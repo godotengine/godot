@@ -40,7 +40,7 @@ Array DebuggerMarshalls::ResourceUsage::serialize() {
 
 	Array arr;
 	arr.push_back(infos.size() * 4);
-	for (ResourceInfo &E : infos) {
+	for (const ResourceInfo &E : infos) {
 		arr.push_back(E.path);
 		arr.push_back(E.format);
 		arr.push_back(E.type);

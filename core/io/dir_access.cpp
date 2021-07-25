@@ -93,7 +93,7 @@ static Error _erase_recursive(DirAccess *da) {
 
 	da->list_dir_end();
 
-	for (String &E : dirs) {
+	for (const String &E : dirs) {
 		Error err = da->change_dir(E);
 		if (err == OK) {
 			err = _erase_recursive(da);
@@ -114,7 +114,7 @@ static Error _erase_recursive(DirAccess *da) {
 		}
 	}
 
-	for (String &E : files) {
+	for (const String &E : files) {
 		Error err = da->remove(da->get_current_dir().plus_file(E));
 		if (err) {
 			return err;
@@ -362,7 +362,7 @@ Error DirAccess::_copy_dir(DirAccess *p_target_da, String p_to, int p_chmod_flag
 
 	list_dir_end();
 
-	for (String &rel_path : dirs) {
+	for (const String &rel_path : dirs) {
 		String target_dir = p_to + rel_path;
 		if (!p_target_da->dir_exists(target_dir)) {
 			Error err = p_target_da->make_dir(target_dir);

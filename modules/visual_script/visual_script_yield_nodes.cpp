@@ -438,7 +438,7 @@ void VisualScriptYieldSignal::_validate_property(PropertyInfo &property) const {
 		ClassDB::get_signal_list(_get_base_type(), &methods);
 
 		List<String> mstring;
-		for (MethodInfo &E : methods) {
+		for (const MethodInfo &E : methods) {
 			if (E.name.begins_with("_")) {
 				continue;
 			}
@@ -448,7 +448,7 @@ void VisualScriptYieldSignal::_validate_property(PropertyInfo &property) const {
 		mstring.sort();
 
 		String ml;
-		for (String &E : mstring) {
+		for (const String &E : mstring) {
 			if (ml != String()) {
 				ml += ",";
 			}

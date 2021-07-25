@@ -350,7 +350,7 @@ void AnimationPlayerEditor::_animation_load() {
 	List<String> extensions;
 
 	ResourceLoader::get_recognized_extensions_for_type("Animation", &extensions);
-	for (String &E : extensions) {
+	for (const String &E : extensions) {
 		file->add_filter("*." + E + " ; " + E.to_upper());
 	}
 
@@ -584,7 +584,7 @@ void AnimationPlayerEditor::_animation_blend() {
 	blend_editor.next->clear();
 	blend_editor.next->add_item("", i);
 
-	for (StringName &to : anims) {
+	for (const StringName &to : anims) {
 		TreeItem *blend = blend_editor.tree->create_item(root);
 		blend->set_editable(0, false);
 		blend->set_editable(1, true);
@@ -829,7 +829,7 @@ void AnimationPlayerEditor::_update_player() {
 	}
 
 	int active_idx = -1;
-	for (StringName &E : animlist) {
+	for (const StringName &E : animlist) {
 		Ref<Texture2D> icon;
 		if (E == player->get_autoplay()) {
 			if (E == "RESET") {
@@ -965,7 +965,7 @@ void AnimationPlayerEditor::_animation_duplicate() {
 	Ref<Animation> new_anim = memnew(Animation);
 	List<PropertyInfo> plist;
 	anim->get_property_list(&plist);
-	for (PropertyInfo &E : plist) {
+	for (const PropertyInfo &E : plist) {
 		if (E.usage & PROPERTY_USAGE_STORAGE) {
 			new_anim->set(E.name, anim->get(E.name));
 		}

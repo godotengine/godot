@@ -95,7 +95,7 @@ Node *InstancePlaceholder::create_instance(bool p_replace, const Ref<PackedScene
 	scene->set_name(get_name());
 	int pos = get_index();
 
-	for (PropSet &E : stored_values) {
+	for (const PropSet &E : stored_values) {
 		scene->set(E.name, E.value);
 	}
 
@@ -114,7 +114,7 @@ Dictionary InstancePlaceholder::get_stored_values(bool p_with_order) {
 	Dictionary ret;
 	PackedStringArray order;
 
-	for (PropSet &E : stored_values) {
+	for (const PropSet &E : stored_values) {
 		ret[E.name] = E.value;
 		if (p_with_order) {
 			order.push_back(E.name);

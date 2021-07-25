@@ -527,7 +527,7 @@ void EditorFeatureProfileManager::_fill_classes_from(TreeItem *p_parent, const S
 	ClassDB::get_direct_inheriters_from_class(p_class, &child_classes);
 	child_classes.sort_custom<StringName::AlphCompare>();
 
-	for (StringName &name : child_classes) {
+	for (const StringName &name : child_classes) {
 		if (String(name).begins_with("Editor") || ClassDB::get_api_type(name) != ClassDB::API_CORE) {
 			continue;
 		}
@@ -596,7 +596,7 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 		TreeItem *properties = property_list->create_item(root);
 		properties->set_text(0, TTR("Class Properties:"));
 
-		for (PropertyInfo &E : props) {
+		for (const PropertyInfo &E : props) {
 			String name = E.name;
 			if (!(E.usage & PROPERTY_USAGE_EDITOR)) {
 				continue;

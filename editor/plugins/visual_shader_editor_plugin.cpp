@@ -666,7 +666,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		if (valid_left) {
 			name_left = vsnode->get_input_port_name(i);
 			port_left = vsnode->get_input_port_type(i);
-			for (VisualShader::Connection &E : connections) {
+			for (const VisualShader::Connection &E : connections) {
 				if (E.to_node == p_id && E.to_port == j) {
 					port_left_used = true;
 				}
@@ -899,7 +899,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		expression_box->set_syntax_highlighter(expression_syntax_highlighter);
 		expression_box->add_theme_color_override("background_color", background_color);
 
-		for (String &E : VisualShaderEditor::get_singleton()->keyword_list) {
+		for (const String &E : VisualShaderEditor::get_singleton()->keyword_list) {
 			if (ShaderLanguage::is_control_flow_keyword(E)) {
 				expression_syntax_highlighter->add_keyword_color(E, control_flow_keyword_color);
 			} else {
@@ -1470,7 +1470,7 @@ void VisualShaderEditor::_update_graph() {
 
 	graph_plugin->make_dirty(false);
 
-	for (VisualShader::Connection &E : connections) {
+	for (const VisualShader::Connection &E : connections) {
 		int from = E.from_node;
 		int from_idx = E.from_port;
 		int to = E.to_node;
@@ -1634,7 +1634,7 @@ void VisualShaderEditor::_expand_output_port(int p_node, int p_port, bool p_expa
 	List<VisualShader::Connection> conns;
 	visual_shader->get_node_connections(type, &conns);
 
-	for (VisualShader::Connection &E : conns) {
+	for (const VisualShader::Connection &E : conns) {
 		int from_node = E.from_node;
 		int from_port = E.from_port;
 		int to_node = E.to_node;
@@ -1708,7 +1708,7 @@ void VisualShaderEditor::_remove_input_port(int p_node, int p_port) {
 
 	List<VisualShader::Connection> conns;
 	visual_shader->get_node_connections(type, &conns);
-	for (VisualShader::Connection &E : conns) {
+	for (const VisualShader::Connection &E : conns) {
 		int from_node = E.from_node;
 		int from_port = E.from_port;
 		int to_node = E.to_node;
@@ -1757,7 +1757,7 @@ void VisualShaderEditor::_remove_output_port(int p_node, int p_port) {
 
 	List<VisualShader::Connection> conns;
 	visual_shader->get_node_connections(type, &conns);
-	for (VisualShader::Connection &E : conns) {
+	for (const VisualShader::Connection &E : conns) {
 		int from_node = E.from_node;
 		int from_port = E.from_port;
 		int to_node = E.to_node;
@@ -2518,7 +2518,7 @@ void VisualShaderEditor::_nodes_dragged() {
 
 	undo_redo->create_action(TTR("Node(s) Moved"));
 
-	for (DragOp &E : drag_buffer) {
+	for (const DragOp &E : drag_buffer) {
 		undo_redo->add_do_method(visual_shader.ptr(), "set_node_position", E.type, E.node, E.to);
 		undo_redo->add_undo_method(visual_shader.ptr(), "set_node_position", E.type, E.node, E.from);
 		undo_redo->add_do_method(graph_plugin.ptr(), "set_node_position", E.type, E.node, E.to);
@@ -2544,7 +2544,7 @@ void VisualShaderEditor::_connection_request(const String &p_from, int p_from_in
 	List<VisualShader::Connection> conns;
 	visual_shader->get_node_connections(type, &conns);
 
-	for (VisualShader::Connection &E : conns) {
+	for (const VisualShader::Connection &E : conns) {
 		if (E.to_node == to && E.to_port == p_to_index) {
 			undo_redo->add_do_method(visual_shader.ptr(), "disconnect_nodes", type, E.from_node, E.from_port, E.to_node, E.to_port);
 			undo_redo->add_undo_method(visual_shader.ptr(), "connect_nodes", type, E.from_node, E.from_port, E.to_node, E.to_port);
@@ -2598,7 +2598,7 @@ void VisualShaderEditor::_delete_nodes(int p_type, const List<int> &p_nodes) {
 	visual_shader->get_node_connections(type, &conns);
 
 	for (const int &F : p_nodes) {
-		for (VisualShader::Connection &E : conns) {
+		for (const VisualShader::Connection &E : conns) {
 			if (E.from_node == F || E.to_node == F) {
 				undo_redo->add_do_method(graph_plugin.ptr(), "disconnect_nodes", type, E.from_node, E.from_port, E.to_node, E.to_port);
 			}
@@ -2639,7 +2639,7 @@ void VisualShaderEditor::_delete_nodes(int p_type, const List<int> &p_nodes) {
 
 	List<VisualShader::Connection> used_conns;
 	for (const int &F : p_nodes) {
-		for (VisualShader::Connection &E : conns) {
+		for (const VisualShader::Connection &E : conns) {
 			if (E.from_node == F || E.to_node == F) {
 				bool cancel = false;
 				for (List<VisualShader::Connection>::Element *R = used_conns.front(); R; R = R->next()) {
@@ -3094,7 +3094,7 @@ void VisualShaderEditor::_notification(int p_what) {
 
 			preview_text->add_theme_color_override("background_color", background_color);
 
-			for (String &E : keyword_list) {
+			for (const String &E : keyword_list) {
 				if (ShaderLanguage::is_control_flow_keyword(E)) {
 					syntax_highlighter->add_keyword_color(E, control_flow_keyword_color);
 				} else {
@@ -3249,7 +3249,7 @@ void VisualShaderEditor::_dup_paste_nodes(int p_type, int p_pasted_type, List<in
 	List<VisualShader::Connection> conns;
 	visual_shader->get_node_connections(pasted_type, &conns);
 
-	for (VisualShader::Connection &E : conns) {
+	for (const VisualShader::Connection &E : conns) {
 		if (unsupported_set.has(E.from_node) || unsupported_set.has(E.to_node)) {
 			continue;
 		}
@@ -3399,7 +3399,7 @@ void VisualShaderEditor::_input_select_item(Ref<VisualShaderNodeInput> p_input, 
 			if (type_changed) {
 				List<VisualShader::Connection> conns;
 				visual_shader->get_node_connections(type, &conns);
-				for (VisualShader::Connection &E : conns) {
+				for (const VisualShader::Connection &E : conns) {
 					if (E.from_node == id) {
 						if (visual_shader->is_port_types_compatible(p_input->get_input_type_by_name(p_name), visual_shader->get_node(type, E.to_node)->get_input_port_type(E.to_port))) {
 							undo_redo->add_do_method(visual_shader.ptr(), "connect_nodes", type, E.from_node, E.from_port, E.to_node, E.to_port);
@@ -3445,7 +3445,7 @@ void VisualShaderEditor::_uniform_select_item(Ref<VisualShaderNodeUniformRef> p_
 			if (type_changed) {
 				List<VisualShader::Connection> conns;
 				visual_shader->get_node_connections(type, &conns);
-				for (VisualShader::Connection &E : conns) {
+				for (const VisualShader::Connection &E : conns) {
 					if (E.from_node == id) {
 						if (visual_shader->is_port_types_compatible(p_uniform_ref->get_uniform_type_by_name(p_name), visual_shader->get_node(type, E.to_node)->get_input_port_type(E.to_port))) {
 							continue;
@@ -4825,7 +4825,7 @@ Control *VisualShaderNodePluginDefault::create_editor(const Ref<Resource> &p_par
 
 	Vector<PropertyInfo> pinfo;
 
-	for (PropertyInfo &E : props) {
+	for (const PropertyInfo &E : props) {
 		for (int i = 0; i < properties.size(); i++) {
 			if (E.name == String(properties[i])) {
 				pinfo.push_back(E);
@@ -4894,7 +4894,7 @@ void EditorPropertyShaderMode::_option_selected(int p_which) {
 		VisualShader::Type type = VisualShader::Type(i);
 		List<VisualShader::Connection> conns;
 		visual_shader->get_node_connections(type, &conns);
-		for (VisualShader::Connection &E : conns) {
+		for (const VisualShader::Connection &E : conns) {
 			if (E.to_node == VisualShader::NODE_ID_OUTPUT) {
 				undo_redo->add_undo_method(visual_shader.ptr(), "connect_nodes", type, E.from_node, E.from_port, E.to_node, E.to_port);
 			}
@@ -4918,7 +4918,7 @@ void EditorPropertyShaderMode::_option_selected(int p_which) {
 	List<PropertyInfo> props;
 	visual_shader->get_property_list(&props);
 
-	for (PropertyInfo &E : props) {
+	for (const PropertyInfo &E : props) {
 		if (E.name.begins_with("flags/") || E.name.begins_with("modes/")) {
 			undo_redo->add_undo_property(visual_shader.ptr(), E.name, visual_shader->get(E.name));
 		}
@@ -5024,7 +5024,7 @@ void VisualShaderNodePortPreview::_shader_changed() {
 		if (src_mat && src_mat->get_shader().is_valid()) {
 			List<PropertyInfo> params;
 			src_mat->get_shader()->get_param_list(&params);
-			for (PropertyInfo &E : params) {
+			for (const PropertyInfo &E : params) {
 				material->set(E.name, src_mat->get(E.name));
 			}
 		}

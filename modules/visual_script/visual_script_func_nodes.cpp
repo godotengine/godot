@@ -538,7 +538,7 @@ void VisualScriptFunctionCall::_validate_property(PropertyInfo &property) const 
 			Engine::get_singleton()->get_singletons(&names);
 			property.hint = PROPERTY_HINT_ENUM;
 			String sl;
-			for (Engine::Singleton &E : names) {
+			for (const Engine::Singleton &E : names) {
 				if (sl != String()) {
 					sl += ",";
 				}
@@ -683,7 +683,7 @@ void VisualScriptFunctionCall::_bind_methods() {
 	}
 
 	String script_ext_hint;
-	for (String &E : script_extensions) {
+	for (const String &E : script_extensions) {
 		if (script_ext_hint != String()) {
 			script_ext_hint += ",";
 		}
@@ -1004,7 +1004,7 @@ PropertyInfo VisualScriptPropertySet::get_input_value_port_info(int p_idx) const
 
 	List<PropertyInfo> props;
 	ClassDB::get_property_list(_get_base_type(), &props, false);
-	for (PropertyInfo &E : props) {
+	for (const PropertyInfo &E : props) {
 		if (E.name == property) {
 			String detail_prop_name = property;
 			if (index != StringName()) {
@@ -1135,7 +1135,7 @@ void VisualScriptPropertySet::_update_cache() {
 		List<PropertyInfo> pinfo;
 		v.get_property_list(&pinfo);
 
-		for (PropertyInfo &E : pinfo) {
+		for (const PropertyInfo &E : pinfo) {
 			if (E.name == property) {
 				type_cache = E;
 			}
@@ -1186,7 +1186,7 @@ void VisualScriptPropertySet::_update_cache() {
 			script->get_script_property_list(&pinfo);
 		}
 
-		for (PropertyInfo &E : pinfo) {
+		for (const PropertyInfo &E : pinfo) {
 			if (E.name == property) {
 				type_cache = E;
 				return;
@@ -1354,7 +1354,7 @@ void VisualScriptPropertySet::_validate_property(PropertyInfo &property) const {
 		List<PropertyInfo> plist;
 		v.get_property_list(&plist);
 		String options = "";
-		for (PropertyInfo &E : plist) {
+		for (const PropertyInfo &E : plist) {
 			options += "," + E.name;
 		}
 
@@ -1410,7 +1410,7 @@ void VisualScriptPropertySet::_bind_methods() {
 	}
 
 	String script_ext_hint;
-	for (String &E : script_extensions) {
+	for (const String &E : script_extensions) {
 		if (script_ext_hint != String()) {
 			script_ext_hint += ",";
 		}
@@ -1820,7 +1820,7 @@ void VisualScriptPropertyGet::_update_cache() {
 		List<PropertyInfo> pinfo;
 		v.get_property_list(&pinfo);
 
-		for (PropertyInfo &E : pinfo) {
+		for (const PropertyInfo &E : pinfo) {
 			if (E.name == property) {
 				type_cache = E.type;
 				return;
@@ -2059,7 +2059,7 @@ void VisualScriptPropertyGet::_validate_property(PropertyInfo &property) const {
 		List<PropertyInfo> plist;
 		v.get_property_list(&plist);
 		String options = "";
-		for (PropertyInfo &E : plist) {
+		for (const PropertyInfo &E : plist) {
 			options += "," + E.name;
 		}
 
@@ -2112,7 +2112,7 @@ void VisualScriptPropertyGet::_bind_methods() {
 	}
 
 	String script_ext_hint;
-	for (String &E : script_extensions) {
+	for (const String &E : script_extensions) {
 		if (script_ext_hint != String()) {
 			script_ext_hint += ",";
 		}
@@ -2323,7 +2323,7 @@ void VisualScriptEmitSignal::_validate_property(PropertyInfo &property) const {
 		}
 
 		String ml;
-		for (StringName &E : sigs) {
+		for (const StringName &E : sigs) {
 			if (ml != String()) {
 				ml += ",";
 			}
@@ -2418,7 +2418,7 @@ void register_visual_script_func_nodes() {
 		List<MethodInfo> ml;
 		vt.get_method_list(&ml);
 
-		for (MethodInfo &E : ml) {
+		for (const MethodInfo &E : ml) {
 			VisualScriptLanguage::singleton->add_register_func("functions/by_type/" + type_name + "/" + E.name, create_basic_type_call_node);
 		}
 	}

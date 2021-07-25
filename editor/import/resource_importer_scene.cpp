@@ -312,7 +312,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 
 		List<StringName> anims;
 		ap->get_animation_list(&anims);
-		for (StringName &E : anims) {
+		for (const StringName &E : anims) {
 			Ref<Animation> anim = ap->get_animation(E);
 			ERR_CONTINUE(anim.is_null());
 			for (int i = 0; i < anim->get_track_count(); i++) {
@@ -659,7 +659,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 						}
 
 						int idx = 0;
-						for (Ref<Shape3D> &E : shapes) {
+						for (const Ref<Shape3D> &E : shapes) {
 							CollisionShape3D *cshape = memnew(CollisionShape3D);
 							cshape->set_shape(E);
 							base->add_child(cshape);
@@ -712,7 +712,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 			//fill node settings for this node with default values
 			List<ImportOption> iopts;
 			get_internal_import_options(INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE, &iopts);
-			for (ImportOption &E : iopts) {
+			for (const ImportOption &E : iopts) {
 				if (!node_settings.has(E.option.name)) {
 					node_settings[E.option.name] = E.default_value;
 				}
@@ -756,7 +756,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 		} else {
 			List<StringName> anims;
 			ap->get_animation_list(&anims);
-			for (StringName &name : anims) {
+			for (const StringName &name : anims) {
 				Ref<Animation> anim = ap->get_animation(name);
 				if (p_animation_data.has(name)) {
 					Dictionary anim_settings = p_animation_data[name];
@@ -764,7 +764,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 						//fill with default values
 						List<ImportOption> iopts;
 						get_internal_import_options(INTERNAL_IMPORT_CATEGORY_ANIMATION, &iopts);
-						for (ImportOption &F : iopts) {
+						for (const ImportOption &F : iopts) {
 							if (!anim_settings.has(F.option.name)) {
 								anim_settings[F.option.name] = F.default_value;
 							}
@@ -935,7 +935,7 @@ void ResourceImporterScene::_create_clips(AnimationPlayer *anim, const Array &p_
 void ResourceImporterScene::_optimize_animations(AnimationPlayer *anim, float p_max_lin_error, float p_max_ang_error, float p_max_angle) {
 	List<StringName> anim_names;
 	anim->get_animation_list(&anim_names);
-	for (StringName &E : anim_names) {
+	for (const StringName &E : anim_names) {
 		Ref<Animation> a = anim->get_animation(E);
 		a->optimize(p_max_lin_error, p_max_ang_error, Math::deg2rad(p_max_angle));
 	}
@@ -1045,7 +1045,7 @@ void ResourceImporterScene::get_import_options(List<ImportOption> *r_options, in
 
 	String script_ext_hint;
 
-	for (String &E : script_extentions) {
+	for (const String &E : script_extentions) {
 		if (script_ext_hint != "") {
 			script_ext_hint += ",";
 		}
@@ -1088,7 +1088,7 @@ Node *ResourceImporterScene::import_scene_from_other_importer(EditorSceneImporte
 		List<String> extensions;
 		E->get()->get_extensions(&extensions);
 
-		for (String &F : extensions) {
+		for (const String &F : extensions) {
 			if (F.to_lower() == ext) {
 				importer = E;
 				break;
@@ -1118,7 +1118,7 @@ Ref<Animation> ResourceImporterScene::import_animation_from_other_importer(Edito
 		List<String> extensions;
 		E->get()->get_extensions(&extensions);
 
-		for (String &F : extensions) {
+		for (const String &F : extensions) {
 			if (F.to_lower() == ext) {
 				importer = E;
 				break;

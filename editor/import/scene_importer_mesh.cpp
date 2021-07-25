@@ -79,7 +79,7 @@ void EditorSceneImporterMesh::add_surface(Mesh::PrimitiveType p_primitive, const
 
 	List<Variant> lods;
 	p_lods.get_key_list(&lods);
-	for (Variant &E : lods) {
+	for (const Variant &E : lods) {
 		ERR_CONTINUE(!E.is_num());
 		Surface::LOD lod;
 		lod.distance = E;

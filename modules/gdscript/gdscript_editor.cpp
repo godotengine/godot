@@ -319,7 +319,7 @@ void GDScriptLanguage::debug_get_stack_level_locals(int p_level, List<String> *p
 	List<Pair<StringName, int>> locals;
 
 	f->debug_get_stack_member_state(*_call_stack[l].line, &locals);
-	for (Pair<StringName, int> &E : locals) {
+	for (const Pair<StringName, int> &E : locals) {
 		p_locals->push_back(E.first);
 		p_values->push_back(_call_stack[l].stack[E.second]);
 	}
@@ -865,7 +865,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 						if (!_static) {
 							List<PropertyInfo> members;
 							scr->get_script_property_list(&members);
-							for (PropertyInfo &E : members) {
+							for (const PropertyInfo &E : members) {
 								ScriptCodeCompletionOption option(E.name, ScriptCodeCompletionOption::KIND_MEMBER);
 								r_result.insert(option.display, option);
 							}
@@ -879,7 +879,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 
 						List<MethodInfo> signals;
 						scr->get_script_signal_list(&signals);
-						for (MethodInfo &E : signals) {
+						for (const MethodInfo &E : signals) {
 							ScriptCodeCompletionOption option(E.name, ScriptCodeCompletionOption::KIND_SIGNAL);
 							r_result.insert(option.display, option);
 						}
@@ -887,7 +887,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 
 					List<MethodInfo> methods;
 					scr->get_script_method_list(&methods);
-					for (MethodInfo &E : methods) {
+					for (const MethodInfo &E : methods) {
 						if (E.name.begins_with("@")) {
 							continue;
 						}
@@ -920,7 +920,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 				if (!p_only_functions) {
 					List<String> constants;
 					ClassDB::get_integer_constant_list(type, &constants);
-					for (String &E : constants) {
+					for (const String &E : constants) {
 						ScriptCodeCompletionOption option(E, ScriptCodeCompletionOption::KIND_CONSTANT);
 						r_result.insert(option.display, option);
 					}
@@ -928,7 +928,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 					if (!_static || Engine::get_singleton()->has_singleton(type)) {
 						List<PropertyInfo> pinfo;
 						ClassDB::get_property_list(type, &pinfo);
-						for (PropertyInfo &E : pinfo) {
+						for (const PropertyInfo &E : pinfo) {
 							if (E.usage & (PROPERTY_USAGE_GROUP | PROPERTY_USAGE_CATEGORY)) {
 								continue;
 							}
@@ -945,7 +945,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 					List<MethodInfo> methods;
 					bool is_autocompleting_getters = GLOBAL_GET("debug/gdscript/completion/autocomplete_setters_and_getters").booleanize();
 					ClassDB::get_method_list(type, &methods, false, !is_autocompleting_getters);
-					for (MethodInfo &E : methods) {
+					for (const MethodInfo &E : methods) {
 						if (E.name.begins_with("_")) {
 							continue;
 						}
@@ -977,7 +977,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 						tmp.get_property_list(&members);
 					}
 
-					for (PropertyInfo &E : members) {
+					for (const PropertyInfo &E : members) {
 						if (String(E.name).find("/") == -1) {
 							ScriptCodeCompletionOption option(E.name, ScriptCodeCompletionOption::KIND_MEMBER);
 							r_result.insert(option.display, option);
@@ -2095,7 +2095,7 @@ static bool _guess_method_return_type_from_base(GDScriptParser::CompletionContex
 				if (scr.is_valid()) {
 					List<MethodInfo> methods;
 					scr->get_script_method_list(&methods);
-					for (MethodInfo &mi : methods) {
+					for (const MethodInfo &mi : methods) {
 						if (mi.name == p_method) {
 							r_type = _type_from_property(mi.return_val);
 							return true;
@@ -2135,7 +2135,7 @@ static bool _guess_method_return_type_from_base(GDScriptParser::CompletionContex
 				List<MethodInfo> methods;
 				tmp.get_method_list(&methods);
 
-				for (MethodInfo &mi : methods) {
+				for (const MethodInfo &mi : methods) {
 					if (mi.name == p_method) {
 						r_type = _type_from_property(mi.return_val);
 						return true;
@@ -2180,7 +2180,7 @@ static void _find_enumeration_candidates(GDScriptParser::CompletionContext &p_co
 
 		List<StringName> enum_constants;
 		ClassDB::get_enum_constants(class_name, enum_name, &enum_constants);
-		for (StringName &E : enum_constants) {
+		for (const StringName &E : enum_constants) {
 			String candidate = class_name + "." + E;
 			ScriptCodeCompletionOption option(candidate, ScriptCodeCompletionOption::KIND_ENUM);
 			r_result.insert(option.display, option);
@@ -2225,7 +2225,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 						if (obj) {
 							List<String> options;
 							obj->get_argument_options(p_method, p_argidx, &options);
-							for (String &F : options) {
+							for (const String &F : options) {
 								ScriptCodeCompletionOption option(F, ScriptCodeCompletionOption::KIND_FUNCTION);
 								r_result.insert(option.display, option);
 							}
@@ -2247,7 +2247,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 					List<PropertyInfo> props;
 					ProjectSettings::get_singleton()->get_property_list(&props);
 
-					for (PropertyInfo &E : props) {
+					for (const PropertyInfo &E : props) {
 						String s = E.name;
 						if (!s.begins_with("autoload/")) {
 							continue;
@@ -2263,7 +2263,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 					// Get input actions
 					List<PropertyInfo> props;
 					ProjectSettings::get_singleton()->get_property_list(&props);
-					for (PropertyInfo &E : props) {
+					for (const PropertyInfo &E : props) {
 						String s = E.name;
 						if (!s.begins_with("input/")) {
 							continue;
@@ -2288,7 +2288,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 				List<MethodInfo> methods;
 				base.get_method_list(&methods);
-				for (MethodInfo &E : methods) {
+				for (const MethodInfo &E : methods) {
 					if (E.name == p_method) {
 						r_arghint = _make_arguments_hint(E, p_argidx);
 						return;
@@ -2337,7 +2337,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 		Variant::get_constructor_list(GDScriptParser::get_builtin_type(call->function_name), &constructors);
 
 		int i = 0;
-		for (MethodInfo &E : constructors) {
+		for (const MethodInfo &E : constructors) {
 			if (p_argidx >= E.arguments.size()) {
 				continue;
 			}
@@ -2603,7 +2603,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 			List<MethodInfo> virtual_methods;
 			ClassDB::get_virtual_methods(class_name, &virtual_methods);
-			for (MethodInfo &mi : virtual_methods) {
+			for (const MethodInfo &mi : virtual_methods) {
 				String method_hint = mi.name;
 				if (method_hint.find(":") != -1) {
 					method_hint = method_hint.get_slice(":", 0);
@@ -2652,7 +2652,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 				List<String> opts;
 				p_owner->get_argument_options("get_node", 0, &opts);
 
-				for (String &E : opts) {
+				for (const String &E : opts) {
 					String opt = E.strip_edges();
 					if (opt.is_quoted()) {
 						r_forced = true;
@@ -2837,7 +2837,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 
 				List<MethodInfo> virtual_methods;
 				ClassDB::get_virtual_methods(class_name, &virtual_methods, true);
-				for (MethodInfo &E : virtual_methods) {
+				for (const MethodInfo &E : virtual_methods) {
 					if (E.name == p_symbol) {
 						r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_METHOD;
 						r_result.class_name = base_type.native_type;
@@ -2856,7 +2856,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 
 				List<String> constants;
 				ClassDB::get_integer_constant_list(class_name, &constants, true);
-				for (String &E : constants) {
+				for (const String &E : constants) {
 					if (E == p_symbol) {
 						r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
 						r_result.class_name = base_type.native_type;

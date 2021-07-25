@@ -144,7 +144,7 @@ void TextureRegionEditor::_region_draw() {
 			}
 		}
 	} else if (snap_mode == SNAP_AUTOSLICE) {
-		for (Rect2 &r : autoslice_cache) {
+		for (const Rect2 &r : autoslice_cache) {
 			Vector2 endpoints[4] = {
 				mtx.basis_xform(r.position),
 				mtx.basis_xform(r.position + Vector2(r.size.x, 0)),
@@ -327,7 +327,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 				}
 				if (edited_margin < 0 && snap_mode == SNAP_AUTOSLICE) {
 					Vector2 point = mtx.affine_inverse().xform(Vector2(mb->get_position().x, mb->get_position().y));
-					for (Rect2 &E : autoslice_cache) {
+					for (const Rect2 &E : autoslice_cache) {
 						if (E.has_point(point)) {
 							rect = E;
 							if (Input::get_singleton()->is_key_pressed(KEY_CTRL) && !(Input::get_singleton()->is_key_pressed(KEY_SHIFT | KEY_ALT))) {

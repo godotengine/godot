@@ -549,7 +549,7 @@ MainLoop *test() {
 		List<StringName> tl;
 		ClassDB::get_class_list(&tl);
 
-		for (StringName &E : tl) {
+		for (const StringName &E : tl) {
 			Vector<uint8_t> m5b = E.operator String().md5_buffer();
 			hashes.push_back(hashes.size());
 		}

@@ -340,7 +340,7 @@ void ProjectExportDialog::_update_feature_list() {
 		}
 	}
 
-	for (String &E : features) {
+	for (const String &E : features) {
 		fset.insert(E);
 	}
 

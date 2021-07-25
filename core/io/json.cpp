@@ -122,7 +122,7 @@ String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_
 			}
 
 			bool first_key = true;
-			for (Variant &E : keys) {
+			for (const Variant &E : keys) {
 				if (first_key) {
 					first_key = false;
 				} else {

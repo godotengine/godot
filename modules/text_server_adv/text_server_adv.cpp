@@ -927,13 +927,13 @@ void TextServerAdvanced::font_set_oversampling(float p_oversampling) {
 		oversampling = p_oversampling;
 		List<RID> fonts;
 		font_owner.get_owned_list(&fonts);
-		for (RID E : fonts) {
+		for (const RID &E : fonts) {
 			font_owner.getornull(E)->clear_cache();
 		}
 
 		List<RID> text_bufs;
 		shaped_owner.get_owned_list(&text_bufs);
-		for (RID E : text_bufs) {
+		for (const RID &E : text_bufs) {
 			invalidate(shaped_owner.getornull(E));
 		}
 	}

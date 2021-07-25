@@ -285,7 +285,7 @@ void GroupDialog::_load_groups(Node *p_current) {
 	List<Node::GroupInfo> gi;
 	p_current->get_groups(&gi);
 
-	for (Node::GroupInfo &E : gi) {
+	for (const Node::GroupInfo &E : gi) {
 		if (!E.persistent) {
 			continue;
 		}
@@ -627,7 +627,7 @@ void GroupsEditor::update_tree() {
 
 	TreeItem *root = tree->create_item();
 
-	for (GroupInfo &gi : groups) {
+	for (const GroupInfo &gi : groups) {
 		if (!gi.persistent) {
 			continue;
 		}

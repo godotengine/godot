@@ -841,7 +841,7 @@ Vector<String> Translation::_get_message_list() const {
 void Translation::_set_messages(const Dictionary &p_messages) {
 	List<Variant> keys;
 	p_messages.get_key_list(&keys);
-	for (Variant &E : keys) {
+	for (const Variant &E : keys) {
 		translation_map[E] = p_messages[E];
 	}
 }

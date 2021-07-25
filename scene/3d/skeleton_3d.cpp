@@ -264,7 +264,7 @@ void Skeleton3D::_notification(int p_what) {
 					b.global_pose_override_amount = 0.0;
 				}
 
-				for (ObjectID &E : b.nodes_bound) {
+				for (const ObjectID &E : b.nodes_bound) {
 					Object *obj = ObjectDB::get_instance(E);
 					ERR_CONTINUE(!obj);
 					Node3D *node_3d = Object::cast_to<Node3D>(obj);

@@ -65,7 +65,7 @@ String InputMap::_suggest_actions(const StringName &p_action) const {
 	float closest_similarity = 0.0;
 
 	// Find the most action with the most similar name.
-	for (StringName &action : actions) {
+	for (const StringName &action : actions) {
 		const float similarity = String(action).similarity(p_action);
 
 		if (similarity > closest_similarity) {
@@ -261,7 +261,7 @@ void InputMap::load_from_project_settings() {
 	List<PropertyInfo> pinfo;
 	ProjectSettings::get_singleton()->get_property_list(&pinfo);
 
-	for (PropertyInfo &pi : pinfo) {
+	for (const PropertyInfo &pi : pinfo) {
 		if (!pi.name.begins_with("input/")) {
 			continue;
 		}

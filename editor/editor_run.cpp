@@ -228,7 +228,7 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 	}
 
 	printf("Running: %s", exec.utf8().get_data());
-	for (String &E : args) {
+	for (const String &E : args) {
 		printf(" %s", E.utf8().get_data());
 	};
 	printf("\n");
@@ -267,7 +267,7 @@ void EditorRun::stop_child_process(OS::ProcessID p_pid) {
 
 void EditorRun::stop() {
 	if (status != STATUS_STOP && pids.size() > 0) {
-		for (OS::ProcessID &E : pids) {
+		for (const OS::ProcessID &E : pids) {
 			OS::get_singleton()->kill(E);
 		}
 	}

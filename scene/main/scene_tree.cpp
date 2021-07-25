@@ -94,7 +94,7 @@ void SceneTreeTimer::release_connections() {
 	List<Connection> connections;
 	get_all_signal_connections(&connections);
 
-	for (Connection &connection : connections) {
+	for (const Connection &connection : connections) {
 		disconnect(connection.signal.get_name(), connection.callable);
 	}
 }
@@ -1402,7 +1402,7 @@ SceneTree::SceneTree() {
 		List<String> exts;
 		ResourceLoader::get_recognized_extensions_for_type("Environment", &exts);
 		String ext_hint;
-		for (String &E : exts) {
+		for (const String &E : exts) {
 			if (ext_hint != String()) {
 				ext_hint += ",";
 			}

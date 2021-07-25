@@ -3391,7 +3391,7 @@ void RendererSceneCull::render_probes() {
 				idx++;
 			}
 
-			for (Instance *instance : probe->owner->scenario->directional_lights) {
+			for (const Instance *instance : probe->owner->scenario->directional_lights) {
 				InstanceLightData *instance_light = (InstanceLightData *)instance->base_data;
 				if (!instance->visible) {
 					continue;
@@ -3464,7 +3464,7 @@ void RendererSceneCull::render_probes() {
 
 					idx++;
 				}
-				for (Instance *instance : probe->owner->scenario->directional_lights) {
+				for (const Instance *instance : probe->owner->scenario->directional_lights) {
 					InstanceLightData *instance_light = (InstanceLightData *)instance->base_data;
 					if (!instance->visible) {
 						continue;
@@ -3571,7 +3571,7 @@ void RendererSceneCull::render_particle_colliders() {
 void RendererSceneCull::_update_instance_shader_parameters_from_material(Map<StringName, Instance::InstanceShaderParameter> &isparams, const Map<StringName, Instance::InstanceShaderParameter> &existing_isparams, RID p_material) {
 	List<RendererStorage::InstanceShaderParam> plist;
 	RSG::storage->material_get_instance_shader_parameters(p_material, &plist);
-	for (RendererStorage::InstanceShaderParam &E : plist) {
+	for (const RendererStorage::InstanceShaderParam &E : plist) {
 		StringName name = E.info.name;
 		if (isparams.has(name)) {
 			if (isparams[name].info.type != E.info.type) {

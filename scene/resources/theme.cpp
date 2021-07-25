@@ -447,7 +447,7 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	// Sort and store properties.
 	list.sort();
-	for (PropertyInfo &E : list) {
+	for (const PropertyInfo &E : list) {
 		p_list->push_back(E);
 	}
 }

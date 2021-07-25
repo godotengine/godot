@@ -65,7 +65,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	tree_icon_items.clear();
 	tree_stylebox_items.clear();
 
-	for (StringName &E : types) {
+	for (const StringName &E : types) {
 		String type_name = (String)E;
 
 		TreeItem *type_node = import_items_tree->create_item(root);
@@ -93,7 +93,7 @@ void ThemeItemImportTree::_update_items_tree() {
 
 			bool data_type_has_filtered_items = false;
 
-			for (StringName &F : names) {
+			for (const StringName &F : names) {
 				String item_name = (String)F;
 				bool is_item_matching_filter = (item_name.findn(filter_text) > -1);
 				if (!filter_text.is_empty() && !is_matching_filter && !is_item_matching_filter) {
@@ -182,7 +182,7 @@ void ThemeItemImportTree::_update_items_tree() {
 			bool data_type_any_checked_with_data = false;
 
 			filtered_names.sort_custom<StringName::AlphCompare>();
-			for (StringName &F : filtered_names) {
+			for (const StringName &F : filtered_names) {
 				TreeItem *item_node = import_items_tree->create_item(data_type_node);
 				item_node->set_meta("_can_be_imported", true);
 				item_node->set_text(0, F);
@@ -1236,7 +1236,7 @@ void ThemeItemEditorDialog::_update_edit_types() {
 	bool item_reselected = false;
 	edit_type_list->clear();
 	int e_idx = 0;
-	for (StringName &E : theme_types) {
+	for (const StringName &E : theme_types) {
 		Ref<Texture2D> item_icon;
 		if (E == "") {
 			item_icon = get_theme_icon(SNAME("NodeDisabled"), SNAME("EditorIcons"));
@@ -1318,7 +1318,7 @@ void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
 			color_root->add_button(0, get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")), ITEMS_TREE_REMOVE_DATA_TYPE, false, TTR("Remove All Color Items"));
 
 			names.sort_custom<StringName::AlphCompare>();
-			for (StringName &E : names) {
+			for (const StringName &E : names) {
 				TreeItem *item = edit_items_tree->create_item(color_root);
 				item->set_text(0, E);
 				item->add_button(0, get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")), ITEMS_TREE_RENAME_ITEM, false, TTR("Rename Item"));
@@ -1339,7 +1339,7 @@ void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
 			constant_root->add_button(0, get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")), ITEMS_TREE_REMOVE_DATA_TYPE, false, TTR("Remove All Constant Items"));
 
 			names.sort_custom<StringName::AlphCompare>();
-			for (StringName &E : names) {
+			for (const StringName &E : names) {
 				TreeItem *item = edit_items_tree->create_item(constant_root);
 				item->set_text(0, E);
 				item->add_button(0, get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")), ITEMS_TREE_RENAME_ITEM, false, TTR("Rename Item"));
@@ -1360,7 +1360,7 @@ void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
 			font_root->add_button(0, get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")), ITEMS_TREE_REMOVE_DATA_TYPE, false, TTR("Remove All Font Items"));
 
 			names.sort_custom<StringName::AlphCompare>();
-			for (StringName &E : names) {
+			for (const StringName &E : names) {
 				TreeItem *item = edit_items_tree->create_item(font_root);
 				item->set_text(0, E);
 				item->add_button(0, get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")), ITEMS_TREE_RENAME_ITEM, false, TTR("Rename Item"));
@@ -1381,7 +1381,7 @@ void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
 			font_size_root->add_button(0, get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")), ITEMS_TREE_REMOVE_DATA_TYPE, false, TTR("Remove All Font Size Items"));
 
 			names.sort_custom<StringName::AlphCompare>();
-			for (StringName &E : names) {
+			for (const StringName &E : names) {
 				TreeItem *item = edit_items_tree->create_item(font_size_root);
 				item->set_text(0, E);
 				item->add_button(0, get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")), ITEMS_TREE_RENAME_ITEM, false, TTR("Rename Item"));
@@ -1402,7 +1402,7 @@ void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
 			icon_root->add_button(0, get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")), ITEMS_TREE_REMOVE_DATA_TYPE, false, TTR("Remove All Icon Items"));
 
 			names.sort_custom<StringName::AlphCompare>();
-			for (StringName &E : names) {
+			for (const StringName &E : names) {
 				TreeItem *item = edit_items_tree->create_item(icon_root);
 				item->set_text(0, E);
 				item->add_button(0, get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")), ITEMS_TREE_RENAME_ITEM, false, TTR("Rename Item"));
@@ -1423,7 +1423,7 @@ void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
 			stylebox_root->add_button(0, get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")), ITEMS_TREE_REMOVE_DATA_TYPE, false, TTR("Remove All StyleBox Items"));
 
 			names.sort_custom<StringName::AlphCompare>();
-			for (StringName &E : names) {
+			for (const StringName &E : names) {
 				TreeItem *item = edit_items_tree->create_item(stylebox_root);
 				item->set_text(0, E);
 				item->add_button(0, get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")), ITEMS_TREE_RENAME_ITEM, false, TTR("Rename Item"));
@@ -1507,7 +1507,7 @@ void ThemeItemEditorDialog::_remove_data_type_items(Theme::DataType p_data_type,
 	edited_theme->_freeze_change_propagation();
 
 	edited_theme->get_theme_item_list(p_data_type, p_item_type, &names);
-	for (StringName &E : names) {
+	for (const StringName &E : names) {
 		edited_theme->clear_theme_item(p_data_type, E, p_item_type);
 	}
 
@@ -1526,7 +1526,7 @@ void ThemeItemEditorDialog::_remove_class_items() {
 
 		names.clear();
 		Theme::get_default()->get_theme_item_list(data_type, edited_item_type, &names);
-		for (StringName &E : names) {
+		for (const StringName &E : names) {
 			if (edited_theme->has_theme_item_nocheck(data_type, E, edited_item_type)) {
 				edited_theme->clear_theme_item(data_type, E, edited_item_type);
 			}
@@ -1550,7 +1550,7 @@ void ThemeItemEditorDialog::_remove_custom_items() {
 
 		names.clear();
 		edited_theme->get_theme_item_list(data_type, edited_item_type, &names);
-		for (StringName &E : names) {
+		for (const StringName &E : names) {
 			if (!Theme::get_default()->has_theme_item_nocheck(data_type, E, edited_item_type)) {
 				edited_theme->clear_theme_item(data_type, E, edited_item_type);
 			}
@@ -1574,7 +1574,7 @@ void ThemeItemEditorDialog::_remove_all_items() {
 
 		names.clear();
 		edited_theme->get_theme_item_list(data_type, edited_item_type, &names);
-		for (StringName &E : names) {
+		for (const StringName &E : names) {
 			edited_theme->clear_theme_item(data_type, E, edited_item_type);
 		}
 	}
@@ -1927,7 +1927,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog() {
 	import_another_theme_dialog->set_title(TTR("Select Another Theme Resource:"));
 	List<String> ext;
 	ResourceLoader::get_recognized_extensions_for_type("Theme", &ext);
-	for (String &E : ext) {
+	for (const String &E : ext) {
 		import_another_theme_dialog->add_filter("*." + E + "; Theme Resource");
 	}
 	import_another_file_hb->add_child(import_another_theme_dialog);
@@ -1969,7 +1969,7 @@ void ThemeTypeDialog::_update_add_type_options(const String &p_filter) {
 	names.sort_custom<StringName::AlphCompare>();
 
 	Vector<StringName> unique_names;
-	for (StringName &E : names) {
+	for (const StringName &E : names) {
 		// Filter out undesired values.
 		if (!p_filter.is_subsequence_ofi(String(E))) {
 			continue;
@@ -2132,7 +2132,7 @@ void ThemeTypeEditor::_update_type_list() {
 
 		bool item_reselected = false;
 		int e_idx = 0;
-		for (StringName &E : theme_types) {
+		for (const StringName &E : theme_types) {
 			Ref<Texture2D> item_icon;
 			if (E == "") {
 				item_icon = get_theme_icon(SNAME("NodeDisabled"), SNAME("EditorIcons"));
@@ -2182,7 +2182,7 @@ OrderedHashMap<StringName, bool> ThemeTypeEditor::_get_type_items(String p_type_
 
 		(Theme::get_default().operator->()->*get_list_func)(default_type, &names);
 		names.sort_custom<StringName::AlphCompare>();
-		for (StringName &E : names) {
+		for (const StringName &E : names) {
 			items[E] = false;
 		}
 	}
@@ -2191,7 +2191,7 @@ OrderedHashMap<StringName, bool> ThemeTypeEditor::_get_type_items(String p_type_
 		names.clear();
 		(edited_theme.operator->()->*get_list_func)(p_type_name, &names);
 		names.sort_custom<StringName::AlphCompare>();
-		for (StringName &E : names) {
+		for (const StringName &E : names) {
 			items[E] = true;
 		}
 	}
@@ -2203,7 +2203,7 @@ OrderedHashMap<StringName, bool> ThemeTypeEditor::_get_type_items(String p_type_
 	keys.sort_custom<StringName::AlphCompare>();
 
 	OrderedHashMap<StringName, bool> ordered_items;
-	for (StringName &E : keys) {
+	for (const StringName &E : keys) {
 		ordered_items[E] = items[E];
 	}
 
@@ -2580,7 +2580,7 @@ void ThemeTypeEditor::_add_default_type_items() {
 	{
 		names.clear();
 		Theme::get_default()->get_icon_list(default_type, &names);
-		for (StringName &E : names) {
+		for (const StringName &E : names) {
 			if (!edited_theme->has_icon(E, edited_type)) {
 				edited_theme->set_icon(E, edited_type, Ref<Texture2D>());
 			}
@@ -2589,7 +2589,7 @@ void ThemeTypeEditor::_add_default_type_items() {
 	{
 		names.clear();
 		Theme::get_default()->get_stylebox_list(default_type, &names);
-		for (StringName &E : names) {
+		for (const StringName &E : names) {
 			if (!edited_theme->has_stylebox(E, edited_type)) {
 				edited_theme->set_stylebox(E, edited_type, Ref<StyleBox>());
 			}
@@ -2598,7 +2598,7 @@ void ThemeTypeEditor::_add_default_type_items() {
 	{
 		names.clear();
 		Theme::get_default()->get_font_list(default_type, &names);
-		for (StringName &E : names) {
+		for (const StringName &E : names) {
 			if (!edited_theme->has_font(E, edited_type)) {
 				edited_theme->set_font(E, edited_type, Ref<Font>());
 			}
@@ -2607,7 +2607,7 @@ void ThemeTypeEditor::_add_default_type_items() {
 	{
 		names.clear();
 		Theme::get_default()->get_font_size_list(default_type, &names);
-		for (StringName &E : names) {
+		for (const StringName &E : names) {
 			if (!edited_theme->has_font_size(E, edited_type)) {
 				edited_theme->set_font_size(E, edited_type, Theme::get_default()->get_font_size(E, default_type));
 			}
@@ -2616,7 +2616,7 @@ void ThemeTypeEditor::_add_default_type_items() {
 	{
 		names.clear();
 		Theme::get_default()->get_color_list(default_type, &names);
-		for (StringName &E : names) {
+		for (const StringName &E : names) {
 			if (!edited_theme->has_color(E, edited_type)) {
 				edited_theme->set_color(E, edited_type, Theme::get_default()->get_color(E, default_type));
 			}
@@ -2625,7 +2625,7 @@ void ThemeTypeEditor::_add_default_type_items() {
 	{
 		names.clear();
 		Theme::get_default()->get_constant_list(default_type, &names);
-		for (StringName &E : names) {
+		for (const StringName &E : names) {
 			if (!edited_theme->has_constant(E, edited_type)) {
 				edited_theme->set_constant(E, edited_type, Theme::get_default()->get_constant(E, default_type));
 			}
@@ -2882,7 +2882,7 @@ void ThemeTypeEditor::_update_stylebox_from_leading() {
 	List<StringName> names;
 	edited_theme->get_stylebox_list(edited_type, &names);
 	List<Ref<StyleBox>> styleboxes;
-	for (StringName &E : names) {
+	for (const StringName &E : names) {
 		if (E == leading_stylebox.item_name) {
 			continue;
 		}
@@ -2895,7 +2895,7 @@ void ThemeTypeEditor::_update_stylebox_from_leading() {
 
 	List<PropertyInfo> props;
 	leading_stylebox.stylebox->get_property_list(&props);
-	for (PropertyInfo &E : props) {
+	for (const PropertyInfo &E : props) {
 		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
 		}
@@ -3301,7 +3301,7 @@ ThemeEditor::ThemeEditor() {
 	preview_scene_dialog->set_title(TTR("Select UI Scene:"));
 	List<String> ext;
 	ResourceLoader::get_recognized_extensions_for_type("PackedScene", &ext);
-	for (String &E : ext) {
+	for (const String &E : ext) {
 		preview_scene_dialog->add_filter("*." + E + "; Scene");
 	}
 	main_hs->add_child(preview_scene_dialog);
@@ -3343,11 +3343,11 @@ bool ThemeEditorPlugin::handles(Object *p_node) const {
 		List<StringName> names;
 
 		edited_theme->get_font_type_list(&types);
-		for (StringName &E : types) {
+		for (const StringName &E : types) {
 			names.clear();
 			edited_theme->get_font_list(E, &names);
 
-			for (StringName &F : names) {
+			for (const StringName &F : names) {
 				if (font_item == edited_theme->get_font(F, E)) {
 					belongs_to_theme = true;
 					break;
@@ -3360,11 +3360,11 @@ bool ThemeEditorPlugin::handles(Object *p_node) const {
 		List<StringName> names;
 
 		edited_theme->get_stylebox_type_list(&types);
-		for (StringName &E : types) {
+		for (const StringName &E : types) {
 			names.clear();
 			edited_theme->get_stylebox_list(E, &names);
 
-			for (StringName &F : names) {
+			for (const StringName &F : names) {
 				if (stylebox_item == edited_theme->get_stylebox(F, E)) {
 					belongs_to_theme = true;
 					break;
@@ -3377,11 +3377,11 @@ bool ThemeEditorPlugin::handles(Object *p_node) const {
 		List<StringName> names;
 
 		edited_theme->get_icon_type_list(&types);
-		for (StringName &E : types) {
+		for (const StringName &E : types) {
 			names.clear();
 			edited_theme->get_icon_list(E, &names);
 
-			for (StringName &F : names) {
+			for (const StringName &F : names) {
 				if (icon_item == edited_theme->get_icon(F, E)) {
 					belongs_to_theme = true;
 					break;

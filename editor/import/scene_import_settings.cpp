@@ -305,7 +305,7 @@ void SceneImportSettings::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
 	if (anim_node) {
 		List<StringName> animations;
 		anim_node->get_animation_list(&animations);
-		for (StringName &E : animations) {
+		for (const StringName &E : animations) {
 			_fill_animation(scene_tree, anim_node->get_animation(E), E, item);
 		}
 	}
@@ -394,7 +394,7 @@ void SceneImportSettings::_load_default_subresource_settings(Map<StringName, Var
 			d = d[p_import_id];
 			List<ResourceImporterScene::ImportOption> options;
 			ResourceImporterScene::get_singleton()->get_internal_import_options(p_category, &options);
-			for (ResourceImporterScene::ImportOption &E : options) {
+			for (const ResourceImporterScene::ImportOption &E : options) {
 				String key = E.option.name;
 				if (d.has(key)) {
 					settings[key] = d[key];
@@ -440,7 +440,7 @@ void SceneImportSettings::open_settings(const String &p_path) {
 		if (err == OK) {
 			List<String> keys;
 			config->get_section_keys("params", &keys);
-			for (String &E : keys) {
+			for (const String &E : keys) {
 				Variant value = config->get_value("params", E);
 				if (E == "_subresources") {
 					base_subresource_settings = value;
@@ -605,7 +605,7 @@ void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
 	scene_import_settings_data->defaults.clear();
 	scene_import_settings_data->current.clear();
 
-	for (ResourceImporter::ImportOption &E : options) {
+	for (const ResourceImporter::ImportOption &E : options) {
 		scene_import_settings_data->defaults[E.option.name] = E.default_value;
 		//needed for visibility toggling (fails if something is missing)
 		if (scene_import_settings_data->settings->has(E.option.name)) {

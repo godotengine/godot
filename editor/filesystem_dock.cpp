@@ -135,7 +135,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 		_sort_file_info_list(file_list);
 
 		// Build the tree.
-		for (FileInfo &fi : file_list) {
+		for (const FileInfo &fi : file_list) {
 			TreeItem *file_item = tree->create_item(subdirectory_item);
 			file_item->set_text(0, fi.name);
 			file_item->set_structured_text_bidi_override(0, STRUCTURED_TEXT_FILE);
@@ -964,7 +964,7 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 				List<String> importer_exts;
 				ResourceImporterScene::get_singleton()->get_recognized_extensions(&importer_exts);
 				String extension = fpath.get_extension();
-				for (String &E : importer_exts) {
+				for (const String &E : importer_exts) {
 					if (extension.nocasecmp_to(E) == 0) {
 						is_imported = true;
 						break;
@@ -1413,7 +1413,7 @@ void FileSystemDock::_make_scene_confirm() {
 	ResourceSaver::get_recognized_extensions(sd, &extensions);
 
 	bool extension_correct = false;
-	for (String &E : extensions) {
+	for (const String &E : extensions) {
 		if (E == extension) {
 			extension_correct = true;
 			break;

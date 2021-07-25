@@ -252,7 +252,7 @@ Array IP::_get_local_addresses() const {
 	Array addresses;
 	List<IPAddress> ip_addresses;
 	get_local_addresses(&ip_addresses);
-	for (IPAddress &E : ip_addresses) {
+	for (const IPAddress &E : ip_addresses) {
 		addresses.push_back(E);
 	}
 

@@ -752,7 +752,7 @@ void VisualScript::_update_placeholders() {
 	List<StringName> keys;
 	variables.get_key_list(&keys);
 
-	for (StringName &E : keys) {
+	for (const StringName &E : keys) {
 		if (!variables[E]._export) {
 			continue;
 		}
@@ -874,7 +874,7 @@ void VisualScript::get_script_method_list(List<MethodInfo> *p_list) const {
 	List<StringName> funcs;
 	functions.get_key_list(&funcs);
 
-	for (StringName &E : funcs) {
+	for (const StringName &E : funcs) {
 		MethodInfo mi;
 		mi.name = E;
 		if (functions[E].func_id >= 0) {
@@ -928,7 +928,7 @@ void VisualScript::get_script_property_list(List<PropertyInfo> *p_list) const {
 	List<StringName> vars;
 	get_variable_list(&vars);
 
-	for (StringName &E : vars) {
+	for (const StringName &E : vars) {
 		//if (!variables[E]._export)
 		//	continue;
 		PropertyInfo pi = variables[E].info;
@@ -2467,7 +2467,7 @@ void VisualScriptLanguage::debug_get_stack_level_members(int p_level, List<Strin
 
 	List<StringName> vars;
 	vs->get_variable_list(&vars);
-	for (StringName &E : vars) {
+	for (const StringName &E : vars) {
 		Variant v;
 		if (_call_stack[l].instance->get_variable(E, &v)) {
 			p_members->push_back("variables/" + E);

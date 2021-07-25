@@ -4746,7 +4746,7 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		Vector3 *tw = tmeshfaces.ptrw();
 		int tidx = 0;
 
-		for (Face3 &f : faces) {
+		for (const Face3 &f : faces) {
 			for (int j = 0; j < 3; j++) {
 				tw[tidx++] = f.vertex[j];
 				_EdgeKey ek;

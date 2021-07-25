@@ -343,7 +343,7 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 	{
 		List<StringName> names;
 		theme->get_icon_list(get_class_name(), &names);
-		for (StringName &E : names) {
+		for (const StringName &E : names) {
 			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
 			if (data.icon_override.has(E)) {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
@@ -355,7 +355,7 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 	{
 		List<StringName> names;
 		theme->get_stylebox_list(get_class_name(), &names);
-		for (StringName &E : names) {
+		for (const StringName &E : names) {
 			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
 			if (data.style_override.has(E)) {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
@@ -367,7 +367,7 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 	{
 		List<StringName> names;
 		theme->get_font_list(get_class_name(), &names);
-		for (StringName &E : names) {
+		for (const StringName &E : names) {
 			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
 			if (data.font_override.has(E)) {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
@@ -379,7 +379,7 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 	{
 		List<StringName> names;
 		theme->get_font_size_list(get_class_name(), &names);
-		for (StringName &E : names) {
+		for (const StringName &E : names) {
 			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
 			if (data.font_size_override.has(E)) {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
@@ -391,7 +391,7 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 	{
 		List<StringName> names;
 		theme->get_color_list(get_class_name(), &names);
-		for (StringName &E : names) {
+		for (const StringName &E : names) {
 			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
 			if (data.color_override.has(E)) {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
@@ -403,7 +403,7 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 	{
 		List<StringName> names;
 		theme->get_constant_list(get_class_name(), &names);
-		for (StringName &E : names) {
+		for (const StringName &E : names) {
 			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
 			if (data.constant_override.has(E)) {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
@@ -428,7 +428,7 @@ void Control::_validate_property(PropertyInfo &property) const {
 
 		Vector<StringName> unique_names;
 		String hint_string;
-		for (StringName &E : names) {
+		for (const StringName &E : names) {
 			// Skip duplicate values.
 			if (unique_names.has(E)) {
 				continue;
@@ -793,7 +793,7 @@ T Control::get_theme_item_in_types(Control *p_theme_owner, Window *p_theme_owner
 	Window *theme_owner_window = p_theme_owner_window;
 
 	while (theme_owner || theme_owner_window) {
-		for (StringName &E : p_theme_types) {
+		for (const StringName &E : p_theme_types) {
 			if (theme_owner && theme_owner->data.theme->has_theme_item(p_data_type, p_name, E)) {
 				return theme_owner->data.theme->get_theme_item(p_data_type, p_name, E);
 			}
@@ -822,7 +822,7 @@ T Control::get_theme_item_in_types(Control *p_theme_owner, Window *p_theme_owner
 
 	// Secondly, check the project-defined Theme resource.
 	if (Theme::get_project_default().is_valid()) {
-		for (StringName &E : p_theme_types) {
+		for (const StringName &E : p_theme_types) {
 			if (Theme::get_project_default()->has_theme_item(p_data_type, p_name, E)) {
 				return Theme::get_project_default()->get_theme_item(p_data_type, p_name, E);
 			}
@@ -830,7 +830,7 @@ T Control::get_theme_item_in_types(Control *p_theme_owner, Window *p_theme_owner
 	}
 
 	// Lastly, fall back on the items defined in the default Theme, if they exist.
-	for (StringName &E : p_theme_types) {
+	for (const StringName &E : p_theme_types) {
 		if (Theme::get_default()->has_theme_item(p_data_type, p_name, E)) {
 			return Theme::get_default()->get_theme_item(p_data_type, p_name, E);
 		}
@@ -848,7 +848,7 @@ bool Control::has_theme_item_in_types(Control *p_theme_owner, Window *p_theme_ow
 	Window *theme_owner_window = p_theme_owner_window;
 
 	while (theme_owner || theme_owner_window) {
-		for (StringName &E : p_theme_types) {
+		for (const StringName &E : p_theme_types) {
 			if (theme_owner && theme_owner->data.theme->has_theme_item(p_data_type, p_name, E)) {
 				return true;
 			}
@@ -877,7 +877,7 @@ bool Control::has_theme_item_in_types(Control *p_theme_owner, Window *p_theme_ow
 
 	// Secondly, check the project-defined Theme resource.
 	if (Theme::get_project_default().is_valid()) {
-		for (StringName &E : p_theme_types) {
+		for (const StringName &E : p_theme_types) {
 			if (Theme::get_project_default()->has_theme_item(p_data_type, p_name, E)) {
 				return true;
 			}
@@ -885,7 +885,7 @@ bool Control::has_theme_item_in_types(Control *p_theme_owner, Window *p_theme_ow
 	}
 
 	// Lastly, fall back on the items defined in the default Theme, if they exist.
-	for (StringName &E : p_theme_types) {
+	for (const StringName &E : p_theme_types) {
 		if (Theme::get_default()->has_theme_item(p_data_type, p_name, E)) {
 			return true;
 		}
@@ -2580,7 +2580,7 @@ void Control::get_argument_options(const StringName &p_function, int p_idx, List
 		}
 
 		sn.sort_custom<StringName::AlphCompare>();
-		for (StringName &E : sn) {
+		for (const StringName &E : sn) {
 			r_options->push_back(quote_style + E + quote_style);
 		}
 	}

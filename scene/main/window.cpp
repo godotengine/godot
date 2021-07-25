@@ -1356,7 +1356,7 @@ void Window::_validate_property(PropertyInfo &property) const {
 
 		Vector<StringName> unique_names;
 		String hint_string;
-		for (StringName &E : names) {
+		for (const StringName &E : names) {
 			// Skip duplicate values.
 			if (unique_names.has(E)) {
 				continue;

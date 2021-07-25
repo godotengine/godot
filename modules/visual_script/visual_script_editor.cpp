@@ -561,7 +561,7 @@ void VisualScriptEditor::_update_graph_connections() {
 	List<VisualScript::SequenceConnection> sequence_conns;
 	script->get_sequence_connection_list(&sequence_conns);
 
-	for (VisualScript::SequenceConnection &E : sequence_conns) {
+	for (const VisualScript::SequenceConnection &E : sequence_conns) {
 		graph->connect_node(itos(E.from_node), E.from_output, itos(E.to_node), 0);
 	}
 
@@ -1045,7 +1045,7 @@ void VisualScriptEditor::_update_members() {
 	List<StringName> func_names;
 	script->get_function_list(&func_names);
 	func_names.sort_custom<StringName::AlphCompare>();
-	for (StringName &E : func_names) {
+	for (const StringName &E : func_names) {
 		TreeItem *ti = members->create_item(functions);
 		ti->set_text(0, E);
 		ti->set_selectable(0, true);
@@ -1099,7 +1099,7 @@ void VisualScriptEditor::_update_members() {
 
 	List<StringName> var_names;
 	script->get_variable_list(&var_names);
-	for (StringName &E : var_names) {
+	for (const StringName &E : var_names) {
 		TreeItem *ti = members->create_item(variables);
 
 		ti->set_text(0, E);
@@ -1123,7 +1123,7 @@ void VisualScriptEditor::_update_members() {
 
 	List<StringName> signal_names;
 	script->get_custom_signal_list(&signal_names);
-	for (StringName &E : signal_names) {
+	for (const StringName &E : signal_names) {
 		TreeItem *ti = members->create_item(_signals);
 		ti->set_text(0, E);
 		ti->set_selectable(0, true);
@@ -1705,7 +1705,7 @@ void VisualScriptEditor::_on_nodes_delete() {
 		List<VisualScript::SequenceConnection> sequence_conns;
 		script->get_sequence_connection_list(&sequence_conns);
 
-		for (VisualScript::SequenceConnection &E : sequence_conns) {
+		for (const VisualScript::SequenceConnection &E : sequence_conns) {
 			if (E.from_node == cr_node || E.to_node == cr_node) {
 				undo_redo->add_undo_method(script.ptr(), "sequence_connect", E.from_node, E.from_output, E.to_node);
 			}
@@ -1714,7 +1714,7 @@ void VisualScriptEditor::_on_nodes_delete() {
 		List<VisualScript::DataConnection> data_conns;
 		script->get_data_connection_list(&data_conns);
 
-		for (VisualScript::DataConnection &E : data_conns) {
+		for (const VisualScript::DataConnection &E : data_conns) {
 			if (E.from_node == F || E.to_node == F) {
 				undo_redo->add_undo_method(script.ptr(), "data_connect", E.from_node, E.from_port, E.to_node, E.to_port);
 			}
@@ -1765,7 +1765,7 @@ void VisualScriptEditor::_on_nodes_duplicate() {
 
 	List<VisualScript::SequenceConnection> seqs;
 	script->get_sequence_connection_list(&seqs);
-	for (VisualScript::SequenceConnection &E : seqs) {
+	for (const VisualScript::SequenceConnection &E : seqs) {
 		if (to_duplicate.has(E.from_node) && to_duplicate.has(E.to_node)) {
 			undo_redo->add_do_method(script.ptr(), "sequence_connect", remap[E.from_node], E.from_output, remap[E.to_node]);
 		}
@@ -1773,7 +1773,7 @@ void VisualScriptEditor::_on_nodes_duplicate() {
 
 	List<VisualScript::DataConnection> data;
 	script->get_data_connection_list(&data);
-	for (VisualScript::DataConnection &E : data) {
+	for (const VisualScript::DataConnection &E : data) {
 		if (to_duplicate.has(E.from_node) && to_duplicate.has(E.to_node)) {
 			undo_redo->add_do_method(script.ptr(), "data_connect", remap[E.from_node], E.from_port, remap[E.to_node], E.to_port);
 		}
@@ -2552,7 +2552,7 @@ void VisualScriptEditor::goto_line(int p_line, bool p_with_error) {
 
 	List<StringName> functions;
 	script->get_function_list(&functions);
-	for (StringName &E : functions) {
+	for (const StringName &E : functions) {
 		if (script->has_node(p_line)) {
 			_update_graph();
 			_update_members();
@@ -2773,7 +2773,7 @@ void VisualScriptEditor::_remove_node(int p_id) {
 	List<VisualScript::SequenceConnection> sequence_conns;
 	script->get_sequence_connection_list(&sequence_conns);
 
-	for (VisualScript::SequenceConnection &E : sequence_conns) {
+	for (const VisualScript::SequenceConnection &E : sequence_conns) {
 		if (E.from_node == p_id || E.to_node == p_id) {
 			undo_redo->add_undo_method(script.ptr(), "sequence_connect", E.from_node, E.from_output, E.to_node);
 		}
@@ -2782,7 +2782,7 @@ void VisualScriptEditor::_remove_node(int p_id) {
 	List<VisualScript::DataConnection> data_conns;
 	script->get_data_connection_list(&data_conns);
 
-	for (VisualScript::DataConnection &E : data_conns) {
+	for (const VisualScript::DataConnection &E : data_conns) {
 		if (E.from_node == p_id || E.to_node == p_id) {
 			undo_redo->add_undo_method(script.ptr(), "data_connect", E.from_node, E.from_port, E.to_node, E.to_port);
 		}
@@ -2802,7 +2802,7 @@ bool VisualScriptEditor::node_has_sequence_connections(int p_id) {
 	List<VisualScript::SequenceConnection> sequence_conns;
 	script->get_sequence_connection_list(&sequence_conns);
 
-	for (VisualScript::SequenceConnection &E : sequence_conns) {
+	for (const VisualScript::SequenceConnection &E : sequence_conns) {
 		int from = E.from_node;
 		int to = E.to_node;
 
@@ -3460,7 +3460,7 @@ void VisualScriptEditor::_selected_new_virtual_method(const String &p_text, cons
 		List<MethodInfo> methods;
 		bool found = false;
 		ClassDB::get_virtual_methods(script->get_instance_base_type(), &methods);
-		for (MethodInfo &E : methods) {
+		for (const MethodInfo &E : methods) {
 			if (E.name == name) {
 				minfo = E;
 				found = true;
@@ -3732,7 +3732,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 
 			_update_graph();
 
-			for (String &E : reselect) {
+			for (const String &E : reselect) {
 				GraphNode *gn = Object::cast_to<GraphNode>(graph->get_node(E));
 				gn->set_selected(true);
 			}
@@ -3772,7 +3772,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 			List<VisualScript::SequenceConnection> sequence_connections;
 			script->get_sequence_connection_list(&sequence_connections);
 
-			for (VisualScript::SequenceConnection &E : sequence_connections) {
+			for (const VisualScript::SequenceConnection &E : sequence_connections) {
 				if (clipboard->nodes.has(E.from_node) && clipboard->nodes.has(E.to_node)) {
 					clipboard->sequence_connections.insert(E);
 				}
@@ -3781,7 +3781,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 			List<VisualScript::DataConnection> data_connections;
 			script->get_data_connection_list(&data_connections);
 
-			for (VisualScript::DataConnection &E : data_connections) {
+			for (const VisualScript::DataConnection &E : data_connections) {
 				if (clipboard->nodes.has(E.from_node) && clipboard->nodes.has(E.to_node)) {
 					clipboard->data_connections.insert(E);
 				}
@@ -3933,7 +3933,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 					// Pick the node with input sequence.
 					Set<int> nodes_from;
 					Set<int> nodes_to;
-					for (VisualScript::SequenceConnection &E : seqs) {
+					for (const VisualScript::SequenceConnection &E : seqs) {
 						if (nodes.has(E.from_node) && nodes.has(E.to_node)) {
 							seqmove.insert(E);
 							nodes_from.insert(E.from_node);
@@ -3976,7 +3976,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 			{
 				List<VisualScript::DataConnection> dats;
 				script->get_data_connection_list(&dats);
-				for (VisualScript::DataConnection &E : dats) {
+				for (const VisualScript::DataConnection &E : dats) {
 					if (nodes.has(E.from_node) && nodes.has(E.to_node)) {
 						datamove.insert(E);
 					} else if (!nodes.has(E.from_node) && nodes.has(E.to_node)) {

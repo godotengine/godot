@@ -359,7 +359,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 	//must be alphabetically sorted for hash to compute
 	names.sort_custom<StringName::AlphCompare>();
 
-	for (StringName &E : names) {
+	for (const StringName &E : names) {
 		ClassInfo *t = classes.getptr(E);
 		ERR_FAIL_COND_V_MSG(!t, 0, "Cannot get class '" + String(E) + "'.");
 		if (t->api != p_api || !t->exposed) {
@@ -388,7 +388,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 
 			snames.sort_custom<StringName::AlphCompare>();
 
-			for (StringName &F : snames) {
+			for (const StringName &F : snames) {
 				MethodBind *mb = t->method_map[F];
 				hash = hash_djb2_one_64(mb->get_name().hash(), hash);
 				hash = hash_djb2_one_64(mb->get_argument_count(), hash);
@@ -426,7 +426,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 
 			snames.sort_custom<StringName::AlphCompare>();
 
-			for (StringName &F : snames) {
+			for (const StringName &F : snames) {
 				hash = hash_djb2_one_64(F.hash(), hash);
 				hash = hash_djb2_one_64(t->constant_map[F], hash);
 			}
@@ -444,7 +444,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 
 			snames.sort_custom<StringName::AlphCompare>();
 
-			for (StringName &F : snames) {
+			for (const StringName &F : snames) {
 				MethodInfo &mi = t->signal_map[F];
 				hash = hash_djb2_one_64(F.hash(), hash);
 				for (int i = 0; i < mi.arguments.size(); i++) {
@@ -465,7 +465,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 
 			snames.sort_custom<StringName::AlphCompare>();
 
-			for (StringName &F : snames) {
+			for (const StringName &F : snames) {
 				PropertySetGet *psg = t->property_setget.getptr(F);
 				ERR_FAIL_COND_V(!psg, 0);
 
@@ -476,7 +476,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 		}
 
 		//property list
-		for (PropertyInfo &F : t->property_list) {
+		for (const PropertyInfo &F : t->property_list) {
 			hash = hash_djb2_one_64(F.name.hash(), hash);
 			hash = hash_djb2_one_64(F.type, hash);
 			hash = hash_djb2_one_64(F.hint, hash);
@@ -619,11 +619,11 @@ void ClassDB::get_method_list(const StringName &p_class, List<MethodInfo> *p_met
 
 #ifdef DEBUG_METHODS_ENABLED
 
-		for (MethodInfo &E : type->virtual_methods) {
+		for (const MethodInfo &E : type->virtual_methods) {
 			p_methods->push_back(E);
 		}
 
-		for (StringName &E : type->method_order) {
+		for (const StringName &E : type->method_order) {
 			if (p_exclude_from_properties && type->methods_in_properties.has(E)) {
 				continue;
 			}
@@ -763,7 +763,7 @@ void ClassDB::get_integer_constant_list(const StringName &p_class, List<String> 
 
 	while (type) {
 #ifdef DEBUG_METHODS_ENABLED
-		for (StringName &E : type->constant_order) {
+		for (const StringName &E : type->constant_order) {
 			p_constants->push_back(E);
 		}
 #else
@@ -1073,10 +1073,12 @@ void ClassDB::get_property_list(const StringName &p_class, List<PropertyInfo> *p
 	ClassInfo *type = classes.getptr(p_class);
 	ClassInfo *check = type;
 	while (check) {
-		for (PropertyInfo pi : check->property_list) {
+		for (const PropertyInfo &pi : check->property_list) {
 			if (p_validator) {
-				p_validator->_validate_property(pi);
-				p_list->push_back(pi);
+				// Making a copy as we may modify it.
+				PropertyInfo pi_mut = pi;
+				p_validator->_validate_property(pi_mut);
+				p_list->push_back(pi_mut);
 			} else {
 				p_list->push_back(pi);
 			}
@@ -1428,7 +1430,7 @@ void ClassDB::get_virtual_methods(const StringName &p_class, List<MethodInfo> *p
 	ClassInfo *type = classes.getptr(p_class);
 	ClassInfo *check = type;
 	while (check) {
-		for (MethodInfo &E : check->virtual_methods) {
+		for (const MethodInfo &E : check->virtual_methods) {
 			p_methods->push_back(E);
 		}
 
@@ -1533,7 +1535,7 @@ Variant ClassDB::class_get_default_property_value(const StringName &p_class, con
 		if (c) {
 			List<PropertyInfo> plist;
 			c->get_property_list(&plist);
-			for (PropertyInfo &E : plist) {
+			for (const PropertyInfo &E : plist) {
 				if (E.usage & (PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR)) {
 					if (!default_values[p_class].has(E.name)) {
 						Variant v = c->get(E.name);

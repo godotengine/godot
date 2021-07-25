@@ -143,7 +143,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 					}
 
 					Set<String> valid_extensions;
-					for (String &E : extensions) {
+					for (const String &E : extensions) {
 						valid_extensions.insert(E);
 					}
 
@@ -179,7 +179,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 					res_orig->get_property_list(&property_list);
 					List<Pair<String, Variant>> propvalues;
 
-					for (PropertyInfo &pi : property_list) {
+					for (const PropertyInfo &pi : property_list) {
 						Pair<String, Variant> p;
 						if (pi.usage & PROPERTY_USAGE_STORAGE) {
 							p.first = pi.name;
@@ -197,7 +197,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 
 					ERR_FAIL_COND(res.is_null());
 
-					for (Pair<String, Variant> &p : propvalues) {
+					for (const Pair<String, Variant> &p : propvalues) {
 						res->set(p.first, p.second);
 					}
 
@@ -1291,7 +1291,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 
 				ResourceLoader::get_recognized_extensions_for_type(type, &extensions);
 				file->clear_filters();
-				for (String &E : extensions) {
+				for (const String &E : extensions) {
 					file->add_filter("*." + E + " ; " + E.to_upper());
 				}
 
@@ -1319,7 +1319,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 				res_orig->get_property_list(&property_list);
 				List<Pair<String, Variant>> propvalues;
 
-				for (PropertyInfo &pi : property_list) {
+				for (const PropertyInfo &pi : property_list) {
 					Pair<String, Variant> p;
 					if (pi.usage & PROPERTY_USAGE_STORAGE) {
 						p.first = pi.name;
@@ -1333,7 +1333,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 
 				ERR_FAIL_COND(res.is_null());
 
-				for (Pair<String, Variant> &p : propvalues) {
+				for (const Pair<String, Variant> &p : propvalues) {
 					res->set(p.first, p.second);
 				}
 

@@ -93,7 +93,7 @@ void VisualScriptPropertySelector::_update_search() {
 		base = ClassDB::get_parent_class_nocheck(base);
 	}
 
-	for (StringName &E : base_list) {
+	for (const StringName &E : base_list) {
 		List<MethodInfo> methods;
 		List<PropertyInfo> props;
 		TreeItem *category = nullptr;
@@ -157,7 +157,7 @@ void VisualScriptPropertySelector::_update_search() {
 					ClassDB::get_property_list(E, &props, true);
 				}
 			}
-			for (PropertyInfo &F : props) {
+			for (const PropertyInfo &F : props) {
 				if (!(F.usage & PROPERTY_USAGE_EDITOR) && !(F.usage & PROPERTY_USAGE_SCRIPT_VARIABLE)) {
 					continue;
 				}
@@ -340,7 +340,7 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 	List<String> fnodes;
 	VisualScriptLanguage::singleton->get_registered_node_names(&fnodes);
 
-	for (String &E : fnodes) {
+	for (const String &E : fnodes) {
 		if (!E.begins_with(root_filter)) {
 			continue;
 		}

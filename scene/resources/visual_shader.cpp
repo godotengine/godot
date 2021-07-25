@@ -739,7 +739,7 @@ Error VisualShader::connect_nodes(Type p_type, int p_from_node, int p_from_port,
 
 	ERR_FAIL_COND_V_MSG(!is_port_types_compatible(from_port_type, to_port_type), ERR_INVALID_PARAMETER, "Incompatible port types (scalar/vec/bool) with transform.");
 
-	for (Connection &E : g->connections) {
+	for (const Connection &E : g->connections) {
 		if (E.from_node == p_from_node && E.from_port == p_from_port && E.to_node == p_to_node && E.to_port == p_to_port) {
 			ERR_FAIL_V(ERR_ALREADY_EXISTS);
 		}
@@ -2586,7 +2586,7 @@ void VisualShaderNodeUniformRef::clear_uniforms() {
 }
 
 bool VisualShaderNodeUniformRef::has_uniform(const String &p_name) {
-	for (VisualShaderNodeUniformRef::Uniform &E : uniforms) {
+	for (const VisualShaderNodeUniformRef::Uniform &E : uniforms) {
 		if (E.name == p_name) {
 			return true;
 		}

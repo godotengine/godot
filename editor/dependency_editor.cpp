@@ -55,7 +55,7 @@ void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button) {
 	search->clear_filters();
 	List<String> ext;
 	ResourceLoader::get_recognized_extensions_for_type(ti->get_metadata(0), &ext);
-	for (String &E : ext) {
+	for (const String &E : ext) {
 		search->add_filter("*" + E);
 	}
 	search->popup_file_dialog();
@@ -120,7 +120,7 @@ void DependencyEditor::_fix_all() {
 
 	Map<String, Map<String, String>> candidates;
 
-	for (String &E : missing) {
+	for (const String &E : missing) {
 		String base = E.get_file();
 		if (!candidates.has(base)) {
 			candidates[base] = Map<String, String>();
@@ -166,7 +166,7 @@ void DependencyEditor::_update_list() {
 
 	bool broken = false;
 
-	for (String &n : deps) {
+	for (const String &n : deps) {
 		TreeItem *item = tree->create_item(root);
 		String path;
 		String type;
@@ -748,7 +748,7 @@ void OrphanResourcesDialog::_find_to_delete(TreeItem *p_item, List<String> &path
 
 void OrphanResourcesDialog::_delete_confirm() {
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	for (String &E : paths) {
+	for (const String &E : paths) {
 		da->remove(E);
 		EditorFileSystem::get_singleton()->update_file(E);
 	}

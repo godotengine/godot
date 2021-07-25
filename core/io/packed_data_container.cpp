@@ -268,7 +268,7 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 			d.get_key_list(&keys);
 			List<DictKey> sortk;
 
-			for (Variant &key : keys) {
+			for (const Variant &key : keys) {
 				DictKey dk;
 				dk.hash = key.hash();
 				dk.key = key;
@@ -278,7 +278,7 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 			sortk.sort();
 
 			int idx = 0;
-			for (DictKey &E : sortk) {
+			for (const DictKey &E : sortk) {
 				encode_uint32(E.hash, &tmpdata.write[pos + 8 + idx * 12 + 0]);
 				uint32_t ofs = _pack(E.key, tmpdata, string_cache);
 				encode_uint32(ofs, &tmpdata.write[pos + 8 + idx * 12 + 4]);

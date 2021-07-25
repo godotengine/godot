@@ -1023,7 +1023,7 @@ void ConnectionsDock::update_tree() {
 			List<Object::Connection> connections;
 			selectedNode->get_signal_connection_list(signal_name, &connections);
 
-			for (Object::Connection &F : connections) {
+			for (const Object::Connection &F : connections) {
 				Connection cn = F;
 				if (!(cn.flags & CONNECT_PERSIST)) {
 					continue;

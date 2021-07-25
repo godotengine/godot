@@ -96,14 +96,14 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 			if (ap) {
 				List<StringName> names;
 				ap->get_animation_list(&names);
-				for (StringName &E : names) {
+				for (const StringName &E : names) {
 					animations_menu->add_icon_item(get_theme_icon(SNAME("Animation"), SNAME("EditorIcons")), E);
 					animations_to_add.push_back(E);
 				}
 			}
 		}
 
-		for (StringName &E : classes) {
+		for (const StringName &E : classes) {
 			String name = String(E).replace_first("AnimationNode", "");
 			if (name == "Animation") {
 				continue; // nope
@@ -295,7 +295,7 @@ void AnimationNodeBlendSpace2DEditor::_add_menu_type(int p_index) {
 		open_file->clear_filters();
 		List<String> filters;
 		ResourceLoader::get_recognized_extensions_for_type("AnimationRootNode", &filters);
-		for (String &E : filters) {
+		for (const String &E : filters) {
 			open_file->add_filter("*." + E);
 		}
 		open_file->popup_file_dialog();

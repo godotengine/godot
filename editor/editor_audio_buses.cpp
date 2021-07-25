@@ -920,7 +920,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	List<StringName> effects;
 	ClassDB::get_inheriters_from_class("AudioEffect", &effects);
 	effects.sort_custom<StringName::AlphCompare>();
-	for (StringName &E : effects) {
+	for (const StringName &E : effects) {
 		if (!ClassDB::can_instantiate(E)) {
 			continue;
 		}
@@ -1331,7 +1331,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	file_dialog = memnew(EditorFileDialog);
 	List<String> ext;
 	ResourceLoader::get_recognized_extensions_for_type("AudioBusLayout", &ext);
-	for (String &E : ext) {
+	for (const String &E : ext) {
 		file_dialog->add_filter("*." + E + "; Audio Bus Layout");
 	}
 	add_child(file_dialog);

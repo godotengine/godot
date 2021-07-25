@@ -1306,7 +1306,7 @@ void VisualScriptVariableGet::_validate_property(PropertyInfo &property) const {
 		vs->get_variable_list(&vars);
 
 		String vhint;
-		for (StringName &E : vars) {
+		for (const StringName &E : vars) {
 			if (vhint != String()) {
 				vhint += ",";
 			}
@@ -1416,7 +1416,7 @@ void VisualScriptVariableSet::_validate_property(PropertyInfo &property) const {
 		vs->get_variable_list(&vars);
 
 		String vhint;
-		for (StringName &E : vars) {
+		for (const StringName &E : vars) {
 			if (vhint != String()) {
 				vhint += ",";
 			}
@@ -1944,7 +1944,7 @@ void VisualScriptClassConstant::set_base_type(const StringName &p_which) {
 	ClassDB::get_integer_constant_list(base_type, &constants, true);
 	if (constants.size() > 0) {
 		bool found_name = false;
-		for (String &E : constants) {
+		for (const String &E : constants) {
 			if (E == name) {
 				found_name = true;
 				break;
@@ -1993,7 +1993,7 @@ void VisualScriptClassConstant::_validate_property(PropertyInfo &property) const
 		ClassDB::get_integer_constant_list(base_type, &constants, true);
 
 		property.hint_string = "";
-		for (String &E : constants) {
+		for (const String &E : constants) {
 			if (property.hint_string != String()) {
 				property.hint_string += ",";
 			}
@@ -2078,7 +2078,7 @@ void VisualScriptBasicTypeConstant::set_basic_type(Variant::Type p_which) {
 	Variant::get_constants_for_type(type, &constants);
 	if (constants.size() > 0) {
 		bool found_name = false;
-		for (StringName &E : constants) {
+		for (const StringName &E : constants) {
 			if (E == name) {
 				found_name = true;
 				break;
@@ -2131,7 +2131,7 @@ void VisualScriptBasicTypeConstant::_validate_property(PropertyInfo &property) c
 			return;
 		}
 		property.hint_string = "";
-		for (StringName &E : constants) {
+		for (const StringName &E : constants) {
 			if (property.hint_string != String()) {
 				property.hint_string += ",";
 			}
@@ -2358,7 +2358,7 @@ void VisualScriptEngineSingleton::_validate_property(PropertyInfo &property) con
 
 	Engine::get_singleton()->get_singletons(&singletons);
 
-	for (Engine::Singleton &E : singletons) {
+	for (const Engine::Singleton &E : singletons) {
 		if (E.name == "VS" || E.name == "PS" || E.name == "PS2D" || E.name == "AS" || E.name == "TS" || E.name == "SS" || E.name == "SS2D") {
 			continue; //skip these, too simple named
 		}
@@ -3749,7 +3749,7 @@ void VisualScriptInputAction::_validate_property(PropertyInfo &property) const {
 		ProjectSettings::get_singleton()->get_property_list(&pinfo);
 		Vector<String> al;
 
-		for (PropertyInfo &pi : pinfo) {
+		for (const PropertyInfo &pi : pinfo) {
 			if (!pi.name.begins_with("input/")) {
 				continue;
 			}
@@ -3842,7 +3842,7 @@ void VisualScriptDeconstruct::_update_elements() {
 	List<PropertyInfo> pinfo;
 	v.get_property_list(&pinfo);
 
-	for (PropertyInfo &E : pinfo) {
+	for (const PropertyInfo &E : pinfo) {
 		Element e;
 		e.name = E.name;
 		e.type = E.type;
@@ -4023,7 +4023,7 @@ void register_visual_script_nodes() {
 		List<MethodInfo> constructors;
 		Variant::get_constructor_list(Variant::Type(i), &constructors);
 
-		for (MethodInfo &E : constructors) {
+		for (const MethodInfo &E : constructors) {
 			if (E.arguments.size() > 0) {
 				String name = "functions/constructors/" + Variant::get_type_name(Variant::Type(i)) + "(";
 				for (int j = 0; j < E.arguments.size(); j++) {

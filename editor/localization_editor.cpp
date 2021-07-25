@@ -43,13 +43,13 @@ void LocalizationEditor::_notification(int p_what) {
 
 		List<String> tfn;
 		ResourceLoader::get_recognized_extensions_for_type("Translation", &tfn);
-		for (String &E : tfn) {
+		for (const String &E : tfn) {
 			translation_file_open->add_filter("*." + E);
 		}
 
 		List<String> rfn;
 		ResourceLoader::get_recognized_extensions_for_type("Resource", &rfn);
-		for (String &E : rfn) {
+		for (const String &E : rfn) {
 			translation_res_file_open_dialog->add_filter("*." + E);
 			translation_res_option_file_open_dialog->add_filter("*." + E);
 		}
@@ -430,7 +430,7 @@ void LocalizationEditor::_update_pot_file_extensions() {
 	pot_file_open_dialog->clear_filters();
 	List<String> translation_parse_file_extensions;
 	EditorTranslationParser::get_singleton()->get_recognized_extensions(&translation_parse_file_extensions);
-	for (String &E : translation_parse_file_extensions) {
+	for (const String &E : translation_parse_file_extensions) {
 		pot_file_open_dialog->add_filter("*." + E);
 	}
 }
@@ -560,7 +560,7 @@ void LocalizationEditor::update_translations() {
 		List<Variant> rk;
 		remaps.get_key_list(&rk);
 		Vector<String> keys;
-		for (Variant &E : rk) {
+		for (const Variant &E : rk) {
 			keys.push_back(E);
 		}
 		keys.sort();

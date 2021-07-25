@@ -3421,7 +3421,7 @@ String String::format(const Variant &values, String placeholder) const {
 		List<Variant> keys;
 		d.get_key_list(&keys);
 
-		for (Variant &key : keys) {
+		for (const Variant &key : keys) {
 			new_string = new_string.replace(placeholder.replace("_", key), d[key]);
 		}
 	} else {

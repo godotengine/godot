@@ -93,14 +93,14 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			if (ap) {
 				List<StringName> names;
 				ap->get_animation_list(&names);
-				for (StringName &E : names) {
+				for (const StringName &E : names) {
 					animations_menu->add_icon_item(get_theme_icon(SNAME("Animation"), SNAME("EditorIcons")), E);
 					animations_to_add.push_back(E);
 				}
 			}
 		}
 
-		for (StringName &E : classes) {
+		for (const StringName &E : classes) {
 			String name = String(E).replace_first("AnimationNode", "");
 			if (name == "Animation") {
 				continue; // nope
@@ -318,7 +318,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			float best_d_x = 1e20;
 			float best_d_y = 1e20;
 
-			for (StringName &E : nodes) {
+			for (const StringName &E : nodes) {
 				if (E == selected_node) {
 					continue;
 				}
@@ -409,7 +409,7 @@ void AnimationNodeStateMachineEditor::_add_menu_type(int p_index) {
 		open_file->clear_filters();
 		List<String> filters;
 		ResourceLoader::get_recognized_extensions_for_type("AnimationRootNode", &filters);
-		for (String &E : filters) {
+		for (const String &E : filters) {
 			open_file->add_filter("*." + E);
 		}
 		open_file->popup_file_dialog();
@@ -606,7 +606,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 	}
 
 	//pre pass nodes so we know the rectangles
-	for (StringName &E : nodes) {
+	for (const StringName &E : nodes) {
 		Ref<AnimationNode> anode = state_machine->get_node(E);
 		String name = E;
 		bool needs_editor = EditorNode::get_singleton()->item_has_editor(anode.ptr());

@@ -324,7 +324,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 	List<String> slist;
 	EditorSettings::get_singleton()->get_shortcut_list(&slist);
 
-	for (String &E : slist) {
+	for (const String &E : slist) {
 		Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(E);
 		if (!sc->has_meta("original")) {
 			continue;

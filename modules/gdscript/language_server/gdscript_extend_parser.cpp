@@ -465,7 +465,7 @@ String ExtendGDScriptParser::parse_documentation(int p_line, bool p_docs_down) {
 	}
 
 	String doc;
-	for (String &E : doc_lines) {
+	for (const String &E : doc_lines) {
 		doc += E + "\n";
 	}
 	return doc;

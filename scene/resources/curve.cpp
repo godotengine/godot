@@ -729,7 +729,7 @@ void Curve2D::_bake() const {
 	Vector2 *w = baked_point_cache.ptrw();
 	int idx = 0;
 
-	for (Vector2 &E : pointlist) {
+	for (const Vector2 &E : pointlist) {
 		w[idx] = E;
 		idx++;
 	}
@@ -1239,7 +1239,7 @@ void Curve3D::_bake() const {
 	Vector3 prev_up = Vector3(0, 1, 0);
 	Vector3 prev_forward = Vector3(0, 0, 1);
 
-	for (Plane &E : pointlist) {
+	for (const Plane &E : pointlist) {
 		w[idx] = E.normal;
 		wt[idx] = E.d;
 

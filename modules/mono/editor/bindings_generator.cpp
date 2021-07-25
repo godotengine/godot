@@ -682,7 +682,7 @@ int BindingsGenerator::_determine_enum_prefix(const EnumInterface &p_ienum) {
 
 void BindingsGenerator::_apply_prefix_to_enum_constants(BindingsGenerator::EnumInterface &p_ienum, int p_prefix_length) {
 	if (p_prefix_length > 0) {
-		for (ConstantInterface &E : p_ienum.constants) {
+		for (const ConstantInterface &E : p_ienum.constants) {
 			int curr_prefix_length = p_prefix_length;
 
 			ConstantInterface &curr_const = E;
@@ -890,7 +890,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 
 	// Enums
 
-	for (EnumInterface &ienum : global_enums) {
+	for (const EnumInterface &ienum : global_enums) {
 		CRASH_COND(ienum.constants.is_empty());
 
 		String enum_proxy_name = ienum.cname.operator String();
@@ -2668,7 +2668,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		ClassDB::get_method_list(type_cname, &method_list, true);
 		method_list.sort();
 
-		for (MethodInfo &E : method_list) {
+		for (const MethodInfo &E : method_list) {
 			const MethodInfo &method_info = E;
 
 			int argc = method_info.arguments.size();
@@ -3523,7 +3523,7 @@ void BindingsGenerator::_populate_global_constants() {
 			}
 		}
 
-		for (EnumInterface &ienum : global_enums) {
+		for (const EnumInterface &ienum : global_enums) {
 			TypeInterface enum_itype;
 			enum_itype.is_enum = true;
 			enum_itype.name = ienum.cname.operator String();
@@ -3553,7 +3553,7 @@ void BindingsGenerator::_populate_global_constants() {
 	hardcoded_enums.push_back("Vector2i.Axis");
 	hardcoded_enums.push_back("Vector3.Axis");
 	hardcoded_enums.push_back("Vector3i.Axis");
-	for (StringName &E : hardcoded_enums) {
+	for (const StringName &E : hardcoded_enums) {
 		// These enums are not generated and must be written manually (e.g.: Vector3.Axis)
 		// Here, we assume core types do not begin with underscore
 		TypeInterface enum_itype;

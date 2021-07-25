@@ -1089,7 +1089,7 @@ bool AnimationNodeBlendTree::_get(const StringName &p_name, Variant &r_ret) cons
 		conns.resize(nc.size() * 3);
 
 		int idx = 0;
-		for (NodeConnection &E : nc) {
+		for (const NodeConnection &E : nc) {
 			conns[idx * 3 + 0] = E.input_node;
 			conns[idx * 3 + 1] = E.input_index;
 			conns[idx * 3 + 2] = E.output_node;
@@ -1110,7 +1110,7 @@ void AnimationNodeBlendTree::_get_property_list(List<PropertyInfo> *p_list) cons
 	}
 	names.sort_custom<StringName::AlphCompare>();
 
-	for (StringName &E : names) {
+	for (const StringName &E : names) {
 		String name = E;
 		if (name != "output") {
 			p_list->push_back(PropertyInfo(Variant::OBJECT, "nodes/" + name + "/node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationNode", PROPERTY_USAGE_NOEDITOR));

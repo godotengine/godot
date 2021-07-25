@@ -176,7 +176,7 @@ void AnimationPlayer::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	anim_names.sort();
 
-	for (PropertyInfo &E : anim_names) {
+	for (const PropertyInfo &E : anim_names) {
 		p_list->push_back(E);
 	}
 
@@ -1076,7 +1076,7 @@ void AnimationPlayer::get_animation_list(List<StringName> *p_animations) const {
 
 	anims.sort();
 
-	for (String &E : anims) {
+	for (const String &E : anims) {
 		p_animations->push_back(E);
 	}
 }
@@ -1118,7 +1118,7 @@ void AnimationPlayer::queue(const StringName &p_name) {
 
 Vector<String> AnimationPlayer::get_queue() {
 	Vector<String> ret;
-	for (StringName &E : queued) {
+	for (const StringName &E : queued) {
 		ret.push_back(E);
 	}
 
@@ -1502,7 +1502,7 @@ void AnimationPlayer::get_argument_options(const StringName &p_function, int p_i
 	if (p_idx == 0 && (p_function == "play" || p_function == "play_backwards" || p_function == "remove_animation" || p_function == "has_animation" || p_function == "queue")) {
 		List<StringName> al;
 		get_animation_list(&al);
-		for (StringName &E : al) {
+		for (const StringName &E : al) {
 			r_options->push_back(quote_style + String(E) + quote_style);
 		}
 	}

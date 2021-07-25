@@ -1597,7 +1597,7 @@ Array Node::_get_groups() const {
 	Array groups;
 	List<GroupInfo> gi;
 	get_groups(&gi);
-	for (GroupInfo &E : gi) {
+	for (const GroupInfo &E : gi) {
 		groups.push_back(E.name);
 	}
 
@@ -1947,7 +1947,7 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 		List<PropertyInfo> plist;
 		N->get()->get_property_list(&plist);
 
-		for (PropertyInfo &E : plist) {
+		for (const PropertyInfo &E : plist) {
 			if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 				continue;
 			}
@@ -1983,7 +1983,7 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 	if (p_flags & DUPLICATE_GROUPS) {
 		List<GroupInfo> gi;
 		get_groups(&gi);
-		for (GroupInfo &E : gi) {
+		for (const GroupInfo &E : gi) {
 #ifdef TOOLS_ENABLED
 			if ((p_flags & DUPLICATE_FROM_EDITOR) && !E.persistent) {
 				continue;
@@ -2073,7 +2073,7 @@ void Node::remap_node_resources(Node *p_node, const Map<RES, RES> &p_resource_re
 	List<PropertyInfo> props;
 	p_node->get_property_list(&props);
 
-	for (PropertyInfo &E : props) {
+	for (const PropertyInfo &E : props) {
 		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
 		}
@@ -2099,7 +2099,7 @@ void Node::remap_nested_resources(RES p_resource, const Map<RES, RES> &p_resourc
 	List<PropertyInfo> props;
 	p_resource->get_property_list(&props);
 
-	for (PropertyInfo &E : props) {
+	for (const PropertyInfo &E : props) {
 		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
 		}
@@ -2135,7 +2135,7 @@ void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
 		List<Connection> conns;
 		n->get_all_signal_connections(&conns);
 
-		for (Connection &E : conns) {
+		for (const Connection &E : conns) {
 			if (E.flags & CONNECT_PERSIST) {
 				//user connected
 				NodePath p = p_original->get_path_to(n);
@@ -2194,7 +2194,7 @@ void Node::replace_by(Node *p_node, bool p_keep_groups) {
 		List<GroupInfo> groups;
 		get_groups(&groups);
 
-		for (GroupInfo &E : groups) {
+		for (const GroupInfo &E : groups) {
 			p_node->add_to_group(E.name, E.persistent);
 		}
 	}
@@ -2241,7 +2241,7 @@ void Node::_replace_connections_target(Node *p_new_target) {
 	List<Connection> cl;
 	get_signals_connected_to_this(&cl);
 
-	for (Connection &c : cl) {
+	for (const Connection &c : cl) {
 		if (c.flags & CONNECT_PERSIST) {
 			c.signal.get_object()->disconnect(c.signal.get_name(), Callable(this, c.callable.get_method()));
 			bool valid = p_new_target->has_method(c.callable.get_method()) || Ref<Script>(p_new_target->get_script()).is_null() || Ref<Script>(p_new_target->get_script())->has_method(c.callable.get_method());

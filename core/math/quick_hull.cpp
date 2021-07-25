@@ -336,7 +336,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 	Map<Edge, RetFaceConnect> ret_edges;
 	List<Geometry3D::MeshData::Face> ret_faces;
 
-	for (Face &E : faces) {
+	for (const Face &E : faces) {
 		Geometry3D::MeshData::Face f;
 		f.plane = E.plane;
 
@@ -439,7 +439,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 	r_mesh.faces.resize(ret_faces.size());
 
 	int idx = 0;
-	for (Geometry3D::MeshData::Face &E : ret_faces) {
+	for (const Geometry3D::MeshData::Face &E : ret_faces) {
 		r_mesh.faces.write[idx++] = E;
 	}
 	r_mesh.edges.resize(ret_edges.size());

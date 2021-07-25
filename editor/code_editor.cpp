@@ -854,7 +854,7 @@ void CodeTextEditor::_complete_request() {
 		return;
 	}
 
-	for (ScriptCodeCompletionOption &e : entries) {
+	for (const ScriptCodeCompletionOption &e : entries) {
 		Color font_color = completion_font_color;
 		if (e.insert_text.begins_with("\"") || e.insert_text.begins_with("\'")) {
 			font_color = completion_string_color;

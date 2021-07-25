@@ -94,7 +94,7 @@ void MeshInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	ls.sort();
 
-	for (String &E : ls) {
+	for (const String &E : ls) {
 		p_list->push_back(PropertyInfo(Variant::FLOAT, E, PROPERTY_HINT_RANGE, "-1,1,0.00001"));
 	}
 

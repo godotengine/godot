@@ -425,7 +425,7 @@ List<ClassAPI> generate_c_api_classes() {
 			List<EnumAPI> enums;
 			List<StringName> enum_names;
 			ClassDB::get_enum_list(class_name, &enum_names, true);
-			for (StringName &E : enum_names) {
+			for (const StringName &E : enum_names) {
 				List<StringName> value_names;
 				EnumAPI enum_api;
 				enum_api.name = E;

@@ -50,7 +50,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 	//must be alphabetically sorted for hash to compute
 	names.sort_custom<StringName::AlphCompare>();
 
-	for (StringName &E : names) {
+	for (const StringName &E : names) {
 		ClassDB::ClassInfo *t = ClassDB::classes.getptr(E);
 		ERR_FAIL_COND(!t);
 		if (t->api != p_api || !t->exposed) {
@@ -84,7 +84,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			Array methods;
 
-			for (StringName &F : snames) {
+			for (const StringName &F : snames) {
 				Dictionary method_dict;
 				methods.push_back(method_dict);
 
@@ -141,7 +141,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			Array constants;
 
-			for (StringName &F : snames) {
+			for (const StringName &F : snames) {
 				Dictionary constant_dict;
 				constants.push_back(constant_dict);
 
@@ -168,7 +168,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			Array signals;
 
-			for (StringName &F : snames) {
+			for (const StringName &F : snames) {
 				Dictionary signal_dict;
 				signals.push_back(signal_dict);
 
@@ -203,7 +203,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			Array properties;
 
-			for (StringName &F : snames) {
+			for (const StringName &F : snames) {
 				Dictionary property_dict;
 				properties.push_back(property_dict);
 
@@ -222,7 +222,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 		Array property_list;
 
 		//property list
-		for (PropertyInfo &F : t->property_list) {
+		for (const PropertyInfo &F : t->property_list) {
 			Dictionary property_dict;
 			property_list.push_back(property_dict);
 

@@ -291,7 +291,7 @@ void GDScript::_get_script_property_list(List<PropertyInfo> *r_list, bool p_incl
 		sptr = sptr->_base;
 	}
 
-	for (PropertyInfo &E : props) {
+	for (const PropertyInfo &E : props) {
 		r_list->push_back(E);
 	}
 }
@@ -401,7 +401,7 @@ void GDScript::_update_exports_values(Map<StringName, Variant> &values, List<Pro
 		values[E->key()] = E->get();
 	}
 
-	for (PropertyInfo &E : members_cache) {
+	for (const PropertyInfo &E : members_cache) {
 		propnames.push_back(E);
 	}
 }
@@ -861,8 +861,7 @@ Error GDScript::reload(bool p_keep_state) {
 		}
 	}
 #ifdef DEBUG_ENABLED
-	for (const GDScriptWarning &E : parser.get_warnings()) {
-		const GDScriptWarning &warning = E;
+	for (const GDScriptWarning &warning : parser.get_warnings()) {
 		if (EngineDebugger::is_active()) {
 			Vector<ScriptLanguage::StackInfo> si;
 			EngineDebugger::get_script_debugger()->send_error("", get_path(), warning.start_line, warning.get_name(), warning.get_message(), ERR_HANDLER_WARNING, si);
@@ -1445,7 +1444,7 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 		sptr = sptr->_base;
 	}
 
-	for (PropertyInfo &E : props) {
+	for (const PropertyInfo &E : props) {
 		p_properties->push_back(E);
 	}
 }
@@ -1661,7 +1660,7 @@ void GDScriptLanguage::init() {
 
 	List<Engine::Singleton> singletons;
 	Engine::get_singleton()->get_singletons(&singletons);
-	for (Engine::Singleton &E : singletons) {
+	for (const Engine::Singleton &E : singletons) {
 		_add_global(E.name, E.ptr);
 	}
 

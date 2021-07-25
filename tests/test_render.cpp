@@ -210,7 +210,7 @@ public:
 
 		//return quit;
 
-		for (InstanceInfo &E : instances) {
+		for (const InstanceInfo &E : instances) {
 			Transform3D pre(Basis(E.rot_axis, ofs), Vector3());
 			vs->instance_set_transform(E.instance, pre * E.base);
 			/*

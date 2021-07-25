@@ -852,7 +852,7 @@ void VisualScriptTypeCast::_bind_methods() {
 	}
 
 	String script_ext_hint;
-	for (String &E : script_extensions) {
+	for (const String &E : script_extensions) {
 		if (script_ext_hint != String()) {
 			script_ext_hint += ",";
 		}

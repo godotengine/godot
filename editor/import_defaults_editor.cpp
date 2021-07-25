@@ -125,7 +125,7 @@ void ImportDefaultsEditor::_update_importer() {
 			d = ProjectSettings::get_singleton()->get("importer_defaults/" + importer->get_importer_name());
 		}
 
-		for (ResourceImporter::ImportOption &E : options) {
+		for (const ResourceImporter::ImportOption &E : options) {
 			settings->properties.push_back(E.option);
 			if (d.has(E.option.name)) {
 				settings->values[E.option.name] = d[E.option.name];

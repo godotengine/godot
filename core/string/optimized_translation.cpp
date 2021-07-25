@@ -66,7 +66,7 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 	int total_compression_size = 0;
 	int total_string_size = 0;
 
-	for (StringName &E : keys) {
+	for (const StringName &E : keys) {
 		//hash string
 		CharString cs = E.operator String().utf8();
 		uint32_t h = hash(0, cs.get_data());

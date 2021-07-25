@@ -800,7 +800,7 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const Map<Strin
 		if (E->key() != "") {
 			file->store_string("[" + E->key() + "]\n\n");
 		}
-		for (String &F : E->get()) {
+		for (const String &F : E->get()) {
 			String key = F;
 			if (E->key() != "") {
 				key = E->key() + "/" + key;
@@ -928,7 +928,7 @@ Vector<String> ProjectSettings::get_optimizer_presets() const {
 	ProjectSettings::get_singleton()->get_property_list(&pi);
 	Vector<String> names;
 
-	for (PropertyInfo &E : pi) {
+	for (const PropertyInfo &E : pi) {
 		if (!E.name.begins_with("optimizer_presets/")) {
 			continue;
 		}

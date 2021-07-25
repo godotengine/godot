@@ -1054,7 +1054,7 @@ void ResourceFormatLoaderBinary::get_recognized_extensions_for_type(const String
 
 	extensions.sort();
 
-	for (String &E : extensions) {
+	for (const String &E : extensions) {
 		String ext = E.to_lower();
 		p_extensions->push_back(ext);
 	}
@@ -1065,7 +1065,7 @@ void ResourceFormatLoaderBinary::get_recognized_extensions(List<String> *p_exten
 	ClassDB::get_resource_base_extensions(&extensions);
 	extensions.sort();
 
-	for (String &E : extensions) {
+	for (const String &E : extensions) {
 		String ext = E.to_lower();
 		p_extensions->push_back(ext);
 	}
@@ -1603,7 +1603,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 			List<Variant> keys;
 			d.get_key_list(&keys);
 
-			for (Variant &E : keys) {
+			for (const Variant &E : keys) {
 				/*
 				if (!_check_type(dict[E]))
 					continue;
@@ -1760,7 +1760,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 
 			res->get_property_list(&property_list);
 
-			for (PropertyInfo &E : property_list) {
+			for (const PropertyInfo &E : property_list) {
 				if (E.usage & PROPERTY_USAGE_STORAGE) {
 					Variant value = res->get(E.name);
 					if (E.usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT) {
@@ -1798,7 +1798,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 			Dictionary d = p_variant;
 			List<Variant> keys;
 			d.get_key_list(&keys);
-			for (Variant &E : keys) {
+			for (const Variant &E : keys) {
 				_find_resources(E);
 				Variant v = d[E];
 				_find_resources(v);
@@ -1909,14 +1909,14 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 	List<ResourceData> resources;
 
 	{
-		for (RES &E : saved_resources) {
+		for (const RES &E : saved_resources) {
 			ResourceData &rd = resources.push_back(ResourceData())->get();
 			rd.type = E->get_class();
 
 			List<PropertyInfo> property_list;
 			E->get_property_list(&property_list);
 
-			for (PropertyInfo &F : property_list) {
+			for (const PropertyInfo &F : property_list) {
 				if (skip_editor && F.name.begins_with("__editor")) {
 					continue;
 				}
@@ -2024,15 +2024,14 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 	Vector<uint64_t> ofs_table;
 
 	//now actually save the resources
-	for (ResourceData &rd : resources) {
+	for (const ResourceData &rd : resources) {
 		ofs_table.push_back(f->get_position());
 		save_unicode_string(f, rd.type);
 		f->store_32(rd.properties.size());
 
-		for (Property &F : rd.properties) {
-			Property &p = F;
+		for (const Property &p : rd.properties) {
 			f->store_32(p.name_idx);
-			write_variant(f, p.value, resource_map, external_resources, string_map, F.pi);
+			write_variant(f, p.value, resource_map, external_resources, string_map, p.pi);
 		}
 	}
 

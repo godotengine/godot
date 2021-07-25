@@ -361,7 +361,7 @@ GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin(EditorNode *p_node) {
 	file = memnew(EditorFileDialog);
 	List<String> ext;
 	ImageLoader::get_recognized_extensions(&ext);
-	for (String &E : ext) {
+	for (const String &E : ext) {
 		file->add_filter("*." + E + "; " + E.to_upper());
 	}
 	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
