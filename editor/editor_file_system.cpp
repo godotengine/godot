@@ -126,7 +126,7 @@ Vector<String> EditorFileSystemDirectory::get_file_deps(int p_idx) const {
 		}
 		ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(dep);
 		if (uid != ResourceUID::INVALID_ID) {
-			//return proper dependency resoure from uid
+			//return proper dependency resource from uid
 			if (ResourceUID::get_singleton()->has_id(uid)) {
 				dep = ResourceUID::get_singleton()->get_id_path(uid);
 			} else {

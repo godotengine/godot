@@ -1555,7 +1555,7 @@ int EditorNode::_save_external_resources() {
 		if (!res->get_path().is_resource_file()) {
 			continue;
 		}
-		//not only check if this resourec is edited, check contained subresources too
+		//not only check if this resource is edited, check contained subresources too
 		if (_find_edited_resources(res, edited_subresources)) {
 			ResourceSaver::save(res->get_path(), res, flg);
 			saved++;

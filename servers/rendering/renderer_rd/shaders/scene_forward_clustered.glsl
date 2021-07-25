@@ -1214,7 +1214,7 @@ void main() {
 		specular_light *= specular * metallic * albedo * 2.0;
 #else
 
-		// scales the specular reflections, needs to be be computed before lighting happens,
+		// scales the specular reflections, needs to be computed before lighting happens,
 		// but after environment, GI, and reflection probes are added
 		// Environment brdf approximation (Lazarov 2013)
 		// see https://www.unrealengine.com/en-US/blog/physically-based-shading-on-mobile

@@ -6037,7 +6037,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 		specialization_info.resize(pipeline_stages.size());
 		specialization_map_entries.resize(pipeline_stages.size());
 		for (int i = 0; i < shader->specialization_constants.size(); i++) {
-			//see if overriden
+			//see if overridden
 			const Shader::SpecializationConstant &sc = shader->specialization_constants[i];
 			data_ptr[i] = sc.constant.int_value; //just copy the 32 bits
 
@@ -6181,7 +6181,7 @@ RID RenderingDeviceVulkan::compute_pipeline_create(RID p_shader, const Vector<Pi
 		specialization_constant_data.resize(shader->specialization_constants.size());
 		uint32_t *data_ptr = specialization_constant_data.ptrw();
 		for (int i = 0; i < shader->specialization_constants.size(); i++) {
-			//see if overriden
+			//see if overridden
 			const Shader::SpecializationConstant &sc = shader->specialization_constants[i];
 			data_ptr[i] = sc.constant.int_value; //just copy the 32 bits
 
