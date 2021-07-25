@@ -266,9 +266,9 @@ void main() {
 
 		} else if (params.sky_mode == SKY_MODE_SKY) {
 #ifdef USE_CUBEMAP_ARRAY
-			light.rgb = textureLod(samplerCubeArray(sky_irradiance, linear_sampler_mipmaps), vec4(ray_dir, 0.0), 2.0).rgb; //use second mipmap because we dont usually throw a lot of rays, so this compensates
+			light.rgb = textureLod(samplerCubeArray(sky_irradiance, linear_sampler_mipmaps), vec4(ray_dir, 0.0), 2.0).rgb; // Use second mipmap because we don't usually throw a lot of rays, so this compensates.
 #else
-			light.rgb = textureLod(samplerCube(sky_irradiance, linear_sampler_mipmaps), ray_dir, 2.0).rgb; //use second mipmap because we dont usually throw a lot of rays, so this compensates
+			light.rgb = textureLod(samplerCube(sky_irradiance, linear_sampler_mipmaps), ray_dir, 2.0).rgb; // Use second mipmap because we don't usually throw a lot of rays, so this compensates.
 #endif
 			light.rgb *= params.sky_energy;
 			light.a = 0.0;

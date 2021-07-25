@@ -127,7 +127,7 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Gets the caret pixel draw poistion.
+				Gets the caret pixel draw position.
 			</description>
 		</method>
 		<method name="get_first_non_whitespace_column" qualifiers="const">

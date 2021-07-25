@@ -1244,7 +1244,7 @@ void TileDataCollisionEditor::_polygons_changed() {
 		}
 	}
 
-	// Remove uneeded properties and their editors.
+	// Remove unneeded properties and their editors.
 	for (int i = polygon_editor->get_polygon_count(); dummy_object->has_dummy_property(vformat("polygon_%d_one_way", i)); i++) {
 		dummy_object->remove_dummy_property(vformat("polygon_%d_one_way", i));
 	}

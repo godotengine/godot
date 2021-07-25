@@ -69,7 +69,7 @@
 			<argument index="0" name="joint_idx" type="int">
 			</argument>
 			<description>
-				Returns a boolean that indiciates whether the joint at [code]joint_idx[/code] is overriding the default Jiggle joint data defined in the modification.
+				Returns a boolean that indicates whether the joint at [code]joint_idx[/code] is overriding the default Jiggle joint data defined in the modification.
 			</description>
 		</method>
 		<method name="get_jiggle_joint_stiffness" qualifiers="const">
@@ -87,7 +87,7 @@
 			<argument index="0" name="joint_idx" type="int">
 			</argument>
 			<description>
-				Returns a boolean that indiciates whether the joint at [code]joint_idx[/code] is using gravity or not.
+				Returns a boolean that indicates whether the joint at [code]joint_idx[/code] is using gravity or not.
 			</description>
 		</method>
 		<method name="get_use_colliders" qualifiers="const">
@@ -206,19 +206,19 @@
 	</methods>
 	<members>
 		<member name="damping" type="float" setter="set_damping" getter="get_damping" default="0.75">
-			The default amount of dampening applied to the Jiggle joints, if they are not overriden. Higher values lead to more of the calculated velocity being applied.
+			The default amount of dampening applied to the Jiggle joints, if they are not overridden. Higher values lead to more of the calculated velocity being applied.
 		</member>
 		<member name="gravity" type="Vector2" setter="set_gravity" getter="get_gravity" default="Vector2(0, 6)">
-			The default amount of gravity applied to the Jiggle joints, if they are not overriden.
+			The default amount of gravity applied to the Jiggle joints, if they are not overridden.
 		</member>
 		<member name="jiggle_data_chain_length" type="int" setter="set_jiggle_data_chain_length" getter="get_jiggle_data_chain_length" default="0">
 			The amount of Jiggle joints in the Jiggle modification.
 		</member>
 		<member name="mass" type="float" setter="set_mass" getter="get_mass" default="0.75">
-			The default amount of mass assigned to the Jiggle joints, if they are not overriden. Higher values lead to faster movements and more overshooting.
+			The default amount of mass assigned to the Jiggle joints, if they are not overridden. Higher values lead to faster movements and more overshooting.
 		</member>
 		<member name="stiffness" type="float" setter="set_stiffness" getter="get_stiffness" default="3.0">
-			The default amount of stiffness assigned to the Jiggle joints, if they are not overriden. Higher values act more like springs, quickly moving into the correct position.
+			The default amount of stiffness assigned to the Jiggle joints, if they are not overridden. Higher values act more like springs, quickly moving into the correct position.
 		</member>
 		<member name="target_nodepath" type="NodePath" setter="set_target_node" getter="get_target_node" default="NodePath(&quot;&quot;)">
 			The NodePath to the node that is the target for the Jiggle modification. This node is what the Jiggle chain will attempt to rotate the bone chain to.

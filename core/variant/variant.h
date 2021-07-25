@@ -253,7 +253,7 @@ private:
 			true, //PACKED_COLOR_ARRAY,
 		};
 
-		if (unlikely(needs_deinit[type])) { //make it fast for types that dont need deinit
+		if (unlikely(needs_deinit[type])) { // Make it fast for types that don't need deinit.
 			_clear_internal();
 		}
 		type = NIL;

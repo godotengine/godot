@@ -177,7 +177,7 @@ layout(set = 1, binding = 0, std140) uniform SceneData {
 	uint cluster_type_size;
 	uint max_cluster_element_count_div_32;
 
-	//use vec4s because std140 doesnt play nice with vec2s, z and w are wasted
+	// Use vec4s because std140 doesn't play nice with vec2s, z and w are wasted.
 	vec4 directional_penumbra_shadow_kernel[32];
 	vec4 directional_soft_shadow_kernel[32];
 	vec4 penumbra_shadow_kernel[32];

@@ -138,7 +138,7 @@ void main() {
 	if (bool(particles.data[particle].flags & PARTICLE_FLAG_ACTIVE) || bool(particles.data[particle].flags & PARTICLE_FLAG_TRAILED)) {
 		txform = particles.data[particle].xform;
 		if (params.trail_size > 1) {
-			// since the steps dont fit precisely in the history frames, must do a tiny bit of
+			// Since the steps don't fit precisely in the history frames, must do a tiny bit of
 			// interpolation to get them close to their intended location.
 			uint part_ofs = particle % params.trail_size;
 			float natural_ofs = fract((float(part_ofs) / float(params.trail_size)) * float(params.trail_total)) * params.frame_delta;

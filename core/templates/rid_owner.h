@@ -101,7 +101,7 @@ class RID_Alloc : public RID_AllocBase {
 
 			//initialize
 			for (uint32_t i = 0; i < elements_in_chunk; i++) {
-				//dont initialize chunk
+				// Don't initialize chunk.
 				validator_chunks[chunk_count][i] = 0xFFFFFFFF;
 				free_list_chunks[chunk_count][i] = alloc_count + i;
 			}

@@ -2728,7 +2728,7 @@ TileSet::TileSet() {
 	tile_lines_mesh.instantiate();
 	tile_filled_mesh.instantiate();
 
-	// Instanciate and list all plugins.
+	// Instantiate and list all plugins.
 	tile_set_plugins_vector.append(memnew(TileSetPluginAtlasRendering));
 	tile_set_plugins_vector.append(memnew(TileSetPluginAtlasPhysics));
 	tile_set_plugins_vector.append(memnew(TileSetPluginAtlasNavigation));

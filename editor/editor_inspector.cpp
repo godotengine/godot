@@ -1970,7 +1970,7 @@ void EditorInspector::update_tree() {
 						if (F.label != String()) {
 							ep->set_label(F.label);
 						} else {
-							//use existin one
+							// Use the existing one.
 							ep->set_label(name);
 						}
 						for (int i = 0; i < F.properties.size(); i++) {

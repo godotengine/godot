@@ -125,7 +125,7 @@
 			<return type="Tween">
 			</return>
 			<description>
-				Makes the next [Tweener] run parallely to the previous one. Example:
+				Makes the next [Tweener] run parallelly to the previous one. Example:
 				[codeblock]
 				var tween = create_tween()
 				tween.tween_property(...)
@@ -175,7 +175,7 @@
 			<argument index="0" name="parallel" type="bool" default="true">
 			</argument>
 			<description>
-				If [code]parallel[/code] is [code]true[/code], the [Tweener]s appended after this method will by default run simultanously, as opposed to sequentially.
+				If [code]parallel[/code] is [code]true[/code], the [Tweener]s appended after this method will by default run simultaneously, as opposed to sequentially.
 			</description>
 		</method>
 		<method name="set_pause_mode">

@@ -2250,7 +2250,7 @@ bool RendererSceneRenderRD::_render_buffers_can_be_storage() {
 }
 
 void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding, uint32_t p_view_count) {
-	ERR_FAIL_COND_MSG(p_view_count == 0, "Must have atleast 1 view");
+	ERR_FAIL_COND_MSG(p_view_count == 0, "Must have at least 1 view");
 
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
 	rb->width = p_width;

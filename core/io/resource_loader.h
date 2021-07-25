@@ -40,9 +40,9 @@ class ResourceFormatLoader : public RefCounted {
 
 public:
 	enum CacheMode {
-		CACHE_MODE_IGNORE, //resource and subresources do not use path cache, no path is set into resource.
-		CACHE_MODE_REUSE, //resource and subresources use patch cache, reuse existing loaded resources instead of loading from disk when available
-		CACHE_MODE_REPLACE, //resource and and subresource use path cache, but replace existing loaded resources when available with information from disk
+		CACHE_MODE_IGNORE, // Resource and subresources do not use path cache, no path is set into resource.
+		CACHE_MODE_REUSE, // Resource and subresources use patch cache, reuse existing loaded resources instead of loading from disk when available.
+		CACHE_MODE_REPLACE, // Resource and subresource use path cache, but replace existing loaded resources when available with information from disk.
 	};
 
 protected:
@@ -108,7 +108,7 @@ private:
 
 	friend class ResourceFormatImporter;
 	friend class ResourceInteractiveLoader;
-	//internal load function
+	// Internal load function.
 	static RES _load(const String &p_path, const String &p_original_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress);
 
 	static ResourceLoadedCallback _loaded_callback;

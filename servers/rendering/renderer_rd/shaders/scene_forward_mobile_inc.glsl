@@ -138,7 +138,7 @@ layout(set = 1, binding = 0, std140) uniform SceneData {
 	vec2 viewport_size;
 	vec2 screen_pixel_size;
 
-	//use vec4s because std140 doesnt play nice with vec2s, z and w are wasted
+	// Use vec4s because std140 doesn't play nice with vec2s, z and w are wasted.
 	vec4 directional_penumbra_shadow_kernel[32];
 	vec4 directional_soft_shadow_kernel[32];
 	vec4 penumbra_shadow_kernel[32];

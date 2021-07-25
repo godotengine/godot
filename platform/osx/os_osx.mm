@@ -369,7 +369,7 @@ String OS_OSX::get_cache_path() const {
 		if (get_environment("XDG_CACHE_HOME").is_absolute_path()) {
 			return get_environment("XDG_CACHE_HOME");
 		} else {
-			WARN_PRINT_ONCE("`XDG_CACHE_HOME` is a relative path. Ignoring its value and falling back to `$HOME/Libary/Caches` or `get_config_path()` per the XDG Base Directory specification.");
+			WARN_PRINT_ONCE("`XDG_CACHE_HOME` is a relative path. Ignoring its value and falling back to `$HOME/Library/Caches` or `get_config_path()` per the XDG Base Directory specification.");
 		}
 	}
 	if (has_environment("HOME")) {
