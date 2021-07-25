@@ -454,6 +454,8 @@ void Control::set_layout_direction(Control::LayoutDirection p_direction) {
 	ERR_FAIL_INDEX((int)p_direction, 4);
 
 	data.layout_dir = p_direction;
+	data.is_rtl_dirty = true;
+
 	propagate_notification(NOTIFICATION_LAYOUT_DIRECTION_CHANGED);
 }
 
@@ -462,29 +464,35 @@ Control::LayoutDirection Control::get_layout_direction() const {
 }
 
 bool Control::is_layout_rtl() const {
-	if (data.layout_dir == LAYOUT_DIRECTION_INHERITED) {
-		Window *parent_window = get_parent_window();
-		Control *parent_control = get_parent_control();
-		if (parent_control) {
-			return parent_control->is_layout_rtl();
-		} else if (parent_window) {
-			return parent_window->is_layout_rtl();
-		} else {
-			if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
-				return true;
+	if (data.is_rtl_dirty) {
+		const_cast<Control *>(this)->data.is_rtl_dirty = false;
+		if (data.layout_dir == LAYOUT_DIRECTION_INHERITED) {
+			Window *parent_window = get_parent_window();
+			Control *parent_control = get_parent_control();
+			if (parent_control) {
+				const_cast<Control *>(this)->data.is_rtl = parent_control->is_layout_rtl();
+			} else if (parent_window) {
+				const_cast<Control *>(this)->data.is_rtl = parent_window->is_layout_rtl();
+			} else {
+				if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
+					const_cast<Control *>(this)->data.is_rtl = true;
+				} else {
+					String locale = TranslationServer::get_singleton()->get_tool_locale();
+					const_cast<Control *>(this)->data.is_rtl = TS->is_locale_right_to_left(locale);
+				}
 			}
-			String locale = TranslationServer::get_singleton()->get_tool_locale();
-			return TS->is_locale_right_to_left(locale);
+		} else if (data.layout_dir == LAYOUT_DIRECTION_LOCALE) {
+			if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
+				const_cast<Control *>(this)->data.is_rtl = true;
+			} else {
+				String locale = TranslationServer::get_singleton()->get_tool_locale();
+				const_cast<Control *>(this)->data.is_rtl = TS->is_locale_right_to_left(locale);
+			}
+		} else {
+			const_cast<Control *>(this)->data.is_rtl = (data.layout_dir == LAYOUT_DIRECTION_RTL);
 		}
-	} else if (data.layout_dir == LAYOUT_DIRECTION_LOCALE) {
-		if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
-			return true;
-		}
-		String locale = TranslationServer::get_singleton()->get_tool_locale();
-		return TS->is_locale_right_to_left(locale);
-	} else {
-		return (data.layout_dir == LAYOUT_DIRECTION_RTL);
 	}
+	return data.is_rtl;
 }
 
 void Control::_clear_size_warning() {
@@ -534,6 +542,7 @@ void Control::_notification(int p_notification) {
 		} break;
 		case NOTIFICATION_POST_ENTER_TREE: {
 			data.minimum_size_valid = false;
+			data.is_rtl_dirty = true;
 			_size_changed();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
@@ -548,6 +557,7 @@ void Control::_notification(int p_notification) {
 		case NOTIFICATION_ENTER_CANVAS: {
 			data.parent = Object::cast_to<Control>(get_parent());
 			data.parent_window = Object::cast_to<Window>(get_parent());
+			data.is_rtl_dirty = true;
 
 			Node *parent = this; //meh
 			Control *parent_control = nullptr;
@@ -613,6 +623,7 @@ void Control::_notification(int p_notification) {
 			data.parent = nullptr;
 			data.parent_canvas_item = nullptr;
 			data.parent_window = nullptr;
+			data.is_rtl_dirty = true;
 
 		} break;
 		case NOTIFICATION_MOVED_IN_PARENT: {
@@ -672,6 +683,7 @@ void Control::_notification(int p_notification) {
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
+			data.is_rtl_dirty = true;
 			_size_changed();
 		} break;
 	}

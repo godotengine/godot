@@ -179,6 +179,8 @@ private:
 		GrowDirection v_grow = GROW_DIRECTION_END;
 
 		LayoutDirection layout_dir = LAYOUT_DIRECTION_INHERITED;
+		bool is_rtl_dirty = true;
+		bool is_rtl = false;
 
 		real_t rotation = 0.0;
 		Vector2 scale = Vector2(1, 1);
