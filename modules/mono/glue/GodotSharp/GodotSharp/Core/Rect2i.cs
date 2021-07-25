@@ -75,7 +75,7 @@ namespace Godot
         /// <returns>The intersection of this Rect2i and `b`, or an empty Rect2i if they do not intersect.</returns>
         public Rect2i Intersection(Rect2i b)
         {
-            var newRect = b;
+            Rect2i newRect = b;
 
             if (!Intersects(newRect))
             {
@@ -113,7 +113,7 @@ namespace Godot
         /// <returns>The expanded Rect2i.</returns>
         public Rect2i Expand(Vector2i to)
         {
-            var expanded = this;
+            Rect2i expanded = this;
 
             Vector2i begin = expanded._position;
             Vector2i end = expanded._position + expanded._size;
@@ -158,7 +158,7 @@ namespace Godot
         /// <returns>The grown Rect2i.</returns>
         public Rect2i Grow(int by)
         {
-            var g = this;
+            Rect2i g = this;
 
             g._position.x -= by;
             g._position.y -= by;
@@ -178,7 +178,7 @@ namespace Godot
         /// <returns>The grown Rect2i.</returns>
         public Rect2i GrowIndividual(int left, int top, int right, int bottom)
         {
-            var g = this;
+            Rect2i g = this;
 
             g._position.x -= left;
             g._position.y -= top;
@@ -196,7 +196,7 @@ namespace Godot
         /// <returns>The grown Rect2i.</returns>
         public Rect2i GrowSide(Side side, int by)
         {
-            var g = this;
+            Rect2i g = this;
 
             g = g.GrowIndividual(Side.Left == side ? by : 0,
                     Side.Top == side ? by : 0,

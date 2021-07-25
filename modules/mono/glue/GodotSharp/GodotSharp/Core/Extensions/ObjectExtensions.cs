@@ -16,6 +16,6 @@ namespace Godot
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static WeakRef godot_icall_Object_weakref(IntPtr obj);
+        internal static extern WeakRef godot_icall_Object_weakref(IntPtr obj);
     }
 }

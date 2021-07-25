@@ -87,7 +87,7 @@ namespace Godot
         /// </summary>
         public static string[] Bigrams(this string instance)
         {
-            var b = new string[instance.Length - 1];
+            string[] b = new string[instance.Length - 1];
 
             for (int i = 0; i < b.Length; i++)
             {
@@ -241,7 +241,7 @@ namespace Godot
         public static string Capitalize(this string instance)
         {
             string aux = instance.Replace("_", " ").ToLower();
-            var cap = string.Empty;
+            string cap = string.Empty;
 
             for (int i = 0; i < aux.GetSliceCount(" "); i++)
             {
@@ -401,20 +401,20 @@ namespace Godot
             int basepos = instance.Find("://");
 
             string rs;
-            var @base = string.Empty;
+            string directory = string.Empty;
 
             if (basepos != -1)
             {
-                var end = basepos + 3;
+                int end = basepos + 3;
                 rs = instance.Substring(end);
-                @base = instance.Substring(0, end);
+                directory = instance.Substring(0, end);
             }
             else
             {
                 if (instance.BeginsWith("/"))
                 {
                     rs = instance.Substring(1);
-                    @base = "/";
+                    directory = "/";
                 }
                 else
                 {
@@ -425,9 +425,9 @@ namespace Godot
             int sep = Mathf.Max(rs.FindLast("/"), rs.FindLast("\\"));
 
             if (sep == -1)
-                return @base;
+                return directory;
 
-            return @base + rs.Substr(0, sep);
+            return directory + rs.Substr(0, sep);
         }
 
         /// <summary>
@@ -494,7 +494,7 @@ namespace Godot
         /// <returns>The hexadecimal representation of this byte.</returns>
         internal static string HexEncode(this byte b)
         {
-            var ret = string.Empty;
+            string ret = string.Empty;
 
             for (int i = 0; i < 2; i++)
             {
@@ -524,7 +524,7 @@ namespace Godot
         /// <returns>The hexadecimal representation of this byte array.</returns>
         public static string HexEncode(this byte[] bytes)
         {
-            var ret = string.Empty;
+            string ret = string.Empty;
 
             foreach (byte b in bytes)
             {
@@ -673,18 +673,15 @@ namespace Godot
             if (len == 0)
                 return false;
 
+            if (instance[0] >= '0' && instance[0] <= '9')
+                return false; // Identifiers cannot start with numbers.
+
             for (int i = 0; i < len; i++)
             {
-                if (i == 0)
-                {
-                    if (instance[0] >= '0' && instance[0] <= '9')
-                        return false; // Don't start with number plz
-                }
-
-                bool validChar = instance[i] >= '0' &&
-                                  instance[i] <= '9' || instance[i] >= 'a' &&
-                                  instance[i] <= 'z' || instance[i] >= 'A' &&
-                                  instance[i] <= 'Z' || instance[i] == '_';
+                bool validChar = instance[i] == '_' ||
+                    (instance[i] >= 'a' && instance[i] <= 'z') ||
+                    (instance[i] >= 'A' && instance[i] <= 'Z') ||
+                    (instance[i] >= '0' && instance[i] <= '9');
 
                 if (!validChar)
                     return false;
@@ -853,7 +850,7 @@ namespace Godot
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static byte[] godot_icall_String_md5_buffer(string str);
+        internal static extern byte[] godot_icall_String_md5_buffer(string str);
 
         /// <summary>
         /// Return the MD5 hash of the string as a string.
@@ -864,7 +861,7 @@ namespace Godot
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static string godot_icall_String_md5_text(string str);
+        internal static extern string godot_icall_String_md5_text(string str);
 
         /// <summary>
         /// Perform a case-insensitive comparison to another string, return -1 if less, 0 if equal and +1 if greater.
@@ -987,7 +984,7 @@ namespace Godot
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static int godot_icall_String_rfind(string str, string what, int from);
+        internal static extern int godot_icall_String_rfind(string str, string what, int from);
 
         /// <summary>
         /// Perform a search for a substring, but start from the end of the string instead of the beginning.
@@ -999,7 +996,7 @@ namespace Godot
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static int godot_icall_String_rfindn(string str, string what, int from);
+        internal static extern int godot_icall_String_rfindn(string str, string what, int from);
 
         /// <summary>
         /// Return the right side of the string from a given position.
@@ -1048,7 +1045,7 @@ namespace Godot
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static byte[] godot_icall_String_sha256_buffer(string str);
+        internal static extern byte[] godot_icall_String_sha256_buffer(string str);
 
         /// <summary>
         /// Return the SHA-256 hash of the string as a string.
@@ -1059,7 +1056,7 @@ namespace Godot
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static string godot_icall_String_sha256_text(string str);
+        internal static extern string godot_icall_String_sha256_text(string str);
 
         /// <summary>
         /// Return the similarity index of the text compared to this string.
@@ -1148,7 +1145,8 @@ namespace Godot
             return ret.ToArray();
         }
 
-        private static readonly char[] _nonPrintable = {
+        private static readonly char[] _nonPrintable =
+        {
             (char)00, (char)01, (char)02, (char)03, (char)04, (char)05,
             (char)06, (char)07, (char)08, (char)09, (char)10, (char)11,
             (char)12, (char)13, (char)14, (char)15, (char)16, (char)17,

@@ -5,7 +5,7 @@ namespace Godot
 {
     public partial class Object : IDisposable
     {
-        private bool disposed = false;
+        private bool _disposed = false;
 
         private static StringName nativeName = "Object";
 
@@ -39,7 +39,7 @@ namespace Godot
             if (instance == null)
                 return IntPtr.Zero;
 
-            if (instance.disposed)
+            if (instance._disposed)
                 throw new ObjectDisposedException(instance.GetType().FullName);
 
             return instance.ptr;
@@ -58,7 +58,7 @@ namespace Godot
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposed)
+            if (_disposed)
                 return;
 
             if (ptr != IntPtr.Zero)
@@ -73,10 +73,10 @@ namespace Godot
                     godot_icall_Object_Disposed(this, ptr);
                 }
 
-                this.ptr = IntPtr.Zero;
+                ptr = IntPtr.Zero;
             }
 
-            disposed = true;
+            _disposed = true;
         }
 
         public override string ToString()

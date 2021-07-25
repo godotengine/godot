@@ -5,7 +5,7 @@ namespace Godot
 {
     public sealed partial class NodePath : IDisposable
     {
-        private bool disposed = false;
+        private bool _disposed = false;
 
         private IntPtr ptr;
 
@@ -14,7 +14,7 @@ namespace Godot
             if (instance == null)
                 throw new NullReferenceException($"The instance of type {nameof(NodePath)} is null.");
 
-            if (instance.disposed)
+            if (instance._disposed)
                 throw new ObjectDisposedException(instance.GetType().FullName);
 
             return instance.ptr;
@@ -33,7 +33,7 @@ namespace Godot
 
         private void Dispose(bool disposing)
         {
-            if (disposed)
+            if (_disposed)
                 return;
 
             if (ptr != IntPtr.Zero)
@@ -42,7 +42,7 @@ namespace Godot
                 ptr = IntPtr.Zero;
             }
 
-            disposed = true;
+            _disposed = true;
         }
 
         internal NodePath(IntPtr ptr)

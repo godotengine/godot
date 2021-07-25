@@ -145,9 +145,9 @@ namespace Godot
                 return null;
             }
 
-            Vector3 result = b._normal.Cross(c._normal) * D +
-                                c._normal.Cross(_normal) * b.D +
-                                _normal.Cross(b._normal) * c.D;
+            Vector3 result = (b._normal.Cross(c._normal) * D) +
+                                (c._normal.Cross(_normal) * b.D) +
+                                (_normal.Cross(b._normal) * c.D);
 
             return result / denom;
         }
@@ -242,7 +242,7 @@ namespace Godot
         /// <returns>The projected point.</returns>
         public Vector3 Project(Vector3 point)
         {
-            return point - _normal * DistanceTo(point);
+            return point - (_normal * DistanceTo(point));
         }
 
         // Constants
@@ -280,7 +280,7 @@ namespace Godot
         public Plane(real_t a, real_t b, real_t c, real_t d)
         {
             _normal = new Vector3(a, b, c);
-            this.D = d;
+            D = d;
         }
 
         /// <summary>
@@ -290,8 +290,8 @@ namespace Godot
         /// <param name="d">The plane's distance from the origin. This value is typically non-negative.</param>
         public Plane(Vector3 normal, real_t d)
         {
-            this._normal = normal;
-            this.D = d;
+            _normal = normal;
+            D = d;
         }
 
         /// <summary>

@@ -12,6 +12,6 @@ namespace Godot
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static IntPtr godot_icall_SceneTree_get_nodes_in_group_Generic(IntPtr obj, IntPtr group, Type elemType);
+        internal static extern IntPtr godot_icall_SceneTree_get_nodes_in_group_Generic(IntPtr obj, IntPtr group, Type elemType);
     }
 }

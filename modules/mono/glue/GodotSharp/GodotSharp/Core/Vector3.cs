@@ -30,10 +30,12 @@ namespace Godot
         /// The vector's X component. Also accessible by using the index position `[0]`.
         /// </summary>
         public real_t x;
+
         /// <summary>
         /// The vector's Y component. Also accessible by using the index position `[1]`.
         /// </summary>
         public real_t y;
+
         /// <summary>
         /// The vector's Z component. Also accessible by using the index position `[2]`.
         /// </summary>
@@ -160,9 +162,9 @@ namespace Godot
         {
             return new Vector3
             (
-                y * b.z - z * b.y,
-                z * b.x - x * b.z,
-                x * b.y - y * b.x
+                (y * b.z) - (z * b.y),
+                (z * b.x) - (x * b.z),
+                (x * b.y) - (y * b.x)
             );
         }
 
@@ -187,10 +189,10 @@ namespace Godot
             real_t t3 = t2 * t;
 
             return 0.5f * (
-                        p1 * 2.0f + (-p0 + p2) * t +
-                        (2.0f * p0 - 5.0f * p1 + 4f * p2 - p3) * t2 +
-                        (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3
-                    );
+                (p1 * 2.0f) + ((-p0 + p2) * t) +
+                (((2.0f * p0) - (5.0f * p1) + (4f * p2) - p3) * t2) +
+                ((-p0 + (3.0f * p1) - (3.0f * p2) + p3) * t3)
+            );
         }
 
         /// <summary>
@@ -232,7 +234,7 @@ namespace Godot
         /// <returns>The dot product of the two vectors.</returns>
         public real_t Dot(Vector3 b)
         {
-            return x * b.x + y * b.y + z * b.z;
+            return (x * b.x) + (y * b.y) + (z * b.z);
         }
 
         /// <summary>
@@ -371,10 +373,13 @@ namespace Godot
         /// <returns>The resulting vector.</returns>
         public Vector3 MoveToward(Vector3 to, real_t delta)
         {
-            var v = this;
-            var vd = to - v;
-            var len = vd.Length();
-            return len <= delta || len < Mathf.Epsilon ? to : v + vd / len * delta;
+            Vector3 v = this;
+            Vector3 vd = to - v;
+            real_t len = vd.Length();
+            if (len <= delta || len < Mathf.Epsilon)
+                return to;
+
+            return v + (vd / len * delta);
         }
 
         /// <summary>
@@ -383,7 +388,7 @@ namespace Godot
         /// <returns>A normalized version of the vector.</returns>
         public Vector3 Normalized()
         {
-            var v = this;
+            Vector3 v = this;
             v.Normalize();
             return v;
         }
@@ -453,7 +458,7 @@ namespace Godot
                 throw new ArgumentException("Argument is not normalized", nameof(normal));
             }
 #endif
-            return 2.0f * Dot(normal) * normal - this;
+            return (2.0f * Dot(normal) * normal) - this;
         }
 
         /// <summary>
@@ -548,7 +553,7 @@ namespace Godot
         /// <returns>The slid vector.</returns>
         public Vector3 Slide(Vector3 normal)
         {
-            return this - normal * Dot(normal);
+            return this - (normal * Dot(normal));
         }
 
         /// <summary>
