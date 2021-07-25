@@ -249,7 +249,7 @@ void ResourceUID::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_id", "id", "path"), &ResourceUID::add_id);
 	ClassDB::bind_method(D_METHOD("set_id", "id", "path"), &ResourceUID::set_id);
 	ClassDB::bind_method(D_METHOD("get_id_path", "id"), &ResourceUID::get_id_path);
-	ClassDB::bind_method(D_METHOD("remove_id", "id", "path"), &ResourceUID::remove_id);
+	ClassDB::bind_method(D_METHOD("remove_id", "id"), &ResourceUID::remove_id);
 
 	BIND_CONSTANT(INVALID_ID)
 }
