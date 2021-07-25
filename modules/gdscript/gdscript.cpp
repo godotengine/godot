@@ -1643,17 +1643,17 @@ void GDScriptLanguage::init() {
 
 	List<StringName> class_list;
 	ClassDB::get_class_list(&class_list);
-	for (StringName &n : class_list) {
+	for (const StringName &n : class_list) {
 		String s = String(n);
 		if (s.begins_with("_")) {
-			n = s.substr(1, s.length());
+			s = s.substr(1, s.length());
 		}
 
-		if (globals.has(n)) {
+		if (globals.has(s)) {
 			continue;
 		}
 		Ref<GDScriptNativeClass> nc = memnew(GDScriptNativeClass(n));
-		_add_global(n, nc);
+		_add_global(s, nc);
 	}
 
 	//populate singletons
