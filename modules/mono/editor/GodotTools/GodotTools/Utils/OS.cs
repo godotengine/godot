@@ -103,11 +103,20 @@ namespace GodotTools.Utils
         {
             string[] windowsExts = Environment.GetEnvironmentVariable("PATHEXT")?.Split(PathSep) ?? new string[] { };
             string[] pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(PathSep);
+            char[] invalidPathChars = Path.GetInvalidPathChars();
 
             var searchDirs = new List<string>();
 
             if (pathDirs != null)
-                searchDirs.AddRange(pathDirs);
+            {
+                foreach (var pathDir in pathDirs)
+                {
+                    if (pathDir.IndexOfAny(invalidPathChars) != -1)
+                        continue;
+
+                    searchDirs.Add(pathDir);
+                }
+            }
 
             string nameExt = Path.GetExtension(name);
             bool hasPathExt = !string.IsNullOrEmpty(nameExt) && windowsExts.Contains(nameExt, StringComparer.OrdinalIgnoreCase);
@@ -127,11 +136,20 @@ namespace GodotTools.Utils
         private static string PathWhichUnix([NotNull] string name)
         {
             string[] pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(PathSep);
+            char[] invalidPathChars = Path.GetInvalidPathChars();
 
             var searchDirs = new List<string>();
 
             if (pathDirs != null)
-                searchDirs.AddRange(pathDirs);
+            {
+                foreach (var pathDir in pathDirs)
+                {
+                    if (pathDir.IndexOfAny(invalidPathChars) != -1)
+                        continue;
+
+                    searchDirs.Add(pathDir);
+                }
+            }
 
             searchDirs.Add(System.IO.Directory.GetCurrentDirectory()); // last in the list
 
