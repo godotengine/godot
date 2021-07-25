@@ -47,6 +47,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="remove_id">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_id">
 			<return type="void">
 			</return>
