@@ -171,7 +171,6 @@ def setup_mingw(env):
     """Set up env for use with mingw"""
     # Nothing to do here
     print("Using MinGW")
-    pass
 
 
 def configure_msvc(env, manual_msvc_config):
