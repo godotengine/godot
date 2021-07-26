@@ -2820,6 +2820,20 @@ bool ShaderLanguage::is_token_operator(TokenType p_type) {
 			p_type == TK_COLON);
 }
 
+bool ShaderLanguage::is_token_operator_assign(TokenType p_type) {
+	return (p_type == TK_OP_ASSIGN ||
+			p_type == TK_OP_ASSIGN_ADD ||
+			p_type == TK_OP_ASSIGN_SUB ||
+			p_type == TK_OP_ASSIGN_MUL ||
+			p_type == TK_OP_ASSIGN_DIV ||
+			p_type == TK_OP_ASSIGN_MOD ||
+			p_type == TK_OP_ASSIGN_SHIFT_LEFT ||
+			p_type == TK_OP_ASSIGN_SHIFT_RIGHT ||
+			p_type == TK_OP_ASSIGN_BIT_AND ||
+			p_type == TK_OP_ASSIGN_BIT_OR ||
+			p_type == TK_OP_ASSIGN_BIT_XOR);
+}
+
 bool ShaderLanguage::convert_constant(ConstantNode *p_constant, DataType p_to_type, ConstantNode::Value *p_value) {
 	if (p_constant->datatype == p_to_type) {
 		if (p_value) {
@@ -4240,7 +4254,8 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						Token next_token = _get_token();
 						_set_tkpos(prev_pos);
 						String error;
-						if (next_token.type == TK_OP_ASSIGN) {
+
+						if (is_token_operator_assign(next_token.type)) {
 							if (!_validate_varying_assign(shader->varyings[identifier], &error)) {
 								_set_error(error);
 								return nullptr;
