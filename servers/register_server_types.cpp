@@ -205,7 +205,7 @@ void register_server_types() {
 	GDREGISTER_CLASS(RDPipelineColorBlendStateAttachment);
 	GDREGISTER_CLASS(RDPipelineColorBlendState);
 	GDREGISTER_CLASS(RDShaderSource);
-	GDREGISTER_CLASS(RDShaderBytecode);
+	GDREGISTER_CLASS(RDShaderSPIRV);
 	GDREGISTER_CLASS(RDShaderFile);
 	GDREGISTER_CLASS(RDPipelineSpecializationConstant);
 

@@ -7,8 +7,8 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="get_bytecode" qualifiers="const">
-			<return type="RDShaderBytecode">
+		<method name="get_spirv" qualifiers="const">
+			<return type="RDShaderSPIRV">
 			</return>
 			<argument index="0" name="version" type="StringName" default="&amp;&quot;&quot;">
 			</argument>
@@ -24,7 +24,7 @@
 		<method name="set_bytecode">
 			<return type="void">
 			</return>
-			<argument index="0" name="bytecode" type="RDShaderBytecode">
+			<argument index="0" name="bytecode" type="RDShaderSPIRV">
 			</argument>
 			<argument index="1" name="version" type="StringName" default="&amp;&quot;&quot;">
 			</argument>

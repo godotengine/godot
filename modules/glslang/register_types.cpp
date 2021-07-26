@@ -193,7 +193,7 @@ void preregister_glslang_types() {
 	// initialize in case it's not initialized. This is done once per thread
 	// and it's safe to call multiple times
 	glslang::InitializeProcess();
-	RenderingDevice::shader_set_compile_function(_compile_shader_glsl);
+	RenderingDevice::shader_set_compile_to_spirv_function(_compile_shader_glsl);
 	RenderingDevice::shader_set_get_cache_key_function(_get_cache_key_function_glsl);
 }
 

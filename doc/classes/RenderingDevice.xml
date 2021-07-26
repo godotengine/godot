@@ -635,8 +635,16 @@
 			<description>
 			</description>
 		</method>
-		<method name="shader_compile_from_source">
-			<return type="RDShaderBytecode">
+		<method name="shader_compile_binary_from_spirv">
+			<return type="PackedByteArray">
+			</return>
+			<argument index="0" name="spirv_data" type="RDShaderSPIRV">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="shader_compile_spirv_from_source">
+			<return type="RDShaderSPIRV">
 			</return>
 			<argument index="0" name="shader_source" type="RDShaderSource">
 			</argument>
@@ -645,10 +653,18 @@
 			<description>
 			</description>
 		</method>
-		<method name="shader_create">
+		<method name="shader_create_from_bytecode">
 			<return type="RID">
 			</return>
-			<argument index="0" name="shader_data" type="RDShaderBytecode">
+			<argument index="0" name="binary_data" type="PackedByteArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="shader_create_from_spirv">
+			<return type="PackedByteArray">
+			</return>
+			<argument index="0" name="spirv_data" type="RDShaderSPIRV">
 			</argument>
 			<description>
 			</description>

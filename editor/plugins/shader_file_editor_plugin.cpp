@@ -55,7 +55,7 @@ void ShaderFileEditor::_version_selected(int p_option) {
 	RD::ShaderStage stage = RD::SHADER_STAGE_MAX;
 	int first_found = -1;
 
-	Ref<RDShaderBytecode> bytecode = shader_file->get_bytecode(version_txt);
+	Ref<RDShaderSPIRV> bytecode = shader_file->get_spirv(version_txt);
 	ERR_FAIL_COND(bytecode.is_null());
 
 	for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
@@ -142,7 +142,7 @@ void ShaderFileEditor::_update_options() {
 
 		Ref<Texture2D> icon;
 
-		Ref<RDShaderBytecode> bytecode = shader_file->get_bytecode(version_list[i]);
+		Ref<RDShaderSPIRV> bytecode = shader_file->get_spirv(version_list[i]);
 		ERR_FAIL_COND(bytecode.is_null());
 
 		bool failed = false;
@@ -175,7 +175,7 @@ void ShaderFileEditor::_update_options() {
 		return;
 	}
 
-	Ref<RDShaderBytecode> bytecode = shader_file->get_bytecode(current_version);
+	Ref<RDShaderSPIRV> bytecode = shader_file->get_spirv(current_version);
 	ERR_FAIL_COND(bytecode.is_null());
 	int first_valid = -1;
 	int current = -1;

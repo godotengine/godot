@@ -794,7 +794,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	}
 	ERR_FAIL_COND_V(err != OK, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
 
-	RID rasterize_shader = rd->shader_create_from_bytecode(raster_shader->get_bytecode());
+	RID rasterize_shader = rd->shader_create_from_spirv(raster_shader->get_spirv_stages());
 
 	ERR_FAIL_COND_V(rasterize_shader.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES); //this is a bug check, though, should not happen
 
@@ -945,27 +945,27 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	ERR_FAIL_COND_V(err != OK, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
 
 	// Unoccluder
-	RID compute_shader_unocclude = rd->shader_create_from_bytecode(compute_shader->get_bytecode("unocclude"));
+	RID compute_shader_unocclude = rd->shader_create_from_spirv(compute_shader->get_spirv_stages("unocclude"));
 	ERR_FAIL_COND_V(compute_shader_unocclude.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES); // internal check, should not happen
 	RID compute_shader_unocclude_pipeline = rd->compute_pipeline_create(compute_shader_unocclude);
 
 	// Direct light
-	RID compute_shader_primary = rd->shader_create_from_bytecode(compute_shader->get_bytecode("primary"));
+	RID compute_shader_primary = rd->shader_create_from_spirv(compute_shader->get_spirv_stages("primary"));
 	ERR_FAIL_COND_V(compute_shader_primary.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES); // internal check, should not happen
 	RID compute_shader_primary_pipeline = rd->compute_pipeline_create(compute_shader_primary);
 
 	// Indirect light
-	RID compute_shader_secondary = rd->shader_create_from_bytecode(compute_shader->get_bytecode("secondary"));
+	RID compute_shader_secondary = rd->shader_create_from_spirv(compute_shader->get_spirv_stages("secondary"));
 	ERR_FAIL_COND_V(compute_shader_secondary.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES); //internal check, should not happen
 	RID compute_shader_secondary_pipeline = rd->compute_pipeline_create(compute_shader_secondary);
 
 	// Dilate
-	RID compute_shader_dilate = rd->shader_create_from_bytecode(compute_shader->get_bytecode("dilate"));
+	RID compute_shader_dilate = rd->shader_create_from_spirv(compute_shader->get_spirv_stages("dilate"));
 	ERR_FAIL_COND_V(compute_shader_dilate.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES); //internal check, should not happen
 	RID compute_shader_dilate_pipeline = rd->compute_pipeline_create(compute_shader_dilate);
 
 	// Light probes
-	RID compute_shader_light_probes = rd->shader_create_from_bytecode(compute_shader->get_bytecode("light_probes"));
+	RID compute_shader_light_probes = rd->shader_create_from_spirv(compute_shader->get_spirv_stages("light_probes"));
 	ERR_FAIL_COND_V(compute_shader_light_probes.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES); //internal check, should not happen
 	RID compute_shader_light_probes_pipeline = rd->compute_pipeline_create(compute_shader_light_probes);
 
@@ -1506,11 +1506,11 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	}
 	ERR_FAIL_COND_V(err != OK, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
 
-	RID blendseams_line_raster_shader = rd->shader_create_from_bytecode(blendseams_shader->get_bytecode("lines"));
+	RID blendseams_line_raster_shader = rd->shader_create_from_spirv(blendseams_shader->get_spirv_stages("lines"));
 
 	ERR_FAIL_COND_V(blendseams_line_raster_shader.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
 
-	RID blendseams_triangle_raster_shader = rd->shader_create_from_bytecode(blendseams_shader->get_bytecode("triangles"));
+	RID blendseams_triangle_raster_shader = rd->shader_create_from_spirv(blendseams_shader->get_spirv_stages("triangles"));
 
 	ERR_FAIL_COND_V(blendseams_triangle_raster_shader.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
 

@@ -59,7 +59,7 @@ class ShaderRD {
 		Map<StringName, CharString> code_sections;
 		Vector<CharString> custom_defines;
 
-		Vector<RD::ShaderStageData> *variant_stages = nullptr;
+		Vector<uint8_t> *variant_data = nullptr;
 		RID *variants = nullptr; //same size as version defines
 
 		bool valid;
