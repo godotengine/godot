@@ -3373,7 +3373,7 @@ bool ShaderLanguage::_validate_varying_using(ShaderNode::Varying &p_varying, Str
 bool ShaderLanguage::_check_varying_usages(int *r_error_line, String *r_error_message) const {
 	for (const List<ShaderLanguage::VaryingUsage>::Element *E = unknown_varying_usages.front(); E; E = E->next()) {
 		ShaderNode::Varying::Stage stage = E->get().var->stage;
-		if (stage != ShaderNode::Varying::STAGE_UNKNOWN && stage != ShaderNode::Varying::STAGE_VERTEX && stage != ShaderNode::Varying::STAGE_VERTEX_TO_FRAGMENT && stage != ShaderNode::Varying::STAGE_VERTEX_TO_LIGHT) {
+		if (stage != ShaderNode::Varying::STAGE_UNKNOWN && stage != ShaderNode::Varying::STAGE_VERTEX && stage != ShaderNode::Varying::STAGE_VERTEX_TO_FRAGMENT_LIGHT) {
 			*r_error_line = E->get().line;
 			*r_error_message = RTR("Fragment-stage varying could not been accessed in custom function!");
 			return false;
