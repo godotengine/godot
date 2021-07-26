@@ -912,6 +912,8 @@ void ShaderLanguage::clear() {
 	completion_class = SubClassTag::TAG_GLOBAL;
 	completion_struct = StringName();
 
+	unknown_varying_usages.clear();
+
 #ifdef DEBUG_ENABLED
 	used_constants.clear();
 	used_varyings.clear();
@@ -3348,8 +3350,11 @@ bool ShaderLanguage::_validate_varying_assign(ShaderNode::Varying &p_varying, St
 bool ShaderLanguage::_validate_varying_using(ShaderNode::Varying &p_varying, String *r_message) {
 	switch (p_varying.stage) {
 		case ShaderNode::Varying::STAGE_UNKNOWN:
-			*r_message = RTR("Varying must be assigned before using!");
-			return false;
+			VaryingUsage usage;
+			usage.var = &p_varying;
+			usage.line = tk_line;
+			unknown_varying_usages.push_back(usage);
+			break;
 		case ShaderNode::Varying::STAGE_VERTEX:
 			if (current_function == varying_function_names.fragment) {
 				p_varying.stage = ShaderNode::Varying::STAGE_VERTEX_TO_FRAGMENT;
@@ -3377,6 +3382,19 @@ bool ShaderLanguage::_validate_varying_using(ShaderNode::Varying &p_varying, Str
 		default:
 			break;
 	}
+	return true;
+}
+
+bool ShaderLanguage::_check_varying_usages(int *r_error_line, String *r_error_message) const {
+	for (const List<ShaderLanguage::VaryingUsage>::Element *E = unknown_varying_usages.front(); E; E = E->next()) {
+		ShaderNode::Varying::Stage stage = E->get().var->stage;
+		if (stage != ShaderNode::Varying::STAGE_UNKNOWN && stage != ShaderNode::Varying::STAGE_VERTEX && stage != ShaderNode::Varying::STAGE_VERTEX_TO_FRAGMENT && stage != ShaderNode::Varying::STAGE_VERTEX_TO_LIGHT) {
+			*r_error_line = E->get().line;
+			*r_error_message = RTR("Fragment-stage varying could not been accessed in custom function!");
+			return false;
+		}
+	}
+
 	return true;
 }
 
@@ -7875,6 +7893,15 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 		tk = _get_token();
 	}
+
+	int error_line;
+	String error_message;
+	if (!_check_varying_usages(&error_line, &error_message)) {
+		_set_tkpos({ 0, error_line });
+		_set_error(error_message);
+		return ERR_PARSE_ERROR;
+	}
+
 	return OK;
 }
 
