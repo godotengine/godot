@@ -123,8 +123,8 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 				// AutoLoads
 				Map<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
 
-				for (Map<StringName, ProjectSettings::AutoloadInfo>::Element *E = autoloads.front(); E; E = E->next()) {
-					const ProjectSettings::AutoloadInfo &info = E->value();
+				for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
+					const ProjectSettings::AutoloadInfo &info = E.value;
 					suggestions.push_back(quoted("/root/" + String(info.name)));
 				}
 			}

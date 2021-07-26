@@ -145,8 +145,8 @@ void CSharpLanguage::finalize() {
 	finalizing = true;
 
 	// Make sure all script binding gchandles are released before finalizing GDMono
-	for (Map<Object *, CSharpScriptBinding>::Element *E = script_bindings.front(); E; E = E->next()) {
-		CSharpScriptBinding &script_binding = E->value();
+	for (KeyValue<Object *, CSharpScriptBinding> &E : script_bindings) {
+		CSharpScriptBinding &script_binding = E.value;
 
 		if (!script_binding.gchandle.is_released()) {
 			script_binding.gchandle.release();
@@ -163,8 +163,8 @@ void CSharpLanguage::finalize() {
 	script_bindings.clear();
 
 #ifdef DEBUG_ENABLED
-	for (Map<ObjectID, int>::Element *E = unsafe_object_references.front(); E; E = E->next()) {
-		const ObjectID &id = E->key();
+	for (const KeyValue<ObjectID, int> &E : unsafe_object_references) {
+		const ObjectID &id = E.key;
 		Object *obj = ObjectDB::get_instance(id);
 
 		if (obj) {
@@ -864,8 +864,8 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 	// We need to keep reference instances alive during reloading
 	List<Ref<RefCounted>> rc_instances;
 
-	for (Map<Object *, CSharpScriptBinding>::Element *E = script_bindings.front(); E; E = E->next()) {
-		CSharpScriptBinding &script_binding = E->value();
+	for (const KeyValue<Object *, CSharpScriptBinding> &E : script_bindings) {
+		const CSharpScriptBinding &script_binding = E.value;
 		RefCounted *rc = Object::cast_to<RefCounted>(script_binding.owner);
 		if (rc) {
 			rc_instances.push_back(Ref<RefCounted>(rc));
@@ -885,8 +885,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		// Script::instances are deleted during managed object disposal, which happens on domain finalize.
 		// Only placeholders are kept. Therefore we need to keep a copy before that happens.
 
-		for (Set<Object *>::Element *F = script->instances.front(); F; F = F->next()) {
-			Object *obj = F->get();
+		for (Object *&obj : script->instances) {
 			script->pending_reload_instances.insert(obj->get_instance_id());
 
 			RefCounted *rc = Object::cast_to<RefCounted>(obj);
@@ -896,8 +895,8 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		}
 
 #ifdef TOOLS_ENABLED
-		for (Set<PlaceHolderScriptInstance *>::Element *F = script->placeholders.front(); F; F = F->next()) {
-			Object *obj = F->get()->get_owner();
+		for (PlaceHolderScriptInstance *&script_instance : script->placeholders) {
+			Object *obj = script_instance->get_owner();
 			script->pending_reload_instances.insert(obj->get_instance_id());
 
 			RefCounted *rc = Object::cast_to<RefCounted>(obj);
@@ -910,9 +909,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		// Save state and remove script from instances
 		Map<ObjectID, CSharpScript::StateBackup> &owners_map = script->pending_reload_state;
 
-		for (Set<Object *>::Element *F = script->instances.front(); F; F = F->next()) {
-			Object *obj = F->get();
-
+		for (Object *&obj : script->instances) {
 			ERR_CONTINUE(!obj->get_script_instance());
 
 			CSharpInstance *csi = static_cast<CSharpInstance *>(obj->get_script_instance());
@@ -948,8 +945,8 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		// Failed to reload the scripts domain
 		// Make sure to add the scripts back to their owners before returning
 		for (Ref<CSharpScript> &scr : to_reload) {
-			for (const Map<ObjectID, CSharpScript::StateBackup>::Element *F = scr->pending_reload_state.front(); F; F = F->next()) {
-				Object *obj = ObjectDB::get_instance(F->key());
+			for (const KeyValue<ObjectID, CSharpScript::StateBackup> &F : scr->pending_reload_state) {
+				Object *obj = ObjectDB::get_instance(F.key);
 
 				if (!obj) {
 					continue;
@@ -969,8 +966,8 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 #endif
 
 				// Restore Variant properties state, it will be kept by the placeholder until the next script reloading
-				for (List<Pair<StringName, Variant>>::Element *G = scr->pending_reload_state[obj_id].properties.front(); G; G = G->next()) {
-					placeholder->property_set_fallback(G->get().first, G->get().second, nullptr);
+				for (const Pair<StringName, Variant> &G : scr->pending_reload_state[obj_id].properties) {
+					placeholder->property_set_fallback(G.first, G.second, nullptr);
 				}
 
 				scr->pending_reload_state.erase(obj_id);
@@ -1035,8 +1032,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		StringName native_name = NATIVE_GDMONOCLASS_NAME(script->native);
 
 		{
-			for (Set<ObjectID>::Element *F = script->pending_reload_instances.front(); F; F = F->next()) {
-				ObjectID obj_id = F->get();
+			for (const ObjectID &obj_id : script->pending_reload_instances) {
 				Object *obj = ObjectDB::get_instance(obj_id);
 
 				if (!obj) {
@@ -1088,8 +1084,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 	}
 
 	for (Ref<CSharpScript> &script : to_reload_state) {
-		for (Set<ObjectID>::Element *F = script->pending_reload_instances.front(); F; F = F->next()) {
-			ObjectID obj_id = F->get();
+		for (const ObjectID &obj_id : script->pending_reload_instances) {
 			Object *obj = ObjectDB::get_instance(obj_id);
 
 			if (!obj) {
@@ -1103,16 +1098,16 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 			CSharpScript::StateBackup &state_backup = script->pending_reload_state[obj_id];
 
-			for (List<Pair<StringName, Variant>>::Element *G = state_backup.properties.front(); G; G = G->next()) {
-				obj->get_script_instance()->set(G->get().first, G->get().second);
+			for (const Pair<StringName, Variant> &G : state_backup.properties) {
+				obj->get_script_instance()->set(G.first, G.second);
 			}
 
 			CSharpInstance *csi = CAST_CSHARP_INSTANCE(obj->get_script_instance());
 
 			if (csi) {
-				for (List<Pair<StringName, Array>>::Element *G = state_backup.event_signals.front(); G; G = G->next()) {
-					const StringName &name = G->get().first;
-					const Array &serialized_data = G->get().second;
+				for (const Pair<StringName, Array> &G : state_backup.event_signals) {
+					const StringName &name = G.first;
+					const Array &serialized_data = G.second;
 
 					Map<StringName, CSharpScript::EventSignal>::Element *match = script->event_signals.find(name);
 
@@ -1156,9 +1151,9 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 	{
 		MutexLock lock(ManagedCallable::instances_mutex);
 
-		for (Map<ManagedCallable *, Array>::Element *elem = ManagedCallable::instances_pending_reload.front(); elem; elem = elem->next()) {
-			ManagedCallable *managed_callable = elem->key();
-			const Array &serialized_data = elem->value();
+		for (const KeyValue<ManagedCallable *, Array> &elem : ManagedCallable::instances_pending_reload) {
+			ManagedCallable *managed_callable = elem.key;
+			const Array &serialized_data = elem.value;
 
 			MonoObject *managed_serialized_data = GDMonoMarshal::variant_to_mono_object(serialized_data);
 			MonoDelegate *delegate = nullptr;
@@ -1302,8 +1297,8 @@ bool CSharpLanguage::debug_break(const String &p_error, bool p_allow_continue) {
 }
 
 void CSharpLanguage::_on_scripts_domain_unloaded() {
-	for (Map<Object *, CSharpScriptBinding>::Element *E = script_bindings.front(); E; E = E->next()) {
-		CSharpScriptBinding &script_binding = E->value();
+	for (KeyValue<Object *, CSharpScriptBinding> &E : script_bindings) {
+		CSharpScriptBinding &script_binding = E.value;
 		script_binding.gchandle.release();
 		script_binding.inited = false;
 	}
@@ -1728,12 +1723,12 @@ bool CSharpInstance::get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void CSharpInstance::get_properties_state_for_reloading(List<Pair<StringName, Variant>> &r_state) {
-	List<PropertyInfo> pinfo;
-	get_property_list(&pinfo);
+	List<PropertyInfo> property_list;
+	get_property_list(&property_list);
 
-	for (const PropertyInfo &E : pinfo) {
+	for (const PropertyInfo &prop_info : property_list) {
 		Pair<StringName, Variant> state_pair;
-		state_pair.first = E.name;
+		state_pair.first = prop_info.name;
 
 		ManagedType managedType;
 
@@ -1756,8 +1751,8 @@ void CSharpInstance::get_event_signals_state_for_reloading(List<Pair<StringName,
 	MonoObject *owner_managed = get_mono_object();
 	ERR_FAIL_NULL(owner_managed);
 
-	for (const Map<StringName, CSharpScript::EventSignal>::Element *E = script->event_signals.front(); E; E = E->next()) {
-		const CSharpScript::EventSignal &event_signal = E->value();
+	for (const KeyValue<StringName, CSharpScript::EventSignal> &E : script->event_signals) {
+		const CSharpScript::EventSignal &event_signal = E.value;
 
 		MonoDelegate *delegate_field_value = (MonoDelegate *)event_signal.field->get_value(owner_managed);
 		if (!delegate_field_value) {
@@ -1784,8 +1779,8 @@ void CSharpInstance::get_event_signals_state_for_reloading(List<Pair<StringName,
 }
 
 void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
-	for (Map<StringName, PropertyInfo>::Element *E = script->member_info.front(); E; E = E->next()) {
-		p_properties->push_back(E->value());
+	for (const KeyValue<StringName, PropertyInfo> &E : script->member_info) {
+		p_properties->push_back(E.value);
 	}
 
 	// Call _get_property_list
@@ -2024,8 +2019,8 @@ void CSharpInstance::mono_object_disposed_baseref(MonoObject *p_obj, bool p_is_f
 }
 
 void CSharpInstance::connect_event_signals() {
-	for (const Map<StringName, CSharpScript::EventSignal>::Element *E = script->event_signals.front(); E; E = E->next()) {
-		const CSharpScript::EventSignal &event_signal = E->value();
+	for (const KeyValue<StringName, CSharpScript::EventSignal> &E : script->event_signals) {
+		const CSharpScript::EventSignal &event_signal = E.value;
 
 		StringName signal_name = event_signal.field->get_name();
 
@@ -2309,12 +2304,12 @@ void CSharpScript::_update_exports_values(Map<StringName, Variant> &values, List
 		base_cache->_update_exports_values(values, propnames);
 	}
 
-	for (Map<StringName, Variant>::Element *E = exported_members_defval_cache.front(); E; E = E->next()) {
-		values[E->key()] = E->get();
+	for (const KeyValue<StringName, Variant> &E : exported_members_defval_cache) {
+		values[E.key] = E.value;
 	}
 
-	for (const PropertyInfo &E : exported_members_cache) {
-		propnames.push_back(E);
+	for (const PropertyInfo &prop_info : exported_members_cache) {
+		propnames.push_back(prop_info);
 	}
 }
 
@@ -2545,8 +2540,8 @@ bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_upda
 			_update_exports_values(values, propnames);
 
 			if (changed) {
-				for (Set<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
-					E->get()->update(propnames, values);
+				for (PlaceHolderScriptInstance *&script_instance : placeholders) {
+					script_instance->update(propnames, values);
 				}
 			} else {
 				p_instance_to_update->update(propnames, values);
@@ -3378,11 +3373,11 @@ bool CSharpScript::has_script_signal(const StringName &p_signal) const {
 }
 
 void CSharpScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
-	for (const Map<StringName, Vector<SignalParameter>>::Element *E = _signals.front(); E; E = E->next()) {
+	for (const KeyValue<StringName, Vector<SignalParameter>> &E : _signals) {
 		MethodInfo mi;
-		mi.name = E->key();
+		mi.name = E.key;
 
-		const Vector<SignalParameter> &params = E->value();
+		const Vector<SignalParameter> &params = E.value;
 		for (int i = 0; i < params.size(); i++) {
 			const SignalParameter &param = params[i];
 
@@ -3397,11 +3392,11 @@ void CSharpScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 		r_signals->push_back(mi);
 	}
 
-	for (const Map<StringName, EventSignal>::Element *E = event_signals.front(); E; E = E->next()) {
+	for (const KeyValue<StringName, EventSignal> &E : event_signals) {
 		MethodInfo mi;
-		mi.name = E->key();
+		mi.name = E.key;
 
-		const EventSignal &event_signal = E->value();
+		const EventSignal &event_signal = E.value;
 		const Vector<SignalParameter> &params = event_signal.parameters;
 		for (int i = 0; i < params.size(); i++) {
 			const SignalParameter &param = params[i];
@@ -3441,8 +3436,8 @@ Ref<Script> CSharpScript::get_base_script() const {
 }
 
 void CSharpScript::get_script_property_list(List<PropertyInfo> *p_list) const {
-	for (Map<StringName, PropertyInfo>::Element *E = member_info.front(); E; E = E->next()) {
-		p_list->push_back(E->value());
+	for (const KeyValue<StringName, PropertyInfo> &E : member_info) {
+		p_list->push_back(E.value);
 	}
 }
 
@@ -3525,8 +3520,8 @@ CSharpScript::~CSharpScript() {
 void CSharpScript::get_members(Set<StringName> *p_members) {
 #if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
 	if (p_members) {
-		for (Set<StringName>::Element *E = exported_members_names.front(); E; E = E->next()) {
-			p_members->insert(E->get());
+		for (const StringName &member_name : exported_members_names) {
+			p_members->insert(member_name);
 		}
 	}
 #endif
