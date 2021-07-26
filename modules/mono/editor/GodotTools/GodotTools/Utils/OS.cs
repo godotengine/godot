@@ -74,10 +74,10 @@ namespace GodotTools.Utils
         }
 
         private static readonly IEnumerable<string> LinuxBSDPlatforms =
-            new[] {Names.Linux, Names.FreeBSD, Names.NetBSD, Names.BSD};
+            new[] { Names.Linux, Names.FreeBSD, Names.NetBSD, Names.BSD };
 
         private static readonly IEnumerable<string> UnixLikePlatforms =
-            new[] {Names.MacOS, Names.Server, Names.Haiku, Names.Android, Names.iOS}
+            new[] { Names.MacOS, Names.Server, Names.Haiku, Names.Android, Names.iOS }
                 .Concat(LinuxBSDPlatforms).ToArray();
 
         private static readonly Lazy<bool> _isWindows = new Lazy<bool>(() => IsOS(Names.Windows));
@@ -111,7 +111,7 @@ namespace GodotTools.Utils
 
         private static string PathWhichWindows([NotNull] string name)
         {
-            string[] windowsExts = Environment.GetEnvironmentVariable("PATHEXT")?.Split(PathSep) ?? new string[] { };
+            string[] windowsExts = Environment.GetEnvironmentVariable("PATHEXT")?.Split(PathSep) ?? Array.Empty<string>();
             string[] pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(PathSep);
 
             var searchDirs = new List<string>();
@@ -128,10 +128,10 @@ namespace GodotTools.Utils
                 return searchDirs.Select(dir => Path.Combine(dir, name)).FirstOrDefault(File.Exists);
 
             return (from dir in searchDirs
-                select Path.Combine(dir, name)
+                    select Path.Combine(dir, name)
                 into path
-                from ext in windowsExts
-                select path + ext).FirstOrDefault(File.Exists);
+                    from ext in windowsExts
+                    select path + ext).FirstOrDefault(File.Exists);
         }
 
         private static string PathWhichUnix([NotNull] string name)
@@ -196,7 +196,7 @@ namespace GodotTools.Utils
 
             startInfo.UseShellExecute = false;
 
-            using (var process = new Process {StartInfo = startInfo})
+            using (var process = new Process { StartInfo = startInfo })
             {
                 process.Start();
                 process.WaitForExit();

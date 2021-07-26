@@ -76,9 +76,9 @@ namespace GodotTools.Export
             GlobalDef("mono/export/aot/use_interpreter", true);
 
             // --aot or --aot=opt1,opt2 (use 'mono --aot=help AuxAssembly.dll' to list AOT options)
-            GlobalDef("mono/export/aot/extra_aot_options", new string[] { });
+            GlobalDef("mono/export/aot/extra_aot_options", Array.Empty<string>());
             // --optimize/-O=opt1,opt2 (use 'mono --list-opt'' to list optimize options)
-            GlobalDef("mono/export/aot/extra_optimizer_options", new string[] { });
+            GlobalDef("mono/export/aot/extra_optimizer_options", Array.Empty<string>());
 
             GlobalDef("mono/export/aot/android_toolchain_path", "");
         }
@@ -188,7 +188,7 @@ namespace GodotTools.Export
                 // However, at least in the case of 'WebAssembly.Net.Http' for some reason the BCL assemblies
                 // reference a different version even though the assembly is the same, for some weird reason.
 
-                var wasmFrameworkAssemblies = new[] {"WebAssembly.Bindings", "WebAssembly.Net.WebSockets"};
+                var wasmFrameworkAssemblies = new[] { "WebAssembly.Bindings", "WebAssembly.Net.WebSockets" };
 
                 foreach (string thisWasmFrameworkAssemblyName in wasmFrameworkAssemblies)
                 {
@@ -298,8 +298,8 @@ namespace GodotTools.Export
                     LLVMOutputPath = "",
                     FullAot = platform == OS.Platforms.iOS || (bool)(ProjectSettings.GetSetting("mono/export/aot/full_aot") ?? false),
                     UseInterpreter = (bool)ProjectSettings.GetSetting("mono/export/aot/use_interpreter"),
-                    ExtraAotOptions = (string[])ProjectSettings.GetSetting("mono/export/aot/extra_aot_options") ?? new string[] { },
-                    ExtraOptimizerOptions = (string[])ProjectSettings.GetSetting("mono/export/aot/extra_optimizer_options") ?? new string[] { },
+                    ExtraAotOptions = (string[])ProjectSettings.GetSetting("mono/export/aot/extra_aot_options") ?? Array.Empty<string>(),
+                    ExtraOptimizerOptions = (string[])ProjectSettings.GetSetting("mono/export/aot/extra_optimizer_options") ?? Array.Empty<string>(),
                     ToolchainPath = aotToolchainPath
                 };
 
@@ -381,7 +381,7 @@ namespace GodotTools.Export
         private static bool PlatformHasTemplateDir(string platform)
         {
             // OSX export templates are contained in a zip, so we place our custom template inside it and let Godot do the rest.
-            return !new[] {OS.Platforms.MacOS, OS.Platforms.Android, OS.Platforms.iOS, OS.Platforms.HTML5}.Contains(platform);
+            return !new[] { OS.Platforms.MacOS, OS.Platforms.Android, OS.Platforms.iOS, OS.Platforms.HTML5 }.Contains(platform);
         }
 
         private static bool DeterminePlatformFromFeatures(IEnumerable<string> features, out string platform)
@@ -430,7 +430,7 @@ namespace GodotTools.Export
         /// </summary>
         private static bool PlatformRequiresCustomBcl(string platform)
         {
-            if (new[] {OS.Platforms.Android, OS.Platforms.iOS, OS.Platforms.HTML5}.Contains(platform))
+            if (new[] { OS.Platforms.Android, OS.Platforms.iOS, OS.Platforms.HTML5 }.Contains(platform))
                 return true;
 
             // The 'net_4_x' BCL is not compatible between Windows and the other platforms.

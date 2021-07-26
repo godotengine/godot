@@ -1737,7 +1737,12 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 				cs_in_statements += " : ";
 			}
 
-			String def_arg = sformat(iarg.default_argument, arg_type->cs_type);
+			String cs_type = arg_type->cs_type;
+			if (cs_type.ends_with("[]")) {
+				cs_type = cs_type.substr(0, cs_type.length() - 2);
+			}
+
+			String def_arg = sformat(iarg.default_argument, cs_type);
 
 			cs_in_statements += def_arg;
 			cs_in_statements += ";\n" INDENT3;
@@ -1746,8 +1751,10 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 			// Apparently the name attribute must not include the @
 			String param_tag_name = iarg.name.begins_with("@") ? iarg.name.substr(1, iarg.name.length()) : iarg.name;
+			// Escape < and > in the attribute default value
+			String param_def_arg = def_arg.replacen("<", "&lt;").replacen(">", "&gt;");
 
-			default_args_doc.append(MEMBER_BEGIN "/// <param name=\"" + param_tag_name + "\">If the parameter is null, then the default value is " + def_arg + "</param>");
+			default_args_doc.append(MEMBER_BEGIN "/// <param name=\"" + param_tag_name + "\">If the parameter is null, then the default value is " + param_def_arg + "</param>");
 		} else {
 			icall_params += arg_type->cs_in.is_empty() ? iarg.name : sformat(arg_type->cs_in, iarg.name);
 		}
@@ -3072,6 +3079,9 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			r_iarg.default_argument = "null";
 			break;
 		case Variant::ARRAY:
+			r_iarg.default_argument = "new %s { }";
+			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_REF;
+			break;
 		case Variant::PACKED_BYTE_ARRAY:
 		case Variant::PACKED_INT32_ARRAY:
 		case Variant::PACKED_INT64_ARRAY:
@@ -3081,7 +3091,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 		case Variant::PACKED_VECTOR2_ARRAY:
 		case Variant::PACKED_VECTOR3_ARRAY:
 		case Variant::PACKED_COLOR_ARRAY:
-			r_iarg.default_argument = "new %s {}";
+			r_iarg.default_argument = "Array.Empty<%s>()";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_REF;
 			break;
 		case Variant::TRANSFORM2D: {

@@ -47,7 +47,7 @@ namespace GodotTools.Ides.Rider
                 GD.PushWarning(e.Message);
             }
 
-            return new RiderInfo[0];
+            return Array.Empty<RiderInfo>();
         }
 
         private static RiderInfo[] CollectAllRiderPathsLinux()
@@ -249,7 +249,7 @@ namespace GodotTools.Ides.Rider
           bool isMac)
         {
             if (!Directory.Exists(toolboxRiderRootPath))
-                return new string[0];
+                return Array.Empty<string>();
 
             var channelDirs = Directory.GetDirectories(toolboxRiderRootPath);
             var paths = channelDirs.SelectMany(channelDir =>
@@ -295,7 +295,7 @@ namespace GodotTools.Ides.Rider
                       Logger.Warn($"Failed to get RiderPath from {channelDir}", e);
                   }
 
-                  return new string[0];
+                  return Array.Empty<string>();
               })
               .Where(c => !string.IsNullOrEmpty(c))
               .ToArray();
@@ -306,7 +306,7 @@ namespace GodotTools.Ides.Rider
         {
             var folder = new DirectoryInfo(Path.Combine(buildDir, dirName));
             if (!folder.Exists)
-                return new string[0];
+                return Array.Empty<string>();
 
             if (!isMac)
                 return new[] { Path.Combine(folder.FullName, searchPattern) }.Where(File.Exists).ToArray();
