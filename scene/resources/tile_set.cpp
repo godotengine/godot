@@ -661,7 +661,8 @@ Vector2 TileSet::atlastile_get_subtile_by_priority(int p_id, const Node *p_tilem
 		}
 	}
 
-	Vector2 coord = tile_get_region(p_id).size / autotile_get_size(p_id);
+	const Vector2 spacing(autotile_get_spacing(p_id), autotile_get_spacing(p_id));
+	const Vector2 coord = tile_get_region(p_id).size / (autotile_get_size(p_id) + spacing);
 
 	List<Vector2> coords;
 	for (int x = 0; x < coord.x; x++) {
