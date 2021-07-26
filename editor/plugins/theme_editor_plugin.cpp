@@ -2906,7 +2906,7 @@ void ThemeTypeEditor::_update_stylebox_from_leading() {
 			continue;
 		}
 
-		for (Ref<StyleBox> F : styleboxes) {
+		for (const Ref<StyleBox> &F : styleboxes) {
 			Ref<StyleBox> sb = F;
 			sb->set(E.name, value);
 		}

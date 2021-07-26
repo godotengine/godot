@@ -438,7 +438,7 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, in
 
 	Node3D *scene = memnew(Node3D);
 
-	for (Ref<Mesh> m : meshes) {
+	for (const Ref<Mesh> &m : meshes) {
 		Ref<EditorSceneImporterMesh> mesh;
 		mesh.instantiate();
 		for (int i = 0; i < m->get_surface_count(); i++) {

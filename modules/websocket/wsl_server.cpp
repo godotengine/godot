@@ -196,7 +196,7 @@ void WSLServer::poll() {
 	remove_ids.clear();
 
 	List<Ref<PendingPeer>> remove_peers;
-	for (Ref<PendingPeer> E : _pending) {
+	for (const Ref<PendingPeer> &E : _pending) {
 		String resource_name;
 		Ref<PendingPeer> ppeer = E;
 		Error err = ppeer->do_handshake(_protocols, handshake_timeout, resource_name);
@@ -224,7 +224,7 @@ void WSLServer::poll() {
 		remove_peers.push_back(ppeer);
 		_on_connect(id, ppeer->protocol, resource_name);
 	}
-	for (Ref<PendingPeer> E : remove_peers) {
+	for (const Ref<PendingPeer> &E : remove_peers) {
 		_pending.erase(E);
 	}
 	remove_peers.clear();

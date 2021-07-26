@@ -1648,7 +1648,7 @@ void EditorInspector::update_tree() {
 
 	Color sscolor = get_theme_color(SNAME("prop_subsection"), SNAME("Editor"));
 
-	for (Ref<EditorInspectorPlugin> ped : valid_plugins) {
+	for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
 		ped->parse_begin(object);
 		_parse_added_editors(main_vbox, ped);
 	}
@@ -1745,7 +1745,7 @@ void EditorInspector::update_tree() {
 				category->set_tooltip(p.name + "::" + (class_descr_cache[type2] == "" ? "" : class_descr_cache[type2]));
 			}
 
-			for (Ref<EditorInspectorPlugin> ped : valid_plugins) {
+			for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
 				ped->parse_category(object, p.name);
 				_parse_added_editors(main_vbox, ped);
 			}
@@ -1946,7 +1946,7 @@ void EditorInspector::update_tree() {
 			doc_hint = descr;
 		}
 
-		for (Ref<EditorInspectorPlugin> ped : valid_plugins) {
+		for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
 			bool exclusive = ped->parse_property(object, p.type, p.name, p.hint, p.hint_string, p.usage, wide_editors);
 
 			List<EditorInspectorPlugin::AddedEditor> editors = ped->added_editors; //make a copy, since plugins may be used again in a sub-inspector
@@ -2028,7 +2028,7 @@ void EditorInspector::update_tree() {
 		}
 	}
 
-	for (Ref<EditorInspectorPlugin> ped : valid_plugins) {
+	for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
 		ped->parse_end();
 		_parse_added_editors(main_vbox, ped);
 	}
@@ -2595,7 +2595,7 @@ void EditorInspector::_update_script_class_properties(const Object &p_object, Li
 	}
 
 	Set<StringName> added;
-	for (Ref<Script> s : classes) {
+	for (const Ref<Script> &s : classes) {
 		String path = s->get_path();
 		String name = EditorNode::get_editor_data().script_class_get_name(path);
 		if (name.is_empty()) {

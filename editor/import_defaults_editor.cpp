@@ -106,7 +106,7 @@ void ImportDefaultsEditor::_update_importer() {
 	List<Ref<ResourceImporter>> importer_list;
 	ResourceFormatImporter::get_singleton()->get_importers(&importer_list);
 	Ref<ResourceImporter> importer;
-	for (Ref<ResourceImporter> E : importer_list) {
+	for (const Ref<ResourceImporter> &E : importer_list) {
 		if (E->get_visible_name() == importers->get_item_text(importers->get_selected())) {
 			importer = E;
 			break;
@@ -166,7 +166,7 @@ void ImportDefaultsEditor::clear() {
 	List<Ref<ResourceImporter>> importer_list;
 	ResourceFormatImporter::get_singleton()->get_importers(&importer_list);
 	Vector<String> names;
-	for (Ref<ResourceImporter> E : importer_list) {
+	for (const Ref<ResourceImporter> &E : importer_list) {
 		String vn = E->get_visible_name();
 		names.push_back(vn);
 	}

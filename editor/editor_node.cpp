@@ -797,8 +797,8 @@ void EditorNode::_resources_changed(const Vector<String> &p_resources) {
 	}
 
 	if (changed.size()) {
-		for (Ref<Resource> E : changed) {
-			E->reload_from_file();
+		for (Ref<Resource> &res : changed) {
+			res->reload_from_file();
 		}
 	}
 }
@@ -1551,7 +1551,7 @@ int EditorNode::_save_external_resources() {
 	int saved = 0;
 	List<Ref<Resource>> cached;
 	ResourceCache::get_cached_resources(&cached);
-	for (Ref<Resource> res : cached) {
+	for (const Ref<Resource> &res : cached) {
 		if (!res->get_path().is_resource_file()) {
 			continue;
 		}
@@ -1641,7 +1641,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 	editor_data.save_editor_external_data();
 
-	for (Ref<AnimatedValuesBackup> E : anim_backups) {
+	for (Ref<AnimatedValuesBackup> &E : anim_backups) {
 		E->restore();
 	}
 
@@ -5333,27 +5333,6 @@ void EditorNode::_file_access_close_error_notify(const String &p_str) {
 }
 
 void EditorNode::reload_scene(const String &p_path) {
-	/*
-	 * No longer necessary since scenes now reset and reload their internal resource if needed.
-	//first of all, reload internal textures, materials, meshes, etc. as they might have changed on disk
-
-	List<Ref<Resource>> cached;
-	ResourceCache::get_cached_resources(&cached);
-	List<Ref<Resource>> to_clear; //clear internal resources from previous scene from being used
-	for (Ref<Resource> E : cached) {
-		if (E->get_path().begins_with(p_path + "::")) { //subresources of existing scene
-			to_clear.push_back(E);
-		}
-	}
-
-	//so reload reloads everything, clear subresources of previous scene
-	while (to_clear.front()) {
-		to_clear.front()->get()->set_path("");
-		to_clear.pop_front();
-	}
-
-	*/
-
 	int scene_idx = -1;
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 		if (editor_data.get_scene_path(i) == p_path) {

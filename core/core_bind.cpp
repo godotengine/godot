@@ -355,20 +355,20 @@ void _OS::print_all_textures_by_size() {
 		List<Ref<Resource>> rsrc;
 		ResourceCache::get_cached_resources(&rsrc);
 
-		for (Ref<Resource> E : rsrc) {
-			if (!E->is_class("ImageTexture")) {
+		for (Ref<Resource> &res : rsrc) {
+			if (!res->is_class("ImageTexture")) {
 				continue;
 			}
 
-			Size2 size = E->call("get_size");
-			int fmt = E->call("get_format");
+			Size2 size = res->call("get_size");
+			int fmt = res->call("get_format");
 
 			_OSCoreBindImg img;
 			img.size = size;
 			img.fmt = fmt;
-			img.path = E->get_path();
+			img.path = res->get_path();
 			img.vram = Image::get_image_data_size(img.size.width, img.size.height, Image::Format(img.fmt));
-			img.id = E->get_instance_id();
+			img.id = res->get_instance_id();
 			total += img.vram;
 			imgs.push_back(img);
 		}
@@ -387,7 +387,7 @@ void _OS::print_resources_by_type(const Vector<String> &p_types) {
 	List<Ref<Resource>> resources;
 	ResourceCache::get_cached_resources(&resources);
 
-	for (Ref<Resource> r : resources) {
+	for (const Ref<Resource> &r : resources) {
 		bool found = false;
 
 		for (int i = 0; i < p_types.size(); i++) {

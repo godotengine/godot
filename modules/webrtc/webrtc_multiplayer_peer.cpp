@@ -154,7 +154,7 @@ void WebRTCMultiplayerPeer::_find_next_peer() {
 	}
 	// After last.
 	while (E) {
-		for (Ref<WebRTCDataChannel> F : E->get()->channels) {
+		for (const Ref<WebRTCDataChannel> &F : E->get()->channels) {
 			if (F->get_available_packet_count()) {
 				next_packet_peer = E->key();
 				return;
@@ -165,7 +165,7 @@ void WebRTCMultiplayerPeer::_find_next_peer() {
 	E = peer_map.front();
 	// Before last
 	while (E) {
-		for (Ref<WebRTCDataChannel> F : E->get()->channels) {
+		for (const Ref<WebRTCDataChannel> &F : E->get()->channels) {
 			if (F->get_available_packet_count()) {
 				next_packet_peer = E->key();
 				return;
@@ -213,7 +213,7 @@ int WebRTCMultiplayerPeer::get_unique_id() const {
 
 void WebRTCMultiplayerPeer::_peer_to_dict(Ref<ConnectedPeer> p_connected_peer, Dictionary &r_dict) {
 	Array channels;
-	for (Ref<WebRTCDataChannel> F : p_connected_peer->channels) {
+	for (Ref<WebRTCDataChannel> &F : p_connected_peer->channels) {
 		channels.push_back(F);
 	}
 	r_dict["connection"] = p_connected_peer->connection;
@@ -297,7 +297,7 @@ Error WebRTCMultiplayerPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_
 		_find_next_peer();
 		ERR_FAIL_V(ERR_UNAVAILABLE);
 	}
-	for (Ref<WebRTCDataChannel> E : peer_map[next_packet_peer]->channels) {
+	for (Ref<WebRTCDataChannel> &E : peer_map[next_packet_peer]->channels) {
 		if (E->get_available_packet_count()) {
 			Error err = E->get_packet(r_buffer, r_buffer_size);
 			_find_next_peer();
@@ -357,7 +357,7 @@ int WebRTCMultiplayerPeer::get_available_packet_count() const {
 	}
 	int size = 0;
 	for (Map<int, Ref<ConnectedPeer>>::Element *E = peer_map.front(); E; E = E->next()) {
-		for (Ref<WebRTCDataChannel> F : E->get()->channels) {
+		for (const Ref<WebRTCDataChannel> &F : E->get()->channels) {
 			size += F->get_available_packet_count();
 		}
 	}

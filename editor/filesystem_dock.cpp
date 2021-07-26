@@ -1237,7 +1237,7 @@ void FileSystemDock::_update_resource_paths_after_move(const Map<String, String>
 	List<Ref<Resource>> cached;
 	ResourceCache::get_cached_resources(&cached);
 
-	for (Ref<Resource> r : cached) {
+	for (Ref<Resource> &r : cached) {
 		String base_path = r->get_path();
 		String extra_path;
 		int sep_pos = r->get_path().find("::");

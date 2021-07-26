@@ -571,8 +571,8 @@ void SceneTree::finalize() {
 	}
 
 	// cleanup timers
-	for (Ref<SceneTreeTimer> E : timers) {
-		E->release_connections();
+	for (Ref<SceneTreeTimer> &timer : timers) {
+		timer->release_connections();
 	}
 	timers.clear();
 }
@@ -1146,8 +1146,8 @@ Array SceneTree::get_processed_tweens() {
 	ret.resize(tweens.size());
 
 	int i = 0;
-	for (Ref<Tween> E : tweens) {
-		ret[i] = E;
+	for (const Ref<Tween> &tween : tweens) {
+		ret[i] = tween;
 		i++;
 	}
 
