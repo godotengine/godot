@@ -235,7 +235,7 @@ public:
 		Transform3D xform = view_xform * p_transform;
 
 		float radius = xform.basis.get_uniform_scale();
-		if (radius > 0.98 && radius < 1.02) {
+		if (radius < 0.98 || radius > 1.02) {
 			xform.basis.orthonormalize();
 		}
 
