@@ -1187,9 +1187,6 @@ void CharacterBody2D::move_and_slide() {
 }
 
 void CharacterBody2D::_set_collision_direction(const PhysicsServer2D::MotionResult &p_result) {
-	on_floor = false;
-	on_ceiling = false;
-	on_wall = false;
 	if (up_direction == Vector2()) {
 		//all is a wall
 		on_wall = true;
