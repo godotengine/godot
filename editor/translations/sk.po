@@ -5183,9 +5183,10 @@ msgstr ""
 "na uloženie so BakedLightmap vlastností."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
-"Light' flag is on."
+"No meshes to bake. Make sure they contain an UV2 channel and that the 'Use "
+"In Baked Light' and 'Generate Lightmap' flags are on."
 msgstr ""
 "Žiadne mesh-e na bake. Uistite sa že obsahujú UV2 channel a je na ňom 'Bake "
 "Light' vlajka."

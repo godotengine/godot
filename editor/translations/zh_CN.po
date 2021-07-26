@@ -83,7 +83,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2021-07-13 06:13+0000\n"
+"PO-Revision-Date: 2021-07-23 12:59+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -1172,7 +1172,7 @@ msgstr "改变字典值"
 
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
-msgstr "Godot 社区感谢你！"
+msgstr "Godot 社区感谢大家！"
 
 #: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
 msgid "Click to copy."
@@ -5171,9 +5171,10 @@ msgstr ""
 "BakedLightmap 属性。"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
-"Light' flag is on."
+"No meshes to bake. Make sure they contain an UV2 channel and that the 'Use "
+"In Baked Light' and 'Generate Lightmap' flags are on."
 msgstr "没有可烘焙的网格。请确保网格包含 UV2 通道并且勾选 “Bake Light” 选项。"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
@@ -7338,7 +7339,7 @@ msgstr "顶视图。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View."
-msgstr "仰视图。"
+msgstr "底视图。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom"
@@ -7547,11 +7548,11 @@ msgstr "使用吸附"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
-msgstr "仰视图"
+msgstr "底视图"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top View"
-msgstr "俯视图"
+msgstr "顶视图"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rear View"
@@ -7559,7 +7560,7 @@ msgstr "后视图"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Front View"
-msgstr "正视图"
+msgstr "前视图"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Left View"
@@ -8240,7 +8241,7 @@ msgstr "新建自动图块"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "New Atlas"
-msgstr "新建合集"
+msgstr "新建图集"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Next Coordinate"

@@ -5277,9 +5277,10 @@ msgstr ""
 "camí des de les propietats de BakedLightmap."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
-"Light' flag is on."
+"No meshes to bake. Make sure they contain an UV2 channel and that the 'Use "
+"In Baked Light' and 'Generate Lightmap' flags are on."
 msgstr ""
 "Cap Malla per precalcular. Comproveu que disposin d'un canal d'UV2 i que "
 "l'indicador 'Bake Light' és activat."

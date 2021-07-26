@@ -72,7 +72,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-07-05 21:41+0000\n"
+"PO-Revision-Date: 2021-07-16 05:47+0000\n"
 "Last-Translator: Erick Figueroa <querecuto@hotmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
@@ -81,7 +81,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.8-dev\n"
+"X-Generator: Weblate 4.7.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1205,7 +1205,7 @@ msgstr "Desarrollador Principal"
 #. you do not have to keep it in your translation.
 #: editor/editor_about.cpp
 msgid "Project Manager "
-msgstr "Gestor del Proyecto "
+msgstr "Administrador de Proyectos "
 
 #: editor/editor_about.cpp
 msgid "Developers"
@@ -3078,7 +3078,7 @@ msgstr "Apoyar el desarrollo de Godot"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
-msgstr "Reproducir el proyecto."
+msgstr "Ejecutar el proyecto."
 
 #: editor/editor_node.cpp
 msgid "Play"
@@ -5293,9 +5293,10 @@ msgstr ""
 "Guarda tu escena e inténtalo de nuevo."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
-"Light' flag is on."
+"No meshes to bake. Make sure they contain an UV2 channel and that the 'Use "
+"In Baked Light' and 'Generate Lightmap' flags are on."
 msgstr ""
 "No hay mallas para hacer bake. Asegúrate que contengan un canal UV2 y que la "
 "opción de 'Bake Light' está activada."
@@ -10154,8 +10155,8 @@ msgid ""
 "The interface will update after restarting the editor or project manager."
 msgstr ""
 "Idioma cambiado.\n"
-"La interfaz se actualizará después de reiniciar el editor o el gestor de "
-"proyectos."
+"La interfaz se actualizará después de reiniciar el editor o el administrador "
+"de proyectos."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -11737,7 +11738,7 @@ msgstr "Eliminar Rotación del Cursor"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Paste Selects"
-msgstr "Pegar Selecciona"
+msgstr "Pegar Seleccionados"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"

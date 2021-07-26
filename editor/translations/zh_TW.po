@@ -5118,9 +5118,10 @@ msgstr ""
 "請保存場景並重試。"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
-"Light' flag is on."
+"No meshes to bake. Make sure they contain an UV2 channel and that the 'Use "
+"In Baked Light' and 'Generate Lightmap' flags are on."
 msgstr ""
 "無可烘焙之網格。請確保這些網格包含 UV2 通道並已開啟「Bake Light」旗標。"
 
