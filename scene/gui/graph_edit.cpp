@@ -600,6 +600,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 									to = get_node(String(connecting_from)); //maybe it was erased
 									if (Object::cast_to<GraphNode>(to)) {
 										connecting = true;
+										emit_signal(SNAME("connection_drag_begun"), connecting_from, connecting_index, false);
 									}
 									return;
 								}
@@ -616,6 +617,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 					connecting_target = false;
 					connecting_to = pos;
 					just_disconnected = false;
+					emit_signal(SNAME("connection_drag_begun"), connecting_from, connecting_index, true);
 					return;
 				}
 			}
@@ -642,6 +644,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 									fr = get_node(String(connecting_from)); //maybe it was erased
 									if (Object::cast_to<GraphNode>(fr)) {
 										connecting = true;
+										emit_signal(SNAME("connection_drag_begun"), connecting_from, connecting_index, true);
 									}
 									return;
 								}
@@ -658,7 +661,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 					connecting_target = false;
 					connecting_to = pos;
 					just_disconnected = false;
-
+					emit_signal(SNAME("connection_drag_begun"), connecting_from, connecting_index, false);
 					return;
 				}
 			}
@@ -740,11 +743,9 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 			}
 		}
 
-		connecting = false;
-		top_layer->update();
-		minimap->update();
-		update();
-		connections_layer->update();
+		if (connecting) {
+			force_connection_drag_end();
+		}
 	}
 }
 
@@ -1162,9 +1163,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 				minimap->update();
 			} else {
 				if (connecting) {
-					connecting = false;
-					top_layer->update();
-					minimap->update();
+					force_connection_drag_end();
 				} else {
 					emit_signal(SNAME("popup_request"), get_screen_position() + b->get_position());
 				}
@@ -1392,6 +1391,17 @@ void GraphEdit::clear_connections() {
 	minimap->update();
 	update();
 	connections_layer->update();
+}
+
+void GraphEdit::force_connection_drag_end() {
+	ERR_FAIL_COND_MSG(!connecting, "Drag end requested without active drag!");
+	connecting = false;
+	connecting_valid = false;
+	top_layer->update();
+	minimap->update();
+	update();
+	connections_layer->update();
+	emit_signal(SNAME("connection_drag_ended"));
 }
 
 void GraphEdit::set_zoom(float p_zoom) {
@@ -2165,6 +2175,7 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_connection_activity", "from", "from_port", "to", "to_port", "amount"), &GraphEdit::set_connection_activity);
 	ClassDB::bind_method(D_METHOD("get_connection_list"), &GraphEdit::_get_connection_list);
 	ClassDB::bind_method(D_METHOD("clear_connections"), &GraphEdit::clear_connections);
+	ClassDB::bind_method(D_METHOD("force_connection_drag_end"), &GraphEdit::force_connection_drag_end);
 	ClassDB::bind_method(D_METHOD("get_scroll_ofs"), &GraphEdit::get_scroll_ofs);
 	ClassDB::bind_method(D_METHOD("set_scroll_ofs", "ofs"), &GraphEdit::set_scroll_ofs);
 
@@ -2262,6 +2273,8 @@ void GraphEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("begin_node_move"));
 	ADD_SIGNAL(MethodInfo("end_node_move"));
 	ADD_SIGNAL(MethodInfo("scroll_offset_changed", PropertyInfo(Variant::VECTOR2, "ofs")));
+	ADD_SIGNAL(MethodInfo("connection_drag_begun", PropertyInfo(Variant::STRING, "from"), PropertyInfo(Variant::STRING, "slot"), PropertyInfo(Variant::BOOL, "is_output")));
+	ADD_SIGNAL(MethodInfo("connection_drag_ended"));
 }
 
 GraphEdit::GraphEdit() {
