@@ -5289,9 +5289,10 @@ msgstr ""
 "Ein Speichern der Szene sollte dieses Problem beheben."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
-"Light' flag is on."
+"No meshes to bake. Make sure they contain an UV2 channel and that the 'Use "
+"In Baked Light' and 'Generate Lightmap' flags are on."
 msgstr ""
 "Keine Meshes zum vorrendern vorhanden. Meshes, die vorgerendert werden "
 "sollen, müssen einen UV2-Kanal beinhalten und die ‚Bake Light‘-Option "

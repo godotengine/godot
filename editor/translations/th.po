@@ -5125,9 +5125,10 @@ msgstr ""
 "ลองบันทึกฉากของคุณแล้วลองอีกครั้ง"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
-"Light' flag is on."
+"No meshes to bake. Make sure they contain an UV2 channel and that the 'Use "
+"In Baked Light' and 'Generate Lightmap' flags are on."
 msgstr ""
 "ไม่มีพื้นผิวให้สร้าง lightmap กรุณาตรวจสอบว่าพื้นผิวมี UV2 และได้เปิดใช้งาน 'Bake Light'"
 

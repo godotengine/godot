@@ -5195,9 +5195,10 @@ msgstr ""
 "Tallenna skenesi ja yritä uudelleen."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
-"Light' flag is on."
+"No meshes to bake. Make sure they contain an UV2 channel and that the 'Use "
+"In Baked Light' and 'Generate Lightmap' flags are on."
 msgstr ""
 "Ei meshejä kehitettävänä. Varmista, että ne sisältävät UV2-kanavan, ja että "
 "'Bake Light' asetus on päällä."

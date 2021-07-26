@@ -30,8 +30,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-06-25 02:57+0000\n"
-"Last-Translator: Vojtěch Šamla <auzkok@seznam.cz>\n"
+"PO-Revision-Date: 2021-07-26 14:18+0000\n"
+"Last-Translator: Zbyněk <zbynek.fiala@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -39,7 +39,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 4.7.1-dev\n"
+"X-Generator: Weblate 4.7.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -5139,7 +5139,7 @@ msgstr "Poslední"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "All"
-msgstr "Všechny"
+msgstr "všichni"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No results for \"%s\"."
@@ -5194,9 +5194,10 @@ msgstr ""
 "Uložte scénu a zkuste to znovu."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
-"Light' flag is on."
+"No meshes to bake. Make sure they contain an UV2 channel and that the 'Use "
+"In Baked Light' and 'Generate Lightmap' flags are on."
 msgstr ""
 "Žádné sítě k zapečení. Ujistěte se, že obsahují kanál UV2 a že je nastaven "
 "příznak \"Zapéct světlo\"."
@@ -10546,7 +10547,7 @@ msgstr "Hodnota, o kterou se počítadlo zvýší za každý uzel"
 
 #: editor/rename_dialog.cpp
 msgid "Padding"
-msgstr "Odsazení"
+msgstr "Zarovnávání"
 
 #: editor/rename_dialog.cpp
 msgid ""
