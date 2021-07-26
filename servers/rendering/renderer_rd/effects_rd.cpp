@@ -1351,8 +1351,9 @@ void EffectsRD::generate_ssao(RID p_depth_buffer, RID p_normal_buffer, RID p_dep
 			if (p_settings.quality > RS::ENV_SSAO_QUALITY_VERY_LOW) {
 				if (pass < blur_passes - 2) {
 					blur_pipeline = SSAO_BLUR_PASS_WIDE;
+				} else {
+					blur_pipeline = SSAO_BLUR_PASS_SMART;
 				}
-				blur_pipeline = SSAO_BLUR_PASS_SMART;
 			}
 
 			for (int i = 0; i < 4; i++) {
