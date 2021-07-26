@@ -1210,9 +1210,6 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 		case DRAG_TYPE_BUCKET: {
 			undo_redo->create_action(TTR("Paint tiles"));
 			for (Map<Vector2i, TileMapCell>::Element *E = drag_modified.front(); E; E = E->next()) {
-				if (!erase_button->is_pressed() && E->get().source_id == TileSet::INVALID_SOURCE) {
-					continue;
-				}
 				undo_redo->add_do_method(tile_map, "set_cell", E->key(), tile_map->get_cell_source_id(E->key()), tile_map->get_cell_atlas_coords(E->key()), tile_map->get_cell_alternative_tile(E->key()));
 				undo_redo->add_undo_method(tile_map, "set_cell", E->key(), E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
 			}
