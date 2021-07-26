@@ -4796,10 +4796,12 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				String member_struct_name;
 
 				if (expr->get_array_size() > 0) {
-					uint32_t index_constant = static_cast<ConstantNode *>(index)->values[0].uint;
-					if (index_constant >= (uint32_t)expr->get_array_size()) {
-						_set_error(vformat("Index [%s] out of range [%s..%s]", index_constant, 0, expr->get_array_size() - 1));
-						return nullptr;
+					if (index->type == Node::TYPE_CONSTANT) {
+						uint32_t index_constant = static_cast<ConstantNode *>(index)->values[0].uint;
+						if (index_constant >= (uint32_t)expr->get_array_size()) {
+							_set_error(vformat("Index [%s] out of range [%s..%s]", index_constant, 0, expr->get_array_size() - 1));
+							return nullptr;
+						}
 					}
 					member_type = expr->get_datatype();
 					if (member_type == TYPE_STRUCT) {
