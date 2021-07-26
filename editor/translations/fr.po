@@ -85,8 +85,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-07-01 14:33+0000\n"
-"Last-Translator: Clément Topy <topy72.mine@gmail.com>\n"
+"PO-Revision-Date: 2021-07-16 05:47+0000\n"
+"Last-Translator: Pierre Caye <pierrecaye@laposte.net>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -94,7 +94,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.8-dev\n"
+"X-Generator: Weblate 4.7.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -5258,7 +5258,7 @@ msgstr "Dernier"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "All"
-msgstr "Tout"
+msgstr "All"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No results for \"%s\"."
@@ -5314,11 +5314,12 @@ msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
-"No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
-"Light' flag is on."
+"No meshes to bake. Make sure they contain an UV2 channel and that the 'Use "
+"In Baked Light' and 'Generate Lightmap' flags are on."
 msgstr ""
-"Aucun maillage à transférer. Assurez-vous qu'ils contiennent un canal UV2 et "
-"que l'indicateur « Bake Light » est activé."
+"Aucun maillage à précalculer. Assurez-vous qu'ils contiennent un canal UV2 "
+"et que les propriétés « Use In Bake Light » et « Generate Lightmap » soient "
+"activées."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed creating lightmap images, make sure path is writable."

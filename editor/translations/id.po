@@ -5210,9 +5210,10 @@ msgstr ""
 "Simpan skena Anda dan coba lagi."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
-"Light' flag is on."
+"No meshes to bake. Make sure they contain an UV2 channel and that the 'Use "
+"In Baked Light' and 'Generate Lightmap' flags are on."
 msgstr ""
 "Tidak ada mesh-mesh untuk di bake. Pastikan mereka punya kanal UV2 dan 'Bake "
 "Cahaya' menyala."

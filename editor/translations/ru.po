@@ -97,12 +97,13 @@
 # Bualma Show <appleaidar6@gmail.com>, 2021.
 # enderlorde <madel.laboratories@gmail.com>, 2021.
 # Олег Довгер <oleg.a.dovger@gmail.com>, 2021.
+# Anna Malinovskaia <tacitcoast@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-07-13 06:13+0000\n"
-"Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
+"PO-Revision-Date: 2021-07-19 09:34+0000\n"
+"Last-Translator: Anna Malinovskaia <tacitcoast@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -5286,9 +5287,10 @@ msgstr ""
 "Сохраните сцену и попробуйте ещё раз."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
-"Light' flag is on."
+"No meshes to bake. Make sure they contain an UV2 channel and that the 'Use "
+"In Baked Light' and 'Generate Lightmap' flags are on."
 msgstr ""
 "Нет полисеток для запекания. Убедитесь, что они содержат канал UV2 и что "
 "флаг «Запекание света» включён."

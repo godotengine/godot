@@ -46,12 +46,13 @@
 # T-rex08 <ipadtriceratops@gmail.com>, 2021.
 # Dwarffish <hoogvlietjohan@gmail.com>, 2021.
 # Arthur de Roos <arthur.de.roos@gmail.com>, 2021.
+# Vancha March <tjipkevdh@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-06-05 08:32+0000\n"
-"Last-Translator: Stijn Hinlopen <f.a.hinlopen@gmail.com>\n"
+"PO-Revision-Date: 2021-07-26 14:18+0000\n"
+"Last-Translator: Vancha March <tjipkevdh@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -59,7 +60,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.7-dev\n"
+"X-Generator: Weblate 4.7.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1162,7 +1163,7 @@ msgstr "Bedankt van de Godot gemeenschap!"
 
 #: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
 msgid "Click to copy."
-msgstr ""
+msgstr "Klik om te kopiëren."
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -5243,9 +5244,10 @@ msgstr ""
 "Sla uw scène op en probeer opnieuw."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
-"Light' flag is on."
+"No meshes to bake. Make sure they contain an UV2 channel and that the 'Use "
+"In Baked Light' and 'Generate Lightmap' flags are on."
 msgstr ""
 "Geen meshes om te bakken. Zorg ervoor dat ze een UV2 kanaal bevatten en dat "
 "'Bake Light' vlag aan staat."
