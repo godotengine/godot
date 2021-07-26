@@ -4436,8 +4436,11 @@ void JointSpatialGizmoPlugin::CreateGeneric6DOFJointGizmo(
 ////
 
 RoomGizmoPlugin::RoomGizmoPlugin() {
-	create_material("room", Color(0.5, 1.0, 0.0), false, true, false);
-	create_material("room_overlap", Color(1.0, 0.0, 0.0), false, false, false);
+	Color color_room = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/room_edge", Color(0.5, 1.0, 0.0));
+	Color color_overlap = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/room_overlap", Color(1.0, 0.0, 0.0));
+
+	create_material("room", color_room, false, true, false);
+	create_material("room_overlap", color_overlap, false, false, false);
 }
 
 bool RoomGizmoPlugin::has_gizmo(Spatial *p_spatial) {
@@ -4516,11 +4519,17 @@ void RoomGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 ////
 
 PortalGizmoPlugin::PortalGizmoPlugin() {
+	_color_portal_front = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/portal_front", Color(0.05, 0.05, 1.0, 0.3));
+	_color_portal_back = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/portal_back", Color(1.0, 1.0, 0.0, 0.15));
+	Color color_portal_margin = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/portal_margin", Color(1.0, 0.1, 0.1, 0.3));
+	Color color_portal_edge = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/portal_edge", Color(0.0, 0.0, 0.0, 0.3));
+	Color color_portal_arrow = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/portal_arrow", Color(1.0, 1.0, 1.0, 1.0));
+
 	create_icon_material("portal_icon", SpatialEditor::get_singleton()->get_icon("GizmoPortal", "EditorIcons"), true);
 	create_material("portal", Color(1.0, 1.0, 1.0, 1.0), false, false, true);
-	create_material("portal_margin", Color(1.0, 0.1, 0.1, 0.3), false, false, false);
-	create_material("portal_edge", Color(0.0, 0.0, 0.0, 0.3), false, false, false);
-	create_material("portal_arrow", Color(1.0, 1.0, 1.0, 1.0), false, false, false);
+	create_material("portal_margin", color_portal_margin, false, false, false);
+	create_material("portal_edge", color_portal_edge, false, false, false);
+	create_material("portal_arrow", color_portal_arrow, false, false, false);
 }
 
 bool PortalGizmoPlugin::has_gizmo(Spatial *p_spatial) {
@@ -4559,8 +4568,6 @@ void PortalGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 		Ref<Material> material_edge = get_material("portal_edge", p_gizmo);
 		Ref<Material> material_arrow = get_material("portal_arrow", p_gizmo);
 		Color color(1, 1, 1, 1);
-		Color color_portal_front(0.05, 0.05, 1.0, 0.3);
-		Color color_portal_back(1.0, 1.0, 0.0, 0.15);
 
 		// make sure world points are up to date
 		portal->portal_update();
@@ -4612,16 +4619,16 @@ void PortalGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 				pts_portal.push_back(pt_portal_first);
 				pts_portal.push_back(pt);
 				pts_portal.push_back(pt_next);
-				cols_portal.push_back(color_portal_front);
-				cols_portal.push_back(color_portal_front);
-				cols_portal.push_back(color_portal_front);
+				cols_portal.push_back(_color_portal_front);
+				cols_portal.push_back(_color_portal_front);
+				cols_portal.push_back(_color_portal_front);
 
 				pts_portal.push_back(pt_next);
 				pts_portal.push_back(pt);
 				pts_portal.push_back(pt_portal_first);
-				cols_portal.push_back(color_portal_back);
-				cols_portal.push_back(color_portal_back);
-				cols_portal.push_back(color_portal_back);
+				cols_portal.push_back(_color_portal_back);
+				cols_portal.push_back(_color_portal_back);
+				cols_portal.push_back(_color_portal_back);
 			}
 
 			if (show_margins) {
