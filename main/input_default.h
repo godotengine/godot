@@ -55,6 +55,7 @@ class InputDefault : public Input {
 		uint64_t idle_frame;
 		bool pressed;
 		float strength;
+		float raw_strength;
 	};
 
 	Map<StringName, Action> action_state;
@@ -224,6 +225,7 @@ public:
 	virtual bool is_action_just_pressed(const StringName &p_action) const;
 	virtual bool is_action_just_released(const StringName &p_action) const;
 	virtual float get_action_strength(const StringName &p_action) const;
+	virtual float get_action_raw_strength(const StringName &p_action) const;
 
 	virtual float get_joy_axis(int p_device, int p_axis) const;
 	String get_joy_name(int p_idx);
