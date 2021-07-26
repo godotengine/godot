@@ -57,7 +57,32 @@ void MenuButton::_unhandled_key_input(Ref<InputEvent> p_event) {
 
 void MenuButton::_popup_visibility_changed(bool p_visible) {
 	set_pressed(p_visible);
-	set_process_internal(p_visible);
+
+	if (!p_visible) {
+		set_process_internal(false);
+		return;
+	}
+
+	if (switch_on_hover) {
+		Window *window = Object::cast_to<Window>(get_viewport());
+		if (window) {
+			mouse_pos_adjusted = window->get_position();
+
+			if (window->is_embedded()) {
+				Window *window_parent = Object::cast_to<Window>(window->get_parent()->get_viewport());
+				while (window_parent) {
+					if (!window_parent->is_embedded()) {
+						mouse_pos_adjusted += window_parent->get_position();
+						break;
+					}
+
+					window_parent = Object::cast_to<Window>(window_parent->get_parent()->get_viewport());
+				}
+			}
+
+			set_process_internal(true);
+		}
+	}
 }
 
 void MenuButton::pressed() {
@@ -106,17 +131,13 @@ void MenuButton::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (switch_on_hover) {
-				Window *window = Object::cast_to<Window>(get_viewport());
-				if (window) {
-					Vector2i mouse_pos = DisplayServer::get_singleton()->mouse_get_position() - window->get_position();
-					MenuButton *menu_btn_other = Object::cast_to<MenuButton>(window->gui_find_control(mouse_pos));
-					if (menu_btn_other && menu_btn_other != this && menu_btn_other->is_switch_on_hover() && !menu_btn_other->is_disabled() &&
-							(get_parent()->is_ancestor_of(menu_btn_other) || menu_btn_other->get_parent()->is_ancestor_of(popup))) {
-						popup->hide();
-						menu_btn_other->pressed();
-					}
-				}
+			Vector2i mouse_pos = DisplayServer::get_singleton()->mouse_get_position() - mouse_pos_adjusted;
+			MenuButton *menu_btn_other = Object::cast_to<MenuButton>(get_viewport()->gui_find_control(mouse_pos));
+
+			if (menu_btn_other && menu_btn_other != this && menu_btn_other->is_switch_on_hover() && !menu_btn_other->is_disabled() &&
+					(get_parent()->is_ancestor_of(menu_btn_other) || menu_btn_other->get_parent()->is_ancestor_of(popup))) {
+				popup->hide();
+				menu_btn_other->pressed();
 			}
 		} break;
 	}

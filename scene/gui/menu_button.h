@@ -42,6 +42,8 @@ class MenuButton : public Button {
 	bool disable_shortcuts = false;
 	PopupMenu *popup;
 
+	Vector2i mouse_pos_adjusted;
+
 	Array _get_items() const;
 	void _set_items(const Array &p_items);
 
