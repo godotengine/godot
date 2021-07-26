@@ -723,6 +723,8 @@ private:
 	void _add_sun_to_scene(bool p_already_added_environment = false);
 	void _add_environment_to_scene(bool p_already_added_sun = false);
 
+	void _update_theme();
+
 protected:
 	void _notification(int p_what);
 	//void _gui_input(InputEvent p_event);
