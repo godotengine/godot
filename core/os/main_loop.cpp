@@ -66,7 +66,7 @@ void MainLoop::initialize() {
 	}
 }
 
-bool MainLoop::physics_process(float p_time) {
+bool MainLoop::physics_process(double p_time) {
 	if (get_script_instance()) {
 		return get_script_instance()->call("_physics_process", p_time);
 	}
@@ -74,7 +74,7 @@ bool MainLoop::physics_process(float p_time) {
 	return false;
 }
 
-bool MainLoop::process(float p_time) {
+bool MainLoop::process(double p_time) {
 	if (get_script_instance()) {
 		return get_script_instance()->call("_process", p_time);
 	}

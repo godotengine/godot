@@ -313,7 +313,7 @@ public:
 		test_fall();
 		quit = false;
 	}
-	virtual bool physics_process(float p_time) override {
+	virtual bool physics_process(double p_time) override {
 		if (mover.is_valid()) {
 			static real_t joy_speed = 10;
 			PhysicsServer3D *ps = PhysicsServer3D::get_singleton();
@@ -399,7 +399,7 @@ public:
 		create_static_plane(Plane(Vector3(0, 1, 0), -1));
 	}
 
-	virtual bool process(float p_time) override {
+	virtual bool process(double p_time) override {
 		return false;
 	}
 
