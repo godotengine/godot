@@ -766,6 +766,7 @@ public:
 	static String get_datatype_name(DataType p_type);
 	static bool is_token_nonvoid_datatype(TokenType p_type);
 	static bool is_token_operator(TokenType p_type);
+	static bool is_token_operator_assign(TokenType p_type);
 
 	static bool convert_constant(ConstantNode *p_constant, DataType p_to_type, ConstantNode::Value *p_value = nullptr);
 	static DataType get_scalar_type(DataType p_type);
