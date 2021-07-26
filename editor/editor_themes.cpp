@@ -380,7 +380,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	const Color font_color = mono_color.linear_interpolate(base_color, 0.25);
 	const Color font_color_hl = mono_color.linear_interpolate(base_color, 0.15);
-	const Color font_color_hover = mono_color.linear_interpolate(base_color, 0.125);
 	const Color font_color_disabled = Color(mono_color.r, mono_color.g, mono_color.b, 0.3);
 	const Color font_color_selection = accent_color * Color(1, 1, 1, 0.4);
 	const Color color_disabled = mono_color.inverted().linear_interpolate(base_color, 0.7);
@@ -955,7 +954,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("focus", "LineEdit", style_widget_focus);
 	theme->set_stylebox("read_only", "LineEdit", style_widget_disabled);
 	theme->set_icon("clear", "LineEdit", theme->get_icon("GuiClose", "EditorIcons"));
-	theme->set_color("font_color_uneditable", "LineEdit", font_color_disabled);
 	theme->set_color("read_only", "LineEdit", font_color_disabled);
 	theme->set_color("font_color", "LineEdit", font_color);
 	theme->set_color("font_color_selected", "LineEdit", mono_color);
@@ -1097,11 +1095,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_tooltip->set_default_margin(MARGIN_TOP, v);
 	style_tooltip->set_default_margin(MARGIN_RIGHT, v);
 	style_tooltip->set_default_margin(MARGIN_BOTTOM, v);
-	style_tooltip->set_bg_color(mono_color.inverted());
+	style_tooltip->set_bg_color(Color(mono_color.r, mono_color.g, mono_color.b, 0.9));
 	style_tooltip->set_border_width_all(border_width);
-	style_tooltip->set_border_color(mono_color.inverted());
-	theme->set_color("font_color", "TooltipLabel", font_color_hover);
-	theme->set_color("font_color_shadow", "TooltipLabel", Color(0, 0, 0, 0));
+	style_tooltip->set_border_color(mono_color);
+	theme->set_color("font_color", "TooltipLabel", font_color.inverted());
+	theme->set_color("font_color_shadow", "TooltipLabel", mono_color.inverted() * Color(1, 1, 1, 0.1));
 	theme->set_stylebox("panel", "TooltipPanel", style_tooltip);
 
 	// PopupPanel
