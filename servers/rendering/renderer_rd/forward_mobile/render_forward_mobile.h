@@ -202,6 +202,7 @@ protected:
 		}
 	};
 
+	virtual float _render_buffers_get_luminance_multiplier() override;
 	virtual RD::DataFormat _render_buffers_get_color_format() override;
 	virtual bool _render_buffers_can_be_storage() override;
 

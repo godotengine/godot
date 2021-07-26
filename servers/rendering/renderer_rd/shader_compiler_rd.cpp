@@ -1165,6 +1165,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 					SL::VariableNode *vnode = (SL::VariableNode *)onode->arguments[0];
 
 					bool is_texture_func = false;
+					bool is_screen_texture = false;
 					if (onode->op == SL::OP_STRUCT) {
 						code += _mkid(vnode->name);
 					} else if (onode->op == SL::OP_CONSTRUCT) {
@@ -1197,6 +1198,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 							const SL::VariableNode *varnode = static_cast<const SL::VariableNode *>(onode->arguments[i]);
 
 							StringName texture_uniform = varnode->name;
+							is_screen_texture = (texture_uniform == "SCREEN_TEXTURE");
 
 							String sampler_name;
 
@@ -1236,6 +1238,9 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 						}
 					}
 					code += ")";
+					if (is_screen_texture && actions.apply_luminance_multiplier) {
+						code = "(" + code + " * vec4(vec3(sc_luminance_multiplier), 1.0))";
+					}
 				} break;
 				case SL::OP_INDEX: {
 					code += _dump_node_code(onode->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
