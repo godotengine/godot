@@ -1580,7 +1580,7 @@ void EditorSettings::set_builtin_action_override(const String &p_name, const Arr
 			int event_idx = 0;
 
 			// Check equality of each event.
-			for (Ref<InputEvent> E : builtin_events) {
+			for (const Ref<InputEvent> &E : builtin_events) {
 				if (!E->is_match(p_events[event_idx])) {
 					same_as_builtin = false;
 					break;
@@ -1610,7 +1610,7 @@ const Array EditorSettings::get_builtin_action_overrides(const String &p_name) c
 		Array event_array;
 
 		List<Ref<InputEvent>> events_list = AO->get();
-		for (Ref<InputEvent> E : events_list) {
+		for (const Ref<InputEvent> &E : events_list) {
 			event_array.push_back(E);
 		}
 		return event_array;

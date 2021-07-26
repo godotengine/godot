@@ -1804,10 +1804,10 @@ void GDScriptLanguage::reload_all_scripts() {
 
 	scripts.sort_custom<GDScriptDepSort>(); //update in inheritance dependency order
 
-	for (Ref<GDScript> E : scripts) {
-		print_verbose("GDScript: Reloading: " + E->get_path());
-		E->load_source_code(E->get_path());
-		E->reload(true);
+	for (Ref<GDScript> &script : scripts) {
+		print_verbose("GDScript: Reloading: " + script->get_path());
+		script->load_source_code(script->get_path());
+		script->reload(true);
 	}
 #endif
 }
@@ -1836,21 +1836,21 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 
 	scripts.sort_custom<GDScriptDepSort>(); //update in inheritance dependency order
 
-	for (Ref<GDScript> E : scripts) {
-		bool reload = E == p_script || to_reload.has(E->get_base());
+	for (Ref<GDScript> &script : scripts) {
+		bool reload = script == p_script || to_reload.has(script->get_base());
 
 		if (!reload) {
 			continue;
 		}
 
-		to_reload.insert(E, Map<ObjectID, List<Pair<StringName, Variant>>>());
+		to_reload.insert(script, Map<ObjectID, List<Pair<StringName, Variant>>>());
 
 		if (!p_soft_reload) {
 			//save state and remove script from instances
-			Map<ObjectID, List<Pair<StringName, Variant>>> &map = to_reload[E];
+			Map<ObjectID, List<Pair<StringName, Variant>>> &map = to_reload[script];
 
-			while (E->instances.front()) {
-				Object *obj = E->instances.front()->get();
+			while (script->instances.front()) {
+				Object *obj = script->instances.front()->get();
 				//save instance info
 				List<Pair<StringName, Variant>> state;
 				if (obj->get_script_instance()) {
@@ -1863,8 +1863,8 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 //same thing for placeholders
 #ifdef TOOLS_ENABLED
 
-			while (E->placeholders.size()) {
-				Object *obj = E->placeholders.front()->get()->get_owner();
+			while (script->placeholders.size()) {
+				Object *obj = script->placeholders.front()->get()->get_owner();
 
 				//save instance info
 				if (obj->get_script_instance()) {
@@ -1874,13 +1874,13 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 					obj->set_script(Variant());
 				} else {
 					// no instance found. Let's remove it so we don't loop forever
-					E->placeholders.erase(E->placeholders.front()->get());
+					script->placeholders.erase(script->placeholders.front()->get());
 				}
 			}
 
 #endif
 
-			for (Map<ObjectID, List<Pair<StringName, Variant>>>::Element *F = E->pending_reload_state.front(); F; F = F->next()) {
+			for (Map<ObjectID, List<Pair<StringName, Variant>>>::Element *F = script->pending_reload_state.front(); F; F = F->next()) {
 				map[F->key()] = F->get(); //pending to reload, use this one instead
 			}
 		}

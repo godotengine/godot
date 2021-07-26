@@ -874,7 +874,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 	// As scripts are going to be reloaded, must proceed without locking here
 
-	for (Ref<CSharpScript> script : scripts) {
+	for (Ref<CSharpScript> &script : scripts) {
 		to_reload.push_back(script);
 
 		if (script->get_path().is_empty()) {
@@ -934,7 +934,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 	}
 
 	// After the state of all instances is saved, clear scripts and script instances
-	for (Ref<CSharpScript> script : scripts) {
+	for (Ref<CSharpScript> &script : scripts) {
 		while (script->instances.front()) {
 			Object *obj = script->instances.front()->get();
 			obj->set_script(REF()); // Remove script and existing script instances (placeholder are not removed before domain reload)
@@ -947,7 +947,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 	if (gdmono->reload_scripts_domain() != OK) {
 		// Failed to reload the scripts domain
 		// Make sure to add the scripts back to their owners before returning
-		for (Ref<CSharpScript> scr : to_reload) {
+		for (Ref<CSharpScript> &scr : to_reload) {
 			for (const Map<ObjectID, CSharpScript::StateBackup>::Element *F = scr->pending_reload_state.front(); F; F = F->next()) {
 				Object *obj = ObjectDB::get_instance(F->key());
 
@@ -982,7 +982,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 	List<Ref<CSharpScript>> to_reload_state;
 
-	for (Ref<CSharpScript> script : to_reload) {
+	for (Ref<CSharpScript> &script : to_reload) {
 #ifdef TOOLS_ENABLED
 		script->exports_invalidated = true;
 #endif
@@ -1087,7 +1087,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		to_reload_state.push_back(script);
 	}
 
-	for (Ref<CSharpScript> script : to_reload_state) {
+	for (Ref<CSharpScript> &script : to_reload_state) {
 		for (Set<ObjectID>::Element *F = script->pending_reload_instances.front(); F; F = F->next()) {
 			ObjectID obj_id = F->get();
 			Object *obj = ObjectDB::get_instance(obj_id);

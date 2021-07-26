@@ -403,7 +403,7 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 				List<Ref<InputEvent>> defaults = InputMap::get_singleton()->get_builtins()[current_action];
 
 				// Convert the list to an array, and only keep key events as this is for the editor.
-				for (Ref<InputEvent> k : defaults) {
+				for (const Ref<InputEvent> &k : defaults) {
 					if (k.is_valid()) {
 						events.append(k);
 					}

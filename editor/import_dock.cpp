@@ -111,7 +111,7 @@ void ImportDock::set_edit_path(const String &p_path) {
 	ResourceFormatImporter::get_singleton()->get_importers_for_extension(p_path.get_extension(), &importers);
 	List<Pair<String, String>> importer_names;
 
-	for (Ref<ResourceImporter> E : importers) {
+	for (const Ref<ResourceImporter> &E : importers) {
 		importer_names.push_back(Pair<String, String>(E->get_visible_name(), E->get_importer_name()));
 	}
 
@@ -254,7 +254,7 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 	ResourceFormatImporter::get_singleton()->get_importers_for_extension(p_paths[0].get_extension(), &importers);
 	List<Pair<String, String>> importer_names;
 
-	for (Ref<ResourceImporter> E : importers) {
+	for (const Ref<ResourceImporter> &E : importers) {
 		importer_names.push_back(Pair<String, String>(E->get_visible_name(), E->get_importer_name()));
 	}
 

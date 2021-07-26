@@ -46,8 +46,8 @@ void Tween::start_tweeners() {
 		ERR_FAIL_MSG("Tween without commands, aborting.");
 	}
 
-	for (Ref<Tweener> E : tweeners.write[current_step]) {
-		E->start();
+	for (Ref<Tweener> &tweener : tweeners.write[current_step]) {
+		tweener->start();
 	}
 }
 
@@ -253,11 +253,11 @@ bool Tween::step(float p_delta) {
 		float step_delta = rem_delta;
 		step_active = false;
 
-		for (Ref<Tweener> E : tweeners.write[current_step]) {
+		for (Ref<Tweener> &tweener : tweeners.write[current_step]) {
 			// Modified inside Tweener.step().
 			float temp_delta = rem_delta;
 			// Turns to true if any Tweener returns true (i.e. is still not finished).
-			step_active = E->step(temp_delta) || step_active;
+			step_active = tweener->step(temp_delta) || step_active;
 			step_delta = MIN(temp_delta, rem_delta);
 		}
 

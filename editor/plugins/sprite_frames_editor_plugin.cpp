@@ -365,7 +365,7 @@ void SpriteFramesEditor::_file_load_request(const Vector<String> &p_path, int p_
 
 	int count = 0;
 
-	for (Ref<Texture2D> &E : resources) {
+	for (const Ref<Texture2D> &E : resources) {
 		undo_redo->add_do_method(frames, "add_frame", edited_anim, E, p_at_pos == -1 ? -1 : p_at_pos + count);
 		undo_redo->add_undo_method(frames, "remove_frame", edited_anim, p_at_pos == -1 ? fc : p_at_pos);
 		count++;
