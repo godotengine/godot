@@ -140,7 +140,7 @@ void ProximityGroup::broadcast(String p_method, Variant p_parameters) {
 void ProximityGroup::_proximity_group_broadcast(String p_method, Variant p_parameters) {
 
 	if (dispatch_mode == MODE_PROXY) {
-
+		ERR_FAIL_COND(!is_inside_tree());
 		get_parent()->call(p_method, p_parameters);
 	} else {
 
