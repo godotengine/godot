@@ -655,9 +655,7 @@ int BindingsGenerator::_determine_enum_prefix(const EnumInterface &p_ienum) {
 		return 0;
 	}
 
-	for (const List<ConstantInterface>::Element *E = p_ienum.constants.front()->next(); E; E = E->next()) {
-		const ConstantInterface &iconstant = E->get();
-
+	for (const ConstantInterface &iconstant : p_ienum.constants) {
 		Vector<String> parts = iconstant.name.split("_", /* p_allow_empty: */ true);
 
 		int i;
