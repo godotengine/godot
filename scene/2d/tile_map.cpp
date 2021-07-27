@@ -1177,6 +1177,7 @@ void TileMap::_set_tile_data(const PoolVector<int> &p_data) {
 	PoolVector<int>::Read r = p_data.read();
 
 	int offset = (format == FORMAT_2) ? 3 : 2;
+	ERR_FAIL_COND_MSG(c % offset != 0, "Corrupted tile data.");
 
 	clear();
 	for (int i = 0; i < c; i += offset) {
