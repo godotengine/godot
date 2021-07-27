@@ -1423,20 +1423,52 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					_edit.snap = spatial_editor->is_snap_enabled();
 					_edit.mode = TRANSFORM_NONE;
 
-					//gizmo has priority over everything
-
-					bool can_select_gizmos = true;
+					bool can_select_gizmos = spatial_editor->get_single_selected_node();
 
 					{
 						int idx = view_menu->get_popup()->get_item_index(VIEW_GIZMOS);
-						can_select_gizmos = view_menu->get_popup()->is_item_checked(idx);
+						can_select_gizmos = can_select_gizmos && view_menu->get_popup()->is_item_checked(idx);
 					}
 
-					if (can_select_gizmos && spatial_editor->get_single_selected_node()) {
-						Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(spatial_editor->get_single_selected_node());
+					// Gizmo handles
+					if (can_select_gizmos) {
 						Vector<Ref<Node3DGizmo>> gizmos = spatial_editor->get_single_selected_node()->get_gizmos();
 
 						bool intersected_handle = false;
+						for (int i = 0; i < gizmos.size(); i++) {
+							Ref<EditorNode3DGizmo> seg = gizmos[i];
+
+							if ((!seg.is_valid())) {
+								continue;
+							}
+
+							int gizmo_handle = -1;
+							seg->handles_intersect_ray(camera, _edit.mouse_pos, b->is_shift_pressed(), gizmo_handle);
+							if (gizmo_handle != -1) {
+								_edit.gizmo = seg;
+								_edit.gizmo_handle = gizmo_handle;
+								_edit.gizmo_initial_value = seg->get_handle_value(gizmo_handle);
+								intersected_handle = true;
+								break;
+							}
+						}
+
+						if (intersected_handle) {
+							break;
+						}
+					}
+
+					// Transform gizmo
+					if (_transform_gizmo_select(_edit.mouse_pos)) {
+						break;
+					}
+
+					// Subgizmos
+					if (can_select_gizmos) {
+						Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(spatial_editor->get_single_selected_node());
+						Vector<Ref<Node3DGizmo>> gizmos = spatial_editor->get_single_selected_node()->get_gizmos();
+
+						bool intersected_subgizmo = false;
 						for (int i = 0; i < gizmos.size(); i++) {
 							Ref<EditorNode3DGizmo> seg = gizmos[i];
 
@@ -1466,28 +1498,14 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 								seg->redraw();
 								spatial_editor->update_transform_gizmo();
-								intersected_handle = true;
-								break;
-							}
-
-							int gizmo_handle = -1;
-							seg->handles_intersect_ray(camera, _edit.mouse_pos, b->is_shift_pressed(), gizmo_handle);
-							if (gizmo_handle != -1) {
-								_edit.gizmo = seg;
-								_edit.gizmo_handle = gizmo_handle;
-								_edit.gizmo_initial_value = seg->get_handle_value(gizmo_handle);
-								intersected_handle = true;
+								intersected_subgizmo = true;
 								break;
 							}
 						}
 
-						if (intersected_handle) {
+						if (intersected_subgizmo) {
 							break;
 						}
-					}
-
-					if (_transform_gizmo_select(_edit.mouse_pos)) {
-						break;
 					}
 
 					clicked = ObjectID();
@@ -1791,7 +1809,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 									Transform3D xform = GE->get();
 									Transform3D new_xform = _compute_transform(TRANSFORM_SCALE, se->original * xform, xform, motion, snap, local_coords);
 									if (!local_coords) {
-										new_xform = se->original.inverse() * new_xform;
+										new_xform = se->original.affine_inverse() * new_xform;
 									}
 									se->gizmo->set_subgizmo_transform(GE->key(), new_xform);
 								}
@@ -1889,7 +1907,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 								for (Map<int, Transform3D>::Element *GE = se->subgizmos.front(); GE; GE = GE->next()) {
 									Transform3D xform = GE->get();
 									Transform3D new_xform = _compute_transform(TRANSFORM_TRANSLATE, se->original * xform, xform, motion, snap, local_coords);
-									new_xform = se->original.inverse() * new_xform;
+									new_xform = se->original.affine_inverse() * new_xform;
 									se->gizmo->set_subgizmo_transform(GE->key(), new_xform);
 								}
 							} else {
@@ -1977,7 +1995,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 									Transform3D new_xform = _compute_transform(TRANSFORM_ROTATE, se->original * xform, xform, compute_axis, angle, local_coords);
 									if (!local_coords) {
-										new_xform = se->original.inverse() * new_xform;
+										new_xform = se->original.affine_inverse() * new_xform;
 									}
 									se->gizmo->set_subgizmo_transform(GE->key(), new_xform);
 								}
