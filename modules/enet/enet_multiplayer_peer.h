@@ -47,10 +47,10 @@ private:
 	};
 
 	enum {
-		SYSCH_CONFIG,
-		SYSCH_RELIABLE,
-		SYSCH_UNRELIABLE,
-		SYSCH_MAX
+		SYSCH_CONFIG = 0,
+		SYSCH_RELIABLE = 1,
+		SYSCH_UNRELIABLE = 2,
+		SYSCH_MAX = 3
 	};
 
 	enum Mode {
@@ -65,6 +65,7 @@ private:
 	uint32_t unique_id = 0;
 
 	int target_peer = 0;
+	int transfer_channel = 0;
 	TransferMode transfer_mode = TRANSFER_MODE_RELIABLE;
 
 	bool refuse_connections = false;
@@ -100,6 +101,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual void set_transfer_channel(int p_channel) override;
+	virtual int get_transfer_channel() const override;
+
 	virtual void set_transfer_mode(TransferMode p_mode) override;
 	virtual TransferMode get_transfer_mode() const override;
 	virtual void set_target_peer(int p_peer) override;

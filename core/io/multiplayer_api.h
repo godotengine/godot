@@ -132,7 +132,7 @@ public:
 	Node *get_root_node();
 	void set_network_peer(const Ref<MultiplayerPeer> &p_peer);
 	Ref<MultiplayerPeer> get_network_peer() const;
-	Error send_bytes(Vector<uint8_t> p_data, int p_to = MultiplayerPeer::TARGET_PEER_BROADCAST, MultiplayerPeer::TransferMode p_mode = MultiplayerPeer::TRANSFER_MODE_RELIABLE);
+	Error send_bytes(Vector<uint8_t> p_data, int p_to = MultiplayerPeer::TARGET_PEER_BROADCAST, MultiplayerPeer::TransferMode p_mode = MultiplayerPeer::TRANSFER_MODE_RELIABLE, int p_channel = 0);
 
 	// Called by Node.rpc
 	void rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const StringName &p_method, const Variant **p_arg, int p_argcount);

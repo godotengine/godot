@@ -62,25 +62,27 @@ private:
 		}
 	};
 
-	uint32_t unique_id;
-	int target_peer;
-	int client_count;
-	bool refuse_connections;
-	ConnectionStatus connection_status;
-	TransferMode transfer_mode;
-	int next_packet_peer;
-	bool server_compat;
+	uint32_t unique_id = 0;
+	int target_peer = 0;
+	int client_count = 0;
+	bool refuse_connections = false;
+	ConnectionStatus connection_status = CONNECTION_DISCONNECTED;
+	int transfer_channel = 0;
+	TransferMode transfer_mode = TRANSFER_MODE_RELIABLE;
+	int next_packet_peer = 0;
+	bool server_compat = false;
 
 	Map<int, Ref<ConnectedPeer>> peer_map;
+	List<Dictionary> channels_config;
 
 	void _peer_to_dict(Ref<ConnectedPeer> p_connected_peer, Dictionary &r_dict);
 	void _find_next_peer();
 
 public:
-	WebRTCMultiplayerPeer();
+	WebRTCMultiplayerPeer() {}
 	~WebRTCMultiplayerPeer();
 
-	Error initialize(int p_self_id, bool p_server_compat = false);
+	Error initialize(int p_self_id, bool p_server_compat = false, Array p_channels_config = Array());
 	Error add_peer(Ref<WebRTCPeerConnection> p_peer, int p_peer_id, int p_unreliable_lifetime = 1);
 	void remove_peer(int p_peer_id);
 	bool has_peer(int p_peer_id);
@@ -95,6 +97,8 @@ public:
 	int get_max_packet_size() const override;
 
 	// MultiplayerPeer
+	void set_transfer_channel(int p_channel) override;
+	int get_transfer_channel() const override;
 	void set_transfer_mode(TransferMode p_mode) override;
 	TransferMode get_transfer_mode() const override;
 	void set_target_peer(int p_peer_id) override;

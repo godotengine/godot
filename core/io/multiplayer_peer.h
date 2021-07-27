@@ -56,6 +56,8 @@ public:
 		CONNECTION_CONNECTED,
 	};
 
+	virtual void set_transfer_channel(int p_channel) = 0;
+	virtual int get_transfer_channel() const = 0;
 	virtual void set_transfer_mode(TransferMode p_mode) = 0;
 	virtual TransferMode get_transfer_mode() const = 0;
 	virtual void set_target_peer(int p_peer_id) = 0;

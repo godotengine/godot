@@ -56,6 +56,8 @@ public:
 	virtual int get_available_packet_count() const override;
 
 	/* Specific to MultiplayerPeer */
+	virtual void set_transfer_channel(int p_channel) override;
+	virtual int get_transfer_channel() const override;
 	virtual void set_transfer_mode(TransferMode p_mode) override;
 	virtual TransferMode get_transfer_mode() const override;
 	virtual void set_target_peer(int p_peer_id) override;
