@@ -179,6 +179,8 @@ void PopupMenu::_activate_submenu(int over) {
 }
 
 void PopupMenu::_submenu_timeout() {
+	ERR_FAIL_COND(submenu_over == -1);
+
 	if (mouse_over == submenu_over) {
 		_activate_submenu(mouse_over);
 	}
