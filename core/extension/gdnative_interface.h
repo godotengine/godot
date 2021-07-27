@@ -134,7 +134,7 @@ typedef void *GDNativeObjectPtr;
 typedef void *GDNativeTypePtr;
 typedef void *GDNativeMethodBindPtr;
 typedef int64_t GDNativeInt;
-typedef uint32_t GDNativeBool;
+typedef uint8_t GDNativeBool;
 typedef uint64_t GDObjectInstanceID;
 
 /* VARIANT DATA I/O */
