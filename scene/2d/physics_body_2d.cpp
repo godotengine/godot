@@ -1249,9 +1249,6 @@ Vector2 KinematicBody2D::move_and_slide_with_snap(const Vector2 &p_linear_veloci
 }
 
 void KinematicBody2D::_set_collision_direction(const Collision &p_collision, const Vector2 &p_up_direction, float p_floor_max_angle) {
-	on_floor = false;
-	on_ceiling = false;
-	on_wall = false;
 	if (p_up_direction == Vector2()) {
 		//all is a wall
 		on_wall = true;
