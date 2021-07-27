@@ -35,6 +35,7 @@
 #include "core/object/message_queue.h"
 #include "core/string/print_string.h"
 #include "instance_placeholder.h"
+#include "modules/gdscript/gdscript.h"
 #include "scene/animation/tween.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/resources/packed_scene.h"
@@ -1266,12 +1267,18 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 Node *Node::get_node(const NodePath &p_path) const {
 	Node *node = get_node_or_null(p_path);
 
-	if (p_path.is_absolute()) {
-		ERR_FAIL_COND_V_MSG(!node, nullptr,
-				vformat(R"(Node not found: "%s" (absolute path attempted from "%s").)", p_path, get_path()));
-	} else {
-		ERR_FAIL_COND_V_MSG(!node, nullptr,
-				vformat(R"(Node not found: "%s" (relative to "%s").)", p_path, get_path()));
+	if (!node) {
+		String message;
+		if (p_path.is_absolute()) {
+			message = vformat(R"(Node not found: "%s" (absolute path attempted from "%s").)", p_path, get_path());
+		} else {
+			message = vformat(R"(Node not found: "%s" (relative to "%s").)", p_path, get_path());
+		}
+		// Print error message before breaking, so that it can be seen in the console while the engine is paused.
+		ERR_PRINT(message);
+		// Break to make debugging easier.
+		GDScriptLanguage::get_singleton()->debug_break(message, true);
+		return nullptr;
 	}
 
 	return node;
