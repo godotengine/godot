@@ -82,6 +82,7 @@ class LightmapperCPU : public Lightmapper {
 	struct BakeParams {
 		float bias;
 		int bounces;
+		float bounce_indirect_energy;
 		int samples;
 		bool use_denoiser = true;
 		Ref<Image> environment_panorama;
@@ -169,7 +170,7 @@ public:
 	virtual void add_directional_light(bool p_bake_direct, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_multiplier, float p_size);
 	virtual void add_omni_light(bool p_bake_direct, const Vector3 &p_position, const Color &p_color, float p_energy, float p_indirect_multiplier, float p_range, float p_attenuation, float p_size);
 	virtual void add_spot_light(bool p_bake_direct, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_indirect_multiplier, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size);
-	virtual BakeError bake(BakeQuality p_quality, bool p_use_denoiser, int p_bounces, float p_bias, bool p_generate_atlas, int p_max_texture_size, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function = nullptr, void *p_bake_userdata = nullptr, BakeStepFunc p_substep_function = nullptr);
+	virtual BakeError bake(BakeQuality p_quality, bool p_use_denoiser, int p_bounces, float p_bounce_energy, float p_bias, bool p_generate_atlas, int p_max_texture_size, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function = nullptr, void *p_bake_userdata = nullptr, BakeStepFunc p_substep_function = nullptr);
 
 	int get_bake_texture_count() const;
 	Ref<Image> get_bake_texture(int p_index) const;

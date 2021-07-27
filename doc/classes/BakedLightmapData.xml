@@ -66,7 +66,8 @@
 		<member name="cell_subdiv" type="int" setter="set_cell_subdiv" getter="get_cell_subdiv" default="1">
 		</member>
 		<member name="energy" type="float" setter="set_energy" getter="get_energy" default="1.0">
-			Global energy multiplier for baked and dynamic capture objects.
+			Global energy multiplier for baked and dynamic capture objects. This can be changed at run-time without having to bake lightmaps again.
+			To adjust only the energy of indirect lighting (without affecting direct lighting or emissive materials), adjust [member BakedLightmap.bounce_indirect_energy] and bake lightmaps again.
 		</member>
 		<member name="interior" type="bool" setter="set_interior" getter="is_interior" default="false">
 			Controls whether dynamic capture objects receive environment lighting or not.
