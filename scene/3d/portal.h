@@ -152,7 +152,6 @@ private:
 
 	// extension margin
 	real_t _margin;
-	real_t _default_margin;
 	bool _use_default_margin;
 
 	// for editing

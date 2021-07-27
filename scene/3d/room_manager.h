@@ -179,7 +179,7 @@ private:
 
 	// misc
 	bool _add_plane_if_unique(const Room *p_room, LocalVector<Plane, int32_t> &r_planes, const Plane &p);
-	void _update_portal_margins(Spatial *p_node, real_t p_margin);
+	void _update_portal_gizmos(Spatial *p_node);
 	bool _check_roomlist_validity(Node *p_node);
 	void _cleanup_after_conversion();
 	Error _build_room_convex_hull(const Room *p_room, const Vector<Vector3> &p_points, Geometry::MeshData &r_mesh);
@@ -217,6 +217,7 @@ private:
 public:
 	static String _find_name_after(Node *p_node, String p_string_start);
 	static void show_warning(const String &p_string, const String &p_extra_string = "", bool p_alert = true);
+	static real_t _get_default_portal_margin() { return _default_portal_margin; }
 
 private:
 	// accessible from UI
@@ -256,7 +257,7 @@ private:
 	LocalVector<Room *, int32_t> _rooms;
 
 	// advanced params
-	real_t _default_portal_margin = 1.0;
+	static real_t _default_portal_margin;
 	real_t _overlap_warning_threshold = 1.0;
 	Room::SimplifyInfo _room_simplify_info;
 	int _settings_portal_depth_limit = 16;

@@ -58,6 +58,10 @@
 RoomManager *RoomManager::active_room_manager = nullptr;
 #endif
 
+// This needs to be static because it cannot easily be propagated to portals
+// during load (as the RoomManager may be loaded before Portals enter the scene tree)
+real_t RoomManager::_default_portal_margin = 1.0;
+
 RoomManager::RoomManager() {
 	// some high value, we want room manager to be processed after other
 	// nodes because the camera should be moved first
@@ -343,14 +347,13 @@ void RoomManager::set_default_portal_margin(real_t p_dist) {
 		return;
 	}
 
-	_update_portal_margins(roomlist, _default_portal_margin);
+	_update_portal_gizmos(roomlist);
 }
 
-void RoomManager::_update_portal_margins(Spatial *p_node, real_t p_margin) {
+void RoomManager::_update_portal_gizmos(Spatial *p_node) {
 	Portal *portal = Object::cast_to<Portal>(p_node);
 
 	if (portal) {
-		portal->_default_margin = p_margin;
 		portal->update_gizmo();
 	}
 
@@ -359,7 +362,7 @@ void RoomManager::_update_portal_margins(Spatial *p_node, real_t p_margin) {
 		Spatial *child = Object::cast_to<Spatial>(p_node->get_child(n));
 
 		if (child) {
-			_update_portal_margins(child, p_margin);
+			_update_portal_gizmos(child);
 		}
 	}
 }

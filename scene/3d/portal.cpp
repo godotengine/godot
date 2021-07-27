@@ -54,8 +54,7 @@ Portal::Portal() {
 	_pts_local_raw.resize(0);
 	_pt_center_world = Vector3();
 	_plane = Plane();
-	_margin = 1.0f;
-	_default_margin = 1.0f;
+	_margin = 1.0;
 	_use_default_margin = true;
 
 	// the visual server portal lifetime is linked to the lifetime of this object
@@ -508,7 +507,7 @@ void Portal::portal_update() {
 
 real_t Portal::get_active_portal_margin() const {
 	if (_use_default_margin) {
-		return _default_margin;
+		return RoomManager::_get_default_portal_margin();
 	}
 	return _margin;
 }
