@@ -56,7 +56,6 @@
 #include "scene/main/window.h"
 #include "scene/resources/font.h"
 #include "scene/resources/packed_scene.h"
-#include "scene/scene_string_names.h"
 
 void EditorResourceConversionPlugin::_bind_methods() {
 	MethodInfo mi;

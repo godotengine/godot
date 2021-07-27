@@ -30,7 +30,6 @@
 
 #include "cpu_particles_2d.h"
 
-#include "core/core_string_names.h"
 #include "scene/2d/gpu_particles_2d.h"
 #include "scene/main/canvas_item.h"
 #include "scene/resources/particles_material.h"
@@ -204,13 +203,13 @@ void CPUParticles2D::set_texture(const Ref<Texture2D> &p_texture) {
 	}
 
 	if (texture.is_valid()) {
-		texture->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CPUParticles2D::_texture_changed));
+		texture->disconnect(SNAME("changed"), callable_mp(this, &CPUParticles2D::_texture_changed));
 	}
 
 	texture = p_texture;
 
 	if (texture.is_valid()) {
-		texture->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CPUParticles2D::_texture_changed));
+		texture->connect(SNAME("changed"), callable_mp(this, &CPUParticles2D::_texture_changed));
 	}
 
 	update();

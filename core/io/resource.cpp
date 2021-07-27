@@ -30,7 +30,6 @@
 
 #include "resource.h"
 
-#include "core/core_string_names.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"
@@ -41,7 +40,7 @@
 #include <stdio.h>
 
 void Resource::emit_changed() {
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(SNAME("changed"));
 }
 
 void Resource::_resource_path_changed() {

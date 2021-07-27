@@ -30,8 +30,6 @@
 
 #include "curve.h"
 
-#include "core/core_string_names.h"
-
 template <class T>
 static _FORCE_INLINE_ T _bezier_interp(real_t t, T start, T control_1, T control_2, T end) {
 	/* Formula from Wikipedia article on Bezier curves. */
@@ -357,7 +355,7 @@ real_t Curve::interpolate_local_nocheck(int index, real_t local_offset) const {
 
 void Curve::mark_dirty() {
 	_baked_cache_dirty = true;
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(SNAME("changed"));
 }
 
 Array Curve::get_data() const {
@@ -547,7 +545,7 @@ void Curve2D::add_point(const Vector2 &p_pos, const Vector2 &p_in, const Vector2
 	}
 
 	baked_cache_dirty = true;
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(SNAME("changed"));
 }
 
 void Curve2D::set_point_position(int p_index, const Vector2 &p_pos) {
@@ -555,7 +553,7 @@ void Curve2D::set_point_position(int p_index, const Vector2 &p_pos) {
 
 	points.write[p_index].pos = p_pos;
 	baked_cache_dirty = true;
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(SNAME("changed"));
 }
 
 Vector2 Curve2D::get_point_position(int p_index) const {
@@ -568,7 +566,7 @@ void Curve2D::set_point_in(int p_index, const Vector2 &p_in) {
 
 	points.write[p_index].in = p_in;
 	baked_cache_dirty = true;
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(SNAME("changed"));
 }
 
 Vector2 Curve2D::get_point_in(int p_index) const {
@@ -581,7 +579,7 @@ void Curve2D::set_point_out(int p_index, const Vector2 &p_out) {
 
 	points.write[p_index].out = p_out;
 	baked_cache_dirty = true;
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(SNAME("changed"));
 }
 
 Vector2 Curve2D::get_point_out(int p_index) const {
@@ -593,14 +591,14 @@ void Curve2D::remove_point(int p_index) {
 	ERR_FAIL_INDEX(p_index, points.size());
 	points.remove(p_index);
 	baked_cache_dirty = true;
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(SNAME("changed"));
 }
 
 void Curve2D::clear_points() {
 	if (!points.is_empty()) {
 		points.clear();
 		baked_cache_dirty = true;
-		emit_signal(CoreStringNames::get_singleton()->changed);
+		emit_signal(SNAME("changed"));
 	}
 }
 
@@ -799,7 +797,7 @@ PackedVector2Array Curve2D::get_baked_points() const {
 void Curve2D::set_bake_interval(float p_tolerance) {
 	bake_interval = p_tolerance;
 	baked_cache_dirty = true;
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(SNAME("changed"));
 }
 
 float Curve2D::get_bake_interval() const {
@@ -1016,7 +1014,7 @@ void Curve3D::add_point(const Vector3 &p_pos, const Vector3 &p_in, const Vector3
 	}
 
 	baked_cache_dirty = true;
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(SNAME("changed"));
 }
 
 void Curve3D::set_point_position(int p_index, const Vector3 &p_pos) {
@@ -1024,7 +1022,7 @@ void Curve3D::set_point_position(int p_index, const Vector3 &p_pos) {
 
 	points.write[p_index].pos = p_pos;
 	baked_cache_dirty = true;
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(SNAME("changed"));
 }
 
 Vector3 Curve3D::get_point_position(int p_index) const {
@@ -1037,7 +1035,7 @@ void Curve3D::set_point_tilt(int p_index, float p_tilt) {
 
 	points.write[p_index].tilt = p_tilt;
 	baked_cache_dirty = true;
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(SNAME("changed"));
 }
 
 float Curve3D::get_point_tilt(int p_index) const {
@@ -1050,7 +1048,7 @@ void Curve3D::set_point_in(int p_index, const Vector3 &p_in) {
 
 	points.write[p_index].in = p_in;
 	baked_cache_dirty = true;
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(SNAME("changed"));
 }
 
 Vector3 Curve3D::get_point_in(int p_index) const {
@@ -1063,7 +1061,7 @@ void Curve3D::set_point_out(int p_index, const Vector3 &p_out) {
 
 	points.write[p_index].out = p_out;
 	baked_cache_dirty = true;
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(SNAME("changed"));
 }
 
 Vector3 Curve3D::get_point_out(int p_index) const {
@@ -1075,14 +1073,14 @@ void Curve3D::remove_point(int p_index) {
 	ERR_FAIL_INDEX(p_index, points.size());
 	points.remove(p_index);
 	baked_cache_dirty = true;
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(SNAME("changed"));
 }
 
 void Curve3D::clear_points() {
 	if (!points.is_empty()) {
 		points.clear();
 		baked_cache_dirty = true;
-		emit_signal(CoreStringNames::get_singleton()->changed);
+		emit_signal(SNAME("changed"));
 	}
 }
 
@@ -1522,7 +1520,7 @@ float Curve3D::get_closest_offset(const Vector3 &p_to_point) const {
 void Curve3D::set_bake_interval(float p_tolerance) {
 	bake_interval = p_tolerance;
 	baked_cache_dirty = true;
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(SNAME("changed"));
 }
 
 float Curve3D::get_bake_interval() const {
@@ -1532,7 +1530,7 @@ float Curve3D::get_bake_interval() const {
 void Curve3D::set_up_vector_enabled(bool p_enable) {
 	up_vector_enabled = p_enable;
 	baked_cache_dirty = true;
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(SNAME("changed"));
 }
 
 bool Curve3D::is_up_vector_enabled() const {

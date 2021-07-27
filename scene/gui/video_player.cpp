@@ -29,7 +29,6 @@
 /*************************************************************************/
 
 #include "video_player.h"
-#include "scene/scene_string_names.h"
 
 #include "core/os/os.h"
 #include "servers/audio_server.h"
@@ -161,7 +160,7 @@ void VideoPlayer::_notification(int p_notification) {
 			playback->update(delta); // playback->is_playing() returns false in the last video frame
 
 			if (!playback->is_playing()) {
-				emit_signal(SceneStringNames::get_singleton()->finished);
+				emit_signal(SNAME("finished"));
 			}
 
 		} break;

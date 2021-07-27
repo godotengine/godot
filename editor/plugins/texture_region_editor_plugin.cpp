@@ -30,7 +30,6 @@
 
 #include "texture_region_editor_plugin.h"
 
-#include "core/core_string_names.h"
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_scale.h"
@@ -414,7 +413,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 					} else if (obj_styleBox.is_valid()) {
 						undo_redo->add_do_method(obj_styleBox.ptr(), "set_margin_size", side[edited_margin], obj_styleBox->get_margin_size(side[edited_margin]));
 						undo_redo->add_undo_method(obj_styleBox.ptr(), "set_margin_size", side[edited_margin], prev_margin);
-						obj_styleBox->emit_signal(CoreStringNames::get_singleton()->changed);
+						obj_styleBox->emit_signal(SNAME("changed"));
 					}
 					edited_margin = -1;
 				} else {

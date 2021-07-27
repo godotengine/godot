@@ -32,7 +32,6 @@
 
 #include "core/math/geometry_3d.h"
 #include "core/object/script_language.h"
-#include "scene/scene_string_names.h"
 
 int AStar::get_available_point_id() const {
 	if (points.is_empty()) {
@@ -388,8 +387,8 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 }
 
 real_t AStar::_estimate_cost(int p_from_id, int p_to_id) {
-	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_estimate_cost)) {
-		return get_script_instance()->call(SceneStringNames::get_singleton()->_estimate_cost, p_from_id, p_to_id);
+	if (get_script_instance() && get_script_instance()->has_method(SNAME("_estimate_cost"))) {
+		return get_script_instance()->call(SNAME("_estimate_cost"), p_from_id, p_to_id);
 	}
 
 	Point *from_point;
@@ -404,8 +403,8 @@ real_t AStar::_estimate_cost(int p_from_id, int p_to_id) {
 }
 
 real_t AStar::_compute_cost(int p_from_id, int p_to_id) {
-	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_compute_cost)) {
-		return get_script_instance()->call(SceneStringNames::get_singleton()->_compute_cost, p_from_id, p_to_id);
+	if (get_script_instance() && get_script_instance()->has_method(SNAME("_compute_cost"))) {
+		return get_script_instance()->call(SNAME("_compute_cost"), p_from_id, p_to_id);
 	}
 
 	Point *from_point;
@@ -660,8 +659,8 @@ Vector2 AStar2D::get_closest_position_in_segment(const Vector2 &p_point) const {
 }
 
 real_t AStar2D::_estimate_cost(int p_from_id, int p_to_id) {
-	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_estimate_cost)) {
-		return get_script_instance()->call(SceneStringNames::get_singleton()->_estimate_cost, p_from_id, p_to_id);
+	if (get_script_instance() && get_script_instance()->has_method(SNAME("_estimate_cost"))) {
+		return get_script_instance()->call(SNAME("_estimate_cost"), p_from_id, p_to_id);
 	}
 
 	AStar::Point *from_point;
@@ -676,8 +675,8 @@ real_t AStar2D::_estimate_cost(int p_from_id, int p_to_id) {
 }
 
 real_t AStar2D::_compute_cost(int p_from_id, int p_to_id) {
-	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_compute_cost)) {
-		return get_script_instance()->call(SceneStringNames::get_singleton()->_compute_cost, p_from_id, p_to_id);
+	if (get_script_instance() && get_script_instance()->has_method(SNAME("_compute_cost"))) {
+		return get_script_instance()->call(SNAME("_compute_cost"), p_from_id, p_to_id);
 	}
 
 	AStar::Point *from_point;

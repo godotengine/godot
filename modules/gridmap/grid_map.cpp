@@ -35,7 +35,6 @@
 #include "scene/3d/light_3d.h"
 #include "scene/resources/mesh_library.h"
 #include "scene/resources/surface_tool.h"
-#include "scene/scene_string_names.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/rendering_server.h"
 

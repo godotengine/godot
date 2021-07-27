@@ -30,7 +30,6 @@
 
 #include "visual_instance_3d.h"
 
-#include "scene/scene_string_names.h"
 #include "servers/rendering_server.h"
 #include "skeleton_3d.h"
 
@@ -212,12 +211,12 @@ bool GeometryInstance3D::_set(const StringName &p_name, const Variant &p_value) 
 		return true;
 	}
 #ifndef DISABLE_DEPRECATED
-	if (p_name == SceneStringNames::get_singleton()->use_in_baked_light && bool(p_value)) {
+	if (p_name == SNAME("use_in_baked_light") && bool(p_value)) {
 		set_gi_mode(GI_MODE_BAKED);
 		return true;
 	}
 
-	if (p_name == SceneStringNames::get_singleton()->use_dynamic_gi && bool(p_value)) {
+	if (p_name == SNAME("use_dynamic_gi") && bool(p_value)) {
 		set_gi_mode(GI_MODE_DYNAMIC);
 		return true;
 	}

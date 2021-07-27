@@ -31,7 +31,6 @@
 #include "curve_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
-#include "core/core_string_names.h"
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_scale.h"
@@ -70,14 +69,14 @@ void CurveEditor::set_curve(Ref<Curve> curve) {
 	}
 
 	if (_curve_ref.is_valid()) {
-		_curve_ref->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveEditor::_curve_changed));
+		_curve_ref->disconnect(SNAME("changed"), callable_mp(this, &CurveEditor::_curve_changed));
 		_curve_ref->disconnect(Curve::SIGNAL_RANGE_CHANGED, callable_mp(this, &CurveEditor::_curve_changed));
 	}
 
 	_curve_ref = curve;
 
 	if (_curve_ref.is_valid()) {
-		_curve_ref->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveEditor::_curve_changed));
+		_curve_ref->connect(SNAME("changed"), callable_mp(this, &CurveEditor::_curve_changed));
 		_curve_ref->connect(Curve::SIGNAL_RANGE_CHANGED, callable_mp(this, &CurveEditor::_curve_changed));
 	}
 

@@ -30,7 +30,6 @@
 
 #include "gdscript_function.h"
 
-#include "core/core_string_names.h"
 #include "core/os/os.h"
 #include "gdscript.h"
 #include "gdscript_lambda_callable.h"
@@ -2758,7 +2757,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				args[0] = &vref;
 
 				Callable::CallError ce;
-				Variant has_next = obj->call(CoreStringNames::get_singleton()->_iter_init, (const Variant **)args, 1, ce);
+				Variant has_next = obj->call(SNAME("_iter_init"), (const Variant **)args, 1, ce);
 
 #ifdef DEBUG_ENABLED
 				if (ce.error != Callable::CallError::CALL_OK) {
@@ -2772,7 +2771,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					ip = jumpto;
 				} else {
 					GET_INSTRUCTION_ARG(iterator, 2);
-					*iterator = obj->call(CoreStringNames::get_singleton()->_iter_get, (const Variant **)args, 1, ce);
+					*iterator = obj->call(SNAME("_iter_get"), (const Variant **)args, 1, ce);
 #ifdef DEBUG_ENABLED
 					if (ce.error != Callable::CallError::CALL_OK) {
 						err_text = vformat(R"(There was an error calling "_iter_get" on iterator object of type %s.)", *container);
@@ -3089,7 +3088,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				args[0] = &vref;
 
 				Callable::CallError ce;
-				Variant has_next = obj->call(CoreStringNames::get_singleton()->_iter_next, (const Variant **)args, 1, ce);
+				Variant has_next = obj->call(SNAME("_iter_next"), (const Variant **)args, 1, ce);
 
 #ifdef DEBUG_ENABLED
 				if (ce.error != Callable::CallError::CALL_OK) {
@@ -3103,7 +3102,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					ip = jumpto;
 				} else {
 					GET_INSTRUCTION_ARG(iterator, 2);
-					*iterator = obj->call(CoreStringNames::get_singleton()->_iter_get, (const Variant **)args, 1, ce);
+					*iterator = obj->call(SNAME("_iter_get"), (const Variant **)args, 1, ce);
 #ifdef DEBUG_ENABLED
 					if (ce.error != Callable::CallError::CALL_OK) {
 						err_text = vformat(R"(There was an error calling "_iter_get" on iterator object of type %s.)", *container);

@@ -30,7 +30,6 @@
 
 #include "packed_data_container.h"
 
-#include "core/core_string_names.h"
 #include "core/io/marshalls.h"
 
 Variant PackedDataContainer::getvar(const Variant &p_key, bool *r_valid) const {

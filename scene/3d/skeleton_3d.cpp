@@ -36,7 +36,6 @@
 #include "core/variant/type_info.h"
 #include "scene/3d/physics_body_3d.h"
 #include "scene/resources/surface_tool.h"
-#include "scene/scene_string_names.h"
 
 void SkinReference::_skin_changed() {
 	if (skeleton_node) {
@@ -332,7 +331,7 @@ void Skeleton3D::_notification(int p_what) {
 			dirty = false;
 
 #ifdef TOOLS_ENABLED
-			emit_signal(SceneStringNames::get_singleton()->pose_updated);
+			emit_signal(SNAME("pose_updated"));
 #endif // TOOLS_ENABLED
 
 		} break;

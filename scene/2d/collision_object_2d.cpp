@@ -30,8 +30,6 @@
 
 #include "collision_object_2d.h"
 
-#include "scene/scene_string_names.h"
-
 void CollisionObject2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -479,37 +477,37 @@ bool CollisionObject2D::is_pickable() const {
 
 void CollisionObject2D::_input_event(Node *p_viewport, const Ref<InputEvent> &p_input_event, int p_shape) {
 	if (get_script_instance()) {
-		get_script_instance()->call(SceneStringNames::get_singleton()->_input_event, p_viewport, p_input_event, p_shape);
+		get_script_instance()->call(SNAME("_input_event"), p_viewport, p_input_event, p_shape);
 	}
-	emit_signal(SceneStringNames::get_singleton()->input_event, p_viewport, p_input_event, p_shape);
+	emit_signal(SNAME("input_event"), p_viewport, p_input_event, p_shape);
 }
 
 void CollisionObject2D::_mouse_enter() {
 	if (get_script_instance()) {
-		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_enter);
+		get_script_instance()->call(SNAME("_mouse_enter"));
 	}
-	emit_signal(SceneStringNames::get_singleton()->mouse_entered);
+	emit_signal(SNAME("mouse_entered"));
 }
 
 void CollisionObject2D::_mouse_exit() {
 	if (get_script_instance()) {
-		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_exit);
+		get_script_instance()->call(SNAME("_mouse_exit"));
 	}
-	emit_signal(SceneStringNames::get_singleton()->mouse_exited);
+	emit_signal(SNAME("mouse_exited"));
 }
 
 void CollisionObject2D::_mouse_shape_enter(int p_shape) {
 	if (get_script_instance()) {
-		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_shape_enter, p_shape);
+		get_script_instance()->call(SNAME("_mouse_shape_enter"), p_shape);
 	}
-	emit_signal(SceneStringNames::get_singleton()->mouse_shape_entered, p_shape);
+	emit_signal(SNAME("mouse_shape_entered"), p_shape);
 }
 
 void CollisionObject2D::_mouse_shape_exit(int p_shape) {
 	if (get_script_instance()) {
-		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_shape_exit, p_shape);
+		get_script_instance()->call(SNAME("_mouse_shape_exit"), p_shape);
 	}
-	emit_signal(SceneStringNames::get_singleton()->mouse_shape_exited, p_shape);
+	emit_signal(SNAME("mouse_shape_exited"), p_shape);
 }
 
 void CollisionObject2D::set_only_update_transform_changes(bool p_enable) {

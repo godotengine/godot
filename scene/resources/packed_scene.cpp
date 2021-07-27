@@ -32,7 +32,6 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
-#include "core/core_string_names.h"
 #include "core/io/resource_loader.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/node_3d.h"
@@ -193,7 +192,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 					ERR_FAIL_INDEX_V(nprops[j].name, sname_count, nullptr);
 					ERR_FAIL_INDEX_V(nprops[j].value, prop_count, nullptr);
 
-					if (snames[nprops[j].name] == CoreStringNames::get_singleton()->_script) {
+					if (snames[nprops[j].name] == SNAME("script")) {
 						//work around to avoid old script variables from disappearing, should be the proper fix to:
 						//https://github.com/godotengine/godot/issues/2958
 

@@ -39,7 +39,6 @@
 #include "scene/resources/font.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
-#include "scene/scene_string_names.h"
 #include "servers/rendering_server.h"
 
 Mutex CanvasItemMaterial::material_mutex;
@@ -356,7 +355,7 @@ void CanvasItem::_propagate_visibility_changed(bool p_visible) {
 	if (p_visible) {
 		update(); //todo optimize
 	} else {
-		emit_signal(SceneStringNames::get_singleton()->hidden);
+		emit_signal(SNAME("hidden"));
 	}
 	_block();
 
@@ -422,9 +421,9 @@ void CanvasItem::_update_callback() {
 		drawing = true;
 		current_item_drawn = this;
 		notification(NOTIFICATION_DRAW);
-		emit_signal(SceneStringNames::get_singleton()->draw);
+		emit_signal(SNAME("draw"));
 		if (get_script_instance()) {
-			get_script_instance()->call(SceneStringNames::get_singleton()->_draw);
+			get_script_instance()->call(SNAME("_draw"));
 		}
 		current_item_drawn = nullptr;
 		drawing = false;
@@ -574,7 +573,7 @@ void CanvasItem::_notification(int p_what) {
 
 					window = Object::cast_to<Window>(viewport);
 					if (window) {
-						window->connect(SceneStringNames::get_singleton()->visibility_changed, callable_mp(this, &CanvasItem::_window_visibility_changed));
+						window->connect(SNAME("visibility_changed"), callable_mp(this, &CanvasItem::_window_visibility_changed));
 					}
 				}
 			}
@@ -607,7 +606,7 @@ void CanvasItem::_notification(int p_what) {
 				C = nullptr;
 			}
 			if (window) {
-				window->disconnect(SceneStringNames::get_singleton()->visibility_changed, callable_mp(this, &CanvasItem::_window_visibility_changed));
+				window->disconnect(SNAME("visibility_changed"), callable_mp(this, &CanvasItem::_window_visibility_changed));
 			}
 			global_invalid = true;
 		} break;
@@ -615,7 +614,7 @@ void CanvasItem::_notification(int p_what) {
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			emit_signal(SceneStringNames::get_singleton()->visibility_changed);
+			emit_signal(SNAME("visibility_changed"));
 		} break;
 	}
 }
@@ -723,7 +722,7 @@ void CanvasItem::item_rect_changed(bool p_size_changed) {
 	if (p_size_changed) {
 		update();
 	}
-	emit_signal(SceneStringNames::get_singleton()->item_rect_changed);
+	emit_signal(SNAME("item_rect_changed"));
 }
 
 void CanvasItem::draw_line(const Point2 &p_from, const Point2 &p_to, const Color &p_color, real_t p_width) {

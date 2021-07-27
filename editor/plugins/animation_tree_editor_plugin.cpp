@@ -45,7 +45,6 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
 #include "scene/main/window.h"
-#include "scene/scene_string_names.h"
 
 void AnimationTreeEditor::edit(AnimationTree *p_tree) {
 	if (tree == p_tree) {
@@ -180,7 +179,7 @@ void AnimationTreeEditor::remove_plugin(AnimationTreeNodeEditorPlugin *p_editor)
 }
 
 String AnimationTreeEditor::get_base_path() {
-	String path = SceneStringNames::get_singleton()->parameters_base_path;
+	String path = "parameters/";
 	for (int i = 0; i < edited_path.size(); i++) {
 		path += edited_path[i] + "/";
 	}

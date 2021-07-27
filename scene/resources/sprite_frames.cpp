@@ -30,8 +30,6 @@
 
 #include "sprite_frames.h"
 
-#include "scene/scene_string_names.h"
-
 void SpriteFrames::add_frame(const StringName &p_anim, const Ref<Texture2D> &p_frame, int p_at_pos) {
 	Map<StringName, Anim>::Element *E = animations.find(p_anim);
 	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
@@ -149,7 +147,7 @@ bool SpriteFrames::get_animation_loop(const StringName &p_anim) const {
 
 void SpriteFrames::_set_frames(const Array &p_frames) {
 	clear_all();
-	Map<StringName, Anim>::Element *E = animations.find(SceneStringNames::get_singleton()->_default);
+	Map<StringName, Anim>::Element *E = animations.find(SNAME("default"));
 	ERR_FAIL_COND(!E);
 
 	E->get().frames.resize(p_frames.size());
@@ -237,5 +235,5 @@ void SpriteFrames::_bind_methods() {
 }
 
 SpriteFrames::SpriteFrames() {
-	add_animation(SceneStringNames::get_singleton()->_default);
+	add_animation(SNAME("default"));
 }

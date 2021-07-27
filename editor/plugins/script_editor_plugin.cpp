@@ -46,7 +46,6 @@
 #include "editor/node_dock.h"
 #include "editor/plugins/shader_editor_plugin.h"
 #include "scene/main/window.h"
-#include "scene/scene_string_names.h"
 #include "script_text_editor.h"
 #include "servers/display_server.h"
 #include "text_editor.h"
@@ -3579,7 +3578,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	autosave_timer = memnew(Timer);
 	autosave_timer->set_one_shot(false);
-	autosave_timer->connect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &ScriptEditor::_update_autosave_timer));
+	autosave_timer->connect(SNAME("tree_entered"), callable_mp(this, &ScriptEditor::_update_autosave_timer));
 	autosave_timer->connect("timeout", callable_mp(this, &ScriptEditor::_autosave_scripts));
 	add_child(autosave_timer);
 

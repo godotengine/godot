@@ -29,7 +29,6 @@
 /*************************************************************************/
 
 #include "mesh_instance_2d.h"
-#include "scene/scene_string_names.h"
 
 void MeshInstance2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {
@@ -71,7 +70,7 @@ void MeshInstance2D::set_texture(const Ref<Texture2D> &p_texture) {
 	}
 	texture = p_texture;
 	update();
-	emit_signal(SceneStringNames::get_singleton()->texture_changed);
+	emit_signal(SNAME("texture_changed"));
 }
 
 void MeshInstance2D::set_normal_map(const Ref<Texture2D> &p_texture) {

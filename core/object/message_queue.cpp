@@ -31,7 +31,6 @@
 #include "message_queue.h"
 
 #include "core/config/project_settings.h"
-#include "core/core_string_names.h"
 #include "core/object/script_language.h"
 
 MessageQueue *MessageQueue::singleton = nullptr;
@@ -104,7 +103,7 @@ Error MessageQueue::push_notification(ObjectID p_id, int p_notification) {
 	Message *msg = memnew_placement(&buffer[buffer_end], Message);
 
 	msg->type = TYPE_NOTIFICATION;
-	msg->callable = Callable(p_id, CoreStringNames::get_singleton()->notification); //name is meaningless but callable needs it
+	msg->callable = Callable(p_id, SNAME("notification")); //name is meaningless but callable needs it
 	//msg->target;
 	msg->notification = p_notification;
 

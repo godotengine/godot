@@ -31,7 +31,6 @@
 #include "navigation_region_2d.h"
 
 #include "core/config/engine.h"
-#include "core/core_string_names.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/mutex.h"
 #include "servers/navigation_server_2d.h"
@@ -320,7 +319,7 @@ void NavigationPolygon::make_polygons_from_outlines() {
 		polygons.push_back(p);
 	}
 
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(SNAME("changed"));
 }
 
 void NavigationPolygon::_bind_methods() {
@@ -480,14 +479,14 @@ void NavigationRegion2D::set_navigation_polygon(const Ref<NavigationPolygon> &p_
 	}
 
 	if (navpoly.is_valid()) {
-		navpoly->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NavigationRegion2D::_navpoly_changed));
+		navpoly->disconnect(SNAME("changed"), callable_mp(this, &NavigationRegion2D::_navpoly_changed));
 	}
 
 	navpoly = p_navpoly;
 	NavigationServer2D::get_singleton()->region_set_navpoly(region, p_navpoly);
 
 	if (navpoly.is_valid()) {
-		navpoly->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NavigationRegion2D::_navpoly_changed));
+		navpoly->connect(SNAME("changed"), callable_mp(this, &NavigationRegion2D::_navpoly_changed));
 	}
 	_navpoly_changed();
 

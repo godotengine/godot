@@ -31,7 +31,6 @@
 #include "project_settings.h"
 
 #include "core/core_bind.h" // For Compression enum.
-#include "core/core_string_names.h"
 #include "core/input/input_map.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
@@ -173,7 +172,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 			}
 		}
 	} else {
-		if (p_name == CoreStringNames::get_singleton()->_custom_features) {
+		if (p_name == SNAME("_custom_features")) {
 			Vector<String> custom_feature_array = String(p_value).split(",");
 			for (int i = 0; i < custom_feature_array.size(); i++) {
 				custom_features.insert(custom_feature_array[i]);
@@ -706,7 +705,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 	if (p_custom_features != String()) {
 		file->store_32(count + 1);
 		//store how many properties are saved, add one for custom featuers, which must always go first
-		String key = CoreStringNames::get_singleton()->_custom_features;
+		String key = SNAME("_custom_features");
 		file->store_pascal_string(key);
 
 		int len;

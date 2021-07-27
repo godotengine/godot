@@ -32,7 +32,6 @@
 
 #include "animation_blend_tree.h"
 #include "core/config/engine.h"
-#include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
 
 void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
@@ -801,11 +800,11 @@ void AnimationTree::_process_graph(float p_delta) {
 	{
 		if (started) {
 			//if started, seek
-			root->_pre_process(SceneStringNames::get_singleton()->parameters_base_path, nullptr, &state, 0, true, Vector<StringName>());
+			root->_pre_process("parameters/", nullptr, &state, 0, true, Vector<StringName>());
 			started = false;
 		}
 
-		root->_pre_process(SceneStringNames::get_singleton()->parameters_base_path, nullptr, &state, p_delta, false, Vector<StringName>());
+		root->_pre_process("parameters/", nullptr, &state, p_delta, false, Vector<StringName>());
 	}
 
 	if (!state.valid) {
@@ -1385,7 +1384,7 @@ void AnimationTree::_update_properties() {
 	input_activity_map_get.clear();
 
 	if (root.is_valid()) {
-		_update_properties_for_node(SceneStringNames::get_singleton()->parameters_base_path, root);
+		_update_properties_for_node("parameters/", root);
 	}
 
 	properties_dirty = false;

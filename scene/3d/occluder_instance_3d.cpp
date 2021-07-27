@@ -29,7 +29,6 @@
 /*************************************************************************/
 
 #include "occluder_instance_3d.h"
-#include "core/core_string_names.h"
 #include "scene/3d/mesh_instance_3d.h"
 
 RID Occluder3D::get_rid() const {
@@ -161,14 +160,14 @@ void OccluderInstance3D::set_occluder(const Ref<Occluder3D> &p_occluder) {
 	}
 
 	if (occluder.is_valid()) {
-		occluder->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &OccluderInstance3D::_occluder_changed));
+		occluder->disconnect(SNAME("changed"), callable_mp(this, &OccluderInstance3D::_occluder_changed));
 	}
 
 	occluder = p_occluder;
 
 	if (occluder.is_valid()) {
 		set_base(occluder->get_rid());
-		occluder->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &OccluderInstance3D::_occluder_changed));
+		occluder->connect(SNAME("changed"), callable_mp(this, &OccluderInstance3D::_occluder_changed));
 	} else {
 		set_base(RID());
 	}

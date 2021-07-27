@@ -35,7 +35,6 @@
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
-#include "scene/scene_string_names.h"
 
 /*
 
@@ -177,11 +176,11 @@ void Node3D::_notification(int p_what) {
 			ERR_FAIL_COND(!data.viewport);
 
 			if (get_script_instance()) {
-				get_script_instance()->call(SceneStringNames::get_singleton()->_enter_world);
+				get_script_instance()->call(SNAME("_enter_world"));
 			}
 #ifdef TOOLS_ENABLED
 			if (Engine::get_singleton()->is_editor_hint() && get_tree()->is_node_being_edited(this)) {
-				get_tree()->call_group_flags(0, SceneStringNames::get_singleton()->_spatial_editor_group, SceneStringNames::get_singleton()->_request_gizmo, this);
+				get_tree()->call_group_flags(0, SNAME("_spatial_editor_group"), SNAME("_request_gizmo"), this);
 				if (!data.gizmos_disabled) {
 					for (int i = 0; i < data.gizmos.size(); i++) {
 						data.gizmos.write[i]->create();
@@ -201,7 +200,7 @@ void Node3D::_notification(int p_what) {
 #endif
 
 			if (get_script_instance()) {
-				get_script_instance()->call(SceneStringNames::get_singleton()->_exit_world);
+				get_script_instance()->call(SNAME("_exit_world"));
 			}
 
 			data.viewport = nullptr;
@@ -389,7 +388,7 @@ void Node3D::clear_subgizmo_selection() {
 	}
 
 	if (Engine::get_singleton()->is_editor_hint() && get_tree()->is_node_being_edited(this)) {
-		get_tree()->call_group_flags(0, SceneStringNames::get_singleton()->_spatial_editor_group, SceneStringNames::get_singleton()->_clear_subgizmo_selection, this);
+		get_tree()->call_group_flags(0, SNAME("_spatial_editor_group"), SNAME("_clear_subgizmo_selection"), this);
 	}
 #endif
 }
@@ -519,7 +518,7 @@ Ref<World3D> Node3D::get_world_3d() const {
 
 void Node3D::_propagate_visibility_changed() {
 	notification(NOTIFICATION_VISIBILITY_CHANGED);
-	emit_signal(SceneStringNames::get_singleton()->visibility_changed);
+	emit_signal(SNAME("visibility_changed"));
 #ifdef TOOLS_ENABLED
 	if (!data.gizmos.is_empty()) {
 		data.gizmos_dirty = true;

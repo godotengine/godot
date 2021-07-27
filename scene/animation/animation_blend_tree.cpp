@@ -30,8 +30,6 @@
 
 #include "animation_blend_tree.h"
 
-#include "scene/scene_string_names.h"
-
 void AnimationNodeAnimation::set_animation(const StringName &p_name) {
 	animation = p_name;
 }
@@ -806,7 +804,7 @@ AnimationNodeOutput::AnimationNodeOutput() {
 void AnimationNodeBlendTree::add_node(const StringName &p_name, Ref<AnimationNode> p_node, const Vector2 &p_position) {
 	ERR_FAIL_COND(nodes.has(p_name));
 	ERR_FAIL_COND(p_node.is_null());
-	ERR_FAIL_COND(p_name == SceneStringNames::get_singleton()->output);
+	ERR_FAIL_COND(p_name == SNAME("output"));
 	ERR_FAIL_COND(String(p_name).find("/") != -1);
 
 	Node n;
@@ -876,7 +874,7 @@ Vector<StringName> AnimationNodeBlendTree::get_node_connection_array(const Strin
 
 void AnimationNodeBlendTree::remove_node(const StringName &p_name) {
 	ERR_FAIL_COND(!nodes.has(p_name));
-	ERR_FAIL_COND(p_name == SceneStringNames::get_singleton()->output); //can't delete output
+	ERR_FAIL_COND(p_name == SNAME("output")); //can't delete output
 
 	{
 		Ref<AnimationNode> node = nodes[p_name].node;
@@ -902,8 +900,8 @@ void AnimationNodeBlendTree::remove_node(const StringName &p_name) {
 void AnimationNodeBlendTree::rename_node(const StringName &p_name, const StringName &p_new_name) {
 	ERR_FAIL_COND(!nodes.has(p_name));
 	ERR_FAIL_COND(nodes.has(p_new_name));
-	ERR_FAIL_COND(p_name == SceneStringNames::get_singleton()->output);
-	ERR_FAIL_COND(p_new_name == SceneStringNames::get_singleton()->output);
+	ERR_FAIL_COND(p_name == SNAME("output"));
+	ERR_FAIL_COND(p_new_name == SNAME("output"));
 
 	nodes[p_name].node->disconnect("changed", callable_mp(this, &AnimationNodeBlendTree::_node_changed));
 
@@ -927,7 +925,7 @@ void AnimationNodeBlendTree::rename_node(const StringName &p_name, const StringN
 void AnimationNodeBlendTree::connect_node(const StringName &p_input_node, int p_input_index, const StringName &p_output_node) {
 	ERR_FAIL_COND(!nodes.has(p_output_node));
 	ERR_FAIL_COND(!nodes.has(p_input_node));
-	ERR_FAIL_COND(p_output_node == SceneStringNames::get_singleton()->output);
+	ERR_FAIL_COND(p_output_node == SNAME("output"));
 	ERR_FAIL_COND(p_input_node == p_output_node);
 
 	Ref<AnimationNode> input = nodes[p_input_node].node;
@@ -955,7 +953,7 @@ void AnimationNodeBlendTree::disconnect_node(const StringName &p_node, int p_inp
 }
 
 AnimationNodeBlendTree::ConnectionError AnimationNodeBlendTree::can_connect_node(const StringName &p_input_node, int p_input_index, const StringName &p_output_node) const {
-	if (!nodes.has(p_output_node) || p_output_node == SceneStringNames::get_singleton()->output) {
+	if (!nodes.has(p_output_node) || p_output_node == SNAME("output")) {
 		return CONNECTION_ERROR_NO_OUTPUT;
 	}
 
@@ -1008,8 +1006,8 @@ String AnimationNodeBlendTree::get_caption() const {
 }
 
 float AnimationNodeBlendTree::process(float p_time, bool p_seek) {
-	Ref<AnimationNodeOutput> output = nodes[SceneStringNames::get_singleton()->output].node;
-	return _blend_node("output", nodes[SceneStringNames::get_singleton()->output].connections, this, output, p_time, p_seek, 1.0);
+	Ref<AnimationNodeOutput> output = nodes[SNAME("output")].node;
+	return _blend_node("output", nodes[SNAME("output")].connections, this, output, p_time, p_seek, 1.0);
 }
 
 void AnimationNodeBlendTree::get_node_list(List<StringName> *r_list) {

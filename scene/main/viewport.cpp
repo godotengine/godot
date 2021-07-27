@@ -31,7 +31,6 @@
 #include "viewport.h"
 
 #include "core/config/project_settings.h"
-#include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/input/input.h"
 #include "core/os/os.h"
@@ -54,7 +53,6 @@
 #include "scene/main/timer.h"
 #include "scene/main/window.h"
 #include "scene/resources/mesh.h"
-#include "scene/scene_string_names.h"
 #include "servers/display_server.h"
 #include "servers/physics_server_2d.h"
 
@@ -1230,7 +1228,7 @@ void Viewport::set_world_3d(const Ref<World3D> &p_world_3d) {
 	}
 
 	if (own_world_3d.is_valid() && world_3d.is_valid()) {
-		world_3d->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Viewport::_own_world_3d_changed));
+		world_3d->disconnect(SNAME("changed"), callable_mp(this, &Viewport::_own_world_3d_changed));
 	}
 
 	world_3d = p_world_3d;
@@ -1238,7 +1236,7 @@ void Viewport::set_world_3d(const Ref<World3D> &p_world_3d) {
 	if (own_world_3d.is_valid()) {
 		if (world_3d.is_valid()) {
 			own_world_3d = world_3d->duplicate();
-			world_3d->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Viewport::_own_world_3d_changed));
+			world_3d->connect(SNAME("changed"), callable_mp(this, &Viewport::_own_world_3d_changed));
 		} else {
 			own_world_3d = Ref<World3D>(memnew(World3D));
 		}
@@ -1624,7 +1622,7 @@ void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_inpu
 		Control *control = Object::cast_to<Control>(ci);
 		if (control) {
 			if (control->data.mouse_filter != Control::MOUSE_FILTER_IGNORE) {
-				control->emit_signal(SceneStringNames::get_singleton()->gui_input, ev); //signal should be first, so it's possible to override an event (and then accept it)
+				control->emit_signal(SNAME("gui_input"), ev); //signal should be first, so it's possible to override an event (and then accept it)
 			}
 			if (gui.key_event_accepted) {
 				break;
@@ -1639,9 +1637,9 @@ void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_inpu
 				Variant event = ev;
 				const Variant *args[1] = { &event };
 				if (control->get_script_instance()) {
-					control->get_script_instance()->call(SceneStringNames::get_singleton()->_gui_input, args, 1, error);
+					control->get_script_instance()->call(SNAME("_gui_input"), args, 1, error);
 				}
-				MethodBind *method = ClassDB::get_method(control->get_class_name(), SceneStringNames::get_singleton()->_gui_input);
+				MethodBind *method = ClassDB::get_method(control->get_class_name(), SNAME("_gui_input"));
 				if (method) {
 					method->call(control, args, 1, error);
 				}
@@ -2372,9 +2370,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		if (gui.key_focus) {
 			gui.key_event_accepted = false;
 			if (gui.key_focus->can_process()) {
-				gui.key_focus->call(SceneStringNames::get_singleton()->_gui_input, p_event);
+				gui.key_focus->call(SNAME("_gui_input"), p_event);
 				if (gui.key_focus) { //maybe lost it
-					gui.key_focus->emit_signal(SceneStringNames::get_singleton()->gui_input, p_event);
+					gui.key_focus->emit_signal(SNAME("gui_input"), p_event);
 				}
 			}
 
@@ -2595,7 +2593,7 @@ void Viewport::_drop_mouse_focus() {
 			mb->set_global_position(c->get_local_mouse_position());
 			mb->set_button_index(MouseButton(i + 1));
 			mb->set_pressed(false);
-			c->call(SceneStringNames::get_singleton()->_gui_input, mb);
+			c->call(SNAME("_gui_input"), mb);
 		}
 	}
 }
@@ -2707,7 +2705,7 @@ void Viewport::_post_gui_grab_click_focus() {
 				mb->set_position(click);
 				mb->set_button_index(MouseButton(i + 1));
 				mb->set_pressed(false);
-				gui.mouse_focus->call(SceneStringNames::get_singleton()->_gui_input, mb);
+				gui.mouse_focus->call(SNAME("_gui_input"), mb);
 			}
 		}
 
@@ -2725,7 +2723,7 @@ void Viewport::_post_gui_grab_click_focus() {
 				mb->set_position(click);
 				mb->set_button_index(MouseButton(i + 1));
 				mb->set_pressed(true);
-				gui.mouse_focus->call_deferred(SceneStringNames::get_singleton()->_gui_input, mb);
+				gui.mouse_focus->call_deferred(SNAME("_gui_input"), mb);
 			}
 		}
 	}
@@ -3149,12 +3147,12 @@ void Viewport::set_use_own_world_3d(bool p_world_3d) {
 	if (!p_world_3d) {
 		own_world_3d = Ref<World3D>();
 		if (world_3d.is_valid()) {
-			world_3d->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Viewport::_own_world_3d_changed));
+			world_3d->disconnect(SNAME("changed"), callable_mp(this, &Viewport::_own_world_3d_changed));
 		}
 	} else {
 		if (world_3d.is_valid()) {
 			own_world_3d = world_3d->duplicate();
-			world_3d->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Viewport::_own_world_3d_changed));
+			world_3d->connect(SNAME("changed"), callable_mp(this, &Viewport::_own_world_3d_changed));
 		} else {
 			own_world_3d = Ref<World3D>(memnew(World3D));
 		}

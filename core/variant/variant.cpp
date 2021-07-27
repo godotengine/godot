@@ -30,7 +30,6 @@
 
 #include "variant.h"
 
-#include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
@@ -2036,7 +2035,7 @@ Variant::operator ::RID() const {
 		}
 #endif
 		Callable::CallError ce;
-		Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->get_rid, nullptr, 0, ce);
+		Variant ret = _get_obj().obj->call(SNAME("get_rid"), nullptr, 0, ce);
 		if (ce.error == Callable::CallError::CALL_OK && ret.get_type() == Variant::RID) {
 			return ret;
 		}

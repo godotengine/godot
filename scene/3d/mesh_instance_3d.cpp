@@ -31,7 +31,6 @@
 #include "mesh_instance_3d.h"
 
 #include "collision_shape_3d.h"
-#include "core/core_string_names.h"
 #include "physics_body_3d.h"
 #include "scene/resources/material.h"
 #include "skeleton_3d.h"
@@ -111,7 +110,7 @@ void MeshInstance3D::set_mesh(const Ref<Mesh> &p_mesh) {
 	}
 
 	if (mesh.is_valid()) {
-		mesh->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &MeshInstance3D::_mesh_changed));
+		mesh->disconnect(SNAME("changed"), callable_mp(this, &MeshInstance3D::_mesh_changed));
 	}
 
 	mesh = p_mesh;
@@ -125,7 +124,7 @@ void MeshInstance3D::set_mesh(const Ref<Mesh> &p_mesh) {
 			blend_shape_tracks["blend_shapes/" + String(mesh->get_blend_shape_name(i))] = mt;
 		}
 
-		mesh->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &MeshInstance3D::_mesh_changed));
+		mesh->connect(SNAME("changed"), callable_mp(this, &MeshInstance3D::_mesh_changed));
 		surface_override_materials.resize(mesh->get_surface_count());
 
 		set_base(mesh->get_rid());

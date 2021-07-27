@@ -32,7 +32,6 @@
 
 #include "core/os/os.h"
 #include "scene/main/viewport.h"
-#include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED
 Dictionary AnimatedSprite2D::_edit_get_state() const {
@@ -179,7 +178,7 @@ void AnimatedSprite2D::_notification(int p_what) {
 								frame = 0;
 							}
 
-							emit_signal(SceneStringNames::get_singleton()->animation_finished);
+							emit_signal(SNAME("animation_finished"));
 						} else {
 							if (backwards) {
 								frame = 0;
@@ -189,7 +188,7 @@ void AnimatedSprite2D::_notification(int p_what) {
 
 							if (!is_over) {
 								is_over = true;
-								emit_signal(SceneStringNames::get_singleton()->animation_finished);
+								emit_signal(SNAME("animation_finished"));
 							}
 						}
 					} else {
@@ -202,7 +201,7 @@ void AnimatedSprite2D::_notification(int p_what) {
 
 					update();
 
-					emit_signal(SceneStringNames::get_singleton()->frame_changed);
+					emit_signal(SNAME("frame_changed"));
 				}
 
 				float to_process = MIN(timeout, remaining);
@@ -303,7 +302,7 @@ void AnimatedSprite2D::set_frame(int p_frame) {
 	_reset_timeout();
 	update();
 
-	emit_signal(SceneStringNames::get_singleton()->frame_changed);
+	emit_signal(SNAME("frame_changed"));
 }
 
 int AnimatedSprite2D::get_frame() const {

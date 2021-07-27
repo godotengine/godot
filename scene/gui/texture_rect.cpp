@@ -29,7 +29,6 @@
 /*************************************************************************/
 
 #include "texture_rect.h"
-#include "core/core_string_names.h"
 #include "servers/rendering_server.h"
 
 void TextureRect::_notification(int p_what) {
@@ -162,13 +161,13 @@ void TextureRect::set_texture(const Ref<Texture2D> &p_tex) {
 	}
 
 	if (texture.is_valid()) {
-		texture->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &TextureRect::_texture_changed));
+		texture->disconnect(SNAME("changed"), callable_mp(this, &TextureRect::_texture_changed));
 	}
 
 	texture = p_tex;
 
 	if (texture.is_valid()) {
-		texture->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &TextureRect::_texture_changed));
+		texture->connect(SNAME("changed"), callable_mp(this, &TextureRect::_texture_changed));
 	}
 
 	update();

@@ -35,7 +35,6 @@
 #include "core/string/translation.h"
 #include "scene/gui/control.h"
 #include "scene/resources/font.h"
-#include "scene/scene_string_names.h"
 
 void Window::set_title(const String &p_title) {
 	title = p_title;
@@ -401,7 +400,7 @@ void Window::set_visible(bool p_visible) {
 		focused = false;
 	}
 	notification(NOTIFICATION_VISIBILITY_CHANGED);
-	emit_signal(SceneStringNames::get_singleton()->visibility_changed);
+	emit_signal(SNAME("visibility_changed"));
 
 	RS::get_singleton()->viewport_set_active(get_viewport_rid(), visible);
 
@@ -750,7 +749,7 @@ void Window::_notification(int p_what) {
 		}
 		if (visible) {
 			notification(NOTIFICATION_VISIBILITY_CHANGED);
-			emit_signal(SceneStringNames::get_singleton()->visibility_changed);
+			emit_signal(SNAME("visibility_changed"));
 			RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
 		}
 	}
@@ -912,7 +911,7 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 		}
 	}
 
-	emit_signal(SceneStringNames::get_singleton()->window_input, p_ev);
+	emit_signal(SNAME("window_input"), p_ev);
 
 	input(p_ev);
 	if (!is_input_handled()) {

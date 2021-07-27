@@ -30,9 +30,7 @@
 
 #include "shader_globals_override.h"
 
-#include "core/core_string_names.h"
 #include "scene/main/window.h"
-#include "scene/scene_string_names.h"
 
 StringName *ShaderGlobalsOverride::_remap(const StringName &p_name) const {
 	StringName *r = param_remaps.getptr(p_name);
@@ -223,11 +221,11 @@ void ShaderGlobalsOverride::_get_property_list(List<PropertyInfo> *p_list) const
 
 void ShaderGlobalsOverride::_activate() {
 	List<Node *> nodes;
-	get_tree()->get_nodes_in_group(SceneStringNames::get_singleton()->shader_overrides_group_active, &nodes);
+	get_tree()->get_nodes_in_group(SNAME("_shader_overrides_group_active_"), &nodes);
 	if (nodes.size() == 0) {
 		//good we are the only override, enable all
 		active = true;
-		add_to_group(SceneStringNames::get_singleton()->shader_overrides_group_active);
+		add_to_group(SNAME("_shader_overrides_group_active_"));
 
 		const StringName *K = nullptr;
 		while ((K = overrides.next(K))) {
@@ -248,7 +246,7 @@ void ShaderGlobalsOverride::_activate() {
 
 void ShaderGlobalsOverride::_notification(int p_what) {
 	if (p_what == Node3D::NOTIFICATION_ENTER_TREE) {
-		add_to_group(SceneStringNames::get_singleton()->shader_overrides_group);
+		add_to_group(SNAME("_shader_overrides_group_"));
 		_activate();
 
 	} else if (p_what == Node3D::NOTIFICATION_EXIT_TREE) {
@@ -263,9 +261,9 @@ void ShaderGlobalsOverride::_notification(int p_what) {
 			}
 		}
 
-		remove_from_group(SceneStringNames::get_singleton()->shader_overrides_group_active);
-		remove_from_group(SceneStringNames::get_singleton()->shader_overrides_group);
-		get_tree()->call_group(SceneStringNames::get_singleton()->shader_overrides_group, "_activate"); //another may want to activate when this is removed
+		remove_from_group(SNAME("_shader_overrides_group_active_"));
+		remove_from_group(SNAME("_shader_overrides_group_"));
+		get_tree()->call_group(SNAME("_shader_overrides_group_"), "_activate"); //another may want to activate when this is removed
 		active = false;
 	}
 }

@@ -36,7 +36,6 @@
 #include "scene/2d/physics_body_2d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/main/window.h"
-#include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED
 Rect2 VisibleOnScreenNotifier2D::_edit_get_rect() const {
@@ -54,7 +53,7 @@ void VisibleOnScreenNotifier2D::_visibility_enter() {
 	}
 
 	on_screen = true;
-	emit_signal(SceneStringNames::get_singleton()->screen_entered);
+	emit_signal(SNAME("screen_entered"));
 	_screen_enter();
 }
 void VisibleOnScreenNotifier2D::_visibility_exit() {
@@ -63,7 +62,7 @@ void VisibleOnScreenNotifier2D::_visibility_exit() {
 	}
 
 	on_screen = false;
-	emit_signal(SceneStringNames::get_singleton()->screen_exited);
+	emit_signal(SNAME("screen_exited"));
 	_screen_exit();
 }
 

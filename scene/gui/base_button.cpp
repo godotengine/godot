@@ -32,7 +32,6 @@
 
 #include "core/os/keyboard.h"
 #include "scene/main/window.h"
-#include "scene/scene_string_names.h"
 
 void BaseButton::_unpress_group() {
 	if (!button_group.is_valid()) {
@@ -122,7 +121,7 @@ void BaseButton::_notification(int p_what) {
 
 void BaseButton::_pressed() {
 	if (get_script_instance()) {
-		get_script_instance()->call(SceneStringNames::get_singleton()->_pressed);
+		get_script_instance()->call(SNAME("_pressed"));
 	}
 	pressed();
 	emit_signal(SNAME("pressed"));
@@ -130,7 +129,7 @@ void BaseButton::_pressed() {
 
 void BaseButton::_toggled(bool p_pressed) {
 	if (get_script_instance()) {
-		get_script_instance()->call(SceneStringNames::get_singleton()->_toggled, p_pressed);
+		get_script_instance()->call(SNAME("_toggled"), p_pressed);
 	}
 	toggled(p_pressed);
 	emit_signal(SNAME("toggled"), p_pressed);

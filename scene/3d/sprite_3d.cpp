@@ -30,9 +30,6 @@
 
 #include "sprite_3d.h"
 
-#include "core/core_string_names.h"
-#include "scene/scene_string_names.h"
-
 Color SpriteBase3D::_get_color_accum() {
 	if (!color_dirty) {
 		return color_accum;
@@ -177,7 +174,7 @@ void SpriteBase3D::_queue_update() {
 	update_gizmos();
 
 	pending_update = true;
-	call_deferred(SceneStringNames::get_singleton()->_im_update);
+	call_deferred(SNAME("_im_update"));
 }
 
 AABB SpriteBase3D::get_aabb() const {
@@ -618,11 +615,11 @@ void Sprite3D::set_texture(const Ref<Texture2D> &p_texture) {
 		return;
 	}
 	if (texture.is_valid()) {
-		texture->disconnect(CoreStringNames::get_singleton()->changed, Callable(this, "_queue_update"));
+		texture->disconnect(SNAME("changed"), Callable(this, "_queue_update"));
 	}
 	texture = p_texture;
 	if (texture.is_valid()) {
-		texture->connect(CoreStringNames::get_singleton()->changed, Callable(this, "_queue_update"));
+		texture->connect(SNAME("changed"), Callable(this, "_queue_update"));
 	}
 	_queue_update();
 }
@@ -663,7 +660,7 @@ void Sprite3D::set_frame(int p_frame) {
 
 	_queue_update();
 
-	emit_signal(SceneStringNames::get_singleton()->frame_changed);
+	emit_signal(SNAME("frame_changed"));
 }
 
 int Sprite3D::get_frame() const {
@@ -1050,13 +1047,13 @@ void AnimatedSprite3D::_notification(int p_what) {
 						} else {
 							frame = fc - 1;
 						}
-						emit_signal(SceneStringNames::get_singleton()->animation_finished);
+						emit_signal(SNAME("animation_finished"));
 					} else {
 						frame++;
 					}
 
 					_queue_update();
-					emit_signal(SceneStringNames::get_singleton()->frame_changed);
+					emit_signal(SNAME("frame_changed"));
 				}
 
 				float to_process = MIN(timeout, remaining);
@@ -1114,7 +1111,7 @@ void AnimatedSprite3D::set_frame(int p_frame) {
 	frame = p_frame;
 	_reset_timeout();
 	_queue_update();
-	emit_signal(SceneStringNames::get_singleton()->frame_changed);
+	emit_signal(SNAME("frame_changed"));
 }
 
 int AnimatedSprite3D::get_frame() const {

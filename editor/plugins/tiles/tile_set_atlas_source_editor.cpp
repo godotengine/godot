@@ -44,7 +44,6 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
 
-#include "core/core_string_names.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
 
@@ -108,7 +107,7 @@ void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::edit(Ref<TileSet> 
 
 	// Disconnect to changes.
 	if (tile_set_atlas_source) {
-		tile_set_atlas_source->disconnect(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed));
+		tile_set_atlas_source->disconnect(SNAME("property_list_changed"), callable_mp((Object *)this, &Object::notify_property_list_changed));
 	}
 
 	tile_set = p_tile_set;
@@ -117,8 +116,8 @@ void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::edit(Ref<TileSet> 
 
 	// Connect to changes.
 	if (tile_set_atlas_source) {
-		if (!tile_set_atlas_source->is_connected(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed))) {
-			tile_set_atlas_source->connect(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed));
+		if (!tile_set_atlas_source->is_connected(SNAME("property_list_changed"), callable_mp((Object *)this, &Object::notify_property_list_changed))) {
+			tile_set_atlas_source->connect(SNAME("property_list_changed"), callable_mp((Object *)this, &Object::notify_property_list_changed));
 		}
 	}
 
@@ -325,8 +324,8 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::edit(TileSetAtlasSource *p_
 
 		if (tile_set_atlas_source && tile_set_atlas_source->has_tile(coords) && tile_set_atlas_source->has_alternative_tile(coords, alternative)) {
 			TileData *tile_data = Object::cast_to<TileData>(tile_set_atlas_source->get_tile_data(coords, alternative));
-			if (tile_data->is_connected(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed))) {
-				tile_data->disconnect(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed));
+			if (tile_data->is_connected(SNAME("property_list_changed"), callable_mp((Object *)this, &Object::notify_property_list_changed))) {
+				tile_data->disconnect(SNAME("property_list_changed"), callable_mp((Object *)this, &Object::notify_property_list_changed));
 			}
 		}
 	}
@@ -341,8 +340,8 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::edit(TileSetAtlasSource *p_
 
 		if (tile_set_atlas_source->has_tile(coords) && tile_set_atlas_source->has_alternative_tile(coords, alternative)) {
 			TileData *tile_data = Object::cast_to<TileData>(tile_set_atlas_source->get_tile_data(coords, alternative));
-			if (!tile_data->is_connected(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed))) {
-				tile_data->connect(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed));
+			if (!tile_data->is_connected(SNAME("property_list_changed"), callable_mp((Object *)this, &Object::notify_property_list_changed))) {
+				tile_data->connect(SNAME("property_list_changed"), callable_mp((Object *)this, &Object::notify_property_list_changed));
 			}
 		}
 	}

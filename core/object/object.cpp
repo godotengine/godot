@@ -30,7 +30,6 @@
 
 #include "object.h"
 
-#include "core/core_string_names.h"
 #include "core/io/resource.h"
 #include "core/object/class_db.h"
 #include "core/object/message_queue.h"
@@ -413,14 +412,14 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 		}
 	}
 
-	if (p_name == CoreStringNames::get_singleton()->_script) {
+	if (p_name == SNAME("script")) {
 		set_script(p_value);
 		if (r_valid) {
 			*r_valid = true;
 		}
 		return;
 
-	} else if (p_name == CoreStringNames::get_singleton()->_meta) {
+	} else if (p_name == SNAME("__meta__")) {
 		//set_meta(p_name,p_value);
 		metadata = p_value.duplicate();
 		if (r_valid) {
@@ -495,14 +494,14 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 		}
 	}
 
-	if (p_name == CoreStringNames::get_singleton()->_script) {
+	if (p_name == SNAME("script")) {
 		ret = get_script();
 		if (r_valid) {
 			*r_valid = true;
 		}
 		return ret;
 
-	} else if (p_name == CoreStringNames::get_singleton()->_meta) {
+	} else if (p_name == SNAME("__meta__")) {
 		ret = metadata;
 		if (r_valid) {
 			*r_valid = true;
@@ -706,7 +705,7 @@ Variant Object::_call_deferred_bind(const Variant **p_args, int p_argcount, Call
 }
 
 bool Object::has_method(const StringName &p_method) const {
-	if (p_method == CoreStringNames::get_singleton()->_free) {
+	if (p_method == SNAME("free")) {
 		return true;
 	}
 
@@ -777,7 +776,7 @@ Variant Object::call(const StringName &p_name, VARIANT_ARG_DECLARE) {
 Variant Object::call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_OK;
 
-	if (p_method == CoreStringNames::get_singleton()->_free) {
+	if (p_method == SNAME("free")) {
 //free must be here, before anything, always ready
 #ifdef DEBUG_ENABLED
 		if (p_argcount != 0) {
@@ -897,7 +896,7 @@ void Object::set_script(const Variant &p_script) {
 	}
 
 	notify_property_list_changed(); //scripts may add variables, so refresh is desired
-	emit_signal(CoreStringNames::get_singleton()->script_changed);
+	emit_signal(SNAME("script_changed"));
 }
 
 void Object::set_script_instance(ScriptInstance *p_instance) {
@@ -1536,7 +1535,7 @@ void Object::clear_internal_resource_paths() {
 }
 
 void Object::notify_property_list_changed() {
-	emit_signal(CoreStringNames::get_singleton()->property_list_changed);
+	emit_signal(SNAME("property_list_changed"));
 }
 
 void Object::_bind_methods() {

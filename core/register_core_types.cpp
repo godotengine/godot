@@ -33,7 +33,6 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/core_bind.h"
-#include "core/core_string_names.h"
 #include "core/crypto/aes_context.h"
 #include "core/crypto/crypto.h"
 #include "core/crypto/hashing_context.h"
@@ -117,8 +116,6 @@ void register_core_types() {
 	register_global_constants();
 
 	Variant::register_types();
-
-	CoreStringNames::create();
 
 	resource_format_po.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_format_po);
@@ -360,6 +357,5 @@ void unregister_core_types() {
 
 	ClassDB::cleanup();
 	ResourceCache::clear();
-	CoreStringNames::free();
 	StringName::cleanup();
 }

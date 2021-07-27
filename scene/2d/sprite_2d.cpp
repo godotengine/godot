@@ -30,10 +30,8 @@
 
 #include "sprite_2d.h"
 
-#include "core/core_string_names.h"
 #include "core/os/os.h"
 #include "scene/main/window.h"
-#include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED
 Dictionary Sprite2D::_edit_get_state() const {
@@ -143,17 +141,17 @@ void Sprite2D::set_texture(const Ref<Texture2D> &p_texture) {
 	}
 
 	if (texture.is_valid()) {
-		texture->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Sprite2D::_texture_changed));
+		texture->disconnect(SNAME("changed"), callable_mp(this, &Sprite2D::_texture_changed));
 	}
 
 	texture = p_texture;
 
 	if (texture.is_valid()) {
-		texture->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Sprite2D::_texture_changed));
+		texture->connect(SNAME("changed"), callable_mp(this, &Sprite2D::_texture_changed));
 	}
 
 	update();
-	emit_signal(SceneStringNames::get_singleton()->texture_changed);
+	emit_signal(SNAME("texture_changed"));
 	item_rect_changed();
 }
 
@@ -247,7 +245,7 @@ void Sprite2D::set_frame(int p_frame) {
 
 	frame = p_frame;
 
-	emit_signal(SceneStringNames::get_singleton()->frame_changed);
+	emit_signal(SNAME("frame_changed"));
 }
 
 int Sprite2D::get_frame() const {

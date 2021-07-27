@@ -30,8 +30,6 @@
 
 #include "open_simplex_noise.h"
 
-#include "core/core_string_names.h"
-
 OpenSimplexNoise::OpenSimplexNoise() {
 	_init_seeds();
 }

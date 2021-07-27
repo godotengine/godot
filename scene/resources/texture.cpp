@@ -30,7 +30,6 @@
 
 #include "texture.h"
 
-#include "core/core_string_names.h"
 #include "core/io/image_loader.h"
 #include "core/os/os.h"
 #include "mesh.h"
@@ -1450,11 +1449,11 @@ void CurveTexture::ensure_default_setup(float p_min, float p_max) {
 void CurveTexture::set_curve(Ref<Curve> p_curve) {
 	if (_curve != p_curve) {
 		if (_curve.is_valid()) {
-			_curve->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveTexture::_update));
+			_curve->disconnect(SNAME("changed"), callable_mp(this, &CurveTexture::_update));
 		}
 		_curve = p_curve;
 		if (_curve.is_valid()) {
-			_curve->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveTexture::_update));
+			_curve->connect(SNAME("changed"), callable_mp(this, &CurveTexture::_update));
 		}
 		_update();
 	}
@@ -1612,11 +1611,11 @@ void CurveXYZTexture::ensure_default_setup(float p_min, float p_max) {
 void CurveXYZTexture::set_curve_x(Ref<Curve> p_curve) {
 	if (_curve_x != p_curve) {
 		if (_curve_x.is_valid()) {
-			_curve_x->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update));
+			_curve_x->disconnect(SNAME("changed"), callable_mp(this, &CurveXYZTexture::_update));
 		}
 		_curve_x = p_curve;
 		if (_curve_x.is_valid()) {
-			_curve_x->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update), varray(), CONNECT_REFERENCE_COUNTED);
+			_curve_x->connect(SNAME("changed"), callable_mp(this, &CurveXYZTexture::_update), varray(), CONNECT_REFERENCE_COUNTED);
 		}
 		_update();
 	}
@@ -1625,11 +1624,11 @@ void CurveXYZTexture::set_curve_x(Ref<Curve> p_curve) {
 void CurveXYZTexture::set_curve_y(Ref<Curve> p_curve) {
 	if (_curve_y != p_curve) {
 		if (_curve_y.is_valid()) {
-			_curve_y->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update));
+			_curve_y->disconnect(SNAME("changed"), callable_mp(this, &CurveXYZTexture::_update));
 		}
 		_curve_y = p_curve;
 		if (_curve_y.is_valid()) {
-			_curve_y->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update), varray(), CONNECT_REFERENCE_COUNTED);
+			_curve_y->connect(SNAME("changed"), callable_mp(this, &CurveXYZTexture::_update), varray(), CONNECT_REFERENCE_COUNTED);
 		}
 		_update();
 	}
@@ -1638,11 +1637,11 @@ void CurveXYZTexture::set_curve_y(Ref<Curve> p_curve) {
 void CurveXYZTexture::set_curve_z(Ref<Curve> p_curve) {
 	if (_curve_z != p_curve) {
 		if (_curve_z.is_valid()) {
-			_curve_z->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update));
+			_curve_z->disconnect(SNAME("changed"), callable_mp(this, &CurveXYZTexture::_update));
 		}
 		_curve_z = p_curve;
 		if (_curve_z.is_valid()) {
-			_curve_z->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update), varray(), CONNECT_REFERENCE_COUNTED);
+			_curve_z->connect(SNAME("changed"), callable_mp(this, &CurveXYZTexture::_update), varray(), CONNECT_REFERENCE_COUNTED);
 		}
 		_update();
 	}
@@ -1770,11 +1769,11 @@ void GradientTexture::set_gradient(Ref<Gradient> p_gradient) {
 		return;
 	}
 	if (gradient.is_valid()) {
-		gradient->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &GradientTexture::_update));
+		gradient->disconnect(SNAME("changed"), callable_mp(this, &GradientTexture::_update));
 	}
 	gradient = p_gradient;
 	if (gradient.is_valid()) {
-		gradient->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &GradientTexture::_update));
+		gradient->connect(SNAME("changed"), callable_mp(this, &GradientTexture::_update));
 	}
 	_update();
 	emit_changed();

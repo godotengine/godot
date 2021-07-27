@@ -30,7 +30,6 @@
 
 #include "node.h"
 
-#include "core/core_string_names.h"
 #include "core/io/resource_loader.h"
 #include "core/object/message_queue.h"
 #include "core/string/print_string.h"
@@ -38,7 +37,6 @@
 #include "scene/animation/tween.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/resources/packed_scene.h"
-#include "scene/scene_string_names.h"
 #include "viewport.h"
 
 #ifdef TOOLS_ENABLED
@@ -56,13 +54,13 @@ void Node::_notification(int p_notification) {
 		case NOTIFICATION_PROCESS: {
 			if (get_script_instance()) {
 				Variant time = get_process_delta_time();
-				get_script_instance()->call(SceneStringNames::get_singleton()->_process, time);
+				get_script_instance()->call(SNAME("_process"), time);
 			}
 		} break;
 		case NOTIFICATION_PHYSICS_PROCESS: {
 			if (get_script_instance()) {
 				Variant time = get_physics_process_delta_time();
-				get_script_instance()->call(SceneStringNames::get_singleton()->_physics_process, time);
+				get_script_instance()->call(SNAME("_physics_process"), time);
 			}
 
 		} break;
@@ -125,27 +123,27 @@ void Node::_notification(int p_notification) {
 		} break;
 		case NOTIFICATION_READY: {
 			if (get_script_instance()) {
-				if (get_script_instance()->has_method(SceneStringNames::get_singleton()->_input)) {
+				if (get_script_instance()->has_method(SNAME("_input"))) {
 					set_process_input(true);
 				}
 
-				if (get_script_instance()->has_method(SceneStringNames::get_singleton()->_unhandled_input)) {
+				if (get_script_instance()->has_method(SNAME("_unhandled_input"))) {
 					set_process_unhandled_input(true);
 				}
 
-				if (get_script_instance()->has_method(SceneStringNames::get_singleton()->_unhandled_key_input)) {
+				if (get_script_instance()->has_method(SNAME("_unhandled_key_input"))) {
 					set_process_unhandled_key_input(true);
 				}
 
-				if (get_script_instance()->has_method(SceneStringNames::get_singleton()->_process)) {
+				if (get_script_instance()->has_method(SNAME("_process"))) {
 					set_process(true);
 				}
 
-				if (get_script_instance()->has_method(SceneStringNames::get_singleton()->_physics_process)) {
+				if (get_script_instance()->has_method(SNAME("_physics_process"))) {
 					set_physics_process(true);
 				}
 
-				get_script_instance()->call(SceneStringNames::get_singleton()->_ready);
+				get_script_instance()->call(SNAME("_ready"));
 			}
 
 		} break;
@@ -187,7 +185,7 @@ void Node::_propagate_ready() {
 	if (data.ready_first) {
 		data.ready_first = false;
 		notification(NOTIFICATION_READY);
-		emit_signal(SceneStringNames::get_singleton()->ready);
+		emit_signal(SNAME("ready"));
 	}
 }
 
@@ -215,10 +213,10 @@ void Node::_propagate_enter_tree() {
 	notification(NOTIFICATION_ENTER_TREE);
 
 	if (get_script_instance()) {
-		get_script_instance()->call(SceneStringNames::get_singleton()->_enter_tree);
+		get_script_instance()->call(SNAME("_enter_tree"));
 	}
 
-	emit_signal(SceneStringNames::get_singleton()->tree_entered);
+	emit_signal(SNAME("tree_entered"));
 
 	data.tree->node_added(this);
 
@@ -245,7 +243,7 @@ void Node::_propagate_after_exit_tree() {
 		data.children[i]->_propagate_after_exit_tree();
 	}
 	data.blocked--;
-	emit_signal(SceneStringNames::get_singleton()->tree_exited);
+	emit_signal(SNAME("tree_exited"));
 }
 
 void Node::_propagate_exit_tree() {
@@ -263,9 +261,9 @@ void Node::_propagate_exit_tree() {
 	data.blocked--;
 
 	if (get_script_instance()) {
-		get_script_instance()->call(SceneStringNames::get_singleton()->_exit_tree);
+		get_script_instance()->call(SNAME("_exit_tree"));
 	}
-	emit_signal(SceneStringNames::get_singleton()->tree_exiting);
+	emit_signal(SNAME("tree_exiting"));
 
 	notification(NOTIFICATION_EXIT_TREE, true);
 	if (data.tree) {
@@ -1226,12 +1224,10 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 		StringName name = p_path.get_name(i);
 		Node *next = nullptr;
 
-		if (name == SceneStringNames::get_singleton()->dot) { // .
-
+		if (name == SNAME(".")) { // .
 			next = current;
 
-		} else if (name == SceneStringNames::get_singleton()->doubledot) { // ..
-
+		} else if (name == SNAME("..")) { // ..
 			if (current == nullptr || !current->data.parent) {
 				return nullptr;
 			}
@@ -1898,7 +1894,7 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 		node->data.editable_instance = data.editable_instance;
 	}
 
-	StringName script_property_name = CoreStringNames::get_singleton()->_script;
+	StringName script_property_name = SNAME("script");
 
 	List<const Node *> hidden_roots;
 	List<const Node *> node_tree;
@@ -2516,7 +2512,7 @@ void Node::update_configuration_warnings() {
 		return;
 	}
 	if (get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root() == this || get_tree()->get_edited_scene_root()->is_ancestor_of(this))) {
-		get_tree()->emit_signal(SceneStringNames::get_singleton()->node_configuration_warning_changed, this);
+		get_tree()->emit_signal(SNAME("node_configuration_warning_changed"), this);
 	}
 #endif
 }

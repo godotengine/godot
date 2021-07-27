@@ -31,7 +31,6 @@
 #include "collision_object_3d.h"
 
 #include "core/config/engine.h"
-#include "scene/scene_string_names.h"
 
 void CollisionObject3D::_notification(int p_what) {
 	switch (p_what) {
@@ -253,23 +252,23 @@ void CollisionObject3D::_apply_enabled() {
 
 void CollisionObject3D::_input_event(Node *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape) {
 	if (get_script_instance()) {
-		get_script_instance()->call(SceneStringNames::get_singleton()->_input_event, p_camera, p_input_event, p_pos, p_normal, p_shape);
+		get_script_instance()->call(SNAME("_input_event"), p_camera, p_input_event, p_pos, p_normal, p_shape);
 	}
-	emit_signal(SceneStringNames::get_singleton()->input_event, p_camera, p_input_event, p_pos, p_normal, p_shape);
+	emit_signal(SNAME("input_event"), p_camera, p_input_event, p_pos, p_normal, p_shape);
 }
 
 void CollisionObject3D::_mouse_enter() {
 	if (get_script_instance()) {
-		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_enter);
+		get_script_instance()->call(SNAME("_mouse_enter"));
 	}
-	emit_signal(SceneStringNames::get_singleton()->mouse_entered);
+	emit_signal(SNAME("mouse_entered"));
 }
 
 void CollisionObject3D::_mouse_exit() {
 	if (get_script_instance()) {
-		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_exit);
+		get_script_instance()->call(SNAME("_mouse_exit"));
 	}
-	emit_signal(SceneStringNames::get_singleton()->mouse_exited);
+	emit_signal(SNAME("mouse_exited"));
 }
 
 void CollisionObject3D::set_body_mode(PhysicsServer3D::BodyMode p_mode) {

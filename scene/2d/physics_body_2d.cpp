@@ -31,12 +31,10 @@
 #include "physics_body_2d.h"
 
 #include "core/config/engine.h"
-#include "core/core_string_names.h"
 #include "core/math/math_funcs.h"
 #include "core/object/class_db.h"
 #include "core/templates/list.h"
 #include "core/templates/rid.h"
-#include "scene/scene_string_names.h"
 
 void PhysicsBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "infinite_inertia", "exclude_raycast_shapes", "test_only", "safe_margin"), &PhysicsBody2D::_move, DEFVAL(true), DEFVAL(true), DEFVAL(false), DEFVAL(0.08));
@@ -198,15 +196,15 @@ real_t StaticBody2D::get_constant_angular_velocity() const {
 
 void StaticBody2D::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
 	if (physics_material_override.is_valid()) {
-		if (physics_material_override->is_connected(CoreStringNames::get_singleton()->changed, callable_mp(this, &StaticBody2D::_reload_physics_characteristics))) {
-			physics_material_override->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &StaticBody2D::_reload_physics_characteristics));
+		if (physics_material_override->is_connected(SNAME("changed"), callable_mp(this, &StaticBody2D::_reload_physics_characteristics))) {
+			physics_material_override->disconnect(SNAME("changed"), callable_mp(this, &StaticBody2D::_reload_physics_characteristics));
 		}
 	}
 
 	physics_material_override = p_physics_material_override;
 
 	if (physics_material_override.is_valid()) {
-		physics_material_override->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &StaticBody2D::_reload_physics_characteristics));
+		physics_material_override->connect(SNAME("changed"), callable_mp(this, &StaticBody2D::_reload_physics_characteristics));
 	}
 	_reload_physics_characteristics();
 }
@@ -417,10 +415,10 @@ void RigidBody2D::_body_enter_tree(ObjectID p_id) {
 	contact_monitor->locked = true;
 
 	E->get().in_scene = true;
-	emit_signal(SceneStringNames::get_singleton()->body_entered, node);
+	emit_signal(SNAME("body_entered"), node);
 
 	for (int i = 0; i < E->get().shapes.size(); i++) {
-		emit_signal(SceneStringNames::get_singleton()->body_shape_entered, E->get().rid, node, E->get().shapes[i].body_shape, E->get().shapes[i].local_shape);
+		emit_signal(SNAME("body_shape_entered"), E->get().rid, node, E->get().shapes[i].body_shape, E->get().shapes[i].local_shape);
 	}
 
 	contact_monitor->locked = false;
@@ -438,10 +436,10 @@ void RigidBody2D::_body_exit_tree(ObjectID p_id) {
 
 	contact_monitor->locked = true;
 
-	emit_signal(SceneStringNames::get_singleton()->body_exited, node);
+	emit_signal(SNAME("body_exited"), node);
 
 	for (int i = 0; i < E->get().shapes.size(); i++) {
-		emit_signal(SceneStringNames::get_singleton()->body_shape_exited, E->get().rid, node, E->get().shapes[i].body_shape, E->get().shapes[i].local_shape);
+		emit_signal(SNAME("body_shape_exited"), E->get().rid, node, E->get().shapes[i].body_shape, E->get().shapes[i].local_shape);
 	}
 
 	contact_monitor->locked = false;
@@ -466,10 +464,10 @@ void RigidBody2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instan
 			//E->get().rc=0;
 			E->get().in_scene = node && node->is_inside_tree();
 			if (node) {
-				node->connect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidBody2D::_body_enter_tree), make_binds(objid));
-				node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidBody2D::_body_exit_tree), make_binds(objid));
+				node->connect(SNAME("tree_entered"), callable_mp(this, &RigidBody2D::_body_enter_tree), make_binds(objid));
+				node->connect(SNAME("tree_exiting"), callable_mp(this, &RigidBody2D::_body_exit_tree), make_binds(objid));
 				if (E->get().in_scene) {
-					emit_signal(SceneStringNames::get_singleton()->body_entered, node);
+					emit_signal(SNAME("body_entered"), node);
 				}
 			}
 
@@ -481,7 +479,7 @@ void RigidBody2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instan
 		}
 
 		if (E->get().in_scene) {
-			emit_signal(SceneStringNames::get_singleton()->body_shape_entered, p_body, node, p_body_shape, p_local_shape);
+			emit_signal(SNAME("body_shape_entered"), p_body, node, p_body_shape, p_local_shape);
 		}
 
 	} else {
@@ -495,17 +493,17 @@ void RigidBody2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instan
 
 		if (E->get().shapes.is_empty()) {
 			if (node) {
-				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidBody2D::_body_enter_tree));
-				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidBody2D::_body_exit_tree));
+				node->disconnect(SNAME("tree_entered"), callable_mp(this, &RigidBody2D::_body_enter_tree));
+				node->disconnect(SNAME("tree_exiting"), callable_mp(this, &RigidBody2D::_body_exit_tree));
 				if (in_scene) {
-					emit_signal(SceneStringNames::get_singleton()->body_exited, node);
+					emit_signal(SNAME("body_exited"), node);
 				}
 			}
 
 			contact_monitor->body_map.erase(E);
 		}
 		if (node && in_scene) {
-			emit_signal(SceneStringNames::get_singleton()->body_shape_exited, p_body, node, p_body_shape, p_local_shape);
+			emit_signal(SNAME("body_shape_exited"), p_body, node, p_body_shape, p_local_shape);
 		}
 	}
 }
@@ -533,7 +531,7 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 	angular_velocity = state->get_angular_velocity();
 	if (sleeping != state->is_sleeping()) {
 		sleeping = state->is_sleeping();
-		emit_signal(SceneStringNames::get_singleton()->sleeping_state_changed);
+		emit_signal(SNAME("sleeping_state_changed"));
 	}
 	if (get_script_instance()) {
 		get_script_instance()->call("_integrate_forces", state);
@@ -668,15 +666,15 @@ real_t RigidBody2D::get_inertia() const {
 
 void RigidBody2D::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
 	if (physics_material_override.is_valid()) {
-		if (physics_material_override->is_connected(CoreStringNames::get_singleton()->changed, callable_mp(this, &RigidBody2D::_reload_physics_characteristics))) {
-			physics_material_override->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &RigidBody2D::_reload_physics_characteristics));
+		if (physics_material_override->is_connected(SNAME("changed"), callable_mp(this, &RigidBody2D::_reload_physics_characteristics))) {
+			physics_material_override->disconnect(SNAME("changed"), callable_mp(this, &RigidBody2D::_reload_physics_characteristics));
 		}
 	}
 
 	physics_material_override = p_physics_material_override;
 
 	if (physics_material_override.is_valid()) {
-		physics_material_override->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &RigidBody2D::_reload_physics_characteristics));
+		physics_material_override->connect(SNAME("changed"), callable_mp(this, &RigidBody2D::_reload_physics_characteristics));
 	}
 	_reload_physics_characteristics();
 }
@@ -874,8 +872,8 @@ void RigidBody2D::set_contact_monitor(bool p_enabled) {
 			Node *node = Object::cast_to<Node>(obj);
 
 			if (node) {
-				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidBody2D::_body_enter_tree));
-				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidBody2D::_body_exit_tree));
+				node->disconnect(SNAME("tree_entered"), callable_mp(this, &RigidBody2D::_body_enter_tree));
+				node->disconnect(SNAME("tree_exiting"), callable_mp(this, &RigidBody2D::_body_exit_tree));
 			}
 		}
 

@@ -30,7 +30,6 @@
 
 #include "container.h"
 #include "core/object/message_queue.h"
-#include "scene/scene_string_names.h"
 
 void Container::_child_minsize_changed() {
 	//Size2 ms = get_combined_minimum_size();
@@ -88,7 +87,7 @@ void Container::_sort_children() {
 	}
 
 	notification(NOTIFICATION_SORT_CHILDREN);
-	emit_signal(SceneStringNames::get_singleton()->sort_children);
+	emit_signal(SNAME("sort_children"));
 	pending_sort = false;
 }
 

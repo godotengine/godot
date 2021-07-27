@@ -30,8 +30,6 @@
 
 #include "noise_texture.h"
 
-#include "core/core_string_names.h"
-
 NoiseTexture::NoiseTexture() {
 	noise = Ref<OpenSimplexNoise>();
 
@@ -173,11 +171,11 @@ void NoiseTexture::set_noise(Ref<OpenSimplexNoise> p_noise) {
 		return;
 	}
 	if (noise.is_valid()) {
-		noise->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NoiseTexture::_queue_update));
+		noise->disconnect(SNAME("changed"), callable_mp(this, &NoiseTexture::_queue_update));
 	}
 	noise = p_noise;
 	if (noise.is_valid()) {
-		noise->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NoiseTexture::_queue_update));
+		noise->connect(SNAME("changed"), callable_mp(this, &NoiseTexture::_queue_update));
 	}
 	_queue_update();
 }

@@ -31,7 +31,6 @@
 #include "visual_script.h"
 
 #include "core/config/project_settings.h"
-#include "core/core_string_names.h"
 #include "core/os/os.h"
 #include "scene/main/node.h"
 #include "visual_script_nodes.h"
@@ -1806,15 +1805,15 @@ void VisualScriptInstance::notification(int p_notification) {
 }
 
 String VisualScriptInstance::to_string(bool *r_valid) {
-	if (has_method(CoreStringNames::get_singleton()->_to_string)) {
+	if (has_method(SNAME("_to_string"))) {
 		Callable::CallError ce;
-		Variant ret = call(CoreStringNames::get_singleton()->_to_string, nullptr, 0, ce);
+		Variant ret = call(SNAME("_to_string"), nullptr, 0, ce);
 		if (ce.error == Callable::CallError::CALL_OK) {
 			if (ret.get_type() != Variant::STRING) {
 				if (r_valid) {
 					*r_valid = false;
 				}
-				ERR_FAIL_V_MSG(String(), "Wrong type for " + CoreStringNames::get_singleton()->_to_string + ", must be a String.");
+				ERR_FAIL_V_MSG(String(), "Wrong type for " + SNAME("_to_string") + ", must be a String.");
 			}
 			if (r_valid) {
 				*r_valid = true;

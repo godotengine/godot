@@ -42,7 +42,6 @@
 #include "scene/gui/panel.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
-#include "scene/scene_string_names.h"
 #include "servers/rendering_server.h"
 #include "servers/text_server.h"
 
@@ -301,7 +300,7 @@ void Control::_update_minimum_size() {
 	if (minsize != data.last_minimum_size) {
 		data.last_minimum_size = minsize;
 		_size_changed();
-		emit_signal(SceneStringNames::get_singleton()->minimum_size_changed);
+		emit_signal(SNAME("minimum_size_changed"));
 	}
 }
 
@@ -640,27 +639,27 @@ void Control::_notification(int p_notification) {
 
 		} break;
 		case NOTIFICATION_RESIZED: {
-			emit_signal(SceneStringNames::get_singleton()->resized);
+			emit_signal(SNAME("resized"));
 		} break;
 		case NOTIFICATION_DRAW: {
 			_update_canvas_item_transform();
 			RenderingServer::get_singleton()->canvas_item_set_custom_rect(get_canvas_item(), !data.disable_visibility_clip, Rect2(Point2(), get_size()));
 			RenderingServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), data.clip_contents);
-			//emit_signal(SceneStringNames::get_singleton()->draw);
+			//emit_signal(SNAME("draw"));
 
 		} break;
 		case NOTIFICATION_MOUSE_ENTER: {
-			emit_signal(SceneStringNames::get_singleton()->mouse_entered);
+			emit_signal(SNAME("mouse_entered"));
 		} break;
 		case NOTIFICATION_MOUSE_EXIT: {
-			emit_signal(SceneStringNames::get_singleton()->mouse_exited);
+			emit_signal(SNAME("mouse_exited"));
 		} break;
 		case NOTIFICATION_FOCUS_ENTER: {
-			emit_signal(SceneStringNames::get_singleton()->focus_entered);
+			emit_signal(SNAME("focus_entered"));
 			update();
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
-			emit_signal(SceneStringNames::get_singleton()->focus_exited);
+			emit_signal(SNAME("focus_exited"));
 			update();
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
@@ -718,7 +717,7 @@ Variant Control::get_drag_data(const Point2 &p_point) {
 		Variant v = p_point;
 		const Variant *p = &v;
 		Callable::CallError ce;
-		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->_get_drag_data, &p, 1, ce);
+		Variant ret = get_script_instance()->call(SNAME("_get_drag_data"), &p, 1, ce);
 		if (ce.error == Callable::CallError::CALL_OK) {
 			return ret;
 		}
@@ -740,7 +739,7 @@ bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const 
 		Variant v = p_point;
 		const Variant *p[2] = { &v, &p_data };
 		Callable::CallError ce;
-		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->_can_drop_data, p, 2, ce);
+		Variant ret = get_script_instance()->call(SNAME("_can_drop_data"), p, 2, ce);
 		if (ce.error == Callable::CallError::CALL_OK) {
 			return ret;
 		}
@@ -763,7 +762,7 @@ void Control::drop_data(const Point2 &p_point, const Variant &p_data) {
 		Variant v = p_point;
 		const Variant *p[2] = { &v, &p_data };
 		Callable::CallError ce;
-		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->_drop_data, p, 2, ce);
+		Variant ret = get_script_instance()->call(SNAME("_drop_data"), p, 2, ce);
 		if (ce.error == Callable::CallError::CALL_OK) {
 			return;
 		}
@@ -787,7 +786,7 @@ Size2 Control::get_minimum_size() const {
 	ScriptInstance *si = const_cast<Control *>(this)->get_script_instance();
 	if (si) {
 		Callable::CallError ce;
-		Variant s = si->call(SceneStringNames::get_singleton()->_get_minimum_size, nullptr, 0, ce);
+		Variant s = si->call(SNAME("_get_minimum_size"), nullptr, 0, ce);
 		if (ce.error == Callable::CallError::CALL_OK) {
 			return s;
 		}
@@ -2016,7 +2015,7 @@ void Control::_propagate_theme_changed(Node *p_at, Control *p_owner, Window *p_o
 			c->data.theme_owner_window = p_owner_window;
 		}
 		c->notification(Control::NOTIFICATION_THEME_CHANGED);
-		c->emit_signal(SceneStringNames::get_singleton()->theme_changed);
+		c->emit_signal(SNAME("theme_changed"));
 	}
 
 	if (w) {
@@ -2025,7 +2024,7 @@ void Control::_propagate_theme_changed(Node *p_at, Control *p_owner, Window *p_o
 			w->theme_owner_window = p_owner_window;
 		}
 		w->notification(Window::NOTIFICATION_THEME_CHANGED);
-		w->emit_signal(SceneStringNames::get_singleton()->theme_changed);
+		w->emit_signal(SNAME("theme_changed"));
 	}
 }
 
@@ -2291,7 +2290,7 @@ void Control::set_h_size_flags(int p_flags) {
 		return;
 	}
 	data.h_size_flags = p_flags;
-	emit_signal(SceneStringNames::get_singleton()->size_flags_changed);
+	emit_signal(SNAME("size_flags_changed"));
 }
 
 int Control::get_h_size_flags() const {
@@ -2303,7 +2302,7 @@ void Control::set_v_size_flags(int p_flags) {
 		return;
 	}
 	data.v_size_flags = p_flags;
-	emit_signal(SceneStringNames::get_singleton()->size_flags_changed);
+	emit_signal(SNAME("size_flags_changed"));
 }
 
 void Control::set_stretch_ratio(real_t p_ratio) {
@@ -2312,7 +2311,7 @@ void Control::set_stretch_ratio(real_t p_ratio) {
 	}
 
 	data.expand = p_ratio;
-	emit_signal(SceneStringNames::get_singleton()->size_flags_changed);
+	emit_signal(SNAME("size_flags_changed"));
 }
 
 real_t Control::get_stretch_ratio() const {
@@ -2467,7 +2466,7 @@ Vector<Vector2i> Control::structured_text_parser(StructuredTextParser p_theme_ty
 		} break;
 		case STRUCTURED_TEXT_CUSTOM: {
 			if (get_script_instance()) {
-				Variant data = get_script_instance()->call(SceneStringNames::get_singleton()->_structured_text_parser, p_args, p_text);
+				Variant data = get_script_instance()->call(SNAME("_structured_text_parser"), p_args, p_text);
 				if (data.get_type() == Variant::ARRAY) {
 					Array _data = data;
 					for (int i = 0; i < _data.size(); i++) {
@@ -2499,7 +2498,7 @@ real_t Control::get_rotation() const {
 
 void Control::_override_changed() {
 	notification(NOTIFICATION_THEME_CHANGED);
-	emit_signal(SceneStringNames::get_singleton()->theme_changed);
+	emit_signal(SNAME("theme_changed"));
 	minimum_size_changed(); // overrides are likely to affect minimum size
 }
 

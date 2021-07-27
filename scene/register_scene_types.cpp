@@ -190,7 +190,6 @@
 #include "scene/resources/world_2d.h"
 #include "scene/resources/world_3d.h"
 #include "scene/resources/world_margin_shape_3d.h"
-#include "scene/scene_string_names.h"
 
 #include "scene/main/shader_globals_override.h"
 
@@ -255,8 +254,6 @@ static Ref<ResourceFormatSaverShader> resource_saver_shader;
 static Ref<ResourceFormatLoaderShader> resource_loader_shader;
 
 void register_scene_types() {
-	SceneStringNames::create();
-
 	OS::get_singleton()->yield(); //may take time to init
 
 	Node::init_node_hrcr();
@@ -1092,5 +1089,4 @@ void unregister_scene_types() {
 	ParticlesMaterial::finish_shaders();
 	CanvasItemMaterial::finish_shaders();
 	ColorPicker::finish_shaders();
-	SceneStringNames::free();
 }

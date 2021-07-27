@@ -32,7 +32,6 @@
 
 #include "core/os/os.h"
 #include "scene/resources/particles_material.h"
-#include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED
 #include "core/config/engine.h"

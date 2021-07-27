@@ -32,7 +32,6 @@
 
 #include "core/config/engine.h"
 #include "core/math/math_funcs.h"
-#include "scene/scene_string_names.h"
 #include "servers/rendering_server.h"
 
 void Camera2D::_update_scroll() {

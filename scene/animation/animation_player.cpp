@@ -32,7 +32,6 @@
 
 #include "core/config/engine.h"
 #include "core/object/message_queue.h"
-#include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
 
 #ifdef TOOLS_ENABLED
@@ -86,7 +85,7 @@ bool AnimationPlayer::_set(const StringName &p_name, const Variant &p_value) {
 		String which = name.get_slicec('/', 1);
 		animation_set_next(which, p_value);
 
-	} else if (p_name == SceneStringNames::get_singleton()->blend_times) {
+	} else if (p_name == SNAME("blend_times")) {
 		Array array = p_value;
 		int len = array.size();
 		ERR_FAIL_COND_V(len % 3, false);
@@ -316,11 +315,11 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 				pa.special = SP_NONE;
 				pa.owner = p_anim->node_cache[i];
 				if (false && p_anim->node_cache[i]->node_2d) {
-					if (leftover_path.size() == 1 && leftover_path[0] == SceneStringNames::get_singleton()->transform_pos) {
+					if (leftover_path.size() == 1 && leftover_path[0] == SNAME("position")) {
 						pa.special = SP_NODE2D_POS;
-					} else if (leftover_path.size() == 1 && leftover_path[0] == SceneStringNames::get_singleton()->transform_rot) {
+					} else if (leftover_path.size() == 1 && leftover_path[0] == SNAME("rotation")) {
 						pa.special = SP_NODE2D_ROT;
-					} else if (leftover_path.size() == 1 && leftover_path[0] == SceneStringNames::get_singleton()->transform_scale) {
+					} else if (leftover_path.size() == 1 && leftover_path[0] == SNAME("scale")) {
 						pa.special = SP_NODE2D_SCALE;
 					}
 				}
@@ -945,14 +944,14 @@ void AnimationPlayer::_animation_process(float p_delta) {
 				String new_name = playback.assigned;
 				queued.pop_front();
 				if (end_notify) {
-					emit_signal(SceneStringNames::get_singleton()->animation_changed, old, new_name);
+					emit_signal(SNAME("animation_changed"), old, new_name);
 				}
 			} else {
 				//stop();
 				playing = false;
 				_set_process(false);
 				if (end_notify) {
-					emit_signal(SceneStringNames::get_singleton()->animation_finished, playback.assigned);
+					emit_signal(SNAME("animation_finished"), playback.assigned);
 				}
 			}
 			end_reached = false;
@@ -998,11 +997,11 @@ void AnimationPlayer::remove_animation(const StringName &p_name) {
 }
 
 void AnimationPlayer::_ref_anim(const Ref<Animation> &p_anim) {
-	Ref<Animation>(p_anim)->connect(SceneStringNames::get_singleton()->tracks_changed, callable_mp(this, &AnimationPlayer::_animation_changed), varray(), CONNECT_REFERENCE_COUNTED);
+	Ref<Animation>(p_anim)->connect(SNAME("tracks_changed"), callable_mp(this, &AnimationPlayer::_animation_changed), varray(), CONNECT_REFERENCE_COUNTED);
 }
 
 void AnimationPlayer::_unref_anim(const Ref<Animation> &p_anim) {
-	Ref<Animation>(p_anim)->disconnect(SceneStringNames::get_singleton()->tracks_changed, callable_mp(this, &AnimationPlayer::_animation_changed));
+	Ref<Animation>(p_anim)->disconnect(SNAME("tracks_changed"), callable_mp(this, &AnimationPlayer::_animation_changed));
 }
 
 void AnimationPlayer::rename_animation(const StringName &p_name, const StringName &p_new_name) {
@@ -1209,7 +1208,7 @@ void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float
 	_set_process(true); // always process when starting an animation
 	playing = true;
 
-	emit_signal(SceneStringNames::get_singleton()->animation_started, c.assigned);
+	emit_signal(SNAME("animation_started"), c.assigned);
 
 	if (is_inside_tree() && Engine::get_singleton()->is_editor_hint()) {
 		return; // no next in this case
@@ -1691,7 +1690,7 @@ void AnimationPlayer::_bind_methods() {
 }
 
 AnimationPlayer::AnimationPlayer() {
-	root = SceneStringNames::get_singleton()->path_pp;
+	root = NodePath("..");
 }
 
 AnimationPlayer::~AnimationPlayer() {
