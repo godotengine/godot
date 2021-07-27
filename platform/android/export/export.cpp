@@ -2068,6 +2068,8 @@ public:
 			if (!installed_android_build_template) {
 				r_missing_templates = !exists_export_template("android_source.zip", &err);
 				err += TTR("Android build template not installed in the project. Install it from the Project menu.") + "\n";
+			} else {
+				r_missing_templates = false;
 			}
 
 			valid = installed_android_build_template && !r_missing_templates;
