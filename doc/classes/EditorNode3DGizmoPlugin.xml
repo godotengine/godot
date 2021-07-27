@@ -46,7 +46,7 @@
 			</argument>
 			<description>
 				Override this method to commit a group of subgizmos being edited (see [method _subgizmos_intersect_ray] and [method _subgizmos_intersect_frustum]). This usually means creating an [UndoRedo] action for the change, using the current transforms as "do" and the [code]restore[/code] transforms as "undo".
-				If the [code]cancel[/code] argument is [code]true[/code], the [code]restore[/code] transforms should be directly set, without any [UndoRedo] action. Called for this plugin's active gizmos.
+				If the [code]cancel[/code] argument is [code]true[/code], the [code]restore[/code] transforms should be directly set, without any [UndoRedo] action. As with all subgizmo methods, transforms are given in local space respect to the gizmo's Node3D. Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="_create_gizmo" qualifiers="virtual">
@@ -103,7 +103,7 @@
 			<argument index="1" name="id" type="int">
 			</argument>
 			<description>
-				Override this method to return the current transform of a subgizmo. This transform will be requested at the start of an edit and used in the [code]restore[/code] argument in [method _commit_subgizmos]. Called for this plugin's active gizmos.
+				Override this method to return the current transform of a subgizmo. As with all subgizmo methods, the transform should be in local space respect to the gizmo's Node3D. This transform will be requested at the start of an edit and used in the [code]restore[/code] argument in [method _commit_subgizmos]. Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="_has_gizmo" qualifiers="virtual">
