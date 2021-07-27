@@ -188,12 +188,6 @@
 				Returns mouse buttons as a bitmask. If multiple mouse buttons are pressed at the same time, the bits are added together.
 			</description>
 		</method>
-		<method name="get_mouse_mode" qualifiers="const">
-			<return type="int" enum="Input.MouseMode" />
-			<description>
-				Returns the mouse mode. See the constants for more information.
-			</description>
-		</method>
 		<method name="get_vector" qualifiers="const">
 			<return type="Vector2" />
 			<argument index="0" name="negative_x" type="String" />
@@ -363,13 +357,6 @@
 				[b]Note:[/b] This value can be immediately overwritten by the hardware sensor value on Android and iOS.
 			</description>
 		</method>
-		<method name="set_mouse_mode">
-			<return type="void" />
-			<argument index="0" name="mode" type="int" enum="Input.MouseMode" />
-			<description>
-				Sets the mouse mode. See the constants for more information.
-			</description>
-		</method>
 		<method name="set_use_accumulated_input">
 			<return type="void" />
 			<argument index="0" name="enable" type="bool" />
@@ -413,6 +400,11 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="mouse_mode" type="int" setter="set_mouse_mode" getter="get_mouse_mode" enum="Input.MouseMode">
+			Sets the visiblity/constraints of the mouse cursor. See [enum MouseMode] for more details.
+		</member>
+	</members>
 	<signals>
 		<signal name="joy_connection_changed">
 			<argument index="0" name="device" type="int" />
