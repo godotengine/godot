@@ -128,6 +128,7 @@ void ProximityGroup3D::broadcast(String p_method, Variant p_parameters) {
 
 void ProximityGroup3D::_proximity_group_broadcast(String p_method, Variant p_parameters) {
 	if (dispatch_mode == MODE_PROXY) {
+		ERR_FAIL_COND(!is_inside_tree());
 		get_parent()->call(p_method, p_parameters);
 	} else {
 		emit_signal(SNAME("broadcast"), p_method, p_parameters);

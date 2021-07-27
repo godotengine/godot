@@ -795,6 +795,7 @@ void TileMap::_set_tile_data(const Vector<int> &p_data) {
 	const int *r = p_data.ptr();
 
 	int offset = (format >= FORMAT_2) ? 3 : 2;
+	ERR_FAIL_COND_MSG(c % offset != 0, "Corrupted tile data.");
 
 	clear();
 
