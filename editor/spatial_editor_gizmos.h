@@ -451,6 +451,10 @@ protected:
 	int get_priority() const;
 	void redraw(EditorSpatialGizmo *p_gizmo);
 
+private:
+	Color _color_portal_front;
+	Color _color_portal_back;
+
 public:
 	PortalGizmoPlugin();
 };
