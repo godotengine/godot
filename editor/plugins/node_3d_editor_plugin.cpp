@@ -690,53 +690,55 @@ void Node3DEditorViewport::_select_region() {
 		Node3D *single_selected = spatial_editor->get_single_selected_node();
 		Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(single_selected);
 
-		Ref<EditorNode3DGizmo> old_gizmo;
-		if (!clicked_wants_append) {
-			se->subgizmos.clear();
-			old_gizmo = se->gizmo;
-			se->gizmo.unref();
-		}
-
-		bool found_subgizmos = false;
-		Vector<Ref<Node3DGizmo>> gizmos = single_selected->get_gizmos();
-		for (int j = 0; j < gizmos.size(); j++) {
-			Ref<EditorNode3DGizmo> seg = gizmos[j];
-			if (!seg.is_valid()) {
-				continue;
+		if (se) {
+			Ref<EditorNode3DGizmo> old_gizmo;
+			if (!clicked_wants_append) {
+				se->subgizmos.clear();
+				old_gizmo = se->gizmo;
+				se->gizmo.unref();
 			}
 
-			if (se->gizmo.is_valid() && se->gizmo != seg) {
-				continue;
-			}
-
-			Vector<int> subgizmos = seg->subgizmos_intersect_frustum(camera, frustum);
-			if (!subgizmos.is_empty()) {
-				se->gizmo = seg;
-				for (int i = 0; i < subgizmos.size(); i++) {
-					int subgizmo_id = subgizmos[i];
-					if (!se->subgizmos.has(subgizmo_id)) {
-						se->subgizmos.insert(subgizmo_id, se->gizmo->get_subgizmo_transform(subgizmo_id));
-					}
+			bool found_subgizmos = false;
+			Vector<Ref<Node3DGizmo>> gizmos = single_selected->get_gizmos();
+			for (int j = 0; j < gizmos.size(); j++) {
+				Ref<EditorNode3DGizmo> seg = gizmos[j];
+				if (!seg.is_valid()) {
+					continue;
 				}
-				found_subgizmos = true;
-				break;
+
+				if (se->gizmo.is_valid() && se->gizmo != seg) {
+					continue;
+				}
+
+				Vector<int> subgizmos = seg->subgizmos_intersect_frustum(camera, frustum);
+				if (!subgizmos.is_empty()) {
+					se->gizmo = seg;
+					for (int i = 0; i < subgizmos.size(); i++) {
+						int subgizmo_id = subgizmos[i];
+						if (!se->subgizmos.has(subgizmo_id)) {
+							se->subgizmos.insert(subgizmo_id, se->gizmo->get_subgizmo_transform(subgizmo_id));
+						}
+					}
+					found_subgizmos = true;
+					break;
+				}
 			}
-		}
 
-		if (!clicked_wants_append || found_subgizmos) {
-			if (se->gizmo.is_valid()) {
-				se->gizmo->redraw();
+			if (!clicked_wants_append || found_subgizmos) {
+				if (se->gizmo.is_valid()) {
+					se->gizmo->redraw();
+				}
+
+				if (old_gizmo != se->gizmo && old_gizmo.is_valid()) {
+					old_gizmo->redraw();
+				}
+
+				spatial_editor->update_transform_gizmo();
 			}
 
-			if (old_gizmo != se->gizmo && old_gizmo.is_valid()) {
-				old_gizmo->redraw();
+			if (found_subgizmos) {
+				return;
 			}
-
-			spatial_editor->update_transform_gizmo();
-		}
-
-		if (found_subgizmos) {
-			return;
 		}
 	}
 
@@ -4776,13 +4778,13 @@ void _update_all_gizmos(Node *p_node) {
 }
 
 void Node3DEditor::update_all_gizmos(Node *p_node) {
+	if (!p_node && get_tree()) {
+		p_node = get_tree()->get_edited_scene_root();
+	}
+
 	if (!p_node) {
-		if (SceneTree::get_singleton()) {
-			p_node = SceneTree::get_singleton()->get_root();
-		} else {
-			// No scene tree, so nothing to update.
-			return;
-		}
+		// No edited scene, so nothing to update.
+		return;
 	}
 	_update_all_gizmos(p_node);
 }
@@ -6591,6 +6593,7 @@ void Node3DEditor::_notification(int p_what) {
 			_register_all_gizmos();
 			_update_gizmos_menu();
 			_init_indicators();
+			update_all_gizmos();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			_finish_indicators();
@@ -7724,7 +7727,6 @@ void Node3DEditor::add_gizmo_plugin(Ref<EditorNode3DGizmoPlugin> p_plugin) {
 	gizmo_plugins_by_name.sort_custom<_GizmoPluginNameComparator>();
 
 	_update_gizmos_menu();
-	Node3DEditor::get_singleton()->update_all_gizmos();
 }
 
 void Node3DEditor::remove_gizmo_plugin(Ref<EditorNode3DGizmoPlugin> p_plugin) {
