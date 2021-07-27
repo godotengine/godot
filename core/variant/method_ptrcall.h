@@ -105,7 +105,7 @@ struct PtrToArg {};
 		}                                                                     \
 	}
 
-MAKE_PTRARGCONV(bool, uint32_t);
+MAKE_PTRARGCONV(bool, uint8_t);
 // Integer types.
 MAKE_PTRARGCONV(uint8_t, int64_t);
 MAKE_PTRARGCONV(int8_t, int64_t);
