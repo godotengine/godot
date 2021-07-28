@@ -131,6 +131,14 @@ namespace Godot.Collections
             }
         }
 
+        private (Array keys, Array values, int count) GetKeyValuePairs()
+        {
+            int count = godot_icall_Dictionary_KeyValuePairs(GetPtr(), out IntPtr keysHandle, out IntPtr valuesHandle);
+            Array keys = new Array(new ArraySafeHandle(keysHandle));
+            Array values = new Array(new ArraySafeHandle(valuesHandle));
+            return (keys, values, count);
+        }
+
         bool IDictionary.IsFixedSize => false;
 
         bool IDictionary.IsReadOnly => false;
@@ -198,17 +206,13 @@ namespace Godot.Collections
         /// <param name="index">The index to start at.</param>
         public void CopyTo(System.Array array, int index)
         {
-            // TODO Can be done with single internal call
-
             if (array == null)
                 throw new ArgumentNullException(nameof(array), "Value cannot be null.");
 
             if (index < 0)
                 throw new ArgumentOutOfRangeException(nameof(index), "Number was less than the array's lower bound in the first dimension.");
 
-            Array keys = (Array)Keys;
-            Array values = (Array)Values;
-            int count = Count;
+            var (keys, values, count) = GetKeyValuePairs();
 
             if (array.Length < (index + count))
                 throw new ArgumentException("Destination array was not long enough. Check destIndex and length, and the array's lower bounds.");
@@ -226,24 +230,39 @@ namespace Godot.Collections
 
         private class DictionaryEnumerator : IDictionaryEnumerator
         {
-            private readonly Array keys;
-            private readonly Array values;
+            private readonly Dictionary dictionary;
             private readonly int count;
             private int index = -1;
+            private bool dirty = true;
+
+            private DictionaryEntry entry;
 
             public DictionaryEnumerator(Dictionary dictionary)
             {
-                // TODO 3 internal calls, can reduce to 1
-                keys = (Array)dictionary.Keys;
-                values = (Array)dictionary.Values;
+                this.dictionary = dictionary;
                 count = dictionary.Count;
             }
 
             public object Current => Entry;
 
-            public DictionaryEntry Entry =>
-                // TODO 2 internal calls, can reduce to 1
-                new DictionaryEntry(keys[index], values[index]);
+            public DictionaryEntry Entry
+            {
+                get
+                {
+                    if (dirty)
+                    {
+                        UpdateEntry();
+                    }
+                    return entry;
+                }
+            }
+
+            private void UpdateEntry()
+            {
+                dirty = false;
+                godot_icall_Dictionary_KeyValuePairAt(dictionary.GetPtr(), index, out object key, out object value);
+                entry = new DictionaryEntry(key, value);
+            }
 
             public object Key => Entry.Key;
 
@@ -252,12 +271,14 @@ namespace Godot.Collections
             public bool MoveNext()
             {
                 index++;
+                dirty = true;
                 return index < count;
             }
 
             public void Reset()
             {
                 index = -1;
+                dirty = true;
             }
         }
 
@@ -293,6 +314,12 @@ namespace Godot.Collections
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static int godot_icall_Dictionary_Count(IntPtr ptr);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static int godot_icall_Dictionary_KeyValuePairs(IntPtr ptr, out IntPtr keys, out IntPtr values);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static void godot_icall_Dictionary_KeyValuePairAt(IntPtr ptr, int index, out object key, out object value);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static void godot_icall_Dictionary_Add(IntPtr ptr, object key, object value);
@@ -459,6 +486,12 @@ namespace Godot.Collections
             }
         }
 
+        private KeyValuePair<TKey, TValue> GetKeyValuePair(int index)
+        {
+            Dictionary.godot_icall_Dictionary_KeyValuePairAt(GetPtr(), index, out object key, out object value);
+            return new KeyValuePair<TKey, TValue>((TKey)key, (TValue)value);
+        }
+
         /// <summary>
         /// Adds an object <paramref name="value"/> at key <paramref name="key"/>
         /// to this <see cref="Dictionary{TKey, TValue}"/>.
@@ -548,9 +581,6 @@ namespace Godot.Collections
             if (arrayIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(arrayIndex), "Number was less than the array's lower bound in the first dimension.");
 
-            // TODO 3 internal calls, can reduce to 1
-            Array<TKey> keys = (Array<TKey>)Keys;
-            Array<TValue> values = (Array<TValue>)Values;
             int count = Count;
 
             if (array.Length < (arrayIndex + count))
@@ -558,8 +588,7 @@ namespace Godot.Collections
 
             for (int i = 0; i < count; i++)
             {
-                // TODO 2 internal calls, can reduce to 1
-                array[arrayIndex] = new KeyValuePair<TKey, TValue>(keys[i], values[i]);
+                array[arrayIndex] = GetKeyValuePair(i);
                 arrayIndex++;
             }
         }
@@ -578,15 +607,9 @@ namespace Godot.Collections
         /// <returns>An enumerator.</returns>
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
-            // TODO 3 internal calls, can reduce to 1
-            Array<TKey> keys = (Array<TKey>)Keys;
-            Array<TValue> values = (Array<TValue>)Values;
-            int count = Count;
-
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < Count; i++)
             {
-                // TODO 2 internal calls, can reduce to 1
-                yield return new KeyValuePair<TKey, TValue>(keys[i], values[i]);
+                yield return GetKeyValuePair(i);
             }
         }
 
