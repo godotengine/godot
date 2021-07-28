@@ -318,8 +318,12 @@ bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool *p_pressed
 		if (p_pressed != nullptr) {
 			*p_pressed = key->is_pressed();
 		}
+		float strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
 		if (p_strength != nullptr) {
-			*p_strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
+			*p_strength = strength;
+		}
+		if (p_raw_strength != nullptr) {
+			*p_raw_strength = strength;
 		}
 	}
 	return match;
@@ -476,8 +480,12 @@ bool InputEventMouseButton::action_match(const Ref<InputEvent> &p_event, bool *p
 		if (p_pressed != nullptr) {
 			*p_pressed = mb->is_pressed();
 		}
+		float strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
 		if (p_strength != nullptr) {
-			*p_strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
+			*p_strength = strength;
+		}
+		if (p_raw_strength != nullptr) {
+			*p_raw_strength = strength;
 		}
 	}
 
@@ -722,8 +730,9 @@ bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event, bool *
 
 	bool match = (axis == jm->axis); // Matches even if not in the same direction, but returns a "not pressed" event.
 	if (match) {
+		float jm_abs_axis_value = Math::abs(jm->get_axis_value());
 		bool same_direction = (((axis_value < 0) == (jm->axis_value < 0)) || jm->axis_value == 0);
-		bool pressed = same_direction ? Math::abs(jm->get_axis_value()) >= p_deadzone : false;
+		bool pressed = same_direction ? jm_abs_axis_value >= p_deadzone : false;
 		if (p_pressed != nullptr) {
 			*p_pressed = pressed;
 		}
@@ -732,10 +741,17 @@ bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event, bool *
 				if (p_deadzone == 1.0f) {
 					*p_strength = 1.0f;
 				} else {
-					*p_strength = CLAMP(Math::inverse_lerp(p_deadzone, 1.0f, Math::abs(jm->get_axis_value())), 0.0f, 1.0f);
+					*p_strength = CLAMP(Math::inverse_lerp(p_deadzone, 1.0f, jm_abs_axis_value), 0.0f, 1.0f);
 				}
 			} else {
 				*p_strength = 0.0f;
+			}
+		}
+		if (p_raw_strength != nullptr) {
+			if (same_direction) { // NOT pressed, because we want to ignore the deadzone.
+				*p_raw_strength = jm_abs_axis_value;
+			} else {
+				*p_raw_strength = 0.0f;
 			}
 		}
 	}
@@ -796,8 +812,12 @@ bool InputEventJoypadButton::action_match(const Ref<InputEvent> &p_event, bool *
 		if (p_pressed != nullptr) {
 			*p_pressed = jb->is_pressed();
 		}
+		float strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
 		if (p_strength != nullptr) {
-			*p_strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
+			*p_strength = strength;
+		}
+		if (p_raw_strength != nullptr) {
+			*p_raw_strength = strength;
 		}
 	}
 
@@ -1015,8 +1035,12 @@ bool InputEventAction::action_match(const Ref<InputEvent> &p_event, bool *p_pres
 		if (p_pressed != nullptr) {
 			*p_pressed = act->pressed;
 		}
+		float strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
 		if (p_strength != nullptr) {
-			*p_strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
+			*p_strength = strength;
+		}
+		if (p_raw_strength != nullptr) {
+			*p_raw_strength = strength;
 		}
 	}
 	return match;
