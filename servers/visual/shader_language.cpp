@@ -2839,7 +2839,7 @@ bool ShaderLanguage::_validate_varying_using(ShaderNode::Varying &p_varying, Str
 			usage.var = &p_varying;
 			usage.line = tk_line;
 			unknown_varying_usages.push_back(usage);
-			return false;
+			break;
 		case ShaderNode::Varying::STAGE_VERTEX:
 			if (current_function == String("fragment") || current_function == String("light")) {
 				p_varying.stage = ShaderNode::Varying::STAGE_VERTEX_TO_FRAGMENT_LIGHT;
