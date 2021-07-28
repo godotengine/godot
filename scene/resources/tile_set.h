@@ -191,7 +191,6 @@ private:
 	Vector2 tile_skew = Vector2(0, 0);
 
 	// Rendering.
-	bool y_sorting = false;
 	bool uv_clipping = false;
 	struct OcclusionLayer {
 		uint32_t light_mask = 1;
@@ -245,9 +244,6 @@ private:
 	int next_source_id = 0;
 	// ---------------------
 
-	// Plugins themselves.
-	Vector<TileSetPlugin *> tile_set_plugins_vector;
-
 	void _compute_next_source_id();
 	void _source_changed();
 
@@ -299,9 +295,6 @@ public:
 	Ref<TileSetSource> get_source(int p_source_id) const;
 
 	// Rendering
-	void set_y_sorting(bool p_y_sort);
-	bool is_y_sorting() const;
-
 	void set_uv_clipping(bool p_uv_clipping);
 	bool is_uv_clipping() const;
 
@@ -664,73 +657,6 @@ public:
 	Variant get_custom_data(String p_layer_name) const;
 	void set_custom_data_by_layer_id(int p_layer_id, Variant p_value);
 	Variant get_custom_data_by_layer_id(int p_layer_id) const;
-};
-
-#include "scene/2d/tile_map.h"
-
-class TileSetPlugin : public Object {
-	GDCLASS(TileSetPlugin, Object);
-
-public:
-	// Tilemap updates.
-	virtual void tilemap_notification(TileMap *p_tile_map, int p_what){};
-	virtual void update_dirty_quadrants(TileMap *p_tile_map, SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list){};
-	virtual void create_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant){};
-	virtual void cleanup_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant){};
-
-	virtual void draw_quadrant_debug(TileMap *p_tile_map, TileMapQuadrant *p_quadrant){};
-};
-
-class TileSetPluginAtlasRendering : public TileSetPlugin {
-	GDCLASS(TileSetPluginAtlasRendering, TileSetPlugin);
-
-private:
-	static constexpr float fp_adjust = 0.00001;
-	bool quadrant_order_dirty = false;
-
-public:
-	// Tilemap updates
-	virtual void tilemap_notification(TileMap *p_tile_map, int p_what) override;
-	virtual void update_dirty_quadrants(TileMap *p_tile_map, SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list) override;
-	virtual void create_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
-	virtual void cleanup_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
-	virtual void draw_quadrant_debug(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
-
-	// Other.
-	static void draw_tile(RID p_canvas_item, Vector2i p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile, Color p_modulation = Color(1.0, 1.0, 1.0, 1.0));
-};
-
-class TileSetPluginAtlasPhysics : public TileSetPlugin {
-	GDCLASS(TileSetPluginAtlasPhysics, TileSetPlugin);
-
-public:
-	// Tilemap updates
-	virtual void tilemap_notification(TileMap *p_tile_map, int p_what) override;
-	virtual void update_dirty_quadrants(TileMap *p_tile_map, SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list) override;
-	virtual void create_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
-	virtual void cleanup_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
-	virtual void draw_quadrant_debug(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
-};
-
-class TileSetPluginAtlasNavigation : public TileSetPlugin {
-	GDCLASS(TileSetPluginAtlasNavigation, TileSetPlugin);
-
-public:
-	// Tilemap updates
-	virtual void tilemap_notification(TileMap *p_tile_map, int p_what) override;
-	virtual void update_dirty_quadrants(TileMap *p_tile_map, SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list) override;
-	virtual void cleanup_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
-	virtual void draw_quadrant_debug(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
-};
-
-class TileSetPluginScenesCollections : public TileSetPlugin {
-	GDCLASS(TileSetPluginScenesCollections, TileSetPlugin);
-
-public:
-	// Tilemap updates
-	virtual void update_dirty_quadrants(TileMap *p_tile_map, SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list) override;
-	virtual void cleanup_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
-	virtual void draw_quadrant_debug(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
 };
 
 VARIANT_ENUM_CAST(TileSet::CellNeighbor);

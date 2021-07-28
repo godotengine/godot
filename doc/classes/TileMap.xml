@@ -31,22 +31,43 @@
 		</method>
 		<method name="get_cell_alternative_tile" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="coords" type="Vector2i" />
-			<argument index="1" name="use_proxies" type="bool" />
+			<argument index="0" name="layer" type="int" />
+			<argument index="1" name="coords" type="Vector2i" />
+			<argument index="2" name="use_proxies" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="get_cell_atlas_coords" qualifiers="const">
 			<return type="Vector2i" />
-			<argument index="0" name="coords" type="Vector2i" />
-			<argument index="1" name="use_proxies" type="bool" />
+			<argument index="0" name="layer" type="int" />
+			<argument index="1" name="coords" type="Vector2i" />
+			<argument index="2" name="use_proxies" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="get_cell_source_id" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="coords" type="Vector2i" />
-			<argument index="1" name="use_proxies" type="bool" />
+			<argument index="0" name="layer" type="int" />
+			<argument index="1" name="coords" type="Vector2i" />
+			<argument index="2" name="use_proxies" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="get_layer_name" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="layer" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_layer_y_sort_origin" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="layer" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_layer_z_indexd" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="layer" type="int" />
 			<description>
 			</description>
 		</method>
@@ -65,6 +86,7 @@
 		</method>
 		<method name="get_used_cells" qualifiers="const">
 			<return type="Vector2i[]" />
+			<argument index="0" name="layer" type="int" />
 			<description>
 				Returns a [Vector2] array with the positions of all cells containing a tile from the tileset (i.e. a tile index different from [code]-1[/code]).
 			</description>
@@ -73,6 +95,18 @@
 			<return type="Rect2" />
 			<description>
 				Returns a rectangle enclosing the used (non-empty) tiles of the map.
+			</description>
+		</method>
+		<method name="is_layer_enabled" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="layer" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="is_layer_y_sort_enabled" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="layer" type="int" />
+			<description>
 			</description>
 		</method>
 		<method name="map_to_world" qualifiers="const">
@@ -84,18 +118,48 @@
 		</method>
 		<method name="set_cell">
 			<return type="void" />
-			<argument index="0" name="coords" type="Vector2i" />
-			<argument index="1" name="source_id" type="int" default="-1" />
-			<argument index="2" name="atlas_coords" type="Vector2i" default="Vector2i(-1, -1)" />
-			<argument index="3" name="alternative_tile" type="int" default="-1" />
+			<argument index="0" name="layer" type="int" />
+			<argument index="1" name="coords" type="Vector2i" />
+			<argument index="2" name="source_id" type="int" default="-1" />
+			<argument index="3" name="atlas_coords" type="Vector2i" default="Vector2i(-1, -1)" />
+			<argument index="4" name="alternative_tile" type="int" default="-1" />
 			<description>
 				Sets the tile index for the cell given by a Vector2i.
 			</description>
 		</method>
-		<method name="update_dirty_quadrants">
+		<method name="set_layer_enabled">
 			<return type="void" />
+			<argument index="0" name="layer" type="int" />
+			<argument index="1" name="enabled" type="bool" />
 			<description>
-				Updates the tile map's quadrants, allowing things such as navigation and collision shapes to be immediately used if modified.
+			</description>
+		</method>
+		<method name="set_layer_name">
+			<return type="void" />
+			<argument index="0" name="layer" type="int" />
+			<argument index="1" name="name" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="set_layer_y_sort_enabled">
+			<return type="void" />
+			<argument index="0" name="layer" type="int" />
+			<argument index="1" name="y_sort_enabled" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="set_layer_y_sort_origin">
+			<return type="void" />
+			<argument index="0" name="layer" type="int" />
+			<argument index="1" name="y_sort_origin" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_layer_z_index">
+			<return type="void" />
+			<argument index="0" name="layer" type="int" />
+			<argument index="1" name="z_index" type="int" />
+			<description>
 			</description>
 		</method>
 		<method name="world_to_map" qualifiers="const">
@@ -110,9 +174,11 @@
 		<member name="cell_quadrant_size" type="int" setter="set_quadrant_size" getter="get_quadrant_size" default="16">
 			The TileMap's quadrant size. Optimizes drawing by batching, using chunks of this size.
 		</member>
-		<member name="show_collision" type="int" setter="set_collision_visibility_mode" getter="get_collision_visibility_mode" enum="TileMap.VisibilityMode" default="0">
+		<member name="collision_visibility_mode" type="int" setter="set_collision_visibility_mode" getter="get_collision_visibility_mode" enum="TileMap.VisibilityMode" default="0">
 		</member>
-		<member name="show_navigation" type="int" setter="set_navigation_visibility_mode" getter="get_navigation_visibility_mode" enum="TileMap.VisibilityMode" default="0">
+		<member name="layers_count" type="int" setter="set_layers_count" getter="get_layers_count" default="1">
+		</member>
+		<member name="navigation_visibility_mode" type="int" setter="set_navigation_visibility_mode" getter="get_navigation_visibility_mode" enum="TileMap.VisibilityMode" default="0">
 		</member>
 		<member name="tile_set" type="TileSet" setter="set_tileset" getter="get_tileset">
 			The assigned [TileSet].

@@ -36,10 +36,10 @@
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"
 
+#include "scene/2d/tile_map.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
-#include "scene/resources/tile_set.h"
 
 class TileDataEditor : public VBoxContainer {
 	GDCLASS(TileDataEditor, VBoxContainer);

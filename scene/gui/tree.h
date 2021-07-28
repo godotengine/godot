@@ -462,8 +462,6 @@ private:
 	void _gui_input(Ref<InputEvent> p_event);
 	void _notification(int p_what);
 
-	Size2 get_minimum_size() const override;
-
 	void item_edited(int p_column, TreeItem *p_item, bool p_lmb = true);
 	void item_changed(int p_column, TreeItem *p_item);
 	void item_selected(int p_column, TreeItem *p_item);
@@ -720,6 +718,8 @@ public:
 
 	void set_allow_reselect(bool p_allow);
 	bool get_allow_reselect() const;
+
+	Size2 get_minimum_size() const override;
 
 	Tree();
 	~Tree();

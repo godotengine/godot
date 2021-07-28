@@ -32,6 +32,7 @@
 
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
+#include "scene/2d/tile_map.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel.h"
@@ -259,7 +260,7 @@ void TileAtlasView::_draw_base_tiles() {
 			Vector2i offset_pos = (margins + (atlas_coords * texture_region_size) + tile_set_atlas_source->get_tile_texture_region(atlas_coords).size / 2 + tile_set_atlas_source->get_tile_effective_texture_offset(atlas_coords, 0));
 
 			// Draw the tile.
-			TileSetPluginAtlasRendering::draw_tile(base_tiles_draw->get_canvas_item(), offset_pos, tile_set, source_id, atlas_coords, 0);
+			TileMap::draw_tile(base_tiles_draw->get_canvas_item(), offset_pos, tile_set, source_id, atlas_coords, 0);
 		}
 	}
 }
@@ -375,7 +376,7 @@ void TileAtlasView::_draw_alternatives() {
 				}
 
 				// Draw the tile.
-				TileSetPluginAtlasRendering::draw_tile(alternatives_draw->get_canvas_item(), offset_pos, tile_set, source_id, atlas_coords, alternative_id);
+				TileMap::draw_tile(alternatives_draw->get_canvas_item(), offset_pos, tile_set, source_id, atlas_coords, alternative_id);
 
 				// Increment the x position.
 				current_pos.x += transposed ? texture_region.size.y : texture_region.size.x;
