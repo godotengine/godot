@@ -1081,7 +1081,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	script_key = memnew(LineEdit);
 	script_key->connect("text_changed", this, "_script_encryption_key_changed");
 	script_key_error = memnew(Label);
-	script_key_error->set_text("- " + TTR("Invalid Encryption Key (must be 64 hexadecimal characters long)"));
+	script_key_error->set_text(String::utf8("• ") + TTR("Invalid Encryption Key (must be 64 hexadecimal characters long)"));
 	script_key_error->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
 	script_vb->add_margin_child(TTR("GDScript Encryption Key (256-bits as hexadecimal):"), script_key);
 	script_vb->add_child(script_key_error);
