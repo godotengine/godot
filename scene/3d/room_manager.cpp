@@ -924,6 +924,10 @@ void RoomManager::_autolink_portals(Spatial *p_roomlist, LocalVector<Portal *> &
 					// send complete link to visual server so the portal will be active in the visual server room system
 					VisualServer::get_singleton()->portal_link(portal->_portal_rid, source_room->_room_rid, room->_room_rid, portal->_settings_two_way);
 
+					// make the portal internal if necessary
+					// (this prevents the portal plane clipping the room bound)
+					portal->_internal = source_room->_room_priority > room->_room_priority;
+
 					autolink_found = true;
 					break;
 				}
