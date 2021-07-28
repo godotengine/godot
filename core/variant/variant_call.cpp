@@ -1838,6 +1838,9 @@ static void _register_variant_builtin_methods() {
 	bind_function(PackedByteArray, to_int64_array, _VariantCall::func_PackedByteArray_decode_T_array<int64_t>, sarray(), varray());
 	bind_function(PackedByteArray, to_float32_array, _VariantCall::func_PackedByteArray_decode_T_array<float>, sarray(), varray());
 	bind_function(PackedByteArray, to_float64_array, _VariantCall::func_PackedByteArray_decode_T_array<double>, sarray(), varray());
+	bind_function(PackedByteArray, to_vector2_array, _VariantCall::func_PackedByteArray_decode_T_array<Vector2>, sarray(), varray());
+	bind_function(PackedByteArray, to_vector3_array, _VariantCall::func_PackedByteArray_decode_T_array<Vector3>, sarray(), varray());
+	bind_function(PackedByteArray, to_color_array, _VariantCall::func_PackedByteArray_decode_T_array<Color>, sarray(), varray());
 
 	bind_functionnc(PackedByteArray, encode_u8, _VariantCall::func_PackedByteArray_encode_u8, sarray("byte_offset", "value"), varray());
 	bind_functionnc(PackedByteArray, encode_s8, _VariantCall::func_PackedByteArray_encode_s8, sarray("byte_offset", "value"), varray());
