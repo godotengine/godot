@@ -750,38 +750,12 @@ struct _VariantCall {
 		return 0;
 	}
 
-	static PackedInt32Array func_PackedByteArray_decode_s32_array(PackedByteArray *p_instance) {
+	template <typename T>
+	static Vector<T> func_PackedByteArray_decode_T_array(PackedByteArray *p_instance) {
 		uint64_t size = p_instance->size();
 		const uint8_t *r = p_instance->ptr();
-		PackedInt32Array dest;
-		dest.resize(size / sizeof(int32_t));
-		memcpy(dest.ptrw(), r, size);
-		return dest;
-	}
-
-	static PackedInt64Array func_PackedByteArray_decode_s64_array(PackedByteArray *p_instance) {
-		uint64_t size = p_instance->size();
-		const uint8_t *r = p_instance->ptr();
-		PackedInt64Array dest;
-		dest.resize(size / sizeof(int64_t));
-		memcpy(dest.ptrw(), r, size);
-		return dest;
-	}
-
-	static PackedFloat32Array func_PackedByteArray_decode_float_array(PackedByteArray *p_instance) {
-		uint64_t size = p_instance->size();
-		const uint8_t *r = p_instance->ptr();
-		PackedFloat32Array dest;
-		dest.resize(size / sizeof(float));
-		memcpy(dest.ptrw(), r, size);
-		return dest;
-	}
-
-	static PackedFloat64Array func_PackedByteArray_decode_double_array(PackedByteArray *p_instance) {
-		uint64_t size = p_instance->size();
-		const uint8_t *r = p_instance->ptr();
-		PackedFloat64Array dest;
-		dest.resize(size / sizeof(double));
+		Vector<T> dest;
+		dest.resize(size / sizeof(T));
 		memcpy(dest.ptrw(), r, size);
 		return dest;
 	}
@@ -1860,10 +1834,10 @@ static void _register_variant_builtin_methods() {
 	bind_function(PackedByteArray, decode_var, _VariantCall::func_PackedByteArray_decode_var, sarray("byte_offset", "allow_objects"), varray(false));
 	bind_function(PackedByteArray, decode_var_size, _VariantCall::func_PackedByteArray_decode_var_size, sarray("byte_offset", "allow_objects"), varray(false));
 
-	bind_function(PackedByteArray, to_int32_array, _VariantCall::func_PackedByteArray_decode_s32_array, sarray(), varray());
-	bind_function(PackedByteArray, to_int64_array, _VariantCall::func_PackedByteArray_decode_s64_array, sarray(), varray());
-	bind_function(PackedByteArray, to_float32_array, _VariantCall::func_PackedByteArray_decode_float_array, sarray(), varray());
-	bind_function(PackedByteArray, to_float64_array, _VariantCall::func_PackedByteArray_decode_double_array, sarray(), varray());
+	bind_function(PackedByteArray, to_int32_array, _VariantCall::func_PackedByteArray_decode_T_array<int32_t>, sarray(), varray());
+	bind_function(PackedByteArray, to_int64_array, _VariantCall::func_PackedByteArray_decode_T_array<int64_t>, sarray(), varray());
+	bind_function(PackedByteArray, to_float32_array, _VariantCall::func_PackedByteArray_decode_T_array<float>, sarray(), varray());
+	bind_function(PackedByteArray, to_float64_array, _VariantCall::func_PackedByteArray_decode_T_array<double>, sarray(), varray());
 
 	bind_functionnc(PackedByteArray, encode_u8, _VariantCall::func_PackedByteArray_encode_u8, sarray("byte_offset", "value"), varray());
 	bind_functionnc(PackedByteArray, encode_s8, _VariantCall::func_PackedByteArray_encode_s8, sarray("byte_offset", "value"), varray());
