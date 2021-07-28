@@ -1086,17 +1086,16 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_window_title->set_corner_radius(CORNER_TOP_RIGHT, 0);
 	// Prevent visible line between window title and body.
 	style_window_title->set_expand_margin_size(SIDE_BOTTOM, 2 * EDSCALE);
-	theme->set_stylebox("panel", "Window", style_window_title);
 
 	Ref<StyleBoxFlat> style_window = style_popup->duplicate();
 	style_window->set_border_color(base_color);
 	style_window->set_border_width(SIDE_TOP, 24 * EDSCALE);
 	style_window->set_expand_margin_size(SIDE_TOP, 24 * EDSCALE);
-	theme->set_stylebox("panel_window", "Window", style_window);
+	theme->set_stylebox("embedded_border", "Window", style_window);
 
 	theme->set_color("title_color", "Window", font_color);
 	theme->set_icon("close", "Window", theme->get_icon("GuiClose", "EditorIcons"));
-	theme->set_icon("close_highlight", "Window", theme->get_icon("GuiClose", "EditorIcons"));
+	theme->set_icon("close_pressed", "Window", theme->get_icon("GuiClose", "EditorIcons"));
 	theme->set_constant("close_h_ofs", "Window", 22 * EDSCALE);
 	theme->set_constant("close_v_ofs", "Window", 20 * EDSCALE);
 	theme->set_constant("title_height", "Window", 24 * EDSCALE);
@@ -1111,6 +1110,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("panel", "EditorSettingsDialog", style_complex_window);
 	theme->set_stylebox("panel", "ProjectSettingsEditor", style_complex_window);
 	theme->set_stylebox("panel", "EditorAbout", style_complex_window);
+
+	// AcceptDialog
+	theme->set_stylebox("panel", "AcceptDialog", style_window_title);
 
 	// HScrollBar
 	Ref<Texture2D> empty_icon = memnew(ImageTexture);

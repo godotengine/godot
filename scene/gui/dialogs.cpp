@@ -72,13 +72,10 @@ void AcceptDialog::_notification(int p_what) {
 					parent_visible = nullptr;
 				}
 			}
-
 		} break;
-
 		case NOTIFICATION_THEME_CHANGED: {
 			bg->add_theme_style_override("panel", bg->get_theme_stylebox(SNAME("panel"), SNAME("AcceptDialog")));
 		} break;
-
 		case NOTIFICATION_EXIT_TREE: {
 			if (parent_visible) {
 				parent_visible->disconnect("focus_entered", callable_mp(this, &AcceptDialog::_parent_focused));

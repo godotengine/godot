@@ -700,93 +700,92 @@ Viewport *Window::_get_embedder() const {
 }
 
 void Window::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		bool embedded = false;
-		{
-			embedder = _get_embedder();
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			bool embedded = false;
+			{
+				embedder = _get_embedder();
 
-			if (embedder) {
-				embedded = true;
+				if (embedder) {
+					embedded = true;
 
-				if (!visible) {
-					embedder = nullptr; //not yet since not visible
+					if (!visible) {
+						embedder = nullptr; //not yet since not visible
+					}
 				}
 			}
-		}
 
-		if (embedded) {
-			//create as embedded
-			if (embedder) {
-				embedder->_sub_window_register(this);
-				RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
-				_update_window_size();
-			}
-
-		} else {
-			if (get_parent() == nullptr) {
-				//it's the root window!
-				visible = true; //always visible
-				window_id = DisplayServer::MAIN_WINDOW_ID;
-				DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
-				_update_from_window();
-				//since this window already exists (created on start), we must update pos and size from it
-				{
-					position = DisplayServer::get_singleton()->window_get_position(window_id);
-					size = DisplayServer::get_singleton()->window_get_size(window_id);
+			if (embedded) {
+				//create as embedded
+				if (embedder) {
+					embedder->_sub_window_register(this);
+					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
+					_update_window_size();
 				}
-				_update_viewport_size(); //then feed back to the viewport
-				_update_window_callbacks();
-				RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_VISIBLE);
+
 			} else {
-				//create
-				if (visible) {
-					_make_window();
+				if (get_parent() == nullptr) {
+					//it's the root window!
+					visible = true; //always visible
+					window_id = DisplayServer::MAIN_WINDOW_ID;
+					DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
+					_update_from_window();
+					//since this window already exists (created on start), we must update pos and size from it
+					{
+						position = DisplayServer::get_singleton()->window_get_position(window_id);
+						size = DisplayServer::get_singleton()->window_get_size(window_id);
+					}
+					_update_viewport_size(); //then feed back to the viewport
+					_update_window_callbacks();
+					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_VISIBLE);
+				} else {
+					//create
+					if (visible) {
+						_make_window();
+					}
 				}
 			}
-		}
 
-		if (transient) {
-			_make_transient();
-		}
-		if (visible) {
-			notification(NOTIFICATION_VISIBILITY_CHANGED);
-			emit_signal(SceneStringNames::get_singleton()->visibility_changed);
-			RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
-		}
-	}
+			if (transient) {
+				_make_transient();
+			}
+			if (visible) {
+				notification(NOTIFICATION_VISIBILITY_CHANGED);
+				emit_signal(SceneStringNames::get_singleton()->visibility_changed);
+				RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
+			}
+		} break;
+		case NOTIFICATION_READY: {
+			if (wrap_controls) {
+				_update_child_controls();
+			}
+		} break;
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			child_controls_changed();
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			if (transient) {
+				_clear_transient();
+			}
 
-	if (p_what == NOTIFICATION_READY) {
-		if (wrap_controls) {
-			_update_child_controls();
-		}
-	}
-
-	if (p_what == NOTIFICATION_TRANSLATION_CHANGED) {
-		child_controls_changed();
-	}
-
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		if (transient) {
-			_clear_transient();
-		}
-
-		if (!is_embedded() && window_id != DisplayServer::INVALID_WINDOW_ID) {
-			if (window_id == DisplayServer::MAIN_WINDOW_ID) {
-				RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
-				_update_window_callbacks();
+			if (!is_embedded() && window_id != DisplayServer::INVALID_WINDOW_ID) {
+				if (window_id == DisplayServer::MAIN_WINDOW_ID) {
+					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
+					_update_window_callbacks();
+				} else {
+					_clear_window();
+				}
 			} else {
-				_clear_window();
+				if (embedder) {
+					embedder->_sub_window_remove(this);
+					embedder = nullptr;
+					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
+				}
+				_update_viewport_size(); //called by clear and make, which does not happen here
 			}
-		} else {
-			if (embedder) {
-				embedder->_sub_window_remove(this);
-				embedder = nullptr;
-				RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
-			}
-			_update_viewport_size(); //called by clear and make, which does not happen here
-		}
 
-		RS::get_singleton()->viewport_set_active(get_viewport_rid(), false);
+			RS::get_singleton()->viewport_set_active(get_viewport_rid(), false);
+		} break;
 	}
 }
 

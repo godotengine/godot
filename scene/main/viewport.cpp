@@ -249,7 +249,7 @@ void Viewport::_sub_window_update(Window *p_window) {
 	Rect2i r = Rect2i(p_window->get_position(), sw.window->get_size());
 
 	if (!p_window->get_flag(Window::FLAG_BORDERLESS)) {
-		Ref<StyleBox> panel = p_window->get_theme_stylebox(SNAME("panel_window"));
+		Ref<StyleBox> panel = p_window->get_theme_stylebox(SNAME("embedded_border"));
 		panel->draw(sw.canvas_item, r);
 
 		// Draw the title bar text.
@@ -273,9 +273,8 @@ void Viewport::_sub_window_update(Window *p_window) {
 		}
 		title_text.draw(sw.canvas_item, r.position + Point2(x, y), title_color);
 
-		bool hl = gui.subwindow_focused == sw.window && gui.subwindow_drag == SUB_WINDOW_DRAG_CLOSE && gui.subwindow_drag_close_inside;
-
-		Ref<Texture2D> close_icon = p_window->get_theme_icon(hl ? "close_highlight" : "close");
+		bool pressed = gui.subwindow_focused == sw.window && gui.subwindow_drag == SUB_WINDOW_DRAG_CLOSE && gui.subwindow_drag_close_inside;
+		Ref<Texture2D> close_icon = p_window->get_theme_icon(pressed ? "close_pressed" : "close");
 		close_icon->draw(sw.canvas_item, r.position + Vector2(r.size.width - close_h_ofs, -close_v_ofs));
 	}
 
