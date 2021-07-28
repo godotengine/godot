@@ -819,7 +819,7 @@ public:
 	};
 	static bool has_builtin(const Map<StringName, ShaderLanguage::FunctionInfo> &p_functions, const StringName &p_name);
 
-	typedef DataType (*GlobalVariableGetTypeFunc)(const StringName &p_name);
+	using GlobalVariableGetTypeFunc = DataType (*)(const StringName &p_name);
 
 private:
 	struct KeyWord {

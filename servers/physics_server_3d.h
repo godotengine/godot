@@ -800,7 +800,7 @@ public:
 	real_t get_best_collision_depth() const;
 };
 
-typedef PhysicsServer3D *(*CreatePhysicsServer3DCallback)();
+using CreatePhysicsServer3DCallback = PhysicsServer3D *(*)();
 
 class PhysicsServer3DManager {
 	struct ClassInfo {

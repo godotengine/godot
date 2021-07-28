@@ -93,12 +93,12 @@ class Scope;
 class Parser;
 class Element;
 
-typedef Element *ElementPtr;
-typedef Scope *ScopePtr;
+using ElementPtr = Element *;
+using ScopePtr = Scope *;
 
-typedef std::vector<ScopePtr> ScopeList;
-typedef std::multimap<std::string, ElementPtr> ElementMap;
-typedef std::pair<ElementMap::const_iterator, ElementMap::const_iterator> ElementCollection;
+using ScopeList = std::vector<ScopePtr>;
+using ElementMap = std::multimap<std::string, ElementPtr>;
+using ElementCollection = std::pair<ElementMap::const_iterator, ElementMap::const_iterator>;
 
 #define new_Scope new Scope
 #define new_Element new Element

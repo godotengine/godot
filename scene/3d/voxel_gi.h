@@ -106,9 +106,9 @@ public:
 
 	};
 
-	typedef void (*BakeBeginFunc)(int);
-	typedef void (*BakeStepFunc)(int, const String &);
-	typedef void (*BakeEndFunc)();
+	using BakeBeginFunc = void (*)(int);
+	using BakeStepFunc = void (*)(int, const String &);
+	using BakeEndFunc = void (*)();
 
 private:
 	Ref<VoxelGIData> probe_data;

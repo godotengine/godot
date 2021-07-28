@@ -82,7 +82,7 @@ public:
 		float value;
 	};
 
-	typedef void (*EventDispatchFunc)(const Ref<InputEvent> &p_event);
+	using EventDispatchFunc = void (*)(const Ref<InputEvent> &p_event);
 
 private:
 	int mouse_button_mask = 0;

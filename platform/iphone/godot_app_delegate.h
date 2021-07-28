@@ -30,7 +30,7 @@
 
 #import <UIKit/UIKit.h>
 
-typedef NSObject<UIApplicationDelegate> ApplicationDelegateService;
+using ApplicationDelegateService = NSObject<UIApplicationDelegate>;
 
 @interface GodotApplicalitionDelegate : NSObject <UIApplicationDelegate>
 

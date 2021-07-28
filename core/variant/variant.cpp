@@ -1315,7 +1315,7 @@ void Variant::_clear_internal() {
 		case RID: {
 			// not much need probably
 			// Can't seem to use destructor + scoping operator, so hack.
-			typedef ::RID RID_Class;
+			using RID_Class = ::RID;
 			reinterpret_cast<RID_Class *>(_data._mem)->~RID_Class();
 		} break;
 		case CALLABLE: {

@@ -58,7 +58,7 @@ void RemoteDebugger::_bind_profiler(const String &p_name, T *p_prof) {
 
 struct RemoteDebugger::NetworkProfiler {
 public:
-	typedef DebuggerMarshalls::MultiplayerNodeInfo NodeInfo;
+	using NodeInfo = DebuggerMarshalls::MultiplayerNodeInfo;
 	struct BandwidthFrame {
 		uint32_t timestamp;
 		int packet_size;
@@ -189,8 +189,8 @@ public:
 };
 
 struct RemoteDebugger::ScriptsProfiler {
-	typedef DebuggerMarshalls::ScriptFunctionSignature FunctionSignature;
-	typedef DebuggerMarshalls::ScriptFunctionInfo FunctionInfo;
+	using FunctionSignature = DebuggerMarshalls::ScriptFunctionSignature;
+	using FunctionInfo = DebuggerMarshalls::ScriptFunctionInfo;
 	struct ProfileInfoSort {
 		bool operator()(ScriptLanguage::ProfilingInfo *A, ScriptLanguage::ProfilingInfo *B) const {
 			return A->total_time < B->total_time;
@@ -272,8 +272,8 @@ struct RemoteDebugger::ScriptsProfiler {
 
 struct RemoteDebugger::ServersProfiler {
 	bool skip_profile_frame = false;
-	typedef DebuggerMarshalls::ServerInfo ServerInfo;
-	typedef DebuggerMarshalls::ServerFunctionInfo ServerFunctionInfo;
+	using ServerInfo = DebuggerMarshalls::ServerInfo;
+	using ServerFunctionInfo = DebuggerMarshalls::ServerFunctionInfo;
 
 	Map<StringName, ServerInfo> server_data;
 	ScriptsProfiler scripts_profiler;
@@ -347,8 +347,8 @@ struct RemoteDebugger::ServersProfiler {
 };
 
 struct RemoteDebugger::VisualProfiler {
-	typedef DebuggerMarshalls::ServerInfo ServerInfo;
-	typedef DebuggerMarshalls::ServerFunctionInfo ServerFunctionInfo;
+	using ServerInfo = DebuggerMarshalls::ServerInfo;
+	using ServerFunctionInfo = DebuggerMarshalls::ServerFunctionInfo;
 
 	Map<StringName, ServerInfo> server_data;
 

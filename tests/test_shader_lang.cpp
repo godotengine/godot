@@ -39,7 +39,7 @@
 #include "scene/gui/text_edit.h"
 #include "servers/rendering/shader_language.h"
 
-typedef ShaderLanguage SL;
+using SL = ShaderLanguage;
 
 namespace TestShaderLang {
 

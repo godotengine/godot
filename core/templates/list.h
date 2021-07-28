@@ -135,7 +135,7 @@ public:
 		_FORCE_INLINE_ Element() {}
 	};
 
-	typedef T ValueType;
+	using ValueType = T;
 
 	struct Iterator {
 		_FORCE_INLINE_ T &operator*() const {

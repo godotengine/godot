@@ -56,7 +56,7 @@ public:
 	// note we are using uint32_t instead of BVHHandle, losing type safety, but this
 	// is for compatibility with octree
 	typedef void *(*PairCallback)(void *, uint32_t, T *, int, uint32_t, T *, int);
-	typedef void (*UnpairCallback)(void *, uint32_t, T *, int, uint32_t, T *, int, void *);
+	using UnpairCallback = void (*)(void *, uint32_t, T *, int, uint32_t, T *, int, void *);
 
 	// these 2 are crucial for fine tuning, and can be applied manually
 	// see the variable declarations for more info.

@@ -122,7 +122,7 @@ public:
 		bool supports_multiview = false; // If true this device supports multiview options
 	};
 
-	typedef String (*ShaderSPIRVGetCacheKeyFunction)(const Capabilities *p_capabilities);
+	using ShaderSPIRVGetCacheKeyFunction = String (*)(const Capabilities *p_capabilities);
 	typedef Vector<uint8_t> (*ShaderCompileToSPIRVFunction)(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language, String *r_error, const Capabilities *p_capabilities);
 	typedef Vector<uint8_t> (*ShaderCacheFunction)(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language);
 
@@ -533,7 +533,7 @@ public:
 		}
 	};
 
-	typedef int64_t FramebufferFormatID;
+	using FramebufferFormatID = int64_t;
 
 	// This ID is warranted to be unique for the same formats, does not need to be freed
 	virtual FramebufferFormatID framebuffer_format_create(const Vector<AttachmentFormat> &p_format, uint32_t p_view_count = 1) = 0;
@@ -649,7 +649,7 @@ public:
 	};
 	virtual RID vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>(), bool p_use_as_storage = false) = 0;
 
-	typedef int64_t VertexFormatID;
+	using VertexFormatID = int64_t;
 
 	// This ID is warranted to be unique for the same formats, does not need to be freed
 	virtual VertexFormatID vertex_format_create(const Vector<VertexAttribute> &p_vertex_formats) = 0;
@@ -738,7 +738,7 @@ public:
 
 	virtual RID uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set) = 0;
 	virtual bool uniform_set_is_valid(RID p_uniform_set) = 0;
-	typedef void (*UniformSetInvalidatedCallback)(const RID &, void *);
+	using UniformSetInvalidatedCallback = void (*)(const RID &, void *);
 	virtual void uniform_set_set_invalidation_callback(RID p_uniform_set, UniformSetInvalidatedCallback p_callback, void *p_userdata) = 0;
 
 	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL) = 0;
@@ -1065,7 +1065,7 @@ public:
 		FINAL_ACTION_MAX
 	};
 
-	typedef int64_t DrawListID;
+	using DrawListID = int64_t;
 
 	virtual DrawListID draw_list_begin_for_screen(DisplayServer::WindowID p_screen = 0, const Color &p_clear_color = Color()) = 0;
 	virtual DrawListID draw_list_begin(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2(), const Vector<RID> &p_storage_textures = Vector<RID>()) = 0;
@@ -1093,7 +1093,7 @@ public:
 	/**** COMPUTE LISTS ****/
 	/***********************/
 
-	typedef int64_t ComputeListID;
+	using ComputeListID = int64_t;
 
 	virtual ComputeListID compute_list_begin(bool p_allow_draw_overlap = false) = 0;
 	virtual void compute_list_bind_compute_pipeline(ComputeListID p_list, RID p_compute_pipeline) = 0;
@@ -1267,6 +1267,6 @@ VARIANT_ENUM_CAST(RenderingDevice::FinalAction)
 VARIANT_ENUM_CAST(RenderingDevice::Limit)
 VARIANT_ENUM_CAST(RenderingDevice::MemoryType)
 
-typedef RenderingDevice RD;
+using RD = RenderingDevice;
 
 #endif // RENDERING_DEVICE_H

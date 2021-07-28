@@ -165,8 +165,8 @@ class EditorExportPlatform : public RefCounted {
 	GDCLASS(EditorExportPlatform, RefCounted);
 
 public:
-	typedef Error (*EditorExportSaveFunction)(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
-	typedef Error (*EditorExportSaveSharedObject)(void *p_userdata, const SharedObject &p_so);
+	using EditorExportSaveFunction = Error (*)(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
+	using EditorExportSaveSharedObject = Error (*)(void *p_userdata, const SharedObject &p_so);
 
 private:
 	struct SavedData {
@@ -416,7 +416,7 @@ class EditorExportPlatformPC : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformPC, EditorExportPlatform);
 
 public:
-	typedef Error (*FixUpEmbeddedPckFunc)(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size);
+	using FixUpEmbeddedPckFunc = Error (*)(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size);
 
 private:
 	Ref<ImageTexture> logo;

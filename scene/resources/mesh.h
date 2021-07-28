@@ -190,7 +190,7 @@ public:
 		uint32_t max_convex_hulls = 1;
 		bool project_hull_vertices = true;
 	};
-	typedef Vector<Vector<Vector3>> (*ConvexDecompositionFunc)(const real_t *p_vertices, int p_vertex_count, const uint32_t *p_triangles, int p_triangle_count, const ConvexDecompositionSettings &p_settings, Vector<Vector<uint32_t>> *r_convex_indices);
+	using ConvexDecompositionFunc = Vector<Vector<Vector3>> (*)(const real_t *p_vertices, int p_vertex_count, const uint32_t *p_triangles, int p_triangle_count, const ConvexDecompositionSettings &p_settings, Vector<Vector<uint32_t>> *r_convex_indices);
 
 	static ConvexDecompositionFunc convex_decomposition_function;
 

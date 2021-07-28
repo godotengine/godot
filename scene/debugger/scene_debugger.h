@@ -62,7 +62,7 @@ private:
 	void _parse_script_properties(Script *p_script, ScriptInstance *p_instance);
 
 public:
-	typedef Pair<PropertyInfo, Variant> SceneDebuggerProperty;
+	using SceneDebuggerProperty = Pair<PropertyInfo, Variant>;
 	ObjectID id;
 	String class_name;
 	List<SceneDebuggerProperty> properties;

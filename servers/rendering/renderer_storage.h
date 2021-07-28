@@ -69,8 +69,8 @@ protected:
 public:
 	struct DependencyTracker {
 		void *userdata = nullptr;
-		typedef void (*ChangedCallback)(DependencyChangedNotification, DependencyTracker *);
-		typedef void (*DeletedCallback)(const RID &, DependencyTracker *);
+		using ChangedCallback = void (*)(DependencyChangedNotification, DependencyTracker *);
+		using DeletedCallback = void (*)(const RID &, DependencyTracker *);
 
 		ChangedCallback changed_callback = nullptr;
 		DeletedCallback deleted_callback = nullptr;

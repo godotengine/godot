@@ -110,7 +110,7 @@ private:
 	std::vector<const BlendShape *> blendShapes;
 };
 
-typedef std::vector<int> MatIndexArray;
+using MatIndexArray = std::vector<int>;
 
 /// Map Geometry stores the FBX file information.
 ///

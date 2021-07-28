@@ -109,7 +109,7 @@ private:
 	LoadedApiAssembly core_api_assembly;
 	LoadedApiAssembly editor_api_assembly;
 
-	typedef bool (*CoreApiAssemblyLoadedCallback)();
+	using CoreApiAssemblyLoadedCallback = bool (*)();
 
 	bool _are_api_assemblies_out_of_sync();
 	bool _temp_domain_load_are_assemblies_out_of_sync(const String &p_config);

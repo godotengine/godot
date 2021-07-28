@@ -183,7 +183,7 @@ T m2n_arg_cast(Mono_InterpMethodArguments *p_margs, size_t p_idx) {
 template <typename... P, size_t... Is>
 void m2n_trampoline_with_idx_seq(void *p_target_func, Mono_InterpMethodArguments *p_margs, IndexSequence<Is...>) {
 	constexpr array<size_t, sizeof...(P)> indices = get_indices_for_type<P...>();
-	typedef void (*Func)(P...);
+	using Func = void (*)(P...);
 	Func func = (Func)p_target_func;
 	func(m2n_arg_cast<P>(p_margs, indices.elems[Is])...);
 }
@@ -191,21 +191,21 @@ void m2n_trampoline_with_idx_seq(void *p_target_func, Mono_InterpMethodArguments
 template <typename R, typename... P, size_t... Is>
 void m2n_trampoline_with_idx_seq_r(void *p_target_func, Mono_InterpMethodArguments *p_margs, IndexSequence<Is...>) {
 	constexpr array<size_t, sizeof...(P)> indices = get_indices_for_type<P...>();
-	typedef R (*Func)(P...);
+	using Func = R (*)(P...);
 	Func func = (Func)p_target_func;
 	R res = func(m2n_arg_cast<P>(p_margs, indices.elems[Is])...);
 	*reinterpret_cast<R *>(p_margs->retval) = res;
 }
 
 inline void m2n_trampoline_with_idx_seq_0(void *p_target_func, Mono_InterpMethodArguments *p_margs) {
-	typedef void (*Func)();
+	using Func = void (*)();
 	Func func = (Func)p_target_func;
 	func();
 }
 
 template <typename R>
 void m2n_trampoline_with_idx_seq_r0(void *p_target_func, Mono_InterpMethodArguments *p_margs) {
-	typedef R (*Func)();
+	using Func = R (*)();
 	Func func = (Func)p_target_func;
 	R res = func();
 	*reinterpret_cast<R *>(p_margs->retval) = res;
@@ -229,7 +229,7 @@ void m2n_trampoline_r(void *p_target_func, Mono_InterpMethodArguments *p_margs) 
 	}
 }
 
-typedef void (*TrampolineFunc)(void *p_target_func, Mono_InterpMethodArguments *p_margs);
+using TrampolineFunc = void (*)(void *p_target_func, Mono_InterpMethodArguments *p_margs);
 
 void set_trampoline(const char *cookies, TrampolineFunc trampoline_func);
 

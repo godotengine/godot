@@ -47,7 +47,7 @@ class DisjointSet {
 		int rank = 0;
 	};
 
-	typedef Map<T, Element *, C, AL> MapT;
+	using MapT = Map<T, Element *, C, AL>;
 
 	MapT elements;
 

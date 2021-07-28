@@ -39,7 +39,7 @@
 #include "core/templates/map.h"
 #include "core/variant/variant.h"
 
-typedef uint32_t OctreeElementID;
+using OctreeElementID = uint32_t;
 
 #define OCTREE_ELEMENT_INVALID_ID 0
 #define OCTREE_SIZE_LIMIT 1e15
@@ -48,7 +48,7 @@ template <class T, bool use_pairs = false, class AL = DefaultAllocator>
 class Octree {
 public:
 	typedef void *(*PairCallback)(void *, OctreeElementID, T *, int, OctreeElementID, T *, int);
-	typedef void (*UnpairCallback)(void *, OctreeElementID, T *, int, OctreeElementID, T *, int, void *);
+	using UnpairCallback = void (*)(void *, OctreeElementID, T *, int, OctreeElementID, T *, int, void *);
 
 private:
 	enum {
@@ -151,8 +151,8 @@ private:
 		typename List<PairData *, AL>::Element *eA, *eB;
 	};
 
-	typedef Map<OctreeElementID, Element, Comparator<OctreeElementID>, AL> ElementMap;
-	typedef Map<PairKey, PairData, Comparator<PairKey>, AL> PairMap;
+	using ElementMap = Map<OctreeElementID, Element, Comparator<OctreeElementID>, AL>;
+	using PairMap = Map<PairKey, PairData, Comparator<PairKey>, AL>;
 	ElementMap element_map;
 	PairMap pair_map;
 

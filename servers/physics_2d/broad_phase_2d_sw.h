@@ -38,14 +38,14 @@ class CollisionObject2DSW;
 
 class BroadPhase2DSW {
 public:
-	typedef BroadPhase2DSW *(*CreateFunction)();
+	using CreateFunction = BroadPhase2DSW *(*)();
 
 	static CreateFunction create_func;
 
-	typedef uint32_t ID;
+	using ID = uint32_t;
 
 	typedef void *(*PairCallback)(CollisionObject2DSW *A, int p_subindex_A, CollisionObject2DSW *B, int p_subindex_B, void *p_userdata);
-	typedef void (*UnpairCallback)(CollisionObject2DSW *A, int p_subindex_A, CollisionObject2DSW *B, int p_subindex_B, void *p_data, void *p_userdata);
+	using UnpairCallback = void (*)(CollisionObject2DSW *A, int p_subindex_A, CollisionObject2DSW *B, int p_subindex_B, void *p_data, void *p_userdata);
 
 	// 0 is an invalid ID
 	virtual ID create(CollisionObject2DSW *p_object_, int p_subindex = 0, const Rect2 &p_aabb = Rect2(), bool p_static = false) = 0;

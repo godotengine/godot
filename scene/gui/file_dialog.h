@@ -57,7 +57,7 @@ public:
 	};
 
 	typedef Ref<Texture2D> (*GetIconFunc)(const String &);
-	typedef void (*RegisterFunc)(FileDialog *);
+	using RegisterFunc = void (*)(FileDialog *);
 
 	static GetIconFunc get_icon_func;
 	static GetIconFunc get_large_icon_func;

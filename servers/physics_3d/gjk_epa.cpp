@@ -100,8 +100,8 @@ struct sResults	{
 };
 
 // Shorthands
-typedef unsigned int	U;
-typedef unsigned char	U1;
+using U = unsigned int;
+using U1 = unsigned char;
 
 // MinkowskiDiff
 struct	MinkowskiDiff {

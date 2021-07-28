@@ -49,10 +49,10 @@ struct FBXMeshData;
 struct FBXBone;
 struct ImportState;
 
-typedef int Vertex;
-typedef int SurfaceId;
-typedef int PolygonId;
-typedef int DataIndex;
+using Vertex = int;
+using SurfaceId = int;
+using PolygonId = int;
+using DataIndex = int;
 
 struct SurfaceData {
 	Ref<SurfaceTool> surface_tool;

@@ -38,7 +38,7 @@
 #include "core/templates/vector.h"
 
 class ScriptDebugger {
-	typedef ScriptLanguage::StackInfo StackInfo;
+	using StackInfo = ScriptLanguage::StackInfo;
 
 	int lines_left = -1;
 	int depth = -1;

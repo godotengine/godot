@@ -234,7 +234,7 @@ public:
 	}
 };
 
-typedef Ref<RefCounted> REF;
+using REF = Ref<RefCounted>;
 
 class WeakRef : public RefCounted {
 	GDCLASS(WeakRef, RefCounted);
@@ -258,7 +258,7 @@ struct PtrToArg<Ref<T>> {
 		return Ref<T>(const_cast<T *>(reinterpret_cast<const T *>(p_ptr)));
 	}
 
-	typedef Ref<T> EncodeT;
+	using EncodeT = Ref<T>;
 
 	_FORCE_INLINE_ static void encode(Ref<T> p_val, const void *p_ptr) {
 		*(Ref<RefCounted> *)p_ptr = p_val;
@@ -267,7 +267,7 @@ struct PtrToArg<Ref<T>> {
 
 template <class T>
 struct PtrToArg<const Ref<T> &> {
-	typedef Ref<T> EncodeT;
+	using EncodeT = Ref<T>;
 
 	_FORCE_INLINE_ static Ref<T> convert(const void *p_ptr) {
 		return Ref<T>((T *)p_ptr);

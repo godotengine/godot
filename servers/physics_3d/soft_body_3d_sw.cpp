@@ -698,7 +698,7 @@ public:
 			// Positive values = "input A" while negative values = "input B"
 	LinkDeps *next; // Next dependence in the list
 };
-typedef LinkDeps *LinkDepsPtr;
+using LinkDepsPtr = LinkDeps *;
 
 void SoftBody3DSW::reoptimize_link_order() {
 	const int reop_not_dependent = -1;

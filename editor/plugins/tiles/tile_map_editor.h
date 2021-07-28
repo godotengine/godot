@@ -252,7 +252,7 @@ private:
 		Constraint() {}
 	};
 
-	typedef Array TerrainsTilePattern;
+	using TerrainsTilePattern = Array;
 
 	Set<TerrainsTilePattern> _get_valid_terrains_tile_patterns_for_constraints(int p_terrain_set, const Vector2i &p_position, Set<TileMapEditorTerrainsPlugin::Constraint> p_constraints) const;
 	Set<TileMapEditorTerrainsPlugin::Constraint> _get_constraints_from_removed_cells_list(const Set<Vector2i> &p_to_replace, int p_terrain_set) const;

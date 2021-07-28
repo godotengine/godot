@@ -81,7 +81,7 @@ struct _CollectorCallback {
 	}
 };
 
-typedef void (*GenerateContactsFunc)(const Vector3 *, int, const Vector3 *, int, _CollectorCallback *);
+using GenerateContactsFunc = void (*)(const Vector3 *, int, const Vector3 *, int, _CollectorCallback *);
 
 static void _generate_contacts_point_point(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
 #ifdef DEBUG_ENABLED
@@ -761,7 +761,7 @@ public:
 
 /****** SAT TESTS *******/
 
-typedef void (*CollisionFunc)(const Shape3DSW *, const Transform3D &, const Shape3DSW *, const Transform3D &, _CollectorCallback *p_callback, real_t, real_t);
+using CollisionFunc = void (*)(const Shape3DSW *, const Transform3D &, const Shape3DSW *, const Transform3D &, _CollectorCallback *p_callback, real_t, real_t);
 
 template <bool withMargin>
 static void _collision_sphere_sphere(const Shape3DSW *p_a, const Transform3D &p_transform_a, const Shape3DSW *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {

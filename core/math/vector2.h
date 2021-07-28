@@ -274,8 +274,8 @@ Vector2 Vector2::direction_to(const Vector2 &p_to) const {
 	return ret;
 }
 
-typedef Vector2 Size2;
-typedef Vector2 Point2;
+using Size2 = Vector2;
+using Point2 = Vector2;
 
 /* INTEGER STUFF */
 
@@ -380,7 +380,7 @@ _FORCE_INLINE_ Vector2i operator*(const double &p_scalar, const Vector2i &p_vect
 	return p_vector * p_scalar;
 }
 
-typedef Vector2i Size2i;
-typedef Vector2i Point2i;
+using Size2i = Vector2i;
+using Point2i = Vector2i;
 
 #endif // VECTOR2_H

@@ -104,8 +104,8 @@ public:
 	virtual bool is_concave() const override { return true; }
 	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const override { r_amount = 0; }
 
-	// Returns true to stop the query.
-	typedef bool (*QueryCallback)(void *p_userdata, Shape3DSW *p_convex);
+	// Returns `true` to stop the query.
+	using QueryCallback = bool (*)(void *p_userdata, Shape3DSW *p_convex);
 
 	virtual void cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata) const = 0;
 

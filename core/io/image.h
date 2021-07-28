@@ -45,11 +45,11 @@
 
 class Image;
 
-typedef Error (*SavePNGFunc)(const String &p_path, const Ref<Image> &p_img);
+using SavePNGFunc = Error (*)(const String &p_path, const Ref<Image> &p_img);
 typedef Vector<uint8_t> (*SavePNGBufferFunc)(const Ref<Image> &p_img);
 typedef Ref<Image> (*ImageMemLoadFunc)(const uint8_t *p_png, int p_size);
 
-typedef Error (*SaveEXRFunc)(const String &p_path, const Ref<Image> &p_img, bool p_grayscale);
+using SaveEXRFunc = Error (*)(const String &p_path, const Ref<Image> &p_img, bool p_grayscale);
 
 class Image : public Resource {
 	GDCLASS(Image, Resource);

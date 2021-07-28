@@ -37,13 +37,13 @@ extern "C" {
 
 #include "stddef.h"
 
-typedef void (*GodotWebXRSupportedCallback)(char *p_session_mode, int p_supported);
-typedef void (*GodotWebXRStartedCallback)(char *p_reference_space_type);
-typedef void (*GodotWebXREndedCallback)();
-typedef void (*GodotWebXRFailedCallback)(char *p_message);
-typedef void (*GodotWebXRControllerCallback)();
-typedef void (*GodotWebXRInputEventCallback)(char *p_signal_name, int p_controller_id);
-typedef void (*GodotWebXRSimpleEventCallback)(char *p_signal_name);
+using GodotWebXRSupportedCallback = void (*)(char *p_session_mode, int p_supported);
+using GodotWebXRStartedCallback = void (*)(char *p_reference_space_type);
+using GodotWebXREndedCallback = void (*)();
+using GodotWebXRFailedCallback = void (*)(char *p_message);
+using GodotWebXRControllerCallback = void (*)();
+using GodotWebXRInputEventCallback = void (*)(char *p_signal_name, int p_controller_id);
+using GodotWebXRSimpleEventCallback = void (*)(char *p_signal_name);
 
 extern int godot_webxr_is_supported();
 extern void godot_webxr_is_session_supported(const char *p_session_mode, GodotWebXRSupportedCallback p_callback);

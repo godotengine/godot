@@ -80,7 +80,7 @@ class SceneTree : public MainLoop {
 	GDCLASS(SceneTree, MainLoop);
 
 public:
-	typedef void (*IdleCallback)();
+	using IdleCallback = void (*)();
 
 private:
 	struct Group {

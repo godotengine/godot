@@ -125,10 +125,10 @@ private:
 };
 
 #define new_Property new Property
-typedef Property *PropertyPtr;
-typedef std::map<std::string, PropertyPtr> DirectPropertyMap;
-typedef std::map<std::string, PropertyPtr> PropertyMap;
-typedef std::map<std::string, ElementPtr> LazyPropertyMap;
+using PropertyPtr = Property *;
+using DirectPropertyMap = std::map<std::string, PropertyPtr>;
+using PropertyMap = std::map<std::string, PropertyPtr>;
+using LazyPropertyMap = std::map<std::string, ElementPtr>;
 
 /**
  *  Represents a property table as can be found in the newer FBX files (Properties60, Properties70)

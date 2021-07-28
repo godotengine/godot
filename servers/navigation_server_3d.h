@@ -194,7 +194,7 @@ public:
 	virtual ~NavigationServer3D();
 };
 
-typedef NavigationServer3D *(*NavigationServer3DCallback)();
+using NavigationServer3DCallback = NavigationServer3D *(*)();
 
 /// Manager used for the server singleton registration
 class NavigationServer3DManager {

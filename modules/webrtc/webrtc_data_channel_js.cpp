@@ -34,10 +34,10 @@
 #include "emscripten.h"
 
 extern "C" {
-typedef void (*RTCChOnOpen)(void *p_obj);
-typedef void (*RTCChOnMessage)(void *p_obj, const uint8_t *p_buffer, int p_size, int p_is_string);
-typedef void (*RTCChOnClose)(void *p_obj);
-typedef void (*RTCChOnError)(void *p_obj);
+using RTCChOnOpen = void (*)(void *p_obj);
+using RTCChOnMessage = void (*)(void *p_obj, const uint8_t *p_buffer, int p_size, int p_is_string);
+using RTCChOnClose = void (*)(void *p_obj);
+using RTCChOnError = void (*)(void *p_obj);
 
 extern int godot_js_rtc_datachannel_ready_state_get(int p_id);
 extern int godot_js_rtc_datachannel_send(int p_id, const uint8_t *p_buffer, int p_length, int p_raw);

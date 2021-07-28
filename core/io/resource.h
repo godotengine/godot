@@ -148,7 +148,7 @@ public:
 	~Resource();
 };
 
-typedef Ref<Resource> RES;
+using RES = Ref<Resource>;
 
 class ResourceCache {
 	friend class Resource;

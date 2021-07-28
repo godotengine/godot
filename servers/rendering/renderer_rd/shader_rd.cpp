@@ -464,7 +464,7 @@ void ShaderRD::_compile_version(Version *p_version) {
 	p_version->dirty = false;
 
 	p_version->variants = memnew_arr(RID, variant_defines.size());
-	typedef Vector<uint8_t> ShaderStageData;
+	using ShaderStageData = Vector<uint8_t>;
 	p_version->variant_data = memnew_arr(ShaderStageData, variant_defines.size());
 
 	if (shader_cache_dir_valid) {

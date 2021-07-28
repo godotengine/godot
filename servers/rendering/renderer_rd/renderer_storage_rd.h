@@ -147,7 +147,7 @@ public:
 		virtual ~ShaderData() {}
 	};
 
-	typedef ShaderData *(*ShaderDataRequestFunction)();
+	using ShaderDataRequestFunction = ShaderData *(*)();
 
 	struct MaterialData {
 		void update_uniform_buffer(const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Map<StringName, Variant> &p_parameters, uint8_t *p_buffer, uint32_t p_buffer_size, bool p_use_linear_color);

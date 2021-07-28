@@ -35,7 +35,7 @@
 
 class CollisionSolver3DSW {
 public:
-	typedef void (*CallbackResult)(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata);
+	using CallbackResult = void (*)(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata);
 
 private:
 	static bool soft_body_query_callback(uint32_t p_node_index, void *p_userdata);

@@ -35,22 +35,22 @@
 
 template <class T>
 struct GetSimpleTypeT {
-	typedef T type_t;
+	using type_t = T;
 };
 
 template <class T>
 struct GetSimpleTypeT<T &> {
-	typedef T type_t;
+	using type_t = T;
 };
 
 template <class T>
 struct GetSimpleTypeT<T const> {
-	typedef T type_t;
+	using type_t = T;
 };
 
 template <class T>
 struct GetSimpleTypeT<T const &> {
-	typedef T type_t;
+	using type_t = T;
 };
 
 #endif // SIMPLE_TYPE_H

@@ -465,8 +465,8 @@ class ConcaveShape2DSW : public Shape2DSW {
 public:
 	virtual bool is_concave() const override { return true; }
 
-	// Returns true to stop the query.
-	typedef bool (*QueryCallback)(void *p_userdata, Shape2DSW *p_convex);
+	// Returns `true` to stop the query.
+	using QueryCallback = bool (*)(void *p_userdata, Shape2DSW *p_convex);
 
 	virtual void cull(const Rect2 &p_local_aabb, QueryCallback p_callback, void *p_userdata) const = 0;
 };

@@ -37,7 +37,7 @@
 #include "servers/text_server.h"
 #include "theme_data.h"
 
-typedef Map<const void *, Ref<ImageTexture>> TexCacheMap;
+using TexCacheMap = Map<const void *, Ref<ImageTexture>>;
 
 static TexCacheMap *tex_cache;
 static float scale = 1.0;

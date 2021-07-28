@@ -36,11 +36,11 @@
 #include "webrtc_peer_connection.h"
 
 extern "C" {
-typedef void (*RTCOnIceConnectionStateChange)(void *p_obj, int p_state);
-typedef void (*RTCOnIceCandidate)(void *p_obj, const char *p_mid, int p_mline_idx, const char *p_candidate);
-typedef void (*RTCOnDataChannel)(void *p_obj, int p_id);
-typedef void (*RTCOnSession)(void *p_obj, const char *p_type, const char *p_sdp);
-typedef void (*RTCOnError)(void *p_obj);
+using RTCOnIceConnectionStateChange = void (*)(void *p_obj, int p_state);
+using RTCOnIceCandidate = void (*)(void *p_obj, const char *p_mid, int p_mline_idx, const char *p_candidate);
+using RTCOnDataChannel = void (*)(void *p_obj, int p_id);
+using RTCOnSession = void (*)(void *p_obj, const char *p_type, const char *p_sdp);
+using RTCOnError = void (*)(void *p_obj);
 extern int godot_js_rtc_pc_create(const char *p_config, void *p_obj, RTCOnIceConnectionStateChange p_on_state_change, RTCOnIceCandidate p_on_candidate, RTCOnDataChannel p_on_datachannel);
 extern void godot_js_rtc_pc_close(int p_id);
 extern void godot_js_rtc_pc_destroy(int p_id);

@@ -43,7 +43,7 @@
 #include <embree3/rtcore.h>
 
 class RaycastOcclusionCull : public RendererSceneOcclusionCull {
-	typedef RTCRayHit16 RayPacket;
+	using RayPacket = RTCRayHit16;
 
 public:
 	class RaycastHZBuffer : public HZBuffer {

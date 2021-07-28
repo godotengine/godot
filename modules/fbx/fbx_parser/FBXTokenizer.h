@@ -175,8 +175,8 @@ private:
 };
 
 // Fixed leak by using shared_ptr for tokens
-typedef Token *TokenPtr;
-typedef std::vector<TokenPtr> TokenList;
+using TokenPtr = Token *;
+using TokenList = std::vector<TokenPtr>;
 
 #define new_Token new Token
 

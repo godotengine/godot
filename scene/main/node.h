@@ -483,6 +483,6 @@ public:
 
 VARIANT_ENUM_CAST(Node::DuplicateFlags);
 
-typedef Set<Node *, Node::Comparator> NodeSet;
+using NodeSet = Set<Node *, Node::Comparator>;
 
 #endif

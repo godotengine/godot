@@ -47,7 +47,7 @@
 #define JOIN_SYMBOLS(p_path, name) ((p_path) + SYMBOL_SEPERATOR + (name))
 #endif
 
-typedef HashMap<String, const lsp::DocumentSymbol *> ClassMembers;
+using ClassMembers = HashMap<String, const lsp::DocumentSymbol *>;
 
 class ExtendGDScriptParser : public GDScriptParser {
 	String path;

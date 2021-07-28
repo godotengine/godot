@@ -204,7 +204,7 @@ public:
 		INVALID_WINDOW_ID = -1
 	};
 
-	typedef int WindowID;
+	using WindowID = int;
 
 	virtual Vector<DisplayServer::WindowID> get_window_list() const = 0;
 

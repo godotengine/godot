@@ -41,7 +41,7 @@ class ProjectSettings : public Object {
 	_THREAD_SAFE_CLASS_
 
 public:
-	typedef Map<String, Variant> CustomMap;
+	using CustomMap = Map<String, Variant>;
 	static const String IMPORTED_FILES_PATH;
 
 	enum {

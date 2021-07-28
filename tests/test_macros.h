@@ -122,7 +122,7 @@ DOCTEST_STRINGIFY_VARIANT(PackedColorArray);
 // For instance: REGISTER_TEST_COMMAND("gdscript-parser" &test_parser_func).
 // Example usage: `godot --test gdscript-parser`.
 
-typedef void (*TestFunc)();
+using TestFunc = void (*)();
 extern Map<String, TestFunc> *test_commands;
 int register_test_command(String p_command, TestFunc p_function);
 

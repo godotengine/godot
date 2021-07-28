@@ -35,7 +35,7 @@
 
 template <bool C, typename T = void>
 struct EnableIf {
-	typedef T type;
+	using type = T;
 };
 
 template <typename T>

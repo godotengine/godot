@@ -615,7 +615,7 @@ public:
 	real_t get_collision_unsafe_fraction() const;
 };
 
-typedef PhysicsServer2D *(*CreatePhysicsServer2DCallback)();
+using CreatePhysicsServer2DCallback = PhysicsServer2D *(*)();
 
 class PhysicsServer2DManager {
 	struct ClassInfo {

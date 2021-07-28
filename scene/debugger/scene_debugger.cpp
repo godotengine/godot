@@ -300,8 +300,8 @@ SceneDebuggerObject::SceneDebuggerObject(ObjectID p_id) {
 }
 
 void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInstance *p_instance) {
-	typedef Map<const Script *, Set<StringName>> ScriptMemberMap;
-	typedef Map<const Script *, Map<StringName, Variant>> ScriptConstantsMap;
+	using ScriptMemberMap = Map<const Script *, Set<StringName>>;
+	using ScriptConstantsMap = Map<const Script *, Map<StringName, Variant>>;
 
 	ScriptMemberMap members;
 	if (p_instance) {

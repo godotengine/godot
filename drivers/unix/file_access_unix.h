@@ -38,7 +38,7 @@
 
 #if defined(UNIX_ENABLED) || defined(LIBC_FILEIO_ENABLED)
 
-typedef void (*CloseNotificationFunc)(const String &p_file, int p_flags);
+using CloseNotificationFunc = void (*)(const String &p_file, int p_flags);
 
 class FileAccessUnix : public FileAccess {
 	FILE *f = nullptr;

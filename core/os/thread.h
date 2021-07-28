@@ -47,9 +47,9 @@ class String;
 
 class Thread {
 public:
-	typedef void (*Callback)(void *p_userdata);
+	using Callback = void (*)(void *p_userdata);
 
-	typedef uint64_t ID;
+	using ID = uint64_t;
 
 	enum Priority {
 		PRIORITY_LOW,

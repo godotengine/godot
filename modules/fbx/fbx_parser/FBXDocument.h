@@ -73,7 +73,7 @@ class BlendShape;
 class Skin;
 class Cluster;
 
-typedef Object *ObjectPtr;
+using ObjectPtr = Object *;
 #define new_Object new Object
 
 /** Represents a delay-parsed FBX objects. Many objects in the scene
@@ -350,7 +350,7 @@ public:
 
 class Model;
 
-typedef Model *ModelPtr;
+using ModelPtr = Model *;
 #define new_Model new Model
 
 /** DOM base class for FBX models (even though its semantics are more "node" than "model" */
@@ -606,8 +606,8 @@ private:
 	float alpha = 0;
 };
 
-typedef std::map<std::string, const Texture *> TextureMap;
-typedef std::map<std::string, const LayeredTexture *> LayeredTextureMap;
+using TextureMap = std::map<std::string, const Texture *>;
+using LayeredTextureMap = std::map<std::string, const LayeredTexture *>;
 
 /** DOM class for generic FBX videos */
 class Video : public Object {
@@ -696,8 +696,8 @@ private:
 };
 
 // signed int keys (this can happen!)
-typedef std::vector<int64_t> KeyTimeList;
-typedef std::vector<float> KeyValueList;
+using KeyTimeList = std::vector<int64_t>;
+using KeyValueList = std::vector<float>;
 
 /** Represents a FBX animation curve (i.e. a 1-dimensional set of keyframes and values therefore) */
 class AnimationCurve : public Object {
@@ -738,13 +738,13 @@ private:
 };
 
 /* Typedef for pointers for the animation handler */
-typedef std::shared_ptr<AnimationCurve> AnimationCurvePtr;
-typedef std::weak_ptr<AnimationCurve> AnimationCurveWeakPtr;
-typedef std::map<std::string, const AnimationCurve *> AnimationMap;
+using AnimationCurvePtr = std::shared_ptr<AnimationCurve>;
+using AnimationCurveWeakPtr = std::weak_ptr<AnimationCurve>;
+using AnimationMap = std::map<std::string, const AnimationCurve *>;
 
 /* Animation Curve node ptr */
-typedef std::shared_ptr<AnimationCurveNode> AnimationCurveNodePtr;
-typedef std::weak_ptr<AnimationCurveNode> AnimationCurveNodeWeakPtr;
+using AnimationCurveNodePtr = std::shared_ptr<AnimationCurveNode>;
+using AnimationCurveNodeWeakPtr = std::weak_ptr<AnimationCurveNode>;
 
 /** Represents a FBX animation curve (i.e. a mapping from single animation curves to nodes) */
 class AnimationCurveNode : public Object {
@@ -786,11 +786,11 @@ private:
 	const Document &doc;
 };
 
-typedef std::vector<const AnimationCurveNode *> AnimationCurveNodeList;
+using AnimationCurveNodeList = std::vector<const AnimationCurveNode *>;
 
-typedef std::shared_ptr<AnimationLayer> AnimationLayerPtr;
-typedef std::weak_ptr<AnimationLayer> AnimationLayerWeakPtr;
-typedef std::vector<const AnimationLayer *> AnimationLayerList;
+using AnimationLayerPtr = std::shared_ptr<AnimationLayer>;
+using AnimationLayerWeakPtr = std::weak_ptr<AnimationLayer>;
+using AnimationLayerList = std::vector<const AnimationLayer *>;
 
 /** Represents a FBX animation layer (i.e. a list of node animations) */
 class AnimationLayer : public Object {
@@ -840,8 +840,8 @@ public:
 	virtual ~Constraint();
 };
 
-typedef std::vector<float> WeightArray;
-typedef std::vector<unsigned int> WeightIndexArray;
+using WeightArray = std::vector<float>;
+using WeightIndexArray = std::vector<unsigned int>;
 
 /** DOM class for BlendShapeChannel deformers */
 class BlendShapeChannel : public Deformer {
@@ -1038,9 +1038,9 @@ public:
 // during their entire lifetime (Document). FBX files have
 // up to many thousands of objects (most of which we never use),
 // so the memory overhead for them should be kept at a minimum.
-typedef std::map<uint64_t, LazyObject *> ObjectMap;
-typedef std::map<std::string, const PropertyTable *> PropertyTemplateMap;
-typedef std::multimap<uint64_t, const Connection *> ConnectionMap;
+using ObjectMap = std::map<uint64_t, LazyObject *>;
+using PropertyTemplateMap = std::map<std::string, const PropertyTable *>;
+using ConnectionMap = std::multimap<uint64_t, const Connection *>;
 
 /** DOM class for global document settings, a single instance per document can
  *  be accessed via Document.Globals(). */

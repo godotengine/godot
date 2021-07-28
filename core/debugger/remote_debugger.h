@@ -47,7 +47,7 @@ public:
 	};
 
 private:
-	typedef DebuggerMarshalls::OutputError ErrorMessage;
+	using ErrorMessage = DebuggerMarshalls::OutputError;
 
 	struct NetworkProfiler;
 	struct ServersProfiler;
