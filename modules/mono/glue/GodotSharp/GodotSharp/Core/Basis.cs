@@ -207,7 +207,7 @@ namespace Godot
             }
         }
 
-        public Quaternion RotationQuaternion()
+        public Quaternion GetRotationQuaternion()
         {
             Basis orthonormalizedBasis = Orthonormalized();
             real_t det = orthonormalizedBasis.Determinant();
