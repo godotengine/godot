@@ -474,13 +474,7 @@ private:
 						return;
 					}
 					ProjectSettings::CustomMap initial_settings;
-					if (rasterizer_button_group->get_pressed_button()->get_meta("driver_name") == "Vulkan") {
-						initial_settings["rendering/driver/driver_name"] = "Vulkan";
-					} else {
-						initial_settings["rendering/driver/driver_name"] = "GLES2";
-						initial_settings["rendering/textures/vram_compression/import_etc2"] = false;
-						initial_settings["rendering/textures/vram_compression/import_etc"] = true;
-					}
+					initial_settings["rendering/vulkan/rendering/back_end"] = rasterizer_button_group->get_pressed_button()->get_meta(SNAME("driver_name"));
 					initial_settings["application/config/name"] = project_name->get_text().strip_edges();
 					initial_settings["application/config/icon"] = "res://icon.png";
 					initial_settings["rendering/environment/defaults/default_environment"] = "res://default_env.tres";
@@ -869,37 +863,36 @@ public:
 		rshb->add_child(rvb);
 		Button *rs_button = memnew(CheckBox);
 		rs_button->set_button_group(rasterizer_button_group);
-		rs_button->set_text(TTR("Vulkan"));
-		rs_button->set_meta("driver_name", "Vulkan");
+		rs_button->set_text(TTR("Vulkan Clustered"));
+		rs_button->set_meta(SNAME("driver_name"), 0); // Vulkan backend "Forward Clustered"
 		rs_button->set_pressed(true);
 		rvb->add_child(rs_button);
 		l = memnew(Label);
-		l->set_text(TTR("- Higher visual quality\n- More accurate API, which produces very fast code\n- Some features not implemented yet - work in progress\n- Incompatible with older hardware\n- Not recommended for web and mobile games"));
+		l->set_text(
+				String::utf8("•  ") + TTR("Supports desktop platforms only.") +
+				String::utf8("\n•  ") + TTR("Advanced 3D graphics available.") +
+				String::utf8("\n•  ") + TTR("Can scale to large complex scenes.") +
+				String::utf8("\n•  ") + TTR("Slower rendering of simple scenes."));
 		l->set_modulate(Color(1, 1, 1, 0.7));
 		rvb->add_child(l);
 
 		rshb->add_child(memnew(VSeparator));
-
-		const String gles2_unsupported_tooltip =
-				TTR("The GLES2 renderer is currently unavailable, as it needs to be reworked for Godot 4.0.\nUse Godot 3.2 if you need GLES2 support.");
 
 		rvb = memnew(VBoxContainer);
 		rvb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		rshb->add_child(rvb);
 		rs_button = memnew(CheckBox);
 		rs_button->set_button_group(rasterizer_button_group);
-		rs_button->set_text(TTR("OpenGL ES 2.0 (currently unavailable)"));
-		rs_button->set_meta("driver_name", "GLES2");
-		rs_button->set_disabled(true);
-		rs_button->set_tooltip(gles2_unsupported_tooltip);
+		rs_button->set_text(TTR("Vulkan Mobile"));
+		rs_button->set_meta(SNAME("driver_name"), 1); // Vulkan backend "Forward Mobile"
 		rvb->add_child(rs_button);
 		l = memnew(Label);
-		l->set_text(TTR("- Lower visual quality\n- Some features not available\n- Works on most hardware\n- Recommended for web and mobile games"));
+		l->set_text(
+				String::utf8("•  ") + TTR("Supports desktop + mobile platforms.") +
+				String::utf8("\n•  ") + TTR("Less advanced 3D graphics.") +
+				String::utf8("\n•  ") + TTR("Less scalable for complex scenes.") +
+				String::utf8("\n•  ") + TTR("Faster rendering of simple scenes."));
 		l->set_modulate(Color(1, 1, 1, 0.7));
-		// Also set the tooltip on the label so it appears when hovering either the checkbox or label.
-		l->set_tooltip(gles2_unsupported_tooltip);
-		// Required for the tooltip to show.
-		l->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 		rvb->add_child(l);
 
 		l = memnew(Label);
