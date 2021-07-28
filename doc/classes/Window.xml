@@ -469,11 +469,11 @@
 		</theme_item>
 		<theme_item name="close_h_ofs" type="int" default="18">
 		</theme_item>
-		<theme_item name="close_highlight" type="Texture2D">
+		<theme_item name="close_pressed" type="Texture2D">
 		</theme_item>
 		<theme_item name="close_v_ofs" type="int" default="18">
 		</theme_item>
-		<theme_item name="panel" type="StyleBox">
+		<theme_item name="embedded_border" type="StyleBox">
 		</theme_item>
 		<theme_item name="resize_margin" type="int" default="4">
 		</theme_item>
@@ -493,8 +493,6 @@
 		</theme_item>
 		<theme_item name="title_outline_size" type="int" default="0">
 			The size of the title outline.
-		</theme_item>
-		<theme_item name="window_panel" type="StyleBox">
 		</theme_item>
 	</theme_items>
 </class>

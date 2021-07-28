@@ -105,4 +105,9 @@
 	</signals>
 	<constants>
 	</constants>
+	<theme_items>
+		<theme_item name="panel" type="StyleBox">
+			Panel that fills up the background of the window.
+		</theme_item>
+	</theme_items>
 </class>

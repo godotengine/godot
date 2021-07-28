@@ -571,10 +571,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	empty.instantiate();
 	theme->set_stylebox("bg", "ScrollContainer", empty);
 
-	// WindowDialog
+	// Window
 
-	theme->set_stylebox("panel", "Window", default_style);
-	theme->set_stylebox("window_panel", "Window", sb_expand(make_stylebox(popup_window_png, 10, 26, 10, 8), 8, 24, 8, 6));
+	theme->set_stylebox("embedded_border", "Window", sb_expand(make_stylebox(popup_window_png, 10, 26, 10, 8), 8, 24, 8, 6));
 	theme->set_constant("scaleborder_size", "Window", 4 * scale);
 
 	theme->set_font("title_font", "Window", large_font);
@@ -588,9 +587,13 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("resize_margin", "Window", 4 * scale);
 
 	theme->set_icon("close", "Window", make_icon(close_png));
-	theme->set_icon("close_highlight", "Window", make_icon(close_hl_png));
+	theme->set_icon("close_pressed", "Window", make_icon(close_hl_png));
 	theme->set_constant("close_h_ofs", "Window", 18 * scale);
 	theme->set_constant("close_v_ofs", "Window", 18 * scale);
+
+	// AcceptDialog
+
+	theme->set_stylebox("panel", "AcceptDialog", make_stylebox(dialog_bg_png, 0, 0, 0, 0));
 
 	// File Dialog
 
