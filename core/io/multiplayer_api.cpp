@@ -63,7 +63,7 @@ const MultiplayerAPI::RPCConfig _get_rpc_config(const Node *p_node, const String
 	const Vector<MultiplayerAPI::RPCConfig> node_config = p_node->get_node_rpc_methods();
 	for (int i = 0; i < node_config.size(); i++) {
 		if (node_config[i].name == p_method) {
-			r_id = ((uint16_t)i) & (1 << 15);
+			r_id = ((uint16_t)i) | (1 << 15);
 			return node_config[i];
 		}
 	}
@@ -89,7 +89,7 @@ const MultiplayerAPI::RPCConfig _get_rpc_config_by_id(Node *p_node, uint16_t p_i
 		config = p_node->get_script_instance()->get_rpc_methods();
 	}
 	if (id < config.size()) {
-		return config[p_id];
+		return config[id];
 	}
 	return MultiplayerAPI::RPCConfig();
 }
