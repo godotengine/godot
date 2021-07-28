@@ -153,6 +153,7 @@ Ref<Material> GeometryInstance3D::get_material_override() const {
 void GeometryInstance3D::set_visibility_range_begin(float p_dist) {
 	visibility_range_begin = p_dist;
 	RS::get_singleton()->instance_geometry_set_visibility_range(get_instance(), visibility_range_begin, visibility_range_end, visibility_range_begin_margin, visibility_range_end_margin);
+	update_configuration_warnings();
 }
 
 float GeometryInstance3D::get_visibility_range_begin() const {
@@ -162,6 +163,7 @@ float GeometryInstance3D::get_visibility_range_begin() const {
 void GeometryInstance3D::set_visibility_range_end(float p_dist) {
 	visibility_range_end = p_dist;
 	RS::get_singleton()->instance_geometry_set_visibility_range(get_instance(), visibility_range_begin, visibility_range_end, visibility_range_begin_margin, visibility_range_end_margin);
+	update_configuration_warnings();
 }
 
 float GeometryInstance3D::get_visibility_range_end() const {
@@ -349,6 +351,16 @@ void GeometryInstance3D::set_ignore_occlusion_culling(bool p_enabled) {
 
 bool GeometryInstance3D::is_ignoring_occlusion_culling() {
 	return ignore_occlusion_culling;
+}
+
+TypedArray<String> GeometryInstance3D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
+
+	if (!Math::is_zero_approx(visibility_range_end) && visibility_range_end <= visibility_range_begin) {
+		warnings.push_back(TTR("The GeometryInstance3D visibility range's End distance is set to a non-zero value, but is lower than the Begin distance.\nThis means the GeometryInstance3D will never be visible.\nTo resolve this, set the End distance to 0 or to a value greater than the Begin distance."));
+	}
+
+	return warnings;
 }
 
 void GeometryInstance3D::_bind_methods() {
