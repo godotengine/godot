@@ -697,8 +697,10 @@ public:
 		STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT = 1
 	};
 
-	virtual RID uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>()) = 0;
-	virtual RID storage_buffer_create(uint32_t p_size, const Vector<uint8_t> &p_data = Vector<uint8_t>(), uint32_t p_usage = 0) = 0;
+	RID uniform_buffer_create_generic(const Variant &p_data);
+	RID storage_buffer_create_generic(const Variant &p_data, uint32_t p_usage = 0);
+	RID uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>());
+	RID storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>(), uint32_t p_usage = 0);
 	virtual RID texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const Vector<uint8_t> &p_data = Vector<uint8_t>()) = 0;
 
 	struct Uniform {
@@ -723,9 +725,15 @@ public:
 	typedef void (*UniformSetInvalidatedCallback)(const RID &, void *);
 	virtual void uniform_set_set_invalidation_callback(RID p_uniform_set, UniformSetInvalidatedCallback p_callback, void *p_userdata) = 0;
 
-	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL) = 0;
+	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size_bytes, const void *p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL) = 0;
+	Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size_bytes, const Vector<uint8_t> &p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL);
+	Error buffer_update_generic(RID p_buffer, uint32_t p_index, uint32_t p_size, const Variant &p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL);
 	virtual Error buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size, uint32_t p_post_barrier = BARRIER_MASK_ALL) = 0;
-	virtual Vector<uint8_t> buffer_get_data(RID p_buffer) = 0; //this causes stall, only use to retrieve large buffers for saving
+
+	//this causes stall, only use to retrieve large buffers for saving
+	template <typename T = uint8_t>
+	Vector<T> buffer_get_data(RID p_buffer);
+	Variant buffer_get_data_generic(RID p_buffer, Variant::Type p_type);
 
 	/******************************************/
 	/**** PIPELINE SPECIALIZATION CONSTANT ****/
@@ -1203,9 +1211,14 @@ protected:
 	Vector<uint8_t> _shader_compile_binary_from_spirv(const Ref<RDShaderSPIRV> &p_bytecode);
 	RID _shader_create_from_spirv(const Ref<RDShaderSPIRV> &p_spirv);
 
+	virtual RID _uniform_buffer_create(uint32_t p_size_bytes, const uint8_t *p_data = nullptr) = 0;
+	virtual RID _storage_buffer_create(uint32_t p_size_bytes, const uint8_t *p_data = nullptr, uint32_t p_usage = 0) = 0;
+
 	RID _uniform_set_create(const Array &p_uniforms, RID p_shader, uint32_t p_shader_set);
 
-	Error _buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const Vector<uint8_t> &p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL);
+	virtual uint64_t _buffer_get_size(RID p_buffer) = 0;
+	//this causes stall, only use to retrieve large buffers for saving
+	virtual void _buffer_get_data(RID p_buffer, uint8_t *p_mem) = 0;
 
 	RID _render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const Ref<RDPipelineRasterizationState> &p_rasterization_state, const Ref<RDPipelineMultisampleState> &p_multisample_state, const Ref<RDPipelineDepthStencilState> &p_depth_stencil_state, const Ref<RDPipelineColorBlendState> &p_blend_state, int p_dynamic_state_flags, uint32_t p_for_render_pass, const TypedArray<RDPipelineSpecializationConstant> &p_specialization_constants);
 	RID _compute_pipeline_create(RID p_shader, const TypedArray<RDPipelineSpecializationConstant> &p_specialization_constants);

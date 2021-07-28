@@ -744,6 +744,12 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	RID_Owner<UniformSet, true> uniform_set_owner;
 
+	virtual RID _uniform_buffer_create(uint32_t p_size_bytes, const uint8_t *p_data = nullptr);
+	virtual RID _storage_buffer_create(uint32_t p_size_bytes, const uint8_t *p_data = nullptr, uint32_t p_usage = 0);
+
+	virtual uint64_t _buffer_get_size(RID p_buffer);
+	virtual void _buffer_get_data(RID p_buffer, uint8_t *p_mem); //this causes stall, only use to retrieve large buffers for saving
+
 	/*******************/
 	/**** PIPELINES ****/
 	/*******************/
@@ -1094,17 +1100,14 @@ public:
 	/**** UNIFORM ****/
 	/*****************/
 
-	virtual RID uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>());
-	virtual RID storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>(), uint32_t p_usage = 0);
 	virtual RID texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const Vector<uint8_t> &p_data = Vector<uint8_t>());
 
 	virtual RID uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set);
 	virtual bool uniform_set_is_valid(RID p_uniform_set);
 	virtual void uniform_set_set_invalidation_callback(RID p_uniform_set, UniformSetInvalidatedCallback p_callback, void *p_userdata);
 
-	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL); //works for any buffer
+	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size_bytes, const void *p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL);
 	virtual Error buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size, uint32_t p_post_barrier = BARRIER_MASK_ALL);
-	virtual Vector<uint8_t> buffer_get_data(RID p_buffer);
 
 	/*************************/
 	/**** RENDER PIPELINE ****/

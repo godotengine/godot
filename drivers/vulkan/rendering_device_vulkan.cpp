@@ -5178,35 +5178,30 @@ uint32_t RenderingDeviceVulkan::shader_get_vertex_input_attribute_mask(RID p_sha
 /**** UNIFORMS ****/
 /******************/
 
-RID RenderingDeviceVulkan::uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data) {
+RID RenderingDeviceVulkan::_uniform_buffer_create(uint32_t p_size_bytes, const uint8_t *p_data) {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, RID());
-	ERR_FAIL_COND_V_MSG(draw_list != nullptr && p_data.size(), RID(),
+	ERR_FAIL_COND_V_MSG(draw_list != nullptr && p_data != nullptr, RID(),
 			"Creating buffers with data is forbidden during creation of a draw list");
-	ERR_FAIL_COND_V_MSG(compute_list != nullptr && p_data.size(), RID(),
+	ERR_FAIL_COND_V_MSG(compute_list != nullptr && p_data != nullptr, RID(),
 			"Creating buffers with data is forbidden during creation of a draw list");
 
 	Buffer buffer;
 	Error err = _buffer_allocate(&buffer, p_size_bytes, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 	ERR_FAIL_COND_V(err != OK, RID());
-	if (p_data.size()) {
-		uint64_t data_size = p_data.size();
-		const uint8_t *r = p_data.ptr();
-		_buffer_update(&buffer, 0, r, data_size);
-		_buffer_memory_barrier(buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_UNIFORM_READ_BIT, false);
+	if (p_data) {
+		_buffer_update(&buffer, 0, p_data, p_size_bytes);
+		_buffer_memory_barrier(buffer.buffer, 0, p_size_bytes, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_UNIFORM_READ_BIT, false);
 	}
 	return uniform_buffer_owner.make_rid(buffer);
 }
 
-RID RenderingDeviceVulkan::storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, uint32_t p_usage) {
+RID RenderingDeviceVulkan::_storage_buffer_create(uint32_t p_size_bytes, const uint8_t *p_data, uint32_t p_usage) {
 	_THREAD_SAFE_METHOD_
-	ERR_FAIL_COND_V_MSG(draw_list != nullptr && p_data.size(), RID(),
+	ERR_FAIL_COND_V_MSG(draw_list != nullptr && p_data != nullptr, RID(),
 			"Creating buffers with data is forbidden during creation of a draw list");
-	ERR_FAIL_COND_V_MSG(compute_list != nullptr && p_data.size(), RID(),
+	ERR_FAIL_COND_V_MSG(compute_list != nullptr && p_data != nullptr, RID(),
 			"Creating buffers with data is forbidden during creation of a draw list");
-
-	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, RID());
 
 	Buffer buffer;
 	buffer.usage = p_usage;
@@ -5217,11 +5212,9 @@ RID RenderingDeviceVulkan::storage_buffer_create(uint32_t p_size_bytes, const Ve
 	Error err = _buffer_allocate(&buffer, p_size_bytes, flags, VMA_MEMORY_USAGE_GPU_ONLY);
 	ERR_FAIL_COND_V(err != OK, RID());
 
-	if (p_data.size()) {
-		uint64_t data_size = p_data.size();
-		const uint8_t *r = p_data.ptr();
-		_buffer_update(&buffer, 0, r, data_size);
-		_buffer_memory_barrier(buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT, false);
+	if (p_data) {
+		_buffer_update(&buffer, 0, p_data, p_size_bytes);
+		_buffer_memory_barrier(buffer.buffer, 0, p_size_bytes, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT, false);
 	}
 	return storage_buffer_owner.make_rid(buffer);
 }
@@ -5880,7 +5873,7 @@ void RenderingDeviceVulkan::uniform_set_set_invalidation_callback(RID p_uniform_
 	us->invalidated_callback_userdata = p_userdata;
 }
 
-Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, uint32_t p_post_barrier) {
+Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size_bytes, const void *p_data, uint32_t p_post_barrier) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V_MSG(draw_list, ERR_INVALID_PARAMETER,
@@ -5900,13 +5893,13 @@ Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint
 		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Buffer argument is not a valid buffer of any type.");
 	}
 
-	ERR_FAIL_COND_V_MSG(p_offset + p_size > buffer->size, ERR_INVALID_PARAMETER,
-			"Attempted to write buffer (" + itos((p_offset + p_size) - buffer->size) + " bytes) past the end.");
+	ERR_FAIL_COND_V_MSG(p_offset + p_size_bytes > buffer->size, ERR_INVALID_PARAMETER,
+			"Attempted to write buffer (" + itos((p_offset + p_size_bytes) - buffer->size) + " bytes) past the end.");
 
 	// no barrier should be needed here
 	// _buffer_memory_barrier(buffer->buffer, p_offset, p_size, dst_stage_mask, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_access, VK_ACCESS_TRANSFER_WRITE_BIT, true);
 
-	Error err = _buffer_update(buffer, p_offset, (uint8_t *)p_data, p_size, p_post_barrier);
+	Error err = _buffer_update(buffer, p_offset, (uint8_t *)p_data, p_size_bytes, p_post_barrier);
 	if (err) {
 		return err;
 	}
@@ -5919,7 +5912,7 @@ Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint
 	}
 
 	if (p_post_barrier != RD::BARRIER_MASK_NO_BARRIER) {
-		_buffer_memory_barrier(buffer->buffer, p_offset, p_size, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage_mask, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, true);
+		_buffer_memory_barrier(buffer->buffer, p_offset, p_size_bytes, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage_mask, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, true);
 	}
 
 #endif
@@ -5970,7 +5963,7 @@ Error RenderingDeviceVulkan::buffer_clear(RID p_buffer, uint32_t p_offset, uint3
 	return OK;
 }
 
-Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
+uint64_t RenderingDeviceVulkan::_buffer_get_size(RID p_buffer) {
 	_THREAD_SAFE_METHOD_
 
 	// It could be this buffer was just created
@@ -5979,7 +5972,22 @@ Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
 	// Get the vulkan buffer and the potential stage/access possible
 	Buffer *buffer = _get_buffer_from_owner(p_buffer, src_stage_mask, src_access_mask, BARRIER_MASK_ALL);
 	if (!buffer) {
-		ERR_FAIL_V_MSG(Vector<uint8_t>(), "Buffer is either invalid or this type of buffer can't be retrieved. Only Index and Vertex buffers allow retrieving.");
+		ERR_FAIL_V_MSG(0, "Buffer is either invalid or this type of buffer can't be retrieved. Only Index and Vertex buffers allow retrieving.");
+	}
+
+	return buffer->size;
+}
+
+void RenderingDeviceVulkan::_buffer_get_data(RID p_buffer, uint8_t *p_mem) {
+	_THREAD_SAFE_METHOD_
+
+	// It could be this buffer was just created
+	VkPipelineShaderStageCreateFlags src_stage_mask = VK_PIPELINE_STAGE_TRANSFER_BIT;
+	VkAccessFlags src_access_mask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	// Get the vulkan buffer and the potential stage/access possible
+	Buffer *buffer = _get_buffer_from_owner(p_buffer, src_stage_mask, src_access_mask, BARRIER_MASK_ALL);
+	if (!buffer) {
+		ERR_FAIL_MSG("Buffer is either invalid or this type of buffer can't be retrieved. Only Index and Vertex buffers allow retrieving.");
 	}
 
 	// Make sure no one is using the buffer -- the "false" gets us to the same command buffer as below.
@@ -5999,20 +6007,16 @@ Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
 
 	void *buffer_mem;
 	VkResult vkerr = vmaMapMemory(allocator, tmp_buffer.allocation, &buffer_mem);
-	ERR_FAIL_COND_V_MSG(vkerr, Vector<uint8_t>(), "vmaMapMemory failed with error " + itos(vkerr) + ".");
+	ERR_FAIL_COND_MSG(vkerr, "vmaMapMemory failed with error " + itos(vkerr) + ".");
 
-	Vector<uint8_t> buffer_data;
-	{
-		buffer_data.resize(buffer->size);
-		uint8_t *w = buffer_data.ptrw();
-		memcpy(w, buffer_mem, buffer->size);
-	}
+	// copy data to transfer to caller
+	memcpy(p_mem, buffer_mem, buffer->size);
 
 	vmaUnmapMemory(allocator, tmp_buffer.allocation);
 
 	_buffer_free(&tmp_buffer);
 
-	return buffer_data;
+	return;
 }
 
 /*************************/

@@ -32,6 +32,68 @@
 
 #include "rendering_device_binds.h"
 
+#include <assert.h>
+
+namespace {
+const uint8_t *getPackedArrayData(const Variant &p_variant, size_t &p_size_elem, size_t &p_size_array) {
+	Variant::Type dataType = p_variant.get_type();
+	const uint8_t *data = nullptr;
+	p_size_elem = 0;
+	p_size_array = 0;
+	switch (dataType) {
+		case Variant::Type::PACKED_BYTE_ARRAY: {
+			const Vector<uint8_t> &packedArray = static_cast<const Vector<uint8_t> &>(p_variant);
+			data = packedArray.ptr();
+			p_size_elem = sizeof(uint8_t);
+			p_size_array = packedArray.size();
+		} break;
+		case Variant::Type::PACKED_INT32_ARRAY: {
+			const Vector<int32_t> &packedArray = static_cast<const Vector<int32_t> &>(p_variant);
+			data = (uint8_t *)packedArray.ptr();
+			p_size_elem = sizeof(uint32_t);
+			p_size_array = packedArray.size();
+		} break;
+		case Variant::Type::PACKED_INT64_ARRAY: {
+			const Vector<int64_t> &packedArray = static_cast<const Vector<int64_t> &>(p_variant);
+			data = (uint8_t *)packedArray.ptr();
+			p_size_elem = sizeof(uint64_t);
+			p_size_array = packedArray.size();
+		} break;
+		case Variant::Type::PACKED_FLOAT32_ARRAY: {
+			const Vector<float> &packedArray = static_cast<const Vector<float> &>(p_variant);
+			data = (uint8_t *)packedArray.ptr();
+			p_size_elem = sizeof(float);
+			p_size_array = packedArray.size();
+		} break;
+		case Variant::Type::PACKED_FLOAT64_ARRAY: {
+			const Vector<double> &packedArray = static_cast<const Vector<double> &>(p_variant);
+			data = (uint8_t *)packedArray.ptr();
+			p_size_elem = sizeof(double);
+			p_size_array = packedArray.size();
+		} break;
+		case Variant::Type::PACKED_VECTOR2_ARRAY: {
+			const Vector<Vector2> &packedArray = static_cast<const Vector<Vector2> &>(p_variant);
+			data = (uint8_t *)packedArray.ptr();
+			p_size_elem = sizeof(Vector2);
+			p_size_array = packedArray.size();
+		} break;
+		case Variant::Type::PACKED_VECTOR3_ARRAY:
+			// Alignment is not possible with Vector3.
+			break;
+		case Variant::Type::PACKED_COLOR_ARRAY: {
+			const Vector<Color> &packedArray = static_cast<const Vector<Color> &>(p_variant);
+			data = (uint8_t *)packedArray.ptr();
+			p_size_elem = sizeof(Color);
+			p_size_array = packedArray.size();
+		} break;
+		default:
+			break;
+	}
+
+	return data;
+}
+} // namespace
+
 RenderingDevice *RenderingDevice::singleton = nullptr;
 
 RenderingDevice *RenderingDevice::get_singleton() {
@@ -231,6 +293,34 @@ RID RenderingDevice::_shader_create_from_spirv(const Ref<RDShaderSPIRV> &p_spirv
 	return shader_create_from_spirv(stage_data);
 }
 
+RID RenderingDevice::uniform_buffer_create_generic(const Variant &p_data) {
+	size_t elem_size = 0;
+	size_t array_size = 0;
+	const uint8_t *data = getPackedArrayData(p_data, elem_size, array_size);
+	ERR_FAIL_COND_V_MSG(data == nullptr, RID(), "Can't create uniform buffer with data of type " + Variant::get_type_name(p_data.get_type()) + ".");
+
+	return _uniform_buffer_create(array_size * elem_size, data);
+}
+
+RID RenderingDevice::storage_buffer_create_generic(const Variant &p_data, uint32_t p_usage) {
+	size_t elem_size = 0;
+	size_t array_size = 0;
+	const uint8_t *data = getPackedArrayData(p_data, elem_size, array_size);
+	ERR_FAIL_COND_V_MSG(data == nullptr, RID(), "Can't create storage buffer with data of type " + Variant::get_type_name(p_data.get_type()) + ".");
+
+	return _storage_buffer_create(array_size * elem_size, data, p_usage);
+}
+
+RID RenderingDevice::uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data) {
+	ERR_FAIL_COND_V_MSG(p_data.size() != 0 && p_size_bytes != (uint32_t)p_data.size(), RID(), "p_size_bytes should have the same size as p_data if p_data is not empty.");
+	return _uniform_buffer_create(p_size_bytes, p_data.ptr());
+}
+
+RID RenderingDevice::storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, uint32_t p_usage) {
+	ERR_FAIL_COND_V_MSG(p_data.size() != 0 && p_size_bytes != (uint32_t)p_data.size(), RID(), "p_size_bytes should have the same size as p_data if p_data is not empty.");
+	return _storage_buffer_create(p_size_bytes, p_data.ptr(), p_usage);
+}
+
 RID RenderingDevice::_uniform_set_create(const Array &p_uniforms, RID p_shader, uint32_t p_shader_set) {
 	Vector<Uniform> uniforms;
 	uniforms.resize(p_uniforms.size());
@@ -242,8 +332,57 @@ RID RenderingDevice::_uniform_set_create(const Array &p_uniforms, RID p_shader, 
 	return uniform_set_create(uniforms, p_shader, p_shader_set);
 }
 
-Error RenderingDevice::_buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const Vector<uint8_t> &p_data, uint32_t p_post_barrier) {
-	return buffer_update(p_buffer, p_offset, p_size, p_data.ptr(), p_post_barrier);
+Error RenderingDevice::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size_bytes, const Vector<uint8_t> &p_byte_data, uint32_t p_post_barrier) {
+	return buffer_update(p_buffer, p_offset, p_size_bytes, p_byte_data.ptr(), p_post_barrier);
+}
+
+Error RenderingDevice::buffer_update_generic(RID p_buffer, uint32_t p_index, uint32_t p_size, const Variant &p_data, uint32_t p_post_barrier) {
+	size_t elem_size = 0;
+	size_t array_size = 0;
+	const uint8_t *data = getPackedArrayData(p_data, elem_size, array_size);
+	ERR_FAIL_COND_V_MSG(data == nullptr, Error::ERR_INVALID_PARAMETER, "Can't update buffer with data of type " + Variant::get_type_name(p_data.get_type()) + ".");
+
+	return buffer_update(p_buffer, p_index * elem_size, p_size * elem_size, data, p_post_barrier);
+}
+
+template <typename T>
+Vector<T> RenderingDevice::buffer_get_data(RID p_buffer) {
+	Vector<T> buffer_data;
+
+	uint64_t size = _buffer_get_size(p_buffer);
+	Error ok = buffer_data.resize(size / sizeof(T));
+	ERR_FAIL_COND_V_MSG(ok != Error::OK, Vector<T>(), "Something goes wrong when resize buffer_data: " + itos(static_cast<int>(ok)) + ".");
+
+	_buffer_get_data(p_buffer, reinterpret_cast<uint8_t *>(buffer_data.ptrw()));
+
+	return buffer_data;
+}
+
+Variant RenderingDevice::buffer_get_data_generic(RID p_buffer, Variant::Type p_type) {
+	switch (p_type) {
+		case Variant::Type::PACKED_BYTE_ARRAY:
+			return buffer_get_data<uint8_t>(p_buffer);
+		case Variant::Type::PACKED_INT32_ARRAY:
+			return buffer_get_data<int32_t>(p_buffer);
+		case Variant::Type::PACKED_INT64_ARRAY:
+			return buffer_get_data<int64_t>(p_buffer);
+		case Variant::Type::PACKED_FLOAT32_ARRAY:
+			return buffer_get_data<float>(p_buffer);
+		case Variant::Type::PACKED_FLOAT64_ARRAY:
+			return buffer_get_data<double>(p_buffer);
+		case Variant::Type::PACKED_VECTOR2_ARRAY:
+			return buffer_get_data<Vector2>(p_buffer);
+		case Variant::Type::PACKED_VECTOR3_ARRAY:
+			// Alignment is not possible with Vector3.
+			break;
+		case Variant::Type::PACKED_COLOR_ARRAY:
+			return buffer_get_data<Color>(p_buffer);
+		default:
+			break;
+	}
+
+	ERR_FAIL_V_MSG(Variant(), "Can't get buffer data with type " + Variant::get_type_name(p_type) + ".");
+	return Variant();
 }
 
 static Vector<RenderingDevice::PipelineSpecializationConstant> _get_spec_constants(const TypedArray<RDPipelineSpecializationConstant> &p_constants) {
@@ -397,6 +536,8 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shader_create_from_bytecode", "binary_data"), &RenderingDevice::shader_create_from_bytecode);
 	ClassDB::bind_method(D_METHOD("shader_get_vertex_input_attribute_mask", "shader"), &RenderingDevice::shader_get_vertex_input_attribute_mask);
 
+	ClassDB::bind_method(D_METHOD("uniform_buffer_create_generic", "data"), &RenderingDevice::uniform_buffer_create_generic);
+	ClassDB::bind_method(D_METHOD("storage_buffer_create_generic", "data", "usage"), &RenderingDevice::storage_buffer_create_generic, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("uniform_buffer_create", "size_bytes", "data"), &RenderingDevice::uniform_buffer_create, DEFVAL(Vector<uint8_t>()));
 	ClassDB::bind_method(D_METHOD("storage_buffer_create", "size_bytes", "data", "usage"), &RenderingDevice::storage_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("texture_buffer_create", "size_bytes", "format", "data"), &RenderingDevice::texture_buffer_create, DEFVAL(Vector<uint8_t>()));
@@ -404,9 +545,13 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("uniform_set_create", "uniforms", "shader", "shader_set"), &RenderingDevice::_uniform_set_create);
 	ClassDB::bind_method(D_METHOD("uniform_set_is_valid", "uniform_set"), &RenderingDevice::uniform_set_is_valid);
 
-	ClassDB::bind_method(D_METHOD("buffer_update", "buffer", "offset", "size_bytes", "data", "post_barrier"), &RenderingDevice::_buffer_update, DEFVAL(BARRIER_MASK_ALL));
+	ClassDB::bind_method(D_METHOD("buffer_update_generic", "buffer", "index", "size", "data", "post_barrier"), &RenderingDevice::buffer_update_generic, DEFVAL(BARRIER_MASK_ALL));
+	ClassDB::bind_method(D_METHOD("buffer_update", "buffer", "offset", "size_bytes", "data", "post_barrier"), static_cast<Error (RenderingDevice::*)(RID, uint32_t, uint32_t, const Vector<uint8_t> &, uint32_t)>(&RenderingDevice::buffer_update), DEFVAL(BARRIER_MASK_ALL));
+
 	ClassDB::bind_method(D_METHOD("buffer_clear", "buffer", "offset", "size_bytes", "post_barrier"), &RenderingDevice::buffer_clear, DEFVAL(BARRIER_MASK_ALL));
-	ClassDB::bind_method(D_METHOD("buffer_get_data", "buffer"), &RenderingDevice::buffer_get_data);
+
+	ClassDB::bind_method(D_METHOD("buffer_get_data_generic", "buffer", "type"), &RenderingDevice::buffer_get_data_generic);
+	ClassDB::bind_method(D_METHOD("buffer_get_data", "buffer"), &RenderingDevice::buffer_get_data<uint8_t>);
 
 	ClassDB::bind_method(D_METHOD("render_pipeline_create", "shader", "framebuffer_format", "vertex_format", "primitive", "rasterization_state", "multisample_state", "stencil_state", "color_blend_state", "dynamic_state_flags", "for_render_pass", "specialization_constants"), &RenderingDevice::_render_pipeline_create, DEFVAL(0), DEFVAL(0), DEFVAL(TypedArray<RDPipelineSpecializationConstant>()));
 	ClassDB::bind_method(D_METHOD("render_pipeline_is_valid", "render_pipeline"), &RenderingDevice::render_pipeline_is_valid);
