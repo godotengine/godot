@@ -39,26 +39,6 @@ WebSocketMultiplayerPeer::~WebSocketMultiplayerPeer() {
 	_clear();
 }
 
-int WebSocketMultiplayerPeer::_gen_unique_id() const {
-	uint32_t hash = 0;
-
-	while (hash == 0 || hash == 1) {
-		hash = hash_djb2_one_32(
-				(uint32_t)OS::get_singleton()->get_ticks_usec());
-		hash = hash_djb2_one_32(
-				(uint32_t)OS::get_singleton()->get_unix_time(), hash);
-		hash = hash_djb2_one_32(
-				(uint32_t)OS::get_singleton()->get_data_path().hash64(), hash);
-		hash = hash_djb2_one_32(
-				(uint32_t)((uint64_t)this), hash); //rely on aslr heap
-		hash = hash_djb2_one_32(
-				(uint32_t)((uint64_t)&hash), hash); //rely on aslr stack
-		hash = hash & 0x7FFFFFFF; // make it compatible with unsigned, since negative id is used for exclusion
-	}
-
-	return hash;
-}
-
 void WebSocketMultiplayerPeer::_clear() {
 	_peer_map.clear();
 	if (_current_packet.data != nullptr) {

@@ -72,6 +72,7 @@ public:
 	virtual bool is_refusing_new_connections() const = 0;
 
 	virtual ConnectionStatus get_connection_status() const = 0;
+	uint32_t generate_unique_id() const;
 
 	MultiplayerPeer() {}
 };

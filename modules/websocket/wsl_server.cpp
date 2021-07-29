@@ -207,7 +207,7 @@ void WSLServer::poll() {
 			continue;
 		}
 		// Creating new peer
-		int32_t id = _gen_unique_id();
+		int32_t id = generate_unique_id();
 
 		WSLPeer::PeerData *data = memnew(struct WSLPeer::PeerData);
 		data->obj = this;

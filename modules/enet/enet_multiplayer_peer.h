@@ -32,22 +32,13 @@
 #define NETWORKED_MULTIPLAYER_ENET_H
 
 #include "core/crypto/crypto.h"
-#include "core/io/compression.h"
 #include "core/io/multiplayer_peer.h"
 
+#include "enet_connection.h"
 #include <enet/enet.h>
 
 class ENetMultiplayerPeer : public MultiplayerPeer {
 	GDCLASS(ENetMultiplayerPeer, MultiplayerPeer);
-
-public:
-	enum CompressionMode {
-		COMPRESS_NONE,
-		COMPRESS_RANGE_CODER,
-		COMPRESS_FASTLZ,
-		COMPRESS_ZLIB,
-		COMPRESS_ZSTD
-	};
 
 private:
 	enum {
@@ -62,27 +53,27 @@ private:
 		SYSCH_MAX
 	};
 
-	bool active = false;
-	bool server = false;
+	enum Mode {
+		MODE_NONE,
+		MODE_SERVER,
+		MODE_CLIENT,
+		MODE_MESH,
+	};
+
+	Mode active_mode = MODE_NONE;
 
 	uint32_t unique_id = 0;
 
 	int target_peer = 0;
 	TransferMode transfer_mode = TRANSFER_MODE_RELIABLE;
-	int transfer_channel = -1;
-	int channel_count = SYSCH_MAX;
-	bool always_ordered = false;
-
-	ENetEvent event;
-	ENetPeer *peer = nullptr;
-	ENetHost *host = nullptr;
 
 	bool refuse_connections = false;
 	bool server_relay = true;
 
 	ConnectionStatus connection_status = CONNECTION_DISCONNECTED;
 
-	Map<int, ENetPeer *> peer_map;
+	Map<int, Ref<ENetConnection>> hosts;
+	Map<int, Ref<ENetPacketPeer>> peers;
 
 	struct Packet {
 		ENetPacket *packet = nullptr;
@@ -90,30 +81,20 @@ private:
 		int channel = 0;
 	};
 
-	CompressionMode compression_mode = COMPRESS_RANGE_CODER;
-
 	List<Packet> incoming_packets;
 
 	Packet current_packet;
 
-	uint32_t _gen_unique_id() const;
 	void _pop_current_packet();
-
-	Vector<uint8_t> src_compressor_mem;
-	Vector<uint8_t> dst_compressor_mem;
-
-	ENetCompressor enet_compressor;
-	static size_t enet_compress(void *context, const ENetBuffer *inBuffers, size_t inBufferCount, size_t inLimit, enet_uint8 *outData, size_t outLimit);
-	static size_t enet_decompress(void *context, const enet_uint8 *inData, size_t inLimit, enet_uint8 *outData, size_t outLimit);
-	static void enet_compressor_destroy(void *context);
-	void _setup_compressor();
+	bool _poll_server();
+	bool _poll_client();
+	bool _poll_mesh();
+	void _relay(int p_from, int p_to, enet_uint8 p_channel, ENetPacket *p_packet);
+	void _notify_peers(int p_id, bool p_connected);
+	void _destroy_unused(ENetPacket *p_packet);
+	_FORCE_INLINE_ bool _is_active() const { return active_mode != MODE_NONE; }
 
 	IPAddress bind_ip;
-
-	bool dtls_enabled = false;
-	Ref<CryptoKey> dtls_key;
-	Ref<X509Certificate> dtls_cert;
-	bool dtls_verify = true;
 
 protected:
 	static void _bind_methods();
@@ -125,13 +106,10 @@ public:
 
 	virtual int get_packet_peer() const override;
 
-	virtual IPAddress get_peer_address(int p_peer_id) const;
-	virtual int get_peer_port(int p_peer_id) const;
-	virtual int get_local_port() const;
-	void set_peer_timeout(int p_peer_id, int p_timeout_limit, int p_timeout_min, int p_timeout_max);
-
-	Error create_server(int p_port, int p_max_clients = 32, int p_in_bandwidth = 0, int p_out_bandwidth = 0);
-	Error create_client(const String &p_address, int p_port, int p_in_bandwidth = 0, int p_out_bandwidth = 0, int p_local_port = 0);
+	Error create_server(int p_port, int p_max_clients = 32, int p_max_channels = 0, int p_in_bandwidth = 0, int p_out_bandwidth = 0);
+	Error create_client(const String &p_address, int p_port, int p_channel_count = 0, int p_in_bandwidth = 0, int p_out_bandwidth = 0, int p_local_port = 0);
+	Error create_mesh(int p_id);
+	Error add_mesh_peer(int p_id, Ref<ENetConnection> p_host);
 
 	void close_connection(uint32_t wait_usec = 100);
 
@@ -154,32 +132,15 @@ public:
 
 	virtual int get_unique_id() const override;
 
-	void set_compression_mode(CompressionMode p_mode);
-	CompressionMode get_compression_mode() const;
-
-	int get_packet_channel() const;
-	int get_last_packet_channel() const;
-	void set_transfer_channel(int p_channel);
-	int get_transfer_channel() const;
-	void set_channel_count(int p_channel);
-	int get_channel_count() const;
-	void set_always_ordered(bool p_ordered);
-	bool is_always_ordered() const;
+	void set_bind_ip(const IPAddress &p_ip);
 	void set_server_relay_enabled(bool p_enabled);
 	bool is_server_relay_enabled() const;
 
+	Ref<ENetConnection> get_host() const;
+	Ref<ENetPacketPeer> get_peer(int p_id) const;
+
 	ENetMultiplayerPeer();
 	~ENetMultiplayerPeer();
-
-	void set_bind_ip(const IPAddress &p_ip);
-	void set_dtls_enabled(bool p_enabled);
-	bool is_dtls_enabled() const;
-	void set_dtls_verify_enabled(bool p_enabled);
-	bool is_dtls_verify_enabled() const;
-	void set_dtls_key(Ref<CryptoKey> p_key);
-	void set_dtls_certificate(Ref<X509Certificate> p_cert);
 };
-
-VARIANT_ENUM_CAST(ENetMultiplayerPeer::CompressionMode);
 
 #endif // NETWORKED_MULTIPLAYER_ENET_H

@@ -30,6 +30,29 @@
 
 #include "multiplayer_peer.h"
 
+#include "core/os/os.h"
+
+uint32_t MultiplayerPeer::generate_unique_id() const {
+	uint32_t hash = 0;
+
+	while (hash == 0 || hash == 1) {
+		hash = hash_djb2_one_32(
+				(uint32_t)OS::get_singleton()->get_ticks_usec());
+		hash = hash_djb2_one_32(
+				(uint32_t)OS::get_singleton()->get_unix_time(), hash);
+		hash = hash_djb2_one_32(
+				(uint32_t)OS::get_singleton()->get_user_data_dir().hash64(), hash);
+		hash = hash_djb2_one_32(
+				(uint32_t)((uint64_t)this), hash); // Rely on ASLR heap
+		hash = hash_djb2_one_32(
+				(uint32_t)((uint64_t)&hash), hash); // Rely on ASLR stack
+
+		hash = hash & 0x7FFFFFFF; // Make it compatible with unsigned, since negative ID is used for exclusion
+	}
+
+	return hash;
+}
+
 void MultiplayerPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_transfer_mode", "mode"), &MultiplayerPeer::set_transfer_mode);
 	ClassDB::bind_method(D_METHOD("get_transfer_mode"), &MultiplayerPeer::get_transfer_mode);
@@ -41,6 +64,7 @@ void MultiplayerPeer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_connection_status"), &MultiplayerPeer::get_connection_status);
 	ClassDB::bind_method(D_METHOD("get_unique_id"), &MultiplayerPeer::get_unique_id);
+	ClassDB::bind_method(D_METHOD("generate_unique_id"), &MultiplayerPeer::generate_unique_id);
 
 	ClassDB::bind_method(D_METHOD("set_refuse_new_connections", "enable"), &MultiplayerPeer::set_refuse_new_connections);
 	ClassDB::bind_method(D_METHOD("is_refusing_new_connections"), &MultiplayerPeer::is_refusing_new_connections);
