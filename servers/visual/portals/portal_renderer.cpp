@@ -240,12 +240,13 @@ void PortalRenderer::portal_destroy(PortalHandle p_portal) {
 	_portal_pool.free(p_portal);
 }
 
-void PortalRenderer::portal_set_geometry(PortalHandle p_portal, const Vector<Vector3> &p_points) {
+void PortalRenderer::portal_set_geometry(PortalHandle p_portal, const Vector<Vector3> &p_points, real_t p_margin) {
 	ERR_FAIL_COND(!p_portal);
 	p_portal--; // plus 1 based
 	VSPortal &portal = _portal_pool[p_portal];
 
 	portal._pts_world = p_points;
+	portal._margin = p_margin;
 
 	if (portal._pts_world.size() < 3) {
 		WARN_PRINT("Portal must have at least 3 vertices");

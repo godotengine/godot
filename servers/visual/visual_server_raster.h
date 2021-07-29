@@ -567,7 +567,7 @@ public:
 
 	BIND0R(RID, portal_create)
 	BIND2(portal_set_scenario, RID, RID)
-	BIND3(portal_set_geometry, RID, const Vector<Vector3> &, float)
+	BIND3(portal_set_geometry, RID, const Vector<Vector3> &, real_t)
 	BIND4(portal_link, RID, RID, RID, bool)
 	BIND2(portal_set_active, RID, bool)
 

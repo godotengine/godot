@@ -132,7 +132,7 @@ public:
 
 	PortalHandle portal_create();
 	void portal_destroy(PortalHandle p_portal);
-	void portal_set_geometry(PortalHandle p_portal, const Vector<Vector3> &p_points);
+	void portal_set_geometry(PortalHandle p_portal, const Vector<Vector3> &p_points, real_t p_margin);
 	void portal_link(PortalHandle p_portal, RoomHandle p_room_from, RoomHandle p_room_to, bool p_two_way);
 	void portal_set_active(PortalHandle p_portal, bool p_active);
 

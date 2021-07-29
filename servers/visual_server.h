@@ -874,7 +874,7 @@ public:
 
 	virtual RID portal_create() = 0;
 	virtual void portal_set_scenario(RID p_portal, RID p_scenario) = 0;
-	virtual void portal_set_geometry(RID p_portal, const Vector<Vector3> &p_points, float p_margin) = 0;
+	virtual void portal_set_geometry(RID p_portal, const Vector<Vector3> &p_points, real_t p_margin) = 0;
 	virtual void portal_link(RID p_portal, RID p_room_from, RID p_room_to, bool p_two_way) = 0;
 	virtual void portal_set_active(RID p_portal, bool p_active) = 0;
 
