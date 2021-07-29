@@ -208,11 +208,11 @@ EditorPluginSettings::EditorPluginSettings() {
 	plugin_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	plugin_list->set_columns(5);
 	plugin_list->set_column_titles_visible(true);
-	plugin_list->set_column_title(0, TTR("Name:"));
-	plugin_list->set_column_title(1, TTR("Version:"));
-	plugin_list->set_column_title(2, TTR("Author:"));
-	plugin_list->set_column_title(3, TTR("Status:"));
-	plugin_list->set_column_title(4, TTR("Edit:"));
+	plugin_list->set_column_title(0, TTR("Name"));
+	plugin_list->set_column_title(1, TTR("Version"));
+	plugin_list->set_column_title(2, TTR("Author"));
+	plugin_list->set_column_title(3, TTR("Status"));
+	plugin_list->set_column_title(4, TTR("Edit"));
 	plugin_list->set_column_expand(0, true);
 	plugin_list->set_column_clip_content(0, true);
 	plugin_list->set_column_expand(1, false);
