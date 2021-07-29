@@ -1815,7 +1815,7 @@ void Object::_construct_object(bool p_reference) {
 	type_is_reference = p_reference;
 	_instance_id = ObjectDB::add_instance(this);
 
-	ClassDB::instance_get_native_extension_data(&_extension, &_extension_instance);
+	ClassDB::instance_get_native_extension_data(&_extension, &_extension_instance, this);
 
 #ifdef DEBUG_ENABLED
 	_lock_index.init(1);
@@ -1876,7 +1876,7 @@ Object::~Object() {
 	if (_instance_bindings != nullptr) {
 		for (uint32_t i = 0; i < _instance_binding_count; i++) {
 			if (_instance_bindings[i].free_callback) {
-				_instance_bindings[i].free_callback(_instance_bindings[i].token, _instance_bindings[i].binding, this);
+				_instance_bindings[i].free_callback(_instance_bindings[i].token, this, _instance_bindings[i].binding);
 			}
 		}
 		memfree(_instance_bindings);
