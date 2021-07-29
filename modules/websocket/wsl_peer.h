@@ -90,6 +90,9 @@ private:
 
 	WriteMode write_mode;
 
+	int _out_buf_size;
+	int _out_pkt_size;
+
 public:
 	int close_code;
 	String close_reason;
@@ -99,6 +102,7 @@ public:
 	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size);
 	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
 	virtual int get_max_packet_size() const { return _packet_buffer.size(); };
+	virtual int get_current_outbound_buffered_amount() const;
 
 	virtual void close_now();
 	virtual void close(int p_code = 1000, String p_reason = "");

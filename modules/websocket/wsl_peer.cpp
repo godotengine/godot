@@ -203,7 +203,9 @@ void WSLPeer::make_context(PeerData *p_data, unsigned int p_in_buf_size, unsigne
 	ERR_FAIL_COND(p_data == NULL);
 
 	_in_buffer.resize(p_in_pkt_size, p_in_buf_size);
-	_packet_buffer.resize((1 << MAX(p_in_buf_size, p_out_buf_size)));
+	_packet_buffer.resize(1 << p_in_buf_size);
+	_out_buf_size = p_out_buf_size;
+	_out_pkt_size = p_out_pkt_size;
 
 	_data = p_data;
 	_data->peer = this;
@@ -236,6 +238,8 @@ void WSLPeer::poll() {
 Error WSLPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 
 	ERR_FAIL_COND_V(!is_connected_to_host(), FAILED);
+	ERR_FAIL_COND_V(_out_pkt_size && (wslay_event_get_queued_msg_count(_data->ctx) >= (1ULL << _out_pkt_size)), ERR_OUT_OF_MEMORY);
+	ERR_FAIL_COND_V(_out_buf_size && (wslay_event_get_queued_msg_length(_data->ctx) >= (1ULL << _out_buf_size)), ERR_OUT_OF_MEMORY);
 
 	struct wslay_event_msg msg; // Should I use fragmented?
 	msg.opcode = write_mode == WRITE_MODE_TEXT ? WSLAY_TEXT_FRAME : WSLAY_BINARY_FRAME;
@@ -275,6 +279,12 @@ int WSLPeer::get_available_packet_count() const {
 		return 0;
 
 	return _in_buffer.packets_left();
+}
+
+int WSLPeer::get_current_outbound_buffered_amount() const {
+	ERR_FAIL_COND_V(!_data, 0);
+
+	return wslay_event_get_queued_msg_length(_data->ctx);
 }
 
 bool WSLPeer::was_string_packet() const {
@@ -334,6 +344,8 @@ WSLPeer::WSLPeer() {
 	_is_string = 0;
 	close_code = -1;
 	write_mode = WRITE_MODE_BINARY;
+	_out_buf_size = 0;
+	_out_pkt_size = 0;
 }
 
 WSLPeer::~WSLPeer() {

@@ -54,6 +54,7 @@ public:
 	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) = 0;
 	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) = 0;
 	virtual int get_max_packet_size() const = 0;
+	virtual int get_current_outbound_buffered_amount() const = 0;
 
 	virtual WriteMode get_write_mode() const = 0;
 	virtual void set_write_mode(WriteMode p_mode) = 0;

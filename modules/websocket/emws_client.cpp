@@ -96,7 +96,7 @@ Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port,
 		return FAILED;
 	}
 
-	static_cast<Ref<EMWSPeer> >(_peer)->set_sock(_js_id, _in_buf_size, _in_pkt_size);
+	static_cast<Ref<EMWSPeer> >(_peer)->set_sock(_js_id, _in_buf_size, _in_pkt_size, _out_buf_size);
 
 	return OK;
 }
@@ -142,12 +142,14 @@ int EMWSClient::get_max_packet_size() const {
 Error EMWSClient::set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets) {
 	_in_buf_size = nearest_shift(p_in_buffer - 1) + 10;
 	_in_pkt_size = nearest_shift(p_in_packets - 1);
+	_out_buf_size = nearest_shift(p_out_buffer - 1) + 10;
 	return OK;
 }
 
 EMWSClient::EMWSClient() {
 	_in_buf_size = nearest_shift((int)GLOBAL_GET(WSC_IN_BUF) - 1) + 10;
 	_in_pkt_size = nearest_shift((int)GLOBAL_GET(WSC_IN_PKT) - 1);
+	_out_buf_size = nearest_shift((int)GLOBAL_GET(WSC_OUT_BUF) - 1) + 10;
 	_is_connecting = false;
 	_peer = Ref<EMWSPeer>(memnew(EMWSPeer));
 	_js_id = 0;
