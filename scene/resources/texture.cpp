@@ -354,11 +354,11 @@ Ref<Image> StreamTexture2D::load_image_from_file(FileAccess *f, int p_size_limit
 			}
 
 			Ref<Image> img;
-			if (data_format == DATA_FORMAT_BASIS_UNIVERSAL) {
+			if (data_format == DATA_FORMAT_BASIS_UNIVERSAL && Image::basis_universal_unpacker) {
 				img = Image::basis_universal_unpacker(pv);
-			} else if (data_format == DATA_FORMAT_PNG) {
+			} else if (data_format == DATA_FORMAT_PNG && Image::png_unpacker) {
 				img = Image::png_unpacker(pv);
-			} else {
+			} else if (data_format == DATA_FORMAT_WEBP && Image::webp_unpacker) {
 				img = Image::webp_unpacker(pv);
 			}
 
