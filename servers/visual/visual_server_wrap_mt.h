@@ -490,7 +490,7 @@ public:
 
 	FUNCRID(portal)
 	FUNC2(portal_set_scenario, RID, RID)
-	FUNC3(portal_set_geometry, RID, const Vector<Vector3> &, float)
+	FUNC3(portal_set_geometry, RID, const Vector<Vector3> &, real_t)
 	FUNC4(portal_link, RID, RID, RID, bool)
 	FUNC2(portal_set_active, RID, bool)
 

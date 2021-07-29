@@ -1006,11 +1006,11 @@ void VisualServerScene::portal_set_scenario(RID p_portal, RID p_scenario) {
 	}
 }
 
-void VisualServerScene::portal_set_geometry(RID p_portal, const Vector<Vector3> &p_points, float p_margin) {
+void VisualServerScene::portal_set_geometry(RID p_portal, const Vector<Vector3> &p_points, real_t p_margin) {
 	Portal *portal = portal_owner.getornull(p_portal);
 	ERR_FAIL_COND(!portal);
 	ERR_FAIL_COND(!portal->scenario);
-	portal->scenario->_portal_renderer.portal_set_geometry(portal->scenario_portal_id, p_points);
+	portal->scenario->_portal_renderer.portal_set_geometry(portal->scenario_portal_id, p_points, p_margin);
 }
 
 void VisualServerScene::portal_link(RID p_portal, RID p_room_from, RID p_room_to, bool p_two_way) {

@@ -1121,13 +1121,25 @@ bool RoomManager::_autoplace_object(VisualInstance *p_vi) {
 	int best_priority = -INT32_MAX;
 	Room *best_room = nullptr;
 
+	// if not set to zero (no preference) this can override a preference
+	// for a certain RoomGroup priority to ensure the instance gets placed in the correct
+	// RoomGroup (e.g. outside, for building exteriors)
+	int preferred_priority = p_vi->get_portal_autoplace_priority();
+
 	for (int n = 0; n < _rooms.size(); n++) {
 		Room *room = _rooms[n];
 
 		if (room->contains_point(centre)) {
+			// the standard routine autoplaces in the highest priority room
 			if (room->_room_priority > best_priority) {
 				best_priority = room->_room_priority;
 				best_room = room;
+			}
+
+			// if we override the preferred priority we always choose this
+			if (preferred_priority && (room->_room_priority == preferred_priority)) {
+				best_room = room;
+				break;
 			}
 		}
 	}
