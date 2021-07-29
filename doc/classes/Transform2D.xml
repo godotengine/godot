@@ -107,7 +107,7 @@
 		</method>
 		<method name="looking_at" qualifiers="const">
 			<return type="Transform2D" />
-			<argument index="0" name="target" type="Vector2" default="Transform2D(1, 0, 0, 1, 0, 0)" />
+			<argument index="0" name="target" type="Vector2" default="Vector2(0, 0)" />
 			<description>
 				Returns a copy of the transform rotated such that it's rotation on the X-axis points towards the [code]target[/code] position.
 				Operations take place in global space.
