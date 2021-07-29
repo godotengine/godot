@@ -208,7 +208,7 @@ private:
 		Transform3D *_transform3d;
 		PackedArrayRefBase *packed_array;
 		void *_ptr; //generic pointer
-		uint8_t _mem[sizeof(ObjData) > (sizeof(real_t) * 4) ? sizeof(ObjData) : (sizeof(real_t) * 4)];
+		uint8_t _mem[sizeof(ObjData) > (sizeof(real_t) * 4) ? sizeof(ObjData) : (sizeof(real_t) * 4)]{ 0 };
 	} _data alignas(8);
 
 	void reference(const Variant &p_variant);
@@ -271,6 +271,8 @@ private:
 	static void _register_variant_setters_getters();
 	static void _unregister_variant_setters_getters();
 	static void _register_variant_constructors();
+	static void _unregister_variant_destructors();
+	static void _register_variant_destructors();
 	static void _unregister_variant_constructors();
 	static void _register_variant_utility_functions();
 	static void _unregister_variant_utility_functions();
@@ -533,6 +535,14 @@ public:
 	static void construct(Variant::Type, Variant &base, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	static void get_constructor_list(Type p_type, List<MethodInfo> *r_list); //convenience
+
+	/* Destructors */
+
+	// Only ptrcall is available.
+	typedef void (*PTRDestructor)(void *base);
+
+	static PTRDestructor get_ptr_destructor(Variant::Type p_type);
+	static bool has_destructor(Variant::Type p_type);
 
 	/* Properties */
 

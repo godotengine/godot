@@ -559,6 +559,10 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 					d["constructors"] = constructors;
 				}
 			}
+			{
+				//destructor
+				d["has_destructor"] = Variant::has_destructor(type);
+			}
 
 			builtins.push_back(d);
 		}
