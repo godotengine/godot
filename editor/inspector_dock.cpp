@@ -409,6 +409,7 @@ void InspectorDock::update(Object *p_object) {
 	current = p_object;
 
 	if (!p_object) {
+		open_docs_button->set_disabled(true);
 		object_menu->set_disabled(true);
 		warning->hide();
 		search->set_editable(false);
@@ -424,7 +425,7 @@ void InspectorDock::update(Object *p_object) {
 	editor_path->enable_path();
 
 	resource_save_button->set_disabled(!is_resource);
-	open_docs_button->set_visible(is_resource || is_node);
+	open_docs_button->set_disabled(!is_resource && !is_node);
 
 	PopupMenu *resource_extra_popup = resource_extra_button->get_popup();
 	resource_extra_popup->set_item_disabled(resource_extra_popup->get_item_index(RESOURCE_COPY), !is_resource);
@@ -575,7 +576,7 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 
 	open_docs_button = memnew(Button);
 	open_docs_button->set_flat(true);
-	open_docs_button->set_visible(false);
+	open_docs_button->set_disabled(true);
 	open_docs_button->set_tooltip(TTR("Open documentation for this object."));
 	open_docs_button->set_icon(get_theme_icon(SNAME("HelpSearch"), SNAME("EditorIcons")));
 	open_docs_button->set_shortcut(ED_SHORTCUT("property_editor/open_help", TTR("Open Documentation")));
