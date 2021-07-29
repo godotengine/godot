@@ -270,6 +270,7 @@ void EditorRun::stop() {
 		for (const OS::ProcessID &E : pids) {
 			OS::get_singleton()->kill(E);
 		}
+		pids.clear();
 	}
 
 	status = STATUS_STOP;
