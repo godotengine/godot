@@ -1,31 +1,53 @@
-#[compute]
+/* clang-format off */
+#[vertex]
 
 #version 450
 
 #VERSION_DEFINES
 
-#define BLOCK_SIZE 8
+#include "bokeh_dof_inc.glsl"
 
-layout(local_size_x = BLOCK_SIZE, local_size_y = BLOCK_SIZE, local_size_z = 1) in;
+layout(location = 0) out vec2 uv_interp;
+/* clang-format on */
 
-#ifdef MODE_GEN_BLUR_SIZE
-layout(rgba16f, set = 0, binding = 0) uniform restrict image2D color_image;
-layout(set = 1, binding = 0) uniform sampler2D source_depth;
-#endif
+void main() {
+	vec2 base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
+	uv_interp = base_arr[gl_VertexIndex];
 
-#if defined(MODE_BOKEH_BOX) || defined(MODE_BOKEH_HEXAGONAL) || defined(MODE_BOKEH_CIRCULAR)
-layout(set = 1, binding = 0) uniform sampler2D color_texture;
-layout(rgba16f, set = 0, binding = 0) uniform restrict writeonly image2D bokeh_image;
-#endif
+	gl_Position = vec4(uv_interp * 2.0 - 1.0, 0.0, 1.0);
+}
 
-#ifdef MODE_COMPOSITE_BOKEH
-layout(rgba16f, set = 0, binding = 0) uniform restrict image2D color_image;
-layout(set = 1, binding = 0) uniform sampler2D source_bokeh;
-#endif
+/* clang-format off */
+#[fragment]
 
-// based on https://www.shadertoy.com/view/Xd3GDl
+#version 450
+
+#VERSION_DEFINES
 
 #include "bokeh_dof_inc.glsl"
+
+layout(location = 0) in vec2 uv_interp;
+/* clang-format on */
+
+#ifdef MODE_GEN_BLUR_SIZE
+layout(location = 0) out float weight;
+
+layout(set = 0, binding = 0) uniform sampler2D source_depth;
+#else
+layout(location = 0) out vec4 frag_color;
+#ifdef OUTPUT_WEIGHT
+layout(location = 1) out float weight;
+#endif
+
+layout(set = 0, binding = 0) uniform sampler2D source_color;
+layout(set = 1, binding = 0) uniform sampler2D source_weight;
+#ifdef MODE_COMPOSITE_BOKEH
+layout(set = 2, binding = 0) uniform sampler2D original_weight;
+#endif
+#endif
+
+//DOF
+// Bokeh single pass implementation based on http://tuxedolabs.blogspot.com/2018/05/bokeh-depth-of-field-in-single-pass.html
 
 #ifdef MODE_GEN_BLUR_SIZE
 
@@ -57,7 +79,8 @@ float get_blur_size(float depth) {
 
 vec4 weighted_filter_dir(vec2 dir, vec2 uv, vec2 pixel_size) {
 	dir *= pixel_size;
-	vec4 color = texture(color_texture, uv);
+	vec4 color = texture(source_color, uv);
+	color.a = texture(source_weight, uv).r;
 
 	vec4 accum = color;
 	float total = 1.0;
@@ -76,7 +99,8 @@ vec4 weighted_filter_dir(vec2 dir, vec2 uv, vec2 pixel_size) {
 		vec2 suv = uv + dir * radius;
 		radius = abs(radius);
 
-		vec4 sample_color = texture(color_texture, suv);
+		vec4 sample_color = texture(source_color, suv);
+		sample_color.a = texture(source_weight, suv).r;
 		float limit;
 
 		if (sample_color.a < color.a) {
@@ -100,28 +124,16 @@ vec4 weighted_filter_dir(vec2 dir, vec2 uv, vec2 pixel_size) {
 #endif
 
 void main() {
-	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-
-	if (any(greaterThan(pos, params.size))) { //too large, do nothing
-		return;
-	}
-
 	vec2 pixel_size = 1.0 / vec2(params.size);
-	vec2 uv = vec2(pos) / vec2(params.size);
+	vec2 uv = uv_interp;
 
 #ifdef MODE_GEN_BLUR_SIZE
 	uv += pixel_size * 0.5;
-	//precompute size in alpha channel
-	float depth = get_depth_at_pos(uv);
-	float size = get_blur_size(depth);
-
-	vec4 color = imageLoad(color_image, pos);
-	color.a = size;
-	imageStore(color_image, pos, color);
+	float center_depth = get_depth_at_pos(uv);
+	weight = get_blur_size(center_depth);
 #endif
 
 #ifdef MODE_BOKEH_BOX
-
 	//pixel_size*=0.5; //resolution is doubled
 	if (params.second_pass || !params.half_size) {
 		uv += pixel_size * 0.5; //half pixel to read centers
@@ -129,11 +141,16 @@ void main() {
 		uv += pixel_size * 0.25; //half pixel to read centers from full res
 	}
 
+	float alpha = texture(source_color, uv).a; // retain this
 	vec2 dir = (params.second_pass ? vec2(0.0, 1.0) : vec2(1.0, 0.0));
 
 	vec4 color = weighted_filter_dir(dir, uv, pixel_size);
 
-	imageStore(bokeh_image, pos, color);
+	frag_color = color;
+	frag_color.a = alpha; // attempt to retain this in case we have a transparent background, ignored if half_size
+#ifdef OUTPUT_WEIGHT
+	weight = color.a;
+#endif
 
 #endif
 
@@ -145,6 +162,8 @@ void main() {
 	} else {
 		uv += pixel_size * 0.25; //half pixel to read centers from full res
 	}
+
+	float alpha = texture(source_color, uv).a; // retain this
 
 	vec2 dir = (params.second_pass ? normalize(vec2(1.0, 0.577350269189626)) : vec2(0.0, 1.0));
 
@@ -159,57 +178,76 @@ void main() {
 		color.a = (color.a + color2.a) * 0.5;
 	}
 
-	imageStore(bokeh_image, pos, color);
+	frag_color = color;
+	frag_color.a = alpha; // attempt to retain this in case we have a transparent background, ignored if half_size
+#ifdef OUTPUT_WEIGHT
+	weight = color.a;
+#endif
 
 #endif
 
 #ifdef MODE_BOKEH_CIRCULAR
-
 	if (params.half_size) {
 		pixel_size *= 0.5; //resolution is doubled
 	}
 
 	uv += pixel_size * 0.5; //half pixel to read centers
 
-	vec4 color = texture(color_texture, uv);
-	float accum = 1.0;
-	float radius = params.blur_scale;
+	vec4 color = texture(source_color, uv);
+	float alpha = color.a; // retain this
+	color.a = texture(source_weight, uv).r;
 
+	vec4 color_accum = color;
+	float accum = 1.0;
+
+	float radius = params.blur_scale;
 	for (float ang = 0.0; radius < params.blur_size; ang += GOLDEN_ANGLE) {
-		vec2 suv = uv + vec2(cos(ang), sin(ang)) * pixel_size * radius;
-		vec4 sample_color = texture(color_texture, suv);
-		float sample_size = abs(sample_color.a);
-		if (sample_color.a > color.a) {
-			sample_size = clamp(sample_size, 0.0, abs(color.a) * 2.0);
+		vec2 uv_adj = uv + vec2(cos(ang), sin(ang)) * pixel_size * radius;
+
+		vec4 sample_color = texture(source_color, uv_adj);
+		sample_color.a = texture(source_weight, uv_adj).r;
+
+		float limit;
+
+		if (sample_color.a < color.a) {
+			limit = abs(sample_color.a);
+		} else {
+			limit = abs(color.a);
 		}
 
-		float m = smoothstep(radius - 0.5, radius + 0.5, sample_size);
-		color += mix(color / accum, sample_color, m);
+		limit -= DEPTH_GAP;
+
+		float m = smoothstep(radius - 0.5, radius + 0.5, limit);
+		color_accum += mix(color_accum / accum, sample_color, m);
 		accum += 1.0;
+
 		radius += params.blur_scale / radius;
 	}
 
-	color /= accum;
+	color_accum = color_accum / accum;
 
-	imageStore(bokeh_image, pos, color);
+	frag_color.rgb = color_accum.rgb;
+	frag_color.a = alpha; // attempt to retain this in case we have a transparent background, ignored if half_size
+#ifdef OUTPUT_WEIGHT
+	weight = color_accum.a;
+#endif
+
 #endif
 
 #ifdef MODE_COMPOSITE_BOKEH
+	frag_color.rgb = texture(source_color, uv).rgb;
 
-	uv += pixel_size * 0.5;
-	vec4 color = imageLoad(color_image, pos);
-	vec4 bokeh = texture(source_bokeh, uv);
+	float center_weigth = texture(source_weight, uv).r;
+	float sample_weight = texture(original_weight, uv).r;
 
 	float mix_amount;
-	if (bokeh.a < color.a) {
-		mix_amount = min(1.0, max(0.0, max(abs(color.a), abs(bokeh.a)) - DEPTH_GAP));
+	if (sample_weight < center_weigth) {
+		mix_amount = min(1.0, max(0.0, max(abs(center_weigth), abs(sample_weight)) - DEPTH_GAP));
 	} else {
-		mix_amount = min(1.0, max(0.0, abs(color.a) - DEPTH_GAP));
+		mix_amount = min(1.0, max(0.0, abs(center_weigth) - DEPTH_GAP));
 	}
 
-	color.rgb = mix(color.rgb, bokeh.rgb, mix_amount); //blend between hires and lowres
-
-	color.a = 0; //reset alpha
-	imageStore(color_image, pos, color);
+	// let alpha blending take care of mixing
+	frag_color.a = mix_amount;
 #endif
 }

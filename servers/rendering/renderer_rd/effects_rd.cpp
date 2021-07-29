@@ -928,7 +928,7 @@ void EffectsRD::luminance_reduction_raster(RID p_source_texture, const Size2i p_
 	}
 }
 
-void EffectsRD::bokeh_dof(RID p_base_texture, RID p_depth_texture, const Size2i &p_base_texture_size, RID p_secondary_texture, RID p_halfsize_texture1, RID p_halfsize_texture2, bool p_dof_far, float p_dof_far_begin, float p_dof_far_size, bool p_dof_near, float p_dof_near_begin, float p_dof_near_size, float p_bokeh_size, RenderingServer::DOFBokehShape p_bokeh_shape, RS::DOFBlurQuality p_quality, bool p_use_jitter, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal) {
+void EffectsRD::bokeh_dof(const BokehBuffers &p_buffers, bool p_dof_far, float p_dof_far_begin, float p_dof_far_size, bool p_dof_near, float p_dof_near_begin, float p_dof_near_size, float p_bokeh_size, RenderingServer::DOFBokehShape p_bokeh_shape, RS::DOFBlurQuality p_quality, bool p_use_jitter, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal) {
 	ERR_FAIL_COND_MSG(prefer_raster_effects, "Can't use compute version of BOKEH DOF with the mobile renderer.");
 
 	bokeh.push_constant.blur_far_active = p_dof_far;
@@ -957,22 +957,22 @@ void EffectsRD::bokeh_dof(RID p_base_texture, RID p_depth_texture, const Size2i 
 	// The alpha channel of the source color texture is filled with the expected circle size
 	// If used for DOF far, the size is positive, if used for near, its negative.
 
-	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.pipelines[BOKEH_GEN_BLUR_SIZE]);
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.compute_pipelines[BOKEH_GEN_BLUR_SIZE]);
 
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_base_texture), 0);
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_depth_texture), 1);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_buffers.base_texture), 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_buffers.depth_texture), 1);
 
-	bokeh.push_constant.size[0] = p_base_texture_size.x;
-	bokeh.push_constant.size[1] = p_base_texture_size.y;
+	bokeh.push_constant.size[0] = p_buffers.base_texture_size.x;
+	bokeh.push_constant.size[1] = p_buffers.base_texture_size.y;
 
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &bokeh.push_constant, sizeof(BokehPushConstant));
 
-	RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_base_texture_size.x, p_base_texture_size.y, 1);
+	RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_buffers.base_texture_size.x, p_buffers.base_texture_size.y, 1);
 	RD::get_singleton()->compute_list_add_barrier(compute_list);
 
 	if (p_bokeh_shape == RS::DOF_BOKEH_BOX || p_bokeh_shape == RS::DOF_BOKEH_HEXAGON) {
 		//second pass
-		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.pipelines[p_bokeh_shape == RS::DOF_BOKEH_BOX ? BOKEH_GEN_BOKEH_BOX : BOKEH_GEN_BOKEH_HEXAGONAL]);
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.compute_pipelines[p_bokeh_shape == RS::DOF_BOKEH_BOX ? BOKEH_GEN_BOKEH_BOX : BOKEH_GEN_BOKEH_HEXAGONAL]);
 
 		static const int quality_samples[4] = { 6, 12, 12, 24 };
 
@@ -981,18 +981,18 @@ void EffectsRD::bokeh_dof(RID p_base_texture, RID p_depth_texture, const Size2i 
 		if (p_quality == RS::DOF_BLUR_QUALITY_VERY_LOW || p_quality == RS::DOF_BLUR_QUALITY_LOW) {
 			//box and hexagon are more or less the same, and they can work in either half (very low and low quality) or full (medium and high quality_ sizes)
 
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_halfsize_texture1), 0);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_base_texture), 1);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_buffers.half_texture[0]), 0);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_buffers.base_texture), 1);
 
-			bokeh.push_constant.size[0] = p_base_texture_size.x >> 1;
-			bokeh.push_constant.size[1] = p_base_texture_size.y >> 1;
+			bokeh.push_constant.size[0] = p_buffers.base_texture_size.x >> 1;
+			bokeh.push_constant.size[1] = p_buffers.base_texture_size.y >> 1;
 			bokeh.push_constant.half_size = true;
 			bokeh.push_constant.blur_size *= 0.5;
 
 		} else {
 			//medium and high quality use full size
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_secondary_texture), 0);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_base_texture), 1);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_buffers.secondary_texture), 0);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_buffers.base_texture), 1);
 		}
 
 		RD::get_singleton()->compute_list_set_push_constant(compute_list, &bokeh.push_constant, sizeof(BokehPushConstant));
@@ -1004,11 +1004,11 @@ void EffectsRD::bokeh_dof(RID p_base_texture, RID p_depth_texture, const Size2i 
 		bokeh.push_constant.second_pass = true;
 
 		if (p_quality == RS::DOF_BLUR_QUALITY_VERY_LOW || p_quality == RS::DOF_BLUR_QUALITY_LOW) {
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_halfsize_texture2), 0);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_halfsize_texture1), 1);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_buffers.half_texture[1]), 0);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_buffers.half_texture[0]), 1);
 		} else {
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_base_texture), 0);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_secondary_texture), 1);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_buffers.base_texture), 0);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_buffers.secondary_texture), 1);
 		}
 
 		RD::get_singleton()->compute_list_set_push_constant(compute_list, &bokeh.push_constant, sizeof(BokehPushConstant));
@@ -1019,25 +1019,25 @@ void EffectsRD::bokeh_dof(RID p_base_texture, RID p_depth_texture, const Size2i 
 		if (p_quality == RS::DOF_BLUR_QUALITY_VERY_LOW || p_quality == RS::DOF_BLUR_QUALITY_LOW) {
 			//forth pass, upscale for low quality
 
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.pipelines[BOKEH_COMPOSITE]);
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.compute_pipelines[BOKEH_COMPOSITE]);
 
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_base_texture), 0);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_halfsize_texture2), 1);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_buffers.base_texture), 0);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_buffers.half_texture[1]), 1);
 
-			bokeh.push_constant.size[0] = p_base_texture_size.x;
-			bokeh.push_constant.size[1] = p_base_texture_size.y;
+			bokeh.push_constant.size[0] = p_buffers.base_texture_size.x;
+			bokeh.push_constant.size[1] = p_buffers.base_texture_size.y;
 			bokeh.push_constant.half_size = false;
 			bokeh.push_constant.second_pass = false;
 
 			RD::get_singleton()->compute_list_set_push_constant(compute_list, &bokeh.push_constant, sizeof(BokehPushConstant));
 
-			RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_base_texture_size.x, p_base_texture_size.y, 1);
+			RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_buffers.base_texture_size.x, p_buffers.base_texture_size.y, 1);
 		}
 	} else {
 		//circle
 
 		//second pass
-		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.pipelines[BOKEH_GEN_BOKEH_CIRCULAR]);
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.compute_pipelines[BOKEH_GEN_BOKEH_CIRCULAR]);
 
 		static const float quality_scale[4] = { 8.0, 4.0, 1.0, 0.5 };
 
@@ -1046,11 +1046,11 @@ void EffectsRD::bokeh_dof(RID p_base_texture, RID p_depth_texture, const Size2i 
 
 		//circle always runs in half size, otherwise too expensive
 
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_halfsize_texture1), 0);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_base_texture), 1);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_buffers.half_texture[0]), 0);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_buffers.base_texture), 1);
 
-		bokeh.push_constant.size[0] = p_base_texture_size.x >> 1;
-		bokeh.push_constant.size[1] = p_base_texture_size.y >> 1;
+		bokeh.push_constant.size[0] = p_buffers.base_texture_size.x >> 1;
+		bokeh.push_constant.size[1] = p_buffers.base_texture_size.y >> 1;
 		bokeh.push_constant.half_size = true;
 
 		RD::get_singleton()->compute_list_set_push_constant(compute_list, &bokeh.push_constant, sizeof(BokehPushConstant));
@@ -1062,93 +1062,195 @@ void EffectsRD::bokeh_dof(RID p_base_texture, RID p_depth_texture, const Size2i 
 
 		// upscale
 
-		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.pipelines[BOKEH_COMPOSITE]);
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.compute_pipelines[BOKEH_COMPOSITE]);
 
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_base_texture), 0);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_halfsize_texture1), 1);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_buffers.base_texture), 0);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_buffers.half_texture[0]), 1);
 
-		bokeh.push_constant.size[0] = p_base_texture_size.x;
-		bokeh.push_constant.size[1] = p_base_texture_size.y;
+		bokeh.push_constant.size[0] = p_buffers.base_texture_size.x;
+		bokeh.push_constant.size[1] = p_buffers.base_texture_size.y;
 		bokeh.push_constant.half_size = false;
 		bokeh.push_constant.second_pass = false;
 
 		RD::get_singleton()->compute_list_set_push_constant(compute_list, &bokeh.push_constant, sizeof(BokehPushConstant));
 
-		RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_base_texture_size.x, p_base_texture_size.y, 1);
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_buffers.base_texture_size.x, p_buffers.base_texture_size.y, 1);
 	}
 
 	RD::get_singleton()->compute_list_end();
 }
 
-void EffectsRD::blur_dof_raster(RID p_base_texture, RID p_depth_texture, const Size2i &p_base_texture_size, RID p_base_fb, RID p_secondary_texture, RID p_secondary_fb, bool p_dof_far, float p_dof_far_begin, float p_dof_far_size, bool p_dof_near, float p_dof_near_begin, float p_dof_near_size, float p_dof_blur_amount, RS::DOFBlurQuality p_quality, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal) {
+void EffectsRD::bokeh_dof_raster(const BokehBuffers &p_buffers, bool p_dof_far, float p_dof_far_begin, float p_dof_far_size, bool p_dof_near, float p_dof_near_begin, float p_dof_near_size, float p_dof_blur_amount, RenderingServer::DOFBokehShape p_bokeh_shape, RS::DOFBlurQuality p_quality, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal) {
 	ERR_FAIL_COND_MSG(!prefer_raster_effects, "Can't use blur DOF with the clustered renderer.");
 
-	memset(&blur_raster.push_constant, 0, sizeof(BlurRasterPushConstant));
+	memset(&bokeh.push_constant, 0, sizeof(BokehPushConstant));
 
-	BlurRasterMode blur_mode;
-	int qsteps[4] = { 4, 4, 10, 20 };
-	uint32_t base_flags = p_cam_orthogonal ? BLUR_FLAG_USE_ORTHOGONAL_PROJECTION : 0;
+	bokeh.push_constant.orthogonal = p_cam_orthogonal;
+	bokeh.push_constant.size[0] = p_buffers.base_texture_size.width;
+	bokeh.push_constant.size[1] = p_buffers.base_texture_size.height;
+	bokeh.push_constant.z_far = p_cam_zfar;
+	bokeh.push_constant.z_near = p_cam_znear;
 
-	Vector2 pixel_size = Vector2(1.0 / p_base_texture_size.width, 1.0 / p_base_texture_size.height);
-
-	blur_raster.push_constant.dof_radius = (p_dof_blur_amount * p_dof_blur_amount) / qsteps[p_quality];
-	blur_raster.push_constant.pixel_size[0] = pixel_size.x;
-	blur_raster.push_constant.pixel_size[1] = pixel_size.y;
-	blur_raster.push_constant.camera_z_far = p_cam_zfar;
-	blur_raster.push_constant.camera_z_near = p_cam_znear;
+	bokeh.push_constant.second_pass = false;
+	bokeh.push_constant.half_size = false;
+	bokeh.push_constant.blur_size = p_dof_blur_amount;
 
 	if (p_dof_far || p_dof_near) {
-		if (p_quality == RS::DOF_BLUR_QUALITY_HIGH) {
-			blur_mode = BLUR_MODE_DOF_HIGH;
-		} else if (p_quality == RS::DOF_BLUR_QUALITY_MEDIUM) {
-			blur_mode = BLUR_MODE_DOF_MEDIUM;
-		} else { // for LOW or VERYLOW we use LOW
-			blur_mode = BLUR_MODE_DOF_LOW;
-		}
-
 		if (p_dof_far) {
-			base_flags |= BLUR_FLAG_DOF_FAR;
-			blur_raster.push_constant.dof_far_begin = p_dof_far_begin;
-			blur_raster.push_constant.dof_far_end = p_dof_far_begin + p_dof_far_size;
+			bokeh.push_constant.blur_far_active = true;
+			bokeh.push_constant.blur_far_begin = p_dof_far_begin;
+			bokeh.push_constant.blur_far_end = p_dof_far_begin + p_dof_far_size;
 		}
 
 		if (p_dof_near) {
-			base_flags |= BLUR_FLAG_DOF_NEAR;
-			blur_raster.push_constant.dof_near_begin = p_dof_near_begin;
-			blur_raster.push_constant.dof_near_end = p_dof_near_begin - p_dof_near_size;
+			bokeh.push_constant.blur_near_active = true;
+			bokeh.push_constant.blur_near_begin = p_dof_near_begin;
+			bokeh.push_constant.blur_near_end = p_dof_near_begin - p_dof_near_size;
 		}
 
-		//HORIZONTAL
-		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_secondary_fb, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
-		RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur_raster.pipelines[blur_mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_secondary_fb)));
-		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_base_texture), 0);
-		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_depth_texture), 1);
-		RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+		{
+			// generate our depth data
+			RID framebuffer = p_buffers.base_weight_fb;
+			RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
+			RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, bokeh.raster_pipelines[BOKEH_GEN_BLUR_SIZE].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(framebuffer)));
+			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_buffers.depth_texture), 0);
+			RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
 
-		blur_raster.push_constant.flags = base_flags | BLUR_FLAG_HORIZONTAL;
-		blur_raster.push_constant.dof_dir[0] = 1.0;
-		blur_raster.push_constant.dof_dir[1] = 0.0;
+			RD::get_singleton()->draw_list_set_push_constant(draw_list, &bokeh.push_constant, sizeof(BokehPushConstant));
 
-		RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur_raster.push_constant, sizeof(BlurRasterPushConstant));
+			RD::get_singleton()->draw_list_draw(draw_list, true);
+			RD::get_singleton()->draw_list_end();
+		}
 
-		RD::get_singleton()->draw_list_draw(draw_list, true);
-		RD::get_singleton()->draw_list_end();
+		if (p_bokeh_shape == RS::DOF_BOKEH_BOX || p_bokeh_shape == RS::DOF_BOKEH_HEXAGON) {
+			// double pass approach
+			BokehMode mode = p_bokeh_shape == RS::DOF_BOKEH_BOX ? BOKEH_GEN_BOKEH_BOX : BOKEH_GEN_BOKEH_HEXAGONAL;
 
-		//VERTICAL
-		draw_list = RD::get_singleton()->draw_list_begin(p_base_fb, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
-		RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur_raster.pipelines[blur_mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_base_fb)));
-		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_secondary_texture), 0);
-		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_depth_texture), 1);
-		RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+			if (p_quality == RS::DOF_BLUR_QUALITY_VERY_LOW || p_quality == RS::DOF_BLUR_QUALITY_LOW) {
+				//box and hexagon are more or less the same, and they can work in either half (very low and low quality) or full (medium and high quality_ sizes)
+				bokeh.push_constant.size[0] = p_buffers.base_texture_size.x >> 1;
+				bokeh.push_constant.size[1] = p_buffers.base_texture_size.y >> 1;
+				bokeh.push_constant.half_size = true;
+				bokeh.push_constant.blur_size *= 0.5;
+			}
 
-		blur_raster.push_constant.flags = base_flags;
-		blur_raster.push_constant.dof_dir[0] = 0.0;
-		blur_raster.push_constant.dof_dir[1] = 1.0;
+			static const int quality_samples[4] = { 6, 12, 12, 24 };
+			bokeh.push_constant.blur_scale = 0.5;
+			bokeh.push_constant.steps = quality_samples[p_quality];
 
-		RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur_raster.push_constant, sizeof(BlurRasterPushConstant));
+			RID framebuffer = bokeh.push_constant.half_size ? p_buffers.half_fb[0] : p_buffers.secondary_fb;
 
-		RD::get_singleton()->draw_list_draw(draw_list, true);
-		RD::get_singleton()->draw_list_end();
+			// Pass 1
+			RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
+			RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, bokeh.raster_pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(framebuffer)));
+			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_buffers.base_texture), 0);
+			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_buffers.weight_texture[0]), 1);
+			RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+
+			RD::get_singleton()->draw_list_set_push_constant(draw_list, &bokeh.push_constant, sizeof(BokehPushConstant));
+
+			RD::get_singleton()->draw_list_draw(draw_list, true);
+			RD::get_singleton()->draw_list_end();
+
+			// Pass 2
+			if (!bokeh.push_constant.half_size) {
+				// do not output weight, we're writing back into our base buffer
+				mode = p_bokeh_shape == RS::DOF_BOKEH_BOX ? BOKEH_GEN_BOKEH_BOX_NOWEIGHT : BOKEH_GEN_BOKEH_HEXAGONAL_NOWEIGHT;
+			}
+			bokeh.push_constant.second_pass = true;
+
+			framebuffer = bokeh.push_constant.half_size ? p_buffers.half_fb[1] : p_buffers.base_fb;
+			RID texture = bokeh.push_constant.half_size ? p_buffers.half_texture[0] : p_buffers.secondary_texture;
+			RID weight = bokeh.push_constant.half_size ? p_buffers.weight_texture[2] : p_buffers.weight_texture[1];
+
+			draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
+			RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, bokeh.raster_pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(framebuffer)));
+			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(texture), 0);
+			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(weight), 1);
+			RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+
+			RD::get_singleton()->draw_list_set_push_constant(draw_list, &bokeh.push_constant, sizeof(BokehPushConstant));
+
+			RD::get_singleton()->draw_list_draw(draw_list, true);
+			RD::get_singleton()->draw_list_end();
+
+			if (bokeh.push_constant.half_size) {
+				// Compose pass
+				mode = BOKEH_COMPOSITE;
+				framebuffer = p_buffers.base_fb;
+
+				draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
+				RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, bokeh.raster_pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(framebuffer)));
+				RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_buffers.half_texture[1]), 0);
+				RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_buffers.weight_texture[3]), 1);
+				RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_buffers.weight_texture[0]), 2);
+				RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+
+				RD::get_singleton()->draw_list_set_push_constant(draw_list, &bokeh.push_constant, sizeof(BokehPushConstant));
+
+				RD::get_singleton()->draw_list_draw(draw_list, true);
+				RD::get_singleton()->draw_list_end();
+			}
+
+		} else {
+			// circular is a single pass approach
+			BokehMode mode = BOKEH_GEN_BOKEH_CIRCULAR;
+
+			{
+				// circle always runs in half size, otherwise too expensive (though the code below does support making this optional)
+				bokeh.push_constant.size[0] = p_buffers.base_texture_size.x >> 1;
+				bokeh.push_constant.size[1] = p_buffers.base_texture_size.y >> 1;
+				bokeh.push_constant.half_size = true;
+				// bokeh.push_constant.blur_size *= 0.5;
+			}
+
+			static const float quality_scale[4] = { 8.0, 4.0, 1.0, 0.5 };
+			bokeh.push_constant.blur_scale = quality_scale[p_quality];
+			bokeh.push_constant.steps = 0.0;
+
+			RID framebuffer = bokeh.push_constant.half_size ? p_buffers.half_fb[0] : p_buffers.secondary_fb;
+
+			RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
+			RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, bokeh.raster_pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(framebuffer)));
+			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_buffers.base_texture), 0);
+			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_buffers.weight_texture[0]), 1);
+			RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+
+			RD::get_singleton()->draw_list_set_push_constant(draw_list, &bokeh.push_constant, sizeof(BokehPushConstant));
+
+			RD::get_singleton()->draw_list_draw(draw_list, true);
+			RD::get_singleton()->draw_list_end();
+
+			if (bokeh.push_constant.half_size) {
+				// Compose
+				mode = BOKEH_COMPOSITE;
+				framebuffer = p_buffers.base_fb;
+
+				draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
+				RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, bokeh.raster_pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(framebuffer)));
+				RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_buffers.half_texture[0]), 0);
+				RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_buffers.weight_texture[2]), 1);
+				RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_buffers.weight_texture[0]), 2);
+				RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+
+				RD::get_singleton()->draw_list_set_push_constant(draw_list, &bokeh.push_constant, sizeof(BokehPushConstant));
+
+				RD::get_singleton()->draw_list_draw(draw_list, true);
+				RD::get_singleton()->draw_list_end();
+			} else {
+				// Just copy it back (we use our blur raster shader here)..
+				draw_list = RD::get_singleton()->draw_list_begin(p_buffers.base_fb, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
+				RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur_raster.pipelines[BLUR_MODE_COPY].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_buffers.base_fb)));
+				RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_buffers.secondary_texture), 0);
+				RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+
+				memset(&blur_raster.push_constant, 0, sizeof(BlurRasterPushConstant));
+				RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur_raster.push_constant, sizeof(BlurRasterPushConstant));
+
+				RD::get_singleton()->draw_list_draw(draw_list, true);
+				RD::get_singleton()->draw_list_end();
+			}
+		}
 	}
 }
 
@@ -1774,9 +1876,7 @@ EffectsRD::EffectsRD(bool p_prefer_raster_effects) {
 		blur_modes.push_back("\n#define MODE_GAUSSIAN_BLUR\n"); // BLUR_MODE_GAUSSIAN_BLUR
 		blur_modes.push_back("\n#define MODE_GAUSSIAN_GLOW\n"); // BLUR_MODE_GAUSSIAN_GLOW
 		blur_modes.push_back("\n#define MODE_GAUSSIAN_GLOW\n#define GLOW_USE_AUTO_EXPOSURE\n"); // BLUR_MODE_GAUSSIAN_GLOW_AUTO_EXPOSURE
-		blur_modes.push_back("\n#define MODE_DOF_BLUR\n#define DOF_QUALITY_LOW\n"); // BLUR_MODE_DOF_LOW
-		blur_modes.push_back("\n#define MODE_DOF_BLUR\n#define DOF_QUALITY_MEDIUM\n"); // BLUR_MODE_DOF_MEDIUM
-		blur_modes.push_back("\n#define MODE_DOF_BLUR\n#define DOF_QUALITY_HIGH\n"); // BLUR_MODE_DOF_HIGH
+		blur_modes.push_back("\n#define MODE_COPY\n"); // BLUR_MODE_COPY
 
 		blur_raster.shader.initialize(blur_modes);
 		memset(&blur_raster.push_constant, 0, sizeof(BlurRasterPushConstant));
@@ -1956,23 +2056,40 @@ EffectsRD::EffectsRD(bool p_prefer_raster_effects) {
 		cube_to_dp.pipeline.setup(shader, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), dss, RD::PipelineColorBlendState(), 0);
 	}
 
+	// Initialize bokeh
+	Vector<String> bokeh_modes;
+	bokeh_modes.push_back("\n#define MODE_GEN_BLUR_SIZE\n");
+	bokeh_modes.push_back("\n#define MODE_BOKEH_BOX\n#define OUTPUT_WEIGHT\n");
+	bokeh_modes.push_back("\n#define MODE_BOKEH_BOX\n");
+	bokeh_modes.push_back("\n#define MODE_BOKEH_HEXAGONAL\n#define OUTPUT_WEIGHT\n");
+	bokeh_modes.push_back("\n#define MODE_BOKEH_HEXAGONAL\n");
+	bokeh_modes.push_back("\n#define MODE_BOKEH_CIRCULAR\n#define OUTPUT_WEIGHT\n");
+	bokeh_modes.push_back("\n#define MODE_COMPOSITE_BOKEH\n");
 	if (prefer_raster_effects) {
-		// not supported
+		bokeh.raster_shader.initialize(bokeh_modes);
+
+		bokeh.shader_version = bokeh.raster_shader.version_create();
+
+		const int att_count[BOKEH_MAX] = { 1, 2, 1, 2, 1, 2, 1 };
+		for (int i = 0; i < BOKEH_MAX; i++) {
+			RD::PipelineColorBlendState blend_state = (i == BOKEH_COMPOSITE) ? RD::PipelineColorBlendState::create_blend(att_count[i]) : RD::PipelineColorBlendState::create_disabled(att_count[i]);
+			bokeh.raster_pipelines[i].setup(bokeh.raster_shader.version_get_shader(bokeh.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state, 0);
+		}
 	} else {
-		// Initialize bokeh
-		Vector<String> bokeh_modes;
-		bokeh_modes.push_back("\n#define MODE_GEN_BLUR_SIZE\n");
-		bokeh_modes.push_back("\n#define MODE_BOKEH_BOX\n");
-		bokeh_modes.push_back("\n#define MODE_BOKEH_HEXAGONAL\n");
-		bokeh_modes.push_back("\n#define MODE_BOKEH_CIRCULAR\n");
-		bokeh_modes.push_back("\n#define MODE_COMPOSITE_BOKEH\n");
+		bokeh.compute_shader.initialize(bokeh_modes);
 
-		bokeh.shader.initialize(bokeh_modes);
-
-		bokeh.shader_version = bokeh.shader.version_create();
+		bokeh.shader_version = bokeh.compute_shader.version_create();
+		bokeh.compute_shader.set_variant_enabled(BOKEH_GEN_BOKEH_BOX_NOWEIGHT, false);
+		bokeh.compute_shader.set_variant_enabled(BOKEH_GEN_BOKEH_HEXAGONAL_NOWEIGHT, false);
 
 		for (int i = 0; i < BOKEH_MAX; i++) {
-			bokeh.pipelines[i] = RD::get_singleton()->compute_pipeline_create(bokeh.shader.version_get_shader(bokeh.shader_version, i));
+			if (bokeh.compute_shader.is_variant_enabled(i)) {
+				bokeh.compute_pipelines[i] = RD::get_singleton()->compute_pipeline_create(bokeh.compute_shader.version_get_shader(bokeh.shader_version, i));
+			}
+		}
+
+		for (int i = 0; i < BOKEH_MAX; i++) {
+			bokeh.raster_pipelines[i].clear();
 		}
 	}
 
@@ -2173,11 +2290,12 @@ EffectsRD::EffectsRD(bool p_prefer_raster_effects) {
 
 		if (prefer_raster_effects) {
 			filter.raster_shader.initialize(cubemap_filter_modes);
-			filter.shader_version = filter.raster_shader.version_create();
 
 			// array variants are not supported in raster
 			filter.raster_shader.set_variant_enabled(FILTER_MODE_HIGH_QUALITY_ARRAY, false);
 			filter.raster_shader.set_variant_enabled(FILTER_MODE_LOW_QUALITY_ARRAY, false);
+
+			filter.shader_version = filter.raster_shader.version_create();
 
 			for (int i = 0; i < FILTER_MODE_MAX; i++) {
 				if (filter.raster_shader.is_variant_enabled(i)) {
@@ -2390,12 +2508,13 @@ EffectsRD::~EffectsRD() {
 
 	if (prefer_raster_effects) {
 		blur_raster.shader.version_free(blur_raster.shader_version);
+		bokeh.raster_shader.version_free(blur_raster.shader_version);
 		luminance_reduce_raster.shader.version_free(luminance_reduce_raster.shader_version);
 		roughness.raster_shader.version_free(roughness.shader_version);
 		cubemap_downsampler.raster_shader.version_free(cubemap_downsampler.shader_version);
 		filter.raster_shader.version_free(filter.shader_version);
 	} else {
-		bokeh.shader.version_free(bokeh.shader_version);
+		bokeh.compute_shader.version_free(bokeh.shader_version);
 		luminance_reduce.shader.version_free(luminance_reduce.shader_version);
 		roughness.compute_shader.version_free(roughness.shader_version);
 		cubemap_downsampler.compute_shader.version_free(cubemap_downsampler.shader_version);

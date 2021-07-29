@@ -1464,6 +1464,53 @@ void RendererSceneRenderRD::_allocate_blur_textures(RenderBuffers *rb) {
 		base_width = MAX(1, base_width >> 1);
 		base_height = MAX(1, base_height >> 1);
 	}
+
+	if (!_render_buffers_can_be_storage()) {
+		// create 4 weight textures, 2 full size, 2 half size
+
+		tf.format = RD::DATA_FORMAT_R16_SFLOAT; // We could probably use DATA_FORMAT_R8_SNORM if we don't pre-multiply by blur_size but that depends on whether we can remove DEPTH_GAP
+		tf.width = rb->width;
+		tf.height = rb->height;
+		tf.texture_type = rb->view_count > 1 ? RD::TEXTURE_TYPE_2D_ARRAY : RD::TEXTURE_TYPE_2D;
+		tf.array_layers = rb->view_count;
+		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+		tf.mipmaps = 1;
+		for (uint32_t i = 0; i < 4; i++) {
+			// associated blur texture
+			RID texture;
+			if (i == 0) {
+				texture = rb->texture;
+			} else if (i == 1) {
+				texture = rb->blur[0].mipmaps[0].texture;
+			} else if (i == 2) {
+				texture = rb->blur[1].mipmaps[0].texture;
+			} else if (i == 3) {
+				texture = rb->blur[0].mipmaps[1].texture;
+			}
+
+			// create weight texture
+			rb->weight_buffers[i].weight = RD::get_singleton()->texture_create(tf, RD::TextureView());
+
+			// create frame buffer
+			Vector<RID> fb;
+			fb.push_back(texture);
+			fb.push_back(rb->weight_buffers[i].weight);
+			rb->weight_buffers[i].fb = RD::get_singleton()->framebuffer_create(fb);
+
+			if (i == 1) {
+				// next 2 are half size
+				tf.width = MAX(1, tf.width >> 1);
+				tf.height = MAX(1, tf.height >> 1);
+			}
+		}
+
+		{
+			// and finally an FB for just our base weights
+			Vector<RID> fb;
+			fb.push_back(rb->weight_buffers[0].weight);
+			rb->base_weight_fb = RD::get_singleton()->framebuffer_create(fb);
+		}
+	}
 }
 
 void RendererSceneRenderRD::_allocate_luminance_textures(RenderBuffers *rb) {
@@ -1851,11 +1898,34 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			_allocate_blur_textures(rb);
 		}
 
+		EffectsRD::BokehBuffers buffers;
+
+		// textures we use
+		buffers.base_texture_size = Size2i(rb->width, rb->height);
+		buffers.base_texture = rb->texture;
+		buffers.depth_texture = rb->depth_texture;
+		buffers.secondary_texture = rb->blur[0].mipmaps[0].texture;
+		buffers.half_texture[0] = rb->blur[1].mipmaps[0].texture;
+		buffers.half_texture[1] = rb->blur[0].mipmaps[1].texture;
+
+		float bokeh_size = camfx->dof_blur_amount * 64.0;
 		if (can_use_storage) {
-			float bokeh_size = camfx->dof_blur_amount * 64.0;
-			storage->get_effects()->bokeh_dof(rb->texture, rb->depth_texture, Size2i(rb->width, rb->height), rb->blur[0].mipmaps[0].texture, rb->blur[1].mipmaps[0].texture, rb->blur[0].mipmaps[1].texture, camfx->dof_blur_far_enabled, camfx->dof_blur_far_distance, camfx->dof_blur_far_transition, camfx->dof_blur_near_enabled, camfx->dof_blur_near_distance, camfx->dof_blur_near_transition, bokeh_size, dof_blur_bokeh_shape, dof_blur_quality, dof_blur_use_jitter, p_render_data->z_near, p_render_data->z_far, p_render_data->cam_ortogonal);
+			storage->get_effects()->bokeh_dof(buffers, camfx->dof_blur_far_enabled, camfx->dof_blur_far_distance, camfx->dof_blur_far_transition, camfx->dof_blur_near_enabled, camfx->dof_blur_near_distance, camfx->dof_blur_near_transition, bokeh_size, dof_blur_bokeh_shape, dof_blur_quality, dof_blur_use_jitter, p_render_data->z_near, p_render_data->z_far, p_render_data->cam_ortogonal);
 		} else {
-			storage->get_effects()->blur_dof_raster(rb->texture, rb->depth_texture, Size2i(rb->width, rb->height), rb->texture_fb, rb->blur[0].mipmaps[0].texture, rb->blur[0].mipmaps[0].fb, camfx->dof_blur_far_enabled, camfx->dof_blur_far_distance, camfx->dof_blur_far_transition, camfx->dof_blur_near_enabled, camfx->dof_blur_near_distance, camfx->dof_blur_near_transition, camfx->dof_blur_amount, dof_blur_quality, p_render_data->z_near, p_render_data->z_far, p_render_data->cam_ortogonal);
+			// set framebuffers
+			buffers.base_fb = rb->texture_fb;
+			buffers.secondary_fb = rb->weight_buffers[1].fb;
+			buffers.half_fb[0] = rb->weight_buffers[2].fb;
+			buffers.half_fb[1] = rb->weight_buffers[3].fb;
+			buffers.weight_texture[0] = rb->weight_buffers[0].weight;
+			buffers.weight_texture[1] = rb->weight_buffers[1].weight;
+			buffers.weight_texture[2] = rb->weight_buffers[2].weight;
+			buffers.weight_texture[3] = rb->weight_buffers[3].weight;
+
+			// set weight buffers
+			buffers.base_weight_fb = rb->base_weight_fb;
+
+			storage->get_effects()->bokeh_dof_raster(buffers, camfx->dof_blur_far_enabled, camfx->dof_blur_far_distance, camfx->dof_blur_far_transition, camfx->dof_blur_near_enabled, camfx->dof_blur_near_distance, camfx->dof_blur_near_transition, bokeh_size, dof_blur_bokeh_shape, dof_blur_quality, p_render_data->z_near, p_render_data->z_far, p_render_data->cam_ortogonal);
 		}
 		RD::get_singleton()->draw_command_end_label();
 	}
