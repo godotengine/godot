@@ -1121,8 +1121,11 @@ void SceneTree::_update_root_rect() {
 	float viewport_aspect = desired_res.aspect();
 	float video_mode_aspect = video_mode.aspect();
 
-	if (use_font_oversampling && stretch_aspect == STRETCH_ASPECT_IGNORE) {
-		WARN_PRINT("Font oversampling only works with the stretch modes \"Keep Width\", \"Keep Height\" and \"Expand\", not \"Ignore\". To remove this warning, disable Rendering > Quality > Dynamic Fonts > Use Oversampling in the Project Settings.");
+	// The font oversampling warning isn't useful for headless/server binaries and when the `--no-window` switch is passed.
+	const bool display_oversampling_warning = OS::get_singleton()->can_draw() && !OS::get_singleton()->is_no_window_mode_enabled();
+
+	if (display_oversampling_warning && use_font_oversampling && stretch_aspect == STRETCH_ASPECT_IGNORE) {
+		WARN_PRINT_ONCE("Font oversampling only works with the stretch modes \"Keep Width\", \"Keep Height\" and \"Expand\", not \"Ignore\". To remove this warning, disable Rendering > Quality > Dynamic Fonts > Use Oversampling in the Project Settings.");
 	}
 
 	if (stretch_aspect == STRETCH_ASPECT_IGNORE || Math::is_equal_approx(viewport_aspect, video_mode_aspect)) {
@@ -1200,8 +1203,8 @@ void SceneTree::_update_root_rect() {
 			root->set_size_override(false, Size2());
 			root->update_canvas_items(); //force them to update just in case
 
-			if (use_font_oversampling) {
-				WARN_PRINT("Font oversampling does not work in \"Viewport\" stretch mode, only \"2D\". To remove this warning, disable Rendering > Quality > Dynamic Fonts > Use Oversampling in the Project Settings.");
+			if (display_oversampling_warning && use_font_oversampling) {
+				WARN_PRINT_ONCE("Font oversampling does not work in \"Viewport\" stretch mode, only \"2D\". To remove this warning, disable Rendering > Quality > Dynamic Fonts > Use Oversampling in the Project Settings.");
 			}
 
 		} break;
