@@ -2,6 +2,7 @@
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
   <mime-type type="application/x-godot-project">
     <comment>Godot Engine project</comment>
+    <sub-class-of type="text/plain"/>
     <icon name="x-godot-project"/>
     <glob pattern="project.godot"/>
   </mime-type>
