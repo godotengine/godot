@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NetworkedController" inherits="Node" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_apply_epoch" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="delta" type="float" />
+			<argument index="1" name="interpolated_data" type="Array" />
+			<description>
+			</description>
+		</method>
+		<method name="_are_inputs_different" qualifiers="virtual">
+			<return type="bool" />
+			<argument index="0" name="inputs_A" type="DataBuffer" />
+			<argument index="1" name="inputs_B" type="DataBuffer" />
+			<description>
+			</description>
+		</method>
+		<method name="_collect_epoch_data" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="buffer" type="DataBuffer" />
+			<description>
+			</description>
+		</method>
+		<method name="_collect_inputs" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="delta" type="float" />
+			<argument index="1" name="buffer" type="DataBuffer" />
+			<description>
+			</description>
+		</method>
+		<method name="_controller_process" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="delta" type="float" />
+			<argument index="1" name="buffer" type="DataBuffer" />
+			<description>
+			</description>
+		</method>
+		<method name="_count_input_size" qualifiers="virtual">
+			<return type="int" />
+			<argument index="0" name="inputs" type="DataBuffer" />
+			<description>
+			</description>
+		</method>
+		<method name="_parse_epoch_data" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="interpolator" type="Interpolator" />
+			<argument index="1" name="buffer" type="DataBuffer" />
+			<description>
+			</description>
+		</method>
+		<method name="_setup_interpolator" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="interpolator" type="Interpolator" />
+			<description>
+			</description>
+		</method>
+		<method name="get_current_input_id" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="is_doll_controller" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="is_nonet_controller" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="is_player_controller" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="is_server_controller" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="mark_epoch_as_important">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="player_get_pretended_delta" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="iterations_per_seconds" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_doll_collect_rate_factor">
+			<return type="void" />
+			<argument index="0" name="peer" type="int" />
+			<argument index="1" name="factor" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="set_doll_peer_active">
+			<return type="void" />
+			<argument index="0" name="peer_id" type="int" />
+			<argument index="1" name="active" type="bool" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="doll_connection_stats_frame_span" type="int" setter="set_doll_connection_stats_frame_span" getter="get_doll_connection_stats_frame_span" default="30">
+		</member>
+		<member name="doll_epoch_batch_sync_rate" type="float" setter="set_doll_epoch_batch_sync_rate" getter="get_doll_epoch_batch_sync_rate" default="0.25">
+		</member>
+		<member name="doll_epoch_collect_rate" type="int" setter="set_doll_epoch_collect_rate" getter="get_doll_epoch_collect_rate" default="1">
+		</member>
+		<member name="doll_interpolation_max_speedup" type="float" setter="set_doll_interpolation_max_speedup" getter="get_doll_interpolation_max_speedup" default="0.2">
+		</member>
+		<member name="doll_max_delay" type="int" setter="set_doll_max_delay" getter="get_doll_max_delay" default="60">
+		</member>
+		<member name="doll_max_frames_delay" type="int" setter="set_doll_max_frames_delay" getter="get_doll_max_frames_delay" default="5">
+		</member>
+		<member name="doll_min_frames_delay" type="int" setter="set_doll_min_frames_delay" getter="get_doll_min_frames_delay" default="2">
+		</member>
+		<member name="doll_net_sensitivity" type="float" setter="set_doll_net_sensitivity" getter="get_doll_net_sensitivity" default="0.2">
+		</member>
+		<member name="input_storage_size" type="int" setter="set_player_input_storage_size" getter="get_player_input_storage_size" default="180">
+		</member>
+		<member name="max_frames_delay" type="int" setter="set_max_frames_delay" getter="get_max_frames_delay" default="6">
+		</member>
+		<member name="max_redundant_inputs" type="int" setter="set_max_redundant_inputs" getter="get_max_redundant_inputs" default="5">
+		</member>
+		<member name="min_frames_delay" type="int" setter="set_min_frames_delay" getter="get_min_frames_delay" default="2">
+		</member>
+		<member name="net_sensitivity" type="float" setter="set_net_sensitivity" getter="get_net_sensitivity" default="0.1">
+		</member>
+		<member name="network_traced_frames" type="int" setter="set_network_traced_frames" getter="get_network_traced_frames" default="120">
+		</member>
+		<member name="tick_acceleration" type="float" setter="set_tick_acceleration" getter="get_tick_acceleration" default="2.0">
+		</member>
+		<member name="tick_speedup_notification_delay" type="float" setter="set_tick_speedup_notification_delay" getter="get_tick_speedup_notification_delay" default="0.33">
+		</member>
+	</members>
+	<signals>
+		<signal name="doll_sync_paused">
+			<description>
+			</description>
+		</signal>
+		<signal name="doll_sync_started">
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

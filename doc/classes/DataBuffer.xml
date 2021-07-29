@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DataBuffer" inherits="Object" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_bool">
+			<return type="bool" />
+			<argument index="0" name="value" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="add_int">
+			<return type="int" />
+			<argument index="0" name="value" type="int" />
+			<argument index="1" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="add_normalized_vector2">
+			<return type="Vector2" />
+			<argument index="0" name="value" type="Vector2" />
+			<argument index="1" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="add_normalized_vector3">
+			<return type="Vector3" />
+			<argument index="0" name="value" type="Vector3" />
+			<argument index="1" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="add_positive_unit_real">
+			<return type="float" />
+			<argument index="0" name="value" type="float" />
+			<argument index="1" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="add_real">
+			<return type="float" />
+			<argument index="0" name="value" type="float" />
+			<argument index="1" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="add_unit_real">
+			<return type="float" />
+			<argument index="0" name="value" type="float" />
+			<argument index="1" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="add_variant">
+			<return type="Variant" />
+			<argument index="0" name="value" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="add_vector2">
+			<return type="Vector2" />
+			<argument index="0" name="value" type="Vector2" />
+			<argument index="1" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="add_vector3">
+			<return type="Vector3" />
+			<argument index="0" name="value" type="Vector3" />
+			<argument index="1" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="begin_read">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="begin_write">
+			<return type="void" />
+			<argument index="0" name="meta_size" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="dry">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="get_bool_size" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_int_size" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="get_normalized_vector2_size" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="get_normalized_vector3_size" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="get_real_size" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="get_unit_real_size" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="get_vector2_size" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="get_vector3_size" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="read_bool">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="read_bool_size">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="read_int">
+			<return type="int" />
+			<argument index="0" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="read_int_size">
+			<return type="int" />
+			<argument index="0" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="read_normalized_vector2">
+			<return type="Vector2" />
+			<argument index="0" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="read_normalized_vector2_size">
+			<return type="int" />
+			<argument index="0" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="read_normalized_vector3">
+			<return type="Vector3" />
+			<argument index="0" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="read_normalized_vector3_size">
+			<return type="int" />
+			<argument index="0" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="read_real">
+			<return type="float" />
+			<argument index="0" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="read_real_size">
+			<return type="int" />
+			<argument index="0" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="read_unit_real">
+			<return type="float" />
+			<argument index="0" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="read_unit_real_size">
+			<return type="int" />
+			<argument index="0" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="read_variant">
+			<return type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="read_variant_size">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="read_vector2">
+			<return type="Vector2" />
+			<argument index="0" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="read_vector2_size">
+			<return type="int" />
+			<argument index="0" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="read_vector3">
+			<return type="Vector3" />
+			<argument index="0" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="read_vector3_size">
+			<return type="int" />
+			<argument index="0" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="size" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="skip_bool">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="skip_int">
+			<return type="void" />
+			<argument index="0" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="skip_normalized_vector2">
+			<return type="void" />
+			<argument index="0" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="skip_normalized_vector3">
+			<return type="void" />
+			<argument index="0" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="skip_real">
+			<return type="void" />
+			<argument index="0" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="skip_unit_real">
+			<return type="void" />
+			<argument index="0" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="skip_vector2">
+			<return type="void" />
+			<argument index="0" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="skip_vector3">
+			<return type="void" />
+			<argument index="0" name="compression_level" type="int" enum="DataBuffer.CompressionLevel" default="1" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="DATA_TYPE_BOOL" value="0" enum="DataType">
+		</constant>
+		<constant name="DATA_TYPE_INT" value="1" enum="DataType">
+		</constant>
+		<constant name="DATA_TYPE_REAL" value="2" enum="DataType">
+		</constant>
+		<constant name="DATA_TYPE_UNIT_REAL" value="4" enum="DataType">
+		</constant>
+		<constant name="DATA_TYPE_VECTOR2" value="5" enum="DataType">
+		</constant>
+		<constant name="DATA_TYPE_NORMALIZED_VECTOR2" value="6" enum="DataType">
+		</constant>
+		<constant name="DATA_TYPE_VECTOR3" value="7" enum="DataType">
+		</constant>
+		<constant name="DATA_TYPE_NORMALIZED_VECTOR3" value="8" enum="DataType">
+		</constant>
+		<constant name="COMPRESSION_LEVEL_0" value="0" enum="CompressionLevel">
+		</constant>
+		<constant name="COMPRESSION_LEVEL_1" value="1" enum="CompressionLevel">
+		</constant>
+		<constant name="COMPRESSION_LEVEL_2" value="2" enum="CompressionLevel">
+		</constant>
+		<constant name="COMPRESSION_LEVEL_3" value="3" enum="CompressionLevel">
+		</constant>
+	</constants>
+</class>

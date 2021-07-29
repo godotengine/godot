@@ -39,14 +39,14 @@
 #include "scene_diff.h"
 
 void SceneSynchronizer::_bind_methods() {
-	BIND_CONSTANT(CHANGE)
-	BIND_CONSTANT(SYNC_RECOVER)
-	BIND_CONSTANT(SYNC_RESET)
-	BIND_CONSTANT(SYNC_REWIND)
-	BIND_CONSTANT(END_SYNC)
-	BIND_CONSTANT(DEFAULT)
-	BIND_CONSTANT(SYNC)
-	BIND_CONSTANT(ALWAYS)
+	BIND_ENUM_CONSTANT(CHANGE)
+	BIND_ENUM_CONSTANT(SYNC_RECOVER)
+	BIND_ENUM_CONSTANT(SYNC_RESET)
+	BIND_ENUM_CONSTANT(SYNC_REWIND)
+	BIND_ENUM_CONSTANT(END_SYNC)
+	BIND_ENUM_CONSTANT(DEFAULT)
+	BIND_ENUM_CONSTANT(SYNC)
+	BIND_ENUM_CONSTANT(ALWAYS)
 
 	ClassDB::bind_method(D_METHOD("reset_synchronizer_mode"), &SceneSynchronizer::reset_synchronizer_mode);
 	ClassDB::bind_method(D_METHOD("clear"), &SceneSynchronizer::clear);
@@ -145,17 +145,17 @@ void SceneSynchronizer::_notification(int p_what) {
 			clear();
 			reset_synchronizer_mode();
 
-			get_multiplayer()->connect("network_peer_connected", Callable(this, "_on_peer_connected"));
-			get_multiplayer()->connect("network_peer_disconnected", Callable(this, "_on_peer_disconnected"));
+			get_multiplayer()->connect(SNAME("network_peer_connected"), Callable(this, SNAME("_on_peer_connected")));
+			get_multiplayer()->connect(SNAME("network_peer_disconnected"), Callable(this, SNAME("_on_peer_disconnected")));
 
-			get_tree()->connect("node_removed", Callable(this, "_on_node_removed"));
+			get_tree()->connect(SNAME("node_removed"), Callable(this, SNAME("_on_node_removed")));
 
 			// Make sure to reset all the assigned controllers.
 			reset_controllers();
 
 			// Init the peers already connected.
-			if (get_tree()->get_network_peer().is_valid()) {
-				const Vector<int> peer_ids = get_tree()->get_network_connected_peers();
+			if (get_tree()->get_multiplayer()->get_network_peer().is_valid()) {
+				const Vector<int> peer_ids = get_tree()->get_multiplayer()->get_network_connected_peers();
 				const int *peer_ids_ptr = peer_ids.ptr();
 				for (int i = 0; i < peer_ids.size(); i += 1) {
 					_on_peer_connected(peer_ids_ptr[i]);
@@ -169,10 +169,10 @@ void SceneSynchronizer::_notification(int p_what) {
 
 			clear_peers();
 
-			get_multiplayer()->disconnect("network_peer_connected", Callable(this, "_on_peer_connected"));
-			get_multiplayer()->disconnect("network_peer_disconnected", Callable(this, "_on_peer_disconnected"));
+			get_multiplayer()->disconnect(SNAME("network_peer_connected"), Callable(this, SNAME("_on_peer_connected")));
+			get_multiplayer()->disconnect(SNAME("network_peer_disconnected"), Callable(this, SNAME("_on_peer_disconnected")));
 
-			get_tree()->disconnect("node_removed", Callable(this, "_on_node_removed"));
+			get_tree()->disconnect(SNAME("node_removed"), Callable(this, SNAME("_on_node_removed")));
 
 			clear();
 
@@ -191,10 +191,10 @@ void SceneSynchronizer::_notification(int p_what) {
 }
 
 SceneSynchronizer::SceneSynchronizer() {
-	rpc_config("_rpc_send_state", MultiplayerAPI::RPC_MODE_REMOTE);
-	rpc_config("_rpc_notify_need_full_snapshot", MultiplayerAPI::RPC_MODE_REMOTE);
-	rpc_config("_rpc_set_network_enabled", MultiplayerAPI::RPC_MODE_REMOTE);
-	rpc_config("_rpc_notify_peer_status", MultiplayerAPI::RPC_MODE_REMOTE);
+	rpc_config(SNAME("_rpc_send_state"), MultiplayerAPI::RPC_MODE_REMOTE, MultiplayerPeer::TRANSFER_MODE_RELIABLE);
+	rpc_config(SNAME("_rpc_notify_need_full_snapshot"), MultiplayerAPI::RPC_MODE_REMOTE, MultiplayerPeer::TRANSFER_MODE_RELIABLE);
+	rpc_config(SNAME("_rpc_set_network_enabled"), MultiplayerAPI::RPC_MODE_REMOTE, MultiplayerPeer::TRANSFER_MODE_RELIABLE);
+	rpc_config(SNAME("_rpc_notify_peer_status"), MultiplayerAPI::RPC_MODE_REMOTE, MultiplayerPeer::TRANSFER_MODE_RELIABLE);
 
 	// Avoid too much useless re-allocations.
 	event_listener.reserve(100);
@@ -638,7 +638,7 @@ void SceneSynchronizer::unregister_process(Node *p_node, const StringName &p_fun
 }
 
 void SceneSynchronizer::start_tracking_scene_changes(Object *p_diff_handle) const {
-	ERR_FAIL_COND_MSG(get_tree()->is_network_server() == false, "This function is supposed to be called only on server.");
+	ERR_FAIL_COND_MSG(get_tree()->get_multiplayer()->is_network_server() == false, "This function is supposed to be called only on server.");
 	SceneDiff *diff = Object::cast_to<SceneDiff>(p_diff_handle);
 	ERR_FAIL_COND_MSG(diff == nullptr, "The object is not a SceneDiff class.");
 
@@ -646,7 +646,7 @@ void SceneSynchronizer::start_tracking_scene_changes(Object *p_diff_handle) cons
 }
 
 void SceneSynchronizer::stop_tracking_scene_changes(Object *p_diff_handle) const {
-	ERR_FAIL_COND_MSG(get_tree()->is_network_server() == false, "This function is supposed to be called only on server.");
+	ERR_FAIL_COND_MSG(get_tree()->get_multiplayer()->is_network_server() == false, "This function is supposed to be called only on server.");
 	SceneDiff *diff = Object::cast_to<SceneDiff>(p_diff_handle);
 	ERR_FAIL_COND_MSG(diff == nullptr, "The object is not a SceneDiff class.");
 
@@ -781,7 +781,7 @@ void SceneSynchronizer::dirty_peers() {
 void SceneSynchronizer::set_enabled(bool p_enable) {
 	ERR_FAIL_COND_MSG(synchronizer_type == SYNCHRONIZER_TYPE_SERVER, "The server is always enabled.");
 	if (synchronizer_type == SYNCHRONIZER_TYPE_CLIENT) {
-		rpc_id(1, "_rpc_set_network_enabled", p_enable);
+		rpc_id(1, SNAME("_rpc_set_network_enabled"), p_enable);
 		if (p_enable == false) {
 			// If the peer want to disable, we can disable it locally
 			// immediately. When it wants to enable the networking, the server
@@ -825,7 +825,7 @@ void SceneSynchronizer::set_peer_networking_enable(int p_peer, bool p_enable) {
 		dirty_peers();
 
 		// Just notify the peer status.
-		rpc_id(p_peer, "_rpc_notify_peer_status", p_enable);
+		rpc_id(p_peer, SNAME("_rpc_notify_peer_status"), p_enable);
 	} else {
 		ERR_FAIL_COND_MSG(synchronizer_type != SYNCHRONIZER_TYPE_NONETWORK, "At this point no network is expected.");
 		static_cast<NoNetSynchronizer *>(synchronizer)->set_enabled(p_enable);
@@ -880,12 +880,12 @@ void SceneSynchronizer::reset_synchronizer_mode() {
 
 	peer_ptr = get_multiplayer() == nullptr ? nullptr : get_multiplayer()->get_network_peer().ptr();
 
-	if (get_tree() == nullptr || get_tree()->get_network_peer().is_null()) {
+	if (get_tree() == nullptr || get_tree()->get_multiplayer()->get_network_peer().is_null()) {
 		synchronizer_type = SYNCHRONIZER_TYPE_NONETWORK;
 		synchronizer = memnew(NoNetSynchronizer(this));
 		generate_id = true;
 
-	} else if (get_tree()->is_network_server()) {
+	} else if (get_tree()->get_multiplayer()->is_network_server()) {
 		synchronizer_type = SYNCHRONIZER_TYPE_SERVER;
 		synchronizer = memnew(ServerSynchronizer(this));
 		generate_id = true;
@@ -1338,10 +1338,10 @@ bool SceneSynchronizer::compare(const Variant &p_first, const Variant &p_second,
 		case Variant::VECTOR3: {
 			return compare(Vector3(p_first), Vector3(p_second), p_tolerance);
 		}
-		case Variant::QUAT: {
-			const Quat a = p_first;
-			const Quat b = p_second;
-			const Quat r(a - b); // Element wise subtraction.
+		case Variant::QUATERNION: {
+			const Quaternion a = p_first;
+			const Quaternion b = p_second;
+			const Quaternion r(a - b); // Element wise subtraction.
 			return (r.x * r.x + r.y * r.y + r.z * r.z + r.w * r.w) <= (p_tolerance * p_tolerance);
 		}
 		case Variant::PLANE: {
@@ -1376,9 +1376,9 @@ bool SceneSynchronizer::compare(const Variant &p_first, const Variant &p_second,
 			}
 			return false;
 		}
-		case Variant::TRANSFORM: {
-			const Transform a = p_first;
-			const Transform b = p_second;
+		case Variant::TRANSFORM3D: {
+			const Transform3D a = p_first;
+			const Transform3D b = p_second;
 			if (compare(a.origin, b.origin, p_tolerance)) {
 				if (compare(a.basis.elements[0], b.basis.elements[0], p_tolerance)) {
 					if (compare(a.basis.elements[1], b.basis.elements[1], p_tolerance)) {
@@ -1572,10 +1572,10 @@ void SceneSynchronizer::reset_controller(NetUtility::NodeData *p_controller_nd) 
 		return;
 	}
 
-	if (get_tree()->get_network_peer().is_null()) {
+	if (get_tree()->get_multiplayer()->get_network_peer().is_null()) {
 		controller->controller_type = NetworkedController::CONTROLLER_TYPE_NONETWORK;
 		controller->controller = memnew(NoNetController(controller));
-	} else if (get_tree()->is_network_server()) {
+	} else if (get_tree()->get_multiplayer()->is_network_server()) {
 		controller->controller_type = NetworkedController::CONTROLLER_TYPE_SERVER;
 		controller->controller = memnew(ServerController(controller, controller->get_network_traced_frames()));
 	} else if (controller->is_network_master()) {
@@ -1832,7 +1832,7 @@ void ServerSynchronizer::process_snapshot_notificator(real_t p_delta) {
 		}
 
 		controller->get_server_controller()->notify_send_state();
-		scene_synchronizer->rpc_id(*peer_it.key, "_rpc_send_state", snap);
+		scene_synchronizer->rpc_id(*peer_it.key, SNAME("_rpc_send_state"), snap);
 	}
 
 	if (notify_state) {
@@ -2001,11 +2001,11 @@ void ClientSynchronizer::process() {
 	}
 
 	const real_t delta = scene_synchronizer->get_physics_process_delta_time();
-	const real_t iteration_per_second = Engine::get_singleton()->get_iterations_per_second();
+	const real_t physics_ticks_per_second = Engine::get_singleton()->get_physics_ticks_per_second();
 
 #ifdef DEBUG_ENABLED
-	if (unlikely(Engine::get_singleton()->get_frames_per_second() < iteration_per_second)) {
-		WARN_PRINT("Current FPS is " + itos(Engine::get_singleton()->get_frames_per_second()) + ", but the minimum required FPS is " + itos(iteration_per_second) + ", the client is unable to generate enough inputs for the server.");
+	if (unlikely(Engine::get_singleton()->get_frames_per_second() < physics_ticks_per_second)) {
+		WARN_PRINT("Current FPS is " + itos(Engine::get_singleton()->get_frames_per_second()) + ", but the minimum required FPS is " + itos(physics_ticks_per_second) + ", the client is unable to generate enough inputs for the server.");
 	}
 #endif
 
@@ -2026,7 +2026,7 @@ void ClientSynchronizer::process() {
 	//
 	// The dolls may want to speed up too, so to consume the inputs faster
 	// and get back in time with the server.
-	int sub_ticks = player_controller->calculates_sub_ticks(delta, iteration_per_second);
+	int sub_ticks = player_controller->calculates_sub_ticks(delta, physics_ticks_per_second);
 
 	while (sub_ticks > 0) {
 		// Process the scene.
@@ -3048,5 +3048,5 @@ void ClientSynchronizer::notify_server_full_snapshot_is_needed() {
 
 	// Notify the server that a full snapshot is needed.
 	need_full_snapshot_notified = true;
-	scene_synchronizer->rpc_id(1, "_rpc_notify_need_full_snapshot");
+	scene_synchronizer->rpc_id(1, SNAME("_rpc_notify_need_full_snapshot"));
 }

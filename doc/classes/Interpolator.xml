@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Interpolator" inherits="Object" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="epoch_insert">
+			<return type="void" />
+			<argument index="0" name="var_id" type="int" />
+			<argument index="1" name="value" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="get_last_pop_epoch" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="pop_epoch">
+			<return type="Array" />
+			<argument index="0" name="epoch" type="int" />
+			<argument index="1" name="arg1" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="register_variable">
+			<return type="int" />
+			<argument index="0" name="default" type="Variant" />
+			<argument index="1" name="fallback" type="int" enum="Interpolator.Fallback" />
+			<description>
+			</description>
+		</method>
+		<method name="set_variable_custom_interpolator">
+			<return type="void" />
+			<argument index="0" name="var_id" type="int" />
+			<argument index="1" name="object" type="Object" />
+			<argument index="2" name="function_name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="set_variable_default">
+			<return type="void" />
+			<argument index="0" name="var_id" type="int" />
+			<argument index="1" name="default" type="Variant" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="FALLBACK_INTERPOLATE" value="0" enum="Fallback">
+		</constant>
+		<constant name="FALLBACK_DEFAULT" value="1" enum="Fallback">
+		</constant>
+		<constant name="FALLBACK_NEW_OR_NEAREST" value="3" enum="Fallback">
+		</constant>
+		<constant name="FALLBACK_OLD_OR_NEAREST" value="2" enum="Fallback">
+		</constant>
+	</constants>
+</class>

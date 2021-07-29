@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SceneSynchronizer" inherits="Node" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="apply_scene_changes">
+			<return type="void" />
+			<argument index="0" name="sync_data" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="controller_add_dependency">
+			<return type="void" />
+			<argument index="0" name="controller" type="Node" />
+			<argument index="1" name="node" type="Node" />
+			<description>
+			</description>
+		</method>
+		<method name="controller_get_dependency">
+			<return type="Node" />
+			<argument index="0" name="controller" type="Node" />
+			<argument index="1" name="index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="controller_get_dependency_count" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="controller" type="Node" />
+			<description>
+			</description>
+		</method>
+		<method name="controller_remove_dependency">
+			<return type="void" />
+			<argument index="0" name="controller" type="Node" />
+			<argument index="1" name="node" type="Node" />
+			<description>
+			</description>
+		</method>
+		<method name="force_state_notify">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="get_node_from_id">
+			<return type="Node" />
+			<argument index="0" name="id" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_node_id">
+			<return type="int" />
+			<argument index="0" name="node" type="Node" />
+			<description>
+			</description>
+		</method>
+		<method name="get_peer_networking_enable" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="peer" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_variable_id">
+			<return type="int" />
+			<argument index="0" name="node" type="Node" />
+			<argument index="1" name="variable" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="is_client" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="is_end_sync" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="is_networked" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="is_node_sync" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="node" type="Node" />
+			<description>
+			</description>
+		</method>
+		<method name="is_recovered" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="is_resetted" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="is_rewinding" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="is_server" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="pop_scene_changes" qualifiers="const">
+			<return type="Variant" />
+			<argument index="0" name="diff_handle" type="Object" />
+			<description>
+			</description>
+		</method>
+		<method name="register_node">
+			<return type="int" />
+			<argument index="0" name="node" type="Node" />
+			<description>
+			</description>
+		</method>
+		<method name="register_process">
+			<return type="void" />
+			<argument index="0" name="node" type="Node" />
+			<argument index="1" name="function" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="register_variable">
+			<return type="void" />
+			<argument index="0" name="node" type="Node" />
+			<argument index="1" name="variable" type="StringName" />
+			<argument index="2" name="on_change_notify" type="StringName" default="&amp;&quot;&quot;" />
+			<argument index="3" name="flags" type="int" enum="NetEventFlag" default="17" />
+			<description>
+			</description>
+		</method>
+		<method name="reset_synchronizer_mode">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="set_enabled">
+			<return type="void" />
+			<argument index="0" name="enabled" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="set_node_as_controlled_by">
+			<return type="void" />
+			<argument index="0" name="node" type="Node" />
+			<argument index="1" name="controller" type="Node" />
+			<description>
+			</description>
+		</method>
+		<method name="set_peer_networking_enable">
+			<return type="void" />
+			<argument index="0" name="peer" type="int" />
+			<argument index="1" name="enabled" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="set_skip_rewinding">
+			<return type="void" />
+			<argument index="0" name="node" type="Node" />
+			<argument index="1" name="variable" type="StringName" />
+			<argument index="2" name="skip_rewinding" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="start_node_sync">
+			<return type="void" />
+			<argument index="0" name="node" type="Node" />
+			<description>
+			</description>
+		</method>
+		<method name="start_tracking_scene_changes" qualifiers="const">
+			<return type="void" />
+			<argument index="0" name="diff_handle" type="Object" />
+			<description>
+			</description>
+		</method>
+		<method name="stop_node_sync">
+			<return type="void" />
+			<argument index="0" name="node" type="Node" />
+			<description>
+			</description>
+		</method>
+		<method name="stop_tracking_scene_changes" qualifiers="const">
+			<return type="void" />
+			<argument index="0" name="diff_handle" type="Object" />
+			<description>
+			</description>
+		</method>
+		<method name="track_variable_changes">
+			<return type="void" />
+			<argument index="0" name="node" type="Node" />
+			<argument index="1" name="variable" type="StringName" />
+			<argument index="2" name="object" type="Object" />
+			<argument index="3" name="method" type="StringName" />
+			<argument index="4" name="flags" type="int" enum="NetEventFlag" default="17" />
+			<description>
+			</description>
+		</method>
+		<method name="unregister_node">
+			<return type="void" />
+			<argument index="0" name="node" type="Node" />
+			<description>
+			</description>
+		</method>
+		<method name="unregister_process">
+			<return type="void" />
+			<argument index="0" name="node" type="Node" />
+			<argument index="1" name="function" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="unregister_variable">
+			<return type="void" />
+			<argument index="0" name="node" type="Node" />
+			<argument index="1" name="variable" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="untrack_variable_changes">
+			<return type="void" />
+			<argument index="0" name="node" type="Node" />
+			<argument index="1" name="variable" type="StringName" />
+			<argument index="2" name="object" type="Object" />
+			<argument index="3" name="method" type="StringName" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="comparison_float_tolerance" type="float" setter="set_comparison_float_tolerance" getter="get_comparison_float_tolerance" default="0.001">
+		</member>
+		<member name="server_notify_state_interval" type="float" setter="set_server_notify_state_interval" getter="get_server_notify_state_interval" default="1.0">
+		</member>
+	</members>
+	<signals>
+		<signal name="sync_paused">
+			<description>
+			</description>
+		</signal>
+		<signal name="sync_started">
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="CHANGE" value="1" enum="NetEventFlag">
+		</constant>
+		<constant name="SYNC_RECOVER" value="2" enum="NetEventFlag">
+		</constant>
+		<constant name="SYNC_RESET" value="4" enum="NetEventFlag">
+		</constant>
+		<constant name="SYNC_REWIND" value="8" enum="NetEventFlag">
+		</constant>
+		<constant name="END_SYNC" value="16" enum="NetEventFlag">
+		</constant>
+		<constant name="DEFAULT" value="17" enum="NetEventFlag">
+		</constant>
+		<constant name="SYNC" value="14" enum="NetEventFlag">
+		</constant>
+		<constant name="ALWAYS" value="31" enum="NetEventFlag">
+		</constant>
+	</constants>
+</class>

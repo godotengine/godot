@@ -41,44 +41,15 @@
 #include "scene_synchronizer.h"
 
 void register_network_synchronizer_types() {
-	NetworkedController::sn_rpc_server_send_inputs = "_rpc_server_send_inputs";
-	NetworkedController::sn_rpc_send_tick_additional_speed = "_rpc_send_tick_additional_speed";
-	NetworkedController::sn_rpc_doll_notify_sync_pause = "_rpc_doll_notify_sync_pause";
-	NetworkedController::sn_rpc_doll_send_epoch_batch = "_rpc_doll_send_epoch_batch";
-
-	NetworkedController::sn_controller_process = "controller_process";
-	NetworkedController::sn_count_input_size = "count_input_size";
-	NetworkedController::sn_are_inputs_different = "are_inputs_different";
-	NetworkedController::sn_collect_epoch_data = "collect_epoch_data";
-	NetworkedController::sn_collect_inputs = "collect_inputs";
-	NetworkedController::sn_setup_interpolator = "setup_interpolator";
-	NetworkedController::sn_parse_epoch_data = "parse_epoch_data";
-	NetworkedController::sn_apply_epoch = "apply_epoch";
-
-	ClassDB::register_class<DataBuffer>();
-	ClassDB::register_class<SceneDiff>();
-	ClassDB::register_class<Interpolator>();
-	ClassDB::register_class<NetworkedController>();
-	ClassDB::register_class<SceneSynchronizer>();
+	GDREGISTER_CLASS(DataBuffer);
+	GDREGISTER_CLASS(SceneDiff);
+	GDREGISTER_CLASS(Interpolator);
+	GDREGISTER_CLASS(NetworkedController);
+	GDREGISTER_CLASS(SceneSynchronizer);
 
 	GLOBAL_DEF("NetworkSynchronizer/debug_server_speedup", false);
 	GLOBAL_DEF("NetworkSynchronizer/debug_doll_speedup", false);
 }
 
 void unregister_network_synchronizer_types() {
-	// Cleanup the used `StringName` here so to avoid that the destructor is
-	// called too late.
-	NetworkedController::sn_rpc_server_send_inputs = StringName();
-	NetworkedController::sn_rpc_send_tick_additional_speed = StringName();
-	NetworkedController::sn_rpc_doll_notify_sync_pause = StringName();
-	NetworkedController::sn_rpc_doll_send_epoch_batch = StringName();
-
-	NetworkedController::sn_controller_process = StringName();
-	NetworkedController::sn_count_input_size = StringName();
-	NetworkedController::sn_are_inputs_different = StringName();
-	NetworkedController::sn_collect_epoch_data = StringName();
-	NetworkedController::sn_collect_inputs = StringName();
-	NetworkedController::sn_setup_interpolator = StringName();
-	NetworkedController::sn_parse_epoch_data = StringName();
-	NetworkedController::sn_apply_epoch = StringName();
 }
