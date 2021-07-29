@@ -119,6 +119,8 @@ protected:
 public:
 	Array get_meshes() const;
 
+	void force_update_shape();
+
 	void set_operation(Operation p_operation);
 	Operation get_operation() const;
 

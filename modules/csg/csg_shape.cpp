@@ -576,6 +576,17 @@ void CSGShape::_validate_property(PropertyInfo &property) const {
 	}
 }
 
+// Calling _make_dirty() normally calls a deferred _update_shape.
+// This is problematic if we need to read the geometry immediately.
+// This function provides a means to make sure the shape is updated
+// immediately. It should only be used where necessary to prevent
+// updating CSGs multiple times per frame. Use _make_dirty in preference.
+void CSGShape::force_update_shape() {
+	if (dirty) {
+		_update_shape();
+	}
+}
+
 Array CSGShape::get_meshes() const {
 	if (root_mesh.is_valid()) {
 		Array arr;

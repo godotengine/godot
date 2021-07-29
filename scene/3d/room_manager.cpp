@@ -1596,6 +1596,11 @@ bool RoomManager::_bound_findpoints_geom_instance(GeometryInstance *p_gi, Vector
 #ifdef MODULE_CSG_ENABLED
 	CSGShape *shape = Object::cast_to<CSGShape>(p_gi);
 	if (shape) {
+		// Shapes will not be up to date on the first frame due to a quirk
+		// of CSG - it defers updates to the next frame. So we need to explicitly
+		// force an update to make sure the CSG is correct on level load.
+		shape->force_update_shape();
+
 		Array arr = shape->get_meshes();
 		if (!arr.size()) {
 			return false;
