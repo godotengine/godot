@@ -108,7 +108,7 @@ class ClassDef:
         self.brief_description = None  # type: Optional[str]
         self.description = None  # type: Optional[str]
         self.theme_items = None  # type: Optional[OrderedDict[str, List[ThemeItemDef]]]
-        self.tutorials = []  # type: List[str]
+        self.tutorials = []  # type: List[Tuple[str, str]]
 
         # Used to match the class with XML source for output filtering purposes.
         self.filepath = ""  # type: str
@@ -257,7 +257,7 @@ class State:
                 assert link.tag == "link"
 
                 if link.text is not None:
-                    class_def.tutorials.append(link.text)
+                    class_def.tutorials.append((link.text.strip(), link.get("title", "")))
 
     def sort_classes(self):  # type: () -> None
         self.classes = OrderedDict(sorted(self.classes.items(), key=lambda t: t[0]))
@@ -431,9 +431,8 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
     # Online tutorials
     if len(class_def.tutorials) > 0:
         f.write(make_heading("Tutorials", "-"))
-        for t in class_def.tutorials:
-            link = t.strip()
-            f.write("- " + make_url(link) + "\n\n")
+        for url, title in class_def.tutorials:
+            f.write("- " + make_link(url, title) + "\n\n")
 
     # Properties overview
     if len(class_def.properties) > 0:
@@ -1062,8 +1061,8 @@ def make_footer():  # type: () -> str
     # fmt: on
 
 
-def make_url(link):  # type: (str) -> str
-    match = GODOT_DOCS_PATTERN.search(link)
+def make_link(url, title):  # type: (str, str) -> str
+    match = GODOT_DOCS_PATTERN.search(url)
     if match:
         groups = match.groups()
         if match.lastindex == 2:
@@ -1080,7 +1079,10 @@ def make_url(link):  # type: (str) -> str
     else:
         # External link, for example:
         # `http://enet.bespin.org/usergroup0.html`
-        return "`" + link + " <" + link + ">`_"
+        if title != "":
+            return "`" + title + " <" + url + ">`_"
+        else:
+            return "`" + url + " <" + url + ">`_"
 
 
 if __name__ == "__main__":
