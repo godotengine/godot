@@ -355,20 +355,12 @@ namespace Godot
 
         public override string ToString()
         {
-            return String.Format("{0}, {1}", new object[]
-            {
-                _normal.ToString(),
-                D.ToString()
-            });
+            return $"{_normal}, {D}";
         }
 
         public string ToString(string format)
         {
-            return String.Format("{0}, {1}", new object[]
-            {
-                _normal.ToString(format),
-                D.ToString(format)
-            });
+            return $"{_normal.ToString(format)}, {D.ToString(format)}";
         }
     }
 }
