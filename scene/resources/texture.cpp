@@ -554,9 +554,10 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 			}
 
 			Ref<Image> img;
-			if (df & FORMAT_BIT_PNG) {
+			bool is_png = df & FORMAT_BIT_PNG;
+			if (is_png && Image::png_unpacker) {
 				img = Image::png_unpacker(pv);
-			} else {
+			} else if (!is_png && Image::webp_unpacker) {
 				img = Image::webp_unpacker(pv);
 			}
 
