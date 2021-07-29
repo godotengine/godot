@@ -167,6 +167,15 @@ void Portal::_notification(int p_what) {
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			// keep the world points and the visual server up to date
 			portal_update();
+
+			// In theory we shouldn't need to update the gizmo when the transform
+			// changes .. HOWEVER, the portal margin is displayed in world space units,
+			// back transformed to model space.
+			// If the Z scale is changed by the user, the portal margin length can become incorrect
+			// and needs 'resyncing' to the global scale of the portal node.
+			// We really only need to do this when Z scale is changed, but it is easier codewise
+			// to always change it, unless we have evidence this is a performance problem.
+			update_gizmo();
 		} break;
 	}
 }
