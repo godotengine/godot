@@ -412,14 +412,8 @@ float light_process_omni_shadow(uint idx, vec3 vertex, vec3 normal) {
 		vec4 v = vec4(vertex, 1.0);
 
 		vec4 splane = (omni_lights.data[idx].shadow_matrix * v);
-		float shadow_len = length(splane.xyz); //need to remember shadow len from here
 
-		{
-			vec3 nofs = normal_interp * omni_lights.data[idx].shadow_normal_bias / omni_lights.data[idx].inv_radius;
-			nofs *= (1.0 - max(0.0, dot(normalize(light_rel_vec), normalize(normal_interp))));
-			v.xyz += nofs;
-			splane = (omni_lights.data[idx].shadow_matrix * v);
-		}
+		float shadow_len = length(splane.xyz); //need to remember shadow len from here
 
 		float shadow;
 
@@ -528,7 +522,8 @@ float light_process_omni_shadow(uint idx, vec3 vertex, vec3 normal) {
 			splane.xy /= splane.z;
 
 			splane.xy = splane.xy * 0.5 + 0.5;
-			splane.z = (shadow_len - omni_lights.data[idx].shadow_bias) * omni_lights.data[idx].inv_radius;
+			splane.z = shadow_len * omni_lights.data[idx].inv_radius;
+			splane.z -= omni_lights.data[idx].shadow_bias;
 			splane.xy = clamp_rect.xy + splane.xy * clamp_rect.zw;
 			splane.w = 1.0; //needed? i think it should be 1 already
 			shadow = sample_pcf_shadow(shadow_atlas, omni_lights.data[idx].soft_shadow_scale * scene_data.shadow_atlas_pixel_size, splane);
@@ -704,27 +699,17 @@ float light_process_spot_shadow(uint idx, vec3 vertex, vec3 normal) {
 		//there is a shadowmap
 		vec4 v = vec4(vertex, 1.0);
 
-		v.xyz -= spot_dir * spot_lights.data[idx].shadow_bias;
-
-		float z_norm = dot(spot_dir, -light_rel_vec) * spot_lights.data[idx].inv_radius;
-
-		float depth_bias_scale = 1.0 / (max(0.0001, z_norm)); //the closer to the light origin, the more you have to offset to reach 1px in the map
-		vec3 normal_bias = normalize(normal_interp) * (1.0 - max(0.0, dot(spot_dir, -normalize(normal_interp)))) * spot_lights.data[idx].shadow_normal_bias * depth_bias_scale;
-		normal_bias -= spot_dir * dot(spot_dir, normal_bias); //only XY, no Z
-		v.xyz += normal_bias;
-
-		//adjust with bias
-		z_norm = dot(spot_dir, v.xyz - spot_lights.data[idx].position) * spot_lights.data[idx].inv_radius;
-
 		float shadow;
 
 		vec4 splane = (spot_lights.data[idx].shadow_matrix * v);
 		splane /= splane.w;
+		splane.z -= spot_lights.data[idx].shadow_bias;
 
 		if (sc_use_light_soft_shadows && spot_lights.data[idx].soft_shadow_size > 0.0) {
 			//soft shadow
 
 			//find blocker
+			float z_norm = dot(spot_dir, -light_rel_vec) * spot_lights.data[idx].inv_radius;
 
 			vec2 shadow_uv = splane.xy * spot_lights.data[idx].atlas_rect.zw + spot_lights.data[idx].atlas_rect.xy;
 
