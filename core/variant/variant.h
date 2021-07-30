@@ -118,6 +118,11 @@ public:
 		VARIANT_MAX
 	};
 
+	enum {
+		// Maximum recursion depth allowed when serializing variants.
+		MAX_RECURSION_DEPTH = 1024,
+	};
+
 private:
 	friend struct _VariantCall;
 	friend class VariantInternal;
