@@ -604,7 +604,7 @@ void ScriptCreateDialog::_path_submitted(const String &p_path) {
 }
 
 void ScriptCreateDialog::_msg_script_valid(bool valid, const String &p_msg) {
-	error_label->set_text("- " + p_msg);
+	error_label->set_text(String::utf8("•  ") + p_msg);
 	if (valid) {
 		error_label->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), SNAME("Editor")));
 	} else {
@@ -613,7 +613,7 @@ void ScriptCreateDialog::_msg_script_valid(bool valid, const String &p_msg) {
 }
 
 void ScriptCreateDialog::_msg_path_valid(bool valid, const String &p_msg) {
-	path_error_label->set_text("- " + p_msg);
+	path_error_label->set_text(String::utf8("•  ") + p_msg);
 	if (valid) {
 		path_error_label->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), SNAME("Editor")));
 	} else {
