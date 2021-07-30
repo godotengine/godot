@@ -604,13 +604,13 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 					} else {
 						switch (mesh_physics_mode) {
 							case MESH_PHYSICS_MESH_AND_STATIC_COLLIDER: {
-								_pre_gen_shape_list(m, shapes, false);
+								_pre_gen_shape_list(m, shapes, true);
 							} break;
 							case MESH_PHYSICS_RIGID_BODY_AND_MESH: {
 								_pre_gen_shape_list(m, shapes, true);
 							} break;
 							case MESH_PHYSICS_STATIC_COLLIDER_ONLY: {
-								_pre_gen_shape_list(m, shapes, false);
+								_pre_gen_shape_list(m, shapes, true);
 							} break;
 							case MESH_PHYSICS_AREA_ONLY: {
 								_pre_gen_shape_list(m, shapes, true);
