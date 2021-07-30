@@ -2327,7 +2327,7 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 			int node_id_offset = 0;
 			Function function;
 			if (!is_module) {
-				const VisualScript::Function vsfn = p_script->functions[E->get()];
+				const VisualScript::Function vsfn = p_script->functions[E];
 				function.node = vsfn.func_id;
 				function.max_stack = 0;
 				function.flow_stack_size = 0;
@@ -2335,7 +2335,7 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 				function.node_count = 0;
 			} else {
 				// for Module add the node count to the offset_node_id
-				offset_node_id += script->modules[E->get()]->get_available_id();
+				offset_node_id += script->modules[E]->get_available_id();
 				node_id_offset = script_end + offset_node_id;
 				function.node = 0;
 				function.max_stack = 0;
@@ -2364,10 +2364,10 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 				function.flow_stack_size = func_node->is_stack_less() ? 0 : func_node->get_stack_size();
 				max_input_args = MAX(max_input_args, function.argument_count);
 			} else {
-				Ref<VisualScriptModuleEntryNode> entry_node = script->modules[E->get()]->get_node(function.node);
+				Ref<VisualScriptModuleEntryNode> entry_node = script->modules[E]->get_node(function.node);
 
 				if (entry_node.is_null()) {
-					VisualScriptLanguage::singleton->debug_break_parse(get_script()->get_path(), 0, "No VisualScriptModuleEntryNode typed start node in module: " + String(E->get()));
+					VisualScriptLanguage::singleton->debug_break_parse(get_script()->get_path(), 0, "No VisualScriptModuleEntryNode typed start node in module: " + String(E));
 				}
 
 				ERR_CONTINUE(!entry_node.is_valid());
@@ -2385,7 +2385,7 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 			{
 				List<int> nd_queue;
 				nd_queue.push_back(function.node);
-				Set<VisualScript::SequenceConnection> sequence_connections = is_module ? script->modules[E->get()]->sequence_connections : script->sequence_connections;
+				Set<VisualScript::SequenceConnection> sequence_connections = is_module ? script->modules[E]->sequence_connections : script->sequence_connections;
 				while (!nd_queue.is_empty()) {
 					if (!is_module && function.node != nd_queue.front()->get() && function_nodes.has(nd_queue.front()->get())) {
 						nd_queue.pop_front();
@@ -2402,7 +2402,7 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 					}
 					nd_queue.pop_front();
 				}
-				Set<VisualScript::DataConnection> data_connections = is_module ? script->modules[E->get()]->data_connections : script->data_connections;
+				Set<VisualScript::DataConnection> data_connections = is_module ? script->modules[E]->data_connections : script->data_connections;
 				HashMap<int, HashMap<int, Pair<int, int>>> dc_lut; // :: to -> to_port -> (from, from_port)
 				for (const Set<VisualScript::DataConnection>::Element *F = data_connections.front(); F; F = F->next()) {
 					dc_lut[F->get().to_node][F->get().to_port] = Pair<int, int>(F->get().from_node, F->get().from_port);
@@ -2448,11 +2448,11 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 			for (const Set<int>::Element *F = node_ids.front(); F; F = F->next()) {
 				Ref<VisualScriptNode> node;
 				if (is_module) {
-					node = script->modules[E->get()]->nodes[F->get()].node;
+					node = script->modules[E]->nodes[F->get()].node;
 				} else {
 					node = script->nodes[F->get()].node;
 				}
-				VisualScriptNodeInstance *instance = node->instance(this); // Create instance
+				VisualScriptNodeInstance *instance = node->instantiate(this); // Create instance
 				ERR_FAIL_COND(!instance);
 
 				instance->base = node.ptr();
@@ -2580,7 +2580,7 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 				if (!is_module) {
 					node = script->nodes[F->get()].node;
 				} else {
-					node = script->modules[E->get()]->nodes[F->get()].node;
+					node = script->modules[E]->nodes[F->get()].node;
 				}
 				VisualScriptNodeInstance *instance = instances[instance_id];
 

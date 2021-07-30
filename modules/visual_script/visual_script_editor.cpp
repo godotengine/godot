@@ -675,7 +675,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 	}
 	StringName editor_icons = "EditorIcons";
 
-	for (int &E : ids) {
+	for (int &E : node_ids) {
 		if (p_only_id >= 0 && p_only_id != E) {
 			continue;
 		}
@@ -734,7 +734,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			}
 			opbtn->select(f);
 			opbtn->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
-			opbtn->connect("item_selected", callable_mp(this, &VisualScriptEditor::_load_module), varray(E->get()), CONNECT_DEFERRED);
+			opbtn->connect("item_selected", callable_mp(this, &VisualScriptEditor::_load_module), varray(E), CONNECT_DEFERRED);
 			gnode->add_child(opbtn);
 			has_gnode_text = true;
 		} else if (is_vslist) {
@@ -1041,14 +1041,14 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 void VisualScriptEditor::_new_module() {
 	String s = script->validate_module_name("New Module");
 	Ref<VisualScriptModule> new_module;
-	new_module.instance();
+	new_module.instantiate();
 	new_module->set_module_name(s);
 	if (!new_module->has_node(0)) {
 		Ref<VisualScriptModuleEntryNode> vsentry;
-		vsentry.instance();
+		vsentry.instantiate();
 		new_module->add_node(0, vsentry, Vector2(100, 100));
 		Ref<VisualScriptModuleExitNode> vsexit;
-		vsexit.instance();
+		vsexit.instantiate();
 		new_module->add_node(1, vsexit, Vector2(200, 200));
 	}
 	script->add_module(s, new_module);
@@ -1103,7 +1103,8 @@ void VisualScriptEditor::_modules_panel_button(Object *p_item, int p_column, int
 		} else if (p_button == 1) {
 			_new_module();
 		}
-	} else if (ti && ti->get_parent() == root->get_children()) {
+	//} else if (ti && ti->get_parent() == root->get_children()) {
+	} else if (ti && root->get_children().has(ti->get_parent())) {
 		if (p_button == 0) { // Edit
 			selected_module = ti->get_text(0);
 			module_name_edit->set_position(Input::get_singleton()->get_mouse_position() - Vector2(60, -10));
@@ -1143,9 +1144,9 @@ void VisualScriptEditor::_modules_panel_selected() {
 
 void VisualScriptEditor::_modules_panel_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mbt = p_event;
-	if (mbt.is_valid() && mbt->is_doubleclick()) {
+	if (mbt.is_valid() && mbt->is_double_click()) {
 		TreeItem *ti = modules_panel->get_selected();
-		if (ti && ti->get_parent() == modules_panel->get_root()->get_children()) {
+		if (ti && modules_panel->get_root()->get_children().has(ti->get_parent())) {
 			curr_module = script->get_module(ti->get_text(0));
 			_edit_module();
 		}
@@ -1268,10 +1269,10 @@ void VisualScriptEditor::_module_action(String p_file) {
 
 			if (!vsmod->has_node(0)) {
 				Ref<VisualScriptModuleEntryNode> vsentry;
-				vsentry.instance();
+				vsentry.instantiate();
 				vsmod->add_node(0, vsentry);
 				Ref<VisualScriptModuleExitNode> vsexit;
-				vsexit.instance();
+				vsexit.instantiate();
 				vsmod->add_node(1, vsexit);
 			}
 			script->add_module(vsmod->get_module_name(), vsmod);
@@ -2359,7 +2360,7 @@ Variant VisualScriptEditor::get_drag_data_fw(const Point2 &p_point, Control *p_f
 		Dictionary dd;
 		TreeItem *root = modules_panel->get_root();
 
-		if (it->get_parent() == root->get_children()) {
+		if (root->get_children().has(it->get_parent())) {
 			dd["type"] = "visual_script_module_drag";
 			dd["module_name"] = type;
 		} else {
@@ -2497,7 +2498,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 		ofs /= EDSCALE;
 
 		Ref<VisualScriptModuleNode> vnode;
-		vnode.instance();
+		vnode.instantiate();
 		vnode->set_module(String(d["module_name"]));
 
 		int new_id = script->get_available_id();
@@ -5015,7 +5016,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	module_name_edit = memnew(TextInputPopup);
 	module_name_edit_box = ((TextInputPopup *)module_name_edit)->get_line_edit();
 	module_name_edit_box->connect("gui_input", callable_mp(this, &VisualScriptEditor::_module_name_edit_box_input));
-	module_name_edit_box->set_expand_to_text_length(true);
+	module_name_edit_box->set_expand_to_text_length_enabled(true);
 	add_child(module_name_edit);
 
 	modules_panel_search_box = memnew(LineEdit);
@@ -5075,7 +5076,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	module_name_box->set_custom_minimum_size(Size2(70 * EDSCALE, 0));
 	module_name_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	module_name_box->set_text("");
-	module_name_box->set_expand_to_text_length(true);
+	module_name_box->set_expand_to_text_length_enabled(true);
 	module_name_box->connect("text_entered", callable_mp(this, &VisualScriptEditor::_module_name_save), varray(Ref<VisualScriptModule>()));
 	top_bar->add_child(module_name_box);
 	module_name_box->hide();

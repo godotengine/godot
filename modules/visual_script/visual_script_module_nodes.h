@@ -73,7 +73,7 @@ public:
 	String get_module_name() const;
 	void set_module_by_name(const StringName &p_name);
 
-	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) override;
+	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 
 	VisualScriptModuleNode();
 	~VisualScriptModuleNode();
@@ -116,7 +116,7 @@ public:
 	virtual String get_text() const override { return ""; }
 	virtual String get_category() const override { return "module"; }
 
-	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) override;
+	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 
 	VisualScriptModuleEntryNode();
 	~VisualScriptModuleEntryNode();
@@ -151,7 +151,7 @@ public:
 	virtual String get_text() const override { return ""; }
 	virtual String get_category() const override { return "module"; }
 
-	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) override;
+	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 
 	VisualScriptModuleExitNode();
 	~VisualScriptModuleExitNode();

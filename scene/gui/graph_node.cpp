@@ -870,7 +870,7 @@ void GraphNode::_gui_input(const Ref<InputEvent> &p_ev) {
 	if (mb.is_valid()) {
 		ERR_FAIL_COND_MSG(get_parent_control() == nullptr, "GraphNode must be the child of a GraphEdit node.");
 
-		if (mb->is_doubleclick() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (mb->is_double_click() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 			emit_signal("double_clicked");
 			accept_event();
 			return;

@@ -203,7 +203,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptModuleNode::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptModuleNode::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptModuleNodeInstance *instance = memnew(VisualScriptModuleNodeInstance);
 	instance->node = this;
 	instance->instance = p_instance;
@@ -266,7 +266,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptModuleEntryNode::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptModuleEntryNode::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptModuleEntryNodeInstance *instance = memnew(VisualScriptModuleEntryNodeInstance);
 	instance->node = this;
 	instance->instance = p_instance;
@@ -347,7 +347,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptModuleExitNode::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptModuleExitNode::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptModuleExitNodeInstance *instance = memnew(VisualScriptModuleExitNodeInstance);
 	instance->node = this;
 	instance->instance = p_instance;
