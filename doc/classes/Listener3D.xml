@@ -11,30 +11,26 @@
 	</tutorials>
 	<methods>
 		<method name="clear_current">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Disables the listener to use the current camera's listener instead.
 			</description>
 		</method>
 		<method name="get_listener_transform" qualifiers="const">
-			<return type="Transform3D">
-			</return>
+			<return type="Transform3D" />
 			<description>
 				Returns the listener's global orthonormalized [Transform3D].
 			</description>
 		</method>
 		<method name="is_current" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the listener was made current using [method make_current], [code]false[/code] otherwise.
 				[b]Note:[/b] There may be more than one Listener3D marked as "current" in the scene tree, but only the one that was made current last will be used.
 			</description>
 		</method>
 		<method name="make_current">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Enables the listener. This will override the current camera's listener.
 			</description>

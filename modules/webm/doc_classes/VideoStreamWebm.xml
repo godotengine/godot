@@ -12,17 +12,14 @@
 	</tutorials>
 	<methods>
 		<method name="get_file">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the WebM video file handled by this [VideoStreamWebm].
 			</description>
 		</method>
 		<method name="set_file">
-			<return type="void">
-			</return>
-			<argument index="0" name="file" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="file" type="String" />
 			<description>
 				Sets the WebM video file that this [VideoStreamWebm] resource handles. The [code]file[/code] name should have the [code].webm[/code] extension.
 			</description>

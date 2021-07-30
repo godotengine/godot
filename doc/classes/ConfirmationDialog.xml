@@ -19,8 +19,7 @@
 	</tutorials>
 	<methods>
 		<method name="get_cancel_button">
-			<return type="Button">
-			</return>
+			<return type="Button" />
 			<description>
 				Returns the cancel button.
 			</description>

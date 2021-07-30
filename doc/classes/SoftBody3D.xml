@@ -11,72 +11,56 @@
 	</tutorials>
 	<methods>
 		<method name="add_collision_exception_with">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="Node">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="Node" />
 			<description>
 				Adds a body to the list of bodies that this body can't collide with.
 			</description>
 		</method>
 		<method name="get_collision_exceptions">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Returns an array of nodes that were added as collision exceptions for this body.
 			</description>
 		</method>
 		<method name="get_collision_layer_bit" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="bit" type="int" />
 			<description>
 				Returns an individual bit on the collision mask.
 			</description>
 		</method>
 		<method name="get_collision_mask_bit" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="bit" type="int" />
 			<description>
 				Returns an individual bit on the collision mask.
 			</description>
 		</method>
 		<method name="get_physics_rid" qualifiers="const">
-			<return type="RID">
-			</return>
+			<return type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="remove_collision_exception_with">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="Node">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="Node" />
 			<description>
 				Removes a body from the list of bodies that this body can't collide with.
 			</description>
 		</method>
 		<method name="set_collision_layer_bit">
-			<return type="void">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
-			<argument index="1" name="value" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="bit" type="int" />
+			<argument index="1" name="value" type="bool" />
 			<description>
 				Sets individual bits on the layer mask. Use this if you only need to change one layer's value.
 			</description>
 		</method>
 		<method name="set_collision_mask_bit">
-			<return type="void">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
-			<argument index="1" name="value" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="bit" type="int" />
+			<argument index="1" name="value" type="bool" />
 			<description>
 				Sets individual bits on the collision mask. Use this if you only need to change one layer's value.
 			</description>

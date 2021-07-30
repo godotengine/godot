@@ -15,108 +15,88 @@
 	</tutorials>
 	<methods>
 		<method name="add_exception">
-			<return type="void">
-			</return>
-			<argument index="0" name="node" type="Object">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="node" type="Object" />
 			<description>
 				Adds a collision exception so the ray does not report collisions with the specified node.
 			</description>
 		</method>
 		<method name="add_exception_rid">
-			<return type="void">
-			</return>
-			<argument index="0" name="rid" type="RID">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="rid" type="RID" />
 			<description>
 				Adds a collision exception so the ray does not report collisions with the specified [RID].
 			</description>
 		</method>
 		<method name="clear_exceptions">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Removes all collision exceptions for this ray.
 			</description>
 		</method>
 		<method name="force_raycast_update">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Updates the collision information for the ray. Use this method to update the collision information immediately instead of waiting for the next [code]_physics_process[/code] call, for example if the ray or its parent has changed state.
 				[b]Note:[/b] [member enabled] does not need to be [code]true[/code] for this to work.
 			</description>
 		</method>
 		<method name="get_collider" qualifiers="const">
-			<return type="Object">
-			</return>
+			<return type="Object" />
 			<description>
 				Returns the first object that the ray intersects, or [code]null[/code] if no object is intersecting the ray (i.e. [method is_colliding] returns [code]false[/code]).
 			</description>
 		</method>
 		<method name="get_collider_shape" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the shape ID of the first object that the ray intersects, or [code]0[/code] if no object is intersecting the ray (i.e. [method is_colliding] returns [code]false[/code]).
 			</description>
 		</method>
 		<method name="get_collision_mask_bit" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="bit" type="int" />
 			<description>
 				Returns an individual bit on the collision mask.
 			</description>
 		</method>
 		<method name="get_collision_normal" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns the normal of the intersecting object's shape at the collision point.
 			</description>
 		</method>
 		<method name="get_collision_point" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns the collision point at which the ray intersects the closest object.
 				[b]Note:[/b] this point is in the [b]global[/b] coordinate system.
 			</description>
 		</method>
 		<method name="is_colliding" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns whether any object is intersecting with the ray's vector (considering the vector length).
 			</description>
 		</method>
 		<method name="remove_exception">
-			<return type="void">
-			</return>
-			<argument index="0" name="node" type="Object">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="node" type="Object" />
 			<description>
 				Removes a collision exception so the ray does report collisions with the specified node.
 			</description>
 		</method>
 		<method name="remove_exception_rid">
-			<return type="void">
-			</return>
-			<argument index="0" name="rid" type="RID">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="rid" type="RID" />
 			<description>
 				Removes a collision exception so the ray does report collisions with the specified [RID].
 			</description>
 		</method>
 		<method name="set_collision_mask_bit">
-			<return type="void">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
-			<argument index="1" name="value" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="bit" type="int" />
+			<argument index="1" name="value" type="bool" />
 			<description>
 				Sets or clears individual bits on the collision mask. This makes selecting the areas scanned easier.
 			</description>

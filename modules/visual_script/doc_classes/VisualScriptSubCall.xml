@@ -10,10 +10,8 @@
 	</tutorials>
 	<methods>
 		<method name="_subcall" qualifiers="virtual">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="arguments" type="Variant">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="arguments" type="Variant" />
 			<description>
 				Called by this node.
 			</description>

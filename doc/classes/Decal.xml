@@ -12,10 +12,8 @@
 	</tutorials>
 	<methods>
 		<method name="get_texture" qualifiers="const">
-			<return type="Texture2D">
-			</return>
-			<argument index="0" name="type" type="int" enum="Decal.DecalTexture">
-			</argument>
+			<return type="Texture2D" />
+			<argument index="0" name="type" type="int" enum="Decal.DecalTexture" />
 			<description>
 				Returns the [Texture2D] associated with the specified [enum DecalTexture]. This is a convenience method, in most cases you should access the texture directly.
 				For example, instead of [code]albedo_tex = $Decal.get_texture(Decal.TEXTURE_ALBEDO)[/code], use [code]albedo_tex = $Decal.texture_albedo[/code].
@@ -35,12 +33,9 @@
 			</description>
 		</method>
 		<method name="set_texture">
-			<return type="void">
-			</return>
-			<argument index="0" name="type" type="int" enum="Decal.DecalTexture">
-			</argument>
-			<argument index="1" name="texture" type="Texture2D">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="type" type="int" enum="Decal.DecalTexture" />
+			<argument index="1" name="texture" type="Texture2D" />
 			<description>
 				Sets the [Texture2D] associated with the specified [enum DecalTexture]. This is a convenience method, in most cases you should access the texture directly.
 				For example, instead of [code]$Decal.set_texture(Decal.TEXTURE_ALBEDO, albedo_tex)[/code], use [code]$Decal.texture_albedo = albedo_tex[/code].

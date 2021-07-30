@@ -12,50 +12,43 @@
 	</tutorials>
 	<methods>
 		<method name="get_camera_feed_id">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				If this is an AR interface that requires displaying a camera feed as the background, this method returns the feed ID in the [CameraServer] for this interface.
 			</description>
 		</method>
 		<method name="get_capabilities" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns a combination of [enum Capabilities] flags providing information about the capabilities of this interface.
 			</description>
 		</method>
 		<method name="get_name" qualifiers="const">
-			<return type="StringName">
-			</return>
+			<return type="StringName" />
 			<description>
 				Returns the name of this interface (OpenVR, OpenHMD, ARKit, etc).
 			</description>
 		</method>
 		<method name="get_render_targetsize">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns the resolution at which we should render our intermediate results before things like lens distortion are applied by the VR platform.
 			</description>
 		</method>
 		<method name="get_tracking_status" qualifiers="const">
-			<return type="int" enum="XRInterface.Tracking_status">
-			</return>
+			<return type="int" enum="XRInterface.Tracking_status" />
 			<description>
 				If supported, returns the status of our tracking. This will allow you to provide feedback to the user whether there are issues with positional tracking.
 			</description>
 		</method>
 		<method name="get_view_count">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of views that need to be rendered for this device. 1 for Monoscopic, 2 for Stereoscopic.
 			</description>
 		</method>
 		<method name="initialize">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Call this to initialize this interface. The first interface that is initialized is identified as the primary interface and it will be used for rendering output.
 				After initializing the interface you want to use you then need to enable the AR/VR mode of a viewport and rendering should commence.
@@ -65,8 +58,7 @@
 			</description>
 		</method>
 		<method name="uninitialize">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Turns the interface off.
 			</description>

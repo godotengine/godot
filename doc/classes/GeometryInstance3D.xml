@@ -10,29 +10,22 @@
 	</tutorials>
 	<methods>
 		<method name="get_shader_instance_uniform" qualifiers="const">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="uniform" type="StringName">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="uniform" type="StringName" />
 			<description>
 			</description>
 		</method>
 		<method name="set_custom_aabb">
-			<return type="void">
-			</return>
-			<argument index="0" name="aabb" type="AABB">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="aabb" type="AABB" />
 			<description>
 				Overrides the bounding box of this node with a custom one. To remove it, set an [AABB] with all fields set to zero.
 			</description>
 		</method>
 		<method name="set_shader_instance_uniform">
-			<return type="void">
-			</return>
-			<argument index="0" name="uniform" type="StringName">
-			</argument>
-			<argument index="1" name="value" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="uniform" type="StringName" />
+			<argument index="1" name="value" type="Variant" />
 			<description>
 			</description>
 		</method>

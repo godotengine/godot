@@ -13,15 +13,13 @@
 	</tutorials>
 	<methods>
 		<method name="capture_rect" qualifiers="const">
-			<return type="Rect2">
-			</return>
+			<return type="Rect2" />
 			<description>
 				Returns a rectangle containing the positions of all existing particles.
 			</description>
 		</method>
 		<method name="restart">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Restarts all the existing particles.
 			</description>

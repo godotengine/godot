@@ -12,191 +12,146 @@
 	</tutorials>
 	<methods>
 		<method name="clear_all_slots">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Disables all input and output slots of the GraphNode.
 			</description>
 		</method>
 		<method name="clear_opentype_features">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Removes all OpenType features.
 			</description>
 		</method>
 		<method name="clear_slot">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Disables input and output slot whose index is [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_connection_input_color">
-			<return type="Color">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the [Color] of the input connection [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_connection_input_count">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of enabled input slots (connections) to the GraphNode.
 			</description>
 		</method>
 		<method name="get_connection_input_position">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the position of the input connection [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_connection_input_type">
-			<return type="int">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the type of the input connection [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_connection_output_color">
-			<return type="Color">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the [Color] of the output connection [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_connection_output_count">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of enabled output slots (connections) of the GraphNode.
 			</description>
 		</method>
 		<method name="get_connection_output_position">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the position of the output connection [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_connection_output_type">
-			<return type="int">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the type of the output connection [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_opentype_feature" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="tag" type="String">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="tag" type="String" />
 			<description>
 				Returns OpenType feature [code]tag[/code].
 			</description>
 		</method>
 		<method name="get_slot_color_left" qualifiers="const">
-			<return type="Color">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the left (input) [Color] of the slot [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_slot_color_right" qualifiers="const">
-			<return type="Color">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the right (output) [Color] of the slot [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_slot_type_left" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the left (input) type of the slot [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_slot_type_right" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the right (output) type of the slot [code]idx[/code].
 			</description>
 		</method>
 		<method name="is_slot_enabled_left" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns [code]true[/code] if left (input) side of the slot [code]idx[/code] is enabled.
 			</description>
 		</method>
 		<method name="is_slot_enabled_right" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns [code]true[/code] if right (output) side of the slot [code]idx[/code] is enabled.
 			</description>
 		</method>
 		<method name="set_opentype_feature">
-			<return type="void">
-			</return>
-			<argument index="0" name="tag" type="String">
-			</argument>
-			<argument index="1" name="value" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="tag" type="String" />
+			<argument index="1" name="value" type="int" />
 			<description>
 				Sets OpenType feature [code]tag[/code]. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
 			</description>
 		</method>
 		<method name="set_slot">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<argument index="1" name="enable_left" type="bool">
-			</argument>
-			<argument index="2" name="type_left" type="int">
-			</argument>
-			<argument index="3" name="color_left" type="Color">
-			</argument>
-			<argument index="4" name="enable_right" type="bool">
-			</argument>
-			<argument index="5" name="type_right" type="int">
-			</argument>
-			<argument index="6" name="color_right" type="Color">
-			</argument>
-			<argument index="7" name="custom_left" type="Texture2D" default="null">
-			</argument>
-			<argument index="8" name="custom_right" type="Texture2D" default="null">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="enable_left" type="bool" />
+			<argument index="2" name="type_left" type="int" />
+			<argument index="3" name="color_left" type="Color" />
+			<argument index="4" name="enable_right" type="bool" />
+			<argument index="5" name="type_right" type="int" />
+			<argument index="6" name="color_right" type="Color" />
+			<argument index="7" name="custom_left" type="Texture2D" default="null" />
+			<argument index="8" name="custom_right" type="Texture2D" default="null" />
 			<description>
 				Sets properties of the slot with ID [code]idx[/code].
 				If [code]enable_left[/code]/[code]right[/code], a port will appear and the slot will be able to be connected from this side.
@@ -208,67 +163,49 @@
 			</description>
 		</method>
 		<method name="set_slot_color_left">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<argument index="1" name="color_left" type="Color">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="color_left" type="Color" />
 			<description>
 				Sets the [Color] of the left (input) side of the slot [code]idx[/code] to [code]color_left[/code].
 			</description>
 		</method>
 		<method name="set_slot_color_right">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<argument index="1" name="color_right" type="Color">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="color_right" type="Color" />
 			<description>
 				Sets the [Color] of the right (output) side of the slot [code]idx[/code] to [code]color_right[/code].
 			</description>
 		</method>
 		<method name="set_slot_enabled_left">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<argument index="1" name="enable_left" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="enable_left" type="bool" />
 			<description>
 				Toggles the left (input) side of the slot [code]idx[/code]. If [code]enable_left[/code] is [code]true[/code], a port will appear on the left side and the slot will be able to be connected from this side.
 			</description>
 		</method>
 		<method name="set_slot_enabled_right">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<argument index="1" name="enable_right" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="enable_right" type="bool" />
 			<description>
 				Toggles the right (output) side of the slot [code]idx[/code]. If [code]enable_right[/code] is [code]true[/code], a port will appear on the right side and the slot will be able to be connected from this side.
 			</description>
 		</method>
 		<method name="set_slot_type_left">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<argument index="1" name="type_left" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="type_left" type="int" />
 			<description>
 				Sets the left (input) type of the slot [code]idx[/code] to [code]type_left[/code].
 			</description>
 		</method>
 		<method name="set_slot_type_right">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<argument index="1" name="type_right" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="type_right" type="int" />
 			<description>
 				Sets the right (output) type of the slot [code]idx[/code] to [code]type_right[/code].
 			</description>
@@ -314,10 +251,8 @@
 			</description>
 		</signal>
 		<signal name="dragged">
-			<argument index="0" name="from" type="Vector2">
-			</argument>
-			<argument index="1" name="to" type="Vector2">
-			</argument>
+			<argument index="0" name="from" type="Vector2" />
+			<argument index="1" name="to" type="Vector2" />
 			<description>
 				Emitted when the GraphNode is dragged.
 			</description>
@@ -333,15 +268,13 @@
 			</description>
 		</signal>
 		<signal name="resize_request">
-			<argument index="0" name="new_minsize" type="Vector2">
-			</argument>
+			<argument index="0" name="new_minsize" type="Vector2" />
 			<description>
 				Emitted when the GraphNode is requested to be resized. Happens on dragging the resizer handle (see [member resizable]).
 			</description>
 		</signal>
 		<signal name="slot_updated">
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Emitted when any GraphNode's slot is updated.
 			</description>

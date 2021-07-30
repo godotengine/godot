@@ -184,62 +184,49 @@
 	</tutorials>
 	<methods>
 		<method name="Dictionary" qualifiers="constructor">
-			<return type="Dictionary">
-			</return>
+			<return type="Dictionary" />
 			<description>
 				Constructs an empty [Dictionary].
 			</description>
 		</method>
 		<method name="Dictionary" qualifiers="constructor">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="from" type="Dictionary">
-			</argument>
+			<return type="Dictionary" />
+			<argument index="0" name="from" type="Dictionary" />
 			<description>
 				Constructs a [Dictionary] as a copy of the given [Dictionary].
 			</description>
 		</method>
 		<method name="clear">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clear the dictionary, removing all key/value pairs.
 			</description>
 		</method>
 		<method name="duplicate" qualifiers="const">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="deep" type="bool" default="false">
-			</argument>
+			<return type="Dictionary" />
+			<argument index="0" name="deep" type="bool" default="false" />
 			<description>
 				Creates a copy of the dictionary, and returns it. The [code]deep[/code] parameter causes inner dictionaries and arrays to be copied recursively, but does not apply to objects.
 			</description>
 		</method>
 		<method name="erase">
-			<return type="bool">
-			</return>
-			<argument index="0" name="key" type="Variant">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="key" type="Variant" />
 			<description>
 				Erase a dictionary key/value pair by key. Returns [code]true[/code] if the given key was present in the dictionary, [code]false[/code] otherwise. Does not erase elements while iterating over the dictionary.
 			</description>
 		</method>
 		<method name="get" qualifiers="const">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="key" type="Variant">
-			</argument>
-			<argument index="1" name="default" type="Variant" default="null">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="key" type="Variant" />
+			<argument index="1" name="default" type="Variant" default="null" />
 			<description>
 				Returns the current value for the specified key in the [Dictionary]. If the key does not exist, the method returns the value of the optional default argument, or [code]null[/code] if it is omitted.
 			</description>
 		</method>
 		<method name="has" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="key" type="Variant">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="key" type="Variant" />
 			<description>
 				Returns [code]true[/code] if the dictionary has a given key.
 				[b]Note:[/b] This is equivalent to using the [code]in[/code] operator as follows:
@@ -261,17 +248,14 @@
 			</description>
 		</method>
 		<method name="has_all" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="keys" type="Array">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="keys" type="Array" />
 			<description>
 				Returns [code]true[/code] if the dictionary has all the keys in the given array.
 			</description>
 		</method>
 		<method name="hash" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns a hashed integer value representing the dictionary contents. This can be used to compare dictionaries by value:
 				[codeblocks]
@@ -293,53 +277,43 @@
 			</description>
 		</method>
 		<method name="is_empty" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the dictionary is empty.
 			</description>
 		</method>
 		<method name="keys" qualifiers="const">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Returns the list of keys in the [Dictionary].
 			</description>
 		</method>
 		<method name="operator !=" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Dictionary">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="Dictionary" />
 			<description>
 			</description>
 		</method>
 		<method name="operator ==" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Dictionary">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="Dictionary" />
 			<description>
 			</description>
 		</method>
 		<method name="operator []" qualifiers="operator">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="key" type="Variant">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="key" type="Variant" />
 			<description>
 			</description>
 		</method>
 		<method name="size" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of keys in the dictionary.
 			</description>
 		</method>
 		<method name="values" qualifiers="const">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Returns the list of values in the [Dictionary].
 			</description>

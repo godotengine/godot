@@ -14,36 +14,27 @@
 	</tutorials>
 	<methods>
 		<method name="call_group" qualifiers="vararg">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="group" type="StringName">
-			</argument>
-			<argument index="1" name="method" type="StringName">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="group" type="StringName" />
+			<argument index="1" name="method" type="StringName" />
 			<description>
 				Calls [code]method[/code] on each member of the given group. You can pass arguments to [code]method[/code] by specifying them at the end of the method call.
 				[b]Note:[/b] [method call_group] will always call methods with an one-frame delay, in a way similar to [method Object.call_deferred]. To call methods immediately, use [method call_group_flags] with the [constant GROUP_CALL_REALTIME] flag.
 			</description>
 		</method>
 		<method name="call_group_flags" qualifiers="vararg">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="flags" type="int">
-			</argument>
-			<argument index="1" name="group" type="StringName">
-			</argument>
-			<argument index="2" name="method" type="StringName">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="flags" type="int" />
+			<argument index="1" name="group" type="StringName" />
+			<argument index="2" name="method" type="StringName" />
 			<description>
 				Calls [code]method[/code] on each member of the given group, respecting the given [enum GroupCallFlags]. You can pass arguments to [code]method[/code] by specifying them at the end of the method call.
 				[b]Note:[/b] Group call flags are used to control the method calling behavior. If the [constant GROUP_CALL_REALTIME] flag is present in the [code]flags[/code] argument, methods will be called immediately. If this flag isn't present in [code]flags[/code], methods will be called with a one-frame delay in a way similar to [method call_group].
 			</description>
 		</method>
 		<method name="change_scene">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Changes the running scene to the one at the given [code]path[/code], after loading it into a [PackedScene] and creating a new instance.
 				Returns [constant OK] on success, [constant ERR_CANT_OPEN] if the [code]path[/code] cannot be loaded into a [PackedScene], or [constant ERR_CANT_CREATE] if that scene cannot be instantiated.
@@ -51,10 +42,8 @@
 			</description>
 		</method>
 		<method name="change_scene_to">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="packed_scene" type="PackedScene">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="packed_scene" type="PackedScene" />
 			<description>
 				Changes the running scene to a new instance of the given [PackedScene].
 				Returns [constant OK] on success or [constant ERR_CANT_CREATE] if the scene cannot be instantiated.
@@ -62,12 +51,9 @@
 			</description>
 		</method>
 		<method name="create_timer">
-			<return type="SceneTreeTimer">
-			</return>
-			<argument index="0" name="time_sec" type="float">
-			</argument>
-			<argument index="1" name="process_always" type="bool" default="true">
-			</argument>
+			<return type="SceneTreeTimer" />
+			<argument index="0" name="time_sec" type="float" />
+			<argument index="1" name="process_always" type="bool" default="true" />
 			<description>
 				Returns a [SceneTreeTimer] which will [signal SceneTreeTimer.timeout] after the given time in seconds elapsed in this [SceneTree]. If [code]process_always[/code] is set to [code]false[/code], pausing the [SceneTree] will also pause the timer.
 				Commonly used to create a one-shot delay timer as in the following example:
@@ -91,97 +77,76 @@
 			</description>
 		</method>
 		<method name="create_tween">
-			<return type="Tween">
-			</return>
+			<return type="Tween" />
 			<description>
 				Creates and returns a new [Tween].
 			</description>
 		</method>
 		<method name="get_first_node_in_group">
-			<return type="Node">
-			</return>
-			<argument index="0" name="group" type="StringName">
-			</argument>
+			<return type="Node" />
+			<argument index="0" name="group" type="StringName" />
 			<description>
 			</description>
 		</method>
 		<method name="get_frame" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the current frame number, i.e. the total frame count since the application started.
 			</description>
 		</method>
 		<method name="get_node_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of nodes in this [SceneTree].
 			</description>
 		</method>
 		<method name="get_nodes_in_group">
-			<return type="Array">
-			</return>
-			<argument index="0" name="group" type="StringName">
-			</argument>
+			<return type="Array" />
+			<argument index="0" name="group" type="StringName" />
 			<description>
 				Returns a list of all nodes assigned to the given group.
 			</description>
 		</method>
 		<method name="get_processed_tweens">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Returns an array of currently existing [Tween]s in the [SceneTree] (both running and paused).
 			</description>
 		</method>
 		<method name="has_group" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if the given group exists.
 			</description>
 		</method>
 		<method name="notify_group">
-			<return type="void">
-			</return>
-			<argument index="0" name="group" type="StringName">
-			</argument>
-			<argument index="1" name="notification" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="group" type="StringName" />
+			<argument index="1" name="notification" type="int" />
 			<description>
 				Sends the given notification to all members of the [code]group[/code].
 			</description>
 		</method>
 		<method name="notify_group_flags">
-			<return type="void">
-			</return>
-			<argument index="0" name="call_flags" type="int">
-			</argument>
-			<argument index="1" name="group" type="StringName">
-			</argument>
-			<argument index="2" name="notification" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="call_flags" type="int" />
+			<argument index="1" name="group" type="StringName" />
+			<argument index="2" name="notification" type="int" />
 			<description>
 				Sends the given notification to all members of the [code]group[/code], respecting the given [enum GroupCallFlags].
 			</description>
 		</method>
 		<method name="queue_delete">
-			<return type="void">
-			</return>
-			<argument index="0" name="obj" type="Object">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="obj" type="Object" />
 			<description>
 				Queues the given object for deletion, delaying the call to [method Object.free] to after the current frame.
 			</description>
 		</method>
 		<method name="quit">
-			<return type="void">
-			</return>
-			<argument index="0" name="exit_code" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="exit_code" type="int" default="0" />
 			<description>
 				Quits the application at the end of the current iteration. Argument [code]exit_code[/code] can optionally be given (defaulting to 0) to customize the exit status code.
 				By convention, an exit code of [code]0[/code] indicates success whereas a non-zero exit code indicates an error.
@@ -190,56 +155,42 @@
 			</description>
 		</method>
 		<method name="reload_current_scene">
-			<return type="int" enum="Error">
-			</return>
+			<return type="int" enum="Error" />
 			<description>
 				Reloads the currently active scene.
 				Returns [constant OK] on success, [constant ERR_UNCONFIGURED] if no [member current_scene] was defined yet, [constant ERR_CANT_OPEN] if [member current_scene] cannot be loaded into a [PackedScene], or [constant ERR_CANT_CREATE] if the scene cannot be instantiated.
 			</description>
 		</method>
 		<method name="set_auto_accept_quit">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="enabled" type="bool" />
 			<description>
 				If [code]true[/code], the application automatically accepts quitting. Enabled by default.
 				For mobile platforms, see [method set_quit_on_go_back].
 			</description>
 		</method>
 		<method name="set_group">
-			<return type="void">
-			</return>
-			<argument index="0" name="group" type="StringName">
-			</argument>
-			<argument index="1" name="property" type="String">
-			</argument>
-			<argument index="2" name="value" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="group" type="StringName" />
+			<argument index="1" name="property" type="String" />
+			<argument index="2" name="value" type="Variant" />
 			<description>
 				Sets the given [code]property[/code] to [code]value[/code] on all members of the given group.
 			</description>
 		</method>
 		<method name="set_group_flags">
-			<return type="void">
-			</return>
-			<argument index="0" name="call_flags" type="int">
-			</argument>
-			<argument index="1" name="group" type="StringName">
-			</argument>
-			<argument index="2" name="property" type="String">
-			</argument>
-			<argument index="3" name="value" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="call_flags" type="int" />
+			<argument index="1" name="group" type="StringName" />
+			<argument index="2" name="property" type="String" />
+			<argument index="3" name="value" type="Variant" />
 			<description>
 				Sets the given [code]property[/code] to [code]value[/code] on all members of the given group, respecting the given [enum GroupCallFlags].
 			</description>
 		</method>
 		<method name="set_quit_on_go_back">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="enabled" type="bool" />
 			<description>
 				If [code]true[/code], the application quits automatically on going back (e.g. on Android). Enabled by default.
 				To handle 'Go Back' button when this option is disabled, use [constant DisplayServer.WINDOW_EVENT_GO_BACK_REQUEST].
@@ -277,38 +228,32 @@
 	</members>
 	<signals>
 		<signal name="files_dropped">
-			<argument index="0" name="files" type="PackedStringArray">
-			</argument>
-			<argument index="1" name="screen" type="int">
-			</argument>
+			<argument index="0" name="files" type="PackedStringArray" />
+			<argument index="1" name="screen" type="int" />
 			<description>
 				Emitted when files are dragged from the OS file manager and dropped in the game window. The arguments are a list of file paths and the identifier of the screen where the drag originated.
 			</description>
 		</signal>
 		<signal name="node_added">
-			<argument index="0" name="node" type="Node">
-			</argument>
+			<argument index="0" name="node" type="Node" />
 			<description>
 				Emitted whenever a node is added to the [SceneTree].
 			</description>
 		</signal>
 		<signal name="node_configuration_warning_changed">
-			<argument index="0" name="node" type="Node">
-			</argument>
+			<argument index="0" name="node" type="Node" />
 			<description>
 				Emitted when a node's configuration changed. Only emitted in [code]tool[/code] mode.
 			</description>
 		</signal>
 		<signal name="node_removed">
-			<argument index="0" name="node" type="Node">
-			</argument>
+			<argument index="0" name="node" type="Node" />
 			<description>
 				Emitted whenever a node is removed from the [SceneTree].
 			</description>
 		</signal>
 		<signal name="node_renamed">
-			<argument index="0" name="node" type="Node">
-			</argument>
+			<argument index="0" name="node" type="Node" />
 			<description>
 				Emitted whenever a node is renamed.
 			</description>

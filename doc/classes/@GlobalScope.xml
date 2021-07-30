@@ -11,18 +11,14 @@
 	</tutorials>
 	<methods>
 		<method name="abs">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="x" type="Variant">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="x" type="Variant" />
 			<description>
 			</description>
 		</method>
 		<method name="absf">
-			<return type="float">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="x" type="float" />
 			<description>
 				Returns the absolute value of float parameter [code]x[/code] (i.e. positive value).
 				[codeblock]
@@ -32,10 +28,8 @@
 			</description>
 		</method>
 		<method name="absi">
-			<return type="int">
-			</return>
-			<argument index="0" name="x" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="x" type="int" />
 			<description>
 				Returns the absolute value of int parameter [code]x[/code] (i.e. positive value).
 				[codeblock]
@@ -45,10 +39,8 @@
 			</description>
 		</method>
 		<method name="acos">
-			<return type="float">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="x" type="float" />
 			<description>
 				Returns the arc cosine of [code]x[/code] in radians. Use to get the angle of cosine [code]x[/code]. [code]x[/code] must be between [code]-1.0[/code] and [code]1.0[/code] (inclusive), otherwise, [method acos] will return [constant @GDScript.NAN].
 				[codeblock]
@@ -58,10 +50,8 @@
 			</description>
 		</method>
 		<method name="asin">
-			<return type="float">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="x" type="float" />
 			<description>
 				Returns the arc sine of [code]x[/code] in radians. Use to get the angle of sine [code]x[/code]. [code]x[/code] must be between [code]-1.0[/code] and [code]1.0[/code] (inclusive), otherwise, [method asin] will return [constant @GDScript.NAN].
 				[codeblock]
@@ -71,10 +61,8 @@
 			</description>
 		</method>
 		<method name="atan">
-			<return type="float">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="x" type="float" />
 			<description>
 				Returns the arc tangent of [code]x[/code] in radians. Use it to get the angle from an angle's tangent in trigonometry: [code]atan(tan(angle)) == angle[/code].
 				The method cannot know in which quadrant the angle should fall. See [method atan2] if you have both [code]y[/code] and [code]x[/code].
@@ -84,12 +72,9 @@
 			</description>
 		</method>
 		<method name="atan2">
-			<return type="float">
-			</return>
-			<argument index="0" name="y" type="float">
-			</argument>
-			<argument index="1" name="x" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="y" type="float" />
+			<argument index="1" name="x" type="float" />
 			<description>
 				Returns the arc tangent of [code]y/x[/code] in radians. Use to get the angle of tangent [code]y/x[/code]. To compute the value, the method takes into account the sign of both arguments in order to determine the quadrant.
 				Important note: The Y coordinate comes first, by convention.
@@ -99,41 +84,32 @@
 			</description>
 		</method>
 		<method name="bytes2var">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="bytes" type="PackedByteArray">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="bytes" type="PackedByteArray" />
 			<description>
 				Decodes a byte array back to a [Variant] value, without decoding objects.
 				[b]Note:[/b] If you need object deserialization, see [method bytes2var_with_objects].
 			</description>
 		</method>
 		<method name="bytes2var_with_objects">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="bytes" type="PackedByteArray">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="bytes" type="PackedByteArray" />
 			<description>
 				Decodes a byte array back to a [Variant] value. Decoding objects is allowed.
 				[b]WARNING:[/b] Deserialized object can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).
 			</description>
 		</method>
 		<method name="cartesian2polar">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
-			<argument index="1" name="y" type="float">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="x" type="float" />
+			<argument index="1" name="y" type="float" />
 			<description>
 				Converts a 2D point expressed in the cartesian coordinate system (X and Y axis) to the polar coordinate system (a distance from the origin and an angle).
 			</description>
 		</method>
 		<method name="ceil">
-			<return type="float">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="x" type="float" />
 			<description>
 				Rounds [code]x[/code] upward (towards positive infinity), returning the smallest whole number that is not less than [code]x[/code].
 				[codeblock]
@@ -144,26 +120,18 @@
 			</description>
 		</method>
 		<method name="clamp">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="value" type="Variant">
-			</argument>
-			<argument index="1" name="min" type="Variant">
-			</argument>
-			<argument index="2" name="max" type="Variant">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="value" type="Variant" />
+			<argument index="1" name="min" type="Variant" />
+			<argument index="2" name="max" type="Variant" />
 			<description>
 			</description>
 		</method>
 		<method name="clampf">
-			<return type="float">
-			</return>
-			<argument index="0" name="value" type="float">
-			</argument>
-			<argument index="1" name="min" type="float">
-			</argument>
-			<argument index="2" name="max" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="value" type="float" />
+			<argument index="1" name="min" type="float" />
+			<argument index="2" name="max" type="float" />
 			<description>
 				Clamps the float [code]value[/code] and returns a value not less than [code]min[/code] and not more than [code]max[/code].
 				[codeblock]
@@ -178,14 +146,10 @@
 			</description>
 		</method>
 		<method name="clampi">
-			<return type="int">
-			</return>
-			<argument index="0" name="value" type="int">
-			</argument>
-			<argument index="1" name="min" type="int">
-			</argument>
-			<argument index="2" name="max" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="value" type="int" />
+			<argument index="1" name="min" type="int" />
+			<argument index="2" name="max" type="int" />
 			<description>
 				Clamps the integer [code]value[/code] and returns a value not less than [code]min[/code] and not more than [code]max[/code].
 				[codeblock]
@@ -200,10 +164,8 @@
 			</description>
 		</method>
 		<method name="cos">
-			<return type="float">
-			</return>
-			<argument index="0" name="angle_rad" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="angle_rad" type="float" />
 			<description>
 				Returns the cosine of angle [code]angle_rad[/code] in radians.
 				[codeblock]
@@ -214,10 +176,8 @@
 			</description>
 		</method>
 		<method name="cosh">
-			<return type="float">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="x" type="float" />
 			<description>
 				Returns the hyperbolic cosine of [code]x[/code] in radians.
 				[codeblock]
@@ -227,23 +187,17 @@
 			</description>
 		</method>
 		<method name="db2linear">
-			<return type="float">
-			</return>
-			<argument index="0" name="db" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="db" type="float" />
 			<description>
 				Converts from decibels to linear energy (audio).
 			</description>
 		</method>
 		<method name="dectime">
-			<return type="float">
-			</return>
-			<argument index="0" name="value" type="float">
-			</argument>
-			<argument index="1" name="amount" type="float">
-			</argument>
-			<argument index="2" name="step" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="value" type="float" />
+			<argument index="1" name="amount" type="float" />
+			<argument index="2" name="step" type="float" />
 			<description>
 				Returns the result of [code]value[/code] decreased by [code]step[/code] * [code]amount[/code].
 				[codeblock]
@@ -253,10 +207,8 @@
 			</description>
 		</method>
 		<method name="deg2rad">
-			<return type="float">
-			</return>
-			<argument index="0" name="deg" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="deg" type="float" />
 			<description>
 				Converts an angle expressed in degrees to radians.
 				[codeblock]
@@ -266,21 +218,16 @@
 			</description>
 		</method>
 		<method name="ease">
-			<return type="float">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
-			<argument index="1" name="curve" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="x" type="float" />
+			<argument index="1" name="curve" type="float" />
 			<description>
 				Easing function, based on exponent. The curve values are: 0 is constant, 1 is linear, 0 to 1 is ease-in, 1+ is ease out. Negative values are in-out/out in.
 			</description>
 		</method>
 		<method name="exp">
-			<return type="float">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="x" type="float" />
 			<description>
 				The natural exponential function. It raises the mathematical constant [b]e[/b] to the power of [code]x[/code] and returns it.
 				[b]e[/b] has an approximate value of 2.71828, and can be obtained with [code]exp(1)[/code].
@@ -291,10 +238,8 @@
 			</description>
 		</method>
 		<method name="floor">
-			<return type="float">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="x" type="float" />
 			<description>
 				Rounds [code]x[/code] downward (towards negative infinity), returning the largest whole number that is not more than [code]x[/code].
 				[codeblock]
@@ -308,12 +253,9 @@
 			</description>
 		</method>
 		<method name="fmod">
-			<return type="float">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
-			<argument index="1" name="y" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="x" type="float" />
+			<argument index="1" name="y" type="float" />
 			<description>
 				Returns the floating-point remainder of [code]x/y[/code], keeping the sign of [code]x[/code].
 				[codeblock]
@@ -324,12 +266,9 @@
 			</description>
 		</method>
 		<method name="fposmod">
-			<return type="float">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
-			<argument index="1" name="y" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="x" type="float" />
+			<argument index="1" name="y" type="float" />
 			<description>
 				Returns the floating-point modulus of [code]x/y[/code] that wraps equally in positive and negative.
 				[codeblock]
@@ -350,10 +289,8 @@
 			</description>
 		</method>
 		<method name="hash">
-			<return type="int">
-			</return>
-			<argument index="0" name="variable" type="Variant">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="variable" type="Variant" />
 			<description>
 				Returns the integer hash of the variable passed.
 				[codeblock]
@@ -362,10 +299,8 @@
 			</description>
 		</method>
 		<method name="instance_from_id">
-			<return type="Object">
-			</return>
-			<argument index="0" name="instance_id" type="int">
-			</argument>
+			<return type="Object" />
+			<argument index="0" name="instance_id" type="int" />
 			<description>
 				Returns the Object that corresponds to [code]instance_id[/code]. All Objects have a unique instance ID.
 				[codeblock]
@@ -378,14 +313,10 @@
 			</description>
 		</method>
 		<method name="inverse_lerp">
-			<return type="float">
-			</return>
-			<argument index="0" name="from" type="float">
-			</argument>
-			<argument index="1" name="to" type="float">
-			</argument>
-			<argument index="2" name="weight" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="from" type="float" />
+			<argument index="1" name="to" type="float" />
+			<argument index="2" name="weight" type="float" />
 			<description>
 				Returns a normalized value considering the given range. This is the opposite of [method lerp].
 				[codeblock]
@@ -398,12 +329,9 @@
 			</description>
 		</method>
 		<method name="is_equal_approx">
-			<return type="bool">
-			</return>
-			<argument index="0" name="a" type="float">
-			</argument>
-			<argument index="1" name="b" type="float">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="a" type="float" />
+			<argument index="1" name="b" type="float" />
 			<description>
 				Returns [code]true[/code] if [code]a[/code] and [code]b[/code] are approximately equal to each other.
 				Here, approximately equal means that [code]a[/code] and [code]b[/code] are within a small internal epsilon of each other, which scales with the magnitude of the numbers.
@@ -411,59 +339,45 @@
 			</description>
 		</method>
 		<method name="is_inf">
-			<return type="bool">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="x" type="float" />
 			<description>
 				Returns whether [code]x[/code] is an infinity value (either positive infinity or negative infinity).
 			</description>
 		</method>
 		<method name="is_instance_id_valid">
-			<return type="bool">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="id" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="is_instance_valid">
-			<return type="bool">
-			</return>
-			<argument index="0" name="instance" type="Variant">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="instance" type="Variant" />
 			<description>
 				Returns whether [code]instance[/code] is a valid object (e.g. has not been deleted from memory).
 			</description>
 		</method>
 		<method name="is_nan">
-			<return type="bool">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="x" type="float" />
 			<description>
 				Returns whether [code]x[/code] is a NaN ("Not a Number" or invalid) value.
 			</description>
 		</method>
 		<method name="is_zero_approx">
-			<return type="bool">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="x" type="float" />
 			<description>
 				Returns [code]true[/code] if [code]x[/code] is zero or almost zero.
 				This method is faster than using [method is_equal_approx] with one value as zero.
 			</description>
 		</method>
 		<method name="lerp">
-			<return type="float">
-			</return>
-			<argument index="0" name="from" type="float">
-			</argument>
-			<argument index="1" name="to" type="float">
-			</argument>
-			<argument index="2" name="weight" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="from" type="float" />
+			<argument index="1" name="to" type="float" />
+			<argument index="2" name="weight" type="float" />
 			<description>
 				Linearly interpolates between two values by a normalized value. This is the opposite of [method inverse_lerp].
 				[codeblock]
@@ -472,14 +386,10 @@
 			</description>
 		</method>
 		<method name="lerp_angle">
-			<return type="float">
-			</return>
-			<argument index="0" name="from" type="float">
-			</argument>
-			<argument index="1" name="to" type="float">
-			</argument>
-			<argument index="2" name="weight" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="from" type="float" />
+			<argument index="1" name="to" type="float" />
+			<argument index="2" name="weight" type="float" />
 			<description>
 				Linearly interpolates between two angles (in radians) by a normalized value.
 				Similar to [method lerp], but interpolates correctly when the angles wrap around [constant @GDScript.TAU].
@@ -495,10 +405,8 @@
 			</description>
 		</method>
 		<method name="linear2db">
-			<return type="float">
-			</return>
-			<argument index="0" name="lin" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="lin" type="float" />
 			<description>
 				Converts from linear energy to decibels (audio). This can be used to implement volume sliders that behave as expected (since volume isn't linear). Example:
 				[codeblock]
@@ -510,10 +418,8 @@
 			</description>
 		</method>
 		<method name="log">
-			<return type="float">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="x" type="float" />
 			<description>
 				Natural logarithm. The amount of time needed to reach a certain level of continuous growth.
 				[b]Note:[/b] This is not the same as the "log" function on most calculators, which uses a base 10 logarithm.
@@ -524,8 +430,7 @@
 			</description>
 		</method>
 		<method name="max" qualifiers="vararg">
-			<return type="Variant">
-			</return>
+			<return type="Variant" />
 			<description>
 				Returns the maximum of the given values. This method can take any number of arguments.
 				[codeblock]
@@ -534,12 +439,9 @@
 			</description>
 		</method>
 		<method name="maxf">
-			<return type="float">
-			</return>
-			<argument index="0" name="a" type="float">
-			</argument>
-			<argument index="1" name="b" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="a" type="float" />
+			<argument index="1" name="b" type="float" />
 			<description>
 				Returns the maximum of two float values.
 				[codeblock]
@@ -549,12 +451,9 @@
 			</description>
 		</method>
 		<method name="maxi">
-			<return type="int">
-			</return>
-			<argument index="0" name="a" type="int">
-			</argument>
-			<argument index="1" name="b" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="a" type="int" />
+			<argument index="1" name="b" type="int" />
 			<description>
 				Returns the maximum of two int values.
 				[codeblock]
@@ -564,8 +463,7 @@
 			</description>
 		</method>
 		<method name="min" qualifiers="vararg">
-			<return type="Variant">
-			</return>
+			<return type="Variant" />
 			<description>
 				Returns the minimum of the given values. This method can take any number of arguments.
 				[codeblock]
@@ -574,12 +472,9 @@
 			</description>
 		</method>
 		<method name="minf">
-			<return type="float">
-			</return>
-			<argument index="0" name="a" type="float">
-			</argument>
-			<argument index="1" name="b" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="a" type="float" />
+			<argument index="1" name="b" type="float" />
 			<description>
 				Returns the minimum of two float values.
 				[codeblock]
@@ -589,12 +484,9 @@
 			</description>
 		</method>
 		<method name="mini">
-			<return type="int">
-			</return>
-			<argument index="0" name="a" type="int">
-			</argument>
-			<argument index="1" name="b" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="a" type="int" />
+			<argument index="1" name="b" type="int" />
 			<description>
 				Returns the minimum of two int values.
 				[codeblock]
@@ -604,14 +496,10 @@
 			</description>
 		</method>
 		<method name="move_toward">
-			<return type="float">
-			</return>
-			<argument index="0" name="from" type="float">
-			</argument>
-			<argument index="1" name="to" type="float">
-			</argument>
-			<argument index="2" name="delta" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="from" type="float" />
+			<argument index="1" name="to" type="float" />
+			<argument index="2" name="delta" type="float" />
 			<description>
 				Moves [code]from[/code] toward [code]to[/code] by the [code]delta[/code] value.
 				Use a negative [code]delta[/code] value to move away.
@@ -623,10 +511,8 @@
 			</description>
 		</method>
 		<method name="nearest_po2">
-			<return type="int">
-			</return>
-			<argument index="0" name="value" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="value" type="int" />
 			<description>
 				Returns the nearest equal or larger power of 2 for integer [code]value[/code].
 				In other words, returns the smallest value [code]a[/code] where [code]a = pow(2, n)[/code] such that [code]value &lt;= a[/code] for some non-negative integer [code]n[/code].
@@ -642,23 +528,17 @@
 			</description>
 		</method>
 		<method name="polar2cartesian">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="r" type="float">
-			</argument>
-			<argument index="1" name="th" type="float">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="r" type="float" />
+			<argument index="1" name="th" type="float" />
 			<description>
 				Converts a 2D point expressed in the polar coordinate system (a distance from the origin [code]r[/code] and an angle [code]th[/code]) to the cartesian coordinate system (X and Y axis).
 			</description>
 		</method>
 		<method name="posmod">
-			<return type="int">
-			</return>
-			<argument index="0" name="x" type="int">
-			</argument>
-			<argument index="1" name="y" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="x" type="int" />
+			<argument index="1" name="y" type="int" />
 			<description>
 				Returns the integer modulus of [code]x/y[/code] that wraps equally in positive and negative.
 				[codeblock]
@@ -678,12 +558,9 @@
 			</description>
 		</method>
 		<method name="pow">
-			<return type="float">
-			</return>
-			<argument index="0" name="base" type="float">
-			</argument>
-			<argument index="1" name="exp" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="base" type="float" />
+			<argument index="1" name="exp" type="float" />
 			<description>
 				Returns the result of [code]base[/code] raised to the power of [code]exp[/code].
 				[codeblock]
@@ -754,10 +631,8 @@
 			</description>
 		</method>
 		<method name="rad2deg">
-			<return type="float">
-			</return>
-			<argument index="0" name="rad" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="rad" type="float" />
 			<description>
 				Converts an angle expressed in radians to degrees.
 				[codeblock]
@@ -766,17 +641,14 @@
 			</description>
 		</method>
 		<method name="rand_from_seed">
-			<return type="PackedInt64Array">
-			</return>
-			<argument index="0" name="seed" type="int">
-			</argument>
+			<return type="PackedInt64Array" />
+			<argument index="0" name="seed" type="int" />
 			<description>
 				Random from seed: pass a [code]seed[/code], and an array with both number and new seed is returned. "Seed" here refers to the internal state of the pseudo random number generator. The internal state of the current implementation is 64 bits.
 			</description>
 		</method>
 		<method name="randf">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns a random floating point value between [code]0.0[/code] and [code]1.0[/code] (inclusive).
 				[codeblock]
@@ -785,12 +657,9 @@
 			</description>
 		</method>
 		<method name="randf_range">
-			<return type="float">
-			</return>
-			<argument index="0" name="from" type="float">
-			</argument>
-			<argument index="1" name="to" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="from" type="float" />
+			<argument index="1" name="to" type="float" />
 			<description>
 				Returns a random floating point value on the interval between [code]from[/code] and [code]to[/code] (inclusive).
 				[codeblock]
@@ -799,8 +668,7 @@
 			</description>
 		</method>
 		<method name="randi">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns a random unsigned 32-bit integer. Use remainder to obtain a random value in the interval [code][0, N - 1][/code] (where N is smaller than 2^32).
 				[codeblock]
@@ -812,12 +680,9 @@
 			</description>
 		</method>
 		<method name="randi_range">
-			<return type="int">
-			</return>
-			<argument index="0" name="from" type="int">
-			</argument>
-			<argument index="1" name="to" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="from" type="int" />
+			<argument index="1" name="to" type="int" />
 			<description>
 				Returns a random signed 32-bit integer between [code]from[/code] and [code]to[/code] (inclusive). If [code]to[/code] is lesser than [code]from[/code], they are swapped.
 				[codeblock]
@@ -833,18 +698,12 @@
 			</description>
 		</method>
 		<method name="range_lerp">
-			<return type="float">
-			</return>
-			<argument index="0" name="value" type="float">
-			</argument>
-			<argument index="1" name="istart" type="float">
-			</argument>
-			<argument index="2" name="istop" type="float">
-			</argument>
-			<argument index="3" name="ostart" type="float">
-			</argument>
-			<argument index="4" name="ostop" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="value" type="float" />
+			<argument index="1" name="istart" type="float" />
+			<argument index="2" name="istop" type="float" />
+			<argument index="3" name="ostart" type="float" />
+			<argument index="4" name="ostop" type="float" />
 			<description>
 				Maps a [code]value[/code] from range [code][istart, istop][/code] to [code][ostart, ostop][/code].
 				[codeblock]
@@ -853,18 +712,14 @@
 			</description>
 		</method>
 		<method name="range_step_decimals">
-			<return type="int">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="x" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="round">
-			<return type="float">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="x" type="float" />
 			<description>
 				Rounds [code]x[/code] to the nearest whole number, with halfway cases rounded away from zero.
 				[codeblock]
@@ -874,8 +729,7 @@
 			</description>
 		</method>
 		<method name="seed">
-			<argument index="0" name="base" type="int">
-			</argument>
+			<argument index="0" name="base" type="int" />
 			<description>
 				Sets seed for the random number generator.
 				[codeblock]
@@ -885,18 +739,14 @@
 			</description>
 		</method>
 		<method name="sign">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="x" type="Variant">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="x" type="Variant" />
 			<description>
 			</description>
 		</method>
 		<method name="signf">
-			<return type="float">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="x" type="float" />
 			<description>
 				Returns the sign of [code]x[/code] as a float: -1.0 or 1.0. Returns 0.0 if [code]x[/code] is 0.
 				[codeblock]
@@ -907,10 +757,8 @@
 			</description>
 		</method>
 		<method name="signi">
-			<return type="int">
-			</return>
-			<argument index="0" name="x" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="x" type="int" />
 			<description>
 				Returns the sign of [code]x[/code] as an integer: -1 or 1. Returns 0 if [code]x[/code] is 0.
 				[codeblock]
@@ -921,10 +769,8 @@
 			</description>
 		</method>
 		<method name="sin">
-			<return type="float">
-			</return>
-			<argument index="0" name="angle_rad" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="angle_rad" type="float" />
 			<description>
 				Returns the sine of angle [code]angle_rad[/code] in radians.
 				[codeblock]
@@ -933,10 +779,8 @@
 			</description>
 		</method>
 		<method name="sinh">
-			<return type="float">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="x" type="float" />
 			<description>
 				Returns the hyperbolic sine of [code]x[/code].
 				[codeblock]
@@ -946,14 +790,10 @@
 			</description>
 		</method>
 		<method name="smoothstep">
-			<return type="float">
-			</return>
-			<argument index="0" name="from" type="float">
-			</argument>
-			<argument index="1" name="to" type="float">
-			</argument>
-			<argument index="2" name="x" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="from" type="float" />
+			<argument index="1" name="to" type="float" />
+			<argument index="2" name="x" type="float" />
 			<description>
 				Returns the result of smoothly interpolating the value of [code]x[/code] between [code]0[/code] and [code]1[/code], based on the where [code]x[/code] lies with respect to the edges [code]from[/code] and [code]to[/code].
 				The return value is [code]0[/code] if [code]x &lt;= from[/code], and [code]1[/code] if [code]x &gt;= to[/code]. If [code]x[/code] lies between [code]from[/code] and [code]to[/code], the returned value follows an S-shaped curve that maps [code]x[/code] between [code]0[/code] and [code]1[/code].
@@ -967,12 +807,9 @@
 			</description>
 		</method>
 		<method name="snapped">
-			<return type="float">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
-			<argument index="1" name="step" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="x" type="float" />
+			<argument index="1" name="step" type="float" />
 			<description>
 				Snaps float value [code]x[/code] to a given [code]step[/code]. This can also be used to round a floating point number to an arbitrary number of decimals.
 				[codeblock]
@@ -983,10 +820,8 @@
 			</description>
 		</method>
 		<method name="sqrt">
-			<return type="float">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="x" type="float" />
 			<description>
 				Returns the square root of [code]x[/code], where [code]x[/code] is a non-negative number.
 				[codeblock]
@@ -996,10 +831,8 @@
 			</description>
 		</method>
 		<method name="step_decimals">
-			<return type="int">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="x" type="float" />
 			<description>
 				Returns the position of the first non-zero digit, after the decimal point. Note that the maximum return value is 10, which is a design decision in the implementation.
 				[codeblock]
@@ -1013,17 +846,14 @@
 			</description>
 		</method>
 		<method name="str" qualifiers="vararg">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Converts one or more arguments of any type to string in the best way possible.
 			</description>
 		</method>
 		<method name="str2var">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="string" type="String">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="string" type="String" />
 			<description>
 				Converts a formatted string that was returned by [method var2str] to the original value.
 				[codeblock]
@@ -1034,10 +864,8 @@
 			</description>
 		</method>
 		<method name="tan">
-			<return type="float">
-			</return>
-			<argument index="0" name="angle_rad" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="angle_rad" type="float" />
 			<description>
 				Returns the tangent of angle [code]angle_rad[/code] in radians.
 				[codeblock]
@@ -1046,10 +874,8 @@
 			</description>
 		</method>
 		<method name="tanh">
-			<return type="float">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="x" type="float" />
 			<description>
 				Returns the hyperbolic tangent of [code]x[/code].
 				[codeblock]
@@ -1059,10 +885,8 @@
 			</description>
 		</method>
 		<method name="typeof">
-			<return type="int">
-			</return>
-			<argument index="0" name="variable" type="Variant">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="variable" type="Variant" />
 			<description>
 				Returns the internal type of the given Variant object, using the [enum Variant.Type] values.
 				[codeblock]
@@ -1077,29 +901,23 @@
 			</description>
 		</method>
 		<method name="var2bytes">
-			<return type="PackedByteArray">
-			</return>
-			<argument index="0" name="variable" type="Variant">
-			</argument>
+			<return type="PackedByteArray" />
+			<argument index="0" name="variable" type="Variant" />
 			<description>
 				Encodes a [Variant] value to a byte array, without encoding objects. Deserialization can be done with [method bytes2var].
 				[b]Note:[/b] If you need object serialization, see [method var2bytes_with_objects].
 			</description>
 		</method>
 		<method name="var2bytes_with_objects">
-			<return type="PackedByteArray">
-			</return>
-			<argument index="0" name="variable" type="Variant">
-			</argument>
+			<return type="PackedByteArray" />
+			<argument index="0" name="variable" type="Variant" />
 			<description>
 				Encodes a [Variant] value to a byte array. Encoding objects is allowed (and can potentially include code). Deserialization can be done with [method bytes2var_with_objects].
 			</description>
 		</method>
 		<method name="var2str">
-			<return type="String">
-			</return>
-			<argument index="0" name="variable" type="Variant">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="variable" type="Variant" />
 			<description>
 				Converts a Variant [code]variable[/code] to a formatted string that can later be parsed using [method str2var].
 				[codeblock]
@@ -1116,24 +934,18 @@
 			</description>
 		</method>
 		<method name="weakref">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="obj" type="Variant">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="obj" type="Variant" />
 			<description>
 				Returns a weak reference to an object, or [code]null[/code] is the argument is invalid.
 				A weak reference to an object is not enough to keep the object alive: when the only remaining references to a referent are weak references, garbage collection is free to destroy the referent and reuse its memory for something else. However, until the object is actually destroyed the weak reference may return the object even if there are no strong references to it.
 			</description>
 		</method>
 		<method name="wrapf">
-			<return type="float">
-			</return>
-			<argument index="0" name="value" type="float">
-			</argument>
-			<argument index="1" name="min" type="float">
-			</argument>
-			<argument index="2" name="max" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="value" type="float" />
+			<argument index="1" name="min" type="float" />
+			<argument index="2" name="max" type="float" />
 			<description>
 				Wraps float [code]value[/code] between [code]min[/code] and [code]max[/code].
 				Usable for creating loop-alike behavior or infinite surfaces.
@@ -1154,14 +966,10 @@
 			</description>
 		</method>
 		<method name="wrapi">
-			<return type="int">
-			</return>
-			<argument index="0" name="value" type="int">
-			</argument>
-			<argument index="1" name="min" type="int">
-			</argument>
-			<argument index="2" name="max" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="value" type="int" />
+			<argument index="1" name="min" type="int" />
+			<argument index="2" name="max" type="int" />
 			<description>
 				Wraps integer [code]value[/code] between [code]min[/code] and [code]max[/code].
 				Usable for creating loop-alike behavior or infinite surfaces.

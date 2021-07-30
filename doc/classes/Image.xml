@@ -13,352 +13,269 @@
 	</tutorials>
 	<methods>
 		<method name="adjust_bcs">
-			<return type="void">
-			</return>
-			<argument index="0" name="brightness" type="float">
-			</argument>
-			<argument index="1" name="contrast" type="float">
-			</argument>
-			<argument index="2" name="saturation" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="brightness" type="float" />
+			<argument index="1" name="contrast" type="float" />
+			<argument index="2" name="saturation" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="blend_rect">
-			<return type="void">
-			</return>
-			<argument index="0" name="src" type="Image">
-			</argument>
-			<argument index="1" name="src_rect" type="Rect2">
-			</argument>
-			<argument index="2" name="dst" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="src" type="Image" />
+			<argument index="1" name="src_rect" type="Rect2" />
+			<argument index="2" name="dst" type="Vector2" />
 			<description>
 				Alpha-blends [code]src_rect[/code] from [code]src[/code] image to this image at coordinates [code]dest[/code].
 			</description>
 		</method>
 		<method name="blend_rect_mask">
-			<return type="void">
-			</return>
-			<argument index="0" name="src" type="Image">
-			</argument>
-			<argument index="1" name="mask" type="Image">
-			</argument>
-			<argument index="2" name="src_rect" type="Rect2">
-			</argument>
-			<argument index="3" name="dst" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="src" type="Image" />
+			<argument index="1" name="mask" type="Image" />
+			<argument index="2" name="src_rect" type="Rect2" />
+			<argument index="3" name="dst" type="Vector2" />
 			<description>
 				Alpha-blends [code]src_rect[/code] from [code]src[/code] image to this image using [code]mask[/code] image at coordinates [code]dst[/code]. Alpha channels are required for both [code]src[/code] and [code]mask[/code]. [code]dst[/code] pixels and [code]src[/code] pixels will blend if the corresponding mask pixel's alpha value is not 0. [code]src[/code] image and [code]mask[/code] image [b]must[/b] have the same size (width and height) but they can have different formats.
 			</description>
 		</method>
 		<method name="blit_rect">
-			<return type="void">
-			</return>
-			<argument index="0" name="src" type="Image">
-			</argument>
-			<argument index="1" name="src_rect" type="Rect2">
-			</argument>
-			<argument index="2" name="dst" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="src" type="Image" />
+			<argument index="1" name="src_rect" type="Rect2" />
+			<argument index="2" name="dst" type="Vector2" />
 			<description>
 				Copies [code]src_rect[/code] from [code]src[/code] image to this image at coordinates [code]dst[/code].
 			</description>
 		</method>
 		<method name="blit_rect_mask">
-			<return type="void">
-			</return>
-			<argument index="0" name="src" type="Image">
-			</argument>
-			<argument index="1" name="mask" type="Image">
-			</argument>
-			<argument index="2" name="src_rect" type="Rect2">
-			</argument>
-			<argument index="3" name="dst" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="src" type="Image" />
+			<argument index="1" name="mask" type="Image" />
+			<argument index="2" name="src_rect" type="Rect2" />
+			<argument index="3" name="dst" type="Vector2" />
 			<description>
 				Blits [code]src_rect[/code] area from [code]src[/code] image to this image at the coordinates given by [code]dst[/code]. [code]src[/code] pixel is copied onto [code]dst[/code] if the corresponding [code]mask[/code] pixel's alpha value is not 0. [code]src[/code] image and [code]mask[/code] image [b]must[/b] have the same size (width and height) but they can have different formats.
 			</description>
 		</method>
 		<method name="bump_map_to_normal_map">
-			<return type="void">
-			</return>
-			<argument index="0" name="bump_scale" type="float" default="1.0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="bump_scale" type="float" default="1.0" />
 			<description>
 				Converts a bump map to a normal map. A bump map provides a height offset per-pixel, while a normal map provides a normal direction per pixel.
 			</description>
 		</method>
 		<method name="clear_mipmaps">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Removes the image's mipmaps.
 			</description>
 		</method>
 		<method name="compress">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="mode" type="int" enum="Image.CompressMode">
-			</argument>
-			<argument index="1" name="source" type="int" enum="Image.CompressSource" default="0">
-			</argument>
-			<argument index="2" name="lossy_quality" type="float" default="0.7">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="mode" type="int" enum="Image.CompressMode" />
+			<argument index="1" name="source" type="int" enum="Image.CompressSource" default="0" />
+			<argument index="2" name="lossy_quality" type="float" default="0.7" />
 			<description>
 				Compresses the image to use less memory. Can not directly access pixel data while the image is compressed. Returns error if the chosen compression mode is not available. See [enum CompressMode] and [enum CompressSource] constants.
 			</description>
 		</method>
 		<method name="compress_from_channels">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="mode" type="int" enum="Image.CompressMode">
-			</argument>
-			<argument index="1" name="channels" type="int" enum="Image.UsedChannels">
-			</argument>
-			<argument index="2" name="lossy_quality" type="float" default="0.7">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="mode" type="int" enum="Image.CompressMode" />
+			<argument index="1" name="channels" type="int" enum="Image.UsedChannels" />
+			<argument index="2" name="lossy_quality" type="float" default="0.7" />
 			<description>
 			</description>
 		</method>
 		<method name="convert">
-			<return type="void">
-			</return>
-			<argument index="0" name="format" type="int" enum="Image.Format">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="format" type="int" enum="Image.Format" />
 			<description>
 				Converts the image's format. See [enum Format] constants.
 			</description>
 		</method>
 		<method name="copy_from">
-			<return type="void">
-			</return>
-			<argument index="0" name="src" type="Image">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="src" type="Image" />
 			<description>
 				Copies [code]src[/code] image to this image.
 			</description>
 		</method>
 		<method name="create">
-			<return type="void">
-			</return>
-			<argument index="0" name="width" type="int">
-			</argument>
-			<argument index="1" name="height" type="int">
-			</argument>
-			<argument index="2" name="use_mipmaps" type="bool">
-			</argument>
-			<argument index="3" name="format" type="int" enum="Image.Format">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="width" type="int" />
+			<argument index="1" name="height" type="int" />
+			<argument index="2" name="use_mipmaps" type="bool" />
+			<argument index="3" name="format" type="int" enum="Image.Format" />
 			<description>
 				Creates an empty image of given size and format. See [enum Format] constants. If [code]use_mipmaps[/code] is [code]true[/code] then generate mipmaps for this image. See the [method generate_mipmaps].
 			</description>
 		</method>
 		<method name="create_from_data">
-			<return type="void">
-			</return>
-			<argument index="0" name="width" type="int">
-			</argument>
-			<argument index="1" name="height" type="int">
-			</argument>
-			<argument index="2" name="use_mipmaps" type="bool">
-			</argument>
-			<argument index="3" name="format" type="int" enum="Image.Format">
-			</argument>
-			<argument index="4" name="data" type="PackedByteArray">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="width" type="int" />
+			<argument index="1" name="height" type="int" />
+			<argument index="2" name="use_mipmaps" type="bool" />
+			<argument index="3" name="format" type="int" enum="Image.Format" />
+			<argument index="4" name="data" type="PackedByteArray" />
 			<description>
 				Creates a new image of given size and format. See [enum Format] constants. Fills the image with the given raw data. If [code]use_mipmaps[/code] is [code]true[/code] then loads mipmaps for this image from [code]data[/code]. See [method generate_mipmaps].
 			</description>
 		</method>
 		<method name="crop">
-			<return type="void">
-			</return>
-			<argument index="0" name="width" type="int">
-			</argument>
-			<argument index="1" name="height" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="width" type="int" />
+			<argument index="1" name="height" type="int" />
 			<description>
 				Crops the image to the given [code]width[/code] and [code]height[/code]. If the specified size is larger than the current size, the extra area is filled with black pixels.
 			</description>
 		</method>
 		<method name="decompress">
-			<return type="int" enum="Error">
-			</return>
+			<return type="int" enum="Error" />
 			<description>
 				Decompresses the image if it is VRAM compressed in a supported format. Returns [constant OK] if the format is supported, otherwise [constant ERR_UNAVAILABLE].
 				[b]Note:[/b] The following formats can be decompressed: DXT, RGTC, BPTC, PVRTC1. The formats ETC1 and ETC2 are not supported.
 			</description>
 		</method>
 		<method name="detect_alpha" qualifiers="const">
-			<return type="int" enum="Image.AlphaMode">
-			</return>
+			<return type="int" enum="Image.AlphaMode" />
 			<description>
 				Returns [constant ALPHA_BLEND] if the image has data for alpha values. Returns [constant ALPHA_BIT] if all the alpha values are stored in a single bit. Returns [constant ALPHA_NONE] if no data for alpha values is found.
 			</description>
 		</method>
 		<method name="detect_used_channels">
-			<return type="int" enum="Image.UsedChannels">
-			</return>
-			<argument index="0" name="source" type="int" enum="Image.CompressSource" default="0">
-			</argument>
+			<return type="int" enum="Image.UsedChannels" />
+			<argument index="0" name="source" type="int" enum="Image.CompressSource" default="0" />
 			<description>
 			</description>
 		</method>
 		<method name="fill">
-			<return type="void">
-			</return>
-			<argument index="0" name="color" type="Color">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="color" type="Color" />
 			<description>
 				Fills the image with a given [Color].
 			</description>
 		</method>
 		<method name="fix_alpha_edges">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Blends low-alpha pixels with nearby pixels.
 			</description>
 		</method>
 		<method name="flip_x">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Flips the image horizontally.
 			</description>
 		</method>
 		<method name="flip_y">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Flips the image vertically.
 			</description>
 		</method>
 		<method name="generate_mipmaps">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="renormalize" type="bool" default="false">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="renormalize" type="bool" default="false" />
 			<description>
 				Generates mipmaps for the image. Mipmaps are precalculated lower-resolution copies of the image that are automatically used if the image needs to be scaled down when rendered. They help improve image quality and performance when rendering. This method returns an error if the image is compressed, in a custom format, or if the image's width/height is [code]0[/code].
 			</description>
 		</method>
 		<method name="get_data" qualifiers="const">
-			<return type="PackedByteArray">
-			</return>
+			<return type="PackedByteArray" />
 			<description>
 				Returns a copy of the image's raw data.
 			</description>
 		</method>
 		<method name="get_format" qualifiers="const">
-			<return type="int" enum="Image.Format">
-			</return>
+			<return type="int" enum="Image.Format" />
 			<description>
 				Returns the image's format. See [enum Format] constants.
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the image's height.
 			</description>
 		</method>
 		<method name="get_mipmap_offset" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="mipmap" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="mipmap" type="int" />
 			<description>
 				Returns the offset where the image's mipmap with index [code]mipmap[/code] is stored in the [code]data[/code] dictionary.
 			</description>
 		</method>
 		<method name="get_pixel" qualifiers="const">
-			<return type="Color">
-			</return>
-			<argument index="0" name="x" type="int">
-			</argument>
-			<argument index="1" name="y" type="int">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="x" type="int" />
+			<argument index="1" name="y" type="int" />
 			<description>
 				Returns the color of the pixel at [code](x, y)[/code].
 				This is the same as [method get_pixelv], but with two integer arguments instead of a [Vector2i] argument.
 			</description>
 		</method>
 		<method name="get_pixelv" qualifiers="const">
-			<return type="Color">
-			</return>
-			<argument index="0" name="point" type="Vector2i">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="point" type="Vector2i" />
 			<description>
 				Returns the color of the pixel at [code]point[/code].
 				This is the same as [method get_pixel], but with a [Vector2i] argument instead of two integer arguments.
 			</description>
 		</method>
 		<method name="get_rect" qualifiers="const">
-			<return type="Image">
-			</return>
-			<argument index="0" name="rect" type="Rect2">
-			</argument>
+			<return type="Image" />
+			<argument index="0" name="rect" type="Rect2" />
 			<description>
 				Returns a new image that is a copy of the image's area specified with [code]rect[/code].
 			</description>
 		</method>
 		<method name="get_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns the image's size (width and height).
 			</description>
 		</method>
 		<method name="get_used_rect" qualifiers="const">
-			<return type="Rect2">
-			</return>
+			<return type="Rect2" />
 			<description>
 				Returns a [Rect2] enclosing the visible portion of the image, considering each pixel with a non-zero alpha channel as visible.
 			</description>
 		</method>
 		<method name="get_width" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the image's width.
 			</description>
 		</method>
 		<method name="has_mipmaps" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the image has generated mipmaps.
 			</description>
 		</method>
 		<method name="is_compressed" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the image is compressed.
 			</description>
 		</method>
 		<method name="is_empty" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the image has no data.
 			</description>
 		</method>
 		<method name="is_invisible" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if all the image's pixels have an alpha value of 0. Returns [code]false[/code] if any pixel has an alpha value higher than 0.
 			</description>
 		</method>
 		<method name="load">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Loads an image from file [code]path[/code]. See [url=https://docs.godotengine.org/en/latest/getting_started/workflow/assets/importing_images.html#supported-image-formats]Supported image formats[/url] for a list of supported image formats and limitations.
 				[b]Warning:[/b] This method should only be used in the editor or in cases when you need to load external images at run-time, such as images located at the [code]user://[/code] directory, and may not work in exported projects.
@@ -366,132 +283,102 @@
 			</description>
 		</method>
 		<method name="load_bmp_from_buffer">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="buffer" type="PackedByteArray">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="buffer" type="PackedByteArray" />
 			<description>
 				Loads an image from the binary contents of a BMP file.
 				[b]Note:[/b] Godot's BMP module doesn't support 16-bit per pixel images. Only 1-bit, 4-bit, 8-bit, 24-bit, and 32-bit per pixel images are supported.
 			</description>
 		</method>
 		<method name="load_jpg_from_buffer">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="buffer" type="PackedByteArray">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="buffer" type="PackedByteArray" />
 			<description>
 				Loads an image from the binary contents of a JPEG file.
 			</description>
 		</method>
 		<method name="load_png_from_buffer">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="buffer" type="PackedByteArray">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="buffer" type="PackedByteArray" />
 			<description>
 				Loads an image from the binary contents of a PNG file.
 			</description>
 		</method>
 		<method name="load_tga_from_buffer">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="buffer" type="PackedByteArray">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="buffer" type="PackedByteArray" />
 			<description>
 				Loads an image from the binary contents of a TGA file.
 			</description>
 		</method>
 		<method name="load_webp_from_buffer">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="buffer" type="PackedByteArray">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="buffer" type="PackedByteArray" />
 			<description>
 				Loads an image from the binary contents of a WebP file.
 			</description>
 		</method>
 		<method name="normal_map_to_xy">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Converts the image's data to represent coordinates on a 3D plane. This is used when the image represents a normal map. A normal map can add lots of detail to a 3D surface without increasing the polygon count.
 			</description>
 		</method>
 		<method name="premultiply_alpha">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Multiplies color values with alpha values. Resulting color values for a pixel are [code](color * alpha)/256[/code].
 			</description>
 		</method>
 		<method name="resize">
-			<return type="void">
-			</return>
-			<argument index="0" name="width" type="int">
-			</argument>
-			<argument index="1" name="height" type="int">
-			</argument>
-			<argument index="2" name="interpolation" type="int" enum="Image.Interpolation" default="1">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="width" type="int" />
+			<argument index="1" name="height" type="int" />
+			<argument index="2" name="interpolation" type="int" enum="Image.Interpolation" default="1" />
 			<description>
 				Resizes the image to the given [code]width[/code] and [code]height[/code]. New pixels are calculated using the [code]interpolation[/code] mode defined via [enum Interpolation] constants.
 			</description>
 		</method>
 		<method name="resize_to_po2">
-			<return type="void">
-			</return>
-			<argument index="0" name="square" type="bool" default="false">
-			</argument>
-			<argument index="1" name="interpolation" type="int" enum="Image.Interpolation" default="1">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="square" type="bool" default="false" />
+			<argument index="1" name="interpolation" type="int" enum="Image.Interpolation" default="1" />
 			<description>
 				Resizes the image to the nearest power of 2 for the width and height. If [code]square[/code] is [code]true[/code] then set width and height to be the same. New pixels are calculated using the [code]interpolation[/code] mode defined via [enum Interpolation] constants.
 			</description>
 		</method>
 		<method name="rgbe_to_srgb">
-			<return type="Image">
-			</return>
+			<return type="Image" />
 			<description>
 				Converts a standard RGBE (Red Green Blue Exponent) image to an sRGB image.
 			</description>
 		</method>
 		<method name="save_exr" qualifiers="const">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="grayscale" type="bool" default="false">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="grayscale" type="bool" default="false" />
 			<description>
 				Saves the image as an EXR file to [code]path[/code]. If [code]grayscale[/code] is [code]true[/code] and the image has only one channel, it will be saved explicitly as monochrome rather than one red channel. This function will return [constant ERR_UNAVAILABLE] if Godot was compiled without the TinyEXR module.
 				[b]Note:[/b] The TinyEXR module is disabled in non-editor builds, which means [method save_exr] will return [constant ERR_UNAVAILABLE] when it is called from an exported project.
 			</description>
 		</method>
 		<method name="save_png" qualifiers="const">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Saves the image as a PNG file to [code]path[/code].
 			</description>
 		</method>
 		<method name="save_png_to_buffer" qualifiers="const">
-			<return type="PackedByteArray">
-			</return>
+			<return type="PackedByteArray" />
 			<description>
 			</description>
 		</method>
 		<method name="set_pixel">
-			<return type="void">
-			</return>
-			<argument index="0" name="x" type="int">
-			</argument>
-			<argument index="1" name="y" type="int">
-			</argument>
-			<argument index="2" name="color" type="Color">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="x" type="int" />
+			<argument index="1" name="y" type="int" />
+			<argument index="2" name="color" type="Color" />
 			<description>
 				Sets the [Color] of the pixel at [code](x, y)[/code] to [code]color[/code]. Example:
 				[codeblocks]
@@ -516,12 +403,9 @@
 			</description>
 		</method>
 		<method name="set_pixelv">
-			<return type="void">
-			</return>
-			<argument index="0" name="point" type="Vector2i">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="point" type="Vector2i" />
+			<argument index="1" name="color" type="Color" />
 			<description>
 				Sets the [Color] of the pixel at [code]point[/code] to [code]color[/code]. Example:
 				[codeblocks]
@@ -546,15 +430,13 @@
 			</description>
 		</method>
 		<method name="shrink_x2">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Shrinks the image by a factor of 2.
 			</description>
 		</method>
 		<method name="srgb_to_linear">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Converts the raw data from the sRGB colorspace to a linear scale.
 			</description>

@@ -13,45 +13,38 @@
 	</tutorials>
 	<methods>
 		<method name="generate_unique_id" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns a randomly generated integer that can be used as a network unique ID.
 			</description>
 		</method>
 		<method name="get_connection_status" qualifiers="const">
-			<return type="int" enum="MultiplayerPeer.ConnectionStatus">
-			</return>
+			<return type="int" enum="MultiplayerPeer.ConnectionStatus" />
 			<description>
 				Returns the current state of the connection. See [enum ConnectionStatus].
 			</description>
 		</method>
 		<method name="get_packet_peer" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the ID of the [MultiplayerPeer] who sent the most recent packet.
 			</description>
 		</method>
 		<method name="get_unique_id" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the ID of this [MultiplayerPeer].
 			</description>
 		</method>
 		<method name="poll">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Waits up to 1 second to receive a new network event.
 			</description>
 		</method>
 		<method name="set_target_peer">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="int" />
 			<description>
 				Sets the peer to which packets will be sent.
 				The [code]id[/code] can be one of: [constant TARGET_PEER_BROADCAST] to send to all connected peers, [constant TARGET_PEER_SERVER] to send to the peer acting as server, a valid peer ID to send to that specific peer, a negative peer ID to send to all peers except that one. By default, the target peer is [constant TARGET_PEER_BROADCAST].
@@ -78,15 +71,13 @@
 			</description>
 		</signal>
 		<signal name="peer_connected">
-			<argument index="0" name="id" type="int">
-			</argument>
+			<argument index="0" name="id" type="int" />
 			<description>
 				Emitted by the server when a client connects.
 			</description>
 		</signal>
 		<signal name="peer_disconnected">
-			<argument index="0" name="id" type="int">
-			</argument>
+			<argument index="0" name="id" type="int" />
 			<description>
 				Emitted by the server when a client disconnects.
 			</description>

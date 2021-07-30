@@ -9,8 +9,7 @@
 	</tutorials>
 	<methods>
 		<method name="size" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 			</description>
 		</method>

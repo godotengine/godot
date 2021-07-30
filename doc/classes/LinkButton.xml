@@ -11,28 +11,22 @@
 	</tutorials>
 	<methods>
 		<method name="clear_opentype_features">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Removes all OpenType features.
 			</description>
 		</method>
 		<method name="get_opentype_feature" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="tag" type="String">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="tag" type="String" />
 			<description>
 				Returns OpenType feature [code]tag[/code].
 			</description>
 		</method>
 		<method name="set_opentype_feature">
-			<return type="void">
-			</return>
-			<argument index="0" name="tag" type="String">
-			</argument>
-			<argument index="1" name="value" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="tag" type="String" />
+			<argument index="1" name="value" type="int" />
 			<description>
 				Returns OpenType feature [code]tag[/code]. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
 			</description>

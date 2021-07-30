@@ -13,26 +13,21 @@
 	</tutorials>
 	<methods>
 		<method name="is_playing" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if an animation is currently being played.
 			</description>
 		</method>
 		<method name="play">
-			<return type="void">
-			</return>
-			<argument index="0" name="anim" type="StringName" default="&amp;&quot;&quot;">
-			</argument>
-			<argument index="1" name="backwards" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="anim" type="StringName" default="&amp;&quot;&quot;" />
+			<argument index="1" name="backwards" type="bool" default="false" />
 			<description>
 				Plays the animation named [code]anim[/code]. If no [code]anim[/code] is provided, the current animation is played. If [code]backwards[/code] is [code]true[/code], the animation will be played in reverse.
 			</description>
 		</method>
 		<method name="stop">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Stops the current animation (does not reset the frame counter).
 			</description>

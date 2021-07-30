@@ -18,117 +18,89 @@
 	</tutorials>
 	<methods>
 		<method name="clear">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clears all cells.
 			</description>
 		</method>
 		<method name="fix_invalid_tiles">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clears cells that do not exist in the tileset.
 			</description>
 		</method>
 		<method name="get_cell_alternative_tile" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="coords" type="Vector2i">
-			</argument>
-			<argument index="1" name="use_proxies" type="bool">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="coords" type="Vector2i" />
+			<argument index="1" name="use_proxies" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="get_cell_atlas_coords" qualifiers="const">
-			<return type="Vector2i">
-			</return>
-			<argument index="0" name="coords" type="Vector2i">
-			</argument>
-			<argument index="1" name="use_proxies" type="bool">
-			</argument>
+			<return type="Vector2i" />
+			<argument index="0" name="coords" type="Vector2i" />
+			<argument index="1" name="use_proxies" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="get_cell_source_id" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="coords" type="Vector2i">
-			</argument>
-			<argument index="1" name="use_proxies" type="bool">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="coords" type="Vector2i" />
+			<argument index="1" name="use_proxies" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="get_neighbor_cell" qualifiers="const">
-			<return type="Vector2i">
-			</return>
-			<argument index="0" name="coords" type="Vector2i">
-			</argument>
-			<argument index="1" name="neighbor" type="int" enum="TileSet.CellNeighbor">
-			</argument>
+			<return type="Vector2i" />
+			<argument index="0" name="coords" type="Vector2i" />
+			<argument index="1" name="neighbor" type="int" enum="TileSet.CellNeighbor" />
 			<description>
 			</description>
 		</method>
 		<method name="get_surrounding_tiles">
-			<return type="Vector2i[]">
-			</return>
-			<argument index="0" name="coords" type="Vector2i">
-			</argument>
+			<return type="Vector2i[]" />
+			<argument index="0" name="coords" type="Vector2i" />
 			<description>
 			</description>
 		</method>
 		<method name="get_used_cells" qualifiers="const">
-			<return type="Vector2i[]">
-			</return>
+			<return type="Vector2i[]" />
 			<description>
 				Returns a [Vector2] array with the positions of all cells containing a tile from the tileset (i.e. a tile index different from [code]-1[/code]).
 			</description>
 		</method>
 		<method name="get_used_rect">
-			<return type="Rect2">
-			</return>
+			<return type="Rect2" />
 			<description>
 				Returns a rectangle enclosing the used (non-empty) tiles of the map.
 			</description>
 		</method>
 		<method name="map_to_world" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="map_position" type="Vector2i">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="map_position" type="Vector2i" />
 			<description>
 				Returns the local position corresponding to the given tilemap (grid-based) coordinates.
 			</description>
 		</method>
 		<method name="set_cell">
-			<return type="void">
-			</return>
-			<argument index="0" name="coords" type="Vector2i">
-			</argument>
-			<argument index="1" name="source_id" type="int" default="-1">
-			</argument>
-			<argument index="2" name="atlas_coords" type="Vector2i" default="Vector2i(-1, -1)">
-			</argument>
-			<argument index="3" name="alternative_tile" type="int" default="-1">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="coords" type="Vector2i" />
+			<argument index="1" name="source_id" type="int" default="-1" />
+			<argument index="2" name="atlas_coords" type="Vector2i" default="Vector2i(-1, -1)" />
+			<argument index="3" name="alternative_tile" type="int" default="-1" />
 			<description>
 				Sets the tile index for the cell given by a Vector2i.
 			</description>
 		</method>
 		<method name="update_dirty_quadrants">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Updates the tile map's quadrants, allowing things such as navigation and collision shapes to be immediately used if modified.
 			</description>
 		</method>
 		<method name="world_to_map" qualifiers="const">
-			<return type="Vector2i">
-			</return>
-			<argument index="0" name="world_position" type="Vector2">
-			</argument>
+			<return type="Vector2i" />
+			<argument index="0" name="world_position" type="Vector2" />
 			<description>
 				Returns the tilemap (grid-based) coordinates corresponding to the given local position.
 			</description>

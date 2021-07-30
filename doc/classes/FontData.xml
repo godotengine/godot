@@ -12,57 +12,39 @@
 	</tutorials>
 	<methods>
 		<method name="bitmap_add_char">
-			<return type="void">
-			</return>
-			<argument index="0" name="char" type="int">
-			</argument>
-			<argument index="1" name="texture_idx" type="int">
-			</argument>
-			<argument index="2" name="rect" type="Rect2">
-			</argument>
-			<argument index="3" name="align" type="Vector2">
-			</argument>
-			<argument index="4" name="advance" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="char" type="int" />
+			<argument index="1" name="texture_idx" type="int" />
+			<argument index="2" name="rect" type="Rect2" />
+			<argument index="3" name="align" type="Vector2" />
+			<argument index="4" name="advance" type="float" />
 			<description>
 				Adds a character to the font, where [code]character[/code] is the Unicode value, [code]texture[/code] is the texture index, [code]rect[/code] is the region in the texture (in pixels!), [code]align[/code] is the (optional) alignment for the character and [code]advance[/code] is the (optional) advance.
 			</description>
 		</method>
 		<method name="bitmap_add_kerning_pair">
-			<return type="void">
-			</return>
-			<argument index="0" name="A" type="int">
-			</argument>
-			<argument index="1" name="B" type="int">
-			</argument>
-			<argument index="2" name="kerning" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="A" type="int" />
+			<argument index="1" name="B" type="int" />
+			<argument index="2" name="kerning" type="int" />
 			<description>
 				Adds a kerning pair to the bitmap font as a difference. Kerning pairs are special cases where a typeface advance is determined by the next character.
 			</description>
 		</method>
 		<method name="bitmap_add_texture">
-			<return type="void">
-			</return>
-			<argument index="0" name="texture" type="Texture">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="texture" type="Texture" />
 			<description>
 				Adds a texture to the bitmap font.
 			</description>
 		</method>
 		<method name="draw_glyph" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="canvas" type="RID">
-			</argument>
-			<argument index="1" name="size" type="int">
-			</argument>
-			<argument index="2" name="pos" type="Vector2">
-			</argument>
-			<argument index="3" name="index" type="int">
-			</argument>
-			<argument index="4" name="color" type="Color" default="Color(1, 1, 1, 1)">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="canvas" type="RID" />
+			<argument index="1" name="size" type="int" />
+			<argument index="2" name="pos" type="Vector2" />
+			<argument index="3" name="index" type="int" />
+			<argument index="4" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Draws single glyph into a canvas item at the position, using [code]font[/code] at the size [code]size[/code].
 				Returns advance of the glyph for horizontal and vertical layouts.
@@ -70,20 +52,13 @@
 			</description>
 		</method>
 		<method name="draw_glyph_outline" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="canvas" type="RID">
-			</argument>
-			<argument index="1" name="size" type="int">
-			</argument>
-			<argument index="2" name="outline_size" type="int">
-			</argument>
-			<argument index="3" name="pos" type="Vector2">
-			</argument>
-			<argument index="4" name="index" type="int">
-			</argument>
-			<argument index="5" name="color" type="Color" default="Color(1, 1, 1, 1)">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="canvas" type="RID" />
+			<argument index="1" name="size" type="int" />
+			<argument index="2" name="outline_size" type="int" />
+			<argument index="3" name="pos" type="Vector2" />
+			<argument index="4" name="index" type="int" />
+			<argument index="5" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Draws single glyph outline of size [code]outline_size[/code] into a canvas item at the position, using [code]font[/code] at the size [code]size[/code]. If outline drawing is not supported, nothing is drawn.
 				Returns advance of the glyph for horizontal and vertical layouts (regardless of outline drawing support).
@@ -91,290 +66,223 @@
 			</description>
 		</method>
 		<method name="get_ascent" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="size" type="int">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="size" type="int" />
 			<description>
 				Returns the font ascent (number of pixels above the baseline).
 			</description>
 		</method>
 		<method name="get_base_size" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the base size of the font (the only size supported for non-scalable fonts, meaningless for scalable fonts).
 			</description>
 		</method>
 		<method name="get_descent" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="size" type="int">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="size" type="int" />
 			<description>
 				Returns the font descent (number of pixels below the baseline).
 			</description>
 		</method>
 		<method name="get_glyph_advance" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
-			<argument index="1" name="size" type="int">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="index" type="int" />
+			<argument index="1" name="size" type="int" />
 			<description>
 				Returns advance of the glyph for horizontal and vertical layouts.
 				Note: Glyph index is bound to the font data, use only glyphs indices returned by [method TextServer.shaped_text_get_glyphs] or [method get_glyph_index] for this font data.
 			</description>
 		</method>
 		<method name="get_glyph_index" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="char" type="int">
-			</argument>
-			<argument index="1" name="variation_selector" type="int" default="0">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="char" type="int" />
+			<argument index="1" name="variation_selector" type="int" default="0" />
 			<description>
 				Return the glyph index of a [code]char[/code], optionally modified by the [code]variation_selector[/code].
 			</description>
 		</method>
 		<method name="get_glyph_kerning" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="index_a" type="int">
-			</argument>
-			<argument index="1" name="index_b" type="int">
-			</argument>
-			<argument index="2" name="size" type="int">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="index_a" type="int" />
+			<argument index="1" name="index_b" type="int" />
+			<argument index="2" name="size" type="int" />
 			<description>
 				Returns a kerning of the pair of glyphs for horizontal and vertical layouts.
 				Note: Glyph index is bound to the font data, use only glyphs indices returned by [method TextServer.shaped_text_get_glyphs] or [method get_glyph_index] for this font data.
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="size" type="int">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="size" type="int" />
 			<description>
 				Returns the total font height (ascent plus descent) in pixels.
 			</description>
 		</method>
 		<method name="get_language_support_override" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="language" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="language" type="String" />
 			<description>
 				Returns [code]true[/code] if support override is enabled for the [code]language[/code].
 			</description>
 		</method>
 		<method name="get_language_support_overrides" qualifiers="const">
-			<return type="PackedStringArray">
-			</return>
+			<return type="PackedStringArray" />
 			<description>
 				Returns list of language support overrides.
 			</description>
 		</method>
 		<method name="get_script_support_override" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="script" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="script" type="String" />
 			<description>
 				Returns [code]true[/code] if support override is enabled for the [code]script[/code].
 			</description>
 		</method>
 		<method name="get_script_support_overrides" qualifiers="const">
-			<return type="PackedStringArray">
-			</return>
+			<return type="PackedStringArray" />
 			<description>
 				Returns list of script support overrides.
 			</description>
 		</method>
 		<method name="get_spacing" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="type" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="type" type="int" />
 			<description>
 				Returns the spacing for the given [code]type[/code] (see [enum SpacingType]).
 			</description>
 		</method>
 		<method name="get_supported_chars" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns a string containing all the characters available in the font.
 			</description>
 		</method>
 		<method name="get_underline_position" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="size" type="int">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="size" type="int" />
 			<description>
 				Returns underline offset (number of pixels below the baseline).
 			</description>
 		</method>
 		<method name="get_underline_thickness" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="size" type="int">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="size" type="int" />
 			<description>
 				Returns underline thickness in pixels.
 			</description>
 		</method>
 		<method name="get_variation" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="tag" type="String">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="tag" type="String" />
 			<description>
 				Returns variation coordinate [code]tag[/code].
 			</description>
 		</method>
 		<method name="get_variation_list" qualifiers="const">
-			<return type="Dictionary">
-			</return>
+			<return type="Dictionary" />
 			<description>
 				Returns list of supported [url=https://docs.microsoft.com/en-us/typography/opentype/spec/dvaraxisreg]variation coordinates[/url], each coordinate is returned as [code]tag: Vector3i(min_value,max_value,default_value)[/code].
 				Font variations allow for continuous change of glyph characteristics along some given design axis, such as weight, width or slant.
 			</description>
 		</method>
 		<method name="has_char" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="char" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="char" type="int" />
 			<description>
 				Return [code]true[/code] if a Unicode [code]char[/code] is available in the font.
 			</description>
 		</method>
 		<method name="has_outline" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code], if font supports drawing glyph outlines.
 			</description>
 		</method>
 		<method name="is_language_supported" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="language" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="language" type="String" />
 			<description>
 				Returns [code]true[/code], if font supports given language ([url=https://en.wikipedia.org/wiki/ISO_639-1]ISO 639[/url] code).
 			</description>
 		</method>
 		<method name="is_script_supported" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="script" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="script" type="String" />
 			<description>
 				Returns [code]true[/code], if font supports given script ([url=https://en.wikipedia.org/wiki/ISO_15924]ISO 15924[/url] code).
 			</description>
 		</method>
 		<method name="load_memory">
-			<return type="void">
-			</return>
-			<argument index="0" name="data" type="PackedByteArray">
-			</argument>
-			<argument index="1" name="type" type="String">
-			</argument>
-			<argument index="2" name="base_size" type="int" default="16">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="data" type="PackedByteArray" />
+			<argument index="1" name="type" type="String" />
+			<argument index="2" name="base_size" type="int" default="16" />
 			<description>
 				Creates new font from the data in memory.
 				Note: For non-scalable fonts [code]base_size[/code] is ignored, use [method get_base_size] to check actual font size.
 			</description>
 		</method>
 		<method name="load_resource">
-			<return type="void">
-			</return>
-			<argument index="0" name="filename" type="String">
-			</argument>
-			<argument index="1" name="base_size" type="int" default="16">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="filename" type="String" />
+			<argument index="1" name="base_size" type="int" default="16" />
 			<description>
 				Creates new font from the file.
 				Note: For non-scalable fonts [code]base_size[/code] is ignored, use [method get_base_size] to check actual font size.
 			</description>
 		</method>
 		<method name="new_bitmap">
-			<return type="void">
-			</return>
-			<argument index="0" name="height" type="float">
-			</argument>
-			<argument index="1" name="ascent" type="float">
-			</argument>
-			<argument index="2" name="base_size" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="height" type="float" />
+			<argument index="1" name="ascent" type="float" />
+			<argument index="2" name="base_size" type="int" />
 			<description>
 				Creates new, empty bitmap font.
 			</description>
 		</method>
 		<method name="remove_language_support_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="language" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="language" type="String" />
 			<description>
 				Remove language support override.
 			</description>
 		</method>
 		<method name="remove_script_support_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="script" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="script" type="String" />
 			<description>
 				Removes script support override.
 			</description>
 		</method>
 		<method name="set_language_support_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="language" type="String">
-			</argument>
-			<argument index="1" name="supported" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="language" type="String" />
+			<argument index="1" name="supported" type="bool" />
 			<description>
 				Adds override for [method is_language_supported].
 			</description>
 		</method>
 		<method name="set_script_support_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="script" type="String">
-			</argument>
-			<argument index="1" name="supported" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="script" type="String" />
+			<argument index="1" name="supported" type="bool" />
 			<description>
 				Adds override for [method is_script_supported].
 			</description>
 		</method>
 		<method name="set_spacing">
-			<return type="void">
-			</return>
-			<argument index="0" name="type" type="int">
-			</argument>
-			<argument index="1" name="value" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="type" type="int" />
+			<argument index="1" name="value" type="int" />
 			<description>
 				Sets the spacing for [code]type[/code] (see [enum SpacingType]) to [code]value[/code] in pixels (not relative to the font size).
 			</description>
 		</method>
 		<method name="set_variation">
-			<return type="void">
-			</return>
-			<argument index="0" name="tag" type="String">
-			</argument>
-			<argument index="1" name="value" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="tag" type="String" />
+			<argument index="1" name="value" type="float" />
 			<description>
 				Sets variation coordinate [code]tag[/code].
 			</description>

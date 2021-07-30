@@ -8,26 +8,20 @@
 	</tutorials>
 	<methods>
 		<method name="get_spirv" qualifiers="const">
-			<return type="RDShaderSPIRV">
-			</return>
-			<argument index="0" name="version" type="StringName" default="&amp;&quot;&quot;">
-			</argument>
+			<return type="RDShaderSPIRV" />
+			<argument index="0" name="version" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 			</description>
 		</method>
 		<method name="get_version_list" qualifiers="const">
-			<return type="PackedStringArray">
-			</return>
+			<return type="PackedStringArray" />
 			<description>
 			</description>
 		</method>
 		<method name="set_bytecode">
-			<return type="void">
-			</return>
-			<argument index="0" name="bytecode" type="RDShaderSPIRV">
-			</argument>
-			<argument index="1" name="version" type="StringName" default="&amp;&quot;&quot;">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="bytecode" type="RDShaderSPIRV" />
+			<argument index="1" name="version" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 			</description>
 		</method>

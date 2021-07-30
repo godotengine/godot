@@ -12,81 +12,61 @@
 	</tutorials>
 	<methods>
 		<method name="get_param" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="param" type="int" enum="ParticlesMaterial.Parameter">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="param" type="int" enum="ParticlesMaterial.Parameter" />
 			<description>
 				Returns the value of the specified parameter.
 			</description>
 		</method>
 		<method name="get_param_randomness" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="param" type="int" enum="ParticlesMaterial.Parameter">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="param" type="int" enum="ParticlesMaterial.Parameter" />
 			<description>
 				Returns the randomness ratio associated with the specified parameter.
 			</description>
 		</method>
 		<method name="get_param_texture" qualifiers="const">
-			<return type="Texture2D">
-			</return>
-			<argument index="0" name="param" type="int" enum="ParticlesMaterial.Parameter">
-			</argument>
+			<return type="Texture2D" />
+			<argument index="0" name="param" type="int" enum="ParticlesMaterial.Parameter" />
 			<description>
 				Returns the [Texture2D] used by the specified parameter.
 			</description>
 		</method>
 		<method name="get_particle_flag" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="particle_flag" type="int" enum="ParticlesMaterial.ParticleFlags">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="particle_flag" type="int" enum="ParticlesMaterial.ParticleFlags" />
 			<description>
 				Returns [code]true[/code] if the specified particle flag is enabled. See [enum ParticleFlags] for options.
 			</description>
 		</method>
 		<method name="set_param">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="ParticlesMaterial.Parameter">
-			</argument>
-			<argument index="1" name="value" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="param" type="int" enum="ParticlesMaterial.Parameter" />
+			<argument index="1" name="value" type="float" />
 			<description>
 				Sets the specified [enum Parameter].
 			</description>
 		</method>
 		<method name="set_param_randomness">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="ParticlesMaterial.Parameter">
-			</argument>
-			<argument index="1" name="randomness" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="param" type="int" enum="ParticlesMaterial.Parameter" />
+			<argument index="1" name="randomness" type="float" />
 			<description>
 				Sets the randomness ratio for the specified [enum Parameter].
 			</description>
 		</method>
 		<method name="set_param_texture">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="ParticlesMaterial.Parameter">
-			</argument>
-			<argument index="1" name="texture" type="Texture2D">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="param" type="int" enum="ParticlesMaterial.Parameter" />
+			<argument index="1" name="texture" type="Texture2D" />
 			<description>
 				Sets the [Texture2D] for the specified [enum Parameter].
 			</description>
 		</method>
 		<method name="set_particle_flag">
-			<return type="void">
-			</return>
-			<argument index="0" name="particle_flag" type="int" enum="ParticlesMaterial.ParticleFlags">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="particle_flag" type="int" enum="ParticlesMaterial.ParticleFlags" />
+			<argument index="1" name="enable" type="bool" />
 			<description>
 				If [code]true[/code], enables the specified particle flag. See [enum ParticleFlags] for options.
 			</description>

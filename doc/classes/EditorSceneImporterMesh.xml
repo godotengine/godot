@@ -8,161 +8,120 @@
 	</tutorials>
 	<methods>
 		<method name="add_blend_shape">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="add_surface">
-			<return type="void">
-			</return>
-			<argument index="0" name="primitive" type="int" enum="Mesh.PrimitiveType">
-			</argument>
-			<argument index="1" name="arrays" type="Array">
-			</argument>
-			<argument index="2" name="blend_shapes" type="Array" default="[]">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="primitive" type="int" enum="Mesh.PrimitiveType" />
+			<argument index="1" name="arrays" type="Array" />
+			<argument index="2" name="blend_shapes" type="Array" default="[]" />
 			<argument index="3" name="lods" type="Dictionary" default="{
-}">
-			</argument>
-			<argument index="4" name="material" type="Material" default="null">
-			</argument>
-			<argument index="5" name="name" type="String" default="&quot;&quot;">
-			</argument>
+}" />
+			<argument index="4" name="material" type="Material" default="null" />
+			<argument index="5" name="name" type="String" default="&quot;&quot;" />
 			<description>
 			</description>
 		</method>
 		<method name="clear">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 			</description>
 		</method>
 		<method name="get_blend_shape_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_blend_shape_mode" qualifiers="const">
-			<return type="int" enum="Mesh.BlendShapeMode">
-			</return>
+			<return type="int" enum="Mesh.BlendShapeMode" />
 			<description>
 			</description>
 		</method>
 		<method name="get_blend_shape_name" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="blend_shape_idx" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="blend_shape_idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_lightmap_size_hint" qualifiers="const">
-			<return type="Vector2i">
-			</return>
+			<return type="Vector2i" />
 			<description>
 			</description>
 		</method>
 		<method name="get_mesh">
-			<return type="ArrayMesh">
-			</return>
-			<argument index="0" name="arg0" type="Mesh">
-			</argument>
+			<return type="ArrayMesh" />
+			<argument index="0" name="arg0" type="Mesh" />
 			<description>
 			</description>
 		</method>
 		<method name="get_surface_arrays" qualifiers="const">
-			<return type="Array">
-			</return>
-			<argument index="0" name="surface_idx" type="int">
-			</argument>
+			<return type="Array" />
+			<argument index="0" name="surface_idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_surface_blend_shape_arrays" qualifiers="const">
-			<return type="Array">
-			</return>
-			<argument index="0" name="surface_idx" type="int">
-			</argument>
-			<argument index="1" name="blend_shape_idx" type="int">
-			</argument>
+			<return type="Array" />
+			<argument index="0" name="surface_idx" type="int" />
+			<argument index="1" name="blend_shape_idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_surface_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_surface_lod_count" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="surface_idx" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="surface_idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_surface_lod_indices" qualifiers="const">
-			<return type="PackedInt32Array">
-			</return>
-			<argument index="0" name="surface_idx" type="int">
-			</argument>
-			<argument index="1" name="lod_idx" type="int">
-			</argument>
+			<return type="PackedInt32Array" />
+			<argument index="0" name="surface_idx" type="int" />
+			<argument index="1" name="lod_idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_surface_lod_size" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="surface_idx" type="int">
-			</argument>
-			<argument index="1" name="lod_idx" type="int">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="surface_idx" type="int" />
+			<argument index="1" name="lod_idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_surface_material" qualifiers="const">
-			<return type="Material">
-			</return>
-			<argument index="0" name="surface_idx" type="int">
-			</argument>
+			<return type="Material" />
+			<argument index="0" name="surface_idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_surface_name" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="surface_idx" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="surface_idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_surface_primitive_type">
-			<return type="int" enum="Mesh.PrimitiveType">
-			</return>
-			<argument index="0" name="surface_idx" type="int">
-			</argument>
+			<return type="int" enum="Mesh.PrimitiveType" />
+			<argument index="0" name="surface_idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="set_blend_shape_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="Mesh.BlendShapeMode">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="mode" type="int" enum="Mesh.BlendShapeMode" />
 			<description>
 			</description>
 		</method>
 		<method name="set_lightmap_size_hint">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="Vector2i">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="size" type="Vector2i" />
 			<description>
 			</description>
 		</method>

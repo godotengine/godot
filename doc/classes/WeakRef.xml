@@ -10,8 +10,7 @@
 	</tutorials>
 	<methods>
 		<method name="get_ref" qualifiers="const">
-			<return type="Variant">
-			</return>
+			<return type="Variant" />
 			<description>
 				Returns the [Object] this weakref is referring to.
 			</description>

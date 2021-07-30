@@ -103,21 +103,16 @@
 	</tutorials>
 	<methods>
 		<method name="_get_recognized_extensions" qualifiers="virtual">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Gets the list of file extensions to associate with this parser, e.g. [code]["csv"][/code].
 			</description>
 		</method>
 		<method name="_parse_file" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="msgids" type="Array">
-			</argument>
-			<argument index="2" name="msgids_context_plural" type="Array">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="msgids" type="Array" />
+			<argument index="2" name="msgids_context_plural" type="Array" />
 			<description>
 				Override this method to define a custom parsing logic to extract the translatable strings.
 			</description>

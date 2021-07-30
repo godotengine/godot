@@ -8,20 +8,15 @@
 	</tutorials>
 	<methods>
 		<method name="get_bake_mask_bit" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="layer" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="layer" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="set_bake_mask_bit">
-			<return type="void">
-			</return>
-			<argument index="0" name="layer" type="int">
-			</argument>
-			<argument index="1" name="enabled" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="layer" type="int" />
+			<argument index="1" name="enabled" type="bool" />
 			<description>
 			</description>
 		</method>

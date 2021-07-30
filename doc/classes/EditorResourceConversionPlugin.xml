@@ -8,16 +8,13 @@
 	</tutorials>
 	<methods>
 		<method name="_convert" qualifiers="virtual">
-			<return type="Resource">
-			</return>
-			<argument index="0" name="resource" type="Resource">
-			</argument>
+			<return type="Resource" />
+			<argument index="0" name="resource" type="Resource" />
 			<description>
 			</description>
 		</method>
 		<method name="_converts_to" qualifiers="virtual">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 			</description>
 		</method>

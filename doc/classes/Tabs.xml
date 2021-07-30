@@ -10,244 +10,188 @@
 	</tutorials>
 	<methods>
 		<method name="add_tab">
-			<return type="void">
-			</return>
-			<argument index="0" name="title" type="String" default="&quot;&quot;">
-			</argument>
-			<argument index="1" name="icon" type="Texture2D" default="null">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="title" type="String" default="&quot;&quot;" />
+			<argument index="1" name="icon" type="Texture2D" default="null" />
 			<description>
 				Adds a new tab.
 			</description>
 		</method>
 		<method name="clear_tab_opentype_features">
-			<return type="void">
-			</return>
-			<argument index="0" name="tab_idx" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="tab_idx" type="int" />
 			<description>
 				Removes all OpenType features from the tab title.
 			</description>
 		</method>
 		<method name="ensure_tab_visible">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Moves the scroll view to make the tab visible.
 			</description>
 		</method>
 		<method name="get_offset_buttons_visible" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the offset buttons (the ones that appear when there's not enough space for all tabs) are visible.
 			</description>
 		</method>
 		<method name="get_previous_tab" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the previously active tab index.
 			</description>
 		</method>
 		<method name="get_select_with_rmb" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if select with right mouse button is enabled.
 			</description>
 		</method>
 		<method name="get_tab_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of tabs.
 			</description>
 		</method>
 		<method name="get_tab_disabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="tab_idx" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="tab_idx" type="int" />
 			<description>
 				Returns [code]true[/code] if the tab at index [code]tab_idx[/code] is disabled.
 			</description>
 		</method>
 		<method name="get_tab_icon" qualifiers="const">
-			<return type="Texture2D">
-			</return>
-			<argument index="0" name="tab_idx" type="int">
-			</argument>
+			<return type="Texture2D" />
+			<argument index="0" name="tab_idx" type="int" />
 			<description>
 				Returns the [Texture2D] for the tab at index [code]tab_idx[/code] or [code]null[/code] if the tab has no [Texture2D].
 			</description>
 		</method>
 		<method name="get_tab_language" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="tab_idx" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="tab_idx" type="int" />
 			<description>
 				Returns tab title language code.
 			</description>
 		</method>
 		<method name="get_tab_offset" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of hidden tabs offsetted to the left.
 			</description>
 		</method>
 		<method name="get_tab_opentype_feature" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="tab_idx" type="int">
-			</argument>
-			<argument index="1" name="tag" type="String">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="tab_idx" type="int" />
+			<argument index="1" name="tag" type="String" />
 			<description>
 				Returns OpenType feature [code]tag[/code] of the tab title.
 			</description>
 		</method>
 		<method name="get_tab_rect" qualifiers="const">
-			<return type="Rect2">
-			</return>
-			<argument index="0" name="tab_idx" type="int">
-			</argument>
+			<return type="Rect2" />
+			<argument index="0" name="tab_idx" type="int" />
 			<description>
 				Returns tab [Rect2] with local position and size.
 			</description>
 		</method>
 		<method name="get_tab_text_direction" qualifiers="const">
-			<return type="int" enum="Control.TextDirection">
-			</return>
-			<argument index="0" name="tab_idx" type="int">
-			</argument>
+			<return type="int" enum="Control.TextDirection" />
+			<argument index="0" name="tab_idx" type="int" />
 			<description>
 				Returns tab title text base writing direction.
 			</description>
 		</method>
 		<method name="get_tab_title" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="tab_idx" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="tab_idx" type="int" />
 			<description>
 				Returns the title of the tab at index [code]tab_idx[/code]. Tab titles default to the name of the indexed child node, but this can be overridden with [method set_tab_title].
 			</description>
 		</method>
 		<method name="get_tabs_rearrange_group" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the [Tabs]' rearrange group ID.
 			</description>
 		</method>
 		<method name="move_tab">
-			<return type="void">
-			</return>
-			<argument index="0" name="from" type="int">
-			</argument>
-			<argument index="1" name="to" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="from" type="int" />
+			<argument index="1" name="to" type="int" />
 			<description>
 				Moves a tab from [code]from[/code] to [code]to[/code].
 			</description>
 		</method>
 		<method name="remove_tab">
-			<return type="void">
-			</return>
-			<argument index="0" name="tab_idx" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="tab_idx" type="int" />
 			<description>
 				Removes the tab at index [code]tab_idx[/code].
 			</description>
 		</method>
 		<method name="set_select_with_rmb">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="enabled" type="bool" />
 			<description>
 				If [code]true[/code], enables selecting a tab with the right mouse button.
 			</description>
 		</method>
 		<method name="set_tab_disabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="tab_idx" type="int">
-			</argument>
-			<argument index="1" name="disabled" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="tab_idx" type="int" />
+			<argument index="1" name="disabled" type="bool" />
 			<description>
 				If [code]disabled[/code] is [code]false[/code], hides the tab at index [code]tab_idx[/code].
 				[b]Note:[/b] Its title text will remain unless it is also removed with [method set_tab_title].
 			</description>
 		</method>
 		<method name="set_tab_icon">
-			<return type="void">
-			</return>
-			<argument index="0" name="tab_idx" type="int">
-			</argument>
-			<argument index="1" name="icon" type="Texture2D">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="tab_idx" type="int" />
+			<argument index="1" name="icon" type="Texture2D" />
 			<description>
 				Sets an [code]icon[/code] for the tab at index [code]tab_idx[/code].
 			</description>
 		</method>
 		<method name="set_tab_language">
-			<return type="void">
-			</return>
-			<argument index="0" name="tab_idx" type="int">
-			</argument>
-			<argument index="1" name="language" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="tab_idx" type="int" />
+			<argument index="1" name="language" type="String" />
 			<description>
 				Sets language code of tab title used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 			</description>
 		</method>
 		<method name="set_tab_opentype_feature">
-			<return type="void">
-			</return>
-			<argument index="0" name="tab_idx" type="int">
-			</argument>
-			<argument index="1" name="tag" type="String">
-			</argument>
-			<argument index="2" name="values" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="tab_idx" type="int" />
+			<argument index="1" name="tag" type="String" />
+			<argument index="2" name="values" type="int" />
 			<description>
 				Sets OpenType feature [code]tag[/code] for the tab title. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
 			</description>
 		</method>
 		<method name="set_tab_text_direction">
-			<return type="void">
-			</return>
-			<argument index="0" name="tab_idx" type="int">
-			</argument>
-			<argument index="1" name="direction" type="int" enum="Control.TextDirection">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="tab_idx" type="int" />
+			<argument index="1" name="direction" type="int" enum="Control.TextDirection" />
 			<description>
 				Sets tab title base writing direction.
 			</description>
 		</method>
 		<method name="set_tab_title">
-			<return type="void">
-			</return>
-			<argument index="0" name="tab_idx" type="int">
-			</argument>
-			<argument index="1" name="title" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="tab_idx" type="int" />
+			<argument index="1" name="title" type="String" />
 			<description>
 				Sets a [code]title[/code] for the tab at index [code]tab_idx[/code].
 			</description>
 		</method>
 		<method name="set_tabs_rearrange_group">
-			<return type="void">
-			</return>
-			<argument index="0" name="group_id" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="group_id" type="int" />
 			<description>
 				Defines the rearrange group ID. Choose for each [Tabs] the same value to dragging tabs between [Tabs]. Enable drag with [code]set_drag_to_rearrange_enabled(true)[/code].
 			</description>
@@ -275,43 +219,37 @@
 	</members>
 	<signals>
 		<signal name="reposition_active_tab_request">
-			<argument index="0" name="idx_to" type="int">
-			</argument>
+			<argument index="0" name="idx_to" type="int" />
 			<description>
 				Emitted when the active tab is rearranged via mouse drag. See [member drag_to_rearrange_enabled].
 			</description>
 		</signal>
 		<signal name="right_button_pressed">
-			<argument index="0" name="tab" type="int">
-			</argument>
+			<argument index="0" name="tab" type="int" />
 			<description>
 				Emitted when a tab is right-clicked.
 			</description>
 		</signal>
 		<signal name="tab_changed">
-			<argument index="0" name="tab" type="int">
-			</argument>
+			<argument index="0" name="tab" type="int" />
 			<description>
 				Emitted when switching to another tab.
 			</description>
 		</signal>
 		<signal name="tab_clicked">
-			<argument index="0" name="tab" type="int">
-			</argument>
+			<argument index="0" name="tab" type="int" />
 			<description>
 				Emitted when a tab is clicked, even if it is the current tab.
 			</description>
 		</signal>
 		<signal name="tab_closed">
-			<argument index="0" name="tab" type="int">
-			</argument>
+			<argument index="0" name="tab" type="int" />
 			<description>
 				Emitted when a tab is closed.
 			</description>
 		</signal>
 		<signal name="tab_hovered">
-			<argument index="0" name="tab" type="int">
-			</argument>
+			<argument index="0" name="tab" type="int" />
 			<description>
 				Emitted when a tab is hovered by the mouse.
 			</description>

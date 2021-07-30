@@ -15,77 +15,62 @@
 	</tutorials>
 	<methods>
 		<method name="align">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Aligns the camera to the tracked node.
 			</description>
 		</method>
 		<method name="force_update_scroll">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Forces the camera to update scroll immediately.
 			</description>
 		</method>
 		<method name="get_camera_position" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns the camera position.
 			</description>
 		</method>
 		<method name="get_camera_screen_center" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns the location of the [Camera2D]'s screen-center, relative to the origin.
 			</description>
 		</method>
 		<method name="get_drag_margin" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Side">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="margin" type="int" enum="Side" />
 			<description>
 				Returns the specified [enum Side]'s margin. See also [member drag_bottom_margin], [member drag_top_margin], [member drag_left_margin], and [member drag_right_margin].
 			</description>
 		</method>
 		<method name="get_limit" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Side">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="margin" type="int" enum="Side" />
 			<description>
 				Returns the camera limit for the specified [enum Side]. See also [member limit_bottom], [member limit_top], [member limit_left], and [member limit_right].
 			</description>
 		</method>
 		<method name="reset_smoothing">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Sets the camera's position immediately to its current smoothing destination.
 				This has no effect if smoothing is disabled.
 			</description>
 		</method>
 		<method name="set_drag_margin">
-			<return type="void">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Side">
-			</argument>
-			<argument index="1" name="drag_margin" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="margin" type="int" enum="Side" />
+			<argument index="1" name="drag_margin" type="float" />
 			<description>
 				Sets the specified [enum Side]'s margin. See also [member drag_bottom_margin], [member drag_top_margin], [member drag_left_margin], and [member drag_right_margin].
 			</description>
 		</method>
 		<method name="set_limit">
-			<return type="void">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Side">
-			</argument>
-			<argument index="1" name="limit" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="margin" type="int" enum="Side" />
+			<argument index="1" name="limit" type="int" />
 			<description>
 				Sets the camera limit for the specified [enum Side]. See also [member limit_bottom], [member limit_top], [member limit_left], and [member limit_right].
 			</description>

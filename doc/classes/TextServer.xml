@@ -10,51 +10,37 @@
 	</tutorials>
 	<methods>
 		<method name="create_font_bitmap">
-			<return type="RID">
-			</return>
-			<argument index="0" name="height" type="float">
-			</argument>
-			<argument index="1" name="ascent" type="float">
-			</argument>
-			<argument index="2" name="base_size" type="int">
-			</argument>
+			<return type="RID" />
+			<argument index="0" name="height" type="float" />
+			<argument index="1" name="ascent" type="float" />
+			<argument index="2" name="base_size" type="int" />
 			<description>
 				Creates new, empty bitmap font. To free the resulting font, use [method free_rid] method.
 			</description>
 		</method>
 		<method name="create_font_memory">
-			<return type="RID">
-			</return>
-			<argument index="0" name="data" type="PackedByteArray">
-			</argument>
-			<argument index="1" name="type" type="String">
-			</argument>
-			<argument index="2" name="base_size" type="int" default="16">
-			</argument>
+			<return type="RID" />
+			<argument index="0" name="data" type="PackedByteArray" />
+			<argument index="1" name="type" type="String" />
+			<argument index="2" name="base_size" type="int" default="16" />
 			<description>
 				Creates new font from the data in memory. To free the resulting font, use [method free_rid] method.
 				Note: For non-scalable fonts [code]base_size[/code] is ignored, use [method font_get_base_size] to check actual font size.
 			</description>
 		</method>
 		<method name="create_font_resource">
-			<return type="RID">
-			</return>
-			<argument index="0" name="filename" type="String">
-			</argument>
-			<argument index="1" name="base_size" type="int" default="16">
-			</argument>
+			<return type="RID" />
+			<argument index="0" name="filename" type="String" />
+			<argument index="1" name="base_size" type="int" default="16" />
 			<description>
 				Creates new font from the file. To free the resulting font, use [method free_rid] method.
 				Note: For non-scalable fonts [code]base_size[/code] is ignored, use [method font_get_base_size] to check actual font size.
 			</description>
 		</method>
 		<method name="create_font_system">
-			<return type="RID">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="base_size" type="int" default="16">
-			</argument>
+			<return type="RID" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="base_size" type="int" default="16" />
 			<description>
 				Creates new font from the system font. To free the resulting font, use [method free_rid] method.
 				Note: This method is supported by servers with the [code]FEATURE_FONT_SYSTEM[/code] feature.
@@ -62,12 +48,9 @@
 			</description>
 		</method>
 		<method name="create_shaped_text">
-			<return type="RID">
-			</return>
-			<argument index="0" name="direction" type="int" enum="TextServer.Direction" default="0">
-			</argument>
-			<argument index="1" name="orientation" type="int" enum="TextServer.Orientation" default="0">
-			</argument>
+			<return type="RID" />
+			<argument index="0" name="direction" type="int" enum="TextServer.Direction" default="0" />
+			<argument index="1" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
 				Creates new buffer for complex text layout, with the given [code]direction[/code] and [code]orientation[/code]. To free the resulting buffer, use [method free_rid] method.
 				Note: Direction is ignored if server does not support [code]FEATURE_BIDI_LAYOUT[/code] feature.
@@ -75,198 +58,138 @@
 			</description>
 		</method>
 		<method name="draw_hex_code_box" qualifiers="const">
-			<return type="void">
-			</return>
-			<argument index="0" name="canvas" type="RID">
-			</argument>
-			<argument index="1" name="size" type="int">
-			</argument>
-			<argument index="2" name="pos" type="Vector2">
-			</argument>
-			<argument index="3" name="index" type="int">
-			</argument>
-			<argument index="4" name="color" type="Color">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="canvas" type="RID" />
+			<argument index="1" name="size" type="int" />
+			<argument index="2" name="pos" type="Vector2" />
+			<argument index="3" name="index" type="int" />
+			<argument index="4" name="color" type="Color" />
 			<description>
 				Draws box displaying character hexadecimal code. Used for replacing missing characters.
 			</description>
 		</method>
 		<method name="font_bitmap_add_char">
-			<return type="void">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="char" type="int">
-			</argument>
-			<argument index="2" name="texture_idx" type="int">
-			</argument>
-			<argument index="3" name="rect" type="Rect2">
-			</argument>
-			<argument index="4" name="align" type="Vector2">
-			</argument>
-			<argument index="5" name="advance" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="char" type="int" />
+			<argument index="2" name="texture_idx" type="int" />
+			<argument index="3" name="rect" type="Rect2" />
+			<argument index="4" name="align" type="Vector2" />
+			<argument index="5" name="advance" type="float" />
 			<description>
 				Adds a character to the font, where [code]character[/code] is the Unicode value, [code]texture[/code] is the texture index, [code]rect[/code] is the region in the texture (in pixels!), [code]align[/code] is the (optional) alignment for the character and [code]advance[/code] is the (optional) advance.
 			</description>
 		</method>
 		<method name="font_bitmap_add_kerning_pair">
-			<return type="void">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="A" type="int">
-			</argument>
-			<argument index="2" name="B" type="int">
-			</argument>
-			<argument index="3" name="kerning" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="A" type="int" />
+			<argument index="2" name="B" type="int" />
+			<argument index="3" name="kerning" type="int" />
 			<description>
 				Adds a kerning pair to the bitmap font as a difference. Kerning pairs are special cases where a typeface advance is determined by the next character.
 			</description>
 		</method>
 		<method name="font_bitmap_add_texture">
-			<return type="void">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="texture" type="Texture">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="texture" type="Texture" />
 			<description>
 				Adds a texture to the bitmap font.
 			</description>
 		</method>
 		<method name="font_draw_glyph" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="canvas" type="RID">
-			</argument>
-			<argument index="2" name="size" type="int">
-			</argument>
-			<argument index="3" name="pos" type="Vector2">
-			</argument>
-			<argument index="4" name="index" type="int">
-			</argument>
-			<argument index="5" name="color" type="Color" default="Color(1, 1, 1, 1)">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="canvas" type="RID" />
+			<argument index="2" name="size" type="int" />
+			<argument index="3" name="pos" type="Vector2" />
+			<argument index="4" name="index" type="int" />
+			<argument index="5" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Draws single glyph into a canvas item at the position, using [code]font[/code] at the size [code]size[/code].
 				Note: Glyph index is specific to the font, use glyphs indices returned by [method shaped_text_get_glyphs] or [method font_get_glyph_index].
 			</description>
 		</method>
 		<method name="font_draw_glyph_outline" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="canvas" type="RID">
-			</argument>
-			<argument index="2" name="size" type="int">
-			</argument>
-			<argument index="3" name="outline_size" type="int">
-			</argument>
-			<argument index="4" name="pos" type="Vector2">
-			</argument>
-			<argument index="5" name="index" type="int">
-			</argument>
-			<argument index="6" name="color" type="Color" default="Color(1, 1, 1, 1)">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="canvas" type="RID" />
+			<argument index="2" name="size" type="int" />
+			<argument index="3" name="outline_size" type="int" />
+			<argument index="4" name="pos" type="Vector2" />
+			<argument index="5" name="index" type="int" />
+			<argument index="6" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Draws single glyph outline of size [code]outline_size[/code] into a canvas item at the position, using [code]font[/code] at the size [code]size[/code].
 				Note: Glyph index is specific to the font, use glyphs indices returned by [method shaped_text_get_glyphs] or [method font_get_glyph_index].
 			</description>
 		</method>
 		<method name="font_get_antialiased" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="font" type="RID" />
 			<description>
 				Returns [code]true[/code], if font anti-aliasing is supported and enabled.
 			</description>
 		</method>
 		<method name="font_get_ascent" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="size" type="int">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="size" type="int" />
 			<description>
 				Returns the font ascent (number of pixels above the baseline).
 			</description>
 		</method>
 		<method name="font_get_base_size" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="font" type="RID" />
 			<description>
 				Returns the default size of the font.
 			</description>
 		</method>
 		<method name="font_get_descent" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="size" type="int">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="size" type="int" />
 			<description>
 				Returns the font descent (number of pixels below the baseline).
 			</description>
 		</method>
 		<method name="font_get_distance_field_hint" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="font" type="RID" />
 			<description>
 				Returns [code]true[/code], if distance field hint is enabled.
 			</description>
 		</method>
 		<method name="font_get_feature_list" qualifiers="const">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
+			<return type="Dictionary" />
+			<argument index="0" name="font" type="RID" />
 			<description>
 				Returns list of OpenType features supported by font.
 			</description>
 		</method>
 		<method name="font_get_force_autohinter" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="font" type="RID" />
 			<description>
 				Returns [code]true[/code], if autohinter is supported and enabled.
 			</description>
 		</method>
 		<method name="font_get_glyph_advance" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="index" type="int">
-			</argument>
-			<argument index="2" name="size" type="int">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="index" type="int" />
+			<argument index="2" name="size" type="int" />
 			<description>
 				Returns advance of the glyph.
 			</description>
 		</method>
 		<method name="font_get_glyph_contours" qualifiers="const">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="size" type="int">
-			</argument>
-			<argument index="2" name="index" type="int">
-			</argument>
+			<return type="Dictionary" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="size" type="int" />
+			<argument index="2" name="index" type="int" />
 			<description>
 				Returns outline contours of the glyph in a Dictionary.
 				[code]points[/code]         - [PackedVector3Array], containing outline points. [code]x[/code] and [code]y[/code] are point coordinates. [code]z[/code] is the type of the point, using the [enum ContourPointTag] values.
@@ -275,955 +198,701 @@
 			</description>
 		</method>
 		<method name="font_get_glyph_index" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="char" type="int">
-			</argument>
-			<argument index="2" name="variation_selector" type="int" default="0">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="char" type="int" />
+			<argument index="2" name="variation_selector" type="int" default="0" />
 			<description>
 				Returns the glyph index of a [code]char[/code], optionally modified by the [code]variation_selector[/code].
 			</description>
 		</method>
 		<method name="font_get_glyph_kerning" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="index_a" type="int">
-			</argument>
-			<argument index="2" name="index_b" type="int">
-			</argument>
-			<argument index="3" name="size" type="int">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="index_a" type="int" />
+			<argument index="2" name="index_b" type="int" />
+			<argument index="3" name="size" type="int" />
 			<description>
 				Returns a kerning of the pair of glyphs.
 			</description>
 		</method>
 		<method name="font_get_height" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="size" type="int">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="size" type="int" />
 			<description>
 				Returns the total font height (ascent plus descent) in pixels.
 			</description>
 		</method>
 		<method name="font_get_hinting" qualifiers="const">
-			<return type="int" enum="TextServer.Hinting">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
+			<return type="int" enum="TextServer.Hinting" />
+			<argument index="0" name="font" type="RID" />
 			<description>
 				Returns the font hinting.
 			</description>
 		</method>
 		<method name="font_get_language_support_override">
-			<return type="bool">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="language" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="language" type="String" />
 			<description>
 				Returns [code]true[/code] if support override is enabled for the [code]language[/code].
 			</description>
 		</method>
 		<method name="font_get_language_support_overrides">
-			<return type="PackedStringArray">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
+			<return type="PackedStringArray" />
+			<argument index="0" name="font" type="RID" />
 			<description>
 				Returns list of language support overrides.
 			</description>
 		</method>
 		<method name="font_get_oversampling" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the font oversampling factor, shared by all fonts in the TextServer.
 			</description>
 		</method>
 		<method name="font_get_script_support_override">
-			<return type="bool">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="script" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="script" type="String" />
 			<description>
 				Returns [code]true[/code] if support override is enabled for the [code]script[/code].
 			</description>
 		</method>
 		<method name="font_get_script_support_overrides">
-			<return type="PackedStringArray">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
+			<return type="PackedStringArray" />
+			<argument index="0" name="font" type="RID" />
 			<description>
 				Returns list of script support overrides.
 			</description>
 		</method>
 		<method name="font_get_spacing_glyph" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="font" type="RID" />
 			<description>
 				Returns extra spacing for each glyph in pixels.
 			</description>
 		</method>
 		<method name="font_get_spacing_space" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="font" type="RID" />
 			<description>
 				Sets extra spacing for each glyph in pixels.
 			</description>
 		</method>
 		<method name="font_get_supported_chars" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="font" type="RID" />
 			<description>
 				Returns a string containing all the characters available in the font.
 			</description>
 		</method>
 		<method name="font_get_underline_position" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="size" type="int">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="size" type="int" />
 			<description>
 				Returns underline offset (number of pixels below the baseline).
 			</description>
 		</method>
 		<method name="font_get_underline_thickness" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="size" type="int">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="size" type="int" />
 			<description>
 				Returns underline thickness in pixels.
 			</description>
 		</method>
 		<method name="font_get_variation" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="tag" type="String">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="tag" type="String" />
 			<description>
 				Returns variation coordinate [code]tag[/code].
 			</description>
 		</method>
 		<method name="font_get_variation_list" qualifiers="const">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
+			<return type="Dictionary" />
+			<argument index="0" name="font" type="RID" />
 			<description>
 				Returns list of supported [url=https://docs.microsoft.com/en-us/typography/opentype/spec/dvaraxisreg]variation coordinates[/url], each coordinate is returned as [code]tag: Vector3i(min_value,max_value,default_value)[/code].
 				Font variations allow for continuous change of glyph characteristics along some given design axis, such as weight, width or slant.
 			</description>
 		</method>
 		<method name="font_has_char" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="char" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="char" type="int" />
 			<description>
 				Returns [code]true[/code] if [code]char[/code] is available in the font.
 			</description>
 		</method>
 		<method name="font_has_outline" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="font" type="RID" />
 			<description>
 				Returns [code]true[/code], if font supports glyph outlines.
 			</description>
 		</method>
 		<method name="font_is_language_supported" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="language" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="language" type="String" />
 			<description>
 				Returns [code]true[/code], if font supports given language (ISO 639 code).
 			</description>
 		</method>
 		<method name="font_is_script_supported" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="script" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="script" type="String" />
 			<description>
 				Returns [code]true[/code], if font supports given script (ISO 15924 code).
 			</description>
 		</method>
 		<method name="font_remove_language_support_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="language" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="language" type="String" />
 			<description>
 				Remove language support override.
 			</description>
 		</method>
 		<method name="font_remove_script_support_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="script" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="script" type="String" />
 			<description>
 				Removes script support override.
 			</description>
 		</method>
 		<method name="font_set_antialiased">
-			<return type="void">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="antialiased" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="antialiased" type="bool" />
 			<description>
 				Sets font anti-aliasing.
 			</description>
 		</method>
 		<method name="font_set_distance_field_hint">
-			<return type="void">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="distance_field" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="distance_field" type="bool" />
 			<description>
 				Sets font distance field hint.
 			</description>
 		</method>
 		<method name="font_set_force_autohinter">
-			<return type="void">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="enabeld" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="enabeld" type="bool" />
 			<description>
 				Enables/disables default autohinter.
 			</description>
 		</method>
 		<method name="font_set_hinting">
-			<return type="void">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="hinting" type="int" enum="TextServer.Hinting">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="hinting" type="int" enum="TextServer.Hinting" />
 			<description>
 				Sets font hinting.
 			</description>
 		</method>
 		<method name="font_set_language_support_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="language" type="String">
-			</argument>
-			<argument index="2" name="supported" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="language" type="String" />
+			<argument index="2" name="supported" type="bool" />
 			<description>
 				Adds override for [method font_is_language_supported].
 			</description>
 		</method>
 		<method name="font_set_oversampling">
-			<return type="void">
-			</return>
-			<argument index="0" name="oversampling" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="oversampling" type="float" />
 			<description>
 				Sets oversampling factor, shared by all font in the TextServer.
 			</description>
 		</method>
 		<method name="font_set_script_support_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="script" type="String">
-			</argument>
-			<argument index="2" name="supported" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="script" type="String" />
+			<argument index="2" name="supported" type="bool" />
 			<description>
 				Adds override for [method font_is_script_supported].
 			</description>
 		</method>
 		<method name="font_set_spacing_glyph">
-			<return type="void">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="value" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="value" type="int" />
 			<description>
 				Returns extra spacing for the space character in pixels.
 			</description>
 		</method>
 		<method name="font_set_spacing_space">
-			<return type="void">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="value" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="value" type="int" />
 			<description>
 				Sets extra spacing for the space character in pixels.
 			</description>
 		</method>
 		<method name="font_set_variation">
-			<return type="void">
-			</return>
-			<argument index="0" name="font" type="RID">
-			</argument>
-			<argument index="1" name="tag" type="String">
-			</argument>
-			<argument index="2" name="value" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="font" type="RID" />
+			<argument index="1" name="tag" type="String" />
+			<argument index="2" name="value" type="float" />
 			<description>
 				Sets variation coordinate [code]name[/code]. Unsupported coordinates will be silently ignored.
 			</description>
 		</method>
 		<method name="format_number" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="number" type="String">
-			</argument>
-			<argument index="1" name="language" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="number" type="String" />
+			<argument index="1" name="language" type="String" default="&quot;&quot;" />
 			<description>
 				Converts a number from the Western Arabic (0..9) to the numeral systems used in [code]language[/code].
 			</description>
 		</method>
 		<method name="free_rid">
-			<return type="void">
-			</return>
-			<argument index="0" name="rid" type="RID">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="rid" type="RID" />
 			<description>
 				Frees an object created by this [TextServer].
 			</description>
 		</method>
 		<method name="get_hex_code_box_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="size" type="int">
-			</argument>
-			<argument index="1" name="index" type="int">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="size" type="int" />
+			<argument index="1" name="index" type="int" />
 			<description>
 				Returns size of the replacement character (box with character hexadecimal code that is drawn in place of invalid characters).
 			</description>
 		</method>
 		<method name="get_name" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the name of the server interface.
 			</description>
 		</method>
 		<method name="get_system_fonts" qualifiers="const">
-			<return type="PackedStringArray">
-			</return>
+			<return type="PackedStringArray" />
 			<description>
 				Returns list of available system fonts.
 				Note: This method is supported by servers with the [code]FEATURE_FONT_SYSTEM[/code] feature.
 			</description>
 		</method>
 		<method name="has">
-			<return type="bool">
-			</return>
-			<argument index="0" name="rid" type="RID">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="rid" type="RID" />
 			<description>
 				Returns [code]true[/code] if [code]rid[/code] is valid resource owned by this text server.
 			</description>
 		</method>
 		<method name="has_feature">
-			<return type="bool">
-			</return>
-			<argument index="0" name="feature" type="int" enum="TextServer.Feature">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="feature" type="int" enum="TextServer.Feature" />
 			<description>
 				Returns [code]true[/code] if the server supports a feature.
 			</description>
 		</method>
 		<method name="is_locale_right_to_left">
-			<return type="bool">
-			</return>
-			<argument index="0" name="locale" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="locale" type="String" />
 			<description>
 				Returns [code]true[/code] if locale is right-to-left.
 			</description>
 		</method>
 		<method name="load_support_data">
-			<return type="bool">
-			</return>
-			<argument index="0" name="filename" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="filename" type="String" />
 			<description>
 				Loads optional TextServer database (e.g. ICU break iterators and dictionaries).
 				Note: This function should be called before any other TextServer functions used, otherwise it won't have any effect.
 			</description>
 		</method>
 		<method name="name_to_tag">
-			<return type="int">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Converts readable feature, variation, script or language name to OpenType tag.
 			</description>
 		</method>
 		<method name="parse_number" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="number" type="String">
-			</argument>
-			<argument index="1" name="language" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="number" type="String" />
+			<argument index="1" name="language" type="String" default="&quot;&quot;" />
 			<description>
 				Converts a number from the numeral systems used in [code]language[/code] to Western Arabic (0..9).
 			</description>
 		</method>
 		<method name="percent_sign" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="language" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="language" type="String" default="&quot;&quot;" />
 			<description>
 				Returns percent sign used in the [code]language[/code].
 			</description>
 		</method>
 		<method name="shaped_text_add_object">
-			<return type="bool">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
-			<argument index="1" name="key" type="Variant">
-			</argument>
-			<argument index="2" name="size" type="Vector2">
-			</argument>
-			<argument index="3" name="inline_align" type="int" enum="VAlign" default="1">
-			</argument>
-			<argument index="4" name="length" type="int" default="1">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="key" type="Variant" />
+			<argument index="2" name="size" type="Vector2" />
+			<argument index="3" name="inline_align" type="int" enum="VAlign" default="1" />
+			<argument index="4" name="length" type="int" default="1" />
 			<description>
 				Adds inline object to the text buffer, [code]key[/code] must be unique. In the text, object is represented as [code]length[/code] object replacement characters.
 			</description>
 		</method>
 		<method name="shaped_text_add_string">
-			<return type="bool">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
-			<argument index="1" name="text" type="String">
-			</argument>
-			<argument index="2" name="fonts" type="Array">
-			</argument>
-			<argument index="3" name="size" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="text" type="String" />
+			<argument index="2" name="fonts" type="Array" />
+			<argument index="3" name="size" type="int" />
 			<argument index="4" name="opentype_features" type="Dictionary" default="{
-}">
-			</argument>
-			<argument index="5" name="language" type="String" default="&quot;&quot;">
-			</argument>
+}" />
+			<argument index="5" name="language" type="String" default="&quot;&quot;" />
 			<description>
 				Adds text span and font to draw it to the text buffer.
 			</description>
 		</method>
 		<method name="shaped_text_clear">
-			<return type="void">
-			</return>
-			<argument index="0" name="rid" type="RID">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="rid" type="RID" />
 			<description>
 				Clears text buffer (removes text and inline objects).
 			</description>
 		</method>
 		<method name="shaped_text_draw" qualifiers="const">
-			<return type="void">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
-			<argument index="1" name="canvas" type="RID">
-			</argument>
-			<argument index="2" name="pos" type="Vector2">
-			</argument>
-			<argument index="3" name="clip_l" type="float" default="-1">
-			</argument>
-			<argument index="4" name="clip_r" type="float" default="-1">
-			</argument>
-			<argument index="5" name="color" type="Color" default="Color(1, 1, 1, 1)">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="canvas" type="RID" />
+			<argument index="2" name="pos" type="Vector2" />
+			<argument index="3" name="clip_l" type="float" default="-1" />
+			<argument index="4" name="clip_r" type="float" default="-1" />
+			<argument index="5" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Draw shaped text into a canvas item at a given position, with [code]color[/code]. [code]pos[/code] specifies the leftmost point of the baseline (for horizontal layout) or topmost point of the baseline (for vertical layout).
 			</description>
 		</method>
 		<method name="shaped_text_draw_outline" qualifiers="const">
-			<return type="void">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
-			<argument index="1" name="canvas" type="RID">
-			</argument>
-			<argument index="2" name="pos" type="Vector2">
-			</argument>
-			<argument index="3" name="clip_l" type="float" default="-1">
-			</argument>
-			<argument index="4" name="clip_r" type="float" default="-1">
-			</argument>
-			<argument index="5" name="outline_size" type="int" default="1">
-			</argument>
-			<argument index="6" name="color" type="Color" default="Color(1, 1, 1, 1)">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="canvas" type="RID" />
+			<argument index="2" name="pos" type="Vector2" />
+			<argument index="3" name="clip_l" type="float" default="-1" />
+			<argument index="4" name="clip_r" type="float" default="-1" />
+			<argument index="5" name="outline_size" type="int" default="1" />
+			<argument index="6" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Draw the outline of the shaped text into a canvas item at a given position, with [code]color[/code]. [code]pos[/code] specifies the leftmost point of the baseline (for horizontal layout) or topmost point of the baseline (for vertical layout).
 			</description>
 		</method>
 		<method name="shaped_text_fit_to_width">
-			<return type="float">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
-			<argument index="1" name="width" type="float">
-			</argument>
-			<argument index="2" name="jst_flags" type="int" default="3">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="width" type="float" />
+			<argument index="2" name="jst_flags" type="int" default="3" />
 			<description>
 				Adjusts text with to fit to specified width, returns new text width.
 			</description>
 		</method>
 		<method name="shaped_text_get_ascent" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Returns the text ascent (number of pixels above the baseline for horizontal layout or to the left of baseline for vertical).
 				Note: overall ascent can be higher than font ascent, if some glyphs are displaced from the baseline.
 			</description>
 		</method>
 		<method name="shaped_text_get_carets" qualifiers="const">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
-			<argument index="1" name="position" type="int">
-			</argument>
+			<return type="Dictionary" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="position" type="int" />
 			<description>
 				Returns shapes of the carets corresponding to the character offset [code]position[/code] in the text. Returned caret shape is 1 pixel wide rectangle.
 			</description>
 		</method>
 		<method name="shaped_text_get_descent" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Returns the text descent (number of pixels below the baseline for horizontal layout or to the right of baseline for vertical).
 				Note: overall descent can be higher than font descent, if some glyphs are displaced from the baseline.
 			</description>
 		</method>
 		<method name="shaped_text_get_direction" qualifiers="const">
-			<return type="int" enum="TextServer.Direction">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
+			<return type="int" enum="TextServer.Direction" />
+			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Returns direction of the text.
 			</description>
 		</method>
 		<method name="shaped_text_get_dominant_direciton_in_range" qualifiers="const">
-			<return type="int" enum="TextServer.Direction">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
-			<argument index="1" name="start" type="int">
-			</argument>
-			<argument index="2" name="end" type="int">
-			</argument>
+			<return type="int" enum="TextServer.Direction" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="start" type="int" />
+			<argument index="2" name="end" type="int" />
 			<description>
 				Returns dominant direction of in the range of text.
 			</description>
 		</method>
 		<method name="shaped_text_get_glyphs" qualifiers="const">
-			<return type="Array">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
+			<return type="Array" />
+			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Returns text glyphs.
 			</description>
 		</method>
 		<method name="shaped_text_get_line_breaks" qualifiers="const">
-			<return type="Array">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
-			<argument index="1" name="width" type="float">
-			</argument>
-			<argument index="2" name="start" type="int" default="0">
-			</argument>
-			<argument index="3" name="break_flags" type="int" default="48">
-			</argument>
+			<return type="Array" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="width" type="float" />
+			<argument index="2" name="start" type="int" default="0" />
+			<argument index="3" name="break_flags" type="int" default="48" />
 			<description>
 				Breaks text to the lines and returns character ranges for each line.
 			</description>
 		</method>
 		<method name="shaped_text_get_line_breaks_adv" qualifiers="const">
-			<return type="Array">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
-			<argument index="1" name="width" type="PackedFloat32Array">
-			</argument>
-			<argument index="2" name="start" type="int" default="0">
-			</argument>
-			<argument index="3" name="once" type="bool" default="true">
-			</argument>
-			<argument index="4" name="break_flags" type="int" default="48">
-			</argument>
+			<return type="Array" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="width" type="PackedFloat32Array" />
+			<argument index="2" name="start" type="int" default="0" />
+			<argument index="3" name="once" type="bool" default="true" />
+			<argument index="4" name="break_flags" type="int" default="48" />
 			<description>
 				Breaks text to the lines and columns. Returns character ranges for each segment.
 			</description>
 		</method>
 		<method name="shaped_text_get_object_rect" qualifiers="const">
-			<return type="Rect2">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
-			<argument index="1" name="key" type="Variant">
-			</argument>
+			<return type="Rect2" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="key" type="Variant" />
 			<description>
 				Returns bounding rectangle of the inline object.
 			</description>
 		</method>
 		<method name="shaped_text_get_objects" qualifiers="const">
-			<return type="Array">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
+			<return type="Array" />
+			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Returns array of inline objects.
 			</description>
 		</method>
 		<method name="shaped_text_get_orientation" qualifiers="const">
-			<return type="int" enum="TextServer.Orientation">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
+			<return type="int" enum="TextServer.Orientation" />
+			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Returns text orientation.
 			</description>
 		</method>
 		<method name="shaped_text_get_parent" qualifiers="const">
-			<return type="RID">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
+			<return type="RID" />
+			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Sets text orientation.
 			</description>
 		</method>
 		<method name="shaped_text_get_preserve_control" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Returns [code]true[/code] if text buffer is configured to display control characters.
 			</description>
 		</method>
 		<method name="shaped_text_get_preserve_invalid" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Returns [code]true[/code] if text buffer is configured to display hexadecimal codes in place of invalid characters.
 				Note: If set to [code]false[/code], nothing is displayed in place of invalid characters.
 			</description>
 		</method>
 		<method name="shaped_text_get_range" qualifiers="const">
-			<return type="Vector2i">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
+			<return type="Vector2i" />
+			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Returns substring buffer character range in the parent buffer.
 			</description>
 		</method>
 		<method name="shaped_text_get_selection" qualifiers="const">
-			<return type="Array">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
-			<argument index="1" name="start" type="int">
-			</argument>
-			<argument index="2" name="end" type="int">
-			</argument>
+			<return type="Array" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="start" type="int" />
+			<argument index="2" name="end" type="int" />
 			<description>
 				Returns selection rectangles for the specified character range.
 			</description>
 		</method>
 		<method name="shaped_text_get_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Returns size of the text.
 			</description>
 		</method>
 		<method name="shaped_text_get_underline_position" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Returns pixel offset of the underline below the baseline.
 			</description>
 		</method>
 		<method name="shaped_text_get_underline_thickness" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Returns thickness of the underline.
 			</description>
 		</method>
 		<method name="shaped_text_get_width" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Returns width (for horizontal layout) or height (for vertical) of the text.
 			</description>
 		</method>
 		<method name="shaped_text_get_word_breaks" qualifiers="const">
-			<return type="Array">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
+			<return type="Array" />
+			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Breaks text into words and returns array of character ranges.
 			</description>
 		</method>
 		<method name="shaped_text_hit_test_grapheme" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
-			<argument index="1" name="coords" type="float">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="coords" type="float" />
 			<description>
 				Returns grapheme index at the specified pixel offset at the baseline, or [code]-1[/code] if none is found.
 			</description>
 		</method>
 		<method name="shaped_text_hit_test_position" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
-			<argument index="1" name="coords" type="float">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="coords" type="float" />
 			<description>
 				Returns caret character offset at the specified pixel offset at the baseline. This function always returns a valid position.
 			</description>
 		</method>
 		<method name="shaped_text_is_ready" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Returns [code]true[/code] if buffer is successfully shaped.
 			</description>
 		</method>
 		<method name="shaped_text_next_grapheme_pos">
-			<return type="int">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
-			<argument index="1" name="pos" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="pos" type="int" />
 			<description>
 				Returns composite character end position closest to the [code]pos[/code].
 			</description>
 		</method>
 		<method name="shaped_text_overrun_trim_to_width">
-			<return type="void">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
-			<argument index="1" name="width" type="float" default="0">
-			</argument>
-			<argument index="2" name="overrun_trim_flags" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="width" type="float" default="0" />
+			<argument index="2" name="overrun_trim_flags" type="int" default="0" />
 			<description>
 				Trims text if it exceeds the given width.
 			</description>
 		</method>
 		<method name="shaped_text_prev_grapheme_pos">
-			<return type="int">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
-			<argument index="1" name="pos" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="pos" type="int" />
 			<description>
 				Returns composite character start position closest to the [code]pos[/code].
 			</description>
 		</method>
 		<method name="shaped_text_resize_object">
-			<return type="bool">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
-			<argument index="1" name="key" type="Variant">
-			</argument>
-			<argument index="2" name="size" type="Vector2">
-			</argument>
-			<argument index="3" name="inline_align" type="int" enum="VAlign" default="1">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="key" type="Variant" />
+			<argument index="2" name="size" type="Vector2" />
+			<argument index="3" name="inline_align" type="int" enum="VAlign" default="1" />
 			<description>
 				Sets new size and alignment of embedded object.
 			</description>
 		</method>
 		<method name="shaped_text_set_bidi_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
-			<argument index="1" name="override" type="Array">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="override" type="Array" />
 			<description>
 				Overrides BiDi for the structured text.
 				Override ranges should cover full source text without overlaps. BiDi algorithm will be used on each range separately.
 			</description>
 		</method>
 		<method name="shaped_text_set_direction">
-			<return type="void">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
-			<argument index="1" name="direction" type="int" enum="TextServer.Direction" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<description>
 				Sets desired text direction. If set to [code]TEXT_DIRECTION_AUTO[/code], direction will be detected based on the buffer contents and current locale.
 				Note: Direction is ignored if server does not support [code]FEATURE_BIDI_LAYOUT[/code] feature.
 			</description>
 		</method>
 		<method name="shaped_text_set_orientation">
-			<return type="void">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
-			<argument index="1" name="orientation" type="int" enum="TextServer.Orientation" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
 				Sets desired text orientation.
 				Note: Orientation is ignored if server does not support [code]FEATURE_VERTICAL_LAYOUT[/code] feature.
 			</description>
 		</method>
 		<method name="shaped_text_set_preserve_control">
-			<return type="void">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
-			<argument index="1" name="enabled" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="enabled" type="bool" />
 			<description>
 				If set to [code]true[/code] text buffer will display control characters.
 			</description>
 		</method>
 		<method name="shaped_text_set_preserve_invalid">
-			<return type="void">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
-			<argument index="1" name="enabled" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="enabled" type="bool" />
 			<description>
 				If set to [code]true[/code] text buffer will display invalid characters as hexadecimal codes, otherwise nothing is displayed.
 			</description>
 		</method>
 		<method name="shaped_text_shape">
-			<return type="bool">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Shapes buffer if it's not shaped. Returns [code]true[/code] if the string is shaped successfully.
 				Note: It is not necessary to call this function manually, buffer will be shaped automatically as soon as any of its output data is requested.
 			</description>
 		</method>
 		<method name="shaped_text_substr" qualifiers="const">
-			<return type="RID">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
-			<argument index="1" name="start" type="int">
-			</argument>
-			<argument index="2" name="length" type="int">
-			</argument>
+			<return type="RID" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="start" type="int" />
+			<argument index="2" name="length" type="int" />
 			<description>
 				Returns text buffer for the substring of the text in the [code]shaped[/code] text buffer (including inline objects).
 			</description>
 		</method>
 		<method name="shaped_text_tab_align">
-			<return type="float">
-			</return>
-			<argument index="0" name="shaped" type="RID">
-			</argument>
-			<argument index="1" name="tab_stops" type="PackedFloat32Array">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="tab_stops" type="PackedFloat32Array" />
 			<description>
 				Aligns shaped text to the given tab-stops.
 			</description>
 		</method>
 		<method name="tag_to_name">
-			<return type="String">
-			</return>
-			<argument index="0" name="tag" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="tag" type="int" />
 			<description>
 				Converts OpenType tag to readable feature, variation, script or language name.
 			</description>

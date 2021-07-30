@@ -11,195 +11,151 @@
 	</tutorials>
 	<methods>
 		<method name="add_icon_item">
-			<return type="void">
-			</return>
-			<argument index="0" name="texture" type="Texture2D">
-			</argument>
-			<argument index="1" name="label" type="String">
-			</argument>
-			<argument index="2" name="id" type="int" default="-1">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="texture" type="Texture2D" />
+			<argument index="1" name="label" type="String" />
+			<argument index="2" name="id" type="int" default="-1" />
 			<description>
 				Adds an item, with a [code]texture[/code] icon, text [code]label[/code] and (optionally) [code]id[/code]. If no [code]id[/code] is passed, the item index will be used as the item's ID. New items are appended at the end.
 			</description>
 		</method>
 		<method name="add_item">
-			<return type="void">
-			</return>
-			<argument index="0" name="label" type="String">
-			</argument>
-			<argument index="1" name="id" type="int" default="-1">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="label" type="String" />
+			<argument index="1" name="id" type="int" default="-1" />
 			<description>
 				Adds an item, with text [code]label[/code] and (optionally) [code]id[/code]. If no [code]id[/code] is passed, the item index will be used as the item's ID. New items are appended at the end.
 			</description>
 		</method>
 		<method name="add_separator">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Adds a separator to the list of items. Separators help to group items. Separator also takes up an index and is appended at the end.
 			</description>
 		</method>
 		<method name="clear">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clears all the items in the [OptionButton].
 			</description>
 		</method>
 		<method name="get_item_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the amount of items in the OptionButton, including separators.
 			</description>
 		</method>
 		<method name="get_item_icon" qualifiers="const">
-			<return type="Texture2D">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="Texture2D" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the icon of the item at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_item_id" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the ID of the item at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_item_index" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="id" type="int" />
 			<description>
 				Returns the index of the item with the given [code]id[/code].
 			</description>
 		</method>
 		<method name="get_item_metadata" qualifiers="const">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Retrieves the metadata of an item. Metadata may be any type and can be used to store extra information about an item, such as an external string ID.
 			</description>
 		</method>
 		<method name="get_item_text" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the text of the item at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_popup" qualifiers="const">
-			<return type="PopupMenu">
-			</return>
+			<return type="PopupMenu" />
 			<description>
 				Returns the [PopupMenu] contained in this button.
 			</description>
 		</method>
 		<method name="get_selected_id" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the ID of the selected item, or [code]0[/code] if no item is selected.
 			</description>
 		</method>
 		<method name="get_selected_metadata" qualifiers="const">
-			<return type="Variant">
-			</return>
+			<return type="Variant" />
 			<description>
 				Gets the metadata of the selected item. Metadata for items can be set using [method set_item_metadata].
 			</description>
 		</method>
 		<method name="is_item_disabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns [code]true[/code] if the item at index [code]idx[/code] is disabled.
 			</description>
 		</method>
 		<method name="remove_item">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Removes the item at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="select">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Selects an item by index and makes it the current item. This will work even if the item is disabled.
 			</description>
 		</method>
 		<method name="set_item_disabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<argument index="1" name="disabled" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="disabled" type="bool" />
 			<description>
 				Sets whether the item at index [code]idx[/code] is disabled.
 				Disabled items are drawn differently in the dropdown and are not selectable by the user. If the current selected item is set as disabled, it will remain selected.
 			</description>
 		</method>
 		<method name="set_item_icon">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<argument index="1" name="texture" type="Texture2D">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="texture" type="Texture2D" />
 			<description>
 				Sets the icon of the item at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="set_item_id">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<argument index="1" name="id" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="id" type="int" />
 			<description>
 				Sets the ID of the item at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="set_item_metadata">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<argument index="1" name="metadata" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="metadata" type="Variant" />
 			<description>
 				Sets the metadata of an item. Metadata may be of any type and can be used to store extra information about an item, such as an external string ID.
 			</description>
 		</method>
 		<method name="set_item_text">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<argument index="1" name="text" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="text" type="String" />
 			<description>
 				Sets the text of the item at index [code]idx[/code].
 			</description>
@@ -215,15 +171,13 @@
 	</members>
 	<signals>
 		<signal name="item_focused">
-			<argument index="0" name="index" type="int">
-			</argument>
+			<argument index="0" name="index" type="int" />
 			<description>
 				Emitted when the user navigates to an item using the [code]ui_up[/code] or [code]ui_down[/code] actions. The index of the item selected is passed as argument.
 			</description>
 		</signal>
 		<signal name="item_selected">
-			<argument index="0" name="index" type="int">
-			</argument>
+			<argument index="0" name="index" type="int" />
 			<description>
 				Emitted when the current item has been changed by the user. The index of the item selected is passed as argument.
 			</description>

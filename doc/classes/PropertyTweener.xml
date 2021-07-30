@@ -11,8 +11,7 @@
 	</tutorials>
 	<methods>
 		<method name="as_relative">
-			<return type="PropertyTweener">
-			</return>
+			<return type="PropertyTweener" />
 			<description>
 				When called, the final value will be used as a relative value instead. Example:
 				[codeblock]
@@ -22,10 +21,8 @@
 			</description>
 		</method>
 		<method name="from">
-			<return type="PropertyTweener">
-			</return>
-			<argument index="0" name="value" type="Variant">
-			</argument>
+			<return type="PropertyTweener" />
+			<argument index="0" name="value" type="Variant" />
 			<description>
 				Sets a custom initial value to the [PropertyTweener]. Example:
 				[codeblock]
@@ -35,8 +32,7 @@
 			</description>
 		</method>
 		<method name="from_current">
-			<return type="PropertyTweener">
-			</return>
+			<return type="PropertyTweener" />
 			<description>
 				Makes the [PropertyTweener] use the current property value (i.e. at the time of creating this [PropertyTweener]) as a starting point. This is equivalent of using [method from] with the current value. These two calls will do the same:
 				[codeblock]
@@ -46,28 +42,22 @@
 			</description>
 		</method>
 		<method name="set_delay">
-			<return type="PropertyTweener">
-			</return>
-			<argument index="0" name="delay" type="float">
-			</argument>
+			<return type="PropertyTweener" />
+			<argument index="0" name="delay" type="float" />
 			<description>
 				Sets the time in seconds after which the [PropertyTweener] will start interpolating. By default there's no delay.
 			</description>
 		</method>
 		<method name="set_ease">
-			<return type="PropertyTweener">
-			</return>
-			<argument index="0" name="ease" type="int" enum="Tween.EaseType">
-			</argument>
+			<return type="PropertyTweener" />
+			<argument index="0" name="ease" type="int" enum="Tween.EaseType" />
 			<description>
 				Sets the type of used easing from [enum Tween.EaseType]. If not set, the default easing is used from the [Tween] that contains this Tweener.
 			</description>
 		</method>
 		<method name="set_trans">
-			<return type="PropertyTweener">
-			</return>
-			<argument index="0" name="trans" type="int" enum="Tween.TransitionType">
-			</argument>
+			<return type="PropertyTweener" />
+			<argument index="0" name="trans" type="int" enum="Tween.TransitionType" />
 			<description>
 				Sets the type of used transition from [enum Tween.TransitionType]. If not set, the default transition is used from the [Tween] that contains this Tweener.
 			</description>

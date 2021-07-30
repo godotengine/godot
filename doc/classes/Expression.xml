@@ -52,40 +52,31 @@
 	</tutorials>
 	<methods>
 		<method name="execute">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="inputs" type="Array" default="[]">
-			</argument>
-			<argument index="1" name="base_instance" type="Object" default="null">
-			</argument>
-			<argument index="2" name="show_error" type="bool" default="true">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="inputs" type="Array" default="[]" />
+			<argument index="1" name="base_instance" type="Object" default="null" />
+			<argument index="2" name="show_error" type="bool" default="true" />
 			<description>
 				Executes the expression that was previously parsed by [method parse] and returns the result. Before you use the returned object, you should check if the method failed by calling [method has_execute_failed].
 				If you defined input variables in [method parse], you can specify their values in the inputs array, in the same order.
 			</description>
 		</method>
 		<method name="get_error_text" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the error text if [method parse] has failed.
 			</description>
 		</method>
 		<method name="has_execute_failed" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if [method execute] has failed.
 			</description>
 		</method>
 		<method name="parse">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="expression" type="String">
-			</argument>
-			<argument index="1" name="input_names" type="PackedStringArray" default="PackedStringArray()">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="expression" type="String" />
+			<argument index="1" name="input_names" type="PackedStringArray" default="PackedStringArray()" />
 			<description>
 				Parses the expression and returns an [enum Error] code.
 				You can optionally specify names of variables that may appear in the expression with [code]input_names[/code], so that you can bind them when it gets executed.

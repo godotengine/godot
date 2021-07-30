@@ -14,127 +14,104 @@
 	</tutorials>
 	<methods>
 		<method name="add_gizmo">
-			<return type="void">
-			</return>
-			<argument index="0" name="gizmo" type="Node3DGizmo">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="gizmo" type="Node3DGizmo" />
 			<description>
 				Attach a gizmo to this [code]Node3D[/code].
 			</description>
 		</method>
 		<method name="clear_gizmos">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clear all gizmos attached to this [code]Node3D[/code].
 			</description>
 		</method>
 		<method name="clear_subgizmo_selection">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clears subgizmo selection for this node in the editor. Useful when subgizmo IDs become invalid after a property change.
 			</description>
 		</method>
 		<method name="force_update_transform">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Forces the transform to update. Transform changes in physics are not instant for performance reasons. Transforms are accumulated and then set. Use this if you need an up-to-date transform when doing physics operations.
 			</description>
 		</method>
 		<method name="get_gizmos" qualifiers="const">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Returns all the gizmos attached to this [code]Node3D[/code].
 			</description>
 		</method>
 		<method name="get_parent_node_3d" qualifiers="const">
-			<return type="Node3D">
-			</return>
+			<return type="Node3D" />
 			<description>
 				Returns the parent [Node3D], or an empty [Object] if no parent exists or parent is not of type [Node3D].
 			</description>
 		</method>
 		<method name="get_world_3d" qualifiers="const">
-			<return type="World3D">
-			</return>
+			<return type="World3D" />
 			<description>
 				Returns the current [World3D] resource this [Node3D] node is registered to.
 			</description>
 		</method>
 		<method name="global_rotate">
-			<return type="void">
-			</return>
-			<argument index="0" name="axis" type="Vector3">
-			</argument>
-			<argument index="1" name="angle" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="axis" type="Vector3" />
+			<argument index="1" name="angle" type="float" />
 			<description>
 				Rotates the global (world) transformation around axis, a unit [Vector3], by specified angle in radians. The rotation axis is in global coordinate system.
 			</description>
 		</method>
 		<method name="global_scale">
-			<return type="void">
-			</return>
-			<argument index="0" name="scale" type="Vector3">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="scale" type="Vector3" />
 			<description>
 				Scales the global (world) transformation by the given [Vector3] scale factors.
 			</description>
 		</method>
 		<method name="global_translate">
-			<return type="void">
-			</return>
-			<argument index="0" name="offset" type="Vector3">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="offset" type="Vector3" />
 			<description>
 				Moves the global (world) transformation by [Vector3] offset. The offset is in global coordinate system.
 			</description>
 		</method>
 		<method name="hide">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Disables rendering of this node. Changes [member visible] to [code]false[/code].
 			</description>
 		</method>
 		<method name="is_local_transform_notification_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns whether node notifies about its local transformation changes. [Node3D] will not propagate this by default.
 			</description>
 		</method>
 		<method name="is_scale_disabled" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns whether this node uses a scale of [code](1, 1, 1)[/code] or its local transformation scale.
 			</description>
 		</method>
 		<method name="is_transform_notification_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns whether the node notifies about its global and local transformation changes. [Node3D] will not propagate this by default.
 			</description>
 		</method>
 		<method name="is_visible_in_tree" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code] and all its antecedents are also visible. If any antecedent is hidden, this node will not be visible in the scene tree.
 			</description>
 		</method>
 		<method name="look_at">
-			<return type="void">
-			</return>
-			<argument index="0" name="target" type="Vector3">
-			</argument>
-			<argument index="1" name="up" type="Vector3" default="Vector3(0, 1, 0)">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="target" type="Vector3" />
+			<argument index="1" name="up" type="Vector3" default="Vector3(0, 1, 0)" />
 			<description>
 				Rotates itself so that the local -Z axis points towards the [code]target[/code] position.
 				The transform will first be rotated around the given [code]up[/code] vector, and then fully aligned to the target by a further rotation around an axis perpendicular to both the [code]target[/code] and [code]up[/code] vectors.
@@ -142,173 +119,135 @@
 			</description>
 		</method>
 		<method name="look_at_from_position">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector3">
-			</argument>
-			<argument index="1" name="target" type="Vector3">
-			</argument>
-			<argument index="2" name="up" type="Vector3" default="Vector3(0, 1, 0)">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="position" type="Vector3" />
+			<argument index="1" name="target" type="Vector3" />
+			<argument index="2" name="up" type="Vector3" default="Vector3(0, 1, 0)" />
 			<description>
 				Moves the node to the specified [code]position[/code], and then rotates itself to point toward the [code]target[/code] as per [method look_at]. Operations take place in global space.
 			</description>
 		</method>
 		<method name="orthonormalize">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Resets this node's transformations (like scale, skew and taper) preserving its rotation and translation by performing Gram-Schmidt orthonormalization on this node's [Transform3D].
 			</description>
 		</method>
 		<method name="rotate">
-			<return type="void">
-			</return>
-			<argument index="0" name="axis" type="Vector3">
-			</argument>
-			<argument index="1" name="angle" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="axis" type="Vector3" />
+			<argument index="1" name="angle" type="float" />
 			<description>
 				Rotates the local transformation around axis, a unit [Vector3], by specified angle in radians.
 			</description>
 		</method>
 		<method name="rotate_object_local">
-			<return type="void">
-			</return>
-			<argument index="0" name="axis" type="Vector3">
-			</argument>
-			<argument index="1" name="angle" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="axis" type="Vector3" />
+			<argument index="1" name="angle" type="float" />
 			<description>
 				Rotates the local transformation around axis, a unit [Vector3], by specified angle in radians. The rotation axis is in object-local coordinate system.
 			</description>
 		</method>
 		<method name="rotate_x">
-			<return type="void">
-			</return>
-			<argument index="0" name="angle" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="angle" type="float" />
 			<description>
 				Rotates the local transformation around the X axis by angle in radians.
 			</description>
 		</method>
 		<method name="rotate_y">
-			<return type="void">
-			</return>
-			<argument index="0" name="angle" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="angle" type="float" />
 			<description>
 				Rotates the local transformation around the Y axis by angle in radians.
 			</description>
 		</method>
 		<method name="rotate_z">
-			<return type="void">
-			</return>
-			<argument index="0" name="angle" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="angle" type="float" />
 			<description>
 				Rotates the local transformation around the Z axis by angle in radians.
 			</description>
 		</method>
 		<method name="scale_object_local">
-			<return type="void">
-			</return>
-			<argument index="0" name="scale" type="Vector3">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="scale" type="Vector3" />
 			<description>
 				Scales the local transformation by given 3D scale factors in object-local coordinate system.
 			</description>
 		</method>
 		<method name="set_disable_scale">
-			<return type="void">
-			</return>
-			<argument index="0" name="disable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="disable" type="bool" />
 			<description>
 				Sets whether the node uses a scale of [code](1, 1, 1)[/code] or its local transformation scale. Changes to the local transformation scale are preserved.
 			</description>
 		</method>
 		<method name="set_identity">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Reset all transformations for this node (sets its [Transform3D] to the identity matrix).
 			</description>
 		</method>
 		<method name="set_ignore_transform_notification">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="enabled" type="bool" />
 			<description>
 				Sets whether the node ignores notification that its transformation (global or local) changed.
 			</description>
 		</method>
 		<method name="set_notify_local_transform">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="enable" type="bool" />
 			<description>
 				Sets whether the node notifies about its local transformation changes. [Node3D] will not propagate this by default.
 			</description>
 		</method>
 		<method name="set_notify_transform">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="enable" type="bool" />
 			<description>
 				Sets whether the node notifies about its global and local transformation changes. [Node3D] will not propagate this by default, unless it is in the editor context and it has a valid gizmo.
 			</description>
 		</method>
 		<method name="show">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Enables rendering of this node. Changes [member visible] to [code]true[/code].
 			</description>
 		</method>
 		<method name="to_global" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="local_point" type="Vector3">
-			</argument>
+			<return type="Vector3" />
+			<argument index="0" name="local_point" type="Vector3" />
 			<description>
 				Transforms [code]local_point[/code] from this node's local space to world space.
 			</description>
 		</method>
 		<method name="to_local" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="global_point" type="Vector3">
-			</argument>
+			<return type="Vector3" />
+			<argument index="0" name="global_point" type="Vector3" />
 			<description>
 				Transforms [code]global_point[/code] from world space to this node's local space.
 			</description>
 		</method>
 		<method name="translate">
-			<return type="void">
-			</return>
-			<argument index="0" name="offset" type="Vector3">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="offset" type="Vector3" />
 			<description>
 				Changes the node's position by the given offset [Vector3].
 				Note that the translation [code]offset[/code] is affected by the node's scale, so if scaled by e.g. [code](10, 1, 1)[/code], a translation by an offset of [code](2, 0, 0)[/code] would actually add 20 ([code]2 * 10[/code]) to the X coordinate.
 			</description>
 		</method>
 		<method name="translate_object_local">
-			<return type="void">
-			</return>
-			<argument index="0" name="offset" type="Vector3">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="offset" type="Vector3" />
 			<description>
 				Changes the node's position by the given offset [Vector3] in local space.
 			</description>
 		</method>
 		<method name="update_gizmos">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Updates all the [Node3DGizmo]s attached to this node.
 			</description>

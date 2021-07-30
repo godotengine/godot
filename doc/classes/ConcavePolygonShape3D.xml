@@ -12,17 +12,14 @@
 	</tutorials>
 	<methods>
 		<method name="get_faces" qualifiers="const">
-			<return type="PackedVector3Array">
-			</return>
+			<return type="PackedVector3Array" />
 			<description>
 				Returns the faces (an array of triangles).
 			</description>
 		</method>
 		<method name="set_faces">
-			<return type="void">
-			</return>
-			<argument index="0" name="faces" type="PackedVector3Array">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="faces" type="PackedVector3Array" />
 			<description>
 				Sets the faces (an array of triangles).
 			</description>

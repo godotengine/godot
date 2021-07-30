@@ -19,21 +19,16 @@
 	</tutorials>
 	<methods>
 		<method name="get_glow_level" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the intensity of the glow level [code]idx[/code].
 			</description>
 		</method>
 		<method name="set_glow_level">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<argument index="1" name="intensity" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="intensity" type="float" />
 			<description>
 				Sets the intensity of the glow level [code]idx[/code]. A value above [code]0.0[/code] enables the level. Each level relies on the previous level. This means that enabling higher glow levels will slow down the glow effect rendering, even if previous levels aren't enabled.
 			</description>

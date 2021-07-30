@@ -8,40 +8,31 @@
 	</tutorials>
 	<methods>
 		<method name="get_extension">
-			<return type="NativeExtension">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="NativeExtension" />
+			<argument index="0" name="path" type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="get_loaded_extensions" qualifiers="const">
-			<return type="PackedStringArray">
-			</return>
+			<return type="PackedStringArray" />
 			<description>
 			</description>
 		</method>
 		<method name="load_extension">
-			<return type="int" enum="NativeExtensionManager.LoadStatus">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="int" enum="NativeExtensionManager.LoadStatus" />
+			<argument index="0" name="path" type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="reload_extension">
-			<return type="int" enum="NativeExtensionManager.LoadStatus">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="int" enum="NativeExtensionManager.LoadStatus" />
+			<argument index="0" name="path" type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="unload_extension">
-			<return type="int" enum="NativeExtensionManager.LoadStatus">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="int" enum="NativeExtensionManager.LoadStatus" />
+			<argument index="0" name="path" type="String" />
 			<description>
 			</description>
 		</method>

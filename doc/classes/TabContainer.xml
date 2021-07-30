@@ -13,124 +13,98 @@
 	</tutorials>
 	<methods>
 		<method name="get_current_tab_control" qualifiers="const">
-			<return type="Control">
-			</return>
+			<return type="Control" />
 			<description>
 				Returns the child [Control] node located at the active tab index.
 			</description>
 		</method>
 		<method name="get_popup" qualifiers="const">
-			<return type="Popup">
-			</return>
+			<return type="Popup" />
 			<description>
 				Returns the [Popup] node instance if one has been set already with [method set_popup].
 			</description>
 		</method>
 		<method name="get_previous_tab" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the previously active tab index.
 			</description>
 		</method>
 		<method name="get_tab_control" qualifiers="const">
-			<return type="Control">
-			</return>
-			<argument index="0" name="tab_idx" type="int">
-			</argument>
+			<return type="Control" />
+			<argument index="0" name="tab_idx" type="int" />
 			<description>
 				Returns the [Control] node from the tab at index [code]tab_idx[/code].
 			</description>
 		</method>
 		<method name="get_tab_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of tabs.
 			</description>
 		</method>
 		<method name="get_tab_disabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="tab_idx" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="tab_idx" type="int" />
 			<description>
 				Returns [code]true[/code] if the tab at index [code]tab_idx[/code] is disabled.
 			</description>
 		</method>
 		<method name="get_tab_icon" qualifiers="const">
-			<return type="Texture2D">
-			</return>
-			<argument index="0" name="tab_idx" type="int">
-			</argument>
+			<return type="Texture2D" />
+			<argument index="0" name="tab_idx" type="int" />
 			<description>
 				Returns the [Texture2D] for the tab at index [code]tab_idx[/code] or [code]null[/code] if the tab has no [Texture2D].
 			</description>
 		</method>
 		<method name="get_tab_title" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="tab_idx" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="tab_idx" type="int" />
 			<description>
 				Returns the title of the tab at index [code]tab_idx[/code]. Tab titles default to the name of the indexed child node, but this can be overridden with [method set_tab_title].
 			</description>
 		</method>
 		<method name="get_tabs_rearrange_group" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the [TabContainer] rearrange group id.
 			</description>
 		</method>
 		<method name="set_popup">
-			<return type="void">
-			</return>
-			<argument index="0" name="popup" type="Node">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="popup" type="Node" />
 			<description>
 				If set on a [Popup] node instance, a popup menu icon appears in the top-right corner of the [TabContainer]. Clicking it will expand the [Popup] node.
 			</description>
 		</method>
 		<method name="set_tab_disabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="tab_idx" type="int">
-			</argument>
-			<argument index="1" name="disabled" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="tab_idx" type="int" />
+			<argument index="1" name="disabled" type="bool" />
 			<description>
 				If [code]disabled[/code] is [code]false[/code], hides the tab at index [code]tab_idx[/code].
 				[b]Note:[/b] Its title text will remain, unless also removed with [method set_tab_title].
 			</description>
 		</method>
 		<method name="set_tab_icon">
-			<return type="void">
-			</return>
-			<argument index="0" name="tab_idx" type="int">
-			</argument>
-			<argument index="1" name="icon" type="Texture2D">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="tab_idx" type="int" />
+			<argument index="1" name="icon" type="Texture2D" />
 			<description>
 				Sets an icon for the tab at index [code]tab_idx[/code].
 			</description>
 		</method>
 		<method name="set_tab_title">
-			<return type="void">
-			</return>
-			<argument index="0" name="tab_idx" type="int">
-			</argument>
-			<argument index="1" name="title" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="tab_idx" type="int" />
+			<argument index="1" name="title" type="String" />
 			<description>
 				Sets a title for the tab at index [code]tab_idx[/code]. Tab titles default to the name of the indexed child node, but this can be overridden with [method set_tab_title].
 			</description>
 		</method>
 		<method name="set_tabs_rearrange_group">
-			<return type="void">
-			</return>
-			<argument index="0" name="group_id" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="group_id" type="int" />
 			<description>
 				Defines rearrange group id, choose for each [TabContainer] the same value to enable tab drag between [TabContainer]. Enable drag with [code]set_drag_to_rearrange_enabled(true)[/code].
 			</description>
@@ -163,15 +137,13 @@
 			</description>
 		</signal>
 		<signal name="tab_changed">
-			<argument index="0" name="tab" type="int">
-			</argument>
+			<argument index="0" name="tab" type="int" />
 			<description>
 				Emitted when switching to another tab.
 			</description>
 		</signal>
 		<signal name="tab_selected">
-			<argument index="0" name="tab" type="int">
-			</argument>
+			<argument index="0" name="tab" type="int" />
 			<description>
 				Emitted when a tab is selected, even if it is the current tab.
 			</description>

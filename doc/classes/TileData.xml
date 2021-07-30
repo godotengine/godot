@@ -8,208 +8,149 @@
 	</tutorials>
 	<methods>
 		<method name="add_collision_polygon">
-			<return type="void">
-			</return>
-			<argument index="0" name="layer_id" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="layer_id" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_collision_polygon_one_way_margin" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="layer_id" type="int">
-			</argument>
-			<argument index="1" name="polygon_index" type="int">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="layer_id" type="int" />
+			<argument index="1" name="polygon_index" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_collision_polygon_points" qualifiers="const">
-			<return type="PackedVector2Array">
-			</return>
-			<argument index="0" name="layer_id" type="int">
-			</argument>
-			<argument index="1" name="polygon_index" type="int">
-			</argument>
+			<return type="PackedVector2Array" />
+			<argument index="0" name="layer_id" type="int" />
+			<argument index="1" name="polygon_index" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_collision_polygons_count" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="layer_id" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="layer_id" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_custom_data" qualifiers="const">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="layer_name" type="String">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="layer_name" type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="get_custom_data_by_layer_id" qualifiers="const">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="layer_id" type="int">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="layer_id" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_navigation_polygon" qualifiers="const">
-			<return type="NavigationPolygon">
-			</return>
-			<argument index="0" name="layer_id" type="int">
-			</argument>
+			<return type="NavigationPolygon" />
+			<argument index="0" name="layer_id" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_occluder" qualifiers="const">
-			<return type="OccluderPolygon2D">
-			</return>
-			<argument index="0" name="layer_id" type="int">
-			</argument>
+			<return type="OccluderPolygon2D" />
+			<argument index="0" name="layer_id" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_peering_bit_terrain" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="peering_bit" type="int" enum="TileSet.CellNeighbor">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="peering_bit" type="int" enum="TileSet.CellNeighbor" />
 			<description>
 			</description>
 		</method>
 		<method name="is_collision_polygon_one_way" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="layer_id" type="int">
-			</argument>
-			<argument index="1" name="polygon_index" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="layer_id" type="int" />
+			<argument index="1" name="polygon_index" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="remove_collision_polygon">
-			<return type="void">
-			</return>
-			<argument index="0" name="layer_id" type="int">
-			</argument>
-			<argument index="1" name="polygon_index" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="layer_id" type="int" />
+			<argument index="1" name="polygon_index" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="set_collision_polygon_one_way">
-			<return type="void">
-			</return>
-			<argument index="0" name="layer_id" type="int">
-			</argument>
-			<argument index="1" name="polygon_index" type="int">
-			</argument>
-			<argument index="2" name="one_way" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="layer_id" type="int" />
+			<argument index="1" name="polygon_index" type="int" />
+			<argument index="2" name="one_way" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="set_collision_polygon_one_way_margin">
-			<return type="void">
-			</return>
-			<argument index="0" name="layer_id" type="int">
-			</argument>
-			<argument index="1" name="polygon_index" type="int">
-			</argument>
-			<argument index="2" name="one_way_margin" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="layer_id" type="int" />
+			<argument index="1" name="polygon_index" type="int" />
+			<argument index="2" name="one_way_margin" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="set_collision_polygon_points">
-			<return type="void">
-			</return>
-			<argument index="0" name="layer_id" type="int">
-			</argument>
-			<argument index="1" name="polygon_index" type="int">
-			</argument>
-			<argument index="2" name="polygon" type="PackedVector2Array">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="layer_id" type="int" />
+			<argument index="1" name="polygon_index" type="int" />
+			<argument index="2" name="polygon" type="PackedVector2Array" />
 			<description>
 			</description>
 		</method>
 		<method name="set_collision_polygons_count">
-			<return type="void">
-			</return>
-			<argument index="0" name="layer_id" type="int">
-			</argument>
-			<argument index="1" name="polygons_count" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="layer_id" type="int" />
+			<argument index="1" name="polygons_count" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="set_custom_data">
-			<return type="void">
-			</return>
-			<argument index="0" name="layer_name" type="String">
-			</argument>
-			<argument index="1" name="value" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="layer_name" type="String" />
+			<argument index="1" name="value" type="Variant" />
 			<description>
 			</description>
 		</method>
 		<method name="set_custom_data_by_layer_id">
-			<return type="void">
-			</return>
-			<argument index="0" name="layer_id" type="int">
-			</argument>
-			<argument index="1" name="value" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="layer_id" type="int" />
+			<argument index="1" name="value" type="Variant" />
 			<description>
 			</description>
 		</method>
 		<method name="set_navigation_polygon">
-			<return type="void">
-			</return>
-			<argument index="0" name="layer_id" type="int">
-			</argument>
-			<argument index="1" name="navigation_polygon" type="NavigationPolygon">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="layer_id" type="int" />
+			<argument index="1" name="navigation_polygon" type="NavigationPolygon" />
 			<description>
 			</description>
 		</method>
 		<method name="set_occluder">
-			<return type="void">
-			</return>
-			<argument index="0" name="layer_id" type="int">
-			</argument>
-			<argument index="1" name="occluder_polygon" type="OccluderPolygon2D">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="layer_id" type="int" />
+			<argument index="1" name="occluder_polygon" type="OccluderPolygon2D" />
 			<description>
 			</description>
 		</method>
 		<method name="set_peering_bit_terrain">
-			<return type="void">
-			</return>
-			<argument index="0" name="peering_bit" type="int" enum="TileSet.CellNeighbor">
-			</argument>
-			<argument index="1" name="terrain" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="peering_bit" type="int" enum="TileSet.CellNeighbor" />
+			<argument index="1" name="terrain" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="tile_get_material" qualifiers="const">
-			<return type="ShaderMaterial">
-			</return>
+			<return type="ShaderMaterial" />
 			<description>
 			</description>
 		</method>
 		<method name="tile_set_material">
-			<return type="void">
-			</return>
-			<argument index="0" name="material" type="ShaderMaterial">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="material" type="ShaderMaterial" />
 			<description>
 			</description>
 		</method>

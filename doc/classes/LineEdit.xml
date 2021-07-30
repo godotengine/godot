@@ -32,99 +32,80 @@
 	</tutorials>
 	<methods>
 		<method name="clear">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Erases the [LineEdit]'s [member text].
 			</description>
 		</method>
 		<method name="clear_opentype_features">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Removes all OpenType features.
 			</description>
 		</method>
 		<method name="delete_char_at_caret">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Deletes one character at the caret's current position (equivalent to pressing [kbd]Delete[/kbd]).
 			</description>
 		</method>
 		<method name="delete_text">
-			<return type="void">
-			</return>
-			<argument index="0" name="from_column" type="int">
-			</argument>
-			<argument index="1" name="to_column" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="from_column" type="int" />
+			<argument index="1" name="to_column" type="int" />
 			<description>
 				Deletes a section of the [member text] going from position [code]from_column[/code] to [code]to_column[/code]. Both parameters should be within the text's length.
 			</description>
 		</method>
 		<method name="deselect">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clears the current selection.
 			</description>
 		</method>
 		<method name="get_menu" qualifiers="const">
-			<return type="PopupMenu">
-			</return>
+			<return type="PopupMenu" />
 			<description>
 				Returns the [PopupMenu] of this [LineEdit]. By default, this menu is displayed when right-clicking on the [LineEdit].
 			</description>
 		</method>
 		<method name="get_opentype_feature" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="tag" type="String">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="tag" type="String" />
 			<description>
 				Returns OpenType feature [code]tag[/code].
 			</description>
 		</method>
 		<method name="get_scroll_offset" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the scroll offset due to [member caret_column], as a number of characters.
 			</description>
 		</method>
 		<method name="insert_text_at_caret">
-			<return type="void">
-			</return>
-			<argument index="0" name="text" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="text" type="String" />
 			<description>
 				Inserts [code]text[/code] at the caret. If the resulting value is longer than [member max_length], nothing happens.
 			</description>
 		</method>
 		<method name="is_menu_visible" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns whether the menu is visible. Use this instead of [code]get_menu().visible[/code] to improve performance (so the creation of the menu is avoided).
 			</description>
 		</method>
 		<method name="menu_option">
-			<return type="void">
-			</return>
-			<argument index="0" name="option" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="option" type="int" />
 			<description>
 				Executes a given action as defined in the [enum MenuItems] enum.
 			</description>
 		</method>
 		<method name="select">
-			<return type="void">
-			</return>
-			<argument index="0" name="from" type="int" default="0">
-			</argument>
-			<argument index="1" name="to" type="int" default="-1">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="from" type="int" default="0" />
+			<argument index="1" name="to" type="int" default="-1" />
 			<description>
 				Selects characters inside [LineEdit] between [code]from[/code] and [code]to[/code]. By default, [code]from[/code] is at the beginning and [code]to[/code] at the end.
 				[codeblocks]
@@ -144,19 +125,15 @@
 			</description>
 		</method>
 		<method name="select_all">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Selects the whole [String].
 			</description>
 		</method>
 		<method name="set_opentype_feature">
-			<return type="void">
-			</return>
-			<argument index="0" name="tag" type="String">
-			</argument>
-			<argument index="1" name="value" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="tag" type="String" />
+			<argument index="1" name="value" type="int" />
 			<description>
 				Returns OpenType feature [code]tag[/code]. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
 			</description>
@@ -267,22 +244,19 @@
 	</members>
 	<signals>
 		<signal name="text_change_rejected">
-			<argument index="0" name="rejected_substring" type="String">
-			</argument>
+			<argument index="0" name="rejected_substring" type="String" />
 			<description>
 				Emitted when appending text that overflows the [member max_length]. The appended text is truncated to fit [member max_length], and the part that couldn't fit is passed as the [code]rejected_substring[/code] argument.
 			</description>
 		</signal>
 		<signal name="text_changed">
-			<argument index="0" name="new_text" type="String">
-			</argument>
+			<argument index="0" name="new_text" type="String" />
 			<description>
 				Emitted when the text changes.
 			</description>
 		</signal>
 		<signal name="text_submitted">
-			<argument index="0" name="new_text" type="String">
-			</argument>
+			<argument index="0" name="new_text" type="String" />
 			<description>
 				Emitted when the user presses [constant KEY_ENTER] on the [LineEdit].
 			</description>

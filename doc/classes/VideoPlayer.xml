@@ -13,37 +13,32 @@
 	</tutorials>
 	<methods>
 		<method name="get_stream_name" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the video stream's name, or [code]"&lt;No Stream&gt;"[/code] if no video stream is assigned.
 			</description>
 		</method>
 		<method name="get_video_texture" qualifiers="const">
-			<return type="Texture2D">
-			</return>
+			<return type="Texture2D" />
 			<description>
 				Returns the current frame as a [Texture2D].
 			</description>
 		</method>
 		<method name="is_playing" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the video is playing.
 				[b]Note:[/b] The video is still considered playing if paused during playback.
 			</description>
 		</method>
 		<method name="play">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Starts the video playback from the beginning. If the video is paused, this will not unpause the video.
 			</description>
 		</method>
 		<method name="stop">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Stops the video playback and sets the stream position to 0.
 				[b]Note:[/b] Although the stream position will be set to 0, the first frame of the video stream won't become the current frame.

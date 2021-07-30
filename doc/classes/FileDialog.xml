@@ -10,45 +10,38 @@
 	</tutorials>
 	<methods>
 		<method name="add_filter">
-			<return type="void">
-			</return>
-			<argument index="0" name="filter" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="filter" type="String" />
 			<description>
 				Adds [code]filter[/code] as a custom filter; [code]filter[/code] should be of the form [code]"filename.extension ; Description"[/code]. For example, [code]"*.png ; PNG Images"[/code].
 			</description>
 		</method>
 		<method name="clear_filters">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clear all the added filters in the dialog.
 			</description>
 		</method>
 		<method name="deselect_all">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clear all currently selected items in the dialog.
 			</description>
 		</method>
 		<method name="get_line_edit">
-			<return type="LineEdit">
-			</return>
+			<return type="LineEdit" />
 			<description>
 				Returns the LineEdit for the selected file.
 			</description>
 		</method>
 		<method name="get_vbox">
-			<return type="VBoxContainer">
-			</return>
+			<return type="VBoxContainer" />
 			<description>
 				Returns the vertical box container of the dialog, custom controls can be added to it.
 			</description>
 		</method>
 		<method name="invalidate">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Invalidate and update the current dialog content list.
 			</description>
@@ -85,22 +78,19 @@
 	</members>
 	<signals>
 		<signal name="dir_selected">
-			<argument index="0" name="dir" type="String">
-			</argument>
+			<argument index="0" name="dir" type="String" />
 			<description>
 				Emitted when the user selects a directory.
 			</description>
 		</signal>
 		<signal name="file_selected">
-			<argument index="0" name="path" type="String">
-			</argument>
+			<argument index="0" name="path" type="String" />
 			<description>
 				Emitted when the user selects a file by double-clicking it or pressing the [b]OK[/b] button.
 			</description>
 		</signal>
 		<signal name="files_selected">
-			<argument index="0" name="paths" type="PackedStringArray">
-			</argument>
+			<argument index="0" name="paths" type="PackedStringArray" />
 			<description>
 				Emitted when the user selects multiple files.
 			</description>

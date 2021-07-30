@@ -10,8 +10,7 @@
 	</tutorials>
 	<methods>
 		<method name="get_mesh_arrays" qualifiers="const">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Returns mesh arrays used to constitute surface of [Mesh]. The result can be passed to [method ArrayMesh.add_surface_from_arrays] to create a new surface. For example:
 				[codeblocks]

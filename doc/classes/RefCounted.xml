@@ -14,24 +14,21 @@
 	</tutorials>
 	<methods>
 		<method name="init_ref">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Initializes the internal reference counter. Use this only if you really know what you are doing.
 				Returns whether the initialization was successful.
 			</description>
 		</method>
 		<method name="reference">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Increments the internal reference counter. Use this only if you really know what you are doing.
 				Returns [code]true[/code] if the increment was successful, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="unreference">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Decrements the internal reference counter. Use this only if you really know what you are doing.
 				Returns [code]true[/code] if the decrement was successful, [code]false[/code] otherwise.

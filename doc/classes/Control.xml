@@ -23,12 +23,9 @@
 	</tutorials>
 	<methods>
 		<method name="_can_drop_data" qualifiers="virtual">
-			<return type="bool">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="data" type="Variant">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="position" type="Vector2" />
+			<argument index="1" name="data" type="Variant" />
 			<description>
 				Godot calls this method to test if [code]data[/code] from a control's [method _get_drag_data] can be dropped at [code]position[/code]. [code]position[/code] is local to this control.
 				This method should only be used to test the data. Process the data in [method _drop_data].
@@ -51,12 +48,9 @@
 			</description>
 		</method>
 		<method name="_drop_data" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="data" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="position" type="Vector2" />
+			<argument index="1" name="data" type="Variant" />
 			<description>
 				Godot calls this method to pass you the [code]data[/code] from a control's [method _get_drag_data] result. Godot first calls [method _can_drop_data] to test if [code]data[/code] is allowed to drop at [code]position[/code] where [code]position[/code] is local to this control.
 				[codeblocks]
@@ -80,10 +74,8 @@
 			</description>
 		</method>
 		<method name="_get_drag_data" qualifiers="virtual">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="position" type="Vector2" />
 			<description>
 				Godot calls this method to get data that can be dragged and dropped onto controls that expect drop data. Returns [code]null[/code] if there is no data to drag. Controls that want to receive drop data should implement [method _can_drop_data] and [method _drop_data]. [code]position[/code] is local to this control. Drag may be forced with [method force_drag].
 				A preview that will follow the mouse that should represent the data can be set with [method set_drag_preview]. A good time to set the preview is in this method.
@@ -106,18 +98,15 @@
 			</description>
 		</method>
 		<method name="_get_minimum_size" qualifiers="virtual">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Virtual method to be implemented by the user. Returns the minimum size for this control. Alternative to [member rect_min_size] for controlling minimum size via code. The actual minimum size will be the max value of these two (in each axis separately).
 				If not overridden, defaults to [constant Vector2.ZERO].
 			</description>
 		</method>
 		<method name="_gui_input" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="event" type="InputEvent">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="event" type="InputEvent" />
 			<description>
 				Virtual method to be implemented by the user. Use this method to process and accept inputs on UI elements. See [method accept_event].
 				Example: clicking a control.
@@ -151,10 +140,8 @@
 			</description>
 		</method>
 		<method name="_has_point" qualifiers="virtual const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="" type="Vector2">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="" type="Vector2" />
 			<description>
 				Virtual method to be implemented by the user. Returns whether the given [code]point[/code] is inside this control.
 				If not overridden, default behavior is checking if the point is within control's Rect.
@@ -162,10 +149,8 @@
 			</description>
 		</method>
 		<method name="_make_custom_tooltip" qualifiers="virtual">
-			<return type="Control">
-			</return>
-			<argument index="0" name="for_text" type="String">
-			</argument>
+			<return type="Control" />
+			<argument index="0" name="for_text" type="String" />
 			<description>
 				Virtual method to be implemented by the user. Returns a [Control] node that should be used as a tooltip instead of the default one. The [code]for_text[/code] includes the contents of the [member hint_tooltip] property.
 				The returned node must be of type [Control] or Control-derived. It can have child nodes of any type. It is freed when the tooltip disappears, so make sure you always provide a new instance (if you want to use a pre-existing node from your scene tree, you can duplicate it and pass the duplicated instance). When [code]null[/code] or a non-Control node is returned, the default tooltip will be used instead.
@@ -209,31 +194,24 @@
 			</description>
 		</method>
 		<method name="_structured_text_parser" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="args" type="Array">
-			</argument>
-			<argument index="1" name="text" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="args" type="Array" />
+			<argument index="1" name="text" type="String" />
 			<description>
 				User defined BiDi algorithm override function.
 				Return [code]Array[/code] of [code]Vector2i[/code] text ranges, in the left-to-right order. Ranges should cover full source [code]text[/code] without overlaps. BiDi algorithm will be used on each range separately.
 			</description>
 		</method>
 		<method name="accept_event">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Marks an input event as handled. Once you accept an input event, it stops propagating, even to nodes listening to [method Node._unhandled_input] or [method Node._unhandled_key_input].
 			</description>
 		</method>
 		<method name="add_theme_color_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="color" type="Color" />
 			<description>
 				Creates a local override for a theme [Color] with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_color_override].
 				See also [method get_theme_color].
@@ -259,60 +237,45 @@
 			</description>
 		</method>
 		<method name="add_theme_constant_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="constant" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="constant" type="int" />
 			<description>
 				Creates a local override for a theme constant with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_constant_override].
 				See also [method get_theme_constant].
 			</description>
 		</method>
 		<method name="add_theme_font_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="font" type="Font">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="font" type="Font" />
 			<description>
 				Creates a local override for a theme [Font] with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_font_override].
 				See also [method get_theme_font].
 			</description>
 		</method>
 		<method name="add_theme_font_size_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="font_size" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="font_size" type="int" />
 			<description>
 				Creates a local override for a theme font size with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_font_size_override].
 				See also [method get_theme_font_size].
 			</description>
 		</method>
 		<method name="add_theme_icon_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="texture" type="Texture2D">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="texture" type="Texture2D" />
 			<description>
 				Creates a local override for a theme icon with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_icon_override].
 				See also [method get_theme_icon].
 			</description>
 		</method>
 		<method name="add_theme_stylebox_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="stylebox" type="StyleBox">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="stylebox" type="StyleBox" />
 			<description>
 				Creates a local override for a theme [StyleBox] with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_stylebox_override].
 				See also [method get_theme_stylebox].
@@ -344,137 +307,112 @@
 			</description>
 		</method>
 		<method name="find_next_valid_focus" qualifiers="const">
-			<return type="Control">
-			</return>
+			<return type="Control" />
 			<description>
 				Finds the next (below in the tree) [Control] that can receive the focus.
 			</description>
 		</method>
 		<method name="find_prev_valid_focus" qualifiers="const">
-			<return type="Control">
-			</return>
+			<return type="Control" />
 			<description>
 				Finds the previous (above in the tree) [Control] that can receive the focus.
 			</description>
 		</method>
 		<method name="force_drag">
-			<return type="void">
-			</return>
-			<argument index="0" name="data" type="Variant">
-			</argument>
-			<argument index="1" name="preview" type="Control">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="data" type="Variant" />
+			<argument index="1" name="preview" type="Control" />
 			<description>
 				Forces drag and bypasses [method _get_drag_data] and [method set_drag_preview] by passing [code]data[/code] and [code]preview[/code]. Drag will start even if the mouse is neither over nor pressed on this control.
 				The methods [method _can_drop_data] and [method _drop_data] must be implemented on controls that want to receive drop data.
 			</description>
 		</method>
 		<method name="get_anchor" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="side" type="int" enum="Side">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="side" type="int" enum="Side" />
 			<description>
 				Returns the anchor for the specified [enum Side]. A getter method for [member anchor_bottom], [member anchor_left], [member anchor_right] and [member anchor_top].
 			</description>
 		</method>
 		<method name="get_begin" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns [member offset_left] and [member offset_top]. See also [member rect_position].
 			</description>
 		</method>
 		<method name="get_combined_minimum_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns combined minimum size from [member rect_min_size] and [method get_minimum_size].
 			</description>
 		</method>
 		<method name="get_cursor_shape" qualifiers="const">
-			<return type="int" enum="Control.CursorShape">
-			</return>
-			<argument index="0" name="position" type="Vector2" default="Vector2(0, 0)">
-			</argument>
+			<return type="int" enum="Control.CursorShape" />
+			<argument index="0" name="position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
 				Returns the mouse cursor shape the control displays on mouse hover. See [enum CursorShape].
 			</description>
 		</method>
 		<method name="get_end" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns [member offset_right] and [member offset_bottom].
 			</description>
 		</method>
 		<method name="get_focus_neighbor" qualifiers="const">
-			<return type="NodePath">
-			</return>
-			<argument index="0" name="side" type="int" enum="Side">
-			</argument>
+			<return type="NodePath" />
+			<argument index="0" name="side" type="int" enum="Side" />
 			<description>
 				Returns the focus neighbor for the specified [enum Side]. A getter method for [member focus_neighbor_bottom], [member focus_neighbor_left], [member focus_neighbor_right] and [member focus_neighbor_top].
 			</description>
 		</method>
 		<method name="get_focus_owner" qualifiers="const">
-			<return type="Control">
-			</return>
+			<return type="Control" />
 			<description>
 				Returns the control that has the keyboard focus or [code]null[/code] if none.
 			</description>
 		</method>
 		<method name="get_global_rect" qualifiers="const">
-			<return type="Rect2">
-			</return>
+			<return type="Rect2" />
 			<description>
 				Returns the position and size of the control relative to the top-left corner of the screen. See [member rect_position] and [member rect_size].
 			</description>
 		</method>
 		<method name="get_minimum_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns the minimum size for this control. See [member rect_min_size].
 			</description>
 		</method>
 		<method name="get_offset" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="offset" type="int" enum="Side">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="offset" type="int" enum="Side" />
 			<description>
 				Returns the anchor for the specified [enum Side]. A getter method for [member offset_bottom], [member offset_left], [member offset_right] and [member offset_top].
 			</description>
 		</method>
 		<method name="get_parent_area_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns the width/height occupied in the parent control.
 			</description>
 		</method>
 		<method name="get_parent_control" qualifiers="const">
-			<return type="Control">
-			</return>
+			<return type="Control" />
 			<description>
 				Returns the parent control node.
 			</description>
 		</method>
 		<method name="get_rect" qualifiers="const">
-			<return type="Rect2">
-			</return>
+			<return type="Rect2" />
 			<description>
 				Returns the position and size of the control relative to the top-left corner of the parent Control. See [member rect_position] and [member rect_size].
 			</description>
 		</method>
 		<method name="get_theme_color" qualifiers="const">
-			<return type="Color">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
 				Returns a [Color] from the first matching [Theme] in the tree if that [Theme] has a color item with the specified [code]name[/code] and [code]theme_type[/code]. If [code]theme_type[/code] is omitted the class name of the current control is used as the type, or [member theme_type_variation] if it is defined. If the type is a class name its parent classes are also checked, in order of inheritance. If the type is a variation its base types are checked, in order of dependency, then the control's class name and its parent classes are checked.
 				For the current control its local overrides are considered first (see [method add_theme_color_override]), then its assigned [member theme]. After the current control, each parent control and its assigned [member theme] are considered; controls without a [member theme] assigned are skipped. If no matching [Theme] is found in the tree, a custom project [Theme] (see [member ProjectSettings.gui/theme/custom]) and the default [Theme] are used.
@@ -499,77 +437,59 @@
 			</description>
 		</method>
 		<method name="get_theme_constant" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
 				Returns a constant from the first matching [Theme] in the tree if that [Theme] has a constant item with the specified [code]name[/code] and [code]theme_type[/code].
 				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="get_theme_font" qualifiers="const">
-			<return type="Font">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
-			</argument>
+			<return type="Font" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
 				Returns a [Font] from the first matching [Theme] in the tree if that [Theme] has a font item with the specified [code]name[/code] and [code]theme_type[/code].
 				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="get_theme_font_size" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
 				Returns a font size from the first matching [Theme] in the tree if that [Theme] has a font size item with the specified [code]name[/code] and [code]theme_type[/code].
 				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="get_theme_icon" qualifiers="const">
-			<return type="Texture2D">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
-			</argument>
+			<return type="Texture2D" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
 				Returns an icon from the first matching [Theme] in the tree if that [Theme] has an icon item with the specified [code]name[/code] and [code]theme_type[/code].
 				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="get_theme_stylebox" qualifiers="const">
-			<return type="StyleBox">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
-			</argument>
+			<return type="StyleBox" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
 				Returns a [StyleBox] from the first matching [Theme] in the tree if that [Theme] has a stylebox item with the specified [code]name[/code] and [code]theme_type[/code].
 				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="get_tooltip" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="at_position" type="Vector2" default="Vector2(0, 0)">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="at_position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
 				Returns the tooltip, which will appear when the cursor is resting over this control. See [member hint_tooltip].
 			</description>
 		</method>
 		<method name="grab_click_focus">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Creates an [InputEventMouseButton] that attempts to click the control. If the event is received, the control acquires focus.
 				[codeblocks]
@@ -587,237 +507,185 @@
 			</description>
 		</method>
 		<method name="grab_focus">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Steal the focus from another control and become the focused control (see [member focus_mode]).
 			</description>
 		</method>
 		<method name="has_focus" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this is the current focused control. See [member focus_mode].
 			</description>
 		</method>
 		<method name="has_theme_color" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a color item with the specified [code]name[/code] and [code]theme_type[/code].
 				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="has_theme_color_override" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if there is a local override for a theme [Color] with the specified [code]name[/code] in this [Control] node.
 				See [method add_theme_color_override].
 			</description>
 		</method>
 		<method name="has_theme_constant" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a constant item with the specified [code]name[/code] and [code]theme_type[/code].
 				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="has_theme_constant_override" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if there is a local override for a theme constant with the specified [code]name[/code] in this [Control] node.
 				See [method add_theme_constant_override].
 			</description>
 		</method>
 		<method name="has_theme_font" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a font item with the specified [code]name[/code] and [code]theme_type[/code].
 				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="has_theme_font_override" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if there is a local override for a theme [Font] with the specified [code]name[/code] in this [Control] node.
 				See [method add_theme_font_override].
 			</description>
 		</method>
 		<method name="has_theme_font_size" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a font size item with the specified [code]name[/code] and [code]theme_type[/code].
 				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="has_theme_font_size_override" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if there is a local override for a theme font size with the specified [code]name[/code] in this [Control] node.
 				See [method add_theme_font_size_override].
 			</description>
 		</method>
 		<method name="has_theme_icon" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has an icon item with the specified [code]name[/code] and [code]theme_type[/code].
 				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="has_theme_icon_override" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if there is a local override for a theme icon with the specified [code]name[/code] in this [Control] node.
 				See [method add_theme_icon_override].
 			</description>
 		</method>
 		<method name="has_theme_stylebox" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a stylebox item with the specified [code]name[/code] and [code]theme_type[/code].
 				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="has_theme_stylebox_override" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if there is a local override for a theme [StyleBox] with the specified [code]name[/code] in this [Control] node.
 				See [method add_theme_stylebox_override].
 			</description>
 		</method>
 		<method name="is_layout_rtl" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if layout is right-to-left.
 			</description>
 		</method>
 		<method name="minimum_size_changed">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Invalidates the size cache in this node and in parent nodes up to top_level. Intended to be used with [method get_minimum_size] when the return value is changed. Setting [member rect_min_size] directly calls this method automatically.
 			</description>
 		</method>
 		<method name="release_focus">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Give up the focus. No other control will be able to receive keyboard input.
 			</description>
 		</method>
 		<method name="remove_theme_color_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 				Removes a local override for a theme [Color] with the specified [code]name[/code] previously added by [method add_theme_color_override] or via the Inspector dock.
 			</description>
 		</method>
 		<method name="remove_theme_constant_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 				Removes a local override for a theme constant with the specified [code]name[/code] previously added by [method add_theme_constant_override] or via the Inspector dock.
 			</description>
 		</method>
 		<method name="remove_theme_font_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 				Removes a local override for a theme [Font] with the specified [code]name[/code] previously added by [method add_theme_font_override] or via the Inspector dock.
 			</description>
 		</method>
 		<method name="remove_theme_font_size_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 				Removes a local override for a theme font size with the specified [code]name[/code] previously added by [method add_theme_font_size_override] or via the Inspector dock.
 			</description>
 		</method>
 		<method name="remove_theme_icon_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 				Removes a local override for a theme icon with the specified [code]name[/code] previously added by [method add_theme_icon_override] or via the Inspector dock.
 			</description>
 		</method>
 		<method name="remove_theme_stylebox_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 				Removes a local override for a theme [StyleBox] with the specified [code]name[/code] previously added by [method add_theme_stylebox_override] or via the Inspector dock.
 			</description>
 		</method>
 		<method name="set_anchor">
-			<return type="void">
-			</return>
-			<argument index="0" name="side" type="int" enum="Side">
-			</argument>
-			<argument index="1" name="anchor" type="float">
-			</argument>
-			<argument index="2" name="keep_offset" type="bool" default="false">
-			</argument>
-			<argument index="3" name="push_opposite_anchor" type="bool" default="true">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="side" type="int" enum="Side" />
+			<argument index="1" name="anchor" type="float" />
+			<argument index="2" name="keep_offset" type="bool" default="false" />
+			<argument index="3" name="push_opposite_anchor" type="bool" default="true" />
 			<description>
 				Sets the anchor for the specified [enum Side] to [code]anchor[/code]. A setter method for [member anchor_bottom], [member anchor_left], [member anchor_right] and [member anchor_top].
 				If [code]keep_offset[/code] is [code]true[/code], offsets aren't updated after this operation.
@@ -825,59 +693,43 @@
 			</description>
 		</method>
 		<method name="set_anchor_and_offset">
-			<return type="void">
-			</return>
-			<argument index="0" name="side" type="int" enum="Side">
-			</argument>
-			<argument index="1" name="anchor" type="float">
-			</argument>
-			<argument index="2" name="offset" type="float">
-			</argument>
-			<argument index="3" name="push_opposite_anchor" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="side" type="int" enum="Side" />
+			<argument index="1" name="anchor" type="float" />
+			<argument index="2" name="offset" type="float" />
+			<argument index="3" name="push_opposite_anchor" type="bool" default="false" />
 			<description>
 				Works the same as [method set_anchor], but instead of [code]keep_offset[/code] argument and automatic update of offset, it allows to set the offset yourself (see [method set_offset]).
 			</description>
 		</method>
 		<method name="set_anchors_and_offsets_preset">
-			<return type="void">
-			</return>
-			<argument index="0" name="preset" type="int" enum="Control.LayoutPreset">
-			</argument>
-			<argument index="1" name="resize_mode" type="int" enum="Control.LayoutPresetMode" default="0">
-			</argument>
-			<argument index="2" name="margin" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="preset" type="int" enum="Control.LayoutPreset" />
+			<argument index="1" name="resize_mode" type="int" enum="Control.LayoutPresetMode" default="0" />
+			<argument index="2" name="margin" type="int" default="0" />
 			<description>
 				Sets both anchor preset and offset preset. See [method set_anchors_preset] and [method set_offsets_preset].
 			</description>
 		</method>
 		<method name="set_anchors_preset">
-			<return type="void">
-			</return>
-			<argument index="0" name="preset" type="int" enum="Control.LayoutPreset">
-			</argument>
-			<argument index="1" name="keep_offsets" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="preset" type="int" enum="Control.LayoutPreset" />
+			<argument index="1" name="keep_offsets" type="bool" default="false" />
 			<description>
 				Sets the anchors to a [code]preset[/code] from [enum Control.LayoutPreset] enum. This is the code equivalent to using the Layout menu in the 2D editor.
 				If [code]keep_offsets[/code] is [code]true[/code], control's position will also be updated.
 			</description>
 		</method>
 		<method name="set_begin">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="position" type="Vector2" />
 			<description>
 				Sets [member offset_left] and [member offset_top] at the same time. Equivalent of changing [member rect_position].
 			</description>
 		</method>
 		<method name="set_drag_forwarding">
-			<return type="void">
-			</return>
-			<argument index="0" name="target" type="Control">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="target" type="Control" />
 			<description>
 				Forwards the handling of this control's drag and drop to [code]target[/code] control.
 				Forwarding can be implemented in the target control similar to the methods [method _get_drag_data], [method _can_drop_data], and [method _drop_data] but with two differences:
@@ -941,10 +793,8 @@
 			</description>
 		</method>
 		<method name="set_drag_preview">
-			<return type="void">
-			</return>
-			<argument index="0" name="control" type="Control">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="control" type="Control" />
 			<description>
 				Shows the given control at the mouse pointer. A good time to call this method is in [method _get_drag_data]. The control must not be in the scene tree. You should not free the control, and you should not keep a reference to the control beyond the duration of the drag. It will be deleted automatically after the drag has ended.
 				[codeblocks]
@@ -977,57 +827,42 @@
 			</description>
 		</method>
 		<method name="set_end">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="position" type="Vector2" />
 			<description>
 				Sets [member offset_right] and [member offset_bottom] at the same time.
 			</description>
 		</method>
 		<method name="set_focus_neighbor">
-			<return type="void">
-			</return>
-			<argument index="0" name="side" type="int" enum="Side">
-			</argument>
-			<argument index="1" name="neighbor" type="NodePath">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="side" type="int" enum="Side" />
+			<argument index="1" name="neighbor" type="NodePath" />
 			<description>
 				Sets the anchor for the specified [enum Side] to the [Control] at [code]neighbor[/code] node path. A setter method for [member focus_neighbor_bottom], [member focus_neighbor_left], [member focus_neighbor_right] and [member focus_neighbor_top].
 			</description>
 		</method>
 		<method name="set_global_position">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="keep_offsets" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="position" type="Vector2" />
+			<argument index="1" name="keep_offsets" type="bool" default="false" />
 			<description>
 				Sets the [member rect_global_position] to given [code]position[/code].
 				If [code]keep_offsets[/code] is [code]true[/code], control's anchors will be updated instead of offsets.
 			</description>
 		</method>
 		<method name="set_offset">
-			<return type="void">
-			</return>
-			<argument index="0" name="side" type="int" enum="Side">
-			</argument>
-			<argument index="1" name="offset" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="side" type="int" enum="Side" />
+			<argument index="1" name="offset" type="float" />
 			<description>
 				Sets the offset for the specified [enum Side] to [code]offset[/code]. A setter method for [member offset_bottom], [member offset_left], [member offset_right] and [member offset_top].
 			</description>
 		</method>
 		<method name="set_offsets_preset">
-			<return type="void">
-			</return>
-			<argument index="0" name="preset" type="int" enum="Control.LayoutPreset">
-			</argument>
-			<argument index="1" name="resize_mode" type="int" enum="Control.LayoutPresetMode" default="0">
-			</argument>
-			<argument index="2" name="margin" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="preset" type="int" enum="Control.LayoutPreset" />
+			<argument index="1" name="resize_mode" type="int" enum="Control.LayoutPresetMode" default="0" />
+			<argument index="2" name="margin" type="int" default="0" />
 			<description>
 				Sets the offsets to a [code]preset[/code] from [enum Control.LayoutPreset] enum. This is the code equivalent to using the Layout menu in the 2D editor.
 				Use parameter [code]resize_mode[/code] with constants from [enum Control.LayoutPresetMode] to better determine the resulting size of the [Control]. Constant size will be ignored if used with presets that change size, e.g. [code]PRESET_LEFT_WIDE[/code].
@@ -1035,34 +870,26 @@
 			</description>
 		</method>
 		<method name="set_position">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="keep_offsets" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="position" type="Vector2" />
+			<argument index="1" name="keep_offsets" type="bool" default="false" />
 			<description>
 				Sets the [member rect_position] to given [code]position[/code].
 				If [code]keep_offsets[/code] is [code]true[/code], control's anchors will be updated instead of offsets.
 			</description>
 		</method>
 		<method name="set_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="Vector2">
-			</argument>
-			<argument index="1" name="keep_offsets" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="size" type="Vector2" />
+			<argument index="1" name="keep_offsets" type="bool" default="false" />
 			<description>
 				Sets the size (see [member rect_size]).
 				If [code]keep_offsets[/code] is [code]true[/code], control's anchors will be updated instead of offsets.
 			</description>
 		</method>
 		<method name="warp_mouse">
-			<return type="void">
-			</return>
-			<argument index="0" name="to_position" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="to_position" type="Vector2" />
 			<description>
 				Moves the mouse cursor to [code]to_position[/code], relative to [member rect_position] of this [Control].
 			</description>
@@ -1218,8 +1045,7 @@
 			</description>
 		</signal>
 		<signal name="gui_input">
-			<argument index="0" name="event" type="InputEvent">
-			</argument>
+			<argument index="0" name="event" type="InputEvent" />
 			<description>
 				Emitted when the node receives an [InputEvent].
 			</description>

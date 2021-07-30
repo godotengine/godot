@@ -8,38 +8,30 @@
 	</tutorials>
 	<methods>
 		<method name="close_library">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 			</description>
 		</method>
 		<method name="get_minimum_library_initialization_level" qualifiers="const">
-			<return type="int" enum="NativeExtension.InitializationLevel">
-			</return>
+			<return type="int" enum="NativeExtension.InitializationLevel" />
 			<description>
 			</description>
 		</method>
 		<method name="initialize_library">
-			<return type="void">
-			</return>
-			<argument index="0" name="level" type="int" enum="NativeExtension.InitializationLevel">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="level" type="int" enum="NativeExtension.InitializationLevel" />
 			<description>
 			</description>
 		</method>
 		<method name="is_library_open" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="open_library">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="entry_symbol" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="entry_symbol" type="String" />
 			<description>
 			</description>
 		</method>

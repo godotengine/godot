@@ -11,65 +11,53 @@
 	</tutorials>
 	<methods>
 		<method name="get_joint_one_bone2d_node" qualifiers="const">
-			<return type="NodePath">
-			</return>
+			<return type="NodePath" />
 			<description>
 				Returns the [Bone2D] node that is being used as the first bone in the TwoBoneIK modification.
 			</description>
 		</method>
 		<method name="get_joint_one_bone_idx" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the index of the [Bone2D] node that is being used as the first bone in the TwoBoneIK modification.
 			</description>
 		</method>
 		<method name="get_joint_two_bone2d_node" qualifiers="const">
-			<return type="NodePath">
-			</return>
+			<return type="NodePath" />
 			<description>
 				Returns the [Bone2D] node that is being used as the second bone in the TwoBoneIK modification.
 			</description>
 		</method>
 		<method name="get_joint_two_bone_idx" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the index of the [Bone2D] node that is being used as the second bone in the TwoBoneIK modification.
 			</description>
 		</method>
 		<method name="set_joint_one_bone2d_node">
-			<return type="void">
-			</return>
-			<argument index="0" name="bone2d_node" type="NodePath">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="bone2d_node" type="NodePath" />
 			<description>
 				Sets the [Bone2D] node that is being used as the first bone in the TwoBoneIK modification.
 			</description>
 		</method>
 		<method name="set_joint_one_bone_idx">
-			<return type="void">
-			</return>
-			<argument index="0" name="bone_idx" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="bone_idx" type="int" />
 			<description>
 				Sets the index of the [Bone2D] node that is being used as the first bone in the TwoBoneIK modification.
 			</description>
 		</method>
 		<method name="set_joint_two_bone2d_node">
-			<return type="void">
-			</return>
-			<argument index="0" name="bone2d_node" type="NodePath">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="bone2d_node" type="NodePath" />
 			<description>
 				Sets the [Bone2D] node that is being used as the second bone in the TwoBoneIK modification.
 			</description>
 		</method>
 		<method name="set_joint_two_bone_idx">
-			<return type="void">
-			</return>
-			<argument index="0" name="bone_idx" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="bone_idx" type="int" />
 			<description>
 				Sets the index of the [Bone2D] node that is being used as the second bone in the TwoBoneIK modification.
 			</description>
