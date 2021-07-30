@@ -31,6 +31,7 @@
 #include "code_editor.h"
 
 #include "core/input/input.h"
+#include "core/object/message_queue.h"
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
 #include "editor/editor_scale.h"
@@ -1567,6 +1568,17 @@ void CodeTextEditor::_update_font() {
 }
 
 void CodeTextEditor::_on_settings_change() {
+	if (settings_changed) {
+		return;
+	}
+
+	settings_changed = true;
+	MessageQueue::get_singleton()->push_callable(callable_mp(this, &CodeTextEditor::_apply_settings_change));
+}
+
+void CodeTextEditor::_apply_settings_change() {
+	settings_changed = false;
+
 	_update_text_editor_theme();
 	_update_font();
 
