@@ -982,7 +982,6 @@ void ResourceLoaderText::open(FileAccess *p_f, bool p_skip_first_tag) {
 
 	rp.ext_func = _parse_ext_resources;
 	rp.sub_func = _parse_sub_resources;
-	rp.func = nullptr;
 	rp.userdata = this;
 }
 
