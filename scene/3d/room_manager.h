@@ -215,7 +215,7 @@ private:
 	void debug_print_line(String p_string, int p_priority = 0);
 
 public:
-	static String _find_name_after(Node *p_node, String p_string_start);
+	static String _find_name_after(Node *p_node, String p_prefix, bool p_allow_no_prefix = false);
 	static void show_warning(const String &p_string, const String &p_extra_string = "", bool p_alert = true);
 	static real_t _get_default_portal_margin() { return _default_portal_margin; }
 

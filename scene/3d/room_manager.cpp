@@ -776,16 +776,34 @@ void RoomManager::_third_pass_rooms(const LocalVector<Portal *> &p_portals) {
 	for (int n = 0; n < _rooms.size(); n++) {
 		Room *room = _rooms[n];
 
-		String room_short_name = _find_name_after(room, "ROOM");
-		convert_log("ROOM\t" + room_short_name);
+		// no need to do all these string operations if we are not debugging and don't need logs
+		if (_show_debug) {
+			String room_short_name = _find_name_after(room, "Room", true);
+			convert_log("ROOM\t" + room_short_name);
 
-		// log output the portals associated with this room
-		for (int p = 0; p < room->_portals.size(); p++) {
-			const Portal &portal = *p_portals[room->_portals[p]];
+			// log output the portals associated with this room
+			for (int p = 0; p < room->_portals.size(); p++) {
+				const Portal &portal = *p_portals[room->_portals[p]];
 
-			String in_or_out = (portal._linkedroom_ID[0] == room->_room_ID) ? "POUT" : "PIN ";
-			convert_log("\t\t" + in_or_out + "\t" + portal.get_name());
-		}
+				bool portal_links_out = portal._linkedroom_ID[0] == room->_room_ID;
+
+				int linked_room_id = (portal_links_out) ? portal._linkedroom_ID[1] : portal._linkedroom_ID[0];
+
+				// this shouldn't be out of range, but just in case
+				if (linked_room_id < _rooms.size()) {
+					Room *linked_room = _rooms[linked_room_id];
+
+					String portal_link_room_name = _find_name_after(linked_room, "Room", true);
+					String in_or_out = (portal_links_out) ? "POUT" : "PIN ";
+
+					// display the name of the room linked to
+					convert_log("\t\t" + in_or_out + "\t" + portal_link_room_name);
+				} else {
+					WARN_PRINT_ONCE("linked_room_id is out of range");
+				}
+			}
+
+		} // if _show_debug
 
 		// do a second pass finding the statics, where they are
 		// finally added to the rooms in the portal_renderer.
@@ -808,21 +826,26 @@ void RoomManager::_third_pass_rooms(const LocalVector<Portal *> &p_portals) {
 }
 
 void RoomManager::_second_pass_portals(Spatial *p_roomlist, LocalVector<Portal *> &r_portals) {
-	convert_log("_second_pass_portals");
-
 	for (unsigned int n = 0; n < r_portals.size(); n++) {
 		Portal *portal = r_portals[n];
-		String string_link_room_shortname = _find_name_after(portal, "Portal");
-		String string_link_room = "Room" + GODOT_PORTAL_DELINEATOR + string_link_room_shortname;
 
-		if (string_link_room_shortname != "") {
-			Room *linked_room = Object::cast_to<Room>(p_roomlist->find_node(string_link_room, true, false));
-			if (linked_room) {
-				NodePath path = portal->get_path_to(linked_room);
-				portal->set_linked_room_internal(path);
-			} else {
-				WARN_PRINT("Portal link room : " + string_link_room + " not found.");
-				_warning_portal_link_room_not_found = true;
+		// we have a choice here.
+		// If we are importing, we will try linking using the naming convention method.
+		// We do this by setting the assigned nodepath if we find the link room, then
+		// the resolving links is done in the usual manner from the nodepath.
+		if (portal->_importing_portal) {
+			String string_link_room_shortname = _find_name_after(portal, "Portal");
+			String string_link_room = "Room" + GODOT_PORTAL_DELINEATOR + string_link_room_shortname;
+
+			if (string_link_room_shortname != "") {
+				Room *linked_room = Object::cast_to<Room>(p_roomlist->find_node(string_link_room, true, false));
+				if (linked_room) {
+					NodePath path = portal->get_path_to(linked_room);
+					portal->set_linked_room_internal(path);
+				} else {
+					WARN_PRINT("Portal link room : " + string_link_room + " not found.");
+					_warning_portal_link_room_not_found = true;
+				}
 			}
 		}
 
@@ -849,8 +872,6 @@ void RoomManager::_second_pass_portals(Spatial *p_roomlist, LocalVector<Portal *
 }
 
 void RoomManager::_autolink_portals(Spatial *p_roomlist, LocalVector<Portal *> &r_portals) {
-	convert_log("_autolink_portals");
-
 	for (unsigned int n = 0; n < r_portals.size(); n++) {
 		Portal *portal = r_portals[n];
 
@@ -958,12 +979,12 @@ bool RoomManager::_check_roomlist_validity(Node *p_node) {
 
 void RoomManager::_convert_rooms_recursive(Spatial *p_node, LocalVector<Portal *> &r_portals, LocalVector<RoomGroup *> &r_roomgroups, int p_roomgroup) {
 	// is this a room?
-	if (_name_starts_with(p_node, "Room") || _node_is_type<Room>(p_node)) {
+	if (_node_is_type<Room>(p_node) || _name_starts_with(p_node, "Room")) {
 		_convert_room(p_node, r_portals, r_roomgroups, p_roomgroup);
 	}
 
 	// is this a roomgroup?
-	if (_name_starts_with(p_node, "RoomGroup") || _node_is_type<RoomGroup>(p_node)) {
+	if (_node_is_type<RoomGroup>(p_node) || _name_starts_with(p_node, "RoomGroup")) {
 		p_roomgroup = _convert_roomgroup(p_node, r_roomgroups);
 	}
 
@@ -1570,12 +1591,16 @@ bool RoomManager::_add_plane_if_unique(const Room *p_room, LocalVector<Plane, in
 void RoomManager::_convert_portal(Room *p_room, Spatial *p_node, LocalVector<Portal *> &portals) {
 	Portal *portal = Object::cast_to<Portal>(p_node);
 
+	bool importing = false;
+
 	// if not a gportal already, convert the node type
 	if (!portal) {
+		importing = true;
 		portal = _change_node_type<Portal>(p_node, "G", false);
 		portal->create_from_mesh_instance(Object::cast_to<MeshInstance>(p_node));
 
 		p_node->queue_delete();
+
 	} else {
 		// only allow converting once
 		if (portal->_conversion_tick == _conversion_tick) {
@@ -1585,6 +1610,10 @@ void RoomManager::_convert_portal(Room *p_room, Spatial *p_node, LocalVector<Por
 
 	// make sure to start with fresh internal data each time (for linked rooms etc)
 	portal->clear();
+
+	// mark the portal if we are importing, because we will need to use the naming
+	// prefix system to look for linked rooms in that case
+	portal->_importing_portal = importing;
 
 	// mark so as only to convert once
 	portal->_conversion_tick = _conversion_tick;
@@ -1976,12 +2005,29 @@ bool RoomManager::_name_starts_with(const Node *p_node, String p_search_string, 
 	return false;
 }
 
-String RoomManager::_find_name_after(Node *p_node, String p_string_start) {
-	p_string_start += GODOT_PORTAL_DELINEATOR;
+String RoomManager::_find_name_after(Node *p_node, String p_prefix, bool p_allow_no_prefix) {
+	ERR_FAIL_NULL_V(p_node, String());
+
+	p_prefix += GODOT_PORTAL_DELINEATOR;
+	p_prefix = p_prefix.to_lower();
+	int prefix_length = p_prefix.length();
+
+	String name = p_node->get_name();
+	String name_start = name.substr(0, prefix_length).to_lower();
 
 	String string_result;
-	String name = p_node->get_name();
-	string_result = name.substr(p_string_start.length());
+
+	// is the prefix correct?
+	if (p_prefix == name_start) {
+		string_result = name.substr(prefix_length);
+	} else {
+		if (p_allow_no_prefix) {
+			// there is no prefix, or the prefix is incorrect...
+			// we will pass the whole name
+			string_result = name;
+		}
+		// else we will return a null string
+	}
 
 	// because godot doesn't support multiple nodes with the same name, we will strip e.g. a number
 	// after an @ on the end of the name...
