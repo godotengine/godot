@@ -4471,6 +4471,9 @@ void AnimationTrackEditor::_add_track(int p_type) {
 	}
 	adding_track_type = p_type;
 	pick_track->popup_centered_ratio();
+
+	pick_track->get_filter_line_edit()->clear();
+	pick_track->get_filter_line_edit()->grab_focus();
 }
 
 void AnimationTrackEditor::_new_track_property_selected(String p_name) {
@@ -5720,11 +5723,77 @@ void AnimationTrackEditor::_bind_methods() {
 	ClassDB::bind_method("_snap_mode_changed", &AnimationTrackEditor::_snap_mode_changed);
 	ClassDB::bind_method("_show_imported_anim_warning", &AnimationTrackEditor::_show_imported_anim_warning);
 	ClassDB::bind_method("_select_all_tracks_for_copy", &AnimationTrackEditor::_select_all_tracks_for_copy);
+	ClassDB::bind_method("_pick_track_filter_text_changed", &AnimationTrackEditor::_pick_track_filter_text_changed);
+	ClassDB::bind_method("_pick_track_filter_input", &AnimationTrackEditor::_pick_track_filter_input);
 
 	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::REAL, "position"), PropertyInfo(Variant::BOOL, "drag")));
 	ADD_SIGNAL(MethodInfo("keying_changed"));
 	ADD_SIGNAL(MethodInfo("animation_len_changed", PropertyInfo(Variant::REAL, "len")));
 	ADD_SIGNAL(MethodInfo("animation_step_changed", PropertyInfo(Variant::REAL, "step")));
+}
+
+void AnimationTrackEditor::_pick_track_filter_text_changed(const String &p_text) {
+	TreeItem *root_item = pick_track->get_scene_tree()->get_scene_tree()->get_root();
+
+	Vector<Node *> select_candidates;
+	Node *to_select = nullptr;
+
+	String filter = pick_track->get_filter_line_edit()->get_text();
+
+	_pick_track_select_recursive(root_item, filter, select_candidates);
+
+	if (!select_candidates.empty()) {
+		for (int i = 0; i < select_candidates.size(); ++i) {
+			Node *candidate = select_candidates[i];
+
+			if (((String)candidate->get_name()).to_lower().begins_with(filter.to_lower())) {
+				to_select = candidate;
+				break;
+			}
+		}
+
+		if (!to_select) {
+			to_select = select_candidates[0];
+		}
+	}
+
+	pick_track->get_scene_tree()->set_selected(to_select);
+}
+
+void AnimationTrackEditor::_pick_track_select_recursive(TreeItem *p_item, const String &p_filter, Vector<Node *> &p_select_candidates) {
+	if (!p_item) {
+		return;
+	}
+
+	NodePath np = p_item->get_metadata(0);
+	Node *node = get_node(np);
+
+	if (p_filter != String() && ((String)node->get_name()).findn(p_filter) != -1) {
+		p_select_candidates.push_back(node);
+	}
+
+	TreeItem *c = p_item->get_children();
+
+	while (c) {
+		_pick_track_select_recursive(c, p_filter, p_select_candidates);
+		c = c->get_next();
+	}
+}
+
+void AnimationTrackEditor::_pick_track_filter_input(const Ref<InputEvent> &p_ie) {
+	Ref<InputEventKey> k = p_ie;
+
+	if (k.is_valid()) {
+		switch (k->get_scancode()) {
+			case KEY_UP:
+			case KEY_DOWN:
+			case KEY_PAGEUP:
+			case KEY_PAGEDOWN: {
+				pick_track->get_scene_tree()->get_scene_tree()->call("_gui_input", k);
+				pick_track->get_filter_line_edit()->accept_event();
+			} break;
+		}
+	}
 }
 
 AnimationTrackEditor::AnimationTrackEditor() {
@@ -5896,8 +5965,12 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	pick_track = memnew(SceneTreeDialog);
 	add_child(pick_track);
+	pick_track->register_text_enter(pick_track->get_filter_line_edit());
 	pick_track->set_title(TTR("Pick the node that will be animated:"));
 	pick_track->connect("selected", this, "_new_track_node_selected");
+	pick_track->get_filter_line_edit()->connect("text_changed", this, "_pick_track_filter_text_changed");
+	pick_track->get_filter_line_edit()->connect("gui_input", this, "_pick_track_filter_input");
+
 	prop_selector = memnew(PropertySelector);
 	add_child(prop_selector);
 	prop_selector->connect("selected", this, "_new_track_property_selected");
