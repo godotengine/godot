@@ -683,6 +683,10 @@ private:
 	void _update_camera_override_viewport(Object *p_viewport);
 
 	HBoxContainer *hbc_menu;
+	// Used for secondary menu items which are displayed depending on the currently selected node
+	// (such as MeshInstance's "Mesh" menu).
+	PanelContainer *context_menu_container;
+	HBoxContainer *hbc_context_menu;
 
 	void _generate_selection_boxes();
 	UndoRedo *undo_redo;
@@ -690,6 +694,7 @@ private:
 	int camera_override_viewport_id;
 
 	void _init_indicators();
+	void _update_context_menu_stylebox();
 	void _update_gizmos_menu();
 	void _update_gizmos_menu_theme();
 	void _init_grid();

@@ -234,6 +234,10 @@ private:
 	HScrollBar *h_scroll;
 	VScrollBar *v_scroll;
 	HBoxContainer *hb;
+	// Used for secondary menu items which are displayed depending on the currently selected node
+	// (such as MeshInstance's "Mesh" menu).
+	PanelContainer *context_menu_container;
+	HBoxContainer *hbc_context_menu;
 
 	ToolButton *zoom_minus;
 	ToolButton *zoom_reset;
@@ -563,6 +567,7 @@ private:
 	void _update_bone_list();
 	void _tree_changed(Node *);
 
+	void _update_context_menu_stylebox();
 	void _popup_warning_temporarily(Control *p_control, const float p_duration);
 	void _popup_warning_depop(Control *p_control);
 
