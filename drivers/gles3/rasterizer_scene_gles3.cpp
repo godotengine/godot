@@ -3551,14 +3551,12 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 		state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::USE_ORTHOGONAL_PROJECTION, p_cam_projection.is_orthogonal());
 		state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::DOF_FAR_BLUR, env->dof_blur_far_enabled);
 		state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::DOF_NEAR_BLUR, env->dof_blur_near_enabled);
-		state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::DOF_QUALITY_LOW, quality == VS::ENV_DOF_BLUR_QUALITY_LOW);
-		state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::DOF_QUALITY_MEDIUM, quality == VS::ENV_DOF_BLUR_QUALITY_MEDIUM);
-		state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::DOF_QUALITY_HIGH, quality == VS::ENV_DOF_BLUR_QUALITY_HIGH);
 
 		state.effect_blur_shader.bind();
-		int qsteps[3] = { 4, 10, 20 };
 
-		float radius = (dof_blur_amount * dof_blur_amount) / qsteps[quality];
+		static const float quality_scale[3] = { 1.0, 0.5, 0.25 };
+		float scale = quality_scale[quality];
+		float radius = dof_blur_amount * 40.0;
 
 		if (env->dof_blur_far_enabled) {
 			state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::DOF_FAR_BEGIN, env->dof_blur_far_distance);
@@ -3568,7 +3566,7 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 			state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::DOF_NEAR_BEGIN, env->dof_blur_near_distance);
 			state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::DOF_NEAR_END, env->dof_blur_near_distance - env->dof_blur_near_transition);
 		}
-		state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::DOF_DIR, Vector2(1, 0));
+		state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::DOF_SCALE, scale);
 		state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::DOF_RADIUS, radius);
 		state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::PIXEL_SIZE, Vector2(1.0 / vp_w, 1.0 / vp_h));
 		state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::CAMERA_Z_NEAR, p_cam_projection.get_z_near());
@@ -3588,18 +3586,19 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 
 		_copy_screen(true);
 
+		state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::DOF_FAR_BLUR, false);
+		state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::DOF_NEAR_BLUR, false);
+		state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::USE_ORTHOGONAL_PROJECTION, false);
+
+		// just copy it back, there is no second pass. Someday we could combine this with something
+		state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::SIMPLE_COPY, true);
+
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->color);
-		state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::DOF_DIR, Vector2(0, 1));
 		glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->effects.mip_maps[0].sizes[0].fbo); // copy to base level
 		_copy_screen();
 
-		state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::DOF_FAR_BLUR, false);
-		state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::DOF_NEAR_BLUR, false);
-		state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::DOF_QUALITY_LOW, false);
-		state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::DOF_QUALITY_MEDIUM, false);
-		state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::DOF_QUALITY_HIGH, false);
-		state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::USE_ORTHOGONAL_PROJECTION, false);
+		state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::SIMPLE_COPY, false);
 
 		composite_from = storage->frame.current_rt->effects.mip_maps[0].color;
 

@@ -40,6 +40,8 @@ uniform sampler2D source_ssao; //texunit:1
 
 uniform float lod;
 uniform vec2 pixel_size;
+uniform float camera_z_far;
+uniform float camera_z_near;
 
 layout(location = 0) out vec4 frag_color;
 
@@ -57,32 +59,42 @@ uniform float glow_strength;
 
 #if defined(DOF_FAR_BLUR) || defined(DOF_NEAR_BLUR)
 
-#ifdef DOF_QUALITY_LOW
-const int dof_kernel_size = 5;
-const int dof_kernel_from = 2;
-const float dof_kernel[5] = float[](0.153388, 0.221461, 0.250301, 0.221461, 0.153388);
-#endif
-
-#ifdef DOF_QUALITY_MEDIUM
-const int dof_kernel_size = 11;
-const int dof_kernel_from = 5;
-const float dof_kernel[11] = float[](0.055037, 0.072806, 0.090506, 0.105726, 0.116061, 0.119726, 0.116061, 0.105726, 0.090506, 0.072806, 0.055037);
-
-#endif
-
-#ifdef DOF_QUALITY_HIGH
-const int dof_kernel_size = 21;
-const int dof_kernel_from = 10;
-const float dof_kernel[21] = float[](0.028174, 0.032676, 0.037311, 0.041944, 0.046421, 0.050582, 0.054261, 0.057307, 0.059587, 0.060998, 0.061476, 0.060998, 0.059587, 0.057307, 0.054261, 0.050582, 0.046421, 0.041944, 0.037311, 0.032676, 0.028174);
-#endif
+// Bokeh single pass implementation based on http://tuxedolabs.blogspot.com/2018/05/bokeh-depth-of-field-in-single-pass.html
+const float GOLDEN_ANGLE = 2.39996323;
 
 uniform sampler2D dof_source_depth; //texunit:1
 uniform float dof_far_begin;
 uniform float dof_far_end;
 uniform float dof_near_begin;
 uniform float dof_near_end;
-uniform vec2 dof_dir;
 uniform float dof_radius;
+uniform float dof_scale;
+
+float get_blur_depth(vec2 uv) {
+	float depth = textureLod(dof_source_depth, uv, 0.0).r;
+	depth = depth * 2.0 - 1.0;
+#ifdef USE_ORTHOGONAL_PROJECTION
+	depth = ((depth + (camera_z_far + camera_z_near) / (camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near)) / 2.0;
+#else
+	depth = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - depth * (camera_z_far - camera_z_near));
+#endif
+
+	return depth;
+}
+
+float get_blur_size(float depth) {
+	// Combine near and far, our depth is unlikely to be in both ranges
+	float amount = 1.0;
+#ifdef DOF_FAR_BLUR
+	amount *= 1.0 - smoothstep(dof_far_begin, dof_far_end, depth);
+#endif
+#ifdef DOF_NEAR_BLUR
+	amount *= smoothstep(dof_near_end, dof_near_begin, depth);
+#endif
+	amount = 1.0 - amount;
+
+	return amount * dof_radius;
+}
 
 #endif
 
@@ -104,9 +116,6 @@ uniform float glow_hdr_threshold;
 uniform float glow_hdr_scale;
 
 #endif
-
-uniform float camera_z_far;
-uniform float camera_z_near;
 
 void main() {
 #ifdef GAUSSIAN_HORIZONTAL
@@ -160,67 +169,33 @@ void main() {
 
 #if defined(DOF_FAR_BLUR) || defined(DOF_NEAR_BLUR)
 
-	vec4 color_accum = vec4(0.0);
+	vec4 center_color = textureLod(source_color, uv_interp, 0.0);
+	vec3 color_accum = center_color.rgb;
+	float accum = 1.0;
+	float center_depth = get_blur_depth(uv_interp);
+	float center_size = get_blur_size(center_depth);
 
-	float depth = textureLod(dof_source_depth, uv_interp, 0.0).r;
-	depth = depth * 2.0 - 1.0;
-#ifdef USE_ORTHOGONAL_PROJECTION
-	depth = ((depth + (camera_z_far + camera_z_near) / (camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near)) / 2.0;
-#else
-	depth = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - depth * (camera_z_far - camera_z_near));
-#endif
+	float radius = dof_scale;
+	for (float ang = 0.0; radius < dof_radius; ang += GOLDEN_ANGLE) {
+		vec2 uv_adj = uv_interp + vec2(cos(ang), sin(ang)) * pixel_size * radius;
 
-	// Combine near and far, our depth is unlikely to be in both ranges
-	float amount = 1.0;
-#ifdef DOF_FAR_BLUR
-	amount *= 1.0 - smoothstep(dof_far_begin, dof_far_end, depth);
-#endif
-#ifdef DOF_NEAR_BLUR
-	amount *= smoothstep(dof_near_end, dof_near_begin, depth);
-#endif
-	amount = 1.0 - amount;
-
-	if (amount > 0.0) {
-		float k_accum = 0.0;
-
-		for (int i = 0; i < dof_kernel_size; i++) {
-			int int_ofs = i - dof_kernel_from;
-			vec2 tap_uv = uv_interp + dof_dir * float(int_ofs) * amount * dof_radius;
-
-			float tap_k = dof_kernel[i];
-
-			float tap_depth = texture(dof_source_depth, tap_uv, 0.0).r;
-			tap_depth = tap_depth * 2.0 - 1.0;
-#ifdef USE_ORTHOGONAL_PROJECTION
-			tap_depth = ((tap_depth + (camera_z_far + camera_z_near) / (camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near)) / 2.0;
-#else
-			tap_depth = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - tap_depth * (camera_z_far - camera_z_near));
-#endif
-			float tap_amount = 1.0;
-#ifdef DOF_FAR_BLUR
-			tap_amount *= mix(1.0 - smoothstep(dof_far_begin, dof_far_end, tap_depth), 0.0, int_ofs == 0);
-#endif
-#ifdef DOF_NEAR_BLUR
-			tap_amount *= mix(smoothstep(dof_near_end, dof_near_begin, tap_depth), 0.0, int_ofs == 0);
-#endif
-			tap_amount = 1.0 - tap_amount;
-			tap_amount *= tap_amount * tap_amount; //prevent undesired glow effect
-
-			vec4 tap_color = textureLod(source_color, tap_uv, 0.0) * tap_k;
-
-			k_accum += tap_k * tap_amount;
-			color_accum += tap_color * tap_amount;
+		vec3 sample_color = textureLod(source_color, uv_adj, 0.0).rgb;
+		float sample_depth = get_blur_depth(uv_adj);
+		float sample_size = get_blur_size(sample_depth);
+		if (sample_depth > center_depth) {
+			// sample is behind our center fragment, limit contribution
+			sample_size = clamp(sample_size, 0.0, center_size * 2.0);
 		}
 
-		if (k_accum > 0.0) {
-			color_accum /= k_accum;
-		}
+		float m = smoothstep(radius - 0.5, radius + 0.5, sample_size);
+		color_accum += mix(color_accum / accum, sample_color, m);
+		accum += 1.0;
 
-		frag_color = color_accum; ///k_accum;
-	} else {
-		// We're in focus, no need to waste time sampling the same UV a bunch of times...
-		frag_color = textureLod(source_color, uv_interp, 0.0);
+		radius += dof_scale / radius;
 	}
+
+	frag_color.rgb = color_accum / accum;
+	frag_color.a = center_color.a;
 #endif
 
 #ifdef GLOW_FIRST_PASS
