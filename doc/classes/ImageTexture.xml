@@ -32,54 +32,41 @@
 	</tutorials>
 	<methods>
 		<method name="create">
-			<return type="void">
-			</return>
-			<argument index="0" name="width" type="int">
-			</argument>
-			<argument index="1" name="height" type="int">
-			</argument>
-			<argument index="2" name="format" type="int" enum="Image.Format">
-			</argument>
-			<argument index="3" name="flags" type="int" default="7">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="width" type="int" />
+			<argument index="1" name="height" type="int" />
+			<argument index="2" name="format" type="int" enum="Image.Format" />
+			<argument index="3" name="flags" type="int" default="7" />
 			<description>
 				Create a new [ImageTexture] with [code]width[/code] and [code]height[/code].
 				[code]format[/code] is a value from [enum Image.Format], [code]flags[/code] is any combination of [enum Texture.Flags].
 			</description>
 		</method>
 		<method name="create_from_image">
-			<return type="void">
-			</return>
-			<argument index="0" name="image" type="Image">
-			</argument>
-			<argument index="1" name="flags" type="int" default="7">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="image" type="Image" />
+			<argument index="1" name="flags" type="int" default="7" />
 			<description>
 				Initializes the texture by allocating and setting the data from an [Image] with [code]flags[/code] from [enum Texture.Flags]. An sRGB to linear color space conversion can take place, according to [enum Image.Format].
 			</description>
 		</method>
 		<method name="get_format" qualifiers="const">
-			<return type="int" enum="Image.Format">
-			</return>
+			<return type="int" enum="Image.Format" />
 			<description>
 				Returns the format of the texture, one of [enum Image.Format].
 			</description>
 		</method>
 		<method name="load">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Loads an image from a file path and creates a texture from it.
 				[b]Note:[/b] the method is deprecated and will be removed in Godot 4.0, use [method Image.load] and [method create_from_image] instead.
 			</description>
 		</method>
 		<method name="set_data">
-			<return type="void">
-			</return>
-			<argument index="0" name="image" type="Image">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="image" type="Image" />
 			<description>
 				Replaces the texture's data with a new [Image].
 				[b]Note:[/b] The texture has to be initialized first with the [method create_from_image] method before it can be updated. The new image dimensions, format, and mipmaps configuration should match the existing texture's image configuration, otherwise it has to be re-created with the [method create_from_image] method.
@@ -87,10 +74,8 @@
 			</description>
 		</method>
 		<method name="set_size_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="size" type="Vector2" />
 			<description>
 				Resizes the texture to the specified dimensions.
 			</description>

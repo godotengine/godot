@@ -23,75 +23,63 @@
 	</tutorials>
 	<methods>
 		<method name="find_world" qualifiers="const">
-			<return type="World">
-			</return>
+			<return type="World" />
 			<description>
 				Returns the 3D world of the viewport, or if none the world of the parent viewport.
 			</description>
 		</method>
 		<method name="find_world_2d" qualifiers="const">
-			<return type="World2D">
-			</return>
+			<return type="World2D" />
 			<description>
 				Returns the 2D world of the viewport.
 			</description>
 		</method>
 		<method name="get_camera" qualifiers="const">
-			<return type="Camera">
-			</return>
+			<return type="Camera" />
 			<description>
 				Returns the active 3D camera.
 			</description>
 		</method>
 		<method name="get_final_transform" qualifiers="const">
-			<return type="Transform2D">
-			</return>
+			<return type="Transform2D" />
 			<description>
 				Returns the total transform of the viewport.
 			</description>
 		</method>
 		<method name="get_modal_stack_top" qualifiers="const">
-			<return type="Control">
-			</return>
+			<return type="Control" />
 			<description>
 				Returns the topmost modal in the stack.
 			</description>
 		</method>
 		<method name="get_mouse_position" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns the mouse position relative to the viewport.
 			</description>
 		</method>
 		<method name="get_render_info">
-			<return type="int">
-			</return>
-			<argument index="0" name="info" type="int" enum="Viewport.RenderInfo">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="info" type="int" enum="Viewport.RenderInfo" />
 			<description>
 				Returns information about the viewport from the rendering pipeline.
 			</description>
 		</method>
 		<method name="get_shadow_atlas_quadrant_subdiv" qualifiers="const">
-			<return type="int" enum="Viewport.ShadowAtlasQuadrantSubdiv">
-			</return>
-			<argument index="0" name="quadrant" type="int">
-			</argument>
+			<return type="int" enum="Viewport.ShadowAtlasQuadrantSubdiv" />
+			<argument index="0" name="quadrant" type="int" />
 			<description>
 				Returns the [enum ShadowAtlasQuadrantSubdiv] of the specified quadrant.
 			</description>
 		</method>
 		<method name="get_size_override" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns the size override set with [method set_size_override].
 			</description>
 		</method>
 		<method name="get_texture" qualifiers="const">
-			<return type="ViewportTexture">
-			</return>
+			<return type="ViewportTexture" />
 			<description>
 				Returns the viewport's texture.
 				[b]Note:[/b] Due to the way OpenGL works, the resulting [ViewportTexture] is flipped vertically. You can use [method Image.flip_y] on the result of [method Texture.get_data] to flip it back, for example:
@@ -102,121 +90,97 @@
 			</description>
 		</method>
 		<method name="get_viewport_rid" qualifiers="const">
-			<return type="RID">
-			</return>
+			<return type="RID" />
 			<description>
 				Returns the viewport's RID from the [VisualServer].
 			</description>
 		</method>
 		<method name="get_visible_rect" qualifiers="const">
-			<return type="Rect2">
-			</return>
+			<return type="Rect2" />
 			<description>
 				Returns the visible rectangle in global screen coordinates.
 			</description>
 		</method>
 		<method name="gui_get_drag_data" qualifiers="const">
-			<return type="Variant">
-			</return>
+			<return type="Variant" />
 			<description>
 				Returns the drag data from the GUI, that was previously returned by [method Control.get_drag_data].
 			</description>
 		</method>
 		<method name="gui_has_modal_stack" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if there are visible modals on-screen.
 			</description>
 		</method>
 		<method name="gui_is_dragging" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the viewport is currently performing a drag operation.
 			</description>
 		</method>
 		<method name="input">
-			<return type="void">
-			</return>
-			<argument index="0" name="local_event" type="InputEvent">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="local_event" type="InputEvent" />
 			<description>
 			</description>
 		</method>
 		<method name="is_input_handled" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="is_size_override_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the size override is enabled. See [method set_size_override].
 			</description>
 		</method>
 		<method name="set_attach_to_screen_rect">
-			<return type="void">
-			</return>
-			<argument index="0" name="rect" type="Rect2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="rect" type="Rect2" />
 			<description>
 				Attaches this [Viewport] to the root [Viewport] with the specified rectangle. This bypasses the need for another node to display this [Viewport] but makes you responsible for updating the position of this [Viewport] manually.
 			</description>
 		</method>
 		<method name="set_input_as_handled">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Stops the input from propagating further down the [SceneTree].
 			</description>
 		</method>
 		<method name="set_shadow_atlas_quadrant_subdiv">
-			<return type="void">
-			</return>
-			<argument index="0" name="quadrant" type="int">
-			</argument>
-			<argument index="1" name="subdiv" type="int" enum="Viewport.ShadowAtlasQuadrantSubdiv">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="quadrant" type="int" />
+			<argument index="1" name="subdiv" type="int" enum="Viewport.ShadowAtlasQuadrantSubdiv" />
 			<description>
 				Sets the number of subdivisions to use in the specified quadrant. A higher number of subdivisions allows you to have more shadows in the scene at once, but reduces the quality of the shadows. A good practice is to have quadrants with a varying number of subdivisions and to have as few subdivisions as possible.
 			</description>
 		</method>
 		<method name="set_size_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<argument index="1" name="size" type="Vector2" default="Vector2( -1, -1 )">
-			</argument>
-			<argument index="2" name="margin" type="Vector2" default="Vector2( 0, 0 )">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="enable" type="bool" />
+			<argument index="1" name="size" type="Vector2" default="Vector2( -1, -1 )" />
+			<argument index="2" name="margin" type="Vector2" default="Vector2( 0, 0 )" />
 			<description>
 				Sets the size override of the viewport. If the [code]enable[/code] parameter is [code]true[/code] the override is used, otherwise it uses the default size. If the size parameter is [code](-1, -1)[/code], it won't update the size.
 			</description>
 		</method>
 		<method name="unhandled_input">
-			<return type="void">
-			</return>
-			<argument index="0" name="local_event" type="InputEvent">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="local_event" type="InputEvent" />
 			<description>
 			</description>
 		</method>
 		<method name="update_worlds">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Forces update of the 2D and 3D worlds.
 			</description>
 		</method>
 		<method name="warp_mouse">
-			<return type="void">
-			</return>
-			<argument index="0" name="to_position" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="to_position" type="Vector2" />
 			<description>
 				Warps the mouse to a position relative to the viewport.
 			</description>
@@ -325,8 +289,7 @@
 	</members>
 	<signals>
 		<signal name="gui_focus_changed">
-			<argument index="0" name="node" type="Control">
-			</argument>
+			<argument index="0" name="node" type="Control" />
 			<description>
 				Emitted when a Control node grabs keyboard focus.
 			</description>

@@ -12,29 +12,25 @@
 	</tutorials>
 	<methods>
 		<method name="get_line_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the amount of lines of text the Label has.
 			</description>
 		</method>
 		<method name="get_line_height" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the font size in pixels.
 			</description>
 		</method>
 		<method name="get_total_character_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the total number of printable characters in the text (excluding spaces and newlines).
 			</description>
 		</method>
 		<method name="get_visible_line_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of lines shown. Useful if the [Label]'s height cannot currently display all lines.
 			</description>

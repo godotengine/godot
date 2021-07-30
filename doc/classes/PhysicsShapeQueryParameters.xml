@@ -10,10 +10,8 @@
 	</tutorials>
 	<methods>
 		<method name="set_shape">
-			<return type="void">
-			</return>
-			<argument index="0" name="shape" type="Resource">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="shape" type="Resource" />
 			<description>
 				Sets the [Shape] that will be used for collision/intersection queries.
 			</description>

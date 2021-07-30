@@ -1063,8 +1063,7 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 				if (m.return_enum != String()) {
 					enum_text = " enum=\"" + m.return_enum + "\"";
 				}
-				_write_string(f, 3, "<return type=\"" + m.return_type + "\"" + enum_text + ">");
-				_write_string(f, 3, "</return>");
+				_write_string(f, 3, "<return type=\"" + m.return_type + "\"" + enum_text + " />");
 			}
 
 			for (int j = 0; j < m.arguments.size(); j++) {
@@ -1076,12 +1075,10 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 				}
 
 				if (a.default_value != "") {
-					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + " default=\"" + a.default_value.xml_escape(true) + "\">");
+					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + " default=\"" + a.default_value.xml_escape(true) + "\" />");
 				} else {
-					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + ">");
+					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + " />");
 				}
-
-				_write_string(f, 3, "</argument>");
 			}
 
 			_write_string(f, 3, "<description>");
@@ -1129,8 +1126,7 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 				_write_string(f, 2, "<signal name=\"" + m.name + "\">");
 				for (int j = 0; j < m.arguments.size(); j++) {
 					const ArgumentDoc &a = m.arguments[j];
-					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\">");
-					_write_string(f, 3, "</argument>");
+					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\" />");
 				}
 
 				_write_string(f, 3, "<description>");

@@ -12,10 +12,8 @@
 	</tutorials>
 	<methods>
 		<method name="get_monitor" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="monitor" type="int" enum="Performance.Monitor">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="monitor" type="int" enum="Performance.Monitor" />
 			<description>
 				Returns the value of one of the available monitors. You should provide one of the [enum Monitor] constants as the argument, like this:
 				[codeblock]

@@ -13,40 +13,33 @@
 	</tutorials>
 	<methods>
 		<method name="get_playback_position">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the position in the [AudioStream].
 			</description>
 		</method>
 		<method name="get_stream_playback">
-			<return type="AudioStreamPlayback">
-			</return>
+			<return type="AudioStreamPlayback" />
 			<description>
 				Returns the [AudioStreamPlayback] object associated with this [AudioStreamPlayer2D].
 			</description>
 		</method>
 		<method name="play">
-			<return type="void">
-			</return>
-			<argument index="0" name="from_position" type="float" default="0.0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="from_position" type="float" default="0.0" />
 			<description>
 				Plays the audio from the given position [code]from_position[/code], in seconds.
 			</description>
 		</method>
 		<method name="seek">
-			<return type="void">
-			</return>
-			<argument index="0" name="to_position" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="to_position" type="float" />
 			<description>
 				Sets the position from which audio will be played, in seconds.
 			</description>
 		</method>
 		<method name="stop">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Stops the audio.
 			</description>

@@ -19,74 +19,58 @@
 	</tutorials>
 	<methods>
 		<method name="add_fallback">
-			<return type="void">
-			</return>
-			<argument index="0" name="data" type="DynamicFontData">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="data" type="DynamicFontData" />
 			<description>
 				Adds a fallback font.
 			</description>
 		</method>
 		<method name="get_available_chars" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns a string containing all the characters available in the main and all the fallback fonts.
 				If a given character is included in more than one font, it appears only once in the returned string.
 			</description>
 		</method>
 		<method name="get_fallback" qualifiers="const">
-			<return type="DynamicFontData">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="DynamicFontData" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the fallback font at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_fallback_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of fallback fonts.
 			</description>
 		</method>
 		<method name="get_spacing" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="type" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="type" type="int" />
 			<description>
 				Returns the spacing for the given [code]type[/code] (see [enum SpacingType]).
 			</description>
 		</method>
 		<method name="remove_fallback">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Removes the fallback font at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="set_fallback">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<argument index="1" name="data" type="DynamicFontData">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="data" type="DynamicFontData" />
 			<description>
 				Sets the fallback font at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="set_spacing">
-			<return type="void">
-			</return>
-			<argument index="0" name="type" type="int">
-			</argument>
-			<argument index="1" name="value" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="type" type="int" />
+			<argument index="1" name="value" type="int" />
 			<description>
 				Sets the spacing for [code]type[/code] (see [enum SpacingType]) to [code]value[/code] in pixels (not relative to the font size).
 			</description>
