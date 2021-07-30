@@ -578,7 +578,6 @@ void VisualScriptEditor::_update_graph_connections() {
 	}
 
 	for (VisualScript::DataConnection &dc : data_conns) {
-
 		Ref<VisualScriptNode> from_node;
 		Ref<VisualScriptNode> to_node;
 		if (inside_module) {
@@ -1103,7 +1102,6 @@ void VisualScriptEditor::_modules_panel_button(Object *p_item, int p_column, int
 		} else if (p_button == 1) {
 			_new_module();
 		}
-	//} else if (ti && ti->get_parent() == root->get_children()) {
 	} else if (ti && root->get_children().has(ti->get_parent())) {
 		if (p_button == 0) { // Edit
 			selected_module = ti->get_text(0);
