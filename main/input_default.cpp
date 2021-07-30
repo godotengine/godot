@@ -90,21 +90,25 @@ bool InputDefault::is_joy_button_pressed(int p_device, int p_button) const {
 	return joy_buttons_pressed.has(_combine_device(p_button, p_device));
 }
 
-bool InputDefault::is_action_pressed(const StringName &p_action) const {
+bool InputDefault::is_action_pressed(const StringName &p_action, bool p_exact) const {
 #ifdef DEBUG_ENABLED
 	bool has_action = InputMap::get_singleton()->has_action(p_action);
 	ERR_FAIL_COND_V_MSG(!has_action, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
 #endif
-	return action_state.has(p_action) && action_state[p_action].pressed;
+	return action_state.has(p_action) && action_state[p_action].pressed && (p_exact ? action_state[p_action].exact : true);
 }
 
-bool InputDefault::is_action_just_pressed(const StringName &p_action) const {
+bool InputDefault::is_action_just_pressed(const StringName &p_action, bool p_exact) const {
 #ifdef DEBUG_ENABLED
 	bool has_action = InputMap::get_singleton()->has_action(p_action);
 	ERR_FAIL_COND_V_MSG(!has_action, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
 #endif
 	const Map<StringName, Action>::Element *E = action_state.find(p_action);
 	if (!E) {
+		return false;
+	}
+
+	if (p_exact && E->get().exact == false) {
 		return false;
 	}
 
@@ -115,13 +119,17 @@ bool InputDefault::is_action_just_pressed(const StringName &p_action) const {
 	}
 }
 
-bool InputDefault::is_action_just_released(const StringName &p_action) const {
+bool InputDefault::is_action_just_released(const StringName &p_action, bool p_exact) const {
 #ifdef DEBUG_ENABLED
 	bool has_action = InputMap::get_singleton()->has_action(p_action);
 	ERR_FAIL_COND_V_MSG(!has_action, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
 #endif
 	const Map<StringName, Action>::Element *E = action_state.find(p_action);
 	if (!E) {
+		return false;
+	}
+
+	if (p_exact && E->get().exact == false) {
 		return false;
 	}
 
@@ -132,7 +140,7 @@ bool InputDefault::is_action_just_released(const StringName &p_action) const {
 	}
 }
 
-float InputDefault::get_action_strength(const StringName &p_action) const {
+float InputDefault::get_action_strength(const StringName &p_action, bool p_exact) const {
 #ifdef DEBUG_ENABLED
 	bool has_action = InputMap::get_singleton()->has_action(p_action);
 	ERR_FAIL_COND_V_MSG(!has_action, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
@@ -142,16 +150,24 @@ float InputDefault::get_action_strength(const StringName &p_action) const {
 		return 0.0f;
 	}
 
+	if (p_exact && E->get().exact == false) {
+		return 0.0f;
+	}
+
 	return E->get().strength;
 }
 
-float InputDefault::get_action_raw_strength(const StringName &p_action) const {
+float InputDefault::get_action_raw_strength(const StringName &p_action, bool p_exact) const {
 #ifdef DEBUG_ENABLED
 	bool has_action = InputMap::get_singleton()->has_action(p_action);
 	ERR_FAIL_COND_V_MSG(!has_action, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
 #endif
 	const Map<StringName, Action>::Element *E = action_state.find(p_action);
 	if (!E) {
+		return 0.0f;
+	}
+
+	if (p_exact && E->get().exact == false) {
 		return 0.0f;
 	}
 
@@ -462,14 +478,15 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 
 	for (const Map<StringName, InputMap::Action>::Element *E = InputMap::get_singleton()->get_action_map().front(); E; E = E->next()) {
 		if (InputMap::get_singleton()->event_is_action(p_event, E->key())) {
-			// Save the action's state
-			if (!p_event->is_echo() && is_action_pressed(E->key()) != p_event->is_action_pressed(E->key())) {
+			// If not echo and action pressed state has changed
+			if (!p_event->is_echo() && is_action_pressed(E->key(), false) != p_event->is_action_pressed(E->key())) {
 				Action action;
 				action.physics_frame = Engine::get_singleton()->get_physics_frames();
 				action.idle_frame = Engine::get_singleton()->get_idle_frames();
 				action.pressed = p_event->is_action_pressed(E->key());
 				action.strength = 0.0f;
 				action.raw_strength = 0.0f;
+				action.exact = InputMap::get_singleton()->event_is_action(p_event, E->key(), true);
 				action_state[E->key()] = action;
 			}
 			action_state[E->key()].strength = p_event->get_action_strength(E->key());
