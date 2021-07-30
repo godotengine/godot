@@ -136,6 +136,11 @@ public:
 
 	};
 
+	enum {
+		// Maximum recursion depth allowed when serializing variants.
+		MAX_RECURSION_DEPTH = 1024,
+	};
+
 private:
 	friend struct _VariantCall;
 	// Variant takes 20 bytes when real_t is float, and 36 if double
