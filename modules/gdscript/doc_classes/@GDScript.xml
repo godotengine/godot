@@ -224,6 +224,7 @@
 			<argument index="1" name="amount" type="float" />
 			<argument index="2" name="step" type="float" />
 			<description>
+				[b]Note:[/b] [code]dectime[/code] has been deprecated and will be removed in Godot 4.0, please use [method move_toward] instead.
 				Returns the result of [code]value[/code] decreased by [code]step[/code] * [code]amount[/code].
 				[codeblock]
 				a = dectime(60, 10, 0.1)) # a is 59.0

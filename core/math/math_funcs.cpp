@@ -91,6 +91,7 @@ int Math::range_step_decimals(double p_step) {
 }
 
 double Math::dectime(double p_value, double p_amount, double p_step) {
+	WARN_DEPRECATED_MSG("The `dectime()` function has been deprecated and will be removed in Godot 4.0. Use `move_toward()` instead.");
 	double sgn = p_value < 0 ? -1.0 : 1.0;
 	double val = Math::abs(p_value);
 	val -= p_amount * p_step;
