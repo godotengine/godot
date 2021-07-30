@@ -3002,24 +3002,31 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> state, const String &p_base_pat
 
 		Ref<Image> img;
 
+		// First we honor the mime types if they were defined.
 		if (mimetype == "image/png") { // Load buffer as PNG.
 			ERR_FAIL_COND_V(Image::_png_mem_loader_func == nullptr, ERR_UNAVAILABLE);
 			img = Image::_png_mem_loader_func(data_ptr, data_size);
 		} else if (mimetype == "image/jpeg") { // Loader buffer as JPEG.
 			ERR_FAIL_COND_V(Image::_jpg_mem_loader_func == nullptr, ERR_UNAVAILABLE);
 			img = Image::_jpg_mem_loader_func(data_ptr, data_size);
-		} else {
-			// We can land here if we got an URI with base64-encoded data with application/* MIME type,
-			// and the optional mimeType property was not defined to tell us how to handle this data (or was invalid).
-			// So let's try PNG first, then JPEG.
-			ERR_FAIL_COND_V(Image::_png_mem_loader_func == nullptr, ERR_UNAVAILABLE);
-			img = Image::_png_mem_loader_func(data_ptr, data_size);
-			if (img.is_null()) {
-				ERR_FAIL_COND_V(Image::_jpg_mem_loader_func == nullptr, ERR_UNAVAILABLE);
-				img = Image::_jpg_mem_loader_func(data_ptr, data_size);
-			}
 		}
 
+		// If we didn't pass the above tests, we attempt loading as PNG and then
+		// JPEG directly.
+		// This covers URIs with base64-encoded data with application/* type but
+		// no optional mimeType property, or bufferViews with a bogus mimeType
+		// (e.g. `image/jpeg` but the data is actually PNG).
+		// That's not *exactly* what the spec mandates but this lets us be
+		// lenient with bogus glb files which do exist in production.
+		if (img.is_null()) { // Try PNG first.
+			ERR_FAIL_COND_V(Image::_png_mem_loader_func == nullptr, ERR_UNAVAILABLE);
+			img = Image::_png_mem_loader_func(data_ptr, data_size);
+		}
+		if (img.is_null()) { // And then JPEG.
+			ERR_FAIL_COND_V(Image::_jpg_mem_loader_func == nullptr, ERR_UNAVAILABLE);
+			img = Image::_jpg_mem_loader_func(data_ptr, data_size);
+		}
+		// Now we've done our best, fix your scenes.
 		if (img.is_null()) {
 			ERR_PRINT(vformat("glTF: Couldn't load image index '%d' with its given mimetype: %s.", i, mimetype));
 			state->images.push_back(Ref<Texture2D>());
