@@ -622,9 +622,15 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 						CollisionObject3D *base = nullptr;
 						switch (mesh_physics_mode) {
 							case MESH_PHYSICS_MESH_AND_STATIC_COLLIDER: {
-								StaticBody3D *col = memnew(StaticBody3D);
-								p_node->add_child(col);
-								base = col;
+								StaticBody3D *static_body = memnew(StaticBody3D);
+								static_body->set_name(p_node->get_name());
+								p_node->replace_by(static_body);
+								static_body->set_transform(mi->get_transform());
+								p_node = static_body;
+								mi->set_transform(Transform3D());
+								static_body->add_child(mi);
+								mi->set_owner(static_body->get_owner());
+								base = static_body;
 							} break;
 							case MESH_PHYSICS_RIGID_BODY_AND_MESH: {
 								RigidBody3D *rigid_body = memnew(RigidBody3D);
