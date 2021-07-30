@@ -107,7 +107,7 @@ Ref<ENetPacketPeer> ENetConnection::connect_to_host(const String &p_address, int
 	address.port = p_port;
 
 	// Initiate connection, allocating enough channels
-	ENetPeer *peer = enet_host_connect(host, &address, p_channels, p_data);
+	ENetPeer *peer = enet_host_connect(host, &address, p_channels > 0 ? p_channels : ENET_PROTOCOL_MAXIMUM_CHANNEL_COUNT, p_data);
 
 	if (peer == nullptr) {
 		return nullptr;
