@@ -76,11 +76,10 @@ public:
 	typedef Error (*ParseResourceFunc)(void *p_self, Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
 
 	struct ResourceParser {
-
-		void *userdata;
-		ParseResourceFunc func;
-		ParseResourceFunc ext_func;
-		ParseResourceFunc sub_func;
+		void *userdata = nullptr;
+		ParseResourceFunc func = nullptr;
+		ParseResourceFunc ext_func = nullptr;
+		ParseResourceFunc sub_func = nullptr;
 	};
 
 	enum TokenType {
