@@ -30,6 +30,8 @@
 
 #include "scene_tree.h"
 
+#include "modules/modules_enabled.gen.h"
+
 #include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
 #include "core/message_queue.h"
@@ -493,10 +495,12 @@ bool SceneTree::iteration(float p_time) {
 }
 
 void SceneTree::_update_font_oversampling(float p_ratio) {
+#ifdef MODULE_FREETYPE_ENABLED
 	if (use_font_oversampling) {
 		DynamicFontAtSize::font_oversampling = p_ratio;
 		DynamicFont::update_oversampling();
 	}
+#endif // MODULE_FREETYPE_ENABLED
 }
 
 bool SceneTree::idle(float p_time) {

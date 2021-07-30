@@ -307,6 +307,6 @@ public:
 	virtual String get_resource_type(const String &p_path) const;
 };
 
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 
-#endif
+#endif // DYNAMIC_FONT_H
