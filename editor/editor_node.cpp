@@ -1168,7 +1168,8 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 			file->set_current_file(p_resource->get_path().get_file());
 		} else {
 			if (extensions.size()) {
-				file->set_current_file("new_" + p_resource->get_class().to_lower() + "." + preferred.front()->get().to_lower());
+				String resource_name_snake_case = p_resource->get_class().camelcase_to_underscore();
+				file->set_current_file("new_" + resource_name_snake_case + "." + preferred.front()->get().to_lower());
 			} else {
 				file->set_current_file(String());
 			}
@@ -1184,7 +1185,8 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 	} else if (preferred.size()) {
 		String existing;
 		if (extensions.size()) {
-			existing = "new_" + p_resource->get_class().to_lower() + "." + preferred.front()->get().to_lower();
+			String resource_name_snake_case = p_resource->get_class().camelcase_to_underscore();
+			existing = "new_" + resource_name_snake_case + "." + preferred.front()->get().to_lower();
 		}
 		file->set_current_path(existing);
 	}
