@@ -582,6 +582,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Focus
 	theme->set_stylebox("Focus", "EditorStyles", style_widget_focus);
+	// Use a less opaque color to be less distracting for the 2D and 3D editor viewports.
+	Ref<StyleBoxFlat> style_widget_focus_viewport = style_widget_focus->duplicate();
+	style_widget_focus_viewport->set_border_color(accent_color * Color(1, 1, 1, 0.5));
+	theme->set_stylebox("FocusViewport", "EditorStyles", style_widget_focus_viewport);
 
 	// Menu
 	Ref<StyleBoxFlat> style_menu = style_widget->duplicate();
