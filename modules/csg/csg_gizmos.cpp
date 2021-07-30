@@ -149,6 +149,12 @@ void CSGShapeSpatialGizmoPlugin::set_handle(EditorSpatialGizmo *p_gizmo, int p_i
 		Vector3 ra, rb;
 		Geometry::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
 		float d = ra[p_idx];
+
+		if (Math::is_nan(d)) {
+			// The handle is perpendicular to the camera.
+			return;
+		}
+
 		if (SpatialEditor::get_singleton()->is_snap_enabled()) {
 			d = Math::stepify(d, SpatialEditor::get_singleton()->get_translate_snap());
 		}
