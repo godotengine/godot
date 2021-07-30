@@ -228,6 +228,11 @@ void FindInFiles::_scan_dir(String path, PackedStringArray &out_folders) {
 			break;
 		}
 
+		// If there is a .gdignore file in the directory, don't bother searching it
+		if (file == ".gdignore") {
+			break;
+		}
+
 		// Ignore special dirs (such as .git and .import)
 		if (file == "." || file == ".." || file.begins_with(".")) {
 			continue;
