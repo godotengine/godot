@@ -3023,14 +3023,12 @@ void VisualScriptEditor::goto_line(int p_line, bool p_with_error) {
 
 	List<StringName> functions;
 	script->get_function_list(&functions);
-	for (const StringName &E : functions) {
-		if (script->has_node(p_line)) {
-			_update_graph();
-			_update_members();
+	if (script->has_node(p_line)) {
+		_update_graph();
+		_update_members();
 
-			call_deferred(SNAME("call_deferred"), "_center_on_node", p_line); // Editor might be just created and size might not exist yet
-			return;
-		}
+		call_deferred(SNAME("call_deferred"), "_center_on_node", p_line); // Editor might be just created and size might not exist yet
+		return;
 	}
 }
 
