@@ -2763,12 +2763,12 @@ RenderingServer::RenderingServer() {
 
 	GLOBAL_DEF("rendering/2d/shadow_atlas/size", 2048);
 
-	GLOBAL_DEF_RST("rendering/vulkan/rendering/back_end", 0);
-	GLOBAL_DEF_RST("rendering/vulkan/rendering/back_end.mobile", 1);
+	GLOBAL_DEF_RST_BASIC("rendering/vulkan/rendering/back_end", 0);
+	GLOBAL_DEF_RST_BASIC("rendering/vulkan/rendering/back_end.mobile", 1);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/vulkan/rendering/back_end",
 			PropertyInfo(Variant::INT,
 					"rendering/vulkan/rendering/back_end",
-					PROPERTY_HINT_ENUM, "ForwardClustered,ForwardMobile"));
+					PROPERTY_HINT_ENUM, "Forward Clustered (Supports Desktop Only),Forward Mobile (Supports Desktop and Mobile)"));
 
 	GLOBAL_DEF("rendering/shader_compiler/shader_cache/enabled", true);
 	GLOBAL_DEF("rendering/shader_compiler/shader_cache/compress", true);
