@@ -88,16 +88,6 @@ int Math::range_step_decimals(double p_step) {
 	return step_decimals(p_step);
 }
 
-double Math::dectime(double p_value, double p_amount, double p_step) {
-	double sgn = p_value < 0 ? -1.0 : 1.0;
-	double val = Math::abs(p_value);
-	val -= p_amount * p_step;
-	if (val < 0.0) {
-		val = 0.0;
-	}
-	return val * sgn;
-}
-
 double Math::ease(double p_x, double p_c) {
 	if (p_x < 0) {
 		p_x = 0;
