@@ -138,7 +138,7 @@ void AnimationNode::make_invalid(const String &p_reason) {
 	if (state->invalid_reasons != String()) {
 		state->invalid_reasons += "\n";
 	}
-	state->invalid_reasons += "- " + p_reason;
+	state->invalid_reasons += String::utf8("• ") + p_reason;
 }
 
 float AnimationNode::blend_input(int p_input, float p_time, bool p_seek, float p_blend, FilterAction p_filter, bool p_optimize) {
