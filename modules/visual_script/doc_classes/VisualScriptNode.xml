@@ -8,8 +8,8 @@
 	</description>
 	<tutorials>
 	</tutorials>
-		<methods>
-			<method name="get_container" qualifiers="const">
+	<methods>
+		<method name="get_container" qualifiers="const">
 			<return type="Resource">
 			</return>
 			<description>
@@ -23,13 +23,6 @@
 			</argument>
 			<description>
 				Returns the default value of a given port. The default value is used when nothing is connected to the port.
-			</description>
-		</method>
-		<method name="get_visual_script" qualifiers="const">
-			<return type="VisualScript">
-			</return>
-			<description>
-				Returns the [VisualScript] instance the node is bound to.
 			</description>
 		</method>
 		<method name="ports_changed_notify">

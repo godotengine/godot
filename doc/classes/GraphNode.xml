@@ -314,7 +314,6 @@
 			</description>
 		</signal>
 		<signal name="double_clicked">
-+			<description>
 			<description>
 				Emitted when the GraphNode is double clicked.
 			</description>
