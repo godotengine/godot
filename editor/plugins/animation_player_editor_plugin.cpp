@@ -408,7 +408,8 @@ void AnimationPlayerEditor::_animation_save_as(const Ref<Resource> &p_resource) 
 			if (p_resource->get_name() != "") {
 				path = p_resource->get_name() + "." + extensions.front()->get().to_lower();
 			} else {
-				path = "new_" + p_resource->get_class().to_lower() + "." + extensions.front()->get().to_lower();
+				String resource_name_snake_case = p_resource->get_class().camelcase_to_underscore();
+				path = "new_" + resource_name_snake_case + "." + extensions.front()->get().to_lower();
 			}
 		}
 	}
