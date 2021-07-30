@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  export.cpp                                                           */
+/*  lipo.h                                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,16 +28,49 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "export.h"
+// Universal / Universal 2 fat binary file creator and extractor.
 
-#include "export_plugin.h"
+#ifndef LIPO_H
+#define LIPO_H
 
-void register_osx_exporter() {
-	EDITOR_DEF("export/macos/force_builtin_codesign", false);
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::BOOL, "export/macos/force_builtin_codesign", PROPERTY_HINT_NONE));
+#include "core/io/file_access.h"
+#include "core/object/ref_counted.h"
+#include "modules/modules_enabled.gen.h" // For regex.
 
-	Ref<EditorExportPlatformOSX> platform;
-	platform.instantiate();
+#include "macho.h"
 
-	EditorExport::get_singleton()->add_export_platform(platform);
-}
+#ifdef MODULE_REGEX_ENABLED
+
+class LipO : public RefCounted {
+	struct FatArch {
+		uint32_t cputype;
+		uint32_t cpusubtype;
+		uint64_t offset;
+		uint64_t size;
+		uint32_t align;
+	};
+
+	FileAccess *fa = nullptr;
+	Vector<FatArch> archs;
+
+	static inline size_t PAD(size_t s, size_t a) {
+		return (a - s % a);
+	}
+
+public:
+	static bool is_lipo(const String &p_path);
+
+	bool create_file(const String &p_output_path, const PackedStringArray &p_files);
+
+	bool open_file(const String &p_path);
+	int get_arch_count() const;
+	bool extract_arch(int p_index, const String &p_path);
+
+	void close();
+
+	~LipO();
+};
+
+#endif // MODULE_REGEX_ENABLED
+
+#endif // LIPO_H
