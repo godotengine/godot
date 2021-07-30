@@ -903,6 +903,7 @@ void ResourceLoaderBinary::open(FileAccess *p_f, bool p_no_resources, bool p_kee
 	if (using_uids) {
 		uid = f->get_64();
 	} else {
+		f->get_64(); // skip over uid field
 		uid = ResourceUID::INVALID_ID;
 	}
 
