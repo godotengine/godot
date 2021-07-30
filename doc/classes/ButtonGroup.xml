@@ -11,15 +11,13 @@
 	</tutorials>
 	<methods>
 		<method name="get_buttons">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Returns an [Array] of [Button]s who have this as their [ButtonGroup] (see [member BaseButton.group]).
 			</description>
 		</method>
 		<method name="get_pressed_button">
-			<return type="BaseButton">
-			</return>
+			<return type="BaseButton" />
 			<description>
 				Returns the current pressed button.
 			</description>

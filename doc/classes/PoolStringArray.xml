@@ -12,42 +12,34 @@
 	</tutorials>
 	<methods>
 		<method name="PoolStringArray">
-			<return type="PoolStringArray">
-			</return>
-			<argument index="0" name="from" type="Array">
-			</argument>
+			<return type="PoolStringArray" />
+			<argument index="0" name="from" type="Array" />
 			<description>
 				Constructs a new [PoolStringArray]. Optionally, you can pass in a generic [Array] that will be converted.
 			</description>
 		</method>
 		<method name="append">
-			<argument index="0" name="string" type="String">
-			</argument>
+			<argument index="0" name="string" type="String" />
 			<description>
 				Appends an element at the end of the array (alias of [method push_back]).
 			</description>
 		</method>
 		<method name="append_array">
-			<argument index="0" name="array" type="PoolStringArray">
-			</argument>
+			<argument index="0" name="array" type="PoolStringArray" />
 			<description>
 				Appends a [PoolStringArray] at the end of this array.
 			</description>
 		</method>
 		<method name="empty">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the array is empty.
 			</description>
 		</method>
 		<method name="insert">
-			<return type="int">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<argument index="1" name="string" type="String">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="string" type="String" />
 			<description>
 				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]idx == size()[/code]).
 			</description>
@@ -58,47 +50,39 @@
 			</description>
 		</method>
 		<method name="join">
-			<return type="String">
-			</return>
-			<argument index="0" name="delimiter" type="String">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="delimiter" type="String" />
 			<description>
 				Returns a [String] with each element of the array joined with the given [code]delimiter[/code].
 			</description>
 		</method>
 		<method name="push_back">
-			<argument index="0" name="string" type="String">
-			</argument>
+			<argument index="0" name="string" type="String" />
 			<description>
 				Appends a string element at end of the array.
 			</description>
 		</method>
 		<method name="remove">
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Removes an element from the array by index.
 			</description>
 		</method>
 		<method name="resize">
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Sets the size of the array. If the array is grown, reserves elements at the end of the array. If the array is shrunk, truncates the array to the new size.
 			</description>
 		</method>
 		<method name="set">
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<argument index="1" name="string" type="String">
-			</argument>
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="string" type="String" />
 			<description>
 				Changes the [String] at the given index.
 			</description>
 		</method>
 		<method name="size">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the size of the array.
 			</description>

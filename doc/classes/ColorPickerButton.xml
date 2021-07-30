@@ -13,15 +13,13 @@
 	</tutorials>
 	<methods>
 		<method name="get_picker">
-			<return type="ColorPicker">
-			</return>
+			<return type="ColorPicker" />
 			<description>
 				Returns the [ColorPicker] that this node toggles.
 			</description>
 		</method>
 		<method name="get_popup">
-			<return type="PopupPanel">
-			</return>
+			<return type="PopupPanel" />
 			<description>
 				Returns the control's [PopupPanel] which allows you to connect to popup signals. This allows you to handle events when the ColorPicker is shown or hidden.
 			</description>
@@ -38,8 +36,7 @@
 	</members>
 	<signals>
 		<signal name="color_changed">
-			<argument index="0" name="color" type="Color">
-			</argument>
+			<argument index="0" name="color" type="Color" />
 			<description>
 				Emitted when the color changes.
 			</description>

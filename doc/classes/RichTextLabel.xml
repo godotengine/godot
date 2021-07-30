@@ -16,268 +16,216 @@
 	</tutorials>
 	<methods>
 		<method name="add_image">
-			<return type="void">
-			</return>
-			<argument index="0" name="image" type="Texture">
-			</argument>
-			<argument index="1" name="width" type="int" default="0">
-			</argument>
-			<argument index="2" name="height" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="image" type="Texture" />
+			<argument index="1" name="width" type="int" default="0" />
+			<argument index="2" name="height" type="int" default="0" />
 			<description>
 				Adds an image's opening and closing tags to the tag stack, optionally providing a [code]width[/code] and [code]height[/code] to resize the image.
 				If [code]width[/code] or [code]height[/code] is set to 0, the image size will be adjusted in order to keep the original aspect ratio.
 			</description>
 		</method>
 		<method name="add_text">
-			<return type="void">
-			</return>
-			<argument index="0" name="text" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="text" type="String" />
 			<description>
 				Adds raw non-BBCode-parsed text to the tag stack.
 			</description>
 		</method>
 		<method name="append_bbcode">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="bbcode" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="bbcode" type="String" />
 			<description>
 				Parses [code]bbcode[/code] and adds tags to the tag stack as needed. Returns the result of the parsing, [constant OK] if successful.
 				[b]Note:[/b] Using this method, you can't close a tag that was opened in a previous [method append_bbcode] call. This is done to improve performance, especially when updating large RichTextLabels since rebuilding the whole BBCode every time would be slower. If you absolutely need to close a tag in a future method call, append the [member bbcode_text] instead of using [method append_bbcode].
 			</description>
 		</method>
 		<method name="clear">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clears the tag stack and sets [member bbcode_text] to an empty string.
 			</description>
 		</method>
 		<method name="get_content_height" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the height of the content.
 			</description>
 		</method>
 		<method name="get_line_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the total number of newlines in the tag stack's text tags. Considers wrapped text as one line.
 			</description>
 		</method>
 		<method name="get_total_character_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the total number of characters from text tags. Does not include BBCodes.
 			</description>
 		</method>
 		<method name="get_v_scroll">
-			<return type="VScrollBar">
-			</return>
+			<return type="VScrollBar" />
 			<description>
 				Returns the vertical scrollbar.
 			</description>
 		</method>
 		<method name="get_visible_line_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of visible lines.
 			</description>
 		</method>
 		<method name="install_effect">
-			<return type="void">
-			</return>
-			<argument index="0" name="effect" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="effect" type="Variant" />
 			<description>
 				Installs a custom effect. [code]effect[/code] should be a valid [RichTextEffect].
 			</description>
 		</method>
 		<method name="newline">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Adds a newline tag to the tag stack.
 			</description>
 		</method>
 		<method name="parse_bbcode">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="bbcode" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="bbcode" type="String" />
 			<description>
 				The assignment version of [method append_bbcode]. Clears the tag stack and inserts the new content. Returns [constant OK] if parses [code]bbcode[/code] successfully.
 			</description>
 		</method>
 		<method name="parse_expressions_for_values">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="expressions" type="PoolStringArray">
-			</argument>
+			<return type="Dictionary" />
+			<argument index="0" name="expressions" type="PoolStringArray" />
 			<description>
 				Parses BBCode parameter [code]expressions[/code] into a dictionary.
 			</description>
 		</method>
 		<method name="pop">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Terminates the current tag. Use after [code]push_*[/code] methods to close BBCodes manually. Does not need to follow [code]add_*[/code] methods.
 			</description>
 		</method>
 		<method name="push_align">
-			<return type="void">
-			</return>
-			<argument index="0" name="align" type="int" enum="RichTextLabel.Align">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="align" type="int" enum="RichTextLabel.Align" />
 			<description>
 				Adds an [code][align][/code] tag based on the given [code]align[/code] value. See [enum Align] for possible values.
 			</description>
 		</method>
 		<method name="push_bold">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Adds a [code][font][/code] tag with a bold font to the tag stack. This is the same as adding a [code][b][/code] tag if not currently in a [code][i][/code] tag.
 			</description>
 		</method>
 		<method name="push_bold_italics">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Adds a [code][font][/code] tag with a bold italics font to the tag stack.
 			</description>
 		</method>
 		<method name="push_cell">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Adds a [code][cell][/code] tag to the tag stack. Must be inside a [code][table][/code] tag. See [method push_table] for details.
 			</description>
 		</method>
 		<method name="push_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="color" type="Color">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="color" type="Color" />
 			<description>
 				Adds a [code][color][/code] tag to the tag stack.
 			</description>
 		</method>
 		<method name="push_font">
-			<return type="void">
-			</return>
-			<argument index="0" name="font" type="Font">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="font" type="Font" />
 			<description>
 				Adds a [code][font][/code] tag to the tag stack. Overrides default fonts for its duration.
 			</description>
 		</method>
 		<method name="push_indent">
-			<return type="void">
-			</return>
-			<argument index="0" name="level" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="level" type="int" />
 			<description>
 				Adds an [code][indent][/code] tag to the tag stack. Multiplies [code]level[/code] by current [member tab_size] to determine new margin length.
 			</description>
 		</method>
 		<method name="push_italics">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Adds a [code][font][/code] tag with a italics font to the tag stack. This is the same as adding a [code][i][/code] tag if not currently in a [code][b][/code] tag.
 			</description>
 		</method>
 		<method name="push_list">
-			<return type="void">
-			</return>
-			<argument index="0" name="type" type="int" enum="RichTextLabel.ListType">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="type" type="int" enum="RichTextLabel.ListType" />
 			<description>
 				Adds a [code][list][/code] tag to the tag stack. Similar to the BBCodes [code][ol][/code] or [code][ul][/code], but supports more list types. Not fully implemented!
 			</description>
 		</method>
 		<method name="push_meta">
-			<return type="void">
-			</return>
-			<argument index="0" name="data" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="data" type="Variant" />
 			<description>
 				Adds a [code][meta][/code] tag to the tag stack. Similar to the BBCode [code][url=something]{text}[/url][/code], but supports non-[String] metadata types.
 			</description>
 		</method>
 		<method name="push_mono">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Adds a [code][font][/code] tag with a monospace font to the tag stack.
 			</description>
 		</method>
 		<method name="push_normal">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Adds a [code][font][/code] tag with a normal font to the tag stack.
 			</description>
 		</method>
 		<method name="push_strikethrough">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Adds a [code][s][/code] tag to the tag stack.
 			</description>
 		</method>
 		<method name="push_table">
-			<return type="void">
-			</return>
-			<argument index="0" name="columns" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="columns" type="int" />
 			<description>
 				Adds a [code][table=columns][/code] tag to the tag stack.
 			</description>
 		</method>
 		<method name="push_underline">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Adds a [code][u][/code] tag to the tag stack.
 			</description>
 		</method>
 		<method name="remove_line">
-			<return type="bool">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="line" type="int" />
 			<description>
 				Removes a line of content from the label. Returns [code]true[/code] if the line exists.
 				The [code]line[/code] argument is the index of the line to remove, it can take values in the interval [code][0, get_line_count() - 1][/code].
 			</description>
 		</method>
 		<method name="scroll_to_line">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="line" type="int" />
 			<description>
 				Scrolls the window's top line to match [code]line[/code].
 			</description>
 		</method>
 		<method name="set_table_column_expand">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="expand" type="bool">
-			</argument>
-			<argument index="2" name="ratio" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="expand" type="bool" />
+			<argument index="2" name="ratio" type="int" />
 			<description>
 				Edits the selected column's expansion options. If [code]expand[/code] is [code]true[/code], the column expands in proportion to its expansion ratio versus the other columns' ratios.
 				For example, 2 columns with ratios 3 and 4 plus 70 pixels in available width would expand 30 and 40 pixels, respectively.
@@ -336,22 +284,19 @@
 	</members>
 	<signals>
 		<signal name="meta_clicked">
-			<argument index="0" name="meta" type="Variant">
-			</argument>
+			<argument index="0" name="meta" type="Variant" />
 			<description>
 				Triggered when the user clicks on content between meta tags. If the meta is defined in text, e.g. [code][url={"data"="hi"}]hi[/url][/code], then the parameter for this signal will be a [String] type. If a particular type or an object is desired, the [method push_meta] method must be used to manually insert the data into the tag stack.
 			</description>
 		</signal>
 		<signal name="meta_hover_ended">
-			<argument index="0" name="meta" type="Variant">
-			</argument>
+			<argument index="0" name="meta" type="Variant" />
 			<description>
 				Triggers when the mouse exits a meta tag.
 			</description>
 		</signal>
 		<signal name="meta_hover_started">
-			<argument index="0" name="meta" type="Variant">
-			</argument>
+			<argument index="0" name="meta" type="Variant" />
 			<description>
 				Triggers when the mouse enters a meta tag.
 			</description>

@@ -10,30 +10,23 @@
 	</tutorials>
 	<methods>
 		<method name="get_flag" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="flag" type="int" enum="GeometryInstance.Flags">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="flag" type="int" enum="GeometryInstance.Flags" />
 			<description>
 				Returns the [enum GeometryInstance.Flags] that have been set for this object.
 			</description>
 		</method>
 		<method name="set_custom_aabb">
-			<return type="void">
-			</return>
-			<argument index="0" name="aabb" type="AABB">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="aabb" type="AABB" />
 			<description>
 				Overrides the bounding box of this node with a custom one. To remove it, set an [AABB] with all fields set to zero.
 			</description>
 		</method>
 		<method name="set_flag">
-			<return type="void">
-			</return>
-			<argument index="0" name="flag" type="int" enum="GeometryInstance.Flags">
-			</argument>
-			<argument index="1" name="value" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="flag" type="int" enum="GeometryInstance.Flags" />
+			<argument index="1" name="value" type="bool" />
 			<description>
 				Sets the [enum GeometryInstance.Flags] specified. See [enum GeometryInstance.Flags] for options.
 			</description>

@@ -12,12 +12,9 @@
 	</tutorials>
 	<methods>
 		<method name="eval">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="code" type="String">
-			</argument>
-			<argument index="1" name="use_global_execution_context" type="bool" default="false">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="code" type="String" />
+			<argument index="1" name="use_global_execution_context" type="bool" default="false" />
 			<description>
 				Execute the string [code]code[/code] as JavaScript code within the browser window. This is a call to the actual global JavaScript function [code]eval()[/code].
 				If [code]use_global_execution_context[/code] is [code]true[/code], the code will be evaluated in the global execution context. Otherwise, it is evaluated in the execution context of a function within the engine's runtime environment.

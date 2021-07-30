@@ -44,125 +44,99 @@
 	</tutorials>
 	<methods>
 		<method name="_drop_files" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="files" type="PoolStringArray">
-			</argument>
-			<argument index="1" name="from_screen" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="files" type="PoolStringArray" />
+			<argument index="1" name="from_screen" type="int" />
 			<description>
 				Called when files are dragged from the OS file manager and dropped in the game window. The arguments are a list of file paths and the identifier of the screen where the drag originated.
 			</description>
 		</method>
 		<method name="_finalize" qualifiers="virtual">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Called before the program exits.
 			</description>
 		</method>
 		<method name="_global_menu_action" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="Variant">
-			</argument>
-			<argument index="1" name="meta" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="Variant" />
+			<argument index="1" name="meta" type="Variant" />
 			<description>
 				Called when the user performs an action in the system global menu (e.g. the Mac OS menu bar).
 			</description>
 		</method>
 		<method name="_idle" qualifiers="virtual">
-			<return type="bool">
-			</return>
-			<argument index="0" name="delta" type="float">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="delta" type="float" />
 			<description>
 				Called each idle frame with the time since the last idle frame as argument (in seconds). Equivalent to [method Node._process].
 				If implemented, the method must return a boolean value. [code]true[/code] ends the main loop, while [code]false[/code] lets it proceed to the next frame.
 			</description>
 		</method>
 		<method name="_initialize" qualifiers="virtual">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Called once during initialization.
 			</description>
 		</method>
 		<method name="_input_event" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="event" type="InputEvent">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="event" type="InputEvent" />
 			<description>
 				Called whenever an [InputEvent] is received by the main loop.
 			</description>
 		</method>
 		<method name="_input_text" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="text" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="text" type="String" />
 			<description>
 				Deprecated callback, does not do anything. Use [method _input_event] to parse text input. Will be removed in Godot 4.0.
 			</description>
 		</method>
 		<method name="_iteration" qualifiers="virtual">
-			<return type="bool">
-			</return>
-			<argument index="0" name="delta" type="float">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="delta" type="float" />
 			<description>
 				Called each physics frame with the time since the last physics frame as argument ([code]delta[/code], in seconds). Equivalent to [method Node._physics_process].
 				If implemented, the method must return a boolean value. [code]true[/code] ends the main loop, while [code]false[/code] lets it proceed to the next frame.
 			</description>
 		</method>
 		<method name="finish">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Should not be called manually, override [method _finalize] instead. Will be removed in Godot 4.0.
 			</description>
 		</method>
 		<method name="idle">
-			<return type="bool">
-			</return>
-			<argument index="0" name="delta" type="float">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="delta" type="float" />
 			<description>
 				Should not be called manually, override [method _idle] instead. Will be removed in Godot 4.0.
 			</description>
 		</method>
 		<method name="init">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Should not be called manually, override [method _initialize] instead. Will be removed in Godot 4.0.
 			</description>
 		</method>
 		<method name="input_event">
-			<return type="void">
-			</return>
-			<argument index="0" name="event" type="InputEvent">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="event" type="InputEvent" />
 			<description>
 				Should not be called manually, override [method _input_event] instead. Will be removed in Godot 4.0.
 			</description>
 		</method>
 		<method name="input_text">
-			<return type="void">
-			</return>
-			<argument index="0" name="text" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="text" type="String" />
 			<description>
 				Should not be called manually, override [method _input_text] instead. Will be removed in Godot 4.0.
 			</description>
 		</method>
 		<method name="iteration">
-			<return type="bool">
-			</return>
-			<argument index="0" name="delta" type="float">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="delta" type="float" />
 			<description>
 				Should not be called manually, override [method _iteration] instead. Will be removed in Godot 4.0.
 			</description>
@@ -170,10 +144,8 @@
 	</methods>
 	<signals>
 		<signal name="on_request_permissions_result">
-			<argument index="0" name="permission" type="String">
-			</argument>
-			<argument index="1" name="granted" type="bool">
-			</argument>
+			<argument index="0" name="permission" type="String" />
+			<argument index="1" name="granted" type="bool" />
 			<description>
 				Emitted when a user responds to a permission request.
 			</description>

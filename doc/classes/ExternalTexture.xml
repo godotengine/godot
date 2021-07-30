@@ -11,8 +11,7 @@
 	</tutorials>
 	<methods>
 		<method name="get_external_texture_id">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the external texture name.
 			</description>

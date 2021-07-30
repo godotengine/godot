@@ -13,8 +13,7 @@
 	</tutorials>
 	<methods>
 		<method name="get_canvas" qualifiers="const">
-			<return type="RID">
-			</return>
+			<return type="RID" />
 			<description>
 				Returns the RID of the canvas used by this layer.
 			</description>

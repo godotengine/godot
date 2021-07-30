@@ -10,83 +10,62 @@
 	</tutorials>
 	<methods>
 		<method name="create">
-			<return type="void">
-			</return>
-			<argument index="0" name="width" type="int">
-			</argument>
-			<argument index="1" name="height" type="int">
-			</argument>
-			<argument index="2" name="depth" type="int">
-			</argument>
-			<argument index="3" name="format" type="int" enum="Image.Format">
-			</argument>
-			<argument index="4" name="flags" type="int" default="4">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="width" type="int" />
+			<argument index="1" name="height" type="int" />
+			<argument index="2" name="depth" type="int" />
+			<argument index="3" name="format" type="int" enum="Image.Format" />
+			<argument index="4" name="flags" type="int" default="4" />
 			<description>
 				Creates the [Texture3D] or [TextureArray] with specified [code]width[/code], [code]height[/code], and [code]depth[/code]. See [enum Image.Format] for [code]format[/code] options. See [enum Flags] enumerator for [code]flags[/code] options.
 			</description>
 		</method>
 		<method name="get_depth" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the depth of the texture. Depth is the 3rd dimension (typically Z-axis).
 			</description>
 		</method>
 		<method name="get_format" qualifiers="const">
-			<return type="int" enum="Image.Format">
-			</return>
+			<return type="int" enum="Image.Format" />
 			<description>
 				Returns the current format being used by this texture. See [enum Image.Format] for details.
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the height of the texture. Height is typically represented by the Y-axis.
 			</description>
 		</method>
 		<method name="get_layer_data" qualifiers="const">
-			<return type="Image">
-			</return>
-			<argument index="0" name="layer" type="int">
-			</argument>
+			<return type="Image" />
+			<argument index="0" name="layer" type="int" />
 			<description>
 				Returns an [Image] resource with the data from specified [code]layer[/code].
 			</description>
 		</method>
 		<method name="get_width" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the width of the texture. Width is typically represented by the X-axis.
 			</description>
 		</method>
 		<method name="set_data_partial">
-			<return type="void">
-			</return>
-			<argument index="0" name="image" type="Image">
-			</argument>
-			<argument index="1" name="x_offset" type="int">
-			</argument>
-			<argument index="2" name="y_offset" type="int">
-			</argument>
-			<argument index="3" name="layer" type="int">
-			</argument>
-			<argument index="4" name="mipmap" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="image" type="Image" />
+			<argument index="1" name="x_offset" type="int" />
+			<argument index="2" name="y_offset" type="int" />
+			<argument index="3" name="layer" type="int" />
+			<argument index="4" name="mipmap" type="int" default="0" />
 			<description>
 				Partially sets the data for a specified [code]layer[/code] by overwriting using the data of the specified [code]image[/code]. [code]x_offset[/code] and [code]y_offset[/code] determine where the [Image] is "stamped" over the texture. The [code]image[/code] must fit within the texture.
 			</description>
 		</method>
 		<method name="set_layer_data">
-			<return type="void">
-			</return>
-			<argument index="0" name="image" type="Image">
-			</argument>
-			<argument index="1" name="layer" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="image" type="Image" />
+			<argument index="1" name="layer" type="int" />
 			<description>
 				Sets the data for the specified layer. Data takes the form of a 2-dimensional [Image] resource.
 			</description>

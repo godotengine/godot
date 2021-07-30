@@ -9,44 +9,35 @@
 	</tutorials>
 	<methods>
 		<method name="can_push_buffer" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="amount" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="amount" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="clear_buffer">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 			</description>
 		</method>
 		<method name="get_frames_available" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_skips" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="push_buffer">
-			<return type="bool">
-			</return>
-			<argument index="0" name="frames" type="PoolVector2Array">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="frames" type="PoolVector2Array" />
 			<description>
 			</description>
 		</method>
 		<method name="push_frame">
-			<return type="bool">
-			</return>
-			<argument index="0" name="frame" type="Vector2">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="frame" type="Vector2" />
 			<description>
 			</description>
 		</method>

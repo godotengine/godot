@@ -14,58 +14,47 @@
 	</tutorials>
 	<methods>
 		<method name="create_convex_collision">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				This helper creates a [StaticBody] child node with a [ConvexPolygonShape] collision shape calculated from the mesh geometry. It's mainly used for testing.
 			</description>
 		</method>
 		<method name="create_debug_tangents">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				This helper creates a [MeshInstance] child node with gizmos at every vertex calculated from the mesh geometry. It's mainly used for testing.
 			</description>
 		</method>
 		<method name="create_trimesh_collision">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				This helper creates a [StaticBody] child node with a [ConcavePolygonShape] collision shape calculated from the mesh geometry. It's mainly used for testing.
 			</description>
 		</method>
 		<method name="get_active_material" qualifiers="const">
-			<return type="Material">
-			</return>
-			<argument index="0" name="surface" type="int">
-			</argument>
+			<return type="Material" />
+			<argument index="0" name="surface" type="int" />
 			<description>
 				Returns the [Material] that will be used by the [Mesh] when drawing. This can return the [member GeometryInstance.material_override], the surface override [Material] defined in this [MeshInstance], or the surface [Material] defined in the [Mesh]. For example, if [member GeometryInstance.material_override] is used, all surfaces will return the override material.
 			</description>
 		</method>
 		<method name="get_surface_material" qualifiers="const">
-			<return type="Material">
-			</return>
-			<argument index="0" name="surface" type="int">
-			</argument>
+			<return type="Material" />
+			<argument index="0" name="surface" type="int" />
 			<description>
 				Returns the [Material] for a surface of the [Mesh] resource.
 			</description>
 		</method>
 		<method name="get_surface_material_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of surface materials.
 			</description>
 		</method>
 		<method name="set_surface_material">
-			<return type="void">
-			</return>
-			<argument index="0" name="surface" type="int">
-			</argument>
-			<argument index="1" name="material" type="Material">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="surface" type="int" />
+			<argument index="1" name="material" type="Material" />
 			<description>
 				Sets the [Material] for a surface of the [Mesh] resource.
 			</description>

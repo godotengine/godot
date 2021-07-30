@@ -9,62 +9,44 @@
 	</tutorials>
 	<methods>
 		<method name="_get_extensions" qualifiers="virtual">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 			</description>
 		</method>
 		<method name="_get_import_flags" qualifiers="virtual">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="_import_animation" qualifiers="virtual">
-			<return type="Animation">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="flags" type="int">
-			</argument>
-			<argument index="2" name="bake_fps" type="int">
-			</argument>
+			<return type="Animation" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="flags" type="int" />
+			<argument index="2" name="bake_fps" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="_import_scene" qualifiers="virtual">
-			<return type="Node">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="flags" type="int">
-			</argument>
-			<argument index="2" name="bake_fps" type="int">
-			</argument>
+			<return type="Node" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="flags" type="int" />
+			<argument index="2" name="bake_fps" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="import_animation_from_other_importer">
-			<return type="Animation">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="flags" type="int">
-			</argument>
-			<argument index="2" name="bake_fps" type="int">
-			</argument>
+			<return type="Animation" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="flags" type="int" />
+			<argument index="2" name="bake_fps" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="import_scene_from_other_importer">
-			<return type="Node">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="flags" type="int">
-			</argument>
-			<argument index="2" name="bake_fps" type="int">
-			</argument>
+			<return type="Node" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="flags" type="int" />
+			<argument index="2" name="bake_fps" type="int" />
 			<description>
 			</description>
 		</method>

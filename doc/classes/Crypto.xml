@@ -28,34 +28,25 @@
 	</tutorials>
 	<methods>
 		<method name="generate_random_bytes">
-			<return type="PoolByteArray">
-			</return>
-			<argument index="0" name="size" type="int">
-			</argument>
+			<return type="PoolByteArray" />
+			<argument index="0" name="size" type="int" />
 			<description>
 				Generates a [PoolByteArray] of cryptographically secure random bytes with given [code]size[/code].
 			</description>
 		</method>
 		<method name="generate_rsa">
-			<return type="CryptoKey">
-			</return>
-			<argument index="0" name="size" type="int">
-			</argument>
+			<return type="CryptoKey" />
+			<argument index="0" name="size" type="int" />
 			<description>
 				Generates an RSA [CryptoKey] that can be used for creating self-signed certificates and passed to [method StreamPeerSSL.accept_stream].
 			</description>
 		</method>
 		<method name="generate_self_signed_certificate">
-			<return type="X509Certificate">
-			</return>
-			<argument index="0" name="key" type="CryptoKey">
-			</argument>
-			<argument index="1" name="issuer_name" type="String" default="&quot;CN=myserver,O=myorganisation,C=IT&quot;">
-			</argument>
-			<argument index="2" name="not_before" type="String" default="&quot;20140101000000&quot;">
-			</argument>
-			<argument index="3" name="not_after" type="String" default="&quot;20340101000000&quot;">
-			</argument>
+			<return type="X509Certificate" />
+			<argument index="0" name="key" type="CryptoKey" />
+			<argument index="1" name="issuer_name" type="String" default="&quot;CN=myserver,O=myorganisation,C=IT&quot;" />
+			<argument index="2" name="not_before" type="String" default="&quot;20140101000000&quot;" />
+			<argument index="3" name="not_after" type="String" default="&quot;20340101000000&quot;" />
 			<description>
 				Generates a self-signed [X509Certificate] from the given [CryptoKey] and [code]issuer_name[/code]. The certificate validity will be defined by [code]not_before[/code] and [code]not_after[/code] (first valid date and last valid date). The [code]issuer_name[/code] must contain at least "CN=" (common name, i.e. the domain name), "O=" (organization, i.e. your company name), "C=" (country, i.e. 2 lettered ISO-3166 code of the country the organization is based in).
 				A small example to generate an RSA key and a X509 self-signed certificate.

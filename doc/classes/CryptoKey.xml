@@ -12,19 +12,15 @@
 	</tutorials>
 	<methods>
 		<method name="load">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Loads a key from [code]path[/code] ("*.key" file).
 			</description>
 		</method>
 		<method name="save">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Saves a key to the given [code]path[/code] (should be a "*.key" file).
 			</description>

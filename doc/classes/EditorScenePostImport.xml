@@ -30,24 +30,20 @@
 	</tutorials>
 	<methods>
 		<method name="get_source_file" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the source file path which got imported (e.g. [code]res://scene.dae[/code]).
 			</description>
 		</method>
 		<method name="get_source_folder" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the resource folder the imported scene file is located in.
 			</description>
 		</method>
 		<method name="post_import" qualifiers="virtual">
-			<return type="Object">
-			</return>
-			<argument index="0" name="scene" type="Object">
-			</argument>
+			<return type="Object" />
+			<argument index="0" name="scene" type="Object" />
 			<description>
 				Called after the scene was imported. This method must return the modified version of the scene.
 			</description>

@@ -14,96 +14,74 @@
 	</tutorials>
 	<methods>
 		<method name="add_sphere">
-			<return type="void">
-			</return>
-			<argument index="0" name="lats" type="int">
-			</argument>
-			<argument index="1" name="lons" type="int">
-			</argument>
-			<argument index="2" name="radius" type="float">
-			</argument>
-			<argument index="3" name="add_uv" type="bool" default="true">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="lats" type="int" />
+			<argument index="1" name="lons" type="int" />
+			<argument index="2" name="radius" type="float" />
+			<argument index="3" name="add_uv" type="bool" default="true" />
 			<description>
 				Simple helper to draw an UV sphere with given latitude, longitude and radius.
 			</description>
 		</method>
 		<method name="add_vertex">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector3">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="position" type="Vector3" />
 			<description>
 				Adds a vertex in local coordinate space with the currently set color/uv/etc.
 			</description>
 		</method>
 		<method name="begin">
-			<return type="void">
-			</return>
-			<argument index="0" name="primitive" type="int" enum="Mesh.PrimitiveType">
-			</argument>
-			<argument index="1" name="texture" type="Texture" default="null">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="primitive" type="int" enum="Mesh.PrimitiveType" />
+			<argument index="1" name="texture" type="Texture" default="null" />
 			<description>
 				Begin drawing (and optionally pass a texture override). When done call [method end]. For more information on how this works, search for [code]glBegin()[/code] and [code]glEnd()[/code] references.
 				For the type of primitive, see the [enum Mesh.PrimitiveType] enum.
 			</description>
 		</method>
 		<method name="clear">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clears everything that was drawn using begin/end.
 			</description>
 		</method>
 		<method name="end">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Ends a drawing context and displays the results.
 			</description>
 		</method>
 		<method name="set_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="color" type="Color">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="color" type="Color" />
 			<description>
 				The current drawing color.
 			</description>
 		</method>
 		<method name="set_normal">
-			<return type="void">
-			</return>
-			<argument index="0" name="normal" type="Vector3">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="normal" type="Vector3" />
 			<description>
 				The next vertex's normal.
 			</description>
 		</method>
 		<method name="set_tangent">
-			<return type="void">
-			</return>
-			<argument index="0" name="tangent" type="Plane">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="tangent" type="Plane" />
 			<description>
 				The next vertex's tangent (and binormal facing).
 			</description>
 		</method>
 		<method name="set_uv">
-			<return type="void">
-			</return>
-			<argument index="0" name="uv" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="uv" type="Vector2" />
 			<description>
 				The next vertex's UV.
 			</description>
 		</method>
 		<method name="set_uv2">
-			<return type="void">
-			</return>
-			<argument index="0" name="uv" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="uv" type="Vector2" />
 			<description>
 				The next vertex's second layer UV.
 			</description>

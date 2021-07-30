@@ -17,107 +17,82 @@
 	</tutorials>
 	<methods>
 		<method name="Vector3">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
-			<argument index="1" name="y" type="float">
-			</argument>
-			<argument index="2" name="z" type="float">
-			</argument>
+			<return type="Vector3" />
+			<argument index="0" name="x" type="float" />
+			<argument index="1" name="y" type="float" />
+			<argument index="2" name="z" type="float" />
 			<description>
 				Returns a Vector3 with the given components.
 			</description>
 		</method>
 		<method name="abs">
-			<return type="Vector3">
-			</return>
+			<return type="Vector3" />
 			<description>
 				Returns a new vector with all components in absolute values (i.e. positive).
 			</description>
 		</method>
 		<method name="angle_to">
-			<return type="float">
-			</return>
-			<argument index="0" name="to" type="Vector3">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="to" type="Vector3" />
 			<description>
 				Returns the minimum angle to the given vector, in radians.
 			</description>
 		</method>
 		<method name="bounce">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="n" type="Vector3">
-			</argument>
+			<return type="Vector3" />
+			<argument index="0" name="n" type="Vector3" />
 			<description>
 				Returns the vector "bounced off" from a plane defined by the given normal.
 			</description>
 		</method>
 		<method name="ceil">
-			<return type="Vector3">
-			</return>
+			<return type="Vector3" />
 			<description>
 				Returns a new vector with all components rounded up (towards positive infinity).
 			</description>
 		</method>
 		<method name="cross">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="b" type="Vector3">
-			</argument>
+			<return type="Vector3" />
+			<argument index="0" name="b" type="Vector3" />
 			<description>
 				Returns the cross product of this vector and [code]b[/code].
 			</description>
 		</method>
 		<method name="cubic_interpolate">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="b" type="Vector3">
-			</argument>
-			<argument index="1" name="pre_a" type="Vector3">
-			</argument>
-			<argument index="2" name="post_b" type="Vector3">
-			</argument>
-			<argument index="3" name="weight" type="float">
-			</argument>
+			<return type="Vector3" />
+			<argument index="0" name="b" type="Vector3" />
+			<argument index="1" name="pre_a" type="Vector3" />
+			<argument index="2" name="post_b" type="Vector3" />
+			<argument index="3" name="weight" type="float" />
 			<description>
 				Performs a cubic interpolation between vectors [code]pre_a[/code], [code]a[/code], [code]b[/code], [code]post_b[/code] ([code]a[/code] is current), by the given amount [code]weight[/code]. [code]weight[/code] is on the range of 0.0 to 1.0, representing the amount of interpolation.
 			</description>
 		</method>
 		<method name="direction_to">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="b" type="Vector3">
-			</argument>
+			<return type="Vector3" />
+			<argument index="0" name="b" type="Vector3" />
 			<description>
 				Returns the normalized vector pointing from this vector to [code]b[/code]. This is equivalent to using [code](b - a).normalized()[/code].
 			</description>
 		</method>
 		<method name="distance_squared_to">
-			<return type="float">
-			</return>
-			<argument index="0" name="b" type="Vector3">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="b" type="Vector3" />
 			<description>
 				Returns the squared distance between this vector and [code]b[/code].
 				This method runs faster than [method distance_to], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>
 		<method name="distance_to">
-			<return type="float">
-			</return>
-			<argument index="0" name="b" type="Vector3">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="b" type="Vector3" />
 			<description>
 				Returns the distance between this vector and [code]b[/code].
 			</description>
 		</method>
 		<method name="dot">
-			<return type="float">
-			</return>
-			<argument index="0" name="b" type="Vector3">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="b" type="Vector3" />
 			<description>
 				Returns the dot product of this vector and [code]b[/code]. This can be used to compare the angle between two vectors. For example, this can be used to determine whether an enemy is facing the player.
 				The dot product will be [code]0[/code] for a straight angle (90 degrees), greater than 0 for angles narrower than 90 degrees and lower than 0 for angles wider than 90 degrees.
@@ -126,196 +101,157 @@
 			</description>
 		</method>
 		<method name="floor">
-			<return type="Vector3">
-			</return>
+			<return type="Vector3" />
 			<description>
 				Returns a new vector with all components rounded down (towards negative infinity).
 			</description>
 		</method>
 		<method name="inverse">
-			<return type="Vector3">
-			</return>
+			<return type="Vector3" />
 			<description>
 				Returns the inverse of the vector. This is the same as [code]Vector3( 1.0 / v.x, 1.0 / v.y, 1.0 / v.z )[/code].
 			</description>
 		</method>
 		<method name="is_equal_approx">
-			<return type="bool">
-			</return>
-			<argument index="0" name="v" type="Vector3">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="v" type="Vector3" />
 			<description>
 				Returns [code]true[/code] if this vector and [code]v[/code] are approximately equal, by running [method @GDScript.is_equal_approx] on each component.
 			</description>
 		</method>
 		<method name="is_normalized">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the vector is normalized, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="length">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the length (magnitude) of this vector.
 			</description>
 		</method>
 		<method name="length_squared">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the squared length (squared magnitude) of this vector.
 				This method runs faster than [method length], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>
 		<method name="linear_interpolate">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="to" type="Vector3">
-			</argument>
-			<argument index="1" name="weight" type="float">
-			</argument>
+			<return type="Vector3" />
+			<argument index="0" name="to" type="Vector3" />
+			<argument index="1" name="weight" type="float" />
 			<description>
 				Returns the result of the linear interpolation between this vector and [code]to[/code] by amount [code]t[/code]. [code]weight[/code] is on the range of 0.0 to 1.0, representing the amount of interpolation.
 			</description>
 		</method>
 		<method name="max_axis">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the axis of the vector's largest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_X].
 			</description>
 		</method>
 		<method name="min_axis">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the axis of the vector's smallest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_Z].
 			</description>
 		</method>
 		<method name="move_toward">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="to" type="Vector3">
-			</argument>
-			<argument index="1" name="delta" type="float">
-			</argument>
+			<return type="Vector3" />
+			<argument index="0" name="to" type="Vector3" />
+			<argument index="1" name="delta" type="float" />
 			<description>
 				Moves this vector toward [code]to[/code] by the fixed [code]delta[/code] amount.
 			</description>
 		</method>
 		<method name="normalized">
-			<return type="Vector3">
-			</return>
+			<return type="Vector3" />
 			<description>
 				Returns the vector scaled to unit length. Equivalent to [code]v / v.length()[/code].
 			</description>
 		</method>
 		<method name="outer">
-			<return type="Basis">
-			</return>
-			<argument index="0" name="b" type="Vector3">
-			</argument>
+			<return type="Basis" />
+			<argument index="0" name="b" type="Vector3" />
 			<description>
 				Returns the outer product with [code]b[/code].
 			</description>
 		</method>
 		<method name="posmod">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="mod" type="float">
-			</argument>
+			<return type="Vector3" />
+			<argument index="0" name="mod" type="float" />
 			<description>
 				Returns a vector composed of the [method @GDScript.fposmod] of this vector's components and [code]mod[/code].
 			</description>
 		</method>
 		<method name="posmodv">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="modv" type="Vector3">
-			</argument>
+			<return type="Vector3" />
+			<argument index="0" name="modv" type="Vector3" />
 			<description>
 				Returns a vector composed of the [method @GDScript.fposmod] of this vector's components and [code]modv[/code]'s components.
 			</description>
 		</method>
 		<method name="project">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="b" type="Vector3">
-			</argument>
+			<return type="Vector3" />
+			<argument index="0" name="b" type="Vector3" />
 			<description>
 				Returns this vector projected onto another vector [code]b[/code].
 			</description>
 		</method>
 		<method name="reflect">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="n" type="Vector3">
-			</argument>
+			<return type="Vector3" />
+			<argument index="0" name="n" type="Vector3" />
 			<description>
 				Returns this vector reflected from a plane defined by the given normal.
 			</description>
 		</method>
 		<method name="rotated">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="axis" type="Vector3">
-			</argument>
-			<argument index="1" name="phi" type="float">
-			</argument>
+			<return type="Vector3" />
+			<argument index="0" name="axis" type="Vector3" />
+			<argument index="1" name="phi" type="float" />
 			<description>
 				Rotates this vector around a given axis by [code]phi[/code] radians. The axis must be a normalized vector.
 			</description>
 		</method>
 		<method name="round">
-			<return type="Vector3">
-			</return>
+			<return type="Vector3" />
 			<description>
 				Returns this vector with all components rounded to the nearest integer, with halfway cases rounded away from zero.
 			</description>
 		</method>
 		<method name="sign">
-			<return type="Vector3">
-			</return>
+			<return type="Vector3" />
 			<description>
 				Returns a vector with each component set to one or negative one, depending on the signs of this vector's components. If a component is zero, it returns positive one.
 			</description>
 		</method>
 		<method name="slerp">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="to" type="Vector3">
-			</argument>
-			<argument index="1" name="weight" type="float">
-			</argument>
+			<return type="Vector3" />
+			<argument index="0" name="to" type="Vector3" />
+			<argument index="1" name="weight" type="float" />
 			<description>
 				Returns the result of spherical linear interpolation between this vector and [code]to[/code], by amount [code]weight[/code]. [code]weight[/code] is on the range of 0.0 to 1.0, representing the amount of interpolation.
 				[b]Note:[/b] Both vectors must be normalized.
 			</description>
 		</method>
 		<method name="slide">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="n" type="Vector3">
-			</argument>
+			<return type="Vector3" />
+			<argument index="0" name="n" type="Vector3" />
 			<description>
 				Returns this vector slid along a plane defined by the given normal.
 			</description>
 		</method>
 		<method name="snapped">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="by" type="Vector3">
-			</argument>
+			<return type="Vector3" />
+			<argument index="0" name="by" type="Vector3" />
 			<description>
 				Returns this vector with each component snapped to the nearest multiple of [code]step[/code]. This can also be used to round to an arbitrary number of decimals.
 			</description>
 		</method>
 		<method name="to_diagonal_matrix">
-			<return type="Basis">
-			</return>
+			<return type="Basis" />
 			<description>
 				Returns a diagonal matrix with the vector as main diagonal.
 				This is equivalent to a Basis with no rotation or shearing and this vector's components set as the scale.

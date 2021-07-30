@@ -12,326 +12,244 @@
 	</tutorials>
 	<methods>
 		<method name="clear">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clears all values on the theme.
 			</description>
 		</method>
 		<method name="clear_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" />
 			<description>
 				Clears the [Color] at [code]name[/code] if the theme has [code]node_type[/code].
 			</description>
 		</method>
 		<method name="clear_constant">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" />
 			<description>
 				Clears the constant at [code]name[/code] if the theme has [code]node_type[/code].
 			</description>
 		</method>
 		<method name="clear_font">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" />
 			<description>
 				Clears the [Font] at [code]name[/code] if the theme has [code]node_type[/code].
 			</description>
 		</method>
 		<method name="clear_icon">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" />
 			<description>
 				Clears the icon at [code]name[/code] if the theme has [code]node_type[/code].
 			</description>
 		</method>
 		<method name="clear_stylebox">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" />
 			<description>
 				Clears [StyleBox] at [code]name[/code] if the theme has [code]node_type[/code].
 			</description>
 		</method>
 		<method name="copy_default_theme">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Sets the theme's values to a copy of the default theme values.
 			</description>
 		</method>
 		<method name="copy_theme">
-			<return type="void">
-			</return>
-			<argument index="0" name="other" type="Theme">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="other" type="Theme" />
 			<description>
 				Sets the theme's values to a copy of a given theme.
 			</description>
 		</method>
 		<method name="get_color" qualifiers="const">
-			<return type="Color">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" />
 			<description>
 				Returns the [Color] at [code]name[/code] if the theme has [code]node_type[/code].
 			</description>
 		</method>
 		<method name="get_color_list" qualifiers="const">
-			<return type="PoolStringArray">
-			</return>
-			<argument index="0" name="node_type" type="String">
-			</argument>
+			<return type="PoolStringArray" />
+			<argument index="0" name="node_type" type="String" />
 			<description>
 				Returns all the [Color]s as a [PoolStringArray] filled with each [Color]'s name, for use in [method get_color], if the theme has [code]node_type[/code].
 			</description>
 		</method>
 		<method name="get_constant" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" />
 			<description>
 				Returns the constant at [code]name[/code] if the theme has [code]node_type[/code].
 			</description>
 		</method>
 		<method name="get_constant_list" qualifiers="const">
-			<return type="PoolStringArray">
-			</return>
-			<argument index="0" name="node_type" type="String">
-			</argument>
+			<return type="PoolStringArray" />
+			<argument index="0" name="node_type" type="String" />
 			<description>
 				Returns all the constants as a [PoolStringArray] filled with each constant's name, for use in [method get_constant], if the theme has [code]node_type[/code].
 			</description>
 		</method>
 		<method name="get_font" qualifiers="const">
-			<return type="Font">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String">
-			</argument>
+			<return type="Font" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" />
 			<description>
 				Returns the [Font] at [code]name[/code] if the theme has [code]node_type[/code].
 			</description>
 		</method>
 		<method name="get_font_list" qualifiers="const">
-			<return type="PoolStringArray">
-			</return>
-			<argument index="0" name="node_type" type="String">
-			</argument>
+			<return type="PoolStringArray" />
+			<argument index="0" name="node_type" type="String" />
 			<description>
 				Returns all the [Font]s as a [PoolStringArray] filled with each [Font]'s name, for use in [method get_font], if the theme has [code]node_type[/code].
 			</description>
 		</method>
 		<method name="get_icon" qualifiers="const">
-			<return type="Texture">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String">
-			</argument>
+			<return type="Texture" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" />
 			<description>
 				Returns the icon [Texture] at [code]name[/code] if the theme has [code]node_type[/code].
 			</description>
 		</method>
 		<method name="get_icon_list" qualifiers="const">
-			<return type="PoolStringArray">
-			</return>
-			<argument index="0" name="node_type" type="String">
-			</argument>
+			<return type="PoolStringArray" />
+			<argument index="0" name="node_type" type="String" />
 			<description>
 				Returns all the icons as a [PoolStringArray] filled with each [Texture]'s name, for use in [method get_icon], if the theme has [code]node_type[/code].
 			</description>
 		</method>
 		<method name="get_stylebox" qualifiers="const">
-			<return type="StyleBox">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String">
-			</argument>
+			<return type="StyleBox" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" />
 			<description>
 				Returns the [StyleBox] at [code]name[/code] if the theme has [code]node_type[/code].
 				Valid [code]name[/code]s may be found using [method get_stylebox_list]. Valid [code]node_type[/code]s may be found using [method get_stylebox_types].
 			</description>
 		</method>
 		<method name="get_stylebox_list" qualifiers="const">
-			<return type="PoolStringArray">
-			</return>
-			<argument index="0" name="node_type" type="String">
-			</argument>
+			<return type="PoolStringArray" />
+			<argument index="0" name="node_type" type="String" />
 			<description>
 				Returns all the [StyleBox]s as a [PoolStringArray] filled with each [StyleBox]'s name, for use in [method get_stylebox], if the theme has [code]node_type[/code].
 				Valid [code]node_type[/code]s may be found using [method get_stylebox_types].
 			</description>
 		</method>
 		<method name="get_stylebox_types" qualifiers="const">
-			<return type="PoolStringArray">
-			</return>
+			<return type="PoolStringArray" />
 			<description>
 				Returns all the [StyleBox] types as a [PoolStringArray] filled with each [StyleBox]'s type, for use in [method get_stylebox] and/or [method get_stylebox_list], if the theme has [code]node_type[/code].
 			</description>
 		</method>
 		<method name="get_type_list" qualifiers="const">
-			<return type="PoolStringArray">
-			</return>
-			<argument index="0" name="node_type" type="String">
-			</argument>
+			<return type="PoolStringArray" />
+			<argument index="0" name="node_type" type="String" />
 			<description>
 				Returns all the types in [code]node_type[/code] as a [PoolStringArray] for use in any of the [code]get_*[/code] functions, if the theme has [code]node_type[/code].
 			</description>
 		</method>
 		<method name="has_color" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" />
 			<description>
 				Returns [code]true[/code] if [Color] with [code]name[/code] is in [code]node_type[/code].
 				Returns [code]false[/code] if the theme does not have [code]node_type[/code].
 			</description>
 		</method>
 		<method name="has_constant" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" />
 			<description>
 				Returns [code]true[/code] if constant with [code]name[/code] is in [code]node_type[/code].
 				Returns [code]false[/code] if the theme does not have [code]node_type[/code].
 			</description>
 		</method>
 		<method name="has_font" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" />
 			<description>
 				Returns [code]true[/code] if [Font] with [code]name[/code] is in [code]node_type[/code].
 				Returns [code]false[/code] if the theme does not have [code]node_type[/code].
 			</description>
 		</method>
 		<method name="has_icon" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" />
 			<description>
 				Returns [code]true[/code] if icon [Texture] with [code]name[/code] is in [code]node_type[/code].
 				Returns [code]false[/code] if the theme does not have [code]node_type[/code].
 			</description>
 		</method>
 		<method name="has_stylebox" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" />
 			<description>
 				Returns [code]true[/code] if [StyleBox] with [code]name[/code] is in [code]node_type[/code].
 				Returns [code]false[/code] if the theme does not have [code]node_type[/code].
 			</description>
 		</method>
 		<method name="set_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String">
-			</argument>
-			<argument index="2" name="color" type="Color">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" />
+			<argument index="2" name="color" type="Color" />
 			<description>
 				Sets the theme's [Color] to [code]color[/code] at [code]name[/code] in [code]node_type[/code].
 				Does nothing if the theme does not have [code]node_type[/code].
 			</description>
 		</method>
 		<method name="set_constant">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String">
-			</argument>
-			<argument index="2" name="constant" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" />
+			<argument index="2" name="constant" type="int" />
 			<description>
 				Sets the theme's constant to [code]constant[/code] at [code]name[/code] in [code]node_type[/code].
 				Does nothing if the theme does not have [code]node_type[/code].
 			</description>
 		</method>
 		<method name="set_font">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String">
-			</argument>
-			<argument index="2" name="font" type="Font">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" />
+			<argument index="2" name="font" type="Font" />
 			<description>
 				Sets the theme's [Font] to [code]font[/code] at [code]name[/code] in [code]node_type[/code].
 				Does nothing if the theme does not have [code]node_type[/code].
 			</description>
 		</method>
 		<method name="set_icon">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String">
-			</argument>
-			<argument index="2" name="texture" type="Texture">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" />
+			<argument index="2" name="texture" type="Texture" />
 			<description>
 				Sets the theme's icon [Texture] to [code]texture[/code] at [code]name[/code] in [code]node_type[/code].
 				Does nothing if the theme does not have [code]node_type[/code].
 			</description>
 		</method>
 		<method name="set_stylebox">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String">
-			</argument>
-			<argument index="2" name="texture" type="StyleBox">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" />
+			<argument index="2" name="texture" type="StyleBox" />
 			<description>
 				Sets theme's [StyleBox] to [code]stylebox[/code] at [code]name[/code] in [code]node_type[/code].
 				Does nothing if the theme does not have [code]node_type[/code].

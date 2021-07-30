@@ -10,105 +10,81 @@
 	</tutorials>
 	<methods>
 		<method name="add_color_region">
-			<return type="void">
-			</return>
-			<argument index="0" name="begin_key" type="String">
-			</argument>
-			<argument index="1" name="end_key" type="String">
-			</argument>
-			<argument index="2" name="color" type="Color">
-			</argument>
-			<argument index="3" name="line_only" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="begin_key" type="String" />
+			<argument index="1" name="end_key" type="String" />
+			<argument index="2" name="color" type="Color" />
+			<argument index="3" name="line_only" type="bool" default="false" />
 			<description>
 				Adds color region (given the delimiters) and its colors.
 			</description>
 		</method>
 		<method name="add_keyword_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="keyword" type="String">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="keyword" type="String" />
+			<argument index="1" name="color" type="Color" />
 			<description>
 				Adds a [code]keyword[/code] and its [Color].
 			</description>
 		</method>
 		<method name="can_fold" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="line" type="int" />
 			<description>
 				Returns if the given line is foldable, that is, it has indented lines right below it.
 			</description>
 		</method>
 		<method name="center_viewport_to_cursor">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Centers the viewport on the line the editing cursor is at. This also resets the [member scroll_horizontal] value to [code]0[/code].
 			</description>
 		</method>
 		<method name="clear_colors">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clears all custom syntax coloring information previously added with [method add_color_region] or [method add_keyword_color].
 			</description>
 		</method>
 		<method name="clear_undo_history">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clears the undo history.
 			</description>
 		</method>
 		<method name="copy">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Copy's the current text selection.
 			</description>
 		</method>
 		<method name="cursor_get_column" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the column the editing cursor is at.
 			</description>
 		</method>
 		<method name="cursor_get_line" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the line the editing cursor is at.
 			</description>
 		</method>
 		<method name="cursor_set_column">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="adjust_viewport" type="bool" default="true">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="adjust_viewport" type="bool" default="true" />
 			<description>
 				Moves the cursor at the specified [code]column[/code] index.
 				If [code]adjust_viewport[/code] is set to [code]true[/code], the viewport will center at the cursor position after the move occurs.
 			</description>
 		</method>
 		<method name="cursor_set_line">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<argument index="1" name="adjust_viewport" type="bool" default="true">
-			</argument>
-			<argument index="2" name="can_be_hidden" type="bool" default="true">
-			</argument>
-			<argument index="3" name="wrap_index" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="line" type="int" />
+			<argument index="1" name="adjust_viewport" type="bool" default="true" />
+			<argument index="2" name="can_be_hidden" type="bool" default="true" />
+			<argument index="3" name="wrap_index" type="int" default="0" />
 			<description>
 				Moves the cursor at the specified [code]line[/code] index.
 				If [code]adjust_viewport[/code] is set to [code]true[/code], the viewport will center at the cursor position after the move occurs.
@@ -116,227 +92,184 @@
 			</description>
 		</method>
 		<method name="cut">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Cut's the current selection.
 			</description>
 		</method>
 		<method name="deselect">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Deselects the current selection.
 			</description>
 		</method>
 		<method name="fold_all_lines">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Folds all lines that are possible to be folded (see [method can_fold]).
 			</description>
 		</method>
 		<method name="fold_line">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="line" type="int" />
 			<description>
 				Folds the given line, if possible (see [method can_fold]).
 			</description>
 		</method>
 		<method name="get_breakpoints" qualifiers="const">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Returns an array containing the line number of each breakpoint.
 			</description>
 		</method>
 		<method name="get_keyword_color" qualifiers="const">
-			<return type="Color">
-			</return>
-			<argument index="0" name="keyword" type="String">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="keyword" type="String" />
 			<description>
 				Returns the [Color] of the specified [code]keyword[/code].
 			</description>
 		</method>
 		<method name="get_line" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="line" type="int" />
 			<description>
 				Returns the text of a specific line.
 			</description>
 		</method>
 		<method name="get_line_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the amount of total lines in the text.
 			</description>
 		</method>
 		<method name="get_menu" qualifiers="const">
-			<return type="PopupMenu">
-			</return>
+			<return type="PopupMenu" />
 			<description>
 				Returns the [PopupMenu] of this [TextEdit]. By default, this menu is displayed when right-clicking on the [TextEdit].
 			</description>
 		</method>
 		<method name="get_selection_from_column" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the selection begin column.
 			</description>
 		</method>
 		<method name="get_selection_from_line" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the selection begin line.
 			</description>
 		</method>
 		<method name="get_selection_text" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the text inside the selection.
 			</description>
 		</method>
 		<method name="get_selection_to_column" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the selection end column.
 			</description>
 		</method>
 		<method name="get_selection_to_line" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the selection end line.
 			</description>
 		</method>
 		<method name="get_word_under_cursor" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns a [String] text with the word under the caret (text cursor) location.
 			</description>
 		</method>
 		<method name="has_keyword_color" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="keyword" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="keyword" type="String" />
 			<description>
 				Returns whether the specified [code]keyword[/code] has a color set to it or not.
 			</description>
 		</method>
 		<method name="insert_text_at_cursor">
-			<return type="void">
-			</return>
-			<argument index="0" name="text" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="text" type="String" />
 			<description>
 				Insert the specified text at the cursor position.
 			</description>
 		</method>
 		<method name="is_folded" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="line" type="int" />
 			<description>
 				Returns whether the line at the specified index is folded or not.
 			</description>
 		</method>
 		<method name="is_line_hidden" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="line" type="int" />
 			<description>
 				Returns whether the line at the specified index is hidden or not.
 			</description>
 		</method>
 		<method name="is_line_set_as_bookmark" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="line" type="int" />
 			<description>
 				Returns [code]true[/code] when the specified [code]line[/code] is bookmarked.
 			</description>
 		</method>
 		<method name="is_line_set_as_breakpoint" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="line" type="int" />
 			<description>
 				Returns [code]true[/code] when the specified [code]line[/code] has a breakpoint.
 			</description>
 		</method>
 		<method name="is_line_set_as_safe" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="line" type="int" />
 			<description>
 				Returns [code]true[/code] when the specified [code]line[/code] is marked as safe.
 			</description>
 		</method>
 		<method name="is_selection_active" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the selection is active.
 			</description>
 		</method>
 		<method name="menu_option">
-			<return type="void">
-			</return>
-			<argument index="0" name="option" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="option" type="int" />
 			<description>
 				Triggers a right-click menu action by the specified index. See [enum MenuItems] for a list of available indexes.
 			</description>
 		</method>
 		<method name="paste">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Paste the current selection.
 			</description>
 		</method>
 		<method name="redo">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Perform redo operation.
 			</description>
 		</method>
 		<method name="remove_breakpoints">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Removes all the breakpoints. This will not fire the [signal breakpoint_toggled] signal.
 			</description>
 		</method>
 		<method name="search" qualifiers="const">
-			<return type="PoolIntArray">
-			</return>
-			<argument index="0" name="key" type="String">
-			</argument>
-			<argument index="1" name="flags" type="int">
-			</argument>
-			<argument index="2" name="from_line" type="int">
-			</argument>
-			<argument index="3" name="from_column" type="int">
-			</argument>
+			<return type="PoolIntArray" />
+			<argument index="0" name="key" type="String" />
+			<argument index="1" name="flags" type="int" />
+			<argument index="2" name="from_line" type="int" />
+			<argument index="3" name="from_column" type="int" />
 			<description>
 				Perform a search inside the text. Search flags can be specified in the [enum SearchFlags] enum.
 				Returns an empty [code]PoolIntArray[/code] if no result was found. Otherwise, the result line and column can be accessed at indices specified in the [enum SearchResult] enum, e.g:
@@ -350,114 +283,87 @@
 			</description>
 		</method>
 		<method name="select">
-			<return type="void">
-			</return>
-			<argument index="0" name="from_line" type="int">
-			</argument>
-			<argument index="1" name="from_column" type="int">
-			</argument>
-			<argument index="2" name="to_line" type="int">
-			</argument>
-			<argument index="3" name="to_column" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="from_line" type="int" />
+			<argument index="1" name="from_column" type="int" />
+			<argument index="2" name="to_line" type="int" />
+			<argument index="3" name="to_column" type="int" />
 			<description>
 				Perform selection, from line/column to line/column.
 				If [member selecting_enabled] is [code]false[/code], no selection will occur.
 			</description>
 		</method>
 		<method name="select_all">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Select all the text.
 				If [member selecting_enabled] is [code]false[/code], no selection will occur.
 			</description>
 		</method>
 		<method name="set_line">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<argument index="1" name="new_text" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="line" type="int" />
+			<argument index="1" name="new_text" type="String" />
 			<description>
 				Sets the text for a specific line.
 			</description>
 		</method>
 		<method name="set_line_as_bookmark">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<argument index="1" name="bookmark" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="line" type="int" />
+			<argument index="1" name="bookmark" type="bool" />
 			<description>
 				Bookmarks the [code]line[/code] if [code]bookmark[/code] is true. Deletes the bookmark if [code]bookmark[/code] is false.
 				Bookmarks are shown in the [member breakpoint_gutter].
 			</description>
 		</method>
 		<method name="set_line_as_breakpoint">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<argument index="1" name="breakpoint" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="line" type="int" />
+			<argument index="1" name="breakpoint" type="bool" />
 			<description>
 				Adds or removes the breakpoint in [code]line[/code]. Breakpoints are shown in the [member breakpoint_gutter].
 			</description>
 		</method>
 		<method name="set_line_as_hidden">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="line" type="int" />
+			<argument index="1" name="enable" type="bool" />
 			<description>
 				If [code]true[/code], hides the line of the specified index.
 			</description>
 		</method>
 		<method name="set_line_as_safe">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<argument index="1" name="safe" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="line" type="int" />
+			<argument index="1" name="safe" type="bool" />
 			<description>
 				If [code]true[/code], marks the [code]line[/code] as safe.
 				This will show the line number with the color provided in the [code]safe_line_number_color[/code] theme property.
 			</description>
 		</method>
 		<method name="toggle_fold_line">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="line" type="int" />
 			<description>
 				Toggle the folding of the code block at the given line.
 			</description>
 		</method>
 		<method name="undo">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Perform undo operation.
 			</description>
 		</method>
 		<method name="unfold_line">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="line" type="int" />
 			<description>
 				Unfolds the given line, if folded.
 			</description>
 		</method>
 		<method name="unhide_all_lines">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Unhide all lines that were previously set to hidden by [method set_line_as_hidden].
 			</description>
@@ -553,8 +459,7 @@
 	</members>
 	<signals>
 		<signal name="breakpoint_toggled">
-			<argument index="0" name="row" type="int">
-			</argument>
+			<argument index="0" name="row" type="int" />
 			<description>
 				Emitted when a breakpoint is placed via the breakpoint gutter.
 			</description>
@@ -565,10 +470,8 @@
 			</description>
 		</signal>
 		<signal name="info_clicked">
-			<argument index="0" name="row" type="int">
-			</argument>
-			<argument index="1" name="info" type="String">
-			</argument>
+			<argument index="0" name="row" type="int" />
+			<argument index="1" name="info" type="String" />
 			<description>
 				Emitted when the info icon is clicked.
 			</description>
@@ -578,12 +481,9 @@
 			</description>
 		</signal>
 		<signal name="symbol_lookup">
-			<argument index="0" name="symbol" type="String">
-			</argument>
-			<argument index="1" name="row" type="int">
-			</argument>
-			<argument index="2" name="column" type="int">
-			</argument>
+			<argument index="0" name="symbol" type="String" />
+			<argument index="1" name="row" type="int" />
+			<argument index="2" name="column" type="int" />
 			<description>
 			</description>
 		</signal>

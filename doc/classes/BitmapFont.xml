@@ -11,83 +11,62 @@
 	</tutorials>
 	<methods>
 		<method name="add_char">
-			<return type="void">
-			</return>
-			<argument index="0" name="character" type="int">
-			</argument>
-			<argument index="1" name="texture" type="int">
-			</argument>
-			<argument index="2" name="rect" type="Rect2">
-			</argument>
-			<argument index="3" name="align" type="Vector2" default="Vector2( 0, 0 )">
-			</argument>
-			<argument index="4" name="advance" type="float" default="-1">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="character" type="int" />
+			<argument index="1" name="texture" type="int" />
+			<argument index="2" name="rect" type="Rect2" />
+			<argument index="3" name="align" type="Vector2" default="Vector2( 0, 0 )" />
+			<argument index="4" name="advance" type="float" default="-1" />
 			<description>
 				Adds a character to the font, where [code]character[/code] is the Unicode value, [code]texture[/code] is the texture index, [code]rect[/code] is the region in the texture (in pixels!), [code]align[/code] is the (optional) alignment for the character and [code]advance[/code] is the (optional) advance.
 			</description>
 		</method>
 		<method name="add_kerning_pair">
-			<return type="void">
-			</return>
-			<argument index="0" name="char_a" type="int">
-			</argument>
-			<argument index="1" name="char_b" type="int">
-			</argument>
-			<argument index="2" name="kerning" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="char_a" type="int" />
+			<argument index="1" name="char_b" type="int" />
+			<argument index="2" name="kerning" type="int" />
 			<description>
 				Adds a kerning pair to the [BitmapFont] as a difference. Kerning pairs are special cases where a typeface advance is determined by the next character.
 			</description>
 		</method>
 		<method name="add_texture">
-			<return type="void">
-			</return>
-			<argument index="0" name="texture" type="Texture">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="texture" type="Texture" />
 			<description>
 				Adds a texture to the [BitmapFont].
 			</description>
 		</method>
 		<method name="clear">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clears all the font data and settings.
 			</description>
 		</method>
 		<method name="create_from_fnt">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Creates a BitmapFont from the [code]*.fnt[/code] file at [code]path[/code].
 			</description>
 		</method>
 		<method name="get_kerning_pair" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="char_a" type="int">
-			</argument>
-			<argument index="1" name="char_b" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="char_a" type="int" />
+			<argument index="1" name="char_b" type="int" />
 			<description>
 				Returns a kerning pair as a difference.
 			</description>
 		</method>
 		<method name="get_texture" qualifiers="const">
-			<return type="Texture">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="Texture" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the font atlas texture at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_texture_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of textures in the BitmapFont atlas.
 			</description>

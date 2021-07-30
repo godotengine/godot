@@ -10,25 +10,18 @@
 	</tutorials>
 	<methods>
 		<method name="get_peer" qualifiers="const">
-			<return type="WebSocketPeer">
-			</return>
-			<argument index="0" name="peer_id" type="int">
-			</argument>
+			<return type="WebSocketPeer" />
+			<argument index="0" name="peer_id" type="int" />
 			<description>
 				Returns the [WebSocketPeer] associated to the given [code]peer_id[/code].
 			</description>
 		</method>
 		<method name="set_buffers">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="input_buffer_size_kb" type="int">
-			</argument>
-			<argument index="1" name="input_max_packets" type="int">
-			</argument>
-			<argument index="2" name="output_buffer_size_kb" type="int">
-			</argument>
-			<argument index="3" name="output_max_packets" type="int">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="input_buffer_size_kb" type="int" />
+			<argument index="1" name="input_max_packets" type="int" />
+			<argument index="2" name="output_buffer_size_kb" type="int" />
+			<argument index="3" name="output_max_packets" type="int" />
 			<description>
 				Configures the buffer sizes for this WebSocket peer. Default values can be specified in the Project Settings under [code]network/limits[/code]. For server, values are meant per connected peer.
 				The first two parameters define the size and queued packets limits of the input buffer, the last two of the output buffer.
@@ -43,8 +36,7 @@
 	</members>
 	<signals>
 		<signal name="peer_packet">
-			<argument index="0" name="peer_source" type="int">
-			</argument>
+			<argument index="0" name="peer_source" type="int" />
 			<description>
 				Emitted when a packet is received from a peer.
 				[b]Note:[/b] This signal is only emitted when the client or server is configured to use Godot multiplayer API.

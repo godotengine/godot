@@ -10,170 +10,128 @@
 	</tutorials>
 	<methods>
 		<method name="_input_event" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="camera" type="Object">
-			</argument>
-			<argument index="1" name="event" type="InputEvent">
-			</argument>
-			<argument index="2" name="click_position" type="Vector3">
-			</argument>
-			<argument index="3" name="click_normal" type="Vector3">
-			</argument>
-			<argument index="4" name="shape_idx" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="camera" type="Object" />
+			<argument index="1" name="event" type="InputEvent" />
+			<argument index="2" name="click_position" type="Vector3" />
+			<argument index="3" name="click_normal" type="Vector3" />
+			<argument index="4" name="shape_idx" type="int" />
 			<description>
 				Accepts unhandled [InputEvent]s. [code]click_position[/code] is the clicked location in world space and [code]click_normal[/code] is the normal vector extending from the clicked surface of the [Shape] at [code]shape_idx[/code]. Connect to the [code]input_event[/code] signal to easily pick up these events.
 			</description>
 		</method>
 		<method name="create_shape_owner">
-			<return type="int">
-			</return>
-			<argument index="0" name="owner" type="Object">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="owner" type="Object" />
 			<description>
 				Creates a new shape owner for the given object. Returns [code]owner_id[/code] of the new owner for future reference.
 			</description>
 		</method>
 		<method name="get_rid" qualifiers="const">
-			<return type="RID">
-			</return>
+			<return type="RID" />
 			<description>
 				Returns the object's [RID].
 			</description>
 		</method>
 		<method name="get_shape_owners">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Returns an [Array] of [code]owner_id[/code] identifiers. You can use these ids in other methods that take [code]owner_id[/code] as an argument.
 			</description>
 		</method>
 		<method name="is_shape_owner_disabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="owner_id" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="owner_id" type="int" />
 			<description>
 				If [code]true[/code], the shape owner and its shapes are disabled.
 			</description>
 		</method>
 		<method name="remove_shape_owner">
-			<return type="void">
-			</return>
-			<argument index="0" name="owner_id" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="owner_id" type="int" />
 			<description>
 				Removes the given shape owner.
 			</description>
 		</method>
 		<method name="shape_find_owner" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="shape_index" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="shape_index" type="int" />
 			<description>
 				Returns the [code]owner_id[/code] of the given shape.
 			</description>
 		</method>
 		<method name="shape_owner_add_shape">
-			<return type="void">
-			</return>
-			<argument index="0" name="owner_id" type="int">
-			</argument>
-			<argument index="1" name="shape" type="Shape">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="owner_id" type="int" />
+			<argument index="1" name="shape" type="Shape" />
 			<description>
 				Adds a [Shape] to the shape owner.
 			</description>
 		</method>
 		<method name="shape_owner_clear_shapes">
-			<return type="void">
-			</return>
-			<argument index="0" name="owner_id" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="owner_id" type="int" />
 			<description>
 				Removes all shapes from the shape owner.
 			</description>
 		</method>
 		<method name="shape_owner_get_owner" qualifiers="const">
-			<return type="Object">
-			</return>
-			<argument index="0" name="owner_id" type="int">
-			</argument>
+			<return type="Object" />
+			<argument index="0" name="owner_id" type="int" />
 			<description>
 				Returns the parent object of the given shape owner.
 			</description>
 		</method>
 		<method name="shape_owner_get_shape" qualifiers="const">
-			<return type="Shape">
-			</return>
-			<argument index="0" name="owner_id" type="int">
-			</argument>
-			<argument index="1" name="shape_id" type="int">
-			</argument>
+			<return type="Shape" />
+			<argument index="0" name="owner_id" type="int" />
+			<argument index="1" name="shape_id" type="int" />
 			<description>
 				Returns the [Shape] with the given id from the given shape owner.
 			</description>
 		</method>
 		<method name="shape_owner_get_shape_count" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="owner_id" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="owner_id" type="int" />
 			<description>
 				Returns the number of shapes the given shape owner contains.
 			</description>
 		</method>
 		<method name="shape_owner_get_shape_index" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="owner_id" type="int">
-			</argument>
-			<argument index="1" name="shape_id" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="owner_id" type="int" />
+			<argument index="1" name="shape_id" type="int" />
 			<description>
 				Returns the child index of the [Shape] with the given id from the given shape owner.
 			</description>
 		</method>
 		<method name="shape_owner_get_transform" qualifiers="const">
-			<return type="Transform">
-			</return>
-			<argument index="0" name="owner_id" type="int">
-			</argument>
+			<return type="Transform" />
+			<argument index="0" name="owner_id" type="int" />
 			<description>
 				Returns the shape owner's [Transform].
 			</description>
 		</method>
 		<method name="shape_owner_remove_shape">
-			<return type="void">
-			</return>
-			<argument index="0" name="owner_id" type="int">
-			</argument>
-			<argument index="1" name="shape_id" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="owner_id" type="int" />
+			<argument index="1" name="shape_id" type="int" />
 			<description>
 				Removes a shape from the given shape owner.
 			</description>
 		</method>
 		<method name="shape_owner_set_disabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="owner_id" type="int">
-			</argument>
-			<argument index="1" name="disabled" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="owner_id" type="int" />
+			<argument index="1" name="disabled" type="bool" />
 			<description>
 				If [code]true[/code], disables the given shape owner.
 			</description>
 		</method>
 		<method name="shape_owner_set_transform">
-			<return type="void">
-			</return>
-			<argument index="0" name="owner_id" type="int">
-			</argument>
-			<argument index="1" name="transform" type="Transform">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="owner_id" type="int" />
+			<argument index="1" name="transform" type="Transform" />
 			<description>
 				Sets the [Transform] of the given shape owner.
 			</description>
@@ -189,16 +147,11 @@
 	</members>
 	<signals>
 		<signal name="input_event">
-			<argument index="0" name="camera" type="Node">
-			</argument>
-			<argument index="1" name="event" type="InputEvent">
-			</argument>
-			<argument index="2" name="click_position" type="Vector3">
-			</argument>
-			<argument index="3" name="click_normal" type="Vector3">
-			</argument>
-			<argument index="4" name="shape_idx" type="int">
-			</argument>
+			<argument index="0" name="camera" type="Node" />
+			<argument index="1" name="event" type="InputEvent" />
+			<argument index="2" name="click_position" type="Vector3" />
+			<argument index="3" name="click_normal" type="Vector3" />
+			<argument index="4" name="shape_idx" type="int" />
 			<description>
 				Emitted when [method _input_event] receives an event. See its description for details.
 			</description>

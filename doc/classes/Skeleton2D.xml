@@ -11,24 +11,20 @@
 	</tutorials>
 	<methods>
 		<method name="get_bone">
-			<return type="Bone2D">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="Bone2D" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns a [Bone2D] from the node hierarchy parented by Skeleton2D. The object to return is identified by the parameter [code]idx[/code]. Bones are indexed by descending the node hierarchy from top to bottom, adding the children of each branch before moving to the next sibling.
 			</description>
 		</method>
 		<method name="get_bone_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of [Bone2D] nodes in the node hierarchy parented by Skeleton2D.
 			</description>
 		</method>
 		<method name="get_skeleton" qualifiers="const">
-			<return type="RID">
-			</return>
+			<return type="RID" />
 			<description>
 				Returns the [RID] of a Skeleton2D instance.
 			</description>

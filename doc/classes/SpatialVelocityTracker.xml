@@ -8,24 +8,19 @@
 	</tutorials>
 	<methods>
 		<method name="get_tracked_linear_velocity" qualifiers="const">
-			<return type="Vector3">
-			</return>
+			<return type="Vector3" />
 			<description>
 			</description>
 		</method>
 		<method name="reset">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector3">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="position" type="Vector3" />
 			<description>
 			</description>
 		</method>
 		<method name="update_position">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector3">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="position" type="Vector3" />
 			<description>
 			</description>
 		</method>

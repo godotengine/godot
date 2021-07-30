@@ -12,63 +12,48 @@
 	</tutorials>
 	<methods>
 		<method name="exists">
-			<return type="bool">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="type_hint" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="type_hint" type="String" default="&quot;&quot;" />
 			<description>
 				Returns whether a recognized resource exists for the given [code]path[/code].
 				An optional [code]type_hint[/code] can be used to further specify the [Resource] type that should be handled by the [ResourceFormatLoader].
 			</description>
 		</method>
 		<method name="get_dependencies">
-			<return type="PoolStringArray">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="PoolStringArray" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Returns the dependencies for the resource at the given [code]path[/code].
 			</description>
 		</method>
 		<method name="get_recognized_extensions_for_type">
-			<return type="PoolStringArray">
-			</return>
-			<argument index="0" name="type" type="String">
-			</argument>
+			<return type="PoolStringArray" />
+			<argument index="0" name="type" type="String" />
 			<description>
 				Returns the list of recognized extensions for a resource type.
 			</description>
 		</method>
 		<method name="has">
-			<return type="bool">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				[i]Deprecated method.[/i] Use [method has_cached] or [method exists] instead.
 			</description>
 		</method>
 		<method name="has_cached">
-			<return type="bool">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Returns whether a cached resource is available for the given [code]path[/code].
 				Once a resource has been loaded by the engine, it is cached in memory for faster access, and future calls to the [method load] or [method load_interactive] methods will use the cached version. The cached resource can be overridden by using [method Resource.take_over_path] on a new resource for that same path.
 			</description>
 		</method>
 		<method name="load">
-			<return type="Resource">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="type_hint" type="String" default="&quot;&quot;">
-			</argument>
-			<argument index="2" name="no_cache" type="bool" default="false">
-			</argument>
+			<return type="Resource" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="type_hint" type="String" default="&quot;&quot;" />
+			<argument index="2" name="no_cache" type="bool" default="false" />
 			<description>
 				Loads a resource at the given [code]path[/code], caching the result for further access.
 				The registered [ResourceFormatLoader]s are queried sequentially to find the first one which can handle the file's extension, and then attempt loading. If loading fails, the remaining ResourceFormatLoaders are also attempted.
@@ -79,22 +64,17 @@
 			</description>
 		</method>
 		<method name="load_interactive">
-			<return type="ResourceInteractiveLoader">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="type_hint" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="ResourceInteractiveLoader" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="type_hint" type="String" default="&quot;&quot;" />
 			<description>
 				Starts loading a resource interactively. The returned [ResourceInteractiveLoader] object allows to load with high granularity, calling its [method ResourceInteractiveLoader.poll] method successively to load chunks.
 				An optional [code]type_hint[/code] can be used to further specify the [Resource] type that should be handled by the [ResourceFormatLoader]. Anything that inherits from [Resource] can be used as a type hint, for example [Image].
 			</description>
 		</method>
 		<method name="set_abort_on_missing_resources">
-			<return type="void">
-			</return>
-			<argument index="0" name="abort" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="abort" type="bool" />
 			<description>
 				Changes the behavior on missing sub-resources. The default behavior is to abort loading.
 			</description>

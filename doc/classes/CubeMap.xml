@@ -10,35 +10,28 @@
 	</tutorials>
 	<methods>
 		<method name="get_height" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the [CubeMap]'s height.
 			</description>
 		</method>
 		<method name="get_side" qualifiers="const">
-			<return type="Image">
-			</return>
-			<argument index="0" name="side" type="int" enum="CubeMap.Side">
-			</argument>
+			<return type="Image" />
+			<argument index="0" name="side" type="int" enum="CubeMap.Side" />
 			<description>
 				Returns an [Image] for a side of the [CubeMap] using one of the [enum Side] constants.
 			</description>
 		</method>
 		<method name="get_width" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the [CubeMap]'s width.
 			</description>
 		</method>
 		<method name="set_side">
-			<return type="void">
-			</return>
-			<argument index="0" name="side" type="int" enum="CubeMap.Side">
-			</argument>
-			<argument index="1" name="image" type="Image">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="side" type="int" enum="CubeMap.Side" />
+			<argument index="1" name="image" type="Image" />
 			<description>
 				Sets an [Image] for a side of the [CubeMap] using one of the [enum Side] constants.
 			</description>

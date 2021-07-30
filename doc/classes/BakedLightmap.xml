@@ -11,12 +11,9 @@
 	</tutorials>
 	<methods>
 		<method name="bake">
-			<return type="int" enum="BakedLightmap.BakeError">
-			</return>
-			<argument index="0" name="from_node" type="Node" default="null">
-			</argument>
-			<argument index="1" name="data_save_path" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="int" enum="BakedLightmap.BakeError" />
+			<argument index="0" name="from_node" type="Node" default="null" />
+			<argument index="1" name="data_save_path" type="String" default="&quot;&quot;" />
 			<description>
 				Bakes the lightmap, scanning from the given [code]from_node[/code] root and saves the resulting [BakedLightmapData] in [code]data_save_path[/code]. If no save path is provided it will try to match the path from the current [member light_data].
 			</description>

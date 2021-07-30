@@ -14,52 +14,42 @@
 	</tutorials>
 	<methods>
 		<method name="get_collision_layer_bit" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="bit" type="int" />
 			<description>
 				Returns an individual bit on the layer mask. Describes whether other areas will collide with this one on the given layer.
 			</description>
 		</method>
 		<method name="get_collision_mask_bit" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="bit" type="int" />
 			<description>
 				Returns an individual bit on the collision mask. Describes whether this area will collide with others on the given layer.
 			</description>
 		</method>
 		<method name="get_overlapping_areas" qualifiers="const">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Returns a list of intersecting [Area2D]s. For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.
 			</description>
 		</method>
 		<method name="get_overlapping_bodies" qualifiers="const">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Returns a list of intersecting [PhysicsBody2D]s. For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.
 			</description>
 		</method>
 		<method name="overlaps_area" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="area" type="Node">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="area" type="Node" />
 			<description>
 				If [code]true[/code], the given area overlaps the Area2D.
 				[b]Note:[/b] The result of this test is not immediate after moving objects. For performance, the list of overlaps is updated once per frame and before the physics step. Consider using signals instead.
 			</description>
 		</method>
 		<method name="overlaps_body" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="body" type="Node">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="body" type="Node" />
 			<description>
 				If [code]true[/code], the given physics body overlaps the Area2D.
 				[b]Note:[/b] The result of this test is not immediate after moving objects. For performance, list of overlaps is updated once per frame and before the physics step. Consider using signals instead.
@@ -67,23 +57,17 @@
 			</description>
 		</method>
 		<method name="set_collision_layer_bit">
-			<return type="void">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
-			<argument index="1" name="value" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="bit" type="int" />
+			<argument index="1" name="value" type="bool" />
 			<description>
 				Set/clear individual bits on the layer mask. This makes getting an area in/out of only one layer easier.
 			</description>
 		</method>
 		<method name="set_collision_mask_bit">
-			<return type="void">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
-			<argument index="1" name="value" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="bit" type="int" />
+			<argument index="1" name="value" type="bool" />
 			<description>
 				Set/clear individual bits on the collision mask. This makes selecting the areas scanned easier.
 			</description>
@@ -137,30 +121,24 @@
 	</members>
 	<signals>
 		<signal name="area_entered">
-			<argument index="0" name="area" type="Area2D">
-			</argument>
+			<argument index="0" name="area" type="Area2D" />
 			<description>
 				Emitted when another Area2D enters this Area2D. Requires [member monitoring] to be set to [code]true[/code].
 				[code]area[/code] the other Area2D.
 			</description>
 		</signal>
 		<signal name="area_exited">
-			<argument index="0" name="area" type="Area2D">
-			</argument>
+			<argument index="0" name="area" type="Area2D" />
 			<description>
 				Emitted when another Area2D exits this Area2D. Requires [member monitoring] to be set to [code]true[/code].
 				[code]area[/code] the other Area2D.
 			</description>
 		</signal>
 		<signal name="area_shape_entered">
-			<argument index="0" name="area_id" type="int">
-			</argument>
-			<argument index="1" name="area" type="Area2D">
-			</argument>
-			<argument index="2" name="area_shape" type="int">
-			</argument>
-			<argument index="3" name="local_shape" type="int">
-			</argument>
+			<argument index="0" name="area_id" type="int" />
+			<argument index="1" name="area" type="Area2D" />
+			<argument index="2" name="area_shape" type="int" />
+			<argument index="3" name="local_shape" type="int" />
 			<description>
 				Emitted when one of another Area2D's [Shape2D]s enters one of this Area2D's [Shape2D]s. Requires [member monitoring] to be set to [code]true[/code].
 				[code]area_id[/code] the [RID] of the other Area2D's [CollisionObject2D] used by the [Physics2DServer].
@@ -170,14 +148,10 @@
 			</description>
 		</signal>
 		<signal name="area_shape_exited">
-			<argument index="0" name="area_id" type="int">
-			</argument>
-			<argument index="1" name="area" type="Area2D">
-			</argument>
-			<argument index="2" name="area_shape" type="int">
-			</argument>
-			<argument index="3" name="local_shape" type="int">
-			</argument>
+			<argument index="0" name="area_id" type="int" />
+			<argument index="1" name="area" type="Area2D" />
+			<argument index="2" name="area_shape" type="int" />
+			<argument index="3" name="local_shape" type="int" />
 			<description>
 				Emitted when one of another Area2D's [Shape2D]s exits one of this Area2D's [Shape2D]s. Requires [member monitoring] to be set to [code]true[/code].
 				[code]area_id[/code] the [RID] of the other Area2D's [CollisionObject2D] used by the [Physics2DServer].
@@ -187,30 +161,24 @@
 			</description>
 		</signal>
 		<signal name="body_entered">
-			<argument index="0" name="body" type="Node">
-			</argument>
+			<argument index="0" name="body" type="Node" />
 			<description>
 				Emitted when a [PhysicsBody2D] or [TileMap] enters this Area2D. Requires [member monitoring] to be set to [code]true[/code]. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
 				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMap].
 			</description>
 		</signal>
 		<signal name="body_exited">
-			<argument index="0" name="body" type="Node">
-			</argument>
+			<argument index="0" name="body" type="Node" />
 			<description>
 				Emitted when a [PhysicsBody2D] or [TileMap] exits this Area2D. Requires [member monitoring] to be set to [code]true[/code]. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
 				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMap].
 			</description>
 		</signal>
 		<signal name="body_shape_entered">
-			<argument index="0" name="body_id" type="int">
-			</argument>
-			<argument index="1" name="body" type="Node">
-			</argument>
-			<argument index="2" name="body_shape" type="int">
-			</argument>
-			<argument index="3" name="local_shape" type="int">
-			</argument>
+			<argument index="0" name="body_id" type="int" />
+			<argument index="1" name="body" type="Node" />
+			<argument index="2" name="body_shape" type="int" />
+			<argument index="3" name="local_shape" type="int" />
 			<description>
 				Emitted when one of a [PhysicsBody2D] or [TileMap]'s [Shape2D]s enters one of this Area2D's [Shape2D]s. Requires [member monitoring] to be set to [code]true[/code]. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
 				[code]body_id[/code] the [RID] of the [PhysicsBody2D] or [TileSet]'s [CollisionObject2D] used by the [Physics2DServer].
@@ -220,14 +188,10 @@
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
-			<argument index="0" name="body_id" type="int">
-			</argument>
-			<argument index="1" name="body" type="Node">
-			</argument>
-			<argument index="2" name="body_shape" type="int">
-			</argument>
-			<argument index="3" name="local_shape" type="int">
-			</argument>
+			<argument index="0" name="body_id" type="int" />
+			<argument index="1" name="body" type="Node" />
+			<argument index="2" name="body_shape" type="int" />
+			<argument index="3" name="local_shape" type="int" />
 			<description>
 				Emitted when one of a [PhysicsBody2D] or [TileMap]'s [Shape2D]s exits one of this Area2D's [Shape2D]s. Requires [member monitoring] to be set to [code]true[/code]. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
 				[code]body_id[/code] the [RID] of the [PhysicsBody2D] or [TileSet]'s [CollisionObject2D] used by the [Physics2DServer].

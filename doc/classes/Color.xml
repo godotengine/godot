@@ -17,10 +17,8 @@
 	</tutorials>
 	<methods>
 		<method name="Color">
-			<return type="Color">
-			</return>
-			<argument index="0" name="from" type="String">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="from" type="String" />
 			<description>
 				Constructs a color from an HTML hexadecimal color string in ARGB or RGB format. See also [method @GDScript.ColorN].
 				[codeblock]
@@ -33,10 +31,8 @@
 			</description>
 		</method>
 		<method name="Color">
-			<return type="Color">
-			</return>
-			<argument index="0" name="from" type="int">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="from" type="int" />
 			<description>
 				Constructs a color from a 32-bit integer in RGBA format (each byte represents a color channel).
 				[codeblock]
@@ -45,14 +41,10 @@
 			</description>
 		</method>
 		<method name="Color">
-			<return type="Color">
-			</return>
-			<argument index="0" name="r" type="float">
-			</argument>
-			<argument index="1" name="g" type="float">
-			</argument>
-			<argument index="2" name="b" type="float">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="r" type="float" />
+			<argument index="1" name="g" type="float" />
+			<argument index="2" name="b" type="float" />
 			<description>
 				Constructs a color from RGB values, typically between 0 and 1. Alpha will be 1.
 				[codeblock]
@@ -61,16 +53,11 @@
 			</description>
 		</method>
 		<method name="Color">
-			<return type="Color">
-			</return>
-			<argument index="0" name="r" type="float">
-			</argument>
-			<argument index="1" name="g" type="float">
-			</argument>
-			<argument index="2" name="b" type="float">
-			</argument>
-			<argument index="3" name="a" type="float">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="r" type="float" />
+			<argument index="1" name="g" type="float" />
+			<argument index="2" name="b" type="float" />
+			<argument index="3" name="a" type="float" />
 			<description>
 				Constructs a color from RGBA values, typically between 0 and 1.
 				[codeblock]
@@ -79,10 +66,8 @@
 			</description>
 		</method>
 		<method name="blend">
-			<return type="Color">
-			</return>
-			<argument index="0" name="over" type="Color">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="over" type="Color" />
 			<description>
 				Returns a new color resulting from blending this color over another. If the color is opaque, the result is also opaque. The second color may have a range of alpha values.
 				[codeblock]
@@ -93,8 +78,7 @@
 			</description>
 		</method>
 		<method name="contrasted">
-			<return type="Color">
-			</return>
+			<return type="Color" />
 			<description>
 				Returns the most contrasting color.
 				[codeblock]
@@ -104,10 +88,8 @@
 			</description>
 		</method>
 		<method name="darkened">
-			<return type="Color">
-			</return>
-			<argument index="0" name="amount" type="float">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="amount" type="float" />
 			<description>
 				Returns a new color resulting from making this color darker by the specified percentage (ratio from 0 to 1).
 				[codeblock]
@@ -117,16 +99,11 @@
 			</description>
 		</method>
 		<method name="from_hsv">
-			<return type="Color">
-			</return>
-			<argument index="0" name="h" type="float">
-			</argument>
-			<argument index="1" name="s" type="float">
-			</argument>
-			<argument index="2" name="v" type="float">
-			</argument>
-			<argument index="3" name="a" type="float" default="1.0">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="h" type="float" />
+			<argument index="1" name="s" type="float" />
+			<argument index="2" name="v" type="float" />
+			<argument index="3" name="a" type="float" default="1.0" />
 			<description>
 				Constructs a color from an HSV profile. [code]h[/code], [code]s[/code], and [code]v[/code] are values between 0 and 1.
 				[codeblock]
@@ -135,8 +112,7 @@
 			</description>
 		</method>
 		<method name="gray">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the color's grayscale representation.
 				The gray value is calculated as [code](r + g + b) / 3[/code].
@@ -147,8 +123,7 @@
 			</description>
 		</method>
 		<method name="inverted">
-			<return type="Color">
-			</return>
+			<return type="Color" />
 			<description>
 				Returns the inverted color [code](1 - r, 1 - g, 1 - b, a)[/code].
 				[codeblock]
@@ -158,19 +133,15 @@
 			</description>
 		</method>
 		<method name="is_equal_approx">
-			<return type="bool">
-			</return>
-			<argument index="0" name="color" type="Color">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="color" type="Color" />
 			<description>
 				Returns [code]true[/code] if this color and [code]color[/code] are approximately equal, by running [method @GDScript.is_equal_approx] on each component.
 			</description>
 		</method>
 		<method name="lightened">
-			<return type="Color">
-			</return>
-			<argument index="0" name="amount" type="float">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="amount" type="float" />
 			<description>
 				Returns a new color resulting from making this color lighter by the specified percentage (ratio from 0 to 1).
 				[codeblock]
@@ -180,12 +151,9 @@
 			</description>
 		</method>
 		<method name="linear_interpolate">
-			<return type="Color">
-			</return>
-			<argument index="0" name="to" type="Color">
-			</argument>
-			<argument index="1" name="weight" type="float">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="to" type="Color" />
+			<argument index="1" name="weight" type="float" />
 			<description>
 				Returns the linear interpolation with another color. The interpolation factor [code]weight[/code] is between 0 and 1.
 				[codeblock]
@@ -196,8 +164,7 @@
 			</description>
 		</method>
 		<method name="to_abgr32">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the color converted to a 32-bit integer in ABGR format (each byte represents a color channel). ABGR is the reversed version of the default format.
 				[codeblock]
@@ -207,8 +174,7 @@
 			</description>
 		</method>
 		<method name="to_abgr64">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the color converted to a 64-bit integer in ABGR format (each word represents a color channel). ABGR is the reversed version of the default format.
 				[codeblock]
@@ -218,8 +184,7 @@
 			</description>
 		</method>
 		<method name="to_argb32">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the color converted to a 32-bit integer in ARGB format (each byte represents a color channel). ARGB is more compatible with DirectX.
 				[codeblock]
@@ -229,8 +194,7 @@
 			</description>
 		</method>
 		<method name="to_argb64">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the color converted to a 64-bit integer in ARGB format (each word represents a color channel). ARGB is more compatible with DirectX.
 				[codeblock]
@@ -240,10 +204,8 @@
 			</description>
 		</method>
 		<method name="to_html">
-			<return type="String">
-			</return>
-			<argument index="0" name="with_alpha" type="bool" default="true">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="with_alpha" type="bool" default="true" />
 			<description>
 				Returns the color's HTML hexadecimal color string in ARGB format (ex: [code]ff34f822[/code]).
 				Setting [code]with_alpha[/code] to [code]false[/code] excludes alpha from the hexadecimal string.
@@ -255,8 +217,7 @@
 			</description>
 		</method>
 		<method name="to_rgba32">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the color converted to a 32-bit integer in RGBA format (each byte represents a color channel). RGBA is Godot's default format.
 				[codeblock]
@@ -266,8 +227,7 @@
 			</description>
 		</method>
 		<method name="to_rgba64">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the color converted to a 64-bit integer in RGBA format (each word represents a color channel). RGBA is Godot's default format.
 				[codeblock]

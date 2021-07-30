@@ -11,264 +11,208 @@
 	</tutorials>
 	<methods>
 		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="bool">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="from" type="bool" />
 			<description>
 				Constructs a new String from the given [bool].
 			</description>
 		</method>
 		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="from" type="int" />
 			<description>
 				Constructs a new String from the given [int].
 			</description>
 		</method>
 		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="float">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="from" type="float" />
 			<description>
 				Constructs a new String from the given [float].
 			</description>
 		</method>
 		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="Vector2">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="from" type="Vector2" />
 			<description>
 				Constructs a new String from the given [Vector2].
 			</description>
 		</method>
 		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="Rect2">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="from" type="Rect2" />
 			<description>
 				Constructs a new String from the given [Rect2].
 			</description>
 		</method>
 		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="Vector3">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="from" type="Vector3" />
 			<description>
 				Constructs a new String from the given [Vector3].
 			</description>
 		</method>
 		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="Transform2D">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="from" type="Transform2D" />
 			<description>
 				Constructs a new String from the given [Transform2D].
 			</description>
 		</method>
 		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="Plane">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="from" type="Plane" />
 			<description>
 				Constructs a new String from the given [Plane].
 			</description>
 		</method>
 		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="Quat">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="from" type="Quat" />
 			<description>
 				Constructs a new String from the given [Quat].
 			</description>
 		</method>
 		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="AABB">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="from" type="AABB" />
 			<description>
 				Constructs a new String from the given [AABB].
 			</description>
 		</method>
 		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="Basis">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="from" type="Basis" />
 			<description>
 				Constructs a new String from the given [Basis].
 			</description>
 		</method>
 		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="Transform">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="from" type="Transform" />
 			<description>
 				Constructs a new String from the given [Transform].
 			</description>
 		</method>
 		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="Color">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="from" type="Color" />
 			<description>
 				Constructs a new String from the given [Color].
 			</description>
 		</method>
 		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="NodePath">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="from" type="NodePath" />
 			<description>
 				Constructs a new String from the given [NodePath].
 			</description>
 		</method>
 		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="RID">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="from" type="RID" />
 			<description>
 				Constructs a new String from the given [RID].
 			</description>
 		</method>
 		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="Dictionary">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="from" type="Dictionary" />
 			<description>
 				Constructs a new String from the given [Dictionary].
 			</description>
 		</method>
 		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="Array">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="from" type="Array" />
 			<description>
 				Constructs a new String from the given [Array].
 			</description>
 		</method>
 		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="PoolByteArray">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="from" type="PoolByteArray" />
 			<description>
 				Constructs a new String from the given [PoolByteArray].
 			</description>
 		</method>
 		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="PoolIntArray">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="from" type="PoolIntArray" />
 			<description>
 				Constructs a new String from the given [PoolIntArray].
 			</description>
 		</method>
 		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="PoolRealArray">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="from" type="PoolRealArray" />
 			<description>
 				Constructs a new String from the given [PoolRealArray].
 			</description>
 		</method>
 		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="PoolStringArray">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="from" type="PoolStringArray" />
 			<description>
 				Constructs a new String from the given [PoolStringArray].
 			</description>
 		</method>
 		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="PoolVector2Array">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="from" type="PoolVector2Array" />
 			<description>
 				Constructs a new String from the given [PoolVector2Array].
 			</description>
 		</method>
 		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="PoolVector3Array">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="from" type="PoolVector3Array" />
 			<description>
 				Constructs a new String from the given [PoolVector3Array].
 			</description>
 		</method>
 		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="PoolColorArray">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="from" type="PoolColorArray" />
 			<description>
 				Constructs a new String from the given [PoolColorArray].
 			</description>
 		</method>
 		<method name="begins_with">
-			<return type="bool">
-			</return>
-			<argument index="0" name="text" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="text" type="String" />
 			<description>
 				Returns [code]true[/code] if the string begins with the given string.
 			</description>
 		</method>
 		<method name="bigrams">
-			<return type="PoolStringArray">
-			</return>
+			<return type="PoolStringArray" />
 			<description>
 				Returns the bigrams (pairs of consecutive letters) of this string.
 			</description>
 		</method>
 		<method name="c_escape">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns a copy of the string with special characters escaped using the C language standard.
 			</description>
 		</method>
 		<method name="c_unescape">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns a copy of the string with escaped characters replaced by their meanings. Supported escape sequences are [code]\'[/code], [code]\"[/code], [code]\?[/code], [code]\\[/code], [code]\a[/code], [code]\b[/code], [code]\f[/code], [code]\n[/code], [code]\r[/code], [code]\t[/code], [code]\v[/code].
 				[b]Note:[/b] Unlike the GDScript parser, this method doesn't support the [code]\uXXXX[/code] escape sequence.
 			</description>
 		</method>
 		<method name="capitalize">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Changes the case of some letters. Replaces underscores with spaces, adds spaces before in-word uppercase characters, converts all letters to lowercase, then capitalizes the first letter and every letter following a space character. For [code]capitalize camelCase mixed_with_underscores[/code], it will return [code]Capitalize Camel Case Mixed With Underscores[/code].
 			</description>
 		</method>
 		<method name="casecmp_to">
-			<return type="int">
-			</return>
-			<argument index="0" name="to" type="String">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="to" type="String" />
 			<description>
 				Performs a case-sensitive comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/code] of each string, which roughly matches the alphabetical order.
 				[b]Behavior with different string lengths:[/b] Returns [code]1[/code] if the "base" string is longer than the [code]to[/code] string or [code]-1[/code] if the "base" string is shorter than the [code]to[/code] string. Keep in mind this length is determined by the number of Unicode codepoints, [i]not[/i] the actual visible characters.
@@ -277,70 +221,53 @@
 			</description>
 		</method>
 		<method name="count">
-			<return type="int">
-			</return>
-			<argument index="0" name="what" type="String">
-			</argument>
-			<argument index="1" name="from" type="int" default="0">
-			</argument>
-			<argument index="2" name="to" type="int" default="0">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="what" type="String" />
+			<argument index="1" name="from" type="int" default="0" />
+			<argument index="2" name="to" type="int" default="0" />
 			<description>
 				Returns the number of occurrences of substring [code]what[/code] between [code]from[/code] and [code]to[/code] positions. If [code]from[/code] and [code]to[/code] equals 0 the whole string will be used. If only [code]to[/code] equals 0 the remained substring will be used.
 			</description>
 		</method>
 		<method name="countn">
-			<return type="int">
-			</return>
-			<argument index="0" name="what" type="String">
-			</argument>
-			<argument index="1" name="from" type="int" default="0">
-			</argument>
-			<argument index="2" name="to" type="int" default="0">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="what" type="String" />
+			<argument index="1" name="from" type="int" default="0" />
+			<argument index="2" name="to" type="int" default="0" />
 			<description>
 				Returns the number of occurrences of substring [code]what[/code] (ignoring case) between [code]from[/code] and [code]to[/code] positions. If [code]from[/code] and [code]to[/code] equals 0 the whole string will be used. If only [code]to[/code] equals 0 the remained substring will be used.
 			</description>
 		</method>
 		<method name="dedent">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns a copy of the string with indentation (leading tabs and spaces) removed.
 			</description>
 		</method>
 		<method name="empty">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the length of the string equals [code]0[/code].
 			</description>
 		</method>
 		<method name="ends_with">
-			<return type="bool">
-			</return>
-			<argument index="0" name="text" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="text" type="String" />
 			<description>
 				Returns [code]true[/code] if the string ends with the given string.
 			</description>
 		</method>
 		<method name="erase">
-			<argument index="0" name="position" type="int">
-			</argument>
-			<argument index="1" name="chars" type="int">
-			</argument>
+			<argument index="0" name="position" type="int" />
+			<argument index="1" name="chars" type="int" />
 			<description>
 				Erases [code]chars[/code] characters from the string starting from [code]position[/code].
 			</description>
 		</method>
 		<method name="find">
-			<return type="int">
-			</return>
-			<argument index="0" name="what" type="String">
-			</argument>
-			<argument index="1" name="from" type="int" default="0">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="what" type="String" />
+			<argument index="1" name="from" type="int" default="0" />
 			<description>
 				Finds the first occurrence of a substring. Returns the starting position of the substring or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
 				[b]Note:[/b] If you just want to know whether a string contains a substring, use the [code]in[/code] operator as follows:
@@ -352,74 +279,60 @@
 			</description>
 		</method>
 		<method name="find_last">
-			<return type="int">
-			</return>
-			<argument index="0" name="what" type="String">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="what" type="String" />
 			<description>
 				Finds the last occurrence of a substring. Returns the starting position of the substring or [code]-1[/code] if not found.
 			</description>
 		</method>
 		<method name="findn">
-			<return type="int">
-			</return>
-			<argument index="0" name="what" type="String">
-			</argument>
-			<argument index="1" name="from" type="int" default="0">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="what" type="String" />
+			<argument index="1" name="from" type="int" default="0" />
 			<description>
 				Finds the first occurrence of a substring, ignoring case. Returns the starting position of the substring or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
 			</description>
 		</method>
 		<method name="format">
-			<return type="String">
-			</return>
-			<argument index="0" name="values" type="Variant">
-			</argument>
-			<argument index="1" name="placeholder" type="String" default="&quot;{_}&quot;">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="values" type="Variant" />
+			<argument index="1" name="placeholder" type="String" default="&quot;{_}&quot;" />
 			<description>
 				Formats the string by replacing all occurrences of [code]placeholder[/code] with [code]values[/code].
 			</description>
 		</method>
 		<method name="get_base_dir">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				If the string is a valid file path, returns the base directory name.
 			</description>
 		</method>
 		<method name="get_basename">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				If the string is a valid file path, returns the full file path without the extension.
 			</description>
 		</method>
 		<method name="get_extension">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				If the string is a valid file path, returns the extension.
 			</description>
 		</method>
 		<method name="get_file">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				If the string is a valid file path, returns the filename.
 			</description>
 		</method>
 		<method name="hash">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Hashes the string and returns a 32-bit integer.
 			</description>
 		</method>
 		<method name="hex_to_int">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Converts a string containing a hexadecimal number into an integer. Hexadecimal strings are expected to be prefixed with "[code]0x[/code]" otherwise [code]0[/code] is returned.
 				[codeblock]
@@ -428,8 +341,7 @@
 			</description>
 		</method>
 		<method name="http_escape">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Escapes (encodes) a string to URL friendly format. Also referred to as 'URL encode'.
 				[codeblock]
@@ -438,8 +350,7 @@
 			</description>
 		</method>
 		<method name="http_unescape">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Unescapes (decodes) a string in URL encoded format. Also referred to as 'URL decode'.
 				[codeblock]
@@ -448,10 +359,8 @@
 			</description>
 		</method>
 		<method name="humanize_size">
-			<return type="String">
-			</return>
-			<argument index="0" name="size" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="size" type="int" />
 			<description>
 				Converts [code]size[/code] represented as number of bytes to human-readable format using internationalized set of data size units, namely: B, KiB, MiB, GiB, TiB, PiB, EiB. Note that the next smallest unit is picked automatically to hold at most 1024 units.
 				[codeblock]
@@ -462,170 +371,139 @@
 			</description>
 		</method>
 		<method name="insert">
-			<return type="String">
-			</return>
-			<argument index="0" name="position" type="int">
-			</argument>
-			<argument index="1" name="what" type="String">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="position" type="int" />
+			<argument index="1" name="what" type="String" />
 			<description>
 				Returns a copy of the string with the substring [code]what[/code] inserted at the given position.
 			</description>
 		</method>
 		<method name="is_abs_path">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				If the string is a path to a file or directory, returns [code]true[/code] if the path is absolute.
 			</description>
 		</method>
 		<method name="is_rel_path">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				If the string is a path to a file or directory, returns [code]true[/code] if the path is relative.
 			</description>
 		</method>
 		<method name="is_subsequence_of">
-			<return type="bool">
-			</return>
-			<argument index="0" name="text" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="text" type="String" />
 			<description>
 				Returns [code]true[/code] if this string is a subsequence of the given string.
 			</description>
 		</method>
 		<method name="is_subsequence_ofi">
-			<return type="bool">
-			</return>
-			<argument index="0" name="text" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="text" type="String" />
 			<description>
 				Returns [code]true[/code] if this string is a subsequence of the given string, without considering case.
 			</description>
 		</method>
 		<method name="is_valid_filename">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this string is free from characters that aren't allowed in file names, those being:
 				[code]: / \ ? * " | % &lt; &gt;[/code]
 			</description>
 		</method>
 		<method name="is_valid_float">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this string contains a valid float.
 			</description>
 		</method>
 		<method name="is_valid_hex_number">
-			<return type="bool">
-			</return>
-			<argument index="0" name="with_prefix" type="bool" default="false">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="with_prefix" type="bool" default="false" />
 			<description>
 				Returns [code]true[/code] if this string contains a valid hexadecimal number. If [code]with_prefix[/code] is [code]true[/code], then a validity of the hexadecimal number is determined by [code]0x[/code] prefix, for instance: [code]0xDEADC0DE[/code].
 			</description>
 		</method>
 		<method name="is_valid_html_color">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this string contains a valid color in hexadecimal HTML notation. Other HTML notations such as named colors or [code]hsl()[/code] colors aren't considered valid by this method and will return [code]false[/code].
 			</description>
 		</method>
 		<method name="is_valid_identifier">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this string is a valid identifier. A valid identifier may contain only letters, digits and underscores ([code]_[/code]) and the first character may not be a digit.
 			</description>
 		</method>
 		<method name="is_valid_integer">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this string contains a valid integer.
 			</description>
 		</method>
 		<method name="is_valid_ip_address">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this string contains only a well-formatted IPv4 or IPv6 address. This method considers [url=https://en.wikipedia.org/wiki/Reserved_IP_addresses]reserved IP addresses[/url] such as [code]0.0.0.0[/code] as valid.
 			</description>
 		</method>
 		<method name="json_escape">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns a copy of the string with special characters escaped using the JSON standard.
 			</description>
 		</method>
 		<method name="left">
-			<return type="String">
-			</return>
-			<argument index="0" name="position" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="position" type="int" />
 			<description>
 				Returns a number of characters from the left of the string.
 			</description>
 		</method>
 		<method name="length">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the string's amount of characters.
 			</description>
 		</method>
 		<method name="lstrip">
-			<return type="String">
-			</return>
-			<argument index="0" name="chars" type="String">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="chars" type="String" />
 			<description>
 				Returns a copy of the string with characters removed from the left. The [code]chars[/code] argument is a string specifying the set of characters to be removed.
 				[b]Note:[/b] The [code]chars[/code] is not a prefix. See [method trim_prefix] method that will remove a single prefix string rather than a set of characters.
 			</description>
 		</method>
 		<method name="match">
-			<return type="bool">
-			</return>
-			<argument index="0" name="expr" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="expr" type="String" />
 			<description>
 				Does a simple case-sensitive expression match, where [code]"*"[/code] matches zero or more arbitrary characters and [code]"?"[/code] matches any single character except a period ([code]"."[/code]).
 			</description>
 		</method>
 		<method name="matchn">
-			<return type="bool">
-			</return>
-			<argument index="0" name="expr" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="expr" type="String" />
 			<description>
 				Does a simple case-insensitive expression match, where [code]"*"[/code] matches zero or more arbitrary characters and [code]"?"[/code] matches any single character except a period ([code]"."[/code]).
 			</description>
 		</method>
 		<method name="md5_buffer">
-			<return type="PoolByteArray">
-			</return>
+			<return type="PoolByteArray" />
 			<description>
 				Returns the MD5 hash of the string as an array of bytes.
 			</description>
 		</method>
 		<method name="md5_text">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the MD5 hash of the string as a string.
 			</description>
 		</method>
 		<method name="naturalnocasecmp_to">
-			<return type="int">
-			</return>
-			<argument index="0" name="to" type="String">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="to" type="String" />
 			<description>
 				Performs a case-insensitive [i]natural order[/i] comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/code] of each string, which roughly matches the alphabetical order. Internally, lowercase characters will be converted to uppercase during the comparison.
 				When used for sorting, natural order comparison will order suites of numbers as expected by most people. If you sort the numbers from 1 to 10 using natural order, you will get [code][1, 2, 3, ...][/code] instead of [code][1, 10, 2, 3, ...][/code].
@@ -635,10 +513,8 @@
 			</description>
 		</method>
 		<method name="nocasecmp_to">
-			<return type="int">
-			</return>
-			<argument index="0" name="to" type="String">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="to" type="String" />
 			<description>
 				Performs a case-insensitive comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/code] of each string, which roughly matches the alphabetical order. Internally, lowercase characters will be converted to uppercase during the comparison.
 				[b]Behavior with different string lengths:[/b] Returns [code]1[/code] if the "base" string is longer than the [code]to[/code] string or [code]-1[/code] if the "base" string is shorter than the [code]to[/code] string. Keep in mind this length is determined by the number of Unicode codepoints, [i]not[/i] the actual visible characters.
@@ -647,126 +523,96 @@
 			</description>
 		</method>
 		<method name="ord_at">
-			<return type="int">
-			</return>
-			<argument index="0" name="at" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="at" type="int" />
 			<description>
 				Returns the character code at position [code]at[/code].
 			</description>
 		</method>
 		<method name="pad_decimals">
-			<return type="String">
-			</return>
-			<argument index="0" name="digits" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="digits" type="int" />
 			<description>
 				Formats a number to have an exact number of [code]digits[/code] after the decimal point.
 			</description>
 		</method>
 		<method name="pad_zeros">
-			<return type="String">
-			</return>
-			<argument index="0" name="digits" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="digits" type="int" />
 			<description>
 				Formats a number to have an exact number of [code]digits[/code] before the decimal point.
 			</description>
 		</method>
 		<method name="percent_decode">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Decode a percent-encoded string. See [method percent_encode].
 			</description>
 		</method>
 		<method name="percent_encode">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Percent-encodes a string. Encodes parameters in a URL when sending a HTTP GET request (and bodies of form-urlencoded POST requests).
 			</description>
 		</method>
 		<method name="plus_file">
-			<return type="String">
-			</return>
-			<argument index="0" name="file" type="String">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="file" type="String" />
 			<description>
 				If the string is a path, this concatenates [code]file[/code] at the end of the string as a subpath. E.g. [code]"this/is".plus_file("path") == "this/is/path"[/code].
 			</description>
 		</method>
 		<method name="repeat">
-			<return type="String">
-			</return>
-			<argument index="0" name="count" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="count" type="int" />
 			<description>
 				Returns original string repeated a number of times. The number of repetitions is given by the argument.
 			</description>
 		</method>
 		<method name="replace">
-			<return type="String">
-			</return>
-			<argument index="0" name="what" type="String">
-			</argument>
-			<argument index="1" name="forwhat" type="String">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="what" type="String" />
+			<argument index="1" name="forwhat" type="String" />
 			<description>
 				Replaces occurrences of a case-sensitive substring with the given one inside the string.
 			</description>
 		</method>
 		<method name="replacen">
-			<return type="String">
-			</return>
-			<argument index="0" name="what" type="String">
-			</argument>
-			<argument index="1" name="forwhat" type="String">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="what" type="String" />
+			<argument index="1" name="forwhat" type="String" />
 			<description>
 				Replaces occurrences of a case-insensitive substring with the given one inside the string.
 			</description>
 		</method>
 		<method name="rfind">
-			<return type="int">
-			</return>
-			<argument index="0" name="what" type="String">
-			</argument>
-			<argument index="1" name="from" type="int" default="-1">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="what" type="String" />
+			<argument index="1" name="from" type="int" default="-1" />
 			<description>
 				Performs a case-sensitive search for a substring, but starts from the end of the string instead of the beginning.
 			</description>
 		</method>
 		<method name="rfindn">
-			<return type="int">
-			</return>
-			<argument index="0" name="what" type="String">
-			</argument>
-			<argument index="1" name="from" type="int" default="-1">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="what" type="String" />
+			<argument index="1" name="from" type="int" default="-1" />
 			<description>
 				Performs a case-insensitive search for a substring, but starts from the end of the string instead of the beginning.
 			</description>
 		</method>
 		<method name="right">
-			<return type="String">
-			</return>
-			<argument index="0" name="position" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="position" type="int" />
 			<description>
 				Returns the right side of the string from a given position.
 			</description>
 		</method>
 		<method name="rsplit">
-			<return type="PoolStringArray">
-			</return>
-			<argument index="0" name="delimiter" type="String">
-			</argument>
-			<argument index="1" name="allow_empty" type="bool" default="true">
-			</argument>
-			<argument index="2" name="maxsplit" type="int" default="0">
-			</argument>
+			<return type="PoolStringArray" />
+			<argument index="0" name="delimiter" type="String" />
+			<argument index="1" name="allow_empty" type="bool" default="true" />
+			<argument index="2" name="maxsplit" type="int" default="0" />
 			<description>
 				Splits the string by a [code]delimiter[/code] string and returns an array of the substrings, starting from right.
 				The splits in the returned array are sorted in the same order as the original string, from left to right.
@@ -782,61 +628,49 @@
 			</description>
 		</method>
 		<method name="rstrip">
-			<return type="String">
-			</return>
-			<argument index="0" name="chars" type="String">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="chars" type="String" />
 			<description>
 				Returns a copy of the string with characters removed from the right. The [code]chars[/code] argument is a string specifying the set of characters to be removed.
 				[b]Note:[/b] The [code]chars[/code] is not a suffix. See [method trim_suffix] method that will remove a single suffix string rather than a set of characters.
 			</description>
 		</method>
 		<method name="sha1_buffer">
-			<return type="PoolByteArray">
-			</return>
+			<return type="PoolByteArray" />
 			<description>
 				Returns the SHA-1 hash of the string as an array of bytes.
 			</description>
 		</method>
 		<method name="sha1_text">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the SHA-1 hash of the string as a string.
 			</description>
 		</method>
 		<method name="sha256_buffer">
-			<return type="PoolByteArray">
-			</return>
+			<return type="PoolByteArray" />
 			<description>
 				Returns the SHA-256 hash of the string as an array of bytes.
 			</description>
 		</method>
 		<method name="sha256_text">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the SHA-256 hash of the string as a string.
 			</description>
 		</method>
 		<method name="similarity">
-			<return type="float">
-			</return>
-			<argument index="0" name="text" type="String">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="text" type="String" />
 			<description>
 				Returns the similarity index of the text compared to this string. 1 means totally similar and 0 means totally dissimilar.
 			</description>
 		</method>
 		<method name="split">
-			<return type="PoolStringArray">
-			</return>
-			<argument index="0" name="delimiter" type="String">
-			</argument>
-			<argument index="1" name="allow_empty" type="bool" default="true">
-			</argument>
-			<argument index="2" name="maxsplit" type="int" default="0">
-			</argument>
+			<return type="PoolStringArray" />
+			<argument index="0" name="delimiter" type="String" />
+			<argument index="1" name="allow_empty" type="bool" default="true" />
+			<argument index="2" name="maxsplit" type="int" default="0" />
 			<description>
 				Splits the string by a [code]delimiter[/code] string and returns an array of the substrings. The [code]delimiter[/code] can be of any length.
 				If [code]maxsplit[/code] is specified, it defines the number of splits to do from the left up to [code]maxsplit[/code]. The default value of [code]0[/code] means that all items are split.
@@ -852,130 +686,106 @@
 			</description>
 		</method>
 		<method name="split_floats">
-			<return type="PoolRealArray">
-			</return>
-			<argument index="0" name="delimiter" type="String">
-			</argument>
-			<argument index="1" name="allow_empty" type="bool" default="true">
-			</argument>
+			<return type="PoolRealArray" />
+			<argument index="0" name="delimiter" type="String" />
+			<argument index="1" name="allow_empty" type="bool" default="true" />
 			<description>
 				Splits the string in floats by using a delimiter string and returns an array of the substrings.
 				For example, [code]"1,2.5,3"[/code] will return [code][1,2.5,3][/code] if split by [code]","[/code].
 			</description>
 		</method>
 		<method name="strip_edges">
-			<return type="String">
-			</return>
-			<argument index="0" name="left" type="bool" default="true">
-			</argument>
-			<argument index="1" name="right" type="bool" default="true">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="left" type="bool" default="true" />
+			<argument index="1" name="right" type="bool" default="true" />
 			<description>
 				Returns a copy of the string stripped of any non-printable character (including tabulations, spaces and line breaks) at the beginning and the end. The optional arguments are used to toggle stripping on the left and right edges respectively.
 			</description>
 		</method>
 		<method name="strip_escapes">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns a copy of the string stripped of any escape character. These include all non-printable control characters of the first page of the ASCII table (&lt; 32), such as tabulation ([code]\t[/code] in C) and newline ([code]\n[/code] and [code]\r[/code]) characters, but not spaces.
 			</description>
 		</method>
 		<method name="substr">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="int">
-			</argument>
-			<argument index="1" name="len" type="int" default="-1">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="from" type="int" />
+			<argument index="1" name="len" type="int" default="-1" />
 			<description>
 				Returns part of the string from the position [code]from[/code] with length [code]len[/code]. Argument [code]len[/code] is optional and using [code]-1[/code] will return remaining characters from given position.
 			</description>
 		</method>
 		<method name="to_ascii">
-			<return type="PoolByteArray">
-			</return>
+			<return type="PoolByteArray" />
 			<description>
 				Converts the String (which is a character array) to [PoolByteArray] (which is an array of bytes). The conversion is faster compared to [method to_utf8], as this method assumes that all the characters in the String are ASCII characters.
 			</description>
 		</method>
 		<method name="to_float">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Converts a string containing a decimal number into a [code]float[/code].
 			</description>
 		</method>
 		<method name="to_int">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Converts a string containing an integer number into an [code]int[/code].
 			</description>
 		</method>
 		<method name="to_lower">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the string converted to lowercase.
 			</description>
 		</method>
 		<method name="to_upper">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the string converted to uppercase.
 			</description>
 		</method>
 		<method name="to_utf8">
-			<return type="PoolByteArray">
-			</return>
+			<return type="PoolByteArray" />
 			<description>
 				Converts the String (which is an array of characters) to [PoolByteArray] (which is an array of bytes). The conversion is a bit slower than [method to_ascii], but supports all UTF-8 characters. Therefore, you should prefer this function over [method to_ascii].
 			</description>
 		</method>
 		<method name="to_wchar">
-			<return type="PoolByteArray">
-			</return>
+			<return type="PoolByteArray" />
 			<description>
 				Converts the String (which is an array of characters) to [PoolByteArray] (which is an array of bytes).
 			</description>
 		</method>
 		<method name="trim_prefix">
-			<return type="String">
-			</return>
-			<argument index="0" name="prefix" type="String">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="prefix" type="String" />
 			<description>
 				Removes a given string from the start if it starts with it or leaves the string unchanged.
 			</description>
 		</method>
 		<method name="trim_suffix">
-			<return type="String">
-			</return>
-			<argument index="0" name="suffix" type="String">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="suffix" type="String" />
 			<description>
 				Removes a given string from the end if it ends with it or leaves the string unchanged.
 			</description>
 		</method>
 		<method name="validate_node_name">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Removes any characters from the string that are prohibited in [Node] names ([code].[/code] [code]:[/code] [code]@[/code] [code]/[/code] [code]"[/code]).
 			</description>
 		</method>
 		<method name="xml_escape">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns a copy of the string with special characters escaped using the XML standard.
 			</description>
 		</method>
 		<method name="xml_unescape">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns a copy of the string with escaped characters replaced by their meanings according to the XML standard.
 			</description>

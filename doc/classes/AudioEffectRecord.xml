@@ -12,24 +12,20 @@
 	</tutorials>
 	<methods>
 		<method name="get_recording" qualifiers="const">
-			<return type="AudioStreamSample">
-			</return>
+			<return type="AudioStreamSample" />
 			<description>
 				Returns the recorded sample.
 			</description>
 		</method>
 		<method name="is_recording_active" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns whether the recording is active or not.
 			</description>
 		</method>
 		<method name="set_recording_active">
-			<return type="void">
-			</return>
-			<argument index="0" name="record" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="record" type="bool" />
 			<description>
 				If [code]true[/code], the sound will be recorded. Note that restarting the recording will remove the previously recorded sample.
 			</description>

@@ -22,318 +22,218 @@
 	</tutorials>
 	<methods>
 		<method name="follow_method">
-			<return type="bool">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="method" type="String">
-			</argument>
-			<argument index="2" name="initial_val" type="Variant">
-			</argument>
-			<argument index="3" name="target" type="Object">
-			</argument>
-			<argument index="4" name="target_method" type="String">
-			</argument>
-			<argument index="5" name="duration" type="float">
-			</argument>
-			<argument index="6" name="trans_type" type="int" enum="Tween.TransitionType" default="0">
-			</argument>
-			<argument index="7" name="ease_type" type="int" enum="Tween.EaseType" default="2">
-			</argument>
-			<argument index="8" name="delay" type="float" default="0">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="method" type="String" />
+			<argument index="2" name="initial_val" type="Variant" />
+			<argument index="3" name="target" type="Object" />
+			<argument index="4" name="target_method" type="String" />
+			<argument index="5" name="duration" type="float" />
+			<argument index="6" name="trans_type" type="int" enum="Tween.TransitionType" default="0" />
+			<argument index="7" name="ease_type" type="int" enum="Tween.EaseType" default="2" />
+			<argument index="8" name="delay" type="float" default="0" />
 			<description>
 				Follows [code]method[/code] of [code]object[/code] and applies the returned value on [code]target_method[/code] of [code]target[/code], beginning from [code]initial_val[/code] for [code]duration[/code] seconds, [code]delay[/code] later. Methods are called with consecutive values.
 				Use [enum TransitionType] for [code]trans_type[/code] and [enum EaseType] for [code]ease_type[/code] parameters. These values control the timing and direction of the interpolation. See the class description for more information.
 			</description>
 		</method>
 		<method name="follow_property">
-			<return type="bool">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="property" type="NodePath">
-			</argument>
-			<argument index="2" name="initial_val" type="Variant">
-			</argument>
-			<argument index="3" name="target" type="Object">
-			</argument>
-			<argument index="4" name="target_property" type="NodePath">
-			</argument>
-			<argument index="5" name="duration" type="float">
-			</argument>
-			<argument index="6" name="trans_type" type="int" enum="Tween.TransitionType" default="0">
-			</argument>
-			<argument index="7" name="ease_type" type="int" enum="Tween.EaseType" default="2">
-			</argument>
-			<argument index="8" name="delay" type="float" default="0">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="property" type="NodePath" />
+			<argument index="2" name="initial_val" type="Variant" />
+			<argument index="3" name="target" type="Object" />
+			<argument index="4" name="target_property" type="NodePath" />
+			<argument index="5" name="duration" type="float" />
+			<argument index="6" name="trans_type" type="int" enum="Tween.TransitionType" default="0" />
+			<argument index="7" name="ease_type" type="int" enum="Tween.EaseType" default="2" />
+			<argument index="8" name="delay" type="float" default="0" />
 			<description>
 				Follows [code]property[/code] of [code]object[/code] and applies it on [code]target_property[/code] of [code]target[/code], beginning from [code]initial_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later.
 				Use [enum TransitionType] for [code]trans_type[/code] and [enum EaseType] for [code]ease_type[/code] parameters. These values control the timing and direction of the interpolation. See the class description for more information.
 			</description>
 		</method>
 		<method name="get_runtime" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the total time needed for all tweens to end. If you have two tweens, one lasting 10 seconds and the other 20 seconds, it would return 20 seconds, as by that time all tweens would have finished.
 			</description>
 		</method>
 		<method name="interpolate_callback">
-			<return type="bool">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="duration" type="float">
-			</argument>
-			<argument index="2" name="callback" type="String">
-			</argument>
-			<argument index="3" name="arg1" type="Variant" default="null">
-			</argument>
-			<argument index="4" name="arg2" type="Variant" default="null">
-			</argument>
-			<argument index="5" name="arg3" type="Variant" default="null">
-			</argument>
-			<argument index="6" name="arg4" type="Variant" default="null">
-			</argument>
-			<argument index="7" name="arg5" type="Variant" default="null">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="duration" type="float" />
+			<argument index="2" name="callback" type="String" />
+			<argument index="3" name="arg1" type="Variant" default="null" />
+			<argument index="4" name="arg2" type="Variant" default="null" />
+			<argument index="5" name="arg3" type="Variant" default="null" />
+			<argument index="6" name="arg4" type="Variant" default="null" />
+			<argument index="7" name="arg5" type="Variant" default="null" />
 			<description>
 				Calls [code]callback[/code] of [code]object[/code] after [code]duration[/code]. [code]arg1[/code]-[code]arg5[/code] are arguments to be passed to the callback.
 			</description>
 		</method>
 		<method name="interpolate_deferred_callback">
-			<return type="bool">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="duration" type="float">
-			</argument>
-			<argument index="2" name="callback" type="String">
-			</argument>
-			<argument index="3" name="arg1" type="Variant" default="null">
-			</argument>
-			<argument index="4" name="arg2" type="Variant" default="null">
-			</argument>
-			<argument index="5" name="arg3" type="Variant" default="null">
-			</argument>
-			<argument index="6" name="arg4" type="Variant" default="null">
-			</argument>
-			<argument index="7" name="arg5" type="Variant" default="null">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="duration" type="float" />
+			<argument index="2" name="callback" type="String" />
+			<argument index="3" name="arg1" type="Variant" default="null" />
+			<argument index="4" name="arg2" type="Variant" default="null" />
+			<argument index="5" name="arg3" type="Variant" default="null" />
+			<argument index="6" name="arg4" type="Variant" default="null" />
+			<argument index="7" name="arg5" type="Variant" default="null" />
 			<description>
 				Calls [code]callback[/code] of [code]object[/code] after [code]duration[/code] on the main thread (similar to [method Object.call_deferred]). [code]arg1[/code]-[code]arg5[/code] are arguments to be passed to the callback.
 			</description>
 		</method>
 		<method name="interpolate_method">
-			<return type="bool">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="method" type="String">
-			</argument>
-			<argument index="2" name="initial_val" type="Variant">
-			</argument>
-			<argument index="3" name="final_val" type="Variant">
-			</argument>
-			<argument index="4" name="duration" type="float">
-			</argument>
-			<argument index="5" name="trans_type" type="int" enum="Tween.TransitionType" default="0">
-			</argument>
-			<argument index="6" name="ease_type" type="int" enum="Tween.EaseType" default="2">
-			</argument>
-			<argument index="7" name="delay" type="float" default="0">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="method" type="String" />
+			<argument index="2" name="initial_val" type="Variant" />
+			<argument index="3" name="final_val" type="Variant" />
+			<argument index="4" name="duration" type="float" />
+			<argument index="5" name="trans_type" type="int" enum="Tween.TransitionType" default="0" />
+			<argument index="6" name="ease_type" type="int" enum="Tween.EaseType" default="2" />
+			<argument index="7" name="delay" type="float" default="0" />
 			<description>
 				Animates [code]method[/code] of [code]object[/code] from [code]initial_val[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later. Methods are called with consecutive values.
 				Use [enum TransitionType] for [code]trans_type[/code] and [enum EaseType] for [code]ease_type[/code] parameters. These values control the timing and direction of the interpolation. See the class description for more information.
 			</description>
 		</method>
 		<method name="interpolate_property">
-			<return type="bool">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="property" type="NodePath">
-			</argument>
-			<argument index="2" name="initial_val" type="Variant">
-			</argument>
-			<argument index="3" name="final_val" type="Variant">
-			</argument>
-			<argument index="4" name="duration" type="float">
-			</argument>
-			<argument index="5" name="trans_type" type="int" enum="Tween.TransitionType" default="0">
-			</argument>
-			<argument index="6" name="ease_type" type="int" enum="Tween.EaseType" default="2">
-			</argument>
-			<argument index="7" name="delay" type="float" default="0">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="property" type="NodePath" />
+			<argument index="2" name="initial_val" type="Variant" />
+			<argument index="3" name="final_val" type="Variant" />
+			<argument index="4" name="duration" type="float" />
+			<argument index="5" name="trans_type" type="int" enum="Tween.TransitionType" default="0" />
+			<argument index="6" name="ease_type" type="int" enum="Tween.EaseType" default="2" />
+			<argument index="7" name="delay" type="float" default="0" />
 			<description>
 				Animates [code]property[/code] of [code]object[/code] from [code]initial_val[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later. Setting the initial value to [code]null[/code] uses the current value of the property.
 				Use [enum TransitionType] for [code]trans_type[/code] and [enum EaseType] for [code]ease_type[/code] parameters. These values control the timing and direction of the interpolation. See the class description for more information.
 			</description>
 		</method>
 		<method name="is_active" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if any tweens are currently running.
 				[b]Note:[/b] This method doesn't consider tweens that have ended.
 			</description>
 		</method>
 		<method name="remove">
-			<return type="bool">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="key" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="key" type="String" default="&quot;&quot;" />
 			<description>
 				Stops animation and removes a tween, given its object and property/method pair. By default, all tweens are removed, unless [code]key[/code] is specified.
 			</description>
 		</method>
 		<method name="remove_all">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Stops animation and removes all tweens.
 			</description>
 		</method>
 		<method name="reset">
-			<return type="bool">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="key" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="key" type="String" default="&quot;&quot;" />
 			<description>
 				Resets a tween to its initial value (the one given, not the one before the tween), given its object and property/method pair. By default, all tweens are removed, unless [code]key[/code] is specified.
 			</description>
 		</method>
 		<method name="reset_all">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Resets all tweens to their initial values (the ones given, not those before the tween).
 			</description>
 		</method>
 		<method name="resume">
-			<return type="bool">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="key" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="key" type="String" default="&quot;&quot;" />
 			<description>
 				Continues animating a stopped tween, given its object and property/method pair. By default, all tweens are resumed, unless [code]key[/code] is specified.
 			</description>
 		</method>
 		<method name="resume_all">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Continues animating all stopped tweens.
 			</description>
 		</method>
 		<method name="seek">
-			<return type="bool">
-			</return>
-			<argument index="0" name="time" type="float">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="time" type="float" />
 			<description>
 				Sets the interpolation to the given [code]time[/code] in seconds.
 			</description>
 		</method>
 		<method name="set_active">
-			<return type="void">
-			</return>
-			<argument index="0" name="active" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="active" type="bool" />
 			<description>
 				Activates/deactivates the tween. See also [method stop_all] and [method resume_all].
 			</description>
 		</method>
 		<method name="start">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Starts the tween. You can define animations both before and after this.
 			</description>
 		</method>
 		<method name="stop">
-			<return type="bool">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="key" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="key" type="String" default="&quot;&quot;" />
 			<description>
 				Stops a tween, given its object and property/method pair. By default, all tweens are stopped, unless [code]key[/code] is specified.
 			</description>
 		</method>
 		<method name="stop_all">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Stops animating all tweens.
 			</description>
 		</method>
 		<method name="targeting_method">
-			<return type="bool">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="method" type="String">
-			</argument>
-			<argument index="2" name="initial" type="Object">
-			</argument>
-			<argument index="3" name="initial_method" type="String">
-			</argument>
-			<argument index="4" name="final_val" type="Variant">
-			</argument>
-			<argument index="5" name="duration" type="float">
-			</argument>
-			<argument index="6" name="trans_type" type="int" enum="Tween.TransitionType" default="0">
-			</argument>
-			<argument index="7" name="ease_type" type="int" enum="Tween.EaseType" default="2">
-			</argument>
-			<argument index="8" name="delay" type="float" default="0">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="method" type="String" />
+			<argument index="2" name="initial" type="Object" />
+			<argument index="3" name="initial_method" type="String" />
+			<argument index="4" name="final_val" type="Variant" />
+			<argument index="5" name="duration" type="float" />
+			<argument index="6" name="trans_type" type="int" enum="Tween.TransitionType" default="0" />
+			<argument index="7" name="ease_type" type="int" enum="Tween.EaseType" default="2" />
+			<argument index="8" name="delay" type="float" default="0" />
 			<description>
 				Animates [code]method[/code] of [code]object[/code] from the value returned by [code]initial_method[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later. Methods are animated by calling them with consecutive values.
 				Use [enum TransitionType] for [code]trans_type[/code] and [enum EaseType] for [code]ease_type[/code] parameters. These values control the timing and direction of the interpolation. See the class description for more information.
 			</description>
 		</method>
 		<method name="targeting_property">
-			<return type="bool">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="property" type="NodePath">
-			</argument>
-			<argument index="2" name="initial" type="Object">
-			</argument>
-			<argument index="3" name="initial_val" type="NodePath">
-			</argument>
-			<argument index="4" name="final_val" type="Variant">
-			</argument>
-			<argument index="5" name="duration" type="float">
-			</argument>
-			<argument index="6" name="trans_type" type="int" enum="Tween.TransitionType" default="0">
-			</argument>
-			<argument index="7" name="ease_type" type="int" enum="Tween.EaseType" default="2">
-			</argument>
-			<argument index="8" name="delay" type="float" default="0">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="property" type="NodePath" />
+			<argument index="2" name="initial" type="Object" />
+			<argument index="3" name="initial_val" type="NodePath" />
+			<argument index="4" name="final_val" type="Variant" />
+			<argument index="5" name="duration" type="float" />
+			<argument index="6" name="trans_type" type="int" enum="Tween.TransitionType" default="0" />
+			<argument index="7" name="ease_type" type="int" enum="Tween.EaseType" default="2" />
+			<argument index="8" name="delay" type="float" default="0" />
 			<description>
 				Animates [code]property[/code] of [code]object[/code] from the current value of the [code]initial_val[/code] property of [code]initial[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later.
 				Use [enum TransitionType] for [code]trans_type[/code] and [enum EaseType] for [code]ease_type[/code] parameters. These values control the timing and direction of the interpolation. See the class description for more information.
 			</description>
 		</method>
 		<method name="tell" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the current time of the tween.
 			</description>
@@ -357,32 +257,24 @@
 			</description>
 		</signal>
 		<signal name="tween_completed">
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="key" type="NodePath">
-			</argument>
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="key" type="NodePath" />
 			<description>
 				Emitted when a tween ends.
 			</description>
 		</signal>
 		<signal name="tween_started">
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="key" type="NodePath">
-			</argument>
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="key" type="NodePath" />
 			<description>
 				Emitted when a tween starts.
 			</description>
 		</signal>
 		<signal name="tween_step">
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="key" type="NodePath">
-			</argument>
-			<argument index="2" name="elapsed" type="float">
-			</argument>
-			<argument index="3" name="value" type="Object">
-			</argument>
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="key" type="NodePath" />
+			<argument index="2" name="elapsed" type="float" />
+			<argument index="3" name="value" type="Object" />
 			<description>
 				Emitted at each step of the animation.
 			</description>

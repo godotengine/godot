@@ -23,224 +23,172 @@
 	</tutorials>
 	<methods>
 		<method name="add_bones">
-			<return type="void">
-			</return>
-			<argument index="0" name="bones" type="PoolIntArray">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="bones" type="PoolIntArray" />
 			<description>
 				Specifies an array of bones to use for the [i]next[/i] vertex. [code]bones[/code] must contain 4 integers.
 			</description>
 		</method>
 		<method name="add_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="color" type="Color">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="color" type="Color" />
 			<description>
 				Specifies a [Color] to use for the [i]next[/i] vertex. If every vertex needs to have this information set and you fail to submit it for the first vertex, this information may not be used at all.
 				[b]Note:[/b] The material must have [member SpatialMaterial.vertex_color_use_as_albedo] enabled for the vertex color to be visible.
 			</description>
 		</method>
 		<method name="add_index">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Adds an index to index array if you are using indexed vertices. Does not need to be called before adding vertices.
 			</description>
 		</method>
 		<method name="add_normal">
-			<return type="void">
-			</return>
-			<argument index="0" name="normal" type="Vector3">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="normal" type="Vector3" />
 			<description>
 				Specifies a normal to use for the [i]next[/i] vertex. If every vertex needs to have this information set and you fail to submit it for the first vertex, this information may not be used at all.
 			</description>
 		</method>
 		<method name="add_smooth_group">
-			<return type="void">
-			</return>
-			<argument index="0" name="smooth" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="smooth" type="bool" />
 			<description>
 				Specifies whether the current vertex (if using only vertex arrays) or current index (if also using index arrays) should use smooth normals for normal calculation.
 			</description>
 		</method>
 		<method name="add_tangent">
-			<return type="void">
-			</return>
-			<argument index="0" name="tangent" type="Plane">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="tangent" type="Plane" />
 			<description>
 				Specifies a tangent to use for the [i]next[/i] vertex. If every vertex needs to have this information set and you fail to submit it for the first vertex, this information may not be used at all.
 			</description>
 		</method>
 		<method name="add_triangle_fan">
-			<return type="void">
-			</return>
-			<argument index="0" name="vertices" type="PoolVector3Array">
-			</argument>
-			<argument index="1" name="uvs" type="PoolVector2Array" default="PoolVector2Array(  )">
-			</argument>
-			<argument index="2" name="colors" type="PoolColorArray" default="PoolColorArray(  )">
-			</argument>
-			<argument index="3" name="uv2s" type="PoolVector2Array" default="PoolVector2Array(  )">
-			</argument>
-			<argument index="4" name="normals" type="PoolVector3Array" default="PoolVector3Array(  )">
-			</argument>
-			<argument index="5" name="tangents" type="Array" default="[  ]">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="vertices" type="PoolVector3Array" />
+			<argument index="1" name="uvs" type="PoolVector2Array" default="PoolVector2Array(  )" />
+			<argument index="2" name="colors" type="PoolColorArray" default="PoolColorArray(  )" />
+			<argument index="3" name="uv2s" type="PoolVector2Array" default="PoolVector2Array(  )" />
+			<argument index="4" name="normals" type="PoolVector3Array" default="PoolVector3Array(  )" />
+			<argument index="5" name="tangents" type="Array" default="[  ]" />
 			<description>
 				Inserts a triangle fan made of array data into [Mesh] being constructed.
 				Requires the primitive type be set to [constant Mesh.PRIMITIVE_TRIANGLES].
 			</description>
 		</method>
 		<method name="add_uv">
-			<return type="void">
-			</return>
-			<argument index="0" name="uv" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="uv" type="Vector2" />
 			<description>
 				Specifies a set of UV coordinates to use for the [i]next[/i] vertex. If every vertex needs to have this information set and you fail to submit it for the first vertex, this information may not be used at all.
 			</description>
 		</method>
 		<method name="add_uv2">
-			<return type="void">
-			</return>
-			<argument index="0" name="uv2" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="uv2" type="Vector2" />
 			<description>
 				Specifies an optional second set of UV coordinates to use for the [i]next[/i] vertex. If every vertex needs to have this information set and you fail to submit it for the first vertex, this information may not be used at all.
 			</description>
 		</method>
 		<method name="add_vertex">
-			<return type="void">
-			</return>
-			<argument index="0" name="vertex" type="Vector3">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="vertex" type="Vector3" />
 			<description>
 				Specifies the position of current vertex. Should be called after specifying other vertex properties (e.g. Color, UV).
 			</description>
 		</method>
 		<method name="add_weights">
-			<return type="void">
-			</return>
-			<argument index="0" name="weights" type="PoolRealArray">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="weights" type="PoolRealArray" />
 			<description>
 				Specifies weight values to use for the [i]next[/i] vertex. [code]weights[/code] must contain 4 values. If every vertex needs to have this information set and you fail to submit it for the first vertex, this information may not be used at all.
 			</description>
 		</method>
 		<method name="append_from">
-			<return type="void">
-			</return>
-			<argument index="0" name="existing" type="Mesh">
-			</argument>
-			<argument index="1" name="surface" type="int">
-			</argument>
-			<argument index="2" name="transform" type="Transform">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="existing" type="Mesh" />
+			<argument index="1" name="surface" type="int" />
+			<argument index="2" name="transform" type="Transform" />
 			<description>
 				Append vertices from a given [Mesh] surface onto the current vertex array with specified [Transform].
 			</description>
 		</method>
 		<method name="begin">
-			<return type="void">
-			</return>
-			<argument index="0" name="primitive" type="int" enum="Mesh.PrimitiveType">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="primitive" type="int" enum="Mesh.PrimitiveType" />
 			<description>
 				Called before adding any vertices. Takes the primitive type as an argument (e.g. [constant Mesh.PRIMITIVE_TRIANGLES]).
 			</description>
 		</method>
 		<method name="clear">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clear all information passed into the surface tool so far.
 			</description>
 		</method>
 		<method name="commit">
-			<return type="ArrayMesh">
-			</return>
-			<argument index="0" name="existing" type="ArrayMesh" default="null">
-			</argument>
-			<argument index="1" name="flags" type="int" default="97280">
-			</argument>
+			<return type="ArrayMesh" />
+			<argument index="0" name="existing" type="ArrayMesh" default="null" />
+			<argument index="1" name="flags" type="int" default="97280" />
 			<description>
 				Returns a constructed [ArrayMesh] from current information passed in. If an existing [ArrayMesh] is passed in as an argument, will add an extra surface to the existing [ArrayMesh].
 				Default flag is [constant Mesh.ARRAY_COMPRESS_DEFAULT]. See [code]ARRAY_COMPRESS_*[/code] constants in [enum Mesh.ArrayFormat] for other flags.
 			</description>
 		</method>
 		<method name="commit_to_arrays">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Commits the data to the same format used by [method ArrayMesh.add_surface_from_arrays]. This way you can further process the mesh data using the [ArrayMesh] API.
 			</description>
 		</method>
 		<method name="create_from">
-			<return type="void">
-			</return>
-			<argument index="0" name="existing" type="Mesh">
-			</argument>
-			<argument index="1" name="surface" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="existing" type="Mesh" />
+			<argument index="1" name="surface" type="int" />
 			<description>
 				Creates a vertex array from an existing [Mesh].
 			</description>
 		</method>
 		<method name="create_from_blend_shape">
-			<return type="void">
-			</return>
-			<argument index="0" name="existing" type="Mesh">
-			</argument>
-			<argument index="1" name="surface" type="int">
-			</argument>
-			<argument index="2" name="blend_shape" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="existing" type="Mesh" />
+			<argument index="1" name="surface" type="int" />
+			<argument index="2" name="blend_shape" type="String" />
 			<description>
 				Creates a vertex array from the specified blend shape of an existing [Mesh]. This can be used to extract a specific pose from a blend shape.
 			</description>
 		</method>
 		<method name="deindex">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Removes the index array by expanding the vertex array.
 			</description>
 		</method>
 		<method name="generate_normals">
-			<return type="void">
-			</return>
-			<argument index="0" name="flip" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="flip" type="bool" default="false" />
 			<description>
 				Generates normals from vertices so you do not have to do it manually. If [code]flip[/code] is [code]true[/code], the resulting normals will be inverted. [method generate_normals] should be called [i]after[/i] generating geometry and [i]before[/i] committing the mesh using [method commit] or [method commit_to_arrays].
 				[b]Note:[/b] [method generate_normals] only works if the primitive type to be set to [constant Mesh.PRIMITIVE_TRIANGLES].
 			</description>
 		</method>
 		<method name="generate_tangents">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Generates a tangent vector for each vertex. Requires that each vertex have UVs and normals set already.
 			</description>
 		</method>
 		<method name="index">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Shrinks the vertex array by creating an index array. This can improve performance by avoiding vertex reuse.
 			</description>
 		</method>
 		<method name="set_material">
-			<return type="void">
-			</return>
-			<argument index="0" name="material" type="Material">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="material" type="Material" />
 			<description>
 				Sets [Material] to be used by the [Mesh] you are constructing.
 			</description>

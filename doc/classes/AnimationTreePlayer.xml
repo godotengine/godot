@@ -13,116 +13,86 @@
 	</tutorials>
 	<methods>
 		<method name="add_node">
-			<return type="void">
-			</return>
-			<argument index="0" name="type" type="int" enum="AnimationTreePlayer.NodeType">
-			</argument>
-			<argument index="1" name="id" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="type" type="int" enum="AnimationTreePlayer.NodeType" />
+			<argument index="1" name="id" type="String" />
 			<description>
 				Adds a [code]type[/code] node to the graph with name [code]id[/code].
 			</description>
 		</method>
 		<method name="advance">
-			<return type="void">
-			</return>
-			<argument index="0" name="delta" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="delta" type="float" />
 			<description>
 				Shifts position in the animation timeline. [code]delta[/code] is the time in seconds to shift. Events between the current frame and [code]delta[/code] are handled.
 			</description>
 		</method>
 		<method name="animation_node_get_animation" qualifiers="const">
-			<return type="Animation">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
+			<return type="Animation" />
+			<argument index="0" name="id" type="String" />
 			<description>
 				Returns the [AnimationPlayer]'s [Animation] bound to the [AnimationTreePlayer]'s animation node with name [code]id[/code].
 			</description>
 		</method>
 		<method name="animation_node_get_master_animation" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="id" type="String" />
 			<description>
 				Returns the name of the [member master_player]'s [Animation] bound to this animation node.
 			</description>
 		</method>
 		<method name="animation_node_get_position" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="id" type="String" />
 			<description>
 				Returns the absolute playback timestamp of the animation node with name [code]id[/code].
 			</description>
 		</method>
 		<method name="animation_node_set_animation">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
-			<argument index="1" name="animation" type="Animation">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="String" />
+			<argument index="1" name="animation" type="Animation" />
 			<description>
 				Binds a new [Animation] from the [member master_player] to the [AnimationTreePlayer]'s animation node with name [code]id[/code].
 			</description>
 		</method>
 		<method name="animation_node_set_filter_path">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
-			<argument index="1" name="path" type="NodePath">
-			</argument>
-			<argument index="2" name="enable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="String" />
+			<argument index="1" name="path" type="NodePath" />
+			<argument index="2" name="enable" type="bool" />
 			<description>
 				If [code]enable[/code] is [code]true[/code], the animation node with ID [code]id[/code] turns off the track modifying the property at [code]path[/code]. The modified node's children continue to animate.
 			</description>
 		</method>
 		<method name="animation_node_set_master_animation">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
-			<argument index="1" name="source" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="String" />
+			<argument index="1" name="source" type="String" />
 			<description>
 				Binds the [Animation] named [code]source[/code] from [member master_player] to the animation node [code]id[/code]. Recalculates caches.
 			</description>
 		</method>
 		<method name="are_nodes_connected" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
-			<argument index="1" name="dst_id" type="String">
-			</argument>
-			<argument index="2" name="dst_input_idx" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="id" type="String" />
+			<argument index="1" name="dst_id" type="String" />
+			<argument index="2" name="dst_input_idx" type="int" />
 			<description>
 				Returns whether node [code]id[/code] and [code]dst_id[/code] are connected at the specified slot.
 			</description>
 		</method>
 		<method name="blend2_node_get_amount" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="id" type="String" />
 			<description>
 				Returns the blend amount of a Blend2 node given its name.
 			</description>
 		</method>
 		<method name="blend2_node_set_amount">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
-			<argument index="1" name="blend" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="String" />
+			<argument index="1" name="blend" type="float" />
 			<description>
 				Sets the blend amount of a Blend2 node given its name and value.
 				A Blend2 node blends two animations (A and B) with the amount between 0 and 1.
@@ -130,34 +100,25 @@
 			</description>
 		</method>
 		<method name="blend2_node_set_filter_path">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
-			<argument index="1" name="path" type="NodePath">
-			</argument>
-			<argument index="2" name="enable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="String" />
+			<argument index="1" name="path" type="NodePath" />
+			<argument index="2" name="enable" type="bool" />
 			<description>
 				If [code]enable[/code] is [code]true[/code], the Blend2 node with name [code]id[/code] turns off the track modifying the property at [code]path[/code]. The modified node's children continue to animate.
 			</description>
 		</method>
 		<method name="blend3_node_get_amount" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="id" type="String" />
 			<description>
 				Returns the blend amount of a Blend3 node given its name.
 			</description>
 		</method>
 		<method name="blend3_node_set_amount">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
-			<argument index="1" name="blend" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="String" />
+			<argument index="1" name="blend" type="float" />
 			<description>
 				Sets the blend amount of a Blend3 node given its name and value.
 				A Blend3 Node blends three animations (A, B-, B+) with the amount between -1 and 1.
@@ -165,21 +126,16 @@
 			</description>
 		</method>
 		<method name="blend4_node_get_amount" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="id" type="String" />
 			<description>
 				Returns the blend amount of a Blend4 node given its name.
 			</description>
 		</method>
 		<method name="blend4_node_set_amount">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
-			<argument index="1" name="blend" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="String" />
+			<argument index="1" name="blend" type="Vector2" />
 			<description>
 				Sets the blend amount of a Blend4 node given its name and value.
 				A Blend4 Node blends two pairs of animations.
@@ -187,305 +143,231 @@
 			</description>
 		</method>
 		<method name="connect_nodes">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
-			<argument index="1" name="dst_id" type="String">
-			</argument>
-			<argument index="2" name="dst_input_idx" type="int">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="id" type="String" />
+			<argument index="1" name="dst_id" type="String" />
+			<argument index="2" name="dst_input_idx" type="int" />
 			<description>
 				Connects node [code]id[/code] to [code]dst_id[/code] at the specified input slot.
 			</description>
 		</method>
 		<method name="disconnect_nodes">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
-			<argument index="1" name="dst_input_idx" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="String" />
+			<argument index="1" name="dst_input_idx" type="int" />
 			<description>
 				Disconnects nodes connected to [code]id[/code] at the specified input slot.
 			</description>
 		</method>
 		<method name="get_node_list">
-			<return type="PoolStringArray">
-			</return>
+			<return type="PoolStringArray" />
 			<description>
 				Returns a [PoolStringArray] containing the name of all nodes.
 			</description>
 		</method>
 		<method name="mix_node_get_amount" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="id" type="String" />
 			<description>
 				Returns the mix amount of a Mix node given its name.
 			</description>
 		</method>
 		<method name="mix_node_set_amount">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
-			<argument index="1" name="ratio" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="String" />
+			<argument index="1" name="ratio" type="float" />
 			<description>
 				Sets the mix amount of a Mix node given its name and value.
 				A Mix node adds input b to input a by the amount given by ratio.
 			</description>
 		</method>
 		<method name="node_exists" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="node" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="node" type="String" />
 			<description>
 				Check if a node exists (by name).
 			</description>
 		</method>
 		<method name="node_get_input_count" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="id" type="String" />
 			<description>
 				Returns the input count for a given node. Different types of nodes have different amount of inputs.
 			</description>
 		</method>
 		<method name="node_get_input_source" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
-			<argument index="1" name="idx" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="id" type="String" />
+			<argument index="1" name="idx" type="int" />
 			<description>
 				Returns the input source for a given node input.
 			</description>
 		</method>
 		<method name="node_get_position" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="id" type="String" />
 			<description>
 				Returns position of a node in the graph given its name.
 			</description>
 		</method>
 		<method name="node_get_type" qualifiers="const">
-			<return type="int" enum="AnimationTreePlayer.NodeType">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
+			<return type="int" enum="AnimationTreePlayer.NodeType" />
+			<argument index="0" name="id" type="String" />
 			<description>
 				Gets the node type, will return from [enum NodeType] enum.
 			</description>
 		</method>
 		<method name="node_rename">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="node" type="String">
-			</argument>
-			<argument index="1" name="new_name" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="node" type="String" />
+			<argument index="1" name="new_name" type="String" />
 			<description>
 				Renames a node in the graph.
 			</description>
 		</method>
 		<method name="node_set_position">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
-			<argument index="1" name="screen_position" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="String" />
+			<argument index="1" name="screen_position" type="Vector2" />
 			<description>
 				Sets the position of a node in the graph given its name and position.
 			</description>
 		</method>
 		<method name="oneshot_node_get_autorestart_delay" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="id" type="String" />
 			<description>
 				Returns the autostart delay of a OneShot node given its name.
 			</description>
 		</method>
 		<method name="oneshot_node_get_autorestart_random_delay" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="id" type="String" />
 			<description>
 				Returns the autostart random delay of a OneShot node given its name.
 			</description>
 		</method>
 		<method name="oneshot_node_get_fadein_time" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="id" type="String" />
 			<description>
 				Returns the fade in time of a OneShot node given its name.
 			</description>
 		</method>
 		<method name="oneshot_node_get_fadeout_time" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="id" type="String" />
 			<description>
 				Returns the fade out time of a OneShot node given its name.
 			</description>
 		</method>
 		<method name="oneshot_node_has_autorestart" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="id" type="String" />
 			<description>
 				Returns whether a OneShot node will auto restart given its name.
 			</description>
 		</method>
 		<method name="oneshot_node_is_active" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="id" type="String" />
 			<description>
 				Returns whether a OneShot node is active given its name.
 			</description>
 		</method>
 		<method name="oneshot_node_set_autorestart">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="String" />
+			<argument index="1" name="enable" type="bool" />
 			<description>
 				Sets the autorestart property of a OneShot node given its name and value.
 			</description>
 		</method>
 		<method name="oneshot_node_set_autorestart_delay">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
-			<argument index="1" name="delay_sec" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="String" />
+			<argument index="1" name="delay_sec" type="float" />
 			<description>
 				Sets the autorestart delay of a OneShot node given its name and value in seconds.
 			</description>
 		</method>
 		<method name="oneshot_node_set_autorestart_random_delay">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
-			<argument index="1" name="rand_sec" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="String" />
+			<argument index="1" name="rand_sec" type="float" />
 			<description>
 				Sets the autorestart random delay of a OneShot node given its name and value in seconds.
 			</description>
 		</method>
 		<method name="oneshot_node_set_fadein_time">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
-			<argument index="1" name="time_sec" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="String" />
+			<argument index="1" name="time_sec" type="float" />
 			<description>
 				Sets the fade in time of a OneShot node given its name and value in seconds.
 			</description>
 		</method>
 		<method name="oneshot_node_set_fadeout_time">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
-			<argument index="1" name="time_sec" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="String" />
+			<argument index="1" name="time_sec" type="float" />
 			<description>
 				Sets the fade out time of a OneShot node given its name and value in seconds.
 			</description>
 		</method>
 		<method name="oneshot_node_set_filter_path">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
-			<argument index="1" name="path" type="NodePath">
-			</argument>
-			<argument index="2" name="enable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="String" />
+			<argument index="1" name="path" type="NodePath" />
+			<argument index="2" name="enable" type="bool" />
 			<description>
 				If [code]enable[/code] is [code]true[/code], the OneShot node with ID [code]id[/code] turns off the track modifying the property at [code]path[/code]. The modified node's children continue to animate.
 			</description>
 		</method>
 		<method name="oneshot_node_start">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="String" />
 			<description>
 				Starts a OneShot node given its name.
 			</description>
 		</method>
 		<method name="oneshot_node_stop">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="String" />
 			<description>
 				Stops the OneShot node with name [code]id[/code].
 			</description>
 		</method>
 		<method name="recompute_caches">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Manually recalculates the cache of track information generated from animation nodes. Needed when external sources modify the animation nodes' state.
 			</description>
 		</method>
 		<method name="remove_node">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="String" />
 			<description>
 				Removes the animation node with name [code]id[/code].
 			</description>
 		</method>
 		<method name="reset">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Resets this [AnimationTreePlayer].
 			</description>
 		</method>
 		<method name="timescale_node_get_scale" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="id" type="String" />
 			<description>
 				Returns the time scale value of the TimeScale node with name [code]id[/code].
 			</description>
 		</method>
 		<method name="timescale_node_set_scale">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
-			<argument index="1" name="scale" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="String" />
+			<argument index="1" name="scale" type="float" />
 			<description>
 				Sets the time scale of the TimeScale node with name [code]id[/code] to [code]scale[/code].
 				The TimeScale node is used to speed [Animation]s up if the scale is above 1 or slow them down if it is below 1.
@@ -493,108 +375,80 @@
 			</description>
 		</method>
 		<method name="timeseek_node_seek">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
-			<argument index="1" name="seconds" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="String" />
+			<argument index="1" name="seconds" type="float" />
 			<description>
 				Sets the time seek value of the TimeSeek node with name [code]id[/code] to [code]seconds[/code].
 				This functions as a seek in the [Animation] or the blend or mix of [Animation]s input in it.
 			</description>
 		</method>
 		<method name="transition_node_delete_input">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
-			<argument index="1" name="input_idx" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="String" />
+			<argument index="1" name="input_idx" type="int" />
 			<description>
 				Deletes the input at [code]input_idx[/code] for the transition node with name [code]id[/code].
 			</description>
 		</method>
 		<method name="transition_node_get_current" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="id" type="String" />
 			<description>
 				Returns the index of the currently evaluated input for the transition node with name [code]id[/code].
 			</description>
 		</method>
 		<method name="transition_node_get_input_count" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="id" type="String" />
 			<description>
 				Returns the number of inputs for the transition node with name [code]id[/code]. You can add inputs by right-clicking on the transition node.
 			</description>
 		</method>
 		<method name="transition_node_get_xfade_time" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="id" type="String" />
 			<description>
 				Returns the cross fade time for the transition node with name [code]id[/code].
 			</description>
 		</method>
 		<method name="transition_node_has_input_auto_advance" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
-			<argument index="1" name="input_idx" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="id" type="String" />
+			<argument index="1" name="input_idx" type="int" />
 			<description>
 				Returns [code]true[/code] if the input at [code]input_idx[/code] on the transition node with name [code]id[/code] is set to automatically advance to the next input upon completion.
 			</description>
 		</method>
 		<method name="transition_node_set_current">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
-			<argument index="1" name="input_idx" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="String" />
+			<argument index="1" name="input_idx" type="int" />
 			<description>
 				The transition node with name [code]id[/code] sets its current input at [code]input_idx[/code].
 			</description>
 		</method>
 		<method name="transition_node_set_input_auto_advance">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
-			<argument index="1" name="input_idx" type="int">
-			</argument>
-			<argument index="2" name="enable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="String" />
+			<argument index="1" name="input_idx" type="int" />
+			<argument index="2" name="enable" type="bool" />
 			<description>
 				The transition node with name [code]id[/code] advances to its next input automatically when the input at [code]input_idx[/code] completes.
 			</description>
 		</method>
 		<method name="transition_node_set_input_count">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
-			<argument index="1" name="count" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="String" />
+			<argument index="1" name="count" type="int" />
 			<description>
 				Resizes the number of inputs available for the transition node with name [code]id[/code].
 			</description>
 		</method>
 		<method name="transition_node_set_xfade_time">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="String">
-			</argument>
-			<argument index="1" name="time_sec" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="String" />
+			<argument index="1" name="time_sec" type="float" />
 			<description>
 				The transition node with name [code]id[/code] sets its cross fade time to [code]time_sec[/code].
 			</description>

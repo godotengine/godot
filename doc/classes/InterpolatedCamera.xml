@@ -11,10 +11,8 @@
 	</tutorials>
 	<methods>
 		<method name="set_target">
-			<return type="void">
-			</return>
-			<argument index="0" name="target" type="Object">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="target" type="Object" />
 			<description>
 				Sets the node to move toward and orient with.
 			</description>

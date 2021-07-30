@@ -14,168 +14,130 @@
 	</tutorials>
 	<methods>
 		<method name="Quat">
-			<return type="Quat">
-			</return>
-			<argument index="0" name="from" type="Basis">
-			</argument>
+			<return type="Quat" />
+			<argument index="0" name="from" type="Basis" />
 			<description>
 				Constructs a quaternion from the given [Basis].
 			</description>
 		</method>
 		<method name="Quat">
-			<return type="Quat">
-			</return>
-			<argument index="0" name="euler" type="Vector3">
-			</argument>
+			<return type="Quat" />
+			<argument index="0" name="euler" type="Vector3" />
 			<description>
 				Constructs a quaternion that will perform a rotation specified by Euler angles (in the YXZ convention: when decomposing, first Z, then X, and Y last), given in the vector format as (X angle, Y angle, Z angle).
 			</description>
 		</method>
 		<method name="Quat">
-			<return type="Quat">
-			</return>
-			<argument index="0" name="axis" type="Vector3">
-			</argument>
-			<argument index="1" name="angle" type="float">
-			</argument>
+			<return type="Quat" />
+			<argument index="0" name="axis" type="Vector3" />
+			<argument index="1" name="angle" type="float" />
 			<description>
 				Constructs a quaternion that will rotate around the given axis by the specified angle. The axis must be a normalized vector.
 			</description>
 		</method>
 		<method name="Quat">
-			<return type="Quat">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
-			<argument index="1" name="y" type="float">
-			</argument>
-			<argument index="2" name="z" type="float">
-			</argument>
-			<argument index="3" name="w" type="float">
-			</argument>
+			<return type="Quat" />
+			<argument index="0" name="x" type="float" />
+			<argument index="1" name="y" type="float" />
+			<argument index="2" name="z" type="float" />
+			<argument index="3" name="w" type="float" />
 			<description>
 				Constructs a quaternion defined by the given values.
 			</description>
 		</method>
 		<method name="cubic_slerp">
-			<return type="Quat">
-			</return>
-			<argument index="0" name="b" type="Quat">
-			</argument>
-			<argument index="1" name="pre_a" type="Quat">
-			</argument>
-			<argument index="2" name="post_b" type="Quat">
-			</argument>
-			<argument index="3" name="weight" type="float">
-			</argument>
+			<return type="Quat" />
+			<argument index="0" name="b" type="Quat" />
+			<argument index="1" name="pre_a" type="Quat" />
+			<argument index="2" name="post_b" type="Quat" />
+			<argument index="3" name="weight" type="float" />
 			<description>
 				Performs a cubic spherical interpolation between quaternions [code]pre_a[/code], this vector, [code]b[/code], and [code]post_b[/code], by the given amount [code]weight[/code].
 			</description>
 		</method>
 		<method name="dot">
-			<return type="float">
-			</return>
-			<argument index="0" name="b" type="Quat">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="b" type="Quat" />
 			<description>
 				Returns the dot product of two quaternions.
 			</description>
 		</method>
 		<method name="get_euler">
-			<return type="Vector3">
-			</return>
+			<return type="Vector3" />
 			<description>
 				Returns Euler angles (in the YXZ convention: when decomposing, first Z, then X, and Y last) corresponding to the rotation represented by the unit quaternion. Returned vector contains the rotation angles in the format (X angle, Y angle, Z angle).
 			</description>
 		</method>
 		<method name="inverse">
-			<return type="Quat">
-			</return>
+			<return type="Quat" />
 			<description>
 				Returns the inverse of the quaternion.
 			</description>
 		</method>
 		<method name="is_equal_approx">
-			<return type="bool">
-			</return>
-			<argument index="0" name="quat" type="Quat">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="quat" type="Quat" />
 			<description>
 				Returns [code]true[/code] if this quaternion and [code]quat[/code] are approximately equal, by running [method @GDScript.is_equal_approx] on each component.
 			</description>
 		</method>
 		<method name="is_normalized">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns whether the quaternion is normalized or not.
 			</description>
 		</method>
 		<method name="length">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the length of the quaternion.
 			</description>
 		</method>
 		<method name="length_squared">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the length of the quaternion, squared.
 			</description>
 		</method>
 		<method name="normalized">
-			<return type="Quat">
-			</return>
+			<return type="Quat" />
 			<description>
 				Returns a copy of the quaternion, normalized to unit length.
 			</description>
 		</method>
 		<method name="set_axis_angle">
-			<argument index="0" name="axis" type="Vector3">
-			</argument>
-			<argument index="1" name="angle" type="float">
-			</argument>
+			<argument index="0" name="axis" type="Vector3" />
+			<argument index="1" name="angle" type="float" />
 			<description>
 				Sets the quaternion to a rotation which rotates around axis by the specified angle, in radians. The axis must be a normalized vector.
 			</description>
 		</method>
 		<method name="set_euler">
-			<argument index="0" name="euler" type="Vector3">
-			</argument>
+			<argument index="0" name="euler" type="Vector3" />
 			<description>
 				Sets the quaternion to a rotation specified by Euler angles (in the YXZ convention: when decomposing, first Z, then X, and Y last), given in the vector format as (X angle, Y angle, Z angle).
 			</description>
 		</method>
 		<method name="slerp">
-			<return type="Quat">
-			</return>
-			<argument index="0" name="to" type="Quat">
-			</argument>
-			<argument index="1" name="weight" type="float">
-			</argument>
+			<return type="Quat" />
+			<argument index="0" name="to" type="Quat" />
+			<argument index="1" name="weight" type="float" />
 			<description>
 				Returns the result of the spherical linear interpolation between this quaternion and [code]to[/code] by amount [code]weight[/code].
 				[b]Note:[/b] Both quaternions must be normalized.
 			</description>
 		</method>
 		<method name="slerpni">
-			<return type="Quat">
-			</return>
-			<argument index="0" name="to" type="Quat">
-			</argument>
-			<argument index="1" name="weight" type="float">
-			</argument>
+			<return type="Quat" />
+			<argument index="0" name="to" type="Quat" />
+			<argument index="1" name="weight" type="float" />
 			<description>
 				Returns the result of the spherical linear interpolation between this quaternion and [code]to[/code] by amount [code]weight[/code], but without checking if the rotation path is not bigger than 90 degrees.
 			</description>
 		</method>
 		<method name="xform">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="v" type="Vector3">
-			</argument>
+			<return type="Vector3" />
+			<argument index="0" name="v" type="Vector3" />
 			<description>
 				Returns a vector transformed (multiplied) by this quaternion.
 			</description>

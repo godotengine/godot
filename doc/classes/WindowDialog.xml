@@ -10,8 +10,7 @@
 	</tutorials>
 	<methods>
 		<method name="get_close_button">
-			<return type="TextureButton">
-			</return>
+			<return type="TextureButton" />
 			<description>
 				Returns the close [TextureButton].
 			</description>

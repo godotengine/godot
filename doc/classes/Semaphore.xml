@@ -11,15 +11,13 @@
 	</tutorials>
 	<methods>
 		<method name="post">
-			<return type="int" enum="Error">
-			</return>
+			<return type="int" enum="Error" />
 			<description>
 				Lowers the [Semaphore], allowing one more thread in. Returns [constant OK] on success, [constant ERR_BUSY] otherwise.
 			</description>
 		</method>
 		<method name="wait">
-			<return type="int" enum="Error">
-			</return>
+			<return type="int" enum="Error" />
 			<description>
 				Tries to wait for the [Semaphore], if its value is zero, blocks until non-zero. Returns [constant OK] on success, [constant ERR_BUSY] otherwise.
 			</description>

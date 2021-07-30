@@ -10,55 +10,43 @@
 	</tutorials>
 	<methods>
 		<method name="popup">
-			<return type="void">
-			</return>
-			<argument index="0" name="bounds" type="Rect2" default="Rect2( 0, 0, 0, 0 )">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="bounds" type="Rect2" default="Rect2( 0, 0, 0, 0 )" />
 			<description>
 				Popup (show the control in modal form).
 			</description>
 		</method>
 		<method name="popup_centered">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="Vector2" default="Vector2( 0, 0 )">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="size" type="Vector2" default="Vector2( 0, 0 )" />
 			<description>
 				Popup (show the control in modal form) in the center of the screen relative to its current canvas transform, at the current size, or at a size determined by [code]size[/code].
 			</description>
 		</method>
 		<method name="popup_centered_clamped">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="Vector2" default="Vector2( 0, 0 )">
-			</argument>
-			<argument index="1" name="fallback_ratio" type="float" default="0.75">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="size" type="Vector2" default="Vector2( 0, 0 )" />
+			<argument index="1" name="fallback_ratio" type="float" default="0.75" />
 			<description>
 				Popup (show the control in modal form) in the center of the screen relative to the current canvas transform, clamping the size to [code]size[/code], then ensuring the popup is no larger than the viewport size multiplied by [code]fallback_ratio[/code].
 			</description>
 		</method>
 		<method name="popup_centered_minsize">
-			<return type="void">
-			</return>
-			<argument index="0" name="minsize" type="Vector2" default="Vector2( 0, 0 )">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="minsize" type="Vector2" default="Vector2( 0, 0 )" />
 			<description>
 				Popup (show the control in modal form) in the center of the screen relative to the current canvas transform, ensuring the size is never smaller than [code]minsize[/code].
 			</description>
 		</method>
 		<method name="popup_centered_ratio">
-			<return type="void">
-			</return>
-			<argument index="0" name="ratio" type="float" default="0.75">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="ratio" type="float" default="0.75" />
 			<description>
 				Popup (show the control in modal form) in the center of the screen relative to the current canvas transform, scaled at a ratio of size of the screen.
 			</description>
 		</method>
 		<method name="set_as_minsize">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Shrink popup to keep to the minimum size of content.
 			</description>

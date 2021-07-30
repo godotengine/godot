@@ -11,8 +11,7 @@
 	</tutorials>
 	<methods>
 		<method name="force_update_cache">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				[RemoteTransform2D] caches the remote node. It may not notice if the remote node disappears; [method force_update_cache] forces it to update the cache again.
 			</description>

@@ -12,17 +12,14 @@
 	</tutorials>
 	<methods>
 		<method name="get_popup" qualifiers="const">
-			<return type="PopupMenu">
-			</return>
+			<return type="PopupMenu" />
 			<description>
 				Returns the [PopupMenu] contained in this button.
 			</description>
 		</method>
 		<method name="set_disable_shortcuts">
-			<return type="void">
-			</return>
-			<argument index="0" name="disabled" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="disabled" type="bool" />
 			<description>
 				If [code]true[/code], shortcuts are disabled and cannot be used to trigger the button.
 			</description>
