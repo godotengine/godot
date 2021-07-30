@@ -1020,11 +1020,11 @@ Error ResourceLoaderText::save_as_binary(FileAccess *p_f, const String &p_path) 
 	bs_save_unicode_string(wf.f, is_scene ? "PackedScene" : resource_type);
 	wf->store_64(0); //offset to import metadata, this is no longer used
 
-	f->store_32(ResourceFormatSaverBinaryInstance::FORMAT_FLAG_NAMED_SCENE_IDS | ResourceFormatSaverBinaryInstance::FORMAT_FLAG_UIDS);
+	wf->store_32(ResourceFormatSaverBinaryInstance::FORMAT_FLAG_NAMED_SCENE_IDS | ResourceFormatSaverBinaryInstance::FORMAT_FLAG_UIDS);
 
-	f->store_64(res_uid);
+	wf->store_64(res_uid);
 
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < 11; i++) {
 		wf->store_32(0); // reserved
 	}
 
@@ -1074,7 +1074,7 @@ Error ResourceLoaderText::save_as_binary(FileAccess *p_f, const String &p_path) 
 
 		bs_save_unicode_string(wf.f, type);
 		bs_save_unicode_string(wf.f, path);
-		wf.f->store_64(uid);
+		wf->store_64(uid);
 
 		int lindex = dummy_read.external_resources.size();
 		Ref<DummyResource> dr;

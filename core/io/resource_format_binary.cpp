@@ -906,7 +906,7 @@ void ResourceLoaderBinary::open(FileAccess *p_f, bool p_no_resources, bool p_kee
 		uid = ResourceUID::INVALID_ID;
 	}
 
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < 11; i++) {
 		f->get_32(); //skip a few reserved fields
 	}
 
@@ -1209,8 +1209,8 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 	fw->store_32(flags);
 	fw->store_64(uid_data);
 
-	for (int i = 0; i < 5; i++) {
-		f->store_32(0); // reserved
+	for (int i = 0; i < 11; i++) {
+		fw->store_32(0); // reserved
 		f->get_32();
 	}
 
@@ -1264,7 +1264,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 
 		if (using_uids) {
 			ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(full_path);
-			f->store_64(uid);
+			fw->store_64(uid);
 		}
 	}
 
@@ -1902,7 +1902,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 	f->store_32(FORMAT_FLAG_NAMED_SCENE_IDS | FORMAT_FLAG_UIDS);
 	ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(p_path, true);
 	f->store_64(uid);
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < 11; i++) {
 		f->store_32(0); // reserved
 	}
 
