@@ -182,6 +182,8 @@ private:
 		bool is_rtl_dirty = true;
 		bool is_rtl = false;
 
+		bool auto_translate = true;
+
 		real_t rotation = 0.0;
 		Vector2 scale = Vector2(1, 1);
 		Vector2 pivot_offset;
@@ -350,6 +352,10 @@ public:
 	void set_layout_direction(LayoutDirection p_direction);
 	LayoutDirection get_layout_direction() const;
 	virtual bool is_layout_rtl() const;
+
+	void set_auto_translate(bool p_enable);
+	bool is_auto_translating() const;
+	_FORCE_INLINE_ String atr(const String p_string) const { return is_auto_translating() ? tr(p_string) : p_string; };
 
 	/* POSITIONING */
 

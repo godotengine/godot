@@ -597,7 +597,7 @@ void LineEdit::_notification(int p_what) {
 			update();
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			placeholder_translated = tr(placeholder);
+			placeholder_translated = atr(placeholder);
 			_shape();
 			update();
 		} break;
@@ -1364,7 +1364,7 @@ String LineEdit::get_text() const {
 
 void LineEdit::set_placeholder(String p_text) {
 	placeholder = p_text;
-	placeholder_translated = tr(placeholder);
+	placeholder_translated = atr(placeholder);
 	_shape();
 	update();
 }

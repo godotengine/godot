@@ -42,9 +42,8 @@ void Window::set_title(const String &p_title) {
 
 	if (embedder) {
 		embedder->_sub_window_update(this);
-
 	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-		DisplayServer::get_singleton()->window_set_title(p_title, window_id);
+		DisplayServer::get_singleton()->window_set_title(atr(p_title), window_id);
 	}
 }
 
@@ -233,7 +232,7 @@ void Window::_make_window() {
 	DisplayServer::get_singleton()->window_set_current_screen(current_screen, window_id);
 	DisplayServer::get_singleton()->window_set_max_size(max_size, window_id);
 	DisplayServer::get_singleton()->window_set_min_size(min_size, window_id);
-	DisplayServer::get_singleton()->window_set_title(tr(title), window_id);
+	DisplayServer::get_singleton()->window_set_title(atr(title), window_id);
 	DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
 
 	_update_window_size();
@@ -761,6 +760,12 @@ void Window::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (embedder) {
+				embedder->_sub_window_update(this);
+			} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+				DisplayServer::get_singleton()->window_set_title(atr(title), window_id);
+			}
+
 			child_controls_changed();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
@@ -1341,6 +1346,20 @@ bool Window::is_layout_rtl() const {
 	}
 }
 
+void Window::set_auto_translate(bool p_enable) {
+	if (p_enable == auto_translate) {
+		return;
+	}
+
+	auto_translate = p_enable;
+
+	notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+}
+
+bool Window::is_auto_translating() const {
+	return auto_translate;
+}
+
 void Window::_validate_property(PropertyInfo &property) const {
 	if (property.name == "theme_type_variation") {
 		List<StringName> names;
@@ -1467,6 +1486,9 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_layout_direction"), &Window::get_layout_direction);
 	ClassDB::bind_method(D_METHOD("is_layout_rtl"), &Window::is_layout_rtl);
 
+	ClassDB::bind_method(D_METHOD("set_auto_translate", "enable"), &Window::set_auto_translate);
+	ClassDB::bind_method(D_METHOD("is_auto_translating"), &Window::is_auto_translating);
+
 	ClassDB::bind_method(D_METHOD("popup", "rect"), &Window::popup, DEFVAL(Rect2i()));
 	ClassDB::bind_method(D_METHOD("popup_on_parent", "parent_rect"), &Window::popup_on_parent);
 	ClassDB::bind_method(D_METHOD("popup_centered_ratio", "ratio"), &Window::popup_centered_ratio, DEFVAL(0.8));
@@ -1478,6 +1500,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Windowed,Minimized,Maximized,Fullscreen"), "set_mode", "get_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_screen"), "set_current_screen", "get_current_screen");
+
 	ADD_GROUP("Flags", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "wrap_controls"), "set_wrap_controls", "is_wrapping_controls");
@@ -1488,16 +1511,22 @@ void Window::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "always_on_top"), "set_flag", "get_flag", FLAG_ALWAYS_ON_TOP);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "transparent"), "set_flag", "get_flag", FLAG_TRANSPARENT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "unfocusable"), "set_flag", "get_flag", FLAG_NO_FOCUS);
+
 	ADD_GROUP("Limits", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "min_size"), "set_min_size", "get_min_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "max_size"), "set_max_size", "get_max_size");
+
 	ADD_GROUP("Content Scale", "content_scale_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "content_scale_size"), "set_content_scale_size", "get_content_scale_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_mode", PROPERTY_HINT_ENUM, "Disabled,Canvas Items,Viewport"), "set_content_scale_mode", "get_content_scale_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_aspect", PROPERTY_HINT_ENUM, "Ignore,Keep,Keep Width,Keep Height,Expand"), "set_content_scale_aspect", "get_content_scale_aspect");
+
 	ADD_GROUP("Theme", "theme_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "theme_type_variation", PROPERTY_HINT_ENUM_SUGGESTION), "set_theme_type_variation", "get_theme_type_variation");
+
+	ADD_GROUP("Auto Translate", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate"), "set_auto_translate", "is_auto_translating");
 
 	ADD_SIGNAL(MethodInfo("window_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files")));

@@ -550,7 +550,7 @@ void TabContainer::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, in
 
 	// Draw the tab contents.
 	Control *control = Object::cast_to<Control>(tabs[p_index]);
-	String text = control->has_meta("_tab_name") ? String(tr(String(control->get_meta("_tab_name")))) : String(tr(control->get_name()));
+	String text = control->has_meta("_tab_name") ? String(atr(String(control->get_meta("_tab_name")))) : String(atr(control->get_name()));
 
 	int x_content = tab_rect.position.x + p_tab_style->get_margin(SIDE_LEFT);
 	int top_margin = p_tab_style->get_margin(SIDE_TOP);
@@ -584,7 +584,8 @@ void TabContainer::_refresh_texts() {
 	int font_size = get_theme_font_size(SNAME("font_size"));
 	for (int i = 0; i < tabs.size(); i++) {
 		Control *control = Object::cast_to<Control>(tabs[i]);
-		String text = control->has_meta("_tab_name") ? String(tr(String(control->get_meta("_tab_name")))) : String(tr(control->get_name()));
+		String text = control->has_meta("_tab_name") ? String(atr(String(control->get_meta("_tab_name")))) : String(atr(control->get_name()));
+
 		Ref<TextLine> name;
 		name.instantiate();
 		name->set_direction(rtl ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
@@ -648,7 +649,7 @@ int TabContainer::_get_tab_width(int p_index) const {
 	// Get the width of the text displayed on the tab.
 	Ref<Font> font = get_theme_font(SNAME("font"));
 	int font_size = get_theme_font_size(SNAME("font_size"));
-	String text = control->has_meta("_tab_name") ? String(tr(String(control->get_meta("_tab_name")))) : String(tr(control->get_name()));
+	String text = control->has_meta("_tab_name") ? String(atr(String(control->get_meta("_tab_name")))) : String(atr(control->get_name()));
 	int width = font->get_string_size(text, font_size).width;
 
 	// Add space for a tab icon.
