@@ -1024,7 +1024,7 @@ Error ResourceLoaderText::save_as_binary(FileAccess *p_f, const String &p_path) 
 
 	wf->store_64(res_uid);
 
-	for (int i = 0; i < 11; i++) {
+	for (int i = 0; i < ResourceFormatSaverBinaryInstance::RESERVED_FIELDS; i++) {
 		wf->store_32(0); // reserved
 	}
 
