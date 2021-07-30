@@ -12,28 +12,22 @@
 	</tutorials>
 	<methods>
 		<method name="advance">
-			<return type="void">
-			</return>
-			<argument index="0" name="delta" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="delta" type="float" />
 			<description>
 				Manually advance the animations by the specified time (in seconds).
 			</description>
 		</method>
 		<method name="get_root_motion_transform" qualifiers="const">
-			<return type="Transform3D">
-			</return>
+			<return type="Transform3D" />
 			<description>
 				Retrieve the motion of the [member root_motion_track] as a [Transform3D] that can be used elsewhere. If [member root_motion_track] is not a path to a track of type [constant Animation.TYPE_TRANSFORM3D], returns an identity transformation. See also [member root_motion_track] and [RootMotionView].
 			</description>
 		</method>
 		<method name="rename_parameter">
-			<return type="void">
-			</return>
-			<argument index="0" name="old_name" type="String">
-			</argument>
-			<argument index="1" name="new_name" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="old_name" type="String" />
+			<argument index="1" name="new_name" type="String" />
 			<description>
 			</description>
 		</method>

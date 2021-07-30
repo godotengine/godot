@@ -11,66 +11,51 @@
 	</tutorials>
 	<methods>
 		<method name="execute_modifications">
-			<return type="void">
-			</return>
-			<argument index="0" name="delta" type="float">
-			</argument>
-			<argument index="1" name="execution_mode" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="delta" type="float" />
+			<argument index="1" name="execution_mode" type="int" />
 			<description>
 				Executes all the modifications on the [SkeletonModificationStack2D], if the Skeleton3D has one assigned.
 			</description>
 		</method>
 		<method name="get_bone">
-			<return type="Bone2D">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="Bone2D" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns a [Bone2D] from the node hierarchy parented by Skeleton2D. The object to return is identified by the parameter [code]idx[/code]. Bones are indexed by descending the node hierarchy from top to bottom, adding the children of each branch before moving to the next sibling.
 			</description>
 		</method>
 		<method name="get_bone_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of [Bone2D] nodes in the node hierarchy parented by Skeleton2D.
 			</description>
 		</method>
 		<method name="get_bone_local_pose_override">
-			<return type="Transform2D">
-			</return>
-			<argument index="0" name="bone_idx" type="int">
-			</argument>
+			<return type="Transform2D" />
+			<argument index="0" name="bone_idx" type="int" />
 			<description>
 				Returns the local pose override transform for [code]bone_idx[/code].
 			</description>
 		</method>
 		<method name="get_modification_stack" qualifiers="const">
-			<return type="SkeletonModificationStack2D">
-			</return>
+			<return type="SkeletonModificationStack2D" />
 			<description>
 				Returns the [SkeletonModificationStack2D] attached to this skeleton, if one exists.
 			</description>
 		</method>
 		<method name="get_skeleton" qualifiers="const">
-			<return type="RID">
-			</return>
+			<return type="RID" />
 			<description>
 				Returns the [RID] of a Skeleton2D instance.
 			</description>
 		</method>
 		<method name="set_bone_local_pose_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="bone_idx" type="int">
-			</argument>
-			<argument index="1" name="override_pose" type="Transform2D">
-			</argument>
-			<argument index="2" name="strength" type="float">
-			</argument>
-			<argument index="3" name="persistent" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="bone_idx" type="int" />
+			<argument index="1" name="override_pose" type="Transform2D" />
+			<argument index="2" name="strength" type="float" />
+			<argument index="3" name="persistent" type="bool" />
 			<description>
 				Sets the local pose transform, [code]pose[/code], for the bone at [code]bone_idx[/code].
 				[code]amount[/code] is the interpolation strength that will be used when applying the pose, and [code]persistent[/code] determines if the applied pose will remain.
@@ -78,10 +63,8 @@
 			</description>
 		</method>
 		<method name="set_modification_stack">
-			<return type="void">
-			</return>
-			<argument index="0" name="modification_stack" type="SkeletonModificationStack2D">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="modification_stack" type="SkeletonModificationStack2D" />
 			<description>
 				Sets the [SkeletonModificationStack2D] attached to this skeleton.
 			</description>

@@ -12,121 +12,94 @@
 	</tutorials>
 	<methods>
 		<method name="get_channels" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of channels allocated for communication with peer.
 			</description>
 		</method>
 		<method name="get_state" qualifiers="const">
-			<return type="int" enum="ENetPacketPeer.PeerState">
-			</return>
+			<return type="int" enum="ENetPacketPeer.PeerState" />
 			<description>
 				Returns the current peer state. See [enum PeerState].
 			</description>
 		</method>
 		<method name="get_statistic">
-			<return type="float">
-			</return>
-			<argument index="0" name="statistic" type="int" enum="ENetPacketPeer.PeerStatistic">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="statistic" type="int" enum="ENetPacketPeer.PeerStatistic" />
 			<description>
 				Returns the requested [code]statistic[/code] for this peer. See [enum PeerStatistic].
 			</description>
 		</method>
 		<method name="is_active" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the peer is currently active (i.e. the associated [ENetConnection] is still valid).
 			</description>
 		</method>
 		<method name="peer_disconnect">
-			<return type="void">
-			</return>
-			<argument index="0" name="data" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="data" type="int" default="0" />
 			<description>
 				Request a disconnection from a peer. An [constant ENetConnection.EVENT_DISCONNECT] will be generated during [method ENetConnection.service] once the disconnection is complete.
 			</description>
 		</method>
 		<method name="peer_disconnect_later">
-			<return type="void">
-			</return>
-			<argument index="0" name="data" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="data" type="int" default="0" />
 			<description>
 				Request a disconnection from a peer, but only after all queued outgoing packets are sent. An [constant ENetConnection.EVENT_DISCONNECT] will be generated during [method ENetConnection.service] once the disconnection is complete.
 			</description>
 		</method>
 		<method name="peer_disconnect_now">
-			<return type="void">
-			</return>
-			<argument index="0" name="data" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="data" type="int" default="0" />
 			<description>
 				Force an immediate disconnection from a peer. No [constant ENetConnection.EVENT_DISCONNECT] will be generated. The foreign peer is not guaranteed to receive the disconnect notification, and is reset immediately upon return from this function.
 			</description>
 		</method>
 		<method name="ping">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Sends a ping request to a peer. ENet automatically pings all connected peers at regular intervals, however, this function may be called to ensure more frequent ping requests.
 			</description>
 		</method>
 		<method name="ping_interval">
-			<return type="void">
-			</return>
-			<argument index="0" name="ping_interval" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="ping_interval" type="int" />
 			<description>
 				Sets the [code]ping_interval[/code] in milliseconds at which pings will be sent to a peer. Pings are used both to monitor the liveness of the connection and also to dynamically adjust the throttle during periods of low traffic so that the throttle has reasonable responsiveness during traffic spikes.
 			</description>
 		</method>
 		<method name="reset">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Forcefully disconnects a peer. The foreign host represented by the peer is not notified of the disconnection and will timeout on its connection to the local host.
 			</description>
 		</method>
 		<method name="send">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="channel" type="int">
-			</argument>
-			<argument index="1" name="packet" type="PackedByteArray">
-			</argument>
-			<argument index="2" name="flags" type="int">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="channel" type="int" />
+			<argument index="1" name="packet" type="PackedByteArray" />
+			<argument index="2" name="flags" type="int" />
 			<description>
 				Queues a [code]packet[/code] to be sent over the specified [code]channel[/code]. See [code]FLAG_*[/code] constants for available packet flags.
 			</description>
 		</method>
 		<method name="set_timeout">
-			<return type="void">
-			</return>
-			<argument index="0" name="timeout" type="int">
-			</argument>
-			<argument index="1" name="timeout_min" type="int">
-			</argument>
-			<argument index="2" name="timeout_max" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="timeout" type="int" />
+			<argument index="1" name="timeout_min" type="int" />
+			<argument index="2" name="timeout_max" type="int" />
 			<description>
 				Sets the timeout parameters for a peer. The timeout parameters control how and when a peer will timeout from a failure to acknowledge reliable traffic. Timeout values are expressed in milliseconds.
 				The [code]timeout_limit[/code] is a factor that, multiplied by a value based on the average round trip time, will determine the timeout limit for a reliable packet. When that limit is reached, the timeout will be doubled, and the peer will be disconnected if that limit has reached [code]timeout_min[/code]. The [code]timeout_max[/code] parameter, on the other hand, defines a fixed timeout for which any packet must be acknowledged or the peer will be dropped.
 			</description>
 		</method>
 		<method name="throttle_configure">
-			<return type="void">
-			</return>
-			<argument index="0" name="interval" type="int">
-			</argument>
-			<argument index="1" name="acceleration" type="int">
-			</argument>
-			<argument index="2" name="deceleration" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="interval" type="int" />
+			<argument index="1" name="acceleration" type="int" />
+			<argument index="2" name="deceleration" type="int" />
 			<description>
 				Configures throttle parameter for a peer.
 				Unreliable packets are dropped by ENet in response to the varying conditions of the Internet connection to the peer. The throttle represents a probability that an unreliable packet should not be dropped and thus sent by ENet to the peer. By measuring fluctuations in round trip times of reliable packets over the specified [code]interval[/code], ENet will either increase the probably by the amount specified in the [code]acceleration[/code] parameter, or decrease it by the amount specified in the [code]deceleration[/code] parameter (both are ratios to [constant PACKET_THROTTLE_SCALE]).

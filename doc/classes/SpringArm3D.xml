@@ -13,33 +13,27 @@
 	</tutorials>
 	<methods>
 		<method name="add_excluded_object">
-			<return type="void">
-			</return>
-			<argument index="0" name="RID" type="RID">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="RID" type="RID" />
 			<description>
 				Adds the [PhysicsBody3D] object with the given [RID] to the list of [PhysicsBody3D] objects excluded from the collision check.
 			</description>
 		</method>
 		<method name="clear_excluded_objects">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clears the list of [PhysicsBody3D] objects excluded from the collision check.
 			</description>
 		</method>
 		<method name="get_hit_length">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the spring arm's current length.
 			</description>
 		</method>
 		<method name="remove_excluded_object">
-			<return type="bool">
-			</return>
-			<argument index="0" name="RID" type="RID">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="RID" type="RID" />
 			<description>
 				Removes the given [RID] from the list of [PhysicsBody3D] objects excluded from the collision check.
 			</description>

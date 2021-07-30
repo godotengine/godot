@@ -12,81 +12,64 @@
 	</tutorials>
 	<methods>
 		<method name="add_modification">
-			<return type="void">
-			</return>
-			<argument index="0" name="modification" type="SkeletonModification2D">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="modification" type="SkeletonModification2D" />
 			<description>
 				Adds the passed-in [SkeletonModification2D] to the stack.
 			</description>
 		</method>
 		<method name="delete_modification">
-			<return type="void">
-			</return>
-			<argument index="0" name="mod_idx" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="mod_idx" type="int" />
 			<description>
 				Deletes the [SkeletonModification2D] at the index position [code]mod_idx[/code], if it exists.
 			</description>
 		</method>
 		<method name="enable_all_modifications">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="enabled" type="bool" />
 			<description>
 				Enables all [SkeletonModification2D]s in the stack.
 			</description>
 		</method>
 		<method name="execute">
-			<return type="void">
-			</return>
-			<argument index="0" name="delta" type="float">
-			</argument>
-			<argument index="1" name="execution_mode" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="delta" type="float" />
+			<argument index="1" name="execution_mode" type="int" />
 			<description>
 				Executes all of the [SkeletonModification2D]s in the stack that use the same execution mode as the passed-in [code]execution_mode[/code], starting from index [code]0[/code] to [member modification_count].
 				[b]Note:[/b] The order of the modifications can matter depending on the modifications. For example, modifications on a spine should operate before modifications on the arms in order to get proper results.
 			</description>
 		</method>
 		<method name="get_is_setup" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns a boolean that indicates whether the modification stack is setup and can execute.
 			</description>
 		</method>
 		<method name="get_modification" qualifiers="const">
-			<return type="SkeletonModification2D">
-			</return>
-			<argument index="0" name="mod_idx" type="int">
-			</argument>
+			<return type="SkeletonModification2D" />
+			<argument index="0" name="mod_idx" type="int" />
 			<description>
 				Returns the [SkeletonModification2D] at the passed-in index, [code]mod_idx[/code].
 			</description>
 		</method>
 		<method name="get_skeleton" qualifiers="const">
-			<return type="Skeleton2D">
-			</return>
+			<return type="Skeleton2D" />
 			<description>
 				Returns the [Skeleton2D] node that the SkeletonModificationStack2D is bound to.
 			</description>
 		</method>
 		<method name="set_modification">
-			<return type="void">
-			</return>
-			<argument index="0" name="mod_idx" type="int">
-			</argument>
-			<argument index="1" name="modification" type="SkeletonModification2D">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="mod_idx" type="int" />
+			<argument index="1" name="modification" type="SkeletonModification2D" />
 			<description>
 				Sets the modification at [code]mod_idx[/code] to the passed-in modification, [code]modification[/code].
 			</description>
 		</method>
 		<method name="setup">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Sets up the modification stack so it can execute. This function should be called by [Skeleton2D] and shouldn't be manually called unless you know what you are doing.
 			</description>

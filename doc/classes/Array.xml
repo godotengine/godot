@@ -46,116 +46,91 @@
 	</tutorials>
 	<methods>
 		<method name="Array" qualifiers="constructor">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Constructs an empty [Array].
 			</description>
 		</method>
 		<method name="Array" qualifiers="constructor">
-			<return type="Array">
-			</return>
-			<argument index="0" name="from" type="Array">
-			</argument>
+			<return type="Array" />
+			<argument index="0" name="from" type="Array" />
 			<description>
 				Constructs an [Array] as a copy of the given [Array].
 			</description>
 		</method>
 		<method name="Array" qualifiers="constructor">
-			<return type="Array">
-			</return>
-			<argument index="0" name="from" type="PackedByteArray">
-			</argument>
+			<return type="Array" />
+			<argument index="0" name="from" type="PackedByteArray" />
 			<description>
 				Constructs an array from a [PackedByteArray].
 			</description>
 		</method>
 		<method name="Array" qualifiers="constructor">
-			<return type="Array">
-			</return>
-			<argument index="0" name="from" type="PackedColorArray">
-			</argument>
+			<return type="Array" />
+			<argument index="0" name="from" type="PackedColorArray" />
 			<description>
 				Constructs an array from a [PackedColorArray].
 			</description>
 		</method>
 		<method name="Array" qualifiers="constructor">
-			<return type="Array">
-			</return>
-			<argument index="0" name="from" type="PackedFloat32Array">
-			</argument>
+			<return type="Array" />
+			<argument index="0" name="from" type="PackedFloat32Array" />
 			<description>
 				Constructs an array from a [PackedFloat32Array].
 			</description>
 		</method>
 		<method name="Array" qualifiers="constructor">
-			<return type="Array">
-			</return>
-			<argument index="0" name="from" type="PackedFloat64Array">
-			</argument>
+			<return type="Array" />
+			<argument index="0" name="from" type="PackedFloat64Array" />
 			<description>
 				Constructs an array from a [PackedFloat64Array].
 			</description>
 		</method>
 		<method name="Array" qualifiers="constructor">
-			<return type="Array">
-			</return>
-			<argument index="0" name="from" type="PackedInt32Array">
-			</argument>
+			<return type="Array" />
+			<argument index="0" name="from" type="PackedInt32Array" />
 			<description>
 				Constructs an array from a [PackedInt32Array].
 			</description>
 		</method>
 		<method name="Array" qualifiers="constructor">
-			<return type="Array">
-			</return>
-			<argument index="0" name="from" type="PackedInt64Array">
-			</argument>
+			<return type="Array" />
+			<argument index="0" name="from" type="PackedInt64Array" />
 			<description>
 				Constructs an array from a [PackedInt64Array].
 			</description>
 		</method>
 		<method name="Array" qualifiers="constructor">
-			<return type="Array">
-			</return>
-			<argument index="0" name="from" type="PackedStringArray">
-			</argument>
+			<return type="Array" />
+			<argument index="0" name="from" type="PackedStringArray" />
 			<description>
 				Constructs an array from a [PackedStringArray].
 			</description>
 		</method>
 		<method name="Array" qualifiers="constructor">
-			<return type="Array">
-			</return>
-			<argument index="0" name="from" type="PackedVector2Array">
-			</argument>
+			<return type="Array" />
+			<argument index="0" name="from" type="PackedVector2Array" />
 			<description>
 				Constructs an array from a [PackedVector2Array].
 			</description>
 		</method>
 		<method name="Array" qualifiers="constructor">
-			<return type="Array">
-			</return>
-			<argument index="0" name="from" type="PackedVector3Array">
-			</argument>
+			<return type="Array" />
+			<argument index="0" name="from" type="PackedVector3Array" />
 			<description>
 				Constructs an array from a [PackedVector3Array].
 			</description>
 		</method>
 		<method name="append">
-			<return type="void">
-			</return>
-			<argument index="0" name="value" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="value" type="Variant" />
 			<description>
 				Appends an element at the end of the array (alias of [method push_back]).
 			</description>
 		</method>
 		<method name="append_array">
-			<return type="void">
-			</return>
-			<argument index="0" name="array" type="Array">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="array" type="Array" />
 			<description>
 				Appends another array at the end of this array.
 				[codeblock]
@@ -167,70 +142,55 @@
 			</description>
 		</method>
 		<method name="back" qualifiers="const">
-			<return type="Variant">
-			</return>
+			<return type="Variant" />
 			<description>
 				Returns the last element of the array. Prints an error and returns [code]null[/code] if the array is empty.
 				[b]Note:[/b] Calling this function is not the same as writing [code]array[-1][/code]. If the array is empty, accessing by index will pause project execution when running from the editor.
 			</description>
 		</method>
 		<method name="bsearch">
-			<return type="int">
-			</return>
-			<argument index="0" name="value" type="Variant">
-			</argument>
-			<argument index="1" name="before" type="bool" default="true">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="value" type="Variant" />
+			<argument index="1" name="before" type="bool" default="true" />
 			<description>
 				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search. Optionally, a [code]before[/code] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array.
 				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
 			</description>
 		</method>
 		<method name="bsearch_custom">
-			<return type="int">
-			</return>
-			<argument index="0" name="value" type="Variant">
-			</argument>
-			<argument index="1" name="func" type="Callable">
-			</argument>
-			<argument index="2" name="before" type="bool" default="true">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="value" type="Variant" />
+			<argument index="1" name="func" type="Callable" />
+			<argument index="2" name="before" type="bool" default="true" />
 			<description>
 				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search and a custom comparison method. Optionally, a [code]before[/code] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array. The custom method receives two arguments (an element from the array and the value searched for) and must return [code]true[/code] if the first argument is less than the second, and return [code]false[/code] otherwise.
 				[b]Note:[/b] Calling [method bsearch_custom] on an unsorted array results in unexpected behavior.
 			</description>
 		</method>
 		<method name="clear">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clears the array. This is equivalent to using [method resize] with a size of [code]0[/code].
 			</description>
 		</method>
 		<method name="count" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="value" type="Variant">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="value" type="Variant" />
 			<description>
 				Returns the number of times an element is in the array.
 			</description>
 		</method>
 		<method name="duplicate" qualifiers="const">
-			<return type="Array">
-			</return>
-			<argument index="0" name="deep" type="bool" default="false">
-			</argument>
+			<return type="Array" />
+			<argument index="0" name="deep" type="bool" default="false" />
 			<description>
 				Returns a copy of the array.
 				If [code]deep[/code] is [code]true[/code], a deep copy is performed: all nested arrays and dictionaries are duplicated and will not be shared with the original array. If [code]false[/code], a shallow copy is made and references to the original nested arrays and dictionaries are kept, so that modifying a sub-array or dictionary in the copy will also impact those referenced in the source array.
 			</description>
 		</method>
 		<method name="erase">
-			<return type="void">
-			</return>
-			<argument index="0" name="value" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="value" type="Variant" />
 			<description>
 				Removes the first occurrence of a value from the array. To remove an element by index, use [method remove] instead.
 				[b]Note:[/b] This method acts in-place and doesn't return a value.
@@ -238,10 +198,8 @@
 			</description>
 		</method>
 		<method name="fill">
-			<return type="void">
-			</return>
-			<argument index="0" name="value" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="value" type="Variant" />
 			<description>
 				Assigns the given value to all elements in the array. This can typically be used together with [method resize] to create an array with a given size and initialized elements:
 				[codeblocks]
@@ -259,10 +217,8 @@
 			</description>
 		</method>
 		<method name="filter" qualifiers="const">
-			<return type="Array">
-			</return>
-			<argument index="0" name="method" type="Callable">
-			</argument>
+			<return type="Array" />
+			<argument index="0" name="method" type="Callable" />
 			<description>
 				Calls the provided [Callable] on each element in the array and returns a new array with the elements for which the method returned [code]true[/code].
 				The callable's method should take one [Variant] parameter (the current array element) and return a boolean value.
@@ -277,38 +233,30 @@
 			</description>
 		</method>
 		<method name="find" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="what" type="Variant">
-			</argument>
-			<argument index="1" name="from" type="int" default="0">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="what" type="Variant" />
+			<argument index="1" name="from" type="int" default="0" />
 			<description>
 				Searches the array for a value and returns its index or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
 			</description>
 		</method>
 		<method name="find_last" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="value" type="Variant">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="value" type="Variant" />
 			<description>
 				Searches the array in reverse order for a value and returns its index or [code]-1[/code] if not found.
 			</description>
 		</method>
 		<method name="front" qualifiers="const">
-			<return type="Variant">
-			</return>
+			<return type="Variant" />
 			<description>
 				Returns the first element of the array. Prints an error and returns [code]null[/code] if the array is empty.
 				[b]Note:[/b] Calling this function is not the same as writing [code]array[0][/code]. If the array is empty, accessing by index will pause project execution when running from the editor.
 			</description>
 		</method>
 		<method name="has" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="value" type="Variant">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="value" type="Variant" />
 			<description>
 				Returns [code]true[/code] if the array contains the given value.
 				[codeblocks]
@@ -347,20 +295,16 @@
 			</description>
 		</method>
 		<method name="hash" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns a hashed integer value representing the array and its contents.
 				[b]Note:[/b] Arrays with equal contents can still produce different hashes. Only the exact same arrays will produce the same hashed integer value.
 			</description>
 		</method>
 		<method name="insert">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="int">
-			</argument>
-			<argument index="1" name="value" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="position" type="int" />
+			<argument index="1" name="value" type="Variant" />
 			<description>
 				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]pos == size()[/code]).
 				[b]Note:[/b] This method acts in-place and doesn't return a value.
@@ -368,17 +312,14 @@
 			</description>
 		</method>
 		<method name="is_empty" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the array is empty.
 			</description>
 		</method>
 		<method name="map" qualifiers="const">
-			<return type="Array">
-			</return>
-			<argument index="0" name="method" type="Callable">
-			</argument>
+			<return type="Array" />
+			<argument index="0" name="method" type="Callable" />
 			<description>
 				Calls the provided [Callable] for each element in the array and returns a new array filled with values returned by the method.
 				The callable's method should take one [Variant] parameter (the current array element) and can return any [Variant].
@@ -393,124 +334,97 @@
 			</description>
 		</method>
 		<method name="max" qualifiers="const">
-			<return type="Variant">
-			</return>
+			<return type="Variant" />
 			<description>
 				Returns the maximum value contained in the array if all elements are of comparable types. If the elements can't be compared, [code]null[/code] is returned.
 			</description>
 		</method>
 		<method name="min" qualifiers="const">
-			<return type="Variant">
-			</return>
+			<return type="Variant" />
 			<description>
 				Returns the minimum value contained in the array if all elements are of comparable types. If the elements can't be compared, [code]null[/code] is returned.
 			</description>
 		</method>
 		<method name="operator !=" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Array">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="Array" />
 			<description>
 			</description>
 		</method>
 		<method name="operator +" qualifiers="operator">
-			<return type="Array">
-			</return>
-			<argument index="0" name="right" type="Array">
-			</argument>
+			<return type="Array" />
+			<argument index="0" name="right" type="Array" />
 			<description>
 			</description>
 		</method>
 		<method name="operator &lt;" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Array">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="Array" />
 			<description>
 			</description>
 		</method>
 		<method name="operator &lt;=" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Array">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="Array" />
 			<description>
 			</description>
 		</method>
 		<method name="operator ==" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Array">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="Array" />
 			<description>
 			</description>
 		</method>
 		<method name="operator &gt;" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Array">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="Array" />
 			<description>
 			</description>
 		</method>
 		<method name="operator &gt;=" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Array">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="Array" />
 			<description>
 			</description>
 		</method>
 		<method name="operator []" qualifiers="operator">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="pop_back">
-			<return type="Variant">
-			</return>
+			<return type="Variant" />
 			<description>
 				Removes and returns the last element of the array. Returns [code]null[/code] if the array is empty, without printing an error message. See also [method pop_front].
 			</description>
 		</method>
 		<method name="pop_front">
-			<return type="Variant">
-			</return>
+			<return type="Variant" />
 			<description>
 				Removes and returns the first element of the array. Returns [code]null[/code] if the array is empty, without printing an error message. See also [method pop_back].
 				[b]Note:[/b] On large arrays, this method is much slower than [method pop_back] as it will reindex all the array's elements every time it's called. The larger the array, the slower [method pop_front] will be.
 			</description>
 		</method>
 		<method name="push_back">
-			<return type="void">
-			</return>
-			<argument index="0" name="value" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="value" type="Variant" />
 			<description>
 				Appends an element at the end of the array. See also [method push_front].
 			</description>
 		</method>
 		<method name="push_front">
-			<return type="void">
-			</return>
-			<argument index="0" name="value" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="value" type="Variant" />
 			<description>
 				Adds an element at the beginning of the array. See also [method push_back].
 				[b]Note:[/b] On large arrays, this method is much slower than [method push_back] as it will reindex all the array's elements every time it's called. The larger the array, the slower [method push_front] will be.
 			</description>
 		</method>
 		<method name="reduce" qualifiers="const">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="method" type="Callable">
-			</argument>
-			<argument index="1" name="accum" type="Variant" default="null">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="method" type="Callable" />
+			<argument index="1" name="accum" type="Variant" default="null" />
 			<description>
 				Calls the provided [Callable] for each element in array and accumulates the result in [code]accum[/code].
 				The callable's method takes two arguments: the current value of [code]accum[/code] and the current array element. If [code]accum[/code] is [code]null[/code] (default value), the iteration will start from the second element, with the first one used as initial value of [code]accum[/code].
@@ -525,10 +439,8 @@
 			</description>
 		</method>
 		<method name="remove">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="position" type="int" />
 			<description>
 				Removes an element from the array by index. If the index does not exist in the array, nothing happens. To remove an element by searching for its value, use [method erase] instead.
 				[b]Note:[/b] This method acts in-place and doesn't return a value.
@@ -536,64 +448,50 @@
 			</description>
 		</method>
 		<method name="resize">
-			<return type="int">
-			</return>
-			<argument index="0" name="size" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="size" type="int" />
 			<description>
 				Resizes the array to contain a different number of elements. If the array size is smaller, elements are cleared, if bigger, new elements are [code]null[/code].
 			</description>
 		</method>
 		<method name="reverse">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Reverses the order of the elements in the array.
 			</description>
 		</method>
 		<method name="rfind" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="what" type="Variant">
-			</argument>
-			<argument index="1" name="from" type="int" default="-1">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="what" type="Variant" />
+			<argument index="1" name="from" type="int" default="-1" />
 			<description>
 				Searches the array in reverse order. Optionally, a start search index can be passed. If negative, the start index is considered relative to the end of the array.
 			</description>
 		</method>
 		<method name="shuffle">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Shuffles the array such that the items will have a random order. This method uses the global random number generator common to methods such as [method @GlobalScope.randi]. Call [method @GlobalScope.randomize] to ensure that a new seed will be used each time if you want non-reproducible shuffling.
 			</description>
 		</method>
 		<method name="size" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of elements in the array.
 			</description>
 		</method>
 		<method name="slice" qualifiers="const">
-			<return type="Array">
-			</return>
-			<argument index="0" name="begin" type="int">
-			</argument>
-			<argument index="1" name="end" type="int">
-			</argument>
-			<argument index="2" name="step" type="int" default="1">
-			</argument>
-			<argument index="3" name="deep" type="bool" default="false">
-			</argument>
+			<return type="Array" />
+			<argument index="0" name="begin" type="int" />
+			<argument index="1" name="end" type="int" />
+			<argument index="2" name="step" type="int" default="1" />
+			<argument index="3" name="deep" type="bool" default="false" />
 			<description>
 				Duplicates the subset described in the function and returns it in an array, deeply copying the array if [code]deep[/code] is [code]true[/code]. Lower and upper index are inclusive, with the [code]step[/code] describing the change between indices while slicing.
 			</description>
 		</method>
 		<method name="sort">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Sorts the array.
 				[b]Note:[/b] Strings are sorted in alphabetical order (as opposed to natural order). This may lead to unexpected behavior when sorting an array of strings ending with a sequence of numbers. Consider the following example:
@@ -610,10 +508,8 @@
 			</description>
 		</method>
 		<method name="sort_custom">
-			<return type="void">
-			</return>
-			<argument index="0" name="func" type="Callable">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="func" type="Callable" />
 			<description>
 				Sorts the array using a custom method. The custom method receives two arguments (a pair of elements from the array) and must return either [code]true[/code] or [code]false[/code]. For two elements [code]a[/code] and [code]b[/code], if the given method returns [code]true[/code], element [code]b[/code] will be after element [code]a[/code] in the array.
 				[b]Note:[/b] you cannot randomize the return value as the heapsort algorithm expects a deterministic result. Doing so will result in unexpected behavior.

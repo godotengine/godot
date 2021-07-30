@@ -11,8 +11,7 @@
 	</tutorials>
 	<methods>
 		<method name="get_debug_mesh">
-			<return type="ArrayMesh">
-			</return>
+			<return type="ArrayMesh" />
 			<description>
 				Returns the [ArrayMesh] used to draw the debug collision for this [Shape3D].
 			</description>

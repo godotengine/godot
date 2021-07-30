@@ -15,90 +15,69 @@
 	</tutorials>
 	<methods>
 		<method name="get_aabb" qualifiers="const">
-			<return type="AABB">
-			</return>
+			<return type="AABB" />
 			<description>
 				Returns the visibility axis-aligned bounding box in local space. See also [method VisualInstance3D.get_transformed_aabb].
 			</description>
 		</method>
 		<method name="get_instance_color" qualifiers="const">
-			<return type="Color">
-			</return>
-			<argument index="0" name="instance" type="int">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="instance" type="int" />
 			<description>
 				Gets a specific instance's color.
 			</description>
 		</method>
 		<method name="get_instance_custom_data" qualifiers="const">
-			<return type="Color">
-			</return>
-			<argument index="0" name="instance" type="int">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="instance" type="int" />
 			<description>
 				Returns the custom data that has been set for a specific instance.
 			</description>
 		</method>
 		<method name="get_instance_transform" qualifiers="const">
-			<return type="Transform3D">
-			</return>
-			<argument index="0" name="instance" type="int">
-			</argument>
+			<return type="Transform3D" />
+			<argument index="0" name="instance" type="int" />
 			<description>
 				Returns the [Transform3D] of a specific instance.
 			</description>
 		</method>
 		<method name="get_instance_transform_2d" qualifiers="const">
-			<return type="Transform2D">
-			</return>
-			<argument index="0" name="instance" type="int">
-			</argument>
+			<return type="Transform2D" />
+			<argument index="0" name="instance" type="int" />
 			<description>
 				Returns the [Transform2D] of a specific instance.
 			</description>
 		</method>
 		<method name="set_instance_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="instance" type="int">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="instance" type="int" />
+			<argument index="1" name="color" type="Color" />
 			<description>
 				Sets the color of a specific instance by [i]multiplying[/i] the mesh's existing vertex colors.
 				For the color to take effect, ensure that [member use_colors] is [code]true[/code] on the [MultiMesh] and [member BaseMaterial3D.vertex_color_use_as_albedo] is [code]true[/code] on the material.
 			</description>
 		</method>
 		<method name="set_instance_custom_data">
-			<return type="void">
-			</return>
-			<argument index="0" name="instance" type="int">
-			</argument>
-			<argument index="1" name="custom_data" type="Color">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="instance" type="int" />
+			<argument index="1" name="custom_data" type="Color" />
 			<description>
 				Sets custom data for a specific instance. Although [Color] is used, it is just a container for 4 floating point numbers.
 				For the custom data to be used, ensure that [member use_custom_data] is [code]true[/code].
 			</description>
 		</method>
 		<method name="set_instance_transform">
-			<return type="void">
-			</return>
-			<argument index="0" name="instance" type="int">
-			</argument>
-			<argument index="1" name="transform" type="Transform3D">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="instance" type="int" />
+			<argument index="1" name="transform" type="Transform3D" />
 			<description>
 				Sets the [Transform3D] for a specific instance.
 			</description>
 		</method>
 		<method name="set_instance_transform_2d">
-			<return type="void">
-			</return>
-			<argument index="0" name="instance" type="int">
-			</argument>
-			<argument index="1" name="transform" type="Transform2D">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="instance" type="int" />
+			<argument index="1" name="transform" type="Transform2D" />
 			<description>
 				Sets the [Transform2D] for a specific instance.
 			</description>

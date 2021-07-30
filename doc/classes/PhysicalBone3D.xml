@@ -8,38 +8,30 @@
 	</tutorials>
 	<methods>
 		<method name="apply_central_impulse">
-			<return type="void">
-			</return>
-			<argument index="0" name="impulse" type="Vector3">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="impulse" type="Vector3" />
 			<description>
 			</description>
 		</method>
 		<method name="apply_impulse">
-			<return type="void">
-			</return>
-			<argument index="0" name="impulse" type="Vector3">
-			</argument>
-			<argument index="1" name="position" type="Vector3" default="Vector3(0, 0, 0)">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="impulse" type="Vector3" />
+			<argument index="1" name="position" type="Vector3" default="Vector3(0, 0, 0)" />
 			<description>
 			</description>
 		</method>
 		<method name="get_bone_id" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_simulate_physics">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="is_simulating_physics">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 			</description>
 		</method>

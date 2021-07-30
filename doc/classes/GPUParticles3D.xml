@@ -13,51 +13,38 @@
 	</tutorials>
 	<methods>
 		<method name="capture_aabb" qualifiers="const">
-			<return type="AABB">
-			</return>
+			<return type="AABB" />
 			<description>
 				Returns the axis-aligned bounding box that contains all the particles that are active in the current frame.
 			</description>
 		</method>
 		<method name="emit_particle">
-			<return type="void">
-			</return>
-			<argument index="0" name="xform" type="Transform3D">
-			</argument>
-			<argument index="1" name="velocity" type="Vector3">
-			</argument>
-			<argument index="2" name="color" type="Color">
-			</argument>
-			<argument index="3" name="custom" type="Color">
-			</argument>
-			<argument index="4" name="flags" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="xform" type="Transform3D" />
+			<argument index="1" name="velocity" type="Vector3" />
+			<argument index="2" name="color" type="Color" />
+			<argument index="3" name="custom" type="Color" />
+			<argument index="4" name="flags" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_draw_pass_mesh" qualifiers="const">
-			<return type="Mesh">
-			</return>
-			<argument index="0" name="pass" type="int">
-			</argument>
+			<return type="Mesh" />
+			<argument index="0" name="pass" type="int" />
 			<description>
 				Returns the [Mesh] that is drawn at index [code]pass[/code].
 			</description>
 		</method>
 		<method name="restart">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Restarts the particle emission, clearing existing particles.
 			</description>
 		</method>
 		<method name="set_draw_pass_mesh">
-			<return type="void">
-			</return>
-			<argument index="0" name="pass" type="int">
-			</argument>
-			<argument index="1" name="mesh" type="Mesh">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="pass" type="int" />
+			<argument index="1" name="mesh" type="Mesh" />
 			<description>
 				Sets the [Mesh] that is drawn at index [code]pass[/code].
 			</description>

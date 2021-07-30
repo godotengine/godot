@@ -15,225 +15,173 @@
 	</tutorials>
 	<methods>
 		<method name="Vector3i" qualifiers="constructor">
-			<return type="Vector3i">
-			</return>
+			<return type="Vector3i" />
 			<description>
 				Constructs a default-initialized [Vector3i] with all components set to [code]0[/code].
 			</description>
 		</method>
 		<method name="Vector3i" qualifiers="constructor">
-			<return type="Vector3i">
-			</return>
-			<argument index="0" name="from" type="Vector3i">
-			</argument>
+			<return type="Vector3i" />
+			<argument index="0" name="from" type="Vector3i" />
 			<description>
 				Constructs a [Vector3i] as a copy of the given [Vector3i].
 			</description>
 		</method>
 		<method name="Vector3i" qualifiers="constructor">
-			<return type="Vector3i">
-			</return>
-			<argument index="0" name="from" type="Vector3">
-			</argument>
+			<return type="Vector3i" />
+			<argument index="0" name="from" type="Vector3" />
 			<description>
 				Constructs a new [Vector3i] from [Vector3]. The floating point coordinates will be truncated.
 			</description>
 		</method>
 		<method name="Vector3i" qualifiers="constructor">
-			<return type="Vector3i">
-			</return>
-			<argument index="0" name="x" type="int">
-			</argument>
-			<argument index="1" name="y" type="int">
-			</argument>
-			<argument index="2" name="z" type="int">
-			</argument>
+			<return type="Vector3i" />
+			<argument index="0" name="x" type="int" />
+			<argument index="1" name="y" type="int" />
+			<argument index="2" name="z" type="int" />
 			<description>
 				Returns a [Vector3i] with the given components.
 			</description>
 		</method>
 		<method name="abs" qualifiers="const">
-			<return type="Vector3i">
-			</return>
+			<return type="Vector3i" />
 			<description>
 			</description>
 		</method>
 		<method name="clamp" qualifiers="const">
-			<return type="Vector3i">
-			</return>
-			<argument index="0" name="min" type="Vector3i">
-			</argument>
-			<argument index="1" name="max" type="Vector3i">
-			</argument>
+			<return type="Vector3i" />
+			<argument index="0" name="min" type="Vector3i" />
+			<argument index="1" name="max" type="Vector3i" />
 			<description>
 				Returns a new vector with all components clamped between the components of [code]min[/code] and [code]max[/code], by running [method @GlobalScope.clamp] on each component.
 			</description>
 		</method>
 		<method name="max_axis" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the axis of the vector's largest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_X].
 			</description>
 		</method>
 		<method name="min_axis" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the axis of the vector's smallest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_Z].
 			</description>
 		</method>
 		<method name="operator !=" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Vector3i">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="Vector3i" />
 			<description>
 			</description>
 		</method>
 		<method name="operator %" qualifiers="operator">
-			<return type="Vector3i">
-			</return>
-			<argument index="0" name="right" type="Vector3i">
-			</argument>
+			<return type="Vector3i" />
+			<argument index="0" name="right" type="Vector3i" />
 			<description>
 			</description>
 		</method>
 		<method name="operator %" qualifiers="operator">
-			<return type="Vector3i">
-			</return>
-			<argument index="0" name="right" type="int">
-			</argument>
+			<return type="Vector3i" />
+			<argument index="0" name="right" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
-			<return type="Vector3i">
-			</return>
-			<argument index="0" name="right" type="Vector3i">
-			</argument>
+			<return type="Vector3i" />
+			<argument index="0" name="right" type="Vector3i" />
 			<description>
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
-			<return type="Vector3i">
-			</return>
-			<argument index="0" name="right" type="float">
-			</argument>
+			<return type="Vector3i" />
+			<argument index="0" name="right" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
-			<return type="Vector3i">
-			</return>
-			<argument index="0" name="right" type="int">
-			</argument>
+			<return type="Vector3i" />
+			<argument index="0" name="right" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="operator +" qualifiers="operator">
-			<return type="Vector3i">
-			</return>
-			<argument index="0" name="right" type="Vector3i">
-			</argument>
+			<return type="Vector3i" />
+			<argument index="0" name="right" type="Vector3i" />
 			<description>
 			</description>
 		</method>
 		<method name="operator -" qualifiers="operator">
-			<return type="Vector3i">
-			</return>
-			<argument index="0" name="right" type="Vector3i">
-			</argument>
+			<return type="Vector3i" />
+			<argument index="0" name="right" type="Vector3i" />
 			<description>
 			</description>
 		</method>
 		<method name="operator /" qualifiers="operator">
-			<return type="Vector3i">
-			</return>
-			<argument index="0" name="right" type="Vector3i">
-			</argument>
+			<return type="Vector3i" />
+			<argument index="0" name="right" type="Vector3i" />
 			<description>
 			</description>
 		</method>
 		<method name="operator /" qualifiers="operator">
-			<return type="Vector3i">
-			</return>
-			<argument index="0" name="right" type="float">
-			</argument>
+			<return type="Vector3i" />
+			<argument index="0" name="right" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="operator /" qualifiers="operator">
-			<return type="Vector3i">
-			</return>
-			<argument index="0" name="right" type="int">
-			</argument>
+			<return type="Vector3i" />
+			<argument index="0" name="right" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="operator &lt;" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Vector3i">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="Vector3i" />
 			<description>
 			</description>
 		</method>
 		<method name="operator &lt;=" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Vector3i">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="Vector3i" />
 			<description>
 			</description>
 		</method>
 		<method name="operator ==" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Vector3i">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="Vector3i" />
 			<description>
 			</description>
 		</method>
 		<method name="operator &gt;" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Vector3i">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="Vector3i" />
 			<description>
 			</description>
 		</method>
 		<method name="operator &gt;=" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Vector3i">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="Vector3i" />
 			<description>
 			</description>
 		</method>
 		<method name="operator []" qualifiers="operator">
-			<return type="int">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="index" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="operator unary+" qualifiers="operator">
-			<return type="Vector3i">
-			</return>
+			<return type="Vector3i" />
 			<description>
 			</description>
 		</method>
 		<method name="operator unary-" qualifiers="operator">
-			<return type="Vector3i">
-			</return>
+			<return type="Vector3i" />
 			<description>
 			</description>
 		</method>
 		<method name="sign" qualifiers="const">
-			<return type="Vector3i">
-			</return>
+			<return type="Vector3i" />
 			<description>
 				Returns the vector with each component set to one or negative one, depending on the signs of the components.
 			</description>

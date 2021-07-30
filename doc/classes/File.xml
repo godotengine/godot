@@ -50,285 +50,231 @@
 	</tutorials>
 	<methods>
 		<method name="close">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Closes the currently opened file and prevents subsequent read/write operations. Use [method flush] to persist the data to disk without closing the file.
 			</description>
 		</method>
 		<method name="eof_reached" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the file cursor has read past the end of the file.
 				[b]Note:[/b] This function will still return [code]false[/code] while at the end of the file and only activates when reading past it. This can be confusing but it conforms to how low-level file access works in all operating systems. There is always [method get_length] and [method get_position] to implement a custom logic.
 			</description>
 		</method>
 		<method name="file_exists" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Returns [code]true[/code] if the file exists in the given path.
 				[b]Note:[/b] Many resources types are imported (e.g. textures or sound files), and their source asset will not be included in the exported game, as only the imported version is used. See [method ResourceLoader.exists] for an alternative approach that takes resource remapping into account.
 			</description>
 		</method>
 		<method name="flush">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Writes the file's buffer to disk. Flushing is automatically performed when the file is closed. This means you don't need to call [method flush] manually before closing a file using [method close]. Still, calling [method flush] can be used to ensure the data is safe even if the project crashes instead of being closed gracefully.
 				[b]Note:[/b] Only call [method flush] when you actually need it. Otherwise, it will decrease performance due to constant disk writes.
 			</description>
 		</method>
 		<method name="get_16" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the next 16 bits from the file as an integer. See [method store_16] for details on what values can be stored and retrieved this way.
 			</description>
 		</method>
 		<method name="get_32" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the next 32 bits from the file as an integer. See [method store_32] for details on what values can be stored and retrieved this way.
 			</description>
 		</method>
 		<method name="get_64" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the next 64 bits from the file as an integer. See [method store_64] for details on what values can be stored and retrieved this way.
 			</description>
 		</method>
 		<method name="get_8" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the next 8 bits from the file as an integer. See [method store_8] for details on what values can be stored and retrieved this way.
 			</description>
 		</method>
 		<method name="get_as_text" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the whole file as a [String].
 				Text is interpreted as being UTF-8 encoded.
 			</description>
 		</method>
 		<method name="get_buffer" qualifiers="const">
-			<return type="PackedByteArray">
-			</return>
-			<argument index="0" name="length" type="int">
-			</argument>
+			<return type="PackedByteArray" />
+			<argument index="0" name="length" type="int" />
 			<description>
 				Returns next [code]length[/code] bytes of the file as a [PackedByteArray].
 			</description>
 		</method>
 		<method name="get_csv_line" qualifiers="const">
-			<return type="PackedStringArray">
-			</return>
-			<argument index="0" name="delim" type="String" default="&quot;,&quot;">
-			</argument>
+			<return type="PackedStringArray" />
+			<argument index="0" name="delim" type="String" default="&quot;,&quot;" />
 			<description>
 				Returns the next value of the file in CSV (Comma-Separated Values) format. You can pass a different delimiter [code]delim[/code] to use other than the default [code]","[/code] (comma). This delimiter must be one-character long.
 				Text is interpreted as being UTF-8 encoded.
 			</description>
 		</method>
 		<method name="get_double" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the next 64 bits from the file as a floating-point number.
 			</description>
 		</method>
 		<method name="get_error" qualifiers="const">
-			<return type="int" enum="Error">
-			</return>
+			<return type="int" enum="Error" />
 			<description>
 				Returns the last error that happened when trying to perform operations. Compare with the [code]ERR_FILE_*[/code] constants from [enum Error].
 			</description>
 		</method>
 		<method name="get_float" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the next 32 bits from the file as a floating-point number.
 			</description>
 		</method>
 		<method name="get_length" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the size of the file in bytes.
 			</description>
 		</method>
 		<method name="get_line" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the next line of the file as a [String].
 				Text is interpreted as being UTF-8 encoded.
 			</description>
 		</method>
 		<method name="get_md5" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Returns an MD5 String representing the file at the given path or an empty [String] on failure.
 			</description>
 		</method>
 		<method name="get_modified_time" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="file" type="String">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="file" type="String" />
 			<description>
 				Returns the last time the [code]file[/code] was modified in Unix timestamp format or returns a [String] "ERROR IN [code]file[/code]". This Unix timestamp can be converted to another format using the [Time] singleton.
 			</description>
 		</method>
 		<method name="get_pascal_string">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns a [String] saved in Pascal format from the file.
 				Text is interpreted as being UTF-8 encoded.
 			</description>
 		</method>
 		<method name="get_path" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the path as a [String] for the current open file.
 			</description>
 		</method>
 		<method name="get_path_absolute" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the absolute path as a [String] for the current open file.
 			</description>
 		</method>
 		<method name="get_position" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the file cursor's position.
 			</description>
 		</method>
 		<method name="get_real" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the next bits from the file as a floating-point number.
 			</description>
 		</method>
 		<method name="get_sha256" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Returns a SHA-256 [String] representing the file at the given path or an empty [String] on failure.
 			</description>
 		</method>
 		<method name="get_var" qualifiers="const">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="allow_objects" type="bool" default="false">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="allow_objects" type="bool" default="false" />
 			<description>
 				Returns the next [Variant] value from the file. If [code]allow_objects[/code] is [code]true[/code], decoding objects is allowed.
 				[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
 			</description>
 		</method>
 		<method name="is_open" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the file is currently opened.
 			</description>
 		</method>
 		<method name="open">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="flags" type="int" enum="File.ModeFlags">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="flags" type="int" enum="File.ModeFlags" />
 			<description>
 				Opens the file for writing or reading, depending on the flags.
 			</description>
 		</method>
 		<method name="open_compressed">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="mode_flags" type="int" enum="File.ModeFlags">
-			</argument>
-			<argument index="2" name="compression_mode" type="int" enum="File.CompressionMode" default="0">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="mode_flags" type="int" enum="File.ModeFlags" />
+			<argument index="2" name="compression_mode" type="int" enum="File.CompressionMode" default="0" />
 			<description>
 				Opens a compressed file for reading or writing.
 				[b]Note:[/b] [method open_compressed] can only read files that were saved by Godot, not third-party compression formats. See [url=https://github.com/godotengine/godot/issues/28999]GitHub issue #28999[/url] for a workaround.
 			</description>
 		</method>
 		<method name="open_encrypted">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="mode_flags" type="int" enum="File.ModeFlags">
-			</argument>
-			<argument index="2" name="key" type="PackedByteArray">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="mode_flags" type="int" enum="File.ModeFlags" />
+			<argument index="2" name="key" type="PackedByteArray" />
 			<description>
 				Opens an encrypted file in write or read mode. You need to pass a binary key to encrypt/decrypt it.
 				[b]Note:[/b] The provided key must be 32 bytes long.
 			</description>
 		</method>
 		<method name="open_encrypted_with_pass">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="mode_flags" type="int" enum="File.ModeFlags">
-			</argument>
-			<argument index="2" name="pass" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="mode_flags" type="int" enum="File.ModeFlags" />
+			<argument index="2" name="pass" type="String" />
 			<description>
 				Opens an encrypted file in write or read mode. You need to pass a password to encrypt/decrypt it.
 			</description>
 		</method>
 		<method name="seek">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="position" type="int" />
 			<description>
 				Changes the file reading/writing cursor to the specified position (in bytes from the beginning of the file).
 			</description>
 		</method>
 		<method name="seek_end">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="position" type="int" default="0" />
 			<description>
 				Changes the file reading/writing cursor to the specified position (in bytes from the end of the file).
 				[b]Note:[/b] This is an offset, so you should use negative numbers or the cursor will be at the end of the file.
 			</description>
 		</method>
 		<method name="store_16">
-			<return type="void">
-			</return>
-			<argument index="0" name="value" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="value" type="int" />
 			<description>
 				Stores an integer as 16 bits in the file.
 				[b]Note:[/b] The [code]value[/code] should lie in the interval [code][0, 2^16 - 1][/code]. Any other value will overflow and wrap around.
@@ -370,10 +316,8 @@
 			</description>
 		</method>
 		<method name="store_32">
-			<return type="void">
-			</return>
-			<argument index="0" name="value" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="value" type="int" />
 			<description>
 				Stores an integer as 32 bits in the file.
 				[b]Note:[/b] The [code]value[/code] should lie in the interval [code][0, 2^32 - 1][/code]. Any other value will overflow and wrap around.
@@ -381,20 +325,16 @@
 			</description>
 		</method>
 		<method name="store_64">
-			<return type="void">
-			</return>
-			<argument index="0" name="value" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="value" type="int" />
 			<description>
 				Stores an integer as 64 bits in the file.
 				[b]Note:[/b] The [code]value[/code] must lie in the interval [code][-2^63, 2^63 - 1][/code] (i.e. be a valid [int] value).
 			</description>
 		</method>
 		<method name="store_8">
-			<return type="void">
-			</return>
-			<argument index="0" name="value" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="value" type="int" />
 			<description>
 				Stores an integer as 8 bits in the file.
 				[b]Note:[/b] The [code]value[/code] should lie in the interval [code][0, 255][/code]. Any other value will overflow and wrap around.
@@ -402,88 +342,68 @@
 			</description>
 		</method>
 		<method name="store_buffer">
-			<return type="void">
-			</return>
-			<argument index="0" name="buffer" type="PackedByteArray">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="buffer" type="PackedByteArray" />
 			<description>
 				Stores the given array of bytes in the file.
 			</description>
 		</method>
 		<method name="store_csv_line">
-			<return type="void">
-			</return>
-			<argument index="0" name="values" type="PackedStringArray">
-			</argument>
-			<argument index="1" name="delim" type="String" default="&quot;,&quot;">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="values" type="PackedStringArray" />
+			<argument index="1" name="delim" type="String" default="&quot;,&quot;" />
 			<description>
 				Store the given [PackedStringArray] in the file as a line formatted in the CSV (Comma-Separated Values) format. You can pass a different delimiter [code]delim[/code] to use other than the default [code]","[/code] (comma). This delimiter must be one-character long.
 				Text will be encoded as UTF-8.
 			</description>
 		</method>
 		<method name="store_double">
-			<return type="void">
-			</return>
-			<argument index="0" name="value" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="value" type="float" />
 			<description>
 				Stores a floating-point number as 64 bits in the file.
 			</description>
 		</method>
 		<method name="store_float">
-			<return type="void">
-			</return>
-			<argument index="0" name="value" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="value" type="float" />
 			<description>
 				Stores a floating-point number as 32 bits in the file.
 			</description>
 		</method>
 		<method name="store_line">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="line" type="String" />
 			<description>
 				Appends [code]line[/code] to the file followed by a line return character ([code]\n[/code]), encoding the text as UTF-8.
 			</description>
 		</method>
 		<method name="store_pascal_string">
-			<return type="void">
-			</return>
-			<argument index="0" name="string" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="string" type="String" />
 			<description>
 				Stores the given [String] as a line in the file in Pascal format (i.e. also store the length of the string).
 				Text will be encoded as UTF-8.
 			</description>
 		</method>
 		<method name="store_real">
-			<return type="void">
-			</return>
-			<argument index="0" name="value" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="value" type="float" />
 			<description>
 				Stores a floating-point number in the file.
 			</description>
 		</method>
 		<method name="store_string">
-			<return type="void">
-			</return>
-			<argument index="0" name="string" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="string" type="String" />
 			<description>
 				Appends [code]string[/code] to the file without a line return, encoding the text as UTF-8.
 			</description>
 		</method>
 		<method name="store_var">
-			<return type="void">
-			</return>
-			<argument index="0" name="value" type="Variant">
-			</argument>
-			<argument index="1" name="full_objects" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="value" type="Variant" />
+			<argument index="1" name="full_objects" type="bool" default="false" />
 			<description>
 				Stores any Variant value in the file. If [code]full_objects[/code] is [code]true[/code], encoding objects is allowed (and can potentially include code).
 				[b]Note:[/b] Not all properties are included. Only properties that are configured with the [constant PROPERTY_USAGE_STORAGE] flag set will be serialized. You can add a new usage flag to a property by overriding the [method Object._get_property_list] method in your class. You can also check how property usage is configured by calling [method Object._get_property_list]. See [enum PropertyUsageFlags] for the possible usage flags.

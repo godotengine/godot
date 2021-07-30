@@ -32,35 +32,28 @@
 	</tutorials>
 	<methods>
 		<method name="create_from_image">
-			<return type="void">
-			</return>
-			<argument index="0" name="image" type="Image">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="image" type="Image" />
 			<description>
 				Initializes the texture by allocating and setting the data from an [Image].
 			</description>
 		</method>
 		<method name="get_format" qualifiers="const">
-			<return type="int" enum="Image.Format">
-			</return>
+			<return type="int" enum="Image.Format" />
 			<description>
 				Returns the format of the texture, one of [enum Image.Format].
 			</description>
 		</method>
 		<method name="set_size_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="size" type="Vector2" />
 			<description>
 				Resizes the texture to the specified dimensions.
 			</description>
 		</method>
 		<method name="update">
-			<return type="void">
-			</return>
-			<argument index="0" name="image" type="Image">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="image" type="Image" />
 			<description>
 				Replaces the texture's data with a new [Image].
 				[b]Note:[/b] The texture has to be initialized first with the [method create_from_image] method before it can be updated. The new image dimensions, format, and mipmaps configuration should match the existing texture's image configuration, otherwise it has to be re-created with the [method create_from_image] method.

@@ -17,59 +17,50 @@
 	</tutorials>
 	<methods>
 		<method name="get_floor_normal" qualifiers="const">
-			<return type="Vector3">
-			</return>
+			<return type="Vector3" />
 			<description>
 				Returns the surface normal of the floor at the last collision point. Only valid after calling [method move_and_slide] and when [method is_on_floor] returns [code]true[/code].
 			</description>
 		</method>
 		<method name="get_floor_velocity" qualifiers="const">
-			<return type="Vector3">
-			</return>
+			<return type="Vector3" />
 			<description>
 				Returns the linear velocity of the floor at the last collision point. Only valid after calling [method move_and_slide] and when [method is_on_floor] returns [code]true[/code].
 			</description>
 		</method>
 		<method name="get_slide_collision">
-			<return type="KinematicCollision3D">
-			</return>
-			<argument index="0" name="slide_idx" type="int">
-			</argument>
+			<return type="KinematicCollision3D" />
+			<argument index="0" name="slide_idx" type="int" />
 			<description>
 				Returns a [KinematicCollision3D], which contains information about a collision that occurred during the last call to [method move_and_slide]. Since the body can collide several times in a single call to [method move_and_slide], you must specify the index of the collision in the range 0 to ([method get_slide_count] - 1).
 			</description>
 		</method>
 		<method name="get_slide_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of times the body collided and changed direction during the last call to [method move_and_slide].
 			</description>
 		</method>
 		<method name="is_on_ceiling" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the body collided with the ceiling on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code].
 			</description>
 		</method>
 		<method name="is_on_floor" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the body collided with the floor on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code].
 			</description>
 		</method>
 		<method name="is_on_wall" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the body collided with a wall on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code].
 			</description>
 		</method>
 		<method name="move_and_slide">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Moves the body based on [member linear_velocity]. If the body collides with another, it will slide along the other body rather than stop immediately. If the other body is a [CharacterBody3D] or [RigidBody3D], it will also be affected by the motion of the other body. You can use this to make moving and rotating platforms, or to make nodes push other nodes.
 				This method should be used in [method Node._physics_process] (or in a method called by [method Node._physics_process]), as it uses the physics step's [code]delta[/code] value automatically in calculations. Otherwise, the simulation will run at an incorrect speed.

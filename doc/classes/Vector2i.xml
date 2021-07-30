@@ -15,217 +15,167 @@
 	</tutorials>
 	<methods>
 		<method name="Vector2i" qualifiers="constructor">
-			<return type="Vector2i">
-			</return>
+			<return type="Vector2i" />
 			<description>
 				Constructs a default-initialized [Vector2i] with all components set to [code]0[/code].
 			</description>
 		</method>
 		<method name="Vector2i" qualifiers="constructor">
-			<return type="Vector2i">
-			</return>
-			<argument index="0" name="from" type="Vector2i">
-			</argument>
+			<return type="Vector2i" />
+			<argument index="0" name="from" type="Vector2i" />
 			<description>
 				Constructs a [Vector2i] as a copy of the given [Vector2i].
 			</description>
 		</method>
 		<method name="Vector2i" qualifiers="constructor">
-			<return type="Vector2i">
-			</return>
-			<argument index="0" name="from" type="Vector2">
-			</argument>
+			<return type="Vector2i" />
+			<argument index="0" name="from" type="Vector2" />
 			<description>
 				Constructs a new [Vector2i] from [Vector2]. The floating point coordinates will be truncated.
 			</description>
 		</method>
 		<method name="Vector2i" qualifiers="constructor">
-			<return type="Vector2i">
-			</return>
-			<argument index="0" name="x" type="int">
-			</argument>
-			<argument index="1" name="y" type="int">
-			</argument>
+			<return type="Vector2i" />
+			<argument index="0" name="x" type="int" />
+			<argument index="1" name="y" type="int" />
 			<description>
 				Constructs a new [Vector2i] from the given [code]x[/code] and [code]y[/code].
 			</description>
 		</method>
 		<method name="abs" qualifiers="const">
-			<return type="Vector2i">
-			</return>
+			<return type="Vector2i" />
 			<description>
 				Returns a new vector with all components in absolute values (i.e. positive).
 			</description>
 		</method>
 		<method name="aspect" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the ratio of [member x] to [member y].
 			</description>
 		</method>
 		<method name="clamp" qualifiers="const">
-			<return type="Vector2i">
-			</return>
-			<argument index="0" name="min" type="Vector2i">
-			</argument>
-			<argument index="1" name="max" type="Vector2i">
-			</argument>
+			<return type="Vector2i" />
+			<argument index="0" name="min" type="Vector2i" />
+			<argument index="1" name="max" type="Vector2i" />
 			<description>
 				Returns a new vector with all components clamped between the components of [code]min[/code] and [code]max[/code], by running [method @GlobalScope.clamp] on each component.
 			</description>
 		</method>
 		<method name="operator !=" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Vector2i">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="Vector2i" />
 			<description>
 			</description>
 		</method>
 		<method name="operator %" qualifiers="operator">
-			<return type="Vector2i">
-			</return>
-			<argument index="0" name="right" type="Vector2i">
-			</argument>
+			<return type="Vector2i" />
+			<argument index="0" name="right" type="Vector2i" />
 			<description>
 			</description>
 		</method>
 		<method name="operator %" qualifiers="operator">
-			<return type="Vector2i">
-			</return>
-			<argument index="0" name="right" type="int">
-			</argument>
+			<return type="Vector2i" />
+			<argument index="0" name="right" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
-			<return type="Vector2i">
-			</return>
-			<argument index="0" name="right" type="Vector2i">
-			</argument>
+			<return type="Vector2i" />
+			<argument index="0" name="right" type="Vector2i" />
 			<description>
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
-			<return type="Vector2i">
-			</return>
-			<argument index="0" name="right" type="float">
-			</argument>
+			<return type="Vector2i" />
+			<argument index="0" name="right" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
-			<return type="Vector2i">
-			</return>
-			<argument index="0" name="right" type="int">
-			</argument>
+			<return type="Vector2i" />
+			<argument index="0" name="right" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="operator +" qualifiers="operator">
-			<return type="Vector2i">
-			</return>
-			<argument index="0" name="right" type="Vector2i">
-			</argument>
+			<return type="Vector2i" />
+			<argument index="0" name="right" type="Vector2i" />
 			<description>
 			</description>
 		</method>
 		<method name="operator -" qualifiers="operator">
-			<return type="Vector2i">
-			</return>
-			<argument index="0" name="right" type="Vector2i">
-			</argument>
+			<return type="Vector2i" />
+			<argument index="0" name="right" type="Vector2i" />
 			<description>
 			</description>
 		</method>
 		<method name="operator /" qualifiers="operator">
-			<return type="Vector2i">
-			</return>
-			<argument index="0" name="right" type="Vector2i">
-			</argument>
+			<return type="Vector2i" />
+			<argument index="0" name="right" type="Vector2i" />
 			<description>
 			</description>
 		</method>
 		<method name="operator /" qualifiers="operator">
-			<return type="Vector2i">
-			</return>
-			<argument index="0" name="right" type="float">
-			</argument>
+			<return type="Vector2i" />
+			<argument index="0" name="right" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="operator /" qualifiers="operator">
-			<return type="Vector2i">
-			</return>
-			<argument index="0" name="right" type="int">
-			</argument>
+			<return type="Vector2i" />
+			<argument index="0" name="right" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="operator &lt;" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Vector2i">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="Vector2i" />
 			<description>
 			</description>
 		</method>
 		<method name="operator &lt;=" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Vector2i">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="Vector2i" />
 			<description>
 			</description>
 		</method>
 		<method name="operator ==" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Vector2i">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="Vector2i" />
 			<description>
 			</description>
 		</method>
 		<method name="operator &gt;" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Vector2i">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="Vector2i" />
 			<description>
 			</description>
 		</method>
 		<method name="operator &gt;=" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Vector2i">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="Vector2i" />
 			<description>
 			</description>
 		</method>
 		<method name="operator []" qualifiers="operator">
-			<return type="int">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="index" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="operator unary+" qualifiers="operator">
-			<return type="Vector2i">
-			</return>
+			<return type="Vector2i" />
 			<description>
 			</description>
 		</method>
 		<method name="operator unary-" qualifiers="operator">
-			<return type="Vector2i">
-			</return>
+			<return type="Vector2i" />
 			<description>
 			</description>
 		</method>
 		<method name="sign" qualifiers="const">
-			<return type="Vector2i">
-			</return>
+			<return type="Vector2i" />
 			<description>
 				Returns the vector with each component set to one or negative one, depending on the signs of the components.
 			</description>

@@ -13,65 +13,54 @@
 	</tutorials>
 	<methods>
 		<method name="clear">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clears the current MultiplayerAPI network state (you shouldn't call this unless you know what you are doing).
 			</description>
 		</method>
 		<method name="get_network_connected_peers" qualifiers="const">
-			<return type="PackedInt32Array">
-			</return>
+			<return type="PackedInt32Array" />
 			<description>
 				Returns the peer IDs of all connected peers of this MultiplayerAPI's [member network_peer].
 			</description>
 		</method>
 		<method name="get_network_unique_id" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the unique peer ID of this MultiplayerAPI's [member network_peer].
 			</description>
 		</method>
 		<method name="get_rpc_sender_id" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the sender's peer ID for the RPC currently being executed.
 				[b]Note:[/b] If not inside an RPC this method will return 0.
 			</description>
 		</method>
 		<method name="has_network_peer" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if there is a [member network_peer] set.
 			</description>
 		</method>
 		<method name="is_network_server" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this MultiplayerAPI's [member network_peer] is in server mode (listening for connections).
 			</description>
 		</method>
 		<method name="poll">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Method used for polling the MultiplayerAPI. You only need to worry about this if you are using [member Node.custom_multiplayer] override or you set [member SceneTree.multiplayer_poll] to [code]false[/code]. By default, [SceneTree] will poll its MultiplayerAPI for you.
 				[b]Note:[/b] This method results in RPCs and RSETs being called, so they will be executed in the same context of this function (e.g. [code]_process[/code], [code]physics[/code], [Thread]).
 			</description>
 		</method>
 		<method name="send_bytes">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="bytes" type="PackedByteArray">
-			</argument>
-			<argument index="1" name="id" type="int" default="0">
-			</argument>
-			<argument index="2" name="mode" type="int" enum="MultiplayerPeer.TransferMode" default="2">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="bytes" type="PackedByteArray" />
+			<argument index="1" name="id" type="int" default="0" />
+			<argument index="2" name="mode" type="int" enum="MultiplayerPeer.TransferMode" default="2" />
 			<description>
 				Sends the given raw [code]bytes[/code] to a specific peer identified by [code]id[/code] (see [method MultiplayerPeer.set_target_peer]). Default ID is [code]0[/code], i.e. broadcast to all peers.
 			</description>
@@ -105,24 +94,20 @@
 			</description>
 		</signal>
 		<signal name="network_peer_connected">
-			<argument index="0" name="id" type="int">
-			</argument>
+			<argument index="0" name="id" type="int" />
 			<description>
 				Emitted when this MultiplayerAPI's [member network_peer] connects with a new peer. ID is the peer ID of the new peer. Clients get notified when other clients connect to the same server. Upon connecting to a server, a client also receives this signal for the server (with ID being 1).
 			</description>
 		</signal>
 		<signal name="network_peer_disconnected">
-			<argument index="0" name="id" type="int">
-			</argument>
+			<argument index="0" name="id" type="int" />
 			<description>
 				Emitted when this MultiplayerAPI's [member network_peer] disconnects from a peer. Clients get notified when other clients disconnect from the same server.
 			</description>
 		</signal>
 		<signal name="network_peer_packet">
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="packet" type="PackedByteArray">
-			</argument>
+			<argument index="0" name="id" type="int" />
+			<argument index="1" name="packet" type="PackedByteArray" />
 			<description>
 				Emitted when this MultiplayerAPI's [member network_peer] receive a [code]packet[/code] with custom data (see [method send_bytes]). ID is the peer ID of the peer that sent the packet.
 			</description>

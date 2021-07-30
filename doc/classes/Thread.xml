@@ -14,38 +14,30 @@
 	</tutorials>
 	<methods>
 		<method name="get_id" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the current [Thread]'s ID, uniquely identifying it among all threads. If the [Thread] is not running this returns an empty string.
 			</description>
 		</method>
 		<method name="is_active" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this [Thread] is currently active. An active [Thread] cannot start work on a new method but can be joined with [method wait_to_finish].
 			</description>
 		</method>
 		<method name="start">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="instance" type="Object">
-			</argument>
-			<argument index="1" name="method" type="StringName">
-			</argument>
-			<argument index="2" name="userdata" type="Variant" default="null">
-			</argument>
-			<argument index="3" name="priority" type="int" enum="Thread.Priority" default="1">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="instance" type="Object" />
+			<argument index="1" name="method" type="StringName" />
+			<argument index="2" name="userdata" type="Variant" default="null" />
+			<argument index="3" name="priority" type="int" enum="Thread.Priority" default="1" />
 			<description>
 				Starts a new [Thread] that runs [code]method[/code] on object [code]instance[/code] with [code]userdata[/code] passed as an argument. Even if no userdata is passed, [code]method[/code] must accept one argument and it will be null. The [code]priority[/code] of the [Thread] can be changed by passing a value from the [enum Priority] enum.
 				Returns [constant OK] on success, or [constant ERR_CANT_CREATE] on failure.
 			</description>
 		</method>
 		<method name="wait_to_finish">
-			<return type="Variant">
-			</return>
+			<return type="Variant" />
 			<description>
 				Joins the [Thread] and waits for it to finish. Returns what the method called returned.
 			</description>

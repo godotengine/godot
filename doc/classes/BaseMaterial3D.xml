@@ -11,61 +11,46 @@
 	</tutorials>
 	<methods>
 		<method name="get_feature" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="feature" type="int" enum="BaseMaterial3D.Feature">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="feature" type="int" enum="BaseMaterial3D.Feature" />
 			<description>
 				Returns [code]true[/code], if the specified [enum Feature] is enabled.
 			</description>
 		</method>
 		<method name="get_flag" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="flag" type="int" enum="BaseMaterial3D.Flags">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="flag" type="int" enum="BaseMaterial3D.Flags" />
 			<description>
 				Returns [code]true[/code], if the specified flag is enabled. See [enum Flags] enumerator for options.
 			</description>
 		</method>
 		<method name="get_texture" qualifiers="const">
-			<return type="Texture2D">
-			</return>
-			<argument index="0" name="param" type="int" enum="BaseMaterial3D.TextureParam">
-			</argument>
+			<return type="Texture2D" />
+			<argument index="0" name="param" type="int" enum="BaseMaterial3D.TextureParam" />
 			<description>
 				Returns the [Texture] associated with the specified [enum TextureParam].
 			</description>
 		</method>
 		<method name="set_feature">
-			<return type="void">
-			</return>
-			<argument index="0" name="feature" type="int" enum="BaseMaterial3D.Feature">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="feature" type="int" enum="BaseMaterial3D.Feature" />
+			<argument index="1" name="enable" type="bool" />
 			<description>
 				If [code]true[/code], enables the specified [enum Feature]. Many features that are available in [BaseMaterial3D]s need to be enabled before use. This way the cost for using the feature is only incurred when specified. Features can also be enabled by setting the corresponding member to [code]true[/code].
 			</description>
 		</method>
 		<method name="set_flag">
-			<return type="void">
-			</return>
-			<argument index="0" name="flag" type="int" enum="BaseMaterial3D.Flags">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="flag" type="int" enum="BaseMaterial3D.Flags" />
+			<argument index="1" name="enable" type="bool" />
 			<description>
 				If [code]true[/code], enables the specified flag. Flags are optional behavior that can be turned on and off. Only one flag can be enabled at a time with this function, the flag enumerators cannot be bit-masked together to enable or disable multiple flags at once. Flags can also be enabled by setting the corresponding member to [code]true[/code]. See [enum Flags] enumerator for options.
 			</description>
 		</method>
 		<method name="set_texture">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="BaseMaterial3D.TextureParam">
-			</argument>
-			<argument index="1" name="texture" type="Texture2D">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="param" type="int" enum="BaseMaterial3D.TextureParam" />
+			<argument index="1" name="texture" type="Texture2D" />
 			<description>
 				Sets the texture for the slot specified by [code]param[/code]. See [enum TextureParam] for available slots.
 			</description>

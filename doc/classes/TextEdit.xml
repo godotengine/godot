@@ -11,92 +11,74 @@
 	</tutorials>
 	<methods>
 		<method name="_backspace" qualifiers="virtual">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				A virtual method that is called whenever backspace is triggered.
 			</description>
 		</method>
 		<method name="add_gutter">
-			<return type="void">
-			</return>
-			<argument index="0" name="at" type="int" default="-1">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="at" type="int" default="-1" />
 			<description>
 			</description>
 		</method>
 		<method name="backspace">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Causes the [TextEdit] to perform a backspace.
 			</description>
 		</method>
 		<method name="center_viewport_to_cursor">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Centers the viewport on the line the editing cursor is at. This also resets the [member scroll_horizontal] value to [code]0[/code].
 			</description>
 		</method>
 		<method name="clear_opentype_features">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Removes all OpenType features.
 			</description>
 		</method>
 		<method name="clear_undo_history">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clears the undo history.
 			</description>
 		</method>
 		<method name="copy">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Copy's the current text selection.
 			</description>
 		</method>
 		<method name="cursor_get_column" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the column the editing cursor is at.
 			</description>
 		</method>
 		<method name="cursor_get_line" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the line the editing cursor is at.
 			</description>
 		</method>
 		<method name="cursor_set_column">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="adjust_viewport" type="bool" default="true">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="adjust_viewport" type="bool" default="true" />
 			<description>
 				Moves the cursor at the specified [code]column[/code] index.
 				If [code]adjust_viewport[/code] is set to [code]true[/code], the viewport will center at the cursor position after the move occurs.
 			</description>
 		</method>
 		<method name="cursor_set_line">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<argument index="1" name="adjust_viewport" type="bool" default="true">
-			</argument>
-			<argument index="2" name="can_be_hidden" type="bool" default="true">
-			</argument>
-			<argument index="3" name="wrap_index" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="line" type="int" />
+			<argument index="1" name="adjust_viewport" type="bool" default="true" />
+			<argument index="2" name="can_be_hidden" type="bool" default="true" />
+			<argument index="3" name="wrap_index" type="int" default="0" />
 			<description>
 				Moves the cursor at the specified [code]line[/code] index.
 				If [code]adjust_viewport[/code] is set to [code]true[/code], the viewport will center at the cursor position after the move occurs.
@@ -104,350 +86,276 @@
 			</description>
 		</method>
 		<method name="cut">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Cut's the current selection.
 			</description>
 		</method>
 		<method name="delete_selection">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 			</description>
 		</method>
 		<method name="deselect">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Deselects the current selection.
 			</description>
 		</method>
 		<method name="get_caret_draw_pos" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Gets the caret pixel draw position.
 			</description>
 		</method>
 		<method name="get_first_non_whitespace_column" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="line" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_gutter_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_gutter_name" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="gutter" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="gutter" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_gutter_type" qualifiers="const">
-			<return type="int" enum="TextEdit.GutterType">
-			</return>
-			<argument index="0" name="gutter" type="int">
-			</argument>
+			<return type="int" enum="TextEdit.GutterType" />
+			<argument index="0" name="gutter" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_gutter_width" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="gutter" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="gutter" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_indent_level" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="line" type="int" />
 			<description>
 				Returns the indent level of a specific line.
 			</description>
 		</method>
 		<method name="get_line" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="line" type="int" />
 			<description>
 				Returns the text of a specific line.
 			</description>
 		</method>
 		<method name="get_line_background_color">
-			<return type="Color">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="line" type="int" />
 			<description>
 				Returns the current background color of the line. [code]Color(0, 0, 0, 0)[/code] is returned if no color is set.
 			</description>
 		</method>
 		<method name="get_line_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the amount of total lines in the text.
 			</description>
 		</method>
 		<method name="get_line_gutter_icon" qualifiers="const">
-			<return type="Texture2D">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<argument index="1" name="gutter" type="int">
-			</argument>
+			<return type="Texture2D" />
+			<argument index="0" name="line" type="int" />
+			<argument index="1" name="gutter" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_line_gutter_item_color">
-			<return type="Color">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<argument index="1" name="gutter" type="int">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="line" type="int" />
+			<argument index="1" name="gutter" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_line_gutter_metadata" qualifiers="const">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<argument index="1" name="gutter" type="int">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="line" type="int" />
+			<argument index="1" name="gutter" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_line_gutter_text" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<argument index="1" name="gutter" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="line" type="int" />
+			<argument index="1" name="gutter" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_menu" qualifiers="const">
-			<return type="PopupMenu">
-			</return>
+			<return type="PopupMenu" />
 			<description>
 				Returns the [PopupMenu] of this [TextEdit]. By default, this menu is displayed when right-clicking on the [TextEdit].
 			</description>
 		</method>
 		<method name="get_opentype_feature" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="tag" type="String">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="tag" type="String" />
 			<description>
 				Returns OpenType feature [code]tag[/code].
 			</description>
 		</method>
 		<method name="get_selection_column" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_selection_from_column" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the selection begin column.
 			</description>
 		</method>
 		<method name="get_selection_from_line" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the selection begin line.
 			</description>
 		</method>
 		<method name="get_selection_line" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_selection_mode" qualifiers="const">
-			<return type="int" enum="TextEdit.SelectionMode">
-			</return>
+			<return type="int" enum="TextEdit.SelectionMode" />
 			<description>
 			</description>
 		</method>
 		<method name="get_selection_text" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the text inside the selection.
 			</description>
 		</method>
 		<method name="get_selection_to_column" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the selection end column.
 			</description>
 		</method>
 		<method name="get_selection_to_line" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the selection end line.
 			</description>
 		</method>
 		<method name="get_tab_size" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the [TextEdit]'s' tab size.
 			</description>
 		</method>
 		<method name="get_visible_line_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of visible lines, including wrapped text.
 			</description>
 		</method>
 		<method name="get_word_under_cursor" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns a [String] text with the word under the caret (text cursor) location.
 			</description>
 		</method>
 		<method name="insert_text_at_cursor">
-			<return type="void">
-			</return>
-			<argument index="0" name="text" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="text" type="String" />
 			<description>
 				Insert the specified text at the cursor position.
 			</description>
 		</method>
 		<method name="is_caret_visible" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the caret is visible on the screen.
 			</description>
 		</method>
 		<method name="is_gutter_clickable" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="gutter" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="gutter" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="is_gutter_drawn" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="gutter" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="gutter" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="is_gutter_overwritable" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="gutter" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="gutter" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="is_line_gutter_clickable" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<argument index="1" name="gutter" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="line" type="int" />
+			<argument index="1" name="gutter" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="is_menu_visible" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns whether the menu is visible. Use this instead of [code]get_menu().visible[/code] to improve performance (so the creation of the menu is avoided).
 			</description>
 		</method>
 		<method name="is_selection_active" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the selection is active.
 			</description>
 		</method>
 		<method name="menu_option">
-			<return type="void">
-			</return>
-			<argument index="0" name="option" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="option" type="int" />
 			<description>
 				Triggers a right-click menu action by the specified index. See [enum MenuItems] for a list of available indexes.
 			</description>
 		</method>
 		<method name="merge_gutters">
-			<return type="void">
-			</return>
-			<argument index="0" name="from_line" type="int">
-			</argument>
-			<argument index="1" name="to_line" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="from_line" type="int" />
+			<argument index="1" name="to_line" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="paste">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Paste the current selection.
 			</description>
 		</method>
 		<method name="redo">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Perform redo operation.
 			</description>
 		</method>
 		<method name="remove_gutter">
-			<return type="void">
-			</return>
-			<argument index="0" name="gutter" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="gutter" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="search" qualifiers="const">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="key" type="String">
-			</argument>
-			<argument index="1" name="flags" type="int">
-			</argument>
-			<argument index="2" name="from_line" type="int">
-			</argument>
-			<argument index="3" name="from_column" type="int">
-			</argument>
+			<return type="Dictionary" />
+			<argument index="0" name="key" type="String" />
+			<argument index="1" name="flags" type="int" />
+			<argument index="2" name="from_line" type="int" />
+			<argument index="3" name="from_column" type="int" />
 			<description>
 				Perform a search inside the text. Search flags can be specified in the [enum SearchFlags] enum.
 				Returns an empty [code]Dictionary[/code] if no result was found. Otherwise, returns a [code]Dictionary[/code] containing [code]line[/code] and [code]column[/code] entries, e.g:
@@ -472,218 +380,154 @@
 			</description>
 		</method>
 		<method name="select">
-			<return type="void">
-			</return>
-			<argument index="0" name="from_line" type="int">
-			</argument>
-			<argument index="1" name="from_column" type="int">
-			</argument>
-			<argument index="2" name="to_line" type="int">
-			</argument>
-			<argument index="3" name="to_column" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="from_line" type="int" />
+			<argument index="1" name="from_column" type="int" />
+			<argument index="2" name="to_line" type="int" />
+			<argument index="3" name="to_column" type="int" />
 			<description>
 				Perform selection, from line/column to line/column.
 				If [member selecting_enabled] is [code]false[/code], no selection will occur.
 			</description>
 		</method>
 		<method name="select_all">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Select all the text.
 				If [member selecting_enabled] is [code]false[/code], no selection will occur.
 			</description>
 		</method>
 		<method name="set_gutter_clickable">
-			<return type="void">
-			</return>
-			<argument index="0" name="gutter" type="int">
-			</argument>
-			<argument index="1" name="clickable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="gutter" type="int" />
+			<argument index="1" name="clickable" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="set_gutter_custom_draw">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="object" type="Object">
-			</argument>
-			<argument index="2" name="callback" type="StringName">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="object" type="Object" />
+			<argument index="2" name="callback" type="StringName" />
 			<description>
 			</description>
 		</method>
 		<method name="set_gutter_draw">
-			<return type="void">
-			</return>
-			<argument index="0" name="gutter" type="int">
-			</argument>
-			<argument index="1" name="draw" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="gutter" type="int" />
+			<argument index="1" name="draw" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="set_gutter_name">
-			<return type="void">
-			</return>
-			<argument index="0" name="gutter" type="int">
-			</argument>
-			<argument index="1" name="name" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="gutter" type="int" />
+			<argument index="1" name="name" type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="set_gutter_overwritable">
-			<return type="void">
-			</return>
-			<argument index="0" name="gutter" type="int">
-			</argument>
-			<argument index="1" name="overwritable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="gutter" type="int" />
+			<argument index="1" name="overwritable" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="set_gutter_type">
-			<return type="void">
-			</return>
-			<argument index="0" name="gutter" type="int">
-			</argument>
-			<argument index="1" name="type" type="int" enum="TextEdit.GutterType">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="gutter" type="int" />
+			<argument index="1" name="type" type="int" enum="TextEdit.GutterType" />
 			<description>
 			</description>
 		</method>
 		<method name="set_gutter_width">
-			<return type="void">
-			</return>
-			<argument index="0" name="gutter" type="int">
-			</argument>
-			<argument index="1" name="width" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="gutter" type="int" />
+			<argument index="1" name="width" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="set_line">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<argument index="1" name="new_text" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="line" type="int" />
+			<argument index="1" name="new_text" type="String" />
 			<description>
 				Sets the text for a specific line.
 			</description>
 		</method>
 		<method name="set_line_background_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="line" type="int" />
+			<argument index="1" name="color" type="Color" />
 			<description>
 				Sets the current background color of the line. Set to [code]Color(0, 0, 0, 0)[/code] for no color.
 			</description>
 		</method>
 		<method name="set_line_gutter_clickable">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<argument index="1" name="gutter" type="int">
-			</argument>
-			<argument index="2" name="clickable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="line" type="int" />
+			<argument index="1" name="gutter" type="int" />
+			<argument index="2" name="clickable" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="set_line_gutter_icon">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<argument index="1" name="gutter" type="int">
-			</argument>
-			<argument index="2" name="icon" type="Texture2D">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="line" type="int" />
+			<argument index="1" name="gutter" type="int" />
+			<argument index="2" name="icon" type="Texture2D" />
 			<description>
 			</description>
 		</method>
 		<method name="set_line_gutter_item_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<argument index="1" name="gutter" type="int">
-			</argument>
-			<argument index="2" name="color" type="Color">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="line" type="int" />
+			<argument index="1" name="gutter" type="int" />
+			<argument index="2" name="color" type="Color" />
 			<description>
 			</description>
 		</method>
 		<method name="set_line_gutter_metadata">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<argument index="1" name="gutter" type="int">
-			</argument>
-			<argument index="2" name="metadata" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="line" type="int" />
+			<argument index="1" name="gutter" type="int" />
+			<argument index="2" name="metadata" type="Variant" />
 			<description>
 			</description>
 		</method>
 		<method name="set_line_gutter_text">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<argument index="1" name="gutter" type="int">
-			</argument>
-			<argument index="2" name="text" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="line" type="int" />
+			<argument index="1" name="gutter" type="int" />
+			<argument index="2" name="text" type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="set_opentype_feature">
-			<return type="void">
-			</return>
-			<argument index="0" name="tag" type="String">
-			</argument>
-			<argument index="1" name="value" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="tag" type="String" />
+			<argument index="1" name="value" type="int" />
 			<description>
 				Sets OpenType feature [code]tag[/code]. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
 			</description>
 		</method>
 		<method name="set_selection_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="TextEdit.SelectionMode">
-			</argument>
-			<argument index="1" name="line" type="int" default="-1">
-			</argument>
-			<argument index="2" name="column" type="int" default="-1">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="mode" type="int" enum="TextEdit.SelectionMode" />
+			<argument index="1" name="line" type="int" default="-1" />
+			<argument index="2" name="column" type="int" default="-1" />
 			<description>
 			</description>
 		</method>
 		<method name="set_tab_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="size" type="int" />
 			<description>
 				Sets the tab size for the [TextEdit] to use.
 			</description>
 		</method>
 		<method name="undo">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Perform undo operation.
 			</description>
@@ -795,10 +639,8 @@
 			</description>
 		</signal>
 		<signal name="gutter_clicked">
-			<argument index="0" name="line" type="int">
-			</argument>
-			<argument index="1" name="gutter" type="int">
-			</argument>
+			<argument index="0" name="line" type="int" />
+			<argument index="1" name="gutter" type="int" />
 			<description>
 			</description>
 		</signal>
@@ -807,26 +649,20 @@
 			</description>
 		</signal>
 		<signal name="lines_edited_from">
-			<argument index="0" name="from_line" type="int">
-			</argument>
-			<argument index="1" name="to_line" type="int">
-			</argument>
+			<argument index="0" name="from_line" type="int" />
+			<argument index="1" name="to_line" type="int" />
 			<description>
 			</description>
 		</signal>
 		<signal name="symbol_lookup">
-			<argument index="0" name="symbol" type="String">
-			</argument>
-			<argument index="1" name="row" type="int">
-			</argument>
-			<argument index="2" name="column" type="int">
-			</argument>
+			<argument index="0" name="symbol" type="String" />
+			<argument index="1" name="row" type="int" />
+			<argument index="2" name="column" type="int" />
 			<description>
 			</description>
 		</signal>
 		<signal name="symbol_validate">
-			<argument index="0" name="symbol" type="String">
-			</argument>
+			<argument index="0" name="symbol" type="String" />
 			<description>
 			</description>
 		</signal>

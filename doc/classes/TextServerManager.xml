@@ -11,67 +11,54 @@
 	</tutorials>
 	<methods>
 		<method name="find_interface" qualifiers="const">
-			<return type="TextServer">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="TextServer" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Finds an interface by its name.
 			</description>
 		</method>
 		<method name="get_interface" qualifiers="const">
-			<return type="TextServer">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="TextServer" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Returns the interface registered at a given index.
 			</description>
 		</method>
 		<method name="get_interface_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of interfaces currently registered.
 			</description>
 		</method>
 		<method name="get_interface_features" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Returns text server supported features (binary OR).
 			</description>
 		</method>
 		<method name="get_interface_name" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Returns the interface name registered at a given index.
 			</description>
 		</method>
 		<method name="get_interfaces" qualifiers="const">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Returns a list of available interfaces the index and name of each interface.
 			</description>
 		</method>
 		<method name="get_primary_interface" qualifiers="const">
-			<return type="TextServer">
-			</return>
+			<return type="TextServer" />
 			<description>
 				Returns the primary [TextServer] interface.
 			</description>
 		</method>
 		<method name="set_primary_interface">
-			<return type="bool">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Sets (and initializes it if required) interface registered at a given index as the primary. Invalidates all references to the fonts and text buffers.
 			</description>

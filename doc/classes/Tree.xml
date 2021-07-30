@@ -36,35 +36,28 @@
 	</tutorials>
 	<methods>
 		<method name="are_column_titles_visible" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the column titles are being shown.
 			</description>
 		</method>
 		<method name="clear">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clears the tree. This removes all items.
 			</description>
 		</method>
 		<method name="clear_column_title_opentype_features">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Removes all OpenType features from the item's text.
 			</description>
 		</method>
 		<method name="create_item">
-			<return type="TreeItem">
-			</return>
-			<argument index="0" name="parent" type="Object" default="null">
-			</argument>
-			<argument index="1" name="idx" type="int" default="-1">
-			</argument>
+			<return type="TreeItem" />
+			<argument index="0" name="parent" type="Object" default="null" />
+			<argument index="1" name="idx" type="int" default="-1" />
 			<description>
 				Creates an item in the tree and adds it as a child of [code]parent[/code].
 				If [code]parent[/code] is [code]null[/code], the root item will be the parent, or the new item will be the root itself if the tree is empty.
@@ -72,15 +65,13 @@
 			</description>
 		</method>
 		<method name="edit_selected">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Edits the selected tree item as if it was clicked. The item must be set editable with [method TreeItem.set_editable]. Returns [code]true[/code] if the item could be edited. Fails if no item is selected.
 			</description>
 		</method>
 		<method name="ensure_cursor_is_visible">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Makes the currently focused cell visible.
 				This will scroll the tree if necessary. In [constant SELECT_ROW] mode, this will not do horizontal scrolling, as all the cells in the selected row is focused logically.
@@ -88,81 +79,63 @@
 			</description>
 		</method>
 		<method name="get_column_at_position" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="position" type="Vector2" />
 			<description>
 				Returns the column index at [code]position[/code], or -1 if no item is there.
 			</description>
 		</method>
 		<method name="get_column_expand_ratio" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="column" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_column_title" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Returns the column's title.
 			</description>
 		</method>
 		<method name="get_column_title_direction" qualifiers="const">
-			<return type="int" enum="Control.TextDirection">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="int" enum="Control.TextDirection" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Returns column title base writing direction.
 			</description>
 		</method>
 		<method name="get_column_title_language" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Returns column title language code.
 			</description>
 		</method>
 		<method name="get_column_title_opentype_feature" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="tag" type="String">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="tag" type="String" />
 			<description>
 				Returns OpenType feature [code]tag[/code] of the column title.
 			</description>
 		</method>
 		<method name="get_column_width" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Returns the column's width in pixels.
 			</description>
 		</method>
 		<method name="get_custom_popup_rect" qualifiers="const">
-			<return type="Rect2">
-			</return>
+			<return type="Rect2" />
 			<description>
 				Returns the rectangle for custom popups. Helper to create custom cell controls that display a popup. See [method TreeItem.set_cell_mode].
 			</description>
 		</method>
 		<method name="get_drop_section_at_position" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="position" type="Vector2" />
 			<description>
 				Returns the drop section at [code]position[/code], or -100 if no item is there.
 				Values -1, 0, or 1 will be returned for the "above item", "on item", and "below item" drop sections, respectively. See [enum DropModeFlags] for a description of each drop section.
@@ -170,8 +143,7 @@
 			</description>
 		</method>
 		<method name="get_edited" qualifiers="const">
-			<return type="TreeItem">
-			</return>
+			<return type="TreeItem" />
 			<description>
 				Returns the currently edited item. Can be used with [signal item_edited] to get the item that was modified.
 				[codeblocks]
@@ -197,66 +169,54 @@
 			</description>
 		</method>
 		<method name="get_edited_column" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the column for the currently edited item.
 			</description>
 		</method>
 		<method name="get_item_area_rect" qualifiers="const">
-			<return type="Rect2">
-			</return>
-			<argument index="0" name="item" type="Object">
-			</argument>
-			<argument index="1" name="column" type="int" default="-1">
-			</argument>
+			<return type="Rect2" />
+			<argument index="0" name="item" type="Object" />
+			<argument index="1" name="column" type="int" default="-1" />
 			<description>
 				Returns the rectangle area for the specified item. If [code]column[/code] is specified, only get the position and size of that column, otherwise get the rectangle containing all columns.
 			</description>
 		</method>
 		<method name="get_item_at_position" qualifiers="const">
-			<return type="TreeItem">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
+			<return type="TreeItem" />
+			<argument index="0" name="position" type="Vector2" />
 			<description>
 				Returns the tree item at the specified position (relative to the tree origin position).
 			</description>
 		</method>
 		<method name="get_next_selected">
-			<return type="TreeItem">
-			</return>
-			<argument index="0" name="from" type="Object">
-			</argument>
+			<return type="TreeItem" />
+			<argument index="0" name="from" type="Object" />
 			<description>
 				Returns the next selected item after the given one, or [code]null[/code] if the end is reached.
 				If [code]from[/code] is [code]null[/code], this returns the first selected item.
 			</description>
 		</method>
 		<method name="get_pressed_button" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the last pressed button's index.
 			</description>
 		</method>
 		<method name="get_root" qualifiers="const">
-			<return type="TreeItem">
-			</return>
+			<return type="TreeItem" />
 			<description>
 				Returns the tree's root item, or [code]null[/code] if the tree is empty.
 			</description>
 		</method>
 		<method name="get_scroll" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns the current scrolling position.
 			</description>
 		</method>
 		<method name="get_selected" qualifiers="const">
-			<return type="TreeItem">
-			</return>
+			<return type="TreeItem" />
 			<description>
 				Returns the currently focused item, or [code]null[/code] if no item is focused.
 				In [constant SELECT_ROW] and [constant SELECT_SINGLE] modes, the focused item is same as the selected item. In [constant SELECT_MULTI] mode, the focused item is the item under the focus cursor, not necessarily selected.
@@ -264,8 +224,7 @@
 			</description>
 		</method>
 		<method name="get_selected_column" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the currently focused column, or -1 if no column is focused.
 				In [constant SELECT_SINGLE] mode, the focused column is the selected column. In [constant SELECT_ROW] mode, the focused column is always 0 if any item is selected. In [constant SELECT_MULTI] mode, the focused column is the column under the focus cursor, and there are not necessarily any column selected.
@@ -273,123 +232,90 @@
 			</description>
 		</method>
 		<method name="is_column_clipping_content" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="column" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="is_column_expanding" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="column" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="scroll_to_item">
-			<return type="void">
-			</return>
-			<argument index="0" name="item" type="Object">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="item" type="Object" />
 			<description>
 				Causes the [Tree] to jump to the specified item.
 			</description>
 		</method>
 		<method name="set_column_clip_content">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="enable" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="set_column_custom_minimum_width">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="min_width" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="min_width" type="int" />
 			<description>
 				Overrides the calculated minimum width of a column. It can be set to `0` to restore the default behavior. Columns that have the "Expand" flag will use their "min_width" in a similar fashion to [member Control.size_flags_stretch_ratio].
 			</description>
 		</method>
 		<method name="set_column_expand">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="expand" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="expand" type="bool" />
 			<description>
 				If [code]true[/code], the column will have the "Expand" flag of [Control]. Columns that have the "Expand" flag will use their "min_width" in a similar fashion to [member Control.size_flags_stretch_ratio].
 			</description>
 		</method>
 		<method name="set_column_expand_ratio">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="ratio" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="ratio" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="set_column_title">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="title" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="title" type="String" />
 			<description>
 				Sets the title of a column.
 			</description>
 		</method>
 		<method name="set_column_title_direction">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="direction" type="int" enum="Control.TextDirection">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="direction" type="int" enum="Control.TextDirection" />
 			<description>
 				Sets column title base writing direction.
 			</description>
 		</method>
 		<method name="set_column_title_language">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="language" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="language" type="String" />
 			<description>
 				Sets language code of column title used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 			</description>
 		</method>
 		<method name="set_column_title_opentype_feature">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="tag" type="String">
-			</argument>
-			<argument index="2" name="value" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="tag" type="String" />
+			<argument index="2" name="value" type="int" />
 			<description>
 				Sets OpenType feature [code]tag[/code] for the column title.
 			</description>
 		</method>
 		<method name="set_column_titles_visible">
-			<return type="void">
-			</return>
-			<argument index="0" name="visible" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="visible" type="bool" />
 			<description>
 				If [code]true[/code], column titles are visible.
 			</description>
@@ -429,12 +355,9 @@
 	</members>
 	<signals>
 		<signal name="button_pressed">
-			<argument index="0" name="item" type="TreeItem">
-			</argument>
-			<argument index="1" name="column" type="int">
-			</argument>
-			<argument index="2" name="id" type="int">
-			</argument>
+			<argument index="0" name="item" type="TreeItem" />
+			<argument index="1" name="column" type="int" />
+			<argument index="2" name="id" type="int" />
 			<description>
 				Emitted when a button on the tree was pressed (see [method TreeItem.add_button]).
 			</description>
@@ -445,29 +368,25 @@
 			</description>
 		</signal>
 		<signal name="column_title_pressed">
-			<argument index="0" name="column" type="int">
-			</argument>
+			<argument index="0" name="column" type="int" />
 			<description>
 				Emitted when a column's title is pressed.
 			</description>
 		</signal>
 		<signal name="custom_popup_edited">
-			<argument index="0" name="arrow_clicked" type="bool">
-			</argument>
+			<argument index="0" name="arrow_clicked" type="bool" />
 			<description>
 				Emitted when a cell with the [constant TreeItem.CELL_MODE_CUSTOM] is clicked to be edited.
 			</description>
 		</signal>
 		<signal name="empty_rmb">
-			<argument index="0" name="position" type="Vector2">
-			</argument>
+			<argument index="0" name="position" type="Vector2" />
 			<description>
 				Emitted when the right mouse button is pressed in the empty space of the tree.
 			</description>
 		</signal>
 		<signal name="empty_tree_rmb_selected">
-			<argument index="0" name="position" type="Vector2">
-			</argument>
+			<argument index="0" name="position" type="Vector2" />
 			<description>
 				Emitted when the right mouse button is pressed if right mouse button selection is active and the tree is empty.
 			</description>
@@ -478,8 +397,7 @@
 			</description>
 		</signal>
 		<signal name="item_collapsed">
-			<argument index="0" name="item" type="TreeItem">
-			</argument>
+			<argument index="0" name="item" type="TreeItem" />
 			<description>
 				Emitted when an item is collapsed by a click on the folding arrow.
 			</description>
@@ -505,8 +423,7 @@
 			</description>
 		</signal>
 		<signal name="item_rmb_selected">
-			<argument index="0" name="position" type="Vector2">
-			</argument>
+			<argument index="0" name="position" type="Vector2" />
 			<description>
 				Emitted when an item is selected with the right mouse button.
 			</description>
@@ -517,12 +434,9 @@
 			</description>
 		</signal>
 		<signal name="multi_selected">
-			<argument index="0" name="item" type="TreeItem">
-			</argument>
-			<argument index="1" name="column" type="int">
-			</argument>
-			<argument index="2" name="selected" type="bool">
-			</argument>
+			<argument index="0" name="item" type="TreeItem" />
+			<argument index="1" name="column" type="int" />
+			<argument index="2" name="selected" type="bool" />
 			<description>
 				Emitted instead of [code]item_selected[/code] if [code]select_mode[/code] is [constant SELECT_MULTI].
 			</description>

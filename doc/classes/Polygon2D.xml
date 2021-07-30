@@ -10,75 +10,58 @@
 	</tutorials>
 	<methods>
 		<method name="add_bone">
-			<return type="void">
-			</return>
-			<argument index="0" name="path" type="NodePath">
-			</argument>
-			<argument index="1" name="weights" type="PackedFloat32Array">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="path" type="NodePath" />
+			<argument index="1" name="weights" type="PackedFloat32Array" />
 			<description>
 				Adds a bone with the specified [code]path[/code] and [code]weights[/code].
 			</description>
 		</method>
 		<method name="clear_bones">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Removes all bones from this [Polygon2D].
 			</description>
 		</method>
 		<method name="erase_bone">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Removes the specified bone from this [Polygon2D].
 			</description>
 		</method>
 		<method name="get_bone_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of bones in this [Polygon2D].
 			</description>
 		</method>
 		<method name="get_bone_path" qualifiers="const">
-			<return type="NodePath">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="NodePath" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Returns the path to the node associated with the specified bone.
 			</description>
 		</method>
 		<method name="get_bone_weights" qualifiers="const">
-			<return type="PackedFloat32Array">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="PackedFloat32Array" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Returns the height values of the specified bone.
 			</description>
 		</method>
 		<method name="set_bone_path">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
-			<argument index="1" name="path" type="NodePath">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<argument index="1" name="path" type="NodePath" />
 			<description>
 				Sets the path to the node associated with the specified bone.
 			</description>
 		</method>
 		<method name="set_bone_weights">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
-			<argument index="1" name="weights" type="PackedFloat32Array">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<argument index="1" name="weights" type="PackedFloat32Array" />
 			<description>
 				Sets the weight values for the specified bone.
 			</description>

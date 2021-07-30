@@ -16,10 +16,8 @@
 	</tutorials>
 	<methods>
 		<method name="add_property_info">
-			<return type="void">
-			</return>
-			<argument index="0" name="hint" type="Dictionary">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="hint" type="Dictionary" />
 			<description>
 				Adds a custom property info to a property. The dictionary must contain:
 				- [code]name[/code]: [String] (the property's name)
@@ -56,28 +54,22 @@
 			</description>
 		</method>
 		<method name="clear">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Clears the whole configuration (not recommended, may break things).
 			</description>
 		</method>
 		<method name="get_order" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Returns the order of a configuration value (influences when saved to the config file).
 			</description>
 		</method>
 		<method name="get_setting" qualifiers="const">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Returns the value of a setting.
 				[b]Example:[/b]
@@ -92,10 +84,8 @@
 			</description>
 		</method>
 		<method name="globalize_path" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Returns the absolute, native OS path corresponding to the localized [code]path[/code] (starting with [code]res://[/code] or [code]user://[/code]). The returned path will vary depending on the operating system and user preferences. See [url=https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html]File paths in Godot projects[/url] to see what those paths convert to. See also [method localize_path].
 				[b]Note:[/b] [method globalize_path] with [code]res://[/code] will not work in an exported project. Instead, prepend the executable's base directory to the path when running from an exported project:
@@ -115,23 +105,17 @@
 			</description>
 		</method>
 		<method name="has_setting" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Returns [code]true[/code] if a configuration value is present.
 			</description>
 		</method>
 		<method name="load_resource_pack">
-			<return type="bool">
-			</return>
-			<argument index="0" name="pack" type="String">
-			</argument>
-			<argument index="1" name="replace_files" type="bool" default="true">
-			</argument>
-			<argument index="2" name="offset" type="int" default="0">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="pack" type="String" />
+			<argument index="1" name="replace_files" type="bool" default="true" />
+			<argument index="2" name="offset" type="int" default="0" />
 			<description>
 				Loads the contents of the .pck or .zip file specified by [code]pack[/code] into the resource filesystem ([code]res://[/code]). Returns [code]true[/code] on success.
 				[b]Note:[/b] If a file from [code]pack[/code] shares the same path as a file already in the resource filesystem, any attempts to load that file will use the file from [code]pack[/code] unless [code]replace_files[/code] is set to [code]false[/code].
@@ -139,78 +123,60 @@
 			</description>
 		</method>
 		<method name="localize_path" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Returns the localized path (starting with [code]res://[/code]) corresponding to the absolute, native OS [code]path[/code]. See also [method globalize_path].
 			</description>
 		</method>
 		<method name="property_can_revert">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Returns [code]true[/code] if the specified property exists and its initial value differs from the current value.
 			</description>
 		</method>
 		<method name="property_get_revert">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Returns the specified property's initial value. Returns [code]null[/code] if the property does not exist.
 			</description>
 		</method>
 		<method name="save">
-			<return type="int" enum="Error">
-			</return>
+			<return type="int" enum="Error" />
 			<description>
 				Saves the configuration to the [code]project.godot[/code] file.
 				[b]Note:[/b] This method is intended to be used by editor plugins, as modified [ProjectSettings] can't be loaded back in the running app. If you want to change project settings in exported projects, use [method save_custom] to save [code]override.cfg[/code] file.
 			</description>
 		</method>
 		<method name="save_custom">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="file" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="file" type="String" />
 			<description>
 				Saves the configuration to a custom file. The file extension must be [code].godot[/code] (to save in text-based [ConfigFile] format) or [code].binary[/code] (to save in binary format). You can also save [code]override.cfg[/code] file, which is also text, but can be used in exported projects unlike other formats.
 			</description>
 		</method>
 		<method name="set_initial_value">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="value" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="value" type="Variant" />
 			<description>
 				Sets the specified property's initial value. This is the value the property reverts to.
 			</description>
 		</method>
 		<method name="set_order">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="position" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="position" type="int" />
 			<description>
 				Sets the order of a configuration value (influences when saved to the config file).
 			</description>
 		</method>
 		<method name="set_setting">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="value" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="value" type="Variant" />
 			<description>
 				Sets the value of a setting.
 				[b]Example:[/b]

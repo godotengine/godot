@@ -8,14 +8,12 @@
 	</tutorials>
 	<methods>
 		<method name="get_skeleton" qualifiers="const">
-			<return type="RID">
-			</return>
+			<return type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="get_skin" qualifiers="const">
-			<return type="Skin">
-			</return>
+			<return type="Skin" />
 			<description>
 			</description>
 		</method>

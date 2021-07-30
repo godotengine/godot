@@ -30,48 +30,38 @@
 	</tutorials>
 	<methods>
 		<method name="get_data" qualifiers="const">
-			<return type="Variant">
-			</return>
+			<return type="Variant" />
 			<description>
 				Returns the [Variant] containing the data of a successful [method parse].
 				[b]Note:[/b] It will return [code]Null[/code] if the last call to parse was unsuccessful or [method parse] has not yet been called.
 			</description>
 		</method>
 		<method name="get_error_line" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns [code]0[/code] if the last call to [method parse] was successful, or the line number where the parse failed.
 			</description>
 		</method>
 		<method name="get_error_message" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns an empty string if the last call to [method parse] was successful, or the error message if it failed.
 			</description>
 		</method>
 		<method name="parse">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="json_string" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="json_string" type="String" />
 			<description>
 				Attempts to parse the [code]json_string[/code] provided.
 				Returns an [enum Error]. If the parse was successful, it returns [code]OK[/code] and the result can be retrieved using [method get_data]. If unsuccessful, use [method get_error_line] and [method get_error_message] for identifying the source of the failure.
 			</description>
 		</method>
 		<method name="stringify">
-			<return type="String">
-			</return>
-			<argument index="0" name="data" type="Variant">
-			</argument>
-			<argument index="1" name="indent" type="String" default="&quot;&quot;">
-			</argument>
-			<argument index="2" name="sort_keys" type="bool" default="true">
-			</argument>
-			<argument index="3" name="full_precision" type="bool" default="false">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="data" type="Variant" />
+			<argument index="1" name="indent" type="String" default="&quot;&quot;" />
+			<argument index="2" name="sort_keys" type="bool" default="true" />
+			<argument index="3" name="full_precision" type="bool" default="false" />
 			<description>
 				Converts a [Variant] var to JSON text and returns the result. Useful for serializing data to store or send over the network.
 				[b]Note:[/b] The JSON specification does not define integer or float types, but only a [i]number[/i] type. Therefore, converting a Variant to JSON text will convert all numerical values to [float] types.

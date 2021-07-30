@@ -12,15 +12,13 @@
 	</tutorials>
 	<methods>
 		<method name="get_joint" qualifiers="const">
-			<return type="Joint2D">
-			</return>
+			<return type="Joint2D" />
 			<description>
 				Returns the first [Joint2D] child node, if one exists. This is mainly a helper function to make it easier to get the [Joint2D] that the [code]PhysicalBone2D[/code] is autoconfiguring.
 			</description>
 		</method>
 		<method name="is_simulating_physics" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns a boolean that indicates whether the [code]PhysicalBone2D[/code] node is running and simulating using the Godot 2D physics engine. When [code]true[/code], the PhysicalBone2D node is using physics.
 			</description>

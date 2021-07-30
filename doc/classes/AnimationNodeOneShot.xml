@@ -12,16 +12,13 @@
 	</tutorials>
 	<methods>
 		<method name="get_mix_mode" qualifiers="const">
-			<return type="int" enum="AnimationNodeOneShot.MixMode">
-			</return>
+			<return type="int" enum="AnimationNodeOneShot.MixMode" />
 			<description>
 			</description>
 		</method>
 		<method name="set_mix_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="AnimationNodeOneShot.MixMode">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="mode" type="int" enum="AnimationNodeOneShot.MixMode" />
 			<description>
 			</description>
 		</method>

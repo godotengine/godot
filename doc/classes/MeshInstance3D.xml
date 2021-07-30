@@ -14,12 +14,9 @@
 	</tutorials>
 	<methods>
 		<method name="create_convex_collision">
-			<return type="void">
-			</return>
-			<argument index="0" name="clean" type="bool" default="true">
-			</argument>
-			<argument index="1" name="simplify" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="clean" type="bool" default="true" />
+			<argument index="1" name="simplify" type="bool" default="false" />
 			<description>
 				This helper creates a [StaticBody3D] child node with a [ConvexPolygonShape3D] collision shape calculated from the mesh geometry. It's mainly used for testing.
 				If [code]clean[/code] is [code]true[/code] (default), duplicate and interior vertices are removed automatically. You can set it to [code]false[/code] to make the process faster if not needed.
@@ -27,58 +24,47 @@
 			</description>
 		</method>
 		<method name="create_debug_tangents">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				This helper creates a [MeshInstance3D] child node with gizmos at every vertex calculated from the mesh geometry. It's mainly used for testing.
 			</description>
 		</method>
 		<method name="create_multiple_convex_collisions">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				This helper creates a [StaticBody3D] child node with multiple [ConvexPolygonShape3D] collision shapes calculated from the mesh geometry via convex decomposition. It's mainly used for testing.
 			</description>
 		</method>
 		<method name="create_trimesh_collision">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				This helper creates a [StaticBody3D] child node with a [ConcavePolygonShape3D] collision shape calculated from the mesh geometry. It's mainly used for testing.
 			</description>
 		</method>
 		<method name="get_active_material" qualifiers="const">
-			<return type="Material">
-			</return>
-			<argument index="0" name="surface" type="int">
-			</argument>
+			<return type="Material" />
+			<argument index="0" name="surface" type="int" />
 			<description>
 				Returns the [Material] that will be used by the [Mesh] when drawing. This can return the [member GeometryInstance3D.material_override], the surface override [Material] defined in this [MeshInstance3D], or the surface [Material] defined in the [Mesh]. For example, if [member GeometryInstance3D.material_override] is used, all surfaces will return the override material.
 			</description>
 		</method>
 		<method name="get_surface_override_material" qualifiers="const">
-			<return type="Material">
-			</return>
-			<argument index="0" name="surface" type="int">
-			</argument>
+			<return type="Material" />
+			<argument index="0" name="surface" type="int" />
 			<description>
 				Returns the override [Material] for the specified surface of the [Mesh] resource.
 			</description>
 		</method>
 		<method name="get_surface_override_material_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of surface override materials. This is equivalent to [method Mesh.get_surface_count].
 			</description>
 		</method>
 		<method name="set_surface_override_material">
-			<return type="void">
-			</return>
-			<argument index="0" name="surface" type="int">
-			</argument>
-			<argument index="1" name="material" type="Material">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="surface" type="int" />
+			<argument index="1" name="material" type="Material" />
 			<description>
 				Sets the override [Material] for the specified surface of the [Mesh] resource. This material is associated with this [MeshInstance3D] rather than with the [Mesh] resource.
 			</description>

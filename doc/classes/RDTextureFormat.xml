@@ -8,18 +8,14 @@
 	</tutorials>
 	<methods>
 		<method name="add_shareable_format">
-			<return type="void">
-			</return>
-			<argument index="0" name="format" type="int" enum="RenderingDevice.DataFormat">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="format" type="int" enum="RenderingDevice.DataFormat" />
 			<description>
 			</description>
 		</method>
 		<method name="remove_shareable_format">
-			<return type="void">
-			</return>
-			<argument index="0" name="format" type="int" enum="RenderingDevice.DataFormat">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="format" type="int" enum="RenderingDevice.DataFormat" />
 			<description>
 			</description>
 		</method>

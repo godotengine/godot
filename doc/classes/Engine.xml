@@ -10,8 +10,7 @@
 	</tutorials>
 	<methods>
 		<method name="get_author_info" qualifiers="const">
-			<return type="Dictionary">
-			</return>
+			<return type="Dictionary" />
 			<description>
 				Returns engine author information in a Dictionary.
 				[code]lead_developers[/code]    - Array of Strings, lead developer names
@@ -21,8 +20,7 @@
 			</description>
 		</method>
 		<method name="get_copyright_info" qualifiers="const">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Returns an Array of copyright information Dictionaries.
 				[code]name[/code]    - String, component name
@@ -30,81 +28,69 @@
 			</description>
 		</method>
 		<method name="get_donor_info" qualifiers="const">
-			<return type="Dictionary">
-			</return>
+			<return type="Dictionary" />
 			<description>
 				Returns a Dictionary of Arrays of donor names.
 				{[code]platinum_sponsors[/code], [code]gold_sponsors[/code], [code]silver_sponsors[/code], [code]bronze_sponsors[/code], [code]mini_sponsors[/code], [code]gold_donors[/code], [code]silver_donors[/code], [code]bronze_donors[/code]}
 			</description>
 		</method>
 		<method name="get_frames_drawn">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the total number of frames drawn. If the render loop is disabled with [code]--disable-render-loop[/code] via command line, this returns [code]0[/code]. See also [method get_process_frames].
 			</description>
 		</method>
 		<method name="get_frames_per_second" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the frames per second of the running game.
 			</description>
 		</method>
 		<method name="get_license_info" qualifiers="const">
-			<return type="Dictionary">
-			</return>
+			<return type="Dictionary" />
 			<description>
 				Returns Dictionary of licenses used by Godot and included third party components.
 			</description>
 		</method>
 		<method name="get_license_text" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns Godot license text.
 			</description>
 		</method>
 		<method name="get_main_loop" qualifiers="const">
-			<return type="MainLoop">
-			</return>
+			<return type="MainLoop" />
 			<description>
 				Returns the main loop object (see [MainLoop] and [SceneTree]).
 			</description>
 		</method>
 		<method name="get_physics_frames" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the total number of frames passed since engine initialization which is advanced on each [b]physics frame[/b].
 			</description>
 		</method>
 		<method name="get_physics_interpolation_fraction" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the fraction through the current physics tick we are at the time of rendering the frame. This can be used to implement fixed timestep interpolation.
 			</description>
 		</method>
 		<method name="get_process_frames" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the total number of frames passed since engine initialization which is advanced on each [b]process frame[/b], regardless of whether the render loop is enabled. See also [method get_frames_drawn].
 			</description>
 		</method>
 		<method name="get_singleton" qualifiers="const">
-			<return type="Object">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="Object" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Returns a global singleton with given [code]name[/code]. Often used for plugins, e.g. GodotPayments.
 			</description>
 		</method>
 		<method name="get_version_info" qualifiers="const">
-			<return type="Dictionary">
-			</return>
+			<return type="Dictionary" />
 			<description>
 				Returns the current engine version information in a Dictionary.
 				[code]major[/code]    - Holds the major version number as an int
@@ -138,17 +124,14 @@
 			</description>
 		</method>
 		<method name="has_singleton" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Returns [code]true[/code] if a singleton with given [code]name[/code] exists in global scope.
 			</description>
 		</method>
 		<method name="is_in_physics_frame" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the game is inside the fixed process and physics phase of the game loop.
 			</description>

@@ -8,74 +8,52 @@
 	</tutorials>
 	<methods>
 		<method name="make_notification">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="method" type="String">
-			</argument>
-			<argument index="1" name="params" type="Variant">
-			</argument>
+			<return type="Dictionary" />
+			<argument index="0" name="method" type="String" />
+			<argument index="1" name="params" type="Variant" />
 			<description>
 			</description>
 		</method>
 		<method name="make_request">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="method" type="String">
-			</argument>
-			<argument index="1" name="params" type="Variant">
-			</argument>
-			<argument index="2" name="id" type="Variant">
-			</argument>
+			<return type="Dictionary" />
+			<argument index="0" name="method" type="String" />
+			<argument index="1" name="params" type="Variant" />
+			<argument index="2" name="id" type="Variant" />
 			<description>
 			</description>
 		</method>
 		<method name="make_response">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="result" type="Variant">
-			</argument>
-			<argument index="1" name="id" type="Variant">
-			</argument>
+			<return type="Dictionary" />
+			<argument index="0" name="result" type="Variant" />
+			<argument index="1" name="id" type="Variant" />
 			<description>
 			</description>
 		</method>
 		<method name="make_response_error" qualifiers="const">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="code" type="int">
-			</argument>
-			<argument index="1" name="message" type="String">
-			</argument>
-			<argument index="2" name="id" type="Variant" default="null">
-			</argument>
+			<return type="Dictionary" />
+			<argument index="0" name="code" type="int" />
+			<argument index="1" name="message" type="String" />
+			<argument index="2" name="id" type="Variant" default="null" />
 			<description>
 			</description>
 		</method>
 		<method name="process_action">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="action" type="Variant">
-			</argument>
-			<argument index="1" name="recurse" type="bool" default="false">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="action" type="Variant" />
+			<argument index="1" name="recurse" type="bool" default="false" />
 			<description>
 			</description>
 		</method>
 		<method name="process_string">
-			<return type="String">
-			</return>
-			<argument index="0" name="action" type="String">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="action" type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="set_scope">
-			<return type="void">
-			</return>
-			<argument index="0" name="scope" type="String">
-			</argument>
-			<argument index="1" name="target" type="Object">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="scope" type="String" />
+			<argument index="1" name="target" type="Object" />
 			<description>
 			</description>
 		</method>

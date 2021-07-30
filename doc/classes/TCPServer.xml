@@ -10,33 +10,27 @@
 	</tutorials>
 	<methods>
 		<method name="get_local_port" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the local port this server is listening to.
 			</description>
 		</method>
 		<method name="is_connection_available" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if a connection is available for taking.
 			</description>
 		</method>
 		<method name="is_listening" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the server is currently listening for connections.
 			</description>
 		</method>
 		<method name="listen">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="port" type="int">
-			</argument>
-			<argument index="1" name="bind_address" type="String" default="&quot;*&quot;">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="port" type="int" />
+			<argument index="1" name="bind_address" type="String" default="&quot;*&quot;" />
 			<description>
 				Listen on the [code]port[/code] binding to [code]bind_address[/code].
 				If [code]bind_address[/code] is set as [code]"*"[/code] (default), the server will listen on all available addresses (both IPv4 and IPv6).
@@ -45,15 +39,13 @@
 			</description>
 		</method>
 		<method name="stop">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Stops listening.
 			</description>
 		</method>
 		<method name="take_connection">
-			<return type="StreamPeerTCP">
-			</return>
+			<return type="StreamPeerTCP" />
 			<description>
 				If a connection is available, returns a StreamPeerTCP with the connection.
 			</description>

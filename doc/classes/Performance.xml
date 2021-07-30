@@ -14,14 +14,10 @@
 	</tutorials>
 	<methods>
 		<method name="add_custom_monitor">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="StringName">
-			</argument>
-			<argument index="1" name="callable" type="Callable">
-			</argument>
-			<argument index="2" name="arguments" type="Array" default="[]">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="StringName" />
+			<argument index="1" name="callable" type="Callable" />
+			<argument index="2" name="arguments" type="Array" default="[]" />
 			<description>
 				Adds a custom monitor with name same as id. You can specify the category of monitor using '/' in id. If there are more than one '/' then default category is used. Default category is "Custom".
 				[codeblocks]
@@ -77,27 +73,22 @@
 			</description>
 		</method>
 		<method name="get_custom_monitor">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="id" type="StringName">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="id" type="StringName" />
 			<description>
 				Returns the value of custom monitor with given id. The callable is called to get the value of custom monitor.
 				[b]Note:[/b] It throws an error if the given id is absent.
 			</description>
 		</method>
 		<method name="get_custom_monitor_names">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Returns the names of active custom monitors in an array.
 			</description>
 		</method>
 		<method name="get_monitor" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="monitor" type="int" enum="Performance.Monitor">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="monitor" type="int" enum="Performance.Monitor" />
 			<description>
 				Returns the value of one of the available monitors. You should provide one of the [enum Monitor] constants as the argument, like this:
 				[codeblocks]
@@ -111,26 +102,21 @@
 			</description>
 		</method>
 		<method name="get_monitor_modification_time">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the last tick in which custom monitor was added/removed.
 			</description>
 		</method>
 		<method name="has_custom_monitor">
-			<return type="bool">
-			</return>
-			<argument index="0" name="id" type="StringName">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="id" type="StringName" />
 			<description>
 				Returns true if custom monitor with the given id is present otherwise returns false.
 			</description>
 		</method>
 		<method name="remove_custom_monitor">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="StringName">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="StringName" />
 			<description>
 				Removes the custom monitor with given id.
 				[b]Note:[/b] It throws an error if the given id is already absent.

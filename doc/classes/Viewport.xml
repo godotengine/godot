@@ -23,69 +23,57 @@
 	</tutorials>
 	<methods>
 		<method name="find_world_2d" qualifiers="const">
-			<return type="World2D">
-			</return>
+			<return type="World2D" />
 			<description>
 				Returns the 2D world of the viewport.
 			</description>
 		</method>
 		<method name="find_world_3d" qualifiers="const">
-			<return type="World3D">
-			</return>
+			<return type="World3D" />
 			<description>
 				Returns the 3D world of the viewport, or if none the world of the parent viewport.
 			</description>
 		</method>
 		<method name="get_camera_2d" qualifiers="const">
-			<return type="Camera2D">
-			</return>
+			<return type="Camera2D" />
 			<description>
 				Returns the currently active 2D camera. Returns null if there are no active cameras.
 			</description>
 		</method>
 		<method name="get_camera_3d" qualifiers="const">
-			<return type="Camera3D">
-			</return>
+			<return type="Camera3D" />
 			<description>
 				Returns the currently active 3D camera.
 			</description>
 		</method>
 		<method name="get_final_transform" qualifiers="const">
-			<return type="Transform2D">
-			</return>
+			<return type="Transform2D" />
 			<description>
 				Returns the total transform of the viewport.
 			</description>
 		</method>
 		<method name="get_mouse_position" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns the mouse position relative to the viewport.
 			</description>
 		</method>
 		<method name="get_render_info">
-			<return type="int">
-			</return>
-			<argument index="0" name="type" type="int" enum="Viewport.RenderInfoType">
-			</argument>
-			<argument index="1" name="info" type="int" enum="Viewport.RenderInfo">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="type" type="int" enum="Viewport.RenderInfoType" />
+			<argument index="1" name="info" type="int" enum="Viewport.RenderInfo" />
 			<description>
 			</description>
 		</method>
 		<method name="get_shadow_atlas_quadrant_subdiv" qualifiers="const">
-			<return type="int" enum="Viewport.ShadowAtlasQuadrantSubdiv">
-			</return>
-			<argument index="0" name="quadrant" type="int">
-			</argument>
+			<return type="int" enum="Viewport.ShadowAtlasQuadrantSubdiv" />
+			<argument index="0" name="quadrant" type="int" />
 			<description>
 				Returns the [enum ShadowAtlasQuadrantSubdiv] of the specified quadrant.
 			</description>
 		</method>
 		<method name="get_texture" qualifiers="const">
-			<return type="ViewportTexture">
-			</return>
+			<return type="ViewportTexture" />
 			<description>
 				Returns the viewport's texture.
 				[b]Note:[/b] Due to the way OpenGL works, the resulting [ViewportTexture] is flipped vertically. You can use [method Image.flip_y] on the result of [method Texture2D.get_image] to flip it back, for example:
@@ -102,96 +90,76 @@
 			</description>
 		</method>
 		<method name="get_viewport_rid" qualifiers="const">
-			<return type="RID">
-			</return>
+			<return type="RID" />
 			<description>
 				Returns the viewport's RID from the [RenderingServer].
 			</description>
 		</method>
 		<method name="get_visible_rect" qualifiers="const">
-			<return type="Rect2">
-			</return>
+			<return type="Rect2" />
 			<description>
 				Returns the visible rectangle in global screen coordinates.
 			</description>
 		</method>
 		<method name="gui_get_drag_data" qualifiers="const">
-			<return type="Variant">
-			</return>
+			<return type="Variant" />
 			<description>
 				Returns the drag data from the GUI, that was previously returned by [method Control._get_drag_data].
 			</description>
 		</method>
 		<method name="gui_is_dragging" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the viewport is currently performing a drag operation.
 			</description>
 		</method>
 		<method name="input">
-			<return type="void">
-			</return>
-			<argument index="0" name="event" type="InputEvent">
-			</argument>
-			<argument index="1" name="in_local_coords" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="event" type="InputEvent" />
+			<argument index="1" name="in_local_coords" type="bool" default="false" />
 			<description>
 			</description>
 		</method>
 		<method name="input_text">
-			<return type="void">
-			</return>
-			<argument index="0" name="text" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="text" type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="is_embedding_subwindows" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="is_input_handled" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="set_input_as_handled">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Stops the input from propagating further down the [SceneTree].
 			</description>
 		</method>
 		<method name="set_shadow_atlas_quadrant_subdiv">
-			<return type="void">
-			</return>
-			<argument index="0" name="quadrant" type="int">
-			</argument>
-			<argument index="1" name="subdiv" type="int" enum="Viewport.ShadowAtlasQuadrantSubdiv">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="quadrant" type="int" />
+			<argument index="1" name="subdiv" type="int" enum="Viewport.ShadowAtlasQuadrantSubdiv" />
 			<description>
 				Sets the number of subdivisions to use in the specified quadrant. A higher number of subdivisions allows you to have more shadows in the scene at once, but reduces the quality of the shadows. A good practice is to have quadrants with a varying number of subdivisions and to have as few subdivisions as possible.
 			</description>
 		</method>
 		<method name="unhandled_input">
-			<return type="void">
-			</return>
-			<argument index="0" name="event" type="InputEvent">
-			</argument>
-			<argument index="1" name="in_local_coords" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="event" type="InputEvent" />
+			<argument index="1" name="in_local_coords" type="bool" default="false" />
 			<description>
 			</description>
 		</method>
 		<method name="warp_mouse">
-			<return type="void">
-			</return>
-			<argument index="0" name="to_position" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="to_position" type="Vector2" />
 			<description>
 				Warps the mouse to a position relative to the viewport.
 			</description>
@@ -291,8 +259,7 @@
 	</members>
 	<signals>
 		<signal name="gui_focus_changed">
-			<argument index="0" name="node" type="Control">
-			</argument>
+			<argument index="0" name="node" type="Control" />
 			<description>
 				Emitted when a Control node grabs keyboard focus.
 			</description>

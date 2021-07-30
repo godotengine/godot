@@ -9,58 +9,44 @@
 	</tutorials>
 	<methods>
 		<method name="allocate">
-			<return type="void">
-			</return>
-			<argument index="0" name="to_cell_xform" type="Transform3D">
-			</argument>
-			<argument index="1" name="aabb" type="AABB">
-			</argument>
-			<argument index="2" name="octree_size" type="Vector3">
-			</argument>
-			<argument index="3" name="octree_cells" type="PackedByteArray">
-			</argument>
-			<argument index="4" name="data_cells" type="PackedByteArray">
-			</argument>
-			<argument index="5" name="distance_field" type="PackedByteArray">
-			</argument>
-			<argument index="6" name="level_counts" type="PackedInt32Array">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="to_cell_xform" type="Transform3D" />
+			<argument index="1" name="aabb" type="AABB" />
+			<argument index="2" name="octree_size" type="Vector3" />
+			<argument index="3" name="octree_cells" type="PackedByteArray" />
+			<argument index="4" name="data_cells" type="PackedByteArray" />
+			<argument index="5" name="distance_field" type="PackedByteArray" />
+			<argument index="6" name="level_counts" type="PackedInt32Array" />
 			<description>
 			</description>
 		</method>
 		<method name="get_bounds" qualifiers="const">
-			<return type="AABB">
-			</return>
+			<return type="AABB" />
 			<description>
 			</description>
 		</method>
 		<method name="get_data_cells" qualifiers="const">
-			<return type="PackedByteArray">
-			</return>
+			<return type="PackedByteArray" />
 			<description>
 			</description>
 		</method>
 		<method name="get_level_counts" qualifiers="const">
-			<return type="PackedInt32Array">
-			</return>
+			<return type="PackedInt32Array" />
 			<description>
 			</description>
 		</method>
 		<method name="get_octree_cells" qualifiers="const">
-			<return type="PackedByteArray">
-			</return>
+			<return type="PackedByteArray" />
 			<description>
 			</description>
 		</method>
 		<method name="get_octree_size" qualifiers="const">
-			<return type="Vector3">
-			</return>
+			<return type="Vector3" />
 			<description>
 			</description>
 		</method>
 		<method name="get_to_cell_xform" qualifiers="const">
-			<return type="Transform3D">
-			</return>
+			<return type="Transform3D" />
 			<description>
 			</description>
 		</method>

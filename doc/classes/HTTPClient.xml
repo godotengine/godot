@@ -17,23 +17,17 @@
 	</tutorials>
 	<methods>
 		<method name="close">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Closes the current connection, allowing reuse of this [HTTPClient].
 			</description>
 		</method>
 		<method name="connect_to_host">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="host" type="String">
-			</argument>
-			<argument index="1" name="port" type="int" default="-1">
-			</argument>
-			<argument index="2" name="use_ssl" type="bool" default="false">
-			</argument>
-			<argument index="3" name="verify_host" type="bool" default="true">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="host" type="String" />
+			<argument index="1" name="port" type="int" default="-1" />
+			<argument index="2" name="use_ssl" type="bool" default="false" />
+			<argument index="3" name="verify_host" type="bool" default="true" />
 			<description>
 				Connects to a host. This needs to be done before any requests are sent.
 				The host should not have http:// prepended but will strip the protocol identifier if provided.
@@ -42,30 +36,26 @@
 			</description>
 		</method>
 		<method name="get_response_body_length" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the response's body length.
 				[b]Note:[/b] Some Web servers may not send a body length. In this case, the value returned will be [code]-1[/code]. If using chunked transfer encoding, the body length will also be [code]-1[/code].
 			</description>
 		</method>
 		<method name="get_response_code" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the response's HTTP status code.
 			</description>
 		</method>
 		<method name="get_response_headers">
-			<return type="PackedStringArray">
-			</return>
+			<return type="PackedStringArray" />
 			<description>
 				Returns the response headers.
 			</description>
 		</method>
 		<method name="get_response_headers_as_dictionary">
-			<return type="Dictionary">
-			</return>
+			<return type="Dictionary" />
 			<description>
 				Returns all response headers as a Dictionary of structure [code]{ "key": "value1; value2" }[/code] where the case-sensitivity of the keys and values is kept like the server delivers it. A value is a simple String, this string can have more than one value where "; " is used as separator.
 				[b]Example:[/b]
@@ -78,38 +68,32 @@
 			</description>
 		</method>
 		<method name="get_status" qualifiers="const">
-			<return type="int" enum="HTTPClient.Status">
-			</return>
+			<return type="int" enum="HTTPClient.Status" />
 			<description>
 				Returns a [enum Status] constant. Need to call [method poll] in order to get status updates.
 			</description>
 		</method>
 		<method name="has_response" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				If [code]true[/code], this [HTTPClient] has a response available.
 			</description>
 		</method>
 		<method name="is_response_chunked" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				If [code]true[/code], this [HTTPClient] has a response that is chunked.
 			</description>
 		</method>
 		<method name="poll">
-			<return type="int" enum="Error">
-			</return>
+			<return type="int" enum="Error" />
 			<description>
 				This needs to be called in order to have any request processed. Check results with [method get_status].
 			</description>
 		</method>
 		<method name="query_string_from_dict">
-			<return type="String">
-			</return>
-			<argument index="0" name="fields" type="Dictionary">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="fields" type="Dictionary" />
 			<description>
 				Generates a GET/POST application/x-www-form-urlencoded style query string from a provided dictionary, e.g.:
 				[codeblocks]
@@ -140,23 +124,17 @@
 			</description>
 		</method>
 		<method name="read_response_body_chunk">
-			<return type="PackedByteArray">
-			</return>
+			<return type="PackedByteArray" />
 			<description>
 				Reads one chunk from the response.
 			</description>
 		</method>
 		<method name="request">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="method" type="int" enum="HTTPClient.Method">
-			</argument>
-			<argument index="1" name="url" type="String">
-			</argument>
-			<argument index="2" name="headers" type="PackedStringArray">
-			</argument>
-			<argument index="3" name="body" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="method" type="int" enum="HTTPClient.Method" />
+			<argument index="1" name="url" type="String" />
+			<argument index="2" name="headers" type="PackedStringArray" />
+			<argument index="3" name="body" type="String" default="&quot;&quot;" />
 			<description>
 				Sends a request to the connected host.
 				The URL parameter is usually just the part after the host, so for [code]http://somehost.com/index.php[/code], it is [code]/index.php[/code]. When sending requests to an HTTP proxy server, it should be an absolute URL. For [constant HTTPClient.METHOD_OPTIONS] requests, [code]*[/code] is also allowed. For [constant HTTPClient.METHOD_CONNECT] requests, it should be the authority component ([code]host:port[/code]).
@@ -180,16 +158,11 @@
 			</description>
 		</method>
 		<method name="request_raw">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="method" type="int" enum="HTTPClient.Method">
-			</argument>
-			<argument index="1" name="url" type="String">
-			</argument>
-			<argument index="2" name="headers" type="PackedStringArray">
-			</argument>
-			<argument index="3" name="body" type="PackedByteArray">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="method" type="int" enum="HTTPClient.Method" />
+			<argument index="1" name="url" type="String" />
+			<argument index="2" name="headers" type="PackedStringArray" />
+			<argument index="3" name="body" type="PackedByteArray" />
 			<description>
 				Sends a raw request to the connected host.
 				The URL parameter is usually just the part after the host, so for [code]http://somehost.com/index.php[/code], it is [code]/index.php[/code]. When sending requests to an HTTP proxy server, it should be an absolute URL. For [constant HTTPClient.METHOD_OPTIONS] requests, [code]*[/code] is also allowed. For [constant HTTPClient.METHOD_CONNECT] requests, it should be the authority component ([code]host:port[/code]).

@@ -12,42 +12,34 @@
 	</tutorials>
 	<methods>
 		<method name="add_feed">
-			<return type="void">
-			</return>
-			<argument index="0" name="feed" type="CameraFeed">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="feed" type="CameraFeed" />
 			<description>
 				Adds the camera [code]feed[/code] to the camera server.
 			</description>
 		</method>
 		<method name="feeds">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Returns an array of [CameraFeed]s.
 			</description>
 		</method>
 		<method name="get_feed">
-			<return type="CameraFeed">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="CameraFeed" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Returns the [CameraFeed] corresponding to the camera with the given [code]index[/code].
 			</description>
 		</method>
 		<method name="get_feed_count">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of [CameraFeed]s registered.
 			</description>
 		</method>
 		<method name="remove_feed">
-			<return type="void">
-			</return>
-			<argument index="0" name="feed" type="CameraFeed">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="feed" type="CameraFeed" />
 			<description>
 				Removes the specified camera [code]feed[/code].
 			</description>
@@ -55,15 +47,13 @@
 	</methods>
 	<signals>
 		<signal name="camera_feed_added">
-			<argument index="0" name="id" type="int">
-			</argument>
+			<argument index="0" name="id" type="int" />
 			<description>
 				Emitted when a [CameraFeed] is added (e.g. a webcam is plugged in).
 			</description>
 		</signal>
 		<signal name="camera_feed_removed">
-			<argument index="0" name="id" type="int">
-			</argument>
+			<argument index="0" name="id" type="int" />
 			<description>
 				Emitted when a [CameraFeed] is removed (e.g. a webcam is unplugged).
 			</description>

@@ -17,88 +17,67 @@
 	</tutorials>
 	<methods>
 		<method name="Transform3D" qualifiers="constructor">
-			<return type="Transform3D">
-			</return>
+			<return type="Transform3D" />
 			<description>
 				Constructs a default-initialized [Transform3D] set to [constant IDENTITY].
 			</description>
 		</method>
 		<method name="Transform3D" qualifiers="constructor">
-			<return type="Transform3D">
-			</return>
-			<argument index="0" name="from" type="Transform3D">
-			</argument>
+			<return type="Transform3D" />
+			<argument index="0" name="from" type="Transform3D" />
 			<description>
 				Constructs a [Transform3D] as a copy of the given [Transform3D].
 			</description>
 		</method>
 		<method name="Transform3D" qualifiers="constructor">
-			<return type="Transform3D">
-			</return>
-			<argument index="0" name="basis" type="Basis">
-			</argument>
-			<argument index="1" name="origin" type="Vector3">
-			</argument>
+			<return type="Transform3D" />
+			<argument index="0" name="basis" type="Basis" />
+			<argument index="1" name="origin" type="Vector3" />
 			<description>
 				Constructs a Transform3D from a [Basis] and [Vector3].
 			</description>
 		</method>
 		<method name="Transform3D" qualifiers="constructor">
-			<return type="Transform3D">
-			</return>
-			<argument index="0" name="x_axis" type="Vector3">
-			</argument>
-			<argument index="1" name="y_axis" type="Vector3">
-			</argument>
-			<argument index="2" name="z_axis" type="Vector3">
-			</argument>
-			<argument index="3" name="origin" type="Vector3">
-			</argument>
+			<return type="Transform3D" />
+			<argument index="0" name="x_axis" type="Vector3" />
+			<argument index="1" name="y_axis" type="Vector3" />
+			<argument index="2" name="z_axis" type="Vector3" />
+			<argument index="3" name="origin" type="Vector3" />
 			<description>
 				Constructs a Transform3D from four [Vector3] values (matrix columns). Each axis corresponds to local basis vectors (some of which may be scaled).
 			</description>
 		</method>
 		<method name="affine_inverse" qualifiers="const">
-			<return type="Transform3D">
-			</return>
+			<return type="Transform3D" />
 			<description>
 				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation, scaling and translation.
 			</description>
 		</method>
 		<method name="interpolate_with" qualifiers="const">
-			<return type="Transform3D">
-			</return>
-			<argument index="0" name="xform" type="Transform3D">
-			</argument>
-			<argument index="1" name="weight" type="float">
-			</argument>
+			<return type="Transform3D" />
+			<argument index="0" name="xform" type="Transform3D" />
+			<argument index="1" name="weight" type="float" />
 			<description>
 				Interpolates the transform to other Transform3D by weight amount (on the range of 0.0 to 1.0).
 			</description>
 		</method>
 		<method name="inverse" qualifiers="const">
-			<return type="Transform3D">
-			</return>
+			<return type="Transform3D" />
 			<description>
 				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling, use affine_inverse for transforms with scaling).
 			</description>
 		</method>
 		<method name="is_equal_approx" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="xform" type="Transform3D">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="xform" type="Transform3D" />
 			<description>
 				Returns [code]true[/code] if this transform and [code]transform[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
 			</description>
 		</method>
 		<method name="looking_at" qualifiers="const">
-			<return type="Transform3D">
-			</return>
-			<argument index="0" name="target" type="Vector3">
-			</argument>
-			<argument index="1" name="up" type="Vector3" default="Vector3(0, 1, 0)">
-			</argument>
+			<return type="Transform3D" />
+			<argument index="0" name="target" type="Vector3" />
+			<argument index="1" name="up" type="Vector3" default="Vector3(0, 1, 0)" />
 			<description>
 				Returns a copy of the transform rotated such that its -Z axis points towards the [code]target[/code] position.
 				The transform will first be rotated around the given [code]up[/code] vector, and then fully aligned to the target by a further rotation around an axis perpendicular to both the [code]target[/code] and [code]up[/code] vectors.
@@ -106,103 +85,79 @@
 			</description>
 		</method>
 		<method name="operator !=" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Transform3D">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="Transform3D" />
 			<description>
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
-			<return type="PackedVector3Array">
-			</return>
-			<argument index="0" name="right" type="PackedVector3Array">
-			</argument>
+			<return type="PackedVector3Array" />
+			<argument index="0" name="right" type="PackedVector3Array" />
 			<description>
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
-			<return type="Transform3D">
-			</return>
-			<argument index="0" name="right" type="Transform3D">
-			</argument>
+			<return type="Transform3D" />
+			<argument index="0" name="right" type="Transform3D" />
 			<description>
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
-			<return type="AABB">
-			</return>
-			<argument index="0" name="right" type="AABB">
-			</argument>
+			<return type="AABB" />
+			<argument index="0" name="right" type="AABB" />
 			<description>
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="right" type="Vector3">
-			</argument>
+			<return type="Vector3" />
+			<argument index="0" name="right" type="Vector3" />
 			<description>
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
-			<return type="Transform3D">
-			</return>
-			<argument index="0" name="right" type="float">
-			</argument>
+			<return type="Transform3D" />
+			<argument index="0" name="right" type="float" />
 			<description>
 				This operator multiplies all components of the [Transform3D], including the origin vector, which scales it uniformly.
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
-			<return type="Transform3D">
-			</return>
-			<argument index="0" name="right" type="int">
-			</argument>
+			<return type="Transform3D" />
+			<argument index="0" name="right" type="int" />
 			<description>
 				This operator multiplies all components of the [Transform3D], including the origin vector, which scales it uniformly.
 			</description>
 		</method>
 		<method name="operator ==" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Transform3D">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="Transform3D" />
 			<description>
 			</description>
 		</method>
 		<method name="orthonormalized" qualifiers="const">
-			<return type="Transform3D">
-			</return>
+			<return type="Transform3D" />
 			<description>
 				Returns the transform with the basis orthogonal (90 degrees), and normalized axis vectors.
 			</description>
 		</method>
 		<method name="rotated" qualifiers="const">
-			<return type="Transform3D">
-			</return>
-			<argument index="0" name="axis" type="Vector3">
-			</argument>
-			<argument index="1" name="phi" type="float">
-			</argument>
+			<return type="Transform3D" />
+			<argument index="0" name="axis" type="Vector3" />
+			<argument index="1" name="phi" type="float" />
 			<description>
 				Rotates the transform around the given axis by the given angle (in radians), using matrix multiplication. The axis must be a normalized vector.
 			</description>
 		</method>
 		<method name="scaled" qualifiers="const">
-			<return type="Transform3D">
-			</return>
-			<argument index="0" name="scale" type="Vector3">
-			</argument>
+			<return type="Transform3D" />
+			<argument index="0" name="scale" type="Vector3" />
 			<description>
 				Scales basis and origin of the transform by the given scale factor, using matrix multiplication.
 			</description>
 		</method>
 		<method name="translated" qualifiers="const">
-			<return type="Transform3D">
-			</return>
-			<argument index="0" name="offset" type="Vector3">
-			</argument>
+			<return type="Transform3D" />
+			<argument index="0" name="offset" type="Vector3" />
 			<description>
 				Translates the transform by the given offset, relative to the transform's basis vectors.
 				Unlike [method rotated] and [method scaled], this does not use matrix multiplication.

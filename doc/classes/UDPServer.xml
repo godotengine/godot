@@ -124,54 +124,45 @@
 	</tutorials>
 	<methods>
 		<method name="get_local_port" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the local port this server is listening to.
 			</description>
 		</method>
 		<method name="is_connection_available" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if a packet with a new address/port combination was received on the socket.
 			</description>
 		</method>
 		<method name="is_listening" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the socket is open and listening on a port.
 			</description>
 		</method>
 		<method name="listen">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="port" type="int">
-			</argument>
-			<argument index="1" name="bind_address" type="String" default="&quot;*&quot;">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="port" type="int" />
+			<argument index="1" name="bind_address" type="String" default="&quot;*&quot;" />
 			<description>
 				Starts the server by opening a UDP socket listening on the given port. You can optionally specify a [code]bind_address[/code] to only listen for packets sent to that address. See also [method PacketPeerUDP.bind].
 			</description>
 		</method>
 		<method name="poll">
-			<return type="int" enum="Error">
-			</return>
+			<return type="int" enum="Error" />
 			<description>
 				Call this method at regular intervals (e.g. inside [method Node._process]) to process new packets. And packet from known address/port pair will be delivered to the appropriate [PacketPeerUDP], any packet received from an unknown address/port pair will be added as a pending connection (see [method is_connection_available], [method take_connection]). The maximum number of pending connection is defined via [member max_pending_connections].
 			</description>
 		</method>
 		<method name="stop">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Stops the server, closing the UDP socket if open. Will close all connected [PacketPeerUDP] accepted via [method take_connection] (remote peers will not be notified).
 			</description>
 		</method>
 		<method name="take_connection">
-			<return type="PacketPeerUDP">
-			</return>
+			<return type="PacketPeerUDP" />
 			<description>
 				Returns the first pending connection (connected to the appropriate address/port). Will return [code]null[/code] if no new connection is available. See also [method is_connection_available], [method PacketPeerUDP.connect_to_host].
 			</description>

@@ -20,55 +20,43 @@
 	</tutorials>
 	<methods>
 		<method name="randf">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns a pseudo-random float between [code]0.0[/code] and [code]1.0[/code] (inclusive).
 			</description>
 		</method>
 		<method name="randf_range">
-			<return type="float">
-			</return>
-			<argument index="0" name="from" type="float">
-			</argument>
-			<argument index="1" name="to" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="from" type="float" />
+			<argument index="1" name="to" type="float" />
 			<description>
 				Returns a pseudo-random float between [code]from[/code] and [code]to[/code] (inclusive).
 			</description>
 		</method>
 		<method name="randfn">
-			<return type="float">
-			</return>
-			<argument index="0" name="mean" type="float" default="0.0">
-			</argument>
-			<argument index="1" name="deviation" type="float" default="1.0">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="mean" type="float" default="0.0" />
+			<argument index="1" name="deviation" type="float" default="1.0" />
 			<description>
 				Returns a [url=https://en.wikipedia.org/wiki/Normal_distribution]normally-distributed[/url] pseudo-random number, using Box-Muller transform with the specified [code]mean[/code] and a standard [code]deviation[/code]. This is also called Gaussian distribution.
 			</description>
 		</method>
 		<method name="randi">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns a pseudo-random 32-bit unsigned integer between [code]0[/code] and [code]4294967295[/code] (inclusive).
 			</description>
 		</method>
 		<method name="randi_range">
-			<return type="int">
-			</return>
-			<argument index="0" name="from" type="int">
-			</argument>
-			<argument index="1" name="to" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="from" type="int" />
+			<argument index="1" name="to" type="int" />
 			<description>
 				Returns a pseudo-random 32-bit signed integer between [code]from[/code] and [code]to[/code] (inclusive).
 			</description>
 		</method>
 		<method name="randomize">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Setups a time-based seed to for this [RandomNumberGenerator] instance. Unlike the [@GlobalScope] random number generation functions, different [RandomNumberGenerator] instances can use different seeds.
 			</description>

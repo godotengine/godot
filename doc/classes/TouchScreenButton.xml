@@ -12,8 +12,7 @@
 	</tutorials>
 	<methods>
 		<method name="is_pressed" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this button is currently pressed.
 			</description>

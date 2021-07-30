@@ -10,55 +10,43 @@
 	</tutorials>
 	<methods>
 		<method name="get_collision_layer_bit" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="bit" type="int" />
 			<description>
 				Returns an individual bit on the collision mask.
 			</description>
 		</method>
 		<method name="get_collision_mask_bit" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="bit" type="int" />
 			<description>
 				Returns an individual bit on the collision mask.
 			</description>
 		</method>
 		<method name="get_meshes" qualifiers="const">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Returns an [Array] with two elements, the first is the [Transform3D] of this node and the second is the root [Mesh] of this node. Only works when this node is the root shape.
 			</description>
 		</method>
 		<method name="is_root_shape" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this is a root shape and is thus the object that is rendered.
 			</description>
 		</method>
 		<method name="set_collision_layer_bit">
-			<return type="void">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
-			<argument index="1" name="value" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="bit" type="int" />
+			<argument index="1" name="value" type="bool" />
 			<description>
 				Sets individual bits on the layer mask. Use this if you only need to change one layer's value.
 			</description>
 		</method>
 		<method name="set_collision_mask_bit">
-			<return type="void">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
-			<argument index="1" name="value" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="bit" type="int" />
+			<argument index="1" name="value" type="bool" />
 			<description>
 				Sets individual bits on the collision mask. Use this if you only need to change one layer's value.
 			</description>

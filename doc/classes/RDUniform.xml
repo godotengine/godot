@@ -8,22 +8,18 @@
 	</tutorials>
 	<methods>
 		<method name="add_id">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="RID">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="clear_ids">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 			</description>
 		</method>
 		<method name="get_ids" qualifiers="const">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 			</description>
 		</method>

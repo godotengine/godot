@@ -10,14 +10,10 @@
 	</tutorials>
 	<methods>
 		<method name="bind">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="port" type="int">
-			</argument>
-			<argument index="1" name="bind_address" type="String" default="&quot;*&quot;">
-			</argument>
-			<argument index="2" name="recv_buf_size" type="int" default="65536">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="port" type="int" />
+			<argument index="1" name="bind_address" type="String" default="&quot;*&quot;" />
+			<argument index="2" name="recv_buf_size" type="int" default="65536" />
 			<description>
 				Binds this [PacketPeerUDP] to the specified [code]port[/code] and [code]address[/code] with a buffer size [code]recv_buf_size[/code], allowing it to receive incoming packets.
 				If [code]address[/code] is set to [code]"*"[/code] (default), the peer will be bound on all available addresses (both IPv4 and IPv6).
@@ -26,66 +22,54 @@
 			</description>
 		</method>
 		<method name="close">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Closes the [PacketPeerUDP]'s underlying UDP socket.
 			</description>
 		</method>
 		<method name="connect_to_host">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="host" type="String">
-			</argument>
-			<argument index="1" name="port" type="int">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="host" type="String" />
+			<argument index="1" name="port" type="int" />
 			<description>
 				Calling this method connects this UDP peer to the given [code]host[/code]/[code]port[/code] pair. UDP is in reality connectionless, so this option only means that incoming packets from different addresses are automatically discarded, and that outgoing packets are always sent to the connected address (future calls to [method set_dest_address] are not allowed). This method does not send any data to the remote peer, to do that, use [method PacketPeer.put_var] or [method PacketPeer.put_packet] as usual. See also [UDPServer].
 				[b]Note:[/b] Connecting to the remote peer does not help to protect from malicious attacks like IP spoofing, etc. Think about using an encryption technique like SSL or DTLS if you feel like your application is transferring sensitive information.
 			</description>
 		</method>
 		<method name="get_local_port" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the local port to which this peer is bound.
 			</description>
 		</method>
 		<method name="get_packet_ip" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the IP of the remote peer that sent the last packet(that was received with [method PacketPeer.get_packet] or [method PacketPeer.get_var]).
 			</description>
 		</method>
 		<method name="get_packet_port" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the port of the remote peer that sent the last packet(that was received with [method PacketPeer.get_packet] or [method PacketPeer.get_var]).
 			</description>
 		</method>
 		<method name="is_bound" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns whether this [PacketPeerUDP] is bound to an address and can receive packets.
 			</description>
 		</method>
 		<method name="is_connected_to_host" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the UDP socket is open and has been connected to a remote address. See [method connect_to_host].
 			</description>
 		</method>
 		<method name="join_multicast_group">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="multicast_address" type="String">
-			</argument>
-			<argument index="1" name="interface_name" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="multicast_address" type="String" />
+			<argument index="1" name="interface_name" type="String" />
 			<description>
 				Joins the multicast group specified by [code]multicast_address[/code] using the interface identified by [code]interface_name[/code].
 				You can join the same multicast group with multiple interfaces. Use [method IP.get_local_interfaces] to know which are available.
@@ -93,41 +77,32 @@
 			</description>
 		</method>
 		<method name="leave_multicast_group">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="multicast_address" type="String">
-			</argument>
-			<argument index="1" name="interface_name" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="multicast_address" type="String" />
+			<argument index="1" name="interface_name" type="String" />
 			<description>
 				Removes the interface identified by [code]interface_name[/code] from the multicast group specified by [code]multicast_address[/code].
 			</description>
 		</method>
 		<method name="set_broadcast_enabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="enabled" type="bool" />
 			<description>
 				Enable or disable sending of broadcast packets (e.g. [code]set_dest_address("255.255.255.255", 4343)[/code]. This option is disabled by default.
 				Note: Some Android devices might require the [code]CHANGE_WIFI_MULTICAST_STATE[/code] permission and this option to be enabled to receive broadcast packets too.
 			</description>
 		</method>
 		<method name="set_dest_address">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="host" type="String">
-			</argument>
-			<argument index="1" name="port" type="int">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="host" type="String" />
+			<argument index="1" name="port" type="int" />
 			<description>
 				Sets the destination address and port for sending packets and variables. A hostname will be resolved using DNS if needed.
 				Note: [method set_broadcast_enabled] must be enabled before sending packets to a broadcast address (e.g. [code]255.255.255.255[/code]).
 			</description>
 		</method>
 		<method name="wait">
-			<return type="int" enum="Error">
-			</return>
+			<return type="int" enum="Error" />
 			<description>
 				Waits for a packet to arrive on the bound address. See [method bind].
 				[b]Note:[/b] [method wait] can't be interrupted once it has been called. This can be worked around by allowing the other party to send a specific "death pill" packet like this:

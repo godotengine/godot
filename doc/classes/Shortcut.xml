@@ -11,24 +11,20 @@
 	</tutorials>
 	<methods>
 		<method name="get_as_text" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the shortcut's [InputEvent] as a [String].
 			</description>
 		</method>
 		<method name="is_shortcut" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="event" type="InputEvent">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="event" type="InputEvent" />
 			<description>
 				Returns [code]true[/code] if the shortcut's [InputEvent] equals [code]event[/code].
 			</description>
 		</method>
 		<method name="is_valid" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				If [code]true[/code], this shortcut is valid.
 			</description>

@@ -10,52 +10,42 @@
 	</tutorials>
 	<methods>
 		<method name="get_available_packet_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of packets currently available in the ring-buffer.
 			</description>
 		</method>
 		<method name="get_packet">
-			<return type="PackedByteArray">
-			</return>
+			<return type="PackedByteArray" />
 			<description>
 				Gets a raw packet.
 			</description>
 		</method>
 		<method name="get_packet_error" qualifiers="const">
-			<return type="int" enum="Error">
-			</return>
+			<return type="int" enum="Error" />
 			<description>
 				Returns the error state of the last packet received (via [method get_packet] and [method get_var]).
 			</description>
 		</method>
 		<method name="get_var">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="allow_objects" type="bool" default="false">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="allow_objects" type="bool" default="false" />
 			<description>
 				Gets a Variant. If [code]allow_objects[/code] is [code]true[/code], decoding objects is allowed.
 				[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
 			</description>
 		</method>
 		<method name="put_packet">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="buffer" type="PackedByteArray">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="buffer" type="PackedByteArray" />
 			<description>
 				Sends a raw packet.
 			</description>
 		</method>
 		<method name="put_var">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="var" type="Variant">
-			</argument>
-			<argument index="1" name="full_objects" type="bool" default="false">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="var" type="Variant" />
+			<argument index="1" name="full_objects" type="bool" default="false" />
 			<description>
 				Sends a [Variant] as a packet. If [code]full_objects[/code] is [code]true[/code], encoding objects is allowed (and can potentially include code).
 			</description>

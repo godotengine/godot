@@ -11,22 +11,19 @@
 	</tutorials>
 	<methods>
 		<method name="lock">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Locks this [Mutex], blocks until it is unlocked by the current owner.
 			</description>
 		</method>
 		<method name="try_lock">
-			<return type="int" enum="Error">
-			</return>
+			<return type="int" enum="Error" />
 			<description>
 				Tries locking this [Mutex], but does not block. Returns [constant OK] on success, [constant ERR_BUSY] otherwise.
 			</description>
 		</method>
 		<method name="unlock">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Unlocks this [Mutex], leaving it to other threads.
 			</description>

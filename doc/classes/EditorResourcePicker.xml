@@ -11,36 +11,29 @@
 	</tutorials>
 	<methods>
 		<method name="_handle_menu_selected" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="int" />
 			<description>
 				This virtual method can be implemented to handle context menu items not handled by default. See [method _set_create_options].
 			</description>
 		</method>
 		<method name="_set_create_options" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="menu_node" type="Object">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="menu_node" type="Object" />
 			<description>
 				This virtual method is called when updating the context menu of [EditorResourcePicker]. Implement this method to override the "New ..." items with your own options. [code]menu_node[/code] is a reference to the [PopupMenu] node.
 				[b]Note:[/b] Implement [method _handle_menu_selected] to handle these custom items.
 			</description>
 		</method>
 		<method name="get_allowed_types" qualifiers="const">
-			<return type="PackedStringArray">
-			</return>
+			<return type="PackedStringArray" />
 			<description>
 				Returns a list of all allowed types and subtypes corresponding to the [member base_type]. If the [member base_type] is empty, an empty list is returned.
 			</description>
 		</method>
 		<method name="set_toggle_pressed">
-			<return type="void">
-			</return>
-			<argument index="0" name="pressed" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="pressed" type="bool" />
 			<description>
 				Sets the toggle mode state for the main button. Works only if [member toggle_mode] is set to [code]true[/code].
 			</description>
@@ -62,15 +55,13 @@
 	</members>
 	<signals>
 		<signal name="resource_changed">
-			<argument index="0" name="resource" type="Resource">
-			</argument>
+			<argument index="0" name="resource" type="Resource" />
 			<description>
 				Emitted when the value of the edited resource was changed.
 			</description>
 		</signal>
 		<signal name="resource_selected">
-			<argument index="0" name="resource" type="Resource">
-			</argument>
+			<argument index="0" name="resource" type="Resource" />
 			<description>
 				Emitted when the resource value was set and user clicked to edit it.
 			</description>

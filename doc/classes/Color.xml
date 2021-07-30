@@ -17,28 +17,22 @@
 	</tutorials>
 	<methods>
 		<method name="Color" qualifiers="constructor">
-			<return type="Color">
-			</return>
+			<return type="Color" />
 			<description>
 				Constructs a default-initialized [Color] with all components set to [code]0[/code].
 			</description>
 		</method>
 		<method name="Color" qualifiers="constructor">
-			<return type="Color">
-			</return>
-			<argument index="0" name="from" type="Color">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="from" type="Color" />
 			<description>
 				Constructs a [Color] as a copy of the given [Color].
 			</description>
 		</method>
 		<method name="Color" qualifiers="constructor">
-			<return type="Color">
-			</return>
-			<argument index="0" name="from" type="Color">
-			</argument>
-			<argument index="1" name="alpha" type="float">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="from" type="Color" />
+			<argument index="1" name="alpha" type="float" />
 			<description>
 				Constructs a [Color] from an existing color, but with a custom alpha value.
 				[codeblocks]
@@ -52,36 +46,26 @@
 			</description>
 		</method>
 		<method name="Color" qualifiers="constructor">
-			<return type="Color">
-			</return>
-			<argument index="0" name="code" type="String">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="code" type="String" />
 			<description>
 				Constructs a [Color] either from an HTML color code or from a standardized color name. Supported color names are the same as the constants.
 			</description>
 		</method>
 		<method name="Color" qualifiers="constructor">
-			<return type="Color">
-			</return>
-			<argument index="0" name="code" type="String">
-			</argument>
-			<argument index="1" name="alpha" type="float">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="code" type="String" />
+			<argument index="1" name="alpha" type="float" />
 			<description>
 				Constructs a [Color] either from an HTML color code or from a standardized color name, with [code]alpha[/code] on the range of 0 to 1. Supported color names are the same as the constants.
 			</description>
 		</method>
 		<method name="Color" qualifiers="constructor">
-			<return type="Color">
-			</return>
-			<argument index="0" name="r" type="float">
-			</argument>
-			<argument index="1" name="g" type="float">
-			</argument>
-			<argument index="2" name="b" type="float">
-			</argument>
-			<argument index="3" name="a" type="float">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="r" type="float" />
+			<argument index="1" name="g" type="float" />
+			<argument index="2" name="b" type="float" />
+			<argument index="3" name="a" type="float" />
 			<description>
 				Constructs a [Color] from RGBA values, typically between 0 and 1.
 				[codeblocks]
@@ -95,14 +79,10 @@
 			</description>
 		</method>
 		<method name="Color" qualifiers="constructor">
-			<return type="Color">
-			</return>
-			<argument index="0" name="r" type="float">
-			</argument>
-			<argument index="1" name="g" type="float">
-			</argument>
-			<argument index="2" name="b" type="float">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="r" type="float" />
+			<argument index="1" name="g" type="float" />
+			<argument index="2" name="b" type="float" />
 			<description>
 				Constructs a [Color] from RGB values, typically between 0 and 1. Alpha will be 1.
 				[codeblocks]
@@ -116,10 +96,8 @@
 			</description>
 		</method>
 		<method name="blend" qualifiers="const">
-			<return type="Color">
-			</return>
-			<argument index="0" name="over" type="Color">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="over" type="Color" />
 			<description>
 				Returns a new color resulting from blending this color over another. If the color is opaque, the result is also opaque. The second color may have a range of alpha values.
 				[codeblocks]
@@ -137,21 +115,16 @@
 			</description>
 		</method>
 		<method name="clamp" qualifiers="const">
-			<return type="Color">
-			</return>
-			<argument index="0" name="min" type="Color" default="Color(0, 0, 0, 0)">
-			</argument>
-			<argument index="1" name="max" type="Color" default="Color(1, 1, 1, 1)">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="min" type="Color" default="Color(0, 0, 0, 0)" />
+			<argument index="1" name="max" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Returns a new color with all components clamped between the components of [code]min[/code] and [code]max[/code], by running [method @GlobalScope.clamp] on each component.
 			</description>
 		</method>
 		<method name="darkened" qualifiers="const">
-			<return type="Color">
-			</return>
-			<argument index="0" name="amount" type="float">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="amount" type="float" />
 			<description>
 				Returns a new color resulting from making this color darker by the specified percentage (ratio from 0 to 1).
 				[codeblocks]
@@ -167,88 +140,67 @@
 			</description>
 		</method>
 		<method name="find_named_color" qualifiers="static">
-			<return type="int">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="name" type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="from_rgbe9995" qualifiers="static">
-			<return type="Color">
-			</return>
-			<argument index="0" name="rgbe" type="int">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="rgbe" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="from_string" qualifiers="static">
-			<return type="Color">
-			</return>
-			<argument index="0" name="str" type="String">
-			</argument>
-			<argument index="1" name="default" type="Color">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="str" type="String" />
+			<argument index="1" name="default" type="Color" />
 			<description>
 			</description>
 		</method>
 		<method name="get_named_color" qualifiers="static">
-			<return type="Color">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_named_color_count" qualifiers="static">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_named_color_name" qualifiers="static">
-			<return type="String">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="hex" qualifiers="static">
-			<return type="Color">
-			</return>
-			<argument index="0" name="hex" type="int">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="hex" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="hex64" qualifiers="static">
-			<return type="Color">
-			</return>
-			<argument index="0" name="hex" type="int">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="hex" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="html" qualifiers="static">
-			<return type="Color">
-			</return>
-			<argument index="0" name="rgba" type="String">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="rgba" type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="html_is_valid" qualifiers="static">
-			<return type="bool">
-			</return>
-			<argument index="0" name="color" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="color" type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="inverted" qualifiers="const">
-			<return type="Color">
-			</return>
+			<return type="Color" />
 			<description>
 				Returns the inverted color [code](1 - r, 1 - g, 1 - b, a)[/code].
 				[codeblocks]
@@ -264,21 +216,16 @@
 			</description>
 		</method>
 		<method name="is_equal_approx" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="to" type="Color">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="to" type="Color" />
 			<description>
 				Returns [code]true[/code] if this color and [code]color[/code] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
 			</description>
 		</method>
 		<method name="lerp" qualifiers="const">
-			<return type="Color">
-			</return>
-			<argument index="0" name="to" type="Color">
-			</argument>
-			<argument index="1" name="weight" type="float">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="to" type="Color" />
+			<argument index="1" name="weight" type="float" />
 			<description>
 				Returns the linear interpolation with another color. The interpolation factor [code]weight[/code] is between 0 and 1.
 				[codeblocks]
@@ -296,10 +243,8 @@
 			</description>
 		</method>
 		<method name="lightened" qualifiers="const">
-			<return type="Color">
-			</return>
-			<argument index="0" name="amount" type="float">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="amount" type="float" />
 			<description>
 				Returns a new color resulting from making this color lighter by the specified percentage (ratio from 0 to 1).
 				[codeblocks]
@@ -315,108 +260,83 @@
 			</description>
 		</method>
 		<method name="operator !=" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Color">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="Color" />
 			<description>
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
-			<return type="Color">
-			</return>
-			<argument index="0" name="right" type="Color">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="right" type="Color" />
 			<description>
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
-			<return type="Color">
-			</return>
-			<argument index="0" name="right" type="float">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="right" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
-			<return type="Color">
-			</return>
-			<argument index="0" name="right" type="int">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="right" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="operator +" qualifiers="operator">
-			<return type="Color">
-			</return>
-			<argument index="0" name="right" type="Color">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="right" type="Color" />
 			<description>
 			</description>
 		</method>
 		<method name="operator -" qualifiers="operator">
-			<return type="Color">
-			</return>
-			<argument index="0" name="right" type="Color">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="right" type="Color" />
 			<description>
 			</description>
 		</method>
 		<method name="operator /" qualifiers="operator">
-			<return type="Color">
-			</return>
-			<argument index="0" name="right" type="Color">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="right" type="Color" />
 			<description>
 			</description>
 		</method>
 		<method name="operator /" qualifiers="operator">
-			<return type="Color">
-			</return>
-			<argument index="0" name="right" type="float">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="right" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="operator /" qualifiers="operator">
-			<return type="Color">
-			</return>
-			<argument index="0" name="right" type="int">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="right" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="operator ==" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Color">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="Color" />
 			<description>
 			</description>
 		</method>
 		<method name="operator []" qualifiers="operator">
-			<return type="float">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="index" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="operator unary+" qualifiers="operator">
-			<return type="Color">
-			</return>
+			<return type="Color" />
 			<description>
 			</description>
 		</method>
 		<method name="operator unary-" qualifiers="operator">
-			<return type="Color">
-			</return>
+			<return type="Color" />
 			<description>
 			</description>
 		</method>
 		<method name="to_abgr32" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the color converted to a 32-bit integer in ABGR format (each byte represents a color channel). ABGR is the reversed version of the default format.
 				[codeblocks]
@@ -432,8 +352,7 @@
 			</description>
 		</method>
 		<method name="to_abgr64" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the color converted to a 64-bit integer in ABGR format (each word represents a color channel). ABGR is the reversed version of the default format.
 				[codeblocks]
@@ -449,8 +368,7 @@
 			</description>
 		</method>
 		<method name="to_argb32" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the color converted to a 32-bit integer in ARGB format (each byte represents a color channel). ARGB is more compatible with DirectX.
 				[codeblocks]
@@ -466,8 +384,7 @@
 			</description>
 		</method>
 		<method name="to_argb64" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the color converted to a 64-bit integer in ARGB format (each word represents a color channel). ARGB is more compatible with DirectX.
 				[codeblocks]
@@ -483,10 +400,8 @@
 			</description>
 		</method>
 		<method name="to_html" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="with_alpha" type="bool" default="true">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="with_alpha" type="bool" default="true" />
 			<description>
 				Returns the color converted to an HTML hexadecimal color string in RGBA format (ex: [code]ff34f822[/code]).
 				Setting [code]with_alpha[/code] to [code]false[/code] excludes alpha from the hexadecimal string (and uses RGB instead of RGBA format).
@@ -505,8 +420,7 @@
 			</description>
 		</method>
 		<method name="to_rgba32" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the color converted to a 32-bit integer in RGBA format (each byte represents a color channel). RGBA is Godot's default format.
 				[codeblocks]
@@ -522,8 +436,7 @@
 			</description>
 		</method>
 		<method name="to_rgba64" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the color converted to a 64-bit integer in RGBA format (each word represents a color channel). RGBA is Godot's default format.
 				[codeblocks]

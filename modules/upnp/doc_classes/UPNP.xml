@@ -21,27 +21,19 @@
 	</tutorials>
 	<methods>
 		<method name="add_device">
-			<return type="void">
-			</return>
-			<argument index="0" name="device" type="UPNPDevice">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="device" type="UPNPDevice" />
 			<description>
 				Adds the given [UPNPDevice] to the list of discovered devices.
 			</description>
 		</method>
 		<method name="add_port_mapping" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="port" type="int">
-			</argument>
-			<argument index="1" name="port_internal" type="int" default="0">
-			</argument>
-			<argument index="2" name="desc" type="String" default="&quot;&quot;">
-			</argument>
-			<argument index="3" name="proto" type="String" default="&quot;UDP&quot;">
-			</argument>
-			<argument index="4" name="duration" type="int" default="0">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="port" type="int" />
+			<argument index="1" name="port_internal" type="int" default="0" />
+			<argument index="2" name="desc" type="String" default="&quot;&quot;" />
+			<argument index="3" name="proto" type="String" default="&quot;UDP&quot;" />
+			<argument index="4" name="duration" type="int" default="0" />
 			<description>
 				Adds a mapping to forward the external [code]port[/code] (between 1 and 65535) on the default gateway (see [method get_gateway]) to the [code]internal_port[/code] on the local machine for the given protocol [code]proto[/code] (either [code]TCP[/code] or [code]UDP[/code], with UDP being the default). If a port mapping for the given port and protocol combination already exists on that gateway device, this method tries to overwrite it. If that is not desired, you can retrieve the gateway manually with [method get_gateway] and call [method add_port_mapping] on it, if any.
 				If [code]internal_port[/code] is [code]0[/code] (the default), the same port number is used for both the external and the internal port (the [code]port[/code] value).
@@ -50,32 +42,24 @@
 			</description>
 		</method>
 		<method name="clear_devices">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clears the list of discovered devices.
 			</description>
 		</method>
 		<method name="delete_port_mapping" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="port" type="int">
-			</argument>
-			<argument index="1" name="proto" type="String" default="&quot;UDP&quot;">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="port" type="int" />
+			<argument index="1" name="proto" type="String" default="&quot;UDP&quot;" />
 			<description>
 				Deletes the port mapping for the given port and protocol combination on the default gateway (see [method get_gateway]) if one exists. [code]port[/code] must be a valid port between 1 and 65535, [code]proto[/code] can be either [code]TCP[/code] or [code]UDP[/code]. See [enum UPNPResult] for possible return values.
 			</description>
 		</method>
 		<method name="discover">
-			<return type="int">
-			</return>
-			<argument index="0" name="timeout" type="int" default="2000">
-			</argument>
-			<argument index="1" name="ttl" type="int" default="2">
-			</argument>
-			<argument index="2" name="device_filter" type="String" default="&quot;InternetGatewayDevice&quot;">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="timeout" type="int" default="2000" />
+			<argument index="1" name="ttl" type="int" default="2" />
+			<argument index="2" name="device_filter" type="String" default="&quot;InternetGatewayDevice&quot;" />
 			<description>
 				Discovers local [UPNPDevice]s. Clears the list of previously discovered devices.
 				Filters for IGD (InternetGatewayDevice) type devices by default, as those manage port forwarding. [code]timeout[/code] is the time to wait for responses in milliseconds. [code]ttl[/code] is the time-to-live; only touch this if you know what you're doing.
@@ -83,51 +67,41 @@
 			</description>
 		</method>
 		<method name="get_device" qualifiers="const">
-			<return type="UPNPDevice">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="UPNPDevice" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Returns the [UPNPDevice] at the given [code]index[/code].
 			</description>
 		</method>
 		<method name="get_device_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of discovered [UPNPDevice]s.
 			</description>
 		</method>
 		<method name="get_gateway" qualifiers="const">
-			<return type="UPNPDevice">
-			</return>
+			<return type="UPNPDevice" />
 			<description>
 				Returns the default gateway. That is the first discovered [UPNPDevice] that is also a valid IGD (InternetGatewayDevice).
 			</description>
 		</method>
 		<method name="query_external_address" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the external [IP] address of the default gateway (see [method get_gateway]) as string. Returns an empty string on error.
 			</description>
 		</method>
 		<method name="remove_device">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Removes the device at [code]index[/code] from the list of discovered devices.
 			</description>
 		</method>
 		<method name="set_device">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
-			<argument index="1" name="device" type="UPNPDevice">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<argument index="1" name="device" type="UPNPDevice" />
 			<description>
 				Sets the device at [code]index[/code] from the list of discovered devices to [code]device[/code].
 			</description>

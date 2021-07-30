@@ -15,200 +15,153 @@
 	</tutorials>
 	<methods>
 		<method name="Rect2" qualifiers="constructor">
-			<return type="Rect2">
-			</return>
+			<return type="Rect2" />
 			<description>
 				Constructs a default-initialized [Rect2] with default (zero) values of [member position] and [member size].
 			</description>
 		</method>
 		<method name="Rect2" qualifiers="constructor">
-			<return type="Rect2">
-			</return>
-			<argument index="0" name="from" type="Rect2">
-			</argument>
+			<return type="Rect2" />
+			<argument index="0" name="from" type="Rect2" />
 			<description>
 				Constructs a [Rect2] as a copy of the given [Rect2].
 			</description>
 		</method>
 		<method name="Rect2" qualifiers="constructor">
-			<return type="Rect2">
-			</return>
-			<argument index="0" name="from" type="Rect2i">
-			</argument>
+			<return type="Rect2" />
+			<argument index="0" name="from" type="Rect2i" />
 			<description>
 				Constructs a [Rect2] from a [Rect2i].
 			</description>
 		</method>
 		<method name="Rect2" qualifiers="constructor">
-			<return type="Rect2">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="size" type="Vector2">
-			</argument>
+			<return type="Rect2" />
+			<argument index="0" name="position" type="Vector2" />
+			<argument index="1" name="size" type="Vector2" />
 			<description>
 				Constructs a [Rect2] by position and size.
 			</description>
 		</method>
 		<method name="Rect2" qualifiers="constructor">
-			<return type="Rect2">
-			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
-			<argument index="1" name="y" type="float">
-			</argument>
-			<argument index="2" name="width" type="float">
-			</argument>
-			<argument index="3" name="height" type="float">
-			</argument>
+			<return type="Rect2" />
+			<argument index="0" name="x" type="float" />
+			<argument index="1" name="y" type="float" />
+			<argument index="2" name="width" type="float" />
+			<argument index="3" name="height" type="float" />
 			<description>
 				Constructs a [Rect2] by x, y, width, and height.
 			</description>
 		</method>
 		<method name="abs" qualifiers="const">
-			<return type="Rect2">
-			</return>
+			<return type="Rect2" />
 			<description>
 				Returns a [Rect2] with equivalent position and area, modified so that the top-left corner is the origin and [code]width[/code] and [code]height[/code] are positive.
 			</description>
 		</method>
 		<method name="encloses" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="b" type="Rect2">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="b" type="Rect2" />
 			<description>
 				Returns [code]true[/code] if this [Rect2] completely encloses another one.
 			</description>
 		</method>
 		<method name="expand" qualifiers="const">
-			<return type="Rect2">
-			</return>
-			<argument index="0" name="to" type="Vector2">
-			</argument>
+			<return type="Rect2" />
+			<argument index="0" name="to" type="Vector2" />
 			<description>
 				Returns this [Rect2] expanded to include a given point.
 			</description>
 		</method>
 		<method name="get_area" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the area of the [Rect2].
 			</description>
 		</method>
 		<method name="grow" qualifiers="const">
-			<return type="Rect2">
-			</return>
-			<argument index="0" name="amount" type="float">
-			</argument>
+			<return type="Rect2" />
+			<argument index="0" name="amount" type="float" />
 			<description>
 				Returns a copy of the [Rect2] grown by the specified [code]amount[/code] on all sides.
 			</description>
 		</method>
 		<method name="grow_individual" qualifiers="const">
-			<return type="Rect2">
-			</return>
-			<argument index="0" name="left" type="float">
-			</argument>
-			<argument index="1" name="top" type="float">
-			</argument>
-			<argument index="2" name="right" type="float">
-			</argument>
-			<argument index="3" name="bottom" type="float">
-			</argument>
+			<return type="Rect2" />
+			<argument index="0" name="left" type="float" />
+			<argument index="1" name="top" type="float" />
+			<argument index="2" name="right" type="float" />
+			<argument index="3" name="bottom" type="float" />
 			<description>
 				Returns a copy of the [Rect2] grown by the specified amount on each side individually.
 			</description>
 		</method>
 		<method name="grow_side" qualifiers="const">
-			<return type="Rect2">
-			</return>
-			<argument index="0" name="side" type="int">
-			</argument>
-			<argument index="1" name="amount" type="float">
-			</argument>
+			<return type="Rect2" />
+			<argument index="0" name="side" type="int" />
+			<argument index="1" name="amount" type="float" />
 			<description>
 				Returns a copy of the [Rect2] grown by the specified [code]amount[/code] on the specified [enum Side].
 			</description>
 		</method>
 		<method name="has_no_area" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the [Rect2] is flat or empty.
 			</description>
 		</method>
 		<method name="has_point" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="point" type="Vector2">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="point" type="Vector2" />
 			<description>
 				Returns [code]true[/code] if the [Rect2] contains a point.
 			</description>
 		</method>
 		<method name="intersection" qualifiers="const">
-			<return type="Rect2">
-			</return>
-			<argument index="0" name="b" type="Rect2">
-			</argument>
+			<return type="Rect2" />
+			<argument index="0" name="b" type="Rect2" />
 			<description>
 				Returns the intersection of this [Rect2] and [code]b[/code].
 				If the rectangles do not intersect, an empty [Rect2] is returned.
 			</description>
 		</method>
 		<method name="intersects" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="b" type="Rect2">
-			</argument>
-			<argument index="1" name="include_borders" type="bool" default="false">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="b" type="Rect2" />
+			<argument index="1" name="include_borders" type="bool" default="false" />
 			<description>
 				Returns [code]true[/code] if the [Rect2] overlaps with [code]b[/code] (i.e. they have at least one point in common).
 				If [code]include_borders[/code] is [code]true[/code], they will also be considered overlapping if their borders touch, even without intersection.
 			</description>
 		</method>
 		<method name="is_equal_approx" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="rect" type="Rect2">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="rect" type="Rect2" />
 			<description>
 				Returns [code]true[/code] if this [Rect2] and [code]rect[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
 			</description>
 		</method>
 		<method name="merge" qualifiers="const">
-			<return type="Rect2">
-			</return>
-			<argument index="0" name="b" type="Rect2">
-			</argument>
+			<return type="Rect2" />
+			<argument index="0" name="b" type="Rect2" />
 			<description>
 				Returns a larger [Rect2] that contains this [Rect2] and [code]b[/code].
 			</description>
 		</method>
 		<method name="operator !=" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Rect2">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="Rect2" />
 			<description>
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
-			<return type="Rect2">
-			</return>
-			<argument index="0" name="right" type="Transform2D">
-			</argument>
+			<return type="Rect2" />
+			<argument index="0" name="right" type="Transform2D" />
 			<description>
 			</description>
 		</method>
 		<method name="operator ==" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Rect2">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="Rect2" />
 			<description>
 			</description>
 		</method>
