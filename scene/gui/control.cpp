@@ -222,41 +222,42 @@ Transform2D Control::_get_internal_transform() const {
 
 bool Control::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
-	if (!name.begins_with("custom")) {
+	// Prefixes "custom_*" are supported for compatibility with 3.x.
+	if (!name.begins_with("theme_override") && !name.begins_with("custom")) {
 		return false;
 	}
 
 	if (p_value.get_type() == Variant::NIL) {
-		if (name.begins_with("custom_icons/")) {
+		if (name.begins_with("theme_override_icons/") || name.begins_with("custom_icons/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.icon_override.has(dname)) {
 				data.icon_override[dname]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 			}
 			data.icon_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
-		} else if (name.begins_with("custom_styles/")) {
+		} else if (name.begins_with("theme_override_styles/") || name.begins_with("custom_styles/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.style_override.has(dname)) {
 				data.style_override[dname]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 			}
 			data.style_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
-		} else if (name.begins_with("custom_fonts/")) {
+		} else if (name.begins_with("theme_override_fonts/") || name.begins_with("custom_fonts/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.font_override.has(dname)) {
 				data.font_override[dname]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 			}
 			data.font_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
-		} else if (name.begins_with("custom_font_sizes/")) {
+		} else if (name.begins_with("theme_override_font_sizes/") || name.begins_with("custom_font_sizes/")) {
 			String dname = name.get_slicec('/', 1);
 			data.font_size_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
-		} else if (name.begins_with("custom_colors/")) {
+		} else if (name.begins_with("theme_override_colors/") || name.begins_with("custom_colors/")) {
 			String dname = name.get_slicec('/', 1);
 			data.color_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
-		} else if (name.begins_with("custom_constants/")) {
+		} else if (name.begins_with("theme_override_constants/") || name.begins_with("custom_constants/")) {
 			String dname = name.get_slicec('/', 1);
 			data.constant_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
@@ -265,22 +266,22 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 		}
 
 	} else {
-		if (name.begins_with("custom_icons/")) {
+		if (name.begins_with("theme_override_icons/") || name.begins_with("custom_icons/")) {
 			String dname = name.get_slicec('/', 1);
 			add_theme_icon_override(dname, p_value);
-		} else if (name.begins_with("custom_styles/")) {
+		} else if (name.begins_with("theme_override_styles/") || name.begins_with("custom_styles/")) {
 			String dname = name.get_slicec('/', 1);
 			add_theme_style_override(dname, p_value);
-		} else if (name.begins_with("custom_fonts/")) {
+		} else if (name.begins_with("theme_override_fonts/") || name.begins_with("custom_fonts/")) {
 			String dname = name.get_slicec('/', 1);
 			add_theme_font_override(dname, p_value);
-		} else if (name.begins_with("custom_font_sizes/")) {
+		} else if (name.begins_with("theme_override_font_sizes/") || name.begins_with("custom_font_sizes/")) {
 			String dname = name.get_slicec('/', 1);
 			add_theme_font_size_override(dname, p_value);
-		} else if (name.begins_with("custom_colors/")) {
+		} else if (name.begins_with("theme_override_colors/") || name.begins_with("custom_colors/")) {
 			String dname = name.get_slicec('/', 1);
 			add_theme_color_override(dname, p_value);
-		} else if (name.begins_with("custom_constants/")) {
+		} else if (name.begins_with("theme_override_constants/") || name.begins_with("custom_constants/")) {
 			String dname = name.get_slicec('/', 1);
 			add_theme_constant_override(dname, p_value);
 		} else {
@@ -307,27 +308,26 @@ void Control::_update_minimum_size() {
 
 bool Control::_get(const StringName &p_name, Variant &r_ret) const {
 	String sname = p_name;
-
-	if (!sname.begins_with("custom")) {
+	if (!sname.begins_with("theme_override")) {
 		return false;
 	}
 
-	if (sname.begins_with("custom_icons/")) {
+	if (sname.begins_with("theme_override_icons/")) {
 		String name = sname.get_slicec('/', 1);
 		r_ret = data.icon_override.has(name) ? Variant(data.icon_override[name]) : Variant();
-	} else if (sname.begins_with("custom_styles/")) {
+	} else if (sname.begins_with("theme_override_styles/")) {
 		String name = sname.get_slicec('/', 1);
 		r_ret = data.style_override.has(name) ? Variant(data.style_override[name]) : Variant();
-	} else if (sname.begins_with("custom_fonts/")) {
+	} else if (sname.begins_with("theme_override_fonts/")) {
 		String name = sname.get_slicec('/', 1);
 		r_ret = data.font_override.has(name) ? Variant(data.font_override[name]) : Variant();
-	} else if (sname.begins_with("custom_font_sizes/")) {
+	} else if (sname.begins_with("theme_override_font_sizes/")) {
 		String name = sname.get_slicec('/', 1);
 		r_ret = data.font_size_override.has(name) ? Variant(data.font_size_override[name]) : Variant();
-	} else if (sname.begins_with("custom_colors/")) {
+	} else if (sname.begins_with("theme_override_colors/")) {
 		String name = sname.get_slicec('/', 1);
 		r_ret = data.color_override.has(name) ? Variant(data.color_override[name]) : Variant();
-	} else if (sname.begins_with("custom_constants/")) {
+	} else if (sname.begins_with("theme_override_constants/")) {
 		String name = sname.get_slicec('/', 1);
 		r_ret = data.constant_override.has(name) ? Variant(data.constant_override[name]) : Variant();
 	} else {
@@ -340,54 +340,8 @@ bool Control::_get(const StringName &p_name, Variant &r_ret) const {
 void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 	Ref<Theme> theme = Theme::get_default();
 
-	{
-		List<StringName> names;
-		theme->get_icon_list(get_class_name(), &names);
-		for (const StringName &E : names) {
-			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
-			if (data.icon_override.has(E)) {
-				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
-			}
+	p_list->push_back(PropertyInfo(Variant::NIL, "Theme Overrides", PROPERTY_HINT_NONE, "theme_override_", PROPERTY_USAGE_GROUP));
 
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "custom_icons/" + E, PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", usage));
-		}
-	}
-	{
-		List<StringName> names;
-		theme->get_stylebox_list(get_class_name(), &names);
-		for (const StringName &E : names) {
-			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
-			if (data.style_override.has(E)) {
-				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
-			}
-
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "custom_styles/" + E, PROPERTY_HINT_RESOURCE_TYPE, "StyleBox", usage));
-		}
-	}
-	{
-		List<StringName> names;
-		theme->get_font_list(get_class_name(), &names);
-		for (const StringName &E : names) {
-			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
-			if (data.font_override.has(E)) {
-				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
-			}
-
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "custom_fonts/" + E, PROPERTY_HINT_RESOURCE_TYPE, "Font", usage));
-		}
-	}
-	{
-		List<StringName> names;
-		theme->get_font_size_list(get_class_name(), &names);
-		for (const StringName &E : names) {
-			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
-			if (data.font_size_override.has(E)) {
-				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
-			}
-
-			p_list->push_back(PropertyInfo(Variant::INT, "custom_font_sizes/" + E, PROPERTY_HINT_NONE, "", usage));
-		}
-	}
 	{
 		List<StringName> names;
 		theme->get_color_list(get_class_name(), &names);
@@ -397,7 +351,7 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::COLOR, "custom_colors/" + E, PROPERTY_HINT_NONE, "", usage));
+			p_list->push_back(PropertyInfo(Variant::COLOR, "theme_override_colors/" + E, PROPERTY_HINT_NONE, "", usage));
 		}
 	}
 	{
@@ -409,7 +363,55 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::INT, "custom_constants/" + E, PROPERTY_HINT_RANGE, "-16384,16384", usage));
+			p_list->push_back(PropertyInfo(Variant::INT, "theme_override_constants/" + E, PROPERTY_HINT_RANGE, "-16384,16384", usage));
+		}
+	}
+	{
+		List<StringName> names;
+		theme->get_font_list(get_class_name(), &names);
+		for (const StringName &E : names) {
+			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
+			if (data.font_override.has(E)) {
+				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+			}
+
+			p_list->push_back(PropertyInfo(Variant::OBJECT, "theme_override_fonts/" + E, PROPERTY_HINT_RESOURCE_TYPE, "Font", usage));
+		}
+	}
+	{
+		List<StringName> names;
+		theme->get_font_size_list(get_class_name(), &names);
+		for (const StringName &E : names) {
+			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
+			if (data.font_size_override.has(E)) {
+				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+			}
+
+			p_list->push_back(PropertyInfo(Variant::INT, "theme_override_font_sizes/" + E, PROPERTY_HINT_NONE, "", usage));
+		}
+	}
+	{
+		List<StringName> names;
+		theme->get_icon_list(get_class_name(), &names);
+		for (const StringName &E : names) {
+			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
+			if (data.icon_override.has(E)) {
+				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+			}
+
+			p_list->push_back(PropertyInfo(Variant::OBJECT, "theme_override_icons/" + E, PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", usage));
+		}
+	}
+	{
+		List<StringName> names;
+		theme->get_stylebox_list(get_class_name(), &names);
+		for (const StringName &E : names) {
+			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
+			if (data.style_override.has(E)) {
+				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+			}
+
+			p_list->push_back(PropertyInfo(Variant::OBJECT, "theme_override_styles/" + E, PROPERTY_HINT_RESOURCE_TYPE, "StyleBox", usage));
 		}
 	}
 }
@@ -2835,6 +2837,9 @@ void Control::_bind_methods() {
 	ADD_GROUP("Layout Direction", "layout_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_direction", PROPERTY_HINT_ENUM, "Inherited,Locale,Left-to-Right,Right-to-Left"), "set_layout_direction", "get_layout_direction");
 
+	ADD_GROUP("Auto Translate", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate"), "set_auto_translate", "is_auto_translating");
+
 	ADD_GROUP("Rect", "rect_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_global_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "_set_global_position", "get_global_position");
@@ -2869,10 +2874,6 @@ void Control::_bind_methods() {
 	ADD_GROUP("Theme", "theme_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "theme_type_variation", PROPERTY_HINT_ENUM_SUGGESTION), "set_theme_type_variation", "get_theme_type_variation");
-
-	ADD_GROUP("Auto Translate", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate"), "set_auto_translate", "is_auto_translating");
-	ADD_GROUP("", "");
 
 	BIND_ENUM_CONSTANT(FOCUS_NONE);
 	BIND_ENUM_CONSTANT(FOCUS_CLICK);
