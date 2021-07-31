@@ -974,7 +974,7 @@ void VisualScriptEditor::_change_port_type(int p_select, int p_id, int p_port, b
 		return;
 	}
 
-	undo_redo->create_action("Change Port Type");
+	undo_redo->create_action(TTR("Change Port Type"));
 	if (is_input) {
 		undo_redo->add_do_method(vsn.ptr(), "set_input_data_port_type", p_port, Variant::Type(p_select));
 		undo_redo->add_undo_method(vsn.ptr(), "set_input_data_port_type", p_port, vsn->get_input_value_port_info(p_port).type);
@@ -1007,7 +1007,7 @@ void VisualScriptEditor::_port_name_focus_out(const Node *p_name_box, int p_id, 
 		return;
 	}
 
-	undo_redo->create_action("Change Port Name");
+	undo_redo->create_action(TTR("Change Port Name"));
 	if (is_input) {
 		undo_redo->add_do_method(vsn.ptr(), "set_input_data_port_name", p_port, text);
 		undo_redo->add_undo_method(vsn.ptr(), "set_input_data_port_name", p_port, vsn->get_input_value_port_info(p_port).name);
