@@ -52,7 +52,7 @@ Ref<Texture2D> FileSystemDock::_get_tree_item_icon(bool p_is_valid, String p_fil
 	if (!p_is_valid) {
 		file_icon = get_theme_icon(SNAME("ImportFail"), SNAME("EditorIcons"));
 	} else {
-		file_icon = (has_theme_icon(p_file_type, SNAME("EditorIcons"))) ? get_theme_icon(p_file_type, SNAME("EditorIcons")) : get_theme_icon(SNAME("File"), SNAME("EditorIcons"));
+		file_icon = get_theme_icon(SNAME("File"), SNAME("EditorIcons"));
 	}
 	return file_icon;
 }
@@ -125,6 +125,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 			FileInfo fi;
 			fi.name = p_dir->get_file(i);
 			fi.type = p_dir->get_file_type(i);
+			fi.path = p_dir->get_file_path(i);
 			fi.import_broken = !p_dir->get_file_import_is_valid(i);
 			fi.modified_time = p_dir->get_file_modified_time(i);
 
@@ -548,30 +549,41 @@ void FileSystemDock::navigate_to_path(const String &p_path) {
 	_navigate_to_path(p_path);
 }
 
-void FileSystemDock::_file_list_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
-	if ((file_list_vb->is_visible_in_tree() || path == p_path.get_base_dir()) && p_preview.is_valid()) {
+void FileSystemDock::_file_list_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Ref<Texture2D> &p_custom_type_icon, const Variant &p_udata) {
+	if ((file_list_vb->is_visible_in_tree() || path == p_path.get_base_dir()) && (p_preview.is_valid() || p_custom_type_icon.is_valid())) {
 		Array uarr = p_udata;
 		int idx = uarr[0];
 		String file = uarr[1];
 		if (idx < files->get_item_count() && files->get_item_text(idx) == file && files->get_item_metadata(idx) == p_path) {
 			if (file_list_display_mode == FILE_LIST_DISPLAY_LIST) {
-				if (p_small_preview.is_valid()) {
+				if (p_custom_type_icon.is_valid()) {
+					files->set_item_icon(idx, p_custom_type_icon);
+				} else if (p_small_preview.is_valid()) {
 					files->set_item_icon(idx, p_small_preview);
 				}
 			} else {
-				files->set_item_icon(idx, p_preview);
+				if (p_custom_type_icon.is_valid()) {
+					files->set_item_tag_icon(idx, p_custom_type_icon);
+				}
+				if (p_preview.is_valid()) {
+					files->set_item_icon(idx, p_preview);
+				}
 			}
 		}
 	}
 }
 
-void FileSystemDock::_tree_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
-	if (p_small_preview.is_valid()) {
+void FileSystemDock::_tree_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Ref<Texture2D> &p_custom_type_icon, const Variant &p_udata) {
+	if (p_small_preview.is_valid() || p_custom_type_icon.is_valid()) {
 		Array uarr = p_udata;
 		if (tree_update_id == (int)uarr[0]) {
 			TreeItem *file_item = Object::cast_to<TreeItem>(uarr[1]);
 			if (file_item) {
-				file_item->set_icon(0, p_small_preview);
+				if (p_custom_type_icon.is_valid()) {
+					file_item->set_icon(0, p_custom_type_icon);
+				} else {
+					file_item->set_icon(0, p_small_preview);
+				}
 			}
 		}
 	}
