@@ -4803,9 +4803,10 @@ Error GLTFDocument::_parse_animations(Ref<GLTFState> state) {
 		Array samplers = d["samplers"];
 
 		if (d.has("name")) {
-			const String name = d["name"];
-			if (name.begins_with("loop") || name.ends_with("loop") || name.begins_with("cycle") || name.ends_with("cycle")) {
+			String name = d["name"];
+			if (name.begins_with("loop") || name.ends_with("loop") || name.begins_with("cycle") || name.ends_with("cycle") || name.find(" -loop") > 0) {
 				animation->set_loop(true);
+				name = name.replace(" -loop", "");
 			}
 			if (state->use_legacy_names) {
 				animation->set_name(_sanitize_scene_name(state, name));
