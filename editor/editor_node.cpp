@@ -2806,7 +2806,9 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			OS::get_singleton()->shell_open("https://godotengine.org/qa/");
 		} break;
 		case HELP_REPORT_A_BUG: {
-			OS::get_singleton()->shell_open("https://github.com/godotengine/godot/issues");
+			String system_info = OS::get_singleton()->get_name() + ", " + RenderingServer::get_singleton()->get_video_adapter_vendor() + " " + RenderingServer::get_singleton()->get_video_adapter_name();
+			String new_issue_link = "https://github.com/godotengine/godot/issues/new?template=bug_report.yml&godot_version=" + _get_version_with_hash().uri_encode() + "&system_information=" + system_info.uri_encode();
+			OS::get_singleton()->shell_open(new_issue_link);
 		} break;
 		case HELP_SUGGEST_A_FEATURE: {
 			OS::get_singleton()->shell_open("https://github.com/godotengine/godot-proposals#readme");
@@ -3899,6 +3901,14 @@ void EditorNode::_pick_main_scene_custom_action(const String &p_custom_action_na
 		current_option = SETTINGS_PICK_MAIN_SCENE;
 		_dialog_action(scene->get_filename());
 	}
+}
+
+String EditorNode::_get_version_with_hash() {
+	String hash = String(VERSION_HASH);
+	if (hash.length() != 0) {
+		hash = " " + vformat("[%s]", hash.left(9));
+	}
+	return "v" VERSION_FULL_BUILD + hash;
 }
 
 Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String &p_fallback) const {
@@ -6611,12 +6621,8 @@ EditorNode::EditorNode() {
 
 	version_btn = memnew(LinkButton);
 	version_btn->set_text(VERSION_FULL_CONFIG);
-	String hash = String(VERSION_HASH);
-	if (hash.length() != 0) {
-		hash = " " + vformat("[%s]", hash.left(9));
-	}
 	// Set the text to copy in metadata as it slightly differs from the button's text.
-	version_btn->set_meta(META_TEXT_TO_COPY, "v" VERSION_FULL_BUILD + hash);
+	version_btn->set_meta(META_TEXT_TO_COPY, _get_version_with_hash());
 	// Fade out the version label to be less prominent, but still readable
 	version_btn->set_self_modulate(Color(1, 1, 1, 0.65));
 	version_btn->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);

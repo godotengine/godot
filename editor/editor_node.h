@@ -670,6 +670,8 @@ private:
 
 	void _pick_main_scene_custom_action(const String &p_custom_action_name);
 
+	String _get_version_with_hash();
+
 protected:
 	void _notification(int p_what);
 
