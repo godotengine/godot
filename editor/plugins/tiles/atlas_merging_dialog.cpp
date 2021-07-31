@@ -154,7 +154,7 @@ void AtlasMergingDialog::_merge_confirmed(String p_path) {
 	Ref<Texture2D> new_texture_resource = ResourceLoader::load(p_path, "Texture2D");
 	merged->set_texture(new_texture_resource);
 
-	undo_redo->create_action("Merge TileSetAtlasSource");
+	undo_redo->create_action(TTR("Merge TileSetAtlasSource"));
 	int next_id = tile_set->get_next_source_id();
 	undo_redo->add_do_method(*tile_set, "add_source", merged, next_id);
 	undo_redo->add_undo_method(*tile_set, "remove_source", next_id);

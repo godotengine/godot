@@ -1596,8 +1596,14 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							se->gizmo->commit_subgizmos(ids, restore, false);
 							spatial_editor->update_transform_gizmo();
 						} else {
-							static const char *_transform_name[4] = { "None", "Rotate", "Translate", "Scale" };
-							undo_redo->create_action(_transform_name[_edit.mode]);
+							static const char *_transform_name[4] = {
+								TTRC("None"),
+								TTRC("Rotate"),
+								// TRANSLATORS: This refers to the movement that changes the position of an object.
+								TTRC("Translate"),
+								TTRC("Scale"),
+							};
+							undo_redo->create_action(TTRGET(_transform_name[_edit.mode]));
 
 							List<Node *> &selection = editor_selection->get_selected_node_list();
 
