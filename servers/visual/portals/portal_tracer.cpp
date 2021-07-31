@@ -228,36 +228,56 @@ void PortalTracer::cull_statics(const VSRoom &p_room, const LocalVector<Plane> &
 	} // for n through statics
 }
 
-int PortalTracer::trace_globals(const LocalVector<Plane> &p_planes, VSInstance **p_result_array, int first_result, int p_result_max, uint32_t p_mask) {
+int PortalTracer::trace_globals(const LocalVector<Plane> &p_planes, VSInstance **p_result_array, int first_result, int p_result_max, uint32_t p_mask, bool p_override_camera) {
 	uint32_t num_globals = _portal_renderer->get_num_moving_globals();
 	int current_result = first_result;
 
-	for (uint32_t n = 0; n < num_globals; n++) {
-		const PortalRenderer::Moving &moving = _portal_renderer->get_moving_global(n);
+	if (!p_override_camera) {
+		for (uint32_t n = 0; n < num_globals; n++) {
+			const PortalRenderer::Moving &moving = _portal_renderer->get_moving_global(n);
 
 #ifdef PORTAL_RENDERER_STORE_MOVING_RIDS
-		// debug check the instance is valid
-		void *vss_instance = VSG::scene->_instance_get_from_rid(moving.instance_rid);
+			// debug check the instance is valid
+			void *vss_instance = VSG::scene->_instance_get_from_rid(moving.instance_rid);
 
-		if (vss_instance) {
+			if (vss_instance) {
 #endif
-			if (test_cull_inside(moving.exact_aabb, p_planes, false)) {
-				if (VSG::scene->_instance_cull_check(moving.instance, p_mask)) {
-					p_result_array[current_result++] = moving.instance;
+				if (test_cull_inside(moving.exact_aabb, p_planes, false)) {
+					if (VSG::scene->_instance_cull_check(moving.instance, p_mask)) {
+						p_result_array[current_result++] = moving.instance;
 
-					// full up?
-					if (current_result >= p_result_max) {
-						return current_result;
+						// full up?
+						if (current_result >= p_result_max) {
+							return current_result;
+						}
 					}
 				}
-			}
 
 #ifdef PORTAL_RENDERER_STORE_MOVING_RIDS
-		} else {
-			WARN_PRINT("vss instance is null " + PortalRenderer::_addr_to_string(moving.instance));
-		}
+			} else {
+				WARN_PRINT("vss instance is null " + PortalRenderer::_addr_to_string(moving.instance));
+			}
 #endif
-	}
+		}
+	} // if not override camera
+	else {
+		// If we are overriding the camera there is a potential problem in the editor:
+		// gizmos BEHIND the override camera will not be drawn.
+		// As this should be editor only and performance is not critical, we will just disable
+		// frustum culling for global objects when the camera is overriden.
+		for (uint32_t n = 0; n < num_globals; n++) {
+			const PortalRenderer::Moving &moving = _portal_renderer->get_moving_global(n);
+
+			if (VSG::scene->_instance_cull_check(moving.instance, p_mask)) {
+				p_result_array[current_result++] = moving.instance;
+
+				// full up?
+				if (current_result >= p_result_max) {
+					return current_result;
+				}
+			}
+		}
+	} // if override camera
 
 	return current_result;
 }
