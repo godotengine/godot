@@ -733,10 +733,11 @@ Error VulkanContext::_create_physical_device() {
 	} vendor_names[] = {
 		{ 0x1002, "AMD" },
 		{ 0x1010, "ImgTec" },
+		{ 0x106B, "Apple" },
 		{ 0x10DE, "NVIDIA" },
 		{ 0x13B5, "ARM" },
 		{ 0x5143, "Qualcomm" },
-		{ 0x8086, "INTEL" },
+		{ 0x8086, "Intel" },
 		{ 0, nullptr },
 	};
 	device_name = gpu_props.deviceName;
