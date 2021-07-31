@@ -65,7 +65,7 @@
 	</methods>
 	<members>
 		<member name="custom_solver_bias" type="float" setter="set_custom_solver_bias" getter="get_custom_solver_bias" default="0.0">
-			The shape's custom solver bias.
+			The shape's custom solver bias. A solver bias is a factor controlling how much two objects "rebound", after violating a constraint, to avoid leaving them in that state because of numerical imprecision.
 		</member>
 	</members>
 	<constants>
