@@ -846,6 +846,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				*dst = Variant::construct(to_type, (const Variant **)&src, 1, err);
 
 #ifdef DEBUG_ENABLED
+				if (src->get_type() == Variant::OBJECT && !src->is_ref() && ObjectDB::get_instance(src->get_object_instance_id()) == nullptr) {
+					err_text = "Trying to cast a deleted object.";
+					OPCODE_BREAK;
+				}
 				if (err.error != Variant::CallError::CALL_OK) {
 					err_text = "Invalid cast: could not convert value to '" + Variant::get_type_name(to_type) + "'.";
 					OPCODE_BREAK;
@@ -866,6 +870,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(!nc);
 
 #ifdef DEBUG_ENABLED
+				if (src->get_type() == Variant::OBJECT && !src->is_ref() && ObjectDB::get_instance(src->get_object_instance_id()) == nullptr) {
+					err_text = "Trying to cast a deleted object.";
+					OPCODE_BREAK;
+				}
 				if (src->get_type() != Variant::OBJECT && src->get_type() != Variant::NIL) {
 					err_text = "Invalid cast: can't convert a non-object value to an object type.";
 					OPCODE_BREAK;
@@ -894,6 +902,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(!base_type);
 
 #ifdef DEBUG_ENABLED
+				if (src->get_type() == Variant::OBJECT && !src->is_ref() && ObjectDB::get_instance(src->get_object_instance_id()) == nullptr) {
+					err_text = "Trying to cast a deleted object.";
+					OPCODE_BREAK;
+				}
 				if (src->get_type() != Variant::OBJECT && src->get_type() != Variant::NIL) {
 					err_text = "Trying to assign a non-object value to a variable of type '" + base_type->get_path().get_file() + "'.";
 					OPCODE_BREAK;

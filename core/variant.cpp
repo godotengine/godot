@@ -803,6 +803,25 @@ bool Variant::is_one() const {
 	return false;
 }
 
+ObjectID Variant::get_object_instance_id() const {
+	if (type != OBJECT) {
+		return 0;
+	}
+#ifdef DEBUG_ENABLED
+	if (is_ref()) {
+		return !_get_obj().ref.is_null() ? _REF_OBJ_PTR(*this)->get_instance_id() : 0;
+	} else {
+		return _get_obj().rc->instance_id;
+	}
+#else
+	if (is_ref() && _get_obj().ref.is_null()) {
+		return 0;
+	} else {
+		return _get_obj().obj->get_instance_id();
+	}
+#endif
+}
+
 void Variant::reference(const Variant &p_variant) {
 	switch (type) {
 		case NIL:
