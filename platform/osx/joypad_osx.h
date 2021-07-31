@@ -63,7 +63,8 @@ struct joypad {
 	Vector<rec_element> button_elements;
 	Vector<rec_element> hat_elements;
 
-	int id;
+	int id = 0;
+	bool offset_hat = false;
 
 	io_service_t ffservice; /* Interface for force feedback, 0 = no ff */
 	FFCONSTANTFORCE ff_constant_force;
