@@ -518,10 +518,10 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 			t = Variant::REAL;
 		} break;
 		case MATH_ABS: {
-			t = Variant::NIL;
+			t = Variant::REAL;
 		} break;
 		case MATH_SIGN: {
-			t = Variant::NIL;
+			t = Variant::INT;
 		} break;
 		case MATH_POW:
 		case MATH_LOG:
@@ -547,7 +547,6 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		case MATH_MOVE_TOWARD:
 		case MATH_DECTIME: {
 			t = Variant::REAL;
-
 		} break;
 		case MATH_RANDOMIZE: {
 		} break;
@@ -584,34 +583,29 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		case LOGIC_MAX:
 		case LOGIC_MIN:
 		case LOGIC_CLAMP: {
+			t = Variant::REAL
 		} break;
-
 		case LOGIC_NEAREST_PO2: {
-			t = Variant::NIL;
+			t = Variant::INT;
 		} break;
 		case OBJ_WEAKREF: {
 			t = Variant::OBJECT;
-
 		} break;
 		case FUNC_FUNCREF: {
 			t = Variant::OBJECT;
-
 		} break;
 		case TYPE_CONVERT: {
 		} break;
 		case TEXT_ORD:
 		case TYPE_OF: {
 			t = Variant::INT;
-
 		} break;
 		case TYPE_EXISTS: {
 			t = Variant::BOOL;
-
 		} break;
 		case TEXT_CHAR:
 		case TEXT_STR: {
 			t = Variant::STRING;
-
 		} break;
 		case TEXT_PRINT: {
 		} break;
@@ -630,7 +624,6 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 			} else {
 				t = Variant::BOOL;
 			}
-
 		} break;
 		case BYTES_TO_VAR: {
 			if (p_idx == 1) {
