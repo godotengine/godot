@@ -116,7 +116,7 @@ void RoomEditorPlugin::_generate_points() {
 
 		// allow the user to undo generating points, because it is
 		// frustrating to lose old data
-		undo_redo->create_action("generate_points");
+		undo_redo->create_action(TTR("Room Generate Points"));
 		undo_redo->add_do_property(_room, "points", pts);
 		undo_redo->add_undo_property(_room, "points", old_pts);
 		undo_redo->commit_action();
