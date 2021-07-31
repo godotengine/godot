@@ -37,6 +37,9 @@ class VisualScriptBuiltinFunc : public VisualScriptNode {
 	GDCLASS(VisualScriptBuiltinFunc, VisualScriptNode);
 
 public:
+	//Changing the order of the enum break the compatibility between version
+	//If you change it for some reason you'll have to copy the order in
+	//VisualScriptBuiltinFunc::func_name
 	enum BuiltinFunc {
 		MATH_SIN,
 		MATH_COS,
