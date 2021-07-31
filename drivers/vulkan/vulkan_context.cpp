@@ -757,9 +757,9 @@ Error VulkanContext::_create_physical_device() {
 			vendor_idx++;
 		}
 	}
-#ifdef DEBUG_ENABLED
+
 	print_line("Using Vulkan Device #" + itos(device_index) + ": " + device_vendor + " - " + device_name);
-#endif
+
 	device_api_version = gpu_props.apiVersion;
 
 	err = vkEnumerateDeviceExtensionProperties(gpu, nullptr, &device_extension_count, nullptr);
