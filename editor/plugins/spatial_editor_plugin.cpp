@@ -5462,6 +5462,18 @@ void SpatialEditor::_init_indicators() {
 	_generate_selection_boxes();
 }
 
+void SpatialEditor::_update_context_menu_stylebox() {
+	// This must be called when the theme changes to follow the new accent color.
+	Ref<StyleBoxFlat> context_menu_stylebox = memnew(StyleBoxFlat);
+	const Color accent_color = EditorNode::get_singleton()->get_gui_base()->get_color("accent_color", "Editor");
+	context_menu_stylebox->set_bg_color(accent_color * Color(1, 1, 1, 0.1));
+	// Add an underline to the StyleBox, but prevent its minimum vertical size from changing.
+	context_menu_stylebox->set_border_color(accent_color);
+	context_menu_stylebox->set_border_width(MARGIN_BOTTOM, Math::round(2 * EDSCALE));
+	context_menu_stylebox->set_default_margin(MARGIN_BOTTOM, 0);
+	context_menu_container->add_style_override("panel", context_menu_stylebox);
+}
+
 void SpatialEditor::_update_gizmos_menu() {
 	gizmos_menu->clear();
 
@@ -5926,6 +5938,7 @@ void SpatialEditor::_notification(int p_what) {
 		_init_indicators();
 	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
 		_update_gizmos_menu_theme();
+		_update_context_menu_stylebox();
 	} else if (p_what == NOTIFICATION_EXIT_TREE) {
 		_finish_indicators();
 	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
@@ -5963,11 +5976,11 @@ void SpatialEditor::_notification(int p_what) {
 }
 
 void SpatialEditor::add_control_to_menu_panel(Control *p_control) {
-	hbc_menu->add_child(p_control);
+	hbc_context_menu->add_child(p_control);
 }
 
 void SpatialEditor::remove_control_from_menu_panel(Control *p_control) {
-	hbc_menu->remove_child(p_control);
+	hbc_context_menu->remove_child(p_control);
 }
 
 void SpatialEditor::set_can_preview(Camera *p_preview) {
@@ -6314,6 +6327,17 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	view_menu->set_text(TTR("View"));
 	view_menu->set_switch_on_hover(true);
 	hbc_menu->add_child(view_menu);
+
+	hbc_menu->add_child(memnew(VSeparator));
+
+	context_menu_container = memnew(PanelContainer);
+	hbc_context_menu = memnew(HBoxContainer);
+	context_menu_container->add_child(hbc_context_menu);
+	// Use a custom stylebox to make contextual menu items stand out from the rest.
+	// This helps with editor usability as contextual menu items change when selecting nodes,
+	// even though it may not be immediately obvious at first.
+	hbc_menu->add_child(context_menu_container);
+	_update_context_menu_stylebox();
 
 	p = view_menu->get_popup();
 

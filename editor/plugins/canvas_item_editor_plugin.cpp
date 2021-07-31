@@ -4137,7 +4137,10 @@ void CanvasItemEditor::_notification(int p_what) {
 		zoom_minus->set_icon(get_icon("ZoomLess", "EditorIcons"));
 		zoom_plus->set_icon(get_icon("ZoomMore", "EditorIcons"));
 
+		_update_context_menu_stylebox();
+
 		presets_menu->set_icon(get_icon("ControlLayout", "EditorIcons"));
+
 		PopupMenu *p = presets_menu->get_popup();
 
 		p->clear();
@@ -4282,6 +4285,18 @@ void CanvasItemEditor::_update_bone_list() {
 
 void CanvasItemEditor::_tree_changed(Node *) {
 	_queue_update_bone_list();
+}
+
+void CanvasItemEditor::_update_context_menu_stylebox() {
+	// This must be called when the theme changes to follow the new accent color.
+	Ref<StyleBoxFlat> context_menu_stylebox = memnew(StyleBoxFlat);
+	const Color accent_color = EditorNode::get_singleton()->get_gui_base()->get_color("accent_color", "Editor");
+	context_menu_stylebox->set_bg_color(accent_color * Color(1, 1, 1, 0.1));
+	// Add an underline to the StyleBox, but prevent its minimum vertical size from changing.
+	context_menu_stylebox->set_border_color(accent_color);
+	context_menu_stylebox->set_border_width(MARGIN_BOTTOM, Math::round(2 * EDSCALE));
+	context_menu_stylebox->set_default_margin(MARGIN_BOTTOM, 0);
+	context_menu_container->add_style_override("panel", context_menu_stylebox);
 }
 
 void CanvasItemEditor::_update_scrollbars() {
@@ -5619,11 +5634,11 @@ void CanvasItemEditor::remove_control_from_info_overlay(Control *p_control) {
 void CanvasItemEditor::add_control_to_menu_panel(Control *p_control) {
 	ERR_FAIL_COND(!p_control);
 
-	hb->add_child(p_control);
+	hbc_context_menu->add_child(p_control);
 }
 
 void CanvasItemEditor::remove_control_from_menu_panel(Control *p_control) {
-	hb->remove_child(p_control);
+	hbc_context_menu->remove_child(p_control);
 }
 
 HSplitContainer *CanvasItemEditor::get_palette_split() {
@@ -5992,9 +6007,20 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_separator();
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/preview_canvas_scale", TTR("Preview Canvas Scale"), KEY_MASK_SHIFT | KEY_MASK_CMD | KEY_P), PREVIEW_CANVAS_SCALE);
 
+	hb->add_child(memnew(VSeparator));
+
+	context_menu_container = memnew(PanelContainer);
+	hbc_context_menu = memnew(HBoxContainer);
+	context_menu_container->add_child(hbc_context_menu);
+	// Use a custom stylebox to make contextual menu items stand out from the rest.
+	// This helps with editor usability as contextual menu items change when selecting nodes,
+	// even though it may not be immediately obvious at first.
+	hb->add_child(context_menu_container);
+	_update_context_menu_stylebox();
+
 	presets_menu = memnew(MenuButton);
 	presets_menu->set_text(TTR("Layout"));
-	hb->add_child(presets_menu);
+	hbc_context_menu->add_child(presets_menu);
 	presets_menu->hide();
 	presets_menu->set_switch_on_hover(true);
 
@@ -6007,13 +6033,13 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	anchors_popup->connect("id_pressed", this, "_popup_callback");
 
 	anchor_mode_button = memnew(ToolButton);
-	hb->add_child(anchor_mode_button);
+	hbc_context_menu->add_child(anchor_mode_button);
 	anchor_mode_button->set_toggle_mode(true);
 	anchor_mode_button->hide();
 	anchor_mode_button->connect("toggled", this, "_button_toggle_anchor_mode");
 
 	animation_hb = memnew(HBoxContainer);
-	hb->add_child(animation_hb);
+	hbc_context_menu->add_child(animation_hb);
 	animation_hb->add_child(memnew(VSeparator));
 	animation_hb->hide();
 
