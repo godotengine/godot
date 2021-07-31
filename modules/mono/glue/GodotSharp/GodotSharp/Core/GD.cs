@@ -28,16 +28,6 @@ namespace Godot
             return (real_t)Math.Exp(db * 0.11512925464970228420089957273422);
         }
 
-        public static real_t DecTime(real_t value, real_t amount, real_t step)
-        {
-            real_t sgn = Mathf.Sign(value);
-            real_t val = Mathf.Abs(value);
-            val -= amount * step;
-            if (val < 0)
-                val = 0;
-            return val * sgn;
-        }
-
         public static int Hash(object var)
         {
             return godot_icall_GD_hash(var);
