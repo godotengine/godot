@@ -524,7 +524,9 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		case MATH_INVERSE_LERP:
 		case MATH_RANGE_LERP:
 		case MATH_SMOOTHSTEP:
-		case MATH_MOVE_TOWARD:
+		case MATH_MOVE_TOWARD: {
+			t = Variant::FLOAT;
+		} break;
 		case MATH_RANDOMIZE: {
 		} break;
 		case MATH_RANDI: {
