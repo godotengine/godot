@@ -1252,6 +1252,13 @@
 				Returns the id of the test texture. Creates one if none exists.
 			</description>
 		</method>
+		<method name="get_video_adapter_api_version" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the version of the graphics video adapter [i]currently in use[/i] (e.g. "1.2.189" for Vulkan, "3.3.0 NVIDIA 510.60.02" for OpenGL). This version may be different from the actual latest version supported by the hardware, as Godot may not always request the latest version.
+				[b]Note:[/b] When running a headless or server binary, this function returns an empty string.
+			</description>
+		</method>
 		<method name="get_video_adapter_name" qualifiers="const">
 			<return type="String" />
 			<description>
