@@ -1733,7 +1733,36 @@ void _Thread::_start_func(void *ud) {
 	memdelete(tud);
 	Callable::CallError ce;
 	const Variant *arg[1] = { &t->userdata };
-	int argc = (int)(arg[0]->get_type() != Variant::NIL);
+	int argc = 0;
+	if (arg[0]->get_type() != Variant::NIL) {
+		// Just pass to the target function whatever came as user data
+		argc = 1;
+	} else {
+		// There are two cases of null user data:
+		// a) The target function has zero parameters and the caller is just honoring that.
+		// b) The target function has at least one parameter with no default and the caller is
+		//    leveraging the fact that user data defaults to null in Thread.start().
+		//    We care about the case of more than one parameter because, even if a thread
+		//    function can have one at most, out mindset here is to do our best with the
+		//    only/first one and let the call handle any other error conditions, like too
+		//    much arguments.
+		// We must check if we are in case b).
+		int target_param_count = 0;
+		int target_default_arg_count = 0;
+		Ref<Script> script = t->target_instance->get_script();
+		if (script.is_valid()) {
+			MethodInfo mi = script->get_method_info(t->target_method);
+			target_param_count = mi.arguments.size();
+			target_default_arg_count = mi.default_arguments.size();
+		} else {
+			MethodBind *method = ClassDB::get_method(t->target_instance->get_class_name(), t->target_method);
+			target_param_count = method->get_argument_count();
+			target_default_arg_count = method->get_default_argument_count();
+		}
+		if (target_param_count >= 1 && target_default_arg_count == target_param_count) {
+			argc = 1;
+		}
+	}
 
 	Thread::set_name(t->target_method);
 
