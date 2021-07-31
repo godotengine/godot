@@ -994,7 +994,7 @@ int PortalRenderer::cull_convex_implementation(const Vector3 &p_point, const Vec
 		return out_count;
 	}
 
-	out_count = _tracer.trace_globals(planes, p_result_array, out_count, p_result_max, p_mask);
+	out_count = _tracer.trace_globals(planes, p_result_array, out_count, p_result_max, p_mask, _override_camera);
 
 	return out_count;
 }

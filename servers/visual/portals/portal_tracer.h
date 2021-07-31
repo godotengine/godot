@@ -105,7 +105,7 @@ public:
 	void trace(PortalRenderer &p_portal_renderer, const Vector3 &p_pos, const LocalVector<Plane> &p_planes, int p_start_room_id, TraceResult &r_result);
 
 	// globals are handled separately as they don't care about the rooms
-	int trace_globals(const LocalVector<Plane> &p_planes, VSInstance **p_result_array, int first_result, int p_result_max, uint32_t p_mask);
+	int trace_globals(const LocalVector<Plane> &p_planes, VSInstance **p_result_array, int first_result, int p_result_max, uint32_t p_mask, bool p_override_camera);
 
 	void set_depth_limit(int p_limit) { _depth_limit = p_limit; }
 
