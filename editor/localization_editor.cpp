@@ -371,15 +371,10 @@ void LocalizationEditor::_translation_filter_mode_changed(int p_mode) {
 
 void LocalizationEditor::_pot_add(const PackedStringArray &p_paths) {
 	PackedStringArray pot_translations = ProjectSettings::get_singleton()->get("internationalization/locale/translations_pot_files");
-
 	for (int i = 0; i < p_paths.size(); i++) {
-		for (int j = 0; j < pot_translations.size(); j++) {
-			if (pot_translations[j] == p_paths[i]) {
-				continue; //exists
-			}
+		if (!pot_translations.has(p_paths[i])) {
+			pot_translations.push_back(p_paths[i]);
 		}
-
-		pot_translations.push_back(p_paths[i]);
 	}
 
 	undo_redo->create_action(vformat(TTR("Add %d file(s) for POT generation"), p_paths.size()));
