@@ -222,7 +222,7 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 
 	RD::get_singleton()->swap_buffers();
 
-	RD::get_singleton()->free(texture);
+	storage->free(texture);
 }
 
 RendererCompositorRD *RendererCompositorRD::singleton = nullptr;

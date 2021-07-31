@@ -146,7 +146,9 @@ void ShaderRD::_clear_version(Version *p_version) {
 	//clear versions if they exist
 	if (p_version->variants) {
 		for (int i = 0; i < variant_defines.size(); i++) {
-			RD::get_singleton()->free(p_version->variants[i]);
+			if (variants_enabled[i]) {
+				RD::get_singleton()->free(p_version->variants[i]);
+			}
 		}
 
 		memdelete_arr(p_version->variants);
