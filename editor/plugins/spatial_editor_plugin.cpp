@@ -2484,20 +2484,20 @@ void SpatialEditorViewport::_notification(int p_what) {
 			text += "X: " + rtos(current_camera->get_translation().x).pad_decimals(1) + "\n";
 			text += "Y: " + rtos(current_camera->get_translation().y).pad_decimals(1) + "\n";
 			text += "Z: " + rtos(current_camera->get_translation().z).pad_decimals(1) + "\n";
-			text += TTR("Pitch") + ": " + itos(Math::round(current_camera->get_rotation_degrees().x)) + "\n";
-			text += TTR("Yaw") + ": " + itos(Math::round(current_camera->get_rotation_degrees().y)) + "\n\n";
+			text += TTR("Pitch:") + " " + itos(Math::round(current_camera->get_rotation_degrees().x)) + "\n";
+			text += TTR("Yaw:") + " " + itos(Math::round(current_camera->get_rotation_degrees().y)) + "\n\n";
 
-			text += TTR("Size") +
+			text += TTR("Size:") +
 					vformat(
-							": %s (%.1fMP)\n",
+							" %s (%.1fMP)\n",
 							viewport_size,
 							viewport->get_size().x * viewport->get_size().y * 0.000'001);
-			text += TTR("Objects Drawn") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_OBJECTS_IN_FRAME)) + "\n";
-			text += TTR("Material Changes") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_MATERIAL_CHANGES_IN_FRAME)) + "\n";
-			text += TTR("Shader Changes") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_SHADER_CHANGES_IN_FRAME)) + "\n";
-			text += TTR("Surface Changes") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_SURFACE_CHANGES_IN_FRAME)) + "\n";
-			text += TTR("Draw Calls") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_DRAW_CALLS_IN_FRAME)) + "\n";
-			text += TTR("Vertices") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_VERTICES_IN_FRAME));
+			text += TTR("Objects Drawn:") + " " + itos(viewport->get_render_info(Viewport::RENDER_INFO_OBJECTS_IN_FRAME)) + "\n";
+			text += TTR("Material Changes:") + " " + itos(viewport->get_render_info(Viewport::RENDER_INFO_MATERIAL_CHANGES_IN_FRAME)) + "\n";
+			text += TTR("Shader Changes:") + " " + itos(viewport->get_render_info(Viewport::RENDER_INFO_SHADER_CHANGES_IN_FRAME)) + "\n";
+			text += TTR("Surface Changes:") + " " + itos(viewport->get_render_info(Viewport::RENDER_INFO_SURFACE_CHANGES_IN_FRAME)) + "\n";
+			text += TTR("Draw Calls:") + " " + itos(viewport->get_render_info(Viewport::RENDER_INFO_DRAW_CALLS_IN_FRAME)) + "\n";
+			text += TTR("Vertices:") + " " + itos(viewport->get_render_info(Viewport::RENDER_INFO_VERTICES_IN_FRAME));
 			info_label->set_text(text);
 		}
 
@@ -2508,7 +2508,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 		if (show_fps) {
 			String text;
 			const float temp_fps = Engine::get_singleton()->get_frames_per_second();
-			text += TTR(vformat("FPS: %d (%s ms)", temp_fps, String::num(1000.0f / temp_fps, 2)));
+			text += vformat(TTR("FPS: %d (%s ms)"), temp_fps, String::num(1000.0f / temp_fps, 2));
 			fps_label->set_text(text);
 		}
 

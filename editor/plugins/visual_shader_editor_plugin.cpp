@@ -3030,7 +3030,7 @@ public:
 		UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 		updating = true;
-		undo_redo->create_action(TTR("Edit Visual Property") + ": " + prop, UndoRedo::MERGE_ENDS);
+		undo_redo->create_action(TTR("Edit Visual Property:") + " " + prop, UndoRedo::MERGE_ENDS);
 		undo_redo->add_do_property(node.ptr(), prop, p_value);
 		undo_redo->add_undo_property(node.ptr(), prop, node->get(prop));
 

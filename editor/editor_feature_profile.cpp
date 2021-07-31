@@ -743,7 +743,7 @@ void EditorFeatureProfileManager::_update_selected_profile() {
 
 	TreeItem *features = class_list->create_item(root);
 	TreeItem *last_feature;
-	features->set_text(0, TTR("Main Features") + ":");
+	features->set_text(0, TTR("Main Features:"));
 	for (int i = 0; i < EditorFeatureProfile::FEATURE_MAX; i++) {
 		TreeItem *feature;
 		if (i == EditorFeatureProfile::FEATURE_IMPORT_DOCK) {
@@ -767,7 +767,7 @@ void EditorFeatureProfileManager::_update_selected_profile() {
 	}
 
 	TreeItem *classes = class_list->create_item(root);
-	classes->set_text(0, TTR("Nodes and Classes") + ":");
+	classes->set_text(0, TTR("Nodes and Classes:"));
 
 	_fill_classes_from(classes, "Node", class_selected);
 	_fill_classes_from(classes, "Resource", class_selected);
@@ -931,7 +931,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	class_list_vbc->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	class_list = memnew(Tree);
-	class_list_vbc->add_margin_child(TTR("Configure Selected Profile") + ":", class_list, true);
+	class_list_vbc->add_margin_child(TTR("Configure Selected Profile:"), class_list, true);
 	class_list->set_hide_root(true);
 	class_list->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
 	class_list->connect("cell_selected", this, "_class_list_item_selected");
@@ -946,11 +946,11 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	property_list_vbc->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	description_bit = memnew(EditorHelpBit);
-	property_list_vbc->add_margin_child(TTR("Description") + ":", description_bit, false);
+	property_list_vbc->add_margin_child(TTR("Description:"), description_bit, false);
 	description_bit->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
 
 	property_list = memnew(Tree);
-	property_list_vbc->add_margin_child(TTR("Extra Options") + ":", property_list, true);
+	property_list_vbc->add_margin_child(TTR("Extra Options:"), property_list, true);
 	property_list->set_hide_root(true);
 	property_list->set_hide_folding(true);
 	property_list->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
@@ -973,7 +973,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	VBoxContainer *new_profile_vb = memnew(VBoxContainer);
 	new_profile_dialog->add_child(new_profile_vb);
 	Label *new_profile_label = memnew(Label);
-	new_profile_label->set_text(TTR("New profile name") + ":");
+	new_profile_label->set_text(TTR("New profile name:"));
 	new_profile_vb->add_child(new_profile_label);
 	new_profile_name = memnew(LineEdit);
 	new_profile_vb->add_child(new_profile_name);
