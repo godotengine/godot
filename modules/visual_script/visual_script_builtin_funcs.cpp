@@ -518,10 +518,10 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 			t = Variant::REAL;
 		} break;
 		case MATH_ABS: {
-			t = Variant::NIL;
+			t = Variant::REAL;
 		} break;
 		case MATH_SIGN: {
-			t = Variant::NIL;
+			t = Variant::REAL;
 		} break;
 		case MATH_POW:
 		case MATH_LOG:
@@ -547,7 +547,6 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		case MATH_MOVE_TOWARD:
 		case MATH_DECTIME: {
 			t = Variant::REAL;
-
 		} break;
 		case MATH_RANDOMIZE: {
 		} break;
@@ -584,34 +583,29 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		case LOGIC_MAX:
 		case LOGIC_MIN:
 		case LOGIC_CLAMP: {
+			t = Variant::REAL;
 		} break;
-
 		case LOGIC_NEAREST_PO2: {
-			t = Variant::NIL;
+			t = Variant::INT;
 		} break;
 		case OBJ_WEAKREF: {
 			t = Variant::OBJECT;
-
 		} break;
 		case FUNC_FUNCREF: {
 			t = Variant::OBJECT;
-
 		} break;
 		case TYPE_CONVERT: {
 		} break;
 		case TEXT_ORD:
 		case TYPE_OF: {
 			t = Variant::INT;
-
 		} break;
 		case TYPE_EXISTS: {
 			t = Variant::BOOL;
-
 		} break;
 		case TEXT_CHAR:
 		case TEXT_STR: {
 			t = Variant::STRING;
-
 		} break;
 		case TEXT_PRINT: {
 		} break;
@@ -630,7 +624,6 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 			} else {
 				t = Variant::BOOL;
 			}
-
 		} break;
 		case BYTES_TO_VAR: {
 			if (p_idx == 1) {
@@ -1217,10 +1210,6 @@ public:
 	VisualScriptInstance *instance;
 
 	VisualScriptBuiltinFunc::BuiltinFunc func;
-
-	//virtual int get_working_memory_size() const { return 0; }
-	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
-	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
 		VisualScriptBuiltinFunc::exec_func(func, p_inputs, p_outputs[0], r_error, r_error_str);
