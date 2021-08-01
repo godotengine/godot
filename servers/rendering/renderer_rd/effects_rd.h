@@ -39,8 +39,11 @@
 #include "servers/rendering/renderer_rd/shaders/copy_to_fb.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/cube_to_dp.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/cubemap_downsampler.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/cubemap_downsampler_raster.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/cubemap_filter.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/cubemap_filter_raster.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/cubemap_roughness.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/cubemap_roughness_raster.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/luminance_reduce.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/luminance_reduce_raster.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/resolve.glsl.gen.h"
@@ -62,6 +65,9 @@
 #include "servers/rendering_server.h"
 
 class EffectsRD {
+private:
+	bool prefer_raster_effects;
+
 	enum BlurRasterMode {
 		BLUR_MODE_GAUSSIAN_BLUR,
 		BLUR_MODE_GAUSSIAN_GLOW,
@@ -220,9 +226,11 @@ class EffectsRD {
 
 	struct CubemapRoughness {
 		CubemapRoughnessPushConstant push_constant;
-		CubemapRoughnessShaderRD shader;
+		CubemapRoughnessShaderRD compute_shader;
+		CubemapRoughnessRasterShaderRD raster_shader;
 		RID shader_version;
-		RID pipeline;
+		RID compute_pipeline;
+		PipelineCacheRD raster_pipeline;
 	} roughness;
 
 	enum TonemapMode {
@@ -508,15 +516,17 @@ class EffectsRD {
 
 	struct CubemapDownsamplerPushConstant {
 		uint32_t face_size;
-		float pad[3];
+		uint32_t face_id;
+		float pad[2];
 	};
 
 	struct CubemapDownsampler {
 		CubemapDownsamplerPushConstant push_constant;
-		CubemapDownsamplerShaderRD shader;
+		CubemapDownsamplerShaderRD compute_shader;
+		CubemapDownsamplerRasterShaderRD raster_shader;
 		RID shader_version;
-		RID pipeline;
-
+		RID compute_pipeline;
+		PipelineCacheRD raster_pipeline;
 	} cubemap_downsampler;
 
 	enum CubemapFilterMode {
@@ -527,10 +537,19 @@ class EffectsRD {
 		FILTER_MODE_MAX,
 	};
 
+	struct CubemapFilterRasterPushConstant {
+		uint32_t mip_level;
+		uint32_t face_id;
+		float pad[2];
+	};
+
 	struct CubemapFilter {
-		CubemapFilterShaderRD shader;
+		CubemapFilterShaderRD compute_shader;
+		CubemapFilterRasterShaderRD raster_shader;
 		RID shader_version;
-		RID pipelines[FILTER_MODE_MAX];
+		RID compute_pipelines[FILTER_MODE_MAX];
+		PipelineCacheRD raster_pipelines[FILTER_MODE_MAX];
+
 		RID uniform_set;
 		RID image_uniform_set;
 		RID coefficient_buffer;
@@ -738,9 +757,9 @@ class EffectsRD {
 	RID _get_compute_uniform_set_from_texture_pair(RID p_texture, RID p_texture2, bool p_use_mipmaps = false);
 	RID _get_compute_uniform_set_from_image_pair(RID p_texture, RID p_texture2);
 
-	bool prefer_raster_effects;
-
 public:
+	bool get_prefer_raster_effects();
+
 	void copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y = false, bool p_force_luminance = false, bool p_alpha_to_zero = false, bool p_srgb = false, RID p_secondary = RID());
 	void copy_to_rect(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y = false, bool p_force_luminance = false, bool p_all_source = false, bool p_8_bit_dst = false, bool p_alpha_to_one = false);
 	void copy_cubemap_to_panorama(RID p_source_cube, RID p_dest_panorama, const Size2i &p_panorama_size, float p_lod, bool p_is_array);
@@ -752,7 +771,8 @@ public:
 	void gaussian_glow(RID p_source_rd_texture, RID p_back_texture, const Size2i &p_size, float p_strength = 1.0, bool p_high_quality = false, bool p_first_pass = false, float p_luminance_cap = 16.0, float p_exposure = 1.0, float p_bloom = 0.0, float p_hdr_bleed_treshold = 1.0, float p_hdr_bleed_scale = 1.0, RID p_auto_exposure = RID(), float p_auto_exposure_grey = 1.0);
 	void gaussian_glow_raster(RID p_source_rd_texture, RID p_framebuffer_half, RID p_rd_texture_half, RID p_dest_framebuffer, const Vector2 &p_pixel_size, float p_strength = 1.0, bool p_high_quality = false, bool p_first_pass = false, float p_luminance_cap = 16.0, float p_exposure = 1.0, float p_bloom = 0.0, float p_hdr_bleed_treshold = 1.0, float p_hdr_bleed_scale = 1.0, RID p_auto_exposure = RID(), float p_auto_exposure_grey = 1.0);
 
-	void cubemap_roughness(RID p_source_rd_texture, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size);
+	void cubemap_roughness(RID p_source_rd_texture, RID p_dest_texture, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size);
+	void cubemap_roughness_raster(RID p_source_rd_texture, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size);
 	void make_mipmap(RID p_source_rd_texture, RID p_dest_texture, const Size2i &p_size);
 	void copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dest_texture, const Rect2 &p_rect, float p_z_near, float p_z_far, bool p_dp_flip);
 	void luminance_reduction(RID p_source_texture, const Size2i p_source_size, const Vector<RID> p_reduce, RID p_prev_luminance, float p_min_luminance, float p_max_luminance, float p_adjust, bool p_set = false);
@@ -828,7 +848,9 @@ public:
 
 	void roughness_limit(RID p_source_normal, RID p_roughness, const Size2i &p_size, float p_curve);
 	void cubemap_downsample(RID p_source_cubemap, RID p_dest_cubemap, const Size2i &p_size);
+	void cubemap_downsample_raster(RID p_source_cubemap, RID p_dest_framebuffer, uint32_t p_face_id, const Size2i &p_size);
 	void cubemap_filter(RID p_source_cubemap, Vector<RID> p_dest_cubemap, bool p_use_array);
+	void cubemap_filter_raster(RID p_source_cubemap, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_mip_level);
 
 	void screen_space_reflection(RID p_diffuse, RID p_normal_roughness, RS::EnvironmentSSRRoughnessQuality p_roughness_quality, RID p_blur_radius, RID p_blur_radius2, RID p_metallic, const Color &p_metallic_mask, RID p_depth, RID p_scale_depth, RID p_scale_normal, RID p_output, RID p_output_blur, const Size2i &p_screen_size, int p_max_steps, float p_fade_in, float p_fade_out, float p_tolerance, const CameraMatrix &p_camera);
 	void merge_specular(RID p_dest_framebuffer, RID p_specular, RID p_base, RID p_reflection);

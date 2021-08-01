@@ -629,6 +629,8 @@ bool RendererSceneRenderRD::reflection_probe_instance_begin_render(RID p_instanc
 	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
 	ERR_FAIL_COND_V(!rpi, false);
 
+	RD::get_singleton()->draw_command_begin_label("Reflection probe render");
+
 	if (storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS && atlas->reflection.is_valid() && atlas->size != 256) {
 		WARN_PRINT("ReflectionProbes set to UPDATE_ALWAYS must have an atlas size of 256. Please update the atlas size in the ProjectSettings.");
 		reflection_atlas_set_size(p_reflection_atlas, 256, atlas->count);
@@ -675,7 +677,7 @@ bool RendererSceneRenderRD::reflection_probe_instance_begin_render(RID p_instanc
 		}
 		atlas->reflections.resize(atlas->count);
 		for (int i = 0; i < atlas->count; i++) {
-			atlas->reflections.write[i].data.update_reflection_data(atlas->size, mipmaps, false, atlas->reflection, i * 6, storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS, sky.roughness_layers);
+			atlas->reflections.write[i].data.update_reflection_data(storage, atlas->size, mipmaps, false, atlas->reflection, i * 6, storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS, sky.roughness_layers, _render_buffers_get_color_format());
 			for (int j = 0; j < 6; j++) {
 				Vector<RID> fb;
 				fb.push_back(atlas->reflections.write[i].data.layers[0].mipmaps[0].views[j]);
@@ -720,6 +722,8 @@ bool RendererSceneRenderRD::reflection_probe_instance_begin_render(RID p_instanc
 	rpi->dirty = false;
 	rpi->processing_layer = 1;
 	rpi->processing_side = 0;
+
+	RD::get_singleton()->draw_command_end_label();
 
 	return true;
 }

@@ -64,6 +64,7 @@ public:
 
 private:
 	RendererStorageRD *storage;
+	RD::DataFormat texture_format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 
 	RID index_buffer;
 	RID index_array;
@@ -190,6 +191,10 @@ public:
 			struct Mipmap {
 				RID view;
 				Size2i size;
+
+				// for mobile only
+				RID views[6];
+				RID framebuffers[6];
 			};
 			Vector<Mipmap> mipmaps;
 		};
@@ -204,7 +209,7 @@ public:
 		Vector<Layer> layers;
 
 		void clear_reflection_data();
-		void update_reflection_data(int p_size, int p_mipmaps, bool p_use_array, RID p_base_cube, int p_base_layer, bool p_low_quality, int p_roughness_layers);
+		void update_reflection_data(RendererStorageRD *p_storage, int p_size, int p_mipmaps, bool p_use_array, RID p_base_cube, int p_base_layer, bool p_low_quality, int p_roughness_layers, RD::DataFormat p_texture_format);
 		void create_reflection_fast_filter(RendererStorageRD *p_storage, bool p_use_arrays);
 		void create_reflection_importance_sample(RendererStorageRD *p_storage, bool p_use_arrays, int p_cube_side, int p_base_layer, uint32_t p_sky_ggx_samples_quality);
 		void update_reflection_mipmaps(RendererStorageRD *p_storage, int p_start, int p_end);
@@ -284,6 +289,7 @@ public:
 
 	RendererSceneSkyRD();
 	void init(RendererStorageRD *p_storage);
+	void set_texture_format(RD::DataFormat p_texture_format);
 	~RendererSceneSkyRD();
 
 	void setup(RendererSceneEnvironmentRD *p_env, RID p_render_buffers, const CameraMatrix &p_projection, const Transform3D &p_transform, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render);

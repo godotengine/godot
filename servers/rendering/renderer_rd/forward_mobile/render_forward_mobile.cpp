@@ -2325,6 +2325,8 @@ RenderForwardMobile::RenderForwardMobile(RendererStorageRD *p_storage) :
 		RendererSceneRenderRD(p_storage) {
 	singleton = this;
 
+	sky.set_texture_format(_render_buffers_get_color_format());
+
 	String defines;
 
 	defines += "\n#define MAX_ROUGHNESS_LOD " + itos(get_roughness_layers() - 1) + ".0\n";

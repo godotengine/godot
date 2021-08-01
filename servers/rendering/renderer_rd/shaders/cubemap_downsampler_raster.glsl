@@ -18,34 +18,52 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#[compute]
+/* clang-format off */
+#[vertex]
 
 #version 450
 
 #VERSION_DEFINES
 
-#define BLOCK_SIZE 8
+#include "cubemap_downsampler_inc.glsl"
 
-layout(local_size_x = BLOCK_SIZE, local_size_y = BLOCK_SIZE, local_size_z = 1) in;
+layout(location = 0) out vec2 uv_interp;
+/* clang-format on */
 
-layout(set = 0, binding = 0) uniform samplerCube source_cubemap;
+void main() {
+	vec2 base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
+	uv_interp = base_arr[gl_VertexIndex] * float(params.face_size);
+	gl_Position = vec4(base_arr[gl_VertexIndex] * 2.0 - 1.0, 0.0, 1.0);
+}
 
-layout(rgba16f, set = 1, binding = 0) uniform restrict writeonly imageCube dest_cubemap;
+/* clang-format off */
+#[fragment]
+
+#version 450
+
+#VERSION_DEFINES
 
 #include "cubemap_downsampler_inc.glsl"
 
+layout(set = 0, binding = 0) uniform samplerCube source_cubemap;
+
+layout(location = 0) in vec2 uv_interp;
+layout(location = 0) out vec4 frag_color;
+/* clang-format on */
+
 void main() {
-	uvec3 id = gl_GlobalInvocationID;
-	uint face_size = params.face_size;
+	// Converted from compute shader which uses absolute coordinates.
+	// Could possibly simplify this
+	float face_size = float(params.face_size);
 
-	if (id.x < face_size && id.y < face_size) {
-		float inv_face_size = 1.0 / float(face_size);
+	if (uv_interp.x < face_size && uv_interp.y < face_size) {
+		float inv_face_size = 1.0 / face_size;
 
-		float u0 = (float(id.x) * 2.0 + 1.0 - 0.75) * inv_face_size - 1.0;
-		float u1 = (float(id.x) * 2.0 + 1.0 + 0.75) * inv_face_size - 1.0;
+		float u0 = (uv_interp.x * 2.0 + 1.0 - 0.75) * inv_face_size - 1.0;
+		float u1 = (uv_interp.x * 2.0 + 1.0 + 0.75) * inv_face_size - 1.0;
 
-		float v0 = (float(id.y) * 2.0 + 1.0 - 0.75) * -inv_face_size + 1.0;
-		float v1 = (float(id.y) * 2.0 + 1.0 + 0.75) * -inv_face_size + 1.0;
+		float v0 = (uv_interp.y * 2.0 + 1.0 - 0.75) * -inv_face_size + 1.0;
+		float v1 = (uv_interp.y * 2.0 + 1.0 + 0.75) * -inv_face_size + 1.0;
 
 		float weights[4];
 		weights[0] = calcWeight(u0, v0);
@@ -60,7 +78,7 @@ void main() {
 
 		vec3 dir;
 		vec4 color;
-		switch (id.z) {
+		switch (params.face_id) {
 			case 0:
 				get_dir_0(dir, u0, v0);
 				color = textureLod(source_cubemap, normalize(dir), 0.0) * weights[0];
@@ -140,6 +158,6 @@ void main() {
 				color += textureLod(source_cubemap, normalize(dir), 0.0) * weights[3];
 				break;
 		}
-		imageStore(dest_cubemap, ivec3(id), color);
+		frag_color = color;
 	}
 }
