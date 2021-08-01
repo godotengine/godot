@@ -593,6 +593,9 @@ public:
 	BIND3(rooms_set_debug_feature, RID, RoomsDebugFeature, bool)
 	BIND2(rooms_update_gameplay_monitor, RID, const Vector<Vector3> &)
 
+	// don't use this in a game
+	BIND1RC(bool, rooms_is_loaded, RID)
+
 	// Callbacks
 	BIND1(callbacks_register, VisualServerCallbacks *)
 

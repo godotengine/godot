@@ -32,12 +32,6 @@
 
 #include "editor/spatial_editor_gizmos.h"
 
-void RoomManagerEditorPlugin::_rooms_convert() {
-	if (_room_manager) {
-		_room_manager->rooms_convert();
-	}
-}
-
 void RoomManagerEditorPlugin::_flip_portals() {
 	if (_room_manager) {
 		_room_manager->rooms_flip_portals();
@@ -59,16 +53,15 @@ bool RoomManagerEditorPlugin::handles(Object *p_object) const {
 
 void RoomManagerEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		button_rooms_convert->show();
 		button_flip_portals->show();
 	} else {
-		button_rooms_convert->hide();
 		button_flip_portals->hide();
 	}
+
+	SpatialEditor::get_singleton()->show_advanced_portal_tools(p_visible);
 }
 
 void RoomManagerEditorPlugin::_bind_methods() {
-	ClassDB::bind_method("_rooms_convert", &RoomManagerEditorPlugin::_rooms_convert);
 	ClassDB::bind_method("_flip_portals", &RoomManagerEditorPlugin::_flip_portals);
 }
 
@@ -81,13 +74,6 @@ RoomManagerEditorPlugin::RoomManagerEditorPlugin(EditorNode *p_node) {
 	button_flip_portals->hide();
 	button_flip_portals->connect("pressed", this, "_flip_portals");
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, button_flip_portals);
-
-	button_rooms_convert = memnew(ToolButton);
-	button_rooms_convert->set_icon(editor->get_gui_base()->get_icon("RoomGroup", "EditorIcons"));
-	button_rooms_convert->set_text(TTR("Convert Rooms"));
-	button_rooms_convert->hide();
-	button_rooms_convert->connect("pressed", this, "_rooms_convert");
-	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, button_rooms_convert);
 
 	_room_manager = nullptr;
 

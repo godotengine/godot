@@ -47,6 +47,7 @@
 #include "scene/3d/collision_shape.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/physics_body.h"
+#include "scene/3d/room_manager.h"
 #include "scene/3d/visual_instance.h"
 #include "scene/gui/viewport_container.h"
 #include "scene/resources/packed_scene.h"
@@ -731,6 +732,10 @@ void SpatialEditorViewport::_update_name() {
 
 	if (auto_orthogonal) {
 		view_mode += " [auto]";
+	}
+
+	if (RoomManager::static_rooms_get_active_and_loaded()) {
+		view_mode += " [portals active]";
 	}
 
 	if (name != "") {
@@ -4303,6 +4308,42 @@ void SpatialEditor::select_gizmo_highlight_axis(int p_axis) {
 	}
 }
 
+void SpatialEditor::show_advanced_portal_tools(bool p_show) {
+	// toolbar button
+	Button *const button = tool_button[TOOL_CONVERT_ROOMS];
+	if (p_show) {
+		button->set_text(TTR("Convert Rooms"));
+	} else {
+		button->set_text("");
+	}
+}
+
+void SpatialEditor::update_portal_tools() {
+	// the view portal culling toggle
+	int view_portal_item_index = view_menu->get_popup()->get_item_index(MENU_VIEW_PORTAL_CULLING);
+	if (RoomManager::active_room_manager) {
+		view_menu->get_popup()->set_item_disabled(view_portal_item_index, false);
+
+		bool active = RoomManager::static_rooms_get_active();
+		view_menu->get_popup()->set_item_checked(view_portal_item_index, active);
+	} else {
+		view_menu->get_popup()->set_item_disabled(view_portal_item_index, true);
+	}
+
+	// toolbar button
+	Button *const button = tool_button[TOOL_CONVERT_ROOMS];
+
+	if (RoomManager::active_room_manager) {
+		button->show();
+	} else {
+		button->hide();
+	}
+
+	for (uint32_t i = 0; i < VIEWPORTS_COUNT; i++) {
+		viewports[i]->_update_name();
+	}
+}
+
 void SpatialEditor::update_transform_gizmo() {
 	List<Node *> &selection = editor_selection->get_selected_node_list();
 	AABB center;
@@ -4791,6 +4832,10 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 			update_transform_gizmo();
 
 		} break;
+		case MENU_TOOL_CONVERT_ROOMS: {
+			RoomManager::static_rooms_convert();
+			update_portal_tools();
+		} break;
 		case MENU_TRANSFORM_CONFIGURE_SNAP: {
 			snap_dialog->popup_centered(Size2(200, 180));
 		} break;
@@ -4896,6 +4941,11 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 
 			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(p_option), grid_enabled);
 
+		} break;
+		case MENU_VIEW_PORTAL_CULLING: {
+			bool is_checked = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(p_option));
+			RoomManager::static_rooms_set_active(!is_checked);
+			update_portal_tools();
 		} break;
 		case MENU_VIEW_CAMERA_SETTINGS: {
 			settings_dialog->popup_centered(settings_vbc->get_combined_minimum_size() + Size2(50, 50));
@@ -5916,6 +5966,7 @@ void SpatialEditor::_notification(int p_what) {
 		tool_button[SpatialEditor::TOOL_UNLOCK_SELECTED]->set_icon(get_icon("Unlock", "EditorIcons"));
 		tool_button[SpatialEditor::TOOL_GROUP_SELECTED]->set_icon(get_icon("Group", "EditorIcons"));
 		tool_button[SpatialEditor::TOOL_UNGROUP_SELECTED]->set_icon(get_icon("Ungroup", "EditorIcons"));
+		tool_button[SpatialEditor::TOOL_CONVERT_ROOMS]->set_icon(get_icon("RoomGroup", "EditorIcons"));
 
 		tool_option_button[SpatialEditor::TOOL_OPT_LOCAL_COORDS]->set_icon(get_icon("Object", "EditorIcons"));
 		tool_option_button[SpatialEditor::TOOL_OPT_USE_SNAP]->set_icon(get_icon("Snap", "EditorIcons"));
@@ -6293,6 +6344,15 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]->connect("toggled", this, "_menu_item_toggled", button_binds);
 	_update_camera_override_button(false);
 
+	tool_button[TOOL_CONVERT_ROOMS] = memnew(ToolButton);
+	hbc_menu->add_child(tool_button[TOOL_CONVERT_ROOMS]);
+	tool_button[TOOL_CONVERT_ROOMS]->set_toggle_mode(false);
+	tool_button[TOOL_CONVERT_ROOMS]->set_flat(true);
+	button_binds.write[0] = MENU_TOOL_CONVERT_ROOMS;
+	tool_button[TOOL_CONVERT_ROOMS]->connect("pressed", this, "_menu_item_pressed", button_binds);
+	tool_button[TOOL_CONVERT_ROOMS]->set_shortcut(ED_SHORTCUT("spatial_editor/convert_rooms", TTR("Convert Rooms"), KEY_MASK_ALT | KEY_C));
+	tool_button[TOOL_CONVERT_ROOMS]->set_tooltip(TTR("Converts rooms for portal culling."));
+
 	hbc_menu->add_child(memnew(VSeparator));
 
 	// Drag and drop support;
@@ -6363,6 +6423,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	p->add_separator();
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_origin", TTR("View Origin")), MENU_VIEW_ORIGIN);
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_grid", TTR("View Grid"), KEY_MASK_CMD + KEY_G), MENU_VIEW_GRID);
+	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_portal_culling", TTR("View Portal Culling"), KEY_MASK_ALT | KEY_P), MENU_VIEW_PORTAL_CULLING);
 
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/settings", TTR("Settings...")), MENU_VIEW_CAMERA_SETTINGS);

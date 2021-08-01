@@ -516,6 +516,9 @@ public:
 	FUNC3(rooms_set_debug_feature, RID, RoomsDebugFeature, bool)
 	FUNC2(rooms_update_gameplay_monitor, RID, const Vector<Vector3> &)
 
+	// don't use this in a game
+	FUNC1RC(bool, rooms_is_loaded, RID)
+
 	// Callbacks
 	FUNC1(callbacks_register, VisualServerCallbacks *)
 

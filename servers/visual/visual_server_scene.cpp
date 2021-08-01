@@ -1308,6 +1308,12 @@ void VisualServerScene::rooms_update_gameplay_monitor(RID p_scenario, const Vect
 	scenario->_portal_renderer.rooms_update_gameplay_monitor(p_camera_positions);
 }
 
+bool VisualServerScene::rooms_is_loaded(RID p_scenario) const {
+	Scenario *scenario = scenario_owner.getornull(p_scenario);
+	ERR_FAIL_COND_V(!scenario, false);
+	return scenario->_portal_renderer.rooms_is_loaded();
+}
+
 Vector<ObjectID> VisualServerScene::instances_cull_aabb(const AABB &p_aabb, RID p_scenario) const {
 	Vector<ObjectID> instances;
 	Scenario *scenario = scenario_owner.get(p_scenario);

@@ -43,6 +43,10 @@
 #include "scene/3d/light.h"
 #include "visibility_notifier.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/plugins/spatial_editor_plugin.h"
+#endif
+
 #include "modules/modules_enabled.gen.h"
 #ifdef MODULE_CSG_ENABLED
 #include "modules/csg/csg_shape.h"
@@ -54,31 +58,55 @@
 #include "core/math/convex_hull.h"
 #endif
 
-#ifdef TOOLS_ENABLED
-RoomManager *RoomManager::active_room_manager = nullptr;
-#endif
-
 // This needs to be static because it cannot easily be propagated to portals
 // during load (as the RoomManager may be loaded before Portals enter the scene tree)
 real_t RoomManager::_default_portal_margin = 1.0;
+
+#ifdef TOOLS_ENABLED
+RoomManager *RoomManager::active_room_manager = nullptr;
+
+// static versions of functions for use from editor toolbars
+void RoomManager::static_rooms_set_active(bool p_active) {
+	if (active_room_manager) {
+		active_room_manager->rooms_set_active(p_active);
+		active_room_manager->property_list_changed_notify();
+	}
+}
+
+bool RoomManager::static_rooms_get_active() {
+	if (active_room_manager) {
+		return active_room_manager->rooms_get_active();
+	}
+
+	return false;
+}
+
+bool RoomManager::static_rooms_get_active_and_loaded() {
+	if (active_room_manager) {
+		if (active_room_manager->rooms_get_active()) {
+			Ref<World> world = active_room_manager->get_world();
+			RID scenario = world->get_scenario();
+			return active_room_manager->rooms_get_active() && VisualServer::get_singleton()->rooms_is_loaded(scenario);
+		}
+	}
+
+	return false;
+}
+
+void RoomManager::static_rooms_convert() {
+	if (active_room_manager) {
+		return active_room_manager->rooms_convert();
+	}
+}
+#endif
 
 RoomManager::RoomManager() {
 	// some high value, we want room manager to be processed after other
 	// nodes because the camera should be moved first
 	set_process_priority(10000);
-
-#ifdef TOOLS_ENABLED
-	// note this mechanism may fail to work correctly if the user creates two room managers,
-	// but should not create major problems as it is just used to auto update when portals etc
-	// are changed in the editor, and there is a check for nullptr.
-	active_room_manager = this;
-#endif
 }
 
 RoomManager::~RoomManager() {
-#ifdef TOOLS_ENABLED
-	active_room_manager = nullptr;
-#endif
 }
 
 String RoomManager::get_configuration_warning() const {
@@ -173,11 +201,32 @@ void RoomManager::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			if (Engine::get_singleton()->is_editor_hint()) {
 				set_process_internal(_godot_preview_camera_ID != (ObjectID)-1);
+#ifdef TOOLS_ENABLED
+				// note this mechanism may fail to work correctly if the user creates two room managers,
+				// but should not create major problems as it is just used to auto update when portals etc
+				// are changed in the editor, and there is a check for nullptr.
+				active_room_manager = this;
+				SpatialEditor *spatial_editor = SpatialEditor::get_singleton();
+				if (spatial_editor) {
+					spatial_editor->update_portal_tools();
+				}
+#endif
 			} else {
 				if (_settings_gameplay_monitor_enabled) {
 					set_process_internal(true);
 				}
 			}
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+#ifdef TOOLS_ENABLED
+			active_room_manager = nullptr;
+			if (Engine::get_singleton()->is_editor_hint()) {
+				SpatialEditor *spatial_editor = SpatialEditor::get_singleton();
+				if (spatial_editor) {
+					spatial_editor->update_portal_tools();
+				}
+			}
+#endif
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			// can't call visual server if not inside world
@@ -459,6 +508,10 @@ void RoomManager::rooms_set_active(bool p_active) {
 	if (is_inside_world() && get_world().is_valid()) {
 		VisualServer::get_singleton()->rooms_set_active(get_world()->get_scenario(), p_active);
 		_active = p_active;
+
+#ifdef TOOLS_ENABLED
+		SpatialEditor::get_singleton()->update_portal_tools();
+#endif
 	}
 }
 

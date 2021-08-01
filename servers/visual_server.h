@@ -909,6 +909,9 @@ public:
 	virtual void rooms_set_debug_feature(RID p_scenario, RoomsDebugFeature p_feature, bool p_active) = 0;
 	virtual void rooms_update_gameplay_monitor(RID p_scenario, const Vector<Vector3> &p_camera_positions) = 0;
 
+	// don't use this in a game!
+	virtual bool rooms_is_loaded(RID p_scenario) const = 0;
+
 	// callbacks are used to send messages back from the visual server to scene tree in thread friendly manner
 	virtual void callbacks_register(VisualServerCallbacks *p_callbacks) = 0;
 
