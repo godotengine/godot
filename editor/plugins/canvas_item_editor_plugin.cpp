@@ -2012,11 +2012,13 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 
 			drag_to = transform.affine_inverse().xform(m->get_position());
 			Point2 previous_pos;
-			if (drag_selection.size() == 1) {
-				Transform2D xform = drag_selection[0]->get_global_transform_with_canvas() * drag_selection[0]->get_transform().affine_inverse();
-				previous_pos = xform.xform(drag_selection[0]->_edit_get_position());
-			} else {
-				previous_pos = _get_encompassing_rect_from_list(drag_selection).position;
+			if (!drag_selection.is_empty()) {
+				if (drag_selection.size() == 1) {
+					Transform2D xform = drag_selection[0]->get_global_transform_with_canvas() * drag_selection[0]->get_transform().affine_inverse();
+					previous_pos = xform.xform(drag_selection[0]->_edit_get_position());
+				} else {
+					previous_pos = _get_encompassing_rect_from_list(drag_selection).position;
+				}
 			}
 
 			Point2 new_pos = snap_point(previous_pos + (drag_to - drag_from), SNAP_GRID | SNAP_GUIDES | SNAP_PIXEL | SNAP_NODE_PARENT | SNAP_NODE_ANCHORS | SNAP_OTHER_NODES, 0, nullptr, drag_selection);
