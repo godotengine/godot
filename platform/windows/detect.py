@@ -152,7 +152,7 @@ def setup_msvc_auto(env):
     env["TARGET_ARCH"] = None
     if env["bits"] != "default":
         env["TARGET_ARCH"] = {"32": "x86", "64": "x86_64"}[env["bits"]]
-    if env.has_key("msvc_version"):
+    if "msvc_version" in env:
         env["MSVC_VERSION"] = env["msvc_version"]
     env.Tool("msvc")
     env.Tool("mssdk")  # we want the MS SDK
