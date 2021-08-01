@@ -505,7 +505,9 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 	Ref<Resource> res;
 	if (drag_data.has("type") && String(drag_data["type"]) == "script_list_element") {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(drag_data["script_list_element"]);
-		res = se->get_edited_resource();
+		if (se) {
+			res = se->get_edited_resource();
+		}
 	} else if (drag_data.has("type") && String(drag_data["type"]) == "resource") {
 		res = drag_data["resource"];
 	}
@@ -571,7 +573,9 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 	Ref<Resource> dropped_resource;
 	if (drag_data.has("type") && String(drag_data["type"]) == "script_list_element") {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(drag_data["script_list_element"]);
-		dropped_resource = se->get_edited_resource();
+		if (se) {
+			dropped_resource = se->get_edited_resource();
+		}
 	} else if (drag_data.has("type") && String(drag_data["type"]) == "resource") {
 		dropped_resource = drag_data["resource"];
 	}
