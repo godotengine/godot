@@ -201,7 +201,7 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 		// Cache the preview in case it's a resource on disk
 		bool has_custom_type_icon = r_custom_type_icon.is_valid();
 		bool has_texture = r_texture.is_valid();
-		bool has_small_texture = r_small_texture.is_valid();		
+		bool has_small_texture = r_small_texture.is_valid();
 		if (has_texture || has_custom_type_icon) {
 			// Preview is valid, saving the cache now...
 			if (has_texture) {

@@ -591,7 +591,7 @@ void FileSystemDock::_tree_thumbnail_done(const String &p_path, const Ref<Textur
 					file_item->set_icon(0, p_small_preview);
 				} else if (resource_type == "Resource" && p_custom_type_icon.is_valid()) {
 					file_item->set_icon(0, p_custom_type_icon);
-				} 
+				}
 			}
 		}
 	}
