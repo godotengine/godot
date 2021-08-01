@@ -35,7 +35,6 @@
 #include "core/io/resource_loader.h"
 #include "core/math/math_defs.h"
 #include "core/os/keyboard.h"
-#include "core/version.h"
 #include "editor/editor_log.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_scale.h"
@@ -995,9 +994,23 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 			visual_shader->connect("changed", callable_mp(this, &VisualShaderEditor::_update_preview));
 		}
 #ifndef DISABLE_DEPRECATED
-		String version = VERSION_BRANCH;
-		if (visual_shader->get_version() != version) {
-			visual_shader->update_version(version);
+		Dictionary engine_version = Engine::get_singleton()->get_version_info();
+		static Array components;
+		if (components.is_empty()) {
+			components.push_back("major");
+			components.push_back("minor");
+		}
+		const Dictionary vs_version = visual_shader->get_engine_version();
+		if (!vs_version.has_all(components)) {
+			visual_shader->update_engine_version(engine_version);
+		} else {
+			for (int i = 0; i < components.size(); i++) {
+				if (vs_version[components[i]] != engine_version[components[i]]) {
+					visual_shader->update_engine_version(engine_version);
+					print_line(vformat(TTR("The shader (\"%s\") has been updated to correspond Godot %s.%s version."), visual_shader->get_path(), engine_version["major"], engine_version["minor"]));
+					break;
+				}
+			}
 		}
 #endif
 		visual_shader->set_graph_offset(graph->get_scroll_ofs() / EDSCALE);

@@ -44,7 +44,7 @@ class VisualShader : public Shader {
 
 	friend class VisualShaderNodeVersionChecker;
 
-	String version = "";
+	Dictionary engine_version;
 
 public:
 	enum Type {
@@ -137,10 +137,12 @@ public: // internal methods
 	Type get_shader_type() const;
 
 public:
-	void set_version(const String &p_version);
-	String get_version() const;
+	void set_engine_version(const Dictionary &p_version);
+	Dictionary get_engine_version() const;
 
-	void update_version(const String &p_new_version);
+#ifndef DISABLE_DEPRECATED
+	void update_engine_version(const Dictionary &p_new_version);
+#endif /* DISABLE_DEPRECATED */
 
 	enum {
 		NODE_ID_INVALID = -1,
