@@ -710,6 +710,9 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 						int type = gn->get_connection_output_type(j);
 						if ((type == connecting_type || valid_connection_types.has(ConnType(connecting_type, type))) && is_in_output_hotzone(gn, j, mpos, port_size)) {
+							if (!is_node_hover_valid(gn->get_name(), j, connecting_from, connecting_index)) {
+								continue;
+							}
 							connecting_target = true;
 							connecting_to = pos;
 							connecting_target_to = gn->get_name();
@@ -725,6 +728,9 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 						int type = gn->get_connection_input_type(j);
 						if ((type == connecting_type || valid_connection_types.has(ConnType(connecting_type, type))) && is_in_input_hotzone(gn, j, mpos, port_size)) {
+							if (!is_node_hover_valid(connecting_from, connecting_index, gn->get_name(), j)) {
+								continue;
+							}
 							connecting_target = true;
 							connecting_to = pos;
 							connecting_target_to = gn->get_name();
@@ -1451,6 +1457,14 @@ void GraphEdit::force_connection_drag_end() {
 	update();
 	connections_layer->update();
 	emit_signal(SNAME("connection_drag_ended"));
+}
+
+bool GraphEdit::is_node_hover_valid(const StringName &p_from, const int p_from_port, const StringName &p_to, const int p_to_port) {
+	bool valid;
+	if (GDVIRTUAL_CALL(_is_node_hover_valid, p_from, p_from_port, p_to, p_to_port, valid)) {
+		return valid;
+	}
+	return true;
 }
 
 void GraphEdit::set_panning_scheme(PanningScheme p_scheme) {
@@ -2315,6 +2329,7 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_selected", "node"), &GraphEdit::set_selected);
 
 	GDVIRTUAL_BIND(_get_connection_line, "from", "to")
+	GDVIRTUAL_BIND(_is_node_hover_valid, "from", "from_slot", "to", "to_slot");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "right_disconnects"), "set_right_disconnects", "is_right_disconnects_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scroll_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_scroll_ofs", "get_scroll_ofs");

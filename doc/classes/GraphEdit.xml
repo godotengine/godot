@@ -55,6 +55,29 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="_is_node_hover_valid" qualifiers="virtual">
+			<return type="bool" />
+			<argument index="0" name="from" type="StringName" />
+			<argument index="1" name="from_slot" type="int" />
+			<argument index="2" name="to" type="StringName" />
+			<argument index="3" name="to_slot" type="int" />
+			<description>
+				This virtual method can be used to insert additional error detection while the user is dragging a connection over a valid port.
+				Return [code]true[/code] if the connection is indeed valid or return [code]false[/code] if the connection is impossible. If the connection is impossible, no snapping to the port and thus no connection request to that port will happen.
+				In this example a connection to same node is suppressed:
+				[codeblocks]
+				[gdscript]
+				func _is_node_hover_valid(from, from_slot, to, to_slot):
+				    return from != to
+				[/gdscript]
+				[csharp]
+				public override bool _IsNodeHoverValid(String from, int fromSlot, String to, int toSlot) {
+				    return from != to;
+				}
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="add_valid_connection_type">
 			<return type="void" />
 			<argument index="0" name="from_type" type="int" />
