@@ -2143,7 +2143,7 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			Vector3 d = skel->get_bone_rest(child_bone_idx).origin.normalized();
 			float dist = skel->get_bone_rest(child_bone_idx).origin.length();
 
-			// Find closest axis
+			// Find closest axis.
 			int closest = -1;
 			float closest_d = 0.0;
 			for (int j = 0; j < 3; j++) {

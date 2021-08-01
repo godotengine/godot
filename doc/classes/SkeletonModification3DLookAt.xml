@@ -10,48 +10,39 @@
 	</tutorials>
 	<methods>
 		<method name="get_additional_rotation" qualifiers="const">
-			<return type="Vector3">
-			</return>
+			<return type="Vector3" />
 			<description>
 				Returns the amount of extra rotation that is applied to the bone after the LookAt modification executes.
 			</description>
 		</method>
 		<method name="get_lock_rotation_plane" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the plane that the LookAt modification is limiting rotation to.
 			</description>
 		</method>
 		<method name="get_lock_rotation_to_plane" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns whether the LookAt modification is limiting rotation to a single plane in 3D space.
 			</description>
 		</method>
 		<method name="set_additional_rotation">
-			<return type="void">
-			</return>
-			<argument index="0" name="additional_rotation" type="Vector3">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="additional_rotation" type="Vector3" />
 			<description>
 				Sets the amount of extra rotation to be applied after the LookAt modification executes. This allows you to adjust the finished result.
 			</description>
 		</method>
 		<method name="set_lock_rotation_plane">
-			<return type="void">
-			</return>
-			<argument index="0" name="plane" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="plane" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="set_lock_rotation_to_plane">
-			<return type="void">
-			</return>
-			<argument index="0" name="lock_to_plane" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="lock_to_plane" type="bool" />
 			<description>
 				When [code]true[/code], the LookAt modification will limit its rotation to a single plane in 3D space. The plane used can be configured using the [code]set_lock_rotation_plane[/code] function.
 			</description>

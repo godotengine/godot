@@ -394,9 +394,8 @@ void Skeleton3D::update_bone_rest_forward_vector(int p_bone, bool p_force_update
 			combined_child_dir = combined_child_dir / child_bones.size();
 			bones.write[p_bone].rest_bone_forward_vector = combined_child_dir.normalized();
 		} else {
-			// TODO: see if there is a better way to calculate bone direction!
-			WARN_PRINT("Cannot calculate forward direction for bone " + itos(p_bone));
-			WARN_PRINT("Assuming direction of (0, 1, 0) for bone");
+			WARN_PRINT_ONCE("Cannot calculate forward direction for bone " + itos(p_bone));
+			WARN_PRINT_ONCE("Assuming direction of (0, 1, 0) for bone");
 			bones.write[p_bone].rest_bone_forward_vector = Vector3(0, 1, 0);
 		}
 	}
