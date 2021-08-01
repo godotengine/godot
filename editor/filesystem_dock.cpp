@@ -52,7 +52,7 @@ Ref<Texture2D> FileSystemDock::_get_tree_item_icon(bool p_is_valid, String p_fil
 	if (!p_is_valid) {
 		file_icon = get_theme_icon(SNAME("ImportFail"), SNAME("EditorIcons"));
 	} else {
-		file_icon = get_theme_icon(SNAME("File"), SNAME("EditorIcons"));
+		file_icon = (has_theme_icon(p_file_type, SNAME("EditorIcons"))) ? get_theme_icon(p_file_type, SNAME("EditorIcons")) : get_theme_icon(SNAME("File"), SNAME("EditorIcons"));
 	}
 	return file_icon;
 }
@@ -151,8 +151,10 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 				file_item->set_custom_color(0, get_theme_color(SNAME("accent_color"), SNAME("Editor")));
 			}
 			Array udata;
-			udata.push_back(tree_update_id);
-			udata.push_back(file_item);
+			udata.resize(3);
+			udata[0] = tree_update_id;
+			udata[1] = file_item;
+			udata[2] = fi.type;
 			EditorResourcePreview::get_singleton()->queue_resource_preview(file_metadata, this, "_tree_thumbnail_done", udata);
 		}
 	} else if (display_mode == DISPLAY_MODE_SPLIT) {
@@ -266,8 +268,10 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 			}
 			if (!fave.ends_with("/")) {
 				Array udata;
-				udata.push_back(tree_update_id);
-				udata.push_back(ti);
+				udata.resize(3);
+				udata[0] = tree_update_id;
+				udata[1] = ti;
+				udata[2] = ResourceLoader::get_resource_type(fave);
 				EditorResourcePreview::get_singleton()->queue_resource_preview(fave, this, "_tree_thumbnail_done", udata);
 			}
 		}
@@ -554,15 +558,17 @@ void FileSystemDock::_file_list_thumbnail_done(const String &p_path, const Ref<T
 		Array uarr = p_udata;
 		int idx = uarr[0];
 		String file = uarr[1];
+		String resource_type = uarr[2];
 		if (idx < files->get_item_count() && files->get_item_text(idx) == file && files->get_item_metadata(idx) == p_path) {
 			if (file_list_display_mode == FILE_LIST_DISPLAY_LIST) {
-				if (p_custom_type_icon.is_valid()) {
-					files->set_item_icon(idx, p_custom_type_icon);
-				} else if (p_small_preview.is_valid()) {
+				// Prioritize showing previews before custom icons.
+				if (p_small_preview.is_valid()) {
 					files->set_item_icon(idx, p_small_preview);
+				} else if (resource_type == "Resource" && p_custom_type_icon.is_valid()) {
+					files->set_item_icon(idx, p_custom_type_icon);
 				}
 			} else {
-				if (p_custom_type_icon.is_valid()) {
+				if (resource_type == "Resource" && p_custom_type_icon.is_valid()) {
 					files->set_item_tag_icon(idx, p_custom_type_icon);
 				}
 				if (p_preview.is_valid()) {
@@ -578,12 +584,14 @@ void FileSystemDock::_tree_thumbnail_done(const String &p_path, const Ref<Textur
 		Array uarr = p_udata;
 		if (tree_update_id == (int)uarr[0]) {
 			TreeItem *file_item = Object::cast_to<TreeItem>(uarr[1]);
+			String resource_type = (String)uarr[2];
 			if (file_item) {
-				if (p_custom_type_icon.is_valid()) {
-					file_item->set_icon(0, p_custom_type_icon);
-				} else {
+				// Prioritize showing previews before custom icons.
+				if (p_small_preview.is_valid()) {
 					file_item->set_icon(0, p_small_preview);
-				}
+				} else if (resource_type == "Resource" && p_custom_type_icon.is_valid()) {
+					file_item->set_icon(0, p_custom_type_icon);
+				} 
 			}
 		}
 	}
@@ -921,9 +929,10 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 		// Generate the preview.
 		if (!finfo->import_broken) {
 			Array udata;
-			udata.resize(2);
+			udata.resize(3);
 			udata[0] = item_index;
 			udata[1] = fname;
+			udata[2] = ftype;
 			EditorResourcePreview::get_singleton()->queue_resource_preview(fpath, this, "_file_list_thumbnail_done", udata);
 		}
 
@@ -1022,9 +1031,10 @@ void FileSystemDock::_preview_invalidated(const String &p_path) {
 			if (files->get_item_metadata(i) == p_path) {
 				// Re-request preview.
 				Array udata;
-				udata.resize(2);
+				udata.resize(3);
 				udata[0] = i;
 				udata[1] = files->get_item_text(i);
+				udata[2] = ResourceLoader::get_resource_type(p_path);
 				EditorResourcePreview::get_singleton()->queue_resource_preview(p_path, this, "_file_list_thumbnail_done", udata);
 				break;
 			}

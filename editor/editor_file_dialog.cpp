@@ -321,7 +321,7 @@ void EditorFileDialog::_post_popup() {
 	set_process_unhandled_input(true);
 }
 
-void EditorFileDialog::_thumbnail_result(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
+void EditorFileDialog::_thumbnail_result(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Ref<Texture2D> &p_custom_type_icon, const Variant &p_udata) {
 	if (display_mode == DISPLAY_LIST || p_preview.is_null()) {
 		return;
 	}
@@ -336,7 +336,7 @@ void EditorFileDialog::_thumbnail_result(const String &p_path, const Ref<Texture
 	}
 }
 
-void EditorFileDialog::_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
+void EditorFileDialog::_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Ref<Texture2D> &p_custom_type_icon, const Variant &p_udata) {
 	set_process(false);
 	preview_waiting = false;
 

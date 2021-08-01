@@ -89,7 +89,7 @@ class EditorResourcePreview : public Node {
 	Map<String, Item> cache;
 
 	void _preview_ready(const String &p_str, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_small_texture, const Ref<Texture2D> &p_custom_type_icon, ObjectID id, const StringName &p_func, const Variant &p_ud);
-	void _generate_preview(Ref<ImageTexture> &r_texture, Ref<ImageTexture> &r_small_texture, Ref<Texture> &r_custom_type_icon, const QueueItem &p_item, const String &cache_base);
+	void _generate_preview(Ref<ImageTexture> &r_texture, Ref<ImageTexture> &r_small_texture, Ref<ImageTexture> &r_custom_type_icon, const QueueItem &p_item, const String &cache_base);
 
 	static void _thread_func(void *ud);
 	void _thread();
