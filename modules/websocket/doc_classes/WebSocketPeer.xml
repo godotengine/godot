@@ -34,6 +34,12 @@
 				[b]Note:[/b] Not available in the HTML5 export.
 			</description>
 		</method>
+		<method name="get_current_outbound_buffered_amount" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the current amount of data in the outbound websocket buffer. [b]Note:[/b] HTML5 exports use WebSocket.bufferedAmount, while other platforms use an internal buffer.
+			</description>
+		</method>
 		<method name="get_write_mode" qualifiers="const">
 			<return type="int" enum="WebSocketPeer.WriteMode" />
 			<description>

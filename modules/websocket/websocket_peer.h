@@ -59,6 +59,7 @@ public:
 	virtual uint16_t get_connected_port() const = 0;
 	virtual bool was_string_packet() const = 0;
 	virtual void set_no_delay(bool p_enabled) = 0;
+	virtual int get_current_outbound_buffered_amount() const = 0;
 
 	WebSocketPeer();
 	~WebSocketPeer();

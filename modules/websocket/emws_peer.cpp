@@ -33,10 +33,11 @@
 #include "emws_peer.h"
 #include "core/io/ip.h"
 
-void EMWSPeer::set_sock(int p_sock, unsigned int p_in_buf_size, unsigned int p_in_pkt_size) {
+void EMWSPeer::set_sock(int p_sock, unsigned int p_in_buf_size, unsigned int p_in_pkt_size, unsigned int p_out_buf_size) {
 	peer_sock = p_sock;
 	_in_buffer.resize(p_in_pkt_size, p_in_buf_size);
 	_packet_buffer.resize((1 << p_in_buf_size));
+	_out_buf_size = p_out_buf_size;
 }
 
 void EMWSPeer::set_write_mode(WriteMode p_mode) {
@@ -53,7 +54,10 @@ Error EMWSPeer::read_msg(const uint8_t *p_data, uint32_t p_size, bool p_is_strin
 }
 
 Error EMWSPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
+	ERR_FAIL_COND_V(_out_buf_size && (godot_js_websocket_buffered_amount(peer_sock) >= (1ULL << _out_buf_size)), ERR_OUT_OF_MEMORY);
+
 	int is_bin = write_mode == WebSocketPeer::WRITE_MODE_BINARY ? 1 : 0;
+
 	godot_js_websocket_send(peer_sock, p_buffer, p_buffer_size, is_bin);
 	return OK;
 }
@@ -74,6 +78,13 @@ Error EMWSPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 
 int EMWSPeer::get_available_packet_count() const {
 	return _in_buffer.packets_left();
+}
+
+int EMWSPeer::get_current_outbound_buffered_amount() const {
+	if (peer_sock != -1) {
+		return godot_js_websocket_buffered_amount(peer_sock);
+	}
+	return 0;
 }
 
 bool EMWSPeer::was_string_packet() const {
