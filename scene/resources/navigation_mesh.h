@@ -122,7 +122,7 @@ public:
 	void set_source_geometry_mode(SourceGeometryMode p_geometry_mode);
 	SourceGeometryMode get_source_geometry_mode() const;
 
-	void set_source_group_name(StringName p_group_name);
+	void set_source_group_name(const StringName &p_group_name);
 	StringName get_source_group_name() const;
 
 	void set_cell_size(float p_value);

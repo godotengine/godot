@@ -2166,7 +2166,7 @@ AnimationMixer::AnimationMixer() {
 AnimationMixer::~AnimationMixer() {
 }
 
-void AnimatedValuesBackup::set_data(const HashMap<NodePath, AnimationMixer::TrackCache *> p_data) {
+void AnimatedValuesBackup::set_data(const HashMap<NodePath, AnimationMixer::TrackCache *> &p_data) {
 	clear_data();
 
 	for (const KeyValue<NodePath, AnimationMixer::TrackCache *> &E : p_data) {

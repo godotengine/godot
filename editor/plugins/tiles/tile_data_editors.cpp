@@ -112,16 +112,16 @@ bool DummyObject::_get(const StringName &p_name, Variant &r_ret) const {
 	return false;
 }
 
-bool DummyObject::has_dummy_property(StringName p_name) {
+bool DummyObject::has_dummy_property(const StringName &p_name) {
 	return properties.has(p_name);
 }
 
-void DummyObject::add_dummy_property(StringName p_name) {
+void DummyObject::add_dummy_property(const StringName &p_name) {
 	ERR_FAIL_COND(properties.has(p_name));
 	properties[p_name] = Variant();
 }
 
-void DummyObject::remove_dummy_property(StringName p_name) {
+void DummyObject::remove_dummy_property(const StringName &p_name) {
 	ERR_FAIL_COND(!properties.has(p_name));
 	properties.erase(p_name);
 }
@@ -948,7 +948,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	_set_snap_option(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "tile_snap_option", SNAP_NONE));
 }
 
-void TileDataDefaultEditor::_property_value_changed(StringName p_property, Variant p_value, StringName p_field) {
+void TileDataDefaultEditor::_property_value_changed(const StringName &p_property, Variant p_value, const StringName &p_field) {
 	ERR_FAIL_NULL(dummy_object);
 	dummy_object->set(p_property, p_value);
 	emit_signal(SNAME("needs_redraw"));
@@ -981,7 +981,7 @@ Variant TileDataDefaultEditor::_get_value(TileSetAtlasSource *p_tile_set_atlas_s
 	return tile_data->get(property);
 }
 
-void TileDataDefaultEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value) {
+void TileDataDefaultEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, const HashMap<TileMapCell, Variant, TileMapCell> &p_previous_values, Variant p_new_value) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	for (const KeyValue<TileMapCell, Variant> &E : p_previous_values) {
 		Vector2i coords = E.key.get_atlas_coords();
@@ -1455,7 +1455,7 @@ Variant TileDataOcclusionShapeEditor::_get_value(TileSetAtlasSource *p_tile_set_
 	return tile_data->get_occluder(occlusion_layer);
 }
 
-void TileDataOcclusionShapeEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value) {
+void TileDataOcclusionShapeEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, const HashMap<TileMapCell, Variant, TileMapCell> &p_previous_values, Variant p_new_value) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	for (const KeyValue<TileMapCell, Variant> &E : p_previous_values) {
 		Vector2i coords = E.key.get_atlas_coords();
@@ -1481,11 +1481,11 @@ TileDataOcclusionShapeEditor::TileDataOcclusionShapeEditor() {
 	add_child(polygon_editor);
 }
 
-void TileDataCollisionEditor::_property_value_changed(StringName p_property, Variant p_value, StringName p_field) {
+void TileDataCollisionEditor::_property_value_changed(const StringName &p_property, Variant p_value, const StringName &p_field) {
 	dummy_object->set(p_property, p_value);
 }
 
-void TileDataCollisionEditor::_property_selected(StringName p_path, int p_focusable) {
+void TileDataCollisionEditor::_property_selected(const StringName &p_path, int p_focusable) {
 	// Deselect all other properties
 	for (KeyValue<StringName, EditorProperty *> &editor : property_editors) {
 		if (editor.key != p_path) {
@@ -1634,10 +1634,10 @@ Variant TileDataCollisionEditor::_get_value(TileSetAtlasSource *p_tile_set_atlas
 	return dict;
 }
 
-void TileDataCollisionEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value) {
+void TileDataCollisionEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, const HashMap<TileMapCell, Variant, TileMapCell> &p_previous_values, Variant p_new_value) {
 	Dictionary new_dict = p_new_value;
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	for (KeyValue<TileMapCell, Variant> &E : p_previous_values) {
+	for (const KeyValue<TileMapCell, Variant> &E : p_previous_values) {
 		Vector2i coords = E.key.get_atlas_coords();
 
 		Dictionary old_dict = E.value;
@@ -1802,7 +1802,7 @@ void TileDataTerrainsEditor::_update_terrain_selector() {
 	}
 }
 
-void TileDataTerrainsEditor::_property_value_changed(StringName p_property, Variant p_value, StringName p_field) {
+void TileDataTerrainsEditor::_property_value_changed(const StringName &p_property, Variant p_value, const StringName &p_field) {
 	Variant old_value = dummy_object->get(p_property);
 	dummy_object->set(p_property, p_value);
 	if (p_property == "terrain_set") {
@@ -2871,7 +2871,7 @@ Variant TileDataNavigationEditor::_get_value(TileSetAtlasSource *p_tile_set_atla
 	return tile_data->get_navigation_polygon(navigation_layer);
 }
 
-void TileDataNavigationEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value) {
+void TileDataNavigationEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, const HashMap<TileMapCell, Variant, TileMapCell> &p_previous_values, Variant p_new_value) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	for (const KeyValue<TileMapCell, Variant> &E : p_previous_values) {
 		Vector2i coords = E.key.get_atlas_coords();

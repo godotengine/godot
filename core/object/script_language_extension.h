@@ -265,7 +265,7 @@ public:
 
 	GDVIRTUAL1RC(TypedArray<Dictionary>, _get_built_in_templates, StringName)
 
-	virtual Vector<ScriptTemplate> get_built_in_templates(StringName p_object) override {
+	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) override {
 		TypedArray<Dictionary> ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_built_in_templates, p_object, ret);
 		Vector<ScriptTemplate> stret;

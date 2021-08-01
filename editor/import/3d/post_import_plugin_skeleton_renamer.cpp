@@ -45,7 +45,7 @@ void PostImportPluginSkeletonRenamer::get_internal_import_options(InternalImport
 	}
 }
 
-void PostImportPluginSkeletonRenamer::_internal_process(InternalImportCategory p_category, Node *p_base_scene, Node *p_node, Ref<Resource> p_resource, const Dictionary &p_options, HashMap<String, String> p_rename_map) {
+void PostImportPluginSkeletonRenamer::_internal_process(InternalImportCategory p_category, Node *p_base_scene, Node *p_node, Ref<Resource> p_resource, const Dictionary &p_options, const HashMap<String, String> &p_rename_map) {
 	// Prepare objects.
 	Object *map = p_options["retarget/bone_map"].get_validated_object();
 	if (!map || !bool(p_options["retarget/bone_renamer/rename_bones"])) {
@@ -121,7 +121,7 @@ void PostImportPluginSkeletonRenamer::_internal_process(InternalImportCategory p
 	// Rename bones in all Nodes by calling method.
 	{
 		Dictionary rename_map_dict;
-		for (HashMap<String, String>::Iterator E = p_rename_map.begin(); E; ++E) {
+		for (HashMap<String, String>::ConstIterator E = p_rename_map.begin(); E; ++E) {
 			rename_map_dict[E->key] = E->value;
 		}
 
