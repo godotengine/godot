@@ -2056,17 +2056,20 @@ bool Main::iteration() {
 
 	iterating++;
 
+	// ticks may become modified later on, and we want to store the raw measured
+	// value for profiling.
+	uint64_t raw_ticks_at_start = OS::get_singleton()->get_ticks_usec();
+
 #ifdef TOOLS_ENABLED
-	uint64_t ticks = OS::get_singleton()->get_ticks_usec();
+	uint64_t ticks = raw_ticks_at_start;
 #else
 	// we can either sync the delta from here, or later in the iteration
-	uint64_t ticks_at_start = OS::get_singleton()->get_ticks_usec();
-	uint64_t ticks_difference = ticks_at_start - frame_delta_sync_time;
+	uint64_t ticks_difference = raw_ticks_at_start - frame_delta_sync_time;
 
 	// if we are syncing at start or if frame_delta_sync_time is being initialized
 	// or a large gap has happened between the last delta_sync_time and now
 	if (!delta_sync_after_draw || (ticks_difference > 100000)) {
-		frame_delta_sync_time = ticks_at_start;
+		frame_delta_sync_time = raw_ticks_at_start;
 	}
 	uint64_t ticks = frame_delta_sync_time;
 #endif
@@ -2165,9 +2168,10 @@ bool Main::iteration() {
 	}
 #endif
 
+	// profiler timing information
 	idle_process_ticks = OS::get_singleton()->get_ticks_usec() - idle_begin;
 	idle_process_max = MAX(idle_process_ticks, idle_process_max);
-	uint64_t frame_time = OS::get_singleton()->get_ticks_usec() - ticks;
+	uint64_t frame_time = OS::get_singleton()->get_ticks_usec() - raw_ticks_at_start;
 
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 		ScriptServer::get_language(i)->frame();
