@@ -1648,19 +1648,10 @@ void VisualShader::_update_shader() const {
 	{
 		//fill render mode enums
 		int idx = 0;
-		bool specular = false;
 		while (render_mode_enums[idx].string) {
 			if (shader_mode == render_mode_enums[idx].mode) {
-				if (shader_mode == Shader::MODE_SPATIAL) {
-					if (String(render_mode_enums[idx].string) == "specular") {
-						specular = true;
-					}
-				}
-				if (modes.has(render_mode_enums[idx].string) || specular) {
-					int which = 0;
-					if (modes.has(render_mode_enums[idx].string)) {
-						which = modes[render_mode_enums[idx].string];
-					}
+				if (modes.has(render_mode_enums[idx].string)) {
+					int which = modes[render_mode_enums[idx].string];
 					int count = 0;
 					for (int i = 0; i < ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode)).size(); i++) {
 						String mode = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode))[i];
