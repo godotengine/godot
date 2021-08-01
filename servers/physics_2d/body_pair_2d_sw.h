@@ -50,8 +50,8 @@ class BodyPair2DSW : public Constraint2DSW {
 	int shape_A = 0;
 	int shape_B = 0;
 
-	bool dynamic_A = false;
-	bool dynamic_B = false;
+	bool collide_A = false;
+	bool collide_B = false;
 
 	Space2DSW *space = nullptr;
 

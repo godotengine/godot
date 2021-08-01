@@ -296,7 +296,6 @@ public:
 	static int step_decimals(double p_step);
 	static int range_step_decimals(double p_step);
 	static double snapped(double p_value, double p_step);
-	static double dectime(double p_value, double p_amount, double p_step);
 
 	static uint32_t larger_prime(uint32_t p_val);
 

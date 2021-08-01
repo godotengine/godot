@@ -47,7 +47,7 @@ void TileProxiesManagerDialog::_menu_id_pressed(int p_id) {
 }
 
 void TileProxiesManagerDialog::_delete_selected_bindings() {
-	undo_redo->create_action("Remove Tile Proxies");
+	undo_redo->create_action(TTR("Remove Tile Proxies"));
 
 	Vector<int> source_level_selected = source_level_list->get_selected_items();
 	for (int i = 0; i < source_level_selected.size(); i++) {
@@ -151,7 +151,7 @@ void TileProxiesManagerDialog::_add_button_pressed() {
 		Vector2i to_coords = to.get_atlas_coords();
 		if (from_coords.x >= 0 && from_coords.y >= 0 && to_coords.x >= 0 && to_coords.y >= 0) {
 			if (from.alternative_tile != TileSetSource::INVALID_TILE_ALTERNATIVE && to.alternative_tile != TileSetSource::INVALID_TILE_ALTERNATIVE) {
-				undo_redo->create_action("Create Alternative-level Tile Proxy");
+				undo_redo->create_action(TTR("Create Alternative-level Tile Proxy"));
 				undo_redo->add_do_method(*tile_set, "set_alternative_level_tile_proxy", from.source_id, from.get_atlas_coords(), from.alternative_tile, to.source_id, to.get_atlas_coords(), to.alternative_tile);
 				if (tile_set->has_alternative_level_tile_proxy(from.source_id, from.get_atlas_coords(), from.alternative_tile)) {
 					Array a = tile_set->get_alternative_level_tile_proxy(from.source_id, from.get_atlas_coords(), from.alternative_tile);
@@ -160,7 +160,7 @@ void TileProxiesManagerDialog::_add_button_pressed() {
 					undo_redo->add_undo_method(*tile_set, "remove_alternative_level_tile_proxy", from.source_id, from.get_atlas_coords(), from.alternative_tile);
 				}
 			} else {
-				undo_redo->create_action("Create Coords-level Tile Proxy");
+				undo_redo->create_action(TTR("Create Coords-level Tile Proxy"));
 				undo_redo->add_do_method(*tile_set, "set_coords_level_tile_proxy", from.source_id, from.get_atlas_coords(), to.source_id, to.get_atlas_coords());
 				if (tile_set->has_coords_level_tile_proxy(from.source_id, from.get_atlas_coords())) {
 					Array a = tile_set->get_coords_level_tile_proxy(from.source_id, from.get_atlas_coords());
@@ -170,7 +170,7 @@ void TileProxiesManagerDialog::_add_button_pressed() {
 				}
 			}
 		} else {
-			undo_redo->create_action("Create source-level Tile Proxy");
+			undo_redo->create_action(TTR("Create source-level Tile Proxy"));
 			undo_redo->add_do_method(*tile_set, "set_source_level_tile_proxy", from.source_id, to.source_id);
 			if (tile_set->has_source_level_tile_proxy(from.source_id)) {
 				undo_redo->add_undo_method(*tile_set, "set_source_level_tile_proxy", to.source_id, tile_set->get_source_level_tile_proxy(from.source_id));
@@ -186,7 +186,7 @@ void TileProxiesManagerDialog::_add_button_pressed() {
 }
 
 void TileProxiesManagerDialog::_clear_invalid_button_pressed() {
-	undo_redo->create_action("Delete All Invalid Tile Proxies");
+	undo_redo->create_action(TTR("Delete All Invalid Tile Proxies"));
 
 	undo_redo->add_do_method(*tile_set, "cleanup_invalid_tile_proxies");
 
@@ -213,7 +213,7 @@ void TileProxiesManagerDialog::_clear_invalid_button_pressed() {
 }
 
 void TileProxiesManagerDialog::_clear_all_button_pressed() {
-	undo_redo->create_action("Delete All Tile Proxies");
+	undo_redo->create_action(TTR("Delete All Tile Proxies"));
 
 	undo_redo->add_do_method(*tile_set, "clear_tile_proxies");
 

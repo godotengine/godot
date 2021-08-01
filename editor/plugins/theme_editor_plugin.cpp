@@ -3112,7 +3112,7 @@ void ThemeEditor::edit(const Ref<Theme> &p_theme) {
 		preview_tab->set_preview_theme(p_theme);
 	}
 
-	theme_name->set_text(TTR("Theme") + ": " + theme->get_path().get_file());
+	theme_name->set_text(TTR("Theme:") + " " + theme->get_path().get_file());
 }
 
 Ref<Theme> ThemeEditor::get_edited_theme() {
@@ -3230,7 +3230,7 @@ ThemeEditor::ThemeEditor() {
 	add_child(top_menu);
 
 	theme_name = memnew(Label);
-	theme_name->set_text(TTR("Theme") + ": ");
+	theme_name->set_text(TTR("Theme:"));
 	theme_name->set_theme_type_variation("HeaderSmall");
 	top_menu->add_child(theme_name);
 

@@ -193,19 +193,6 @@
 				Converts from decibels to linear energy (audio).
 			</description>
 		</method>
-		<method name="dectime">
-			<return type="float" />
-			<argument index="0" name="value" type="float" />
-			<argument index="1" name="amount" type="float" />
-			<argument index="2" name="step" type="float" />
-			<description>
-				Returns the result of [code]value[/code] decreased by [code]step[/code] * [code]amount[/code].
-				[codeblock]
-				# a = 59
-				a = dectime(60, 10, 0.1))
-				[/codeblock]
-			</description>
-		</method>
 		<method name="deg2rad">
 			<return type="float" />
 			<argument index="0" name="deg" type="float" />
