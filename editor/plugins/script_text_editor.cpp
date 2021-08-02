@@ -204,7 +204,13 @@ void ScriptTextEditor::_set_theme_for_script() {
 	for (const String &string : strings) {
 		String beg = string.get_slice(" ", 0);
 		String end = string.get_slice_count(" ") > 1 ? string.get_slice(" ", 1) : String();
-		text_edit->add_string_delimiter(beg, end, end == "");
+		if (!text_edit->has_string_delimiter(beg)) {
+			text_edit->add_string_delimiter(beg, end, end == "");
+		}
+
+		if (!end.is_empty() && !text_edit->has_auto_brace_completion_open_key(beg)) {
+			text_edit->add_auto_brace_completion_pair(beg, end);
+		}
 	}
 
 	List<String> comments;
@@ -214,6 +220,10 @@ void ScriptTextEditor::_set_theme_for_script() {
 		String beg = comment.get_slice(" ", 0);
 		String end = comment.get_slice_count(" ") > 1 ? comment.get_slice(" ", 1) : String();
 		text_edit->add_comment_delimiter(beg, end, end == "");
+
+		if (!end.is_empty() && !text_edit->has_auto_brace_completion_open_key(beg)) {
+			text_edit->add_auto_brace_completion_pair(beg, end);
+		}
 	}
 }
 
@@ -742,7 +752,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 			EditorNode::get_singleton()->load_resource(p_symbol);
 		}
 
-	} else if (script->get_language()->lookup_code(code_editor->get_text_editor()->get_text_for_lookup_completion(), p_symbol, script->get_path(), base, result) == OK) {
+	} else if (script->get_language()->lookup_code(code_editor->get_text_editor()->get_text_for_symbol_lookup(), p_symbol, script->get_path(), base, result) == OK) {
 		_goto_line(p_row);
 
 		result.class_name = result.class_name.trim_prefix("_");
@@ -845,18 +855,17 @@ void ScriptTextEditor::_validate_symbol(const String &p_symbol) {
 	}
 
 	ScriptLanguage::LookupResult result;
-	if (ScriptServer::is_global_class(p_symbol) || p_symbol.is_resource_file() || script->get_language()->lookup_code(code_editor->get_text_editor()->get_text_for_lookup_completion(), p_symbol, script->get_path(), base, result) == OK || (ProjectSettings::get_singleton()->has_autoload(p_symbol) && ProjectSettings::get_singleton()->get_autoload(p_symbol).is_singleton)) {
-		text_edit->set_highlighted_word(p_symbol);
+	if (ScriptServer::is_global_class(p_symbol) || p_symbol.is_resource_file() || script->get_language()->lookup_code(code_editor->get_text_editor()->get_text_for_symbol_lookup(), p_symbol, script->get_path(), base, result) == OK || (ProjectSettings::get_singleton()->has_autoload(p_symbol) && ProjectSettings::get_singleton()->get_autoload(p_symbol).is_singleton)) {
+		text_edit->set_symbol_lookup_word_as_valid(true);
 	} else if (p_symbol.is_rel_path()) {
 		String path = _get_absolute_path(p_symbol);
 		if (FileAccess::exists(path)) {
-			text_edit->set_highlighted_word(p_symbol);
+			text_edit->set_symbol_lookup_word_as_valid(true);
 		} else {
-			text_edit->set_highlighted_word(String());
+			text_edit->set_symbol_lookup_word_as_valid(false);
 		}
-
 	} else {
-		text_edit->set_highlighted_word(String());
+		text_edit->set_symbol_lookup_word_as_valid(false);
 	}
 }
 
@@ -1544,7 +1553,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 				base = _find_node_for_script(base, base, script);
 			}
 			ScriptLanguage::LookupResult result;
-			if (script->get_language()->lookup_code(code_editor->get_text_editor()->get_text_for_lookup_completion(), word_at_pos, script->get_path(), base, result) == OK) {
+			if (script->get_language()->lookup_code(code_editor->get_text_editor()->get_text_for_symbol_lookup(), word_at_pos, script->get_path(), base, result) == OK) {
 				open_docs = true;
 			}
 		}
@@ -1829,7 +1838,7 @@ ScriptTextEditor::ScriptTextEditor() {
 
 	code_editor->get_text_editor()->set_code_hint_draw_below(EditorSettings::get_singleton()->get("text_editor/completion/put_callhint_tooltip_below_current_line"));
 
-	code_editor->get_text_editor()->set_select_identifiers_on_hover(true);
+	code_editor->get_text_editor()->set_symbol_lookup_on_click_enabled(true);
 	code_editor->get_text_editor()->set_context_menu_enabled(false);
 
 	context_menu = memnew(PopupMenu);

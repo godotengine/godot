@@ -158,6 +158,10 @@ void ShaderTextEditor::_load_theme_settings() {
 	text_editor->add_comment_delimiter("/*", "*/", false);
 	text_editor->add_comment_delimiter("//", "", true);
 
+	if (!text_editor->has_auto_brace_completion_open_key("/*")) {
+		text_editor->add_auto_brace_completion_pair("/*", "*/");
+	}
+
 	if (warnings_panel) {
 		// Warnings panel
 		warnings_panel->add_theme_font_override("normal_font", EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("main"), SNAME("EditorFonts")));
@@ -659,7 +663,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 
 	shader_editor->get_text_editor()->set_code_hint_draw_below(EditorSettings::get_singleton()->get("text_editor/completion/put_callhint_tooltip_below_current_line"));
 
-	shader_editor->get_text_editor()->set_select_identifiers_on_hover(true);
+	shader_editor->get_text_editor()->set_symbol_lookup_on_click_enabled(true);
 	shader_editor->get_text_editor()->set_context_menu_enabled(false);
 	shader_editor->get_text_editor()->connect("gui_input", callable_mp(this, &ShaderEditor::_text_edit_gui_input));
 

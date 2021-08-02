@@ -66,6 +66,19 @@ private:
 
 	void _new_line(bool p_split_current_line = true, bool p_above = false);
 
+	/* Auto brace completion */
+	bool auto_brace_completion_enabled = false;
+
+	/* BracePair open_key must be uniquie and ordered by length. */
+	struct BracePair {
+		String open_key = "";
+		String close_key = "";
+	};
+	Vector<BracePair> auto_brace_completion_pairs;
+
+	int _get_auto_brace_pair_open_at_pos(int p_line, int p_col);
+	int _get_auto_brace_pair_close_at_pos(int p_line, int p_col);
+
 	/* Main Gutter */
 	enum MainGutterType {
 		MAIN_GUTTER_BREAKPOINT = 0x01,
@@ -112,7 +125,7 @@ private:
 	void _update_gutter_indexes();
 
 	/* Line Folding */
-	bool line_folding_enabled = true;
+	bool line_folding_enabled = false;
 
 	/* Delimiters */
 	enum DelimiterType {
@@ -210,6 +223,16 @@ private:
 
 	void _lines_edited_from(int p_from_line, int p_to_line);
 
+	/* Line length guidelines */
+	TypedArray<int> line_length_guideline_columns;
+	Color line_length_guideline_color;
+
+	/* Symbol lookup */
+	bool symbol_lookup_on_click_enabled = false;
+
+	String symbol_lookup_new_word = "";
+	String symbol_lookup_word = "";
+
 protected:
 	void _gui_input(const Ref<InputEvent> &p_gui_input) override;
 	void _notification(int p_what);
@@ -217,7 +240,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	/* General overrides */
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
+	virtual void handle_unicode_input(uint32_t p_unicode) override;
 
 	/* Indent management */
 	void set_indent_size(const int p_size);
@@ -239,6 +264,22 @@ public:
 	void unindent_lines();
 
 	virtual void backspace() override;
+
+	/* Auto brace completion */
+	void set_auto_brace_completion_enabled(bool p_enabled);
+	bool is_auto_brace_completion_enabled() const;
+
+	void set_highlight_matching_braces_enabled(bool p_enabled);
+	bool is_highlight_matching_braces_enabled() const;
+
+	void add_auto_brace_completion_pair(const String &p_open_key, const String &p_close_key);
+	void set_auto_brace_completion_pairs(const Dictionary &p_auto_brace_completion_pairs);
+	Dictionary get_auto_brace_completion_pairs() const;
+
+	bool has_auto_brace_completion_open_key(const String &p_open_key) const;
+	bool has_auto_brace_completion_close_key(const String &p_close_key) const;
+
+	String get_auto_brace_completion_close_key(const String &p_open_key) const;
 
 	/* Main Gutter */
 	void set_draw_breakpoints_gutter(bool p_draw);
@@ -346,6 +387,18 @@ public:
 
 	void confirm_code_completion(bool p_replace = false);
 	void cancel_code_completion();
+
+	/* Line length guidelines */
+	void set_line_length_guidelines(TypedArray<int> p_guideline_columns);
+	TypedArray<int> get_line_length_guidelines() const;
+
+	/* Symbol lookup */
+	void set_symbol_lookup_on_click_enabled(bool p_enabled);
+	bool is_symbol_lookup_on_click_enabled() const;
+
+	String get_text_for_symbol_lookup();
+
+	void set_symbol_lookup_word_as_valid(bool p_valid);
 
 	CodeEdit();
 	~CodeEdit();

@@ -280,9 +280,6 @@ private:
 	bool cursor_changed_dirty = false;
 	bool text_changed_dirty = false;
 	bool undo_enabled = true;
-	bool line_length_guidelines = false;
-	int line_length_guideline_soft_col = 80;
-	int line_length_guideline_hard_col = 100;
 	bool hiding_enabled = false;
 	bool draw_minimap = false;
 	int minimap_width = 80;
@@ -291,7 +288,6 @@ private:
 
 	bool highlight_all_occurrences = false;
 	bool scroll_past_end_of_file_enabled = false;
-	bool brace_matching_enabled = false;
 	bool highlight_current_line = false;
 
 	String cut_copy_line;
@@ -309,7 +305,7 @@ private:
 	float target_v_scroll = 0.0;
 	float v_scroll_speed = 80.0;
 
-	String highlighted_word;
+	String lookup_symbol_word;
 
 	uint64_t last_dblclk = 0;
 
@@ -386,7 +382,6 @@ private:
 	Size2 get_minimum_size() const override;
 	int _get_control_height() const;
 
-	Point2 _get_local_mouse_pos() const;
 	int _get_menu_action_accelerator(const String &p_action);
 
 	void _reset_caret_blink_timer();
@@ -431,10 +426,9 @@ private:
 	void _delete(bool p_word = false, bool p_all_to_right = false);
 	void _move_cursor_document_start(bool p_select);
 	void _move_cursor_document_end(bool p_select);
-	void _handle_unicode_character(uint32_t unicode, bool p_had_selection);
 
 protected:
-	bool auto_brace_completion_enabled = false;
+	bool highlight_matching_braces_enabled = false;
 
 	struct Cache {
 		Ref<Texture2D> tab_icon;
@@ -455,7 +449,6 @@ protected:
 		Color selection_color;
 		Color code_folding_color;
 		Color current_line_color;
-		Color line_length_guideline_color;
 		Color brace_mismatch_color;
 		Color word_highlighted_color;
 		Color search_result_color;
@@ -470,18 +463,16 @@ protected:
 
 	void _insert_text(int p_line, int p_char, const String &p_text, int *r_end_line = nullptr, int *r_end_char = nullptr);
 	void _remove_text(int p_from_line, int p_from_column, int p_to_line, int p_to_column);
-	void _insert_text_at_cursor(const String &p_text);
 	virtual void _gui_input(const Ref<InputEvent> &p_gui_input);
 	void _notification(int p_what);
-
-	void _consume_pair_symbol(char32_t ch);
-	void _consume_backspace_for_pair_symbol(int prev_line, int prev_column);
 
 	static void _bind_methods();
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+	void _set_symbol_lookup_word(const String &p_symbol);
 
 public:
 	/* Syntax Highlighting. */
@@ -577,8 +568,10 @@ public:
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
 
+	Point2 _get_local_mouse_pos() const;
 	void _get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) const;
 	void _get_minimap_mouse_row(const Point2i &p_mouse, int &r_row) const;
+	bool is_dragging_cursor() const;
 
 	//void delete_char();
 	//void delete_line();
@@ -607,7 +600,6 @@ public:
 	void set_structured_text_bidi_override_options(Array p_args);
 	Array get_structured_text_bidi_override_options() const;
 
-	void set_highlighted_word(const String &new_word);
 	void set_text(String p_text);
 	void insert_text_at_cursor(const String &p_text);
 	void insert_at(const String &p_text, int at);
@@ -633,13 +625,6 @@ public:
 
 	inline void set_scroll_pass_end_of_file(bool p_enabled) {
 		scroll_past_end_of_file_enabled = p_enabled;
-		update();
-	}
-	inline void set_auto_brace_completion(bool p_enabled) {
-		auto_brace_completion_enabled = p_enabled;
-	}
-	inline void set_brace_matching(bool p_enabled) {
-		brace_matching_enabled = p_enabled;
 		update();
 	}
 
@@ -686,6 +671,7 @@ public:
 
 	void delete_selection();
 
+	virtual void handle_unicode_input(uint32_t p_unicode);
 	virtual void backspace();
 	void cut();
 	void copy();
@@ -751,10 +737,6 @@ public:
 	void set_highlight_current_line(bool p_enabled);
 	bool is_highlight_current_line_enabled() const;
 
-	void set_show_line_length_guidelines(bool p_show);
-	void set_line_length_guideline_soft_column(int p_column);
-	void set_line_length_guideline_hard_column(int p_column);
-
 	void set_draw_minimap(bool p_draw);
 	bool is_drawing_minimap() const;
 
@@ -765,9 +747,6 @@ public:
 	bool is_hiding_enabled() const;
 
 	void set_tooltip_request_func(Object *p_obj, const StringName &p_function, const Variant &p_udata);
-
-	void set_select_identifiers_on_hover(bool p_enable);
-	bool is_selecting_identifiers_on_hover_enabled() const;
 
 	void set_context_menu_enabled(bool p_enable);
 	bool is_context_menu_enabled();
@@ -783,8 +762,6 @@ public:
 
 	bool is_menu_visible() const;
 	PopupMenu *get_menu() const;
-
-	String get_text_for_lookup_completion();
 
 	virtual bool is_text_field() const override;
 	TextEdit();
