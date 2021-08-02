@@ -639,10 +639,10 @@ void RoomManager::_second_pass_room(Room *p_room, const LocalVector<RoomGroup *>
 		Spatial *child = Object::cast_to<Spatial>(p_room->get_child(n));
 
 		if (child) {
-			if (_name_starts_with(child, "GPortal", true) || _node_is_type<Portal>(child)) {
+			if (_node_is_type<Portal>(child) || child->is_queued_for_deletion()) {
 				// the adding of portal points is done after this stage, because
 				// we need to take into account incoming as well as outgoing portals
-			} else if (_name_starts_with(child, "Bound", true)) {
+			} else if (_name_ends_with(child, "-bound")) {
 				manual_bound_found = _convert_manual_bound(p_room, child, p_portals);
 			} else {
 				// don't add the instances to the portal renderer on the first pass of _find_statics,
@@ -778,7 +778,7 @@ void RoomManager::_third_pass_rooms(const LocalVector<Portal *> &p_portals) {
 
 		// no need to do all these string operations if we are not debugging and don't need logs
 		if (_show_debug) {
-			String room_short_name = _find_name_after(room, "Room", true);
+			String room_short_name = _find_name_before(room, "-room", true);
 			convert_log("ROOM\t" + room_short_name);
 
 			// log output the portals associated with this room
@@ -793,7 +793,7 @@ void RoomManager::_third_pass_rooms(const LocalVector<Portal *> &p_portals) {
 				if (linked_room_id < _rooms.size()) {
 					Room *linked_room = _rooms[linked_room_id];
 
-					String portal_link_room_name = _find_name_after(linked_room, "Room", true);
+					String portal_link_room_name = _find_name_before(linked_room, "-room", true);
 					String in_or_out = (portal_links_out) ? "POUT" : "PIN ";
 
 					// display the name of the room linked to
@@ -834,8 +834,8 @@ void RoomManager::_second_pass_portals(Spatial *p_roomlist, LocalVector<Portal *
 		// We do this by setting the assigned nodepath if we find the link room, then
 		// the resolving links is done in the usual manner from the nodepath.
 		if (portal->_importing_portal) {
-			String string_link_room_shortname = _find_name_after(portal, "Portal");
-			String string_link_room = "Room" + GODOT_PORTAL_DELINEATOR + string_link_room_shortname;
+			String string_link_room_shortname = _find_name_before(portal, "-portal");
+			String string_link_room = string_link_room_shortname + "-room";
 
 			if (string_link_room_shortname != "") {
 				Room *linked_room = Object::cast_to<Room>(p_roomlist->find_node(string_link_room, true, false));
@@ -979,12 +979,12 @@ bool RoomManager::_check_roomlist_validity(Node *p_node) {
 
 void RoomManager::_convert_rooms_recursive(Spatial *p_node, LocalVector<Portal *> &r_portals, LocalVector<RoomGroup *> &r_roomgroups, int p_roomgroup) {
 	// is this a room?
-	if (_node_is_type<Room>(p_node) || _name_starts_with(p_node, "Room")) {
+	if (_node_is_type<Room>(p_node) || _name_ends_with(p_node, "-room")) {
 		_convert_room(p_node, r_portals, r_roomgroups, p_roomgroup);
 	}
 
 	// is this a roomgroup?
-	if (_node_is_type<RoomGroup>(p_node) || _name_starts_with(p_node, "RoomGroup")) {
+	if (_node_is_type<RoomGroup>(p_node) || _name_ends_with(p_node, "-roomgroup")) {
 		p_roomgroup = _convert_roomgroup(p_node, r_roomgroups);
 	}
 
@@ -1073,7 +1073,7 @@ void RoomManager::_convert_room(Spatial *p_node, LocalVector<Portal *> &r_portal
 
 void RoomManager::_find_portals_recursive(Spatial *p_node, Room *p_room, LocalVector<Portal *> &r_portals) {
 	MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
-	if ((mi && _name_starts_with(mi, "Portal", true)) || _node_is_type<Portal>(p_node)) {
+	if (_node_is_type<Portal>(p_node) || (mi && _name_ends_with(mi, "-portal"))) {
 		_convert_portal(p_room, p_node, r_portals);
 	}
 
@@ -1956,91 +1956,58 @@ void RoomManager::_set_owner_recursive(Node *p_node, Node *p_owner) {
 	}
 }
 
-void RoomManager::_check_for_misnamed_node(const Node *p_node, String p_start_string) {
-	// don't check the roomlist name, as it often has a conflict with Room
-	if (p_node == _roomlist) {
-		return;
-	}
-
+bool RoomManager::_name_ends_with(const Node *p_node, String p_postfix) const {
+	ERR_FAIL_NULL_V(p_node, false);
 	String name = p_node->get_name();
 
-	int ss_length = p_start_string.length();
+	int pf_l = p_postfix.length();
+	int l = name.length();
 
-	if (name.substr(0, ss_length).to_lower() == p_start_string.to_lower()) {
-		if (p_start_string == "Room") {
-			// do allow RoomGroup and RoomManager
-			if (name.substr(0, 9) == "RoomGroup") {
-				return;
-			}
-
-			if (name.substr(0, 11) == "RoomManager") {
-				return;
-			}
-		} else {
-			if (p_start_string == "RoomGroup") {
-				return;
-			}
-		}
-
-		WARN_PRINT("Possible misnamed node : " + name);
-		_warning_misnamed_nodes_detected = true;
+	if (pf_l > l) {
+		return false;
 	}
-}
 
-bool RoomManager::_name_starts_with(const Node *p_node, String p_search_string, bool p_allow_no_delineator) {
-	String name = p_node->get_name();
-
-	if (p_allow_no_delineator && (name == p_search_string)) {
+	// allow capitalization errors
+	if (name.substr(l - pf_l, pf_l).to_lower() == p_postfix) {
 		return true;
 	}
 
-	String search_string = p_search_string + GODOT_PORTAL_DELINEATOR;
-	int sl = search_string.length();
-
-	if (name.substr(0, sl) == search_string) {
-		return true;
-	}
-
-	_check_for_misnamed_node(p_node, p_search_string);
 	return false;
 }
 
-String RoomManager::_find_name_after(Node *p_node, String p_prefix, bool p_allow_no_prefix) {
+String RoomManager::_find_name_before(Node *p_node, String p_postfix, bool p_allow_no_postfix) {
 	ERR_FAIL_NULL_V(p_node, String());
-
-	p_prefix += GODOT_PORTAL_DELINEATOR;
-	p_prefix = p_prefix.to_lower();
-	int prefix_length = p_prefix.length();
-
 	String name = p_node->get_name();
-	String name_start = name.substr(0, prefix_length).to_lower();
 
-	String string_result;
+	int pf_l = p_postfix.length();
+	int l = name.length();
 
-	// is the prefix correct?
-	if (p_prefix == name_start) {
-		string_result = name.substr(prefix_length);
-	} else {
-		if (p_allow_no_prefix) {
-			// there is no prefix, or the prefix is incorrect...
-			// we will pass the whole name
-			string_result = name;
+	if (pf_l > l) {
+		if (!p_allow_no_postfix) {
+			return String();
 		}
-		// else we will return a null string
+	} else {
+		if (name.substr(l - pf_l, pf_l) == p_postfix) {
+			name = name.substr(0, l - pf_l);
+		} else {
+			if (!p_allow_no_postfix) {
+				return String();
+			}
+		}
 	}
 
 	// because godot doesn't support multiple nodes with the same name, we will strip e.g. a number
-	// after an @ on the end of the name...
-	// e.g. portal_kitchen@2
-	for (int c = 0; c < string_result.length(); c++) {
-		if (string_result[c] == '*') {
+	// after an * on the end of the name...
+	// e.g. kitchen*2-portal
+	for (int c = 0; c < name.length(); c++) {
+		if (name[c] == GODOT_PORTAL_WILDCARD) {
 			// remove everything after and including this character
-			string_result = string_result.substr(0, c);
+			name = name.substr(0, c);
 			break;
 		}
 	}
 
-	return string_result;
+	return name;
 }
 
 void RoomManager::_merge_meshes_in_room(Room *p_room) {
@@ -2202,7 +2169,7 @@ void RoomManager::_list_mergeable_mesh_instances(Spatial *p_node, LocalVector<Me
 		if (vi && vi->get_portal_mode() == CullInstance::PORTAL_MODE_STATIC) {
 			// disallow for portals or bounds
 			// mesh instance portals should be queued for deletion by this point, we don't want to merge portals!
-			if (!_node_is_type<Portal>(mi) && !_name_starts_with(mi, "Bound", true) && !mi->is_queued_for_deletion()) {
+			if (!_node_is_type<Portal>(mi) && !_name_ends_with(mi, "-bound") && !mi->is_queued_for_deletion()) {
 				// only merge if visible
 				if (mi->is_inside_tree() && mi->is_visible()) {
 					r_list.push_back(mi);
