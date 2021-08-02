@@ -140,6 +140,8 @@ bool Tween::is_valid() {
 }
 
 Ref<Tween> Tween::bind_node(Node *p_node) {
+	ERR_FAIL_NULL_V(p_node, this);
+
 	bound_node = p_node->get_instance_id();
 	is_bound = true;
 	return this;
