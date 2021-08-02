@@ -112,7 +112,25 @@ void NativeScript::_placeholder_erased(PlaceHolderScriptInstance *p_placeholder)
 #endif
 
 bool NativeScript::inherits_script(const Ref<Script> &p_script) const {
-	WARN_PRINT_ONCE("Inheritance needs to be implemented in NativeScript.");
+	Ref<NativeScript> ns = p_script;
+	if (ns.is_null()) {
+		return false;
+	}
+
+	const NativeScriptDesc *other_s = ns->get_script_desc();
+	if (!other_s) {
+		return false;
+	}
+
+	const NativeScriptDesc *s = get_script_desc();
+
+	while (s) {
+		if (s == other_s) {
+			return true;
+		}
+		s = s->base_data;
+	}
+
 	return false;
 }
 
