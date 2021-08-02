@@ -417,7 +417,7 @@ bool EditorPropertyRevert::may_node_be_in_instance(Node *p_node) {
 	return might_be; // or might not be
 }
 
-bool EditorPropertyRevert::get_instantiated_node_original_property(Node *p_node, const StringName &p_prop, Variant &value) {
+bool EditorPropertyRevert::get_instantiated_node_original_property(Node *p_node, const StringName &p_prop, Variant &value, bool p_check_class_default) {
 	Node *node = p_node;
 	Node *orig = node;
 
@@ -455,7 +455,7 @@ bool EditorPropertyRevert::get_instantiated_node_original_property(Node *p_node,
 		node = node->get_owner();
 	}
 
-	if (!found && p_node) {
+	if (p_check_class_default && !found && p_node) {
 		//if not found, try default class value
 		Variant attempt = ClassDB::class_get_default_property_value(p_node->get_class_name(), p_prop);
 		if (attempt.get_type() != Variant::NIL) {
@@ -548,7 +548,7 @@ Variant EditorPropertyRevert::get_property_revert_value(Object *p_object, const 
 		if (!ignore_parent) {
 			//check for difference including instantiation
 			Variant vorig;
-			if (EditorPropertyRevert::get_instantiated_node_original_property(node, p_property, vorig)) {
+			if (EditorPropertyRevert::get_instantiated_node_original_property(node, p_property, vorig, false)) {
 				return vorig;
 			}
 		}
