@@ -1120,6 +1120,7 @@ SurfaceTool::CustomFormat SurfaceTool::get_custom_format(int p_index) const {
 void SurfaceTool::optimize_indices_for_cache() {
 	ERR_FAIL_COND(optimize_vertex_cache_func == nullptr);
 	ERR_FAIL_COND(index_array.size() == 0);
+	ERR_FAIL_COND(index_array.size() % 3 != 0);
 
 	LocalVector old_index_array = index_array;
 	memset(index_array.ptr(), 0, index_array.size() * sizeof(int));
