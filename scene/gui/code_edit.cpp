@@ -225,8 +225,15 @@ void CodeEdit::_notification(int p_what) {
 					round_ofs = round_ofs.round();
 					draw_string(font, round_ofs, line.replace(String::chr(0xFFFF), ""), HALIGN_LEFT, -1, cache.font_size, font_color);
 					if (end > 0) {
-						Vector2 b = hint_ofs + sb->get_offset() + Vector2(begin, font_height + font_height * i + line_spacing - 1);
-						draw_line(b, b + Vector2(end - begin, 0), font_color);
+						// Draw an underline for the currently edited function parameter.
+						const Vector2 b = hint_ofs + sb->get_offset() + Vector2(begin, font_height + font_height * i + line_spacing);
+						draw_line(b, b + Vector2(end - begin, 0), font_color, 2);
+
+						// Draw a translucent text highlight as well.
+						const Rect2 highlight_rect = Rect2(
+								hint_ofs + sb->get_offset() + Vector2(begin, 0),
+								Vector2(end - begin, font_height));
+						draw_rect(highlight_rect, font_color * Color(1, 1, 1, 0.2));
 					}
 					line_spacing += cache.line_spacing;
 				}
