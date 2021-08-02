@@ -31,6 +31,7 @@
 #include "version_control_editor_plugin.h"
 
 #include "core/object/script_language.h"
+#include "core/os/keyboard.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
@@ -292,6 +293,29 @@ void VersionControlEditorPlugin::_update_commit_button() {
 	commit_button->set_disabled(commit_message->get_text().strip_edges() == "");
 }
 
+void VersionControlEditorPlugin::_commit_message_gui_input(const Ref<InputEvent> &p_event) {
+	if (!commit_message->has_focus()) {
+		return;
+	}
+	if (commit_message->get_text().strip_edges().is_empty()) {
+		// Do not allow empty commit messages.
+		return;
+	}
+	const Ref<InputEventKey> k = p_event;
+
+	if (k.is_valid() && k->is_pressed()) {
+		if (ED_IS_SHORTCUT("version_control/commit", p_event)) {
+			if (staged_files_count == 0) {
+				// Stage all files only when no files were previously staged.
+				_stage_all();
+			}
+			_send_commit_msg();
+			commit_message->accept_event();
+			return;
+		}
+	}
+}
+
 void VersionControlEditorPlugin::register_editor() {
 	if (!EditorVCSInterface::get_singleton()) {
 		EditorNode::get_singleton()->add_control_to_dock(EditorNode::DOCK_SLOT_RIGHT_UL, version_commit_dock);
@@ -462,7 +486,9 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_message->set_custom_minimum_size(Size2(200, 100));
 	commit_message->set_wrap_enabled(true);
 	commit_message->connect("text_changed", callable_mp(this, &VersionControlEditorPlugin::_update_commit_button));
+	commit_message->connect("gui_input", callable_mp(this, &VersionControlEditorPlugin::_commit_message_gui_input));
 	commit_box_vbc->add_child(commit_message);
+	ED_SHORTCUT("version_control/commit", TTR("Commit"), KEY_MASK_CMD | KEY_ENTER);
 
 	commit_button = memnew(Button);
 	commit_button->set_text(TTR("Commit Changes"));
