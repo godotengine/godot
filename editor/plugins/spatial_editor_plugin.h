@@ -652,7 +652,7 @@ private:
 
 	MenuButton *transform_menu;
 	PopupMenu *gizmos_menu;
-	MenuButton *view_menu;
+	MenuButton *view_menu = nullptr;
 
 	AcceptDialog *accept;
 
