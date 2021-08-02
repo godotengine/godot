@@ -1314,6 +1314,7 @@ void AnimationTreePlayer::remove_node(const StringName &p_node) {
 		}
 	}
 
+	memdelete(node_map[p_node]);
 	node_map.erase(p_node);
 
 	_clear_cycle_test();
