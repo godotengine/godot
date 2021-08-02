@@ -43,11 +43,9 @@ class RoomManagerEditorPlugin : public EditorPlugin {
 
 	RoomManager *_room_manager;
 
-	ToolButton *button_rooms_convert;
 	ToolButton *button_flip_portals;
 	EditorNode *editor;
 
-	void _rooms_convert();
 	void _flip_portals();
 
 protected:

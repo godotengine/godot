@@ -647,6 +647,9 @@ public:
 	virtual void rooms_set_debug_feature(RID p_scenario, VisualServer::RoomsDebugFeature p_feature, bool p_active);
 	virtual void rooms_update_gameplay_monitor(RID p_scenario, const Vector<Vector3> &p_camera_positions);
 
+	// don't use this in a game
+	virtual bool rooms_is_loaded(RID p_scenario) const;
+
 	virtual void callbacks_register(VisualServerCallbacks *p_callbacks);
 	VisualServerCallbacks *get_callbacks() const { return _visual_server_callbacks; }
 

@@ -159,6 +159,7 @@ public:
 	// for use in the editor only, to allow a cheap way of turning off portals
 	// if there has been a change, e.g. moving a room etc.
 	void rooms_unload() { _ensure_unloaded(); }
+	bool rooms_is_loaded() const { return _loaded; }
 
 	// debugging
 	void set_debug_sprawl(bool p_active) { _debug_sprawl = p_active; }

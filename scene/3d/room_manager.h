@@ -134,6 +134,12 @@ public:
 	// an easy way of grabbing the active room manager for tools purposes
 #ifdef TOOLS_ENABLED
 	static RoomManager *active_room_manager;
+
+	// static versions of functions for use from editor toolbars
+	static void static_rooms_set_active(bool p_active);
+	static bool static_rooms_get_active();
+	static bool static_rooms_get_active_and_loaded();
+	static void static_rooms_convert();
 #endif
 
 private:
