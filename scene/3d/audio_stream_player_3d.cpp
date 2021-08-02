@@ -407,14 +407,14 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 			for (const Set<Camera3D *>::Element *E = world_3d->get_cameras().front(); E; E = E->next()) {
 				Camera3D *camera = E->get();
 				Viewport *vp = camera->get_viewport();
-				if (!vp->is_audio_listener()) {
+				if (!vp->is_audio_listener_3d()) {
 					continue;
 				}
 
 				bool listener_is_camera = true;
 				Node3D *listener_node = camera;
 
-				Listener3D *listener = vp->get_listener();
+				Listener3D *listener = vp->get_listener_3d();
 				if (listener) {
 					listener_node = listener;
 					listener_is_camera = false;

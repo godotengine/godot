@@ -169,7 +169,7 @@
 		<member name="audio_listener_enable_2d" type="bool" setter="set_as_audio_listener_2d" getter="is_audio_listener_2d" default="false">
 			If [code]true[/code], the viewport will process 2D audio streams.
 		</member>
-		<member name="audio_listener_enable_3d" type="bool" setter="set_as_audio_listener" getter="is_audio_listener" default="false">
+		<member name="audio_listener_enable_3d" type="bool" setter="set_as_audio_listener_3d" getter="is_audio_listener_3d" default="false">
 			If [code]true[/code], the viewport will process 3D audio streams.
 		</member>
 		<member name="canvas_item_default_texture_filter" type="int" setter="set_default_canvas_item_texture_filter" getter="get_default_canvas_item_texture_filter" enum="Viewport.DefaultCanvasItemTextureFilter" default="1">
