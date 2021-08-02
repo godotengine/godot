@@ -71,6 +71,8 @@ private:
 protected:
 	static void _bind_methods();
 
+	bool inherits_script(const Ref<Script> &p_script) const;
+
 	PluginScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, Variant::CallError &r_error);
 	Variant _new(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 

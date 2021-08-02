@@ -146,6 +146,8 @@ protected:
 public:
 	virtual bool is_valid() const { return valid; }
 
+	bool inherits_script(const Ref<Script> &p_script) const;
+
 	const Map<StringName, Ref<GDScript>> &get_subclasses() const { return subclasses; }
 	const Map<StringName, Variant> &get_constants() const { return constants; }
 	const Set<StringName> &get_members() const { return members; }

@@ -3205,6 +3205,16 @@ void CSharpScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 	}
 }
 
+bool CSharpScript::inherits_script(const Ref<Script> &p_script) const {
+	Ref<CSharpScript> cs = p_script;
+	if (cs.is_null()) {
+		return false;
+	}
+
+	WARN_PRINT_ONCE("Implement CSharpScript::inherits_script and other relevant changes after GH-38063.");
+	return false;
+}
+
 Ref<Script> CSharpScript::get_base_script() const {
 	// TODO search in metadata file once we have it, not important any way?
 	return Ref<Script>();

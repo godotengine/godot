@@ -815,6 +815,24 @@ Ref<GDScript> GDScript::get_base() const {
 	return base;
 }
 
+bool GDScript::inherits_script(const Ref<Script> &p_script) const {
+	Ref<GDScript> gd = p_script;
+	if (gd.is_null()) {
+		return false;
+	}
+
+	const GDScript *s = this;
+
+	while (s) {
+		if (s == p_script.ptr()) {
+			return true;
+		}
+		s = s->_base;
+	}
+
+	return false;
+}
+
 bool GDScript::has_script_signal(const StringName &p_signal) const {
 	if (_signals.has(p_signal)) {
 		return true;

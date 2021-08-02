@@ -1265,6 +1265,10 @@ VisualScript::VisualScript() {
 	is_tool_script = false;
 }
 
+bool VisualScript::inherits_script(const Ref<Script> &p_script) const {
+	return this == p_script.ptr(); //there is no inheritance in visual scripts, so this is enough
+}
+
 StringName VisualScript::get_default_func() const {
 	return StringName("f_312843592");
 }

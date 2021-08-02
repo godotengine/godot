@@ -136,6 +136,11 @@ bool PluginScript::can_instance() const {
 	return can;
 }
 
+bool PluginScript::inherits_script(const Ref<Script> &p_script) const {
+	WARN_PRINT_ONCE("Inheritance needs to be implemented in PluginScript.");
+	return false;
+}
+
 Ref<Script> PluginScript::get_base_script() const {
 	if (_ref_base_parent.is_valid()) {
 		return Ref<PluginScript>(_ref_base_parent);
