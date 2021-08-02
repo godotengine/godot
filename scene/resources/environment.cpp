@@ -449,6 +449,7 @@ bool Environment::is_sdfgi_enabled() const {
 }
 
 void Environment::set_sdfgi_cascades(SDFGICascades p_cascades) {
+	ERR_FAIL_INDEX(p_cascades, SDFGI_CASCADES_8 + 1);
 	sdfgi_cascades = p_cascades;
 	_update_sdfgi();
 }
