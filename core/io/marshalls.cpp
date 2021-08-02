@@ -746,7 +746,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		} break;
 		case Variant::PACKED_INT64_ARRAY: {
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
-			int64_t count = decode_uint64(buf);
+			int32_t count = decode_uint32(buf);
 			buf += 4;
 			len -= 4;
 			ERR_FAIL_MUL_OF(count, 8, ERR_INVALID_DATA);
@@ -795,7 +795,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		} break;
 		case Variant::PACKED_FLOAT64_ARRAY: {
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
-			int64_t count = decode_uint64(buf);
+			int32_t count = decode_uint32(buf);
 			buf += 4;
 			len -= 4;
 			ERR_FAIL_MUL_OF(count, 8, ERR_INVALID_DATA);
@@ -804,7 +804,6 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			Vector<double> data;
 
 			if (count) {
-				//const double*rbuf=(const double*)buf;
 				data.resize(count);
 				double *w = data.ptrw();
 				for (int64_t i = 0; i < count; i++) {
@@ -1519,7 +1518,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			int datasize = sizeof(int64_t);
 
 			if (buf) {
-				encode_uint64(datalen, buf);
+				encode_uint32(datalen, buf);
 				buf += 4;
 				const int64_t *r = data.ptr();
 				for (int64_t i = 0; i < datalen; i++) {
