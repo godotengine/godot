@@ -1000,9 +1000,12 @@ void register_scene_types() {
 
 	for (int i = 0; i < 20; i++) {
 		GLOBAL_DEF_BASIC(vformat("layer_names/2d_render/layer_%d", i), "");
+		GLOBAL_DEF_BASIC(vformat("layer_names/3d_render/layer_%d", i), "");
+	}
+
+	for (int i = 0; i < 32; i++) {
 		GLOBAL_DEF_BASIC(vformat("layer_names/2d_physics/layer_%d", i), "");
 		GLOBAL_DEF_BASIC(vformat("layer_names/2d_navigation/layer_%d", i), "");
-		GLOBAL_DEF_BASIC(vformat("layer_names/3d_render/layer_%d", i), "");
 		GLOBAL_DEF_BASIC(vformat("layer_names/3d_physics/layer_%d", i), "");
 		GLOBAL_DEF_BASIC(vformat("layer_names/3d_navigation/layer_%d", i), "");
 	}

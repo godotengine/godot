@@ -786,8 +786,44 @@
 		<member name="layer_names/2d_navigation/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 2. If left empty, the layer will display as "Layer 2".
 		</member>
+		<member name="layer_names/2d_navigation/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 20. If left empty, the layer will display as "Layer 20".
+		</member>
+		<member name="layer_names/2d_navigation/layer_21" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 21. If left empty, the layer will display as "Layer 21".
+		</member>
+		<member name="layer_names/2d_navigation/layer_22" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 22. If left empty, the layer will display as "Layer 22".
+		</member>
+		<member name="layer_names/2d_navigation/layer_23" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 23. If left empty, the layer will display as "Layer 23".
+		</member>
+		<member name="layer_names/2d_navigation/layer_24" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 24. If left empty, the layer will display as "Layer 24".
+		</member>
+		<member name="layer_names/2d_navigation/layer_25" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 25. If left empty, the layer will display as "Layer 25".
+		</member>
+		<member name="layer_names/2d_navigation/layer_26" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 26. If left empty, the layer will display as "Layer 26".
+		</member>
+		<member name="layer_names/2d_navigation/layer_27" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 27. If left empty, the layer will display as "Layer 27".
+		</member>
+		<member name="layer_names/2d_navigation/layer_28" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 28. If left empty, the layer will display as "Layer 28".
+		</member>
+		<member name="layer_names/2d_navigation/layer_29" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 29. If left empty, the layer will display as "Layer 29".
+		</member>
 		<member name="layer_names/2d_navigation/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 3. If left empty, the layer will display as "Layer 3".
+		</member>
+		<member name="layer_names/2d_navigation/layer_30" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 30. If left empty, the layer will display as "Layer 30".
+		</member>
+		<member name="layer_names/2d_navigation/layer_31" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 31. If left empty, the layer will display as "Layer 31".
 		</member>
 		<member name="layer_names/2d_navigation/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 4. If left empty, the layer will display as "Layer 4".
@@ -846,8 +882,44 @@
 		<member name="layer_names/2d_physics/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D physics layer 2. If left empty, the layer will display as "Layer 2".
 		</member>
+		<member name="layer_names/2d_physics/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 20. If left empty, the layer will display as "Layer 20".
+		</member>
+		<member name="layer_names/2d_physics/layer_21" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 21. If left empty, the layer will display as "Layer 21".
+		</member>
+		<member name="layer_names/2d_physics/layer_22" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 22. If left empty, the layer will display as "Layer 22".
+		</member>
+		<member name="layer_names/2d_physics/layer_23" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 23. If left empty, the layer will display as "Layer 23".
+		</member>
+		<member name="layer_names/2d_physics/layer_24" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 24. If left empty, the layer will display as "Layer 24".
+		</member>
+		<member name="layer_names/2d_physics/layer_25" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 25. If left empty, the layer will display as "Layer 25".
+		</member>
+		<member name="layer_names/2d_physics/layer_26" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 26. If left empty, the layer will display as "Layer 26".
+		</member>
+		<member name="layer_names/2d_physics/layer_27" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 27. If left empty, the layer will display as "Layer 27".
+		</member>
+		<member name="layer_names/2d_physics/layer_28" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 28. If left empty, the layer will display as "Layer 28".
+		</member>
+		<member name="layer_names/2d_physics/layer_29" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 29. If left empty, the layer will display as "Layer 29".
+		</member>
 		<member name="layer_names/2d_physics/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D physics layer 3. If left empty, the layer will display as "Layer 3".
+		</member>
+		<member name="layer_names/2d_physics/layer_30" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 30. If left empty, the layer will display as "Layer 30".
+		</member>
+		<member name="layer_names/2d_physics/layer_31" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 31. If left empty, the layer will display as "Layer 31".
 		</member>
 		<member name="layer_names/2d_physics/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D physics layer 4. If left empty, the layer will display as "Layer 4".
@@ -966,8 +1038,44 @@
 		<member name="layer_names/3d_navigation/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 2. If left empty, the layer will display as "Layer 2".
 		</member>
+		<member name="layer_names/3d_navigation/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 20. If left empty, the layer will display as "Layer 20".
+		</member>
+		<member name="layer_names/3d_navigation/layer_21" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 21. If left empty, the layer will display as "Layer 21".
+		</member>
+		<member name="layer_names/3d_navigation/layer_22" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 22. If left empty, the layer will display as "Layer 22".
+		</member>
+		<member name="layer_names/3d_navigation/layer_23" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 23. If left empty, the layer will display as "Layer 23".
+		</member>
+		<member name="layer_names/3d_navigation/layer_24" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 24. If left empty, the layer will display as "Layer 24".
+		</member>
+		<member name="layer_names/3d_navigation/layer_25" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 25. If left empty, the layer will display as "Layer 25".
+		</member>
+		<member name="layer_names/3d_navigation/layer_26" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 26. If left empty, the layer will display as "Layer 26".
+		</member>
+		<member name="layer_names/3d_navigation/layer_27" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 27. If left empty, the layer will display as "Layer 27".
+		</member>
+		<member name="layer_names/3d_navigation/layer_28" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 28. If left empty, the layer will display as "Layer 28".
+		</member>
+		<member name="layer_names/3d_navigation/layer_29" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 29. If left empty, the layer will display as "Layer 29".
+		</member>
 		<member name="layer_names/3d_navigation/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 3. If left empty, the layer will display as "Layer 3".
+		</member>
+		<member name="layer_names/3d_navigation/layer_30" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 30. If left empty, the layer will display as "Layer 30".
+		</member>
+		<member name="layer_names/3d_navigation/layer_31" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 31. If left empty, the layer will display as "Layer 31".
 		</member>
 		<member name="layer_names/3d_navigation/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 4. If left empty, the layer will display as "Layer 4".
@@ -1026,8 +1134,44 @@
 		<member name="layer_names/3d_physics/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D physics layer 2. If left empty, the layer will display as "Layer 2".
 		</member>
+		<member name="layer_names/3d_physics/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 20. If left empty, the layer will display as "Layer 20".
+		</member>
+		<member name="layer_names/3d_physics/layer_21" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 21. If left empty, the layer will display as "Layer 21".
+		</member>
+		<member name="layer_names/3d_physics/layer_22" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 22. If left empty, the layer will display as "Layer 22".
+		</member>
+		<member name="layer_names/3d_physics/layer_23" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 23. If left empty, the layer will display as "Layer 23".
+		</member>
+		<member name="layer_names/3d_physics/layer_24" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 24. If left empty, the layer will display as "Layer 24".
+		</member>
+		<member name="layer_names/3d_physics/layer_25" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 25. If left empty, the layer will display as "Layer 25".
+		</member>
+		<member name="layer_names/3d_physics/layer_26" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 26. If left empty, the layer will display as "Layer 26".
+		</member>
+		<member name="layer_names/3d_physics/layer_27" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 27. If left empty, the layer will display as "Layer 27".
+		</member>
+		<member name="layer_names/3d_physics/layer_28" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 28. If left empty, the layer will display as "Layer 28".
+		</member>
+		<member name="layer_names/3d_physics/layer_29" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 29. If left empty, the layer will display as "Layer 29".
+		</member>
 		<member name="layer_names/3d_physics/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D physics layer 3. If left empty, the layer will display as "Layer 3".
+		</member>
+		<member name="layer_names/3d_physics/layer_30" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 30. If left empty, the layer will display as "Layer 30".
+		</member>
+		<member name="layer_names/3d_physics/layer_31" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 31. If left empty, the layer will display as "Layer 31".
 		</member>
 		<member name="layer_names/3d_physics/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D physics layer 4. If left empty, the layer will display as "Layer 4".
