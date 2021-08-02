@@ -3789,6 +3789,7 @@ int TileData::get_terrain_set() const {
 }
 
 void TileData::set_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit, int p_terrain_index) {
+	ERR_FAIL_INDEX(p_peering_bit, TileSet::CellNeighbor::CELL_NEIGHBOR_MAX);
 	ERR_FAIL_COND(terrain_set < 0);
 	ERR_FAIL_COND(p_terrain_index < -1);
 	if (tile_set) {
