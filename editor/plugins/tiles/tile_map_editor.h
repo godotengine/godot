@@ -47,7 +47,7 @@ public:
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return false; };
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay){};
 	virtual void tile_set_changed(){};
-	virtual void edit(ObjectID p_tile_map_id){};
+	virtual void edit(ObjectID p_tile_map_id, int p_tile_map_layer){};
 };
 
 class TileMapEditorTilesPlugin : public TileMapEditorPlugin {
@@ -56,7 +56,8 @@ class TileMapEditorTilesPlugin : public TileMapEditorPlugin {
 private:
 	UndoRedo *undo_redo = EditorNode::get_undo_redo();
 	ObjectID tile_map_id;
-	virtual void edit(ObjectID p_tile_map_id) override;
+	int tile_map_layer = -1;
+	virtual void edit(ObjectID p_tile_map_id, int p_tile_map_layer) override;
 
 	///// Toolbar /////
 	HBoxContainer *toolbar;
@@ -185,7 +186,8 @@ class TileMapEditorTerrainsPlugin : public TileMapEditorPlugin {
 private:
 	UndoRedo *undo_redo = EditorNode::get_undo_redo();
 	ObjectID tile_map_id;
-	virtual void edit(ObjectID p_tile_map_id) override;
+	int tile_map_layer = -1;
+	virtual void edit(ObjectID p_tile_map_id, int p_tile_map_layer) override;
 
 	// Toolbar.
 	HBoxContainer *toolbar;
@@ -258,9 +260,9 @@ private:
 	Map<Vector2i, TerrainsTilePattern> _wave_function_collapse(const Set<Vector2i> &p_to_replace, int p_terrain_set, const Set<TileMapEditorTerrainsPlugin::Constraint> p_constraints) const;
 	TileMapCell _get_random_tile_from_pattern(int p_terrain_set, TerrainsTilePattern p_terrain_tile_pattern) const;
 	Map<Vector2i, TileMapCell> _draw_terrains(const Map<Vector2i, TerrainsTilePattern> &p_to_paint, int p_terrain_set) const;
+	void _stop_dragging();
 
 	// Cached data.
-
 	TerrainsTilePattern _build_terrains_tile_pattern(TileData *p_tile_data);
 	LocalVector<Map<TerrainsTilePattern, Set<TileMapCell>>> per_terrain_terrains_tile_patterns_tiles;
 	LocalVector<LocalVector<Set<TerrainsTilePattern>>> per_terrain_terrains_tile_patterns;
@@ -300,12 +302,20 @@ private:
 	UndoRedo *undo_redo = EditorNode::get_undo_redo();
 	bool tileset_changed_needs_update = false;
 	ObjectID tile_map_id;
+	int tile_map_layer = -1;
 
 	// Vector to keep plugins.
 	Vector<TileMapEditorPlugin *> tile_map_editor_plugins;
 
 	// Toolbar.
-	HBoxContainer *tilemap_toolbar;
+	HBoxContainer *tile_map_toolbar;
+
+	PopupMenu *layers_selection_popup;
+	Button *layers_selection_button;
+	Button *toogle_highlight_selected_layer_button;
+	void _layers_selection_button_draw();
+	void _layers_selection_button_pressed();
+	void _layers_selection_id_pressed(int p_id);
 
 	Button *toggle_grid_button;
 	void _on_grid_toggled(bool p_pressed);
@@ -313,18 +323,25 @@ private:
 	MenuButton *advanced_menu_button;
 	void _advanced_menu_button_id_pressed(int p_id);
 
-	// Bottom panel
+	// Bottom panel.
 	Label *missing_tileset_label;
 	Tabs *tabs;
 	void _update_bottom_panel();
 
-	// TileMap
+	// TileMap.
 	Ref<Texture2D> missing_tile_texture;
 	Ref<Texture2D> warning_pattern_texture;
 
-	// CallBack
+	// CallBack.
 	void _tile_map_changed();
 	void _tab_changed(int p_tab_changed);
+
+	// Updates.
+	void _layers_select_next_or_previous(bool p_next);
+	void _update_layers_selection();
+
+	// Inspector undo/redo callback.
+	void _undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, String p_property, Variant p_new_value);
 
 protected:
 	void _notification(int p_what);
@@ -335,7 +352,7 @@ public:
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
 
 	void edit(TileMap *p_tile_map);
-	Control *get_toolbar() { return tilemap_toolbar; };
+	Control *get_toolbar() { return tile_map_toolbar; };
 
 	TileMapEditor();
 	~TileMapEditor();
