@@ -2260,23 +2260,6 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 				attributes["POSITION"] = _encode_accessor_as_vec3(state, a, true);
 			}
 			{
-				Vector<real_t> a = array[Mesh::ARRAY_TANGENT];
-				if (a.size()) {
-					const int ret_size = a.size() / 4;
-					Vector<Color> attribs;
-					attribs.resize(ret_size);
-					for (int i = 0; i < ret_size; i++) {
-						Color out;
-						out.r = a[(i * 4) + 0];
-						out.g = a[(i * 4) + 1];
-						out.b = a[(i * 4) + 2];
-						out.a = a[(i * 4) + 3];
-						attribs.write[i] = out;
-					}
-					attributes["TANGENT"] = _encode_accessor_as_color(state, attribs, true);
-				}
-			}
-			{
 				Vector<Vector3> a = array[Mesh::ARRAY_NORMAL];
 				if (a.size()) {
 					const int ret_size = a.size();
@@ -2456,20 +2439,6 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 					Vector<Vector3> narr = array_morph[Mesh::ARRAY_NORMAL];
 					if (varr.size()) {
 						t["NORMAL"] = _encode_accessor_as_vec3(state, narr, true);
-					}
-					Vector<real_t> tarr = array_morph[Mesh::ARRAY_TANGENT];
-					if (tarr.size()) {
-						const int ret_size = tarr.size() / 4;
-						Vector<Color> attribs;
-						attribs.resize(ret_size);
-						for (int i = 0; i < ret_size; i++) {
-							Color tangent;
-							tangent.r = tarr[(i * 4) + 0];
-							tangent.g = tarr[(i * 4) + 1];
-							tangent.b = tarr[(i * 4) + 2];
-							tangent.a = tarr[(i * 4) + 3];
-						}
-						t["TANGENT"] = _encode_accessor_as_color(state, attribs, true);
 					}
 					targets.push_back(t);
 				}
