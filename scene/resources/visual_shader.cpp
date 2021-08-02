@@ -451,16 +451,21 @@ VisualShader::Type VisualShader::get_shader_type() const {
 	return current_type;
 }
 
-void VisualShader::set_version(const String &p_version) {
-	version = p_version;
+void VisualShader::set_engine_version(const Dictionary &p_engine_version) {
+	ERR_FAIL_COND(!p_engine_version.has("major"));
+	ERR_FAIL_COND(!p_engine_version.has("minor"));
+	engine_version["major"] = p_engine_version["major"];
+	engine_version["minor"] = p_engine_version["minor"];
 }
 
-String VisualShader::get_version() const {
-	return version;
+Dictionary VisualShader::get_engine_version() const {
+	return engine_version;
 }
 
-void VisualShader::update_version(const String &p_new_version) {
-	if (version == "") {
+#ifndef DISABLE_DEPRECATED
+
+void VisualShader::update_engine_version(const Dictionary &p_new_version) {
+	if (engine_version.is_empty()) { // before 4.0
 		for (int i = 0; i < TYPE_MAX; i++) {
 			for (Map<int, Node>::Element *E = graph[i].nodes.front(); E; E = E->next()) {
 				Ref<VisualShaderNodeExpression> expression = Object::cast_to<VisualShaderNodeExpression>(E->get().node.ptr());
@@ -491,8 +496,10 @@ void VisualShader::update_version(const String &p_new_version) {
 			}
 		}
 	}
-	set_version(p_new_version);
+	set_engine_version(p_new_version);
 }
+
+#endif /* DISABLE_DEPRECATED */
 
 void VisualShader::add_node(Type p_type, const Ref<VisualShaderNode> &p_node, const Vector2 &p_position, int p_id) {
 	ERR_FAIL_COND(p_node.is_null());
@@ -2007,8 +2014,8 @@ void VisualShader::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_node_connections", "type"), &VisualShader::_get_node_connections);
 
-	ClassDB::bind_method(D_METHOD("set_version", "version"), &VisualShader::set_version);
-	ClassDB::bind_method(D_METHOD("get_version"), &VisualShader::get_version);
+	ClassDB::bind_method(D_METHOD("set_engine_version", "version"), &VisualShader::set_engine_version);
+	ClassDB::bind_method(D_METHOD("get_engine_version"), &VisualShader::get_engine_version);
 
 	ClassDB::bind_method(D_METHOD("set_graph_offset", "offset"), &VisualShader::set_graph_offset);
 	ClassDB::bind_method(D_METHOD("get_graph_offset"), &VisualShader::get_graph_offset);
@@ -2016,7 +2023,7 @@ void VisualShader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_shader"), &VisualShader::_update_shader);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "graph_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_graph_offset", "get_graph_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "version", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_version", "get_version");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "engine_version", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_engine_version", "get_engine_version");
 
 	ADD_PROPERTY_DEFAULT("code", ""); // Inherited from Shader, prevents showing default code as override in docs.
 
