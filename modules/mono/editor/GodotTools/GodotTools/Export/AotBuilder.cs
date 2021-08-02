@@ -249,55 +249,72 @@ namespace GodotTools.Export
 
             var aotObjFilePaths = new List<string>(assemblies.Count);
 
-            foreach (var assembly in assemblies)
+            string compilerDirPath = Path.Combine(GodotSharpDirs.DataEditorToolsDir, "aot-compilers",
+                $"{OS.Platforms.iOS}-arm64");
+            string crossCompiler = FindCrossCompiler(compilerDirPath);
+
+            string aotCacheDir = Path.Combine(ProjectSettings.GlobalizePath(GodotSharpDirs.ResTempDir),
+                "obj", isDebug ? "ExportDebug" : "ExportRelease", "godot-aot-cache");
+
+            if (!Directory.Exists(aotCacheDir))
+                Directory.CreateDirectory(aotCacheDir);
+
+            var aotCache = new AotCache(Path.Combine(aotCacheDir, "cache.json"));
+
+            try
             {
-                string assemblyName = assembly.Key;
-                string assemblyPath = assembly.Value;
-
-                string asmFileName = assemblyName + ".dll.S";
-                string objFileName = assemblyName + ".dll.o";
-
+                foreach (var assembly in assemblies)
                 {
-                    string asmFilePath = Path.Combine(aotTempDir, asmFileName);
+                    string assemblyName = assembly.Key;
+                    string assemblyPath = assembly.Value;
 
-                    var compilerArgs = GetAotCompilerArgs(OS.Platforms.iOS, isDebug, "arm64", aotOpts, assemblyPath, asmFilePath);
+                    string asmFilePath = Path.Combine(aotCacheDir, assemblyName + ".dll.S");
+                    string objFilePath = Path.Combine(aotCacheDir, assemblyName + ".dll.o");
 
-                    string compilerDirPath = Path.Combine(GodotSharpDirs.DataEditorToolsDir, "aot-compilers", $"{OS.Platforms.iOS}-arm64");
-
-                    ExecuteCompiler(FindCrossCompiler(compilerDirPath), compilerArgs, bclDir);
-
-                    // Assembling
-                    const string iOSPlatformName = "iPhoneOS";
-                    const string versionMin = "10.0"; // TODO: Turn this hard-coded version into an exporter setting
-                    string iOSSdkPath = Path.Combine(XcodeHelper.XcodePath,
-                        $"Contents/Developer/Platforms/{iOSPlatformName}.platform/Developer/SDKs/{iOSPlatformName}.sdk");
-
-                    string objFilePath = Path.Combine(aotTempDir, objFileName);
-
-                    var clangArgs = new List<string>()
+                    aotCache.RunCached(name: assemblyName, input: assemblyPath, output: objFilePath, () =>
                     {
-                        "-isysroot", iOSSdkPath,
-                        "-Qunused-arguments",
-                        $"-miphoneos-version-min={versionMin}",
-                        "-arch", "arm64",
-                        "-c",
-                        "-o", objFilePath,
-                        "-x", "assembler"
-                    };
+                        Console.WriteLine($"AOT compiler: Compiling '{assemblyName}'...");
 
-                    if (isDebug)
-                        clangArgs.Add("-DDEBUG");
+                        var compilerArgs = GetAotCompilerArgs(OS.Platforms.iOS, isDebug,
+                            "arm64", aotOpts, assemblyPath, asmFilePath);
 
-                    clangArgs.Add(asmFilePath);
+                        ExecuteCompiler(crossCompiler, compilerArgs, bclDir);
 
-                    int clangExitCode = OS.ExecuteCommand(XcodeHelper.FindXcodeTool("clang"), clangArgs);
-                    if (clangExitCode != 0)
-                        throw new Exception($"Command 'clang' exited with code: {clangExitCode}");
+                        // Assembling
+                        const string iOSPlatformName = "iPhoneOS";
+                        const string versionMin = "10.0"; // TODO: Turn this hard-coded version into an exporter setting
+                        string iOSSdkPath = Path.Combine(XcodeHelper.XcodePath,
+                            $"Contents/Developer/Platforms/{iOSPlatformName}.platform/Developer/SDKs/{iOSPlatformName}.sdk");
+
+                        var clangArgs = new List<string>()
+                        {
+                            "-isysroot", iOSSdkPath,
+                            "-Qunused-arguments",
+                            $"-miphoneos-version-min={versionMin}",
+                            "-arch", "arm64",
+                            "-c",
+                            "-o", objFilePath,
+                            "-x", "assembler"
+                        };
+
+                        if (isDebug)
+                            clangArgs.Add("-DDEBUG");
+
+                        clangArgs.Add(asmFilePath);
+
+                        int clangExitCode = OS.ExecuteCommand(XcodeHelper.FindXcodeTool("clang"), clangArgs);
+                        if (clangExitCode != 0)
+                            throw new Exception($"Command 'clang' exited with code: {clangExitCode}");
+                    });
 
                     aotObjFilePaths.Add(objFilePath);
-                }
 
-                aotModuleInfoSymbols.Add($"mono_aot_module_{AssemblyNameToAotSymbol(assemblyName)}_info");
+                    aotModuleInfoSymbols.Add($"mono_aot_module_{AssemblyNameToAotSymbol(assemblyName)}_info");
+                }
+            }
+            finally
+            {
+                aotCache.SaveCache();
             }
 
             RunAr(aotObjFilePaths, libAotFilePath);
