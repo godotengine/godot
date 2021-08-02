@@ -31,12 +31,18 @@
 #include "editor_spin_slider.h"
 #include "core/math/expression.h"
 #include "core/os/input.h"
+#include "core/os/keyboard.h"
 #include "editor_node.h"
 #include "editor_scale.h"
 
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 	if (grabber->is_visible()) {
-		return rtos(get_value()) + "\n\n" + TTR("Hold Ctrl to round to integers. Hold Shift for more precise changes.");
+#ifdef OSX_ENABLED
+		const int key = KEY_META;
+#else
+		const int key = KEY_CONTROL;
+#endif
+		return rtos(get_value()) + "\n\n" + vformat(TTR("Hold %s to round to integers. Hold Shift for more precise changes."), find_keycode_name(key));
 	}
 	return rtos(get_value());
 }
@@ -113,7 +119,7 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 					pre_grab_value = get_max();
 				}
 
-				if (mm->get_control()) {
+				if (mm->get_command()) {
 					// If control was just pressed, don't make the value do a huge jump in magnitude.
 					if (grabbing_spinner_dist_cache != 0) {
 						pre_grab_value += grabbing_spinner_dist_cache * get_step();
