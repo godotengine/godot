@@ -2365,27 +2365,28 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 								varr.write[blend_i] = Vector3(varr[blend_i]) - src_varr[blend_i];
 							}
 						}
-
-						t["POSITION"] = _encode_accessor_as_vec3(state, varr, true);
 					}
-
+					t["POSITION"] = _encode_accessor_as_vec3(state, varr, true);
 					Vector<Vector3> narr = array_morph[Mesh::ARRAY_NORMAL];
-					if (varr.size()) {
+					if (narr.size()) {
+						for (int i = 0; i < narr.size(); i++) {
+							narr.write[i] = Vector3(narr[i]).normalized();
+						}
 						t["NORMAL"] = _encode_accessor_as_vec3(state, narr, true);
 					}
 					Vector<real_t> tarr = array_morph[Mesh::ARRAY_TANGENT];
+					const int ret_size = tarr.size() / 4;
+					Vector<Vector3> attribs;
+					attribs.resize(ret_size);
 					if (tarr.size()) {
-						const int ret_size = tarr.size() / 4;
-						Vector<Color> attribs;
-						attribs.resize(ret_size);
 						for (int i = 0; i < ret_size; i++) {
-							Color tangent;
-							tangent.r = tarr[(i * 4) + 0];
-							tangent.g = tarr[(i * 4) + 1];
-							tangent.b = tarr[(i * 4) + 2];
-							tangent.a = tarr[(i * 4) + 3];
+							Vector3 tangent;
+							tangent.x = tarr[(i * 4) + 0];
+							tangent.y = tarr[(i * 4) + 1];
+							tangent.z = tarr[(i * 4) + 2];
+							attribs.write[i] = tangent;
 						}
-						t["TANGENT"] = _encode_accessor_as_color(state, attribs, true);
+						t["TANGENT"] = _encode_accessor_as_vec3(state, attribs, true);
 					}
 					targets.push_back(t);
 				}
@@ -4604,6 +4605,9 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> state) {
 				Vector<real_t> times = Variant(track.rotation_track.times);
 				s["input"] = _encode_accessor_as_floats(state, times, false);
 				Vector<Quaternion> values = track.rotation_track.values;
+				for (int i = 0; i < values.size(); i++) {
+					values.write[i].normalize();
+				}
 				s["output"] = _encode_accessor_as_quaternions(state, values, false);
 
 				samplers.push_back(s);
