@@ -320,7 +320,7 @@ void EditorNode3DGizmo::add_vertices(const Vector<Vector3> &p_vertices, const Re
 	instances.push_back(ins);
 }
 
-void EditorNode3DGizmo::add_unscaled_billboard(const Ref<Material> &p_material, float p_scale, const Color &p_modulate) {
+void EditorNode3DGizmo::add_unscaled_billboard(const Ref<Material> &p_material, real_t p_scale, const Color &p_modulate) {
 	ERR_FAIL_COND(!spatial_node);
 	Instance ins;
 

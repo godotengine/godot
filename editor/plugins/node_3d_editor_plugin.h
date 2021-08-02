@@ -201,7 +201,7 @@ private:
 	bool orthogonal;
 	bool auto_orthogonal;
 	bool lock_rotation;
-	float gizmo_scale;
+	real_t gizmo_scale;
 
 	bool freelook_active;
 	real_t freelook_speed;
@@ -221,7 +221,7 @@ private:
 
 	struct _RayResult {
 		Node3D *item = nullptr;
-		float depth = 0;
+		real_t depth = 0;
 		_FORCE_INLINE_ bool operator<(const _RayResult &p_rr) const { return depth < p_rr.depth; }
 	};
 
@@ -306,7 +306,7 @@ private:
 
 	struct Cursor {
 		Vector3 pos;
-		float x_rot, y_rot, distance;
+		real_t x_rot, y_rot, distance;
 		Vector3 eye_pos; // Used in freelook mode
 		bool region_select;
 		Point2 region_begin, region_end;
@@ -340,8 +340,7 @@ private:
 
 	void set_message(String p_message, float p_time = 5);
 
-	//
-	void _update_camera(float p_interp_delta);
+	void _update_camera(real_t p_interp_delta);
 	Transform3D to_camera_transform(const Cursor &p_cursor) const;
 	void _draw();
 
@@ -450,8 +449,8 @@ public:
 private:
 	View view;
 	bool mouseover;
-	float ratio_h;
-	float ratio_v;
+	real_t ratio_h;
+	real_t ratio_v;
 
 	bool hovering_v;
 	bool hovering_h;
@@ -534,9 +533,9 @@ private:
 	Ref<Node3DGizmo> current_hover_gizmo;
 	int current_hover_gizmo_handle;
 
-	float snap_translate_value;
-	float snap_rotate_value;
-	float snap_scale_value;
+	real_t snap_translate_value;
+	real_t snap_rotate_value;
+	real_t snap_scale_value;
 
 	Ref<ArrayMesh> selection_box_xray;
 	Ref<ArrayMesh> selection_box;
@@ -554,7 +553,7 @@ private:
 
 	struct Gizmo {
 		bool visible = false;
-		float scale = 0;
+		real_t scale = 0;
 		Transform3D transform;
 	} gizmo;
 
@@ -752,9 +751,9 @@ public:
 	ToolMode get_tool_mode() const { return tool_mode; }
 	bool are_local_coords_enabled() const { return tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->is_pressed(); }
 	bool is_snap_enabled() const { return snap_enabled ^ snap_key_enabled; }
-	float get_translate_snap() const;
-	float get_rotate_snap() const;
-	float get_scale_snap() const;
+	double get_translate_snap() const;
+	double get_rotate_snap() const;
+	double get_scale_snap() const;
 
 	Ref<ArrayMesh> get_move_gizmo(int idx) const { return move_gizmo[idx]; }
 	Ref<ArrayMesh> get_move_plane_gizmo(int idx) const { return move_plane_gizmo[idx]; }
