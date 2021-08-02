@@ -271,6 +271,7 @@ void VisualScript::_node_ports_changed(int p_id) {
 void VisualScript::add_node(int p_id, const Ref<VisualScriptNode> &p_node, const Point2 &p_pos) {
 	ERR_FAIL_COND(instances.size());
 	ERR_FAIL_COND(nodes.has(p_id)); // ID can exist only one in script.
+	ERR_FAIL_COND(p_node.is_null());
 
 	NodeData nd;
 	nd.node = p_node;
