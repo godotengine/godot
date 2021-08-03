@@ -70,6 +70,8 @@ public:
 	static void register_language(ScriptLanguage *p_language);
 	static void unregister_language(ScriptLanguage *p_language);
 
+	static void reload_all_scripts();
+
 	static void set_reload_scripts_on_save(bool p_enable);
 	static bool is_reload_scripts_on_save_enabled();
 

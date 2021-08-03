@@ -191,6 +191,12 @@ bool ScriptServer::is_reload_scripts_on_save_enabled() {
 	return reload_scripts_on_save;
 }
 
+void ScriptServer::reload_all_scripts() {
+	for (int i = 0; i < _language_count; i++) {
+		_languages[i]->reload_all_scripts();
+	}
+}
+
 void ScriptServer::thread_enter() {
 	for (int i = 0; i < _language_count; i++) {
 		_languages[i]->thread_enter();

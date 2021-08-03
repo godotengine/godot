@@ -2177,6 +2177,8 @@ bool Main::start() {
 					}
 				}
 
+				ScriptServer::reload_all_scripts();
+
 				for (Node *E : to_add) {
 					sml->get_root()->add_child(E);
 				}
