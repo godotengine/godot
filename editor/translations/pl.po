@@ -52,7 +52,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-07-16 05:47+0000\n"
+"PO-Revision-Date: 2021-07-29 21:48+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -5229,13 +5229,12 @@ msgstr ""
 "Zapisz scenę i spróbuj ponownie."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "No meshes to bake. Make sure they contain an UV2 channel and that the 'Use "
 "In Baked Light' and 'Generate Lightmap' flags are on."
 msgstr ""
-"Brak siatek do cieniowania. Upewnij się, że zawierają kanał UV2 i że flaga "
-"\"Bake Light\" jest ustawiona."
+"Brak siatek do wypalenia. Upewnij się, że zawierają kanał UV2 i że flagi "
+"\"Use In Baked Light\" oraz \"Generate Lightmap\" są ustawione."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed creating lightmap images, make sure path is writable."
@@ -7372,6 +7371,28 @@ msgid "View Plane Transform."
 msgstr "Pokaż transformację płaszczyzny."
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: scene/resources/visual_shader.cpp
+msgid "None"
+msgstr "Brak"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rotate"
+msgstr "Status:"
+
+#. TRANSLATORS: This refers to the movement that changes the position of an object.
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Translate"
+msgstr "Przesuń:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Scale"
+msgstr "Skala:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
 msgstr "Skalowanie: "
 
@@ -8025,11 +8046,6 @@ msgstr "Ustaw margines"
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
 msgstr "Tryb przyciągania:"
-
-#: editor/plugins/texture_region_editor_plugin.cpp
-#: scene/resources/visual_shader.cpp
-msgid "None"
-msgstr "Brak"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Pixel Snap"
@@ -11590,6 +11606,11 @@ msgid "GridMap Paint"
 msgstr "Malowanie GridMap"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "GridMap Selection"
+msgstr "GridMap Wypełnij zaznaczenie"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr "Siatka"
 
@@ -11837,6 +11858,16 @@ msgstr "Dodaj port wejściowy"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Output Port"
 msgstr "Dodaj port wyjściowy"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Type"
+msgstr "Zmień typ"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Name"
+msgstr "Zmień nazwę portu wejściowego"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Override an existing built-in function."
@@ -14904,10 +14935,6 @@ msgstr "Stałe nie mogą być modyfikowane."
 #, fuzzy
 #~ msgid "Organization"
 #~ msgstr "Przejście"
-
-#, fuzzy
-#~ msgid "State"
-#~ msgstr "Status:"
 
 #, fuzzy
 #~ msgid "Password"

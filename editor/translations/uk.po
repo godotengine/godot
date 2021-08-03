@@ -16,12 +16,13 @@
 # Vladislav Glinsky <cl0ne@mithril.org.ua>, 2020.
 # Микола Тимошенко <9081@ukr.net>, 2020.
 # Miroslav <zinmirx@gmail.com>, 2020.
+# IllusiveMan196 <hamsterrv@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-06-20 13:35+0000\n"
-"Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
+"PO-Revision-Date: 2021-08-02 02:00+0000\n"
+"Last-Translator: IllusiveMan196 <hamsterrv@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -30,7 +31,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.7\n"
+"X-Generator: Weblate 4.8-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -5222,13 +5223,13 @@ msgstr ""
 "Збережіть вашу сцену і повторіть спробу."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "No meshes to bake. Make sure they contain an UV2 channel and that the 'Use "
 "In Baked Light' and 'Generate Lightmap' flags are on."
 msgstr ""
-"Немає полісеток для запікання. Переконайтеся, що вони містять канал UV2 і що "
-"прапор 'Запікання світла' включений."
+"Немає сіток для запікання. Переконайтеся, що вони містять канал UV2, і "
+"позначено пункти «Використовувати у приготованому освітленні» (Use In Baked "
+"Light) та «Створити карту освітлення» (Generate Lightmap)."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed creating lightmap images, make sure path is writable."
@@ -7367,6 +7368,28 @@ msgid "View Plane Transform."
 msgstr "Перетворення площини перегляду."
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: scene/resources/visual_shader.cpp
+msgid "None"
+msgstr "Немає"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rotate"
+msgstr "Режим повороту"
+
+#. TRANSLATORS: This refers to the movement that changes the position of an object.
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Translate"
+msgstr "Перенесення:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Scale"
+msgstr "Масштаб:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
 msgstr "Масштаб: "
 
@@ -8021,11 +8044,6 @@ msgstr "Встановити поле"
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
 msgstr "Режим прилипання:"
-
-#: editor/plugins/texture_region_editor_plugin.cpp
-#: scene/resources/visual_shader.cpp
-msgid "None"
-msgstr "Немає"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Pixel Snap"
@@ -11594,6 +11612,11 @@ msgid "GridMap Paint"
 msgstr "Малюнок GridMap"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "GridMap Selection"
+msgstr "Вибір заповнення GridMap"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr "Карта сітки"
 
@@ -11841,6 +11864,16 @@ msgstr "Додати вхідний порт"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Output Port"
 msgstr "Додати вихідний порт"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Type"
+msgstr "Змінити тип"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Name"
+msgstr "Змінити назву вхідного порту"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Override an existing built-in function."

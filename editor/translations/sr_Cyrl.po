@@ -8049,6 +8049,29 @@ msgid "View Plane Transform."
 msgstr "Види трансформацију равни."
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: scene/resources/visual_shader.cpp
+#, fuzzy
+msgid "None"
+msgstr "<Ниједан>"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rotate"
+msgstr "Режим ротације"
+
+#. TRANSLATORS: This refers to the movement that changes the position of an object.
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Translate"
+msgstr "Померај:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Scale"
+msgstr "Скала:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
 msgstr "Скала: "
 
@@ -8757,12 +8780,6 @@ msgstr "Постави дршку"
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
 msgstr "Режим лепљења:"
-
-#: editor/plugins/texture_region_editor_plugin.cpp
-#: scene/resources/visual_shader.cpp
-#, fuzzy
-msgid "None"
-msgstr "<Ниједан>"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Pixel Snap"
@@ -13014,6 +13031,11 @@ msgid "GridMap Paint"
 msgstr "МапаМреже Боји"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "GridMap Selection"
+msgstr "МапаМреже Испуни Одабрано"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr "Мапа мреже"
 
@@ -13299,6 +13321,16 @@ msgstr "Додај улазни порт"
 #, fuzzy
 msgid "Add Output Port"
 msgstr "Додај излазни порт"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Type"
+msgstr "Промени Тип"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Name"
+msgstr "Промени улазно име"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy

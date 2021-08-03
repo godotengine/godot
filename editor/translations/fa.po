@@ -7385,6 +7385,28 @@ msgid "View Plane Transform."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: scene/resources/visual_shader.cpp
+msgid "None"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rotate"
+msgstr "وضعیت:"
+
+#. TRANSLATORS: This refers to the movement that changes the position of an object.
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Translate"
+msgstr "ترجمه‌ها"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Scale"
+msgstr "بومی"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
 msgstr ""
 
@@ -8058,11 +8080,6 @@ msgstr ""
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
-msgstr ""
-
-#: editor/plugins/texture_region_editor_plugin.cpp
-#: scene/resources/visual_shader.cpp
-msgid "None"
 msgstr ""
 
 #: editor/plugins/texture_region_editor_plugin.cpp
@@ -11660,6 +11677,11 @@ msgid "GridMap Paint"
 msgstr "ترجیحات"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "GridMap Selection"
+msgstr "انتخاب شده را حذف کن"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr ""
 
@@ -11922,6 +11944,16 @@ msgstr "افزودن عمل ورودی"
 #, fuzzy
 msgid "Add Output Port"
 msgstr "افزودن عمل ورودی"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Type"
+msgstr "تغییر نوع"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Name"
+msgstr "تغییر مقدار ورودی"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -13757,10 +13789,6 @@ msgstr "ثوابت قابل تغییر نیستند."
 #, fuzzy
 #~ msgid "Organization"
 #~ msgstr "انتقال"
-
-#, fuzzy
-#~ msgid "State"
-#~ msgstr "وضعیت:"
 
 #, fuzzy
 #~ msgid "Password"

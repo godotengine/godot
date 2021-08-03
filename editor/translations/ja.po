@@ -37,8 +37,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-05-29 13:49+0000\n"
-"Last-Translator: 都築 本成 <motonari728@gmail.com>\n"
+"PO-Revision-Date: 2021-07-29 02:33+0000\n"
+"Last-Translator: nitenook <admin@alterbaum.net>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -46,7 +46,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.7-dev\n"
+"X-Generator: Weblate 4.7.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2562,6 +2562,7 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "パス '%s' からアドオンスクリプトを読込めません。"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
 "Unable to load addon script from path: '%s'. This might be due to a code "
 "error in that script.\n"
@@ -5243,12 +5244,11 @@ msgstr ""
 "ことを確認してください。"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
-"Godotエディタがレイトレーシングに対応せずにビルドされており、ライトマップのベ"
-"イクができません。"
+"Godotエディタがレイトレーシングのサポートなしでビルドされているため、ライト"
+"マップのベイクができません。"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
@@ -7355,6 +7355,28 @@ msgid "View Plane Transform."
 msgstr "ビュー平面トランスフォーム."
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: scene/resources/visual_shader.cpp
+msgid "None"
+msgstr "None"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rotate"
+msgstr "回転モード"
+
+#. TRANSLATORS: This refers to the movement that changes the position of an object.
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Translate"
+msgstr "移動:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Scale"
+msgstr "スケール:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
 msgstr "縮尺: "
 
@@ -8004,11 +8026,6 @@ msgstr "マージンを設定する"
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
 msgstr "Snapモード:"
-
-#: editor/plugins/texture_region_editor_plugin.cpp
-#: scene/resources/visual_shader.cpp
-msgid "None"
-msgstr "None"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Pixel Snap"
@@ -11558,6 +11575,11 @@ msgid "GridMap Paint"
 msgstr "GridMap ペイント"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "GridMap Selection"
+msgstr "GridMap 選択範囲を埋める"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr "グリッドマップ"
 
@@ -11808,6 +11830,16 @@ msgstr "入力ポートを追加"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Output Port"
 msgstr "出力ポートを追加"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Type"
+msgstr "型を変更"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Name"
+msgstr "入力ポート名の変更"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Override an existing built-in function."
