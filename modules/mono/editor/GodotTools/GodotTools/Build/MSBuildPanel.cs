@@ -11,6 +11,7 @@ namespace GodotTools.Build
     {
         public BuildOutputView BuildOutputView { get; private set; }
 
+        private MenuButton buildMenuBtn;
         private Button errorsBtn;
         private Button warningsBtn;
         private Button viewLogBtn;
@@ -115,7 +116,7 @@ namespace GodotTools.Build
             var toolBarHBox = new HBoxContainer {SizeFlagsHorizontal = (int)SizeFlags.ExpandFill};
             AddChild(toolBarHBox);
 
-            var buildMenuBtn = new MenuButton {Text = "Build", Icon = GetIcon("Play", "EditorIcons")};
+            buildMenuBtn = new MenuButton {Text = "Build", Icon = GetIcon("Play", "EditorIcons")};
             toolBarHBox.AddChild(buildMenuBtn);
 
             var buildMenu = buildMenuBtn.GetPopup();
@@ -160,6 +161,17 @@ namespace GodotTools.Build
 
             BuildOutputView = new BuildOutputView();
             AddChild(BuildOutputView);
+        }
+
+        public override void _Notification(int what)
+        {
+            base._Notification(what);
+
+            if (what == NotificationThemeChanged) {
+                buildMenuBtn.Icon = GetIcon("Play", "EditorIcons");
+                errorsBtn.Icon = GetIcon("StatusError", "EditorIcons");
+                warningsBtn.Icon = GetIcon("NodeWarning", "EditorIcons");
+            }
         }
     }
 }
