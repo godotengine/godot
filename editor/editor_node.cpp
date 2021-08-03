@@ -3797,6 +3797,8 @@ void EditorNode::unregister_editor_types() {
 	if (EditorPaths::get_singleton()) {
 		EditorPaths::free();
 	}
+
+	EditorResourcePicker::clear_caches();
 }
 
 void EditorNode::stop_child_process(OS::ProcessID p_pid) {
