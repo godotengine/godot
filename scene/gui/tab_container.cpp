@@ -899,7 +899,7 @@ void TabContainer::drop_data(const Point2 &p_point, const Variant &p_data) {
 			if (hover_now < 0) {
 				hover_now = get_tab_count() - 1;
 			}
-			move_child(get_tab_control(tab_from_id), hover_now);
+			move_child(get_tab_control(tab_from_id), get_tab_control(hover_now)->get_index());
 			set_current_tab(hover_now);
 		} else if (get_tabs_rearrange_group() != -1) {
 			// drag and drop between TabContainers
@@ -912,7 +912,7 @@ void TabContainer::drop_data(const Point2 &p_point, const Variant &p_data) {
 				if (hover_now < 0) {
 					hover_now = get_tab_count() - 1;
 				}
-				move_child(moving_tabc, hover_now);
+				move_child(moving_tabc, get_tab_control(hover_now)->get_index());
 				set_current_tab(hover_now);
 				emit_signal(SNAME("tab_changed"), hover_now);
 			}
