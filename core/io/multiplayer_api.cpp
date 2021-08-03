@@ -1293,6 +1293,25 @@ void MultiplayerAPI::_bind_methods() {
 
 MultiplayerAPI::MultiplayerAPI() {
 	clear();
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		// Load default spawnables
+		List<PropertyInfo> props;
+		ProjectSettings::get_singleton()->get_property_list(&props);
+		for (const PropertyInfo &pi : props) {
+			if (!pi.name.begins_with("spawnables/")) {
+				continue;
+			}
+
+			String name = pi.name.get_slice("/", 1);
+			int mode = ProjectSettings::get_singleton()->get(pi.name);
+
+			if (mode != MultiplayerAPI::SPAWN_MODE_SERVER && mode != MultiplayerAPI::SPAWN_MODE_CUSTOM) {
+				continue;
+			}
+			ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id("uid://" + name);
+			spawnable_config(uid, (SpawnMode)mode);
+		}
+	}
 }
 
 MultiplayerAPI::~MultiplayerAPI() {

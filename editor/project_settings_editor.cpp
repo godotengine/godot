@@ -51,6 +51,7 @@ void ProjectSettingsEditor::popup_project_settings() {
 
 	localization_editor->update_translations();
 	autoload_settings->update_autoload();
+	spawnable_settings->update_spawnables();
 	plugin_settings->update_plugins();
 	import_defaults_editor->clear();
 }
@@ -628,6 +629,11 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	autoload_settings->set_name(TTR("AutoLoad"));
 	autoload_settings->connect("autoload_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
 	tab_container->add_child(autoload_settings);
+
+	spawnable_settings = memnew(EditorSpawnableSettings);
+	spawnable_settings->set_name(TTR("Network Scenes"));
+	spawnable_settings->connect("spawnable_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
+	tab_container->add_child(spawnable_settings);
 
 	shaders_global_variables_editor = memnew(ShaderGlobalsEditor);
 	shaders_global_variables_editor->set_name(TTR("Shader Globals"));

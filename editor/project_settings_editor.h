@@ -33,13 +33,14 @@
 
 #include "core/object/undo_redo.h"
 #include "editor/action_map_editor.h"
+#include "editor/editor_autoload_settings.h"
 #include "editor/editor_data.h"
 #include "editor/editor_plugin_settings.h"
 #include "editor/editor_sectioned_inspector.h"
+#include "editor/editor_spawnable_settings.h"
 #include "editor/import_defaults_editor.h"
 #include "editor/localization_editor.h"
 #include "editor/shader_globals_editor.h"
-#include "editor_autoload_settings.h"
 #include "scene/gui/tab_container.h"
 
 class ProjectSettingsEditor : public AcceptDialog {
@@ -54,6 +55,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	ActionMapEditor *action_map;
 	LocalizationEditor *localization_editor;
 	EditorAutoloadSettings *autoload_settings;
+	EditorSpawnableSettings *spawnable_settings;
 	ShaderGlobalsEditor *shaders_global_variables_editor;
 	EditorPluginSettings *plugin_settings;
 
