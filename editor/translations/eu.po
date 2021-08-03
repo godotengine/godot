@@ -5,18 +5,19 @@
 # Julen Irazoki <rktzbkr.julen@gmail.com>, 2019.
 # Osoitz <oelkoro@gmail.com>, 2019, 2020.
 # Erik Zubiria <erik@ezsd.net>, 2021.
+# Sergio Varela <sergitroll9@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2021-06-20 13:35+0000\n"
-"Last-Translator: Erik Zubiria <erik@ezsd.net>\n"
+"PO-Revision-Date: 2021-07-29 02:34+0000\n"
+"Last-Translator: Sergio Varela <sergitroll9@gmail.com>\n"
 "Language-Team: Basque <https://hosted.weblate.org/projects/godot-engine/"
 "godot/eu/>\n"
 "Language: eu\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.7\n"
+"X-Generator: Weblate 4.7.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -435,11 +436,11 @@ msgstr "Gehitu Pistaren Transformazio Giltza"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Track Key"
-msgstr ""
+msgstr "Gehitu pista-gakoa"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
-msgstr ""
+msgstr "Sarbideak ez du balio, eta, beraz, ezin da metodo-gakorik gehitu."
 
 #: editor/animation_track_editor.cpp
 msgid "Add Method Track Key"
@@ -7089,6 +7090,26 @@ msgid "View Plane Transform."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: scene/resources/visual_shader.cpp
+msgid "None"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Rotate"
+msgstr ""
+
+#. TRANSLATORS: This refers to the movement that changes the position of an object.
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Translate"
+msgstr "Translazio atzikitzea:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Scale"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
 msgstr ""
 
@@ -7728,11 +7749,6 @@ msgstr ""
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
 msgstr "Atxikitze modua:"
-
-#: editor/plugins/texture_region_editor_plugin.cpp
-#: scene/resources/visual_shader.cpp
-msgid "None"
-msgstr ""
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Pixel Snap"
@@ -11107,6 +11123,10 @@ msgid "GridMap Paint"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "GridMap Selection"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr ""
 
@@ -11347,6 +11367,15 @@ msgstr ""
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Output Port"
 msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Change Port Type"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Name"
+msgstr "Aldatu animazioaren izena:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Override an existing built-in function."

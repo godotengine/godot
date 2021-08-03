@@ -83,7 +83,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2021-07-23 12:59+0000\n"
+"PO-Revision-Date: 2021-08-01 12:02+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -92,7 +92,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.7.2-dev\n"
+"X-Generator: Weblate 4.8-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -736,7 +736,7 @@ msgstr "修改数组大小"
 
 #: editor/array_property_edit.cpp
 msgid "Change Array Value Type"
-msgstr "修改数组类型"
+msgstr "修改数组值类型"
 
 #: editor/array_property_edit.cpp
 msgid "Change Array Value"
@@ -821,7 +821,7 @@ msgstr "必须指定目标节点的方法。"
 
 #: editor/connections_dialog.cpp
 msgid "Method name must be a valid identifier."
-msgstr "方法名称必须是一个有效的标识符。"
+msgstr "方法名称必须是有效的标识符。"
 
 #: editor/connections_dialog.cpp
 msgid ""
@@ -923,7 +923,7 @@ msgstr "信号："
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
-msgstr "连接 “%s” 到 “%s”"
+msgstr "将 “%s” 连接到 “%s”"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect '%s' from '%s'"
@@ -2176,7 +2176,7 @@ msgstr "输出："
 
 #: editor/editor_log.cpp editor/plugins/tile_map_editor_plugin.cpp
 msgid "Copy Selection"
-msgstr "复制所选项"
+msgstr "复制选中项"
 
 #: editor/editor_log.cpp editor/editor_network_profiler.cpp
 #: editor/editor_profiler.cpp editor/editor_properties.cpp
@@ -4907,11 +4907,11 @@ msgstr "删除输入"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation tree is valid."
-msgstr "动画树可用。"
+msgstr "动画树有效。"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation tree is invalid."
-msgstr "动画树不可用。"
+msgstr "动画树无效。"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation Node"
@@ -5171,11 +5171,12 @@ msgstr ""
 "BakedLightmap 属性。"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "No meshes to bake. Make sure they contain an UV2 channel and that the 'Use "
 "In Baked Light' and 'Generate Lightmap' flags are on."
-msgstr "没有可烘焙的网格。请确保网格包含 UV2 通道并且勾选 “Bake Light” 选项。"
+msgstr ""
+"没有可烘焙的网格。请确保网格包含 UV2 通道，并且“Use In Baked "
+"Light”和“Generate Lightmap”选项已启用。"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed creating lightmap images, make sure path is writable."
@@ -7278,6 +7279,28 @@ msgid "View Plane Transform."
 msgstr "视图平面变换。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: scene/resources/visual_shader.cpp
+msgid "None"
+msgstr "无"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rotate"
+msgstr "州(State)"
+
+#. TRANSLATORS: This refers to the movement that changes the position of an object.
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Translate"
+msgstr "移动："
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Scale"
+msgstr "缩放："
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
 msgstr "缩放： "
 
@@ -7929,11 +7952,6 @@ msgid "Snap Mode:"
 msgstr "吸附模式："
 
 #: editor/plugins/texture_region_editor_plugin.cpp
-#: scene/resources/visual_shader.cpp
-msgid "None"
-msgstr "无"
-
-#: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Pixel Snap"
 msgstr "像素吸附"
 
@@ -8129,7 +8147,7 @@ msgstr "剪切选中项"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint TileMap"
-msgstr "绘制图块地图"
+msgstr "绘制 TileMap"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Line Draw"
@@ -8145,7 +8163,7 @@ msgstr "油漆桶填充"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase TileMap"
-msgstr "擦除图块地图"
+msgstr "擦除 TileMap"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Find Tile"
@@ -8169,7 +8187,7 @@ msgstr "筛选图块"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Give a TileSet resource to this TileMap to use its tiles."
-msgstr "为图块地图设置图块集资源后，才能使用其图块。"
+msgstr "为 TileMap 设置 TileSet 资源后，才能使用其图块。"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint Tile"
@@ -11243,23 +11261,23 @@ msgstr "更改球体半径"
 
 #: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
 msgid "Change Box Shape Extents"
-msgstr "改变方框大小"
+msgstr "改变立方体大小"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Capsule Shape Radius"
-msgstr "修改椭圆形半径"
+msgstr "修改胶囊体半径"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Capsule Shape Height"
-msgstr "修改椭圆形高度"
+msgstr "修改胶囊体高度"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Cylinder Shape Radius"
-msgstr "修改圆柱形半径"
+msgstr "修改圆柱体半径"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Cylinder Shape Height"
-msgstr "修改圆柱形高度"
+msgstr "修改圆柱体高度"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Ray Shape Length"
@@ -11414,6 +11432,11 @@ msgid "GridMap Paint"
 msgstr "绘制栅格图"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "GridMap Selection"
+msgstr "网格地图填充所选项"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr "网格地图"
 
@@ -11451,23 +11474,23 @@ msgstr "光标沿 X 轴旋转"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Rotate Y"
-msgstr "沿 Y 轴旋转"
+msgstr "光标沿 Y 轴旋转"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Rotate Z"
-msgstr "沿 Z 轴旋转"
+msgstr "光标沿 Z 轴旋转"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Back Rotate X"
-msgstr "光标沿 X 轴向后旋转"
+msgstr "光标沿 X 轴逆向旋转"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Back Rotate Y"
-msgstr "光标沿 Y 轴向后旋转"
+msgstr "光标沿 Y 轴逆向旋转"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Back Rotate Z"
-msgstr "光标沿 Z 轴向后旋转"
+msgstr "光标沿 Z 轴逆向旋转"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Clear Rotation"
@@ -11479,11 +11502,11 @@ msgstr "粘贴选中项"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"
-msgstr "清空选中"
+msgstr "清空选中项"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Fill Selection"
-msgstr "填充已选"
+msgstr "填充选中项"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Settings"
@@ -11656,6 +11679,16 @@ msgstr "添加输入端口"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Output Port"
 msgstr "增加输出端口"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Type"
+msgstr "更改类型"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Name"
+msgstr "更改输入端口名称"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Override an existing built-in function."
@@ -12911,7 +12944,7 @@ msgstr "Viewport 大小大于 0 时才能进行渲染。"
 msgid ""
 "The sampler port is connected but not used. Consider changing the source to "
 "'SamplerPort'."
-msgstr "采样器端口已连接但未使用。考虑将源更改为“SamplerPort”。"
+msgstr "采样器端口已连接但未使用。请考虑将源更改为“SamplerPort”。"
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
@@ -14680,9 +14713,6 @@ msgstr "不允许修改常量。"
 
 #~ msgid "City"
 #~ msgstr "城市(City)"
-
-#~ msgid "State"
-#~ msgstr "州(State)"
 
 #~ msgid "2 letter country code"
 #~ msgstr "2个字母的国家代码"

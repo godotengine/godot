@@ -7462,6 +7462,28 @@ msgid "View Plane Transform."
 msgstr "Ver Transformada do Plano."
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: scene/resources/visual_shader.cpp
+msgid "None"
+msgstr "Nenhum"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rotate"
+msgstr "Status:"
+
+#. TRANSLATORS: This refers to the movement that changes the position of an object.
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Translate"
+msgstr "Translação:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Scale"
+msgstr "Escala:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
 msgstr "Escala: "
 
@@ -8115,11 +8137,6 @@ msgstr "Definir Margem"
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
 msgstr "Modo Snap:"
-
-#: editor/plugins/texture_region_editor_plugin.cpp
-#: scene/resources/visual_shader.cpp
-msgid "None"
-msgstr "Nenhum"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Pixel Snap"
@@ -11679,6 +11696,11 @@ msgid "GridMap Paint"
 msgstr "Pintura GridMap"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "GridMap Selection"
+msgstr "Seleção de preenchimento GridMap"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr "Mapa de Grade"
 
@@ -11925,6 +11947,16 @@ msgstr "Adicionar porta de entrada"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Output Port"
 msgstr "Adicionar porta de saída"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Type"
+msgstr "Mudar Tipo"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Name"
+msgstr "Alterar nome da porta de entrada"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Override an existing built-in function."
@@ -15047,10 +15079,6 @@ msgstr "Constantes não podem serem modificadas."
 #, fuzzy
 #~ msgid "Organization"
 #~ msgstr "Transição"
-
-#, fuzzy
-#~ msgid "State"
-#~ msgstr "Status:"
 
 #, fuzzy
 #~ msgid "Password"

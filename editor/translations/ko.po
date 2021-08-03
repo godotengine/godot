@@ -7308,6 +7308,28 @@ msgid "View Plane Transform."
 msgstr "뷰 평면 변형."
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: scene/resources/visual_shader.cpp
+msgid "None"
+msgstr "없음"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rotate"
+msgstr "주(State)"
+
+#. TRANSLATORS: This refers to the movement that changes the position of an object.
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Translate"
+msgstr "이동:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Scale"
+msgstr "크기:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
 msgstr "크기 조절 중: "
 
@@ -7957,11 +7979,6 @@ msgstr "여백 설정"
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
 msgstr "스냅 모드:"
-
-#: editor/plugins/texture_region_editor_plugin.cpp
-#: scene/resources/visual_shader.cpp
-msgid "None"
-msgstr "없음"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Pixel Snap"
@@ -11479,6 +11496,11 @@ msgid "GridMap Paint"
 msgstr "그리드맵 칠하기"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "GridMap Selection"
+msgstr "그리드맵 선택 항목 채우기"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr "그리드맵"
 
@@ -11725,6 +11747,16 @@ msgstr "입력 포트 추가하기"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Output Port"
 msgstr "출력 포트 추가하기"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Type"
+msgstr "유형 바꾸기"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Name"
+msgstr "입력 포트 이름 바꾸기"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Override an existing built-in function."
@@ -14939,9 +14971,6 @@ msgstr "상수는 수정할 수 없습니다."
 
 #~ msgid "Organization"
 #~ msgstr "조직"
-
-#~ msgid "State"
-#~ msgstr "주(State)"
 
 #~ msgid "Password"
 #~ msgstr "암호"

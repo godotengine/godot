@@ -7328,6 +7328,28 @@ msgid "View Plane Transform."
 msgstr "Zobrazit transformaci roviny."
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: scene/resources/visual_shader.cpp
+msgid "None"
+msgstr "Žádné"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rotate"
+msgstr "Režim otáčení"
+
+#. TRANSLATORS: This refers to the movement that changes the position of an object.
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Translate"
+msgstr "Posunout:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Scale"
+msgstr "Zvětšení:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
 msgstr "Škálování: "
 
@@ -7977,11 +7999,6 @@ msgstr "Nastavit okraj"
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
 msgstr "Režim přichycení:"
-
-#: editor/plugins/texture_region_editor_plugin.cpp
-#: scene/resources/visual_shader.cpp
-msgid "None"
-msgstr "Žádné"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Pixel Snap"
@@ -11523,6 +11540,11 @@ msgid "GridMap Paint"
 msgstr "Vykreslit GridMap"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "GridMap Selection"
+msgstr "GridMap Vyplnit výběr"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr "Grid Map"
 
@@ -11767,6 +11789,16 @@ msgstr "Přidat vstupní port"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Output Port"
 msgstr "Přidat výstupní port"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Type"
+msgstr "Změnit typ"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Name"
+msgstr "Změnit název vstupního portu"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Override an existing built-in function."

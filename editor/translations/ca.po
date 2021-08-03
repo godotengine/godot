@@ -7489,6 +7489,28 @@ msgid "View Plane Transform."
 msgstr "Transformació en el Pla de la Vista."
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: scene/resources/visual_shader.cpp
+msgid "None"
+msgstr "Cap"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rotate"
+msgstr "Estat:"
+
+#. TRANSLATORS: This refers to the movement that changes the position of an object.
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Translate"
+msgstr "Translació:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Scale"
+msgstr "Escala:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
 msgstr "Escala: "
 
@@ -8166,11 +8188,6 @@ msgstr "Establir Marge"
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
 msgstr "Mode d'ajustament:"
-
-#: editor/plugins/texture_region_editor_plugin.cpp
-#: scene/resources/visual_shader.cpp
-msgid "None"
-msgstr "Cap"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 #, fuzzy
@@ -11905,6 +11922,11 @@ msgid "GridMap Paint"
 msgstr "Configuració del GridMap"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "GridMap Selection"
+msgstr "Elimina la Selecció del GridMap"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr "Mapa de Graella"
 
@@ -12162,6 +12184,16 @@ msgstr "Afegeix una Entrada"
 #, fuzzy
 msgid "Add Output Port"
 msgstr "Afegir port de sortida"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Type"
+msgstr "Modifica el Tipus"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Name"
+msgstr "Modifica el Nom de l'Entrada"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -15025,10 +15057,6 @@ msgstr "Les constants no es poden modificar."
 #, fuzzy
 #~ msgid "Organization"
 #~ msgstr "Transició"
-
-#, fuzzy
-#~ msgid "State"
-#~ msgstr "Estat:"
 
 #, fuzzy
 #~ msgid "Password"

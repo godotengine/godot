@@ -102,8 +102,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-07-19 09:34+0000\n"
-"Last-Translator: Anna Malinovskaia <tacitcoast@gmail.com>\n"
+"PO-Revision-Date: 2021-07-29 02:33+0000\n"
+"Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -5287,13 +5287,12 @@ msgstr ""
 "Сохраните сцену и попробуйте ещё раз."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "No meshes to bake. Make sure they contain an UV2 channel and that the 'Use "
 "In Baked Light' and 'Generate Lightmap' flags are on."
 msgstr ""
 "Нет полисеток для запекания. Убедитесь, что они содержат канал UV2 и что "
-"флаг «Запекание света» включён."
+"флаги «Запекание света» и «Генерировать карту освещения» включены."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed creating lightmap images, make sure path is writable."
@@ -7426,6 +7425,28 @@ msgid "View Plane Transform."
 msgstr "Вид преобразования плоскости."
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: scene/resources/visual_shader.cpp
+msgid "None"
+msgstr "Пусто"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rotate"
+msgstr "Государство"
+
+#. TRANSLATORS: This refers to the movement that changes the position of an object.
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Translate"
+msgstr "Перемещение:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Scale"
+msgstr "Масштаб:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
 msgstr "Масштаб: "
 
@@ -8081,11 +8102,6 @@ msgstr "Задать отступ"
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
 msgstr "Режим привязки:"
-
-#: editor/plugins/texture_region_editor_plugin.cpp
-#: scene/resources/visual_shader.cpp
-msgid "None"
-msgstr "Пусто"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Pixel Snap"
@@ -11646,6 +11662,11 @@ msgid "GridMap Paint"
 msgstr "Рисование сетки"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "GridMap Selection"
+msgstr "Залить выделенную GridMap"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr "Сеточная карта"
 
@@ -11893,6 +11914,16 @@ msgstr "Добавить входной порт"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Output Port"
 msgstr "Добавить выходной порт"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Type"
+msgstr "Изменить тип"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Name"
+msgstr "Изменить имя входного порта"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Override an existing built-in function."
@@ -15010,9 +15041,6 @@ msgstr "Константы не могут быть изменены."
 
 #~ msgid "City"
 #~ msgstr "Город"
-
-#~ msgid "State"
-#~ msgstr "Государство"
 
 #~ msgid "2 letter country code"
 #~ msgstr "Двух буквенный код страны"

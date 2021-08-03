@@ -7472,6 +7472,28 @@ msgid "View Plane Transform."
 msgstr "Transformation du plan de vue."
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: scene/resources/visual_shader.cpp
+msgid "None"
+msgstr "Aucun"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rotate"
+msgstr "Mode rotation"
+
+#. TRANSLATORS: This refers to the movement that changes the position of an object.
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Translate"
+msgstr "Translater :"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Scale"
+msgstr "Échelle :"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
 msgstr "Échelle : "
 
@@ -8129,11 +8151,6 @@ msgstr "Définir la marge"
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
 msgstr "Mode d'aimantation :"
-
-#: editor/plugins/texture_region_editor_plugin.cpp
-#: scene/resources/visual_shader.cpp
-msgid "None"
-msgstr "Aucun"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Pixel Snap"
@@ -11714,6 +11731,11 @@ msgid "GridMap Paint"
 msgstr "Peinture GridMap"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "GridMap Selection"
+msgstr "Remplissage de la sélection de GridMap"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr "Grille"
 
@@ -11963,6 +11985,16 @@ msgstr "Ajouter un port d'entrée"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Output Port"
 msgstr "Ajouter un port de sortie"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Type"
+msgstr "Changer le type"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Name"
+msgstr "Changer le nom du port d'entrée"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Override an existing built-in function."

@@ -7406,6 +7406,28 @@ msgid "View Plane Transform."
 msgstr "Μετασχηματισμός στο επίπεδο θέασης."
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: scene/resources/visual_shader.cpp
+msgid "None"
+msgstr "Τίποτα"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rotate"
+msgstr "Λειτουργία Περιστροφής"
+
+#. TRANSLATORS: This refers to the movement that changes the position of an object.
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Translate"
+msgstr "Μετατόπιση:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Scale"
+msgstr "Κλιμάκωση:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
 msgstr "Κλιμάκωση: "
 
@@ -8059,11 +8081,6 @@ msgstr "Ορισμός Περιθωρίου"
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
 msgstr "Λειτουργία κουμπώματος:"
-
-#: editor/plugins/texture_region_editor_plugin.cpp
-#: scene/resources/visual_shader.cpp
-msgid "None"
-msgstr "Τίποτα"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Pixel Snap"
@@ -11644,6 +11661,11 @@ msgid "GridMap Paint"
 msgstr "GridMap Ζωγραφική"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "GridMap Selection"
+msgstr "GridMap Γέμισμα Επιλογής"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr "Χάρτης δικτύου"
 
@@ -11897,6 +11919,16 @@ msgstr "Προσθήκη Θύρας Εισόδου"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Output Port"
 msgstr "Προσθήκη Θύρας Εξόδου"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Type"
+msgstr "Αλλαγή τύπου"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Name"
+msgstr "Αλλαγή ονόματος θύρας εισόδου"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Override an existing built-in function."

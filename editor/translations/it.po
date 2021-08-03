@@ -7488,6 +7488,28 @@ msgid "View Plane Transform."
 msgstr "Visualizza la trasformazione del piano."
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: scene/resources/visual_shader.cpp
+msgid "None"
+msgstr "Nessuno"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rotate"
+msgstr "Stato"
+
+#. TRANSLATORS: This refers to the movement that changes the position of an object.
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Translate"
+msgstr "Trasla:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Scale"
+msgstr "Scala:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
 msgstr "Scalatura: "
 
@@ -8153,11 +8175,6 @@ msgstr "Imposta Margine"
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
 msgstr "Modalità dello scatto:"
-
-#: editor/plugins/texture_region_editor_plugin.cpp
-#: scene/resources/visual_shader.cpp
-msgid "None"
-msgstr "Nessuno"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 #, fuzzy
@@ -11747,6 +11764,11 @@ msgid "GridMap Paint"
 msgstr "GridMap Riempi"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "GridMap Selection"
+msgstr "GridMap Riempi Selezione"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr "Mappa di Griglia"
 
@@ -11995,6 +12017,16 @@ msgstr "Aggiungi Porta Input"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Output Port"
 msgstr "Aggiungi Porta Output"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Type"
+msgstr "Cambia Tipo"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Name"
+msgstr "Cambia Nome porta Input"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Override an existing built-in function."
@@ -15147,9 +15179,6 @@ msgstr "Le constanti non possono essere modificate."
 
 #~ msgid "City"
 #~ msgstr "Città"
-
-#~ msgid "State"
-#~ msgstr "Stato"
 
 #~ msgid "2 letter country code"
 #~ msgstr "Codice nazione di 2 lettere"

@@ -7063,6 +7063,25 @@ msgid "View Plane Transform."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: scene/resources/visual_shader.cpp
+msgid "None"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Rotate"
+msgstr ""
+
+#. TRANSLATORS: This refers to the movement that changes the position of an object.
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Translate"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Scale"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
 msgstr ""
 
@@ -7701,11 +7720,6 @@ msgstr ""
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
-msgstr ""
-
-#: editor/plugins/texture_region_editor_plugin.cpp
-#: scene/resources/visual_shader.cpp
-msgid "None"
 msgstr ""
 
 #: editor/plugins/texture_region_editor_plugin.cpp
@@ -11067,6 +11081,10 @@ msgid "GridMap Paint"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "GridMap Selection"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr ""
 
@@ -11306,6 +11324,14 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Output Port"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Change Port Type"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Change Port Name"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
