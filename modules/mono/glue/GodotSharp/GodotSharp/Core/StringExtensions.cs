@@ -1132,7 +1132,7 @@ namespace Godot
         /// </summary>
         public static string[] Split(this string instance, string divisor, bool allowEmpty = true)
         {
-            return instance.Split(new[] { divisor }, StringSplitOptions.RemoveEmptyEntries);
+            return instance.Split(new[] { divisor }, allowEmpty ? StringSplitOptions.None : StringSplitOptions.RemoveEmptyEntries);
         }
 
         /// <summary>

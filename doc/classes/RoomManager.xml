@@ -10,15 +10,13 @@
 	</tutorials>
 	<methods>
 		<method name="rooms_clear">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				This function clears all converted data from the [b]room graph[/b]. Use this before unloading a level, when transitioning from level to level, or returning to a main menu.
 			</description>
 		</method>
 		<method name="rooms_convert">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				This is the most important function in the whole portal culling system. Without it, the system cannot function.
 				First it goes through every [Room] that is a child of the [code]room list[/code] node (and [RoomGroup]s within) and converts and adds it to the [code]room graph[/code].

@@ -10,12 +10,9 @@
 	</tutorials>
 	<methods>
 		<method name="broadcast">
-			<return type="void">
-			</return>
-			<argument index="0" name="method" type="String">
-			</argument>
-			<argument index="1" name="parameters" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="method" type="String" />
+			<argument index="1" name="parameters" type="Variant" />
 			<description>
 			</description>
 		</method>
@@ -30,10 +27,8 @@
 	</members>
 	<signals>
 		<signal name="broadcast">
-			<argument index="0" name="method" type="String">
-			</argument>
-			<argument index="1" name="parameters" type="Array">
-			</argument>
+			<argument index="0" name="method" type="String" />
+			<argument index="1" name="parameters" type="Array" />
 			<description>
 			</description>
 		</signal>

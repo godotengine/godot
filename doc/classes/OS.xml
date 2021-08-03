@@ -11,78 +11,63 @@
 	</tutorials>
 	<methods>
 		<method name="alert">
-			<return type="void">
-			</return>
-			<argument index="0" name="text" type="String">
-			</argument>
-			<argument index="1" name="title" type="String" default="&quot;Alert!&quot;">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="text" type="String" />
+			<argument index="1" name="title" type="String" default="&quot;Alert!&quot;" />
 			<description>
 				Displays a modal dialog box using the host OS' facilities. Execution is blocked until the dialog is closed.
 			</description>
 		</method>
 		<method name="can_draw" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the host OS allows drawing.
 			</description>
 		</method>
 		<method name="can_use_threads" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the current host platform is using multiple threads.
 			</description>
 		</method>
 		<method name="center_window">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Centers the window on the screen if in windowed mode.
 			</description>
 		</method>
 		<method name="close_midi_inputs">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Shuts down system MIDI driver.
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="delay_msec" qualifiers="const">
-			<return type="void">
-			</return>
-			<argument index="0" name="msec" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="msec" type="int" />
 			<description>
 				Delay execution of the current thread by [code]msec[/code] milliseconds. [code]msec[/code] must be greater than or equal to [code]0[/code]. Otherwise, [method delay_msec] will do nothing and will print an error message.
 			</description>
 		</method>
 		<method name="delay_usec" qualifiers="const">
-			<return type="void">
-			</return>
-			<argument index="0" name="usec" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="usec" type="int" />
 			<description>
 				Delay execution of the current thread by [code]usec[/code] microseconds. [code]usec[/code] must be greater than or equal to [code]0[/code]. Otherwise, [method delay_usec] will do nothing and will print an error message.
 			</description>
 		</method>
 		<method name="dump_memory_to_file">
-			<return type="void">
-			</return>
-			<argument index="0" name="file" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="file" type="String" />
 			<description>
 				Dumps the memory allocation ringlist to a file (only works in debug).
 				Entry format per line: "Address - Size - Description".
 			</description>
 		</method>
 		<method name="dump_resources_to_file">
-			<return type="void">
-			</return>
-			<argument index="0" name="file" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="file" type="String" />
 			<description>
 				Dumps all used resources to file (only works in debug).
 				Entry format per line: "Resource Type : Resource Location".
@@ -90,18 +75,12 @@
 			</description>
 		</method>
 		<method name="execute">
-			<return type="int">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="arguments" type="PoolStringArray">
-			</argument>
-			<argument index="2" name="blocking" type="bool" default="true">
-			</argument>
-			<argument index="3" name="output" type="Array" default="[  ]">
-			</argument>
-			<argument index="4" name="read_stderr" type="bool" default="false">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="arguments" type="PoolStringArray" />
+			<argument index="2" name="blocking" type="bool" default="true" />
+			<argument index="3" name="output" type="Array" default="[  ]" />
+			<argument index="4" name="read_stderr" type="bool" default="false" />
 			<description>
 				Execute the file at the given path with the arguments passed as an array of strings. Platform path resolution will take place. The resolved file must exist and be executable.
 				The arguments are used in the given order and separated by a space, so [code]OS.execute("ping", ["-w", "3", "godotengine.org"], false)[/code] will resolve to [code]ping -w 3 godotengine.org[/code] in the system's shell.
@@ -126,41 +105,34 @@
 			</description>
 		</method>
 		<method name="find_scancode_from_string" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="string" type="String">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="string" type="String" />
 			<description>
 				Returns the scancode of the given string (e.g. "Escape").
 			</description>
 		</method>
 		<method name="get_audio_driver_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the total number of available audio drivers.
 			</description>
 		</method>
 		<method name="get_audio_driver_name" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="driver" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="driver" type="int" />
 			<description>
 				Returns the audio driver name for the given index.
 			</description>
 		</method>
 		<method name="get_cache_dir" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the [i]global[/i] cache data directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the [code]XDG_CACHE_HOME[/code] environment variable before starting the project. See [url=https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_config_dir] and [method get_data_dir].
 				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
 			</description>
 		</method>
 		<method name="get_cmdline_args">
-			<return type="PoolStringArray">
-			</return>
+			<return type="PoolStringArray" />
 			<description>
 				Returns the command-line arguments passed to the engine.
 				Command-line arguments can be written in any form, including both [code]--key value[/code] and [code]--key=value[/code] forms so they can be properly parsed, as long as custom command-line arguments do not conflict with engine arguments.
@@ -177,16 +149,14 @@
 			</description>
 		</method>
 		<method name="get_config_dir" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the [i]global[/i] user configuration directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the [code]XDG_CONFIG_HOME[/code] environment variable before starting the project. See [url=https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_cache_dir] and [method get_data_dir].
 				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
 			</description>
 		</method>
 		<method name="get_connected_midi_inputs">
-			<return type="PoolStringArray">
-			</return>
+			<return type="PoolStringArray" />
 			<description>
 				Returns an array of MIDI device names.
 				The returned array will be empty if the system MIDI driver has not previously been initialised with [method open_midi_inputs].
@@ -194,90 +164,75 @@
 			</description>
 		</method>
 		<method name="get_current_video_driver" qualifiers="const">
-			<return type="int" enum="OS.VideoDriver">
-			</return>
+			<return type="int" enum="OS.VideoDriver" />
 			<description>
 				Returns the currently used video driver, using one of the values from [enum VideoDriver].
 			</description>
 		</method>
 		<method name="get_data_dir" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the [i]global[/i] user data directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the [code]XDG_DATA_HOME[/code] environment variable before starting the project. See [url=https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_cache_dir] and [method get_config_dir].
 				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
 			</description>
 		</method>
 		<method name="get_date" qualifiers="const">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="utc" type="bool" default="false">
-			</argument>
+			<return type="Dictionary" />
+			<argument index="0" name="utc" type="bool" default="false" />
 			<description>
 				Returns current date as a dictionary of keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]weekday[/code], [code]dst[/code] (Daylight Savings Time).
 			</description>
 		</method>
 		<method name="get_datetime" qualifiers="const">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="utc" type="bool" default="false">
-			</argument>
+			<return type="Dictionary" />
+			<argument index="0" name="utc" type="bool" default="false" />
 			<description>
 				Returns current datetime as a dictionary of keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]weekday[/code], [code]dst[/code] (Daylight Savings Time), [code]hour[/code], [code]minute[/code], [code]second[/code].
 			</description>
 		</method>
 		<method name="get_datetime_from_unix_time" qualifiers="const">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="unix_time_val" type="int">
-			</argument>
+			<return type="Dictionary" />
+			<argument index="0" name="unix_time_val" type="int" />
 			<description>
 				Gets a dictionary of time values corresponding to the given UNIX epoch time (in seconds).
 				The returned Dictionary's values will be the same as [method get_datetime], with the exception of Daylight Savings Time as it cannot be determined from the epoch.
 			</description>
 		</method>
 		<method name="get_dynamic_memory_usage" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the total amount of dynamic memory used (only works in debug).
 			</description>
 		</method>
 		<method name="get_environment" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="variable" type="String">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="variable" type="String" />
 			<description>
 				Returns the value of an environment variable. Returns an empty string if the environment variable doesn't exist.
 				[b]Note:[/b] Double-check the casing of [code]variable[/code]. Environment variable names are case-sensitive on all platforms except Windows.
 			</description>
 		</method>
 		<method name="get_executable_path" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the path to the current engine executable.
 			</description>
 		</method>
 		<method name="get_external_data_dir" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				On Android, returns the absolute directory path where user data can be written to external storage if available. On all other platforms, this will return the same location as [method get_user_data_dir].
 			</description>
 		</method>
 		<method name="get_granted_permissions" qualifiers="const">
-			<return type="PoolStringArray">
-			</return>
+			<return type="PoolStringArray" />
 			<description>
 				With this function, you can get the list of dangerous permissions that have been granted to the Android application.
 				[b]Note:[/b] This method is implemented on Android.
 			</description>
 		</method>
 		<method name="get_ime_selection" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns the IME cursor position (the currently-edited portion of the string) relative to the characters in the composition string.
 				[constant MainLoop.NOTIFICATION_OS_IME_UPDATE] is sent to the application to notify it of changes to the IME cursor position.
@@ -285,8 +240,7 @@
 			</description>
 		</method>
 		<method name="get_ime_text" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the IME intermediate composition string.
 				[constant MainLoop.NOTIFICATION_OS_IME_UPDATE] is sent to the application to notify it of changes to the IME composition string.
@@ -294,8 +248,7 @@
 			</description>
 		</method>
 		<method name="get_latin_keyboard_variant" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the current latin keyboard variant as a String.
 				Possible return values are: [code]"QWERTY"[/code], [code]"AZERTY"[/code], [code]"QZERTY"[/code], [code]"DVORAK"[/code], [code]"NEO"[/code], [code]"COLEMAK"[/code] or [code]"ERROR"[/code].
@@ -303,105 +256,89 @@
 			</description>
 		</method>
 		<method name="get_locale" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the host OS locale.
 			</description>
 		</method>
 		<method name="get_model_name" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the model name of the current device.
 				[b]Note:[/b] This method is implemented on Android and iOS. Returns [code]"GenericDevice"[/code] on unsupported platforms.
 			</description>
 		</method>
 		<method name="get_name" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the name of the host OS. Possible values are: [code]"Android"[/code], [code]"iOS"[/code], [code]"HTML5"[/code], [code]"OSX"[/code], [code]"Server"[/code], [code]"Windows"[/code], [code]"UWP"[/code], [code]"X11"[/code].
 			</description>
 		</method>
 		<method name="get_native_handle">
-			<return type="int">
-			</return>
-			<argument index="0" name="handle_type" type="int" enum="OS.HandleType">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="handle_type" type="int" enum="OS.HandleType" />
 			<description>
 				Returns internal structure pointers for use in GDNative plugins.
 				[b]Note:[/b] This method is implemented on Linux and Windows (other OSs will soon be supported).
 			</description>
 		</method>
 		<method name="get_power_percent_left">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the amount of battery left in the device as a percentage. Returns [code]-1[/code] if power state is unknown.
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_power_seconds_left">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns an estimate of the time left in seconds before the device runs out of battery. Returns [code]-1[/code] if power state is unknown.
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_power_state">
-			<return type="int" enum="OS.PowerState">
-			</return>
+			<return type="int" enum="OS.PowerState" />
 			<description>
 				Returns the current state of the device regarding battery and power. See [enum PowerState] constants.
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_process_id" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the project's process ID.
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_processor_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of threads available on the host machine.
 			</description>
 		</method>
 		<method name="get_real_window_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns the window size including decorations like window borders.
 			</description>
 		</method>
 		<method name="get_scancode_string" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="code" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="code" type="int" />
 			<description>
 				Returns the given scancode as a string (e.g. Return values: [code]"Escape"[/code], [code]"Shift+Escape"[/code]).
 				See also [member InputEventKey.scancode] and [method InputEventKey.get_scancode_with_modifiers].
 			</description>
 		</method>
 		<method name="get_screen_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of displays attached to the host machine.
 			</description>
 		</method>
 		<method name="get_screen_dpi" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="screen" type="int" default="-1">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="screen" type="int" default="-1" />
 			<description>
 				Returns the dots per inch density of the specified screen. If [code]screen[/code] is [/code]-1[/code] (the default value), the current screen will be used.
 				[b]Note:[/b] On macOS, returned value is inaccurate if fractional display scaling mode is used.
@@ -418,8 +355,7 @@
 			</description>
 		</method>
 		<method name="get_screen_max_scale" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Return the greatest scale factor of all screens.
 				[b]Note:[/b] On macOS returned value is [code]2.0[/code] if there is at least one hiDPI (Retina) screen in the system, and [code]1.0[/code] in all other cases.
@@ -427,19 +363,15 @@
 			</description>
 		</method>
 		<method name="get_screen_position" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="screen" type="int" default="-1">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="screen" type="int" default="-1" />
 			<description>
 				Returns the position of the specified screen by index. If [code]screen[/code] is [/code]-1[/code] (the default value), the current screen will be used.
 			</description>
 		</method>
 		<method name="get_screen_scale" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="screen" type="int" default="-1">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="screen" type="int" default="-1" />
 			<description>
 				Return the scale factor of the specified screen by index. If [code]screen[/code] is [/code]-1[/code] (the default value), the current screen will be used.
 				[b]Note:[/b] On macOS returned value is [code]2.0[/code] for hiDPI (Retina) screen, and [code]1.0[/code] for all other cases.
@@ -447,118 +379,99 @@
 			</description>
 		</method>
 		<method name="get_screen_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="screen" type="int" default="-1">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="screen" type="int" default="-1" />
 			<description>
 				Returns the dimensions in pixels of the specified screen. If [code]screen[/code] is [/code]-1[/code] (the default value), the current screen will be used.
 			</description>
 		</method>
 		<method name="get_splash_tick_msec" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the amount of time in milliseconds it took for the boot logo to appear.
 			</description>
 		</method>
 		<method name="get_static_memory_peak_usage" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the maximum amount of static memory used (only works in debug).
 			</description>
 		</method>
 		<method name="get_static_memory_usage" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the amount of static memory being used by the program in bytes.
 			</description>
 		</method>
 		<method name="get_system_dir" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="dir" type="int" enum="OS.SystemDir">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="dir" type="int" enum="OS.SystemDir" />
 			<description>
 				Returns the actual path to commonly used folders across different platforms. Available locations are specified in [enum SystemDir].
 				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_system_time_msecs" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the epoch time of the operating system in milliseconds.
 			</description>
 		</method>
 		<method name="get_system_time_secs" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the epoch time of the operating system in seconds.
 			</description>
 		</method>
 		<method name="get_tablet_driver_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the total number of available tablet drivers.
 				[b]Note:[/b] This method is implemented on Windows.
 			</description>
 		</method>
 		<method name="get_tablet_driver_name" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the tablet driver name for the given index.
 				[b]Note:[/b] This method is implemented on Windows.
 			</description>
 		</method>
 		<method name="get_thread_caller_id" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the ID of the current thread. This can be used in logs to ease debugging of multi-threaded applications.
 				[b]Note:[/b] Thread IDs are not deterministic and may be reused across application restarts.
 			</description>
 		</method>
 		<method name="get_ticks_msec" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the amount of time passed in milliseconds since the engine started.
 			</description>
 		</method>
 		<method name="get_ticks_usec" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the amount of time passed in microseconds since the engine started.
 			</description>
 		</method>
 		<method name="get_time" qualifiers="const">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="utc" type="bool" default="false">
-			</argument>
+			<return type="Dictionary" />
+			<argument index="0" name="utc" type="bool" default="false" />
 			<description>
 				Returns current time as a dictionary of keys: hour, minute, second.
 			</description>
 		</method>
 		<method name="get_time_zone_info" qualifiers="const">
-			<return type="Dictionary">
-			</return>
+			<return type="Dictionary" />
 			<description>
 				Returns the current time zone as a dictionary with the keys: bias and name.
 			</description>
 		</method>
 		<method name="get_unique_id" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns a string that is unique to the device.
 				[b]Note:[/b] This string may change without notice if the user reinstalls/upgrades their operating system or changes their hardware. This means it should generally not be used to encrypt persistent data as the data saved before an unexpected ID change would become inaccessible. The returned string may also be falsified using external programs, so do not rely on the string returned by [method get_unique_id] for security purposes.
@@ -566,18 +479,15 @@
 			</description>
 		</method>
 		<method name="get_unix_time" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the current UNIX epoch timestamp in seconds.
 				[b]Important:[/b] This is the system clock that the user can manually set. [b]Never use[/b] this method for precise time calculation since its results are also subject to automatic adjustments by the operating system. [b]Always use[/b] [method get_ticks_usec] or [method get_ticks_msec] for precise time calculation instead, since they are guaranteed to be monotonic (i.e. never decrease).
 			</description>
 		</method>
 		<method name="get_unix_time_from_datetime" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="datetime" type="Dictionary">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="datetime" type="Dictionary" />
 			<description>
 				Gets an epoch time value from a dictionary of time values.
 				[code]datetime[/code] must be populated with the following keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]hour[/code], [code]minute[/code], [code]second[/code].
@@ -586,8 +496,7 @@
 			</description>
 		</method>
 		<method name="get_user_data_dir" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the absolute directory path where user data is written ([code]user://[/code]).
 				On Linux, this is [code]~/.local/share/godot/app_userdata/[project_name][/code], or [code]~/.local/share/[custom_name][/code] if [code]use_custom_user_dir[/code] is set.
@@ -598,127 +507,102 @@
 			</description>
 		</method>
 		<method name="get_video_driver_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of video drivers supported on the current platform.
 			</description>
 		</method>
 		<method name="get_video_driver_name" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="driver" type="int" enum="OS.VideoDriver">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="driver" type="int" enum="OS.VideoDriver" />
 			<description>
 				Returns the name of the video driver matching the given [code]driver[/code] index. This index is a value from [enum VideoDriver], and you can use [method get_current_video_driver] to get the current backend's index.
 			</description>
 		</method>
 		<method name="get_virtual_keyboard_height">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the on-screen keyboard's height in pixels. Returns 0 if there is no keyboard or if it is currently hidden.
 			</description>
 		</method>
 		<method name="get_window_safe_area" qualifiers="const">
-			<return type="Rect2">
-			</return>
+			<return type="Rect2" />
 			<description>
 				Returns unobscured area of the window where interactive controls should be rendered.
 			</description>
 		</method>
 		<method name="global_menu_add_item">
-			<return type="void">
-			</return>
-			<argument index="0" name="menu" type="String">
-			</argument>
-			<argument index="1" name="label" type="String">
-			</argument>
-			<argument index="2" name="id" type="Variant">
-			</argument>
-			<argument index="3" name="meta" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="menu" type="String" />
+			<argument index="1" name="label" type="String" />
+			<argument index="2" name="id" type="Variant" />
+			<argument index="3" name="meta" type="Variant" />
 			<description>
 				Add a new item with text "label" to global menu. Use "_dock" menu to add item to the macOS dock icon menu.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="global_menu_add_separator">
-			<return type="void">
-			</return>
-			<argument index="0" name="menu" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="menu" type="String" />
 			<description>
 				Add a separator between items. Separators also occupy an index.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="global_menu_clear">
-			<return type="void">
-			</return>
-			<argument index="0" name="menu" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="menu" type="String" />
 			<description>
 				Clear the global menu, in effect removing all items.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="global_menu_remove_item">
-			<return type="void">
-			</return>
-			<argument index="0" name="menu" type="String">
-			</argument>
-			<argument index="1" name="idx" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="menu" type="String" />
+			<argument index="1" name="idx" type="int" />
 			<description>
 				Removes the item at index "idx" from the global menu. Note that the indexes of items after the removed item are going to be shifted by one.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="has_environment" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="variable" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="variable" type="String" />
 			<description>
 				Returns [code]true[/code] if the environment variable with the name [code]variable[/code] exists.
 				[b]Note:[/b] Double-check the casing of [code]variable[/code]. Environment variable names are case-sensitive on all platforms except Windows.
 			</description>
 		</method>
 		<method name="has_feature" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="tag_name" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="tag_name" type="String" />
 			<description>
 				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on the platform, build etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the [url=https://docs.godotengine.org/en/3.3/getting_started/workflow/export/feature_tags.html]Feature Tags[/url] documentation for more details.
 				[b]Note:[/b] Tag names are case-sensitive.
 			</description>
 		</method>
 		<method name="has_touchscreen_ui_hint" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the device has a touchscreen or emulates one.
 			</description>
 		</method>
 		<method name="has_virtual_keyboard" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the platform has a virtual keyboard, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="hide_virtual_keyboard">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Hides the virtual keyboard if it is shown, does nothing otherwise.
 			</description>
 		</method>
 		<method name="is_debug_build" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the Godot binary used to run the project is a [i]debug[/i] export template, or when running in the editor.
 				Returns [code]false[/code] if the Godot binary used to run the project is a [i]release[/i] export template.
@@ -726,101 +610,84 @@
 			</description>
 		</method>
 		<method name="is_ok_left_and_cancel_right" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the [b]OK[/b] button should appear on the left and [b]Cancel[/b] on the right.
 			</description>
 		</method>
 		<method name="is_scancode_unicode" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="code" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="code" type="int" />
 			<description>
 				Returns [code]true[/code] if the input scancode corresponds to a Unicode character.
 			</description>
 		</method>
 		<method name="is_stdout_verbose" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the engine was executed with [code]-v[/code] (verbose stdout).
 			</description>
 		</method>
 		<method name="is_userfs_persistent" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				If [code]true[/code], the [code]user://[/code] file system is persistent, so that its state is the same after a player quits and starts the game again. Relevant to the HTML5 platform, where this persistence may be unavailable.
 			</description>
 		</method>
 		<method name="is_window_always_on_top" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the window should always be on top of other windows.
 			</description>
 		</method>
 		<method name="is_window_focused" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the window is currently focused.
 				[b]Note:[/b] Only implemented on desktop platforms. On other platforms, it will always return [code]true[/code].
 			</description>
 		</method>
 		<method name="keyboard_get_current_layout" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns active keyboard layout index.
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="keyboard_get_layout_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of keyboard layouts.
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="keyboard_get_layout_language" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Returns the ISO-639/BCP-47 language code of the keyboard layout at position [code]index[/code].
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="keyboard_get_layout_name" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Returns the localized name of the keyboard layout at position [code]index[/code].
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="keyboard_set_current_layout">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Sets active keyboard layout.
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="kill">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="pid" type="int">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="pid" type="int" />
 			<description>
 				Kill (terminate) the process identified by the given process ID ([code]pid[/code]), e.g. the one returned by [method execute] in non-blocking mode.
 				[b]Note:[/b] This method can also be used to kill processes that were not spawned by the game.
@@ -828,145 +695,118 @@
 			</description>
 		</method>
 		<method name="move_window_to_foreground">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Moves the window to the front.
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="native_video_is_playing">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if native video is playing.
 				[b]Note:[/b] This method is only implemented on iOS.
 			</description>
 		</method>
 		<method name="native_video_pause">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Pauses native video playback.
 				[b]Note:[/b] This method is only implemented on iOS.
 			</description>
 		</method>
 		<method name="native_video_play">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="volume" type="float">
-			</argument>
-			<argument index="2" name="audio_track" type="String">
-			</argument>
-			<argument index="3" name="subtitle_track" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="volume" type="float" />
+			<argument index="2" name="audio_track" type="String" />
+			<argument index="3" name="subtitle_track" type="String" />
 			<description>
 				Plays native video from the specified path, at the given volume and with audio and subtitle tracks.
 				[b]Note:[/b] This method is only implemented on iOS.
 			</description>
 		</method>
 		<method name="native_video_stop">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Stops native video playback.
 				[b]Note:[/b] This method is implemented on iOS.
 			</description>
 		</method>
 		<method name="native_video_unpause">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Resumes native video playback.
 				[b]Note:[/b] This method is implemented on iOS.
 			</description>
 		</method>
 		<method name="open_midi_inputs">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Initialises the singleton for the system MIDI driver.
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="print_all_resources">
-			<return type="void">
-			</return>
-			<argument index="0" name="tofile" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="tofile" type="String" default="&quot;&quot;" />
 			<description>
 				Shows all resources in the game. Optionally, the list can be written to a file by specifying a file path in [code]tofile[/code].
 			</description>
 		</method>
 		<method name="print_all_textures_by_size">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Shows the list of loaded textures sorted by size in memory.
 			</description>
 		</method>
 		<method name="print_resources_by_type">
-			<return type="void">
-			</return>
-			<argument index="0" name="types" type="PoolStringArray">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="types" type="PoolStringArray" />
 			<description>
 				Shows the number of resources loaded by the game of the given types.
 			</description>
 		</method>
 		<method name="print_resources_in_use">
-			<return type="void">
-			</return>
-			<argument index="0" name="short" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="short" type="bool" default="false" />
 			<description>
 				Shows all resources currently used by the game.
 			</description>
 		</method>
 		<method name="request_attention">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Request the user attention to the window. It'll flash the taskbar button on Windows or bounce the dock icon on OSX.
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="request_permission">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				At the moment this function is only used by [code]AudioDriverOpenSL[/code] to request permission for [code]RECORD_AUDIO[/code] on Android.
 			</description>
 		</method>
 		<method name="request_permissions">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				With this function, you can request dangerous permissions since normal permissions are automatically granted at install time in Android applications.
 				[b]Note:[/b] This method is implemented on Android.
 			</description>
 		</method>
 		<method name="set_environment" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="variable" type="String">
-			</argument>
-			<argument index="1" name="value" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="variable" type="String" />
+			<argument index="1" name="value" type="String" />
 			<description>
 				Sets the value of the environment variable [code]variable[/code] to [code]value[/code]. The environment variable will be set for the Godot process and any process executed with [method execute] after running [method set_environment]. The environment variable will [i]not[/i] persist to processes run after the Godot process was terminated.
 				[b]Note:[/b] Double-check the casing of [code]variable[/code]. Environment variable names are case-sensitive on all platforms except Windows.
 			</description>
 		</method>
 		<method name="set_icon">
-			<return type="void">
-			</return>
-			<argument index="0" name="icon" type="Image">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="icon" type="Image" />
 			<description>
 				Sets the game's icon using an [Image] resource.
 				The same image is used for window caption, taskbar/dock and window selection dialog. Image is scaled as needed.
@@ -974,10 +814,8 @@
 			</description>
 		</method>
 		<method name="set_ime_active">
-			<return type="void">
-			</return>
-			<argument index="0" name="active" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="active" type="bool" />
 			<description>
 				Sets whether IME input mode should be enabled.
 				If active IME handles key events before the application and creates an composition string and suggestion list.
@@ -987,20 +825,16 @@
 			</description>
 		</method>
 		<method name="set_ime_position">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="position" type="Vector2" />
 			<description>
 				Sets position of IME suggestion list popup (in window coordinates).
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="set_native_icon">
-			<return type="void">
-			</return>
-			<argument index="0" name="filename" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="filename" type="String" />
 			<description>
 				Sets the game's icon using a multi-size platform-specific icon file ([code]*.ico[/code] on Windows and [code]*.icns[/code] on macOS).
 				Appropriate size sub-icons are used for window caption, taskbar/dock and window selection dialog.
@@ -1008,38 +842,30 @@
 			</description>
 		</method>
 		<method name="set_thread_name">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Sets the name of the current thread.
 			</description>
 		</method>
 		<method name="set_use_file_access_save_and_swap">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="enabled" type="bool" />
 			<description>
 				Enables backup saves if [code]enabled[/code] is [code]true[/code].
 			</description>
 		</method>
 		<method name="set_window_always_on_top">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="enabled" type="bool" />
 			<description>
 				Sets whether the window should always be on top.
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="set_window_mouse_passthrough">
-			<return type="void">
-			</return>
-			<argument index="0" name="region" type="PoolVector2Array">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="region" type="PoolVector2Array" />
 			<description>
 				Sets a polygonal region of the window which accepts mouse events. Mouse events outside the region will be passed through.
 				Passing an empty array will disable passthrough support (all mouse events will be intercepted by the window, which is the default behavior).
@@ -1058,10 +884,8 @@
 			</description>
 		</method>
 		<method name="set_window_title">
-			<return type="void">
-			</return>
-			<argument index="0" name="title" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="title" type="String" />
 			<description>
 				Sets the window title to the specified string.
 				[b]Note:[/b] This should be used sporadically. Don't set this every frame, as that will negatively affect performance on some window managers.
@@ -1069,10 +893,8 @@
 			</description>
 		</method>
 		<method name="shell_open">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="uri" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="uri" type="String" />
 			<description>
 				Requests the OS to open a resource with the most appropriate program. For example:
 				- [code]OS.shell_open("C:\\Users\name\Downloads")[/code] on Windows opens the file explorer at the user's Downloads folder.
@@ -1083,12 +905,9 @@
 			</description>
 		</method>
 		<method name="show_virtual_keyboard">
-			<return type="void">
-			</return>
-			<argument index="0" name="existing_text" type="String" default="&quot;&quot;">
-			</argument>
-			<argument index="1" name="multiline" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="existing_text" type="String" default="&quot;&quot;" />
+			<argument index="1" name="multiline" type="bool" default="false" />
 			<description>
 				Shows the virtual keyboard if the platform has one.
 				The [code]existing_text[/code] parameter is useful for implementing your own [LineEdit] or [TextEdit], as it tells the virtual keyboard what text has already been typed (the virtual keyboard uses it for auto-correct and predictions).

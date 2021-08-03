@@ -10,17 +10,14 @@
 	</tutorials>
 	<methods>
 		<method name="RID">
-			<return type="RID">
-			</return>
-			<argument index="0" name="from" type="Object">
-			</argument>
+			<return type="RID" />
+			<argument index="0" name="from" type="Object" />
 			<description>
 				Creates a new RID instance with the ID of a given resource. When not handed a valid resource, silently stores the unused ID 0.
 			</description>
 		</method>
 		<method name="get_id">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the ID of the referenced resource.
 			</description>

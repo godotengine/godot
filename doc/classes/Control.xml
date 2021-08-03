@@ -21,26 +21,22 @@
 	</tutorials>
 	<methods>
 		<method name="_clips_input" qualifiers="virtual">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Virtual method to be implemented by the user. Returns whether [method _gui_input] should not be called for children controls outside this control's rectangle. Input will be clipped to the Rect of this [Control]. Similar to [member rect_clip_content], but doesn't affect visibility.
 				If not overridden, defaults to [code]false[/code].
 			</description>
 		</method>
 		<method name="_get_minimum_size" qualifiers="virtual">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Virtual method to be implemented by the user. Returns the minimum size for this control. Alternative to [member rect_min_size] for controlling minimum size via code. The actual minimum size will be the max value of these two (in each axis separately).
 				If not overridden, defaults to [constant Vector2.ZERO].
 			</description>
 		</method>
 		<method name="_gui_input" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="event" type="InputEvent">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="event" type="InputEvent" />
 			<description>
 				Virtual method to be implemented by the user. Use this method to process and accept inputs on UI elements. See [method accept_event].
 				Example: clicking a control.
@@ -59,10 +55,8 @@
 			</description>
 		</method>
 		<method name="_make_custom_tooltip" qualifiers="virtual">
-			<return type="Control">
-			</return>
-			<argument index="0" name="for_text" type="String">
-			</argument>
+			<return type="Control" />
+			<argument index="0" name="for_text" type="String" />
 			<description>
 				Virtual method to be implemented by the user. Returns a [Control] node that should be used as a tooltip instead of the default one. The [code]for_text[/code] includes the contents of the [member hint_tooltip] property.
 				The returned node must be of type [Control] or Control-derived. It can have child nodes of any type. It is freed when the tooltip disappears, so make sure you always provide a new instance (if you want to use a pre-existing node from your scene tree, you can duplicate it and pass the duplicated instance). When [code]null[/code] or a non-Control node is returned, the default tooltip will be used instead.
@@ -85,19 +79,15 @@
 			</description>
 		</method>
 		<method name="accept_event">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Marks an input event as handled. Once you accept an input event, it stops propagating, even to nodes listening to [method Node._unhandled_input] or [method Node._unhandled_key_input].
 			</description>
 		</method>
 		<method name="add_color_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="color" type="Color" />
 			<description>
 				Overrides the [Color] with given [code]name[/code] in the [member theme] resource the control uses.
 				[b]Note:[/b] Unlike other theme overrides, there is no way to undo a color override without manually assigning the previous color.
@@ -113,56 +103,41 @@
 			</description>
 		</method>
 		<method name="add_constant_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="constant" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="constant" type="int" />
 			<description>
 				Overrides an integer constant with given [code]name[/code] in the [member theme] resource the control uses. If the [code]constant[/code] is [code]0[/code], the override is cleared and the constant from assigned [Theme] is used.
 			</description>
 		</method>
 		<method name="add_font_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="font" type="Font">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="font" type="Font" />
 			<description>
 				Overrides the font with given [code]name[/code] in the [member theme] resource the control uses. If [code]font[/code] is [code]null[/code] or invalid, the override is cleared and the font from assigned [Theme] is used.
 			</description>
 		</method>
 		<method name="add_icon_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="texture" type="Texture">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="texture" type="Texture" />
 			<description>
 				Overrides the icon with given [code]name[/code] in the [member theme] resource the control uses. If [code]icon[/code] is [code]null[/code] or invalid, the override is cleared and the icon from assigned [Theme] is used.
 			</description>
 		</method>
 		<method name="add_shader_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="shader" type="Shader">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="shader" type="Shader" />
 			<description>
 				Overrides the [Shader] with given [code]name[/code] in the [member theme] resource the control uses. If [code]shader[/code] is [code]null[/code] or invalid, the override is cleared and the shader from assigned [Theme] is used.
 			</description>
 		</method>
 		<method name="add_stylebox_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="stylebox" type="StyleBox">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="stylebox" type="StyleBox" />
 			<description>
 				Overrides the [StyleBox] with given [code]name[/code] in the [member theme] resource the control uses. If [code]stylebox[/code] is empty or invalid, the override is cleared and the [StyleBox] from assigned [Theme] is used.
 				[b]Example of modifying a property in a StyleBox by duplicating it:[/b]
@@ -181,12 +156,9 @@
 			</description>
 		</method>
 		<method name="can_drop_data" qualifiers="virtual">
-			<return type="bool">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="data" type="Variant">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="position" type="Vector2" />
+			<argument index="1" name="data" type="Variant" />
 			<description>
 				Godot calls this method to test if [code]data[/code] from a control's [method get_drag_data] can be dropped at [code]position[/code]. [code]position[/code] is local to this control.
 				This method should only be used to test the data. Process the data in [method drop_data].
@@ -199,12 +171,9 @@
 			</description>
 		</method>
 		<method name="drop_data" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="data" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="position" type="Vector2" />
+			<argument index="1" name="data" type="Variant" />
 			<description>
 				Godot calls this method to pass you the [code]data[/code] from a control's [method get_drag_data] result. Godot first calls [method can_drop_data] to test if [code]data[/code] is allowed to drop at [code]position[/code] where [code]position[/code] is local to this control.
 				[codeblock]
@@ -217,54 +186,43 @@
 			</description>
 		</method>
 		<method name="find_next_valid_focus" qualifiers="const">
-			<return type="Control">
-			</return>
+			<return type="Control" />
 			<description>
 				Finds the next (below in the tree) [Control] that can receive the focus.
 			</description>
 		</method>
 		<method name="find_prev_valid_focus" qualifiers="const">
-			<return type="Control">
-			</return>
+			<return type="Control" />
 			<description>
 				Finds the previous (above in the tree) [Control] that can receive the focus.
 			</description>
 		</method>
 		<method name="force_drag">
-			<return type="void">
-			</return>
-			<argument index="0" name="data" type="Variant">
-			</argument>
-			<argument index="1" name="preview" type="Control">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="data" type="Variant" />
+			<argument index="1" name="preview" type="Control" />
 			<description>
 				Forces drag and bypasses [method get_drag_data] and [method set_drag_preview] by passing [code]data[/code] and [code]preview[/code]. Drag will start even if the mouse is neither over nor pressed on this control.
 				The methods [method can_drop_data] and [method drop_data] must be implemented on controls that want to receive drop data.
 			</description>
 		</method>
 		<method name="get_anchor" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="margin" type="int" enum="Margin" />
 			<description>
 				Returns the anchor identified by [code]margin[/code] constant from [enum Margin] enum. A getter method for [member anchor_bottom], [member anchor_left], [member anchor_right] and [member anchor_top].
 			</description>
 		</method>
 		<method name="get_begin" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns [member margin_left] and [member margin_top]. See also [member rect_position].
 			</description>
 		</method>
 		<method name="get_color" qualifiers="const">
-			<return type="Color">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" default="&quot;&quot;" />
 			<description>
 				Returns a color from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code].
 				[codeblock]
@@ -274,37 +232,29 @@
 			</description>
 		</method>
 		<method name="get_combined_minimum_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns combined minimum size from [member rect_min_size] and [method get_minimum_size].
 			</description>
 		</method>
 		<method name="get_constant" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" default="&quot;&quot;" />
 			<description>
 				Returns a constant from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code].
 			</description>
 		</method>
 		<method name="get_cursor_shape" qualifiers="const">
-			<return type="int" enum="Control.CursorShape">
-			</return>
-			<argument index="0" name="position" type="Vector2" default="Vector2( 0, 0 )">
-			</argument>
+			<return type="int" enum="Control.CursorShape" />
+			<argument index="0" name="position" type="Vector2" default="Vector2( 0, 0 )" />
 			<description>
 				Returns the mouse cursor shape the control displays on mouse hover. See [enum CursorShape].
 			</description>
 		</method>
 		<method name="get_drag_data" qualifiers="virtual">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="position" type="Vector2" />
 			<description>
 				Godot calls this method to get data that can be dragged and dropped onto controls that expect drop data. Returns [code]null[/code] if there is no data to drag. Controls that want to receive drop data should implement [method can_drop_data] and [method drop_data]. [code]position[/code] is local to this control. Drag may be forced with [method force_drag].
 				A preview that will follow the mouse that should represent the data can be set with [method set_drag_preview]. A good time to set the preview is in this method.
@@ -317,124 +267,100 @@
 			</description>
 		</method>
 		<method name="get_end" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns [member margin_right] and [member margin_bottom].
 			</description>
 		</method>
 		<method name="get_focus_neighbour" qualifiers="const">
-			<return type="NodePath">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
+			<return type="NodePath" />
+			<argument index="0" name="margin" type="int" enum="Margin" />
 			<description>
 				Returns the focus neighbour identified by [code]margin[/code] constant from [enum Margin] enum. A getter method for [member focus_neighbour_bottom], [member focus_neighbour_left], [member focus_neighbour_right] and [member focus_neighbour_top].
 			</description>
 		</method>
 		<method name="get_focus_owner" qualifiers="const">
-			<return type="Control">
-			</return>
+			<return type="Control" />
 			<description>
 				Returns the control that has the keyboard focus or [code]null[/code] if none.
 			</description>
 		</method>
 		<method name="get_font" qualifiers="const">
-			<return type="Font">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="Font" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" default="&quot;&quot;" />
 			<description>
 				Returns a font from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code].
 			</description>
 		</method>
 		<method name="get_global_rect" qualifiers="const">
-			<return type="Rect2">
-			</return>
+			<return type="Rect2" />
 			<description>
 				Returns the position and size of the control relative to the top-left corner of the screen. See [member rect_position] and [member rect_size].
 			</description>
 		</method>
 		<method name="get_icon" qualifiers="const">
-			<return type="Texture">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="Texture" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" default="&quot;&quot;" />
 			<description>
 				Returns an icon from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code].
 			</description>
 		</method>
 		<method name="get_margin" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="margin" type="int" enum="Margin" />
 			<description>
 				Returns the anchor identified by [code]margin[/code] constant from [enum Margin] enum. A getter method for [member margin_bottom], [member margin_left], [member margin_right] and [member margin_top].
 			</description>
 		</method>
 		<method name="get_minimum_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns the minimum size for this control. See [member rect_min_size].
 			</description>
 		</method>
 		<method name="get_parent_area_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns the width/height occupied in the parent control.
 			</description>
 		</method>
 		<method name="get_parent_control" qualifiers="const">
-			<return type="Control">
-			</return>
+			<return type="Control" />
 			<description>
 				Returns the parent control node.
 			</description>
 		</method>
 		<method name="get_rect" qualifiers="const">
-			<return type="Rect2">
-			</return>
+			<return type="Rect2" />
 			<description>
 				Returns the position and size of the control relative to the top-left corner of the parent Control. See [member rect_position] and [member rect_size].
 			</description>
 		</method>
 		<method name="get_rotation" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the rotation (in radians).
 			</description>
 		</method>
 		<method name="get_stylebox" qualifiers="const">
-			<return type="StyleBox">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="StyleBox" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" default="&quot;&quot;" />
 			<description>
 				Returns a [StyleBox] from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code].
 			</description>
 		</method>
 		<method name="get_tooltip" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="at_position" type="Vector2" default="Vector2( 0, 0 )">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="at_position" type="Vector2" default="Vector2( 0, 0 )" />
 			<description>
 				Returns the tooltip, which will appear when the cursor is resting over this control. See [member hint_tooltip].
 			</description>
 		</method>
 		<method name="grab_click_focus">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Creates an [InputEventMouseButton] that attempts to click the control. If the event is received, the control acquires focus.
 				[codeblock]
@@ -444,104 +370,80 @@
 			</description>
 		</method>
 		<method name="grab_focus">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Steal the focus from another control and become the focused control (see [member focus_mode]).
 			</description>
 		</method>
 		<method name="has_color" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" default="&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if [Color] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code] exists in assigned [Theme].
 			</description>
 		</method>
 		<method name="has_color_override" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Returns [code]true[/code] if [Color] with given [code]name[/code] has a valid override in this [Control] node.
 			</description>
 		</method>
 		<method name="has_constant" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" default="&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if constant with given [code]name[/code] and associated with [Control] of given [code]node_type[/code] exists in assigned [Theme].
 			</description>
 		</method>
 		<method name="has_constant_override" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Returns [code]true[/code] if constant with given [code]name[/code] has a valid override in this [Control] node.
 			</description>
 		</method>
 		<method name="has_focus" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this is the current focused control. See [member focus_mode].
 			</description>
 		</method>
 		<method name="has_font" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" default="&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if font with given [code]name[/code] and associated with [Control] of given [code]node_type[/code] exists in assigned [Theme].
 			</description>
 		</method>
 		<method name="has_font_override" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Returns [code]true[/code] if font with given [code]name[/code] has a valid override in this [Control] node.
 			</description>
 		</method>
 		<method name="has_icon" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" default="&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if icon with given [code]name[/code] and associated with [Control] of given [code]node_type[/code] exists in assigned [Theme].
 			</description>
 		</method>
 		<method name="has_icon_override" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Returns [code]true[/code] if icon with given [code]name[/code] has a valid override in this [Control] node.
 			</description>
 		</method>
 		<method name="has_point" qualifiers="virtual">
-			<return type="bool">
-			</return>
-			<argument index="0" name="point" type="Vector2">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="point" type="Vector2" />
 			<description>
 				Virtual method to be implemented by the user. Returns whether the given [code]point[/code] is inside this control.
 				If not overridden, default behavior is checking if the point is within control's Rect.
@@ -549,59 +451,45 @@
 			</description>
 		</method>
 		<method name="has_shader_override" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Returns [code]true[/code] if [Shader] with given [code]name[/code] has a valid override in this [Control] node.
 			</description>
 		</method>
 		<method name="has_stylebox" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="node_type" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="node_type" type="String" default="&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if [StyleBox] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code] exists in assigned [Theme].
 			</description>
 		</method>
 		<method name="has_stylebox_override" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Returns [code]true[/code] if [StyleBox] with given [code]name[/code] has a valid override in this [Control] node.
 			</description>
 		</method>
 		<method name="minimum_size_changed">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Invalidates the size cache in this node and in parent nodes up to toplevel. Intended to be used with [method get_minimum_size] when the return value is changed. Setting [member rect_min_size] directly calls this method automatically.
 			</description>
 		</method>
 		<method name="release_focus">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Give up the focus. No other control will be able to receive keyboard input.
 			</description>
 		</method>
 		<method name="set_anchor">
-			<return type="void">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
-			<argument index="1" name="anchor" type="float">
-			</argument>
-			<argument index="2" name="keep_margin" type="bool" default="false">
-			</argument>
-			<argument index="3" name="push_opposite_anchor" type="bool" default="true">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="margin" type="int" enum="Margin" />
+			<argument index="1" name="anchor" type="float" />
+			<argument index="2" name="keep_margin" type="bool" default="false" />
+			<argument index="3" name="push_opposite_anchor" type="bool" default="true" />
 			<description>
 				Sets the anchor identified by [code]margin[/code] constant from [enum Margin] enum to value [code]anchor[/code]. A setter method for [member anchor_bottom], [member anchor_left], [member anchor_right] and [member anchor_top].
 				If [code]keep_margin[/code] is [code]true[/code], margins aren't updated after this operation.
@@ -609,59 +497,43 @@
 			</description>
 		</method>
 		<method name="set_anchor_and_margin">
-			<return type="void">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
-			<argument index="1" name="anchor" type="float">
-			</argument>
-			<argument index="2" name="offset" type="float">
-			</argument>
-			<argument index="3" name="push_opposite_anchor" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="margin" type="int" enum="Margin" />
+			<argument index="1" name="anchor" type="float" />
+			<argument index="2" name="offset" type="float" />
+			<argument index="3" name="push_opposite_anchor" type="bool" default="false" />
 			<description>
 				Works the same as [method set_anchor], but instead of [code]keep_margin[/code] argument and automatic update of margin, it allows to set the margin offset yourself (see [method set_margin]).
 			</description>
 		</method>
 		<method name="set_anchors_and_margins_preset">
-			<return type="void">
-			</return>
-			<argument index="0" name="preset" type="int" enum="Control.LayoutPreset">
-			</argument>
-			<argument index="1" name="resize_mode" type="int" enum="Control.LayoutPresetMode" default="0">
-			</argument>
-			<argument index="2" name="margin" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="preset" type="int" enum="Control.LayoutPreset" />
+			<argument index="1" name="resize_mode" type="int" enum="Control.LayoutPresetMode" default="0" />
+			<argument index="2" name="margin" type="int" default="0" />
 			<description>
 				Sets both anchor preset and margin preset. See [method set_anchors_preset] and [method set_margins_preset].
 			</description>
 		</method>
 		<method name="set_anchors_preset">
-			<return type="void">
-			</return>
-			<argument index="0" name="preset" type="int" enum="Control.LayoutPreset">
-			</argument>
-			<argument index="1" name="keep_margins" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="preset" type="int" enum="Control.LayoutPreset" />
+			<argument index="1" name="keep_margins" type="bool" default="false" />
 			<description>
 				Sets the anchors to a [code]preset[/code] from [enum Control.LayoutPreset] enum. This is the code equivalent to using the Layout menu in the 2D editor.
 				If [code]keep_margins[/code] is [code]true[/code], control's position will also be updated.
 			</description>
 		</method>
 		<method name="set_begin">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="position" type="Vector2" />
 			<description>
 				Sets [member margin_left] and [member margin_top] at the same time. Equivalent of changing [member rect_position].
 			</description>
 		</method>
 		<method name="set_drag_forwarding">
-			<return type="void">
-			</return>
-			<argument index="0" name="target" type="Control">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="target" type="Control" />
 			<description>
 				Forwards the handling of this control's drag and drop to [code]target[/code] control.
 				Forwarding can be implemented in the target control similar to the methods [method get_drag_data], [method can_drop_data], and [method drop_data] but with two differences:
@@ -688,10 +560,8 @@
 			</description>
 		</method>
 		<method name="set_drag_preview">
-			<return type="void">
-			</return>
-			<argument index="0" name="control" type="Control">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="control" type="Control" />
 			<description>
 				Shows the given control at the mouse pointer. A good time to call this method is in [method get_drag_data]. The control must not be in the scene tree. You should not free the control, and you should not keep a reference to the control beyond the duration of the drag. It will be deleted automatically after the drag has ended.
 				[codeblock]
@@ -708,57 +578,42 @@
 			</description>
 		</method>
 		<method name="set_end">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="position" type="Vector2" />
 			<description>
 				Sets [member margin_right] and [member margin_bottom] at the same time.
 			</description>
 		</method>
 		<method name="set_focus_neighbour">
-			<return type="void">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
-			<argument index="1" name="neighbour" type="NodePath">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="margin" type="int" enum="Margin" />
+			<argument index="1" name="neighbour" type="NodePath" />
 			<description>
 				Sets the anchor identified by [code]margin[/code] constant from [enum Margin] enum to [Control] at [code]neighbor[/code] node path. A setter method for [member focus_neighbour_bottom], [member focus_neighbour_left], [member focus_neighbour_right] and [member focus_neighbour_top].
 			</description>
 		</method>
 		<method name="set_global_position">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="keep_margins" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="position" type="Vector2" />
+			<argument index="1" name="keep_margins" type="bool" default="false" />
 			<description>
 				Sets the [member rect_global_position] to given [code]position[/code].
 				If [code]keep_margins[/code] is [code]true[/code], control's anchors will be updated instead of margins.
 			</description>
 		</method>
 		<method name="set_margin">
-			<return type="void">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
-			<argument index="1" name="offset" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="margin" type="int" enum="Margin" />
+			<argument index="1" name="offset" type="float" />
 			<description>
 				Sets the margin identified by [code]margin[/code] constant from [enum Margin] enum to given [code]offset[/code]. A setter method for [member margin_bottom], [member margin_left], [member margin_right] and [member margin_top].
 			</description>
 		</method>
 		<method name="set_margins_preset">
-			<return type="void">
-			</return>
-			<argument index="0" name="preset" type="int" enum="Control.LayoutPreset">
-			</argument>
-			<argument index="1" name="resize_mode" type="int" enum="Control.LayoutPresetMode" default="0">
-			</argument>
-			<argument index="2" name="margin" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="preset" type="int" enum="Control.LayoutPreset" />
+			<argument index="1" name="resize_mode" type="int" enum="Control.LayoutPresetMode" default="0" />
+			<argument index="2" name="margin" type="int" default="0" />
 			<description>
 				Sets the margins to a [code]preset[/code] from [enum Control.LayoutPreset] enum. This is the code equivalent to using the Layout menu in the 2D editor.
 				Use parameter [code]resize_mode[/code] with constants from [enum Control.LayoutPresetMode] to better determine the resulting size of the [Control]. Constant size will be ignored if used with presets that change size, e.g. [code]PRESET_LEFT_WIDE[/code].
@@ -766,53 +621,41 @@
 			</description>
 		</method>
 		<method name="set_position">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="keep_margins" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="position" type="Vector2" />
+			<argument index="1" name="keep_margins" type="bool" default="false" />
 			<description>
 				Sets the [member rect_position] to given [code]position[/code].
 				If [code]keep_margins[/code] is [code]true[/code], control's anchors will be updated instead of margins.
 			</description>
 		</method>
 		<method name="set_rotation">
-			<return type="void">
-			</return>
-			<argument index="0" name="radians" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="radians" type="float" />
 			<description>
 				Sets the rotation (in radians).
 			</description>
 		</method>
 		<method name="set_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="Vector2">
-			</argument>
-			<argument index="1" name="keep_margins" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="size" type="Vector2" />
+			<argument index="1" name="keep_margins" type="bool" default="false" />
 			<description>
 				Sets the size (see [member rect_size]).
 				If [code]keep_margins[/code] is [code]true[/code], control's anchors will be updated instead of margins.
 			</description>
 		</method>
 		<method name="show_modal">
-			<return type="void">
-			</return>
-			<argument index="0" name="exclusive" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="exclusive" type="bool" default="false" />
 			<description>
 				Displays a control as modal. Control must be a subwindow. Modal controls capture the input signals until closed or the area outside them is accessed. When a modal control loses focus, or the ESC key is pressed, they automatically hide. Modal controls are used extensively for popup dialogs and menus.
 				If [code]exclusive[/code] is [code]true[/code], other controls will not receive input and clicking outside this control will not close it.
 			</description>
 		</method>
 		<method name="warp_mouse">
-			<return type="void">
-			</return>
-			<argument index="0" name="to_position" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="to_position" type="Vector2" />
 			<description>
 				Moves the mouse cursor to [code]to_position[/code], relative to [member rect_position] of this [Control].
 			</description>
@@ -950,8 +793,7 @@
 			</description>
 		</signal>
 		<signal name="gui_input">
-			<argument index="0" name="event" type="InputEvent">
-			</argument>
+			<argument index="0" name="event" type="InputEvent" />
 			<description>
 				Emitted when the node receives an [InputEvent].
 			</description>

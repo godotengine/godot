@@ -10,28 +10,22 @@
 	</tutorials>
 	<methods>
 		<method name="float">
-			<return type="float">
-			</return>
-			<argument index="0" name="from" type="bool">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="from" type="bool" />
 			<description>
 				Cast a [bool] value to a floating-point value, [code]float(true)[/code] will be equal to 1.0 and [code]float(false)[/code] will be equal to 0.0.
 			</description>
 		</method>
 		<method name="float">
-			<return type="float">
-			</return>
-			<argument index="0" name="from" type="int">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="from" type="int" />
 			<description>
 				Cast an [int] value to a floating-point value, [code]float(1)[/code] will be equal to 1.0.
 			</description>
 		</method>
 		<method name="float">
-			<return type="float">
-			</return>
-			<argument index="0" name="from" type="String">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="from" type="String" />
 			<description>
 				Cast a [String] value to a floating-point value. This method accepts float value strings like [code]"1.23"[/code] and exponential notation strings for its parameter so calling [code]float("1e3")[/code] will return 1000.0 and calling [code]float("1e-3")[/code] will return 0.001. Calling this method with an invalid float string will return 0. This method stops parsing at the first invalid character and will return the parsed result so far, so calling [code]float("1a3")[/code] will return 1 while calling [code]float("1e3a2")[/code] will return 1000.0.
 			</description>

@@ -763,7 +763,8 @@ static void _encode_string(const String &p_string, uint8_t *&buf, int &r_len) {
 	}
 }
 
-Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bool p_full_objects) {
+Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bool p_full_objects, int p_depth) {
+	ERR_FAIL_COND_V_MSG(p_depth > Variant::MAX_RECURSION_DEPTH, ERR_OUT_OF_MEMORY, "Potential inifite recursion detected. Bailing.");
 	uint8_t *buf = r_buffer;
 
 	r_len = 0;
@@ -1076,10 +1077,8 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 						_encode_string(E->get().name, buf, r_len);
 
 						int len;
-						Error err = encode_variant(obj->get(E->get().name), buf, len, p_full_objects);
-						if (err) {
-							return err;
-						}
+						Error err = encode_variant(obj->get(E->get().name), buf, len, p_full_objects, p_depth + 1);
+						ERR_FAIL_COND_V(err, err);
 						ERR_FAIL_COND_V(len % 4, ERR_BUG);
 						r_len += len;
 						if (buf) {
@@ -1130,13 +1129,15 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				*/
 				Variant *v = d.getptr(E->get());
 				int len;
-				encode_variant(v ? E->get() : Variant("[Deleted Object]"), buf, len, p_full_objects);
+				Error err = encode_variant(v ? E->get() : Variant("[Deleted Object]"), buf, len, p_full_objects, p_depth + 1);
+				ERR_FAIL_COND_V(err, err);
 				ERR_FAIL_COND_V(len % 4, ERR_BUG);
 				r_len += len;
 				if (buf) {
 					buf += len;
 				}
-				encode_variant(v ? *v : Variant(), buf, len, p_full_objects);
+				err = encode_variant(v ? *v : Variant(), buf, len, p_full_objects, p_depth + 1);
+				ERR_FAIL_COND_V(err, err);
 				ERR_FAIL_COND_V(len % 4, ERR_BUG);
 				r_len += len;
 				if (buf) {
@@ -1157,7 +1158,8 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 
 			for (int i = 0; i < v.size(); i++) {
 				int len;
-				encode_variant(v.get(i), buf, len, p_full_objects);
+				Error err = encode_variant(v.get(i), buf, len, p_full_objects, p_depth + 1);
+				ERR_FAIL_COND_V(err, err);
 				ERR_FAIL_COND_V(len % 4, ERR_BUG);
 				r_len += len;
 				if (buf) {

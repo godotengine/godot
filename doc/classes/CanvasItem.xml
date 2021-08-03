@@ -18,284 +18,189 @@
 	</tutorials>
 	<methods>
 		<method name="_draw" qualifiers="virtual">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Overridable function called by the engine (if defined) to draw the canvas item.
 			</description>
 		</method>
 		<method name="draw_arc">
-			<return type="void">
-			</return>
-			<argument index="0" name="center" type="Vector2">
-			</argument>
-			<argument index="1" name="radius" type="float">
-			</argument>
-			<argument index="2" name="start_angle" type="float">
-			</argument>
-			<argument index="3" name="end_angle" type="float">
-			</argument>
-			<argument index="4" name="point_count" type="int">
-			</argument>
-			<argument index="5" name="color" type="Color">
-			</argument>
-			<argument index="6" name="width" type="float" default="1.0">
-			</argument>
-			<argument index="7" name="antialiased" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="center" type="Vector2" />
+			<argument index="1" name="radius" type="float" />
+			<argument index="2" name="start_angle" type="float" />
+			<argument index="3" name="end_angle" type="float" />
+			<argument index="4" name="point_count" type="int" />
+			<argument index="5" name="color" type="Color" />
+			<argument index="6" name="width" type="float" default="1.0" />
+			<argument index="7" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws an arc between the given angles. The larger the value of [code]point_count[/code], the smoother the curve.
 			</description>
 		</method>
 		<method name="draw_char">
-			<return type="float">
-			</return>
-			<argument index="0" name="font" type="Font">
-			</argument>
-			<argument index="1" name="position" type="Vector2">
-			</argument>
-			<argument index="2" name="char" type="String">
-			</argument>
-			<argument index="3" name="next" type="String">
-			</argument>
-			<argument index="4" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="font" type="Font" />
+			<argument index="1" name="position" type="Vector2" />
+			<argument index="2" name="char" type="String" />
+			<argument index="3" name="next" type="String" />
+			<argument index="4" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )" />
 			<description>
 				Draws a string character using a custom font. Returns the advance, depending on the character width and kerning with an optional next character.
 			</description>
 		</method>
 		<method name="draw_circle">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="radius" type="float">
-			</argument>
-			<argument index="2" name="color" type="Color">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="position" type="Vector2" />
+			<argument index="1" name="radius" type="float" />
+			<argument index="2" name="color" type="Color" />
 			<description>
 				Draws a colored circle.
 			</description>
 		</method>
 		<method name="draw_colored_polygon">
-			<return type="void">
-			</return>
-			<argument index="0" name="points" type="PoolVector2Array">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
-			<argument index="2" name="uvs" type="PoolVector2Array" default="PoolVector2Array(  )">
-			</argument>
-			<argument index="3" name="texture" type="Texture" default="null">
-			</argument>
-			<argument index="4" name="normal_map" type="Texture" default="null">
-			</argument>
-			<argument index="5" name="antialiased" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="points" type="PoolVector2Array" />
+			<argument index="1" name="color" type="Color" />
+			<argument index="2" name="uvs" type="PoolVector2Array" default="PoolVector2Array(  )" />
+			<argument index="3" name="texture" type="Texture" default="null" />
+			<argument index="4" name="normal_map" type="Texture" default="null" />
+			<argument index="5" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws a colored polygon of any amount of points, convex or concave.
 			</description>
 		</method>
 		<method name="draw_line">
-			<return type="void">
-			</return>
-			<argument index="0" name="from" type="Vector2">
-			</argument>
-			<argument index="1" name="to" type="Vector2">
-			</argument>
-			<argument index="2" name="color" type="Color">
-			</argument>
-			<argument index="3" name="width" type="float" default="1.0">
-			</argument>
-			<argument index="4" name="antialiased" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="from" type="Vector2" />
+			<argument index="1" name="to" type="Vector2" />
+			<argument index="2" name="color" type="Color" />
+			<argument index="3" name="width" type="float" default="1.0" />
+			<argument index="4" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws a line from a 2D point to another, with a given color and width. It can be optionally antialiased.
 			</description>
 		</method>
 		<method name="draw_mesh">
-			<return type="void">
-			</return>
-			<argument index="0" name="mesh" type="Mesh">
-			</argument>
-			<argument index="1" name="texture" type="Texture">
-			</argument>
-			<argument index="2" name="normal_map" type="Texture" default="null">
-			</argument>
-			<argument index="3" name="transform" type="Transform2D" default="Transform2D( 1, 0, 0, 1, 0, 0 )">
-			</argument>
-			<argument index="4" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="mesh" type="Mesh" />
+			<argument index="1" name="texture" type="Texture" />
+			<argument index="2" name="normal_map" type="Texture" default="null" />
+			<argument index="3" name="transform" type="Transform2D" default="Transform2D( 1, 0, 0, 1, 0, 0 )" />
+			<argument index="4" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )" />
 			<description>
 				Draws a [Mesh] in 2D, using the provided texture. See [MeshInstance2D] for related documentation.
 			</description>
 		</method>
 		<method name="draw_multiline">
-			<return type="void">
-			</return>
-			<argument index="0" name="points" type="PoolVector2Array">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
-			<argument index="2" name="width" type="float" default="1.0">
-			</argument>
-			<argument index="3" name="antialiased" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="points" type="PoolVector2Array" />
+			<argument index="1" name="color" type="Color" />
+			<argument index="2" name="width" type="float" default="1.0" />
+			<argument index="3" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws multiple, parallel lines with a uniform [code]color[/code].
 				[b]Note:[/b] [code]width[/code] and [code]antialiased[/code] are currently not implemented and have no effect.
 			</description>
 		</method>
 		<method name="draw_multiline_colors">
-			<return type="void">
-			</return>
-			<argument index="0" name="points" type="PoolVector2Array">
-			</argument>
-			<argument index="1" name="colors" type="PoolColorArray">
-			</argument>
-			<argument index="2" name="width" type="float" default="1.0">
-			</argument>
-			<argument index="3" name="antialiased" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="points" type="PoolVector2Array" />
+			<argument index="1" name="colors" type="PoolColorArray" />
+			<argument index="2" name="width" type="float" default="1.0" />
+			<argument index="3" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws multiple, parallel lines with a uniform [code]width[/code] and segment-by-segment coloring. Colors assigned to line segments match by index between [code]points[/code] and [code]colors[/code].
 				[b]Note:[/b] [code]width[/code] and [code]antialiased[/code] are currently not implemented and have no effect.
 			</description>
 		</method>
 		<method name="draw_multimesh">
-			<return type="void">
-			</return>
-			<argument index="0" name="multimesh" type="MultiMesh">
-			</argument>
-			<argument index="1" name="texture" type="Texture">
-			</argument>
-			<argument index="2" name="normal_map" type="Texture" default="null">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="multimesh" type="MultiMesh" />
+			<argument index="1" name="texture" type="Texture" />
+			<argument index="2" name="normal_map" type="Texture" default="null" />
 			<description>
 				Draws a [MultiMesh] in 2D with the provided texture. See [MultiMeshInstance2D] for related documentation.
 			</description>
 		</method>
 		<method name="draw_polygon">
-			<return type="void">
-			</return>
-			<argument index="0" name="points" type="PoolVector2Array">
-			</argument>
-			<argument index="1" name="colors" type="PoolColorArray">
-			</argument>
-			<argument index="2" name="uvs" type="PoolVector2Array" default="PoolVector2Array(  )">
-			</argument>
-			<argument index="3" name="texture" type="Texture" default="null">
-			</argument>
-			<argument index="4" name="normal_map" type="Texture" default="null">
-			</argument>
-			<argument index="5" name="antialiased" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="points" type="PoolVector2Array" />
+			<argument index="1" name="colors" type="PoolColorArray" />
+			<argument index="2" name="uvs" type="PoolVector2Array" default="PoolVector2Array(  )" />
+			<argument index="3" name="texture" type="Texture" default="null" />
+			<argument index="4" name="normal_map" type="Texture" default="null" />
+			<argument index="5" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws a polygon of any amount of points, convex or concave.
 			</description>
 		</method>
 		<method name="draw_polyline">
-			<return type="void">
-			</return>
-			<argument index="0" name="points" type="PoolVector2Array">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
-			<argument index="2" name="width" type="float" default="1.0">
-			</argument>
-			<argument index="3" name="antialiased" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="points" type="PoolVector2Array" />
+			<argument index="1" name="color" type="Color" />
+			<argument index="2" name="width" type="float" default="1.0" />
+			<argument index="3" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws interconnected line segments with a uniform [code]color[/code] and [code]width[/code] and optional antialiasing.
 			</description>
 		</method>
 		<method name="draw_polyline_colors">
-			<return type="void">
-			</return>
-			<argument index="0" name="points" type="PoolVector2Array">
-			</argument>
-			<argument index="1" name="colors" type="PoolColorArray">
-			</argument>
-			<argument index="2" name="width" type="float" default="1.0">
-			</argument>
-			<argument index="3" name="antialiased" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="points" type="PoolVector2Array" />
+			<argument index="1" name="colors" type="PoolColorArray" />
+			<argument index="2" name="width" type="float" default="1.0" />
+			<argument index="3" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws interconnected line segments with a uniform [code]width[/code], segment-by-segment coloring, and optional antialiasing. Colors assigned to line segments match by index between [code]points[/code] and [code]colors[/code].
 			</description>
 		</method>
 		<method name="draw_primitive">
-			<return type="void">
-			</return>
-			<argument index="0" name="points" type="PoolVector2Array">
-			</argument>
-			<argument index="1" name="colors" type="PoolColorArray">
-			</argument>
-			<argument index="2" name="uvs" type="PoolVector2Array">
-			</argument>
-			<argument index="3" name="texture" type="Texture" default="null">
-			</argument>
-			<argument index="4" name="width" type="float" default="1.0">
-			</argument>
-			<argument index="5" name="normal_map" type="Texture" default="null">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="points" type="PoolVector2Array" />
+			<argument index="1" name="colors" type="PoolColorArray" />
+			<argument index="2" name="uvs" type="PoolVector2Array" />
+			<argument index="3" name="texture" type="Texture" default="null" />
+			<argument index="4" name="width" type="float" default="1.0" />
+			<argument index="5" name="normal_map" type="Texture" default="null" />
 			<description>
 				Draws a custom primitive. 1 point for a point, 2 points for a line, 3 points for a triangle and 4 points for a quad.
 			</description>
 		</method>
 		<method name="draw_rect">
-			<return type="void">
-			</return>
-			<argument index="0" name="rect" type="Rect2">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
-			<argument index="2" name="filled" type="bool" default="true">
-			</argument>
-			<argument index="3" name="width" type="float" default="1.0">
-			</argument>
-			<argument index="4" name="antialiased" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="rect" type="Rect2" />
+			<argument index="1" name="color" type="Color" />
+			<argument index="2" name="filled" type="bool" default="true" />
+			<argument index="3" name="width" type="float" default="1.0" />
+			<argument index="4" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws a rectangle. If [code]filled[/code] is [code]true[/code], the rectangle will be filled with the [code]color[/code] specified. If [code]filled[/code] is [code]false[/code], the rectangle will be drawn as a stroke with the [code]color[/code] and [code]width[/code] specified. If [code]antialiased[/code] is [code]true[/code], the lines will be antialiased.
 				[b]Note:[/b] [code]width[/code] and [code]antialiased[/code] are only effective if [code]filled[/code] is [code]false[/code].
 			</description>
 		</method>
 		<method name="draw_set_transform">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="rotation" type="float">
-			</argument>
-			<argument index="2" name="scale" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="position" type="Vector2" />
+			<argument index="1" name="rotation" type="float" />
+			<argument index="2" name="scale" type="Vector2" />
 			<description>
 				Sets a custom transform for drawing via components. Anything drawn afterwards will be transformed by this.
 			</description>
 		</method>
 		<method name="draw_set_transform_matrix">
-			<return type="void">
-			</return>
-			<argument index="0" name="xform" type="Transform2D">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="xform" type="Transform2D" />
 			<description>
 				Sets a custom transform for drawing via matrix. Anything drawn afterwards will be transformed by this.
 			</description>
 		</method>
 		<method name="draw_string">
-			<return type="void">
-			</return>
-			<argument index="0" name="font" type="Font">
-			</argument>
-			<argument index="1" name="position" type="Vector2">
-			</argument>
-			<argument index="2" name="text" type="String">
-			</argument>
-			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="4" name="clip_w" type="int" default="-1">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="font" type="Font" />
+			<argument index="1" name="position" type="Vector2" />
+			<argument index="2" name="text" type="String" />
+			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )" />
+			<argument index="4" name="clip_w" type="int" default="-1" />
 			<description>
 				Draws [code]text[/code] using the specified [code]font[/code] at the [code]position[/code] (bottom-left corner using the baseline of the font). The text will have its color multiplied by [code]modulate[/code]. If [code]clip_w[/code] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
 				[b]Example using the default project font:[/b]
@@ -310,245 +215,193 @@
 			</description>
 		</method>
 		<method name="draw_style_box">
-			<return type="void">
-			</return>
-			<argument index="0" name="style_box" type="StyleBox">
-			</argument>
-			<argument index="1" name="rect" type="Rect2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="style_box" type="StyleBox" />
+			<argument index="1" name="rect" type="Rect2" />
 			<description>
 				Draws a styled rectangle.
 			</description>
 		</method>
 		<method name="draw_texture">
-			<return type="void">
-			</return>
-			<argument index="0" name="texture" type="Texture">
-			</argument>
-			<argument index="1" name="position" type="Vector2">
-			</argument>
-			<argument index="2" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="3" name="normal_map" type="Texture" default="null">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="texture" type="Texture" />
+			<argument index="1" name="position" type="Vector2" />
+			<argument index="2" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )" />
+			<argument index="3" name="normal_map" type="Texture" default="null" />
 			<description>
 				Draws a texture at a given position.
 			</description>
 		</method>
 		<method name="draw_texture_rect">
-			<return type="void">
-			</return>
-			<argument index="0" name="texture" type="Texture">
-			</argument>
-			<argument index="1" name="rect" type="Rect2">
-			</argument>
-			<argument index="2" name="tile" type="bool">
-			</argument>
-			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="4" name="transpose" type="bool" default="false">
-			</argument>
-			<argument index="5" name="normal_map" type="Texture" default="null">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="texture" type="Texture" />
+			<argument index="1" name="rect" type="Rect2" />
+			<argument index="2" name="tile" type="bool" />
+			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )" />
+			<argument index="4" name="transpose" type="bool" default="false" />
+			<argument index="5" name="normal_map" type="Texture" default="null" />
 			<description>
 				Draws a textured rectangle at a given position, optionally modulated by a color. If [code]transpose[/code] is [code]true[/code], the texture will have its X and Y coordinates swapped.
 			</description>
 		</method>
 		<method name="draw_texture_rect_region">
-			<return type="void">
-			</return>
-			<argument index="0" name="texture" type="Texture">
-			</argument>
-			<argument index="1" name="rect" type="Rect2">
-			</argument>
-			<argument index="2" name="src_rect" type="Rect2">
-			</argument>
-			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="4" name="transpose" type="bool" default="false">
-			</argument>
-			<argument index="5" name="normal_map" type="Texture" default="null">
-			</argument>
-			<argument index="6" name="clip_uv" type="bool" default="true">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="texture" type="Texture" />
+			<argument index="1" name="rect" type="Rect2" />
+			<argument index="2" name="src_rect" type="Rect2" />
+			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )" />
+			<argument index="4" name="transpose" type="bool" default="false" />
+			<argument index="5" name="normal_map" type="Texture" default="null" />
+			<argument index="6" name="clip_uv" type="bool" default="true" />
 			<description>
 				Draws a textured rectangle region at a given position, optionally modulated by a color. If [code]transpose[/code] is [code]true[/code], the texture will have its X and Y coordinates swapped.
 			</description>
 		</method>
 		<method name="force_update_transform">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Forces the transform to update. Transform changes in physics are not instant for performance reasons. Transforms are accumulated and then set. Use this if you need an up-to-date transform when doing physics operations.
 			</description>
 		</method>
 		<method name="get_canvas" qualifiers="const">
-			<return type="RID">
-			</return>
+			<return type="RID" />
 			<description>
 				Returns the [RID] of the [World2D] canvas where this item is in.
 			</description>
 		</method>
 		<method name="get_canvas_item" qualifiers="const">
-			<return type="RID">
-			</return>
+			<return type="RID" />
 			<description>
 				Returns the canvas item RID used by [VisualServer] for this item.
 			</description>
 		</method>
 		<method name="get_canvas_transform" qualifiers="const">
-			<return type="Transform2D">
-			</return>
+			<return type="Transform2D" />
 			<description>
 				Returns the transform matrix of this item's canvas.
 			</description>
 		</method>
 		<method name="get_global_mouse_position" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns the global position of the mouse.
 			</description>
 		</method>
 		<method name="get_global_transform" qualifiers="const">
-			<return type="Transform2D">
-			</return>
+			<return type="Transform2D" />
 			<description>
 				Returns the global transform matrix of this item.
 			</description>
 		</method>
 		<method name="get_global_transform_with_canvas" qualifiers="const">
-			<return type="Transform2D">
-			</return>
+			<return type="Transform2D" />
 			<description>
 				Returns the global transform matrix of this item in relation to the canvas.
 			</description>
 		</method>
 		<method name="get_local_mouse_position" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns the mouse position relative to this item's position.
 			</description>
 		</method>
 		<method name="get_transform" qualifiers="const">
-			<return type="Transform2D">
-			</return>
+			<return type="Transform2D" />
 			<description>
 				Returns the transform matrix of this item.
 			</description>
 		</method>
 		<method name="get_viewport_rect" qualifiers="const">
-			<return type="Rect2">
-			</return>
+			<return type="Rect2" />
 			<description>
 				Returns the viewport's boundaries as a [Rect2].
 			</description>
 		</method>
 		<method name="get_viewport_transform" qualifiers="const">
-			<return type="Transform2D">
-			</return>
+			<return type="Transform2D" />
 			<description>
 				Returns this item's transform in relation to the viewport.
 			</description>
 		</method>
 		<method name="get_world_2d" qualifiers="const">
-			<return type="World2D">
-			</return>
+			<return type="World2D" />
 			<description>
 				Returns the [World2D] where this item is in.
 			</description>
 		</method>
 		<method name="hide">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Hide the [CanvasItem] if it's currently visible.
 			</description>
 		</method>
 		<method name="is_local_transform_notification_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if local transform notifications are communicated to children.
 			</description>
 		</method>
 		<method name="is_set_as_toplevel" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the node is set as top-level. See [method set_as_toplevel].
 			</description>
 		</method>
 		<method name="is_transform_notification_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if global transform notifications are communicated to children.
 			</description>
 		</method>
 		<method name="is_visible_in_tree" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code] and all its antecedents are also visible. If any antecedent is hidden, this node will not be visible in the scene tree.
 			</description>
 		</method>
 		<method name="make_canvas_position_local" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="screen_point" type="Vector2">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="screen_point" type="Vector2" />
 			<description>
 				Assigns [code]screen_point[/code] as this node's new local transform.
 			</description>
 		</method>
 		<method name="make_input_local" qualifiers="const">
-			<return type="InputEvent">
-			</return>
-			<argument index="0" name="event" type="InputEvent">
-			</argument>
+			<return type="InputEvent" />
+			<argument index="0" name="event" type="InputEvent" />
 			<description>
 				Transformations issued by [code]event[/code]'s inputs are applied in local space instead of global space.
 			</description>
 		</method>
 		<method name="set_as_toplevel">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="enable" type="bool" />
 			<description>
 				If [code]enable[/code] is [code]true[/code], the node won't inherit its transform from parent canvas items.
 			</description>
 		</method>
 		<method name="set_notify_local_transform">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="enable" type="bool" />
 			<description>
 				If [code]enable[/code] is [code]true[/code], children will be updated with local transform data.
 			</description>
 		</method>
 		<method name="set_notify_transform">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="enable" type="bool" />
 			<description>
 				If [code]enable[/code] is [code]true[/code], children will be updated with global transform data.
 			</description>
 		</method>
 		<method name="show">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Show the [CanvasItem] if it's currently hidden. For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple [code]popup*()[/code] functions instead.
 			</description>
 		</method>
 		<method name="update">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Queue the [CanvasItem] for update. [constant NOTIFICATION_DRAW] will be called on idle time to request redraw.
 			</description>

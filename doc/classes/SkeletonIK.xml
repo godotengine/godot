@@ -30,31 +30,26 @@
 	</tutorials>
 	<methods>
 		<method name="get_parent_skeleton" qualifiers="const">
-			<return type="Skeleton">
-			</return>
+			<return type="Skeleton" />
 			<description>
 				Returns the parent [Skeleton] Node that was present when SkeletonIK entered the [SceneTree]. Returns null if the parent node was not a [Skeleton] Node when SkeletonIK entered the [SceneTree].
 			</description>
 		</method>
 		<method name="is_running">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if SkeletonIK is applying IK effects on continues frames to the [Skeleton] bones. Returns [code]false[/code] if SkeletonIK is stopped or [method start] was used with the [code]one_time[/code] parameter set to [code]true[/code].
 			</description>
 		</method>
 		<method name="start">
-			<return type="void">
-			</return>
-			<argument index="0" name="one_time" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="one_time" type="bool" default="false" />
 			<description>
 				Starts applying IK effects on each frame to the [Skeleton] bones but will only take effect starting on the next frame. If [code]one_time[/code] is [code]true[/code], this will take effect immediately but also reset on the next frame.
 			</description>
 		</method>
 		<method name="stop">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Stops applying IK effects on each frame to the [Skeleton] bones and also calls [method Skeleton.clear_bones_global_pose_override] to remove existing overrides on all bones.
 			</description>

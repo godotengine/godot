@@ -13,80 +13,68 @@
 	</tutorials>
 	<methods>
 		<method name="get_hand" qualifiers="const">
-			<return type="int" enum="ARVRPositionalTracker.TrackerHand">
-			</return>
+			<return type="int" enum="ARVRPositionalTracker.TrackerHand" />
 			<description>
 				Returns the hand holding this tracker, if known. See [enum TrackerHand] constants.
 			</description>
 		</method>
 		<method name="get_joy_id" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				If this is a controller that is being tracked, the controller will also be represented by a joystick entry with this ID.
 			</description>
 		</method>
 		<method name="get_mesh" qualifiers="const">
-			<return type="Mesh">
-			</return>
+			<return type="Mesh" />
 			<description>
 				Returns the mesh related to a controller or anchor point if one is available.
 			</description>
 		</method>
 		<method name="get_name" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the controller or anchor point's name if available.
 			</description>
 		</method>
 		<method name="get_orientation" qualifiers="const">
-			<return type="Basis">
-			</return>
+			<return type="Basis" />
 			<description>
 				Returns the controller's orientation matrix.
 			</description>
 		</method>
 		<method name="get_position" qualifiers="const">
-			<return type="Vector3">
-			</return>
+			<return type="Vector3" />
 			<description>
 				Returns the world-space controller position.
 			</description>
 		</method>
 		<method name="get_tracker_id" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the internal tracker ID. This uniquely identifies the tracker per tracker type and matches the ID you need to specify for nodes such as the [ARVRController] and [ARVRAnchor] nodes.
 			</description>
 		</method>
 		<method name="get_tracks_orientation" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this device tracks orientation.
 			</description>
 		</method>
 		<method name="get_tracks_position" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this device tracks position.
 			</description>
 		</method>
 		<method name="get_transform" qualifiers="const">
-			<return type="Transform">
-			</return>
-			<argument index="0" name="adjust_by_reference_frame" type="bool">
-			</argument>
+			<return type="Transform" />
+			<argument index="0" name="adjust_by_reference_frame" type="bool" />
 			<description>
 				Returns the transform combining this device's orientation and position.
 			</description>
 		</method>
 		<method name="get_type" qualifiers="const">
-			<return type="int" enum="ARVRServer.TrackerType">
-			</return>
+			<return type="int" enum="ARVRServer.TrackerType" />
 			<description>
 				Returns the tracker's type.
 			</description>

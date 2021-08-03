@@ -13,8 +13,7 @@
 	</tutorials>
 	<methods>
 		<method name="is_on_screen" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				If [code]true[/code], the bounding rectangle is on the screen.
 				[b]Note:[/b] It takes one frame for the node's visibility to be assessed once added to the scene tree, so this method will return [code]false[/code] right after it is instantiated, even if it will be on screen in the draw pass.
@@ -38,15 +37,13 @@
 			</description>
 		</signal>
 		<signal name="viewport_entered">
-			<argument index="0" name="viewport" type="Viewport">
-			</argument>
+			<argument index="0" name="viewport" type="Viewport" />
 			<description>
 				Emitted when the VisibilityNotifier2D enters a [Viewport]'s view.
 			</description>
 		</signal>
 		<signal name="viewport_exited">
-			<argument index="0" name="viewport" type="Viewport">
-			</argument>
+			<argument index="0" name="viewport" type="Viewport" />
 			<description>
 				Emitted when the VisibilityNotifier2D exits a [Viewport]'s view.
 			</description>
