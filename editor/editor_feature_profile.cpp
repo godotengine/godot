@@ -563,7 +563,7 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 		int feature_id = md;
 		String feature_description = EditorFeatureProfile::get_feature_description(EditorFeatureProfile::Feature(feature_id));
 
-		description_bit->set_text(feature_description);
+		description_bit->set_text(TTRGET(feature_description));
 		return;
 	} else {
 		return;

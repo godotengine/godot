@@ -3418,6 +3418,7 @@ void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
 		if (bool(EDITOR_DEF("editors/animation/confirm_insert_track", true))) {
 			//potential new key, does not exist
 			if (num_tracks == 1) {
+				// TRANSLATORS: %s will be replaced by a phrase describing the target of track.
 				insert_confirm_text->set_text(vformat(TTR("Create new track for %s and insert key?"), p_id.query));
 			} else {
 				insert_confirm_text->set_text(vformat(TTR("Create %d new tracks and insert keys?"), num_tracks));
@@ -3525,7 +3526,8 @@ void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_
 	id.track_idx = track_idx;
 	id.value = p_xform;
 	id.type = Animation::TYPE_TRANSFORM3D;
-	id.query = "node '" + p_node->get_name() + "'";
+	// TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+	id.query = vformat(TTR("node '%s'"), p_node->get_name());
 	id.advance = false;
 
 	//dialog insert
@@ -3547,7 +3549,8 @@ void AnimationTrackEditor::_insert_animation_key(NodePath p_path, const Variant 
 			id.track_idx = i;
 			id.value = p_value;
 			id.type = Animation::TYPE_ANIMATION;
-			id.query = "animation";
+			// TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+			id.query = TTR("animation");
 			id.advance = false;
 			//dialog insert
 			_query_insert(id);
@@ -3560,7 +3563,7 @@ void AnimationTrackEditor::_insert_animation_key(NodePath p_path, const Variant 
 	id.track_idx = -1;
 	id.value = p_value;
 	id.type = Animation::TYPE_ANIMATION;
-	id.query = "animation";
+	id.query = TTR("animation");
 	id.advance = false;
 	//dialog insert
 	_query_insert(id);
@@ -3609,7 +3612,8 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 			id.track_idx = i;
 			id.value = p_value;
 			id.type = Animation::TYPE_VALUE;
-			id.query = "property '" + p_property + "'";
+			// TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+			id.query = vformat(TTR("property '%s'"), p_property);
 			id.advance = false;
 			//dialog insert
 			_query_insert(id);
@@ -3639,7 +3643,7 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 			id.track_idx = i;
 			id.value = value;
 			id.type = Animation::TYPE_BEZIER;
-			id.query = "property '" + p_property + "'";
+			id.query = vformat(TTR("property '%s'"), p_property);
 			id.advance = false;
 			//dialog insert
 			_query_insert(id);
@@ -3655,7 +3659,7 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 	id.track_idx = -1;
 	id.value = p_value;
 	id.type = Animation::TYPE_VALUE;
-	id.query = "property '" + p_property + "'";
+	id.query = vformat(TTR("property '%s'"), p_property);
 	id.advance = false;
 	//dialog insert
 	_query_insert(id);
@@ -3708,7 +3712,7 @@ void AnimationTrackEditor::insert_value_key(const String &p_property, const Vari
 			id.track_idx = i;
 			id.value = p_value;
 			id.type = Animation::TYPE_VALUE;
-			id.query = "property '" + p_property + "'";
+			id.query = vformat(TTR("property '%s'"), p_property);
 			id.advance = p_advance;
 			//dialog insert
 			_query_insert(id);
@@ -3733,7 +3737,7 @@ void AnimationTrackEditor::insert_value_key(const String &p_property, const Vari
 			id.track_idx = i;
 			id.value = value;
 			id.type = Animation::TYPE_BEZIER;
-			id.query = "property '" + p_property + "'";
+			id.query = vformat(TTR("property '%s'"), p_property);
 			id.advance = p_advance;
 			//dialog insert
 			_query_insert(id);
@@ -3747,7 +3751,7 @@ void AnimationTrackEditor::insert_value_key(const String &p_property, const Vari
 		id.track_idx = -1;
 		id.value = p_value;
 		id.type = Animation::TYPE_VALUE;
-		id.query = "property '" + p_property + "'";
+		id.query = vformat(TTR("property '%s'"), p_property);
 		id.advance = p_advance;
 		//dialog insert
 		_query_insert(id);
