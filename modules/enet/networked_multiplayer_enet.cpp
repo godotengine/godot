@@ -174,14 +174,20 @@ Error NetworkedMultiplayerENet::create_client(const String &p_address, int p_por
 		ip = IP::get_singleton()->resolve_hostname(p_address, IP::TYPE_IPV4);
 #endif
 
-		ERR_FAIL_COND_V_MSG(!ip.is_valid(), ERR_CANT_RESOLVE, "Couldn't resolve the server IP address or domain name.");
+		if (!ip.is_valid()) {
+			enet_host_destroy(host);
+			ERR_FAIL_V_MSG(ERR_CANT_RESOLVE, "Couldn't resolve the server IP address or domain name.");
+		}
 	}
 
 	ENetAddress address;
 #ifdef GODOT_ENET
 	enet_address_set_ip(&address, ip.get_ipv6(), 16);
 #else
-	ERR_FAIL_COND_V_MSG(!ip.is_ipv4(), ERR_INVALID_PARAMETER, "Connecting to an IPv6 server isn't supported when using vanilla ENet. Recompile Godot with the bundled ENet library.");
+	if (!ip.is_ipv4()) {
+		enet_host_destroy(host);
+		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Connecting to an IPv6 server isn't supported when using vanilla ENet. Recompile Godot with the bundled ENet library.");
+	}
 	address.host = *(uint32_t *)ip.get_ipv4();
 #endif
 	address.port = p_port;
@@ -193,7 +199,7 @@ Error NetworkedMultiplayerENet::create_client(const String &p_address, int p_por
 
 	if (peer == nullptr) {
 		enet_host_destroy(host);
-		ERR_FAIL_COND_V_MSG(!peer, ERR_CANT_CREATE, "Couldn't connect to the ENet multiplayer server.");
+		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Couldn't connect to the ENet multiplayer server.");
 	}
 
 	// Technically safe to ignore the peer or anything else.
