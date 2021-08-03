@@ -486,11 +486,11 @@ void CanvasItemEditor::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
 		}
 
 		if (k->is_pressed() && !k->is_ctrl_pressed() && !k->is_echo()) {
-			if ((grid_snap_active || show_grid) && multiply_grid_step_shortcut.is_valid() && multiply_grid_step_shortcut->is_shortcut(p_ev)) {
+			if ((grid_snap_active || show_grid) && multiply_grid_step_shortcut.is_valid() && multiply_grid_step_shortcut->matches_event(p_ev)) {
 				// Multiply the grid size
 				grid_step_multiplier = MIN(grid_step_multiplier + 1, 12);
 				viewport->update();
-			} else if ((grid_snap_active || show_grid) && divide_grid_step_shortcut.is_valid() && divide_grid_step_shortcut->is_shortcut(p_ev)) {
+			} else if ((grid_snap_active || show_grid) && divide_grid_step_shortcut.is_valid() && divide_grid_step_shortcut->matches_event(p_ev)) {
 				// Divide the grid size
 				Point2 new_grid_step = grid_step * Math::pow(2.0, grid_step_multiplier - 1);
 				if (new_grid_step.x >= 1.0 && new_grid_step.y >= 1.0) {
@@ -1192,30 +1192,30 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid()) {
 		if (k->is_pressed()) {
-			if (ED_GET_SHORTCUT("canvas_item_editor/zoom_3.125_percent")->is_shortcut(p_event)) {
+			if (ED_GET_SHORTCUT("canvas_item_editor/zoom_3.125_percent")->matches_event(p_event)) {
 				_update_zoom((1.0 / 32.0) * MAX(1, EDSCALE));
-			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_6.25_percent")->is_shortcut(p_event)) {
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_6.25_percent")->matches_event(p_event)) {
 				_update_zoom((1.0 / 16.0) * MAX(1, EDSCALE));
-			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_12.5_percent")->is_shortcut(p_event)) {
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_12.5_percent")->matches_event(p_event)) {
 				_update_zoom((1.0 / 8.0) * MAX(1, EDSCALE));
-			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_25_percent")->is_shortcut(p_event)) {
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_25_percent")->matches_event(p_event)) {
 				_update_zoom((1.0 / 4.0) * MAX(1, EDSCALE));
-			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_50_percent")->is_shortcut(p_event)) {
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_50_percent")->matches_event(p_event)) {
 				_update_zoom((1.0 / 2.0) * MAX(1, EDSCALE));
-			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_100_percent")->is_shortcut(p_event)) {
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_100_percent")->matches_event(p_event)) {
 				_update_zoom(1.0 * MAX(1, EDSCALE));
-			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_200_percent")->is_shortcut(p_event)) {
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_200_percent")->matches_event(p_event)) {
 				_update_zoom(2.0 * MAX(1, EDSCALE));
-			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_400_percent")->is_shortcut(p_event)) {
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_400_percent")->matches_event(p_event)) {
 				_update_zoom(4.0 * MAX(1, EDSCALE));
-			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_800_percent")->is_shortcut(p_event)) {
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_800_percent")->matches_event(p_event)) {
 				_update_zoom(8.0 * MAX(1, EDSCALE));
-			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_1600_percent")->is_shortcut(p_event)) {
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_1600_percent")->matches_event(p_event)) {
 				_update_zoom(16.0 * MAX(1, EDSCALE));
 			}
 		}
 
-		bool is_pan_key = pan_view_shortcut.is_valid() && pan_view_shortcut->is_shortcut(p_event);
+		bool is_pan_key = pan_view_shortcut.is_valid() && pan_view_shortcut->matches_event(p_event);
 
 		if (is_pan_key && (EditorSettings::get_singleton()->get("editors/2d/simple_panning") || drag_type != DRAG_NONE)) {
 			if (!panning) {

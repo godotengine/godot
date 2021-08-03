@@ -2555,17 +2555,17 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (p_event->is_pressed()) {
-		if (ED_GET_SHORTCUT("animation_editor/duplicate_selection")->is_shortcut(p_event)) {
+		if (ED_GET_SHORTCUT("animation_editor/duplicate_selection")->matches_event(p_event)) {
 			emit_signal(SNAME("duplicate_request"));
 			accept_event();
 		}
 
-		if (ED_GET_SHORTCUT("animation_editor/duplicate_selection_transposed")->is_shortcut(p_event)) {
+		if (ED_GET_SHORTCUT("animation_editor/duplicate_selection_transposed")->matches_event(p_event)) {
 			emit_signal(SNAME("duplicate_transpose_request"));
 			accept_event();
 		}
 
-		if (ED_GET_SHORTCUT("animation_editor/delete_selection")->is_shortcut(p_event)) {
+		if (ED_GET_SHORTCUT("animation_editor/delete_selection")->matches_event(p_event)) {
 			emit_signal(SNAME("delete_request"));
 			accept_event();
 		}

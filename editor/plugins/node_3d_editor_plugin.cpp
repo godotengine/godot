@@ -2454,7 +2454,7 @@ static bool is_shortcut_pressed(const String &p_path) {
 	if (shortcut.is_null()) {
 		return false;
 	}
-	InputEventKey *k = Object::cast_to<InputEventKey>(shortcut->get_shortcut().ptr());
+	InputEventKey *k = Object::cast_to<InputEventKey>(shortcut->get_event().ptr());
 	if (k == nullptr) {
 		return false;
 	}
