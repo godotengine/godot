@@ -7198,7 +7198,9 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	hbc_menu->add_child(context_menu_container);
 	_update_context_menu_stylebox();
 
+	// Get the view menu popup and have it stay open when a checkable item is selected
 	p = view_menu->get_popup();
+	p->set_hide_on_checkable_item_selection(false);
 
 	accept = memnew(AcceptDialog);
 	editor->get_gui_base()->add_child(accept);
