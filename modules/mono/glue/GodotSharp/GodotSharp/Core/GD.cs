@@ -28,6 +28,16 @@ namespace Godot
             return (real_t)Math.Exp(db * 0.11512925464970228420089957273422);
         }
 
+        private static object[] GetPrintParams(object[] parameters)
+        {
+            if (parameters == null)
+            {
+                return new[] { "null" };
+            }
+
+            return Array.ConvertAll(parameters, x => x?.ToString() ?? "null");
+        }
+
         public static int Hash(object var)
         {
             return godot_icall_GD_hash(var);
@@ -65,7 +75,7 @@ namespace Godot
 
         public static void Print(params object[] what)
         {
-            godot_icall_GD_print(Array.ConvertAll(what ?? new object[] { "null" }, x => x != null ? x.ToString() : "null"));
+            godot_icall_GD_print(GetPrintParams(what));
         }
 
         public static void PrintStack()
@@ -75,22 +85,22 @@ namespace Godot
 
         public static void PrintErr(params object[] what)
         {
-            godot_icall_GD_printerr(Array.ConvertAll(what ?? new object[] { "null" }, x => x != null ? x.ToString() : "null"));
+            godot_icall_GD_printerr(GetPrintParams(what));
         }
 
         public static void PrintRaw(params object[] what)
         {
-            godot_icall_GD_printraw(Array.ConvertAll(what ?? new object[] { "null" }, x => x != null ? x.ToString() : "null"));
+            godot_icall_GD_printraw(GetPrintParams(what));
         }
 
         public static void PrintS(params object[] what)
         {
-            godot_icall_GD_prints(Array.ConvertAll(what ?? new object[] { "null" }, x => x != null ? x.ToString() : "null"));
+            godot_icall_GD_prints(GetPrintParams(what));
         }
 
         public static void PrintT(params object[] what)
         {
-            godot_icall_GD_printt(Array.ConvertAll(what ?? new object[] { "null" }, x => x != null ? x.ToString() : "null"));
+            godot_icall_GD_printt(GetPrintParams(what));
         }
 
         public static float Randf()
