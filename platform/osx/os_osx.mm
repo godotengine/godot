@@ -3159,7 +3159,7 @@ void OS_OSX::process_events() {
 	[autoreleasePool drain];
 	autoreleasePool = [[NSAutoreleasePool alloc] init];
 
-	input->flush_accumulated_events();
+	input->flush_buffered_events();
 }
 
 void OS_OSX::process_key_events() {

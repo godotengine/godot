@@ -2529,7 +2529,7 @@ void OS_Windows::process_events() {
 
 	if (!drop_events) {
 		process_key_events();
-		input->flush_accumulated_events();
+		input->flush_buffered_events();
 	}
 }
 
