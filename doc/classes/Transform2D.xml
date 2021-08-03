@@ -4,7 +4,7 @@
 		2D transformation (2×3 matrix).
 	</brief_description>
 	<description>
-		2×3 matrix (2 rows, 3 columns) used for 2D linear transformations. It can represent transformations such as translation, rotation, or scaling. It consists of a three [Vector2] values: [member x], [member y], and the [member origin].
+		2×3 matrix (2 rows, 3 columns) used for 2D linear transformations. It can represent transformations such as translation, rotation, or scaling. It consists of three [Vector2] values: [member x], [member y], and the [member origin].
 		For more information, read the "Matrices and transforms" documentation article.
 	</description>
 	<tutorials>
