@@ -7228,6 +7228,28 @@ msgid "View Plane Transform."
 msgstr "檢視平面轉換。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: scene/resources/visual_shader.cpp
+msgid "None"
+msgstr "無"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rotate"
+msgstr "旋轉模式"
+
+#. TRANSLATORS: This refers to the movement that changes the position of an object.
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Translate"
+msgstr "移動："
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Scale"
+msgstr "縮放："
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
 msgstr "縮放： "
 
@@ -7877,11 +7899,6 @@ msgstr "設定外邊距"
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
 msgstr "吸附模式："
-
-#: editor/plugins/texture_region_editor_plugin.cpp
-#: scene/resources/visual_shader.cpp
-msgid "None"
-msgstr "無"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Pixel Snap"
@@ -11362,6 +11379,11 @@ msgid "GridMap Paint"
 msgstr "網格地圖繪圖"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "GridMap Selection"
+msgstr "網格地圖填充所選範圍"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr "網格地圖"
 
@@ -11602,6 +11624,16 @@ msgstr "新增輸入埠口"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Output Port"
 msgstr "新增輸出埠口"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Type"
+msgstr "更改型別"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Name"
+msgstr "修改輸入埠口名稱"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Override an existing built-in function."

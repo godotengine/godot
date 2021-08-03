@@ -53,12 +53,13 @@
 # Hatim Jamal <hatimjamal8@gmail.com>, 2021.
 # HASSAN GAMER - حسن جيمر <gamerhassan55@gmail.com>, 2021.
 # abubakrAlsaab <madeinsudan19@gmail.com>, 2021.
+# Hafid Talbi <atalbiie@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-07-16 05:47+0000\n"
-"Last-Translator: abubakrAlsaab <madeinsudan19@gmail.com>\n"
+"PO-Revision-Date: 2021-07-29 02:33+0000\n"
+"Last-Translator: Hafid Talbi <atalbiie@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -2568,14 +2569,14 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "غير قادر علي تحميل النص البرمجي للإضافة من المسار: '%s'."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Unable to load addon script from path: '%s'. This might be due to a code "
 "error in that script.\n"
 "Disabling the addon at '%s' to prevent further errors."
 msgstr ""
-"غير قادر علي تحميل النص البرمجي الإضافب من المسار: '%s' يبدو أن شِفرة "
-"البرمجية يوجد بها أخطاء , الرجاء مراجعة الشِفرة البرمجية."
+"غير قادر علي تحميل النص البرمجي للإضافة  من المسار: '%s'. يبدو أنه يوجد خطأ "
+"في ذلك النص البرمجي.\n"
+" تعطيل الإضافة في '%s' كي لا تحصل أخطاء."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2864,9 +2865,8 @@ msgstr ""
 "لا تحتاج إلى تمكينه لاستخدام مصحح أخطاء GDScript محليًا."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Small Deploy with Network Filesystem"
-msgstr "نشر مصغر مع نظام شبكات الملفات"
+msgstr "نشر مصغر مع نظام ملفات الشبكة"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2900,35 +2900,32 @@ msgid "Visible Navigation"
 msgstr "الإنتقال المرئي"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, navigation meshes and polygons will be visible "
 "in the running project."
 msgstr ""
-"مجسمات التنقل والأشكال المضلعة سوف تكون ظاهرة حينما يتم تفعيل هذا الإعداد."
+"عندما يكون هذا الخيار مفعل,مجسمات التنقل والأشكال المضلعة سوف تكون ظاهرة في "
+"المشروع المشغل."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Synchronize Scene Changes"
 msgstr "مزامنة تغييرات المشهد"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, any changes made to the scene in the editor "
 "will be replicated in the running project.\n"
 "When used remotely on a device, this is more efficient when the network "
 "filesystem option is enabled."
 msgstr ""
-"حينما يكون هذا الإعداد مُفعل، أي تغيير يحدث في المشهد من خلال المُعدل سوف يتم "
+"حينما يكون هذا الخيار مُفعل، أي تغيير يحدث في المشهد من خلال المُعدل سوف يتم "
 "تطبيقة في اللعبة العاملة.\n"
 "حينما يتم إستخدامه عن بعد علي جهاز، سيكون هذا أكثر فعالية مع نظام شبكات "
 "الملفات."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Synchronize Script Changes"
-msgstr "مزامنة تغييرات الكود"
+msgstr "مزامنة تغييرات النص البرمجي"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -7353,6 +7350,28 @@ msgid "View Plane Transform."
 msgstr "إظهار تحولات المستوى."
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: scene/resources/visual_shader.cpp
+msgid "None"
+msgstr "لا شيء"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rotate"
+msgstr "وضع التدوير"
+
+#. TRANSLATORS: This refers to the movement that changes the position of an object.
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Translate"
+msgstr "الترجمة:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Scale"
+msgstr "تكبير/تصغير:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
 msgstr "يُحجم: "
 
@@ -8007,11 +8026,6 @@ msgstr "تحديد الهامش"
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
 msgstr "وضع المحاذاة:"
-
-#: editor/plugins/texture_region_editor_plugin.cpp
-#: scene/resources/visual_shader.cpp
-msgid "None"
-msgstr "لا شيء"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Pixel Snap"
@@ -11572,6 +11586,11 @@ msgid "GridMap Paint"
 msgstr "تلوين (طلاء) خريطة الشبكة GridMap"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "GridMap Selection"
+msgstr "تحديد الملئ خريطة-الشبكة"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr "خريطة الشبكة"
 
@@ -11821,6 +11840,16 @@ msgstr "أضف منفذ أدخال"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Output Port"
 msgstr "أضف منفذ إخراج"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Type"
+msgstr "تغيير النوع"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Name"
+msgstr "غيّر اسم منفذ المُدخلات"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Override an existing built-in function."

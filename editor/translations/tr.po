@@ -7385,6 +7385,28 @@ msgid "View Plane Transform."
 msgstr "Düzlem Dönüşümünü Görüntüle."
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: scene/resources/visual_shader.cpp
+msgid "None"
+msgstr "Düğüm"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rotate"
+msgstr "Ülke"
+
+#. TRANSLATORS: This refers to the movement that changes the position of an object.
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Translate"
+msgstr "Çevir:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Scale"
+msgstr "Ölçekle:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
 msgstr "Ölçekleniyor: "
 
@@ -8037,11 +8059,6 @@ msgstr "Kenar Boşluk Belirle"
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
 msgstr "Yapışma Kipi:"
-
-#: editor/plugins/texture_region_editor_plugin.cpp
-#: scene/resources/visual_shader.cpp
-msgid "None"
-msgstr "Düğüm"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Pixel Snap"
@@ -11595,6 +11612,11 @@ msgid "GridMap Paint"
 msgstr "IzgaraHaritası Boyama"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "GridMap Selection"
+msgstr "IzgaraHaritası Seçimi Doldur"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr "Izgara Haritası"
 
@@ -11841,6 +11863,16 @@ msgstr "Giriş Portu Ekle"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Output Port"
 msgstr "Çıkış Portu Ekle"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Type"
+msgstr "Türü Değiştir"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Port Name"
+msgstr "Giriş noktası adını değiştir"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Override an existing built-in function."
@@ -14931,9 +14963,6 @@ msgstr "Sabit değerler değiştirilemez."
 
 #~ msgid "City"
 #~ msgstr "Şehir"
-
-#~ msgid "State"
-#~ msgstr "Ülke"
 
 #~ msgid "2 letter country code"
 #~ msgstr "2 damgalı ülke imi"
