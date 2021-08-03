@@ -83,12 +83,19 @@ struct _IP_ResolverPrivate {
 
 			if (queue[i].status.get() != IP::RESOLVER_STATUS_WAITING)
 				continue;
-			queue[i].response = IP::get_singleton()->resolve_hostname(queue[i].hostname, queue[i].type);
 
-			if (!queue[i].response.is_valid())
-				queue[i].status.set(IP::RESOLVER_STATUS_ERROR);
-			else
-				queue[i].status.set(IP::RESOLVER_STATUS_DONE);
+			mutex.lock();
+			String hostname = queue[i].hostname;
+			IP::Type type = queue[i].type;
+			mutex.unlock();
+
+			// We should not lock while resolving the hostname,
+			// only when modifying the queue.
+			IP_Address response = IP::get_singleton()->resolve_hostname(hostname, type);
+
+			MutexLock lock(mutex);
+			queue[i].response = response;
+			queue[i].status.set(response.is_valid() ? IP::RESOLVER_STATUS_DONE : IP::RESOLVER_STATUS_ERROR);
 		}
 	}
 
@@ -97,12 +104,8 @@ struct _IP_ResolverPrivate {
 		_IP_ResolverPrivate *ipr = (_IP_ResolverPrivate *)self;
 
 		while (!ipr->thread_abort) {
-
 			ipr->sem.wait();
-
-			ipr->mutex.lock();
 			ipr->resolve_queues();
-			ipr->mutex.unlock();
 		}
 	}
 
@@ -114,19 +117,24 @@ struct _IP_ResolverPrivate {
 };
 
 IP_Address IP::resolve_hostname(const String &p_hostname, IP::Type p_type) {
+	String key = _IP_ResolverPrivate::get_cache_key(p_hostname, p_type);
+	IP_Address res;
 
 	resolver->mutex.lock();
-
-	String key = _IP_ResolverPrivate::get_cache_key(p_hostname, p_type);
 	if (resolver->cache.has(key) && resolver->cache[key].is_valid()) {
-		IP_Address res = resolver->cache[key];
+		res = resolver->cache[key];
+	} else {
+		// This should be run unlocked so the resolver thread can keep
+		// resolving other requests.
 		resolver->mutex.unlock();
-		return res;
+		res = _resolve_hostname(p_hostname, p_type);
+		resolver->mutex.lock();
+		// We might be overriding another result, but we don't care (they are the
+		// same hostname).
+		resolver->cache[key] = res;
 	}
-
-	IP_Address res = _resolve_hostname(p_hostname, p_type);
-	resolver->cache[key] = res;
 	resolver->mutex.unlock();
+
 	return res;
 }
 
@@ -165,15 +173,10 @@ IP::ResolverStatus IP::get_resolve_item_status(ResolverID p_id) const {
 
 	ERR_FAIL_INDEX_V(p_id, IP::RESOLVER_MAX_QUERIES, IP::RESOLVER_STATUS_NONE);
 
-	resolver->mutex.lock();
-	if (resolver->queue[p_id].status.get() == IP::RESOLVER_STATUS_NONE) {
-		ERR_PRINT("Condition status == IP::RESOLVER_STATUS_NONE");
-		resolver->mutex.unlock();
-		return IP::RESOLVER_STATUS_NONE;
-	}
 	IP::ResolverStatus res = resolver->queue[p_id].status.get();
-
-	resolver->mutex.unlock();
+	if (res == IP::RESOLVER_STATUS_NONE) {
+		ERR_PRINT("Condition status == IP::RESOLVER_STATUS_NONE");
+	}
 	return res;
 }
 
@@ -199,11 +202,7 @@ void IP::erase_resolve_item(ResolverID p_id) {
 
 	ERR_FAIL_INDEX(p_id, IP::RESOLVER_MAX_QUERIES);
 
-	resolver->mutex.lock();
-
 	resolver->queue[p_id].status.set(IP::RESOLVER_STATUS_NONE);
-
-	resolver->mutex.unlock();
 }
 
 void IP::clear_cache(const String &p_hostname) {
