@@ -40,6 +40,8 @@
 class EditorResourcePicker : public HBoxContainer {
 	GDCLASS(EditorResourcePicker, HBoxContainer);
 
+	static HashMap<StringName, List<StringName>> allowed_types_cache;
+
 	String base_type;
 	RES edited_resource;
 
@@ -97,6 +99,8 @@ protected:
 	void _notification(int p_what);
 
 public:
+	static void clear_caches();
+
 	void set_base_type(const String &p_base_type);
 	String get_base_type() const;
 	Vector<String> get_allowed_types() const;
