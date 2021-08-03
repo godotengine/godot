@@ -3811,6 +3811,8 @@ void EditorNode::register_editor_types() {
 
 void EditorNode::unregister_editor_types() {
 	_init_callbacks.clear();
+
+	EditorResourcePicker::clear_caches();
 }
 
 void EditorNode::stop_child_process() {
