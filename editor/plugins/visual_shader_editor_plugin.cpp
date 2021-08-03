@@ -4319,7 +4319,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("CollisionDepth", "Input", "Collide", "VisualShaderNodeInput", vformat(input_param_for_collide_shader_mode, "collision_depth"), "collision_depth", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_COLLIDE, Shader::MODE_PARTICLES));
 	add_options.push_back(AddOption("CollisionNormal", "Input", "Collide", "VisualShaderNodeInput", vformat(input_param_for_collide_shader_mode, "collision_normal"), "collision_normal", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_COLLIDE, Shader::MODE_PARTICLES));
 
-	add_options.push_back(AddOption("EmitParticle", "Particles", "", "VisualShaderNodeParticleEmit", "", -1, -1, -1, Shader::MODE_PARTICLES));
+	add_options.push_back(AddOption("EmitParticle", "Particles", "", "VisualShaderNodeParticleEmit", "", -1, -1, TYPE_FLAGS_PROCESS | TYPE_FLAGS_PROCESS_CUSTOM | TYPE_FLAGS_COLLIDE, Shader::MODE_PARTICLES));
 	add_options.push_back(AddOption("ParticleAccelerator", "Particles", "", "VisualShaderNodeParticleAccelerator", "", -1, VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_PROCESS, Shader::MODE_PARTICLES));
 	add_options.push_back(AddOption("ParticleRandomness", "Particles", "", "VisualShaderNodeParticleRandomness", "", -1, VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_EMIT | TYPE_FLAGS_PROCESS | TYPE_FLAGS_COLLIDE, Shader::MODE_PARTICLES));
 	add_options.push_back(AddOption("MultiplyByAxisAngle", "Particles", "Transform", "VisualShaderNodeParticleMultiplyByAxisAngle", "A node for help to multiply a position input vector by rotation using specific axis. Intended to work with emitters.", -1, VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_EMIT | TYPE_FLAGS_PROCESS | TYPE_FLAGS_COLLIDE, Shader::MODE_PARTICLES));
