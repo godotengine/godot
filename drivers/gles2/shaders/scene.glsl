@@ -1816,12 +1816,13 @@ FRAGMENT_SHADER_CODE
 	}
 
 #ifdef USE_LIGHTMAP
-//ambient light will come entirely from lightmap is lightmap is used
 #if defined(USE_LIGHTMAP_FILTER_BICUBIC)
-	ambient_light = texture2D_bicubic(lightmap, uv2_interp).rgb * lightmap_energy;
+	vec4 lightmap_sample = texture2D_bicubic(lightmap, uv2_interp);
 #else
-	ambient_light = texture2D(lightmap, uv2_interp).rgb * lightmap_energy;
+	vec4 lightmap_sample = texture2D(lightmap, uv2_interp);
 #endif
+	//ambient light will come entirely from lightmap is lightmap is used
+	ambient_light = lightmap_sample.rgb * lightmap_energy;
 #endif
 
 #ifdef USE_LIGHTMAP_CAPTURE
@@ -1938,6 +1939,16 @@ FRAGMENT_SHADER_CODE
 #endif
 	float depth_z = -vertex.z;
 
+#ifdef USE_LIGHTMAP
+	// Take the DirectionalLight's shadow color into account for the shadowmask.
+	// This applies even if the DirectionalLight shadow is disabled, which can be
+	// done to improve performance by disabling shadows for dynamic objects only.
+	vec3 shadowmask = mix(shadow_color.rgb, vec3(1.0), lightmap_sample.a);
+#else
+	// No lightmaps, fallback to no shadows in the distance.
+	vec3 shadowmask = vec3(1.0);
+#endif
+
 #if !defined(SHADOWS_DISABLED)
 
 #ifdef USE_SHADOW
@@ -2001,7 +2012,7 @@ FRAGMENT_SHADER_CODE
 			shadow_att = mix(shadow_att, shadow_att2, pssm_blend);
 		}
 #endif
-		light_att *= mix(shadow_color.rgb, vec3(1.0), shadow_att);
+		light_att *= mix(shadow_color.rgb, shadowmask, shadow_att);
 	}
 
 #endif //LIGHT_USE_PSSM4
@@ -2041,14 +2052,14 @@ FRAGMENT_SHADER_CODE
 			shadow_att = mix(shadow_att, shadow_att2, pssm_blend);
 		}
 #endif
-		light_att *= mix(shadow_color.rgb, vec3(1.0), shadow_att);
+		light_att *= mix(shadow_color.rgb, shadowmask, shadow_att);
 	}
 
 #endif //LIGHT_USE_PSSM2
 
 #if !defined(LIGHT_USE_PSSM4) && !defined(LIGHT_USE_PSSM2)
 
-	light_att *= mix(shadow_color.rgb, vec3(1.0), sample_shadow(light_directional_shadow, shadow_coord));
+	light_att *= mix(shadow_color.rgb, shadowmask, sample_shadow(light_directional_shadow, shadow_coord));
 #endif //orthogonal
 
 #else //fragment version of pssm
@@ -2144,11 +2155,16 @@ FRAGMENT_SHADER_CODE
 			}
 #endif
 
-			light_att *= mix(shadow_color.rgb, vec3(1.0), shadow);
+			light_att *= mix(shadow_color.rgb, shadowmask, shadow);
 		}
 	}
 #endif //use vertex lighting
 
+#else
+	// Use the shadowmask only when past the DirectionalLight's maximum shadow distance.
+	// FIXME: This doesn't work when the DirectionalLight's shadow is enabled.
+	// It only works when the shadow is disabled.
+	light_att *= shadowmask;
 #endif //use shadow
 
 #endif // SHADOWS_DISABLED

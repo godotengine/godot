@@ -167,6 +167,7 @@ private:
 	bool use_denoiser;
 	bool use_hdr;
 	bool use_color;
+	bool use_shadowmask;
 
 	EnvironmentMode environment_mode;
 	Ref<Sky> environment_custom_sky;
@@ -264,6 +265,9 @@ public:
 
 	void set_use_color(bool p_enable);
 	bool is_using_color() const;
+
+	void set_use_shadowmask(bool p_enable);
+	bool is_using_shadowmask() const;
 
 	void set_bounces(int p_bounces);
 	int get_bounces() const;

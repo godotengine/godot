@@ -43,7 +43,7 @@ void LightmapDenoiserOIDN::make_default_denoiser() {
 Ref<Image> LightmapDenoiserOIDN::denoise_image(const Ref<Image> &p_image) {
 	Ref<Image> img = p_image->duplicate();
 
-	img->convert(Image::FORMAT_RGBF);
+	img->convert(Image::FORMAT_RGBAF);
 
 	PoolByteArray data = img->get_data();
 	{

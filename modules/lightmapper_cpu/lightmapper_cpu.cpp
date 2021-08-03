@@ -831,10 +831,15 @@ void LightmapperCPU::_compute_direct_light(uint32_t p_idx, void *r_lightmap) {
 			}
 		}
 
-		Vector3 final_energy = attenuation * penumbra * light_energy * MAX(0, normal.dot(-light_to_point));
+		const Vector3 final_energy = attenuation * penumbra * light_energy * MAX(0, normal.dot(-light_to_point));
 		lightmap[p_idx].direct_light += final_energy * light.indirect_multiplier;
 		if (light.bake_direct) {
 			lightmap[p_idx].output_light += final_energy;
+		}
+
+		if (light.type == LIGHT_TYPE_DIRECTIONAL) {
+			// Store the directional shadowmask, which does not depend on the light color, energy or angle.
+			lightmap[p_idx].shadowmask = CLAMP(lightmap[p_idx].shadowmask - attenuation * penumbra, 0.0, 1.0);
 		}
 	}
 }
@@ -952,7 +957,7 @@ void LightmapperCPU::_post_process(uint32_t p_idx, void *r_output) {
 
 	LocalVector<int> &indices = scene_lightmap_indices[p_idx];
 	LocalVector<LightmapTexel> &lightmap = scene_lightmaps[p_idx];
-	Vector3 *output = ((LocalVector<Vector3> *)r_output)[p_idx].ptr();
+	Color *output = ((LocalVector<Color> *)r_output)[p_idx].ptr();
 	Vector2i size = mesh.size;
 
 	// Blit texels to buffer
@@ -961,7 +966,11 @@ void LightmapperCPU::_post_process(uint32_t p_idx, void *r_output) {
 		for (int j = 0; j < size.x; j++) {
 			int idx = indices[i * size.x + j];
 			if (idx >= 0) {
-				output[i * size.x + j] = lightmap[idx].output_light;
+				output[i * size.x + j] = Color(
+						lightmap[idx].output_light.x,
+						lightmap[idx].output_light.y,
+						lightmap[idx].output_light.z,
+						1.0 - lightmap[idx].shadowmask);
 				continue; // filled, skip
 			}
 
@@ -993,7 +1002,11 @@ void LightmapperCPU::_post_process(uint32_t p_idx, void *r_output) {
 			}
 
 			if (closest_idx != -1) {
-				output[i * size.x + j] = lightmap[closest_idx].output_light;
+				output[i * size.x + j] = Color(
+						lightmap[closest_idx].output_light.x,
+						lightmap[closest_idx].output_light.y,
+						lightmap[closest_idx].output_light.z,
+						1.0 - lightmap[closest_idx].shadowmask);
 			}
 		}
 	}
@@ -1033,7 +1046,6 @@ void LightmapperCPU::_post_process(uint32_t p_idx, void *r_output) {
 	_dilate_lightmap(output, indices, size, margin);
 	_fix_seams(seams, output, size);
 	_dilate_lightmap(output, indices, size, margin);
-
 	indices.clear();
 }
 
@@ -1120,25 +1132,25 @@ void LightmapperCPU::_compute_seams(const MeshInstance &p_mesh, LocalVector<UVSe
 	}
 }
 
-void LightmapperCPU::_fix_seams(const LocalVector<UVSeam> &p_seams, Vector3 *r_lightmap, Vector2i p_size) {
-	LocalVector<Vector3> extra_buffer;
+void LightmapperCPU::_fix_seams(const LocalVector<UVSeam> &p_seams, Color *r_lightmap, Vector2i p_size) {
+	LocalVector<Color> extra_buffer;
 	extra_buffer.resize(p_size.x * p_size.y);
 
-	memcpy(extra_buffer.ptr(), r_lightmap, p_size.x * p_size.y * sizeof(Vector3));
+	memcpy(extra_buffer.ptr(), r_lightmap, p_size.x * p_size.y * sizeof(Color));
 
-	Vector3 *read_ptr = extra_buffer.ptr();
-	Vector3 *write_ptr = r_lightmap;
+	Color *read_ptr = extra_buffer.ptr();
+	Color *write_ptr = r_lightmap;
 
 	for (int i = 0; i < 5; i++) {
 		for (unsigned int j = 0; j < p_seams.size(); j++) {
 			_fix_seam(p_seams[j].edge0[0], p_seams[j].edge0[1], p_seams[j].edge1[0], p_seams[j].edge1[1], read_ptr, write_ptr, p_size);
 			_fix_seam(p_seams[j].edge1[0], p_seams[j].edge1[1], p_seams[j].edge0[0], p_seams[j].edge0[1], read_ptr, write_ptr, p_size);
 		}
-		memcpy(read_ptr, write_ptr, p_size.x * p_size.y * sizeof(Vector3));
+		memcpy(read_ptr, write_ptr, p_size.x * p_size.y * sizeof(Color));
 	}
 }
 
-void LightmapperCPU::_fix_seam(const Vector2 &p_pos0, const Vector2 &p_pos1, const Vector2 &p_uv0, const Vector2 &p_uv1, const Vector3 *p_read_buffer, Vector3 *r_write_buffer, const Vector2i &p_size) {
+void LightmapperCPU::_fix_seam(const Vector2 &p_pos0, const Vector2 &p_pos1, const Vector2 &p_uv0, const Vector2 &p_uv1, const Color *p_read_buffer, Color *r_write_buffer, const Vector2i &p_size) {
 	Vector2 line[2];
 	line[0] = p_pos0 * p_size;
 	line[1] = p_pos1 * p_size;
@@ -1187,8 +1199,8 @@ void LightmapperCPU::_fix_seam(const Vector2 &p_pos0, const Vector2 &p_pos1, con
 		Vector2 current_uv = p_uv0 * (1.0 - t) + p_uv1 * t;
 		Vector2i sampled_point = (current_uv * p_size).floor();
 
-		Vector3 current_color = r_write_buffer[pixel.y * p_size.x + pixel.x];
-		Vector3 sampled_color = p_read_buffer[sampled_point.y * p_size.x + sampled_point.x];
+		Color current_color = r_write_buffer[pixel.y * p_size.x + pixel.x];
+		Color sampled_color = p_read_buffer[sampled_point.y * p_size.x + sampled_point.x];
 
 		r_write_buffer[pixel.y * p_size.x + pixel.x] = current_color * 0.6f + sampled_color * 0.4f;
 
@@ -1206,7 +1218,7 @@ void LightmapperCPU::_fix_seam(const Vector2 &p_pos0, const Vector2 &p_pos1, con
 	}
 }
 
-void LightmapperCPU::_dilate_lightmap(Vector3 *r_lightmap, const LocalVector<int> p_indices, Vector2i p_size, int margin) {
+void LightmapperCPU::_dilate_lightmap(Color *r_lightmap, const LocalVector<int> p_indices, Vector2i p_size, int margin) {
 	for (int i = 0; i < p_size.y; i++) {
 		for (int j = 0; j < p_size.x; j++) {
 			int idx = p_indices[i * p_size.x + j];
@@ -1248,7 +1260,7 @@ void LightmapperCPU::_dilate_lightmap(Vector3 *r_lightmap, const LocalVector<int
 	}
 }
 
-void LightmapperCPU::_blit_lightmap(const Vector<Vector3> &p_src, const Vector2i &p_size, Ref<Image> &p_dst, int p_x, int p_y, bool p_with_padding) {
+void LightmapperCPU::_blit_lightmap(const Vector<Color> &p_src, const Vector2i &p_size, Ref<Image> &p_dst, int p_x, int p_y, bool p_with_padding) {
 	int padding = p_with_padding ? 1 : 0;
 	ERR_FAIL_COND(p_x < padding || p_y < padding);
 	ERR_FAIL_COND(p_x + p_size.x > p_dst->get_width() - padding);
@@ -1256,9 +1268,9 @@ void LightmapperCPU::_blit_lightmap(const Vector<Vector3> &p_src, const Vector2i
 
 	p_dst->lock();
 	for (int y = 0; y < p_size.y; y++) {
-		const Vector3 *__restrict src = p_src.ptr() + y * p_size.x;
+		const Color *__restrict src = p_src.ptr() + y * p_size.x;
 		for (int x = 0; x < p_size.x; x++) {
-			p_dst->set_pixel(p_x + x, p_y + y, Color(src->x, src->y, src->z));
+			p_dst->set_pixel(p_x + x, p_y + y, Color(src->r, src->g, src->b, src->a));
 			src++;
 		}
 	}
@@ -1268,16 +1280,16 @@ void LightmapperCPU::_blit_lightmap(const Vector<Vector3> &p_src, const Vector2i
 			int yy = CLAMP(y, 0, p_size.y - 1);
 			int idx_left = yy * p_size.x;
 			int idx_right = idx_left + p_size.x - 1;
-			p_dst->set_pixel(p_x - 1, p_y + y, Color(p_src[idx_left].x, p_src[idx_left].y, p_src[idx_left].z));
-			p_dst->set_pixel(p_x + p_size.x, p_y + y, Color(p_src[idx_right].x, p_src[idx_right].y, p_src[idx_right].z));
+			p_dst->set_pixel(p_x - 1, p_y + y, Color(p_src[idx_left].r, p_src[idx_left].g, p_src[idx_left].b, p_src[idx_left].a));
+			p_dst->set_pixel(p_x + p_size.x, p_y + y, Color(p_src[idx_right].r, p_src[idx_right].g, p_src[idx_right].b, p_src[idx_right].a));
 		}
 
 		for (int x = -1; x < p_size.x + 1; x++) {
 			int xx = CLAMP(x, 0, p_size.x - 1);
 			int idx_top = xx;
 			int idx_bot = idx_top + (p_size.y - 1) * p_size.x;
-			p_dst->set_pixel(p_x + x, p_y - 1, Color(p_src[idx_top].x, p_src[idx_top].y, p_src[idx_top].z));
-			p_dst->set_pixel(p_x + x, p_y + p_size.y, Color(p_src[idx_bot].x, p_src[idx_bot].y, p_src[idx_bot].z));
+			p_dst->set_pixel(p_x + x, p_y - 1, Color(p_src[idx_top].r, p_src[idx_top].g, p_src[idx_top].b, p_src[idx_top].a));
+			p_dst->set_pixel(p_x + x, p_y + p_size.y, Color(p_src[idx_bot].r, p_src[idx_bot].g, p_src[idx_bot].b, p_src[idx_bot].a));
 		}
 	}
 	p_dst->unlock();
@@ -1456,7 +1468,7 @@ LightmapperCPU::BakeError LightmapperCPU::bake(BakeQuality p_quality, bool p_use
 
 	raycaster.unref(); // Not needed anymore, free some memory.
 
-	LocalVector<LocalVector<Vector3>> lightmaps_data;
+	LocalVector<LocalVector<Color>> lightmaps_data;
 	lightmaps_data.resize(mesh_instances.size());
 
 	for (unsigned int i = 0; i < mesh_instances.size(); i++) {
@@ -1483,7 +1495,9 @@ LightmapperCPU::BakeError LightmapperCPU::bake(BakeQuality p_quality, bool p_use
 		for (int i = 0; i < atlas_slices; i++) {
 			Ref<Image> image;
 			image.instance();
-			image->create(atlas_size.x, atlas_size.y, false, Image::FORMAT_RGBH);
+			// FIXME: Baking alpha channel only works if image format is RGBA8, not RGBAH.
+			// However, using RGBA8 breaks HDR light baking, so only LDR light baking can be used for now.
+			image->create(atlas_size.x, atlas_size.y, false, Image::FORMAT_RGBA8);
 			bake_textures[i] = image;
 		}
 	} else {
@@ -1516,7 +1530,9 @@ LightmapperCPU::BakeError LightmapperCPU::bake(BakeQuality p_quality, bool p_use
 
 			Ref<Image> image;
 			image.instance();
-			image->create(mesh_instances[i].size.x, mesh_instances[i].size.y, false, Image::FORMAT_RGBH);
+			// FIXME: Baking alpha channel only works if image format is RGBA8, not RGBAH.
+			// However, using RGBA8 breaks HDR light baking, so only LDR light baking can be used for now.
+			image->create(mesh_instances[i].size.x, mesh_instances[i].size.y, false, Image::FORMAT_RGBA8);
 			image->set_name(mesh_name);
 			bake_textures[i] = image;
 		}
