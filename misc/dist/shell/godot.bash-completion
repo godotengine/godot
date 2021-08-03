@@ -53,7 +53,7 @@ _complete_godot_options() {
 --resolution
 --position
 --low-dpi
---no-window
+--headless
 --debug
 --breakpoints
 --profiling

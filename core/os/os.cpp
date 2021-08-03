@@ -215,14 +215,6 @@ void OS::dump_resources_to_file(const char *p_file) {
 	ResourceCache::dump(p_file);
 }
 
-void OS::set_no_window_mode(bool p_enable) {
-	_no_window = p_enable;
-}
-
-bool OS::is_no_window_mode_enabled() const {
-	return _no_window;
-}
-
 int OS::get_exit_code() const {
 	return _exit_code;
 }
