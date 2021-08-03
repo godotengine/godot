@@ -188,7 +188,10 @@ PropertyInfo VisualScriptFunction::get_input_value_port_info(int p_idx) const {
 	ERR_FAIL_V(PropertyInfo());
 }
 PropertyInfo VisualScriptFunction::get_output_value_port_info(int p_idx) const {
-	ERR_FAIL_INDEX_V(p_idx, arguments.size(), PropertyInfo());
+	// Need to check it without ERR_FAIL_COND, to prevent warnings from appearing on node creation via dragging.
+	if (p_idx < 0 || p_idx >= arguments.size()) {
+		return PropertyInfo();
+	}
 	PropertyInfo out;
 	out.type = arguments[p_idx].type;
 	out.name = arguments[p_idx].name;

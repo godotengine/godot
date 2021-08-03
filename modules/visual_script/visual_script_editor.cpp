@@ -2869,6 +2869,20 @@ void VisualScriptEditor::_graph_connected(const String &p_from, int p_from_slot,
 
 	ERR_FAIL_COND(from_seq != to_seq);
 
+	// Checking to prevent warnings.
+	if (from_seq) {
+		if (script->has_sequence_connection(from_func, p_from.to_int(), from_port, p_to.to_int())) {
+			return;
+		}
+	} else if (script->has_data_connection(from_func, p_from.to_int(), from_port, p_to.to_int(), to_port)) {
+		return;
+	}
+
+	// Preventing connection to itself.
+	if (p_from.to_int() == p_to.to_int()) {
+		return;
+	}
+
 	// Do all the checks here
 	StringName func; // this the func where we store the one the nodes at the end of the resolution on having multiple nodes
 
@@ -3357,7 +3371,7 @@ VisualScriptNode::TypeGuess VisualScriptEditor::_guess_output_type(int p_port_ac
 
 	Ref<VisualScriptNode> node = script->get_node(func, p_port_action_node);
 
-	if (!node.is_valid()) {
+	if (!node.is_valid() || node->get_output_value_port_count() <= p_port_action_output) {
 		return tg;
 	}
 
