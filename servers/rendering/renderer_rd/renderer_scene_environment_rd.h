@@ -123,6 +123,14 @@ public:
 	float ssr_fade_out = 2.0;
 	float ssr_depth_tolerance = 0.2;
 
+	/// SSIL
+	///
+	bool ssil_enabled = false;
+	float ssil_radius = 5.0;
+	float ssil_intensity = 1.0;
+	float ssil_sharpness = 0.98;
+	float ssil_normal_rejection = 1.0;
+
 	/// SDFGI
 	bool sdfgi_enabled = false;
 	RS::EnvironmentSDFGICascades sdfgi_cascades;

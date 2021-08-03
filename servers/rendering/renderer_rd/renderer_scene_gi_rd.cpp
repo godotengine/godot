@@ -2065,7 +2065,7 @@ void RendererSceneGIRD::VoxelGIInstance::update(bool p_update_light_instances, c
 
 			for (int i = 0; i < levels.size(); i++) {
 				VoxelGIInstance::Mipmap mipmap;
-				mipmap.texture = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), texture, 0, i, RD::TEXTURE_SLICE_3D);
+				mipmap.texture = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), texture, 0, i, 1, RD::TEXTURE_SLICE_3D);
 				mipmap.level = levels.size() - i - 1;
 				mipmap.cell_offset = 0;
 				for (uint32_t j = 0; j < mipmap.level; j++) {

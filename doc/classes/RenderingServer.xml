@@ -3967,28 +3967,31 @@
 		<constant name="VIEWPORT_DEBUG_DRAW_SSAO" value="12" enum="ViewportDebugDraw">
 			Draws the screen space ambient occlusion texture instead of the scene so that you can clearly see how it is affecting objects. In order for this display mode to work, you must have [member Environment.ssao_enabled] set in your [WorldEnvironment].
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_PSSM_SPLITS" value="13" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_SSIL" value="13" enum="ViewportDebugDraw">
+			Draws the screen space indirect lighting texture instead of the scene so that you can clearly see how it is affecting objects. In order for this display mode to work, you must have [member Environment.ssil_enabled] set in your [WorldEnvironment].
+		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_PSSM_SPLITS" value="14" enum="ViewportDebugDraw">
 			Colors each PSSM split for the [DirectionalLight3D]s in the scene a different color so you can see where the splits are. In order they will be colored red, green, blue, yellow.
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_DECAL_ATLAS" value="14" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_DECAL_ATLAS" value="15" enum="ViewportDebugDraw">
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_SDFGI" value="15" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_SDFGI" value="16" enum="ViewportDebugDraw">
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_SDFGI_PROBES" value="16" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_SDFGI_PROBES" value="17" enum="ViewportDebugDraw">
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_GI_BUFFER" value="17" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_GI_BUFFER" value="18" enum="ViewportDebugDraw">
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_DISABLE_LOD" value="18" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_DISABLE_LOD" value="19" enum="ViewportDebugDraw">
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_OMNI_LIGHTS" value="19" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_OMNI_LIGHTS" value="20" enum="ViewportDebugDraw">
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_SPOT_LIGHTS" value="20" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_SPOT_LIGHTS" value="21" enum="ViewportDebugDraw">
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS" value="21" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS" value="22" enum="ViewportDebugDraw">
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES" value="22" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES" value="23" enum="ViewportDebugDraw">
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_OCCLUDERS" value="23" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_OCCLUDERS" value="24" enum="ViewportDebugDraw">
 		</constant>
 		<constant name="SKY_MODE_AUTOMATIC" value="0" enum="SkyMode">
 		</constant>

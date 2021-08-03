@@ -72,6 +72,9 @@ layout(set = 0, binding = 4) uniform sampler light_projector_sampler;
 //3 bits of stride
 #define INSTANCE_FLAGS_PARTICLE_TRAIL_MASK 0xFF
 
+#define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSAO 1
+#define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL 2
+
 layout(set = 0, binding = 5, std430) restrict readonly buffer OmniLights {
 	LightData data[];
 }
@@ -201,7 +204,7 @@ layout(set = 1, binding = 0, std140) uniform SceneData {
 	float z_far;
 	float z_near;
 
-	bool ssao_enabled;
+	uint ss_effects_flags;
 	float ssao_light_affect;
 	float ssao_ao_affect;
 	bool roughness_limiter_enabled;
@@ -325,6 +328,8 @@ layout(set = 1, binding = 17, std140) uniform VoxelGIs {
 voxel_gi_instances;
 
 layout(set = 1, binding = 18) uniform texture3D volumetric_fog_texture;
+
+layout(set = 1, binding = 19) uniform texture2D ssil_buffer;
 
 #endif
 

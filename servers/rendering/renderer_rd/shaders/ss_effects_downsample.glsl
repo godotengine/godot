@@ -42,6 +42,9 @@ layout(r16f, set = 1, binding = 0) uniform restrict writeonly image2DArray dest_
 layout(r16f, set = 2, binding = 0) uniform restrict writeonly image2DArray dest_image1;
 layout(r16f, set = 2, binding = 1) uniform restrict writeonly image2DArray dest_image2;
 layout(r16f, set = 2, binding = 2) uniform restrict writeonly image2DArray dest_image3;
+#ifdef GENERATE_FULL_MIPS
+layout(r16f, set = 2, binding = 3) uniform restrict writeonly image2DArray dest_image4;
+#endif
 #endif
 
 vec4 screen_space_to_view_space_depth(vec4 p_depth) {
@@ -150,7 +153,27 @@ void prepare_depths_and_mips(vec4 p_samples, uvec2 p_output_coord, uvec2 p_gtid)
 
 		float avg = mip_smart_average(vec4(sample_00, sample_01, sample_10, sample_11));
 		imageStore(dest_image3, ivec3(p_output_coord.x, p_output_coord.y, depth_array_index), vec4(avg));
+#ifndef GENERATE_FULL_MIPS
 	}
+#else
+		depth_buffer[depth_array_index][buffer_coord.x][buffer_coord.y] = avg;
+	}
+	still_alive = p_gtid.x % 16 == depth_array_offset.x && depth_array_offset.y % 16 == depth_array_offset.y;
+
+	p_output_coord /= 2;
+	groupMemoryBarrier();
+	barrier();
+
+	if (still_alive) {
+		float sample_00 = depth_buffer[depth_array_index][buffer_coord.x + 0][buffer_coord.y + 0];
+		float sample_01 = depth_buffer[depth_array_index][buffer_coord.x + 0][buffer_coord.y + 8];
+		float sample_10 = depth_buffer[depth_array_index][buffer_coord.x + 8][buffer_coord.y + 0];
+		float sample_11 = depth_buffer[depth_array_index][buffer_coord.x + 8][buffer_coord.y + 8];
+
+		float avg = mip_smart_average(vec4(sample_00, sample_01, sample_10, sample_11));
+		imageStore(dest_image4, ivec3(p_output_coord.x, p_output_coord.y, depth_array_index), vec4(avg));
+	}
+#endif
 }
 #else
 #ifndef USE_HALF_BUFFERS

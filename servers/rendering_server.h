@@ -900,6 +900,7 @@ public:
 		VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS,
 		VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE,
 		VIEWPORT_DEBUG_DRAW_SSAO,
+		VIEWPORT_DEBUG_DRAW_SSIL,
 		VIEWPORT_DEBUG_DRAW_PSSM_SPLITS,
 		VIEWPORT_DEBUG_DRAW_DECAL_ATLAS,
 		VIEWPORT_DEBUG_DRAW_SDFGI,
@@ -1015,6 +1016,18 @@ public:
 	};
 
 	virtual void environment_set_ssao_quality(EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) = 0;
+
+	virtual void environment_set_ssil(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_sharpness, float p_normal_rejection) = 0;
+
+	enum EnvironmentSSILQuality {
+		ENV_SSIL_QUALITY_VERY_LOW,
+		ENV_SSIL_QUALITY_LOW,
+		ENV_SSIL_QUALITY_MEDIUM,
+		ENV_SSIL_QUALITY_HIGH,
+		ENV_SSIL_QUALITY_ULTRA,
+	};
+
+	virtual void environment_set_ssil_quality(EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) = 0;
 
 	enum EnvironmentSDFGICascades {
 		ENV_SDFGI_CASCADES_4,

@@ -1606,6 +1606,24 @@
 		<member name="rendering/environment/ssao/quality" type="int" setter="" getter="" default="2">
 			Sets the quality of the screen-space ambient occlusion effect. Higher values take more samples and so will result in better quality, at the cost of performance. Setting to [code]ULTRA[/code] will use the [member rendering/environment/ssao/adaptive_target] setting.
 		</member>
+		<member name="rendering/environment/ssil/adaptive_target" type="float" setter="" getter="" default="0.5">
+			Quality target to use when [member rendering/environment/ssil/quality] is set to [code]ULTRA[/code]. A value of [code]0.0[/code] provides a quality and speed similar to [code]MEDIUM[/code] while a value of [code]1.0[/code] provides much higher quality than any of the other settings at the cost of performance. When using the adaptive target, the performance cost scales with the complexity of the scene.
+		</member>
+		<member name="rendering/environment/ssil/blur_passes" type="int" setter="" getter="" default="4">
+			Number of blur passes to use when computing screen-space indirect lighting. A higher number will result in a smoother look, but will be slower to compute and will have less high-frequency detail.
+		</member>
+		<member name="rendering/environment/ssil/fadeout_from" type="float" setter="" getter="" default="50.0">
+			Distance at which the screen-space indirect lighting effect starts to fade out. Use this hide screen-space indirect lighting at great distances.
+		</member>
+		<member name="rendering/environment/ssil/fadeout_to" type="float" setter="" getter="" default="300.0">
+			Distance at which the screen-space indirect lighting is fully faded out. Use this hide screen-space indirect lighting at great distances.
+		</member>
+		<member name="rendering/environment/ssil/half_size" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], screen-space indirect lighting will be rendered at half size and then upscaled before being added to the scene. This is significantly faster but may miss small details and may result in some objects appearing to glow at their edges.
+		</member>
+		<member name="rendering/environment/ssil/quality" type="int" setter="" getter="" default="2">
+			Sets the quality of the screen-space indirect lighting effect. Higher values take more samples and so will result in better quality, at the cost of performance. Setting to [code]ULTRA[/code] will use the [member rendering/environment/ssil/adaptive_target] setting.
+		</member>
 		<member name="rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale" type="float" setter="" getter="" default="0.01">
 			Scales the depth over which the subsurface scattering effect is applied. A high value may allow light to scatter into a part of the mesh or another mesh that is close in screen space but far in depth.
 		</member>

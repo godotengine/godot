@@ -722,7 +722,7 @@ void RenderForwardClustered::_setup_environment(const RenderDataRD *p_render_dat
 		scene_state.ubo.ambient_light_color_energy[3] = 1.0;
 		scene_state.ubo.use_ambient_cubemap = false;
 		scene_state.ubo.use_reflection_cubemap = false;
-		scene_state.ubo.ssao_enabled = false;
+		scene_state.ubo.ss_effects_flags = 0;
 
 	} else if (is_environment(p_render_data->environment)) {
 		RS::EnvironmentBG env_bg = environment_get_background(p_render_data->environment);
@@ -767,9 +767,14 @@ void RenderForwardClustered::_setup_environment(const RenderDataRD *p_render_dat
 			scene_state.ubo.use_reflection_cubemap = false;
 		}
 
-		scene_state.ubo.ssao_enabled = p_opaque_render_buffers && environment_is_ssao_enabled(p_render_data->environment);
 		scene_state.ubo.ssao_ao_affect = environment_get_ssao_ao_affect(p_render_data->environment);
 		scene_state.ubo.ssao_light_affect = environment_get_ssao_light_affect(p_render_data->environment);
+		uint32_t ss_flags = 0;
+		if (p_opaque_render_buffers) {
+			ss_flags |= environment_is_ssao_enabled(p_render_data->environment) ? 1 : 0;
+			ss_flags |= environment_is_ssil_enabled(p_render_data->environment) ? 2 : 0;
+		}
+		scene_state.ubo.ss_effects_flags = ss_flags;
 
 		scene_state.ubo.fog_enabled = environment_is_fog_enabled(p_render_data->environment);
 		scene_state.ubo.fog_density = environment_get_fog_density(p_render_data->environment);
@@ -801,7 +806,7 @@ void RenderForwardClustered::_setup_environment(const RenderDataRD *p_render_dat
 
 		scene_state.ubo.use_ambient_cubemap = false;
 		scene_state.ubo.use_reflection_cubemap = false;
-		scene_state.ubo.ssao_enabled = false;
+		scene_state.ubo.ss_effects_flags = 0;
 	}
 
 	scene_state.ubo.roughness_limiter_enabled = p_opaque_render_buffers && screen_space_roughness_limiter_is_active();
@@ -1216,6 +1221,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	bool using_sdfgi = false;
 	bool using_voxelgi = false;
 	bool reverse_cull = false;
+	bool using_ssil = p_render_data->environment.is_valid() && environment_is_ssil_enabled(p_render_data->environment);
 
 	if (render_buffer) {
 		screen_size.x = render_buffer->width;
@@ -1245,7 +1251,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				opaque_specular_framebuffer = render_buffer->color_specular_fb;
 			}
 
-		} else if (p_render_data->environment.is_valid() && (environment_is_ssao_enabled(p_render_data->environment) || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER)) {
+		} else if (p_render_data->environment.is_valid() && (environment_is_ssao_enabled(p_render_data->environment) || using_ssil || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER)) {
 			depth_pass_mode = PASS_MODE_DEPTH_NORMAL_ROUGHNESS;
 		}
 
@@ -1440,7 +1446,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		continue_depth = !finish_depth;
 	}
 
-	_pre_opaque_render(p_render_data, using_ssao, using_sdfgi || using_voxelgi, render_buffer ? render_buffer->normal_roughness_buffer : RID(), render_buffer ? render_buffer->voxelgi_buffer : RID());
+	_pre_opaque_render(p_render_data, using_ssao, using_ssil, using_sdfgi || using_voxelgi, render_buffer ? render_buffer->normal_roughness_buffer : RID(), render_buffer ? render_buffer->voxelgi_buffer : RID());
 
 	RD::get_singleton()->draw_command_begin_label("Render Opaque Pass");
 
@@ -1584,12 +1590,21 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	RD::get_singleton()->draw_command_end_label();
 
+	RENDER_TIMESTAMP("Resolve");
+
 	RD::get_singleton()->draw_command_begin_label("Resolve");
 
 	if (render_buffer && render_buffer->msaa != RS::VIEWPORT_MSAA_DISABLED) {
 		RD::get_singleton()->texture_resolve_multisample(render_buffer->color_msaa, render_buffer->color);
 	}
 
+	RD::get_singleton()->draw_command_end_label();
+
+	RD::get_singleton()->draw_command_begin_label("Copy framebuffer for SSIL");
+	if (using_ssil) {
+		RENDER_TIMESTAMP("Copy Final Framebuffer");
+		_copy_framebuffer_to_ssil(p_render_data->render_buffers);
+	}
 	RD::get_singleton()->draw_command_end_label();
 
 	if (p_render_data->render_buffers.is_valid()) {
@@ -2354,6 +2369,15 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 				vfog = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE);
 			}
 			u.ids.push_back(vfog);
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.binding = 19;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+			RID ssil = rb ? render_buffers_get_ssil_texture(p_render_data->render_buffers) : RID();
+			RID texture = ssil.is_valid() ? ssil : storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK);
+			u.ids.push_back(texture);
 			uniforms.push_back(u);
 		}
 	}

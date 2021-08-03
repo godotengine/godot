@@ -84,6 +84,8 @@ void main() {
 	color += texelFetch(source_color, base_pos + ivec2(1, 0), 0);
 	color += texelFetch(source_color, base_pos + ivec2(1, 1), 0);
 	color /= 4.0;
+	color = mix(color, vec4(100.0, 100.0, 100.0, 1.0), isinf(color));
+	color = mix(color, vec4(100.0, 100.0, 100.0, 1.0), isnan(color));
 
 	imageStore(dest_buffer, pos + params.target, color);
 #endif

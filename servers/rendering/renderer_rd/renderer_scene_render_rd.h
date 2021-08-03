@@ -129,12 +129,15 @@ protected:
 	void _process_ssao(RID p_render_buffers, RID p_environment, RID p_normal_buffer, const CameraMatrix &p_projection);
 	void _process_ssr(RID p_render_buffers, RID p_dest_framebuffer, RID p_normal_buffer, RID p_specular_buffer, RID p_metallic, const Color &p_metallic_mask, RID p_environment, const CameraMatrix &p_projection, bool p_use_additive);
 	void _process_sss(RID p_render_buffers, const CameraMatrix &p_camera);
+	void _process_ssil(RID p_render_buffers, RID p_environment, RID p_normal_buffer, const CameraMatrix &p_projection, const Transform3D &p_transform);
+	void _copy_framebuffer_to_ssil(RID p_render_buffers);
+	void _ensure_ss_effects(RID p_render_buffers, bool p_using_ssil);
 
 	bool _needs_post_prepass_render(RenderDataRD *p_render_data, bool p_use_gi);
 	void _post_prepass_render(RenderDataRD *p_render_data, bool p_use_gi);
 	void _pre_resolve_render(RenderDataRD *p_render_data, bool p_use_gi);
 
-	void _pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_gi, RID p_normal_roughness_buffer, RID p_voxel_gi_buffer);
+	void _pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_ssil, bool p_use_gi, RID p_normal_roughness_buffer, RID p_voxel_gi_buffer);
 
 	void _render_buffers_copy_screen_texture(const RenderDataRD *p_render_data);
 	void _render_buffers_copy_depth_texture(const RenderDataRD *p_render_data);
@@ -415,6 +418,14 @@ private:
 	float ssao_fadeout_from = 50.0;
 	float ssao_fadeout_to = 300.0;
 
+	RS::EnvironmentSSILQuality ssil_quality = RS::ENV_SSIL_QUALITY_MEDIUM;
+	bool ssil_half_size = false;
+	bool ssil_using_half_size = false;
+	float ssil_adaptive_target = 0.5;
+	int ssil_blur_passes = 4;
+	float ssil_fadeout_from = 50.0;
+	float ssil_fadeout_to = 300.0;
+
 	bool glow_bicubic_upscale = false;
 	bool glow_high_quality = false;
 	RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::ENV_SSR_ROUGNESS_QUALITY_LOW;
@@ -517,20 +528,47 @@ private:
 			RID current_fb;
 		} luminance;
 
-		struct SSAO {
-			RID depth;
-			Vector<RID> depth_slices;
-			RID ao_deinterleaved;
-			Vector<RID> ao_deinterleaved_slices;
-			RID ao_pong;
-			Vector<RID> ao_pong_slices;
-			RID ao_final;
-			RID importance_map[2];
+		struct SSEffects {
+			RID linear_depth;
+			Vector<RID> linear_depth_slices;
 
 			RID downsample_uniform_set;
-			RID gather_uniform_set;
-			RID importance_map_uniform_set;
-		} ssao;
+
+			RID last_frame;
+			Vector<RID> last_frame_slices;
+
+			CameraMatrix last_frame_projection;
+			Transform3D last_frame_transform;
+
+			struct SSAO {
+				RID ao_deinterleaved;
+				Vector<RID> ao_deinterleaved_slices;
+				RID ao_pong;
+				Vector<RID> ao_pong_slices;
+				RID ao_final;
+				RID importance_map[2];
+				RID depth_texture_view;
+
+				RID gather_uniform_set;
+				RID importance_map_uniform_set;
+			} ssao;
+
+			struct SSIL {
+				RID ssil_final;
+				RID deinterleaved;
+				Vector<RID> deinterleaved_slices;
+				RID pong;
+				Vector<RID> pong_slices;
+				RID edges;
+				Vector<RID> edges_slices;
+				RID importance_map[2];
+				RID depth_texture_view;
+
+				RID gather_uniform_set;
+				RID importance_map_uniform_set;
+				RID projection_uniform_set;
+			} ssil;
+		} ss_effects;
 
 		struct SSR {
 			RID normal_scaled;
@@ -1039,9 +1077,12 @@ public:
 	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance) override;
 	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_light_affect, float p_ao_channel_affect) override;
 	virtual void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override;
+	virtual void environment_set_ssil(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_sharpness, float p_normal_rejection) override;
+	virtual void environment_set_ssil_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override;
 	bool environment_is_ssao_enabled(RID p_env) const;
 	float environment_get_ssao_ao_affect(RID p_env) const;
 	float environment_get_ssao_light_affect(RID p_env) const;
+	bool environment_is_ssil_enabled(RID p_env) const;
 	bool environment_is_ssr_enabled(RID p_env) const;
 	bool environment_is_sdfgi_enabled(RID p_env) const;
 
@@ -1337,6 +1378,7 @@ public:
 
 	RID render_buffers_get_depth_texture(RID p_render_buffers);
 	RID render_buffers_get_ao_texture(RID p_render_buffers);
+	RID render_buffers_get_ssil_texture(RID p_render_buffers);
 	RID render_buffers_get_back_buffer_texture(RID p_render_buffers);
 	RID render_buffers_get_back_depth_texture(RID p_render_buffers);
 	RID render_buffers_get_voxel_gi_buffer(RID p_render_buffers);

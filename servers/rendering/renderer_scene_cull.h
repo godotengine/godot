@@ -1107,6 +1107,9 @@ public:
 	PASS10(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, float)
 	PASS6(environment_set_ssao_quality, RS::EnvironmentSSAOQuality, bool, float, int, float, float)
 
+	PASS6(environment_set_ssil, RID, bool, float, float, float, float)
+	PASS6(environment_set_ssil_quality, RS::EnvironmentSSILQuality, bool, float, int, float, float)
+
 	PASS11(environment_set_glow, RID, bool, Vector<float>, float, float, float, float, RS::EnvironmentGlowBlendMode, float, float, float)
 	PASS1(environment_glow_set_use_bicubic_upscale, bool)
 	PASS1(environment_glow_set_use_high_quality, bool)

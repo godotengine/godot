@@ -560,7 +560,8 @@
 			<argument index="1" name="with_texture" type="RID" />
 			<argument index="2" name="layer" type="int" />
 			<argument index="3" name="mipmap" type="int" />
-			<argument index="4" name="slice_type" type="int" enum="RenderingDevice.TextureSliceType" default="0" />
+			<argument index="4" name="mipmaps" type="int" default="1" />
+			<argument index="5" name="slice_type" type="int" enum="RenderingDevice.TextureSliceType" default="0" />
 			<description>
 			</description>
 		</method>
