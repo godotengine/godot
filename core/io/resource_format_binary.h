@@ -164,6 +164,8 @@ public:
 	enum {
 		FORMAT_FLAG_NAMED_SCENE_IDS = 1,
 		FORMAT_FLAG_UIDS = 2,
+		// Amount of reserved 32-bit fields in resource header
+		RESERVED_FIELDS = 11
 	};
 	Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);
 	static void write_variant(FileAccess *f, const Variant &p_property, Map<RES, int> &resource_map, Map<RES, int> &external_resources, Map<StringName, int> &string_map, const PropertyInfo &p_hint = PropertyInfo());
