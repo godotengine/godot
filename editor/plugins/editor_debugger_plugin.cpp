@@ -32,7 +32,7 @@
 
 #include "editor/debugger/script_editor_debugger.h"
 
-void EditorDebuggerPlugin::_breaked(bool p_really_did, bool p_can_debug) {
+void EditorDebuggerPlugin::_breaked(bool p_really_did, bool p_can_debug, String p_message, bool p_has_stackdump) {
 	if (p_really_did) {
 		emit_signal(SNAME("breaked"), p_can_debug);
 	} else {

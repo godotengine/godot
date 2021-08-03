@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  editor_debugger_plugin.h                                             */
+/*  debug_adapter_server.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,37 +28,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_DEBUGGER_PLUGIN_H
-#define EDITOR_DEBUGGER_PLUGIN_H
+#ifndef DEBUG_ADAPTER_SERVER_H
+#define DEBUG_ADAPTER_SERVER_H
 
-#include "scene/gui/control.h"
+#include "debug_adapter_protocol.h"
+#include "editor/editor_plugin.h"
 
-class ScriptEditorDebugger;
+class DebugAdapterServer : public EditorPlugin {
+	GDCLASS(DebugAdapterServer, EditorPlugin);
 
-class EditorDebuggerPlugin : public Control {
-	GDCLASS(EditorDebuggerPlugin, Control);
+	DebugAdapterProtocol protocol;
+
+	Thread thread;
+	int remote_port = 6006;
+	bool thread_running = false;
+	bool started = false;
+	bool use_thread = false;
+	bool polling = false;
+	static void thread_func(void *p_userdata);
 
 private:
-	ScriptEditorDebugger *debugger = nullptr;
-
-	void _breaked(bool p_really_did, bool p_can_debug, String p_message, bool p_has_stackdump);
-	void _started();
-	void _stopped();
-
-protected:
-	static void _bind_methods();
+	void _notification(int p_what);
 
 public:
-	void attach_debugger(ScriptEditorDebugger *p_debugger);
-	void detach_debugger(bool p_call_debugger);
-	void send_message(const String &p_message, const Array &p_args);
-	void register_message_capture(const StringName &p_name, const Callable &p_callable);
-	void unregister_message_capture(const StringName &p_name);
-	bool has_capture(const StringName &p_name);
-	bool is_breaked();
-	bool is_debuggable();
-	bool is_session_active();
-	~EditorDebuggerPlugin();
+	DebugAdapterServer();
+	void start();
+	void stop();
 };
 
-#endif // EDITOR_DEBUGGER_PLUGIN_H
+#endif

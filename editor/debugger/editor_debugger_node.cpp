@@ -466,7 +466,7 @@ void EditorDebuggerNode::_paused() {
 	});
 }
 
-void EditorDebuggerNode::_breaked(bool p_breaked, bool p_can_debug, int p_debugger) {
+void EditorDebuggerNode::_breaked(bool p_breaked, bool p_can_debug, String p_message, bool p_has_stackdump, int p_debugger) {
 	if (get_current_debugger() != get_debugger(p_debugger)) {
 		if (!p_breaked) {
 			return;
@@ -487,6 +487,19 @@ void EditorDebuggerNode::set_breakpoint(const String &p_path, int p_line, bool p
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
 		dbg->set_breakpoint(p_path, p_line, p_enabled);
 	});
+}
+
+void EditorDebuggerNode::set_breakpoints(const String &p_path, Array p_lines) {
+	for (int i = 0; i < p_lines.size(); i++) {
+		set_breakpoint(p_path, p_lines[i], true);
+	}
+
+	for (Map<Breakpoint, bool>::Element *E = breakpoints.front(); E; E = E->next()) {
+		Breakpoint b = E->key();
+		if (b.source == p_path && !p_lines.has(b.line)) {
+			set_breakpoint(p_path, b.line, false);
+		}
+	}
 }
 
 void EditorDebuggerNode::reload_scripts() {

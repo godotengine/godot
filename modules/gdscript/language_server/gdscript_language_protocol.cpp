@@ -128,13 +128,13 @@ Error GDScriptLanguageProtocol::on_client_connected() {
 	peer->connection = tcp_peer;
 	clients.set(next_client_id, peer);
 	next_client_id++;
-	EditorNode::get_log()->add_message("Connection Taken", EditorLog::MSG_TYPE_EDITOR);
+	EditorNode::get_log()->add_message("[LSP] Connection Taken", EditorLog::MSG_TYPE_EDITOR);
 	return OK;
 }
 
 void GDScriptLanguageProtocol::on_client_disconnected(const int &p_client_id) {
 	clients.erase(p_client_id);
-	EditorNode::get_log()->add_message("Disconnected", EditorLog::MSG_TYPE_EDITOR);
+	EditorNode::get_log()->add_message("[LSP] Disconnected", EditorLog::MSG_TYPE_EDITOR);
 }
 
 String GDScriptLanguageProtocol::process_message(const String &p_text) {

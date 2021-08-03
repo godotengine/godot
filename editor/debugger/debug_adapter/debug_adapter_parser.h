@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  editor_debugger_plugin.h                                             */
+/*  debug_adapter_parser.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,37 +28,61 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_DEBUGGER_PLUGIN_H
-#define EDITOR_DEBUGGER_PLUGIN_H
+#ifndef DEBUG_ADAPTER_PARSER_H
+#define DEBUG_ADAPTER_PARSER_H
 
-#include "scene/gui/control.h"
+#include "core/config/project_settings.h"
+#include "debug_adapter_protocol.h"
+#include "debug_adapter_types.h"
 
-class ScriptEditorDebugger;
+struct DAPeer;
+class DebugAdapterProtocol;
 
-class EditorDebuggerPlugin : public Control {
-	GDCLASS(EditorDebuggerPlugin, Control);
+class DebugAdapterParser : public Object {
+	GDCLASS(DebugAdapterParser, Object);
 
 private:
-	ScriptEditorDebugger *debugger = nullptr;
+	friend DebugAdapterProtocol;
 
-	void _breaked(bool p_really_did, bool p_can_debug, String p_message, bool p_has_stackdump);
-	void _started();
-	void _stopped();
+	_FORCE_INLINE_ bool is_valid_path(const String &p_path) {
+		return p_path.begins_with(ProjectSettings::get_singleton()->get_resource_path());
+	}
 
 protected:
 	static void _bind_methods();
 
+	Dictionary prepare_base_event() const;
+	Dictionary prepare_success_response(const Dictionary &p_params) const;
+	Dictionary prepare_error_response(const Dictionary &p_params, DAP::ErrorType err_type, const Dictionary &variables = Dictionary()) const;
+
+	Dictionary ev_stopped() const;
+
 public:
-	void attach_debugger(ScriptEditorDebugger *p_debugger);
-	void detach_debugger(bool p_call_debugger);
-	void send_message(const String &p_message, const Array &p_args);
-	void register_message_capture(const StringName &p_name, const Callable &p_callable);
-	void unregister_message_capture(const StringName &p_name);
-	bool has_capture(const StringName &p_name);
-	bool is_breaked();
-	bool is_debuggable();
-	bool is_session_active();
-	~EditorDebuggerPlugin();
+	// Requests
+	Dictionary req_initialize(const Dictionary &p_params) const;
+	Dictionary req_launch(const Dictionary &p_params);
+	Dictionary req_terminate(const Dictionary &p_params) const;
+	Dictionary req_pause(const Dictionary &p_params) const;
+	Dictionary req_continue(const Dictionary &p_params) const;
+	Dictionary req_threads(const Dictionary &p_params) const;
+	Dictionary req_stackTrace(const Dictionary &p_params) const;
+	Dictionary req_setBreakpoints(const Dictionary &p_params);
+	Dictionary req_scopes(const Dictionary &p_params);
+	Dictionary req_variables(const Dictionary &p_params) const;
+	Dictionary req_next(const Dictionary &p_params) const;
+	Dictionary req_stepIn(const Dictionary &p_params) const;
+
+	// Events
+	Dictionary ev_initialized() const;
+	Dictionary ev_process(const String &p_command) const;
+	Dictionary ev_terminated() const;
+	Dictionary ev_exited(const int &p_exitcode) const;
+	Dictionary ev_stopped_paused() const;
+	Dictionary ev_stopped_exception(const String &p_error) const;
+	Dictionary ev_stopped_breakpoint(const int &p_id) const;
+	Dictionary ev_stopped_step() const;
+	Dictionary ev_continued() const;
+	Dictionary ev_output(const String &p_message) const;
 };
 
-#endif // EDITOR_DEBUGGER_PLUGIN_H
+#endif

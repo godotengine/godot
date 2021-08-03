@@ -55,11 +55,15 @@ class EditorNetworkProfiler;
 class EditorPerformanceProfiler;
 class SceneDebuggerTree;
 class EditorDebuggerPlugin;
+class DebugAdapterProtocol;
+class DebugAdapterParser;
 
 class ScriptEditorDebugger : public MarginContainer {
 	GDCLASS(ScriptEditorDebugger, MarginContainer);
 
 	friend class EditorDebuggerNode;
+	friend class DebugAdapterProtocol;
+	friend class DebugAdapterParser;
 
 private:
 	enum MessageType {
@@ -147,6 +151,7 @@ private:
 	OS::ProcessID remote_pid = 0;
 	bool breaked = false;
 	bool can_debug = false;
+	bool move_to_foreground = true;
 
 	bool live_debug;
 
@@ -230,11 +235,16 @@ public:
 	bool is_session_active() { return peer.is_valid() && peer->is_peer_connected(); };
 	int get_remote_pid() const { return remote_pid; }
 
+	bool is_move_to_foreground() const;
+	void set_move_to_foreground(const bool &p_move_to_foreground);
+
 	int get_error_count() const { return error_count; }
 	int get_warning_count() const { return warning_count; }
 	String get_stack_script_file() const;
 	int get_stack_script_line() const;
 	int get_stack_script_frame() const;
+
+	bool request_stack_dump(const int &p_frame);
 
 	void update_tabs();
 	void clear_style();
