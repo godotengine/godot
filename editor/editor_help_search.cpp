@@ -367,7 +367,7 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 			if (search_flags & SEARCH_THEME_ITEMS) {
 				for (int i = 0; i < class_doc.theme_properties.size(); i++) {
 					if (_match_string(term, class_doc.theme_properties[i].name)) {
-						match.theme_properties.push_back(const_cast<DocData::PropertyDoc *>(&class_doc.theme_properties[i]));
+						match.theme_properties.push_back(const_cast<DocData::ThemeItemDoc *>(&class_doc.theme_properties[i]));
 					}
 				}
 			}
@@ -571,7 +571,7 @@ TreeItem *EditorHelpSearch::Runner::_create_property_item(TreeItem *p_parent, co
 	return _create_member_item(p_parent, p_class_doc->name, "MemberProperty", p_doc->name, p_doc->name, TTRC("Property"), "property", tooltip);
 }
 
-TreeItem *EditorHelpSearch::Runner::_create_theme_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::PropertyDoc *p_doc) {
+TreeItem *EditorHelpSearch::Runner::_create_theme_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ThemeItemDoc *p_doc) {
 	String tooltip = p_doc->type + " " + p_class_doc->name + "." + p_doc->name;
 	return _create_member_item(p_parent, p_class_doc->name, "MemberTheme", p_doc->name, p_doc->name, TTRC("Theme Property"), "theme_item", tooltip);
 }

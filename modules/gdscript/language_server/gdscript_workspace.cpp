@@ -231,23 +231,29 @@ Error GDScriptWorkspace::initialize() {
 			class_symbol.children.push_back(symbol);
 		}
 
-		Vector<DocData::PropertyDoc> properties;
-		properties.append_array(class_data.properties);
-		const int theme_prop_start_idx = properties.size();
-		properties.append_array(class_data.theme_properties);
-
 		for (int i = 0; i < class_data.properties.size(); i++) {
 			const DocData::PropertyDoc &data = class_data.properties[i];
 			lsp::DocumentSymbol symbol;
 			symbol.name = data.name;
 			symbol.native_class = class_name;
 			symbol.kind = lsp::SymbolKind::Property;
-			symbol.detail = String(i >= theme_prop_start_idx ? "<Theme> var" : "var") + " " + class_name + "." + data.name;
+			symbol.detail = "var " + class_name + "." + data.name;
 			if (data.enumeration.length()) {
 				symbol.detail += ": " + data.enumeration;
 			} else {
 				symbol.detail += ": " + data.type;
 			}
+			symbol.documentation = data.description;
+			class_symbol.children.push_back(symbol);
+		}
+
+		for (int i = 0; i < class_data.theme_properties.size(); i++) {
+			const DocData::ThemeItemDoc &data = class_data.theme_properties[i];
+			lsp::DocumentSymbol symbol;
+			symbol.name = data.name;
+			symbol.native_class = class_name;
+			symbol.kind = lsp::SymbolKind::Property;
+			symbol.detail = "<Theme> var " + class_name + "." + data.name + ": " + data.type;
 			symbol.documentation = data.description;
 			class_symbol.children.push_back(symbol);
 		}
