@@ -1496,11 +1496,11 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 						for (int j = 0; j < p_vertex_len; j++) {
 							const int8_t *t = (const int8_t *)&r[j * total_elem_size + offsets[i]];
 							Vector2 enc(t[0] / 127.0f, t[1] / 127.0f);
-							Vector3 dec = oct_to_tangent(enc, &w[j * 3 + 2]);
+							Vector3 dec = oct_to_tangent(enc, &w[j * 4 + 3]);
 
-							w[j * 3 + 0] = dec.x;
-							w[j * 3 + 1] = dec.y;
-							w[j * 3 + 2] = dec.z;
+							w[j * 4 + 0] = dec.x;
+							w[j * 4 + 1] = dec.y;
+							w[j * 4 + 2] = dec.z;
 						}
 					} else {
 						PoolVector<float>::Write w = arr.write();
@@ -1508,11 +1508,11 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 						for (int j = 0; j < p_vertex_len; j++) {
 							const int16_t *t = (const int16_t *)&r[j * total_elem_size + offsets[i]];
 							Vector2 enc(t[0] / 32767.0f, t[1] / 32767.0f);
-							Vector3 dec = oct_to_tangent(enc, &w[j * 3 + 2]);
+							Vector3 dec = oct_to_tangent(enc, &w[j * 4 + 3]);
 
-							w[j * 3 + 0] = dec.x;
-							w[j * 3 + 1] = dec.y;
-							w[j * 3 + 2] = dec.z;
+							w[j * 4 + 0] = dec.x;
+							w[j * 4 + 1] = dec.y;
+							w[j * 4 + 2] = dec.z;
 						}
 					}
 				} else {
