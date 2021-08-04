@@ -45,6 +45,7 @@ class Room : public Spatial {
 	friend class Portal;
 	friend class RoomGizmoPlugin;
 	friend class RoomEditorPlugin;
+	friend class RoomSpatialGizmo;
 
 	RID _room_rid;
 
@@ -70,6 +71,9 @@ public:
 
 	void set_points(const PoolVector<Vector3> &p_points);
 	PoolVector<Vector3> get_points() const;
+
+	// primarily for the gizmo
+	void set_point(int p_idx, const Vector3 &p_point);
 
 	// editor only
 	PoolVector<Vector3> generate_points();
