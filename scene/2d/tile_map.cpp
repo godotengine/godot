@@ -1053,9 +1053,13 @@ void TileMap::_physics_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r
 
 		Vector2 quadrant_pos = map_to_world(q.coords * get_effective_quadrant_size(q.layer));
 
+		LocalVector<int> body_shape_count;
+		body_shape_count.resize(q.bodies.size());
+
 		// Clear shapes.
 		for (int body_index = 0; body_index < q.bodies.size(); body_index++) {
 			ps->body_clear_shapes(q.bodies[body_index]);
+			body_shape_count[body_index] = 0;
 
 			// Position the bodies.
 			Transform2D xform;
@@ -1080,6 +1084,8 @@ void TileMap::_physics_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r
 					TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
 
 					for (int body_index = 0; body_index < q.bodies.size(); body_index++) {
+						int &body_shape_index = body_shape_count[body_index];
+
 						// Add the shapes again.
 						for (int polygon_index = 0; polygon_index < tile_data->get_collision_polygons_count(body_index); polygon_index++) {
 							bool one_way_collision = tile_data->is_collision_polygon_one_way(body_index, polygon_index);
@@ -1093,8 +1099,10 @@ void TileMap::_physics_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r
 								// Add decomposed convex shapes.
 								Ref<ConvexPolygonShape2D> shape = tile_data->get_collision_polygon_shape(body_index, polygon_index, shape_index);
 								ps->body_add_shape(q.bodies[body_index], shape->get_rid(), xform);
-								ps->body_set_shape_metadata(q.bodies[body_index], shape_index, E_cell->get());
-								ps->body_set_shape_as_one_way_collision(q.bodies[body_index], shape_index, one_way_collision, one_way_collision_margin);
+								ps->body_set_shape_metadata(q.bodies[body_index], body_shape_index, E_cell->get());
+								ps->body_set_shape_as_one_way_collision(q.bodies[body_index], body_shape_index, one_way_collision, one_way_collision_margin);
+
+								++body_shape_index;
 							}
 						}
 					}
