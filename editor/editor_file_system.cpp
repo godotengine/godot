@@ -165,6 +165,11 @@ StringName EditorFileSystemDirectory::get_file_type(int p_idx) const {
 	return files[p_idx]->type;
 }
 
+ResourceUID::ID EditorFileSystemDirectory::get_file_uid(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, files.size(), ResourceUID::INVALID_ID);
+	return files[p_idx]->uid;
+}
+
 String EditorFileSystemDirectory::get_name() {
 	return name;
 }
