@@ -197,6 +197,7 @@ class ThemeItemEditorDialog : public AcceptDialog {
 	Button *edit_items_remove_custom;
 	Button *edit_items_remove_all;
 	Tree *edit_items_tree;
+	Label *edit_items_message;
 
 	enum ItemsTreeAction {
 		ITEMS_TREE_RENAME_ITEM,
@@ -324,6 +325,7 @@ class ThemeTypeEditor : public MarginContainer {
 
 	LineEdit *type_variation_edit;
 	Button *type_variation_button;
+	Label *type_variation_locked;
 
 	enum TypeDialogMode {
 		ADD_THEME_TYPE,
