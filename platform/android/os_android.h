@@ -32,7 +32,6 @@
 #define OS_ANDROID_H
 
 #include "audio_driver_opensl.h"
-#include "core/os/input.h"
 #include "core/os/main_loop.h"
 #include "drivers/unix/os_unix.h"
 #include "main/input_default.h"
@@ -43,32 +42,6 @@ class GodotJavaWrapper;
 class GodotIOJavaWrapper;
 
 class OS_Android : public OS_Unix {
-public:
-	struct TouchPos {
-		int id;
-		Point2 pos;
-	};
-
-	enum {
-		JOY_EVENT_BUTTON = 0,
-		JOY_EVENT_AXIS = 1,
-		JOY_EVENT_HAT = 2
-	};
-
-	struct JoypadEvent {
-		int device;
-		int type;
-		int index;
-		bool pressed;
-		float value;
-		int hat;
-	};
-
-private:
-	Vector<TouchPos> touch;
-	Point2 hover_prev_pos; // needed to calculate the relative position on hover events
-	Point2 scroll_prev_pos; // needed to calculate the relative position on scroll events
-
 	bool use_gl2;
 	bool use_apk_expansion;
 
@@ -92,21 +65,6 @@ private:
 	//PowerAndroid *power_manager_func;
 
 	int video_driver_index;
-
-	bool alt_mem = false;
-	bool shift_mem = false;
-	bool control_mem = false;
-	bool meta_mem = false;
-
-	int buttons_state;
-
-	void _set_key_modifier_state(Ref<InputEventWithModifiers> ev) const;
-
-	static int _button_index_from_mask(int button_mask);
-
-	static int _android_button_mask_to_godot_button_mask(int android_button_mask);
-
-	void _wheel_button_click(int event_buttons_mask, const Ref<InputEventMouseButton> &ev, int wheel_button, float factor);
 
 public:
 	// functions used by main to initialize/deinitialize the OS
@@ -162,7 +120,6 @@ public:
 
 	void main_loop_begin();
 	bool main_loop_iterate();
-	void main_loop_request_go_back();
 	void main_loop_end();
 	void main_loop_focusout();
 	void main_loop_focusin();
@@ -200,19 +157,10 @@ public:
 	void process_gravity(const Vector3 &p_gravity);
 	void process_magnetometer(const Vector3 &p_magnetometer);
 	void process_gyroscope(const Vector3 &p_gyroscope);
-	void process_touch(int p_event, int p_pointer, const Vector<TouchPos> &p_points);
-	void process_hover(int p_type, Point2 p_pos);
-	void process_mouse_event(int event_action, int event_android_buttons_mask, Point2 event_pos, float event_vertical_factor = 0, float event_horizontal_factor = 0);
-	void process_double_tap(int event_android_button_mask, Point2 p_pos);
-	void process_scroll(Point2 p_pos);
-	void process_joy_event(JoypadEvent p_event);
-	void process_key_event(int p_keycode, int p_scancode, int p_unicode_char, bool p_pressed);
-	void process_event(Ref<InputEvent> p_event);
 	void init_video_mode(int p_video_width, int p_video_height);
 
 	virtual bool is_joy_known(int p_device);
 	virtual String get_joy_guid(int p_device) const;
-	void joy_connection_changed(int p_device, bool p_connected, String p_name);
 	void vibrate_handheld(int p_duration_ms);
 
 	virtual bool _check_internal_feature_support(const String &p_feature);
