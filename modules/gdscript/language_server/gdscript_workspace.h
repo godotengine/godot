@@ -52,6 +52,8 @@ protected:
 
 	const lsp::DocumentSymbol *get_native_symbol(const String &p_class, const String &p_member = "") const;
 	const lsp::DocumentSymbol *get_script_symbol(const String &p_path) const;
+	const lsp::DocumentSymbol *get_parameter_symbol(const lsp::DocumentSymbol *p_parent, const String &symbol_identifier);
+	const lsp::DocumentSymbol *get_local_symbol(const ExtendGDScriptParser *p_parser, const String &p_symbol_identifier);
 
 	void reload_all_workspace_scripts();
 
@@ -90,6 +92,7 @@ public:
 	Dictionary generate_script_api(const String &p_path);
 	Error resolve_signature(const lsp::TextDocumentPositionParams &p_doc_pos, lsp::SignatureHelp &r_signature);
 	void did_delete_files(const Dictionary &p_params);
+	Dictionary rename(const lsp::TextDocumentPositionParams &p_doc_pos, const String &new_name);
 
 	GDScriptWorkspace();
 	~GDScriptWorkspace();

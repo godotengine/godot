@@ -42,10 +42,12 @@ void GDScriptTextDocument::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("didOpen"), &GDScriptTextDocument::didOpen);
 	ClassDB::bind_method(D_METHOD("didClose"), &GDScriptTextDocument::didClose);
 	ClassDB::bind_method(D_METHOD("didChange"), &GDScriptTextDocument::didChange);
+	ClassDB::bind_method(D_METHOD("didSave"), &GDScriptTextDocument::didSave);
 	ClassDB::bind_method(D_METHOD("nativeSymbol"), &GDScriptTextDocument::nativeSymbol);
 	ClassDB::bind_method(D_METHOD("documentSymbol"), &GDScriptTextDocument::documentSymbol);
 	ClassDB::bind_method(D_METHOD("completion"), &GDScriptTextDocument::completion);
 	ClassDB::bind_method(D_METHOD("resolve"), &GDScriptTextDocument::resolve);
+	ClassDB::bind_method(D_METHOD("rename"), &GDScriptTextDocument::rename);
 	ClassDB::bind_method(D_METHOD("foldingRange"), &GDScriptTextDocument::foldingRange);
 	ClassDB::bind_method(D_METHOD("codeLens"), &GDScriptTextDocument::codeLens);
 	ClassDB::bind_method(D_METHOD("documentLink"), &GDScriptTextDocument::documentLink);
@@ -77,6 +79,20 @@ void GDScriptTextDocument::didChange(const Variant &p_param) {
 		doc.text = evt.text;
 	}
 	sync_script_content(doc.uri, doc.text);
+}
+
+void GDScriptTextDocument::didSave(const Variant &p_param) {
+	lsp::TextDocumentItem doc = load_document_item(p_param);
+	Dictionary dict = p_param;
+	String text = dict["text"];
+
+	sync_script_content(doc.uri, text);
+
+	/*String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(doc.uri);
+
+	Ref<GDScript> script = ResourceLoader::load(path);
+	script->load_source_code(path);
+	script->reload(true);*/
 }
 
 lsp::TextDocumentItem GDScriptTextDocument::load_document_item(const Variant &p_param) {
@@ -213,6 +229,14 @@ Array GDScriptTextDocument::completion(const Dictionary &p_params) {
 		}
 	}
 	return arr;
+}
+
+Dictionary GDScriptTextDocument::rename(const Dictionary &p_params) {
+	lsp::TextDocumentPositionParams params;
+	params.load(p_params);
+	String new_name = p_params["newName"];
+
+	return GDScriptLanguageProtocol::get_singleton()->get_workspace()->rename(params, new_name);
 }
 
 Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
@@ -405,7 +429,11 @@ GDScriptTextDocument::~GDScriptTextDocument() {
 void GDScriptTextDocument::sync_script_content(const String &p_path, const String &p_content) {
 	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(p_path);
 	GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_script(path, p_content);
+
 	EditorFileSystem::get_singleton()->update_file(path);
+	Ref<GDScript> script = ResourceLoader::load(path);
+	script->load_source_code(path);
+	script->reload(true);
 }
 
 void GDScriptTextDocument::show_native_symbol_in_editor(const String &p_symbol_id) {
