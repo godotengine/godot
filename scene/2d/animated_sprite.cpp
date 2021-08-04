@@ -572,7 +572,7 @@ void AnimatedSprite::_res_changed() {
 	update();
 }
 
-void AnimatedSprite::_set_playing(bool p_playing) {
+void AnimatedSprite::set_playing(bool p_playing) {
 	if (playing == p_playing) {
 		return;
 	}
@@ -581,7 +581,7 @@ void AnimatedSprite::_set_playing(bool p_playing) {
 	set_process_internal(playing);
 }
 
-bool AnimatedSprite::_is_playing() const {
+bool AnimatedSprite::is_playing() const {
 	return playing;
 }
 
@@ -595,15 +595,11 @@ void AnimatedSprite::play(const StringName &p_animation, const bool p_backwards)
 		}
 	}
 
-	_set_playing(true);
+	set_playing(true);
 }
 
 void AnimatedSprite::stop() {
-	_set_playing(false);
-}
-
-bool AnimatedSprite::is_playing() const {
-	return playing;
+	set_playing(false);
 }
 
 float AnimatedSprite::_get_frame_duration() {
@@ -662,12 +658,11 @@ void AnimatedSprite::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_animation", "animation"), &AnimatedSprite::set_animation);
 	ClassDB::bind_method(D_METHOD("get_animation"), &AnimatedSprite::get_animation);
 
-	ClassDB::bind_method(D_METHOD("_set_playing", "playing"), &AnimatedSprite::_set_playing);
-	ClassDB::bind_method(D_METHOD("_is_playing"), &AnimatedSprite::_is_playing);
+	ClassDB::bind_method(D_METHOD("set_playing", "playing"), &AnimatedSprite::set_playing);
+	ClassDB::bind_method(D_METHOD("is_playing"), &AnimatedSprite::is_playing);
 
 	ClassDB::bind_method(D_METHOD("play", "anim", "backwards"), &AnimatedSprite::play, DEFVAL(StringName()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("stop"), &AnimatedSprite::stop);
-	ClassDB::bind_method(D_METHOD("is_playing"), &AnimatedSprite::is_playing);
 
 	ClassDB::bind_method(D_METHOD("set_centered", "centered"), &AnimatedSprite::set_centered);
 	ClassDB::bind_method(D_METHOD("is_centered"), &AnimatedSprite::is_centered);
@@ -696,7 +691,7 @@ void AnimatedSprite::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "animation"), "set_animation", "get_animation");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "speed_scale"), "set_speed_scale", "get_speed_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "_set_playing", "_is_playing");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "set_playing", "is_playing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
