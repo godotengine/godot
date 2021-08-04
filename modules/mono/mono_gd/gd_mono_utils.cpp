@@ -35,8 +35,8 @@
 
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
-#include "core/object/reference.h"
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
+#include "core/object/ref_counted.h"
 #include "core/os/mutex.h"
 #include "core/os/os.h"
 
@@ -54,6 +54,7 @@
 namespace GDMonoUtils {
 
 MonoObject *unmanaged_get_managed(Object *unmanaged) {
+#if 0
 	if (!unmanaged) {
 		return nullptr;
 	}
@@ -108,18 +109,20 @@ MonoObject *unmanaged_get_managed(Object *unmanaged) {
 	gchandle = MonoGCHandleData::new_strong_handle(mono_object);
 
 	// Tie managed to unmanaged
-	Reference *ref = Object::cast_to<Reference>(unmanaged);
+	RefCounted *rc = Object::cast_to<RefCounted>(unmanaged);
 
-	if (ref) {
+	if (rc) {
 		// Unsafe refcount increment. The managed instance also counts as a reference.
 		// This way if the unmanaged world has no references to our owner
 		// but the managed instance is alive, the refcount will be 1 instead of 0.
-		// See: godot_icall_Reference_Dtor(MonoObject *p_obj, Object *p_ptr)
-		ref->reference();
-		CSharpLanguage::get_singleton()->post_unsafe_reference(ref);
+		// See: godot_icall_RefCounted_Dtor(MonoObject *p_obj, Object *p_ptr)
+		rc->reference();
+		CSharpLanguage::get_singleton()->post_unsafe_reference(rc);
 	}
 
 	return mono_object;
+#endif
+	return nullptr;
 }
 
 void set_main_thread(MonoThread *p_thread) {
@@ -238,7 +241,7 @@ GDMonoClass *get_class_native_base(GDMonoClass *p_class) {
 MonoObject *create_managed_for_godot_object(GDMonoClass *p_class, const StringName &p_native, Object *p_object) {
 	bool parent_is_object_class = ClassDB::is_parent_class(p_object->get_class_name(), p_native);
 	ERR_FAIL_COND_V_MSG(!parent_is_object_class, nullptr,
-			"Type inherits from native type '" + p_native + "', so it can't be instanced in object of type: '" + p_object->get_class() + "'.");
+			"Type inherits from native type '" + p_native + "', so it can't be instantiated in object of type: '" + p_object->get_class() + "'.");
 
 	MonoObject *mono_object = mono_object_new(mono_domain_get(), p_class->get_mono_ptr());
 	ERR_FAIL_NULL_V(mono_object, nullptr);

@@ -31,7 +31,7 @@
 #include "video_stream_webm.h"
 
 #include "core/config/project_settings.h"
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 #include "core/os/os.h"
 #include "servers/audio_server.h"
 
@@ -116,7 +116,7 @@ bool VideoStreamPlaybackWebm::open_file(const String &p_file) {
 
 			frame_data.resize((webm->getWidth() * webm->getHeight()) << 2);
 			Ref<Image> img;
-			img.instance();
+			img.instantiate();
 			img->create(webm->getWidth(), webm->getHeight(), false, Image::FORMAT_RGBA8);
 			texture->create_from_image(img);
 

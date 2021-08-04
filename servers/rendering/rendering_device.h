@@ -41,12 +41,14 @@ class RDAttachmentFormat;
 class RDSamplerState;
 class RDVertexAttribute;
 class RDShaderSource;
-class RDShaderBytecode;
+class RDShaderSPIRV;
 class RDUniforms;
 class RDPipelineRasterizationState;
 class RDPipelineMultisampleState;
 class RDPipelineDepthStencilState;
 class RDPipelineColorBlendState;
+class RDFramebufferPass;
+class RDPipelineSpecializationConstant;
 
 class RenderingDevice : public Object {
 	GDCLASS(RenderingDevice, Object)
@@ -103,12 +105,14 @@ public:
 		bool supports_multiview = false; // If true this device supports multiview options
 	};
 
-	typedef Vector<uint8_t> (*ShaderCompileFunction)(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language, String *r_error, const Capabilities *p_capabilities);
+	typedef String (*ShaderSPIRVGetCacheKeyFunction)(const Capabilities *p_capabilities);
+	typedef Vector<uint8_t> (*ShaderCompileToSPIRVFunction)(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language, String *r_error, const Capabilities *p_capabilities);
 	typedef Vector<uint8_t> (*ShaderCacheFunction)(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language);
 
 private:
-	static ShaderCompileFunction compile_function;
+	static ShaderCompileToSPIRVFunction compile_to_spirv_function;
 	static ShaderCacheFunction cache_function;
+	static ShaderSPIRVGetCacheKeyFunction get_spirv_cache_key_function;
 
 	static RenderingDevice *singleton;
 
@@ -514,11 +518,24 @@ public:
 	typedef int64_t FramebufferFormatID;
 
 	// This ID is warranted to be unique for the same formats, does not need to be freed
-	virtual FramebufferFormatID framebuffer_format_create(const Vector<AttachmentFormat> &p_format) = 0;
-	virtual FramebufferFormatID framebuffer_format_create_empty(TextureSamples p_samples = TEXTURE_SAMPLES_1) = 0;
-	virtual TextureSamples framebuffer_format_get_texture_samples(FramebufferFormatID p_format) = 0;
+	virtual FramebufferFormatID framebuffer_format_create(const Vector<AttachmentFormat> &p_format, uint32_t p_view_count = 1) = 0;
+	struct FramebufferPass {
+		enum {
+			ATTACHMENT_UNUSED = -1
+		};
+		Vector<int32_t> color_attachments;
+		Vector<int32_t> input_attachments;
+		Vector<int32_t> resolve_attachments;
+		Vector<int32_t> preserve_attachments;
+		int32_t depth_attachment = ATTACHMENT_UNUSED;
+	};
 
-	virtual RID framebuffer_create(const Vector<RID> &p_texture_attachments, FramebufferFormatID p_format_check = INVALID_ID) = 0;
+	virtual FramebufferFormatID framebuffer_format_create_multipass(const Vector<AttachmentFormat> &p_attachments, Vector<FramebufferPass> &p_passes, uint32_t p_view_count = 1) = 0;
+	virtual FramebufferFormatID framebuffer_format_create_empty(TextureSamples p_samples = TEXTURE_SAMPLES_1) = 0;
+	virtual TextureSamples framebuffer_format_get_texture_samples(FramebufferFormatID p_format, uint32_t p_pass = 0) = 0;
+
+	virtual RID framebuffer_create(const Vector<RID> &p_texture_attachments, FramebufferFormatID p_format_check = INVALID_ID, uint32_t p_view_count = 1) = 0;
+	virtual RID framebuffer_create_multipass(const Vector<RID> &p_texture_attachments, Vector<FramebufferPass> &p_passes, FramebufferFormatID p_format_check = INVALID_ID, uint32_t p_view_count = 1) = 0;
 	virtual RID framebuffer_create_empty(const Size2i &p_size, TextureSamples p_samples = TEXTURE_SAMPLES_1, FramebufferFormatID p_format_check = INVALID_ID) = 0;
 
 	virtual FramebufferFormatID framebuffer_get_format(RID p_framebuffer) = 0;
@@ -634,22 +651,28 @@ public:
 
 	const Capabilities *get_device_capabilities() const { return &device_capabilities; };
 
-	virtual Vector<uint8_t> shader_compile_from_source(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language = SHADER_LANGUAGE_GLSL, String *r_error = nullptr, bool p_allow_cache = true);
+	virtual Vector<uint8_t> shader_compile_spirv_from_source(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language = SHADER_LANGUAGE_GLSL, String *r_error = nullptr, bool p_allow_cache = true);
+	virtual String shader_get_spirv_cache_key() const;
 
-	static void shader_set_compile_function(ShaderCompileFunction p_function);
-	static void shader_set_cache_function(ShaderCacheFunction p_function);
+	static void shader_set_compile_to_spirv_function(ShaderCompileToSPIRVFunction p_function);
+	static void shader_set_spirv_cache_function(ShaderCacheFunction p_function);
+	static void shader_set_get_cache_key_function(ShaderSPIRVGetCacheKeyFunction p_function);
 
-	struct ShaderStageData {
+	struct ShaderStageSPIRVData {
 		ShaderStage shader_stage;
 		Vector<uint8_t> spir_v;
 
-		ShaderStageData() {
+		ShaderStageSPIRVData() {
 			shader_stage = SHADER_STAGE_VERTEX;
 		}
 	};
 
-	RID shader_create_from_bytecode(const Ref<RDShaderBytecode> &p_bytecode);
-	virtual RID shader_create(const Vector<ShaderStageData> &p_stages) = 0;
+	virtual String shader_get_binary_cache_key() const = 0;
+	virtual Vector<uint8_t> shader_compile_binary_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv) = 0;
+
+	virtual RID shader_create_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv);
+	virtual RID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary) = 0;
+
 	virtual uint32_t shader_get_vertex_input_attribute_mask(RID p_shader) = 0;
 
 	/******************/
@@ -697,10 +720,38 @@ public:
 
 	virtual RID uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set) = 0;
 	virtual bool uniform_set_is_valid(RID p_uniform_set) = 0;
+	typedef void (*UniformSetInvalidatedCallback)(const RID &, void *);
+	virtual void uniform_set_set_invalidation_callback(RID p_uniform_set, UniformSetInvalidatedCallback p_callback, void *p_userdata) = 0;
 
 	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL) = 0;
 	virtual Error buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size, uint32_t p_post_barrier = BARRIER_MASK_ALL) = 0;
 	virtual Vector<uint8_t> buffer_get_data(RID p_buffer) = 0; //this causes stall, only use to retrieve large buffers for saving
+
+	/******************************************/
+	/**** PIPELINE SPECIALIZATION CONSTANT ****/
+	/******************************************/
+
+	enum PipelineSpecializationConstantType {
+		PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL,
+		PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT,
+		PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT,
+	};
+
+	struct PipelineSpecializationConstant {
+		PipelineSpecializationConstantType type;
+		uint32_t constant_id;
+		union {
+			uint32_t int_value;
+			float float_value;
+			bool bool_value;
+		};
+
+		PipelineSpecializationConstant() {
+			type = PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
+			constant_id = 0;
+			int_value = 0;
+		}
+	};
 
 	/*************************/
 	/**** RENDER PIPELINE ****/
@@ -958,13 +1009,13 @@ public:
 	};
 
 	virtual bool render_pipeline_is_valid(RID p_pipeline) = 0;
-	virtual RID render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const PipelineRasterizationState &p_rasterization_state, const PipelineMultisampleState &p_multisample_state, const PipelineDepthStencilState &p_depth_stencil_state, const PipelineColorBlendState &p_blend_state, int p_dynamic_state_flags = 0) = 0;
+	virtual RID render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const PipelineRasterizationState &p_rasterization_state, const PipelineMultisampleState &p_multisample_state, const PipelineDepthStencilState &p_depth_stencil_state, const PipelineColorBlendState &p_blend_state, int p_dynamic_state_flags = 0, uint32_t p_for_render_pass = 0, const Vector<PipelineSpecializationConstant> &p_specialization_constants = Vector<PipelineSpecializationConstant>()) = 0;
 
 	/**************************/
 	/**** COMPUTE PIPELINE ****/
 	/**************************/
 
-	virtual RID compute_pipeline_create(RID p_shader) = 0;
+	virtual RID compute_pipeline_create(RID p_shader, const Vector<PipelineSpecializationConstant> &p_specialization_constants = Vector<PipelineSpecializationConstant>()) = 0;
 	virtual bool compute_pipeline_is_valid(RID p_pipeline) = 0;
 
 	/****************/
@@ -1013,6 +1064,9 @@ public:
 
 	virtual void draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect) = 0;
 	virtual void draw_list_disable_scissor(DrawListID p_list) = 0;
+
+	virtual DrawListID draw_list_switch_to_next_pass() = 0;
+	virtual Error draw_list_switch_to_next_pass_split(uint32_t p_splits, DrawListID *r_split_ids) = 0;
 
 	virtual void draw_list_end(uint32_t p_post_barrier = BARRIER_MASK_ALL) = 0;
 
@@ -1107,7 +1161,13 @@ public:
 	virtual void submit() = 0;
 	virtual void sync() = 0;
 
-	virtual uint64_t get_memory_usage() const = 0;
+	enum MemoryType {
+		MEMORY_TEXTURES,
+		MEMORY_BUFFERS,
+		MEMORY_TOTAL
+	};
+
+	virtual uint64_t get_memory_usage(MemoryType p_type) const = 0;
 
 	virtual RenderingDevice *create_local_device() = 0;
 
@@ -1130,23 +1190,29 @@ protected:
 	RID _texture_create_shared(const Ref<RDTextureView> &p_view, RID p_with_texture);
 	RID _texture_create_shared_from_slice(const Ref<RDTextureView> &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, TextureSliceType p_slice_type = TEXTURE_SLICE_2D);
 
-	FramebufferFormatID _framebuffer_format_create(const TypedArray<RDAttachmentFormat> &p_attachments);
-	RID _framebuffer_create(const Array &p_textures, FramebufferFormatID p_format_check = INVALID_ID);
+	FramebufferFormatID _framebuffer_format_create(const TypedArray<RDAttachmentFormat> &p_attachments, uint32_t p_view_count);
+	FramebufferFormatID _framebuffer_format_create_multipass(const TypedArray<RDAttachmentFormat> &p_attachments, const TypedArray<RDFramebufferPass> &p_passes, uint32_t p_view_count);
+	RID _framebuffer_create(const TypedArray<RID> &p_textures, FramebufferFormatID p_format_check = INVALID_ID, uint32_t p_view_count = 1);
+	RID _framebuffer_create_multipass(const TypedArray<RID> &p_textures, const TypedArray<RDFramebufferPass> &p_passes, FramebufferFormatID p_format_check = INVALID_ID, uint32_t p_view_count = 1);
 	RID _sampler_create(const Ref<RDSamplerState> &p_state);
 	VertexFormatID _vertex_format_create(const TypedArray<RDVertexAttribute> &p_vertex_formats);
 	RID _vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const TypedArray<RID> &p_src_buffers);
 
-	Ref<RDShaderBytecode> _shader_compile_from_source(const Ref<RDShaderSource> &p_source, bool p_allow_cache = true);
+	Ref<RDShaderSPIRV> _shader_compile_spirv_from_source(const Ref<RDShaderSource> &p_source, bool p_allow_cache = true);
+	Vector<uint8_t> _shader_compile_binary_from_spirv(const Ref<RDShaderSPIRV> &p_bytecode);
+	RID _shader_create_from_spirv(const Ref<RDShaderSPIRV> &p_spirv);
 
 	RID _uniform_set_create(const Array &p_uniforms, RID p_shader, uint32_t p_shader_set);
 
 	Error _buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const Vector<uint8_t> &p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL);
 
-	RID _render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const Ref<RDPipelineRasterizationState> &p_rasterization_state, const Ref<RDPipelineMultisampleState> &p_multisample_state, const Ref<RDPipelineDepthStencilState> &p_depth_stencil_state, const Ref<RDPipelineColorBlendState> &p_blend_state, int p_dynamic_state_flags = 0);
+	RID _render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const Ref<RDPipelineRasterizationState> &p_rasterization_state, const Ref<RDPipelineMultisampleState> &p_multisample_state, const Ref<RDPipelineDepthStencilState> &p_depth_stencil_state, const Ref<RDPipelineColorBlendState> &p_blend_state, int p_dynamic_state_flags, uint32_t p_for_render_pass, const TypedArray<RDPipelineSpecializationConstant> &p_specialization_constants);
+	RID _compute_pipeline_create(RID p_shader, const TypedArray<RDPipelineSpecializationConstant> &p_specialization_constants);
 
 	Vector<int64_t> _draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2(), const TypedArray<RID> &p_storage_textures = TypedArray<RID>());
 	void _draw_list_set_push_constant(DrawListID p_list, const Vector<uint8_t> &p_data, uint32_t p_data_size);
 	void _compute_list_set_push_constant(ComputeListID p_list, const Vector<uint8_t> &p_data, uint32_t p_data_size);
+	Vector<int64_t> _draw_list_switch_to_next_pass_split(uint32_t p_splits);
 };
 
 VARIANT_ENUM_CAST(RenderingDevice::ShaderStage)
@@ -1173,9 +1239,11 @@ VARIANT_ENUM_CAST(RenderingDevice::LogicOperation)
 VARIANT_ENUM_CAST(RenderingDevice::BlendFactor)
 VARIANT_ENUM_CAST(RenderingDevice::BlendOperation)
 VARIANT_ENUM_CAST(RenderingDevice::PipelineDynamicStateFlags)
+VARIANT_ENUM_CAST(RenderingDevice::PipelineSpecializationConstantType)
 VARIANT_ENUM_CAST(RenderingDevice::InitialAction)
 VARIANT_ENUM_CAST(RenderingDevice::FinalAction)
 VARIANT_ENUM_CAST(RenderingDevice::Limit)
+VARIANT_ENUM_CAST(RenderingDevice::MemoryType)
 
 typedef RenderingDevice RD;
 

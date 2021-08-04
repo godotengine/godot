@@ -36,6 +36,7 @@
 #include "core/object/class_db.h"
 #include "core/os/thread_safe.h"
 #include "core/string/translation.h"
+#include "editor/editor_paths.h"
 #include "scene/gui/shortcut.h"
 
 class EditorPlugin;
@@ -46,7 +47,6 @@ class EditorSettings : public Resource {
 	_THREAD_SAFE_CLASS_
 
 public:
-	inline static const String PROJECT_EDITOR_SETTINGS_PATH = "res://.godot/editor";
 	struct Plugin {
 		EditorPlugin *instance = nullptr;
 		String path;
@@ -87,12 +87,7 @@ private:
 	mutable Map<String, Ref<Shortcut>> shortcuts;
 	Map<String, List<Ref<InputEvent>>> builtin_action_overrides;
 
-	String resource_path;
-	String settings_dir;
-	String data_dir;
-	String cache_dir;
 	String config_file_path;
-	String project_config_dir;
 
 	Vector<String> favorites;
 	Vector<String> recent_dirs;
@@ -108,7 +103,7 @@ private:
 	void _add_property_info_bind(const Dictionary &p_info);
 
 	void _load_defaults(Ref<ConfigFile> p_extra_config = Ref<ConfigFile>());
-	void _load_default_text_editor_theme();
+	void _load_godot2_text_editor_theme();
 	bool _save_text_editor_theme(String p_file);
 	bool _is_default_text_editor_theme(String p_theme_name);
 
@@ -153,12 +148,10 @@ public:
 
 	String get_data_dir() const;
 	String get_templates_dir() const;
-	String get_settings_dir() const;
 	String get_project_settings_dir() const;
 	String get_text_editor_themes_dir() const;
 	String get_script_templates_dir() const;
 	String get_project_script_templates_dir() const;
-	String get_cache_dir() const;
 	String get_feature_profiles_dir() const;
 
 	void set_project_metadata(const String &p_section, const String &p_key, Variant p_data);
@@ -181,6 +174,7 @@ public:
 
 	Vector<String> get_script_templates(const String &p_extension, const String &p_custom_path = String());
 	String get_editor_layouts_config() const;
+	float get_auto_display_scale() const;
 
 	void add_shortcut(const String &p_name, Ref<Shortcut> &p_shortcut);
 	bool is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const;

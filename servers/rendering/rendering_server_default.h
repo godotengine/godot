@@ -58,9 +58,6 @@ class RenderingServerDefault : public RenderingServer {
 	static int changes;
 	RID test_cube;
 
-	int black_margin[4];
-	RID black_image[4];
-
 	struct FrameDrawnCallbacks {
 		ObjectID object;
 		StringName method;
@@ -69,7 +66,6 @@ class RenderingServerDefault : public RenderingServer {
 
 	List<FrameDrawnCallbacks> frame_drawn_callbacks;
 
-	void _draw_margins();
 	static void _changes_changed() {}
 
 	uint64_t frame_profile_frame;
@@ -192,8 +188,6 @@ public:
 	FUNCRIDTEX6(texture_3d, Image::Format, int, int, int, bool, const Vector<Ref<Image>> &)
 	FUNCRIDTEX1(texture_proxy, RID)
 
-	//goes pass-through
-	FUNC3(texture_2d_update_immediate, RID, const Ref<Image> &, int)
 	//these go through command queue if they are in another thread
 	FUNC3(texture_2d_update, RID, const Ref<Image> &, int)
 	FUNC2(texture_3d_update, RID, const Vector<Ref<Image>> &)
@@ -290,7 +284,9 @@ public:
 	FUNC2(mesh_set_blend_shape_mode, RID, BlendShapeMode)
 	FUNC1RC(BlendShapeMode, mesh_get_blend_shape_mode, RID)
 
-	FUNC4(mesh_surface_update_region, RID, int, int, const Vector<uint8_t> &)
+	FUNC4(mesh_surface_update_vertex_region, RID, int, int, const Vector<uint8_t> &)
+	FUNC4(mesh_surface_update_attribute_region, RID, int, int, const Vector<uint8_t> &)
+	FUNC4(mesh_surface_update_skin_region, RID, int, int, const Vector<uint8_t> &)
 
 	FUNC3(mesh_surface_set_material, RID, int, RID)
 	FUNC2RC(RID, mesh_surface_get_material, RID, int)
@@ -314,7 +310,7 @@ public:
 	FUNC1RC(int, multimesh_get_instance_count, RID)
 
 	FUNC2(multimesh_set_mesh, RID, RID)
-	FUNC3(multimesh_instance_set_transform, RID, int, const Transform &)
+	FUNC3(multimesh_instance_set_transform, RID, int, const Transform3D &)
 	FUNC3(multimesh_instance_set_transform_2d, RID, int, const Transform2D &)
 	FUNC3(multimesh_instance_set_color, RID, int, const Color &)
 	FUNC3(multimesh_instance_set_custom_data, RID, int, const Color &)
@@ -322,7 +318,7 @@ public:
 	FUNC1RC(RID, multimesh_get_mesh, RID)
 	FUNC1RC(AABB, multimesh_get_aabb, RID)
 
-	FUNC2RC(Transform, multimesh_instance_get_transform, RID, int)
+	FUNC2RC(Transform3D, multimesh_instance_get_transform, RID, int)
 	FUNC2RC(Transform2D, multimesh_instance_get_transform_2d, RID, int)
 	FUNC2RC(Color, multimesh_instance_get_color, RID, int)
 	FUNC2RC(Color, multimesh_instance_get_custom_data, RID, int)
@@ -333,28 +329,13 @@ public:
 	FUNC2(multimesh_set_visible_instances, RID, int)
 	FUNC1RC(int, multimesh_get_visible_instances, RID)
 
-	/* IMMEDIATE API */
-
-	FUNCRIDSPLIT(immediate)
-	FUNC3(immediate_begin, RID, PrimitiveType, RID)
-	FUNC2(immediate_vertex, RID, const Vector3 &)
-	FUNC2(immediate_normal, RID, const Vector3 &)
-	FUNC2(immediate_tangent, RID, const Plane &)
-	FUNC2(immediate_color, RID, const Color &)
-	FUNC2(immediate_uv, RID, const Vector2 &)
-	FUNC2(immediate_uv2, RID, const Vector2 &)
-	FUNC1(immediate_end, RID)
-	FUNC1(immediate_clear, RID)
-	FUNC2(immediate_set_material, RID, RID)
-	FUNC1RC(RID, immediate_get_material, RID)
-
 	/* SKELETON API */
 
 	FUNCRIDSPLIT(skeleton)
 	FUNC3(skeleton_allocate_data, RID, int, bool)
 	FUNC1RC(int, skeleton_get_bone_count, RID)
-	FUNC3(skeleton_bone_set_transform, RID, int, const Transform &)
-	FUNC2RC(Transform, skeleton_bone_get_transform, RID, int)
+	FUNC3(skeleton_bone_set_transform, RID, int, const Transform3D &)
+	FUNC2RC(Transform3D, skeleton_bone_get_transform, RID, int)
 	FUNC3(skeleton_bone_set_transform_2d, RID, int, const Transform2D &)
 	FUNC2RC(Transform2D, skeleton_bone_get_transform_2d, RID, int)
 	FUNC2(skeleton_set_base_transform_2d, RID, const Transform2D &)
@@ -381,7 +362,6 @@ public:
 	FUNC2(light_directional_set_shadow_mode, RID, LightDirectionalShadowMode)
 	FUNC2(light_directional_set_blend_splits, RID, bool)
 	FUNC2(light_directional_set_sky_only, RID, bool)
-	FUNC2(light_directional_set_shadow_depth_range_mode, RID, LightDirectionalShadowDepthRangeMode)
 
 	/* PROBE API */
 
@@ -418,47 +398,25 @@ public:
 
 	/* BAKED LIGHT API */
 
-	FUNCRIDSPLIT(gi_probe)
+	FUNCRIDSPLIT(voxel_gi)
 
-	FUNC8(gi_probe_allocate_data, RID, const Transform &, const AABB &, const Vector3i &, const Vector<uint8_t> &, const Vector<uint8_t> &, const Vector<uint8_t> &, const Vector<int> &)
+	FUNC8(voxel_gi_allocate_data, RID, const Transform3D &, const AABB &, const Vector3i &, const Vector<uint8_t> &, const Vector<uint8_t> &, const Vector<uint8_t> &, const Vector<int> &)
 
-	FUNC1RC(AABB, gi_probe_get_bounds, RID)
-	FUNC1RC(Vector3i, gi_probe_get_octree_size, RID)
-	FUNC1RC(Vector<uint8_t>, gi_probe_get_octree_cells, RID)
-	FUNC1RC(Vector<uint8_t>, gi_probe_get_data_cells, RID)
-	FUNC1RC(Vector<uint8_t>, gi_probe_get_distance_field, RID)
-	FUNC1RC(Vector<int>, gi_probe_get_level_counts, RID)
-	FUNC1RC(Transform, gi_probe_get_to_cell_xform, RID)
+	FUNC1RC(AABB, voxel_gi_get_bounds, RID)
+	FUNC1RC(Vector3i, voxel_gi_get_octree_size, RID)
+	FUNC1RC(Vector<uint8_t>, voxel_gi_get_octree_cells, RID)
+	FUNC1RC(Vector<uint8_t>, voxel_gi_get_data_cells, RID)
+	FUNC1RC(Vector<uint8_t>, voxel_gi_get_distance_field, RID)
+	FUNC1RC(Vector<int>, voxel_gi_get_level_counts, RID)
+	FUNC1RC(Transform3D, voxel_gi_get_to_cell_xform, RID)
 
-	FUNC2(gi_probe_set_dynamic_range, RID, float)
-	FUNC1RC(float, gi_probe_get_dynamic_range, RID)
-
-	FUNC2(gi_probe_set_propagation, RID, float)
-	FUNC1RC(float, gi_probe_get_propagation, RID)
-
-	FUNC2(gi_probe_set_energy, RID, float)
-	FUNC1RC(float, gi_probe_get_energy, RID)
-
-	FUNC2(gi_probe_set_ao, RID, float)
-	FUNC1RC(float, gi_probe_get_ao, RID)
-
-	FUNC2(gi_probe_set_ao_size, RID, float)
-	FUNC1RC(float, gi_probe_get_ao_size, RID)
-
-	FUNC2(gi_probe_set_bias, RID, float)
-	FUNC1RC(float, gi_probe_get_bias, RID)
-
-	FUNC2(gi_probe_set_normal_bias, RID, float)
-	FUNC1RC(float, gi_probe_get_normal_bias, RID)
-
-	FUNC2(gi_probe_set_interior, RID, bool)
-	FUNC1RC(bool, gi_probe_is_interior, RID)
-
-	FUNC2(gi_probe_set_use_two_bounces, RID, bool)
-	FUNC1RC(bool, gi_probe_is_using_two_bounces, RID)
-
-	FUNC2(gi_probe_set_anisotropy_strength, RID, float)
-	FUNC1RC(float, gi_probe_get_anisotropy_strength, RID)
+	FUNC2(voxel_gi_set_dynamic_range, RID, float)
+	FUNC2(voxel_gi_set_propagation, RID, float)
+	FUNC2(voxel_gi_set_energy, RID, float)
+	FUNC2(voxel_gi_set_bias, RID, float)
+	FUNC2(voxel_gi_set_normal_bias, RID, float)
+	FUNC2(voxel_gi_set_interior, RID, bool)
+	FUNC2(voxel_gi_set_use_two_bounces, RID, bool)
 
 	/* LIGHTMAP */
 
@@ -496,11 +454,11 @@ public:
 	FUNC2(particles_set_fractional_delta, RID, bool)
 	FUNC1R(bool, particles_is_inactive, RID)
 	FUNC3(particles_set_trails, RID, bool, float)
-	FUNC2(particles_set_trail_bind_poses, RID, const Vector<Transform> &)
+	FUNC2(particles_set_trail_bind_poses, RID, const Vector<Transform3D> &)
 
 	FUNC1(particles_request_process, RID)
 	FUNC1(particles_restart, RID)
-	FUNC6(particles_emit, RID, const Transform &, const Vector3 &, const Color &, const Color &, uint32_t)
+	FUNC6(particles_emit, RID, const Transform3D &, const Vector3 &, const Color &, const Color &, uint32_t)
 	FUNC2(particles_set_subemitter, RID, RID)
 	FUNC2(particles_set_collision_base_size, RID, float)
 
@@ -512,7 +470,7 @@ public:
 	FUNC3(particles_set_draw_pass_mesh, RID, int, RID)
 
 	FUNC1R(AABB, particles_get_current_aabb, RID)
-	FUNC2(particles_set_emission_transform, RID, const Transform &)
+	FUNC2(particles_set_emission_transform, RID, const Transform3D &)
 
 	/* PARTICLES COLLISION */
 
@@ -529,6 +487,12 @@ public:
 	FUNC1(particles_collision_height_field_update, RID)
 	FUNC2(particles_collision_set_height_field_resolution, RID, ParticlesCollisionHeightfieldResolution)
 
+	/* VISIBILITY_NOTIFIER */
+
+	FUNCRIDSPLIT(visibility_notifier)
+	FUNC2(visibility_notifier_set_aabb, RID, const AABB &)
+	FUNC3(visibility_notifier_set_callbacks, RID, const Callable &, const Callable &)
+
 #undef server_name
 #undef ServerName
 //from now on, calls forwarded to this singleton
@@ -541,7 +505,7 @@ public:
 	FUNC4(camera_set_perspective, RID, float, float, float)
 	FUNC4(camera_set_orthogonal, RID, float, float, float)
 	FUNC5(camera_set_frustum, RID, float, Vector2, float, float)
-	FUNC2(camera_set_transform, RID, const Transform &)
+	FUNC2(camera_set_transform, RID, const Transform3D &)
 	FUNC2(camera_set_cull_mask, RID, uint32_t)
 	FUNC2(camera_set_environment, RID, RID)
 	FUNC2(camera_set_camera_effects, RID, RID)
@@ -549,7 +513,7 @@ public:
 
 	/* OCCLUDER */
 	FUNCRIDSPLIT(occluder)
-	FUNC3(occluder_set_mesh, RID, const PackedVector3Array &, const PackedInt32Array &);
+	FUNC3(occluder_set_mesh, RID, const PackedVector3Array &, const PackedInt32Array &)
 
 #undef server_name
 #undef ServerName
@@ -576,9 +540,9 @@ public:
 
 	FUNC1RC(RID, viewport_get_texture, RID)
 
-	FUNC2(viewport_set_hide_scenario, RID, bool)
-	FUNC2(viewport_set_hide_canvas, RID, bool)
+	FUNC2(viewport_set_disable_2d, RID, bool)
 	FUNC2(viewport_set_disable_environment, RID, bool)
+	FUNC2(viewport_set_disable_3d, RID, bool)
 
 	FUNC2(viewport_attach_camera, RID, RID)
 	FUNC2(viewport_set_scenario, RID, RID)
@@ -606,14 +570,14 @@ public:
 	FUNC1(viewport_set_occlusion_culling_build_quality, ViewportOcclusionCullingBuildQuality)
 	FUNC2(viewport_set_lod_threshold, RID, float)
 
-	FUNC2R(int, viewport_get_render_info, RID, ViewportRenderInfo)
+	FUNC3R(int, viewport_get_render_info, RID, ViewportRenderInfoType, ViewportRenderInfo)
 	FUNC2(viewport_set_debug_draw, RID, ViewportDebugDraw)
 
 	FUNC2(viewport_set_measure_render_time, RID, bool)
 	FUNC1RC(float, viewport_get_measured_render_time_cpu, RID)
 	FUNC1RC(float, viewport_get_measured_render_time_gpu, RID)
 
-	FUNC1(call_set_use_vsync, bool)
+	FUNC2(call_set_vsync_mode, DisplayServer::VSyncMode, DisplayServer::WindowID)
 
 	/* ENVIRONMENT API */
 
@@ -624,7 +588,7 @@ public:
 #define server_name RSG::scene
 
 	FUNC2(directional_shadow_atlas_set_size, int, bool)
-	FUNC1(gi_probe_set_quality, GIProbeQuality)
+	FUNC1(voxel_gi_set_quality, VoxelGIQuality)
 
 	/* SKY API */
 
@@ -692,6 +656,8 @@ public:
 
 	FUNC1(shadows_quality_set, ShadowQuality);
 	FUNC1(directional_shadow_quality_set, ShadowQuality);
+	FUNC1(decals_set_filter, RS::DecalFilter);
+	FUNC1(light_projectors_set_filter, RS::LightProjectorFilter);
 
 	/* SCENARIO API */
 
@@ -703,7 +669,6 @@ public:
 
 	FUNCRIDSPLIT(scenario)
 
-	FUNC2(scenario_set_debug, RID, ScenarioDebugMode)
 	FUNC2(scenario_set_environment, RID, RID)
 	FUNC2(scenario_set_camera_effects, RID, RID)
 	FUNC2(scenario_set_fallback_environment, RID, RID)
@@ -714,7 +679,7 @@ public:
 	FUNC2(instance_set_base, RID, RID)
 	FUNC2(instance_set_scenario, RID, RID)
 	FUNC2(instance_set_layer_mask, RID, uint32_t)
-	FUNC2(instance_set_transform, RID, const Transform &)
+	FUNC2(instance_set_transform, RID, const Transform3D &)
 	FUNC2(instance_attach_object_instance_id, RID, ObjectID)
 	FUNC3(instance_set_blend_shape_weight, RID, int, float)
 	FUNC3(instance_set_surface_override_material, RID, int, RID)
@@ -723,9 +688,9 @@ public:
 	FUNC2(instance_set_custom_aabb, RID, AABB)
 
 	FUNC2(instance_attach_skeleton, RID, RID)
-	FUNC2(instance_set_exterior, RID, bool)
 
 	FUNC2(instance_set_extra_visibility_margin, RID, real_t)
+	FUNC2(instance_set_visibility_parent, RID, RID)
 
 	// don't use these in a game!
 	FUNC2RC(Vector<ObjectID>, instances_cull_aabb, const AABB &, RID)
@@ -736,8 +701,7 @@ public:
 	FUNC2(instance_geometry_set_cast_shadows_setting, RID, ShadowCastingSetting)
 	FUNC2(instance_geometry_set_material_override, RID, RID)
 
-	FUNC5(instance_geometry_set_draw_range, RID, float, float, float, float)
-	FUNC2(instance_geometry_set_as_instance_lod, RID, RID)
+	FUNC5(instance_geometry_set_visibility_range, RID, float, float, float, float)
 	FUNC4(instance_geometry_set_lightmap, RID, RID, const Rect2 &, int)
 	FUNC2(instance_geometry_set_lod_bias, RID, float)
 
@@ -807,6 +771,8 @@ public:
 	FUNC3(canvas_item_add_particles, RID, RID, RID)
 	FUNC2(canvas_item_add_set_transform, RID, const Transform2D &)
 	FUNC2(canvas_item_add_clip_ignore, RID, bool)
+	FUNC5(canvas_item_add_animation_slice, RID, double, double, double, double)
+
 	FUNC2(canvas_item_set_sort_children_by_y, RID, bool)
 	FUNC2(canvas_item_set_z_index, RID, int)
 	FUNC2(canvas_item_set_z_as_relative_to_parent, RID, bool)
@@ -819,6 +785,8 @@ public:
 	FUNC2(canvas_item_set_material, RID, RID)
 
 	FUNC2(canvas_item_set_use_parent_material, RID, bool)
+
+	FUNC5(canvas_item_set_visibility_notifier, RID, bool, const Rect2 &, const Callable &, const Callable &)
 
 	FUNC6(canvas_item_set_canvas_group_mode, RID, CanvasGroupMode, float, bool, float, bool)
 
@@ -887,11 +855,6 @@ public:
 #undef WRITE_ACTION
 #undef SYNC_DEBUG
 
-	/* BLACK BARS */
-
-	virtual void black_bars_set_margins(int p_left, int p_top, int p_right, int p_bottom) override;
-	virtual void black_bars_set_images(RID p_left, RID p_top, RID p_right, RID p_bottom) override;
-
 	/* FREE */
 
 	virtual void free(RID p_rid) override {
@@ -915,7 +878,7 @@ public:
 
 	/* STATUS INFORMATION */
 
-	virtual uint64_t get_render_info(RenderInfo p_info) override;
+	virtual uint64_t get_rendering_info(RenderingInfo p_info) override;
 	virtual String get_video_adapter_name() const override;
 	virtual String get_video_adapter_vendor() const override;
 

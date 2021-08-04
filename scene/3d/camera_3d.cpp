@@ -85,18 +85,14 @@ void Camera3D::_update_camera() {
 	// here goes listener stuff
 	/*
 	if (viewport_ptr && is_inside_scene() && is_current())
-		get_viewport()->_camera_transform_changed_notify();
+		get_viewport()->_camera_3d_transform_changed_notify();
 	*/
 
 	if (get_tree()->is_node_being_edited(this) || !is_current()) {
 		return;
 	}
 
-	get_viewport()->_camera_transform_changed_notify();
-
-	if (get_world_3d().is_valid()) {
-		get_world_3d()->_update_camera(this);
-	}
+	get_viewport()->_camera_3d_transform_changed_notify();
 }
 
 void Camera3D::_notification(int p_what) {
@@ -108,9 +104,9 @@ void Camera3D::_notification(int p_what) {
 			viewport = get_viewport();
 			ERR_FAIL_COND(!viewport);
 
-			bool first_camera = viewport->_camera_add(this);
+			bool first_camera = viewport->_camera_3d_add(this);
 			if (current || first_camera) {
-				viewport->_camera_set(this);
+				viewport->_camera_3d_set(this);
 			}
 
 		} break;
@@ -132,7 +128,7 @@ void Camera3D::_notification(int p_what) {
 			}
 
 			if (viewport) {
-				viewport->_camera_remove(this);
+				viewport->_camera_3d_remove(this);
 				viewport = nullptr;
 			}
 
@@ -150,8 +146,8 @@ void Camera3D::_notification(int p_what) {
 	}
 }
 
-Transform Camera3D::get_camera_transform() const {
-	Transform tr = get_global_transform().orthonormalized();
+Transform3D Camera3D::get_camera_transform() const {
+	Transform3D tr = get_global_transform().orthonormalized();
 	tr.origin += tr.basis.get_axis(1) * v_offset;
 	tr.origin += tr.basis.get_axis(0) * h_offset;
 	return tr;
@@ -168,7 +164,7 @@ void Camera3D::set_perspective(float p_fovy_degrees, float p_z_near, float p_z_f
 	mode = PROJECTION_PERSPECTIVE;
 
 	RenderingServer::get_singleton()->camera_set_perspective(camera, fov, near, far);
-	update_gizmo();
+	update_gizmos();
 	force_change = false;
 }
 
@@ -185,7 +181,7 @@ void Camera3D::set_orthogonal(float p_size, float p_z_near, float p_z_far) {
 	force_change = false;
 
 	RenderingServer::get_singleton()->camera_set_orthogonal(camera, size, near, far);
-	update_gizmo();
+	update_gizmos();
 }
 
 void Camera3D::set_frustum(float p_size, Vector2 p_offset, float p_z_near, float p_z_far) {
@@ -202,7 +198,7 @@ void Camera3D::set_frustum(float p_size, Vector2 p_offset, float p_z_near, float
 	force_change = false;
 
 	RenderingServer::get_singleton()->camera_set_frustum(camera, size, frustum_offset, near, far);
-	update_gizmo();
+	update_gizmos();
 }
 
 void Camera3D::set_projection(Camera3D::Projection p_mode) {
@@ -224,7 +220,7 @@ void Camera3D::make_current() {
 		return;
 	}
 
-	get_viewport()->_camera_set(this);
+	get_viewport()->_camera_3d_set(this);
 
 	//get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,camera_group,"_camera_make_current",this);
 }
@@ -235,11 +231,11 @@ void Camera3D::clear_current(bool p_enable_next) {
 		return;
 	}
 
-	if (get_viewport()->get_camera() == this) {
-		get_viewport()->_camera_set(nullptr);
+	if (get_viewport()->get_camera_3d() == this) {
+		get_viewport()->_camera_3d_set(nullptr);
 
 		if (p_enable_next) {
-			get_viewport()->_camera_make_next_current(this);
+			get_viewport()->_camera_3d_make_next_current(this);
 		}
 	}
 }
@@ -254,7 +250,7 @@ void Camera3D::set_current(bool p_current) {
 
 bool Camera3D::is_current() const {
 	if (is_inside_tree() && !get_tree()->is_node_being_edited(this)) {
-		return get_viewport()->get_camera() == this;
+		return get_viewport()->get_camera_3d() == this;
 	} else {
 		return current;
 	}
@@ -318,7 +314,7 @@ Vector3 Camera3D::project_ray_origin(const Point2 &p_pos) const {
 };
 
 bool Camera3D::is_position_behind(const Vector3 &p_pos) const {
-	Transform t = get_global_transform();
+	Transform3D t = get_global_transform();
 	Vector3 eyedir = -t.basis.get_axis(2).normalized();
 	return eyedir.dot(p_pos - t.origin) < near;
 }
@@ -337,7 +333,7 @@ Vector<Vector3> Camera3D::get_near_plane_points() const {
 	}
 
 	Vector3 endpoints[8];
-	cm.get_endpoints(Transform(), endpoints);
+	cm.get_endpoints(Transform3D(), endpoints);
 
 	Vector<Vector3> points;
 	points.push_back(Vector3());
@@ -500,6 +496,7 @@ void Camera3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_doppler_tracking", "mode"), &Camera3D::set_doppler_tracking);
 	ClassDB::bind_method(D_METHOD("get_doppler_tracking"), &Camera3D::get_doppler_tracking);
 	ClassDB::bind_method(D_METHOD("get_frustum"), &Camera3D::get_frustum);
+	ClassDB::bind_method(D_METHOD("is_position_in_frustum", "world_point"), &Camera3D::is_position_in_frustum);
 	ClassDB::bind_method(D_METHOD("get_camera_rid"), &Camera3D::get_camera);
 
 	ClassDB::bind_method(D_METHOD("set_cull_mask_bit", "layer", "enable"), &Camera3D::set_cull_mask_bit);
@@ -516,11 +513,11 @@ void Camera3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "doppler_tracking", PROPERTY_HINT_ENUM, "Disabled,Idle,Physics"), "set_doppler_tracking", "get_doppler_tracking");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "projection", PROPERTY_HINT_ENUM, "Perspective,Orthogonal,Frustum"), "set_projection", "get_projection");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "current"), "set_current", "is_current");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fov", PROPERTY_HINT_RANGE, "1,179,0.1"), "set_fov", "get_fov");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fov", PROPERTY_HINT_RANGE, "1,179,0.1,degrees"), "set_fov", "get_fov");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "size", PROPERTY_HINT_RANGE, "0.1,16384,0.01"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frustum_offset"), "set_frustum_offset", "get_frustum_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "near", PROPERTY_HINT_EXP_RANGE, "0.001,10,0.001,or_greater"), "set_near", "get_near");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "far", PROPERTY_HINT_EXP_RANGE, "0.01,4000,0.01,or_greater"), "set_far", "get_far");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "near", PROPERTY_HINT_RANGE, "0.001,10,0.001,or_greater,exp"), "set_near", "get_near");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "far", PROPERTY_HINT_RANGE, "0.01,4000,0.01,or_greater,exp"), "set_far", "get_far");
 
 	BIND_ENUM_CONSTANT(PROJECTION_PERSPECTIVE);
 	BIND_ENUM_CONSTANT(PROJECTION_ORTHOGONAL);
@@ -623,6 +620,16 @@ Vector<Plane> Camera3D::get_frustum() const {
 	return cm.get_projection_planes(get_camera_transform());
 }
 
+bool Camera3D::is_position_in_frustum(const Vector3 &p_position) const {
+	Vector<Plane> frustum = get_frustum();
+	for (int i = 0; i < frustum.size(); i++) {
+		if (frustum[i].is_point_over(p_position)) {
+			return false;
+		}
+	}
+	return true;
+}
+
 void Camera3D::set_v_offset(float p_offset) {
 	v_offset = p_offset;
 	_update_camera();
@@ -654,7 +661,7 @@ Camera3D::Camera3D() {
 	set_perspective(75.0, 0.05, 4000.0);
 	RenderingServer::get_singleton()->camera_set_cull_mask(camera, layers);
 	//active=false;
-	velocity_tracker.instance();
+	velocity_tracker.instantiate();
 	set_notify_transform(true);
 	set_disable_scale(true);
 }
@@ -686,8 +693,8 @@ ClippedCamera3D::ClipProcessCallback ClippedCamera3D::get_process_callback() con
 	return process_callback;
 }
 
-Transform ClippedCamera3D::get_camera_transform() const {
-	Transform t = Camera3D::get_camera_transform();
+Transform3D ClippedCamera3D::get_camera_transform() const {
+	Transform3D t = Camera3D::get_camera_transform();
 	t.origin += -t.basis.get_axis(Vector3::AXIS_Z).normalized() * clip_offset;
 	return t;
 }
@@ -735,7 +742,7 @@ void ClippedCamera3D::_notification(int p_what) {
 			}
 		}
 
-		Transform xf = get_global_transform();
+		Transform3D xf = get_global_transform();
 		xf.origin = ray_from;
 		xf.orthonormalize();
 
@@ -748,7 +755,7 @@ void ClippedCamera3D::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
-		update_gizmo();
+		update_gizmos();
 	}
 }
 

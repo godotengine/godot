@@ -30,7 +30,7 @@
 
 #include "gdnative/variant.h"
 
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/variant/variant.h"
 
 #ifdef __cplusplus
@@ -143,10 +143,10 @@ void GDAPI godot_variant_new_plane(godot_variant *r_dest, const godot_plane *p_p
 	memnew_placement_custom(dest, Variant, Variant(*plane));
 }
 
-void GDAPI godot_variant_new_quat(godot_variant *r_dest, const godot_quat *p_quat) {
+void GDAPI godot_variant_new_quaternion(godot_variant *r_dest, const godot_quaternion *p_quaternion) {
 	Variant *dest = (Variant *)r_dest;
-	const Quat *quat = (const Quat *)p_quat;
-	memnew_placement_custom(dest, Variant, Variant(*quat));
+	const Quaternion *quaternion = (const Quaternion *)p_quaternion;
+	memnew_placement_custom(dest, Variant, Variant(*quaternion));
 }
 
 void GDAPI godot_variant_new_aabb(godot_variant *r_dest, const godot_aabb *p_aabb) {
@@ -161,9 +161,9 @@ void GDAPI godot_variant_new_basis(godot_variant *r_dest, const godot_basis *p_b
 	memnew_placement_custom(dest, Variant, Variant(*basis));
 }
 
-void GDAPI godot_variant_new_transform(godot_variant *r_dest, const godot_transform *p_trans) {
+void GDAPI godot_variant_new_transform3d(godot_variant *r_dest, const godot_transform3d *p_trans) {
 	Variant *dest = (Variant *)r_dest;
-	const Transform *trans = (const Transform *)p_trans;
+	const Transform3D *trans = (const Transform3D *)p_trans;
 	memnew_placement_custom(dest, Variant, Variant(*trans));
 }
 
@@ -200,17 +200,17 @@ void GDAPI godot_variant_new_signal(godot_variant *r_dest, const godot_signal *p
 void GDAPI godot_variant_new_object(godot_variant *r_dest, const godot_object *p_obj) {
 	Variant *dest = (Variant *)r_dest;
 	const Object *obj = (const Object *)p_obj;
-	const Reference *reference = Object::cast_to<Reference>(obj);
+	const RefCounted *ref_counted = Object::cast_to<RefCounted>(obj);
 	REF ref;
-	if (reference) {
-		ref = REF(reference);
+	if (ref_counted) {
+		ref = REF(ref_counted);
 	}
 	if (!ref.is_null()) {
 		memnew_placement_custom(dest, Variant, Variant(ref));
 	} else {
 #if defined(DEBUG_METHODS_ENABLED)
-		if (reference) {
-			ERR_PRINT("Reference object has 0 refcount in godot_variant_new_object - you lost it somewhere.");
+		if (ref_counted) {
+			ERR_PRINT("RefCounted object has 0 refcount in godot_variant_new_object - you lost it somewhere.");
 		}
 #endif
 		memnew_placement_custom(dest, Variant, Variant(obj));
@@ -378,10 +378,10 @@ godot_plane GDAPI godot_variant_as_plane(const godot_variant *p_self) {
 	return raw_dest;
 }
 
-godot_quat GDAPI godot_variant_as_quat(const godot_variant *p_self) {
-	godot_quat raw_dest;
+godot_quaternion GDAPI godot_variant_as_quaternion(const godot_variant *p_self) {
+	godot_quaternion raw_dest;
 	const Variant *self = (const Variant *)p_self;
-	Quat *dest = (Quat *)&raw_dest;
+	Quaternion *dest = (Quaternion *)&raw_dest;
 	*dest = *self;
 	return raw_dest;
 }
@@ -402,10 +402,10 @@ godot_basis GDAPI godot_variant_as_basis(const godot_variant *p_self) {
 	return raw_dest;
 }
 
-godot_transform GDAPI godot_variant_as_transform(const godot_variant *p_self) {
-	godot_transform raw_dest;
+godot_transform3d GDAPI godot_variant_as_transform3d(const godot_variant *p_self) {
+	godot_transform3d raw_dest;
 	const Variant *self = (const Variant *)p_self;
-	Transform *dest = (Transform *)&raw_dest;
+	Transform3D *dest = (Transform3D *)&raw_dest;
 	*dest = *self;
 	return raw_dest;
 }
@@ -915,8 +915,8 @@ void GDAPI godot_variant_get_builtin_method_list(godot_variant_type p_type, godo
 	List<StringName> list;
 	Variant::get_builtin_method_list((Variant::Type)p_type, &list);
 	int i = 0;
-	for (const List<StringName>::Element *E = list.front(); E; E = E->next()) {
-		memnew_placement_custom(&r_list[i], StringName, StringName(E->get()));
+	for (const StringName &E : list) {
+		memnew_placement_custom(&r_list[i], StringName, StringName(E));
 	}
 }
 
@@ -970,8 +970,8 @@ void GDAPI godot_variant_get_member_list(godot_variant_type p_type, godot_string
 	List<StringName> members;
 	Variant::get_member_list((Variant::Type)p_type, &members);
 	int i = 0;
-	for (const List<StringName>::Element *E = members.front(); E; E = E->next()) {
-		memnew_placement_custom(&r_list[i++], StringName, StringName(E->get()));
+	for (const StringName &E : members) {
+		memnew_placement_custom(&r_list[i++], StringName, StringName(E));
 	}
 }
 
@@ -1075,8 +1075,8 @@ void GDAPI godot_variant_get_constants_list(godot_variant_type p_type, godot_str
 	List<StringName> constants;
 	int i = 0;
 	Variant::get_constants_for_type((Variant::Type)p_type, &constants);
-	for (const List<StringName>::Element *E = constants.front(); E; E = E->next()) {
-		memnew_placement_custom(&r_list[i++], StringName, StringName(E->get()));
+	for (const StringName &E : constants) {
+		memnew_placement_custom(&r_list[i++], StringName, StringName(E));
 	}
 }
 
@@ -1227,8 +1227,8 @@ void GDAPI godot_variant_get_utility_function_list(godot_string_name *r_function
 	godot_string_name *func = r_functions;
 	Variant::get_utility_function_list(&functions);
 
-	for (const List<StringName>::Element *E = functions.front(); E; E = E->next()) {
-		memnew_placement_custom(func++, StringName, StringName(E->get()));
+	for (const StringName &E : functions) {
+		memnew_placement_custom(func++, StringName, StringName(E));
 	}
 }
 

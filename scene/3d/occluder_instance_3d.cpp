@@ -114,7 +114,7 @@ Ref<ArrayMesh> Occluder3D::get_debug_mesh() const {
 	arrays[Mesh::ARRAY_VERTEX] = vertices;
 	arrays[Mesh::ARRAY_INDEX] = indices;
 
-	debug_mesh.instance();
+	debug_mesh.instantiate();
 	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, arrays);
 	return debug_mesh;
 }
@@ -173,11 +173,13 @@ void OccluderInstance3D::set_occluder(const Ref<Occluder3D> &p_occluder) {
 		set_base(RID());
 	}
 
-	update_gizmo();
+	update_gizmos();
+	update_configuration_warnings();
 }
 
 void OccluderInstance3D::_occluder_changed() {
-	update_gizmo();
+	update_gizmos();
+	update_configuration_warnings();
 }
 
 Ref<Occluder3D> OccluderInstance3D::get_occluder() const {
@@ -186,6 +188,7 @@ Ref<Occluder3D> OccluderInstance3D::get_occluder() const {
 
 void OccluderInstance3D::set_bake_mask(uint32_t p_mask) {
 	bake_mask = p_mask;
+	update_configuration_warnings();
 }
 
 uint32_t OccluderInstance3D::get_bake_mask() const {
@@ -233,7 +236,7 @@ void OccluderInstance3D::_bake_node(Node *p_node, PackedVector3Array &r_vertices
 		}
 
 		if (valid) {
-			Transform global_to_local = get_global_transform().affine_inverse() * mi->get_global_transform();
+			Transform3D global_to_local = get_global_transform().affine_inverse() * mi->get_global_transform();
 
 			for (int i = 0; i < mesh->get_surface_count(); i++) {
 				if (mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
@@ -303,7 +306,7 @@ OccluderInstance3D::BakeError OccluderInstance3D::bake(Node *p_from_node, String
 	if (get_occluder().is_valid()) {
 		occ = get_occluder();
 	} else {
-		occ.instance();
+		occ.instantiate();
 		occ->set_path(p_occluder_path);
 	}
 
@@ -312,6 +315,31 @@ OccluderInstance3D::BakeError OccluderInstance3D::bake(Node *p_from_node, String
 	set_occluder(occ);
 
 	return BAKE_ERROR_OK;
+}
+
+TypedArray<String> OccluderInstance3D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
+
+	if (!bool(GLOBAL_GET("rendering/occlusion_culling/use_occlusion_culling"))) {
+		warnings.push_back(TTR("Occlusion culling is disabled in the Project Settings, which means occlusion culling won't be performed in the root viewport.\nTo resolve this, open the Project Settings and enable Rendering > Occlusion Culling > Use Occlusion Culling."));
+	}
+
+	if (bake_mask == 0) {
+		// NOTE: This warning will not be emitted if none of the 20 checkboxes
+		// exposed in the editor are checked. This is because there are
+		// currently 12 unexposed layers in the editor inspector.
+		warnings.push_back(TTR("The Bake Mask has no bits enabled, which means baking will not produce any occluder meshes for this OccluderInstance3D.\nTo resolve this, enable at least one bit in the Bake Mask property."));
+	}
+
+	if (occluder.is_null()) {
+		warnings.push_back(TTR("No occluder mesh is defined in the Occluder property, so no occlusion culling will be performed using this OccluderInstance3D.\nTo resolve this, select the OccluderInstance3D then use the Bake Occluders button at the top of the 3D editor viewport."));
+	} else if (occluder->get_vertices().size() < 3) {
+		// Using the "New Occluder" dropdown button won't result in a correct occluder,
+		// so warn the user about this.
+		warnings.push_back(TTR("The occluder mesh has less than 3 vertices, so no occlusion culling will be performed using this OccluderInstance3D.\nTo generate a proper occluder mesh, select the OccluderInstance3D then use the Bake Occluders button at the top of the 3D editor viewport."));
+	}
+
+	return warnings;
 }
 
 void OccluderInstance3D::_bind_methods() {

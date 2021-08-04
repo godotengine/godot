@@ -148,10 +148,11 @@ public:
 	static void (*_image_decompress_etc1)(Image *);
 	static void (*_image_decompress_etc2)(Image *);
 
-	static Vector<uint8_t> (*lossy_packer)(const Ref<Image> &p_image, float p_quality);
-	static Ref<Image> (*lossy_unpacker)(const Vector<uint8_t> &p_buffer);
-	static Vector<uint8_t> (*lossless_packer)(const Ref<Image> &p_image);
-	static Ref<Image> (*lossless_unpacker)(const Vector<uint8_t> &p_buffer);
+	static Vector<uint8_t> (*webp_lossy_packer)(const Ref<Image> &p_image, float p_quality);
+	static Vector<uint8_t> (*webp_lossless_packer)(const Ref<Image> &p_image);
+	static Ref<Image> (*webp_unpacker)(const Vector<uint8_t> &p_buffer);
+	static Vector<uint8_t> (*png_packer)(const Ref<Image> &p_image);
+	static Ref<Image> (*png_unpacker)(const Vector<uint8_t> &p_buffer);
 	static Vector<uint8_t> (*basis_universal_packer)(const Ref<Image> &p_image, UsedChannels p_channels);
 	static Ref<Image> (*basis_universal_unpacker)(const Vector<uint8_t> &p_buffer);
 
@@ -335,11 +336,13 @@ public:
 		COMPRESS_ETC,
 		COMPRESS_ETC2,
 		COMPRESS_BPTC,
+		COMPRESS_MAX,
 	};
 	enum CompressSource {
 		COMPRESS_SOURCE_GENERIC,
 		COMPRESS_SOURCE_SRGB,
-		COMPRESS_SOURCE_NORMAL
+		COMPRESS_SOURCE_NORMAL,
+		COMPRESS_SOURCE_MAX,
 	};
 
 	Error compress(CompressMode p_mode, CompressSource p_source = COMPRESS_SOURCE_GENERIC, float p_lossy_quality = 0.7);

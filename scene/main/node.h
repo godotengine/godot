@@ -41,6 +41,9 @@
 
 class Viewport;
 class SceneState;
+class Tween;
+class PropertyTweener;
+
 class Node : public Object {
 	GDCLASS(Node, Object);
 	OBJ_CATEGORY("Nodes");
@@ -64,6 +67,12 @@ public:
 #endif
 	};
 
+	enum NameCasing {
+		NAME_CASING_PASCAL_CASE,
+		NAME_CASING_CAMEL_CASE,
+		NAME_CASING_SNAKE_CASE
+	};
+
 	struct Comparator {
 		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->is_greater_than(p_a); }
 	};
@@ -78,11 +87,6 @@ private:
 	struct GroupData {
 		bool persistent = false;
 		SceneTree::Group *group = nullptr;
-	};
-
-	struct NetData {
-		StringName name;
-		MultiplayerAPI::RPCMode mode = MultiplayerAPI::RPCMode::RPC_MODE_DISABLED;
 	};
 
 	struct Data {
@@ -116,8 +120,7 @@ private:
 		Node *process_owner = nullptr;
 
 		int network_master = 1; // Server by default.
-		Vector<NetData> rpc_methods;
-		Vector<NetData> rpc_properties;
+		Vector<MultiplayerAPI::RPCConfig> rpc_methods;
 
 		// Variables used to properly sort the node when processing, ignored otherwise.
 		// TODO: Should move all the stuff below to bits.
@@ -143,12 +146,6 @@ private:
 
 	} data;
 
-	enum NameCasing {
-		NAME_CASING_PASCAL_CASE,
-		NAME_CASING_CAMEL_CASE,
-		NAME_CASING_SNAKE_CASE
-	};
-
 	Ref<MultiplayerAPI> multiplayer;
 
 	void _print_tree_pretty(const String &prefix, const bool last);
@@ -169,7 +166,7 @@ private:
 	void _propagate_after_exit_tree();
 	void _propagate_validate_owner();
 	void _print_stray_nodes();
-	void _propagate_process_owner(Node *p_owner, int p_notification);
+	void _propagate_process_owner(Node *p_owner, int p_pause_notification, int p_enabled_notification);
 	Array _get_node_and_resource(const NodePath &p_path);
 
 	void _duplicate_signals(const Node *p_original, Node *p_copy) const;
@@ -179,9 +176,7 @@ private:
 	Array _get_groups() const;
 
 	Variant _rpc_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-	Variant _rpc_unreliable_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Variant _rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-	Variant _rpc_unreliable_id_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	friend class SceneTree;
 
@@ -189,6 +184,7 @@ private:
 	void _propagate_pause_notification(bool p_enable);
 
 	_FORCE_INLINE_ bool _can_process(bool p_paused) const;
+	_FORCE_INLINE_ bool _is_enabled() const;
 
 protected:
 	void _block() { data.blocked++; }
@@ -232,6 +228,8 @@ public:
 		NOTIFICATION_INTERNAL_PROCESS = 25,
 		NOTIFICATION_INTERNAL_PHYSICS_PROCESS = 26,
 		NOTIFICATION_POST_ENTER_TREE = 27,
+		NOTIFICATION_DISABLED = 28,
+		NOTIFICATION_ENABLED = 29,
 		//keep these linked to node
 
 		NOTIFICATION_WM_MOUSE_ENTER = 1002,
@@ -253,6 +251,10 @@ public:
 		NOTIFICATION_APPLICATION_FOCUS_IN = MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN,
 		NOTIFICATION_APPLICATION_FOCUS_OUT = MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT,
 		NOTIFICATION_TEXT_SERVER_CHANGED = MainLoop::NOTIFICATION_TEXT_SERVER_CHANGED,
+
+		// Editor specific node notifications
+		NOTIFICATION_EDITOR_PRE_SAVE = 9001,
+		NOTIFICATION_EDITOR_POST_SAVE = 9002,
 	};
 
 	/* NODE/TREE */
@@ -283,7 +285,7 @@ public:
 
 	_FORCE_INLINE_ bool is_inside_tree() const { return data.inside_tree; }
 
-	bool is_a_parent_of(const Node *p_node) const;
+	bool is_ancestor_of(const Node *p_node) const;
 	bool is_greater_than(const Node *p_node) const;
 
 	NodePath get_path() const;
@@ -312,6 +314,8 @@ public:
 	void remove_and_skip();
 	int get_index() const;
 
+	Ref<Tween> create_tween();
+
 	void print_tree();
 	void print_tree_pretty();
 
@@ -324,6 +328,8 @@ public:
 	void set_editable_instance(Node *p_node, bool p_editable);
 	bool is_editable_instance(const Node *p_node) const;
 	Node *get_deepest_editable_node(Node *p_start_node) const;
+
+	virtual String to_string() override;
 
 	/* NOTIFICATIONS */
 
@@ -384,6 +390,7 @@ public:
 	ProcessMode get_process_mode() const;
 	bool can_process() const;
 	bool can_process_notification(int p_what) const;
+	bool is_enabled() const;
 
 	void request_ready();
 
@@ -425,41 +432,16 @@ public:
 	int get_network_master() const;
 	bool is_network_master() const;
 
-	uint16_t rpc_config(const StringName &p_method, MultiplayerAPI::RPCMode p_mode); // config a local method for RPC
-	uint16_t rset_config(const StringName &p_property, MultiplayerAPI::RPCMode p_mode); // config a local property for RPC
+	uint16_t rpc_config(const StringName &p_method, MultiplayerAPI::RPCMode p_rpc_mode, MultiplayerPeer::TransferMode p_transfer_mode, int p_channel = 0); // config a local method for RPC
+	Vector<MultiplayerAPI::RPCConfig> get_node_rpc_methods() const;
 
-	void rpc(const StringName &p_method, VARIANT_ARG_LIST); //rpc call, honors RPCMode
-	void rpc_unreliable(const StringName &p_method, VARIANT_ARG_LIST); //rpc call, honors RPCMode
-	void rpc_id(int p_peer_id, const StringName &p_method, VARIANT_ARG_LIST); //rpc call, honors RPCMode
-	void rpc_unreliable_id(int p_peer_id, const StringName &p_method, VARIANT_ARG_LIST); //rpc call, honors RPCMode
-
-	void rset(const StringName &p_property, const Variant &p_value); //remote set call, honors RPCMode
-	void rset_unreliable(const StringName &p_property, const Variant &p_value); //remote set call, honors RPCMode
-	void rset_id(int p_peer_id, const StringName &p_property, const Variant &p_value); //remote set call, honors RPCMode
-	void rset_unreliable_id(int p_peer_id, const StringName &p_property, const Variant &p_value); //remote set call, honors RPCMode
-
-	void rpcp(int p_peer_id, bool p_unreliable, const StringName &p_method, const Variant **p_arg, int p_argcount);
-	void rsetp(int p_peer_id, bool p_unreliable, const StringName &p_property, const Variant &p_value);
+	void rpc(const StringName &p_method, VARIANT_ARG_LIST); // RPC, honors RPCMode, TransferMode, channel
+	void rpc_id(int p_peer_id, const StringName &p_method, VARIANT_ARG_LIST); // RPC to specific peer(s), honors RPCMode, TransferMode, channel
+	void rpcp(int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount);
 
 	Ref<MultiplayerAPI> get_multiplayer() const;
 	Ref<MultiplayerAPI> get_custom_multiplayer() const;
 	void set_custom_multiplayer(Ref<MultiplayerAPI> p_multiplayer);
-
-	/// Returns the rpc method ID, otherwise UINT32_MAX
-	uint16_t get_node_rpc_method_id(const StringName &p_method) const;
-	StringName get_node_rpc_method(const uint16_t p_rpc_method_id) const;
-	MultiplayerAPI::RPCMode get_node_rpc_mode_by_id(const uint16_t p_rpc_method_id) const;
-	MultiplayerAPI::RPCMode get_node_rpc_mode(const StringName &p_method) const;
-
-	/// Returns the rpc property ID, otherwise UINT32_MAX
-	uint16_t get_node_rset_property_id(const StringName &p_property) const;
-	StringName get_node_rset_property(const uint16_t p_rset_property_id) const;
-	MultiplayerAPI::RPCMode get_node_rset_mode_by_id(const uint16_t p_rpc_method_id) const;
-	MultiplayerAPI::RPCMode get_node_rset_mode(const StringName &p_property) const;
-
-	/// Can be used to check if the rpc methods and the rset properties are the
-	/// same across the peers.
-	String get_rpc_md5() const;
 
 	Node();
 	~Node();

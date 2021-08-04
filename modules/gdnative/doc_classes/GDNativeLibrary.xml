@@ -12,15 +12,13 @@
 	</tutorials>
 	<methods>
 		<method name="get_current_dependencies" qualifiers="const">
-			<return type="PackedStringArray">
-			</return>
+			<return type="PackedStringArray" />
 			<description>
 				Returns paths to all dependency libraries for the current platform and architecture.
 			</description>
 		</method>
 		<method name="get_current_library_path" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the path to the dynamic library file for the current platform and architecture.
 			</description>

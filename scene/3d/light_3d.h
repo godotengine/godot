@@ -149,15 +149,9 @@ public:
 		SHADOW_PARALLEL_4_SPLITS,
 	};
 
-	enum ShadowDepthRange {
-		SHADOW_DEPTH_RANGE_STABLE = RS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE,
-		SHADOW_DEPTH_RANGE_OPTIMIZED = RS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_OPTIMIZED,
-	};
-
 private:
 	bool blend_splits;
 	ShadowMode shadow_mode;
-	ShadowDepthRange shadow_depth_range;
 	bool sky_only = false;
 
 protected:
@@ -166,9 +160,6 @@ protected:
 public:
 	void set_shadow_mode(ShadowMode p_mode);
 	ShadowMode get_shadow_mode() const;
-
-	void set_shadow_depth_range(ShadowDepthRange p_range);
-	ShadowDepthRange get_shadow_depth_range() const;
 
 	void set_blend_splits(bool p_enable);
 	bool is_blend_splits_enabled() const;
@@ -180,7 +171,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(DirectionalLight3D::ShadowMode)
-VARIANT_ENUM_CAST(DirectionalLight3D::ShadowDepthRange)
 
 class OmniLight3D : public Light3D {
 	GDCLASS(OmniLight3D, Light3D);

@@ -119,7 +119,7 @@ private:
 
 	struct PlotMesh {
 		Ref<Mesh> mesh;
-		Transform local_xform;
+		Transform3D local_xform;
 	};
 
 	void _find_meshes(const AABB &p_aabb, Node *p_at_node, List<PlotMesh> &plot_meshes);

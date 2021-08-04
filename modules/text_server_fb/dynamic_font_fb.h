@@ -34,7 +34,6 @@
 #include "font_fb.h"
 
 #include "modules/modules_enabled.gen.h"
-
 #ifdef MODULE_FREETYPE_ENABLED
 
 #include <ft2build.h>

@@ -109,7 +109,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	Ref<AudioEffectInstance> instance() override;
+	Ref<AudioEffectInstance> instantiate() override;
 
 	void set_pitch_scale(float p_pitch_scale);
 	float get_pitch_scale() const;

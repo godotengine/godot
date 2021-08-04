@@ -41,7 +41,7 @@ bool EditorDebuggerRemoteObject::_set(const StringName &p_name, const Variant &p
 	}
 
 	prop_values[p_name] = p_value;
-	emit_signal("value_edited", remote_object_id, p_name, p_value);
+	emit_signal(SNAME("value_edited"), remote_object_id, p_name, p_value);
 	return true;
 }
 
@@ -56,8 +56,8 @@ bool EditorDebuggerRemoteObject::_get(const StringName &p_name, Variant &r_ret) 
 
 void EditorDebuggerRemoteObject::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->clear(); //sorry, no want category
-	for (const List<PropertyInfo>::Element *E = prop_list.front(); E; E = E->next()) {
-		p_list->push_back(E->get());
+	for (const PropertyInfo &E : prop_list) {
+		p_list->push_back(E);
 	}
 }
 
@@ -114,11 +114,11 @@ void EditorDebuggerInspector::_notification(int p_what) {
 }
 
 void EditorDebuggerInspector::_object_edited(ObjectID p_id, const String &p_prop, const Variant &p_value) {
-	emit_signal("object_edited", p_id, p_prop, p_value);
+	emit_signal(SNAME("object_edited"), p_id, p_prop, p_value);
 }
 
 void EditorDebuggerInspector::_object_selected(ObjectID p_object) {
-	emit_signal("object_selected", p_object);
+	emit_signal(SNAME("object_selected"), p_object);
 }
 
 ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
@@ -190,7 +190,7 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 	if (old_prop_size == debugObj->prop_list.size() && new_props_added == 0) {
 		//only some may have changed, if so, then update those, if exist
 		for (Set<String>::Element *E = changed.front(); E; E = E->next()) {
-			emit_signal("object_property_updated", debugObj->remote_object_id, E->get());
+			emit_signal(SNAME("object_property_updated"), debugObj->remote_object_id, E->get());
 		}
 	} else {
 		//full update, because props were added or removed

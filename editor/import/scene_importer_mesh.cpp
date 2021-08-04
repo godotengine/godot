@@ -79,11 +79,11 @@ void EditorSceneImporterMesh::add_surface(Mesh::PrimitiveType p_primitive, const
 
 	List<Variant> lods;
 	p_lods.get_key_list(&lods);
-	for (List<Variant>::Element *E = lods.front(); E; E = E->next()) {
-		ERR_CONTINUE(!E->get().is_num());
+	for (const Variant &E : lods) {
+		ERR_CONTINUE(!E.is_num());
 		Surface::LOD lod;
-		lod.distance = E->get();
-		lod.indices = p_lods[E->get()];
+		lod.distance = E;
+		lod.indices = p_lods[E];
 		ERR_CONTINUE(lod.indices.size() == 0);
 		s.lods.push_back(lod);
 	}
@@ -215,6 +215,7 @@ void EditorSceneImporterMesh::generate_lods() {
 		int index_target = indices.size() * threshold;
 		float max_mesh_error_percentage = 1e0f;
 		float mesh_error = 0.0f;
+		float scale = SurfaceTool::simplify_scale_func((const float *)vertices_ptr, vertex_count, sizeof(Vector3));
 		while (index_target > min_indices) {
 			Vector<int> new_indices;
 			new_indices.resize(indices.size());
@@ -223,8 +224,8 @@ void EditorSceneImporterMesh::generate_lods() {
 				break;
 			}
 			Surface::LOD lod;
-			lod.distance = mesh_error;
-			if (Math::is_equal_approx(mesh_error, 0.0f)) {
+			lod.distance = mesh_error * scale;
+			if (Math::is_zero_approx(mesh_error)) {
 				break;
 			}
 			if (new_len <= 0) {
@@ -251,7 +252,7 @@ Ref<ArrayMesh> EditorSceneImporterMesh::get_mesh(const Ref<Mesh> &p_base) {
 			mesh = p_base;
 		}
 		if (mesh.is_null()) {
-			mesh.instance();
+			mesh.instantiate();
 		}
 		mesh->set_name(get_name());
 		if (has_meta("import_id")) {
@@ -320,7 +321,7 @@ void EditorSceneImporterMesh::create_shadow_mesh() {
 		}
 	}
 
-	shadow_mesh.instance();
+	shadow_mesh.instantiate();
 
 	for (int i = 0; i < surfaces.size(); i++) {
 		LocalVector<int> vertex_remap;
@@ -505,7 +506,7 @@ Vector<Ref<Shape3D>> EditorSceneImporterMesh::convex_decompose() const {
 
 	const Vector<Face3> faces = get_faces();
 
-	Vector<Vector<Face3>> decomposed = Mesh::convex_composition_function(faces);
+	Vector<Vector<Face3>> decomposed = Mesh::convex_composition_function(faces, -1);
 
 	Vector<Ref<Shape3D>> ret;
 
@@ -528,7 +529,7 @@ Vector<Ref<Shape3D>> EditorSceneImporterMesh::convex_decompose() const {
 		}
 
 		Ref<ConvexPolygonShape3D> shape;
-		shape.instance();
+		shape.instantiate();
 		shape->set_points(convex_points);
 		ret.push_back(shape);
 	}
@@ -587,7 +588,7 @@ Ref<NavigationMesh> EditorSceneImporterMesh::create_navigation_mesh() {
 	}
 
 	Ref<NavigationMesh> nm;
-	nm.instance();
+	nm.instantiate();
 	nm->set_vertices(vertices);
 
 	Vector<int> v3;
@@ -612,7 +613,7 @@ struct EditorSceneImporterMeshLightmapSurface {
 	String name;
 };
 
-Error EditorSceneImporterMesh::lightmap_unwrap_cached(const Transform &p_base_transform, float p_texel_size, const Vector<uint8_t> &p_src_cache, Vector<uint8_t> &r_dst_cache) {
+Error EditorSceneImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, float p_texel_size, const Vector<uint8_t> &p_src_cache, Vector<uint8_t> &r_dst_cache) {
 	ERR_FAIL_COND_V(!array_mesh_lightmap_unwrap_callback, ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V_MSG(blend_shapes.size() != 0, ERR_UNAVAILABLE, "Can't unwrap mesh with blend shapes.");
 
@@ -628,7 +629,7 @@ Error EditorSceneImporterMesh::lightmap_unwrap_cached(const Transform &p_base_tr
 	Basis basis = p_base_transform.get_basis();
 	Vector3 scale = Vector3(basis.get_axis(0).length(), basis.get_axis(1).length(), basis.get_axis(2).length());
 
-	Transform transform;
+	Transform3D transform;
 	transform.scale(scale);
 
 	Basis normal_basis = transform.basis.inverse().transposed();
@@ -733,7 +734,7 @@ Error EditorSceneImporterMesh::lightmap_unwrap_cached(const Transform &p_base_tr
 
 	for (int i = 0; i < lightmap_surfaces.size(); i++) {
 		Ref<SurfaceTool> st;
-		st.instance();
+		st.instantiate();
 		st->begin(Mesh::PRIMITIVE_TRIANGLES);
 		st->set_material(lightmap_surfaces[i].material);
 		st->set_meta("name", lightmap_surfaces[i].name);

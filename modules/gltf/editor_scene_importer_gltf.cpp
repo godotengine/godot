@@ -28,23 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "core/crypto/crypto_core.h"
-#include "core/io/json.h"
-#include "core/math/disjoint_set.h"
-#include "core/math/math_defs.h"
-#include "core/os/file_access.h"
-#include "core/os/os.h"
-#include "editor/import/resource_importer_scene.h"
-#include "modules/gltf/gltf_state.h"
-#include "modules/regex/regex.h"
-#include "scene/3d/bone_attachment_3d.h"
-#include "scene/3d/camera_3d.h"
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/animation/animation_player.h"
-#include "scene/resources/packed_scene.h"
-#include "scene/resources/surface_tool.h"
+#include "editor_scene_importer_gltf.h"
 
-#include "modules/gltf/editor_scene_importer_gltf.h"
+#include "gltf_document.h"
+#include "gltf_state.h"
+
+#include "scene/3d/node_3d.h"
+#include "scene/animation/animation_player.h"
+#include "scene/resources/animation.h"
 
 uint32_t EditorSceneImporterGLTF::get_import_flags() const {
 	return ImportFlags::IMPORT_SCENE | ImportFlags::IMPORT_ANIMATION;
@@ -60,7 +51,7 @@ Node *EditorSceneImporterGLTF::import_scene(const String &p_path,
 		List<String> *r_missing_deps,
 		Error *r_err) {
 	Ref<PackedSceneGLTF> importer;
-	importer.instance();
+	importer.instantiate();
 	return importer->import_scene(p_path, p_flags, p_bake_fps, r_missing_deps, r_err, Ref<GLTFState>());
 }
 
@@ -91,13 +82,13 @@ Node *PackedSceneGLTF::import_scene(const String &p_path, uint32_t p_flags,
 		Error *r_err,
 		Ref<GLTFState> r_state) {
 	if (r_state == Ref<GLTFState>()) {
-		r_state.instance();
+		r_state.instantiate();
 	}
 	r_state->use_named_skin_binds =
 			p_flags & EditorSceneImporter::IMPORT_USE_NAMED_SKIN_BINDS;
 
 	Ref<GLTFDocument> gltf_document;
-	gltf_document.instance();
+	gltf_document.instantiate();
 	Error err = gltf_document->parse(r_state, p_path);
 	if (r_err) {
 		*r_err = err;
@@ -139,9 +130,9 @@ void PackedSceneGLTF::save_scene(Node *p_node, const String &p_path,
 		*r_err = err;
 	}
 	Ref<GLTFDocument> gltf_document;
-	gltf_document.instance();
+	gltf_document.instantiate();
 	Ref<GLTFState> state;
-	state.instance();
+	state.instantiate();
 	err = gltf_document->serialize(state, p_node, p_path);
 	if (r_err) {
 		*r_err = err;
@@ -172,7 +163,7 @@ Error PackedSceneGLTF::export_gltf(Node *p_root, String p_path,
 	int32_t flags = p_flags;
 	real_t baked_fps = p_bake_fps;
 	Ref<PackedSceneGLTF> exporter;
-	exporter.instance();
+	exporter.instantiate();
 	exporter->save_scene(p_root, path, "", flags, baked_fps, &deps, &err);
 	int32_t error_code = err;
 	if (error_code != 0) {

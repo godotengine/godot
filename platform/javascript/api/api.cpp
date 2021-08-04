@@ -37,8 +37,8 @@ static JavaScript *javascript_eval;
 
 void register_javascript_api() {
 	JavaScriptToolsEditorPlugin::initialize();
-	ClassDB::register_virtual_class<JavaScriptObject>();
-	ClassDB::register_virtual_class<JavaScript>();
+	GDREGISTER_VIRTUAL_CLASS(JavaScriptObject);
+	GDREGISTER_VIRTUAL_CLASS(JavaScript);
 	javascript_eval = memnew(JavaScript);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("JavaScript", javascript_eval));
 }

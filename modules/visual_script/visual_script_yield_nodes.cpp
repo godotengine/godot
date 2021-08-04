@@ -113,7 +113,7 @@ public:
 			}
 
 			Ref<VisualScriptFunctionState> state;
-			state.instance();
+			state.instantiate();
 
 			int ret = STEP_YIELD_BIT;
 			switch (mode) {
@@ -138,7 +138,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptYield::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptYield::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceYield *instance = memnew(VisualScriptNodeInstanceYield);
 	//instance->instance=p_instance;
 	instance->mode = yield_mode;
@@ -174,7 +174,7 @@ float VisualScriptYield::get_wait_time() {
 void VisualScriptYield::_validate_property(PropertyInfo &property) const {
 	if (property.name == "wait_time") {
 		if (yield_mode != YIELD_WAIT) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 }
@@ -202,7 +202,7 @@ VisualScriptYield::VisualScriptYield() {
 template <VisualScriptYield::YieldMode MODE>
 static Ref<VisualScriptNode> create_yield_node(const String &p_name) {
 	Ref<VisualScriptYield> node;
-	node.instance();
+	node.instantiate();
 	node->set_yield_mode(MODE);
 	return node;
 }
@@ -421,7 +421,7 @@ void VisualScriptYieldSignal::_validate_property(PropertyInfo &property) const {
 
 	if (property.name == "node_path") {
 		if (call_mode != CALL_MODE_NODE_PATH) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		} else {
 			Node *bnode = _get_base_node();
 			if (bnode) {
@@ -438,21 +438,21 @@ void VisualScriptYieldSignal::_validate_property(PropertyInfo &property) const {
 		ClassDB::get_signal_list(_get_base_type(), &methods);
 
 		List<String> mstring;
-		for (List<MethodInfo>::Element *E = methods.front(); E; E = E->next()) {
-			if (E->get().name.begins_with("_")) {
+		for (const MethodInfo &E : methods) {
+			if (E.name.begins_with("_")) {
 				continue;
 			}
-			mstring.push_back(E->get().name.get_slice(":", 0));
+			mstring.push_back(E.name.get_slice(":", 0));
 		}
 
 		mstring.sort();
 
 		String ml;
-		for (List<String>::Element *E = mstring.front(); E; E = E->next()) {
+		for (const String &E : mstring) {
 			if (ml != String()) {
 				ml += ",";
 			}
-			ml += E->get();
+			ml += E;
 		}
 
 		property.hint_string = ml;
@@ -548,7 +548,7 @@ public:
 			}
 
 			Ref<VisualScriptFunctionState> state;
-			state.instance();
+			state.instantiate();
 
 			state->connect_to_signal(object, signal, Array());
 
@@ -559,7 +559,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptYieldSignal::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptYieldSignal::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceYieldSignal *instance = memnew(VisualScriptNodeInstanceYieldSignal);
 	instance->node = this;
 	instance->instance = p_instance;
@@ -578,7 +578,7 @@ VisualScriptYieldSignal::VisualScriptYieldSignal() {
 template <VisualScriptYieldSignal::CallMode cmode>
 static Ref<VisualScriptNode> create_yield_signal_node(const String &p_name) {
 	Ref<VisualScriptYieldSignal> node;
-	node.instance();
+	node.instantiate();
 	node->set_call_mode(cmode);
 	return node;
 }

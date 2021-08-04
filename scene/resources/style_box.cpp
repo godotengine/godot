@@ -121,7 +121,6 @@ void StyleBoxTexture::set_texture(Ref<Texture2D> p_texture) {
 	} else {
 		region_rect = Rect2(Point2(), texture->get_size());
 	}
-	emit_signal("texture_changed");
 	emit_changed();
 }
 
@@ -284,8 +283,6 @@ void StyleBoxTexture::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_v_axis_stretch_mode", "mode"), &StyleBoxTexture::set_v_axis_stretch_mode);
 	ClassDB::bind_method(D_METHOD("get_v_axis_stretch_mode"), &StyleBoxTexture::get_v_axis_stretch_mode);
-
-	ADD_SIGNAL(MethodInfo("texture_changed"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region_rect"), "set_region_rect", "get_region_rect");

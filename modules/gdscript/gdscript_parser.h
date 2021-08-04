@@ -33,7 +33,7 @@
 
 #include "core/io/multiplayer_api.h"
 #include "core/io/resource.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
 #include "core/string/string_name.h"
 #include "core/string/ustring.h"
@@ -729,7 +729,7 @@ public:
 		SuiteNode *body = nullptr;
 		bool is_static = false;
 		bool is_coroutine = false;
-		MultiplayerAPI::RPCMode rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
+		MultiplayerAPI::RPCConfig rpc_config;
 		MethodInfo info;
 		LambdaNode *source_lambda = nullptr;
 #ifdef TOOLS_ENABLED
@@ -1117,7 +1117,6 @@ public:
 		bool exported = false;
 		bool onready = false;
 		PropertyInfo export_info;
-		MultiplayerAPI::RPCMode rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 		int assignments = 0;
 		int usages = 0;
 		bool use_conversion_assign = false;
@@ -1432,7 +1431,7 @@ public:
 		void push_line(const String &p_line = String());
 		void push_text(const String &p_text);
 
-		void print_annotation(AnnotationNode *p_annotation);
+		void print_annotation(const AnnotationNode *p_annotation);
 		void print_array(ArrayNode *p_array);
 		void print_assert(AssertNode *p_assert);
 		void print_assignment(AssignmentNode *p_assignment);

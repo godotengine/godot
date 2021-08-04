@@ -1,10 +1,9 @@
-using System;
-
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
 using real_t = System.Single;
 #endif
+using System;
 
 namespace Godot
 {
@@ -15,12 +14,12 @@ namespace Godot
         /// <summary>
         /// The natural number `e`.
         /// </summary>
-        public const real_t E = (real_t) 2.7182818284590452353602874714M; // 2.7182817f and 2.718281828459045
+        public const real_t E = (real_t)2.7182818284590452353602874714M; // 2.7182817f and 2.718281828459045
 
         /// <summary>
         /// The square root of 2.
         /// </summary>
-        public const real_t Sqrt2 = (real_t) 1.4142135623730950488016887242M; // 1.4142136f and 1.414213562373095
+        public const real_t Sqrt2 = (real_t)1.4142135623730950488016887242M; // 1.4142136f and 1.414213562373095
 
         /// <summary>
         /// A very small number used for float comparison with error tolerance.

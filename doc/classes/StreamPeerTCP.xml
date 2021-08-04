@@ -10,75 +10,61 @@
 	</tutorials>
 	<methods>
 		<method name="bind">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="port" type="int">
-			</argument>
-			<argument index="1" name="host" type="String" default="&quot;*&quot;">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="port" type="int" />
+			<argument index="1" name="host" type="String" default="&quot;*&quot;" />
 			<description>
 				Opens the TCP socket, and binds it to the specified local address.
 				This method is generally not needed, and only used to force the subsequent call to [method connect_to_host] to use the specified [code]host[/code] and [code]port[/code] as source address. This can be desired in some NAT punchthrough techniques, or when forcing the source network interface.
 			</description>
 		</method>
 		<method name="connect_to_host">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="host" type="String">
-			</argument>
-			<argument index="1" name="port" type="int">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="host" type="String" />
+			<argument index="1" name="port" type="int" />
 			<description>
 				Connects to the specified [code]host:port[/code] pair. A hostname will be resolved if valid. Returns [constant OK] on success.
 			</description>
 		</method>
 		<method name="disconnect_from_host">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Disconnects from host.
 			</description>
 		</method>
 		<method name="get_connected_host" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the IP of this peer.
 			</description>
 		</method>
 		<method name="get_connected_port" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the port of this peer.
 			</description>
 		</method>
 		<method name="get_local_port" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the local port to which this peer is bound.
 			</description>
 		</method>
 		<method name="get_status">
-			<return type="int" enum="StreamPeerTCP.Status">
-			</return>
+			<return type="int" enum="StreamPeerTCP.Status" />
 			<description>
 				Returns the status of the connection, see [enum Status].
 			</description>
 		</method>
 		<method name="is_connected_to_host" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this peer is currently connected or is connecting to a host, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="set_no_delay">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="enabled" type="bool" />
 			<description>
 				If [code]enabled[/code] is [code]true[/code], packets will be sent immediately. If [code]enabled[/code] is [code]false[/code] (the default), packet transfers will be delayed and combined using [url=https://en.wikipedia.org/wiki/Nagle%27s_algorithm]Nagle's algorithm[/url].
 				[b]Note:[/b] It's recommended to leave this disabled for applications that send large packets or need to transfer a lot of data, as enabling this can decrease the total available bandwidth.

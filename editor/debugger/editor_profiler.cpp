@@ -135,11 +135,11 @@ String EditorProfiler::_get_time_as_text(const Metric &m, float p_time, int p_ca
 }
 
 Color EditorProfiler::_get_color_from_signature(const StringName &p_signature) const {
-	Color bc = get_theme_color("error_color", "Editor");
+	Color bc = get_theme_color(SNAME("error_color"), SNAME("Editor"));
 	double rot = ABS(double(p_signature.hash()) / double(0x7FFFFFFF));
 	Color c;
 	c.set_hsv(rot, bc.get_s(), bc.get_v());
-	return c.lerp(get_theme_color("base_color", "Editor"), 0.07);
+	return c.lerp(get_theme_color(SNAME("base_color"), SNAME("Editor")), 0.07);
 }
 
 void EditorProfiler::_item_edited() {
@@ -180,7 +180,7 @@ void EditorProfiler::_update_plot() {
 	}
 
 	uint8_t *wr = graph_image.ptrw();
-	const Color background_color = get_theme_color("dark_color_2", "Editor");
+	const Color background_color = get_theme_color(SNAME("dark_color_2"), SNAME("Editor"));
 
 	// Clear the previous frame and set the background color.
 	for (int i = 0; i < desired_len; i += 4) {
@@ -305,17 +305,17 @@ void EditorProfiler::_update_plot() {
 	}
 
 	Ref<Image> img;
-	img.instance();
+	img.instantiate();
 	img->create(w, h, false, Image::FORMAT_RGBA8, graph_image);
 
 	if (reset_texture) {
 		if (graph_texture.is_null()) {
-			graph_texture.instance();
+			graph_texture.instantiate();
 		}
 		graph_texture->create_from_image(img);
 	}
 
-	graph_texture->update(img, true);
+	graph_texture->update(img);
 
 	graph->set_texture(graph_texture);
 	graph->update();
@@ -356,7 +356,7 @@ void EditorProfiler::_update_frame() {
 			item->set_metadata(1, it.script);
 			item->set_metadata(2, it.line);
 			item->set_text_align(2, TreeItem::ALIGN_RIGHT);
-			item->set_tooltip(0, it.script + ":" + itos(it.line));
+			item->set_tooltip(0, it.name + "\n" + it.script + ":" + itos(it.line));
 
 			float time = dtime == DISPLAY_SELF_TIME ? it.self : it.total;
 
@@ -376,14 +376,14 @@ void EditorProfiler::_update_frame() {
 
 void EditorProfiler::_activate_pressed() {
 	if (activate->is_pressed()) {
-		activate->set_icon(get_theme_icon("Stop", "EditorIcons"));
+		activate->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
 		activate->set_text(TTR("Stop"));
 		_clear_pressed();
 	} else {
-		activate->set_icon(get_theme_icon("Play", "EditorIcons"));
+		activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
 		activate->set_text(TTR("Start"));
 	}
-	emit_signal("enable_profiling", activate->is_pressed());
+	emit_signal(SNAME("enable_profiling"), activate->is_pressed());
 }
 
 void EditorProfiler::_clear_pressed() {
@@ -394,8 +394,8 @@ void EditorProfiler::_clear_pressed() {
 
 void EditorProfiler::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_LAYOUT_DIRECTION_CHANGED || p_what == NOTIFICATION_TRANSLATION_CHANGED) {
-		activate->set_icon(get_theme_icon("Play", "EditorIcons"));
-		clear_button->set_icon(get_theme_icon("Clear", "EditorIcons"));
+		activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
+		clear_button->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
 	}
 }
 
@@ -462,7 +462,7 @@ void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 
 			if (activate->is_pressed()) {
 				if (!seeking) {
-					emit_signal("break_request");
+					emit_signal(SNAME("break_request"));
 				}
 			}
 
@@ -588,8 +588,8 @@ EditorProfiler::EditorProfiler() {
 	hb->add_child(memnew(Label(TTR("Measure:"))));
 
 	display_mode = memnew(OptionButton);
-	display_mode->add_item(TTR("Frame Time (sec)"));
-	display_mode->add_item(TTR("Average Time (sec)"));
+	display_mode->add_item(TTR("Frame Time (ms)"));
+	display_mode->add_item(TTR("Average Time (ms)"));
 	display_mode->add_item(TTR("Frame %"));
 	display_mode->add_item(TTR("Physics Frame %"));
 	display_mode->connect("item_selected", callable_mp(this, &EditorProfiler::_combo_changed));
@@ -601,6 +601,7 @@ EditorProfiler::EditorProfiler() {
 	display_time = memnew(OptionButton);
 	display_time->add_item(TTR("Inclusive"));
 	display_time->add_item(TTR("Self"));
+	display_time->set_tooltip(TTR("Inclusive: Includes time from other functions called by this function.\nUse this to spot bottlenecks.\n\nSelf: Only count the time spent in the function itself, not in other functions called by that function.\nUse this to find individual functions to optimize."));
 	display_time->connect("item_selected", callable_mp(this, &EditorProfiler::_combo_changed));
 
 	hb->add_child(display_time);
@@ -631,13 +632,16 @@ EditorProfiler::EditorProfiler() {
 	variables->set_column_titles_visible(true);
 	variables->set_column_title(0, TTR("Name"));
 	variables->set_column_expand(0, true);
-	variables->set_column_min_width(0, 60 * EDSCALE);
+	variables->set_column_clip_content(0, true);
+	variables->set_column_expand_ratio(0, 60);
 	variables->set_column_title(1, TTR("Time"));
 	variables->set_column_expand(1, false);
-	variables->set_column_min_width(1, 100 * EDSCALE);
+	variables->set_column_clip_content(1, true);
+	variables->set_column_expand_ratio(1, 100);
 	variables->set_column_title(2, TTR("Calls"));
 	variables->set_column_expand(2, false);
-	variables->set_column_min_width(2, 60 * EDSCALE);
+	variables->set_column_clip_content(2, true);
+	variables->set_column_expand_ratio(2, 60);
 	variables->connect("item_edited", callable_mp(this, &EditorProfiler::_item_edited));
 
 	graph = memnew(TextureRect);

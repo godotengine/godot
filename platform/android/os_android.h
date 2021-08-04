@@ -31,7 +31,6 @@
 #ifndef OS_ANDROID_H
 #define OS_ANDROID_H
 
-#include "audio_driver_jandroid.h"
 #include "audio_driver_opensl.h"
 #include "core/os/main_loop.h"
 #include "drivers/unix/os_unix.h"
@@ -59,7 +58,6 @@ private:
 
 	mutable String data_dir_cache;
 
-	//AudioDriverAndroid audio_driver_android;
 	AudioDriverOpenSL audio_driver_android;
 
 	MainLoop *main_loop;
@@ -88,6 +86,8 @@ public:
 	virtual bool request_permissions() override;
 	virtual Vector<String> get_granted_permissions() const override;
 
+	virtual void alert(const String &p_alert, const String &p_title) override;
+
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false) override;
 
 	virtual String get_name() const override;
@@ -111,6 +111,7 @@ public:
 
 	virtual Error shell_open(String p_uri) override;
 	virtual String get_user_data_dir() const override;
+	virtual String get_external_data_dir() const override;
 	virtual String get_resource_dir() const override;
 	virtual String get_locale() const override;
 	virtual String get_model_name() const override;

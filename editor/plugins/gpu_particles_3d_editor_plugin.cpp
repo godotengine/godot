@@ -177,7 +177,7 @@ void GPUParticles3DEditorBase::_node_selected(const NodePath &p_path) {
 		return;
 	}
 
-	Transform geom_xform = base_node->get_global_transform().affine_inverse() * vi->get_global_transform();
+	Transform3D geom_xform = base_node->get_global_transform().affine_inverse() * vi->get_global_transform();
 
 	int gc = geometry.size();
 	Face3 *w = geometry.ptrw();
@@ -230,7 +230,7 @@ void GPUParticles3DEditor::_node_removed(Node *p_node) {
 
 void GPUParticles3DEditor::_notification(int p_notification) {
 	if (p_notification == NOTIFICATION_ENTER_TREE) {
-		options->set_icon(options->get_popup()->get_theme_icon("GPUParticles3D", "EditorIcons"));
+		options->set_icon(options->get_popup()->get_theme_icon(SNAME("GPUParticles3D"), SNAME("EditorIcons")));
 		get_tree()->connect("node_removed", callable_mp(this, &GPUParticles3DEditor::_node_removed));
 	}
 }
@@ -359,7 +359,7 @@ void GPUParticles3DEditor::_generate_emission_points() {
 	Ref<Image> image = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img));
 
 	Ref<ImageTexture> tex;
-	tex.instance();
+	tex.instantiate();
 
 	Ref<ParticlesMaterial> material = node->get_process_material();
 	ERR_FAIL_COND(material.is_null());
@@ -387,7 +387,7 @@ void GPUParticles3DEditor::_generate_emission_points() {
 		Ref<Image> image2 = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img2));
 
 		Ref<ImageTexture> tex2;
-		tex2.instance();
+		tex2.instantiate();
 
 		material->set_emission_normal_texture(tex2);
 	} else {

@@ -370,13 +370,13 @@ Array SurfaceTool::commit_to_arrays() {
 				for (uint32_t idx = 0; idx < vertex_array.size(); idx++) {
 					const Vertex &v = vertex_array[idx];
 
-					w[idx + 0] = v.tangent.x;
-					w[idx + 1] = v.tangent.y;
-					w[idx + 2] = v.tangent.z;
+					w[idx * 4 + 0] = v.tangent.x;
+					w[idx * 4 + 1] = v.tangent.y;
+					w[idx * 4 + 2] = v.tangent.z;
 
 					//float d = v.tangent.dot(v.binormal,v.normal);
 					float d = v.binormal.dot(v.normal.cross(v.tangent));
-					w[idx + 3] = d < 0 ? -1 : 1;
+					w[idx * 4 + 3] = d < 0 ? -1 : 1;
 				}
 
 				a[i] = array;
@@ -537,12 +537,16 @@ Array SurfaceTool::commit_to_arrays() {
 				int count = skin_weights == SKIN_8_WEIGHTS ? 8 : 4;
 				Vector<int> array;
 				array.resize(varr_len * count);
+				array.fill(0);
 				int *w = array.ptrw();
 
 				for (uint32_t idx = 0; idx < vertex_array.size(); idx++) {
 					const Vertex &v = vertex_array[idx];
 
-					ERR_CONTINUE(v.bones.size() != count);
+					if (v.bones.size() > count) {
+						ERR_PRINT_ONCE(vformat("Invalid bones size %d vs count %d", v.bones.size(), count));
+						continue;
+					}
 
 					for (int j = 0; j < count; j++) {
 						w[idx * count + j] = v.bones[j];
@@ -557,12 +561,16 @@ Array SurfaceTool::commit_to_arrays() {
 				int count = skin_weights == SKIN_8_WEIGHTS ? 8 : 4;
 
 				array.resize(varr_len * count);
+				array.fill(0.0f);
 				float *w = array.ptrw();
 
 				for (uint32_t idx = 0; idx < vertex_array.size(); idx++) {
 					const Vertex &v = vertex_array[idx];
 
-					ERR_CONTINUE(v.weights.size() != count);
+					if (v.weights.size() > count) {
+						ERR_PRINT_ONCE(vformat("Invalid weight size %d vs count %d", v.weights.size(), count));
+						continue;
+					}
 
 					for (int j = 0; j < count; j++) {
 						w[idx * count + j] = v.weights[j];
@@ -599,7 +607,7 @@ Ref<ArrayMesh> SurfaceTool::commit(const Ref<ArrayMesh> &p_existing, uint32_t p_
 	if (p_existing.is_valid()) {
 		mesh = p_existing;
 	} else {
-		mesh.instance();
+		mesh.instantiate();
 	}
 
 	int varr_len = vertex_array.size();
@@ -857,7 +865,7 @@ void SurfaceTool::create_from_blend_shape(const Ref<Mesh> &p_existing, int p_sur
 	_create_list_from_arrays(arr[shape_idx], &vertex_array, &index_array, format);
 }
 
-void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const Transform &p_xform) {
+void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const Transform3D &p_xform) {
 	ERR_FAIL_NULL_MSG(p_existing, "First argument in SurfaceTool::append_from() must be a valid object of type Mesh");
 
 	if (vertex_array.size() == 0) {
@@ -1112,6 +1120,7 @@ SurfaceTool::CustomFormat SurfaceTool::get_custom_format(int p_index) const {
 void SurfaceTool::optimize_indices_for_cache() {
 	ERR_FAIL_COND(optimize_vertex_cache_func == nullptr);
 	ERR_FAIL_COND(index_array.size() == 0);
+	ERR_FAIL_COND(index_array.size() % 3 != 0);
 
 	LocalVector old_index_array = index_array;
 	memset(index_array.ptr(), 0, index_array.size() * sizeof(int));

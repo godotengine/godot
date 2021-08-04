@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsShapeQueryParameters2D" inherits="Reference" version="4.0">
+<class name="PhysicsShapeQueryParameters2D" inherits="RefCounted" version="4.0">
 	<brief_description>
 		Parameters to be sent to a 2D shape physics query.
 	</brief_description>
 	<description>
-		This class contains the shape and other parameters for 2D intersection/collision queries. See also [PhysicsShapeQueryResult2D].
+		This class contains the shape and other parameters for 2D intersection/collision queries.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -20,13 +20,13 @@
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="2147483647">
 			The physics layer(s) the query will take into account (as a bitmask). See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
-		<member name="exclude" type="Array" setter="set_exclude" getter="get_exclude" default="[  ]">
+		<member name="exclude" type="Array" setter="set_exclude" getter="get_exclude" default="[]">
 			The list of objects or object [RID]s that will be excluded from collisions.
 		</member>
 		<member name="margin" type="float" setter="set_margin" getter="get_margin" default="0.0">
 			The collision margin for the shape.
 		</member>
-		<member name="motion" type="Vector2" setter="set_motion" getter="get_motion" default="Vector2( 0, 0 )">
+		<member name="motion" type="Vector2" setter="set_motion" getter="get_motion" default="Vector2(0, 0)">
 			The motion of the shape being queried for.
 		</member>
 		<member name="shape" type="Resource" setter="set_shape" getter="get_shape">
@@ -63,7 +63,7 @@
 				[/csharp]
 				[/codeblocks]
 		</member>
-		<member name="transform" type="Transform2D" setter="set_transform" getter="get_transform" default="Transform2D( 1, 0, 0, 1, 0, 0 )">
+		<member name="transform" type="Transform2D" setter="set_transform" getter="get_transform" default="Transform2D(1, 0, 0, 1, 0, 0)">
 			The queried shape's transform matrix.
 		</member>
 	</members>

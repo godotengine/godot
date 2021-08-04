@@ -41,8 +41,8 @@ extern "C" {
 // version info to detect whether a call is available
 
 // Use these to populate version in your plugin
-#define GODOTVR_API_MAJOR 1
-#define GODOTVR_API_MINOR 1
+#define GODOTVR_API_MAJOR 4
+#define GODOTVR_API_MINOR 0
 
 typedef struct {
 	godot_gdnative_api_version version; /* version of our API */
@@ -52,25 +52,32 @@ typedef struct {
 	godot_int (*get_capabilities)(const void *);
 	godot_bool (*get_anchor_detection_is_enabled)(const void *);
 	void (*set_anchor_detection_is_enabled)(void *, godot_bool);
-	godot_bool (*is_stereo)(const void *);
+	godot_int (*get_view_count)(const void *);
 	godot_bool (*is_initialized)(const void *);
 	godot_bool (*initialize)(void *);
 	void (*uninitialize)(void *);
 	godot_vector2 (*get_render_targetsize)(const void *);
-	godot_transform (*get_transform_for_eye)(void *, godot_int, godot_transform *);
-	void (*fill_projection_for_eye)(void *, godot_float *, godot_int, godot_float, godot_float, godot_float);
-	void (*commit_for_eye)(void *, godot_int, godot_rid *, godot_rect2 *);
+
+	godot_transform3d (*get_camera_transform)(void *);
+	godot_transform3d (*get_transform_for_view)(void *, godot_int, godot_transform3d *);
+	void (*fill_projection_for_view)(void *, godot_real_t *, godot_int, godot_real_t, godot_real_t, godot_real_t);
+	void (*commit_views)(void *, godot_rid *, godot_rect2 *);
+
 	void (*process)(void *);
-	godot_int (*get_external_texture_for_eye)(void *, godot_int);
 	void (*notification)(void *, godot_int);
 	godot_int (*get_camera_feed_id)(void *);
+
+	// possibly deprecate but adding/keeping as a reminder these are in Godot 3
+	void (*commit_for_eye)(void *, godot_int, godot_rid *, godot_rect2 *);
+	godot_int (*get_external_texture_for_eye)(void *, godot_int);
+	godot_int (*get_external_depth_for_eye)(void *, godot_int);
 } godot_xr_interface_gdnative;
 
 void GDAPI godot_xr_register_interface(const godot_xr_interface_gdnative *p_interface);
 
 // helper functions to access XRServer data
-godot_float GDAPI godot_xr_get_worldscale();
-godot_transform GDAPI godot_xr_get_reference_frame();
+godot_real_t GDAPI godot_xr_get_worldscale();
+godot_transform3d GDAPI godot_xr_get_reference_frame();
 
 // helper functions for rendering
 void GDAPI godot_xr_blit(godot_int p_eye, godot_rid *p_render_target, godot_rect2 *p_rect);
@@ -79,10 +86,10 @@ godot_int GDAPI godot_xr_get_texid(godot_rid *p_render_target);
 // helper functions for updating XR controllers
 godot_int GDAPI godot_xr_add_controller(char *p_device_name, godot_int p_hand, godot_bool p_tracks_orientation, godot_bool p_tracks_position);
 void GDAPI godot_xr_remove_controller(godot_int p_controller_id);
-void GDAPI godot_xr_set_controller_transform(godot_int p_controller_id, godot_transform *p_transform, godot_bool p_tracks_orientation, godot_bool p_tracks_position);
+void GDAPI godot_xr_set_controller_transform(godot_int p_controller_id, godot_transform3d *p_transform, godot_bool p_tracks_orientation, godot_bool p_tracks_position);
 void GDAPI godot_xr_set_controller_button(godot_int p_controller_id, godot_int p_button, godot_bool p_is_pressed);
-void GDAPI godot_xr_set_controller_axis(godot_int p_controller_id, godot_int p_axis, godot_float p_value, godot_bool p_can_be_negative);
-godot_float GDAPI godot_xr_get_controller_rumble(godot_int p_controller_id);
+void GDAPI godot_xr_set_controller_axis(godot_int p_controller_id, godot_int p_axis, godot_real_t p_value, godot_bool p_can_be_negative);
+godot_real_t GDAPI godot_xr_get_controller_rumble(godot_int p_controller_id);
 
 #ifdef __cplusplus
 }

@@ -122,7 +122,7 @@ bool VideoStreamPlaybackGDNative::open_file(const String &p_file) {
 		samples_decoded = 0;
 
 		Ref<Image> img;
-		img.instance();
+		img.instantiate();
 		img->create((int)texture_size.width, false, (int)texture_size.height, Image::FORMAT_RGBA8);
 
 		texture->create_from_image(img);
@@ -185,7 +185,7 @@ void VideoStreamPlaybackGDNative::update_texture() {
 
 	Ref<Image> img = memnew(Image(texture_size.width, texture_size.height, 0, Image::FORMAT_RGBA8, *pba));
 
-	texture->update(img, true);
+	texture->update(img);
 }
 
 // ctor and dtor

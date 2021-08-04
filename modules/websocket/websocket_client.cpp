@@ -42,9 +42,9 @@ Error WebSocketClient::connect_to_url(String p_url, const Vector<String> p_proto
 	_is_multiplayer = gd_mp_api;
 
 	String host = p_url;
-	String path = "/";
-	String scheme = "";
-	int port = 80;
+	String path;
+	String scheme;
+	int port = 0;
 	Error err = p_url.parse_url(scheme, host, port, path);
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Invalid URL: " + p_url);
 
@@ -54,6 +54,9 @@ Error WebSocketClient::connect_to_url(String p_url, const Vector<String> p_proto
 	}
 	if (port == 0) {
 		port = ssl ? 443 : 80;
+	}
+	if (path.is_empty()) {
+		path = "/";
 	}
 	return connect_to_host(host, path, port, ssl, p_protocols, p_custom_headers);
 }
@@ -83,7 +86,7 @@ void WebSocketClient::_on_peer_packet() {
 	if (_is_multiplayer) {
 		_process_multiplayer(get_peer(1), 1);
 	} else {
-		emit_signal("data_received");
+		emit_signal(SNAME("data_received"));
 	}
 }
 
@@ -91,27 +94,27 @@ void WebSocketClient::_on_connect(String p_protocol) {
 	if (_is_multiplayer) {
 		// need to wait for ID confirmation...
 	} else {
-		emit_signal("connection_established", p_protocol);
+		emit_signal(SNAME("connection_established"), p_protocol);
 	}
 }
 
 void WebSocketClient::_on_close_request(int p_code, String p_reason) {
-	emit_signal("server_close_request", p_code, p_reason);
+	emit_signal(SNAME("server_close_request"), p_code, p_reason);
 }
 
 void WebSocketClient::_on_disconnect(bool p_was_clean) {
 	if (_is_multiplayer) {
-		emit_signal("connection_failed");
+		emit_signal(SNAME("connection_failed"));
 	} else {
-		emit_signal("connection_closed", p_was_clean);
+		emit_signal(SNAME("connection_closed"), p_was_clean);
 	}
 }
 
 void WebSocketClient::_on_error() {
 	if (_is_multiplayer) {
-		emit_signal("connection_failed");
+		emit_signal(SNAME("connection_failed"));
 	} else {
-		emit_signal("connection_error");
+		emit_signal(SNAME("connection_error"));
 	}
 }
 
@@ -123,12 +126,12 @@ void WebSocketClient::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_verify_ssl_enabled", "enabled"), &WebSocketClient::set_verify_ssl_enabled);
 	ClassDB::bind_method(D_METHOD("is_verify_ssl_enabled"), &WebSocketClient::is_verify_ssl_enabled);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "verify_ssl", PROPERTY_HINT_NONE, "", 0), "set_verify_ssl_enabled", "is_verify_ssl_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "verify_ssl", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_verify_ssl_enabled", "is_verify_ssl_enabled");
 
 	ClassDB::bind_method(D_METHOD("get_trusted_ssl_certificate"), &WebSocketClient::get_trusted_ssl_certificate);
 	ClassDB::bind_method(D_METHOD("set_trusted_ssl_certificate"), &WebSocketClient::set_trusted_ssl_certificate);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "trusted_ssl_certificate", PROPERTY_HINT_RESOURCE_TYPE, "X509Certificate", 0), "set_trusted_ssl_certificate", "get_trusted_ssl_certificate");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "trusted_ssl_certificate", PROPERTY_HINT_RESOURCE_TYPE, "X509Certificate", PROPERTY_USAGE_NONE), "set_trusted_ssl_certificate", "get_trusted_ssl_certificate");
 
 	ADD_SIGNAL(MethodInfo("data_received"));
 	ADD_SIGNAL(MethodInfo("connection_established", PropertyInfo(Variant::STRING, "protocol")));

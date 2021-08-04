@@ -11,15 +11,13 @@
 	</tutorials>
 	<methods>
 		<method name="get_buttons">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Returns an [Array] of [Button]s who have this as their [ButtonGroup] (see [member BaseButton.button_group]).
 			</description>
 		</method>
 		<method name="get_pressed_button">
-			<return type="BaseButton">
-			</return>
+			<return type="BaseButton" />
 			<description>
 				Returns the current pressed button.
 			</description>
@@ -30,8 +28,7 @@
 	</members>
 	<signals>
 		<signal name="pressed">
-			<argument index="0" name="button" type="Object">
-			</argument>
+			<argument index="0" name="button" type="Object" />
 			<description>
 				Emitted when one of the buttons of the group is pressed.
 			</description>

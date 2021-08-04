@@ -63,9 +63,9 @@ private:
 	real_t display_to_lens = 4.0;
 	real_t oversample = 1.5;
 
-	//@TODO not yet used, these are needed in our distortion shader...
 	real_t k1 = 0.215;
 	real_t k2 = 0.215;
+	real_t aspect = 1.0;
 
 	/*
 		logic for processing our sensor data, this was originally in our positional tracker logic but I think
@@ -138,16 +138,20 @@ public:
 	virtual void uninitialize() override;
 
 	virtual Size2 get_render_targetsize() override;
-	virtual bool is_stereo() override;
-	virtual Transform get_transform_for_eye(XRInterface::Eyes p_eye, const Transform &p_cam_transform) override;
-	virtual CameraMatrix get_projection_for_eye(XRInterface::Eyes p_eye, real_t p_aspect, real_t p_z_near, real_t p_z_far) override;
-	virtual void commit_for_eye(XRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) override;
+	virtual uint32_t get_view_count() override;
+	virtual Transform3D get_camera_transform() override;
+	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) override;
+	virtual CameraMatrix get_projection_for_view(uint32_t p_view, real_t p_aspect, real_t p_z_near, real_t p_z_far) override;
+	virtual Vector<BlitToScreen> commit_views(RID p_render_target, const Rect2 &p_screen_rect) override;
 
 	virtual void process() override;
 	virtual void notification(int p_what) override {}
 
 	MobileVRInterface();
 	~MobileVRInterface();
+
+	// deprecated
+	virtual void commit_for_eye(XRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) override;
 };
 
 #endif // !MOBILE_VR_INTERFACE_H

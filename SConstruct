@@ -4,10 +4,12 @@ EnsureSConsVersion(3, 0, 0)
 EnsurePythonVersion(3, 5)
 
 # System
+import atexit
 import glob
 import os
 import pickle
 import sys
+import time
 from collections import OrderedDict
 
 # Local
@@ -24,6 +26,8 @@ active_platforms = []
 active_platform_ids = []
 platform_exporters = []
 platform_apis = []
+
+time_at_start = time.time()
 
 for x in sorted(glob.glob("platform/*")):
     if not os.path.isdir(x) or not os.path.exists(x + "/detect.py"):
@@ -123,6 +127,7 @@ opts.Add(BoolVariable("use_lto", "Use link-time optimization", False))
 opts.Add(BoolVariable("deprecated", "Enable deprecated features", True))
 opts.Add(BoolVariable("minizip", "Enable ZIP archive support using minizip", True))
 opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver", False))
+opts.Add(BoolVariable("vulkan", "Enable the vulkan video driver", True))
 opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
 opts.Add(BoolVariable("custom_modules_recursive", "Detect custom modules recursively for each specified path.", True))
 
@@ -137,6 +142,7 @@ opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all 
 opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
+opts.Add("disable_classes", "Disable given classes (comma separated)", "")
 opts.Add(BoolVariable("modules_enabled_by_default", "If no, disable all modules except ones explicitly enabled", True))
 opts.Add(BoolVariable("no_editor_splash", "Don't use the custom splash screen for the editor", False))
 opts.Add("system_certs_path", "Use this path as SSL certificates default for editor (for package maintainers)", "")
@@ -409,14 +415,27 @@ if selected_platform in platform_list:
         env.Prepend(CCFLAGS=["/std:c++17"])
 
     # Enforce our minimal compiler version requirements
-    cc_version = methods.get_compiler_version(env) or [-1, -1]
-    cc_version_major = cc_version[0]
-    cc_version_minor = cc_version[1]
+    cc_version = methods.get_compiler_version(env) or {
+        "major": None,
+        "minor": None,
+        "patch": None,
+        "metadata1": None,
+        "metadata2": None,
+        "date": None,
+    }
+    cc_version_major = int(cc_version["major"] or -1)
+    cc_version_minor = int(cc_version["minor"] or -1)
+    cc_version_metadata1 = cc_version["metadata1"] or ""
 
     if methods.using_gcc(env):
+        if cc_version_major == -1:
+            print(
+                "Couldn't detect compiler version, skipping version checks. "
+                "Build may fail if the compiler doesn't support C++17 fully."
+            )
         # GCC 8 before 8.4 has a regression in the support of guaranteed copy elision
         # which causes a build failure: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86521
-        if cc_version_major == 8 and cc_version_minor < 4:
+        elif cc_version_major == 8 and cc_version_minor < 4:
             print(
                 "Detected GCC 8 version < 8.4, which is not supported due to a "
                 "regression in its C++17 guaranteed copy elision support. Use a "
@@ -432,10 +451,23 @@ if selected_platform in platform_list:
                 "SCons command line."
             )
             Exit(255)
+        elif cc_version_metadata1 == "win32":
+            print(
+                "Detected mingw version is not using posix threads. Only posix "
+                "version of mingw is supported. "
+                'Use "update-alternatives --config <platform>-w64-mingw32-[gcc|g++]" '
+                "to switch to posix threads."
+            )
+            Exit(255)
     elif methods.using_clang(env):
+        if cc_version_major == -1:
+            print(
+                "Couldn't detect compiler version, skipping version checks. "
+                "Build may fail if the compiler doesn't support C++17 fully."
+            )
         # Apple LLVM versions differ from upstream LLVM version \o/, compare
         # in https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
-        if env["platform"] == "osx" or env["platform"] == "iphone":
+        elif env["platform"] == "osx" or env["platform"] == "iphone":
             vanilla = methods.is_vanilla_clang(env)
             if vanilla and cc_version_major < 6:
                 print(
@@ -524,11 +556,10 @@ if selected_platform in platform_list:
 
     if env["target"] == "release":
         if env["tools"]:
-            print("Tools can only be built with targets 'debug' and 'release_debug'.")
+            print("Error: The editor can only be built with `target=debug` or `target=release_debug`.")
             Exit(255)
         suffix += ".opt"
         env.Append(CPPDEFINES=["NDEBUG"])
-
     elif env["target"] == "release_debug":
         if env["tools"]:
             suffix += ".opt.tools"
@@ -536,8 +567,14 @@ if selected_platform in platform_list:
             suffix += ".opt.debug"
     else:
         if env["tools"]:
+            print(
+                "Note: Building a debug binary (which will run slowly). Use `target=release_debug` to build an optimized release binary."
+            )
             suffix += ".tools"
         else:
+            print(
+                "Note: Building a debug binary (which will run slowly). Use `target=release` to build an optimized release binary."
+            )
             suffix += ".debug"
 
     if env["arch"] != "":
@@ -606,6 +643,7 @@ if selected_platform in platform_list:
 
     if env["tools"]:
         env.Append(CPPDEFINES=["TOOLS_ENABLED"])
+    methods.write_disabled_classes(env["disable_classes"].split(","))
     if env["disable_3d"]:
         if env["tools"]:
             print(
@@ -639,20 +677,19 @@ if selected_platform in platform_list:
     if not env["verbose"]:
         methods.no_verbose(sys, env)
 
-    if not env["platform"] == "server":
-        GLSL_BUILDERS = {
-            "RD_GLSL": env.Builder(
-                action=env.Run(glsl_builders.build_rd_headers, 'Building RD_GLSL header: "$TARGET"'),
-                suffix="glsl.gen.h",
-                src_suffix=".glsl",
-            ),
-            "GLSL_HEADER": env.Builder(
-                action=env.Run(glsl_builders.build_raw_headers, 'Building GLSL header: "$TARGET"'),
-                suffix="glsl.gen.h",
-                src_suffix=".glsl",
-            ),
-        }
-        env.Append(BUILDERS=GLSL_BUILDERS)
+    GLSL_BUILDERS = {
+        "RD_GLSL": env.Builder(
+            action=env.Run(glsl_builders.build_rd_headers, 'Building RD_GLSL header: "$TARGET"'),
+            suffix="glsl.gen.h",
+            src_suffix=".glsl",
+        ),
+        "GLSL_HEADER": env.Builder(
+            action=env.Run(glsl_builders.build_raw_headers, 'Building GLSL header: "$TARGET"'),
+            suffix="glsl.gen.h",
+            src_suffix=".glsl",
+        ),
+    }
+    env.Append(BUILDERS=GLSL_BUILDERS)
 
     scons_cache_path = os.environ.get("SCONS_CACHE")
     if scons_cache_path != None:
@@ -717,3 +754,12 @@ if "env" in locals():
     # TODO: replace this with `env.Dump(format="json")`
     # once we start requiring SCons 4.0 as min version.
     methods.dump(env)
+
+
+def print_elapsed_time():
+    elapsed_time_sec = round(time.time() - time_at_start, 3)
+    time_ms = round((elapsed_time_sec % 1) * 1000)
+    print("[Time elapsed: {}.{:03}]".format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time_sec)), time_ms))
+
+
+atexit.register(print_elapsed_time)

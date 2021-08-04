@@ -50,7 +50,7 @@ void Texture3DEditor::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_DRAW) {
-		Ref<Texture2D> checkerboard = get_theme_icon("Checkerboard", "EditorIcons");
+		Ref<Texture2D> checkerboard = get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons"));
 		Size2 size = get_size();
 
 		draw_texture_rect(checkerboard, Rect2(Point2(), size), true);
@@ -77,17 +77,18 @@ void Texture3DEditor::_update_material() {
 }
 
 void Texture3DEditor::_make_shaders() {
-	String shader_3d = ""
-					   "shader_type canvas_item;\n"
-					   "uniform sampler3D tex;\n"
-					   "uniform float layer;\n"
-					   "void fragment() {\n"
-					   "  COLOR = textureLod(tex,vec3(UV,layer),0.0);\n"
-					   "}";
+	shader.instantiate();
+	shader->set_code(R"(
+shader_type canvas_item;
 
-	shader.instance();
-	shader->set_code(shader_3d);
-	material.instance();
+uniform sampler3D tex;
+uniform float layer;
+
+void fragment() {
+	COLOR = textureLod(tex, vec3(UV, layer), 0.0);
+}
+)");
+	material.instantiate();
 	material->set_shader(shader);
 }
 
@@ -207,6 +208,6 @@ void EditorInspectorPlugin3DTexture::parse_begin(Object *p_object) {
 
 Texture3DEditorPlugin::Texture3DEditorPlugin(EditorNode *p_node) {
 	Ref<EditorInspectorPlugin3DTexture> plugin;
-	plugin.instance();
+	plugin.instantiate();
 	add_inspector_plugin(plugin);
 }

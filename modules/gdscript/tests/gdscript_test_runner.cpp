@@ -37,8 +37,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/core_string_names.h"
+#include "core/io/dir_access.h"
 #include "core/io/file_access_pack.h"
-#include "core/os/dir_access.h"
 #include "core/os/os.h"
 #include "core/string/string_builder.h"
 #include "scene/resources/packed_scene.h"
@@ -75,14 +75,14 @@ void init_autoloads() {
 		Node *n = nullptr;
 		if (res->is_class("PackedScene")) {
 			Ref<PackedScene> ps = res;
-			n = ps->instance();
+			n = ps->instantiate();
 		} else if (res->is_class("Script")) {
 			Ref<Script> script_res = res;
 			StringName ibt = script_res->get_instance_base_type();
 			bool valid_type = ClassDB::is_parent_class(ibt, "Node");
 			ERR_CONTINUE_MSG(!valid_type, "Script does not inherit a Node: " + info.path);
 
-			Object *obj = ClassDB::instance(ibt);
+			Object *obj = ClassDB::instantiate(ibt);
 
 			ERR_CONTINUE_MSG(obj == nullptr,
 					"Cannot instance script for autoload, expected 'Node' inheritance, got: " +
@@ -295,7 +295,7 @@ void GDScriptTestRunner::handle_cmdline() {
 	String test_cmd = "--gdscript-test";
 	String gen_cmd = "--gdscript-generate-tests";
 
-	for (List<String>::Element *E = cmdline_args.front(); E != nullptr; E = E->next()) {
+	for (List<String>::Element *E = cmdline_args.front(); E; E = E->next()) {
 		String &cmd = E->get();
 		if (cmd == test_cmd || cmd == gen_cmd) {
 			if (E->next() == nullptr) {
@@ -420,7 +420,7 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 
 	// Create script.
 	Ref<GDScript> script;
-	script.instance();
+	script.instantiate();
 	script->set_path(source_file);
 	script->set_script_path(source_file);
 	err = script->load_source_code(source_file);
@@ -440,8 +440,8 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		result.output = get_text_for_status(result.status) + "\n";
 
 		const List<GDScriptParser::ParserError> &errors = parser.get_errors();
-		for (const List<GDScriptParser::ParserError>::Element *E = errors.front(); E; E = E->next()) {
-			result.output += E->get().message + "\n"; // TODO: line, column?
+		for (const GDScriptParser::ParserError &E : errors) {
+			result.output += E.message + "\n"; // TODO: line, column?
 			break; // Only the first error since the following might be cascading.
 		}
 		if (!p_is_generating) {
@@ -459,8 +459,8 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		result.output = get_text_for_status(result.status) + "\n";
 
 		const List<GDScriptParser::ParserError> &errors = parser.get_errors();
-		for (const List<GDScriptParser::ParserError>::Element *E = errors.front(); E; E = E->next()) {
-			result.output += E->get().message + "\n"; // TODO: line, column?
+		for (const GDScriptParser::ParserError &E : errors) {
+			result.output += E.message + "\n"; // TODO: line, column?
 			break; // Only the first error since the following might be cascading.
 		}
 		if (!p_is_generating) {
@@ -470,8 +470,8 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 	}
 
 	StringBuilder warning_string;
-	for (const List<GDScriptWarning>::Element *E = parser.get_warnings().front(); E != nullptr; E = E->next()) {
-		const GDScriptWarning warning = E->get();
+	for (const GDScriptWarning &E : parser.get_warnings()) {
+		const GDScriptWarning warning = E;
 		warning_string.append(">> WARNING");
 		warning_string.append("\n>> Line: ");
 		warning_string.append(itos(warning.start_line));
@@ -510,10 +510,10 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 	script->reload();
 
 	// Create object instance for test.
-	Object *obj = ClassDB::instance(script->get_native()->get_name());
-	Ref<Reference> obj_ref;
-	if (obj->is_reference()) {
-		obj_ref = Ref<Reference>(Object::cast_to<Reference>(obj));
+	Object *obj = ClassDB::instantiate(script->get_native()->get_name());
+	Ref<RefCounted> obj_ref;
+	if (obj->is_ref_counted()) {
+		obj_ref = Ref<RefCounted>(Object::cast_to<RefCounted>(obj));
 	}
 	obj->set_script(script);
 	GDScriptInstance *instance = static_cast<GDScriptInstance *>(obj->get_script_instance());

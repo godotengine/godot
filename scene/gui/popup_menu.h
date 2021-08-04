@@ -80,8 +80,8 @@ class PopupMenu : public Popup {
 		}
 
 		Item() {
-			text_buf.instance();
-			accel_text_buf.instance();
+			text_buf.instantiate();
+			accel_text_buf.instantiate();
 			checkable_type = CHECKABLE_TYPE_NONE;
 		}
 	};
@@ -140,7 +140,6 @@ class PopupMenu : public Popup {
 	void _close_pressed();
 
 protected:
-	friend class MenuButton;
 	void _notification(int p_what);
 	static void _bind_methods();
 

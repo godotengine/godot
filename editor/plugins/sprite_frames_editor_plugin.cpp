@@ -65,13 +65,11 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 		int x = i * width;
 		split_sheet_preview->draw_line(Point2(x, 0), Point2(x, size.height), Color(1, 1, 1, a));
 		split_sheet_preview->draw_line(Point2(x + 1, 0), Point2(x + 1, size.height), Color(0, 0, 0, a));
-
-		for (int j = 1; j < v; j++) {
-			int y = j * height;
-
-			split_sheet_preview->draw_line(Point2(0, y), Point2(size.width, y), Color(1, 1, 1, a));
-			split_sheet_preview->draw_line(Point2(0, y + 1), Point2(size.width, y + 1), Color(0, 0, 0, a));
-		}
+	}
+	for (int i = 1; i < v; i++) {
+		int y = i * height;
+		split_sheet_preview->draw_line(Point2(0, y), Point2(size.width, y), Color(1, 1, 1, a));
+		split_sheet_preview->draw_line(Point2(0, y + 1), Point2(size.width, y + 1), Color(0, 0, 0, a));
 	}
 
 	if (frames_selected.size() == 0) {
@@ -80,7 +78,7 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 		return;
 	}
 
-	Color accent = get_theme_color("accent_color", "Editor");
+	Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 
 	for (Set<int>::Element *E = frames_selected.front(); E; E = E->next()) {
 		int idx = E->get();
@@ -103,17 +101,16 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 }
 
 void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
-	Ref<InputEventMouseButton> mb = p_event;
-
+	const Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
-		Size2i size = split_sheet_preview->get_size();
-		int h = split_sheet_h->get_value();
-		int v = split_sheet_v->get_value();
+		const Size2i size = split_sheet_preview->get_size();
+		const int h = split_sheet_h->get_value();
+		const int v = split_sheet_v->get_value();
 
-		int x = CLAMP(int(mb->get_position().x) * h / size.width, 0, h - 1);
-		int y = CLAMP(int(mb->get_position().y) * v / size.height, 0, v - 1);
+		const int x = CLAMP(int(mb->get_position().x) * h / size.width, 0, h - 1);
+		const int y = CLAMP(int(mb->get_position().y) * v / size.height, 0, v - 1);
 
-		int idx = h * y + x;
+		const int idx = h * y + x;
 
 		if (mb->is_shift_pressed() && last_frame_selected >= 0) {
 			//select multiple
@@ -124,6 +121,9 @@ void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
 			}
 
 			for (int i = from; i <= to; i++) {
+				// Prevent double-toggling the same frame when moving the mouse when the mouse button is still held.
+				frames_toggled_by_mouse_hover.insert(idx);
+
 				if (mb->is_ctrl_pressed()) {
 					frames_selected.erase(i);
 				} else {
@@ -131,6 +131,9 @@ void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 		} else {
+			// Prevent double-toggling the same frame when moving the mouse when the mouse button is still held.
+			frames_toggled_by_mouse_hover.insert(idx);
+
 			if (frames_selected.has(idx)) {
 				frames_selected.erase(idx);
 			} else {
@@ -140,6 +143,39 @@ void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
 
 		last_frame_selected = idx;
 		split_sheet_preview->update();
+	}
+
+	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		frames_toggled_by_mouse_hover.clear();
+	}
+
+	const Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
+		// Select by holding down the mouse button on frames.
+		const Size2i size = split_sheet_preview->get_size();
+		const int h = split_sheet_h->get_value();
+		const int v = split_sheet_v->get_value();
+
+		const int x = CLAMP(int(mm->get_position().x) * h / size.width, 0, h - 1);
+		const int y = CLAMP(int(mm->get_position().y) * v / size.height, 0, v - 1);
+
+		const int idx = h * y + x;
+
+		if (!frames_toggled_by_mouse_hover.has(idx)) {
+			// Only allow toggling each tile once per mouse hold.
+			// Otherwise, the selection would constantly "flicker" in and out when moving the mouse cursor.
+			// The mouse button must be released before it can be toggled again.
+			frames_toggled_by_mouse_hover.insert(idx);
+
+			if (frames_selected.has(idx)) {
+				frames_selected.erase(idx);
+			} else {
+				frames_selected.insert(idx);
+			}
+
+			last_frame_selected = idx;
+			split_sheet_preview->update();
+		}
 	}
 }
 
@@ -189,7 +225,7 @@ void SpriteFramesEditor::_sheet_add_frames() {
 		int y = (yp * height) + region_rect.position.y;
 
 		Ref<AtlasTexture> at;
-		at.instance();
+		at.instantiate();
 		at->set_atlas(split_sheet_preview->get_texture());
 		at->set_region(Rect2(x, y, width, height));
 
@@ -270,27 +306,27 @@ void SpriteFramesEditor::_prepare_sprite_sheet(const String &p_file) {
 void SpriteFramesEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			load->set_icon(get_theme_icon("Load", "EditorIcons"));
-			load_sheet->set_icon(get_theme_icon("SpriteSheet", "EditorIcons"));
-			copy->set_icon(get_theme_icon("ActionCopy", "EditorIcons"));
-			paste->set_icon(get_theme_icon("ActionPaste", "EditorIcons"));
-			empty->set_icon(get_theme_icon("InsertBefore", "EditorIcons"));
-			empty2->set_icon(get_theme_icon("InsertAfter", "EditorIcons"));
-			move_up->set_icon(get_theme_icon("MoveLeft", "EditorIcons"));
-			move_down->set_icon(get_theme_icon("MoveRight", "EditorIcons"));
-			_delete->set_icon(get_theme_icon("Remove", "EditorIcons"));
-			zoom_out->set_icon(get_theme_icon("ZoomLess", "EditorIcons"));
-			zoom_reset->set_icon(get_theme_icon("ZoomReset", "EditorIcons"));
-			zoom_in->set_icon(get_theme_icon("ZoomMore", "EditorIcons"));
-			new_anim->set_icon(get_theme_icon("New", "EditorIcons"));
-			remove_anim->set_icon(get_theme_icon("Remove", "EditorIcons"));
-			split_sheet_zoom_out->set_icon(get_theme_icon("ZoomLess", "EditorIcons"));
-			split_sheet_zoom_reset->set_icon(get_theme_icon("ZoomReset", "EditorIcons"));
-			split_sheet_zoom_in->set_icon(get_theme_icon("ZoomMore", "EditorIcons"));
+			load->set_icon(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")));
+			load_sheet->set_icon(get_theme_icon(SNAME("SpriteSheet"), SNAME("EditorIcons")));
+			copy->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
+			paste->set_icon(get_theme_icon(SNAME("ActionPaste"), SNAME("EditorIcons")));
+			empty->set_icon(get_theme_icon(SNAME("InsertBefore"), SNAME("EditorIcons")));
+			empty2->set_icon(get_theme_icon(SNAME("InsertAfter"), SNAME("EditorIcons")));
+			move_up->set_icon(get_theme_icon(SNAME("MoveLeft"), SNAME("EditorIcons")));
+			move_down->set_icon(get_theme_icon(SNAME("MoveRight"), SNAME("EditorIcons")));
+			_delete->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+			zoom_out->set_icon(get_theme_icon(SNAME("ZoomLess"), SNAME("EditorIcons")));
+			zoom_reset->set_icon(get_theme_icon(SNAME("ZoomReset"), SNAME("EditorIcons")));
+			zoom_in->set_icon(get_theme_icon(SNAME("ZoomMore"), SNAME("EditorIcons")));
+			new_anim->set_icon(get_theme_icon(SNAME("New"), SNAME("EditorIcons")));
+			remove_anim->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+			split_sheet_zoom_out->set_icon(get_theme_icon(SNAME("ZoomLess"), SNAME("EditorIcons")));
+			split_sheet_zoom_reset->set_icon(get_theme_icon(SNAME("ZoomReset"), SNAME("EditorIcons")));
+			split_sheet_zoom_in->set_icon(get_theme_icon(SNAME("ZoomMore"), SNAME("EditorIcons")));
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
-			split_sheet_scroll->add_theme_style_override("bg", get_theme_stylebox("bg", "Tree"));
+			split_sheet_scroll->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 		} break;
 		case NOTIFICATION_READY: {
 			add_theme_constant_override("autohide", 1); // Fixes the dragger always showing up.
@@ -329,8 +365,8 @@ void SpriteFramesEditor::_file_load_request(const Vector<String> &p_path, int p_
 
 	int count = 0;
 
-	for (List<Ref<Texture2D>>::Element *E = resources.front(); E; E = E->next()) {
-		undo_redo->add_do_method(frames, "add_frame", edited_anim, E->get(), p_at_pos == -1 ? -1 : p_at_pos + count);
+	for (const Ref<Texture2D> &E : resources) {
+		undo_redo->add_do_method(frames, "add_frame", edited_anim, E, p_at_pos == -1 ? -1 : p_at_pos + count);
 		undo_redo->add_undo_method(frames, "remove_frame", edited_anim, p_at_pos == -1 ? fc : p_at_pos);
 		count++;
 	}
@@ -588,10 +624,10 @@ void SpriteFramesEditor::_animation_name_edited() {
 	undo_redo->add_do_method(frames, "rename_animation", edited_anim, name);
 	undo_redo->add_undo_method(frames, "rename_animation", name, edited_anim);
 
-	for (List<Node *>::Element *E = nodes.front(); E; E = E->next()) {
-		String current = E->get()->call("get_animation");
-		undo_redo->add_do_method(E->get(), "set_animation", name);
-		undo_redo->add_undo_method(E->get(), "set_animation", edited_anim);
+	for (Node *E : nodes) {
+		String current = E->call("get_animation");
+		undo_redo->add_do_method(E, "set_animation", name);
+		undo_redo->add_undo_method(E, "set_animation", edited_anim);
 	}
 
 	undo_redo->add_do_method(this, "_update_library");
@@ -619,10 +655,10 @@ void SpriteFramesEditor::_animation_add() {
 	undo_redo->add_do_method(this, "_update_library");
 	undo_redo->add_undo_method(this, "_update_library");
 
-	for (List<Node *>::Element *E = nodes.front(); E; E = E->next()) {
-		String current = E->get()->call("get_animation");
-		undo_redo->add_do_method(E->get(), "set_animation", name);
-		undo_redo->add_undo_method(E->get(), "set_animation", current);
+	for (Node *E : nodes) {
+		String current = E->call("get_animation");
+		undo_redo->add_do_method(E, "set_animation", name);
+		undo_redo->add_undo_method(E, "set_animation", current);
 	}
 
 	edited_anim = name;
@@ -752,8 +788,8 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 
 		anim_names.sort_custom<StringName::AlphCompare>();
 
-		for (List<StringName>::Element *E = anim_names.front(); E; E = E->next()) {
-			String name = E->get();
+		for (const StringName &E : anim_names) {
+			String name = E;
 
 			TreeItem *it = animations->create_item(anim_root);
 
@@ -762,7 +798,7 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 			it->set_text(0, name);
 			it->set_editable(0, true);
 
-			if (E->get() == edited_anim) {
+			if (E == edited_anim) {
 				it->select(0);
 			}
 		}
@@ -964,9 +1000,9 @@ void SpriteFramesEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 
 void SpriteFramesEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_library", "skipsel"), &SpriteFramesEditor::_update_library, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &SpriteFramesEditor::get_drag_data_fw);
-	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &SpriteFramesEditor::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("drop_data_fw"), &SpriteFramesEditor::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_get_drag_data_fw"), &SpriteFramesEditor::get_drag_data_fw);
+	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &SpriteFramesEditor::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &SpriteFramesEditor::drop_data_fw);
 }
 
 SpriteFramesEditor::SpriteFramesEditor() {

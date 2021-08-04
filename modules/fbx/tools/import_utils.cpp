@@ -80,7 +80,7 @@ Basis ImportUtils::EulerToBasis(FBXDocParser::Model::RotOrder mode, const Vector
 	return ret;
 }
 
-Quat ImportUtils::EulerToQuaternion(FBXDocParser::Model::RotOrder mode, const Vector3 &p_rotation) {
+Quaternion ImportUtils::EulerToQuaternion(FBXDocParser::Model::RotOrder mode, const Vector3 &p_rotation) {
 	return ImportUtils::EulerToBasis(mode, p_rotation);
 }
 
@@ -117,13 +117,13 @@ Vector3 ImportUtils::BasisToEuler(FBXDocParser::Model::RotOrder mode, const Basi
 	}
 }
 
-Vector3 ImportUtils::QuaternionToEuler(FBXDocParser::Model::RotOrder mode, const Quat &p_rotation) {
+Vector3 ImportUtils::QuaternionToEuler(FBXDocParser::Model::RotOrder mode, const Quaternion &p_rotation) {
 	return BasisToEuler(mode, p_rotation);
 }
 
-Transform get_unscaled_transform(const Transform &p_initial, real_t p_scale) {
-	Transform unscaled = Transform(p_initial.basis, p_initial.origin * p_scale);
-	ERR_FAIL_COND_V_MSG(unscaled.basis.determinant() == 0, Transform(), "det is zero unscaled?");
+Transform3D get_unscaled_transform(const Transform3D &p_initial, real_t p_scale) {
+	Transform3D unscaled = Transform3D(p_initial.basis, p_initial.origin * p_scale);
+	ERR_FAIL_COND_V_MSG(unscaled.basis.determinant() == 0, Transform3D(), "det is zero unscaled?");
 	return unscaled;
 }
 

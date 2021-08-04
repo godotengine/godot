@@ -41,8 +41,8 @@
 #include "scene/gui/tree.h"
 #include "scene/resources/visual_shader.h"
 
-class VisualShaderNodePlugin : public Reference {
-	GDCLASS(VisualShaderNodePlugin, Reference);
+class VisualShaderNodePlugin : public RefCounted {
+	GDCLASS(VisualShaderNodePlugin, RefCounted);
 
 protected:
 	static void _bind_methods();
@@ -51,8 +51,8 @@ public:
 	virtual Control *create_editor(const Ref<Resource> &p_parent_resource, const Ref<VisualShaderNode> &p_node);
 };
 
-class VisualShaderGraphPlugin : public Reference {
-	GDCLASS(VisualShaderGraphPlugin, Reference);
+class VisualShaderGraphPlugin : public RefCounted {
+	GDCLASS(VisualShaderGraphPlugin, RefCounted);
 
 private:
 	struct InputPort {
@@ -75,7 +75,7 @@ private:
 		LineEdit *uniform_name = nullptr;
 		OptionButton *const_op = nullptr;
 		CodeEdit *expression_edit = nullptr;
-		CurveEditor *curve_editor = nullptr;
+		CurveEditor *curve_editors[3] = { nullptr, nullptr, nullptr };
 	};
 
 	Ref<VisualShader> visual_shader;
@@ -97,7 +97,7 @@ public:
 	void register_default_input_button(int p_node_id, int p_port_id, Button *p_button);
 	void register_constant_option_btn(int p_node_id, OptionButton *p_button);
 	void register_expression_edit(int p_node_id, CodeEdit *p_expression_edit);
-	void register_curve_editor(int p_node_id, CurveEditor *p_curve_editor);
+	void register_curve_editor(int p_node_id, int p_index, CurveEditor *p_curve_editor);
 	void clear_links();
 	void set_shader_type(VisualShader::Type p_type);
 	bool is_preview_visible(int p_id) const;
@@ -117,6 +117,7 @@ public:
 	void update_uniform_refs();
 	void set_uniform_name(VisualShader::Type p_type, int p_node_id, const String &p_name);
 	void update_curve(int p_node_id);
+	void update_curve_xyz(int p_node_id);
 	void update_constant(VisualShader::Type p_type, int p_node_id);
 	void set_expression(VisualShader::Type p_type, int p_node_id, const String &p_expression);
 	int get_constant_index(float p_constant) const;
@@ -142,12 +143,11 @@ class VisualShaderEditor : public VBoxContainer {
 	Button *preview_shader;
 
 	OptionButton *edit_type = nullptr;
-	OptionButton *edit_type_standart;
+	OptionButton *edit_type_standard;
 	OptionButton *edit_type_particles;
 	OptionButton *edit_type_sky;
-
-	PanelContainer *error_panel;
-	Label *error_label;
+	CheckBox *custom_mode_box;
+	bool custom_mode_enabled = false;
 
 	bool pending_update_preview;
 	bool shader_error;
@@ -155,7 +155,8 @@ class VisualShaderEditor : public VBoxContainer {
 	VBoxContainer *preview_vbox;
 	CodeEdit *preview_text;
 	Ref<CodeHighlighter> syntax_highlighter;
-	Label *error_text;
+	PanelContainer *error_panel;
+	Label *error_label;
 
 	UndoRedo *undo_redo;
 	Point2 saved_node_pos;
@@ -191,7 +192,9 @@ class VisualShaderEditor : public VBoxContainer {
 	enum ParticlesTypeFlags {
 		TYPE_FLAGS_EMIT = 1,
 		TYPE_FLAGS_PROCESS = 2,
-		TYPE_FLAGS_END = 4
+		TYPE_FLAGS_COLLIDE = 4,
+		TYPE_FLAGS_EMIT_CUSTOM = 8,
+		TYPE_FLAGS_PROCESS_CUSTOM = 16,
 	};
 
 	enum SkyTypeFlags {
@@ -287,6 +290,7 @@ class VisualShaderEditor : public VBoxContainer {
 	int texture3d_node_option_idx;
 	int custom_node_option_idx;
 	int curve_node_option_idx;
+	int curve_xyz_node_option_idx;
 	List<String> keyword_list;
 
 	List<VisualShaderNodeUniformRef> uniform_refs;
@@ -356,7 +360,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _comment_title_popup_hide();
 	void _comment_title_popup_focus_out();
 	void _comment_title_text_changed(const String &p_new_text);
-	void _comment_title_text_entered(const String &p_new_text);
+	void _comment_title_text_submitted(const String &p_new_text);
 
 	void _comment_desc_popup_show(const Point2 &p_position, int p_node_id);
 	void _comment_desc_popup_hide();
@@ -387,6 +391,7 @@ class VisualShaderEditor : public VBoxContainer {
 	Ref<VisualShaderGraphPlugin> graph_plugin;
 
 	void _mode_selected(int p_id);
+	void _custom_mode_toggled(bool p_enabled);
 
 	void _input_select_item(Ref<VisualShaderNodeInput> input, String name);
 	void _uniform_select_item(Ref<VisualShaderNodeUniformRef> p_uniform, String p_name);
@@ -502,7 +507,7 @@ class EditorInspectorShaderModePlugin : public EditorInspectorPlugin {
 public:
 	virtual bool can_handle(Object *p_object) override;
 	virtual void parse_begin(Object *p_object) override;
-	virtual bool parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage, bool p_wide = false) override;
+	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false) override;
 	virtual void parse_end() override;
 };
 

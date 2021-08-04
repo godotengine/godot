@@ -37,8 +37,8 @@
 #include "gdscript_extend_parser.h"
 #include "lsp.hpp"
 
-class GDScriptWorkspace : public Reference {
-	GDCLASS(GDScriptWorkspace, Reference);
+class GDScriptWorkspace : public RefCounted {
+	GDCLASS(GDScriptWorkspace, RefCounted);
 
 private:
 	void _get_owners(EditorFileSystemDirectory *efsd, String p_path, List<String> &owners);

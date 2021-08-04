@@ -101,7 +101,7 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		grabbed = -1;
 		grabbing = false;
 		update();
-		emit_signal("ramp_changed");
+		emit_signal(SNAME("ramp_changed"));
 		accept_event();
 	}
 
@@ -121,7 +121,7 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 			grabbed = -1;
 			grabbing = false;
 			update();
-			emit_signal("ramp_changed");
+			emit_signal(SNAME("ramp_changed"));
 			accept_event();
 		}
 	}
@@ -145,7 +145,7 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 
-			emit_signal("ramp_changed");
+			emit_signal(SNAME("ramp_changed"));
 			update();
 		}
 	}
@@ -214,13 +214,13 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		emit_signal("ramp_changed");
+		emit_signal(SNAME("ramp_changed"));
 	}
 
 	if (mb.is_valid() && mb->get_button_index() == 1 && !mb->is_pressed()) {
 		if (grabbing) {
 			grabbing = false;
-			emit_signal("ramp_changed");
+			emit_signal(SNAME("ramp_changed"));
 		}
 		update();
 	}
@@ -288,7 +288,7 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		emit_signal("ramp_changed");
+		emit_signal(SNAME("ramp_changed"));
 
 		update();
 	}
@@ -436,7 +436,7 @@ void GradientEdit::_color_changed(const Color &p_color) {
 	}
 	points.write[grabbed].color = p_color;
 	update();
-	emit_signal("ramp_changed");
+	emit_signal(SNAME("ramp_changed"));
 }
 
 void GradientEdit::set_ramp(const Vector<float> &p_offsets, const Vector<Color> &p_colors) {

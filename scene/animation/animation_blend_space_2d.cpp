@@ -34,8 +34,8 @@
 
 void AnimationNodeBlendSpace2D::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::VECTOR2, blend_position));
-	r_list->push_back(PropertyInfo(Variant::INT, closest, PROPERTY_HINT_NONE, "", 0));
-	r_list->push_back(PropertyInfo(Variant::FLOAT, length_internal, PROPERTY_HINT_NONE, "", 0));
+	r_list->push_back(PropertyInfo(Variant::INT, closest, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+	r_list->push_back(PropertyInfo(Variant::FLOAT, length_internal, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 }
 
 Variant AnimationNodeBlendSpace2D::get_parameter_default_value(const StringName &p_parameter) const {
@@ -84,7 +84,7 @@ void AnimationNodeBlendSpace2D::add_blend_point(const Ref<AnimationRootNode> &p_
 
 	_queue_auto_triangles();
 
-	emit_signal("tree_changed");
+	emit_signal(SNAME("tree_changed"));
 }
 
 void AnimationNodeBlendSpace2D::set_blend_point_position(int p_point, const Vector2 &p_position) {
@@ -103,7 +103,7 @@ void AnimationNodeBlendSpace2D::set_blend_point_node(int p_point, const Ref<Anim
 	blend_points[p_point].node = p_node;
 	blend_points[p_point].node->connect("tree_changed", callable_mp(this, &AnimationNodeBlendSpace2D::_tree_changed), varray(), CONNECT_REFERENCE_COUNTED);
 
-	emit_signal("tree_changed");
+	emit_signal(SNAME("tree_changed"));
 }
 
 Vector2 AnimationNodeBlendSpace2D::get_blend_point_position(int p_point) const {
@@ -143,7 +143,7 @@ void AnimationNodeBlendSpace2D::remove_blend_point(int p_point) {
 		blend_points[i] = blend_points[i + 1];
 	}
 	blend_points_used--;
-	emit_signal("tree_changed");
+	emit_signal(SNAME("tree_changed"));
 }
 
 int AnimationNodeBlendSpace2D::get_blend_point_count() const {
@@ -321,7 +321,7 @@ void AnimationNodeBlendSpace2D::_queue_auto_triangles() {
 	}
 
 	trianges_dirty = true;
-	call_deferred("_update_triangles");
+	call_deferred(SNAME("_update_triangles"));
 }
 
 void AnimationNodeBlendSpace2D::_update_triangles() {
@@ -332,7 +332,7 @@ void AnimationNodeBlendSpace2D::_update_triangles() {
 	trianges_dirty = false;
 	triangles.clear();
 	if (blend_points_used < 3) {
-		emit_signal("triangles_updated");
+		emit_signal(SNAME("triangles_updated"));
 		return;
 	}
 
@@ -347,7 +347,7 @@ void AnimationNodeBlendSpace2D::_update_triangles() {
 	for (int i = 0; i < triangles.size(); i++) {
 		add_triangle(triangles[i].points[0], triangles[i].points[1], triangles[i].points[2]);
 	}
-	emit_signal("triangles_updated");
+	emit_signal(SNAME("triangles_updated"));
 }
 
 Vector2 AnimationNodeBlendSpace2D::get_closest_point(const Vector2 &p_point) {
@@ -387,19 +387,19 @@ Vector2 AnimationNodeBlendSpace2D::get_closest_point(const Vector2 &p_point) {
 }
 
 void AnimationNodeBlendSpace2D::_blend_triangle(const Vector2 &p_pos, const Vector2 *p_points, float *r_weights) {
-	if (p_pos.distance_squared_to(p_points[0]) < CMP_EPSILON2) {
+	if (p_pos.is_equal_approx(p_points[0])) {
 		r_weights[0] = 1;
 		r_weights[1] = 0;
 		r_weights[2] = 0;
 		return;
 	}
-	if (p_pos.distance_squared_to(p_points[1]) < CMP_EPSILON2) {
+	if (p_pos.is_equal_approx(p_points[1])) {
 		r_weights[0] = 0;
 		r_weights[1] = 1;
 		r_weights[2] = 0;
 		return;
 	}
-	if (p_pos.distance_squared_to(p_points[2]) < CMP_EPSILON2) {
+	if (p_pos.is_equal_approx(p_points[2])) {
 		r_weights[0] = 0;
 		r_weights[1] = 0;
 		r_weights[2] = 1;
@@ -532,10 +532,10 @@ float AnimationNodeBlendSpace2D::process(float p_time, bool p_seek) {
 			float from = 0.0;
 			if (blend_mode == BLEND_MODE_DISCRETE_CARRY && closest != -1) {
 				//see how much animation remains
-				from = blend_node(blend_points[closest].name, blend_points[closest].node, p_time, true, 0.0, FILTER_IGNORE, false) - length_internal;
+				from = length_internal - blend_node(blend_points[closest].name, blend_points[closest].node, p_time, false, 0.0, FILTER_IGNORE, false);
 			}
 
-			mind = blend_node(blend_points[new_closest].name, blend_points[new_closest].node, from, true, 1.0, FILTER_IGNORE, false) + from;
+			mind = blend_node(blend_points[new_closest].name, blend_points[new_closest].node, from, true, 1.0, FILTER_IGNORE, false);
 			length_internal = from + mind;
 
 			closest = new_closest;
@@ -556,13 +556,13 @@ String AnimationNodeBlendSpace2D::get_caption() const {
 
 void AnimationNodeBlendSpace2D::_validate_property(PropertyInfo &property) const {
 	if (auto_triangles && property.name == "triangles") {
-		property.usage = 0;
+		property.usage = PROPERTY_USAGE_NONE;
 	}
 	if (property.name.begins_with("blend_point_")) {
 		String left = property.name.get_slicec('/', 0);
 		int idx = left.get_slicec('_', 2).to_int();
 		if (idx >= blend_points_used) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 	AnimationRootNode::_validate_property(property);
@@ -586,7 +586,7 @@ Ref<AnimationNode> AnimationNodeBlendSpace2D::get_child_by_name(const StringName
 }
 
 void AnimationNodeBlendSpace2D::_tree_changed() {
-	emit_signal("tree_changed");
+	emit_signal(SNAME("tree_changed"));
 }
 
 void AnimationNodeBlendSpace2D::set_blend_mode(BlendMode p_blend_mode) {

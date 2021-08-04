@@ -121,6 +121,9 @@ bool DisplayServerX11::has_feature(Feature p_feature) const {
 		case FEATURE_ICON:
 		case FEATURE_NATIVE_ICON:
 		case FEATURE_SWAP_BUFFERS:
+#ifdef DBUS_ENABLED
+		case FEATURE_KEEP_SCREEN_ON:
+#endif
 			return true;
 		default: {
 		}
@@ -131,70 +134,6 @@ bool DisplayServerX11::has_feature(Feature p_feature) const {
 
 String DisplayServerX11::get_name() const {
 	return "X11";
-}
-
-void DisplayServerX11::alert(const String &p_alert, const String &p_title) {
-	const char *message_programs[] = { "zenity", "kdialog", "Xdialog", "xmessage" };
-
-	String path = OS::get_singleton()->get_environment("PATH");
-	Vector<String> path_elems = path.split(":", false);
-	String program;
-
-	for (int i = 0; i < path_elems.size(); i++) {
-		for (uint64_t k = 0; k < sizeof(message_programs) / sizeof(char *); k++) {
-			String tested_path = path_elems[i].plus_file(message_programs[k]);
-
-			if (FileAccess::exists(tested_path)) {
-				program = tested_path;
-				break;
-			}
-		}
-
-		if (program.length()) {
-			break;
-		}
-	}
-
-	List<String> args;
-
-	if (program.ends_with("zenity")) {
-		args.push_back("--error");
-		args.push_back("--width");
-		args.push_back("500");
-		args.push_back("--title");
-		args.push_back(p_title);
-		args.push_back("--text");
-		args.push_back(p_alert);
-	}
-
-	if (program.ends_with("kdialog")) {
-		args.push_back("--error");
-		args.push_back(p_alert);
-		args.push_back("--title");
-		args.push_back(p_title);
-	}
-
-	if (program.ends_with("Xdialog")) {
-		args.push_back("--title");
-		args.push_back(p_title);
-		args.push_back("--msgbox");
-		args.push_back(p_alert);
-		args.push_back("0");
-		args.push_back("0");
-	}
-
-	if (program.ends_with("xmessage")) {
-		args.push_back("-center");
-		args.push_back("-title");
-		args.push_back(p_title);
-		args.push_back(p_alert);
-	}
-
-	if (program.length()) {
-		OS::get_singleton()->execute(program, args);
-	} else {
-		print_line(p_alert);
-	}
 }
 
 void DisplayServerX11::_update_real_mouse_position(const WindowData &wd) {
@@ -360,7 +299,7 @@ void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 		return;
 	}
 
-	if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED) {
+	if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
 		XUngrabPointer(x11_display, CurrentTime);
 	}
 
@@ -376,7 +315,7 @@ void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 	}
 	mouse_mode = p_mode;
 
-	if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED) {
+	if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
 		//flush pending motion events
 		_flush_mouse_motion();
 		WindowData &main_window = windows[MAIN_WINDOW_ID];
@@ -450,7 +389,7 @@ Point2i DisplayServerX11::mouse_get_absolute_position() const {
 	return Vector2i();
 }
 
-int DisplayServerX11::mouse_get_button_state() const {
+MouseButton DisplayServerX11::mouse_get_button_state() const {
 	return last_button_state;
 }
 
@@ -822,6 +761,26 @@ bool DisplayServerX11::screen_is_touchscreen(int p_screen) const {
 	return DisplayServer::screen_is_touchscreen(p_screen);
 }
 
+#ifdef DBUS_ENABLED
+void DisplayServerX11::screen_set_keep_on(bool p_enable) {
+	if (screen_is_kept_on() == p_enable) {
+		return;
+	}
+
+	if (p_enable) {
+		screensaver->inhibit();
+	} else {
+		screensaver->uninhibit();
+	}
+
+	keep_screen_on = p_enable;
+}
+
+bool DisplayServerX11::screen_is_kept_on() const {
+	return keep_screen_on;
+}
+#endif
+
 Vector<DisplayServer::WindowID> DisplayServerX11::get_window_list() const {
 	_THREAD_SAFE_METHOD_
 
@@ -832,10 +791,10 @@ Vector<DisplayServer::WindowID> DisplayServerX11::get_window_list() const {
 	return ret;
 }
 
-DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect) {
+DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
 	_THREAD_SAFE_METHOD_
 
-	WindowID id = _create_window(p_mode, p_flags, p_rect);
+	WindowID id = _create_window(p_mode, p_vsync_mode, p_flags, p_rect);
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
 			window_set_flag(WindowFlags(i), true, id);
@@ -848,7 +807,9 @@ DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, u
 void DisplayServerX11::show_window(WindowID p_id) {
 	_THREAD_SAFE_METHOD_
 
-	WindowData &wd = windows[p_id];
+	const WindowData &wd = windows[p_id];
+
+	DEBUG_LOG_X11("show_window: %lu (%u) \n", wd.x11_window, p_id);
 
 	XMapWindow(x11_display, wd.x11_window);
 }
@@ -1072,6 +1033,8 @@ void DisplayServerX11::window_set_transient(WindowID p_window, WindowID p_parent
 	WindowID prev_parent = wd_window.transient_parent;
 	ERR_FAIL_COND(prev_parent == p_parent);
 
+	DEBUG_LOG_X11("window_set_transient: %lu (%u), prev_parent=%u, parent=%u\n", wd_window.x11_window, p_window, prev_parent, p_parent);
+
 	ERR_FAIL_COND_MSG(wd_window.on_top, "Windows with the 'on top' can't become transient.");
 	if (p_parent == INVALID_WINDOW_ID) {
 		//remove transient
@@ -1086,10 +1049,10 @@ void DisplayServerX11::window_set_transient(WindowID p_window, WindowID p_parent
 
 		XSetTransientForHint(x11_display, wd_window.x11_window, None);
 
-		// Set focus to parent sub window to avoid losing all focus with nested menus.
+		// Set focus to parent sub window to avoid losing all focus when closing a nested sub-menu.
 		// RevertToPointerRoot is used to make sure we don't lose all focus in case
 		// a subwindow and its parent are both destroyed.
-		if (wd_window.menu_type && !wd_window.no_focus) {
+		if (wd_window.menu_type && !wd_window.no_focus && wd_window.focused) {
 			if (!wd_parent.no_focus) {
 				XSetInputFocus(x11_display, wd_parent.x11_window, RevertToPointerRoot, CurrentTime);
 			}
@@ -2172,13 +2135,13 @@ void DisplayServerX11::_get_key_modifier_state(unsigned int p_x11_state, Ref<Inp
 	state->set_meta_pressed((p_x11_state & Mod4Mask));
 }
 
-unsigned int DisplayServerX11::_get_mouse_button_state(unsigned int p_x11_button, int p_x11_type) {
-	unsigned int mask = 1 << (p_x11_button - 1);
+MouseButton DisplayServerX11::_get_mouse_button_state(MouseButton p_x11_button, int p_x11_type) {
+	MouseButton mask = MouseButton(1 << (p_x11_button - 1));
 
 	if (p_x11_type == ButtonPress) {
 		last_button_state |= mask;
 	} else {
-		last_button_state &= ~mask;
+		last_button_state &= MouseButton(~mask);
 	}
 
 	return last_button_state;
@@ -2204,7 +2167,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	// still works in half the cases. (won't handle deadkeys)
 	// For more complex input methods (deadkeys and more advanced)
 	// you have to use XmbLookupString (??).
-	// So.. then you have to chosse which of both results
+	// So then you have to choose which of both results
 	// you want to keep.
 	// This is a real bizarreness and cpu waster.
 
@@ -2255,7 +2218,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 			tmp.parse_utf8(utf8string, utf8bytes);
 			for (int i = 0; i < tmp.length(); i++) {
 				Ref<InputEventKey> k;
-				k.instance();
+				k.instantiate();
 				if (physical_keycode == 0 && keycode == 0 && tmp[i] == 0) {
 					continue;
 				}
@@ -2346,7 +2309,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	//print_verbose("mod1: "+itos(xkeyevent->state&Mod1Mask)+" mod 5: "+itos(xkeyevent->state&Mod5Mask));
 
 	Ref<InputEventKey> k;
-	k.instance();
+	k.instantiate();
 	k->set_window_id(p_window);
 
 	_get_key_modifier_state(xkeyevent->state, k);
@@ -2766,7 +2729,7 @@ void DisplayServerX11::process_events() {
 	do_mouse_warp = false;
 
 	// Is the current mouse mode one where it needs to be grabbed.
-	bool mouse_mode_grab = mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED;
+	bool mouse_mode_grab = mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN;
 
 	xi.pressure = 0;
 	xi.tilt = Vector2();
@@ -2904,7 +2867,7 @@ void DisplayServerX11::process_events() {
 						bool is_begin = event_data->evtype == XI_TouchBegin;
 
 						Ref<InputEventScreenTouch> st;
-						st.instance();
+						st.instantiate();
 						st->set_window_id(window_id);
 						st->set_index(index);
 						st->set_position(pos);
@@ -2938,7 +2901,7 @@ void DisplayServerX11::process_events() {
 
 						if (curr_pos_elem->value() != pos) {
 							Ref<InputEventScreenDrag> sd;
-							sd.instance();
+							sd.instantiate();
 							sd->set_window_id(window_id);
 							sd->set_index(index);
 							sd->set_position(pos);
@@ -3030,7 +2993,7 @@ void DisplayServerX11::process_events() {
 					for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
 						if (mouse_mode == MOUSE_MODE_CONFINED) {
 							XUndefineCursor(x11_display, E->get().x11_window);
-						} else if (mouse_mode == MOUSE_MODE_CAPTURED) { // or re-hide it in captured mode
+						} else if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) { // Or re-hide it.
 							XDefineCursor(x11_display, E->get().x11_window, null_cursor);
 						}
 
@@ -3091,7 +3054,7 @@ void DisplayServerX11::process_events() {
 				// Release every pointer to avoid sticky points
 				for (Map<int, Vector2>::Element *E = xi.state.front(); E; E = E->next()) {
 					Ref<InputEventScreenTouch> st;
-					st.instance();
+					st.instantiate();
 					st->set_index(E->key());
 					st->set_window_id(window_id);
 					st->set_position(E->get());
@@ -3126,15 +3089,15 @@ void DisplayServerX11::process_events() {
 				}
 
 				Ref<InputEventMouseButton> mb;
-				mb.instance();
+				mb.instantiate();
 
 				mb->set_window_id(window_id);
 				_get_key_modifier_state(event.xbutton.state, mb);
-				mb->set_button_index(event.xbutton.button);
-				if (mb->get_button_index() == 2) {
-					mb->set_button_index(3);
-				} else if (mb->get_button_index() == 3) {
-					mb->set_button_index(2);
+				mb->set_button_index((MouseButton)event.xbutton.button);
+				if (mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
+					mb->set_button_index(MOUSE_BUTTON_MIDDLE);
+				} else if (mb->get_button_index() == MOUSE_BUTTON_MIDDLE) {
+					mb->set_button_index(MOUSE_BUTTON_RIGHT);
 				}
 				mb->set_button_mask(_get_mouse_button_state(mb->get_button_index(), event.xbutton.type));
 				mb->set_position(Vector2(event.xbutton.x, event.xbutton.y));
@@ -3291,13 +3254,13 @@ void DisplayServerX11::process_events() {
 				}
 
 				Ref<InputEventMouseMotion> mm;
-				mm.instance();
+				mm.instantiate();
 
 				mm->set_window_id(window_id);
 				if (xi.pressure_supported) {
 					mm->set_pressure(xi.pressure);
 				} else {
-					mm->set_pressure((mouse_get_button_state() & (1 << (MOUSE_BUTTON_LEFT - 1))) ? 1.0f : 0.0f);
+					mm->set_pressure((mouse_get_button_state() & MOUSE_BUTTON_MASK_LEFT) ? 1.0f : 0.0f);
 				}
 				mm->set_tilt(xi.tilt);
 
@@ -3618,6 +3581,22 @@ void DisplayServerX11::set_icon(const Ref<Image> &p_icon) {
 	XSetErrorHandler(oldHandler);
 }
 
+void DisplayServerX11::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+#if defined(VULKAN_ENABLED)
+	context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
+#endif
+}
+
+DisplayServer::VSyncMode DisplayServerX11::window_get_vsync_mode(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+#if defined(VULKAN_ENABLED)
+	return context_vulkan->get_vsync_mode(p_window);
+#else
+	return DisplayServer::VSYNC_ENABLED;
+#endif
+}
+
 Vector<String> DisplayServerX11::get_rendering_drivers_func() {
 	Vector<String> drivers;
 
@@ -3631,17 +3610,17 @@ Vector<String> DisplayServerX11::get_rendering_drivers_func() {
 	return drivers;
 }
 
-DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
-	DisplayServer *ds = memnew(DisplayServerX11(p_rendering_driver, p_mode, p_flags, p_resolution, r_error));
+DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
+	DisplayServer *ds = memnew(DisplayServerX11(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, r_error));
 	if (r_error != OK) {
-		ds->alert("Your video card driver does not support any of the supported Vulkan versions.\n"
-				  "Please update your drivers or if you have a very old or integrated GPU upgrade it.",
+		OS::get_singleton()->alert("Your video card driver does not support any of the supported Vulkan versions.\n"
+								   "Please update your drivers or if you have a very old or integrated GPU upgrade it.",
 				"Unable to initialize Video driver");
 	}
 	return ds;
 }
 
-DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect) {
+DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
 	//Create window
 
 	long visualMask = VisualScreenMask;
@@ -3805,7 +3784,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 
 #if defined(VULKAN_ENABLED)
 		if (context_vulkan) {
-			Error err = context_vulkan->window_create(id, wd.x11_window, x11_display, p_rect.size.width, p_rect.size.height);
+			Error err = context_vulkan->window_create(id, p_vsync_mode, wd.x11_window, x11_display, p_rect.size.width, p_rect.size.height);
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create a Vulkan window");
 		}
 #endif
@@ -3842,7 +3821,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 	return id;
 }
 
-DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
+DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
 
 	r_error = OK;
@@ -3854,8 +3833,6 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		cursors[i] = None;
 		img[i] = nullptr;
 	}
-
-	last_button_state = 0;
 
 	xmbstring = nullptr;
 
@@ -3935,8 +3912,8 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 
 	if (!_refresh_device_info()) {
-		alert("Your system does not support XInput 2.\n"
-			  "Please upgrade your distribution.",
+		OS::get_singleton()->alert("Your system does not support XInput 2.\n"
+								   "Please upgrade your distribution.",
 				"Unable to initialize XInput");
 		r_error = ERR_UNAVAILABLE;
 		return;
@@ -4080,7 +4057,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	Point2i window_position(
 			(screen_get_size(0).width - p_resolution.width) / 2,
 			(screen_get_size(0).height - p_resolution.height) / 2);
-	WindowID main_window = _create_window(p_mode, p_flags, Rect2i(window_position, p_resolution));
+	WindowID main_window = _create_window(p_mode, p_vsync_mode, p_flags, Rect2i(window_position, p_resolution));
 	if (main_window == INVALID_WINDOW_ID) {
 		r_error = ERR_CANT_CREATE;
 		return;
@@ -4272,6 +4249,11 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 	_update_real_mouse_position(windows[MAIN_WINDOW_ID]);
 
+#ifdef DBUS_ENABLED
+	screensaver = memnew(FreeDesktopScreenSaver);
+	screen_set_keep_on(GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true));
+#endif
+
 	r_error = OK;
 }
 
@@ -4336,6 +4318,10 @@ DisplayServerX11::~DisplayServerX11() {
 	if (xmbstring) {
 		memfree(xmbstring);
 	}
+
+#ifdef DBUS_ENABLED
+	memdelete(screensaver);
+#endif
 }
 
 void DisplayServerX11::register_x11_driver() {

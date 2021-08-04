@@ -55,7 +55,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	enum Tool {
 		TOOL_NEW,
-		TOOL_INSTANCE,
+		TOOL_INSTANTIATE,
 		TOOL_EXPAND_COLLAPSE,
 		TOOL_CUT,
 		TOOL_COPY,
@@ -123,7 +123,12 @@ class SceneTreeDock : public VBoxContainer {
 
 	HBoxContainer *tool_hbc;
 	void _tool_selected(int p_tool, bool p_confirm_override = false);
+	void _property_selected(int p_idx);
 	void _node_collapsed(Object *p_obj);
+
+	Node *property_drop_node = nullptr;
+	String resource_drop_path;
+	void _perform_property_drop(Node *p_node, String p_property, RES p_res);
 
 	EditorData *editor_data;
 	EditorSelection *editor_selection;
@@ -147,6 +152,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	PopupMenu *menu;
 	PopupMenu *menu_subresources;
+	PopupMenu *menu_properties;
 	ConfirmationDialog *clear_inherit_confirm;
 
 	bool first_enter;
@@ -211,7 +217,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _selection_changed();
 	void _update_script_button();
 
-	void _fill_path_renames(Vector<StringName> base_path, Vector<StringName> new_base_path, Node *p_node, List<Pair<NodePath, NodePath>> *p_renames);
+	void _fill_path_renames(Vector<StringName> base_path, Vector<StringName> new_base_path, Node *p_node, Map<Node *, NodePath> *p_renames);
 
 	void _normalize_drop(Node *&to_node, int &to_pos, int p_type);
 
@@ -224,7 +230,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _filter_changed(const String &p_filter);
 
-	void _perform_instance_scenes(const Vector<String> &p_files, Node *parent, int p_pos);
+	void _perform_instantiate_scenes(const Vector<String> &p_files, Node *parent, int p_pos);
 	void _replace_with_branch_scene(const String &p_file, Node *base);
 
 	void _file_selected(String p_file);
@@ -247,6 +253,9 @@ class SceneTreeDock : public VBoxContainer {
 	static SceneTreeDock *singleton;
 	static void _update_configuration_warning();
 
+	bool _update_node_path(Node *p_root_node, NodePath &r_node_path, Map<Node *, NodePath> *p_renames) const;
+	bool _check_node_path_recursive(Node *p_root_node, Variant &r_variant, Map<Node *, NodePath> *p_renames) const;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -258,12 +267,13 @@ public:
 	void _focus_node();
 
 	void import_subscene();
+	void add_root_node(Node *p_node);
 	void set_edited_scene(Node *p_scene);
-	void instance(const String &p_file);
-	void instance_scenes(const Vector<String> &p_files, Node *p_parent = nullptr);
+	void instantiate(const String &p_file);
+	void instantiate_scenes(const Vector<String> &p_files, Node *p_parent = nullptr);
 	void set_selected(Node *p_node, bool p_emit_selected = false);
-	void fill_path_renames(Node *p_node, Node *p_new_parent, List<Pair<NodePath, NodePath>> *p_renames);
-	void perform_node_renames(Node *p_base, List<Pair<NodePath, NodePath>> *p_renames, Map<Ref<Animation>, Set<int>> *r_rem_anims = nullptr);
+	void fill_path_renames(Node *p_node, Node *p_new_parent, Map<Node *, NodePath> *p_renames);
+	void perform_node_renames(Node *p_base, Map<Node *, NodePath> *p_renames, Map<Ref<Animation>, Set<int>> *r_rem_anims = nullptr);
 	SceneTreeEditor *get_tree_editor() { return scene_tree; }
 	EditorData *get_editor_data() { return editor_data; }
 

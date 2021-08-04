@@ -1,11 +1,10 @@
-using System;
-using System.Runtime.InteropServices;
-
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
 using real_t = System.Single;
 #endif
+using System;
+using System.Runtime.InteropServices;
 
 namespace Godot
 {
@@ -86,6 +85,24 @@ namespace Godot
         public Vector3i Abs()
         {
             return new Vector3i(Mathf.Abs(x), Mathf.Abs(y), Mathf.Abs(z));
+        }
+
+        /// <summary>
+        /// Returns a new vector with all components clamped between the
+        /// components of `min` and `max` using
+        /// <see cref="Mathf.Clamp(int, int, int)"/>.
+        /// </summary>
+        /// <param name="min">The vector with minimum allowed values.</param>
+        /// <param name="max">The vector with maximum allowed values.</param>
+        /// <returns>The vector with all components clamped.</returns>
+        public Vector3i Clamp(Vector3i min, Vector3i max)
+        {
+            return new Vector3i
+            (
+                Mathf.Clamp(x, min.x, max.x),
+                Mathf.Clamp(y, min.y, max.y),
+                Mathf.Clamp(z, min.z, max.z)
+            );
         }
 
         /// <summary>
@@ -494,22 +511,12 @@ namespace Godot
 
         public override string ToString()
         {
-            return String.Format("({0}, {1}, {2})", new object[]
-            {
-                this.x.ToString(),
-                this.y.ToString(),
-                this.z.ToString()
-            });
+            return $"({x}, {y}, {z})";
         }
 
         public string ToString(string format)
         {
-            return String.Format("({0}, {1}, {2})", new object[]
-            {
-                this.x.ToString(format),
-                this.y.ToString(format),
-                this.z.ToString(format)
-            });
+            return $"({x.ToString(format)}, {y.ToString(format)}, {z.ToString(format)})";
         }
     }
 }

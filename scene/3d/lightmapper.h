@@ -44,8 +44,8 @@
 
 #endif
 
-class LightmapDenoiser : public Reference {
-	GDCLASS(LightmapDenoiser, Reference)
+class LightmapDenoiser : public RefCounted {
+	GDCLASS(LightmapDenoiser, RefCounted)
 protected:
 	static LightmapDenoiser *(*create_function)();
 
@@ -54,8 +54,8 @@ public:
 	static Ref<LightmapDenoiser> create();
 };
 
-class LightmapRaycaster : public Reference {
-	GDCLASS(LightmapRaycaster, Reference)
+class LightmapRaycaster : public RefCounted {
+	GDCLASS(LightmapRaycaster, RefCounted)
 protected:
 	static LightmapRaycaster *(*create_function)();
 
@@ -121,8 +121,8 @@ public:
 	static Ref<LightmapRaycaster> create();
 };
 
-class Lightmapper : public Reference {
-	GDCLASS(Lightmapper, Reference)
+class Lightmapper : public RefCounted {
+	GDCLASS(Lightmapper, RefCounted)
 public:
 	enum GenerateProbes {
 		GENERATE_PROBES_DISABLED,

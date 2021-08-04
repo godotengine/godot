@@ -47,9 +47,9 @@ void Container::add_child_notify(Node *p_child) {
 		return;
 	}
 
-	control->connect("size_flags_changed", callable_mp(this, &Container::queue_sort));
-	control->connect("minimum_size_changed", callable_mp(this, &Container::_child_minsize_changed));
-	control->connect("visibility_changed", callable_mp(this, &Container::_child_minsize_changed));
+	control->connect(SNAME("size_flags_changed"), callable_mp(this, &Container::queue_sort));
+	control->connect(SNAME("minimum_size_changed"), callable_mp(this, &Container::_child_minsize_changed));
+	control->connect(SNAME("visibility_changed"), callable_mp(this, &Container::_child_minsize_changed));
 
 	minimum_size_changed();
 	queue_sort();

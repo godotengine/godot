@@ -26,8 +26,6 @@ namespace GodotTools
         private PopupMenu menuPopup;
 
         private AcceptDialog errorDialog;
-        private AcceptDialog aboutDialog;
-        private CheckBox aboutDialogCheckBox;
 
         private Button bottomPanelBtn;
         private Button toolBarBuildButton;
@@ -130,22 +128,12 @@ namespace GodotTools
             toolBarBuildButton.Show();
         }
 
-        private void _ShowAboutDialog()
-        {
-            bool showOnStart = (bool)editorSettings.GetSetting("mono/editor/show_info_on_start");
-            aboutDialogCheckBox.Pressed = showOnStart;
-            aboutDialog.PopupCentered();
-        }
-
         private void _MenuOptionPressed(int id)
         {
             switch ((MenuOptions)id)
             {
                 case MenuOptions.CreateSln:
                     CreateProjectSolution();
-                    break;
-                case MenuOptions.AboutCSharp:
-                    _ShowAboutDialog();
                     break;
                 case MenuOptions.SetupGodotNugetFallbackFolder:
                 {
@@ -183,21 +171,11 @@ namespace GodotTools
             base._Ready();
 
             MSBuildPanel.BuildOutputView.BuildStateChanged += BuildStateChanged;
-
-            bool showInfoDialog = (bool)editorSettings.GetSetting("mono/editor/show_info_on_start");
-            if (showInfoDialog)
-            {
-                aboutDialog.Exclusive = true;
-                _ShowAboutDialog();
-                // Once shown a first time, it can be seen again via the Mono menu - it doesn't have to be exclusive from that time on.
-                aboutDialog.Exclusive = false;
-            }
         }
 
         private enum MenuOptions
         {
             CreateSln,
-            AboutCSharp,
             SetupGodotNugetFallbackFolder,
         }
 
@@ -371,7 +349,7 @@ namespace GodotTools
             return (ExternalEditorId)editorSettings.GetSetting("mono/editor/external_editor") != ExternalEditorId.None;
         }
 
-        public override bool Build()
+        public override bool _Build()
         {
             return BuildManager.EditorBuildCallback();
         }
@@ -413,9 +391,9 @@ namespace GodotTools
                 bottomPanelBtn.Icon = MSBuildPanel.BuildOutputView.BuildStateIcon;
         }
 
-        public override void EnablePlugin()
+        public override void _EnablePlugin()
         {
-            base.EnablePlugin();
+            base._EnablePlugin();
 
             if (Instance != null)
                 throw new InvalidOperationException();
@@ -438,57 +416,6 @@ namespace GodotTools
             menuPopup.Hide();
 
             AddToolSubmenuItem("C#", menuPopup);
-
-            // TODO: Remove or edit this info dialog once Mono support is no longer in alpha
-            {
-                menuPopup.AddItem("About C# support".TTR(), (int)MenuOptions.AboutCSharp);
-                menuPopup.AddItem("Setup Godot NuGet Offline Packages".TTR(), (int)MenuOptions.SetupGodotNugetFallbackFolder);
-                aboutDialog = new AcceptDialog();
-                editorBaseControl.AddChild(aboutDialog);
-                aboutDialog.Title = "Important: C# support is not feature-complete";
-
-                // We don't use DialogText as the default AcceptDialog Label doesn't play well with the TextureRect and CheckBox
-                // we'll add. Instead we add containers and a new autowrapped Label inside.
-
-                // Main VBoxContainer (icon + label on top, checkbox at bottom)
-                var aboutVBox = new VBoxContainer();
-                aboutDialog.AddChild(aboutVBox);
-
-                // HBoxContainer for icon + label
-                var aboutHBox = new HBoxContainer();
-                aboutVBox.AddChild(aboutHBox);
-
-                var aboutIcon = new TextureRect();
-                aboutIcon.Texture = aboutIcon.GetThemeIcon("NodeWarning", "EditorIcons");
-                aboutHBox.AddChild(aboutIcon);
-
-                var aboutLabel = new Label();
-                aboutHBox.AddChild(aboutLabel);
-                aboutLabel.RectMinSize = new Vector2(600, 150) * EditorScale;
-                aboutLabel.SizeFlagsVertical = (int)Control.SizeFlags.ExpandFill;
-                aboutLabel.Autowrap = true;
-                aboutLabel.Text =
-                    "C# support in Godot Engine is in late alpha stage and, while already usable, " +
-                    "it is not meant for use in production.\n\n" +
-                    "Projects can be exported to Linux, macOS, Windows, Android, iOS and HTML5, but not yet to UWP. " +
-                    "Bugs and usability issues will be addressed gradually over future releases, " +
-                    "potentially including compatibility breaking changes as new features are implemented for a better overall C# experience.\n\n" +
-                    "If you experience issues with this Mono build, please report them on Godot's issue tracker with details about your system, MSBuild version, IDE, etc.:\n\n" +
-                    "        https://github.com/godotengine/godot/issues\n\n" +
-                    "Your critical feedback at this stage will play a great role in shaping the C# support in future releases, so thank you!";
-
-                EditorDef("mono/editor/show_info_on_start", true);
-
-                // CheckBox in main container
-                aboutDialogCheckBox = new CheckBox {Text = "Show this warning when starting the editor"};
-                aboutDialogCheckBox.Toggled += enabled =>
-                {
-                    bool showOnStart = (bool)editorSettings.GetSetting("mono/editor/show_info_on_start");
-                    if (showOnStart != enabled)
-                        editorSettings.SetSetting("mono/editor/show_info_on_start", enabled);
-                };
-                aboutVBox.AddChild(aboutDialogCheckBox);
-            }
 
             toolBarBuildButton = new Button
             {

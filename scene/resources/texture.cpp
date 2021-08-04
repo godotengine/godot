@@ -88,7 +88,7 @@ void ImageTexture::reload_from_file() {
 	}
 
 	Ref<Image> img;
-	img.instance();
+	img.instantiate();
 
 	if (ImageLoader::load_image(path, img) == OK) {
 		create_from_image(img);
@@ -138,7 +138,7 @@ void ImageTexture::_reload_hook(const RID &p_hook) {
 	}
 
 	Ref<Image> img;
-	img.instance();
+	img.instantiate();
 	Error err = ImageLoader::load_image(path, img);
 
 	ERR_FAIL_COND_MSG(err != OK, "Cannot load image from path '" + path + "'.");
@@ -173,7 +173,7 @@ Image::Format ImageTexture::get_format() const {
 	return format;
 }
 
-void ImageTexture::update(const Ref<Image> &p_image, bool p_immediate) {
+void ImageTexture::update(const Ref<Image> &p_image) {
 	ERR_FAIL_COND_MSG(p_image.is_null(), "Invalid image");
 	ERR_FAIL_COND_MSG(texture.is_null(), "Texture is not initialized.");
 	ERR_FAIL_COND_MSG(p_image->get_width() != w || p_image->get_height() != h,
@@ -183,11 +183,7 @@ void ImageTexture::update(const Ref<Image> &p_image, bool p_immediate) {
 	ERR_FAIL_COND_MSG(mipmaps != p_image->has_mipmaps(),
 			"The new image mipmaps configuration must match the texture's image mipmaps configuration");
 
-	if (p_immediate) {
-		RenderingServer::get_singleton()->texture_2d_update_immediate(texture, p_image);
-	} else {
-		RenderingServer::get_singleton()->texture_2d_update(texture, p_image);
-	}
+	RenderingServer::get_singleton()->texture_2d_update(texture, p_image);
 
 	notify_property_list_changed();
 	emit_changed();
@@ -258,7 +254,7 @@ bool ImageTexture::is_pixel_opaque(int p_x, int p_y) const {
 				decom->decompress();
 				img = decom;
 			}
-			alpha_cache.instance();
+			alpha_cache.instantiate();
 			alpha_cache->create_from_image_alpha(img);
 		}
 	}
@@ -305,7 +301,7 @@ void ImageTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_from_image", "image"), &ImageTexture::create_from_image);
 	ClassDB::bind_method(D_METHOD("get_format"), &ImageTexture::get_format);
 
-	ClassDB::bind_method(D_METHOD("update", "image", "immediate"), &ImageTexture::update, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("update", "image"), &ImageTexture::update);
 	ClassDB::bind_method(D_METHOD("set_size_override", "size"), &ImageTexture::set_size_override);
 	ClassDB::bind_method(D_METHOD("_reload_hook", "rid"), &ImageTexture::_reload_hook);
 }
@@ -327,7 +323,7 @@ Ref<Image> StreamTexture2D::load_image_from_file(FileAccess *f, int p_size_limit
 	uint32_t mipmaps = f->get_32();
 	Image::Format format = Image::Format(f->get_32());
 
-	if (data_format == DATA_FORMAT_LOSSLESS || data_format == DATA_FORMAT_LOSSY || data_format == DATA_FORMAT_BASIS_UNIVERSAL) {
+	if (data_format == DATA_FORMAT_PNG || data_format == DATA_FORMAT_WEBP || data_format == DATA_FORMAT_BASIS_UNIVERSAL) {
 		//look for a PNG or WEBP file inside
 
 		int sw = w;
@@ -358,12 +354,12 @@ Ref<Image> StreamTexture2D::load_image_from_file(FileAccess *f, int p_size_limit
 			}
 
 			Ref<Image> img;
-			if (data_format == DATA_FORMAT_BASIS_UNIVERSAL) {
+			if (data_format == DATA_FORMAT_BASIS_UNIVERSAL && Image::basis_universal_unpacker) {
 				img = Image::basis_universal_unpacker(pv);
-			} else if (data_format == DATA_FORMAT_LOSSLESS) {
-				img = Image::lossless_unpacker(pv);
-			} else {
-				img = Image::lossy_unpacker(pv);
+			} else if (data_format == DATA_FORMAT_PNG && Image::png_unpacker) {
+				img = Image::png_unpacker(pv);
+			} else if (data_format == DATA_FORMAT_WEBP && Image::webp_unpacker) {
+				img = Image::webp_unpacker(pv);
 			}
 
 			if (img.is_null() || img->is_empty()) {
@@ -390,7 +386,7 @@ Ref<Image> StreamTexture2D::load_image_from_file(FileAccess *f, int p_size_limit
 		//print_line("mipmap read total: " + itos(mipmap_images.size()));
 
 		Ref<Image> image;
-		image.instance();
+		image.instantiate();
 
 		if (mipmap_images.size() == 1) {
 			//only one image (which will most likely be the case anyway for this format)
@@ -442,7 +438,7 @@ Ref<Image> StreamTexture2D::load_image_from_file(FileAccess *f, int p_size_limit
 			}
 
 			Ref<Image> image;
-			image.instance();
+			image.instantiate();
 
 			image->create(tw, th, mipmaps - i ? true : false, format, data);
 
@@ -490,7 +486,7 @@ Image::Format StreamTexture2D::get_format() const {
 	return format;
 }
 
-Error StreamTexture2D::_load_data(const String &p_path, int &tw, int &th, int &tw_custom, int &th_custom, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit, int p_size_limit) {
+Error StreamTexture2D::_load_data(const String &p_path, int &r_width, int &r_height, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit, int p_size_limit) {
 	alpha_cache.unref();
 
 	ERR_FAIL_COND_V(image.is_null(), ERR_INVALID_PARAMETER);
@@ -511,8 +507,8 @@ Error StreamTexture2D::_load_data(const String &p_path, int &tw, int &th, int &t
 		memdelete(f);
 		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Stream texture file is too new.");
 	}
-	tw_custom = f->get_32();
-	th_custom = f->get_32();
+	r_width = f->get_32();
+	r_height = f->get_32();
 	uint32_t df = f->get_32(); //data format
 
 	//skip reserved
@@ -551,16 +547,16 @@ Error StreamTexture2D::_load_data(const String &p_path, int &tw, int &th, int &t
 }
 
 Error StreamTexture2D::load(const String &p_path) {
-	int lw, lh, lwc, lhc;
+	int lw, lh;
 	Ref<Image> image;
-	image.instance();
+	image.instantiate();
 
 	bool request_3d;
 	bool request_normal;
 	bool request_roughness;
 	int mipmap_limit;
 
-	Error err = _load_data(p_path, lw, lh, lwc, lhc, image, request_3d, request_normal, request_roughness, mipmap_limit);
+	Error err = _load_data(p_path, lw, lh, image, request_3d, request_normal, request_roughness, mipmap_limit);
 	if (err) {
 		return err;
 	}
@@ -571,12 +567,12 @@ Error StreamTexture2D::load(const String &p_path) {
 	} else {
 		texture = RS::get_singleton()->texture_2d_create(image);
 	}
-	if (lwc || lhc) {
-		RS::get_singleton()->texture_set_size_override(texture, lwc, lhc);
+	if (lw || lh) {
+		RS::get_singleton()->texture_set_size_override(texture, lw, lh);
 	}
 
-	w = lwc ? lwc : lw;
-	h = lhc ? lhc : lh;
+	w = lw;
+	h = lh;
 	path_to_file = p_path;
 	format = image->get_format();
 
@@ -679,7 +675,7 @@ bool StreamTexture2D::is_pixel_opaque(int p_x, int p_y) const {
 				img = decom;
 			}
 
-			alpha_cache.instance();
+			alpha_cache.instantiate();
 			alpha_cache->create_from_image_alpha(img);
 		}
 	}
@@ -738,7 +734,7 @@ StreamTexture2D::~StreamTexture2D() {
 
 RES ResourceFormatLoaderStreamTexture2D::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	Ref<StreamTexture2D> st;
-	st.instance();
+	st.instantiate();
 	Error err = st->load(p_path);
 	if (r_error) {
 		*r_error = err;
@@ -1036,7 +1032,7 @@ StreamTexture3D::~StreamTexture3D() {
 
 RES ResourceFormatLoaderStreamTexture3D::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	Ref<StreamTexture3D> st;
-	st.instance();
+	st.instantiate();
 	Error err = st->load(p_path);
 	if (r_error) {
 		*r_error = err;
@@ -1411,14 +1407,26 @@ void CurveTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_curve", "curve"), &CurveTexture::set_curve);
 	ClassDB::bind_method(D_METHOD("get_curve"), &CurveTexture::get_curve);
 
+	ClassDB::bind_method(D_METHOD("set_texture_mode", "texture_mode"), &CurveTexture::set_texture_mode);
+	ClassDB::bind_method(D_METHOD("get_texture_mode"), &CurveTexture::get_texture_mode);
+
 	ClassDB::bind_method(D_METHOD("_update"), &CurveTexture::_update);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "32,4096"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,4096"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_mode", PROPERTY_HINT_ENUM, "RGB,Red"), "set_texture_mode", "get_texture_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve", "get_curve");
+
+	BIND_ENUM_CONSTANT(TEXTURE_MODE_RGB);
+	BIND_ENUM_CONSTANT(TEXTURE_MODE_RED);
 }
 
 void CurveTexture::set_width(int p_width) {
 	ERR_FAIL_COND(p_width < 32 || p_width > 4096);
+
+	if (_width == p_width) {
+		return;
+	}
+
 	_width = p_width;
 	_update();
 }
@@ -1454,7 +1462,7 @@ void CurveTexture::set_curve(Ref<Curve> p_curve) {
 
 void CurveTexture::_update() {
 	Vector<uint8_t> data;
-	data.resize(_width * sizeof(float));
+	data.resize(_width * sizeof(float) * (texture_mode == TEXTURE_MODE_RGB ? 3 : 1));
 
 	// The array is locked in that scope
 	{
@@ -1465,30 +1473,59 @@ void CurveTexture::_update() {
 			Curve &curve = **_curve;
 			for (int i = 0; i < _width; ++i) {
 				float t = i / static_cast<float>(_width);
-				wd[i] = curve.interpolate_baked(t);
+				if (texture_mode == TEXTURE_MODE_RGB) {
+					wd[i * 3 + 0] = curve.interpolate_baked(t);
+					wd[i * 3 + 1] = wd[i * 3 + 0];
+					wd[i * 3 + 2] = wd[i * 3 + 0];
+				} else {
+					wd[i] = curve.interpolate_baked(t);
+				}
 			}
 
 		} else {
 			for (int i = 0; i < _width; ++i) {
-				wd[i] = 0;
+				if (texture_mode == TEXTURE_MODE_RGB) {
+					wd[i * 3 + 0] = 0;
+					wd[i * 3 + 1] = 0;
+					wd[i * 3 + 2] = 0;
+				} else {
+					wd[i] = 0;
+				}
 			}
 		}
 	}
 
-	Ref<Image> image = memnew(Image(_width, 1, false, Image::FORMAT_RF, data));
+	Ref<Image> image = memnew(Image(_width, 1, false, texture_mode == TEXTURE_MODE_RGB ? Image::FORMAT_RGBF : Image::FORMAT_RF, data));
 
 	if (_texture.is_valid()) {
-		RID new_texture = RS::get_singleton()->texture_2d_create(image);
-		RS::get_singleton()->texture_replace(_texture, new_texture);
+		if (_current_texture_mode != texture_mode || _current_width != _width) {
+			RID new_texture = RS::get_singleton()->texture_2d_create(image);
+			RS::get_singleton()->texture_replace(_texture, new_texture);
+		} else {
+			RS::get_singleton()->texture_2d_update(_texture, image);
+		}
 	} else {
 		_texture = RS::get_singleton()->texture_2d_create(image);
 	}
+	_current_texture_mode = texture_mode;
+	_current_width = _width;
 
 	emit_changed();
 }
 
 Ref<Curve> CurveTexture::get_curve() const {
 	return _curve;
+}
+
+void CurveTexture::set_texture_mode(TextureMode p_mode) {
+	if (texture_mode == p_mode) {
+		return;
+	}
+	texture_mode = p_mode;
+	_update();
+}
+CurveTexture::TextureMode CurveTexture::get_texture_mode() const {
+	return texture_mode;
 }
 
 RID CurveTexture::get_rid() const {
@@ -1501,6 +1538,204 @@ RID CurveTexture::get_rid() const {
 CurveTexture::CurveTexture() {}
 
 CurveTexture::~CurveTexture() {
+	if (_texture.is_valid()) {
+		RS::get_singleton()->free(_texture);
+	}
+}
+
+//////////////////
+
+void CurveXYZTexture::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_width", "width"), &CurveXYZTexture::set_width);
+
+	ClassDB::bind_method(D_METHOD("set_curve_x", "curve"), &CurveXYZTexture::set_curve_x);
+	ClassDB::bind_method(D_METHOD("get_curve_x"), &CurveXYZTexture::get_curve_x);
+
+	ClassDB::bind_method(D_METHOD("set_curve_y", "curve"), &CurveXYZTexture::set_curve_y);
+	ClassDB::bind_method(D_METHOD("get_curve_y"), &CurveXYZTexture::get_curve_y);
+
+	ClassDB::bind_method(D_METHOD("set_curve_z", "curve"), &CurveXYZTexture::set_curve_z);
+	ClassDB::bind_method(D_METHOD("get_curve_z"), &CurveXYZTexture::get_curve_z);
+
+	ClassDB::bind_method(D_METHOD("_update"), &CurveXYZTexture::_update);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,4096"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve_x", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve_x", "get_curve_x");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve_y", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve_y", "get_curve_y");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve_z", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve_z", "get_curve_z");
+}
+
+void CurveXYZTexture::set_width(int p_width) {
+	ERR_FAIL_COND(p_width < 32 || p_width > 4096);
+
+	if (_width == p_width) {
+		return;
+	}
+
+	_width = p_width;
+	_update();
+}
+
+int CurveXYZTexture::get_width() const {
+	return _width;
+}
+
+void CurveXYZTexture::ensure_default_setup(float p_min, float p_max) {
+	if (_curve_x.is_null()) {
+		Ref<Curve> curve = Ref<Curve>(memnew(Curve));
+		curve->add_point(Vector2(0, 1));
+		curve->add_point(Vector2(1, 1));
+		curve->set_min_value(p_min);
+		curve->set_max_value(p_max);
+		set_curve_x(curve);
+	}
+
+	if (_curve_y.is_null()) {
+		Ref<Curve> curve = Ref<Curve>(memnew(Curve));
+		curve->add_point(Vector2(0, 1));
+		curve->add_point(Vector2(1, 1));
+		curve->set_min_value(p_min);
+		curve->set_max_value(p_max);
+		set_curve_y(curve);
+	}
+
+	if (_curve_z.is_null()) {
+		Ref<Curve> curve = Ref<Curve>(memnew(Curve));
+		curve->add_point(Vector2(0, 1));
+		curve->add_point(Vector2(1, 1));
+		curve->set_min_value(p_min);
+		curve->set_max_value(p_max);
+		set_curve_z(curve);
+	}
+}
+
+void CurveXYZTexture::set_curve_x(Ref<Curve> p_curve) {
+	if (_curve_x != p_curve) {
+		if (_curve_x.is_valid()) {
+			_curve_x->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update));
+		}
+		_curve_x = p_curve;
+		if (_curve_x.is_valid()) {
+			_curve_x->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update), varray(), CONNECT_REFERENCE_COUNTED);
+		}
+		_update();
+	}
+}
+
+void CurveXYZTexture::set_curve_y(Ref<Curve> p_curve) {
+	if (_curve_y != p_curve) {
+		if (_curve_y.is_valid()) {
+			_curve_y->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update));
+		}
+		_curve_y = p_curve;
+		if (_curve_y.is_valid()) {
+			_curve_y->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update), varray(), CONNECT_REFERENCE_COUNTED);
+		}
+		_update();
+	}
+}
+
+void CurveXYZTexture::set_curve_z(Ref<Curve> p_curve) {
+	if (_curve_z != p_curve) {
+		if (_curve_z.is_valid()) {
+			_curve_z->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update));
+		}
+		_curve_z = p_curve;
+		if (_curve_z.is_valid()) {
+			_curve_z->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update), varray(), CONNECT_REFERENCE_COUNTED);
+		}
+		_update();
+	}
+}
+
+void CurveXYZTexture::_update() {
+	Vector<uint8_t> data;
+	data.resize(_width * sizeof(float) * 3);
+
+	// The array is locked in that scope
+	{
+		uint8_t *wd8 = data.ptrw();
+		float *wd = (float *)wd8;
+
+		if (_curve_x.is_valid()) {
+			Curve &curve_x = **_curve_x;
+			for (int i = 0; i < _width; ++i) {
+				float t = i / static_cast<float>(_width);
+				wd[i * 3 + 0] = curve_x.interpolate_baked(t);
+			}
+
+		} else {
+			for (int i = 0; i < _width; ++i) {
+				wd[i * 3 + 0] = 0;
+			}
+		}
+
+		if (_curve_y.is_valid()) {
+			Curve &curve_y = **_curve_y;
+			for (int i = 0; i < _width; ++i) {
+				float t = i / static_cast<float>(_width);
+				wd[i * 3 + 1] = curve_y.interpolate_baked(t);
+			}
+
+		} else {
+			for (int i = 0; i < _width; ++i) {
+				wd[i * 3 + 1] = 0;
+			}
+		}
+
+		if (_curve_z.is_valid()) {
+			Curve &curve_z = **_curve_z;
+			for (int i = 0; i < _width; ++i) {
+				float t = i / static_cast<float>(_width);
+				wd[i * 3 + 2] = curve_z.interpolate_baked(t);
+			}
+
+		} else {
+			for (int i = 0; i < _width; ++i) {
+				wd[i * 3 + 2] = 0;
+			}
+		}
+	}
+
+	Ref<Image> image = memnew(Image(_width, 1, false, Image::FORMAT_RGBF, data));
+
+	if (_texture.is_valid()) {
+		if (_current_width != _width) {
+			RID new_texture = RS::get_singleton()->texture_2d_create(image);
+			RS::get_singleton()->texture_replace(_texture, new_texture);
+		} else {
+			RS::get_singleton()->texture_2d_update(_texture, image);
+		}
+	} else {
+		_texture = RS::get_singleton()->texture_2d_create(image);
+	}
+	_current_width = _width;
+
+	emit_changed();
+}
+
+Ref<Curve> CurveXYZTexture::get_curve_x() const {
+	return _curve_x;
+}
+
+Ref<Curve> CurveXYZTexture::get_curve_y() const {
+	return _curve_y;
+}
+
+Ref<Curve> CurveXYZTexture::get_curve_z() const {
+	return _curve_z;
+}
+
+RID CurveXYZTexture::get_rid() const {
+	if (!_texture.is_valid()) {
+		_texture = RS::get_singleton()->texture_2d_placeholder_create();
+	}
+	return _texture;
+}
+
+CurveXYZTexture::CurveXYZTexture() {}
+
+CurveXYZTexture::~CurveXYZTexture() {
 	if (_texture.is_valid()) {
 		RS::get_singleton()->free(_texture);
 	}
@@ -1527,7 +1762,7 @@ void GradientTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update"), &GradientTexture::_update);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gradient", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_gradient", "get_gradient");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,2048,1,or_greater"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,4096"), "set_width", "get_width");
 }
 
 void GradientTexture::set_gradient(Ref<Gradient> p_gradient) {
@@ -1555,7 +1790,7 @@ void GradientTexture::_queue_update() {
 	}
 
 	update_pending = true;
-	call_deferred("_update");
+	call_deferred(SNAME("_update"));
 }
 
 void GradientTexture::_update() {
@@ -1595,6 +1830,7 @@ void GradientTexture::_update() {
 }
 
 void GradientTexture::set_width(int p_width) {
+	ERR_FAIL_COND(p_width <= 0);
 	width = p_width;
 	_queue_update();
 }
@@ -1876,7 +2112,7 @@ void AnimatedTexture::_validate_property(PropertyInfo &property) const {
 	if (prop.begins_with("frame_")) {
 		int frame = prop.get_slicec('/', 0).get_slicec('_', 1).to_int();
 		if (frame >= frame_count) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 }
@@ -1904,7 +2140,7 @@ void AnimatedTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_frame_delay", "frame"), &AnimatedTexture::get_frame_delay);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frames", PROPERTY_HINT_RANGE, "1," + itos(MAX_FRAMES), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_frames", "get_frames");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_frame", PROPERTY_HINT_NONE, "", 0), "set_current_frame", "get_current_frame");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_frame", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_current_frame", "get_current_frame");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pause"), "set_pause", "get_pause");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "oneshot"), "set_oneshot", "get_oneshot");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fps", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_fps", "get_fps");
@@ -2257,15 +2493,15 @@ RES ResourceFormatLoaderStreamTextureLayered::load(const String &p_path, const S
 	Ref<StreamTextureLayered> st;
 	if (p_path.get_extension().to_lower() == "stexarray") {
 		Ref<StreamTexture2DArray> s;
-		s.instance();
+		s.instantiate();
 		st = s;
 	} else if (p_path.get_extension().to_lower() == "scube") {
 		Ref<StreamCubemap> s;
-		s.instance();
+		s.instantiate();
 		st = s;
 	} else if (p_path.get_extension().to_lower() == "scubearray") {
 		Ref<StreamCubemapArray> s;
-		s.instance();
+		s.instantiate();
 		st = s;
 	} else {
 		if (r_error) {

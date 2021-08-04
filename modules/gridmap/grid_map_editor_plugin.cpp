@@ -62,12 +62,6 @@ void GridMapEditor::_menu_option(int p_option) {
 			floor->set_value(floor->get_value() + 1);
 		} break;
 
-		case MENU_OPTION_LOCK_VIEW: {
-			int index = options->get_popup()->get_item_index(MENU_OPTION_LOCK_VIEW);
-			lock_view = !options->get_popup()->is_item_checked(index);
-
-			options->get_popup()->set_item_checked(index, lock_view);
-		} break;
 		case MENU_OPTION_CLIP_DISABLED:
 		case MENU_OPTION_CLIP_ABOVE:
 		case MENU_OPTION_CLIP_BELOW: {
@@ -255,7 +249,7 @@ void GridMapEditor::_menu_option(int p_option) {
 }
 
 void GridMapEditor::_update_cursor_transform() {
-	cursor_transform = Transform();
+	cursor_transform = Transform3D();
 	cursor_transform.origin = cursor_origin;
 	cursor_transform.basis.set_orthogonal_index(cursor_rot);
 	cursor_transform.basis *= node->get_cell_scale();
@@ -268,7 +262,7 @@ void GridMapEditor::_update_cursor_transform() {
 }
 
 void GridMapEditor::_update_selection_transform() {
-	Transform xf_zero;
+	Transform3D xf_zero;
 	xf_zero.basis.set_zero();
 
 	if (!selection.active) {
@@ -279,7 +273,7 @@ void GridMapEditor::_update_selection_transform() {
 		return;
 	}
 
-	Transform xf;
+	Transform3D xf;
 	xf.scale((Vector3(1, 1, 1) + (selection.end - selection.begin)) * node->get_cell_size());
 	xf.origin = selection.begin * node->get_cell_size();
 
@@ -297,7 +291,7 @@ void GridMapEditor::_update_selection_transform() {
 			scale *= node->get_cell_size();
 			position *= node->get_cell_size();
 
-			Transform xf2;
+			Transform3D xf2;
 			xf2.basis.scale(scale);
 			xf2.origin = position;
 
@@ -362,7 +356,7 @@ bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, b
 	Camera3D *camera = p_camera;
 	Vector3 from = camera->project_ray_origin(p_point);
 	Vector3 normal = camera->project_ray_normal(p_point);
-	Transform local_xform = node->get_global_transform().affine_inverse();
+	Transform3D local_xform = node->get_global_transform().affine_inverse();
 	Vector<Plane> planes = camera->get_frustum();
 	from = local_xform.xform(from);
 	normal = local_xform.basis.xform(normal).normalized();
@@ -503,8 +497,8 @@ void GridMapEditor::_fill_selection() {
 }
 
 void GridMapEditor::_clear_clipboard_data() {
-	for (List<ClipboardItem>::Element *E = clipboard_items.front(); E; E = E->next()) {
-		RenderingServer::get_singleton()->free(E->get().instance);
+	for (const ClipboardItem &E : clipboard_items) {
+		RenderingServer::get_singleton()->free(E.instance);
 	}
 
 	clipboard_items.clear();
@@ -540,7 +534,7 @@ void GridMapEditor::_set_clipboard_data() {
 
 void GridMapEditor::_update_paste_indicator() {
 	if (input_action != INPUT_PASTE) {
-		Transform xf;
+		Transform3D xf;
 		xf.basis.set_zero();
 		RenderingServer::get_singleton()->instance_set_transform(paste_instance, xf);
 		return;
@@ -548,7 +542,7 @@ void GridMapEditor::_update_paste_indicator() {
 
 	Vector3 center = 0.5 * Vector3(real_t(node->get_center_x()), real_t(node->get_center_y()), real_t(node->get_center_z()));
 	Vector3 scale = (Vector3(1, 1, 1) + (paste_indicator.end - paste_indicator.begin)) * node->get_cell_size();
-	Transform xf;
+	Transform3D xf;
 	xf.scale(scale);
 	xf.origin = (paste_indicator.begin + (paste_indicator.current - paste_indicator.click) + center) * node->get_cell_size();
 	Basis rot;
@@ -558,10 +552,8 @@ void GridMapEditor::_update_paste_indicator() {
 
 	RenderingServer::get_singleton()->instance_set_transform(paste_instance, node->get_global_transform() * xf);
 
-	for (List<ClipboardItem>::Element *E = clipboard_items.front(); E; E = E->next()) {
-		ClipboardItem &item = E->get();
-
-		xf = Transform();
+	for (const ClipboardItem &item : clipboard_items) {
+		xf = Transform3D();
 		xf.origin = (paste_indicator.begin + (paste_indicator.current - paste_indicator.click) + center) * node->get_cell_size();
 		xf.basis = rot * xf.basis;
 		xf.translate(item.grid_offset * node->get_cell_size());
@@ -584,9 +576,7 @@ void GridMapEditor::_do_paste() {
 	Vector3 ofs = paste_indicator.current - paste_indicator.click;
 	undo_redo->create_action(TTR("GridMap Paste Selection"));
 
-	for (List<ClipboardItem>::Element *E = clipboard_items.front(); E; E = E->next()) {
-		ClipboardItem &item = E->get();
-
+	for (const ClipboardItem &item : clipboard_items) {
 		Vector3 position = rot.xform(item.grid_offset) + paste_indicator.begin + ofs;
 
 		Basis orm;
@@ -669,8 +659,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 			if ((mb->get_button_index() == MOUSE_BUTTON_RIGHT && input_action == INPUT_ERASE) || (mb->get_button_index() == MOUSE_BUTTON_LEFT && input_action == INPUT_PAINT)) {
 				if (set_items.size()) {
 					undo_redo->create_action(TTR("GridMap Paint"));
-					for (List<SetItem>::Element *E = set_items.front(); E; E = E->next()) {
-						const SetItem &si = E->get();
+					for (const SetItem &si : set_items) {
 						undo_redo->add_do_method(node, "set_cell_item", si.position, si.new_value, si.new_orientation);
 					}
 					for (List<SetItem>::Element *E = set_items.back(); E; E = E->prev()) {
@@ -686,7 +675,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 			}
 
 			if (mb->get_button_index() == MOUSE_BUTTON_LEFT && input_action == INPUT_SELECT) {
-				undo_redo->create_action("GridMap Selection");
+				undo_redo->create_action(TTR("GridMap Selection"));
 				undo_redo->add_do_method(this, "_set_selection", selection.active, selection.begin, selection.end);
 				undo_redo->add_undo_method(this, "_set_selection", last_selection.active, last_selection.begin, last_selection.end);
 				undo_redo->commit_action();
@@ -875,8 +864,8 @@ void GridMapEditor::update_palette() {
 
 	int item = 0;
 
-	for (List<_CGMEItemSort>::Element *E = il.front(); E; E = E->next()) {
-		int id = E->get().id;
+	for (_CGMEItemSort &E : il) {
+		int id = E.id;
 		String name = mesh_library->get_item_name(id);
 		Ref<Texture2D> preview = mesh_library->get_item_preview(id);
 
@@ -1068,7 +1057,7 @@ void GridMapEditor::_notification(int p_what) {
 				return;
 			}
 
-			Transform xf = node->get_global_transform();
+			Transform3D xf = node->get_global_transform();
 
 			if (xf != grid_xform) {
 				for (int i = 0; i < 3; i++) {
@@ -1080,25 +1069,21 @@ void GridMapEditor::_notification(int p_what) {
 			if (cgmt.operator->() != last_mesh_library) {
 				update_palette();
 			}
-
-			if (lock_view) {
-				EditorNode *editor = Object::cast_to<EditorNode>(get_tree()->get_root()->get_child(0));
-
-				Plane p;
-				p.normal[edit_axis] = 1.0;
-				p.d = edit_floor[edit_axis] * node->get_cell_size()[edit_axis];
-				p = node->get_transform().xform(p); // plane to snap
-
-				Node3DEditorPlugin *sep = Object::cast_to<Node3DEditorPlugin>(editor->get_editor_plugin_screen());
-				if (sep) {
-					sep->snap_cursor_to_plane(p);
-				}
-			}
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			options->set_icon(get_theme_icon("GridMap", "EditorIcons"));
-			search_box->set_right_icon(get_theme_icon("Search", "EditorIcons"));
+			options->set_icon(get_theme_icon(SNAME("GridMap"), SNAME("EditorIcons")));
+			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+		} break;
+
+		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
+			if (input_action == INPUT_PAINT) {
+				// Simulate mouse released event to stop drawing when editor focus exists.
+				Ref<InputEventMouseButton> release;
+				release.instantiate();
+				release->set_button_index(MOUSE_BUTTON_LEFT);
+				forward_spatial_input_event(nullptr, release);
+			}
 		} break;
 	}
 }
@@ -1187,8 +1172,6 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	spatial_editor_hb->hide();
 
 	options->set_text(TTR("Grid Map"));
-	options->get_popup()->add_check_item(TTR("Snap View"), MENU_OPTION_LOCK_VIEW);
-	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Previous Floor"), MENU_OPTION_PREV_LEVEL, KEY_Q);
 	options->get_popup()->add_item(TTR("Next Floor"), MENU_OPTION_NEXT_LEVEL, KEY_E);
 	options->get_popup()->add_separator();
@@ -1251,7 +1234,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	mode_thumbnail->set_flat(true);
 	mode_thumbnail->set_toggle_mode(true);
 	mode_thumbnail->set_pressed(true);
-	mode_thumbnail->set_icon(p_editor->get_gui_base()->get_theme_icon("FileThumbnail", "EditorIcons"));
+	mode_thumbnail->set_icon(p_editor->get_gui_base()->get_theme_icon(SNAME("FileThumbnail"), SNAME("EditorIcons")));
 	hb->add_child(mode_thumbnail);
 	mode_thumbnail->connect("pressed", callable_mp(this, &GridMapEditor::_set_display_mode), varray(DISPLAY_THUMBNAIL));
 
@@ -1259,7 +1242,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	mode_list->set_flat(true);
 	mode_list->set_toggle_mode(true);
 	mode_list->set_pressed(false);
-	mode_list->set_icon(p_editor->get_gui_base()->get_theme_icon("FileList", "EditorIcons"));
+	mode_list->set_icon(p_editor->get_gui_base()->get_theme_icon(SNAME("FileList"), SNAME("EditorIcons")));
 	hb->add_child(mode_list);
 	mode_list->connect("pressed", callable_mp(this, &GridMapEditor::_set_display_mode), varray(DISPLAY_LIST));
 
@@ -1283,7 +1266,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	info_message->set_text(TTR("Give a MeshLibrary resource to this GridMap to use its meshes."));
 	info_message->set_valign(Label::VALIGN_CENTER);
 	info_message->set_align(Label::ALIGN_CENTER);
-	info_message->set_autowrap(true);
+	info_message->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
 	info_message->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	info_message->set_anchors_and_offsets_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
 	mesh_library_palette->add_child(info_message);
@@ -1368,7 +1351,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 		Array d;
 		d.resize(RS::ARRAY_MAX);
 
-		inner_mat.instance();
+		inner_mat.instantiate();
 		inner_mat->set_albedo(Color(0.7, 0.7, 1.0, 0.2));
 		inner_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 		inner_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
@@ -1377,14 +1360,14 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 		RenderingServer::get_singleton()->mesh_add_surface_from_arrays(selection_mesh, RS::PRIMITIVE_TRIANGLES, d);
 		RenderingServer::get_singleton()->mesh_surface_set_material(selection_mesh, 0, inner_mat->get_rid());
 
-		outer_mat.instance();
+		outer_mat.instantiate();
 		outer_mat->set_albedo(Color(0.7, 0.7, 1.0, 0.8));
 		outer_mat->set_on_top_of_alpha();
 
 		outer_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 		outer_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 
-		selection_floor_mat.instance();
+		selection_floor_mat.instantiate();
 		selection_floor_mat->set_albedo(Color(0.80, 0.80, 1.0, 1));
 		selection_floor_mat->set_on_top_of_alpha();
 		selection_floor_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
@@ -1411,7 +1394,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 	_set_selection(false);
 
-	indicator_mat.instance();
+	indicator_mat.instantiate();
 	indicator_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 	indicator_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	indicator_mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);

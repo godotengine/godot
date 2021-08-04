@@ -31,10 +31,10 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
+#include "core/io/file_access.h"
 #include "core/io/resource.h"
 #include "core/io/resource_loader.h"
 #include "core/math/rect2.h"
-#include "core/os/file_access.h"
 #include "core/os/mutex.h"
 #include "core/os/rw_lock.h"
 #include "core/os/thread_safe.h"
@@ -107,7 +107,7 @@ public:
 
 	Image::Format get_format() const;
 
-	void update(const Ref<Image> &p_image, bool p_immediate = false);
+	void update(const Ref<Image> &p_image);
 	Ref<Image> get_image() const override;
 
 	int get_width() const override;
@@ -136,8 +136,8 @@ class StreamTexture2D : public Texture2D {
 public:
 	enum DataFormat {
 		DATA_FORMAT_IMAGE,
-		DATA_FORMAT_LOSSLESS,
-		DATA_FORMAT_LOSSY,
+		DATA_FORMAT_PNG,
+		DATA_FORMAT_WEBP,
 		DATA_FORMAT_BASIS_UNIVERSAL,
 	};
 
@@ -146,9 +146,6 @@ public:
 	};
 
 	enum FormatBits {
-		FORMAT_MASK_IMAGE_FORMAT = (1 << 20) - 1,
-		FORMAT_BIT_LOSSLESS = 1 << 20,
-		FORMAT_BIT_LOSSY = 1 << 21,
 		FORMAT_BIT_STREAM = 1 << 22,
 		FORMAT_BIT_HAS_MIPMAPS = 1 << 23,
 		FORMAT_BIT_DETECT_3D = 1 << 24,
@@ -158,7 +155,7 @@ public:
 	};
 
 private:
-	Error _load_data(const String &p_path, int &tw, int &th, int &tw_custom, int &th_custom, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit, int p_size_limit = 0);
+	Error _load_data(const String &p_path, int &r_width, int &r_height, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit, int p_size_limit = 0);
 	String path_to_file;
 	mutable RID texture;
 	Image::Format format = Image::FORMAT_MAX;
@@ -389,8 +386,8 @@ class StreamTextureLayered : public TextureLayered {
 public:
 	enum DataFormat {
 		DATA_FORMAT_IMAGE,
-		DATA_FORMAT_LOSSLESS,
-		DATA_FORMAT_LOSSY,
+		DATA_FORMAT_PNG,
+		DATA_FORMAT_WEBP,
 		DATA_FORMAT_BASIS_UNIVERSAL,
 	};
 
@@ -399,9 +396,6 @@ public:
 	};
 
 	enum FormatBits {
-		FORMAT_MASK_IMAGE_FORMAT = (1 << 20) - 1,
-		FORMAT_BIT_LOSSLESS = 1 << 20,
-		FORMAT_BIT_LOSSY = 1 << 21,
 		FORMAT_BIT_STREAM = 1 << 22,
 		FORMAT_BIT_HAS_MIPMAPS = 1 << 23,
 	};
@@ -532,8 +526,8 @@ class StreamTexture3D : public Texture3D {
 public:
 	enum DataFormat {
 		DATA_FORMAT_IMAGE,
-		DATA_FORMAT_LOSSLESS,
-		DATA_FORMAT_LOSSY,
+		DATA_FORMAT_PNG,
+		DATA_FORMAT_WEBP,
 		DATA_FORMAT_BASIS_UNIVERSAL,
 	};
 
@@ -542,9 +536,6 @@ public:
 	};
 
 	enum FormatBits {
-		FORMAT_MASK_IMAGE_FORMAT = (1 << 20) - 1,
-		FORMAT_BIT_LOSSLESS = 1 << 20,
-		FORMAT_BIT_LOSSY = 1 << 21,
 		FORMAT_BIT_STREAM = 1 << 22,
 		FORMAT_BIT_HAS_MIPMAPS = 1 << 23,
 	};
@@ -595,11 +586,19 @@ public:
 class CurveTexture : public Texture2D {
 	GDCLASS(CurveTexture, Texture2D);
 	RES_BASE_EXTENSION("curvetex")
+public:
+	enum TextureMode {
+		TEXTURE_MODE_RGB,
+		TEXTURE_MODE_RED,
+	};
 
 private:
 	mutable RID _texture;
 	Ref<Curve> _curve;
 	int _width = 2048;
+	int _current_width = 0;
+	TextureMode texture_mode = TEXTURE_MODE_RGB;
+	TextureMode _current_texture_mode = TEXTURE_MODE_RGB;
 
 	void _update();
 
@@ -609,6 +608,9 @@ protected:
 public:
 	void set_width(int p_width);
 	int get_width() const override;
+
+	void set_texture_mode(TextureMode p_mode);
+	TextureMode get_texture_mode() const;
 
 	void ensure_default_setup(float p_min = 0, float p_max = 1);
 
@@ -623,18 +625,49 @@ public:
 	CurveTexture();
 	~CurveTexture();
 };
-/*
-	enum CubeMapSide {
-		CUBEMAP_LEFT,
-		CUBEMAP_RIGHT,
-		CUBEMAP_BOTTOM,
-		CUBEMAP_TOP,
-		CUBEMAP_FRONT,
-		CUBEMAP_BACK,
-	};
 
-*/
-//VARIANT_ENUM_CAST( Texture::CubeMapSide );
+VARIANT_ENUM_CAST(CurveTexture::TextureMode)
+
+class CurveXYZTexture : public Texture2D {
+	GDCLASS(CurveXYZTexture, Texture2D);
+	RES_BASE_EXTENSION("curvetex")
+
+private:
+	mutable RID _texture;
+	Ref<Curve> _curve_x;
+	Ref<Curve> _curve_y;
+	Ref<Curve> _curve_z;
+	int _width = 2048;
+	int _current_width = 0;
+
+	void _update();
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_width(int p_width);
+	int get_width() const override;
+
+	void ensure_default_setup(float p_min = 0, float p_max = 1);
+
+	void set_curve_x(Ref<Curve> p_curve);
+	Ref<Curve> get_curve_x() const;
+
+	void set_curve_y(Ref<Curve> p_curve);
+	Ref<Curve> get_curve_y() const;
+
+	void set_curve_z(Ref<Curve> p_curve);
+	Ref<Curve> get_curve_z() const;
+
+	virtual RID get_rid() const override;
+
+	virtual int get_height() const override { return 1; }
+	virtual bool has_alpha() const override { return false; }
+
+	CurveXYZTexture();
+	~CurveXYZTexture();
+};
 
 class GradientTexture : public Texture2D {
 	GDCLASS(GradientTexture, Texture2D);

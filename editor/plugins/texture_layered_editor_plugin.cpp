@@ -58,7 +58,7 @@ void TextureLayeredEditor::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_DRAW) {
-		Ref<Texture2D> checkerboard = get_theme_icon("Checkerboard", "EditorIcons");
+		Ref<Texture2D> checkerboard = get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons"));
 		Size2 size = get_size();
 
 		draw_texture_rect(checkerboard, Rect2(Point2(), size), true);
@@ -104,46 +104,49 @@ void TextureLayeredEditor::_update_material() {
 }
 
 void TextureLayeredEditor::_make_shaders() {
-	String shader_2d_array = ""
-							 "shader_type canvas_item;\n"
-							 "uniform sampler2DArray tex;\n"
-							 "uniform float layer;\n"
-							 "void fragment() {\n"
-							 "  COLOR = textureLod(tex,vec3(UV,layer),0.0);\n"
-							 "}";
+	shaders[0].instantiate();
+	shaders[0]->set_code(R"(
+shader_type canvas_item;
 
-	shaders[0].instance();
-	shaders[0]->set_code(shader_2d_array);
+uniform sampler2DArray tex;
+uniform float layer;
 
-	String shader_cube = ""
-						 "shader_type canvas_item;\n"
-						 "uniform samplerCube tex;\n"
-						 "uniform vec3 normal;\n"
-						 "uniform mat3 rot;\n"
-						 "void fragment() {\n"
-						 "  vec3 n = rot * normalize(vec3(normal.xy*(UV * 2.0 - 1.0),normal.z));\n"
-						 "  COLOR = textureLod(tex,n,0.0);\n"
-						 "}";
+void fragment() {
+	COLOR = textureLod(tex, vec3(UV, layer), 0.0);
+}
+)");
 
-	shaders[1].instance();
-	shaders[1]->set_code(shader_cube);
+	shaders[1].instantiate();
+	shaders[1]->set_code(R"(
+shader_type canvas_item;
 
-	String shader_cube_array = ""
-							   "shader_type canvas_item;\n"
-							   "uniform samplerCubeArray tex;\n"
-							   "uniform vec3 normal;\n"
-							   "uniform mat3 rot;\n"
-							   "uniform float layer;\n"
-							   "void fragment() {\n"
-							   "  vec3 n = rot * normalize(vec3(normal.xy*(UV * 2.0 - 1.0),normal.z));\n"
-							   "  COLOR = textureLod(tex,vec4(n,layer),0.0);\n"
-							   "}";
+uniform samplerCube tex;
+uniform vec3 normal;
+uniform mat3 rot;
 
-	shaders[2].instance();
-	shaders[2]->set_code(shader_cube_array);
+void fragment() {
+	vec3 n = rot * normalize(vec3(normal.xy * (UV * 2.0 - 1.0), normal.z));
+	COLOR = textureLod(tex, n, 0.0);
+}
+)");
+
+	shaders[2].instantiate();
+	shaders[2]->set_code(R"(
+shader_type canvas_item;
+
+uniform samplerCubeArray tex;
+uniform vec3 normal;
+uniform mat3 rot;
+uniform float layer;
+
+void fragment() {
+	vec3 n = rot * normalize(vec3(normal.xy * (UV * 2.0 - 1.0), normal.z));
+	COLOR = textureLod(tex, vec4(n, layer), 0.0);
+}
+)");
 
 	for (int i = 0; i < 3; i++) {
-		materials[i].instance();
+		materials[i].instantiate();
 		materials[i]->set_shader(shaders[i]);
 	}
 }
@@ -271,6 +274,6 @@ void EditorInspectorPluginLayeredTexture::parse_begin(Object *p_object) {
 
 TextureLayeredEditorPlugin::TextureLayeredEditorPlugin(EditorNode *p_node) {
 	Ref<EditorInspectorPluginLayeredTexture> plugin;
-	plugin.instance();
+	plugin.instantiate();
 	add_inspector_plugin(plugin);
 }

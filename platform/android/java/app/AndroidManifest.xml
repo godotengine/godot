@@ -19,8 +19,9 @@
     <application
         android:label="@string/godot_project_name_string"
         android:allowBackup="false"
-        tools:ignore="GoogleAppIndexingWarning"
-        android:icon="@mipmap/icon" >
+        android:icon="@mipmap/icon"
+        android:isGame="true"
+        tools:ignore="GoogleAppIndexingWarning" >
 
         <!-- Records the version of the Godot editor used for building -->
         <meta-data

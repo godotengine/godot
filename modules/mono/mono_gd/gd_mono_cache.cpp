@@ -109,8 +109,8 @@ void CachedData::clear_godot_api_cache() {
 	class_Vector3 = nullptr;
 	class_Vector3i = nullptr;
 	class_Basis = nullptr;
-	class_Quat = nullptr;
-	class_Transform = nullptr;
+	class_Quaternion = nullptr;
+	class_Transform3D = nullptr;
 	class_AABB = nullptr;
 	class_Color = nullptr;
 	class_Plane = nullptr;
@@ -143,9 +143,6 @@ void CachedData::clear_godot_api_cache() {
 	class_RemoteAttribute = nullptr;
 	class_MasterAttribute = nullptr;
 	class_PuppetAttribute = nullptr;
-	class_RemoteSyncAttribute = nullptr;
-	class_MasterSyncAttribute = nullptr;
-	class_PuppetSyncAttribute = nullptr;
 	class_GodotMethodAttribute = nullptr;
 	field_GodotMethodAttribute_methodName = nullptr;
 	class_ScriptPathAttribute = nullptr;
@@ -238,8 +235,8 @@ void update_godot_api_cache() {
 	CACHE_CLASS_AND_CHECK(Vector3, GODOT_API_CLASS(Vector3));
 	CACHE_CLASS_AND_CHECK(Vector3i, GODOT_API_CLASS(Vector3i));
 	CACHE_CLASS_AND_CHECK(Basis, GODOT_API_CLASS(Basis));
-	CACHE_CLASS_AND_CHECK(Quat, GODOT_API_CLASS(Quat));
-	CACHE_CLASS_AND_CHECK(Transform, GODOT_API_CLASS(Transform));
+	CACHE_CLASS_AND_CHECK(Quaternion, GODOT_API_CLASS(Quaternion));
+	CACHE_CLASS_AND_CHECK(Transform3D, GODOT_API_CLASS(Transform3D));
 	CACHE_CLASS_AND_CHECK(AABB, GODOT_API_CLASS(AABB));
 	CACHE_CLASS_AND_CHECK(Color, GODOT_API_CLASS(Color));
 	CACHE_CLASS_AND_CHECK(Plane, GODOT_API_CLASS(Plane));
@@ -272,9 +269,6 @@ void update_godot_api_cache() {
 	CACHE_CLASS_AND_CHECK(RemoteAttribute, GODOT_API_CLASS(RemoteAttribute));
 	CACHE_CLASS_AND_CHECK(MasterAttribute, GODOT_API_CLASS(MasterAttribute));
 	CACHE_CLASS_AND_CHECK(PuppetAttribute, GODOT_API_CLASS(PuppetAttribute));
-	CACHE_CLASS_AND_CHECK(RemoteSyncAttribute, GODOT_API_CLASS(RemoteSyncAttribute));
-	CACHE_CLASS_AND_CHECK(MasterSyncAttribute, GODOT_API_CLASS(MasterSyncAttribute));
-	CACHE_CLASS_AND_CHECK(PuppetSyncAttribute, GODOT_API_CLASS(PuppetSyncAttribute));
 	CACHE_CLASS_AND_CHECK(GodotMethodAttribute, GODOT_API_CLASS(GodotMethodAttribute));
 	CACHE_FIELD_AND_CHECK(GodotMethodAttribute, methodName, CACHED_CLASS(GodotMethodAttribute)->get_field("methodName"));
 	CACHE_CLASS_AND_CHECK(ScriptPathAttribute, GODOT_API_CLASS(ScriptPathAttribute));

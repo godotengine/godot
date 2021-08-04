@@ -40,6 +40,8 @@
 class EditorResourcePicker : public HBoxContainer {
 	GDCLASS(EditorResourcePicker, HBoxContainer);
 
+	static HashMap<StringName, List<StringName>> allowed_types_cache;
+
 	String base_type;
 	RES edited_resource;
 
@@ -67,7 +69,7 @@ class EditorResourcePicker : public HBoxContainer {
 		CONVERT_BASE_ID = 1000,
 	};
 
-	PopupMenu *edit_menu;
+	PopupMenu *edit_menu = nullptr;
 
 	void _update_resource();
 	void _update_resource_preview(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, ObjectID p_obj);
@@ -90,11 +92,15 @@ class EditorResourcePicker : public HBoxContainer {
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
+	void _ensure_resource_menu();
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
+	static void clear_caches();
+
 	void set_base_type(const String &p_base_type);
 	String get_base_type() const;
 	Vector<String> get_allowed_types() const;

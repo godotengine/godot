@@ -39,7 +39,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
 import android.view.GestureDetector;
-import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.PointerIcon;
@@ -150,13 +149,10 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 	public void onResume() {
 		super.onResume();
 
-		queueOnVkThread(new Runnable() {
-			@Override
-			public void run() {
-				// Resume the renderer
-				mRenderer.onVkResume();
-				GodotLib.focusin();
-			}
+		queueOnVkThread(() -> {
+			// Resume the renderer
+			mRenderer.onVkResume();
+			GodotLib.focusin();
 		});
 	}
 
@@ -164,13 +160,10 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 	public void onPause() {
 		super.onPause();
 
-		queueOnVkThread(new Runnable() {
-			@Override
-			public void run() {
-				GodotLib.focusout();
-				// Pause the renderer
-				mRenderer.onVkPause();
-			}
+		queueOnVkThread(() -> {
+			GodotLib.focusout();
+			// Pause the renderer
+			mRenderer.onVkPause();
 		});
 	}
 }

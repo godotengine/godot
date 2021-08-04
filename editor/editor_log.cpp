@@ -57,35 +57,43 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 	}
 }
 
+void EditorLog::_update_theme() {
+	Ref<Font> normal_font = get_theme_font(SNAME("output_source"), SNAME("EditorFonts"));
+	if (normal_font.is_valid()) {
+		log->add_theme_font_override("normal_font", normal_font);
+	}
+
+	log->add_theme_font_size_override("normal_font_size", get_theme_font_size(SNAME("output_source_size"), SNAME("EditorFonts")));
+	log->add_theme_color_override("selection_color", get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.4));
+
+	Ref<Font> bold_font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
+	if (bold_font.is_valid()) {
+		log->add_theme_font_override("bold_font", bold_font);
+	}
+
+	type_filter_map[MSG_TYPE_STD]->toggle_button->set_icon(get_theme_icon(SNAME("Popup"), SNAME("EditorIcons")));
+	type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_icon(get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons")));
+	type_filter_map[MSG_TYPE_WARNING]->toggle_button->set_icon(get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
+	type_filter_map[MSG_TYPE_EDITOR]->toggle_button->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
+
+	clear_button->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
+	copy_button->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
+	collapse_button->set_icon(get_theme_icon(SNAME("CombineLines"), SNAME("EditorIcons")));
+	show_search_button->set_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+}
+
 void EditorLog::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		//button->set_icon(get_icon("Console","EditorIcons"));
-		log->add_theme_font_override("normal_font", get_theme_font("output_source", "EditorFonts"));
-		log->add_theme_font_size_override("normal_font_size", get_theme_font_size("output_source_size", "EditorFonts"));
-		log->add_theme_color_override("selection_color", get_theme_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
-		log->add_theme_font_override("bold_font", get_theme_font("bold", "EditorFonts"));
-
-		type_filter_map[MSG_TYPE_STD]->toggle_button->set_icon(get_theme_icon("Popup", "EditorIcons"));
-		type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_icon(get_theme_icon("StatusError", "EditorIcons"));
-		type_filter_map[MSG_TYPE_WARNING]->toggle_button->set_icon(get_theme_icon("StatusWarning", "EditorIcons"));
-		type_filter_map[MSG_TYPE_EDITOR]->toggle_button->set_icon(get_theme_icon("Edit", "EditorIcons"));
-
-		clear_button->set_icon(get_theme_icon("Clear", "EditorIcons"));
-		copy_button->set_icon(get_theme_icon("ActionCopy", "EditorIcons"));
-		collapse_button->set_icon(get_theme_icon("CombineLines", "EditorIcons"));
-		show_search_button->set_icon(get_theme_icon("Search", "EditorIcons"));
-
-		_load_state();
-
-	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
-		Ref<Font> df_output_code = get_theme_font("output_source", "EditorFonts");
-		if (df_output_code.is_valid()) {
-			if (log != nullptr) {
-				log->add_theme_font_override("normal_font", get_theme_font("output_source", "EditorFonts"));
-				log->add_theme_font_size_override("normal_font_size", get_theme_font_size("output_source_size", "EditorFonts"));
-				log->add_theme_color_override("selection_color", get_theme_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
-			}
-		}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			_update_theme();
+			_load_state();
+		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+			_update_theme();
+			_rebuild_log();
+		} break;
+		default:
+			break;
 	}
 }
 
@@ -103,7 +111,7 @@ void EditorLog::_start_state_save_timer() {
 
 void EditorLog::_save_state() {
 	Ref<ConfigFile> config;
-	config.instance();
+	config.instantiate();
 	// Load and amend existing config if it exists.
 	config->load(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("editor_layout.cfg"));
 
@@ -122,21 +130,20 @@ void EditorLog::_load_state() {
 	is_loading_state = true;
 
 	Ref<ConfigFile> config;
-	config.instance();
-	Error err = config->load(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("editor_layout.cfg"));
+	config.instantiate();
+	config->load(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("editor_layout.cfg"));
 
-	if (err == OK) {
-		const String section = "editor_log";
-		for (Map<MessageType, LogFilter *>::Element *E = type_filter_map.front(); E; E = E->next()) {
-			E->get()->set_active(config->get_value(section, "log_filter_" + itos(E->key()), false));
-		}
-
-		collapse = config->get_value(section, "collapse", false);
-		collapse_button->set_pressed(collapse);
-		bool show_search = config->get_value(section, "show_search", true);
-		search_box->set_visible(show_search);
-		show_search_button->set_pressed(show_search);
+	// Run the below code even if config->load returns an error, since we want the defaults to be set even if the file does not exist yet.
+	const String section = "editor_log";
+	for (Map<MessageType, LogFilter *>::Element *E = type_filter_map.front(); E; E = E->next()) {
+		E->get()->set_active(config->get_value(section, "log_filter_" + itos(E->key()), true));
 	}
+
+	collapse = config->get_value(section, "collapse", false);
+	collapse_button->set_pressed(collapse);
+	bool show_search = config->get_value(section, "show_search", true);
+	search_box->set_visible(show_search);
+	show_search_button->set_pressed(show_search);
 
 	is_loading_state = false;
 }
@@ -243,22 +250,22 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		case MSG_TYPE_STD: {
 		} break;
 		case MSG_TYPE_ERROR: {
-			log->push_color(get_theme_color("error_color", "Editor"));
-			Ref<Texture2D> icon = get_theme_icon("Error", "EditorIcons");
+			log->push_color(get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			Ref<Texture2D> icon = get_theme_icon(SNAME("Error"), SNAME("EditorIcons"));
 			log->add_image(icon);
 			log->add_text(" ");
 			tool_button->set_icon(icon);
 		} break;
 		case MSG_TYPE_WARNING: {
-			log->push_color(get_theme_color("warning_color", "Editor"));
-			Ref<Texture2D> icon = get_theme_icon("Warning", "EditorIcons");
+			log->push_color(get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+			Ref<Texture2D> icon = get_theme_icon(SNAME("Warning"), SNAME("EditorIcons"));
 			log->add_image(icon);
 			log->add_text(" ");
 			tool_button->set_icon(icon);
 		} break;
 		case MSG_TYPE_EDITOR: {
 			// Distinguish editor messages from messages printed by the project
-			log->push_color(get_theme_color("font_color", "Editor") * Color(1, 1, 1, 0.6));
+			log->push_color(get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.6));
 		} break;
 	}
 
@@ -337,7 +344,7 @@ EditorLog::EditorLog() {
 	search_box = memnew(LineEdit);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_box->set_placeholder(TTR("Filter messages"));
-	search_box->set_right_icon(get_theme_icon("Search", "EditorIcons"));
+	search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 	search_box->set_clear_button_enabled(true);
 	search_box->set_visible(true);
 	search_box->connect("text_changed", callable_mp(this, &EditorLog::_search_changed));
@@ -399,22 +406,22 @@ EditorLog::EditorLog() {
 	vb_right->add_child(memnew(HSeparator));
 
 	LogFilter *std_filter = memnew(LogFilter(MSG_TYPE_STD));
-	std_filter->initialize_button("Toggle visibility of standard output messages.", callable_mp(this, &EditorLog::_set_filter_active));
+	std_filter->initialize_button(TTR("Toggle visibility of standard output messages."), callable_mp(this, &EditorLog::_set_filter_active));
 	vb_right->add_child(std_filter->toggle_button);
 	type_filter_map.insert(MSG_TYPE_STD, std_filter);
 
 	LogFilter *error_filter = memnew(LogFilter(MSG_TYPE_ERROR));
-	error_filter->initialize_button("Toggle visibility of errors.", callable_mp(this, &EditorLog::_set_filter_active));
+	error_filter->initialize_button(TTR("Toggle visibility of errors."), callable_mp(this, &EditorLog::_set_filter_active));
 	vb_right->add_child(error_filter->toggle_button);
 	type_filter_map.insert(MSG_TYPE_ERROR, error_filter);
 
 	LogFilter *warning_filter = memnew(LogFilter(MSG_TYPE_WARNING));
-	warning_filter->initialize_button("Toggle visibility of warnings.", callable_mp(this, &EditorLog::_set_filter_active));
+	warning_filter->initialize_button(TTR("Toggle visibility of warnings."), callable_mp(this, &EditorLog::_set_filter_active));
 	vb_right->add_child(warning_filter->toggle_button);
 	type_filter_map.insert(MSG_TYPE_WARNING, warning_filter);
 
 	LogFilter *editor_filter = memnew(LogFilter(MSG_TYPE_EDITOR));
-	editor_filter->initialize_button("Toggle visibility of editor messages.", callable_mp(this, &EditorLog::_set_filter_active));
+	editor_filter->initialize_button(TTR("Toggle visibility of editor messages."), callable_mp(this, &EditorLog::_set_filter_active));
 	vb_right->add_child(editor_filter->toggle_button);
 	type_filter_map.insert(MSG_TYPE_EDITOR, editor_filter);
 

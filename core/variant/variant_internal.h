@@ -55,7 +55,7 @@ public:
 			case Variant::BASIS:
 				init_basis(v);
 				break;
-			case Variant::TRANSFORM:
+			case Variant::TRANSFORM3D:
 				init_transform(v);
 				break;
 			case Variant::STRING_NAME:
@@ -138,14 +138,14 @@ public:
 	_FORCE_INLINE_ static const Transform2D *get_transform2d(const Variant *v) { return v->_data._transform2d; }
 	_FORCE_INLINE_ static Plane *get_plane(Variant *v) { return reinterpret_cast<Plane *>(v->_data._mem); }
 	_FORCE_INLINE_ static const Plane *get_plane(const Variant *v) { return reinterpret_cast<const Plane *>(v->_data._mem); }
-	_FORCE_INLINE_ static Quat *get_quat(Variant *v) { return reinterpret_cast<Quat *>(v->_data._mem); }
-	_FORCE_INLINE_ static const Quat *get_quat(const Variant *v) { return reinterpret_cast<const Quat *>(v->_data._mem); }
+	_FORCE_INLINE_ static Quaternion *get_quaternion(Variant *v) { return reinterpret_cast<Quaternion *>(v->_data._mem); }
+	_FORCE_INLINE_ static const Quaternion *get_quaternion(const Variant *v) { return reinterpret_cast<const Quaternion *>(v->_data._mem); }
 	_FORCE_INLINE_ static ::AABB *get_aabb(Variant *v) { return v->_data._aabb; }
 	_FORCE_INLINE_ static const ::AABB *get_aabb(const Variant *v) { return v->_data._aabb; }
 	_FORCE_INLINE_ static Basis *get_basis(Variant *v) { return v->_data._basis; }
 	_FORCE_INLINE_ static const Basis *get_basis(const Variant *v) { return v->_data._basis; }
-	_FORCE_INLINE_ static Transform *get_transform(Variant *v) { return v->_data._transform; }
-	_FORCE_INLINE_ static const Transform *get_transform(const Variant *v) { return v->_data._transform; }
+	_FORCE_INLINE_ static Transform3D *get_transform(Variant *v) { return v->_data._transform3d; }
+	_FORCE_INLINE_ static const Transform3D *get_transform(const Variant *v) { return v->_data._transform3d; }
 
 	// Misc types.
 	_FORCE_INLINE_ static Color *get_color(Variant *v) { return reinterpret_cast<Color *>(v->_data._mem); }
@@ -217,8 +217,8 @@ public:
 		v->type = Variant::BASIS;
 	}
 	_FORCE_INLINE_ static void init_transform(Variant *v) {
-		v->_data._transform = memnew(Transform);
-		v->type = Variant::TRANSFORM;
+		v->_data._transform3d = memnew(Transform3D);
+		v->type = Variant::TRANSFORM3D;
 	}
 	_FORCE_INLINE_ static void init_string_name(Variant *v) {
 		memnew_placement(v->_data._mem, StringName);
@@ -285,7 +285,7 @@ public:
 		v->clear();
 	}
 
-	static void object_assign(Variant *v, const Object *o); // Needs Reference, so it's implemented elsewhere.
+	static void object_assign(Variant *v, const Object *o); // Needs RefCounted, so it's implemented elsewhere.
 
 	_FORCE_INLINE_ static void object_assign(Variant *v, const Variant *o) {
 		object_assign(v, o->_get_obj().obj);
@@ -320,12 +320,12 @@ public:
 				return get_rect2(v);
 			case Variant::RECT2I:
 				return get_rect2i(v);
-			case Variant::TRANSFORM:
+			case Variant::TRANSFORM3D:
 				return get_transform(v);
 			case Variant::TRANSFORM2D:
 				return get_transform2d(v);
-			case Variant::QUAT:
-				return get_quat(v);
+			case Variant::QUATERNION:
+				return get_quaternion(v);
 			case Variant::PLANE:
 				return get_plane(v);
 			case Variant::BASIS:
@@ -398,12 +398,12 @@ public:
 				return get_rect2(v);
 			case Variant::RECT2I:
 				return get_rect2i(v);
-			case Variant::TRANSFORM:
+			case Variant::TRANSFORM3D:
 				return get_transform(v);
 			case Variant::TRANSFORM2D:
 				return get_transform2d(v);
-			case Variant::QUAT:
-				return get_quat(v);
+			case Variant::QUATERNION:
+				return get_quaternion(v);
 			case Variant::PLANE:
 				return get_plane(v);
 			case Variant::BASIS:
@@ -590,9 +590,9 @@ struct VariantGetInternalPtr<Transform2D> {
 };
 
 template <>
-struct VariantGetInternalPtr<Transform> {
-	static Transform *get_ptr(Variant *v) { return VariantInternal::get_transform(v); }
-	static const Transform *get_ptr(const Variant *v) { return VariantInternal::get_transform(v); }
+struct VariantGetInternalPtr<Transform3D> {
+	static Transform3D *get_ptr(Variant *v) { return VariantInternal::get_transform(v); }
+	static const Transform3D *get_ptr(const Variant *v) { return VariantInternal::get_transform(v); }
 };
 
 template <>
@@ -602,9 +602,9 @@ struct VariantGetInternalPtr<Plane> {
 };
 
 template <>
-struct VariantGetInternalPtr<Quat> {
-	static Quat *get_ptr(Variant *v) { return VariantInternal::get_quat(v); }
-	static const Quat *get_ptr(const Variant *v) { return VariantInternal::get_quat(v); }
+struct VariantGetInternalPtr<Quaternion> {
+	static Quaternion *get_ptr(Variant *v) { return VariantInternal::get_quaternion(v); }
+	static const Quaternion *get_ptr(const Variant *v) { return VariantInternal::get_quaternion(v); }
 };
 
 template <>
@@ -819,9 +819,9 @@ struct VariantInternalAccessor<Transform2D> {
 };
 
 template <>
-struct VariantInternalAccessor<Transform> {
-	static _FORCE_INLINE_ const Transform &get(const Variant *v) { return *VariantInternal::get_transform(v); }
-	static _FORCE_INLINE_ void set(Variant *v, const Transform &p_value) { *VariantInternal::get_transform(v) = p_value; }
+struct VariantInternalAccessor<Transform3D> {
+	static _FORCE_INLINE_ const Transform3D &get(const Variant *v) { return *VariantInternal::get_transform(v); }
+	static _FORCE_INLINE_ void set(Variant *v, const Transform3D &p_value) { *VariantInternal::get_transform(v) = p_value; }
 };
 
 template <>
@@ -831,9 +831,9 @@ struct VariantInternalAccessor<Plane> {
 };
 
 template <>
-struct VariantInternalAccessor<Quat> {
-	static _FORCE_INLINE_ const Quat &get(const Variant *v) { return *VariantInternal::get_quat(v); }
-	static _FORCE_INLINE_ void set(Variant *v, const Quat &p_value) { *VariantInternal::get_quat(v) = p_value; }
+struct VariantInternalAccessor<Quaternion> {
+	static _FORCE_INLINE_ const Quaternion &get(const Variant *v) { return *VariantInternal::get_quaternion(v); }
+	static _FORCE_INLINE_ void set(Variant *v, const Quaternion &p_value) { *VariantInternal::get_quaternion(v) = p_value; }
 };
 
 template <>
@@ -1067,8 +1067,8 @@ struct VariantInitializer<Plane> {
 };
 
 template <>
-struct VariantInitializer<Quat> {
-	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<Quat>(v); }
+struct VariantInitializer<Quaternion> {
+	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<Quaternion>(v); }
 };
 
 template <>
@@ -1082,7 +1082,7 @@ struct VariantInitializer<Basis> {
 };
 
 template <>
-struct VariantInitializer<Transform> {
+struct VariantInitializer<Transform3D> {
 	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_transform(v); }
 };
 
@@ -1241,8 +1241,8 @@ struct VariantZeroAssigner<Plane> {
 };
 
 template <>
-struct VariantZeroAssigner<Quat> {
-	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_quat(v) = Quat(); }
+struct VariantZeroAssigner<Quaternion> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_quaternion(v) = Quaternion(); }
 };
 
 template <>
@@ -1256,8 +1256,8 @@ struct VariantZeroAssigner<Basis> {
 };
 
 template <>
-struct VariantZeroAssigner<Transform> {
-	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_transform(v) = Transform(); }
+struct VariantZeroAssigner<Transform3D> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_transform(v) = Transform3D(); }
 };
 
 template <>

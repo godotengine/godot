@@ -81,9 +81,11 @@ class InspectorDock : public VBoxContainer {
 	Button *resource_new_button;
 	Button *resource_load_button;
 	MenuButton *resource_save_button;
+	MenuButton *resource_extra_button;
 	MenuButton *history_menu;
 	LineEdit *search;
 
+	Button *open_docs_button;
 	MenuButton *object_menu;
 	EditorPath *editor_path;
 
@@ -112,7 +114,7 @@ class InspectorDock : public VBoxContainer {
 	void _prepare_history();
 
 	void _property_keyed(const String &p_keyed, const Variant &p_value, bool p_advance);
-	void _transform_keyed(Object *sp, const String &p_sub, const Transform &p_key);
+	void _transform_keyed(Object *sp, const String &p_sub, const Transform3D &p_key);
 
 protected:
 	static void _bind_methods();

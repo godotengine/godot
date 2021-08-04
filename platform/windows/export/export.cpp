@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 #include "core/os/os.h"
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
@@ -310,7 +310,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 	args.push_back(p_path);
 #ifndef WINDOWS_ENABLED
 	args.push_back("-out");
-	args.push_back(p_path);
+	args.push_back(p_path + "_signed");
 #endif
 
 	String str;
@@ -325,6 +325,16 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 #endif
 		return FAILED;
 	}
+
+#ifndef WINDOWS_ENABLED
+	DirAccessRef tmp_dir = DirAccess::create_for_path(p_path.get_base_dir());
+
+	err = tmp_dir->remove(p_path);
+	ERR_FAIL_COND_V(err != OK, err);
+
+	err = tmp_dir->rename(p_path + "_signed", p_path);
+	ERR_FAIL_COND_V(err != OK, err);
+#endif
 
 	return OK;
 }
@@ -344,11 +354,11 @@ void register_windows_exporter() {
 #endif
 
 	Ref<EditorExportPlatformWindows> platform;
-	platform.instance();
+	platform.instantiate();
 
 	Ref<Image> img = memnew(Image(_windows_logo));
 	Ref<ImageTexture> logo;
-	logo.instance();
+	logo.instantiate();
 	logo->create_from_image(img);
 	platform->set_logo(logo);
 	platform->set_name("Windows Desktop");

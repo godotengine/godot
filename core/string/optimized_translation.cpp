@@ -66,9 +66,9 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 	int total_compression_size = 0;
 	int total_string_size = 0;
 
-	for (List<StringName>::Element *E = keys.front(); E; E = E->next()) {
+	for (const StringName &E : keys) {
 		//hash string
-		CharString cs = E->get().operator String().utf8();
+		CharString cs = E.operator String().utf8();
 		uint32_t h = hash(0, cs.get_data());
 		Pair<int, CharString> p;
 		p.first = idx;
@@ -76,7 +76,7 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 		buckets.write[h % size].push_back(p);
 
 		//compress string
-		CharString src_s = p_from->get_message(E->get()).operator String().utf8();
+		CharString src_s = p_from->get_message(E).operator String().utf8();
 		CompressedString ps;
 		ps.orig_len = src_s.size();
 		ps.offset = total_compression_size;

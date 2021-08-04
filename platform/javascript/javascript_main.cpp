@@ -97,7 +97,7 @@ extern EMSCRIPTEN_KEEPALIVE int godot_js_main(int argc, char *argv[]) {
 	if (Main::is_project_manager() && FileAccess::exists("/tmp/preload.zip")) {
 		PackedStringArray ps;
 		ps.push_back("/tmp/preload.zip");
-		os->get_main_loop()->emit_signal("files_dropped", ps, -1);
+		os->get_main_loop()->emit_signal(SNAME("files_dropped"), ps, -1);
 	}
 #endif
 	emscripten_set_main_loop(main_loop_callback, -1, false);

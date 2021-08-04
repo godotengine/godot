@@ -60,7 +60,7 @@ EditorDebuggerServer *EditorDebuggerServerTCP::create(const String &p_protocol) 
 }
 
 EditorDebuggerServerTCP::EditorDebuggerServerTCP() {
-	server.instance();
+	server.instantiate();
 }
 
 Error EditorDebuggerServerTCP::start() {

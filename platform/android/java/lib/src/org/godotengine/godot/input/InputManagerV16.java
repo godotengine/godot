@@ -34,7 +34,7 @@ public class InputManagerV16 implements InputManagerCompat {
 
 	public InputManagerV16(Context context) {
 		mInputManager = (InputManager)context.getSystemService(Context.INPUT_SERVICE);
-		mListeners = new HashMap<InputManagerCompat.InputDeviceListener, V16InputDeviceListener>();
+		mListeners = new HashMap<>();
 	}
 
 	@Override

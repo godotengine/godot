@@ -50,7 +50,7 @@ void TileSetEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 
 	if (p_from == sources_list) {
 		// Handle dropping a texture in the list of atlas resources.
-		int source_id = -1;
+		int source_id = TileSet::INVALID_SOURCE;
 		int added = 0;
 		Dictionary d = p_data;
 		Vector<String> files = d["files"];
@@ -77,7 +77,7 @@ void TileSetEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 		}
 
 		// Update the selected source (thus triggering an update).
-		_update_atlas_sources_list(source_id);
+		_update_sources_list(source_id);
 	}
 }
 
@@ -114,11 +114,11 @@ bool TileSetEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_dat
 	return false;
 }
 
-void TileSetEditor::_update_atlas_sources_list(int force_selected_id) {
+void TileSetEditor::_update_sources_list(int force_selected_id) {
 	ERR_FAIL_COND(!tile_set.is_valid());
 
 	// Get the previously selected id.
-	int old_selected = -1;
+	int old_selected = TileSet::INVALID_SOURCE;
 	if (sources_list->get_current() >= 0) {
 		int source_id = sources_list->get_item_metadata(sources_list->get_current());
 		if (tile_set->has_source(source_id)) {
@@ -126,7 +126,7 @@ void TileSetEditor::_update_atlas_sources_list(int force_selected_id) {
 		}
 	}
 
-	int to_select = -1;
+	int to_select = TileSet::INVALID_SOURCE;
 	if (force_selected_id >= 0) {
 		to_select = force_selected_id;
 	} else if (old_selected >= 0) {
@@ -159,7 +159,7 @@ void TileSetEditor::_update_atlas_sources_list(int force_selected_id) {
 		// Scene collection source.
 		TileSetScenesCollectionSource *scene_collection_source = Object::cast_to<TileSetScenesCollectionSource>(source);
 		if (scene_collection_source) {
-			texture = get_theme_icon("PackedScene", "EditorIcons");
+			texture = get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons"));
 			item_text = vformat(TTR("Scene Collection Source (id:%d)"), source_id);
 		}
 
@@ -181,7 +181,7 @@ void TileSetEditor::_update_atlas_sources_list(int force_selected_id) {
 			if ((int)sources_list->get_item_metadata(i) == to_select) {
 				sources_list->set_current(i);
 				if (old_selected != to_select) {
-					sources_list->emit_signal("item_selected", sources_list->get_current());
+					sources_list->emit_signal(SNAME("item_selected"), sources_list->get_current());
 				}
 				break;
 			}
@@ -192,7 +192,7 @@ void TileSetEditor::_update_atlas_sources_list(int force_selected_id) {
 	if (sources_list->get_current() < 0 && sources_list->get_item_count() > 0) {
 		sources_list->set_current(0);
 		if (old_selected != int(sources_list->get_item_metadata(0))) {
-			sources_list->emit_signal("item_selected", sources_list->get_current());
+			sources_list->emit_signal(SNAME("item_selected"), sources_list->get_current());
 		}
 	}
 
@@ -200,7 +200,7 @@ void TileSetEditor::_update_atlas_sources_list(int force_selected_id) {
 	_source_selected(sources_list->get_current());
 
 	// Synchronize the lists.
-	TilesEditor::get_singleton()->set_atlas_sources_lists_current(sources_list->get_current());
+	TilesEditor::get_singleton()->set_sources_lists_current(sources_list->get_current());
 }
 
 void TileSetEditor::_source_selected(int p_source_index) {
@@ -235,6 +235,23 @@ void TileSetEditor::_source_selected(int p_source_index) {
 	}
 }
 
+void TileSetEditor::_source_delete_pressed() {
+	ERR_FAIL_COND(!tile_set.is_valid());
+
+	// Update the selected source.
+	int to_delete = sources_list->get_item_metadata(sources_list->get_current());
+
+	Ref<TileSetSource> source = tile_set->get_source(to_delete);
+
+	// Remove the source.
+	undo_redo->create_action(TTR("Remove source"));
+	undo_redo->add_do_method(*tile_set, "remove_source", to_delete);
+	undo_redo->add_undo_method(*tile_set, "add_source", source, to_delete);
+	undo_redo->commit_action();
+
+	_update_sources_list();
+}
+
 void TileSetEditor::_source_add_id_pressed(int p_id_pressed) {
 	ERR_FAIL_COND(!tile_set.is_valid());
 
@@ -251,7 +268,7 @@ void TileSetEditor::_source_add_id_pressed(int p_id_pressed) {
 			undo_redo->add_undo_method(*tile_set, "remove_source", source_id);
 			undo_redo->commit_action();
 
-			_update_atlas_sources_list(source_id);
+			_update_sources_list(source_id);
 		} break;
 		case 1: {
 			int source_id = tile_set->get_next_source_id();
@@ -264,44 +281,43 @@ void TileSetEditor::_source_add_id_pressed(int p_id_pressed) {
 			undo_redo->add_undo_method(*tile_set, "remove_source", source_id);
 			undo_redo->commit_action();
 
-			_update_atlas_sources_list(source_id);
+			_update_sources_list(source_id);
 		} break;
 		default:
 			ERR_FAIL();
 	}
 }
 
-void TileSetEditor::_source_delete_pressed() {
+void TileSetEditor::_sources_advanced_menu_id_pressed(int p_id_pressed) {
 	ERR_FAIL_COND(!tile_set.is_valid());
 
-	// Update the selected source.
-	int to_delete = sources_list->get_item_metadata(sources_list->get_current());
-
-	Ref<TileSetSource> source = tile_set->get_source(to_delete);
-
-	// Remove the source.
-	undo_redo->create_action(TTR("Remove source"));
-	undo_redo->add_do_method(*tile_set, "remove_source", to_delete);
-	undo_redo->add_undo_method(*tile_set, "add_source", source, to_delete);
-	undo_redo->commit_action();
-
-	_update_atlas_sources_list();
+	switch (p_id_pressed) {
+		case 0: {
+			atlas_merging_dialog->update_tile_set(tile_set);
+			atlas_merging_dialog->popup_centered_ratio(0.5);
+		} break;
+		case 1: {
+			tile_proxies_manager_dialog->update_tile_set(tile_set);
+			tile_proxies_manager_dialog->popup_centered_ratio(0.5);
+		} break;
+	}
 }
 
 void TileSetEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED:
-			sources_delete_button->set_icon(get_theme_icon("Remove", "EditorIcons"));
-			sources_add_button->set_icon(get_theme_icon("Add", "EditorIcons"));
-			missing_texture_texture = get_theme_icon("TileSet", "EditorIcons");
+			sources_delete_button->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+			sources_add_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			sources_advanced_menu_button->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
+			missing_texture_texture = get_theme_icon(SNAME("TileSet"), SNAME("EditorIcons"));
 			break;
 		case NOTIFICATION_INTERNAL_PROCESS:
 			if (tile_set_changed_needs_update) {
 				if (tile_set.is_valid()) {
 					tile_set->set_edited(true);
 				}
-				_update_atlas_sources_list();
+				_update_sources_list();
 				tile_set_changed_needs_update = false;
 			}
 			break;
@@ -347,65 +363,23 @@ void TileSetEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p
 							int old_layer_count = tile_set->get_physics_layers_count();
 							if (new_layer_count < old_layer_count) {
 								for (int physics_layer_index = new_layer_count - 1; physics_layer_index < old_layer_count; physics_layer_index++) {
-									ADD_UNDO(tile_data, vformat("physics_layer_%d/shapes_count", physics_layer_index));
-									for (int shape_index = 0; shape_index < tile_data->get_collision_shapes_count(physics_layer_index); shape_index++) {
-										ADD_UNDO(tile_data, vformat("physics_layer_%d/shape_%d/shape", physics_layer_index, shape_index));
-										ADD_UNDO(tile_data, vformat("physics_layer_%d/shape_%d/one_way", physics_layer_index, shape_index));
-										ADD_UNDO(tile_data, vformat("physics_layer_%d/shape_%d/one_way_margin", physics_layer_index, shape_index));
+									ADD_UNDO(tile_data, vformat("physics_layer_%d/polygons_count", physics_layer_index));
+									for (int polygon_index = 0; polygon_index < tile_data->get_collision_polygons_count(physics_layer_index); polygon_index++) {
+										ADD_UNDO(tile_data, vformat("physics_layer_%d/polygon_%d/points", physics_layer_index, polygon_index));
+										ADD_UNDO(tile_data, vformat("physics_layer_%d/polygon_%d/one_way", physics_layer_index, polygon_index));
+										ADD_UNDO(tile_data, vformat("physics_layer_%d/polygon_%d/one_way_margin", physics_layer_index, polygon_index));
 									}
 								}
 							}
 						} else if ((p_property == "terrains_sets_count" && tile_data->get_terrain_set() >= (int)p_new_value) ||
-								   (components.size() == 2 && components[0].begins_with("terrain_set_") && components[0].trim_prefix("terrain_set_").is_valid_integer() && components[1] == "mode") ||
-								   (components.size() == 2 && components[0].begins_with("terrain_set_") && components[0].trim_prefix("terrain_set_").is_valid_integer() && components[1] == "terrains_count" && tile_data->get_terrain_set() == components[0].trim_prefix("terrain_set_").to_int() && (int)p_new_value < tile_set->get_terrains_count(tile_data->get_terrain_set()))) {
+								   (components.size() == 2 && components[0].begins_with("terrain_set_") && components[0].trim_prefix("terrain_set_").is_valid_int() && components[1] == "mode") ||
+								   (components.size() == 2 && components[0].begins_with("terrain_set_") && components[0].trim_prefix("terrain_set_").is_valid_int() && components[1] == "terrains_count" && tile_data->get_terrain_set() == components[0].trim_prefix("terrain_set_").to_int() && (int)p_new_value < tile_set->get_terrains_count(tile_data->get_terrain_set()))) {
 							ADD_UNDO(tile_data, "terrain_set");
-							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_RIGHT_SIDE)) {
-								ADD_UNDO(tile_data, "terrains_peering_bit/right_side");
-							}
-							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_RIGHT_CORNER)) {
-								ADD_UNDO(tile_data, "terrains_peering_bit/right_corner");
-							}
-							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE)) {
-								ADD_UNDO(tile_data, "terrains_peering_bit/bottom_right_side");
-							}
-							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER)) {
-								ADD_UNDO(tile_data, "terrains_peering_bit/bottom_right_corner");
-							}
-							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)) {
-								ADD_UNDO(tile_data, "terrains_peering_bit/bottom_side");
-							}
-							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_CORNER)) {
-								ADD_UNDO(tile_data, "terrains_peering_bit/bottom_corner");
-							}
-							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE)) {
-								ADD_UNDO(tile_data, "terrains_peering_bit/bottom_left_side");
-							}
-							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER)) {
-								ADD_UNDO(tile_data, "terrains_peering_bit/bottom_left_corner");
-							}
-							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_LEFT_SIDE)) {
-								ADD_UNDO(tile_data, "terrains_peering_bit/left_side");
-							}
-							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_LEFT_CORNER)) {
-								ADD_UNDO(tile_data, "terrains_peering_bit/left_corner");
-							}
-							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE)) {
-								ADD_UNDO(tile_data, "terrains_peering_bit/top_left_side");
-							}
-							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER)) {
-								ADD_UNDO(tile_data, "terrains_peering_bit/top_left_corner");
-							}
-							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_SIDE)) {
-								ADD_UNDO(tile_data, "terrains_peering_bit/top_side");
-							}
-							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_CORNER)) {
-								ADD_UNDO(tile_data, "terrains_peering_bit/top_corner");
-							}
-							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE)) {
-								ADD_UNDO(tile_data, "terrains_peering_bit/top_right_side");
-							}
-							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER)) {
-								ADD_UNDO(tile_data, "terrains_peering_bit/top_right_corner");
+							for (int l = 0; l < TileSet::CELL_NEIGHBOR_MAX; l++) {
+								TileSet::CellNeighbor bit = TileSet::CellNeighbor(l);
+								if (tile_data->is_valid_peering_bit_terrain(bit)) {
+									ADD_UNDO(tile_data, "terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[l]));
+								}
 							}
 						} else if (p_property == "navigation_layers_count") {
 							int new_layer_count = p_new_value;
@@ -423,8 +397,8 @@ void TileSetEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p
 									ADD_UNDO(tile_data, vformat("custom_data_%d", custom_data_layer_index));
 								}
 							}
-						} else if (components.size() == 2 && components[0].begins_with("custom_data_layer_") && components[0].trim_prefix("custom_data_layer_").is_valid_integer() && components[1] == "type") {
-							int custom_data_layer = components[0].trim_prefix("custom_data_layer_").is_valid_integer();
+						} else if (components.size() == 2 && components[0].begins_with("custom_data_layer_") && components[0].trim_prefix("custom_data_layer_").is_valid_int() && components[1] == "type") {
+							int custom_data_layer = components[0].trim_prefix("custom_data_layer_").is_valid_int();
 							ADD_UNDO(tile_data, vformat("custom_data_%d", custom_data_layer));
 						}
 					}
@@ -436,32 +410,8 @@ void TileSetEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p
 }
 
 void TileSetEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &TileSetEditor::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("drop_data_fw"), &TileSetEditor::drop_data_fw);
-}
-
-TileDataEditor *TileSetEditor::get_tile_data_editor(String p_property) {
-	Vector<String> components = String(p_property).split("/", true);
-
-	if (p_property == "z_index") {
-		return tile_data_integer_editor;
-	} else if (p_property == "probability") {
-		return tile_data_float_editor;
-	} else if (p_property == "y_sort_origin") {
-		return tile_data_y_sort_editor;
-	} else if (p_property == "texture_offset") {
-		return tile_data_texture_offset_editor;
-	} else if (components.size() >= 1 && components[0].begins_with("occlusion_layer_")) {
-		return tile_data_occlusion_shape_editor;
-	} else if (components.size() >= 1 && components[0].begins_with("physics_layer_")) {
-		return tile_data_collision_shape_editor;
-	} else if (p_property == "mode" || p_property == "terrain" || (components.size() >= 1 && components[0] == "terrains_peering_bit")) {
-		return tile_data_terrains_editor;
-	} else if (components.size() >= 1 && components[0].begins_with("navigation_layer_")) {
-		return tile_data_navigation_polygon_editor;
-	}
-
-	return nullptr;
+	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &TileSetEditor::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &TileSetEditor::drop_data_fw);
 }
 
 void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
@@ -480,7 +430,7 @@ void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
 	// Add the listener again.
 	if (tile_set.is_valid()) {
 		tile_set->connect("changed", callable_mp(this, &TileSetEditor::_tile_set_changed));
-		_update_atlas_sources_list();
+		_update_sources_list();
 	}
 
 	tile_set_atlas_source_editor->hide();
@@ -513,8 +463,8 @@ TileSetEditor::TileSetEditor() {
 	sources_list->set_h_size_flags(SIZE_EXPAND_FILL);
 	sources_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	sources_list->connect("item_selected", callable_mp(this, &TileSetEditor::_source_selected));
-	sources_list->connect("item_selected", callable_mp(TilesEditor::get_singleton(), &TilesEditor::set_atlas_sources_lists_current));
-	sources_list->connect("visibility_changed", callable_mp(TilesEditor::get_singleton(), &TilesEditor::synchronize_atlas_sources_list), varray(sources_list));
+	sources_list->connect("item_selected", callable_mp(TilesEditor::get_singleton(), &TilesEditor::set_sources_lists_current));
+	sources_list->connect("visibility_changed", callable_mp(TilesEditor::get_singleton(), &TilesEditor::synchronize_sources_list), varray(sources_list));
 	sources_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 	sources_list->set_drag_forwarding(this);
 	split_container_left_side->add_child(sources_list);
@@ -536,6 +486,19 @@ TileSetEditor::TileSetEditor() {
 	sources_add_button->get_popup()->connect("id_pressed", callable_mp(this, &TileSetEditor::_source_add_id_pressed));
 	sources_bottom_actions->add_child(sources_add_button);
 
+	sources_advanced_menu_button = memnew(MenuButton);
+	sources_advanced_menu_button->set_flat(true);
+	sources_advanced_menu_button->get_popup()->add_item(TTR("Open Atlas Merging Tool"));
+	sources_advanced_menu_button->get_popup()->add_item(TTR("Manage Tile Proxies"));
+	sources_advanced_menu_button->get_popup()->connect("id_pressed", callable_mp(this, &TileSetEditor::_sources_advanced_menu_id_pressed));
+	sources_bottom_actions->add_child(sources_advanced_menu_button);
+
+	atlas_merging_dialog = memnew(AtlasMergingDialog);
+	add_child(atlas_merging_dialog);
+
+	tile_proxies_manager_dialog = memnew(TileProxiesManagerDialog);
+	add_child(tile_proxies_manager_dialog);
+
 	// Right side container.
 	VBoxContainer *split_container_right_side = memnew(VBoxContainer);
 	split_container_right_side->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -555,7 +518,7 @@ TileSetEditor::TileSetEditor() {
 	tile_set_atlas_source_editor = memnew(TileSetAtlasSourceEditor);
 	tile_set_atlas_source_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 	tile_set_atlas_source_editor->set_v_size_flags(SIZE_EXPAND_FILL);
-	tile_set_atlas_source_editor->connect("source_id_changed", callable_mp(this, &TileSetEditor::_update_atlas_sources_list));
+	tile_set_atlas_source_editor->connect("source_id_changed", callable_mp(this, &TileSetEditor::_update_sources_list));
 	split_container_right_side->add_child(tile_set_atlas_source_editor);
 	tile_set_atlas_source_editor->hide();
 
@@ -563,7 +526,7 @@ TileSetEditor::TileSetEditor() {
 	tile_set_scenes_collection_source_editor = memnew(TileSetScenesCollectionSourceEditor);
 	tile_set_scenes_collection_source_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 	tile_set_scenes_collection_source_editor->set_v_size_flags(SIZE_EXPAND_FILL);
-	tile_set_scenes_collection_source_editor->connect("source_id_changed", callable_mp(this, &TileSetEditor::_update_atlas_sources_list));
+	tile_set_scenes_collection_source_editor->connect("source_id_changed", callable_mp(this, &TileSetEditor::_update_sources_list));
 	split_container_right_side->add_child(tile_set_scenes_collection_source_editor);
 	tile_set_scenes_collection_source_editor->hide();
 
@@ -575,14 +538,4 @@ TileSetEditor::~TileSetEditor() {
 	if (tile_set.is_valid()) {
 		tile_set->disconnect("changed", callable_mp(this, &TileSetEditor::_tile_set_changed));
 	}
-
-	// Delete tile data editors.
-	memdelete(tile_data_texture_offset_editor);
-	memdelete(tile_data_y_sort_editor);
-	memdelete(tile_data_integer_editor);
-	memdelete(tile_data_float_editor);
-	memdelete(tile_data_occlusion_shape_editor);
-	memdelete(tile_data_collision_shape_editor);
-	memdelete(tile_data_terrains_editor);
-	memdelete(tile_data_navigation_polygon_editor);
 }

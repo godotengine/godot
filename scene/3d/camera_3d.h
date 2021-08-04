@@ -134,7 +134,7 @@ public:
 	void set_near(float p_near);
 	void set_frustum_offset(Vector2 p_offset);
 
-	virtual Transform get_camera_transform() const;
+	virtual Transform3D get_camera_transform() const;
 
 	virtual Vector3 project_ray_normal(const Point2 &p_pos) const;
 	virtual Vector3 project_ray_origin(const Point2 &p_pos) const;
@@ -153,6 +153,7 @@ public:
 	bool get_cull_mask_bit(int p_layer) const;
 
 	virtual Vector<Plane> get_frustum() const;
+	bool is_position_in_frustum(const Vector3 &p_position) const;
 
 	void set_environment(const Ref<Environment> &p_environment);
 	Ref<Environment> get_environment() const;
@@ -207,7 +208,7 @@ private:
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-	virtual Transform get_camera_transform() const override;
+	virtual Transform3D get_camera_transform() const override;
 
 public:
 	void set_clip_to_areas(bool p_clip);

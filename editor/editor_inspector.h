@@ -40,8 +40,10 @@ class UndoRedo;
 class EditorPropertyRevert {
 public:
 	static bool may_node_be_in_instance(Node *p_node);
-	static bool get_instanced_node_original_property(Node *p_node, const StringName &p_prop, Variant &value);
+	static bool get_instantiated_node_original_property(Node *p_node, const StringName &p_prop, Variant &value, bool p_check_class_default = true);
 	static bool is_node_property_different(Node *p_node, const Variant &p_current, const Variant &p_orig);
+	static bool is_property_value_different(const Variant &p_a, const Variant &p_b);
+	static Variant get_property_revert_value(Object *p_object, const StringName &p_property);
 
 	static bool can_property_revert(Object *p_object, const StringName &p_property);
 };
@@ -83,7 +85,7 @@ private:
 	bool draw_top_bg;
 
 	bool _is_property_different(const Variant &p_current, const Variant &p_orig);
-	bool _get_instanced_node_original_property(const StringName &p_prop, Variant &value);
+	bool _get_instantiated_node_original_property(const StringName &p_prop, Variant &value);
 	void _focusable_focused(int p_index);
 
 	bool selectable;
@@ -175,8 +177,8 @@ public:
 	EditorProperty();
 };
 
-class EditorInspectorPlugin : public Reference {
-	GDCLASS(EditorInspectorPlugin, Reference);
+class EditorInspectorPlugin : public RefCounted {
+	GDCLASS(EditorInspectorPlugin, RefCounted);
 
 	friend class EditorInspector;
 	struct AddedEditor {
@@ -198,7 +200,7 @@ public:
 	virtual bool can_handle(Object *p_object);
 	virtual void parse_begin(Object *p_object);
 	virtual void parse_category(Object *p_object, const String &p_parse_category);
-	virtual bool parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage, bool p_wide = false);
+	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false);
 	virtual void parse_end();
 };
 
@@ -208,7 +210,7 @@ class EditorInspectorCategory : public Control {
 	friend class EditorInspector;
 	Ref<Texture2D> icon;
 	String label;
-	Color bg_color;
+
 	mutable String tooltip_text;
 
 protected:
@@ -271,7 +273,7 @@ class EditorInspector : public ScrollContainer {
 
 	VBoxContainer *main_vbox;
 
-	//map use to cache the instanced editors
+	//map use to cache the instantiated editors
 	Map<StringName, List<EditorProperty *>> editor_property_map;
 	List<EditorInspectorSection *> sections;
 	Set<StringName> pending;
@@ -356,7 +358,7 @@ public:
 	static void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	static void cleanup_plugins();
 
-	static EditorProperty *instantiate_property_editor(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage, bool p_wide = false);
+	static EditorProperty *instantiate_property_editor(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false);
 
 	void set_undo_redo(UndoRedo *p_undo_redo);
 

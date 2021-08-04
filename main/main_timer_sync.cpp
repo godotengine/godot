@@ -30,7 +30,7 @@
 
 #include "main_timer_sync.h"
 
-void MainFrameTime::clamp_process_step(float min_process_step, float max_process_step) {
+void MainFrameTime::clamp_process_step(double min_process_step, double max_process_step) {
 	if (process_step < min_process_step) {
 		process_step = min_process_step;
 	} else if (process_step > max_process_step) {
@@ -43,25 +43,25 @@ void MainFrameTime::clamp_process_step(float min_process_step, float max_process
 // returns the fraction of p_physics_step required for the timer to overshoot
 // before advance_core considers changing the physics_steps return from
 // the typical values as defined by typical_physics_steps
-float MainTimerSync::get_physics_jitter_fix() {
+double MainTimerSync::get_physics_jitter_fix() {
 	return Engine::get_singleton()->get_physics_jitter_fix();
 }
 
 // gets our best bet for the average number of physics steps per render frame
 // return value: number of frames back this data is consistent
-int MainTimerSync::get_average_physics_steps(float &p_min, float &p_max) {
+int MainTimerSync::get_average_physics_steps(double &p_min, double &p_max) {
 	p_min = typical_physics_steps[0];
 	p_max = p_min + 1;
 
 	for (int i = 1; i < CONTROL_STEPS; ++i) {
-		const float typical_lower = typical_physics_steps[i];
-		const float current_min = typical_lower / (i + 1);
+		const double typical_lower = typical_physics_steps[i];
+		const double current_min = typical_lower / (i + 1);
 		if (current_min > p_max) {
 			return i; // bail out of further restrictions would void the interval
 		} else if (current_min > p_min) {
 			p_min = current_min;
 		}
-		const float current_max = (typical_lower + 1) / (i + 1);
+		const double current_max = (typical_lower + 1) / (i + 1);
 		if (current_max < p_min) {
 			return i;
 		} else if (current_max < p_max) {
@@ -73,7 +73,7 @@ int MainTimerSync::get_average_physics_steps(float &p_min, float &p_max) {
 }
 
 // advance physics clock by p_process_step, return appropriate number of steps to simulate
-MainFrameTime MainTimerSync::advance_core(float p_physics_step, int p_physics_fps, float p_process_step) {
+MainFrameTime MainTimerSync::advance_core(double p_physics_step, int p_physics_fps, double p_process_step) {
 	MainFrameTime ret;
 
 	ret.process_step = p_process_step;
@@ -146,7 +146,7 @@ MainFrameTime MainTimerSync::advance_core(float p_physics_step, int p_physics_fp
 }
 
 // calls advance_core, keeps track of deficit it adds to animaption_step, make sure the deficit sum stays close to zero
-MainFrameTime MainTimerSync::advance_checked(float p_physics_step, int p_physics_fps, float p_process_step) {
+MainFrameTime MainTimerSync::advance_checked(double p_physics_step, int p_physics_fps, double p_process_step) {
 	if (fixed_fps != -1) {
 		p_process_step = 1.0 / fixed_fps;
 	}
@@ -163,7 +163,7 @@ MainFrameTime MainTimerSync::advance_checked(float p_physics_step, int p_physics
 	// first, least important clamping: keep ret.process_step consistent with typical_physics_steps.
 	// this smoothes out the process steps and culls small but quick variations.
 	{
-		float min_average_physics_steps, max_average_physics_steps;
+		double min_average_physics_steps, max_average_physics_steps;
 		int consistent_steps = get_average_physics_steps(min_average_physics_steps, max_average_physics_steps);
 		if (consistent_steps > 3) {
 			ret.clamp_process_step(min_average_physics_steps * p_physics_step, max_average_physics_steps * p_physics_step);
@@ -171,7 +171,7 @@ MainFrameTime MainTimerSync::advance_checked(float p_physics_step, int p_physics
 	}
 
 	// second clamping: keep abs(time_deficit) < jitter_fix * frame_slise
-	float max_clock_deviation = get_physics_jitter_fix() * p_physics_step;
+	double max_clock_deviation = get_physics_jitter_fix() * p_physics_step;
 	ret.clamp_process_step(p_process_step - max_clock_deviation, p_process_step + max_clock_deviation);
 
 	// last clamping: make sure time_accum is between 0 and p_physics_step for consistency between physics and process
@@ -191,7 +191,7 @@ MainFrameTime MainTimerSync::advance_checked(float p_physics_step, int p_physics
 }
 
 // determine wall clock step since last iteration
-float MainTimerSync::get_cpu_process_step() {
+double MainTimerSync::get_cpu_process_step() {
 	uint64_t cpu_ticks_elapsed = current_cpu_ticks_usec - last_cpu_ticks_usec;
 	last_cpu_ticks_usec = current_cpu_ticks_usec;
 
@@ -220,8 +220,8 @@ void MainTimerSync::set_fixed_fps(int p_fixed_fps) {
 }
 
 // advance one physics frame, return timesteps to take
-MainFrameTime MainTimerSync::advance(float p_physics_step, int p_physics_fps) {
-	float cpu_process_step = get_cpu_process_step();
+MainFrameTime MainTimerSync::advance(double p_physics_step, int p_physics_fps) {
+	double cpu_process_step = get_cpu_process_step();
 
 	return advance_checked(p_physics_step, p_physics_fps, cpu_process_step);
 }

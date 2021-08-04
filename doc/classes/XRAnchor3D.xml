@@ -12,36 +12,31 @@
 	</tutorials>
 	<methods>
 		<method name="get_anchor_name" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the name given to this anchor.
 			</description>
 		</method>
 		<method name="get_is_active" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the anchor is being tracked and [code]false[/code] if no anchor with this ID is currently known.
 			</description>
 		</method>
 		<method name="get_mesh" qualifiers="const">
-			<return type="Mesh">
-			</return>
+			<return type="Mesh" />
 			<description>
 				If provided by the [XRInterface], this returns a mesh object for the anchor. For an anchor, this can be a shape related to the object being tracked or it can be a mesh that provides topology related to the anchor and can be used to create shadows/reflections on surfaces or for generating collision shapes.
 			</description>
 		</method>
 		<method name="get_plane" qualifiers="const">
-			<return type="Plane">
-			</return>
+			<return type="Plane" />
 			<description>
 				Returns a plane aligned with our anchor; handy for intersection testing.
 			</description>
 		</method>
 		<method name="get_size" qualifiers="const">
-			<return type="Vector3">
-			</return>
+			<return type="Vector3" />
 			<description>
 				Returns the estimated size of the plane that was detected. Say when the anchor relates to a table in the real world, this is the estimated size of the surface of that table.
 			</description>
@@ -54,8 +49,7 @@
 	</members>
 	<signals>
 		<signal name="mesh_updated">
-			<argument index="0" name="mesh" type="Mesh">
-			</argument>
+			<argument index="0" name="mesh" type="Mesh" />
 			<description>
 				Emitted when the mesh associated with the anchor changes or when one becomes available. This is especially important for topology that is constantly being [code]mesh_updated[/code].
 			</description>

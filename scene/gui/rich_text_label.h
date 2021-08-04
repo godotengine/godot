@@ -75,6 +75,8 @@ public:
 		ITEM_WAVE,
 		ITEM_TORNADO,
 		ITEM_RAINBOW,
+		ITEM_BGCOLOR,
+		ITEM_FGCOLOR,
 		ITEM_META,
 		ITEM_DROPCAP,
 		ITEM_CUSTOMFX
@@ -100,7 +102,7 @@ private:
 		int char_offset = 0;
 		int char_count = 0;
 
-		Line() { text_buf.instance(); }
+		Line() { text_buf.instantiate(); }
 	};
 
 	struct Item {
@@ -307,13 +309,23 @@ private:
 		ItemRainbow() { type = ITEM_RAINBOW; }
 	};
 
+	struct ItemBGColor : public Item {
+		Color color;
+		ItemBGColor() { type = ITEM_BGCOLOR; }
+	};
+
+	struct ItemFGColor : public Item {
+		Color color;
+		ItemFGColor() { type = ITEM_FGCOLOR; }
+	};
+
 	struct ItemCustomFX : public ItemFX {
 		Ref<CharFXTransform> char_fx_transform;
 		Ref<RichTextEffect> custom_effect;
 
 		ItemCustomFX() {
 			type = ITEM_CUSTOMFX;
-			char_fx_transform.instance();
+			char_fx_transform.instantiate();
 		}
 
 		virtual ~ItemCustomFX() {
@@ -392,7 +404,8 @@ private:
 	void _find_click(ItemFrame *p_frame, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr);
 
 	String _get_line_text(ItemFrame *p_frame, int p_line, Selection p_sel) const;
-	bool _search_line(ItemFrame *p_frame, int p_line, const String &p_string, Item *p_from, Item *p_to);
+	bool _search_line(ItemFrame *p_frame, int p_line, const String &p_string, int p_char_idx, bool p_reverse_search);
+	bool _search_table(ItemTable *p_table, List<Item *>::Element *p_from, const String &p_string, bool p_reverse_search);
 
 	void _shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, int *r_char_offset);
 	void _resize_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width);
@@ -421,6 +434,8 @@ private:
 	bool _find_underline(Item *p_item);
 	bool _find_strikethrough(Item *p_item);
 	bool _find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item = nullptr);
+	Color _find_bgcolor(Item *p_item);
+	Color _find_fgcolor(Item *p_item);
 	bool _find_layout_subitem(Item *from, Item *to);
 	void _fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack);
 
@@ -435,6 +450,8 @@ private:
 	Rect2 _get_text_rect();
 	Ref<RichTextEffect> _get_custom_effect_by_code(String p_bbcode_identifier);
 	virtual Dictionary parse_expressions_for_values(Vector<String> p_expressions);
+
+	void _draw_fbg_boxes(RID p_ci, RID p_rid, Vector2 line_off, Item *it_from, Item *it_to, int start, int end, int fbg_flag);
 
 	bool use_bbcode = false;
 	String bbcode;
@@ -473,6 +490,8 @@ public:
 	void push_wave(float p_frequency, float p_amplitude);
 	void push_tornado(float p_frequency, float p_radius);
 	void push_rainbow(float p_saturation, float p_value, float p_frequency);
+	void push_bgcolor(const Color &p_color);
+	void push_fgcolor(const Color &p_color);
 	void push_customfx(Ref<RichTextEffect> p_custom_effect, Dictionary p_environment);
 	void set_table_column_expand(int p_column, bool p_expand, int p_ratio = 1);
 	void set_cell_row_background_color(const Color &p_odd_row_bg, const Color &p_even_row_bg);

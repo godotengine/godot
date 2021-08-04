@@ -49,10 +49,13 @@
 
 class AnimationPlayer;
 
+class AnimationTrackEdit;
+
 class AnimationTimelineEdit : public Range {
 	GDCLASS(AnimationTimelineEdit, Range);
 
 	Ref<Animation> animation;
+	AnimationTrackEdit *track_edit;
 	int name_limit;
 	Range *zoom;
 	Range *h_scroll;
@@ -101,6 +104,7 @@ public:
 
 	virtual Size2 get_minimum_size() const override;
 	void set_animation(const Ref<Animation> &p_animation);
+	void set_track_edit(AnimationTrackEdit *p_track_edit);
 	void set_zoom(Range *p_zoom);
 	Range *get_zoom() const { return zoom; }
 	void set_undo_redo(UndoRedo *p_undo_redo);
@@ -173,7 +177,7 @@ class AnimationTrackEdit : public Control {
 
 	void _menu_selected(int p_index);
 
-	void _path_entered(const String &p_text);
+	void _path_submitted(const String &p_text);
 	void _play_position_draw();
 	bool _is_value_key_valid(const Variant &p_key_value, Variant::Type &r_valid_type) const;
 
@@ -236,8 +240,8 @@ public:
 	AnimationTrackEdit();
 };
 
-class AnimationTrackEditPlugin : public Reference {
-	GDCLASS(AnimationTrackEditPlugin, Reference);
+class AnimationTrackEditPlugin : public RefCounted {
+	GDCLASS(AnimationTrackEditPlugin, RefCounted);
 
 public:
 	virtual AnimationTrackEdit *create_value_track_edit(Object *p_object, Variant::Type p_type, const String &p_property, PropertyHint p_hint, const String &p_hint_string, int p_usage);
@@ -274,25 +278,6 @@ public:
 
 class AnimationTrackEditor : public VBoxContainer {
 	GDCLASS(AnimationTrackEditor, VBoxContainer);
-
-	enum {
-		EDIT_COPY_TRACKS,
-		EDIT_COPY_TRACKS_CONFIRM,
-		EDIT_PASTE_TRACKS,
-		EDIT_SCALE_SELECTION,
-		EDIT_SCALE_FROM_CURSOR,
-		EDIT_SCALE_CONFIRM,
-		EDIT_DUPLICATE_SELECTION,
-		EDIT_DUPLICATE_TRANSPOSED,
-		EDIT_DELETE_SELECTION,
-		EDIT_GOTO_NEXT_STEP,
-		EDIT_GOTO_PREV_STEP,
-		EDIT_APPLY_RESET,
-		EDIT_OPTIMIZE_ANIMATION,
-		EDIT_OPTIMIZE_ANIMATION_CONFIRM,
-		EDIT_CLEAN_UP_ANIMATION,
-		EDIT_CLEAN_UP_ANIMATION_CONFIRM
-	};
 
 	Ref<Animation> animation;
 	Node *root;
@@ -508,6 +493,25 @@ protected:
 	void _notification(int p_what);
 
 public:
+	enum {
+		EDIT_COPY_TRACKS,
+		EDIT_COPY_TRACKS_CONFIRM,
+		EDIT_PASTE_TRACKS,
+		EDIT_SCALE_SELECTION,
+		EDIT_SCALE_FROM_CURSOR,
+		EDIT_SCALE_CONFIRM,
+		EDIT_DUPLICATE_SELECTION,
+		EDIT_DUPLICATE_TRANSPOSED,
+		EDIT_DELETE_SELECTION,
+		EDIT_GOTO_NEXT_STEP,
+		EDIT_GOTO_PREV_STEP,
+		EDIT_APPLY_RESET,
+		EDIT_OPTIMIZE_ANIMATION,
+		EDIT_OPTIMIZE_ANIMATION_CONFIRM,
+		EDIT_CLEAN_UP_ANIMATION,
+		EDIT_CLEAN_UP_ANIMATION_CONFIRM
+	};
+
 	void add_track_edit_plugin(const Ref<AnimationTrackEditPlugin> &p_plugin);
 	void remove_track_edit_plugin(const Ref<AnimationTrackEditPlugin> &p_plugin);
 
@@ -526,7 +530,7 @@ public:
 	void set_anim_pos(float p_pos);
 	void insert_node_value_key(Node *p_node, const String &p_property, const Variant &p_value, bool p_only_if_exists = false);
 	void insert_value_key(const String &p_property, const Variant &p_value, bool p_advance);
-	void insert_transform_key(Node3D *p_node, const String &p_sub, const Transform &p_xform);
+	void insert_transform_key(Node3D *p_node, const String &p_sub, const Transform3D &p_xform);
 
 	void show_select_node_warning(bool p_show);
 
@@ -537,6 +541,12 @@ public:
 	float get_moving_selection_offset() const;
 	float snap_time(float p_value, bool p_relative = false);
 	bool is_grouping_tracks();
+
+	/** If `p_from_mouse_event` is `true`, handle Shift key presses for precise snapping. */
+	void goto_prev_step(bool p_from_mouse_event);
+
+	/** If `p_from_mouse_event` is `true`, handle Shift key presses for precise snapping. */
+	void goto_next_step(bool p_from_mouse_event);
 
 	MenuButton *get_edit_menu();
 	AnimationTrackEditor();

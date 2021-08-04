@@ -56,8 +56,10 @@ public:
 
 	struct MultiviewCapabilities {
 		bool is_supported;
-		int32_t max_view_count;
-		int32_t max_instance_count;
+		bool geometry_shader_is_supported;
+		bool tessellation_shader_is_supported;
+		uint32_t max_view_count;
+		uint32_t max_instance_count;
 	};
 
 private:
@@ -68,7 +70,6 @@ private:
 	};
 
 	VkInstance inst = VK_NULL_HANDLE;
-	VkSurfaceKHR surface = VK_NULL_HANDLE;
 	VkPhysicalDevice gpu = VK_NULL_HANDLE;
 	VkPhysicalDeviceProperties gpu_props;
 	uint32_t queue_family_count = 0;
@@ -99,7 +100,6 @@ private:
 	VkQueue present_queue = VK_NULL_HANDLE;
 	VkColorSpaceKHR color_space;
 	VkFormat format;
-	VkSemaphore image_acquired_semaphores[FRAME_LAG];
 	VkSemaphore draw_complete_semaphores[FRAME_LAG];
 	VkSemaphore image_ownership_semaphores[FRAME_LAG];
 	int frame_index = 0;
@@ -119,9 +119,12 @@ private:
 		VkSwapchainKHR swapchain = VK_NULL_HANDLE;
 		SwapchainImageResources *swapchain_image_resources = VK_NULL_HANDLE;
 		VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
+		VkSemaphore image_acquired_semaphores[FRAME_LAG];
+		bool semaphore_acquired = false;
 		uint32_t current_buffer = 0;
 		int width = 0;
 		int height = 0;
+		DisplayServer::VSyncMode vsync_mode = DisplayServer::VSYNC_ENABLED;
 		VkCommandPool present_cmd_pool = VK_NULL_HANDLE; // For separate present queue.
 		VkRenderPass render_pass = VK_NULL_HANDLE;
 	};
@@ -206,7 +209,7 @@ private:
 
 	Error _create_physical_device();
 
-	Error _initialize_queues(VkSurfaceKHR surface);
+	Error _initialize_queues(VkSurfaceKHR p_surface);
 
 	Error _create_device();
 
@@ -220,7 +223,7 @@ private:
 protected:
 	virtual const char *_get_platform_surface_extension() const = 0;
 
-	virtual Error _window_create(DisplayServer::WindowID p_window_id, VkSurfaceKHR p_surface, int p_width, int p_height);
+	virtual Error _window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, VkSurfaceKHR p_surface, int p_width, int p_height);
 
 	virtual bool _use_validation_layers();
 
@@ -273,6 +276,9 @@ public:
 	String get_device_vendor_name() const;
 	String get_device_name() const;
 	String get_device_pipeline_cache_uuid() const;
+
+	void set_vsync_mode(DisplayServer::WindowID p_window, DisplayServer::VSyncMode p_mode);
+	DisplayServer::VSyncMode get_vsync_mode(DisplayServer::WindowID p_window = 0) const;
 
 	VulkanContext();
 	virtual ~VulkanContext();

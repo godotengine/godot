@@ -31,9 +31,9 @@
 #ifndef IMAGE_LOADER_H
 #define IMAGE_LOADER_H
 
+#include "core/io/file_access.h"
 #include "core/io/image.h"
 #include "core/io/resource_loader.h"
-#include "core/os/file_access.h"
 #include "core/string/ustring.h"
 #include "core/templates/list.h"
 

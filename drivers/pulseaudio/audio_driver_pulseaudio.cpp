@@ -35,6 +35,10 @@
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 
+#ifdef ALSAMIDI_ENABLED
+#include "drivers/alsa/asound-so_wrap.h"
+#endif
+
 void AudioDriverPulseAudio::pa_state_cb(pa_context *c, void *userdata) {
 	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)userdata;
 
@@ -271,6 +275,10 @@ Error AudioDriverPulseAudio::init() {
 	int dylibloader_verbose = 1;
 #else
 	int dylibloader_verbose = 0;
+#endif
+#ifdef ALSAMIDI_ENABLED
+	// If using PulseAudio with ALSA MIDI, we need to initialize ALSA as well
+	initialize_asound(dylibloader_verbose);
 #endif
 	if (initialize_pulse(dylibloader_verbose)) {
 		return ERR_CANT_OPEN;

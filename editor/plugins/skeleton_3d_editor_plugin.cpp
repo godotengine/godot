@@ -44,7 +44,7 @@
 #include "scene/resources/sphere_shape_3d.h"
 
 void BoneTransformEditor::create_editors() {
-	const Color section_color = get_theme_color("prop_subsection", "Editor");
+	const Color section_color = get_theme_color(SNAME("prop_subsection"), SNAME("Editor"));
 
 	section = memnew(EditorInspectorSection);
 	section->setup("trf_properties", label, this, section_color, true);
@@ -53,7 +53,7 @@ void BoneTransformEditor::create_editors() {
 	key_button = memnew(Button);
 	key_button->set_text(TTR("Key Transform"));
 	key_button->set_visible(keyable);
-	key_button->set_icon(get_theme_icon("Key", "EditorIcons"));
+	key_button->set_icon(get_theme_icon(SNAME("Key"), SNAME("EditorIcons")));
 	key_button->set_flat(true);
 	section->get_vbox()->add_child(key_button);
 
@@ -95,7 +95,7 @@ void BoneTransformEditor::create_editors() {
 	section->get_vbox()->add_child(transform_section);
 
 	// Transform/Matrix property
-	transform_property = memnew(EditorPropertyTransform());
+	transform_property = memnew(EditorPropertyTransform3D());
 	transform_property->setup(-10000, 10000, 0.001f, true);
 	transform_property->set_label("Transform");
 	transform_property->set_use_folding(true);
@@ -113,19 +113,19 @@ void BoneTransformEditor::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case NOTIFICATION_SORT_CHILDREN: {
-			const Ref<Font> font = get_theme_font("font", "Tree");
-			int font_size = get_theme_font_size("font_size", "Tree");
+			const Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
+			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
 
 			Point2 buffer;
-			buffer.x += get_theme_constant("inspector_margin", "Editor");
+			buffer.x += get_theme_constant(SNAME("inspector_margin"), SNAME("Editor"));
 			buffer.y += font->get_height(font_size);
-			buffer.y += get_theme_constant("vseparation", "Tree");
+			buffer.y += get_theme_constant(SNAME("vseparation"), SNAME("Tree"));
 
 			const float vector_height = translation_property->get_size().y;
 			const float transform_height = transform_property->get_size().y;
 			const float button_height = key_button->get_size().y;
 
-			const float width = get_size().x - get_theme_constant("inspector_margin", "Editor");
+			const float width = get_size().x - get_theme_constant(SNAME("inspector_margin"), SNAME("Editor"));
 			Vector<Rect2> input_rects;
 			if (keyable && section->get_vbox()->is_visible()) {
 				input_rects.push_back(Rect2(key_button->get_position() + buffer, Size2(width, button_height)));
@@ -155,7 +155,7 @@ void BoneTransformEditor::_notification(int p_what) {
 			break;
 		}
 		case NOTIFICATION_DRAW: {
-			const Color dark_color = get_theme_color("dark_color_2", "Editor");
+			const Color dark_color = get_theme_color(SNAME("dark_color_2"), SNAME("Editor"));
 
 			for (int i = 0; i < 5; ++i) {
 				draw_rect(background_rects[i], dark_color);
@@ -171,7 +171,7 @@ void BoneTransformEditor::_value_changed(const double p_value) {
 		return;
 	}
 
-	Transform tform = compute_transform_from_vector3s();
+	Transform3D tform = compute_transform_from_vector3s();
 	_change_transform(tform);
 }
 
@@ -179,30 +179,30 @@ void BoneTransformEditor::_value_changed_vector3(const String p_property_name, c
 	if (updating) {
 		return;
 	}
-	Transform tform = compute_transform_from_vector3s();
+	Transform3D tform = compute_transform_from_vector3s();
 	_change_transform(tform);
 }
 
-Transform BoneTransformEditor::compute_transform_from_vector3s() const {
+Transform3D BoneTransformEditor::compute_transform_from_vector3s() const {
 	// Convert rotation from degrees to radians.
 	Vector3 prop_rotation = rotation_property->get_vector();
 	prop_rotation.x = Math::deg2rad(prop_rotation.x);
 	prop_rotation.y = Math::deg2rad(prop_rotation.y);
 	prop_rotation.z = Math::deg2rad(prop_rotation.z);
 
-	return Transform(
+	return Transform3D(
 			Basis(prop_rotation, scale_property->get_vector()),
 			translation_property->get_vector());
 }
 
-void BoneTransformEditor::_value_changed_transform(const String p_property_name, const Transform p_transform, const StringName p_edited_property_name, const bool p_boolean) {
+void BoneTransformEditor::_value_changed_transform(const String p_property_name, const Transform3D p_transform, const StringName p_edited_property_name, const bool p_boolean) {
 	if (updating) {
 		return;
 	}
 	_change_transform(p_transform);
 }
 
-void BoneTransformEditor::_change_transform(Transform p_new_transform) {
+void BoneTransformEditor::_change_transform(Transform3D p_new_transform) {
 	if (property.get_slicec('/', 0) == "bones" && property.get_slicec('/', 2) == "custom_pose") {
 		undo_redo->create_action(TTR("Set Custom Bone Pose Transform"), UndoRedo::MERGE_ENDS);
 		undo_redo->add_undo_method(skeleton, "set_bone_custom_pose", property.get_slicec('/', 1).to_int(), skeleton->get_bone_custom_pose(property.get_slicec('/', 1).to_int()));
@@ -235,7 +235,7 @@ void BoneTransformEditor::_update_properties() {
 
 	updating = true;
 
-	Transform tform = skeleton->get(property);
+	Transform3D tform = skeleton->get(property);
 	_update_transform_properties(tform);
 }
 
@@ -250,11 +250,11 @@ void BoneTransformEditor::_update_custom_pose_properties() {
 
 	updating = true;
 
-	Transform tform = skeleton->get_bone_custom_pose(property.to_int());
+	Transform3D tform = skeleton->get_bone_custom_pose(property.to_int());
 	_update_transform_properties(tform);
 }
 
-void BoneTransformEditor::_update_transform_properties(Transform tform) {
+void BoneTransformEditor::_update_transform_properties(Transform3D tform) {
 	Basis rotation_basis = tform.get_basis();
 	Vector3 rotation_radians = rotation_basis.get_rotation_euler();
 	Vector3 rotation_degrees = Vector3(Math::rad2deg(rotation_radians.x), Math::rad2deg(rotation_radians.y), Math::rad2deg(rotation_radians.z));
@@ -306,7 +306,7 @@ void BoneTransformEditor::_key_button_pressed() {
 	}
 
 	// Need to normalize the basis before you key it
-	Transform tform = compute_transform_from_vector3s();
+	Transform3D tform = compute_transform_from_vector3s();
 	tform.orthonormalize();
 	AnimationPlayerEditor::singleton->get_track_editor()->insert_transform_key(skeleton, name, tform);
 }
@@ -380,7 +380,7 @@ void Skeleton3DEditor::create_physical_skeleton() {
 }
 
 PhysicalBone3D *Skeleton3DEditor::create_physical_bone(int bone_id, int bone_child_id, const Vector<BoneInfo> &bones_infos) {
-	const Transform child_rest = skeleton->get_bone_rest(bone_child_id);
+	const Transform3D child_rest = skeleton->get_bone_rest(bone_child_id);
 
 	const real_t half_height(child_rest.origin.length() * 0.5);
 	const real_t radius(half_height * 0.2);
@@ -392,15 +392,15 @@ PhysicalBone3D *Skeleton3DEditor::create_physical_bone(int bone_id, int bone_chi
 	CollisionShape3D *bone_shape = memnew(CollisionShape3D);
 	bone_shape->set_shape(bone_shape_capsule);
 
-	Transform capsule_transform;
+	Transform3D capsule_transform;
 	capsule_transform.basis = Basis(Vector3(1, 0, 0), Vector3(0, 0, 1), Vector3(0, -1, 0));
 	bone_shape->set_transform(capsule_transform);
 
-	Transform body_transform;
+	Transform3D body_transform;
 	body_transform.set_look_at(Vector3(0, 0, 0), child_rest.origin);
 	body_transform.origin = body_transform.basis.xform(Vector3(0, 0, -half_height));
 
-	Transform joint_transform;
+	Transform3D joint_transform;
 	joint_transform.origin = Vector3(0, 0, half_height);
 
 	PhysicalBone3D *physical_bone = memnew(PhysicalBone3D);
@@ -552,7 +552,7 @@ void Skeleton3DEditor::update_joint_tree() {
 	items.insert(-1, root);
 
 	const Vector<int> &joint_porder = skeleton->get_bone_process_orders();
-	Ref<Texture> bone_icon = get_theme_icon("BoneAttachment3D", "EditorIcons");
+	Ref<Texture> bone_icon = get_theme_icon(SNAME("BoneAttachment3D"), SNAME("EditorIcons"));
 
 	for (int i = 0; i < joint_porder.size(); ++i) {
 		const int b_idx = joint_porder[i];
@@ -584,13 +584,13 @@ void Skeleton3DEditor::create_editors() {
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text(TTR("Skeleton3D"));
-	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Skeleton3D", "EditorIcons"));
+	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Skeleton3D"), SNAME("EditorIcons")));
 
 	options->get_popup()->add_item(TTR("Create physical skeleton"), MENU_OPTION_CREATE_PHYSICAL_SKELETON);
 
 	options->get_popup()->connect("id_pressed", callable_mp(this, &Skeleton3DEditor::_on_click_option));
 
-	const Color section_color = get_theme_color("prop_subsection", "Editor");
+	const Color section_color = get_theme_color(SNAME("prop_subsection"), SNAME("Editor"));
 
 	EditorInspectorSection *bones_section = memnew(EditorInspectorSection);
 	bones_section->setup("bones", "Bones", skeleton, section_color, true);
@@ -666,9 +666,9 @@ void Skeleton3DEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_properties"), &Skeleton3DEditor::_update_properties);
 	ClassDB::bind_method(D_METHOD("_on_click_option"), &Skeleton3DEditor::_on_click_option);
 
-	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &Skeleton3DEditor::get_drag_data_fw);
-	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &Skeleton3DEditor::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("drop_data_fw"), &Skeleton3DEditor::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_get_drag_data_fw"), &Skeleton3DEditor::get_drag_data_fw);
+	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &Skeleton3DEditor::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &Skeleton3DEditor::drop_data_fw);
 	ClassDB::bind_method(D_METHOD("move_skeleton_bone"), &Skeleton3DEditor::move_skeleton_bone);
 }
 
@@ -700,7 +700,7 @@ Skeleton3DEditorPlugin::Skeleton3DEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 
 	Ref<EditorInspectorPluginSkeleton> skeleton_plugin;
-	skeleton_plugin.instance();
+	skeleton_plugin.instantiate();
 	skeleton_plugin->editor = editor;
 
 	EditorInspector::add_inspector_plugin(skeleton_plugin);

@@ -105,46 +105,6 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 }
 
 /*************************************************************************/
-/* GodotApplication                                                      */
-/*************************************************************************/
-
-@interface GodotApplication : NSApplication
-@end
-
-@implementation GodotApplication
-
-- (void)sendEvent:(NSEvent *)event {
-	// special case handling of command-period, which is traditionally a special
-	// shortcut in macOS and doesn't arrive at our regular keyDown handler.
-	if ([event type] == NSEventTypeKeyDown) {
-		if (([event modifierFlags] & NSEventModifierFlagCommand) && [event keyCode] == 0x2f) {
-			Ref<InputEventKey> k;
-			k.instance();
-
-			_get_key_modifier_state([event modifierFlags], k);
-			k->set_window_id(DisplayServerOSX::INVALID_WINDOW_ID);
-			k->set_pressed(true);
-			k->set_keycode(KEY_PERIOD);
-			k->set_physical_keycode(KEY_PERIOD);
-			k->set_echo([event isARepeat]);
-
-			Input::get_singleton()->accumulate_input_event(k);
-		}
-	}
-
-	// From http://cocoadev.com/index.pl?GameKeyboardHandlingAlmost
-	// This works around an AppKit bug, where key up events while holding
-	// down the command key don't get sent to the key window.
-	if ([event type] == NSEventTypeKeyUp && ([event modifierFlags] & NSEventModifierFlagCommand)) {
-		[[self keyWindow] sendEvent:event];
-	} else {
-		[super sendEvent:event];
-	}
-}
-
-@end
-
-/*************************************************************************/
 /* GlobalMenuItem                                                       */
 /*************************************************************************/
 
@@ -158,121 +118,6 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 @end
 
 @implementation GlobalMenuItem
-@end
-
-/*************************************************************************/
-/* GodotApplicationDelegate                                              */
-/*************************************************************************/
-
-@interface GodotApplicationDelegate : NSObject
-- (void)forceUnbundledWindowActivationHackStep1;
-- (void)forceUnbundledWindowActivationHackStep2;
-- (void)forceUnbundledWindowActivationHackStep3;
-@end
-
-@implementation GodotApplicationDelegate
-
-- (void)forceUnbundledWindowActivationHackStep1 {
-	// Step1: Switch focus to macOS Dock.
-	// Required to perform step 2, TransformProcessType will fail if app is already the in focus.
-	for (NSRunningApplication *app in [NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.apple.dock"]) {
-		[app activateWithOptions:NSApplicationActivateIgnoringOtherApps];
-		break;
-	}
-	[self performSelector:@selector(forceUnbundledWindowActivationHackStep2) withObject:nil afterDelay:0.02];
-}
-
-- (void)forceUnbundledWindowActivationHackStep2 {
-	// Step 2: Register app as foreground process.
-	ProcessSerialNumber psn = { 0, kCurrentProcess };
-	(void)TransformProcessType(&psn, kProcessTransformToForegroundApplication);
-	[self performSelector:@selector(forceUnbundledWindowActivationHackStep3) withObject:nil afterDelay:0.02];
-}
-
-- (void)forceUnbundledWindowActivationHackStep3 {
-	// Step 3: Switch focus back to app window.
-	[[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
-}
-
-- (void)applicationDidFinishLaunching:(NSNotification *)notice {
-	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
-	if (nsappname == nil) {
-		// If executable is not a bundled, macOS WindowServer won't register and activate app window correctly (menu and title bar are grayed out and input ignored).
-		[self performSelector:@selector(forceUnbundledWindowActivationHackStep1) withObject:nil afterDelay:0.02];
-	}
-}
-
-- (void)applicationDidResignActive:(NSNotification *)notification {
-	if (OS_OSX::get_singleton()->get_main_loop()) {
-		OS_OSX::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
-	}
-}
-
-- (void)applicationDidBecomeActive:(NSNotification *)notification {
-	if (OS_OSX::get_singleton()->get_main_loop()) {
-		OS_OSX::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
-	}
-}
-
-- (void)globalMenuCallback:(id)sender {
-	if (![sender representedObject]) {
-		return;
-	}
-
-	GlobalMenuItem *value = [sender representedObject];
-
-	if (value) {
-		if (value->checkable) {
-			if ([sender state] == NSControlStateValueOff) {
-				[sender setState:NSControlStateValueOn];
-			} else {
-				[sender setState:NSControlStateValueOff];
-			}
-		}
-
-		if (value->callback != Callable()) {
-			Variant tag = value->meta;
-			Variant *tagp = &tag;
-			Variant ret;
-			Callable::CallError ce;
-			value->callback.call((const Variant **)&tagp, 1, ret, ce);
-		}
-	}
-}
-
-- (NSMenu *)applicationDockMenu:(NSApplication *)sender {
-	return DS_OSX->dock_menu;
-}
-
-- (BOOL)application:(NSApplication *)sender openFile:(NSString *)filename {
-	// Note: may be called called before main loop init!
-	char *utfs = strdup([filename UTF8String]);
-	((OS_OSX *)(OS_OSX::get_singleton()))->open_with_filename.parse_utf8(utfs);
-	free(utfs);
-
-#ifdef TOOLS_ENABLED
-	// Open new instance
-	if (OS_OSX::get_singleton()->get_main_loop()) {
-		List<String> args;
-		args.push_back(((OS_OSX *)(OS_OSX::get_singleton()))->open_with_filename);
-		String exec = OS::get_singleton()->get_executable_path();
-		OS::get_singleton()->create_process(exec, args);
-	}
-#endif
-	return YES;
-}
-
-- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
-	DS_OSX->_send_window_event(DS_OSX->windows[DisplayServerOSX::MAIN_WINDOW_ID], DisplayServerOSX::WINDOW_EVENT_CLOSE_REQUEST);
-	return NSTerminateCancel;
-}
-
-- (void)showAbout:(id)sender {
-	if (OS_OSX::get_singleton()->get_main_loop()) {
-		OS_OSX::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_ABOUT);
-	}
-}
-
 @end
 
 /*************************************************************************/
@@ -813,18 +658,18 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 	DS_OSX->cursor_set_shape(p_shape);
 }
 
-static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, int index, int mask, bool pressed) {
+static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, MouseButton index, MouseButton mask, bool pressed) {
 	ERR_FAIL_COND(!DS_OSX->windows.has(window_id));
 	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
 
 	if (pressed) {
 		DS_OSX->last_button_state |= mask;
 	} else {
-		DS_OSX->last_button_state &= ~mask;
+		DS_OSX->last_button_state &= (MouseButton)~mask;
 	}
 
 	Ref<InputEventMouseButton> mb;
-	mb.instance();
+	mb.instantiate();
 	mb->set_window_id(window_id);
 	const Vector2 pos = _get_mouse_pos(wd, [event locationInWindow]);
 	_get_key_modifier_state([event modifierFlags], mb);
@@ -884,7 +729,7 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 		return;
 	}
 
-	if (DS_OSX->mouse_mode == DisplayServer::MOUSE_MODE_CONFINED) {
+	if (DS_OSX->mouse_mode == DisplayServer::MOUSE_MODE_CONFINED || DS_OSX->mouse_mode == DisplayServer::MOUSE_MODE_CONFINED_HIDDEN) {
 		// Discard late events
 		if (([event timestamp]) < DS_OSX->last_warp) {
 			return;
@@ -928,7 +773,7 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 	}
 
 	Ref<InputEventMouseMotion> mm;
-	mm.instance();
+	mm.instantiate();
 
 	mm->set_window_id(window_id);
 	mm->set_button_mask(DS_OSX->last_button_state);
@@ -1016,7 +861,7 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
 
 	Ref<InputEventMagnifyGesture> ev;
-	ev.instance();
+	ev.instantiate();
 	ev->set_window_id(window_id);
 	_get_key_modifier_state([event modifierFlags], ev);
 	ev->set_position(_get_mouse_pos(wd, [event locationInWindow]));
@@ -1485,14 +1330,14 @@ static int remapKey(unsigned int key, unsigned int state) {
 	}
 }
 
-inline void sendScrollEvent(DisplayServer::WindowID window_id, int button, double factor, int modifierFlags) {
+inline void sendScrollEvent(DisplayServer::WindowID window_id, MouseButton button, double factor, int modifierFlags) {
 	ERR_FAIL_COND(!DS_OSX->windows.has(window_id));
 	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
 
-	unsigned int mask = 1 << (button - 1);
+	MouseButton mask = MouseButton(1 << (button - 1));
 
 	Ref<InputEventMouseButton> sc;
-	sc.instance();
+	sc.instantiate();
 
 	sc->set_window_id(window_id);
 	_get_key_modifier_state(modifierFlags, sc);
@@ -1501,19 +1346,19 @@ inline void sendScrollEvent(DisplayServer::WindowID window_id, int button, doubl
 	sc->set_pressed(true);
 	sc->set_position(wd.mouse_pos);
 	sc->set_global_position(wd.mouse_pos);
-	DS_OSX->last_button_state |= mask;
+	DS_OSX->last_button_state |= (MouseButton)mask;
 	sc->set_button_mask(DS_OSX->last_button_state);
 
 	Input::get_singleton()->accumulate_input_event(sc);
 
-	sc.instance();
+	sc.instantiate();
 	sc->set_window_id(window_id);
 	sc->set_button_index(button);
 	sc->set_factor(factor);
 	sc->set_pressed(false);
 	sc->set_position(wd.mouse_pos);
 	sc->set_global_position(wd.mouse_pos);
-	DS_OSX->last_button_state &= ~mask;
+	DS_OSX->last_button_state &= (MouseButton)~mask;
 	sc->set_button_mask(DS_OSX->last_button_state);
 
 	Input::get_singleton()->accumulate_input_event(sc);
@@ -1524,7 +1369,7 @@ inline void sendPanEvent(DisplayServer::WindowID window_id, double dx, double dy
 	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
 
 	Ref<InputEventPanGesture> pg;
-	pg.instance();
+	pg.instantiate();
 
 	pg->set_window_id(window_id);
 	_get_key_modifier_state(modifierFlags, pg);
@@ -1983,26 +1828,6 @@ void DisplayServerOSX::global_menu_clear(const String &p_menu_root) {
 	}
 }
 
-void DisplayServerOSX::alert(const String &p_alert, const String &p_title) {
-	_THREAD_SAFE_METHOD_
-
-	NSAlert *window = [[NSAlert alloc] init];
-	NSString *ns_title = [NSString stringWithUTF8String:p_title.utf8().get_data()];
-	NSString *ns_alert = [NSString stringWithUTF8String:p_alert.utf8().get_data()];
-
-	[window addButtonWithTitle:@"OK"];
-	[window setMessageText:ns_title];
-	[window setInformativeText:ns_alert];
-	[window setAlertStyle:NSAlertStyleWarning];
-
-	id key_window = [[NSApplication sharedApplication] keyWindow];
-	[window runModal];
-	[window release];
-	if (key_window) {
-		[key_window makeKeyAndOrderFront:nil];
-	}
-}
-
 Error DisplayServerOSX::dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) {
 	_THREAD_SAFE_METHOD_
 
@@ -2106,7 +1931,12 @@ void DisplayServerOSX::mouse_set_mode(MouseMode p_mode) {
 	} else if (p_mode == MOUSE_MODE_CONFINED) {
 		CGDisplayShowCursor(kCGDirectMainDisplay);
 		CGAssociateMouseAndMouseCursorPosition(false);
-	} else {
+	} else if (p_mode == MOUSE_MODE_CONFINED_HIDDEN) {
+		if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+			CGDisplayHideCursor(kCGDirectMainDisplay);
+		}
+		CGAssociateMouseAndMouseCursorPosition(false);
+	} else { // MOUSE_MODE_VISIBLE
 		CGDisplayShowCursor(kCGDirectMainDisplay);
 		CGAssociateMouseAndMouseCursorPosition(true);
 	}
@@ -2115,6 +1945,12 @@ void DisplayServerOSX::mouse_set_mode(MouseMode p_mode) {
 	ignore_warp = true;
 	warp_events.clear();
 	mouse_mode = p_mode;
+
+	if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+		CursorShape p_shape = cursor_shape;
+		cursor_shape = DisplayServer::CURSOR_MAX;
+		cursor_set_shape(p_shape);
+	}
 }
 
 DisplayServer::MouseMode DisplayServerOSX::mouse_get_mode() const {
@@ -2143,7 +1979,7 @@ void DisplayServerOSX::mouse_warp_to_position(const Point2i &p_to) {
 		CGEventSourceSetLocalEventsSuppressionInterval(lEventRef, 0.0);
 		CGAssociateMouseAndMouseCursorPosition(false);
 		CGWarpMouseCursorPosition(lMouseWarpPos);
-		if (mouse_mode != MOUSE_MODE_CONFINED) {
+		if (mouse_mode != MOUSE_MODE_CONFINED && mouse_mode != MOUSE_MODE_CONFINED_HIDDEN) {
 			CGAssociateMouseAndMouseCursorPosition(true);
 		}
 	}
@@ -2168,7 +2004,7 @@ Point2i DisplayServerOSX::mouse_get_absolute_position() const {
 	return Vector2i();
 }
 
-int DisplayServerOSX::mouse_get_button_state() const {
+MouseButton DisplayServerOSX::mouse_get_button_state() const {
 	return last_button_state;
 }
 
@@ -2377,10 +2213,10 @@ Vector<DisplayServer::WindowID> DisplayServerOSX::get_window_list() const {
 	return ret;
 }
 
-DisplayServer::WindowID DisplayServerOSX::create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect) {
+DisplayServer::WindowID DisplayServerOSX::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
 	_THREAD_SAFE_METHOD_
 
-	WindowID id = _create_window(p_mode, p_rect);
+	WindowID id = _create_window(p_mode, p_vsync_mode, p_rect);
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
 			window_set_flag(WindowFlags(i), true, id);
@@ -3364,13 +3200,63 @@ void DisplayServerOSX::_release_pressed_events() {
 	}
 }
 
+NSMenu *DisplayServerOSX::_get_dock_menu() const {
+	return dock_menu;
+}
+
+void DisplayServerOSX::_menu_callback(id p_sender) {
+	if (![p_sender representedObject]) {
+		return;
+	}
+
+	GlobalMenuItem *value = [p_sender representedObject];
+
+	if (value) {
+		if (value->checkable) {
+			if ([p_sender state] == NSControlStateValueOff) {
+				[p_sender setState:NSControlStateValueOn];
+			} else {
+				[p_sender setState:NSControlStateValueOff];
+			}
+		}
+
+		if (value->callback != Callable()) {
+			Variant tag = value->meta;
+			Variant *tagp = &tag;
+			Variant ret;
+			Callable::CallError ce;
+			value->callback.call((const Variant **)&tagp, 1, ret, ce);
+		}
+	}
+}
+
+void DisplayServerOSX::_send_event(NSEvent *p_event) {
+	// special case handling of command-period, which is traditionally a special
+	// shortcut in macOS and doesn't arrive at our regular keyDown handler.
+	if ([p_event type] == NSEventTypeKeyDown) {
+		if (([p_event modifierFlags] & NSEventModifierFlagCommand) && [p_event keyCode] == 0x2f) {
+			Ref<InputEventKey> k;
+			k.instantiate();
+
+			_get_key_modifier_state([p_event modifierFlags], k);
+			k->set_window_id(DisplayServerOSX::INVALID_WINDOW_ID);
+			k->set_pressed(true);
+			k->set_keycode(KEY_PERIOD);
+			k->set_physical_keycode(KEY_PERIOD);
+			k->set_echo([p_event isARepeat]);
+
+			Input::get_singleton()->accumulate_input_event(k);
+		}
+	}
+}
+
 void DisplayServerOSX::_process_key_events() {
 	Ref<InputEventKey> k;
 	for (int i = 0; i < key_event_pos; i++) {
 		const KeyEvent &ke = key_event_buffer[i];
 		if (ke.raw) {
 			// Non IME input - no composite characters, pass events as is
-			k.instance();
+			k.instantiate();
 
 			k->set_window_id(ke.window_id);
 			_get_key_modifier_state(ke.osx_state, k);
@@ -3384,7 +3270,7 @@ void DisplayServerOSX::_process_key_events() {
 		} else {
 			// IME input
 			if ((i == 0 && ke.keycode == 0) || (i > 0 && key_event_buffer[i - 1].keycode == 0)) {
-				k.instance();
+				k.instantiate();
 
 				k->set_window_id(ke.window_id);
 				_get_key_modifier_state(ke.osx_state, k);
@@ -3397,7 +3283,7 @@ void DisplayServerOSX::_process_key_events() {
 				_push_input(k);
 			}
 			if (ke.keycode != 0) {
-				k.instance();
+				k.instantiate();
 
 				k->set_window_id(ke.window_id);
 				_get_key_modifier_state(ke.osx_state, k);
@@ -3535,6 +3421,22 @@ void DisplayServerOSX::set_icon(const Ref<Image> &p_icon) {
 	[nsimg release];
 }
 
+void DisplayServerOSX::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+#if defined(VULKAN_ENABLED)
+	context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
+#endif
+}
+
+DisplayServer::VSyncMode DisplayServerOSX::window_get_vsync_mode(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+#if defined(VULKAN_ENABLED)
+	return context_vulkan->get_vsync_mode(p_window);
+#else
+	return DisplayServer::VSYNC_ENABLED;
+#endif
+}
+
 Vector<String> DisplayServerOSX::get_rendering_drivers_func() {
 	Vector<String> drivers;
 
@@ -3585,15 +3487,15 @@ ObjectID DisplayServerOSX::window_get_attached_instance_id(WindowID p_window) co
 	return windows[p_window].instance_id;
 }
 
-DisplayServer *DisplayServerOSX::create_func(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
-	DisplayServer *ds = memnew(DisplayServerOSX(p_rendering_driver, p_mode, p_flags, p_resolution, r_error));
+DisplayServer *DisplayServerOSX::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
+	DisplayServer *ds = memnew(DisplayServerOSX(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, r_error));
 	if (r_error != OK) {
-		ds->alert("Your video card driver does not support any of the supported Metal versions.", "Unable to initialize Video driver");
+		OS::get_singleton()->alert("Your video card driver does not support any of the supported Metal versions.", "Unable to initialize Video driver");
 	}
 	return ds;
 }
 
-DisplayServerOSX::WindowID DisplayServerOSX::_create_window(WindowMode p_mode, const Rect2i &p_rect) {
+DisplayServerOSX::WindowID DisplayServerOSX::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect) {
 	WindowID id;
 	const float scale = screen_get_max_scale();
 	{
@@ -3640,7 +3542,7 @@ DisplayServerOSX::WindowID DisplayServerOSX::_create_window(WindowMode p_mode, c
 #if defined(VULKAN_ENABLED)
 		if (rendering_driver == "vulkan") {
 			if (context_vulkan) {
-				Error err = context_vulkan->window_create(window_id_counter, wd.window_view, p_rect.size.width, p_rect.size.height);
+				Error err = context_vulkan->window_create(window_id_counter, p_vsync_mode, wd.window_view, p_rect.size.width, p_rect.size.height);
 				ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create a Vulkan context");
 			}
 		}
@@ -3739,7 +3641,7 @@ bool DisplayServerOSX::is_console_visible() const {
 	return isatty(STDIN_FILENO);
 }
 
-DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
+DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
 
 	r_error = OK;
@@ -3750,7 +3652,6 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 
 	key_event_pos = 0;
 	mouse_mode = MOUSE_MODE_VISIBLE;
-	last_button_state = 0;
 
 	autoreleasePool = [[NSAutoreleasePool alloc] init];
 
@@ -3758,12 +3659,6 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 	ERR_FAIL_COND(!eventSource);
 
 	CGEventSourceSetLocalEventsSuppressionInterval(eventSource, 0.0);
-
-	// Implicitly create shared NSApplication instance
-	[GodotApplication sharedApplication];
-
-	// In case we are unbundled, make us a proper UI application
-	[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
 
 	keyboard_layout_dirty = true;
 	displays_arrangement_dirty = true;
@@ -3778,9 +3673,6 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 	// Register to be notified on displays arrangement changes
 	CGDisplayRegisterReconfigurationCallback(displays_arrangement_changed, nullptr);
 
-	// Menu bar setup must go between sharedApplication above and
-	// finishLaunching below, in order to properly emulate the behavior
-	// of NSApplicationMain
 	NSMenuItem *menu_item;
 	NSString *title;
 
@@ -3820,32 +3712,10 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 	title = [NSString stringWithFormat:NSLocalizedString(@"Quit %@", nil), nsappname];
 	[apple_menu addItemWithTitle:title action:@selector(terminate:) keyEquivalent:@"q"];
 
-	// Setup menu bar
-	NSMenu *main_menu = [[[NSMenu alloc] initWithTitle:@""] autorelease];
+	// Add items to the menu bar
+	NSMenu *main_menu = [NSApp mainMenu];
 	menu_item = [main_menu addItemWithTitle:@"" action:nil keyEquivalent:@""];
 	[main_menu setSubmenu:apple_menu forItem:menu_item];
-	[NSApp setMainMenu:main_menu];
-
-	[NSApp finishLaunching];
-
-	delegate = [[GodotApplicationDelegate alloc] init];
-	ERR_FAIL_COND(!delegate);
-	[NSApp setDelegate:delegate];
-
-	//process application:openFile: event
-	while (true) {
-		NSEvent *event = [NSApp
-				nextEventMatchingMask:NSEventMaskAny
-							untilDate:[NSDate distantPast]
-							   inMode:NSDefaultRunLoopMode
-							  dequeue:YES];
-
-		if (event == nil) {
-			break;
-		}
-
-		[NSApp sendEvent:event];
-	}
 
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!
 	//TODO - do Vulkan and GLES2 support checks, driver selection and fallback
@@ -3876,7 +3746,7 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 	Point2i window_position(
 			screen_get_position(0).x + (screen_get_size(0).width - p_resolution.width) / 2,
 			screen_get_position(0).y + (screen_get_size(0).height - p_resolution.height) / 2);
-	WindowID main_window = _create_window(p_mode, Rect2i(window_position, p_resolution));
+	WindowID main_window = _create_window(p_mode, p_vsync_mode, Rect2i(window_position, p_resolution));
 	ERR_FAIL_COND(main_window == INVALID_WINDOW_ID);
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
@@ -3898,8 +3768,6 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 		RendererCompositorRD::make_current();
 	}
 #endif
-
-	[NSApp activateIgnoringOtherApps:YES];
 }
 
 DisplayServerOSX::~DisplayServerOSX() {

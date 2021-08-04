@@ -13,7 +13,7 @@
 # There should be no need to change anything below this line.
 
 # Canonicalize by recursively following every symlink in every component of the
-# specified filename.  This should reproduce the results of the GNU version of
+# specified filename. This should reproduce the results of the GNU version of
 # readlink with the -f option.
 #
 # Reference: http://stackoverflow.com/questions/1055671/how-can-i-get-the-behavior-of-gnus-readlink-f-on-a-mac

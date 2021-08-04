@@ -150,8 +150,8 @@ EndProject";
                 {"Tools|Any CPU", "ExportRelease|Any CPU"}
             };
 
-            var regex = new Regex(string.Join("|",dict.Keys.Select(Regex.Escape)));
-            var result = regex.Replace(input,m => dict[m.Value]);
+            var regex = new Regex(string.Join("|", dict.Keys.Select(Regex.Escape)));
+            var result = regex.Replace(input, m => dict[m.Value]);
 
             if (result != input)
             {

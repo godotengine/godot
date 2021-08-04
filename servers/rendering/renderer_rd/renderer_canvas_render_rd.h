@@ -201,14 +201,11 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	struct MaterialData : public RendererStorageRD::MaterialData {
 		uint64_t last_frame;
 		ShaderData *shader_data;
-		RID uniform_buffer;
 		RID uniform_set;
-		Vector<RID> texture_cache;
-		Vector<uint8_t> ubo_data;
 
 		virtual void set_render_priority(int p_priority) {}
 		virtual void set_next_pass(RID p_pass) {}
-		virtual void update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
+		virtual bool update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
 		virtual ~MaterialData();
 	};
 
@@ -433,7 +430,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	_FORCE_INLINE_ void _update_transform_2d_to_mat2x3(const Transform2D &p_transform, float *p_mat2x3);
 
 	_FORCE_INLINE_ void _update_transform_2d_to_mat4(const Transform2D &p_transform, float *p_mat4);
-	_FORCE_INLINE_ void _update_transform_to_mat4(const Transform &p_transform, float *p_mat4);
+	_FORCE_INLINE_ void _update_transform_to_mat4(const Transform3D &p_transform, float *p_mat4);
 
 	void _update_shadow_atlas();
 
@@ -456,8 +453,6 @@ public:
 	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_light_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used);
 
 	void canvas_debug_viewport_shadows(Light *p_lights_with_shadow) {}
-
-	void draw_window_margins(int *p_margins, RID *p_margin_textures) {}
 
 	virtual void set_shadow_texture_size(int p_size);
 

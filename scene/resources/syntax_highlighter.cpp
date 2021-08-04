@@ -405,7 +405,7 @@ void CodeHighlighter::_clear_highlighting_cache() {
 }
 
 void CodeHighlighter::_update_cache() {
-	font_color = text_edit->get_theme_color("font_color");
+	font_color = text_edit->get_theme_color(SNAME("font_color"));
 }
 
 void CodeHighlighter::add_keyword_color(const String &p_keyword, const Color &p_color) {
@@ -529,8 +529,8 @@ void CodeHighlighter::set_color_regions(const Dictionary &p_color_regions) {
 	List<Variant> keys;
 	p_color_regions.get_key_list(&keys);
 
-	for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-		String key = E->get();
+	for (const Variant &E : keys) {
+		String key = E;
 
 		String start_key = key.get_slice(" ", 0);
 		String end_key = key.get_slice_count(" ") > 1 ? key.get_slice(" ", 1) : String();

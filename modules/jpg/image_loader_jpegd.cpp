@@ -127,7 +127,7 @@ void ImageLoaderJPG::get_recognized_extensions(List<String> *p_extensions) const
 
 static Ref<Image> _jpegd_mem_loader_func(const uint8_t *p_png, int p_size) {
 	Ref<Image> img;
-	img.instance();
+	img.instantiate();
 	Error err = jpeg_load_image_from_buffer(img.ptr(), p_png, p_size);
 	ERR_FAIL_COND_V(err, Ref<Image>());
 	return img;

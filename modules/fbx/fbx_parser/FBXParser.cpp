@@ -82,7 +82,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FBXParser.h"
 #include "FBXTokenizer.h"
 #include "core/math/math_defs.h"
-#include "core/math/transform.h"
+#include "core/math/transform_3d.h"
 #include "core/math/vector3.h"
 #include "core/string/print_string.h"
 
@@ -1157,7 +1157,7 @@ void ParseVectorDataArray(std::vector<int64_t> &out, const ElementPtr el) {
 }
 
 // ------------------------------------------------------------------------------------------------
-Transform ReadMatrix(const ElementPtr element) {
+Transform3D ReadMatrix(const ElementPtr element) {
 	std::vector<float> values;
 	ParseVectorDataArray(values, element);
 
@@ -1167,12 +1167,12 @@ Transform ReadMatrix(const ElementPtr element) {
 
 	// clean values to prevent any IBM damage on inverse() / affine_inverse()
 	for (float &value : values) {
-		if (::Math::is_equal_approx(0, value)) {
+		if (::Math::is_zero_approx(value)) {
 			value = 0;
 		}
 	}
 
-	Transform xform;
+	Transform3D xform;
 	Basis basis;
 
 	basis.set(

@@ -31,9 +31,10 @@
 #ifndef TILE_SET_EDITOR_H
 #define TILE_SET_EDITOR_H
 
+#include "atlas_merging_dialog.h"
 #include "scene/gui/box_container.h"
 #include "scene/resources/tile_set.h"
-#include "tile_data_editors.h"
+#include "tile_proxies_manager_dialog.h"
 #include "tile_set_atlas_source_editor.h"
 #include "tile_set_scenes_collection_source_editor.h"
 
@@ -52,26 +53,21 @@ private:
 
 	UndoRedo *undo_redo = EditorNode::get_undo_redo();
 
-	void _update_atlas_sources_list(int force_selected_id = -1);
+	void _update_sources_list(int force_selected_id = -1);
 
-	// List of tile data editors.
-	TileDataTextureOffsetEditor *tile_data_texture_offset_editor = memnew(TileDataTextureOffsetEditor);
-	TileDataYSortEditor *tile_data_y_sort_editor = memnew(TileDataYSortEditor);
-	TileDataIntegerEditor *tile_data_integer_editor = memnew(TileDataIntegerEditor);
-	TileDataFloatEditor *tile_data_float_editor = memnew(TileDataFloatEditor);
-	TileDataOcclusionShapeEditor *tile_data_occlusion_shape_editor = memnew(TileDataOcclusionShapeEditor);
-	TileDataCollisionShapeEditor *tile_data_collision_shape_editor = memnew(TileDataCollisionShapeEditor);
-	TileDataTerrainsEditor *tile_data_terrains_editor = memnew(TileDataTerrainsEditor);
-	TileDataNavigationPolygonEditor *tile_data_navigation_polygon_editor = memnew(TileDataNavigationPolygonEditor);
-
-	// -- Sources management --
+	// Sources management.
 	Button *sources_delete_button;
 	MenuButton *sources_add_button;
+	MenuButton *sources_advanced_menu_button;
 	ItemList *sources_list;
 	Ref<Texture2D> missing_texture_texture;
 	void _source_selected(int p_source_index);
-	void _source_add_id_pressed(int p_id_pressed);
 	void _source_delete_pressed();
+	void _source_add_id_pressed(int p_id_pressed);
+	void _sources_advanced_menu_id_pressed(int p_id_pressed);
+
+	AtlasMergingDialog *atlas_merging_dialog;
+	TileProxiesManagerDialog *tile_proxies_manager_dialog;
 
 	void _tile_set_changed();
 
@@ -84,7 +80,6 @@ protected:
 public:
 	_FORCE_INLINE_ static TileSetEditor *get_singleton() { return singleton; }
 
-	TileDataEditor *get_tile_data_editor(String property);
 	void edit(Ref<TileSet> p_tile_set);
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;

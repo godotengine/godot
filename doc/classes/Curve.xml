@@ -10,184 +10,140 @@
 	</tutorials>
 	<methods>
 		<method name="add_point">
-			<return type="int">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="left_tangent" type="float" default="0">
-			</argument>
-			<argument index="2" name="right_tangent" type="float" default="0">
-			</argument>
-			<argument index="3" name="left_mode" type="int" enum="Curve.TangentMode" default="0">
-			</argument>
-			<argument index="4" name="right_mode" type="int" enum="Curve.TangentMode" default="0">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="position" type="Vector2" />
+			<argument index="1" name="left_tangent" type="float" default="0" />
+			<argument index="2" name="right_tangent" type="float" default="0" />
+			<argument index="3" name="left_mode" type="int" enum="Curve.TangentMode" default="0" />
+			<argument index="4" name="right_mode" type="int" enum="Curve.TangentMode" default="0" />
 			<description>
 				Adds a point to the curve. For each side, if the [code]*_mode[/code] is [constant TANGENT_LINEAR], the [code]*_tangent[/code] angle (in degrees) uses the slope of the curve halfway to the adjacent point. Allows custom assignments to the [code]*_tangent[/code] angle if [code]*_mode[/code] is set to [constant TANGENT_FREE].
 			</description>
 		</method>
 		<method name="bake">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Recomputes the baked cache of points for the curve.
 			</description>
 		</method>
 		<method name="clean_dupes">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Removes points that are closer than [code]CMP_EPSILON[/code] (0.00001) units to their neighbor on the curve.
 			</description>
 		</method>
 		<method name="clear_points">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Removes all points from the curve.
 			</description>
 		</method>
 		<method name="get_point_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of points describing the curve.
 			</description>
 		</method>
 		<method name="get_point_left_mode" qualifiers="const">
-			<return type="int" enum="Curve.TangentMode">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="int" enum="Curve.TangentMode" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Returns the left [enum TangentMode] for the point at [code]index[/code].
 			</description>
 		</method>
 		<method name="get_point_left_tangent" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Returns the left tangent angle (in degrees) for the point at [code]index[/code].
 			</description>
 		</method>
 		<method name="get_point_position" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Returns the curve coordinates for the point at [code]index[/code].
 			</description>
 		</method>
 		<method name="get_point_right_mode" qualifiers="const">
-			<return type="int" enum="Curve.TangentMode">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="int" enum="Curve.TangentMode" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Returns the right [enum TangentMode] for the point at [code]index[/code].
 			</description>
 		</method>
 		<method name="get_point_right_tangent" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Returns the right tangent angle (in degrees) for the point at [code]index[/code].
 			</description>
 		</method>
 		<method name="interpolate" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="offset" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="offset" type="float" />
 			<description>
 				Returns the Y value for the point that would exist at the X position [code]offset[/code] along the curve.
 			</description>
 		</method>
 		<method name="interpolate_baked" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="offset" type="float">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="offset" type="float" />
 			<description>
 				Returns the Y value for the point that would exist at the X position [code]offset[/code] along the curve using the baked cache. Bakes the curve's points if not already baked.
 			</description>
 		</method>
 		<method name="remove_point">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Removes the point at [code]index[/code] from the curve.
 			</description>
 		</method>
 		<method name="set_point_left_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
-			<argument index="1" name="mode" type="int" enum="Curve.TangentMode">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<argument index="1" name="mode" type="int" enum="Curve.TangentMode" />
 			<description>
 				Sets the left [enum TangentMode] for the point at [code]index[/code] to [code]mode[/code].
 			</description>
 		</method>
 		<method name="set_point_left_tangent">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
-			<argument index="1" name="tangent" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<argument index="1" name="tangent" type="float" />
 			<description>
 				Sets the left tangent angle for the point at [code]index[/code] to [code]tangent[/code].
 			</description>
 		</method>
 		<method name="set_point_offset">
-			<return type="int">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
-			<argument index="1" name="offset" type="float">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="index" type="int" />
+			<argument index="1" name="offset" type="float" />
 			<description>
 				Sets the offset from [code]0.5[/code].
 			</description>
 		</method>
 		<method name="set_point_right_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
-			<argument index="1" name="mode" type="int" enum="Curve.TangentMode">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<argument index="1" name="mode" type="int" enum="Curve.TangentMode" />
 			<description>
 				Sets the right [enum TangentMode] for the point at [code]index[/code] to [code]mode[/code].
 			</description>
 		</method>
 		<method name="set_point_right_tangent">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
-			<argument index="1" name="tangent" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<argument index="1" name="tangent" type="float" />
 			<description>
 				Sets the right tangent angle for the point at [code]index[/code] to [code]tangent[/code].
 			</description>
 		</method>
 		<method name="set_point_value">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
-			<argument index="1" name="y" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<argument index="1" name="y" type="float" />
 			<description>
 				Assigns the vertical position [code]y[/code] to the point at [code]index[/code].
 			</description>

@@ -54,6 +54,7 @@ private:
 		NONE,
 		REGION,
 		NODE_PATH,
+		ANNOTATION,
 		SYMBOL,
 		NUMBER,
 		FUNCTION,
@@ -72,6 +73,7 @@ private:
 	Color number_color;
 	Color member_color;
 	Color node_path_color;
+	Color annotation_color;
 	Color type_color;
 
 	void add_color_region(const String &p_start_key, const String &p_end_key, const Color &p_color, bool p_line_only = false);

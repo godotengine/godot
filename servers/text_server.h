@@ -31,7 +31,7 @@
 #ifndef TEXT_SERVER_H
 #define TEXT_SERVER_H
 
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/os/os.h"
 #include "core/templates/rid.h"
 #include "core/variant/variant.h"
@@ -66,8 +66,16 @@ public:
 		BREAK_NONE = 0,
 		BREAK_MANDATORY = 1 << 4,
 		BREAK_WORD_BOUND = 1 << 5,
-		BREAK_GRAPHEME_BOUND = 1 << 6
-		//RESERVED = 1 << 7
+		BREAK_GRAPHEME_BOUND = 1 << 6,
+		BREAK_WORD_BOUND_ADAPTIVE = 1 << 5 | 1 << 7
+	};
+
+	enum TextOverrunFlag {
+		OVERRUN_NO_TRIMMING = 0,
+		OVERRUN_TRIM = 1 << 0,
+		OVERRUN_TRIM_WORD_ONLY = 1 << 1,
+		OVERRUN_ADD_ELLIPSIS = 1 << 2,
+		OVERRUN_ENFORCE_ELLIPSIS = 1 << 3
 	};
 
 	enum GraphemeFlag {
@@ -79,7 +87,8 @@ public:
 		GRAPHEME_IS_BREAK_SOFT = 1 << 5, // Is line break (optional break, e.g. space).
 		GRAPHEME_IS_TAB = 1 << 6, // Is tab or vertical tab.
 		GRAPHEME_IS_ELONGATION = 1 << 7, // Elongation (e.g. kashida), glyph can be duplicated or truncated to fit line to width.
-		GRAPHEME_IS_PUNCTUATION = 1 << 8 // Punctuation (can be used as word break, but not line break or justifiction).
+		GRAPHEME_IS_PUNCTUATION = 1 << 8, // Punctuation, except underscore (can be used as word break, but not line break or justifiction).
+		GRAPHEME_IS_UNDERSCORE = 1 << 9, // Underscore (can be used as word break).
 	};
 
 	enum Hinting {
@@ -138,7 +147,7 @@ public:
 						return true;
 					}
 				}
-				return l.count > r.count; // Sort first glyoh with count & flags, order of the rest are irrelevant.
+				return l.count > r.count; // Sort first glyph with count & flags, order of the rest are irrelevant.
 			} else {
 				return l.start < r.start;
 			}
@@ -346,7 +355,9 @@ public:
 
 	virtual Vector<Vector2i> shaped_text_get_line_breaks_adv(RID p_shaped, const Vector<float> &p_width, int p_start = 0, bool p_once = true, uint8_t /*TextBreakFlag*/ p_break_flags = BREAK_MANDATORY | BREAK_WORD_BOUND) const;
 	virtual Vector<Vector2i> shaped_text_get_line_breaks(RID p_shaped, float p_width, int p_start = 0, uint8_t /*TextBreakFlag*/ p_break_flags = BREAK_MANDATORY | BREAK_WORD_BOUND) const;
-	virtual Vector<Vector2i> shaped_text_get_word_breaks(RID p_shaped) const;
+	virtual Vector<Vector2i> shaped_text_get_word_breaks(RID p_shaped, int p_grapheme_flags = GRAPHEME_IS_SPACE | GRAPHEME_IS_PUNCTUATION) const;
+
+	virtual void shaped_text_overrun_trim_to_width(RID p_shaped, float p_width, uint8_t p_clip_flags) = 0;
 	virtual Array shaped_text_get_objects(RID p_shaped) const = 0;
 	virtual Rect2 shaped_text_get_object_rect(RID p_shaped, Variant p_key) const = 0;
 
@@ -461,6 +472,7 @@ VARIANT_ENUM_CAST(TextServer::Direction);
 VARIANT_ENUM_CAST(TextServer::Orientation);
 VARIANT_ENUM_CAST(TextServer::JustificationFlag);
 VARIANT_ENUM_CAST(TextServer::LineBreakFlag);
+VARIANT_ENUM_CAST(TextServer::TextOverrunFlag);
 VARIANT_ENUM_CAST(TextServer::GraphemeFlag);
 VARIANT_ENUM_CAST(TextServer::Hinting);
 VARIANT_ENUM_CAST(TextServer::Feature);

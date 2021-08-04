@@ -40,6 +40,7 @@
 
 void GDScriptTextDocument::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("didOpen"), &GDScriptTextDocument::didOpen);
+	ClassDB::bind_method(D_METHOD("didClose"), &GDScriptTextDocument::didClose);
 	ClassDB::bind_method(D_METHOD("didChange"), &GDScriptTextDocument::didChange);
 	ClassDB::bind_method(D_METHOD("nativeSymbol"), &GDScriptTextDocument::nativeSymbol);
 	ClassDB::bind_method(D_METHOD("documentSymbol"), &GDScriptTextDocument::documentSymbol);
@@ -59,6 +60,11 @@ void GDScriptTextDocument::_bind_methods() {
 void GDScriptTextDocument::didOpen(const Variant &p_param) {
 	lsp::TextDocumentItem doc = load_document_item(p_param);
 	sync_script_content(doc.uri, doc.text);
+}
+
+void GDScriptTextDocument::didClose(const Variant &p_param) {
+	// Left empty on purpose. Godot does nothing special on closing a document,
+	// but it satisfies LSP clients that require didClose be implemented.
 }
 
 void GDScriptTextDocument::didChange(const Variant &p_param) {
@@ -151,8 +157,7 @@ Array GDScriptTextDocument::completion(const Dictionary &p_params) {
 		int i = 0;
 		arr.resize(options.size());
 
-		for (const List<ScriptCodeCompletionOption>::Element *E = options.front(); E; E = E->next()) {
-			const ScriptCodeCompletionOption &option = E->get();
+		for (const ScriptCodeCompletionOption &option : options) {
 			lsp::CompletionItem item;
 			item.label = option.display;
 			item.data = request_data;
@@ -288,8 +293,8 @@ Array GDScriptTextDocument::documentLink(const Dictionary &p_params) {
 
 	List<lsp::DocumentLink> links;
 	GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_document_links(params.textDocument.uri, links);
-	for (const List<lsp::DocumentLink>::Element *E = links.front(); E; E = E->next()) {
-		ret.push_back(E->get().to_json());
+	for (const lsp::DocumentLink &E : links) {
+		ret.push_back(E.to_json());
 	}
 	return ret;
 }
@@ -316,8 +321,8 @@ Variant GDScriptTextDocument::hover(const Dictionary &p_params) {
 		Array contents;
 		List<const lsp::DocumentSymbol *> list;
 		GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_related_symbols(params, list);
-		for (List<const lsp::DocumentSymbol *>::Element *E = list.front(); E; E = E->next()) {
-			if (const lsp::DocumentSymbol *s = E->get()) {
+		for (const lsp::DocumentSymbol *&E : list) {
+			if (const lsp::DocumentSymbol *s = E) {
 				contents.push_back(s->render().value);
 			}
 		}
@@ -367,7 +372,7 @@ Variant GDScriptTextDocument::declaration(const Dictionary &p_params) {
 					id = "class_global:" + symbol->native_class + ":" + symbol->name;
 					break;
 			}
-			call_deferred("show_native_symbol_in_editor", id);
+			call_deferred(SNAME("show_native_symbol_in_editor"), id);
 		} else {
 			notify_client_show_symbol(symbol);
 		}
@@ -404,7 +409,7 @@ void GDScriptTextDocument::sync_script_content(const String &p_path, const Strin
 }
 
 void GDScriptTextDocument::show_native_symbol_in_editor(const String &p_symbol_id) {
-	ScriptEditor::get_singleton()->call_deferred("_help_class_goto", p_symbol_id);
+	ScriptEditor::get_singleton()->call_deferred(SNAME("_help_class_goto"), p_symbol_id);
 
 	DisplayServer::get_singleton()->window_move_to_foreground();
 }
@@ -424,8 +429,8 @@ Array GDScriptTextDocument::find_symbols(const lsp::TextDocumentPositionParams &
 	} else if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
 		List<const lsp::DocumentSymbol *> list;
 		GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_related_symbols(p_location, list);
-		for (List<const lsp::DocumentSymbol *>::Element *E = list.front(); E; E = E->next()) {
-			if (const lsp::DocumentSymbol *s = E->get()) {
+		for (const lsp::DocumentSymbol *&E : list) {
+			if (const lsp::DocumentSymbol *s = E) {
 				if (!s->uri.is_empty()) {
 					lsp::Location location;
 					location.uri = s->uri;

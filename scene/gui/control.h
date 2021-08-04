@@ -32,6 +32,7 @@
 #define CONTROL_H
 
 #include "core/math/transform_2d.h"
+#include "core/object/gdvirtual.gen.inc"
 #include "core/templates/rid.h"
 #include "scene/gui/shortcut.h"
 #include "scene/main/canvas_item.h"
@@ -178,6 +179,10 @@ private:
 		GrowDirection v_grow = GROW_DIRECTION_END;
 
 		LayoutDirection layout_dir = LAYOUT_DIRECTION_INHERITED;
+		bool is_rtl_dirty = true;
+		bool is_rtl = false;
+
+		bool auto_translate = true;
 
 		real_t rotation = 0.0;
 		Vector2 scale = Vector2(1, 1);
@@ -201,7 +206,8 @@ private:
 		Ref<Theme> theme;
 		Control *theme_owner = nullptr;
 		Window *theme_owner_window = nullptr;
-		StringName theme_custom_type;
+		Window *parent_window = nullptr;
+		StringName theme_type_variation;
 
 		String tooltip;
 		CursorShape default_cursor = CURSOR_ARROW;
@@ -264,6 +270,7 @@ private:
 	static bool has_theme_item_in_types(Control *p_theme_owner, Window *p_theme_owner_window, Theme::DataType p_data_type, const StringName &p_name, List<StringName> p_theme_types);
 	_FORCE_INLINE_ void _get_theme_type_dependencies(const StringName &p_theme_type, List<StringName> *p_list) const;
 
+	GDVIRTUAL1RC(bool, _has_point, Vector2)
 protected:
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
@@ -277,8 +284,8 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 	void _notification(int p_notification);
-
 	static void _bind_methods();
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 	//bind helpers
 
@@ -329,7 +336,6 @@ public:
 	virtual Size2 get_minimum_size() const;
 	virtual Size2 get_combined_minimum_size() const;
 	virtual bool has_point(const Point2 &p_point) const;
-	virtual bool clips_input() const;
 	virtual void set_drag_forwarding(Control *p_target);
 	virtual Variant get_drag_data(const Point2 &p_point);
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
@@ -341,10 +347,15 @@ public:
 	Size2 get_custom_minimum_size() const;
 
 	Control *get_parent_control() const;
+	Window *get_parent_window() const;
 
 	void set_layout_direction(LayoutDirection p_direction);
 	LayoutDirection get_layout_direction() const;
 	virtual bool is_layout_rtl() const;
+
+	void set_auto_translate(bool p_enable);
+	bool is_auto_translating() const;
+	_FORCE_INLINE_ String atr(const String p_string) const { return is_auto_translating() ? tr(p_string) : p_string; };
 
 	/* POSITIONING */
 
@@ -384,9 +395,7 @@ public:
 	void set_rect(const Rect2 &p_rect); // Reset anchors to begin and set rect, for faster container children sorting.
 
 	void set_rotation(real_t p_radians);
-	void set_rotation_degrees(real_t p_degrees);
 	real_t get_rotation() const;
-	real_t get_rotation_degrees() const;
 
 	void set_h_grow_direction(GrowDirection p_direction);
 	GrowDirection get_h_grow_direction() const;
@@ -403,8 +412,8 @@ public:
 	void set_theme(const Ref<Theme> &p_theme);
 	Ref<Theme> get_theme() const;
 
-	void set_theme_custom_type(const StringName &p_theme_type);
-	StringName get_theme_custom_type() const;
+	void set_theme_type_variation(const StringName &p_theme_type);
+	StringName get_theme_type_variation() const;
 
 	void set_h_size_flags(int p_flags);
 	int get_h_size_flags() const;

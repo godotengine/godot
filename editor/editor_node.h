@@ -164,6 +164,7 @@ private:
 		RUN_PLAY_CUSTOM_SCENE,
 		RUN_SETTINGS,
 		RUN_PROJECT_DATA_FOLDER,
+		RUN_RELOAD_CURRENT_PROJECT,
 		RUN_PROJECT_MANAGER,
 		RUN_VCS_SETTINGS,
 		RUN_VCS_SHUT_DOWN,
@@ -180,6 +181,7 @@ private:
 		SETTINGS_EDITOR_CONFIG_FOLDER,
 		SETTINGS_MANAGE_EXPORT_TEMPLATES,
 		SETTINGS_MANAGE_FEATURE_PROFILES,
+		SETTINGS_INSTALL_ANDROID_BUILD_TEMPLATE,
 		SETTINGS_PICK_MAIN_SCENE,
 		SETTINGS_TOGGLE_CONSOLE,
 		SETTINGS_TOGGLE_FULLSCREEN,
@@ -193,6 +195,7 @@ private:
 		HELP_DOCS,
 		HELP_QA,
 		HELP_REPORT_A_BUG,
+		HELP_SUGGEST_A_FEATURE,
 		HELP_SEND_DOCS_FEEDBACK,
 		HELP_COMMUNITY,
 		HELP_ABOUT,
@@ -299,6 +302,7 @@ private:
 	ConfirmationDialog *save_confirmation;
 	ConfirmationDialog *import_confirmation;
 	ConfirmationDialog *pick_main_scene;
+	Button *select_current_scene_button;
 	AcceptDialog *accept;
 	EditorAbout *about;
 	AcceptDialog *warning;
@@ -324,6 +328,7 @@ private:
 	EditorFileDialog *file_templates;
 	EditorFileDialog *file_export_lib;
 	EditorFileDialog *file_script;
+	EditorFileDialog *file_android_build_source;
 	CheckBox *file_export_lib_merge;
 	String current_path;
 	MenuButton *update_spinner;
@@ -331,7 +336,7 @@ private:
 	EditorNativeShaderSourceVisualizer *native_shader_source_visualizer;
 
 	String defer_load_scene;
-	Node *_last_instanced_scene;
+	Node *_last_instantiated_scene;
 
 	EditorLog *log;
 	CenterContainer *tabs_center;
@@ -452,6 +457,8 @@ private:
 	void _menu_confirm_current();
 	void _menu_option_confirm(int p_option, bool p_confirmed);
 
+	void _android_build_source_selected(const String &p_file);
+
 	void _request_screenshot();
 	void _screenshot(bool p_use_utc = false);
 	void _save_screenshot(NodePath p_path);
@@ -490,7 +497,7 @@ private:
 	void _discard_changes(const String &p_str = String());
 
 	void _inherit_request(String p_file);
-	void _instance_request(const Vector<String> &p_files);
+	void _instantiate_request(const Vector<String> &p_files);
 
 	void _display_top_editors(bool p_display);
 	void _set_top_editors(Vector<EditorPlugin *> p_editor_plugins_over);
@@ -661,6 +668,8 @@ private:
 	bool _is_class_editor_disabled_by_feature_profile(const StringName &p_class);
 	Ref<ImageTexture> _load_custom_class_icon(const String &p_path) const;
 
+	void _pick_main_scene_custom_action(const String &p_custom_action_name);
+
 protected:
 	void _notification(int p_what);
 
@@ -769,7 +778,7 @@ public:
 	static VSplitContainer *get_top_split() { return singleton->top_split; }
 
 	void request_instance_scene(const String &p_path);
-	void request_instance_scenes(const Vector<String> &p_files);
+	void request_instantiate_scenes(const Vector<String> &p_files);
 	FileSystemDock *get_filesystem_dock();
 	ImportDock *get_import_dock();
 	SceneTreeDock *get_scene_tree_dock();
@@ -855,7 +864,7 @@ public:
 
 	void notify_settings_changed();
 
-	void dim_editor(bool p_dimming, bool p_force_dim = false);
+	void dim_editor(bool p_dimming);
 	bool is_editor_dimmed() const;
 
 	void edit_current() { _edit_current(); };

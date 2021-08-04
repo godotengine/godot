@@ -49,7 +49,7 @@ void EditorRunNative::_notification(int p_what) {
 				if (!im->is_empty()) {
 					im->resize(16 * EDSCALE, 16 * EDSCALE);
 					Ref<ImageTexture> small_icon;
-					small_icon.instance();
+					small_icon.instantiate();
 					small_icon->create_from_image(im);
 					MenuButton *mb = memnew(MenuButton);
 					mb->get_popup()->connect("id_pressed", callable_mp(this, &EditorRunNative::_run_native), varray(i));
@@ -127,7 +127,7 @@ void EditorRunNative::_run_native(int p_idx, int p_platform) {
 		return;
 	}
 
-	emit_signal("native_run", preset);
+	emit_signal(SNAME("native_run"), preset);
 
 	int flags = 0;
 

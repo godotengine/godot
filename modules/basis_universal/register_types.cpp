@@ -260,7 +260,7 @@ static Ref<Image> basis_universal_unpacker(const Vector<uint8_t> &p_buffer) {
 		};
 	};
 
-	image.instance();
+	image.instantiate();
 	image->create(info.m_width, info.m_height, info.m_total_levels > 1, imgfmt, gpudata);
 
 	return image;
@@ -272,7 +272,7 @@ void register_basis_universal_types() {
 	Image::basis_universal_packer = basis_universal_packer;
 #endif
 	Image::basis_universal_unpacker = basis_universal_unpacker;
-	//ClassDB::register_class<TextureBasisU>();
+	//GDREGISTER_CLASS(TextureBasisU);
 }
 
 void unregister_basis_universal_types() {

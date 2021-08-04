@@ -29,13 +29,13 @@
 		<theme_item name="font" type="Font">
 			Font used to draw the fill percentage if [member percent_visible] is [code]true[/code].
 		</theme_item>
-		<theme_item name="font_color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
+		<theme_item name="font_color" type="Color" default="Color(0.94, 0.94, 0.94, 1)">
 			The color of the text.
 		</theme_item>
-		<theme_item name="font_outline_color" type="Color" default="Color( 1, 1, 1, 1 )">
+		<theme_item name="font_outline_color" type="Color" default="Color(1, 1, 1, 1)">
 			The tint of text outline of the [ProgressBar].
 		</theme_item>
-		<theme_item name="font_shadow_color" type="Color" default="Color( 0, 0, 0, 1 )">
+		<theme_item name="font_shadow_color" type="Color" default="Color(0, 0, 0, 1)">
 			The color of the text's shadow.
 		</theme_item>
 		<theme_item name="font_size" type="int">

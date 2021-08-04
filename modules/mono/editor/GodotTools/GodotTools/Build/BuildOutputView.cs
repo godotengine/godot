@@ -11,7 +11,7 @@ namespace GodotTools.Build
     public class BuildOutputView : VBoxContainer, ISerializationListener
     {
         [Serializable]
-        private class BuildIssue : Reference // TODO Remove Reference once we have proper serialization
+        private class BuildIssue : RefCounted // TODO Remove RefCounted once we have proper serialization
         {
             public bool Warning { get; set; }
             public string File { get; set; }

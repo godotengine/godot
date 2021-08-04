@@ -289,7 +289,7 @@ void SoftBody3DSW::update_link_constants() {
 	}
 }
 
-void SoftBody3DSW::apply_nodes_transform(const Transform &p_transform) {
+void SoftBody3DSW::apply_nodes_transform(const Transform3D &p_transform) {
 	if (soft_mesh.is_null()) {
 		return;
 	}
@@ -684,7 +684,7 @@ void SoftBody3DSW::generate_bending_constraints(int p_distance) {
 //
 // This function takes in a list of interdependent Links and tries
 // to maximize the distance between calculation
-// of dependent links.  This increases the amount of parallelism that can
+// of dependent links. This increases the amount of parallelism that can
 // be exploited by out-of-order instruction processors with large but
 // (inevitably) finite instruction windows.
 //
@@ -1172,7 +1172,7 @@ struct _SoftBodyIntersectSegmentInfo {
 	Vector3 dir;
 	Vector3 hit_position;
 	uint32_t hit_face_index = -1;
-	real_t hit_dist_sq = Math_INF;
+	real_t hit_dist_sq = INFINITY;
 
 	static bool process_hit(uint32_t p_face_index, void *p_userdata) {
 		_SoftBodyIntersectSegmentInfo &query_info = *(_SoftBodyIntersectSegmentInfo *)(p_userdata);
@@ -1203,7 +1203,7 @@ bool SoftBodyShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 
 
 	soft_body->query_ray(p_begin, p_end, _SoftBodyIntersectSegmentInfo::process_hit, &query_info);
 
-	if (query_info.hit_dist_sq != Math_INF) {
+	if (query_info.hit_dist_sq != INFINITY) {
 		r_result = query_info.hit_position;
 		r_normal = soft_body->get_face_normal(query_info.hit_face_index);
 		return true;

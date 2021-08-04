@@ -31,8 +31,8 @@
 #include "test_gdscript.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/file_access.h"
 #include "core/io/file_access_pack.h"
-#include "core/os/file_access.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/string/string_builder.h"
@@ -113,8 +113,7 @@ static void test_parser(const String &p_code, const String &p_script_path, const
 
 	if (err != OK) {
 		const List<GDScriptParser::ParserError> &errors = parser.get_errors();
-		for (const List<GDScriptParser::ParserError>::Element *E = errors.front(); E != nullptr; E = E->next()) {
-			const GDScriptParser::ParserError &error = E->get();
+		for (const GDScriptParser::ParserError &error : errors) {
 			print_line(vformat("%02d:%02d: %s", error.line, error.column, error.message));
 		}
 	}
@@ -124,8 +123,7 @@ static void test_parser(const String &p_code, const String &p_script_path, const
 
 	if (err != OK) {
 		const List<GDScriptParser::ParserError> &errors = parser.get_errors();
-		for (const List<GDScriptParser::ParserError>::Element *E = errors.front(); E != nullptr; E = E->next()) {
-			const GDScriptParser::ParserError &error = E->get();
+		for (const GDScriptParser::ParserError &error : errors) {
 			print_line(vformat("%02d:%02d: %s", error.line, error.column, error.message));
 		}
 	}
@@ -143,8 +141,7 @@ static void test_compiler(const String &p_code, const String &p_script_path, con
 	if (err != OK) {
 		print_line("Error in parser:");
 		const List<GDScriptParser::ParserError> &errors = parser.get_errors();
-		for (const List<GDScriptParser::ParserError>::Element *E = errors.front(); E != nullptr; E = E->next()) {
-			const GDScriptParser::ParserError &error = E->get();
+		for (const GDScriptParser::ParserError &error : errors) {
 			print_line(vformat("%02d:%02d: %s", error.line, error.column, error.message));
 		}
 		return;
@@ -156,8 +153,7 @@ static void test_compiler(const String &p_code, const String &p_script_path, con
 	if (err != OK) {
 		print_line("Error in analyzer:");
 		const List<GDScriptParser::ParserError> &errors = parser.get_errors();
-		for (const List<GDScriptParser::ParserError>::Element *E = errors.front(); E != nullptr; E = E->next()) {
-			const GDScriptParser::ParserError &error = E->get();
+		for (const GDScriptParser::ParserError &error : errors) {
 			print_line(vformat("%02d:%02d: %s", error.line, error.column, error.message));
 		}
 		return;
@@ -165,7 +161,7 @@ static void test_compiler(const String &p_code, const String &p_script_path, con
 
 	GDScriptCompiler compiler;
 	Ref<GDScript> script;
-	script.instance();
+	script.instantiate();
 	script->set_path(p_script_path);
 
 	err = compiler.compile(&parser, script.ptr(), false);

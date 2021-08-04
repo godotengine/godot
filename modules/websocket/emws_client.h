@@ -45,6 +45,7 @@ private:
 	bool _is_connecting = false;
 	int _in_buf_size = DEF_BUF_SHIFT;
 	int _in_pkt_size = DEF_PKT_SHIFT;
+	int _out_buf_size = DEF_BUF_SHIFT;
 
 	static void _esws_on_connect(void *obj, char *proto);
 	static void _esws_on_message(void *obj, const uint8_t *p_data, int p_data_size, int p_is_string);

@@ -120,9 +120,6 @@ public:
 	void set_texture_rotation(real_t p_rot);
 	real_t get_texture_rotation() const;
 
-	void set_texture_rotation_degrees(real_t p_rot);
-	real_t get_texture_rotation_degrees() const;
-
 	void set_texture_scale(const Size2 &p_scale);
 	Size2 get_texture_scale() const;
 

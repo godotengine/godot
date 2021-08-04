@@ -30,7 +30,7 @@
 
 #include "translation_po.h"
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 
 #ifdef DEBUG_TRANSLATION_PO
 void TranslationPO::print_translation_map() {
@@ -47,8 +47,7 @@ void TranslationPO::print_translation_map() {
 
 	List<StringName> context_l;
 	translation_map.get_key_list(&context_l);
-	for (List<StringName>::Element *E = context_l.front(); E; E = E->next()) {
-		StringName ctx = E->get();
+	for (const StringName &ctx : context_l) {
 		file->store_line(" ===== Context: " + String::utf8(String(ctx).utf8()) + " ===== ");
 		const HashMap<StringName, Vector<StringName>> &inner_map = translation_map[ctx];
 
@@ -74,8 +73,7 @@ Dictionary TranslationPO::_get_messages() const {
 
 	List<StringName> context_l;
 	translation_map.get_key_list(&context_l);
-	for (List<StringName>::Element *E = context_l.front(); E; E = E->next()) {
-		StringName ctx = E->get();
+	for (const StringName &ctx : context_l) {
 		const HashMap<StringName, Vector<StringName>> &id_str_map = translation_map[ctx];
 
 		Dictionary d2;
@@ -98,8 +96,7 @@ void TranslationPO::_set_messages(const Dictionary &p_messages) {
 
 	List<Variant> context_l;
 	p_messages.get_key_list(&context_l);
-	for (List<Variant>::Element *E = context_l.front(); E; E = E->next()) {
-		StringName ctx = E->get();
+	for (const Variant &ctx : context_l) {
 		const Dictionary &id_str_map = p_messages[ctx];
 
 		HashMap<StringName, Vector<StringName>> temp_map;
@@ -121,8 +118,8 @@ Vector<String> TranslationPO::_get_message_list() const {
 	get_message_list(&msgs);
 
 	Vector<String> v;
-	for (List<StringName>::Element *E = msgs.front(); E; E = E->next()) {
-		v.push_back(E->get());
+	for (const StringName &E : msgs) {
+		v.push_back(E);
 	}
 
 	return v;
@@ -188,7 +185,7 @@ void TranslationPO::set_plural_rule(const String &p_plural_rule) {
 	plural_rule = plural_rule.replacen("(", "");
 	plural_rule = plural_rule.replacen(")", "");
 	_cache_plural_tests(plural_rule);
-	expr.instance();
+	expr.instantiate();
 	input_name.push_back("n");
 }
 
@@ -281,13 +278,13 @@ void TranslationPO::get_message_list(List<StringName> *r_messages) const {
 	List<StringName> context_l;
 	translation_map.get_key_list(&context_l);
 
-	for (List<StringName>::Element *E = context_l.front(); E; E = E->next()) {
-		if (String(E->get()) != "") {
+	for (const StringName &E : context_l) {
+		if (String(E) != "") {
 			continue;
 		}
 
 		List<StringName> msgid_l;
-		translation_map[E->get()].get_key_list(&msgid_l);
+		translation_map[E].get_key_list(&msgid_l);
 
 		for (List<StringName>::Element *E2 = msgid_l.front(); E2; E2 = E2->next()) {
 			r_messages->push_back(E2->get());
@@ -300,8 +297,8 @@ int TranslationPO::get_message_count() const {
 	translation_map.get_key_list(&context_l);
 
 	int count = 0;
-	for (List<StringName>::Element *E = context_l.front(); E; E = E->next()) {
-		count += translation_map[E->get()].size();
+	for (const StringName &E : context_l) {
+		count += translation_map[E].size();
 	}
 	return count;
 }

@@ -31,7 +31,7 @@
 #ifndef A_STAR_H
 #define A_STAR_H
 
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/templates/oa_hash_map.h"
 
 /**
@@ -40,8 +40,8 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-class AStar : public Reference {
-	GDCLASS(AStar, Reference);
+class AStar : public RefCounted {
+	GDCLASS(AStar, RefCounted);
 	friend class AStar2D;
 
 	struct Point {
@@ -157,8 +157,8 @@ public:
 	~AStar();
 };
 
-class AStar2D : public Reference {
-	GDCLASS(AStar2D, Reference);
+class AStar2D : public RefCounted {
+	GDCLASS(AStar2D, RefCounted);
 	AStar astar;
 
 	bool _solve(AStar::Point *begin_point, AStar::Point *end_point);

@@ -34,6 +34,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/graph_node.h"
+#include "scene/gui/label.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
@@ -105,6 +106,7 @@ public:
 	};
 
 private:
+	Label *zoom_label;
 	Button *zoom_minus;
 	Button *zoom_reset;
 	Button *zoom_plus;
@@ -113,10 +115,6 @@ private:
 	SpinBox *snap_amount;
 
 	Button *minimap_button;
-
-	void _zoom_minus();
-	void _zoom_reset();
-	void _zoom_plus();
 
 	HScrollBar *h_scroll;
 	VScrollBar *v_scroll;
@@ -144,6 +142,14 @@ private:
 	Vector2 drag_accum;
 
 	float zoom = 1.0;
+	float zoom_step = 1.2;
+	float zoom_min;
+	float zoom_max;
+
+	void _zoom_minus();
+	void _zoom_reset();
+	void _zoom_plus();
+	void _update_zoom_label();
 
 	bool box_selecting = false;
 	bool box_selection_mode_additive = false;
@@ -163,7 +169,7 @@ private:
 
 	void _bake_segment2d(Vector<Vector2> &points, Vector<Color> &colors, float p_begin, float p_end, const Vector2 &p_a, const Vector2 &p_out, const Vector2 &p_b, const Vector2 &p_in, int p_depth, int p_min_depth, int p_max_depth, float p_tol, const Color &p_color, const Color &p_to_color, int &lines) const;
 
-	void _draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width, float p_bezier_ratio);
+	void _draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width, float p_bezier_ratio = 1.0);
 
 	void _graph_node_raised(Node *p_gn);
 	void _graph_node_moved(Node *p_gn);
@@ -229,7 +235,6 @@ protected:
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 	void _notification(int p_what);
-	virtual bool clips_input() const override;
 
 public:
 	Error connect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
@@ -246,6 +251,18 @@ public:
 	void set_zoom(float p_zoom);
 	void set_zoom_custom(float p_zoom, const Vector2 &p_center);
 	float get_zoom() const;
+
+	void set_zoom_min(float p_zoom_min);
+	float get_zoom_min() const;
+
+	void set_zoom_max(float p_zoom_max);
+	float get_zoom_max() const;
+
+	void set_zoom_step(float p_zoom_step);
+	float get_zoom_step() const;
+
+	void set_show_zoom_label(bool p_enable);
+	bool is_showing_zoom_label() const;
 
 	void set_minimap_size(Vector2 p_size);
 	Vector2 get_minimap_size() const;

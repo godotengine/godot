@@ -138,8 +138,8 @@ name="Unnamed Player"
 tagline="Waiting
 for
 Godot"
-color=Color( 0, 0.5, 1, 1 )
-position=Vector2( 3, 4 )
+color=Color(0, 0.5, 1, 1)
+position=Vector2(3, 4)
 
 [graphics]
 

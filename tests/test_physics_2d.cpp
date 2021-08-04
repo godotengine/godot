@@ -386,7 +386,7 @@ public:
 		//_add_plane(Vector2(-1,0).normalized(),-600);
 	}
 
-	virtual bool process(float p_time) override {
+	virtual bool process(double p_time) override {
 		return false;
 	}
 	virtual void finalize() override {

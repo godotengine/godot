@@ -64,7 +64,7 @@ void RaycastOcclusionCull::RaycastHZBuffer::resize(const Size2i &p_size) {
 	camera_ray_masks.resize(ray_packets_count * TILE_SIZE * TILE_SIZE);
 }
 
-void RaycastOcclusionCull::RaycastHZBuffer::update_camera_rays(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, ThreadWorkPool &p_thread_work_pool) {
+void RaycastOcclusionCull::RaycastHZBuffer::update_camera_rays(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, ThreadWorkPool &p_thread_work_pool) {
 	CameraRayThreadData td;
 	td.camera_matrix = p_cam_projection;
 	td.camera_transform = p_cam_transform;
@@ -82,7 +82,7 @@ void RaycastOcclusionCull::RaycastHZBuffer::_camera_rays_threaded(uint32_t p_thr
 	_generate_camera_rays(p_data->camera_transform, p_data->camera_matrix, p_data->camera_orthogonal, from, to);
 }
 
-void RaycastOcclusionCull::RaycastHZBuffer::_generate_camera_rays(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, int p_from, int p_to) {
+void RaycastOcclusionCull::RaycastHZBuffer::_generate_camera_rays(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, int p_from, int p_to) {
 	Size2i buffer_size = sizes[0];
 
 	CameraMatrix inv_camera_matrix = p_cam_projection.inverse();
@@ -227,7 +227,7 @@ void RaycastOcclusionCull::remove_scenario(RID p_scenario) {
 	scenario.removed = true;
 }
 
-void RaycastOcclusionCull::scenario_set_instance(RID p_scenario, RID p_instance, RID p_occluder, const Transform &p_xform, bool p_enabled) {
+void RaycastOcclusionCull::scenario_set_instance(RID p_scenario, RID p_instance, RID p_occluder, const Transform3D &p_xform, bool p_enabled) {
 	ERR_FAIL_COND(!scenarios.has(p_scenario));
 	Scenario &scenario = scenarios[p_scenario];
 
@@ -345,7 +345,7 @@ void RaycastOcclusionCull::Scenario::_transform_vertices_thread(uint32_t p_threa
 	_transform_vertices_range(p_data->read, p_data->write, p_data->xform, from, to);
 }
 
-void RaycastOcclusionCull::Scenario::_transform_vertices_range(const Vector3 *p_read, Vector3 *p_write, const Transform &p_xform, int p_from, int p_to) {
+void RaycastOcclusionCull::Scenario::_transform_vertices_range(const Vector3 *p_read, Vector3 *p_write, const Transform3D &p_xform, int p_from, int p_to) {
 	for (int i = p_from; i < p_to; i++) {
 		p_write[i] = p_xform.xform(p_read[i]);
 	}
@@ -491,7 +491,7 @@ void RaycastOcclusionCull::buffer_set_size(RID p_buffer, const Vector2i &p_size)
 	buffers[p_buffer].resize(p_size);
 }
 
-void RaycastOcclusionCull::buffer_update(RID p_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, ThreadWorkPool &p_thread_pool) {
+void RaycastOcclusionCull::buffer_update(RID p_buffer, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, ThreadWorkPool &p_thread_pool) {
 	if (!buffers.has(p_buffer)) {
 		return;
 	}

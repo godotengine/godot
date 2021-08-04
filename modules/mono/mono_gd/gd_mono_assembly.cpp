@@ -34,8 +34,8 @@
 #include <mono/metadata/tokentype.h>
 
 #include "core/config/project_settings.h"
+#include "core/io/file_access.h"
 #include "core/io/file_access_pack.h"
-#include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "core/templates/list.h"
 
@@ -330,8 +330,8 @@ no_pdb:
 void GDMonoAssembly::unload() {
 	ERR_FAIL_NULL(image); // Should not be called if already unloaded
 
-	for (Map<MonoClass *, GDMonoClass *>::Element *E = cached_raw.front(); E; E = E->next()) {
-		memdelete(E->value());
+	for (const KeyValue<MonoClass *, GDMonoClass *> &E : cached_raw) {
+		memdelete(E.value);
 	}
 
 	cached_classes.clear();

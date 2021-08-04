@@ -128,24 +128,21 @@ void CanvasItemMaterial::_update_shader() {
 	if (particles_animation) {
 		code += "uniform int particles_anim_h_frames;\n";
 		code += "uniform int particles_anim_v_frames;\n";
-		code += "uniform bool particles_anim_loop;\n";
+		code += "uniform bool particles_anim_loop;\n\n";
 
 		code += "void vertex() {\n";
-
-		code += "\tfloat h_frames = float(particles_anim_h_frames);\n";
-		code += "\tfloat v_frames = float(particles_anim_v_frames);\n";
-
-		code += "\tVERTEX.xy /= vec2(h_frames, v_frames);\n";
-
-		code += "\tfloat particle_total_frames = float(particles_anim_h_frames * particles_anim_v_frames);\n";
-		code += "\tfloat particle_frame = floor(INSTANCE_CUSTOM.z * float(particle_total_frames));\n";
-		code += "\tif (!particles_anim_loop) {\n";
-		code += "\t\tparticle_frame = clamp(particle_frame, 0.0, particle_total_frames - 1.0);\n";
-		code += "\t} else {\n";
-		code += "\t\tparticle_frame = mod(particle_frame, particle_total_frames);\n";
-		code += "\t}";
-		code += "\tUV /= vec2(h_frames, v_frames);\n";
-		code += "\tUV += vec2(mod(particle_frame, h_frames) / h_frames, floor(particle_frame / h_frames) / v_frames);\n";
+		code += "	float h_frames = float(particles_anim_h_frames);\n";
+		code += "	float v_frames = float(particles_anim_v_frames);\n";
+		code += "	VERTEX.xy /= vec2(h_frames, v_frames);\n";
+		code += "	float particle_total_frames = float(particles_anim_h_frames * particles_anim_v_frames);\n";
+		code += "	float particle_frame = floor(INSTANCE_CUSTOM.z * float(particle_total_frames));\n";
+		code += "	if (!particles_anim_loop) {\n";
+		code += "		particle_frame = clamp(particle_frame, 0.0, particle_total_frames - 1.0);\n";
+		code += "	} else {\n";
+		code += "		particle_frame = mod(particle_frame, particle_total_frames);\n";
+		code += "	}";
+		code += "	UV /= vec2(h_frames, v_frames);\n";
+		code += "	UV += vec2(mod(particle_frame, h_frames) / h_frames, floor(particle_frame / h_frames) / v_frames);\n";
 		code += "}\n";
 	}
 
@@ -239,7 +236,7 @@ bool CanvasItemMaterial::get_particles_anim_loop() const {
 
 void CanvasItemMaterial::_validate_property(PropertyInfo &property) const {
 	if (property.name.begins_with("particles_anim_") && !particles_animation) {
-		property.usage = 0;
+		property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 
@@ -526,7 +523,7 @@ void CanvasItem::_enter_canvas() {
 			get_viewport()->gui_reset_canvas_sort_index();
 		}
 
-		get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, group, "_top_level_raise_self");
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, group, SNAME("_top_level_raise_self"));
 
 	} else {
 		CanvasItem *parent = get_parent_item();
@@ -545,7 +542,7 @@ void CanvasItem::_exit_canvas() {
 	notification(NOTIFICATION_EXIT_CANVAS, true); //reverse the notification
 	RenderingServer::get_singleton()->canvas_item_set_parent(canvas_item, RID());
 	canvas_layer = nullptr;
-	group = "";
+	group = StringName();
 }
 
 void CanvasItem::_notification(int p_what) {
@@ -591,7 +588,7 @@ void CanvasItem::_notification(int p_what) {
 				break;
 			}
 
-			if (group != "") {
+			if (group != StringName()) {
 				get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, group, "_top_level_raise_self");
 			} else {
 				CanvasItem *p = get_parent_item();
@@ -651,7 +648,7 @@ void CanvasItem::update() {
 
 	pending_update = true;
 
-	MessageQueue::get_singleton()->push_call(this, "_update_callback");
+	MessageQueue::get_singleton()->push_call(this, SNAME("_update_callback"));
 }
 
 void CanvasItem::set_modulate(const Color &p_modulate) {
@@ -876,6 +873,17 @@ void CanvasItem::draw_set_transform_matrix(const Transform2D &p_matrix) {
 
 	RenderingServer::get_singleton()->canvas_item_add_set_transform(canvas_item, p_matrix);
 }
+void CanvasItem::draw_animation_slice(double p_animation_length, double p_slice_begin, double p_slice_end, double p_offset) {
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
+
+	RenderingServer::get_singleton()->canvas_item_add_animation_slice(canvas_item, p_animation_length, p_slice_begin, p_slice_end, p_offset);
+}
+
+void CanvasItem::draw_end_animation() {
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
+
+	RenderingServer::get_singleton()->canvas_item_add_animation_slice(canvas_item, 1, 0, 2, 0);
+}
 
 void CanvasItem::draw_polygon(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
@@ -948,8 +956,7 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 		}
 	}
 
-	for (List<CanvasItem *>::Element *E = p_node->children_items.front(); E; E = E->next()) {
-		CanvasItem *ci = E->get();
+	for (CanvasItem *ci : p_node->children_items) {
 		if (ci->top_level) {
 			continue;
 		}
@@ -1159,6 +1166,8 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_multimesh", "multimesh", "texture"), &CanvasItem::draw_multimesh);
 	ClassDB::bind_method(D_METHOD("draw_set_transform", "position", "rotation", "scale"), &CanvasItem::draw_set_transform, DEFVAL(0.0), DEFVAL(Size2(1.0, 1.0)));
 	ClassDB::bind_method(D_METHOD("draw_set_transform_matrix", "xform"), &CanvasItem::draw_set_transform_matrix);
+	ClassDB::bind_method(D_METHOD("draw_animation_slice", "animation_length", "slice_begin", "slice_end", "offset"), &CanvasItem::draw_animation_slice, DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("draw_end_animation"), &CanvasItem::draw_end_animation);
 	ClassDB::bind_method(D_METHOD("get_transform"), &CanvasItem::get_transform);
 	ClassDB::bind_method(D_METHOD("get_global_transform"), &CanvasItem::get_global_transform);
 	ClassDB::bind_method(D_METHOD("get_global_transform_with_canvas"), &CanvasItem::get_global_transform_with_canvas);
@@ -1205,7 +1214,7 @@ void CanvasItem::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "self_modulate"), "set_self_modulate", "get_self_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_behind_parent"), "set_draw_behind_parent", "is_draw_behind_parent_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "top_level"), "set_as_top_level", "is_set_as_top_level");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_on_top", PROPERTY_HINT_NONE, "", 0), "_set_on_top", "_is_on_top"); //compatibility
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_on_top", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "_set_on_top", "_is_on_top"); //compatibility
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_children"), "set_clip_children", "is_clipping_children");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_light_mask", "get_light_mask");
 
@@ -1214,7 +1223,7 @@ void CanvasItem::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_repeat", PROPERTY_HINT_ENUM, "Inherit,Disabled,Enabled,Mirror"), "set_texture_repeat", "get_texture_repeat");
 
 	ADD_GROUP("Material", "");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,CanvasItemMaterial"), "set_material", "get_material");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemMaterial,ShaderMaterial"), "set_material", "get_material");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_parent_material"), "set_use_parent_material", "get_use_parent_material");
 	// ADD_PROPERTY(PropertyInfo(Variant::BOOL,"transform/notify"),"set_transform_notify","is_transform_notify_enabled");
 
@@ -1324,9 +1333,9 @@ void CanvasItem::_update_texture_filter_changed(bool p_propagate) {
 	update();
 
 	if (p_propagate) {
-		for (List<CanvasItem *>::Element *E = children_items.front(); E; E = E->next()) {
-			if (!E->get()->top_level && E->get()->texture_filter == TEXTURE_FILTER_PARENT_NODE) {
-				E->get()->_update_texture_filter_changed(true);
+		for (CanvasItem *E : children_items) {
+			if (!E->top_level && E->texture_filter == TEXTURE_FILTER_PARENT_NODE) {
+				E->_update_texture_filter_changed(true);
 			}
 		}
 	}
@@ -1364,9 +1373,9 @@ void CanvasItem::_update_texture_repeat_changed(bool p_propagate) {
 	RS::get_singleton()->canvas_item_set_default_texture_repeat(get_canvas_item(), texture_repeat_cache);
 	update();
 	if (p_propagate) {
-		for (List<CanvasItem *>::Element *E = children_items.front(); E; E = E->next()) {
-			if (!E->get()->top_level && E->get()->texture_repeat == TEXTURE_REPEAT_PARENT_NODE) {
-				E->get()->_update_texture_repeat_changed(true);
+		for (CanvasItem *E : children_items) {
+			if (!E->top_level && E->texture_repeat == TEXTURE_REPEAT_PARENT_NODE) {
+				E->_update_texture_repeat_changed(true);
 			}
 		}
 	}

@@ -33,7 +33,7 @@
 
 #ifdef JAVASCRIPT_ENABLED
 
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "emws_peer.h"
 #include "websocket_server.h"
 

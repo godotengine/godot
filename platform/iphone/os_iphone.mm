@@ -33,9 +33,9 @@
 #include "os_iphone.h"
 #import "app_delegate.h"
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/io/file_access_pack.h"
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
 #include "display_server_iphone.h"
 #include "drivers/unix/syslog_logger.h"
 #import "godot_view.h"
@@ -113,6 +113,12 @@ OSIPhone::OSIPhone(String p_data_dir) {
 }
 
 OSIPhone::~OSIPhone() {}
+
+void OSIPhone::alert(const String &p_alert, const String &p_title) {
+	const CharString utf8_alert = p_alert.utf8();
+	const CharString utf8_title = p_title.utf8();
+	iOS::alert(utf8_alert.get_data(), utf8_title.get_data());
+}
 
 void OSIPhone::initialize_core() {
 	OS_Unix::initialize_core();
@@ -219,12 +225,6 @@ Error OSIPhone::get_dynamic_library_symbol_handle(void *p_library_handle, const 
 		}
 	}
 	return OS_Unix::get_dynamic_library_symbol_handle(p_library_handle, p_name, p_symbol_handle, p_optional);
-}
-
-void OSIPhone::alert(const String &p_alert, const String &p_title) {
-	const CharString utf8_alert = p_alert.utf8();
-	const CharString utf8_title = p_title.utf8();
-	iOS::alert(utf8_alert.get_data(), utf8_title.get_data());
 }
 
 String OSIPhone::get_name() const {

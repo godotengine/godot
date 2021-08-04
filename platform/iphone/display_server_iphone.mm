@@ -48,7 +48,7 @@ DisplayServerIPhone *DisplayServerIPhone::get_singleton() {
 	return (DisplayServerIPhone *)DisplayServer::get_singleton();
 }
 
-DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
+DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	rendering_driver = p_rendering_driver;
 
 #if defined(OPENGL_ENABLED)
@@ -108,7 +108,7 @@ DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, Displ
 		}
 
 		Size2i size = Size2i(layer.bounds.size.width, layer.bounds.size.height) * screen_get_max_scale();
-		if (context_vulkan->window_create(MAIN_WINDOW_ID, layer, size.width, size.height) != OK) {
+		if (context_vulkan->window_create(MAIN_WINDOW_ID, p_vsync_mode, layer, size.width, size.height) != OK) {
 			memdelete(context_vulkan);
 			context_vulkan = nullptr;
 			ERR_FAIL_MSG("Failed to create Vulkan window.");
@@ -147,8 +147,8 @@ DisplayServerIPhone::~DisplayServerIPhone() {
 #endif
 }
 
-DisplayServer *DisplayServerIPhone::create_func(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
-	return memnew(DisplayServerIPhone(p_rendering_driver, p_mode, p_flags, p_resolution, r_error));
+DisplayServer *DisplayServerIPhone::create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
+	return memnew(DisplayServerIPhone(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, r_error));
 }
 
 Vector<String> DisplayServerIPhone::get_rendering_drivers_func() {
@@ -224,7 +224,7 @@ void DisplayServerIPhone::_window_callback(const Callable &p_callable, const Var
 void DisplayServerIPhone::touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_double_click) {
 	if (!GLOBAL_DEF("debug/disable_touch", false)) {
 		Ref<InputEventScreenTouch> ev;
-		ev.instance();
+		ev.instantiate();
 
 		ev->set_index(p_idx);
 		ev->set_pressed(p_pressed);
@@ -236,7 +236,7 @@ void DisplayServerIPhone::touch_press(int p_idx, int p_x, int p_y, bool p_presse
 void DisplayServerIPhone::touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y) {
 	if (!GLOBAL_DEF("debug/disable_touch", false)) {
 		Ref<InputEventScreenDrag> ev;
-		ev.instance();
+		ev.instantiate();
 		ev->set_index(p_idx);
 		ev->set_position(Vector2(p_x, p_y));
 		ev->set_relative(Vector2(p_x - p_prev_x, p_y - p_prev_y));
@@ -256,7 +256,7 @@ void DisplayServerIPhone::touches_cancelled(int p_idx) {
 
 void DisplayServerIPhone::key(uint32_t p_key, bool p_pressed) {
 	Ref<InputEventKey> ev;
-	ev.instance();
+	ev.instantiate();
 	ev->set_echo(false);
 	ev->set_pressed(p_pressed);
 	ev->set_keycode(p_key);
@@ -318,12 +318,6 @@ bool DisplayServerIPhone::has_feature(Feature p_feature) const {
 
 String DisplayServerIPhone::get_name() const {
 	return "iPhone";
-}
-
-void DisplayServerIPhone::alert(const String &p_alert, const String &p_title) {
-	const CharString utf8_alert = p_alert.utf8();
-	const CharString utf8_title = p_title.utf8();
-	iOS::alert(utf8_alert.get_data(), utf8_title.get_data());
 }
 
 int DisplayServerIPhone::get_screen_count() const {
@@ -580,4 +574,20 @@ void DisplayServerIPhone::resize_window(CGSize viewSize) {
 
 	Variant resize_rect = Rect2i(Point2i(), size);
 	_window_callback(window_resize_callback, resize_rect);
+}
+
+void DisplayServerIPhone::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+#if defined(VULKAN_ENABLED)
+	context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
+#endif
+}
+
+DisplayServer::VSyncMode DisplayServerIPhone::window_get_vsync_mode(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+#if defined(VULKAN_ENABLED)
+	return context_vulkan->get_vsync_mode(p_window);
+#else
+	return DisplayServer::VSYNC_ENABLED;
+#endif
 }

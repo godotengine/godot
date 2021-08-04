@@ -74,6 +74,7 @@
 #include "test_shader_lang.h"
 #include "test_string.h"
 #include "test_text_server.h"
+#include "test_time.h"
 #include "test_translation.h"
 #include "test_validate_testing.h"
 #include "test_variant.h"
@@ -121,24 +122,27 @@ int test_main(int argc, char *argv[]) {
 			test_args.push_back(arg);
 		}
 	}
-	// Convert Godot command line arguments back to standard arguments.
-	char **doctest_args = new char *[test_args.size()];
-	for (int x = 0; x < test_args.size(); x++) {
-		// Operation to convert Godot string to non wchar string.
-		CharString cs = test_args[x].utf8();
-		const char *str = cs.get_data();
-		// Allocate the string copy.
-		doctest_args[x] = new char[strlen(str) + 1];
-		// Copy this into memory.
-		memcpy(doctest_args[x], str, strlen(str) + 1);
-	}
 
-	test_context.applyCommandLine(test_args.size(), doctest_args);
+	if (test_args.size() > 0) {
+		// Convert Godot command line arguments back to standard arguments.
+		char **doctest_args = new char *[test_args.size()];
+		for (int x = 0; x < test_args.size(); x++) {
+			// Operation to convert Godot string to non wchar string.
+			CharString cs = test_args[x].utf8();
+			const char *str = cs.get_data();
+			// Allocate the string copy.
+			doctest_args[x] = new char[strlen(str) + 1];
+			// Copy this into memory.
+			memcpy(doctest_args[x], str, strlen(str) + 1);
+		}
 
-	for (int x = 0; x < test_args.size(); x++) {
-		delete[] doctest_args[x];
+		test_context.applyCommandLine(test_args.size(), doctest_args);
+
+		for (int x = 0; x < test_args.size(); x++) {
+			delete[] doctest_args[x];
+		}
+		delete[] doctest_args;
 	}
-	delete[] doctest_args;
 
 	return test_context.run();
 }

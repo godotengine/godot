@@ -608,8 +608,8 @@ template <class ShapeA, class ShapeB, bool withMargin = false>
 class SeparatorAxisTest {
 	const ShapeA *shape_A;
 	const ShapeB *shape_B;
-	const Transform *transform_A;
-	const Transform *transform_B;
+	const Transform3D *transform_A;
+	const Transform3D *transform_B;
 	real_t best_depth;
 	Vector3 best_axis;
 	_CollectorCallback *callback;
@@ -629,9 +629,7 @@ public:
 	_FORCE_INLINE_ bool test_axis(const Vector3 &p_axis, bool p_directional = false) {
 		Vector3 axis = p_axis;
 
-		if (Math::abs(axis.x) < CMP_EPSILON &&
-				Math::abs(axis.y) < CMP_EPSILON &&
-				Math::abs(axis.z) < CMP_EPSILON) {
+		if (axis.is_equal_approx(Vector3())) {
 			// strange case, try an upwards separator
 			axis = Vector3(0.0, 1.0, 0.0);
 		}
@@ -750,7 +748,7 @@ public:
 		callback->collided = true;
 	}
 
-	_FORCE_INLINE_ SeparatorAxisTest(const ShapeA *p_shape_A, const Transform &p_transform_A, const ShapeB *p_shape_B, const Transform &p_transform_B, _CollectorCallback *p_callback, real_t p_margin_A = 0, real_t p_margin_B = 0) {
+	_FORCE_INLINE_ SeparatorAxisTest(const ShapeA *p_shape_A, const Transform3D &p_transform_A, const ShapeB *p_shape_B, const Transform3D &p_transform_B, _CollectorCallback *p_callback, real_t p_margin_A = 0, real_t p_margin_B = 0) {
 		best_depth = 1e15;
 		shape_A = p_shape_A;
 		shape_B = p_shape_B;
@@ -764,10 +762,10 @@ public:
 
 /****** SAT TESTS *******/
 
-typedef void (*CollisionFunc)(const Shape3DSW *, const Transform &, const Shape3DSW *, const Transform &, _CollectorCallback *p_callback, real_t, real_t);
+typedef void (*CollisionFunc)(const Shape3DSW *, const Transform3D &, const Shape3DSW *, const Transform3D &, _CollectorCallback *p_callback, real_t, real_t);
 
 template <bool withMargin>
-static void _collision_sphere_sphere(const Shape3DSW *p_a, const Transform &p_transform_a, const Shape3DSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+static void _collision_sphere_sphere(const Shape3DSW *p_a, const Transform3D &p_transform_a, const Shape3DSW *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const SphereShape3DSW *sphere_A = static_cast<const SphereShape3DSW *>(p_a);
 	const SphereShape3DSW *sphere_B = static_cast<const SphereShape3DSW *>(p_b);
 
@@ -787,7 +785,7 @@ static void _collision_sphere_sphere(const Shape3DSW *p_a, const Transform &p_tr
 }
 
 template <bool withMargin>
-static void _collision_sphere_box(const Shape3DSW *p_a, const Transform &p_transform_a, const Shape3DSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+static void _collision_sphere_box(const Shape3DSW *p_a, const Transform3D &p_transform_a, const Shape3DSW *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const SphereShape3DSW *sphere_A = static_cast<const SphereShape3DSW *>(p_a);
 	const BoxShape3DSW *box_B = static_cast<const BoxShape3DSW *>(p_b);
 
@@ -838,7 +836,7 @@ static void _collision_sphere_box(const Shape3DSW *p_a, const Transform &p_trans
 }
 
 template <bool withMargin>
-static void _collision_sphere_capsule(const Shape3DSW *p_a, const Transform &p_transform_a, const Shape3DSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+static void _collision_sphere_capsule(const Shape3DSW *p_a, const Transform3D &p_transform_a, const Shape3DSW *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const SphereShape3DSW *sphere_A = static_cast<const SphereShape3DSW *>(p_a);
 	const CapsuleShape3DSW *capsule_B = static_cast<const CapsuleShape3DSW *>(p_b);
 
@@ -880,7 +878,7 @@ static void _collision_sphere_capsule(const Shape3DSW *p_a, const Transform &p_t
 }
 
 template <bool withMargin>
-static void _collision_sphere_cylinder(const Shape3DSW *p_a, const Transform &p_transform_a, const Shape3DSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+static void _collision_sphere_cylinder(const Shape3DSW *p_a, const Transform3D &p_transform_a, const Shape3DSW *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const SphereShape3DSW *sphere_A = static_cast<const SphereShape3DSW *>(p_a);
 	const CylinderShape3DSW *cylinder_B = static_cast<const CylinderShape3DSW *>(p_b);
 
@@ -939,7 +937,7 @@ static void _collision_sphere_cylinder(const Shape3DSW *p_a, const Transform &p_
 }
 
 template <bool withMargin>
-static void _collision_sphere_convex_polygon(const Shape3DSW *p_a, const Transform &p_transform_a, const Shape3DSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+static void _collision_sphere_convex_polygon(const Shape3DSW *p_a, const Transform3D &p_transform_a, const Shape3DSW *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const SphereShape3DSW *sphere_A = static_cast<const SphereShape3DSW *>(p_a);
 	const ConvexPolygonShape3DSW *convex_polygon_B = static_cast<const ConvexPolygonShape3DSW *>(p_b);
 
@@ -999,7 +997,7 @@ static void _collision_sphere_convex_polygon(const Shape3DSW *p_a, const Transfo
 }
 
 template <bool withMargin>
-static void _collision_sphere_face(const Shape3DSW *p_a, const Transform &p_transform_a, const Shape3DSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+static void _collision_sphere_face(const Shape3DSW *p_a, const Transform3D &p_transform_a, const Shape3DSW *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const SphereShape3DSW *sphere_A = static_cast<const SphereShape3DSW *>(p_a);
 	const FaceShape3DSW *face_B = static_cast<const FaceShape3DSW *>(p_b);
 
@@ -1024,7 +1022,7 @@ static void _collision_sphere_face(const Shape3DSW *p_a, const Transform &p_tran
 			n1 *= -1.0;
 		}
 
-		if (!separator.test_axis(n1.normalized(), !face_B->backface_collision)) {
+		if (!separator.test_axis(n1.normalized())) {
 			return;
 		}
 
@@ -1035,7 +1033,7 @@ static void _collision_sphere_face(const Shape3DSW *p_a, const Transform &p_tran
 			axis *= -1.0;
 		}
 
-		if (!separator.test_axis(axis, !face_B->backface_collision)) {
+		if (!separator.test_axis(axis)) {
 			return;
 		}
 	}
@@ -1044,7 +1042,7 @@ static void _collision_sphere_face(const Shape3DSW *p_a, const Transform &p_tran
 }
 
 template <bool withMargin>
-static void _collision_box_box(const Shape3DSW *p_a, const Transform &p_transform_a, const Shape3DSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+static void _collision_box_box(const Shape3DSW *p_a, const Transform3D &p_transform_a, const Shape3DSW *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const BoxShape3DSW *box_A = static_cast<const BoxShape3DSW *>(p_a);
 	const BoxShape3DSW *box_B = static_cast<const BoxShape3DSW *>(p_b);
 
@@ -1142,7 +1140,7 @@ static void _collision_box_box(const Shape3DSW *p_a, const Transform &p_transfor
 }
 
 template <bool withMargin>
-static void _collision_box_capsule(const Shape3DSW *p_a, const Transform &p_transform_a, const Shape3DSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+static void _collision_box_capsule(const Shape3DSW *p_a, const Transform3D &p_transform_a, const Shape3DSW *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const BoxShape3DSW *box_A = static_cast<const BoxShape3DSW *>(p_a);
 	const CapsuleShape3DSW *capsule_B = static_cast<const CapsuleShape3DSW *>(p_b);
 
@@ -1240,7 +1238,7 @@ static void _collision_box_capsule(const Shape3DSW *p_a, const Transform &p_tran
 }
 
 template <bool withMargin>
-static void _collision_box_cylinder(const Shape3DSW *p_a, const Transform &p_transform_a, const Shape3DSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+static void _collision_box_cylinder(const Shape3DSW *p_a, const Transform3D &p_transform_a, const Shape3DSW *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const BoxShape3DSW *box_A = static_cast<const BoxShape3DSW *>(p_a);
 	const CylinderShape3DSW *cylinder_B = static_cast<const CylinderShape3DSW *>(p_b);
 
@@ -1353,7 +1351,7 @@ static void _collision_box_cylinder(const Shape3DSW *p_a, const Transform &p_tra
 }
 
 template <bool withMargin>
-static void _collision_box_convex_polygon(const Shape3DSW *p_a, const Transform &p_transform_a, const Shape3DSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+static void _collision_box_convex_polygon(const Shape3DSW *p_a, const Transform3D &p_transform_a, const Shape3DSW *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const BoxShape3DSW *box_A = static_cast<const BoxShape3DSW *>(p_a);
 	const ConvexPolygonShape3DSW *convex_polygon_B = static_cast<const ConvexPolygonShape3DSW *>(p_b);
 
@@ -1468,7 +1466,7 @@ static void _collision_box_convex_polygon(const Shape3DSW *p_a, const Transform 
 }
 
 template <bool withMargin>
-static void _collision_box_face(const Shape3DSW *p_a, const Transform &p_transform_a, const Shape3DSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+static void _collision_box_face(const Shape3DSW *p_a, const Transform3D &p_transform_a, const Shape3DSW *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const BoxShape3DSW *box_A = static_cast<const BoxShape3DSW *>(p_a);
 	const FaceShape3DSW *face_B = static_cast<const FaceShape3DSW *>(p_b);
 
@@ -1493,7 +1491,7 @@ static void _collision_box_face(const Shape3DSW *p_a, const Transform &p_transfo
 			axis *= -1.0;
 		}
 
-		if (!separator.test_axis(axis, !face_B->backface_collision)) {
+		if (!separator.test_axis(axis)) {
 			return;
 		}
 	}
@@ -1509,7 +1507,7 @@ static void _collision_box_face(const Shape3DSW *p_a, const Transform &p_transfo
 				axis *= -1.0;
 			}
 
-			if (!separator.test_axis(axis, !face_B->backface_collision)) {
+			if (!separator.test_axis(axis)) {
 				return;
 			}
 		}
@@ -1533,7 +1531,7 @@ static void _collision_box_face(const Shape3DSW *p_a, const Transform &p_transfo
 				axis_ab *= -1.0;
 			}
 
-			if (!separator.test_axis(axis_ab.normalized(), !face_B->backface_collision)) {
+			if (!separator.test_axis(axis_ab.normalized())) {
 				return;
 			}
 
@@ -1548,7 +1546,7 @@ static void _collision_box_face(const Shape3DSW *p_a, const Transform &p_transfo
 					axis *= -1.0;
 				}
 
-				if (!separator.test_axis(axis, !face_B->backface_collision)) {
+				if (!separator.test_axis(axis)) {
 					return;
 				}
 			}
@@ -1578,7 +1576,7 @@ static void _collision_box_face(const Shape3DSW *p_a, const Transform &p_transfo
 							axis *= -1.0;
 						}
 
-						if (!separator.test_axis(axis, !face_B->backface_collision)) {
+						if (!separator.test_axis(axis)) {
 							return;
 						}
 					}
@@ -1591,7 +1589,7 @@ static void _collision_box_face(const Shape3DSW *p_a, const Transform &p_transfo
 }
 
 template <bool withMargin>
-static void _collision_capsule_capsule(const Shape3DSW *p_a, const Transform &p_transform_a, const Shape3DSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+static void _collision_capsule_capsule(const Shape3DSW *p_a, const Transform3D &p_transform_a, const Shape3DSW *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const CapsuleShape3DSW *capsule_A = static_cast<const CapsuleShape3DSW *>(p_a);
 	const CapsuleShape3DSW *capsule_B = static_cast<const CapsuleShape3DSW *>(p_b);
 
@@ -1655,7 +1653,7 @@ static void _collision_capsule_capsule(const Shape3DSW *p_a, const Transform &p_
 }
 
 template <bool withMargin>
-static void _collision_capsule_cylinder(const Shape3DSW *p_a, const Transform &p_transform_a, const Shape3DSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+static void _collision_capsule_cylinder(const Shape3DSW *p_a, const Transform3D &p_transform_a, const Shape3DSW *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const CapsuleShape3DSW *capsule_A = static_cast<const CapsuleShape3DSW *>(p_a);
 	const CylinderShape3DSW *cylinder_B = static_cast<const CylinderShape3DSW *>(p_b);
 
@@ -1717,7 +1715,7 @@ static void _collision_capsule_cylinder(const Shape3DSW *p_a, const Transform &p
 }
 
 template <bool withMargin>
-static void _collision_capsule_convex_polygon(const Shape3DSW *p_a, const Transform &p_transform_a, const Shape3DSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+static void _collision_capsule_convex_polygon(const Shape3DSW *p_a, const Transform3D &p_transform_a, const Shape3DSW *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const CapsuleShape3DSW *capsule_A = static_cast<const CapsuleShape3DSW *>(p_a);
 	const ConvexPolygonShape3DSW *convex_polygon_B = static_cast<const ConvexPolygonShape3DSW *>(p_b);
 
@@ -1781,7 +1779,7 @@ static void _collision_capsule_convex_polygon(const Shape3DSW *p_a, const Transf
 }
 
 template <bool withMargin>
-static void _collision_capsule_face(const Shape3DSW *p_a, const Transform &p_transform_a, const Shape3DSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+static void _collision_capsule_face(const Shape3DSW *p_a, const Transform3D &p_transform_a, const Shape3DSW *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const CapsuleShape3DSW *capsule_A = static_cast<const CapsuleShape3DSW *>(p_a);
 	const FaceShape3DSW *face_B = static_cast<const FaceShape3DSW *>(p_b);
 
@@ -1812,7 +1810,7 @@ static void _collision_capsule_face(const Shape3DSW *p_a, const Transform &p_tra
 			axis *= -1.0;
 		}
 
-		if (!separator.test_axis(axis, !face_B->backface_collision)) {
+		if (!separator.test_axis(axis)) {
 			return;
 		}
 
@@ -1821,7 +1819,7 @@ static void _collision_capsule_face(const Shape3DSW *p_a, const Transform &p_tra
 			dir_axis *= -1.0;
 		}
 
-		if (!separator.test_axis(dir_axis, !face_B->backface_collision)) {
+		if (!separator.test_axis(dir_axis)) {
 			return;
 		}
 
@@ -1834,7 +1832,7 @@ static void _collision_capsule_face(const Shape3DSW *p_a, const Transform &p_tra
 				n1 *= -1.0;
 			}
 
-			if (!separator.test_axis(n1.normalized(), !face_B->backface_collision)) {
+			if (!separator.test_axis(n1.normalized())) {
 				return;
 			}
 
@@ -1845,7 +1843,7 @@ static void _collision_capsule_face(const Shape3DSW *p_a, const Transform &p_tra
 				axis *= -1.0;
 			}
 
-			if (!separator.test_axis(axis.normalized(), !face_B->backface_collision)) {
+			if (!separator.test_axis(axis.normalized())) {
 				return;
 			}
 		}
@@ -1855,7 +1853,7 @@ static void _collision_capsule_face(const Shape3DSW *p_a, const Transform &p_tra
 }
 
 template <bool withMargin>
-static void _collision_cylinder_cylinder(const Shape3DSW *p_a, const Transform &p_transform_a, const Shape3DSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+static void _collision_cylinder_cylinder(const Shape3DSW *p_a, const Transform3D &p_transform_a, const Shape3DSW *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const CylinderShape3DSW *cylinder_A = static_cast<const CylinderShape3DSW *>(p_a);
 	const CylinderShape3DSW *cylinder_B = static_cast<const CylinderShape3DSW *>(p_b);
 
@@ -1909,7 +1907,7 @@ static void _collision_cylinder_cylinder(const Shape3DSW *p_a, const Transform &
 }
 
 template <bool withMargin>
-static void _collision_cylinder_convex_polygon(const Shape3DSW *p_a, const Transform &p_transform_a, const Shape3DSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+static void _collision_cylinder_convex_polygon(const Shape3DSW *p_a, const Transform3D &p_transform_a, const Shape3DSW *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const CylinderShape3DSW *cylinder_A = static_cast<const CylinderShape3DSW *>(p_a);
 	const ConvexPolygonShape3DSW *convex_polygon_B = static_cast<const ConvexPolygonShape3DSW *>(p_b);
 
@@ -1926,7 +1924,7 @@ static void _collision_cylinder_convex_polygon(const Shape3DSW *p_a, const Trans
 }
 
 template <bool withMargin>
-static void _collision_cylinder_face(const Shape3DSW *p_a, const Transform &p_transform_a, const Shape3DSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+static void _collision_cylinder_face(const Shape3DSW *p_a, const Transform3D &p_transform_a, const Shape3DSW *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const CylinderShape3DSW *cylinder_A = static_cast<const CylinderShape3DSW *>(p_a);
 	const FaceShape3DSW *face_B = static_cast<const FaceShape3DSW *>(p_b);
 
@@ -1955,7 +1953,7 @@ static void _collision_cylinder_face(const Shape3DSW *p_a, const Transform &p_tr
 	}
 
 	// Cylinder end caps.
-	if (!separator.test_axis(cyl_axis, !face_B->backface_collision)) {
+	if (!separator.test_axis(cyl_axis)) {
 		return;
 	}
 
@@ -1971,7 +1969,7 @@ static void _collision_cylinder_face(const Shape3DSW *p_a, const Transform &p_tr
 			axis *= -1.0;
 		}
 
-		if (!separator.test_axis(axis.normalized(), !face_B->backface_collision)) {
+		if (!separator.test_axis(axis.normalized())) {
 			return;
 		}
 	}
@@ -1984,7 +1982,7 @@ static void _collision_cylinder_face(const Shape3DSW *p_a, const Transform &p_tr
 			axis *= -1.0;
 		}
 
-		if (!separator.test_axis(axis, !face_B->backface_collision)) {
+		if (!separator.test_axis(axis)) {
 			return;
 		}
 	}
@@ -2021,7 +2019,7 @@ static void _collision_cylinder_face(const Shape3DSW *p_a, const Transform &p_tr
 				axis *= -1.0;
 			}
 
-			if (!separator.test_axis(axis.normalized(), !face_B->backface_collision)) {
+			if (!separator.test_axis(axis.normalized())) {
 				return;
 			}
 		}
@@ -2031,7 +2029,7 @@ static void _collision_cylinder_face(const Shape3DSW *p_a, const Transform &p_tr
 }
 
 template <bool withMargin>
-static void _collision_convex_polygon_convex_polygon(const Shape3DSW *p_a, const Transform &p_transform_a, const Shape3DSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+static void _collision_convex_polygon_convex_polygon(const Shape3DSW *p_a, const Transform3D &p_transform_a, const Shape3DSW *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const ConvexPolygonShape3DSW *convex_polygon_A = static_cast<const ConvexPolygonShape3DSW *>(p_a);
 	const ConvexPolygonShape3DSW *convex_polygon_B = static_cast<const ConvexPolygonShape3DSW *>(p_b);
 
@@ -2140,7 +2138,7 @@ static void _collision_convex_polygon_convex_polygon(const Shape3DSW *p_a, const
 }
 
 template <bool withMargin>
-static void _collision_convex_polygon_face(const Shape3DSW *p_a, const Transform &p_transform_a, const Shape3DSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+static void _collision_convex_polygon_face(const Shape3DSW *p_a, const Transform3D &p_transform_a, const Shape3DSW *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const ConvexPolygonShape3DSW *convex_polygon_A = static_cast<const ConvexPolygonShape3DSW *>(p_a);
 	const FaceShape3DSW *face_B = static_cast<const FaceShape3DSW *>(p_b);
 
@@ -2175,7 +2173,7 @@ static void _collision_convex_polygon_face(const Shape3DSW *p_a, const Transform
 			axis *= -1.0;
 		}
 
-		if (!separator.test_axis(axis, !face_B->backface_collision)) {
+		if (!separator.test_axis(axis)) {
 			return;
 		}
 	}
@@ -2192,7 +2190,7 @@ static void _collision_convex_polygon_face(const Shape3DSW *p_a, const Transform
 				axis *= -1.0;
 			}
 
-			if (!separator.test_axis(axis, !face_B->backface_collision)) {
+			if (!separator.test_axis(axis)) {
 				return;
 			}
 		}
@@ -2209,7 +2207,7 @@ static void _collision_convex_polygon_face(const Shape3DSW *p_a, const Transform
 					axis *= -1.0;
 				}
 
-				if (!separator.test_axis(axis, !face_B->backface_collision)) {
+				if (!separator.test_axis(axis)) {
 					return;
 				}
 			}
@@ -2229,7 +2227,7 @@ static void _collision_convex_polygon_face(const Shape3DSW *p_a, const Transform
 					axis *= -1.0;
 				}
 
-				if (!separator.test_axis(axis, !face_B->backface_collision)) {
+				if (!separator.test_axis(axis)) {
 					return;
 				}
 			}
@@ -2248,7 +2246,7 @@ static void _collision_convex_polygon_face(const Shape3DSW *p_a, const Transform
 					axis *= -1.0;
 				}
 
-				if (!separator.test_axis(axis, !face_B->backface_collision)) {
+				if (!separator.test_axis(axis)) {
 					return;
 				}
 			}
@@ -2258,7 +2256,7 @@ static void _collision_convex_polygon_face(const Shape3DSW *p_a, const Transform
 	separator.generate_contacts();
 }
 
-bool sat_calculate_penetration(const Shape3DSW *p_shape_A, const Transform &p_transform_A, const Shape3DSW *p_shape_B, const Transform &p_transform_B, CollisionSolver3DSW::CallbackResult p_result_callback, void *p_userdata, bool p_swap, Vector3 *r_prev_axis, real_t p_margin_a, real_t p_margin_b) {
+bool sat_calculate_penetration(const Shape3DSW *p_shape_A, const Transform3D &p_transform_A, const Shape3DSW *p_shape_B, const Transform3D &p_transform_B, CollisionSolver3DSW::CallbackResult p_result_callback, void *p_userdata, bool p_swap, Vector3 *r_prev_axis, real_t p_margin_a, real_t p_margin_b) {
 	PhysicsServer3D::ShapeType type_A = p_shape_A->get_type();
 
 	ERR_FAIL_COND_V(type_A == PhysicsServer3D::SHAPE_PLANE, false);
@@ -2358,8 +2356,8 @@ bool sat_calculate_penetration(const Shape3DSW *p_shape_A, const Transform &p_tr
 
 	const Shape3DSW *A = p_shape_A;
 	const Shape3DSW *B = p_shape_B;
-	const Transform *transform_A = &p_transform_A;
-	const Transform *transform_B = &p_transform_B;
+	const Transform3D *transform_A = &p_transform_A;
+	const Transform3D *transform_B = &p_transform_B;
 	real_t margin_A = p_margin_a;
 	real_t margin_B = p_margin_b;
 

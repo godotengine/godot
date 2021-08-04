@@ -172,7 +172,7 @@ RID RendererSceneOcclusionCull::HZBuffer::get_debug_texture() {
 	}
 
 	if (debug_image.is_null()) {
-		debug_image.instance();
+		debug_image.instantiate();
 	}
 
 	unsigned char *ptrw = debug_data.ptrw();
@@ -185,7 +185,7 @@ RID RendererSceneOcclusionCull::HZBuffer::get_debug_texture() {
 	if (debug_texture.is_null()) {
 		debug_texture = RS::get_singleton()->texture_2d_create(debug_image);
 	} else {
-		RenderingServer::get_singleton()->texture_2d_update_immediate(debug_texture, debug_image);
+		RenderingServer::get_singleton()->texture_2d_update(debug_texture, debug_image);
 	}
 
 	return debug_texture;

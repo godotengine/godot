@@ -36,17 +36,17 @@
 #include <stdlib.h>
 
 static _FORCE_INLINE_ void get_uv_and_normal(const Vector3 &p_pos, const Vector3 *p_vtx, const Vector2 *p_uv, const Vector3 *p_normal, Vector2 &r_uv, Vector3 &r_normal) {
-	if (p_pos.distance_squared_to(p_vtx[0]) < CMP_EPSILON2) {
+	if (p_pos.is_equal_approx(p_vtx[0])) {
 		r_uv = p_uv[0];
 		r_normal = p_normal[0];
 		return;
 	}
-	if (p_pos.distance_squared_to(p_vtx[1]) < CMP_EPSILON2) {
+	if (p_pos.is_equal_approx(p_vtx[1])) {
 		r_uv = p_uv[1];
 		r_normal = p_normal[1];
 		return;
 	}
-	if (p_pos.distance_squared_to(p_vtx[2]) < CMP_EPSILON2) {
+	if (p_pos.is_equal_approx(p_vtx[2])) {
 		r_uv = p_uv[2];
 		r_normal = p_normal[2];
 		return;
@@ -378,7 +378,7 @@ Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material
 	return mc;
 }
 
-void Voxelizer::plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material) {
+void Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material) {
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
 		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
 			continue; //only triangles
@@ -647,11 +647,11 @@ void Voxelizer::begin_bake(int p_subdiv, const AABB &p_bounds) {
 		po2_bounds.size[i] = po2_bounds.size[longest_axis];
 	}
 
-	Transform to_bounds;
+	Transform3D to_bounds;
 	to_bounds.basis.scale(Vector3(po2_bounds.size[longest_axis], po2_bounds.size[longest_axis], po2_bounds.size[longest_axis]));
 	to_bounds.origin = po2_bounds.position;
 
-	Transform to_grid;
+	Transform3D to_grid;
 	to_grid.basis.scale(Vector3(axis_cell_size[longest_axis], axis_cell_size[longest_axis], axis_cell_size[longest_axis]));
 
 	to_cell_space = to_grid * to_bounds.affine_inverse();
@@ -668,19 +668,19 @@ void Voxelizer::end_bake() {
 
 //create the data for visual server
 
-int Voxelizer::get_gi_probe_octree_depth() const {
+int Voxelizer::get_voxel_gi_octree_depth() const {
 	return cell_subdiv;
 }
 
-Vector3i Voxelizer::get_giprobe_octree_size() const {
+Vector3i Voxelizer::get_voxel_gi_octree_size() const {
 	return Vector3i(axis_cell_size[0], axis_cell_size[1], axis_cell_size[2]);
 }
 
-int Voxelizer::get_giprobe_cell_count() const {
+int Voxelizer::get_voxel_gi_cell_count() const {
 	return bake_cells.size();
 }
 
-Vector<uint8_t> Voxelizer::get_giprobe_octree_cells() const {
+Vector<uint8_t> Voxelizer::get_voxel_gi_octree_cells() const {
 	Vector<uint8_t> data;
 	data.resize((8 * 4) * bake_cells.size()); //8 uint32t values
 	{
@@ -700,7 +700,7 @@ Vector<uint8_t> Voxelizer::get_giprobe_octree_cells() const {
 	return data;
 }
 
-Vector<uint8_t> Voxelizer::get_giprobe_data_cells() const {
+Vector<uint8_t> Voxelizer::get_voxel_gi_data_cells() const {
 	Vector<uint8_t> data;
 	data.resize((4 * 4) * bake_cells.size()); //8 uint32t values
 	{
@@ -755,7 +755,7 @@ Vector<uint8_t> Voxelizer::get_giprobe_data_cells() const {
 	return data;
 }
 
-Vector<int> Voxelizer::get_giprobe_level_cell_count() const {
+Vector<int> Voxelizer::get_voxel_gi_level_cell_count() const {
 	uint32_t cell_count = bake_cells.size();
 	const Cell *cells = bake_cells.ptr();
 	Vector<int> level_count;
@@ -819,7 +819,7 @@ static void edt(float *f, int stride, int n) {
 #undef square
 
 Vector<uint8_t> Voxelizer::get_sdf_3d_image() const {
-	Vector3i octree_size = get_giprobe_octree_size();
+	Vector3i octree_size = get_voxel_gi_octree_size();
 
 	uint32_t float_count = octree_size.x * octree_size.y * octree_size.z;
 	float *work_memory = memnew_arr(float, float_count);
@@ -891,7 +891,7 @@ Vector<uint8_t> Voxelizer::get_sdf_3d_image() const {
 void Voxelizer::_debug_mesh(int p_idx, int p_level, const AABB &p_aabb, Ref<MultiMesh> &p_multimesh, int &idx) {
 	if (p_level == cell_subdiv - 1) {
 		Vector3 center = p_aabb.position + p_aabb.size * 0.5;
-		Transform xform;
+		Transform3D xform;
 		xform.origin = center;
 		xform.basis.scale(p_aabb.size * 0.5);
 		p_multimesh->set_instance_transform(idx, xform);
@@ -931,14 +931,14 @@ void Voxelizer::_debug_mesh(int p_idx, int p_level, const AABB &p_aabb, Ref<Mult
 Ref<MultiMesh> Voxelizer::create_debug_multimesh() {
 	Ref<MultiMesh> mm;
 
-	mm.instance();
+	mm.instantiate();
 
 	mm->set_transform_format(MultiMesh::TRANSFORM_3D);
 	mm->set_use_colors(true);
 	mm->set_instance_count(leaf_voxel_count);
 
 	Ref<ArrayMesh> mesh;
-	mesh.instance();
+	mesh.instantiate();
 
 	{
 		Array arr;
@@ -985,7 +985,7 @@ Ref<MultiMesh> Voxelizer::create_debug_multimesh() {
 
 	{
 		Ref<StandardMaterial3D> fsm;
-		fsm.instance();
+		fsm.instantiate();
 		fsm->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 		fsm->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 		fsm->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
@@ -1002,7 +1002,7 @@ Ref<MultiMesh> Voxelizer::create_debug_multimesh() {
 	return mm;
 }
 
-Transform Voxelizer::get_to_cell_space_xform() const {
+Transform3D Voxelizer::get_to_cell_space_xform() const {
 	return to_cell_space;
 }
 

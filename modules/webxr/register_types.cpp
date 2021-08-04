@@ -34,11 +34,11 @@
 #include "webxr_interface_js.h"
 
 void register_webxr_types() {
-	ClassDB::register_virtual_class<WebXRInterface>();
+	GDREGISTER_VIRTUAL_CLASS(WebXRInterface);
 
 #ifdef JAVASCRIPT_ENABLED
 	Ref<WebXRInterfaceJS> webxr;
-	webxr.instance();
+	webxr.instantiate();
 	XRServer::get_singleton()->add_interface(webxr);
 #endif
 }

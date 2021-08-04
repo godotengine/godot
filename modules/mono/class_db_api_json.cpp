@@ -33,8 +33,8 @@
 #ifdef DEBUG_METHODS_ENABLED
 
 #include "core/config/project_settings.h"
+#include "core/io/file_access.h"
 #include "core/io/json.h"
-#include "core/os/file_access.h"
 #include "core/version.h"
 
 void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
@@ -50,8 +50,8 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 	//must be alphabetically sorted for hash to compute
 	names.sort_custom<StringName::AlphCompare>();
 
-	for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-		ClassDB::ClassInfo *t = ClassDB::classes.getptr(E->get());
+	for (const StringName &E : names) {
+		ClassDB::ClassInfo *t = ClassDB::classes.getptr(E);
 		ERR_FAIL_COND(!t);
 		if (t->api != p_api || !t->exposed) {
 			continue;
@@ -84,11 +84,11 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			Array methods;
 
-			for (List<StringName>::Element *F = snames.front(); F; F = F->next()) {
+			for (const StringName &F : snames) {
 				Dictionary method_dict;
 				methods.push_back(method_dict);
 
-				MethodBind *mb = t->method_map[F->get()];
+				MethodBind *mb = t->method_map[F];
 				method_dict["name"] = mb->get_name();
 				method_dict["argument_count"] = mb->get_argument_count();
 				method_dict["return_type"] = mb->get_argument_type(-1);
@@ -141,12 +141,12 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			Array constants;
 
-			for (List<StringName>::Element *F = snames.front(); F; F = F->next()) {
+			for (const StringName &F : snames) {
 				Dictionary constant_dict;
 				constants.push_back(constant_dict);
 
-				constant_dict["name"] = F->get();
-				constant_dict["value"] = t->constant_map[F->get()];
+				constant_dict["name"] = F;
+				constant_dict["value"] = t->constant_map[F];
 			}
 
 			if (!constants.is_empty()) {
@@ -168,12 +168,12 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			Array signals;
 
-			for (List<StringName>::Element *F = snames.front(); F; F = F->next()) {
+			for (const StringName &F : snames) {
 				Dictionary signal_dict;
 				signals.push_back(signal_dict);
 
-				MethodInfo &mi = t->signal_map[F->get()];
-				signal_dict["name"] = F->get();
+				MethodInfo &mi = t->signal_map[F];
+				signal_dict["name"] = F;
 
 				Array arguments;
 				signal_dict["arguments"] = arguments;
@@ -203,13 +203,13 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			Array properties;
 
-			for (List<StringName>::Element *F = snames.front(); F; F = F->next()) {
+			for (const StringName &F : snames) {
 				Dictionary property_dict;
 				properties.push_back(property_dict);
 
-				ClassDB::PropertySetGet *psg = t->property_setget.getptr(F->get());
+				ClassDB::PropertySetGet *psg = t->property_setget.getptr(F);
 
-				property_dict["name"] = F->get();
+				property_dict["name"] = F;
 				property_dict["setter"] = psg->setter;
 				property_dict["getter"] = psg->getter;
 			}
@@ -222,15 +222,15 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 		Array property_list;
 
 		//property list
-		for (List<PropertyInfo>::Element *F = t->property_list.front(); F; F = F->next()) {
+		for (const PropertyInfo &F : t->property_list) {
 			Dictionary property_dict;
 			property_list.push_back(property_dict);
 
-			property_dict["name"] = F->get().name;
-			property_dict["type"] = F->get().type;
-			property_dict["hint"] = F->get().hint;
-			property_dict["hint_string"] = F->get().hint_string;
-			property_dict["usage"] = F->get().usage;
+			property_dict["name"] = F.name;
+			property_dict["type"] = F.type;
+			property_dict["hint"] = F.hint;
+			property_dict["hint_string"] = F.hint_string;
+			property_dict["usage"] = F.usage;
 		}
 
 		if (!property_list.is_empty()) {
@@ -240,7 +240,8 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 	FileAccessRef f = FileAccess::open(p_output_file, FileAccess::WRITE);
 	ERR_FAIL_COND_MSG(!f, "Cannot open file '" + p_output_file + "'.");
-	f->store_string(JSON::print(classes_dict, /*indent: */ "\t"));
+	JSON json;
+	f->store_string(json.stringify(classes_dict, "\t"));
 	f->close();
 
 	print_line(String() + "ClassDB API JSON written to: " + ProjectSettings::get_singleton()->globalize_path(p_output_file));

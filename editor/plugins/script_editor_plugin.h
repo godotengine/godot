@@ -80,7 +80,7 @@ public:
 
 	virtual Ref<EditorSyntaxHighlighter> _create() const override;
 
-	EditorStandardSyntaxHighlighter() { highlighter.instance(); }
+	EditorStandardSyntaxHighlighter() { highlighter.instantiate(); }
 };
 
 class EditorPlainTextSyntaxHighlighter : public EditorSyntaxHighlighter {
@@ -162,6 +162,7 @@ public:
 	virtual void set_tooltip_request_func(String p_method, Object *p_obj) = 0;
 	virtual Control *get_edit_menu() = 0;
 	virtual void clear_edit_menu() = 0;
+	virtual void set_find_replace_bar(FindReplaceBar *p_bar) = 0;
 
 	virtual Control *get_base_editor() const = 0;
 
@@ -270,6 +271,7 @@ class ScriptEditor : public PanelContainer {
 	ConfirmationDialog *erase_tab_confirm;
 	ScriptCreateDialog *script_create_dialog;
 	Button *scripts_visible;
+	FindReplaceBar *find_replace_bar;
 
 	String current_theme;
 
@@ -326,6 +328,7 @@ class ScriptEditor : public PanelContainer {
 	void _show_error_dialog(String p_path);
 
 	void _close_tab(int p_idx, bool p_save = true, bool p_history_back = true);
+	void _update_find_replace_bar();
 
 	void _close_current_tab(bool p_save = true);
 	void _close_discard_current_tab(const String &p_str);

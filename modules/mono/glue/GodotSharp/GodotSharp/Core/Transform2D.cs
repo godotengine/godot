@@ -1,10 +1,10 @@
-using System;
-using System.Runtime.InteropServices;
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
 using real_t = System.Single;
 #endif
+using System;
+using System.Runtime.InteropServices;
 
 namespace Godot
 {
@@ -492,22 +492,12 @@ namespace Godot
 
         public override string ToString()
         {
-            return String.Format("({0}, {1}, {2})", new object[]
-            {
-                x.ToString(),
-                y.ToString(),
-                origin.ToString()
-            });
+            return $"[X: {x}, Y: {y}, O: {origin}]";
         }
 
         public string ToString(string format)
         {
-            return String.Format("({0}, {1}, {2})", new object[]
-            {
-                x.ToString(format),
-                y.ToString(format),
-                origin.ToString(format)
-            });
+            return $"[X: {x.ToString(format)}, Y: {y.ToString(format)}, O: {origin.ToString(format)}]";
         }
     }
 }

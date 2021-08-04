@@ -72,7 +72,9 @@ def get_opts():
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
         BoolVariable("use_msan", "Use LLVM compiler memory sanitizer (MSAN)", False),
         BoolVariable("pulseaudio", "Detect and use PulseAudio", True),
+        BoolVariable("dbus", "Detect and use D-Bus to handle screensaver", True),
         BoolVariable("udev", "Use udev for gamepad connection callbacks", True),
+        BoolVariable("x11", "Enable X11 display", True),
         BoolVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", True),
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         BoolVariable("touch", "Enable touch events", True),
@@ -346,6 +348,14 @@ def configure(env):
         else:
             print("PulseAudio development libraries not found, disabling driver")
 
+    if env["dbus"]:
+        if os.system("pkg-config --exists dbus-1") == 0:  # 0 means found
+            print("Enabling D-Bus")
+            env.Append(CPPDEFINES=["DBUS_ENABLED"])
+            env.ParseConfig("pkg-config --cflags --libs dbus-1")
+        else:
+            print("D-Bus development libraries not found, disabling dependent features")
+
     if platform.system() == "Linux":
         env.Append(CPPDEFINES=["JOYDEV_ENABLED"])
         if env["udev"]:
@@ -362,18 +372,26 @@ def configure(env):
         env.ParseConfig("pkg-config zlib --cflags --libs")
 
     env.Prepend(CPPPATH=["#platform/linuxbsd"])
-    env.Append(CPPDEFINES=["X11_ENABLED", "UNIX_ENABLED"])
+
+    if env["x11"]:
+        if not env["vulkan"]:
+            print("Error: X11 support requires vulkan=yes")
+            env.Exit(255)
+        env.Append(CPPDEFINES=["X11_ENABLED"])
+
+    env.Append(CPPDEFINES=["UNIX_ENABLED"])
     env.Append(CPPDEFINES=[("_FILE_OFFSET_BITS", 64)])
 
-    env.Append(CPPDEFINES=["VULKAN_ENABLED"])
-    if not env["builtin_vulkan"]:
-        env.ParseConfig("pkg-config vulkan --cflags --libs")
-    if not env["builtin_glslang"]:
-        # No pkgconfig file for glslang so far
-        env.Append(LIBS=["glslang", "SPIRV"])
+    if env["vulkan"]:
+        env.Append(CPPDEFINES=["VULKAN_ENABLED"])
+        if not env["builtin_vulkan"]:
+            env.ParseConfig("pkg-config vulkan --cflags --libs")
+        if not env["builtin_glslang"]:
+            # No pkgconfig file for glslang so far
+            env.Append(LIBS=["glslang", "SPIRV"])
 
-    # env.Append(CPPDEFINES=['OPENGL_ENABLED'])
-    env.Append(LIBS=["GL"])
+        # env.Append(CPPDEFINES=['OPENGL_ENABLED'])
+        env.Append(LIBS=["GL"])
 
     env.Append(LIBS=["pthread"])
 

@@ -42,9 +42,8 @@ void Window::set_title(const String &p_title) {
 
 	if (embedder) {
 		embedder->_sub_window_update(this);
-
 	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-		DisplayServer::get_singleton()->window_set_title(p_title, window_id);
+		DisplayServer::get_singleton()->window_set_title(atr(p_title), window_id);
 	}
 }
 
@@ -115,7 +114,7 @@ Size2i Window::get_max_size() const {
 
 void Window::set_min_size(const Size2i &p_min_size) {
 	min_size = p_min_size;
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	if (!wrap_controls && window_id != DisplayServer::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_set_min_size(min_size, window_id);
 	}
 	_update_window_size();
@@ -227,12 +226,13 @@ void Window::_make_window() {
 		}
 	}
 
-	window_id = DisplayServer::get_singleton()->create_sub_window(DisplayServer::WindowMode(mode), f, Rect2i(position, size));
+	DisplayServer::VSyncMode vsync_mode = DisplayServer::get_singleton()->window_get_vsync_mode(DisplayServer::MAIN_WINDOW_ID);
+	window_id = DisplayServer::get_singleton()->create_sub_window(DisplayServer::WindowMode(mode), vsync_mode, f, Rect2i(position, size));
 	ERR_FAIL_COND(window_id == DisplayServer::INVALID_WINDOW_ID);
 	DisplayServer::get_singleton()->window_set_current_screen(current_screen, window_id);
 	DisplayServer::get_singleton()->window_set_max_size(max_size, window_id);
 	DisplayServer::get_singleton()->window_set_min_size(min_size, window_id);
-	DisplayServer::get_singleton()->window_set_title(tr(title), window_id);
+	DisplayServer::get_singleton()->window_set_title(atr(title), window_id);
 	DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
 
 	_update_window_size();
@@ -312,39 +312,39 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 	switch (p_event) {
 		case DisplayServer::WINDOW_EVENT_MOUSE_ENTER: {
 			_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_ENTER);
-			emit_signal("mouse_entered");
+			emit_signal(SNAME("mouse_entered"));
 			DisplayServer::get_singleton()->cursor_set_shape(DisplayServer::CURSOR_ARROW); //restore cursor shape
 		} break;
 		case DisplayServer::WINDOW_EVENT_MOUSE_EXIT: {
 			_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_EXIT);
-			emit_signal("mouse_exited");
+			emit_signal(SNAME("mouse_exited"));
 		} break;
 		case DisplayServer::WINDOW_EVENT_FOCUS_IN: {
 			focused = true;
 			_propagate_window_notification(this, NOTIFICATION_WM_WINDOW_FOCUS_IN);
-			emit_signal("focus_entered");
+			emit_signal(SNAME("focus_entered"));
 
 		} break;
 		case DisplayServer::WINDOW_EVENT_FOCUS_OUT: {
 			focused = false;
 			_propagate_window_notification(this, NOTIFICATION_WM_WINDOW_FOCUS_OUT);
-			emit_signal("focus_exited");
+			emit_signal(SNAME("focus_exited"));
 		} break;
 		case DisplayServer::WINDOW_EVENT_CLOSE_REQUEST: {
 			if (exclusive_child != nullptr) {
 				break; //has an exclusive child, can't get events until child is closed
 			}
 			_propagate_window_notification(this, NOTIFICATION_WM_CLOSE_REQUEST);
-			emit_signal("close_requested");
+			emit_signal(SNAME("close_requested"));
 		} break;
 		case DisplayServer::WINDOW_EVENT_GO_BACK_REQUEST: {
 			_propagate_window_notification(this, NOTIFICATION_WM_GO_BACK_REQUEST);
-			emit_signal("go_back_requested");
+			emit_signal(SNAME("go_back_requested"));
 		} break;
 		case DisplayServer::WINDOW_EVENT_DPI_CHANGE: {
 			_update_viewport_size();
 			_propagate_window_notification(this, NOTIFICATION_WM_DPI_CHANGE);
-			emit_signal("dpi_changed");
+			emit_signal(SNAME("dpi_changed"));
 		} break;
 	}
 }
@@ -541,6 +541,7 @@ void Window::_update_window_size() {
 		embedder->_sub_window_update(this);
 	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_set_size(size, window_id);
+		DisplayServer::get_singleton()->window_set_min_size(size_limit, window_id);
 	}
 
 	//update the viewport
@@ -698,93 +699,98 @@ Viewport *Window::_get_embedder() const {
 }
 
 void Window::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		bool embedded = false;
-		{
-			embedder = _get_embedder();
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			bool embedded = false;
+			{
+				embedder = _get_embedder();
 
-			if (embedder) {
-				embedded = true;
+				if (embedder) {
+					embedded = true;
 
-				if (!visible) {
-					embedder = nullptr; //not yet since not visible
+					if (!visible) {
+						embedder = nullptr; //not yet since not visible
+					}
 				}
 			}
-		}
 
-		if (embedded) {
-			//create as embedded
-			if (embedder) {
-				embedder->_sub_window_register(this);
-				RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
-				_update_window_size();
-			}
-
-		} else {
-			if (get_parent() == nullptr) {
-				//it's the root window!
-				visible = true; //always visible
-				window_id = DisplayServer::MAIN_WINDOW_ID;
-				DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
-				_update_from_window();
-				//since this window already exists (created on start), we must update pos and size from it
-				{
-					position = DisplayServer::get_singleton()->window_get_position(window_id);
-					size = DisplayServer::get_singleton()->window_get_size(window_id);
+			if (embedded) {
+				//create as embedded
+				if (embedder) {
+					embedder->_sub_window_register(this);
+					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
+					_update_window_size();
 				}
-				_update_viewport_size(); //then feed back to the viewport
-				_update_window_callbacks();
-				RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_VISIBLE);
+
 			} else {
-				//create
-				if (visible) {
-					_make_window();
+				if (get_parent() == nullptr) {
+					//it's the root window!
+					visible = true; //always visible
+					window_id = DisplayServer::MAIN_WINDOW_ID;
+					DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
+					_update_from_window();
+					//since this window already exists (created on start), we must update pos and size from it
+					{
+						position = DisplayServer::get_singleton()->window_get_position(window_id);
+						size = DisplayServer::get_singleton()->window_get_size(window_id);
+					}
+					_update_viewport_size(); //then feed back to the viewport
+					_update_window_callbacks();
+					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_VISIBLE);
+				} else {
+					//create
+					if (visible) {
+						_make_window();
+					}
 				}
 			}
-		}
 
-		if (transient) {
-			_make_transient();
-		}
-		if (visible) {
-			notification(NOTIFICATION_VISIBILITY_CHANGED);
-			emit_signal(SceneStringNames::get_singleton()->visibility_changed);
-			RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
-		}
-	}
-
-	if (p_what == NOTIFICATION_READY) {
-		if (wrap_controls) {
-			_update_child_controls();
-		}
-	}
-
-	if (p_what == NOTIFICATION_TRANSLATION_CHANGED) {
-		child_controls_changed();
-	}
-
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		if (transient) {
-			_clear_transient();
-		}
-
-		if (!is_embedded() && window_id != DisplayServer::INVALID_WINDOW_ID) {
-			if (window_id == DisplayServer::MAIN_WINDOW_ID) {
-				RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
-				_update_window_callbacks();
-			} else {
-				_clear_window();
+			if (transient) {
+				_make_transient();
 			}
-		} else {
+			if (visible) {
+				notification(NOTIFICATION_VISIBILITY_CHANGED);
+				emit_signal(SceneStringNames::get_singleton()->visibility_changed);
+				RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
+			}
+		} break;
+		case NOTIFICATION_READY: {
+			if (wrap_controls) {
+				_update_child_controls();
+			}
+		} break;
+		case NOTIFICATION_TRANSLATION_CHANGED: {
 			if (embedder) {
-				embedder->_sub_window_remove(this);
-				embedder = nullptr;
-				RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
+				embedder->_sub_window_update(this);
+			} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+				DisplayServer::get_singleton()->window_set_title(atr(title), window_id);
 			}
-			_update_viewport_size(); //called by clear and make, which does not happen here
-		}
 
-		RS::get_singleton()->viewport_set_active(get_viewport_rid(), false);
+			child_controls_changed();
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			if (transient) {
+				_clear_transient();
+			}
+
+			if (!is_embedded() && window_id != DisplayServer::INVALID_WINDOW_ID) {
+				if (window_id == DisplayServer::MAIN_WINDOW_ID) {
+					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
+					_update_window_callbacks();
+				} else {
+					_clear_window();
+				}
+			} else {
+				if (embedder) {
+					embedder->_sub_window_remove(this);
+					embedder = nullptr;
+					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
+				}
+				_update_viewport_size(); //called by clear and make, which does not happen here
+			}
+
+			RS::get_singleton()->viewport_set_active(get_viewport_rid(), false);
+		} break;
 	}
 }
 
@@ -880,7 +886,7 @@ void Window::child_controls_changed() {
 	}
 
 	updating_child_controls = true;
-	call_deferred("_update_child_controls");
+	call_deferred(SNAME("_update_child_controls"));
 }
 
 bool Window::_can_consume_input_events() const {
@@ -923,7 +929,7 @@ void Window::_window_input_text(const String &p_text) {
 }
 
 void Window::_window_drop_files(const Vector<String> &p_files) {
-	emit_signal("files_dropped", p_files, current_screen);
+	emit_signal(SNAME("files_dropped"), p_files, current_screen);
 }
 
 Viewport *Window::get_parent_viewport() const {
@@ -1041,7 +1047,7 @@ void Window::popup_centered_ratio(float p_ratio) {
 }
 
 void Window::popup(const Rect2i &p_screen_rect) {
-	emit_signal("about_to_popup");
+	emit_signal(SNAME("about_to_popup"));
 
 	// Update window size to calculate the actual window size based on contents minimum size and minimum size.
 	_update_window_size();
@@ -1169,23 +1175,24 @@ Ref<Theme> Window::get_theme() const {
 	return theme;
 }
 
-void Window::set_theme_custom_type(const StringName &p_theme_type) {
-	theme_custom_type = p_theme_type;
+void Window::set_theme_type_variation(const StringName &p_theme_type) {
+	theme_type_variation = p_theme_type;
 	Control::_propagate_theme_changed(this, theme_owner, theme_owner_window);
 }
 
-StringName Window::get_theme_custom_type() const {
-	return theme_custom_type;
+StringName Window::get_theme_type_variation() const {
+	return theme_type_variation;
 }
 
 void Window::_get_theme_type_dependencies(const StringName &p_theme_type, List<StringName> *p_list) const {
-	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_custom_type) {
-		if (theme_custom_type != StringName()) {
-			p_list->push_back(theme_custom_type);
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		if (Theme::get_project_default().is_valid() && Theme::get_project_default()->get_type_variation_base(theme_type_variation) != StringName()) {
+			Theme::get_project_default()->get_type_dependencies(get_class_name(), theme_type_variation, p_list);
+		} else {
+			Theme::get_default()->get_type_dependencies(get_class_name(), theme_type_variation, p_list);
 		}
-		Theme::get_type_dependencies(get_class_name(), p_list);
 	} else {
-		Theme::get_type_dependencies(p_theme_type, p_list);
+		Theme::get_default()->get_type_dependencies(p_theme_type, StringName(), p_list);
 	}
 }
 
@@ -1322,20 +1329,62 @@ bool Window::is_layout_rtl() const {
 		if (parent) {
 			return parent->is_layout_rtl();
 		} else {
-			if (GLOBAL_GET("internationalization/rendering/force_right_to_left_layout_direction")) {
+			if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
 				return true;
 			}
 			String locale = TranslationServer::get_singleton()->get_tool_locale();
 			return TS->is_locale_right_to_left(locale);
 		}
 	} else if (layout_dir == LAYOUT_DIRECTION_LOCALE) {
-		if (GLOBAL_GET("internationalization/rendering/force_right_to_left_layout_direction")) {
+		if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
 			return true;
 		}
 		String locale = TranslationServer::get_singleton()->get_tool_locale();
 		return TS->is_locale_right_to_left(locale);
 	} else {
 		return (layout_dir == LAYOUT_DIRECTION_RTL);
+	}
+}
+
+void Window::set_auto_translate(bool p_enable) {
+	if (p_enable == auto_translate) {
+		return;
+	}
+
+	auto_translate = p_enable;
+
+	notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+}
+
+bool Window::is_auto_translating() const {
+	return auto_translate;
+}
+
+void Window::_validate_property(PropertyInfo &property) const {
+	if (property.name == "theme_type_variation") {
+		List<StringName> names;
+
+		// Only the default theme and the project theme are used for the list of options.
+		// This is an imposed limitation to simplify the logic needed to leverage those options.
+		Theme::get_default()->get_type_variation_list(get_class_name(), &names);
+		if (Theme::get_project_default().is_valid()) {
+			Theme::get_project_default()->get_type_variation_list(get_class_name(), &names);
+		}
+		names.sort_custom<StringName::AlphCompare>();
+
+		Vector<StringName> unique_names;
+		String hint_string;
+		for (const StringName &E : names) {
+			// Skip duplicate values.
+			if (unique_names.has(E)) {
+				continue;
+			}
+
+			hint_string += String(E) + ",";
+			unique_names.append(E);
+		}
+
+		property.hint_string = hint_string;
 	}
 }
 
@@ -1393,6 +1442,8 @@ void Window::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_embedded"), &Window::is_embedded);
 
+	ClassDB::bind_method(D_METHOD("get_contents_minimum_size"), &Window::get_contents_minimum_size);
+
 	ClassDB::bind_method(D_METHOD("set_content_scale_size", "size"), &Window::set_content_scale_size);
 	ClassDB::bind_method(D_METHOD("get_content_scale_size"), &Window::get_content_scale_size);
 
@@ -1414,8 +1465,8 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_theme", "theme"), &Window::set_theme);
 	ClassDB::bind_method(D_METHOD("get_theme"), &Window::get_theme);
 
-	ClassDB::bind_method(D_METHOD("set_theme_custom_type", "theme_type"), &Window::set_theme_custom_type);
-	ClassDB::bind_method(D_METHOD("get_theme_custom_type"), &Window::get_theme_custom_type);
+	ClassDB::bind_method(D_METHOD("set_theme_type_variation", "theme_type"), &Window::set_theme_type_variation);
+	ClassDB::bind_method(D_METHOD("get_theme_type_variation"), &Window::get_theme_type_variation);
 
 	ClassDB::bind_method(D_METHOD("get_theme_icon", "name", "theme_type"), &Window::get_theme_icon, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_stylebox", "name", "theme_type"), &Window::get_theme_stylebox, DEFVAL(""));
@@ -1435,6 +1486,9 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_layout_direction"), &Window::get_layout_direction);
 	ClassDB::bind_method(D_METHOD("is_layout_rtl"), &Window::is_layout_rtl);
 
+	ClassDB::bind_method(D_METHOD("set_auto_translate", "enable"), &Window::set_auto_translate);
+	ClassDB::bind_method(D_METHOD("is_auto_translating"), &Window::is_auto_translating);
+
 	ClassDB::bind_method(D_METHOD("popup", "rect"), &Window::popup, DEFVAL(Rect2i()));
 	ClassDB::bind_method(D_METHOD("popup_on_parent", "parent_rect"), &Window::popup_on_parent);
 	ClassDB::bind_method(D_METHOD("popup_centered_ratio", "ratio"), &Window::popup_centered_ratio, DEFVAL(0.8));
@@ -1446,6 +1500,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Windowed,Minimized,Maximized,Fullscreen"), "set_mode", "get_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_screen"), "set_current_screen", "get_current_screen");
+
 	ADD_GROUP("Flags", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "wrap_controls"), "set_wrap_controls", "is_wrapping_controls");
@@ -1456,16 +1511,22 @@ void Window::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "always_on_top"), "set_flag", "get_flag", FLAG_ALWAYS_ON_TOP);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "transparent"), "set_flag", "get_flag", FLAG_TRANSPARENT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "unfocusable"), "set_flag", "get_flag", FLAG_NO_FOCUS);
+
 	ADD_GROUP("Limits", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "min_size"), "set_min_size", "get_min_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "max_size"), "set_max_size", "get_max_size");
+
 	ADD_GROUP("Content Scale", "content_scale_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "content_scale_size"), "set_content_scale_size", "get_content_scale_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_mode", PROPERTY_HINT_ENUM, "Disabled,Canvas Items,Viewport"), "set_content_scale_mode", "get_content_scale_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_aspect", PROPERTY_HINT_ENUM, "Ignore,Keep,Keep Width,Keep Height,Expand"), "set_content_scale_aspect", "get_content_scale_aspect");
+
 	ADD_GROUP("Theme", "theme_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "theme_custom_type"), "set_theme_custom_type", "get_theme_custom_type");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "theme_type_variation", PROPERTY_HINT_ENUM_SUGGESTION), "set_theme_type_variation", "get_theme_type_variation");
+
+	ADD_GROUP("Auto Translate", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate"), "set_auto_translate", "is_auto_translating");
 
 	ADD_SIGNAL(MethodInfo("window_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files")));

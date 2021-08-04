@@ -37,9 +37,9 @@
 #include "core/math/color.h"
 #include "core/math/face3.h"
 #include "core/math/plane.h"
-#include "core/math/quat.h"
-#include "core/math/transform.h"
+#include "core/math/quaternion.h"
 #include "core/math/transform_2d.h"
+#include "core/math/transform_3d.h"
 #include "core/math/vector3.h"
 #include "core/math/vector3i.h"
 #include "core/object/object_id.h"
@@ -88,10 +88,10 @@ public:
 		VECTOR3I,
 		TRANSFORM2D,
 		PLANE,
-		QUAT,
+		QUATERNION,
 		AABB,
 		BASIS,
-		TRANSFORM,
+		TRANSFORM3D,
 
 		// misc types
 		COLOR,
@@ -116,6 +116,11 @@ public:
 		PACKED_COLOR_ARRAY,
 
 		VARIANT_MAX
+	};
+
+	enum {
+		// Maximum recursion depth allowed when serializing variants.
+		MAX_RECURSION_DEPTH = 1024,
 	};
 
 private:
@@ -200,7 +205,7 @@ private:
 		Transform2D *_transform2d;
 		::AABB *_aabb;
 		Basis *_basis;
-		Transform *_transform;
+		Transform3D *_transform3d;
 		PackedArrayRefBase *packed_array;
 		void *_ptr; //generic pointer
 		uint8_t _mem[sizeof(ObjData) > (sizeof(real_t) * 4) ? sizeof(ObjData) : (sizeof(real_t) * 4)];
@@ -225,7 +230,7 @@ private:
 			false, //VECTOR3I,
 			true, //TRANSFORM2D,
 			false, //PLANE,
-			false, //QUAT,
+			false, //QUATERNION,
 			true, //AABB,
 			true, //BASIS,
 			true, //TRANSFORM,
@@ -253,7 +258,7 @@ private:
 			true, //PACKED_COLOR_ARRAY,
 		};
 
-		if (unlikely(needs_deinit[type])) { //make it fast for types that dont need deinit
+		if (unlikely(needs_deinit[type])) { // Make it fast for types that don't need deinit.
 			_clear_internal();
 		}
 		type = NIL;
@@ -320,10 +325,10 @@ public:
 	operator Vector3i() const;
 	operator Plane() const;
 	operator ::AABB() const;
-	operator Quat() const;
+	operator Quaternion() const;
 	operator Basis() const;
-	operator Transform() const;
 	operator Transform2D() const;
+	operator Transform3D() const;
 
 	operator Color() const;
 	operator NodePath() const;
@@ -392,10 +397,10 @@ public:
 	Variant(const Vector3i &p_vector3i);
 	Variant(const Plane &p_plane);
 	Variant(const ::AABB &p_aabb);
-	Variant(const Quat &p_quat);
+	Variant(const Quaternion &p_quat);
 	Variant(const Basis &p_matrix);
 	Variant(const Transform2D &p_transform);
-	Variant(const Transform &p_transform);
+	Variant(const Transform3D &p_transform);
 	Variant(const Color &p_color);
 	Variant(const NodePath &p_node_path);
 	Variant(const ::RID &p_rid);
@@ -499,9 +504,10 @@ public:
 	static bool is_builtin_method_vararg(Variant::Type p_type, const StringName &p_method);
 	static void get_builtin_method_list(Variant::Type p_type, List<StringName> *p_list);
 	static int get_builtin_method_count(Variant::Type p_type);
+	static uint32_t get_builtin_method_hash(Variant::Type p_type, const StringName &p_method);
 
 	void call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error);
-	Variant call(const StringName &p_method, const Variant &p_arg1 = Variant(), const Variant &p_arg2 = Variant(), const Variant &p_arg3 = Variant(), const Variant &p_arg4 = Variant(), const Variant &p_arg5 = Variant());
+	Variant call(const StringName &p_method, const Variant &p_arg1 = Variant(), const Variant &p_arg2 = Variant(), const Variant &p_arg3 = Variant(), const Variant &p_arg4 = Variant(), const Variant &p_arg5 = Variant(), const Variant &p_arg6 = Variant(), const Variant &p_arg7 = Variant(), const Variant &p_arg8 = Variant());
 
 	static void call_static(Variant::Type p_type, const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error);
 
@@ -586,7 +592,7 @@ public:
 
 	typedef void (*PTRKeyedSetter)(void *base, const void *key, const void *value);
 	typedef void (*PTRKeyedGetter)(const void *base, const void *key, void *value);
-	typedef bool (*PTRKeyedChecker)(const void *base, const void *key);
+	typedef uint32_t (*PTRKeyedChecker)(const void *base, const void *key);
 
 	static PTRKeyedSetter get_member_ptr_keyed_setter(Variant::Type p_type);
 	static PTRKeyedGetter get_member_ptr_keyed_getter(Variant::Type p_type);
@@ -631,6 +637,7 @@ public:
 	static bool has_utility_function_return_value(const StringName &p_name);
 	static Variant::Type get_utility_function_return_type(const StringName &p_name);
 	static bool is_utility_function_vararg(const StringName &p_name);
+	static uint32_t get_utility_function_hash(const StringName &p_name);
 
 	static void get_utility_function_list(List<StringName> *r_functions);
 	static int get_utility_function_count();
@@ -645,6 +652,7 @@ public:
 	bool hash_compare(const Variant &p_variant) const;
 	bool booleanize() const;
 	String stringify(List<const void *> &stack) const;
+	String to_json_string() const;
 
 	void static_assign(const Variant &p_variant);
 	static void get_constants_for_type(Variant::Type p_type, List<StringName> *p_constants);

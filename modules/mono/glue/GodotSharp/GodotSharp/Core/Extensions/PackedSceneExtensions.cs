@@ -8,9 +8,9 @@ namespace Godot
         /// `Node.NotificationInstanced` notification on the root node.
         /// </summary>
         /// <typeparam name="T">The type to cast to. Should be a descendant of Node.</typeparam>
-        public T Instance<T>(PackedScene.GenEditState editState = (PackedScene.GenEditState)0) where T : class
+        public T Instantiate<T>(PackedScene.GenEditState editState = (PackedScene.GenEditState)0) where T : class
         {
-            return (T)(object)Instance(editState);
+            return (T)(object)Instantiate(editState);
         }
 
         /// <summary>
@@ -19,9 +19,9 @@ namespace Godot
         /// `Node.NotificationInstanced` notification on the root node.
         /// </summary>
         /// <typeparam name="T">The type to cast to. Should be a descendant of Node.</typeparam>
-        public T InstanceOrNull<T>(PackedScene.GenEditState editState = (PackedScene.GenEditState)0) where T : class
+        public T InstantiateOrNull<T>(PackedScene.GenEditState editState = (PackedScene.GenEditState)0) where T : class
         {
-            return Instance(editState) as T;
+            return Instantiate(editState) as T;
         }
     }
 }

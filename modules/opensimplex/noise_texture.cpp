@@ -109,7 +109,7 @@ void NoiseTexture::_thread_done(const Ref<Image> &p_image) {
 
 void NoiseTexture::_thread_function(void *p_ud) {
 	NoiseTexture *tex = (NoiseTexture *)p_ud;
-	tex->call_deferred("_thread_done", tex->_generate_texture());
+	tex->call_deferred(SNAME("_thread_done"), tex->_generate_texture());
 }
 
 void NoiseTexture::_queue_update() {
@@ -118,7 +118,7 @@ void NoiseTexture::_queue_update() {
 	}
 
 	update_queued = true;
-	call_deferred("_update_texture");
+	call_deferred(SNAME("_update_texture"));
 }
 
 Ref<Image> NoiseTexture::_generate_texture() {
@@ -187,6 +187,7 @@ Ref<OpenSimplexNoise> NoiseTexture::get_noise() {
 }
 
 void NoiseTexture::set_width(int p_width) {
+	ERR_FAIL_COND(p_width <= 0);
 	if (p_width == size.x) {
 		return;
 	}
@@ -195,6 +196,7 @@ void NoiseTexture::set_width(int p_width) {
 }
 
 void NoiseTexture::set_height(int p_height) {
+	ERR_FAIL_COND(p_height <= 0);
 	if (p_height == size.y) {
 		return;
 	}

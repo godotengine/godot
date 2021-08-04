@@ -30,8 +30,8 @@
 
 #include "stream_peer_mbedtls.h"
 
+#include "core/io/file_access.h"
 #include "core/io/stream_peer_tcp.h"
-#include "core/os/file_access.h"
 
 int StreamPeerMbedTLS::bio_send(void *ctx, const unsigned char *buf, size_t len) {
 	if (buf == nullptr || len <= 0) {
@@ -273,7 +273,7 @@ int StreamPeerMbedTLS::get_available_bytes() const {
 }
 
 StreamPeerMbedTLS::StreamPeerMbedTLS() {
-	ssl_ctx.instance();
+	ssl_ctx.instantiate();
 }
 
 StreamPeerMbedTLS::~StreamPeerMbedTLS() {

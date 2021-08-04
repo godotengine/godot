@@ -35,7 +35,7 @@
 
 #include "audio_stream_mp3.h"
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 
 void AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	ERR_FAIL_COND(!active);
@@ -126,7 +126,7 @@ Ref<AudioStreamPlayback> AudioStreamMP3::instance_playback() {
 			"to it. AudioStreamMP3 should not be created from the "
 			"inspector or with `.new()`. Instead, load an audio file.");
 
-	mp3s.instance();
+	mp3s.instantiate();
 	mp3s->mp3_stream = Ref<AudioStreamMP3>(this);
 	mp3s->mp3d = (mp3dec_ex_t *)memalloc(sizeof(mp3dec_ex_t));
 

@@ -320,7 +320,7 @@ struct Rect2 {
 		return position + size;
 	}
 
-	operator String() const { return String(position) + ", " + String(size); }
+	operator String() const;
 
 	Rect2() {}
 	Rect2(real_t p_x, real_t p_y, real_t p_width, real_t p_height) :
@@ -498,7 +498,7 @@ struct Rect2i {
 		return position + size;
 	}
 
-	operator String() const { return String(position) + ", " + String(size); }
+	operator String() const;
 
 	operator Rect2() const { return Rect2(position, size); }
 

@@ -295,11 +295,13 @@ void TextureButton::set_normal_texture(const Ref<Texture2D> &p_normal) {
 void TextureButton::set_pressed_texture(const Ref<Texture2D> &p_pressed) {
 	pressed = p_pressed;
 	update();
+	minimum_size_changed();
 }
 
 void TextureButton::set_hover_texture(const Ref<Texture2D> &p_hover) {
 	hover = p_hover;
 	update();
+	minimum_size_changed();
 }
 
 void TextureButton::set_disabled_texture(const Ref<Texture2D> &p_disabled) {
@@ -310,6 +312,7 @@ void TextureButton::set_disabled_texture(const Ref<Texture2D> &p_disabled) {
 void TextureButton::set_click_mask(const Ref<BitMap> &p_click_mask) {
 	click_mask = p_click_mask;
 	update();
+	minimum_size_changed();
 }
 
 Ref<Texture2D> TextureButton::get_normal_texture() const {

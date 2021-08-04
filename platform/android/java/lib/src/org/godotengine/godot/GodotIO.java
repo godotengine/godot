@@ -34,11 +34,9 @@ import org.godotengine.godot.input.*;
 
 import android.app.Activity;
 import android.content.*;
-import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.AssetManager;
 import android.graphics.Point;
-import android.media.*;
 import android.net.Uri;
 import android.os.*;
 import android.util.DisplayMetrics;
@@ -73,7 +71,7 @@ public class GodotIO {
 
 	public int last_file_id = 1;
 
-	class AssetData {
+	static class AssetData {
 		public boolean eof = false;
 		public String path;
 		public InputStream is;
@@ -232,7 +230,7 @@ public class GodotIO {
 	/// DIRECTORIES
 	/////////////////////////
 
-	class AssetDir {
+	static class AssetDir {
 		public String[] files;
 		public int current;
 		public String path;
@@ -323,97 +321,8 @@ public class GodotIO {
 		am = p_activity.getAssets();
 		activity = p_activity;
 		//streams = new HashMap<Integer, AssetData>();
-		streams = new SparseArray<AssetData>();
-		dirs = new SparseArray<AssetDir>();
-	}
-
-	/////////////////////////
-	// AUDIO
-	/////////////////////////
-
-	private Object buf;
-	private Thread mAudioThread;
-	private AudioTrack mAudioTrack;
-
-	public Object audioInit(int sampleRate, int desiredFrames) {
-		int channelConfig = AudioFormat.CHANNEL_OUT_STEREO;
-		int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
-		int frameSize = 4;
-
-		System.out.printf("audioInit: initializing audio:\n");
-
-		//Log.v("Godot", "Godot audio: wanted " + (isStereo ? "stereo" : "mono") + " " + (is16Bit ? "16-bit" : "8-bit") + " " + ((float)sampleRate / 1000f) + "kHz, " + desiredFrames + " frames buffer");
-
-		// Let the user pick a larger buffer if they really want -- but ye
-		// gods they probably shouldn't, the minimums are horrifyingly high
-		// latency already
-		desiredFrames = Math.max(desiredFrames, (AudioTrack.getMinBufferSize(sampleRate, channelConfig, audioFormat) + frameSize - 1) / frameSize);
-
-		mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate,
-				channelConfig, audioFormat, desiredFrames * frameSize, AudioTrack.MODE_STREAM);
-
-		audioStartThread();
-
-		//Log.v("Godot", "Godot audio: got " + ((mAudioTrack.getChannelCount() >= 2) ? "stereo" : "mono") + " " + ((mAudioTrack.getAudioFormat() == AudioFormat.ENCODING_PCM_16BIT) ? "16-bit" : "8-bit") + " " + ((float)mAudioTrack.getSampleRate() / 1000f) + "kHz, " + desiredFrames + " frames buffer");
-
-		buf = new short[desiredFrames * 2];
-		return buf;
-	}
-
-	public void audioStartThread() {
-		mAudioThread = new Thread(new Runnable() {
-			public void run() {
-				mAudioTrack.play();
-				GodotLib.audio();
-			}
-		});
-
-		// I'd take REALTIME if I could get it!
-		mAudioThread.setPriority(Thread.MAX_PRIORITY);
-		mAudioThread.start();
-	}
-
-	public void audioWriteShortBuffer(short[] buffer) {
-		for (int i = 0; i < buffer.length;) {
-			int result = mAudioTrack.write(buffer, i, buffer.length - i);
-			if (result > 0) {
-				i += result;
-			} else if (result == 0) {
-				try {
-					Thread.sleep(1);
-				} catch (InterruptedException e) {
-					// Nom nom
-				}
-			} else {
-				Log.w("Godot", "Godot audio: error return from write(short)");
-				return;
-			}
-		}
-	}
-
-	public void audioQuit() {
-		if (mAudioThread != null) {
-			try {
-				mAudioThread.join();
-			} catch (Exception e) {
-				Log.v("Godot", "Problem stopping audio thread: " + e);
-			}
-			mAudioThread = null;
-
-			//Log.v("Godot", "Finished waiting for audio thread");
-		}
-
-		if (mAudioTrack != null) {
-			mAudioTrack.stop();
-			mAudioTrack = null;
-		}
-	}
-
-	public void audioPause(boolean p_pause) {
-		if (p_pause)
-			mAudioTrack.pause();
-		else
-			mAudioTrack.play();
+		streams = new SparseArray<>();
+		dirs = new SparseArray<>();
 	}
 
 	/////////////////////////
@@ -452,6 +361,10 @@ public class GodotIO {
 		return activity.getFilesDir().getAbsolutePath();
 	}
 
+	public String getExternalDataDir() {
+		return activity.getExternalFilesDir(null).getAbsolutePath();
+	}
+
 	public String getLocale() {
 		return Locale.getDefault().toString();
 	}
@@ -471,7 +384,7 @@ public class GodotIO {
 		Point size = new Point();
 		display.getRealSize(size);
 
-		int result[] = { 0, 0, size.x, size.y };
+		int[] result = { 0, 0, size.x, size.y };
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
 			WindowInsets insets = activity.getWindow().getDecorView().getRootWindowInsets();
 			DisplayCutout cutout = insets.getDisplayCutout();
@@ -493,12 +406,12 @@ public class GodotIO {
 
 		//InputMethodManager inputMgr = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
 		//inputMgr.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-	};
+	}
 
 	public void hideKeyboard() {
 		if (edit != null)
 			edit.hideKeyboard();
-	};
+	}
 
 	public void setScreenOrientation(int p_orientation) {
 		switch (p_orientation) {

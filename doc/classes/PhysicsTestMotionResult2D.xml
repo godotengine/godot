@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsTestMotionResult2D" inherits="Reference" version="4.0">
+<class name="PhysicsTestMotionResult2D" inherits="RefCounted" version="4.0">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -17,15 +17,21 @@
 		</member>
 		<member name="collider_shape" type="int" setter="" getter="get_collider_shape" default="0">
 		</member>
-		<member name="collider_velocity" type="Vector2" setter="" getter="get_collider_velocity" default="Vector2( 0, 0 )">
+		<member name="collider_velocity" type="Vector2" setter="" getter="get_collider_velocity" default="Vector2(0, 0)">
 		</member>
-		<member name="collision_normal" type="Vector2" setter="" getter="get_collision_normal" default="Vector2( 0, 0 )">
+		<member name="collision_depth" type="float" setter="" getter="get_collision_depth" default="0.0">
 		</member>
-		<member name="collision_point" type="Vector2" setter="" getter="get_collision_point" default="Vector2( 0, 0 )">
+		<member name="collision_normal" type="Vector2" setter="" getter="get_collision_normal" default="Vector2(0, 0)">
 		</member>
-		<member name="motion" type="Vector2" setter="" getter="get_motion" default="Vector2( 0, 0 )">
+		<member name="collision_point" type="Vector2" setter="" getter="get_collision_point" default="Vector2(0, 0)">
 		</member>
-		<member name="motion_remainder" type="Vector2" setter="" getter="get_motion_remainder" default="Vector2( 0, 0 )">
+		<member name="collision_safe_fraction" type="float" setter="" getter="get_collision_safe_fraction" default="0.0">
+		</member>
+		<member name="collision_unsafe_fraction" type="float" setter="" getter="get_collision_unsafe_fraction" default="0.0">
+		</member>
+		<member name="motion" type="Vector2" setter="" getter="get_motion" default="Vector2(0, 0)">
+		</member>
+		<member name="motion_remainder" type="Vector2" setter="" getter="get_motion_remainder" default="Vector2(0, 0)">
 		</member>
 	</members>
 	<constants>

@@ -30,7 +30,7 @@
 
 #include "gdscript_language_server.h"
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 #include "core/os/os.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
@@ -101,7 +101,7 @@ void GDScriptLanguageServer::stop() {
 }
 
 void register_lsp_types() {
-	ClassDB::register_class<GDScriptLanguageProtocol>();
-	ClassDB::register_class<GDScriptTextDocument>();
-	ClassDB::register_class<GDScriptWorkspace>();
+	GDREGISTER_CLASS(GDScriptLanguageProtocol);
+	GDREGISTER_CLASS(GDScriptTextDocument);
+	GDREGISTER_CLASS(GDScriptWorkspace);
 }

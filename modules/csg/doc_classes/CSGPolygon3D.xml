@@ -38,7 +38,7 @@
 		<member name="path_rotation" type="int" setter="set_path_rotation" getter="get_path_rotation" enum="CSGPolygon3D.PathRotation">
 			The method by which each slice is rotated along the path when [member mode] is [constant MODE_PATH].
 		</member>
-		<member name="polygon" type="PackedVector2Array" setter="set_polygon" getter="get_polygon" default="PackedVector2Array( 0, 0, 0, 1, 1, 1, 1, 0 )">
+		<member name="polygon" type="PackedVector2Array" setter="set_polygon" getter="get_polygon" default="PackedVector2Array(0, 0, 0, 1, 1, 1, 1, 0)">
 			Point array that defines the shape that we'll extrude.
 		</member>
 		<member name="smooth_faces" type="bool" setter="set_smooth_faces" getter="get_smooth_faces" default="false">

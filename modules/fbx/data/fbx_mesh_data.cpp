@@ -211,7 +211,7 @@ EditorSceneImporterMeshNode3D *FBXMeshData::create_fbx_mesh(const ImportState &s
 			const int surface_id = polygon_surfaces[*polygon_id];
 			if (surfaces.has(surface_id) == false) {
 				SurfaceData sd;
-				sd.surface_tool.instance();
+				sd.surface_tool.instantiate();
 				sd.surface_tool->begin(Mesh::PRIMITIVE_TRIANGLES);
 
 				if (surface_id < 0) {
@@ -316,7 +316,7 @@ EditorSceneImporterMeshNode3D *FBXMeshData::create_fbx_mesh(const ImportState &s
 			Vector3 *normals_ptr = morph_data->normals.ptrw();
 
 			Ref<SurfaceTool> morph_st;
-			morph_st.instance();
+			morph_st.instantiate();
 			morph_st->begin(Mesh::PRIMITIVE_TRIANGLES);
 
 			for (unsigned int vi = 0; vi < surface->vertices_map.size(); vi += 1) {
@@ -345,7 +345,7 @@ EditorSceneImporterMeshNode3D *FBXMeshData::create_fbx_mesh(const ImportState &s
 
 	// Phase 6. Compose the mesh and return it.
 	Ref<EditorSceneImporterMesh> mesh;
-	mesh.instance();
+	mesh.instantiate();
 
 	// Add blend shape info.
 	for (const String *morph_name = morphs.next(nullptr); morph_name != nullptr; morph_name = morphs.next(morph_name)) {
@@ -525,7 +525,7 @@ void FBXMeshData::reorganize_vertices(
 				}
 
 				const Vector3 vert_poly_normal = *nrml_arr->getptr(*pid);
-				if ((this_vert_poly_normal - vert_poly_normal).length_squared() > CMP_EPSILON) {
+				if (!vert_poly_normal.is_equal_approx(this_vert_poly_normal)) {
 					// Yes this polygon need duplication.
 					need_duplication = true;
 					break;
@@ -586,7 +586,7 @@ void FBXMeshData::reorganize_vertices(
 								continue;
 							}
 							const Vector2 vert_poly_uv = *uvs->getptr(*pid);
-							if (((*this_vert_poly_uv) - vert_poly_uv).length_squared() > CMP_EPSILON) {
+							if (!vert_poly_uv.is_equal_approx(*this_vert_poly_uv)) {
 								// Yes this polygon need duplication.
 								need_duplication = true;
 								break;
@@ -1126,8 +1126,8 @@ HashMap<int, R> FBXMeshData::extract_per_vertex_data(
 					}
 					const int vertex_index = get_vertex_from_polygon_vertex(p_mesh_indices, polygon_vertex_index);
 					ERR_FAIL_COND_V_MSG(vertex_index < 0, (HashMap<int, R>()), "FBX file corrupted: #ERR8");
-					ERR_FAIL_COND_V_MSG(vertex_index >= p_vertex_count, (HashMap<int, R>()), "FBX file seems  corrupted: #ERR9.");
-					ERR_FAIL_COND_V_MSG(p_mapping_data.index[polygon_vertex_index] < 0, (HashMap<int, R>()), "FBX file seems  corrupted: #ERR10.");
+					ERR_FAIL_COND_V_MSG(vertex_index >= p_vertex_count, (HashMap<int, R>()), "FBX file seems corrupted: #ERR9.");
+					ERR_FAIL_COND_V_MSG(p_mapping_data.index[polygon_vertex_index] < 0, (HashMap<int, R>()), "FBX file seems corrupted: #ERR10.");
 					ERR_FAIL_COND_V_MSG(p_mapping_data.index[polygon_vertex_index] >= (int)p_mapping_data.data.size(), (HashMap<int, R>()), "FBX file seems corrupted: #ERR11.");
 					aggregate_vertex_data[vertex_index].push_back({ polygon_id, p_mapping_data.data[p_mapping_data.index[polygon_vertex_index]] });
 				}

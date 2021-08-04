@@ -38,10 +38,10 @@ void Path3D::_notification(int p_what) {
 
 void Path3D::_curve_changed() {
 	if (is_inside_tree() && Engine::get_singleton()->is_editor_hint()) {
-		update_gizmo();
+		update_gizmos();
 	}
 	if (is_inside_tree()) {
-		emit_signal("curve_changed");
+		emit_signal(SNAME("curve_changed"));
 	}
 
 	// update the configuration warnings of all children of type PathFollow
@@ -100,20 +100,32 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 	}
 	float bi = c->get_bake_interval();
 	float o_next = offset + bi;
+	float o_prev = offset - bi;
 
 	if (loop) {
 		o_next = Math::fposmod(o_next, bl);
-	} else if (rotation_mode == ROTATION_ORIENTED && o_next >= bl) {
-		o_next = bl;
+		o_prev = Math::fposmod(o_prev, bl);
+	} else if (rotation_mode == ROTATION_ORIENTED) {
+		if (o_next >= bl) {
+			o_next = bl;
+		}
+		if (o_prev <= 0) {
+			o_prev = 0;
+		}
 	}
 
 	Vector3 pos = c->interpolate_baked(offset, cubic);
-	Transform t = get_transform();
+	Transform3D t = get_transform();
 	// Vector3 pos_offset = Vector3(h_offset, v_offset, 0); not used in all cases
 	// will be replaced by "Vector3(h_offset, v_offset, 0)" where it was formerly used
 
 	if (rotation_mode == ROTATION_ORIENTED) {
-		Vector3 forward = c->interpolate_baked(o_next, cubic) - pos;
+		Vector3 forward = c->interpolate_baked(o_next, cubic);
+
+		// Try with the previous position
+		if (forward.length_squared() < CMP_EPSILON2) {
+			forward = pos - c->interpolate_baked(o_prev, cubic);
+		}
 
 		if (forward.length_squared() < CMP_EPSILON2) {
 			forward = Vector3(0, 0, 1);

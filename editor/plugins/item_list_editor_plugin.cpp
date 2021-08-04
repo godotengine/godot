@@ -243,8 +243,8 @@ void ItemListEditor::_node_removed(Node *p_node) {
 
 void ItemListEditor::_notification(int p_notification) {
 	if (p_notification == NOTIFICATION_ENTER_TREE || p_notification == NOTIFICATION_THEME_CHANGED) {
-		add_button->set_icon(get_theme_icon("Add", "EditorIcons"));
-		del_button->set_icon(get_theme_icon("Remove", "EditorIcons"));
+		add_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+		del_button->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 	} else if (p_notification == NOTIFICATION_READY) {
 		get_tree()->connect("node_removed", callable_mp(this, &ItemListEditor::_node_removed));
 	}

@@ -119,8 +119,7 @@ const lsp::DocumentSymbol *GDScriptWorkspace::get_script_symbol(const String &p_
 void GDScriptWorkspace::reload_all_workspace_scripts() {
 	List<String> paths;
 	list_script_files("res://", paths);
-	for (List<String>::Element *E = paths.front(); E; E = E->next()) {
-		const String &path = E->get();
+	for (const String &path : paths) {
 		Error err;
 		String content = FileAccess::get_file_as_string(path, &err);
 		ERR_CONTINUE(err != OK);
@@ -188,7 +187,9 @@ Array GDScriptWorkspace::symbol(const Dictionary &p_params) {
 			E->get()->get_symbols().symbol_tree_as_list(E->key(), script_symbols);
 			for (int i = 0; i < script_symbols.size(); ++i) {
 				if (query.is_subsequence_ofi(script_symbols[i].name)) {
-					arr.push_back(script_symbols[i].to_json());
+					lsp::DocumentedSymbolInformation symbol = script_symbols[i];
+					symbol.location.uri = get_file_uri(symbol.location.uri);
+					arr.push_back(symbol.to_json());
 				}
 			}
 		}
@@ -424,7 +425,7 @@ Node *GDScriptWorkspace::_get_owner_scene_node(String p_path) {
 		RES owner_res = ResourceLoader::load(owner_path);
 		if (Object::cast_to<PackedScene>(owner_res.ptr())) {
 			Ref<PackedScene> owner_packed_scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*owner_res));
-			owner_scene_node = owner_packed_scene->instance();
+			owner_scene_node = owner_packed_scene->instantiate();
 			break;
 		}
 	}
@@ -557,8 +558,8 @@ const lsp::DocumentSymbol *GDScriptWorkspace::resolve_native_symbol(const lsp::N
 void GDScriptWorkspace::resolve_document_links(const String &p_uri, List<lsp::DocumentLink> &r_list) {
 	if (const ExtendGDScriptParser *parser = get_parse_successed_script(get_file_path(p_uri))) {
 		const List<lsp::DocumentLink> &links = parser->get_document_links();
-		for (const List<lsp::DocumentLink>::Element *E = links.front(); E; E = E->next()) {
-			r_list.push_back(E->get());
+		for (const lsp::DocumentLink &E : links) {
+			r_list.push_back(E);
 		}
 	}
 }
@@ -585,8 +586,7 @@ Error GDScriptWorkspace::resolve_signature(const lsp::TextDocumentPositionParams
 				GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_related_symbols(text_pos, symbols);
 			}
 
-			for (List<const lsp::DocumentSymbol *>::Element *E = symbols.front(); E; E = E->next()) {
-				const lsp::DocumentSymbol *symbol = E->get();
+			for (const lsp::DocumentSymbol *const &symbol : symbols) {
 				if (symbol->kind == lsp::SymbolKind::Method || symbol->kind == lsp::SymbolKind::Function) {
 					lsp::SignatureInformation signature_info;
 					signature_info.label = symbol->detail;

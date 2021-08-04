@@ -12,15 +12,13 @@
 	</tutorials>
 	<methods>
 		<method name="get_as_byte_code" qualifiers="const">
-			<return type="PackedByteArray">
-			</return>
+			<return type="PackedByteArray" />
 			<description>
 				Returns byte code for the script source code.
 			</description>
 		</method>
 		<method name="new" qualifiers="vararg">
-			<return type="Variant">
-			</return>
+			<return type="Variant" />
 			<description>
 				Returns a new instance of the script.
 				For example:

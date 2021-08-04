@@ -39,8 +39,8 @@
 #include "core/object/script_language.h"
 #include "gdscript_function.h"
 
-class GDScriptNativeClass : public Reference {
-	GDCLASS(GDScriptNativeClass, Reference);
+class GDScriptNativeClass : public RefCounted {
+	GDCLASS(GDScriptNativeClass, RefCounted);
 
 	StringName name;
 
@@ -51,7 +51,7 @@ protected:
 public:
 	_FORCE_INLINE_ const StringName &get_name() const { return name; }
 	Variant _new();
-	Object *instance();
+	Object *instantiate();
 	GDScriptNativeClass(const StringName &p_name);
 };
 
@@ -64,7 +64,6 @@ class GDScript : public Script {
 		int index = 0;
 		StringName setter;
 		StringName getter;
-		MultiplayerAPI::RPCMode rpc_mode;
 		GDScriptDataType data_type;
 	};
 
@@ -80,14 +79,13 @@ class GDScript : public Script {
 	GDScript *_base = nullptr; //fast pointer access
 	GDScript *_owner = nullptr; //for subclasses
 
-	Set<StringName> members; //members are just indices to the instanced script.
+	Set<StringName> members; //members are just indices to the instantiated script.
 	Map<StringName, Variant> constants;
 	Map<StringName, GDScriptFunction *> member_functions;
-	Map<StringName, MemberInfo> member_indices; //members are just indices to the instanced script.
+	Map<StringName, MemberInfo> member_indices; //members are just indices to the instantiated script.
 	Map<StringName, Ref<GDScript>> subclasses;
 	Map<StringName, Vector<StringName>> _signals;
-	Vector<ScriptNetData> rpc_functions;
-	Vector<ScriptNetData> rpc_variables;
+	Vector<MultiplayerAPI::RPCConfig> rpc_functions;
 
 #ifdef TOOLS_ENABLED
 
@@ -133,7 +131,7 @@ class GDScript : public Script {
 	SelfList<GDScriptFunctionState>::List pending_func_states;
 
 	void _super_implicit_constructor(GDScript *p_script, GDScriptInstance *p_instance, Callable::CallError &r_error);
-	GDScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Callable::CallError &r_error);
+	GDScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_is_ref_counted, Callable::CallError &r_error);
 
 	void _set_subclass_path(Ref<GDScript> &p_sc, const String &p_path);
 
@@ -149,7 +147,7 @@ class GDScript : public Script {
 
 #endif
 
-	bool _update_exports(bool *r_err = nullptr, bool p_recursive_call = false);
+	bool _update_exports(bool *r_err = nullptr, bool p_recursive_call = false, PlaceHolderScriptInstance *p_instance_to_update = nullptr);
 
 	void _save_orphaned_subclasses();
 	void _init_rpc_methods_properties();
@@ -158,7 +156,7 @@ class GDScript : public Script {
 	void _get_script_method_list(List<MethodInfo> *r_list, bool p_include_base) const;
 	void _get_script_signal_list(List<MethodInfo> *r_list, bool p_include_base) const;
 
-	// This method will map the class name from "Reference" to "MyClass.InnerClass".
+	// This method will map the class name from "RefCounted" to "MyClass.InnerClass".
 	static String _get_gdscript_reference_class_name(const GDScript *p_gdscript);
 
 protected:
@@ -197,7 +195,7 @@ public:
 	StringName debug_get_member_by_index(int p_idx) const;
 
 	Variant _new(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-	virtual bool can_instance() const override;
+	virtual bool can_instantiate() const override;
 
 	virtual Ref<Script> get_base_script() const override;
 
@@ -247,17 +245,7 @@ public:
 	virtual void get_constants(Map<StringName, Variant> *p_constants) override;
 	virtual void get_members(Set<StringName> *p_members) override;
 
-	virtual Vector<ScriptNetData> get_rpc_methods() const override;
-	virtual uint16_t get_rpc_method_id(const StringName &p_method) const override;
-	virtual StringName get_rpc_method(const uint16_t p_rpc_method_id) const override;
-	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const override;
-	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const override;
-
-	virtual Vector<ScriptNetData> get_rset_properties() const override;
-	virtual uint16_t get_rset_property_id(const StringName &p_variable) const override;
-	virtual StringName get_rset_property(const uint16_t p_variable_id) const override;
-	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(const uint16_t p_variable_id) const override;
-	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const override;
+	virtual const Vector<MultiplayerAPI::RPCConfig> get_rpc_methods() const override;
 
 #ifdef TOOLS_ENABLED
 	virtual bool is_placeholder_fallback_enabled() const override { return placeholder_fallback_enabled; }
@@ -281,7 +269,7 @@ class GDScriptInstance : public ScriptInstance {
 	Map<StringName, int> member_indices_cache; //used only for hot script reloading
 #endif
 	Vector<Variant> members;
-	bool base_ref;
+	bool base_ref_counted;
 
 	SelfList<GDScriptFunctionState>::List pending_func_states;
 
@@ -310,17 +298,7 @@ public:
 
 	void reload_members();
 
-	virtual Vector<ScriptNetData> get_rpc_methods() const;
-	virtual uint16_t get_rpc_method_id(const StringName &p_method) const;
-	virtual StringName get_rpc_method(const uint16_t p_rpc_method_id) const;
-	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const;
-	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const;
-
-	virtual Vector<ScriptNetData> get_rset_properties() const;
-	virtual uint16_t get_rset_property_id(const StringName &p_variable) const;
-	virtual StringName get_rset_property(const uint16_t p_variable_id) const;
-	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(const uint16_t p_variable_id) const;
-	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const;
+	virtual const Vector<MultiplayerAPI::RPCConfig> get_rpc_methods() const;
 
 	GDScriptInstance();
 	~GDScriptInstance();
@@ -468,7 +446,7 @@ public:
 	virtual Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const;
 	virtual bool is_using_templates();
 	virtual void make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script);
-	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const;
+	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const;
 	virtual Script *create_script() const;
 	virtual bool has_named_classes() const;
 	virtual bool supports_builtin_mode() const;

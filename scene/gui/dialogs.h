@@ -69,7 +69,7 @@ protected:
 	virtual void custom_action(const String &) {}
 
 	// Not private since used by derived classes signal.
-	void _text_entered(const String &p_text);
+	void _text_submitted(const String &p_text);
 	void _ok_pressed();
 	void _cancel_pressed();
 
@@ -77,11 +77,12 @@ public:
 	Label *get_label() { return label; }
 	static void set_swap_cancel_ok(bool p_swap);
 
-	void register_text_enter(Node *p_line_edit);
+	void register_text_enter(Control *p_line_edit);
 
 	Button *get_ok_button() { return ok; }
 	Button *add_button(const String &p_text, bool p_right = false, const String &p_action = "");
 	Button *add_cancel_button(const String &p_cancel = "");
+	void remove_button(Control *p_button);
 
 	void set_hide_on_ok(bool p_hide);
 	bool get_hide_on_ok() const;

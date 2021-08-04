@@ -9,70 +9,54 @@
 	</tutorials>
 	<methods>
 		<method name="add_polygon">
-			<return type="void">
-			</return>
-			<argument index="0" name="polygon" type="PackedInt32Array">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="polygon" type="PackedInt32Array" />
 			<description>
 			</description>
 		</method>
 		<method name="clear_polygons">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 			</description>
 		</method>
 		<method name="create_from_mesh">
-			<return type="void">
-			</return>
-			<argument index="0" name="mesh" type="Mesh">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="mesh" type="Mesh" />
 			<description>
 			</description>
 		</method>
 		<method name="get_collision_mask_bit" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="bit" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_polygon">
-			<return type="PackedInt32Array">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="PackedInt32Array" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_polygon_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_vertices" qualifiers="const">
-			<return type="PackedVector3Array">
-			</return>
+			<return type="PackedVector3Array" />
 			<description>
 			</description>
 		</method>
 		<method name="set_collision_mask_bit">
-			<return type="void">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
-			<argument index="1" name="value" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="bit" type="int" />
+			<argument index="1" name="value" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="set_vertices">
-			<return type="void">
-			</return>
-			<argument index="0" name="vertices" type="PackedVector3Array">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="vertices" type="PackedVector3Array" />
 			<description>
 			</description>
 		</method>

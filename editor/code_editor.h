@@ -57,6 +57,8 @@ public:
 	GotoLineDialog();
 };
 
+class CodeTextEditor;
+
 class FindReplaceBar : public HBoxContainer {
 	GDCLASS(FindReplaceBar, HBoxContainer);
 
@@ -77,6 +79,7 @@ class FindReplaceBar : public HBoxContainer {
 	HBoxContainer *hbc_button_replace;
 	HBoxContainer *hbc_option_replace;
 
+	CodeTextEditor *base_text_editor = nullptr;
 	CodeEdit *text_editor;
 
 	int result_line;
@@ -96,8 +99,8 @@ class FindReplaceBar : public HBoxContainer {
 	void _editor_text_changed();
 	void _search_options_changed(bool p_pressed);
 	void _search_text_changed(const String &p_text);
-	void _search_text_entered(const String &p_text);
-	void _replace_text_entered(const String &p_text);
+	void _search_text_submitted(const String &p_text);
+	void _replace_text_submitted(const String &p_text);
 	void _update_size();
 
 protected:
@@ -120,7 +123,7 @@ public:
 	bool is_selection_only() const;
 	void set_error(const String &p_label);
 
-	void set_text_edit(CodeEdit *p_text_edit);
+	void set_text_edit(CodeTextEditor *p_text_editor);
 
 	void popup_search(bool p_show_only = false);
 	void popup_replace();
@@ -138,12 +141,12 @@ class CodeTextEditor : public VBoxContainer {
 	GDCLASS(CodeTextEditor, VBoxContainer);
 
 	CodeEdit *text_editor;
-	FindReplaceBar *find_replace_bar;
+	FindReplaceBar *find_replace_bar = nullptr;
 	HBoxContainer *status_bar;
 
 	Button *toggle_scripts_button;
+	Button *error_button;
 	Button *warning_button;
-	Label *warning_count_label;
 
 	Label *line_and_col_txt;
 
@@ -159,7 +162,10 @@ class CodeTextEditor : public VBoxContainer {
 	int error_line;
 	int error_column;
 
+	bool settings_changed = false;
+
 	void _on_settings_change();
+	void _apply_settings_change();
 
 	void _update_text_editor_theme();
 	void _update_font();
@@ -181,8 +187,9 @@ class CodeTextEditor : public VBoxContainer {
 	CodeTextEditorCodeCompleteFunc code_complete_func;
 	void *code_complete_ud;
 
-	void _warning_label_gui_input(const Ref<InputEvent> &p_event);
+	void _error_button_pressed();
 	void _warning_button_pressed();
+	void _set_show_errors_panel(bool p_show);
 	void _set_show_warnings_panel(bool p_show);
 	void _error_pressed(const Ref<InputEvent> &p_event);
 
@@ -202,6 +209,7 @@ protected:
 	static void _bind_methods();
 
 	bool is_warnings_panel_opened;
+	bool is_errors_panel_opened;
 
 public:
 	void trim_trailing_whitespace();
@@ -220,7 +228,7 @@ public:
 	void move_lines_up();
 	void move_lines_down();
 	void delete_lines();
-	void clone_lines_down();
+	void duplicate_selection();
 
 	/// Toggle inline comment on currently selected lines, or on current line if nothing is selected,
 	/// by adding or removing comment delimiter
@@ -235,7 +243,8 @@ public:
 	Variant get_edit_state();
 	void set_edit_state(const Variant &p_state);
 
-	void set_warning_nb(int p_warning_nb);
+	void set_error_count(int p_error_count);
+	void set_warning_count(int p_warning_count);
 
 	void update_editor_settings();
 	void set_error(const String &p_error);
@@ -243,6 +252,8 @@ public:
 	void update_line_and_column() { _line_col_changed(); }
 	CodeEdit *get_text_editor() { return text_editor; }
 	FindReplaceBar *get_find_replace_bar() { return find_replace_bar; }
+	void set_find_replace_bar(FindReplaceBar *p_bar);
+	void remove_find_replace_bar();
 	virtual void apply_code() {}
 	void goto_error();
 

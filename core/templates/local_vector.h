@@ -178,7 +178,7 @@ public:
 	}
 
 	int64_t find(const T &p_val, U p_from = 0) const {
-		for (U i = 0; i < count; i++) {
+		for (U i = p_from; i < count; i++) {
 			if (data[i] == p_val) {
 				return int64_t(i);
 			}

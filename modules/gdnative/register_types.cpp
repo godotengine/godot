@@ -79,9 +79,7 @@ void GDNativeExportPlugin::_export_file(const String &p_path, const String &p_ty
 		List<String> entry_keys;
 		config->get_section_keys("entry", &entry_keys);
 
-		for (List<String>::Element *E = entry_keys.front(); E; E = E->next()) {
-			String key = E->get();
-
+		for (const String &key : entry_keys) {
 			Vector<String> tags = key.split(".");
 
 			bool skip = false;
@@ -112,9 +110,7 @@ void GDNativeExportPlugin::_export_file(const String &p_path, const String &p_ty
 		List<String> dependency_keys;
 		config->get_section_keys("dependencies", &dependency_keys);
 
-		for (List<String>::Element *E = dependency_keys.front(); E; E = E->next()) {
-			String key = E->get();
-
+		for (const String &key : dependency_keys) {
 			Vector<String> tags = key.split(".");
 
 			bool skip = false;
@@ -149,9 +145,7 @@ void GDNativeExportPlugin::_export_file(const String &p_path, const String &p_ty
 		List<String> entry_keys;
 		config->get_section_keys("entry", &entry_keys);
 
-		for (List<String>::Element *E = entry_keys.front(); E; E = E->next()) {
-			String key = E->get();
-
+		for (const String &key : entry_keys) {
 			Vector<String> tags = key.split(".");
 
 			bool skip = false;
@@ -230,7 +224,7 @@ static void editor_init_callback() {
 	ProjectSettingsEditor::get_singleton()->get_tabs()->add_child(library_editor);
 
 	Ref<GDNativeExportPlugin> export_plugin;
-	export_plugin.instance();
+	export_plugin.instantiate();
 
 	EditorExport::get_singleton()->add_export_plugin(export_plugin);
 
@@ -259,13 +253,13 @@ void register_gdnative_types() {
 	EditorNode::add_init_callback(editor_init_callback);
 #endif
 
-	ClassDB::register_class<GDNativeLibrary>();
-	ClassDB::register_class<GDNative>();
+	GDREGISTER_CLASS(GDNativeLibrary);
+	GDREGISTER_CLASS(GDNative);
 
-	resource_loader_gdnlib.instance();
+	resource_loader_gdnlib.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_gdnlib);
 
-	resource_saver_gdnlib.instance();
+	resource_saver_gdnlib.instantiate();
 	ResourceSaver::add_resource_format_saver(resource_saver_gdnlib);
 
 	GDNativeCallRegistry::singleton = memnew(GDNativeCallRegistry);
@@ -298,7 +292,7 @@ void register_gdnative_types() {
 
 		Ref<GDNativeLibrary> lib = ResourceLoader::load(path);
 		Ref<GDNative> singleton;
-		singleton.instance();
+		singleton.instantiate();
 		singleton->set_library(lib);
 
 		if (!singleton->initialize()) {
@@ -363,7 +357,7 @@ void unregister_gdnative_types() {
 	print_line(String("aabb:\t")     + itos(sizeof(AABB)));
 	print_line(String("rid:\t")       + itos(sizeof(RID)));
 	print_line(String("string:\t")    + itos(sizeof(String)));
-	print_line(String("transform:\t") + itos(sizeof(Transform)));
+	print_line(String("transform:\t") + itos(sizeof(Transform3D)));
 	print_line(String("transfo2D:\t") + itos(sizeof(Transform2D)));
 	print_line(String("variant:\t")   + itos(sizeof(Variant)));
 	print_line(String("vector2:\t")   + itos(sizeof(Vector2)));

@@ -1130,7 +1130,7 @@ TEST_CASE("[String] Path functions") {
 		CHECK(String(path[i]).get_basename() == base_name[i]);
 		CHECK(String(path[i]).get_extension() == ext[i]);
 		CHECK(String(path[i]).get_file() == file[i]);
-		CHECK(String(path[i]).is_abs_path() == abs[i]);
+		CHECK(String(path[i]).is_absolute_path() == abs[i]);
 		CHECK(String(path[i]).is_rel_path() != abs[i]);
 		CHECK(String(path[i]).simplify_path().get_base_dir().plus_file(file[i]) == String(path[i]).simplify_path());
 	}
@@ -1317,7 +1317,7 @@ TEST_CASE("[String] Is_*") {
 	for (int i = 0; i < 12; i++) {
 		String s = String(data[i]);
 		CHECK(s.is_numeric() == isnum[i]);
-		CHECK(s.is_valid_integer() == isint[i]);
+		CHECK(s.is_valid_int() == isint[i]);
 		CHECK(s.is_valid_hex_number(false) == ishex[i]);
 		CHECK(s.is_valid_hex_number(true) == ishex_p[i]);
 		CHECK(s.is_valid_float() == isflt[i]);

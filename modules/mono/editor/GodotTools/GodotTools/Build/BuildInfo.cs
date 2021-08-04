@@ -7,7 +7,7 @@ using Path = System.IO.Path;
 namespace GodotTools.Build
 {
     [Serializable]
-    public sealed class BuildInfo : Reference // TODO Remove Reference once we have proper serialization
+    public sealed class BuildInfo : RefCounted // TODO Remove RefCounted once we have proper serialization
     {
         public string Solution { get; }
         public string[] Targets { get; }

@@ -31,7 +31,7 @@
 #ifndef EDITORFILEDIALOG_H
 #define EDITORFILEDIALOG_H
 
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
@@ -167,8 +167,8 @@ private:
 	void _item_menu_id_pressed(int p_option);
 
 	void _select_drive(int p_idx);
-	void _dir_entered(String p_dir);
-	void _file_entered(const String &p_file);
+	void _dir_submitted(String p_dir);
+	void _file_submitted(const String &p_file);
 	void _action_pressed();
 	void _save_confirm_pressed();
 	void _cancel_pressed();

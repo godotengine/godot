@@ -813,7 +813,7 @@ Size2 Font::get_string_size(const String &p_text, int p_size) const {
 	if (cache.has(hash)) {
 		buffer = cache.get(hash);
 	} else {
-		buffer.instance();
+		buffer.instantiate();
 		int size = p_size <= 0 ? data[0]->get_base_size() : p_size;
 		buffer->add_string(p_text, Ref<Font>(this), size, Dictionary(), TranslationServer::get_singleton()->get_tool_locale());
 		cache.insert(hash, buffer);
@@ -838,7 +838,7 @@ Size2 Font::get_multiline_string_size(const String &p_text, float p_width, int p
 	if (cache_wrap.has(wrp_hash)) {
 		lines_buffer = cache_wrap.get(wrp_hash);
 	} else {
-		lines_buffer.instance();
+		lines_buffer.instantiate();
 		int size = p_size <= 0 ? data[0]->get_base_size() : p_size;
 		lines_buffer->add_string(p_text, Ref<Font>(this), size, Dictionary(), TranslationServer::get_singleton()->get_tool_locale());
 		lines_buffer->set_width(p_width);
@@ -870,7 +870,7 @@ void Font::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_t
 	if (cache.has(hash)) {
 		buffer = cache.get(hash);
 	} else {
-		buffer.instance();
+		buffer.instantiate();
 		int size = p_size <= 0 ? data[0]->get_base_size() : p_size;
 		buffer->add_string(p_text, Ref<Font>(this), size, Dictionary(), TranslationServer::get_singleton()->get_tool_locale());
 		cache.insert(hash, buffer);
@@ -905,7 +905,7 @@ void Font::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const S
 	if (cache_wrap.has(wrp_hash)) {
 		lines_buffer = cache_wrap.get(wrp_hash);
 	} else {
-		lines_buffer.instance();
+		lines_buffer.instantiate();
 		int size = p_size <= 0 ? data[0]->get_base_size() : p_size;
 		lines_buffer->add_string(p_text, Ref<Font>(this), size, Dictionary(), TranslationServer::get_singleton()->get_tool_locale());
 		lines_buffer->set_width(p_width);
@@ -1041,7 +1041,7 @@ RES ResourceFormatLoaderFont::load(const String &p_path, const String &p_origina
 	}
 
 	Ref<FontData> dfont;
-	dfont.instance();
+	dfont.instantiate();
 	dfont->load_resource(p_path);
 
 	if (r_error) {
@@ -1096,11 +1096,11 @@ RES ResourceFormatLoaderCompatFont::load(const String &p_path, const String &p_o
 	}
 
 	Ref<FontData> dfont;
-	dfont.instance();
+	dfont.instantiate();
 	dfont->load_resource(p_path);
 
 	Ref<Font> font;
-	font.instance();
+	font.instantiate();
 	font->add_data(dfont);
 
 	if (r_error) {

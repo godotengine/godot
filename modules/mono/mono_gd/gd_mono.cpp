@@ -39,8 +39,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/os/os.h"
 #include "core/os/thread.h"
 
@@ -100,8 +100,8 @@ void gd_mono_setup_runtime_main_args() {
 	main_args.write[0] = execpath.ptrw();
 
 	int i = 1;
-	for (List<String>::Element *E = cmdline_args.front(); E; E = E->next()) {
-		CharString &stored = cmdline_args_utf8.push_back(E->get().utf8())->get();
+	for (const String &E : cmdline_args) {
+		CharString &stored = cmdline_args_utf8.push_back(E.utf8())->get();
 		main_args.write[i] = stored.ptrw();
 		i++;
 	}
@@ -691,7 +691,7 @@ static bool try_get_cached_api_hash_for(const String &p_api_assemblies_dir, bool
 	}
 
 	Ref<ConfigFile> cfg;
-	cfg.instance();
+	cfg.instantiate();
 	Error cfg_err = cfg->load(cached_api_hash_path);
 	ERR_FAIL_COND_V(cfg_err != OK, false);
 
@@ -717,7 +717,7 @@ static void create_cached_api_hash_for(const String &p_api_assemblies_dir) {
 	String cached_api_hash_path = p_api_assemblies_dir.plus_file("api_hash_cache.cfg");
 
 	Ref<ConfigFile> cfg;
-	cfg.instance();
+	cfg.instantiate();
 
 	cfg->set_value("core", "modified_time", FileAccess::get_modified_time(core_api_assembly_path));
 	cfg->set_value("editor", "modified_time", FileAccess::get_modified_time(editor_api_assembly_path));

@@ -84,7 +84,7 @@ TEST_SUITE("Validate tests") {
 		Plane plane(Vector3(1, 1, 1), 1.0);
 		INFO(plane);
 
-		Quat quat(Vector3(0.5, 1.0, 2.0));
+		Quaternion quat(Vector3(0.5, 1.0, 2.0));
 		INFO(quat);
 
 		AABB aabb(Vector3(), Vector3(100, 100, 100));
@@ -93,7 +93,7 @@ TEST_SUITE("Validate tests") {
 		Basis basis(quat);
 		INFO(basis);
 
-		Transform trans(basis);
+		Transform3D trans(basis);
 		INFO(trans);
 
 		Color color(1, 0.5, 0.2, 0.3);

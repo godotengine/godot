@@ -16,10 +16,8 @@
 	</tutorials>
 	<methods>
 		<method name="add_property_info">
-			<return type="void">
-			</return>
-			<argument index="0" name="hint" type="Dictionary">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="hint" type="Dictionary" />
 			<description>
 				Adds a custom property info to a property. The dictionary must contain:
 				- [code]name[/code]: [String] (the property's name)
@@ -56,28 +54,22 @@
 			</description>
 		</method>
 		<method name="clear">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Clears the whole configuration (not recommended, may break things).
 			</description>
 		</method>
 		<method name="get_order" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Returns the order of a configuration value (influences when saved to the config file).
 			</description>
 		</method>
 		<method name="get_setting" qualifiers="const">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Returns the value of a setting.
 				[b]Example:[/b]
@@ -92,10 +84,8 @@
 			</description>
 		</method>
 		<method name="globalize_path" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Returns the absolute, native OS path corresponding to the localized [code]path[/code] (starting with [code]res://[/code] or [code]user://[/code]). The returned path will vary depending on the operating system and user preferences. See [url=https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html]File paths in Godot projects[/url] to see what those paths convert to. See also [method localize_path].
 				[b]Note:[/b] [method globalize_path] with [code]res://[/code] will not work in an exported project. Instead, prepend the executable's base directory to the path when running from an exported project:
@@ -115,23 +105,17 @@
 			</description>
 		</method>
 		<method name="has_setting" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Returns [code]true[/code] if a configuration value is present.
 			</description>
 		</method>
 		<method name="load_resource_pack">
-			<return type="bool">
-			</return>
-			<argument index="0" name="pack" type="String">
-			</argument>
-			<argument index="1" name="replace_files" type="bool" default="true">
-			</argument>
-			<argument index="2" name="offset" type="int" default="0">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="pack" type="String" />
+			<argument index="1" name="replace_files" type="bool" default="true" />
+			<argument index="2" name="offset" type="int" default="0" />
 			<description>
 				Loads the contents of the .pck or .zip file specified by [code]pack[/code] into the resource filesystem ([code]res://[/code]). Returns [code]true[/code] on success.
 				[b]Note:[/b] If a file from [code]pack[/code] shares the same path as a file already in the resource filesystem, any attempts to load that file will use the file from [code]pack[/code] unless [code]replace_files[/code] is set to [code]false[/code].
@@ -139,78 +123,60 @@
 			</description>
 		</method>
 		<method name="localize_path" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Returns the localized path (starting with [code]res://[/code]) corresponding to the absolute, native OS [code]path[/code]. See also [method globalize_path].
 			</description>
 		</method>
 		<method name="property_can_revert">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Returns [code]true[/code] if the specified property exists and its initial value differs from the current value.
 			</description>
 		</method>
 		<method name="property_get_revert">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Returns the specified property's initial value. Returns [code]null[/code] if the property does not exist.
 			</description>
 		</method>
 		<method name="save">
-			<return type="int" enum="Error">
-			</return>
+			<return type="int" enum="Error" />
 			<description>
 				Saves the configuration to the [code]project.godot[/code] file.
 				[b]Note:[/b] This method is intended to be used by editor plugins, as modified [ProjectSettings] can't be loaded back in the running app. If you want to change project settings in exported projects, use [method save_custom] to save [code]override.cfg[/code] file.
 			</description>
 		</method>
 		<method name="save_custom">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="file" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="file" type="String" />
 			<description>
 				Saves the configuration to a custom file. The file extension must be [code].godot[/code] (to save in text-based [ConfigFile] format) or [code].binary[/code] (to save in binary format). You can also save [code]override.cfg[/code] file, which is also text, but can be used in exported projects unlike other formats.
 			</description>
 		</method>
 		<method name="set_initial_value">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="value" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="value" type="Variant" />
 			<description>
 				Sets the specified property's initial value. This is the value the property reverts to.
 			</description>
 		</method>
 		<method name="set_order">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="position" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="position" type="int" />
 			<description>
 				Sets the order of a configuration value (influences when saved to the config file).
 			</description>
 		</method>
 		<method name="set_setting">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="value" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="value" type="Variant" />
 			<description>
 				Sets the value of a setting.
 				[b]Example:[/b]
@@ -226,7 +192,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="application/boot_splash/bg_color" type="Color" setter="" getter="" default="Color( 0.14, 0.14, 0.14, 1 )">
+		<member name="application/boot_splash/bg_color" type="Color" setter="" getter="" default="Color(0.14, 0.14, 0.14, 1)">
 			Background color for the boot splash.
 		</member>
 		<member name="application/boot_splash/fullsize" type="bool" setter="" getter="" default="true">
@@ -266,10 +232,12 @@
 			Icon set in [code].ico[/code] format used on Windows to set the game's icon. This is done automatically on start by calling [method DisplayServer.set_native_icon].
 		</member>
 		<member name="application/run/disable_stderr" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], disables printing to standard error in an exported build.
+			If [code]true[/code], disables printing to standard error. If [code]true[/code], this also hides error and warning messages printed by [method @GlobalScope.push_error] and [method @GlobalScope.push_warning]. See also [member application/run/disable_stdout].
+			Changes to this setting will only be applied upon restarting the application.
 		</member>
 		<member name="application/run/disable_stdout" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], disables printing to standard output in an exported build.
+			If [code]true[/code], disables printing to standard output. This is equivalent to starting the editor or project with the [code]--quiet[/code] command line argument. See also [member application/run/disable_stderr].
+			Changes to this setting will only be applied upon restarting the application.
 		</member>
 		<member name="application/run/flush_stdout_on_print" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], flushes the standard output stream every time a line is printed. This affects both terminal logging and file logging.
@@ -309,7 +277,7 @@
 			If [code]true[/code], microphone input will be allowed. This requires appropriate permissions to be set when exporting to Android or iOS.
 		</member>
 		<member name="audio/driver/mix_rate" type="int" setter="" getter="" default="44100">
-			Mixing rate used for audio. In general, it's better to not touch this and leave it to the host operating system.
+			The mixing rate used for audio (in Hz). In general, it's better to not touch this and leave it to the host operating system.
 		</member>
 		<member name="audio/driver/output_latency" type="int" setter="" getter="" default="15">
 			Output latency in milliseconds for audio. Lower values will result in lower audio latency at the cost of increased CPU usage. Low values may result in audible cracking on slower hardware.
@@ -443,7 +411,7 @@
 		</member>
 		<member name="debug/settings/fps/force_fps" type="int" setter="" getter="" default="0">
 			Maximum number of frames per second allowed. The actual number of frames per second may still be below this value if the game is lagging.
-			If [member display/window/vsync/use_vsync] is enabled, it takes precedence and the forced FPS number cannot exceed the monitor's refresh rate.
+			If [member display/window/vsync/vsync_mode] is set to [code]Enabled[/code] or [code]Adaptive[/code], it takes precedence and the forced FPS number cannot exceed the monitor's refresh rate.
 			This setting is therefore mostly relevant for lowering the maximum FPS below VSync, e.g. to perform non-real-time rendering of static frames, or test the project under lag conditions.
 		</member>
 		<member name="debug/settings/gdscript/max_call_stack" type="int" setter="" getter="" default="1024">
@@ -461,7 +429,7 @@
 		<member name="debug/settings/visual_script/max_call_stack" type="int" setter="" getter="" default="1024">
 			Maximum call stack in visual scripting, to avoid infinite recursion.
 		</member>
-		<member name="debug/shapes/collision/contact_color" type="Color" setter="" getter="" default="Color( 1, 0.2, 0.1, 0.8 )">
+		<member name="debug/shapes/collision/contact_color" type="Color" setter="" getter="" default="Color(1, 0.2, 0.1, 0.8)">
 			Color of the contact points between collision shapes, visible when "Visible Collision Shapes" is enabled in the Debug menu.
 		</member>
 		<member name="debug/shapes/collision/draw_2d_outlines" type="bool" setter="" getter="" default="true">
@@ -470,22 +438,22 @@
 		<member name="debug/shapes/collision/max_contacts_displayed" type="int" setter="" getter="" default="10000">
 			Maximum number of contact points between collision shapes to display when "Visible Collision Shapes" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/collision/shape_color" type="Color" setter="" getter="" default="Color( 0, 0.6, 0.7, 0.42 )">
+		<member name="debug/shapes/collision/shape_color" type="Color" setter="" getter="" default="Color(0, 0.6, 0.7, 0.42)">
 			Color of the collision shapes, visible when "Visible Collision Shapes" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/navigation/disabled_geometry_color" type="Color" setter="" getter="" default="Color( 1, 0.7, 0.1, 0.4 )">
+		<member name="debug/shapes/navigation/disabled_geometry_color" type="Color" setter="" getter="" default="Color(1, 0.7, 0.1, 0.4)">
 			Color of the disabled navigation geometry, visible when "Visible Navigation" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/navigation/geometry_color" type="Color" setter="" getter="" default="Color( 0.1, 1, 0.7, 0.4 )">
+		<member name="debug/shapes/navigation/geometry_color" type="Color" setter="" getter="" default="Color(0.1, 1, 0.7, 0.4)">
 			Color of the navigation geometry, visible when "Visible Navigation" is enabled in the Debug menu.
 		</member>
 		<member name="display/mouse_cursor/custom_image" type="String" setter="" getter="" default="&quot;&quot;">
 			Custom image for the mouse cursor (limited to 256×256).
 		</member>
-		<member name="display/mouse_cursor/custom_image_hotspot" type="Vector2" setter="" getter="" default="Vector2( 0, 0 )">
+		<member name="display/mouse_cursor/custom_image_hotspot" type="Vector2" setter="" getter="" default="Vector2(0, 0)">
 			Hotspot for the custom mouse cursor image.
 		</member>
-		<member name="display/mouse_cursor/tooltip_position_offset" type="Vector2" setter="" getter="" default="Vector2( 10, 10 )">
+		<member name="display/mouse_cursor/tooltip_position_offset" type="Vector2" setter="" getter="" default="Vector2(10, 10)">
 			Position offset for tooltips, relative to the mouse cursor's hotspot.
 		</member>
 		<member name="display/window/dpi/allow_hidpi" type="bool" setter="" getter="" default="false">
@@ -530,12 +498,10 @@
 		<member name="display/window/size/width" type="int" setter="" getter="" default="1024">
 			Sets the game's main viewport width. On desktop platforms, this is the default window size. Stretch mode settings also use this as a reference when enabled.
 		</member>
-		<member name="display/window/vsync/use_vsync" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables vertical synchronization. This eliminates tearing that may appear in moving scenes, at the cost of higher input latency and stuttering at lower framerates. If [code]false[/code], vertical synchronization will be disabled, however, many platforms will enforce it regardless (such as mobile platforms and HTML5).
-		</member>
-		<member name="display/window/vsync/vsync_via_compositor" type="bool" setter="" getter="" default="false">
-			If [code]Use Vsync[/code] is enabled and this setting is [code]true[/code], enables vertical synchronization via the operating system's window compositor when in windowed mode and the compositor is enabled. This will prevent stutter in certain situations. (Windows only.)
-			[b]Note:[/b] This option is experimental and meant to alleviate stutter experienced by some users. However, some users have experienced a Vsync framerate halving (e.g. from 60 FPS to 30 FPS) when using it.
+		<member name="display/window/vsync/vsync_mode" type="int" setter="" getter="" default="1">
+			Sets the VSync mode for the main game window.
+			See [enum DisplayServer.VSyncMode] for possible values and how they affect the behavior of your application.
+			Depending on the platform and used renderer, the engine will fall back to [code]Enabled[/code], if the desired mode is not supported.
 		</member>
 		<member name="editor/node_naming/name_casing" type="int" setter="" getter="" default="0">
 			When creating node names automatically, set the type of casing in this project. This is mostly an editor setting.
@@ -551,7 +517,7 @@
 			prime-run %command%
 			[/codeblock]
 		</member>
-		<member name="editor/script/search_in_file_extensions" type="PackedStringArray" setter="" getter="" default="PackedStringArray( &quot;gd&quot;, &quot;shader&quot; )">
+		<member name="editor/script/search_in_file_extensions" type="PackedStringArray" setter="" getter="" default="PackedStringArray(&quot;gd&quot;, &quot;gdshader&quot;)">
 			Text-based file extensions to include in the script editor's "Find in Files" feature. You can add e.g. [code]tscn[/code] if you wish to also parse your scene files, especially if you use built-in scripts which are serialized in the scene files.
 		</member>
 		<member name="editor/script/templates_search_path" type="String" setter="" getter="" default="&quot;res://script_templates&quot;">
@@ -703,6 +669,8 @@
 		</member>
 		<member name="input/ui_text_completion_query" type="Dictionary" setter="" getter="">
 		</member>
+		<member name="input/ui_text_completion_replace" type="Dictionary" setter="" getter="">
+		</member>
 		<member name="input/ui_text_dedent" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_delete" type="Dictionary" setter="" getter="">
@@ -736,6 +704,8 @@
 		<member name="input/ui_text_select_word_under_caret" type="Dictionary" setter="" getter="">
 			If no selection is currently active, selects the word currently under the caret in text fields. If a selection is currently active, deselects the current selection.
 			[b]Note:[/b] Currently, this is only implemented in [TextEdit], not [LineEdit].
+		</member>
+		<member name="input/ui_text_submit" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_toggle_insert_mode" type="Dictionary" setter="" getter="">
 		</member>
@@ -816,8 +786,44 @@
 		<member name="layer_names/2d_navigation/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 2. If left empty, the layer will display as "Layer 2".
 		</member>
+		<member name="layer_names/2d_navigation/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 20. If left empty, the layer will display as "Layer 20".
+		</member>
+		<member name="layer_names/2d_navigation/layer_21" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 21. If left empty, the layer will display as "Layer 21".
+		</member>
+		<member name="layer_names/2d_navigation/layer_22" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 22. If left empty, the layer will display as "Layer 22".
+		</member>
+		<member name="layer_names/2d_navigation/layer_23" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 23. If left empty, the layer will display as "Layer 23".
+		</member>
+		<member name="layer_names/2d_navigation/layer_24" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 24. If left empty, the layer will display as "Layer 24".
+		</member>
+		<member name="layer_names/2d_navigation/layer_25" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 25. If left empty, the layer will display as "Layer 25".
+		</member>
+		<member name="layer_names/2d_navigation/layer_26" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 26. If left empty, the layer will display as "Layer 26".
+		</member>
+		<member name="layer_names/2d_navigation/layer_27" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 27. If left empty, the layer will display as "Layer 27".
+		</member>
+		<member name="layer_names/2d_navigation/layer_28" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 28. If left empty, the layer will display as "Layer 28".
+		</member>
+		<member name="layer_names/2d_navigation/layer_29" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 29. If left empty, the layer will display as "Layer 29".
+		</member>
 		<member name="layer_names/2d_navigation/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 3. If left empty, the layer will display as "Layer 3".
+		</member>
+		<member name="layer_names/2d_navigation/layer_30" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 30. If left empty, the layer will display as "Layer 30".
+		</member>
+		<member name="layer_names/2d_navigation/layer_31" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 31. If left empty, the layer will display as "Layer 31".
 		</member>
 		<member name="layer_names/2d_navigation/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 4. If left empty, the layer will display as "Layer 4".
@@ -876,8 +882,44 @@
 		<member name="layer_names/2d_physics/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D physics layer 2. If left empty, the layer will display as "Layer 2".
 		</member>
+		<member name="layer_names/2d_physics/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 20. If left empty, the layer will display as "Layer 20".
+		</member>
+		<member name="layer_names/2d_physics/layer_21" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 21. If left empty, the layer will display as "Layer 21".
+		</member>
+		<member name="layer_names/2d_physics/layer_22" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 22. If left empty, the layer will display as "Layer 22".
+		</member>
+		<member name="layer_names/2d_physics/layer_23" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 23. If left empty, the layer will display as "Layer 23".
+		</member>
+		<member name="layer_names/2d_physics/layer_24" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 24. If left empty, the layer will display as "Layer 24".
+		</member>
+		<member name="layer_names/2d_physics/layer_25" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 25. If left empty, the layer will display as "Layer 25".
+		</member>
+		<member name="layer_names/2d_physics/layer_26" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 26. If left empty, the layer will display as "Layer 26".
+		</member>
+		<member name="layer_names/2d_physics/layer_27" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 27. If left empty, the layer will display as "Layer 27".
+		</member>
+		<member name="layer_names/2d_physics/layer_28" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 28. If left empty, the layer will display as "Layer 28".
+		</member>
+		<member name="layer_names/2d_physics/layer_29" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 29. If left empty, the layer will display as "Layer 29".
+		</member>
 		<member name="layer_names/2d_physics/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D physics layer 3. If left empty, the layer will display as "Layer 3".
+		</member>
+		<member name="layer_names/2d_physics/layer_30" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 30. If left empty, the layer will display as "Layer 30".
+		</member>
+		<member name="layer_names/2d_physics/layer_31" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 31. If left empty, the layer will display as "Layer 31".
 		</member>
 		<member name="layer_names/2d_physics/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D physics layer 4. If left empty, the layer will display as "Layer 4".
@@ -996,8 +1038,44 @@
 		<member name="layer_names/3d_navigation/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 2. If left empty, the layer will display as "Layer 2".
 		</member>
+		<member name="layer_names/3d_navigation/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 20. If left empty, the layer will display as "Layer 20".
+		</member>
+		<member name="layer_names/3d_navigation/layer_21" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 21. If left empty, the layer will display as "Layer 21".
+		</member>
+		<member name="layer_names/3d_navigation/layer_22" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 22. If left empty, the layer will display as "Layer 22".
+		</member>
+		<member name="layer_names/3d_navigation/layer_23" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 23. If left empty, the layer will display as "Layer 23".
+		</member>
+		<member name="layer_names/3d_navigation/layer_24" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 24. If left empty, the layer will display as "Layer 24".
+		</member>
+		<member name="layer_names/3d_navigation/layer_25" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 25. If left empty, the layer will display as "Layer 25".
+		</member>
+		<member name="layer_names/3d_navigation/layer_26" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 26. If left empty, the layer will display as "Layer 26".
+		</member>
+		<member name="layer_names/3d_navigation/layer_27" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 27. If left empty, the layer will display as "Layer 27".
+		</member>
+		<member name="layer_names/3d_navigation/layer_28" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 28. If left empty, the layer will display as "Layer 28".
+		</member>
+		<member name="layer_names/3d_navigation/layer_29" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 29. If left empty, the layer will display as "Layer 29".
+		</member>
 		<member name="layer_names/3d_navigation/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 3. If left empty, the layer will display as "Layer 3".
+		</member>
+		<member name="layer_names/3d_navigation/layer_30" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 30. If left empty, the layer will display as "Layer 30".
+		</member>
+		<member name="layer_names/3d_navigation/layer_31" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 31. If left empty, the layer will display as "Layer 31".
 		</member>
 		<member name="layer_names/3d_navigation/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 4. If left empty, the layer will display as "Layer 4".
@@ -1056,8 +1134,44 @@
 		<member name="layer_names/3d_physics/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D physics layer 2. If left empty, the layer will display as "Layer 2".
 		</member>
+		<member name="layer_names/3d_physics/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 20. If left empty, the layer will display as "Layer 20".
+		</member>
+		<member name="layer_names/3d_physics/layer_21" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 21. If left empty, the layer will display as "Layer 21".
+		</member>
+		<member name="layer_names/3d_physics/layer_22" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 22. If left empty, the layer will display as "Layer 22".
+		</member>
+		<member name="layer_names/3d_physics/layer_23" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 23. If left empty, the layer will display as "Layer 23".
+		</member>
+		<member name="layer_names/3d_physics/layer_24" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 24. If left empty, the layer will display as "Layer 24".
+		</member>
+		<member name="layer_names/3d_physics/layer_25" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 25. If left empty, the layer will display as "Layer 25".
+		</member>
+		<member name="layer_names/3d_physics/layer_26" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 26. If left empty, the layer will display as "Layer 26".
+		</member>
+		<member name="layer_names/3d_physics/layer_27" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 27. If left empty, the layer will display as "Layer 27".
+		</member>
+		<member name="layer_names/3d_physics/layer_28" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 28. If left empty, the layer will display as "Layer 28".
+		</member>
+		<member name="layer_names/3d_physics/layer_29" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 29. If left empty, the layer will display as "Layer 29".
+		</member>
 		<member name="layer_names/3d_physics/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D physics layer 3. If left empty, the layer will display as "Layer 3".
+		</member>
+		<member name="layer_names/3d_physics/layer_30" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 30. If left empty, the layer will display as "Layer 30".
+		</member>
+		<member name="layer_names/3d_physics/layer_31" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 31. If left empty, the layer will display as "Layer 31".
 		</member>
 		<member name="layer_names/3d_physics/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D physics layer 4. If left empty, the layer will display as "Layer 4".
@@ -1136,8 +1250,6 @@
 		</member>
 		<member name="layer_names/3d_render/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D render layer 9. If left empty, the layer will display as "Layer 9".
-		</member>
-		<member name="memory/limits/command_queue/multithreading_queue_size_kb" type="int" setter="" getter="" default="256">
 		</member>
 		<member name="memory/limits/message_queue/max_size_kb" type="int" setter="" getter="" default="4096">
 			Godot uses a message queue to defer some function calls. If you run out of space on it (you will see an error), you can increase the size here.
@@ -1220,7 +1332,7 @@
 			[/csharp]
 			[/codeblocks]
 		</member>
-		<member name="physics/2d/default_gravity_vector" type="Vector2" setter="" getter="" default="Vector2( 0, 1 )">
+		<member name="physics/2d/default_gravity_vector" type="Vector2" setter="" getter="" default="Vector2(0, 1)">
 			The default gravity direction in 2D.
 			[b]Note:[/b] This property is only read when the project starts. To change the default gravity vector at runtime, use the following code sample:
 			[codeblocks]
@@ -1272,7 +1384,7 @@
 			[/csharp]
 			[/codeblocks]
 		</member>
-		<member name="physics/3d/default_gravity_vector" type="Vector3" setter="" getter="" default="Vector3( 0, -1, 0 )">
+		<member name="physics/3d/default_gravity_vector" type="Vector3" setter="" getter="" default="Vector3(0, -1, 0)">
 			The default gravity direction in 3D.
 			[b]Note:[/b] This property is only read when the project starts. To change the default gravity vector at runtime, use the following code sample:
 			[codeblocks]
@@ -1311,7 +1423,8 @@
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.iterations_per_second] instead.
 		</member>
 		<member name="physics/common/physics_jitter_fix" type="float" setter="" getter="" default="0.5">
-			Fix to improve physics jitter, specially on monitors where refresh rate is different than the physics FPS.
+			Controls how much physics ticks are synchronized with real time. For 0 or less, the ticks are synchronized. Such values are recommended for network games, where clock synchronization matters. Higher values cause higher deviation of in-game clock and real clock, but allows smoothing out framerate jitters. The default value of 0.5 should be fine for most; values above 2 could cause the game to react to dropped frames with a noticeable delay and are not recommended.
+			[b]Note:[/b] For best results, when using a custom physics interpolation solution, the physics jitter fix should be disabled by setting [member physics/common/physics_jitter_fix] to [code]0[/code].
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_jitter_fix] instead.
 		</member>
 		<member name="rendering/2d/sdf/oversize" type="int" setter="" getter="" default="1">
@@ -1363,7 +1476,7 @@
 		<member name="rendering/driver/threads/thread_model" type="int" setter="" getter="" default="1">
 			Thread model for rendering. Rendering on a thread can vastly improve performance, but synchronizing to the main thread can cause a bit more jitter.
 		</member>
-		<member name="rendering/environment/defaults/default_clear_color" type="Color" setter="" getter="" default="Color( 0.3, 0.3, 0.3, 1 )">
+		<member name="rendering/environment/defaults/default_clear_color" type="Color" setter="" getter="" default="Color(0.3, 0.3, 0.3, 1)">
 			Default background clear color. Overridable per [Viewport] using its [Environment]. See [member Environment.background_mode] and [member Environment.background_color] in particular. To change this default color programmatically, use [method RenderingServer.set_default_clear_color].
 		</member>
 		<member name="rendering/environment/defaults/default_environment" type="String" setter="" getter="" default="&quot;&quot;">
@@ -1419,17 +1532,13 @@
 		</member>
 		<member name="rendering/global_illumination/gi/use_half_resolution" type="bool" setter="" getter="" default="false">
 		</member>
-		<member name="rendering/global_illumination/gi_probes/anisotropic" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], take additional samples when rendering objects affected by a [GIProbe] to reduce artifacts from only sampling in one direction.
-		</member>
-		<member name="rendering/global_illumination/gi_probes/quality" type="int" setter="" getter="" default="1">
-			Sets the number of cone samples taken when rendering objects affected by [GIProbe]s.
-		</member>
 		<member name="rendering/global_illumination/sdfgi/frames_to_converge" type="int" setter="" getter="" default="4">
 		</member>
 		<member name="rendering/global_illumination/sdfgi/frames_to_update_lights" type="int" setter="" getter="" default="2">
 		</member>
 		<member name="rendering/global_illumination/sdfgi/probe_ray_count" type="int" setter="" getter="" default="1">
+		</member>
+		<member name="rendering/global_illumination/voxel_gi/quality" type="int" setter="" getter="" default="1">
 		</member>
 		<member name="rendering/lightmapping/bake_performance/max_rays_per_pass" type="int" setter="" getter="" default="32">
 		</member>
@@ -1502,6 +1611,16 @@
 		<member name="rendering/reflections/sky_reflections/texture_array_reflections.mobile" type="bool" setter="" getter="" default="false">
 			Lower-end override for [member rendering/reflections/sky_reflections/texture_array_reflections] on mobile devices, due to performance concerns or driver support.
 		</member>
+		<member name="rendering/shader_compiler/shader_cache/compress" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="rendering/shader_compiler/shader_cache/enabled" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="rendering/shader_compiler/shader_cache/strip_debug" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="rendering/shader_compiler/shader_cache/strip_debug.release" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="rendering/shader_compiler/shader_cache/use_zstd_compression" type="bool" setter="" getter="" default="true">
+		</member>
 		<member name="rendering/shading/overrides/force_blinn_over_ggx" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses faster but lower-quality Blinn model to generate blurred reflections instead of the GGX model.
 		</member>
@@ -1560,26 +1679,41 @@
 		<member name="rendering/shadows/shadows/soft_shadow_quality.mobile" type="int" setter="" getter="" default="0">
 			Lower-end override for [member rendering/shadows/shadows/soft_shadow_quality] on mobile devices, due to performance concerns or driver support.
 		</member>
+		<member name="rendering/textures/decals/filter" type="int" setter="" getter="" default="3">
+		</member>
 		<member name="rendering/textures/default_filters/anisotropic_filtering_level" type="int" setter="" getter="" default="2">
 			Sets the maximum number of samples to take when using anisotropic filtering on textures (as a power of two). A higher sample count will result in sharper textures at oblique angles, but is more expensive to compute. A value of [code]0[/code] forcibly disables anisotropic filtering, even on materials where it is enabled.
 		</member>
 		<member name="rendering/textures/default_filters/use_nearest_mipmap_filter" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses nearest-neighbor mipmap filtering when using mipmaps (also called "bilinear filtering"), which will result in visible seams appearing between mipmap stages. This may increase performance in mobile as less memory bandwidth is used. If [code]false[/code], linear mipmap filtering (also called "trilinear filtering") is used.
 		</member>
+		<member name="rendering/textures/light_projectors/filter" type="int" setter="" getter="" default="3">
+		</member>
+		<member name="rendering/textures/lossless_compression/force_png" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the texture importer will import lossless textures using the PNG format. Otherwise, it will default to using WebP.
+		</member>
+		<member name="rendering/textures/lossless_compression/webp_compression_level" type="int" setter="" getter="" default="2">
+			The default compression level for lossless WebP. Higher levels result in smaller files at the cost of compression speed. Decompression speed is mostly unaffected by the compression level. Supported values are 0 to 9. Note that compression levels above 6 are very slow and offer very little savings.
+		</member>
 		<member name="rendering/textures/vram_compression/import_bptc" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the BPTC algorithm. This texture compression algorithm is only supported on desktop platforms, and only when using the Vulkan renderer.
+			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor.
 		</member>
 		<member name="rendering/textures/vram_compression/import_etc" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the Ericsson Texture Compression algorithm. This algorithm doesn't support alpha channels in textures.
+			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor.
 		</member>
 		<member name="rendering/textures/vram_compression/import_etc2" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the Ericsson Texture Compression 2 algorithm. This texture compression algorithm is only supported when using the Vulkan renderer.
+			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor.
 		</member>
 		<member name="rendering/textures/vram_compression/import_pvrtc" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the PowerVR Texture Compression algorithm. This texture compression algorithm is only supported on iOS.
+			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor.
 		</member>
 		<member name="rendering/textures/vram_compression/import_s3tc" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the S3 Texture Compression algorithm. This algorithm is only supported on desktop platforms and consoles.
+			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor.
 		</member>
 		<member name="rendering/vulkan/descriptor_pools/max_descriptors_per_pool" type="int" setter="" getter="" default="64">
 		</member>
@@ -1593,8 +1727,8 @@
 		</member>
 		<member name="rendering/vulkan/staging_buffer/texture_upload_region_size_px" type="int" setter="" getter="" default="64">
 		</member>
-		<member name="world/2d/cell_size" type="int" setter="" getter="" default="100">
-			Cell size used for the 2D hash grid that [VisibilityNotifier2D] uses (in pixels).
+		<member name="rendering/xr/enabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], XR support is enabled in Godot, this ensures required shaders are compiled.
 		</member>
 	</members>
 	<constants>

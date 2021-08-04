@@ -33,7 +33,7 @@
 #include "callable_bind.h"
 #include "core/object/message_queue.h"
 #include "core/object/object.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
 
 void Callable::call_deferred(const Variant **p_arguments, int p_argcount) const {
@@ -87,6 +87,10 @@ Callable Callable::bind(const Variant **p_arguments, int p_argcount) const {
 }
 Callable Callable::unbind(int p_argcount) const {
 	return Callable(memnew(CallableCustomUnbind(*this, p_argcount)));
+}
+
+bool Callable::is_valid() const {
+	return get_object() && (is_custom() || get_object()->has_method(get_method()));
 }
 
 Object *Callable::get_object() const {
@@ -403,8 +407,8 @@ Array Signal::get_connections() const {
 	object->get_signal_connection_list(name, &connections);
 
 	Array arr;
-	for (List<Object::Connection>::Element *E = connections.front(); E; E = E->next()) {
-		arr.push_back(E->get());
+	for (const Object::Connection &E : connections) {
+		arr.push_back(E);
 	}
 	return arr;
 }

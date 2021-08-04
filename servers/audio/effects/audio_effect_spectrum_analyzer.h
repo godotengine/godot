@@ -90,7 +90,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	Ref<AudioEffectInstance> instance() override;
+	Ref<AudioEffectInstance> instantiate() override;
 	void set_buffer_length(float p_seconds);
 	float get_buffer_length() const;
 	void set_tap_back_pos(float p_seconds);

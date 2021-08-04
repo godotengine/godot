@@ -37,8 +37,8 @@
 #include "scene/resources/animation.h"
 
 #ifdef TOOLS_ENABLED
-class AnimatedValuesBackup : public Reference {
-	GDCLASS(AnimatedValuesBackup, Reference);
+class AnimatedValuesBackup : public RefCounted {
+	GDCLASS(AnimatedValuesBackup, RefCounted);
 
 	struct Entry {
 		Object *object = nullptr;
@@ -93,14 +93,16 @@ private:
 		uint32_t id = 0;
 		RES resource;
 		Node *node = nullptr;
-		Node3D *spatial = nullptr;
 		Node2D *node_2d = nullptr;
+#ifndef _3D_DISABLED
+		Node3D *node_3d = nullptr;
 		Skeleton3D *skeleton = nullptr;
+#endif // _3D_DISABLED
 		int bone_idx = -1;
 		// accumulated transforms
 
 		Vector3 loc_accum;
-		Quat rot_accum;
+		Quaternion rot_accum;
 		Vector3 scale_accum;
 		uint64_t accum_pass = 0;
 

@@ -99,46 +99,46 @@ void AnimationPlayerEditor::_notification(int p_what) {
 
 			get_tree()->connect("node_removed", callable_mp(this, &AnimationPlayerEditor::_node_removed));
 
-			add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox("panel", "Panel"));
+			add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox("panel", "Panel"));
+			add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
-			autoplay->set_icon(get_theme_icon("AutoPlay", "EditorIcons"));
+			autoplay->set_icon(get_theme_icon(SNAME("AutoPlay"), SNAME("EditorIcons")));
 
-			play->set_icon(get_theme_icon("PlayStart", "EditorIcons"));
-			play_from->set_icon(get_theme_icon("Play", "EditorIcons"));
-			play_bw->set_icon(get_theme_icon("PlayStartBackwards", "EditorIcons"));
-			play_bw_from->set_icon(get_theme_icon("PlayBackwards", "EditorIcons"));
+			play->set_icon(get_theme_icon(SNAME("PlayStart"), SNAME("EditorIcons")));
+			play_from->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
+			play_bw->set_icon(get_theme_icon(SNAME("PlayStartBackwards"), SNAME("EditorIcons")));
+			play_bw_from->set_icon(get_theme_icon(SNAME("PlayBackwards"), SNAME("EditorIcons")));
 
-			autoplay_icon = get_theme_icon("AutoPlay", "EditorIcons");
-			reset_icon = get_theme_icon("Reload", "EditorIcons");
+			autoplay_icon = get_theme_icon(SNAME("AutoPlay"), SNAME("EditorIcons"));
+			reset_icon = get_theme_icon(SNAME("Reload"), SNAME("EditorIcons"));
 			{
 				Ref<Image> autoplay_img = autoplay_icon->get_image();
 				Ref<Image> reset_img = reset_icon->get_image();
 				Ref<Image> autoplay_reset_img;
 				Size2 icon_size = Size2(autoplay_img->get_width(), autoplay_img->get_height());
-				autoplay_reset_img.instance();
+				autoplay_reset_img.instantiate();
 				autoplay_reset_img->create(icon_size.x * 2, icon_size.y, false, autoplay_img->get_format());
 				autoplay_reset_img->blit_rect(autoplay_img, Rect2(Point2(), icon_size), Point2());
 				autoplay_reset_img->blit_rect(reset_img, Rect2(Point2(), icon_size), Point2(icon_size.x, 0));
-				autoplay_reset_icon.instance();
+				autoplay_reset_icon.instantiate();
 				autoplay_reset_icon->create_from_image(autoplay_reset_img);
 			}
-			stop->set_icon(get_theme_icon("Stop", "EditorIcons"));
+			stop->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
 
-			onion_toggle->set_icon(get_theme_icon("Onion", "EditorIcons"));
-			onion_skinning->set_icon(get_theme_icon("GuiTabMenuHl", "EditorIcons"));
+			onion_toggle->set_icon(get_theme_icon(SNAME("Onion"), SNAME("EditorIcons")));
+			onion_skinning->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
 
-			pin->set_icon(get_theme_icon("Pin", "EditorIcons"));
+			pin->set_icon(get_theme_icon(SNAME("Pin"), SNAME("EditorIcons")));
 
-			tool_anim->add_theme_style_override("normal", get_theme_stylebox("normal", "Button"));
-			track_editor->get_edit_menu()->add_theme_style_override("normal", get_theme_stylebox("normal", "Button"));
+			tool_anim->add_theme_style_override("normal", get_theme_stylebox(SNAME("normal"), SNAME("Button")));
+			track_editor->get_edit_menu()->add_theme_style_override("normal", get_theme_stylebox(SNAME("normal"), SNAME("Button")));
 
-#define ITEM_ICON(m_item, m_icon) tool_anim->get_popup()->set_item_icon(tool_anim->get_popup()->get_item_index(m_item), get_theme_icon(m_icon, "EditorIcons"))
+#define ITEM_ICON(m_item, m_icon) tool_anim->get_popup()->set_item_icon(tool_anim->get_popup()->get_item_index(m_item), get_theme_icon(SNAME(m_icon), SNAME("EditorIcons")))
 
 			ITEM_ICON(TOOL_NEW_ANIM, "New");
 			ITEM_ICON(TOOL_LOAD_ANIM, "Load");
@@ -350,8 +350,8 @@ void AnimationPlayerEditor::_animation_load() {
 	List<String> extensions;
 
 	ResourceLoader::get_recognized_extensions_for_type("Animation", &extensions);
-	for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
-		file->add_filter("*." + E->get() + " ; " + E->get().to_upper());
+	for (const String &E : extensions) {
+		file->add_filter("*." + E + " ; " + E.to_upper());
 	}
 
 	file->popup_file_dialog();
@@ -373,7 +373,7 @@ void AnimationPlayerEditor::_animation_save_in_path(const Ref<Resource> &p_resou
 	}
 
 	((Resource *)p_resource.ptr())->set_path(path);
-	editor->emit_signal("resource_saved", p_resource);
+	editor->emit_signal(SNAME("resource_saved"), p_resource);
 }
 
 void AnimationPlayerEditor::_animation_save(const Ref<Resource> &p_resource) {
@@ -408,7 +408,8 @@ void AnimationPlayerEditor::_animation_save_as(const Ref<Resource> &p_resource) 
 			if (p_resource->get_name() != "") {
 				path = p_resource->get_name() + "." + extensions.front()->get().to_lower();
 			} else {
-				path = "new_" + p_resource->get_class().to_lower() + "." + extensions.front()->get().to_lower();
+				String resource_name_snake_case = p_resource->get_class().camelcase_to_underscore();
+				path = "new_" + resource_name_snake_case + "." + extensions.front()->get().to_lower();
 			}
 		}
 	}
@@ -569,8 +570,10 @@ void AnimationPlayerEditor::_animation_blend() {
 	blend_editor.dialog->popup_centered(Size2(400, 400) * EDSCALE);
 
 	blend_editor.tree->set_hide_root(true);
-	blend_editor.tree->set_column_min_width(0, 10);
-	blend_editor.tree->set_column_min_width(1, 3);
+	blend_editor.tree->set_column_expand_ratio(0, 10);
+	blend_editor.tree->set_column_clip_content(0, true);
+	blend_editor.tree->set_column_expand_ratio(1, 3);
+	blend_editor.tree->set_column_clip_content(1, true);
 
 	List<StringName> anims;
 	player->get_animation_list(&anims);
@@ -582,8 +585,7 @@ void AnimationPlayerEditor::_animation_blend() {
 	blend_editor.next->clear();
 	blend_editor.next->add_item("", i);
 
-	for (List<StringName>::Element *E = anims.front(); E; E = E->next()) {
-		String to = E->get();
+	for (const StringName &to : anims) {
 		TreeItem *blend = blend_editor.tree->create_item(root);
 		blend->set_editable(0, false);
 		blend->set_editable(1, true);
@@ -828,20 +830,20 @@ void AnimationPlayerEditor::_update_player() {
 	}
 
 	int active_idx = -1;
-	for (List<StringName>::Element *E = animlist.front(); E; E = E->next()) {
+	for (const StringName &E : animlist) {
 		Ref<Texture2D> icon;
-		if (E->get() == player->get_autoplay()) {
-			if (E->get() == "RESET") {
+		if (E == player->get_autoplay()) {
+			if (E == "RESET") {
 				icon = autoplay_reset_icon;
 			} else {
 				icon = autoplay_icon;
 			}
-		} else if (E->get() == "RESET") {
+		} else if (E == "RESET") {
 			icon = reset_icon;
 		}
-		animation->add_icon_item(icon, E->get());
+		animation->add_icon_item(icon, E);
 
-		if (player->get_assigned_animation() == E->get()) {
+		if (player->get_assigned_animation() == E) {
 			active_idx = animation->get_item_count() - 1;
 		}
 	}
@@ -964,9 +966,9 @@ void AnimationPlayerEditor::_animation_duplicate() {
 	Ref<Animation> new_anim = memnew(Animation);
 	List<PropertyInfo> plist;
 	anim->get_property_list(&plist);
-	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-		if (E->get().usage & PROPERTY_USAGE_STORAGE) {
-			new_anim->set(E->get().name, anim->get(E->get().name));
+	for (const PropertyInfo &E : plist) {
+		if (E.usage & PROPERTY_USAGE_STORAGE) {
+			new_anim->set(E.name, anim->get(E.name));
 		}
 	}
 	new_anim->set_path("");
@@ -1322,11 +1324,11 @@ void AnimationPlayerEditor::_prepare_onion_layers_1() {
 	}
 
 	// And go to next step afterwards.
-	call_deferred("_prepare_onion_layers_2");
+	call_deferred(SNAME("_prepare_onion_layers_2"));
 }
 
 void AnimationPlayerEditor::_prepare_onion_layers_1_deferred() {
-	call_deferred("_prepare_onion_layers_1");
+	call_deferred(SNAME("_prepare_onion_layers_1"));
 }
 
 void AnimationPlayerEditor::_prepare_onion_layers_2() {
@@ -1694,7 +1696,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 
 	file->connect("file_selected", callable_mp(this, &AnimationPlayerEditor::_dialog_action));
 	frame->connect("value_changed", callable_mp(this, &AnimationPlayerEditor::_seek_value_changed), make_binds(true, false));
-	scale->connect("text_entered", callable_mp(this, &AnimationPlayerEditor::_scale_changed));
+	scale->connect("text_submitted", callable_mp(this, &AnimationPlayerEditor::_scale_changed));
 
 	renaming = false;
 	last_active = false;
@@ -1731,27 +1733,27 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	onion.capture.material = Ref<ShaderMaterial>(memnew(ShaderMaterial));
 
 	onion.capture.shader = Ref<Shader>(memnew(Shader));
-	onion.capture.shader->set_code(" \
-		shader_type canvas_item; \
-		\
-        uniform vec4 bkg_color; \
-		uniform vec4 dir_color; \
-		uniform bool differences_only; \
-		uniform sampler2D present; \
-		\
-		float zero_if_equal(vec4 a, vec4 b) { \
-			return smoothstep(0.0, 0.005, length(a.rgb - b.rgb) / sqrt(3.0)); \
-		} \
-		\
-		void fragment() { \
-			vec4 capture_samp = texture(TEXTURE, UV); \
-			vec4 present_samp = texture(present, UV); \
-			float bkg_mask = zero_if_equal(capture_samp, bkg_color); \
-			float diff_mask = 1.0 - zero_if_equal(present_samp, bkg_color); \
-			diff_mask = min(1.0, diff_mask + float(!differences_only)); \
-			COLOR = vec4(capture_samp.rgb * dir_color.rgb, bkg_mask * diff_mask); \
-		} \
-	");
+	onion.capture.shader->set_code(R"(
+shader_type canvas_item;
+
+uniform vec4 bkg_color;
+uniform vec4 dir_color;
+uniform bool differences_only;
+uniform sampler2D present;
+
+float zero_if_equal(vec4 a, vec4 b) {
+	return smoothstep(0.0, 0.005, length(a.rgb - b.rgb) / sqrt(3.0));
+}
+
+void fragment() {
+	vec4 capture_samp = texture(TEXTURE, UV);
+	vec4 present_samp = texture(present, UV);
+	float bkg_mask = zero_if_equal(capture_samp, bkg_color);
+	float diff_mask = 1.0 - zero_if_equal(present_samp, bkg_color);
+	diff_mask = min(1.0, diff_mask + float(!differences_only));
+	COLOR = vec4(capture_samp.rgb * dir_color.rgb, bkg_mask * diff_mask);
+}
+)");
 	RS::get_singleton()->material_set_shader(onion.capture.material->get_rid(), onion.capture.shader->get_rid());
 }
 

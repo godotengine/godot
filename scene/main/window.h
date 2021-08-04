@@ -103,6 +103,8 @@ private:
 
 	LayoutDirection layout_dir = LAYOUT_DIRECTION_INHERITED;
 
+	bool auto_translate = true;
+
 	void _update_child_controls();
 
 	Size2i content_scale_size;
@@ -130,7 +132,7 @@ private:
 	Ref<Theme> theme;
 	Control *theme_owner = nullptr;
 	Window *theme_owner_window = nullptr;
-	StringName theme_custom_type;
+	StringName theme_type_variation;
 
 	Viewport *embedder = nullptr;
 
@@ -151,6 +153,7 @@ protected:
 	virtual Size2 _get_contents_minimum_size() const;
 	static void _bind_methods();
 	void _notification(int p_what);
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
@@ -242,8 +245,8 @@ public:
 	void set_theme(const Ref<Theme> &p_theme);
 	Ref<Theme> get_theme() const;
 
-	void set_theme_custom_type(const StringName &p_theme_type);
-	StringName get_theme_custom_type() const;
+	void set_theme_type_variation(const StringName &p_theme_type);
+	StringName get_theme_type_variation() const;
 	_FORCE_INLINE_ void _get_theme_type_dependencies(const StringName &p_theme_type, List<StringName> *p_list) const;
 
 	Size2 get_contents_minimum_size() const;
@@ -254,6 +257,10 @@ public:
 	void set_layout_direction(LayoutDirection p_direction);
 	LayoutDirection get_layout_direction() const;
 	bool is_layout_rtl() const;
+
+	void set_auto_translate(bool p_enable);
+	bool is_auto_translating() const;
+	_FORCE_INLINE_ String atr(const String p_string) const { return is_auto_translating() ? tr(p_string) : p_string; };
 
 	Rect2i get_usable_parent_rect() const;
 

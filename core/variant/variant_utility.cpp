@@ -32,7 +32,7 @@
 
 #include "core/core_string_names.h"
 #include "core/io/marshalls.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/os/os.h"
 #include "core/templates/oa_hash_map.h"
 #include "core/variant/binder_common.h"
@@ -247,10 +247,6 @@ struct VariantUtilityFunctions {
 
 	static inline double move_toward(double from, double to, double delta) {
 		return Math::move_toward(from, to, delta);
-	}
-
-	static inline double dectime(double value, double amount, double step) {
-		return Math::dectime(value, amount, step);
 	}
 
 	static inline double deg2rad(double angle_deg) {
@@ -1195,7 +1191,6 @@ void Variant::_register_variant_utility_functions() {
 
 	FUNCBINDR(smoothstep, sarray("from", "to", "x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(move_toward, sarray("from", "to", "delta"), Variant::UTILITY_FUNC_TYPE_MATH);
-	FUNCBINDR(dectime, sarray("value", "amount", "step"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDR(deg2rad, sarray("deg"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(rad2deg, sarray("rad"), Variant::UTILITY_FUNC_TYPE_MATH);
@@ -1348,8 +1343,8 @@ String Variant::get_utility_function_argument_name(const StringName &p_name, int
 	if (!bfi) {
 		return String();
 	}
-	ERR_FAIL_COND_V(bfi->is_vararg, String());
 	ERR_FAIL_INDEX_V(p_arg, bfi->argnames.size(), String());
+	ERR_FAIL_COND_V(bfi->is_vararg, String());
 	return bfi->argnames[p_arg];
 }
 
@@ -1379,9 +1374,26 @@ bool Variant::is_utility_function_vararg(const StringName &p_name) {
 	return bfi->is_vararg;
 }
 
+uint32_t Variant::get_utility_function_hash(const StringName &p_name) {
+	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
+	ERR_FAIL_COND_V(!bfi, 0);
+
+	uint32_t hash = hash_djb2_one_32(bfi->is_vararg);
+	hash = hash_djb2_one_32(bfi->returns_value, hash);
+	if (bfi->returns_value) {
+		hash = hash_djb2_one_32(bfi->return_type, hash);
+	}
+	hash = hash_djb2_one_32(bfi->argcount, hash);
+	for (int i = 0; i < bfi->argcount; i++) {
+		hash = hash_djb2_one_32(bfi->get_arg_type(i), hash);
+	}
+
+	return hash;
+}
+
 void Variant::get_utility_function_list(List<StringName> *r_functions) {
-	for (List<StringName>::Element *E = utility_function_name_table.front(); E; E = E->next()) {
-		r_functions->push_back(E->get());
+	for (const StringName &E : utility_function_name_table) {
+		r_functions->push_back(E);
 	}
 }
 

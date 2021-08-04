@@ -30,8 +30,8 @@
 
 #include "resource_importer_ogg_vorbis.h"
 
+#include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
-#include "core/os/file_access.h"
 #include "scene/resources/texture.h"
 
 String ResourceImporterOGGVorbis::get_importer_name() const {
@@ -90,7 +90,7 @@ Error ResourceImporterOGGVorbis::import(const String &p_source_file, const Strin
 	memdelete(f);
 
 	Ref<AudioStreamOGGVorbis> ogg_stream;
-	ogg_stream.instance();
+	ogg_stream.instantiate();
 
 	ogg_stream->set_data(data);
 	ERR_FAIL_COND_V(!ogg_stream->get_data().size(), ERR_FILE_CORRUPT);

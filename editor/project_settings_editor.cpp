@@ -229,16 +229,16 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 	for (int i = 0; i < ee->get_export_platform_count(); i++) {
 		List<String> p;
 		ee->get_export_platform(i)->get_platform_features(&p);
-		for (List<String>::Element *E = p.front(); E; E = E->next()) {
-			presets.insert(E->get());
+		for (const String &E : p) {
+			presets.insert(E);
 		}
 	}
 
 	for (int i = 0; i < ee->get_export_preset_count(); i++) {
 		List<String> p;
 		ee->get_export_preset(i)->get_platform()->get_preset_features(ee->get_export_preset(i), &p);
-		for (List<String>::Element *E = p.front(); E; E = E->next()) {
-			presets.insert(E->get());
+		for (const String &E : p) {
+			presets.insert(E);
 		}
 
 		String custom = ee->get_export_preset(i)->get_custom_features();
@@ -391,8 +391,7 @@ void ProjectSettingsEditor::_action_reordered(const String &p_action_name, const
 
 	undo_redo->create_action(TTR("Update Input Action Order"));
 
-	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-		PropertyInfo prop = E->get();
+	for (const PropertyInfo &prop : props) {
 		// Skip builtins and non-inputs
 		if (ProjectSettings::get_singleton()->is_builtin_setting(prop.name) || !prop.name.begins_with("input/")) {
 			continue;
@@ -444,9 +443,9 @@ void ProjectSettingsEditor::_update_action_map_editor() {
 	List<PropertyInfo> props;
 	ProjectSettings::get_singleton()->get_property_list(&props);
 
-	const Ref<Texture2D> builtin_icon = get_theme_icon("PinPressed", "EditorIcons");
-	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-		const String property_name = E->get().name;
+	const Ref<Texture2D> builtin_icon = get_theme_icon(SNAME("PinPressed"), SNAME("EditorIcons"));
+	for (const PropertyInfo &E : props) {
+		const String property_name = E.name;
 
 		if (!property_name.begins_with("input/")) {
 			continue;
@@ -483,18 +482,18 @@ void ProjectSettingsEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			inspector->edit(ps);
 
-			search_box->set_right_icon(get_theme_icon("Search", "EditorIcons"));
+			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			search_box->set_clear_button_enabled(true);
 
-			restart_close_button->set_icon(get_theme_icon("Close", "EditorIcons"));
-			restart_container->add_theme_style_override("panel", get_theme_stylebox("bg", "Tree"));
-			restart_icon->set_texture(get_theme_icon("StatusWarning", "EditorIcons"));
-			restart_label->add_theme_color_override("font_color", get_theme_color("warning_color", "Editor"));
+			restart_close_button->set_icon(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+			restart_container->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+			restart_icon->set_texture(get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
+			restart_label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 
 			_update_action_map_editor();
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			search_box->set_right_icon(get_theme_icon("Search", "EditorIcons"));
+			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			search_box->set_clear_button_enabled(true);
 		} break;
 	}

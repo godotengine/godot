@@ -83,7 +83,7 @@ protected:
 	void _update_scroll();
 
 	void _make_current(Object *p_which);
-	void _set_current(bool p_current);
+	void set_current(bool p_current);
 
 	void _set_old_smoothing(real_t p_enable);
 

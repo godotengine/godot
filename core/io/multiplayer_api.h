@@ -31,11 +31,38 @@
 #ifndef MULTIPLAYER_API_H
 #define MULTIPLAYER_API_H
 
-#include "core/io/networked_multiplayer_peer.h"
-#include "core/object/reference.h"
+#include "core/io/multiplayer_peer.h"
+#include "core/object/ref_counted.h"
 
-class MultiplayerAPI : public Reference {
-	GDCLASS(MultiplayerAPI, Reference);
+class MultiplayerAPI : public RefCounted {
+	GDCLASS(MultiplayerAPI, RefCounted);
+
+public:
+	enum RPCMode {
+		RPC_MODE_DISABLED, // No rpc for this method, calls to this will be blocked (default)
+		RPC_MODE_REMOTE, // Using rpc() on it will call method in all remote peers
+		RPC_MODE_MASTER, // Using rpc() on it will call method on wherever the master is, be it local or remote
+		RPC_MODE_PUPPET, // Using rpc() on it will call method for all puppets
+	};
+
+	struct RPCConfig {
+		StringName name;
+		RPCMode rpc_mode = RPC_MODE_DISABLED;
+		bool sync = false;
+		MultiplayerPeer::TransferMode transfer_mode = MultiplayerPeer::TRANSFER_MODE_RELIABLE;
+		int channel = 0;
+
+		bool operator==(RPCConfig const &p_other) const {
+			return name == p_other.name;
+		}
+	};
+
+	struct SortRPCConfig {
+		StringName::AlphCompare compare;
+		bool operator()(const RPCConfig &p_a, const RPCConfig &p_b) const {
+			return compare(p_a.name, p_b.name);
+		}
+	};
 
 private:
 	//path sent caches
@@ -54,7 +81,7 @@ private:
 		Map<int, NodeInfo> nodes;
 	};
 
-	Ref<NetworkedMultiplayerPeer> network_peer;
+	Ref<MultiplayerPeer> network_peer;
 	int rpc_sender_id = 0;
 	Set<int> connected_peers;
 	HashMap<NodePath, PathSentCache> path_send_cache;
@@ -72,10 +99,9 @@ protected:
 	void _process_confirm_path(int p_from, const uint8_t *p_packet, int p_packet_len);
 	Node *_process_get_node(int p_from, const uint8_t *p_packet, uint32_t p_node_target, int p_packet_len);
 	void _process_rpc(Node *p_node, const uint16_t p_rpc_method_id, int p_from, const uint8_t *p_packet, int p_packet_len, int p_offset);
-	void _process_rset(Node *p_node, const uint16_t p_rpc_property_id, int p_from, const uint8_t *p_packet, int p_packet_len, int p_offset);
 	void _process_raw(int p_from, const uint8_t *p_packet, int p_packet_len);
 
-	void _send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p_set, const StringName &p_name, const Variant **p_arg, int p_argcount);
+	void _send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, const RPCConfig &p_config, const StringName &p_name, const Variant **p_arg, int p_argcount);
 	bool _send_confirm_path(Node *p_node, NodePath p_path, PathSentCache *psc, int p_target);
 
 	Error _encode_and_compress_variant(const Variant &p_variant, uint8_t *p_buffer, int &r_len);
@@ -84,7 +110,6 @@ protected:
 public:
 	enum NetworkCommands {
 		NETWORK_COMMAND_REMOTE_CALL = 0,
-		NETWORK_COMMAND_REMOTE_SET,
 		NETWORK_COMMAND_SIMPLIFY_PATH,
 		NETWORK_COMMAND_CONFIRM_PATH,
 		NETWORK_COMMAND_RAW,
@@ -101,28 +126,16 @@ public:
 		NETWORK_NAME_ID_COMPRESSION_16,
 	};
 
-	enum RPCMode {
-		RPC_MODE_DISABLED, // No rpc for this method, calls to this will be blocked (default)
-		RPC_MODE_REMOTE, // Using rpc() on it will call method / set property in all remote peers
-		RPC_MODE_MASTER, // Using rpc() on it will call method on wherever the master is, be it local or remote
-		RPC_MODE_PUPPET, // Using rpc() on it will call method for all puppets
-		RPC_MODE_REMOTESYNC, // Using rpc() on it will call method / set property in all remote peers and locally
-		RPC_MODE_MASTERSYNC, // Using rpc() on it will call method / set property in the master peer and locally
-		RPC_MODE_PUPPETSYNC, // Using rpc() on it will call method / set property in all puppets peers and locally
-	};
-
 	void poll();
 	void clear();
 	void set_root_node(Node *p_node);
 	Node *get_root_node();
-	void set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_peer);
-	Ref<NetworkedMultiplayerPeer> get_network_peer() const;
-	Error send_bytes(Vector<uint8_t> p_data, int p_to = NetworkedMultiplayerPeer::TARGET_PEER_BROADCAST, NetworkedMultiplayerPeer::TransferMode p_mode = NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE);
+	void set_network_peer(const Ref<MultiplayerPeer> &p_peer);
+	Ref<MultiplayerPeer> get_network_peer() const;
+	Error send_bytes(Vector<uint8_t> p_data, int p_to = MultiplayerPeer::TARGET_PEER_BROADCAST, MultiplayerPeer::TransferMode p_mode = MultiplayerPeer::TRANSFER_MODE_RELIABLE, int p_channel = 0);
 
 	// Called by Node.rpc
 	void rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const StringName &p_method, const Variant **p_arg, int p_argcount);
-	// Called by Node.rset
-	void rsetp(Node *p_node, int p_peer_id, bool p_unreliable, const StringName &p_property, const Variant &p_value);
 
 	void _add_peer(int p_id);
 	void _del_peer(int p_id);

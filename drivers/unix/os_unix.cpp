@@ -139,10 +139,6 @@ void OS_Unix::finalize_core() {
 	NetSocketPosix::cleanup();
 }
 
-void OS_Unix::alert(const String &p_alert, const String &p_title) {
-	fprintf(stderr, "ERROR: %s\n", p_alert.utf8().get_data());
-}
-
 String OS_Unix::get_stdin_string(bool p_block) {
 	if (p_block) {
 		char buff[1024];
@@ -195,8 +191,8 @@ OS::Time OS_Unix::get_time(bool utc) const {
 	}
 	Time ret;
 	ret.hour = lt.tm_hour;
-	ret.min = lt.tm_min;
-	ret.sec = lt.tm_sec;
+	ret.minute = lt.tm_min;
+	ret.second = lt.tm_sec;
 	get_time_zone_info();
 	return ret;
 }

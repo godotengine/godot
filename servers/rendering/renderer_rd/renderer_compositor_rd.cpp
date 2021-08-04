@@ -31,6 +31,7 @@
 #include "renderer_compositor_rd.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
 
 void RendererCompositorRD::prepare_for_blitting_render_targets() {
 	RD::get_singleton()->prepare_screen_for_drawing();
@@ -59,8 +60,7 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 		}
 
 		Size2 screen_size(RD::get_singleton()->screen_get_width(p_screen), RD::get_singleton()->screen_get_height(p_screen));
-		BlitMode mode = p_render_targets[i].lens_distortion.apply ? BLIT_MODE_LENS : p_render_targets[i].multi_view.use_layer ? BLIT_MODE_USE_LAYER :
-																																  BLIT_MODE_NORMAL;
+		BlitMode mode = p_render_targets[i].lens_distortion.apply ? BLIT_MODE_LENS : (p_render_targets[i].multi_view.use_layer ? BLIT_MODE_USE_LAYER : BLIT_MODE_NORMAL);
 		RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blit.pipelines[mode]);
 		RD::get_singleton()->draw_list_bind_index_array(draw_list, blit.array);
 		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, render_target_descriptors[rd_texture], 0);
@@ -110,13 +110,14 @@ void RendererCompositorRD::initialize() {
 		blit_modes.push_back("\n");
 		blit_modes.push_back("\n#define USE_LAYER\n");
 		blit_modes.push_back("\n#define USE_LAYER\n#define APPLY_LENS_DISTORTION\n");
+		blit_modes.push_back("\n");
 
 		blit.shader.initialize(blit_modes);
 
 		blit.shader_version = blit.shader.version_create();
 
 		for (int i = 0; i < BLIT_MODE_MAX; i++) {
-			blit.pipelines[i] = RD::get_singleton()->render_pipeline_create(blit.shader.version_get_shader(blit.shader_version, i), RD::get_singleton()->screen_get_framebuffer_format(), RD::INVALID_ID, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RenderingDevice::PipelineColorBlendState::create_disabled(), 0);
+			blit.pipelines[i] = RD::get_singleton()->render_pipeline_create(blit.shader.version_get_shader(blit.shader_version, i), RD::get_singleton()->screen_get_framebuffer_format(), RD::INVALID_ID, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), i == BLIT_MODE_NORMAL_ALPHA ? RenderingDevice::PipelineColorBlendState::create_blend() : RenderingDevice::PipelineColorBlendState::create_disabled(), 0);
 		}
 
 		//create index array for copy shader
@@ -152,9 +153,118 @@ void RendererCompositorRD::finalize() {
 	RD::get_singleton()->free(blit.sampler);
 }
 
+void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
+	RD::get_singleton()->prepare_screen_for_drawing();
+
+	RID texture = storage->texture_allocate();
+	storage->texture_2d_initialize(texture, p_image);
+	RID rd_texture = storage->texture_get_rd_texture(texture);
+
+	RID uset;
+	{
+		Vector<RD::Uniform> uniforms;
+		RD::Uniform u;
+		u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
+		u.binding = 0;
+		u.ids.push_back(blit.sampler);
+		u.ids.push_back(rd_texture);
+		uniforms.push_back(u);
+		uset = RD::get_singleton()->uniform_set_create(uniforms, blit.shader.version_get_shader(blit.shader_version, BLIT_MODE_NORMAL), 0);
+	}
+
+	Size2 window_size = DisplayServer::get_singleton()->window_get_size();
+
+	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
+	Rect2 screenrect;
+	if (p_scale) {
+		if (window_size.width > window_size.height) {
+			//scale horizontally
+			screenrect.size.y = window_size.height;
+			screenrect.size.x = imgrect.size.x * window_size.height / imgrect.size.y;
+			screenrect.position.x = (window_size.width - screenrect.size.x) / 2;
+
+		} else {
+			//scale vertically
+			screenrect.size.x = window_size.width;
+			screenrect.size.y = imgrect.size.y * window_size.width / imgrect.size.x;
+			screenrect.position.y = (window_size.height - screenrect.size.y) / 2;
+		}
+	} else {
+		screenrect = imgrect;
+		screenrect.position += ((Size2(window_size.width, window_size.height) - screenrect.size) / 2.0).floor();
+	}
+
+	screenrect.position /= window_size;
+	screenrect.size /= window_size;
+
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin_for_screen(DisplayServer::MAIN_WINDOW_ID, p_color);
+
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blit.pipelines[BLIT_MODE_NORMAL_ALPHA]);
+	RD::get_singleton()->draw_list_bind_index_array(draw_list, blit.array);
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uset, 0);
+
+	blit.push_constant.rect[0] = screenrect.position.x;
+	blit.push_constant.rect[1] = screenrect.position.y;
+	blit.push_constant.rect[2] = screenrect.size.width;
+	blit.push_constant.rect[3] = screenrect.size.height;
+	blit.push_constant.layer = 0;
+	blit.push_constant.eye_center[0] = 0;
+	blit.push_constant.eye_center[1] = 0;
+	blit.push_constant.k1 = 0;
+	blit.push_constant.k2 = 0;
+	blit.push_constant.upscale = 1.0;
+	blit.push_constant.aspect_ratio = 1.0;
+
+	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blit.push_constant, sizeof(BlitPushConstant));
+	RD::get_singleton()->draw_list_draw(draw_list, true);
+
+	RD::get_singleton()->draw_list_end();
+
+	RD::get_singleton()->swap_buffers();
+
+	storage->free(texture);
+}
+
 RendererCompositorRD *RendererCompositorRD::singleton = nullptr;
 
 RendererCompositorRD::RendererCompositorRD() {
+	{
+		String shader_cache_dir = Engine::get_singleton()->get_shader_cache_path();
+		if (shader_cache_dir == String()) {
+			shader_cache_dir = "user://";
+		}
+		DirAccessRef da = DirAccess::open(shader_cache_dir);
+		if (!da) {
+			ERR_PRINT("Can't create shader cache folder, no shader caching will happen: " + shader_cache_dir);
+		} else {
+			Error err = da->change_dir("shader_cache");
+			if (err != OK) {
+				err = da->make_dir("shader_cache");
+			}
+			if (err != OK) {
+				ERR_PRINT("Can't create shader cache folder, no shader caching will happen: " + shader_cache_dir);
+			} else {
+				shader_cache_dir = shader_cache_dir.plus_file("shader_cache");
+
+				bool shader_cache_enabled = GLOBAL_GET("rendering/shader_compiler/shader_cache/enabled");
+				if (!Engine::get_singleton()->is_editor_hint() && !shader_cache_enabled) {
+					shader_cache_dir = String(); //disable only if not editor
+				}
+
+				if (shader_cache_dir != String()) {
+					bool compress = GLOBAL_GET("rendering/shader_compiler/shader_cache/compress");
+					bool use_zstd = GLOBAL_GET("rendering/shader_compiler/shader_cache/use_zstd_compression");
+					bool strip_debug = GLOBAL_GET("rendering/shader_compiler/shader_cache/strip_debug");
+
+					ShaderRD::set_shader_cache_dir(shader_cache_dir);
+					ShaderRD::set_shader_cache_save_compressed(compress);
+					ShaderRD::set_shader_cache_save_compressed_zstd(use_zstd);
+					ShaderRD::set_shader_cache_save_debug(!strip_debug);
+				}
+			}
+		}
+	}
+
 	singleton = this;
 	time = 0;
 
@@ -170,4 +280,11 @@ RendererCompositorRD::RendererCompositorRD() {
 		// default to our high end renderer
 		scene = memnew(RendererSceneRenderImplementation::RenderForwardClustered(storage));
 	}
+
+	// now we're ready to create our effects,
+	storage->init_effects(!scene->_render_buffers_can_be_storage());
+}
+
+RendererCompositorRD::~RendererCompositorRD() {
+	ShaderRD::set_shader_cache_dir(String());
 }

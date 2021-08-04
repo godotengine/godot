@@ -31,8 +31,8 @@
 #include "path_utils.h"
 
 #include "core/config/project_settings.h"
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/os/os.h"
 
 #ifdef WINDOWS_ENABLED
@@ -80,7 +80,7 @@ String cwd() {
 }
 
 String abspath(const String &p_path) {
-	if (p_path.is_abs_path()) {
+	if (p_path.is_absolute_path()) {
 		return p_path.simplify_path();
 	} else {
 		return path::join(path::cwd(), p_path).simplify_path();

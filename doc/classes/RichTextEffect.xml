@@ -24,10 +24,8 @@
 	</tutorials>
 	<methods>
 		<method name="_process_custom_fx" qualifiers="virtual">
-			<return type="bool">
-			</return>
-			<argument index="0" name="char_fx" type="CharFXTransform">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="char_fx" type="CharFXTransform" />
 			<description>
 				Override this method to modify properties in [code]char_fx[/code]. The method must return [code]true[/code] if the character could be transformed successfully. If the method returns [code]false[/code], it will skip transformation to avoid displaying broken text.
 			</description>

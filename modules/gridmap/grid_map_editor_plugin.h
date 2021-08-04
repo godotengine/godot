@@ -94,9 +94,8 @@ class GridMapEditor : public VBoxContainer {
 	MeshLibrary *last_mesh_library;
 	ClipMode clip_mode = CLIP_DISABLED;
 
-	bool lock_view = false;
-	Transform grid_xform;
-	Transform edit_grid_xform;
+	Transform3D grid_xform;
+	Transform3D edit_grid_xform;
 	Vector3::Axis edit_axis;
 	int edit_floor[3];
 	Vector3 grid_ofs;
@@ -146,7 +145,7 @@ class GridMapEditor : public VBoxContainer {
 	PasteIndicator paste_indicator;
 
 	bool cursor_visible = false;
-	Transform cursor_transform;
+	Transform3D cursor_transform;
 
 	Vector3 cursor_origin;
 

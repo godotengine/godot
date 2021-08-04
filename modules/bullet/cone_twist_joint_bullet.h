@@ -43,7 +43,7 @@ class ConeTwistJointBullet : public JointBullet {
 	class btConeTwistConstraint *coneConstraint;
 
 public:
-	ConeTwistJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &rbAFrame, const Transform &rbBFrame);
+	ConeTwistJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform3D &rbAFrame, const Transform3D &rbBFrame);
 
 	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_CONE_TWIST; }
 

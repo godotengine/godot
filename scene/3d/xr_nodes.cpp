@@ -86,7 +86,8 @@ Vector3 XRCamera3D::project_local_ray_normal(const Point2 &p_pos) const {
 	Vector2 cpos = get_viewport()->get_camera_coords(p_pos);
 	Vector3 ray;
 
-	CameraMatrix cm = xr_interface->get_projection_for_eye(XRInterface::EYE_MONO, viewport_size.aspect(), get_near(), get_far());
+	// Just use the first view, if multiple views are supported this function has no good result
+	CameraMatrix cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
 	Vector2 screen_he = cm.get_viewport_half_extents();
 	ray = Vector3(((cpos.x / viewport_size.width) * 2.0 - 1.0) * screen_he.x, ((1.0 - (cpos.y / viewport_size.height)) * 2.0 - 1.0) * screen_he.y, -get_near()).normalized();
 
@@ -108,7 +109,8 @@ Point2 XRCamera3D::unproject_position(const Vector3 &p_pos) const {
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
-	CameraMatrix cm = xr_interface->get_projection_for_eye(XRInterface::EYE_MONO, viewport_size.aspect(), get_near(), get_far());
+	// Just use the first view, if multiple views are supported this function has no good result
+	CameraMatrix cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
 
 	Plane p(get_camera_transform().xform_inv(p_pos), 1.0);
 
@@ -137,7 +139,8 @@ Vector3 XRCamera3D::project_position(const Point2 &p_point, float p_z_depth) con
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
-	CameraMatrix cm = xr_interface->get_projection_for_eye(XRInterface::EYE_MONO, viewport_size.aspect(), get_near(), get_far());
+	// Just use the first view, if multiple views are supported this function has no good result
+	CameraMatrix cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
 
 	Vector2 vp_he = cm.get_viewport_half_extents();
 
@@ -165,7 +168,8 @@ Vector<Plane> XRCamera3D::get_frustum() const {
 	ERR_FAIL_COND_V(!is_inside_world(), Vector<Plane>());
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
-	CameraMatrix cm = xr_interface->get_projection_for_eye(XRInterface::EYE_MONO, viewport_size.aspect(), get_near(), get_far());
+	// TODO Just use the first view for now, this is mostly for debugging so we may look into using our combined projection here.
+	CameraMatrix cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
 	return cm.get_projection_planes(get_camera_transform());
 };
 
@@ -200,13 +204,13 @@ void XRController3D::_notification(int p_what) {
 					// check button states
 					for (int i = 0; i < 16; i++) {
 						bool was_pressed = (button_states & mask) == mask;
-						bool is_pressed = Input::get_singleton()->is_joy_button_pressed(joy_id, i);
+						bool is_pressed = Input::get_singleton()->is_joy_button_pressed(joy_id, (JoyButton)i);
 
 						if (!was_pressed && is_pressed) {
-							emit_signal("button_pressed", i);
+							emit_signal(SNAME("button_pressed"), i);
 							button_states += mask;
 						} else if (was_pressed && !is_pressed) {
-							emit_signal("button_released", i);
+							emit_signal(SNAME("button_released"), i);
 							button_states -= mask;
 						};
 
@@ -221,7 +225,7 @@ void XRController3D::_notification(int p_what) {
 				Ref<Mesh> trackerMesh = tracker->get_mesh();
 				if (mesh != trackerMesh) {
 					mesh = trackerMesh;
-					emit_signal("mesh_updated", mesh);
+					emit_signal(SNAME("mesh_updated"), mesh);
 				}
 			};
 		}; break;
@@ -300,7 +304,7 @@ bool XRController3D::is_button_pressed(int p_button) const {
 		return false;
 	};
 
-	return Input::get_singleton()->is_joy_button_pressed(joy_id, p_button);
+	return Input::get_singleton()->is_joy_button_pressed(joy_id, (JoyButton)p_button);
 };
 
 float XRController3D::get_joystick_axis(int p_axis) const {
@@ -309,7 +313,7 @@ float XRController3D::get_joystick_axis(int p_axis) const {
 		return 0.0;
 	};
 
-	return Input::get_singleton()->get_joy_axis(joy_id, p_axis);
+	return Input::get_singleton()->get_joy_axis(joy_id, (JoyAxis)p_axis);
 };
 
 real_t XRController3D::get_rumble() const {
@@ -397,7 +401,7 @@ void XRAnchor3D::_notification(int p_what) {
 				is_active = false;
 			} else {
 				is_active = true;
-				Transform transform;
+				Transform3D transform;
 
 				// we'll need our world_scale
 				real_t world_scale = xr_server->get_world_scale();
@@ -418,7 +422,7 @@ void XRAnchor3D::_notification(int p_what) {
 				Ref<Mesh> trackerMesh = tracker->get_mesh();
 				if (mesh != trackerMesh) {
 					mesh = trackerMesh;
-					emit_signal("mesh_updated", mesh);
+					emit_signal(SNAME("mesh_updated"), mesh);
 				}
 			};
 		}; break;
@@ -493,7 +497,7 @@ TypedArray<String> XRAnchor3D::get_configuration_warnings() const {
 };
 
 Plane XRAnchor3D::get_plane() const {
-	Vector3 location = get_translation();
+	Vector3 location = get_position();
 	Basis orientation = get_transform().basis;
 
 	Plane plane(location, orientation.get_axis(1).normalized());
@@ -514,6 +518,11 @@ TypedArray<String> XROrigin3D::get_configuration_warnings() const {
 		if (tracked_camera == nullptr) {
 			warnings.push_back(TTR("XROrigin3D requires an XRCamera3D child node."));
 		}
+	}
+
+	bool xr_enabled = GLOBAL_GET("rendering/xr/enabled");
+	if (!xr_enabled) {
+		warnings.push_back(TTR("XR is not enabled in rendering project settings. Stereoscopic output is not supported unless this is enabled."));
 	}
 
 	return warnings;
@@ -571,7 +580,7 @@ void XROrigin3D::_notification(int p_what) {
 			Ref<XRInterface> xr_interface = xr_server->get_primary_interface();
 			if (xr_interface.is_valid() && tracked_camera != nullptr) {
 				// get our positioning transform for our headset
-				Transform t = xr_interface->get_transform_for_eye(XRInterface::EYE_MONO, Transform());
+				Transform3D t = xr_interface->get_camera_transform();
 
 				// now apply this to our camera
 				tracked_camera->set_transform(t);

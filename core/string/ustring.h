@@ -309,7 +309,7 @@ public:
 	String unquote() const;
 	static String num(double p_num, int p_decimals = -1);
 	static String num_scientific(double p_num);
-	static String num_real(double p_num);
+	static String num_real(double p_num, bool p_trailing = true);
 	static String num_int64(int64_t p_num, int base = 10, bool capitalize_hex = false);
 	static String num_uint64(uint64_t p_num, int base = 10, bool capitalize_hex = false);
 	static String chr(char32_t p_char);
@@ -397,7 +397,7 @@ public:
 	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
 
 	// path functions
-	bool is_abs_path() const;
+	bool is_absolute_path() const;
 	bool is_rel_path() const;
 	bool is_resource_file() const;
 	String path_to(const String &p_path) const;
@@ -425,7 +425,7 @@ public:
 	String validate_node_name() const;
 
 	bool is_valid_identifier() const;
-	bool is_valid_integer() const;
+	bool is_valid_int() const;
 	bool is_valid_float() const;
 	bool is_valid_hex_number(bool p_with_prefix) const;
 	bool is_valid_html_color() const;

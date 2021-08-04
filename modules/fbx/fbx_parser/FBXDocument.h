@@ -37,7 +37,7 @@
 #include "FBXCommon.h"
 #include "FBXParser.h"
 #include "FBXProperties.h"
-#include "core/math/transform.h"
+#include "core/math/transform_3d.h"
 #include "core/math/vector2.h"
 #include "core/math/vector3.h"
 #include "core/string/print_string.h"
@@ -242,13 +242,13 @@ public:
 		return target_id;
 	}
 
-	Transform GetBindPose() const {
+	Transform3D GetBindPose() const {
 		return transform;
 	}
 
 private:
 	uint64_t target_id = 0;
-	Transform transform;
+	Transform3D transform;
 };
 
 /** DOM base class for FBX cameras attached to a node */
@@ -905,11 +905,11 @@ public:
 	}
 
 	/** */
-	const Transform &GetTransform() const {
+	const Transform3D &GetTransform() const {
 		return transform;
 	}
 
-	const Transform &TransformLink() const {
+	const Transform3D &TransformLink() const {
 		return transformLink;
 	}
 
@@ -917,7 +917,7 @@ public:
 		return node;
 	}
 
-	const Transform &TransformAssociateModel() const {
+	const Transform3D &TransformAssociateModel() const {
 		return transformAssociateModel;
 	}
 
@@ -941,9 +941,9 @@ private:
 	std::vector<float> weights;
 	std::vector<unsigned int> indices;
 
-	Transform transform;
-	Transform transformLink;
-	Transform transformAssociateModel;
+	Transform3D transform;
+	Transform3D transformLink;
+	Transform3D transformAssociateModel;
 	SkinLinkMode link_mode;
 	bool valid_transformAssociateModel = false;
 	const Model *node = nullptr;

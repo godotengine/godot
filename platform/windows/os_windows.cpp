@@ -165,6 +165,10 @@ BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType) {
 	}
 }
 
+void OS_Windows::alert(const String &p_alert, const String &p_title) {
+	MessageBoxW(nullptr, (LPCWSTR)(p_alert.utf16().get_data()), (LPCWSTR)(p_title.utf16().get_data()), MB_OK | MB_ICONEXCLAMATION | MB_TASKMODAL);
+}
+
 void OS_Windows::initialize_debugging() {
 	SetConsoleCtrlHandler(HandlerRoutine, TRUE);
 }
@@ -315,8 +319,8 @@ OS::Time OS_Windows::get_time(bool utc) const {
 
 	Time time;
 	time.hour = systemtime.wHour;
-	time.min = systemtime.wMinute;
-	time.sec = systemtime.wSecond;
+	time.minute = systemtime.wMinute;
+	time.second = systemtime.wSecond;
 	return time;
 }
 
@@ -407,8 +411,8 @@ String OS_Windows::_quote_command_line_argument(const String &p_text) const {
 Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
 	String path = p_path.replace("/", "\\");
 	String command = _quote_command_line_argument(path);
-	for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
-		command += " " + _quote_command_line_argument(E->get());
+	for (const String &E : p_arguments) {
+		command += " " + _quote_command_line_argument(E);
 	}
 
 	if (r_pipe) {
@@ -463,8 +467,8 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 Error OS_Windows::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id) {
 	String path = p_path.replace("/", "\\");
 	String command = _quote_command_line_argument(path);
-	for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
-		command += " " + _quote_command_line_argument(E->get());
+	for (const String &E : p_arguments) {
+		command += " " + _quote_command_line_argument(E);
 	}
 
 	ProcessInfo pi;
@@ -633,14 +637,14 @@ MainLoop *OS_Windows::get_main_loop() const {
 String OS_Windows::get_config_path() const {
 	// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on Windows as well.
 	if (has_environment("XDG_CONFIG_HOME")) {
-		if (get_environment("XDG_CONFIG_HOME").is_abs_path()) {
-			return get_environment("XDG_CONFIG_HOME");
+		if (get_environment("XDG_CONFIG_HOME").is_absolute_path()) {
+			return get_environment("XDG_CONFIG_HOME").replace("\\", "/");
 		} else {
 			WARN_PRINT_ONCE("`XDG_CONFIG_HOME` is a relative path. Ignoring its value and falling back to `%APPDATA%` or `.` per the XDG Base Directory specification.");
 		}
 	}
 	if (has_environment("APPDATA")) {
-		return get_environment("APPDATA");
+		return get_environment("APPDATA").replace("\\", "/");
 	}
 	return ".";
 }
@@ -648,8 +652,8 @@ String OS_Windows::get_config_path() const {
 String OS_Windows::get_data_path() const {
 	// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on Windows as well.
 	if (has_environment("XDG_DATA_HOME")) {
-		if (get_environment("XDG_DATA_HOME").is_abs_path()) {
-			return get_environment("XDG_DATA_HOME");
+		if (get_environment("XDG_DATA_HOME").is_absolute_path()) {
+			return get_environment("XDG_DATA_HOME").replace("\\", "/");
 		} else {
 			WARN_PRINT_ONCE("`XDG_DATA_HOME` is a relative path. Ignoring its value and falling back to `get_config_path()` per the XDG Base Directory specification.");
 		}
@@ -660,14 +664,14 @@ String OS_Windows::get_data_path() const {
 String OS_Windows::get_cache_path() const {
 	// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on Windows as well.
 	if (has_environment("XDG_CACHE_HOME")) {
-		if (get_environment("XDG_CACHE_HOME").is_abs_path()) {
-			return get_environment("XDG_CACHE_HOME");
+		if (get_environment("XDG_CACHE_HOME").is_absolute_path()) {
+			return get_environment("XDG_CACHE_HOME").replace("\\", "/");
 		} else {
 			WARN_PRINT_ONCE("`XDG_CACHE_HOME` is a relative path. Ignoring its value and falling back to `%TEMP%` or `get_config_path()` per the XDG Base Directory specification.");
 		}
 	}
 	if (has_environment("TEMP")) {
-		return get_environment("TEMP");
+		return get_environment("TEMP").replace("\\", "/");
 	}
 	return get_config_path();
 }
@@ -710,7 +714,7 @@ String OS_Windows::get_system_dir(SystemDir p_dir) const {
 	PWSTR szPath;
 	HRESULT res = SHGetKnownFolderPath(id, 0, nullptr, &szPath);
 	ERR_FAIL_COND_V(res != S_OK, String());
-	String path = String::utf16((const char16_t *)szPath);
+	String path = String::utf16((const char16_t *)szPath).replace("\\", "/");
 	CoTaskMemFree(szPath);
 	return path;
 }

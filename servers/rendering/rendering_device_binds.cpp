@@ -156,7 +156,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 	}
 
 	Ref<RDShaderFile> shader_file;
-	shader_file.instance();
+	shader_file.instantiate();
 
 	if (base_error == "") {
 		if (stage_found[RD::SHADER_STAGE_COMPUTE] && stages_found > 1) {
@@ -172,8 +172,8 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 		/* STEP 2, Compile the versions, add to shader file */
 
 		for (Map<StringName, String>::Element *E = version_texts.front(); E; E = E->next()) {
-			Ref<RDShaderBytecode> bytecode;
-			bytecode.instance();
+			Ref<RDShaderSPIRV> bytecode;
+			bytecode.instantiate();
 
 			for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
 				String code = stage_code[i];
@@ -182,7 +182,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 				}
 				code = code.replace("VERSION_DEFINES", E->get());
 				String error;
-				Vector<uint8_t> spirv = RenderingDevice::get_singleton()->shader_compile_from_source(RD::ShaderStage(i), code, RD::SHADER_LANGUAGE_GLSL, &error, false);
+				Vector<uint8_t> spirv = RenderingDevice::get_singleton()->shader_compile_spirv_from_source(RD::ShaderStage(i), code, RD::SHADER_LANGUAGE_GLSL, &error, false);
 				bytecode->set_stage_bytecode(RD::ShaderStage(i), spirv);
 				if (error != "") {
 					error += String() + "\n\nStage '" + stage_str[i] + "' source code: \n\n";

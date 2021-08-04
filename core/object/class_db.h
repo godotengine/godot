@@ -97,6 +97,8 @@ public:
 	enum APIType {
 		API_CORE,
 		API_EDITOR,
+		API_EXTENSION,
+		API_EDITOR_EXTENSION,
 		API_NONE
 	};
 
@@ -114,6 +116,8 @@ public:
 		APIType api = API_NONE;
 		ClassInfo *inherits_ptr = nullptr;
 		void *class_ptr = nullptr;
+
+		ObjectNativeExtension *native_extension = nullptr;
 
 		HashMap<StringName, MethodBind *> method_map;
 		HashMap<StringName, int> constant_map;
@@ -199,6 +203,9 @@ public:
 		//nothing
 	}
 
+	static void register_extension_class(ObjectNativeExtension *p_extension);
+	static void unregister_extension_class(const StringName &p_class);
+
 	template <class T>
 	static Object *_create_ptr_func() {
 		return T::create();
@@ -224,8 +231,10 @@ public:
 	static StringName get_compatibility_remapped_class(const StringName &p_class);
 	static bool class_exists(const StringName &p_class);
 	static bool is_parent_class(const StringName &p_class, const StringName &p_inherits);
-	static bool can_instance(const StringName &p_class);
-	static Object *instance(const StringName &p_class);
+	static bool can_instantiate(const StringName &p_class);
+	static Object *instantiate(const StringName &p_class);
+	static void instance_get_native_extension_data(ObjectNativeExtension **r_extension, GDExtensionClassInstancePtr *r_extension_instance);
+
 	static APIType get_api_type(const StringName &p_class);
 
 	static uint64_t get_api_hash(APIType p_api);
@@ -302,7 +311,7 @@ public:
 	}
 
 	template <class M>
-	static MethodBind *bind_vararg_method(uint32_t p_flags, StringName p_name, M p_method, const MethodInfo &p_info = MethodInfo(), const Vector<Variant> &p_default_args = Vector<Variant>(), bool p_return_nil_is_variant = true) {
+	static MethodBind *bind_vararg_method(uint32_t p_flags, const StringName &p_name, M p_method, const MethodInfo &p_info = MethodInfo(), const Vector<Variant> &p_default_args = Vector<Variant>(), bool p_return_nil_is_variant = true) {
 		GLOBAL_LOCK_FUNCTION;
 
 		MethodBind *bind = create_vararg_method_bind(p_method, p_info, p_return_nil_is_variant);
@@ -334,31 +343,33 @@ public:
 		return bind;
 	}
 
-	static void add_signal(StringName p_class, const MethodInfo &p_signal);
-	static bool has_signal(StringName p_class, StringName p_signal, bool p_no_inheritance = false);
-	static bool get_signal(StringName p_class, StringName p_signal, MethodInfo *r_signal);
-	static void get_signal_list(StringName p_class, List<MethodInfo> *p_signals, bool p_no_inheritance = false);
+	static void bind_method_custom(const StringName &p_class, MethodBind *p_method);
 
-	static void add_property_group(StringName p_class, const String &p_name, const String &p_prefix = "");
-	static void add_property_subgroup(StringName p_class, const String &p_name, const String &p_prefix = "");
-	static void add_property(StringName p_class, const PropertyInfo &p_pinfo, const StringName &p_setter, const StringName &p_getter, int p_index = -1);
-	static void set_property_default_value(StringName p_class, const StringName &p_name, const Variant &p_default);
-	static void get_property_list(StringName p_class, List<PropertyInfo> *p_list, bool p_no_inheritance = false, const Object *p_validator = nullptr);
-	static bool get_property_info(StringName p_class, StringName p_property, PropertyInfo *r_info, bool p_no_inheritance = false, const Object *p_validator = nullptr);
+	static void add_signal(const StringName &p_class, const MethodInfo &p_signal);
+	static bool has_signal(const StringName &p_class, const StringName &p_signal, bool p_no_inheritance = false);
+	static bool get_signal(const StringName &p_class, const StringName &p_signal, MethodInfo *r_signal);
+	static void get_signal_list(const StringName &p_class, List<MethodInfo> *p_signals, bool p_no_inheritance = false);
+
+	static void add_property_group(const StringName &p_class, const String &p_name, const String &p_prefix = "");
+	static void add_property_subgroup(const StringName &p_class, const String &p_name, const String &p_prefix = "");
+	static void add_property(const StringName &p_class, const PropertyInfo &p_pinfo, const StringName &p_setter, const StringName &p_getter, int p_index = -1);
+	static void set_property_default_value(const StringName &p_class, const StringName &p_name, const Variant &p_default);
+	static void get_property_list(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance = false, const Object *p_validator = nullptr);
+	static bool get_property_info(const StringName &p_class, const StringName &p_property, PropertyInfo *r_info, bool p_no_inheritance = false, const Object *p_validator = nullptr);
 	static bool set_property(Object *p_object, const StringName &p_property, const Variant &p_value, bool *r_valid = nullptr);
 	static bool get_property(Object *p_object, const StringName &p_property, Variant &r_value);
 	static bool has_property(const StringName &p_class, const StringName &p_property, bool p_no_inheritance = false);
 	static int get_property_index(const StringName &p_class, const StringName &p_property, bool *r_is_valid = nullptr);
 	static Variant::Type get_property_type(const StringName &p_class, const StringName &p_property, bool *r_is_valid = nullptr);
-	static StringName get_property_setter(StringName p_class, const StringName &p_property);
-	static StringName get_property_getter(StringName p_class, const StringName &p_property);
+	static StringName get_property_setter(const StringName &p_class, const StringName &p_property);
+	static StringName get_property_getter(const StringName &p_class, const StringName &p_property);
 
-	static bool has_method(StringName p_class, StringName p_method, bool p_no_inheritance = false);
-	static void set_method_flags(StringName p_class, StringName p_method, int p_flags);
+	static bool has_method(const StringName &p_class, const StringName &p_method, bool p_no_inheritance = false);
+	static void set_method_flags(const StringName &p_class, const StringName &p_method, int p_flags);
 
-	static void get_method_list(StringName p_class, List<MethodInfo> *p_methods, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
-	static bool get_method_info(StringName p_class, StringName p_method, MethodInfo *r_info, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
-	static MethodBind *get_method(StringName p_class, StringName p_name);
+	static void get_method_list(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
+	static bool get_method_info(const StringName &p_class, const StringName &p_method, MethodInfo *r_info, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
+	static MethodBind *get_method(const StringName &p_class, const StringName &p_name);
 
 	static void add_virtual_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual = true);
 	static void get_virtual_methods(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance = false);
@@ -377,14 +388,15 @@ public:
 
 	static StringName get_category(const StringName &p_node);
 
-	static void set_class_enabled(StringName p_class, bool p_enable);
-	static bool is_class_enabled(StringName p_class);
+	static void set_class_enabled(const StringName &p_class, bool p_enable);
+	static bool is_class_enabled(const StringName &p_class);
 
-	static bool is_class_exposed(StringName p_class);
+	static bool is_class_exposed(const StringName &p_class);
 
 	static void add_resource_base_extension(const StringName &p_extension, const StringName &p_class);
 	static void get_resource_base_extensions(List<String> *p_extensions);
 	static void get_extensions_for_type(const StringName &p_class, List<String> *p_extensions);
+	static bool is_resource_extension(const StringName &p_extension);
 
 	static void add_compatibility_class(const StringName &p_class, const StringName &p_fallback);
 
@@ -422,5 +434,16 @@ public:
 #define BIND_VMETHOD(m_method)
 
 #endif
+
+#define GDREGISTER_CLASS(m_class)                    \
+	if (!GD_IS_DEFINED(ClassDB_Disable_##m_class)) { \
+		ClassDB::register_class<m_class>();          \
+	}
+#define GDREGISTER_VIRTUAL_CLASS(m_class)            \
+	if (!GD_IS_DEFINED(ClassDB_Disable_##m_class)) { \
+		ClassDB::register_virtual_class<m_class>();  \
+	}
+
+#include "core/disabled_classes.gen.h"
 
 #endif // CLASS_DB_H

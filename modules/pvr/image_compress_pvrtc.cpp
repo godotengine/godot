@@ -31,7 +31,7 @@
 #include "image_compress_pvrtc.h"
 
 #include "core/io/image.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 
 #include <PvrTcEncoder.h>
 #include <RgbaBitmap.h>
@@ -43,6 +43,10 @@ static void _compress_pvrtc1_4bpp(Image *p_img) {
 	if (!img->is_size_po2() || img->get_width() != img->get_height()) {
 		make_mipmaps = img->has_mipmaps();
 		img->resize_to_po2(true);
+		// Resizing can fail for some formats
+		if (!img->is_size_po2() || img->get_width() != img->get_height()) {
+			ERR_FAIL_MSG("Failed to resize the image for compression.");
+		}
 	}
 	img->convert(Image::FORMAT_RGBA8);
 	if (!img->has_mipmaps() && make_mipmaps) {
@@ -52,7 +56,7 @@ static void _compress_pvrtc1_4bpp(Image *p_img) {
 	bool use_alpha = img->detect_alpha();
 
 	Ref<Image> new_img;
-	new_img.instance();
+	new_img.instantiate();
 	new_img->create(img->get_width(), img->get_height(), img->has_mipmaps(), use_alpha ? Image::FORMAT_PVRTC1_4A : Image::FORMAT_PVRTC1_4);
 
 	Vector<uint8_t> data = new_img->get_data();

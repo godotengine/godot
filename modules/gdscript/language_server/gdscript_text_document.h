@@ -31,18 +31,19 @@
 #ifndef GDSCRIPT_TEXT_DOCUMENT_H
 #define GDSCRIPT_TEXT_DOCUMENT_H
 
-#include "core/object/reference.h"
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
+#include "core/object/ref_counted.h"
 #include "lsp.hpp"
 
-class GDScriptTextDocument : public Reference {
-	GDCLASS(GDScriptTextDocument, Reference)
+class GDScriptTextDocument : public RefCounted {
+	GDCLASS(GDScriptTextDocument, RefCounted)
 protected:
 	static void _bind_methods();
 
 	FileAccess *file_checker;
 
 	void didOpen(const Variant &p_param);
+	void didClose(const Variant &p_param);
 	void didChange(const Variant &p_param);
 
 	void sync_script_content(const String &p_path, const String &p_content);

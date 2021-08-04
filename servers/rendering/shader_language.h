@@ -447,7 +447,7 @@ public:
 
 		virtual DataType get_datatype() const override { return datatype_cache; }
 		virtual String get_datatype_name() const override { return String(struct_name); }
-		virtual int get_array_size() const override { return array_size; }
+		virtual int get_array_size() const override { return (index_expression || call_expression) ? 0 : array_size; }
 		virtual bool is_indexed() const override { return index_expression != nullptr; }
 
 		ArrayNode() :
@@ -646,10 +646,9 @@ public:
 		struct Varying {
 			enum Stage {
 				STAGE_UNKNOWN,
-				STAGE_VERTEX, // transition stage to STAGE_VERTEX_TO_FRAGMENT or STAGE_VERTEX_TO_LIGHT, emits error if they are not used
-				STAGE_FRAGMENT, // transition stage to STAGE_FRAGMENT_TO_LIGHT, emits error if it's not used
-				STAGE_VERTEX_TO_FRAGMENT,
-				STAGE_VERTEX_TO_LIGHT,
+				STAGE_VERTEX, // transition stage to STAGE_VERTEX_TO_FRAGMENT_LIGHT, emits warning if it's not used
+				STAGE_FRAGMENT, // transition stage to STAGE_FRAGMENT_TO_LIGHT, emits warning if it's not used
+				STAGE_VERTEX_TO_FRAGMENT_LIGHT,
 				STAGE_FRAGMENT_TO_LIGHT,
 			};
 
@@ -767,6 +766,7 @@ public:
 	static String get_datatype_name(DataType p_type);
 	static bool is_token_nonvoid_datatype(TokenType p_type);
 	static bool is_token_operator(TokenType p_type);
+	static bool is_token_operator_assign(TokenType p_type);
 
 	static bool convert_constant(ConstantNode *p_constant, DataType p_to_type, ConstantNode::Value *p_value = nullptr);
 	static DataType get_scalar_type(DataType p_type);
@@ -848,6 +848,9 @@ private:
 	Map<StringName, Usage> used_structs;
 	Map<ShaderWarning::Code, Map<StringName, Usage> *> warnings_check_map;
 
+	Map<StringName, Map<StringName, Usage>> used_local_vars;
+	Map<ShaderWarning::Code, Map<StringName, Map<StringName, Usage>> *> warnings_check_map2;
+
 	List<ShaderWarning> warnings;
 
 	bool check_warnings = false;
@@ -872,6 +875,14 @@ private:
 	StringName last_name;
 
 	VaryingFunctionNames varying_function_names;
+
+	struct VaryingUsage {
+		ShaderNode::Varying *var;
+		int line;
+	};
+	List<VaryingUsage> unknown_varying_usages;
+
+	bool _check_varying_usages(int *r_error_line, String *r_error_message) const;
 
 	TkPos _get_tkpos() {
 		TkPos tkp;
@@ -917,7 +928,7 @@ private:
 
 	bool _find_identifier(const BlockNode *p_block, bool p_allow_reassign, const FunctionInfo &p_function_info, const StringName &p_identifier, DataType *r_data_type = nullptr, IdentifierType *r_type = nullptr, bool *r_is_const = nullptr, int *r_array_size = nullptr, StringName *r_struct_name = nullptr, ConstantNode::Value *r_constant_value = nullptr);
 #ifdef DEBUG_ENABLED
-	void _parse_used_identifier(const StringName &p_identifier, IdentifierType p_type);
+	void _parse_used_identifier(const StringName &p_identifier, IdentifierType p_type, const StringName &p_function);
 #endif // DEBUG_ENABLED
 	bool _is_operator_assign(Operator p_op) const;
 	bool _validate_assign(Node *p_node, const FunctionInfo &p_function_info, String *r_message = nullptr);

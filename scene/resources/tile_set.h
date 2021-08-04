@@ -33,19 +33,18 @@
 
 #include "core/io/resource.h"
 #include "core/object/object.h"
+#include "core/templates/local_vector.h"
 #include "scene/2d/light_occluder_2d.h"
 #include "scene/2d/navigation_region_2d.h"
 #include "scene/main/canvas_item.h"
+#include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/physics_material.h"
 #include "scene/resources/shape_2d.h"
 
 #ifndef DISABLE_DEPRECATED
-#include "scene/2d/light_occluder_2d.h"
-#include "scene/2d/navigation_region_2d.h"
 #include "scene/resources/shader.h"
-#include "scene/resources/shape_2d.h"
 #include "scene/resources/texture.h"
 #endif
 
@@ -60,7 +59,6 @@ class TileSetPlugin;
 class TileSetPluginAtlasRendering;
 class TileSetPluginAtlasPhysics;
 class TileSetPluginAtlasNavigation;
-class TileSetPluginAtlasTerrain;
 
 class TileSet : public Resource {
 	GDCLASS(TileSet, Resource);
@@ -81,15 +79,15 @@ private:
 		Vector2 tex_offset;
 		Ref<ShaderMaterial> material;
 		Rect2 region;
-		int tile_mode;
-		Color modulate;
+		int tile_mode = 0;
+		Color modulate = Color(1, 1, 1);
 
 		// Atlas or autotiles data
-		int autotile_bitmask_mode;
+		int autotile_bitmask_mode = 0;
 		Vector2 autotile_icon_coordinate;
 		Size2i autotile_tile_size = Size2i(16, 16);
 
-		int autotile_spacing;
+		int autotile_spacing = 0;
 		Map<Vector2i, int> autotile_bitmask_flags;
 		Map<Vector2i, Ref<OccluderPolygon2D>> autotile_occluder_map;
 		Map<Vector2i, Ref<NavigationPolygon>> autotile_navpoly_map;
@@ -101,23 +99,29 @@ private:
 		Vector2 occluder_offset;
 		Ref<NavigationPolygon> navigation;
 		Vector2 navigation_offset;
-		int z_index;
+		int z_index = 0;
 	};
 
-	Map<int, CompatibilityTileData *> compatibility_data = Map<int, CompatibilityTileData *>();
-	Map<int, int> compatibility_source_mapping = Map<int, int>();
+	enum CompatibilityTileMode {
+		COMPATIBILITY_TILE_MODE_SINGLE_TILE = 0,
+		COMPATIBILITY_TILE_MODE_AUTO_TILE,
+		COMPATIBILITY_TILE_MODE_ATLAS_TILE,
+	};
 
-private:
-	void compatibility_conversion();
+	Map<int, CompatibilityTileData *> compatibility_data;
+	Map<int, int> compatibility_tilemap_mapping_tile_modes;
+	Map<int, Map<Array, Array>> compatibility_tilemap_mapping;
+
+	void _compatibility_conversion();
 
 public:
-	int compatibility_get_source_for_tile_id(int p_old_source) {
-		return compatibility_source_mapping[p_old_source];
-	};
-
+	// Format of output array [source_id, atlas_coords, alternative]
+	Array compatibility_tilemap_map(int p_tile_id, Vector2i p_coords, bool p_flip_h, bool p_flip_v, bool p_transpose);
 #endif // DISABLE_DEPRECATED
 
 public:
+	static const int INVALID_SOURCE; // -1;
+
 	enum CellNeighbor {
 		CELL_NEIGHBOR_RIGHT_SIDE = 0,
 		CELL_NEIGHBOR_RIGHT_CORNER,
@@ -137,6 +141,8 @@ public:
 		CELL_NEIGHBOR_TOP_RIGHT_CORNER,
 		CELL_NEIGHBOR_MAX,
 	};
+
+	static const char *CELL_NEIGHBOR_ENUM_TO_TEXT[];
 
 	enum TerrainMode {
 		TERRAIN_MODE_MATCH_CORNERS_AND_SIDES = 0,
@@ -165,7 +171,6 @@ public:
 		TILE_OFFSET_AXIS_VERTICAL,
 	};
 
-public:
 	struct PackedSceneSource {
 		Ref<PackedScene> scene;
 		Vector2 offset;
@@ -186,13 +191,16 @@ private:
 	Vector2 tile_skew = Vector2(0, 0);
 
 	// Rendering.
-	bool y_sorting = false;
 	bool uv_clipping = false;
 	struct OcclusionLayer {
 		uint32_t light_mask = 1;
 		bool sdf_collision = false;
 	};
 	Vector<OcclusionLayer> occlusion_layers;
+
+	Ref<ArrayMesh> tile_lines_mesh;
+	Ref<ArrayMesh> tile_filled_mesh;
+	bool tile_meshes_dirty = true;
 
 	// Physics
 	struct PhysicsLayer {
@@ -212,6 +220,9 @@ private:
 		Vector<Terrain> terrains;
 	};
 	Vector<TerrainSet> terrain_sets;
+
+	Map<TerrainMode, Map<CellNeighbor, Ref<ArrayMesh>>> terrain_bits_meshes;
+	bool terrain_bits_meshes_dirty = true;
 
 	// Navigation
 	struct Navigationlayer {
@@ -233,11 +244,26 @@ private:
 	int next_source_id = 0;
 	// ---------------------
 
-	// Plugins themselves.
-	Vector<TileSetPlugin *> tile_set_plugins_vector;
-
 	void _compute_next_source_id();
 	void _source_changed();
+
+	// Tile proxies
+	Map<int, int> source_level_proxies;
+	Map<Array, Array> coords_level_proxies;
+	Map<Array, Array> alternative_level_proxies;
+
+	// Helpers
+	Vector<Point2> _get_square_corner_or_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit);
+	Vector<Point2> _get_square_corner_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit);
+	Vector<Point2> _get_square_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit);
+
+	Vector<Point2> _get_isometric_corner_or_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit);
+	Vector<Point2> _get_isometric_corner_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit);
+	Vector<Point2> _get_isometric_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit);
+
+	Vector<Point2> _get_half_offset_corner_or_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis);
+	Vector<Point2> _get_half_offset_corner_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis);
+	Vector<Point2> _get_half_offset_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis);
 
 protected:
 	static void _bind_methods();
@@ -257,8 +283,6 @@ public:
 	TileOffsetAxis get_tile_offset_axis() const;
 	void set_tile_size(Size2i p_size);
 	Size2i get_tile_size() const;
-	void set_tile_skew(Vector2 p_skew);
-	Vector2 get_tile_skew() const;
 
 	// -- Sources management --
 	int get_next_source_id() const;
@@ -271,9 +295,6 @@ public:
 	Ref<TileSetSource> get_source(int p_source_id) const;
 
 	// Rendering
-	void set_y_sorting(bool p_y_sort);
-	bool is_y_sorting() const;
-
 	void set_uv_clipping(bool p_uv_clipping);
 	bool is_uv_clipping() const;
 
@@ -305,6 +326,7 @@ public:
 	String get_terrain_name(int p_terrain_set, int p_terrain_index) const;
 	void set_terrain_color(int p_terrain_set, int p_terrain_index, Color p_color);
 	Color get_terrain_color(int p_terrain_set, int p_terrain_index) const;
+	bool is_valid_peering_bit_for_mode(TileSet::TerrainMode p_terrain_mode, TileSet::CellNeighbor p_peering_bit) const;
 	bool is_valid_peering_bit_terrain(int p_terrain_set, TileSet::CellNeighbor p_peering_bit) const;
 
 	// Navigation
@@ -322,9 +344,40 @@ public:
 	void set_custom_data_type(int p_layer_id, Variant::Type p_value);
 	Variant::Type get_custom_data_type(int p_layer_id) const;
 
+	// Tiles proxies.
+	void set_source_level_tile_proxy(int p_source_from, int p_source_to);
+	int get_source_level_tile_proxy(int p_source_from);
+	bool has_source_level_tile_proxy(int p_source_from);
+	void remove_source_level_tile_proxy(int p_source_from);
+
+	void set_coords_level_tile_proxy(int p_source_from, Vector2i p_coords_from, int p_source_to, Vector2i p_coords_to);
+	Array get_coords_level_tile_proxy(int p_source_from, Vector2i p_coords_from);
+	bool has_coords_level_tile_proxy(int p_source_from, Vector2i p_coords_from);
+	void remove_coords_level_tile_proxy(int p_source_from, Vector2i p_coords_from);
+
+	void set_alternative_level_tile_proxy(int p_source_from, Vector2i p_coords_from, int p_alternative_from, int p_source_to, Vector2i p_coords_to, int p_alternative_to);
+	Array get_alternative_level_tile_proxy(int p_source_from, Vector2i p_coords_from, int p_alternative_from);
+	bool has_alternative_level_tile_proxy(int p_source_from, Vector2i p_coords_from, int p_alternative_from);
+	void remove_alternative_level_tile_proxy(int p_source_from, Vector2i p_coords_from, int p_alternative_from);
+
+	Array get_source_level_tile_proxies() const;
+	Array get_coords_level_tile_proxies() const;
+	Array get_alternative_level_tile_proxies() const;
+
+	Array map_tile_proxy(int p_source_from, Vector2i p_coords_from, int p_alternative_from) const;
+
+	void cleanup_invalid_tile_proxies();
+	void clear_tile_proxies();
+
 	// Helpers
+	Vector<Vector2> get_tile_shape_polygon();
 	void draw_tile_shape(CanvasItem *p_canvas_item, Rect2 p_region, Color p_color, bool p_filled = false, Ref<Texture2D> p_texture = Ref<Texture2D>());
 
+	Vector<Point2> get_terrain_bit_polygon(int p_terrain_set, TileSet::CellNeighbor p_bit);
+	void draw_terrains(CanvasItem *p_canvas_item, Transform2D p_transform, const TileData *p_tile_data);
+	Vector<Vector<Ref<Texture2D>>> generate_terrains_icons(Size2i p_size);
+
+	// Resource management
 	virtual void reset_state() override;
 
 	TileSet();
@@ -509,13 +562,14 @@ private:
 
 	// Physics
 	struct PhysicsLayerTileData {
-		struct ShapeTileData {
-			Ref<Shape2D> shape = Ref<Shape2D>();
+		struct PolygonShapeTileData {
+			LocalVector<Vector2> polygon;
+			LocalVector<Ref<ConvexPolygonShape2D>> shapes;
 			bool one_way = false;
 			float one_way_margin = 1.0;
 		};
 
-		Vector<ShapeTileData> shapes;
+		Vector<PolygonShapeTileData> polygons;
 	};
 	Vector<PhysicsLayerTileData> physics;
 	// TODO add support for areas.
@@ -570,16 +624,18 @@ public:
 	Ref<OccluderPolygon2D> get_occluder(int p_layer_id) const;
 
 	// Physics
-	int get_collision_shapes_count(int p_layer_id) const;
-	void set_collision_shapes_count(int p_layer_id, int p_shapes_count);
-	void add_collision_shape(int p_layer_id);
-	void remove_collision_shape(int p_layer_id, int p_shape_index);
-	void set_collision_shape_shape(int p_layer_id, int p_shape_index, Ref<Shape2D> p_shape);
-	Ref<Shape2D> get_collision_shape_shape(int p_layer_id, int p_shape_index) const;
-	void set_collision_shape_one_way(int p_layer_id, int p_shape_index, bool p_one_way);
-	bool is_collision_shape_one_way(int p_layer_id, int p_shape_index) const;
-	void set_collision_shape_one_way_margin(int p_layer_id, int p_shape_index, float p_one_way_margin);
-	float get_collision_shape_one_way_margin(int p_layer_id, int p_shape_index) const;
+	int get_collision_polygons_count(int p_layer_id) const;
+	void set_collision_polygons_count(int p_layer_id, int p_shapes_count);
+	void add_collision_polygon(int p_layer_id);
+	void remove_collision_polygon(int p_layer_id, int p_polygon_index);
+	void set_collision_polygon_points(int p_layer_id, int p_polygon_index, Vector<Vector2> p_polygon);
+	Vector<Vector2> get_collision_polygon_points(int p_layer_id, int p_polygon_index) const;
+	void set_collision_polygon_one_way(int p_layer_id, int p_polygon_index, bool p_one_way);
+	bool is_collision_polygon_one_way(int p_layer_id, int p_polygon_index) const;
+	void set_collision_polygon_one_way_margin(int p_layer_id, int p_polygon_index, float p_one_way_margin);
+	float get_collision_polygon_one_way_margin(int p_layer_id, int p_polygon_index) const;
+	int get_collision_polygon_shapes_count(int p_layer_id, int p_polygon_index) const;
+	Ref<ConvexPolygonShape2D> get_collision_polygon_shape(int p_layer_id, int p_polygon_index, int shape_index) const;
 
 	// Terrain
 	void set_terrain_set(int p_terrain_id);
@@ -601,93 +657,6 @@ public:
 	Variant get_custom_data(String p_layer_name) const;
 	void set_custom_data_by_layer_id(int p_layer_id, Variant p_value);
 	Variant get_custom_data_by_layer_id(int p_layer_id) const;
-};
-
-#include "scene/2d/tile_map.h"
-
-class TileSetPlugin : public Object {
-	GDCLASS(TileSetPlugin, Object);
-
-public:
-	// Tilemap updates.
-	virtual void tilemap_notification(TileMap *p_tile_map, int p_what){};
-	virtual void update_dirty_quadrants(TileMap *p_tile_map, SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list){};
-	virtual void create_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant){};
-	virtual void cleanup_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant){};
-
-	virtual void draw_quadrant_debug(TileMap *p_tile_map, TileMapQuadrant *p_quadrant){};
-};
-
-class TileSetPluginAtlasRendering : public TileSetPlugin {
-	GDCLASS(TileSetPluginAtlasRendering, TileSetPlugin);
-
-private:
-	static constexpr float fp_adjust = 0.00001;
-	bool quadrant_order_dirty = false;
-
-public:
-	// Tilemap updates
-	virtual void tilemap_notification(TileMap *p_tile_map, int p_what) override;
-	virtual void update_dirty_quadrants(TileMap *p_tile_map, SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list) override;
-	virtual void create_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
-	virtual void cleanup_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
-	virtual void draw_quadrant_debug(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
-
-	// Other.
-	static void draw_tile(RID p_canvas_item, Vector2i p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile, Color p_modulation = Color(1.0, 1.0, 1.0, 1.0));
-};
-
-class TileSetPluginAtlasTerrain : public TileSetPlugin {
-	GDCLASS(TileSetPluginAtlasTerrain, TileSetPlugin);
-
-private:
-	static void _draw_square_corner_or_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit);
-	static void _draw_square_corner_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit);
-	static void _draw_square_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit);
-
-	static void _draw_isometric_corner_or_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit);
-	static void _draw_isometric_corner_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit);
-	static void _draw_isometric_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit);
-
-	static void _draw_half_offset_corner_or_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis);
-	static void _draw_half_offset_corner_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis);
-	static void _draw_half_offset_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis);
-
-public:
-	static void draw_terrains(CanvasItem *p_canvas_item, Transform2D p_transform, TileSet *p_tile_set, const TileData *p_tile_data);
-};
-
-class TileSetPluginAtlasPhysics : public TileSetPlugin {
-	GDCLASS(TileSetPluginAtlasPhysics, TileSetPlugin);
-
-public:
-	// Tilemap updates
-	virtual void tilemap_notification(TileMap *p_tile_map, int p_what) override;
-	virtual void update_dirty_quadrants(TileMap *p_tile_map, SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list) override;
-	virtual void create_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
-	virtual void cleanup_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
-	virtual void draw_quadrant_debug(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
-};
-
-class TileSetPluginAtlasNavigation : public TileSetPlugin {
-	GDCLASS(TileSetPluginAtlasNavigation, TileSetPlugin);
-
-public:
-	// Tilemap updates
-	virtual void tilemap_notification(TileMap *p_tile_map, int p_what) override;
-	virtual void update_dirty_quadrants(TileMap *p_tile_map, SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list) override;
-	virtual void cleanup_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
-	virtual void draw_quadrant_debug(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
-};
-
-class TileSetPluginScenesCollections : public TileSetPlugin {
-	GDCLASS(TileSetPluginScenesCollections, TileSetPlugin);
-
-public:
-	// Tilemap updates
-	virtual void update_dirty_quadrants(TileMap *p_tile_map, SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list) override;
-	virtual void cleanup_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
-	virtual void draw_quadrant_debug(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
 };
 
 VARIANT_ENUM_CAST(TileSet::CellNeighbor);

@@ -29,7 +29,6 @@
 /*************************************************************************/
 
 #include "core/io/image_loader.h"
-#include "core/io/json.h"
 #include "core/io/stream_peer_ssl.h"
 #include "core/io/tcp_server.h"
 #include "core/io/zip_io.h"
@@ -39,7 +38,7 @@
 #include "platform/javascript/logo.gen.h"
 #include "platform/javascript/run_icon.gen.h"
 
-class EditorHTTPServer : public Reference {
+class EditorHTTPServer : public RefCounted {
 private:
 	Ref<TCPServer> server;
 	Map<String, String> mimes;
@@ -63,7 +62,7 @@ private:
 	}
 
 	void _set_internal_certs(Ref<Crypto> p_crypto) {
-		const String cache_path = EditorSettings::get_singleton()->get_cache_dir();
+		const String cache_path = EditorPaths::get_singleton()->get_cache_dir();
 		const String key_path = cache_path.plus_file("html5_server.key");
 		const String crt_path = cache_path.plus_file("html5_server.crt");
 		bool regen = !FileAccess::exists(key_path) || !FileAccess::exists(crt_path);
@@ -91,7 +90,7 @@ public:
 		mimes["png"] = "image/png";
 		mimes["svg"] = "image/svg";
 		mimes["wasm"] = "application/wasm";
-		server.instance();
+		server.instantiate();
 		stop();
 	}
 
@@ -136,9 +135,12 @@ public:
 		// Wrong protocol
 		ERR_FAIL_COND_MSG(req[0] != "GET" || req[2] != "HTTP/1.1", "Invalid method or HTTP version.");
 
-		const String req_file = req[1].get_file();
-		const String req_ext = req[1].get_extension();
-		const String cache_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("web");
+		const int query_index = req[1].find_char('?');
+		const String path = (query_index == -1) ? req[1] : req[1].substr(0, query_index);
+
+		const String req_file = path.get_file();
+		const String req_ext = path.get_extension();
+		const String cache_path = EditorPaths::get_singleton()->get_cache_dir().plus_file("web");
 		const String filepath = cache_path.plus_file(req_file);
 
 		if (!mimes.has(req_ext) || !FileAccess::exists(filepath)) {
@@ -290,7 +292,7 @@ class EditorExportPlatformJavaScript : public EditorExportPlatform {
 
 	Ref<Image> _get_project_icon() const {
 		Ref<Image> icon;
-		icon.instance();
+		icon.instantiate();
 		const String icon_path = String(GLOBAL_GET("application/config/icon")).strip_edges();
 		if (icon_path.is_empty() || ImageLoader::load_image(icon_path, icon) != OK) {
 			return EditorNode::get_singleton()->get_editor_theme()->get_icon("DefaultProjectIcon", "EditorIcons")->get_image();
@@ -300,7 +302,7 @@ class EditorExportPlatformJavaScript : public EditorExportPlatform {
 
 	Ref<Image> _get_project_splash() const {
 		Ref<Image> splash;
-		splash.instance();
+		splash.instantiate();
 		const String splash_path = String(GLOBAL_GET("application/boot_splash/image")).strip_edges();
 		if (splash_path.is_empty() || ImageLoader::load_image(splash_path, splash) != OK) {
 			return Ref<Image>(memnew(Image(boot_splash_png)));
@@ -448,6 +450,7 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Re
 	}
 	config["canvasResizePolicy"] = p_preset->get("html/canvas_resize_policy");
 	config["experimentalVK"] = p_preset->get("html/experimental_virtual_keyboard");
+	config["focusCanvas"] = p_preset->get("html/focus_canvas_on_start");
 	config["gdnativeLibs"] = libs;
 	config["executable"] = p_name;
 	config["args"] = args;
@@ -465,7 +468,7 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Re
 	}
 
 	// Replaces HTML string
-	const String str_config = JSON::print(config);
+	const String str_config = Variant(config).to_json_string();
 	const String custom_head_include = p_preset->get("html/head_include");
 	Map<String, String> replaces;
 	replaces["$GODOT_URL"] = p_name + ".js";
@@ -482,7 +485,7 @@ Error EditorExportPlatformJavaScript::_add_manifest_icon(const String &p_path, c
 
 	Ref<Image> icon;
 	if (!p_icon.is_empty()) {
-		icon.instance();
+		icon.instantiate();
 		const Error err = ImageLoader::load_image(p_icon, icon);
 		if (err != OK) {
 			EditorNode::get_singleton()->show_warning(TTR("Could not read file:") + "\n" + p_icon);
@@ -518,7 +521,7 @@ Error EditorExportPlatformJavaScript::_build_pwa(const Ref<EditorExportPreset> &
 	replaces["@GODOT_NAME@"] = name;
 	replaces["@GODOT_OFFLINE_PAGE@"] = name + ".offline.html";
 	Array files;
-	replaces["@GODOT_OPT_CACHE@"] = JSON::print(files);
+	replaces["@GODOT_OPT_CACHE@"] = Variant(files).to_json_string();
 	files.push_back(name + ".html");
 	files.push_back(name + ".js");
 	files.push_back(name + ".wasm");
@@ -537,7 +540,7 @@ Error EditorExportPlatformJavaScript::_build_pwa(const Ref<EditorExportPreset> &
 			files.push_back(p_shared_objects[i].path.get_file());
 		}
 	}
-	replaces["@GODOT_CACHE@"] = JSON::print(files);
+	replaces["@GODOT_CACHE@"] = Variant(files).to_json_string();
 
 	const String sw_path = dir.plus_file(name + ".service.worker.js");
 	Vector<uint8_t> sw;
@@ -605,7 +608,7 @@ Error EditorExportPlatformJavaScript::_build_pwa(const Ref<EditorExportPreset> &
 	}
 	manifest["icons"] = icons_arr;
 
-	CharString cs = JSON::print(manifest).utf8();
+	CharString cs = Variant(manifest).to_json_string().utf8();
 	err = _write_or_error((const uint8_t *)cs.get_data(), cs.length(), dir.plus_file(name + ".manifest.json"));
 	if (err != OK) {
 		return err;
@@ -648,6 +651,7 @@ void EditorExportPlatformJavaScript::get_export_options(List<ExportOption> *r_op
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/custom_html_shell", PROPERTY_HINT_FILE, "*.html"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/head_include", PROPERTY_HINT_MULTILINE_TEXT), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "html/canvas_resize_policy", PROPERTY_HINT_ENUM, "None,Project,Adaptive"), 2));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "html/focus_canvas_on_start"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "html/experimental_virtual_keyboard"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "progressive_web_app/enabled"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/offline_page", PROPERTY_HINT_FILE, "*.html"), ""));
@@ -888,7 +892,7 @@ Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_prese
 		return OK;
 	}
 
-	const String dest = EditorSettings::get_singleton()->get_cache_dir().plus_file("web");
+	const String dest = EditorPaths::get_singleton()->get_cache_dir().plus_file("web");
 	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	if (!da->dir_exists(dest)) {
 		Error err = da->make_dir_recursive(dest);
@@ -965,22 +969,22 @@ void EditorExportPlatformJavaScript::_server_thread_poll(void *data) {
 }
 
 EditorExportPlatformJavaScript::EditorExportPlatformJavaScript() {
-	server.instance();
+	server.instantiate();
 	server_thread.start(_server_thread_poll, this);
 
 	Ref<Image> img = memnew(Image(_javascript_logo));
-	logo.instance();
+	logo.instantiate();
 	logo->create_from_image(img);
 
 	img = Ref<Image>(memnew(Image(_javascript_run_icon)));
-	run_icon.instance();
+	run_icon.instantiate();
 	run_icon->create_from_image(img);
 
 	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 	if (theme.is_valid()) {
 		stop_icon = theme->get_icon("Stop", "EditorIcons");
 	} else {
-		stop_icon.instance();
+		stop_icon.instantiate();
 	}
 }
 
@@ -1001,6 +1005,6 @@ void register_javascript_exporter() {
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/web/ssl_certificate", PROPERTY_HINT_GLOBAL_FILE, "*.crt,*.pem"));
 
 	Ref<EditorExportPlatformJavaScript> platform;
-	platform.instance();
+	platform.instantiate();
 	EditorExport::get_singleton()->add_export_platform(platform);
 }

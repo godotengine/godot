@@ -32,14 +32,17 @@
 
 #include "core/input/input.h"
 #include "scene/resources/texture.h"
+#include "servers/display_server_headless.h"
 
 DisplayServer *DisplayServer::singleton = nullptr;
-DisplayServer::SwitchVSyncCallbackInThread DisplayServer::switch_vsync_function = nullptr;
 
 bool DisplayServer::hidpi_allowed = false;
 
-DisplayServer::DisplayServerCreate DisplayServer::server_create_functions[DisplayServer::MAX_SERVERS];
-int DisplayServer::server_create_count = 0;
+DisplayServer::DisplayServerCreate DisplayServer::server_create_functions[DisplayServer::MAX_SERVERS] = {
+	{ "headless", &DisplayServerHeadless::create_func, &DisplayServerHeadless::get_rendering_drivers_func }
+};
+
+int DisplayServer::server_create_count = 1;
 
 void DisplayServer::global_menu_add_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Variant &p_tag) {
 	WARN_PRINT("Global menus not supported by this display server.");
@@ -144,8 +147,8 @@ Point2i DisplayServer::mouse_get_position() const {
 	ERR_FAIL_V_MSG(Point2i(), "Mouse is not supported by this display server.");
 }
 
-int DisplayServer::mouse_get_button_state() const {
-	ERR_FAIL_V_MSG(0, "Mouse is not supported by this display server.");
+MouseButton DisplayServer::mouse_get_button_state() const {
+	ERR_FAIL_V_MSG(MOUSE_BUTTON_NONE, "Mouse is not supported by this display server.");
 }
 
 void DisplayServer::clipboard_set(const String &p_text) {
@@ -181,7 +184,7 @@ bool DisplayServer::screen_is_kept_on() const {
 	return false;
 }
 
-DisplayServer::WindowID DisplayServer::create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect) {
+DisplayServer::WindowID DisplayServer::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
 	ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Sub-windows not supported by this display server.");
 }
 
@@ -305,29 +308,13 @@ void DisplayServer::set_icon(const Ref<Image> &p_icon) {
 	WARN_PRINT("Icon not supported by this display server.");
 }
 
-void DisplayServer::_set_use_vsync(bool p_enable) {
-	WARN_PRINT("VSync not supported by this display server.");
+void DisplayServer::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
+	WARN_PRINT("Changing the VSync mode is not supported by this display server.");
 }
 
-void DisplayServer::vsync_set_enabled(bool p_enable) {
-	vsync_enabled = p_enable;
-	if (switch_vsync_function) { //if a function was set, use function
-		switch_vsync_function(p_enable);
-	} else { //otherwise just call here
-		_set_use_vsync(p_enable);
-	}
-}
-
-bool DisplayServer::vsync_is_enabled() const {
-	return vsync_enabled;
-}
-
-void DisplayServer::vsync_set_use_via_compositor(bool p_enable) {
-	WARN_PRINT("VSync via compositor not supported by this display server.");
-}
-
-bool DisplayServer::vsync_is_using_via_compositor() const {
-	return false;
+DisplayServer::VSyncMode DisplayServer::window_get_vsync_mode(WindowID p_window) const {
+	WARN_PRINT("Changing the VSync mode is not supported by this display server.");
+	return VSyncMode::VSYNC_ENABLED;
 }
 
 void DisplayServer::set_context(Context p_context) {
@@ -359,8 +346,6 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("global_menu_remove_item", "menu_root", "idx"), &DisplayServer::global_menu_remove_item);
 	ClassDB::bind_method(D_METHOD("global_menu_clear", "menu_root"), &DisplayServer::global_menu_clear);
 
-	ClassDB::bind_method(D_METHOD("alert", "text", "title"), &DisplayServer::alert, DEFVAL("Alert!"));
-
 	ClassDB::bind_method(D_METHOD("mouse_set_mode", "mouse_mode"), &DisplayServer::mouse_set_mode);
 	ClassDB::bind_method(D_METHOD("mouse_get_mode"), &DisplayServer::mouse_get_mode);
 
@@ -390,7 +375,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_window_list"), &DisplayServer::get_window_list);
 	ClassDB::bind_method(D_METHOD("get_window_at_screen_position", "position"), &DisplayServer::get_window_at_screen_position);
 
-	ClassDB::bind_method(D_METHOD("create_sub_window", "mode", "flags", "rect"), &DisplayServer::create_sub_window, DEFVAL(Rect2i()));
+	ClassDB::bind_method(D_METHOD("create_sub_window", "mode", "vsync_mode", "flags", "rect"), &DisplayServer::create_sub_window, DEFVAL(Rect2i()));
 	ClassDB::bind_method(D_METHOD("delete_sub_window", "window_id"), &DisplayServer::delete_sub_window);
 
 	ClassDB::bind_method(D_METHOD("window_set_title", "title", "window_id"), &DisplayServer::window_set_title, DEFVAL(MAIN_WINDOW_ID));
@@ -437,6 +422,9 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("window_set_ime_active", "active", "window_id"), &DisplayServer::window_set_ime_active, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_set_ime_position", "position", "window_id"), &DisplayServer::window_set_ime_position, DEFVAL(MAIN_WINDOW_ID));
 
+	ClassDB::bind_method(D_METHOD("window_set_vsync_mode", "vsync_mode", "window_id"), &DisplayServer::window_set_vsync_mode, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_get_vsync_mode", "window_id"), &DisplayServer::window_get_vsync_mode, DEFVAL(MAIN_WINDOW_ID));
+
 	ClassDB::bind_method(D_METHOD("ime_get_selection"), &DisplayServer::ime_get_selection);
 	ClassDB::bind_method(D_METHOD("ime_get_text"), &DisplayServer::ime_get_text);
 
@@ -467,12 +455,6 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("process_events"), &DisplayServer::process_events);
 	ClassDB::bind_method(D_METHOD("force_process_and_drop_events"), &DisplayServer::force_process_and_drop_events);
-
-	ClassDB::bind_method(D_METHOD("vsync_set_enabled", "enabled"), &DisplayServer::vsync_set_enabled);
-	ClassDB::bind_method(D_METHOD("vsync_is_enabled"), &DisplayServer::vsync_is_enabled);
-
-	ClassDB::bind_method(D_METHOD("vsync_set_use_via_compositor", "enabled"), &DisplayServer::vsync_set_use_via_compositor);
-	ClassDB::bind_method(D_METHOD("vsync_is_using_via_compositor"), &DisplayServer::vsync_is_using_via_compositor);
 
 	ClassDB::bind_method(D_METHOD("set_native_icon", "filename"), &DisplayServer::set_native_icon);
 	ClassDB::bind_method(D_METHOD("set_icon", "image"), &DisplayServer::set_icon);
@@ -505,6 +487,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(MOUSE_MODE_HIDDEN);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CAPTURED);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CONFINED);
+	BIND_ENUM_CONSTANT(MOUSE_MODE_CONFINED_HIDDEN);
 
 	BIND_CONSTANT(SCREEN_OF_MAIN_WINDOW);
 	BIND_CONSTANT(MAIN_WINDOW_ID);
@@ -556,13 +539,20 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(WINDOW_EVENT_CLOSE_REQUEST);
 	BIND_ENUM_CONSTANT(WINDOW_EVENT_GO_BACK_REQUEST);
 	BIND_ENUM_CONSTANT(WINDOW_EVENT_DPI_CHANGE);
+
+	BIND_ENUM_CONSTANT(VSYNC_DISABLED);
+	BIND_ENUM_CONSTANT(VSYNC_ENABLED);
+	BIND_ENUM_CONSTANT(VSYNC_ADAPTIVE);
+	BIND_ENUM_CONSTANT(VSYNC_MAILBOX);
 }
 
 void DisplayServer::register_create_function(const char *p_name, CreateFunction p_function, GetRenderingDriversFunction p_get_drivers) {
 	ERR_FAIL_COND(server_create_count == MAX_SERVERS);
-	server_create_functions[server_create_count].name = p_name;
-	server_create_functions[server_create_count].create_function = p_function;
-	server_create_functions[server_create_count].get_rendering_drivers_function = p_get_drivers;
+	// Headless display server is always last
+	server_create_functions[server_create_count] = server_create_functions[server_create_count - 1];
+	server_create_functions[server_create_count - 1].name = p_name;
+	server_create_functions[server_create_count - 1].create_function = p_function;
+	server_create_functions[server_create_count - 1].get_rendering_drivers_function = p_get_drivers;
 	server_create_count++;
 }
 
@@ -580,9 +570,9 @@ Vector<String> DisplayServer::get_create_function_rendering_drivers(int p_index)
 	return server_create_functions[p_index].get_rendering_drivers_function();
 }
 
-DisplayServer *DisplayServer::create(int p_index, const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
+DisplayServer *DisplayServer::create(int p_index, const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	ERR_FAIL_INDEX_V(p_index, server_create_count, nullptr);
-	return server_create_functions[p_index].create_function(p_rendering_driver, p_mode, p_flags, p_resolution, r_error);
+	return server_create_functions[p_index].create_function(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, r_error);
 }
 
 void DisplayServer::_input_set_mouse_mode(Input::MouseMode p_mode) {

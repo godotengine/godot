@@ -486,7 +486,7 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 		color.b *= env->bg_energy;
 
 		Ref<Image> ret;
-		ret.instance();
+		ret.instantiate();
 		ret->create(p_size.width, p_size.height, false, Image::FORMAT_RGBAF);
 		for (int i = 0; i < p_size.width; i++) {
 			for (int j = 0; j < p_size.height; j++) {
@@ -567,10 +567,12 @@ int RendererSceneRenderRD::reflection_atlas_get_size(RID p_ref_atlas) const {
 RID RendererSceneRenderRD::reflection_probe_instance_create(RID p_probe) {
 	ReflectionProbeInstance rpi;
 	rpi.probe = p_probe;
+	rpi.forward_id = _allocate_forward_id(FORWARD_ID_TYPE_REFLECTION_PROBE);
+
 	return reflection_probe_instance_owner.make_rid(rpi);
 }
 
-void RendererSceneRenderRD::reflection_probe_instance_set_transform(RID p_instance, const Transform &p_transform) {
+void RendererSceneRenderRD::reflection_probe_instance_set_transform(RID p_instance, const Transform3D &p_transform) {
 	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
 	ERR_FAIL_COND(!rpi);
 
@@ -627,6 +629,8 @@ bool RendererSceneRenderRD::reflection_probe_instance_begin_render(RID p_instanc
 	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
 	ERR_FAIL_COND_V(!rpi, false);
 
+	RD::get_singleton()->draw_command_begin_label("Reflection probe render");
+
 	if (storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS && atlas->reflection.is_valid() && atlas->size != 256) {
 		WARN_PRINT("ReflectionProbes set to UPDATE_ALWAYS must have an atlas size of 256. Please update the atlas size in the ProjectSettings.");
 		reflection_atlas_set_size(p_reflection_atlas, 256, atlas->count);
@@ -654,12 +658,12 @@ bool RendererSceneRenderRD::reflection_probe_instance_begin_render(RID p_instanc
 			//reflection atlas was unused, create:
 			RD::TextureFormat tf;
 			tf.array_layers = 6 * atlas->count;
-			tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+			tf.format = _render_buffers_get_color_format();
 			tf.texture_type = RD::TEXTURE_TYPE_CUBE_ARRAY;
 			tf.mipmaps = mipmaps;
 			tf.width = atlas->size;
 			tf.height = atlas->size;
-			tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+			tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | (_render_buffers_can_be_storage() ? RD::TEXTURE_USAGE_STORAGE_BIT : 0);
 
 			atlas->reflection = RD::get_singleton()->texture_create(tf, RD::TextureView());
 		}
@@ -673,7 +677,7 @@ bool RendererSceneRenderRD::reflection_probe_instance_begin_render(RID p_instanc
 		}
 		atlas->reflections.resize(atlas->count);
 		for (int i = 0; i < atlas->count; i++) {
-			atlas->reflections.write[i].data.update_reflection_data(atlas->size, mipmaps, false, atlas->reflection, i * 6, storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS, sky.roughness_layers);
+			atlas->reflections.write[i].data.update_reflection_data(storage, atlas->size, mipmaps, false, atlas->reflection, i * 6, storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS, sky.roughness_layers, _render_buffers_get_color_format());
 			for (int j = 0; j < 6; j++) {
 				Vector<RID> fb;
 				fb.push_back(atlas->reflections.write[i].data.layers[0].mipmaps[0].views[j]);
@@ -709,11 +713,17 @@ bool RendererSceneRenderRD::reflection_probe_instance_begin_render(RID p_instanc
 		}
 	}
 
+	if (rpi->atlas_index != -1) { // should we fail if this is still -1 ?
+		atlas->reflections.write[rpi->atlas_index].owner = p_instance;
+	}
+
 	rpi->atlas = p_reflection_atlas;
 	rpi->rendering = true;
 	rpi->dirty = false;
 	rpi->processing_layer = 1;
 	rpi->processing_side = 0;
+
+	RD::get_singleton()->draw_command_end_label();
 
 	return true;
 }
@@ -1229,11 +1239,14 @@ RID RendererSceneRenderRD::light_instance_create(RID p_light) {
 	light_instance->self = li;
 	light_instance->light = p_light;
 	light_instance->light_type = storage->light_get_type(p_light);
+	if (light_instance->light_type != RS::LIGHT_DIRECTIONAL) {
+		light_instance->forward_id = _allocate_forward_id(light_instance->light_type == RS::LIGHT_OMNI ? FORWARD_ID_TYPE_OMNI_LIGHT : FORWARD_ID_TYPE_SPOT_LIGHT);
+	}
 
 	return li;
 }
 
-void RendererSceneRenderRD::light_instance_set_transform(RID p_light_instance, const Transform &p_transform) {
+void RendererSceneRenderRD::light_instance_set_transform(RID p_light_instance, const Transform3D &p_transform) {
 	LightInstance *light_instance = light_instance_owner.getornull(p_light_instance);
 	ERR_FAIL_COND(!light_instance);
 
@@ -1247,7 +1260,7 @@ void RendererSceneRenderRD::light_instance_set_aabb(RID p_light_instance, const 
 	light_instance->aabb = p_aabb;
 }
 
-void RendererSceneRenderRD::light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale, float p_range_begin, const Vector2 &p_uv_scale) {
+void RendererSceneRenderRD::light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale, float p_range_begin, const Vector2 &p_uv_scale) {
 	LightInstance *light_instance = light_instance_owner.getornull(p_light_instance);
 	ERR_FAIL_COND(!light_instance);
 
@@ -1302,10 +1315,11 @@ RendererSceneRenderRD::ShadowCubemap *RendererSceneRenderRD::_get_shadow_cubemap
 RID RendererSceneRenderRD::decal_instance_create(RID p_decal) {
 	DecalInstance di;
 	di.decal = p_decal;
+	di.forward_id = _allocate_forward_id(FORWARD_ID_TYPE_DECAL);
 	return decal_instance_owner.make_rid(di);
 }
 
-void RendererSceneRenderRD::decal_instance_set_transform(RID p_decal, const Transform &p_transform) {
+void RendererSceneRenderRD::decal_instance_set_transform(RID p_decal, const Transform3D &p_transform) {
 	DecalInstance *di = decal_instance_owner.getornull(p_decal);
 	ERR_FAIL_COND(!di);
 	di->transform = p_transform;
@@ -1318,7 +1332,7 @@ RID RendererSceneRenderRD::lightmap_instance_create(RID p_lightmap) {
 	li.lightmap = p_lightmap;
 	return lightmap_instance_owner.make_rid(li);
 }
-void RendererSceneRenderRD::lightmap_instance_set_transform(RID p_lightmap, const Transform &p_transform) {
+void RendererSceneRenderRD::lightmap_instance_set_transform(RID p_lightmap, const Transform3D &p_transform) {
 	LightmapInstance *li = lightmap_instance_owner.getornull(p_lightmap);
 	ERR_FAIL_COND(!li);
 	li->transform = p_transform;
@@ -1326,28 +1340,28 @@ void RendererSceneRenderRD::lightmap_instance_set_transform(RID p_lightmap, cons
 
 /////////////////////////////////
 
-RID RendererSceneRenderRD::gi_probe_instance_create(RID p_base) {
-	return gi.gi_probe_instance_create(p_base);
+RID RendererSceneRenderRD::voxel_gi_instance_create(RID p_base) {
+	return gi.voxel_gi_instance_create(p_base);
 }
 
-void RendererSceneRenderRD::gi_probe_instance_set_transform_to_data(RID p_probe, const Transform &p_xform) {
-	gi.gi_probe_instance_set_transform_to_data(p_probe, p_xform);
+void RendererSceneRenderRD::voxel_gi_instance_set_transform_to_data(RID p_probe, const Transform3D &p_xform) {
+	gi.voxel_gi_instance_set_transform_to_data(p_probe, p_xform);
 }
 
-bool RendererSceneRenderRD::gi_probe_needs_update(RID p_probe) const {
+bool RendererSceneRenderRD::voxel_gi_needs_update(RID p_probe) const {
 	if (!is_dynamic_gi_supported()) {
 		return false;
 	}
 
-	return gi.gi_probe_needs_update(p_probe);
+	return gi.voxel_gi_needs_update(p_probe);
 }
 
-void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<GeometryInstance *> &p_dynamic_objects) {
+void RendererSceneRenderRD::voxel_gi_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<GeometryInstance *> &p_dynamic_objects) {
 	if (!is_dynamic_gi_supported()) {
 		return;
 	}
 
-	gi.gi_probe_update(p_probe, p_update_light_instances, p_light_instances, p_dynamic_objects, this);
+	gi.voxel_gi_update(p_probe, p_update_light_instances, p_light_instances, p_dynamic_objects, this);
 }
 
 void RendererSceneRenderRD::_debug_sdfgi_probes(RID p_render_buffers, RD::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform) {
@@ -1373,12 +1387,20 @@ void RendererSceneRenderRD::_allocate_blur_textures(RenderBuffers *rb) {
 
 	uint32_t mipmaps_required = Image::get_image_required_mipmaps(rb->width, rb->height, Image::FORMAT_RGBAH);
 
+	// TODO make sure texture_create_shared_from_slice works for multiview
+
 	RD::TextureFormat tf;
-	tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+	tf.format = _render_buffers_get_color_format(); // RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 	tf.width = rb->width;
 	tf.height = rb->height;
-	tf.texture_type = RD::TEXTURE_TYPE_2D;
-	tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+	tf.texture_type = rb->view_count > 1 ? RD::TEXTURE_TYPE_2D_ARRAY : RD::TEXTURE_TYPE_2D;
+	tf.array_layers = rb->view_count;
+	tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+	if (_render_buffers_can_be_storage()) {
+		tf.usage_bits += RD::TEXTURE_USAGE_STORAGE_BIT;
+	} else {
+		tf.usage_bits += RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+	}
 	tf.mipmaps = mipmaps_required;
 
 	rb->blur[0].texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
@@ -1398,10 +1420,39 @@ void RendererSceneRenderRD::_allocate_blur_textures(RenderBuffers *rb) {
 		mm.width = base_width;
 		mm.height = base_height;
 
+		if (!_render_buffers_can_be_storage()) {
+			Vector<RID> fb;
+			fb.push_back(mm.texture);
+
+			mm.fb = RD::get_singleton()->framebuffer_create(fb);
+		}
+
+		if (!_render_buffers_can_be_storage()) {
+			// and half texture, this is an intermediate result so just allocate a texture, is this good enough?
+			tf.width = MAX(1, base_width >> 1);
+			tf.height = base_height;
+			tf.mipmaps = 1; // 1 or 0?
+
+			mm.half_texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
+
+			Vector<RID> half_fb;
+			half_fb.push_back(mm.half_texture);
+			mm.half_fb = RD::get_singleton()->framebuffer_create(half_fb);
+		}
+
 		rb->blur[0].mipmaps.push_back(mm);
 
 		if (i > 0) {
 			mm.texture = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rb->blur[1].texture, 0, i - 1);
+
+			if (!_render_buffers_can_be_storage()) {
+				Vector<RID> fb;
+				fb.push_back(mm.texture);
+
+				mm.fb = RD::get_singleton()->framebuffer_create(fb);
+
+				// We can re-use the half texture here as it is an intermediate result
+			}
 
 			rb->blur[1].mipmaps.push_back(mm);
 		}
@@ -1425,26 +1476,48 @@ void RendererSceneRenderRD::_allocate_luminance_textures(RenderBuffers *rb) {
 		tf.format = RD::DATA_FORMAT_R32_SFLOAT;
 		tf.width = w;
 		tf.height = h;
-		tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT;
 
 		bool final = w == 1 && h == 1;
 
-		if (final) {
-			tf.usage_bits |= RD::TEXTURE_USAGE_SAMPLING_BIT;
+		if (_render_buffers_can_be_storage()) {
+			tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT;
+			if (final) {
+				tf.usage_bits |= RD::TEXTURE_USAGE_SAMPLING_BIT;
+			}
+		} else {
+			tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
 		}
 
 		RID texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
 
 		rb->luminance.reduce.push_back(texture);
+		if (!_render_buffers_can_be_storage()) {
+			Vector<RID> fb;
+			fb.push_back(texture);
+
+			rb->luminance.fb.push_back(RD::get_singleton()->framebuffer_create(fb));
+		}
 
 		if (final) {
 			rb->luminance.current = RD::get_singleton()->texture_create(tf, RD::TextureView());
+
+			if (!_render_buffers_can_be_storage()) {
+				Vector<RID> fb;
+				fb.push_back(rb->luminance.current);
+
+				rb->luminance.current_fb = RD::get_singleton()->framebuffer_create(fb);
+			}
 			break;
 		}
 	}
 }
 
 void RendererSceneRenderRD::_free_render_buffer_data(RenderBuffers *rb) {
+	if (rb->texture_fb.is_valid()) {
+		RD::get_singleton()->free(rb->texture_fb);
+		rb->texture_fb = RID();
+	}
+
 	if (rb->texture.is_valid()) {
 		RD::get_singleton()->free(rb->texture);
 		rb->texture = RID();
@@ -1456,18 +1529,42 @@ void RendererSceneRenderRD::_free_render_buffer_data(RenderBuffers *rb) {
 	}
 
 	for (int i = 0; i < 2; i++) {
+		for (int m = 0; m < rb->blur[i].mipmaps.size(); m++) {
+			// do we free the texture slice here? or is it enough to free the main texture?
+
+			// do free the mobile extra stuff
+			if (rb->blur[i].mipmaps[m].fb.is_valid()) {
+				RD::get_singleton()->free(rb->blur[i].mipmaps[m].fb);
+			}
+			if (rb->blur[i].mipmaps[m].half_fb.is_valid()) {
+				RD::get_singleton()->free(rb->blur[i].mipmaps[m].half_fb);
+			}
+			if (rb->blur[i].mipmaps[m].half_texture.is_valid()) {
+				RD::get_singleton()->free(rb->blur[i].mipmaps[m].half_texture);
+			}
+		}
+		rb->blur[i].mipmaps.clear();
+
 		if (rb->blur[i].texture.is_valid()) {
 			RD::get_singleton()->free(rb->blur[i].texture);
 			rb->blur[i].texture = RID();
-			rb->blur[i].mipmaps.clear();
 		}
 	}
+
+	for (int i = 0; i < rb->luminance.fb.size(); i++) {
+		RD::get_singleton()->free(rb->luminance.fb[i]);
+	}
+	rb->luminance.fb.clear();
 
 	for (int i = 0; i < rb->luminance.reduce.size(); i++) {
 		RD::get_singleton()->free(rb->luminance.reduce[i]);
 	}
-
 	rb->luminance.reduce.clear();
+
+	if (rb->luminance.current_fb.is_valid()) {
+		RD::get_singleton()->free(rb->luminance.current_fb);
+		rb->luminance.current_fb = RID();
+	}
 
 	if (rb->luminance.current.is_valid()) {
 		RD::get_singleton()->free(rb->luminance.current);
@@ -1728,7 +1825,7 @@ void RendererSceneRenderRD::_process_ssao(RID p_render_buffers, RID p_environmen
 	settings.half_screen_size = Size2i(buffer_width, buffer_height);
 	settings.quarter_screen_size = Size2i(half_width, half_height);
 
-	storage->get_effects()->generate_ssao(rb->depth_texture, p_normal_buffer, rb->ssao.depth, rb->ssao.depth_slices, rb->ssao.ao_deinterleaved, rb->ssao.ao_deinterleaved_slices, rb->ssao.ao_pong, rb->ssao.ao_pong_slices, rb->ssao.ao_final, rb->ssao.importance_map[0], rb->ssao.importance_map[1], p_projection, settings, uniform_sets_are_invalid);
+	storage->get_effects()->generate_ssao(rb->depth_texture, p_normal_buffer, rb->ssao.depth, rb->ssao.depth_slices, rb->ssao.ao_deinterleaved, rb->ssao.ao_deinterleaved_slices, rb->ssao.ao_pong, rb->ssao.ao_pong_slices, rb->ssao.ao_final, rb->ssao.importance_map[0], rb->ssao.importance_map[1], p_projection, settings, uniform_sets_are_invalid, rb->ssao.downsample_uniform_set, rb->ssao.gather_uniform_set, rb->ssao.importance_map_uniform_set);
 }
 
 void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const RenderDataRD *p_render_data) {
@@ -1740,17 +1837,27 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 	CameraEffects *camfx = camera_effects_owner.getornull(p_render_data->camera_effects);
 
 	bool can_use_effects = rb->width >= 8 && rb->height >= 8;
+	bool can_use_storage = _render_buffers_can_be_storage();
+
+	// @TODO IMPLEMENT MULTIVIEW, all effects need to support stereo buffers or effects are only applied to the left eye
 
 	if (can_use_effects && camfx && (camfx->dof_blur_near_enabled || camfx->dof_blur_far_enabled) && camfx->dof_blur_amount > 0.0) {
+		RD::get_singleton()->draw_command_begin_label("DOF");
 		if (rb->blur[0].texture.is_null()) {
 			_allocate_blur_textures(rb);
 		}
 
-		float bokeh_size = camfx->dof_blur_amount * 64.0;
-		storage->get_effects()->bokeh_dof(rb->texture, rb->depth_texture, Size2i(rb->width, rb->height), rb->blur[0].mipmaps[0].texture, rb->blur[1].mipmaps[0].texture, rb->blur[0].mipmaps[1].texture, camfx->dof_blur_far_enabled, camfx->dof_blur_far_distance, camfx->dof_blur_far_transition, camfx->dof_blur_near_enabled, camfx->dof_blur_near_distance, camfx->dof_blur_near_transition, bokeh_size, dof_blur_bokeh_shape, dof_blur_quality, dof_blur_use_jitter, p_render_data->z_near, p_render_data->z_far, p_render_data->cam_ortogonal);
+		if (can_use_storage) {
+			float bokeh_size = camfx->dof_blur_amount * 64.0;
+			storage->get_effects()->bokeh_dof(rb->texture, rb->depth_texture, Size2i(rb->width, rb->height), rb->blur[0].mipmaps[0].texture, rb->blur[1].mipmaps[0].texture, rb->blur[0].mipmaps[1].texture, camfx->dof_blur_far_enabled, camfx->dof_blur_far_distance, camfx->dof_blur_far_transition, camfx->dof_blur_near_enabled, camfx->dof_blur_near_distance, camfx->dof_blur_near_transition, bokeh_size, dof_blur_bokeh_shape, dof_blur_quality, dof_blur_use_jitter, p_render_data->z_near, p_render_data->z_far, p_render_data->cam_ortogonal);
+		} else {
+			storage->get_effects()->blur_dof_raster(rb->texture, rb->depth_texture, Size2i(rb->width, rb->height), rb->texture_fb, rb->blur[0].mipmaps[0].texture, rb->blur[0].mipmaps[0].fb, camfx->dof_blur_far_enabled, camfx->dof_blur_far_distance, camfx->dof_blur_far_transition, camfx->dof_blur_near_enabled, camfx->dof_blur_near_distance, camfx->dof_blur_near_transition, camfx->dof_blur_amount, dof_blur_quality, p_render_data->z_near, p_render_data->z_far, p_render_data->cam_ortogonal);
+		}
+		RD::get_singleton()->draw_command_end_label();
 	}
 
 	if (can_use_effects && env && env->auto_exposure) {
+		RD::get_singleton()->draw_command_begin_label("Auto exposure");
 		if (rb->luminance.current.is_null()) {
 			_allocate_luminance_textures(rb);
 		}
@@ -1759,16 +1866,26 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		rb->auto_exposure_version = env->auto_exposure_version;
 
 		double step = env->auto_exp_speed * time_step;
-		storage->get_effects()->luminance_reduction(rb->texture, Size2i(rb->width, rb->height), rb->luminance.reduce, rb->luminance.current, env->min_luminance, env->max_luminance, step, set_immediate);
-
+		if (can_use_storage) {
+			storage->get_effects()->luminance_reduction(rb->texture, Size2i(rb->width, rb->height), rb->luminance.reduce, rb->luminance.current, env->min_luminance, env->max_luminance, step, set_immediate);
+		} else {
+			storage->get_effects()->luminance_reduction_raster(rb->texture, Size2i(rb->width, rb->height), rb->luminance.reduce, rb->luminance.fb, rb->luminance.current, env->min_luminance, env->max_luminance, step, set_immediate);
+		}
 		//swap final reduce with prev luminance
 		SWAP(rb->luminance.current, rb->luminance.reduce.write[rb->luminance.reduce.size() - 1]);
+		if (!can_use_storage) {
+			SWAP(rb->luminance.current_fb, rb->luminance.fb.write[rb->luminance.fb.size() - 1]);
+		}
+
 		RenderingServerDefault::redraw_request(); //redraw all the time if auto exposure rendering is on
+		RD::get_singleton()->draw_command_end_label();
 	}
 
 	int max_glow_level = -1;
 
 	if (can_use_effects && env && env->glow_enabled) {
+		RD::get_singleton()->draw_command_begin_label("Gaussian Glow");
+
 		/* see that blur textures are allocated */
 
 		if (rb->blur[1].texture.is_null()) {
@@ -1794,14 +1911,26 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 				if (env->auto_exposure && rb->luminance.current.is_valid()) {
 					luminance_texture = rb->luminance.current;
 				}
-				storage->get_effects()->gaussian_glow(rb->texture, rb->blur[1].mipmaps[i].texture, Size2i(vp_w, vp_h), env->glow_strength, glow_high_quality, true, env->glow_hdr_luminance_cap, env->exposure, env->glow_bloom, env->glow_hdr_bleed_threshold, env->glow_hdr_bleed_scale, luminance_texture, env->auto_exp_scale);
+				if (can_use_storage) {
+					storage->get_effects()->gaussian_glow(rb->texture, rb->blur[1].mipmaps[i].texture, Size2i(vp_w, vp_h), env->glow_strength, glow_high_quality, true, env->glow_hdr_luminance_cap, env->exposure, env->glow_bloom, env->glow_hdr_bleed_threshold, env->glow_hdr_bleed_scale, luminance_texture, env->auto_exp_scale);
+				} else {
+					storage->get_effects()->gaussian_glow_raster(rb->texture, rb->blur[1].mipmaps[i].half_fb, rb->blur[1].mipmaps[i].half_texture, rb->blur[1].mipmaps[i].fb, Size2i(vp_w, vp_h), env->glow_strength, glow_high_quality, true, env->glow_hdr_luminance_cap, env->exposure, env->glow_bloom, env->glow_hdr_bleed_threshold, env->glow_hdr_bleed_scale, luminance_texture, env->auto_exp_scale);
+				}
 			} else {
-				storage->get_effects()->gaussian_glow(rb->blur[1].mipmaps[i - 1].texture, rb->blur[1].mipmaps[i].texture, Size2i(vp_w, vp_h), env->glow_strength, glow_high_quality);
+				if (can_use_storage) {
+					storage->get_effects()->gaussian_glow(rb->blur[1].mipmaps[i - 1].texture, rb->blur[1].mipmaps[i].texture, Size2i(vp_w, vp_h), env->glow_strength, glow_high_quality);
+				} else {
+					storage->get_effects()->gaussian_glow_raster(rb->blur[1].mipmaps[i - 1].texture, rb->blur[1].mipmaps[i].half_fb, rb->blur[1].mipmaps[i].half_texture, rb->blur[1].mipmaps[i].fb, Vector2(1.0 / vp_w, 1.0 / vp_h), env->glow_strength, glow_high_quality);
+				}
 			}
 		}
+
+		RD::get_singleton()->draw_command_end_label();
 	}
 
 	{
+		RD::get_singleton()->draw_command_begin_label("Tonemap");
+
 		//tonemap
 		EffectsRD::TonemapSettings tonemap;
 
@@ -1857,7 +1986,11 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			}
 		}
 
+		tonemap.view_count = p_render_data->view_count;
+
 		storage->get_effects()->tonemapper(rb->texture, storage->render_target_get_rd_framebuffer(rb->render_target), tonemap);
+
+		RD::get_singleton()->draw_command_end_label();
 	}
 
 	storage->render_target_disable_clear_request(rb->render_target);
@@ -1959,17 +2092,17 @@ RID RendererSceneRenderRD::render_buffers_get_ao_texture(RID p_render_buffers) {
 	return rb->ssao.ao_final;
 }
 
-RID RendererSceneRenderRD::render_buffers_get_gi_probe_buffer(RID p_render_buffers) {
+RID RendererSceneRenderRD::render_buffers_get_voxel_gi_buffer(RID p_render_buffers) {
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
 	ERR_FAIL_COND_V(!rb, RID());
-	if (rb->gi.giprobe_buffer.is_null()) {
-		rb->gi.giprobe_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(RendererSceneGIRD::GIProbeData) * RendererSceneGIRD::MAX_GIPROBES);
+	if (rb->gi.voxel_gi_buffer.is_null()) {
+		rb->gi.voxel_gi_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(RendererSceneGIRD::VoxelGIData) * RendererSceneGIRD::MAX_VOXEL_GI_INSTANCES);
 	}
-	return rb->gi.giprobe_buffer;
+	return rb->gi.voxel_gi_buffer;
 }
 
-RID RendererSceneRenderRD::render_buffers_get_default_gi_probe_buffer() {
-	return gi.default_giprobe_buffer;
+RID RendererSceneRenderRD::render_buffers_get_default_voxel_gi_buffer() {
+	return gi.default_voxel_gi_buffer;
 }
 
 RID RendererSceneRenderRD::render_buffers_get_gi_ambient_texture(RID p_render_buffers) {
@@ -2112,7 +2245,17 @@ float RendererSceneRenderRD::render_buffers_get_volumetric_fog_detail_spread(RID
 	return rb->volumetric_fog->spread;
 }
 
-void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding) {
+RD::DataFormat RendererSceneRenderRD::_render_buffers_get_color_format() {
+	return RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+}
+
+bool RendererSceneRenderRD::_render_buffers_can_be_storage() {
+	return true;
+}
+
+void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding, uint32_t p_view_count) {
+	ERR_FAIL_COND_MSG(p_view_count == 0, "Must have at least 1 view");
+
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
 	rb->width = p_width;
 	rb->height = p_height;
@@ -2120,6 +2263,7 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 	rb->msaa = p_msaa;
 	rb->screen_space_aa = p_screen_space_aa;
 	rb->use_debanding = p_use_debanding;
+	rb->view_count = p_view_count;
 
 	if (is_clustered_enabled()) {
 		if (rb->cluster_builder == nullptr) {
@@ -2132,12 +2276,16 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 
 	{
 		RD::TextureFormat tf;
-		tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+		if (rb->view_count > 1) {
+			tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+		}
+		tf.format = _render_buffers_get_color_format();
 		tf.width = rb->width;
 		tf.height = rb->height;
-		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+		tf.array_layers = rb->view_count; // create a layer for every view
+		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | (_render_buffers_can_be_storage() ? RD::TEXTURE_USAGE_STORAGE_BIT : 0);
 		if (rb->msaa != RS::VIEWPORT_MSAA_DISABLED) {
-			tf.usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+			tf.usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | (_render_buffers_can_be_storage() ? RD::TEXTURE_USAGE_STORAGE_BIT : 0);
 		} else {
 			tf.usage_bits |= RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 		}
@@ -2147,6 +2295,9 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 
 	{
 		RD::TextureFormat tf;
+		if (rb->view_count > 1) {
+			tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+		}
 		if (rb->msaa == RS::VIEWPORT_MSAA_DISABLED) {
 			tf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D24_UNORM_S8_UINT, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D24_UNORM_S8_UINT : RD::DATA_FORMAT_D32_SFLOAT_S8_UINT;
 		} else {
@@ -2156,6 +2307,7 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 		tf.width = p_width;
 		tf.height = p_height;
 		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT;
+		tf.array_layers = rb->view_count; // create a layer for every view
 
 		if (rb->msaa != RS::VIEWPORT_MSAA_DISABLED) {
 			tf.usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
@@ -2166,7 +2318,15 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 		rb->depth_texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
 	}
 
-	rb->data->configure(rb->texture, rb->depth_texture, p_width, p_height, p_msaa);
+	if (!_render_buffers_can_be_storage()) {
+		// ONLY USED ON MOBILE RENDERER, ONLY USED FOR POST EFFECTS!
+		Vector<RID> fb;
+		fb.push_back(rb->texture);
+
+		rb->texture_fb = RD::get_singleton()->framebuffer_create(fb, RenderingDevice::INVALID_ID, rb->view_count);
+	}
+
+	rb->data->configure(rb->texture, rb->depth_texture, p_width, p_height, p_msaa, p_view_count);
 
 	if (is_clustered_enabled()) {
 		rb->cluster_builder->setup(Size2i(p_width, p_height), max_cluster_elements, rb->depth_texture, storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED), rb->texture);
@@ -2228,6 +2388,8 @@ void RendererSceneRenderRD::shadows_quality_set(RS::ShadowQuality p_quality) {
 		get_vogel_disk(penumbra_shadow_kernel, penumbra_shadow_samples);
 		get_vogel_disk(soft_shadow_kernel, soft_shadow_samples);
 	}
+
+	_update_shader_quality_settings();
 }
 
 void RendererSceneRenderRD::directional_shadow_quality_set(RS::ShadowQuality p_quality) {
@@ -2268,6 +2430,23 @@ void RendererSceneRenderRD::directional_shadow_quality_set(RS::ShadowQuality p_q
 		get_vogel_disk(directional_penumbra_shadow_kernel, directional_penumbra_shadow_samples);
 		get_vogel_disk(directional_soft_shadow_kernel, directional_soft_shadow_samples);
 	}
+
+	_update_shader_quality_settings();
+}
+
+void RendererSceneRenderRD::decals_set_filter(RenderingServer::DecalFilter p_filter) {
+	if (decals_filter == p_filter) {
+		return;
+	}
+	decals_filter = p_filter;
+	_update_shader_quality_settings();
+}
+void RendererSceneRenderRD::light_projectors_set_filter(RenderingServer::LightProjectorFilter p_filter) {
+	if (light_projectors_filter == p_filter) {
+		return;
+	}
+	light_projectors_filter = p_filter;
+	_update_shader_quality_settings();
 }
 
 int RendererSceneRenderRD::get_roughness_layers() const {
@@ -2284,7 +2463,7 @@ RendererSceneRenderRD::RenderBufferData *RendererSceneRenderRD::render_buffers_g
 	return rb->data;
 }
 
-void RendererSceneRenderRD::_setup_reflections(const PagedArray<RID> &p_reflections, const Transform &p_camera_inverse_transform, RID p_environment) {
+void RendererSceneRenderRD::_setup_reflections(const PagedArray<RID> &p_reflections, const Transform3D &p_camera_inverse_transform, RID p_environment) {
 	cluster.reflection_count = 0;
 
 	for (uint32_t i = 0; i < (uint32_t)p_reflections.size(); i++) {
@@ -2307,10 +2486,13 @@ void RendererSceneRenderRD::_setup_reflections(const PagedArray<RID> &p_reflecti
 		sort_array.sort(cluster.reflection_sort, cluster.reflection_count);
 	}
 
+	bool using_forward_ids = _uses_forward_ids();
 	for (uint32_t i = 0; i < cluster.reflection_count; i++) {
 		ReflectionProbeInstance *rpi = cluster.reflection_sort[i].instance;
 
-		rpi->render_index = i;
+		if (using_forward_ids) {
+			_map_forward_id(FORWARD_ID_TYPE_REFLECTION_PROBE, rpi->forward_id, i);
+		}
 
 		RID base_probe = rpi->probe;
 
@@ -2344,8 +2526,8 @@ void RendererSceneRenderRD::_setup_reflections(const PagedArray<RID> &p_reflecti
 		reflection_ubo.ambient[1] = ambient_linear.g * interior_ambient_energy;
 		reflection_ubo.ambient[2] = ambient_linear.b * interior_ambient_energy;
 
-		Transform transform = rpi->transform;
-		Transform proj = (p_camera_inverse_transform * transform).inverse();
+		Transform3D transform = rpi->transform;
+		Transform3D proj = (p_camera_inverse_transform * transform).inverse();
 		RendererStorageRD::store_transform(proj, reflection_ubo.local_matrix);
 
 		if (current_cluster_builder != nullptr) {
@@ -2360,8 +2542,8 @@ void RendererSceneRenderRD::_setup_reflections(const PagedArray<RID> &p_reflecti
 	}
 }
 
-void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const Transform &p_camera_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count) {
-	Transform inverse_transform = p_camera_transform.affine_inverse();
+void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const Transform3D &p_camera_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count, bool &r_directional_light_soft_shadows) {
+	Transform3D inverse_transform = p_camera_transform.affine_inverse();
 
 	r_directional_light_count = 0;
 	r_positional_light_count = 0;
@@ -2371,6 +2553,8 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 	cluster.omni_light_count = 0;
 	cluster.spot_light_count = 0;
+
+	r_directional_light_soft_shadows = false;
 
 	for (int i = 0; i < (int)p_lights.size(); i++) {
 		LightInstance *li = light_instance_owner.getornull(p_lights[i]);
@@ -2387,7 +2571,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 				//	Copy to SkyDirectionalLightData
 				if (r_directional_light_count < sky.sky_scene_state.max_directional_lights) {
 					RendererSceneSkyRD::SkyDirectionalLightData &sky_light_data = sky.sky_scene_state.directional_lights[r_directional_light_count];
-					Transform light_transform = li->transform;
+					Transform3D light_transform = li->transform;
 					Vector3 world_direction = light_transform.basis.xform(Vector3(0, 0, 1)).normalized();
 
 					sky_light_data.direction[0] = world_direction.x;
@@ -2410,6 +2594,9 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 						// technically this will keep expanding until reaching the sun, but all we care
 						// is expand until we reach the radius of the near plane (there can't be more occluders than that)
 						angular_diameter = Math::tan(Math::deg2rad(angular_diameter));
+						if (storage->light_has_shadow(base)) {
+							r_directional_light_soft_shadows = true;
+						}
 					} else {
 						angular_diameter = 0.0;
 					}
@@ -2423,7 +2610,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 				Cluster::DirectionalLightData &light_data = cluster.directional_lights[r_directional_light_count];
 
-				Transform light_transform = li->transform;
+				Transform3D light_transform = li->transform;
 
 				Vector3 direction = inverse_transform.basis.xform(light_transform.basis.xform(Vector3(0, 0, 1))).normalized();
 
@@ -2513,7 +2700,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 						CameraMatrix rectm;
 						rectm.set_light_atlas_rect(atlas_rect);
 
-						Transform modelview = (inverse_transform * li->shadow_transform[j].transform).inverse();
+						Transform3D modelview = (inverse_transform * li->shadow_transform[j].transform).inverse();
 
 						CameraMatrix shadow_mtx = rectm * bias * matrix * modelview;
 						light_data.shadow_split_offsets[j] = split;
@@ -2602,6 +2789,8 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 		shadow_atlas = shadow_atlas_owner.getornull(p_shadow_atlas);
 	}
 
+	bool using_forward_ids = _uses_forward_ids();
+
 	for (uint32_t i = 0; i < (cluster.omni_light_count + cluster.spot_light_count); i++) {
 		uint32_t index = (i < cluster.omni_light_count) ? i : i - (cluster.omni_light_count);
 		Cluster::LightData &light_data = (i < cluster.omni_light_count) ? cluster.omni_lights[index] : cluster.spot_lights[index];
@@ -2609,7 +2798,11 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 		LightInstance *li = (i < cluster.omni_light_count) ? cluster.omni_light_sort[index].instance : cluster.spot_light_sort[index].instance;
 		RID base = li->light;
 
-		Transform light_transform = li->transform;
+		if (using_forward_ids) {
+			_map_forward_id(type == RS::LIGHT_OMNI ? FORWARD_ID_TYPE_OMNI_LIGHT : FORWARD_ID_TYPE_SPOT_LIGHT, li->forward_id, index);
+		}
+
+		Transform3D light_transform = li->transform;
 
 		float sign = storage->light_is_negative(base) ? -1 : 1;
 		Color linear_col = storage->light_get_color(base).to_linear();
@@ -2709,7 +2902,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 			if (type == RS::LIGHT_OMNI) {
 				light_data.atlas_rect[3] *= 0.5; //one paraboloid on top of another
-				Transform proj = (inverse_transform * light_transform).inverse();
+				Transform3D proj = (inverse_transform * light_transform).inverse();
 
 				RendererStorageRD::store_transform(proj, light_data.shadow_matrix);
 
@@ -2721,7 +2914,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 				}
 
 			} else if (type == RS::LIGHT_SPOT) {
-				Transform modelview = (inverse_transform * light_transform).inverse();
+				Transform3D modelview = (inverse_transform * light_transform).inverse();
 				CameraMatrix bias;
 				bias.set_light_bias();
 
@@ -2741,7 +2934,6 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 			light_data.shadow_enabled = false;
 		}
 
-		li->light_index = index;
 		li->cull_mask = storage->light_get_cull_mask(base);
 
 		if (current_cluster_builder != nullptr) {
@@ -2765,8 +2957,8 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 	}
 }
 
-void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const Transform &p_camera_inverse_xform) {
-	Transform uv_xform;
+void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const Transform3D &p_camera_inverse_xform) {
+	Transform3D uv_xform;
 	uv_xform.basis.scale(Vector3(2.0, 1.0, 2.0));
 	uv_xform.origin = Vector3(-1.0, 0.0, -1.0);
 
@@ -2785,7 +2977,7 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 		}
 		RID decal = di->decal;
 
-		Transform xform = di->transform;
+		Transform3D xform = di->transform;
 
 		real_t distance = -p_camera_inverse_xform.xform(xform.origin).z;
 
@@ -2810,14 +3002,18 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 		sort_array.sort(cluster.decal_sort, cluster.decal_count);
 	}
 
+	bool using_forward_ids = _uses_forward_ids();
 	for (uint32_t i = 0; i < cluster.decal_count; i++) {
 		DecalInstance *di = cluster.decal_sort[i].instance;
 		RID decal = di->decal;
 
-		di->render_index = i;
+		if (using_forward_ids) {
+			_map_forward_id(FORWARD_ID_TYPE_DECAL, di->forward_id, i);
+		}
+
 		di->cull_mask = storage->decal_get_cull_mask(decal);
 
-		Transform xform = di->transform;
+		Transform3D xform = di->transform;
 		float fade = 1.0;
 
 		if (storage->decal_is_distance_fade_enabled(decal)) {
@@ -2834,9 +3030,9 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 
 		Vector3 decal_extents = storage->decal_get_extents(decal);
 
-		Transform scale_xform;
+		Transform3D scale_xform;
 		scale_xform.basis.scale(Vector3(decal_extents.x, decal_extents.y, decal_extents.z));
-		Transform to_decal_xform = (p_camera_inverse_xform * di->transform * scale_xform * uv_xform).affine_inverse();
+		Transform3D to_decal_xform = (p_camera_inverse_xform * di->transform * scale_xform * uv_xform).affine_inverse();
 		RendererStorageRD::store_transform(to_decal_xform, dd.xform);
 
 		Vector3 normal = xform.basis.get_axis(Vector3::AXIS_Y).normalized();
@@ -2931,116 +3127,6 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 	}
 }
 
-void RendererSceneRenderRD::_fill_instance_indices(const RID *p_omni_light_instances, uint32_t p_omni_light_instance_count, uint32_t *p_omni_light_indices, const RID *p_spot_light_instances, uint32_t p_spot_light_instance_count, uint32_t *p_spot_light_indices, const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count, uint32_t *p_reflection_probe_indices, const RID *p_decal_instances, uint32_t p_decal_instance_count, uint32_t *p_decal_instance_indices, uint32_t p_layer_mask, uint32_t p_max_dst_words) {
-	// first zero out our indices
-	for (uint32_t i = 0; i < p_max_dst_words; i++) {
-		p_omni_light_indices[i] = 0;
-		p_spot_light_indices[i] = 0;
-		p_reflection_probe_indices[i] = 0;
-		p_decal_instance_indices[i] = 0;
-	}
-
-	{
-		// process omni lights
-		uint32_t dword = 0;
-		uint32_t shift = 0;
-
-		for (uint32_t i = 0; i < p_omni_light_instance_count && dword < p_max_dst_words; i++) {
-			LightInstance *li = light_instance_owner.getornull(p_omni_light_instances[i]);
-
-			if ((li->cull_mask & p_layer_mask) && (li->light_index < 255)) {
-				p_omni_light_indices[dword] += li->light_index << shift;
-				if (shift == 24) {
-					dword++;
-					shift = 0;
-				} else {
-					shift += 8;
-				}
-			}
-		}
-
-		if (dword < 2) {
-			// put in ending mark
-			p_omni_light_indices[dword] += 0xFF << shift;
-		}
-	}
-
-	{
-		// process spot lights
-		uint32_t dword = 0;
-		uint32_t shift = 0;
-
-		for (uint32_t i = 0; i < p_spot_light_instance_count && dword < p_max_dst_words; i++) {
-			LightInstance *li = light_instance_owner.getornull(p_spot_light_instances[i]);
-
-			if ((li->cull_mask & p_layer_mask) && (li->light_index < 255)) {
-				p_spot_light_indices[dword] += li->light_index << shift;
-				if (shift == 24) {
-					dword++;
-					shift = 0;
-				} else {
-					shift += 8;
-				}
-			}
-		}
-
-		if (dword < 2) {
-			// put in ending mark
-			p_spot_light_indices[dword] += 0xFF << shift;
-		}
-	}
-
-	{
-		// process reflection probes
-		uint32_t dword = 0;
-		uint32_t shift = 0;
-
-		for (uint32_t i = 0; i < p_reflection_probe_instance_count && dword < p_max_dst_words; i++) {
-			ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_reflection_probe_instances[i]);
-
-			if ((rpi->cull_mask & p_layer_mask) && (rpi->render_index < 255)) {
-				p_reflection_probe_indices[dword] += rpi->render_index << shift;
-				if (shift == 24) {
-					dword++;
-					shift = 0;
-				} else {
-					shift += 8;
-				}
-			}
-		}
-
-		if (dword < 2) {
-			// put in ending mark
-			p_reflection_probe_indices[dword] += 0xFF << shift;
-		}
-	}
-
-	{
-		// process decals
-		uint32_t dword = 0;
-		uint32_t shift = 0;
-
-		for (uint32_t i = 0; i < p_decal_instance_count && dword < p_max_dst_words; i++) {
-			DecalInstance *decal = decal_instance_owner.getornull(p_decal_instances[i]);
-
-			if ((decal->cull_mask & p_layer_mask) && (decal->render_index < 255)) {
-				p_decal_instance_indices[dword] += decal->render_index << shift;
-				if (shift == 24) {
-					dword++;
-					shift = 0;
-				} else {
-					shift += 8;
-				}
-			}
-		}
-
-		if (dword < 2) {
-			// put in ending mark
-			p_decal_instance_indices[dword] += 0xFF << shift;
-		}
-	}
-}
-
 void RendererSceneRenderRD::_volumetric_fog_erase(RenderBuffers *rb) {
 	ERR_FAIL_COND(!rb->volumetric_fog);
 
@@ -3066,7 +3152,7 @@ void RendererSceneRenderRD::_volumetric_fog_erase(RenderBuffers *rb) {
 	rb->volumetric_fog = nullptr;
 }
 
-void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_gi_probe_count) {
+void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_environment, const CameraMatrix &p_cam_projection, const Transform3D &p_cam_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count) {
 	ERR_FAIL_COND(!is_clustered_enabled()); // can't use volumetric fog without clustered
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
 	ERR_FAIL_COND(!rb);
@@ -3228,7 +3314,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 			u.binding = 11;
-			u.ids.push_back(render_buffers_get_gi_probe_buffer(p_render_buffers));
+			u.ids.push_back(render_buffers_get_voxel_gi_buffer(p_render_buffers));
 			uniforms.push_back(u);
 		}
 
@@ -3236,8 +3322,8 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 12;
-			for (int i = 0; i < RendererSceneGIRD::MAX_GIPROBES; i++) {
-				u.ids.push_back(rb->gi.giprobe_textures[i]);
+			for (int i = 0; i < RendererSceneGIRD::MAX_VOXEL_GI_INSTANCES; i++) {
+				u.ids.push_back(rb->gi.voxel_gi_textures[i]);
 			}
 			uniforms.push_back(u);
 		}
@@ -3362,10 +3448,10 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 	params.cam_rotation[10] = p_cam_transform.basis[2][2];
 	params.cam_rotation[11] = 0;
 	params.filter_axis = 0;
-	params.max_gi_probes = env->volumetric_fog_gi_inject > 0.001 ? p_gi_probe_count : 0;
+	params.max_voxel_gi_instances = env->volumetric_fog_gi_inject > 0.001 ? p_voxel_gi_count : 0;
 	params.temporal_frame = RSG::rasterizer->get_frame_number() % VolumetricFog::MAX_TEMPORAL_FRAMES;
 
-	Transform to_prev_cam_view = rb->volumetric_fog->prev_cam_transform.affine_inverse() * p_cam_transform;
+	Transform3D to_prev_cam_view = rb->volumetric_fog->prev_cam_transform.affine_inverse() * p_cam_transform;
 	storage->store_transform(to_prev_cam_view, params.to_prev_view);
 
 	params.use_temporal_reprojection = env->volumetric_fog_temporal_reprojection;
@@ -3492,17 +3578,15 @@ void RendererSceneRenderRD::_pre_resolve_render(RenderDataRD *p_render_data, boo
 	}
 }
 
-void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_gi, RID p_normal_roughness_buffer, RID p_gi_probe_buffer) {
+void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_gi, RID p_normal_roughness_buffer, RID p_voxel_gi_buffer) {
 	// Render shadows while GI is rendering, due to how barriers are handled, this should happen at the same time
 
 	if (p_render_data->render_buffers.is_valid() && p_use_gi) {
 		RenderBuffers *rb = render_buffers_owner.getornull(p_render_data->render_buffers);
 		ERR_FAIL_COND(rb == nullptr);
-		if (rb->sdfgi == nullptr) {
-			return;
+		if (rb->sdfgi != nullptr) {
+			rb->sdfgi->store_probes();
 		}
-
-		rb->sdfgi->store_probes();
 	}
 
 	render_state.cube_shadows.clear();
@@ -3511,7 +3595,6 @@ void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool
 
 	Plane camera_plane(p_render_data->cam_transform.origin, -p_render_data->cam_transform.basis.get_axis(Vector3::AXIS_Z));
 	float lod_distance_multiplier = p_render_data->cam_projection.get_lod_multiplier();
-
 	{
 		for (int i = 0; i < render_state.render_shadow_count; i++) {
 			LightInstance *li = light_instance_owner.getornull(render_state.render_shadows[i].light);
@@ -3527,7 +3610,7 @@ void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool
 
 		//cube shadows are rendered in their own way
 		for (uint32_t i = 0; i < render_state.cube_shadows.size(); i++) {
-			_render_shadow_pass(render_state.render_shadows[render_state.cube_shadows[i]].light, p_render_data->shadow_atlas, render_state.render_shadows[render_state.cube_shadows[i]].pass, render_state.render_shadows[render_state.cube_shadows[i]].instances, camera_plane, lod_distance_multiplier, p_render_data->screen_lod_threshold, true, true, true);
+			_render_shadow_pass(render_state.render_shadows[render_state.cube_shadows[i]].light, p_render_data->shadow_atlas, render_state.render_shadows[render_state.cube_shadows[i]].pass, render_state.render_shadows[render_state.cube_shadows[i]].instances, camera_plane, lod_distance_multiplier, p_render_data->screen_lod_threshold, true, true, true, p_render_data->render_info);
 		}
 
 		if (render_state.directional_shadows.size()) {
@@ -3557,11 +3640,11 @@ void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool
 
 		//render directional shadows
 		for (uint32_t i = 0; i < render_state.directional_shadows.size(); i++) {
-			_render_shadow_pass(render_state.render_shadows[render_state.directional_shadows[i]].light, p_render_data->shadow_atlas, render_state.render_shadows[render_state.directional_shadows[i]].pass, render_state.render_shadows[render_state.directional_shadows[i]].instances, camera_plane, lod_distance_multiplier, p_render_data->screen_lod_threshold, false, i == render_state.directional_shadows.size() - 1, false);
+			_render_shadow_pass(render_state.render_shadows[render_state.directional_shadows[i]].light, p_render_data->shadow_atlas, render_state.render_shadows[render_state.directional_shadows[i]].pass, render_state.render_shadows[render_state.directional_shadows[i]].instances, camera_plane, lod_distance_multiplier, p_render_data->screen_lod_threshold, false, i == render_state.directional_shadows.size() - 1, false, p_render_data->render_info);
 		}
 		//render positional shadows
 		for (uint32_t i = 0; i < render_state.shadows.size(); i++) {
-			_render_shadow_pass(render_state.render_shadows[render_state.shadows[i]].light, p_render_data->shadow_atlas, render_state.render_shadows[render_state.shadows[i]].pass, render_state.render_shadows[render_state.shadows[i]].instances, camera_plane, lod_distance_multiplier, p_render_data->screen_lod_threshold, i == 0, i == render_state.shadows.size() - 1, true);
+			_render_shadow_pass(render_state.render_shadows[render_state.shadows[i]].light, p_render_data->shadow_atlas, render_state.render_shadows[render_state.shadows[i]].pass, render_state.render_shadows[render_state.shadows[i]].instances, camera_plane, lod_distance_multiplier, p_render_data->screen_lod_threshold, i == 0, i == render_state.shadows.size() - 1, true, p_render_data->render_info);
 		}
 
 		_render_shadow_process();
@@ -3569,7 +3652,7 @@ void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool
 
 	//start GI
 	if (render_gi) {
-		gi.process_gi(p_render_data->render_buffers, p_normal_roughness_buffer, p_gi_probe_buffer, p_render_data->environment, p_render_data->cam_projection, p_render_data->cam_transform, *p_render_data->gi_probes, this);
+		gi.process_gi(p_render_data->render_buffers, p_normal_roughness_buffer, p_voxel_gi_buffer, p_render_data->environment, p_render_data->cam_projection, p_render_data->cam_transform, *p_render_data->voxel_gi_instances, this);
 	}
 
 	//Do shadow rendering (in parallel with GI)
@@ -3607,7 +3690,7 @@ void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool
 
 	uint32_t directional_light_count = 0;
 	uint32_t positional_light_count = 0;
-	_setup_lights(*p_render_data->lights, p_render_data->cam_transform, p_render_data->shadow_atlas, using_shadows, directional_light_count, positional_light_count);
+	_setup_lights(*p_render_data->lights, p_render_data->cam_transform, p_render_data->shadow_atlas, using_shadows, directional_light_count, positional_light_count, p_render_data->directional_light_soft_shadows);
 	_setup_decals(*p_render_data->decals, p_render_data->cam_transform.affine_inverse());
 
 	p_render_data->directional_light_count = directional_light_count;
@@ -3625,12 +3708,12 @@ void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool
 			}
 		}
 		if (is_volumetric_supported()) {
-			_update_volumetric_fog(p_render_data->render_buffers, p_render_data->environment, p_render_data->cam_projection, p_render_data->cam_transform, p_render_data->shadow_atlas, directional_light_count, directional_shadows, positional_light_count, render_state.gi_probe_count);
+			_update_volumetric_fog(p_render_data->render_buffers, p_render_data->environment, p_render_data->cam_projection, p_render_data->cam_transform, p_render_data->shadow_atlas, directional_light_count, directional_shadows, positional_light_count, render_state.voxel_gi_count);
 		}
 	}
 }
 
-void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_gi_probes, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data) {
+void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData *p_camera_data, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data, RendererScene::RenderInfo *r_render_info) {
 	// getting this here now so we can direct call a bunch of things more easily
 	RenderBuffers *rb = nullptr;
 	if (p_render_buffers.is_valid()) {
@@ -3643,16 +3726,24 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform &
 	{
 		render_data.render_buffers = p_render_buffers;
 
-		render_data.cam_transform = p_cam_transform;
-		render_data.cam_projection = p_cam_projection;
-		render_data.cam_ortogonal = p_cam_projection.is_orthogonal(); // !BAS! Shouldn't this be p_cam_ortogonal ?
-		render_data.z_near = p_cam_projection.get_z_near();
-		render_data.z_far = p_cam_projection.get_z_far();
+		// Our first camera is used by default
+		render_data.cam_transform = p_camera_data->main_transform;
+		render_data.cam_projection = p_camera_data->main_projection;
+		render_data.view_projection[0] = p_camera_data->main_projection;
+		render_data.cam_ortogonal = p_camera_data->is_ortogonal;
+
+		render_data.view_count = p_camera_data->view_count;
+		for (uint32_t v = 0; v < p_camera_data->view_count; v++) {
+			render_data.view_projection[v] = p_camera_data->view_projection[v];
+		}
+
+		render_data.z_near = p_camera_data->main_projection.get_z_near();
+		render_data.z_far = p_camera_data->main_projection.get_z_far();
 
 		render_data.instances = &p_instances;
 		render_data.lights = &p_lights;
 		render_data.reflection_probes = &p_reflection_probes;
-		render_data.gi_probes = &p_gi_probes;
+		render_data.voxel_gi_instances = &p_voxel_gi_instances;
 		render_data.decals = &p_decals;
 		render_data.lightmaps = &p_lightmaps;
 		render_data.environment = p_environment;
@@ -3662,8 +3753,9 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform &
 		render_data.reflection_probe = p_reflection_probe;
 		render_data.reflection_probe_pass = p_reflection_probe_pass;
 
-		render_data.lod_distance_multiplier = p_cam_projection.get_lod_multiplier();
-		render_data.lod_camera_plane = Plane(p_cam_transform.get_origin(), -p_cam_transform.basis.get_axis(Vector3::AXIS_Z));
+		// this should be the same for all cameras..
+		render_data.lod_distance_multiplier = p_camera_data->main_projection.get_lod_multiplier();
+		render_data.lod_camera_plane = Plane(p_camera_data->main_transform.get_origin(), -p_camera_data->main_transform.basis.get_axis(Vector3::AXIS_Z));
 
 		if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DISABLE_LOD) {
 			render_data.screen_lod_threshold = 0.0;
@@ -3676,6 +3768,7 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform &
 		render_state.render_sdfgi_regions = p_render_sdfgi_regions;
 		render_state.render_sdfgi_region_count = p_render_sdfgi_region_count;
 		render_state.sdfgi_update_data = p_sdfgi_update_data;
+		render_data.render_info = r_render_info;
 	}
 
 	PagedArray<RID> empty;
@@ -3683,7 +3776,7 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform &
 	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UNSHADED) {
 		render_data.lights = &empty;
 		render_data.reflection_probes = &empty;
-		render_data.gi_probes = &empty;
+		render_data.voxel_gi_instances = &empty;
 	}
 
 	//sdfgi first
@@ -3703,12 +3796,12 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform &
 		clear_color = storage->get_default_clear_color();
 	}
 
-	//assign render indices to giprobes
+	//assign render indices to voxel_gi_instances
 	if (is_dynamic_gi_supported()) {
-		for (uint32_t i = 0; i < (uint32_t)p_gi_probes.size(); i++) {
-			RendererSceneGIRD::GIProbeInstance *giprobe_inst = gi.gi_probe_instance_owner.getornull(p_gi_probes[i]);
-			if (giprobe_inst) {
-				giprobe_inst->render_index = i;
+		for (uint32_t i = 0; i < (uint32_t)p_voxel_gi_instances.size(); i++) {
+			RendererSceneGIRD::VoxelGIInstance *voxel_gi_inst = gi.voxel_gi_instance_owner.getornull(p_voxel_gi_instances[i]);
+			if (voxel_gi_inst) {
+				voxel_gi_inst->render_index = i;
 			}
 		}
 	}
@@ -3730,17 +3823,16 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform &
 		current_cluster_builder = nullptr;
 	}
 
-	if (rb != nullptr && rb->sdfgi != nullptr) {
-		rb->sdfgi->update_cascades();
+	render_state.voxel_gi_count = 0;
 
-		rb->sdfgi->pre_process_gi(p_cam_transform, &render_data, this);
-	}
+	if (rb != nullptr) {
+		if (rb->sdfgi) {
+			rb->sdfgi->update_cascades();
+			rb->sdfgi->pre_process_gi(render_data.cam_transform, &render_data, this);
+			rb->sdfgi->update_light();
+		}
 
-	render_state.gi_probe_count = 0;
-	if (rb != nullptr && rb->sdfgi != nullptr) {
-		gi.setup_giprobes(render_data.render_buffers, render_data.cam_transform, *render_data.gi_probes, render_state.gi_probe_count, this);
-
-		rb->sdfgi->update_light();
+		gi.setup_voxel_gi_instances(render_data.render_buffers, render_data.cam_transform, *render_data.voxel_gi_instances, render_state.voxel_gi_count, this);
 	}
 
 	render_state.depth_prepass_used = false;
@@ -3782,12 +3874,12 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform &
 		_render_buffers_post_process_and_tonemap(&render_data);
 		_render_buffers_debug_draw(p_render_buffers, p_shadow_atlas, p_occluder_debug_tex);
 		if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_SDFGI && rb != nullptr && rb->sdfgi != nullptr) {
-			rb->sdfgi->debug_draw(p_cam_projection, p_cam_transform, rb->width, rb->height, rb->render_target, rb->texture);
+			rb->sdfgi->debug_draw(render_data.cam_projection, render_data.cam_transform, rb->width, rb->height, rb->render_target, rb->texture);
 		}
 	}
 }
 
-void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas, int p_pass, const PagedArray<GeometryInstance *> &p_instances, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_lod_threshold, bool p_open_pass, bool p_close_pass, bool p_clear_region) {
+void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas, int p_pass, const PagedArray<GeometryInstance *> &p_instances, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_lod_threshold, bool p_open_pass, bool p_close_pass, bool p_clear_region, RendererScene::RenderInfo *p_render_info) {
 	LightInstance *light_instance = light_instance_owner.getornull(p_light);
 	ERR_FAIL_COND(!light_instance);
 
@@ -3808,7 +3900,7 @@ void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas,
 	bool flip_y = false;
 
 	CameraMatrix light_projection;
-	Transform light_transform;
+	Transform3D light_transform;
 
 	if (storage->light_get_type(light_instance->light) == RS::LIGHT_DIRECTIONAL) {
 		//set pssm stuff
@@ -3933,7 +4025,7 @@ void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas,
 
 	if (render_cubemap) {
 		//rendering to cubemap
-		_render_shadow_append(render_fb, p_instances, light_projection, light_transform, zfar, 0, 0, false, false, use_pancake, p_camera_plane, p_lod_distance_multiplier, p_screen_lod_threshold, Rect2(), false, true, true, true);
+		_render_shadow_append(render_fb, p_instances, light_projection, light_transform, zfar, 0, 0, false, false, use_pancake, p_camera_plane, p_lod_distance_multiplier, p_screen_lod_threshold, Rect2(), false, true, true, true, p_render_info);
 		if (finalize_cubemap) {
 			_render_shadow_process();
 			_render_shadow_end();
@@ -3954,15 +4046,15 @@ void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas,
 
 	} else {
 		//render shadow
-		_render_shadow_append(render_fb, p_instances, light_projection, light_transform, zfar, 0, 0, using_dual_paraboloid, using_dual_paraboloid_flip, use_pancake, p_camera_plane, p_lod_distance_multiplier, p_screen_lod_threshold, atlas_rect, flip_y, p_clear_region, p_open_pass, p_close_pass);
+		_render_shadow_append(render_fb, p_instances, light_projection, light_transform, zfar, 0, 0, using_dual_paraboloid, using_dual_paraboloid_flip, use_pancake, p_camera_plane, p_lod_distance_multiplier, p_screen_lod_threshold, atlas_rect, flip_y, p_clear_region, p_open_pass, p_close_pass, p_render_info);
 	}
 }
 
-void RendererSceneRenderRD::render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
+void RendererSceneRenderRD::render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
 	_render_material(p_cam_transform, p_cam_projection, p_cam_ortogonal, p_instances, p_framebuffer, p_region);
 }
 
-void RendererSceneRenderRD::render_particle_collider_heightfield(RID p_collider, const Transform &p_transform, const PagedArray<GeometryInstance *> &p_instances) {
+void RendererSceneRenderRD::render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<GeometryInstance *> &p_instances) {
 	ERR_FAIL_COND(!storage->particles_collision_is_heightfield(p_collider));
 	Vector3 extents = storage->particles_collision_get_extents(p_collider) * p_transform.basis.get_scale();
 	CameraMatrix cm;
@@ -3971,7 +4063,7 @@ void RendererSceneRenderRD::render_particle_collider_heightfield(RID p_collider,
 	Vector3 cam_pos = p_transform.origin;
 	cam_pos.y += extents.y;
 
-	Transform cam_xform;
+	Transform3D cam_xform;
 	cam_xform.set_look_at(cam_pos, cam_pos - p_transform.basis.get_axis(Vector3::AXIS_Y), -p_transform.basis.get_axis(Vector3::AXIS_Z).normalized());
 
 	RID fb = storage->particles_collision_get_heightfield_framebuffer(p_collider);
@@ -4010,27 +4102,29 @@ bool RendererSceneRenderRD::free(RID p_rid) {
 		}
 		reflection_atlas_owner.free(p_rid);
 	} else if (reflection_probe_instance_owner.owns(p_rid)) {
-		//not much to delete, just free it
-		//ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_rid);
+		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_rid);
+		_free_forward_id(FORWARD_ID_TYPE_REFLECTION_PROBE, rpi->forward_id);
 		reflection_probe_release_atlas_index(p_rid);
 		reflection_probe_instance_owner.free(p_rid);
 	} else if (decal_instance_owner.owns(p_rid)) {
+		DecalInstance *di = decal_instance_owner.getornull(p_rid);
+		_free_forward_id(FORWARD_ID_TYPE_DECAL, di->forward_id);
 		decal_instance_owner.free(p_rid);
 	} else if (lightmap_instance_owner.owns(p_rid)) {
 		lightmap_instance_owner.free(p_rid);
-	} else if (gi.gi_probe_instance_owner.owns(p_rid)) {
-		RendererSceneGIRD::GIProbeInstance *gi_probe = gi.gi_probe_instance_owner.getornull(p_rid);
-		if (gi_probe->texture.is_valid()) {
-			RD::get_singleton()->free(gi_probe->texture);
-			RD::get_singleton()->free(gi_probe->write_buffer);
+	} else if (gi.voxel_gi_instance_owner.owns(p_rid)) {
+		RendererSceneGIRD::VoxelGIInstance *voxel_gi = gi.voxel_gi_instance_owner.getornull(p_rid);
+		if (voxel_gi->texture.is_valid()) {
+			RD::get_singleton()->free(voxel_gi->texture);
+			RD::get_singleton()->free(voxel_gi->write_buffer);
 		}
 
-		for (int i = 0; i < gi_probe->dynamic_maps.size(); i++) {
-			RD::get_singleton()->free(gi_probe->dynamic_maps[i].texture);
-			RD::get_singleton()->free(gi_probe->dynamic_maps[i].depth);
+		for (int i = 0; i < voxel_gi->dynamic_maps.size(); i++) {
+			RD::get_singleton()->free(voxel_gi->dynamic_maps[i].texture);
+			RD::get_singleton()->free(voxel_gi->dynamic_maps[i].depth);
 		}
 
-		gi.gi_probe_instance_owner.free(p_rid);
+		gi.voxel_gi_instance_owner.free(p_rid);
 	} else if (sky.sky_owner.owns(p_rid)) {
 		sky.update_dirty_skys();
 		sky.free_sky(p_rid);
@@ -4049,6 +4143,9 @@ bool RendererSceneRenderRD::free(RID p_rid) {
 			shadow_atlas->shadow_owners.erase(p_rid);
 		}
 
+		if (light_instance->light_type != RS::LIGHT_DIRECTIONAL) {
+			_free_forward_id(light_instance->light_type == RS::LIGHT_OMNI ? FORWARD_ID_TYPE_OMNI_LIGHT : FORWARD_ID_TYPE_SPOT_LIGHT, light_instance->forward_id);
+		}
 		light_instance_owner.free(p_rid);
 
 	} else if (shadow_atlas_owner.owns(p_rid)) {
@@ -4153,7 +4250,7 @@ TypedArray<Image> RendererSceneRenderRD::bake_render_uv2(RID p_base, const Vecto
 	{
 		PackedByteArray data = RD::get_singleton()->texture_get_data(albedo_alpha_tex, 0);
 		Ref<Image> img;
-		img.instance();
+		img.instantiate();
 		img->create(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBA8, data);
 		RD::get_singleton()->free(albedo_alpha_tex);
 		ret.push_back(img);
@@ -4162,7 +4259,7 @@ TypedArray<Image> RendererSceneRenderRD::bake_render_uv2(RID p_base, const Vecto
 	{
 		PackedByteArray data = RD::get_singleton()->texture_get_data(normal_tex, 0);
 		Ref<Image> img;
-		img.instance();
+		img.instantiate();
 		img->create(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBA8, data);
 		RD::get_singleton()->free(normal_tex);
 		ret.push_back(img);
@@ -4171,7 +4268,7 @@ TypedArray<Image> RendererSceneRenderRD::bake_render_uv2(RID p_base, const Vecto
 	{
 		PackedByteArray data = RD::get_singleton()->texture_get_data(orm_tex, 0);
 		Ref<Image> img;
-		img.instance();
+		img.instantiate();
 		img->create(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBA8, data);
 		RD::get_singleton()->free(orm_tex);
 		ret.push_back(img);
@@ -4180,7 +4277,7 @@ TypedArray<Image> RendererSceneRenderRD::bake_render_uv2(RID p_base, const Vecto
 	{
 		PackedByteArray data = RD::get_singleton()->texture_get_data(emission_tex, 0);
 		Ref<Image> img;
-		img.instance();
+		img.instantiate();
 		img->create(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBAH, data);
 		RD::get_singleton()->free(emission_tex);
 		ret.push_back(img);
@@ -4337,6 +4434,9 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 
 	environment_set_volumetric_fog_volume_size(GLOBAL_GET("rendering/environment/volumetric_fog/volume_size"), GLOBAL_GET("rendering/environment/volumetric_fog/volume_depth"));
 	environment_set_volumetric_fog_filter_active(GLOBAL_GET("rendering/environment/volumetric_fog/use_filter"));
+
+	decals_set_filter(RS::DecalFilter(int(GLOBAL_GET("rendering/textures/decals/filter"))));
+	light_projectors_set_filter(RS::LightProjectorFilter(int(GLOBAL_GET("rendering/textures/light_projectors/filter"))));
 
 	cull_argument.set_page_pool(&cull_argument_pool);
 }

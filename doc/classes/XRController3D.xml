@@ -13,54 +13,45 @@
 	</tutorials>
 	<methods>
 		<method name="get_controller_name" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				If active, returns the name of the associated controller if provided by the AR/VR SDK used.
 			</description>
 		</method>
 		<method name="get_is_active" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the bound controller is active. XR systems attempt to track active controllers.
 			</description>
 		</method>
 		<method name="get_joystick_axis" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="axis" type="int">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="axis" type="int" />
 			<description>
 				Returns the value of the given axis for things like triggers, touchpads, etc. that are embedded into the controller.
 			</description>
 		</method>
 		<method name="get_joystick_id" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the ID of the joystick object bound to this. Every controller tracked by the [XRServer] that has buttons and axis will also be registered as a joystick within Godot. This means that all the normal joystick tracking and input mapping will work for buttons and axis found on the AR/VR controllers. This ID is purely offered as information so you can link up the controller with its joystick entry.
 			</description>
 		</method>
 		<method name="get_mesh" qualifiers="const">
-			<return type="Mesh">
-			</return>
+			<return type="Mesh" />
 			<description>
 				If provided by the [XRInterface], this returns a mesh associated with the controller. This can be used to visualize the controller.
 			</description>
 		</method>
 		<method name="get_tracker_hand" qualifiers="const">
-			<return type="int" enum="XRPositionalTracker.TrackerHand">
-			</return>
+			<return type="int" enum="XRPositionalTracker.TrackerHand" />
 			<description>
 				Returns the hand holding this controller, if known. See [enum XRPositionalTracker.TrackerHand].
 			</description>
 		</method>
 		<method name="is_button_pressed" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="button" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="button" type="int" />
 			<description>
 				Returns [code]true[/code] if the button at index [code]button[/code] is pressed. See [enum JoyButton].
 			</description>
@@ -80,22 +71,19 @@
 	</members>
 	<signals>
 		<signal name="button_pressed">
-			<argument index="0" name="button" type="int">
-			</argument>
+			<argument index="0" name="button" type="int" />
 			<description>
 				Emitted when a button on this controller is pressed.
 			</description>
 		</signal>
 		<signal name="button_released">
-			<argument index="0" name="button" type="int">
-			</argument>
+			<argument index="0" name="button" type="int" />
 			<description>
 				Emitted when a button on this controller is released.
 			</description>
 		</signal>
 		<signal name="mesh_updated">
-			<argument index="0" name="mesh" type="Mesh">
-			</argument>
+			<argument index="0" name="mesh" type="Mesh" />
 			<description>
 				Emitted when the mesh associated with the controller changes or when one becomes available. Generally speaking this will be a static mesh after becoming available.
 			</description>

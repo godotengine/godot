@@ -55,6 +55,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	CodeTextEditor *code_editor = nullptr;
 	RichTextLabel *warnings_panel = nullptr;
+	RichTextLabel *errors_panel = nullptr;
 
 	Ref<Script> script;
 	bool script_is_valid = false;
@@ -116,7 +117,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 		EDIT_INDENT_RIGHT,
 		EDIT_INDENT_LEFT,
 		EDIT_DELETE_LINE,
-		EDIT_CLONE_DOWN,
+		EDIT_DUPLICATE_SELECTION,
 		EDIT_PICK_COLOR,
 		EDIT_TO_UPPERCASE,
 		EDIT_TO_LOWERCASE,
@@ -161,7 +162,9 @@ protected:
 
 	void _load_theme_settings();
 	void _set_theme_for_script();
+	void _show_errors_panel(bool p_show);
 	void _show_warnings_panel(bool p_show);
+	void _error_clicked(Variant p_line);
 	void _warning_clicked(Variant p_line);
 
 	void _notification(int p_what);
@@ -233,6 +236,8 @@ public:
 
 	Control *get_edit_menu() override;
 	virtual void clear_edit_menu() override;
+	virtual void set_find_replace_bar(FindReplaceBar *p_bar) override;
+
 	static void register_editor();
 
 	virtual Control *get_base_editor() const override;

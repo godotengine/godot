@@ -180,6 +180,7 @@ public:
 				TYPE_PARTICLES,
 				TYPE_TRANSFORM,
 				TYPE_CLIP_IGNORE,
+				TYPE_ANIMATION_SLICE,
 			};
 
 			Command *next;
@@ -283,6 +284,17 @@ public:
 			CommandClipIgnore() {
 				type = TYPE_CLIP_IGNORE;
 				ignore = false;
+			}
+		};
+
+		struct CommandAnimationSlice : public Command {
+			double animation_length = 0;
+			double slice_begin = 0;
+			double slice_end = 0;
+			double offset = 0;
+
+			CommandAnimationSlice() {
+				type = TYPE_ANIMATION_SLICE;
 			}
 		};
 
@@ -420,7 +432,6 @@ public:
 
 				if (found_xform) {
 					r = xf.xform(r);
-					found_xform = false;
 				}
 
 				if (first) {
@@ -596,8 +607,6 @@ public:
 	virtual void occluder_polygon_set_shape(RID p_occluder, const Vector<Vector2> &p_points, bool p_closed) = 0;
 	virtual void occluder_polygon_set_cull_mode(RID p_occluder, RS::CanvasOccluderPolygonCullMode p_mode) = 0;
 	virtual void set_shadow_texture_size(int p_size) = 0;
-
-	virtual void draw_window_margins(int *p_margins, RID *p_margin_textures) = 0;
 
 	virtual bool free(RID p_rid) = 0;
 	virtual void update() = 0;

@@ -59,7 +59,7 @@ void ImageLoaderPNG::get_recognized_extensions(List<String> *p_extensions) const
 
 Ref<Image> ImageLoaderPNG::load_mem_png(const uint8_t *p_png, int p_size) {
 	Ref<Image> img;
-	img.instance();
+	img.instantiate();
 
 	// the value of p_force_linear does not matter since it only applies to 16 bit
 	Error err = PNGDriverCommon::png_to_image(p_png, p_size, false, img);
@@ -101,6 +101,6 @@ Vector<uint8_t> ImageLoaderPNG::lossless_pack_png(const Ref<Image> &p_image) {
 
 ImageLoaderPNG::ImageLoaderPNG() {
 	Image::_png_mem_loader_func = load_mem_png;
-	Image::lossless_unpacker = lossless_unpack_png;
-	Image::lossless_packer = lossless_pack_png;
+	Image::png_unpacker = lossless_unpack_png;
+	Image::png_packer = lossless_pack_png;
 }

@@ -37,7 +37,7 @@
 
 void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
 	if (get_script_instance()) {
-		Array parameters = get_script_instance()->call("get_parameter_list");
+		Array parameters = get_script_instance()->call("_get_parameter_list");
 		for (int i = 0; i < parameters.size(); i++) {
 			Dictionary d = parameters[i];
 			ERR_CONTINUE(d.is_empty());
@@ -48,7 +48,7 @@ void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
 
 Variant AnimationNode::get_parameter_default_value(const StringName &p_parameter) const {
 	if (get_script_instance()) {
-		return get_script_instance()->call("get_parameter_default_value", p_parameter);
+		return get_script_instance()->call("_get_parameter_default_value", p_parameter);
 	}
 	return Variant();
 }
@@ -73,13 +73,13 @@ Variant AnimationNode::get_parameter(const StringName &p_name) const {
 
 void AnimationNode::get_child_nodes(List<ChildNode> *r_child_nodes) {
 	if (get_script_instance()) {
-		Dictionary cn = get_script_instance()->call("get_child_nodes");
+		Dictionary cn = get_script_instance()->call("_get_child_nodes");
 		List<Variant> keys;
 		cn.get_key_list(&keys);
-		for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+		for (const Variant &E : keys) {
 			ChildNode child;
-			child.name = E->get();
-			child.node = cn[E->get()];
+			child.name = E;
+			child.node = cn[E];
 			r_child_nodes->push_back(child);
 		}
 	}
@@ -137,7 +137,7 @@ void AnimationNode::make_invalid(const String &p_reason) {
 	if (state->invalid_reasons != String()) {
 		state->invalid_reasons += "\n";
 	}
-	state->invalid_reasons += "- " + p_reason;
+	state->invalid_reasons += String::utf8("•  ") + p_reason;
 }
 
 float AnimationNode::blend_input(int p_input, float p_time, bool p_seek, float p_blend, FilterAction p_filter, bool p_optimize) {
@@ -299,7 +299,7 @@ String AnimationNode::get_input_name(int p_input) {
 
 String AnimationNode::get_caption() const {
 	if (get_script_instance()) {
-		return get_script_instance()->call("get_caption");
+		return get_script_instance()->call("_get_caption");
 	}
 
 	return "Node";
@@ -330,7 +330,7 @@ void AnimationNode::remove_input(int p_index) {
 
 float AnimationNode::process(float p_time, bool p_seek) {
 	if (get_script_instance()) {
-		return get_script_instance()->call("process", p_time, p_seek);
+		return get_script_instance()->call("_process", p_time, p_seek);
 	}
 
 	return 0;
@@ -357,6 +357,10 @@ bool AnimationNode::is_path_filtered(const NodePath &p_path) const {
 }
 
 bool AnimationNode::has_filter() const {
+	if (get_script_instance()) {
+		return get_script_instance()->call("_has_filter");
+	}
+
 	return false;
 }
 
@@ -381,13 +385,13 @@ void AnimationNode::_set_filters(const Array &p_filters) {
 
 void AnimationNode::_validate_property(PropertyInfo &property) const {
 	if (!has_filter() && (property.name == "filter_enabled" || property.name == "filters")) {
-		property.usage = 0;
+		property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 
 Ref<AnimationNode> AnimationNode::get_child_by_name(const StringName &p_name) {
 	if (get_script_instance()) {
-		return get_script_instance()->call("get_child_by_name", p_name);
+		return get_script_instance()->call("_get_child_by_name", p_name);
 	}
 	return Ref<AnimationNode>();
 }
@@ -418,17 +422,17 @@ void AnimationNode::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_filter_enabled", "is_filter_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "filters", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_filters", "_get_filters");
 
-	BIND_VMETHOD(MethodInfo(Variant::DICTIONARY, "get_child_nodes"));
-	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "get_parameter_list"));
-	BIND_VMETHOD(MethodInfo(Variant::OBJECT, "get_child_by_name", PropertyInfo(Variant::STRING, "name")));
+	BIND_VMETHOD(MethodInfo(Variant::DICTIONARY, "_get_child_nodes"));
+	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "_get_parameter_list"));
+	BIND_VMETHOD(MethodInfo(Variant::OBJECT, "_get_child_by_name", PropertyInfo(Variant::STRING, "name")));
 	{
-		MethodInfo mi = MethodInfo(Variant::NIL, "get_parameter_default_value", PropertyInfo(Variant::STRING_NAME, "name"));
+		MethodInfo mi = MethodInfo(Variant::NIL, "_get_parameter_default_value", PropertyInfo(Variant::STRING_NAME, "name"));
 		mi.return_val.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
 		BIND_VMETHOD(mi);
 	}
-	BIND_VMETHOD(MethodInfo("process", PropertyInfo(Variant::FLOAT, "time"), PropertyInfo(Variant::BOOL, "seek")));
-	BIND_VMETHOD(MethodInfo(Variant::STRING, "get_caption"));
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "has_filter"));
+	BIND_VMETHOD(MethodInfo("_process", PropertyInfo(Variant::FLOAT, "time"), PropertyInfo(Variant::BOOL, "seek")));
+	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_caption"));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_has_filter"));
 
 	ADD_SIGNAL(MethodInfo("removed_from_graph"));
 
@@ -532,8 +536,8 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 	List<StringName> sname;
 	player->get_animation_list(&sname);
 
-	for (List<StringName>::Element *E = sname.front(); E; E = E->next()) {
-		Ref<Animation> anim = player->get_animation(E->get());
+	for (const StringName &E : sname) {
+		Ref<Animation> anim = player->get_animation(E);
 		for (int i = 0; i < anim->get_track_count(); i++) {
 			NodePath path = anim->track_get_path(i);
 			Animation::TrackType track_type = anim->track_get_type(i);
@@ -557,7 +561,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 				Node *child = parent->get_node_and_resource(path, resource, leftover_path);
 
 				if (!child) {
-					ERR_PRINT("AnimationTree: '" + String(E->get()) + "', couldn't resolve track:  '" + String(path) + "'");
+					ERR_PRINT("AnimationTree: '" + String(E) + "', couldn't resolve track:  '" + String(path) + "'");
 					continue;
 				}
 
@@ -581,22 +585,23 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 						track = track_value;
 
 					} break;
-					case Animation::TYPE_TRANSFORM: {
-						Node3D *spatial = Object::cast_to<Node3D>(child);
+					case Animation::TYPE_TRANSFORM3D: {
+#ifndef _3D_DISABLED
+						Node3D *node_3d = Object::cast_to<Node3D>(child);
 
-						if (!spatial) {
-							ERR_PRINT("AnimationTree: '" + String(E->get()) + "', transform track does not point to spatial:  '" + String(path) + "'");
+						if (!node_3d) {
+							ERR_PRINT("AnimationTree: '" + String(E) + "', transform track does not point to Node3D:  '" + String(path) + "'");
 							continue;
 						}
 
 						TrackCacheTransform *track_xform = memnew(TrackCacheTransform);
 
-						track_xform->spatial = spatial;
+						track_xform->node_3d = node_3d;
 						track_xform->skeleton = nullptr;
 						track_xform->bone_idx = -1;
 
-						if (path.get_subname_count() == 1 && Object::cast_to<Skeleton3D>(spatial)) {
-							Skeleton3D *sk = Object::cast_to<Skeleton3D>(spatial);
+						if (path.get_subname_count() == 1 && Object::cast_to<Skeleton3D>(node_3d)) {
+							Skeleton3D *sk = Object::cast_to<Skeleton3D>(node_3d);
 							track_xform->skeleton = sk;
 							int bone_idx = sk->find_bone(path.get_subname(0));
 							if (bone_idx != -1) {
@@ -604,11 +609,11 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 							}
 						}
 
-						track_xform->object = spatial;
+						track_xform->object = node_3d;
 						track_xform->object_id = track_xform->object->get_instance_id();
 
 						track = track_xform;
-
+#endif // _3D_DISABLED
 					} break;
 					case Animation::TYPE_METHOD: {
 						TrackCacheMethod *track_method = memnew(TrackCacheMethod);
@@ -718,7 +723,7 @@ void AnimationTree::_process_graph(float p_delta) {
 
 	//check all tracks, see if they need modification
 
-	root_motion_transform = Transform();
+	root_motion_transform = Transform3D();
 
 	if (!root.is_valid()) {
 		ERR_PRINT("AnimationTree: root AnimationNode is not set, disabling playback.");
@@ -811,9 +816,7 @@ void AnimationTree::_process_graph(float p_delta) {
 	{
 		bool can_call = is_inside_tree() && !Engine::get_singleton()->is_editor_hint();
 
-		for (List<AnimationNode::AnimationState>::Element *E = state.animation_states.front(); E; E = E->next()) {
-			const AnimationNode::AnimationState &as = E->get();
-
+		for (const AnimationNode::AnimationState &as : state.animation_states) {
 			Ref<Animation> a = as.animation;
 			float time = as.time;
 			float delta = as.delta;
@@ -844,14 +847,15 @@ void AnimationTree::_process_graph(float p_delta) {
 				}
 
 				switch (track->type) {
-					case Animation::TYPE_TRANSFORM: {
+					case Animation::TYPE_TRANSFORM3D: {
+#ifndef _3D_DISABLED
 						TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
 
 						if (track->root_motion) {
 							if (t->process_pass != process_pass) {
 								t->process_pass = process_pass;
 								t->loc = Vector3();
-								t->rot = Quat();
+								t->rot = Quaternion();
 								t->rot_blend_accum = 0;
 								t->scale = Vector3(1, 1, 1);
 							}
@@ -866,7 +870,7 @@ void AnimationTree::_process_graph(float p_delta) {
 							}
 
 							Vector3 loc[2];
-							Quat rot[2];
+							Quaternion rot[2];
 							Vector3 scale[2];
 
 							if (prev_time > time) {
@@ -879,7 +883,7 @@ void AnimationTree::_process_graph(float p_delta) {
 
 								t->loc += (loc[1] - loc[0]) * blend;
 								t->scale += (scale[1] - scale[0]) * blend;
-								Quat q = Quat().slerp(rot[0].normalized().inverse() * rot[1].normalized(), blend).normalized();
+								Quaternion q = Quaternion().slerp(rot[0].normalized().inverse() * rot[1].normalized(), blend).normalized();
 								t->rot = (t->rot * q).normalized();
 
 								prev_time = 0;
@@ -894,14 +898,14 @@ void AnimationTree::_process_graph(float p_delta) {
 
 							t->loc += (loc[1] - loc[0]) * blend;
 							t->scale += (scale[1] - scale[0]) * blend;
-							Quat q = Quat().slerp(rot[0].normalized().inverse() * rot[1].normalized(), blend).normalized();
+							Quaternion q = Quaternion().slerp(rot[0].normalized().inverse() * rot[1].normalized(), blend).normalized();
 							t->rot = (t->rot * q).normalized();
 
 							prev_time = 0;
 
 						} else {
 							Vector3 loc;
-							Quat rot;
+							Quaternion rot;
 							Vector3 scale;
 
 							Error err = a->transform_track_interpolate(i, time, &loc, &rot, &scale);
@@ -930,7 +934,7 @@ void AnimationTree::_process_graph(float p_delta) {
 							}
 							t->scale = t->scale.lerp(scale, blend);
 						}
-
+#endif // _3D_DISABLED
 					} break;
 					case Animation::TYPE_VALUE: {
 						TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
@@ -956,8 +960,8 @@ void AnimationTree::_process_graph(float p_delta) {
 							List<int> indices;
 							a->value_track_get_key_indices(i, time, delta, &indices);
 
-							for (List<int>::Element *F = indices.front(); F; F = F->next()) {
-								Variant value = a->track_get_key_value(i, F->get());
+							for (int &F : indices) {
+								Variant value = a->track_get_key_value(i, F);
 								t->object->set_indexed(t->subpath, value);
 							}
 						}
@@ -973,12 +977,13 @@ void AnimationTree::_process_graph(float p_delta) {
 
 						a->method_track_get_key_indices(i, time, delta, &indices);
 
-						for (List<int>::Element *F = indices.front(); F; F = F->next()) {
-							StringName method = a->method_track_get_name(i, F->get());
-							Vector<Variant> params = a->method_track_get_params(i, F->get());
+						for (int &F : indices) {
+							StringName method = a->method_track_get_name(i, F);
+							Vector<Variant> params = a->method_track_get_params(i, F);
 
 							int s = params.size();
 
+							static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
 							ERR_CONTINUE(s > VARIANT_ARG_MAX);
 							if (can_call) {
 								t->object->call_deferred(
@@ -987,7 +992,10 @@ void AnimationTree::_process_graph(float p_delta) {
 										s >= 2 ? params[1] : Variant(),
 										s >= 3 ? params[2] : Variant(),
 										s >= 4 ? params[3] : Variant(),
-										s >= 5 ? params[4] : Variant());
+										s >= 5 ? params[4] : Variant(),
+										s >= 6 ? params[5] : Variant(),
+										s >= 7 ? params[6] : Variant(),
+										s >= 8 ? params[7] : Variant());
 							}
 						}
 
@@ -1188,13 +1196,14 @@ void AnimationTree::_process_graph(float p_delta) {
 			}
 
 			switch (track->type) {
-				case Animation::TYPE_TRANSFORM: {
+				case Animation::TYPE_TRANSFORM3D: {
+#ifndef _3D_DISABLED
 					TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
 
-					Transform xform;
+					Transform3D xform;
 					xform.origin = t->loc;
 
-					xform.basis.set_quat_scale(t->rot, t->scale);
+					xform.basis.set_quaternion_scale(t->rot, t->scale);
 
 					if (t->root_motion) {
 						root_motion_transform = xform;
@@ -1206,9 +1215,9 @@ void AnimationTree::_process_graph(float p_delta) {
 						t->skeleton->set_bone_pose(t->bone_idx, xform);
 
 					} else if (!t->skeleton) {
-						t->spatial->set_transform(xform);
+						t->node_3d->set_transform(xform);
 					}
-
+#endif // _3D_DISABLED
 				} break;
 				case Animation::TYPE_VALUE: {
 					TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
@@ -1311,7 +1320,7 @@ NodePath AnimationTree::get_root_motion_track() const {
 	return root_motion_track;
 }
 
-Transform AnimationTree::get_root_motion_transform() const {
+Transform3D AnimationTree::get_root_motion_transform() const {
 	return root_motion_transform;
 }
 
@@ -1320,7 +1329,7 @@ void AnimationTree::_tree_changed() {
 		return;
 	}
 
-	call_deferred("_update_properties");
+	call_deferred(SNAME("_update_properties"));
 	properties_dirty = true;
 }
 
@@ -1344,9 +1353,7 @@ void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<A
 
 	List<PropertyInfo> plist;
 	node->get_parameter_list(&plist);
-	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-		PropertyInfo pinfo = E->get();
-
+	for (PropertyInfo &pinfo : plist) {
 		StringName key = pinfo.name;
 
 		if (!property_map.has(p_base_path + key)) {
@@ -1362,8 +1369,8 @@ void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<A
 	List<AnimationNode::ChildNode> children;
 	node->get_child_nodes(&children);
 
-	for (List<AnimationNode::ChildNode>::Element *E = children.front(); E; E = E->next()) {
-		_update_properties_for_node(p_base_path + E->get().name + "/", E->get().node);
+	for (const AnimationNode::ChildNode &E : children) {
+		_update_properties_for_node(p_base_path + E.name + "/", E.node);
 	}
 }
 
@@ -1417,17 +1424,17 @@ void AnimationTree::_get_property_list(List<PropertyInfo> *p_list) const {
 		const_cast<AnimationTree *>(this)->_update_properties();
 	}
 
-	for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-		p_list->push_back(E->get());
+	for (const PropertyInfo &E : properties) {
+		p_list->push_back(E);
 	}
 }
 
 void AnimationTree::rename_parameter(const String &p_base, const String &p_new_base) {
 	//rename values first
-	for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-		if (E->get().name.begins_with(p_base)) {
-			String new_name = E->get().name.replace_first(p_base, p_new_base);
-			property_map[new_name] = property_map[E->get().name];
+	for (const PropertyInfo &E : properties) {
+		if (E.name.begins_with(p_base)) {
+			String new_name = E.name.replace_first(p_base, p_new_base);
+			property_map[new_name] = property_map[E.name];
 		}
 	}
 

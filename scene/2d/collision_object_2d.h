@@ -33,16 +33,29 @@
 
 #include "scene/2d/node_2d.h"
 #include "scene/resources/shape_2d.h"
+#include "servers/physics_server_2d.h"
 
 class CollisionObject2D : public Node2D {
 	GDCLASS(CollisionObject2D, Node2D);
 
+public:
+	enum DisableMode {
+		DISABLE_MODE_REMOVE,
+		DISABLE_MODE_MAKE_STATIC,
+		DISABLE_MODE_KEEP_ACTIVE,
+	};
+
+private:
 	uint32_t collision_layer = 1;
 	uint32_t collision_mask = 1;
 
 	bool area = false;
 	RID rid;
 	bool pickable = false;
+
+	DisableMode disable_mode = DISABLE_MODE_REMOVE;
+
+	PhysicsServer2D::BodyMode body_mode = PhysicsServer2D::BODY_MODE_STATIC;
 
 	struct ShapeData {
 		Object *owner = nullptr;
@@ -62,7 +75,10 @@ class CollisionObject2D : public Node2D {
 	int total_subshapes = 0;
 
 	Map<uint32_t, ShapeData> shapes;
-	bool only_update_transform_changes = false; //this is used for sync physics in KinematicBody
+	bool only_update_transform_changes = false; // This is used for sync to physics.
+
+	void _apply_disabled();
+	void _apply_enabled();
 
 protected:
 	CollisionObject2D(RID p_rid, bool p_area);
@@ -76,7 +92,13 @@ protected:
 	void _mouse_enter();
 	void _mouse_exit();
 
+	void _mouse_shape_enter(int p_shape);
+	void _mouse_shape_exit(int p_shape);
+
 	void set_only_update_transform_changes(bool p_enable);
+	bool is_only_update_transform_changes_enabled() const;
+
+	void set_body_mode(PhysicsServer2D::BodyMode p_mode);
 
 public:
 	void set_collision_layer(uint32_t p_layer);
@@ -90,6 +112,9 @@ public:
 
 	void set_collision_mask_bit(int p_bit, bool p_value);
 	bool get_collision_mask_bit(int p_bit) const;
+
+	void set_disable_mode(DisableMode p_mode);
+	DisableMode get_disable_mode() const;
 
 	uint32_t create_shape_owner(Object *p_owner);
 	void remove_shape_owner(uint32_t owner);
@@ -129,5 +154,7 @@ public:
 	CollisionObject2D();
 	~CollisionObject2D();
 };
+
+VARIANT_ENUM_CAST(CollisionObject2D::DisableMode);
 
 #endif // COLLISION_OBJECT_2D_H

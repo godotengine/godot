@@ -83,8 +83,8 @@ public:
 	Node *create_trimesh_collision_node();
 	void create_trimesh_collision();
 
-	Node *create_convex_collision_node();
-	void create_convex_collision();
+	Node *create_convex_collision_node(bool p_clean = true, bool p_simplify = false);
+	void create_convex_collision(bool p_clean = true, bool p_simplify = false);
 
 	Node *create_multiple_convex_collisions_node();
 	void create_multiple_convex_collisions();

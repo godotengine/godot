@@ -34,7 +34,7 @@
 
 void FontDataPreview::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {
-		Color text_color = get_theme_color("font_color", "Label");
+		Color text_color = get_theme_color(SNAME("font_color"), SNAME("Label"));
 		Color line_color = text_color;
 		line_color.a *= 0.6;
 		Vector2 pos = (get_size() - line->get_size()) / 2;
@@ -56,7 +56,7 @@ struct FSample {
 };
 
 static FSample _samples[] = {
-	{ "hani", U"漢語" },
+	{ "hani", U"漢字" },
 	{ "armn", U"Աբ" },
 	{ "copt", U"Αα" },
 	{ "cyrl", U"Аб" },
@@ -119,7 +119,7 @@ void FontDataPreview::set_data(const Ref<FontData> &p_data) {
 }
 
 FontDataPreview::FontDataPreview() {
-	line.instance();
+	line.instantiate();
 }
 
 /*************************************************************************/
@@ -127,7 +127,7 @@ FontDataPreview::FontDataPreview() {
 void FontDataEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_SORT_CHILDREN) {
 		int split_width = get_name_split_ratio() * get_size().width;
-		button->set_size(Size2(get_theme_icon("Add", "EditorIcons")->get_width(), get_size().height));
+		button->set_size(Size2(get_theme_icon(SNAME("Add"), SNAME("EditorIcons"))->get_width(), get_size().height));
 		if (is_layout_rtl()) {
 			if (le != nullptr) {
 				fit_child_in_rect(le, Rect2(Vector2(split_width, 0), Size2(split_width, get_size().height)));
@@ -145,7 +145,7 @@ void FontDataEditor::_notification(int p_what) {
 	}
 	if (p_what == NOTIFICATION_DRAW) {
 		int split_width = get_name_split_ratio() * get_size().width;
-		Color dark_color = get_theme_color("dark_color_2", "Editor");
+		Color dark_color = get_theme_color(SNAME("dark_color_2"), SNAME("Editor"));
 		if (is_layout_rtl()) {
 			draw_rect(Rect2(Vector2(0, 0), Size2(split_width, get_size().height)), dark_color);
 		} else {
@@ -154,9 +154,9 @@ void FontDataEditor::_notification(int p_what) {
 	}
 	if (p_what == NOTIFICATION_THEME_CHANGED) {
 		if (le != nullptr) {
-			button->set_icon(get_theme_icon("Add", "EditorIcons"));
+			button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 		} else {
-			button->set_icon(get_theme_icon("Remove", "EditorIcons"));
+			button->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 		}
 		queue_sort();
 	}
@@ -187,12 +187,12 @@ void FontDataEditor::init_lang_add() {
 	le->set_editable(true);
 	add_child(le);
 
-	button->set_icon(get_theme_icon("Add", "EditorIcons"));
+	button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 	button->connect("pressed", callable_mp(this, &FontDataEditor::add_lang));
 }
 
 void FontDataEditor::init_lang_edit() {
-	button->set_icon(get_theme_icon("Remove", "EditorIcons"));
+	button->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 	button->connect("pressed", callable_mp(this, &FontDataEditor::remove_lang));
 	chk->connect("toggled", callable_mp(this, &FontDataEditor::toggle_lang));
 }
@@ -204,12 +204,12 @@ void FontDataEditor::init_script_add() {
 	le->set_editable(true);
 	add_child(le);
 
-	button->set_icon(get_theme_icon("Add", "EditorIcons"));
+	button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 	button->connect("pressed", callable_mp(this, &FontDataEditor::add_script));
 }
 
 void FontDataEditor::init_script_edit() {
-	button->set_icon(get_theme_icon("Remove", "EditorIcons"));
+	button->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 	button->connect("pressed", callable_mp(this, &FontDataEditor::remove_script));
 	chk->connect("toggled", callable_mp(this, &FontDataEditor::toggle_script));
 }
@@ -290,7 +290,7 @@ void EditorInspectorPluginFont::parse_begin(Object *p_object) {
 	add_custom_control(editor);
 }
 
-bool EditorInspectorPluginFont::parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage, bool p_wide) {
+bool EditorInspectorPluginFont::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {
 	if (p_path.begins_with("language_support_override/") && p_object->is_class("FontData")) {
 		String lang = p_path.replace("language_support_override/", "");
 
@@ -326,6 +326,6 @@ bool EditorInspectorPluginFont::parse_property(Object *p_object, Variant::Type p
 
 FontEditorPlugin::FontEditorPlugin(EditorNode *p_node) {
 	Ref<EditorInspectorPluginFont> fd_plugin;
-	fd_plugin.instance();
+	fd_plugin.instantiate();
 	EditorInspector::add_inspector_plugin(fd_plugin);
 }

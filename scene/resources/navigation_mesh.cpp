@@ -329,9 +329,7 @@ Ref<Mesh> NavigationMesh::get_debug_mesh() {
 		Vector3 *tw = tmeshfaces.ptrw();
 		int tidx = 0;
 
-		for (List<Face3>::Element *E = faces.front(); E; E = E->next()) {
-			const Face3 &f = E->get();
-
+		for (const Face3 &f : faces) {
 			for (int j = 0; j < 3; j++) {
 				tw[tidx++] = f.vertex[j];
 				_EdgeKey ek;
@@ -366,8 +364,8 @@ Ref<Mesh> NavigationMesh::get_debug_mesh() {
 	{
 		Vector3 *w = varr.ptrw();
 		int idx = 0;
-		for (List<Vector3>::Element *E = lines.front(); E; E = E->next()) {
-			w[idx++] = E->get();
+		for (const Vector3 &E : lines) {
+			w[idx++] = E;
 		}
 	}
 
@@ -501,14 +499,14 @@ void NavigationMesh::_bind_methods() {
 void NavigationMesh::_validate_property(PropertyInfo &property) const {
 	if (property.name == "geometry/collision_mask") {
 		if (parsed_geometry_type == PARSED_GEOMETRY_MESH_INSTANCES) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 			return;
 		}
 	}
 
 	if (property.name == "geometry/source_group_name") {
 		if (source_geometry_mode == SOURCE_GEOMETRY_NAVMESH_CHILDREN) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 			return;
 		}
 	}

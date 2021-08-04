@@ -79,6 +79,8 @@ class ShaderMaterial : public Material {
 	GDCLASS(ShaderMaterial, Material);
 	Ref<Shader> shader;
 
+	Map<StringName, Variant> param_cache;
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -243,7 +245,6 @@ public:
 		DIFFUSE_BURLEY,
 		DIFFUSE_LAMBERT,
 		DIFFUSE_LAMBERT_WRAP,
-		DIFFUSE_OREN_NAYAR,
 		DIFFUSE_TOON,
 		DIFFUSE_MAX
 	};
@@ -390,7 +391,6 @@ private:
 		StringName heightmap_scale;
 		StringName subsurface_scattering_strength;
 		StringName transmittance_color;
-		StringName transmittance_curve;
 		StringName transmittance_depth;
 		StringName transmittance_boost;
 		StringName backlight;
@@ -459,7 +459,6 @@ private:
 	float transmittance_amount;
 	Color transmittance_color;
 	float transmittance_depth;
-	float transmittance_curve;
 	float transmittance_boost;
 
 	Color backlight;
@@ -603,9 +602,6 @@ public:
 	void set_transmittance_depth(float p_depth);
 	float get_transmittance_depth() const;
 
-	void set_transmittance_curve(float p_curve);
-	float get_transmittance_curve() const;
-
 	void set_transmittance_boost(float p_boost);
 	float get_transmittance_boost() const;
 
@@ -739,7 +735,7 @@ public:
 	static void finish_shaders();
 	static void flush_changes();
 
-	static RID get_material_rid_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass, bool p_billboard = false, bool p_billboard_y = false);
+	static Ref<Material> get_material_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass, bool p_billboard = false, bool p_billboard_y = false, RID *r_shader_rid = nullptr);
 
 	virtual RID get_shader_rid() const override;
 

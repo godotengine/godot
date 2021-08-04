@@ -31,9 +31,9 @@
 #ifndef GODOT_GRADLE_EXPORT_UTIL_H
 #define GODOT_GRADLE_EXPORT_UTIL_H
 
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/io/zip_io.h"
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "editor/editor_export.h"
 
@@ -93,14 +93,6 @@ Error create_directory(const String &p_dir) {
 		ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "Cannot create directory '" + p_dir + "'.");
 		memdelete(filesystem_da);
 	}
-	return OK;
-}
-
-// Implementation of EditorExportSaveSharedObject.
-// This method will only be called as an input to export_project_files.
-// This method lets the .so files for all ABIs to be copied
-// into the gradle project from the .AAR file
-Error ignore_so_file(void *p_userdata, const SharedObject &p_so) {
 	return OK;
 }
 
@@ -260,9 +252,13 @@ String _get_activity_tag(const Ref<EditorExportPreset> &p_preset) {
 String _get_application_tag(const Ref<EditorExportPreset> &p_preset) {
 	String manifest_application_text = vformat(
 			"    <application android:label=\"@string/godot_project_name_string\"\n"
-			"        android:allowBackup=\"%s\" tools:ignore=\"GoogleAppIndexingWarning\"\n"
-			"        android:icon=\"@mipmap/icon\">\n\n",
-			bool_to_string(p_preset->get("user_data_backup/allow")));
+			"        android:allowBackup=\"%s\"\n"
+			"        android:icon=\"@mipmap/icon\"\n"
+			"        android:isGame=\"%s\"\n"
+			"        tools:replace=\"android:allowBackup,android:isGame\"\n"
+			"        tools:ignore=\"GoogleAppIndexingWarning\">\n\n",
+			bool_to_string(p_preset->get("user_data_backup/allow")),
+			bool_to_string(p_preset->get("package/classify_as_game")));
 
 	manifest_application_text += _get_activity_tag(p_preset);
 	manifest_application_text += "    </application>\n";

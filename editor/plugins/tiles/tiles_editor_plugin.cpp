@@ -50,7 +50,7 @@ void TilesEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			tileset_tilemap_switch_button->set_icon(get_theme_icon("TileSet", "EditorIcons"));
+			tileset_tilemap_switch_button->set_icon(get_theme_icon(SNAME("TileSet"), SNAME("EditorIcons")));
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (tile_map_changed_needs_update) {
@@ -118,11 +118,11 @@ void TilesEditor::_update_editors() {
 	CanvasItemEditor::get_singleton()->update_viewport();
 }
 
-void TilesEditor::set_atlas_sources_lists_current(int p_current) {
+void TilesEditor::set_sources_lists_current(int p_current) {
 	atlas_sources_lists_current = p_current;
 }
 
-void TilesEditor::synchronize_atlas_sources_list(Object *p_current) {
+void TilesEditor::synchronize_sources_list(Object *p_current) {
 	ItemList *item_list = Object::cast_to<ItemList>(p_current);
 	ERR_FAIL_COND(!item_list);
 
@@ -131,7 +131,7 @@ void TilesEditor::synchronize_atlas_sources_list(Object *p_current) {
 			item_list->deselect_all();
 		} else {
 			item_list->set_current(atlas_sources_lists_current);
-			item_list->emit_signal("item_selected", atlas_sources_lists_current);
+			item_list->emit_signal(SNAME("item_selected"), atlas_sources_lists_current);
 		}
 	}
 }

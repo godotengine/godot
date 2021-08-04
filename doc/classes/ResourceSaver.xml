@@ -11,23 +11,17 @@
 	</tutorials>
 	<methods>
 		<method name="get_recognized_extensions">
-			<return type="PackedStringArray">
-			</return>
-			<argument index="0" name="type" type="Resource">
-			</argument>
+			<return type="PackedStringArray" />
+			<argument index="0" name="type" type="Resource" />
 			<description>
 				Returns the list of extensions available for saving a resource of a given type.
 			</description>
 		</method>
 		<method name="save">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="resource" type="Resource">
-			</argument>
-			<argument index="2" name="flags" type="int" enum="ResourceSaver.SaverFlags" default="0">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="resource" type="Resource" />
+			<argument index="2" name="flags" type="int" enum="ResourceSaver.SaverFlags" default="0" />
 			<description>
 				Saves a resource to disk to the given path, using a [ResourceFormatSaver] that recognizes the resource object.
 				The [code]flags[/code] bitmask can be specified to customize the save behavior.
@@ -49,7 +43,7 @@
 			Do not save editor-specific metadata (identified by their [code]__editor[/code] prefix).
 		</constant>
 		<constant name="FLAG_SAVE_BIG_ENDIAN" value="16" enum="SaverFlags">
-			Save as big endian (see [member File.endian_swap]).
+			Save as big endian (see [member File.big_endian]).
 		</constant>
 		<constant name="FLAG_COMPRESS" value="32" enum="SaverFlags">
 			Compress the resource on save using [constant File.COMPRESSION_ZSTD]. Only available for binary resource types.

@@ -42,26 +42,6 @@
 
 int RenderingServerDefault::changes = 0;
 
-/* BLACK BARS */
-
-void RenderingServerDefault::black_bars_set_margins(int p_left, int p_top, int p_right, int p_bottom) {
-	black_margin[SIDE_LEFT] = p_left;
-	black_margin[SIDE_TOP] = p_top;
-	black_margin[SIDE_RIGHT] = p_right;
-	black_margin[SIDE_BOTTOM] = p_bottom;
-}
-
-void RenderingServerDefault::black_bars_set_images(RID p_left, RID p_top, RID p_right, RID p_bottom) {
-	black_image[SIDE_LEFT] = p_left;
-	black_image[SIDE_TOP] = p_top;
-	black_image[SIDE_RIGHT] = p_right;
-	black_image[SIDE_BOTTOM] = p_bottom;
-}
-
-void RenderingServerDefault::_draw_margins() {
-	RSG::canvas_render->draw_window_margins(black_margin, black_image);
-};
-
 /* FREE */
 
 void RenderingServerDefault::_free(RID p_rid) {
@@ -93,7 +73,7 @@ void RenderingServerDefault::request_frame_drawn_callback(Object *p_where, const
 
 void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	//needs to be done before changes is reset to 0, to not force the editor to redraw
-	RS::get_singleton()->emit_signal("frame_pre_draw");
+	RS::get_singleton()->emit_signal(SNAME("frame_pre_draw"));
 
 	changes = 0;
 
@@ -114,8 +94,10 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	RSG::viewport->draw_viewports();
 	RSG::canvas_render->update();
 
-	_draw_margins();
 	RSG::rasterizer->end_frame(p_swap_buffers);
+
+	RSG::canvas->update_visibility_notifiers();
+	RSG::scene->update_visibility_notifiers();
 
 	while (frame_drawn_callbacks.front()) {
 		Object *obj = ObjectDB::get_instance(frame_drawn_callbacks.front()->get().object);
@@ -131,7 +113,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 
 		frame_drawn_callbacks.pop_front();
 	}
-	RS::get_singleton()->emit_signal("frame_post_draw");
+	RS::get_singleton()->emit_signal(SNAME("frame_post_draw"));
 
 	if (RSG::storage->get_captured_timestamps_count()) {
 		Vector<FrameProfileArea> new_profile;
@@ -207,6 +189,8 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 			print_frame_profile_frame_count = 0;
 		}
 	}
+
+	RSG::storage->update_memory_info();
 }
 
 float RenderingServerDefault::get_frame_setup_time_cpu() const {
@@ -257,8 +241,15 @@ void RenderingServerDefault::finish() {
 
 /* STATUS INFORMATION */
 
-uint64_t RenderingServerDefault::get_render_info(RenderInfo p_info) {
-	return RSG::storage->get_render_info(p_info);
+uint64_t RenderingServerDefault::get_rendering_info(RenderingInfo p_info) {
+	if (p_info == RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME) {
+		return RSG::viewport->get_total_objects_drawn();
+	} else if (p_info == RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME) {
+		return RSG::viewport->get_total_vertices_drawn();
+	} else if (p_info == RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME) {
+		return RSG::viewport->get_total_draw_calls_used();
+	}
+	return RSG::storage->get_rendering_info(p_info);
 }
 
 String RenderingServerDefault::get_video_adapter_name() const {
@@ -358,7 +349,7 @@ void RenderingServerDefault::_thread_loop() {
 	draw_thread_up.set();
 	while (!exit.is_set()) {
 		// flush commands one by one, until exit is requested
-		command_queue.wait_and_flush_one();
+		command_queue.wait_and_flush();
 	}
 
 	command_queue.flush_all(); // flush all
@@ -396,6 +387,7 @@ RenderingServerDefault::RenderingServerDefault(bool p_create_thread) :
 		server_thread = 0;
 	}
 
+	RSG::threaded = p_create_thread;
 	RSG::canvas = memnew(RendererCanvasCull);
 	RSG::viewport = memnew(RendererViewport);
 	RendererSceneCull *sr = memnew(RendererSceneCull);
@@ -406,11 +398,6 @@ RenderingServerDefault::RenderingServerDefault(bool p_create_thread) :
 	sr->set_scene_render(RSG::rasterizer->get_scene());
 
 	frame_profile_frame = 0;
-
-	for (int i = 0; i < 4; i++) {
-		black_margin[i] = 0;
-		black_image[i] = RID();
-	}
 }
 
 RenderingServerDefault::~RenderingServerDefault() {

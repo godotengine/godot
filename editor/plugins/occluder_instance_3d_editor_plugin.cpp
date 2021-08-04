@@ -56,7 +56,7 @@ void OccluderInstance3DEditorPlugin::_bake_select_file(const String &p_file) {
 
 			} break;
 			case OccluderInstance3D::BAKE_ERROR_NO_MESHES: {
-				EditorNode::get_singleton()->show_warning(TTR("No meshes to bake."));
+				EditorNode::get_singleton()->show_warning(TTR("No meshes to bake.\nMake sure there is at least one MeshInstance3D node in the scene whose visual layers are part of the OccluderInstance3D's Bake Mask property."));
 				break;
 			}
 			default: {
@@ -98,7 +98,7 @@ OccluderInstance3DEditorPlugin::OccluderInstance3DEditorPlugin(EditorNode *p_nod
 	editor = p_node;
 	bake = memnew(Button);
 	bake->set_flat(true);
-	bake->set_icon(editor->get_gui_base()->get_theme_icon("Bake", "EditorIcons"));
+	bake->set_icon(editor->get_gui_base()->get_theme_icon(SNAME("Bake"), SNAME("EditorIcons")));
 	bake->set_text(TTR("Bake Occluders"));
 	bake->hide();
 	bake->connect("pressed", Callable(this, "_bake"));

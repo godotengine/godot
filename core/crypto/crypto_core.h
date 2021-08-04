@@ -31,7 +31,7 @@
 #ifndef CRYPTO_CORE_H
 #define CRYPTO_CORE_H
 
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 
 class CryptoCore {
 public:

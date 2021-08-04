@@ -38,6 +38,7 @@ const int InputEvent::DEVICE_ID_INTERNAL = -2;
 
 void InputEvent::set_device(int p_device) {
 	device = p_device;
+	emit_changed();
 }
 
 int InputEvent::get_device() const {
@@ -88,7 +89,7 @@ bool InputEvent::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, f
 	return false;
 }
 
-bool InputEvent::shortcut_match(const Ref<InputEvent> &p_event) const {
+bool InputEvent::is_match(const Ref<InputEvent> &p_event, bool p_exact_match) const {
 	return false;
 }
 
@@ -110,7 +111,7 @@ void InputEvent::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("as_text"), &InputEvent::as_text);
 
-	ClassDB::bind_method(D_METHOD("shortcut_match", "event"), &InputEvent::shortcut_match);
+	ClassDB::bind_method(D_METHOD("is_match", "event", "exact_match"), &InputEvent::is_match, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("is_action_type"), &InputEvent::is_action_type);
 
@@ -131,6 +132,7 @@ void InputEventFromWindow::_bind_methods() {
 
 void InputEventFromWindow::set_window_id(int64_t p_id) {
 	window_id = p_id;
+	emit_changed();
 }
 
 int64_t InputEventFromWindow::get_window_id() const {
@@ -141,6 +143,7 @@ int64_t InputEventFromWindow::get_window_id() const {
 
 void InputEventWithModifiers::set_store_command(bool p_enabled) {
 	store_command = p_enabled;
+	emit_changed();
 }
 
 bool InputEventWithModifiers::is_storing_command() const {
@@ -149,6 +152,7 @@ bool InputEventWithModifiers::is_storing_command() const {
 
 void InputEventWithModifiers::set_shift_pressed(bool p_enabled) {
 	shift_pressed = p_enabled;
+	emit_changed();
 }
 
 bool InputEventWithModifiers::is_shift_pressed() const {
@@ -157,6 +161,7 @@ bool InputEventWithModifiers::is_shift_pressed() const {
 
 void InputEventWithModifiers::set_alt_pressed(bool p_enabled) {
 	alt_pressed = p_enabled;
+	emit_changed();
 }
 
 bool InputEventWithModifiers::is_alt_pressed() const {
@@ -165,6 +170,7 @@ bool InputEventWithModifiers::is_alt_pressed() const {
 
 void InputEventWithModifiers::set_ctrl_pressed(bool p_enabled) {
 	ctrl_pressed = p_enabled;
+	emit_changed();
 }
 
 bool InputEventWithModifiers::is_ctrl_pressed() const {
@@ -173,6 +179,7 @@ bool InputEventWithModifiers::is_ctrl_pressed() const {
 
 void InputEventWithModifiers::set_meta_pressed(bool p_enabled) {
 	meta_pressed = p_enabled;
+	emit_changed();
 }
 
 bool InputEventWithModifiers::is_meta_pressed() const {
@@ -181,6 +188,7 @@ bool InputEventWithModifiers::is_meta_pressed() const {
 
 void InputEventWithModifiers::set_command_pressed(bool p_enabled) {
 	command_pressed = p_enabled;
+	emit_changed();
 }
 
 bool InputEventWithModifiers::is_command_pressed() const {
@@ -192,6 +200,23 @@ void InputEventWithModifiers::set_modifiers_from_event(const InputEventWithModif
 	set_shift_pressed(event->is_shift_pressed());
 	set_ctrl_pressed(event->is_ctrl_pressed());
 	set_meta_pressed(event->is_meta_pressed());
+}
+
+uint32_t InputEventWithModifiers::get_modifiers_mask() const {
+	uint32_t mask = 0;
+	if (is_ctrl_pressed()) {
+		mask |= KEY_MASK_CTRL;
+	}
+	if (is_shift_pressed()) {
+		mask |= KEY_MASK_SHIFT;
+	}
+	if (is_alt_pressed()) {
+		mask |= KEY_MASK_ALT;
+	}
+	if (is_meta_pressed()) {
+		mask |= KEY_MASK_META;
+	}
+	return mask;
 }
 
 String InputEventWithModifiers::as_text() const {
@@ -274,6 +299,7 @@ void InputEventWithModifiers::_validate_property(PropertyInfo &property) const {
 
 void InputEventKey::set_pressed(bool p_pressed) {
 	pressed = p_pressed;
+	emit_changed();
 }
 
 bool InputEventKey::is_pressed() const {
@@ -282,6 +308,7 @@ bool InputEventKey::is_pressed() const {
 
 void InputEventKey::set_keycode(uint32_t p_keycode) {
 	keycode = p_keycode;
+	emit_changed();
 }
 
 uint32_t InputEventKey::get_keycode() const {
@@ -290,6 +317,7 @@ uint32_t InputEventKey::get_keycode() const {
 
 void InputEventKey::set_physical_keycode(uint32_t p_keycode) {
 	physical_keycode = p_keycode;
+	emit_changed();
 }
 
 uint32_t InputEventKey::get_physical_keycode() const {
@@ -298,6 +326,7 @@ uint32_t InputEventKey::get_physical_keycode() const {
 
 void InputEventKey::set_unicode(uint32_t p_unicode) {
 	unicode = p_unicode;
+	emit_changed();
 }
 
 uint32_t InputEventKey::get_unicode() const {
@@ -306,6 +335,7 @@ uint32_t InputEventKey::get_unicode() const {
 
 void InputEventKey::set_echo(bool p_enable) {
 	echo = p_enable;
+	emit_changed();
 }
 
 bool InputEventKey::is_echo() const {
@@ -313,39 +343,11 @@ bool InputEventKey::is_echo() const {
 }
 
 uint32_t InputEventKey::get_keycode_with_modifiers() const {
-	uint32_t sc = keycode;
-	if (is_ctrl_pressed()) {
-		sc |= KEY_MASK_CTRL;
-	}
-	if (is_alt_pressed()) {
-		sc |= KEY_MASK_ALT;
-	}
-	if (is_shift_pressed()) {
-		sc |= KEY_MASK_SHIFT;
-	}
-	if (is_meta_pressed()) {
-		sc |= KEY_MASK_META;
-	}
-
-	return sc;
+	return keycode | get_modifiers_mask();
 }
 
 uint32_t InputEventKey::get_physical_keycode_with_modifiers() const {
-	uint32_t sc = physical_keycode;
-	if (is_ctrl_pressed()) {
-		sc |= KEY_MASK_CTRL;
-	}
-	if (is_alt_pressed()) {
-		sc |= KEY_MASK_ALT;
-	}
-	if (is_shift_pressed()) {
-		sc |= KEY_MASK_SHIFT;
-	}
-	if (is_meta_pressed()) {
-		sc |= KEY_MASK_META;
-	}
-
-	return sc;
+	return physical_keycode | get_modifiers_mask();
 }
 
 String InputEventKey::as_text() const {
@@ -386,7 +388,7 @@ String InputEventKey::to_string() {
 
 Ref<InputEventKey> InputEventKey::create_reference(uint32_t p_keycode) {
 	Ref<InputEventKey> ie;
-	ie.instance();
+	ie.instantiate();
 	ie->set_keycode(p_keycode & KEY_CODE_MASK);
 	ie->set_unicode(p_keycode & KEY_CODE_MASK);
 
@@ -442,16 +444,14 @@ bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool *p_pressed
 	return match;
 }
 
-bool InputEventKey::shortcut_match(const Ref<InputEvent> &p_event) const {
+bool InputEventKey::is_match(const Ref<InputEvent> &p_event, bool p_exact_match) const {
 	Ref<InputEventKey> key = p_event;
 	if (key.is_null()) {
 		return false;
 	}
 
-	uint32_t code = get_keycode_with_modifiers();
-	uint32_t event_code = key->get_keycode_with_modifiers();
-
-	return code == event_code;
+	return keycode == key->keycode &&
+		   (!p_exact_match || get_modifiers_mask() == key->get_modifiers_mask());
 }
 
 void InputEventKey::_bind_methods() {
@@ -482,6 +482,7 @@ void InputEventKey::_bind_methods() {
 
 void InputEventMouse::set_button_mask(int p_mask) {
 	button_mask = p_mask;
+	emit_changed();
 }
 
 int InputEventMouse::get_button_mask() const {
@@ -529,11 +530,12 @@ float InputEventMouseButton::get_factor() const {
 	return factor;
 }
 
-void InputEventMouseButton::set_button_index(int p_index) {
+void InputEventMouseButton::set_button_index(MouseButton p_index) {
 	button_index = p_index;
+	emit_changed();
 }
 
-int InputEventMouseButton::get_button_index() const {
+MouseButton InputEventMouseButton::get_button_index() const {
 	return button_index;
 }
 
@@ -558,7 +560,7 @@ Ref<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &p_xform, co
 	Vector2 l = p_xform.xform(get_position() + p_local_ofs);
 
 	Ref<InputEventMouseButton> mb;
-	mb.instance();
+	mb.instantiate();
 
 	mb->set_device(get_device());
 	mb->set_window_id(get_window_id());
@@ -597,6 +599,16 @@ bool InputEventMouseButton::action_match(const Ref<InputEvent> &p_event, bool *p
 	}
 
 	return match;
+}
+
+bool InputEventMouseButton::is_match(const Ref<InputEvent> &p_event, bool p_exact_match) const {
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_null()) {
+		return false;
+	}
+
+	return button_index == mb->button_index &&
+		   (!p_exact_match || get_modifiers_mask() == mb->get_modifiers_mask());
 }
 
 static const char *_mouse_button_descriptions[9] = {
@@ -734,7 +746,7 @@ Ref<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &p_xform, co
 	Vector2 s = p_xform.basis_xform(get_speed());
 
 	Ref<InputEventMouseMotion> mm;
-	mm.instance();
+	mm.instantiate();
 
 	mm->set_device(get_device());
 	mm->set_window_id(get_window_id());
@@ -848,16 +860,18 @@ void InputEventMouseMotion::_bind_methods() {
 
 ///////////////////////////////////
 
-void InputEventJoypadMotion::set_axis(int p_axis) {
+void InputEventJoypadMotion::set_axis(JoyAxis p_axis) {
 	axis = p_axis;
+	emit_changed();
 }
 
-int InputEventJoypadMotion::get_axis() const {
+JoyAxis InputEventJoypadMotion::get_axis() const {
 	return axis;
 }
 
 void InputEventJoypadMotion::set_axis_value(float p_value) {
 	axis_value = p_value;
+	emit_changed();
 }
 
 float InputEventJoypadMotion::get_axis_value() const {
@@ -904,6 +918,16 @@ bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event, bool *
 	return match;
 }
 
+bool InputEventJoypadMotion::is_match(const Ref<InputEvent> &p_event, bool p_exact_match) const {
+	Ref<InputEventJoypadMotion> jm = p_event;
+	if (jm.is_null()) {
+		return false;
+	}
+
+	return axis == jm->axis &&
+		   (!p_exact_match || ((axis_value < 0) == (jm->axis_value < 0)));
+}
+
 static const char *_joy_axis_descriptions[JOY_AXIS_MAX] = {
 	TTRC("Left Stick X-Axis, Joystick 0 X-Axis"),
 	TTRC("Left Stick Y-Axis, Joystick 0 Y-Axis"),
@@ -940,11 +964,12 @@ void InputEventJoypadMotion::_bind_methods() {
 
 ///////////////////////////////////
 
-void InputEventJoypadButton::set_button_index(int p_index) {
+void InputEventJoypadButton::set_button_index(JoyButton p_index) {
 	button_index = p_index;
+	emit_changed();
 }
 
-int InputEventJoypadButton::get_button_index() const {
+JoyButton InputEventJoypadButton::get_button_index() const {
 	return button_index;
 }
 
@@ -987,7 +1012,7 @@ bool InputEventJoypadButton::action_match(const Ref<InputEvent> &p_event, bool *
 	return match;
 }
 
-bool InputEventJoypadButton::shortcut_match(const Ref<InputEvent> &p_event) const {
+bool InputEventJoypadButton::is_match(const Ref<InputEvent> &p_event, bool p_exact_match) const {
 	Ref<InputEventJoypadButton> button = p_event;
 	if (button.is_null()) {
 		return false;
@@ -1023,7 +1048,7 @@ static const char *_joy_button_descriptions[JOY_BUTTON_SDL_MAX] = {
 String InputEventJoypadButton::as_text() const {
 	String text = "Joypad Button " + itos(button_index);
 
-	if (button_index < JOY_BUTTON_SDL_MAX) {
+	if (button_index >= 0 && button_index < JOY_BUTTON_SDL_MAX) {
 		text += vformat(" (%s)", _joy_button_descriptions[button_index]);
 	}
 
@@ -1039,9 +1064,9 @@ String InputEventJoypadButton::to_string() {
 	return vformat("InputEventJoypadButton: button_index=%d, pressed=%s, pressure=%.2f", button_index, p, pressure);
 }
 
-Ref<InputEventJoypadButton> InputEventJoypadButton::create_reference(int p_btn_index) {
+Ref<InputEventJoypadButton> InputEventJoypadButton::create_reference(JoyButton p_btn_index) {
 	Ref<InputEventJoypadButton> ie;
-	ie.instance();
+	ie.instantiate();
 	ie->set_button_index(p_btn_index);
 
 	return ie;
@@ -1090,7 +1115,7 @@ bool InputEventScreenTouch::is_pressed() const {
 
 Ref<InputEvent> InputEventScreenTouch::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 	Ref<InputEventScreenTouch> st;
-	st.instance();
+	st.instantiate();
 	st->set_device(get_device());
 	st->set_window_id(get_window_id());
 	st->set_index(index);
@@ -1163,7 +1188,7 @@ Vector2 InputEventScreenDrag::get_speed() const {
 Ref<InputEvent> InputEventScreenDrag::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 	Ref<InputEventScreenDrag> sd;
 
-	sd.instance();
+	sd.instantiate();
 
 	sd->set_device(get_device());
 	sd->set_window_id(get_window_id());
@@ -1229,7 +1254,7 @@ float InputEventAction::get_strength() const {
 	return strength;
 }
 
-bool InputEventAction::shortcut_match(const Ref<InputEvent> &p_event) const {
+bool InputEventAction::is_match(const Ref<InputEvent> &p_event, bool p_exact_match) const {
 	if (p_event.is_null()) {
 		return false;
 	}
@@ -1318,7 +1343,7 @@ real_t InputEventMagnifyGesture::get_factor() const {
 
 Ref<InputEvent> InputEventMagnifyGesture::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 	Ref<InputEventMagnifyGesture> ev;
-	ev.instance();
+	ev.instantiate();
 
 	ev->set_device(get_device());
 	ev->set_window_id(get_window_id());
@@ -1358,7 +1383,7 @@ Vector2 InputEventPanGesture::get_delta() const {
 
 Ref<InputEvent> InputEventPanGesture::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 	Ref<InputEventPanGesture> ev;
-	ev.instance();
+	ev.instantiate();
 
 	ev->set_device(get_device());
 	ev->set_window_id(get_window_id());
@@ -1396,11 +1421,11 @@ int InputEventMIDI::get_channel() const {
 	return channel;
 }
 
-void InputEventMIDI::set_message(const int p_message) {
+void InputEventMIDI::set_message(const MIDIMessage p_message) {
 	message = p_message;
 }
 
-int InputEventMIDI::get_message() const {
+MIDIMessage InputEventMIDI::get_message() const {
 	return message;
 }
 

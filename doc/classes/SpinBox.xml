@@ -30,15 +30,13 @@
 	</tutorials>
 	<methods>
 		<method name="apply">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Applies the current value of this [SpinBox].
 			</description>
 		</method>
 		<method name="get_line_edit">
-			<return type="LineEdit">
-			</return>
+			<return type="LineEdit" />
 			<description>
 				Returns the [LineEdit] instance from this [SpinBox]. You can use it to access properties and methods of [LineEdit].
 			</description>

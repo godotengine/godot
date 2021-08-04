@@ -11,7 +11,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="border_color" type="Color" setter="set_border_color" getter="get_border_color" default="Color( 1, 0, 0, 1 )">
+		<member name="border_color" type="Color" setter="set_border_color" getter="get_border_color" default="Color(1, 0, 0, 1)">
 			Sets the border [Color] of the [ReferenceRect].
 		</member>
 		<member name="border_width" type="float" setter="set_border_width" getter="get_border_width" default="1.0">

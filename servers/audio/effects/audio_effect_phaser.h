@@ -83,7 +83,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	Ref<AudioEffectInstance> instance() override;
+	Ref<AudioEffectInstance> instantiate() override;
 
 	void set_range_min_hz(float p_hz);
 	float get_range_min_hz() const;

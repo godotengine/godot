@@ -227,10 +227,10 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 		case Variant::VECTOR3:
 		case Variant::TRANSFORM2D:
 		case Variant::PLANE:
-		case Variant::QUAT:
+		case Variant::QUATERNION:
 		case Variant::AABB:
 		case Variant::BASIS:
-		case Variant::TRANSFORM:
+		case Variant::TRANSFORM3D:
 		case Variant::PACKED_BYTE_ARRAY:
 		case Variant::PACKED_INT32_ARRAY:
 		case Variant::PACKED_INT64_ARRAY:
@@ -268,21 +268,21 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 			d.get_key_list(&keys);
 			List<DictKey> sortk;
 
-			for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+			for (const Variant &key : keys) {
 				DictKey dk;
-				dk.hash = E->get().hash();
-				dk.key = E->get();
+				dk.hash = key.hash();
+				dk.key = key;
 				sortk.push_back(dk);
 			}
 
 			sortk.sort();
 
 			int idx = 0;
-			for (List<DictKey>::Element *E = sortk.front(); E; E = E->next()) {
-				encode_uint32(E->get().hash, &tmpdata.write[pos + 8 + idx * 12 + 0]);
-				uint32_t ofs = _pack(E->get().key, tmpdata, string_cache);
+			for (const DictKey &E : sortk) {
+				encode_uint32(E.hash, &tmpdata.write[pos + 8 + idx * 12 + 0]);
+				uint32_t ofs = _pack(E.key, tmpdata, string_cache);
 				encode_uint32(ofs, &tmpdata.write[pos + 8 + idx * 12 + 4]);
-				ofs = _pack(d[E->get().key], tmpdata, string_cache);
+				ofs = _pack(d[E.key], tmpdata, string_cache);
 				encode_uint32(ofs, &tmpdata.write[pos + 8 + idx * 12 + 8]);
 				idx++;
 			}

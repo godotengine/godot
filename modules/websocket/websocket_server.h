@@ -32,7 +32,7 @@
 #define WEBSOCKET_H
 
 #include "core/crypto/crypto.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "websocket_multiplayer_peer.h"
 #include "websocket_peer.h"
 
@@ -48,6 +48,7 @@ protected:
 	Ref<CryptoKey> private_key;
 	Ref<X509Certificate> ssl_cert;
 	Ref<X509Certificate> ca_chain;
+	uint32_t handshake_timeout = 3000;
 
 public:
 	virtual Error listen(int p_port, const Vector<String> p_protocols = Vector<String>(), bool gd_mp_api = false) = 0;
@@ -62,7 +63,7 @@ public:
 	virtual void disconnect_peer(int p_peer_id, int p_code = 1000, String p_reason = "") = 0;
 
 	void _on_peer_packet(int32_t p_peer_id);
-	void _on_connect(int32_t p_peer_id, String p_protocol);
+	void _on_connect(int32_t p_peer_id, String p_protocol, String p_resource_name);
 	void _on_disconnect(int32_t p_peer_id, bool p_was_clean);
 	void _on_close_request(int32_t p_peer_id, int p_code, String p_reason);
 
@@ -77,6 +78,9 @@ public:
 
 	Ref<X509Certificate> get_ca_chain() const;
 	void set_ca_chain(Ref<X509Certificate> p_ca_chain);
+
+	float get_handshake_timeout() const;
+	void set_handshake_timeout(float p_timeout);
 
 	WebSocketServer();
 	~WebSocketServer();

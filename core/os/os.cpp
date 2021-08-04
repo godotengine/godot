@@ -32,8 +32,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/os/midi_driver.h"
 #include "core/version_generated.gen.h"
 #include "servers/audio_server.h"
@@ -47,37 +47,8 @@ OS *OS::get_singleton() {
 	return singleton;
 }
 
-uint32_t OS::get_ticks_msec() const {
-	return get_ticks_usec() / 1000;
-}
-
-String OS::get_iso_date_time(bool local) const {
-	OS::Date date = get_date(local);
-	OS::Time time = get_time(local);
-
-	String timezone;
-	if (!local) {
-		TimeZoneInfo zone = get_time_zone_info();
-		if (zone.bias >= 0) {
-			timezone = "+";
-		}
-		timezone = timezone + itos(zone.bias / 60).pad_zeros(2) + itos(zone.bias % 60).pad_zeros(2);
-	} else {
-		timezone = "Z";
-	}
-
-	return itos(date.year).pad_zeros(2) +
-		   "-" +
-		   itos(date.month).pad_zeros(2) +
-		   "-" +
-		   itos(date.day).pad_zeros(2) +
-		   "T" +
-		   itos(time.hour).pad_zeros(2) +
-		   ":" +
-		   itos(time.min).pad_zeros(2) +
-		   ":" +
-		   itos(time.sec).pad_zeros(2) +
-		   timezone;
+uint64_t OS::get_ticks_msec() const {
+	return get_ticks_usec() / 1000ULL;
 }
 
 double OS::get_unix_time() const {
@@ -137,6 +108,10 @@ void OS::printerr(const char *p_format, ...) {
 	_logger->logv(p_format, argp, true);
 
 	va_end(argp);
+}
+
+void OS::alert(const String &p_alert, const String &p_title) {
+	fprintf(stderr, "%s: %s\n", p_title.utf8().get_data(), p_alert.utf8().get_data());
 }
 
 void OS::set_low_processor_usage_mode(bool p_enabled) {
@@ -240,14 +215,6 @@ void OS::dump_resources_to_file(const char *p_file) {
 	ResourceCache::dump(p_file);
 }
 
-void OS::set_no_window_mode(bool p_enable) {
-	_no_window = p_enable;
-}
-
-bool OS::is_no_window_mode_enabled() const {
-	return _no_window;
-}
-
 int OS::get_exit_code() const {
 	return _exit_code;
 }
@@ -309,6 +276,11 @@ String OS::get_bundle_resource_dir() const {
 String OS::get_user_data_dir() const {
 	return ".";
 }
+
+// Android OS path to app's external data storage
+String OS::get_external_data_dir() const {
+	return get_user_data_dir();
+};
 
 // Absolute path to res://
 String OS::get_resource_dir() const {

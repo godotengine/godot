@@ -76,7 +76,7 @@ public:
 	void set_wait_time(float p_time);
 	float get_wait_time();
 
-	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) override;
+	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 
 	VisualScriptYield();
 };
@@ -135,7 +135,7 @@ public:
 	void set_call_mode(CallMode p_mode);
 	CallMode get_call_mode() const;
 
-	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) override;
+	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 
 	VisualScriptYieldSignal();
 };

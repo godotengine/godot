@@ -31,8 +31,8 @@
 #include "packet_peer_mbed_dtls.h"
 #include "mbedtls/platform_util.h"
 
+#include "core/io/file_access.h"
 #include "core/io/stream_peer_ssl.h"
-#include "core/os/file_access.h"
 
 int PacketPeerMbedDTLS::bio_send(void *ctx, const unsigned char *buf, size_t len) {
 	if (buf == nullptr || len <= 0) {
@@ -245,7 +245,7 @@ int PacketPeerMbedDTLS::get_max_packet_size() const {
 }
 
 PacketPeerMbedDTLS::PacketPeerMbedDTLS() {
-	ssl_ctx.instance();
+	ssl_ctx.instantiate();
 }
 
 PacketPeerMbedDTLS::~PacketPeerMbedDTLS() {

@@ -88,7 +88,7 @@ void ResourceImporterTexture::update_imports() {
 
 		for (Map<StringName, MakeInfo>::Element *E = make_flags.front(); E; E = E->next()) {
 			Ref<ConfigFile> cf;
-			cf.instance();
+			cf.instantiate();
 			String src_path = String(E->key()) + ".import";
 
 			Error err = cf->load(src_path);
@@ -208,7 +208,7 @@ void ResourceImporterTexture::get_import_options(List<ImportOption> *r_options, 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "roughness/src_normal", PROPERTY_HINT_FILE, "*.bmp,*.dds,*.exr,*.jpeg,*.jpg,*.hdr,*.png,*.svg,*.svgz,*.tga,*.webp"), ""));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/fix_alpha_border"), p_preset != PRESET_3D));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/premult_alpha"), false));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/invert_color"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/normal_map_invert_y"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/HDR_as_SRGB"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/size_limit", PROPERTY_HINT_RANGE, "0,4096,1"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "detect_3d/compress_to", PROPERTY_HINT_ENUM, "Disabled,VRAM Compressed,Basis Universal"), (p_preset == PRESET_DETECT) ? 1 : 0));
@@ -218,14 +218,21 @@ void ResourceImporterTexture::get_import_options(List<ImportOption> *r_options, 
 void ResourceImporterTexture::save_to_stex_format(FileAccess *f, const Ref<Image> &p_image, CompressMode p_compress_mode, Image::UsedChannels p_channels, Image::CompressMode p_compress_format, float p_lossy_quality) {
 	switch (p_compress_mode) {
 		case COMPRESS_LOSSLESS: {
-			f->store_32(StreamTexture2D::DATA_FORMAT_LOSSLESS);
+			bool lossless_force_png = ProjectSettings::get_singleton()->get("rendering/textures/lossless_compression/force_png");
+			bool use_webp = !lossless_force_png && p_image->get_width() <= 16383 && p_image->get_height() <= 16383; // WebP has a size limit
+			f->store_32(use_webp ? StreamTexture2D::DATA_FORMAT_WEBP : StreamTexture2D::DATA_FORMAT_PNG);
 			f->store_16(p_image->get_width());
 			f->store_16(p_image->get_height());
 			f->store_32(p_image->get_mipmap_count());
 			f->store_32(p_image->get_format());
 
 			for (int i = 0; i < p_image->get_mipmap_count() + 1; i++) {
-				Vector<uint8_t> data = Image::lossless_packer(p_image->get_image_from_mipmap(i));
+				Vector<uint8_t> data;
+				if (use_webp) {
+					data = Image::webp_lossless_packer(p_image->get_image_from_mipmap(i));
+				} else {
+					data = Image::png_packer(p_image->get_image_from_mipmap(i));
+				}
 				int data_len = data.size();
 				f->store_32(data_len);
 
@@ -235,14 +242,14 @@ void ResourceImporterTexture::save_to_stex_format(FileAccess *f, const Ref<Image
 
 		} break;
 		case COMPRESS_LOSSY: {
-			f->store_32(StreamTexture2D::DATA_FORMAT_LOSSY);
+			f->store_32(StreamTexture2D::DATA_FORMAT_WEBP);
 			f->store_16(p_image->get_width());
 			f->store_16(p_image->get_height());
 			f->store_32(p_image->get_mipmap_count());
 			f->store_32(p_image->get_format());
 
 			for (int i = 0; i < p_image->get_mipmap_count() + 1; i++) {
-				Vector<uint8_t> data = Image::lossy_packer(p_image->get_image_from_mipmap(i), p_lossy_quality);
+				Vector<uint8_t> data = Image::webp_lossy_packer(p_image->get_image_from_mipmap(i), p_lossy_quality);
 				int data_len = data.size();
 				f->store_32(data_len);
 
@@ -301,6 +308,7 @@ void ResourceImporterTexture::save_to_stex_format(FileAccess *f, const Ref<Image
 
 void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String &p_to_path, CompressMode p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, bool p_streamable, bool p_detect_3d, bool p_detect_roughness, bool p_detect_normal, bool p_force_normal, bool p_srgb_friendly, bool p_force_po2_for_compressed, uint32_t p_limit_mipmap, const Ref<Image> &p_normal, Image::RoughnessChannel p_roughness_channel) {
 	FileAccess *f = FileAccess::open(p_to_path, FileAccess::WRITE);
+	ERR_FAIL_NULL(f);
 	f->store_8('G');
 	f->store_8('S');
 	f->store_8('T');
@@ -388,7 +396,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	uint32_t mipmap_limit = int(mipmaps ? int(p_options["mipmaps/limit"]) : int(-1));
 	bool fix_alpha_border = p_options["process/fix_alpha_border"];
 	bool premult_alpha = p_options["process/premult_alpha"];
-	bool invert_color = p_options["process/invert_color"];
+	bool normal_map_invert_y = p_options["process/normal_map_invert_y"];
 	bool stream = p_options["compress/streamed"];
 	int size_limit = p_options["process/size_limit"];
 	bool hdr_as_srgb = p_options["process/HDR_as_SRGB"];
@@ -403,13 +411,13 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	Image::RoughnessChannel roughness_channel = Image::ROUGHNESS_CHANNEL_R;
 
 	if (mipmaps && roughness > 1 && FileAccess::exists(normal_map)) {
-		normal_image.instance();
+		normal_image.instantiate();
 		if (ImageLoader::load_image(normal_map, normal_image) == OK) {
 			roughness_channel = Image::RoughnessChannel(roughness - 2);
 		}
 	}
 	Ref<Image> image;
-	image.instance();
+	image.instantiate();
 	Error err = ImageLoader::load_image(p_source_file, image, nullptr, hdr_as_srgb, scale);
 	if (err != OK) {
 		return err;
@@ -444,13 +452,18 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		image->premultiply_alpha();
 	}
 
-	if (invert_color) {
-		int height = image->get_height();
-		int width = image->get_width();
+	if (normal_map_invert_y) {
+		// Inverting the green channel can be used to flip a normal map's direction.
+		// There's no standard when it comes to normal map Y direction, so this is
+		// sometimes needed when using a normal map exported from another program.
+		// See <http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates>.
+		const int height = image->get_height();
+		const int width = image->get_width();
 
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < height; j++) {
-				image->set_pixel(i, j, image->get_pixel(i, j).inverted());
+				const Color color = image->get_pixel(i, j);
+				image->set_pixel(i, j, Color(color.r, 1 - color.g, color.b));
 			}
 		}
 	}

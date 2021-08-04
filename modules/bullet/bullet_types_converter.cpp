@@ -59,7 +59,7 @@ void INVERT_B_TO_G(btMatrix3x3 const &inVal, Basis &outVal) {
 	INVERT_B_TO_G(inVal[2], outVal[2]);
 }
 
-void B_TO_G(btTransform const &inVal, Transform &outVal) {
+void B_TO_G(btTransform const &inVal, Transform3D &outVal) {
 	B_TO_G(inVal.getBasis(), outVal.basis);
 	B_TO_G(inVal.getOrigin(), outVal.origin);
 }
@@ -89,7 +89,7 @@ void INVERT_G_TO_B(Basis const &inVal, btMatrix3x3 &outVal) {
 	INVERT_G_TO_B(inVal[2], outVal[2]);
 }
 
-void G_TO_B(Transform const &inVal, btTransform &outVal) {
+void G_TO_B(Transform3D const &inVal, btTransform &outVal) {
 	G_TO_B(inVal.basis, outVal.getBasis());
 	G_TO_B(inVal.origin, outVal.getOrigin());
 }

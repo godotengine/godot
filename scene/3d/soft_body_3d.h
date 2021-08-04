@@ -67,6 +67,11 @@ class SoftBody3D : public MeshInstance3D {
 	GDCLASS(SoftBody3D, MeshInstance3D);
 
 public:
+	enum DisableMode {
+		DISABLE_MODE_REMOVE,
+		DISABLE_MODE_KEEP_ACTIVE,
+	};
+
 	struct PinnedPoint {
 		int point_index = -1;
 		NodePath spatial_attachment_path;
@@ -82,6 +87,8 @@ private:
 	SoftBodyRenderingServerHandler rendering_server_handler;
 
 	RID physics_rid;
+
+	DisableMode disable_mode = DISABLE_MODE_REMOVE;
 
 	bool mesh_owner = false;
 	uint32_t collision_mask = 1;
@@ -137,6 +144,9 @@ public:
 	void set_collision_layer_bit(int p_bit, bool p_value);
 	bool get_collision_layer_bit(int p_bit) const;
 
+	void set_disable_mode(DisableMode p_mode);
+	DisableMode get_disable_mode() const;
+
 	void set_parent_collision_ignore(const NodePath &p_parent_collision_ignore);
 	const NodePath &get_parent_collision_ignore() const;
 
@@ -191,5 +201,7 @@ private:
 	int _get_pinned_point(int p_point_index, PinnedPoint *&r_point) const;
 	int _has_pinned_point(int p_point_index) const;
 };
+
+VARIANT_ENUM_CAST(SoftBody3D::DisableMode);
 
 #endif // SOFT_PHYSICS_BODY_H

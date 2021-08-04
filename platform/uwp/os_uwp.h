@@ -106,7 +106,7 @@ private:
 	bool control_mem;
 	bool meta_mem;
 	bool force_quit;
-	uint32_t last_button_state;
+	MouseButton last_button_state = MOUSE_BUTTON_NONE;
 
 	CursorShape cursor_shape;
 
@@ -173,7 +173,7 @@ public:
 	MouseMode get_mouse_mode() const;
 
 	virtual Point2 get_mouse_position() const;
-	virtual int get_mouse_button_state() const;
+	virtual MouseButton get_mouse_button_state() const;
 	virtual void set_window_title(const String &p_title);
 
 	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0);

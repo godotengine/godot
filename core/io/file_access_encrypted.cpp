@@ -257,6 +257,7 @@ Error FileAccessEncrypted::get_error() const {
 
 void FileAccessEncrypted::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 	ERR_FAIL_COND_MSG(!writing, "File has not been opened in write mode.");
+	ERR_FAIL_COND(!p_src && p_length > 0);
 
 	if (pos < get_length()) {
 		for (uint64_t i = 0; i < p_length; i++) {

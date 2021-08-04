@@ -82,6 +82,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual TypedArray<String> get_configuration_warnings() const override;
+
 	enum BakeError {
 		BAKE_ERROR_OK,
 		BAKE_ERROR_NO_SAVE_PATH,

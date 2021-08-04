@@ -30,7 +30,7 @@
 
 #include "export.h"
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 #include "editor/editor_export.h"
 #include "platform/linuxbsd/logo.gen.h"
 #include "scene/resources/texture.h"
@@ -39,11 +39,11 @@ static Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, 
 
 void register_linuxbsd_exporter() {
 	Ref<EditorExportPlatformPC> platform;
-	platform.instance();
+	platform.instantiate();
 
 	Ref<Image> img = memnew(Image(_linuxbsd_logo));
 	Ref<ImageTexture> logo;
-	logo.instance();
+	logo.instantiate();
 	logo->create_from_image(img);
 	platform->set_logo(logo);
 	platform->set_name("Linux/X11");

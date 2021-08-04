@@ -179,6 +179,9 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	void connect_data(Ref<VisualScriptNode> vnode_old, Ref<VisualScriptNode> vnode, int new_id);
 
+	NodePath drop_path;
+	Node *drop_node = nullptr;
+	Vector2 drop_position;
 	void _selected_connect_node(const String &p_text, const String &p_category, const bool p_connecting = true);
 	void connect_seq(Ref<VisualScriptNode> vnode_old, Ref<VisualScriptNode> vnode_new, int new_id);
 
@@ -226,7 +229,8 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _update_node_size(int p_id);
 	void _port_name_focus_out(const Node *p_name_box, int p_id, int p_port, bool is_input);
 
-	Vector2 _get_available_pos(bool centered = true, Vector2 ofs = Vector2()) const;
+	Vector2 _get_pos_in_graph(Vector2 p_point) const;
+	Vector2 _get_available_pos(bool p_centered = true, Vector2 p_pos = Vector2()) const;
 
 	bool node_has_sequence_connections(int p_id);
 
@@ -268,9 +272,6 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	void _graph_ofs_changed(const Vector2 &p_ofs);
 	void _comment_node_resized(const Vector2 &p_new_size, int p_node);
-
-	int selecting_method_id;
-	void _selected_method(const String &p_method, const String &p_type, const bool p_connecting);
 
 	void _draw_color_over_button(Object *obj, Color p_color);
 	void _button_resource_previewed(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, Variant p_ud);
@@ -317,6 +318,7 @@ public:
 	virtual void set_tooltip_request_func(String p_method, Object *p_obj) override;
 	virtual Control *get_edit_menu() override;
 	virtual void clear_edit_menu() override;
+	virtual void set_find_replace_bar(FindReplaceBar *p_bar) override { p_bar->hide(); }; // Not needed here.
 	virtual bool can_lose_focus_on_node_selection() override { return false; }
 	virtual void validate() override;
 

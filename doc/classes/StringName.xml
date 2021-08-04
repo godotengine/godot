@@ -10,59 +10,46 @@
 	</tutorials>
 	<methods>
 		<method name="StringName" qualifiers="constructor">
-			<return type="StringName">
-			</return>
+			<return type="StringName" />
 			<description>
 				Constructs an empty [StringName].
 			</description>
 		</method>
 		<method name="StringName" qualifiers="constructor">
-			<return type="StringName">
-			</return>
-			<argument index="0" name="from" type="StringName">
-			</argument>
+			<return type="StringName" />
+			<argument index="0" name="from" type="StringName" />
 			<description>
 				Constructs a [StringName] as a copy of the given [StringName].
 			</description>
 		</method>
 		<method name="StringName" qualifiers="constructor">
-			<return type="StringName">
-			</return>
-			<argument index="0" name="from" type="String">
-			</argument>
+			<return type="StringName" />
+			<argument index="0" name="from" type="String" />
 			<description>
 				Creates a new [StringName] from the given [String].
 			</description>
 		</method>
 		<method name="operator !=" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="operator !=" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="StringName">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="StringName" />
 			<description>
 			</description>
 		</method>
 		<method name="operator ==" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="operator ==" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="StringName">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="StringName" />
 			<description>
 			</description>
 		</method>

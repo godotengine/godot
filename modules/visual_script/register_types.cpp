@@ -51,59 +51,59 @@ void register_visual_script_types() {
 	//script_language_gd->init();
 	ScriptServer::register_language(visual_script_language);
 
-	ClassDB::register_class<VisualScript>();
-	ClassDB::register_virtual_class<VisualScriptNode>();
-	ClassDB::register_class<VisualScriptFunctionState>();
-	ClassDB::register_class<VisualScriptFunction>();
-	ClassDB::register_virtual_class<VisualScriptLists>();
-	ClassDB::register_class<VisualScriptComposeArray>();
-	ClassDB::register_class<VisualScriptOperator>();
-	ClassDB::register_class<VisualScriptVariableSet>();
-	ClassDB::register_class<VisualScriptVariableGet>();
-	ClassDB::register_class<VisualScriptConstant>();
-	ClassDB::register_class<VisualScriptIndexGet>();
-	ClassDB::register_class<VisualScriptIndexSet>();
-	ClassDB::register_class<VisualScriptGlobalConstant>();
-	ClassDB::register_class<VisualScriptClassConstant>();
-	ClassDB::register_class<VisualScriptMathConstant>();
-	ClassDB::register_class<VisualScriptBasicTypeConstant>();
-	ClassDB::register_class<VisualScriptEngineSingleton>();
-	ClassDB::register_class<VisualScriptSceneNode>();
-	ClassDB::register_class<VisualScriptSceneTree>();
-	ClassDB::register_class<VisualScriptResourcePath>();
-	ClassDB::register_class<VisualScriptSelf>();
-	ClassDB::register_class<VisualScriptCustomNode>();
-	ClassDB::register_class<VisualScriptSubCall>();
-	ClassDB::register_class<VisualScriptComment>();
-	ClassDB::register_class<VisualScriptConstructor>();
-	ClassDB::register_class<VisualScriptLocalVar>();
-	ClassDB::register_class<VisualScriptLocalVarSet>();
-	ClassDB::register_class<VisualScriptInputAction>();
-	ClassDB::register_class<VisualScriptDeconstruct>();
-	ClassDB::register_class<VisualScriptPreload>();
-	ClassDB::register_class<VisualScriptTypeCast>();
+	GDREGISTER_CLASS(VisualScript);
+	GDREGISTER_VIRTUAL_CLASS(VisualScriptNode);
+	GDREGISTER_CLASS(VisualScriptFunctionState);
+	GDREGISTER_CLASS(VisualScriptFunction);
+	GDREGISTER_VIRTUAL_CLASS(VisualScriptLists);
+	GDREGISTER_CLASS(VisualScriptComposeArray);
+	GDREGISTER_CLASS(VisualScriptOperator);
+	GDREGISTER_CLASS(VisualScriptVariableSet);
+	GDREGISTER_CLASS(VisualScriptVariableGet);
+	GDREGISTER_CLASS(VisualScriptConstant);
+	GDREGISTER_CLASS(VisualScriptIndexGet);
+	GDREGISTER_CLASS(VisualScriptIndexSet);
+	GDREGISTER_CLASS(VisualScriptGlobalConstant);
+	GDREGISTER_CLASS(VisualScriptClassConstant);
+	GDREGISTER_CLASS(VisualScriptMathConstant);
+	GDREGISTER_CLASS(VisualScriptBasicTypeConstant);
+	GDREGISTER_CLASS(VisualScriptEngineSingleton);
+	GDREGISTER_CLASS(VisualScriptSceneNode);
+	GDREGISTER_CLASS(VisualScriptSceneTree);
+	GDREGISTER_CLASS(VisualScriptResourcePath);
+	GDREGISTER_CLASS(VisualScriptSelf);
+	GDREGISTER_CLASS(VisualScriptCustomNode);
+	GDREGISTER_CLASS(VisualScriptSubCall);
+	GDREGISTER_CLASS(VisualScriptComment);
+	GDREGISTER_CLASS(VisualScriptConstructor);
+	GDREGISTER_CLASS(VisualScriptLocalVar);
+	GDREGISTER_CLASS(VisualScriptLocalVarSet);
+	GDREGISTER_CLASS(VisualScriptInputAction);
+	GDREGISTER_CLASS(VisualScriptDeconstruct);
+	GDREGISTER_CLASS(VisualScriptPreload);
+	GDREGISTER_CLASS(VisualScriptTypeCast);
 
-	ClassDB::register_class<VisualScriptFunctionCall>();
-	ClassDB::register_class<VisualScriptPropertySet>();
-	ClassDB::register_class<VisualScriptPropertyGet>();
+	GDREGISTER_CLASS(VisualScriptFunctionCall);
+	GDREGISTER_CLASS(VisualScriptPropertySet);
+	GDREGISTER_CLASS(VisualScriptPropertyGet);
 	//ClassDB::register_type<VisualScriptScriptCall>();
-	ClassDB::register_class<VisualScriptEmitSignal>();
+	GDREGISTER_CLASS(VisualScriptEmitSignal);
 
-	ClassDB::register_class<VisualScriptReturn>();
-	ClassDB::register_class<VisualScriptCondition>();
-	ClassDB::register_class<VisualScriptWhile>();
-	ClassDB::register_class<VisualScriptIterator>();
-	ClassDB::register_class<VisualScriptSequence>();
-	//ClassDB::register_class<VisualScriptInputFilter>();
-	ClassDB::register_class<VisualScriptSwitch>();
-	ClassDB::register_class<VisualScriptSelect>();
+	GDREGISTER_CLASS(VisualScriptReturn);
+	GDREGISTER_CLASS(VisualScriptCondition);
+	GDREGISTER_CLASS(VisualScriptWhile);
+	GDREGISTER_CLASS(VisualScriptIterator);
+	GDREGISTER_CLASS(VisualScriptSequence);
+	//GDREGISTER_CLASS(VisualScriptInputFilter);
+	GDREGISTER_CLASS(VisualScriptSwitch);
+	GDREGISTER_CLASS(VisualScriptSelect);
 
-	ClassDB::register_class<VisualScriptYield>();
-	ClassDB::register_class<VisualScriptYieldSignal>();
+	GDREGISTER_CLASS(VisualScriptYield);
+	GDREGISTER_CLASS(VisualScriptYieldSignal);
 
-	ClassDB::register_class<VisualScriptBuiltinFunc>();
+	GDREGISTER_CLASS(VisualScriptBuiltinFunc);
 
-	ClassDB::register_class<VisualScriptExpression>();
+	GDREGISTER_CLASS(VisualScriptExpression);
 
 	register_visual_script_nodes();
 	register_visual_script_func_nodes();
@@ -114,7 +114,7 @@ void register_visual_script_types() {
 
 #ifdef TOOLS_ENABLED
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
-	ClassDB::register_class<_VisualScriptEditor>();
+	GDREGISTER_CLASS(_VisualScriptEditor);
 	ClassDB::set_current_api(ClassDB::API_CORE);
 	vs_editor_singleton = memnew(_VisualScriptEditor);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("VisualScriptEditor", _VisualScriptEditor::get_singleton()));

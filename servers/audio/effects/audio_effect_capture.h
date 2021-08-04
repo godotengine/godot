@@ -33,7 +33,7 @@
 
 #include "core/config/engine.h"
 #include "core/math/audio_frame.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/templates/vector.h"
 #include "servers/audio/audio_effect.h"
 #include "servers/audio_server.h"
@@ -64,7 +64,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual Ref<AudioEffectInstance> instance() override;
+	virtual Ref<AudioEffectInstance> instantiate() override;
 
 	void set_buffer_length(float p_buffer_length_seconds);
 	float get_buffer_length();

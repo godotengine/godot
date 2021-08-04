@@ -40,16 +40,16 @@
 	@author AndreaCatania
 */
 
-ConeTwistJointBullet::ConeTwistJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &rbAFrame, const Transform &rbBFrame) :
+ConeTwistJointBullet::ConeTwistJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform3D &rbAFrame, const Transform3D &rbBFrame) :
 		JointBullet() {
-	Transform scaled_AFrame(rbAFrame.scaled(rbA->get_body_scale()));
+	Transform3D scaled_AFrame(rbAFrame.scaled(rbA->get_body_scale()));
 	scaled_AFrame.basis.rotref_posscale_decomposition(scaled_AFrame.basis);
 
 	btTransform btFrameA;
 	G_TO_B(scaled_AFrame, btFrameA);
 
 	if (rbB) {
-		Transform scaled_BFrame(rbBFrame.scaled(rbB->get_body_scale()));
+		Transform3D scaled_BFrame(rbBFrame.scaled(rbB->get_body_scale()));
 		scaled_BFrame.basis.rotref_posscale_decomposition(scaled_BFrame.basis);
 
 		btTransform btFrameB;

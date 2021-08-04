@@ -48,7 +48,7 @@ float AudioStreamGenerator::get_buffer_length() const {
 
 Ref<AudioStreamPlayback> AudioStreamGenerator::instance_playback() {
 	Ref<AudioStreamGeneratorPlayback> playback;
-	playback.instance();
+	playback.instantiate();
 	playback->generator = this;
 	int target_buffer_size = mix_rate * buffer_len;
 	playback->buffer.resize(nearest_shift(target_buffer_size));

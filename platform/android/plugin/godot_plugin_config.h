@@ -37,8 +37,8 @@
 
 /*
  The `config` section and fields are required and defined as follow:
-- **name**: name of the plugin
-- **binary_type**: can be either `local` or `remote`.  The type affects the **binary** field
+- **name**: name of the plugin.
+- **binary_type**: can be either `local` or `remote`. The type affects the **binary** field.
 - **binary**:
   - if **binary_type** is `local`, then this should be the filename of the plugin `aar` file in the `res://android/plugins` directory (e.g: `MyPlugin.aar`).
   - if **binary_type** is `remote`, then this should be a declaration for a remote gradle binary (e.g: "org.godot.example:my-plugin:0.0.0").
@@ -102,7 +102,7 @@ struct PluginConfigAndroid {
 static inline String resolve_local_dependency_path(String plugin_config_dir, String dependency_path) {
 	String absolute_path;
 	if (!dependency_path.is_empty()) {
-		if (dependency_path.is_abs_path()) {
+		if (dependency_path.is_absolute_path()) {
 			absolute_path = ProjectSettings::get_singleton()->globalize_path(dependency_path);
 		} else {
 			absolute_path = plugin_config_dir.plus_file(dependency_path);

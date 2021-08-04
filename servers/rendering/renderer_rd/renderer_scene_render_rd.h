@@ -40,15 +40,20 @@
 #include "servers/rendering/renderer_rd/renderer_scene_sky_rd.h"
 #include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_rd/shaders/volumetric_fog.glsl.gen.h"
+#include "servers/rendering/renderer_scene.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
 
 struct RenderDataRD {
 	RID render_buffers = RID();
 
-	Transform cam_transform = Transform();
+	Transform3D cam_transform = Transform3D();
 	CameraMatrix cam_projection = CameraMatrix();
 	bool cam_ortogonal = false;
+
+	// For stereo rendering
+	uint32_t view_count = 1;
+	CameraMatrix view_projection[RendererSceneRender::MAX_RENDER_VIEWS];
 
 	float z_near = 0.0;
 	float z_far = 0.0;
@@ -56,7 +61,7 @@ struct RenderDataRD {
 	const PagedArray<RendererSceneRender::GeometryInstance *> *instances = nullptr;
 	const PagedArray<RID> *lights = nullptr;
 	const PagedArray<RID> *reflection_probes = nullptr;
-	const PagedArray<RID> *gi_probes = nullptr;
+	const PagedArray<RID> *voxel_gi_instances = nullptr;
 	const PagedArray<RID> *decals = nullptr;
 	const PagedArray<RID> *lightmaps = nullptr;
 	RID environment = RID();
@@ -75,6 +80,9 @@ struct RenderDataRD {
 	uint32_t cluster_max_elements = 0;
 
 	uint32_t directional_light_count = 0;
+	bool directional_light_soft_shadows = false;
+
+	RendererScene::RenderInfo *render_info = nullptr;
 };
 
 class RendererSceneRenderRD : public RendererSceneRender {
@@ -87,26 +95,26 @@ protected:
 	double time_step = 0;
 
 	struct RenderBufferData {
-		virtual void configure(RID p_color_buffer, RID p_depth_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa) = 0;
+		virtual void configure(RID p_color_buffer, RID p_depth_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, uint32_t p_view_count) = 0;
 		virtual ~RenderBufferData() {}
 	};
 	virtual RenderBufferData *_create_render_buffer_data() = 0;
 
-	void _setup_lights(const PagedArray<RID> &p_lights, const Transform &p_camera_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count);
-	void _setup_decals(const PagedArray<RID> &p_decals, const Transform &p_camera_inverse_xform);
-	void _setup_reflections(const PagedArray<RID> &p_reflections, const Transform &p_camera_inverse_transform, RID p_environment);
+	void _setup_lights(const PagedArray<RID> &p_lights, const Transform3D &p_camera_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count, bool &r_directional_light_soft_shadows);
+	void _setup_decals(const PagedArray<RID> &p_decals, const Transform3D &p_camera_inverse_xform);
+	void _setup_reflections(const PagedArray<RID> &p_reflections, const Transform3D &p_camera_inverse_transform, RID p_environment);
 
 	virtual void _render_scene(RenderDataRD *p_render_data, const Color &p_default_color) = 0;
 
 	virtual void _render_shadow_begin() = 0;
-	virtual void _render_shadow_append(RID p_framebuffer, const PagedArray<GeometryInstance *> &p_instances, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_lod_threshold = 0.0, const Rect2i &p_rect = Rect2i(), bool p_flip_y = false, bool p_clear_region = true, bool p_begin = true, bool p_end = true) = 0;
+	virtual void _render_shadow_append(RID p_framebuffer, const PagedArray<GeometryInstance *> &p_instances, const CameraMatrix &p_projection, const Transform3D &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_lod_threshold = 0.0, const Rect2i &p_rect = Rect2i(), bool p_flip_y = false, bool p_clear_region = true, bool p_begin = true, bool p_end = true, RendererScene::RenderInfo *p_render_info = nullptr) = 0;
 	virtual void _render_shadow_process() = 0;
 	virtual void _render_shadow_end(uint32_t p_barrier = RD::BARRIER_MASK_ALL) = 0;
 
-	virtual void _render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) = 0;
+	virtual void _render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) = 0;
 	virtual void _render_uv2(const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) = 0;
 	virtual void _render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<GeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture) = 0;
-	virtual void _render_particle_collider_heightfield(RID p_fb, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, const PagedArray<GeometryInstance *> &p_instances) = 0;
+	virtual void _render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, const PagedArray<GeometryInstance *> &p_instances) = 0;
 
 	void _debug_sdfgi_probes(RID p_render_buffers, RD::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform);
 
@@ -123,7 +131,7 @@ protected:
 	void _post_prepass_render(RenderDataRD *p_render_data, bool p_use_gi);
 	void _pre_resolve_render(RenderDataRD *p_render_data, bool p_use_gi);
 
-	void _pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_gi, RID p_normal_roughness_buffer, RID p_gi_probe_buffer);
+	void _pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_gi, RID p_normal_roughness_buffer, RID p_voxel_gi_buffer);
 
 	// needed for a single argument calls (material and uv2)
 	PagedArrayPool<GeometryInstance *> cull_argument_pool;
@@ -139,6 +147,25 @@ protected:
 			return nullptr;
 		}
 	}
+
+	//used for mobile renderer mostly
+
+	typedef int32_t ForwardID;
+
+	enum ForwardIDType {
+		FORWARD_ID_TYPE_OMNI_LIGHT,
+		FORWARD_ID_TYPE_SPOT_LIGHT,
+		FORWARD_ID_TYPE_REFLECTION_PROBE,
+		FORWARD_ID_TYPE_DECAL,
+		FORWARD_ID_MAX,
+	};
+
+	virtual ForwardID _allocate_forward_id(ForwardIDType p_type) { return -1; }
+	virtual void _free_forward_id(ForwardIDType p_type, ForwardID p_id) {}
+	virtual void _map_forward_id(ForwardIDType p_type, ForwardID p_id, uint32_t p_index) {}
+	virtual bool _uses_forward_ids() const { return false; }
+
+	virtual void _update_shader_quality_settings() {}
 
 private:
 	RS::ViewportDebugDraw debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
@@ -181,10 +208,11 @@ private:
 
 		uint32_t render_step = 0;
 		uint64_t last_pass = 0;
-		uint32_t render_index = 0;
 		uint32_t cull_mask = 0;
 
-		Transform transform;
+		ForwardID forward_id = -1;
+
+		Transform3D transform;
 	};
 
 	mutable RID_Owner<ReflectionProbeInstance> reflection_probe_instance_owner;
@@ -193,9 +221,9 @@ private:
 
 	struct DecalInstance {
 		RID decal;
-		Transform transform;
-		uint32_t render_index;
+		Transform3D transform;
 		uint32_t cull_mask;
+		ForwardID forward_id = -1;
 	};
 
 	mutable RID_Owner<DecalInstance> decal_instance_owner;
@@ -204,7 +232,7 @@ private:
 
 	struct LightmapInstance {
 		RID lightmap;
-		Transform transform;
+		Transform3D transform;
 	};
 
 	mutable RID_Owner<LightmapInstance> lightmap_instance_owner;
@@ -279,6 +307,8 @@ private:
 	int directional_soft_shadow_samples = 0;
 	int penumbra_shadow_samples = 0;
 	int soft_shadow_samples = 0;
+	RS::DecalFilter decals_filter = RS::DECAL_FILTER_LINEAR_MIPMAPS;
+	RS::LightProjectorFilter light_projectors_filter = RS::LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS;
 
 	/* DIRECTIONAL SHADOW */
 
@@ -312,7 +342,7 @@ private:
 	struct LightInstance {
 		struct ShadowTransform {
 			CameraMatrix camera;
-			Transform transform;
+			Transform3D transform;
 			float farplane;
 			float split;
 			float bias_scale;
@@ -329,7 +359,7 @@ private:
 		AABB aabb;
 		RID self;
 		RID light;
-		Transform transform;
+		Transform3D transform;
 
 		Vector3 light_vector;
 		Vector3 spot_vector;
@@ -339,7 +369,6 @@ private:
 		uint64_t last_scene_pass = 0;
 		uint64_t last_scene_shadow_pass = 0;
 		uint64_t last_pass = 0;
-		uint32_t light_index = 0;
 		uint32_t cull_mask = 0;
 		uint32_t light_directional_index = 0;
 
@@ -350,6 +379,8 @@ private:
 		Rect2 directional_rect;
 
 		Set<RID> shadow_atlases; //shadow atlases where this light is registered
+
+		ForwardID forward_id = -1;
 
 		LightInstance() {}
 	};
@@ -411,6 +442,7 @@ private:
 		RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
 		RS::ViewportScreenSpaceAA screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
 		bool use_debanding = false;
+		uint32_t view_count = 1;
 
 		RID render_target;
 
@@ -418,6 +450,7 @@ private:
 
 		RID texture; //main texture for rendering to, must be filled after done rendering
 		RID depth_texture; //main depth texture
+		RID texture_fb; // framebuffer for the main texture, ONLY USED FOR MOBILE RENDERER POST EFFECTS, DO NOT USE FOR RENDERING 3D!!!
 
 		RendererSceneGIRD::SDFGI *sdfgi = nullptr;
 		VolumetricFog *volumetric_fog = nullptr;
@@ -433,6 +466,11 @@ private:
 				RID texture;
 				int width;
 				int height;
+
+				// only used on mobile renderer
+				RID fb;
+				RID half_texture;
+				RID half_fb;
 			};
 
 			Vector<Mipmap> mipmaps;
@@ -443,6 +481,10 @@ private:
 		struct Luminance {
 			Vector<RID> reduce;
 			RID current;
+
+			// used only on mobile renderer
+			Vector<RID> fb;
+			RID current_fb;
 		} luminance;
 
 		struct SSAO {
@@ -454,6 +496,10 @@ private:
 			Vector<RID> ao_pong_slices;
 			RID ao_final;
 			RID importance_map[2];
+
+			RID downsample_uniform_set;
+			RID gather_uniform_set;
+			RID importance_map_uniform_set;
 		} ssao;
 
 		struct SSR {
@@ -631,7 +677,7 @@ private:
 		int render_sdfgi_region_count = 0;
 		const RendererSceneRender::RenderSDFGIUpdateData *sdfgi_update_data = nullptr;
 
-		uint32_t gi_probe_count = 0;
+		uint32_t voxel_gi_count = 0;
 
 		LocalVector<int> cube_shadows;
 		LocalVector<int> shadows;
@@ -663,7 +709,7 @@ private:
 
 		int last_shadow_filter = -1;
 
-		Transform prev_cam_transform;
+		Transform3D prev_cam_transform;
 	};
 
 	enum {
@@ -692,7 +738,7 @@ private:
 
 			float detail_spread;
 			float gi_inject;
-			uint32_t max_gi_probes;
+			uint32_t max_voxel_gi_instances;
 			uint32_t cluster_type_size;
 
 			float screen_size[2];
@@ -721,7 +767,7 @@ private:
 	bool volumetric_fog_filter_active = true;
 
 	void _volumetric_fog_erase(RenderBuffers *rb);
-	void _update_volumetric_fog(RID p_render_buffers, RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_gi_probe_count);
+	void _update_volumetric_fog(RID p_render_buffers, RID p_environment, const CameraMatrix &p_cam_projection, const Transform3D &p_cam_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count);
 
 	RID shadow_sampler;
 
@@ -737,18 +783,18 @@ private:
 
 	uint32_t max_cluster_elements = 512;
 
-	void _render_shadow_pass(RID p_light, RID p_shadow_atlas, int p_pass, const PagedArray<GeometryInstance *> &p_instances, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0, float p_screen_lod_threshold = 0.0, bool p_open_pass = true, bool p_close_pass = true, bool p_clear_region = true);
+	void _render_shadow_pass(RID p_light, RID p_shadow_atlas, int p_pass, const PagedArray<GeometryInstance *> &p_instances, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0, float p_screen_lod_threshold = 0.0, bool p_open_pass = true, bool p_close_pass = true, bool p_clear_region = true, RendererScene::RenderInfo *p_render_info = nullptr);
 
 public:
-	virtual Transform geometry_instance_get_transform(GeometryInstance *p_instance) = 0;
+	virtual Transform3D geometry_instance_get_transform(GeometryInstance *p_instance) = 0;
 	virtual AABB geometry_instance_get_aabb(GeometryInstance *p_instance) = 0;
 
 	/* SHADOW ATLAS API */
 
-	RID shadow_atlas_create();
-	void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits = false);
-	void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision);
-	bool shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version);
+	virtual RID shadow_atlas_create() override;
+	virtual void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits = false) override;
+	virtual void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) override;
+	virtual bool shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version) override;
 	_FORCE_INLINE_ bool shadow_atlas_owns_light_instance(RID p_atlas, RID p_light_intance) {
 		ShadowAtlas *atlas = shadow_atlas_owner.getornull(p_atlas);
 		ERR_FAIL_COND_V(!atlas, false);
@@ -767,9 +813,9 @@ public:
 		return Size2(atlas->size, atlas->size);
 	}
 
-	void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = false);
-	int get_directional_light_shadow_size(RID p_light_intance);
-	void set_directional_shadow_count(int p_count);
+	virtual void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = false) override;
+	virtual int get_directional_light_shadow_size(RID p_light_intance) override;
+	virtual void set_directional_shadow_count(int p_count) override;
 
 	_FORCE_INLINE_ RID directional_shadow_get_texture() {
 		return directional_shadow.depth;
@@ -781,43 +827,43 @@ public:
 
 	/* SDFGI UPDATE */
 
-	virtual void sdfgi_update(RID p_render_buffers, RID p_environment, const Vector3 &p_world_position);
-	virtual int sdfgi_get_pending_region_count(RID p_render_buffers) const;
-	virtual AABB sdfgi_get_pending_region_bounds(RID p_render_buffers, int p_region) const;
-	virtual uint32_t sdfgi_get_pending_region_cascade(RID p_render_buffers, int p_region) const;
+	virtual void sdfgi_update(RID p_render_buffers, RID p_environment, const Vector3 &p_world_position) override;
+	virtual int sdfgi_get_pending_region_count(RID p_render_buffers) const override;
+	virtual AABB sdfgi_get_pending_region_bounds(RID p_render_buffers, int p_region) const override;
+	virtual uint32_t sdfgi_get_pending_region_cascade(RID p_render_buffers, int p_region) const override;
 	RID sdfgi_get_ubo() const { return gi.sdfgi_ubo; }
 
 	/* SKY API */
 
-	virtual RID sky_allocate();
-	virtual void sky_initialize(RID p_rid);
+	virtual RID sky_allocate() override;
+	virtual void sky_initialize(RID p_rid) override;
 
-	void sky_set_radiance_size(RID p_sky, int p_radiance_size);
-	void sky_set_mode(RID p_sky, RS::SkyMode p_mode);
-	void sky_set_material(RID p_sky, RID p_material);
-	Ref<Image> sky_bake_panorama(RID p_sky, float p_energy, bool p_bake_irradiance, const Size2i &p_size);
+	virtual void sky_set_radiance_size(RID p_sky, int p_radiance_size) override;
+	virtual void sky_set_mode(RID p_sky, RS::SkyMode p_mode) override;
+	virtual void sky_set_material(RID p_sky, RID p_material) override;
+	virtual Ref<Image> sky_bake_panorama(RID p_sky, float p_energy, bool p_bake_irradiance, const Size2i &p_size) override;
 
 	/* ENVIRONMENT API */
 
-	virtual RID environment_allocate();
-	virtual void environment_initialize(RID p_rid);
+	virtual RID environment_allocate() override;
+	virtual void environment_initialize(RID p_rid) override;
 
-	void environment_set_background(RID p_env, RS::EnvironmentBG p_bg);
-	void environment_set_sky(RID p_env, RID p_sky);
-	void environment_set_sky_custom_fov(RID p_env, float p_scale);
-	void environment_set_sky_orientation(RID p_env, const Basis &p_orientation);
-	void environment_set_bg_color(RID p_env, const Color &p_color);
-	void environment_set_bg_energy(RID p_env, float p_energy);
-	void environment_set_canvas_max_layer(RID p_env, int p_max_layer);
-	void environment_set_ambient_light(RID p_env, const Color &p_color, RS::EnvironmentAmbientSource p_ambient = RS::ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, RS::EnvironmentReflectionSource p_reflection_source = RS::ENV_REFLECTION_SOURCE_BG, const Color &p_ao_color = Color());
+	virtual void environment_set_background(RID p_env, RS::EnvironmentBG p_bg) override;
+	virtual void environment_set_sky(RID p_env, RID p_sky) override;
+	virtual void environment_set_sky_custom_fov(RID p_env, float p_scale) override;
+	virtual void environment_set_sky_orientation(RID p_env, const Basis &p_orientation) override;
+	virtual void environment_set_bg_color(RID p_env, const Color &p_color) override;
+	virtual void environment_set_bg_energy(RID p_env, float p_energy) override;
+	virtual void environment_set_canvas_max_layer(RID p_env, int p_max_layer) override;
+	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, RS::EnvironmentAmbientSource p_ambient = RS::ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, RS::EnvironmentReflectionSource p_reflection_source = RS::ENV_REFLECTION_SOURCE_BG, const Color &p_ao_color = Color()) override;
 
-	RS::EnvironmentBG environment_get_background(RID p_env) const;
+	virtual RS::EnvironmentBG environment_get_background(RID p_env) const override;
 	RID environment_get_sky(RID p_env) const;
 	float environment_get_sky_custom_fov(RID p_env) const;
 	Basis environment_get_sky_orientation(RID p_env) const;
 	Color environment_get_bg_color(RID p_env) const;
 	float environment_get_bg_energy(RID p_env) const;
-	int environment_get_canvas_max_layer(RID p_env) const;
+	virtual int environment_get_canvas_max_layer(RID p_env) const override;
 	Color environment_get_ambient_light_color(RID p_env) const;
 	RS::EnvironmentAmbientSource environment_get_ambient_source(RID p_env) const;
 	float environment_get_ambient_light_energy(RID p_env) const;
@@ -825,13 +871,13 @@ public:
 	RS::EnvironmentReflectionSource environment_get_reflection_source(RID p_env) const;
 	Color environment_get_ao_color(RID p_env) const;
 
-	bool is_environment(RID p_env) const;
+	virtual bool is_environment(RID p_env) const override;
 
-	void environment_set_glow(RID p_env, bool p_enable, Vector<float> p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap);
-	void environment_glow_set_use_bicubic_upscale(bool p_enable);
-	void environment_glow_set_use_high_quality(bool p_enable);
+	virtual void environment_set_glow(RID p_env, bool p_enable, Vector<float> p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap) override;
+	virtual void environment_glow_set_use_bicubic_upscale(bool p_enable) override;
+	virtual void environment_glow_set_use_high_quality(bool p_enable) override;
 
-	void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective);
+	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective) override;
 	bool environment_is_fog_enabled(RID p_env) const;
 	Color environment_get_fog_light_color(RID p_env) const;
 	float environment_get_fog_light_energy(RID p_env) const;
@@ -841,54 +887,54 @@ public:
 	float environment_get_fog_height_density(RID p_env) const;
 	float environment_get_fog_aerial_perspective(RID p_env) const;
 
-	void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount);
+	virtual void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount) override;
 
-	virtual void environment_set_volumetric_fog_volume_size(int p_size, int p_depth);
-	virtual void environment_set_volumetric_fog_filter_active(bool p_enable);
+	virtual void environment_set_volumetric_fog_volume_size(int p_size, int p_depth) override;
+	virtual void environment_set_volumetric_fog_filter_active(bool p_enable) override;
 
-	void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance);
-	void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_light_affect, float p_ao_channel_affect);
-	void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to);
+	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance) override;
+	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_light_affect, float p_ao_channel_affect) override;
+	virtual void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override;
 	bool environment_is_ssao_enabled(RID p_env) const;
 	float environment_get_ssao_ao_affect(RID p_env) const;
 	float environment_get_ssao_light_affect(RID p_env) const;
 	bool environment_is_ssr_enabled(RID p_env) const;
 	bool environment_is_sdfgi_enabled(RID p_env) const;
 
-	virtual void environment_set_sdfgi(RID p_env, bool p_enable, RS::EnvironmentSDFGICascades p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias);
-	virtual void environment_set_sdfgi_ray_count(RS::EnvironmentSDFGIRayCount p_ray_count);
-	virtual void environment_set_sdfgi_frames_to_converge(RS::EnvironmentSDFGIFramesToConverge p_frames);
-	virtual void environment_set_sdfgi_frames_to_update_light(RS::EnvironmentSDFGIFramesToUpdateLight p_update);
+	virtual void environment_set_sdfgi(RID p_env, bool p_enable, RS::EnvironmentSDFGICascades p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) override;
+	virtual void environment_set_sdfgi_ray_count(RS::EnvironmentSDFGIRayCount p_ray_count) override;
+	virtual void environment_set_sdfgi_frames_to_converge(RS::EnvironmentSDFGIFramesToConverge p_frames) override;
+	virtual void environment_set_sdfgi_frames_to_update_light(RS::EnvironmentSDFGIFramesToUpdateLight p_update) override;
 
-	void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality);
+	virtual void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) override;
 	RS::EnvironmentSSRRoughnessQuality environment_get_ssr_roughness_quality() const;
 
-	void environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale);
-	void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction);
+	virtual void environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) override;
+	virtual void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction) override;
 
-	virtual Ref<Image> environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size);
+	virtual Ref<Image> environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size) override;
 
-	virtual RID camera_effects_allocate();
-	virtual void camera_effects_initialize(RID p_rid);
+	virtual RID camera_effects_allocate() override;
+	virtual void camera_effects_initialize(RID p_rid) override;
 
-	virtual void camera_effects_set_dof_blur_quality(RS::DOFBlurQuality p_quality, bool p_use_jitter);
-	virtual void camera_effects_set_dof_blur_bokeh_shape(RS::DOFBokehShape p_shape);
+	virtual void camera_effects_set_dof_blur_quality(RS::DOFBlurQuality p_quality, bool p_use_jitter) override;
+	virtual void camera_effects_set_dof_blur_bokeh_shape(RS::DOFBokehShape p_shape) override;
 
-	virtual void camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount);
-	virtual void camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure);
+	virtual void camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) override;
+	virtual void camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) override;
 
-	RID light_instance_create(RID p_light);
-	void light_instance_set_transform(RID p_light_instance, const Transform &p_transform);
-	void light_instance_set_aabb(RID p_light_instance, const AABB &p_aabb);
-	void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2());
-	void light_instance_mark_visible(RID p_light_instance);
+	virtual RID light_instance_create(RID p_light) override;
+	virtual void light_instance_set_transform(RID p_light_instance, const Transform3D &p_transform) override;
+	virtual void light_instance_set_aabb(RID p_light_instance, const AABB &p_aabb) override;
+	virtual void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2()) override;
+	virtual void light_instance_mark_visible(RID p_light_instance) override;
 
 	_FORCE_INLINE_ RID light_instance_get_base_light(RID p_light_instance) {
 		LightInstance *li = light_instance_owner.getornull(p_light_instance);
 		return li->light;
 	}
 
-	_FORCE_INLINE_ Transform light_instance_get_base_transform(RID p_light_instance) {
+	_FORCE_INLINE_ Transform3D light_instance_get_base_transform(RID p_light_instance) {
 		LightInstance *li = light_instance_owner.getornull(p_light_instance);
 		return li->transform;
 	}
@@ -945,7 +991,7 @@ public:
 		return float(1.0) / shadow_size;
 	}
 
-	_FORCE_INLINE_ Transform
+	_FORCE_INLINE_ Transform3D
 	light_instance_get_shadow_transform(RID p_light_instance, int p_index) {
 		LightInstance *li = light_instance_owner.getornull(p_light_instance);
 		return li->shadow_transform[p_index].transform;
@@ -993,14 +1039,9 @@ public:
 		return li->last_pass;
 	}
 
-	_FORCE_INLINE_ void light_instance_set_index(RID p_light_instance, uint32_t p_index) {
+	_FORCE_INLINE_ ForwardID light_instance_get_forward_id(RID p_light_instance) {
 		LightInstance *li = light_instance_owner.getornull(p_light_instance);
-		li->light_index = p_index;
-	}
-
-	_FORCE_INLINE_ uint32_t light_instance_get_index(RID p_light_instance) {
-		LightInstance *li = light_instance_owner.getornull(p_light_instance);
-		return li->light_index;
+		return li->forward_id;
 	}
 
 	_FORCE_INLINE_ RS::LightType light_instance_get_type(RID p_light_instance) {
@@ -1008,9 +1049,9 @@ public:
 		return li->light_type;
 	}
 
-	virtual RID reflection_atlas_create();
-	virtual void reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_size, int p_reflection_count);
-	virtual int reflection_atlas_get_size(RID p_ref_atlas) const;
+	virtual RID reflection_atlas_create() override;
+	virtual void reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_size, int p_reflection_count) override;
+	virtual int reflection_atlas_get_size(RID p_ref_atlas) const override;
 
 	_FORCE_INLINE_ RID reflection_atlas_get_texture(RID p_ref_atlas) {
 		ReflectionAtlas *atlas = reflection_atlas_owner.getornull(p_ref_atlas);
@@ -1018,13 +1059,13 @@ public:
 		return atlas->reflection;
 	}
 
-	virtual RID reflection_probe_instance_create(RID p_probe);
-	virtual void reflection_probe_instance_set_transform(RID p_instance, const Transform &p_transform);
-	virtual void reflection_probe_release_atlas_index(RID p_instance);
-	virtual bool reflection_probe_instance_needs_redraw(RID p_instance);
-	virtual bool reflection_probe_instance_has_reflection(RID p_instance);
-	virtual bool reflection_probe_instance_begin_render(RID p_instance, RID p_reflection_atlas);
-	virtual bool reflection_probe_instance_postprocess_step(RID p_instance);
+	virtual RID reflection_probe_instance_create(RID p_probe) override;
+	virtual void reflection_probe_instance_set_transform(RID p_instance, const Transform3D &p_transform) override;
+	virtual void reflection_probe_release_atlas_index(RID p_instance) override;
+	virtual bool reflection_probe_instance_needs_redraw(RID p_instance) override;
+	virtual bool reflection_probe_instance_has_reflection(RID p_instance) override;
+	virtual bool reflection_probe_instance_begin_render(RID p_instance, RID p_reflection_atlas) override;
+	virtual bool reflection_probe_instance_postprocess_step(RID p_instance) override;
 
 	uint32_t reflection_probe_instance_get_resolution(RID p_instance);
 	RID reflection_probe_instance_get_framebuffer(RID p_instance, int p_index);
@@ -1037,17 +1078,11 @@ public:
 		return rpi->probe;
 	}
 
-	_FORCE_INLINE_ void reflection_probe_instance_set_render_index(RID p_instance, uint32_t p_render_index) {
-		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
-		ERR_FAIL_COND(!rpi);
-		rpi->render_index = p_render_index;
-	}
-
-	_FORCE_INLINE_ uint32_t reflection_probe_instance_get_render_index(RID p_instance) {
+	_FORCE_INLINE_ ForwardID reflection_probe_instance_get_forward_id(RID p_instance) {
 		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
 		ERR_FAIL_COND_V(!rpi, 0);
 
-		return rpi->render_index;
+		return rpi->forward_id;
 	}
 
 	_FORCE_INLINE_ void reflection_probe_instance_set_render_pass(RID p_instance, uint32_t p_render_pass) {
@@ -1063,9 +1098,9 @@ public:
 		return rpi->last_pass;
 	}
 
-	_FORCE_INLINE_ Transform reflection_probe_instance_get_transform(RID p_instance) {
+	_FORCE_INLINE_ Transform3D reflection_probe_instance_get_transform(RID p_instance) {
 		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
-		ERR_FAIL_COND_V(!rpi, Transform());
+		ERR_FAIL_COND_V(!rpi, Transform3D());
 
 		return rpi->transform;
 	}
@@ -1077,21 +1112,26 @@ public:
 		return rpi->atlas_index;
 	}
 
-	virtual RID decal_instance_create(RID p_decal);
-	virtual void decal_instance_set_transform(RID p_decal, const Transform &p_transform);
+	virtual RID decal_instance_create(RID p_decal) override;
+	virtual void decal_instance_set_transform(RID p_decal, const Transform3D &p_transform) override;
 
 	_FORCE_INLINE_ RID decal_instance_get_base(RID p_decal) const {
 		DecalInstance *decal = decal_instance_owner.getornull(p_decal);
 		return decal->decal;
 	}
 
-	_FORCE_INLINE_ Transform decal_instance_get_transform(RID p_decal) const {
+	_FORCE_INLINE_ ForwardID decal_instance_get_forward_id(RID p_decal) const {
+		DecalInstance *decal = decal_instance_owner.getornull(p_decal);
+		return decal->forward_id;
+	}
+
+	_FORCE_INLINE_ Transform3D decal_instance_get_transform(RID p_decal) const {
 		DecalInstance *decal = decal_instance_owner.getornull(p_decal);
 		return decal->transform;
 	}
 
-	virtual RID lightmap_instance_create(RID p_lightmap);
-	virtual void lightmap_instance_set_transform(RID p_lightmap, const Transform &p_transform);
+	virtual RID lightmap_instance_create(RID p_lightmap) override;
+	virtual void lightmap_instance_set_transform(RID p_lightmap, const Transform3D &p_transform) override;
 	_FORCE_INLINE_ bool lightmap_instance_is_valid(RID p_lightmap_instance) {
 		return lightmap_instance_owner.getornull(p_lightmap_instance) != nullptr;
 	}
@@ -1100,31 +1140,31 @@ public:
 		LightmapInstance *li = lightmap_instance_owner.getornull(p_lightmap_instance);
 		return li->lightmap;
 	}
-	_FORCE_INLINE_ Transform lightmap_instance_get_transform(RID p_lightmap_instance) {
+	_FORCE_INLINE_ Transform3D lightmap_instance_get_transform(RID p_lightmap_instance) {
 		LightmapInstance *li = lightmap_instance_owner.getornull(p_lightmap_instance);
 		return li->transform;
 	}
 
-	void _fill_instance_indices(const RID *p_omni_light_instances, uint32_t p_omni_light_instance_count, uint32_t *p_omni_light_indices, const RID *p_spot_light_instances, uint32_t p_spot_light_instance_count, uint32_t *p_spot_light_indices, const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count, uint32_t *p_reflection_probe_indices, const RID *p_decal_instances, uint32_t p_decal_instance_count, uint32_t *p_decal_instance_indices, uint32_t p_layer_mask, uint32_t p_max_dst_words = 2);
-
 	/* gi light probes */
 
-	RID gi_probe_instance_create(RID p_base);
-	void gi_probe_instance_set_transform_to_data(RID p_probe, const Transform &p_xform);
-	bool gi_probe_needs_update(RID p_probe) const;
-	void gi_probe_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RendererSceneRender::GeometryInstance *> &p_dynamic_objects);
-	void gi_probe_set_quality(RS::GIProbeQuality p_quality) { gi.gi_probe_quality = p_quality; }
+	virtual RID voxel_gi_instance_create(RID p_base) override;
+	virtual void voxel_gi_instance_set_transform_to_data(RID p_probe, const Transform3D &p_xform) override;
+	virtual bool voxel_gi_needs_update(RID p_probe) const override;
+	virtual void voxel_gi_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RendererSceneRender::GeometryInstance *> &p_dynamic_objects) override;
+	virtual void voxel_gi_set_quality(RS::VoxelGIQuality p_quality) override { gi.voxel_gi_quality = p_quality; }
 
 	/* render buffers */
 
-	RID render_buffers_create();
-	void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding);
-	void gi_set_use_half_resolution(bool p_enable);
+	virtual RD::DataFormat _render_buffers_get_color_format();
+	virtual bool _render_buffers_can_be_storage();
+	virtual RID render_buffers_create() override;
+	virtual void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding, uint32_t p_view_count) override;
+	virtual void gi_set_use_half_resolution(bool p_enable) override;
 
 	RID render_buffers_get_ao_texture(RID p_render_buffers);
 	RID render_buffers_get_back_buffer_texture(RID p_render_buffers);
-	RID render_buffers_get_gi_probe_buffer(RID p_render_buffers);
-	RID render_buffers_get_default_gi_probe_buffer();
+	RID render_buffers_get_voxel_gi_buffer(RID p_render_buffers);
+	RID render_buffers_get_default_voxel_gi_buffer();
 	RID render_buffers_get_gi_ambient_texture(RID p_render_buffers);
 	RID render_buffers_get_gi_reflection_texture(RID p_render_buffers);
 
@@ -1147,30 +1187,34 @@ public:
 	float render_buffers_get_volumetric_fog_end(RID p_render_buffers);
 	float render_buffers_get_volumetric_fog_detail_spread(RID p_render_buffers);
 
-	void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_gi_probes, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr);
+	virtual void render_scene(RID p_render_buffers, const CameraData *p_camera_data, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RendererScene::RenderInfo *r_render_info = nullptr) override;
 
-	void render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region);
+	virtual void render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
 
-	void render_particle_collider_heightfield(RID p_collider, const Transform &p_transform, const PagedArray<GeometryInstance *> &p_instances);
+	virtual void render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<GeometryInstance *> &p_instances) override;
 
-	virtual void set_scene_pass(uint64_t p_pass) {
+	virtual void set_scene_pass(uint64_t p_pass) override {
 		scene_pass = p_pass;
 	}
 	_FORCE_INLINE_ uint64_t get_scene_pass() {
 		return scene_pass;
 	}
 
-	virtual void screen_space_roughness_limiter_set_active(bool p_enable, float p_amount, float p_limit);
-	virtual bool screen_space_roughness_limiter_is_active() const;
+	virtual void screen_space_roughness_limiter_set_active(bool p_enable, float p_amount, float p_limit) override;
+	virtual bool screen_space_roughness_limiter_is_active() const override;
 	virtual float screen_space_roughness_limiter_get_amount() const;
 	virtual float screen_space_roughness_limiter_get_limit() const;
 
-	virtual void sub_surface_scattering_set_quality(RS::SubSurfaceScatteringQuality p_quality);
+	virtual void sub_surface_scattering_set_quality(RS::SubSurfaceScatteringQuality p_quality) override;
 	RS::SubSurfaceScatteringQuality sub_surface_scattering_get_quality() const;
-	virtual void sub_surface_scattering_set_scale(float p_scale, float p_depth_scale);
+	virtual void sub_surface_scattering_set_scale(float p_scale, float p_depth_scale) override;
 
-	virtual void shadows_quality_set(RS::ShadowQuality p_quality);
-	virtual void directional_shadow_quality_set(RS::ShadowQuality p_quality);
+	virtual void shadows_quality_set(RS::ShadowQuality p_quality) override;
+	virtual void directional_shadow_quality_set(RS::ShadowQuality p_quality) override;
+
+	virtual void decals_set_filter(RS::DecalFilter p_filter) override;
+	virtual void light_projectors_set_filter(RS::LightProjectorFilter p_filter) override;
+
 	_FORCE_INLINE_ RS::ShadowQuality shadows_quality_get() const { return shadows_quality; }
 	_FORCE_INLINE_ RS::ShadowQuality directional_shadow_quality_get() const { return directional_shadow_quality; }
 	_FORCE_INLINE_ float shadows_quality_radius_get() const { return shadows_quality_radius; }
@@ -1186,21 +1230,24 @@ public:
 	_FORCE_INLINE_ int penumbra_shadow_samples_get() const { return penumbra_shadow_samples; }
 	_FORCE_INLINE_ int soft_shadow_samples_get() const { return soft_shadow_samples; }
 
+	_FORCE_INLINE_ RS::LightProjectorFilter light_projectors_get_filter() const { return light_projectors_filter; }
+	_FORCE_INLINE_ RS::DecalFilter decals_get_filter() const { return decals_filter; }
+
 	int get_roughness_layers() const;
 	bool is_using_radiance_cubemap_array() const;
 
-	virtual TypedArray<Image> bake_render_uv2(RID p_base, const Vector<RID> &p_material_overrides, const Size2i &p_image_size);
+	virtual TypedArray<Image> bake_render_uv2(RID p_base, const Vector<RID> &p_material_overrides, const Size2i &p_image_size) override;
 
-	virtual bool free(RID p_rid);
+	virtual bool free(RID p_rid) override;
 
-	virtual void update();
+	virtual void update() override;
 
-	virtual void set_debug_draw_mode(RS::ViewportDebugDraw p_debug_draw);
+	virtual void set_debug_draw_mode(RS::ViewportDebugDraw p_debug_draw) override;
 	_FORCE_INLINE_ RS::ViewportDebugDraw get_debug_draw_mode() const {
 		return debug_draw;
 	}
 
-	void set_time(double p_time, double p_step);
+	virtual void set_time(double p_time, double p_step) override;
 
 	RID get_reflection_probe_buffer();
 	RID get_omni_light_buffer();
@@ -1209,7 +1256,7 @@ public:
 	RID get_decal_buffer();
 	int get_max_directional_lights() const;
 
-	void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir);
+	virtual void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) override;
 
 	virtual bool is_dynamic_gi_supported() const;
 	virtual bool is_clustered_enabled() const;

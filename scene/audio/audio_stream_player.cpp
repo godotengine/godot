@@ -146,7 +146,7 @@ void AudioStreamPlayer::_notification(int p_what) {
 		if (!active.is_set() || (setseek.get() < 0 && !stream_playback->is_playing())) {
 			active.clear();
 			set_process_internal(false);
-			emit_signal("finished");
+			emit_signal(SNAME("finished"));
 		}
 	}
 

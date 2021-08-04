@@ -59,6 +59,8 @@ String ShaderWarning::get_message() const {
 			return vformat("The uniform '%s' is declared but never used.", subject);
 		case UNUSED_VARYING:
 			return vformat("The varying '%s' is declared but never used.", subject);
+		case UNUSED_LOCAL_VARIABLE:
+			return vformat("The local variable '%s' is declared but never used.", subject);
 		default:
 			break;
 	}
@@ -79,6 +81,7 @@ String ShaderWarning::get_name_from_code(Code p_code) {
 		"UNUSED_STRUCT",
 		"UNUSED_UNIFORM",
 		"UNUSED_VARYING",
+		"UNUSED_LOCAL_VARIABLE",
 	};
 
 	static_assert((sizeof(names) / sizeof(*names)) == WARNING_MAX, "Amount of warning types don't match the amount of warning names.");
@@ -106,6 +109,7 @@ static void init_code_to_flags_map() {
 	code_to_flags_map->insert(ShaderWarning::UNUSED_STRUCT, ShaderWarning::UNUSED_STRUCT_FLAG);
 	code_to_flags_map->insert(ShaderWarning::UNUSED_UNIFORM, ShaderWarning::UNUSED_UNIFORM_FLAG);
 	code_to_flags_map->insert(ShaderWarning::UNUSED_VARYING, ShaderWarning::UNUSED_VARYING_FLAG);
+	code_to_flags_map->insert(ShaderWarning::UNUSED_LOCAL_VARIABLE, ShaderWarning::UNUSED_LOCAL_VARIABLE_FLAG);
 }
 
 ShaderWarning::CodeFlags ShaderWarning::get_flags_from_codemap(const Map<Code, bool> &p_map) {

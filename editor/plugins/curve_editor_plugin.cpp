@@ -127,6 +127,8 @@ void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
 				case MOUSE_BUTTON_LEFT:
 					_dragging = true;
 					break;
+				default:
+					break;
 			}
 		}
 
@@ -391,7 +393,8 @@ int CurveEditor::get_point_at(Vector2 pos) const {
 	}
 	const Curve &curve = **_curve_ref;
 
-	const float r = _hover_radius * _hover_radius;
+	const float true_hover_radius = Math::round(_hover_radius * EDSCALE);
+	const float r = true_hover_radius * true_hover_radius;
 
 	for (int i = 0; i < curve.get_point_count(); ++i) {
 		Vector2 p = get_view_pos(curve.get_point_position(i));
@@ -517,8 +520,8 @@ void CurveEditor::set_hover_point_index(int index) {
 }
 
 void CurveEditor::update_view_transform() {
-	Ref<Font> font = get_theme_font("font", "Label");
-	int font_size = get_theme_font_size("font_size", "Label");
+	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 
 	const real_t margin = font->get_height(font_size) + 2 * EDSCALE;
 
@@ -556,7 +559,7 @@ Vector2 CurveEditor::get_tangent_view_pos(int i, TangentIndex tangent) const {
 	Vector2 point_pos = get_view_pos(_curve_ref->get_point_position(i));
 	Vector2 control_pos = get_view_pos(_curve_ref->get_point_position(i) + dir);
 
-	return point_pos + _tangents_length * (control_pos - point_pos).normalized();
+	return point_pos + Math::round(_tangents_length * EDSCALE) * (control_pos - point_pos).normalized();
 }
 
 Vector2 CurveEditor::get_view_pos(Vector2 world_pos) const {
@@ -633,7 +636,7 @@ void CurveEditor::_draw() {
 	// Background
 
 	Vector2 view_size = get_rect().size;
-	draw_style_box(get_theme_stylebox("bg", "Tree"), Rect2(Point2(), view_size));
+	draw_style_box(get_theme_stylebox(SNAME("bg"), SNAME("Tree")), Rect2(Point2(), view_size));
 
 	// Grid
 
@@ -642,8 +645,8 @@ void CurveEditor::_draw() {
 	Vector2 min_edge = get_world_pos(Vector2(0, view_size.y));
 	Vector2 max_edge = get_world_pos(Vector2(view_size.x, 0));
 
-	const Color grid_color0 = get_theme_color("mono_color", "Editor") * Color(1, 1, 1, 0.15);
-	const Color grid_color1 = get_theme_color("mono_color", "Editor") * Color(1, 1, 1, 0.07);
+	const Color grid_color0 = get_theme_color(SNAME("mono_color"), SNAME("Editor")) * Color(1, 1, 1, 0.15);
+	const Color grid_color1 = get_theme_color(SNAME("mono_color"), SNAME("Editor")) * Color(1, 1, 1, 0.07);
 	draw_line(Vector2(min_edge.x, curve.get_min_value()), Vector2(max_edge.x, curve.get_min_value()), grid_color0);
 	draw_line(Vector2(max_edge.x, curve.get_max_value()), Vector2(min_edge.x, curve.get_max_value()), grid_color0);
 	draw_line(Vector2(0, min_edge.y), Vector2(0, max_edge.y), grid_color0);
@@ -663,10 +666,10 @@ void CurveEditor::_draw() {
 
 	draw_set_transform_matrix(Transform2D());
 
-	Ref<Font> font = get_theme_font("font", "Label");
-	int font_size = get_theme_font_size("font_size", "Label");
+	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	float font_height = font->get_height(font_size);
-	Color text_color = get_theme_color("font_color", "Editor");
+	Color text_color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
 
 	{
 		// X axis
@@ -693,7 +696,7 @@ void CurveEditor::_draw() {
 	// Draw tangents for current point
 
 	if (_selected_point >= 0) {
-		const Color tangent_color = get_theme_color("accent_color", "Editor");
+		const Color tangent_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 
 		int i = _selected_point;
 		Vector2 pos = curve.get_point_position(i);
@@ -701,13 +704,13 @@ void CurveEditor::_draw() {
 		if (i != 0) {
 			Vector2 control_pos = get_tangent_view_pos(i, TANGENT_LEFT);
 			draw_line(get_view_pos(pos), control_pos, tangent_color, Math::round(EDSCALE));
-			draw_rect(Rect2(control_pos, Vector2(1, 1)).grow(2), tangent_color);
+			draw_rect(Rect2(control_pos, Vector2(1, 1)).grow(Math::round(2 * EDSCALE)), tangent_color);
 		}
 
 		if (i != curve.get_point_count() - 1) {
 			Vector2 control_pos = get_tangent_view_pos(i, TANGENT_RIGHT);
 			draw_line(get_view_pos(pos), control_pos, tangent_color, Math::round(EDSCALE));
-			draw_rect(Rect2(control_pos, Vector2(1, 1)).grow(2), tangent_color);
+			draw_rect(Rect2(control_pos, Vector2(1, 1)).grow(Math::round(2 * EDSCALE)), tangent_color);
 		}
 	}
 
@@ -715,8 +718,8 @@ void CurveEditor::_draw() {
 
 	draw_set_transform_matrix(_world_to_view);
 
-	const Color line_color = get_theme_color("font_color", "Editor");
-	const Color edge_line_color = get_theme_color("highlight_color", "Editor");
+	const Color line_color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
+	const Color edge_line_color = get_theme_color(SNAME("highlight_color"), SNAME("Editor"));
 
 	CanvasItemPlotCurve plot_func(*this, line_color, edge_line_color);
 	plot_curve_accurate(curve, 4.f / view_size.x, plot_func);
@@ -725,12 +728,12 @@ void CurveEditor::_draw() {
 
 	draw_set_transform_matrix(Transform2D());
 
-	const Color point_color = get_theme_color("font_color", "Editor");
-	const Color selected_point_color = get_theme_color("accent_color", "Editor");
+	const Color point_color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
+	const Color selected_point_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 
 	for (int i = 0; i < curve.get_point_count(); ++i) {
 		Vector2 pos = curve.get_point_position(i);
-		draw_rect(Rect2(get_view_pos(pos), Vector2(1, 1)).grow(3), i == _selected_point ? selected_point_color : point_color);
+		draw_rect(Rect2(get_view_pos(pos), Vector2(1, 1)).grow(Math::round(3 * EDSCALE)), i == _selected_point ? selected_point_color : point_color);
 		// TODO Circles are prettier. Needs a fix! Or a texture
 		//draw_circle(pos, 2, point_color);
 	}
@@ -740,7 +743,7 @@ void CurveEditor::_draw() {
 	if (_hover_point != -1) {
 		const Color hover_color = line_color;
 		Vector2 pos = curve.get_point_position(_hover_point);
-		draw_rect(Rect2(get_view_pos(pos), Vector2(1, 1)).grow(_hover_radius), hover_color, false, Math::round(EDSCALE));
+		draw_rect(Rect2(get_view_pos(pos), Vector2(1, 1)).grow(Math::round(_hover_radius * EDSCALE)), hover_color, false, Math::round(EDSCALE));
 	}
 
 	// Help text
@@ -776,7 +779,7 @@ void EditorInspectorPluginCurve::parse_begin(Object *p_object) {
 
 CurveEditorPlugin::CurveEditorPlugin(EditorNode *p_node) {
 	Ref<EditorInspectorPluginCurve> curve_plugin;
-	curve_plugin.instance();
+	curve_plugin.instantiate();
 	EditorInspector::add_inspector_plugin(curve_plugin);
 
 	get_editor_interface()->get_resource_previewer()->add_preview_generator(memnew(CurvePreviewGenerator));
@@ -798,7 +801,7 @@ Ref<Texture2D> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, cons
 	int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
 	thumbnail_size *= EDSCALE;
 	Ref<Image> img_ref;
-	img_ref.instance();
+	img_ref.instantiate();
 	Image &im = **img_ref;
 
 	im.create(thumbnail_size, thumbnail_size / 2, false, Image::FORMAT_RGBA8);

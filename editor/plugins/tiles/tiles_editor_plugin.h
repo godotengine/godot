@@ -76,8 +76,8 @@ public:
 	void forward_canvas_draw_over_viewport(Control *p_overlay) { tilemap_editor->forward_canvas_draw_over_viewport(p_overlay); }
 
 	// To synchronize the atlas sources lists.
-	void set_atlas_sources_lists_current(int p_current);
-	void synchronize_atlas_sources_list(Object *p_current);
+	void set_sources_lists_current(int p_current);
+	void synchronize_sources_list(Object *p_current);
 
 	void set_atlas_view_transform(float p_zoom, Vector2 p_scroll);
 	void synchronize_atlas_view(Object *p_current);

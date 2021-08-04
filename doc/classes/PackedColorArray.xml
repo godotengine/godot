@@ -10,195 +10,153 @@
 	</tutorials>
 	<methods>
 		<method name="PackedColorArray" qualifiers="constructor">
-			<return type="PackedColorArray">
-			</return>
+			<return type="PackedColorArray" />
 			<description>
 				Constructs an empty [PackedColorArray].
 			</description>
 		</method>
 		<method name="PackedColorArray" qualifiers="constructor">
-			<return type="PackedColorArray">
-			</return>
-			<argument index="0" name="from" type="PackedColorArray">
-			</argument>
+			<return type="PackedColorArray" />
+			<argument index="0" name="from" type="PackedColorArray" />
 			<description>
 				Constructs a [PackedColorArray] as a copy of the given [PackedColorArray].
 			</description>
 		</method>
 		<method name="PackedColorArray" qualifiers="constructor">
-			<return type="PackedColorArray">
-			</return>
-			<argument index="0" name="from" type="Array">
-			</argument>
+			<return type="PackedColorArray" />
+			<argument index="0" name="from" type="Array" />
 			<description>
 				Constructs a new [PackedColorArray]. Optionally, you can pass in a generic [Array] that will be converted.
 			</description>
 		</method>
 		<method name="append">
-			<return type="bool">
-			</return>
-			<argument index="0" name="value" type="Color">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="value" type="Color" />
 			<description>
 				Appends an element at the end of the array (alias of [method push_back]).
 			</description>
 		</method>
 		<method name="append_array">
-			<return type="void">
-			</return>
-			<argument index="0" name="array" type="PackedColorArray">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="array" type="PackedColorArray" />
 			<description>
 				Appends a [PackedColorArray] at the end of this array.
 			</description>
 		</method>
 		<method name="duplicate">
-			<return type="PackedColorArray">
-			</return>
+			<return type="PackedColorArray" />
 			<description>
 				Creates a copy of the array, and returns it.
 			</description>
 		</method>
 		<method name="fill">
-			<return type="void">
-			</return>
-			<argument index="0" name="value" type="Color">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="value" type="Color" />
 			<description>
 				Assigns the given value to all elements in the array. This can typically be used together with [method resize] to create an array with a given size and initialized elements.
 			</description>
 		</method>
 		<method name="has">
-			<return type="bool">
-			</return>
-			<argument index="0" name="value" type="Color">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="value" type="Color" />
 			<description>
 				Returns [code]true[/code] if the array contains [code]value[/code].
 			</description>
 		</method>
 		<method name="insert">
-			<return type="int">
-			</return>
-			<argument index="0" name="at_index" type="int">
-			</argument>
-			<argument index="1" name="value" type="Color">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="at_index" type="int" />
+			<argument index="1" name="value" type="Color" />
 			<description>
 				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]idx == size()[/code]).
 			</description>
 		</method>
 		<method name="is_empty" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the array is empty.
 			</description>
 		</method>
 		<method name="operator !=" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="PackedColorArray">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="PackedColorArray" />
 			<description>
 			</description>
 		</method>
 		<method name="operator +" qualifiers="operator">
-			<return type="PackedColorArray">
-			</return>
-			<argument index="0" name="right" type="PackedColorArray">
-			</argument>
+			<return type="PackedColorArray" />
+			<argument index="0" name="right" type="PackedColorArray" />
 			<description>
 			</description>
 		</method>
 		<method name="operator ==" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="PackedColorArray">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="right" type="PackedColorArray" />
 			<description>
 			</description>
 		</method>
 		<method name="operator []" qualifiers="operator">
-			<return type="Color">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="index" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="push_back">
-			<return type="bool">
-			</return>
-			<argument index="0" name="value" type="Color">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="value" type="Color" />
 			<description>
 				Appends a value to the array.
 			</description>
 		</method>
 		<method name="remove">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Removes an element from the array by index.
 			</description>
 		</method>
 		<method name="resize">
-			<return type="int">
-			</return>
-			<argument index="0" name="new_size" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="new_size" type="int" />
 			<description>
 				Sets the size of the array. If the array is grown, reserves elements at the end of the array. If the array is shrunk, truncates the array to the new size.
 			</description>
 		</method>
 		<method name="reverse">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Reverses the order of the elements in the array.
 			</description>
 		</method>
 		<method name="set">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
-			<argument index="1" name="value" type="Color">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<argument index="1" name="value" type="Color" />
 			<description>
 				Changes the [Color] at the given index.
 			</description>
 		</method>
 		<method name="size" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the size of the array.
 			</description>
 		</method>
 		<method name="sort">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Sorts the elements of the array in ascending order.
 			</description>
 		</method>
 		<method name="subarray" qualifiers="const">
-			<return type="PackedColorArray">
-			</return>
-			<argument index="0" name="from" type="int">
-			</argument>
-			<argument index="1" name="to" type="int">
-			</argument>
+			<return type="PackedColorArray" />
+			<argument index="0" name="from" type="int" />
+			<argument index="1" name="to" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="to_byte_array" qualifiers="const">
-			<return type="PackedByteArray">
-			</return>
+			<return type="PackedByteArray" />
 			<description>
 			</description>
 		</method>

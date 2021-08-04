@@ -32,11 +32,11 @@
 #define JAVASCRIPT_SINGLETON_H
 
 #include "core/object/class_db.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 
-class JavaScriptObject : public Reference {
+class JavaScriptObject : public RefCounted {
 private:
-	GDCLASS(JavaScriptObject, Reference);
+	GDCLASS(JavaScriptObject, RefCounted);
 
 protected:
 	virtual bool _set(const StringName &p_name, const Variant &p_value) { return false; }

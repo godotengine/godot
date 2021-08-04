@@ -122,23 +122,23 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 			List<uint32_t> shapes;
 			sb->get_shape_owners(&shapes);
 
-			for (List<uint32_t>::Element *E = shapes.front(); E; E = E->next()) {
-				if (sb->is_shape_owner_disabled(E->get())) {
+			for (uint32_t &E : shapes) {
+				if (sb->is_shape_owner_disabled(E)) {
 					continue;
 				}
 
-				//Transform shape_transform = sb->shape_owner_get_transform(E->get());
+				//Transform3D shape_transform = sb->shape_owner_get_transform(E);
 
 				//shape_transform.set_origin(shape_transform.get_origin() - phys_offset);
 
-				for (int k = 0; k < sb->shape_owner_get_shape_count(E->get()); k++) {
-					Ref<Shape3D> collision = sb->shape_owner_get_shape(E->get(), k);
+				for (int k = 0; k < sb->shape_owner_get_shape_count(E); k++) {
+					Ref<Shape3D> collision = sb->shape_owner_get_shape(E, k);
 					if (!collision.is_valid()) {
 						continue;
 					}
 					MeshLibrary::ShapeData shape_data;
 					shape_data.shape = collision;
-					shape_data.local_transform = sb->get_transform() * sb->shape_owner_get_transform(E->get());
+					shape_data.local_transform = sb->get_transform() * sb->shape_owner_get_transform(E);
 					collisions.push_back(shape_data);
 				}
 			}
@@ -147,7 +147,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 		p_library->set_item_shapes(id, collisions);
 
 		Ref<NavigationMesh> navmesh;
-		Transform navmesh_transform;
+		Transform3D navmesh_transform;
 		for (int j = 0; j < mi->get_child_count(); j++) {
 			Node *child2 = mi->get_child(j);
 			if (!Object::cast_to<NavigationRegion3D>(child2)) {
@@ -170,7 +170,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 
 	if (true) {
 		Vector<Ref<Mesh>> meshes;
-		Vector<Transform> transforms;
+		Vector<Transform3D> transforms;
 		Vector<int> ids = p_library->get_item_list();
 		for (int i = 0; i < ids.size(); i++) {
 			if (mesh_instances.find(ids[i])) {
@@ -193,7 +193,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 void MeshLibraryEditor::_import_scene_cbk(const String &p_str) {
 	Ref<PackedScene> ps = ResourceLoader::load(p_str, "PackedScene");
 	ERR_FAIL_COND(ps.is_null());
-	Node *scene = ps->instance();
+	Node *scene = ps->instantiate();
 
 	ERR_FAIL_COND_MSG(!scene, "Cannot create an instance from PackedScene '" + p_str + "'.");
 
@@ -254,7 +254,7 @@ MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(menu);
 	menu->set_position(Point2(1, 1));
 	menu->set_text(TTR("Mesh Library"));
-	menu->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("MeshLibrary", "EditorIcons"));
+	menu->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("MeshLibrary"), SNAME("EditorIcons")));
 	menu->get_popup()->add_item(TTR("Add Item"), MENU_OPTION_ADD_ITEM);
 	menu->get_popup()->add_item(TTR("Remove Selected Item"), MENU_OPTION_REMOVE_ITEM);
 	menu->get_popup()->add_separator();

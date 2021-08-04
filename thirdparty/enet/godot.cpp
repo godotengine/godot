@@ -52,6 +52,7 @@ public:
 	virtual int set_option(ENetSocketOption p_option, int p_value) = 0;
 	virtual void close() = 0;
 	virtual void set_refuse_new_connections(bool p_enable) {} /* Only used by dtls server */
+	virtual bool can_upgrade() { return false; } /* Only true in ENetUDP */
 	virtual ~ENetGodotSocket() {}
 };
 
@@ -79,6 +80,10 @@ public:
 		sock->close();
 	}
 
+	bool can_upgrade() {
+		return true;
+	}
+
 	Error bind(IPAddress p_ip, uint16_t p_port) {
 		local_address = p_ip;
 		bound = true;
@@ -86,7 +91,11 @@ public:
 	}
 
 	Error get_socket_address(IPAddress *r_ip, uint16_t *r_port) {
-		return sock->get_socket_address(r_ip, r_port);
+		Error err = sock->get_socket_address(r_ip, r_port);
+		if (bound) {
+			*r_ip = local_address;
+		}
+		return err;
 	}
 
 	Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IPAddress p_ip, uint16_t p_port) {
@@ -164,7 +173,7 @@ public:
 		verify = p_verify;
 		for_hostname = p_for_hostname;
 		cert = p_cert;
-		udp.instance();
+		udp.instantiate();
 		dtls = Ref<PacketPeerDTLS>(PacketPeerDTLS::create());
 		if (p_base->bound) {
 			uint16_t port;
@@ -195,7 +204,9 @@ public:
 	Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IPAddress p_ip, uint16_t p_port) {
 		if (!connected) {
 			udp->connect_to_host(p_ip, p_port);
-			dtls->connect_to_peer(udp, verify, for_hostname, cert);
+			if (dtls->connect_to_peer(udp, verify, for_hostname, cert)) {
+				return FAILED;
+			}
 			connected = true;
 		}
 		dtls->poll();
@@ -254,7 +265,7 @@ class ENetDTLSServer : public ENetGodotSocket {
 
 public:
 	ENetDTLSServer(ENetUDP *p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert) {
-		udp_server.instance();
+		udp_server.instantiate();
 		if (p_base->bound) {
 			uint16_t port;
 			p_base->get_socket_address(&local_address, &port);
@@ -353,8 +364,8 @@ public:
 		}
 
 		// Remove disconnected peers from map.
-		for (List<String>::Element *E = remove.front(); E; E = E->next()) {
-			peers.erase(E->get());
+		for (String &E : remove) {
+			peers.erase(E);
 		}
 
 		return err; // OK, ERR_BUSY, or possibly an error.
@@ -424,16 +435,24 @@ ENetSocket enet_socket_create(ENetSocketType type) {
 	return socket;
 }
 
-void enet_host_dtls_server_setup(ENetHost *host, void *p_key, void *p_cert) {
-	ENetUDP *sock = (ENetUDP *)host->socket;
-	host->socket = memnew(ENetDTLSServer(sock, Ref<CryptoKey>((CryptoKey *)p_key), Ref<X509Certificate>((X509Certificate *)p_cert)));
+int enet_host_dtls_server_setup(ENetHost *host, void *p_key, void *p_cert) {
+	ENetGodotSocket *sock = (ENetGodotSocket *)host->socket;
+	if (!sock->can_upgrade()) {
+		return -1;
+	}
+	host->socket = memnew(ENetDTLSServer((ENetUDP *)sock, Ref<CryptoKey>((CryptoKey *)p_key), Ref<X509Certificate>((X509Certificate *)p_cert)));
 	memdelete(sock);
+	return 0;
 }
 
-void enet_host_dtls_client_setup(ENetHost *host, void *p_cert, uint8_t p_verify, const char *p_for_hostname) {
-	ENetUDP *sock = (ENetUDP *)host->socket;
-	host->socket = memnew(ENetDTLSClient(sock, Ref<X509Certificate>((X509Certificate *)p_cert), p_verify, String(p_for_hostname)));
+int enet_host_dtls_client_setup(ENetHost *host, void *p_cert, uint8_t p_verify, const char *p_for_hostname) {
+	ENetGodotSocket *sock = (ENetGodotSocket *)host->socket;
+	if (!sock->can_upgrade()) {
+		return -1;
+	}
+	host->socket = memnew(ENetDTLSClient((ENetUDP *)sock, Ref<X509Certificate>((X509Certificate *)p_cert), p_verify, String::utf8(p_for_hostname)));
 	memdelete(sock);
+	return 0;
 }
 
 void enet_host_refuse_new_connections(ENetHost *host, int p_refuse) {

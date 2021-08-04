@@ -38,7 +38,7 @@ class VulkanContextX11 : public VulkanContext {
 	virtual const char *_get_platform_surface_extension() const;
 
 public:
-	Error window_create(DisplayServer::WindowID p_window_id, ::Window p_window, Display *p_display, int p_width, int p_height);
+	Error window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, ::Window p_window, Display *p_display, int p_width, int p_height);
 
 	VulkanContextX11();
 	~VulkanContextX11();

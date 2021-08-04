@@ -61,8 +61,7 @@ private:
 	Map<StringName, PropertyInfo> _properties_info;
 	Map<StringName, MethodInfo> _signals_info;
 	Map<StringName, MethodInfo> _methods_info;
-	Vector<ScriptNetData> _rpc_methods;
-	Vector<ScriptNetData> _rpc_variables;
+	Vector<MultiplayerAPI::RPCConfig> _rpc_methods;
 
 	Set<Object *> _instances;
 	//exported members
@@ -93,7 +92,7 @@ public:
 		return _icon_path;
 	}
 
-	virtual bool can_instance() const override;
+	virtual bool can_instantiate() const override;
 
 	virtual Ref<Script> get_base_script() const override; //for script inheritance
 
@@ -137,17 +136,7 @@ public:
 
 	virtual int get_member_line(const StringName &p_member) const override;
 
-	virtual Vector<ScriptNetData> get_rpc_methods() const override;
-	virtual uint16_t get_rpc_method_id(const StringName &p_method) const override;
-	virtual StringName get_rpc_method(const uint16_t p_rpc_method_id) const override;
-	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const override;
-	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const override;
-
-	virtual Vector<ScriptNetData> get_rset_properties() const override;
-	virtual uint16_t get_rset_property_id(const StringName &p_property) const override;
-	virtual StringName get_rset_property(const uint16_t p_rset_property_id) const override;
-	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(const uint16_t p_rpc_method_id) const override;
-	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const override;
+	virtual const Vector<MultiplayerAPI::RPCConfig> get_rpc_methods() const override;
 
 	PluginScript();
 	void init(PluginScriptLanguage *language);

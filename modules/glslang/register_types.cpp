@@ -116,6 +116,10 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 		}
 	}
 
+	if (p_capabilities->supports_multiview) {
+		preamble += "#define has_VK_KHR_multiview 1\n";
+	}
+
 	if (preamble != "") {
 		shader.setPreamble(preamble.c_str());
 	}
@@ -179,11 +183,18 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 	return ret;
 }
 
+static String _get_cache_key_function_glsl(const RenderingDevice::Capabilities *p_capabilities) {
+	String version;
+	version = "SpirVGen=" + itos(glslang::GetSpirvGeneratorVersion()) + ", major=" + itos(p_capabilities->version_major) + ", minor=" + itos(p_capabilities->version_minor) + " , subgroup_size=" + itos(p_capabilities->subgroup_operations) + " , subgroup_ops=" + itos(p_capabilities->subgroup_operations) + " , subgroup_in_shaders=" + itos(p_capabilities->subgroup_in_shaders);
+	return version;
+}
+
 void preregister_glslang_types() {
 	// initialize in case it's not initialized. This is done once per thread
 	// and it's safe to call multiple times
 	glslang::InitializeProcess();
-	RenderingDevice::shader_set_compile_function(_compile_shader_glsl);
+	RenderingDevice::shader_set_compile_to_spirv_function(_compile_shader_glsl);
+	RenderingDevice::shader_set_get_cache_key_function(_get_cache_key_function_glsl);
 }
 
 void register_glslang_types() {

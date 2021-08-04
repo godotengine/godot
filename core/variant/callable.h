@@ -81,6 +81,7 @@ public:
 	_FORCE_INLINE_ bool is_standard() const {
 		return method != StringName();
 	}
+	bool is_valid() const;
 
 	Callable bind(const Variant **p_arguments, int p_argcount) const;
 	Callable unbind(int p_argcount) const;

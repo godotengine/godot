@@ -32,8 +32,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
-#include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "scene/resources/audio_stream_sample.h"
 #include "servers/audio/audio_driver_dummy.h"
@@ -561,7 +561,7 @@ void AudioServer::set_bus_count(int p_count) {
 
 	unlock();
 
-	emit_signal("bus_layout_changed");
+	emit_signal(SNAME("bus_layout_changed"));
 }
 
 void AudioServer::remove_bus(int p_index) {
@@ -576,7 +576,7 @@ void AudioServer::remove_bus(int p_index) {
 	buses.remove(p_index);
 	unlock();
 
-	emit_signal("bus_layout_changed");
+	emit_signal(SNAME("bus_layout_changed"));
 }
 
 void AudioServer::add_bus(int p_at_pos) {
@@ -630,7 +630,7 @@ void AudioServer::add_bus(int p_at_pos) {
 		buses.insert(p_at_pos, bus);
 	}
 
-	emit_signal("bus_layout_changed");
+	emit_signal(SNAME("bus_layout_changed"));
 }
 
 void AudioServer::move_bus(int p_bus, int p_to_pos) {
@@ -654,7 +654,7 @@ void AudioServer::move_bus(int p_bus, int p_to_pos) {
 		buses.insert(p_to_pos - 1, bus);
 	}
 
-	emit_signal("bus_layout_changed");
+	emit_signal(SNAME("bus_layout_changed"));
 }
 
 int AudioServer::get_bus_count() const {
@@ -700,7 +700,7 @@ void AudioServer::set_bus_name(int p_bus, const String &p_name) {
 	bus_map[attempt] = buses[p_bus];
 	unlock();
 
-	emit_signal("bus_layout_changed");
+	emit_signal(SNAME("bus_layout_changed"));
 }
 
 String AudioServer::get_bus_name(int p_bus) const {
@@ -794,7 +794,7 @@ void AudioServer::_update_bus_effects(int p_bus) {
 	for (int i = 0; i < buses[p_bus]->channels.size(); i++) {
 		buses.write[p_bus]->channels.write[i].effect_instances.resize(buses[p_bus]->effects.size());
 		for (int j = 0; j < buses[p_bus]->effects.size(); j++) {
-			Ref<AudioEffectInstance> fx = buses.write[p_bus]->effects.write[j].effect->instance();
+			Ref<AudioEffectInstance> fx = buses.write[p_bus]->effects.write[j].effect->instantiate();
 			if (Object::cast_to<AudioEffectCompressorInstance>(*fx)) {
 				Object::cast_to<AudioEffectCompressorInstance>(*fx)->set_current_channel(i);
 			}
@@ -813,7 +813,7 @@ void AudioServer::add_bus_effect(int p_bus, const Ref<AudioEffect> &p_effect, in
 
 	Bus::Effect fx;
 	fx.effect = p_effect;
-	//fx.instance=p_effect->instance();
+	//fx.instance=p_effect->instantiate();
 	fx.enabled = true;
 #ifdef DEBUG_ENABLED
 	fx.prof_time = 0;
@@ -1164,6 +1164,9 @@ void AudioServer::set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout) {
 				Bus::Effect bfx;
 				bfx.effect = fx;
 				bfx.enabled = p_bus_layout->buses[i].effects[j].enabled;
+#if DEBUG_ENABLED
+				bfx.prof_time = 0;
+#endif
 				bus->effects.push_back(bfx);
 			}
 		}
@@ -1185,7 +1188,7 @@ void AudioServer::set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout) {
 
 Ref<AudioBusLayout> AudioServer::generate_bus_layout() const {
 	Ref<AudioBusLayout> state;
-	state.instance();
+	state.instantiate();
 
 	state->buses.resize(buses.size());
 

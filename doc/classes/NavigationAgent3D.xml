@@ -10,88 +10,74 @@
 	</tutorials>
 	<methods>
 		<method name="distance_to_target" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the distance to the target location, using the agent's global position. The user must set the target location with [method set_target_location] in order for this to be accurate.
 			</description>
 		</method>
 		<method name="get_final_location">
-			<return type="Vector3">
-			</return>
+			<return type="Vector3" />
 			<description>
 				Returns the reachable final location in global coordinates. This can change if the navigation path is altered in any way. Because of this, it would be best to check this each frame.
 			</description>
 		</method>
 		<method name="get_nav_path" qualifiers="const">
-			<return type="PackedVector3Array">
-			</return>
+			<return type="PackedVector3Array" />
 			<description>
 				Returns the path from start to finish in global coordinates.
 			</description>
 		</method>
 		<method name="get_nav_path_index" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns which index the agent is currently on in the navigation path's [PackedVector3Array].
 			</description>
 		</method>
 		<method name="get_next_location">
-			<return type="Vector3">
-			</return>
+			<return type="Vector3" />
 			<description>
 				Returns a [Vector3] in global coordinates, that can be moved to, making sure that there are no static objects in the way. If the agent does not have a navigation path, it will return the origin of the agent's parent.
 			</description>
 		</method>
 		<method name="get_rid" qualifiers="const">
-			<return type="RID">
-			</return>
+			<return type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="get_target_location" qualifiers="const">
-			<return type="Vector3">
-			</return>
+			<return type="Vector3" />
 			<description>
 				Returns the user defined [Vector3] after setting the target location.
 			</description>
 		</method>
 		<method name="is_navigation_finished">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns true if the navigation path's final location has been reached.
 			</description>
 		</method>
 		<method name="is_target_reachable">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns true if the target location is reachable. The target location is set using [method set_target_location].
 			</description>
 		</method>
 		<method name="is_target_reached" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns true if the target location is reached. The target location is set using [method set_target_location]. It may not always be possible to reach the target location. It should always be possible to reach the final location though. See [method get_final_location].
 			</description>
 		</method>
 		<method name="set_target_location">
-			<return type="void">
-			</return>
-			<argument index="0" name="location" type="Vector3">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="location" type="Vector3" />
 			<description>
 				Sets the user desired final location. This will clear the current navigation path.
 			</description>
 		</method>
 		<method name="set_velocity">
-			<return type="void">
-			</return>
-			<argument index="0" name="velocity" type="Vector3">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="velocity" type="Vector3" />
 			<description>
 				Sends the passed in velocity to the collision avoidance algorithm. It will adjust the velocity to avoid collisions. Once the adjustment to the velocity is complete, it will emit the [signal velocity_computed] signal.
 			</description>
@@ -143,8 +129,7 @@
 			</description>
 		</signal>
 		<signal name="velocity_computed">
-			<argument index="0" name="safe_velocity" type="Vector3">
-			</argument>
+			<argument index="0" name="safe_velocity" type="Vector3" />
 			<description>
 				Notifies when the collision avoidance velocity is calculated. Emitted by [method set_velocity].
 			</description>
