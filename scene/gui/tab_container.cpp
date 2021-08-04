@@ -421,7 +421,7 @@ void TabContainer::_notification(int p_what) {
 }
 
 void TabContainer::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_index, float p_x) {
-	Vector<Control *> tabs = _get_tabs();
+	Control *control = get_tab_control(p_index);
 	RID canvas = get_canvas_item();
 	Ref<Font> font = get_font("font");
 	int icon_text_distance = get_constant("hseparation");
@@ -433,7 +433,6 @@ void TabContainer::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, in
 	p_tab_style->draw(canvas, tab_rect);
 
 	// Draw the tab contents.
-	Control *control = Object::cast_to<Control>(tabs[p_index]);
 	String text = control->has_meta("_tab_name") ? String(tr(String(control->get_meta("_tab_name")))) : String(tr(control->get_name()));
 
 	int x_content = tab_rect.position.x + p_tab_style->get_margin(MARGIN_LEFT);
@@ -475,10 +474,10 @@ void TabContainer::_repaint() {
 			if (tabs_visible) {
 				c->set_margin(MARGIN_TOP, _get_top_margin());
 			}
-			c->set_margin(Margin(MARGIN_TOP), c->get_margin(Margin(MARGIN_TOP)) + sb->get_margin(Margin(MARGIN_TOP)));
-			c->set_margin(Margin(MARGIN_LEFT), c->get_margin(Margin(MARGIN_LEFT)) + sb->get_margin(Margin(MARGIN_LEFT)));
-			c->set_margin(Margin(MARGIN_RIGHT), c->get_margin(Margin(MARGIN_RIGHT)) - sb->get_margin(Margin(MARGIN_RIGHT)));
-			c->set_margin(Margin(MARGIN_BOTTOM), c->get_margin(Margin(MARGIN_BOTTOM)) - sb->get_margin(Margin(MARGIN_BOTTOM)));
+			c->set_margin(MARGIN_TOP, c->get_margin(MARGIN_TOP) + sb->get_margin(MARGIN_TOP));
+			c->set_margin(MARGIN_LEFT, c->get_margin(MARGIN_LEFT) + sb->get_margin(MARGIN_LEFT));
+			c->set_margin(MARGIN_RIGHT, c->get_margin(MARGIN_RIGHT) - sb->get_margin(MARGIN_RIGHT));
+			c->set_margin(MARGIN_BOTTOM, c->get_margin(MARGIN_BOTTOM) - sb->get_margin(MARGIN_BOTTOM));
 
 		} else {
 			c->hide();
@@ -536,7 +535,7 @@ Vector<Control *> TabContainer::_get_tabs() const {
 	Vector<Control *> controls;
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *control = Object::cast_to<Control>(get_child(i));
-		if (!control || control->is_toplevel_control()) {
+		if (!control || control->is_set_as_toplevel()) {
 			continue;
 		}
 
@@ -553,10 +552,7 @@ void TabContainer::add_child_notify(Node *p_child) {
 	Container::add_child_notify(p_child);
 
 	Control *c = Object::cast_to<Control>(p_child);
-	if (!c) {
-		return;
-	}
-	if (c->is_set_as_toplevel()) {
+	if (!c || c->is_set_as_toplevel()) {
 		return;
 	}
 
@@ -576,16 +572,28 @@ void TabContainer::add_child_notify(Node *p_child) {
 		c->set_margin(MARGIN_TOP, _get_top_margin());
 	}
 	Ref<StyleBox> sb = get_stylebox("panel");
-	c->set_margin(Margin(MARGIN_TOP), c->get_margin(Margin(MARGIN_TOP)) + sb->get_margin(Margin(MARGIN_TOP)));
-	c->set_margin(Margin(MARGIN_LEFT), c->get_margin(Margin(MARGIN_LEFT)) + sb->get_margin(Margin(MARGIN_LEFT)));
-	c->set_margin(Margin(MARGIN_RIGHT), c->get_margin(Margin(MARGIN_RIGHT)) - sb->get_margin(Margin(MARGIN_RIGHT)));
-	c->set_margin(Margin(MARGIN_BOTTOM), c->get_margin(Margin(MARGIN_BOTTOM)) - sb->get_margin(Margin(MARGIN_BOTTOM)));
+	c->set_margin(MARGIN_TOP, c->get_margin(MARGIN_TOP) + sb->get_margin(MARGIN_TOP));
+	c->set_margin(MARGIN_LEFT, c->get_margin(MARGIN_LEFT) + sb->get_margin(MARGIN_LEFT));
+	c->set_margin(MARGIN_RIGHT, c->get_margin(MARGIN_RIGHT) - sb->get_margin(MARGIN_RIGHT));
+	c->set_margin(MARGIN_BOTTOM, c->get_margin(MARGIN_BOTTOM) - sb->get_margin(MARGIN_BOTTOM));
 
 	update();
 	p_child->connect("renamed", this, "_child_renamed_callback");
 	if (first) {
 		emit_signal("tab_changed", current);
 	}
+}
+
+void TabContainer::move_child_notify(Node *p_child) {
+	Container::move_child_notify(p_child);
+
+	Control *c = Object::cast_to<Control>(p_child);
+	if (!c || c->is_set_as_toplevel()) {
+		return;
+	}
+
+	_update_current_tab();
+	update();
 }
 
 int TabContainer::get_tab_count() const {
@@ -631,21 +639,18 @@ Control *TabContainer::get_tab_control(int p_idx) const {
 }
 
 Control *TabContainer::get_current_tab_control() const {
-	Vector<Control *> tabs = _get_tabs();
-	if (current >= 0 && current < tabs.size()) {
-		return tabs[current];
-	} else {
-		return nullptr;
-	}
+	return get_tab_control(current);
 }
 
 void TabContainer::remove_child_notify(Node *p_child) {
 	Container::remove_child_notify(p_child);
 
-	if (!Object::cast_to<Control>(p_child)) {
+	Control *c = Object::cast_to<Control>(p_child);
+	if (!c || c->is_set_as_toplevel()) {
 		return;
 	}
 
+	// Defer the call because tab is not yet removed (remove_child_notify is called right before p_child is actually removed).
 	call_deferred("_update_current_tab");
 
 	p_child->disconnect("renamed", this, "_child_renamed_callback");
@@ -856,19 +861,15 @@ bool TabContainer::is_all_tabs_in_front() const {
 	return all_tabs_in_front;
 }
 
-Control *TabContainer::_get_tab(int p_idx) const {
-	return get_tab_control(p_idx);
-}
-
 void TabContainer::set_tab_title(int p_tab, const String &p_title) {
-	Control *child = _get_tab(p_tab);
+	Control *child = get_tab_control(p_tab);
 	ERR_FAIL_COND(!child);
 	child->set_meta("_tab_name", p_title);
 	update();
 }
 
 String TabContainer::get_tab_title(int p_tab) const {
-	Control *child = _get_tab(p_tab);
+	Control *child = get_tab_control(p_tab);
 	ERR_FAIL_COND_V(!child, "");
 	if (child->has_meta("_tab_name")) {
 		return child->get_meta("_tab_name");
@@ -878,13 +879,13 @@ String TabContainer::get_tab_title(int p_tab) const {
 }
 
 void TabContainer::set_tab_icon(int p_tab, const Ref<Texture> &p_icon) {
-	Control *child = _get_tab(p_tab);
+	Control *child = get_tab_control(p_tab);
 	ERR_FAIL_COND(!child);
 	child->set_meta("_tab_icon", p_icon);
 	update();
 }
 Ref<Texture> TabContainer::get_tab_icon(int p_tab) const {
-	Control *child = _get_tab(p_tab);
+	Control *child = get_tab_control(p_tab);
 	ERR_FAIL_COND_V(!child, Ref<Texture>());
 	if (child->has_meta("_tab_icon")) {
 		return child->get_meta("_tab_icon");
@@ -894,14 +895,14 @@ Ref<Texture> TabContainer::get_tab_icon(int p_tab) const {
 }
 
 void TabContainer::set_tab_disabled(int p_tab, bool p_disabled) {
-	Control *child = _get_tab(p_tab);
+	Control *child = get_tab_control(p_tab);
 	ERR_FAIL_COND(!child);
 	child->set_meta("_tab_disabled", p_disabled);
 	update();
 }
 
 bool TabContainer::get_tab_disabled(int p_tab) const {
-	Control *child = _get_tab(p_tab);
+	Control *child = get_tab_control(p_tab);
 	ERR_FAIL_COND_V(!child, false);
 	if (child->has_meta("_tab_disabled")) {
 		return child->get_meta("_tab_disabled");
@@ -911,7 +912,7 @@ bool TabContainer::get_tab_disabled(int p_tab) const {
 }
 
 void TabContainer::set_tab_hidden(int p_tab, bool p_hidden) {
-	Control *child = _get_tab(p_tab);
+	Control *child = get_tab_control(p_tab);
 	ERR_FAIL_COND(!child);
 	child->set_meta("_tab_hidden", p_hidden);
 	update();
@@ -930,7 +931,7 @@ void TabContainer::set_tab_hidden(int p_tab, bool p_hidden) {
 }
 
 bool TabContainer::get_tab_hidden(int p_tab) const {
-	Control *child = _get_tab(p_tab);
+	Control *child = get_tab_control(p_tab);
 	ERR_FAIL_COND_V(!child, false);
 	if (child->has_meta("_tab_hidden")) {
 		return child->get_meta("_tab_hidden");
