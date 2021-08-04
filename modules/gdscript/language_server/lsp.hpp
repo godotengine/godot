@@ -255,6 +255,62 @@ struct TextEdit {
 };
 
 /**
+ * The edits to be applied.
+ */
+struct WorkspaceEdit {
+	/**
+	 * Holds changes to existing resources.
+	 */
+	Map<String, Vector<TextEdit>> changes;
+
+	_FORCE_INLINE_ Dictionary to_json() const {
+		Dictionary dict;
+
+		Dictionary out_changes;
+		for (Map<String, Vector<TextEdit>>::Element *E = changes.front(); E; E = E->next()) {
+			Array edits;
+			for (int i = 0; i < E->get().size(); ++i) {
+				Dictionary text_edit;
+				text_edit["range"] = E->get()[i].range.to_json();
+				text_edit["newText"] = E->get()[i].newText;
+				edits.push_back(text_edit);
+			}
+			out_changes[E->key()] = edits;
+		}
+		dict["changes"] = out_changes;
+
+		return dict;
+	}
+
+	_FORCE_INLINE_ void add_change(const String &uri, const int &line, const int &start_character, const int &end_character, const String &new_text) {
+		if (Map<String, Vector<TextEdit>>::Element *E = changes.find(uri)) {
+			Vector<TextEdit> edit_list = E->value();
+			for (int i = 0; i < edit_list.size(); ++i) {
+				TextEdit edit = edit_list[i];
+				if (edit.range.start.character == start_character) {
+					return;
+				}
+			}
+		}
+
+		TextEdit new_edit;
+		new_edit.newText = new_text;
+		new_edit.range.start.line = line;
+		new_edit.range.start.character = start_character;
+		new_edit.range.end.line = line;
+		new_edit.range.end.character = end_character;
+
+		if (Map<String, Vector<TextEdit>>::Element *E = changes.find(uri)) {
+			E->value().push_back(new_edit);
+		} else {
+			Vector<TextEdit> edit_list;
+			edit_list.push_back(new_edit);
+			changes.insert(uri, edit_list);
+		}
+	}
+};
+
+/**
  * Represents a reference to a command.
  * Provides a title which will be used to represent a command in the UI.
  * Commands are identified by a string identifier.
@@ -486,7 +542,7 @@ struct TextDocumentSyncOptions {
 	 * If present save notifications are sent to the server. If omitted the notification should not be
 	 * sent.
 	 */
-	bool save = false;
+	SaveOptions save;
 
 	Dictionary to_json() {
 		Dictionary dict;
@@ -494,7 +550,7 @@ struct TextDocumentSyncOptions {
 		dict["willSave"] = willSave;
 		dict["openClose"] = openClose;
 		dict["change"] = change;
-		dict["save"] = save;
+		dict["save"] = save.to_json();
 		return dict;
 	}
 };
