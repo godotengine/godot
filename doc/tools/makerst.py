@@ -90,9 +90,13 @@ class EnumDef:
 
 
 class ThemeItemDef:
-    def __init__(self, name, type_name, default_value):  # type: (str, TypeName, Optional[str]) -> None
+    def __init__(
+        self, name, type_name, data_name, text, default_value
+    ):  # type: (str, TypeName, str, Optional[str], Optional[str]) -> None
         self.name = name
         self.type_name = type_name
+        self.data_name = data_name
+        self.text = text
         self.default_value = default_value
 
 
@@ -104,10 +108,10 @@ class ClassDef:
         self.properties = OrderedDict()  # type: OrderedDict[str, PropertyDef]
         self.methods = OrderedDict()  # type: OrderedDict[str, List[MethodDef]]
         self.signals = OrderedDict()  # type: OrderedDict[str, SignalDef]
+        self.theme_items = OrderedDict()  # type: OrderedDict[str, ThemeItemDef]
         self.inherits = None  # type: Optional[str]
         self.brief_description = None  # type: Optional[str]
         self.description = None  # type: Optional[str]
-        self.theme_items = None  # type: Optional[OrderedDict[str, List[ThemeItemDef]]]
         self.tutorials = []  # type: List[Tuple[str, str]]
 
         # Used to match the class with XML source for output filtering purposes.
@@ -240,16 +244,33 @@ class State:
 
         theme_items = class_root.find("theme_items")
         if theme_items is not None:
-            class_def.theme_items = OrderedDict()
             for theme_item in theme_items:
                 assert theme_item.tag == "theme_item"
 
                 theme_item_name = theme_item.attrib["name"]
+                theme_item_data_name = theme_item.attrib["data_type"]
+                theme_item_id = "{}_{}".format(theme_item_data_name, theme_item_name)
+                if theme_item_id in class_def.theme_items:
+                    print_error(
+                        "Duplicate theme property '{}' of type '{}', file: {}".format(
+                            theme_item_name, theme_item_data_name, class_name
+                        ),
+                        self,
+                    )
+                    continue
+
                 default_value = theme_item.get("default") or None
-                theme_item_def = ThemeItemDef(theme_item_name, TypeName.from_element(theme_item), default_value)
-                if theme_item_name not in class_def.theme_items:
-                    class_def.theme_items[theme_item_name] = []
-                class_def.theme_items[theme_item_name].append(theme_item_def)
+                if default_value is not None:
+                    default_value = "``{}``".format(default_value)
+
+                theme_item_def = ThemeItemDef(
+                    theme_item_name,
+                    TypeName.from_element(theme_item),
+                    theme_item_data_name,
+                    theme_item.text,
+                    default_value,
+                )
+                class_def.theme_items[theme_item_id] = theme_item_def
 
         tutorials = class_root.find("tutorials")
         if tutorials is not None:
@@ -461,9 +482,11 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
     if class_def.theme_items is not None and len(class_def.theme_items) > 0:
         f.write(make_heading("Theme Properties", "-"))
         pl = []
-        for theme_item_list in class_def.theme_items.values():
-            for theme_item in theme_item_list:
-                pl.append((theme_item.type_name.to_rst(state), theme_item.name, theme_item.default_value))
+        for theme_item_def in class_def.theme_items.values():
+            ref = ":ref:`{0}<class_{2}_theme_{1}_{0}>`".format(
+                theme_item_def.name, theme_item_def.data_name, class_name
+            )
+            pl.append((theme_item_def.type_name.to_rst(state), ref, theme_item_def.default_value))
         format_table(f, pl, True)
 
     # Signals
@@ -577,6 +600,29 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
                     f.write(rstize_text(m.description.strip(), state) + "\n\n")
 
                 index += 1
+
+    if len(class_def.theme_items) > 0:
+        f.write(make_heading("Theme Property Descriptions", "-"))
+        index = 0
+
+        for theme_item_def in class_def.theme_items.values():
+            if index != 0:
+                f.write("----\n\n")
+
+            f.write(".. _class_{}_theme_{}_{}:\n\n".format(class_name, theme_item_def.data_name, theme_item_def.name))
+            f.write("- {} **{}**\n\n".format(theme_item_def.type_name.to_rst(state), theme_item_def.name))
+
+            info = []
+            if theme_item_def.default_value is not None:
+                info.append(("*Default*", theme_item_def.default_value))
+
+            if len(info) > 0:
+                format_table(f, info)
+
+            if theme_item_def.text is not None and theme_item_def.text.strip() != "":
+                f.write(rstize_text(theme_item_def.text.strip(), state) + "\n\n")
+
+            index += 1
 
     f.write(make_footer())
 

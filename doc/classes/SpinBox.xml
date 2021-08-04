@@ -59,7 +59,7 @@
 	<constants>
 	</constants>
 	<theme_items>
-		<theme_item name="updown" type="Texture2D">
+		<theme_item name="updown" data_type="icon" type="Texture2D">
 			Sets a custom [Texture2D] for up and down arrows of the [SpinBox].
 		</theme_item>
 	</theme_items>
