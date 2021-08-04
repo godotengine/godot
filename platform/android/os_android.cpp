@@ -188,10 +188,6 @@ void OS_Android::main_loop_focusin() {
 	audio_driver_android.set_pause(false);
 }
 
-void OS_Android::main_loop_request_go_back() {
-	DisplayServerAndroid::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_GO_BACK_REQUEST);
-}
-
 Error OS_Android::shell_open(String p_uri) {
 	return godot_io_java->open_uri(p_uri);
 }

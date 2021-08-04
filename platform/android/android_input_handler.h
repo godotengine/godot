@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  GodotGestureHandler.java                                             */
+/*  android_input_handler.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,69 +28,64 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-package org.godotengine.godot.input;
+#ifndef ANDROID_INPUT_HANDLER_H
+#define ANDROID_INPUT_HANDLER_H
 
-import org.godotengine.godot.GodotLib;
-import org.godotengine.godot.GodotRenderView;
+#include "core/input/input.h"
 
-import android.view.GestureDetector;
-import android.view.MotionEvent;
+// This class encapsulates all the handling of input events that come from the Android UI thread.
+// Remarks:
+// - It's not thread-safe by itself, so its functions must only be called on a single thread, which is the Android UI thread.
+// - Its functions must only call thread-safe methods.
+class AndroidInputHandler {
+public:
+	struct TouchPos {
+		int id = 0;
+		Point2 pos;
+	};
 
-/**
- * Handles gesture input related events for the {@link GodotRenderView} view.
- * https://developer.android.com/reference/android/view/GestureDetector.SimpleOnGestureListener
- */
-public class GodotGestureHandler extends GestureDetector.SimpleOnGestureListener {
-	private final GodotRenderView mRenderView;
+	enum {
+		JOY_EVENT_BUTTON = 0,
+		JOY_EVENT_AXIS = 1,
+		JOY_EVENT_HAT = 2
+	};
 
-	public GodotGestureHandler(GodotRenderView godotView) {
-		mRenderView = godotView;
-	}
+	struct JoypadEvent {
+		int device = 0;
+		int type = 0;
+		int index = 0;
+		bool pressed = false;
+		float value = 0;
+		int hat = 0;
+	};
 
-	private void queueEvent(Runnable task) {
-		mRenderView.queueOnRenderThread(task);
-	}
+private:
+	bool alt_mem = false;
+	bool shift_mem = false;
+	bool control_mem = false;
+	bool meta_mem = false;
 
-	@Override
-	public boolean onDown(MotionEvent event) {
-		super.onDown(event);
-		//Log.i("GodotGesture", "onDown");
-		return true;
-	}
+	MouseButton buttons_state = MOUSE_BUTTON_NONE;
 
-	@Override
-	public boolean onSingleTapConfirmed(MotionEvent event) {
-		super.onSingleTapConfirmed(event);
-		return true;
-	}
+	Vector<TouchPos> touch;
+	Point2 hover_prev_pos; // needed to calculate the relative position on hover events
+	Point2 scroll_prev_pos; // needed to calculate the relative position on scroll events
 
-	@Override
-	public void onLongPress(MotionEvent event) {
-		//Log.i("GodotGesture", "onLongPress");
-	}
+	void _set_key_modifier_state(Ref<InputEventWithModifiers> ev);
 
-	@Override
-	public boolean onDoubleTap(MotionEvent event) {
-		//Log.i("GodotGesture", "onDoubleTap");
-		final int x = Math.round(event.getX());
-		final int y = Math.round(event.getY());
-		final int buttonMask = event.getButtonState();
-		GodotLib.doubleTap(buttonMask, x, y);
-		return true;
-	}
+	static MouseButton _button_index_from_mask(MouseButton button_mask);
+	static MouseButton _android_button_mask_to_godot_button_mask(int android_button_mask);
 
-	@Override
-	public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-		//Log.i("GodotGesture", "onScroll");
-		final int x = Math.round(distanceX);
-		final int y = Math.round(distanceY);
-		GodotLib.scroll(x, y);
-		return true;
-	}
+	void _wheel_button_click(MouseButton event_buttons_mask, const Ref<InputEventMouseButton> &ev, MouseButton wheel_button, float factor);
 
-	@Override
-	public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
-		//Log.i("GodotGesture", "onFling");
-		return true;
-	}
-}
+public:
+	void process_touch(int p_event, int p_pointer, const Vector<TouchPos> &p_points);
+	void process_hover(int p_type, Point2 p_pos);
+	void process_mouse_event(int input_device, int event_action, int event_android_buttons_mask, Point2 event_pos, float event_vertical_factor = 0, float event_horizontal_factor = 0);
+	void process_double_tap(int event_android_button_mask, Point2 p_pos);
+	void process_scroll(Point2 p_pos);
+	void process_joy_event(JoypadEvent p_event);
+	void process_key_event(int p_keycode, int p_scancode, int p_unicode_char, bool p_pressed);
+};
+
+#endif
