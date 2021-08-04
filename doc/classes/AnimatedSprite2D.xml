@@ -12,12 +12,6 @@
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 	</tutorials>
 	<methods>
-		<method name="is_playing" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if an animation is currently being played.
-			</description>
-		</method>
 		<method name="play">
 			<return type="void" />
 			<argument index="0" name="anim" type="StringName" default="&amp;&quot;&quot;" />
@@ -55,7 +49,7 @@
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
 			The texture's drawing offset.
 		</member>
-		<member name="playing" type="bool" setter="_set_playing" getter="_is_playing" default="false">
+		<member name="playing" type="bool" setter="set_playing" getter="is_playing" default="false">
 			If [code]true[/code], the [member animation] is currently playing.
 		</member>
 		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale" default="1.0">
