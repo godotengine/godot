@@ -114,8 +114,6 @@ int OSIPhone::get_current_video_driver() const {
 }
 
 void OSIPhone::start() {
-	godot_ios_plugins_initialize();
-
 	Main::start();
 
 	if (joypad_iphone) {
@@ -319,8 +317,6 @@ void OSIPhone::finalize() {
 	if (ios) {
 		memdelete(ios);
 	}
-
-	godot_ios_plugins_deinitialize();
 
 	visual_server->finish();
 	memdelete(visual_server);
