@@ -316,52 +316,53 @@ String FileAccess::get_line() const {
 }
 
 Vector<String> FileAccess::get_csv_line(const String &p_delim) const {
-	ERR_FAIL_COND_V(p_delim.length() != 1, Vector<String>());
+	ERR_FAIL_COND_V_MSG(p_delim.length() != 1, Vector<String>(), "Only single character delimiters are supported to parse CSV lines.");
+	ERR_FAIL_COND_V_MSG(p_delim[0] == '"', Vector<String>(), "The double quotation mark character (\") is not supported as a delimiter for CSV lines.");
 
-	String l;
+	String line;
+
+	// CSV can support entries with line breaks as long as they are enclosed
+	// in double quotes. So our "line" might be more than a single line in the
+	// text file.
 	int qc = 0;
 	do {
 		if (eof_reached()) {
 			break;
 		}
-
-		l += get_line() + "\n";
+		line += get_line() + "\n";
 		qc = 0;
-		for (int i = 0; i < l.length(); i++) {
-			if (l[i] == '"') {
+		for (int i = 0; i < line.length(); i++) {
+			if (line[i] == '"') {
 				qc++;
 			}
 		}
-
 	} while (qc % 2);
 
-	l = l.substr(0, l.length() - 1);
+	// Remove the extraneous newline we've added above.
+	line = line.substr(0, line.length() - 1);
 
 	Vector<String> strings;
 
 	bool in_quote = false;
 	String current;
-	for (int i = 0; i < l.length(); i++) {
-		char32_t c = l[i];
-		char32_t s[2] = { 0, 0 };
-
+	for (int i = 0; i < line.length(); i++) {
+		char32_t c = line[i];
+		// A delimiter ends the current entry, unless it's in a quoted string.
 		if (!in_quote && c == p_delim[0]) {
 			strings.push_back(current);
 			current = String();
 		} else if (c == '"') {
-			if (l[i + 1] == '"' && in_quote) {
-				s[0] = '"';
-				current += s;
+			// Doubled quotes are escapes for intentional quotes in the string.
+			if (line[i + 1] == '"' && in_quote) {
+				current += '"';
 				i++;
 			} else {
 				in_quote = !in_quote;
 			}
 		} else {
-			s[0] = c;
-			current += s;
+			current += c;
 		}
 	}
-
 	strings.push_back(current);
 
 	return strings;
