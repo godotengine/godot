@@ -105,6 +105,14 @@ Error WebSocketMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer
 //
 // MultiplayerPeer
 //
+void WebSocketMultiplayerPeer::set_transfer_channel(int p_channel) {
+	// Websocket does not have channels.
+}
+
+int WebSocketMultiplayerPeer::get_transfer_channel() const {
+	return 0;
+}
+
 void WebSocketMultiplayerPeer::set_transfer_mode(TransferMode p_mode) {
 	// Websocket uses TCP, reliable
 }

@@ -54,6 +54,8 @@ uint32_t MultiplayerPeer::generate_unique_id() const {
 }
 
 void MultiplayerPeer::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_transfer_channel", "channel"), &MultiplayerPeer::set_transfer_channel);
+	ClassDB::bind_method(D_METHOD("get_transfer_channel"), &MultiplayerPeer::get_transfer_channel);
 	ClassDB::bind_method(D_METHOD("set_transfer_mode", "mode"), &MultiplayerPeer::set_transfer_mode);
 	ClassDB::bind_method(D_METHOD("get_transfer_mode"), &MultiplayerPeer::get_transfer_mode);
 	ClassDB::bind_method(D_METHOD("set_target_peer", "id"), &MultiplayerPeer::set_target_peer);
@@ -71,6 +73,7 @@ void MultiplayerPeer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "refuse_new_connections"), "set_refuse_new_connections", "is_refusing_new_connections");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "transfer_mode", PROPERTY_HINT_ENUM, "Unreliable,Unreliable Ordered,Reliable"), "set_transfer_mode", "get_transfer_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "transfer_channel", PROPERTY_HINT_RANGE, "0,255,1"), "set_transfer_channel", "get_transfer_channel");
 
 	BIND_ENUM_CONSTANT(TRANSFER_MODE_UNRELIABLE);
 	BIND_ENUM_CONSTANT(TRANSFER_MODE_UNRELIABLE_ORDERED);

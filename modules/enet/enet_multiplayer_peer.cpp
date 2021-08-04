@@ -33,6 +33,14 @@
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
 
+void ENetMultiplayerPeer::set_transfer_channel(int p_channel) {
+	transfer_channel = p_channel;
+}
+
+int ENetMultiplayerPeer::get_transfer_channel() const {
+	return transfer_channel;
+}
+
 void ENetMultiplayerPeer::set_transfer_mode(TransferMode p_mode) {
 	transfer_mode = p_mode;
 }
@@ -441,20 +449,23 @@ Error ENetMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size
 
 	int packet_flags = 0;
 	int channel = SYSCH_RELIABLE;
-
-	switch (transfer_mode) {
-		case TRANSFER_MODE_UNRELIABLE: {
-			packet_flags = ENET_PACKET_FLAG_UNSEQUENCED;
-			channel = SYSCH_UNRELIABLE;
-		} break;
-		case TRANSFER_MODE_UNRELIABLE_ORDERED: {
-			packet_flags = 0;
-			channel = SYSCH_UNRELIABLE;
-		} break;
-		case TRANSFER_MODE_RELIABLE: {
-			packet_flags = ENET_PACKET_FLAG_RELIABLE;
-			channel = SYSCH_RELIABLE;
-		} break;
+	if (transfer_channel > 0) {
+		channel = SYSCH_MAX + transfer_channel - 1;
+	} else {
+		switch (transfer_mode) {
+			case TRANSFER_MODE_UNRELIABLE: {
+				packet_flags = ENET_PACKET_FLAG_UNSEQUENCED;
+				channel = SYSCH_UNRELIABLE;
+			} break;
+			case TRANSFER_MODE_UNRELIABLE_ORDERED: {
+				packet_flags = 0;
+				channel = SYSCH_UNRELIABLE;
+			} break;
+			case TRANSFER_MODE_RELIABLE: {
+				packet_flags = ENET_PACKET_FLAG_RELIABLE;
+				channel = SYSCH_RELIABLE;
+			} break;
+		}
 	}
 
 	ENetPacket *packet = enet_packet_create(nullptr, p_buffer_size + 8, packet_flags);

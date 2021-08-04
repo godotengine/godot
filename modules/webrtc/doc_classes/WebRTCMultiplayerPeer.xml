@@ -51,10 +51,12 @@
 			<return type="int" enum="Error" />
 			<argument index="0" name="peer_id" type="int" />
 			<argument index="1" name="server_compatibility" type="bool" default="false" />
+			<argument index="2" name="channels_config" type="Array" default="[]" />
 			<description>
 				Initialize the multiplayer peer with the given [code]peer_id[/code] (must be between 1 and 2147483647).
 				If [code]server_compatibilty[/code] is [code]false[/code] (default), the multiplayer peer will be immediately in state [constant MultiplayerPeer.CONNECTION_CONNECTED] and [signal MultiplayerPeer.connection_succeeded] will not be emitted.
 				If [code]server_compatibilty[/code] is [code]true[/code] the peer will suppress all [signal MultiplayerPeer.peer_connected] signals until a peer with id [constant MultiplayerPeer.TARGET_PEER_SERVER] connects and then emit [signal MultiplayerPeer.connection_succeeded]. After that the signal [signal MultiplayerPeer.peer_connected] will be emitted for every already connected peer, and any new peer that might connect. If the server peer disconnects after that, signal [signal MultiplayerPeer.server_disconnected] will be emitted and state will become [constant MultiplayerPeer.CONNECTION_CONNECTED].
+				You can optionally specify a [code]channels_config[/code] array of [enum MultiplayerPeer.TransferMode] which will be used to create extra channels (WebRTC only supports one transfer mode per channel).
 			</description>
 		</method>
 		<method name="remove_peer">

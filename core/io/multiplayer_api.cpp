@@ -478,6 +478,7 @@ void MultiplayerAPI::_process_simplify_path(int p_from, const uint8_t *p_packet,
 	packet.write[1] = valid_rpc_checksum;
 	encode_cstring(pname.get_data(), &packet.write[2]);
 
+	network_peer->set_transfer_channel(0);
 	network_peer->set_transfer_mode(MultiplayerPeer::TRANSFER_MODE_RELIABLE);
 	network_peer->set_target_peer(p_from);
 	network_peer->put_packet(packet.ptr(), packet.size());
@@ -557,6 +558,7 @@ bool MultiplayerAPI::_send_confirm_path(Node *p_node, NodePath p_path, PathSentC
 
 		for (int &E : peers_to_add) {
 			network_peer->set_target_peer(E); // To all of you.
+			network_peer->set_transfer_channel(0);
 			network_peer->set_transfer_mode(MultiplayerPeer::TRANSFER_MODE_RELIABLE);
 			network_peer->put_packet(packet.ptr(), packet.size());
 
@@ -858,6 +860,7 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, const 
 #endif
 
 	// Take chance and set transfer mode, since all send methods will use it.
+	network_peer->set_transfer_channel(p_config.channel);
 	network_peer->set_transfer_mode(p_config.transfer_mode);
 
 	if (has_all_peers) {
@@ -996,7 +999,7 @@ void MultiplayerAPI::rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const 
 	ERR_FAIL_COND_MSG(p_peer_id == node_id && !config.sync, "RPC '" + p_method + "' on yourself is not allowed by selected mode.");
 }
 
-Error MultiplayerAPI::send_bytes(Vector<uint8_t> p_data, int p_to, MultiplayerPeer::TransferMode p_mode) {
+Error MultiplayerAPI::send_bytes(Vector<uint8_t> p_data, int p_to, MultiplayerPeer::TransferMode p_mode, int p_channel) {
 	ERR_FAIL_COND_V_MSG(p_data.size() < 1, ERR_INVALID_DATA, "Trying to send an empty raw packet.");
 	ERR_FAIL_COND_V_MSG(!network_peer.is_valid(), ERR_UNCONFIGURED, "Trying to send a raw packet while no network peer is active.");
 	ERR_FAIL_COND_V_MSG(network_peer->get_connection_status() != MultiplayerPeer::CONNECTION_CONNECTED, ERR_UNCONFIGURED, "Trying to send a raw packet via a network peer which is not connected.");
@@ -1007,6 +1010,7 @@ Error MultiplayerAPI::send_bytes(Vector<uint8_t> p_data, int p_to, MultiplayerPe
 	memcpy(&packet_cache.write[1], &r[0], p_data.size());
 
 	network_peer->set_target_peer(p_to);
+	network_peer->set_transfer_channel(p_channel);
 	network_peer->set_transfer_mode(p_mode);
 
 	return network_peer->put_packet(packet_cache.ptr(), p_data.size() + 1);
@@ -1066,7 +1070,7 @@ bool MultiplayerAPI::is_object_decoding_allowed() const {
 void MultiplayerAPI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_root_node", "node"), &MultiplayerAPI::set_root_node);
 	ClassDB::bind_method(D_METHOD("get_root_node"), &MultiplayerAPI::get_root_node);
-	ClassDB::bind_method(D_METHOD("send_bytes", "bytes", "id", "mode"), &MultiplayerAPI::send_bytes, DEFVAL(MultiplayerPeer::TARGET_PEER_BROADCAST), DEFVAL(MultiplayerPeer::TRANSFER_MODE_RELIABLE));
+	ClassDB::bind_method(D_METHOD("send_bytes", "bytes", "id", "mode", "channel"), &MultiplayerAPI::send_bytes, DEFVAL(MultiplayerPeer::TARGET_PEER_BROADCAST), DEFVAL(MultiplayerPeer::TRANSFER_MODE_RELIABLE), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("has_network_peer"), &MultiplayerAPI::has_network_peer);
 	ClassDB::bind_method(D_METHOD("get_network_peer"), &MultiplayerAPI::get_network_peer);
 	ClassDB::bind_method(D_METHOD("get_network_unique_id"), &MultiplayerAPI::get_network_unique_id);

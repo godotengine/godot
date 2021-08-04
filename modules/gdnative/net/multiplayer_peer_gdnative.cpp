@@ -62,6 +62,16 @@ int MultiplayerPeerGDNative::get_available_packet_count() const {
 }
 
 /* MultiplayerPeer */
+void MultiplayerPeerGDNative::set_transfer_channel(int p_channel) {
+	ERR_FAIL_COND(interface == nullptr);
+	return interface->set_transfer_channel(interface->data, p_channel);
+}
+
+int MultiplayerPeerGDNative::get_transfer_channel() const {
+	ERR_FAIL_COND_V(interface == nullptr, 0);
+	return interface->get_transfer_channel(interface->data);
+}
+
 void MultiplayerPeerGDNative::set_transfer_mode(TransferMode p_mode) {
 	ERR_FAIL_COND(interface == nullptr);
 	interface->set_transfer_mode(interface->data, (godot_int)p_mode);
@@ -113,6 +123,7 @@ MultiplayerPeer::ConnectionStatus MultiplayerPeerGDNative::get_connection_status
 }
 
 void MultiplayerPeerGDNative::_bind_methods() {
+	ADD_PROPERTY_DEFAULT("transfer_channel", 0);
 	ADD_PROPERTY_DEFAULT("transfer_mode", TRANSFER_MODE_UNRELIABLE);
 	ADD_PROPERTY_DEFAULT("refuse_new_connections", true);
 }

@@ -91,6 +91,8 @@ typedef struct {
 	godot_int (*get_max_packet_size)(const void *);
 
 	/* This is MultiplayerPeer */
+	void (*set_transfer_channel)(void *, godot_int);
+	godot_int (*get_transfer_channel)(void *);
 	void (*set_transfer_mode)(void *, godot_int);
 	godot_int (*get_transfer_mode)(const void *);
 	// 0 = broadcast, 1 = server, <0 = all but abs(value)
