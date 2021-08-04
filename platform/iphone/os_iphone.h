@@ -44,9 +44,6 @@
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
 
-extern void godot_ios_plugins_initialize();
-extern void godot_ios_plugins_deinitialize();
-
 class OSIPhone : public OS_Unix {
 
 private:
