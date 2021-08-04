@@ -188,6 +188,7 @@ class ThemeItemEditorDialog : public AcceptDialog {
 	Button *edit_items_remove_custom;
 	Button *edit_items_remove_all;
 	Tree *edit_items_tree;
+	Label *edit_items_message;
 
 	enum ItemsTreeAction {
 		ITEMS_TREE_RENAME_ITEM,

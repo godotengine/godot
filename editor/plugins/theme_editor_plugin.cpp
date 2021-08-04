@@ -1216,6 +1216,9 @@ void ThemeItemEditorDialog::_update_edit_types() {
 		edit_items_remove_class->set_disabled(false);
 		edit_items_remove_custom->set_disabled(false);
 		edit_items_remove_all->set_disabled(false);
+
+		edit_items_message->set_text("");
+		edit_items_message->hide();
 	} else {
 		edit_items_add_color->set_disabled(true);
 		edit_items_add_constant->set_disabled(true);
@@ -1226,6 +1229,9 @@ void ThemeItemEditorDialog::_update_edit_types() {
 		edit_items_remove_class->set_disabled(true);
 		edit_items_remove_custom->set_disabled(true);
 		edit_items_remove_all->set_disabled(true);
+
+		edit_items_message->set_text(TTR("Select a theme type from the list to edit its items.\nYou can add a custom type or import a type with its items from another theme."));
+		edit_items_message->show();
 	}
 	_update_edit_item_tree(selected_type);
 }
@@ -1242,6 +1248,7 @@ void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
 	TreeItem *root = edit_items_tree->create_item();
 
 	List<StringName> names;
+	bool has_any_items = false;
 
 	{ // Colors.
 		names.clear();
@@ -1261,6 +1268,8 @@ void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
 				item->add_button(0, get_icon("Edit", "EditorIcons"), ITEMS_TREE_RENAME_ITEM, false, TTR("Rename Item"));
 				item->add_button(0, get_icon("Remove", "EditorIcons"), ITEMS_TREE_REMOVE_ITEM, false, TTR("Remove Item"));
 			}
+
+			has_any_items = true;
 		}
 	}
 
@@ -1282,6 +1291,8 @@ void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
 				item->add_button(0, get_icon("Edit", "EditorIcons"), ITEMS_TREE_RENAME_ITEM, false, TTR("Rename Item"));
 				item->add_button(0, get_icon("Remove", "EditorIcons"), ITEMS_TREE_REMOVE_ITEM, false, TTR("Remove Item"));
 			}
+
+			has_any_items = true;
 		}
 	}
 
@@ -1303,6 +1314,8 @@ void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
 				item->add_button(0, get_icon("Edit", "EditorIcons"), ITEMS_TREE_RENAME_ITEM, false, TTR("Rename Item"));
 				item->add_button(0, get_icon("Remove", "EditorIcons"), ITEMS_TREE_REMOVE_ITEM, false, TTR("Remove Item"));
 			}
+
+			has_any_items = true;
 		}
 	}
 
@@ -1324,6 +1337,8 @@ void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
 				item->add_button(0, get_icon("Edit", "EditorIcons"), ITEMS_TREE_RENAME_ITEM, false, TTR("Rename Item"));
 				item->add_button(0, get_icon("Remove", "EditorIcons"), ITEMS_TREE_REMOVE_ITEM, false, TTR("Remove Item"));
 			}
+
+			has_any_items = true;
 		}
 	}
 
@@ -1345,6 +1360,20 @@ void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
 				item->add_button(0, get_icon("Edit", "EditorIcons"), ITEMS_TREE_RENAME_ITEM, false, TTR("Rename Item"));
 				item->add_button(0, get_icon("Remove", "EditorIcons"), ITEMS_TREE_REMOVE_ITEM, false, TTR("Remove Item"));
 			}
+
+			has_any_items = true;
+		}
+	}
+
+	// If some type is selected, but it doesn't seem to have any items, show a guiding message.
+	Vector<int> selected_ids = edit_type_list->get_selected_items();
+	if (selected_ids.size() > 0) {
+		if (!has_any_items) {
+			edit_items_message->set_text(TTR("This theme type is empty.\nAdd more items to it manually or by importing from another theme."));
+			edit_items_message->show();
+		} else {
+			edit_items_message->set_text("");
+			edit_items_message->hide();
 		}
 	}
 }
@@ -1788,6 +1817,14 @@ ThemeItemEditorDialog::ThemeItemEditorDialog() {
 	edit_items_tree->set_columns(1);
 	edit_items_vb->add_child(edit_items_tree);
 	edit_items_tree->connect("button_pressed", this, "_item_tree_button_pressed");
+
+	edit_items_message = memnew(Label);
+	edit_items_message->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	edit_items_message->set_mouse_filter(Control::MOUSE_FILTER_STOP);
+	edit_items_message->set_align(Label::ALIGN_CENTER);
+	edit_items_message->set_valign(Label::VALIGN_CENTER);
+	edit_items_message->set_autowrap(true);
+	edit_items_tree->add_child(edit_items_message);
 
 	edit_theme_item_dialog = memnew(ConfirmationDialog);
 	edit_theme_item_dialog->set_title(TTR("Add Theme Item"));
@@ -2888,7 +2925,7 @@ void ThemeEditor::_theme_save_button_cbk(bool p_save_as) {
 }
 
 void ThemeEditor::_theme_edit_button_cbk() {
-	theme_edit_dialog->popup_centered(Size2(850, 760) * EDSCALE);
+	theme_edit_dialog->popup_centered(Size2(850, 700) * EDSCALE);
 }
 
 void ThemeEditor::_add_preview_button_cbk() {
