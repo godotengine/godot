@@ -860,7 +860,7 @@ void RendererSceneRenderRD::shadow_atlas_set_size(RID p_atlas, int p_size, bool 
 	shadow_atlas->shadow_owners.clear();
 
 	shadow_atlas->size = p_size;
-	shadow_atlas->use_16_bits = p_size;
+	shadow_atlas->use_16_bits = p_16_bits;
 }
 
 void RendererSceneRenderRD::shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) {
@@ -935,7 +935,7 @@ bool RendererSceneRenderRD::_shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas,
 
 		//look for an empty space
 		int sc = shadow_atlas->quadrants[qidx].shadows.size();
-		ShadowAtlas::Quadrant::Shadow *sarr = shadow_atlas->quadrants[qidx].shadows.ptrw();
+		const ShadowAtlas::Quadrant::Shadow *sarr = shadow_atlas->quadrants[qidx].shadows.ptr();
 
 		int found_free_idx = -1; //found a free one
 		int found_used_idx = -1; //found existing one, must steal it
@@ -973,6 +973,78 @@ bool RendererSceneRenderRD::_shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas,
 
 		r_quadrant = qidx;
 		r_shadow = found_free_idx;
+
+		return true;
+	}
+
+	return false;
+}
+
+bool RendererSceneRenderRD::_shadow_atlas_find_omni_shadows(ShadowAtlas *shadow_atlas, int *p_in_quadrants, int p_quadrant_count, int p_current_subdiv, uint64_t p_tick, int &r_quadrant, int &r_shadow) {
+	for (int i = p_quadrant_count - 1; i >= 0; i--) {
+		int qidx = p_in_quadrants[i];
+
+		if (shadow_atlas->quadrants[qidx].subdivision == (uint32_t)p_current_subdiv) {
+			return false;
+		}
+
+		//look for an empty space
+		int sc = shadow_atlas->quadrants[qidx].shadows.size();
+		const ShadowAtlas::Quadrant::Shadow *sarr = shadow_atlas->quadrants[qidx].shadows.ptr();
+
+		int found_idx = -1;
+		uint64_t min_pass = 0; // sum of currently selected spots, try to get the least recently used pair
+
+		for (int j = 0; j < sc - 1; j++) {
+			uint64_t pass = 0;
+
+			if (sarr[j].owner.is_valid()) {
+				LightInstance *sli = light_instance_owner.getornull(sarr[j].owner);
+				ERR_CONTINUE(!sli);
+
+				if (sli->last_scene_pass == scene_pass) {
+					continue;
+				}
+
+				//was just allocated, don't kill it so soon, wait a bit..
+				if (p_tick - sarr[j].alloc_tick < shadow_atlas_realloc_tolerance_msec) {
+					continue;
+				}
+				pass += sli->last_scene_pass;
+			}
+
+			if (sarr[j + 1].owner.is_valid()) {
+				LightInstance *sli = light_instance_owner.getornull(sarr[j + 1].owner);
+				ERR_CONTINUE(!sli);
+
+				if (sli->last_scene_pass == scene_pass) {
+					continue;
+				}
+
+				//was just allocated, don't kill it so soon, wait a bit..
+				if (p_tick - sarr[j + 1].alloc_tick < shadow_atlas_realloc_tolerance_msec) {
+					continue;
+				}
+				pass += sli->last_scene_pass;
+			}
+
+			if (found_idx == -1 || pass < min_pass) {
+				found_idx = j;
+				min_pass = pass;
+
+				// we found two empty spots, no need to check the rest
+				if (pass == 0) {
+					break;
+				}
+			}
+		}
+
+		if (found_idx == -1) {
+			continue; //nothing found
+		}
+
+		r_quadrant = qidx;
+		r_shadow = found_idx;
 
 		return true;
 	}
@@ -1025,94 +1097,104 @@ bool RendererSceneRenderRD::shadow_atlas_update_light(RID p_atlas, RID p_light_i
 
 	uint64_t tick = OS::get_singleton()->get_ticks_msec();
 
-	//see if it already exists
+	uint32_t old_key = ShadowAtlas::SHADOW_INVALID;
+	uint32_t old_quadrant = ShadowAtlas::SHADOW_INVALID;
+	uint32_t old_shadow = ShadowAtlas::SHADOW_INVALID;
+	int old_subdivision = -1;
+
+	bool should_realloc = false;
+	bool should_redraw = false;
 
 	if (shadow_atlas->shadow_owners.has(p_light_intance)) {
-		//it does!
-		uint32_t key = shadow_atlas->shadow_owners[p_light_intance];
-		uint32_t q = (key >> ShadowAtlas::QUADRANT_SHIFT) & 0x3;
-		uint32_t s = key & ShadowAtlas::SHADOW_INDEX_MASK;
+		old_key = shadow_atlas->shadow_owners[p_light_intance];
+		old_quadrant = (old_key >> ShadowAtlas::QUADRANT_SHIFT) & 0x3;
+		old_shadow = old_key & ShadowAtlas::SHADOW_INDEX_MASK;
 
-		bool should_realloc = shadow_atlas->quadrants[q].subdivision != (uint32_t)best_subdiv && (shadow_atlas->quadrants[q].shadows[s].alloc_tick - tick > shadow_atlas_realloc_tolerance_msec);
-		bool should_redraw = shadow_atlas->quadrants[q].shadows[s].version != p_light_version;
+		should_realloc = shadow_atlas->quadrants[old_quadrant].subdivision != (uint32_t)best_subdiv && (shadow_atlas->quadrants[old_quadrant].shadows[old_shadow].alloc_tick - tick > shadow_atlas_realloc_tolerance_msec);
+		should_redraw = shadow_atlas->quadrants[old_quadrant].shadows[old_shadow].version != p_light_version;
 
 		if (!should_realloc) {
-			shadow_atlas->quadrants[q].shadows.write[s].version = p_light_version;
+			shadow_atlas->quadrants[old_quadrant].shadows.write[old_shadow].version = p_light_version;
 			//already existing, see if it should redraw or it's just OK
 			return should_redraw;
 		}
 
-		int new_quadrant, new_shadow;
-
-		//find a better place
-		if (_shadow_atlas_find_shadow(shadow_atlas, valid_quadrants, valid_quadrant_count, shadow_atlas->quadrants[q].subdivision, tick, new_quadrant, new_shadow)) {
-			//found a better place!
-			ShadowAtlas::Quadrant::Shadow *sh = &shadow_atlas->quadrants[new_quadrant].shadows.write[new_shadow];
-			if (sh->owner.is_valid()) {
-				//is taken, but is invalid, erasing it
-				shadow_atlas->shadow_owners.erase(sh->owner);
-				LightInstance *sli = light_instance_owner.getornull(sh->owner);
-				sli->shadow_atlases.erase(p_atlas);
-			}
-
-			//erase previous
-			shadow_atlas->quadrants[q].shadows.write[s].version = 0;
-			shadow_atlas->quadrants[q].shadows.write[s].owner = RID();
-
-			sh->owner = p_light_intance;
-			sh->alloc_tick = tick;
-			sh->version = p_light_version;
-			li->shadow_atlases.insert(p_atlas);
-
-			//make new key
-			key = new_quadrant << ShadowAtlas::QUADRANT_SHIFT;
-			key |= new_shadow;
-			//update it in map
-			shadow_atlas->shadow_owners[p_light_intance] = key;
-			//make it dirty, as it should redraw anyway
-			return true;
-		}
-
-		//no better place for this shadow found, keep current
-
-		//already existing, see if it should redraw or it's just OK
-
-		shadow_atlas->quadrants[q].shadows.write[s].version = p_light_version;
-
-		return should_redraw;
+		old_subdivision = shadow_atlas->quadrants[old_quadrant].subdivision;
 	}
 
-	int new_quadrant, new_shadow;
+	bool is_omni = li->light_type == RS::LIGHT_OMNI;
+	bool found_shadow = false;
+	int new_quadrant = -1;
+	int new_shadow = -1;
 
-	//find a better place
-	if (_shadow_atlas_find_shadow(shadow_atlas, valid_quadrants, valid_quadrant_count, -1, tick, new_quadrant, new_shadow)) {
-		//found a better place!
-		ShadowAtlas::Quadrant::Shadow *sh = &shadow_atlas->quadrants[new_quadrant].shadows.write[new_shadow];
-		if (sh->owner.is_valid()) {
-			//is taken, but is invalid, erasing it
-			shadow_atlas->shadow_owners.erase(sh->owner);
-			LightInstance *sli = light_instance_owner.getornull(sh->owner);
-			sli->shadow_atlases.erase(p_atlas);
+	if (is_omni) {
+		found_shadow = _shadow_atlas_find_omni_shadows(shadow_atlas, valid_quadrants, valid_quadrant_count, old_subdivision, tick, new_quadrant, new_shadow);
+	} else {
+		found_shadow = _shadow_atlas_find_shadow(shadow_atlas, valid_quadrants, valid_quadrant_count, old_subdivision, tick, new_quadrant, new_shadow);
+	}
+
+	if (found_shadow) {
+		if (old_quadrant != ShadowAtlas::SHADOW_INVALID) {
+			shadow_atlas->quadrants[old_quadrant].shadows.write[old_shadow].version = 0;
+			shadow_atlas->quadrants[old_quadrant].shadows.write[old_shadow].owner = RID();
+
+			if (old_key & ShadowAtlas::OMNI_LIGHT_FLAG) {
+				shadow_atlas->quadrants[old_quadrant].shadows.write[old_shadow + 1].version = 0;
+				shadow_atlas->quadrants[old_quadrant].shadows.write[old_shadow + 1].owner = RID();
+			}
 		}
+
+		uint32_t new_key = new_quadrant << ShadowAtlas::QUADRANT_SHIFT;
+		new_key |= new_shadow;
+
+		ShadowAtlas::Quadrant::Shadow *sh = &shadow_atlas->quadrants[new_quadrant].shadows.write[new_shadow];
+		_shadow_atlas_invalidate_shadow(sh, p_atlas, shadow_atlas, new_quadrant, new_shadow);
 
 		sh->owner = p_light_intance;
 		sh->alloc_tick = tick;
 		sh->version = p_light_version;
+
+		if (is_omni) {
+			new_key |= ShadowAtlas::OMNI_LIGHT_FLAG;
+
+			int new_omni_shadow = new_shadow + 1;
+			ShadowAtlas::Quadrant::Shadow *extra_sh = &shadow_atlas->quadrants[new_quadrant].shadows.write[new_omni_shadow];
+			_shadow_atlas_invalidate_shadow(extra_sh, p_atlas, shadow_atlas, new_quadrant, new_omni_shadow);
+
+			extra_sh->owner = p_light_intance;
+			extra_sh->alloc_tick = tick;
+			extra_sh->version = p_light_version;
+		}
+
 		li->shadow_atlases.insert(p_atlas);
 
-		//make new key
-		uint32_t key = new_quadrant << ShadowAtlas::QUADRANT_SHIFT;
-		key |= new_shadow;
 		//update it in map
-		shadow_atlas->shadow_owners[p_light_intance] = key;
+		shadow_atlas->shadow_owners[p_light_intance] = new_key;
 		//make it dirty, as it should redraw anyway
-
 		return true;
 	}
 
-	//no place to allocate this light, apologies
+	return should_redraw;
+}
 
-	return false;
+void RendererSceneRenderRD::_shadow_atlas_invalidate_shadow(RendererSceneRenderRD::ShadowAtlas::Quadrant::Shadow *p_shadow, RID p_atlas, RendererSceneRenderRD::ShadowAtlas *p_shadow_atlas, uint32_t p_quadrant, uint32_t p_shadow_idx) {
+	if (p_shadow->owner.is_valid()) {
+		LightInstance *sli = light_instance_owner.getornull(p_shadow->owner);
+		uint32_t old_key = p_shadow_atlas->shadow_owners[p_shadow->owner];
+
+		if (old_key & ShadowAtlas::OMNI_LIGHT_FLAG) {
+			uint32_t s = old_key & ShadowAtlas::SHADOW_INDEX_MASK;
+			uint32_t omni_shadow_idx = p_shadow_idx + (s == (uint32_t)p_shadow_idx ? 1 : -1);
+			RendererSceneRenderRD::ShadowAtlas::Quadrant::Shadow *omni_shadow = &p_shadow_atlas->quadrants[p_quadrant].shadows.write[omni_shadow_idx];
+			omni_shadow->version = 0;
+			omni_shadow->owner = RID();
+		}
+
+		p_shadow->version = 0;
+		p_shadow->owner = RID();
+		sli->shadow_atlases.erase(p_atlas);
+		p_shadow_atlas->shadow_owners.erase(p_shadow->owner);
+	}
 }
 
 void RendererSceneRenderRD::_update_directional_shadow_atlas() {
@@ -1137,6 +1219,7 @@ void RendererSceneRenderRD::directional_shadow_atlas_set_size(int p_size, bool p
 	}
 
 	directional_shadow.size = p_size;
+	directional_shadow.use_16_bits = p_16_bits;
 
 	if (directional_shadow.depth.is_valid()) {
 		RD::get_singleton()->free(directional_shadow.depth);
@@ -3120,18 +3203,19 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 			light_data.shadow_enabled = true;
 
-			if (type == RS::LIGHT_SPOT) {
-				light_data.shadow_bias = (storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BIAS) / 100.0);
+			float shadow_texel_size = light_instance_get_shadow_texel_size(li->self, p_shadow_atlas);
+			light_data.shadow_normal_bias = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS) * shadow_texel_size * 10.0;
 
-			} else { //omni
+			if (type == RS::LIGHT_SPOT) {
 				light_data.shadow_bias = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BIAS) / 100.0;
-				float shadow_texel_size = light_instance_get_shadow_texel_size(li->self, p_shadow_atlas);
-				light_data.shadow_normal_bias = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS) * shadow_texel_size * 2.0; // applied in -1 .. 1 space
+			} else { //omni
+				light_data.shadow_bias = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BIAS);
 			}
 
 			light_data.transmittance_bias = storage->light_get_transmittance_bias(base);
 
-			Rect2 rect = light_instance_get_shadow_atlas_rect(li->self, p_shadow_atlas);
+			Vector2i omni_offset;
+			Rect2 rect = light_instance_get_shadow_atlas_rect(li->self, p_shadow_atlas, omni_offset);
 
 			light_data.atlas_rect[0] = rect.position.x;
 			light_data.atlas_rect[1] = rect.position.y;
@@ -3142,7 +3226,6 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 			light_data.shadow_volumetric_fog_fade = 1.0 / storage->light_get_shadow_volumetric_fog_fade(base);
 
 			if (type == RS::LIGHT_OMNI) {
-				light_data.atlas_rect[3] *= 0.5; //one paraboloid on top of another
 				Transform3D proj = (inverse_transform * light_transform).inverse();
 
 				RendererStorageRD::store_transform(proj, light_data.shadow_matrix);
@@ -3154,6 +3237,8 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 					light_data.soft_shadow_scale *= shadows_quality_radius_get(); // Only use quality radius for PCF
 				}
 
+				light_data.direction[0] = omni_offset.x * float(rect.size.width);
+				light_data.direction[1] = omni_offset.y * float(rect.size.height);
 			} else if (type == RS::LIGHT_SPOT) {
 				Transform3D modelview = (inverse_transform * light_transform).inverse();
 				CameraMatrix bias;
@@ -4139,6 +4224,7 @@ void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas,
 
 	bool using_dual_paraboloid = false;
 	bool using_dual_paraboloid_flip = false;
+	Vector2i dual_paraboloid_offset;
 	RID render_fb;
 	RID render_texture;
 	float zfar;
@@ -4232,6 +4318,9 @@ void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas,
 		zfar = storage->light_get_param(light_instance->light, RS::LIGHT_PARAM_RANGE);
 
 		if (storage->light_get_type(light_instance->light) == RS::LIGHT_OMNI) {
+			bool wrap = (shadow + 1) % shadow_atlas->quadrants[quadrant].subdivision == 0;
+			dual_paraboloid_offset = wrap ? Vector2i(1 - shadow_atlas->quadrants[quadrant].subdivision, 1) : Vector2i(1, 0);
+
 			if (storage->light_omni_get_shadow_mode(light_instance->light) == RS::LIGHT_OMNI_SHADOW_CUBE) {
 				ShadowCubemap *cubemap = _get_shadow_cubemap(shadow_size / 2);
 
@@ -4251,11 +4340,15 @@ void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas,
 				}
 
 			} else {
+				atlas_rect.position.x += 1;
+				atlas_rect.position.y += 1;
+				atlas_rect.size.x -= 2;
+				atlas_rect.size.y -= 2;
+
+				atlas_rect.position += p_pass * atlas_rect.size * dual_paraboloid_offset;
+
 				light_projection = light_instance->shadow_transform[0].camera;
 				light_transform = light_instance->shadow_transform[0].transform;
-
-				atlas_rect.size.height /= 2;
-				atlas_rect.position.y += p_pass * atlas_rect.size.height;
 
 				using_dual_paraboloid = true;
 				using_dual_paraboloid_flip = p_pass == 1;
@@ -4285,10 +4378,9 @@ void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas,
 			atlas_rect_norm.position.y /= float(atlas_size);
 			atlas_rect_norm.size.x /= float(atlas_size);
 			atlas_rect_norm.size.y /= float(atlas_size);
-			atlas_rect_norm.size.height /= 2;
-			storage->get_effects()->copy_cubemap_to_dp(render_texture, atlas_fb, atlas_rect_norm, light_projection.get_z_near(), light_projection.get_z_far(), false);
-			atlas_rect_norm.position.y += atlas_rect_norm.size.height;
-			storage->get_effects()->copy_cubemap_to_dp(render_texture, atlas_fb, atlas_rect_norm, light_projection.get_z_near(), light_projection.get_z_far(), true);
+			storage->get_effects()->copy_cubemap_to_dp(render_texture, atlas_fb, atlas_rect_norm, atlas_rect.size, light_projection.get_z_near(), light_projection.get_z_far(), false);
+			atlas_rect_norm.position += Vector2(dual_paraboloid_offset) * atlas_rect_norm.size;
+			storage->get_effects()->copy_cubemap_to_dp(render_texture, atlas_fb, atlas_rect_norm, atlas_rect.size, light_projection.get_z_near(), light_projection.get_z_far(), true);
 
 			//restore transform so it can be properly used
 			light_instance_set_shadow_transform(p_light, CameraMatrix(), light_instance->transform, zfar, 0, 0, 0);
@@ -4390,6 +4482,12 @@ bool RendererSceneRenderRD::free(RID p_rid) {
 			uint32_t s = key & ShadowAtlas::SHADOW_INDEX_MASK;
 
 			shadow_atlas->quadrants[q].shadows.write[s].owner = RID();
+
+			if (key & ShadowAtlas::OMNI_LIGHT_FLAG) {
+				// Omni lights use two atlas spots, make sure to clear the other as well
+				shadow_atlas->quadrants[q].shadows.write[s + 1].owner = RID();
+			}
+
 			shadow_atlas->shadow_owners.erase(p_rid);
 		}
 

@@ -255,7 +255,8 @@ private:
 	struct ShadowAtlas {
 		enum {
 			QUADRANT_SHIFT = 27,
-			SHADOW_INDEX_MASK = (1 << QUADRANT_SHIFT) - 1,
+			OMNI_LIGHT_FLAG = 1 << 26,
+			SHADOW_INDEX_MASK = OMNI_LIGHT_FLAG - 1,
 			SHADOW_INVALID = 0xFFFFFFFF
 		};
 
@@ -299,7 +300,9 @@ private:
 
 	void _update_shadow_atlas(ShadowAtlas *shadow_atlas);
 
+	void _shadow_atlas_invalidate_shadow(RendererSceneRenderRD::ShadowAtlas::Quadrant::Shadow *p_shadow, RID p_atlas, RendererSceneRenderRD::ShadowAtlas *p_shadow_atlas, uint32_t p_quadrant, uint32_t p_shadow_idx);
 	bool _shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, int *p_in_quadrants, int p_quadrant_count, int p_current_subdiv, uint64_t p_tick, int &r_quadrant, int &r_shadow);
+	bool _shadow_atlas_find_omni_shadows(ShadowAtlas *shadow_atlas, int *p_in_quadrants, int p_quadrant_count, int p_current_subdiv, uint64_t p_tick, int &r_quadrant, int &r_shadow);
 
 	RS::ShadowQuality shadows_quality = RS::SHADOW_QUALITY_MAX; //So it always updates when first set
 	RS::ShadowQuality directional_shadow_quality = RS::SHADOW_QUALITY_MAX;
@@ -378,10 +381,6 @@ private:
 		uint64_t last_pass = 0;
 		uint32_t cull_mask = 0;
 		uint32_t light_directional_index = 0;
-
-		uint32_t current_shadow_atlas_key = 0;
-
-		Vector2 dp;
 
 		Rect2 directional_rect;
 
@@ -575,7 +574,7 @@ private:
 		struct LightData {
 			float position[3];
 			float inv_radius;
-			float direction[3];
+			float direction[3]; // in omni, x and y are used for dual paraboloid offset
 			float size;
 
 			float color[3];
@@ -964,7 +963,7 @@ public:
 		return li->transform;
 	}
 
-	_FORCE_INLINE_ Rect2 light_instance_get_shadow_atlas_rect(RID p_light_instance, RID p_shadow_atlas) {
+	_FORCE_INLINE_ Rect2 light_instance_get_shadow_atlas_rect(RID p_light_instance, RID p_shadow_atlas, Vector2i &r_omni_offset) {
 		ShadowAtlas *shadow_atlas = shadow_atlas_owner.getornull(p_shadow_atlas);
 		LightInstance *li = light_instance_owner.getornull(p_light_instance);
 		uint32_t key = shadow_atlas->shadow_owners[li->self];
@@ -983,6 +982,16 @@ public:
 		uint32_t shadow_size = (quadrant_size / shadow_atlas->quadrants[quadrant].subdivision);
 		x += (shadow % shadow_atlas->quadrants[quadrant].subdivision) * shadow_size;
 		y += (shadow / shadow_atlas->quadrants[quadrant].subdivision) * shadow_size;
+
+		if (key & ShadowAtlas::OMNI_LIGHT_FLAG) {
+			if (((shadow + 1) % shadow_atlas->quadrants[quadrant].subdivision) == 0) {
+				r_omni_offset.x = 1 - int(shadow_atlas->quadrants[quadrant].subdivision);
+				r_omni_offset.y = 1;
+			} else {
+				r_omni_offset.x = 1;
+				r_omni_offset.y = 0;
+			}
+		}
 
 		uint32_t width = shadow_size;
 		uint32_t height = shadow_size;
