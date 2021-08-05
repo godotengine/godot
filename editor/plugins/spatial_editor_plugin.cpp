@@ -5725,7 +5725,7 @@ void SpatialEditor::_init_grid() {
 		d[VisualServer::ARRAY_VERTEX] = grid_points[c];
 		d[VisualServer::ARRAY_COLOR] = grid_colors[c];
 		d[VisualServer::ARRAY_NORMAL] = grid_normals[c];
-		VisualServer::get_singleton()->mesh_add_surface_from_arrays(grid[c], VisualServer::PRIMITIVE_LINES, d);
+		VisualServer::get_singleton()->mesh_add_surface_from_arrays(grid[c], VisualServer::PRIMITIVE_LINES, d, Array(), 0);
 		VisualServer::get_singleton()->mesh_surface_set_material(grid[c], 0, grid_mat[c]->get_rid());
 		grid_instance[c] = VisualServer::get_singleton()->instance_create2(grid[c], get_tree()->get_root()->get_world()->get_scenario());
 
