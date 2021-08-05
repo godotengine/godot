@@ -426,8 +426,10 @@ void GDScriptTextDocument::sync_script_content(const String &p_path, const Strin
 
 	EditorFileSystem::get_singleton()->update_file(path);
 	Ref<GDScript> script = ResourceLoader::load(path);
-	script->load_source_code(path);
-	script->reload(true);
+	Error err = script->load_source_code(path);
+	if (err == OK) {
+		script->reload(true);
+	}
 }
 
 void GDScriptTextDocument::show_native_symbol_in_editor(const String &p_symbol_id) {
