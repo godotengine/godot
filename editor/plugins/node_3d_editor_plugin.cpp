@@ -107,11 +107,15 @@ void ViewportRotationControl::_notification(int p_what) {
 }
 
 void ViewportRotationControl::_draw() {
-	const Vector2i center = get_size() / 2.0;
+	const Vector2 center = get_size() / 2.0;
 	const real_t radius = get_size().x / 2.0;
 
 	if (focused_axis > -2 || orbiting) {
-		draw_circle(center, radius, Color(0.5, 0.5, 0.5, 0.25));
+		draw_circle(center, radius, Color(0.5, 0.5, 0.5, 0.125));
+		// Perform crude antialiasing by drawing a second translucent circle
+		// that's 1 pixel larger (independently of the editor scale).
+		// The "sum" of the two opacities drawn on top of each other is equal to 0.25.
+		draw_circle(center, radius + 1, Color(0.5, 0.5, 0.5, 0.145));
 	}
 
 	Vector<Axis2D> axis_to_draw;
@@ -122,31 +126,39 @@ void ViewportRotationControl::_draw() {
 }
 
 void ViewportRotationControl::_draw_axis(const Axis2D &p_axis) {
-	bool focused = focused_axis == p_axis.axis;
-	bool positive = p_axis.axis < 3;
-	bool front = (Math::abs(p_axis.z_axis) <= 0.001 && positive) || p_axis.z_axis > 0.001;
-	int direction = p_axis.axis % 3;
+	const bool focused = focused_axis == p_axis.axis;
+	const bool positive = p_axis.axis < 3;
+	const bool front = (Math::abs(p_axis.z_axis) <= 0.001 && positive) || p_axis.z_axis > 0.001;
+	const int direction = p_axis.axis % 3;
 
 	Color axis_color = axis_colors[direction];
-
 	if (!front) {
 		axis_color = axis_color.darkened(0.4);
 	}
-	Color c = focused ? Color(0.9, 0.9, 0.9) : axis_color;
+
+	const Color c = focused ? Color(0.9, 0.9, 0.9) : axis_color;
 
 	if (positive) {
-		Vector2i center = get_size() / 2.0;
+		const Vector2 center = get_size() / 2.0;
 		draw_line(center, p_axis.screen_point, c, 1.5 * EDSCALE);
 	}
 
 	if (front) {
 		draw_circle(p_axis.screen_point, AXIS_CIRCLE_RADIUS, c);
+		// Perform crude antialiasing by drawing a second translucent circle
+		// that's 1 pixel larger (independently of the editor scale).
+		// The center is slightly offset too, as this is needed to align the second circle properly.
+		draw_circle(p_axis.screen_point - Vector2(0.5, 0.5), AXIS_CIRCLE_RADIUS + 1, c * Color(1, 1, 1, 0.5));
 		if (positive) {
-			String axis_name = direction == 0 ? "X" : (direction == 1 ? "Y" : "Z");
+			const String axis_name = direction == 0 ? "X" : (direction == 1 ? "Y" : "Z");
 			draw_char(get_theme_font(SNAME("rotation_control"), SNAME("EditorFonts")), p_axis.screen_point + Vector2i(-4, 5) * EDSCALE, axis_name, "", get_theme_font_size(SNAME("rotation_control_size"), SNAME("EditorFonts")), Color(0.0, 0.0, 0.0));
 		}
 	} else {
 		draw_circle(p_axis.screen_point, AXIS_CIRCLE_RADIUS * (0.55 + (0.2 * (1.0 + p_axis.z_axis))), c);
+		// Perform crude antialiasing by drawing a second translucent circle
+		// that's 1 pixel larger (independently of the editor scale).
+		// The center is slightly offset too, as this is needed to align the second circle properly.
+		draw_circle(p_axis.screen_point - Vector2(0.5, 0.5), AXIS_CIRCLE_RADIUS * (0.55 + (0.2 * (1.0 + p_axis.z_axis))) + 1, c * Color(1, 1, 1, 0.5));
 	}
 }
 
