@@ -338,7 +338,7 @@ void PortalTracer::trace_pvs(int p_source_room_id, const LocalVector<Plane> &p_p
 	}
 }
 
-void PortalTracer::trace_recursive(const TraceParams &p_params, int p_depth, int p_room_id, const LocalVector<Plane> &p_planes) {
+void PortalTracer::trace_recursive(const TraceParams &p_params, int p_depth, int p_room_id, const LocalVector<Plane> &p_planes, int p_from_external_room_id) {
 	// prevent too much depth
 	if (p_depth > _depth_limit) {
 		WARN_PRINT_ONCE("Portal Depth Limit reached (seeing through too many portals)");
@@ -434,6 +434,30 @@ void PortalTracer::trace_recursive(const TraceParams &p_params, int p_depth, int
 			continue;
 		}
 
+		// Don't allow portals from internal to external room to be followed
+		// if the external room has already been processed in this trace stack. This prevents
+		// unneeded processing, and also prevents recursive feedback where you
+		// see into internal room -> external room and back into the same internal room
+		// via the same portal.
+		if (portal._internal && (linked_room_id != -1)) {
+			if (outgoing) {
+				if (linked_room_id == p_from_external_room_id) {
+					continue;
+				}
+			} else {
+				// We are entering an internal portal from an external room.
+				// set the external room id, so we can recognise this when we are
+				// later exiting the internal rooms.
+				// Note that as we can only store 1 previous external room, this system
+				// won't work completely correctly when you have 2 levels of internal room
+				// and you can see from roomgroup a -> b -> c. However this should just result
+				// in a little slower culling for that particular view, and hopefully will not break
+				// with recursive loop looking through the same portal multiple times. (don't think this
+				// is possible in this scenario).
+				p_from_external_room_id = p_room_id;
+			}
+		}
+
 		// hopefully the portal actually leads somewhere...
 		if (linked_room_id != -1) {
 			// we need some new planes
@@ -473,7 +497,7 @@ void PortalTracer::trace_recursive(const TraceParams &p_params, int p_depth, int
 				new_planes.push_back(_near_and_far_planes[1]);
 
 				// go and do the whole lot again in the next room
-				trace_recursive(p_params, p_depth + 1, linked_room_id, new_planes);
+				trace_recursive(p_params, p_depth + 1, linked_room_id, new_planes, p_from_external_room_id);
 
 				// no longer need these planes, return them to the pool
 				_planes_pool.free(pool_mem);

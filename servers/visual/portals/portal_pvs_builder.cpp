@@ -233,9 +233,10 @@ void PVSBuilder::save_pvs(String p_filename) {
 
 #endif
 
-void PVSBuilder::calculate_pvs(PortalRenderer &p_portal_renderer, String p_filename) {
+void PVSBuilder::calculate_pvs(PortalRenderer &p_portal_renderer, String p_filename, int p_depth_limit) {
 	_portal_renderer = &p_portal_renderer;
 	_pvs = &p_portal_renderer.get_pvs();
+	_depth_limit = p_depth_limit;
 
 	// attempt to load from file rather than create each time
 #ifdef GODOT_PVS_SUPPORT_SAVE_FILE
@@ -327,6 +328,12 @@ void PVSBuilder::log(String p_string) {
 void PVSBuilder::trace_rooms_recursive(int p_depth, int p_source_room_id, int p_room_id, int p_first_portal_id, bool p_first_portal_outgoing, int p_previous_portal_id, const LocalVector<Plane, int32_t> &p_planes, BitFieldDynamic &r_bitfield_rooms) {
 	// has this room been done already?
 	if (!r_bitfield_rooms.check_and_set(p_room_id)) {
+		return;
+	}
+
+	// prevent too much depth
+	if (p_depth > _depth_limit) {
+		WARN_PRINT_ONCE("Portal Depth Limit reached (seeing through too many portals)");
 		return;
 	}
 
