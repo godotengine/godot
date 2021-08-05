@@ -105,10 +105,8 @@ const float dof_kernel[21] = float[](0.028174, 0.032676, 0.037311, 0.041944, 0.0
 #endif
 
 uniform sampler2D dof_source_depth; //texunit:1
-uniform float dof_far_begin;
-uniform float dof_far_end;
-uniform float dof_near_begin;
-uniform float dof_near_end;
+uniform float dof_begin;
+uniform float dof_end;
 uniform vec2 dof_dir;
 uniform float dof_radius;
 
@@ -212,7 +210,7 @@ void main() {
 #endif
 #endif //!USE_GLES_OVER_GL
 
-#if defined(DOF_FAR_BLUR) || defined(DOF_NEAR_BLUR)
+#ifdef DOF_FAR_BLUR
 
 	vec4 color_accum = vec4(0.0);
 
@@ -224,58 +222,78 @@ void main() {
 	depth = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - depth * (camera_z_far - camera_z_near));
 #endif
 
-	// Combine near and far, our depth is unlikely to be in both ranges
-	float amount = 1.0;
-#ifdef DOF_FAR_BLUR
-	amount *= 1.0 - smoothstep(dof_far_begin, dof_far_end, depth);
-#endif
-#ifdef DOF_NEAR_BLUR
-	amount *= smoothstep(dof_near_end, dof_near_begin, depth);
-#endif
-	amount = 1.0 - amount;
+	float amount = smoothstep(dof_begin, dof_end, depth);
+	float k_accum = 0.0;
 
-	if (amount > 0.0) {
-		float k_accum = 0.0;
+	for (int i = 0; i < dof_kernel_size; i++) {
+		int int_ofs = i - dof_kernel_from;
+		vec2 tap_uv = uv_interp + dof_dir * float(int_ofs) * amount * dof_radius;
 
-		for (int i = 0; i < dof_kernel_size; i++) {
-			int int_ofs = i - dof_kernel_from;
-			vec2 tap_uv = uv_interp + dof_dir * float(int_ofs) * amount * dof_radius;
+		float tap_k = dof_kernel[i];
 
-			float tap_k = dof_kernel[i];
-
-			float tap_depth = texture2D(dof_source_depth, tap_uv, 0.0).r;
-			tap_depth = tap_depth * 2.0 - 1.0;
+		float tap_depth = texture2D(dof_source_depth, tap_uv, 0.0).r;
+		tap_depth = tap_depth * 2.0 - 1.0;
 #ifdef USE_ORTHOGONAL_PROJECTION
-			tap_depth = ((tap_depth + (camera_z_far + camera_z_near) / (camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near)) / 2.0;
+		tap_depth = ((tap_depth + (camera_z_far + camera_z_near) / (camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near)) / 2.0;
 #else
-			tap_depth = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - tap_depth * (camera_z_far - camera_z_near));
+		tap_depth = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - tap_depth * (camera_z_far - camera_z_near));
 #endif
-			float tap_amount = 1.0;
-#ifdef DOF_FAR_BLUR
-			tap_amount *= int_ofs == 0 ? 0.0 : (1.0 - smoothstep(dof_far_begin, dof_far_end, tap_depth));
-#endif
-#ifdef DOF_NEAR_BLUR
-			tap_amount *= int_ofs == 0 ? 0.0 : (smoothstep(dof_near_end, dof_near_begin, tap_depth));
-#endif
-			tap_amount = 1.0 - tap_amount;
+		float tap_amount = int_ofs == 0 ? 1.0 : smoothstep(dof_begin, dof_end, tap_depth);
+		tap_amount *= tap_amount * tap_amount; //prevent undesired glow effect
 
-			tap_amount *= tap_amount * tap_amount; //prevent undesired glow effect
+		vec4 tap_color = texture2DLod(source_color, tap_uv, 0.0) * tap_k;
 
-			vec4 tap_color = texture2DLod(source_color, tap_uv, 0.0) * tap_k;
-
-			k_accum += tap_k * tap_amount;
-			color_accum += tap_color * tap_amount;
-		}
-
-		if (k_accum > 0.0) {
-			color_accum /= k_accum;
-		}
-
-		gl_FragColor = color_accum; ///k_accum;
-	} else {
-		// We're in focus, no need to waste time sampling the same UV a bunch of times...
-		gl_FragColor = texture2DLod(source_color, uv_interp, 0.0);
+		k_accum += tap_k * tap_amount;
+		color_accum += tap_color * tap_amount;
 	}
+
+	if (k_accum > 0.0) {
+		color_accum /= k_accum;
+	}
+
+	gl_FragColor = color_accum; ///k_accum;
+
+#endif
+
+#ifdef DOF_NEAR_BLUR
+
+	vec4 color_accum = vec4(0.0);
+
+	float max_accum = 0.0;
+
+	for (int i = 0; i < dof_kernel_size; i++) {
+		int int_ofs = i - dof_kernel_from;
+		vec2 tap_uv = uv_interp + dof_dir * float(int_ofs) * dof_radius;
+		float ofs_influence = max(0.0, 1.0 - abs(float(int_ofs)) / float(dof_kernel_from));
+
+		float tap_k = dof_kernel[i];
+
+		vec4 tap_color = texture2DLod(source_color, tap_uv, 0.0);
+
+		float tap_depth = texture2D(dof_source_depth, tap_uv, 0.0).r;
+		tap_depth = tap_depth * 2.0 - 1.0;
+#ifdef USE_ORTHOGONAL_PROJECTION
+		tap_depth = ((tap_depth + (camera_z_far + camera_z_near) / (camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near)) / 2.0;
+#else
+		tap_depth = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - tap_depth * (camera_z_far - camera_z_near));
+#endif
+		float tap_amount = 1.0 - smoothstep(dof_end, dof_begin, tap_depth);
+		tap_amount *= tap_amount * tap_amount; //prevent undesired glow effect
+
+#ifdef DOF_NEAR_FIRST_TAP
+
+		tap_color.a = 1.0 - smoothstep(dof_end, dof_begin, tap_depth);
+
+#endif
+
+		max_accum = max(max_accum, tap_amount * ofs_influence);
+
+		color_accum += tap_color * tap_k;
+	}
+
+	color_accum.a = max(color_accum.a, sqrt(max_accum));
+
+	gl_FragColor = color_accum;
 
 #endif
 
