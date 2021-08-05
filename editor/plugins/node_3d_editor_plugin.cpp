@@ -1113,9 +1113,9 @@ Transform3D Node3DEditorViewport::_compute_transform(TransformMode p_mode, const
 					local_motion.snap(Vector3(p_extra, p_extra, p_extra));
 				}
 
-				Vector3 local_scale = p_original_local.basis.get_scale() * (local_motion + Vector3(1, 1, 1));
-				Transform3D local_t = p_original_local;
-				local_t.basis.set_euler_scale(p_original_local.basis.get_rotation_euler(), local_scale);
+				Transform3D local_t;
+				local_t.basis = p_original_local.basis.scaled_local(local_motion + Vector3(1, 1, 1));
+				local_t.origin = p_original_local.origin;
 				return local_t;
 			} else {
 				Transform3D base = Transform3D(Basis(), _edit.center);
@@ -1123,9 +1123,9 @@ Transform3D Node3DEditorViewport::_compute_transform(TransformMode p_mode, const
 					p_motion.snap(Vector3(p_extra, p_extra, p_extra));
 				}
 
-				Transform3D r;
-				r.basis.scale(p_motion + Vector3(1, 1, 1));
-				return base * (r * (base.inverse() * p_original));
+				Transform3D global_t;
+				global_t.basis.scale(p_motion + Vector3(1, 1, 1));
+				return base * (global_t * (base.inverse() * p_original));
 			}
 		}
 		case TRANSFORM_TRANSLATE: {
@@ -1151,19 +1151,18 @@ Transform3D Node3DEditorViewport::_compute_transform(TransformMode p_mode, const
 		}
 		case TRANSFORM_ROTATE: {
 			if (p_local) {
-				Basis rot = Basis(p_motion, p_extra);
-
-				Vector3 scale = p_original_local.basis.get_scale();
-				Vector3 euler = (p_original_local.get_basis().orthonormalized() * rot).get_euler();
-				Transform3D t;
-				t.basis.set_euler_scale(euler, scale);
-				t.origin = p_original_local.origin;
-				return t;
+				Transform3D r;
+				Vector3 axis = p_original_local.basis.xform(p_motion);
+				r.basis = Basis(axis.normalized(), p_extra) * p_original_local.basis;
+				r.origin = p_original_local.origin;
+				return r;
 			} else {
 				Transform3D r;
-				r.basis.rotate(p_motion, p_extra);
-				Transform3D base = Transform3D(Basis(), _edit.center);
-				return base * r * base.inverse() * p_original;
+				Basis local = p_original.basis * p_original_local.basis.inverse();
+				Vector3 axis = local.xform_inv(p_motion);
+				r.basis = local * Basis(axis.normalized(), p_extra) * p_original_local.basis;
+				r.origin = Basis(p_motion, p_extra).xform(p_original.origin - _edit.center) + _edit.center;
+				return r;
 			}
 		}
 		default: {
