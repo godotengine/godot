@@ -99,6 +99,9 @@ public:
 	virtual void set_force_autohinter(bool p_enabeld) override{};
 	virtual bool get_force_autohinter() const override { return false; };
 
+	virtual void set_gradient(const Ref<Gradient> &p_gradient) override{};
+	virtual Ref<Gradient> get_gradient() const override { return nullptr; };
+
 	virtual bool has_outline() const override { return false; };
 	virtual float get_base_size() const override;
 	virtual float get_font_scale(int p_size) const override;

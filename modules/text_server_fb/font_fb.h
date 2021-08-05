@@ -81,6 +81,9 @@ struct FontDataFallback {
 	virtual void set_force_autohinter(bool p_enabeld) = 0;
 	virtual bool get_force_autohinter() const = 0;
 
+	virtual void set_gradient(const Ref<Gradient> &p_gradient) = 0;
+	virtual Ref<Gradient> get_gradient() const = 0;
+
 	virtual bool has_outline() const = 0;
 	virtual float get_base_size() const = 0;
 

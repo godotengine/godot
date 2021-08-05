@@ -557,6 +557,17 @@ TextServer::Hinting DynamicFontDataFallback::get_hinting() const {
 	return hinting;
 }
 
+void DynamicFontDataFallback::set_gradient(const Ref<Gradient> &p_gradient) {
+	if (gradient != p_gradient) {
+		clear_cache();
+		gradient = p_gradient;
+	}
+}
+
+Ref<Gradient> DynamicFontDataFallback::get_gradient() const {
+	return gradient;
+}
+
 bool DynamicFontDataFallback::has_outline() const {
 	return true;
 }

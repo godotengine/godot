@@ -125,6 +125,7 @@ private:
 	float oversampling = 1.f;
 	bool antialiased = true;
 	bool force_autohinter = false;
+	Ref<Gradient> gradient;
 	TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 
 	Map<CacheID, DataAtSize *> size_cache;
@@ -167,6 +168,9 @@ public:
 
 	virtual void set_distance_field_hint(bool p_distance_field) override{};
 	virtual bool get_distance_field_hint() const override { return false; };
+
+	virtual void set_gradient(const Ref<Gradient> &p_gradient) override;
+	virtual Ref<Gradient> get_gradient() const override;
 
 	virtual bool has_outline() const override;
 	virtual float get_base_size() const override;

@@ -327,6 +327,9 @@ DynamicFontDataAdvanced::TexturePosition DynamicFontDataAdvanced::find_texture_p
 			ERR_FAIL_COND_V(texsize * texsize * p_color_size > tex.imgdata.size(), ret);
 			// Initialize the texture to all-white pixels to prevent artifacts when the
 			// font is displayed at a non-default scale with filtering enabled.
+			// TODO: When a gradient is specified, use the color gradient to use the correct color
+			// for these transparent pixels. Otherwise, the color won't match, which creates
+			// filtering artifacts when the font is displayed at a non-default scale.
 			if (p_color_size == 2) {
 				for (int i = 0; i < texsize * texsize * p_color_size; i += 2) { // FORMAT_LA8
 					w[i + 0] = 255;
@@ -361,19 +364,21 @@ DynamicFontDataAdvanced::Character DynamicFontDataAdvanced::Character::not_found
 }
 
 DynamicFontDataAdvanced::Character DynamicFontDataAdvanced::bitmap_to_character(DynamicFontDataAdvanced::DataAtSize *p_data, FT_Bitmap bitmap, int yofs, int xofs, const Vector2 &advance) {
-	int w = bitmap.width;
-	int h = bitmap.rows;
+	const int w = bitmap.width;
+	const int h = bitmap.rows;
 
-	int mw = w + rect_margin * 2;
-	int mh = h + rect_margin * 2;
+	const int mw = w + rect_margin * 2;
+	const int mh = h + rect_margin * 2;
 
 	ERR_FAIL_COND_V(mw > 4096, Character::not_found());
 	ERR_FAIL_COND_V(mh > 4096, Character::not_found());
 
-	int color_size = bitmap.pixel_mode == FT_PIXEL_MODE_BGRA ? 4 : 2;
-	Image::Format require_format = color_size == 4 ? Image::FORMAT_RGBA8 : Image::FORMAT_LA8;
+	// Use a colored texture for output if the font has color information,
+	// or if a gradient is used (as it may have colors).
+	const int color_size = (bitmap.pixel_mode == FT_PIXEL_MODE_BGRA || gradient.is_valid()) ? 4 : 2;
+	const Image::Format require_format = color_size == 4 ? Image::FORMAT_RGBA8 : Image::FORMAT_LA8;
 
-	TexturePosition tex_pos = find_texture_pos_for_glyph(p_data, color_size, require_format, mw, mh);
+	const TexturePosition tex_pos = find_texture_pos_for_glyph(p_data, color_size, require_format, mw, mh);
 	ERR_FAIL_COND_V(tex_pos.index < 0, Character::not_found());
 
 	//fit character in char texture
@@ -385,25 +390,54 @@ DynamicFontDataAdvanced::Character DynamicFontDataAdvanced::bitmap_to_character(
 
 		for (int i = 0; i < h; i++) {
 			for (int j = 0; j < w; j++) {
-				int ofs = ((i + tex_pos.y + rect_margin) * tex.texture_size + j + tex_pos.x + rect_margin) * color_size;
+				const int ofs = ((i + tex_pos.y + rect_margin) * tex.texture_size + j + tex_pos.x + rect_margin) * color_size;
 				ERR_FAIL_COND_V(ofs >= tex.imgdata.size(), Character::not_found());
 				switch (bitmap.pixel_mode) {
 					case FT_PIXEL_MODE_MONO: {
-						int byte = i * bitmap.pitch + (j >> 3);
-						int bit = 1 << (7 - (j % 8));
-						wr[ofs + 0] = 255; //grayscale as 1
-						wr[ofs + 1] = (bitmap.buffer[byte] & bit) ? 255 : 0;
+						const int byte = i * bitmap.pitch + (j >> 3);
+						const int bit = 1 << (7 - (j % 8));
+						if (gradient.is_valid()) {
+							// Store colored texture.
+							const Color modulate = gradient->get_color_at_offset(float(i) / float(h - 1));
+							wr[ofs + 0] = 255 * modulate.r;
+							wr[ofs + 1] = 255 * modulate.g;
+							wr[ofs + 2] = 255 * modulate.b;
+							wr[ofs + 3] = ((bitmap.buffer[byte] & bit) ? 255 : 0) * modulate.a;
+						} else {
+							// Store luminance + alpha texture.
+							wr[ofs + 0] = 255; //grayscale as 1
+							wr[ofs + 1] = (bitmap.buffer[byte] & bit) ? 255 : 0;
+						}
 					} break;
 					case FT_PIXEL_MODE_GRAY:
-						wr[ofs + 0] = 255; //grayscale as 1
-						wr[ofs + 1] = bitmap.buffer[i * bitmap.pitch + j];
+						if (gradient.is_valid()) {
+							// Store colored texture.
+							const Color modulate = gradient->get_color_at_offset(float(i) / float(h - 1));
+							wr[ofs + 0] = 255 * modulate.r;
+							wr[ofs + 1] = 255 * modulate.g;
+							wr[ofs + 2] = 255 * modulate.b;
+							wr[ofs + 3] = bitmap.buffer[i * bitmap.pitch + j] * modulate.a;
+						} else {
+							// Store luminance + alpha texture.
+							wr[ofs + 0] = 255; //grayscale as 1
+							wr[ofs + 1] = bitmap.buffer[i * bitmap.pitch + j];
+						}
 						break;
 					case FT_PIXEL_MODE_BGRA: {
 						int ofs_color = i * bitmap.pitch + (j << 2);
-						wr[ofs + 2] = bitmap.buffer[ofs_color + 0];
-						wr[ofs + 1] = bitmap.buffer[ofs_color + 1];
-						wr[ofs + 0] = bitmap.buffer[ofs_color + 2];
-						wr[ofs + 3] = bitmap.buffer[ofs_color + 3];
+						if (gradient.is_valid()) {
+							const Color modulate = gradient->get_color_at_offset(float(i) / float(h - 1));
+							// Order is BGRA, change it to RGBA.
+							wr[ofs + 2] = bitmap.buffer[ofs_color + 0] * modulate.r;
+							wr[ofs + 1] = bitmap.buffer[ofs_color + 1] * modulate.g;
+							wr[ofs + 0] = bitmap.buffer[ofs_color + 2] * modulate.b;
+							wr[ofs + 3] = bitmap.buffer[ofs_color + 3] * modulate.a;
+						} else {
+							wr[ofs + 2] = bitmap.buffer[ofs_color + 0];
+							wr[ofs + 1] = bitmap.buffer[ofs_color + 1];
+							wr[ofs + 0] = bitmap.buffer[ofs_color + 2];
+							wr[ofs + 3] = bitmap.buffer[ofs_color + 3];
+						}
 					} break;
 					// TODO: FT_PIXEL_MODE_LCD
 					default:
@@ -846,6 +880,17 @@ void DynamicFontDataAdvanced::set_hinting(TextServer::Hinting p_hinting) {
 
 TextServer::Hinting DynamicFontDataAdvanced::get_hinting() const {
 	return hinting;
+}
+
+void DynamicFontDataAdvanced::set_gradient(const Ref<Gradient> &p_gradient) {
+	if (gradient != p_gradient) {
+		clear_cache();
+		gradient = p_gradient;
+	}
+}
+
+Ref<Gradient> DynamicFontDataAdvanced::get_gradient() const {
+	return gradient;
 }
 
 bool DynamicFontDataAdvanced::has_outline() const {

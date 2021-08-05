@@ -106,6 +106,9 @@ public:
 	void set_hinting(TextServer::Hinting p_hinting);
 	TextServer::Hinting get_hinting() const;
 
+	void set_gradient(const Ref<Gradient> &p_gradient);
+	Ref<Gradient> get_gradient() const;
+
 	bool has_char(char32_t p_char) const;
 	String get_supported_chars() const;
 

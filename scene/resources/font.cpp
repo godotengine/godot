@@ -75,6 +75,9 @@ void FontData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_distance_field_hint", "distance_field"), &FontData::set_distance_field_hint);
 	ClassDB::bind_method(D_METHOD("get_distance_field_hint"), &FontData::get_distance_field_hint);
 
+	ClassDB::bind_method(D_METHOD("set_gradient", "gradient"), &FontData::set_gradient);
+	ClassDB::bind_method(D_METHOD("get_gradient"), &FontData::get_gradient);
+
 	ClassDB::bind_method(D_METHOD("has_char", "char"), &FontData::has_char);
 	ClassDB::bind_method(D_METHOD("get_supported_chars"), &FontData::get_supported_chars);
 
@@ -108,6 +111,7 @@ void FontData::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distance_field_hint"), "set_distance_field_hint", "get_distance_field_hint");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), "set_hinting", "get_hinting");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gradient", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_gradient", "get_gradient");
 
 	ADD_GROUP("Extra Spacing", "extra_spacing");
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "extra_spacing_glyph"), "set_spacing", "get_spacing", SPACING_GLYPH);
@@ -403,6 +407,19 @@ bool FontData::get_force_autohinter() const {
 		return false;
 	}
 	return TS->font_get_force_autohinter(rid);
+}
+
+void FontData::set_gradient(const Ref<Gradient> &p_gradient) {
+	ERR_FAIL_COND(rid == RID());
+	TS->font_set_gradient(rid, p_gradient);
+	emit_changed();
+}
+
+Ref<Gradient> FontData::get_gradient() const {
+	if (rid == RID()) {
+		return nullptr;
+	}
+	return TS->font_get_gradient(rid);
 }
 
 bool FontData::has_char(char32_t p_char) const {

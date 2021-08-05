@@ -309,6 +309,10 @@
 		<member name="force_autohinter" type="bool" setter="set_force_autohinter" getter="get_force_autohinter" default="false">
 			If [code]true[/code], default autohinter is used for font hinting.
 		</member>
+		<member name="gradient" type="Gradient" setter="set_gradient" getter="get_gradient">
+			If a [Gradient] resource is specified, modulates the DynamicFont's color and opacity by the gradient (applied from top to bottom). This applies to the font itself, but also the outline and shadow (if any).
+			[b]Note:[/b] This has no effect on bitmap fonts.
+		</member>
 		<member name="hinting" type="int" setter="set_hinting" getter="get_hinting" enum="TextServer.Hinting" default="0">
 			The font hinting mode used by FreeType. See [enum TextServer.Hinting] for options.
 		</member>
