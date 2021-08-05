@@ -1690,6 +1690,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec2(Ref<GLTFState> state, c
 	for (int32_t min_i = 0; min_i < min.size(); min_i++) {
 		write_min[min_i] = type_min[min_i];
 	}
+	accessor->min = min;
 	accessor->normalized = false;
 	accessor->count = p_attribs.size();
 	accessor->type = type;
@@ -1749,6 +1750,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_color(Ref<GLTFState> state, 
 	for (int32_t min_i = 0; min_i < min.size(); min_i++) {
 		write_min[min_i] = type_min[min_i];
 	}
+	accessor->min = min;
 	accessor->normalized = false;
 	accessor->count = p_attribs.size();
 	accessor->type = type;
@@ -1825,6 +1827,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_weights(Ref<GLTFState> state
 	for (int32_t min_i = 0; min_i < min.size(); min_i++) {
 		write_min[min_i] = type_min[min_i];
 	}
+	accessor->min = min;
 	accessor->normalized = false;
 	accessor->count = p_attribs.size();
 	accessor->type = type;
@@ -1883,6 +1886,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_joints(Ref<GLTFState> state,
 	for (int32_t min_i = 0; min_i < min.size(); min_i++) {
 		write_min[min_i] = type_min[min_i];
 	}
+	accessor->min = min;
 	accessor->normalized = false;
 	accessor->count = p_attribs.size();
 	accessor->type = type;
@@ -1943,6 +1947,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_quats(Ref<GLTFState> state, 
 	for (int32_t min_i = 0; min_i < min.size(); min_i++) {
 		write_min[min_i] = type_min[min_i];
 	}
+	accessor->min = min;
 	accessor->normalized = false;
 	accessor->count = p_attribs.size();
 	accessor->type = type;
@@ -2019,6 +2024,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_floats(Ref<GLTFState> state,
 	for (int32_t min_i = 0; min_i < min.size(); min_i++) {
 		write_min[min_i] = type_min[min_i];
 	}
+	accessor->min = min;
 	accessor->normalized = false;
 	accessor->count = ret_size;
 	accessor->type = type;
@@ -2076,6 +2082,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec3(Ref<GLTFState> state, c
 	for (int32_t min_i = 0; min_i < min.size(); min_i++) {
 		write_min[min_i] = type_min[min_i];
 	}
+	accessor->min = min;
 	accessor->normalized = false;
 	accessor->count = p_attribs.size();
 	accessor->type = type;
@@ -2155,6 +2162,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_xform(Ref<GLTFState> state, 
 	for (int32_t min_i = 0; min_i < min.size(); min_i++) {
 		write_min[min_i] = type_min[min_i];
 	}
+	accessor->min = min;
 	accessor->normalized = false;
 	accessor->count = p_attribs.size();
 	accessor->type = type;
