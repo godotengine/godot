@@ -684,7 +684,7 @@ void PortalRenderer::rooms_finalize(bool p_generate_pvs, bool p_cull_using_pvs, 
 	// calculate PVS
 	if (p_generate_pvs) {
 		PVSBuilder pvs;
-		pvs.calculate_pvs(*this, p_pvs_filename);
+		pvs.calculate_pvs(*this, p_pvs_filename, _tracer.get_depth_limit());
 		_cull_using_pvs = p_cull_using_pvs; // hard code to on for test
 	} else {
 		_cull_using_pvs = false;

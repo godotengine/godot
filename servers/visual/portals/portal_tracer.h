@@ -108,10 +108,11 @@ public:
 	int trace_globals(const LocalVector<Plane> &p_planes, VSInstance **p_result_array, int first_result, int p_result_max, uint32_t p_mask, bool p_override_camera);
 
 	void set_depth_limit(int p_limit) { _depth_limit = p_limit; }
+	int get_depth_limit() const { return _depth_limit; }
 
 private:
 	// main tracing function is recursive
-	void trace_recursive(const TraceParams &p_params, int p_depth, int p_room_id, const LocalVector<Plane> &p_planes);
+	void trace_recursive(const TraceParams &p_params, int p_depth, int p_room_id, const LocalVector<Plane> &p_planes, int p_from_external_room_id = -1);
 
 	// use pvs to cull instead of dynamically using portals
 	// this is a faster trace but less accurate. Only possible if PVS has been generated.
