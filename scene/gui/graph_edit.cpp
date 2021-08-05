@@ -1709,6 +1709,8 @@ void GraphEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &GraphEdit::_gui_input);
 	ClassDB::bind_method(D_METHOD("_update_scroll_offset"), &GraphEdit::_update_scroll_offset);
+	ClassDB::bind_method(D_METHOD("is_in_input_hotzone", "graph_node", "child_index", "mouse_position"), &GraphEdit::is_in_input_hotzone);
+	ClassDB::bind_method(D_METHOD("is_in_output_hotzone", "graph_node", "child_index", "mouse_position"), &GraphEdit::is_in_output_hotzone);
 
 	ClassDB::bind_method(D_METHOD("get_zoom_hbox"), &GraphEdit::get_zoom_hbox);
 
