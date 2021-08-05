@@ -80,7 +80,7 @@ bool EditorSettings::_set_only(const StringName &p_name, const Variant &p_value)
 
 			Ref<Shortcut> sc;
 			sc.instantiate();
-			sc->set_shortcut(shortcut);
+			sc->set_event(shortcut);
 			add_shortcut(name, sc);
 		}
 
@@ -153,13 +153,13 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 				}
 
 				Ref<InputEvent> original = sc->get_meta("original");
-				if (sc->is_shortcut(original) || (original.is_null() && sc->get_shortcut().is_null())) {
+				if (sc->matches_event(original) || (original.is_null() && sc->get_event().is_null())) {
 					continue; //not changed from default, don't save
 				}
 			}
 
 			arr.push_back(E->key());
-			arr.push_back(sc->get_shortcut());
+			arr.push_back(sc->get_event());
 		}
 		r_ret = arr;
 		return true;
@@ -1457,7 +1457,7 @@ bool EditorSettings::is_shortcut(const String &p_name, const Ref<InputEvent> &p_
 	const Map<String, Ref<Shortcut>>::Element *E = shortcuts.find(p_name);
 	ERR_FAIL_COND_V_MSG(!E, false, "Unknown Shortcut: " + p_name + ".");
 
-	return E->get()->is_shortcut(p_event);
+	return E->get()->matches_event(p_event);
 }
 
 Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
@@ -1473,7 +1473,7 @@ Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
 	const Map<String, List<Ref<InputEvent>>>::Element *builtin_override = builtin_action_overrides.find(p_name);
 	if (builtin_override) {
 		sc.instantiate();
-		sc->set_shortcut(builtin_override->get().front()->get());
+		sc->set_event(builtin_override->get().front()->get());
 		sc->set_name(InputMap::get_singleton()->get_builtin_display_name(p_name));
 	}
 
@@ -1482,7 +1482,7 @@ Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
 		const OrderedHashMap<String, List<Ref<InputEvent>>>::ConstElement builtin_default = InputMap::get_singleton()->get_builtins().find(p_name);
 		if (builtin_default) {
 			sc.instantiate();
-			sc->set_shortcut(builtin_default.get().front()->get());
+			sc->set_event(builtin_default.get().front()->get());
 			sc->set_name(InputMap::get_singleton()->get_builtin_display_name(p_name));
 		}
 	}
@@ -1538,7 +1538,7 @@ Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p
 		Ref<Shortcut> sc;
 		sc.instantiate();
 		sc->set_name(p_name);
-		sc->set_shortcut(ie);
+		sc->set_event(ie);
 		sc->set_meta("original", ie);
 		return sc;
 	}
@@ -1552,7 +1552,7 @@ Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p
 
 	sc.instantiate();
 	sc->set_name(p_name);
-	sc->set_shortcut(ie);
+	sc->set_event(ie);
 	sc->set_meta("original", ie); //to compare against changes
 	EditorSettings::get_singleton()->add_shortcut(p_path, sc);
 
@@ -1600,7 +1600,7 @@ void EditorSettings::set_builtin_action_override(const String &p_name, const Arr
 
 	// Update the shortcut (if it is used somewhere in the editor) to be the first event of the new list.
 	if (shortcuts.has(p_name)) {
-		shortcuts[p_name]->set_shortcut(event_list.front()->get());
+		shortcuts[p_name]->set_event(event_list.front()->get());
 	}
 }
 

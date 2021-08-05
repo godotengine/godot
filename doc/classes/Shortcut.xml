@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A shortcut for binding input.
-		Shortcuts are commonly used for interacting with a [Control] element from a [InputEvent].
+		Shortcuts are commonly used for interacting with a [Control] element from an [InputEvent] (also known as hotkeys).
 	</description>
 	<tutorials>
 	</tutorials>
@@ -16,24 +16,24 @@
 				Returns the shortcut's [InputEvent] as a [String].
 			</description>
 		</method>
-		<method name="is_shortcut" qualifiers="const">
+		<method name="has_valid_event" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns whether the shortcut has a valid [member event] assigned to it.
+			</description>
+		</method>
+		<method name="matches_event" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="event" type="InputEvent" />
 			<description>
-				Returns [code]true[/code] if the shortcut's [InputEvent] equals [code]event[/code].
-			</description>
-		</method>
-		<method name="is_valid" qualifiers="const">
-			<return type="bool" />
-			<description>
-				If [code]true[/code], this shortcut is valid.
+				Returns whether the shortcut's [member event] matches [code]event[/code].
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="shortcut" type="InputEvent" setter="set_shortcut" getter="get_shortcut">
+		<member name="event" type="InputEvent" setter="set_event" getter="get_event">
 			The shortcut's [InputEvent].
-			Generally the [InputEvent] is a keyboard key, though it can be any [InputEvent].
+			Generally the [InputEvent] is a keyboard key, though it can be any [InputEvent], including an [InputEventAction].
 		</member>
 	</members>
 	<constants>

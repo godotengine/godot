@@ -209,7 +209,7 @@ void EditorSettingsDialog::_event_config_confirmed() {
 
 		undo_redo->create_action(TTR("Change Shortcut") + " '" + shortcut_being_edited + "'");
 		undo_redo->add_do_method(current_sc.ptr(), "set_shortcut", k);
-		undo_redo->add_undo_method(current_sc.ptr(), "set_shortcut", current_sc->get_shortcut());
+		undo_redo->add_undo_method(current_sc.ptr(), "set_shortcut", current_sc->get_event());
 		undo_redo->add_do_method(this, "_update_shortcuts");
 		undo_redo->add_undo_method(this, "_update_shortcuts");
 		undo_redo->add_do_method(this, "_settings_changed");
@@ -361,7 +361,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 			item->set_text(0, sc->get_name());
 			item->set_text(1, sc->get_as_text());
 
-			if (!sc->is_shortcut(original) && !(sc->get_shortcut().is_null() && original.is_null())) {
+			if (!sc->matches_event(original) && !(sc->get_event().is_null() && original.is_null())) {
 				item->add_button(1, shortcuts->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")), 2);
 			}
 
@@ -444,7 +444,7 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 
 		switch (button_idx) {
 			case EditorSettingsDialog::SHORTCUT_EDIT:
-				shortcut_editor->popup_and_configure(sc->get_shortcut());
+				shortcut_editor->popup_and_configure(sc->get_event());
 				shortcut_being_edited = item;
 				break;
 			case EditorSettingsDialog::SHORTCUT_ERASE: {
@@ -454,7 +454,7 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 
 				undo_redo->create_action(TTR("Erase Shortcut"));
 				undo_redo->add_do_method(sc.ptr(), "set_shortcut", Ref<InputEvent>());
-				undo_redo->add_undo_method(sc.ptr(), "set_shortcut", sc->get_shortcut());
+				undo_redo->add_undo_method(sc.ptr(), "set_shortcut", sc->get_event());
 				undo_redo->add_do_method(this, "_update_shortcuts");
 				undo_redo->add_undo_method(this, "_update_shortcuts");
 				undo_redo->add_do_method(this, "_settings_changed");
@@ -470,7 +470,7 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 
 				undo_redo->create_action(TTR("Restore Shortcut"));
 				undo_redo->add_do_method(sc.ptr(), "set_shortcut", original);
-				undo_redo->add_undo_method(sc.ptr(), "set_shortcut", sc->get_shortcut());
+				undo_redo->add_undo_method(sc.ptr(), "set_shortcut", sc->get_event());
 				undo_redo->add_do_method(this, "_update_shortcuts");
 				undo_redo->add_undo_method(this, "_update_shortcuts");
 				undo_redo->add_do_method(this, "_settings_changed");

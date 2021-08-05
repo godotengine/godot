@@ -74,7 +74,7 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 		size.width += items[i].text_buf->get_size().x;
 		size.height += vseparation;
 
-		if (items[i].accel || (items[i].shortcut.is_valid() && items[i].shortcut->is_valid())) {
+		if (items[i].accel || (items[i].shortcut.is_valid() && items[i].shortcut->has_valid_event())) {
 			int accel_w = hseparation * 2;
 			accel_w += items[i].accel_text_buf->get_size().x;
 			accel_max_w = MAX(accel_w, accel_max_w);
@@ -635,7 +635,7 @@ void PopupMenu::_draw_items() {
 		}
 
 		// Accelerator / Shortcut
-		if (items[i].accel || (items[i].shortcut.is_valid() && items[i].shortcut->is_valid())) {
+		if (items[i].accel || (items[i].shortcut.is_valid() && items[i].shortcut->has_valid_event())) {
 			if (rtl) {
 				item_ofs.x = scroll_width + style->get_margin(SIDE_LEFT) + item_end_padding;
 			} else {
@@ -1301,7 +1301,7 @@ bool PopupMenu::activate_item_by_event(const Ref<InputEvent> &p_event, bool p_fo
 			continue;
 		}
 
-		if (items[i].shortcut.is_valid() && items[i].shortcut->is_shortcut(p_event) && (items[i].shortcut_is_global || !p_for_global_only)) {
+		if (items[i].shortcut.is_valid() && items[i].shortcut->matches_event(p_event) && (items[i].shortcut_is_global || !p_for_global_only)) {
 			activate_item(i);
 			return true;
 		}

@@ -32,42 +32,39 @@
 
 #include "core/os/keyboard.h"
 
-void Shortcut::set_shortcut(const Ref<InputEvent> &p_shortcut) {
-	shortcut = p_shortcut;
+void Shortcut::set_event(const Ref<InputEvent> &p_event) {
+	event = p_event;
 	emit_changed();
 }
 
-Ref<InputEvent> Shortcut::get_shortcut() const {
-	return shortcut;
+Ref<InputEvent> Shortcut::get_event() const {
+	return event;
 }
 
-bool Shortcut::is_shortcut(const Ref<InputEvent> &p_event) const {
-	return shortcut.is_valid() && shortcut->is_match(p_event, true);
+bool Shortcut::matches_event(const Ref<InputEvent> &p_event) const {
+	return event.is_valid() && event->is_match(p_event, true);
 }
 
 String Shortcut::get_as_text() const {
-	if (shortcut.is_valid()) {
-		return shortcut->as_text();
+	if (event.is_valid()) {
+		return event->as_text();
 	} else {
 		return "None";
 	}
 }
 
-bool Shortcut::is_valid() const {
-	return shortcut.is_valid();
+bool Shortcut::has_valid_event() const {
+	return event.is_valid();
 }
 
 void Shortcut::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_shortcut", "event"), &Shortcut::set_shortcut);
-	ClassDB::bind_method(D_METHOD("get_shortcut"), &Shortcut::get_shortcut);
+	ClassDB::bind_method(D_METHOD("set_event", "event"), &Shortcut::set_event);
+	ClassDB::bind_method(D_METHOD("get_event"), &Shortcut::get_event);
 
-	ClassDB::bind_method(D_METHOD("is_valid"), &Shortcut::is_valid);
+	ClassDB::bind_method(D_METHOD("has_valid_event"), &Shortcut::has_valid_event);
 
-	ClassDB::bind_method(D_METHOD("is_shortcut", "event"), &Shortcut::is_shortcut);
+	ClassDB::bind_method(D_METHOD("matches_event", "event"), &Shortcut::matches_event);
 	ClassDB::bind_method(D_METHOD("get_as_text"), &Shortcut::get_as_text);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), "set_shortcut", "get_shortcut");
-}
-
-Shortcut::Shortcut() {
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), "set_event", "get_event");
 }
