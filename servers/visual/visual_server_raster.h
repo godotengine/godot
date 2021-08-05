@@ -578,6 +578,14 @@ public:
 	BIND2(roomgroup_set_scenario, RID, RID)
 	BIND2(roomgroup_add_room, RID, RID)
 
+	// Occluders
+	BIND0R(RID, occluder_create)
+	BIND3(occluder_set_scenario, RID, RID, OccluderType)
+	BIND2(occluder_spheres_update, RID, const Vector<Plane> &)
+	BIND2(occluder_set_transform, RID, const Transform &)
+	BIND2(occluder_set_active, RID, bool)
+	BIND1(set_use_occlusion_culling, bool)
+
 	// Rooms
 	BIND0R(RID, room_create)
 	BIND2(room_set_scenario, RID, RID)

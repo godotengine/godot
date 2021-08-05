@@ -501,6 +501,14 @@ public:
 	FUNC2(roomgroup_set_scenario, RID, RID)
 	FUNC2(roomgroup_add_room, RID, RID)
 
+	// Occluders
+	FUNCRID(occluder)
+	FUNC3(occluder_set_scenario, RID, RID, OccluderType)
+	FUNC2(occluder_spheres_update, RID, const Vector<Plane> &)
+	FUNC2(occluder_set_transform, RID, const Transform &)
+	FUNC2(occluder_set_active, RID, bool)
+	FUNC1(set_use_occlusion_culling, bool)
+
 	// Rooms
 	FUNCRID(room)
 	FUNC2(room_set_scenario, RID, RID)

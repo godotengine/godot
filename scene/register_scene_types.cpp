@@ -191,6 +191,7 @@
 #include "scene/3d/multimesh_instance.h"
 #include "scene/3d/navigation.h"
 #include "scene/3d/navigation_mesh.h"
+#include "scene/3d/occluder.h"
 #include "scene/3d/particles.h"
 #include "scene/3d/path.h"
 #include "scene/3d/physics_body.h"
@@ -213,6 +214,7 @@
 #include "scene/animation/skeleton_ik.h"
 #include "scene/resources/environment.h"
 #include "scene/resources/mesh_library.h"
+#include "scene/resources/occluder_shape.h"
 #endif
 
 static Ref<ResourceFormatSaverText> resource_saver_text;
@@ -438,6 +440,7 @@ void register_scene_types() {
 	ClassDB::register_class<Room>();
 	ClassDB::register_class<RoomGroup>();
 	ClassDB::register_class<RoomManager>();
+	ClassDB::register_class<Occluder>();
 	ClassDB::register_class<Portal>();
 
 	ClassDB::register_class<RootMotionView>();
@@ -649,6 +652,8 @@ void register_scene_types() {
 	ClassDB::register_class<PlaneShape>();
 	ClassDB::register_class<ConvexPolygonShape>();
 	ClassDB::register_class<ConcavePolygonShape>();
+	ClassDB::register_virtual_class<OccluderShape>();
+	ClassDB::register_class<OccluderShapeSphere>();
 
 	OS::get_singleton()->yield(); //may take time to init
 

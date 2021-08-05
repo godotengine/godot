@@ -1242,6 +1242,10 @@
 		<member name="rendering/mesh_storage/split_stream" type="bool" setter="" getter="" default="false">
 			On import, mesh vertex data will be split into two streams within a single vertex buffer, one for position data and the other for interleaved attributes data. Recommended to be enabled if targeting mobile devices. Requires manual reimport of meshes after toggling.
 		</member>
+		<member name="rendering/misc/occlusion_culling/max_active_spheres" type="int" setter="" getter="" default="8">
+			Determines the maximum number of sphere occluders that will be used at any one time.
+			Although you can have many occluders in a scene, each frame the system will choose from these the most relevant based on a screen space metric, in order to give the best overall performance.
+		</member>
 		<member name="rendering/portals/advanced/flip_imported_portals" type="bool" setter="" getter="" default="false">
 			The default convention is for portal normals to point outward (face outward) from the source room.
 			If you accidentally build your level with portals facing the wrong way, this setting can fix the problem.

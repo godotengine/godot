@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OccluderShape" inherits="Resource" version="3.4">
+	<brief_description>
+		Base class for shapes used for occlusion culling by the [Occluder] node.
+	</brief_description>
+	<description>
+		[Occluder]s can use any primitive shape derived from [OccluderShape].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<constants>
+	</constants>
+</class>

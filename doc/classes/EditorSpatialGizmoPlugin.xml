@@ -45,8 +45,10 @@
 			<return type="void" />
 			<argument index="0" name="name" type="String" />
 			<argument index="1" name="billboard" type="bool" default="false" />
+			<argument index="2" name="texture" type="Texture" default="null" />
 			<description>
 				Creates a handle material with its variants (selected and/or editable) and adds them to the internal material list. They can then be accessed with [method get_material] and used in [method EditorSpatialGizmo.add_handles]. Should not be overridden.
+				You can optionally provide a texture to use instead of the default icon.
 			</description>
 		</method>
 		<method name="create_icon_material">

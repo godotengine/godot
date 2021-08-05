@@ -6850,6 +6850,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(BakedLightmapEditorPlugin(this)));
 	add_editor_plugin(memnew(RoomManagerEditorPlugin(this)));
 	add_editor_plugin(memnew(RoomEditorPlugin(this)));
+	add_editor_plugin(memnew(OccluderEditorPlugin(this)));
 	add_editor_plugin(memnew(PortalEditorPlugin(this)));
 	add_editor_plugin(memnew(Path2DEditorPlugin(this)));
 	add_editor_plugin(memnew(PathEditorPlugin(this)));

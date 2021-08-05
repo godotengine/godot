@@ -168,10 +168,12 @@ void PortalTracer::cull_roamers(const VSRoom &p_room, const LocalVector<Plane> &
 		}
 
 		if (test_cull_inside(moving.exact_aabb, p_planes)) {
-			// mark as done (and on visible list)
-			moving.last_tick_hit = _tick;
+			if (!_occlusion_culler.cull_aabb(moving.exact_aabb)) {
+				// mark as done (and on visible list)
+				moving.last_tick_hit = _tick;
 
-			_result->visible_roamer_pool_ids.push_back(pool_id);
+				_result->visible_roamer_pool_ids.push_back(pool_id);
+			}
 		}
 	}
 }
@@ -215,6 +217,10 @@ void PortalTracer::cull_statics(const VSRoom &p_room, const LocalVector<Plane> &
 		// print("\t\t\tculling object " + pObj->get_name());
 
 		if (test_cull_inside(bb, p_planes)) {
+			if (_occlusion_culler.cull_aabb(bb)) {
+				continue;
+			}
+
 			// bypass the bitfield for now and just show / hide
 			//stat.show(bShow);
 
@@ -348,6 +354,9 @@ void PortalTracer::trace_recursive(const TraceParams &p_params, int p_depth, int
 	// get the room
 	const VSRoom &room = _portal_renderer->get_room(p_room_id);
 
+	// set up the occlusion culler as a one off
+	_occlusion_culler.prepare(*_portal_renderer, room, _trace_start_point, p_planes, &_near_and_far_planes[0]);
+
 	cull_statics(room, p_planes);
 	cull_roamers(room, p_planes);
 
@@ -458,6 +467,11 @@ void PortalTracer::trace_recursive(const TraceParams &p_params, int p_depth, int
 			}
 		}
 
+		// occlusion culling of portals
+		if (_occlusion_culler.cull_sphere(portal._pt_center, portal._bounding_sphere_radius)) {
+			continue;
+		}
+
 		// hopefully the portal actually leads somewhere...
 		if (linked_room_id != -1) {
 			// we need some new planes
@@ -516,4 +530,39 @@ void PortalTracer::trace_recursive(const TraceParams &p_params, int p_depth, int
 
 		} // if a linked room exists
 	} // for p through portals
+}
+
+int PortalTracer::occlusion_cull(PortalRenderer &p_portal_renderer, const Vector3 &p_point, const Vector<Plane> &p_convex, VSInstance **p_result_array, int p_num_results) {
+	// silly conversion of vector to local vector
+	// can this be avoided? NYI
+	// pretty cheap anyway as it will just copy 6 planes, max a few times per frame...
+	static LocalVector<Plane> local_planes;
+	if ((int)local_planes.size() != p_convex.size()) {
+		local_planes.resize(p_convex.size());
+	}
+	for (int n = 0; n < p_convex.size(); n++) {
+		local_planes[n] = p_convex[n];
+	}
+
+	_occlusion_culler.prepare_generic(p_portal_renderer, p_portal_renderer.get_occluders_active_list(), p_point, local_planes, nullptr);
+
+	// cull each instance
+	int count = p_num_results;
+	AABB bb;
+
+	for (int n = 0; n < count; n++) {
+		VSInstance *instance = p_result_array[n];
+
+		// this will return false for GLOBAL instances, so we don't occlusion cull gizmos
+		if (VSG::scene->_instance_get_transformed_aabb_for_occlusion(instance, bb)) {
+			if (_occlusion_culler.cull_aabb(bb)) {
+				// remove from list with unordered swap from the end of list
+				p_result_array[n] = p_result_array[count - 1];
+				count--;
+				n--; // repeat this element, as it will have changed
+			}
+		}
+	}
+
+	return count;
 }

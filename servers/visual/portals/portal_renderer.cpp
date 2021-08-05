@@ -34,6 +34,8 @@
 #include "servers/visual/visual_server_globals.h"
 #include "servers/visual/visual_server_scene.h"
 
+bool PortalRenderer::use_occlusion_culling = true;
+
 OcclusionHandle PortalRenderer::instance_moving_create(VSInstance *p_instance, RID p_instance_rid, bool p_global, AABB p_aabb) {
 	uint32_t pool_id = 0;
 	Moving *moving = _moving_pool.request(pool_id);
@@ -112,6 +114,14 @@ void PortalRenderer::_rghost_remove_from_rooms(uint32_t p_pool_id) {
 
 	// moving is now in no rooms
 	moving._rooms.clear();
+}
+
+void PortalRenderer::_occluder_remove_from_rooms(uint32_t p_pool_id) {
+	VSOccluder &occ = _occluder_pool[p_pool_id];
+	if (_loaded && (occ.room_id != -1)) {
+		VSRoom &room = get_room(occ.room_id);
+		room.remove_occluder(p_pool_id);
+	}
 }
 
 void PortalRenderer::_moving_remove_from_rooms(uint32_t p_moving_pool_id) {
@@ -281,6 +291,16 @@ void PortalRenderer::portal_set_geometry(PortalHandle p_portal, const Vector<Vec
 	// record the center for use in PVS
 	portal._pt_center = average_pt;
 
+	// calculate bounding sphere radius
+	portal._bounding_sphere_radius = 0.0;
+	for (unsigned int n = 0; n < portal._pts_world.size(); n++) {
+		real_t sl = (portal._pts_world[n] - average_pt).length_squared();
+		if (sl > portal._bounding_sphere_radius) {
+			portal._bounding_sphere_radius = sl;
+		}
+	}
+	portal._bounding_sphere_radius = Math::sqrt(portal._bounding_sphere_radius);
+
 	// use the average point and normal to derive the plane
 	portal._plane = Plane(average_pt, average_normal);
 
@@ -445,6 +465,138 @@ void PortalRenderer::rghost_destroy(RGhostHandle p_handle) {
 
 	// can now free the moving
 	_rghost_pool.free(p_handle);
+}
+
+OccluderHandle PortalRenderer::occluder_create(VSOccluder::Type p_type) {
+	uint32_t pool_id = 0;
+	VSOccluder *occ = _occluder_pool.request(pool_id);
+	occ->create();
+
+	// specific type
+	occ->type = p_type;
+	CRASH_COND(p_type == VSOccluder::OT_UNDEFINED);
+
+	OccluderHandle handle = pool_id + 1;
+	return handle;
+}
+
+void PortalRenderer::occluder_set_active(OccluderHandle p_handle, bool p_active) {
+	p_handle--;
+	VSOccluder &occ = _occluder_pool[p_handle];
+
+	if (occ.active == p_active) {
+		return;
+	}
+	occ.active = p_active;
+
+	// this will take care of adding or removing from rooms
+	occluder_refresh_room_within(p_handle);
+}
+
+void PortalRenderer::occluder_set_transform(OccluderHandle p_handle, const Transform &p_xform) {
+	p_handle--;
+	VSOccluder &occ = _occluder_pool[p_handle];
+	occ.xform = p_xform;
+
+	// mark as dirty as the world space spheres will be out of date
+	occ.dirty = true;
+	occluder_refresh_room_within(p_handle);
+}
+
+void PortalRenderer::occluder_refresh_room_within(uint32_t p_occluder_pool_id) {
+	VSOccluder &occ = _occluder_pool[p_occluder_pool_id];
+
+	// if we aren't loaded, the room within can't be valid
+	if (!_loaded) {
+		occ.room_id = -1;
+		return;
+	}
+
+	// inactive?
+	if (!occ.active) {
+		// remove from any rooms present in
+		if (occ.room_id != -1) {
+			_occluder_remove_from_rooms(p_occluder_pool_id);
+			occ.room_id = -1;
+		}
+		return;
+	}
+
+	// prevent checks with no significant changes
+	Vector3 offset = occ.xform.origin - occ.pt_center;
+
+	// could possibly make this epsilon editable?
+	// is highly world size dependent.
+	if ((offset.length_squared() < 0.01) && (occ.room_id != -1)) {
+		return;
+	}
+
+	// standardize on the node origin for now
+	occ.pt_center = occ.xform.origin;
+
+	int new_room = find_room_within(occ.pt_center, occ.room_id);
+
+	if (new_room != occ.room_id) {
+		_occluder_remove_from_rooms(p_occluder_pool_id);
+		occ.room_id = new_room;
+
+		if (new_room != -1) {
+			VSRoom &room = get_room(new_room);
+			room.add_occluder(p_occluder_pool_id);
+		}
+	}
+}
+
+void PortalRenderer::occluder_update_spheres(OccluderHandle p_handle, const Vector<Plane> &p_spheres) {
+	p_handle--;
+	VSOccluder &occ = _occluder_pool[p_handle];
+	ERR_FAIL_COND(occ.type != VSOccluder::OT_SPHERE);
+
+	// first deal with the situation where the number of spheres has changed (rare)
+	if (occ.list_ids.size() != p_spheres.size()) {
+		// not the most efficient, but works...
+		// remove existing
+		for (int n = 0; n < occ.list_ids.size(); n++) {
+			uint32_t id = occ.list_ids[n];
+			_occluder_sphere_pool.free(id);
+		}
+
+		occ.list_ids.clear();
+		// create new
+		for (int n = 0; n < p_spheres.size(); n++) {
+			uint32_t id;
+			VSOccluder_Sphere *sphere = _occluder_sphere_pool.request(id);
+			sphere->create();
+			occ.list_ids.push_back(id);
+		}
+	}
+
+	// new positions
+	for (int n = 0; n < occ.list_ids.size(); n++) {
+		uint32_t id = occ.list_ids[n];
+		VSOccluder_Sphere &sphere = _occluder_sphere_pool[id];
+		sphere.local.from_plane(p_spheres[n]);
+	}
+
+	// mark as dirty as the world space spheres will be out of date
+	occ.dirty = true;
+}
+
+void PortalRenderer::occluder_destroy(OccluderHandle p_handle) {
+	p_handle--;
+
+	// depending on the occluder type, remove the spheres etc
+	VSOccluder &occ = _occluder_pool[p_handle];
+	switch (occ.type) {
+		case VSOccluder::OT_SPHERE: {
+			occluder_update_spheres(p_handle + 1, Vector<Plane>());
+		} break;
+		default: {
+		} break;
+	}
+
+	_occluder_remove_from_rooms(p_handle);
+	_occluder_pool.free(p_handle);
 }
 
 // Rooms
@@ -807,6 +959,19 @@ void PortalRenderer::_load_finalize_roaming() {
 		const AABB &aabb = moving.exact_aabb;
 
 		rghost_update(_rghost_pool.get_active_id(n) + 1, aabb, true);
+	}
+
+	for (int n = 0; n < _occluder_pool.active_size(); n++) {
+		VSOccluder &occ = _occluder_pool.get_active(n);
+		int occluder_id = _occluder_pool.get_active_id(n);
+
+		// make sure occluder is in the correct room
+		occ.room_id = find_room_within(occ.pt_center, -1);
+
+		if (occ.room_id != -1) {
+			VSRoom &room = get_room(occ.room_id);
+			room.add_occluder(occluder_id);
+		}
 	}
 }
 

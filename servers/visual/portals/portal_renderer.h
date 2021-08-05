@@ -31,6 +31,7 @@
 #ifndef PORTAL_RENDERER_H
 #define PORTAL_RENDERER_H
 
+#include "core/math/plane.h"
 #include "core/pooled_list.h"
 #include "core/vector.h"
 #include "portal_gameplay_monitor.h"
@@ -38,6 +39,8 @@
 #include "portal_rooms_bsp.h"
 #include "portal_tracer.h"
 #include "portal_types.h"
+
+class Transform;
 
 struct VSStatic {
 	// the lifetime of statics is not strictly monitored like moving objects
@@ -74,6 +77,7 @@ public:
 	// in which case, deleting such an instance should deactivate the portal system to prevent
 	// crashes due to dangling references to instances.
 	static const uint32_t OCCLUSION_HANDLE_ROOM_BIT = 1 << 31;
+	static bool use_occlusion_culling;
 
 	struct MovingBase {
 		// when the rooms_and_portals_clear message is sent,
@@ -174,6 +178,13 @@ public:
 	void rghost_update(RGhostHandle p_handle, const AABB &p_aabb, bool p_force_reinsert = false);
 	void rghost_destroy(RGhostHandle p_handle);
 
+	// occluders
+	OccluderHandle occluder_create(VSOccluder::Type p_type);
+	void occluder_update_spheres(OccluderHandle p_handle, const Vector<Plane> &p_spheres);
+	void occluder_set_transform(OccluderHandle p_handle, const Transform &p_xform);
+	void occluder_set_active(OccluderHandle p_handle, bool p_active);
+	void occluder_destroy(OccluderHandle p_handle);
+
 	// note that this relies on a 'frustum' type cull, from a point, and that the planes are specified as in
 	// CameraMatrix, i.e.
 	// order PLANE_NEAR,PLANE_FAR,PLANE_LEFT,PLANE_TOP,PLANE_RIGHT,PLANE_BOTTOM
@@ -185,6 +196,16 @@ public:
 	}
 
 	int cull_convex_implementation(const Vector3 &p_point, const Vector<Plane> &p_convex, VSInstance **p_result_array, int p_result_max, uint32_t p_mask, int32_t &r_previous_room_id_hint);
+
+	// special function for occlusion culling only that does not use portals / rooms,
+	// but allows using occluders with the main scene
+	int occlusion_cull(const Vector3 &p_point, const Vector<Plane> &p_convex, VSInstance **p_result_array, int p_num_results) {
+		// inactive?
+		if (!_occluder_pool.active_size() || !use_occlusion_culling) {
+			return p_num_results;
+		}
+		return _tracer.occlusion_cull(*this, p_point, p_convex, p_result_array, p_num_results);
+	}
 
 	bool is_active() const { return _active && _loaded; }
 
@@ -208,6 +229,11 @@ public:
 	RGhost &get_pool_rghost(uint32_t p_pool_id) { return _rghost_pool[p_pool_id]; }
 	const RGhost &get_pool_rghost(uint32_t p_pool_id) const { return _rghost_pool[p_pool_id]; }
 
+	const VSOccluder &get_pool_occluder(uint32_t p_pool_id) const { return _occluder_pool[p_pool_id]; }
+	VSOccluder &get_pool_occluder(uint32_t p_pool_id) { return _occluder_pool[p_pool_id]; }
+	const VSOccluder_Sphere &get_pool_occluder_sphere(uint32_t p_pool_id) const { return _occluder_sphere_pool[p_pool_id]; }
+	const LocalVector<uint32_t, uint32_t> &get_occluders_active_list() const { return _occluder_pool.get_active_list(); }
+
 	VSStaticGhost &get_static_ghost(uint32_t p_id) { return _static_ghosts[p_id]; }
 
 	VSRoomGroup &get_roomgroup(uint32_t p_pool_id) { return _roomgroup_pool[p_pool_id]; }
@@ -230,6 +256,7 @@ private:
 	void sprawl_roaming(uint32_t p_mover_pool_id, MovingBase &r_moving, int p_room_id, bool p_moving_or_ghost);
 	void _moving_remove_from_rooms(uint32_t p_moving_pool_id);
 	void _rghost_remove_from_rooms(uint32_t p_pool_id);
+	void _occluder_remove_from_rooms(uint32_t p_pool_id);
 	void _ensure_unloaded();
 	void _rooms_add_portals_to_convex_hulls();
 	void _add_portal_to_convex_hull(LocalVector<Plane, int32_t> &p_planes, const Plane &p);
@@ -258,6 +285,10 @@ private:
 	TrackedPooledList<RGhost> _rghost_pool;
 	LocalVector<uint32_t, int32_t> _moving_list_global;
 	LocalVector<uint32_t, int32_t> _moving_list_roaming;
+
+	// occluders
+	TrackedPooledList<VSOccluder> _occluder_pool;
+	TrackedPooledList<VSOccluder_Sphere> _occluder_sphere_pool;
 
 	PVS _pvs;
 
@@ -288,6 +319,31 @@ private:
 public:
 	static String _rid_to_string(RID p_rid);
 	static String _addr_to_string(const void *p_addr);
+
+	void occluder_ensure_up_to_date_sphere(VSOccluder &r_occluder);
+	void occluder_refresh_room_within(uint32_t p_occluder_pool_id);
 };
+
+inline void PortalRenderer::occluder_ensure_up_to_date_sphere(VSOccluder &r_occluder) {
+	if (!r_occluder.dirty) {
+		return;
+	}
+	r_occluder.dirty = false;
+
+	const Transform &tr = r_occluder.xform;
+
+	Vector3 scale3 = tr.basis.get_scale_abs();
+	real_t scale = (scale3.x + scale3.y + scale3.z) / 3.0;
+
+	// transform spheres
+	for (int n = 0; n < r_occluder.list_ids.size(); n++) {
+		uint32_t pool_id = r_occluder.list_ids[n];
+		VSOccluder_Sphere &osphere = _occluder_sphere_pool[pool_id];
+
+		// transform position and radius
+		osphere.world.pos = tr.xform(osphere.local.pos);
+		osphere.world.radius = osphere.local.radius * scale;
+	}
+}
 
 #endif
