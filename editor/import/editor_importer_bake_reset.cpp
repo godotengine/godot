@@ -151,7 +151,9 @@ void BakeReset::_align_animations(AnimationPlayer *p_ap, const Map<StringName, B
 }
 
 void BakeReset::_fetch_reset_animation(AnimationPlayer *p_ap, Map<StringName, BakeResetRestBone> &r_rest_bones, const String &p_bake_anim) {
-	ERR_FAIL_NULL(p_ap);
+	if (!p_ap) {
+		return;
+	}
 	List<StringName> anim_names;
 	p_ap->get_animation_list(&anim_names);
 	Node *root = p_ap->get_owner();
