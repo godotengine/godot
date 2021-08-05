@@ -83,7 +83,7 @@ def update_version(module_version_string=""):
     godot_status = str(version.status)
     if os.getenv("GODOT_VERSION_STATUS") != None:
         godot_status = str(os.getenv("GODOT_VERSION_STATUS"))
-        print("Using version status '%s', overriding the original '%s'.".format(godot_status, str(version.status)))
+        print("Using version status '{}', overriding the original '{}'.".format(godot_status, str(version.status)))
     f.write('#define VERSION_STATUS "' + godot_status + '"\n')
     f.write('#define VERSION_BUILD "' + str(build_name) + '"\n')
     f.write('#define VERSION_MODULE_CONFIG "' + str(version.module_config) + module_version_string + '"\n')
