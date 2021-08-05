@@ -1576,7 +1576,7 @@ void TileMap::set_cell(int p_layer, const Vector2i &p_coords, int p_source_id, c
 			_make_quadrant_dirty(Q);
 		}
 
-		used_size_cache_dirty = true;
+		used_rect_cache_dirty = true;
 	} else {
 		if (!E) {
 			// Insert a new cell in the tile map.
@@ -1604,7 +1604,7 @@ void TileMap::set_cell(int p_layer, const Vector2i &p_coords, int p_source_id, c
 		c.alternative_tile = alternative_tile;
 
 		_make_quadrant_dirty(Q);
-		used_size_cache_dirty = true;
+		used_rect_cache_dirty = true;
 	}
 }
 
@@ -1800,7 +1800,7 @@ void TileMap::clear_layer(int p_layer) {
 	_clear_layer_internals(p_layer);
 	layers[p_layer].tile_map.clear();
 
-	used_size_cache_dirty = true;
+	used_rect_cache_dirty = true;
 }
 
 void TileMap::clear() {
@@ -1809,7 +1809,7 @@ void TileMap::clear() {
 	for (unsigned int i = 0; i < layers.size(); i++) {
 		layers[i].tile_map.clear();
 	}
-	used_size_cache_dirty = true;
+	used_rect_cache_dirty = true;
 }
 
 void TileMap::_set_tile_data(int p_layer, const Vector<int> &p_data) {
@@ -2666,25 +2666,31 @@ TypedArray<Vector2i> TileMap::get_used_cells(int p_layer) const {
 
 Rect2 TileMap::get_used_rect() { // Not const because of cache
 	// Return the rect of the currently used area
-	if (used_size_cache_dirty) {
+	if (used_rect_cache_dirty) {
 		bool first = true;
+		used_rect_cache = Rect2i();
+
 		for (unsigned int i = 0; i < layers.size(); i++) {
 			const Map<Vector2i, TileMapCell> &tile_map = layers[i].tile_map;
 			if (tile_map.size() > 0) {
 				if (first) {
-					used_size_cache = Rect2(tile_map.front()->key().x, tile_map.front()->key().y, 1, 1);
+					used_rect_cache = Rect2i(tile_map.front()->key().x, tile_map.front()->key().y, 0, 0);
 					first = false;
 				}
 
 				for (Map<Vector2i, TileMapCell>::Element *E = tile_map.front(); E; E = E->next()) {
-					used_size_cache.expand_to(Vector2(E->key().x + 1, E->key().y + 1));
+					used_rect_cache.expand_to(Vector2i(E->key().x, E->key().y));
 				}
 			}
 		}
-		used_size_cache_dirty = false;
+
+		if (!first) { // first is true if every layer is empty.
+			used_rect_cache.size += Vector2i(1, 1); // The cache expands to top-left coordinate, so we add one full tile.
+		}
+		used_rect_cache_dirty = false;
 	}
 
-	return used_size_cache;
+	return used_rect_cache;
 }
 
 // --- Override some methods of the CanvasItem class to pass the changes to the quadrants CanvasItems ---
