@@ -1429,8 +1429,10 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 						PoolVector<Vector3>::Write w = arr_3d.write();
 
 						for (int j = 0; j < p_vertex_len; j++) {
-							const float *v = (const float *)&r[j * total_elem_size + offsets[i]];
-							w[j] = Vector3(v[0], v[1], v[2]);
+							const float &x = r[j * total_elem_size + offsets[i]];
+							const float &y = r[j * total_elem_size + offsets[i] + 1];
+							const float &z = r[j * total_elem_size + offsets[i] + 2];
+							w[j] = Vector3(x, y, z);
 						}
 					}
 
