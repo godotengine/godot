@@ -256,6 +256,7 @@ void CollisionObject::_update_debug_shapes() {
 				Ref<Mesh> mesh = s.shape->get_debug_mesh();
 				VS::get_singleton()->instance_set_base(s.debug_shape, mesh->get_rid());
 				VS::get_singleton()->instance_set_transform(s.debug_shape, get_global_transform() * shapedata.xform);
+				VS::get_singleton()->instance_set_portal_mode(s.debug_shape, VisualServer::INSTANCE_PORTAL_MODE_GLOBAL);
 			}
 		}
 	}
