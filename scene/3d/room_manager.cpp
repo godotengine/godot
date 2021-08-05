@@ -510,7 +510,12 @@ void RoomManager::rooms_set_active(bool p_active) {
 		_active = p_active;
 
 #ifdef TOOLS_ENABLED
-		SpatialEditor::get_singleton()->update_portal_tools();
+		if (Engine::get_singleton()->is_editor_hint()) {
+			SpatialEditor *spatial_editor = SpatialEditor::get_singleton();
+			if (spatial_editor) {
+				spatial_editor->update_portal_tools();
+			}
+		}
 #endif
 	}
 }
