@@ -1907,8 +1907,7 @@ void EditorInspector::update_tree() {
 					}
 
 					Vector<String> slices = propname.operator String().split("/");
-					if (slices.size() == 2 && slices[0].begins_with("custom_")) {
-						// Likely a theme property.
+					if (slices.size() == 2 && slices[0].begins_with("theme_override_")) {
 						for (int i = 0; i < F->get().theme_properties.size(); i++) {
 							if (F->get().theme_properties[i].name == slices[1]) {
 								descr = DTR(F->get().theme_properties[i].description);
