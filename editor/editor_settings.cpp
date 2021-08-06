@@ -960,11 +960,11 @@ fail:
 }
 
 void EditorSettings::setup_language() {
+	TranslationServer::get_singleton()->set_editor_pseudolocalization(get("interface/editor/enable_debugging_pseudolocalization"));
 	String lang = get("interface/editor/editor_language");
 	if (lang == "en") {
 		return; // Default, nothing to do.
 	}
-
 	// Load editor translation for configured/detected locale.
 	EditorTranslationList *etl = _editor_translations;
 	while (etl->data) {

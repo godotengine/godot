@@ -1263,24 +1263,10 @@ StringName TranslationServer::tool_translate(const StringName &p_message, const 
 	if (tool_translation.is_valid()) {
 		StringName r = tool_translation->get_message(p_message, p_context);
 		if (r) {
-#ifdef TOOLS_ENABLED
-			if (EditorSettings::get_singleton()) {
-				if (EditorSettings::get_singleton()->get("interface/editor/enable_debugging_pseudolocalization")) {
-					return tool_pseudolocalize(r);
-				}
-			}
-#endif // TOOLS_ENABLED
-			return r;
+			return editor_pseudolocalization ? tool_pseudolocalize(r) : r;
 		}
 	}
-#ifdef TOOLS_ENABLED
-	if (EditorSettings::get_singleton()) {
-		if (EditorSettings::get_singleton()->get("interface/editor/enable_debugging_pseudolocalization")) {
-			return tool_pseudolocalize(p_message);
-		}
-	}
-#endif // TOOLS_ENABLED
-	return p_message;
+	return editor_pseudolocalization ? tool_pseudolocalize(p_message) : p_message;
 }
 
 StringName TranslationServer::tool_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
@@ -1336,6 +1322,10 @@ void TranslationServer::set_pseudolocalization_enabled(bool p_enabled) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
 	}
 	ResourceLoader::reload_translation_remaps();
+}
+
+void TranslationServer::set_editor_pseudolocalization(bool p_enabled) {
+	editor_pseudolocalization = p_enabled;
 }
 
 void TranslationServer::reload_pseudolocalization() {
