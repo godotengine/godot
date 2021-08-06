@@ -1095,18 +1095,10 @@ StringName TranslationServer::translate(const StringName &p_message, const Strin
 	}
 
 	if (!res) {
-		if (pseudolocalization_enabled) {
-			return pseudolocalize(p_message);
-		} else {
-			return p_message;
-		}
+		return pseudolocalization_enabled ? pseudolocalize(p_message) : p_message;
 	}
 
-	if (pseudolocalization_enabled) {
-		return pseudolocalize(res);
-	} else {
-		return res;
-	}
+	return pseudolocalization_enabled ? pseudolocalize(res) : res;
 }
 
 StringName TranslationServer::translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
@@ -1337,8 +1329,8 @@ bool TranslationServer::is_pseudolocalization_enabled() const {
 	return pseudolocalization_enabled;
 }
 
-void TranslationServer::set_pseudolocalization_enabled(bool enabled) {
-	pseudolocalization_enabled = enabled;
+void TranslationServer::set_pseudolocalization_enabled(bool p_enabled) {
+	pseudolocalization_enabled = p_enabled;
 
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
@@ -1393,14 +1385,14 @@ StringName TranslationServer::tool_pseudolocalize(const StringName &p_message) c
 	return res;
 }
 
-String TranslationServer::get_override_string(String &message) const {
-	String res = "";
-	for (int i = 0; i < message.size(); i++) {
-		if (pseudolocalization_skip_placeholders_enabled && message[i] == '%' && i < message.size() - 1 &&
-				(message[i + 1] == 's' || message[i + 1] == 'c' || message[i + 1] == 'd' ||
-						message[i + 1] == 'o' || message[i + 1] == 'x' || message[i + 1] == 'X' || message[i + 1] == 'f')) {
-			res += message[i];
-			res += message[i + 1];
+String TranslationServer::get_override_string(String &p_message) const {
+	String res;
+	for (int i = 0; i < p_message.size(); i++) {
+		if (pseudolocalization_skip_placeholders_enabled && p_message[i] == '%' && i < p_message.size() - 1 &&
+				(p_message[i + 1] == 's' || p_message[i + 1] == 'c' || p_message[i + 1] == 'd' ||
+						p_message[i + 1] == 'o' || p_message[i + 1] == 'x' || p_message[i + 1] == 'X' || p_message[i + 1] == 'f')) {
+			res += p_message[i];
+			res += p_message[i + 1];
 			i++;
 			continue;
 		}
@@ -1408,92 +1400,92 @@ String TranslationServer::get_override_string(String &message) const {
 	}
 	return res;
 }
-String TranslationServer::double_vowels(String &message) const {
-	String res = "";
-	for (int i = 0; i < message.size(); i++) {
-		if (pseudolocalization_skip_placeholders_enabled && message[i] == '%' && i < message.size() - 1 &&
-				(message[i + 1] == 's' || message[i + 1] == 'c' || message[i + 1] == 'd' ||
-						message[i + 1] == 'o' || message[i + 1] == 'x' || message[i + 1] == 'X' || message[i + 1] == 'f')) {
-			res += message[i];
-			res += message[i + 1];
+
+String TranslationServer::double_vowels(String &p_message) const {
+	String res;
+	for (int i = 0; i < p_message.size(); i++) {
+		if (pseudolocalization_skip_placeholders_enabled && p_message[i] == '%' && i < p_message.size() - 1 &&
+				(p_message[i + 1] == 's' || p_message[i + 1] == 'c' || p_message[i + 1] == 'd' ||
+						p_message[i + 1] == 'o' || p_message[i + 1] == 'x' || p_message[i + 1] == 'X' || p_message[i + 1] == 'f')) {
+			res += p_message[i];
+			res += p_message[i + 1];
 			i++;
 			continue;
 		}
-		res += message[i];
-		if (message[i] == 'a' || message[i] == 'e' || message[i] == 'i' || message[i] == 'o' || message[i] == 'u' ||
-				message[i] == 'A' || message[i] == 'E' || message[i] == 'I' || message[i] == 'O' || message[i] == 'U') {
-			res += message[i];
+		res += p_message[i];
+		if (p_message[i] == 'a' || p_message[i] == 'e' || p_message[i] == 'i' || p_message[i] == 'o' || p_message[i] == 'u' ||
+				p_message[i] == 'A' || p_message[i] == 'E' || p_message[i] == 'I' || p_message[i] == 'O' || p_message[i] == 'U') {
+			res += p_message[i];
 		}
 	}
 	return res;
 };
 
-String TranslationServer::replace_with_accented_string(String &message) const {
-	String res = "";
-	for (int i = 0; i < message.size(); i++) {
-		if (pseudolocalization_skip_placeholders_enabled && message[i] == '%' && i < message.size() - 1 &&
-				(message[i + 1] == 's' || message[i + 1] == 'c' || message[i + 1] == 'd' ||
-						message[i + 1] == 'o' || message[i + 1] == 'x' || message[i + 1] == 'X' || message[i + 1] == 'f')) {
-			res += message[i];
-			res += message[i + 1];
+String TranslationServer::replace_with_accented_string(String &p_message) const {
+	String res;
+	for (int i = 0; i < p_message.size(); i++) {
+		if (pseudolocalization_skip_placeholders_enabled && p_message[i] == '%' && i < p_message.size() - 1 &&
+				(p_message[i + 1] == 's' || p_message[i + 1] == 'c' || p_message[i + 1] == 'd' ||
+						p_message[i + 1] == 'o' || p_message[i + 1] == 'x' || p_message[i + 1] == 'X' || p_message[i + 1] == 'f')) {
+			res += p_message[i];
+			res += p_message[i + 1];
 			i++;
 			continue;
 		}
-		const char32_t *accented = get_accented_version(message[i]);
+		const char32_t *accented = get_accented_version(p_message[i]);
 		if (accented) {
 			res += accented;
 		} else {
-			res += message[i];
+			res += p_message[i];
 		}
 	}
 	return res;
 }
 
-String TranslationServer::wrap_with_fakebidi_characters(String &message) const {
-	String res = "";
+String TranslationServer::wrap_with_fakebidi_characters(String &p_message) const {
+	String res;
 	char32_t fakebidiprefix = U'\u202e';
 	char32_t fakebidisuffix = U'\u202c';
 	res += fakebidiprefix;
-	//the fake bidi unicode gets popped at every newline so pushing it back at every newline.
-	for (int i = 0; i < message.size(); i++) {
-		if (message[i] == '\n') {
+	// The fake bidi unicode gets popped at every newline so pushing it back at every newline.
+	for (int i = 0; i < p_message.size(); i++) {
+		if (p_message[i] == '\n') {
 			res += fakebidisuffix;
-			res += message[i];
+			res += p_message[i];
 			res += fakebidiprefix;
-		} else if (pseudolocalization_skip_placeholders_enabled && message[i] == '%' && i < message.size() - 1 &&
-				   (message[i + 1] == 's' || message[i + 1] == 'c' || message[i + 1] == 'd' ||
-						   message[i + 1] == 'o' || message[i + 1] == 'x' || message[i + 1] == 'X' || message[i + 1] == 'f')) {
+		} else if (pseudolocalization_skip_placeholders_enabled && p_message[i] == '%' && i < p_message.size() - 1 &&
+				   (p_message[i + 1] == 's' || p_message[i + 1] == 'c' || p_message[i + 1] == 'd' ||
+						   p_message[i + 1] == 'o' || p_message[i + 1] == 'x' || p_message[i + 1] == 'X' || p_message[i + 1] == 'f')) {
 			res += fakebidisuffix;
-			res += message[i];
-			res += message[i + 1];
+			res += p_message[i];
+			res += p_message[i + 1];
 			res += fakebidiprefix;
 			i++;
 		} else {
-			res += message[i];
+			res += p_message[i];
 		}
 	}
 	res += fakebidisuffix;
 	return res;
 }
 
-String TranslationServer::add_padding(String &message, int length) const {
-	String res = "";
+String TranslationServer::add_padding(String &p_message, int p_length) const {
+	String res;
 	String prefix = pseudolocalization_prefix;
-	String suffix = "";
-	for (int i = 0; i < length * expansion_ratio / 2; i++) {
+	String suffix;
+	for (int i = 0; i < p_length * expansion_ratio / 2; i++) {
 		prefix += "_";
 		suffix += "_";
 	}
 	suffix += pseudolocalization_suffix;
-	//replace with expansion logic here when implementing that
 	res += prefix;
-	res += message;
+	res += p_message;
 	res += suffix;
 	return res;
 }
 
-const char32_t *TranslationServer::get_accented_version(char32_t c) const {
-	switch (c) {
+const char32_t *TranslationServer::get_accented_version(char32_t p_character) const {
+	switch (p_character) {
 		case 'A':
 			return U"Å";
 		case 'B':
@@ -1599,7 +1591,7 @@ const char32_t *TranslationServer::get_accented_version(char32_t c) const {
 		case 'z':
 			return U"ź";
 	}
-	return NULL;
+	return nullptr;
 }
 
 void TranslationServer::_bind_methods() {
@@ -1622,7 +1614,7 @@ void TranslationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_pseudolocalization_enabled"), &TranslationServer::is_pseudolocalization_enabled);
 	ClassDB::bind_method(D_METHOD("set_pseudolocalization_enabled", "enabled"), &TranslationServer::set_pseudolocalization_enabled);
 	ClassDB::bind_method(D_METHOD("reload_pseudolocalization"), &TranslationServer::reload_pseudolocalization);
-	ClassDB::bind_method(D_METHOD("pseudolocalize", "p_message"), &TranslationServer::pseudolocalize);
+	ClassDB::bind_method(D_METHOD("pseudolocalize", "message"), &TranslationServer::pseudolocalize);
 }
 
 void TranslationServer::load_translations() {
