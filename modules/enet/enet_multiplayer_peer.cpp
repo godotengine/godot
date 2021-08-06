@@ -242,8 +242,8 @@ bool ENetMultiplayerPeer::_poll_client() {
 	}
 	switch (ret) {
 		case ENetConnection::EVENT_CONNECT: {
-			emit_signal(SNAME("peer_connected"), 1);
 			connection_status = CONNECTION_CONNECTED;
+			emit_signal(SNAME("peer_connected"), 1);
 			emit_signal(SNAME("connection_succeeded"));
 			return false;
 		}
