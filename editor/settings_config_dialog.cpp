@@ -268,7 +268,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 		Array events; // Need to get the list of events into an array so it can be set as metadata on the item.
 		Vector<String> event_strings;
 
-		List<Ref<InputEvent>> all_default_events = InputMap::get_singleton()->get_builtins().find(action_name).value();
+		List<Ref<InputEvent>> all_default_events = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(action_name).value();
 		List<Ref<InputEventKey>> key_default_events;
 		// Remove all non-key events from the defaults. Only check keys, since we are in the editor.
 		for (List<Ref<InputEvent>>::Element *I = all_default_events.front(); I; I = I->next()) {
@@ -404,7 +404,7 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 		switch (button_idx) {
 			case SHORTCUT_REVERT: {
 				Array events;
-				List<Ref<InputEvent>> defaults = InputMap::get_singleton()->get_builtins()[current_action];
+				List<Ref<InputEvent>> defaults = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied()[current_action];
 
 				// Convert the list to an array, and only keep key events as this is for the editor.
 				for (const Ref<InputEvent> &k : defaults) {

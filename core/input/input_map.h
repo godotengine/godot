@@ -56,6 +56,7 @@ private:
 
 	mutable OrderedHashMap<StringName, Action> input_map;
 	OrderedHashMap<String, List<Ref<InputEvent>>> default_builtin_cache;
+	OrderedHashMap<String, List<Ref<InputEvent>>> default_builtin_with_overrides_cache;
 
 	List<Ref<InputEvent>>::Element *_find_event(Action &p_action, const Ref<InputEvent> &p_event, bool p_exact_match = false, bool *p_pressed = nullptr, float *p_strength = nullptr, float *p_raw_strength = nullptr) const;
 
@@ -93,6 +94,7 @@ public:
 	String get_builtin_display_name(const String &p_name) const;
 	// Use an Ordered Map so insertion order is preserved. We want the elements to be 'grouped' somewhat.
 	const OrderedHashMap<String, List<Ref<InputEvent>>> &get_builtins();
+	const OrderedHashMap<String, List<Ref<InputEvent>>> &get_builtins_with_feature_overrides_applied();
 
 	InputMap();
 	~InputMap();

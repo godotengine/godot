@@ -1409,7 +1409,7 @@ Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
 
 	// If there was no override, check the default builtins to see if it has an InputEvent for the provided name.
 	if (sc.is_null()) {
-		const OrderedHashMap<String, List<Ref<InputEvent>>>::ConstElement builtin_default = InputMap::get_singleton()->get_builtins().find(p_name);
+		const OrderedHashMap<String, List<Ref<InputEvent>>>::ConstElement builtin_default = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(p_name);
 		if (builtin_default) {
 			sc.instantiate();
 			sc->set_event(builtin_default.get().front()->get());
@@ -1502,15 +1502,23 @@ void EditorSettings::set_builtin_action_override(const String &p_name, const Arr
 	// Check if the provided event array is same as built-in. If it is, it does not need to be added to the overrides.
 	// Note that event order must also be the same.
 	bool same_as_builtin = true;
-	OrderedHashMap<String, List<Ref<InputEvent>>>::ConstElement builtin_default = InputMap::get_singleton()->get_builtins().find(p_name);
+	OrderedHashMap<String, List<Ref<InputEvent>>>::ConstElement builtin_default = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(p_name);
 	if (builtin_default) {
 		List<Ref<InputEvent>> builtin_events = builtin_default.get();
 
-		if (p_events.size() == builtin_events.size()) {
+		// In the editor we only care about key events.
+		List<Ref<InputEventKey>> builtin_key_events;
+		for (Ref<InputEventKey> iek : builtin_events) {
+			if (iek.is_valid()) {
+				builtin_key_events.push_back(iek);
+			}
+		}
+
+		if (p_events.size() == builtin_key_events.size()) {
 			int event_idx = 0;
 
 			// Check equality of each event.
-			for (const Ref<InputEvent> &E : builtin_events) {
+			for (const Ref<InputEventKey> &E : builtin_key_events) {
 				if (!E->is_match(p_events[event_idx])) {
 					same_as_builtin = false;
 					break;
