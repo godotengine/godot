@@ -285,12 +285,15 @@ void RendererSceneSkyRD::_render_sky(RD::DrawListID p_list, float p_time, RID p_
 
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, p_pipeline->get_render_pipeline(RD::INVALID_ID, fb_format, false, RD::get_singleton()->draw_list_get_current_pass()));
 
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, sky_scene_state.uniform_set, 0);
-	if (p_uniform_set.is_valid()) { //material may not have uniform set
-		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_uniform_set, 1);
+	// Update uniform sets.
+	{
+		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, sky_scene_state.uniform_set, 0);
+		if (RD::get_singleton()->uniform_set_is_valid(p_uniform_set)) { // Material may not have a uniform set.
+			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_uniform_set, 1);
+		}
+		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_texture_set, 2);
+		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, sky_scene_state.fog_uniform_set, 3);
 	}
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_texture_set, 2);
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, sky_scene_state.fog_uniform_set, 3);
 
 	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
 

@@ -1924,8 +1924,8 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 		}
 
 		if (material_uniform_set != prev_material_uniform_set) {
-			//update uniform set
-			if (material_uniform_set.is_valid()) {
+			// Update uniform set.
+			if (RD::get_singleton()->uniform_set_is_valid(material_uniform_set)) { // Material may not have a uniform set.
 				RD::get_singleton()->draw_list_bind_uniform_set(draw_list, material_uniform_set, MATERIAL_UNIFORM_SET);
 			}
 
