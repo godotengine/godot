@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Godot.Collections
 {
@@ -528,7 +527,7 @@ namespace Godot.Collections
         /// <param name="key">The key of the element to get.</param>
         /// <param name="value">The value at the given <paramref name="key"/>.</param>
         /// <returns>If an object was found for the given <paramref name="key"/>.</returns>
-        public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
+        public bool TryGetValue(TKey key, out TValue value)
         {
             bool found = Dictionary.godot_icall_Dictionary_TryGetValue_Generic(GetPtr(), key, out object retValue, valTypeEncoding, valTypeClass);
             value = found ? (TValue)retValue : default;
