@@ -13,6 +13,14 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="set_point">
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<argument index="1" name="position" type="Vector3" />
+			<description>
+				Sets individual points. Primarily for use by the editor.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="points" type="PoolVector3Array" setter="set_points" getter="get_points" default="PoolVector3Array(  )">

@@ -114,6 +114,16 @@ String Portal::get_configuration_warning() const {
 	return warning;
 }
 
+void Portal::set_point(int p_idx, const Vector2 &p_point) {
+	if (p_idx >= _pts_local_raw.size()) {
+		return;
+	}
+
+	_pts_local_raw.set(p_idx, p_point);
+	_sanitize_points();
+	update_gizmo();
+}
+
 void Portal::set_points(const PoolVector<Vector2> &p_points) {
 	_pts_local_raw = p_points;
 	_sanitize_points();
@@ -669,6 +679,8 @@ void Portal::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_points", "points"), &Portal::set_points);
 	ClassDB::bind_method(D_METHOD("get_points"), &Portal::get_points);
+
+	ClassDB::bind_method(D_METHOD("set_point", "index", "position"), &Portal::set_point);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "portal_active"), "set_portal_active", "get_portal_active");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "two_way"), "set_two_way", "is_two_way");
