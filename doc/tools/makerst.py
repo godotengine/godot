@@ -479,7 +479,7 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
         format_table(f, ml)
 
     # Theme properties
-    if class_def.theme_items is not None and len(class_def.theme_items) > 0:
+    if len(class_def.theme_items) > 0:
         f.write(make_heading("Theme Properties", "-"))
         pl = []
         for theme_item_def in class_def.theme_items.values():
@@ -601,6 +601,7 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
 
                 index += 1
 
+    # Theme property descriptions
     if len(class_def.theme_items) > 0:
         f.write(make_heading("Theme Property Descriptions", "-"))
         index = 0
