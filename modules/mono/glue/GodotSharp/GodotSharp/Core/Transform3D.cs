@@ -124,11 +124,11 @@ namespace Godot
             /* not sure if very "efficient" but good enough? */
 
             Vector3 sourceScale = basis.Scale;
-            Quaternion sourceRotation = basis.RotationQuaternion();
+            Quaternion sourceRotation = basis.GetRotationQuaternion();
             Vector3 sourceLocation = origin;
 
             Vector3 destinationScale = transform.basis.Scale;
-            Quaternion destinationRotation = transform.basis.RotationQuaternion();
+            Quaternion destinationRotation = transform.basis.GetRotationQuaternion();
             Vector3 destinationLocation = transform.origin;
 
             var interpolated = new Transform3D();
