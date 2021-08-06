@@ -168,7 +168,7 @@ GDScriptParser::GDScriptParser() {
 	register_annotation(MethodInfo("@export_flags_3d_physics"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_PHYSICS, Variant::INT>);
 	register_annotation(MethodInfo("@export_flags_3d_navigation"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_NAVIGATION, Variant::INT>);
 	// Networking.
-	register_annotation(MethodInfo("@rpc", { Variant::STRING, "mode" }, { Variant::STRING, "sync" }, { Variant::STRING, "transfer_mode" }, { Variant::INT, "transfer_channel" }), AnnotationInfo::FUNCTION, &GDScriptParser::network_annotations<MultiplayerAPI::RPC_MODE_MASTER>, 4, true);
+	register_annotation(MethodInfo("@rpc", { Variant::STRING, "mode" }, { Variant::STRING, "sync" }, { Variant::STRING, "transfer_mode" }, { Variant::INT, "transfer_channel" }), AnnotationInfo::FUNCTION, &GDScriptParser::network_annotations<MultiplayerAPI::RPC_MODE_PUPPET>, 4, true);
 	// TODO: Warning annotations.
 }
 
