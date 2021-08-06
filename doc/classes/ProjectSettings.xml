@@ -801,7 +801,7 @@
 		</member>
 		<member name="internationalization/pseudolocalization/use_pseudolocalization" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables pseudolocalization for the project. This can be used to spot untranslatable strings or layout issues that may occur once the project is localized to languages that have longer strings than the source language.
-			[b]Note:[/b] This property is only read when the project starts. To toggle pseudolocalization at run-time, use [method TranslationServer.set_pseudolocalization_enabled] instead.
+			[b]Note:[/b] This property is only read when the project starts. To toggle pseudolocalization at run-time, use [member TranslationServer.pseudolocalization_enabled] instead.
 		</member>
 		<member name="internationalization/rendering/force_right_to_left_layout_direction" type="bool" setter="" getter="" default="false">
 			Force layout direction and text writing direction to RTL for all locales.
