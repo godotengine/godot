@@ -556,6 +556,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 			for (int j = 0; j < gn->get_connection_output_count(); j++) {
 				if (is_in_output_hotzone(gn, j, click_pos)) {
+					Vector2 pos = gn->get_connection_input_position(j) + gn->get_position();
 					if (valid_left_disconnect_types.has(gn->get_connection_output_type(j))) {
 						//check disconnect
 						for (const Connection &E : connections) {
@@ -597,6 +598,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 			for (int j = 0; j < gn->get_connection_input_count(); j++) {
 				if (is_in_input_hotzone(gn, j, click_pos)) {
+					Vector2 pos = gn->get_connection_input_position(j) + gn->get_position();
 					if (right_disconnects || valid_right_disconnect_types.has(gn->get_connection_input_type(j))) {
 						//check disconnect
 						for (const Connection &E : connections) {
@@ -672,6 +674,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 					for (int j = 0; j < gn->get_connection_input_count(); j++) {
 						int type = gn->get_connection_input_type(j);
 						if ((type == connecting_type || valid_connection_types.has(ConnType(type, connecting_type))) && is_in_input_hotzone(gn, j, mpos)) {
+							Vector2 pos = gn->get_connection_input_position(j) + gn->get_position();
 							connecting_target = true;
 							connecting_to = pos;
 							connecting_target_to = gn->get_name();
