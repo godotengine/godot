@@ -356,7 +356,7 @@ void _OS::print_all_textures_by_size() {
 		ResourceCache::get_cached_resources(&rsrc);
 
 		for (Ref<Resource> &res : rsrc) {
-			if (!res->is_class("ImageTexture")) {
+			if (!res->is_class("Texture")) {
 				continue;
 			}
 
@@ -376,14 +376,30 @@ void _OS::print_all_textures_by_size() {
 
 	imgs.sort();
 
-	for (_OSCoreBindImg &E : imgs) {
-		total -= E.vram;
+	if (imgs.size() == 0) {
+		print_line("No textures seem used in this project.");
+	} else {
+		print_line("Textures currently in use, sorted by VRAM usage:\n"
+				   "Path - VRAM usage (Dimensions)");
 	}
+
+	for (const _OSCoreBindImg &img : imgs) {
+		print_line(vformat("%s - %s %s",
+				img.path,
+				String::humanize_size(img.vram),
+				img.size));
+	}
+
+	print_line(vformat("Total VRAM usage: %s.", String::humanize_size(total)));
 }
 
 void _OS::print_resources_by_type(const Vector<String> &p_types) {
-	Map<String, int> type_count;
+	ERR_FAIL_COND_MSG(p_types.size() == 0,
+			"At least one type should be provided to print resources by type.");
 
+	print_line(vformat("Resources currently in use for the following types: %s", p_types));
+
+	Map<String, int> type_count;
 	List<Ref<Resource>> resources;
 	ResourceCache::get_cached_resources(&resources);
 
@@ -404,6 +420,18 @@ void _OS::print_resources_by_type(const Vector<String> &p_types) {
 		}
 
 		type_count[r->get_class()]++;
+
+		print_line(vformat("%s: %s", r->get_class(), r->get_path()));
+
+		List<StringName> metas;
+		r->get_meta_list(&metas);
+		for (const StringName &meta : metas) {
+			print_line(vformat("  %s: %s", meta, r->get_meta(meta)));
+		}
+	}
+
+	for (const KeyValue<String, int> &E : type_count) {
+		print_line(vformat("%s count: %d", E.key, E.value));
 	}
 }
 
