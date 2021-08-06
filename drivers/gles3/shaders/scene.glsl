@@ -26,13 +26,11 @@ ARRAY_INDEX=8,
 layout(location = 0) in highp vec4 vertex_attrib;
 /* clang-format on */
 #ifdef ENABLE_OCTAHEDRAL_COMPRESSION
-layout(location = 1) in vec2 normal_attrib;
-#else
-layout(location = 1) in vec3 normal_attrib;
+layout(location = 1) in vec4 normal_tangent_attrib;
 #endif
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
 #ifdef ENABLE_OCTAHEDRAL_COMPRESSION
-layout(location = 2) in vec2 tangent_attrib;
+// packed into normal_attrib zw component
 #else
 layout(location = 2) in vec4 tangent_attrib;
 #endif
@@ -340,15 +338,15 @@ void main() {
 #endif
 
 #ifdef ENABLE_OCTAHEDRAL_COMPRESSION
-	vec3 normal = oct_to_vec3(normal_attrib);
+	vec3 normal = oct_to_vec3(normal_tangent_attrib.xy);
 #else
 	vec3 normal = normal_attrib;
 #endif
 
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
 #ifdef ENABLE_OCTAHEDRAL_COMPRESSION
-	vec3 tangent = oct_to_vec3(vec2(tangent_attrib.x, abs(tangent_attrib.y) * 2.0 - 1.0));
-	float binormalf = sign(tangent_attrib.y);
+	vec3 tangent = oct_to_vec3(vec2(normal_tangent_attrib.z, abs(normal_tangent_attrib.w) * 2.0 - 1.0));
+	float binormalf = sign(normal_tangent_attrib.w);
 #else
 	vec3 tangent = tangent_attrib.xyz;
 	float binormalf = tangent_attrib.a;

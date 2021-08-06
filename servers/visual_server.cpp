@@ -491,7 +491,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 				// setting vertices means regenerating the AABB
 
 				if (p_format & ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION) {
-					if (p_format & ARRAY_COMPRESS_NORMAL) {
+					if ((p_format & ARRAY_COMPRESS_NORMAL) && (p_format & ARRAY_FORMAT_TANGENT) && (p_format & ARRAY_COMPRESS_TANGENT)) {
 						for (int i = 0; i < p_vertex_array_len; i++) {
 							Vector2 res = norm_to_oct(src[i]);
 							int8_t vector[2] = {
@@ -878,7 +878,10 @@ uint32_t VisualServer::mesh_surface_make_offsets_from_format(uint32_t p_format, 
 			} break;
 			case VS::ARRAY_NORMAL: {
 				if (p_format & ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION) {
-					if (p_format & ARRAY_COMPRESS_NORMAL) {
+					// normal will always be oct32 (4 byte) encoded
+					// UNLESS tangent exists and is also compressed
+					// then it will be oct16 encoded along with tangent
+					if ((p_format & ARRAY_COMPRESS_NORMAL) && (p_format & ARRAY_FORMAT_TANGENT) && (p_format & ARRAY_COMPRESS_TANGENT)) {
 						elem_size = sizeof(uint8_t) * 2;
 					} else {
 						elem_size = sizeof(uint16_t) * 2;
@@ -1083,7 +1086,10 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 			} break;
 			case VS::ARRAY_NORMAL: {
 				if (p_compress_format & ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION) {
-					if (p_compress_format & ARRAY_COMPRESS_NORMAL) {
+					// normal will always be oct32 (4 byte) encoded
+					// UNLESS tangent exists and is also compressed
+					// then it will be oct16 encoded along with tangent
+					if ((p_compress_format & ARRAY_COMPRESS_NORMAL) && (format & ARRAY_FORMAT_TANGENT) && (p_compress_format & ARRAY_COMPRESS_TANGENT)) {
 						elem_size = sizeof(uint8_t) * 2;
 					} else {
 						elem_size = sizeof(uint16_t) * 2;
@@ -1286,7 +1292,10 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 			} break;
 			case VS::ARRAY_NORMAL: {
 				if (p_format & ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION) {
-					if (p_format & ARRAY_COMPRESS_NORMAL) {
+					// normal will always be oct32 (4 byte) encoded
+					// UNLESS tangent exists and is also compressed
+					// then it will be oct16 encoded along with tangent
+					if ((p_format & ARRAY_COMPRESS_NORMAL) && (p_format & ARRAY_FORMAT_TANGENT) && (p_format & ARRAY_COMPRESS_TANGENT)) {
 						elem_size = sizeof(uint8_t) * 2;
 					} else {
 						elem_size = sizeof(uint16_t) * 2;
@@ -1443,7 +1452,7 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 				arr.resize(p_vertex_len);
 
 				if (p_format & ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION) {
-					if (p_format & ARRAY_COMPRESS_NORMAL) {
+					if (p_format & ARRAY_COMPRESS_NORMAL && (p_format & ARRAY_FORMAT_TANGENT) && (p_format & ARRAY_COMPRESS_TANGENT)) {
 						PoolVector<Vector3>::Write w = arr.write();
 
 						for (int j = 0; j < p_vertex_len; j++) {
