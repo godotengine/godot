@@ -38,6 +38,7 @@
 #include "scene/gui/control.h"
 #include "scene/gui/text_edit.h"
 #include "servers/visual/shader_language.h"
+#include "servers/visual/shader_types.h"
 
 typedef ShaderLanguage SL;
 
@@ -310,49 +311,122 @@ MainLoop *test() {
 
 	if (cmdlargs.empty()) {
 		//try editor!
-		print_line("usage: godot -test shader_lang <shader>");
+		print_line("usage: godot -test shaderlang <shader>");
 		return nullptr;
 	}
 
-	String test = cmdlargs.back()->get();
-
-	FileAccess *fa = FileAccess::open(test, FileAccess::READ);
-
-	if (!fa) {
-		ERR_FAIL_V(nullptr);
-	}
-
-	String code;
-
-	while (true) {
-		CharType c = fa->get_8();
-		if (fa->eof_reached()) {
-			break;
-		}
-		code += c;
-	}
+	List<String> code_list;
+	List<Map<StringName, SL::FunctionInfo>> dt_list;
+	List<Vector<StringName>> rm_list;
+	List<Set<String>> types_list;
+	int test_count = 0;
 
 	SL sl;
-	print_line("tokens:\n\n" + sl.token_debug(code));
 
-	Map<StringName, SL::FunctionInfo> dt;
-	dt["fragment"].built_ins["ALBEDO"] = SL::TYPE_VEC3;
-	dt["fragment"].can_discard = true;
+	if (cmdlargs.empty() || cmdlargs.back()->get() == "shaderlang") {
+		{
+			String code;
+			code += "shader_type canvas_item;\n";
+			code += "render_mode test_rm;\n";
+			code += "\n";
+			code += "void fragment() {\n";
+			code += "\tCOLOR = vec4(1.0);\n";
+			code += "\tdiscard;\n";
+			code += "}\n";
+			code_list.push_back(code);
 
-	Vector<StringName> rm;
-	rm.push_back("popo");
-	Set<String> types;
-	types.insert("spatial");
+			Vector<StringName> rm;
+			rm.push_back("test_rm");
+			rm_list.push_back(rm);
 
-	Error err = sl.compile(code, dt, rm, types);
+			Map<StringName, SL::FunctionInfo> dt;
+			dt["fragment"].built_ins["COLOR"] = SL::TYPE_VEC4;
+			dt["fragment"].can_discard = true;
+			dt_list.push_back(dt);
 
-	if (err) {
-		print_line("Error at line: " + rtos(sl.get_error_line()) + ": " + sl.get_error_text());
-		return nullptr;
+			Set<String> types;
+			types.insert("canvas_item");
+			types_list.push_back(types);
+
+			test_count++;
+		}
+
+#ifndef _3D_DISABLED
+		{
+			String code;
+			code += "shader_type spatial;\n";
+			code += "render_mode test_rm;\n";
+			code += "\n";
+			code += "void fragment() {\n";
+			code += "\tALBEDO = vec3(1.0);\n";
+			code += "\tdiscard;\n";
+			code += "}\n";
+			code_list.push_back(code);
+
+			Vector<StringName> rm;
+			rm.push_back("test_rm");
+			rm_list.push_back(rm);
+
+			Map<StringName, SL::FunctionInfo> dt;
+			dt["fragment"].built_ins["ALBEDO"] = SL::TYPE_VEC3;
+			dt["fragment"].can_discard = true;
+			dt_list.push_back(dt);
+
+			Set<String> types;
+			types.insert("spatial");
+			types_list.push_back(types);
+
+			test_count++;
+		}
+#endif
 	} else {
-		String code2;
-		recreate_code(&code2, sl.get_shader());
-		print_line("code:\n\n" + code2);
+		FileAccess *fa = FileAccess::open(cmdlargs.back()->get(), FileAccess::READ);
+		String code;
+		if (!fa) {
+			ERR_FAIL_V(nullptr);
+		}
+		while (true) {
+			CharType c = fa->get_8();
+			if (fa->eof_reached()) {
+				break;
+			}
+			code += c;
+		}
+		code_list.push_back(code);
+		String type = sl.get_shader_type(code);
+
+		if (type == "canvas_item") {
+			dt_list.push_back(ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode::SHADER_CANVAS_ITEM));
+			rm_list.push_back(ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode::SHADER_CANVAS_ITEM));
+		} else if (type == "spatial") {
+			dt_list.push_back(ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode::SHADER_SPATIAL));
+			rm_list.push_back(ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode::SHADER_SPATIAL));
+		} else if (type == "particles") {
+			dt_list.push_back(ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode::SHADER_PARTICLES));
+			rm_list.push_back(ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode::SHADER_PARTICLES));
+		}
+		types_list.push_back(ShaderTypes::get_singleton()->get_types());
+
+		test_count++;
+	}
+
+	for (int i = 0; i < test_count; i++) {
+		String code = code_list[i];
+		Map<StringName, SL::FunctionInfo> dt = dt_list[i];
+		Vector<StringName> rm = rm_list[i];
+		Set<String> types = types_list[i];
+
+		print_line("tokens:\n\n" + sl.token_debug(code));
+		Error err = sl.compile(code, dt, rm, types);
+
+		if (err) {
+			print_line("Error at line: " + rtos(sl.get_error_line()) + ": " + sl.get_error_text());
+			return nullptr;
+		} else {
+			String code2;
+			recreate_code(&code2, sl.get_shader());
+			print_line("code:\n\n" + code2);
+		}
 	}
 
 	return nullptr;
