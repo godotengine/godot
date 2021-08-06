@@ -520,8 +520,29 @@ void GDScriptWorkspace::completion(const lsp::CompletionParams &p_params, List<S
 
 	if (const ExtendGDScriptParser *parser = get_parse_result(path)) {
 		Node *owner_scene_node = _get_owner_scene_node(path);
+
+		Array stack;
+		Node *current = nullptr;
+		stack.push_back(owner_scene_node);
+
+		while (!stack.is_empty()) {
+			current = stack.pop_back();
+			Ref<GDScript> script = current->get_script();
+			if (script.is_valid() && script->get_path() == path) {
+				break;
+			}
+			for (int i = 0; i < current->get_child_count(); ++i) {
+				stack.push_back(current->get_child(i));
+			}
+		}
+
+		Ref<GDScript> script = current->get_script();
+		if (!script.is_valid() || script->get_path() != path) {
+			current = owner_scene_node;
+		}
+
 		String code = parser->get_text_for_completion(p_params.position);
-		GDScriptLanguage::get_singleton()->complete_code(code, path, owner_scene_node, r_options, forced, call_hint);
+		GDScriptLanguage::get_singleton()->complete_code(code, path, current, r_options, forced, call_hint);
 		if (owner_scene_node) {
 			memdelete(owner_scene_node);
 		}
