@@ -122,31 +122,28 @@ void ViewportRotationControl::_draw() {
 }
 
 void ViewportRotationControl::_draw_axis(const Axis2D &p_axis) {
-	bool focused = focused_axis == p_axis.axis;
-	bool positive = p_axis.axis < 3;
-	bool front = (Math::abs(p_axis.z_axis) <= 0.001 && positive) || p_axis.z_axis > 0.001;
-	int direction = p_axis.axis % 3;
+	const bool focused = focused_axis == p_axis.axis;
+	const bool positive = p_axis.axis < 3;
+	const int direction = p_axis.axis % 3;
 
-	Color axis_color = axis_colors[direction];
-
-	if (!front) {
-		axis_color = axis_color.darkened(0.4);
-	}
-	Color c = focused ? Color(0.9, 0.9, 0.9) : axis_color;
+	const Color axis_color = axis_colors[direction];
+	const double alpha = focused ? 1.0 : ((p_axis.z_axis + 1.0) / 2.0) * 0.5 + 0.5;
+	const Color c = focused ? Color(0.9, 0.9, 0.9) : Color(axis_color.r, axis_color.g, axis_color.b, alpha);
 
 	if (positive) {
-		Vector2i center = get_size() / 2.0;
+		// Draw axis lines for the positive axes.
+		const Vector2i center = get_size() / 2.0;
 		draw_line(center, p_axis.screen_point, c, 1.5 * EDSCALE);
-	}
 
-	if (front) {
 		draw_circle(p_axis.screen_point, AXIS_CIRCLE_RADIUS, c);
-		if (positive) {
-			String axis_name = direction == 0 ? "X" : (direction == 1 ? "Y" : "Z");
-			draw_char(get_theme_font(SNAME("rotation_control"), SNAME("EditorFonts")), p_axis.screen_point + Vector2i(-4, 5) * EDSCALE, axis_name, "", get_theme_font_size(SNAME("rotation_control_size"), SNAME("EditorFonts")), Color(0.0, 0.0, 0.0));
-		}
+
+		// Draw the axis letter for the positive axes.
+		const String axis_name = direction == 0 ? "X" : (direction == 1 ? "Y" : "Z");
+		draw_char(get_theme_font(SNAME("rotation_control"), SNAME("EditorFonts")), p_axis.screen_point + Vector2i(-4, 5) * EDSCALE, axis_name, "", get_theme_font_size(SNAME("rotation_control_size"), SNAME("EditorFonts")), Color(0.0, 0.0, 0.0, alpha));
 	} else {
-		draw_circle(p_axis.screen_point, AXIS_CIRCLE_RADIUS * (0.55 + (0.2 * (1.0 + p_axis.z_axis))), c);
+		// Draw an outline around the negative axes.
+		draw_circle(p_axis.screen_point, AXIS_CIRCLE_RADIUS, c);
+		draw_circle(p_axis.screen_point, AXIS_CIRCLE_RADIUS * 0.8, c.darkened(0.4));
 	}
 }
 
