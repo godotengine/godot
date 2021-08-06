@@ -923,6 +923,66 @@ void Translation::_bind_methods() {
 
 ///////////////////////////////////////////////
 
+struct _character_accent_pair {
+	const char32_t character;
+	const char32_t *accented_character;
+};
+
+static _character_accent_pair _character_to_accented[] = {
+	{ 'A', U"Å" },
+	{ 'B', U"ß" },
+	{ 'C', U"Ç" },
+	{ 'D', U"Ð" },
+	{ 'E', U"É" },
+	{ 'F', U"F́" },
+	{ 'G', U"Ĝ" },
+	{ 'H', U"Ĥ" },
+	{ 'I', U"Ĩ" },
+	{ 'J', U"Ĵ" },
+	{ 'K', U"ĸ" },
+	{ 'L', U"Ł" },
+	{ 'M', U"Ḿ" },
+	{ 'N', U"й" },
+	{ 'O', U"Ö" },
+	{ 'P', U"Ṕ" },
+	{ 'Q', U"Q́" },
+	{ 'R', U"Ř" },
+	{ 'S', U"Ŝ" },
+	{ 'T', U"Ŧ" },
+	{ 'U', U"Ũ" },
+	{ 'V', U"Ṽ" },
+	{ 'W', U"Ŵ" },
+	{ 'X', U"X́" },
+	{ 'Y', U"Ÿ" },
+	{ 'Z', U"Ž" },
+	{ 'a', U"á" },
+	{ 'b', U"ḅ" },
+	{ 'c', U"ć" },
+	{ 'd', U"d́" },
+	{ 'e', U"é" },
+	{ 'f', U"f́" },
+	{ 'g', U"ǵ" },
+	{ 'h', U"h̀" },
+	{ 'i', U"í" },
+	{ 'j', U"ǰ" },
+	{ 'k', U"ḱ" },
+	{ 'l', U"ł" },
+	{ 'm', U"m̀" },
+	{ 'n', U"ή" },
+	{ 'o', U"ô" },
+	{ 'p', U"ṕ" },
+	{ 'q', U"q́" },
+	{ 'r', U"ŕ" },
+	{ 's', U"š" },
+	{ 't', U"ŧ" },
+	{ 'u', U"ü" },
+	{ 'v', U"ṽ" },
+	{ 'w', U"ŵ" },
+	{ 'x', U"x́" },
+	{ 'y', U"ý" },
+	{ 'z', U"ź" },
+};
+
 bool TranslationServer::is_locale_valid(const String &p_locale) {
 	const char **ptr = locale_list;
 
@@ -1467,112 +1527,16 @@ String TranslationServer::add_padding(String &p_message, int p_length) const {
 }
 
 const char32_t *TranslationServer::get_accented_version(char32_t p_character) const {
-	switch (p_character) {
-		case 'A':
-			return U"Å";
-		case 'B':
-			return U"ß";
-		case 'C':
-			return U"Ç";
-		case 'D':
-			return U"Ð";
-		case 'E':
-			return U"É";
-		case 'F':
-			return U"F́";
-		case 'G':
-			return U"Ĝ";
-		case 'H':
-			return U"Ĥ";
-		case 'I':
-			return U"Ĩ";
-		case 'J':
-			return U"Ĵ";
-		case 'K':
-			return U"ĸ";
-		case 'L':
-			return U"Ł";
-		case 'M':
-			return U"Ḿ";
-		case 'N':
-			return U"й";
-		case 'O':
-			return U"Ö";
-		case 'P':
-			return U"Ṕ";
-		case 'Q':
-			return U"Q́";
-		case 'R':
-			return U"Ř";
-		case 'S':
-			return U"Ŝ";
-		case 'T':
-			return U"Ŧ";
-		case 'U':
-			return U"Ũ";
-		case 'V':
-			return U"Ṽ";
-		case 'W':
-			return U"Ŵ";
-		case 'X':
-			return U"X́";
-		case 'Y':
-			return U"Ÿ";
-		case 'Z':
-			return U"Ž";
-		case 'a':
-			return U"á";
-		case 'b':
-			return U"ḅ";
-		case 'c':
-			return U"ć";
-		case 'd':
-			return U"d́";
-		case 'e':
-			return U"é";
-		case 'f':
-			return U"f́";
-		case 'g':
-			return U"ǵ";
-		case 'h':
-			return U"h̀";
-		case 'i':
-			return U"í";
-		case 'j':
-			return U"ǰ";
-		case 'k':
-			return U"ḱ";
-		case 'l':
-			return U"ł";
-		case 'm':
-			return U"m̀";
-		case 'n':
-			return U"ή";
-		case 'o':
-			return U"ô";
-		case 'p':
-			return U"ṕ";
-		case 'q':
-			return U"q́";
-		case 'r':
-			return U"ŕ";
-		case 's':
-			return U"š";
-		case 't':
-			return U"ŧ";
-		case 'u':
-			return U"ü";
-		case 'v':
-			return U"ṽ";
-		case 'w':
-			return U"ŵ";
-		case 'x':
-			return U"x́";
-		case 'y':
-			return U"ý";
-		case 'z':
-			return U"ź";
+	if (!((p_character >= 'a' && p_character <= 'z') || (p_character >= 'A' && p_character <= 'Z'))) {
+		return nullptr;
 	}
+
+	for (unsigned int i = 0; i < sizeof(_character_to_accented) / sizeof(_character_to_accented[0]); i++) {
+		if (_character_to_accented[i].character == p_character) {
+			return _character_to_accented[i].accented_character;
+		}
+	}
+
 	return nullptr;
 }
 
