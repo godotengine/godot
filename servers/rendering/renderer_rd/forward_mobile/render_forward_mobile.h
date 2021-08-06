@@ -92,6 +92,18 @@ protected:
 
 	/* Render Buffer */
 
+	// We can have:
+	// - 4 subpasses combining the full render cycle
+	// - 3 subpasses + 1 normal pass for tonemapping/glow/dof/etc (using fb for 2D buffer)
+	// - 2 subpasses + 1 normal pass for transparent + 1 normal pass for tonemapping/glow/dof/etc (using fb for 2D buffer)
+	enum RenderBufferMobileFramebufferConfigType {
+		FB_CONFIG_ONE_PASS, // Single pass frame buffer for alpha pass
+		FB_CONFIG_TWO_SUBPASSES, // Opaque + Sky sub pass
+		FB_CONFIG_THREE_SUBPASSES, // Opaque + Sky + Alpha sub pass
+		FB_CONFIG_FOUR_SUBPASSES, // Opaque + Sky + Alpha sub pass + Tonemap pass
+		FB_CONFIG_MAX
+	};
+
 	struct RenderBufferDataForwardMobile : public RenderBufferData {
 		RID color;
 		RID depth;
@@ -104,12 +116,12 @@ protected:
 		RID depth_msaa;
 		// RID normal_roughness_buffer_msaa;
 
-		RID color_fb;
+		RID color_fbs[FB_CONFIG_MAX];
 		int width, height;
 		uint32_t view_count;
 
 		void clear();
-		virtual void configure(RID p_color_buffer, RID p_depth_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, uint32_t p_view_count);
+		virtual void configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, uint32_t p_view_count);
 
 		~RenderBufferDataForwardMobile();
 	};
@@ -152,6 +164,7 @@ protected:
 		RD::FramebufferFormatID framebuffer_format = 0;
 		uint32_t element_offset = 0;
 		uint32_t barrier = RD::BARRIER_MASK_ALL;
+		uint32_t subpass = 0;
 
 		RenderListParameters(GeometryInstanceSurfaceDataCache **p_elements, RenderElementInfo *p_element_info, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, RID p_render_pass_uniform_set, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2(), const Plane &p_lod_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_lod_threshold = 0.0, uint32_t p_view_count = 1, uint32_t p_element_offset = 0, uint32_t p_barrier = RD::BARRIER_MASK_ALL) {
 			elements = p_elements;
@@ -195,7 +208,7 @@ protected:
 	virtual RID _render_buffers_get_normal_texture(RID p_render_buffers) override;
 
 	void _fill_render_list(RenderListType p_render_list, const RenderDataRD *p_render_data, PassMode p_pass_mode, bool p_append = false);
-	void _fill_instance_data(RenderListType p_render_list, uint32_t p_offset = 0, int32_t p_max_elements = -1, bool p_update_buffer = true);
+	void _fill_element_info(RenderListType p_render_list, uint32_t p_offset = 0, int32_t p_max_elements = -1);
 	// void _update_instance_data_buffer(RenderListType p_render_list);
 
 	static RenderForwardMobile *singleton;
@@ -576,6 +589,8 @@ protected:
 	void _update_shader_quality_settings() override;
 
 public:
+	virtual RID reflection_probe_create_framebuffer(RID p_color, RID p_depth) override;
+
 	static void _geometry_instance_dependency_changed(RendererStorage::DependencyChangedNotification p_notification, RendererStorage::DependencyTracker *p_tracker);
 	static void _geometry_instance_dependency_deleted(const RID &p_dependency, RendererStorage::DependencyTracker *p_tracker);
 

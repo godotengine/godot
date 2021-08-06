@@ -679,10 +679,7 @@ bool RendererSceneRenderRD::reflection_probe_instance_begin_render(RID p_instanc
 		for (int i = 0; i < atlas->count; i++) {
 			atlas->reflections.write[i].data.update_reflection_data(storage, atlas->size, mipmaps, false, atlas->reflection, i * 6, storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS, sky.roughness_layers, _render_buffers_get_color_format());
 			for (int j = 0; j < 6; j++) {
-				Vector<RID> fb;
-				fb.push_back(atlas->reflections.write[i].data.layers[0].mipmaps[0].views[j]);
-				fb.push_back(atlas->depth_buffer);
-				atlas->reflections.write[i].fbs[j] = RD::get_singleton()->framebuffer_create(fb);
+				atlas->reflections.write[i].fbs[j] = reflection_probe_create_framebuffer(atlas->reflections.write[i].data.layers[0].mipmaps[0].views[j], atlas->depth_buffer);
 			}
 		}
 
@@ -726,6 +723,13 @@ bool RendererSceneRenderRD::reflection_probe_instance_begin_render(RID p_instanc
 	RD::get_singleton()->draw_command_end_label();
 
 	return true;
+}
+
+RID RendererSceneRenderRD::reflection_probe_create_framebuffer(RID p_color, RID p_depth) {
+	Vector<RID> fb;
+	fb.push_back(p_color);
+	fb.push_back(p_depth);
+	return RD::get_singleton()->framebuffer_create(fb);
 }
 
 bool RendererSceneRenderRD::reflection_probe_instance_postprocess_step(RID p_instance) {
@@ -1996,6 +2000,75 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 	storage->render_target_disable_clear_request(rb->render_target);
 }
 
+void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_framebuffer, const RenderDataRD *p_render_data) {
+	RD::get_singleton()->draw_command_begin_label("Post Process Subpass");
+
+	RenderBuffers *rb = render_buffers_owner.getornull(p_render_data->render_buffers);
+	ERR_FAIL_COND(!rb);
+
+	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_render_data->environment);
+
+	bool can_use_effects = rb->width >= 8 && rb->height >= 8;
+
+	RENDER_TIMESTAMP("Tonemap");
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_switch_to_next_pass();
+
+	EffectsRD::TonemapSettings tonemap;
+
+	if (env) {
+		tonemap.tonemap_mode = env->tone_mapper;
+		tonemap.exposure = env->exposure;
+		tonemap.white = env->white;
+	}
+
+	// We don't support glow or auto exposure here, if they are needed, don't use subpasses!
+	// The problem is that we need to use the result so far and process them before we can
+	// apply this to our results.
+	if (can_use_effects && env && env->glow_enabled) {
+		ERR_FAIL_MSG("Glow is not supported when using subpasses.");
+	}
+	if (can_use_effects && env && env->auto_exposure) {
+		ERR_FAIL_MSG("Glow is not supported when using subpasses.");
+	}
+
+	tonemap.use_glow = false;
+	tonemap.glow_texture = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK);
+	tonemap.use_auto_exposure = false;
+	tonemap.exposure_texture = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE);
+
+	tonemap.use_color_correction = false;
+	tonemap.use_1d_color_correction = false;
+	tonemap.color_correction_texture = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE);
+
+	if (can_use_effects && env) {
+		tonemap.use_bcs = env->adjustments_enabled;
+		tonemap.brightness = env->adjustments_brightness;
+		tonemap.contrast = env->adjustments_contrast;
+		tonemap.saturation = env->adjustments_saturation;
+		if (env->adjustments_enabled && env->color_correction.is_valid()) {
+			tonemap.use_color_correction = true;
+			tonemap.use_1d_color_correction = env->use_1d_color_correction;
+			tonemap.color_correction_texture = storage->texture_get_rd_texture(env->color_correction);
+		}
+	}
+
+	tonemap.use_debanding = rb->use_debanding;
+	tonemap.texture_size = Vector2i(rb->width, rb->height);
+
+	tonemap.view_count = p_render_data->view_count;
+
+	storage->get_effects()->tonemapper(draw_list, p_source_texture, RD::get_singleton()->framebuffer_get_format(p_framebuffer), tonemap);
+
+	RD::get_singleton()->draw_command_end_label();
+}
+
+void RendererSceneRenderRD::_disable_clear_request(const RenderDataRD *p_render_data) {
+	RenderBuffers *rb = render_buffers_owner.getornull(p_render_data->render_buffers);
+	ERR_FAIL_COND(!rb);
+
+	storage->render_target_disable_clear_request(rb->render_target);
+}
+
 void RendererSceneRenderRD::_render_buffers_debug_draw(RID p_render_buffers, RID p_shadow_atlas, RID p_occlusion_buffer) {
 	EffectsRD *effects = storage->get_effects();
 
@@ -2283,12 +2356,11 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 		tf.width = rb->width;
 		tf.height = rb->height;
 		tf.array_layers = rb->view_count; // create a layer for every view
-		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | (_render_buffers_can_be_storage() ? RD::TEXTURE_USAGE_STORAGE_BIT : 0);
+		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | (_render_buffers_can_be_storage() ? RD::TEXTURE_USAGE_STORAGE_BIT : 0) | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 		if (rb->msaa != RS::VIEWPORT_MSAA_DISABLED) {
-			tf.usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | (_render_buffers_can_be_storage() ? RD::TEXTURE_USAGE_STORAGE_BIT : 0);
-		} else {
-			tf.usage_bits |= RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+			tf.usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 		}
+		tf.usage_bits |= RD::TEXTURE_USAGE_INPUT_ATTACHMENT_BIT; // only needed when using subpasses in the mobile renderer
 
 		rb->texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
 	}
@@ -2326,7 +2398,8 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 		rb->texture_fb = RD::get_singleton()->framebuffer_create(fb, RenderingDevice::INVALID_ID, rb->view_count);
 	}
 
-	rb->data->configure(rb->texture, rb->depth_texture, p_width, p_height, p_msaa, p_view_count);
+	RID target_texture = storage->render_target_get_rd_texture(rb->render_target);
+	rb->data->configure(rb->texture, rb->depth_texture, target_texture, p_width, p_height, p_msaa, p_view_count);
 
 	if (is_clustered_enabled()) {
 		rb->cluster_builder->setup(Size2i(p_width, p_height), max_cluster_elements, rb->depth_texture, storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED), rb->texture);
@@ -3846,9 +3919,28 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData 
 	_render_scene(&render_data, clear_color);
 
 	if (p_render_buffers.is_valid()) {
-		if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_CLUSTER_OMNI_LIGHTS || debug_draw == RS::VIEWPORT_DEBUG_DRAW_CLUSTER_SPOT_LIGHTS || debug_draw == RS::VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS || debug_draw == RS::VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES) {
+		/*
+		_debug_draw_cluster(p_render_buffers);
+
+		RENDER_TIMESTAMP("Tonemap");
+
+		_render_buffers_post_process_and_tonemap(&render_data);
+		*/
+
+		_render_buffers_debug_draw(p_render_buffers, p_shadow_atlas, p_occluder_debug_tex);
+		if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_SDFGI && rb != nullptr && rb->sdfgi != nullptr) {
+			rb->sdfgi->debug_draw(render_data.cam_projection, render_data.cam_transform, rb->width, rb->height, rb->render_target, rb->texture);
+		}
+	}
+}
+
+void RendererSceneRenderRD::_debug_draw_cluster(RID p_render_buffers) {
+	if (p_render_buffers.is_valid() && current_cluster_builder != nullptr) {
+		RS::ViewportDebugDraw dd = get_debug_draw_mode();
+
+		if (dd == RS::VIEWPORT_DEBUG_DRAW_CLUSTER_OMNI_LIGHTS || dd == RS::VIEWPORT_DEBUG_DRAW_CLUSTER_SPOT_LIGHTS || dd == RS::VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS || dd == RS::VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES) {
 			ClusterBuilderRD::ElementType elem_type = ClusterBuilderRD::ELEMENT_TYPE_MAX;
-			switch (debug_draw) {
+			switch (dd) {
 				case RS::VIEWPORT_DEBUG_DRAW_CLUSTER_OMNI_LIGHTS:
 					elem_type = ClusterBuilderRD::ELEMENT_TYPE_OMNI_LIGHT;
 					break;
@@ -3864,17 +3956,7 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData 
 				default: {
 				}
 			}
-			if (current_cluster_builder != nullptr) {
-				current_cluster_builder->debug(elem_type);
-			}
-		}
-
-		RENDER_TIMESTAMP("Tonemap");
-
-		_render_buffers_post_process_and_tonemap(&render_data);
-		_render_buffers_debug_draw(p_render_buffers, p_shadow_atlas, p_occluder_debug_tex);
-		if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_SDFGI && rb != nullptr && rb->sdfgi != nullptr) {
-			rb->sdfgi->debug_draw(render_data.cam_projection, render_data.cam_transform, rb->width, rb->height, rb->render_target, rb->texture);
+			current_cluster_builder->debug(elem_type);
 		}
 	}
 }

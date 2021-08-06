@@ -112,7 +112,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		void ensure_specular();
 		void ensure_voxelgi();
 		void clear();
-		virtual void configure(RID p_color_buffer, RID p_depth_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, uint32_t p_view_count);
+		virtual void configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, uint32_t p_view_count);
 
 		~RenderBufferDataForwardClustered();
 	};

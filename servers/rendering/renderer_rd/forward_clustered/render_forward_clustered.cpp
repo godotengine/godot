@@ -183,7 +183,7 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::clear() {
 	}
 }
 
-void RenderForwardClustered::RenderBufferDataForwardClustered::configure(RID p_color_buffer, RID p_depth_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, uint32_t p_view_count) {
+void RenderForwardClustered::RenderBufferDataForwardClustered::configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, uint32_t p_view_count) {
 	clear();
 
 	ERR_FAIL_COND_MSG(p_view_count != 1, "Multiple views is currently not supported in this renderer, please use the mobile renderer for VR support");
@@ -1555,6 +1555,14 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	}
 
 	RD::get_singleton()->draw_command_end_label();
+
+	if (p_render_data->render_buffers.is_valid()) {
+		_debug_draw_cluster(p_render_data->render_buffers);
+
+		RENDER_TIMESTAMP("Tonemap");
+
+		_render_buffers_post_process_and_tonemap(p_render_data);
+	}
 }
 
 void RenderForwardClustered::_render_shadow_begin() {

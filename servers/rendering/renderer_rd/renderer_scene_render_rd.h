@@ -95,7 +95,7 @@ protected:
 	double time_step = 0;
 
 	struct RenderBufferData {
-		virtual void configure(RID p_color_buffer, RID p_depth_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, uint32_t p_view_count) = 0;
+		virtual void configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, uint32_t p_view_count) = 0;
 		virtual ~RenderBufferData() {}
 	};
 	virtual RenderBufferData *_create_render_buffer_data() = 0;
@@ -117,6 +117,7 @@ protected:
 	virtual void _render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, const PagedArray<GeometryInstance *> &p_instances) = 0;
 
 	void _debug_sdfgi_probes(RID p_render_buffers, RD::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform);
+	void _debug_draw_cluster(RID p_render_buffers);
 
 	RenderBufferData *render_buffers_get_data(RID p_render_buffers);
 
@@ -133,6 +134,10 @@ protected:
 
 	void _pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_gi, RID p_normal_roughness_buffer, RID p_voxel_gi_buffer);
 
+	void _render_buffers_post_process_and_tonemap(const RenderDataRD *p_render_data);
+	void _post_process_subpass(RID p_source_texture, RID p_framebuffer, const RenderDataRD *p_render_data);
+	void _disable_clear_request(const RenderDataRD *p_render_data);
+
 	// needed for a single argument calls (material and uv2)
 	PagedArrayPool<GeometryInstance *> cull_argument_pool;
 	PagedArray<GeometryInstance *> cull_argument; //need this to exist
@@ -146,7 +151,7 @@ protected:
 		} else {
 			return nullptr;
 		}
-	}
+	};
 
 	//used for mobile renderer mostly
 
@@ -524,7 +529,6 @@ private:
 	void _allocate_luminance_textures(RenderBuffers *rb);
 
 	void _render_buffers_debug_draw(RID p_render_buffers, RID p_shadow_atlas, RID p_occlusion_buffer);
-	void _render_buffers_post_process_and_tonemap(const RenderDataRD *p_render_data);
 
 	/* Cluster */
 
@@ -923,6 +927,12 @@ public:
 	virtual void camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) override;
 	virtual void camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) override;
 
+	bool camera_effects_uses_dof(RID p_camera_effects) {
+		CameraEffects *camfx = camera_effects_owner.getornull(p_camera_effects);
+
+		return camfx && (camfx->dof_blur_near_enabled || camfx->dof_blur_far_enabled) && camfx->dof_blur_amount > 0.0;
+	}
+
 	virtual RID light_instance_create(RID p_light) override;
 	virtual void light_instance_set_transform(RID p_light_instance, const Transform3D &p_transform) override;
 	virtual void light_instance_set_aabb(RID p_light_instance, const AABB &p_aabb) override;
@@ -1065,6 +1075,7 @@ public:
 	virtual bool reflection_probe_instance_needs_redraw(RID p_instance) override;
 	virtual bool reflection_probe_instance_has_reflection(RID p_instance) override;
 	virtual bool reflection_probe_instance_begin_render(RID p_instance, RID p_reflection_atlas) override;
+	virtual RID reflection_probe_create_framebuffer(RID p_color, RID p_depth);
 	virtual bool reflection_probe_instance_postprocess_step(RID p_instance) override;
 
 	uint32_t reflection_probe_instance_get_resolution(RID p_instance);

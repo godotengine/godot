@@ -35,10 +35,14 @@ void main() {
 
 layout(location = 0) in vec2 uv_interp;
 
-#ifdef MULTIVIEW
+#ifdef SUBPASS
+layout(input_attachment_index = 0, set = 0, binding = 0) uniform subpassInput input_color;
+#else
+#if MULTIVIEW
 layout(set = 0, binding = 0) uniform sampler2DArray source_color;
 #else
 layout(set = 0, binding = 0) uniform sampler2D source_color;
+#endif
 #endif
 layout(set = 1, binding = 0) uniform sampler2D source_auto_exposure;
 layout(set = 2, binding = 0) uniform sampler2D source_glow;
@@ -291,6 +295,7 @@ vec3 apply_color_correction(vec3 color) {
 }
 #endif
 
+#ifndef SUBPASS
 vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
 	const float FXAA_REDUCE_MIN = (1.0 / 128.0);
 	const float FXAA_REDUCE_MUL = (1.0 / 8.0);
@@ -346,6 +351,7 @@ vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
 		return rgbB;
 	}
 }
+#endif // !SUBPASS
 
 // From http://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
 // and https://www.shadertoy.com/view/MslGR8 (5th one starting from the bottom)
@@ -360,7 +366,10 @@ vec3 screen_space_dither(vec2 frag_coord) {
 }
 
 void main() {
-#ifdef MULTIVIEW
+#ifdef SUBPASS
+	// SUBPASS and MULTIVIEW can be combined but in that case we're already reading from the correct layer
+	vec3 color = subpassLoad(input_color).rgb;
+#elif MULTIVIEW
 	vec3 color = textureLod(source_color, vec3(uv_interp, ViewIndex), 0.0f).rgb;
 #else
 	vec3 color = textureLod(source_color, uv_interp, 0.0f).rgb;
@@ -370,14 +379,16 @@ void main() {
 
 	float exposure = params.exposure;
 
+#ifndef SUBPASS
 	if (params.use_auto_exposure) {
 		exposure *= 1.0 / (texelFetch(source_auto_exposure, ivec2(0, 0), 0).r / params.auto_exposure_grey);
 	}
+#endif
 
 	color *= exposure;
 
 	// Early Tonemap & SRGB Conversion
-
+#ifndef SUBPASS
 	if (params.use_glow && params.glow_mode == GLOW_MODE_MIX) {
 		vec3 glow = gather_glow(source_glow, uv_interp);
 		color.rgb = mix(color.rgb, glow, params.glow_intensity);
@@ -386,15 +397,19 @@ void main() {
 	if (params.use_fxaa) {
 		color = do_fxaa(color, exposure, uv_interp);
 	}
+#endif
+
 	if (params.use_debanding) {
 		// For best results, debanding should be done before tonemapping.
 		// Otherwise, we're adding noise to an already-quantized image.
 		color += screen_space_dither(gl_FragCoord.xy);
 	}
+
 	color = apply_tonemapping(color, params.white);
 
 	color = linear_to_srgb(color); // regular linear -> SRGB conversion
 
+#ifndef SUBPASS
 	// Glow
 
 	if (params.use_glow && params.glow_mode != GLOW_MODE_MIX) {
@@ -406,6 +421,7 @@ void main() {
 
 		color = apply_glow(color, glow);
 	}
+#endif
 
 	// Additional effects
 
