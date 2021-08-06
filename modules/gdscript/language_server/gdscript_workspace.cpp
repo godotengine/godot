@@ -523,22 +523,24 @@ void GDScriptWorkspace::completion(const lsp::CompletionParams &p_params, List<S
 
 		Array stack;
 		Node *current = nullptr;
-		stack.push_back(owner_scene_node);
+		if (owner_scene_node != nullptr) {
+			stack.push_back(owner_scene_node);
 
-		while (!stack.is_empty()) {
-			current = stack.pop_back();
+			while (!stack.is_empty()) {
+				current = stack.pop_back();
+				Ref<GDScript> script = current->get_script();
+				if (script.is_valid() && script->get_path() == path) {
+					break;
+				}
+				for (int i = 0; i < current->get_child_count(); ++i) {
+					stack.push_back(current->get_child(i));
+				}
+			}
+
 			Ref<GDScript> script = current->get_script();
-			if (script.is_valid() && script->get_path() == path) {
-				break;
+			if (!script.is_valid() || script->get_path() != path) {
+				current = owner_scene_node;
 			}
-			for (int i = 0; i < current->get_child_count(); ++i) {
-				stack.push_back(current->get_child(i));
-			}
-		}
-
-		Ref<GDScript> script = current->get_script();
-		if (!script.is_valid() || script->get_path() != path) {
-			current = owner_scene_node;
 		}
 
 		String code = parser->get_text_for_completion(p_params.position);
