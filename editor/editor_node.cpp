@@ -736,10 +736,25 @@ void EditorNode::_notification(int p_what) {
 void EditorNode::_update_update_spinner() {
 	update_spinner->set_visible(EditorSettings::get_singleton()->get("interface/editor/show_update_spinner"));
 
-	bool update_continuously = EditorSettings::get_singleton()->get("interface/editor/update_continuously");
+	const bool update_continuously = EditorSettings::get_singleton()->get("interface/editor/update_continuously");
 	PopupMenu *update_popup = update_spinner->get_popup();
 	update_popup->set_item_checked(update_popup->get_item_index(SETTINGS_UPDATE_CONTINUOUSLY), update_continuously);
 	update_popup->set_item_checked(update_popup->get_item_index(SETTINGS_UPDATE_WHEN_CHANGED), !update_continuously);
+
+	if (update_continuously) {
+		update_spinner->set_tooltip(TTR("Spins when the editor window redraws.\nUpdate Continuously is enabled, which can increase power usage. Click to disable it."));
+
+		// Use a different color for the update spinner when Update Continuously is enabled,
+		// as this feature should only be enabled for troubleshooting purposes.
+		// Make the icon modulate color overbright because icons are not completely white on a dark theme.
+		// On a light theme, icons are dark, so we need to modulate them with an even brighter color.
+		const bool dark_theme = EditorSettings::get_singleton()->is_dark_theme();
+		update_spinner->set_self_modulate(
+				gui_base->get_theme_color("error_color", "Editor") * (dark_theme ? Color(1.1, 1.1, 1.1) : Color(4.25, 4.25, 4.25)));
+	} else {
+		update_spinner->set_tooltip(TTR("Spins when the editor window redraws."));
+		update_spinner->set_self_modulate(Color(1, 1, 1));
+	}
 
 	OS::get_singleton()->set_low_processor_usage_mode(!update_continuously);
 }
@@ -6511,7 +6526,6 @@ EditorNode::EditorNode() {
 	layout_dialog->connect("name_confirmed", callable_mp(this, &EditorNode::_dialog_action));
 
 	update_spinner = memnew(MenuButton);
-	update_spinner->set_tooltip(TTR("Spins when the editor window redraws."));
 	right_menu_hb->add_child(update_spinner);
 	update_spinner->set_icon(gui_base->get_theme_icon(SNAME("Progress1"), SNAME("EditorIcons")));
 	update_spinner->get_popup()->connect("id_pressed", callable_mp(this, &EditorNode::_menu_option));
