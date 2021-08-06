@@ -742,13 +742,13 @@ bool GraphEdit::_check_clickable_control(Control *p_control, const Vector2 &pos)
 	}
 }
 
-bool GraphEdit::is_in_input_hotzone(GraphNode gn, int i, const Vector2 &p_mouse_pos){
-	Vector2 pos = gn->get_connection_input_position(i) + gn->get_position();
+bool GraphEdit::is_in_input_hotzone(GraphNode *p_graph_node, int p_slot_index, const Vector2 &p_mouse_pos){
+	Vector2 pos = p_graph_node->get_connection_input_position(p_slot_index) + p_graph_node->get_position();
 	return is_in_port_hotzone(pos / zoom, p_mouse_pos);
 }
 
-bool GraphEdit::is_in_output_hotzone(GraphNode gn, int i, const Vector2 &p_mouse_pos){
-	Vector2 pos = gn->get_connection_output_position(i) + gn->get_position();
+bool GraphEdit::is_in_output_hotzone(GraphNode *p_graph_node, int p_slot_index, const Vector2 &p_mouse_pos){
+	Vector2 pos = p_graph_node->get_connection_output_position(p_slot_index) + p_graph_node->get_position();
 	return is_in_port_hotzone(pos / zoom, p_mouse_pos);
 }
 

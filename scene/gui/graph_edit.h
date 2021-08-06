@@ -184,8 +184,8 @@ private:
 	GraphEditMinimap *minimap;
 	void _top_layer_input(const Ref<InputEvent> &p_ev);
 
-	bool is_in_input_hotzone(GraphNode gn, int i, const Vector2 &p_mouse_pos);
-	bool is_in_output_hotzone(GraphNode gn, int i, const Vector2 &p_mouse_pos);
+	bool is_in_input_hotzone(GraphNode *p_graph_node, int p_slot_index, const Vector2 &p_mouse_pos);
+	bool is_in_output_hotzone(GraphNode *p_graph_node, int p_slot_index, const Vector2 &p_mouse_pos);
 	bool is_in_port_hotzone(const Vector2 &pos, const Vector2 &p_mouse_pos);
 
 	void _top_layer_draw();
