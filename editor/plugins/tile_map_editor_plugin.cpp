@@ -370,7 +370,7 @@ void TileMapEditor::_set_cell(const Point2i &p_pos, Vector<int> p_values, bool p
 	if (tool == TOOL_PASTING)
 		return;
 
-	if (manual_autotile || (p_value != -1 && node->get_tileset()->tile_get_tile_mode(p_value) == TileSet::ATLAS_TILE)) {
+	if (manual_autotile || (p_value != -1 && node->get_tileset()->has_tile(p_value) && node->get_tileset()->tile_get_tile_mode(p_value) == TileSet::ATLAS_TILE)) {
 		if (current != -1) {
 			node->set_cell_autotile_coord(p_pos.x, p_pos.y, position);
 		} else if (node->get_tileset()->tile_get_tile_mode(p_value) == TileSet::ATLAS_TILE && priority_atlastile) {
@@ -561,8 +561,7 @@ void TileMapEditor::_update_palette() {
 		sel_tile = palette->get_selected_items().get(0);
 	}
 
-	if (sel_tile != TileMap::INVALID_CELL && ((manual_autotile && tileset->tile_get_tile_mode(sel_tile) == TileSet::AUTO_TILE) || (!priority_atlastile && tileset->tile_get_tile_mode(sel_tile) == TileSet::ATLAS_TILE))) {
-
+	if (sel_tile != TileMap::INVALID_CELL && tileset->has_tile(sel_tile) && ((manual_autotile && tileset->tile_get_tile_mode(sel_tile) == TileSet::AUTO_TILE) || (!priority_atlastile && tileset->tile_get_tile_mode(sel_tile) == TileSet::ATLAS_TILE))) {
 		const Map<Vector2, uint32_t> &tiles2 = tileset->autotile_get_bitmask_map(sel_tile);
 
 		Vector<Vector2> entries2;
@@ -611,7 +610,7 @@ void TileMapEditor::_update_palette() {
 		manual_palette->show();
 	}
 
-	if (sel_tile != TileMap::INVALID_CELL && tileset->tile_get_tile_mode(sel_tile) == TileSet::AUTO_TILE) {
+	if (sel_tile != TileMap::INVALID_CELL && tileset->has_tile(sel_tile) && tileset->tile_get_tile_mode(sel_tile) == TileSet::AUTO_TILE) {
 		manual_button->show();
 		priority_button->hide();
 	} else {
@@ -624,8 +623,9 @@ void TileMapEditor::_pick_tile(const Point2 &p_pos) {
 
 	int id = node->get_cell(p_pos.x, p_pos.y);
 
-	if (id == TileMap::INVALID_CELL)
+	if (id == TileMap::INVALID_CELL || !node->get_tileset()->has_tile(id)) {
 		return;
+	}
 
 	if (search_box->get_text() != "") {
 		search_box->set_text("");
@@ -821,11 +821,14 @@ void TileMapEditor::_erase_selection() {
 }
 
 void TileMapEditor::_draw_cell(Control *p_viewport, int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Point2i &p_autotile_coord, const Transform2D &p_xform) {
+	if (!node->get_tileset()->has_tile(p_cell)) {
+		return;
+	}
 
 	Ref<Texture> t = node->get_tileset()->tile_get_texture(p_cell);
-
-	if (t.is_null())
+	if (t.is_null()) {
 		return;
+	}
 
 	Vector2 tile_ofs = node->get_tileset()->tile_get_texture_offset(p_cell);
 
