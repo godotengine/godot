@@ -785,15 +785,15 @@ Size2 Control::get_minimum_size() const {
 	return Size2();
 }
 
-Ref<Texture> Control::get_icon(const StringName &p_name, const StringName &p_node_type) const {
-	if (p_node_type == StringName() || p_node_type == get_class_name()) {
+Ref<Texture> Control::get_icon(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
 		const Ref<Texture> *tex = data.icon_override.getptr(p_name);
 		if (tex) {
 			return *tex;
 		}
 	}
 
-	StringName type = p_node_type ? p_node_type : get_class_name();
+	StringName type = p_theme_type ? p_theme_type : get_class_name();
 
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
@@ -827,15 +827,15 @@ Ref<Texture> Control::get_icon(const StringName &p_name, const StringName &p_nod
 	return Theme::get_default()->get_icon(p_name, type);
 }
 
-Ref<Shader> Control::get_shader(const StringName &p_name, const StringName &p_node_type) const {
-	if (p_node_type == StringName() || p_node_type == get_class_name()) {
+Ref<Shader> Control::get_shader(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
 		const Ref<Shader> *sdr = data.shader_override.getptr(p_name);
 		if (sdr) {
 			return *sdr;
 		}
 	}
 
-	StringName type = p_node_type ? p_node_type : get_class_name();
+	StringName type = p_theme_type ? p_theme_type : get_class_name();
 
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
@@ -869,15 +869,15 @@ Ref<Shader> Control::get_shader(const StringName &p_name, const StringName &p_no
 	return Theme::get_default()->get_shader(p_name, type);
 }
 
-Ref<StyleBox> Control::get_stylebox(const StringName &p_name, const StringName &p_node_type) const {
-	if (p_node_type == StringName() || p_node_type == get_class_name()) {
+Ref<StyleBox> Control::get_stylebox(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
 		const Ref<StyleBox> *style = data.style_override.getptr(p_name);
 		if (style) {
 			return *style;
 		}
 	}
 
-	StringName type = p_node_type ? p_node_type : get_class_name();
+	StringName type = p_theme_type ? p_theme_type : get_class_name();
 
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
@@ -917,15 +917,15 @@ Ref<StyleBox> Control::get_stylebox(const StringName &p_name, const StringName &
 	}
 	return Theme::get_default()->get_stylebox(p_name, type);
 }
-Ref<Font> Control::get_font(const StringName &p_name, const StringName &p_node_type) const {
-	if (p_node_type == StringName() || p_node_type == get_class_name()) {
+Ref<Font> Control::get_font(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
 		const Ref<Font> *font = data.font_override.getptr(p_name);
 		if (font) {
 			return *font;
 		}
 	}
 
-	StringName type = p_node_type ? p_node_type : get_class_name();
+	StringName type = p_theme_type ? p_theme_type : get_class_name();
 
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
@@ -955,15 +955,15 @@ Ref<Font> Control::get_font(const StringName &p_name, const StringName &p_node_t
 
 	return Theme::get_default()->get_font(p_name, type);
 }
-Color Control::get_color(const StringName &p_name, const StringName &p_node_type) const {
-	if (p_node_type == StringName() || p_node_type == get_class_name()) {
+Color Control::get_color(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
 		const Color *color = data.color_override.getptr(p_name);
 		if (color) {
 			return *color;
 		}
 	}
 
-	StringName type = p_node_type ? p_node_type : get_class_name();
+	StringName type = p_theme_type ? p_theme_type : get_class_name();
 
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
@@ -996,15 +996,15 @@ Color Control::get_color(const StringName &p_name, const StringName &p_node_type
 	return Theme::get_default()->get_color(p_name, type);
 }
 
-int Control::get_constant(const StringName &p_name, const StringName &p_node_type) const {
-	if (p_node_type == StringName() || p_node_type == get_class_name()) {
+int Control::get_constant(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
 		const int *constant = data.constant_override.getptr(p_name);
 		if (constant) {
 			return *constant;
 		}
 	}
 
-	StringName type = p_node_type ? p_node_type : get_class_name();
+	StringName type = p_theme_type ? p_theme_type : get_class_name();
 
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
@@ -1067,14 +1067,14 @@ bool Control::has_constant_override(const StringName &p_name) const {
 	return constant != nullptr;
 }
 
-bool Control::has_icon(const StringName &p_name, const StringName &p_node_type) const {
-	if (p_node_type == StringName() || p_node_type == get_class_name()) {
+bool Control::has_icon(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
 		if (has_icon_override(p_name)) {
 			return true;
 		}
 	}
 
-	StringName type = p_node_type ? p_node_type : get_class_name();
+	StringName type = p_theme_type ? p_theme_type : get_class_name();
 
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
@@ -1106,14 +1106,14 @@ bool Control::has_icon(const StringName &p_name, const StringName &p_node_type) 
 	return Theme::get_default()->has_icon(p_name, type);
 }
 
-bool Control::has_shader(const StringName &p_name, const StringName &p_node_type) const {
-	if (p_node_type == StringName() || p_node_type == get_class_name()) {
+bool Control::has_shader(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
 		if (has_shader_override(p_name)) {
 			return true;
 		}
 	}
 
-	StringName type = p_node_type ? p_node_type : get_class_name();
+	StringName type = p_theme_type ? p_theme_type : get_class_name();
 
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
@@ -1144,14 +1144,14 @@ bool Control::has_shader(const StringName &p_name, const StringName &p_node_type
 	}
 	return Theme::get_default()->has_shader(p_name, type);
 }
-bool Control::has_stylebox(const StringName &p_name, const StringName &p_node_type) const {
-	if (p_node_type == StringName() || p_node_type == get_class_name()) {
+bool Control::has_stylebox(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
 		if (has_stylebox_override(p_name)) {
 			return true;
 		}
 	}
 
-	StringName type = p_node_type ? p_node_type : get_class_name();
+	StringName type = p_theme_type ? p_theme_type : get_class_name();
 
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
@@ -1182,14 +1182,14 @@ bool Control::has_stylebox(const StringName &p_name, const StringName &p_node_ty
 	}
 	return Theme::get_default()->has_stylebox(p_name, type);
 }
-bool Control::has_font(const StringName &p_name, const StringName &p_node_type) const {
-	if (p_node_type == StringName() || p_node_type == get_class_name()) {
+bool Control::has_font(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
 		if (has_font_override(p_name)) {
 			return true;
 		}
 	}
 
-	StringName type = p_node_type ? p_node_type : get_class_name();
+	StringName type = p_theme_type ? p_theme_type : get_class_name();
 
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
@@ -1221,14 +1221,14 @@ bool Control::has_font(const StringName &p_name, const StringName &p_node_type) 
 	return Theme::get_default()->has_font(p_name, type);
 }
 
-bool Control::has_color(const StringName &p_name, const StringName &p_node_type) const {
-	if (p_node_type == StringName() || p_node_type == get_class_name()) {
+bool Control::has_color(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
 		if (has_color_override(p_name)) {
 			return true;
 		}
 	}
 
-	StringName type = p_node_type ? p_node_type : get_class_name();
+	StringName type = p_theme_type ? p_theme_type : get_class_name();
 
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
@@ -1260,14 +1260,14 @@ bool Control::has_color(const StringName &p_name, const StringName &p_node_type)
 	return Theme::get_default()->has_color(p_name, type);
 }
 
-bool Control::has_constant(const StringName &p_name, const StringName &p_node_type) const {
-	if (p_node_type == StringName() || p_node_type == get_class_name()) {
+bool Control::has_constant(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
 		if (has_constant_override(p_name)) {
 			return true;
 		}
 	}
 
-	StringName type = p_node_type ? p_node_type : get_class_name();
+	StringName type = p_theme_type ? p_theme_type : get_class_name();
 
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
@@ -2774,11 +2774,11 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_color_override", "name", "color"), &Control::add_color_override);
 	ClassDB::bind_method(D_METHOD("add_constant_override", "name", "constant"), &Control::add_constant_override);
 
-	ClassDB::bind_method(D_METHOD("get_icon", "name", "node_type"), &Control::get_icon, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_stylebox", "name", "node_type"), &Control::get_stylebox, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_font", "name", "node_type"), &Control::get_font, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_color", "name", "node_type"), &Control::get_color, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_constant", "name", "node_type"), &Control::get_constant, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_icon", "name", "theme_type"), &Control::get_icon, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_stylebox", "name", "theme_type"), &Control::get_stylebox, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_font", "name", "theme_type"), &Control::get_font, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_color", "name", "theme_type"), &Control::get_color, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_constant", "name", "theme_type"), &Control::get_constant, DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("has_icon_override", "name"), &Control::has_icon_override);
 	ClassDB::bind_method(D_METHOD("has_shader_override", "name"), &Control::has_shader_override);
@@ -2787,11 +2787,11 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_color_override", "name"), &Control::has_color_override);
 	ClassDB::bind_method(D_METHOD("has_constant_override", "name"), &Control::has_constant_override);
 
-	ClassDB::bind_method(D_METHOD("has_icon", "name", "node_type"), &Control::has_icon, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_stylebox", "name", "node_type"), &Control::has_stylebox, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_font", "name", "node_type"), &Control::has_font, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_color", "name", "node_type"), &Control::has_color, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_constant", "name", "node_type"), &Control::has_constant, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_icon", "name", "theme_type"), &Control::has_icon, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_stylebox", "name", "theme_type"), &Control::has_stylebox, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_font", "name", "theme_type"), &Control::has_font, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_color", "name", "theme_type"), &Control::has_color, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_constant", "name", "theme_type"), &Control::has_constant, DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("get_parent_control"), &Control::get_parent_control);
 
