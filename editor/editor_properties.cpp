@@ -2854,6 +2854,10 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 		EditorScriptPicker *script_picker = memnew(EditorScriptPicker);
 		script_picker->set_script_owner(Object::cast_to<Node>(p_object));
 		resource_picker = script_picker;
+	} else if (p_path == "shader" && p_base_type == "Shader" && Object::cast_to<ShaderMaterial>(p_object)) {
+		EditorShaderPicker *shader_picker = memnew(EditorShaderPicker);
+		shader_picker->set_edited_material(Object::cast_to<ShaderMaterial>(p_object));
+		resource_picker = shader_picker;
 	} else {
 		resource_picker = memnew(EditorResourcePicker);
 	}
