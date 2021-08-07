@@ -125,7 +125,7 @@ void PathFollow::_update_transform(bool p_update_xyz_rot) {
 	// will be replaced by "Vector3(h_offset, v_offset, 0)" where it was formerly used
 
 	if (rotation_mode == ROTATION_ORIENTED) {
-		Vector3 forward = c->interpolate_baked(o_next, cubic);
+		Vector3 forward = c->interpolate_baked(o_next, cubic) - pos;
 
 		// Try with the previous position
 		if (forward.length_squared() < CMP_EPSILON2) {
