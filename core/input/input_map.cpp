@@ -196,7 +196,7 @@ Array InputMap::_action_get_events(const StringName &p_action) {
 	const List<Ref<InputEvent>> *al = action_get_events(p_action);
 	if (al) {
 		for (const List<Ref<InputEvent>>::Element *E = al->front(); E; E = E->next()) {
-			ret.push_back(E);
+			ret.push_back(E->get());
 		}
 	}
 
