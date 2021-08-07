@@ -181,6 +181,9 @@ public:
 	// the portal needs a list of unique world points (in order, clockwise?)
 	LocalVector<Vector3> _pts_world;
 
+	// used in PVS calculation
+	Vector3 _pt_center;
+
 	// portal plane
 	Plane _plane;
 

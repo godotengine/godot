@@ -278,6 +278,9 @@ void PortalRenderer::portal_set_geometry(PortalHandle p_portal, const Vector<Vec
 	}
 	average_pt /= portal._pts_world.size();
 
+	// record the center for use in PVS
+	portal._pt_center = average_pt;
+
 	// use the average point and normal to derive the plane
 	portal._plane = Plane(average_pt, average_normal);
 
