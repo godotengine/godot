@@ -88,7 +88,7 @@ Variant Path3DGizmo::get_handle_value(int p_id) const {
 	return ofs;
 }
 
-void Path3DGizmo::set_handle(int p_id, Camera3D *p_camera, const Point2 &p_point) const {
+void Path3DGizmo::set_handle(int p_id, Camera3D *p_camera, const Point2 &p_point) {
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null()) {
 		return;
@@ -157,7 +157,7 @@ void Path3DGizmo::set_handle(int p_id, Camera3D *p_camera, const Point2 &p_point
 	}
 }
 
-void Path3DGizmo::commit_handle(int p_id, const Variant &p_restore, bool p_cancel) const {
+void Path3DGizmo::commit_handle(int p_id, const Variant &p_restore, bool p_cancel) {
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null()) {
 		return;
