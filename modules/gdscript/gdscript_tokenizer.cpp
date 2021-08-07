@@ -313,7 +313,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::pop_error() {
 }
 
 static bool _is_alphanumeric(char32_t c) {
-	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
+	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_' || (c > 0x80 && c != 0xffff);
 }
 
 static bool _is_digit(char32_t c) {
