@@ -30,6 +30,8 @@
 
 #include "audio_stream_preview.h"
 
+#include "editor/editor_file_system.h"
+
 /////////////////////
 
 float AudioStreamPreview::get_length() const {
@@ -211,6 +213,16 @@ void AudioStreamPreviewGenerator::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("preview_updated", PropertyInfo(Variant::INT, "obj_id")));
 }
 
+void AudioStreamPreviewGenerator::_update_audio_streams() {
+	for (KeyValue<ObjectID, AudioStreamPreviewGenerator::Preview> &E : previews) {
+		// Re-instance all of the audio playbacks for all of our previews, since it's possible that the old playbacks could be invalid after a re-import.
+		Preview &preview = E.value;
+		if (preview.playback.is_valid() && preview.base_stream.is_valid()) {
+			preview.playback = preview.base_stream->instance_playback();
+		}
+	}
+}
+
 AudioStreamPreviewGenerator *AudioStreamPreviewGenerator::singleton = nullptr;
 
 void AudioStreamPreviewGenerator::_notification(int p_what) {
@@ -233,6 +245,12 @@ void AudioStreamPreviewGenerator::_notification(int p_what) {
 			previews.erase(to_erase.front()->get());
 			to_erase.pop_front();
 		}
+	}
+	if (p_what == NOTIFICATION_ENTER_TREE) {
+		EditorFileSystem::get_singleton()->connect(SNAME("resources_reload"), callable_mp(this, &AudioStreamPreviewGenerator::_update_audio_streams));
+	}
+	if (p_what == NOTIFICATION_EXIT_TREE) {
+		EditorFileSystem::get_singleton()->disconnect(SNAME("resources_reload"), callable_mp(this, &AudioStreamPreviewGenerator::_update_audio_streams));
 	}
 }
 

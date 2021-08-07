@@ -99,6 +99,8 @@ protected:
 public:
 	static AudioStreamPreviewGenerator *get_singleton() { return singleton; }
 
+	void _update_audio_streams();
+
 	Ref<AudioStreamPreview> generate_preview(const Ref<AudioStream> &p_stream);
 
 	AudioStreamPreviewGenerator();
