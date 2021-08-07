@@ -1972,35 +1972,30 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 		Control *from = gui.key_focus ? gui.key_focus : nullptr;
 
-		// Keyboard focus.
-		Ref<InputEventKey> k = p_event;
-		// Need to check for mods, otherwise any combination of alt/ctrl/shift+<up/down/left/right/etc> is handled here when it shouldn't be.
-		bool mods = k.is_valid() && (k->is_ctrl_pressed() || k->is_alt_pressed() || k->is_shift_pressed() || k->is_meta_pressed());
-
 		if (from && p_event->is_pressed()) {
 			Control *next = nullptr;
 
-			if (p_event->is_action_pressed("ui_focus_next", true)) {
+			if (p_event->is_action_pressed("ui_focus_next", true, true)) {
 				next = from->find_next_valid_focus();
 			}
 
-			if (p_event->is_action_pressed("ui_focus_prev", true)) {
+			if (p_event->is_action_pressed("ui_focus_prev", true, true)) {
 				next = from->find_prev_valid_focus();
 			}
 
-			if (!mods && p_event->is_action_pressed("ui_up", true)) {
+			if (p_event->is_action_pressed("ui_up", true, true)) {
 				next = from->_get_focus_neighbor(SIDE_TOP);
 			}
 
-			if (!mods && p_event->is_action_pressed("ui_left", true)) {
+			if (p_event->is_action_pressed("ui_left", true, true)) {
 				next = from->_get_focus_neighbor(SIDE_LEFT);
 			}
 
-			if (!mods && p_event->is_action_pressed("ui_right", true)) {
+			if (p_event->is_action_pressed("ui_right", true, true)) {
 				next = from->_get_focus_neighbor(SIDE_RIGHT);
 			}
 
-			if (!mods && p_event->is_action_pressed("ui_down", true)) {
+			if (p_event->is_action_pressed("ui_down", true, true)) {
 				next = from->_get_focus_neighbor(SIDE_BOTTOM);
 			}
 
