@@ -161,6 +161,8 @@ Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int
 		}
 	}
 
+	transparency_enabled = p_desired.layered;
+
 	if (gl_initialization_error) {
 		OS::get_singleton()->alert("Your device does not support any of the supported OpenGL versions.\n"
 								   "Please try updating your Android version.",
