@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Displays a color picker widget. Useful for selecting a color from an RGB/RGBA colorspace.
+		Note: You can use a [ColorPickerButton] to display a [ColorPicker] in a pop-up.
 	</description>
 	<tutorials>
 		<link title="Tween Demo">https://godotengine.org/asset-library/asset/146</link>
