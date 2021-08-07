@@ -954,11 +954,11 @@ static void _collision_sphere_convex_polygon(const ShapeSW *p_a, const Transform
 	int vertex_count = mesh.vertices.size();
 
 	// Precalculating this makes the transforms faster.
-	Basis b_xform_normal = p_transform_b.basis.inverse().transposed();
+	Basis nx_b = p_transform_b.basis.get_normal_xform_basis();
 
 	// faces of B
 	for (int i = 0; i < face_count; i++) {
-		Vector3 axis = b_xform_normal.xform(faces[i].plane.normal).normalized();
+		Vector3 axis = nx_b.xform_normal_fast(faces[i].plane.normal);
 
 		if (!separator.test_axis(axis)) {
 			return;
@@ -1373,11 +1373,11 @@ static void _collision_box_convex_polygon(const ShapeSW *p_a, const Transform &p
 	}
 
 	// Precalculating this makes the transforms faster.
-	Basis b_xform_normal = p_transform_b.basis.inverse().transposed();
+	Basis nx_b = p_transform_b.basis.get_normal_xform_basis();
 
 	// faces of B
 	for (int i = 0; i < face_count; i++) {
-		Vector3 axis = b_xform_normal.xform(faces[i].plane.normal).normalized();
+		Vector3 axis = nx_b.xform_normal_fast(faces[i].plane.normal);
 
 		if (!separator.test_axis(axis)) {
 			return;
@@ -1709,11 +1709,11 @@ static void _collision_capsule_convex_polygon(const ShapeSW *p_a, const Transfor
 	const Vector3 *vertices = mesh.vertices.ptr();
 
 	// Precalculating this makes the transforms faster.
-	Basis b_xform_normal = p_transform_b.basis.inverse().transposed();
+	Basis nx_b = p_transform_b.basis.get_normal_xform_basis();
 
 	// faces of B
 	for (int i = 0; i < face_count; i++) {
-		Vector3 axis = b_xform_normal.xform(faces[i].plane.normal).normalized();
+		Vector3 axis = nx_b.xform_normal_fast(faces[i].plane.normal);
 
 		if (!separator.test_axis(axis)) {
 			return;
@@ -2006,11 +2006,11 @@ static void _collision_convex_polygon_convex_polygon(const ShapeSW *p_a, const T
 	int vertex_count_B = mesh_B.vertices.size();
 
 	// Precalculating this makes the transforms faster.
-	Basis a_xform_normal = p_transform_a.basis.inverse().transposed();
+	Basis nx_a = p_transform_a.basis.get_normal_xform_basis();
 
 	// faces of A
 	for (int i = 0; i < face_count_A; i++) {
-		Vector3 axis = a_xform_normal.xform(faces_A[i].plane.normal).normalized();
+		Vector3 axis = nx_a.xform_normal_fast(faces_A[i].plane.normal);
 
 		if (!separator.test_axis(axis)) {
 			return;
@@ -2018,11 +2018,11 @@ static void _collision_convex_polygon_convex_polygon(const ShapeSW *p_a, const T
 	}
 
 	// Precalculating this makes the transforms faster.
-	Basis b_xform_normal = p_transform_b.basis.inverse().transposed();
+	Basis nx_b = p_transform_b.basis.get_normal_xform_basis();
 
 	// faces of B
 	for (int i = 0; i < face_count_B; i++) {
-		Vector3 axis = b_xform_normal.xform(faces_B[i].plane.normal).normalized();
+		Vector3 axis = nx_b.xform_normal_fast(faces_B[i].plane.normal);
 
 		if (!separator.test_axis(axis)) {
 			return;

@@ -237,9 +237,23 @@ public:
 	bool is_symmetric() const;
 	Basis diagonalize();
 
+	// The following normal xform functions are correct for non-uniform scales.
+	// Use these two functions in combination to xform a series of normals.
+	// First use get_normal_xform_basis() to precalculate the inverse transpose.
+	// Then apply xform_normal_fast() multiple times using the inverse transpose basis.
+	Basis get_normal_xform_basis() const { return inverse().transposed(); }
+
+	// N.B. This only does a normal transform if the basis used is the inverse transpose!
+	// Otherwise use xform_normal().
+	Vector3 xform_normal_fast(const Vector3 &p_vector) const { return xform(p_vector).normalized(); }
+
+	// This function does the above but for a single normal vector. It is considerably slower, so should usually
+	// only be used in cases of single normals, or when the basis changes each time.
+	Vector3 xform_normal(const Vector3 &p_vector) const { return get_normal_xform_basis().xform_normal_fast(p_vector); }
+
 	operator Quat() const { return get_quat(); }
 
-	Basis(const Quat &p_quat) { set_quat(p_quat); };
+	Basis(const Quat &p_quat) { set_quat(p_quat); }
 	Basis(const Quat &p_quat, const Vector3 &p_scale) { set_quat_scale(p_quat, p_scale); }
 
 	Basis(const Vector3 &p_euler) { set_euler(p_euler); }
