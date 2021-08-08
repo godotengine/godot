@@ -843,7 +843,7 @@ void RoomManager::_third_pass_rooms(const LocalVector<Portal *> &p_portals) {
 				int linked_room_id = (portal_links_out) ? portal._linkedroom_ID[1] : portal._linkedroom_ID[0];
 
 				// this shouldn't be out of range, but just in case
-				if (linked_room_id < _rooms.size()) {
+				if ((linked_room_id >= 0) && (linked_room_id < _rooms.size())) {
 					Room *linked_room = _rooms[linked_room_id];
 
 					String portal_link_room_name = _find_name_before(linked_room, "-room", true);
