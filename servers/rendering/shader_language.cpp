@@ -8993,17 +8993,17 @@ uint32_t ShaderLanguage::get_warning_flags() const {
 }
 #endif // DEBUG_ENABLED
 
-Error ShaderLanguage::compile(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const VaryingFunctionNames &p_varying_function_names, const Set<String> &p_shader_types, GlobalVariableGetTypeFunc p_global_variable_type_func) {
+Error ShaderLanguage::compile(const String &p_code, const ShaderCompileInfo &p_info) {
 	clear();
 
 	code = p_code;
-	global_var_get_type_func = p_global_variable_type_func;
-	varying_function_names = p_varying_function_names;
+	global_var_get_type_func = p_info.global_variable_type_func;
+	varying_function_names = p_info.varying_function_names;
 
 	nodes = nullptr;
 
 	shader = alloc_node<ShaderNode>();
-	Error err = _parse_shader(p_functions, p_render_modes, p_shader_types);
+	Error err = _parse_shader(p_info.functions, p_info.render_modes, p_info.shader_types);
 
 #ifdef DEBUG_ENABLED
 	if (check_warnings) {
@@ -9017,17 +9017,17 @@ Error ShaderLanguage::compile(const String &p_code, const Map<StringName, Functi
 	return OK;
 }
 
-Error ShaderLanguage::complete(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const VaryingFunctionNames &p_varying_function_names, const Set<String> &p_shader_types, GlobalVariableGetTypeFunc p_global_variable_type_func, List<ScriptCodeCompletionOption> *r_options, String &r_call_hint) {
+Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_info, List<ScriptCodeCompletionOption> *r_options, String &r_call_hint) {
 	clear();
 
 	code = p_code;
-	varying_function_names = p_varying_function_names;
+	varying_function_names = p_info.varying_function_names;
 
 	nodes = nullptr;
-	global_var_get_type_func = p_global_variable_type_func;
+	global_var_get_type_func = p_info.global_variable_type_func;
 
 	shader = alloc_node<ShaderNode>();
-	_parse_shader(p_functions, p_render_modes, p_shader_types);
+	_parse_shader(p_info.functions, p_info.render_modes, p_info.shader_types);
 
 	switch (completion_type) {
 		case COMPLETION_NONE: {
@@ -9035,8 +9035,8 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 			return OK;
 		} break;
 		case COMPLETION_RENDER_MODE: {
-			for (int i = 0; i < p_render_modes.size(); i++) {
-				ScriptCodeCompletionOption option(p_render_modes[i], ScriptCodeCompletionOption::KIND_ENUM);
+			for (int i = 0; i < p_info.render_modes.size(); i++) {
+				ScriptCodeCompletionOption option(p_info.render_modes[i], ScriptCodeCompletionOption::KIND_ENUM);
 				r_options->push_back(option);
 			}
 
@@ -9054,7 +9054,7 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 			return OK;
 		} break;
 		case COMPLETION_MAIN_FUNCTION: {
-			for (const KeyValue<StringName, FunctionInfo> &E : p_functions) {
+			for (const KeyValue<StringName, FunctionInfo> &E : p_info.functions) {
 				ScriptCodeCompletionOption option(E.key, ScriptCodeCompletionOption::KIND_FUNCTION);
 				r_options->push_back(option);
 			}
@@ -9090,8 +9090,8 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 				}
 
 				if (comp_ident) {
-					if (p_functions.has("global")) {
-						for (const KeyValue<StringName, BuiltInInfo> &E : p_functions["global"].built_ins) {
+					if (p_info.functions.has("global")) {
+						for (const KeyValue<StringName, BuiltInInfo> &E : p_info.functions["global"].built_ins) {
 							ScriptCodeCompletionOption::Kind kind = ScriptCodeCompletionOption::KIND_MEMBER;
 							if (E.value.constant) {
 								kind = ScriptCodeCompletionOption::KIND_CONSTANT;
@@ -9100,8 +9100,8 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 						}
 					}
 
-					if (p_functions.has("constants")) {
-						for (const KeyValue<StringName, BuiltInInfo> &E : p_functions["constants"].built_ins) {
+					if (p_info.functions.has("constants")) {
+						for (const KeyValue<StringName, BuiltInInfo> &E : p_info.functions["constants"].built_ins) {
 							ScriptCodeCompletionOption::Kind kind = ScriptCodeCompletionOption::KIND_MEMBER;
 							if (E.value.constant) {
 								kind = ScriptCodeCompletionOption::KIND_CONSTANT;
@@ -9110,8 +9110,8 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 						}
 					}
 
-					if (skip_function != StringName() && p_functions.has(skip_function)) {
-						for (const KeyValue<StringName, BuiltInInfo> &E : p_functions[skip_function].built_ins) {
+					if (skip_function != StringName() && p_info.functions.has(skip_function)) {
+						for (const KeyValue<StringName, BuiltInInfo> &E : p_info.functions[skip_function].built_ins) {
 							ScriptCodeCompletionOption::Kind kind = ScriptCodeCompletionOption::KIND_MEMBER;
 							if (E.value.constant) {
 								kind = ScriptCodeCompletionOption::KIND_CONSTANT;

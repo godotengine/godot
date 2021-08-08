@@ -1413,7 +1413,13 @@ ShaderLanguage::DataType ShaderCompilerRD::_get_variable_type(const StringName &
 }
 
 Error ShaderCompilerRD::compile(RS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code) {
-	Error err = parser.compile(p_code, ShaderTypes::get_singleton()->get_functions(p_mode), ShaderTypes::get_singleton()->get_modes(p_mode), ShaderLanguage::VaryingFunctionNames(), ShaderTypes::get_singleton()->get_types(), _get_variable_type);
+	SL::ShaderCompileInfo info;
+	info.functions = ShaderTypes::get_singleton()->get_functions(p_mode);
+	info.render_modes = ShaderTypes::get_singleton()->get_modes(p_mode);
+	info.shader_types = ShaderTypes::get_singleton()->get_types();
+	info.global_variable_type_func = _get_variable_type;
+
+	Error err = parser.compile(p_code, info);
 
 	if (err != OK) {
 		Vector<String> shader = p_code.split("\n");

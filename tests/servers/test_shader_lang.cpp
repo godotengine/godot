@@ -346,7 +346,12 @@ MainLoop *test() {
 	Set<String> types;
 	types.insert("spatial");
 
-	Error err = sl.compile(code, dt, rm, ShaderLanguage::VaryingFunctionNames(), types, nullptr);
+	ShaderLanguage::ShaderCompileInfo info;
+	info.functions = dt;
+	info.render_modes = rm;
+	info.shader_types = types;
+
+	Error err = sl.compile(code, info);
 
 	if (err) {
 		print_line("Error at line: " + rtos(sl.get_error_line()) + ": " + sl.get_error_text());
