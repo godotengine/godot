@@ -460,8 +460,10 @@ public:
 		FLAG_MIPMAPS = VisualServer::TEXTURE_FLAG_MIPMAPS,
 		FLAG_REPEAT = VisualServer::TEXTURE_FLAG_REPEAT,
 		FLAG_FILTER = VisualServer::TEXTURE_FLAG_FILTER,
+		FLAG_ANISOTROPIC_FILTER = VisualServer::TEXTURE_FLAG_ANISOTROPIC_FILTER,
 		FLAG_CONVERT_TO_LINEAR = VisualServer::TEXTURE_FLAG_CONVERT_TO_LINEAR,
-		FLAGS_DEFAULT = FLAG_FILTER,
+		FLAGS_DEFAULT_TEXTURE_ARRAY = FLAG_MIPMAPS | FLAG_REPEAT | FLAG_FILTER,
+		FLAGS_DEFAULT_TEXTURE_3D = FLAG_FILTER,
 	};
 
 	enum CompressMode {
@@ -501,7 +503,7 @@ public:
 	uint32_t get_height() const;
 	uint32_t get_depth() const;
 
-	void create(uint32_t p_width, uint32_t p_height, uint32_t p_depth, Image::Format p_format, uint32_t p_flags = FLAGS_DEFAULT);
+	void create(uint32_t p_width, uint32_t p_height, uint32_t p_depth, Image::Format p_format, uint32_t p_flags = FLAGS_DEFAULT_TEXTURE_ARRAY);
 	void set_layer_data(const Ref<Image> &p_image, int p_layer);
 	Ref<Image> get_layer_data(int p_layer) const;
 	void set_data_partial(const Ref<Image> &p_image, int p_x_ofs, int p_y_ofs, int p_z, int p_mipmap = 0);
@@ -518,7 +520,14 @@ VARIANT_ENUM_CAST(TextureLayered::Flags)
 class Texture3D : public TextureLayered {
 	GDCLASS(Texture3D, TextureLayered);
 
+protected:
+	static void _bind_methods();
+
 public:
+	void create(uint32_t p_width, uint32_t p_height, uint32_t p_depth, Image::Format p_format, uint32_t p_flags = FLAGS_DEFAULT_TEXTURE_3D) {
+		TextureLayered::create(p_width, p_height, p_depth, p_format, p_flags);
+	}
+
 	Texture3D() :
 			TextureLayered(true) {}
 };
@@ -526,7 +535,14 @@ public:
 class TextureArray : public TextureLayered {
 	GDCLASS(TextureArray, TextureLayered);
 
+protected:
+	static void _bind_methods();
+
 public:
+	void create(uint32_t p_width, uint32_t p_height, uint32_t p_depth, Image::Format p_format, uint32_t p_flags = FLAGS_DEFAULT_TEXTURE_ARRAY) {
+		TextureLayered::create(p_width, p_height, p_depth, p_format, p_flags);
+	}
+
 	TextureArray() :
 			TextureLayered(false) {}
 };
