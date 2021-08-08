@@ -104,20 +104,23 @@ void PortalGameplayMonitor::update_gameplay(PortalRenderer &p_portal_renderer, c
 	for (int n = 0; n < p_num_source_rooms; n++) {
 		const VSRoom &source_room = p_portal_renderer.get_room(p_source_room_ids[n]);
 
-		int pvs_size = source_room._pvs_size;
-		int pvs_first = source_room._pvs_first;
 		if (_use_secondary_pvs) {
-			pvs_size = source_room._secondary_pvs_size;
-			pvs_first = source_room._secondary_pvs_first;
+			int pvs_size = source_room._secondary_pvs_size;
+			int pvs_first = source_room._secondary_pvs_first;
+
+			for (int r = 0; r < pvs_size; r++) {
+				int room_id = pvs.get_secondary_pvs_room_id(pvs_first + r);
+				_update_gameplay_room(p_portal_renderer, room_id, source_rooms_changed);
+			} // for r through the rooms hit in the pvs
+		} else {
+			int pvs_size = source_room._pvs_size;
+			int pvs_first = source_room._pvs_first;
+
+			for (int r = 0; r < pvs_size; r++) {
+				int room_id = pvs.get_pvs_room_id(pvs_first + r);
+				_update_gameplay_room(p_portal_renderer, room_id, source_rooms_changed);
+			} // for r through the rooms hit in the pvs
 		}
-
-		for (int r = 0; r < pvs_size; r++) {
-			int room_id = pvs.get_pvs_room_id(pvs_first + r);
-
-			_update_gameplay_room(p_portal_renderer, room_id, source_rooms_changed);
-
-		} // for r through the rooms hit in the pvs
-
 	} // for n through source rooms
 
 	// find any moving that were active last tick that are no longer active, and send notifications

@@ -272,8 +272,8 @@ void PVSBuilder::calculate_pvs(PortalRenderer &p_portal_renderer, String p_filen
 
 		log("pvs from room : " + itos(n));
 
-		// trace_rooms_recursive_simple(0, n, n, -1, false, -1, dummy_planes, bf);
-		trace_rooms_recursive(0, n, n, -1, false, -1, dummy_planes, bf);
+		trace_rooms_recursive_simple(0, n, n, -1, false, -1, dummy_planes, bf);
+		// trace_rooms_recursive(0, n, n, -1, false, -1, dummy_planes, bf);
 
 		create_secondary_pvs(n, neighbors, bf);
 
