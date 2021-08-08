@@ -1266,10 +1266,10 @@ void VisualServerScene::rooms_and_portals_clear(RID p_scenario) {
 	scenario->_portal_renderer.rooms_and_portals_clear();
 }
 
-void VisualServerScene::rooms_finalize(RID p_scenario, bool p_generate_pvs, bool p_cull_using_pvs, bool p_use_secondary_pvs, bool p_use_signals, String p_pvs_filename) {
+void VisualServerScene::rooms_finalize(RID p_scenario, bool p_generate_pvs, bool p_cull_using_pvs, bool p_use_secondary_pvs, bool p_use_signals, String p_pvs_filename, bool p_use_simple_pvs, bool p_log_pvs_generation) {
 	Scenario *scenario = scenario_owner.getornull(p_scenario);
 	ERR_FAIL_COND(!scenario);
-	scenario->_portal_renderer.rooms_finalize(p_generate_pvs, p_cull_using_pvs, p_use_secondary_pvs, p_use_signals, p_pvs_filename);
+	scenario->_portal_renderer.rooms_finalize(p_generate_pvs, p_cull_using_pvs, p_use_secondary_pvs, p_use_signals, p_pvs_filename, p_use_simple_pvs, p_log_pvs_generation);
 }
 
 void VisualServerScene::rooms_override_camera(RID p_scenario, bool p_override, const Vector3 &p_point, const Vector<Plane> *p_convex) {

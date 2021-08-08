@@ -2594,6 +2594,14 @@ VisualServer::VisualServer() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/batching/lights/max_join_items", PropertyInfo(Variant::INT, "rendering/batching/lights/max_join_items", PROPERTY_HINT_RANGE, "0,512"));
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/batching/parameters/item_reordering_lookahead", PropertyInfo(Variant::INT, "rendering/batching/parameters/item_reordering_lookahead", PROPERTY_HINT_RANGE, "0,256"));
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/batching/precision/uv_contract_amount", PropertyInfo(Variant::INT, "rendering/batching/precision/uv_contract_amount", PROPERTY_HINT_RANGE, "0,10000"));
+
+	// Portal rendering settings
+	GLOBAL_DEF("rendering/portals/pvs/use_simple_pvs", false);
+	GLOBAL_DEF("rendering/portals/pvs/pvs_logging", false);
+	GLOBAL_DEF("rendering/portals/gameplay/use_signals", true);
+	GLOBAL_DEF("rendering/portals/optimize/remove_danglers", true);
+	GLOBAL_DEF("rendering/portals/debug/logging", true);
+	GLOBAL_DEF("rendering/portals/advanced/flip_imported_portals", false);
 }
 
 VisualServer::~VisualServer() {

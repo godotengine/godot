@@ -48,9 +48,6 @@
 			Usually we don't want objects that only [b]just[/b] cross a boundary into an adjacent [Room] to sprawl into that room. To prevent this, each [Portal] has an extra margin, or tolerance zone where objects can enter without sprawling to a neighbouring room.
 			In most cases you can set this here for all portals. It is possible to override the margin for each portal.
 		</member>
-		<member name="flip_portal_meshes" type="bool" setter="set_flip_portal_meshes" getter="get_flip_portal_meshes" default="false">
-			The default convention is for portal normals to point outward (face outward) from the source room. If you accidentally build your level with portals facing the wrong way, this setting can fix the problem. It will flip named portal meshes (i.e. [code]Portal_[/code]) on the initial convertion to [Portal] nodes.
-		</member>
 		<member name="gameplay_monitor" type="bool" setter="set_gameplay_monitor_enabled" getter="get_gameplay_monitor_enabled" default="false">
 			When using a partial or full PVS, the gameplay monitor allows you to receive callbacks when roaming objects or rooms enter or exit the [b]gameplay area[/b]. The gameplay area is defined as either the primary, or secondary PVS.
 			These callbacks allow you to, for example, reduce processing for objects that are far from the player, or turn on and off AI.
@@ -78,10 +75,6 @@
 			Optionally during conversion the potentially visible set (PVS) of rooms that are potentially visible from each room can be calculated. This can be used either to aid in dynamic portal culling, or to totally replace portal culling.
 			In [code]Full[/code] PVS Mode, all objects within the potentially visible rooms will be frustum culled, and rendered if they are within the view frustum.
 		</member>
-		<member name="remove_danglers" type="bool" setter="set_remove_danglers" getter="get_remove_danglers" default="true">
-			If enabled, while merging meshes, the system will also attempt to remove [Spatial] nodes that no longer have any children.
-			Reducing the number of [Node]s in the scene tree can make traversal more efficient, but can be switched off in case you wish to use empty [Spatial]s for markers or some other purpose.
-		</member>
 		<member name="room_simplify" type="float" setter="set_room_simplify" getter="get_room_simplify" default="0.5">
 			During the conversion process, the geometry of objects within [Room]s, or a custom specified manual bound, are used to generate a [b]convex hull bound[/b].
 			This convex hull is [b]required[/b] in the visibility system, and is used for many purposes. Most importantly, it is used to decide whether the [Camera] (or an object) is within a [Room]. The convex hull generating algorithm is good, but occasionally it can create too many (or too few) planes to give a good representation of the room volume.
@@ -92,19 +85,12 @@
 		<member name="roomlist" type="NodePath" setter="set_roomlist_path" getter="get_roomlist_path" default="NodePath(&quot;&quot;)">
 			For the [Room] conversion process to succeed, you must point the [RoomManager] to the parent [Node] of your [Room]s and [RoomGroup]s, which we refer to as the [code]roomlist[/code] (the roomlist is not a special node type, it is normally just a [Spatial]).
 		</member>
-		<member name="show_debug" type="bool" setter="set_show_debug" getter="get_show_debug" default="true">
-			Show debugging information - including [Portal]s, and conversion logs.
-			[b]Note:[/b] This will automatically be disabled in exports.
-		</member>
 		<member name="show_margins" type="bool" setter="set_show_margins" getter="get_show_margins" default="true">
 			Shows the [Portal] margins when the portal gizmo is used in the editor.
 		</member>
 		<member name="use_secondary_pvs" type="bool" setter="set_use_secondary_pvs" getter="get_use_secondary_pvs" default="false">
 			When receiving gameplay callbacks when objects enter and exit gameplay, the [b]gameplay area[/b] can be defined by either the primary PVS (potentially visible set) of [Room]s, or the secondary PVS (the primary PVS and their neighbouring [Room]s).
 			Sometimes using the larger gameplay area of the secondary PVS may be preferable.
-		</member>
-		<member name="use_signals" type="bool" setter="set_use_signals" getter="get_use_signals" default="true">
-			Gameplay callbacks can either be sent as [code]signals[/code] or [code]notifications[/code].
 		</member>
 	</members>
 	<constants>

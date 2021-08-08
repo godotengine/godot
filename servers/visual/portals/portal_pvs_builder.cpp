@@ -35,7 +35,7 @@
 #include "core/print_string.h"
 #include "portal_renderer.h"
 
-bool PVSBuilder::_log_active = false;
+bool PVSBuilder::_log_active = true;
 
 void PVSBuilder::find_neighbors(LocalVector<Neighbours> &r_neighbors) {
 	// first find the neighbors
@@ -233,10 +233,12 @@ void PVSBuilder::save_pvs(String p_filename) {
 
 #endif
 
-void PVSBuilder::calculate_pvs(PortalRenderer &p_portal_renderer, String p_filename, int p_depth_limit) {
+void PVSBuilder::calculate_pvs(PortalRenderer &p_portal_renderer, String p_filename, int p_depth_limit, bool p_use_simple_pvs, bool p_log_pvs_generation) {
 	_portal_renderer = &p_portal_renderer;
 	_pvs = &p_portal_renderer.get_pvs();
 	_depth_limit = p_depth_limit;
+
+	_log_active = p_log_pvs_generation;
 
 	// attempt to load from file rather than create each time
 #ifdef GODOT_PVS_SUPPORT_SAVE_FILE
@@ -272,8 +274,11 @@ void PVSBuilder::calculate_pvs(PortalRenderer &p_portal_renderer, String p_filen
 
 		log("pvs from room : " + itos(n));
 
-		trace_rooms_recursive_simple(0, n, n, -1, false, -1, dummy_planes, bf);
-		// trace_rooms_recursive(0, n, n, -1, false, -1, dummy_planes, bf);
+		if (p_use_simple_pvs) {
+			trace_rooms_recursive_simple(0, n, n, -1, false, -1, dummy_planes, bf);
+		} else {
+			trace_rooms_recursive(0, n, n, -1, false, -1, dummy_planes, bf);
+		}
 
 		create_secondary_pvs(n, neighbors, bf);
 
@@ -310,7 +315,9 @@ void PVSBuilder::calculate_pvs(PortalRenderer &p_portal_renderer, String p_filen
 }
 
 void PVSBuilder::logd(int p_depth, String p_string) {
-	return;
+	if (!_log_active) {
+		return;
+	}
 
 	String string_long;
 	for (int n = 0; n < p_depth; n++) {
@@ -389,7 +396,14 @@ void PVSBuilder::trace_rooms_recursive(int p_depth, int p_source_room_id, int p_
 			// Closely aligned portals should not happen in normal level design,
 			// and will usually be a design error.
 			// Watch for bugs here though, caused by closely aligned portals.
-			_trace_start_point -= portal._plane.normal * 0.1;
+
+			// The epsilon should be BEHIND the way we are going through the portal,
+			// so depends whether it is outgoing or not
+			if (outgoing) {
+				_trace_start_point -= portal._plane.normal * 0.1;
+			} else {
+				_trace_start_point += portal._plane.normal * 0.1;
+			}
 
 		} else {
 			// much better way of culling portals by direction to camera...

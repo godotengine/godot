@@ -1236,6 +1236,30 @@
 		<member name="rendering/mesh_storage/split_stream" type="bool" setter="" getter="" default="false">
 			On import, mesh vertex data will be split into two streams within a single vertex buffer, one for position data and the other for interleaved attributes data. Recommended to be enabled if targeting mobile devices. Requires manual reimport of meshes after toggling.
 		</member>
+		<member name="rendering/portals/advanced/flip_imported_portals" type="bool" setter="" getter="" default="false">
+			The default convention is for portal normals to point outward (face outward) from the source room.
+			If you accidentally build your level with portals facing the wrong way, this setting can fix the problem.
+			It will flip named portal meshes (i.e. [code]-portal[/code]) on the initial convertion to [Portal] nodes.
+		</member>
+		<member name="rendering/portals/debug/logging" type="bool" setter="" getter="" default="true">
+			Show conversion logs.
+			[b]Note:[/b] This will automatically be disabled in exports.
+		</member>
+		<member name="rendering/portals/gameplay/use_signals" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], gameplay callbacks will be sent as [code]signals[/code]. If [code]false[/code], they will be sent as [code]notifications[/code].
+		</member>
+		<member name="rendering/portals/optimize/remove_danglers" type="bool" setter="" getter="" default="true">
+			If enabled, while merging meshes, the system will also attempt to remove [Spatial] nodes that no longer have any children.
+			Reducing the number of [Node]s in the scene tree can make traversal more efficient, but can be switched off in case you wish to use empty [Spatial]s for markers or some other purpose.
+		</member>
+		<member name="rendering/portals/pvs/pvs_logging" type="bool" setter="" getter="" default="false">
+			Show logs during PVS generation.
+			[b]Note:[/b] This will automatically be disabled in exports.
+		</member>
+		<member name="rendering/portals/pvs/use_simple_pvs" type="bool" setter="" getter="" default="false">
+			Uses a simplified method of generating PVS (potentially visible set) data. The results may not be accurate where more than one portal join adjacent rooms.
+			[b]Note:[/b] Generally you should only use this option if you encounter bugs when it is set to [code]false[/code], i.e. there are problems with the default method.
+		</member>
 		<member name="rendering/quality/depth/hdr" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], allocates the main framebuffer with high dynamic range. High dynamic range allows the use of [Color] values greater than 1.
 			[b]Note:[/b] Only available on the GLES3 backend.

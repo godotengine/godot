@@ -67,9 +67,6 @@ public:
 	void rooms_set_active(bool p_active);
 	bool rooms_get_active() const;
 
-	void set_show_debug(bool p_show);
-	bool get_show_debug() const;
-
 	void set_show_margins(bool p_show);
 	bool get_show_margins() const;
 
@@ -78,9 +75,6 @@ public:
 
 	void set_merge_meshes(bool p_enable);
 	bool get_merge_meshes() const;
-
-	void set_remove_danglers(bool p_enable);
-	bool get_remove_danglers() const;
 
 	void set_room_simplify(real_t p_value);
 	real_t get_room_simplify() const;
@@ -94,9 +88,6 @@ public:
 	void set_portal_depth_limit(int p_limit);
 	int get_portal_depth_limit() const { return _settings_portal_depth_limit; }
 
-	void set_flip_portal_meshes(bool p_flip);
-	bool get_flip_portal_meshes() const;
-
 	void set_pvs_mode(PVSMode p_mode);
 	PVSMode get_pvs_mode() const;
 
@@ -105,9 +96,6 @@ public:
 
 	void set_use_secondary_pvs(bool p_enable) { _settings_use_secondary_pvs = p_enable; }
 	bool get_use_secondary_pvs() const { return _settings_use_secondary_pvs; }
-
-	void set_use_signals(bool p_enable) { _settings_use_signals = p_enable; }
-	bool get_use_signals() const { return _settings_use_signals; }
 
 	void set_gameplay_monitor_enabled(bool p_enable) { _settings_gameplay_monitor_enabled = p_enable; }
 	bool get_gameplay_monitor_enabled() const { return _settings_gameplay_monitor_enabled; }
@@ -251,6 +239,9 @@ private:
 	PVSMode _pvs_mode = PVS_MODE_PARTIAL;
 	String _pvs_filename;
 	bool _settings_use_secondary_pvs = false;
+	bool _settings_use_simple_pvs = false;
+	bool _settings_log_pvs_generation = false;
+
 	bool _settings_use_signals = true;
 	bool _settings_gameplay_monitor_enabled = false;
 
@@ -277,6 +268,7 @@ private:
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+	void _refresh_from_project_settings();
 };
 
 VARIANT_ENUM_CAST(RoomManager::PVSMode);

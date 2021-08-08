@@ -299,21 +299,17 @@ void RoomManager::_bind_methods() {
 	ADD_GROUP("Gameplay", "");
 	LIMPL_PROPERTY(Variant::BOOL, gameplay_monitor, set_gameplay_monitor_enabled, get_gameplay_monitor_enabled);
 	LIMPL_PROPERTY(Variant::BOOL, use_secondary_pvs, set_use_secondary_pvs, get_use_secondary_pvs);
-	LIMPL_PROPERTY(Variant::BOOL, use_signals, set_use_signals, get_use_signals);
 
 	ADD_GROUP("Optimize", "");
 	LIMPL_PROPERTY(Variant::BOOL, merge_meshes, set_merge_meshes, get_merge_meshes);
-	LIMPL_PROPERTY(Variant::BOOL, remove_danglers, set_remove_danglers, get_remove_danglers);
 
 	ADD_GROUP("Debug", "");
-	LIMPL_PROPERTY(Variant::BOOL, show_debug, set_show_debug, get_show_debug);
 	LIMPL_PROPERTY(Variant::BOOL, show_margins, set_show_margins, get_show_margins);
 	LIMPL_PROPERTY(Variant::BOOL, debug_sprawl, set_debug_sprawl, get_debug_sprawl);
 	LIMPL_PROPERTY_RANGE(Variant::INT, overlap_warning_threshold, set_overlap_warning_threshold, get_overlap_warning_threshold, "1,1000,1");
 	LIMPL_PROPERTY(Variant::NODE_PATH, preview_camera, set_preview_camera_path, get_preview_camera_path);
 
 	ADD_GROUP("Advanced", "");
-	LIMPL_PROPERTY(Variant::BOOL, flip_portal_meshes, set_flip_portal_meshes, get_flip_portal_meshes);
 	LIMPL_PROPERTY_RANGE(Variant::INT, portal_depth_limit, set_portal_depth_limit, get_portal_depth_limit, "0,255,1");
 	LIMPL_PROPERTY_RANGE(Variant::REAL, room_simplify, set_room_simplify, get_room_simplify, "0.0,1.0,0.005");
 	LIMPL_PROPERTY_RANGE(Variant::REAL, default_portal_margin, set_default_portal_margin, get_default_portal_margin, "0.0, 10.0, 0.01");
@@ -322,6 +318,21 @@ void RoomManager::_bind_methods() {
 #undef LIMPL_PROPERTY_RANGE
 #undef LPORTAL_STRINGIFY
 #undef LPORTAL_TOSTRING
+}
+
+void RoomManager::_refresh_from_project_settings() {
+	_settings_use_simple_pvs = GLOBAL_GET("rendering/portals/pvs/use_simple_pvs");
+	_settings_log_pvs_generation = GLOBAL_GET("rendering/portals/pvs/pvs_logging");
+	_settings_use_signals = GLOBAL_GET("rendering/portals/gameplay/use_signals");
+	_settings_remove_danglers = GLOBAL_GET("rendering/portals/optimize/remove_danglers");
+	_show_debug = GLOBAL_GET("rendering/portals/debug/logging");
+	Portal::_portal_plane_convention = GLOBAL_GET("rendering/portals/advanced/flip_imported_portals");
+
+	// force not to show logs when not in editor
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		_show_debug = false;
+		_settings_log_pvs_generation = false;
+	}
 }
 
 void RoomManager::set_roomlist_path(const NodePath &p_path) {
@@ -365,14 +376,6 @@ void RoomManager::set_room_simplify(real_t p_value) {
 
 real_t RoomManager::get_room_simplify() const {
 	return _room_simplify_info._plane_simplify;
-}
-
-void RoomManager::set_flip_portal_meshes(bool p_flip) {
-	Portal::_portal_plane_convention = p_flip;
-}
-
-bool RoomManager::get_flip_portal_meshes() const {
-	return Portal::_portal_plane_convention;
 }
 
 void RoomManager::set_portal_depth_limit(int p_limit) {
@@ -431,19 +434,6 @@ bool RoomManager::get_show_margins() const {
 	return Portal::_settings_gizmo_show_margins;
 }
 
-void RoomManager::set_show_debug(bool p_show) {
-	// force not to show when not in editor
-	if (!Engine::get_singleton()->is_editor_hint()) {
-		p_show = false;
-	}
-
-	_show_debug = p_show;
-}
-
-bool RoomManager::get_show_debug() const {
-	return _show_debug;
-}
-
 void RoomManager::set_debug_sprawl(bool p_enable) {
 	if (is_inside_world() && get_world().is_valid()) {
 		VisualServer::get_singleton()->rooms_set_debug_feature(get_world()->get_scenario(), VisualServer::ROOMS_DEBUG_SPRAWL, p_enable);
@@ -461,14 +451,6 @@ void RoomManager::set_merge_meshes(bool p_enable) {
 
 bool RoomManager::get_merge_meshes() const {
 	return _settings_merge_meshes;
-}
-
-void RoomManager::set_remove_danglers(bool p_enable) {
-	_settings_remove_danglers = p_enable;
-}
-
-bool RoomManager::get_remove_danglers() const {
-	return _settings_remove_danglers;
 }
 
 void RoomManager::show_warning(const String &p_string, const String &p_extra_string, bool p_alert) {
@@ -571,6 +553,8 @@ void RoomManager::rooms_convert() {
 	_warning_portal_autolink_failed = false;
 	_warning_room_overlap_detected = false;
 
+	_refresh_from_project_settings();
+
 	_roomlist = _resolve_path<Spatial>(_settings_path_roomlist);
 	if (!_roomlist) {
 		WARN_PRINT("Cannot resolve nodepath");
@@ -644,10 +628,7 @@ void RoomManager::rooms_convert() {
 		} break;
 	}
 
-	VisualServer::get_singleton()->rooms_finalize(get_world()->get_scenario(), generate_pvs, pvs_cull, _settings_use_secondary_pvs, _settings_use_signals, _pvs_filename);
-
-	// refresh whether to show portals etc
-	set_show_debug(_show_debug);
+	VisualServer::get_singleton()->rooms_finalize(get_world()->get_scenario(), generate_pvs, pvs_cull, _settings_use_secondary_pvs, _settings_use_signals, _pvs_filename, _settings_use_simple_pvs, _settings_log_pvs_generation);
 
 	// refresh portal depth limit
 	set_portal_depth_limit(get_portal_depth_limit());
