@@ -275,13 +275,13 @@ void light_compute(
 		vec3 H = normalize(V + L);
 		float cNdotH = max(dot(N, H), 0.0);
 		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
-		float blinn = pow(cNdotH, shininess) * cNdotL;
-		blinn *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));
+		float blinn = pow(cNdotH, shininess);
+		blinn *= (shininess + 2.0) * (1.0 / (8.0 * M_PI));
 		specular_brdf_NL = blinn;
 #endif
 
 		SRGB_APPROX(specular_brdf_NL)
-		specular_interp += specular_brdf_NL * light_color * attenuation * (1.0 / M_PI);
+		specular_interp += specular_brdf_NL * light_color * attenuation;
 	}
 }
 
@@ -1360,7 +1360,7 @@ LIGHT_SHADER_CODE
 
 	if (roughness > 0.0) {
 
-#if defined(SPECULAR_SCHLICK_GGX)
+#if defined(SPECULAR_SCHLICK_GGX) || defined(SPECULAR_BLINN) || defined(SPECULAR_PHONG)
 		vec3 specular_brdf_NL = vec3(0.0);
 #else
 		float specular_brdf_NL = 0.0;
@@ -1370,9 +1370,10 @@ LIGHT_SHADER_CODE
 
 		//normalized blinn
 		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
-		float blinn = pow(cNdotH, shininess) * cNdotL;
-		blinn *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));
-		specular_brdf_NL = blinn;
+		float blinn = pow(cNdotH, shininess);
+		blinn *= (shininess + 2.0) * (1.0 / (8.0 * M_PI));
+
+		specular_brdf_NL = blinn * diffuse_color * specular;
 
 #elif defined(SPECULAR_PHONG)
 
@@ -1380,8 +1381,9 @@ LIGHT_SHADER_CODE
 		float cRdotV = max(0.0, dot(R, V));
 		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
 		float phong = pow(cRdotV, shininess);
-		phong *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));
-		specular_brdf_NL = (phong) / max(4.0 * cNdotV * cNdotL, 0.75);
+		phong *= (shininess + 1.0) * (1.0 / (8.0 * M_PI));
+
+		specular_brdf_NL = phong * diffuse_color * specular;
 
 #elif defined(SPECULAR_TOON)
 
@@ -2165,8 +2167,7 @@ FRAGMENT_SHADER_CODE
 
 #ifdef USE_VERTEX_LIGHTING
 	//vertex lighting
-
-	specular_light += specular_interp * specular_blob_intensity * light_att;
+	specular_light += specular_interp * albedo * specular * specular_blob_intensity * light_att;
 	diffuse_light += diffuse_interp * albedo * light_att;
 
 #else
