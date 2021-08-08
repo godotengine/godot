@@ -966,6 +966,9 @@ void RoomManager::_autolink_portals(Spatial *p_roomlist, LocalVector<Portal *> &
 
 			Vector3 test_pos = portal->_pt_center_world + (dist * portal->_plane.normal);
 
+			int best_priority = -1000;
+			int best_room = -1;
+
 			for (int r = 0; r < _rooms.size(); r++) {
 				Room *room = _rooms[r];
 				if (room->_room_ID == portal->_linkedroom_ID[0]) {
@@ -988,25 +991,37 @@ void RoomManager::_autolink_portals(Spatial *p_roomlist, LocalVector<Portal *> &
 				} // for through planes
 
 				if (!outside) {
-					// great, we found a linked room!
-					convert_log("\t\tAUTOLINK OK from " + source_room->get_name() + " to " + room->get_name(), 1);
-					portal->_linkedroom_ID[1] = r;
-
-					// add the portal to the portals list for the receiving room
-					room->_portals.push_back(n);
-
-					// send complete link to visual server so the portal will be active in the visual server room system
-					VisualServer::get_singleton()->portal_link(portal->_portal_rid, source_room->_room_rid, room->_room_rid, portal->_settings_two_way);
-
-					// make the portal internal if necessary
-					// (this prevents the portal plane clipping the room bound)
-					portal->_internal = source_room->_room_priority > room->_room_priority;
-
-					autolink_found = true;
-					break;
+					// we found a suitable room, but we want the highest priority in
+					// case there are internal rooms...
+					if (room->_room_priority > best_priority) {
+						best_priority = room->_room_priority;
+						best_room = r;
+					}
 				}
 
 			} // for through rooms
+
+			// found a suitable link room
+			if (best_room != -1) {
+				Room *room = _rooms[best_room];
+
+				// great, we found a linked room!
+				convert_log("\t\tAUTOLINK OK from " + source_room->get_name() + " to " + room->get_name(), 1);
+				portal->_linkedroom_ID[1] = best_room;
+
+				// add the portal to the portals list for the receiving room
+				room->_portals.push_back(n);
+
+				// send complete link to visual server so the portal will be active in the visual server room system
+				VisualServer::get_singleton()->portal_link(portal->_portal_rid, source_room->_room_rid, room->_room_rid, portal->_settings_two_way);
+
+				// make the portal internal if necessary
+				// (this prevents the portal plane clipping the room bound)
+				portal->_internal = source_room->_room_priority > room->_room_priority;
+
+				autolink_found = true;
+				break;
+			}
 
 		} // for attempt
 
