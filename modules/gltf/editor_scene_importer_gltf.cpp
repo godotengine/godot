@@ -46,6 +46,7 @@
 
 #include "modules/gltf/editor_scene_importer_gltf.h"
 
+#ifdef TOOLS_ENABLED
 uint32_t EditorSceneImporterGLTF::get_import_flags() const {
 	return ImportFlags::IMPORT_SCENE | ImportFlags::IMPORT_ANIMATION;
 }
@@ -69,6 +70,7 @@ Ref<Animation> EditorSceneImporterGLTF::import_animation(const String &p_path,
 		int p_bake_fps) {
 	return Ref<Animation>();
 }
+#endif
 
 void PackedSceneGLTF::_bind_methods() {
 	ClassDB::bind_method(

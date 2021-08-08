@@ -33,7 +33,9 @@
 
 #include "core/resource.h"
 #include "core/vector.h"
+#ifdef TOOLS_ENABLED
 #include "editor_scene_importer_gltf.h"
+#endif
 #include "gltf_accessor.h"
 #include "gltf_animation.h"
 #include "gltf_buffer_view.h"

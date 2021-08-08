@@ -35,7 +35,9 @@
 #include "core/object.h"
 #include "core/project_settings.h"
 #include "core/vector.h"
+#ifdef TOOLS_ENABLED
 #include "editor/import/resource_importer_scene.h"
+#endif
 #include "modules/csg/csg_shape.h"
 #include "modules/gridmap/grid_map.h"
 #include "scene/3d/mesh_instance.h"

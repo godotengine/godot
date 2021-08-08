@@ -31,6 +31,7 @@
 #ifndef EDITOR_SCENE_EXPORTER_GLTF_PLUGIN_H
 #define EDITOR_SCENE_EXPORTER_GLTF_PLUGIN_H
 
+#ifdef TOOLS_ENABLED
 #include "editor/editor_plugin.h"
 #include "editor_scene_importer_gltf.h"
 
@@ -53,3 +54,4 @@ public:
 };
 
 #endif // EDITOR_SCENE_EXPORTER_GLTF_PLUGIN_H
+#endif

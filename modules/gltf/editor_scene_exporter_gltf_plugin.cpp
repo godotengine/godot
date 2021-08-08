@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifdef TOOLS_ENABLED
 #include "editor_scene_exporter_gltf_plugin.h"
 #include "core/object.h"
 #include "core/project_settings.h"
@@ -93,3 +94,4 @@ void SceneExporterGLTFPlugin::convert_scene_to_gltf2(Variant p_null) {
 	file_export_lib->set_current_file(filename + String(".gltf"));
 	file_export_lib->popup_centered_ratio();
 }
+#endif
