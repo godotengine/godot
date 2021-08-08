@@ -1787,7 +1787,7 @@ void _Thread::_start_func(void *ud) {
 			target_param_count = method->get_argument_count();
 			target_default_arg_count = method->get_default_argument_count();
 		}
-		if (target_param_count >= 1 && target_default_arg_count == target_param_count) {
+		if (target_param_count >= 1 && target_default_arg_count < target_param_count) {
 			argc = 1;
 		}
 	}
