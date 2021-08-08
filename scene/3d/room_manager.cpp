@@ -164,11 +164,6 @@ void RoomManager::_preview_camera_update() {
 			bool changed = false;
 			if (camera_pos != _godot_camera_pos) {
 				changed = true;
-
-				// update gameplay monitor
-				Vector<Vector3> camera_positions;
-				camera_positions.push_back(camera_pos);
-				VisualServer::get_singleton()->rooms_update_gameplay_monitor(scenario, camera_positions);
 			}
 			// check planes
 			if (!changed) {
