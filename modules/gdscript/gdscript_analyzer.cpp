@@ -2534,6 +2534,9 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 		// If the identifier is local, check if it's any kind of capture by comparing their source function.
 		// Only capture locals and members and enum values. Constants are still accessible from the lambda using the script reference.
 		if (p_identifier->source == GDScriptParser::IdentifierNode::UNDEFINED_SOURCE || p_identifier->source == GDScriptParser::IdentifierNode::MEMBER_CONSTANT || lambda_stack.is_empty()) {
+			GDScriptParser::DataType dummy;
+			dummy.kind = GDScriptParser::DataType::VARIANT;
+			p_identifier->set_datatype(dummy);
 			return;
 		}
 
