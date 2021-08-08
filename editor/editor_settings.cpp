@@ -374,6 +374,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("interface/editor/display_scale", 0);
 	// Display what the Auto display scale setting effectively corresponds to.
 	float scale = get_auto_display_scale();
+
+	_initial_set("interface/editor/enable_debugging_pseudolocalization", false);
+	set_restart_if_changed("interface/editor/enable_debugging_pseudolocalization", true);
+	// Use pseudolocalization in editor.
+
 	hints["interface/editor/display_scale"] = PropertyInfo(Variant::INT, "interface/editor/display_scale", PROPERTY_HINT_ENUM, vformat("Auto (%d%%),75%%,100%%,125%%,150%%,175%%,200%%,Custom", Math::round(scale * 100)), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	_initial_set("interface/editor/custom_display_scale", 1.0f);
 	hints["interface/editor/custom_display_scale"] = PropertyInfo(Variant::FLOAT, "interface/editor/custom_display_scale", PROPERTY_HINT_RANGE, "0.5,3,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
@@ -953,11 +958,11 @@ fail:
 }
 
 void EditorSettings::setup_language() {
+	TranslationServer::get_singleton()->set_editor_pseudolocalization(get("interface/editor/enable_debugging_pseudolocalization"));
 	String lang = get("interface/editor/editor_language");
 	if (lang == "en") {
 		return; // Default, nothing to do.
 	}
-
 	// Load editor translation for configured/detected locale.
 	EditorTranslationList *etl = _editor_translations;
 	while (etl->data) {
