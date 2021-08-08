@@ -318,8 +318,16 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 	}
 	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
 
-	_get_mouse_pos(wd, [wd.window_object mouseLocationOutsideOfEventStream]);
-	Input::get_singleton()->set_mouse_position(wd.mouse_pos);
+	if (DS_OSX->mouse_mode == DisplayServer::MOUSE_MODE_CAPTURED) {
+		const NSRect contentRect = [wd.window_view frame];
+		NSRect pointInWindowRect = NSMakeRect(contentRect.size.width / 2, contentRect.size.height / 2, 0, 0);
+		NSPoint pointOnScreen = [[wd.window_view window] convertRectToScreen:pointInWindowRect].origin;
+		CGPoint lMouseWarpPos = { pointOnScreen.x, CGDisplayBounds(CGMainDisplayID()).size.height - pointOnScreen.y };
+		CGWarpMouseCursorPosition(lMouseWarpPos);
+	} else {
+		_get_mouse_pos(wd, [wd.window_object mouseLocationOutsideOfEventStream]);
+		Input::get_singleton()->set_mouse_position(wd.mouse_pos);
+	}
 
 	DS_OSX->window_focused = true;
 	DS_OSX->_send_window_event(wd, DisplayServerOSX::WINDOW_EVENT_FOCUS_IN);
