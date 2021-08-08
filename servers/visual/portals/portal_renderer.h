@@ -149,7 +149,7 @@ public:
 	void room_set_bound(RoomHandle p_room, ObjectID p_room_object_id, const Vector<Plane> &p_convex, const AABB &p_aabb, const Vector<Vector3> &p_verts);
 	void room_prepare(RoomHandle p_room, int32_t p_priority);
 	void rooms_and_portals_clear();
-	void rooms_finalize(bool p_generate_pvs, bool p_cull_using_pvs, bool p_use_secondary_pvs, bool p_use_signals, String p_pvs_filename);
+	void rooms_finalize(bool p_generate_pvs, bool p_cull_using_pvs, bool p_use_secondary_pvs, bool p_use_signals, String p_pvs_filename, bool p_use_simple_pvs, bool p_log_pvs_generation);
 	void rooms_override_camera(bool p_override, const Vector3 &p_point, const Vector<Plane> *p_convex);
 	void rooms_set_active(bool p_active) { _active = p_active; }
 	void rooms_set_params(int p_portal_depth_limit) { _tracer.set_depth_limit(p_portal_depth_limit); }

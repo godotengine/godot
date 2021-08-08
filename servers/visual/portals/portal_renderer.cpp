@@ -653,7 +653,7 @@ void PortalRenderer::_rooms_add_portals_to_convex_hulls() {
 	}
 }
 
-void PortalRenderer::rooms_finalize(bool p_generate_pvs, bool p_cull_using_pvs, bool p_use_secondary_pvs, bool p_use_signals, String p_pvs_filename) {
+void PortalRenderer::rooms_finalize(bool p_generate_pvs, bool p_cull_using_pvs, bool p_use_secondary_pvs, bool p_use_signals, String p_pvs_filename, bool p_use_simple_pvs, bool p_log_pvs_generation) {
 	_gameplay_monitor.set_params(p_use_secondary_pvs, p_use_signals);
 
 	// portals should also bound the rooms, the room geometry may extend past the portal
@@ -687,7 +687,7 @@ void PortalRenderer::rooms_finalize(bool p_generate_pvs, bool p_cull_using_pvs, 
 	// calculate PVS
 	if (p_generate_pvs) {
 		PVSBuilder pvs;
-		pvs.calculate_pvs(*this, p_pvs_filename, _tracer.get_depth_limit());
+		pvs.calculate_pvs(*this, p_pvs_filename, _tracer.get_depth_limit(), p_use_simple_pvs, p_log_pvs_generation);
 		_cull_using_pvs = p_cull_using_pvs; // hard code to on for test
 	} else {
 		_cull_using_pvs = false;

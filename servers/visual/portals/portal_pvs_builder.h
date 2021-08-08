@@ -46,7 +46,7 @@ class PVSBuilder {
 	};
 
 public:
-	void calculate_pvs(PortalRenderer &p_portal_renderer, String p_filename, int p_depth_limit);
+	void calculate_pvs(PortalRenderer &p_portal_renderer, String p_filename, int p_depth_limit, bool p_use_simple_pvs, bool p_log_pvs_generation);
 
 private:
 #ifdef GODOT_PVS_SUPPORT_SAVE_FILE
