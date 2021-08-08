@@ -41,6 +41,7 @@
 #include "room_group.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/light.h"
+#include "scene/3d/sprite_3d.h"
 #include "visibility_notifier.h"
 
 #ifdef TOOLS_ENABLED
@@ -1738,11 +1739,11 @@ bool RoomManager::_bound_findpoints_geom_instance(GeometryInstance *p_gi, Vector
 
 			// convert to world space
 			for (int n = 0; n < vertices.size(); n++) {
-				Vector3 ptWorld = trans.xform(vertices[n]);
-				r_room_pts.push_back(ptWorld);
+				Vector3 pt_world = trans.xform(vertices[n]);
+				r_room_pts.push_back(pt_world);
 
 				// keep the bound up to date
-				r_aabb.expand_to(ptWorld);
+				r_aabb.expand_to(pt_world);
 			}
 
 		} // for through the surfaces
@@ -1798,13 +1799,34 @@ bool RoomManager::_bound_findpoints_geom_instance(GeometryInstance *p_gi, Vector
 			trans = mmi->get_global_transform() * trans;
 
 			for (int n = 0; n < local_verts.size(); n++) {
-				Vector3 ptWorld = trans.xform(local_verts[n]);
-				r_room_pts.push_back(ptWorld);
+				Vector3 pt_world = trans.xform(local_verts[n]);
+				r_room_pts.push_back(pt_world);
 
 				// keep the bound up to date
-				r_aabb.expand_to(ptWorld);
+				r_aabb.expand_to(pt_world);
 			}
 		}
+		return true;
+	}
+
+	// Sprite3D
+	SpriteBase3D *sprite = Object::cast_to<SpriteBase3D>(p_gi);
+	if (sprite) {
+		Ref<TriangleMesh> tmesh = sprite->generate_triangle_mesh();
+		PoolVector<Vector3> vertices = tmesh->get_vertices();
+
+		// for converting meshes to world space
+		Transform trans = p_gi->get_global_transform();
+
+		// convert to world space
+		for (int n = 0; n < vertices.size(); n++) {
+			Vector3 pt_world = trans.xform(vertices[n]);
+			r_room_pts.push_back(pt_world);
+
+			// keep the bound up to date
+			r_aabb.expand_to(pt_world);
+		}
+
 		return true;
 	}
 
