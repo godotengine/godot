@@ -76,6 +76,24 @@ class TranslationServer : public Object {
 
 	bool enabled;
 
+	bool pseudolocalization_enabled = false;
+	bool pseudolocalization_accents_enabled = false;
+	bool pseudolocalization_double_vowels_enabled = false;
+	bool pseudolocalization_override_enabled = false;
+	bool pseudolocalization_skip_placeholders_enabled = false;
+	bool editor_pseudolocalization = false;
+	float expansion_ratio = 0.0;
+	String pseudolocalization_prefix;
+	String pseudolocalization_suffix;
+
+	StringName tool_pseudolocalize(const StringName &p_message) const;
+	String get_override_string(String &p_message) const;
+	String double_vowels(String &p_message) const;
+	String replace_with_accented_string(String &p_message) const;
+	String add_padding(String &p_message, int p_length) const;
+	const CharType *get_accented_version(CharType p_character) const;
+	bool is_placeholder(String &p_message, int p_index) const;
+
 	static TranslationServer *singleton;
 	bool _load_translations(const String &p_from);
 
@@ -98,6 +116,13 @@ public:
 	void remove_translation(const Ref<Translation> &p_translation);
 
 	StringName translate(const StringName &p_message) const;
+
+	StringName pseudolocalize(const StringName &p_message) const;
+
+	bool is_pseudolocalization_enabled() const;
+	void set_pseudolocalization_enabled(bool p_enabled);
+	void set_editor_pseudolocalization(bool p_enabled);
+	void reload_pseudolocalization();
 
 	static Vector<String> get_all_locales();
 	static Vector<String> get_all_locale_names();
