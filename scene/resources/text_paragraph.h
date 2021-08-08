@@ -86,8 +86,8 @@ public:
 	void clear_dropcap();
 
 	bool add_string(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "");
-	bool add_object(Variant p_key, const Size2 &p_size, VAlign p_inline_align = VALIGN_CENTER, int p_length = 1);
-	bool resize_object(Variant p_key, const Size2 &p_size, VAlign p_inline_align = VALIGN_CENTER);
+	bool add_object(Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER, int p_length = 1);
+	bool resize_object(Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER);
 
 	void set_align(HAlign p_align);
 	HAlign get_align() const;

@@ -56,8 +56,8 @@ void TextLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bidi_override", "override"), &TextLine::_set_bidi_override);
 
 	ClassDB::bind_method(D_METHOD("add_string", "text", "fonts", "size", "opentype_features", "language"), &TextLine::add_string, DEFVAL(Dictionary()), DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("add_object", "key", "size", "inline_align", "length"), &TextLine::add_object, DEFVAL(VALIGN_CENTER), DEFVAL(1));
-	ClassDB::bind_method(D_METHOD("resize_object", "key", "size", "inline_align"), &TextLine::resize_object, DEFVAL(VALIGN_CENTER));
+	ClassDB::bind_method(D_METHOD("add_object", "key", "size", "inline_align", "length"), &TextLine::add_object, DEFVAL(INLINE_ALIGN_CENTER), DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("resize_object", "key", "size", "inline_align"), &TextLine::resize_object, DEFVAL(INLINE_ALIGN_CENTER));
 
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &TextLine::set_width);
 	ClassDB::bind_method(D_METHOD("get_width"), &TextLine::get_width);
@@ -175,13 +175,13 @@ bool TextLine::add_string(const String &p_text, const Ref<Font> &p_fonts, int p_
 	return res;
 }
 
-bool TextLine::add_object(Variant p_key, const Size2 &p_size, VAlign p_inline_align, int p_length) {
+bool TextLine::add_object(Variant p_key, const Size2 &p_size, InlineAlign p_inline_align, int p_length) {
 	bool res = TS->shaped_text_add_object(rid, p_key, p_size, p_inline_align, p_length);
 	dirty = true;
 	return res;
 }
 
-bool TextLine::resize_object(Variant p_key, const Size2 &p_size, VAlign p_inline_align) {
+bool TextLine::resize_object(Variant p_key, const Size2 &p_size, InlineAlign p_inline_align) {
 	const_cast<TextLine *>(this)->_shape();
 	return TS->shaped_text_resize_object(rid, p_key, p_size, p_inline_align);
 }

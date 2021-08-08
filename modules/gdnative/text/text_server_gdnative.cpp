@@ -449,12 +449,12 @@ bool TextServerGDNative::shaped_text_add_string(RID p_shaped, const String &p_te
 	return interface->shaped_text_add_string(data, (godot_rid *)&p_shaped, (const godot_string *)&p_text, (const godot_rid **)p_fonts.ptr(), p_size, (const godot_dictionary *)&p_opentype_features, (const godot_string *)&p_language);
 }
 
-bool TextServerGDNative::shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, VAlign p_inline_align, int p_length) {
+bool TextServerGDNative::shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align, int p_length) {
 	ERR_FAIL_COND_V(interface == nullptr, false);
 	return interface->shaped_text_add_object(data, (godot_rid *)&p_shaped, (const godot_variant *)&p_key, (const godot_vector2 *)&p_size, (godot_int)p_inline_align, p_length);
 }
 
-bool TextServerGDNative::shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, VAlign p_inline_align) {
+bool TextServerGDNative::shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align) {
 	ERR_FAIL_COND_V(interface == nullptr, false);
 	return interface->shaped_text_resize_object(data, (godot_rid *)&p_shaped, (const godot_variant *)&p_key, (const godot_vector2 *)&p_size, (godot_int)p_inline_align);
 }
