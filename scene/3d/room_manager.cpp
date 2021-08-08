@@ -476,7 +476,7 @@ void RoomManager::show_warning(const String &p_string, const String &p_extra_str
 		WARN_PRINT(p_string + " " + p_extra_string);
 #ifdef TOOLS_ENABLED
 		if (p_alert && Engine::get_singleton()->is_editor_hint()) {
-			EditorNode::get_singleton()->show_warning(TTR(p_string + "\n" + p_extra_string));
+			EditorNode::get_singleton()->show_warning(TTRGET(p_string) + "\n" + TTRGET(p_extra_string));
 		}
 #endif
 	} else {
@@ -484,7 +484,7 @@ void RoomManager::show_warning(const String &p_string, const String &p_extra_str
 		// OS::get_singleton()->alert(p_string, p_title);
 #ifdef TOOLS_ENABLED
 		if (p_alert && Engine::get_singleton()->is_editor_hint()) {
-			EditorNode::get_singleton()->show_warning(TTR(p_string));
+			EditorNode::get_singleton()->show_warning(TTRGET(p_string));
 		}
 #endif
 	}
@@ -556,7 +556,7 @@ void RoomManager::rooms_flip_portals() {
 	_roomlist = _resolve_path<Spatial>(_settings_path_roomlist);
 	if (!_roomlist) {
 		WARN_PRINT("Cannot resolve nodepath");
-		show_warning("RoomList path is invalid.", "Please check the RoomList branch has been assigned in the RoomManager");
+		show_warning(TTRC("RoomList path is invalid."), TTRC("Please check the RoomList branch has been assigned in the RoomManager."));
 		return;
 	}
 
@@ -574,7 +574,7 @@ void RoomManager::rooms_convert() {
 	_roomlist = _resolve_path<Spatial>(_settings_path_roomlist);
 	if (!_roomlist) {
 		WARN_PRINT("Cannot resolve nodepath");
-		show_warning("RoomList path is invalid.", "Please check the RoomList branch has been assigned in the RoomManager");
+		show_warning(TTRC("RoomList path is invalid."), TTRC("Please check the RoomList branch has been assigned in the RoomManager."));
 		return;
 	}
 
@@ -601,7 +601,7 @@ void RoomManager::rooms_convert() {
 
 	if (!_rooms.size()) {
 		rooms_clear();
-		show_warning("RoomList contains no Rooms, aborting");
+		show_warning(TTRC("RoomList contains no Rooms, aborting."));
 		return;
 	}
 
@@ -661,20 +661,20 @@ void RoomManager::rooms_convert() {
 
 	// display error dialogs
 	if (_warning_misnamed_nodes_detected) {
-		show_warning("Misnamed nodes detected, check output log for details. Aborting.");
+		show_warning(TTRC("Misnamed nodes detected, check output log for details. Aborting."));
 		rooms_clear();
 	}
 
 	if (_warning_portal_link_room_not_found) {
-		show_warning("Portal link room not found, check output log for details.");
+		show_warning(TTRC("Portal link room not found, check output log for details."));
 	}
 
 	if (_warning_portal_autolink_failed) {
-		show_warning("Portal autolink failed, check output log for details.\nCheck the portal is facing outwards from the source room.");
+		show_warning(TTRC("Portal autolink failed, check output log for details.\nCheck the portal is facing outwards from the source room."));
 	}
 
 	if (_warning_room_overlap_detected) {
-		show_warning("Room overlap detected, cameras may work incorrectly in overlapping area.\nCheck output log for details..");
+		show_warning(TTRC("Room overlap detected, cameras may work incorrectly in overlapping area.\nCheck output log for details."));
 	}
 }
 
@@ -875,7 +875,7 @@ void RoomManager::_third_pass_rooms(const LocalVector<Portal *> &p_portals) {
 	}
 
 	if (found_errors) {
-		show_warning("ERROR calculating room bounds.", "Ensure all rooms contain geometry or manual bounds.");
+		show_warning(TTRC("ERROR calculating room bounds."), TTRC("Ensure all rooms contain geometry or manual bounds."));
 	}
 }
 
