@@ -308,7 +308,7 @@ void GradientEdit::_notification(int p_what) {
 		int total_w = get_size().width - get_size().height - SPACING;
 
 		//Draw checker pattern for ramp
-		draw_texture_rect(get_theme_icon("GuiMiniCheckerboard", "EditorIcons"), Rect2(0, 0, total_w, h), true);
+		draw_texture_rect(get_theme_icon(SNAME("GuiMiniCheckerboard"), SNAME("EditorIcons")), Rect2(0, 0, total_w, h), true);
 
 		//Draw color ramp
 		Gradient::Point prev;
@@ -375,7 +375,7 @@ void GradientEdit::_notification(int p_what) {
 		}
 
 		//Draw "button" for color selector
-		draw_texture_rect(get_theme_icon("GuiMiniCheckerboard", "EditorIcons"), Rect2(total_w + SPACING, 0, h, h), true);
+		draw_texture_rect(get_theme_icon(SNAME("GuiMiniCheckerboard"), SNAME("EditorIcons")), Rect2(total_w + SPACING, 0, h, h), true);
 		if (grabbed != -1) {
 			//Draw with selection color
 			draw_rect(Rect2(total_w + SPACING, 0, h, h), points[grabbed].color);
