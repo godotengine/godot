@@ -1066,7 +1066,9 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 		// This approach makes sure there is less delay between the actual body velocity and the one we saved.
 		PhysicsDirectBodyState *bs = PhysicsServer::get_singleton()->body_get_direct_state(on_floor_body);
 		if (bs) {
-			current_floor_velocity = bs->get_linear_velocity();
+			Transform gt = get_global_transform();
+			Vector3 local_position = gt.origin - bs->get_transform().origin;
+			current_floor_velocity = bs->get_velocity_at_local_position(local_position);
 		}
 	}
 

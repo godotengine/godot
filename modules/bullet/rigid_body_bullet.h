@@ -110,6 +110,8 @@ public:
 	virtual void set_transform(const Transform &p_transform);
 	virtual Transform get_transform() const;
 
+	virtual Vector3 get_velocity_at_local_position(const Vector3 &p_position) const;
+
 	virtual void add_central_force(const Vector3 &p_force);
 	virtual void add_force(const Vector3 &p_force, const Vector3 &p_pos);
 	virtual void add_torque(const Vector3 &p_torque);
