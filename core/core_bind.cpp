@@ -107,6 +107,10 @@ bool _ResourceLoader::exists(const String &p_path, const String &p_type_hint) {
 	return ResourceLoader::exists(p_path, p_type_hint);
 }
 
+ResourceUID::ID _ResourceLoader::get_resource_uid(const String &p_path) {
+	return ResourceLoader::get_resource_uid(p_path);
+}
+
 void _ResourceLoader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_threaded_request", "path", "type_hint", "use_sub_threads"), &_ResourceLoader::load_threaded_request, DEFVAL(""), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("load_threaded_get_status", "path", "progress"), &_ResourceLoader::load_threaded_get_status, DEFVAL(Array()));
@@ -118,6 +122,7 @@ void _ResourceLoader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_dependencies", "path"), &_ResourceLoader::get_dependencies);
 	ClassDB::bind_method(D_METHOD("has_cached", "path"), &_ResourceLoader::has_cached);
 	ClassDB::bind_method(D_METHOD("exists", "path", "type_hint"), &_ResourceLoader::exists, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_resource_uid", "path"), &_ResourceLoader::get_resource_uid);
 
 	BIND_ENUM_CONSTANT(THREAD_LOAD_INVALID_RESOURCE);
 	BIND_ENUM_CONSTANT(THREAD_LOAD_IN_PROGRESS);

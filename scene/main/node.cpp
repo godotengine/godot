@@ -116,6 +116,9 @@ void Node::_notification(int p_notification) {
 				memdelete(data.path_cache);
 				data.path_cache = nullptr;
 			}
+			if (data.filename.length()) {
+				get_multiplayer()->scene_enter_exit_notify(data.filename, this, false);
+			}
 		} break;
 		case NOTIFICATION_PATH_CHANGED: {
 			if (data.path_cache) {
@@ -146,6 +149,10 @@ void Node::_notification(int p_notification) {
 				}
 
 				get_script_instance()->call(SceneStringNames::get_singleton()->_ready);
+			}
+			if (data.filename.length()) {
+				ERR_FAIL_COND(!is_inside_tree());
+				get_multiplayer()->scene_enter_exit_notify(data.filename, this, true);
 			}
 
 		} break;

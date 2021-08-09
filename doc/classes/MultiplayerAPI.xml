@@ -66,6 +66,34 @@
 				Sends the given raw [code]bytes[/code] to a specific peer identified by [code]id[/code] (see [method MultiplayerPeer.set_target_peer]). Default ID is [code]0[/code], i.e. broadcast to all peers.
 			</description>
 		</method>
+		<method name="send_despawn">
+			<return type="int" enum="Error" />
+			<argument index="0" name="peer_id" type="int" />
+			<argument index="1" name="scene_id" type="int" />
+			<argument index="2" name="path" type="NodePath" />
+			<argument index="3" name="data" type="PackedByteArray" default="PackedByteArray()" />
+			<description>
+				Sends a despawn request for the scene identified by [code]scene_id[/code] to the given [code]peer_id[/code] (see [method MultiplayerPeer.set_target_peer]). If the scene is configured as [constant SPAWN_MODE_SERVER] (see [method spawnable_config]) and the request is sent by the server (see [method is_network_server]), the receiving peer(s) will automatically queue for deletion the node at [code]path[/code] and emit the signal [signal network_despawn]. In all other cases no deletion happens, and the signal [signal network_despawn_request] is emitted instead.
+			</description>
+		</method>
+		<method name="send_spawn">
+			<return type="int" enum="Error" />
+			<argument index="0" name="peer_id" type="int" />
+			<argument index="1" name="scene_id" type="int" />
+			<argument index="2" name="path" type="NodePath" />
+			<argument index="3" name="data" type="PackedByteArray" default="PackedByteArray()" />
+			<description>
+				Sends a spawn request for the scene identified by [code]scene_id[/code] to the given [code]peer_id[/code] (see [method MultiplayerPeer.set_target_peer]). If the scene is configured as [constant SPAWN_MODE_SERVER] (see [method spawnable_config]) and the request is sent by the server (see [method is_network_server]), the receiving peer(s) will automatically instantiate that scene, add it to the [SceneTree] at the given [code]path[/code] and emit the signal [signal network_spawn]. In all other cases no instantiation happens, and the signal [signal network_spawn_request] is emitted instead.
+			</description>
+		</method>
+		<method name="spawnable_config">
+			<return type="int" enum="Error" />
+			<argument index="0" name="scene_id" type="int" />
+			<argument index="1" name="spawn_mode" type="int" enum="MultiplayerAPI.SpawnMode" />
+			<description>
+				Configures the MultiplayerAPI to track instances of the [PackedScene] idenfied by [code]scene_id[/code] (see [method ResourceLoader.get_resource_uid]) for the purpose of network replication. See [enum SpawnMode] for the possible configurations.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="allow_object_decoding" type="bool" setter="set_allow_object_decoding" getter="is_object_decoding_allowed" default="false">
@@ -94,6 +122,25 @@
 				Emitted when this MultiplayerAPI's [member network_peer] fails to establish a connection to a server. Only emitted on clients.
 			</description>
 		</signal>
+		<signal name="network_despawn">
+			<argument index="0" name="id" type="int" />
+			<argument index="1" name="scene_id" type="int" />
+			<argument index="2" name="node" type="Node" />
+			<argument index="3" name="data" type="PackedByteArray" />
+			<description>
+				Emitted on a client before deleting a local Node upon receiving a despawn request from the server.
+			</description>
+		</signal>
+		<signal name="network_despawn_request">
+			<argument index="0" name="id" type="int" />
+			<argument index="1" name="scene_id" type="int" />
+			<argument index="2" name="parent" type="Node" />
+			<argument index="3" name="name" type="String" />
+			<argument index="4" name="data" type="PackedByteArray" />
+			<description>
+				Emitted when a network despawn request has been received from a client, or for a [PackedScene] that has been configured as [constant SPAWN_MODE_CUSTOM].
+			</description>
+		</signal>
 		<signal name="network_peer_connected">
 			<argument index="0" name="id" type="int" />
 			<description>
@@ -111,6 +158,39 @@
 			<argument index="1" name="packet" type="PackedByteArray" />
 			<description>
 				Emitted when this MultiplayerAPI's [member network_peer] receive a [code]packet[/code] with custom data (see [method send_bytes]). ID is the peer ID of the peer that sent the packet.
+			</description>
+		</signal>
+		<signal name="network_spawn">
+			<argument index="0" name="id" type="int" />
+			<argument index="1" name="scene_id" type="int" />
+			<argument index="2" name="node" type="Node" />
+			<argument index="3" name="data" type="PackedByteArray" />
+			<description>
+				Emitted on a client after a new Node is instantiated locally and added to the SceneTree upon receiving a spawn request from the server.
+			</description>
+		</signal>
+		<signal name="network_spawn_request">
+			<argument index="0" name="id" type="int" />
+			<argument index="1" name="scene_id" type="int" />
+			<argument index="2" name="parent" type="Node" />
+			<argument index="3" name="name" type="String" />
+			<argument index="4" name="data" type="PackedByteArray" />
+			<description>
+				Emitted when a network spawn request has been received from a client, or for a [PackedScene] that has been configured as [constant SPAWN_MODE_CUSTOM].
+			</description>
+		</signal>
+		<signal name="network_spawnable_added">
+			<argument index="0" name="scene_id" type="int" />
+			<argument index="1" name="node" type="Node" />
+			<description>
+				Emitted when an instance of a [PackedScene] that has been configured for networking enters the [SceneTree]. See [method spawnable_config].
+			</description>
+		</signal>
+		<signal name="network_spawnable_removed">
+			<argument index="0" name="scene_id" type="int" />
+			<argument index="1" name="node" type="Node" />
+			<description>
+				Emitted when an instance of a [PackedScene] that has been configured for networking leaves the [SceneTree]. See [method spawnable_config].
 			</description>
 		</signal>
 		<signal name="server_disconnected">
@@ -131,6 +211,15 @@
 		</constant>
 		<constant name="RPC_MODE_PUPPET" value="3" enum="RPCMode">
 			Used with [method Node.rpc_config] to set a method to be called or a property to be changed only on puppets for this node. Analogous to the [code]puppet[/code] keyword. Only accepts calls or property changes from the node's network master, see [method Node.set_network_master].
+		</constant>
+		<constant name="SPAWN_MODE_NONE" value="0" enum="SpawnMode">
+			Used with [method spawnable_config] to identify a [PackedScene] that should not be replicated.
+		</constant>
+		<constant name="SPAWN_MODE_SERVER" value="1" enum="SpawnMode">
+			Used with [method spawnable_config] to identify a [PackedScene] that should be automatically replicated from server to clients.
+		</constant>
+		<constant name="SPAWN_MODE_CUSTOM" value="2" enum="SpawnMode">
+			Used with [method spawnable_config] to identify a [PackedScene] that can be manually replicated among peers.
 		</constant>
 	</constants>
 </class>
