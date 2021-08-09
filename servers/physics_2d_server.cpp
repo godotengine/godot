@@ -90,6 +90,8 @@ void Physics2DDirectBodyState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_transform", "transform"), &Physics2DDirectBodyState::set_transform);
 	ClassDB::bind_method(D_METHOD("get_transform"), &Physics2DDirectBodyState::get_transform);
 
+	ClassDB::bind_method(D_METHOD("get_velocity_at_local_position", "local_position"), &Physics2DDirectBodyState::get_velocity_at_local_position);
+
 	ClassDB::bind_method(D_METHOD("add_central_force", "force"), &Physics2DDirectBodyState::add_central_force);
 	ClassDB::bind_method(D_METHOD("add_force", "offset", "force"), &Physics2DDirectBodyState::add_force);
 	ClassDB::bind_method(D_METHOD("add_torque", "torque"), &Physics2DDirectBodyState::add_torque);
