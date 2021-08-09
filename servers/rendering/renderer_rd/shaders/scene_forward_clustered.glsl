@@ -907,6 +907,8 @@ void main() {
 		specular_light = textureLod(samplerCube(radiance_cubemap, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), ref_vec, roughness * MAX_ROUGHNESS_LOD).rgb;
 
 #endif //USE_RADIANCE_CUBEMAP_ARRAY
+		float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
+		specular_light *= horizon * horizon;
 		specular_light *= scene_data.ambient_light_color_energy.a;
 	}
 
