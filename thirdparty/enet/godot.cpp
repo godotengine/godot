@@ -48,6 +48,7 @@ class ENetGodotSocket {
 public:
 	virtual Error bind(IP_Address p_ip, uint16_t p_port) = 0;
 	virtual Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IP_Address p_ip, uint16_t p_port) = 0;
+	virtual Error sendmsg(const NetSocketBuffer *p_buffers, int p_len, int &r_sent, IP_Address p_ip, uint16_t p_port) = 0;
 	virtual Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port) = 0;
 	virtual int set_option(ENetSocketOption p_option, int p_value) = 0;
 	virtual void close() = 0;
@@ -91,6 +92,10 @@ public:
 
 	Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IP_Address p_ip, uint16_t p_port) {
 		return sock->sendto(p_buffer, p_len, r_sent, p_ip, p_port);
+	}
+
+	Error sendmsg(const NetSocketBuffer *p_buffers, int p_len, int &r_sent, IP_Address p_ip, uint16_t p_port) {
+		return sock->sendmsg(p_buffers, p_len, r_sent, p_ip, p_port);
 	}
 
 	Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port) {
@@ -196,6 +201,22 @@ public:
 		return dtls->put_packet(p_buffer, p_len);
 	}
 
+	Error sendmsg(const NetSocketBuffer *p_buffers, int p_len, int &r_sent, IP_Address p_ip, uint16_t p_port) {
+		r_sent = 0;
+		for(int i = 0; i < p_len; i++) {
+			int sent = 0;
+			Error e = sendto((const uint8_t *)p_buffers[i].data, p_buffers[i].dataLength, sent, p_ip, p_port);
+			if(e != OK) {
+				return e;
+			}
+			r_sent += sent; 
+			if(sent < p_buffers[i].dataLength) {
+				break;
+			}
+		}
+		return OK;
+	}
+
 	Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port) {
 		dtls->poll();
 		if (dtls->get_status() == PacketPeerDTLS::STATUS_HANDSHAKING) {
@@ -277,6 +298,22 @@ public:
 			r_sent = -1;
 }
 		return err;
+	}
+
+	Error sendmsg(const NetSocketBuffer *p_buffers, int p_len, int &r_sent, IP_Address p_ip, uint16_t p_port) {
+		r_sent = 0;
+		for(int i = 0; i < p_len; i++) {
+			int sent = 0;
+			Error e = sendto((const uint8_t *)p_buffers[i].data, p_buffers[i].dataLength, sent, p_ip, p_port);
+			if(e != OK) {
+				return e;
+			}
+			r_sent += sent; 
+			if(sent < p_buffers[i].dataLength) {
+				break;
+			}
+		}
+		return OK;
 	}
 
 	Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port) {
@@ -459,26 +496,9 @@ int enet_socket_send(ENetSocket socket, const ENetAddress *address, const ENetBu
 
 	dest.set_ipv6(address->host);
 
-	// Create a single packet.
-	PoolVector<uint8_t> out;
-	PoolVector<uint8_t>::Write w;
-	int size = 0;
-	int pos = 0;
-	for (i = 0; i < bufferCount; i++) {
-		size += buffers[i].dataLength;
-	}
-
-	out.resize(size);
-	w = out.write();
-	for (i = 0; i < bufferCount; i++) {
-		memcpy(&w[pos], buffers[i].data, buffers[i].dataLength);
-		pos += buffers[i].dataLength;
-	}
-
 	int sent = 0;
-	err = sock->sendto((const uint8_t *)&w[0], size, sent, dest, address->port);
+	err = sock->sendmsg((const NetSocketBuffer*)buffers, bufferCount, sent, dest, address->port);
 	if (err != OK) {
-
 		if (err == ERR_BUSY) { // Blocking call
 			return 0;
 		}

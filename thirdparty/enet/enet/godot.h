@@ -59,8 +59,13 @@ typedef void *ENetSocket;
 
 typedef struct
 {
+#ifdef WINDOWS_ENABLED
+	size_t dataLength;
+	void *data;
+#else
 	void *data;
 	size_t dataLength;
+#endif
 } ENetBuffer;
 
 #define ENET_CALLBACK

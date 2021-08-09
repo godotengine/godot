@@ -34,6 +34,16 @@
 #include "core/io/ip.h"
 #include "core/reference.h"
 
+typedef struct {
+#ifdef WINDOWS_ENABLED
+	size_t dataLength;
+	void *data;
+#else
+	void *data;
+	size_t dataLength;
+#endif
+} NetSocketBuffer;
+
 class NetSocket : public Reference {
 protected:
 	static NetSocket *(*_create)();
@@ -63,6 +73,7 @@ public:
 	virtual Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port, bool p_peek = false) = 0;
 	virtual Error send(const uint8_t *p_buffer, int p_len, int &r_sent) = 0;
 	virtual Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IP_Address p_ip, uint16_t p_port) = 0;
+	virtual Error sendmsg(const NetSocketBuffer *p_buffers, int p_len, int &r_sent, IP_Address p_ip, uint16_t p_port) = 0;
 	virtual Ref<NetSocket> accept(IP_Address &r_ip, uint16_t &r_port) = 0;
 
 	virtual bool is_open() const = 0;
