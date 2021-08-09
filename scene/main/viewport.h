@@ -375,7 +375,7 @@ private:
 		Variant drag_data;
 		ObjectID drag_preview_id;
 		Ref<SceneTreeTimer> tooltip_timer;
-		float tooltip_delay = 0.0;
+		double tooltip_delay = 0.0;
 		Transform2D focus_inv_xform;
 		bool roots_order_dirty = false;
 		List<Control *> roots;

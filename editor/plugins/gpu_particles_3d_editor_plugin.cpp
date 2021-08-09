@@ -282,9 +282,9 @@ void GPUParticles3DEditor::_menu_option(int p_option) {
 }
 
 void GPUParticles3DEditor::_generate_aabb() {
-	float time = generate_seconds->get_value();
+	double time = generate_seconds->get_value();
 
-	float running = 0.0;
+	double running = 0.0;
 
 	EditorProgress ep("gen_aabb", TTR("Generating AABB"), int(time));
 

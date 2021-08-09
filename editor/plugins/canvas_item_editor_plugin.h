@@ -540,7 +540,7 @@ private:
 	VSplitContainer *bottom_split;
 
 	void _update_context_menu_stylebox();
-	void _popup_warning_temporarily(Control *p_control, const float p_duration);
+	void _popup_warning_temporarily(Control *p_control, const double p_duration);
 	void _popup_warning_depop(Control *p_control);
 
 	void _set_owner_for_node_and_children(Node *p_node, Node *p_owner);

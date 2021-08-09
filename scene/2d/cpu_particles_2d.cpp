@@ -65,7 +65,7 @@ void CPUParticles2D::set_amount(int p_amount) {
 	particle_order.resize(p_amount);
 }
 
-void CPUParticles2D::set_lifetime(float p_lifetime) {
+void CPUParticles2D::set_lifetime(double p_lifetime) {
 	ERR_FAIL_COND_MSG(p_lifetime <= 0, "Particles lifetime must be greater than 0.");
 	lifetime = p_lifetime;
 }
@@ -74,7 +74,7 @@ void CPUParticles2D::set_one_shot(bool p_one_shot) {
 	one_shot = p_one_shot;
 }
 
-void CPUParticles2D::set_pre_process_time(float p_time) {
+void CPUParticles2D::set_pre_process_time(double p_time) {
 	pre_process_time = p_time;
 }
 
@@ -86,7 +86,7 @@ void CPUParticles2D::set_randomness_ratio(real_t p_ratio) {
 	randomness_ratio = p_ratio;
 }
 
-void CPUParticles2D::set_lifetime_randomness(float p_random) {
+void CPUParticles2D::set_lifetime_randomness(double p_random) {
 	lifetime_randomness = p_random;
 }
 
@@ -95,7 +95,7 @@ void CPUParticles2D::set_use_local_coordinates(bool p_enable) {
 	set_notify_transform(!p_enable);
 }
 
-void CPUParticles2D::set_speed_scale(real_t p_scale) {
+void CPUParticles2D::set_speed_scale(double p_scale) {
 	speed_scale = p_scale;
 }
 
@@ -107,7 +107,7 @@ int CPUParticles2D::get_amount() const {
 	return particles.size();
 }
 
-float CPUParticles2D::get_lifetime() const {
+double CPUParticles2D::get_lifetime() const {
 	return lifetime;
 }
 
@@ -115,7 +115,7 @@ bool CPUParticles2D::get_one_shot() const {
 	return one_shot;
 }
 
-float CPUParticles2D::get_pre_process_time() const {
+double CPUParticles2D::get_pre_process_time() const {
 	return pre_process_time;
 }
 
@@ -127,7 +127,7 @@ real_t CPUParticles2D::get_randomness_ratio() const {
 	return randomness_ratio;
 }
 
-float CPUParticles2D::get_lifetime_randomness() const {
+double CPUParticles2D::get_lifetime_randomness() const {
 	return lifetime_randomness;
 }
 
@@ -135,7 +135,7 @@ bool CPUParticles2D::get_use_local_coordinates() const {
 	return local_coords;
 }
 
-real_t CPUParticles2D::get_speed_scale() const {
+double CPUParticles2D::get_speed_scale() const {
 	return speed_scale;
 }
 
@@ -516,7 +516,7 @@ void CPUParticles2D::_update_internal() {
 		return;
 	}
 
-	float delta = get_process_delta_time();
+	double delta = get_process_delta_time();
 	if (emitting) {
 		inactive_time = 0;
 	} else {
@@ -536,14 +536,14 @@ void CPUParticles2D::_update_internal() {
 	_set_redraw(true);
 
 	if (time == 0 && pre_process_time > 0.0) {
-		float frame_time;
+		double frame_time;
 		if (fixed_fps > 0) {
 			frame_time = 1.0 / fixed_fps;
 		} else {
 			frame_time = 1.0 / 30.0;
 		}
 
-		float todo = pre_process_time;
+		double todo = pre_process_time;
 
 		while (todo >= 0) {
 			_particles_process(frame_time);
@@ -552,16 +552,16 @@ void CPUParticles2D::_update_internal() {
 	}
 
 	if (fixed_fps > 0) {
-		float frame_time = 1.0 / fixed_fps;
-		float decr = frame_time;
+		double frame_time = 1.0 / fixed_fps;
+		double decr = frame_time;
 
-		float ldelta = delta;
+		double ldelta = delta;
 		if (ldelta > 0.1) { //avoid recursive stalls if fps goes below 10
 			ldelta = 0.1;
 		} else if (ldelta <= 0.0) { //unlikely but..
 			ldelta = 0.001;
 		}
-		float todo = frame_remainder + ldelta;
+		double todo = frame_remainder + ldelta;
 
 		while (todo >= frame_time) {
 			_particles_process(frame_time);
@@ -577,7 +577,7 @@ void CPUParticles2D::_update_internal() {
 	_update_particle_data_buffer();
 }
 
-void CPUParticles2D::_particles_process(float p_delta) {
+void CPUParticles2D::_particles_process(double p_delta) {
 	p_delta *= speed_scale;
 
 	int pcount = particles.size();
@@ -585,7 +585,7 @@ void CPUParticles2D::_particles_process(float p_delta) {
 
 	Particle *parray = w;
 
-	float prev_time = time;
+	double prev_time = time;
 	time += p_delta;
 	if (time > lifetime) {
 		time = Math::fmod(time, lifetime);
@@ -604,7 +604,7 @@ void CPUParticles2D::_particles_process(float p_delta) {
 		velocity_xform[2] = Vector2();
 	}
 
-	float system_phase = time / lifetime;
+	double system_phase = time / lifetime;
 
 	for (int i = 0; i < pcount; i++) {
 		Particle &p = parray[i];
@@ -613,12 +613,12 @@ void CPUParticles2D::_particles_process(float p_delta) {
 			continue;
 		}
 
-		float local_delta = p_delta;
+		double local_delta = p_delta;
 
 		// The phase is a ratio between 0 (birth) and 1 (end of life) for each particle.
 		// While we use time in tests later on, for randomness we use the phase as done in the
 		// original shader code, and we later multiply by lifetime to get the time.
-		real_t restart_phase = real_t(i) / real_t(pcount);
+		double restart_phase = double(i) / double(pcount);
 
 		if (randomness_ratio > 0.0) {
 			uint32_t seed = cycle;
@@ -627,12 +627,12 @@ void CPUParticles2D::_particles_process(float p_delta) {
 			}
 			seed *= uint32_t(pcount);
 			seed += uint32_t(i);
-			real_t random = (idhash(seed) % uint32_t(65536)) / 65536.0;
-			restart_phase += randomness_ratio * random * 1.0 / pcount;
+			double random = double(idhash(seed) % uint32_t(65536)) / 65536.0;
+			restart_phase += randomness_ratio * random * 1.0 / double(pcount);
 		}
 
 		restart_phase *= (1.0 - explosiveness_ratio);
-		float restart_time = restart_phase * lifetime;
+		double restart_time = restart_phase * lifetime;
 		bool restart = false;
 
 		if (time > prev_time) {

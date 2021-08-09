@@ -715,12 +715,12 @@ private:
 	struct Particles {
 		RS::ParticlesMode mode = RS::PARTICLES_MODE_3D;
 		bool inactive = true;
-		float inactive_time = 0.0;
+		double inactive_time = 0.0;
 		bool emitting = false;
 		bool one_shot = false;
 		int amount = 0;
-		float lifetime = 1.0;
-		float pre_process_time = 0.0;
+		double lifetime = 1.0;
+		double pre_process_time = 0.0;
 		float explosiveness = 0.0;
 		float randomness = 0.0;
 		bool restart_request = false;
@@ -773,12 +773,12 @@ private:
 
 		uint32_t cycle_number = 0;
 
-		float speed_scale = 1.0;
+		double speed_scale = 1.0;
 
 		int fixed_fps = 30;
 		bool interpolate = true;
 		bool fractional_delta = false;
-		float frame_remainder = 0;
+		double frame_remainder = 0;
 		float collision_base_size = 0.01;
 
 		bool clear = true;
@@ -805,14 +805,14 @@ private:
 		}
 	};
 
-	void _particles_process(Particles *p_particles, float p_delta);
+	void _particles_process(Particles *p_particles, double p_delta);
 	void _particles_allocate_emission_buffer(Particles *particles);
 	void _particles_free_data(Particles *particles);
 	void _particles_update_buffers(Particles *particles);
 
 	struct ParticlesShader {
 		struct PushConstant {
-			float lifetime;
+			double lifetime;
 			uint32_t clear;
 			uint32_t total_particles;
 			uint32_t trail_size;
@@ -2144,13 +2144,13 @@ public:
 	void particles_set_mode(RID p_particles, RS::ParticlesMode p_mode);
 	void particles_set_emitting(RID p_particles, bool p_emitting);
 	void particles_set_amount(RID p_particles, int p_amount);
-	void particles_set_lifetime(RID p_particles, float p_lifetime);
+	void particles_set_lifetime(RID p_particles, double p_lifetime);
 	void particles_set_one_shot(RID p_particles, bool p_one_shot);
-	void particles_set_pre_process_time(RID p_particles, float p_time);
+	void particles_set_pre_process_time(RID p_particles, double p_time);
 	void particles_set_explosiveness_ratio(RID p_particles, float p_ratio);
 	void particles_set_randomness_ratio(RID p_particles, float p_ratio);
 	void particles_set_custom_aabb(RID p_particles, const AABB &p_aabb);
-	void particles_set_speed_scale(RID p_particles, float p_scale);
+	void particles_set_speed_scale(RID p_particles, double p_scale);
 	void particles_set_use_local_coordinates(RID p_particles, bool p_enable);
 	void particles_set_process_material(RID p_particles, RID p_material);
 	void particles_set_fixed_fps(RID p_particles, int p_fps);

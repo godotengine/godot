@@ -626,21 +626,21 @@ public:
 	void set_iterations_per_second(int p_ips);
 	int get_iterations_per_second() const;
 
-	void set_physics_jitter_fix(float p_threshold);
-	float get_physics_jitter_fix() const;
-	float get_physics_interpolation_fraction() const;
+	void set_physics_jitter_fix(double p_threshold);
+	double get_physics_jitter_fix() const;
+	double get_physics_interpolation_fraction() const;
 
 	void set_target_fps(int p_fps);
 	int get_target_fps() const;
 
-	float get_frames_per_second() const;
+	double get_frames_per_second() const;
 	uint64_t get_physics_frames() const;
 	uint64_t get_process_frames() const;
 
 	int get_frames_drawn();
 
-	void set_time_scale(float p_scale);
-	float get_time_scale();
+	void set_time_scale(double p_scale);
+	double get_time_scale();
 
 	MainLoop *get_main_loop() const;
 
@@ -712,7 +712,7 @@ public:
 
 	static void call_toggle(void *p_user, bool p_enable, const Array &p_opts);
 	static void call_add(void *p_user, const Array &p_data);
-	static void call_tick(void *p_user, float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time);
+	static void call_tick(void *p_user, double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time);
 	static Error call_capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured);
 
 	_EngineDebugger() { singleton = this; }

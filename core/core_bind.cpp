@@ -2085,15 +2085,15 @@ int _Engine::get_iterations_per_second() const {
 	return Engine::get_singleton()->get_iterations_per_second();
 }
 
-void _Engine::set_physics_jitter_fix(float p_threshold) {
+void _Engine::set_physics_jitter_fix(double p_threshold) {
 	Engine::get_singleton()->set_physics_jitter_fix(p_threshold);
 }
 
-float _Engine::get_physics_jitter_fix() const {
+double _Engine::get_physics_jitter_fix() const {
 	return Engine::get_singleton()->get_physics_jitter_fix();
 }
 
-float _Engine::get_physics_interpolation_fraction() const {
+double _Engine::get_physics_interpolation_fraction() const {
 	return Engine::get_singleton()->get_physics_interpolation_fraction();
 }
 
@@ -2105,7 +2105,7 @@ int _Engine::get_target_fps() const {
 	return Engine::get_singleton()->get_target_fps();
 }
 
-float _Engine::get_frames_per_second() const {
+double _Engine::get_frames_per_second() const {
 	return Engine::get_singleton()->get_frames_per_second();
 }
 
@@ -2117,11 +2117,11 @@ uint64_t _Engine::get_process_frames() const {
 	return Engine::get_singleton()->get_process_frames();
 }
 
-void _Engine::set_time_scale(float p_scale) {
+void _Engine::set_time_scale(double p_scale) {
 	Engine::get_singleton()->set_time_scale(p_scale);
 }
 
-float _Engine::get_time_scale() {
+double _Engine::get_time_scale() {
 	return Engine::get_singleton()->get_time_scale();
 }
 
@@ -2342,7 +2342,7 @@ void _EngineDebugger::call_add(void *p_user, const Array &p_data) {
 	ERR_FAIL_COND_MSG(err.error != Callable::CallError::CALL_OK, "Error calling 'add' to callable: " + Variant::get_callable_error_text(add, args, 1, err));
 }
 
-void _EngineDebugger::call_tick(void *p_user, float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) {
+void _EngineDebugger::call_tick(void *p_user, double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
 	Callable &tick = ((ProfilerCallable *)p_user)->callable_tick;
 	if (tick.is_null()) {
 		return;

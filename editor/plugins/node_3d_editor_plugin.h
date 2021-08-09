@@ -166,9 +166,9 @@ public:
 	};
 
 private:
-	float cpu_time_history[FRAME_TIME_HISTORY];
+	double cpu_time_history[FRAME_TIME_HISTORY];
 	int cpu_time_history_index;
-	float gpu_time_history[FRAME_TIME_HISTORY];
+	double gpu_time_history[FRAME_TIME_HISTORY];
 	int gpu_time_history_index;
 
 	int index;
@@ -336,7 +336,7 @@ private:
 
 	String last_message;
 	String message;
-	float message_time;
+	double message_time;
 
 	void set_message(String p_message, float p_time = 5);
 

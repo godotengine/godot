@@ -4091,7 +4091,7 @@ void RendererStorageRD::particles_set_amount(RID p_particles, int p_amount) {
 	particles->dependency.changed_notify(DEPENDENCY_CHANGED_PARTICLES);
 }
 
-void RendererStorageRD::particles_set_lifetime(RID p_particles, float p_lifetime) {
+void RendererStorageRD::particles_set_lifetime(RID p_particles, double p_lifetime) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	particles->lifetime = p_lifetime;
@@ -4103,7 +4103,7 @@ void RendererStorageRD::particles_set_one_shot(RID p_particles, bool p_one_shot)
 	particles->one_shot = p_one_shot;
 }
 
-void RendererStorageRD::particles_set_pre_process_time(RID p_particles, float p_time) {
+void RendererStorageRD::particles_set_pre_process_time(RID p_particles, double p_time) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	particles->pre_process_time = p_time;
@@ -4126,7 +4126,7 @@ void RendererStorageRD::particles_set_custom_aabb(RID p_particles, const AABB &p
 	particles->dependency.changed_notify(DEPENDENCY_CHANGED_AABB);
 }
 
-void RendererStorageRD::particles_set_speed_scale(RID p_particles, float p_scale) {
+void RendererStorageRD::particles_set_speed_scale(RID p_particles, double p_scale) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
@@ -4442,7 +4442,7 @@ void RendererStorageRD::particles_set_canvas_sdf_collision(RID p_particles, bool
 	particles->sdf_collision_texture = p_texture;
 }
 
-void RendererStorageRD::_particles_process(Particles *p_particles, float p_delta) {
+void RendererStorageRD::_particles_process(Particles *p_particles, double p_delta) {
 	if (p_particles->particles_material_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(p_particles->particles_material_uniform_set)) {
 		Vector<RD::Uniform> uniforms;
 
@@ -4491,7 +4491,7 @@ void RendererStorageRD::_particles_process(Particles *p_particles, float p_delta
 		p_particles->particles_material_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.default_shader_rd, 1);
 	}
 
-	float new_phase = Math::fmod((float)p_particles->phase + (p_delta / p_particles->lifetime) * p_particles->speed_scale, (float)1.0);
+	double new_phase = Math::fmod((double)p_particles->phase + (p_delta / p_particles->lifetime) * p_particles->speed_scale, 1.0);
 
 	//move back history (if there is any)
 	for (uint32_t i = p_particles->frame_history.size() - 1; i > 0; i--) {
@@ -5131,14 +5131,14 @@ void RendererStorageRD::update_particles() {
 		bool zero_time_scale = Engine::get_singleton()->get_time_scale() <= 0.0;
 
 		if (particles->clear && particles->pre_process_time > 0.0) {
-			float frame_time;
+			double frame_time;
 			if (fixed_fps > 0) {
 				frame_time = 1.0 / fixed_fps;
 			} else {
 				frame_time = 1.0 / 30.0;
 			}
 
-			float todo = particles->pre_process_time;
+			double todo = particles->pre_process_time;
 
 			while (todo >= 0) {
 				_particles_process(particles, frame_time);
@@ -5147,8 +5147,8 @@ void RendererStorageRD::update_particles() {
 		}
 
 		if (fixed_fps > 0) {
-			float frame_time;
-			float decr;
+			double frame_time;
+			double decr;
 			if (zero_time_scale) {
 				frame_time = 0.0;
 				decr = 1.0 / fixed_fps;
@@ -5156,13 +5156,13 @@ void RendererStorageRD::update_particles() {
 				frame_time = 1.0 / fixed_fps;
 				decr = frame_time;
 			}
-			float delta = RendererCompositorRD::singleton->get_frame_delta_time();
+			double delta = RendererCompositorRD::singleton->get_frame_delta_time();
 			if (delta > 0.1) { //avoid recursive stalls if fps goes below 10
 				delta = 0.1;
 			} else if (delta <= 0.0) { //unlikely but..
 				delta = 0.001;
 			}
-			float todo = particles->frame_remainder + delta;
+			double todo = particles->frame_remainder + delta;
 
 			while (todo >= frame_time) {
 				_particles_process(particles, frame_time);

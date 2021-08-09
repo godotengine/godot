@@ -2735,7 +2735,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 		if (show_fps) {
 			cpu_time_history[cpu_time_history_index] = RS::get_singleton()->viewport_get_measured_render_time_cpu(viewport->get_viewport_rid());
 			cpu_time_history_index = (cpu_time_history_index + 1) % FRAME_TIME_HISTORY;
-			float cpu_time = 0.0;
+			double cpu_time = 0.0;
 			for (int i = 0; i < FRAME_TIME_HISTORY; i++) {
 				cpu_time += cpu_time_history[i];
 			}
@@ -2745,7 +2745,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 			gpu_time_history[gpu_time_history_index] = RS::get_singleton()->viewport_get_measured_render_time_gpu(viewport->get_viewport_rid());
 			gpu_time_history_index = (gpu_time_history_index + 1) % FRAME_TIME_HISTORY;
-			float gpu_time = 0.0;
+			double gpu_time = 0.0;
 			for (int i = 0; i < FRAME_TIME_HISTORY; i++) {
 				gpu_time += gpu_time_history[i];
 			}
@@ -2769,7 +2769,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 					frame_time_gradient->get_color_at_offset(
 							Math::range_lerp(gpu_time, 0, 30, 0, 1)));
 
-			const float fps = 1000.0 / gpu_time;
+			const double fps = 1000.0 / gpu_time;
 			fps_label->set_text(vformat(TTR("FPS: %d"), fps));
 			// Middle point is at 60 FPS.
 			fps_label->add_theme_color_override(

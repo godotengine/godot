@@ -1037,7 +1037,7 @@ void AnimatedSprite3D::_notification(int p_what) {
 				return; //do nothing
 			}
 
-			float remaining = get_process_delta_time();
+			double remaining = get_process_delta_time();
 
 			while (remaining) {
 				if (timeout <= 0) {
@@ -1059,7 +1059,7 @@ void AnimatedSprite3D::_notification(int p_what) {
 					emit_signal(SceneStringNames::get_singleton()->frame_changed);
 				}
 
-				float to_process = MIN(timeout, remaining);
+				double to_process = MIN(timeout, remaining);
 				remaining -= to_process;
 				timeout -= to_process;
 			}

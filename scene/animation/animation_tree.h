@@ -63,8 +63,8 @@ public:
 
 	struct AnimationState {
 		Ref<Animation> animation;
-		float time = 0.0;
-		float delta = 0.0;
+		double time = 0.0;
+		double delta = 0.0;
 		const Vector<float> *track_blends = nullptr;
 		float blend = 0.0;
 		bool seeked = false;
@@ -126,7 +126,7 @@ public:
 
 	virtual void get_child_nodes(List<ChildNode> *r_child_nodes);
 
-	virtual float process(float p_time, bool p_seek);
+	virtual double process(double p_time, bool p_seek);
 	virtual String get_caption() const;
 
 	int get_input_count() const;
