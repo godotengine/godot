@@ -34,6 +34,7 @@
 #include "core/io/multiplayer_peer.h"
 #include "core/io/resource_uid.h"
 #include "core/object/ref_counted.h"
+#include "core/variant/typed_array.h"
 
 class MultiplayerAPI : public RefCounted {
 	GDCLASS(MultiplayerAPI, RefCounted);
@@ -88,8 +89,13 @@ private:
 		Map<int, NodeInfo> nodes;
 	};
 
+	struct SpawnableConfig {
+		SpawnMode mode;
+		List<StringName> properties;
+	};
+
 	Ref<MultiplayerPeer> network_peer;
-	Map<ResourceUID::ID, SpawnMode> spawnables;
+	Map<ResourceUID::ID, SpawnableConfig> spawnables;
 	int rpc_sender_id = 0;
 	Set<int> connected_peers;
 	HashMap<NodePath, PathSentCache> path_send_cache;
@@ -116,6 +122,9 @@ protected:
 
 	Error _encode_and_compress_variant(const Variant &p_variant, uint8_t *p_buffer, int &r_len);
 	Error _decode_and_decompress_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int *r_len);
+	Error _encode_spawn_state(const SpawnableConfig &p_cfg, const Object *p_obj, uint8_t *p_buffer, int &r_len);
+	Error _decode_spawn_state(const SpawnableConfig &p_cfg, Object *p_obj, const uint8_t *p_buffer, int p_len, int &r_len);
+	Error _send_spawn_despawn(int p_peer_id, const ResourceUID::ID &p_scene_id, const NodePath &p_path, const Variant &p_state, bool p_spawn);
 
 public:
 	enum NetworkCommands {
@@ -166,10 +175,11 @@ public:
 	void set_allow_object_decoding(bool p_enable);
 	bool is_object_decoding_allowed() const;
 
-	Error spawnable_config(const ResourceUID::ID &p_id, SpawnMode p_mode);
+	Error spawnable_config(const ResourceUID::ID &p_id, SpawnMode p_mode, const TypedArray<StringName> p_props = TypedArray<StringName>());
 	Error send_despawn(int p_peer_id, const ResourceUID::ID &p_scene_id, const NodePath &p_path, const PackedByteArray &p_data = PackedByteArray());
 	Error send_spawn(int p_peer_id, const ResourceUID::ID &p_scene_id, const NodePath &p_path, const PackedByteArray &p_data = PackedByteArray());
-	Error _send_spawn_despawn(int p_peer_id, const ResourceUID::ID &p_scene_id, const NodePath &p_path, const uint8_t *p_data, int p_data_len, bool p_spawn);
+	PackedByteArray spawnable_encode_state(const ResourceUID::ID &p_scene_id, const Object *p_node);
+	Error spawnable_decode_state(const ResourceUID::ID &p_scene_id, Object *p_node, PackedByteArray p_data);
 	void scene_enter_exit_notify(const String &p_scene, const Node *p_node, bool p_enter);
 
 	MultiplayerAPI();

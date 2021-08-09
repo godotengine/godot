@@ -90,8 +90,29 @@
 			<return type="int" enum="Error" />
 			<argument index="0" name="scene_id" type="int" />
 			<argument index="1" name="spawn_mode" type="int" enum="MultiplayerAPI.SpawnMode" />
+			<argument index="2" name="properties" type="StringName[]" default="[]" />
 			<description>
-				Configures the MultiplayerAPI to track instances of the [PackedScene] idenfied by [code]scene_id[/code] (see [method ResourceLoader.get_resource_uid]) for the purpose of network replication. See [enum SpawnMode] for the possible configurations.
+				Configures the MultiplayerAPI to track instances of the [PackedScene] identified by [code]scene_id[/code] (see [method ResourceLoader.get_resource_uid]) for the purpose of network replication. When [code]mode[/code] is [constant SPAWN_MODE_SERVER], the specified [code]properties[/code] will also be replicated to clients during the initial spawn.
+				Tip: You can use a custom property in the scene main script to return a customly optimized state representation.
+			</description>
+		</method>
+		<method name="spawnable_decode_state">
+			<return type="int" enum="Error" />
+			<argument index="0" name="scene_id" type="int" />
+			<argument index="1" name="object" type="Object" />
+			<argument index="2" name="data" type="PackedByteArray" />
+			<description>
+				Decode the given [code]data[/code] representing a spawnable state into [code]object[/code] using the configuration associated with the provided [code]scene_id[/code]. This function is called automatically when a client receives a server spawn for a scene with [constant SPAWN_MODE_SERVER]. See [method spawnable_config].
+				Tip: You may find this function useful in servers when parsing spawn requests from clients, or when implementing your own logic with [constant SPAWN_MODE_CUSTOM].
+			</description>
+		</method>
+		<method name="spawnable_encode_state">
+			<return type="PackedByteArray" />
+			<argument index="0" name="scene_id" type="int" />
+			<argument index="1" name="object" type="Object" />
+			<description>
+				Encode the given [code]object[/code] using the configuration associated with the provided [code]scene_id[/code]. This function is called automatically when the server spawns scenes with [constant SPAWN_MODE_SERVER]. See [method spawnable_config].
+				Tip: You may find this function useful when requesting spawns from clients to server, or when implementing your own logic with [constant SPAWN_MODE_CUSTOM].
 			</description>
 		</method>
 	</methods>
@@ -123,10 +144,8 @@
 			</description>
 		</signal>
 		<signal name="network_despawn">
-			<argument index="0" name="id" type="int" />
-			<argument index="1" name="scene_id" type="int" />
-			<argument index="2" name="node" type="Node" />
-			<argument index="3" name="data" type="PackedByteArray" />
+			<argument index="0" name="scene_id" type="int" />
+			<argument index="1" name="node" type="Node" />
 			<description>
 				Emitted on a client before deleting a local Node upon receiving a despawn request from the server.
 			</description>
@@ -161,10 +180,8 @@
 			</description>
 		</signal>
 		<signal name="network_spawn">
-			<argument index="0" name="id" type="int" />
-			<argument index="1" name="scene_id" type="int" />
-			<argument index="2" name="node" type="Node" />
-			<argument index="3" name="data" type="PackedByteArray" />
+			<argument index="0" name="scene_id" type="int" />
+			<argument index="1" name="node" type="Node" />
 			<description>
 				Emitted on a client after a new Node is instantiated locally and added to the SceneTree upon receiving a spawn request from the server.
 			</description>
