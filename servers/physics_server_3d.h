@@ -62,6 +62,8 @@ public:
 	virtual void set_transform(const Transform3D &p_transform) = 0;
 	virtual Transform3D get_transform() const = 0;
 
+	virtual Vector3 get_velocity_at_local_position(const Vector3 &p_position) const = 0;
+
 	virtual void add_central_force(const Vector3 &p_force) = 0;
 	virtual void add_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) = 0;
 	virtual void add_torque(const Vector3 &p_torque) = 0;

@@ -1062,7 +1062,9 @@ void CharacterBody2D::move_and_slide() {
 		//this approach makes sure there is less delay between the actual body velocity and the one we saved
 		PhysicsDirectBodyState2D *bs = PhysicsServer2D::get_singleton()->body_get_direct_state(on_floor_body);
 		if (bs) {
-			current_floor_velocity = bs->get_linear_velocity();
+			Transform2D gt = get_global_transform();
+			Vector2 local_position = gt.elements[2] - bs->get_transform().elements[2];
+			current_floor_velocity = bs->get_velocity_at_local_position(local_position);
 		}
 	}
 
