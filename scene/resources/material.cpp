@@ -776,7 +776,9 @@ void SpatialMaterial::_update_shader() {
 
 		} else {
 			code += "\t\tfloat depth = texture(texture_depth, base_uv).r;\n";
-			code += "\t\tvec2 ofs = base_uv - view_dir.xy / view_dir.z * (depth * depth_scale);\n";
+			// Use offset limiting to improve the appearance of non-deep parallax.
+			// This reduces the impression of depth, but avoids visible warping in the distance.
+			code += "\t\tvec2 ofs = base_uv - view_dir.xy * depth * depth_scale;\n";
 		}
 
 		code += "\t\tbase_uv=ofs;\n";
