@@ -38,7 +38,7 @@ class HeightMapShape3D : public Shape3D {
 
 	int map_width = 2;
 	int map_depth = 2;
-	PackedFloat32Array map_data;
+	Vector<real_t> map_data;
 	real_t min_height = 0.0;
 	real_t max_height = 0.0;
 
@@ -51,8 +51,8 @@ public:
 	int get_map_width() const;
 	void set_map_depth(int p_new);
 	int get_map_depth() const;
-	void set_map_data(PackedFloat32Array p_new);
-	PackedFloat32Array get_map_data() const;
+	void set_map_data(Vector<real_t> p_new);
+	Vector<real_t> get_map_data() const;
 
 	virtual Vector<Vector3> get_debug_mesh_lines() const override;
 	virtual real_t get_enclosing_radius() const override;

@@ -63,7 +63,7 @@ class EditorNode3DGizmo : public Node3DGizmo {
 	Vector<Vector3> secondary_handles;
 	Vector<int> secondary_handle_ids;
 
-	float selectable_icon_size;
+	real_t selectable_icon_size;
 	bool billboard_handle;
 
 	bool valid;

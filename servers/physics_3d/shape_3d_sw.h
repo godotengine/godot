@@ -389,12 +389,12 @@ public:
 };
 
 struct HeightMapShape3DSW : public ConcaveShape3DSW {
-	Vector<float> heights;
+	Vector<real_t> heights;
 	int width = 0;
 	int depth = 0;
 	Vector3 local_origin;
 
-	_FORCE_INLINE_ float _get_height(int p_x, int p_z) const {
+	_FORCE_INLINE_ real_t _get_height(int p_x, int p_z) const {
 		return heights[(p_z * width) + p_x];
 	}
 
@@ -406,10 +406,10 @@ struct HeightMapShape3DSW : public ConcaveShape3DSW {
 
 	void _get_cell(const Vector3 &p_point, int &r_x, int &r_y, int &r_z) const;
 
-	void _setup(const Vector<float> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height);
+	void _setup(const Vector<real_t> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height);
 
 public:
-	Vector<float> get_heights() const;
+	Vector<real_t> get_heights() const;
 	int get_width() const;
 	int get_depth() const;
 

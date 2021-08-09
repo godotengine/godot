@@ -231,11 +231,11 @@ double GPUParticles2D::get_pre_process_time() const {
 	return pre_process_time;
 }
 
-float GPUParticles2D::get_explosiveness_ratio() const {
+real_t GPUParticles2D::get_explosiveness_ratio() const {
 	return explosiveness_ratio;
 }
 
-float GPUParticles2D::get_randomness_ratio() const {
+real_t GPUParticles2D::get_randomness_ratio() const {
 	return randomness_ratio;
 }
 

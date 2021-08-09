@@ -1457,7 +1457,7 @@ public:
 
 	virtual void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) = 0;
 
-	virtual RID make_sphere_mesh(int p_lats, int p_lons, float p_radius);
+	virtual RID make_sphere_mesh(int p_lats, int p_lons, real_t p_radius);
 
 	virtual void mesh_add_surface_from_mesh_data(RID p_mesh, const Geometry3D::MeshData &p_mesh_data);
 	virtual void mesh_add_surface_from_planes(RID p_mesh, const Vector<Plane> &p_planes);

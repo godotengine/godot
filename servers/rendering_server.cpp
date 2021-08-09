@@ -242,7 +242,7 @@ RID RenderingServer::_make_test_cube() {
 	return test_cube;
 }
 
-RID RenderingServer::make_sphere_mesh(int p_lats, int p_lons, float p_radius) {
+RID RenderingServer::make_sphere_mesh(int p_lats, int p_lons, real_t p_radius) {
 	Vector<Vector3> vertices;
 	Vector<Vector3> normals;
 	const double lat_step = Math_TAU / p_lats;

@@ -83,7 +83,7 @@ private:
 	struct Particle {
 		Transform2D transform;
 		Color color;
-		float custom[4] = {};
+		real_t custom[4] = {};
 		real_t rotation = 0.0;
 		Vector2 velocity;
 		bool active = false;

@@ -433,7 +433,7 @@ void FBXMeshData::sanitize_vertex_weights(const ImportState &state) {
 
 		{
 			// Sort
-			real_t *weights_ptr = vm->weights.ptrw();
+			float *weights_ptr = vm->weights.ptrw();
 			int *bones_ptr = vm->bones.ptrw();
 			for (int i = 0; i < vm->weights.size(); i += 1) {
 				for (int x = i + 1; x < vm->weights.size(); x += 1) {
@@ -449,7 +449,7 @@ void FBXMeshData::sanitize_vertex_weights(const ImportState &state) {
 			// Resize
 			vm->weights.resize(max_vertex_influence_count);
 			vm->bones.resize(max_vertex_influence_count);
-			real_t *weights_ptr = vm->weights.ptrw();
+			float *weights_ptr = vm->weights.ptrw();
 			int *bones_ptr = vm->bones.ptrw();
 			for (int i = initial_size; i < max_vertex_influence_count; i += 1) {
 				weights_ptr[i] = 0.0;

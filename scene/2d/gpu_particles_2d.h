@@ -109,16 +109,16 @@ public:
 	double get_lifetime() const;
 	bool get_one_shot() const;
 	double get_pre_process_time() const;
-	float get_explosiveness_ratio() const;
-	float get_randomness_ratio() const;
+	real_t get_explosiveness_ratio() const;
+	real_t get_randomness_ratio() const;
 	Rect2 get_visibility_rect() const;
 	bool get_use_local_coordinates() const;
 	Ref<Material> get_process_material() const;
 	double get_speed_scale() const;
 
-	float get_collision_base_size() const;
+	real_t get_collision_base_size() const;
 	bool is_trail_enabled() const;
-	float get_trail_length() const;
+	real_t get_trail_length() const;
 	int get_trail_sections() const;
 	int get_trail_section_subdivisions() const;
 

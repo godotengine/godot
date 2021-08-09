@@ -86,7 +86,7 @@ private:
 	struct Particle {
 		Transform3D transform;
 		Color color;
-		float custom[4] = {};
+		real_t custom[4] = {};
 		Vector3 velocity;
 		bool active = false;
 		real_t angle_rand = 0.0;

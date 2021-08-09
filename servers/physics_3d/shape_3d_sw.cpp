@@ -1635,7 +1635,7 @@ ConcavePolygonShape3DSW::ConcavePolygonShape3DSW() {
 
 /* HEIGHT MAP SHAPE */
 
-Vector<float> HeightMapShape3DSW::get_heights() const {
+Vector<real_t> HeightMapShape3DSW::get_heights() const {
 	return heights;
 }
 
@@ -1932,7 +1932,7 @@ Vector3 HeightMapShape3DSW::get_moment_of_inertia(real_t p_mass) const {
 			(p_mass / 3.0) * (extents.x * extents.x + extents.y * extents.y));
 }
 
-void HeightMapShape3DSW::_setup(const Vector<float> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height) {
+void HeightMapShape3DSW::_setup(const Vector<real_t> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height) {
 	heights = p_heights;
 	width = p_width;
 	depth = p_depth;
@@ -1966,8 +1966,12 @@ void HeightMapShape3DSW::set_data(const Variant &p_data) {
 	ERR_FAIL_COND(depth <= 0.0);
 
 	Variant heights_variant = d["heights"];
-	Vector<float> heights_buffer;
+	Vector<real_t> heights_buffer;
+#ifdef REAL_T_IS_DOUBLE
+	if (heights_variant.get_type() == Variant::PACKED_FLOAT64_ARRAY) {
+#else
 	if (heights_variant.get_type() == Variant::PACKED_FLOAT32_ARRAY) {
+#endif
 		// Ready-to-use heights can be passed.
 		heights_buffer = heights_variant;
 	} else if (heights_variant.get_type() == Variant::OBJECT) {
@@ -1980,13 +1984,17 @@ void HeightMapShape3DSW::set_data(const Variant &p_data) {
 		PackedByteArray im_data = image->get_data();
 		heights_buffer.resize(image->get_width() * image->get_height());
 
-		float *w = heights_buffer.ptrw();
-		float *rp = (float *)im_data.ptr();
+		real_t *w = heights_buffer.ptrw();
+		real_t *rp = (real_t *)im_data.ptr();
 		for (int i = 0; i < heights_buffer.size(); ++i) {
 			w[i] = rp[i];
 		}
 	} else {
+#ifdef REAL_T_IS_DOUBLE
+		ERR_FAIL_MSG("Expected PackedFloat64Array or float Image.");
+#else
 		ERR_FAIL_MSG("Expected PackedFloat32Array or float Image.");
+#endif
 	}
 
 	// Compute min and max heights or use precomputed values.
