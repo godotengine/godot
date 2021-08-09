@@ -137,6 +137,13 @@
 				Returns the current state of the space, useful for queries.
 			</description>
 		</method>
+		<method name="get_velocity_at_local_position" qualifiers="const">
+			<return type="Vector2" />
+			<argument index="0" name="local_position" type="Vector2" />
+			<description>
+				Returns the body's velocity at the given relative position, including both translation and rotation.
+			</description>
+		</method>
 		<method name="integrate_forces">
 			<return type="void" />
 			<description>

@@ -266,6 +266,10 @@ public:
 	void integrate_forces(real_t p_step);
 	void integrate_velocities(real_t p_step);
 
+	_FORCE_INLINE_ Vector2 get_velocity_in_local_point(const Vector2 &rel_pos) const {
+		return linear_velocity + Vector2(-angular_velocity * rel_pos.y, angular_velocity * rel_pos.x);
+	}
+
 	_FORCE_INLINE_ Vector2 get_motion() const {
 		if (mode > PhysicsServer2D::BODY_MODE_KINEMATIC) {
 			return new_transform.get_origin() - get_transform().get_origin();
@@ -351,6 +355,8 @@ public:
 
 	virtual void set_transform(const Transform2D &p_transform) override { body->set_state(PhysicsServer2D::BODY_STATE_TRANSFORM, p_transform); }
 	virtual Transform2D get_transform() const override { return body->get_transform(); }
+
+	virtual Vector2 get_velocity_at_local_position(const Vector2 &p_position) const override { return body->get_velocity_in_local_point(p_position); }
 
 	virtual void add_central_force(const Vector2 &p_force) override { body->add_central_force(p_force); }
 	virtual void add_force(const Vector2 &p_force, const Vector2 &p_position = Vector2()) override { body->add_force(p_force, p_position); }

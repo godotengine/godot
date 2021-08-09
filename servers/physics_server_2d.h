@@ -60,6 +60,8 @@ public:
 	virtual void set_transform(const Transform2D &p_transform) = 0;
 	virtual Transform2D get_transform() const = 0;
 
+	virtual Vector2 get_velocity_at_local_position(const Vector2 &p_position) const = 0;
+
 	virtual void add_central_force(const Vector2 &p_force) = 0;
 	virtual void add_force(const Vector2 &p_force, const Vector2 &p_position = Vector2()) = 0;
 	virtual void add_torque(real_t p_torque) = 0;

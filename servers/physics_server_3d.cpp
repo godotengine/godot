@@ -91,6 +91,8 @@ void PhysicsDirectBodyState3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_transform", "transform"), &PhysicsDirectBodyState3D::set_transform);
 	ClassDB::bind_method(D_METHOD("get_transform"), &PhysicsDirectBodyState3D::get_transform);
 
+	ClassDB::bind_method(D_METHOD("get_velocity_at_local_position", "local_position"), &PhysicsDirectBodyState3D::get_velocity_at_local_position);
+
 	ClassDB::bind_method(D_METHOD("add_central_force", "force"), &PhysicsDirectBodyState3D::add_central_force, Vector3());
 	ClassDB::bind_method(D_METHOD("add_force", "force", "position"), &PhysicsDirectBodyState3D::add_force, Vector3());
 	ClassDB::bind_method(D_METHOD("add_torque", "torque"), &PhysicsDirectBodyState3D::add_torque);
