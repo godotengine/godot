@@ -702,8 +702,7 @@ public:
 
 		for (Map<int, List<float>>::Element *E = key_ofs_map.front(); E; E = E->next()) {
 			int key = 0;
-			for (float &F : E->value()) {
-				float key_ofs = F;
+			for (const float &key_ofs : E->value()) {
 				if (from != key_ofs) {
 					key++;
 					continue;
@@ -728,8 +727,7 @@ public:
 		bool change_notify_deserved = false;
 		for (Map<int, List<float>>::Element *E = key_ofs_map.front(); E; E = E->next()) {
 			int track = E->key();
-			for (float &F : E->value()) {
-				float key_ofs = F;
+			for (const float &key_ofs : E->value()) {
 				int key = animation->track_find_key(track, key_ofs, true);
 				ERR_FAIL_COND_V(key == -1, false);
 
@@ -986,8 +984,7 @@ public:
 	bool _get(const StringName &p_name, Variant &r_ret) const {
 		for (Map<int, List<float>>::Element *E = key_ofs_map.front(); E; E = E->next()) {
 			int track = E->key();
-			for (float &F : E->value()) {
-				float key_ofs = F;
+			for (const float &key_ofs : E->value()) {
 				int key = animation->track_find_key(track, key_ofs, true);
 				ERR_CONTINUE(key == -1);
 
@@ -1137,7 +1134,7 @@ public:
 					same_key_type = false;
 				}
 
-				for (float &F : E->value()) {
+				for (const float &F : E->value()) {
 					int key = animation->track_find_key(track, F, true);
 					ERR_FAIL_COND(key == -1);
 					if (first_key < 0) {

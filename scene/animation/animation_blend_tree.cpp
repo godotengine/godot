@@ -978,7 +978,7 @@ AnimationNodeBlendTree::ConnectionError AnimationNodeBlendTree::can_connect_node
 
 	for (Map<StringName, Node>::Element *E = nodes.front(); E; E = E->next()) {
 		for (int i = 0; i < E->get().connections.size(); i++) {
-			StringName output = E->get().connections[i];
+			const StringName output = E->get().connections[i];
 			if (output == p_output_node) {
 				return CONNECTION_ERROR_CONNECTION_EXISTS;
 			}
@@ -990,7 +990,7 @@ AnimationNodeBlendTree::ConnectionError AnimationNodeBlendTree::can_connect_node
 void AnimationNodeBlendTree::get_node_connections(List<NodeConnection> *r_connections) const {
 	for (Map<StringName, Node>::Element *E = nodes.front(); E; E = E->next()) {
 		for (int i = 0; i < E->get().connections.size(); i++) {
-			StringName output = E->get().connections[i];
+			const StringName output = E->get().connections[i];
 			if (output != StringName()) {
 				NodeConnection nc;
 				nc.input_node = E->key();
