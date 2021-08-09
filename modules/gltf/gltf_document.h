@@ -103,6 +103,7 @@ public:
 	};
 
 private:
+	const float BAKE_FPS = 30.0f;
 	template <class T>
 	static Array to_array(const Vector<T> &p_inp) {
 		Array ret;
