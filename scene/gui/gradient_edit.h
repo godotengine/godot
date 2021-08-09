@@ -42,8 +42,6 @@ class GradientEdit : public Control {
 	PopupPanel *popup;
 	ColorPicker *picker;
 
-	Ref<ImageTexture> checker;
-
 	bool grabbing = false;
 	int grabbed = -1;
 	Vector<Gradient::Point> points;
