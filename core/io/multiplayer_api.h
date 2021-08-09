@@ -35,6 +35,8 @@
 #include "core/io/resource_uid.h"
 #include "core/object/ref_counted.h"
 
+class MultiplayerReplicator;
+
 class MultiplayerAPI : public RefCounted {
 	GDCLASS(MultiplayerAPI, RefCounted);
 
@@ -44,12 +46,6 @@ public:
 		RPC_MODE_REMOTE, // Using rpc() on it will call method in all remote peers
 		RPC_MODE_MASTER, // Using rpc() on it will call method on wherever the master is, be it local or remote
 		RPC_MODE_PUPPET, // Using rpc() on it will call method for all puppets
-	};
-
-	enum SpawnMode {
-		SPAWN_MODE_NONE,
-		SPAWN_MODE_SERVER,
-		SPAWN_MODE_CUSTOM,
 	};
 
 	struct RPCConfig {
@@ -71,53 +67,6 @@ public:
 		}
 	};
 
-private:
-	//path sent caches
-	struct PathSentCache {
-		Map<int, bool> confirmed_peers;
-		int id;
-	};
-
-	//path get caches
-	struct PathGetCache {
-		struct NodeInfo {
-			NodePath path;
-			ObjectID instance;
-		};
-
-		Map<int, NodeInfo> nodes;
-	};
-
-	Ref<MultiplayerPeer> network_peer;
-	Map<ResourceUID::ID, SpawnMode> spawnables;
-	int rpc_sender_id = 0;
-	Set<int> connected_peers;
-	HashMap<NodePath, PathSentCache> path_send_cache;
-	Map<int, PathGetCache> path_get_cache;
-	Map<ObjectID, ResourceUID::ID> replicated_nodes;
-	int last_send_cache_id;
-	Vector<uint8_t> packet_cache;
-	Node *root_node = nullptr;
-	bool allow_object_decoding = false;
-
-protected:
-	static void _bind_methods();
-
-	void _process_packet(int p_from, const uint8_t *p_packet, int p_packet_len);
-	void _process_simplify_path(int p_from, const uint8_t *p_packet, int p_packet_len);
-	void _process_confirm_path(int p_from, const uint8_t *p_packet, int p_packet_len);
-	void _process_spawn_despawn(int p_from, const uint8_t *p_packet, int p_packet_len, bool p_spawn);
-	Node *_process_get_node(int p_from, const uint8_t *p_packet, uint32_t p_node_target, int p_packet_len);
-	void _process_rpc(Node *p_node, const uint16_t p_rpc_method_id, int p_from, const uint8_t *p_packet, int p_packet_len, int p_offset);
-	void _process_raw(int p_from, const uint8_t *p_packet, int p_packet_len);
-
-	void _send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, const RPCConfig &p_config, const StringName &p_name, const Variant **p_arg, int p_argcount);
-	bool _send_confirm_path(Node *p_node, NodePath p_path, PathSentCache *psc, int p_target);
-
-	Error _encode_and_compress_variant(const Variant &p_variant, uint8_t *p_buffer, int &r_len);
-	Error _decode_and_decompress_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int *r_len);
-
-public:
 	enum NetworkCommands {
 		NETWORK_COMMAND_REMOTE_CALL = 0,
 		NETWORK_COMMAND_SIMPLIFY_PATH,
@@ -138,6 +87,54 @@ public:
 		NETWORK_NAME_ID_COMPRESSION_16,
 	};
 
+	enum {
+		NODE_ID_COMPRESSION_SHIFT = 3,
+		NAME_ID_COMPRESSION_SHIFT = 5,
+		BYTE_ONLY_OR_NO_ARGS_SHIFT = 6,
+	};
+
+private:
+	//path sent caches
+	struct PathSentCache {
+		Map<int, bool> confirmed_peers;
+		int id;
+	};
+
+	//path get caches
+	struct PathGetCache {
+		struct NodeInfo {
+			NodePath path;
+			ObjectID instance;
+		};
+
+		Map<int, NodeInfo> nodes;
+	};
+
+	Ref<MultiplayerPeer> network_peer;
+	int rpc_sender_id = 0;
+	Set<int> connected_peers;
+	HashMap<NodePath, PathSentCache> path_send_cache;
+	Map<int, PathGetCache> path_get_cache;
+	int last_send_cache_id;
+	Vector<uint8_t> packet_cache;
+	Node *root_node = nullptr;
+	bool allow_object_decoding = false;
+	MultiplayerReplicator *replicator = nullptr;
+
+protected:
+	static void _bind_methods();
+
+	void _process_packet(int p_from, const uint8_t *p_packet, int p_packet_len);
+	void _process_simplify_path(int p_from, const uint8_t *p_packet, int p_packet_len);
+	void _process_confirm_path(int p_from, const uint8_t *p_packet, int p_packet_len);
+	Node *_process_get_node(int p_from, const uint8_t *p_packet, uint32_t p_node_target, int p_packet_len);
+	void _process_rpc(Node *p_node, const uint16_t p_rpc_method_id, int p_from, const uint8_t *p_packet, int p_packet_len, int p_offset);
+	void _process_raw(int p_from, const uint8_t *p_packet, int p_packet_len);
+
+	void _send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, const RPCConfig &p_config, const StringName &p_name, const Variant **p_arg, int p_argcount);
+	bool _send_confirm_path(Node *p_node, NodePath p_path, PathSentCache *psc, int p_target);
+
+public:
 	void poll();
 	void clear();
 	void set_root_node(Node *p_node);
@@ -146,8 +143,16 @@ public:
 	Ref<MultiplayerPeer> get_network_peer() const;
 	Error send_bytes(Vector<uint8_t> p_data, int p_to = MultiplayerPeer::TARGET_PEER_BROADCAST, MultiplayerPeer::TransferMode p_mode = MultiplayerPeer::TRANSFER_MODE_RELIABLE, int p_channel = 0);
 
+	Error encode_and_compress_variant(const Variant &p_variant, uint8_t *p_buffer, int &r_len);
+	Error decode_and_decompress_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int *r_len);
+
 	// Called by Node.rpc
 	void rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const StringName &p_method, const Variant **p_arg, int p_argcount);
+	// Called by Node._notification
+	void scene_enter_exit_notify(const String &p_scene, Node *p_node, bool p_enter);
+	// Called by replicator
+	bool send_confirm_path(Node *p_node, NodePath p_path, int p_target, int &p_id);
+	Node *get_cached_node(int p_from, uint32_t p_node_id);
 
 	void _add_peer(int p_id);
 	void _del_peer(int p_id);
@@ -166,17 +171,12 @@ public:
 	void set_allow_object_decoding(bool p_enable);
 	bool is_object_decoding_allowed() const;
 
-	Error spawnable_config(const ResourceUID::ID &p_id, SpawnMode p_mode);
-	Error send_despawn(int p_peer_id, const ResourceUID::ID &p_scene_id, const NodePath &p_path, const PackedByteArray &p_data = PackedByteArray());
-	Error send_spawn(int p_peer_id, const ResourceUID::ID &p_scene_id, const NodePath &p_path, const PackedByteArray &p_data = PackedByteArray());
-	Error _send_spawn_despawn(int p_peer_id, const ResourceUID::ID &p_scene_id, const NodePath &p_path, const uint8_t *p_data, int p_data_len, bool p_spawn);
-	void scene_enter_exit_notify(const String &p_scene, const Node *p_node, bool p_enter);
+	MultiplayerReplicator *get_replicator() const;
 
 	MultiplayerAPI();
 	~MultiplayerAPI();
 };
 
 VARIANT_ENUM_CAST(MultiplayerAPI::RPCMode);
-VARIANT_ENUM_CAST(MultiplayerAPI::SpawnMode);
 
 #endif // MULTIPLAYER_API_H
