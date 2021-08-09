@@ -850,8 +850,8 @@ void RendererSceneRenderRD::shadow_atlas_set_size(RID p_atlas, int p_size, bool 
 	}
 
 	//erase shadow atlas reference from lights
-	for (Map<RID, uint32_t>::Element *E = shadow_atlas->shadow_owners.front(); E; E = E->next()) {
-		LightInstance *li = light_instance_owner.get_or_null(E->key());
+	for (const KeyValue<RID, uint32_t> &E : shadow_atlas->shadow_owners) {
+		LightInstance *li = light_instance_owner.get_or_null(E.key);
 		ERR_CONTINUE(!li);
 		li->shadow_atlases.erase(p_atlas);
 	}
@@ -4801,8 +4801,8 @@ void RendererSceneRenderRD::init() {
 }
 
 RendererSceneRenderRD::~RendererSceneRenderRD() {
-	for (Map<int, ShadowCubemap>::Element *E = shadow_cubemaps.front(); E; E = E->next()) {
-		RD::get_singleton()->free(E->get().cubemap);
+	for (const KeyValue<int, ShadowCubemap> &E : shadow_cubemaps) {
+		RD::get_singleton()->free(E.value.cubemap);
 	}
 
 	if (sky.sky_scene_state.uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(sky.sky_scene_state.uniform_set)) {

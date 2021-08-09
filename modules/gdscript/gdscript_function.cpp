@@ -120,11 +120,11 @@ void GDScriptFunction::debug_get_stack_member_state(int p_line, List<Pair<String
 	}
 
 	List<_GDFKCS> stackpositions;
-	for (Map<StringName, _GDFKC>::Element *E = sdmap.front(); E; E = E->next()) {
+	for (const KeyValue<StringName, _GDFKC> &E : sdmap) {
 		_GDFKCS spp;
-		spp.id = E->key();
-		spp.order = E->get().order;
-		spp.pos = E->get().pos.back()->get();
+		spp.id = E.key;
+		spp.order = E.value.order;
+		spp.pos = E.value.pos.back()->get();
 		stackpositions.push_back(spp);
 	}
 

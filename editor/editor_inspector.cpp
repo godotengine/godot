@@ -842,10 +842,10 @@ void EditorProperty::set_bottom_editor(Control *p_control) {
 
 bool EditorProperty::is_cache_valid() const {
 	if (object) {
-		for (Map<StringName, Variant>::Element *E = cache.front(); E; E = E->next()) {
+		for (const KeyValue<StringName, Variant> &E : cache) {
 			bool valid;
-			Variant value = object->get(E->key(), &valid);
-			if (!valid || value != E->get()) {
+			Variant value = object->get(E.key, &valid);
+			if (!valid || value != E.value) {
 				return false;
 			}
 		}
@@ -3029,8 +3029,8 @@ void EditorInspector::collapse_all_folding() {
 		E->fold();
 	}
 
-	for (Map<StringName, List<EditorProperty *>>::Element *F = editor_property_map.front(); F; F = F->next()) {
-		for (EditorProperty *E : F->get()) {
+	for (const KeyValue<StringName, List<EditorProperty *>> &F : editor_property_map) {
+		for (EditorProperty *E : F.value) {
 			E->collapse_all_folding();
 		}
 	}
@@ -3040,8 +3040,8 @@ void EditorInspector::expand_all_folding() {
 	for (EditorInspectorSection *E : sections) {
 		E->unfold();
 	}
-	for (Map<StringName, List<EditorProperty *>>::Element *F = editor_property_map.front(); F; F = F->next()) {
-		for (EditorProperty *E : F->get()) {
+	for (const KeyValue<StringName, List<EditorProperty *>> &F : editor_property_map) {
+		for (EditorProperty *E : F.value) {
 			E->expand_all_folding();
 		}
 	}
@@ -3306,11 +3306,11 @@ void EditorInspector::_property_selected(const String &p_path, int p_focusable) 
 	property_selected = p_path;
 	property_focusable = p_focusable;
 	//deselect the others
-	for (Map<StringName, List<EditorProperty *>>::Element *F = editor_property_map.front(); F; F = F->next()) {
-		if (F->key() == property_selected) {
+	for (const KeyValue<StringName, List<EditorProperty *>> &F : editor_property_map) {
+		if (F.key == property_selected) {
 			continue;
 		}
-		for (EditorProperty *E : F->get()) {
+		for (EditorProperty *E : F.value) {
 			if (E->is_selected()) {
 				E->deselect();
 			}
@@ -3368,8 +3368,8 @@ void EditorInspector::_notification(int p_what) {
 		if (refresh_countdown > 0) {
 			refresh_countdown -= get_process_delta_time();
 			if (refresh_countdown <= 0) {
-				for (Map<StringName, List<EditorProperty *>>::Element *F = editor_property_map.front(); F; F = F->next()) {
-					for (EditorProperty *E : F->get()) {
+				for (const KeyValue<StringName, List<EditorProperty *>> &F : editor_property_map) {
+					for (EditorProperty *E : F.value) {
 						if (!E->is_cache_valid()) {
 							E->update_property();
 							E->update_reload_status();

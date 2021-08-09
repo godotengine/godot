@@ -116,8 +116,8 @@ void EditorLog::_save_state() {
 	config->load(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("editor_layout.cfg"));
 
 	const String section = "editor_log";
-	for (Map<MessageType, LogFilter *>::Element *E = type_filter_map.front(); E; E = E->next()) {
-		config->set_value(section, "log_filter_" + itos(E->key()), E->get()->is_active());
+	for (const KeyValue<MessageType, LogFilter *> &E : type_filter_map) {
+		config->set_value(section, "log_filter_" + itos(E.key), E.value->is_active());
 	}
 
 	config->set_value(section, "collapse", collapse);
@@ -135,8 +135,8 @@ void EditorLog::_load_state() {
 
 	// Run the below code even if config->load returns an error, since we want the defaults to be set even if the file does not exist yet.
 	const String section = "editor_log";
-	for (Map<MessageType, LogFilter *>::Element *E = type_filter_map.front(); E; E = E->next()) {
-		E->get()->set_active(config->get_value(section, "log_filter_" + itos(E->key()), true));
+	for (const KeyValue<MessageType, LogFilter *> &E : type_filter_map) {
+		E.value->set_active(config->get_value(section, "log_filter_" + itos(E.key), true));
 	}
 
 	collapse = config->get_value(section, "collapse", false);
@@ -306,8 +306,8 @@ void EditorLog::_search_changed(const String &p_text) {
 }
 
 void EditorLog::_reset_message_counts() {
-	for (Map<MessageType, LogFilter *>::Element *E = type_filter_map.front(); E; E = E->next()) {
-		E->value()->set_message_count(0);
+	for (const KeyValue<MessageType, LogFilter *> &E : type_filter_map) {
+		E.value->set_message_count(0);
 	}
 }
 
@@ -441,7 +441,7 @@ void EditorLog::deinit() {
 }
 
 EditorLog::~EditorLog() {
-	for (Map<MessageType, LogFilter *>::Element *E = type_filter_map.front(); E; E = E->next()) {
-		memdelete(E->get());
+	for (const KeyValue<MessageType, LogFilter *> &E : type_filter_map) {
+		memdelete(E.value);
 	}
 }

@@ -776,16 +776,16 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 		}
 
 		if (player) {
-			for (Map<StringName, ProgressBar *>::Element *E = animations.front(); E; E = E->next()) {
-				Ref<AnimationNodeAnimation> an = blend_tree->get_node(E->key());
+			for (const KeyValue<StringName, ProgressBar *> &E : animations) {
+				Ref<AnimationNodeAnimation> an = blend_tree->get_node(E.key);
 				if (an.is_valid()) {
 					if (player->has_animation(an->get_animation())) {
 						Ref<Animation> anim = player->get_animation(an->get_animation());
 						if (anim.is_valid()) {
-							E->get()->set_max(anim->get_length());
+							E.value->set_max(anim->get_length());
 							//StringName path = AnimationTreeEditor::get_singleton()->get_base_path() + E.input_node;
-							StringName time_path = AnimationTreeEditor::get_singleton()->get_base_path() + String(E->key()) + "/time";
-							E->get()->set_value(AnimationTreeEditor::get_singleton()->get_tree()->get(time_path));
+							StringName time_path = AnimationTreeEditor::get_singleton()->get_base_path() + String(E.key) + "/time";
+							E.value->set_value(AnimationTreeEditor::get_singleton()->get_tree()->get(time_path));
 						}
 					}
 				}

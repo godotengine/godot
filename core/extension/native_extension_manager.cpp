@@ -84,8 +84,8 @@ bool NativeExtensionManager::is_extension_loaded(const String &p_path) const {
 
 Vector<String> NativeExtensionManager::get_loaded_extensions() const {
 	Vector<String> ret;
-	for (const Map<String, Ref<NativeExtension>>::Element *E = native_extension_map.front(); E; E = E->next()) {
-		ret.push_back(E->key());
+	for (const KeyValue<String, Ref<NativeExtension>> &E : native_extension_map) {
+		ret.push_back(E.key);
 	}
 	return ret;
 }
@@ -97,16 +97,16 @@ Ref<NativeExtension> NativeExtensionManager::get_extension(const String &p_path)
 
 void NativeExtensionManager::initialize_extensions(NativeExtension::InitializationLevel p_level) {
 	ERR_FAIL_COND(int32_t(p_level) - 1 != level);
-	for (Map<String, Ref<NativeExtension>>::Element *E = native_extension_map.front(); E; E = E->next()) {
-		E->get()->initialize_library(p_level);
+	for (KeyValue<String, Ref<NativeExtension>> &E : native_extension_map) {
+		E.value->initialize_library(p_level);
 	}
 	level = p_level;
 }
 
 void NativeExtensionManager::deinitialize_extensions(NativeExtension::InitializationLevel p_level) {
 	ERR_FAIL_COND(int32_t(p_level) != level);
-	for (Map<String, Ref<NativeExtension>>::Element *E = native_extension_map.front(); E; E = E->next()) {
-		E->get()->deinitialize_library(p_level);
+	for (KeyValue<String, Ref<NativeExtension>> &E : native_extension_map) {
+		E.value->deinitialize_library(p_level);
 	}
 	level = int32_t(p_level) - 1;
 }

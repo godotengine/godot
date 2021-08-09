@@ -82,15 +82,15 @@ void GridContainer::_notification(int p_what) {
 
 			// Evaluate the remaining space for expanded columns/rows.
 			Size2 remaining_space = get_size();
-			for (Map<int, int>::Element *E = col_minw.front(); E; E = E->next()) {
-				if (!col_expanded.has(E->key())) {
-					remaining_space.width -= E->get();
+			for (const KeyValue<int, int> &E : col_minw) {
+				if (!col_expanded.has(E.key)) {
+					remaining_space.width -= E.value;
 				}
 			}
 
-			for (Map<int, int>::Element *E = row_minh.front(); E; E = E->next()) {
-				if (!row_expanded.has(E->key())) {
-					remaining_space.height -= E->get();
+			for (const KeyValue<int, int> &E : row_minh) {
+				if (!row_expanded.has(E.key)) {
+					remaining_space.height -= E.value;
 				}
 			}
 			remaining_space.height -= vsep * MAX(max_row - 1, 0);
@@ -247,12 +247,12 @@ Size2 GridContainer::get_minimum_size() const {
 
 	Size2 ms;
 
-	for (Map<int, int>::Element *E = col_minw.front(); E; E = E->next()) {
-		ms.width += E->get();
+	for (const KeyValue<int, int> &E : col_minw) {
+		ms.width += E.value;
 	}
 
-	for (Map<int, int>::Element *E = row_minh.front(); E; E = E->next()) {
-		ms.height += E->get();
+	for (const KeyValue<int, int> &E : row_minh) {
+		ms.height += E.value;
 	}
 
 	ms.height += vsep * max_row;

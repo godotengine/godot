@@ -2193,8 +2193,8 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 	p_script->_base = nullptr;
 	p_script->members.clear();
 	p_script->constants.clear();
-	for (Map<StringName, GDScriptFunction *>::Element *E = p_script->member_functions.front(); E; E = E->next()) {
-		memdelete(E->get());
+	for (const KeyValue<StringName, GDScriptFunction *> &E : p_script->member_functions) {
+		memdelete(E.value);
 	}
 	p_script->member_functions.clear();
 	p_script->member_indices.clear();
@@ -2519,8 +2519,8 @@ Error GDScriptCompiler::_parse_class_blocks(GDScript *p_script, const GDScriptPa
 					instance->owner = E->get();
 
 					//needed for hot reloading
-					for (Map<StringName, GDScript::MemberInfo>::Element *F = p_script->member_indices.front(); F; F = F->next()) {
-						instance->member_indices_cache[F->key()] = F->get().index;
+					for (const KeyValue<StringName, GDScript::MemberInfo> &F : p_script->member_indices) {
+						instance->member_indices_cache[F.key] = F.value.index;
 					}
 					instance->owner->set_script_instance(instance);
 

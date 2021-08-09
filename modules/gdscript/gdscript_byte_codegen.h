@@ -153,12 +153,12 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 #endif
 		locals.resize(current_locals);
 		if (debug_stack) {
-			for (Map<StringName, int>::Element *E = block_identifiers.front(); E; E = E->next()) {
+			for (const KeyValue<StringName, int> &E : block_identifiers) {
 				GDScriptFunction::StackDebug sd;
 				sd.added = false;
-				sd.identifier = E->key();
+				sd.identifier = E.key;
 				sd.line = current_line;
-				sd.pos = E->get();
+				sd.pos = E.value;
 				stack_debug.push_back(sd);
 			}
 			block_identifiers = block_identifier_stack.back()->get();

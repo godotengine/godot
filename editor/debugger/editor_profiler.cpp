@@ -515,11 +515,11 @@ Vector<Vector<String>> EditorProfiler::get_data_as_csv() const {
 		if (!m.valid) {
 			continue;
 		}
-		for (Map<StringName, Metric::Category *>::Element *E = m.category_ptrs.front(); E; E = E->next()) {
-			possible_signatures.insert(E->key());
+		for (const KeyValue<StringName, Metric::Category *> &E : m.category_ptrs) {
+			possible_signatures.insert(E.key);
 		}
-		for (Map<StringName, Metric::Category::Item *>::Element *E = m.item_ptrs.front(); E; E = E->next()) {
-			possible_signatures.insert(E->key());
+		for (const KeyValue<StringName, Metric::Category::Item *> &E : m.item_ptrs) {
+			possible_signatures.insert(E.key);
 		}
 	}
 
@@ -557,11 +557,11 @@ Vector<Vector<String>> EditorProfiler::get_data_as_csv() const {
 		values.clear();
 		values.resize(possible_signatures.size());
 
-		for (Map<StringName, Metric::Category *>::Element *E = m.category_ptrs.front(); E; E = E->next()) {
-			values.write[sig_map[E->key()]] = String::num_real(E->value()->total_time);
+		for (const KeyValue<StringName, Metric::Category *> &E : m.category_ptrs) {
+			values.write[sig_map[E.key]] = String::num_real(E.value->total_time);
 		}
-		for (Map<StringName, Metric::Category::Item *>::Element *E = m.item_ptrs.front(); E; E = E->next()) {
-			values.write[sig_map[E->key()]] = String::num_real(E->value()->total);
+		for (const KeyValue<StringName, Metric::Category::Item *> &E : m.item_ptrs) {
+			values.write[sig_map[E.key]] = String::num_real(E.value->total);
 		}
 
 		res.push_back(values);

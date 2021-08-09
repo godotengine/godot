@@ -1403,8 +1403,8 @@ void RendererSceneCull::instance_geometry_get_shader_parameter_list(RID p_instan
 	const_cast<RendererSceneCull *>(this)->update_dirty_instances();
 
 	Vector<StringName> names;
-	for (Map<StringName, Instance::InstanceShaderParameter>::Element *E = instance->instance_shader_parameters.front(); E; E = E->next()) {
-		names.push_back(E->key());
+	for (const KeyValue<StringName, Instance::InstanceShaderParameter> &E : instance->instance_shader_parameters) {
+		names.push_back(E.key);
 	}
 	names.sort_custom<StringName::AlphCompare>();
 	for (int i = 0; i < names.size(); i++) {
@@ -3688,9 +3688,9 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 					p_instance->instance_allocated_shader_parameters_offset = RSG::storage->global_variables_instance_allocate(p_instance->self);
 					scene_render->geometry_instance_set_instance_shader_parameters_offset(geom->geometry_instance, p_instance->instance_allocated_shader_parameters_offset);
 
-					for (Map<StringName, Instance::InstanceShaderParameter>::Element *E = p_instance->instance_shader_parameters.front(); E; E = E->next()) {
-						if (E->get().value.get_type() != Variant::NIL) {
-							RSG::storage->global_variables_instance_update(p_instance->self, E->get().index, E->get().value);
+					for (const KeyValue<StringName, Instance::InstanceShaderParameter> &E : p_instance->instance_shader_parameters) {
+						if (E.value.value.get_type() != Variant::NIL) {
+							RSG::storage->global_variables_instance_update(p_instance->self, E.value.index, E.value.value);
 						}
 					}
 				} else {

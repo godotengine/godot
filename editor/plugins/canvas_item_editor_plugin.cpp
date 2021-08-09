@@ -748,8 +748,8 @@ bool CanvasItemEditor::_select_click_on_item(CanvasItem *item, Point2 p_click_po
 
 List<CanvasItem *> CanvasItemEditor::_get_edited_canvas_items(bool retreive_locked, bool remove_canvas_item_if_parent_in_selection) {
 	List<CanvasItem *> selection;
-	for (Map<Node *, Object *>::Element *E = editor_selection->get_selection().front(); E; E = E->next()) {
-		CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E->key());
+	for (const KeyValue<Node *, Object *> &E : editor_selection->get_selection()) {
+		CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E.key);
 		if (canvas_item && canvas_item->is_visible_in_tree() && canvas_item->get_viewport() == EditorNode::get_singleton()->get_scene_root() && (retreive_locked || !_is_node_locked(canvas_item))) {
 			CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
 			if (se) {
@@ -3782,8 +3782,8 @@ void CanvasItemEditor::_notification(int p_what) {
 		}
 
 		// Update the viewport if bones changes
-		for (Map<BoneKey, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
-			Object *b = ObjectDB::get_instance(E->key().from);
+		for (KeyValue<BoneKey, BoneList> &E : bone_list) {
+			Object *b = ObjectDB::get_instance(E.key.from);
 			if (!b) {
 				viewport->update();
 				break;
@@ -3796,14 +3796,14 @@ void CanvasItemEditor::_notification(int p_what) {
 
 			Transform2D global_xform = b2->get_global_transform();
 
-			if (global_xform != E->get().xform) {
-				E->get().xform = global_xform;
+			if (global_xform != E.value.xform) {
+				E.value.xform = global_xform;
 				viewport->update();
 			}
 
 			Bone2D *bone = Object::cast_to<Bone2D>(b);
-			if (bone && bone->get_length() != E->get().length) {
-				E->get().length = bone->get_length();
+			if (bone && bone->get_length() != E.value.length) {
+				E.value.length = bone->get_length();
 				viewport->update();
 			}
 		}
@@ -4263,8 +4263,8 @@ void CanvasItemEditor::_button_tool_select(int p_index) {
 void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, bool p_scale, bool p_on_existing) {
 	Map<Node *, Object *> &selection = editor_selection->get_selection();
 
-	for (Map<Node *, Object *>::Element *E = selection.front(); E; E = E->next()) {
-		CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E->key());
+	for (const KeyValue<Node *, Object *> &E : selection) {
+		CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E.key);
 		if (!canvas_item || !canvas_item->is_visible_in_tree()) {
 			continue;
 		}
@@ -4695,8 +4695,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 			Map<Node *, Object *> &selection = editor_selection->get_selection();
 
-			for (Map<Node *, Object *>::Element *E = selection.front(); E; E = E->next()) {
-				CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E->key());
+			for (const KeyValue<Node *, Object *> &E : selection) {
+				CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E.key);
 				if (!canvas_item || !canvas_item->is_visible_in_tree()) {
 					continue;
 				}
@@ -4741,8 +4741,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		case ANIM_CLEAR_POSE: {
 			Map<Node *, Object *> &selection = editor_selection->get_selection();
 
-			for (Map<Node *, Object *>::Element *E = selection.front(); E; E = E->next()) {
-				CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E->key());
+			for (const KeyValue<Node *, Object *> &E : selection) {
+				CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E.key);
 				if (!canvas_item || !canvas_item->is_visible_in_tree()) {
 					continue;
 				}
@@ -4816,8 +4816,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			Node *editor_root = EditorNode::get_singleton()->get_edited_scene()->get_tree()->get_edited_scene_root();
 
 			undo_redo->create_action(TTR("Create Custom Bone2D(s) from Node(s)"));
-			for (Map<Node *, Object *>::Element *E = selection.front(); E; E = E->next()) {
-				Node2D *n2d = Object::cast_to<Node2D>(E->key());
+			for (const KeyValue<Node *, Object *> &E : selection) {
+				Node2D *n2d = Object::cast_to<Node2D>(E.key);
 
 				Bone2D *new_bone = memnew(Bone2D);
 				String new_bone_name = n2d->get_name();
@@ -4861,8 +4861,8 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 	int count = 0;
 
 	Map<Node *, Object *> &selection = editor_selection->get_selection();
-	for (Map<Node *, Object *>::Element *E = selection.front(); E; E = E->next()) {
-		CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E->key());
+	for (const KeyValue<Node *, Object *> &E : selection) {
+		CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E.key);
 		if (!canvas_item) {
 			continue;
 		}

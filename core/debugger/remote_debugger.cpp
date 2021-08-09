@@ -179,8 +179,8 @@ public:
 		if (pt - last_profile_time > 100) {
 			last_profile_time = pt;
 			DebuggerMarshalls::NetworkProfilerFrame frame;
-			for (Map<ObjectID, NodeInfo>::Element *E = multiplayer_node_data.front(); E; E = E->next()) {
-				frame.infos.push_back(E->get());
+			for (const KeyValue<ObjectID, NodeInfo> &E : multiplayer_node_data) {
+				frame.infos.push_back(E.value);
 			}
 			multiplayer_node_data.clear();
 			EngineDebugger::get_singleton()->send_message("network:profile_frame", frame.serialize());

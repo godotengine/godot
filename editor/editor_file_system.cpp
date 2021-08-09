@@ -1663,8 +1663,8 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 	Error err = importer->import_group_file(p_group_file, source_file_options, base_paths);
 
 	//all went well, overwrite config files with proper remaps and md5s
-	for (Map<String, Map<StringName, Variant>>::Element *E = source_file_options.front(); E; E = E->next()) {
-		const String &file = E->key();
+	for (const KeyValue<String, Map<StringName, Variant>> &E : source_file_options) {
+		const String &file = E.key;
 		String base_path = ResourceFormatImporter::get_singleton()->get_import_base_path(file);
 		FileAccessRef f = FileAccess::open(file + ".import", FileAccess::WRITE);
 		ERR_FAIL_COND_V_MSG(!f, ERR_FILE_CANT_OPEN, "Cannot open import file '" + file + ".import'.");
@@ -2133,10 +2133,10 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	if (groups_to_reimport.size()) {
 		Map<String, Vector<String>> group_files;
 		_find_group_files(filesystem, group_files, groups_to_reimport);
-		for (Map<String, Vector<String>>::Element *E = group_files.front(); E; E = E->next()) {
-			Error err = _reimport_group(E->key(), E->get());
+		for (const KeyValue<String, Vector<String>> &E : group_files) {
+			Error err = _reimport_group(E.key, E.value);
 			if (err == OK) {
-				_reimport_file(E->key());
+				_reimport_file(E.key);
 			}
 		}
 	}

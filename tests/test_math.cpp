@@ -296,8 +296,8 @@ public:
 				if (tk == TK_IDENTIFIER) {
 					String name = value;
 					if (use_next_class || p_known_class_name == name) {
-						for (Map<int, String>::Element *E = namespace_stack.front(); E; E = E->next()) {
-							class_name += E->get() + ".";
+						for (const KeyValue<int, String> &E : namespace_stack) {
+							class_name += E.value + ".";
 						}
 						class_name += String(value);
 						break;

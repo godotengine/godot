@@ -171,7 +171,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 
 		/* STEP 2, Compile the versions, add to shader file */
 
-		for (Map<StringName, String>::Element *E = version_texts.front(); E; E = E->next()) {
+		for (const KeyValue<StringName, String> &E : version_texts) {
 			Ref<RDShaderSPIRV> bytecode;
 			bytecode.instantiate();
 
@@ -180,7 +180,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 				if (code == String()) {
 					continue;
 				}
-				code = code.replace("VERSION_DEFINES", E->get());
+				code = code.replace("VERSION_DEFINES", E.value);
 				String error;
 				Vector<uint8_t> spirv = RenderingDevice::get_singleton()->shader_compile_spirv_from_source(RD::ShaderStage(i), code, RD::SHADER_LANGUAGE_GLSL, &error, false);
 				bytecode->set_stage_bytecode(RD::ShaderStage(i), spirv);
@@ -195,7 +195,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 				bytecode->set_stage_compile_error(RD::ShaderStage(i), error);
 			}
 
-			set_bytecode(bytecode, E->key());
+			set_bytecode(bytecode, E.key);
 		}
 
 		return errors_found ? ERR_PARSE_ERROR : OK;

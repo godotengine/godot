@@ -211,8 +211,8 @@ void Node::_propagate_enter_tree() {
 
 	data.inside_tree = true;
 
-	for (Map<StringName, GroupData>::Element *E = data.grouped.front(); E; E = E->next()) {
-		E->get().group = data.tree->add_to_group(E->key(), this);
+	for (KeyValue<StringName, GroupData> &E : data.grouped) {
+		E.value.group = data.tree->add_to_group(E.key, this);
 	}
 
 	notification(NOTIFICATION_ENTER_TREE);
@@ -274,9 +274,9 @@ void Node::_propagate_exit_tree() {
 
 	// exit groups
 
-	for (Map<StringName, GroupData>::Element *E = data.grouped.front(); E; E = E->next()) {
-		data.tree->remove_from_group(E->key(), this);
-		E->get().group = nullptr;
+	for (KeyValue<StringName, GroupData> &E : data.grouped) {
+		data.tree->remove_from_group(E.key, this);
+		E.value.group = nullptr;
 	}
 
 	data.viewport = nullptr;
@@ -353,9 +353,9 @@ void Node::_move_child(Node *p_child, int p_pos, bool p_ignore_end) {
 	for (int i = motion_from; i <= motion_to; i++) {
 		data.children[i]->notification(NOTIFICATION_MOVED_IN_PARENT);
 	}
-	for (const Map<StringName, GroupData>::Element *E = p_child->data.grouped.front(); E; E = E->next()) {
-		if (E->get().group) {
-			E->get().group->changed = true;
+	for (const KeyValue<StringName, GroupData> &E : p_child->data.grouped) {
+		if (E.value.group) {
+			E.value.group->changed = true;
 		}
 	}
 
@@ -1678,10 +1678,10 @@ Array Node::_get_groups() const {
 }
 
 void Node::get_groups(List<GroupInfo> *p_groups) const {
-	for (const Map<StringName, GroupData>::Element *E = data.grouped.front(); E; E = E->next()) {
+	for (const KeyValue<StringName, GroupData> &E : data.grouped) {
 		GroupInfo gi;
-		gi.name = E->key();
-		gi.persistent = E->get().persistent;
+		gi.name = E.key;
+		gi.persistent = E.value.persistent;
 		p_groups->push_back(gi);
 	}
 }
@@ -1689,8 +1689,8 @@ void Node::get_groups(List<GroupInfo> *p_groups) const {
 int Node::get_persistent_group_count() const {
 	int count = 0;
 
-	for (const Map<StringName, GroupData>::Element *E = data.grouped.front(); E; E = E->next()) {
-		if (E->get().persistent) {
+	for (const KeyValue<StringName, GroupData> &E : data.grouped) {
+		if (E.value.persistent) {
 			count += 1;
 		}
 	}

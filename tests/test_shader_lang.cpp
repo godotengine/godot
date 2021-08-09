@@ -120,14 +120,14 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 		case SL::Node::TYPE_SHADER: {
 			SL::ShaderNode *pnode = (SL::ShaderNode *)p_node;
 
-			for (Map<StringName, SL::ShaderNode::Uniform>::Element *E = pnode->uniforms.front(); E; E = E->next()) {
+			for (const KeyValue<StringName, SL::ShaderNode::Uniform> &E : pnode->uniforms) {
 				String ucode = "uniform ";
-				ucode += _prestr(E->get().precision);
-				ucode += _typestr(E->get().type);
-				ucode += " " + String(E->key());
+				ucode += _prestr(E.value.precision);
+				ucode += _typestr(E.value.type);
+				ucode += " " + String(E.key);
 
-				if (E->get().default_value.size()) {
-					ucode += " = " + get_constant_text(E->get().type, E->get().default_value);
+				if (E.value.default_value.size()) {
+					ucode += " = " + get_constant_text(E.value.type, E.value.default_value);
 				}
 
 				static const char *hint_name[SL::ShaderNode::Uniform::HINT_MAX] = {
@@ -140,18 +140,18 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 					"white"
 				};
 
-				if (E->get().hint) {
-					ucode += " : " + String(hint_name[E->get().hint]);
+				if (E.value.hint) {
+					ucode += " : " + String(hint_name[E.value.hint]);
 				}
 
 				code += ucode + "\n";
 			}
 
-			for (Map<StringName, SL::ShaderNode::Varying>::Element *E = pnode->varyings.front(); E; E = E->next()) {
+			for (const KeyValue<StringName, SL::ShaderNode::Varying> &E : pnode->varyings) {
 				String vcode = "varying ";
-				vcode += _prestr(E->get().precision);
-				vcode += _typestr(E->get().type);
-				vcode += " " + String(E->key());
+				vcode += _prestr(E.value.precision);
+				vcode += _typestr(E.value.type);
+				vcode += " " + String(E.key);
 
 				code += vcode + "\n";
 			}
@@ -183,8 +183,8 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 
 			//variables
 			code += _mktab(p_level - 1) + "{\n";
-			for (Map<StringName, SL::BlockNode::Variable>::Element *E = bnode->variables.front(); E; E = E->next()) {
-				code += _mktab(p_level) + _prestr(E->get().precision) + _typestr(E->get().type) + " " + E->key() + ";\n";
+			for (const KeyValue<StringName, SL::BlockNode::Variable> &E : bnode->variables) {
+				code += _mktab(p_level) + _prestr(E.value.precision) + _typestr(E.value.type) + " " + E.key + ";\n";
 			}
 
 			for (int i = 0; i < bnode->statements.size(); i++) {

@@ -373,8 +373,8 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 
 		//normalize
 
-		for (Map<Vector3, Vector3>::Element *E = normal_accum.front(); E; E = E->next()) {
-			E->get().normalize();
+		for (KeyValue<Vector3, Vector3> &E : normal_accum) {
+			E.value.normalize();
 		}
 
 		//displace normals

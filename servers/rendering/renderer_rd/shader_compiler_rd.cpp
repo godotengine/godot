@@ -566,11 +566,11 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 			int max_texture_uniforms = 0;
 			int max_uniforms = 0;
 
-			for (Map<StringName, SL::ShaderNode::Uniform>::Element *E = pnode->uniforms.front(); E; E = E->next()) {
-				if (SL::is_sampler_type(E->get().type)) {
+			for (const KeyValue<StringName, SL::ShaderNode::Uniform> &E : pnode->uniforms) {
+				if (SL::is_sampler_type(E.value.type)) {
 					max_texture_uniforms++;
 				} else {
-					if (E->get().scope == SL::ShaderNode::Uniform::SCOPE_INSTANCE) {
+					if (E.value.scope == SL::ShaderNode::Uniform::SCOPE_INSTANCE) {
 						continue; // Instances are indexed directly, don't need index uniforms.
 					}
 
@@ -590,8 +590,8 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 
 			Vector<StringName> uniform_names;
 
-			for (Map<StringName, SL::ShaderNode::Uniform>::Element *E = pnode->uniforms.front(); E; E = E->next()) {
-				uniform_names.push_back(E->key());
+			for (const KeyValue<StringName, SL::ShaderNode::Uniform> &E : pnode->uniforms) {
+				uniform_names.push_back(E.key);
 			}
 
 			uniform_names.sort_custom<StringName::AlphCompare>(); //ensure order is deterministic so the same shader is always produced
@@ -724,8 +724,8 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 
 			Vector<StringName> varying_names;
 
-			for (Map<StringName, SL::ShaderNode::Varying>::Element *E = pnode->varyings.front(); E; E = E->next()) {
-				varying_names.push_back(E->key());
+			for (const KeyValue<StringName, SL::ShaderNode::Varying> &E : pnode->varyings) {
+				varying_names.push_back(E.key);
 			}
 
 			varying_names.sort_custom<StringName::AlphCompare>(); //ensure order is deterministic so the same shader is always produced

@@ -454,8 +454,8 @@ Vector<DisplayServer::WindowID> DisplayServerWindows::get_window_list() const {
 	_THREAD_SAFE_METHOD_
 
 	Vector<DisplayServer::WindowID> ret;
-	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-		ret.push_back(E->key());
+	for (const KeyValue<WindowID, WindowData> &E : windows) {
+		ret.push_back(E.key);
 	}
 	return ret;
 }
@@ -465,9 +465,9 @@ DisplayServer::WindowID DisplayServerWindows::get_window_at_screen_position(cons
 	p.x = p_position.x;
 	p.y = p_position.y;
 	HWND hwnd = WindowFromPoint(p);
-	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-		if (E->get().hWnd == hwnd) {
-			return E->key();
+	for (const KeyValue<WindowID, WindowData> &E : windows) {
+		if (E.value.hWnd == hwnd) {
+			return E.key;
 		}
 	}
 
@@ -1131,8 +1131,8 @@ bool DisplayServerWindows::window_can_draw(WindowID p_window) const {
 bool DisplayServerWindows::can_any_window_draw() const {
 	_THREAD_SAFE_METHOD_
 
-	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-		if (!E->get().minimized) {
+	for (const KeyValue<WindowID, WindowData> &E : windows) {
+		if (!E.value.minimized) {
 			return true;
 		}
 	}
@@ -1816,8 +1816,8 @@ void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event)
 		callable.call((const Variant **)&evp, 1, ret, ce);
 	} else {
 		// Send to all windows.
-		for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-			Callable callable = E->get().input_event_callback;
+		for (const KeyValue<WindowID, WindowData> &E : windows) {
+			const Callable callable = E.value.input_event_callback;
 			if (callable.is_null()) {
 				continue;
 			}
@@ -1844,9 +1844,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 	bool window_created = false;
 
 	// Check whether window exists.
-	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-		if (E->get().hWnd == hWnd) {
-			window_id = E->key();
+	for (const KeyValue<WindowID, WindowData> &E : windows) {
+		if (E.value.hWnd == hWnd) {
+			window_id = E.key;
 			window_created = true;
 			break;
 		}
@@ -1882,8 +1882,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			ReleaseCapture();
 
 			// Release every touch to avoid sticky points.
-			for (Map<int, Vector2>::Element *E = touch_state.front(); E; E = E->next()) {
-				_touch_event(window_id, false, E->get().x, E->get().y, E->key());
+			for (const KeyValue<int, Vector2> &E : touch_state) {
+				_touch_event(window_id, false, E.value.x, E.value.y, E.key);
 			}
 			touch_state.clear();
 
@@ -2943,8 +2943,8 @@ void DisplayServerWindows::_process_key_events() {
 }
 
 void DisplayServerWindows::_update_tablet_ctx(const String &p_old_driver, const String &p_new_driver) {
-	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-		WindowData &wd = E->get();
+	for (KeyValue<WindowID, WindowData> &E : windows) {
+		WindowData &wd = E.value;
 		wd.block_mm = false;
 		if ((p_old_driver == "wintab") && wintab_available && wd.wtctx) {
 			wintab_WTEnable(wd.wtctx, false);

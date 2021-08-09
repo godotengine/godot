@@ -122,14 +122,14 @@ void BakeReset::_align_animations(AnimationPlayer *p_ap, const Map<StringName, B
 	for (List<StringName>::Element *anim_i = anim_names.front(); anim_i; anim_i = anim_i->next()) {
 		Ref<Animation> a = p_ap->get_animation(anim_i->get());
 		ERR_CONTINUE(a.is_null());
-		for (Map<StringName, BakeResetRestBone>::Element *rest_bone_i = r_rest_bones.front(); rest_bone_i; rest_bone_i = rest_bone_i->next()) {
-			int track = a->find_track(NodePath(rest_bone_i->key()));
+		for (const KeyValue<StringName, BakeResetRestBone> &rest_bone_i : r_rest_bones) {
+			int track = a->find_track(NodePath(rest_bone_i.key));
 			if (track == -1) {
 				continue;
 			}
 			int new_track = a->add_track(Animation::TYPE_TRANSFORM3D);
-			NodePath new_path = NodePath(rest_bone_i->key());
-			BakeResetRestBone rest_bone = rest_bone_i->get();
+			NodePath new_path = NodePath(rest_bone_i.key);
+			const BakeResetRestBone rest_bone = rest_bone_i.value;
 			a->track_set_path(new_track, new_path);
 			for (int key_i = 0; key_i < a->track_get_key_count(track); key_i++) {
 				Vector3 loc;

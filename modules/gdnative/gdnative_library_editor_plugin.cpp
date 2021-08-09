@@ -38,9 +38,9 @@ void GDNativeLibraryEditor::edit(Ref<GDNativeLibrary> p_library) {
 	library = p_library;
 	Ref<ConfigFile> config = p_library->get_config_file();
 
-	for (Map<String, NativePlatformConfig>::Element *E = platforms.front(); E; E = E->next()) {
-		for (List<String>::Element *it = E->value().entries.front(); it; it = it->next()) {
-			String target = E->key() + "." + it->get();
+	for (KeyValue<String, NativePlatformConfig> &E : platforms) {
+		for (List<String>::Element *it = E.value.entries.front(); it; it = it->next()) {
+			String target = E.key + "." + it->get();
 			TargetConfig ecfg;
 			ecfg.library = config->get_value("entry", target, "");
 			ecfg.dependencies = config->get_value("dependencies", target, Array());
@@ -245,9 +245,9 @@ void GDNativeLibraryEditor::_translate_to_config_file() {
 		config->erase_section("entry");
 		config->erase_section("dependencies");
 
-		for (Map<String, NativePlatformConfig>::Element *E = platforms.front(); E; E = E->next()) {
-			for (List<String>::Element *it = E->value().entries.front(); it; it = it->next()) {
-				String target = E->key() + "." + it->get();
+		for (KeyValue<String, NativePlatformConfig> &E : platforms) {
+			for (List<String>::Element *it = E.value.entries.front(); it; it = it->next()) {
+				String target = E.key + "." + it->get();
 				if (entry_configs[target].library.is_empty() && entry_configs[target].dependencies.is_empty()) {
 					continue;
 				}
@@ -341,9 +341,9 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 	filter_list->set_hide_on_checkable_item_selection(false);
 
 	int idx = 0;
-	for (Map<String, NativePlatformConfig>::Element *E = platforms.front(); E; E = E->next()) {
-		filter_list->add_check_item(E->get().name, idx);
-		filter_list->set_item_metadata(idx, E->key());
+	for (const KeyValue<String, NativePlatformConfig> &E : platforms) {
+		filter_list->add_check_item(E.value.name, idx);
+		filter_list->set_item_metadata(idx, E.key);
 		filter_list->set_item_checked(idx, true);
 		idx += 1;
 	}

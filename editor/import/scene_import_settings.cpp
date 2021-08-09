@@ -771,52 +771,52 @@ void SceneImportSettings::_re_import() {
 
 	Dictionary subresources;
 
-	for (Map<String, NodeData>::Element *E = node_map.front(); E; E = E->next()) {
-		if (E->get().settings.size()) {
+	for (KeyValue<String, NodeData> &E : node_map) {
+		if (E.value.settings.size()) {
 			Dictionary d;
-			for (Map<StringName, Variant>::Element *F = E->get().settings.front(); F; F = F->next()) {
-				d[String(F->key())] = F->get();
+			for (const KeyValue<StringName, Variant> &F : E.value.settings) {
+				d[String(F.key)] = F.value;
 			}
-			nodes[E->key()] = d;
+			nodes[E.key] = d;
 		}
 	}
 	if (nodes.size()) {
 		subresources["nodes"] = nodes;
 	}
 
-	for (Map<String, MaterialData>::Element *E = material_map.front(); E; E = E->next()) {
-		if (E->get().settings.size()) {
+	for (KeyValue<String, MaterialData> &E : material_map) {
+		if (E.value.settings.size()) {
 			Dictionary d;
-			for (Map<StringName, Variant>::Element *F = E->get().settings.front(); F; F = F->next()) {
-				d[String(F->key())] = F->get();
+			for (const KeyValue<StringName, Variant> &F : E.value.settings) {
+				d[String(F.key)] = F.value;
 			}
-			materials[E->key()] = d;
+			materials[E.key] = d;
 		}
 	}
 	if (materials.size()) {
 		subresources["materials"] = materials;
 	}
 
-	for (Map<String, MeshData>::Element *E = mesh_map.front(); E; E = E->next()) {
-		if (E->get().settings.size()) {
+	for (KeyValue<String, MeshData> &E : mesh_map) {
+		if (E.value.settings.size()) {
 			Dictionary d;
-			for (Map<StringName, Variant>::Element *F = E->get().settings.front(); F; F = F->next()) {
-				d[String(F->key())] = F->get();
+			for (const KeyValue<StringName, Variant> &F : E.value.settings) {
+				d[String(F.key)] = F.value;
 			}
-			meshes[E->key()] = d;
+			meshes[E.key] = d;
 		}
 	}
 	if (meshes.size()) {
 		subresources["meshes"] = meshes;
 	}
 
-	for (Map<String, AnimationData>::Element *E = animation_map.front(); E; E = E->next()) {
-		if (E->get().settings.size()) {
+	for (KeyValue<String, AnimationData> &E : animation_map) {
+		if (E.value.settings.size()) {
 			Dictionary d;
-			for (Map<StringName, Variant>::Element *F = E->get().settings.front(); F; F = F->next()) {
-				d[String(F->key())] = F->get();
+			for (const KeyValue<StringName, Variant> &F : E.value.settings) {
+				d[String(F.key)] = F.value;
 			}
-			animations[E->key()] = d;
+			animations[E.key] = d;
 		}
 	}
 	if (animations.size()) {
@@ -889,8 +889,8 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 
 	switch (current_action) {
 		case ACTION_EXTRACT_MATERIALS: {
-			for (Map<String, MaterialData>::Element *E = material_map.front(); E; E = E->next()) {
-				MaterialData &md = material_map[E->key()];
+			for (const KeyValue<String, MaterialData> &E : material_map) {
+				MaterialData &md = material_map[E.key];
 
 				TreeItem *item = external_path_tree->create_item(root);
 
@@ -905,7 +905,7 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 						item->set_text(2, "Already External");
 						item->set_tooltip(2, TTR("This material already references an external file, no action will be taken.\nDisable the external property for it to be extracted again."));
 					} else {
-						item->set_metadata(0, E->key());
+						item->set_metadata(0, E.key);
 						item->set_editable(0, true);
 						item->set_checked(0, true);
 						String path = p_path.plus_file(name);
@@ -942,8 +942,8 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 			external_paths->get_ok_button()->set_text(TTR("Extract"));
 		} break;
 		case ACTION_CHOOSE_MESH_SAVE_PATHS: {
-			for (Map<String, MeshData>::Element *E = mesh_map.front(); E; E = E->next()) {
-				MeshData &md = mesh_map[E->key()];
+			for (const KeyValue<String, MeshData> &E : mesh_map) {
+				MeshData &md = mesh_map[E.key];
 
 				TreeItem *item = external_path_tree->create_item(root);
 
@@ -958,7 +958,7 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 						item->set_text(2, "Already Saving");
 						item->set_tooltip(2, TTR("This mesh already saves to an external resource, no action will be taken."));
 					} else {
-						item->set_metadata(0, E->key());
+						item->set_metadata(0, E.key);
 						item->set_editable(0, true);
 						item->set_checked(0, true);
 						String path = p_path.plus_file(name);
@@ -995,8 +995,8 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 			external_paths->get_ok_button()->set_text(TTR("Set Paths"));
 		} break;
 		case ACTION_CHOOSE_ANIMATION_SAVE_PATHS: {
-			for (Map<String, AnimationData>::Element *E = animation_map.front(); E; E = E->next()) {
-				AnimationData &ad = animation_map[E->key()];
+			for (const KeyValue<String, AnimationData> &E : animation_map) {
+				AnimationData &ad = animation_map[E.key];
 
 				TreeItem *item = external_path_tree->create_item(root);
 
@@ -1010,7 +1010,7 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 					item->set_text(2, "Already Saving");
 					item->set_tooltip(2, TTR("This animation already saves to an external resource, no action will be taken."));
 				} else {
-					item->set_metadata(0, E->key());
+					item->set_metadata(0, E.key);
 					item->set_editable(0, true);
 					item->set_checked(0, true);
 					String path = p_path.plus_file(name);

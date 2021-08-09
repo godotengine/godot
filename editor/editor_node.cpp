@@ -3202,8 +3202,8 @@ void EditorNode::_update_addon_config() {
 
 	Vector<String> enabled_addons;
 
-	for (Map<String, EditorPlugin *>::Element *E = plugin_addons.front(); E; E = E->next()) {
-		enabled_addons.push_back(E->key());
+	for (const KeyValue<String, EditorPlugin *> &E : plugin_addons) {
+		enabled_addons.push_back(E.key);
 	}
 
 	if (enabled_addons.size() == 0) {
@@ -3585,9 +3585,9 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	dependency_errors.erase(lpath); //at least not self path
 
-	for (Map<String, Set<String>>::Element *E = dependency_errors.front(); E; E = E->next()) {
-		String txt = vformat(TTR("Scene '%s' has broken dependencies:"), E->key()) + "\n";
-		for (Set<String>::Element *F = E->get().front(); F; F = F->next()) {
+	for (KeyValue<String, Set<String>> &E : dependency_errors) {
+		String txt = vformat(TTR("Scene '%s' has broken dependencies:"), E.key) + "\n";
+		for (Set<String>::Element *F = E.value.front(); F; F = F->next()) {
 			txt += "\t" + F->get() + "\n";
 		}
 		add_io_error(txt);
@@ -4050,8 +4050,8 @@ Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p
 	}
 
 	const Map<String, Vector<EditorData::CustomType>> &p_map = EditorNode::get_editor_data().get_custom_types();
-	for (const Map<String, Vector<EditorData::CustomType>>::Element *E = p_map.front(); E; E = E->next()) {
-		const Vector<EditorData::CustomType> &ct = E->value();
+	for (const KeyValue<String, Vector<EditorData::CustomType>> &E : p_map) {
+		const Vector<EditorData::CustomType> &ct = E.value;
 		for (int i = 0; i < ct.size(); ++i) {
 			if (ct[i].name == p_class) {
 				if (ct[i].icon.is_valid()) {

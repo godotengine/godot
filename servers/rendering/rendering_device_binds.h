@@ -351,8 +351,8 @@ public:
 
 	Vector<StringName> get_version_list() const {
 		Vector<StringName> vnames;
-		for (Map<StringName, Ref<RDShaderSPIRV>>::Element *E = versions.front(); E; E = E->next()) {
-			vnames.push_back(E->key());
+		for (const KeyValue<StringName, Ref<RDShaderSPIRV>> &E : versions) {
+			vnames.push_back(E.key);
 		}
 		vnames.sort_custom<StringName::AlphCompare>();
 		return vnames;
@@ -371,9 +371,9 @@ public:
 		if (base_error != "") {
 			ERR_PRINT("Error parsing shader '" + p_file + "':\n\n" + base_error);
 		} else {
-			for (Map<StringName, Ref<RDShaderSPIRV>>::Element *E = versions.front(); E; E = E->next()) {
+			for (KeyValue<StringName, Ref<RDShaderSPIRV>> &E : versions) {
 				for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
-					String error = E->get()->get_stage_compile_error(RD::ShaderStage(i));
+					String error = E.value->get_stage_compile_error(RD::ShaderStage(i));
 					if (error != String()) {
 						static const char *stage_str[RD::SHADER_STAGE_MAX] = {
 							"vertex",
@@ -383,7 +383,7 @@ public:
 							"compute"
 						};
 
-						ERR_PRINT("Error parsing shader '" + p_file + "', version '" + String(E->key()) + "', stage '" + stage_str[i] + "':\n\n" + error);
+						ERR_PRINT("Error parsing shader '" + p_file + "', version '" + String(E.key) + "', stage '" + stage_str[i] + "':\n\n" + error);
 					}
 				}
 			}

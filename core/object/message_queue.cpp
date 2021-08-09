@@ -227,16 +227,16 @@ void MessageQueue::statistics() {
 	print_line("TOTAL BYTES: " + itos(buffer_end));
 	print_line("NULL count: " + itos(null_count));
 
-	for (Map<StringName, int>::Element *E = set_count.front(); E; E = E->next()) {
-		print_line("SET " + E->key() + ": " + itos(E->get()));
+	for (const KeyValue<StringName, int> &E : set_count) {
+		print_line("SET " + E.key + ": " + itos(E.value));
 	}
 
-	for (Map<Callable, int>::Element *E = call_count.front(); E; E = E->next()) {
-		print_line("CALL " + E->key() + ": " + itos(E->get()));
+	for (const KeyValue<Callable, int> &E : call_count) {
+		print_line("CALL " + E.key + ": " + itos(E.value));
 	}
 
-	for (Map<int, int>::Element *E = notify_count.front(); E; E = E->next()) {
-		print_line("NOTIFY " + itos(E->key()) + ": " + itos(E->get()));
+	for (const KeyValue<int, int> &E : notify_count) {
+		print_line("NOTIFY " + itos(E.key) + ": " + itos(E.value));
 	}
 }
 

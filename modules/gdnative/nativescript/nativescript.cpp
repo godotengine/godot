@@ -360,8 +360,8 @@ void NativeScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 	Set<MethodInfo> signals_;
 
 	while (script_data) {
-		for (Map<StringName, NativeScriptDesc::Signal>::Element *S = script_data->signals_.front(); S; S = S->next()) {
-			signals_.insert(S->get().signal);
+		for (const KeyValue<StringName, NativeScriptDesc::Signal> &S : script_data->signals_) {
+			signals_.insert(S.value.signal);
 		}
 
 		script_data = script_data->base_data;
@@ -401,8 +401,8 @@ void NativeScript::get_script_method_list(List<MethodInfo> *p_list) const {
 	Set<MethodInfo> methods;
 
 	while (script_data) {
-		for (Map<StringName, NativeScriptDesc::Method>::Element *E = script_data->methods.front(); E; E = E->next()) {
-			methods.insert(E->get().info);
+		for (const KeyValue<StringName, NativeScriptDesc::Method> &E : script_data->methods) {
+			methods.insert(E.value.info);
 		}
 
 		script_data = script_data->base_data;
@@ -857,9 +857,9 @@ NativeScriptLanguage *NativeScriptLanguage::singleton;
 void NativeScriptLanguage::_unload_stuff(bool p_reload) {
 	Map<String, Ref<GDNative>> erase_and_unload;
 
-	for (Map<String, Map<StringName, NativeScriptDesc>>::Element *L = library_classes.front(); L; L = L->next()) {
-		String lib_path = L->key();
-		Map<StringName, NativeScriptDesc> classes = L->get();
+	for (KeyValue<String, Map<StringName, NativeScriptDesc>> &L : library_classes) {
+		String lib_path = L.key;
+		Map<StringName, NativeScriptDesc> classes = L.value;
 
 		if (p_reload) {
 			Map<String, Ref<GDNative>>::Element *E = library_gdnatives.find(lib_path);
@@ -890,9 +890,9 @@ void NativeScriptLanguage::_unload_stuff(bool p_reload) {
 			gdn = E->get();
 		}
 
-		for (Map<StringName, NativeScriptDesc>::Element *C = classes.front(); C; C = C->next()) {
+		for (KeyValue<StringName, NativeScriptDesc> &C : classes) {
 			// free property stuff first
-			for (OrderedHashMap<StringName, NativeScriptDesc::Property>::Element P = C->get().properties.front(); P; P = P.next()) {
+			for (OrderedHashMap<StringName, NativeScriptDesc::Property>::Element P = C.value.properties.front(); P; P = P.next()) {
 				if (P.get().getter.free_func) {
 					P.get().getter.free_func(P.get().getter.method_data);
 				}
@@ -903,28 +903,28 @@ void NativeScriptLanguage::_unload_stuff(bool p_reload) {
 			}
 
 			// free method stuff
-			for (Map<StringName, NativeScriptDesc::Method>::Element *M = C->get().methods.front(); M; M = M->next()) {
-				if (M->get().method.free_func) {
-					M->get().method.free_func(M->get().method.method_data);
+			for (const KeyValue<StringName, NativeScriptDesc::Method> &M : C.value.methods) {
+				if (M.value.method.free_func) {
+					M.value.method.free_func(M.value.method.method_data);
 				}
 			}
 
 			// free constructor/destructor
-			if (C->get().create_func.free_func) {
-				C->get().create_func.free_func(C->get().create_func.method_data);
+			if (C.value.create_func.free_func) {
+				C.value.create_func.free_func(C.value.create_func.method_data);
 			}
 
-			if (C->get().destroy_func.free_func) {
-				C->get().destroy_func.free_func(C->get().destroy_func.method_data);
+			if (C.value.destroy_func.free_func) {
+				C.value.destroy_func.free_func(C.value.destroy_func.method_data);
 			}
 		}
 
 		erase_and_unload.insert(lib_path, gdn);
 	}
 
-	for (Map<String, Ref<GDNative>>::Element *E = erase_and_unload.front(); E; E = E->next()) {
-		String lib_path = E->key();
-		Ref<GDNative> gdn = E->get();
+	for (KeyValue<String, Ref<GDNative>> &E : erase_and_unload) {
+		String lib_path = E.key;
+		Ref<GDNative> gdn = E.value;
 
 		library_classes.erase(lib_path);
 
@@ -957,8 +957,8 @@ NativeScriptLanguage::NativeScriptLanguage() {
 }
 
 NativeScriptLanguage::~NativeScriptLanguage() {
-	for (Map<String, Ref<GDNative>>::Element *L = NSL->library_gdnatives.front(); L; L = L->next()) {
-		Ref<GDNative> lib = L->get();
+	for (KeyValue<String, Ref<GDNative>> &L : NSL->library_gdnatives) {
+		Ref<GDNative> lib = L.value;
 		// only shut down valid libs, duh!
 		if (lib.is_valid()) {
 			// If it's a singleton-library then the gdnative module
@@ -1157,15 +1157,15 @@ int NativeScriptLanguage::profiling_get_accumulated_data(ProfilingInfo *p_info_a
 
 	int current = 0;
 
-	for (Map<StringName, ProfileData>::Element *d = profile_data.front(); d; d = d->next()) {
+	for (const KeyValue<StringName, ProfileData> &d : profile_data) {
 		if (current >= p_info_max) {
 			break;
 		}
 
-		p_info_arr[current].call_count = d->get().call_count;
-		p_info_arr[current].self_time = d->get().self_time;
-		p_info_arr[current].total_time = d->get().total_time;
-		p_info_arr[current].signature = d->get().signature;
+		p_info_arr[current].call_count = d.value.call_count;
+		p_info_arr[current].self_time = d.value.self_time;
+		p_info_arr[current].total_time = d.value.total_time;
+		p_info_arr[current].signature = d.value.signature;
 		current++;
 	}
 
@@ -1181,16 +1181,16 @@ int NativeScriptLanguage::profiling_get_frame_data(ProfilingInfo *p_info_arr, in
 
 	int current = 0;
 
-	for (Map<StringName, ProfileData>::Element *d = profile_data.front(); d; d = d->next()) {
+	for (const KeyValue<StringName, ProfileData> &d : profile_data) {
 		if (current >= p_info_max) {
 			break;
 		}
 
-		if (d->get().last_frame_call_count) {
-			p_info_arr[current].call_count = d->get().last_frame_call_count;
-			p_info_arr[current].self_time = d->get().last_frame_self_time;
-			p_info_arr[current].total_time = d->get().last_frame_total_time;
-			p_info_arr[current].signature = d->get().signature;
+		if (d.value.last_frame_call_count) {
+			p_info_arr[current].call_count = d.value.last_frame_call_count;
+			p_info_arr[current].self_time = d.value.last_frame_self_time;
+			p_info_arr[current].total_time = d.value.last_frame_total_time;
+			p_info_arr[current].signature = d.value.signature;
 			current++;
 		}
 	}
@@ -1503,9 +1503,9 @@ void NativeScriptLanguage::unregister_script(NativeScript *script) {
 				if (L) {
 					Map<StringName, NativeScriptDesc> classes = L->get();
 
-					for (Map<StringName, NativeScriptDesc>::Element *C = classes.front(); C; C = C->next()) {
+					for (KeyValue<StringName, NativeScriptDesc> &C : classes) {
 						// free property stuff first
-						for (OrderedHashMap<StringName, NativeScriptDesc::Property>::Element P = C->get().properties.front(); P; P = P.next()) {
+						for (OrderedHashMap<StringName, NativeScriptDesc::Property>::Element P = C.value.properties.front(); P; P = P.next()) {
 							if (P.get().getter.free_func) {
 								P.get().getter.free_func(P.get().getter.method_data);
 							}
@@ -1516,19 +1516,19 @@ void NativeScriptLanguage::unregister_script(NativeScript *script) {
 						}
 
 						// free method stuff
-						for (Map<StringName, NativeScriptDesc::Method>::Element *M = C->get().methods.front(); M; M = M->next()) {
-							if (M->get().method.free_func) {
-								M->get().method.free_func(M->get().method.method_data);
+						for (const KeyValue<StringName, NativeScriptDesc::Method> &M : C.value.methods) {
+							if (M.value.method.free_func) {
+								M.value.method.free_func(M.value.method.method_data);
 							}
 						}
 
 						// free constructor/destructor
-						if (C->get().create_func.free_func) {
-							C->get().create_func.free_func(C->get().create_func.method_data);
+						if (C.value.create_func.free_func) {
+							C.value.create_func.free_func(C.value.create_func.method_data);
 						}
 
-						if (C->get().destroy_func.free_func) {
-							C->get().destroy_func.free_func(C->get().destroy_func.method_data);
+						if (C.value.destroy_func.free_func) {
+							C.value.destroy_func.free_func(C.value.destroy_func.method_data);
 						}
 					}
 
@@ -1548,14 +1548,14 @@ void NativeScriptLanguage::unregister_script(NativeScript *script) {
 
 void NativeScriptLanguage::call_libraries_cb(const StringName &name) {
 	// library_gdnatives is modified only from the main thread, so it's safe not to use mutex here
-	for (Map<String, Ref<GDNative>>::Element *L = library_gdnatives.front(); L; L = L->next()) {
-		if (L->get().is_null()) {
+	for (KeyValue<String, Ref<GDNative>> &L : library_gdnatives) {
+		if (L.value.is_null()) {
 			continue;
 		}
 
-		if (L->get()->is_initialized()) {
+		if (L.value->is_initialized()) {
 			void *proc_ptr;
-			Error err = L->get()->get_symbol(L->get()->get_library()->get_symbol_prefix() + name, proc_ptr);
+			Error err = L.value->get_symbol(L.value->get_library()->get_symbol_prefix() + name, proc_ptr);
 
 			if (!err) {
 				((void (*)())proc_ptr)();
@@ -1584,13 +1584,13 @@ void NativeScriptLanguage::frame() {
 	{
 		MutexLock lock(mutex);
 
-		for (Map<StringName, ProfileData>::Element *d = profile_data.front(); d; d = d->next()) {
-			d->get().last_frame_call_count = d->get().frame_call_count;
-			d->get().last_frame_self_time = d->get().frame_self_time;
-			d->get().last_frame_total_time = d->get().frame_total_time;
-			d->get().frame_call_count = 0;
-			d->get().frame_self_time = 0;
-			d->get().frame_total_time = 0;
+		for (KeyValue<StringName, ProfileData> &d : profile_data) {
+			d.value.last_frame_call_count = d.value.frame_call_count;
+			d.value.last_frame_self_time = d.value.frame_self_time;
+			d.value.last_frame_total_time = d.value.frame_total_time;
+			d.value.frame_call_count = 0;
+			d.value.frame_self_time = 0;
+			d.value.frame_total_time = 0;
 		}
 	}
 #endif
@@ -1651,8 +1651,8 @@ void NativeReloadNode::_notification(int p_what) {
 			MutexLock lock(NSL->mutex);
 			NSL->_unload_stuff(true);
 
-			for (Map<String, Ref<GDNative>>::Element *L = NSL->library_gdnatives.front(); L; L = L->next()) {
-				Ref<GDNative> gdn = L->get();
+			for (KeyValue<String, Ref<GDNative>> &L : NSL->library_gdnatives) {
+				Ref<GDNative> gdn = L.value;
 
 				if (gdn.is_null()) {
 					continue;
@@ -1685,8 +1685,8 @@ void NativeReloadNode::_notification(int p_what) {
 			MutexLock lock(NSL->mutex);
 
 			Set<StringName> libs_to_remove;
-			for (Map<String, Ref<GDNative>>::Element *L = NSL->library_gdnatives.front(); L; L = L->next()) {
-				Ref<GDNative> gdn = L->get();
+			for (KeyValue<String, Ref<GDNative>> &L : NSL->library_gdnatives) {
+				Ref<GDNative> gdn = L.value;
 
 				if (gdn.is_null()) {
 					continue;
@@ -1703,24 +1703,24 @@ void NativeReloadNode::_notification(int p_what) {
 				}
 
 				if (!gdn->initialize()) {
-					libs_to_remove.insert(L->key());
+					libs_to_remove.insert(L.key);
 					continue;
 				}
 
-				NSL->library_classes.insert(L->key(), Map<StringName, NativeScriptDesc>());
+				NSL->library_classes.insert(L.key, Map<StringName, NativeScriptDesc>());
 
 				// here the library registers all the classes and stuff.
 
 				void *proc_ptr;
 				Error err = gdn->get_symbol(gdn->get_library()->get_symbol_prefix() + "nativescript_init", proc_ptr);
 				if (err != OK) {
-					ERR_PRINT(String("No godot_nativescript_init in \"" + L->key() + "\" found").utf8().get_data());
+					ERR_PRINT(String("No godot_nativescript_init in \"" + L.key + "\" found").utf8().get_data());
 				} else {
-					((void (*)(void *))proc_ptr)((void *)&L->key());
+					((void (*)(void *))proc_ptr)((void *)&L.key);
 				}
 
-				for (Map<String, Set<NativeScript *>>::Element *U = NSL->library_script_users.front(); U; U = U->next()) {
-					for (Set<NativeScript *>::Element *S = U->get().front(); S; S = S->next()) {
+				for (KeyValue<String, Set<NativeScript *>> &U : NSL->library_script_users) {
+					for (Set<NativeScript *>::Element *S = U.value.front(); S; S = S->next()) {
 						NativeScript *script = S->get();
 
 						if (script->placeholders.size() == 0) {

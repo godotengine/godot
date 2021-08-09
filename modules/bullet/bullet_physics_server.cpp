@@ -1404,8 +1404,8 @@ void BulletPhysicsServer3D::free(RID p_rid) {
 		ShapeBullet *shape = shape_owner.get_or_null(p_rid);
 
 		// Notify the shape is configured
-		for (Map<ShapeOwnerBullet *, int>::Element *element = shape->get_owners().front(); element; element = element->next()) {
-			static_cast<ShapeOwnerBullet *>(element->key())->remove_shape_full(shape);
+		for (const KeyValue<ShapeOwnerBullet *, int> &element : shape->get_owners()) {
+			static_cast<ShapeOwnerBullet *>(element.key)->remove_shape_full(shape);
 		}
 
 		shape_owner.free(p_rid);

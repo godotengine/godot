@@ -173,8 +173,8 @@ bool GDScriptLanguage::validate(const String &p_script, const String &p_path, Li
 
 		get_function_names_recursively(cl, "", funcs);
 
-		for (Map<int, String>::Element *E = funcs.front(); E; E = E->next()) {
-			r_functions->push_back(E->get() + ":" + itos(E->key()));
+		for (const KeyValue<int, String> &E : funcs) {
+			r_functions->push_back(E.value + ":" + itos(E.key));
 		}
 	}
 
@@ -344,9 +344,9 @@ void GDScriptLanguage::debug_get_stack_level_members(int p_level, List<String> *
 
 	const Map<StringName, GDScript::MemberInfo> &mi = script->debug_get_member_indices();
 
-	for (const Map<StringName, GDScript::MemberInfo>::Element *E = mi.front(); E; E = E->next()) {
-		p_members->push_back(E->key());
-		p_values->push_back(instance->debug_get_member_by_index(E->get().index));
+	for (const KeyValue<StringName, GDScript::MemberInfo> &E : mi) {
+		p_members->push_back(E.key);
+		p_values->push_back(instance->debug_get_member_by_index(E.value.index));
 	}
 }
 
@@ -370,14 +370,14 @@ void GDScriptLanguage::debug_get_globals(List<String> *p_globals, List<Variant> 
 	List<Pair<String, Variant>> cinfo;
 	get_public_constants(&cinfo);
 
-	for (const Map<StringName, int>::Element *E = name_idx.front(); E; E = E->next()) {
-		if (ClassDB::class_exists(E->key()) || Engine::get_singleton()->has_singleton(E->key())) {
+	for (const KeyValue<StringName, int> &E : name_idx) {
+		if (ClassDB::class_exists(E.key) || Engine::get_singleton()->has_singleton(E.key)) {
 			continue;
 		}
 
 		bool is_script_constant = false;
 		for (List<Pair<String, Variant>>::Element *CE = cinfo.front(); CE; CE = CE->next()) {
-			if (CE->get().first == E->key()) {
+			if (CE->get().first == E.key) {
 				is_script_constant = true;
 				break;
 			}
@@ -386,7 +386,7 @@ void GDScriptLanguage::debug_get_globals(List<String> *p_globals, List<Variant> 
 			continue;
 		}
 
-		const Variant &var = globals[E->value()];
+		const Variant &var = globals[E.value];
 		if (Object *obj = var) {
 			if (Object::cast_to<GDScriptNativeClass>(obj)) {
 				continue;
@@ -395,7 +395,7 @@ void GDScriptLanguage::debug_get_globals(List<String> *p_globals, List<Variant> 
 
 		bool skip = false;
 		for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
-			if (E->key() == CoreConstants::get_global_constant_name(i)) {
+			if (E.key == CoreConstants::get_global_constant_name(i)) {
 				skip = true;
 				break;
 			}
@@ -404,7 +404,7 @@ void GDScriptLanguage::debug_get_globals(List<String> *p_globals, List<Variant> 
 			continue;
 		}
 
-		p_globals->push_back(E->key());
+		p_globals->push_back(E.key);
 		p_values->push_back(var);
 	}
 }
@@ -875,8 +875,8 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 						}
 						Map<StringName, Variant> constants;
 						scr->get_constants(&constants);
-						for (Map<StringName, Variant>::Element *E = constants.front(); E; E = E->next()) {
-							ScriptCodeCompletionOption option(E->key().operator String(), ScriptCodeCompletionOption::KIND_CONSTANT);
+						for (const KeyValue<StringName, Variant> &E : constants) {
+							ScriptCodeCompletionOption option(E.key.operator String(), ScriptCodeCompletionOption::KIND_CONSTANT);
 							r_result.insert(option.display, option);
 						}
 
@@ -1099,12 +1099,12 @@ static void _find_identifiers(GDScriptParser::CompletionContext &p_context, bool
 	}
 
 	// Native classes and global constants.
-	for (const Map<StringName, int>::Element *E = GDScriptLanguage::get_singleton()->get_global_map().front(); E; E = E->next()) {
+	for (const KeyValue<StringName, int> &E : GDScriptLanguage::get_singleton()->get_global_map()) {
 		ScriptCodeCompletionOption option;
-		if (ClassDB::class_exists(E->key()) || Engine::get_singleton()->has_singleton(E->key())) {
-			option = ScriptCodeCompletionOption(E->key().operator String(), ScriptCodeCompletionOption::KIND_CLASS);
+		if (ClassDB::class_exists(E.key) || Engine::get_singleton()->has_singleton(E.key)) {
+			option = ScriptCodeCompletionOption(E.key.operator String(), ScriptCodeCompletionOption::KIND_CLASS);
 		} else {
-			option = ScriptCodeCompletionOption(E->key().operator String(), ScriptCodeCompletionOption::KIND_CONSTANT);
+			option = ScriptCodeCompletionOption(E.key.operator String(), ScriptCodeCompletionOption::KIND_CONSTANT);
 		}
 		r_result.insert(option.display, option);
 	}
@@ -2680,8 +2680,8 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 		} break;
 	}
 
-	for (Map<String, ScriptCodeCompletionOption>::Element *E = options.front(); E; E = E->next()) {
-		r_options->push_back(E->get());
+	for (const KeyValue<String, ScriptCodeCompletionOption> &E : options) {
+		r_options->push_back(E.value);
 	}
 
 	return OK;

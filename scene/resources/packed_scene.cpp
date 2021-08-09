@@ -299,8 +299,8 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 		}
 	}
 
-	for (Map<Ref<Resource>, Ref<Resource>>::Element *E = resources_local_to_scene.front(); E; E = E->next()) {
-		E->get()->setup_local_to_scene();
+	for (KeyValue<Ref<Resource>, Ref<Resource>> &E : resources_local_to_scene) {
+		E.value->setup_local_to_scene();
 	}
 
 	//do connections
@@ -887,8 +887,8 @@ Error SceneState::pack(Node *p_scene) {
 
 	names.resize(name_map.size());
 
-	for (Map<StringName, int>::Element *E = name_map.front(); E; E = E->next()) {
-		names.write[E->get()] = E->key();
+	for (const KeyValue<StringName, int> &E : name_map) {
+		names.write[E.value] = E.key;
 	}
 
 	variants.resize(variant_map.size());
@@ -899,14 +899,14 @@ Error SceneState::pack(Node *p_scene) {
 	}
 
 	node_paths.resize(nodepath_map.size());
-	for (Map<Node *, int>::Element *E = nodepath_map.front(); E; E = E->next()) {
-		node_paths.write[E->get()] = scene->get_path_to(E->key());
+	for (const KeyValue<Node *, int> &E : nodepath_map) {
+		node_paths.write[E.value] = scene->get_path_to(E.key);
 	}
 
 	if (Engine::get_singleton()->is_editor_hint()) {
 		// Build node path cache
-		for (Map<Node *, int>::Element *E = node_map.front(); E; E = E->next()) {
-			node_path_cache[scene->get_path_to(E->key())] = E->get();
+		for (const KeyValue<Node *, int> &E : node_map) {
+			node_path_cache[scene->get_path_to(E.key)] = E.value;
 		}
 	}
 
@@ -977,9 +977,9 @@ int SceneState::find_node_by_path(const NodePath &p_node) const {
 }
 
 int SceneState::_find_base_scene_node_remap_key(int p_idx) const {
-	for (Map<int, int>::Element *E = base_scene_node_remap.front(); E; E = E->next()) {
-		if (E->value() == p_idx) {
-			return E->key();
+	for (const KeyValue<int, int> &E : base_scene_node_remap) {
+		if (E.value == p_idx) {
+			return E.key;
 		}
 	}
 	return -1;

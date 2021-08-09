@@ -820,8 +820,8 @@ static const char *locale_renames[][2] = {
 
 Dictionary Translation::_get_messages() const {
 	Dictionary d;
-	for (const Map<StringName, StringName>::Element *E = translation_map.front(); E; E = E->next()) {
-		d[E->key()] = E->value();
+	for (const KeyValue<StringName, StringName> &E : translation_map) {
+		d[E.key] = E.value;
 	}
 	return d;
 }
@@ -830,8 +830,8 @@ Vector<String> Translation::_get_message_list() const {
 	Vector<String> msgs;
 	msgs.resize(translation_map.size());
 	int idx = 0;
-	for (const Map<StringName, StringName>::Element *E = translation_map.front(); E; E = E->next()) {
-		msgs.set(idx, E->key());
+	for (const KeyValue<StringName, StringName> &E : translation_map) {
+		msgs.set(idx, E.key);
 		idx += 1;
 	}
 
@@ -911,8 +911,8 @@ void Translation::erase_message(const StringName &p_src_text, const StringName &
 }
 
 void Translation::get_message_list(List<StringName> *r_messages) const {
-	for (const Map<StringName, StringName>::Element *E = translation_map.front(); E; E = E->next()) {
-		r_messages->push_back(E->key());
+	for (const KeyValue<StringName, StringName> &E : translation_map) {
+		r_messages->push_back(E.key);
 	}
 }
 

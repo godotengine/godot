@@ -863,9 +863,9 @@ void Input::release_pressed_events() {
 	joy_buttons_pressed.clear();
 	_joy_axis.clear();
 
-	for (Map<StringName, Input::Action>::Element *E = action_state.front(); E; E = E->next()) {
-		if (E->get().pressed) {
-			action_release(E->key());
+	for (const KeyValue<StringName, Input::Action> &E : action_state) {
+		if (E.value.pressed) {
+			action_release(E.key);
 		}
 	}
 }
@@ -1322,8 +1322,8 @@ void Input::add_joy_mapping(String p_mapping, bool p_update_existing) {
 	if (p_update_existing) {
 		Vector<String> entry = p_mapping.split(",");
 		String uid = entry[0];
-		for (Map<int, Joypad>::Element *E = joy_names.front(); E; E = E->next()) {
-			Joypad &joy = E->get();
+		for (KeyValue<int, Joypad> &E : joy_names) {
+			Joypad &joy = E.value;
 			if (joy.uid == uid) {
 				joy.mapping = map_db.size() - 1;
 			}
@@ -1337,8 +1337,8 @@ void Input::remove_joy_mapping(String p_guid) {
 			map_db.remove(i);
 		}
 	}
-	for (Map<int, Joypad>::Element *E = joy_names.front(); E; E = E->next()) {
-		Joypad &joy = E->get();
+	for (KeyValue<int, Joypad> &E : joy_names) {
+		Joypad &joy = E.value;
 		if (joy.uid == p_guid) {
 			joy.mapping = -1;
 		}

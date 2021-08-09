@@ -277,15 +277,15 @@ struct WorkspaceEdit {
 		Dictionary dict;
 
 		Dictionary out_changes;
-		for (Map<String, Vector<TextEdit>>::Element *E = changes.front(); E; E = E->next()) {
+		for (const KeyValue<String, Vector<TextEdit>> &E : changes) {
 			Array edits;
-			for (int i = 0; i < E->get().size(); ++i) {
+			for (int i = 0; i < E.value.size(); ++i) {
 				Dictionary text_edit;
-				text_edit["range"] = E->get()[i].range.to_json();
-				text_edit["newText"] = E->get()[i].newText;
+				text_edit["range"] = E.value[i].range.to_json();
+				text_edit["newText"] = E.value[i].newText;
 				edits.push_back(text_edit);
 			}
-			out_changes[E->key()] = edits;
+			out_changes[E.key] = edits;
 		}
 		dict["changes"] = out_changes;
 

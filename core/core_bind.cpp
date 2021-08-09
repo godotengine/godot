@@ -2411,12 +2411,12 @@ Error EngineDebugger::call_capture(void *p_user, const String &p_cmd, const Arra
 }
 
 EngineDebugger::~EngineDebugger() {
-	for (Map<StringName, Callable>::Element *E = captures.front(); E; E = E->next()) {
-		::EngineDebugger::unregister_message_capture(E->key());
+	for (const KeyValue<StringName, Callable> &E : captures) {
+		::EngineDebugger::unregister_message_capture(E.key);
 	}
 	captures.clear();
-	for (Map<StringName, ProfilerCallable>::Element *E = profilers.front(); E; E = E->next()) {
-		::EngineDebugger::unregister_profiler(E->key());
+	for (const KeyValue<StringName, ProfilerCallable> &E : profilers) {
+		::EngineDebugger::unregister_profiler(E.key);
 	}
 	profilers.clear();
 }

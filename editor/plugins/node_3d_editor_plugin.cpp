@@ -357,8 +357,8 @@ int Node3DEditorViewport::get_selected_count() const {
 
 	int count = 0;
 
-	for (Map<Node *, Object *>::Element *E = selection.front(); E; E = E->next()) {
-		Node3D *sp = Object::cast_to<Node3D>(E->key());
+	for (const KeyValue<Node *, Object *> &E : selection) {
+		Node3D *sp = Object::cast_to<Node3D>(E.key);
 		if (!sp) {
 			continue;
 		}
@@ -864,8 +864,8 @@ void Node3DEditorViewport::_compute_edit(const Point2 &p_point) {
 	Node3DEditorSelectedItem *se = selected ? editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(selected) : nullptr;
 
 	if (se && se->gizmo.is_valid()) {
-		for (Map<int, Transform3D>::Element *E = se->subgizmos.front(); E; E = E->next()) {
-			int subgizmo_id = E->key();
+		for (const KeyValue<int, Transform3D> &E : se->subgizmos) {
+			int subgizmo_id = E.key;
 			se->subgizmos[subgizmo_id] = se->gizmo->get_subgizmo_transform(subgizmo_id);
 		}
 		se->original_local = selected->get_transform();
@@ -1374,9 +1374,9 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							Vector<int> ids;
 							Vector<Transform3D> restore;
 
-							for (Map<int, Transform3D>::Element *GE = se->subgizmos.front(); GE; GE = GE->next()) {
-								ids.push_back(GE->key());
-								restore.push_back(GE->value());
+							for (const KeyValue<int, Transform3D> &GE : se->subgizmos) {
+								ids.push_back(GE.key);
+								restore.push_back(GE.value);
 							}
 
 							se->gizmo->commit_subgizmos(ids, restore, true);
@@ -1612,9 +1612,9 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							Vector<int> ids;
 							Vector<Transform3D> restore;
 
-							for (Map<int, Transform3D>::Element *GE = se->subgizmos.front(); GE; GE = GE->next()) {
-								ids.push_back(GE->key());
-								restore.push_back(GE->value());
+							for (const KeyValue<int, Transform3D> &GE : se->subgizmos) {
+								ids.push_back(GE.key);
+								restore.push_back(GE.value);
 							}
 
 							se->gizmo->commit_subgizmos(ids, restore, false);
@@ -1845,13 +1845,13 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							}
 
 							if (se->gizmo.is_valid()) {
-								for (Map<int, Transform3D>::Element *GE = se->subgizmos.front(); GE; GE = GE->next()) {
-									Transform3D xform = GE->get();
+								for (KeyValue<int, Transform3D> &GE : se->subgizmos) {
+									Transform3D xform = GE.value;
 									Transform3D new_xform = _compute_transform(TRANSFORM_SCALE, se->original * xform, xform, motion, snap, local_coords);
 									if (!local_coords) {
 										new_xform = se->original.affine_inverse() * new_xform;
 									}
-									se->gizmo->set_subgizmo_transform(GE->key(), new_xform);
+									se->gizmo->set_subgizmo_transform(GE.key, new_xform);
 								}
 							} else {
 								Transform3D new_xform = _compute_transform(TRANSFORM_SCALE, se->original, se->original_local, motion, snap, local_coords);
@@ -1944,11 +1944,11 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							}
 
 							if (se->gizmo.is_valid()) {
-								for (Map<int, Transform3D>::Element *GE = se->subgizmos.front(); GE; GE = GE->next()) {
-									Transform3D xform = GE->get();
+								for (KeyValue<int, Transform3D> &GE : se->subgizmos) {
+									Transform3D xform = GE.value;
 									Transform3D new_xform = _compute_transform(TRANSFORM_TRANSLATE, se->original * xform, xform, motion, snap, local_coords);
 									new_xform = se->original.affine_inverse() * new_xform;
-									se->gizmo->set_subgizmo_transform(GE->key(), new_xform);
+									se->gizmo->set_subgizmo_transform(GE.key, new_xform);
 								}
 							} else {
 								Transform3D new_xform = _compute_transform(TRANSFORM_TRANSLATE, se->original, se->original_local, motion, snap, local_coords);
@@ -2030,14 +2030,14 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 							Vector3 compute_axis = local_coords ? axis : plane.normal;
 							if (se->gizmo.is_valid()) {
-								for (Map<int, Transform3D>::Element *GE = se->subgizmos.front(); GE; GE = GE->next()) {
-									Transform3D xform = GE->get();
+								for (KeyValue<int, Transform3D> &GE : se->subgizmos) {
+									Transform3D xform = GE.value;
 
 									Transform3D new_xform = _compute_transform(TRANSFORM_ROTATE, se->original * xform, xform, compute_axis, angle, local_coords);
 									if (!local_coords) {
 										new_xform = se->original.affine_inverse() * new_xform;
 									}
-									se->gizmo->set_subgizmo_transform(GE->key(), new_xform);
+									se->gizmo->set_subgizmo_transform(GE.key, new_xform);
 								}
 							} else {
 								Transform3D new_xform = _compute_transform(TRANSFORM_ROTATE, se->original, se->original_local, compute_axis, angle, local_coords);
@@ -2666,8 +2666,8 @@ void Node3DEditorViewport::_notification(int p_what) {
 		bool changed = false;
 		bool exist = false;
 
-		for (Map<Node *, Object *>::Element *E = selection.front(); E; E = E->next()) {
-			Node3D *sp = Object::cast_to<Node3D>(E->key());
+		for (const KeyValue<Node *, Object *> &E : selection) {
+			Node3D *sp = Object::cast_to<Node3D>(E.key);
 			if (!sp) {
 				continue;
 			}
@@ -3809,8 +3809,8 @@ void Node3DEditorViewport::focus_selection() {
 		}
 
 		if (se->gizmo.is_valid()) {
-			for (Map<int, Transform3D>::Element *GE = se->subgizmos.front(); GE; GE = GE->next()) {
-				center += se->gizmo->get_subgizmo_transform(GE->key()).origin;
+			for (const KeyValue<int, Transform3D> &GE : se->subgizmos) {
+				center += se->gizmo->get_subgizmo_transform(GE.key).origin;
 				count++;
 			}
 		}
@@ -4750,8 +4750,8 @@ void Node3DEditor::update_transform_gizmo() {
 	Node3DEditorSelectedItem *se = selected ? editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(selected) : nullptr;
 
 	if (se && se->gizmo.is_valid()) {
-		for (Map<int, Transform3D>::Element *E = se->subgizmos.front(); E; E = E->next()) {
-			Transform3D xf = se->sp->get_global_transform() * se->gizmo->get_subgizmo_transform(E->key());
+		for (const KeyValue<int, Transform3D> &E : se->subgizmos) {
+			Transform3D xf = se->sp->get_global_transform() * se->gizmo->get_subgizmo_transform(E.key);
 			gizmo_center += xf.origin;
 			if (count == 0 && local_gizmo_coords) {
 				gizmo_basis = xf.basis;
@@ -6677,8 +6677,8 @@ Vector<int> Node3DEditor::get_subgizmo_selection() {
 
 	Vector<int> ret;
 	if (se) {
-		for (Map<int, Transform3D>::Element *E = se->subgizmos.front(); E; E = E->next()) {
-			ret.push_back(E->key());
+		for (const KeyValue<int, Transform3D> &E : se->subgizmos) {
+			ret.push_back(E.key);
 		}
 	}
 	return ret;

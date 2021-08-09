@@ -66,9 +66,9 @@ void EditorRunNative::_notification(int p_what) {
 		bool changed = EditorExport::get_singleton()->poll_export_platforms() || first;
 
 		if (changed) {
-			for (Map<int, MenuButton *>::Element *E = menus.front(); E; E = E->next()) {
-				Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(E->key());
-				MenuButton *mb = E->get();
+			for (KeyValue<int, MenuButton *> &E : menus) {
+				Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(E.key);
+				MenuButton *mb = E.value;
 				int dc = eep->get_options_count();
 
 				if (dc == 0) {

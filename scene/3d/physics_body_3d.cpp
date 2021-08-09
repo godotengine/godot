@@ -516,9 +516,9 @@ void RigidDynamicBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) 
 
 		//untag all
 		int rc = 0;
-		for (Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.front(); E; E = E->next()) {
-			for (int i = 0; i < E->get().shapes.size(); i++) {
-				E->get().shapes[i].tagged = false;
+		for (KeyValue<ObjectID, BodyState> &E : contact_monitor->body_map) {
+			for (int i = 0; i < E.value.shapes.size(); i++) {
+				E.value.shapes[i].tagged = false;
 				rc++;
 			}
 		}
@@ -564,12 +564,12 @@ void RigidDynamicBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) 
 
 		//put the ones to remove
 
-		for (Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.front(); E; E = E->next()) {
-			for (int i = 0; i < E->get().shapes.size(); i++) {
-				if (!E->get().shapes[i].tagged) {
-					toremove[toremove_count].rid = E->get().rid;
-					toremove[toremove_count].body_id = E->key();
-					toremove[toremove_count].pair = E->get().shapes[i];
+		for (const KeyValue<ObjectID, BodyState> &E : contact_monitor->body_map) {
+			for (int i = 0; i < E.value.shapes.size(); i++) {
+				if (!E.value.shapes[i].tagged) {
+					toremove[toremove_count].rid = E.value.rid;
+					toremove[toremove_count].body_id = E.key;
+					toremove[toremove_count].pair = E.value.shapes[i];
 					toremove_count++;
 				}
 			}
@@ -889,9 +889,9 @@ void RigidDynamicBody3D::set_contact_monitor(bool p_enabled) {
 	if (!p_enabled) {
 		ERR_FAIL_COND_MSG(contact_monitor->locked, "Can't disable contact monitoring during in/out callback. Use call_deferred(\"set_contact_monitor\", false) instead.");
 
-		for (Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.front(); E; E = E->next()) {
+		for (const KeyValue<ObjectID, BodyState> &E : contact_monitor->body_map) {
 			//clean up mess
-			Object *obj = ObjectDB::get_instance(E->key());
+			Object *obj = ObjectDB::get_instance(E.key);
 			Node *node = Object::cast_to<Node>(obj);
 
 			if (node) {
@@ -918,8 +918,8 @@ Array RigidDynamicBody3D::get_colliding_bodies() const {
 	Array ret;
 	ret.resize(contact_monitor->body_map.size());
 	int idx = 0;
-	for (const Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.front(); E; E = E->next()) {
-		Object *obj = ObjectDB::get_instance(E->key());
+	for (const KeyValue<ObjectID, BodyState> &E : contact_monitor->body_map) {
+		Object *obj = ObjectDB::get_instance(E.key);
 		if (!obj) {
 			ret.resize(ret.size() - 1); //ops
 		} else {

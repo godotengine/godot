@@ -223,8 +223,8 @@ List<ClassAPI> generate_c_api_classes() {
 				enum_api_map[enum_name] = enum_api;
 			}
 		}
-		for (const Map<StringName, EnumAPI>::Element *E = enum_api_map.front(); E; E = E->next()) {
-			global_constants_api.enums.push_back(E->get());
+		for (const KeyValue<StringName, EnumAPI> &E : enum_api_map) {
+			global_constants_api.enums.push_back(E.value);
 		}
 		global_constants_api.constants.sort_custom<ConstantAPIComparator>();
 		api.push_back(global_constants_api);

@@ -3632,17 +3632,17 @@ void VisualScriptEditor::_notification(int p_what) {
 				node_colors["constants"] = Color(0.94, 0.18, 0.49);
 			}
 
-			for (Map<StringName, Color>::Element *E = node_colors.front(); E; E = E->next()) {
+			for (const KeyValue<StringName, Color> &E : node_colors) {
 				const Ref<StyleBoxFlat> sb = tm->get_stylebox(SNAME("frame"), SNAME("GraphNode"));
 
 				if (!sb.is_null()) {
 					Ref<StyleBoxFlat> frame_style = sb->duplicate();
 					// Adjust the border color to be close to the GraphNode's background color.
 					// This keeps the node's title area from being too distracting.
-					Color color = dark_theme ? E->get().darkened(0.75) : E->get().lightened(0.75);
+					Color color = dark_theme ? E.value.darkened(0.75) : E.value.lightened(0.75);
 					color.a = 0.9;
 					frame_style->set_border_color(color);
-					node_styles[E->key()] = frame_style;
+					node_styles[E.key] = frame_style;
 				}
 			}
 
@@ -3813,15 +3813,15 @@ void VisualScriptEditor::_menu_option(int p_what) {
 				}
 			}
 
-			for (Map<int, Ref<VisualScriptNode>>::Element *E = clipboard->nodes.front(); E; E = E->next()) {
-				Ref<VisualScriptNode> node = E->get()->duplicate();
+			for (KeyValue<int, Ref<VisualScriptNode>> &E : clipboard->nodes) {
+				Ref<VisualScriptNode> node = E.value->duplicate();
 
 				int new_id = idc++;
 				to_select.insert(new_id);
 
-				remap[E->key()] = new_id;
+				remap[E.key] = new_id;
 
-				Vector2 paste_pos = clipboard->nodes_positions[E->key()];
+				Vector2 paste_pos = clipboard->nodes_positions[E.key];
 
 				while (existing_positions.has(paste_pos.snapped(Vector2(2, 2)))) {
 					paste_pos += Vector2(20, 20) * EDSCALE;
@@ -3906,16 +3906,16 @@ void VisualScriptEditor::_menu_option(int p_what) {
 					// the user wants to connect the nodes.
 					int top_nd = -1;
 					Vector2 top;
-					for (Map<int, Ref<VisualScriptNode>>::Element *E = nodes.front(); E; E = E->next()) {
-						Ref<VisualScriptNode> nd = script->get_node(E->key());
+					for (const KeyValue<int, Ref<VisualScriptNode>> &E : nodes) {
+						Ref<VisualScriptNode> nd = script->get_node(E.key);
 						if (nd.is_valid() && nd->has_input_sequence_port()) {
 							if (top_nd < 0) {
-								top_nd = E->key();
+								top_nd = E.key;
 								top = script->get_node_position(top_nd);
 							}
-							Vector2 pos = script->get_node_position(E->key());
+							Vector2 pos = script->get_node_position(E.key);
 							if (top.y > pos.y) {
-								top_nd = E->key();
+								top_nd = E.key;
 								top = pos;
 							}
 						}

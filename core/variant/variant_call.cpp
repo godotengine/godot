@@ -1241,8 +1241,8 @@ void Variant::get_constants_for_type(Variant::Type p_type, List<StringName> *p_c
 	for (List<StringName>::Element *E = cd.value_ordered.front(); E; E = E->next()) {
 		p_constants->push_back(E->get());
 #else
-	for (Map<StringName, int>::Element *E = cd.value.front(); E; E = E->next()) {
-		p_constants->push_back(E->key());
+	for (const KeyValue<StringName, int> &E : cd.value) {
+		p_constants->push_back(E.key);
 #endif
 	}
 
@@ -1250,8 +1250,8 @@ void Variant::get_constants_for_type(Variant::Type p_type, List<StringName> *p_c
 	for (List<StringName>::Element *E = cd.variant_value_ordered.front(); E; E = E->next()) {
 		p_constants->push_back(E->get());
 #else
-	for (Map<StringName, Variant>::Element *E = cd.variant_value.front(); E; E = E->next()) {
-		p_constants->push_back(E->key());
+	for (const KeyValue<StringName, Variant> &E : cd.variant_value) {
+		p_constants->push_back(E.key);
 #endif
 	}
 }

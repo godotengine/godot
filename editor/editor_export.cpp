@@ -1817,9 +1817,9 @@ bool EditorExportPlatformPC::can_export(const Ref<EditorExportPreset> &p_preset,
 
 List<String> EditorExportPlatformPC::get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
 	List<String> list;
-	for (Map<String, String>::Element *E = extensions.front(); E; E = E->next()) {
-		if (p_preset->get(E->key())) {
-			list.push_back(extensions[E->key()]);
+	for (const KeyValue<String, String> &E : extensions) {
+		if (p_preset->get(E.key)) {
+			list.push_back(extensions[E.key]);
 			return list;
 		}
 	}

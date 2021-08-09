@@ -382,8 +382,8 @@ void EditorSettingsDialog::_update_shortcuts() {
 	}
 
 	// remove sections with no shortcuts
-	for (Map<String, TreeItem *>::Element *E = sections.front(); E; E = E->next()) {
-		TreeItem *section = E->get();
+	for (KeyValue<String, TreeItem *> &E : sections) {
+		TreeItem *section = E.value;
 		if (section->get_first_child() == nullptr) {
 			root->remove_child(section);
 		}

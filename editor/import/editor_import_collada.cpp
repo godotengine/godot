@@ -1314,8 +1314,8 @@ Error ColladaImport::load(const String &p_path, int p_flags, bool p_force_make_t
 }
 
 void ColladaImport::_fix_param_animation_tracks() {
-	for (Map<String, Collada::Node *>::Element *E = collada.state.scene_map.front(); E; E = E->next()) {
-		Collada::Node *n = E->get();
+	for (KeyValue<String, Collada::Node *> &E : collada.state.scene_map) {
+		Collada::Node *n = E.value;
 		switch (n->type) {
 			case Collada::Node::TYPE_NODE: {
 				// ? do nothing
@@ -1363,7 +1363,7 @@ void ColladaImport::_fix_param_animation_tracks() {
 										for (int rti = 0; rti < rt.size(); rti++) {
 											Collada::AnimationTrack *at = &collada.state.animation_tracks.write[rt[rti]];
 
-											at->target = E->key();
+											at->target = E.key;
 											at->param = "morph/" + collada.state.mesh_name_map[mesh_name];
 											at->property = true;
 											//at->param
@@ -1431,11 +1431,11 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 		animation->set_name(collada.state.animation_clips[p_clip].name);
 	}
 
-	for (Map<String, NodeMap>::Element *E = node_map.front(); E; E = E->next()) {
-		if (E->get().bone < 0) {
+	for (const KeyValue<String, NodeMap> &E : node_map) {
+		if (E.value.bone < 0) {
 			continue;
 		}
-		bones_with_animation[E->key()] = false;
+		bones_with_animation[E.key] = false;
 	}
 	//store and validate tracks
 
@@ -1626,19 +1626,19 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 
 	if (p_make_tracks_in_all_bones) {
 		//some bones may lack animation, but since we don't store pose as a property, we must add keyframes!
-		for (Map<String, bool>::Element *E = bones_with_animation.front(); E; E = E->next()) {
-			if (E->get()) {
+		for (const KeyValue<String, bool> &E : bones_with_animation) {
+			if (E.value) {
 				continue;
 			}
 
-			NodeMap &nm = node_map[E->key()];
+			NodeMap &nm = node_map[E.key];
 			String path = scene->get_path_to(nm.node);
 			ERR_CONTINUE(nm.bone < 0);
 			Skeleton3D *sk = static_cast<Skeleton3D *>(nm.node);
 			String name = sk->get_bone_name(nm.bone);
 			path = path + ":" + name;
 
-			Collada::Node *cn = collada.state.scene_map[E->key()];
+			Collada::Node *cn = collada.state.scene_map[E.key];
 			if (cn->ignore_anim) {
 				WARN_PRINT("Collada: Ignoring animation on node: " + path);
 				continue;
