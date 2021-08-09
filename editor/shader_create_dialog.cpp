@@ -378,40 +378,30 @@ String ShaderCreateDialog::_validate_path(const String &p_path, bool p_file_must
 	memdelete(f);
 
 	String extension = p.get_extension();
-	List<String> extensions;
+	Set<String> extensions;
 
 	for (int l = 0; l < SHADER_TYPE_MAX; l++) {
 		for (List<String>::Element *E = language_data[l].extensions.front(); E; E = E->next()) {
-			extensions.push_back(E->get());
+			if (!extensions.has(E->get())) {
+				extensions.insert(E->get());
+			}
 		}
 	}
 
 	ShaderTypeData data = language_data[language_menu->get_selected()];
 
-	bool found = false;
 	bool match = false;
 	int index = 0;
-	for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
+	for (Set<String>::Element *E = extensions.front(); E; E = E->next()) {
 		if (E->get().nocasecmp_to(extension) == 0) {
-			found = true;
-			if (E->get() == data.default_extension) {
-				match = true;
-			}
+			match = true;
 			break;
 		}
 		index++;
 	}
 
-	if (!found) {
-		return TTR("Invalid extension.");
-	}
 	if (!match) {
 		return TTR("Wrong extension chosen.");
-	}
-
-	String path_error = ScriptServer::get_language(language_menu->get_selected())->validate_path(p);
-	if (path_error != "") {
-		return path_error;
 	}
 
 	return "";
@@ -468,7 +458,7 @@ void ShaderCreateDialog::_update_dialog() {
 
 	if (is_built_in) {
 		get_ok_button()->set_text(TTR("Create"));
-		_msg_path_valid(true, TTR("Built-in script (into scene file)."));
+		_msg_path_valid(true, TTR("Built-in shader (into scene file)."));
 	} else if (is_new_shader_created) {
 		get_ok_button()->set_text(TTR("Create"));
 		if (is_path_valid) {
