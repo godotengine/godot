@@ -633,6 +633,10 @@ OS_LinuxBSD::OS_LinuxBSD() {
 	main_loop = nullptr;
 	force_quit = false;
 
+#ifdef SNDIO_ENABLED
+	AudioDriverManager::add_driver(&driver_sndio);
+#endif
+
 #ifdef PULSEAUDIO_ENABLED
 	AudioDriverManager::add_driver(&driver_pulseaudio);
 #endif

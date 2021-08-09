@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  os_linuxbsd.h                                                        */
+/*  audio_driver_sndio.cpp                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,86 +28,113 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OS_LINUXBSD_H
-#define OS_LINUXBSD_H
-
-#include "core/input/input.h"
-#include "crash_handler_linuxbsd.h"
-#include "drivers/alsa/audio_driver_alsa.h"
-#include "drivers/alsamidi/midi_driver_alsamidi.h"
-#include "drivers/pulseaudio/audio_driver_pulseaudio.h"
-#include "drivers/sndio/audio_driver_sndio.h"
-#include "drivers/unix/os_unix.h"
-#include "joypad_linux.h"
-#include "servers/audio_server.h"
-
-class OS_LinuxBSD : public OS_Unix {
-	virtual void delete_main_loop() override;
-
-	bool force_quit;
-
-#ifdef JOYDEV_ENABLED
-	JoypadLinux *joypad = nullptr;
-#endif
-
-#ifdef ALSA_ENABLED
-	AudioDriverALSA driver_alsa;
-#endif
-
-#ifdef ALSAMIDI_ENABLED
-	MIDIDriverALSAMidi driver_alsamidi;
-#endif
+#include "audio_driver_sndio.h"
 
 #ifdef SNDIO_ENABLED
-	AudioDriverSndio driver_sndio;
-#endif
 
-#ifdef PULSEAUDIO_ENABLED
-	AudioDriverPulseAudio driver_pulseaudio;
-#endif
+#include "core/config/project_settings.h"
+#include "core/os/os.h"
 
-	CrashHandler crash_handler;
+Error AudioDriverSndio::init() {
+	active = false;
+	thread_exited = false;
+	exit_thread = false;
+	speaker_mode = SPEAKER_MODE_STEREO;
 
-	MainLoop *main_loop = nullptr;
+	handle = sio_open(SIO_DEVANY, SIO_PLAY, 0);
+	ERR_FAIL_COND_V(handle == NULL, ERR_CANT_OPEN);
 
-protected:
-	virtual void initialize() override;
-	virtual void finalize() override;
+	struct sio_par par;
+	sio_initpar(&par);
 
-	virtual void initialize_joypads() override;
+	par.bits = 32;
+	par.bps = 4;
+	par.rate = GLOBAL_GET("audio/driver/mix_rate");
+	par.appbufsz = 50 * par.rate / 1000;
 
-	virtual void set_main_loop(MainLoop *p_main_loop) override;
+	if (!sio_setpar(handle, &par)) {
+		return ERR_CANT_OPEN;
+	}
 
-public:
-	virtual String get_name() const override;
+	if (!sio_getpar(handle, &par)) {
+		return ERR_CANT_OPEN;
+	}
 
-	virtual MainLoop *get_main_loop() const override;
+	if (par.bits != 32 || par.bps != 4 || par.le != SIO_LE_NATIVE) {
+		return ERR_CANT_OPEN;
+	}
 
-	virtual uint64_t get_embedded_pck_offset() const override;
+	if (!sio_start(handle)) {
+		return ERR_CANT_OPEN;
+	}
 
-	virtual String get_config_path() const override;
-	virtual String get_data_path() const override;
-	virtual String get_cache_path() const override;
+	mix_rate = par.rate;
+	channels = par.pchan;
+	period_size = par.appbufsz;
 
-	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const override;
+	samples.resize(period_size * channels);
 
-	virtual Error shell_open(String p_uri) override;
+	thread.start(AudioDriverSndio::thread_func, this);
 
-	virtual String get_unique_id() const override;
-	virtual String get_processor_name() const override;
+	return OK;
+}
 
-	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
+void AudioDriverSndio::thread_func(void *p_udata) {
+	AudioDriverSndio *ad = (AudioDriverSndio *)p_udata;
 
-	virtual bool _check_internal_feature_support(const String &p_feature) override;
+	for (size_t i = 0; i < ad->period_size * ad->channels; ++i) {
+		ad->samples.write[i] = 0;
+	}
 
-	void run();
+	while (!ad->exit_thread) {
+		ad->lock();
+		ad->start_counting_ticks();
 
-	virtual void disable_crash_handler() override;
-	virtual bool is_disable_crash_handler() const override;
+		if (ad->active) {
+			ad->audio_server_process(ad->period_size, ad->samples.ptrw());
+		}
 
-	virtual Error move_to_trash(const String &p_path) override;
+		ad->stop_counting_ticks();
+		ad->unlock();
 
-	OS_LinuxBSD();
-};
+		size_t bytes = ad->period_size * ad->channels * sizeof(int32_t);
+		if (sio_write(ad->handle, ad->samples.ptr(), bytes) != bytes) {
+			ERR_PRINT("sndio: fatal error");
+			ad->exit_thread = true;
+		}
+	}
+
+	ad->thread_exited = true;
+}
+
+void AudioDriverSndio::start() {
+	active = true;
+}
+
+int AudioDriverSndio::get_mix_rate() const {
+	return mix_rate;
+}
+
+AudioDriver::SpeakerMode AudioDriverSndio::get_speaker_mode() const {
+	return speaker_mode;
+}
+
+void AudioDriverSndio::lock() {
+	mutex.lock();
+}
+
+void AudioDriverSndio::unlock() {
+	mutex.unlock();
+}
+
+void AudioDriverSndio::finish() {
+	exit_thread = true;
+	thread.wait_to_finish();
+
+	if (handle) {
+		sio_close(handle);
+		handle = NULL;
+	}
+}
 
 #endif
