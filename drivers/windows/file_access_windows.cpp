@@ -113,10 +113,10 @@ Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 		path = path + ".tmp";
 	}
 
-	errno_t errcode = _wfopen_s(&f, (LPCWSTR)(path.utf16().get_data()), mode_string);
+	f = _wfsopen((LPCWSTR)(path.utf16().get_data()), mode_string, _SH_DENYNO);
 
 	if (f == nullptr) {
-		switch (errcode) {
+		switch (errno) {
 			case ENOENT: {
 				last_error = ERR_FILE_NOT_FOUND;
 			} break;
@@ -307,10 +307,8 @@ void FileAccessWindows::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 }
 
 bool FileAccessWindows::file_exists(const String &p_name) {
-	FILE *g;
-	//printf("opening file %s\n", p_fname.utf8().get_data());
 	String filename = fix_path(p_name);
-	_wfopen_s(&g, (LPCWSTR)(filename.utf16().get_data()), L"rb");
+	FILE *g = _wfsopen((LPCWSTR)(filename.utf16().get_data()), L"rb", _SH_DENYNO);
 	if (g == nullptr) {
 		return false;
 	} else {
