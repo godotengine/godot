@@ -78,26 +78,18 @@ void ShaderCreateDialog::_update_theme() {
 void ShaderCreateDialog::_update_language_info() {
 	language_data.clear();
 
-	List<StringName> classes;
-	classes.push_front(SNAME("Shader"));
-	classes.push_front(SNAME("VisualShader"));
-
-	for (List<StringName>::Element *E = classes.front(); E; E = E->next()) {
-		language_data.push_back(ShaderTypeData());
-	}
-
-	int idx = 0;
-	for (List<ShaderTypeData>::Element *E = language_data.front(); E; E = E->next()) {
-		if (idx == int(SHADER_TYPE_TEXT)) {
-			E->get().use_templates = true;
-			E->get().extensions.push_back("gdshader");
-			E->get().default_extension = "gdshader";
+	for (int i = 0; i < SHADER_TYPE_MAX; i++) {
+		ShaderTypeData data;
+		if (i == int(SHADER_TYPE_TEXT)) {
+			data.use_templates = true;
+			data.extensions.push_back("gdshader");
+			data.default_extension = "gdshader";
 		} else {
-			E->get().default_extension = "tres";
+			data.default_extension = "tres";
 		}
-		E->get().extensions.push_back("res");
-		E->get().extensions.push_back("tres");
-		idx++;
+		data.extensions.push_back("res");
+		data.extensions.push_back("tres");
+		language_data.push_back(data);
 	}
 }
 
@@ -216,6 +208,7 @@ void ShaderCreateDialog::_load_exist() {
 }
 
 void ShaderCreateDialog::_language_changed(int p_language) {
+	current_language = p_language;
 	ShaderTypeData data = language_data[p_language];
 
 	String selected_ext = "." + data.default_extension;
@@ -304,20 +297,19 @@ void ShaderCreateDialog::_path_changed(const String &p_path) {
 	is_path_valid = false;
 	is_new_shader_created = true;
 
-	String path_error = _validate_path(p_path, false);
+	String path_error = _validate_path(p_path);
 	if (path_error != "") {
 		_msg_path_valid(false, path_error);
 		_update_dialog();
 		return;
 	}
 
-	DirAccess *f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	DirAccessRef f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	String p = ProjectSettings::get_singleton()->localize_path(p_path.strip_edges());
 	if (f->file_exists(p)) {
 		is_new_shader_created = false;
 		_msg_path_valid(true, TTR("File exists, it will be reused."));
 	}
-	memdelete(f);
 
 	is_path_valid = true;
 	_update_dialog();
@@ -345,7 +337,7 @@ void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabl
 	_path_changed(file_path->get_text());
 }
 
-String ShaderCreateDialog::_validate_path(const String &p_path, bool p_file_must_exist) {
+String ShaderCreateDialog::_validate_path(const String &p_path) {
 	String p = p_path.strip_edges();
 
 	if (p == "") {
@@ -360,46 +352,48 @@ String ShaderCreateDialog::_validate_path(const String &p_path, bool p_file_must
 		return TTR("Path is not local.");
 	}
 
-	DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	DirAccessRef d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	if (d->change_dir(p.get_base_dir()) != OK) {
-		memdelete(d);
 		return TTR("Invalid base path.");
 	}
-	memdelete(d);
 
-	DirAccess *f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	DirAccessRef f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	if (f->dir_exists(p)) {
-		memdelete(f);
 		return TTR("A directory with the same name exists.");
-	} else if (p_file_must_exist && !f->file_exists(p)) {
-		memdelete(f);
-		return TTR("File does not exist.");
 	}
-	memdelete(f);
 
 	String extension = p.get_extension();
 	Set<String> extensions;
 
-	for (int l = 0; l < SHADER_TYPE_MAX; l++) {
-		for (List<String>::Element *E = language_data[l].extensions.front(); E; E = E->next()) {
-			if (!extensions.has(E->get())) {
-				extensions.insert(E->get());
+	for (int i = 0; i < SHADER_TYPE_MAX; i++) {
+		for (const String &ext : language_data[i].extensions) {
+			if (!extensions.has(ext)) {
+				extensions.insert(ext);
 			}
 		}
 	}
 
 	ShaderTypeData data = language_data[language_menu->get_selected()];
 
+	bool found = false;
 	bool match = false;
-	int index = 0;
-	for (Set<String>::Element *E = extensions.front(); E; E = E->next()) {
-		if (E->get().nocasecmp_to(extension) == 0) {
-			match = true;
+
+	for (const String &ext : extensions) {
+		if (ext.nocasecmp_to(extension) == 0) {
+			found = true;
+			for (const String &lang_ext : language_data[current_language].extensions) {
+				if (lang_ext.nocasecmp_to(extension) == 0) {
+					match = true;
+					break;
+				}
+			}
 			break;
 		}
-		index++;
 	}
 
+	if (!found) {
+		return TTR("Invalid extension.");
+	}
 	if (!match) {
 		return TTR("Wrong extension chosen.");
 	}
@@ -575,8 +569,8 @@ ShaderCreateDialog::ShaderCreateDialog() {
 	// Modes.
 
 	mode_menu = memnew(OptionButton);
-	for (const List<String>::Element *E = ShaderTypes::get_singleton()->get_types_list().front(); E; E = E->next()) {
-		mode_menu->add_item(E->get().capitalize());
+	for (const String &type_name : ShaderTypes::get_singleton()->get_types_list()) {
+		mode_menu->add_item(type_name.capitalize());
 	}
 	gc->add_child(memnew(Label(TTR("Mode:"))));
 	gc->add_child(mode_menu);
