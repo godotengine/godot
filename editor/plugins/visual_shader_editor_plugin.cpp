@@ -408,10 +408,14 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 	node->connect("dragged", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_node_dragged), varray(p_id));
 
 	Control *custom_editor = nullptr;
-	int port_offset = 0;
+	int port_offset = 1;
+
+	Control *content_offset = memnew(Control);
+	content_offset->set_custom_minimum_size(Size2(0, 5 * EDSCALE));
+	node->add_child(content_offset);
 
 	if (is_group) {
-		port_offset += 2;
+		port_offset += 1;
 	}
 
 	if (is_resizable) {
@@ -448,7 +452,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		if (vsnode->get_input_port_count() == 0 && vsnode->get_output_port_count() == 1 && vsnode->get_output_port_name(0) == "") {
 			//shortcut
 			VisualShaderNode::PortType port_right = vsnode->get_output_port_type(0);
-			node->set_slot(0, false, VisualShaderNode::PORT_TYPE_SCALAR, Color(), true, port_right, type_color[port_right]);
+			node->set_slot(1, false, VisualShaderNode::PORT_TYPE_SCALAR, Color(), true, port_right, type_color[port_right]);
 			if (!vsnode->is_use_prop_slots()) {
 				return;
 			}
@@ -582,7 +586,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		if (is_curve) {
 			VisualShaderNode::PortType port_left = vsnode->get_input_port_type(0);
 			VisualShaderNode::PortType port_right = vsnode->get_output_port_type(0);
-			node->set_slot(0, true, port_left, type_color[port_left], true, port_right, type_color[port_right]);
+			node->set_slot(1, true, port_left, type_color[port_left], true, port_right, type_color[port_right]);
 
 			VisualShaderEditor::get_singleton()->call_deferred(SNAME("_set_node_size"), (int)p_type, p_id, size);
 		}
@@ -594,10 +598,6 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 	}
 
 	if (is_group) {
-		offset = memnew(Control);
-		offset->set_custom_minimum_size(Size2(0, 6 * EDSCALE));
-		node->add_child(offset);
-
 		if (group_node->is_editable()) {
 			HBoxContainer *hb2 = memnew(HBoxContainer);
 
