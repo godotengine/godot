@@ -3211,6 +3211,23 @@ void CSharpScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 	}
 }
 
+bool CSharpScript::inherits_script(const Ref<Script> &p_script) const {
+	Ref<CSharpScript> cs = p_script;
+	if (cs.is_null()) {
+		return false;
+	}
+
+	if (script_class == nullptr || cs->script_class == nullptr) {
+		return false;
+	}
+
+	if (script_class == cs->script_class) {
+		return true;
+	}
+
+	return cs->script_class->is_assignable_from(script_class);
+}
+
 Ref<Script> CSharpScript::get_base_script() const {
 	// TODO search in metadata file once we have it, not important any way?
 	return Ref<Script>();
