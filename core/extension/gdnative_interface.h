@@ -145,12 +145,12 @@ typedef uint64_t GDObjectInstanceID;
 /* VARIANT DATA I/O */
 
 typedef enum {
-	NATIVE_CALL_OK,
-	NATIVE_CALL_ERROR_INVALID_METHOD,
-	NATIVE_CALL_ERROR_INVALID_ARGUMENT, /* expected is variant type */
-	NATIVE_CALL_ERROR_TOO_MANY_ARGUMENTS, /* expected is number of arguments */
-	NATIVE_CALL_ERROR_TOO_FEW_ARGUMENTS, /*  expected is number of arguments */
-	NATIVE_CALL_ERROR_INSTANCE_IS_NULL,
+	GDNATIVE_CALL_OK,
+	GDNATIVE_CALL_ERROR_INVALID_METHOD,
+	GDNATIVE_CALL_ERROR_INVALID_ARGUMENT, /* expected is variant type */
+	GDNATIVE_CALL_ERROR_TOO_MANY_ARGUMENTS, /* expected is number of arguments */
+	GDNATIVE_CALL_ERROR_TOO_FEW_ARGUMENTS, /*  expected is number of arguments */
+	GDNATIVE_CALL_ERROR_INSTANCE_IS_NULL,
 
 } GDNativeCallErrorType;
 
