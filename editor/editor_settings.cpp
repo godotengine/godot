@@ -476,6 +476,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// SceneTree
 	_initial_set("docks/scene_tree/start_create_dialog_fully_expanded", false);
+	_initial_set("docks/scene_tree/auto_expand_to_selected", true);
 
 	// FileSystem
 	_initial_set("docks/filesystem/thumbnail_size", 64);
