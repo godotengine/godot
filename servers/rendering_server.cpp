@@ -2771,13 +2771,14 @@ void RenderingServer::mesh_add_surface_from_mesh_data(RID p_mesh, const Geometry
 		const Geometry3D::MeshData::Face &f = p_mesh_data.faces[i];
 
 		for (int j = 2; j < f.indices.size(); j++) {
-#define _ADD_VERTEX(m_idx)                                      \
-	vertices.push_back(p_mesh_data.vertices[f.indices[m_idx]]); \
-	normals.push_back(f.plane.normal);
+			vertices.push_back(p_mesh_data.vertices[f.indices[0]]);
+			normals.push_back(f.plane.normal);
 
-			_ADD_VERTEX(0);
-			_ADD_VERTEX(j - 1);
-			_ADD_VERTEX(j);
+			vertices.push_back(p_mesh_data.vertices[f.indices[j - 1]]);
+			normals.push_back(f.plane.normal);
+
+			vertices.push_back(p_mesh_data.vertices[f.indices[j]]);
+			normals.push_back(f.plane.normal);
 		}
 	}
 
