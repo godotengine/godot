@@ -1278,6 +1278,11 @@ LIGHT_SHADER_CODE
 	float NdotV = dot(N, V);
 	float cNdotV = max(abs(NdotV), 1e-6);
 
+/* Make a default specular mode SPECULAR_SCHLICK_GGX. */
+#if !defined(SPECULAR_DISABLED) && !defined(SPECULAR_SCHLICK_GGX) && !defined(SPECULAR_BLINN) && !defined(SPECULAR_PHONG) && !defined(SPECULAR_TOON)
+#define SPECULAR_SCHLICK_GGX
+#endif
+
 #if defined(DIFFUSE_BURLEY) || defined(SPECULAR_BLINN) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_USE_CLEARCOAT)
 	vec3 H = normalize(V + L);
 #endif
