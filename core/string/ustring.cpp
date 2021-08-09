@@ -2673,7 +2673,7 @@ uint32_t String::hash(const char *p_cstr) {
 	uint32_t c;
 
 	while ((c = *p_cstr++)) {
-		hashv = ((hashv << 5) + hashv) + c; /* hash * 33 + c */
+		hashv = ((hashv << 5) + hashv) ^ c; /* hash * 33 ^ c */
 	}
 
 	return hashv;
@@ -2682,7 +2682,7 @@ uint32_t String::hash(const char *p_cstr) {
 uint32_t String::hash(const char *p_cstr, int p_len) {
 	uint32_t hashv = 5381;
 	for (int i = 0; i < p_len; i++) {
-		hashv = ((hashv << 5) + hashv) + p_cstr[i]; /* hash * 33 + c */
+		hashv = ((hashv << 5) + hashv) ^ p_cstr[i]; /* hash * 33 ^ c */
 	}
 
 	return hashv;
@@ -2691,7 +2691,7 @@ uint32_t String::hash(const char *p_cstr, int p_len) {
 uint32_t String::hash(const wchar_t *p_cstr, int p_len) {
 	uint32_t hashv = 5381;
 	for (int i = 0; i < p_len; i++) {
-		hashv = ((hashv << 5) + hashv) + p_cstr[i]; /* hash * 33 + c */
+		hashv = ((hashv << 5) + hashv) ^ p_cstr[i]; /* hash * 33 ^ c */
 	}
 
 	return hashv;
@@ -2702,7 +2702,7 @@ uint32_t String::hash(const wchar_t *p_cstr) {
 	uint32_t c;
 
 	while ((c = *p_cstr++)) {
-		hashv = ((hashv << 5) + hashv) + c; /* hash * 33 + c */
+		hashv = ((hashv << 5) + hashv) ^ c; /* hash * 33 ^ c */
 	}
 
 	return hashv;
@@ -2711,7 +2711,7 @@ uint32_t String::hash(const wchar_t *p_cstr) {
 uint32_t String::hash(const char32_t *p_cstr, int p_len) {
 	uint32_t hashv = 5381;
 	for (int i = 0; i < p_len; i++) {
-		hashv = ((hashv << 5) + hashv) + p_cstr[i]; /* hash * 33 + c */
+		hashv = ((hashv << 5) + hashv) ^ p_cstr[i]; /* hash * 33 ^ c */
 	}
 
 	return hashv;
@@ -2722,7 +2722,7 @@ uint32_t String::hash(const char32_t *p_cstr) {
 	uint32_t c;
 
 	while ((c = *p_cstr++)) {
-		hashv = ((hashv << 5) + hashv) + c; /* hash * 33 + c */
+		hashv = ((hashv << 5) + hashv) ^ c; /* hash * 33 ^ c */
 	}
 
 	return hashv;
@@ -2736,7 +2736,7 @@ uint32_t String::hash() const {
 	uint32_t c;
 
 	while ((c = *chr++)) {
-		hashv = ((hashv << 5) + hashv) + c; /* hash * 33 + c */
+		hashv = ((hashv << 5) + hashv) ^ c; /* hash * 33 ^ c */
 	}
 
 	return hashv;
@@ -2750,7 +2750,7 @@ uint64_t String::hash64() const {
 	uint64_t c;
 
 	while ((c = *chr++)) {
-		hashv = ((hashv << 5) + hashv) + c; /* hash * 33 + c */
+		hashv = ((hashv << 5) + hashv) ^ c; /* hash * 33 ^ c */
 	}
 
 	return hashv;
