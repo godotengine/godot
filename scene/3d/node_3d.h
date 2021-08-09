@@ -167,18 +167,18 @@ public:
 
 	Transform3D get_relative_transform(const Node *p_parent) const;
 
-	void rotate(const Vector3 &p_axis, float p_angle);
-	void rotate_x(float p_angle);
-	void rotate_y(float p_angle);
-	void rotate_z(float p_angle);
+	void rotate(const Vector3 &p_axis, real_t p_angle);
+	void rotate_x(real_t p_angle);
+	void rotate_y(real_t p_angle);
+	void rotate_z(real_t p_angle);
 	void translate(const Vector3 &p_offset);
 	void scale(const Vector3 &p_ratio);
 
-	void rotate_object_local(const Vector3 &p_axis, float p_angle);
+	void rotate_object_local(const Vector3 &p_axis, real_t p_angle);
 	void scale_object_local(const Vector3 &p_scale);
 	void translate_object_local(const Vector3 &p_offset);
 
-	void global_rotate(const Vector3 &p_axis, float p_angle);
+	void global_rotate(const Vector3 &p_axis, real_t p_angle);
 	void global_scale(const Vector3 &p_scale);
 	void global_translate(const Vector3 &p_offset);
 

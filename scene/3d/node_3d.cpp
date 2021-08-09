@@ -588,31 +588,31 @@ bool Node3D::is_visible() const {
 	return data.visible;
 }
 
-void Node3D::rotate_object_local(const Vector3 &p_axis, float p_angle) {
+void Node3D::rotate_object_local(const Vector3 &p_axis, real_t p_angle) {
 	Transform3D t = get_transform();
 	t.basis.rotate_local(p_axis, p_angle);
 	set_transform(t);
 }
 
-void Node3D::rotate(const Vector3 &p_axis, float p_angle) {
+void Node3D::rotate(const Vector3 &p_axis, real_t p_angle) {
 	Transform3D t = get_transform();
 	t.basis.rotate(p_axis, p_angle);
 	set_transform(t);
 }
 
-void Node3D::rotate_x(float p_angle) {
+void Node3D::rotate_x(real_t p_angle) {
 	Transform3D t = get_transform();
 	t.basis.rotate(Vector3(1, 0, 0), p_angle);
 	set_transform(t);
 }
 
-void Node3D::rotate_y(float p_angle) {
+void Node3D::rotate_y(real_t p_angle) {
 	Transform3D t = get_transform();
 	t.basis.rotate(Vector3(0, 1, 0), p_angle);
 	set_transform(t);
 }
 
-void Node3D::rotate_z(float p_angle) {
+void Node3D::rotate_z(real_t p_angle) {
 	Transform3D t = get_transform();
 	t.basis.rotate(Vector3(0, 0, 1), p_angle);
 	set_transform(t);
@@ -644,7 +644,7 @@ void Node3D::scale_object_local(const Vector3 &p_scale) {
 	set_transform(t);
 }
 
-void Node3D::global_rotate(const Vector3 &p_axis, float p_angle) {
+void Node3D::global_rotate(const Vector3 &p_axis, real_t p_angle) {
 	Transform3D t = get_global_transform();
 	t.basis.rotate(p_axis, p_angle);
 	set_global_transform(t);
