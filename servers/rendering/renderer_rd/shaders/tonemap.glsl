@@ -184,10 +184,6 @@ vec3 tonemap_aces(vec3 color, float white) {
 }
 
 vec3 tonemap_reinhard(vec3 color, float white) {
-	// Ensure color values are positive.
-	// They can be negative in the case of negative lights, which leads to undesired behavior.
-	color = max(vec3(0.0), color);
-
 	return (white * color + color) / (color * white + white);
 }
 
@@ -211,7 +207,7 @@ vec3 apply_tonemapping(vec3 color, float white) { // inputs are LINEAR, always o
 		return tonemap_reinhard(color, white);
 	} else if (params.tonemapper == TONEMAPPER_FILMIC) {
 		return tonemap_filmic(color, white);
-	} else { //aces
+	} else { // TONEMAPPER_ACES
 		return tonemap_aces(color, white);
 	}
 }
@@ -405,7 +401,9 @@ void main() {
 		color += screen_space_dither(gl_FragCoord.xy);
 	}
 
-	color = apply_tonemapping(color, params.white);
+	// Ensure color values passed to tonemappers are positive.
+	// They can be negative in the case of negative lights, which leads to undesired behavior.
+	color = apply_tonemapping(max(vec3(0.0), color), params.white);
 
 	color = linear_to_srgb(color); // regular linear -> SRGB conversion
 
