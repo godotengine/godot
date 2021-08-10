@@ -1693,6 +1693,8 @@ FRAGMENT_SHADER_CODE
 	ref_vec.z *= -1.0;
 
 	specular_light = textureCubeLod(radiance_map, ref_vec, roughness * RADIANCE_MAX_LOD).xyz * bg_energy;
+	float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
+	specular_light *= horizon * horizon;
 #ifndef USE_LIGHTMAP
 	{
 		vec3 ambient_dir = normalize((radiance_inverse_xform * vec4(normal, 0.0)).xyz);
