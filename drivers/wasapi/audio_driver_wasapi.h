@@ -38,15 +38,16 @@
 #include "servers/audio_server.h"
 
 #include <audioclient.h>
+#include <atlbase.h>
 #include <mmdeviceapi.h>
 #include <windows.h>
 
 class AudioDriverWASAPI : public AudioDriver {
 	class AudioDeviceWASAPI {
 	public:
-		IAudioClient *audio_client = nullptr;
-		IAudioRenderClient *render_client = nullptr;
-		IAudioCaptureClient *capture_client = nullptr;
+		CComPtr<IAudioClient> audio_client = nullptr;
+		CComPtr<IAudioRenderClient> render_client = nullptr;
+		CComPtr<IAudioCaptureClient> capture_client = nullptr;
 		bool active = false;
 
 		WORD format_tag = 0;
