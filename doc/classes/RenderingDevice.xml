@@ -142,7 +142,7 @@
 			<argument index="5" name="clear_color_values" type="PackedColorArray" default="PackedColorArray()" />
 			<argument index="6" name="clear_depth" type="float" default="1.0" />
 			<argument index="7" name="clear_stencil" type="int" default="0" />
-			<argument index="8" name="region" type="Rect2" default="Rect2i(0, 0, 0, 0)" />
+			<argument index="8" name="region" type="Rect2" default="Rect2(0, 0, 0, 0)" />
 			<argument index="9" name="storage_textures" type="Array" default="[]" />
 			<description>
 			</description>
@@ -165,7 +165,7 @@
 			<argument index="6" name="clear_color_values" type="PackedColorArray" default="PackedColorArray()" />
 			<argument index="7" name="clear_depth" type="float" default="1.0" />
 			<argument index="8" name="clear_stencil" type="int" default="0" />
-			<argument index="9" name="region" type="Rect2" default="Rect2i(0, 0, 0, 0)" />
+			<argument index="9" name="region" type="Rect2" default="Rect2(0, 0, 0, 0)" />
 			<argument index="10" name="storage_textures" type="RID[]" default="[]" />
 			<description>
 			</description>
@@ -217,7 +217,7 @@
 		<method name="draw_list_enable_scissor">
 			<return type="void" />
 			<argument index="0" name="draw_list" type="int" />
-			<argument index="1" name="rect" type="Rect2" default="Rect2i(0, 0, 0, 0)" />
+			<argument index="1" name="rect" type="Rect2" default="Rect2(0, 0, 0, 0)" />
 			<description>
 			</description>
 		</method>

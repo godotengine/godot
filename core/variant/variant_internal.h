@@ -1171,6 +1171,11 @@ struct VariantInitializer<PackedColorArray> {
 	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_color_array(v); }
 };
 
+template <>
+struct VariantInitializer<Object *> {
+	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::object_assign_null(v); }
+};
+
 template <class T>
 struct VariantZeroAssigner {
 };
@@ -1382,6 +1387,21 @@ struct VariantTypeAdjust<Object *> {
 	_FORCE_INLINE_ static void adjust(Variant *r_ret) {
 		VariantInternal::clear(r_ret);
 		*r_ret = (Object *)nullptr;
+	}
+};
+
+// GDNative extension helpers.
+
+template <class T>
+struct VariantTypeConstructor {
+	_FORCE_INLINE_ static void variant_from_type(void *p_variant, void *p_value) {
+		Variant *variant = reinterpret_cast<Variant *>(p_variant);
+		VariantInitializer<T>::init(variant);
+		VariantInternalAccessor<T>::set(variant, *((T *)p_value));
+	}
+
+	_FORCE_INLINE_ static void type_from_variant(void *p_value, void *p_variant) {
+		*((T *)p_value) = VariantInternalAccessor<T>::get(reinterpret_cast<Variant *>(p_variant));
 	}
 };
 
