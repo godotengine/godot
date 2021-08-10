@@ -286,7 +286,7 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_c
 		hr = p_device->audio_client->GetService(IID_IAudioRenderClient, (void **)&p_device->render_client);
 	}
 	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
-	
+
 	// Free memory
 	CoTaskMemFree(pwfex);
 
