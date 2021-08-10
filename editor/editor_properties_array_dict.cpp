@@ -675,6 +675,8 @@ void EditorPropertyArray::_reorder_button_up() {
 	reorder_mouse_y_delta = 0.0f;
 
 	Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+
+	ERR_FAIL_NULL(reorder_selected_button);
 	reorder_selected_button->warp_mouse(reorder_selected_button->get_size() / 2.0f);
 
 	reorder_selected_element_hbox = nullptr;
