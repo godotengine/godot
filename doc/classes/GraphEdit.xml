@@ -32,6 +32,12 @@
 				Makes possible to disconnect nodes when dragging from the slot at the right if it has the specified type.
 			</description>
 		</method>
+		<method name="arrange_nodes">
+			<return type="void" />
+			<description>
+				Rearranges selected nodes in a layout with minimum crossings between connections and uniform horizontal and vertical gap between nodes.
+			</description>
+		</method>
 		<method name="clear_connections">
 			<return type="void" />
 			<description>
@@ -282,6 +288,8 @@
 		</theme_item>
 		<theme_item name="grid_minor" data_type="color" type="Color" default="Color(1, 1, 1, 0.05)">
 			Color of minor grid lines.
+		</theme_item>
+		<theme_item name="layout" data_type="icon" type="Texture2D">
 		</theme_item>
 		<theme_item name="minimap" data_type="icon" type="Texture2D">
 		</theme_item>
