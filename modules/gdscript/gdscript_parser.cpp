@@ -133,7 +133,7 @@ GDScriptParser::GDScriptParser() {
 	register_annotation(MethodInfo("@export_flags_3d_physics"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_PHYSICS, Variant::INT>);
 	register_annotation(MethodInfo("@export_flags_3d_navigation"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_NAVIGATION, Variant::INT>);
 	// Networking.
-	register_annotation(MethodInfo("@rpc", { Variant::STRING, "mode" }, { Variant::STRING, "sync" }, { Variant::STRING, "transfer_mode" }, { Variant::INT, "transfer_channel" }), AnnotationInfo::FUNCTION, &GDScriptParser::network_annotations<MultiplayerAPI::RPC_MODE_PUPPET>, 4, true);
+	register_annotation(MethodInfo("@rpc", { Variant::STRING, "mode" }, { Variant::STRING, "sync" }, { Variant::STRING, "transfer_mode" }, { Variant::INT, "transfer_channel" }), AnnotationInfo::FUNCTION, &GDScriptParser::network_annotations<MultiplayerAPI::RPC_MODE_AUTHORITY>, 4, true);
 	// TODO: Warning annotations.
 }
 
@@ -3403,13 +3403,11 @@ bool GDScriptParser::network_annotations(const AnnotationNode *p_annotation, Nod
 		if (i == 0) {
 			String mode = p_annotation->resolved_arguments[i].operator String();
 			if (mode == "any") {
-				rpc_config.rpc_mode = MultiplayerAPI::RPC_MODE_REMOTE;
-			} else if (mode == "master") {
-				rpc_config.rpc_mode = MultiplayerAPI::RPC_MODE_MASTER;
-			} else if (mode == "puppet") {
-				rpc_config.rpc_mode = MultiplayerAPI::RPC_MODE_PUPPET;
+				rpc_config.rpc_mode = MultiplayerAPI::RPC_MODE_ANY;
+			} else if (mode == "auth") {
+				rpc_config.rpc_mode = MultiplayerAPI::RPC_MODE_AUTHORITY;
 			} else {
-				push_error(R"(Invalid RPC mode. Must be one of: 'any', 'master', or 'puppet')", p_annotation);
+				push_error(R"(Invalid RPC mode. Must be one of: 'any' or 'auth')", p_annotation);
 				return false;
 			}
 		} else if (i == 1) {
