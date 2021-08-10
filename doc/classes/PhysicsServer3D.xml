@@ -572,6 +572,8 @@
 			<argument index="3" name="infinite_inertia" type="bool" />
 			<argument index="4" name="margin" type="float" default="0.001" />
 			<argument index="5" name="result" type="PhysicsTestMotionResult3D" default="null" />
+			<argument index="6" name="exclude_raycast_shapes" type="bool" default="true" />
+			<argument index="7" name="exclude" type="Array" default="[]" />
 			<description>
 				Returns [code]true[/code] if a collision would result from moving in the given direction from a given point in space. Margin increases the size of the shapes involved in the collision detection. [PhysicsTestMotionResult3D] can be passed to return additional information in.
 			</description>

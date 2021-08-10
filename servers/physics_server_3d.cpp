@@ -447,12 +447,16 @@ void PhysicsTestMotionResult3D::_bind_methods() {
 
 ///////////////////////////////////////
 
-bool PhysicsServer3D::_body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia, real_t p_margin, const Ref<PhysicsTestMotionResult3D> &p_result) {
+bool PhysicsServer3D::_body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia, real_t p_margin, const Ref<PhysicsTestMotionResult3D> &p_result, bool p_exclude_raycast_shapes, const Vector<RID> &p_exclude) {
 	MotionResult *r = nullptr;
 	if (p_result.is_valid()) {
 		r = p_result->get_result_ptr();
 	}
-	return body_test_motion(p_body, p_from, p_motion, p_infinite_inertia, p_margin, r);
+	Set<RID> exclude;
+	for (int i = 0; i < p_exclude.size(); i++) {
+		exclude.insert(p_exclude[i]);
+	}
+	return body_test_motion(p_body, p_from, p_motion, p_infinite_inertia, p_margin, r, p_exclude_raycast_shapes, exclude);
 }
 
 RID PhysicsServer3D::shape_create(ShapeType p_shape) {
@@ -608,7 +612,7 @@ void PhysicsServer3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("body_set_ray_pickable", "body", "enable"), &PhysicsServer3D::body_set_ray_pickable);
 
-	ClassDB::bind_method(D_METHOD("body_test_motion", "body", "from", "motion", "infinite_inertia", "margin", "result"), &PhysicsServer3D::_body_test_motion, DEFVAL(0.001), DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("body_test_motion", "body", "from", "motion", "infinite_inertia", "margin", "result", "exclude_raycast_shapes", "exclude"), &PhysicsServer3D::_body_test_motion, DEFVAL(0.001), DEFVAL(Variant()), DEFVAL(true), DEFVAL(Array()));
 
 	ClassDB::bind_method(D_METHOD("body_get_direct_state", "body"), &PhysicsServer3D::body_get_direct_state);
 

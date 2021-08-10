@@ -1075,7 +1075,7 @@ void CharacterBody2D::move_and_slide() {
 	floor_normal = Vector2();
 	floor_velocity = Vector2();
 
-	if (current_floor_velocity != Vector2()) {
+	if (current_floor_velocity != Vector2() && on_floor_body.is_valid()) {
 		PhysicsServer2D::MotionResult floor_result;
 		Set<RID> exclude;
 		exclude.insert(on_floor_body);

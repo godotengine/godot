@@ -135,6 +135,10 @@ bool GodotKinClosestConvexResultCallback::needsCollision(btBroadphaseProxy *prox
 			if (m_self_object->has_collision_exception(gObj) || gObj->has_collision_exception(m_self_object)) {
 				return false;
 			}
+
+			if (m_exclude->has(gObj->get_self())) {
+				return false;
+			}
 		}
 		return true;
 	} else {

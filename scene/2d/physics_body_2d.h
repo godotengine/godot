@@ -292,6 +292,8 @@ private:
 
 	Ref<KinematicCollision2D> _get_slide_collision(int p_bounce);
 
+	void _set_collision_direction(const PhysicsServer2D::MotionResult &p_result);
+
 	bool separate_raycast_shapes(PhysicsServer2D::MotionResult &r_result);
 
 	void set_safe_margin(real_t p_margin);
@@ -314,7 +316,6 @@ private:
 
 	const Vector2 &get_up_direction() const;
 	void set_up_direction(const Vector2 &p_up_direction);
-	void _set_collision_direction(const PhysicsServer2D::MotionResult &p_result);
 
 protected:
 	void _notification(int p_what);
