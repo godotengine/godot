@@ -208,11 +208,10 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 
 		//normalized blinn
 		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
-		float blinn = pow(cNdotH, shininess) * cNdotL;
-		blinn *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));
-		float intensity = blinn;
+		float blinn = pow(cNdotH, shininess);
+		blinn *= (shininess + 2.0) * (1.0 / (8.0 * M_PI));
 
-		specular_light += light_color * intensity * attenuation * specular_amount;
+		specular_light += light_color * attenuation * specular_amount * blinn * albedo * unpackUnorm4x8(orms).w;
 
 #elif defined(SPECULAR_PHONG)
 
@@ -220,10 +219,9 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 		float cRdotV = clamp(A + dot(R, V), 0.0, 1.0);
 		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
 		float phong = pow(cRdotV, shininess);
-		phong *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));
-		float intensity = (phong) / max(4.0 * cNdotV * cNdotL, 0.75);
+		phong *= (shininess + 1.0) * (1.0 / (8.0 * M_PI));
 
-		specular_light += light_color * intensity * attenuation * specular_amount;
+		specular_light += light_color * attenuation * specular_amount * phong * albedo * unpackUnorm4x8(orms).w;
 
 #elif defined(SPECULAR_TOON)
 
