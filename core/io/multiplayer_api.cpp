@@ -545,6 +545,8 @@ void MultiplayerAPI::_process_spawn_despawn(int p_from, const uint8_t *p_packet,
 	if (cfg.mode == SPAWN_MODE_SERVER && p_from == 1) {
 		String scene_path = ResourceUID::get_singleton()->get_id_path(id);
 		if (p_spawn) {
+			const bool is_raw = ((p_packet[0] & 64) >> BYTE_ONLY_OR_NO_ARGS_SHIFT) == 1;
+
 			ERR_FAIL_COND_MSG(parent->has_node(name), vformat("Unable to spawn node. Node already exists: %s/%s", parent->get_path(), name));
 			RES res = ResourceLoader::load(scene_path);
 			ERR_FAIL_COND_MSG(!res.is_valid(), "Unable to load scene to spawn at path: " + scene_path);
@@ -554,7 +556,7 @@ void MultiplayerAPI::_process_spawn_despawn(int p_from, const uint8_t *p_packet,
 			ERR_FAIL_COND(!node);
 			replicated_nodes[node->get_instance_id()] = id;
 			int size;
-			_decode_spawn_state(cfg, node, data.ptr(), data.size(), size);
+			_decode_spawn_state(cfg, node, data.ptr(), data.size(), size, is_raw);
 			parent->_add_child_nocheck(node, name);
 			emit_signal(SNAME("network_spawn"), id, node);
 		} else {
@@ -984,7 +986,7 @@ void MultiplayerAPI::_add_peer(int p_id) {
 			ERR_CONTINUE(!obj);
 			Node *node = Object::cast_to<Node>(obj);
 			ERR_CONTINUE(!node);
-			_send_spawn_despawn(p_id, E.value, node->get_path(), node, true);
+			_send_spawn_despawn(p_id, E.value, node->get_path(), node, true, true);
 		}
 	}
 	emit_signal(SNAME("network_peer_connected"), p_id);
@@ -1173,14 +1175,14 @@ Error MultiplayerAPI::spawnable_config(const ResourceUID::ID &p_id, SpawnMode p_
 }
 
 Error MultiplayerAPI::send_despawn(int p_peer_id, const ResourceUID::ID &p_scene_id, const NodePath &p_path, const PackedByteArray &p_data) {
-	return _send_spawn_despawn(p_peer_id, p_scene_id, p_path, p_data, false);
+	return _send_spawn_despawn(p_peer_id, p_scene_id, p_path, p_data, false, false);
 }
 
 Error MultiplayerAPI::send_spawn(int p_peer_id, const ResourceUID::ID &p_scene_id, const NodePath &p_path, const PackedByteArray &p_data) {
-	return _send_spawn_despawn(p_peer_id, p_scene_id, p_path, p_data, true);
+	return _send_spawn_despawn(p_peer_id, p_scene_id, p_path, p_data, true, false);
 }
 
-Error MultiplayerAPI::_send_spawn_despawn(int p_peer_id, const ResourceUID::ID &p_scene_id, const NodePath &p_path, const Variant &p_state, bool p_spawn) {
+Error MultiplayerAPI::_send_spawn_despawn(int p_peer_id, const ResourceUID::ID &p_scene_id, const NodePath &p_path, const Variant &p_state, bool p_spawn, bool p_optimize_objects) {
 	ERR_FAIL_COND_V(!root_node, ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V_MSG(!spawnables.has(p_scene_id), ERR_INVALID_PARAMETER, vformat("Spawnable not found: %d", p_scene_id));
 
@@ -1196,17 +1198,20 @@ Error MultiplayerAPI::_send_spawn_despawn(int p_peer_id, const ResourceUID::ID &
 	Variant::Type state_type = p_state.get_type();
 	int state_len = 0;
 	Error err;
+	bool is_raw = false;
 	switch (state_type) {
 		case Variant::OBJECT:
-			err = _encode_spawn_state(cfg, p_state.get_validated_object(), nullptr, state_len);
+			err = _encode_spawn_state(cfg, p_state.get_validated_object(), nullptr, state_len, p_optimize_objects ? &is_raw : nullptr);
 			break;
 		case Variant::PACKED_BYTE_ARRAY: {
 			const PackedByteArray pba = p_state.operator PackedByteArray();
 			state_len = pba.size();
 			err = OK;
+			is_raw = true;
 		} break;
 		case Variant::NIL:
 			err = OK;
+			is_raw = true;
 			break;
 		default:
 			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Only null, PoolByteArrays, and objects can be used as spawnable state.");
@@ -1227,7 +1232,7 @@ Error MultiplayerAPI::_send_spawn_despawn(int p_peer_id, const ResourceUID::ID &
 	int nlen = encode_cstring(cname.get_data(), nullptr);
 	MAKE_ROOM(1 + 8 + 4 + 4 + nlen + state_len);
 	uint8_t *ptr = packet_cache.ptrw();
-	ptr[0] = p_spawn ? NETWORK_COMMAND_SPAWN : NETWORK_COMMAND_DESPAWN;
+	ptr[0] = (p_spawn ? NETWORK_COMMAND_SPAWN : NETWORK_COMMAND_DESPAWN) + ((is_raw ? 1 : 0) << BYTE_ONLY_OR_NO_ARGS_SHIFT);
 	int ofs = 1;
 	ofs += encode_uint64(p_scene_id, &ptr[ofs]);
 	ofs += encode_uint32(psc->id, &ptr[ofs]);
@@ -1236,7 +1241,7 @@ Error MultiplayerAPI::_send_spawn_despawn(int p_peer_id, const ResourceUID::ID &
 	if (state_len) {
 		switch (state_type) {
 			case Variant::OBJECT:
-				_encode_spawn_state(cfg, p_state.get_validated_object(), &ptr[ofs], state_len);
+				_encode_spawn_state(cfg, p_state.get_validated_object(), &ptr[ofs], state_len, p_optimize_objects ? &is_raw : nullptr);
 				break;
 			case Variant::PACKED_BYTE_ARRAY: {
 				const PackedByteArray pba = p_state.operator PackedByteArray();
@@ -1271,11 +1276,34 @@ Error MultiplayerAPI::spawnable_decode_state(const ResourceUID::ID &p_scene_id, 
 	return _decode_spawn_state(cfg, p_obj, p_data.ptr(), p_data.size(), size);
 }
 
-Error MultiplayerAPI::_encode_spawn_state(const SpawnableConfig &p_cfg, const Object *p_obj, uint8_t *p_buffer, int &r_len) {
+Error MultiplayerAPI::_encode_spawn_state(const SpawnableConfig &p_cfg, const Object *p_obj, uint8_t *p_buffer, int &r_len, bool *r_raw) {
 	r_len = 0;
 	ERR_FAIL_COND_V_MSG(!p_obj, ERR_INVALID_PARAMETER, "Cannot encode null object");
+
 	int size = 0;
 	bool valid = false;
+
+	// Try raw encoding optimization.
+	if (r_raw && p_cfg.properties.size() == 1) {
+		*r_raw = false;
+		const StringName &prop = p_cfg.properties[0];
+		const Variant v = p_obj->get(prop, &valid);
+		ERR_FAIL_COND_V_MSG(!valid, ERR_INVALID_DATA, vformat("Property '%s' not found.", prop));
+		if (v.get_type() == Variant::PACKED_BYTE_ARRAY) {
+			*r_raw = true;
+			const PackedByteArray pba = v;
+			if (p_buffer) {
+				memcpy(p_buffer, pba.ptr(), pba.size());
+			}
+			r_len += pba.size();
+		} else {
+			_encode_and_compress_variant(v, p_buffer, size);
+			r_len += size;
+		}
+		return OK;
+	}
+
+	// Regular encoding.
 	for (const StringName &prop : p_cfg.properties) {
 		const Variant v = p_obj->get(prop, &valid);
 		ERR_FAIL_COND_V_MSG(!valid, ERR_INVALID_DATA, vformat("Property '%s' not found.", prop));
@@ -1285,10 +1313,19 @@ Error MultiplayerAPI::_encode_spawn_state(const SpawnableConfig &p_cfg, const Ob
 	return OK;
 }
 
-Error MultiplayerAPI::_decode_spawn_state(const SpawnableConfig &p_cfg, Object *p_obj, const uint8_t *p_buffer, int p_len, int &r_len) {
+Error MultiplayerAPI::_decode_spawn_state(const SpawnableConfig &p_cfg, Object *p_obj, const uint8_t *p_buffer, int p_len, int &r_len, bool p_raw) {
 	r_len = 0;
-
 	int argc = p_cfg.properties.size();
+	ERR_FAIL_COND_V(p_raw && argc != 1, ERR_INVALID_DATA);
+	if (p_raw) {
+		r_len = p_len;
+		PackedByteArray pba;
+		pba.resize(p_len);
+		memcpy(pba.ptrw(), p_buffer, p_len);
+		p_obj->set(p_cfg.properties[0], pba);
+		return OK;
+	}
+
 	Vector<Variant> args;
 	Vector<const Variant *> argp;
 	args.resize(argc);
@@ -1328,13 +1365,13 @@ void MultiplayerAPI::scene_enter_exit_notify(const String &p_scene, const Node *
 	if (p_enter) {
 		if (cfg.mode == SPAWN_MODE_SERVER && is_network_server()) {
 			replicated_nodes[p_node->get_instance_id()] = id;
-			_send_spawn_despawn(0, id, p_node->get_path(), p_node, true);
+			_send_spawn_despawn(0, id, p_node->get_path(), p_node, true, true);
 		}
 		emit_signal(SNAME("network_spawnable_added"), id, p_node);
 	} else {
 		if (cfg.mode == SPAWN_MODE_SERVER && is_network_server() && replicated_nodes.has(p_node->get_instance_id())) {
 			replicated_nodes.erase(p_node->get_instance_id());
-			_send_spawn_despawn(0, id, p_node->get_path(), Variant(), false);
+			_send_spawn_despawn(0, id, p_node->get_path(), Variant(), false, false);
 		}
 		emit_signal(SNAME("network_spawnable_removed"), id, p_node);
 	}

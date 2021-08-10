@@ -122,9 +122,9 @@ protected:
 
 	Error _encode_and_compress_variant(const Variant &p_variant, uint8_t *p_buffer, int &r_len);
 	Error _decode_and_decompress_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int *r_len);
-	Error _encode_spawn_state(const SpawnableConfig &p_cfg, const Object *p_obj, uint8_t *p_buffer, int &r_len);
-	Error _decode_spawn_state(const SpawnableConfig &p_cfg, Object *p_obj, const uint8_t *p_buffer, int p_len, int &r_len);
-	Error _send_spawn_despawn(int p_peer_id, const ResourceUID::ID &p_scene_id, const NodePath &p_path, const Variant &p_state, bool p_spawn);
+	Error _encode_spawn_state(const SpawnableConfig &p_cfg, const Object *p_obj, uint8_t *p_buffer, int &r_len, bool *r_raw = nullptr);
+	Error _decode_spawn_state(const SpawnableConfig &p_cfg, Object *p_obj, const uint8_t *p_buffer, int p_len, int &r_len, bool p_raw = false);
+	Error _send_spawn_despawn(int p_peer_id, const ResourceUID::ID &p_scene_id, const NodePath &p_path, const Variant &p_state, bool p_spawn, bool p_optmize_objects);
 
 public:
 	enum NetworkCommands {
