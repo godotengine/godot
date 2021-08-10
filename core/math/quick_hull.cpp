@@ -364,6 +364,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 	bool warning_f = false;
 	bool warning_o_equal_e = false;
 	bool warning_o = false;
+	bool warning_not_f2 = false;
 
 	for (List<Geometry::MeshData::Face>::Element *E = ret_faces.front(); E; E = E->next()) {
 		Geometry::MeshData::Face &f = E->get();
@@ -413,7 +414,12 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 							Edge e2(idx, idxn);
 
 							Map<Edge, RetFaceConnect>::Element *F2 = ret_edges.find(e2);
-							ERR_CONTINUE(!F2);
+
+							if (unlikely(!F2)) {
+								warning_not_f2 = true;
+								continue;
+							}
+
 							//change faceconnect, point to this face instead
 							if (F2->get().left == O) {
 								F2->get().left = E;
@@ -452,6 +458,9 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 		}
 		if (warning_o) {
 			WARN_PRINT("QuickHull : O == nullptr");
+		}
+		if (warning_not_f2) {
+			WARN_PRINT("QuickHull : !F2");
 		}
 	}
 
