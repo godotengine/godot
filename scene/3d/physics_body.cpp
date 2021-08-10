@@ -973,14 +973,14 @@ Ref<KinematicCollision> KinematicBody::_move(const Vector3 &p_motion, bool p_inf
 	return Ref<KinematicCollision>();
 }
 
-bool KinematicBody::move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes, bool p_test_only, bool p_cancel_sliding) {
+bool KinematicBody::move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes, bool p_test_only, bool p_cancel_sliding, const Set<RID> &p_exclude) {
 	if (sync_to_physics) {
 		ERR_PRINT("Functions move_and_slide and move_and_collide do not work together with 'sync to physics' option. Please read the documentation.");
 	}
 
 	Transform gt = get_global_transform();
 	PhysicsServer::MotionResult result;
-	bool colliding = PhysicsServer::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_infinite_inertia, &result, p_exclude_raycast_shapes);
+	bool colliding = PhysicsServer::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_infinite_inertia, &result, p_exclude_raycast_shapes, p_exclude);
 
 	// Restore direction of motion to be along original motion,
 	// in order to avoid sliding due to recovery,
@@ -1061,8 +1061,11 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 		}
 	}
 
+	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky
+	float delta = Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time();
+
 	Vector3 current_floor_velocity = floor_velocity;
-	if (on_floor && on_floor_body.is_valid()) {
+	if ((on_floor || on_wall) && on_floor_body.is_valid()) {
 		// This approach makes sure there is less delay between the actual body velocity and the one we saved.
 		PhysicsDirectBodyState *bs = PhysicsServer::get_singleton()->body_get_direct_state(on_floor_body);
 		if (bs) {
@@ -1072,16 +1075,25 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 		}
 	}
 
-	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky
-	Vector3 motion = (current_floor_velocity + body_velocity) * (Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time());
-
+	colliders.clear();
 	on_floor = false;
-	on_floor_body = RID();
 	on_ceiling = false;
 	on_wall = false;
-	colliders.clear();
 	floor_normal = Vector3();
 	floor_velocity = Vector3();
+
+	if (current_floor_velocity != Vector3() && on_floor_body.is_valid()) {
+		Collision floor_collision;
+		Set<RID> exclude;
+		exclude.insert(on_floor_body);
+		if (move_and_collide(current_floor_velocity * delta, p_infinite_inertia, floor_collision, true, false, false, exclude)) {
+			colliders.push_back(floor_collision);
+			_set_collision_direction(floor_collision, up_direction, p_floor_max_angle);
+		}
+	}
+
+	on_floor_body = RID();
+	Vector3 motion = body_velocity * delta;
 
 	// No sliding on first attempt to keep floor motion stable when possible,
 	// when stop on slope is enabled.
@@ -1110,33 +1122,18 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 
 				colliders.push_back(collision);
 
-				if (up_direction == Vector3()) {
-					//all is a wall
-					on_wall = true;
-				} else {
-					if (Math::acos(collision.normal.dot(up_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //floor
+				_set_collision_direction(collision, up_direction, p_floor_max_angle);
 
-						on_floor = true;
-						floor_normal = collision.normal;
-						on_floor_body = collision.collider_rid;
-						floor_velocity = collision.collider_vel;
-
-						if (p_stop_on_slope) {
-							if ((body_velocity_normal + up_direction).length() < 0.01) {
-								Transform gt = get_global_transform();
-								if (collision.travel.length() > margin) {
-									gt.origin -= collision.travel.slide(up_direction);
-								} else {
-									gt.origin -= collision.travel;
-								}
-								set_global_transform(gt);
-								return Vector3();
-							}
+				if (on_floor && p_stop_on_slope) {
+					if ((body_velocity_normal + up_direction).length() < 0.01) {
+						Transform gt = get_global_transform();
+						if (collision.travel.length() > margin) {
+							gt.origin -= collision.travel.slide(up_direction);
+						} else {
+							gt.origin -= collision.travel;
 						}
-					} else if (Math::acos(collision.normal.dot(-up_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //ceiling
-						on_ceiling = true;
-					} else {
-						on_wall = true;
+						set_global_transform(gt);
+						return Vector3();
 					}
 				}
 
@@ -1160,6 +1157,11 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 		if (!found_collision || motion == Vector3()) {
 			break;
 		}
+	}
+
+	if (!on_floor && !on_wall) {
+		// Add last platform velocity when just left a moving platform.
+		return body_velocity + current_floor_velocity;
 	}
 
 	return body_velocity;
@@ -1205,6 +1207,29 @@ Vector3 KinematicBody::move_and_slide_with_snap(const Vector3 &p_linear_velocity
 	}
 
 	return ret;
+}
+
+void KinematicBody::_set_collision_direction(const Collision &p_collision, const Vector3 &p_up_direction, float p_floor_max_angle) {
+	on_floor = false;
+	on_ceiling = false;
+	on_wall = false;
+	if (p_up_direction == Vector3()) {
+		//all is a wall
+		on_wall = true;
+	} else {
+		if (Math::acos(p_collision.normal.dot(p_up_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //floor
+			on_floor = true;
+			floor_normal = p_collision.normal;
+			on_floor_body = p_collision.collider_rid;
+			floor_velocity = p_collision.collider_vel;
+		} else if (Math::acos(p_collision.normal.dot(-p_up_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //ceiling
+			on_ceiling = true;
+		} else {
+			on_wall = true;
+			on_floor_body = p_collision.collider_rid;
+			floor_velocity = p_collision.collider_vel;
+		}
+	}
 }
 
 bool KinematicBody::is_on_floor() const {

@@ -1128,7 +1128,7 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 	floor_normal = Vector2();
 	floor_velocity = Vector2();
 
-	if (current_floor_velocity != Vector2()) {
+	if (current_floor_velocity != Vector2() && on_floor_body.is_valid()) {
 		Collision floor_collision;
 		Set<RID> exclude;
 		exclude.insert(on_floor_body);

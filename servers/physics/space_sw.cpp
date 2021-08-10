@@ -712,7 +712,7 @@ int SpaceSW::test_body_ray_separation(BodySW *p_body, const Transform &p_transfo
 	return rays_found;
 }
 
-bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, real_t p_margin, PhysicsServer::MotionResult *r_result, bool p_exclude_raycast_shapes) {
+bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, real_t p_margin, PhysicsServer::MotionResult *r_result, bool p_exclude_raycast_shapes, const Set<RID> &p_exclude) {
 	//give me back regular physics engine logic
 	//this is madness
 	//and most people using this function will think
@@ -793,6 +793,9 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 
 				for (int i = 0; i < amount; i++) {
 					const CollisionObjectSW *col_obj = intersection_query_results[i];
+					if (p_exclude.has(col_obj->get_self())) {
+						continue;
+					}
 					int shape_idx = intersection_query_subindex_results[i];
 
 					if (CollisionObjectSW::TYPE_BODY == col_obj->get_type()) {
@@ -882,6 +885,9 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 
 			for (int i = 0; i < amount; i++) {
 				const CollisionObjectSW *col_obj = intersection_query_results[i];
+				if (p_exclude.has(col_obj->get_self())) {
+					continue;
+				}
 				int shape_idx = intersection_query_subindex_results[i];
 
 				if (CollisionObjectSW::TYPE_BODY == col_obj->get_type()) {
@@ -1008,6 +1014,9 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 
 			for (int i = 0; i < amount; i++) {
 				const CollisionObjectSW *col_obj = intersection_query_results[i];
+				if (p_exclude.has(col_obj->get_self())) {
+					continue;
+				}
 				int shape_idx = intersection_query_subindex_results[i];
 
 				if (CollisionObjectSW::TYPE_BODY == col_obj->get_type()) {
