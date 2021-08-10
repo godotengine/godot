@@ -76,6 +76,11 @@ void TextLine::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Kashida Justify,Word Justify,Trim Edge Spaces After Justify,Justify Only After Last Tab"), "set_flags", "get_flags");
 
+	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &TextLine::set_text_overrun_behavior);
+	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &TextLine::get_text_overrun_behavior);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
+
 	ClassDB::bind_method(D_METHOD("get_objects"), &TextLine::get_objects);
 	ClassDB::bind_method(D_METHOD("get_object_rect", "key"), &TextLine::get_object_rect);
 
@@ -93,6 +98,12 @@ void TextLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_outline", "canvas", "pos", "outline_size", "color"), &TextLine::draw_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)));
 
 	ClassDB::bind_method(D_METHOD("hit_test", "coords"), &TextLine::hit_test);
+
+	BIND_ENUM_CONSTANT(OVERRUN_NO_TRIMMING);
+	BIND_ENUM_CONSTANT(OVERRUN_TRIM_CHAR);
+	BIND_ENUM_CONSTANT(OVERRUN_TRIM_WORD);
+	BIND_ENUM_CONSTANT(OVERRUN_TRIM_ELLIPSIS);
+	BIND_ENUM_CONSTANT(OVERRUN_TRIM_WORD_ELLIPSIS);
 }
 
 void TextLine::_shape() {
@@ -100,7 +111,38 @@ void TextLine::_shape() {
 		if (!tab_stops.is_empty()) {
 			TS->shaped_text_tab_align(rid, tab_stops);
 		}
-		if (align == HALIGN_FILL) {
+
+		uint8_t overrun_flags = TextServer::OVERRUN_NO_TRIMMING;
+		if (overrun_behavior != OVERRUN_NO_TRIMMING) {
+			switch (overrun_behavior) {
+				case OVERRUN_TRIM_WORD_ELLIPSIS:
+					overrun_flags |= TextServer::OVERRUN_TRIM;
+					overrun_flags |= TextServer::OVERRUN_TRIM_WORD_ONLY;
+					overrun_flags |= TextServer::OVERRUN_ADD_ELLIPSIS;
+					break;
+				case OVERRUN_TRIM_ELLIPSIS:
+					overrun_flags |= TextServer::OVERRUN_TRIM;
+					overrun_flags |= TextServer::OVERRUN_ADD_ELLIPSIS;
+					break;
+				case OVERRUN_TRIM_WORD:
+					overrun_flags |= TextServer::OVERRUN_TRIM;
+					overrun_flags |= TextServer::OVERRUN_TRIM_WORD_ONLY;
+					break;
+				case OVERRUN_TRIM_CHAR:
+					overrun_flags |= TextServer::OVERRUN_TRIM;
+					break;
+				case OVERRUN_NO_TRIMMING:
+					break;
+			}
+
+			if (align == HALIGN_FILL) {
+				TS->shaped_text_fit_to_width(rid, width, flags);
+				overrun_flags |= TextServer::OVERRUN_JUSTIFICATION_AWARE;
+				TS->shaped_text_overrun_trim_to_width(rid, width, overrun_flags);
+			} else {
+				TS->shaped_text_overrun_trim_to_width(rid, width, overrun_flags);
+			}
+		} else if (align == HALIGN_FILL) {
 			TS->shaped_text_fit_to_width(rid, width, flags);
 		}
 		dirty = false;
@@ -225,9 +267,20 @@ uint8_t TextLine::get_flags() const {
 	return flags;
 }
 
+void TextLine::set_text_overrun_behavior(TextLine::OverrunBehavior p_behavior) {
+	if (overrun_behavior != p_behavior) {
+		overrun_behavior = p_behavior;
+		dirty = true;
+	}
+}
+
+TextLine::OverrunBehavior TextLine::get_text_overrun_behavior() const {
+	return overrun_behavior;
+}
+
 void TextLine::set_width(float p_width) {
 	width = p_width;
-	if (align == HALIGN_FILL) {
+	if (align == HALIGN_FILL || overrun_behavior != OVERRUN_NO_TRIMMING) {
 		dirty = true;
 	}
 }
