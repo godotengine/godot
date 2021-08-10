@@ -54,12 +54,6 @@ const IID IID_IAudioClient = __uuidof(IAudioClient);
 const IID IID_IAudioRenderClient = __uuidof(IAudioRenderClient);
 const IID IID_IAudioCaptureClient = __uuidof(IAudioCaptureClient);
 
-#define SAFE_RELEASE(memory)   \
-	if ((memory) != nullptr) { \
-		(memory)->Release();   \
-		(memory) = nullptr;    \
-	}
-
 #define REFTIMES_PER_SEC 10000000
 #define REFTIMES_PER_MILLISEC 10000
 
@@ -70,16 +64,11 @@ static bool default_capture_device_changed = false;
 
 class CMMNotificationClient : public IMMNotificationClient {
 	LONG _cRef = 1;
-	IMMDeviceEnumerator *_pEnumerator = nullptr;
+	CComPtr<IMMDeviceEnumerator> _pEnumerator = nullptr;
 
 public:
 	CMMNotificationClient() {}
-	virtual ~CMMNotificationClient() {
-		if ((_pEnumerator) != nullptr) {
-			(_pEnumerator)->Release();
-			(_pEnumerator) = nullptr;
-		}
-	}
+	virtual ~CMMNotificationClient() {}
 
 	ULONG STDMETHODCALLTYPE AddRef() {
 		return InterlockedIncrement(&_cRef);
@@ -140,8 +129,8 @@ static CMMNotificationClient notif_client;
 
 Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_capture, bool reinit) {
 	WAVEFORMATEX *pwfex;
-	IMMDeviceEnumerator *enumerator = nullptr;
-	IMMDevice *device = nullptr;
+	CComPtr<IMMDeviceEnumerator> enumerator = nullptr;
+	CComPtr<IMMDevice> device = nullptr;
 
 	CoInitialize(nullptr);
 
@@ -151,7 +140,7 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_c
 	if (p_device->device_name == "Default") {
 		hr = enumerator->GetDefaultAudioEndpoint(p_capture ? eCapture : eRender, eConsole, &device);
 	} else {
-		IMMDeviceCollection *devices = nullptr;
+		CComPtr<IMMDeviceCollection> devices = nullptr;
 
 		hr = enumerator->EnumAudioEndpoints(p_capture ? eCapture : eRender, DEVICE_STATE_ACTIVE, &devices);
 		ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
@@ -164,12 +153,12 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_c
 		ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
 
 		for (ULONG i = 0; i < count && !found; i++) {
-			IMMDevice *tmp_device = nullptr;
+			CComPtr<IMMDevice> tmp_device = nullptr;
 
 			hr = devices->Item(i, &tmp_device);
 			ERR_BREAK(hr != S_OK);
 
-			IPropertyStore *props = nullptr;
+			CComPtr<IPropertyStore> props = nullptr;
 			hr = tmp_device->OpenPropertyStore(STGM_READ, &props);
 			ERR_BREAK(hr != S_OK);
 
@@ -187,8 +176,6 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_c
 			}
 
 			PropVariantClear(&propvar);
-			props->Release();
-			tmp_device->Release();
 		}
 
 		if (found) {
@@ -215,14 +202,12 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_c
 	}
 
 	hr = enumerator->RegisterEndpointNotificationCallback(&notif_client);
-	SAFE_RELEASE(enumerator)
 
 	if (hr != S_OK) {
 		ERR_PRINT("WASAPI: RegisterEndpointNotificationCallback error");
 	}
 
 	hr = device->Activate(IID_IAudioClient, CLSCTX_ALL, nullptr, (void **)&p_device->audio_client);
-	SAFE_RELEASE(device)
 
 	if (reinit) {
 		if (hr != S_OK) {
@@ -304,7 +289,6 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_c
 
 	// Free memory
 	CoTaskMemFree(pwfex);
-	SAFE_RELEASE(device)
 
 	return OK;
 }
@@ -371,10 +355,6 @@ Error AudioDriverWASAPI::audio_device_finish(AudioDeviceWASAPI *p_device) {
 		p_device->active = false;
 	}
 
-	SAFE_RELEASE(p_device->audio_client)
-	SAFE_RELEASE(p_device->render_client)
-	SAFE_RELEASE(p_device->capture_client)
-
 	return OK;
 }
 
@@ -412,8 +392,8 @@ AudioDriver::SpeakerMode AudioDriverWASAPI::get_speaker_mode() const {
 
 Array AudioDriverWASAPI::audio_device_get_list(bool p_capture) {
 	Array list;
-	IMMDeviceCollection *devices = nullptr;
-	IMMDeviceEnumerator *enumerator = nullptr;
+	CComPtr<IMMDeviceCollection> devices = nullptr;
+	CComPtr<IMMDeviceEnumerator> enumerator = nullptr;
 
 	list.push_back(String("Default"));
 
@@ -430,12 +410,12 @@ Array AudioDriverWASAPI::audio_device_get_list(bool p_capture) {
 	ERR_FAIL_COND_V(hr != S_OK, Array());
 
 	for (ULONG i = 0; i < count; i++) {
-		IMMDevice *device = nullptr;
+		CComPtr<IMMDevice> device = nullptr;
 
 		hr = devices->Item(i, &device);
 		ERR_BREAK(hr != S_OK);
 
-		IPropertyStore *props = nullptr;
+		CComPtr<IPropertyStore> props = nullptr;
 		hr = device->OpenPropertyStore(STGM_READ, &props);
 		ERR_BREAK(hr != S_OK);
 
@@ -448,12 +428,8 @@ Array AudioDriverWASAPI::audio_device_get_list(bool p_capture) {
 		list.push_back(String(propvar.pwszVal));
 
 		PropVariantClear(&propvar);
-		props->Release();
-		device->Release();
 	}
 
-	devices->Release();
-	enumerator->Release();
 	return list;
 }
 
