@@ -128,7 +128,7 @@ public:
 static CMMNotificationClient notif_client;
 
 Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_capture, bool reinit) {
-	CComHeapPtr<WAVEFORMATEX> pwfex;
+	WAVEFORMATEX* pwfex;
 	CComPtr<IMMDeviceEnumerator> enumerator = nullptr;
 	CComPtr<IMMDevice> device = nullptr;
 
@@ -228,7 +228,7 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_c
 	print_verbose("WASAPI: wBitsPerSample = " + itos(pwfex->wBitsPerSample));
 	print_verbose("WASAPI: cbSize = " + itos(pwfex->cbSize));
 
-	CComHeapPtr<WAVEFORMATEX> closest = nullptr;
+	WAVEFORMATEX* closest = nullptr;
 	hr = p_device->audio_client->IsFormatSupported(AUDCLNT_SHAREMODE_SHARED, pwfex, &closest);
 	if (hr == S_FALSE) {
 		WARN_PRINT("WASAPI: Mix format is not supported by the Device");
@@ -253,7 +253,7 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_c
 	p_device->frame_size = (p_device->bits_per_sample / 8) * p_device->channels;
 
 	if (p_device->format_tag == WAVE_FORMAT_EXTENSIBLE) {
-		CComHeapPtr<WAVEFORMATEXTENSIBLE> wfex = (WAVEFORMATEXTENSIBLE *)pwfex;
+		WAVEFORMATEXTENSIBLE wfex = (WAVEFORMATEXTENSIBLE *)pwfex;
 
 		if (wfex->SubFormat == KSDATAFORMAT_SUBTYPE_PCM) {
 			p_device->format_tag = WAVE_FORMAT_PCM;
@@ -286,6 +286,9 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_c
 		hr = p_device->audio_client->GetService(IID_IAudioRenderClient, (void **)&p_device->render_client);
 	}
 	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
+	
+	// Free memory
+	CoTaskMemFree(pwfex);
 
 	return OK;
 }
