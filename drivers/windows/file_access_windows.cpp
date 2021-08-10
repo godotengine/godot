@@ -35,6 +35,7 @@
 #include "core/os/os.h"
 #include "core/print_string.h"
 
+#include <share.h> // _SH_DENYNO
 #include <shlwapi.h>
 #include <windows.h>
 
