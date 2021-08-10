@@ -745,7 +745,7 @@ bool GraphEdit::_check_clickable_control(Control *p_control, const Vector2 &pos)
 	}
 }
 
-bool GraphEdit::is_in_input_hotzone(GraphNode *p_graph_node, int p_slot_index, const Vector2 &p_mouse_pos){
+bool GraphEdit::is_in_input_hotzone(GraphNode *p_graph_node, int p_slot_index, const Vector2 &p_mouse_pos) {
 	if (get_script_instance() && get_script_instance()->has_method("_is_in_input_hotzone")) {
 		NodePath nodepath_graph_node = get_path_to(p_graph_node);
 		return get_script_instance()->call("_is_in_input_hotzone", nodepath_graph_node, p_slot_index, p_mouse_pos);
@@ -755,7 +755,7 @@ bool GraphEdit::is_in_input_hotzone(GraphNode *p_graph_node, int p_slot_index, c
 	}
 }
 
-bool GraphEdit::is_in_output_hotzone(GraphNode *p_graph_node, int p_slot_index, const Vector2 &p_mouse_pos){
+bool GraphEdit::is_in_output_hotzone(GraphNode *p_graph_node, int p_slot_index, const Vector2 &p_mouse_pos) {
 	if (get_script_instance() && get_script_instance()->has_method("_is_in_output_hotzone")) {
 		NodePath nodepath_graph_node = get_path_to(p_graph_node);
 		return get_script_instance()->call("_is_in_output_hotzone", nodepath_graph_node, p_slot_index, p_mouse_pos);
