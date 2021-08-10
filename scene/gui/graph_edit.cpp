@@ -1722,8 +1722,8 @@ void GraphEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &GraphEdit::_gui_input);
 	ClassDB::bind_method(D_METHOD("_update_scroll_offset"), &GraphEdit::_update_scroll_offset);
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_is_in_input_hotzone", PropertyInfo(Variant::NODE_PATH, "graph_node"), PropertyInfo(Variant::INT, "slot_index"), PropertyInfo(Variant::VECTOR2, "mouse_position")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_is_in_output_hotzone", PropertyInfo(Variant::NODE_PATH, "graph_node"), PropertyInfo(Variant::INT, "slot_index"), PropertyInfo(Variant::VECTOR2, "mouse_position")));
+	ClassDB::add_virtual_method("bool", MethodInfo("_is_in_input_hotzone", PropertyInfo(Variant::NODE_PATH, "graph_node"), PropertyInfo(Variant::INT, "slot_index"), PropertyInfo(Variant::VECTOR2, "mouse_position")));
+	ClassDB::add_virtual_method("bool", MethodInfo("_is_in_output_hotzone", PropertyInfo(Variant::NODE_PATH, "graph_node"), PropertyInfo(Variant::INT, "slot_index"), PropertyInfo(Variant::VECTOR2, "mouse_position")));
 
 	ClassDB::bind_method(D_METHOD("get_zoom_hbox"), &GraphEdit::get_zoom_hbox);
 
