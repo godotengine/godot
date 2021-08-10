@@ -780,7 +780,7 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd, double p_delta, 
 	double delta = p_delta * speed_scale * cd.speed_scale;
 	double next_pos = cd.pos + delta;
 
-	float len = cd.from->animation->get_length();
+	real_t len = cd.from->animation->get_length();
 	bool loop = cd.from->animation->has_loop();
 
 	if (!loop) {

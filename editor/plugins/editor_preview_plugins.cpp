@@ -386,7 +386,7 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 	Vector<Vector3> vertices;
 	Vector<Vector3> normals;
 	Vector<Vector2> uvs;
-	Vector<float> tangents;
+	Vector<real_t> tangents;
 	Basis tt = Basis(Vector3(0, 1, 0), Math_PI * 0.5);
 
 	for (int i = 1; i <= lats; i++) {
@@ -635,7 +635,7 @@ Ref<Texture2D> EditorAudioStreamPreviewPlugin::generate(const RES &p_from, const
 	Ref<AudioStreamPlayback> playback = stream->instance_playback();
 	ERR_FAIL_COND_V(playback.is_null(), Ref<Texture2D>());
 
-	float len_s = stream->get_length();
+	real_t len_s = stream->get_length();
 	if (len_s == 0) {
 		len_s = 60; //one minute audio if no length specified
 	}
@@ -649,8 +649,8 @@ Ref<Texture2D> EditorAudioStreamPreviewPlugin::generate(const RES &p_from, const
 	playback->stop();
 
 	for (int i = 0; i < w; i++) {
-		float max = -1000;
-		float min = 1000;
+		real_t max = -1000;
+		real_t min = 1000;
 		int from = uint64_t(i) * frame_length / w;
 		int to = (uint64_t(i) + 1) * frame_length / w;
 		to = MIN(to, frame_length);

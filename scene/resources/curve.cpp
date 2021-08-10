@@ -1366,7 +1366,7 @@ float Curve3D::interpolate_baked_tilt(float p_offset) const {
 		frac /= bake_interval;
 	}
 
-	return Math::lerp(r[idx], r[idx + 1], frac);
+	return Math::lerp(r[idx], r[idx + 1], (real_t)frac);
 }
 
 Vector3 Curve3D::interpolate_baked_up_vector(float p_offset, bool p_apply_tilt) const {
@@ -1424,7 +1424,7 @@ PackedVector3Array Curve3D::get_baked_points() const {
 	return baked_point_cache;
 }
 
-PackedFloat32Array Curve3D::get_baked_tilts() const {
+Vector<real_t> Curve3D::get_baked_tilts() const {
 	if (baked_cache_dirty) {
 		_bake();
 	}
@@ -1545,7 +1545,7 @@ Dictionary Curve3D::_get_data() const {
 	PackedVector3Array d;
 	d.resize(points.size() * 3);
 	Vector3 *w = d.ptrw();
-	PackedFloat32Array t;
+	Vector<real_t> t;
 	t.resize(points.size());
 	real_t *wt = t.ptrw();
 
@@ -1571,7 +1571,7 @@ void Curve3D::_set_data(const Dictionary &p_data) {
 	ERR_FAIL_COND(pc % 3 != 0);
 	points.resize(pc / 3);
 	const Vector3 *r = rp.ptr();
-	PackedFloat32Array rtl = p_data["tilts"];
+	Vector<real_t> rtl = p_data["tilts"];
 	const real_t *rt = rtl.ptr();
 
 	for (int i = 0; i < points.size(); i++) {

@@ -76,8 +76,8 @@ private:
 	};
 
 	struct Key {
-		float transition = 1.0;
-		float time = 0.0; // time in secs
+		real_t transition = 1.0;
+		double time = 0.0; // time in secs
 	};
 
 	// transform key holds either Vector3 or Quaternion
@@ -129,7 +129,7 @@ private:
 	struct BezierKey {
 		Vector2 in_handle; //relative (x always <0)
 		Vector2 out_handle; //relative (x always >0)
-		float value = 0.0;
+		real_t value = 0.0;
 	};
 
 	struct BezierTrack : public Track {
@@ -144,8 +144,8 @@ private:
 
 	struct AudioKey {
 		RES stream;
-		float start_offset = 0.0; //offset from start
-		float end_offset = 0.0; //offset from end, if 0 then full length or infinite
+		real_t start_offset = 0.0; //offset from start
+		real_t end_offset = 0.0; //offset from end, if 0 then full length or infinite
 		AudioKey() {
 		}
 	};
@@ -183,18 +183,18 @@ private:
 	template <class K>
 	inline int _find(const Vector<K> &p_keys, double p_time) const;
 
-	_FORCE_INLINE_ Animation::TransformKey _interpolate(const Animation::TransformKey &p_a, const Animation::TransformKey &p_b, float p_c) const;
+	_FORCE_INLINE_ Animation::TransformKey _interpolate(const Animation::TransformKey &p_a, const Animation::TransformKey &p_b, real_t p_c) const;
 
-	_FORCE_INLINE_ Vector3 _interpolate(const Vector3 &p_a, const Vector3 &p_b, float p_c) const;
-	_FORCE_INLINE_ Quaternion _interpolate(const Quaternion &p_a, const Quaternion &p_b, float p_c) const;
-	_FORCE_INLINE_ Variant _interpolate(const Variant &p_a, const Variant &p_b, float p_c) const;
-	_FORCE_INLINE_ float _interpolate(const float &p_a, const float &p_b, float p_c) const;
+	_FORCE_INLINE_ Vector3 _interpolate(const Vector3 &p_a, const Vector3 &p_b, real_t p_c) const;
+	_FORCE_INLINE_ Quaternion _interpolate(const Quaternion &p_a, const Quaternion &p_b, real_t p_c) const;
+	_FORCE_INLINE_ Variant _interpolate(const Variant &p_a, const Variant &p_b, real_t p_c) const;
+	_FORCE_INLINE_ real_t _interpolate(const real_t &p_a, const real_t &p_b, real_t p_c) const;
 
-	_FORCE_INLINE_ Animation::TransformKey _cubic_interpolate(const Animation::TransformKey &p_pre_a, const Animation::TransformKey &p_a, const Animation::TransformKey &p_b, const Animation::TransformKey &p_post_b, float p_c) const;
-	_FORCE_INLINE_ Vector3 _cubic_interpolate(const Vector3 &p_pre_a, const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_post_b, float p_c) const;
-	_FORCE_INLINE_ Quaternion _cubic_interpolate(const Quaternion &p_pre_a, const Quaternion &p_a, const Quaternion &p_b, const Quaternion &p_post_b, float p_c) const;
-	_FORCE_INLINE_ Variant _cubic_interpolate(const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, float p_c) const;
-	_FORCE_INLINE_ float _cubic_interpolate(const float &p_pre_a, const float &p_a, const float &p_b, const float &p_post_b, float p_c) const;
+	_FORCE_INLINE_ Animation::TransformKey _cubic_interpolate(const Animation::TransformKey &p_pre_a, const Animation::TransformKey &p_a, const Animation::TransformKey &p_b, const Animation::TransformKey &p_post_b, real_t p_c) const;
+	_FORCE_INLINE_ Vector3 _cubic_interpolate(const Vector3 &p_pre_a, const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_post_b, real_t p_c) const;
+	_FORCE_INLINE_ Quaternion _cubic_interpolate(const Quaternion &p_pre_a, const Quaternion &p_a, const Quaternion &p_b, const Quaternion &p_post_b, real_t p_c) const;
+	_FORCE_INLINE_ Variant _cubic_interpolate(const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, real_t p_c) const;
+	_FORCE_INLINE_ real_t _cubic_interpolate(const real_t &p_pre_a, const real_t &p_a, const real_t &p_b, const real_t &p_post_b, real_t p_c) const;
 
 	template <class T>
 	_FORCE_INLINE_ T _interpolate(const Vector<TKey<T>> &p_keys, double p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok) const;
@@ -206,7 +206,7 @@ private:
 	_FORCE_INLINE_ void _method_track_get_key_indices_in_range(const MethodTrack *mt, double from_time, double to_time, List<int> *p_indices) const;
 
 	double length = 1.0;
-	float step = 0.1;
+	real_t step = 0.1;
 	bool loop = false;
 
 	// bind helpers
@@ -244,8 +244,8 @@ private:
 		return idxr;
 	}
 
-	bool _transform_track_optimize_key(const TKey<TransformKey> &t0, const TKey<TransformKey> &t1, const TKey<TransformKey> &t2, float p_alowed_linear_err, float p_alowed_angular_err, float p_max_optimizable_angle, const Vector3 &p_norm);
-	void _transform_track_optimize(int p_idx, float p_allowed_linear_err = 0.05, float p_allowed_angular_err = 0.01, float p_max_optimizable_angle = Math_PI * 0.125);
+	bool _transform_track_optimize_key(const TKey<TransformKey> &t0, const TKey<TransformKey> &t1, const TKey<TransformKey> &t2, real_t p_alowed_linear_err, real_t p_alowed_angular_err, real_t p_max_optimizable_angle, const Vector3 &p_norm);
+	void _transform_track_optimize(int p_idx, real_t p_allowed_linear_err = 0.05, real_t p_allowed_angular_err = 0.01, real_t p_max_optimizable_angle = Math_PI * 0.125);
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -279,8 +279,8 @@ public:
 	void track_set_enabled(int p_track, bool p_enabled);
 	bool track_is_enabled(int p_track) const;
 
-	void track_insert_key(int p_track, double p_time, const Variant &p_key, float p_transition = 1);
-	void track_set_key_transition(int p_track, int p_key_idx, float p_transition);
+	void track_insert_key(int p_track, double p_time, const Variant &p_key, real_t p_transition = 1);
+	void track_set_key_transition(int p_track, int p_key_idx, real_t p_transition);
 	void track_set_key_value(int p_track, int p_key_idx, const Variant &p_value);
 	void track_set_key_time(int p_track, int p_key_idx, double p_time);
 	int track_find_key(int p_track, double p_time, bool p_exact = false) const;
@@ -289,30 +289,30 @@ public:
 	int track_get_key_count(int p_track) const;
 	Variant track_get_key_value(int p_track, int p_key_idx) const;
 	double track_get_key_time(int p_track, int p_key_idx) const;
-	float track_get_key_transition(int p_track, int p_key_idx) const;
+	real_t track_get_key_transition(int p_track, int p_key_idx) const;
 
 	int transform_track_insert_key(int p_track, double p_time, const Vector3 &p_loc, const Quaternion &p_rot = Quaternion(), const Vector3 &p_scale = Vector3());
 	Error transform_track_get_key(int p_track, int p_key, Vector3 *r_loc, Quaternion *r_rot, Vector3 *r_scale) const;
 	void track_set_interpolation_type(int p_track, InterpolationType p_interp);
 	InterpolationType track_get_interpolation_type(int p_track) const;
 
-	int bezier_track_insert_key(int p_track, double p_time, float p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle);
-	void bezier_track_set_key_value(int p_track, int p_index, float p_value);
+	int bezier_track_insert_key(int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle);
+	void bezier_track_set_key_value(int p_track, int p_index, real_t p_value);
 	void bezier_track_set_key_in_handle(int p_track, int p_index, const Vector2 &p_handle);
 	void bezier_track_set_key_out_handle(int p_track, int p_index, const Vector2 &p_handle);
-	float bezier_track_get_key_value(int p_track, int p_index) const;
+	real_t bezier_track_get_key_value(int p_track, int p_index) const;
 	Vector2 bezier_track_get_key_in_handle(int p_track, int p_index) const;
 	Vector2 bezier_track_get_key_out_handle(int p_track, int p_index) const;
 
-	float bezier_track_interpolate(int p_track, double p_time) const;
+	real_t bezier_track_interpolate(int p_track, double p_time) const;
 
-	int audio_track_insert_key(int p_track, double p_time, const RES &p_stream, float p_start_offset = 0, float p_end_offset = 0);
+	int audio_track_insert_key(int p_track, double p_time, const RES &p_stream, real_t p_start_offset = 0, real_t p_end_offset = 0);
 	void audio_track_set_key_stream(int p_track, int p_key, const RES &p_stream);
-	void audio_track_set_key_start_offset(int p_track, int p_key, float p_offset);
-	void audio_track_set_key_end_offset(int p_track, int p_key, float p_offset);
+	void audio_track_set_key_start_offset(int p_track, int p_key, real_t p_offset);
+	void audio_track_set_key_end_offset(int p_track, int p_key, real_t p_offset);
 	RES audio_track_get_key_stream(int p_track, int p_key) const;
-	float audio_track_get_key_start_offset(int p_track, int p_key) const;
-	float audio_track_get_key_end_offset(int p_track, int p_key) const;
+	real_t audio_track_get_key_start_offset(int p_track, int p_key) const;
+	real_t audio_track_get_key_end_offset(int p_track, int p_key) const;
 
 	int animation_track_insert_key(int p_track, double p_time, const StringName &p_animation);
 	void animation_track_set_key_animation(int p_track, int p_key, const StringName &p_animation);
@@ -336,18 +336,18 @@ public:
 
 	void track_get_key_indices_in_range(int p_track, double p_time, double p_delta, List<int> *p_indices) const;
 
-	void set_length(float p_length);
-	float get_length() const;
+	void set_length(real_t p_length);
+	real_t get_length() const;
 
 	void set_loop(bool p_enabled);
 	bool has_loop() const;
 
-	void set_step(float p_step);
-	float get_step() const;
+	void set_step(real_t p_step);
+	real_t get_step() const;
 
 	void clear();
 
-	void optimize(float p_allowed_linear_err = 0.05, float p_allowed_angular_err = 0.01, float p_max_optimizable_angle = Math_PI * 0.125);
+	void optimize(real_t p_allowed_linear_err = 0.05, real_t p_allowed_angular_err = 0.01, real_t p_max_optimizable_angle = Math_PI * 0.125);
 
 	Animation();
 	~Animation();
