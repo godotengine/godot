@@ -2704,6 +2704,7 @@ void Viewport::input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 void Viewport::unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 	ERR_FAIL_COND(p_event.is_null());
 	ERR_FAIL_COND(!is_inside_tree());
+	local_input_handled = false;
 
 	if (disable_input || !_can_consume_input_events()) {
 		return;
@@ -2723,8 +2724,8 @@ void Viewport::unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coor
 	// Unhandled Input
 	get_tree()->_call_input_pause(unhandled_input_group, "_unhandled_input", ev, this);
 
-	// Unhandled key Input - used for performance reasons - This is called a lot less then _unhandled_input since it ignores MouseMotion, etc
-	if (!is_input_handled() && Object::cast_to<InputEventKey>(*ev) != nullptr) {
+	// Unhandled key Input - used for performance reasons - This is called a lot less than _unhandled_input since it ignores MouseMotion, etc
+	if (!is_input_handled() && (Object::cast_to<InputEventKey>(*ev) != nullptr || Object::cast_to<InputEventShortcut>(*ev) != nullptr)) {
 		get_tree()->_call_input_pause(unhandled_key_input_group, "_unhandled_key_input", ev, this);
 	}
 
