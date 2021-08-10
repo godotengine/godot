@@ -310,6 +310,10 @@ bool EditorInterface::is_distraction_free_mode_enabled() const {
 	return EditorNode::get_singleton()->is_distraction_free_mode_enabled();
 }
 
+EditorCommandPalette *EditorInterface::get_command_palette() const {
+	return EditorNode::get_singleton()->get_editor_command_palette();
+}
+
 EditorInterface *EditorInterface::singleton = nullptr;
 
 void EditorInterface::_bind_methods() {
@@ -340,6 +344,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_current_path"), &EditorInterface::get_current_path);
 	ClassDB::bind_method(D_METHOD("get_file_system_dock"), &EditorInterface::get_file_system_dock);
 	ClassDB::bind_method(D_METHOD("get_editor_paths"), &EditorInterface::get_editor_paths);
+	ClassDB::bind_method(D_METHOD("get_command_palette"), &EditorInterface::get_command_palette);
 
 	ClassDB::bind_method(D_METHOD("set_plugin_enabled", "plugin", "enabled"), &EditorInterface::set_plugin_enabled);
 	ClassDB::bind_method(D_METHOD("is_plugin_enabled", "plugin"), &EditorInterface::is_plugin_enabled);

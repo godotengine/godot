@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  shortcut.cpp                                                         */
+/*  editor_command_palette.h                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,49 +28,68 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "shortcut.h"
-#include "core/os/keyboard.h"
+#ifndef EDITOR_COMMAND_PALETTE_H
+#define EDITOR_COMMAND_PALETTE_H
 
-void Shortcut::set_event(const Ref<InputEvent> &p_event) {
-	ERR_FAIL_COND(Object::cast_to<InputEventShortcut>(*p_event));
-	event = p_event;
-	emit_changed();
-}
+#include "core/os/thread_safe.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/shortcut.h"
+#include "scene/gui/tree.h"
 
-Ref<InputEvent> Shortcut::get_event() const {
-	return event;
-}
+class EditorCommandPalette : public ConfirmationDialog {
+	GDCLASS(EditorCommandPalette, ConfirmationDialog);
 
-bool Shortcut::matches_event(const Ref<InputEvent> &p_event) const {
-	Ref<InputEventShortcut> ies = p_event;
-	if (ies != nullptr) {
-		if (ies->get_shortcut().ptr() == this) {
-			return true;
+	static EditorCommandPalette *singleton;
+	LineEdit *command_search_box;
+	Tree *search_options;
+
+	struct Command {
+		Callable callable;
+		String name;
+		String shortcut;
+	};
+
+	struct CommandEntry {
+		String key_name;
+		String display_name;
+		String shortcut_text;
+		float score;
+	};
+
+	struct CommandEntryComparator {
+		_FORCE_INLINE_ bool operator()(const CommandEntry &A, const CommandEntry &B) const {
+			return A.score > B.score;
 		}
-	}
-	return event.is_valid() && event->is_match(p_event, true);
-}
+	};
 
-String Shortcut::get_as_text() const {
-	if (event.is_valid()) {
-		return event->as_text();
-	} else {
-		return "None";
-	}
-}
+	HashMap<String, Command> commands;
+	HashMap<String, Pair<String, Ref<Shortcut>>> unregistered_shortcuts;
 
-bool Shortcut::has_valid_event() const {
-	return event.is_valid();
-}
+	List<String> command_keys;
 
-void Shortcut::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_event", "event"), &Shortcut::set_event);
-	ClassDB::bind_method(D_METHOD("get_event"), &Shortcut::get_event);
+	void _update_command_search(const String &search_text);
+	float _score_path(const String &p_search, const String &p_path);
+	void _sbox_input(const Ref<InputEvent> &p_ie);
+	void _confirmed();
+	void _update_command_keys();
+	void _add_command(String p_command_name, String p_key_name, Callable p_binded_action, String p_shortcut_text = "None");
+	void _theme_changed();
+	EditorCommandPalette();
 
-	ClassDB::bind_method(D_METHOD("has_valid_event"), &Shortcut::has_valid_event);
+protected:
+	static void _bind_methods();
 
-	ClassDB::bind_method(D_METHOD("matches_event", "event"), &Shortcut::matches_event);
-	ClassDB::bind_method(D_METHOD("get_as_text"), &Shortcut::get_as_text);
+public:
+	void open_popup();
+	void get_actions_list(List<String> *p_list) const;
+	void add_command(String p_command_name, String p_key_name, Callable p_action, Vector<Variant> arguments, String p_shortcut_text = "None");
+	void execute_command(String &p_command_name);
+	void register_shortcuts_as_command();
+	Ref<Shortcut> add_shortcut_command(const String &p_command, const String &p_key, Ref<Shortcut> p_shortcut);
+	void remove_command(String p_key_name);
+	static EditorCommandPalette *get_singleton();
+};
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), "set_event", "get_event");
-}
+Ref<Shortcut> ED_SHORTCUT_AND_COMMAND(const String &p_path, const String &p_name, uint32_t p_keycode = 0, String p_command = "");
+
+#endif //EDITOR_COMMAND_PALETTE_H
