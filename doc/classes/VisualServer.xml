@@ -3047,12 +3047,9 @@
 			</description>
 		</method>
 		<method name="viewport_set_sharpen_intensity">
-			<return type="void">
-			</return>
-			<argument index="0" name="viewport" type="RID">
-			</argument>
-			<argument index="1" name="intensity" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="viewport" type="RID" />
+			<argument index="1" name="intensity" type="float" />
 			<description>
 				Sets the sharpening [code]intensity[/code] for the [code]viewport[/code]. If set to a value greater than [code]0.0[/code], contrast-adaptive sharpening will be applied to the 3D viewport. This has a low performance cost and can be used to recover some of the sharpness lost from using FXAA. Values around [code]0.5[/code] generally give the best results. See also [method viewport_set_use_fxaa].
 			</description>
