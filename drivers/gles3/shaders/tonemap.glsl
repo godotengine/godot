@@ -160,10 +160,6 @@ vec3 tonemap_aces(vec3 color, float white) {
 }
 
 vec3 tonemap_reinhard(vec3 color, float white) {
-	// Ensure color values are positive.
-	// They can be negative in the case of negative lights, which leads to undesired behavior.
-	color = max(vec3(0.0), color);
-
 	return clamp((white * color + color) / (color * white + white), vec3(0.0f), vec3(1.0f));
 }
 
@@ -347,8 +343,9 @@ void main() {
 #endif
 
 	// Early Tonemap & SRGB Conversion; note that Linear tonemapping does not clamp to [0, 1]; some operations below expect a [0, 1] range and will clamp
-
-	color = apply_tonemapping(color, white);
+	// Ensure color values are positive.
+	// They can be negative in the case of negative lights, which leads to undesired behavior.
+	color = apply_tonemapping(max(vec3(0.0), color), white);
 
 #ifdef KEEP_3D_LINEAR
 	// leave color as is (-> don't convert to SRGB)
