@@ -673,19 +673,17 @@ void Node3D::set_identity() {
 }
 
 void Node3D::look_at(const Vector3 &p_target, const Vector3 &p_up) {
-	Vector3 origin(get_global_transform().origin);
+	Vector3 origin = get_global_transform().origin;
 	look_at_from_position(origin, p_target, p_up);
 }
 
 void Node3D::look_at_from_position(const Vector3 &p_pos, const Vector3 &p_target, const Vector3 &p_up) {
-	ERR_FAIL_COND_MSG(p_pos == p_target, "Node origin and target are in the same position, look_at() failed.");
-	ERR_FAIL_COND_MSG(p_up.cross(p_target - p_pos) == Vector3(), "Up vector and direction between node origin and target are aligned, look_at() failed.");
+	ERR_FAIL_COND_MSG(p_pos.is_equal_approx(p_target), "Node origin and target are in the same position, look_at() failed.");
+	ERR_FAIL_COND_MSG(p_up.is_equal_approx(Vector3()), "The up vector can't be zero, look_at() failed.");
+	ERR_FAIL_COND_MSG(p_up.cross(p_target - p_pos).is_equal_approx(Vector3()), "Up vector and direction between node origin and target are aligned, look_at() failed.");
 
-	Transform3D lookat;
-	lookat.origin = p_pos;
-
-	Vector3 original_scale(get_scale());
-	lookat = lookat.looking_at(p_target, p_up);
+	Transform3D lookat = Transform3D(Basis::looking_at(p_target - p_pos, p_up), p_pos);
+	Vector3 original_scale = get_scale();
 	set_global_transform(lookat);
 	set_scale(original_scale);
 }

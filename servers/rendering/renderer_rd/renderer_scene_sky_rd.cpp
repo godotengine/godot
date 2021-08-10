@@ -1280,12 +1280,11 @@ void RendererSceneSkyRD::update(RendererSceneEnvironmentRD *p_env, const CameraM
 			RD::DrawListID cubemap_draw_list;
 
 			for (int i = 0; i < 6; i++) {
-				Transform3D local_view;
-				local_view.set_look_at(Vector3(0, 0, 0), view_normals[i], view_up[i]);
+				Basis local_view = Basis::looking_at(view_normals[i], view_up[i]);
 				RID texture_uniform_set = sky->get_textures(storage, SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES, sky_shader.default_shader_rd);
 
 				cubemap_draw_list = RD::get_singleton()->draw_list_begin(sky->reflection.layers[0].mipmaps[2].framebuffers[i], RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
-				_render_sky(cubemap_draw_list, p_time, sky->reflection.layers[0].mipmaps[2].framebuffers[i], pipeline, material->uniform_set, texture_uniform_set, 1, &cm, local_view.basis, multiplier, p_transform.origin);
+				_render_sky(cubemap_draw_list, p_time, sky->reflection.layers[0].mipmaps[2].framebuffers[i], pipeline, material->uniform_set, texture_uniform_set, 1, &cm, local_view, multiplier, p_transform.origin);
 				RD::get_singleton()->draw_list_end();
 			}
 			RD::get_singleton()->draw_command_end_label();
@@ -1300,12 +1299,11 @@ void RendererSceneSkyRD::update(RendererSceneEnvironmentRD *p_env, const CameraM
 			RD::DrawListID cubemap_draw_list;
 
 			for (int i = 0; i < 6; i++) {
-				Transform3D local_view;
-				local_view.set_look_at(Vector3(0, 0, 0), view_normals[i], view_up[i]);
+				Basis local_view = Basis::looking_at(view_normals[i], view_up[i]);
 				RID texture_uniform_set = sky->get_textures(storage, SKY_TEXTURE_SET_CUBEMAP_HALF_RES, sky_shader.default_shader_rd);
 
 				cubemap_draw_list = RD::get_singleton()->draw_list_begin(sky->reflection.layers[0].mipmaps[1].framebuffers[i], RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
-				_render_sky(cubemap_draw_list, p_time, sky->reflection.layers[0].mipmaps[1].framebuffers[i], pipeline, material->uniform_set, texture_uniform_set, 1, &cm, local_view.basis, multiplier, p_transform.origin);
+				_render_sky(cubemap_draw_list, p_time, sky->reflection.layers[0].mipmaps[1].framebuffers[i], pipeline, material->uniform_set, texture_uniform_set, 1, &cm, local_view, multiplier, p_transform.origin);
 				RD::get_singleton()->draw_list_end();
 			}
 			RD::get_singleton()->draw_command_end_label();
@@ -1316,12 +1314,11 @@ void RendererSceneSkyRD::update(RendererSceneEnvironmentRD *p_env, const CameraM
 
 		RD::get_singleton()->draw_command_begin_label("Render Sky Cubemap");
 		for (int i = 0; i < 6; i++) {
-			Transform3D local_view;
-			local_view.set_look_at(Vector3(0, 0, 0), view_normals[i], view_up[i]);
+			Basis local_view = Basis::looking_at(view_normals[i], view_up[i]);
 			RID texture_uniform_set = sky->get_textures(storage, SKY_TEXTURE_SET_CUBEMAP, sky_shader.default_shader_rd);
 
 			cubemap_draw_list = RD::get_singleton()->draw_list_begin(sky->reflection.layers[0].mipmaps[0].framebuffers[i], RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
-			_render_sky(cubemap_draw_list, p_time, sky->reflection.layers[0].mipmaps[0].framebuffers[i], pipeline, material->uniform_set, texture_uniform_set, 1, &cm, local_view.basis, multiplier, p_transform.origin);
+			_render_sky(cubemap_draw_list, p_time, sky->reflection.layers[0].mipmaps[0].framebuffers[i], pipeline, material->uniform_set, texture_uniform_set, 1, &cm, local_view, multiplier, p_transform.origin);
 			RD::get_singleton()->draw_list_end();
 		}
 		RD::get_singleton()->draw_command_end_label();
