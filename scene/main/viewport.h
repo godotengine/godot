@@ -281,6 +281,7 @@ private:
 	MSAA msaa;
 	bool use_fxaa;
 	bool use_debanding;
+	float sharpen_intensity;
 	bool hdr;
 
 	Ref<ViewportTexture> default_texture;
@@ -501,6 +502,9 @@ public:
 
 	void set_use_debanding(bool p_debanding);
 	bool get_use_debanding() const;
+
+	void set_sharpen_intensity(float p_intensity);
+	float get_sharpen_intensity() const;
 
 	void set_hdr(bool p_hdr);
 	bool get_hdr() const;

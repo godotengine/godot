@@ -1383,6 +1383,7 @@ public:
 		VS::ViewportMSAA msaa;
 		bool use_fxaa;
 		bool use_debanding;
+		float sharpen_intensity;
 
 		RID texture;
 
@@ -1395,7 +1396,8 @@ public:
 				used_in_frame(false),
 				msaa(VS::VIEWPORT_MSAA_DISABLED),
 				use_fxaa(false),
-				use_debanding(false) {
+				use_debanding(false),
+				sharpen_intensity(0.0) {
 			exposure.fbo = 0;
 			buffers.fbo = 0;
 			external.fbo = 0;
@@ -1426,6 +1428,7 @@ public:
 	virtual void render_target_set_msaa(RID p_render_target, VS::ViewportMSAA p_msaa);
 	virtual void render_target_set_use_fxaa(RID p_render_target, bool p_fxaa);
 	virtual void render_target_set_use_debanding(RID p_render_target, bool p_debanding);
+	virtual void render_target_set_sharpen_intensity(RID p_render_target, float p_intensity);
 
 	/* CANVAS SHADOW */
 

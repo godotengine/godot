@@ -416,6 +416,7 @@ public:
 	FUNC2(viewport_set_msaa, RID, ViewportMSAA)
 	FUNC2(viewport_set_use_fxaa, RID, bool)
 	FUNC2(viewport_set_use_debanding, RID, bool)
+	FUNC2(viewport_set_sharpen_intensity, RID, float)
 	FUNC2(viewport_set_hdr, RID, bool)
 	FUNC2(viewport_set_usage, RID, ViewportUsage)
 
