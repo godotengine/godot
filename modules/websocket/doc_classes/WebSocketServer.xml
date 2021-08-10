@@ -7,6 +7,7 @@
 		This class implements a WebSocket server that can also support the high-level multiplayer API.
 		After starting the server ([method listen]), you will need to [method MultiplayerPeer.poll] it at regular intervals (e.g. inside [method Node._process]). When clients connect, disconnect, or send data, you will receive the appropriate signal.
 		[b]Note:[/b] Not available in HTML5 exports.
+		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
 	</description>
 	<tutorials>
 	</tutorials>

@@ -7,6 +7,7 @@
 		A node with the ability to send HTTP requests. Uses [HTTPClient] internally.
 		Can be used to make HTTP requests, i.e. download or upload files or web content via HTTP.
 		[b]Warning:[/b] See the notes and warnings on [HTTPClient] for limitations, especially regarding SSL security.
+		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
 		[b]Example of contacting a REST API and printing one of its returned fields:[/b]
 		[codeblocks]
 		[gdscript]
@@ -149,7 +150,6 @@
 		}
 		[/csharp]
 		[/codeblocks]
-
 		[b]Gzipped response bodies[/b]: HTTPRequest will automatically handle decompression of response bodies. A [code]Accept-Encoding[/code] header will be automatically added to each of your requests, unless one is already specified. Any response with a [code]Content-Encoding: gzip[/code] header will automatically be decompressed and delivered to you as uncompressed bytes.
 	</description>
 	<tutorials>
