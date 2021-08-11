@@ -317,9 +317,6 @@ private:
 	int get_max_slides() const;
 	void set_max_slides(int p_max_slides);
 
-	real_t get_move_max_angle() const;
-	void set_move_max_angle(real_t p_radians);
-
 	real_t get_floor_max_angle() const;
 	void set_floor_max_angle(real_t p_radians);
 

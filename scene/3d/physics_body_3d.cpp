@@ -1121,7 +1121,7 @@ void CharacterBody3D::move_and_slide() {
 		PhysicsServer3D::MotionResult floor_result;
 		Set<RID> exclude;
 		exclude.insert(on_floor_body);
-		if (move_and_collide(current_floor_velocity * delta, infinite_inertia, floor_result, true, false, false, false, exclude)) {
+		if (move_and_collide(current_floor_velocity * delta, infinite_inertia, floor_result, margin, true, false, false, exclude)) {
 			motion_results.push_back(floor_result);
 			_set_collision_direction(floor_result);
 		}

@@ -1080,7 +1080,7 @@ void CharacterBody2D::move_and_slide() {
 		PhysicsServer2D::MotionResult floor_result;
 		Set<RID> exclude;
 		exclude.insert(platform_rid);
-		if (move_and_collide(current_platform_velocity * delta, infinite_inertia, floor_result, true, false, false, false, exclude)) {
+		if (move_and_collide(current_platform_velocity * delta, infinite_inertia, floor_result, margin, true, false, false, exclude)) {
 			motion_results.push_back(floor_result);
 			_set_collision_direction(floor_result);
 		}
@@ -1450,6 +1450,7 @@ void CharacterBody2D::set_stop_on_slope_enabled(bool p_enabled) {
 bool CharacterBody2D::is_infinite_inertia_enabled() const {
 	return infinite_inertia;
 }
+
 void CharacterBody2D::set_infinite_inertia_enabled(bool p_enabled) {
 	infinite_inertia = p_enabled;
 }
@@ -1457,6 +1458,7 @@ void CharacterBody2D::set_infinite_inertia_enabled(bool p_enabled) {
 bool CharacterBody2D::is_constant_speed_on_floor_enabled() const {
 	return constant_speed_on_floor;
 }
+
 void CharacterBody2D::set_constant_speed_on_floor_enabled(bool p_enabled) {
 	constant_speed_on_floor = p_enabled;
 }
@@ -1464,6 +1466,7 @@ void CharacterBody2D::set_constant_speed_on_floor_enabled(bool p_enabled) {
 bool CharacterBody2D::is_move_on_floor_only_enabled() const {
 	return move_on_floor_only;
 }
+
 void CharacterBody2D::set_move_on_floor_only_enabled(bool p_enabled) {
 	move_on_floor_only = p_enabled;
 }
@@ -1471,6 +1474,7 @@ void CharacterBody2D::set_move_on_floor_only_enabled(bool p_enabled) {
 bool CharacterBody2D::is_slide_on_ceiling_enabled() const {
 	return slide_on_ceiling;
 }
+
 void CharacterBody2D::set_slide_on_ceiling_enabled(bool p_enabled) {
 	slide_on_ceiling = p_enabled;
 }
