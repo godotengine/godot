@@ -297,13 +297,12 @@ private:
 	Vector<Ref<KinematicCollision2D>> slide_colliders;
 	Ref<KinematicCollision2D> motion_cache;
 
-	_FORCE_INLINE_ bool _ignores_mode(Physics2DServer::BodyMode) const;
-
 	Ref<KinematicCollision2D> _move(const Vector2 &p_motion, bool p_infinite_inertia = true, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
 	Ref<KinematicCollision2D> _get_slide_collision(int p_bounce);
 
 	Transform2D last_valid_transform;
 	void _direct_state_changed(Object *p_state);
+	Vector2 _move_and_slide_internal(const Vector2 &p_linear_velocity, const Vector2 &p_snap, const Vector2 &p_up_direction = Vector2(0, 0), bool p_stop_on_slope = false, int p_max_slides = 4, float p_floor_max_angle = Math::deg2rad((float)45), bool p_infinite_inertia = true);
 	void _set_collision_direction(const Collision &p_collision, const Vector2 &p_up_direction, float p_floor_max_angle);
 
 protected:
