@@ -9129,25 +9129,41 @@ RendererStorageRD::RendererStorageRD() {
 				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS: {
 					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
 					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
-					sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
+					} else {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+					}
 				} break;
 				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS: {
 					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
 					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
-					sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
+					} else {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+					}
 
 				} break;
 				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC: {
 					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
 					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
-					sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
+					} else {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+					}
 					sampler_state.use_anisotropy = true;
 					sampler_state.anisotropy_max = 1 << int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level"));
 				} break;
 				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC: {
 					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
 					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
-					sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
+					} else {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+					}
 					sampler_state.use_anisotropy = true;
 					sampler_state.anisotropy_max = 1 << int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level"));
 
