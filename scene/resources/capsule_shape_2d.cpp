@@ -59,10 +59,7 @@ void CapsuleShape2D::_update_shape() {
 }
 
 void CapsuleShape2D::set_radius(real_t p_radius) {
-	radius = p_radius;
-	if (radius > height * 0.5) {
-		height = radius * 2;
-	}
+	radius = MIN(p_radius, height * 0.5);
 	_update_shape();
 }
 
@@ -71,11 +68,7 @@ real_t CapsuleShape2D::get_radius() const {
 }
 
 void CapsuleShape2D::set_height(real_t p_height) {
-	height = p_height;
-	if (radius > height * 0.5) {
-		height = radius * 2;
-	}
-
+	height = MAX(p_height, radius * 2);
 	_update_shape();
 }
 
