@@ -208,8 +208,8 @@ void EditorSettingsDialog::_event_config_confirmed() {
 		Ref<Shortcut> current_sc = EditorSettings::get_singleton()->get_shortcut(shortcut_being_edited);
 
 		undo_redo->create_action(TTR("Change Shortcut") + " '" + shortcut_being_edited + "'");
-		undo_redo->add_do_method(current_sc.ptr(), "set_shortcut", k);
-		undo_redo->add_undo_method(current_sc.ptr(), "set_shortcut", current_sc->get_event());
+		undo_redo->add_do_method(current_sc.ptr(), "set_event", k);
+		undo_redo->add_undo_method(current_sc.ptr(), "set_event", current_sc->get_event());
 		undo_redo->add_do_method(this, "_update_shortcuts");
 		undo_redo->add_undo_method(this, "_update_shortcuts");
 		undo_redo->add_do_method(this, "_settings_changed");
@@ -453,8 +453,8 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 				}
 
 				undo_redo->create_action(TTR("Erase Shortcut"));
-				undo_redo->add_do_method(sc.ptr(), "set_shortcut", Ref<InputEvent>());
-				undo_redo->add_undo_method(sc.ptr(), "set_shortcut", sc->get_event());
+				undo_redo->add_do_method(sc.ptr(), "set_event", Ref<InputEvent>());
+				undo_redo->add_undo_method(sc.ptr(), "set_event", sc->get_event());
 				undo_redo->add_do_method(this, "_update_shortcuts");
 				undo_redo->add_undo_method(this, "_update_shortcuts");
 				undo_redo->add_do_method(this, "_settings_changed");
@@ -469,8 +469,8 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 				Ref<InputEvent> original = sc->get_meta("original");
 
 				undo_redo->create_action(TTR("Restore Shortcut"));
-				undo_redo->add_do_method(sc.ptr(), "set_shortcut", original);
-				undo_redo->add_undo_method(sc.ptr(), "set_shortcut", sc->get_event());
+				undo_redo->add_do_method(sc.ptr(), "set_event", original);
+				undo_redo->add_undo_method(sc.ptr(), "set_event", sc->get_event());
 				undo_redo->add_do_method(this, "_update_shortcuts");
 				undo_redo->add_undo_method(this, "_update_shortcuts");
 				undo_redo->add_do_method(this, "_settings_changed");
