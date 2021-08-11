@@ -3,7 +3,7 @@
 #define LIGHT_BAKE_STATIC 2
 
 struct LightData { //this structure needs to be as packed as possible
-	vec3 position;
+	highp vec3 position;
 	float inv_radius;
 
 	vec3 direction;
@@ -17,8 +17,8 @@ struct LightData { //this structure needs to be as packed as possible
 	float specular_amount;
 	bool shadow_enabled;
 
-	vec4 atlas_rect; // rect in the shadow atlas
-	mat4 shadow_matrix;
+	highp vec4 atlas_rect; // rect in the shadow atlas
+	highp mat4 shadow_matrix;
 	float shadow_bias;
 	float shadow_normal_bias;
 	float transmittance_bias;
@@ -27,7 +27,7 @@ struct LightData { //this structure needs to be as packed as possible
 	uint mask;
 	float shadow_volumetric_fog_fade;
 	uint bake_mode;
-	vec4 projector_rect; //projector rect in srgb decal atlas
+	highp vec4 projector_rect; //projector rect in srgb decal atlas
 };
 
 #define REFLECTION_AMBIENT_DISABLED 0
@@ -69,13 +69,13 @@ struct DirectionalLightData {
 	vec4 shadow_bias;
 	vec4 shadow_normal_bias;
 	vec4 shadow_transmittance_bias;
-	vec4 shadow_z_range;
-	vec4 shadow_range_begin;
+	highp vec4 shadow_z_range;
+	highp vec4 shadow_range_begin;
 	vec4 shadow_split_offsets;
-	mat4 shadow_matrix1;
-	mat4 shadow_matrix2;
-	mat4 shadow_matrix3;
-	mat4 shadow_matrix4;
+	highp mat4 shadow_matrix1;
+	highp mat4 shadow_matrix2;
+	highp mat4 shadow_matrix3;
+	highp mat4 shadow_matrix4;
 	vec4 shadow_color1;
 	vec4 shadow_color2;
 	vec4 shadow_color3;

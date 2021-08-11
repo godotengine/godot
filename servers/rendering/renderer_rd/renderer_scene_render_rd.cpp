@@ -2010,7 +2010,6 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 
 	bool can_use_effects = rb->width >= 8 && rb->height >= 8;
 
-	RENDER_TIMESTAMP("Tonemap");
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_switch_to_next_pass();
 
 	EffectsRD::TonemapSettings tonemap;

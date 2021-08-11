@@ -423,6 +423,8 @@
 		<member name="debug/settings/stdout/print_fps" type="bool" setter="" getter="" default="false">
 			Print frames per second to standard output every second.
 		</member>
+		<member name="debug/settings/stdout/print_gpu_profile" type="bool" setter="" getter="" default="false">
+		</member>
 		<member name="debug/settings/stdout/verbose_stdout" type="bool" setter="" getter="" default="false">
 			Print more information to standard output when running. It displays information such as memory leaks, which scenes and resources are being loaded, etc.
 		</member>
