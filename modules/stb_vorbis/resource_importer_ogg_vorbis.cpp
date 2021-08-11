@@ -67,7 +67,7 @@ String ResourceImporterOGGVorbis::get_preset_name(int p_idx) const {
 }
 
 void ResourceImporterOGGVorbis::get_import_options(List<ImportOption> *r_options, int p_preset) const {
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "loop"), true));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "loop"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "loop_offset"), 0));
 }
 
