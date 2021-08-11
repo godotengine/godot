@@ -74,8 +74,6 @@ static void gdnative_variant_destroy(GDNativeVariantPtr p_self) {
 
 // variant type
 
-#define memnew_placement_custom(m_placement, m_class, m_constr) _post_initialize(new (m_placement, sizeof(m_class), "") m_constr)
-
 static void gdnative_variant_call(GDNativeVariantPtr p_self, const GDNativeStringNamePtr p_method, const GDNativeVariantPtr *p_args, const GDNativeInt p_argcount, GDNativeVariantPtr r_return, GDNativeCallError *r_error) {
 	Variant *self = (Variant *)p_self;
 	const StringName *method = (const StringName *)p_method;
@@ -83,7 +81,7 @@ static void gdnative_variant_call(GDNativeVariantPtr p_self, const GDNativeStrin
 	Variant ret;
 	Callable::CallError error;
 	self->call(*method, args, p_argcount, ret, error);
-	memnew_placement_custom(r_return, Variant, Variant(ret));
+	memnew_placement(r_return, Variant(ret));
 
 	if (r_error) {
 		r_error->error = (GDNativeCallErrorType)(error.error);
@@ -99,7 +97,7 @@ static void gdnative_variant_call_static(GDNativeVariantType p_type, const GDNat
 	Variant ret;
 	Callable::CallError error;
 	Variant::call_static(type, *method, args, p_argcount, ret, error);
-	memnew_placement_custom(r_return, Variant, Variant(ret));
+	memnew_placement(r_return, Variant(ret));
 
 	if (r_error) {
 		r_error->error = (GDNativeCallErrorType)error.error;
@@ -164,7 +162,7 @@ static void gdnative_variant_get(const GDNativeVariantPtr p_self, const GDNative
 	const Variant *key = (const Variant *)p_key;
 
 	bool valid;
-	memnew_placement_custom(r_ret, Variant, Variant(self->get(*key, &valid)));
+	memnew_placement(r_ret, Variant(self->get(*key, &valid)));
 	*r_valid = valid;
 }
 
@@ -173,7 +171,7 @@ static void gdnative_variant_get_named(const GDNativeVariantPtr p_self, const GD
 	const StringName *key = (const StringName *)p_key;
 
 	bool valid;
-	memnew_placement_custom(r_ret, Variant, Variant(self->get_named(*key, valid)));
+	memnew_placement(r_ret, Variant(self->get_named(*key, valid)));
 	*r_valid = valid;
 }
 
@@ -182,7 +180,7 @@ static void gdnative_variant_get_keyed(const GDNativeVariantPtr p_self, const GD
 	const Variant *key = (const Variant *)p_key;
 
 	bool valid;
-	memnew_placement_custom(r_ret, Variant, Variant(self->get_keyed(*key, valid)));
+	memnew_placement(r_ret, Variant(self->get_keyed(*key, valid)));
 	*r_valid = valid;
 }
 
@@ -191,7 +189,7 @@ static void gdnative_variant_get_indexed(const GDNativeVariantPtr p_self, GDNati
 
 	bool valid;
 	bool oob;
-	memnew_placement_custom(r_ret, Variant, Variant(self->get_indexed(p_index, valid, oob)));
+	memnew_placement(r_ret, Variant(self->get_indexed(p_index, valid, oob)));
 	*r_valid = valid;
 	*r_oob = oob;
 }
@@ -222,7 +220,7 @@ static void gdnative_variant_iter_get(const GDNativeVariantPtr p_self, GDNativeV
 	Variant *iter = (Variant *)r_iter;
 
 	bool valid;
-	memnew_placement_custom(r_ret, Variant, Variant(self->iter_next(*iter, valid)));
+	memnew_placement(r_ret, Variant(self->iter_next(*iter, valid)));
 	*r_valid = valid;
 }
 
@@ -254,12 +252,12 @@ static void gdnative_variant_interpolate(const GDNativeVariantPtr p_a, const GDN
 
 static void gdnative_variant_duplicate(const GDNativeVariantPtr p_self, GDNativeVariantPtr r_ret, GDNativeBool p_deep) {
 	const Variant *self = (const Variant *)p_self;
-	memnew_placement_custom(r_ret, Variant, Variant(self->duplicate(p_deep)));
+	memnew_placement(r_ret, Variant(self->duplicate(p_deep)));
 }
 
 static void gdnative_variant_stringify(const GDNativeVariantPtr p_self, GDNativeStringPtr r_ret) {
 	const Variant *self = (const Variant *)p_self;
-	memnew_placement_custom(r_ret, String, String(*self));
+	memnew_placement(r_ret, String(*self));
 }
 
 static GDNativeVariantType gdnative_variant_get_type(const GDNativeVariantPtr p_self) {
@@ -288,7 +286,7 @@ static GDNativeBool gdnative_variant_has_key(const GDNativeVariantPtr p_self, co
 
 static void gdnative_variant_get_type_name(GDNativeVariantType p_type, GDNativeStringPtr r_ret) {
 	String name = Variant::get_type_name((Variant::Type)p_type);
-	memnew_placement_custom(r_ret, String, String(name));
+	memnew_placement(r_ret, String(name));
 }
 
 static GDNativeBool gdnative_variant_can_convert(GDNativeVariantType p_from, GDNativeVariantType p_to) {
@@ -508,7 +506,7 @@ static GDNativePtrKeyedChecker gdnative_variant_get_ptr_keyed_checker(GDNativeVa
 	return (GDNativePtrKeyedChecker)Variant::get_member_ptr_keyed_checker(Variant::Type(p_type));
 }
 static void gdnative_variant_get_constant_value(GDNativeVariantType p_type, const char *p_constant, GDNativeVariantPtr r_ret) {
-	memnew_placement_custom(r_ret, Variant, Variant(Variant::get_constant_value(Variant::Type(p_type), p_constant)));
+	memnew_placement(r_ret, Variant(Variant::get_constant_value(Variant::Type(p_type), p_constant)));
 }
 static GDNativePtrUtilityFunction gdnative_variant_get_ptr_utility_function(const char *p_function, GDNativeInt p_hash) {
 	StringName function = p_function;
