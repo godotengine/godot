@@ -31,14 +31,9 @@ Files extracted from upstream source:
 
 ## certs
 
-- Upstream: Mozilla, via https://apps.fedoraproject.org/packages/ca-certificates
-- Version: 2018.2.26 (2018)
+- Upstream: Mozilla, via https://github.com/bagder/ca-bundle
+- Version: git (8b263a18fca98ea371e54227837321c5cdaa1ba7, 2021)
 - License: MPL 2.0
-
-File extracted from a recent Fedora install:
-/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
-(It can't be extracted directly from the package,
-as it's generated on the user's system.)
 
 
 ## cvtt
