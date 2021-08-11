@@ -1464,6 +1464,7 @@ VisualShaderNode *VisualShaderEditor::_add_node(int p_idx, int p_op_idx) {
 		position += graph->get_size() * 0.5;
 		position /= EDSCALE;
 	}
+	position /= graph->get_zoom();
 	saved_node_pos_dirty = false;
 
 	VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
