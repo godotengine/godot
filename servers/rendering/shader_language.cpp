@@ -6623,6 +6623,7 @@ Error ShaderLanguage::_validate_datatype(DataType p_type) {
 
 Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types) {
 	Token tk = _get_token();
+	TkPos prev_pos;
 
 	if (tk.type != TK_SHADER_TYPE) {
 		_set_error("Expected 'shader_type' at the beginning of shader. Valid types are: " + _get_shader_type_list(p_shader_types));
@@ -6644,11 +6645,13 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 		_set_error("Invalid shader type. Valid types are: " + _get_shader_type_list(p_shader_types));
 		return ERR_PARSE_ERROR;
 	}
-
+	prev_pos = _get_tkpos();
 	tk = _get_token();
 
 	if (tk.type != TK_SEMICOLON) {
+		_set_tkpos(prev_pos);
 		_set_error("Expected ';' after 'shader_type <type>'.");
+		return ERR_PARSE_ERROR;
 	}
 
 	tk = _get_token();
@@ -6927,7 +6930,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					return ERR_PARSE_ERROR;
 				}
 
-				TkPos name_pos = _get_tkpos();
+				prev_pos = _get_tkpos();
 				name = tk.text;
 
 				if (_find_identifier(nullptr, false, FunctionInfo(), name)) {
@@ -7220,7 +7223,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					varying.type = type;
 					varying.precision = precision;
 					varying.interpolation = interpolation;
-					varying.tkpos = name_pos;
+					varying.tkpos = prev_pos;
 					varying.array_size = array_size;
 
 					tk = _get_token();
@@ -7309,7 +7312,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				} else {
 					type = get_token_datatype(tk.type);
 				}
-				TkPos prev_pos = _get_tkpos();
+				prev_pos = _get_tkpos();
 				tk = _get_token();
 
 				if (tk.type == TK_BRACKET_OPEN) {
@@ -7452,13 +7455,13 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 									tk = _get_token();
 									if (tk.type == TK_BRACKET_OPEN) {
-										TkPos pos2 = _get_tkpos();
+										prev_pos = _get_tkpos();
 										tk = _get_token();
 										if (tk.type == TK_BRACKET_CLOSE) {
 											array_size2 = constant.array_size;
 											tk = _get_token();
 										} else {
-											_set_tkpos(pos2);
+											_set_tkpos(prev_pos);
 
 											Node *n = _parse_and_reduce_expression(nullptr, FunctionInfo());
 											if (!n || n->type != Node::TYPE_CONSTANT || n->get_datatype() != TYPE_INT) {
