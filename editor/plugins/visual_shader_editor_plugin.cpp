@@ -2361,6 +2361,7 @@ void VisualShaderEditor::_add_node(int p_idx, int p_op_idx, String p_resource_pa
 		position += graph->get_size() * 0.5;
 		position /= EDSCALE;
 	}
+	position /= graph->get_zoom();
 	saved_node_pos_dirty = false;
 
 	int id_to_use = visual_shader->get_valid_node_id(type);
