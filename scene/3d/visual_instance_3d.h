@@ -72,8 +72,8 @@ public:
 	void set_layer_mask(uint32_t p_mask);
 	uint32_t get_layer_mask() const;
 
-	void set_layer_mask_bit(int p_layer, bool p_enable);
-	bool get_layer_mask_bit(int p_layer) const;
+	void set_layer_mask_value(int p_layer_number, bool p_enable);
+	bool get_layer_mask_value(int p_layer_number) const;
 
 	VisualInstance3D();
 	~VisualInstance3D();

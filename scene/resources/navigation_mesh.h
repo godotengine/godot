@@ -118,8 +118,8 @@ public:
 	void set_collision_mask(uint32_t p_mask);
 	uint32_t get_collision_mask() const;
 
-	void set_collision_mask_bit(int p_bit, bool p_value);
-	bool get_collision_mask_bit(int p_bit) const;
+	void set_collision_mask_value(int p_layer_number, bool p_value);
+	bool get_collision_mask_value(int p_layer_number) const;
 
 	void set_source_geometry_mode(SourceGeometryMode p_geometry_mode);
 	SourceGeometryMode get_source_geometry_mode() const;

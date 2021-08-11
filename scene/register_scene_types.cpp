@@ -994,15 +994,15 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 	for (int i = 0; i < 20; i++) {
-		GLOBAL_DEF_BASIC(vformat("layer_names/2d_render/layer_%d", i), "");
-		GLOBAL_DEF_BASIC(vformat("layer_names/3d_render/layer_%d", i), "");
+		GLOBAL_DEF_BASIC(vformat("layer_names/2d_render/layer_%d", i + 1), "");
+		GLOBAL_DEF_BASIC(vformat("layer_names/3d_render/layer_%d", i + 1), "");
 	}
 
 	for (int i = 0; i < 32; i++) {
-		GLOBAL_DEF_BASIC(vformat("layer_names/2d_physics/layer_%d", i), "");
-		GLOBAL_DEF_BASIC(vformat("layer_names/2d_navigation/layer_%d", i), "");
-		GLOBAL_DEF_BASIC(vformat("layer_names/3d_physics/layer_%d", i), "");
-		GLOBAL_DEF_BASIC(vformat("layer_names/3d_navigation/layer_%d", i), "");
+		GLOBAL_DEF_BASIC(vformat("layer_names/2d_physics/layer_%d", i + 1), "");
+		GLOBAL_DEF_BASIC(vformat("layer_names/2d_navigation/layer_%d", i + 1), "");
+		GLOBAL_DEF_BASIC(vformat("layer_names/3d_physics/layer_%d", i + 1), "");
+		GLOBAL_DEF_BASIC(vformat("layer_names/3d_navigation/layer_%d", i + 1), "");
 	}
 
 	bool default_theme_hidpi = GLOBAL_DEF("gui/theme/use_hidpi", false);

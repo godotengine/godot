@@ -837,7 +837,7 @@ public:
 							Vector2 offset;
 							offset.y = rect2.size.y * 0.75;
 
-							draw_string(font, rect2.position + offset, itos(layer_index), HALIGN_CENTER, rect2.size.x, -1, on ? text_color_on : text_color);
+							draw_string(font, rect2.position + offset, itos(layer_index + 1), HALIGN_CENTER, rect2.size.x, -1, on ? text_color_on : text_color);
 
 							ofs.x += bsize + 1;
 
@@ -993,12 +993,12 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 	for (int i = 0; i < layer_count; i++) {
 		String name;
 
-		if (ProjectSettings::get_singleton()->has_setting(basename + vformat("/layer_%d", i))) {
-			name = ProjectSettings::get_singleton()->get(basename + vformat("/layer_%d", i));
+		if (ProjectSettings::get_singleton()->has_setting(basename + vformat("/layer_%d", i + 1))) {
+			name = ProjectSettings::get_singleton()->get(basename + vformat("/layer_%d", i + 1));
 		}
 
 		if (name == "") {
-			name = vformat(TTR("Layer %d"), i);
+			name = vformat(TTR("Layer %d"), i + 1);
 		}
 
 		names.push_back(name);

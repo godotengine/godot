@@ -777,9 +777,6 @@
 		<member name="internationalization/rendering/text_driver" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies the [TextServer] to use. If left empty, the default will be used.
 		</member>
-		<member name="layer_names/2d_navigation/layer_0" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D navigation layer 0. If left empty, the layer will display as "Layer 0".
-		</member>
 		<member name="layer_names/2d_navigation/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 1. If left empty, the layer will display as "Layer 1".
 		</member>
@@ -855,6 +852,9 @@
 		<member name="layer_names/2d_navigation/layer_31" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 31. If left empty, the layer will display as "Layer 31".
 		</member>
+		<member name="layer_names/2d_navigation/layer_32" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 32. If left empty, the layer will display as "Layer 32".
+		</member>
 		<member name="layer_names/2d_navigation/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 4. If left empty, the layer will display as "Layer 4".
 		</member>
@@ -872,9 +872,6 @@
 		</member>
 		<member name="layer_names/2d_navigation/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 9. If left empty, the layer will display as "Layer 9".
-		</member>
-		<member name="layer_names/2d_physics/layer_0" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D physics layer 0. If left empty, the layer will display as "Layer 0".
 		</member>
 		<member name="layer_names/2d_physics/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D physics layer 1. If left empty, the layer will display as "Layer 1".
@@ -951,6 +948,9 @@
 		<member name="layer_names/2d_physics/layer_31" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D physics layer 31. If left empty, the layer will display as "Layer 31".
 		</member>
+		<member name="layer_names/2d_physics/layer_32" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 32. If left empty, the layer will display as "Layer 32".
+		</member>
 		<member name="layer_names/2d_physics/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D physics layer 4. If left empty, the layer will display as "Layer 4".
 		</member>
@@ -968,9 +968,6 @@
 		</member>
 		<member name="layer_names/2d_physics/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D physics layer 9. If left empty, the layer will display as "Layer 9".
-		</member>
-		<member name="layer_names/2d_render/layer_0" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D render layer 0. If left empty, the layer will display as "Layer 0".
 		</member>
 		<member name="layer_names/2d_render/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D render layer 1. If left empty, the layer will display as "Layer 1".
@@ -1008,6 +1005,9 @@
 		<member name="layer_names/2d_render/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D render layer 2. If left empty, the layer will display as "Layer 2".
 		</member>
+		<member name="layer_names/2d_render/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D render layer 20. If left empty, the layer will display as "Layer 20".
+		</member>
 		<member name="layer_names/2d_render/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D render layer 3. If left empty, the layer will display as "Layer 3".
 		</member>
@@ -1028,9 +1028,6 @@
 		</member>
 		<member name="layer_names/2d_render/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D render layer 9. If left empty, the layer will display as "Layer 9".
-		</member>
-		<member name="layer_names/3d_navigation/layer_0" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D navigation layer 0. If left empty, the layer will display as "Layer 0".
 		</member>
 		<member name="layer_names/3d_navigation/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 1. If left empty, the layer will display as "Layer 1".
@@ -1107,6 +1104,9 @@
 		<member name="layer_names/3d_navigation/layer_31" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 31. If left empty, the layer will display as "Layer 31".
 		</member>
+		<member name="layer_names/3d_navigation/layer_32" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 32. If left empty, the layer will display as "Layer 32".
+		</member>
 		<member name="layer_names/3d_navigation/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 4. If left empty, the layer will display as "Layer 4".
 		</member>
@@ -1124,9 +1124,6 @@
 		</member>
 		<member name="layer_names/3d_navigation/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 9. If left empty, the layer will display as "Layer 9".
-		</member>
-		<member name="layer_names/3d_physics/layer_0" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D physics layer 0. If left empty, the layer will display as "Layer 0".
 		</member>
 		<member name="layer_names/3d_physics/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D physics layer 1. If left empty, the layer will display as "Layer 1".
@@ -1203,6 +1200,9 @@
 		<member name="layer_names/3d_physics/layer_31" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D physics layer 31. If left empty, the layer will display as "Layer 31".
 		</member>
+		<member name="layer_names/3d_physics/layer_32" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 32. If left empty, the layer will display as "Layer 32".
+		</member>
 		<member name="layer_names/3d_physics/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D physics layer 4. If left empty, the layer will display as "Layer 4".
 		</member>
@@ -1220,9 +1220,6 @@
 		</member>
 		<member name="layer_names/3d_physics/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D physics layer 9. If left empty, the layer will display as "Layer 9".
-		</member>
-		<member name="layer_names/3d_render/layer_0" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D render layer 0. If left empty, the layer will display as "Layer 0".
 		</member>
 		<member name="layer_names/3d_render/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D render layer 1. If left empty, the layer will display as "Layer 1".
@@ -1259,6 +1256,9 @@
 		</member>
 		<member name="layer_names/3d_render/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D render layer 2. If left empty, the layer will display as "Layer 2".
+		</member>
+		<member name="layer_names/3d_render/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D render layer 20. If left empty, the layer will display as "Layer 20".
 		</member>
 		<member name="layer_names/3d_render/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D render layer 3. If left empty, the layer will display as "Layer 3".

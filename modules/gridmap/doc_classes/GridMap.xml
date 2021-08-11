@@ -53,18 +53,18 @@
 				The orientation of the cell at the given grid coordinates. [code]-1[/code] is returned if the cell is empty.
 			</description>
 		</method>
-		<method name="get_collision_layer_bit" qualifiers="const">
+		<method name="get_collision_layer_value" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="bit" type="int" />
+			<argument index="0" name="layer_number" type="int" />
 			<description>
-				Returns an individual bit on the [member collision_layer].
+				Returns whether or not the specified layer of the [member collision_layer] is enabled, given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
-		<method name="get_collision_mask_bit" qualifiers="const">
+		<method name="get_collision_mask_value" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="bit" type="int" />
+			<argument index="0" name="layer_number" type="int" />
 			<description>
-				Returns an individual bit on the [member collision_mask].
+				Returns whether or not the specified layer of the [member collision_mask] is enabled, given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
 		<method name="get_meshes">
@@ -119,20 +119,20 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_collision_layer_bit">
+		<method name="set_collision_layer_value">
 			<return type="void" />
-			<argument index="0" name="bit" type="int" />
+			<argument index="0" name="layer_number" type="int" />
 			<argument index="1" name="value" type="bool" />
 			<description>
-				Sets an individual bit on the [member collision_layer].
+				Based on [code]value[/code], enables or disables the specified layer in the [member collision_layer], given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
-		<method name="set_collision_mask_bit">
+		<method name="set_collision_mask_value">
 			<return type="void" />
-			<argument index="0" name="bit" type="int" />
+			<argument index="0" name="layer_number" type="int" />
 			<argument index="1" name="value" type="bool" />
 			<description>
-				Sets an individual bit on the [member collision_mask].
+				Based on [code]value[/code], enables or disables the specified layer in the [member collision_mask], given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
 		<method name="world_to_map" qualifiers="const">

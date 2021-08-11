@@ -59,7 +59,7 @@
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
 				If the ray did not intersect anything, then an empty dictionary is returned instead.
-				Additionally, the method can take an [code]exclude[/code] array of objects or [RID]s that are to be excluded from collisions, a [code]collision_mask[/code] bitmask representing the physics layers to check in, or booleans to determine if the ray should collide with [PhysicsBody3D]s or [Area3D]s, respectively.
+				Additionally, the method can take an [code]exclude[/code] array of objects or [RID]s that are to be excluded from collisions, a [code]collision_mask[/code] bitmask representing the physics layers to detect, or booleans to determine if the ray should collide with [PhysicsBody3D]s or [Area3D]s, respectively.
 			</description>
 		</method>
 		<method name="intersect_shape">

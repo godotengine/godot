@@ -47,7 +47,7 @@
 			<argument index="0" name="point" type="Vector2" />
 			<argument index="1" name="max_results" type="int" default="32" />
 			<argument index="2" name="exclude" type="Array" default="[]" />
-			<argument index="3" name="collision_layer" type="int" default="2147483647" />
+			<argument index="3" name="collision_mask" type="int" default="2147483647" />
 			<argument index="4" name="collide_with_bodies" type="bool" default="true" />
 			<argument index="5" name="collide_with_areas" type="bool" default="false" />
 			<description>
@@ -57,7 +57,7 @@
 				[code]metadata[/code]: The intersecting shape's metadata. This metadata is different from [method Object.get_meta], and is set with [method PhysicsServer2D.shape_set_data].
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
-				Additionally, the method can take an [code]exclude[/code] array of objects or [RID]s that are to be excluded from collisions, a [code]collision_mask[/code] bitmask representing the physics layers to check in, or booleans to determine if the ray should collide with [PhysicsBody2D]s or [Area2D]s, respectively.
+				Additionally, the method can take an [code]exclude[/code] array of objects or [RID]s that are to be excluded from collisions, a [code]collision_mask[/code] bitmask representing the physics layers to detect, or booleans to determine if the ray should collide with [PhysicsBody2D]s or [Area2D]s, respectively.
 				[b]Note:[/b] [ConcavePolygonShape2D]s and [CollisionPolygon2D]s in [code]Segments[/code] build mode are not solid shapes. Therefore, they will not be detected.
 			</description>
 		</method>
@@ -67,7 +67,7 @@
 			<argument index="1" name="canvas_instance_id" type="int" />
 			<argument index="2" name="max_results" type="int" default="32" />
 			<argument index="3" name="exclude" type="Array" default="[]" />
-			<argument index="4" name="collision_layer" type="int" default="2147483647" />
+			<argument index="4" name="collision_mask" type="int" default="2147483647" />
 			<argument index="5" name="collide_with_bodies" type="bool" default="true" />
 			<argument index="6" name="collide_with_areas" type="bool" default="false" />
 			<description>
@@ -78,7 +78,7 @@
 			<argument index="0" name="from" type="Vector2" />
 			<argument index="1" name="to" type="Vector2" />
 			<argument index="2" name="exclude" type="Array" default="[]" />
-			<argument index="3" name="collision_layer" type="int" default="2147483647" />
+			<argument index="3" name="collision_mask" type="int" default="2147483647" />
 			<argument index="4" name="collide_with_bodies" type="bool" default="true" />
 			<argument index="5" name="collide_with_areas" type="bool" default="false" />
 			<description>
@@ -91,7 +91,7 @@
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
 				If the ray did not intersect anything, then an empty dictionary is returned instead.
-				Additionally, the method can take an [code]exclude[/code] array of objects or [RID]s that are to be excluded from collisions, a [code]collision_mask[/code] bitmask representing the physics layers to check in, or booleans to determine if the ray should collide with [PhysicsBody2D]s or [Area2D]s, respectively.
+				Additionally, the method can take an [code]exclude[/code] array of objects or [RID]s that are to be excluded from collisions, a [code]collision_mask[/code] bitmask representing the physics layers to detect, or booleans to determine if the ray should collide with [PhysicsBody2D]s or [Area2D]s, respectively.
 			</description>
 		</method>
 		<method name="intersect_shape">

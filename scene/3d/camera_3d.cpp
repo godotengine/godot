@@ -499,8 +499,8 @@ void Camera3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_position_in_frustum", "world_point"), &Camera3D::is_position_in_frustum);
 	ClassDB::bind_method(D_METHOD("get_camera_rid"), &Camera3D::get_camera);
 
-	ClassDB::bind_method(D_METHOD("set_cull_mask_bit", "layer", "enable"), &Camera3D::set_cull_mask_bit);
-	ClassDB::bind_method(D_METHOD("get_cull_mask_bit", "layer"), &Camera3D::get_cull_mask_bit);
+	ClassDB::bind_method(D_METHOD("set_cull_mask_value", "layer_number", "value"), &Camera3D::set_cull_mask_value);
+	ClassDB::bind_method(D_METHOD("get_cull_mask_value", "layer_number"), &Camera3D::get_cull_mask_value);
 
 	//ClassDB::bind_method(D_METHOD("_camera_make_current"),&Camera::_camera_make_current );
 
@@ -592,18 +592,22 @@ uint32_t Camera3D::get_cull_mask() const {
 	return layers;
 }
 
-void Camera3D::set_cull_mask_bit(int p_layer, bool p_enable) {
-	ERR_FAIL_INDEX(p_layer, 32);
-	if (p_enable) {
-		set_cull_mask(layers | (1 << p_layer));
+void Camera3D::set_cull_mask_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Render layer number must be between 1 and 20 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 20, "Render layer number must be between 1 and 20 inclusive.");
+	uint32_t mask = get_cull_mask();
+	if (p_value) {
+		mask |= 1 << (p_layer_number - 1);
 	} else {
-		set_cull_mask(layers & (~(1 << p_layer)));
+		mask &= ~(1 << (p_layer_number - 1));
 	}
+	set_cull_mask(mask);
 }
 
-bool Camera3D::get_cull_mask_bit(int p_layer) const {
-	ERR_FAIL_INDEX_V(p_layer, 32, false);
-	return (layers & (1 << p_layer));
+bool Camera3D::get_cull_mask_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Render layer number must be between 1 and 20 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 20, false, "Render layer number must be between 1 and 20 inclusive.");
+	return layers & (1 << (p_layer_number - 1));
 }
 
 Vector<Plane> Camera3D::get_frustum() const {
@@ -767,20 +771,22 @@ uint32_t ClippedCamera3D::get_collision_mask() const {
 	return collision_mask;
 }
 
-void ClippedCamera3D::set_collision_mask_bit(int p_bit, bool p_value) {
-	ERR_FAIL_INDEX_MSG(p_bit, 32, "Collision layer bit must be between 0 and 31 inclusive.");
+void ClippedCamera3D::set_collision_mask_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 32, "Collision layer number must be between 1 and 32 inclusive.");
 	uint32_t mask = get_collision_mask();
 	if (p_value) {
-		mask |= 1 << p_bit;
+		mask |= 1 << (p_layer_number - 1);
 	} else {
-		mask &= ~(1 << p_bit);
+		mask &= ~(1 << (p_layer_number - 1));
 	}
 	set_collision_mask(mask);
 }
 
-bool ClippedCamera3D::get_collision_mask_bit(int p_bit) const {
-	ERR_FAIL_INDEX_V_MSG(p_bit, 32, false, "Collision mask bit must be between 0 and 31 inclusive.");
-	return get_collision_mask() & (1 << p_bit);
+bool ClippedCamera3D::get_collision_mask_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Collision layer number must be between 1 and 32 inclusive.");
+	return get_collision_mask() & (1 << (p_layer_number - 1));
 }
 
 void ClippedCamera3D::add_exception_rid(const RID &p_rid) {
@@ -843,8 +849,8 @@ void ClippedCamera3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_mask", "mask"), &ClippedCamera3D::set_collision_mask);
 	ClassDB::bind_method(D_METHOD("get_collision_mask"), &ClippedCamera3D::get_collision_mask);
 
-	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &ClippedCamera3D::set_collision_mask_bit);
-	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &ClippedCamera3D::get_collision_mask_bit);
+	ClassDB::bind_method(D_METHOD("set_collision_mask_value", "layer_number", "value"), &ClippedCamera3D::set_collision_mask_value);
+	ClassDB::bind_method(D_METHOD("get_collision_mask_value", "layer_number"), &ClippedCamera3D::get_collision_mask_value);
 
 	ClassDB::bind_method(D_METHOD("add_exception_rid", "rid"), &ClippedCamera3D::add_exception_rid);
 	ClassDB::bind_method(D_METHOD("add_exception", "node"), &ClippedCamera3D::add_exception);
