@@ -43,7 +43,7 @@ void MainFrameTime::clamp_idle(float min_idle_step, float max_idle_step) {
 
 /////////////////////////////////
 
-void MainTimerSync::DeltaSmoother::update_refresh_rate_estimator(int p_delta) {
+void MainTimerSync::DeltaSmoother::update_refresh_rate_estimator(int64_t p_delta) {
 	// the calling code should prevent 0 or negative values of delta
 	// (preventing divide by zero)
 
@@ -195,7 +195,7 @@ void MainTimerSync::DeltaSmoother::update_refresh_rate_estimator(int p_delta) {
 	}
 }
 
-bool MainTimerSync::DeltaSmoother::fps_allows_smoothing(int p_delta) {
+bool MainTimerSync::DeltaSmoother::fps_allows_smoothing(int64_t p_delta) {
 	_measurement_time += p_delta;
 	_measurement_frame_count++;
 
@@ -209,8 +209,8 @@ bool MainTimerSync::DeltaSmoother::fps_allows_smoothing(int p_delta) {
 
 			// estimate fps
 			if (time_passed) {
-				float fps = 1000000.0f / time_passed;
-				float ratio = fps / (float)_estimated_fps;
+				double fps = 1000000.0 / time_passed;
+				double ratio = fps / (double)_estimated_fps;
 
 				//print_line("ratio : " + String(Variant(ratio)));
 
@@ -230,13 +230,19 @@ bool MainTimerSync::DeltaSmoother::fps_allows_smoothing(int p_delta) {
 	return _measurement_allows_smoothing;
 }
 
-int MainTimerSync::DeltaSmoother::smooth_delta(int p_delta) {
+int64_t MainTimerSync::DeltaSmoother::smooth_delta(int64_t p_delta) {
 	// Conditions to disable smoothing.
 	// Note that vsync is a request, it cannot be relied on, the OS may override this.
 	// If the OS turns vsync on without vsync in the app, smoothing will not be enabled.
 	// If the OS turns vsync off with sync enabled in the app, the smoothing must detect this
 	// via the error metric and switch off.
 	if (!OS::get_singleton()->is_delta_smoothing_enabled() || !OS::get_singleton()->is_vsync_enabled() || Engine::get_singleton()->is_editor_hint()) {
+		return p_delta;
+	}
+
+	// Very important, ignore long deltas and pass them back unmodified.
+	// This is to deal with resuming after suspend for long periods.
+	if (p_delta > 1000000) {
 		return p_delta;
 	}
 
@@ -266,7 +272,7 @@ int MainTimerSync::DeltaSmoother::smooth_delta(int p_delta) {
 	_leftover_time += p_delta;
 
 	// how many vsyncs units can we fit?
-	int units = _leftover_time / _vsync_delta;
+	int64_t units = _leftover_time / _vsync_delta;
 
 	// a delta must include minimum 1 vsync
 	// (if it is less than that, it is either random error or we are no longer running at the vsync rate,
