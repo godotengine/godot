@@ -2246,7 +2246,10 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					selection.selecting_column = col;
 				}
 
-				if (!mb->is_double_click() && (OS::get_singleton()->get_ticks_msec() - last_dblclk) < 600 && cursor.line == prev_line) {
+				const int triple_click_timeout = 600;
+				const int triple_click_tolerance = 5;
+
+				if (!mb->is_double_click() && (OS::get_singleton()->get_ticks_msec() - last_dblclk) < triple_click_timeout && mb->get_position().distance_to(last_dblclk_pos) < triple_click_tolerance) {
 					// Triple-click select line.
 					selection.selecting_mode = SelectionMode::SELECTION_MODE_LINE;
 					_update_selection_mode_line();
@@ -2256,6 +2259,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					selection.selecting_mode = SelectionMode::SELECTION_MODE_WORD;
 					_update_selection_mode_word();
 					last_dblclk = OS::get_singleton()->get_ticks_msec();
+					last_dblclk_pos = mb->get_position();
 				}
 
 				update();
