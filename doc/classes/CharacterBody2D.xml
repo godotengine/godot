@@ -122,9 +122,6 @@
 			Sets a snapping distance. When set to a value different from [code]0.0[/code], the body is kept attached to slopes when calling [method move_and_slide]. The snapping vector is determined by the given distance along the opposite direction of the [member up_direction].
 			As long as the snapping vector is in contact with the ground and the body moves against `up_direction`, the body will remain attached to the surface. Snapping is not applied if the body moves along `up_direction`, so it will be able to detach from the ground when jumping.
 		</member>
-		<member name="infinite_inertia" type="bool" setter="set_infinite_inertia_enabled" getter="is_infinite_inertia_enabled" default="true">
-			If [code]true[/code], the body will be able to push [RigidBody2D] nodes when calling [method move_and_slide], but it also won't detect any collisions with them. If [code]false[/code], it will interact with [RigidBody2D] nodes like with [StaticBody2D].
-		</member>
 		<member name="linear_velocity" type="Vector2" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector2(0, 0)">
 			Current velocity vector in pixels per second, used and modified during calls to [method move_and_slide].
 		</member>

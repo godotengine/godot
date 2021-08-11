@@ -48,12 +48,6 @@ RID PhysicsServer3DSW::plane_shape_create() {
 	shape->set_self(rid);
 	return rid;
 }
-RID PhysicsServer3DSW::ray_shape_create() {
-	Shape3DSW *shape = memnew(RayShape3DSW);
-	RID rid = shape_owner.make_rid(shape);
-	shape->set_self(rid);
-	return rid;
-}
 RID PhysicsServer3DSW::sphere_shape_create() {
 	Shape3DSW *shape = memnew(SphereShape3DSW);
 	RID rid = shape_owner.make_rid(shape);
@@ -854,7 +848,7 @@ void PhysicsServer3DSW::body_set_ray_pickable(RID p_body, bool p_enable) {
 	body->set_ray_pickable(p_enable);
 }
 
-bool PhysicsServer3DSW::body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia, real_t p_margin, MotionResult *r_result, bool p_exclude_raycast_shapes, const Set<RID> &p_exclude) {
+bool PhysicsServer3DSW::body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin, MotionResult *r_result, const Set<RID> &p_exclude) {
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, false);
 	ERR_FAIL_COND_V(!body->get_space(), false);
@@ -862,18 +856,7 @@ bool PhysicsServer3DSW::body_test_motion(RID p_body, const Transform3D &p_from, 
 
 	_update_shapes();
 
-	return body->get_space()->test_body_motion(body, p_from, p_motion, p_infinite_inertia, p_margin, r_result, p_exclude_raycast_shapes, p_exclude);
-}
-
-int PhysicsServer3DSW::body_test_ray_separation(RID p_body, const Transform3D &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, SeparationResult *r_results, int p_result_max, real_t p_margin) {
-	Body3DSW *body = body_owner.getornull(p_body);
-	ERR_FAIL_COND_V(!body, false);
-	ERR_FAIL_COND_V(!body->get_space(), false);
-	ERR_FAIL_COND_V(body->get_space()->is_locked(), false);
-
-	_update_shapes();
-
-	return body->get_space()->test_body_ray_separation(body, p_transform, p_infinite_inertia, r_recover_motion, r_results, p_result_max, p_margin);
+	return body->get_space()->test_body_motion(body, p_from, p_motion, p_margin, r_result, p_exclude);
 }
 
 PhysicsDirectBodyState3D *PhysicsServer3DSW::body_get_direct_state(RID p_body) {

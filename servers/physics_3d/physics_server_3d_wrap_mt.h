@@ -79,7 +79,6 @@ public:
 
 	//FUNC1RID(shape,ShapeType); todo fix
 	FUNCRID(plane_shape)
-	FUNCRID(ray_shape)
 	FUNCRID(sphere_shape)
 	FUNCRID(box_shape)
 	FUNCRID(capsule_shape)
@@ -250,14 +249,9 @@ public:
 
 	FUNC2(body_set_ray_pickable, RID, bool);
 
-	bool body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia, real_t p_margin = 0.001, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true, const Set<RID> &p_exclude = Set<RID>()) override {
+	bool body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin = 0.001, MotionResult *r_result = nullptr, const Set<RID> &p_exclude = Set<RID>()) override {
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), false);
-		return physics_3d_server->body_test_motion(p_body, p_from, p_motion, p_infinite_inertia, p_margin, r_result, p_exclude_raycast_shapes, p_exclude);
-	}
-
-	int body_test_ray_separation(RID p_body, const Transform3D &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, SeparationResult *r_results, int p_result_max, real_t p_margin = 0.001) override {
-		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), false);
-		return physics_3d_server->body_test_ray_separation(p_body, p_transform, p_infinite_inertia, r_recover_motion, r_results, p_result_max, p_margin);
+		return physics_3d_server->body_test_motion(p_body, p_from, p_motion, p_margin, r_result, p_exclude);
 	}
 
 	// this function only works on physics process, errors and returns null otherwise

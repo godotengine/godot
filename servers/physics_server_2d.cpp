@@ -500,7 +500,7 @@ void PhysicsTestMotionResult2D::_bind_methods() {
 
 ///////////////////////////////////////
 
-bool PhysicsServer2D::_body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin, const Ref<PhysicsTestMotionResult2D> &p_result, bool p_exclude_raycast_shapes, const Vector<RID> &p_exclude) {
+bool PhysicsServer2D::_body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, real_t p_margin, const Ref<PhysicsTestMotionResult2D> &p_result, const Vector<RID> &p_exclude) {
 	MotionResult *r = nullptr;
 	if (p_result.is_valid()) {
 		r = p_result->get_result_ptr();
@@ -509,12 +509,11 @@ bool PhysicsServer2D::_body_test_motion(RID p_body, const Transform2D &p_from, c
 	for (int i = 0; i < p_exclude.size(); i++) {
 		exclude.insert(p_exclude[i]);
 	}
-	return body_test_motion(p_body, p_from, p_motion, p_infinite_inertia, p_margin, r, p_exclude_raycast_shapes, exclude);
+	return body_test_motion(p_body, p_from, p_motion, p_margin, r, exclude);
 }
 
 void PhysicsServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("line_shape_create"), &PhysicsServer2D::line_shape_create);
-	ClassDB::bind_method(D_METHOD("ray_shape_create"), &PhysicsServer2D::ray_shape_create);
 	ClassDB::bind_method(D_METHOD("segment_shape_create"), &PhysicsServer2D::segment_shape_create);
 	ClassDB::bind_method(D_METHOD("circle_shape_create"), &PhysicsServer2D::circle_shape_create);
 	ClassDB::bind_method(D_METHOD("rectangle_shape_create"), &PhysicsServer2D::rectangle_shape_create);
@@ -636,7 +635,7 @@ void PhysicsServer2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("body_set_force_integration_callback", "body", "callable", "userdata"), &PhysicsServer2D::body_set_force_integration_callback, DEFVAL(Variant()));
 
-	ClassDB::bind_method(D_METHOD("body_test_motion", "body", "from", "motion", "infinite_inertia", "margin", "result", "exclude_raycast_shapes", "exclude"), &PhysicsServer2D::_body_test_motion, DEFVAL(0.08), DEFVAL(Variant()), DEFVAL(true), DEFVAL(Array()));
+	ClassDB::bind_method(D_METHOD("body_test_motion", "body", "from", "motion", "margin", "result", "exclude"), &PhysicsServer2D::_body_test_motion, DEFVAL(0.08), DEFVAL(Variant()), DEFVAL(Array()));
 
 	ClassDB::bind_method(D_METHOD("body_get_direct_state", "body"), &PhysicsServer2D::body_get_direct_state);
 
@@ -676,7 +675,6 @@ void PhysicsServer2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(SPACE_PARAM_TEST_MOTION_MIN_CONTACT_DEPTH);
 
 	BIND_ENUM_CONSTANT(SHAPE_LINE);
-	BIND_ENUM_CONSTANT(SHAPE_RAY);
 	BIND_ENUM_CONSTANT(SHAPE_SEGMENT);
 	BIND_ENUM_CONSTANT(SHAPE_CIRCLE);
 	BIND_ENUM_CONSTANT(SHAPE_RECTANGLE);

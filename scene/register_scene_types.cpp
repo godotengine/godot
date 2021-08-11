@@ -158,8 +158,6 @@
 #include "scene/resources/physics_material.h"
 #include "scene/resources/polygon_path_finder.h"
 #include "scene/resources/primitive_meshes.h"
-#include "scene/resources/ray_shape_2d.h"
-#include "scene/resources/ray_shape_3d.h"
 #include "scene/resources/rectangle_shape_2d.h"
 #include "scene/resources/resource_format_text.h"
 #include "scene/resources/segment_shape_2d.h"
@@ -747,7 +745,6 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 	GDREGISTER_VIRTUAL_CLASS(Shape3D);
-	GDREGISTER_CLASS(RayShape3D);
 	GDREGISTER_CLASS(SphereShape3D);
 	GDREGISTER_CLASS(BoxShape3D);
 	GDREGISTER_CLASS(CapsuleShape3D);
@@ -828,7 +825,6 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(Shape2D);
 	GDREGISTER_CLASS(LineShape2D);
 	GDREGISTER_CLASS(SegmentShape2D);
-	GDREGISTER_CLASS(RayShape2D);
 	GDREGISTER_CLASS(CircleShape2D);
 	GDREGISTER_CLASS(RectangleShape2D);
 	GDREGISTER_CLASS(CapsuleShape2D);
@@ -948,7 +944,6 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("ProceduralSky", "Sky");
 	ClassDB::add_compatibility_class("ProximityGroup", "ProximityGroup3D");
 	ClassDB::add_compatibility_class("RayCast", "RayCast3D");
-	ClassDB::add_compatibility_class("RayShape", "RayShape3D");
 	ClassDB::add_compatibility_class("RemoteTransform", "RemoteTransform3D");
 	ClassDB::add_compatibility_class("RigidBody", "RigidBody3D");
 	ClassDB::add_compatibility_class("Shape", "Shape3D");

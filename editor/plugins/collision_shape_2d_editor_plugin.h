@@ -47,7 +47,6 @@ class CollisionShape2DEditor : public Control {
 		CONCAVE_POLYGON_SHAPE,
 		CONVEX_POLYGON_SHAPE,
 		LINE_SHAPE,
-		RAY_SHAPE,
 		RECTANGLE_SHAPE,
 		SEGMENT_SHAPE
 	};
