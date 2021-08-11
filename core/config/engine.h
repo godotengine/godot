@@ -78,8 +78,8 @@ private:
 public:
 	static Engine *get_singleton();
 
-	virtual void set_iterations_per_second(int p_ips);
-	virtual int get_iterations_per_second() const;
+	virtual void set_physics_ticks_per_second(int p_ips);
+	virtual int get_physics_ticks_per_second() const;
 
 	void set_physics_jitter_fix(double p_threshold);
 	double get_physics_jitter_fix() const;

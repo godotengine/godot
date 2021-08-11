@@ -1344,7 +1344,7 @@
 		</member>
 		<member name="physics/2d/default_angular_damp" type="float" setter="" getter="" default="1.0">
 			The default angular damp in 2D.
-			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_fps], [code]60[/code] by default) will bring the object to a stop in one iteration.
+			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_ticks_per_second], [code]60[/code] by default) will bring the object to a stop in one iteration.
 		</member>
 		<member name="physics/2d/default_gravity" type="float" setter="" getter="" default="980.0">
 			The default gravity strength in 2D (in pixels per second squared).
@@ -1376,7 +1376,7 @@
 		</member>
 		<member name="physics/2d/default_linear_damp" type="float" setter="" getter="" default="0.1">
 			The default linear damp in 2D.
-			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_fps], [code]60[/code] by default) will bring the object to a stop in one iteration.
+			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_ticks_per_second], [code]60[/code] by default) will bring the object to a stop in one iteration.
 		</member>
 		<member name="physics/2d/physics_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
 			Sets which physics engine to use for 2D physics.
@@ -1396,7 +1396,7 @@
 		</member>
 		<member name="physics/3d/default_angular_damp" type="float" setter="" getter="" default="0.1">
 			The default angular damp in 3D.
-			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_fps], [code]60[/code] by default) will bring the object to a stop in one iteration.
+			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_ticks_per_second], [code]60[/code] by default) will bring the object to a stop in one iteration.
 		</member>
 		<member name="physics/3d/default_gravity" type="float" setter="" getter="" default="9.8">
 			The default gravity strength in 3D (in meters per second squared).
@@ -1428,7 +1428,7 @@
 		</member>
 		<member name="physics/3d/default_linear_damp" type="float" setter="" getter="" default="0.1">
 			The default linear damp in 3D.
-			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_fps], [code]60[/code] by default) will bring the object to a stop in one iteration.
+			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_ticks_per_second], [code]60[/code] by default) will bring the object to a stop in one iteration.
 		</member>
 		<member name="physics/3d/physics_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
 			Sets which physics engine to use for 3D physics.
@@ -1446,14 +1446,14 @@
 		<member name="physics/common/enable_object_picking" type="bool" setter="" getter="" default="true">
 			Enables [member Viewport.physics_object_picking] on the root viewport.
 		</member>
-		<member name="physics/common/physics_fps" type="int" setter="" getter="" default="60">
-			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run.
-			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.iterations_per_second] instead.
-		</member>
 		<member name="physics/common/physics_jitter_fix" type="float" setter="" getter="" default="0.5">
 			Controls how much physics ticks are synchronized with real time. For 0 or less, the ticks are synchronized. Such values are recommended for network games, where clock synchronization matters. Higher values cause higher deviation of in-game clock and real clock, but allows smoothing out framerate jitters. The default value of 0.5 should be fine for most; values above 2 could cause the game to react to dropped frames with a noticeable delay and are not recommended.
 			[b]Note:[/b] For best results, when using a custom physics interpolation solution, the physics jitter fix should be disabled by setting [member physics/common/physics_jitter_fix] to [code]0[/code].
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_jitter_fix] instead.
+		</member>
+		<member name="physics/common/physics_ticks_per_second" type="int" setter="" getter="" default="60">
+			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run.
+			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_ticks_per_second] instead.
 		</member>
 		<member name="rendering/2d/sdf/oversize" type="int" setter="" getter="" default="1">
 		</member>
