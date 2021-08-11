@@ -1584,6 +1584,12 @@ void TextEdit::_move_cursor_left(bool p_select, bool p_move_by_word) {
 	// Handle selection
 	if (p_select) {
 		_pre_shift_selection();
+	} else if (selection.active && !p_move_by_word) {
+		// If a selection is active, move cursor to start of selection
+		cursor_set_line(selection.from_line);
+		cursor_set_column(selection.from_column);
+		deselect();
+		return;
 	} else {
 		deselect();
 	}
@@ -1629,6 +1635,12 @@ void TextEdit::_move_cursor_right(bool p_select, bool p_move_by_word) {
 	// Handle selection
 	if (p_select) {
 		_pre_shift_selection();
+	} else if (selection.active && !p_move_by_word) {
+		// If a selection is active, move cursor to end of selection
+		cursor_set_line(selection.to_line);
+		cursor_set_column(selection.to_column);
+		deselect();
+		return;
 	} else {
 		deselect();
 	}
