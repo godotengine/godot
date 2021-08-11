@@ -2172,6 +2172,16 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, int p_op_idx) {
 		}
 	}
 
+	// TRANSFORM_OP
+	{
+		VisualShaderNodeTransformOp *matOp = Object::cast_to<VisualShaderNodeTransformOp>(p_node);
+
+		if (matOp) {
+			matOp->set_operator((VisualShaderNodeTransformOp::Operator)p_op_idx);
+			return;
+		}
+	}
+
 	// TRANSFORM_FUNC
 	{
 		VisualShaderNodeTransformFunc *matFunc = Object::cast_to<VisualShaderNodeTransformFunc>(p_node);
@@ -4450,6 +4460,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	// TRANSFORM
 
 	add_options.push_back(AddOption("TransformFunc", "Transform", "Common", "VisualShaderNodeTransformFunc", TTR("Transform function."), -1, VisualShaderNode::PORT_TYPE_TRANSFORM));
+	add_options.push_back(AddOption("TransformOp", "Transform", "Common", "VisualShaderNodeTransformOp", TTR("Transform operator."), -1, VisualShaderNode::PORT_TYPE_TRANSFORM));
 
 	add_options.push_back(AddOption("OuterProduct", "Transform", "Composition", "VisualShaderNodeOuterProduct", TTR("Calculate the outer product of a pair of vectors.\n\nOuterProduct treats the first parameter 'c' as a column vector (matrix with one column) and the second parameter 'r' as a row vector (matrix with one row) and does a linear algebraic matrix multiply 'c * r', yielding a matrix whose number of rows is the number of components in 'c' and whose number of columns is the number of components in 'r'."), -1, VisualShaderNode::PORT_TYPE_TRANSFORM));
 	add_options.push_back(AddOption("TransformCompose", "Transform", "Composition", "VisualShaderNodeTransformCompose", TTR("Composes transform from four vectors."), -1, VisualShaderNode::PORT_TYPE_TRANSFORM));
@@ -4460,7 +4471,11 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("Inverse", "Transform", "Functions", "VisualShaderNodeTransformFunc", TTR("Calculates the inverse of a transform."), VisualShaderNodeTransformFunc::FUNC_INVERSE, VisualShaderNode::PORT_TYPE_TRANSFORM));
 	add_options.push_back(AddOption("Transpose", "Transform", "Functions", "VisualShaderNodeTransformFunc", TTR("Calculates the transpose of a transform."), VisualShaderNodeTransformFunc::FUNC_TRANSPOSE, VisualShaderNode::PORT_TYPE_TRANSFORM));
 
-	add_options.push_back(AddOption("TransformMult", "Transform", "Operators", "VisualShaderNodeTransformMult", TTR("Multiplies transform by transform."), -1, VisualShaderNode::PORT_TYPE_TRANSFORM));
+	add_options.push_back(AddOption("Add", "Transform", "Operators", "VisualShaderNodeTransformOp", TTR("Sums two transforms."), VisualShaderNodeTransformOp::OP_ADD, VisualShaderNode::PORT_TYPE_TRANSFORM));
+	add_options.push_back(AddOption("Divide", "Transform", "Operators", "VisualShaderNodeTransformOp", TTR("Divides two transforms."), VisualShaderNodeTransformOp::OP_A_DIV_B, VisualShaderNode::PORT_TYPE_TRANSFORM));
+	add_options.push_back(AddOption("Multiply", "Transform", "Operators", "VisualShaderNodeTransformOp", TTR("Multiplies two transforms."), VisualShaderNodeTransformOp::OP_AxB, VisualShaderNode::PORT_TYPE_TRANSFORM));
+	add_options.push_back(AddOption("MultiplyComp", "Transform", "Operators", "VisualShaderNodeTransformOp", TTR("Performs per-component multiplication of two transforms."), VisualShaderNodeTransformOp::OP_AxB_COMP, VisualShaderNode::PORT_TYPE_TRANSFORM));
+	add_options.push_back(AddOption("Subtract", "Transform", "Operators", "VisualShaderNodeTransformOp", TTR("Subtracts two transforms."), VisualShaderNodeTransformOp::OP_A_MINUS_B, VisualShaderNode::PORT_TYPE_TRANSFORM));
 	add_options.push_back(AddOption("TransformVectorMult", "Transform", "Operators", "VisualShaderNodeTransformVecMult", TTR("Multiplies vector by transform."), -1, VisualShaderNode::PORT_TYPE_VECTOR));
 
 	add_options.push_back(AddOption("TransformConstant", "Transform", "Variables", "VisualShaderNodeTransformConstant", TTR("Transform constant."), -1, VisualShaderNode::PORT_TYPE_TRANSFORM));

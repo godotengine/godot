@@ -1915,76 +1915,96 @@ VisualShaderNodeColorOp::VisualShaderNodeColorOp() {
 	set_input_port_default_value(1, Vector3());
 }
 
-////////////// Transform Mult
+////////////// Transform Op
 
-String VisualShaderNodeTransformMult::get_caption() const {
-	return "TransformMult";
+String VisualShaderNodeTransformOp::get_caption() const {
+	return "TransformOp";
 }
 
-int VisualShaderNodeTransformMult::get_input_port_count() const {
+int VisualShaderNodeTransformOp::get_input_port_count() const {
 	return 2;
 }
 
-VisualShaderNodeTransformMult::PortType VisualShaderNodeTransformMult::get_input_port_type(int p_port) const {
+VisualShaderNodeTransformOp::PortType VisualShaderNodeTransformOp::get_input_port_type(int p_port) const {
 	return PORT_TYPE_TRANSFORM;
 }
 
-String VisualShaderNodeTransformMult::get_input_port_name(int p_port) const {
+String VisualShaderNodeTransformOp::get_input_port_name(int p_port) const {
 	return p_port == 0 ? "a" : "b";
 }
 
-int VisualShaderNodeTransformMult::get_output_port_count() const {
+int VisualShaderNodeTransformOp::get_output_port_count() const {
 	return 1;
 }
 
-VisualShaderNodeTransformMult::PortType VisualShaderNodeTransformMult::get_output_port_type(int p_port) const {
+VisualShaderNodeTransformOp::PortType VisualShaderNodeTransformOp::get_output_port_type(int p_port) const {
 	return PORT_TYPE_TRANSFORM;
 }
 
-String VisualShaderNodeTransformMult::get_output_port_name(int p_port) const {
+String VisualShaderNodeTransformOp::get_output_port_name(int p_port) const {
 	return "mult"; //no output port means the editor will be used as port
 }
 
-String VisualShaderNodeTransformMult::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	if (op == OP_AxB) {
-		return "	" + p_output_vars[0] + " = " + p_input_vars[0] + " * " + p_input_vars[1] + ";\n";
-	} else if (op == OP_BxA) {
-		return "	" + p_output_vars[0] + " = " + p_input_vars[1] + " * " + p_input_vars[0] + ";\n";
-	} else if (op == OP_AxB_COMP) {
-		return "	" + p_output_vars[0] + " = matrixCompMult(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n";
-	} else {
-		return "	" + p_output_vars[0] + " = matrixCompMult(" + p_input_vars[1] + ", " + p_input_vars[0] + ");\n";
+String VisualShaderNodeTransformOp::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	switch (op) {
+		case OP_AxB:
+			return "	" + p_output_vars[0] + " = " + p_input_vars[0] + " * " + p_input_vars[1] + ";\n";
+		case OP_BxA:
+			return "	" + p_output_vars[0] + " = " + p_input_vars[1] + " * " + p_input_vars[0] + ";\n";
+		case OP_AxB_COMP:
+			return "	" + p_output_vars[0] + " = matrixCompMult(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n";
+		case OP_BxA_COMP:
+			return "	" + p_output_vars[0] + " = matrixCompMult(" + p_input_vars[1] + ", " + p_input_vars[0] + ");\n";
+		case OP_ADD:
+			return "	" + p_output_vars[0] + " = " + p_input_vars[0] + " + " + p_input_vars[1] + ";\n";
+		case OP_A_MINUS_B:
+			return "	" + p_output_vars[0] + " = " + p_input_vars[0] + " - " + p_input_vars[1] + ";\n";
+		case OP_B_MINUS_A:
+			return "	" + p_output_vars[0] + " = " + p_input_vars[1] + " - " + p_input_vars[0] + ";\n";
+		case OP_A_DIV_B:
+			return "	" + p_output_vars[0] + " = " + p_input_vars[0] + " / " + p_input_vars[1] + ";\n";
+		case OP_B_DIV_A:
+			return "	" + p_output_vars[0] + " = " + p_input_vars[1] + " / " + p_input_vars[0] + ";\n";
+		default:
+			return "";
 	}
 }
 
-void VisualShaderNodeTransformMult::set_operator(Operator p_op) {
+void VisualShaderNodeTransformOp::set_operator(Operator p_op) {
+	ERR_FAIL_INDEX(int(p_op), int(OP_LIMITER));
 	op = p_op;
 	emit_changed();
 }
 
-VisualShaderNodeTransformMult::Operator VisualShaderNodeTransformMult::get_operator() const {
+VisualShaderNodeTransformOp::Operator VisualShaderNodeTransformOp::get_operator() const {
 	return op;
 }
 
-Vector<StringName> VisualShaderNodeTransformMult::get_editable_properties() const {
+Vector<StringName> VisualShaderNodeTransformOp::get_editable_properties() const {
 	Vector<StringName> props;
 	props.push_back("operator");
 	return props;
 }
 
-void VisualShaderNodeTransformMult::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_operator", "op"), &VisualShaderNodeTransformMult::set_operator);
-	ClassDB::bind_method(D_METHOD("get_operator"), &VisualShaderNodeTransformMult::get_operator);
+void VisualShaderNodeTransformOp::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_operator", "op"), &VisualShaderNodeTransformOp::set_operator);
+	ClassDB::bind_method(D_METHOD("get_operator"), &VisualShaderNodeTransformOp::get_operator);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "operator", PROPERTY_HINT_ENUM, "A x B,B x A,A x B(per component),B x A(per component)"), "set_operator", "get_operator");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "operator", PROPERTY_HINT_ENUM, "A x B,B x A,A x B(per component),B x A(per component),A + B,A - B,B - A,A / B,B / A"), "set_operator", "get_operator");
 
 	BIND_ENUM_CONSTANT(OP_AxB);
 	BIND_ENUM_CONSTANT(OP_BxA);
 	BIND_ENUM_CONSTANT(OP_AxB_COMP);
 	BIND_ENUM_CONSTANT(OP_BxA_COMP);
+	BIND_ENUM_CONSTANT(OP_ADD);
+	BIND_ENUM_CONSTANT(OP_A_MINUS_B);
+	BIND_ENUM_CONSTANT(OP_B_MINUS_A);
+	BIND_ENUM_CONSTANT(OP_A_DIV_B);
+	BIND_ENUM_CONSTANT(OP_B_DIV_A);
+	BIND_ENUM_CONSTANT(OP_LIMITER);
 }
 
-VisualShaderNodeTransformMult::VisualShaderNodeTransformMult() {
+VisualShaderNodeTransformOp::VisualShaderNodeTransformOp() {
 	set_input_port_default_value(0, Transform3D());
 	set_input_port_default_value(1, Transform3D());
 }

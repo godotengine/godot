@@ -696,19 +696,25 @@ public:
 
 VARIANT_ENUM_CAST(VisualShaderNodeColorOp::Operator)
 
-///////////////////////////////////////
-/// TRANSFORM-TRANSFORM MULTIPLICATION
-///////////////////////////////////////
+////////////////////////////////
+/// TRANSFORM-TRANSFORM OPERATOR
+////////////////////////////////
 
-class VisualShaderNodeTransformMult : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeTransformMult, VisualShaderNode);
+class VisualShaderNodeTransformOp : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeTransformOp, VisualShaderNode);
 
 public:
 	enum Operator {
 		OP_AxB,
 		OP_BxA,
 		OP_AxB_COMP,
-		OP_BxA_COMP
+		OP_BxA_COMP,
+		OP_ADD,
+		OP_A_MINUS_B,
+		OP_B_MINUS_A,
+		OP_A_DIV_B,
+		OP_B_DIV_A,
+		OP_LIMITER,
 	};
 
 protected:
@@ -734,10 +740,10 @@ public:
 
 	virtual Vector<StringName> get_editable_properties() const override;
 
-	VisualShaderNodeTransformMult();
+	VisualShaderNodeTransformOp();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeTransformMult::Operator)
+VARIANT_ENUM_CAST(VisualShaderNodeTransformOp::Operator)
 
 ///////////////////////////////////////
 /// TRANSFORM-VECTOR MULTIPLICATION
