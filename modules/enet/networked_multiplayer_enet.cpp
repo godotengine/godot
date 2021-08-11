@@ -897,7 +897,7 @@ NetworkedMultiplayerENet::NetworkedMultiplayerENet() {
 	transfer_channel = -1;
 	always_ordered = false;
 	connection_status = CONNECTION_DISCONNECTED;
-	compression_mode = COMPRESS_NONE;
+	compression_mode = COMPRESS_RANGE_CODER;
 	enet_compressor.context = this;
 	enet_compressor.compress = enet_compress;
 	enet_compressor.decompress = enet_decompress;
