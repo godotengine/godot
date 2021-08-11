@@ -193,6 +193,10 @@
 		</method>
 	</methods>
 	<members>
+		<member name="NetworkSynchronizer/debug_doll_speedup" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="NetworkSynchronizer/debug_server_speedup" type="bool" setter="" getter="" default="false">
+		</member>
 		<member name="application/boot_splash/bg_color" type="Color" setter="" getter="" default="Color(0.14, 0.14, 0.14, 1)">
 			Background color for the boot splash.
 		</member>
