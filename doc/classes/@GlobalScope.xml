@@ -96,7 +96,7 @@
 			<argument index="0" name="bytes" type="PackedByteArray" />
 			<description>
 				Decodes a byte array back to a [Variant] value. Decoding objects is allowed.
-				[b]WARNING:[/b] Deserialized object can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).
+				[b]Warning:[/b] Deserialized object can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).
 			</description>
 		</method>
 		<method name="cartesian2polar">
@@ -518,7 +518,7 @@
 				nearest_po2(0) # Returns 0 (this may not be what you expect)
 				nearest_po2(-1) # Returns 0 (this may not be what you expect)
 				[/codeblock]
-				[b]WARNING:[/b] Due to the way it is implemented, this function returns [code]0[/code] rather than [code]1[/code] for non-positive values of [code]value[/code] (in reality, 1 is the smallest integer power of 2).
+				[b]Warning:[/b] Due to the way it is implemented, this function returns [code]0[/code] rather than [code]1[/code] for non-positive values of [code]value[/code] (in reality, 1 is the smallest integer power of 2).
 			</description>
 		</method>
 		<method name="polar2cartesian">
