@@ -70,6 +70,8 @@ private:
 	bool prefer_raster_effects;
 
 	enum BlurRasterMode {
+		BLUR_MIPMAP,
+
 		BLUR_MODE_GAUSSIAN_BLUR,
 		BLUR_MODE_GAUSSIAN_GLOW,
 		BLUR_MODE_GAUSSIAN_GLOW_AUTO_EXPOSURE,
@@ -767,6 +769,7 @@ public:
 	void cubemap_roughness(RID p_source_rd_texture, RID p_dest_texture, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size);
 	void cubemap_roughness_raster(RID p_source_rd_texture, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size);
 	void make_mipmap(RID p_source_rd_texture, RID p_dest_texture, const Size2i &p_size);
+	void make_mipmap_raster(RID p_source_rd_texture, RID p_dest_framebuffer, const Size2i &p_size);
 	void copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dest_texture, const Rect2 &p_rect, float p_z_near, float p_z_far, bool p_dp_flip);
 	void luminance_reduction(RID p_source_texture, const Size2i p_source_size, const Vector<RID> p_reduce, RID p_prev_luminance, float p_min_luminance, float p_max_luminance, float p_adjust, bool p_set = false);
 	void luminance_reduction_raster(RID p_source_texture, const Size2i p_source_size, const Vector<RID> p_reduce, Vector<RID> p_fb, RID p_prev_luminance, float p_min_luminance, float p_max_luminance, float p_adjust, bool p_set = false);

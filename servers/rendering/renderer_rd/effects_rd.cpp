@@ -739,6 +739,26 @@ void EffectsRD::make_mipmap(RID p_source_rd_texture, RID p_dest_texture, const S
 	RD::get_singleton()->compute_list_end();
 }
 
+void EffectsRD::make_mipmap_raster(RID p_source_rd_texture, RID p_dest_framebuffer, const Size2i &p_size) {
+	ERR_FAIL_COND_MSG(!prefer_raster_effects, "Can't use the raster version of mipmap with the clustered renderer.");
+
+	memset(&blur_raster.push_constant, 0, sizeof(BlurRasterPushConstant));
+
+	BlurRasterMode mode = BLUR_MIPMAP;
+
+	blur_raster.push_constant.pixel_size[0] = 1.0 / float(p_size.x);
+	blur_raster.push_constant.pixel_size[1] = 1.0 / float(p_size.y);
+
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur_raster.pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_source_rd_texture), 0);
+	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur_raster.push_constant, sizeof(BlurRasterPushConstant));
+
+	RD::get_singleton()->draw_list_draw(draw_list, true);
+	RD::get_singleton()->draw_list_end();
+}
+
 void EffectsRD::copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dst_framebuffer, const Rect2 &p_rect, float p_z_near, float p_z_far, bool p_dp_flip) {
 	CopyToDPPushConstant push_constant;
 	push_constant.screen_rect[0] = p_rect.position.x;
@@ -1873,6 +1893,7 @@ EffectsRD::EffectsRD(bool p_prefer_raster_effects) {
 		// init blur shader (on compute use copy shader)
 
 		Vector<String> blur_modes;
+		blur_modes.push_back("\n#define MODE_MIPMAP\n"); // BLUR_MIPMAP
 		blur_modes.push_back("\n#define MODE_GAUSSIAN_BLUR\n"); // BLUR_MODE_GAUSSIAN_BLUR
 		blur_modes.push_back("\n#define MODE_GAUSSIAN_GLOW\n"); // BLUR_MODE_GAUSSIAN_GLOW
 		blur_modes.push_back("\n#define MODE_GAUSSIAN_GLOW\n#define GLOW_USE_AUTO_EXPOSURE\n"); // BLUR_MODE_GAUSSIAN_GLOW_AUTO_EXPOSURE
