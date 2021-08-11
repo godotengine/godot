@@ -977,6 +977,7 @@ void TextServerAdvanced::invalidate(TextServerAdvanced::ShapedTextDataAdvanced *
 	p_shaped->sort_valid = false;
 	p_shaped->line_breaks_valid = false;
 	p_shaped->justification_ops_valid = false;
+	p_shaped->text_trimmed = false;
 	p_shaped->ascent = 0.f;
 	p_shaped->descent = 0.f;
 	p_shaped->width = 0.f;
@@ -984,6 +985,7 @@ void TextServerAdvanced::invalidate(TextServerAdvanced::ShapedTextDataAdvanced *
 	p_shaped->uthk = 0.f;
 	p_shaped->glyphs.clear();
 	p_shaped->glyphs_logical.clear();
+	p_shaped->overrun_trim_data = TrimData();
 	p_shaped->utf16 = Char16String();
 	if (p_shaped->script_iter != nullptr) {
 		memdelete(p_shaped->script_iter);
@@ -1375,7 +1377,7 @@ RID TextServerAdvanced::shaped_text_substr(RID p_shaped, int p_start, int p_leng
 
 			ERR_FAIL_COND_V_MSG((start < 0 || end - start > new_sd->utf16.length()), RID(), "Invalid BiDi override range.");
 
-			//Create temporary line bidi & shape
+			// Create temporary line bidi & shape.
 			UBiDi *bidi_iter = ubidi_openSized(end - start, 0, &err);
 			ERR_FAIL_COND_V_MSG(U_FAILURE(err), RID(), u_errorName(err));
 			ubidi_setLine(sd->bidi_iter[ov], start, end, bidi_iter, &err);
@@ -1541,6 +1543,7 @@ float TextServerAdvanced::shaped_text_fit_to_width(RID p_shaped, float p_width, 
 		const_cast<TextServerAdvanced *>(this)->shaped_text_update_justification_ops(p_shaped);
 	}
 
+	sd->fit_width_minimum_reached = false;
 	int start_pos = 0;
 	int end_pos = sd->glyphs.size() - 1;
 
@@ -1569,14 +1572,26 @@ float TextServerAdvanced::shaped_text_fit_to_width(RID p_shaped, float p_width, 
 		}
 	}
 
+	float justification_width;
+	if ((p_jst_flags & JUSTIFICATION_CONSTRAIN_ELLIPSIS) == JUSTIFICATION_CONSTRAIN_ELLIPSIS) {
+		if (sd->overrun_trim_data.trim_pos >= 0) {
+			start_pos = sd->overrun_trim_data.trim_pos;
+			justification_width = sd->width_trimmed;
+		} else {
+			return sd->width;
+		}
+	} else {
+		justification_width = sd->width;
+	}
+
 	if ((p_jst_flags & JUSTIFICATION_TRIM_EDGE_SPACES) == JUSTIFICATION_TRIM_EDGE_SPACES) {
 		while ((start_pos < end_pos) && ((sd->glyphs[start_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (sd->glyphs[start_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (sd->glyphs[start_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
-			sd->width -= sd->glyphs[start_pos].advance * sd->glyphs[start_pos].repeat;
+			justification_width -= sd->glyphs[start_pos].advance * sd->glyphs[start_pos].repeat;
 			sd->glyphs.write[start_pos].advance = 0;
 			start_pos += sd->glyphs[start_pos].count;
 		}
 		while ((start_pos < end_pos) && ((sd->glyphs[end_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (sd->glyphs[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (sd->glyphs[end_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
-			sd->width -= sd->glyphs[end_pos].advance * sd->glyphs[end_pos].repeat;
+			justification_width -= sd->glyphs[end_pos].advance * sd->glyphs[end_pos].repeat;
 			sd->glyphs.write[end_pos].advance = 0;
 			end_pos -= sd->glyphs[end_pos].count;
 		}
@@ -1597,7 +1612,7 @@ float TextServerAdvanced::shaped_text_fit_to_width(RID p_shaped, float p_width, 
 	}
 
 	if ((elongation_count > 0) && ((p_jst_flags & JUSTIFICATION_KASHIDA) == JUSTIFICATION_KASHIDA)) {
-		float delta_width_per_kashida = (p_width - sd->width) / elongation_count;
+		float delta_width_per_kashida = (p_width - justification_width) / elongation_count;
 		for (int i = start_pos; i <= end_pos; i++) {
 			Glyph &gl = sd->glyphs.write[i];
 			if (gl.count > 0) {
@@ -1605,32 +1620,48 @@ float TextServerAdvanced::shaped_text_fit_to_width(RID p_shaped, float p_width, 
 					int count = delta_width_per_kashida / gl.advance;
 					int prev_count = gl.repeat;
 					if ((gl.flags & GRAPHEME_IS_VIRTUAL) == GRAPHEME_IS_VIRTUAL) {
-						gl.repeat = count;
-					} else {
-						gl.repeat = count + 1;
+						gl.repeat = MAX(count, 0);
 					}
-					sd->width += (gl.repeat - prev_count) * gl.advance;
+					justification_width += (gl.repeat - prev_count) * gl.advance;
 				}
 			}
 		}
 	}
-
+	float adv_remain = 0;
 	if ((space_count > 0) && ((p_jst_flags & JUSTIFICATION_WORD_BOUND) == JUSTIFICATION_WORD_BOUND)) {
-		float delta_width_per_space = (p_width - sd->width) / space_count;
+		float delta_width_per_space = (p_width - justification_width) / space_count;
 		for (int i = start_pos; i <= end_pos; i++) {
 			Glyph &gl = sd->glyphs.write[i];
 			if (gl.count > 0) {
 				if ((gl.flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE) {
 					float old_adv = gl.advance;
+					float new_advance;
 					if ((gl.flags & GRAPHEME_IS_VIRTUAL) == GRAPHEME_IS_VIRTUAL) {
-						gl.advance = Math::round(MAX(gl.advance + delta_width_per_space, 0.f));
+						new_advance = MAX(gl.advance + delta_width_per_space, 0.f);
 					} else {
-						gl.advance = Math::round(MAX(gl.advance + delta_width_per_space, 0.05 * gl.font_size));
+						new_advance = MAX(gl.advance + delta_width_per_space, 0.05 * gl.font_size);
 					}
-					sd->width += (gl.advance - old_adv);
+					gl.advance = new_advance;
+					adv_remain += (new_advance - gl.advance);
+					if (adv_remain >= 1.0) {
+						gl.advance++;
+						adv_remain -= 1.0;
+					} else if (adv_remain <= -1.0) {
+						gl.advance = MAX(gl.advance - 1, 0);
+						adv_remain -= 1.0;
+					}
+					justification_width += (gl.advance - old_adv);
 				}
 			}
 		}
+	}
+
+	if (Math::floor(p_width) < Math::floor(justification_width)) {
+		sd->fit_width_minimum_reached = true;
+	}
+
+	if ((p_jst_flags & JUSTIFICATION_CONSTRAIN_ELLIPSIS) != JUSTIFICATION_CONSTRAIN_ELLIPSIS) {
+		sd->width = justification_width;
 	}
 
 	return sd->width;
@@ -1685,7 +1716,7 @@ float TextServerAdvanced::shaped_text_tab_align(RID p_shaped, const Vector<float
 	return 0.f;
 }
 
-void TextServerAdvanced::shaped_text_overrun_trim_to_width(RID p_shaped_line, float p_width, uint8_t p_clip_flags) {
+void TextServerAdvanced::shaped_text_overrun_trim_to_width(RID p_shaped_line, float p_width, uint8_t p_trim_flags) {
 	_THREAD_SAFE_METHOD_
 	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped_line);
 	ERR_FAIL_COND_MSG(!sd, "ShapedTextDataAdvanced invalid.");
@@ -1693,13 +1724,22 @@ void TextServerAdvanced::shaped_text_overrun_trim_to_width(RID p_shaped_line, fl
 		shaped_text_shape(p_shaped_line);
 	}
 
-	bool add_ellipsis = (p_clip_flags & OVERRUN_ADD_ELLIPSIS) == OVERRUN_ADD_ELLIPSIS;
-	bool cut_per_word = (p_clip_flags & OVERRUN_TRIM_WORD_ONLY) == OVERRUN_TRIM_WORD_ONLY;
-	bool enforce_ellipsis = (p_clip_flags & OVERRUN_ENFORCE_ELLIPSIS) == OVERRUN_ENFORCE_ELLIPSIS;
+	sd->overrun_trim_data.ellipsis_glyph_buf.clear();
+
+	bool add_ellipsis = (p_trim_flags & OVERRUN_ADD_ELLIPSIS) == OVERRUN_ADD_ELLIPSIS;
+	bool cut_per_word = (p_trim_flags & OVERRUN_TRIM_WORD_ONLY) == OVERRUN_TRIM_WORD_ONLY;
+	bool enforce_ellipsis = (p_trim_flags & OVERRUN_ENFORCE_ELLIPSIS) == OVERRUN_ENFORCE_ELLIPSIS;
+	bool justification_aware = (p_trim_flags & OVERRUN_JUSTIFICATION_AWARE) == OVERRUN_JUSTIFICATION_AWARE;
 
 	Glyph *sd_glyphs = sd->glyphs.ptrw();
 
-	if ((p_clip_flags & OVERRUN_TRIM) == OVERRUN_NO_TRIMMING || sd_glyphs == nullptr || p_width <= 0 || !(sd->width > p_width || enforce_ellipsis)) {
+	if ((p_trim_flags & OVERRUN_TRIM) == OVERRUN_NO_TRIMMING || sd_glyphs == nullptr || p_width <= 0 || !(sd->width > p_width || enforce_ellipsis)) {
+		sd->overrun_trim_data.trim_pos = -1;
+		sd->overrun_trim_data.ellipsis_pos = -1;
+		return;
+	}
+
+	if (justification_aware && !sd->fit_width_minimum_reached) {
 		return;
 	}
 
@@ -1711,9 +1751,9 @@ void TextServerAdvanced::shaped_text_overrun_trim_to_width(RID p_shaped_line, fl
 	uint32_t whitespace_gl_idx = font_get_glyph_index(last_gl_font_rid, ' ');
 	Vector2 whitespace_adv = font_get_glyph_advance(last_gl_font_rid, whitespace_gl_idx, last_gl_font_size);
 
-	int ellipsis_advance = 0;
+	int ellipsis_width = 0;
 	if (add_ellipsis) {
-		ellipsis_advance = 3 * dot_adv.x + font_get_spacing_glyph(last_gl_font_rid) + (cut_per_word ? whitespace_adv.x : 0);
+		ellipsis_width = 3 * dot_adv.x + font_get_spacing_glyph(last_gl_font_rid) + (cut_per_word ? whitespace_adv.x : 0);
 	}
 
 	int ell_min_characters = 6;
@@ -1733,12 +1773,12 @@ void TextServerAdvanced::shaped_text_overrun_trim_to_width(RID p_shaped_line, fl
 
 	for (int i = glyphs_from; i != glyphs_to; i += glyphs_delta) {
 		if (!is_rtl) {
-			width -= sd_glyphs[i].advance;
+			width -= sd_glyphs[i].advance * sd_glyphs[i].repeat;
 		}
 		if (sd_glyphs[i].count > 0) {
 			bool above_min_char_treshold = ((is_rtl) ? sd_size - 1 - i : i) >= ell_min_characters;
 
-			if (width + (((above_min_char_treshold && add_ellipsis) || enforce_ellipsis) ? ellipsis_advance : 0) <= p_width) {
+			if (width + (((above_min_char_treshold && add_ellipsis) || enforce_ellipsis) ? ellipsis_width : 0) <= p_width) {
 				if (cut_per_word && above_min_char_treshold) {
 					if ((sd_glyphs[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
 						last_valid_cut = i;
@@ -1751,7 +1791,7 @@ void TextServerAdvanced::shaped_text_overrun_trim_to_width(RID p_shaped_line, fl
 				if (found) {
 					trim_pos = last_valid_cut;
 
-					if (above_min_char_treshold && width - ellipsis_advance <= p_width) {
+					if (add_ellipsis && (above_min_char_treshold || enforce_ellipsis) && width - ellipsis_width <= p_width) {
 						ellipsis_pos = trim_pos;
 					}
 					break;
@@ -1759,18 +1799,21 @@ void TextServerAdvanced::shaped_text_overrun_trim_to_width(RID p_shaped_line, fl
 			}
 		}
 		if (is_rtl) {
-			width -= sd_glyphs[i].advance;
+			width -= sd_glyphs[i].advance * sd_glyphs[i].repeat;
 		}
 	}
 
+	sd->overrun_trim_data.trim_pos = trim_pos;
+	sd->overrun_trim_data.ellipsis_pos = ellipsis_pos;
+	if (trim_pos == 0 && enforce_ellipsis && add_ellipsis) {
+		sd->overrun_trim_data.ellipsis_pos = 0;
+	}
+
 	if ((trim_pos >= 0 && sd->width > p_width) || enforce_ellipsis) {
-		int added_glyphs = 0;
 		if (add_ellipsis && (ellipsis_pos > 0 || enforce_ellipsis)) {
 			// Insert an additional space when cutting word bound for aesthetics.
 			if (cut_per_word && (ellipsis_pos > 0)) {
 				TextServer::Glyph gl;
-				gl.start = sd_glyphs[ellipsis_pos].start;
-				gl.end = sd_glyphs[ellipsis_pos].end;
 				gl.count = 1;
 				gl.advance = whitespace_adv.x;
 				gl.index = whitespace_gl_idx;
@@ -1778,66 +1821,31 @@ void TextServerAdvanced::shaped_text_overrun_trim_to_width(RID p_shaped_line, fl
 				gl.font_size = last_gl_font_size;
 				gl.flags = GRAPHEME_IS_SPACE | GRAPHEME_IS_BREAK_SOFT | GRAPHEME_IS_VIRTUAL | (is_rtl ? GRAPHEME_IS_RTL : 0);
 
-				// Optimized glyph insertion by replacing a glyph whenever possible.
-				int glyph_idx = trim_pos + ((is_rtl) ? (-added_glyphs - 1) : added_glyphs);
-				if (is_rtl) {
-					if (glyph_idx < 0) {
-						sd->glyphs.insert(0, gl);
-					} else {
-						sd->glyphs.set(glyph_idx, gl);
-					}
-				} else {
-					if (glyph_idx > (sd_size - 1)) {
-						sd->glyphs.append(gl);
-					} else {
-						sd->glyphs.set(glyph_idx, gl);
-					}
-				}
-				added_glyphs++;
+				sd->overrun_trim_data.ellipsis_glyph_buf.append(gl);
 			}
 			// Add ellipsis dots.
-			for (int d = 0; d < 3; d++) {
-				TextServer::Glyph gl;
-				gl.start = sd_glyphs[ellipsis_pos].start;
-				gl.end = sd_glyphs[ellipsis_pos].end;
-				gl.count = 1;
-				gl.advance = dot_adv.x;
-				gl.index = dot_gl_idx;
-				gl.font_rid = last_gl_font_rid;
-				gl.font_size = last_gl_font_size;
-				gl.flags = GRAPHEME_IS_PUNCTUATION | GRAPHEME_IS_VIRTUAL | (is_rtl ? GRAPHEME_IS_RTL : 0);
+			TextServer::Glyph gl;
+			gl.count = 1;
+			gl.repeat = 3;
+			gl.advance = dot_adv.x;
+			gl.index = dot_gl_idx;
+			gl.font_rid = last_gl_font_rid;
+			gl.font_size = last_gl_font_size;
+			gl.flags = GRAPHEME_IS_PUNCTUATION | GRAPHEME_IS_VIRTUAL | (is_rtl ? GRAPHEME_IS_RTL : 0);
 
-				// Optimized glyph insertion by replacing a glyph whenever possible.
-				int glyph_idx = trim_pos + ((is_rtl) ? (-added_glyphs - 1) : added_glyphs);
-				if (is_rtl) {
-					if (glyph_idx < 0) {
-						sd->glyphs.insert(0, gl);
-					} else {
-						sd->glyphs.set(glyph_idx, gl);
-					}
-				} else {
-					if (glyph_idx > (sd_size - 1)) {
-						sd->glyphs.append(gl);
-					} else {
-						sd->glyphs.set(glyph_idx, gl);
-					}
-				}
-				added_glyphs++;
-			}
+			sd->overrun_trim_data.ellipsis_glyph_buf.append(gl);
 		}
 
-		// Cut the remaining glyphs off.
-		if (!is_rtl) {
-			sd->glyphs.resize(trim_pos + added_glyphs);
-		} else {
-			if (trim_pos - added_glyphs >= 0) {
-				sd->glyphs = sd->glyphs.subarray(trim_pos - added_glyphs, sd->glyphs.size() - 1);
-			}
-		}
-
-		// Update to correct width.
-		sd->width = width + ((ellipsis_pos != -1) ? ellipsis_advance : 0);
+		sd->text_trimmed = true;
+		sd->width_trimmed = width + ((ellipsis_pos != -1) ? ellipsis_width : 0);
 	}
+}
+
+TextServer::TrimData TextServerAdvanced::shaped_text_get_trim_data(RID p_shaped) const {
+	_THREAD_SAFE_METHOD_
+	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
+	ERR_FAIL_COND_V_MSG(!sd, TrimData(), "ShapedTextDataAdvanced invalid.");
+	return sd->overrun_trim_data;
 }
 
 bool TextServerAdvanced::shaped_text_update_breaks(RID p_shaped) {
@@ -1866,7 +1874,7 @@ bool TextServerAdvanced::shaped_text_update_breaks(RID p_shaped) {
 		int r_end = sd->spans[i].end;
 		UBreakIterator *bi = ubrk_open(UBRK_LINE, language.ascii().get_data(), data + _convert_pos_inv(sd, r_start), _convert_pos_inv(sd, r_end - r_start), &err);
 		if (U_FAILURE(err)) {
-			//No data loaded - use fallback.
+			// No data loaded - use fallback.
 			for (int j = r_start; j < r_end; j++) {
 				char32_t c = sd->text[j - sd->start];
 				if (is_whitespace(c)) {
@@ -1930,7 +1938,7 @@ bool TextServerAdvanced::shaped_text_update_breaks(RID p_shaped) {
 						gl.font_rid = sd_glyphs[i].font_rid;
 						gl.font_size = sd_glyphs[i].font_size;
 						gl.flags = GRAPHEME_IS_BREAK_SOFT | GRAPHEME_IS_VIRTUAL;
-						sd->glyphs.insert(i + sd_glyphs[i].count, gl); // insert after
+						sd->glyphs.insert(i + sd_glyphs[i].count, gl); // Insert after.
 
 						// Update write pointer and size.
 						sd_size = sd->glyphs.size();
@@ -2050,7 +2058,7 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(RID p_shaped) {
 	UErrorCode err = U_ZERO_ERROR;
 	UBreakIterator *bi = ubrk_open(UBRK_WORD, "", data, data_size, &err);
 	if (U_FAILURE(err)) {
-		// No data - use fallback
+		// No data - use fallback.
 		int limit = 0;
 		for (int i = 0; i < sd->text.length(); i++) {
 			if (is_whitespace(data[i])) {
@@ -2123,7 +2131,7 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(RID p_shaped) {
 						gl.font_rid = sd->glyphs[i].font_rid;
 						gl.font_size = sd->glyphs[i].font_size;
 						gl.flags = GRAPHEME_IS_SPACE | GRAPHEME_IS_VIRTUAL;
-						sd->glyphs.insert(i + sd->glyphs[i].count, gl); // insert after
+						sd->glyphs.insert(i + sd->glyphs[i].count, gl); // Insert after.
 						i += sd->glyphs[i].count;
 						continue;
 					}
@@ -2189,7 +2197,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 
 	int fs = p_sd->spans[p_span].font_size;
 	if (fd == nullptr) {
-		// Add fallback glyphs
+		// Add fallback glyphs.
 		for (int i = p_start; i < p_end; i++) {
 			if (p_sd->preserve_invalid || (p_sd->preserve_control && is_control(p_sd->text[i]))) {
 				TextServer::Glyph gl;
@@ -2332,7 +2340,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 			w[last_cluster_index].flags |= GRAPHEME_IS_VALID;
 		}
 
-		//Fallback.
+		// Fallback.
 		int failed_subrun_start = p_end + 1;
 		int failed_subrun_end = p_start;
 
@@ -2677,9 +2685,9 @@ Size2 TextServerAdvanced::shaped_text_get_size(RID p_shaped) const {
 		const_cast<TextServerAdvanced *>(this)->shaped_text_shape(p_shaped);
 	}
 	if (sd->orientation == TextServer::ORIENTATION_HORIZONTAL) {
-		return Size2(sd->width, sd->ascent + sd->descent);
+		return Size2((sd->text_trimmed ? sd->width_trimmed : sd->width), sd->ascent + sd->descent);
 	} else {
-		return Size2(sd->ascent + sd->descent, sd->width);
+		return Size2(sd->ascent + sd->descent, (sd->text_trimmed ? sd->width_trimmed : sd->width));
 	}
 }
 
@@ -2710,7 +2718,7 @@ float TextServerAdvanced::shaped_text_get_width(RID p_shaped) const {
 	if (!sd->valid) {
 		const_cast<TextServerAdvanced *>(this)->shaped_text_shape(p_shaped);
 	}
-	return sd->width;
+	return (sd->text_trimmed ? sd->width_trimmed : sd->width);
 }
 
 float TextServerAdvanced::shaped_text_get_underline_position(RID p_shaped) const {

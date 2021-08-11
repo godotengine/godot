@@ -229,7 +229,8 @@ public:
 	virtual bool shaped_text_update_breaks(RID p_shaped) override;
 	virtual bool shaped_text_update_justification_ops(RID p_shaped) override;
 
-	virtual void shaped_text_overrun_trim_to_width(RID p_shaped, float p_width, uint8_t p_clip_flags) override;
+	virtual void shaped_text_overrun_trim_to_width(RID p_shaped, float p_width, uint8_t p_trim_flags) override;
+	virtual TrimData shaped_text_get_trim_data(RID p_shaped) const override;
 
 	virtual bool shaped_text_is_ready(RID p_shaped) const override;
 
