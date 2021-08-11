@@ -343,15 +343,15 @@ void CapsuleShape2DSW::get_supports(const Vector2 &p_normal, Vector2 *r_supports
 
 		r_amount = 2;
 		r_supports[0] = n;
-		r_supports[0].y += height * 0.5;
+		r_supports[0].y += height * 0.5 - radius;
 		r_supports[1] = n;
-		r_supports[1].y -= height * 0.5;
+		r_supports[1].y -= height * 0.5 - radius;
 
 	} else {
-		real_t h = (d > 0) ? height : -height;
+		real_t h = height * 0.5 - radius;
 
 		n *= radius;
-		n.y += h * 0.5;
+		n.y += (d > 0) ? h : -h;
 		r_amount = 1;
 		*r_supports = n;
 	}
@@ -360,7 +360,7 @@ void CapsuleShape2DSW::get_supports(const Vector2 &p_normal, Vector2 *r_supports
 bool CapsuleShape2DSW::contains_point(const Vector2 &p_point) const {
 	Vector2 p = p_point;
 	p.y = Math::abs(p.y);
-	p.y -= height * 0.5;
+	p.y -= height * 0.5 - radius;
 	if (p.y < 0) {
 		p.y = 0;
 	}
@@ -377,7 +377,7 @@ bool CapsuleShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &
 	for (int i = 0; i < 2; i++) {
 		Vector2 begin = p_begin;
 		Vector2 end = p_end;
-		real_t ofs = (i == 0) ? -height * 0.5 : height * 0.5;
+		real_t ofs = (i == 0) ? -height * 0.5 + radius : height * 0.5 - radius;
 		begin.y += ofs;
 		end.y += ofs;
 
@@ -414,7 +414,7 @@ bool CapsuleShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &
 	}
 
 	Vector2 rpos, rnorm;
-	if (Rect2(Point2(-radius, -height * 0.5), Size2(radius * 2.0, height)).intersects_segment(p_begin, p_end, &rpos, &rnorm)) {
+	if (Rect2(Point2(-radius, -height * 0.5 + radius), Size2(radius * 2.0, height - radius * 2)).intersects_segment(p_begin, p_end, &rpos, &rnorm)) {
 		real_t pd = n.dot(rpos);
 		if (pd < d) {
 			r_point = rpos;
@@ -429,7 +429,7 @@ bool CapsuleShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &
 }
 
 real_t CapsuleShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
-	Vector2 he2 = Vector2(radius * 2, height + radius * 2) * p_scale;
+	Vector2 he2 = Vector2(radius * 2, height) * p_scale;
 	return p_mass * he2.dot(he2) / 12.0;
 }
 
@@ -447,7 +447,7 @@ void CapsuleShape2DSW::set_data(const Variant &p_data) {
 		height = p.y;
 	}
 
-	Point2 he(radius, height * 0.5 + radius);
+	Point2 he(radius, height * 0.5);
 	configure(Rect2(-he, he * 2));
 }
 
