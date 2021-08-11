@@ -403,6 +403,7 @@ private:
 	String highlighted_word;
 
 	uint64_t last_dblclk;
+	Vector2 last_dblclk_pos;
 
 	Timer *idle_detect;
 	Timer *click_select_held;
