@@ -407,10 +407,6 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 		} break;
 		case TOOL_EXPAND_COLLAPSE: {
-			if (!scene_tree->get_selected()) {
-				break;
-			}
-
 			Tree *tree = scene_tree->get_scene_tree();
 			TreeItem *selected_item = tree->get_selected();
 
@@ -1221,6 +1217,7 @@ void SceneTreeDock::_notification(int p_what) {
 			button_instance->set_icon(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
 			button_create_script->set_icon(get_theme_icon(SNAME("ScriptCreate"), SNAME("EditorIcons")));
 			button_detach_script->set_icon(get_theme_icon(SNAME("ScriptRemove"), SNAME("EditorIcons")));
+			button_tree_menu->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
 
 			filter->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			filter->set_clear_button_enabled(true);
@@ -2692,7 +2689,6 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			menu->add_icon_shortcut(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/add_child_node"), TOOL_NEW);
 			menu->add_icon_shortcut(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/instance_scene"), TOOL_INSTANTIATE);
 		}
-		menu->add_icon_shortcut(get_theme_icon(SNAME("Collapse"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/expand_collapse_all"), TOOL_EXPAND_COLLAPSE);
 		menu->add_separator();
 
 		existing_script = selected->get_script();
@@ -2818,8 +2814,6 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	}
 	menu->add_separator();
 	menu->add_icon_item(get_theme_icon(SNAME("Help"), SNAME("EditorIcons")), TTR("Open Documentation"), TOOL_OPEN_DOCUMENTATION);
-	menu->add_check_item(TTR("Auto Expand to Selected"), TOOL_AUTO_EXPAND);
-	menu->set_item_checked(menu->get_item_idx_from_text(TTR("Auto Expand to Selected")), EditorSettings::get_singleton()->get("docks/scene_tree/auto_expand_to_selected"));
 
 	if (profile_allow_editing) {
 		menu->add_separator();
@@ -2827,6 +2821,18 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	}
 	menu->set_size(Size2(1, 1));
 	menu->set_position(p_menu_pos);
+	menu->popup();
+}
+
+void SceneTreeDock::_open_tree_menu() {
+	menu->clear();
+
+	menu->add_icon_shortcut(get_theme_icon(SNAME("Collapse"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/expand_collapse_all"), TOOL_EXPAND_COLLAPSE);
+	menu->add_check_item(TTR("Auto Expand to Selected"), TOOL_AUTO_EXPAND);
+	menu->set_item_checked(menu->get_item_idx_from_text(TTR("Auto Expand to Selected")), EditorSettings::get_singleton()->get("docks/scene_tree/auto_expand_to_selected"));
+
+	menu->set_size(Size2(1, 1));
+	menu->set_position(get_screen_position() + get_local_mouse_position());
 	menu->popup();
 }
 
@@ -3264,6 +3270,11 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	button_detach_script->set_shortcut(ED_GET_SHORTCUT("scene_tree/detach_script"));
 	filter_hbc->add_child(button_detach_script);
 	button_detach_script->hide();
+
+	button_tree_menu = memnew(Button);
+	button_tree_menu->set_flat(true);
+	button_tree_menu->connect("pressed", callable_mp(this, &SceneTreeDock::_open_tree_menu));
+	filter_hbc->add_child(button_tree_menu);
 
 	button_hb = memnew(HBoxContainer);
 	vbc->add_child(button_hb);
