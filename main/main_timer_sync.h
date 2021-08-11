@@ -48,11 +48,11 @@ class MainTimerSync {
 	class DeltaSmoother {
 	public:
 		// pass the recorded delta, returns a smoothed delta
-		int smooth_delta(int p_delta);
+		int64_t smooth_delta(int64_t p_delta);
 
 	private:
-		void update_refresh_rate_estimator(int p_delta);
-		bool fps_allows_smoothing(int p_delta);
+		void update_refresh_rate_estimator(int64_t p_delta);
+		bool fps_allows_smoothing(int64_t p_delta);
 
 		// estimated vsync delta (monitor refresh rate)
 		int64_t _vsync_delta = 16666;
@@ -75,19 +75,19 @@ class MainTimerSync {
 
 		// we can estimate the fps by growing it on condition
 		// that a large proportion of frames are higher than the current estimate.
-		int _estimated_fps = 0;
-		int _hits_at_estimated = 0;
-		int _hits_above_estimated = 0;
-		int _hits_below_estimated = 0;
-		int _hits_one_above_estimated = 0;
-		int _hits_one_below_estimated = 0;
+		int32_t _estimated_fps = 0;
+		int32_t _hits_at_estimated = 0;
+		int32_t _hits_above_estimated = 0;
+		int32_t _hits_below_estimated = 0;
+		int32_t _hits_one_above_estimated = 0;
+		int32_t _hits_one_below_estimated = 0;
 		bool _estimate_complete = false;
 		bool _estimate_locked = false;
 
 		// data for averaging the delta over a second or so
 		// to prevent spurious values
-		int _estimator_total_delta = 0;
-		int _estimator_delta_readings = 0;
+		int64_t _estimator_total_delta = 0;
+		int32_t _estimator_delta_readings = 0;
 
 		void made_new_estimate() {
 			_hits_above_estimated = 0;
