@@ -4252,9 +4252,16 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					if (ident_type == IDENTIFIER_VARYING) {
 						TkPos prev_pos = _get_tkpos();
 						Token next_token = _get_token();
-						_set_tkpos(prev_pos);
-						String error;
 
+						// An array of varyings.
+						if (next_token.type == TK_BRACKET_OPEN) {
+							_get_token(); // Pass constant.
+							_get_token(); // Pass TK_BRACKET_CLOSE.
+							next_token = _get_token();
+						}
+						_set_tkpos(prev_pos);
+
+						String error;
 						if (is_token_operator_assign(next_token.type)) {
 							if (!_validate_varying_assign(shader->varyings[identifier], &error)) {
 								_set_error(error);
@@ -6860,6 +6867,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				DataInterpolation interpolation = INTERPOLATION_SMOOTH;
 				DataType type;
 				StringName name;
+				int array_size = 0;
 
 				tk = _get_token();
 				if (is_token_interpolation(tk.type)) {
@@ -6890,6 +6898,30 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				}
 
 				tk = _get_token();
+
+				if (tk.type == TK_BRACKET_OPEN) {
+					if (uniform) {
+						_set_error(vformat("Uniform arrays are not yet implemented!"));
+						return ERR_PARSE_ERROR;
+					}
+					tk = _get_token();
+
+					if (tk.type == TK_INT_CONSTANT && tk.constant > 0) {
+						array_size = (int)tk.constant;
+
+						tk = _get_token();
+						if (tk.type == TK_BRACKET_CLOSE) {
+							tk = _get_token();
+						} else {
+							_set_error("Expected ']'");
+							return ERR_PARSE_ERROR;
+						}
+					} else {
+						_set_error("Expected integer constant > 0");
+						return ERR_PARSE_ERROR;
+					}
+				}
+
 				if (tk.type != TK_IDENTIFIER) {
 					_set_error("Expected identifier!");
 					return ERR_PARSE_ERROR;
@@ -7189,6 +7221,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					varying.precision = precision;
 					varying.interpolation = interpolation;
 					varying.tkpos = name_pos;
+					varying.array_size = array_size;
 
 					tk = _get_token();
 					if (tk.type != TK_SEMICOLON && tk.type != TK_BRACKET_OPEN) {
@@ -7197,6 +7230,10 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					}
 
 					if (tk.type == TK_BRACKET_OPEN) {
+						if (array_size > 0) {
+							_set_error("Array size is already defined!");
+							return ERR_PARSE_ERROR;
+						}
 						tk = _get_token();
 						if (tk.type == TK_INT_CONSTANT && tk.constant > 0) {
 							varying.array_size = (int)tk.constant;
