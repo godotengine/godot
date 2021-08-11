@@ -1721,6 +1721,8 @@ void ThemeItemEditorDialog::_edit_theme_item_gui_input(const Ref<InputEvent> &p_
 				edit_theme_item_dialog->hide();
 				edit_theme_item_dialog->set_input_as_handled();
 			} break;
+			default:
+				break;
 		}
 	}
 }

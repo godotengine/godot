@@ -221,7 +221,7 @@ Input::SpeedTrack::SpeedTrack() {
 	reset();
 }
 
-bool Input::is_key_pressed(int p_keycode) const {
+bool Input::is_key_pressed(Key p_keycode) const {
 	_THREAD_SAFE_METHOD_
 	return keys_pressed.has(p_keycode);
 }

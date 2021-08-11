@@ -538,8 +538,8 @@ void DisplayServerAndroid::process_key_event(int p_keycode, int p_scancode, int 
 		meta_mem = p_pressed;
 	}
 
-	ev->set_keycode(keycode);
-	ev->set_physical_keycode(phy_keycode);
+	ev->set_keycode((Key)keycode);
+	ev->set_physical_keycode((Key)phy_keycode);
 	ev->set_unicode(val);
 	ev->set_pressed(p_pressed);
 

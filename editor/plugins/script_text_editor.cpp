@@ -1925,12 +1925,12 @@ void ScriptTextEditor::register_editor() {
 	// Leave these at zero, same can be accomplished with tab/shift-tab, including selection.
 	// The next/previous in history shortcut in this case makes a lot more sense.
 
-	ED_SHORTCUT("script_text_editor/indent_left", TTR("Indent Left"), 0);
-	ED_SHORTCUT("script_text_editor/indent_right", TTR("Indent Right"), 0);
+	ED_SHORTCUT("script_text_editor/indent_left", TTR("Indent Left"), KEY_NONE);
+	ED_SHORTCUT("script_text_editor/indent_right", TTR("Indent Right"), KEY_NONE);
 	ED_SHORTCUT("script_text_editor/toggle_comment", TTR("Toggle Comment"), KEY_MASK_CMD | KEY_K);
 	ED_SHORTCUT("script_text_editor/toggle_fold_line", TTR("Fold/Unfold Line"), KEY_MASK_ALT | KEY_F);
-	ED_SHORTCUT("script_text_editor/fold_all_lines", TTR("Fold All Lines"), 0);
-	ED_SHORTCUT("script_text_editor/unfold_all_lines", TTR("Unfold All Lines"), 0);
+	ED_SHORTCUT("script_text_editor/fold_all_lines", TTR("Fold All Lines"), KEY_NONE);
+	ED_SHORTCUT("script_text_editor/unfold_all_lines", TTR("Unfold All Lines"), KEY_NONE);
 #ifdef OSX_ENABLED
 	ED_SHORTCUT("script_text_editor/duplicate_selection", TTR("Duplicate Selection"), KEY_MASK_SHIFT | KEY_MASK_CMD | KEY_C);
 #else
@@ -1965,7 +1965,7 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/toggle_bookmark", TTR("Toggle Bookmark"), KEY_MASK_CMD | KEY_MASK_ALT | KEY_B);
 	ED_SHORTCUT("script_text_editor/goto_next_bookmark", TTR("Go to Next Bookmark"), KEY_MASK_CMD | KEY_B);
 	ED_SHORTCUT("script_text_editor/goto_previous_bookmark", TTR("Go to Previous Bookmark"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_B);
-	ED_SHORTCUT("script_text_editor/remove_all_bookmarks", TTR("Remove All Bookmarks"), 0);
+	ED_SHORTCUT("script_text_editor/remove_all_bookmarks", TTR("Remove All Bookmarks"), KEY_NONE);
 
 #ifdef OSX_ENABLED
 	ED_SHORTCUT("script_text_editor/goto_function", TTR("Go to Function..."), KEY_MASK_CTRL | KEY_MASK_CMD | KEY_J);

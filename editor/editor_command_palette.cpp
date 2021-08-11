@@ -153,6 +153,8 @@ void EditorCommandPalette::_sbox_input(const Ref<InputEvent> &p_ie) {
 			case KEY_PAGEDOWN: {
 				search_options->call("_gui_input", k);
 			} break;
+			default:
+				break;
 		}
 	}
 }
@@ -289,7 +291,7 @@ EditorCommandPalette::EditorCommandPalette() {
 	set_hide_on_ok(false);
 }
 
-Ref<Shortcut> ED_SHORTCUT_AND_COMMAND(const String &p_path, const String &p_name, uint32_t p_keycode, String p_command_name) {
+Ref<Shortcut> ED_SHORTCUT_AND_COMMAND(const String &p_path, const String &p_name, Key p_keycode, String p_command_name) {
 	if (p_command_name.is_empty()) {
 		p_command_name = p_name;
 	}
