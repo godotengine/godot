@@ -308,6 +308,7 @@ private:
 	String lookup_symbol_word;
 
 	uint64_t last_dblclk = 0;
+	Vector2 last_dblclk_pos;
 
 	Timer *idle_detect;
 	Timer *click_select_held;
