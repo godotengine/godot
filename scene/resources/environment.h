@@ -145,6 +145,7 @@ private:
 	float glow_hdr_bleed_scale;
 	float glow_hdr_luminance_cap;
 	bool glow_bicubic_upscale;
+	bool glow_high_quality;
 
 	bool dof_blur_far_enabled;
 	float dof_blur_far_distance;
@@ -331,6 +332,9 @@ public:
 
 	void set_glow_bicubic_upscale(bool p_enable);
 	bool is_glow_bicubic_upscale_enabled() const;
+
+	void set_glow_high_quality(bool p_enable);
+	bool is_glow_high_quality_enabled() const;
 
 	void set_dof_blur_far_enabled(bool p_enable);
 	bool is_dof_blur_far_enabled() const;
