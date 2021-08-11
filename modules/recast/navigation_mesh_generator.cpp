@@ -132,7 +132,7 @@ void EditorNavigationMeshGenerator::_add_faces(const PoolVector3Array &p_faces, 
 	}
 }
 
-void EditorNavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform, Node *p_node, Vector<float> &p_verticies, Vector<int> &p_indices, int p_generate_from, uint32_t p_collision_mask, bool p_recurse_children) {
+void EditorNavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform, Node *p_node, Vector<float> &p_verticies, Vector<int> &p_indices, NavigationMesh::ParsedGeometryType p_generate_from, uint32_t p_collision_mask, bool p_recurse_children) {
 	if (Object::cast_to<MeshInstance>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
 		MeshInstance *mesh_instance = Object::cast_to<MeshInstance>(p_node);
 		Ref<Mesh> mesh = mesh_instance->get_mesh();
@@ -454,7 +454,7 @@ void EditorNavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p
 
 	Transform navmesh_xform = Object::cast_to<Spatial>(p_node)->get_transform().affine_inverse();
 	for (const List<Node *>::Element *E = parse_nodes.front(); E; E = E->next()) {
-		int geometry_type = p_nav_mesh->get_parsed_geometry_type();
+		NavigationMesh::ParsedGeometryType geometry_type = p_nav_mesh->get_parsed_geometry_type();
 		uint32_t collision_mask = p_nav_mesh->get_collision_mask();
 		bool recurse_children = p_nav_mesh->get_source_geometry_mode() != NavigationMesh::SOURCE_GEOMETRY_GROUPS_EXPLICIT;
 		_parse_geometry(navmesh_xform, E->get(), vertices, indices, geometry_type, collision_mask, recurse_children);

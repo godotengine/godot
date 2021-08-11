@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="NavigationMeshInstance" inherits="Spatial" version="3.4">
 	<brief_description>
+		Node that instances navigation meshes into a scenario.
 	</brief_description>
 	<description>
+		NavigationMeshInstance is a node that takes a [NavigationMesh] resource and adds it to the current scenario by creating an instance of it.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -10,8 +12,10 @@
 	</methods>
 	<members>
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
+			If [code]true[/code], the navigation mesh will be used by [Navigation].
 		</member>
 		<member name="navmesh" type="NavigationMesh" setter="set_navigation_mesh" getter="get_navigation_mesh">
+			The [NavigationMesh] resource for the instance.
 		</member>
 	</members>
 	<constants>
