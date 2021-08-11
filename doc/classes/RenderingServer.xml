@@ -3747,14 +3747,22 @@
 			Use [Transform3D] to store MultiMesh transform.
 		</constant>
 		<constant name="LIGHT_PROJECTOR_FILTER_NEAREST" value="0" enum="LightProjectorFilter">
+			Nearest-neighbor filter for light projectors (use for pixel art light projectors). No mipmaps are used for rendering, which means light projectors at a distance will look sharp but grainy. This has roughly the same performance cost as using mipmaps.
 		</constant>
-		<constant name="LIGHT_PROJECTOR_FILTER_NEAREST_MIPMAPS" value="1" enum="LightProjectorFilter">
+		<constant name="LIGHT_PROJECTOR_FILTER_LINEAR" value="1" enum="LightProjectorFilter">
+			Linear filter for light projectors (use for non-pixel art light projectors). No mipmaps are used for rendering, which means light projectors at a distance will look smooth but blurry. This has roughly the same performance cost as using mipmaps.
 		</constant>
-		<constant name="LIGHT_PROJECTOR_FILTER_LINEAR" value="2" enum="LightProjectorFilter">
+		<constant name="LIGHT_PROJECTOR_FILTER_NEAREST_MIPMAPS" value="2" enum="LightProjectorFilter">
+			Nearest-neighbor filter for light projectors (use for pixel art light projectors). Isotropic mipmaps are used for rendering, which means light projectors at a distance will look smooth but blurry. This has roughly the same performance cost as not using mipmaps.
 		</constant>
 		<constant name="LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS" value="3" enum="LightProjectorFilter">
+			Linear filter for light projectors (use for non-pixel art light projectors). Isotropic mipmaps are used for rendering, which means light projectors at a distance will look smooth but blurry. This has roughly the same performance cost as not using mipmaps.
 		</constant>
-		<constant name="LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS_ANISOTROPIC" value="4" enum="LightProjectorFilter">
+		<constant name="LIGHT_PROJECTOR_FILTER_NEAREST_MIPMAPS_ANISOTROPIC" value="4" enum="LightProjectorFilter">
+			Nearest-neighbor filter for light projectors (use for pixel art light projectors). Anisotropic mipmaps are used for rendering, which means light projectors at a distance will look smooth and sharp when viewed from oblique angles. This looks better compared to isotropic mipmaps, but is slower. The level of anisotropic filtering is defined by [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].
+		</constant>
+		<constant name="LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS_ANISOTROPIC" value="5" enum="LightProjectorFilter">
+			Linear filter for light projectors (use for non-pixel art light projectors). Anisotropic mipmaps are used for rendering, which means light projectors at a distance will look smooth and sharp when viewed from oblique angles. This looks better compared to isotropic mipmaps, but is slower. The level of anisotropic filtering is defined by [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].
 		</constant>
 		<constant name="LIGHT_DIRECTIONAL" value="0" enum="LightType">
 			Is a directional (sun) light.
@@ -3896,14 +3904,22 @@
 		<constant name="DECAL_TEXTURE_MAX" value="4" enum="DecalTexture">
 		</constant>
 		<constant name="DECAL_FILTER_NEAREST" value="0" enum="DecalFilter">
+			Nearest-neighbor filter for decals (use for pixel art decals). No mipmaps are used for rendering, which means decals at a distance will look sharp but grainy. This has roughly the same performance cost as using mipmaps.
 		</constant>
-		<constant name="DECAL_FILTER_NEAREST_MIPMAPS" value="1" enum="DecalFilter">
+		<constant name="DECAL_FILTER_LINEAR" value="1" enum="DecalFilter">
+			Linear filter for decals (use for non-pixel art decals). No mipmaps are used for rendering, which means decals at a distance will look smooth but blurry. This has roughly the same performance cost as using mipmaps.
 		</constant>
-		<constant name="DECAL_FILTER_LINEAR" value="2" enum="DecalFilter">
+		<constant name="DECAL_FILTER_NEAREST_MIPMAPS" value="2" enum="DecalFilter">
+			Nearest-neighbor filter for decals (use for pixel art decals). Isotropic mipmaps are used for rendering, which means decals at a distance will look smooth but blurry. This has roughly the same performance cost as not using mipmaps.
 		</constant>
 		<constant name="DECAL_FILTER_LINEAR_MIPMAPS" value="3" enum="DecalFilter">
+			Linear filter for decals (use for non-pixel art decals). Isotropic mipmaps are used for rendering, which means decals at a distance will look smooth but blurry. This has roughly the same performance cost as not using mipmaps.
 		</constant>
-		<constant name="DECAL_FILTER_LINEAR_MIPMAPS_ANISOTROPIC" value="4" enum="DecalFilter">
+		<constant name="DECAL_FILTER_NEAREST_MIPMAPS_ANISOTROPIC" value="4" enum="DecalFilter">
+			Nearest-neighbor filter for decals (use for pixel art decals). Anisotropic mipmaps are used for rendering, which means decals at a distance will look smooth and sharp when viewed from oblique angles. This looks better compared to isotropic mipmaps, but is slower. The level of anisotropic filtering is defined by [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].
+		</constant>
+		<constant name="DECAL_FILTER_LINEAR_MIPMAPS_ANISOTROPIC" value="5" enum="DecalFilter">
+			Linear filter for decals (use for non-pixel art decals). Anisotropic mipmaps are used for rendering, which means decals at a distance will look smooth and sharp when viewed from oblique angles. This looks better compared to isotropic mipmaps, but is slower. The level of anisotropic filtering is defined by [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].
 		</constant>
 		<constant name="VOXEL_GI_QUALITY_LOW" value="0" enum="VoxelGIQuality">
 		</constant>

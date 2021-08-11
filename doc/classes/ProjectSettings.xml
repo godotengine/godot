@@ -1962,9 +1962,11 @@
 			Lower-end override for [member rendering/shadows/positional_shadow/soft_shadow_filter_quality] on mobile devices, due to performance concerns or driver support.
 		</member>
 		<member name="rendering/textures/decals/filter" type="int" setter="" getter="" default="3">
+			The filtering quality to use for [Decal] nodes. When using one of the anisotropic filtering modes, the anisotropic filtering level is controlled by [member rendering/textures/default_filters/anisotropic_filtering_level].
 		</member>
 		<member name="rendering/textures/default_filters/anisotropic_filtering_level" type="int" setter="" getter="" default="2">
 			Sets the maximum number of samples to take when using anisotropic filtering on textures (as a power of two). A higher sample count will result in sharper textures at oblique angles, but is more expensive to compute. A value of [code]0[/code] forcibly disables anisotropic filtering, even on materials where it is enabled.
+			The anisotropic filtering level also affects decals and light projectors if they are configured to use anisotropic filtering. See [member rendering/textures/decals/filter] and [member rendering/textures/light_projectors/filter].
 			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this setting at run-time.
 		</member>
 		<member name="rendering/textures/default_filters/texture_mipmap_bias" type="float" setter="" getter="" default="0.0">
@@ -1977,6 +1979,7 @@
 			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this setting at run-time.
 		</member>
 		<member name="rendering/textures/light_projectors/filter" type="int" setter="" getter="" default="3">
+			The filtering quality to use for [OmniLight3D] and [SpotLight3D] projectors. When using one of the anisotropic filtering modes, the anisotropic filtering level is controlled by [member rendering/textures/default_filters/anisotropic_filtering_level].
 		</member>
 		<member name="rendering/textures/lossless_compression/force_png" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import lossless textures using the PNG format. Otherwise, it will default to using WebP.

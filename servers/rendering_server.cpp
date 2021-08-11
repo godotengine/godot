@@ -1885,9 +1885,10 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("light_projectors_set_filter", "filter"), &RenderingServer::light_projectors_set_filter);
 
 	BIND_ENUM_CONSTANT(LIGHT_PROJECTOR_FILTER_NEAREST);
-	BIND_ENUM_CONSTANT(LIGHT_PROJECTOR_FILTER_NEAREST_MIPMAPS);
 	BIND_ENUM_CONSTANT(LIGHT_PROJECTOR_FILTER_LINEAR);
+	BIND_ENUM_CONSTANT(LIGHT_PROJECTOR_FILTER_NEAREST_MIPMAPS);
 	BIND_ENUM_CONSTANT(LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS);
+	BIND_ENUM_CONSTANT(LIGHT_PROJECTOR_FILTER_NEAREST_MIPMAPS_ANISOTROPIC);
 	BIND_ENUM_CONSTANT(LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS_ANISOTROPIC);
 
 	BIND_ENUM_CONSTANT(LIGHT_DIRECTIONAL);
@@ -1989,9 +1990,10 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(DECAL_TEXTURE_MAX);
 
 	BIND_ENUM_CONSTANT(DECAL_FILTER_NEAREST);
-	BIND_ENUM_CONSTANT(DECAL_FILTER_NEAREST_MIPMAPS);
 	BIND_ENUM_CONSTANT(DECAL_FILTER_LINEAR);
+	BIND_ENUM_CONSTANT(DECAL_FILTER_NEAREST_MIPMAPS);
 	BIND_ENUM_CONSTANT(DECAL_FILTER_LINEAR_MIPMAPS);
+	BIND_ENUM_CONSTANT(DECAL_FILTER_NEAREST_MIPMAPS_ANISOTROPIC);
 	BIND_ENUM_CONSTANT(DECAL_FILTER_LINEAR_MIPMAPS_ANISOTROPIC);
 
 	/* GI API (affects VoxelGI and SDFGI) */
@@ -2956,9 +2958,9 @@ void RenderingServer::init() {
 					PROPERTY_HINT_RANGE, "-2,2,0.001"));
 
 	GLOBAL_DEF("rendering/textures/decals/filter", DECAL_FILTER_LINEAR_MIPMAPS);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/textures/decals/filter", PropertyInfo(Variant::INT, "rendering/textures/decals/filter", PROPERTY_HINT_ENUM, "Nearest (Fast),Nearest+Mipmaps,Linear,Linear+Mipmaps,Linear+Mipmaps Anisotropic (Slow)"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/textures/decals/filter", PropertyInfo(Variant::INT, "rendering/textures/decals/filter", PROPERTY_HINT_ENUM, "Nearest (Fast),Linear (Fast),Nearest Mipmap (Fast),Linear Mipmap (Fast),Nearest Mipmap Anisotropic (Average),Linear Mipmap Anisotropic (Average)"));
 	GLOBAL_DEF("rendering/textures/light_projectors/filter", LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/textures/light_projectors/filter", PropertyInfo(Variant::INT, "rendering/textures/light_projectors/filter", PROPERTY_HINT_ENUM, "Nearest (Fast),Nearest+Mipmaps,Linear,Linear+Mipmaps,Linear+Mipmaps Anisotropic (Slow)"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/textures/light_projectors/filter", PropertyInfo(Variant::INT, "rendering/textures/light_projectors/filter", PROPERTY_HINT_ENUM, "Nearest (Fast),Linear (Fast),Nearest Mipmap (Fast),Linear Mipmap (Fast),Nearest Mipmap Anisotropic (Average),Linear Mipmap Anisotropic (Average)"));
 
 	GLOBAL_DEF_RST("rendering/occlusion_culling/occlusion_rays_per_thread", 512);
 	GLOBAL_DEF_RST("rendering/occlusion_culling/bvh_build_quality", 2);
