@@ -623,8 +623,8 @@ protected:
 
 public:
 	static _Engine *get_singleton() { return singleton; }
-	void set_iterations_per_second(int p_ips);
-	int get_iterations_per_second() const;
+	void set_physics_ticks_per_second(int p_ips);
+	int get_physics_ticks_per_second() const;
 
 	void set_physics_jitter_fix(double p_threshold);
 	double get_physics_jitter_fix() const;
