@@ -708,7 +708,6 @@ public:
 	EditorInspector *get_inspector() { return inspector_dock->get_inspector(); }
 	Container *get_inspector_dock_addon_area() { return inspector_dock->get_addon_area(); }
 	ScriptCreateDialog *get_script_create_dialog() { return scene_tree_dock->get_script_create_dialog(); }
-	EditorCommandPalette *get_editor_command_palette() { return command_palette; }
 
 	ProjectSettingsEditor *get_project_settings() { return project_settings; }
 

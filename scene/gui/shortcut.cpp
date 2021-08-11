@@ -43,7 +43,7 @@ Ref<InputEvent> Shortcut::get_event() const {
 
 bool Shortcut::matches_event(const Ref<InputEvent> &p_event) const {
 	Ref<InputEventShortcut> ies = p_event;
-	if (ies != nullptr) {
+	if (ies.is_valid()) {
 		if (ies->get_shortcut().ptr() == this) {
 			return true;
 		}
