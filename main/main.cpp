@@ -1352,6 +1352,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					PROPERTY_HINT_RANGE, "0,1000,1"));
 
 	GLOBAL_DEF("debug/settings/stdout/print_fps", false);
+	GLOBAL_DEF("debug/settings/stdout/print_gpu_profile", false);
 	GLOBAL_DEF("debug/settings/stdout/verbose_stdout", false);
 
 	if (!OS::get_singleton()->_verbose_stdout) { // Not manually overridden.
@@ -1591,7 +1592,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	rendering_server->init();
 	rendering_server->set_render_loop_enabled(!disable_render_loop);
 
-	if (profile_gpu) {
+	if (profile_gpu || (!editor && bool(GLOBAL_GET("debug/settings/stdout/print_gpu_profile")))) {
 		rendering_server->set_print_gpu_profile(true);
 	}
 

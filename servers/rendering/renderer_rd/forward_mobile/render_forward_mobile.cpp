@@ -519,7 +519,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			using_subpass_post_process = false;
 		}
 
-		if (scene_state.used_screen_texture || scene_state.used_depth_texture) {
+		if (using_ssr || using_sss || scene_state.used_screen_texture || scene_state.used_depth_texture) {
 			// can't use our last two subpasses
 			using_subpass_transparent = false;
 			using_subpass_post_process = false;
@@ -679,17 +679,20 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 		_setup_environment(p_render_data, p_render_data->reflection_probe.is_valid(), screen_size, !p_render_data->reflection_probe.is_valid(), p_default_bg_color, p_render_data->render_buffers.is_valid());
 
-		RENDER_TIMESTAMP("Render Opaque Subpass");
+		if (using_subpass_transparent && using_subpass_post_process) {
+			RENDER_TIMESTAMP("Render Opaque + Transparent + Tonemap");
+		} else if (using_subpass_transparent) {
+			RENDER_TIMESTAMP("Render Opaque + Transparent");
+		} else {
+			RENDER_TIMESTAMP("Render Opaque");
+		}
 
 		RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_OPAQUE, p_render_data, radiance_texture, true);
 
-		bool can_continue_color = !scene_state.used_screen_texture && !using_ssr && !using_sss;
-		bool can_continue_depth = !scene_state.used_depth_texture && !using_ssr && !using_sss;
+		bool can_continue_color = !using_subpass_transparent && !scene_state.used_screen_texture && !using_ssr && !using_sss;
+		bool can_continue_depth = !using_subpass_transparent && !scene_state.used_depth_texture && !using_ssr && !using_sss;
 
 		{
-			bool will_continue_color = (can_continue_color || draw_sky || draw_sky_fog_only);
-			bool will_continue_depth = (can_continue_depth || draw_sky || draw_sky_fog_only);
-
 			// regular forward for now
 			Vector<Color> c;
 			c.push_back(clear_color.to_linear()); // our render buffer
@@ -709,11 +712,11 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				// secondary command buffers need more testing at this time
 				//multi threaded
 				thread_draw_lists.resize(RendererThreadPool::singleton->thread_work_pool.get_thread_count());
-				RD::get_singleton()->draw_list_begin_split(framebuffer, thread_draw_lists.size(), thread_draw_lists.ptr(), keep_color ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CLEAR, will_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, will_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, c, 1.0, 0);
+				RD::get_singleton()->draw_list_begin_split(framebuffer, thread_draw_lists.size(), thread_draw_lists.ptr(), keep_color ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CLEAR, can_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, can_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, c, 1.0, 0);
 				RendererThreadPool::singleton->thread_work_pool.do_work(thread_draw_lists.size(), this, &RenderForwardMobile::_render_list_thread_function, &render_list_params);
 			} else {
 				//single threaded
-				RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, keep_color ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CLEAR, will_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, will_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, c, 1.0, 0);
+				RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, keep_color ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CLEAR, can_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, can_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, c, 1.0, 0);
 				_render_list(draw_list, fb_format, &render_list_params, 0, render_list_params.element_count);
 			}
 		}
@@ -721,8 +724,6 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		RD::get_singleton()->draw_command_end_label(); //Render Opaque Subpass
 
 		if (draw_sky || draw_sky_fog_only) {
-			RENDER_TIMESTAMP("Render Sky Subpass");
-
 			RD::get_singleton()->draw_command_begin_label("Draw Sky Subpass");
 
 			RD::DrawListID draw_list = RD::get_singleton()->draw_list_switch_to_next_pass();
@@ -752,7 +753,6 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		}
 
 		// transparent pass
-		RENDER_TIMESTAMP("Render Transparent Subpass");
 
 		RD::get_singleton()->draw_command_begin_label("Render Transparent Subpass");
 
@@ -789,6 +789,8 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 			RD::get_singleton()->draw_list_end(RD::BARRIER_MASK_ALL);
 		} else {
+			RENDER_TIMESTAMP("Render Transparent");
+
 			framebuffer = render_buffer->color_fbs[FB_CONFIG_ONE_PASS];
 
 			// this may be needed if we re-introduced steps that change info, not sure which do so in the previous implementation

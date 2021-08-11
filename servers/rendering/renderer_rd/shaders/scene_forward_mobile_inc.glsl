@@ -16,12 +16,12 @@
 /* don't exceed 128 bytes!! */
 /* put instance data into our push content, not a array */
 layout(push_constant, binding = 0, std430) uniform DrawCall {
-	mat4 transform; // 64 - 64
+	highp mat4 transform; // 64 - 64
 	uint flags; // 04 - 68
 	uint instance_uniforms_ofs; //base offset in global buffer for instance variables	// 04 - 72
 	uint gi_offset; //GI information when using lightmapping (VCT or lightmap index)    // 04 - 76
 	uint layer_mask; // 04 - 80
-	vec4 lightmap_uv_scale; // 16 - 96 doubles as uv_offset when needed
+	highp vec4 lightmap_uv_scale; // 16 - 96 doubles as uv_offset when needed
 
 	uvec2 reflection_probes; // 08 - 104
 	uvec2 omni_lights; // 08 - 112
@@ -126,14 +126,14 @@ global_variables;
 /* Set 1: Render Pass (changes per render pass) */
 
 layout(set = 1, binding = 0, std140) uniform SceneData {
-	mat4 projection_matrix;
-	mat4 inv_projection_matrix;
-	mat4 camera_matrix;
-	mat4 inv_camera_matrix;
+	highp mat4 projection_matrix;
+	highp mat4 inv_projection_matrix;
+	highp mat4 camera_matrix;
+	highp mat4 inv_camera_matrix;
 
 	// only used for multiview
-	mat4 projection_matrix_view[MAX_VIEWS];
-	mat4 inv_projection_matrix_view[MAX_VIEWS];
+	highp mat4 projection_matrix_view[MAX_VIEWS];
+	highp mat4 inv_projection_matrix_view[MAX_VIEWS];
 
 	vec2 viewport_size;
 	vec2 screen_pixel_size;
