@@ -213,10 +213,8 @@
 			</description>
 		</method>
 		<method name="error_string">
-			<return type="String">
-			</return>
-			<argument index="0" name="error" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="error" type="int" />
 			<description>
 				Returns a human-readable name for the given error code.
 			</description>
