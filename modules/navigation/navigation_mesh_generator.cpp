@@ -187,7 +187,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform3D p_accumulated_transfor
 						Ref<CapsuleMesh> capsule_mesh;
 						capsule_mesh.instantiate();
 						capsule_mesh->set_radius(capsule->get_radius());
-						capsule_mesh->set_mid_height(capsule->get_height() / 2.0);
+						capsule_mesh->set_height(capsule->get_height());
 						mesh = capsule_mesh;
 					}
 

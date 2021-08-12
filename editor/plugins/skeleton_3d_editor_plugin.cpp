@@ -386,7 +386,7 @@ PhysicalBone3D *Skeleton3DEditor::create_physical_bone(int bone_id, int bone_chi
 	const real_t radius(half_height * 0.2);
 
 	CapsuleShape3D *bone_shape_capsule = memnew(CapsuleShape3D);
-	bone_shape_capsule->set_height((half_height - radius) * 2);
+	bone_shape_capsule->set_height(half_height * 2);
 	bone_shape_capsule->set_radius(radius);
 
 	CollisionShape3D *bone_shape = memnew(CollisionShape3D);
