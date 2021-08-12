@@ -710,15 +710,28 @@ void CPUParticles3D::_particles_process(double p_delta) {
 				p.velocity = rot * parameters[PARAM_INITIAL_LINEAR_VELOCITY] * Math::lerp((real_t)1.0, real_t(Math::randf()), randomness[PARAM_INITIAL_LINEAR_VELOCITY]);
 			} else {
 				//initiate velocity spread in 3D
-				real_t angle1_rad = Math::atan2(direction.x, direction.z) + Math::deg2rad((Math::randf() * 2.0 - 1.0) * spread);
-				real_t angle2_rad = Math::atan2(direction.y, Math::abs(direction.z)) + Math::deg2rad((Math::randf() * 2.0 - 1.0) * (1.0 - flatness) * spread);
+				real_t angle1_rad = Math::deg2rad((Math::randf() * (real_t)2.0 - (real_t)1.0) * spread);
+				real_t angle2_rad = Math::deg2rad((Math::randf() * (real_t)2.0 - (real_t)1.0) * ((real_t)1.0 - flatness) * spread);
 
 				Vector3 direction_xz = Vector3(Math::sin(angle1_rad), 0, Math::cos(angle1_rad));
 				Vector3 direction_yz = Vector3(0, Math::sin(angle2_rad), Math::cos(angle2_rad));
-				direction_yz.z = direction_yz.z / MAX(0.0001, Math::sqrt(ABS(direction_yz.z))); //better uniform distribution
-				Vector3 direction = Vector3(direction_xz.x * direction_yz.z, direction_yz.y, direction_xz.z * direction_yz.z);
-				direction.normalize();
-				p.velocity = direction * parameters[PARAM_INITIAL_LINEAR_VELOCITY] * Math::lerp((real_t)1.0, real_t(Math::randf()), randomness[PARAM_INITIAL_LINEAR_VELOCITY]);
+				Vector3 spread_direction = Vector3(direction_xz.x * direction_yz.z, direction_yz.y, direction_xz.z * direction_yz.z);
+				Vector3 direction_nrm = direction;
+				if (direction_nrm.length_squared() > 0) {
+					direction_nrm.normalize();
+				} else {
+					direction_nrm = Vector3(0, 0, 1);
+				}
+				// rotate spread to direction
+				Vector3 binormal = Vector3(0.0, 1.0, 0.0).cross(direction_nrm);
+				if (binormal.length_squared() < 0.00000001) {
+					// direction is parallel to Y. Choose Z as the binormal.
+					binormal = Vector3(0.0, 0.0, 1.0);
+				}
+				binormal.normalize();
+				Vector3 normal = binormal.cross(direction_nrm);
+				spread_direction = binormal * spread_direction.x + normal * spread_direction.y + direction_nrm * spread_direction.z;
+				p.velocity = spread_direction * parameters[PARAM_INITIAL_LINEAR_VELOCITY] * Math::lerp((real_t)1.0, real_t(Math::randf()), randomness[PARAM_INITIAL_LINEAR_VELOCITY]);
 			}
 
 			real_t base_angle = (parameters[PARAM_ANGLE] + tex_angle) * Math::lerp((real_t)1.0, p.angle_rand, randomness[PARAM_ANGLE]);
