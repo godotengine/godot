@@ -205,8 +205,8 @@ public:
 
 	void set_anti_aliased(const bool &p_anti_aliased);
 	bool is_anti_aliased() const;
-	void set_aa_size(const float &p_aa_size);
-	float get_aa_size() const;
+	void set_aa_size(const real_t p_aa_size);
+	real_t get_aa_size() const;
 
 	virtual Size2 get_center_size() const override;
 

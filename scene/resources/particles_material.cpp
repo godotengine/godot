@@ -996,7 +996,7 @@ void ParticlesMaterial::set_emission_shape(EmissionShape p_shape) {
 	_queue_shader_change();
 }
 
-void ParticlesMaterial::set_emission_sphere_radius(float p_radius) {
+void ParticlesMaterial::set_emission_sphere_radius(real_t p_radius) {
 	emission_sphere_radius = p_radius;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_sphere_radius, p_radius);
 }
@@ -1035,17 +1035,17 @@ void ParticlesMaterial::set_emission_ring_axis(Vector3 p_axis) {
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ring_axis, p_axis);
 }
 
-void ParticlesMaterial::set_emission_ring_height(float p_height) {
+void ParticlesMaterial::set_emission_ring_height(real_t p_height) {
 	emission_ring_height = p_height;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ring_height, p_height);
 }
 
-void ParticlesMaterial::set_emission_ring_radius(float p_radius) {
+void ParticlesMaterial::set_emission_ring_radius(real_t p_radius) {
 	emission_ring_radius = p_radius;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ring_radius, p_radius);
 }
 
-void ParticlesMaterial::set_emission_ring_inner_radius(float p_radius) {
+void ParticlesMaterial::set_emission_ring_inner_radius(real_t p_radius) {
 	emission_ring_inner_radius = p_radius;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ring_inner_radius, p_radius);
 }
@@ -1054,7 +1054,7 @@ ParticlesMaterial::EmissionShape ParticlesMaterial::get_emission_shape() const {
 	return emission_shape;
 }
 
-float ParticlesMaterial::get_emission_sphere_radius() const {
+real_t ParticlesMaterial::get_emission_sphere_radius() const {
 	return emission_sphere_radius;
 }
 
@@ -1082,15 +1082,15 @@ Vector3 ParticlesMaterial::get_emission_ring_axis() const {
 	return emission_ring_axis;
 }
 
-float ParticlesMaterial::get_emission_ring_height() const {
+real_t ParticlesMaterial::get_emission_ring_height() const {
 	return emission_ring_height;
 }
 
-float ParticlesMaterial::get_emission_ring_radius() const {
+real_t ParticlesMaterial::get_emission_ring_radius() const {
 	return emission_ring_radius;
 }
 
-float ParticlesMaterial::get_emission_ring_inner_radius() const {
+real_t ParticlesMaterial::get_emission_ring_inner_radius() const {
 	return emission_ring_inner_radius;
 }
 
@@ -1107,12 +1107,12 @@ Vector3 ParticlesMaterial::get_gravity() const {
 	return gravity;
 }
 
-void ParticlesMaterial::set_lifetime_randomness(float p_lifetime) {
+void ParticlesMaterial::set_lifetime_randomness(double p_lifetime) {
 	lifetime_randomness = p_lifetime;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->lifetime_randomness, lifetime_randomness);
 }
 
-float ParticlesMaterial::get_lifetime_randomness() const {
+double ParticlesMaterial::get_lifetime_randomness() const {
 	return lifetime_randomness;
 }
 
@@ -1169,11 +1169,12 @@ ParticlesMaterial::SubEmitterMode ParticlesMaterial::get_sub_emitter_mode() cons
 	return sub_emitter_mode;
 }
 
-void ParticlesMaterial::set_sub_emitter_frequency(float p_frequency) {
+void ParticlesMaterial::set_sub_emitter_frequency(double p_frequency) {
 	sub_emitter_frequency = p_frequency;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->sub_emitter_frequency, 1.0 / p_frequency); //pass delta instead of frequency, since its easier to compute
 }
-float ParticlesMaterial::get_sub_emitter_frequency() const {
+
+double ParticlesMaterial::get_sub_emitter_frequency() const {
 	return sub_emitter_frequency;
 }
 

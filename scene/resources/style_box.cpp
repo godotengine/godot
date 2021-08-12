@@ -461,12 +461,12 @@ bool StyleBoxFlat::is_anti_aliased() const {
 	return anti_aliased;
 }
 
-void StyleBoxFlat::set_aa_size(const real_t &p_aa_size) {
+void StyleBoxFlat::set_aa_size(const real_t p_aa_size) {
 	aa_size = CLAMP(p_aa_size, 0.01, 10);
 	emit_changed();
 }
 
-float StyleBoxFlat::get_aa_size() const {
+real_t StyleBoxFlat::get_aa_size() const {
 	return aa_size;
 }
 
