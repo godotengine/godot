@@ -54,7 +54,6 @@ def get_android_ndk_root():
 def get_flags():
     return [
         ("tools", False),
-        ("use_volk", False),
     ]
 
 
