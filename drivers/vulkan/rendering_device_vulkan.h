@@ -44,7 +44,11 @@
 #endif
 #include "vk_mem_alloc.h"
 
+#ifdef USE_VOLK
+#include <volk.h>
+#else
 #include <vulkan/vulkan.h>
+#endif
 
 class VulkanContext;
 

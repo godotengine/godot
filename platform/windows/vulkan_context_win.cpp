@@ -29,7 +29,11 @@
 /*************************************************************************/
 
 #include "vulkan_context_win.h"
-#include <vulkan/vulkan_win32.h>
+#ifdef USE_VOLK
+#include <volk.h>
+#else
+#include <vulkan/vulkan.h>
+#endif
 
 const char *VulkanContextWindows::_get_platform_surface_extension() const {
 	return VK_KHR_WIN32_SURFACE_EXTENSION_NAME;

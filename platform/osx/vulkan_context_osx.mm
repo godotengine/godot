@@ -29,7 +29,11 @@
 /*************************************************************************/
 
 #include "vulkan_context_osx.h"
-#include <vulkan/vulkan_macos.h>
+#ifdef USE_VOLK
+#include <volk.h>
+#else
+#include <vulkan/vulkan.h>
+#endif
 
 const char *VulkanContextOSX::_get_platform_surface_extension() const {
 	return VK_MVK_MACOS_SURFACE_EXTENSION_NAME;

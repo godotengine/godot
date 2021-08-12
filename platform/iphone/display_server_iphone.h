@@ -41,7 +41,11 @@
 #include "vulkan_context_iphone.h"
 
 #import <QuartzCore/CAMetalLayer.h>
-#include <vulkan/vulkan_metal.h>
+#ifdef USE_VOLK
+#include <volk.h>
+#else
+#include <vulkan/vulkan.h>
+#endif
 #endif
 
 class DisplayServerIPhone : public DisplayServer {

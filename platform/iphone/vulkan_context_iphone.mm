@@ -29,7 +29,11 @@
 /*************************************************************************/
 
 #include "vulkan_context_iphone.h"
-#include <vulkan/vulkan_ios.h>
+#ifdef USE_VOLK
+#include <volk.h>
+#else
+#include <vulkan/vulkan.h>
+#endif
 
 const char *VulkanContextIPhone::_get_platform_surface_extension() const {
 	return VK_MVK_IOS_SURFACE_EXTENSION_NAME;
