@@ -106,12 +106,10 @@ def configure(env):
     if env["ios_simulator"]:
         detect_darwin_sdk_path("iphonesimulator", env)
         env.Append(CCFLAGS=["-mios-simulator-version-min=13.0"])
-        env.Append(LINKFLAGS=["-mios-simulator-version-min=13.0"])
         env.extra_suffix = ".simulator" + env.extra_suffix
     else:
         detect_darwin_sdk_path("iphone", env)
         env.Append(CCFLAGS=["-miphoneos-version-min=11.0"])
-        env.Append(LINKFLAGS=["-miphoneos-version-min=11.0"])
 
     if env["arch"] == "x86" or env["arch"] == "x86_64":
         env["ENV"]["MACOSX_DEPLOYMENT_TARGET"] = "10.9"
@@ -157,35 +155,6 @@ def configure(env):
     # Temp fix for ABS/MAX/MIN macros in iPhone SDK blocking compilation
     env.Append(CCFLAGS=["-Wno-ambiguous-macro"])
 
-    ## Link flags
-
-    if env["arch"] == "x86" or env["arch"] == "x86_64":
-        arch_flag = "i386" if env["arch"] == "x86" else env["arch"]
-        env.Append(
-            LINKFLAGS=[
-                "-arch",
-                arch_flag,
-                "-isysroot",
-                "$IPHONESDK",
-                "-Xlinker",
-                "-objc_abi_version",
-                "-Xlinker",
-                "2",
-                "-F$IPHONESDK",
-            ]
-        )
-    elif env["arch"] == "arm":
-        env.Append(LINKFLAGS=["-arch", "armv7", "-Wl,-dead_strip"])
-    if env["arch"] == "arm64":
-        env.Append(LINKFLAGS=["-arch", "arm64", "-Wl,-dead_strip"])
-
-    env.Append(
-        LINKFLAGS=[
-            "-isysroot",
-            "$IPHONESDK",
-        ]
-    )
-
     env.Prepend(
         CPPPATH=[
             "$IPHONESDK/usr/include",
@@ -193,15 +162,8 @@ def configure(env):
         ]
     )
 
-    env["ENV"]["CODESIGN_ALLOCATE"] = "/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/codesign_allocate"
-
     env.Prepend(CPPPATH=["#platform/iphone"])
     env.Append(CPPDEFINES=["IPHONE_ENABLED", "UNIX_ENABLED", "COREAUDIO_ENABLED"])
 
-    env.Append(CPPDEFINES=["VULKAN_ENABLED"])
-    env.Append(LINKFLAGS=["-framework", "IOSurface"])
-
-    # Use Static Vulkan for iOS. Dynamic Framework works fine too.
-    env.Append(LINKFLAGS=["-framework", "MoltenVK"])
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED"])
