@@ -1144,11 +1144,7 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 				view_offset.y += int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor();
 				update_viewport();
 			} else {
-				zoom_widget->set_zoom_by_increments(-1, Input::get_singleton()->is_key_pressed(KEY_ALT));
-				if (!Math::is_equal_approx(b->get_factor(), 1.0f)) {
-					// Handle high-precision (analog) scrolling.
-					zoom_widget->set_zoom(zoom * ((zoom_widget->get_zoom() / zoom - 1.f) * b->get_factor() + 1.f));
-				}
+				zoom_widget->set_zoom_by_increments(-MAX(1, b->get_factor()), Input::get_singleton()->is_key_pressed(KEY_ALT));
 				_zoom_on_position(zoom_widget->get_zoom(), b->get_position());
 			}
 			return true;
@@ -1160,11 +1156,7 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 				view_offset.y -= int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor();
 				update_viewport();
 			} else {
-				zoom_widget->set_zoom_by_increments(1, Input::get_singleton()->is_key_pressed(KEY_ALT));
-				if (!Math::is_equal_approx(b->get_factor(), 1.0f)) {
-					// Handle high-precision (analog) scrolling.
-					zoom_widget->set_zoom(zoom * ((zoom_widget->get_zoom() / zoom - 1.f) * b->get_factor() + 1.f));
-				}
+				zoom_widget->set_zoom_by_increments(MAX(1, b->get_factor()), Input::get_singleton()->is_key_pressed(KEY_ALT));
 				_zoom_on_position(zoom_widget->get_zoom(), b->get_position());
 			}
 			return true;
