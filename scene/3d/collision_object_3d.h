@@ -32,8 +32,6 @@
 #define COLLISION_OBJECT_3D_H
 
 #include "scene/3d/node_3d.h"
-#include "scene/resources/shape_3d.h"
-#include "servers/physics_server_3d.h"
 
 class CollisionObject3D : public Node3D {
 	GDCLASS(CollisionObject3D, Node3D);

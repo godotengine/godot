@@ -31,8 +31,6 @@
 #include "visual_instance_3d.h"
 
 #include "scene/scene_string_names.h"
-#include "servers/rendering_server.h"
-#include "skeleton_3d.h"
 
 AABB VisualInstance3D::get_transformed_aabb() const {
 	return get_global_transform().xform(get_aabb());

@@ -32,7 +32,6 @@
 #define LISTENER_3D_H
 
 #include "scene/3d/node_3d.h"
-#include "scene/main/window.h"
 
 class Listener3D : public Node3D {
 	GDCLASS(Listener3D, Node3D);

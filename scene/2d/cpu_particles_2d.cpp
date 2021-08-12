@@ -32,9 +32,7 @@
 
 #include "core/core_string_names.h"
 #include "scene/2d/gpu_particles_2d.h"
-#include "scene/main/canvas_item.h"
 #include "scene/resources/particles_material.h"
-#include "servers/rendering_server.h"
 
 void CPUParticles2D::set_emitting(bool p_emitting) {
 	if (emitting == p_emitting) {

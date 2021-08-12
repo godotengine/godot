@@ -6160,7 +6160,7 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 	editor = p_node;
 	editor_data = editor->get_scene_tree_dock()->get_editor_data();
 	canvas_item_editor = p_canvas_item_editor;
-	preview_node = memnew(Node2D);
+	preview_node = memnew(Control);
 
 	accept = memnew(AcceptDialog);
 	editor->get_gui_base()->add_child(accept);

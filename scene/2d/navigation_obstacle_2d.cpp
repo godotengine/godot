@@ -31,7 +31,6 @@
 #include "navigation_obstacle_2d.h"
 
 #include "scene/2d/collision_shape_2d.h"
-#include "scene/2d/physics_body_2d.h"
 #include "servers/navigation_server_2d.h"
 
 void NavigationObstacle2D::_bind_methods() {

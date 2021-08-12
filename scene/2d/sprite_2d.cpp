@@ -31,7 +31,6 @@
 #include "sprite_2d.h"
 
 #include "core/core_string_names.h"
-#include "core/os/os.h"
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
 

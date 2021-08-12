@@ -30,9 +30,6 @@
 
 #include "position_2d.h"
 
-#include "core/config/engine.h"
-#include "scene/resources/texture.h"
-
 const real_t DEFAULT_GIZMO_EXTENTS = 10.0;
 
 void Position2D::_draw_cross() {

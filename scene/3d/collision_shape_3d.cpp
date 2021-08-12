@@ -30,12 +30,10 @@
 
 #include "collision_shape_3d.h"
 
-#include "core/math/quick_hull.h"
 #include "mesh_instance_3d.h"
 #include "physics_body_3d.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
-#include "servers/rendering_server.h"
 
 void CollisionShape3D::make_convex_from_siblings() {
 	Node *p = get_parent();

@@ -31,7 +31,7 @@
 #ifndef SCENARIO_FX_H
 #define SCENARIO_FX_H
 
-#include "scene/3d/node_3d.h"
+#include "scene/main/node.h"
 #include "scene/resources/camera_effects.h"
 #include "scene/resources/environment.h"
 

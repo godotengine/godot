@@ -30,7 +30,7 @@
 
 #include "listener_3d.h"
 
-#include "scene/resources/mesh.h"
+#include "scene/main/viewport.h"
 
 void Listener3D::_update_audio_listener_state() {
 }

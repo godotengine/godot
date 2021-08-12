@@ -30,7 +30,6 @@
 
 #include "navigation_region_3d.h"
 
-#include "core/os/thread.h"
 #include "mesh_instance_3d.h"
 #include "servers/navigation_server_3d.h"
 

@@ -32,8 +32,6 @@
 #define DECAL_H
 
 #include "scene/3d/visual_instance_3d.h"
-#include "scene/resources/texture.h"
-#include "servers/rendering_server.h"
 
 class Decal : public VisualInstance3D {
 	GDCLASS(Decal, VisualInstance3D);

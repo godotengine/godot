@@ -32,8 +32,6 @@
 #define XR_NODES_H
 
 #include "scene/3d/camera_3d.h"
-#include "scene/3d/node_3d.h"
-#include "scene/resources/mesh.h"
 #include "servers/xr/xr_positional_tracker.h"
 
 /**

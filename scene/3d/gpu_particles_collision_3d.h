@@ -32,9 +32,7 @@
 #define GPU_PARTICLES_COLLISION_3D_H
 
 #include "core/templates/local_vector.h"
-#include "core/templates/rid.h"
 #include "scene/3d/visual_instance_3d.h"
-#include "scene/resources/material.h"
 
 class GPUParticlesCollision3D : public VisualInstance3D {
 	GDCLASS(GPUParticlesCollision3D, VisualInstance3D);

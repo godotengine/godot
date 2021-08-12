@@ -30,33 +30,25 @@
 
 #include "viewport.h"
 
-#include "core/config/project_settings.h"
 #include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
-#include "core/input/input.h"
-#include "core/os/os.h"
 #include "core/string/translation.h"
-
+#include "core/templates/pair.h"
 #include "scene/2d/camera_2d.h"
 #include "scene/2d/collision_object_2d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/collision_object_3d.h"
 #include "scene/3d/listener_3d.h"
-#include "scene/3d/node_3d.h"
 #include "scene/3d/world_environment.h"
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/panel.h"
-#include "scene/gui/panel_container.h"
-#include "scene/gui/popup_menu.h"
+#include "scene/gui/popup.h"
 #include "scene/main/canvas_layer.h"
-#include "scene/main/timer.h"
 #include "scene/main/window.h"
 #include "scene/resources/mesh.h"
+#include "scene/resources/text_line.h"
+#include "scene/resources/world_2d.h"
 #include "scene/scene_string_names.h"
-#include "servers/display_server.h"
-#include "servers/physics_server_2d.h"
 
 void ViewportTexture::setup_local_to_scene() {
 	if (vp) {
