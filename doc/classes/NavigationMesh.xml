@@ -30,11 +30,11 @@
 				Initializes the navigation mesh by setting the vertices and indices according to a [Mesh].
 			</description>
 		</method>
-		<method name="get_collision_mask_bit" qualifiers="const">
+		<method name="get_collision_mask_value" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="bit" type="int" />
+			<argument index="0" name="layer_number" type="int" />
 			<description>
-				Returns whether the specified [code]bit[/code] of the [member geometry/collision_mask] is set.
+				Returns whether or not the specified layer of the [member geometry/collision_mask] is enabled, given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
 		<method name="get_polygon">
@@ -56,13 +56,12 @@
 				Returns a [PackedVector3Array] containing all the vertices being used to create the polygons.
 			</description>
 		</method>
-		<method name="set_collision_mask_bit">
+		<method name="set_collision_mask_value">
 			<return type="void" />
-			<argument index="0" name="bit" type="int" />
+			<argument index="0" name="layer_number" type="int" />
 			<argument index="1" name="value" type="bool" />
 			<description>
-				If [code]value[/code] is [code]true[/code], sets the specified [code]bit[/code] in the [member geometry/collision_mask].
-				If [code]value[/code] is [code]false[/code], clears the specified [code]bit[/code] in the [member geometry/collision_mask].
+				Based on [code]value[/code], enables or disables the specified layer in the [member geometry/collision_mask], given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
 		<method name="set_vertices">
