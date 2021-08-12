@@ -633,7 +633,7 @@ void CodeEdit::_backspace() {
 	int prev_line = cc ? cl : cl - 1;
 	int prev_column = cc ? (cc - 1) : (get_line(cl - 1).length());
 
-	merge_gutters(cl, prev_line);
+	merge_gutters(prev_line, cl);
 
 	if (auto_brace_completion_enabled && cc > 0) {
 		int idx = _get_auto_brace_pair_open_at_pos(cl, cc);
@@ -1178,6 +1178,8 @@ void CodeEdit::_main_gutter_draw_callback(int p_line, int p_gutter, const Rect2 
 
 // Breakpoints
 void CodeEdit::set_line_as_breakpoint(int p_line, bool p_breakpointed) {
+	ERR_FAIL_INDEX(p_line, get_line_count());
+
 	int mask = get_line_gutter_metadata(p_line, main_gutter);
 	set_line_gutter_metadata(p_line, main_gutter, p_breakpointed ? mask | MAIN_GUTTER_BREAKPOINT : mask & ~MAIN_GUTTER_BREAKPOINT);
 	if (p_breakpointed) {
@@ -2884,6 +2886,21 @@ void CodeEdit::_lines_edited_from(int p_from_line, int p_to_line) {
 		return;
 	}
 
+	lines_edited_from = (lines_edited_from == -1) ? MIN(p_from_line, p_to_line) : MIN(lines_edited_from, MIN(p_from_line, p_to_line));
+	lines_edited_to = (lines_edited_to == -1) ? MAX(p_from_line, p_to_line) : MAX(lines_edited_from, MAX(p_from_line, p_to_line));
+}
+
+void CodeEdit::_text_set() {
+	lines_edited_from = 0;
+	lines_edited_to = 9999;
+	_text_changed();
+}
+
+void CodeEdit::_text_changed() {
+	if (lines_edited_from == -1) {
+		return;
+	}
+
 	int lc = get_line_count();
 	line_number_digits = 1;
 	while (lc /= 10) {
@@ -2891,23 +2908,28 @@ void CodeEdit::_lines_edited_from(int p_from_line, int p_to_line) {
 	}
 	set_gutter_width(line_number_gutter, (line_number_digits + 1) * font->get_char_size('0', 0, font_size).width);
 
-	int from_line = MIN(p_from_line, p_to_line);
-	int line_count = (p_to_line - p_from_line);
+	lc = get_line_count();
+	int line_change_size = (lines_edited_to - lines_edited_from);
 	List<int> breakpoints;
 	breakpointed_lines.get_key_list(&breakpoints);
-	for (const int line : breakpoints) {
-		if (line <= from_line) {
+	for (const int &line : breakpoints) {
+		if (line < lines_edited_from || (line < lc && is_line_breakpointed(line))) {
 			continue;
 		}
-		breakpointed_lines.erase(line);
 
+		breakpointed_lines.erase(line);
 		emit_signal(SNAME("breakpoint_toggled"), line);
-		if (line_count > 0 || line >= p_from_line) {
-			emit_signal(SNAME("breakpoint_toggled"), line + line_count);
-			breakpointed_lines[line + line_count] = true;
+
+		int next_line = line + line_change_size;
+		if (next_line < lc && is_line_breakpointed(next_line)) {
+			emit_signal(SNAME("breakpoint_toggled"), next_line);
+			breakpointed_lines[next_line] = true;
 			continue;
 		}
 	}
+
+	lines_edited_from = -1;
+	lines_edited_to = -1;
 }
 
 CodeEdit::CodeEdit() {
@@ -2961,8 +2983,10 @@ CodeEdit::CodeEdit() {
 	gutter_idx++;
 
 	connect("lines_edited_from", callable_mp(this, &CodeEdit::_lines_edited_from));
-	connect("gutter_clicked", callable_mp(this, &CodeEdit::_gutter_clicked));
+	connect("text_set", callable_mp(this, &CodeEdit::_text_set));
+	connect("text_changed", callable_mp(this, &CodeEdit::_text_changed));
 
+	connect("gutter_clicked", callable_mp(this, &CodeEdit::_gutter_clicked));
 	connect("gutter_added", callable_mp(this, &CodeEdit::_update_gutter_indexes));
 	connect("gutter_removed", callable_mp(this, &CodeEdit::_update_gutter_indexes));
 	_update_gutter_indexes();
