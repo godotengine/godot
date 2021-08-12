@@ -62,8 +62,6 @@ private:
 	String path_cache;
 	String scene_unique_id;
 
-	virtual bool _use_builtin_script() const { return true; }
-
 #ifdef TOOLS_ENABLED
 	uint64_t last_modified_time = 0;
 	uint64_t import_last_modified_time = 0;
