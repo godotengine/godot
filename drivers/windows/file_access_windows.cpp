@@ -35,6 +35,7 @@
 #include "core/os/os.h"
 #include "core/print_string.h"
 
+#include <share.h> // _SH_DENYNO
 #include <shlwapi.h>
 #include <windows.h>
 
@@ -110,10 +111,10 @@ Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 		path = path + ".tmp";
 	}
 
-	errno_t errcode = _wfopen_s(&f, path.c_str(), mode_string);
+	f = _wfsopen((LPCWSTR)(path.c_str()), mode_string, _SH_DENYNO);
 
-	if (f == NULL) {
-		switch (errcode) {
+	if (f == nullptr) {
+		switch (errno) {
 			case ENOENT: {
 				last_error = ERR_FILE_NOT_FOUND;
 			} break;
@@ -300,11 +301,9 @@ void FileAccessWindows::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 }
 
 bool FileAccessWindows::file_exists(const String &p_name) {
-	FILE *g;
-	//printf("opening file %s\n", p_fname.c_str());
 	String filename = fix_path(p_name);
-	_wfopen_s(&g, filename.c_str(), L"rb");
-	if (g == NULL) {
+	FILE *g = _wfsopen((LPCWSTR)(filename.c_str()), L"rb", _SH_DENYNO);
+	if (g == nullptr) {
 		return false;
 	} else {
 		fclose(g);

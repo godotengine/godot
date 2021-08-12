@@ -59,8 +59,6 @@ class Resource : public Reference {
 	String path_cache;
 	int subindex;
 
-	virtual bool _use_builtin_script() const { return true; }
-
 #ifdef TOOLS_ENABLED
 	uint64_t last_modified_time;
 	uint64_t import_last_modified_time;

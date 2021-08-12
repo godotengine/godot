@@ -15,7 +15,7 @@
 # Tohru Ike (rokujyouhitoma) <rokujyouhitomajp@gmail.com>, 2017-2018.
 # yu tang <0011solo@gmail.com>, 2018.
 # zukkun <zukkun@gmail.com>, 2018.
-# sugusan <sugusan.development@gmail.com>, 2018, 2019.
+# sugusan <sugusan.development@gmail.com>, 2018, 2019, 2021.
 # Nathan Lovato <nathan.lovato.art@gmail.com>, 2018.
 # nyanode <akaruooyagi@yahoo.co.jp>, 2018.
 # nitenook <admin@alterbaum.net>, 2018, 2019, 2020, 2021.
@@ -37,8 +37,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-07-29 02:33+0000\n"
-"Last-Translator: nitenook <admin@alterbaum.net>\n"
+"PO-Revision-Date: 2021-08-12 14:48+0000\n"
+"Last-Translator: sugusan <sugusan.development@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -46,7 +46,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.7.2-dev\n"
+"X-Generator: Weblate 4.8-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -367,6 +367,7 @@ msgstr "アニメーションのループモードを変更"
 msgid "Remove Anim Track"
 msgstr "アニメーショントラックを除去"
 
+#. TRANSLATORS: %s will be replaced by a phrase describing the target of track.
 #: editor/animation_track_editor.cpp
 msgid "Create NEW track for %s and insert key?"
 msgstr "%s の新規トラックを作成し、キーを挿入しますか？"
@@ -391,11 +392,29 @@ msgstr "作成"
 msgid "Anim Insert"
 msgstr "アニメーション挿入"
 
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "node '%s'"
+msgstr "'..'を処理できません"
+
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "animation"
+msgstr "アニメーション"
+
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
 msgstr ""
 "アニメーションプレイヤーは他のプレイヤーだけをアニメーション化することはでき"
 "ません。"
+
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "property '%s'"
+msgstr "プロパティ '%s' は存在しません。"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -972,9 +991,9 @@ msgstr "%s を新規作成"
 msgid "No results for \"%s\"."
 msgstr "\"%s\" の結果はありません。"
 
-#: editor/create_dialog.cpp
+#: editor/create_dialog.cpp editor/property_selector.cpp
 msgid "No description available for %s."
-msgstr ""
+msgstr "%s についての説明はありません。"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
@@ -1166,7 +1185,7 @@ msgstr "Godot コミュニティより感謝を！"
 
 #: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
 msgid "Click to copy."
-msgstr ""
+msgstr "クリックしてコピーします。"
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -2325,6 +2344,17 @@ msgid "New Window"
 msgstr "新規ウィンドウ"
 
 #: editor/editor_node.cpp
+msgid ""
+"Spins when the editor window redraws.\n"
+"Update Continuously is enabled, which can increase power usage. Click to "
+"disable it."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Spins when the editor window redraws."
+msgstr "エディタ ウィンドウの再描画時にスピンします。"
+
+#: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
 msgstr "インポートしたリソースは保存できません。"
 
@@ -3185,10 +3215,6 @@ msgid "Save & Restart"
 msgstr "保存して再起動"
 
 #: editor/editor_node.cpp
-msgid "Spins when the editor window redraws."
-msgstr "エディタ ウィンドウの再描画時にスピンします。"
-
-#: editor/editor_node.cpp
 msgid "Update Continuously"
 msgstr "継続的に更新"
 
@@ -3634,11 +3660,11 @@ msgstr "ノードからインポート:"
 
 #: editor/export_template_manager.cpp
 msgid "Open the folder containing these templates."
-msgstr ""
+msgstr "これらのテンプレートがあるフォルダを開きます。"
 
 #: editor/export_template_manager.cpp
 msgid "Uninstall these templates."
-msgstr ""
+msgstr "これらのテンプレートをアンインストールします。"
 
 #: editor/export_template_manager.cpp
 #, fuzzy
@@ -3652,7 +3678,7 @@ msgstr "ミラーを取得しています。しばらくお待ちください...
 
 #: editor/export_template_manager.cpp
 msgid "Starting the download..."
-msgstr ""
+msgstr "ダウンロードを開始しています..."
 
 #: editor/export_template_manager.cpp
 msgid "Error requesting URL:"
@@ -3695,7 +3721,7 @@ msgstr "リクエストは失敗しました。"
 
 #: editor/export_template_manager.cpp
 msgid "Download complete; extracting templates..."
-msgstr ""
+msgstr "ダウンロードが完了しました。テンプレートを展開しています..."
 
 #: editor/export_template_manager.cpp
 msgid "Cannot remove temporary file:"
@@ -3820,10 +3846,12 @@ msgstr "現在のバージョン:"
 #: editor/export_template_manager.cpp
 msgid "Export templates are missing. Download them or install from a file."
 msgstr ""
+"エクスポート テンプレートが見つかりません。ダウンロードするかファイルからイン"
+"ストールしてください。"
 
 #: editor/export_template_manager.cpp
 msgid "Export templates are installed and ready to be used."
-msgstr ""
+msgstr "エクスポート テンプレートはインストールされており、利用できます。"
 
 #: editor/export_template_manager.cpp
 #, fuzzy
@@ -3849,8 +3877,18 @@ msgid "Download from:"
 msgstr "ダウンロードエラー"
 
 #: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Open in Web Browser"
+msgstr "ブラウザで実行"
+
+#: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Copy Mirror URL"
+msgstr "エラーをコピー"
+
+#: editor/export_template_manager.cpp
 msgid "Download and Install"
-msgstr ""
+msgstr "ダウンロードしてインストール"
 
 #: editor/export_template_manager.cpp
 msgid ""
@@ -4052,35 +4090,32 @@ msgid "Collapse All"
 msgstr "すべて折りたたむ"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Sort files"
-msgstr "ファイル検索"
+msgstr "ファイルの並び替え"
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by Name (Ascending)"
-msgstr ""
+msgstr "名前 (昇順) で並び替え"
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by Name (Descending)"
-msgstr ""
+msgstr "名前 (降順) で並び替え"
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by Type (Ascending)"
-msgstr ""
+msgstr "種類 (昇順) で並び替え"
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by Type (Descending)"
-msgstr ""
+msgstr "種類 (降順) で並び替え"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Sort by Last Modified"
-msgstr "最終更新"
+msgstr "更新日時が新しい順で並び替え"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Sort by First Modified"
-msgstr "最終更新"
+msgstr "更新日時が古い順で並び替え"
 
 #: editor/filesystem_dock.cpp
 msgid "Duplicate..."
@@ -8708,6 +8743,12 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"Select a theme type from the list to edit its items.\n"
+"You can add a custom type or import a type with its items from another theme."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
 msgid "Remove All Color Items"
 msgstr "すべてのアイテムを除去"
@@ -8736,6 +8777,12 @@ msgstr "すべてのアイテムを除去"
 #, fuzzy
 msgid "Remove All StyleBox Items"
 msgstr "すべてのアイテムを除去"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"This theme type is empty.\n"
+"Add more items to it manually or by importing from another theme."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -12390,6 +12437,16 @@ msgstr "円柱シェイプの高さを変更"
 msgid "Change Ray Shape Length"
 msgstr "レイシェイプの長さを変更"
 
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Room Point Position"
+msgstr "カーブポイントの位置を設定"
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Portal Point Position"
+msgstr "カーブポイントの位置を設定"
+
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Radius"
 msgstr "円柱の半径を変更"
@@ -14160,6 +14217,42 @@ msgstr ""
 msgid "There should only be one RoomManager in the SceneTree."
 msgstr ""
 
+#: scene/3d/room_manager.cpp
+msgid ""
+"RoomList path is invalid.\n"
+"Please check the RoomList branch has been assigned in the RoomManager."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "RoomList contains no Rooms, aborting."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "Misnamed nodes detected, check output log for details. Aborting."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "Portal link room not found, check output log for details."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Portal autolink failed, check output log for details.\n"
+"Check the portal is facing outwards from the source room."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Room overlap detected, cameras may work incorrectly in overlapping area.\n"
+"Check output log for details."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Error calculating room bounds.\n"
+"Ensure all rooms contain geometry or manual bounds."
+msgstr ""
+
 #: scene/3d/soft_body.cpp
 msgid "This body will be ignored until you set a mesh."
 msgstr "このボディは、メッシュを設定するまで無視されます。"
@@ -15442,10 +15535,6 @@ msgstr "定数は変更できません。"
 #, fuzzy
 #~ msgid "I see..."
 #~ msgstr "わかった..."
-
-#, fuzzy
-#~ msgid "Can't open '%s'."
-#~ msgstr "'..'を処理できません"
 
 #, fuzzy
 #~ msgid "Ugh"

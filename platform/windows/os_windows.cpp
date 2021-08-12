@@ -895,11 +895,12 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					if (!motion)
 						return 0;
 
-					if (motion > 0)
+					if (motion > 0) {
 						mb->set_button_index(BUTTON_WHEEL_UP);
-					else
+					} else {
 						mb->set_button_index(BUTTON_WHEEL_DOWN);
-
+					}
+					mb->set_factor(fabs((double)motion / (double)WHEEL_DELTA));
 				} break;
 				case WM_MOUSEHWHEEL: {
 					mb->set_pressed(true);
@@ -909,11 +910,10 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 					if (motion < 0) {
 						mb->set_button_index(BUTTON_WHEEL_LEFT);
-						mb->set_factor(fabs((double)motion / (double)WHEEL_DELTA));
 					} else {
 						mb->set_button_index(BUTTON_WHEEL_RIGHT);
-						mb->set_factor(fabs((double)motion / (double)WHEEL_DELTA));
 					}
+					mb->set_factor(fabs((double)motion / (double)WHEEL_DELTA));
 				} break;
 				case WM_XBUTTONDOWN: {
 					mb->set_pressed(true);

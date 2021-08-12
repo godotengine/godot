@@ -840,6 +840,10 @@ def using_clang(env):
     return "clang" in os.path.basename(env["CC"])
 
 
+def using_emcc(env):
+    return "emcc" in os.path.basename(env["CC"])
+
+
 def show_progress(env):
     import sys
     from SCons.Script import Progress, Command, AlwaysBuild
