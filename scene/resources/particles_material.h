@@ -241,19 +241,19 @@ private:
 	Ref<Texture2D> emission_normal_texture;
 	Ref<Texture2D> emission_color_texture;
 	Vector3 emission_ring_axis;
-	float emission_ring_height;
-	float emission_ring_radius;
-	float emission_ring_inner_radius;
+	real_t emission_ring_height;
+	real_t emission_ring_radius;
+	real_t emission_ring_inner_radius;
 	int emission_point_count = 1;
 
 	bool anim_loop;
 
 	Vector3 gravity;
 
-	float lifetime_randomness;
+	double lifetime_randomness;
 
 	SubEmitterMode sub_emitter_mode;
-	float sub_emitter_frequency;
+	double sub_emitter_frequency;
 	int sub_emitter_amount_at_end;
 	bool sub_emitter_keep_velocity;
 	//do not save emission points here
@@ -297,34 +297,34 @@ public:
 	bool get_particle_flag(ParticleFlags p_particle_flag) const;
 
 	void set_emission_shape(EmissionShape p_shape);
-	void set_emission_sphere_radius(float p_radius);
+	void set_emission_sphere_radius(real_t p_radius);
 	void set_emission_box_extents(Vector3 p_extents);
 	void set_emission_point_texture(const Ref<Texture2D> &p_points);
 	void set_emission_normal_texture(const Ref<Texture2D> &p_normals);
 	void set_emission_color_texture(const Ref<Texture2D> &p_colors);
 	void set_emission_ring_axis(Vector3 p_axis);
-	void set_emission_ring_height(float p_height);
-	void set_emission_ring_radius(float p_radius);
-	void set_emission_ring_inner_radius(float p_radius);
+	void set_emission_ring_height(real_t p_height);
+	void set_emission_ring_radius(real_t p_radius);
+	void set_emission_ring_inner_radius(real_t p_radius);
 	void set_emission_point_count(int p_count);
 
 	EmissionShape get_emission_shape() const;
-	float get_emission_sphere_radius() const;
+	real_t get_emission_sphere_radius() const;
 	Vector3 get_emission_box_extents() const;
 	Ref<Texture2D> get_emission_point_texture() const;
 	Ref<Texture2D> get_emission_normal_texture() const;
 	Ref<Texture2D> get_emission_color_texture() const;
 	Vector3 get_emission_ring_axis() const;
-	float get_emission_ring_height() const;
-	float get_emission_ring_radius() const;
-	float get_emission_ring_inner_radius() const;
+	real_t get_emission_ring_height() const;
+	real_t get_emission_ring_radius() const;
+	real_t get_emission_ring_inner_radius() const;
 	int get_emission_point_count() const;
 
 	void set_gravity(const Vector3 &p_gravity);
 	Vector3 get_gravity() const;
 
-	void set_lifetime_randomness(float p_lifetime);
-	float get_lifetime_randomness() const;
+	void set_lifetime_randomness(double p_lifetime);
+	double get_lifetime_randomness() const;
 
 	void set_attractor_interaction_enabled(bool p_enable);
 	bool is_attractor_interaction_enabled() const;
@@ -348,8 +348,8 @@ public:
 	void set_sub_emitter_mode(SubEmitterMode p_sub_emitter_mode);
 	SubEmitterMode get_sub_emitter_mode() const;
 
-	void set_sub_emitter_frequency(float p_frequency);
-	float get_sub_emitter_frequency() const;
+	void set_sub_emitter_frequency(double p_frequency);
+	double get_sub_emitter_frequency() const;
 
 	void set_sub_emitter_amount_at_end(int p_amount);
 	int get_sub_emitter_amount_at_end() const;

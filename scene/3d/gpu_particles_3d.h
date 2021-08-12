@@ -66,8 +66,8 @@ private:
 	int amount;
 	double lifetime;
 	double pre_process_time;
-	float explosiveness_ratio;
-	float randomness_ratio;
+	real_t explosiveness_ratio;
+	real_t randomness_ratio;
 	double speed_scale;
 	AABB visibility_aabb;
 	bool local_coords;
@@ -75,10 +75,10 @@ private:
 	bool fractional_delta;
 	bool interpolate = true;
 	NodePath sub_emitter;
-	float collision_base_size = 0.01;
+	real_t collision_base_size = 0.01;
 
 	bool trail_enabled = false;
-	float trail_length = 0.3;
+	double trail_length = 0.3;
 
 	TransformAlign transform_align = TRANSFORM_ALIGN_DISABLED;
 
@@ -107,30 +107,30 @@ public:
 	void set_lifetime(double p_lifetime);
 	void set_one_shot(bool p_one_shot);
 	void set_pre_process_time(double p_time);
-	void set_explosiveness_ratio(float p_ratio);
-	void set_randomness_ratio(float p_ratio);
+	void set_explosiveness_ratio(real_t p_ratio);
+	void set_randomness_ratio(real_t p_ratio);
 	void set_visibility_aabb(const AABB &p_aabb);
 	void set_use_local_coordinates(bool p_enable);
 	void set_process_material(const Ref<Material> &p_material);
 	void set_speed_scale(double p_scale);
-	void set_collision_base_size(float p_ratio);
+	void set_collision_base_size(real_t p_ratio);
 	void set_trail_enabled(bool p_enabled);
-	void set_trail_length(float p_seconds);
+	void set_trail_length(double p_seconds);
 
 	bool is_emitting() const;
 	int get_amount() const;
 	double get_lifetime() const;
 	bool get_one_shot() const;
 	double get_pre_process_time() const;
-	float get_explosiveness_ratio() const;
-	float get_randomness_ratio() const;
+	real_t get_explosiveness_ratio() const;
+	real_t get_randomness_ratio() const;
 	AABB get_visibility_aabb() const;
 	bool get_use_local_coordinates() const;
 	Ref<Material> get_process_material() const;
 	double get_speed_scale() const;
-	float get_collision_base_size() const;
+	real_t get_collision_base_size() const;
 	bool is_trail_enabled() const;
-	float get_trail_length() const;
+	double get_trail_length() const;
 
 	void set_fixed_fps(int p_count);
 	int get_fixed_fps() const;

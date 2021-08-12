@@ -4109,12 +4109,12 @@ void RendererStorageRD::particles_set_pre_process_time(RID p_particles, double p
 	ERR_FAIL_COND(!particles);
 	particles->pre_process_time = p_time;
 }
-void RendererStorageRD::particles_set_explosiveness_ratio(RID p_particles, float p_ratio) {
+void RendererStorageRD::particles_set_explosiveness_ratio(RID p_particles, real_t p_ratio) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	particles->explosiveness = p_ratio;
 }
-void RendererStorageRD::particles_set_randomness_ratio(RID p_particles, float p_ratio) {
+void RendererStorageRD::particles_set_randomness_ratio(RID p_particles, real_t p_ratio) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	particles->randomness = p_ratio;
@@ -4170,7 +4170,7 @@ void RendererStorageRD::particles_set_fractional_delta(RID p_particles, bool p_e
 	particles->fractional_delta = p_enable;
 }
 
-void RendererStorageRD::particles_set_trails(RID p_particles, bool p_enable, float p_length) {
+void RendererStorageRD::particles_set_trails(RID p_particles, bool p_enable, double p_length) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	ERR_FAIL_COND(p_length < 0.1);
@@ -4206,7 +4206,7 @@ void RendererStorageRD::particles_set_trail_bind_poses(RID p_particles, const Ve
 	particles->dependency.changed_notify(DEPENDENCY_CHANGED_PARTICLES);
 }
 
-void RendererStorageRD::particles_set_collision_base_size(RID p_particles, float p_size) {
+void RendererStorageRD::particles_set_collision_base_size(RID p_particles, real_t p_size) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
@@ -5464,7 +5464,7 @@ void RendererStorageRD::particles_collision_set_cull_mask(RID p_particles_collis
 	particles_collision->cull_mask = p_cull_mask;
 }
 
-void RendererStorageRD::particles_collision_set_sphere_radius(RID p_particles_collision, float p_radius) {
+void RendererStorageRD::particles_collision_set_sphere_radius(RID p_particles_collision, real_t p_radius) {
 	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
 	ERR_FAIL_COND(!particles_collision);
 
@@ -5480,21 +5480,21 @@ void RendererStorageRD::particles_collision_set_box_extents(RID p_particles_coll
 	particles_collision->dependency.changed_notify(DEPENDENCY_CHANGED_AABB);
 }
 
-void RendererStorageRD::particles_collision_set_attractor_strength(RID p_particles_collision, float p_strength) {
+void RendererStorageRD::particles_collision_set_attractor_strength(RID p_particles_collision, real_t p_strength) {
 	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
 	ERR_FAIL_COND(!particles_collision);
 
 	particles_collision->attractor_strength = p_strength;
 }
 
-void RendererStorageRD::particles_collision_set_attractor_directionality(RID p_particles_collision, float p_directionality) {
+void RendererStorageRD::particles_collision_set_attractor_directionality(RID p_particles_collision, real_t p_directionality) {
 	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
 	ERR_FAIL_COND(!particles_collision);
 
 	particles_collision->attractor_directionality = p_directionality;
 }
 
-void RendererStorageRD::particles_collision_set_attractor_attenuation(RID p_particles_collision, float p_curve) {
+void RendererStorageRD::particles_collision_set_attractor_attenuation(RID p_particles_collision, real_t p_curve) {
 	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
 	ERR_FAIL_COND(!particles_collision);
 

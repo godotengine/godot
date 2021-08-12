@@ -53,8 +53,8 @@ private:
 	int amount;
 	double lifetime;
 	double pre_process_time;
-	float explosiveness_ratio;
-	float randomness_ratio;
+	real_t explosiveness_ratio;
+	real_t randomness_ratio;
 	double speed_scale;
 	Rect2 visibility_rect;
 	bool local_coords;
@@ -70,10 +70,10 @@ private:
 	void _update_particle_emission_transform();
 
 	NodePath sub_emitter;
-	float collision_base_size = 1.0;
+	real_t collision_base_size = 1.0;
 
 	bool trail_enabled = false;
-	float trail_length = 0.3;
+	double trail_length = 0.3;
 	int trail_sections = 8;
 	int trail_section_subdivisions = 4;
 
@@ -92,8 +92,8 @@ public:
 	void set_lifetime(double p_lifetime);
 	void set_one_shot(bool p_enable);
 	void set_pre_process_time(double p_time);
-	void set_explosiveness_ratio(float p_ratio);
-	void set_randomness_ratio(float p_ratio);
+	void set_explosiveness_ratio(real_t p_ratio);
+	void set_randomness_ratio(real_t p_ratio);
 	void set_visibility_rect(const Rect2 &p_visibility_rect);
 	void set_use_local_coordinates(bool p_enable);
 	void set_process_material(const Ref<Material> &p_material);
@@ -118,7 +118,7 @@ public:
 
 	real_t get_collision_base_size() const;
 	bool is_trail_enabled() const;
-	real_t get_trail_length() const;
+	double get_trail_length() const;
 	int get_trail_sections() const;
 	int get_trail_section_subdivisions() const;
 
