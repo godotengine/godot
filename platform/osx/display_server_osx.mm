@@ -690,7 +690,7 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, M
 		mb->set_double_click([event clickCount] == 2);
 	}
 
-	Input::get_singleton()->accumulate_input_event(mb);
+	Input::get_singleton()->parse_input_event(mb);
 }
 
 - (void)mouseDown:(NSEvent *)event {
@@ -799,7 +799,7 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, M
 	_get_key_modifier_state([event modifierFlags], mm);
 
 	Input::get_singleton()->set_mouse_position(wd.mouse_pos);
-	Input::get_singleton()->accumulate_input_event(mm);
+	Input::get_singleton()->parse_input_event(mm);
 }
 
 - (void)rightMouseDown:(NSEvent *)event {
@@ -875,7 +875,7 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, M
 	ev->set_position(_get_mouse_pos(wd, [event locationInWindow]));
 	ev->set_factor([event magnification] + 1.0);
 
-	Input::get_singleton()->accumulate_input_event(ev);
+	Input::get_singleton()->parse_input_event(ev);
 }
 
 - (void)viewDidChangeBackingProperties {
@@ -1357,7 +1357,7 @@ inline void sendScrollEvent(DisplayServer::WindowID window_id, MouseButton butto
 	DS_OSX->last_button_state |= (MouseButton)mask;
 	sc->set_button_mask(DS_OSX->last_button_state);
 
-	Input::get_singleton()->accumulate_input_event(sc);
+	Input::get_singleton()->parse_input_event(sc);
 
 	sc.instantiate();
 	sc->set_window_id(window_id);
@@ -1369,7 +1369,7 @@ inline void sendScrollEvent(DisplayServer::WindowID window_id, MouseButton butto
 	DS_OSX->last_button_state &= (MouseButton)~mask;
 	sc->set_button_mask(DS_OSX->last_button_state);
 
-	Input::get_singleton()->accumulate_input_event(sc);
+	Input::get_singleton()->parse_input_event(sc);
 }
 
 inline void sendPanEvent(DisplayServer::WindowID window_id, double dx, double dy, int modifierFlags) {
@@ -1384,7 +1384,7 @@ inline void sendPanEvent(DisplayServer::WindowID window_id, double dx, double dy
 	pg->set_position(wd.mouse_pos);
 	pg->set_delta(Vector2(-dx, -dy));
 
-	Input::get_singleton()->accumulate_input_event(pg);
+	Input::get_singleton()->parse_input_event(pg);
 }
 
 - (void)scrollWheel:(NSEvent *)event {
@@ -3198,7 +3198,7 @@ String DisplayServerOSX::keyboard_get_layout_name(int p_index) const {
 
 void DisplayServerOSX::_push_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEvent> ev = p_event;
-	Input::get_singleton()->accumulate_input_event(ev);
+	Input::get_singleton()->parse_input_event(ev);
 }
 
 void DisplayServerOSX::_release_pressed_events() {
@@ -3253,7 +3253,7 @@ void DisplayServerOSX::_send_event(NSEvent *p_event) {
 			k->set_physical_keycode(KEY_PERIOD);
 			k->set_echo([p_event isARepeat]);
 
-			Input::get_singleton()->accumulate_input_event(k);
+			Input::get_singleton()->parse_input_event(k);
 		}
 	}
 }

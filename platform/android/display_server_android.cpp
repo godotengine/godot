@@ -557,7 +557,7 @@ void DisplayServerAndroid::process_key_event(int p_keycode, int p_scancode, int 
 		OS_Android::get_singleton()->main_loop_request_go_back();
 	}
 
-	Input::get_singleton()->accumulate_input_event(ev);
+	Input::get_singleton()->parse_input_event(ev);
 }
 
 void DisplayServerAndroid::process_touch(int p_event, int p_pointer, const Vector<DisplayServerAndroid::TouchPos> &p_points) {
@@ -571,7 +571,7 @@ void DisplayServerAndroid::process_touch(int p_event, int p_pointer, const Vecto
 					ev->set_index(touch[i].id);
 					ev->set_pressed(false);
 					ev->set_position(touch[i].pos);
-					Input::get_singleton()->accumulate_input_event(ev);
+					Input::get_singleton()->parse_input_event(ev);
 				}
 			}
 
@@ -588,7 +588,7 @@ void DisplayServerAndroid::process_touch(int p_event, int p_pointer, const Vecto
 				ev->set_index(touch[i].id);
 				ev->set_pressed(true);
 				ev->set_position(touch[i].pos);
-				Input::get_singleton()->accumulate_input_event(ev);
+				Input::get_singleton()->parse_input_event(ev);
 			}
 
 		} break;
@@ -614,7 +614,7 @@ void DisplayServerAndroid::process_touch(int p_event, int p_pointer, const Vecto
 				ev->set_index(touch[i].id);
 				ev->set_position(p_points[idx].pos);
 				ev->set_relative(p_points[idx].pos - touch[i].pos);
-				Input::get_singleton()->accumulate_input_event(ev);
+				Input::get_singleton()->parse_input_event(ev);
 				touch.write[i].pos = p_points[idx].pos;
 			}
 
@@ -629,7 +629,7 @@ void DisplayServerAndroid::process_touch(int p_event, int p_pointer, const Vecto
 					ev->set_index(touch[i].id);
 					ev->set_pressed(false);
 					ev->set_position(touch[i].pos);
-					Input::get_singleton()->accumulate_input_event(ev);
+					Input::get_singleton()->parse_input_event(ev);
 				}
 				touch.clear();
 			}
@@ -646,7 +646,7 @@ void DisplayServerAndroid::process_touch(int p_event, int p_pointer, const Vecto
 					ev->set_index(tp.id);
 					ev->set_pressed(true);
 					ev->set_position(tp.pos);
-					Input::get_singleton()->accumulate_input_event(ev);
+					Input::get_singleton()->parse_input_event(ev);
 
 					break;
 				}
@@ -660,7 +660,7 @@ void DisplayServerAndroid::process_touch(int p_event, int p_pointer, const Vecto
 					ev->set_index(touch[i].id);
 					ev->set_pressed(false);
 					ev->set_position(touch[i].pos);
-					Input::get_singleton()->accumulate_input_event(ev);
+					Input::get_singleton()->parse_input_event(ev);
 					touch.remove(i);
 
 					break;
@@ -682,7 +682,7 @@ void DisplayServerAndroid::process_hover(int p_type, Point2 p_pos) {
 			ev->set_position(p_pos);
 			ev->set_global_position(p_pos);
 			ev->set_relative(p_pos - hover_prev_pos);
-			Input::get_singleton()->accumulate_input_event(ev);
+			Input::get_singleton()->parse_input_event(ev);
 			hover_prev_pos = p_pos;
 		} break;
 	}
@@ -710,7 +710,7 @@ void DisplayServerAndroid::process_mouse_event(int input_device, int event_actio
 
 			ev->set_button_index(_button_index_from_mask(changed_button_mask));
 			ev->set_button_mask(event_buttons_mask);
-			Input::get_singleton()->accumulate_input_event(ev);
+			Input::get_singleton()->parse_input_event(ev);
 		} break;
 
 		case AMOTION_EVENT_ACTION_MOVE: {
@@ -728,7 +728,7 @@ void DisplayServerAndroid::process_mouse_event(int input_device, int event_actio
 				ev->set_relative(event_pos);
 			}
 			ev->set_button_mask(event_buttons_mask);
-			Input::get_singleton()->accumulate_input_event(ev);
+			Input::get_singleton()->parse_input_event(ev);
 		} break;
 		case AMOTION_EVENT_ACTION_SCROLL: {
 			Ref<InputEventMouseButton> ev;
@@ -763,11 +763,11 @@ void DisplayServerAndroid::_wheel_button_click(MouseButton event_buttons_mask, c
 	evd->set_button_index(wheel_button);
 	evd->set_button_mask(MouseButton(event_buttons_mask ^ (1 << (wheel_button - 1))));
 	evd->set_factor(factor);
-	Input::get_singleton()->accumulate_input_event(evd);
+	Input::get_singleton()->parse_input_event(evd);
 	Ref<InputEventMouseButton> evdd = evd->duplicate();
 	evdd->set_pressed(false);
 	evdd->set_button_mask(event_buttons_mask);
-	Input::get_singleton()->accumulate_input_event(evdd);
+	Input::get_singleton()->parse_input_event(evdd);
 }
 
 void DisplayServerAndroid::process_double_tap(int event_android_button_mask, Point2 p_pos) {
@@ -781,7 +781,7 @@ void DisplayServerAndroid::process_double_tap(int event_android_button_mask, Poi
 	ev->set_button_index(_button_index_from_mask(event_button_mask));
 	ev->set_button_mask(event_button_mask);
 	ev->set_double_click(true);
-	Input::get_singleton()->accumulate_input_event(ev);
+	Input::get_singleton()->parse_input_event(ev);
 }
 
 MouseButton DisplayServerAndroid::_button_index_from_mask(MouseButton button_mask) {
@@ -807,7 +807,7 @@ void DisplayServerAndroid::process_scroll(Point2 p_pos) {
 	_set_key_modifier_state(ev);
 	ev->set_position(p_pos);
 	ev->set_delta(p_pos - scroll_prev_pos);
-	Input::get_singleton()->accumulate_input_event(ev);
+	Input::get_singleton()->parse_input_event(ev);
 	scroll_prev_pos = p_pos;
 }
 

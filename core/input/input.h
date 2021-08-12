@@ -323,7 +323,6 @@ public:
 	String get_joy_guid(int p_device) const;
 	void set_fallback_mapping(String p_guid);
 
-	void accumulate_input_event(const Ref<InputEvent> &p_event);
 	void flush_accumulated_events();
 	void set_use_accumulated_input(bool p_enable);
 
