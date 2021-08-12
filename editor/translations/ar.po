@@ -389,6 +389,7 @@ msgstr "تغيير وضع عقدة الحركة"
 msgid "Remove Anim Track"
 msgstr "حذف مسار التحريك"
 
+#. TRANSLATORS: %s will be replaced by a phrase describing the target of track.
 #: editor/animation_track_editor.cpp
 msgid "Create NEW track for %s and insert key?"
 msgstr "أنشئ مسار جديد ل %s و إدخال مفتاح؟"
@@ -413,9 +414,27 @@ msgstr "أنشئ"
 msgid "Anim Insert"
 msgstr "إدخال حركة"
 
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "node '%s'"
+msgstr "لا يمكن فتح '%s'."
+
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "animation"
+msgstr "رسوم متحركة"
+
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
 msgstr "اللأعب المتحرك لا يستطيع تحريك نفسه ,فقط اللاعبين الآخرين."
+
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "property '%s'"
+msgstr "لا خاصية '%s' موجودة."
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -988,7 +1007,7 @@ msgstr "إنشاء %s جديد"
 msgid "No results for \"%s\"."
 msgstr "لا نتائج من أجل \"%s\"."
 
-#: editor/create_dialog.cpp
+#: editor/create_dialog.cpp editor/property_selector.cpp
 msgid "No description available for %s."
 msgstr ""
 
@@ -2333,6 +2352,17 @@ msgid "New Window"
 msgstr "نافذة جديدة"
 
 #: editor/editor_node.cpp
+msgid ""
+"Spins when the editor window redraws.\n"
+"Update Continuously is enabled, which can increase power usage. Click to "
+"disable it."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Spins when the editor window redraws."
+msgstr "قم بالتدوير أثناء إعادة رسم نافذة المحرّر."
+
+#: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
 msgstr "لا يمكن حفظ الموارد المستوردة."
 
@@ -3187,10 +3217,6 @@ msgid "Save & Restart"
 msgstr "حفظ و إعادة تشغيل"
 
 #: editor/editor_node.cpp
-msgid "Spins when the editor window redraws."
-msgstr "قم بالتدوير أثناء إعادة رسم نافذة المحرّر."
-
-#: editor/editor_node.cpp
 msgid "Update Continuously"
 msgstr "تحديث متواصل"
 
@@ -3849,6 +3875,16 @@ msgstr "القيمة المبدئية للعداد"
 #, fuzzy
 msgid "Download from:"
 msgstr "خطأ في التحميل"
+
+#: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Open in Web Browser"
+msgstr "تشغيل في المتصفح"
+
+#: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Copy Mirror URL"
+msgstr "خطأ في نسخ"
 
 #: editor/export_template_manager.cpp
 msgid "Download and Install"
@@ -8708,6 +8744,12 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"Select a theme type from the list to edit its items.\n"
+"You can add a custom type or import a type with its items from another theme."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
 msgid "Remove All Color Items"
 msgstr "إزالة جميع العناصر"
@@ -8736,6 +8778,12 @@ msgstr "إزالة جميع العناصر"
 #, fuzzy
 msgid "Remove All StyleBox Items"
 msgstr "إزالة جميع العناصر"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"This theme type is empty.\n"
+"Add more items to it manually or by importing from another theme."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -12401,6 +12449,16 @@ msgstr "تعديل ارتفاع الشكل الأسطواني"
 msgid "Change Ray Shape Length"
 msgstr "تعديل طول الشكل الشعاعي"
 
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Room Point Position"
+msgstr "حدد موقع نقطة الإنحناء"
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Portal Point Position"
+msgstr "حدد موقع نقطة الإنحناء"
+
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Radius"
 msgstr "تغيير نصف قطر الاسطوانة"
@@ -14183,6 +14241,42 @@ msgstr ""
 msgid "There should only be one RoomManager in the SceneTree."
 msgstr ""
 
+#: scene/3d/room_manager.cpp
+msgid ""
+"RoomList path is invalid.\n"
+"Please check the RoomList branch has been assigned in the RoomManager."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "RoomList contains no Rooms, aborting."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "Misnamed nodes detected, check output log for details. Aborting."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "Portal link room not found, check output log for details."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Portal autolink failed, check output log for details.\n"
+"Check the portal is facing outwards from the source room."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Room overlap detected, cameras may work incorrectly in overlapping area.\n"
+"Check output log for details."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Error calculating room bounds.\n"
+"Ensure all rooms contain geometry or manual bounds."
+msgstr ""
+
 #: scene/3d/soft_body.cpp
 msgid "This body will be ignored until you set a mesh."
 msgstr "سيتم تجاهل هذا الجسم حتى تضع تحدد له مجسمًا."
@@ -15135,9 +15229,6 @@ msgstr "لا يمكن تعديل الثوابت."
 
 #~ msgid "I see..."
 #~ msgstr "أنا أري..."
-
-#~ msgid "Can't open '%s'."
-#~ msgstr "لا يمكن فتح '%s'."
 
 #~ msgid "Ugh"
 #~ msgstr "آخخ"
