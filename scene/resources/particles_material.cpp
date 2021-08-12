@@ -223,7 +223,12 @@ void ParticlesMaterial::_update_shader() {
 
 	code += "uniform vec3 gravity;\n";
 
-	if (color_ramp.is_valid()) {
+	// When doing threaded scene loading, users are running into situations
+	// where this check might fail while the later check to add code using
+	// `color_ramp` would pass... which throws an error (GH-23684).
+	// Work it around by doing the check only once to be safe.
+	const bool has_color_ramp = color_ramp.is_valid();
+	if (has_color_ramp) {
 		code += "uniform sampler2D color_ramp;\n";
 	}
 
@@ -600,7 +605,7 @@ void ParticlesMaterial::_update_shader() {
 	code += "			vec4(-0.328, 0.035,  0.292, 0.0),\n";
 	code += "			vec4(1.250, -1.050, -0.203, 0.0),\n";
 	code += "			vec4(0.000, 0.000, 0.000, 0.0)) * hue_rot_s;\n";
-	if (color_ramp.is_valid()) {
+	if (has_color_ramp) {
 		code += "	COLOR = hue_rot_mat * textureLod(color_ramp, vec2(tv, 0.0), 0.0) * color_value;\n";
 	} else {
 		code += "	COLOR = hue_rot_mat * color_value;\n";
