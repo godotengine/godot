@@ -2243,6 +2243,13 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		undo_redo->add_do_property(object, p_name, p_value);
 		undo_redo->add_undo_property(object, p_name, object->get(p_name));
 
+		PropertyInfo prop_info;
+		if (ClassDB::get_property_info(object->get_class_name(), p_name, &prop_info)) {
+			for (const String &linked_prop : prop_info.linked_properties) {
+				undo_redo->add_undo_property(object, linked_prop, object->get(linked_prop));
+			}
+		}
+
 		Variant v_undo_redo = (Object *)undo_redo;
 		Variant v_object = object;
 		Variant v_name = p_name;
