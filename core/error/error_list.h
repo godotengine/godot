@@ -92,5 +92,6 @@ enum Error {
 };
 
 extern const char *error_names[];
+extern const char *error_names_readable[];
 
 #endif // ERROR_LIST_H

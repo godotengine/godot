@@ -489,6 +489,14 @@ struct VariantUtilityFunctions {
 			return String("(invalid error code)");
 		}
 
+		return String(error_names_readable[error]) + " (" + String(error_names[error]) + ")";
+	}
+
+	static inline String error_name(Error error) {
+		if (error < 0 || error >= ERR_MAX) {
+			return String("(invalid error code)");
+		}
+
 		return String(error_names[error]);
 	}
 
@@ -1243,6 +1251,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(_typeof, sarray("variable"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGS(str, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDR(error_string, sarray("error"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDR(error_name, sarray("error"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(print, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(printerr, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(printt, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
