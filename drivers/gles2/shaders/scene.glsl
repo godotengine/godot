@@ -32,14 +32,14 @@ precision highp int;
 attribute highp vec4 vertex_attrib; // attrib:0
 /* clang-format on */
 #ifdef ENABLE_OCTAHEDRAL_COMPRESSION
-attribute vec2 normal_attrib; // attrib:1
+attribute vec4 normal_tangent_attrib; // attrib:1
 #else
 attribute vec3 normal_attrib; // attrib:1
 #endif
 
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP)
 #ifdef ENABLE_OCTAHEDRAL_COMPRESSION
-attribute vec2 tangent_attrib; // attrib:2
+// packed into normal_attrib zw component
 #else
 attribute vec4 tangent_attrib; // attrib:2
 #endif
@@ -359,15 +359,15 @@ void main() {
 #endif
 
 #ifdef ENABLE_OCTAHEDRAL_COMPRESSION
-	vec3 normal = oct_to_vec3(normal_attrib);
+	vec3 normal = oct_to_vec3(normal_tangent_attrib.xy);
 #else
 	vec3 normal = normal_attrib;
 #endif
 
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP)
 #ifdef ENABLE_OCTAHEDRAL_COMPRESSION
-	vec3 tangent = oct_to_vec3(vec2(tangent_attrib.x, abs(tangent_attrib.y) * 2.0 - 1.0));
-	float binormalf = sign(tangent_attrib.y);
+	vec3 tangent = oct_to_vec3(vec2(normal_tangent_attrib.z, abs(normal_tangent_attrib.w) * 2.0 - 1.0));
+	float binormalf = sign(normal_tangent_attrib.w);
 #else
 	vec3 tangent = tangent_attrib.xyz;
 	float binormalf = tangent_attrib.a;

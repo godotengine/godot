@@ -2099,13 +2099,8 @@ static PoolVector<uint8_t> _unpack_half_floats(const PoolVector<uint8_t> &array,
 			} break;
 			case VS::ARRAY_NORMAL: {
 				if (p_format & VS::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION) {
-					if (p_format & VS::ARRAY_COMPRESS_NORMAL) {
-						src_size[i] = 2;
-						dst_size[i] = 2;
-					} else {
-						src_size[i] = 4;
-						dst_size[i] = 4;
-					}
+					src_size[i] = 4;
+					dst_size[i] = 4;
 				} else {
 					if (p_format & VS::ARRAY_COMPRESS_NORMAL) {
 						src_size[i] = 4;
@@ -2119,13 +2114,12 @@ static PoolVector<uint8_t> _unpack_half_floats(const PoolVector<uint8_t> &array,
 			} break;
 			case VS::ARRAY_TANGENT: {
 				if (p_format & VS::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION) {
-					if (p_format & VS::ARRAY_COMPRESS_TANGENT) {
-						src_size[i] = 2;
-						dst_size[i] = 2;
-					} else {
-						src_size[i] = 4;
-						dst_size[i] = 4;
+					if (!(p_format & VS::ARRAY_COMPRESS_TANGENT)) {
+						src_size[VS::ARRAY_NORMAL] = 8;
+						dst_size[VS::ARRAY_NORMAL] = 8;
 					}
+					src_size[i] = 0;
+					dst_size[i] = 0;
 				} else {
 					if (p_format & VS::ARRAY_COMPRESS_TANGENT) {
 						src_size[i] = 4;
@@ -2309,15 +2303,15 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 			} break;
 			case VS::ARRAY_NORMAL: {
 				if (p_format & VS::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION) {
+					// Always pack normal and tangent into vec4
+					// normal will be xy tangent will be zw
+					// normal will always be oct32 encoded
+					// UNLESS tangent exists and is also compressed
+					// then it will be oct16 encoded along with tangent
 					attribs[i].normalized = GL_TRUE;
-					attribs[i].size = 2;
-					if (p_format & VS::ARRAY_COMPRESS_NORMAL) {
-						attribs[i].type = GL_BYTE;
-						attributes_stride += 2;
-					} else {
-						attribs[i].type = GL_SHORT;
-						attributes_stride += 4;
-					}
+					attribs[i].size = 4;
+					attribs[i].type = GL_SHORT;
+					attributes_stride += 4;
 				} else {
 					attribs[i].size = 3;
 
@@ -2335,13 +2329,14 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 			} break;
 			case VS::ARRAY_TANGENT: {
 				if (p_format & VS::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION) {
-					attribs[i].normalized = GL_TRUE;
-					attribs[i].size = 2;
+					attribs[i].enabled = false;
 					if (p_format & VS::ARRAY_COMPRESS_TANGENT) {
-						attribs[i].type = GL_BYTE;
-						attributes_stride += 2;
+						// normal and tangent will each be oct16 (2 bytes each)
+						// pack into single vec4<GL_BYTE> for memory bandwidth
+						// savings while keeping 4 byte alignment
+						attribs[VS::ARRAY_NORMAL].type = GL_BYTE;
 					} else {
-						attribs[i].type = GL_SHORT;
+						// normal and tangent will each be oct32 (4 bytes each)
 						attributes_stride += 4;
 					}
 				} else {
