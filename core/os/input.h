@@ -136,8 +136,9 @@ public:
 	virtual int get_joy_axis_index_from_string(String p_axis) = 0;
 
 	virtual void parse_input_event(const Ref<InputEvent> &p_event) = 0;
-	virtual void accumulate_input_event(const Ref<InputEvent> &p_event) = 0;
-	virtual void flush_accumulated_events() = 0;
+	virtual void flush_buffered_events() = 0;
+	virtual bool is_using_input_buffering() = 0;
+	virtual void set_use_input_buffering(bool p_enable) = 0;
 	virtual void set_use_accumulated_input(bool p_enable) = 0;
 
 	Input();

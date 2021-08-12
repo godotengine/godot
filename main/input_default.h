@@ -205,7 +205,8 @@ private:
 
 	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated);
 
-	List<Ref<InputEvent>> accumulated_events;
+	List<Ref<InputEvent>> buffered_events;
+	bool use_input_buffering;
 	bool use_accumulated_input;
 
 protected:
@@ -302,8 +303,9 @@ public:
 	String get_joy_guid_remapped(int p_device) const;
 	void set_fallback_mapping(String p_guid);
 
-	virtual void accumulate_input_event(const Ref<InputEvent> &p_event);
-	virtual void flush_accumulated_events();
+	virtual void flush_buffered_events();
+	virtual bool is_using_input_buffering();
+	virtual void set_use_input_buffering(bool p_enable);
 	virtual void set_use_accumulated_input(bool p_enable);
 
 	virtual void release_pressed_events();

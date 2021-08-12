@@ -502,6 +502,8 @@ public:
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
 	virtual String as_text() const;
 
+	virtual bool accumulate(const Ref<InputEvent> &p_event);
+
 	InputEventScreenDrag();
 };
 

@@ -1928,7 +1928,7 @@ void OS_X11::_handle_key_event(XKeyEvent *p_event, LocalVector<XEvent> &p_events
 					k->set_shift(true);
 				}
 
-				input->accumulate_input_event(k);
+				input->parse_input_event(k);
 			}
 			memfree(utf8string);
 			return;
@@ -2075,7 +2075,7 @@ void OS_X11::_handle_key_event(XKeyEvent *p_event, LocalVector<XEvent> &p_events
 	}
 
 	//printf("key: %x\n",k->get_scancode());
-	input->accumulate_input_event(k);
+	input->parse_input_event(k);
 }
 
 Atom OS_X11::_process_selection_request_target(Atom p_target, Window p_requestor, Atom p_property) const {
@@ -2491,13 +2491,13 @@ void OS_X11::process_xevents() {
 								// in a spurious mouse motion event being sent to Godot; remember it to be able to filter it out
 								xi.mouse_pos_to_filter = pos;
 							}
-							input->accumulate_input_event(st);
+							input->parse_input_event(st);
 						} else {
 							if (!xi.state.has(index)) { // Defensive
 								break;
 							}
 							xi.state.erase(index);
-							input->accumulate_input_event(st);
+							input->parse_input_event(st);
 						}
 					} break;
 
@@ -2513,7 +2513,7 @@ void OS_X11::process_xevents() {
 							sd->set_index(index);
 							sd->set_position(pos);
 							sd->set_relative(pos - curr_pos_elem->value());
-							input->accumulate_input_event(sd);
+							input->parse_input_event(sd);
 
 							curr_pos_elem->value() = pos;
 						}
@@ -2607,7 +2607,7 @@ void OS_X11::process_xevents() {
 					st.instance();
 					st->set_index(E->key());
 					st->set_position(E->get());
-					input->accumulate_input_event(st);
+					input->parse_input_event(st);
 				}
 				xi.state.clear();
 #endif
@@ -2668,7 +2668,7 @@ void OS_X11::process_xevents() {
 					}
 				}
 
-				input->accumulate_input_event(mb);
+				input->parse_input_event(mb);
 
 			} break;
 			case MotionNotify: {
@@ -2783,7 +2783,7 @@ void OS_X11::process_xevents() {
 				// this is so that the relative motion doesn't get messed up
 				// after we regain focus.
 				if (window_has_focus || !mouse_mode_grab) {
-					input->accumulate_input_event(mm);
+					input->parse_input_event(mm);
 				}
 
 			} break;
@@ -2904,7 +2904,7 @@ void OS_X11::process_xevents() {
 		*/
 	}
 
-	input->flush_accumulated_events();
+	input->flush_buffered_events();
 }
 
 MainLoop *OS_X11::get_main_loop() const {
