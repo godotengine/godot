@@ -181,7 +181,7 @@ void SceneTree::_flush_ugc() {
 			argptrs[i] = &E->get()[i];
 		}
 
-		call_group_flagsp(GROUP_CALL_REALTIME, E->key().group, E->key().call, argptrs, E->get().size());
+		call_group_flagsp(GROUP_CALL_DEFAULT, E->key().group, E->key().call, argptrs, E->get().size());
 
 		unique_group_calls.erase(E);
 	}
@@ -220,7 +220,7 @@ void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_gro
 		return;
 	}
 
-	if (p_call_flags & GROUP_CALL_UNIQUE && !(p_call_flags & GROUP_CALL_REALTIME)) {
+	if (p_call_flags & GROUP_CALL_UNIQUE && p_call_flags & GROUP_CALL_DEFERRED) {
 		ERR_FAIL_COND(ugc_locked);
 
 		UGCall ug;
@@ -254,7 +254,7 @@ void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_gro
 				continue;
 			}
 
-			if (p_call_flags & GROUP_CALL_REALTIME) {
+			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
 				Callable::CallError ce;
 				nodes[i]->callp(p_function, p_args, p_argcount, ce);
 			} else {
@@ -268,7 +268,7 @@ void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_gro
 				continue;
 			}
 
-			if (p_call_flags & GROUP_CALL_REALTIME) {
+			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
 				Callable::CallError ce;
 				nodes[i]->callp(p_function, p_args, p_argcount, ce);
 			} else {
@@ -307,7 +307,7 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 				continue;
 			}
 
-			if (p_call_flags & GROUP_CALL_REALTIME) {
+			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
 				nodes[i]->notification(p_notification);
 			} else {
 				MessageQueue::get_singleton()->push_notification(nodes[i], p_notification);
@@ -320,7 +320,7 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 				continue;
 			}
 
-			if (p_call_flags & GROUP_CALL_REALTIME) {
+			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
 				nodes[i]->notification(p_notification);
 			} else {
 				MessageQueue::get_singleton()->push_notification(nodes[i], p_notification);
@@ -358,7 +358,7 @@ void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group
 				continue;
 			}
 
-			if (p_call_flags & GROUP_CALL_REALTIME) {
+			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
 				nodes[i]->set(p_name, p_value);
 			} else {
 				MessageQueue::get_singleton()->push_set(nodes[i], p_name, p_value);
@@ -371,7 +371,7 @@ void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group
 				continue;
 			}
 
-			if (p_call_flags & GROUP_CALL_REALTIME) {
+			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
 				nodes[i]->set(p_name, p_value);
 			} else {
 				MessageQueue::get_singleton()->push_set(nodes[i], p_name, p_value);
@@ -390,7 +390,7 @@ void SceneTree::notify_group(const StringName &p_group, int p_notification) {
 }
 
 void SceneTree::set_group(const StringName &p_group, const String &p_name, const Variant &p_value) {
-	set_group_flags(0, p_group, p_name, p_value);
+	set_group_flags(GROUP_CALL_DEFAULT, p_group, p_name, p_value);
 }
 
 void SceneTree::initialize() {
@@ -413,7 +413,7 @@ bool SceneTree::physics_process(double p_time) {
 	emit_signal(SNAME("physics_frame"));
 
 	_notify_group_pause(SNAME("physics_process_internal"), Node::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
-	call_group_flags(GROUP_CALL_REALTIME, SNAME("_picking_viewports"), SNAME("_process_picking"));
+	call_group(SNAME("_picking_viewports"), SNAME("_process_picking"));
 	_notify_group_pause(SNAME("physics_process"), Node::NOTIFICATION_PHYSICS_PROCESS);
 	_flush_ugc();
 	MessageQueue::get_singleton()->flush(); //small little hack
@@ -944,7 +944,7 @@ void SceneTree::_call_group(const Variant **p_args, int p_argcount, Callable::Ca
 	StringName group = *p_args[0];
 	StringName method = *p_args[1];
 
-	call_group_flagsp(0, group, method, p_args + 2, p_argcount - 2);
+	call_group_flagsp(GROUP_CALL_DEFAULT, group, method, p_args + 2, p_argcount - 2);
 }
 
 int64_t SceneTree::get_frame() const {
@@ -1277,7 +1277,7 @@ void SceneTree::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(GROUP_CALL_DEFAULT);
 	BIND_ENUM_CONSTANT(GROUP_CALL_REVERSE);
-	BIND_ENUM_CONSTANT(GROUP_CALL_REALTIME);
+	BIND_ENUM_CONSTANT(GROUP_CALL_DEFERRED);
 	BIND_ENUM_CONSTANT(GROUP_CALL_UNIQUE);
 }
 

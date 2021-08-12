@@ -217,8 +217,6 @@ void Camera3D::make_current() {
 	}
 
 	get_viewport()->_camera_3d_set(this);
-
-	//get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,camera_group,"_camera_make_current",this);
 }
 
 void Camera3D::clear_current(bool p_enable_next) {
