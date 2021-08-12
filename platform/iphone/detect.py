@@ -28,12 +28,6 @@ def get_opts():
             "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain",
         ),
         ("IPHONESDK", "Path to the iPhone SDK", ""),
-        BoolVariable(
-            "use_static_mvk",
-            "Link MoltenVK statically as Level-0 driver (better portability) or use Vulkan ICD loader (enables"
-            " validation layers)",
-            False,
-        ),
         BoolVariable("ios_simulator", "Build for iOS Simulator", False),
         BoolVariable("ios_exceptions", "Enable exceptions", False),
         ("ios_triple", "Triple for ios toolchain", ""),
@@ -43,6 +37,7 @@ def get_opts():
 def get_flags():
     return [
         ("tools", False),
+        ("use_volk", False),
     ]
 
 
@@ -208,4 +203,5 @@ def configure(env):
 
     # Use Static Vulkan for iOS. Dynamic Framework works fine too.
     env.Append(LINKFLAGS=["-framework", "MoltenVK"])
-    env["builtin_vulkan"] = False
+    if env["vulkan"]:
+        env.Append(CPPDEFINES=["VULKAN_ENABLED"])

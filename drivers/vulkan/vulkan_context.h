@@ -38,7 +38,11 @@
 #include "core/templates/rid_owner.h"
 #include "servers/display_server.h"
 
+#ifdef USE_VOLK
+#include <volk.h>
+#else
 #include <vulkan/vulkan.h>
+#endif
 
 class VulkanContext {
 public:

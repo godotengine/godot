@@ -681,6 +681,10 @@ Error VulkanContext::_create_physical_device() {
 
 	inst_initialized = true;
 
+#ifdef USE_VOLK
+	volkLoadInstance(inst);
+#endif
+
 	/* Make initial call to query gpu_count, then second call for gpu info*/
 	err = vkEnumeratePhysicalDevices(inst, &gpu_count, nullptr);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
@@ -1669,6 +1673,11 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 }
 
 Error VulkanContext::initialize() {
+#ifdef USE_VOLK
+	if (volkInitialize() != VK_SUCCESS) {
+		return FAILED;
+	}
+#endif
 	Error err = _create_physical_device();
 	if (err) {
 		return err;

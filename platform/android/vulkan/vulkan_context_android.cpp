@@ -30,7 +30,11 @@
 
 #include "vulkan_context_android.h"
 
-#include <vulkan/vulkan_android.h>
+#ifdef USE_VOLK
+#include <volk.h>
+#else
+#include <vulkan/vulkan.h>
+#endif
 
 const char *VulkanContextAndroid::_get_platform_surface_extension() const {
 	return VK_KHR_ANDROID_SURFACE_EXTENSION_NAME;

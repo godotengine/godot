@@ -384,7 +384,7 @@ def configure(env):
 
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED"])
-        if not env["builtin_vulkan"]:
+        if not env["use_volk"]:
             env.ParseConfig("pkg-config vulkan --cflags --libs")
         if not env["builtin_glslang"]:
             # No pkgconfig file for glslang so far

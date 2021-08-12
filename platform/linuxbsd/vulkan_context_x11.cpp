@@ -29,7 +29,11 @@
 /*************************************************************************/
 
 #include "vulkan_context_x11.h"
-#include <vulkan/vulkan_xlib.h>
+#ifdef USE_VOLK
+#include <volk.h>
+#else
+#include <vulkan/vulkan.h>
+#endif
 
 const char *VulkanContextX11::_get_platform_surface_extension() const {
 	return VK_KHR_XLIB_SURFACE_EXTENSION_NAME;
