@@ -1048,6 +1048,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_readonly_color", "LineEdit", font_readonly_color);
 	theme->set_color("caret_color", "TextEdit", font_color);
 	theme->set_color("selection_color", "TextEdit", selection_color);
+	theme->set_constant("line_spacing", "TextEdit", 4 * EDSCALE);
 
 	// CodeEdit
 	theme->set_stylebox("normal", "CodeEdit", style_widget);
@@ -1062,6 +1063,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_color", "CodeEdit", font_color);
 	theme->set_color("caret_color", "CodeEdit", font_color);
 	theme->set_color("selection_color", "CodeEdit", selection_color);
+	theme->set_constant("line_spacing", "CodeEdit", 4 * EDSCALE);
 
 	// H/VSplitContainer
 	theme->set_stylebox("bg", "VSplitContainer", make_stylebox(theme->get_icon("GuiVsplitBg", "EditorIcons"), 1, 1, 1, 1));

@@ -233,16 +233,29 @@ private:
 	String symbol_lookup_new_word = "";
 	String symbol_lookup_word = "";
 
+	/* Visual */
+	Ref<StyleBox> style_normal;
+
+	Ref<Font> font;
+	int font_size = 16;
+
+	int line_spacing = 1;
+
 protected:
 	void _gui_input(const Ref<InputEvent> &p_gui_input) override;
 	void _notification(int p_what);
 
 	static void _bind_methods();
 
+	/* Text manipulation */
+
+	// Overridable actions
+	virtual void _handle_unicode_input(const uint32_t p_unicode) override;
+	virtual void _backspace() override;
+
 public:
 	/* General overrides */
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
-	virtual void handle_unicode_input(uint32_t p_unicode) override;
 
 	/* Indent management */
 	void set_indent_size(const int p_size);
@@ -262,8 +275,6 @@ public:
 
 	void indent_lines();
 	void unindent_lines();
-
-	virtual void backspace() override;
 
 	/* Auto brace completion */
 	void set_auto_brace_completion_enabled(bool p_enabled);
