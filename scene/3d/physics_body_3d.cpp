@@ -1223,9 +1223,6 @@ void CharacterBody3D::move_and_slide() {
 }
 
 void CharacterBody3D::_set_collision_direction(const PhysicsServer3D::MotionResult &p_result) {
-	on_floor = false;
-	on_ceiling = false;
-	on_wall = false;
 	if (up_direction == Vector3()) {
 		//all is a wall
 		on_wall = true;
