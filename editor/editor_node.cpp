@@ -1606,7 +1606,9 @@ static void _reset_animation_players(Node *p_node, List<Ref<AnimatedValuesBackup
 		AnimationPlayer *player = Object::cast_to<AnimationPlayer>(p_node->get_child(i));
 		if (player && player->is_reset_on_save_enabled() && player->can_apply_reset()) {
 			Ref<AnimatedValuesBackup> old_values = player->apply_reset();
-			r_anim_backups->push_back(old_values);
+			if (old_values.is_valid()) {
+				r_anim_backups->push_back(old_values);
+			}
 		}
 		_reset_animation_players(p_node->get_child(i), r_anim_backups);
 	}
