@@ -1143,6 +1143,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			editor_selection->clear();
 			editor_selection->add_node(new_node);
 
+			scene_tree->get_scene_tree()->grab_focus();
 		} break;
 
 		default: {
@@ -2279,7 +2280,7 @@ void SceneTreeDock::_create() {
 		_do_reparent(last_created, -1, nodes, true);
 	}
 
-	scene_tree->get_scene_tree()->call_deferred(SNAME("grab_focus"));
+	scene_tree->get_scene_tree()->grab_focus();
 }
 
 void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node, bool p_keep_properties, bool p_remove_old) {
