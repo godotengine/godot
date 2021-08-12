@@ -165,8 +165,8 @@ void PhysicalBone2D::_start_physics_simulation() {
 		set_body_mode(PhysicsServer2D::BODY_MODE_DYNAMIC);
 	} else if (rigid_mode == RigidBody2D::MODE_KINEMATIC) {
 		set_body_mode(PhysicsServer2D::BODY_MODE_KINEMATIC);
-	} else if (rigid_mode == RigidBody2D::MODE_DYNAMIC_LOCKED) {
-		set_body_mode(PhysicsServer2D::BODY_MODE_DYNAMIC_LOCKED);
+	} else if (rigid_mode == RigidBody2D::MODE_DYNAMIC_LINEAR) {
+		set_body_mode(PhysicsServer2D::BODY_MODE_DYNAMIC_LINEAR);
 	} else {
 		// Default to Dynamic.
 		set_body_mode(PhysicsServer2D::BODY_MODE_DYNAMIC);

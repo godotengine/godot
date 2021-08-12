@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="RigidBody2D" inherits="PhysicsBody2D" version="4.0">
 	<brief_description>
-		A body that is controlled by the 2D physics engine.
+		Physics Body which is moved by 2D physics simulation. Useful for objects that have gravity and can be pushed by other objects.
 	</brief_description>
 	<description>
 		This node implements simulated 2D physics. You do not control a RigidBody2D directly. Instead, you apply forces to it (gravity, impulses, etc.) and the physics simulation calculates the resulting movement based on its mass, friction, and other physical properties.
-		A RigidBody2D has 4 behavior [member mode]s: Dynamic, Static, DynamicLocked, and Kinematic.
+		A RigidBody2D has 4 behavior [member mode]s: Dynamic (default), Static, Kinematic and DynamicLinear.
 		[b]Note:[/b] You should not change a RigidBody2D's [code]position[/code] or [code]linear_velocity[/code] every frame or even very often. If you need to directly affect the body's state, use [method _integrate_forces], which allows you to directly access the physics state.
 		Please also keep in mind that physics bodies manage their own transform which overwrites the ones you set. So any direct or indirect transformation (including scaling of the node or its parent) will be visible in the editor only, and immediately reset at runtime.
 		If you need to override the default physics behavior or add a transformation at runtime, you can write a custom force integration. See [member custom_integrator].
@@ -129,8 +129,9 @@
 		<member name="mass" type="float" setter="set_mass" getter="get_mass" default="1.0">
 			The body's mass.
 		</member>
-		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="RigidBody2D.Mode" default="0">
+		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="RigidBody2D.Mode" default="2">
 			The body's mode. See [enum Mode] for possible values.
+			For a body that uses only Static or Kinematic mode, use [ColliderBody2D] instead.
 		</member>
 		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
 			The physics material override for the body.
@@ -189,17 +190,17 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="MODE_DYNAMIC" value="0" enum="Mode">
+		<constant name="MODE_STATIC" value="0" enum="Mode">
+			Static body mode. In this mode, a body can be only moved by user code and is teleported when moved.
+		</constant>
+		<constant name="MODE_KINEMATIC" value="1" enum="Mode">
+			Kinematic body mode. In this mode, a body can be only moved by user code and collides with other bodies along its path.
+		</constant>
+		<constant name="MODE_DYNAMIC" value="2" enum="Mode">
 			Dynamic body mode. This is the default mode of a rigid body. It is affected by forces, and can move, rotate, and be affected by user code.
 		</constant>
-		<constant name="MODE_STATIC" value="1" enum="Mode">
-			Static body mode. The body behaves like a [StaticBody2D], and must be moved by code.
-		</constant>
-		<constant name="MODE_DYNAMIC_LOCKED" value="2" enum="Mode">
-			Locked dynamic body mode. Similar to [constant MODE_DYNAMIC], but the body can not rotate.
-		</constant>
-		<constant name="MODE_KINEMATIC" value="3" enum="Mode">
-			Kinematic body mode. The body behaves like a [StaticBody2D] with [member StaticBody2D.kinematic_motion] enabled, and must be moved by user code.
+		<constant name="MODE_DYNAMIC_LINEAR" value="3" enum="Mode">
+			Linear dynamic body mode. Similar to [constant MODE_DYNAMIC], but the body can not rotate.
 		</constant>
 		<constant name="CCD_MODE_DISABLED" value="0" enum="CCDMode">
 			Continuous collision detection disabled. This is the fastest way to detect body collisions, but can miss small, fast-moving objects.

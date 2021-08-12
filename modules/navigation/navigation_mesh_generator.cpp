@@ -160,16 +160,16 @@ void NavigationMeshGenerator::_parse_geometry(Transform3D p_accumulated_transfor
 	}
 #endif
 
-	if (Object::cast_to<StaticBody3D>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_MESH_INSTANCES) {
-		StaticBody3D *static_body = Object::cast_to<StaticBody3D>(p_node);
+	if (Object::cast_to<ColliderBody3D>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_MESH_INSTANCES) {
+		ColliderBody3D *body = Object::cast_to<ColliderBody3D>(p_node);
 
-		if (static_body->get_collision_layer() & p_collision_mask) {
+		if (body->get_collision_layer() & p_collision_mask) {
 			for (int i = 0; i < p_node->get_child_count(); ++i) {
 				Node *child = p_node->get_child(i);
 				if (Object::cast_to<CollisionShape3D>(child)) {
 					CollisionShape3D *col_shape = Object::cast_to<CollisionShape3D>(child);
 
-					Transform3D transform = p_accumulated_transform * static_body->get_transform() * col_shape->get_transform();
+					Transform3D transform = p_accumulated_transform * body->get_transform() * col_shape->get_transform();
 
 					Ref<Mesh> mesh;
 					Ref<Shape3D> s = col_shape->get_shape();

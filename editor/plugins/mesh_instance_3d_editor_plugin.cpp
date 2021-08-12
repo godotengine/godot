@@ -73,12 +73,12 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 				CollisionShape3D *cshape = memnew(CollisionShape3D);
 				cshape->set_shape(shape);
-				StaticBody3D *body = memnew(StaticBody3D);
+				ColliderBody3D *body = memnew(ColliderBody3D);
 				body->add_child(cshape);
 
 				Node *owner = node == get_tree()->get_edited_scene_root() ? node : node->get_owner();
 
-				ur->create_action(TTR("Create Static Trimesh Body"));
+				ur->create_action(TTR("Create Collider Trimesh Body"));
 				ur->add_do_method(node, "add_child", body);
 				ur->add_do_method(body, "set_owner", owner);
 				ur->add_do_method(cshape, "set_owner", owner);
@@ -88,7 +88,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				return;
 			}
 
-			ur->create_action(TTR("Create Static Trimesh Body"));
+			ur->create_action(TTR("Create Collider Trimesh Body"));
 
 			for (Node *E : selection) {
 				MeshInstance3D *instance = Object::cast_to<MeshInstance3D>(E);
@@ -108,7 +108,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 				CollisionShape3D *cshape = memnew(CollisionShape3D);
 				cshape->set_shape(shape);
-				StaticBody3D *body = memnew(StaticBody3D);
+				ColliderBody3D *body = memnew(ColliderBody3D);
 				body->add_child(cshape);
 
 				Node *owner = instance == get_tree()->get_edited_scene_root() ? instance : instance->get_owner();
@@ -144,7 +144,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 
-			ur->create_action(TTR("Create Trimesh Static Shape"));
+			ur->create_action(TTR("Create Trimesh Collision Shape"));
 
 			ur->add_do_method(node->get_parent(), "add_child", cshape);
 			ur->add_do_method(node->get_parent(), "move_child", cshape, node->get_index() + 1);
@@ -444,8 +444,8 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	options->set_text(TTR("Mesh"));
 	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("MeshInstance3D"), SNAME("EditorIcons")));
 
-	options->get_popup()->add_item(TTR("Create Trimesh Static Body"), MENU_OPTION_CREATE_STATIC_TRIMESH_BODY);
-	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a StaticBody3D and assigns a polygon-based collision shape to it automatically.\nThis is the most accurate (but slowest) option for collision detection."));
+	options->get_popup()->add_item(TTR("Create Trimesh Collider Body"), MENU_OPTION_CREATE_STATIC_TRIMESH_BODY);
+	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a ColliderBody3D and assigns a polygon-based collision shape to it automatically.\nThis is the most accurate (but slowest) option for collision detection."));
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Create Trimesh Collision Sibling"), MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE);
 	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a polygon-based collision shape.\nThis is the most accurate (but slowest) option for collision detection."));

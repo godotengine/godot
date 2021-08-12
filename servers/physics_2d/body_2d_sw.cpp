@@ -87,7 +87,7 @@ void Body2DSW::update_inertias() {
 			_inv_inertia = 0;
 			_inv_mass = 0;
 		} break;
-		case PhysicsServer2D::BODY_MODE_DYNAMIC_LOCKED: {
+		case PhysicsServer2D::BODY_MODE_DYNAMIC_LINEAR: {
 			_inv_inertia = 0;
 			_inv_mass = 1.0 / mass;
 
@@ -211,7 +211,7 @@ void Body2DSW::set_mode(PhysicsServer2D::BodyMode p_mode) {
 			set_active(true);
 
 		} break;
-		case PhysicsServer2D::BODY_MODE_DYNAMIC_LOCKED: {
+		case PhysicsServer2D::BODY_MODE_DYNAMIC_LINEAR: {
 			_inv_mass = mass > 0 ? (1.0 / mass) : 0;
 			_inv_inertia = 0;
 			_set_static(false);

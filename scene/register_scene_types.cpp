@@ -492,7 +492,7 @@ void register_scene_types() {
 
 	GDREGISTER_VIRTUAL_CLASS(CollisionObject3D);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsBody3D);
-	GDREGISTER_CLASS(StaticBody3D);
+	GDREGISTER_CLASS(ColliderBody3D);
 	GDREGISTER_CLASS(RigidBody3D);
 	GDREGISTER_CLASS(KinematicCollision3D);
 	GDREGISTER_CLASS(CharacterBody3D);
@@ -651,7 +651,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(MultiMeshInstance2D);
 	GDREGISTER_VIRTUAL_CLASS(CollisionObject2D);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsBody2D);
-	GDREGISTER_CLASS(StaticBody2D);
+	GDREGISTER_CLASS(ColliderBody2D);
 	GDREGISTER_CLASS(RigidBody2D);
 	GDREGISTER_CLASS(CharacterBody2D);
 	GDREGISTER_CLASS(KinematicCollision2D);
@@ -960,7 +960,8 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("SpotLight", "SpotLight3D");
 	ClassDB::add_compatibility_class("SpringArm", "SpringArm3D");
 	ClassDB::add_compatibility_class("Sprite", "Sprite2D");
-	ClassDB::add_compatibility_class("StaticBody", "StaticBody3D");
+	ClassDB::add_compatibility_class("StaticBody", "ColliderBody3D");
+	ClassDB::add_compatibility_class("StaticBody2D", "ColliderBody2D");
 	ClassDB::add_compatibility_class("TextureProgress", "TextureProgressBar");
 	ClassDB::add_compatibility_class("VehicleBody", "VehicleBody3D");
 	ClassDB::add_compatibility_class("VehicleWheel", "VehicleWheel3D");

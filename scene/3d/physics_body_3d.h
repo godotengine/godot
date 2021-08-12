@@ -70,9 +70,16 @@ public:
 	virtual ~PhysicsBody3D();
 };
 
-class StaticBody3D : public PhysicsBody3D {
-	GDCLASS(StaticBody3D, PhysicsBody3D);
+class ColliderBody3D : public PhysicsBody3D {
+	GDCLASS(ColliderBody3D, PhysicsBody3D);
 
+public:
+	enum Mode {
+		MODE_STATIC,
+		MODE_KINEMATIC,
+	};
+
+private:
 	Vector3 constant_linear_velocity;
 	Vector3 constant_angular_velocity;
 
@@ -81,7 +88,7 @@ class StaticBody3D : public PhysicsBody3D {
 
 	Ref<PhysicsMaterial> physics_material_override;
 
-	bool kinematic_motion = false;
+	Mode mode = MODE_STATIC;
 	bool sync_to_physics = false;
 
 	Transform3D last_valid_transform;
@@ -107,29 +114,31 @@ public:
 
 	virtual TypedArray<String> get_configuration_warnings() const override;
 
-	StaticBody3D();
+	ColliderBody3D();
 
 private:
 	void _reload_physics_characteristics();
 
 	void _update_kinematic_motion();
 
-	void set_kinematic_motion_enabled(bool p_enabled);
-	bool is_kinematic_motion_enabled() const;
+	void set_mode(Mode p_mode);
+	Mode get_mode() const;
 
 	void set_sync_to_physics(bool p_enable);
 	bool is_sync_to_physics_enabled() const;
 };
+
+VARIANT_ENUM_CAST(ColliderBody3D::Mode);
 
 class RigidBody3D : public PhysicsBody3D {
 	GDCLASS(RigidBody3D, PhysicsBody3D);
 
 public:
 	enum Mode {
-		MODE_DYNAMIC,
 		MODE_STATIC,
-		MODE_DYNAMIC_LOCKED,
 		MODE_KINEMATIC,
+		MODE_DYNAMIC,
+		MODE_DYNAMIC_LINEAR,
 	};
 
 protected:

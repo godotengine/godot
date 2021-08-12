@@ -356,7 +356,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 				ERR_FAIL_COND_V(fixed_name == String(), nullptr);
 
 				if (shapes.size()) {
-					StaticBody3D *col = memnew(StaticBody3D);
+					ColliderBody3D *col = memnew(ColliderBody3D);
 					col->set_transform(mi->get_transform());
 					col->set_name(fixed_name);
 					p_node->replace_by(col);
@@ -369,10 +369,10 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 
 		} else if (p_node->has_meta("empty_draw_type")) {
 			String empty_draw_type = String(p_node->get_meta("empty_draw_type"));
-			StaticBody3D *sb = memnew(StaticBody3D);
-			sb->set_name(_fixstr(name, "colonly"));
-			Object::cast_to<Node3D>(sb)->set_transform(Object::cast_to<Node3D>(p_node)->get_transform());
-			p_node->replace_by(sb);
+			ColliderBody3D *col = memnew(ColliderBody3D);
+			col->set_name(_fixstr(name, "colonly"));
+			Object::cast_to<Node3D>(col)->set_transform(Object::cast_to<Node3D>(p_node)->get_transform());
+			p_node->replace_by(col);
 			memdelete(p_node);
 			p_node = nullptr;
 			CollisionShape3D *colshape = memnew(CollisionShape3D);
@@ -388,8 +388,8 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 				sphereShape->set_radius(1);
 				colshape->set_shape(sphereShape);
 			}
-			sb->add_child(colshape);
-			colshape->set_owner(sb->get_owner());
+			col->add_child(colshape);
+			colshape->set_owner(col->get_owner());
 		}
 
 	} else if (_teststr(name, "rigid") && Object::cast_to<EditorSceneImporterMeshNode3D>(p_node)) {
@@ -451,7 +451,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 			}
 
 			if (shapes.size()) {
-				StaticBody3D *col = memnew(StaticBody3D);
+				ColliderBody3D *col = memnew(ColliderBody3D);
 				mi->add_child(col);
 				col->set_owner(mi->get_owner());
 
@@ -499,7 +499,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 			}
 
 			if (shapes.size()) {
-				StaticBody3D *col = memnew(StaticBody3D);
+				ColliderBody3D *col = memnew(ColliderBody3D);
 				p_node->add_child(col);
 				col->set_owner(p_node->get_owner());
 
@@ -602,7 +602,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 						CollisionObject3D *base = nullptr;
 						switch (mesh_physics_mode) {
 							case MESH_PHYSICS_MESH_AND_STATIC_COLLIDER: {
-								StaticBody3D *col = memnew(StaticBody3D);
+								ColliderBody3D *col = memnew(ColliderBody3D);
 								p_node->add_child(col);
 								base = col;
 							} break;
@@ -618,7 +618,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 								base = rigid_body;
 							} break;
 							case MESH_PHYSICS_STATIC_COLLIDER_ONLY: {
-								StaticBody3D *col = memnew(StaticBody3D);
+								ColliderBody3D *col = memnew(ColliderBody3D);
 								col->set_transform(mi->get_transform());
 								col->set_name(p_node->get_name());
 								p_node->replace_by(col);

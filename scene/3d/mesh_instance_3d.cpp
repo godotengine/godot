@@ -221,22 +221,22 @@ Node *MeshInstance3D::create_trimesh_collision_node() {
 		return nullptr;
 	}
 
-	StaticBody3D *static_body = memnew(StaticBody3D);
+	ColliderBody3D *body = memnew(ColliderBody3D);
 	CollisionShape3D *cshape = memnew(CollisionShape3D);
 	cshape->set_shape(shape);
-	static_body->add_child(cshape);
-	return static_body;
+	body->add_child(cshape);
+	return body;
 }
 
 void MeshInstance3D::create_trimesh_collision() {
-	StaticBody3D *static_body = Object::cast_to<StaticBody3D>(create_trimesh_collision_node());
-	ERR_FAIL_COND(!static_body);
-	static_body->set_name(String(get_name()) + "_col");
+	ColliderBody3D *body = Object::cast_to<ColliderBody3D>(create_trimesh_collision_node());
+	ERR_FAIL_COND(!body);
+	body->set_name(String(get_name()) + "_col");
 
-	add_child(static_body);
+	add_child(body);
 	if (get_owner()) {
-		CollisionShape3D *cshape = Object::cast_to<CollisionShape3D>(static_body->get_child(0));
-		static_body->set_owner(get_owner());
+		CollisionShape3D *cshape = Object::cast_to<CollisionShape3D>(body->get_child(0));
+		body->set_owner(get_owner());
 		cshape->set_owner(get_owner());
 	}
 }
@@ -251,22 +251,22 @@ Node *MeshInstance3D::create_convex_collision_node(bool p_clean, bool p_simplify
 		return nullptr;
 	}
 
-	StaticBody3D *static_body = memnew(StaticBody3D);
+	ColliderBody3D *body = memnew(ColliderBody3D);
 	CollisionShape3D *cshape = memnew(CollisionShape3D);
 	cshape->set_shape(shape);
-	static_body->add_child(cshape);
-	return static_body;
+	body->add_child(cshape);
+	return body;
 }
 
 void MeshInstance3D::create_convex_collision(bool p_clean, bool p_simplify) {
-	StaticBody3D *static_body = Object::cast_to<StaticBody3D>(create_convex_collision_node(p_clean, p_simplify));
-	ERR_FAIL_COND(!static_body);
-	static_body->set_name(String(get_name()) + "_col");
+	ColliderBody3D *body = Object::cast_to<ColliderBody3D>(create_convex_collision_node(p_clean, p_simplify));
+	ERR_FAIL_COND(!body);
+	body->set_name(String(get_name()) + "_col");
 
-	add_child(static_body);
+	add_child(body);
 	if (get_owner()) {
-		CollisionShape3D *cshape = Object::cast_to<CollisionShape3D>(static_body->get_child(0));
-		static_body->set_owner(get_owner());
+		CollisionShape3D *cshape = Object::cast_to<CollisionShape3D>(body->get_child(0));
+		body->set_owner(get_owner());
 		cshape->set_owner(get_owner());
 	}
 }
@@ -281,26 +281,26 @@ Node *MeshInstance3D::create_multiple_convex_collisions_node() {
 		return nullptr;
 	}
 
-	StaticBody3D *static_body = memnew(StaticBody3D);
+	ColliderBody3D *body = memnew(ColliderBody3D);
 	for (int i = 0; i < shapes.size(); i++) {
 		CollisionShape3D *cshape = memnew(CollisionShape3D);
 		cshape->set_shape(shapes[i]);
-		static_body->add_child(cshape);
+		body->add_child(cshape);
 	}
-	return static_body;
+	return body;
 }
 
 void MeshInstance3D::create_multiple_convex_collisions() {
-	StaticBody3D *static_body = Object::cast_to<StaticBody3D>(create_multiple_convex_collisions_node());
-	ERR_FAIL_COND(!static_body);
-	static_body->set_name(String(get_name()) + "_col");
+	ColliderBody3D *body = Object::cast_to<ColliderBody3D>(create_multiple_convex_collisions_node());
+	ERR_FAIL_COND(!body);
+	body->set_name(String(get_name()) + "_col");
 
-	add_child(static_body);
+	add_child(body);
 	if (get_owner()) {
-		static_body->set_owner(get_owner());
-		int count = static_body->get_child_count();
+		body->set_owner(get_owner());
+		int count = body->get_child_count();
 		for (int i = 0; i < count; i++) {
-			CollisionShape3D *cshape = Object::cast_to<CollisionShape3D>(static_body->get_child(i));
+			CollisionShape3D *cshape = Object::cast_to<CollisionShape3D>(body->get_child(i));
 			cshape->set_owner(get_owner());
 		}
 	}

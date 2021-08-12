@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="RigidBody3D" inherits="PhysicsBody3D" version="4.0">
 	<brief_description>
-		Physics Body whose position is determined through physics simulation in 3D space.
+		Physics Body which is moved by 3D physics simulation. Useful for objects that have gravity and can be pushed by other objects.
 	</brief_description>
 	<description>
 		This is the node that implements full 3D physics. This means that you do not control a RigidBody3D directly. Instead, you can apply forces to it (gravity, impulses, etc.), and the physics simulation will calculate the resulting movement, collision, bouncing, rotating, etc.
-		A RigidBody3D has 4 behavior [member mode]s: Dynamic, Static, DynamicLocked, and Kinematic.
+		A RigidBody3D has 4 behavior [member mode]s: Dynamic (default), Static, Kinematic and DynamicLinear.
 		[b]Note:[/b] Don't change a RigidBody3D's position every frame or very often. Sporadic changes work fine, but physics runs at a different granularity (fixed Hz) than usual rendering (process callback) and maybe even in a separate thread, so changing this from a process loop may result in strange behavior. If you need to directly affect the body's state, use [method _integrate_forces], which allows you to directly access the physics state.
 		If you need to override the default physics behavior, you can write a custom force integration function. See [member custom_integrator].
 		With Bullet physics (the default), the center of mass is the RigidBody3D center. With GodotPhysics, the center of mass is the average of the [CollisionShape3D] centers.
@@ -129,8 +129,9 @@
 		<member name="mass" type="float" setter="set_mass" getter="get_mass" default="1.0">
 			The body's mass.
 		</member>
-		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="RigidBody3D.Mode" default="0">
-			The body mode. See [enum Mode] for possible values.
+		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="RigidBody3D.Mode" default="2">
+			The body's mode. See [enum Mode] for possible values.
+			For a body that uses only Static or Kinematic mode, use [ColliderBody3D] instead.
 		</member>
 		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
 			The physics material override for the body.
@@ -191,17 +192,17 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="MODE_DYNAMIC" value="0" enum="Mode">
+		<constant name="MODE_STATIC" value="0" enum="Mode">
+			Static body mode. In this mode, a body can be only moved by user code and is teleported when moved.
+		</constant>
+		<constant name="MODE_KINEMATIC" value="1" enum="Mode">
+			Kinematic body mode. In this mode, a body can be only moved by user code and collides with other bodies along its path.
+		</constant>
+		<constant name="MODE_DYNAMIC" value="2" enum="Mode">
 			Dynamic body mode. This is the default mode of a rigid body. It is affected by forces, and can move, rotate, and be affected by user code.
 		</constant>
-		<constant name="MODE_STATIC" value="1" enum="Mode">
-			Static body mode. The body behaves like a [StaticBody3D], and can only move by user code.
-		</constant>
-		<constant name="MODE_DYNAMIC_LOCKED" value="2" enum="Mode">
-			Locked dynamic body mode. Similar to [constant MODE_DYNAMIC], but the body can not rotate.
-		</constant>
-		<constant name="MODE_KINEMATIC" value="3" enum="Mode">
-			Kinematic body mode. The body behaves like a [StaticBody3D] with [member StaticBody3D.kinematic_motion] enabled, and can only move by user code.
+		<constant name="MODE_DYNAMIC_LINEAR" value="3" enum="Mode">
+			Linear dynamic body mode. Similar to [constant MODE_DYNAMIC], but the body can not rotate.
 		</constant>
 	</constants>
 </class>

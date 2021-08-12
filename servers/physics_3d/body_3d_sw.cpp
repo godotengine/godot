@@ -132,7 +132,7 @@ void Body3DSW::update_inertias() {
 			_inv_inertia_tensor.set_zero();
 			_inv_mass = 0;
 		} break;
-		case PhysicsServer3D::BODY_MODE_DYNAMIC_LOCKED: {
+		case PhysicsServer3D::BODY_MODE_DYNAMIC_LINEAR: {
 			_inv_inertia_tensor.set_zero();
 			_inv_mass = 1.0 / mass;
 
@@ -245,7 +245,7 @@ void Body3DSW::set_mode(PhysicsServer3D::BodyMode p_mode) {
 			set_active(true);
 
 		} break;
-		case PhysicsServer3D::BODY_MODE_DYNAMIC_LOCKED: {
+		case PhysicsServer3D::BODY_MODE_DYNAMIC_LINEAR: {
 			_inv_mass = mass > 0 ? (1.0 / mass) : 0;
 			_set_static(false);
 			set_active(true);

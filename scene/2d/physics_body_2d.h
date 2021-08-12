@@ -60,15 +60,22 @@ public:
 	virtual ~PhysicsBody2D();
 };
 
-class StaticBody2D : public PhysicsBody2D {
-	GDCLASS(StaticBody2D, PhysicsBody2D);
+class ColliderBody2D : public PhysicsBody2D {
+	GDCLASS(ColliderBody2D, PhysicsBody2D);
 
+public:
+	enum Mode {
+		MODE_STATIC,
+		MODE_KINEMATIC,
+	};
+
+private:
 	Vector2 constant_linear_velocity;
 	real_t constant_angular_velocity = 0.0;
 
 	Ref<PhysicsMaterial> physics_material_override;
 
-	bool kinematic_motion = false;
+	Mode mode = MODE_STATIC;
 	bool sync_to_physics = false;
 
 	Transform2D last_valid_transform;
@@ -91,29 +98,31 @@ public:
 
 	virtual TypedArray<String> get_configuration_warnings() const override;
 
-	StaticBody2D();
+	ColliderBody2D();
 
 private:
 	void _reload_physics_characteristics();
 
 	void _update_kinematic_motion();
 
-	void set_kinematic_motion_enabled(bool p_enabled);
-	bool is_kinematic_motion_enabled() const;
+	void set_mode(Mode p_mode);
+	Mode get_mode() const;
 
 	void set_sync_to_physics(bool p_enable);
 	bool is_sync_to_physics_enabled() const;
 };
+
+VARIANT_ENUM_CAST(ColliderBody2D::Mode);
 
 class RigidBody2D : public PhysicsBody2D {
 	GDCLASS(RigidBody2D, PhysicsBody2D);
 
 public:
 	enum Mode {
-		MODE_DYNAMIC,
 		MODE_STATIC,
-		MODE_DYNAMIC_LOCKED,
 		MODE_KINEMATIC,
+		MODE_DYNAMIC,
+		MODE_DYNAMIC_LINEAR,
 	};
 
 	enum CCDMode {

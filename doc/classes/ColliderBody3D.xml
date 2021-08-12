@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ColliderBody3D" inherits="PhysicsBody3D" version="4.0">
+	<brief_description>
+		Physics body for 3D physics which is static or moves only by script. Useful for floor, walls and moving platforms.
+	</brief_description>
+	<description>
+		Collider body for 3D physics, with 2 behavior [member mode]s: Static (default) and Kinematic.
+		A collider body is a simple body that can't be moved by external forces or contacts. It is ideal for implementing objects in the environment, such as walls or platforms. In contrast to [RigidBody3D], they don't consume any CPU resources as long as they don't move.
+		They have extra functionalities to move and affect other bodies:
+		[b]Kinematic motion:[/b] Collider bodies in Kinematic mode can be moved by code and push other bodies on their path.
+		[b]Static transform change:[/b] Collider bodies in Static mode can be also moved by code. When in Static mode, they are just teleported and don't affect other bodies on their path.
+		[b]Constant velocity:[/b] [member constant_linear_velocity] and [member constant_angular_velocity] can be used in Static mode. In this case, they don't move but affect other bodies as if they were moving (this is useful for simulating conveyor belts or conveyor wheels).
+	</description>
+	<tutorials>
+		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
+		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="constant_angular_velocity" type="Vector3" setter="set_constant_angular_velocity" getter="get_constant_angular_velocity" default="Vector3(0, 0, 0)">
+			The body's constant angular velocity. This does not rotate the body if [member mode] is set to Static, but affects other bodies that touch it, as if it were rotating.
+		</member>
+		<member name="constant_linear_velocity" type="Vector3" setter="set_constant_linear_velocity" getter="get_constant_linear_velocity" default="Vector3(0, 0, 0)">
+			The body's constant linear velocity. This does not move the body if [member mode] is set to Static, but affects other bodies that touch it, as if it were moving.
+		</member>
+		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="ColliderBody3D.Mode" default="0">
+			The body's mode. See [enum Mode] for possible values.
+			If the mode is set to Kinematic, when the body is moved manually, either from code or from an [AnimationPlayer] (with [member AnimationPlayer.playback_process_mode] set to [code]physics[/code]), the physics will automatically compute an estimate of their linear and angular velocity. This makes them very useful for moving platforms or other AnimationPlayer-controlled objects (like a door, a bridge that opens, etc).
+		</member>
+		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
+			The physics material override for the body.
+			If a material is assigned to this property, it will be used instead of any other physics material, such as an inherited one.
+		</member>
+		<member name="sync_to_physics" type="bool" setter="set_sync_to_physics" getter="is_sync_to_physics_enabled" default="false">
+			If [code]true[/code] and [member mode] is set to Kinematic, the body's movement will be synchronized to the physics frame. This is useful when animating movement via [AnimationPlayer], for example on moving platforms. Do [b]not[/b] use together with [method PhysicsBody3D.move_and_collide].
+		</member>
+	</members>
+	<constants>
+		<constant name="MODE_STATIC" value="0" enum="Mode">
+			Static body mode. In this mode, a body can be only moved by user code and is teleported when moved.
+		</constant>
+		<constant name="MODE_KINEMATIC" value="1" enum="Mode">
+			Kinematic body mode. In this mode, a body can be only moved by user code and collides with other bodies along its path.
+		</constant>
+	</constants>
+</class>

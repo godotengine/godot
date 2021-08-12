@@ -547,8 +547,8 @@ void RigidBodyBullet::set_mode(PhysicsServer3D::BodyMode p_mode) {
 			_internal_set_mass(0 == mass ? 1 : mass);
 			scratch_space_override_modificator();
 			break;
-		case PhysicsServer3D::MODE_DYNAMIC_LOCKED:
-			mode = PhysicsServer3D::MODE_DYNAMIC_LOCKED;
+		case PhysicsServer3D::MODE_DYNAMIC_LINEAR:
+			mode = PhysicsServer3D::MODE_DYNAMIC_LINEAR;
 			reload_axis_lock();
 			_internal_set_mass(0 == mass ? 1 : mass);
 			scratch_space_override_modificator();
@@ -721,7 +721,7 @@ bool RigidBodyBullet::is_axis_locked(PhysicsServer3D::BodyAxis p_axis) const {
 
 void RigidBodyBullet::reload_axis_lock() {
 	btBody->setLinearFactor(btVector3(btScalar(!is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_X)), btScalar(!is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_Y)), btScalar(!is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_Z))));
-	if (PhysicsServer3D::MODE_DYNAMIC_LOCKED == mode) {
+	if (PhysicsServer3D::MODE_DYNAMIC_LINEAR == mode) {
 		/// When character angular is always locked
 		btBody->setAngularFactor(btVector3(0., 0., 0.));
 	} else {
@@ -1016,7 +1016,7 @@ void RigidBodyBullet::_internal_set_mass(real_t p_mass) {
 	// Rigidbody is dynamic if and only if mass is non Zero, otherwise static
 	const bool isDynamic = p_mass != 0.f;
 	if (isDynamic) {
-		if (PhysicsServer3D::BODY_MODE_DYNAMIC != mode && PhysicsServer3D::MODE_DYNAMIC_LOCKED != mode) {
+		if (PhysicsServer3D::BODY_MODE_DYNAMIC != mode && PhysicsServer3D::MODE_DYNAMIC_LINEAR != mode) {
 			return;
 		}
 

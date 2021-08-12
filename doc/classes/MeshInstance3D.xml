@@ -18,7 +18,7 @@
 			<argument index="0" name="clean" type="bool" default="true" />
 			<argument index="1" name="simplify" type="bool" default="false" />
 			<description>
-				This helper creates a [StaticBody3D] child node with a [ConvexPolygonShape3D] collision shape calculated from the mesh geometry. It's mainly used for testing.
+				This helper creates a [ColliderBody3D] child node with a [ConvexPolygonShape3D] collision shape calculated from the mesh geometry. It's mainly used for testing.
 				If [code]clean[/code] is [code]true[/code] (default), duplicate and interior vertices are removed automatically. You can set it to [code]false[/code] to make the process faster if not needed.
 				If [code]simplify[/code] is [code]true[/code], the geometry can be further simplified to reduce the amount of vertices. Disabled by default.
 			</description>
@@ -32,13 +32,13 @@
 		<method name="create_multiple_convex_collisions">
 			<return type="void" />
 			<description>
-				This helper creates a [StaticBody3D] child node with multiple [ConvexPolygonShape3D] collision shapes calculated from the mesh geometry via convex decomposition. It's mainly used for testing.
+				This helper creates a [ColliderBody3D] child node with multiple [ConvexPolygonShape3D] collision shapes calculated from the mesh geometry via convex decomposition. It's mainly used for testing.
 			</description>
 		</method>
 		<method name="create_trimesh_collision">
 			<return type="void" />
 			<description>
-				This helper creates a [StaticBody3D] child node with a [ConcavePolygonShape3D] collision shape calculated from the mesh geometry. It's mainly used for testing.
+				This helper creates a [ColliderBody3D] child node with a [ConcavePolygonShape3D] collision shape calculated from the mesh geometry. It's mainly used for testing.
 			</description>
 		</method>
 		<method name="get_active_material" qualifiers="const">

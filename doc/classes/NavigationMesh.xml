@@ -162,7 +162,7 @@
 			Parses mesh instances as geometry. This includes [MeshInstance3D], [CSGShape3D], and [GridMap] nodes.
 		</constant>
 		<constant name="PARSED_GEOMETRY_STATIC_COLLIDERS" value="1" enum="ParsedGeometryType">
-			Parses [StaticBody3D] colliders as geometry. The collider should be in any of the layers specified by [member geometry/collision_mask].
+			Parses [ColliderBody3D] colliders as geometry. The collider should be in any of the layers specified by [member geometry/collision_mask].
 		</constant>
 		<constant name="PARSED_GEOMETRY_BOTH" value="2" enum="ParsedGeometryType">
 			Both [constant PARSED_GEOMETRY_MESH_INSTANCES] and [constant PARSED_GEOMETRY_STATIC_COLLIDERS].
