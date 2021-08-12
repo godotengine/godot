@@ -71,8 +71,8 @@
 		Any response with a "Content-Encoding: gzip" header will automatically be decompressed and delivered to you as a uncompressed bytes.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.3/tutorials/networking/http_request_class.html</link>
-		<link>https://docs.godotengine.org/en/3.3/tutorials/networking/ssl_certificates.html</link>
+		<link>https://docs.godotengine.org/en/3.4/tutorials/networking/http_request_class.html</link>
+		<link>https://docs.godotengine.org/en/3.4/tutorials/networking/ssl_certificates.html</link>
 	</tutorials>
 	<methods>
 		<method name="cancel_request">

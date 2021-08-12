@@ -8,7 +8,7 @@
 		[b]Note:[/b] Due to how lightmaps work, most properties only have a visible effect once lightmaps are baked again.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.3/tutorials/3d/baked_lightmaps.html</link>
+		<link>https://docs.godotengine.org/en/3.4/tutorials/3d/baked_lightmaps.html</link>
 	</tutorials>
 	<methods>
 		<method name="bake">
