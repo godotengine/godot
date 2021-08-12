@@ -566,6 +566,10 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 				ERR_FAIL_COND_V(img.is_null() || img->empty(), ERR_FILE_CORRUPT);
 			}
 
+			if (i != 0) {
+				img->convert(mipmap_images[0]->get_format()); // ensure the same format for all mipmaps
+			}
+
 			total_size += img->get_data().size();
 
 			mipmap_images.push_back(img);
