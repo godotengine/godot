@@ -14,7 +14,7 @@
 			<return type="String" />
 			<argument index="0" name="path" type="String" />
 			<description>
-				Gets the type of the file, given the full path.
+				Returns the resource type of the file, given the full path. This returns a string such as [code]"Resource"[/code] or [code]"GDScript"[/code], [i]not[/i] a file extension such as [code]".gd"[/code].
 			</description>
 		</method>
 		<method name="get_filesystem">
