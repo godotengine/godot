@@ -2826,8 +2826,8 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/driver/depth_prepass/enable", true);
 	GLOBAL_DEF("rendering/driver/depth_prepass/disable_for_vendors", "PowerVR,Mali,Adreno,Apple");
 
-	GLOBAL_DEF("rendering/textures/default_filters/use_nearest_mipmap_filter", false);
-	GLOBAL_DEF("rendering/textures/default_filters/anisotropic_filtering_level", 2);
+	GLOBAL_DEF_RST("rendering/textures/default_filters/use_nearest_mipmap_filter", false);
+	GLOBAL_DEF_RST("rendering/textures/default_filters/anisotropic_filtering_level", 2);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/textures/default_filters/anisotropic_filtering_level", PropertyInfo(Variant::INT, "rendering/textures/default_filters/anisotropic_filtering_level", PROPERTY_HINT_ENUM, "Disabled (Fastest),2x (Faster),4x (Fast),8x (Average),16x (Slow)"));
 
 	GLOBAL_DEF("rendering/camera/depth_of_field/depth_of_field_bokeh_shape", 1);
