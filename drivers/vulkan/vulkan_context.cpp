@@ -682,7 +682,7 @@ Error VulkanContext::_create_physical_device() {
 	inst_initialized = true;
 
 #ifdef USE_VOLK
-	volkLoadInstance(inst);
+	volkLoadInstanceOnly(inst);
 #endif
 
 	/* Make initial call to query gpu_count, then second call for gpu info*/
@@ -1009,6 +1009,10 @@ Error VulkanContext::_create_device() {
 #endif
 
 	err = vkCreateDevice(gpu, &sdevice, nullptr, &device);
+#ifdef USE_VOLK
+	volkLoadDevice(device);
+#endif
+
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
 	return OK;
