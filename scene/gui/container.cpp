@@ -82,12 +82,15 @@ void Container::remove_child_notify(Node *p_child) {
 	queue_sort();
 }
 
-void Container::_sort_children() {
+void Container::_sort_children(bool p_sort_disabled) {
 	if (!is_inside_tree()) {
 		return;
 	}
 
-	notification(NOTIFICATION_SORT_CHILDREN);
+	if (!p_sort_disabled) {
+		notification(NOTIFICATION_SORT_CHILDREN);
+	}
+
 	emit_signal(SceneStringNames::get_singleton()->sort_children);
 	pending_sort = false;
 }
@@ -131,7 +134,7 @@ void Container::fit_child_in_rect(Control *p_child, const Rect2 &p_rect) {
 	p_child->set_scale(Vector2(1, 1));
 }
 
-void Container::queue_sort() {
+void Container::queue_sort(bool p_ignore_sort_disabled) {
 	if (!is_inside_tree()) {
 		return;
 	}
@@ -140,7 +143,7 @@ void Container::queue_sort() {
 		return;
 	}
 
-	MessageQueue::get_singleton()->push_call(this, "_sort_children");
+	MessageQueue::get_singleton()->push_call(this, "_sort_children", sort_disabled && !p_ignore_sort_disabled);
 	pending_sort = true;
 }
 
@@ -176,12 +179,25 @@ String Container::get_configuration_warning() const {
 	return warning;
 }
 
+void Container::set_sort_disabled(bool p_disabled) {
+
+	sort_disabled = p_disabled;
+}
+
+bool Container::is_sort_disabled() const {
+
+	return sort_disabled;
+}
+
 void Container::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_sort_children"), &Container::_sort_children);
 	ClassDB::bind_method(D_METHOD("_child_minsize_changed"), &Container::_child_minsize_changed);
-
-	ClassDB::bind_method(D_METHOD("queue_sort"), &Container::queue_sort);
+	ClassDB::bind_method(D_METHOD("queue_sort", "ignore_sort_disabled"), &Container::queue_sort, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("fit_child_in_rect", "child", "rect"), &Container::fit_child_in_rect);
+	ClassDB::bind_method(D_METHOD("set_sort_disabled", "disabled"), &Container::set_sort_disabled);
+	ClassDB::bind_method(D_METHOD("is_sort_disabled"), &Container::is_sort_disabled);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sort_disabled"), "set_sort_disabled", "is_sort_disabled");
 
 	BIND_CONSTANT(NOTIFICATION_SORT_CHILDREN);
 	ADD_SIGNAL(MethodInfo("sort_children"));
@@ -189,4 +205,5 @@ void Container::_bind_methods() {
 
 Container::Container() {
 	pending_sort = false;
+	sort_disabled = false;
 }

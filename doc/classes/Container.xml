@@ -20,15 +20,21 @@
 		</method>
 		<method name="queue_sort">
 			<return type="void" />
+			<argument index="0" name="ignore_sort_disabled" type="bool"/>
 			<description>
-				Queue resort of the contained children. This is called automatically anyway, but can be called upon request.
+				Queue resort of the contained children. This is called automatically anyway, but can be called upon request. If [code]sort_disabled[/code] is [code]true[/code], the resort will not be queued unless [code]ignore_sort_disabled[/code] is also [code]true[/code].
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="sort_disabled" type="bool" setter="set_sort_disabled" getter"is_sort_disabled" default="false">
+			If [code]true[/code], the container will not manipulate the position, scale, or size of its children.
+		</member>
+	</members>
 	<signals>
 		<signal name="sort_children">
 			<description>
-				Emitted when sorting the children is needed.
+				Emitted when sorting the children is needed, regardless of whether [code]sort_disabled[/code] is set to true.
 			</description>
 		</signal>
 	</signals>

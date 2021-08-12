@@ -37,11 +37,11 @@ class Container : public Control {
 	GDCLASS(Container, Control);
 
 	bool pending_sort;
-	void _sort_children();
+	void _sort_children(bool p_sort_disabled);
 	void _child_minsize_changed();
 
 protected:
-	void queue_sort();
+	void queue_sort(bool p_ignore_sort_disabled = false);
 	virtual void add_child_notify(Node *p_child);
 	virtual void move_child_notify(Node *p_child);
 	virtual void remove_child_notify(Node *p_child);
@@ -49,6 +49,8 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+private:
+	bool sort_disabled = false;
 public:
 	enum {
 		NOTIFICATION_SORT_CHILDREN = 50
@@ -57,6 +59,9 @@ public:
 	void fit_child_in_rect(Control *p_child, const Rect2 &p_rect);
 
 	virtual String get_configuration_warning() const;
+
+	void set_sort_disabled(bool p_disabled);
+	bool is_sort_disabled() const;
 
 	Container();
 };
