@@ -337,6 +337,12 @@
 				Returns the global position of the mouse.
 			</description>
 		</method>
+		<method name="get_global_position" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the global position of this [CanvasItem]. This is the same as the origin of the global transformation matrix.
+			</description>
+		</method>
 		<method name="get_global_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
@@ -353,6 +359,12 @@
 			<return type="Vector2" />
 			<description>
 				Returns the mouse position relative to this item's position.
+			</description>
+		</method>
+		<method name="get_position" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the position of this [CanvasItem]. This is the same as the origin of the transformation matrix.
 			</description>
 		</method>
 		<method name="get_transform" qualifiers="const">

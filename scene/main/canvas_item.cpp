@@ -902,6 +902,8 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_set_transform_matrix", "xform"), &CanvasItem::draw_set_transform_matrix);
 	ClassDB::bind_method(D_METHOD("draw_animation_slice", "animation_length", "slice_begin", "slice_end", "offset"), &CanvasItem::draw_animation_slice, DEFVAL(0.0));
 	ClassDB::bind_method(D_METHOD("draw_end_animation"), &CanvasItem::draw_end_animation);
+	ClassDB::bind_method(D_METHOD("get_position"), &CanvasItem::get_position);
+	ClassDB::bind_method(D_METHOD("get_global_position"), &CanvasItem::get_global_position);
 	ClassDB::bind_method(D_METHOD("get_transform"), &CanvasItem::get_transform);
 	ClassDB::bind_method(D_METHOD("get_global_transform"), &CanvasItem::get_global_transform);
 	ClassDB::bind_method(D_METHOD("get_global_transform_with_canvas"), &CanvasItem::get_global_transform_with_canvas);

@@ -85,12 +85,12 @@ public:
 	void global_translate(const Vector2 &p_amount);
 	void apply_scale(const Size2 &p_amount);
 
-	Point2 get_position() const;
+	virtual Point2 get_position() const override;
 	real_t get_rotation() const;
 	real_t get_skew() const;
 	Size2 get_scale() const;
 
-	Point2 get_global_position() const;
+	virtual Point2 get_global_position() const override;
 	real_t get_global_rotation() const;
 	Size2 get_global_scale() const;
 

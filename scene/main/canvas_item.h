@@ -256,6 +256,8 @@ public:
 
 	CanvasItem *get_parent_item() const;
 
+	virtual Point2 get_position() const = 0;
+	virtual Point2 get_global_position() const = 0;
 	virtual Transform2D get_transform() const = 0;
 
 	virtual Transform2D get_global_transform() const;

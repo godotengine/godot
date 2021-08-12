@@ -377,7 +377,6 @@ void Node2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_skew", "radians"), &Node2D::set_skew);
 	ClassDB::bind_method(D_METHOD("set_scale", "scale"), &Node2D::set_scale);
 
-	ClassDB::bind_method(D_METHOD("get_position"), &Node2D::get_position);
 	ClassDB::bind_method(D_METHOD("get_rotation"), &Node2D::get_rotation);
 	ClassDB::bind_method(D_METHOD("get_skew"), &Node2D::get_skew);
 	ClassDB::bind_method(D_METHOD("get_scale"), &Node2D::get_scale);
@@ -390,7 +389,6 @@ void Node2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("apply_scale", "ratio"), &Node2D::apply_scale);
 
 	ClassDB::bind_method(D_METHOD("set_global_position", "position"), &Node2D::set_global_position);
-	ClassDB::bind_method(D_METHOD("get_global_position"), &Node2D::get_global_position);
 	ClassDB::bind_method(D_METHOD("set_global_rotation", "radians"), &Node2D::set_global_rotation);
 	ClassDB::bind_method(D_METHOD("get_global_rotation"), &Node2D::get_global_rotation);
 	ClassDB::bind_method(D_METHOD("set_global_scale", "scale"), &Node2D::set_global_scale);

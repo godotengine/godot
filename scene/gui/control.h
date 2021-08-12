@@ -395,8 +395,8 @@ public:
 
 	void set_position(const Point2 &p_point, bool p_keep_offsets = false);
 	void set_global_position(const Point2 &p_point, bool p_keep_offsets = false);
-	Point2 get_position() const;
-	Point2 get_global_position() const;
+	virtual Point2 get_position() const override;
+	virtual Point2 get_global_position() const override;
 	Point2 get_screen_position() const;
 
 	void set_size(const Size2 &p_size, bool p_keep_offsets = false);
