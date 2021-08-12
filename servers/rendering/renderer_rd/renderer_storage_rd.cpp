@@ -3453,6 +3453,7 @@ void RendererStorageRD::multimesh_allocate_data(RID p_multimesh, int p_instances
 	if (multimesh->buffer.is_valid()) {
 		RD::get_singleton()->free(multimesh->buffer);
 		multimesh->buffer = RID();
+		multimesh->uniform_set_2d = RID(); //cleared by dependency
 		multimesh->uniform_set_3d = RID(); //cleared by dependency
 	}
 
