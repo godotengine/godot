@@ -967,7 +967,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// Visual Node Ports
 
-	theme->set_constant("port_grab_distance_horizontal", "GraphEdit", 48 * scale);
+	theme->set_constant("port_grab_distance_horizontal", "GraphEdit", 24 * scale);
 	theme->set_constant("port_grab_distance_vertical", "GraphEdit", 6 * scale);
 
 	theme->set_stylebox("bg", "GraphEditMinimap", make_flat_stylebox(Color(0.24, 0.24, 0.24), 0, 0, 0, 0));

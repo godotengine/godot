@@ -520,6 +520,7 @@ void GraphEdit::_notification(int p_what) {
 
 bool GraphEdit::_filter_input(const Point2 &p_point) {
 	Ref<Texture2D> port = get_theme_icon(SNAME("port"), SNAME("GraphNode"));
+	Vector2i port_size = Vector2i(port->get_width(), port->get_height());
 
 	for (int i = get_child_count() - 1; i >= 0; i--) {
 		GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
@@ -529,14 +530,14 @@ bool GraphEdit::_filter_input(const Point2 &p_point) {
 
 		for (int j = 0; j < gn->get_connection_output_count(); j++) {
 			Vector2 pos = gn->get_connection_output_position(j) + gn->get_position();
-			if (is_in_hot_zone(pos / zoom, p_point / zoom)) {
+			if (is_in_hot_zone(pos / zoom, p_point / zoom, port_size, false)) {
 				return true;
 			}
 		}
 
 		for (int j = 0; j < gn->get_connection_input_count(); j++) {
 			Vector2 pos = gn->get_connection_input_position(j) + gn->get_position();
-			if (is_in_hot_zone(pos / zoom, p_point / zoom)) {
+			if (is_in_hot_zone(pos / zoom, p_point / zoom, port_size, true)) {
 				return true;
 			}
 		}
@@ -548,8 +549,10 @@ bool GraphEdit::_filter_input(const Point2 &p_point) {
 void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseButton> mb = p_ev;
 	if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT && mb->is_pressed()) {
-		connecting_valid = false;
 		Ref<Texture2D> port = get_theme_icon(SNAME("port"), SNAME("GraphNode"));
+		Vector2i port_size = Vector2i(port->get_width(), port->get_height());
+
+		connecting_valid = false;
 		click_pos = mb->get_position() / zoom;
 		for (int i = get_child_count() - 1; i >= 0; i--) {
 			GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
@@ -559,7 +562,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 			for (int j = 0; j < gn->get_connection_output_count(); j++) {
 				Vector2 pos = gn->get_connection_output_position(j) + gn->get_position();
-				if (is_in_hot_zone(pos / zoom, click_pos)) {
+				if (is_in_hot_zone(pos / zoom, click_pos, port_size, false)) {
 					if (valid_left_disconnect_types.has(gn->get_connection_output_type(j))) {
 						//check disconnect
 						for (const Connection &E : connections) {
@@ -601,7 +604,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 			for (int j = 0; j < gn->get_connection_input_count(); j++) {
 				Vector2 pos = gn->get_connection_input_position(j) + gn->get_position();
-				if (is_in_hot_zone(pos / zoom, click_pos)) {
+				if (is_in_hot_zone(pos / zoom, click_pos, port_size, true)) {
 					if (right_disconnects || valid_right_disconnect_types.has(gn->get_connection_input_type(j))) {
 						//check disconnect
 						for (const Connection &E : connections) {
@@ -650,10 +653,12 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 		connecting_target = false;
 		top_layer->update();
 		minimap->update();
-		connecting_valid = just_disconnected || click_pos.distance_to(connecting_to / zoom) > 20.0 * zoom;
+		connecting_valid = just_disconnected || click_pos.distance_to(connecting_to / zoom) > 20.0;
 
 		if (connecting_valid) {
 			Ref<Texture2D> port = get_theme_icon(SNAME("port"), SNAME("GraphNode"));
+			Vector2i port_size = Vector2i(port->get_width(), port->get_height());
+
 			Vector2 mpos = mm->get_position() / zoom;
 			for (int i = get_child_count() - 1; i >= 0; i--) {
 				GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
@@ -665,7 +670,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 					for (int j = 0; j < gn->get_connection_output_count(); j++) {
 						Vector2 pos = gn->get_connection_output_position(j) + gn->get_position();
 						int type = gn->get_connection_output_type(j);
-						if ((type == connecting_type || valid_connection_types.has(ConnType(type, connecting_type))) && is_in_hot_zone(pos / zoom, mpos)) {
+						if ((type == connecting_type || valid_connection_types.has(ConnType(type, connecting_type))) && is_in_hot_zone(pos / zoom, mpos, port_size, false)) {
 							connecting_target = true;
 							connecting_to = pos;
 							connecting_target_to = gn->get_name();
@@ -677,7 +682,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 					for (int j = 0; j < gn->get_connection_input_count(); j++) {
 						Vector2 pos = gn->get_connection_input_position(j) + gn->get_position();
 						int type = gn->get_connection_input_type(j);
-						if ((type == connecting_type || valid_connection_types.has(ConnType(type, connecting_type))) && is_in_hot_zone(pos / zoom, mpos)) {
+						if ((type == connecting_type || valid_connection_types.has(ConnType(type, connecting_type))) && is_in_hot_zone(pos / zoom, mpos, port_size, true)) {
 							connecting_target = true;
 							connecting_to = pos;
 							connecting_target_to = gn->get_name();
@@ -748,9 +753,25 @@ bool GraphEdit::_check_clickable_control(Control *p_control, const Vector2 &pos)
 	}
 }
 
-bool GraphEdit::is_in_hot_zone(const Vector2 &pos, const Vector2 &p_mouse_pos) {
-	if (!Rect2(pos.x - port_grab_distance_horizontal, pos.y - port_grab_distance_vertical, port_grab_distance_horizontal * 2, port_grab_distance_vertical * 2).has_point(p_mouse_pos)) {
-		return false;
+bool GraphEdit::is_in_hot_zone(const Vector2 &pos, const Vector2 &p_mouse_pos, const Vector2i &p_port_size, bool p_left) {
+	if (p_left) {
+		if (!Rect2(
+					pos.x - p_port_size.x / 2 - port_grab_distance_horizontal,
+					pos.y - p_port_size.y / 2 - port_grab_distance_vertical / 2,
+					p_port_size.x + port_grab_distance_horizontal,
+					p_port_size.y + port_grab_distance_vertical)
+						.has_point(p_mouse_pos)) {
+			return false;
+		}
+	} else {
+		if (!Rect2(
+					pos.x - p_port_size.x / 2,
+					pos.y - p_port_size.y / 2 - port_grab_distance_vertical / 2,
+					p_port_size.x + port_grab_distance_horizontal,
+					p_port_size.y + port_grab_distance_vertical)
+						.has_point(p_mouse_pos)) {
+			return false;
+		}
 	}
 
 	for (int i = 0; i < get_child_count(); i++) {
