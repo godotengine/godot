@@ -2610,15 +2610,14 @@ void ExternalTexture::set_flags(uint32_t p_flags) {
 }
 
 uint32_t ExternalTexture::get_flags() const {
-	// not supported
-	return 0;
+	return Texture::FLAG_VIDEO_SURFACE;
 }
 
 ExternalTexture::ExternalTexture() {
 	size = Size2(1.0, 1.0);
 	texture = VisualServer::get_singleton()->texture_create();
 
-	VisualServer::get_singleton()->texture_allocate(texture, size.width, size.height, 0, Image::FORMAT_RGBA8, VS::TEXTURE_TYPE_EXTERNAL, 0);
+	VisualServer::get_singleton()->texture_allocate(texture, size.width, size.height, 0, Image::FORMAT_RGBA8, VS::TEXTURE_TYPE_EXTERNAL, Texture::FLAG_VIDEO_SURFACE);
 	_change_notify();
 	emit_changed();
 }
