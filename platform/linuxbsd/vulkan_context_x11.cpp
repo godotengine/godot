@@ -48,7 +48,7 @@ Error VulkanContextX11::window_create(DisplayServer::WindowID p_window_id, Displ
 	createInfo.window = p_window;
 
 	VkSurfaceKHR surface;
-	VkResult err = vkCreateXlibSurfaceKHR(_get_instance(), &createInfo, nullptr, &surface);
+	VkResult err = vkCreateXlibSurfaceKHR(get_instance(), &createInfo, nullptr, &surface);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 	return _window_create(p_window_id, p_vsync_mode, surface, p_width, p_height);
 }

@@ -36,6 +36,10 @@ if env["use_volk"]:
 
     thirdparty_sources_volk = [thirdparty_volk_dir + "/volk.c"]
     env_thirdparty_volk.add_source_files(thirdparty_obj, thirdparty_sources_volk)
+elif env["platform"] == "android":
+    # Our current NDK version only provides old Vulkan headers,
+    # so we have to limit VMA.
+    env_thirdparty_vma.AppendUnique(CPPDEFINES=["VMA_VULKAN_VERSION=1000000"])
 
 env_thirdparty_vma.add_source_files(thirdparty_obj, thirdparty_sources_vma)
 

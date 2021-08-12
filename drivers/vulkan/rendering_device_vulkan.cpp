@@ -8794,6 +8794,7 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 		memset(&allocatorInfo, 0, sizeof(VmaAllocatorCreateInfo));
 		allocatorInfo.physicalDevice = p_context->get_physical_device();
 		allocatorInfo.device = device;
+		allocatorInfo.instance = p_context->get_instance();
 		vmaCreateAllocator(&allocatorInfo, &allocator);
 	}
 

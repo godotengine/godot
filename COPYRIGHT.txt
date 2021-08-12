@@ -453,7 +453,7 @@ License: Apache-2.0
 
 Files: ./thirdparty/vulkan/vk_mem_alloc.h
 Comment: Vulkan Memory Allocator
-Copyright: 2017-2019, Advanced Micro Devices, Inc.
+Copyright: 2017-2021, Advanced Micro Devices, Inc.
 License: Expat
 
 Files: ./thirdparty/wslay/

@@ -47,7 +47,7 @@ int VulkanContextWindows::window_create(DisplayServer::WindowID p_window_id, Dis
 	createInfo.hinstance = p_instance;
 	createInfo.hwnd = p_window;
 	VkSurfaceKHR surface;
-	VkResult err = vkCreateWin32SurfaceKHR(_get_instance(), &createInfo, nullptr, &surface);
+	VkResult err = vkCreateWin32SurfaceKHR(get_instance(), &createInfo, nullptr, &surface);
 	ERR_FAIL_COND_V(err, -1);
 	return _window_create(p_window_id, p_vsync_mode, surface, p_width, p_height);
 }
