@@ -24,10 +24,7 @@
 	<string>$signature</string>
 	<key>CFBundleVersion</key>
 	<string>$version</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>$microphone_usage_description</string>
-	<key>NSCameraUsageDescription</key>
-	<string>$camera_usage_description</string>
+$usage_descriptions
 	<key>NSHumanReadableCopyright</key>
 	<string>$copyright</string>
 	<key>CFBundleSupportedPlatforms</key>
@@ -46,6 +43,6 @@
 		<string>10.12</string>
 	</dict>
 	<key>NSHighResolutionCapable</key>
-	$highres
+$highres
 </dict>
 </plist>

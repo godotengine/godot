@@ -99,6 +99,7 @@ private:
 	Label *script_key_error;
 
 	Label *export_error;
+	Label *export_warning;
 	HBoxContainer *export_templates_error;
 
 	String default_filename;
