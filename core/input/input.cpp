@@ -837,24 +837,32 @@ void Input::parse_input_event(const Ref<InputEvent> &p_event) {
 
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (!use_accumulated_input) {
+	if (use_accumulated_input) {
+		if (buffered_events.is_empty() || !buffered_events.back()->get()->accumulate(p_event)) {
+			buffered_events.push_back(p_event);
+		}
+	} else if (use_input_buffering) {
+		buffered_events.push_back(p_event);
+	} else {
 		_parse_input_event_impl(p_event, false);
-		return;
 	}
-	if (!accumulated_events.is_empty() && accumulated_events.back()->get()->accumulate(p_event)) {
-		return; //event was accumulated, exit
-	}
-
-	accumulated_events.push_back(p_event);
 }
 
-void Input::flush_accumulated_events() {
+void Input::flush_buffered_events() {
 	_THREAD_SAFE_METHOD_
 
-	while (accumulated_events.front()) {
-		_parse_input_event_impl(accumulated_events.front()->get(), false);
-		accumulated_events.pop_front();
+	while (buffered_events.front()) {
+		_parse_input_event_impl(buffered_events.front()->get(), false);
+		buffered_events.pop_front();
 	}
+}
+
+bool Input::is_using_input_buffering() {
+	return use_input_buffering;
+}
+
+void Input::set_use_input_buffering(bool p_enable) {
+	use_input_buffering = p_enable;
 }
 
 void Input::set_use_accumulated_input(bool p_enable) {
@@ -862,7 +870,7 @@ void Input::set_use_accumulated_input(bool p_enable) {
 }
 
 void Input::release_pressed_events() {
-	flush_accumulated_events(); // this is needed to release actions strengths
+	flush_buffered_events(); // this is needed to release actions strengths
 
 	keys_pressed.clear();
 	joy_buttons_pressed.clear();

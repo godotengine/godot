@@ -2587,6 +2587,11 @@ bool Main::iteration() {
 
 	iterating--;
 
+	// Needed for OSs using input buffering regardless accumulation (like Android)
+	if (Input::get_singleton()->is_using_input_buffering()) {
+		Input::get_singleton()->flush_buffered_events();
+	}
+
 	if (fixed_fps != -1) {
 		return exit;
 	}

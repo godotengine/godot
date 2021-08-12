@@ -3433,7 +3433,7 @@ void DisplayServerX11::process_events() {
 		*/
 	}
 
-	Input::get_singleton()->flush_accumulated_events();
+	Input::get_singleton()->flush_buffered_events();
 }
 
 void DisplayServerX11::release_rendering_thread() {

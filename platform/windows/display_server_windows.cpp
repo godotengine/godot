@@ -1527,7 +1527,7 @@ void DisplayServerWindows::process_events() {
 
 	if (!drop_events) {
 		_process_key_events();
-		Input::get_singleton()->flush_accumulated_events();
+		Input::get_singleton()->flush_buffered_events();
 	}
 }
 

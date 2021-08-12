@@ -335,7 +335,7 @@ bool DisplayServerAndroid::can_any_window_draw() const {
 }
 
 void DisplayServerAndroid::process_events() {
-	Input::get_singleton()->flush_accumulated_events();
+	Input::get_singleton()->flush_buffered_events();
 }
 
 Vector<String> DisplayServerAndroid::get_rendering_drivers_func() {
