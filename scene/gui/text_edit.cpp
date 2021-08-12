@@ -62,11 +62,19 @@ static bool _is_char(char32_t c) {
 ///////////////////////////////////////////////////////////////////////////////
 
 void TextEdit::Text::set_font(const Ref<Font> &p_font) {
+	if (font == p_font) {
+		return;
+	}
 	font = p_font;
+	is_dirty = true;
 }
 
 void TextEdit::Text::set_font_size(int p_font_size) {
+	if (font_size == p_font_size) {
+		return;
+	}
 	font_size = p_font_size;
+	is_dirty = true;
 }
 
 void TextEdit::Text::set_tab_size(int p_tab_size) {
@@ -78,16 +86,28 @@ int TextEdit::Text::get_tab_size() const {
 }
 
 void TextEdit::Text::set_font_features(const Dictionary &p_features) {
+	if (opentype_features.hash() == p_features.hash()) {
+		return;
+	}
 	opentype_features = p_features;
+	is_dirty = true;
 }
 
 void TextEdit::Text::set_direction_and_language(TextServer::Direction p_direction, const String &p_language) {
+	if (direction == p_direction && language == p_language) {
+		return;
+	}
 	direction = p_direction;
 	language = p_language;
+	is_dirty = true;
 }
 
 void TextEdit::Text::set_draw_control_chars(bool p_draw_control_chars) {
+	if (draw_control_chars == p_draw_control_chars) {
+		return;
+	}
 	draw_control_chars = p_draw_control_chars;
+	is_dirty = true;
 }
 
 int TextEdit::Text::get_line_width(int p_line, int p_wrap_index) const {
@@ -176,9 +196,14 @@ void TextEdit::Text::invalidate_all_lines() {
 }
 
 void TextEdit::Text::invalidate_all() {
+	if (!is_dirty) {
+		return;
+	}
+
 	for (int i = 0; i < text.size(); i++) {
 		invalidate_cache(i);
 	}
+	is_dirty = false;
 }
 
 void TextEdit::Text::clear() {
@@ -4748,7 +4773,6 @@ bool TextEdit::_set(const StringName &p_name, const Variant &p_value) {
 				opentype_features[tag] = value;
 				text.set_font_features(opentype_features);
 				text.invalidate_all();
-				;
 				update();
 			}
 		}

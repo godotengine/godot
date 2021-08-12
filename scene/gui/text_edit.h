@@ -151,6 +151,8 @@ private:
 		};
 
 	private:
+		bool is_dirty = false;
+
 		mutable Vector<Line> text;
 		Ref<Font> font;
 		int font_size = -1;
