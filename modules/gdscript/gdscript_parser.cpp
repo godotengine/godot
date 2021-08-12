@@ -2415,7 +2415,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_await(ExpressionNode *p_pr
 	AwaitNode *await = alloc_node<AwaitNode>();
 	await->to_await = parse_precedence(PREC_AWAIT, false);
 
-	current_function->is_coroutine = true;
+	if (current_function) { // Might be null in a getter or setter.
+		current_function->is_coroutine = true;
+	}
 
 	return await;
 }
