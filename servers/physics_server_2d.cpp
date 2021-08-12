@@ -422,11 +422,11 @@ void PhysicsDirectSpaceState2D::_bind_methods() {
 
 ///////////////////////////////
 
-Vector2 PhysicsTestMotionResult2D::get_motion() const {
-	return result.motion;
+Vector2 PhysicsTestMotionResult2D::get_travel() const {
+	return result.travel;
 }
 
-Vector2 PhysicsTestMotionResult2D::get_motion_remainder() const {
+Vector2 PhysicsTestMotionResult2D::get_remainder() const {
 	return result.remainder;
 }
 
@@ -471,8 +471,8 @@ real_t PhysicsTestMotionResult2D::get_collision_unsafe_fraction() const {
 }
 
 void PhysicsTestMotionResult2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_motion"), &PhysicsTestMotionResult2D::get_motion);
-	ClassDB::bind_method(D_METHOD("get_motion_remainder"), &PhysicsTestMotionResult2D::get_motion_remainder);
+	ClassDB::bind_method(D_METHOD("get_travel"), &PhysicsTestMotionResult2D::get_travel);
+	ClassDB::bind_method(D_METHOD("get_remainder"), &PhysicsTestMotionResult2D::get_remainder);
 	ClassDB::bind_method(D_METHOD("get_collision_point"), &PhysicsTestMotionResult2D::get_collision_point);
 	ClassDB::bind_method(D_METHOD("get_collision_normal"), &PhysicsTestMotionResult2D::get_collision_normal);
 	ClassDB::bind_method(D_METHOD("get_collider_velocity"), &PhysicsTestMotionResult2D::get_collider_velocity);
@@ -484,8 +484,8 @@ void PhysicsTestMotionResult2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collision_safe_fraction"), &PhysicsTestMotionResult2D::get_collision_safe_fraction);
 	ClassDB::bind_method(D_METHOD("get_collision_unsafe_fraction"), &PhysicsTestMotionResult2D::get_collision_unsafe_fraction);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "motion"), "", "get_motion");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "motion_remainder"), "", "get_motion_remainder");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "travel"), "", "get_travel");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "remainder"), "", "get_remainder");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "collision_point"), "", "get_collision_point");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "collision_normal"), "", "get_collision_normal");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "collider_velocity"), "", "get_collider_velocity");

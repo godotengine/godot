@@ -560,7 +560,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 	if (!shapes_found) {
 		if (r_result) {
 			*r_result = PhysicsServer2D::MotionResult();
-			r_result->motion = p_motion;
+			r_result->travel = p_motion;
 		}
 		return false;
 	}
@@ -954,9 +954,9 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 				Vector2 rel_vec = r_result->collision_point - body->get_transform().get_origin();
 				r_result->collider_velocity = Vector2(-body->get_angular_velocity() * rel_vec.y, body->get_angular_velocity() * rel_vec.x) + body->get_linear_velocity();
 
-				r_result->motion = safe * p_motion;
+				r_result->travel = safe * p_motion;
 				r_result->remainder = p_motion - safe * p_motion;
-				r_result->motion += (body_transform.get_origin() - p_from.get_origin());
+				r_result->travel += (body_transform.get_origin() - p_from.get_origin());
 			}
 
 			collided = true;
@@ -964,9 +964,9 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 	}
 
 	if (!collided && r_result) {
-		r_result->motion = p_motion;
+		r_result->travel = p_motion;
 		r_result->remainder = Vector2();
-		r_result->motion += (body_transform.get_origin() - p_from.get_origin());
+		r_result->travel += (body_transform.get_origin() - p_from.get_origin());
 	}
 
 	return collided;
