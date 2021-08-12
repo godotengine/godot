@@ -1210,9 +1210,6 @@ Vector3 KinematicBody::move_and_slide_with_snap(const Vector3 &p_linear_velocity
 }
 
 void KinematicBody::_set_collision_direction(const Collision &p_collision, const Vector3 &p_up_direction, float p_floor_max_angle) {
-	on_floor = false;
-	on_ceiling = false;
-	on_wall = false;
 	if (p_up_direction == Vector3()) {
 		//all is a wall
 		on_wall = true;
