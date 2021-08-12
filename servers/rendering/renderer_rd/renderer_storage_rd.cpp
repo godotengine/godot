@@ -9129,7 +9129,7 @@ RendererStorageRD::RendererStorageRD() {
 				} break;
 				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS: {
 					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
-					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
 					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
 						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
 					} else {
@@ -9148,7 +9148,7 @@ RendererStorageRD::RendererStorageRD() {
 				} break;
 				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC: {
 					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
-					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
 					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
 						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
 					} else {
