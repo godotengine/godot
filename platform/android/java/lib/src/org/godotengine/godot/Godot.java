@@ -842,6 +842,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	}
 
 	private void forceQuit() {
+		getActivity().finish();
 		System.exit(0);
 	}
 
