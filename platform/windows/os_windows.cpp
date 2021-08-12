@@ -574,7 +574,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					mm->set_relative(Vector2(mm->get_position() - Vector2(old_x, old_y)));
 					old_x = mm->get_position().x;
 					old_y = mm->get_position().y;
-					if (window_has_focus && main_loop)
+					if (window_has_focus && main_loop && mm->get_relative() != Vector2())
 						input->accumulate_input_event(mm);
 				}
 				return 0;
@@ -718,7 +718,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			mm->set_relative(Vector2(mm->get_position() - Vector2(old_x, old_y)));
 			old_x = mm->get_position().x;
 			old_y = mm->get_position().y;
-			if (window_has_focus && main_loop)
+			if (window_has_focus && main_loop && mm->get_relative() != Vector2())
 				input->accumulate_input_event(mm);
 			return 0;
 		} break;
@@ -820,7 +820,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			mm->set_relative(Vector2(mm->get_position() - Vector2(old_x, old_y)));
 			old_x = mm->get_position().x;
 			old_y = mm->get_position().y;
-			if (window_has_focus && main_loop)
+			if (window_has_focus && main_loop && mm->get_relative() != Vector2())
 				input->accumulate_input_event(mm);
 
 		} break;
