@@ -592,6 +592,14 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		}
 
 		if (vsnode->is_use_prop_slots()) {
+			String error = vsnode->get_warning(visual_shader->get_mode(), p_type);
+			if (error != String()) {
+				Label *error_label = memnew(Label);
+				error_label->add_theme_color_override("font_color", VisualShaderEditor::get_singleton()->get_theme_color(SNAME("error_color"), SNAME("Editor")));
+				error_label->set_text(error);
+				node->add_child(error_label);
+			}
+
 			return;
 		}
 		custom_editor = nullptr;
@@ -2029,6 +2037,8 @@ void VisualShaderEditor::_uniform_line_edit_changed(const String &p_text, int p_
 	undo_redo->add_undo_method(node.ptr(), "set_uniform_name", node->get_uniform_name());
 	undo_redo->add_do_method(graph_plugin.ptr(), "set_uniform_name", type, p_node_id, validated_name);
 	undo_redo->add_undo_method(graph_plugin.ptr(), "set_uniform_name", type, p_node_id, node->get_uniform_name());
+	undo_redo->add_do_method(graph_plugin.ptr(), "update_node_deferred", type, p_node_id);
+	undo_redo->add_undo_method(graph_plugin.ptr(), "update_node_deferred", type, p_node_id);
 
 	undo_redo->add_do_method(this, "_update_uniforms", true);
 	undo_redo->add_undo_method(this, "_update_uniforms", true);
