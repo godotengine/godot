@@ -5021,7 +5021,11 @@ void VisualShaderNodePortPreview::_shader_changed() {
 
 	Ref<Shader> preview_shader;
 	preview_shader.instantiate();
+
+	RS::get_singleton()->set_suppress_shader_errors(true);
 	preview_shader->set_code(shader_code);
+	RS::get_singleton()->set_suppress_shader_errors(false);
+
 	for (int i = 0; i < default_textures.size(); i++) {
 		preview_shader->set_default_texture_param(default_textures[i].name, default_textures[i].param);
 	}
@@ -5115,7 +5119,9 @@ Ref<Resource> VisualShaderConversionPlugin::convert(const Ref<Resource> &p_resou
 	shader.instantiate();
 
 	String code = vshader->get_code();
+	RS::get_singleton()->set_suppress_shader_errors(true);
 	shader->set_code(code);
+	RS::get_singleton()->set_suppress_shader_errors(false);
 
 	return shader;
 }

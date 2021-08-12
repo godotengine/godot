@@ -183,7 +183,9 @@ void ShaderTextEditor::_check_shader_mode() {
 	}
 
 	if (shader->get_mode() != mode) {
+		RS::get_singleton()->set_suppress_shader_errors(true);
 		shader->set_code(get_text_editor()->get_text());
+		RS::get_singleton()->set_suppress_shader_errors(false);
 		_load_theme_settings();
 	}
 }
@@ -497,7 +499,9 @@ void ShaderEditor::_reload_shader_from_disk() {
 	Ref<Shader> rel_shader = ResourceLoader::load(shader->get_path(), shader->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
 	ERR_FAIL_COND(!rel_shader.is_valid());
 
+	RS::get_singleton()->set_suppress_shader_errors(true);
 	shader->set_code(rel_shader->get_code());
+	RS::get_singleton()->set_suppress_shader_errors(false);
 	shader->set_last_modified_time(rel_shader->get_last_modified_time());
 	shader_editor->reload_text();
 }
@@ -539,7 +543,9 @@ void ShaderEditor::apply_shaders() {
 		String shader_code = shader->get_code();
 		String editor_code = shader_editor->get_text_editor()->get_text();
 		if (shader_code != editor_code) {
+			RS::get_singleton()->set_suppress_shader_errors(true);
 			shader->set_code(editor_code);
+			RS::get_singleton()->set_suppress_shader_errors(false);
 			shader->set_edited(true);
 		}
 	}

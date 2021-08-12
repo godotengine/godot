@@ -1948,7 +1948,10 @@ void VisualShader::_update_shader() const {
 	}
 	final_code += tcode;
 
+	RS::get_singleton()->set_suppress_shader_errors(true);
 	const_cast<VisualShader *>(this)->set_code(final_code);
+	RS::get_singleton()->set_suppress_shader_errors(false);
+
 	for (int i = 0; i < default_tex_params.size(); i++) {
 		const_cast<VisualShader *>(this)->set_default_texture_param(default_tex_params[i].name, default_tex_params[i].param);
 	}

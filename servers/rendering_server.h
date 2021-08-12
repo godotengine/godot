@@ -61,6 +61,7 @@ protected:
 	RID test_texture;
 	RID white_texture;
 	RID test_material;
+	bool suppress_shader_errors = false;
 
 	Error _surface_set_data(Array p_arrays, uint32_t p_format, uint32_t *p_offsets, uint32_t p_vertex_stride, uint32_t p_attrib_stride, uint32_t p_skin_stride, Vector<uint8_t> &r_vertex_array, Vector<uint8_t> &r_attrib_array, Vector<uint8_t> &r_skin_array, int p_vertex_array_len, Vector<uint8_t> &r_index_array, int p_index_array_len, AABB &r_aabb, Vector<AABB> &r_bone_aabb);
 
@@ -173,6 +174,9 @@ public:
 
 	virtual void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture) = 0;
 	virtual RID shader_get_default_texture_param(RID p_shader, const StringName &p_name) const = 0;
+
+	_FORCE_INLINE_ void set_suppress_shader_errors(bool p_enabled) { suppress_shader_errors = p_enabled; }
+	_FORCE_INLINE_ bool is_shader_errors_suppressed() const { return suppress_shader_errors; }
 
 	struct ShaderNativeSourceCode {
 		struct Version {

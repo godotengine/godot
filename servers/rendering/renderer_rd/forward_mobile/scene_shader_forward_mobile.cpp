@@ -135,8 +135,12 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	SceneShaderForwardMobile *shader_singleton = (SceneShaderForwardMobile *)SceneShaderForwardMobile::singleton;
 
 	Error err = shader_singleton->compiler.compile(RS::SHADER_SPATIAL, code, &actions, path, gen_code);
-
-	ERR_FAIL_COND(err != OK);
+	if (err != OK) {
+		if (RS::get_singleton()->is_shader_errors_suppressed()) {
+			return;
+		}
+		ERR_FAIL_MSG("Shader compilation failed.");
+	}
 
 	if (version.is_null()) {
 		version = shader_singleton->shader.version_create();

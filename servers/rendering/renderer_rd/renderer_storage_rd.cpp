@@ -5268,8 +5268,12 @@ void RendererStorageRD::ParticlesShaderData::set_code(const String &p_code) {
 	actions.uniforms = &uniforms;
 
 	Error err = base_singleton->particles_shader.compiler.compile(RS::SHADER_PARTICLES, code, &actions, path, gen_code);
-
-	ERR_FAIL_COND(err != OK);
+	if (err != OK) {
+		if (RS::get_singleton()->is_shader_errors_suppressed()) {
+			return;
+		}
+		ERR_FAIL_MSG("Shader compilation failed.");
+	}
 
 	if (version.is_null()) {
 		version = base_singleton->particles_shader.shader.version_create();
