@@ -111,6 +111,7 @@ private:
 
 	bool emulate_touch_from_mouse = false;
 	bool emulate_mouse_from_touch = false;
+	bool use_input_buffering = false;
 	bool use_accumulated_input = false;
 
 	int mouse_from_touch_index = -1;
@@ -213,7 +214,7 @@ private:
 
 	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated);
 
-	List<Ref<InputEvent>> accumulated_events;
+	List<Ref<InputEvent>> buffered_events;
 
 	friend class DisplayServer;
 
@@ -323,8 +324,9 @@ public:
 	String get_joy_guid(int p_device) const;
 	void set_fallback_mapping(String p_guid);
 
-	void accumulate_input_event(const Ref<InputEvent> &p_event);
-	void flush_accumulated_events();
+	void flush_buffered_events();
+	bool is_using_input_buffering();
+	void set_use_input_buffering(bool p_enable);
 	void set_use_accumulated_input(bool p_enable);
 
 	void release_pressed_events();

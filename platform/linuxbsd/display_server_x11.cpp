@@ -2247,7 +2247,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 					k->set_shift_pressed(true);
 				}
 
-				Input::get_singleton()->accumulate_input_event(k);
+				Input::get_singleton()->parse_input_event(k);
 			}
 			memfree(utf8string);
 			return;
@@ -2396,7 +2396,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 		}
 	}
 
-	Input::get_singleton()->accumulate_input_event(k);
+	Input::get_singleton()->parse_input_event(k);
 }
 
 Atom DisplayServerX11::_process_selection_request_target(Atom p_target, Window p_requestor, Atom p_property) const {
@@ -2883,13 +2883,13 @@ void DisplayServerX11::process_events() {
 								// in a spurious mouse motion event being sent to Godot; remember it to be able to filter it out
 								xi.mouse_pos_to_filter = pos;
 							}
-							Input::get_singleton()->accumulate_input_event(st);
+							Input::get_singleton()->parse_input_event(st);
 						} else {
 							if (!xi.state.has(index)) { // Defensive
 								break;
 							}
 							xi.state.erase(index);
-							Input::get_singleton()->accumulate_input_event(st);
+							Input::get_singleton()->parse_input_event(st);
 						}
 					} break;
 
@@ -2906,7 +2906,7 @@ void DisplayServerX11::process_events() {
 							sd->set_index(index);
 							sd->set_position(pos);
 							sd->set_relative(pos - curr_pos_elem->value());
-							Input::get_singleton()->accumulate_input_event(sd);
+							Input::get_singleton()->parse_input_event(sd);
 
 							curr_pos_elem->value() = pos;
 						}
@@ -3058,7 +3058,7 @@ void DisplayServerX11::process_events() {
 					st->set_index(E->key());
 					st->set_window_id(window_id);
 					st->set_position(E->get());
-					Input::get_singleton()->accumulate_input_event(st);
+					Input::get_singleton()->parse_input_event(st);
 				}
 				xi.state.clear();
 #endif
@@ -3156,7 +3156,7 @@ void DisplayServerX11::process_events() {
 									mb->set_window_id(window_id_other);
 									mb->set_position(Vector2(x, y));
 									mb->set_global_position(mb->get_position());
-									Input::get_singleton()->accumulate_input_event(mb);
+									Input::get_singleton()->parse_input_event(mb);
 								}
 								break;
 							}
@@ -3164,7 +3164,7 @@ void DisplayServerX11::process_events() {
 					}
 				}
 
-				Input::get_singleton()->accumulate_input_event(mb);
+				Input::get_singleton()->parse_input_event(mb);
 
 			} break;
 			case MotionNotify: {
@@ -3280,7 +3280,7 @@ void DisplayServerX11::process_events() {
 				// this is so that the relative motion doesn't get messed up
 				// after we regain focus.
 				if (focused) {
-					Input::get_singleton()->accumulate_input_event(mm);
+					Input::get_singleton()->parse_input_event(mm);
 				} else {
 					// Propagate the event to the focused window,
 					// because it's received only on the topmost window.
@@ -3300,7 +3300,7 @@ void DisplayServerX11::process_events() {
 							mm->set_position(pos_focused);
 							mm->set_global_position(pos_focused);
 							mm->set_speed(Input::get_singleton()->get_last_mouse_speed());
-							Input::get_singleton()->accumulate_input_event(mm);
+							Input::get_singleton()->parse_input_event(mm);
 
 							break;
 						}
@@ -3433,7 +3433,7 @@ void DisplayServerX11::process_events() {
 		*/
 	}
 
-	Input::get_singleton()->flush_accumulated_events();
+	Input::get_singleton()->flush_buffered_events();
 }
 
 void DisplayServerX11::release_rendering_thread() {

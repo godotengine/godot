@@ -1735,6 +1735,8 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	Input *id = Input::get_singleton();
 	if (id) {
+		agile_input_event_flushing = GLOBAL_DEF("input_devices/buffering/agile_event_flushing", false);
+
 		if (bool(GLOBAL_DEF("input_devices/pointing/emulate_touch_from_mouse", false)) &&
 				!(editor || project_manager)) {
 			bool found_touchscreen = false;
@@ -2442,6 +2444,7 @@ uint32_t Main::frames = 0;
 uint32_t Main::frame = 0;
 bool Main::force_redraw_requested = false;
 int Main::iterating = 0;
+bool Main::agile_input_event_flushing = false;
 
 bool Main::is_iterating() {
 	return iterating > 0;
@@ -2491,9 +2494,13 @@ bool Main::iteration() {
 
 	bool exit = false;
 
-	Engine::get_singleton()->_in_physics = true;
-
 	for (int iters = 0; iters < advance.physics_steps; ++iters) {
+		if (Input::get_singleton()->is_using_input_buffering() && agile_input_event_flushing) {
+			Input::get_singleton()->flush_buffered_events();
+		}
+
+		Engine::get_singleton()->_in_physics = true;
+
 		uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
 
 		PhysicsServer3D::get_singleton()->sync();
@@ -2522,9 +2529,13 @@ bool Main::iteration() {
 		physics_process_ticks = MAX(physics_process_ticks, OS::get_singleton()->get_ticks_usec() - physics_begin); // keep the largest one for reference
 		physics_process_max = MAX(OS::get_singleton()->get_ticks_usec() - physics_begin, physics_process_max);
 		Engine::get_singleton()->_physics_frames++;
+
+		Engine::get_singleton()->_in_physics = false;
 	}
 
-	Engine::get_singleton()->_in_physics = false;
+	if (Input::get_singleton()->is_using_input_buffering() && agile_input_event_flushing) {
+		Input::get_singleton()->flush_buffered_events();
+	}
 
 	uint64_t process_begin = OS::get_singleton()->get_ticks_usec();
 
@@ -2586,6 +2597,11 @@ bool Main::iteration() {
 	}
 
 	iterating--;
+
+	// Needed for OSs using input buffering regardless accumulation (like Android)
+	if (Input::get_singleton()->is_using_input_buffering() && !agile_input_event_flushing) {
+		Input::get_singleton()->flush_buffered_events();
+	}
 
 	if (fixed_fps != -1) {
 		return exit;

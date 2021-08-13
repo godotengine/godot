@@ -1210,6 +1210,22 @@ String InputEventScreenDrag::to_string() {
 	return vformat("InputEventScreenDrag: index=%d, position=(%s), relative=(%s), speed=(%s)", index, String(get_position()), String(get_relative()), String(get_speed()));
 }
 
+bool InputEventScreenDrag::accumulate(const Ref<InputEvent> &p_event) {
+	Ref<InputEventScreenDrag> drag = p_event;
+	if (drag.is_null())
+		return false;
+
+	if (get_index() != drag->get_index()) {
+		return false;
+	}
+
+	set_position(drag->get_position());
+	set_speed(drag->get_speed());
+	relative += drag->get_relative();
+
+	return true;
+}
+
 void InputEventScreenDrag::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_index", "index"), &InputEventScreenDrag::set_index);
 	ClassDB::bind_method(D_METHOD("get_index"), &InputEventScreenDrag::get_index);

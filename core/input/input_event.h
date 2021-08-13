@@ -410,6 +410,8 @@ public:
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
+	virtual bool accumulate(const Ref<InputEvent> &p_event) override;
+
 	InputEventScreenDrag() {}
 };
 

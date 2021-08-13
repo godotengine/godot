@@ -95,7 +95,6 @@ public:
 
 	void main_loop_begin();
 	bool main_loop_iterate();
-	void main_loop_request_go_back();
 	void main_loop_end();
 	void main_loop_focusout();
 	void main_loop_focusin();

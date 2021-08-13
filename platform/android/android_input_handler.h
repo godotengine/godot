@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  main.h                                                               */
+/*  android_input_handler.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,55 +28,64 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef ANDROID_INPUT_HANDLER_H
+#define ANDROID_INPUT_HANDLER_H
 
-#include "core/error/error_list.h"
-#include "core/os/thread.h"
-#include "core/typedefs.h"
+#include "core/input/input.h"
 
-class Main {
-	static void print_help(const char *p_binary);
-	static uint64_t last_ticks;
-	static uint32_t frames;
-	static uint32_t frame;
-	static bool force_redraw_requested;
-	static int iterating;
-	static bool agile_input_event_flushing;
+// This class encapsulates all the handling of input events that come from the Android UI thread.
+// Remarks:
+// - It's not thread-safe by itself, so its functions must only be called on a single thread, which is the Android UI thread.
+// - Its functions must only call thread-safe methods.
+class AndroidInputHandler {
+public:
+	struct TouchPos {
+		int id = 0;
+		Point2 pos;
+	};
+
+	enum {
+		JOY_EVENT_BUTTON = 0,
+		JOY_EVENT_AXIS = 1,
+		JOY_EVENT_HAT = 2
+	};
+
+	struct JoypadEvent {
+		int device = 0;
+		int type = 0;
+		int index = 0;
+		bool pressed = false;
+		float value = 0;
+		int hat = 0;
+	};
+
+private:
+	bool alt_mem = false;
+	bool shift_mem = false;
+	bool control_mem = false;
+	bool meta_mem = false;
+
+	MouseButton buttons_state = MOUSE_BUTTON_NONE;
+
+	Vector<TouchPos> touch;
+	Point2 hover_prev_pos; // needed to calculate the relative position on hover events
+	Point2 scroll_prev_pos; // needed to calculate the relative position on scroll events
+
+	void _set_key_modifier_state(Ref<InputEventWithModifiers> ev);
+
+	static MouseButton _button_index_from_mask(MouseButton button_mask);
+	static MouseButton _android_button_mask_to_godot_button_mask(int android_button_mask);
+
+	void _wheel_button_click(MouseButton event_buttons_mask, const Ref<InputEventMouseButton> &ev, MouseButton wheel_button, float factor);
 
 public:
-	static bool is_project_manager();
-	static bool is_cmdline_tool();
-	static int test_entrypoint(int argc, char *argv[], bool &tests_need_run);
-	static Error setup(const char *execpath, int argc, char *argv[], bool p_second_phase = true);
-	static Error setup2(Thread::ID p_main_tid_override = 0);
-#ifdef TESTS_ENABLED
-	static Error test_setup();
-	static void test_cleanup();
-#endif
-	static bool start();
-
-	static bool iteration();
-	static void force_redraw();
-
-	static bool is_iterating();
-
-	static void cleanup(bool p_force = false);
+	void process_touch(int p_event, int p_pointer, const Vector<TouchPos> &p_points);
+	void process_hover(int p_type, Point2 p_pos);
+	void process_mouse_event(int input_device, int event_action, int event_android_buttons_mask, Point2 event_pos, float event_vertical_factor = 0, float event_horizontal_factor = 0);
+	void process_double_tap(int event_android_button_mask, Point2 p_pos);
+	void process_scroll(Point2 p_pos);
+	void process_joy_event(JoypadEvent p_event);
+	void process_key_event(int p_keycode, int p_scancode, int p_unicode_char, bool p_pressed);
 };
 
-// Test main override is for the testing behaviour.
-#define TEST_MAIN_OVERRIDE                                         \
-	bool run_test = false;                                         \
-	int return_code = Main::test_entrypoint(argc, argv, run_test); \
-	if (run_test) {                                                \
-		return return_code;                                        \
-	}
-
-#define TEST_MAIN_PARAM_OVERRIDE(argc, argv)                       \
-	bool run_test = false;                                         \
-	int return_code = Main::test_entrypoint(argc, argv, run_test); \
-	if (run_test) {                                                \
-		return return_code;                                        \
-	}
-
-#endif // MAIN_H
+#endif
