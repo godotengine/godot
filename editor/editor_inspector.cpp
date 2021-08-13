@@ -887,7 +887,7 @@ Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 				text += "\n" + property_doc;
 			}
 		}
-		help_bit->set_text(text);
+		help_bit->call_deferred(SNAME("set_text"), text); //hack so it uses proper theme once inside scene
 	}
 
 	return help_bit;
@@ -1102,7 +1102,7 @@ Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) cons
 				text += "\n" + property_doc;
 			}
 		}
-		help_bit->set_text(text); //hack so it uses proper theme once inside scene
+		help_bit->call_deferred(SNAME("set_text"), text); //hack so it uses proper theme once inside scene
 	}
 
 	return help_bit;
