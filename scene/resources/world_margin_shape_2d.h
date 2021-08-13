@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  line_shape_2d.h                                                      */
+/*  world_margin_shape_2d.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,15 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef LINE_SHAPE_2D_H
-#define LINE_SHAPE_2D_H
+#ifndef WORLD_MARGIN_SHAPE_2D_H
+#define WORLD_MARGIN_SHAPE_2D_H
 
 #include "scene/resources/shape_2d.h"
 
-class LineShape2D : public Shape2D {
-	GDCLASS(LineShape2D, Shape2D);
+class WorldMarginShape2D : public Shape2D {
+	GDCLASS(WorldMarginShape2D, Shape2D);
 
-	// LineShape2D is often used for one-way platforms, where the normal pointing up makes sense.
+	// WorldMarginShape2D is often used for one-way platforms, where the normal pointing up makes sense.
 	Vector2 normal = Vector2(0, -1);
 	real_t distance = 0.0;
 
@@ -58,7 +58,7 @@ public:
 	virtual Rect2 get_rect() const override;
 	virtual real_t get_enclosing_radius() const override;
 
-	LineShape2D();
+	WorldMarginShape2D();
 };
 
-#endif // LINE_SHAPE_2D_H
+#endif // WORLD_MARGIN_SHAPE_2D_H

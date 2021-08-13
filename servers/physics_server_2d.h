@@ -219,7 +219,7 @@ public:
 	static PhysicsServer2D *get_singleton();
 
 	enum ShapeType {
-		SHAPE_LINE, ///< plane:"plane"
+		SHAPE_WORLD_MARGIN, ///< plane:"plane"
 		SHAPE_SEGMENT, ///< float:"length"
 		SHAPE_CIRCLE, ///< float:"radius"
 		SHAPE_RECTANGLE, ///< vec3:"extents"
@@ -229,7 +229,7 @@ public:
 		SHAPE_CUSTOM, ///< Server-Implementation based custom shape, calling shape_create() with this value will result in an error
 	};
 
-	virtual RID line_shape_create() = 0;
+	virtual RID world_margin_shape_create() = 0;
 	virtual RID segment_shape_create() = 0;
 	virtual RID circle_shape_create() = 0;
 	virtual RID rectangle_shape_create() = 0;

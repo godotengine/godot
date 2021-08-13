@@ -716,11 +716,6 @@
 				Sets a joint parameter. See [enum JointParam] for a list of available parameters.
 			</description>
 		</method>
-		<method name="line_shape_create">
-			<return type="RID" />
-			<description>
-			</description>
-		</method>
 		<method name="rectangle_shape_create">
 			<return type="RID" />
 			<description>
@@ -812,6 +807,11 @@
 				Sets the value for a space parameter. See [enum SpaceParameter] for a list of available parameters.
 			</description>
 		</method>
+		<method name="world_margin_shape_create">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 		<constant name="SPACE_PARAM_CONTACT_RECYCLE_RADIUS" value="0" enum="SpaceParameter">
@@ -837,11 +837,11 @@
 		</constant>
 		<constant name="SPACE_PARAM_TEST_MOTION_MIN_CONTACT_DEPTH" value="7" enum="SpaceParameter">
 		</constant>
-		<constant name="SHAPE_LINE" value="0" enum="ShapeType">
-			This is the constant for creating line shapes. A line shape is an infinite line with an origin point, and a normal. Thus, it can be used for front/behind checks.
+		<constant name="SHAPE_WORLD_MARGIN" value="0" enum="ShapeType">
+			This is the constant for creating world margin shapes. A world margin shape is an [i]infinite[/i] line with an origin point, and a normal. Thus, it can be used for front/behind checks.
 		</constant>
 		<constant name="SHAPE_SEGMENT" value="1" enum="ShapeType">
-			This is the constant for creating segment shapes. A segment shape is a line from a point A to a point B. It can be checked for intersections.
+			This is the constant for creating segment shapes. A segment shape is a [i]finite[/i] line from a point A to a point B. It can be checked for intersections.
 		</constant>
 		<constant name="SHAPE_CIRCLE" value="2" enum="ShapeType">
 			This is the constant for creating circle shapes. A circle shape only has a radius. It can be used for intersections and inside/outside checks.

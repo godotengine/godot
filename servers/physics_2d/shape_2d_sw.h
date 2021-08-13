@@ -36,7 +36,7 @@
 
 /*
 
-SHAPE_LINE, ///< plane:"plane"
+SHAPE_WORLD_MARGIN, ///< plane:"plane"
 SHAPE_SEGMENT, ///< real_t:"length"
 SHAPE_CIRCLE, ///< real_t:"radius"
 SHAPE_RECTANGLE, ///< vec3:"extents"
@@ -152,7 +152,7 @@ public:
 		r_max = MAX(maxa, maxb);                                                                                                                                 \
 	}
 
-class LineShape2DSW : public Shape2DSW {
+class WorldMarginShape2DSW : public Shape2DSW {
 	Vector2 normal;
 	real_t d;
 
@@ -160,7 +160,7 @@ public:
 	_FORCE_INLINE_ Vector2 get_normal() const { return normal; }
 	_FORCE_INLINE_ real_t get_d() const { return d; }
 
-	virtual PhysicsServer2D::ShapeType get_type() const { return PhysicsServer2D::SHAPE_LINE; }
+	virtual PhysicsServer2D::ShapeType get_type() const { return PhysicsServer2D::SHAPE_WORLD_MARGIN; }
 
 	virtual void project_rangev(const Vector2 &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const { project_range(p_normal, p_transform, r_min, r_max); }
 	virtual void get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const;

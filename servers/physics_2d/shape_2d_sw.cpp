@@ -88,15 +88,15 @@ Shape2DSW::~Shape2DSW() {
 /*********************************************************/
 /*********************************************************/
 
-void LineShape2DSW::get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const {
+void WorldMarginShape2DSW::get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const {
 	r_amount = 0;
 }
 
-bool LineShape2DSW::contains_point(const Vector2 &p_point) const {
+bool WorldMarginShape2DSW::contains_point(const Vector2 &p_point) const {
 	return normal.dot(p_point) < d;
 }
 
-bool LineShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const {
+bool WorldMarginShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const {
 	Vector2 segment = p_begin - p_end;
 	real_t den = normal.dot(segment);
 
@@ -118,11 +118,11 @@ bool LineShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &p_e
 	return true;
 }
 
-real_t LineShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
+real_t WorldMarginShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
 	return 0;
 }
 
-void LineShape2DSW::set_data(const Variant &p_data) {
+void WorldMarginShape2DSW::set_data(const Variant &p_data) {
 	ERR_FAIL_COND(p_data.get_type() != Variant::ARRAY);
 	Array arr = p_data;
 	ERR_FAIL_COND(arr.size() != 2);
@@ -131,7 +131,7 @@ void LineShape2DSW::set_data(const Variant &p_data) {
 	configure(Rect2(Vector2(-1e4, -1e4), Vector2(1e4 * 2, 1e4 * 2)));
 }
 
-Variant LineShape2DSW::get_data() const {
+Variant WorldMarginShape2DSW::get_data() const {
 	Array arr;
 	arr.resize(2);
 	arr[0] = normal;
