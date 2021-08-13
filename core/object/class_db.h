@@ -330,7 +330,7 @@ public:
 
 		if (type->method_map.has(p_name)) {
 			memdelete(bind);
-			// overloading not supported
+			// Overloading not supported
 			ERR_FAIL_V_MSG(nullptr, "Method already bound: " + instance_type + "::" + p_name + ".");
 		}
 		type->method_map[p_name] = bind;
@@ -409,25 +409,25 @@ public:
 #ifdef DEBUG_METHODS_ENABLED
 
 #define BIND_CONSTANT(m_constant) \
-	ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
+	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
 
 #define BIND_ENUM_CONSTANT(m_constant) \
-	ClassDB::bind_integer_constant(get_class_static(), __constant_get_enum_name(m_constant, #m_constant), #m_constant, m_constant);
+	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_enum_name(m_constant, #m_constant), #m_constant, m_constant);
 
 #else
 
 #define BIND_CONSTANT(m_constant) \
-	ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
+	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
 
 #define BIND_ENUM_CONSTANT(m_constant) \
-	ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
+	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
 
 #endif
 
 #ifdef TOOLS_ENABLED
 
 #define BIND_VMETHOD(m_method) \
-	ClassDB::add_virtual_method(get_class_static(), m_method);
+	::ClassDB::add_virtual_method(get_class_static(), m_method);
 
 #else
 
@@ -437,11 +437,11 @@ public:
 
 #define GDREGISTER_CLASS(m_class)                    \
 	if (!GD_IS_DEFINED(ClassDB_Disable_##m_class)) { \
-		ClassDB::register_class<m_class>();          \
+		::ClassDB::register_class<m_class>();        \
 	}
-#define GDREGISTER_VIRTUAL_CLASS(m_class)            \
-	if (!GD_IS_DEFINED(ClassDB_Disable_##m_class)) { \
-		ClassDB::register_virtual_class<m_class>();  \
+#define GDREGISTER_VIRTUAL_CLASS(m_class)             \
+	if (!GD_IS_DEFINED(ClassDB_Disable_##m_class)) {  \
+		::ClassDB::register_virtual_class<m_class>(); \
 	}
 
 #include "core/disabled_classes.gen.h"

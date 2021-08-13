@@ -4521,44 +4521,49 @@ void VisualScriptEditor::register_editor() {
 	EditorNode::add_plugin_init_callback(register_editor_callback);
 }
 
-Ref<VisualScriptNode> _VisualScriptEditor::create_node_custom(const String &p_name) {
+void VisualScriptEditor::validate() {
+}
+
+namespace vs_bind {
+
+Ref<VisualScriptNode> VisualScriptEditor::create_node_custom(const String &p_name) {
 	Ref<VisualScriptCustomNode> node;
 	node.instantiate();
 	node->set_script(singleton->custom_nodes[p_name]);
 	return node;
 }
 
-_VisualScriptEditor *_VisualScriptEditor::singleton = nullptr;
-Map<String, REF> _VisualScriptEditor::custom_nodes;
+VisualScriptEditor *VisualScriptEditor::singleton = nullptr;
+Map<String, REF> VisualScriptEditor::custom_nodes;
 
-_VisualScriptEditor::_VisualScriptEditor() {
+VisualScriptEditor::VisualScriptEditor() {
 	singleton = this;
 }
 
-_VisualScriptEditor::~_VisualScriptEditor() {
+VisualScriptEditor::~VisualScriptEditor() {
 	custom_nodes.clear();
 }
 
-void _VisualScriptEditor::add_custom_node(const String &p_name, const String &p_category, const Ref<Script> &p_script) {
+void VisualScriptEditor::add_custom_node(const String &p_name, const String &p_category, const Ref<Script> &p_script) {
 	String node_name = "custom/" + p_category + "/" + p_name;
 	custom_nodes.insert(node_name, p_script);
-	VisualScriptLanguage::singleton->add_register_func(node_name, &_VisualScriptEditor::create_node_custom);
+	VisualScriptLanguage::singleton->add_register_func(node_name, &VisualScriptEditor::create_node_custom);
 	emit_signal(SNAME("custom_nodes_updated"));
 }
 
-void _VisualScriptEditor::remove_custom_node(const String &p_name, const String &p_category) {
+void VisualScriptEditor::remove_custom_node(const String &p_name, const String &p_category) {
 	String node_name = "custom/" + p_category + "/" + p_name;
 	custom_nodes.erase(node_name);
 	VisualScriptLanguage::singleton->remove_register_func(node_name);
 	emit_signal(SNAME("custom_nodes_updated"));
 }
 
-void _VisualScriptEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("add_custom_node", "name", "category", "script"), &_VisualScriptEditor::add_custom_node);
-	ClassDB::bind_method(D_METHOD("remove_custom_node", "name", "category"), &_VisualScriptEditor::remove_custom_node);
+void VisualScriptEditor::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("add_custom_node", "name", "category", "script"), &VisualScriptEditor::add_custom_node);
+	ClassDB::bind_method(D_METHOD("remove_custom_node", "name", "category"), &VisualScriptEditor::remove_custom_node);
 	ADD_SIGNAL(MethodInfo("custom_nodes_updated"));
 }
 
-void VisualScriptEditor::validate() {
-}
+} // namespace vs_bind
+
 #endif
