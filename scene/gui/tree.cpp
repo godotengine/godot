@@ -915,15 +915,23 @@ void Tree::update_cache() {
 
 	cache.font_color = get_color("font_color");
 	cache.font_color_selected = get_color("font_color_selected");
-	cache.guide_color = get_color("guide_color");
 	cache.drop_position_color = get_color("drop_position_color");
 	cache.hseparation = get_constant("hseparation");
 	cache.vseparation = get_constant("vseparation");
 	cache.item_margin = get_constant("item_margin");
 	cache.button_margin = get_constant("button_margin");
+
 	cache.draw_guides = get_constant("draw_guides");
+	cache.guide_color = get_color("guide_color");
 	cache.draw_relationship_lines = get_constant("draw_relationship_lines");
+	cache.relationship_line_width = get_constant("relationship_line_width");
+	cache.parent_hl_line_width = get_constant("parent_hl_line_width");
+	cache.children_hl_line_width = get_constant("children_hl_line_width");
+	cache.parent_hl_line_margin = get_constant("parent_hl_line_margin");
 	cache.relationship_line_color = get_color("relationship_line_color");
+	cache.parent_hl_line_color = get_color("parent_hl_line_color");
+	cache.children_hl_line_color = get_color("children_hl_line_color");
+
 	cache.scroll_border = get_constant("scroll_border");
 	cache.scroll_speed = get_constant("scroll_speed");
 
@@ -1414,45 +1422,84 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 		TreeItem *c = p_item->children;
 
-		int prev_ofs = children_pos.y - cache.offset.y + p_draw_ofs.y;
+		int base_ofs = children_pos.y - cache.offset.y + p_draw_ofs.y;
+		int prev_ofs = base_ofs;
+		int prev_hl_ofs = base_ofs;
 
 		while (c) {
-			if (htotal >= 0) {
-				int child_h = draw_item(children_pos, p_draw_ofs, p_draw_size, c);
+			if (cache.draw_relationship_lines > 0 && (!hide_root || c->parent != root)) {
+				int root_ofs = children_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
+				int parent_ofs = p_pos.x + cache.item_margin;
+				Point2i root_pos = Point2i(root_ofs, children_pos.y + label_h / 2) - cache.offset + p_draw_ofs;
 
-				// Draw relationship lines.
-				if (cache.draw_relationship_lines > 0 && (!hide_root || c->parent != root)) {
-					int root_ofs = children_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
-					int parent_ofs = p_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
-					Point2i root_pos = Point2i(root_ofs, children_pos.y + label_h / 2) - cache.offset + p_draw_ofs;
+				if (c->get_children() != nullptr) {
+					root_pos -= Point2i(cache.arrow->get_width(), 0);
+				}
 
-					if (c->get_children() != nullptr) {
-						root_pos -= Point2i(cache.arrow->get_width(), 0);
-					}
+				float line_width = cache.relationship_line_width;
+				float parent_line_width = cache.parent_hl_line_width;
+				float children_line_width = cache.children_hl_line_width;
 
-					float line_width = 1.0;
 #ifdef TOOLS_ENABLED
-					line_width *= EDSCALE;
+				line_width *= Math::round(EDSCALE);
+				parent_line_width *= Math::round(EDSCALE);
+				children_line_width *= Math::round(EDSCALE);
 #endif
 
-					Point2i parent_pos = Point2i(parent_ofs - cache.arrow->get_width() / 2, p_pos.y + label_h / 2 + cache.arrow->get_height() / 2) - cache.offset + p_draw_ofs;
+				Point2i parent_pos = Point2i(parent_ofs - cache.arrow->get_width() / 2, p_pos.y + label_h / 2 + cache.arrow->get_height() / 2) - cache.offset + p_draw_ofs;
 
-					if (root_pos.y + line_width >= 0) {
-						// Order of parts on this bend: the horizontal line first, then the vertical line.
-						VisualServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x - Math::floor(line_width / 2), root_pos.y), cache.relationship_line_color, line_width);
-						VisualServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y), Point2i(parent_pos.x, prev_ofs), cache.relationship_line_color, line_width);
+				int more_prev_ofs = 0;
+
+				if (root_pos.y + line_width >= 0) {
+					// Order of parts on this bend: the horizontal line first, then the vertical line.
+					if (_is_branch_selected(c)) {
+						// If this item or one of its children is selected, we draw the line using parent highlight style.
+						VisualServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(parent_line_width / 2), root_pos.y), cache.parent_hl_line_color, parent_line_width);
+						VisualServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(parent_line_width / 2)), Point2i(parent_pos.x, prev_hl_ofs), cache.parent_hl_line_color, parent_line_width);
+
+						more_prev_ofs = cache.parent_hl_line_margin;
+						prev_hl_ofs = root_pos.y + Math::floor(parent_line_width / 2);
+					} else if (p_item->is_selected(0)) {
+						// If parent item is selected (but this item is not), we draw the line using children highlight style.
+						// Siblings of the selected branch can be drawn with a slight offset and their vertical line must appear as highlighted.
+						if (_is_sibling_branch_selected(c)) {
+							VisualServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(parent_line_width / 2), root_pos.y), cache.children_hl_line_color, children_line_width);
+							VisualServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(parent_line_width / 2)), Point2i(parent_pos.x, prev_hl_ofs), cache.parent_hl_line_color, parent_line_width);
+
+							prev_hl_ofs = root_pos.y + Math::floor(parent_line_width / 2);
+						} else {
+							VisualServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(children_line_width / 2), root_pos.y), cache.children_hl_line_color, children_line_width);
+							VisualServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(children_line_width / 2)), Point2i(parent_pos.x, prev_ofs + Math::floor(children_line_width / 2)), cache.children_hl_line_color, children_line_width);
+						}
+					} else {
+						// If nothing of the above is true, we draw the line using normal style.
+						// Siblings of the selected branch can be drawn with a slight offset and their vertical line must appear as highlighted.
+						if (_is_sibling_branch_selected(c)) {
+							VisualServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + cache.parent_hl_line_margin, root_pos.y), cache.relationship_line_color, line_width);
+							VisualServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(parent_line_width / 2)), Point2i(parent_pos.x, prev_hl_ofs), cache.parent_hl_line_color, parent_line_width);
+
+							prev_hl_ofs = root_pos.y + Math::floor(parent_line_width / 2);
+						} else {
+							VisualServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(line_width / 2), root_pos.y), cache.relationship_line_color, line_width);
+							VisualServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(line_width / 2)), Point2i(parent_pos.x, prev_ofs + Math::floor(line_width / 2)), cache.relationship_line_color, line_width);
+						}
 					}
 
 					prev_ofs = root_pos.y;
 				}
+				prev_ofs = root_pos.y + more_prev_ofs;
+			}
+
+			if (htotal >= 0) {
+				int child_h = draw_item(children_pos, p_draw_ofs, p_draw_size, c);
 
 				if (child_h < 0) {
 					if (cache.draw_relationship_lines == 0) {
 						return -1; // break, stop drawing, no need to anymore
-					} else {
-						htotal = -1;
-						children_pos.y = cache.offset.y + p_draw_size.height;
 					}
+
+					htotal = -1;
+					children_pos.y = cache.offset.y + p_draw_size.height;
 				} else {
 					htotal += child_h;
 					children_pos.y += child_h;
@@ -1484,6 +1531,37 @@ int Tree::_count_selected_items(TreeItem *p_from) const {
 
 	return count;
 }
+
+bool Tree::_is_branch_selected(TreeItem *p_from) const {
+	for (int i = 0; i < columns.size(); i++) {
+		if (p_from->is_selected(i)) {
+			return true;
+		}
+	}
+
+	TreeItem *child_item = p_from->get_children();
+	while (child_item) {
+		if (_is_branch_selected(child_item)) {
+			return true;
+		}
+		child_item = child_item->get_next();
+	}
+
+	return false;
+}
+
+bool Tree::_is_sibling_branch_selected(TreeItem *p_from) const {
+	TreeItem *sibling_item = p_from->get_next();
+	while (sibling_item) {
+		if (_is_branch_selected(sibling_item)) {
+			return true;
+		}
+		sibling_item = sibling_item->get_next();
+	}
+
+	return false;
+}
+
 void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev, bool *r_in_range, bool p_force_deselect) {
 	TreeItem::Cell &selected_cell = p_selected->cells.write[p_col];
 
