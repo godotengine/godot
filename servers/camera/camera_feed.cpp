@@ -138,11 +138,15 @@ RID CameraFeed::get_texture(CameraServer::FeedImage p_which) {
 CameraFeed::CameraFeed() {
 	// initialize our feed
 	id = CameraServer::get_singleton()->get_free_id();
+	base_width = 0;
+	base_height = 0;
 	name = "???";
 	active = false;
 	datatype = CameraFeed::FEED_RGB;
 	position = CameraFeed::FEED_UNSPECIFIED;
 	transform = Transform2D(1.0, 0.0, 0.0, -1.0, 0.0, 1.0);
+	texture[CameraServer::FEED_Y_IMAGE] = RenderingServer::get_singleton()->texture_2d_placeholder_create();
+	texture[CameraServer::FEED_CBCR_IMAGE] = RenderingServer::get_singleton()->texture_2d_placeholder_create();
 }
 
 CameraFeed::CameraFeed(String p_name, FeedPosition p_position) {
@@ -155,16 +159,14 @@ CameraFeed::CameraFeed(String p_name, FeedPosition p_position) {
 	datatype = CameraFeed::FEED_NOIMAGE;
 	position = p_position;
 	transform = Transform2D(1.0, 0.0, 0.0, -1.0, 0.0, 1.0);
+	texture[CameraServer::FEED_Y_IMAGE] = RenderingServer::get_singleton()->texture_2d_placeholder_create();
+	texture[CameraServer::FEED_CBCR_IMAGE] = RenderingServer::get_singleton()->texture_2d_placeholder_create();
 }
 
 CameraFeed::~CameraFeed() {
 	// Free our textures
-	if (texture[CameraServer::FEED_Y_IMAGE].is_valid()) {
-		RenderingServer::get_singleton()->free(texture[CameraServer::FEED_Y_IMAGE]);
-	}
-	if (texture[CameraServer::FEED_CBCR_IMAGE].is_valid()) {
-		RenderingServer::get_singleton()->free(texture[CameraServer::FEED_CBCR_IMAGE]);
-	}
+	RenderingServer::get_singleton()->free(texture[CameraServer::FEED_Y_IMAGE]);
+	RenderingServer::get_singleton()->free(texture[CameraServer::FEED_CBCR_IMAGE]);
 }
 
 void CameraFeed::set_RGB_img(const Ref<Image> &p_rgb_img) {
@@ -177,12 +179,9 @@ void CameraFeed::set_RGB_img(const Ref<Image> &p_rgb_img) {
 			// We're assuming here that our camera image doesn't change around formats etc, allocate the whole lot...
 			base_width = new_width;
 			base_height = new_height;
-			if (texture[CameraServer::FEED_RGBA_IMAGE].is_null()) {
-				texture[CameraServer::FEED_RGBA_IMAGE] = RenderingServer::get_singleton()->texture_2d_create(p_rgb_img);
-			} else {
-				RID new_texture = RenderingServer::get_singleton()->texture_2d_create(p_rgb_img);
-				RenderingServer::get_singleton()->texture_replace(texture[CameraServer::FEED_RGBA_IMAGE], new_texture);
-			}
+
+			RID new_texture = RenderingServer::get_singleton()->texture_2d_create(p_rgb_img);
+			RenderingServer::get_singleton()->texture_replace(texture[CameraServer::FEED_RGBA_IMAGE], new_texture);
 		} else {
 			RenderingServer::get_singleton()->texture_2d_update(texture[CameraServer::FEED_RGBA_IMAGE], p_rgb_img);
 		}
@@ -201,12 +200,9 @@ void CameraFeed::set_YCbCr_img(const Ref<Image> &p_ycbcr_img) {
 			// We're assuming here that our camera image doesn't change around formats etc, allocate the whole lot...
 			base_width = new_width;
 			base_height = new_height;
-			if (texture[CameraServer::FEED_RGBA_IMAGE].is_null()) {
-				texture[CameraServer::FEED_RGBA_IMAGE] = RenderingServer::get_singleton()->texture_2d_create(p_ycbcr_img);
-			} else {
-				RID new_texture = RenderingServer::get_singleton()->texture_2d_create(p_ycbcr_img);
-				RenderingServer::get_singleton()->texture_replace(texture[CameraServer::FEED_RGBA_IMAGE], new_texture);
-			}
+
+			RID new_texture = RenderingServer::get_singleton()->texture_2d_create(p_ycbcr_img);
+			RenderingServer::get_singleton()->texture_replace(texture[CameraServer::FEED_RGBA_IMAGE], new_texture);
 		} else {
 			RenderingServer::get_singleton()->texture_2d_update(texture[CameraServer::FEED_RGBA_IMAGE], p_ycbcr_img);
 		}
@@ -230,16 +226,11 @@ void CameraFeed::set_YCbCr_imgs(const Ref<Image> &p_y_img, const Ref<Image> &p_c
 			// We're assuming here that our camera image doesn't change around formats etc, allocate the whole lot...
 			base_width = new_y_width;
 			base_height = new_y_height;
-			if (texture[CameraServer::FEED_Y_IMAGE].is_null()) {
-				texture[CameraServer::FEED_Y_IMAGE] = RenderingServer::get_singleton()->texture_2d_create(p_y_img);
-			} else {
+			{
 				RID new_texture = RenderingServer::get_singleton()->texture_2d_create(p_y_img);
 				RenderingServer::get_singleton()->texture_replace(texture[CameraServer::FEED_Y_IMAGE], new_texture);
 			}
-
-			if (texture[CameraServer::FEED_CBCR_IMAGE].is_null()) {
-				texture[CameraServer::FEED_CBCR_IMAGE] = RenderingServer::get_singleton()->texture_2d_create(p_cbcr_img);
-			} else {
+			{
 				RID new_texture = RenderingServer::get_singleton()->texture_2d_create(p_cbcr_img);
 				RenderingServer::get_singleton()->texture_replace(texture[CameraServer::FEED_CBCR_IMAGE], new_texture);
 			}
