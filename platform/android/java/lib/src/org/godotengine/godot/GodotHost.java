@@ -53,4 +53,9 @@ public interface GodotHost {
 	 * Invoked on the render thread when the Godot main loop has started.
 	 */
 	default void onGodotMainLoopStarted() {}
+
+	/**
+	 * Invoked on the UI thread as the last step of the Godot instance clean up phase.
+	 */
+	default void onGodotForceQuit(Godot instance) {}
 }
