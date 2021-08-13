@@ -30,7 +30,7 @@
 
 #include "gltf_mesh.h"
 
-#include "scene/resources/importer_mesh.h"
+#include "scene/resources/3d/importer_mesh.h"
 
 void GLTFMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_original_name"), &GLTFMesh::get_original_name);

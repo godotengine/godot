@@ -46,15 +46,15 @@
 #include "scene/3d/physics_body_3d.h"
 #include "scene/3d/vehicle_body_3d.h"
 #include "scene/animation/animation_player.h"
+#include "scene/resources/3d/box_shape_3d.h"
+#include "scene/resources/3d/importer_mesh.h"
+#include "scene/resources/3d/separation_ray_shape_3d.h"
+#include "scene/resources/3d/sphere_shape_3d.h"
+#include "scene/resources/3d/world_boundary_shape_3d.h"
 #include "scene/resources/animation.h"
-#include "scene/resources/box_shape_3d.h"
-#include "scene/resources/importer_mesh.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/resource_format_text.h"
-#include "scene/resources/separation_ray_shape_3d.h"
-#include "scene/resources/sphere_shape_3d.h"
 #include "scene/resources/surface_tool.h"
-#include "scene/resources/world_boundary_shape_3d.h"
 
 uint32_t EditorSceneFormatImporter::get_import_flags() const {
 	uint32_t ret;

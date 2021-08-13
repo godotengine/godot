@@ -55,12 +55,12 @@
 #include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/world_2d.h"
-#include "scene/resources/world_3d.h"
 #include "scene/scene_string_names.h"
 #include "servers/display_server.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/physics_server_2d.h"
 #ifndef _3D_DISABLED
+#include "scene/resources/3d/world_3d.h"
 #include "servers/physics_server_3d.h"
 #endif // _3D_DISABLED
 #include "window.h"

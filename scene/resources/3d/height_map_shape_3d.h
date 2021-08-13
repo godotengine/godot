@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  capsule_shape_3d.h                                                    */
+/*  height_map_shape_3d.h                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,31 +28,39 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CAPSULE_SHAPE_3D_H
-#define CAPSULE_SHAPE_3D_H
+#ifndef HEIGHT_MAP_SHAPE_3D_H
+#define HEIGHT_MAP_SHAPE_3D_H
 
-#include "scene/resources/shape_3d.h"
+#include "scene/resources/3d/shape_3d.h"
 
-class CapsuleShape3D : public Shape3D {
-	GDCLASS(CapsuleShape3D, Shape3D);
-	float radius = 0.5;
-	float height = 2.0;
+class HeightMapShape3D : public Shape3D {
+	GDCLASS(HeightMapShape3D, Shape3D);
+
+	int map_width = 2;
+	int map_depth = 2;
+	Vector<real_t> map_data;
+	real_t min_height = 0.0;
+	real_t max_height = 0.0;
 
 protected:
 	static void _bind_methods();
-
 	virtual void _update_shape() override;
 
 public:
-	void set_radius(float p_radius);
-	float get_radius() const;
-	void set_height(float p_height);
-	float get_height() const;
+	void set_map_width(int p_new);
+	int get_map_width() const;
+	void set_map_depth(int p_new);
+	int get_map_depth() const;
+	void set_map_data(Vector<real_t> p_new);
+	Vector<real_t> get_map_data() const;
+
+	real_t get_min_height() const;
+	real_t get_max_height() const;
 
 	virtual Vector<Vector3> get_debug_mesh_lines() const override;
 	virtual real_t get_enclosing_radius() const override;
 
-	CapsuleShape3D();
+	HeightMapShape3D();
 };
 
-#endif // CAPSULE_SHAPE_3D_H
+#endif // HEIGHT_MAP_SHAPE_3D_H
