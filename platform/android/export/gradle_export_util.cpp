@@ -241,10 +241,12 @@ String _get_application_tag(const Ref<EditorExportPreset> &p_preset) {
 			"        android:allowBackup=\"%s\"\n"
 			"        android:icon=\"@mipmap/icon\"\n"
 			"        android:isGame=\"%s\"\n"
-			"        tools:replace=\"android:allowBackup,android:isGame\"\n"
+			"        android:hasFragileUserData=\"%s\"\n"
+			"        tools:replace=\"android:allowBackup,android:isGame,android:hasFragileUserData\"\n"
 			"        tools:ignore=\"GoogleAppIndexingWarning\">\n\n",
 			bool_to_string(p_preset->get("user_data_backup/allow")),
-			bool_to_string(p_preset->get("package/classify_as_game")));
+			bool_to_string(p_preset->get("package/classify_as_game")),
+			bool_to_string(p_preset->get("package/retain_data_on_uninstall")));
 
 	manifest_application_text += _get_activity_tag(p_preset);
 	manifest_application_text += "    </application>\n";
