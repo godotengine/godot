@@ -51,8 +51,6 @@ static_assert(sizeof(godot_packed_color_array) == sizeof(PackedColorArray), "Pac
 extern "C" {
 #endif
 
-#define memnew_placement_custom(m_placement, m_class, m_constr) _post_initialize(new (m_placement, sizeof(m_class), "") m_constr)
-
 // byte
 
 void GDAPI godot_packed_byte_array_new(godot_packed_byte_array *p_self) {
