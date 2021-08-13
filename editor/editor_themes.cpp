@@ -1051,19 +1051,17 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("line_spacing", "TextEdit", 4 * EDSCALE);
 
 	// CodeEdit
+	theme->set_font("font", "CodeEdit", theme->get_font("source", "EditorFonts"));
+	theme->set_font_size("font_size", "CodeEdit", theme->get_font_size("source_size", "EditorFonts"));
 	theme->set_stylebox("normal", "CodeEdit", style_widget);
 	theme->set_stylebox("focus", "CodeEdit", style_widget_hover);
 	theme->set_stylebox("read_only", "CodeEdit", style_widget_disabled);
-	theme->set_constant("side_margin", "TabContainer", 0);
 	theme->set_icon("tab", "CodeEdit", theme->get_icon("GuiTab", "EditorIcons"));
 	theme->set_icon("space", "CodeEdit", theme->get_icon("GuiSpace", "EditorIcons"));
 	theme->set_icon("folded", "CodeEdit", theme->get_icon("GuiTreeArrowRight", "EditorIcons"));
 	theme->set_icon("can_fold", "CodeEdit", theme->get_icon("GuiTreeArrowDown", "EditorIcons"));
 	theme->set_icon("executing_line", "CodeEdit", theme->get_icon("MainPlay", "EditorIcons"));
-	theme->set_color("font_color", "CodeEdit", font_color);
-	theme->set_color("caret_color", "CodeEdit", font_color);
-	theme->set_color("selection_color", "CodeEdit", selection_color);
-	theme->set_constant("line_spacing", "CodeEdit", 4 * EDSCALE);
+	theme->set_constant("line_spacing", "CodeEdit", EDITOR_DEF("text_editor/theme/line_spacing", 6));
 
 	// H/VSplitContainer
 	theme->set_stylebox("bg", "VSplitContainer", make_stylebox(theme->get_icon("GuiVsplitBg", "EditorIcons"), 1, 1, 1, 1));
@@ -1473,6 +1471,29 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	} else if (text_editor_color_theme == "Godot 2") {
 		setting->load_text_editor_theme();
 	}
+
+	// Now theme is loaded, apply it to CodeEdit.
+	theme->set_color("background_color", "CodeEdit", EDITOR_GET("text_editor/highlighting/background_color"));
+	theme->set_color("completion_background_color", "CodeEdit", EDITOR_GET("text_editor/highlighting/completion_background_color"));
+	theme->set_color("completion_selected_color", "CodeEdit", EDITOR_GET("text_editor/highlighting/completion_selected_color"));
+	theme->set_color("completion_existing_color", "CodeEdit", EDITOR_GET("text_editor/highlighting/completion_existing_color"));
+	theme->set_color("completion_scroll_color", "CodeEdit", EDITOR_GET("text_editor/highlighting/completion_scroll_color"));
+	theme->set_color("completion_font_color", "CodeEdit", EDITOR_GET("text_editor/highlighting/completion_font_color"));
+	theme->set_color("font_color", "CodeEdit", EDITOR_GET("text_editor/highlighting/text_color"));
+	theme->set_color("line_number_color", "CodeEdit", EDITOR_GET("text_editor/highlighting/line_number_color"));
+	theme->set_color("caret_color", "CodeEdit", EDITOR_GET("text_editor/highlighting/caret_color"));
+	theme->set_color("font_selected_color", "CodeEdit", EDITOR_GET("text_editor/highlighting/text_selected_color"));
+	theme->set_color("selection_color", "CodeEdit", EDITOR_GET("text_editor/highlighting/selection_color"));
+	theme->set_color("brace_mismatch_color", "CodeEdit", EDITOR_GET("text_editor/highlighting/brace_mismatch_color"));
+	theme->set_color("current_line_color", "CodeEdit", EDITOR_GET("text_editor/highlighting/current_line_color"));
+	theme->set_color("line_length_guideline_color", "CodeEdit", EDITOR_GET("text_editor/highlighting/line_length_guideline_color"));
+	theme->set_color("word_highlighted_color", "CodeEdit", EDITOR_GET("text_editor/highlighting/word_highlighted_color"));
+	theme->set_color("bookmark_color", "CodeEdit", EDITOR_GET("text_editor/highlighting/bookmark_color"));
+	theme->set_color("breakpoint_color", "CodeEdit", EDITOR_GET("text_editor/highlighting/breakpoint_color"));
+	theme->set_color("executing_line_color", "CodeEdit", EDITOR_GET("text_editor/highlighting/executing_line_color"));
+	theme->set_color("code_folding_color", "CodeEdit", EDITOR_GET("text_editor/highlighting/code_folding_color"));
+	theme->set_color("search_result_color", "CodeEdit", EDITOR_GET("text_editor/highlighting/search_result_color"));
+	theme->set_color("search_result_border_color", "CodeEdit", EDITOR_GET("text_editor/highlighting/search_result_border_color"));
 
 	return theme;
 }

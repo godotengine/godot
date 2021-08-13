@@ -168,7 +168,6 @@ class CodeTextEditor : public VBoxContainer {
 	void _apply_settings_change();
 
 	void _update_text_editor_theme();
-	void _update_font();
 	void _complete_request();
 	Ref<Texture2D> _get_completion_icon(const ScriptCodeCompletionOption &p_option);
 	void _font_resize_timeout();

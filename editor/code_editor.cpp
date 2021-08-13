@@ -1520,40 +1520,12 @@ void CodeTextEditor::goto_error() {
 }
 
 void CodeTextEditor::_update_text_editor_theme() {
-	text_editor->add_theme_color_override("background_color", EDITOR_GET("text_editor/highlighting/background_color"));
-	text_editor->add_theme_color_override("completion_background_color", EDITOR_GET("text_editor/highlighting/completion_background_color"));
-	text_editor->add_theme_color_override("completion_selected_color", EDITOR_GET("text_editor/highlighting/completion_selected_color"));
-	text_editor->add_theme_color_override("completion_existing_color", EDITOR_GET("text_editor/highlighting/completion_existing_color"));
-	text_editor->add_theme_color_override("completion_scroll_color", EDITOR_GET("text_editor/highlighting/completion_scroll_color"));
-	text_editor->add_theme_color_override("completion_font_color", EDITOR_GET("text_editor/highlighting/completion_font_color"));
-	text_editor->add_theme_color_override("font_color", EDITOR_GET("text_editor/highlighting/text_color"));
-	text_editor->add_theme_color_override("line_number_color", EDITOR_GET("text_editor/highlighting/line_number_color"));
-	text_editor->add_theme_color_override("caret_color", EDITOR_GET("text_editor/highlighting/caret_color"));
-	text_editor->add_theme_color_override("caret_background_color", EDITOR_GET("text_editor/highlighting/caret_background_color"));
-	text_editor->add_theme_color_override("font_selected_color", EDITOR_GET("text_editor/highlighting/text_selected_color"));
-	text_editor->add_theme_color_override("selection_color", EDITOR_GET("text_editor/highlighting/selection_color"));
-	text_editor->add_theme_color_override("brace_mismatch_color", EDITOR_GET("text_editor/highlighting/brace_mismatch_color"));
-	text_editor->add_theme_color_override("current_line_color", EDITOR_GET("text_editor/highlighting/current_line_color"));
-	text_editor->add_theme_color_override("line_length_guideline_color", EDITOR_GET("text_editor/highlighting/line_length_guideline_color"));
-	text_editor->add_theme_color_override("word_highlighted_color", EDITOR_GET("text_editor/highlighting/word_highlighted_color"));
-	text_editor->add_theme_color_override("bookmark_color", EDITOR_GET("text_editor/highlighting/bookmark_color"));
-	text_editor->add_theme_color_override("breakpoint_color", EDITOR_GET("text_editor/highlighting/breakpoint_color"));
-	text_editor->add_theme_color_override("executing_line_color", EDITOR_GET("text_editor/highlighting/executing_line_color"));
-	text_editor->add_theme_color_override("code_folding_color", EDITOR_GET("text_editor/highlighting/code_folding_color"));
-	text_editor->add_theme_color_override("search_result_color", EDITOR_GET("text_editor/highlighting/search_result_color"));
-	text_editor->add_theme_color_override("search_result_border_color", EDITOR_GET("text_editor/highlighting/search_result_border_color"));
-	text_editor->add_theme_constant_override("line_spacing", EDITOR_DEF("text_editor/theme/line_spacing", 6));
 	emit_signal(SNAME("load_theme_settings"));
-	_load_theme_settings();
-}
 
-void CodeTextEditor::_update_font() {
-	text_editor->add_theme_font_override("font", get_theme_font(SNAME("source"), SNAME("EditorFonts")));
-	text_editor->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("source_size"), SNAME("EditorFonts")));
-
-	error->add_theme_font_override("font", get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
-	error->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
-	error->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+	error->begin_bulk_theme_override();
+	error->add_theme_font_override(SNAME("font"), get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
+	error->add_theme_font_size_override(SNAME("font_size"), get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
+	error->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("error_color"), SNAME("Editor")));
 
 	Ref<Font> status_bar_font = get_theme_font(SNAME("status_source"), SNAME("EditorFonts"));
 	int status_bar_font_size = get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts"));
@@ -1567,6 +1539,7 @@ void CodeTextEditor::_update_font() {
 			n->add_theme_font_size_override("font_size", status_bar_font_size);
 		}
 	}
+	error->end_bulk_theme_override();
 }
 
 void CodeTextEditor::_on_settings_change() {
@@ -1582,7 +1555,6 @@ void CodeTextEditor::_apply_settings_change() {
 	settings_changed = false;
 
 	_update_text_editor_theme();
-	_update_font();
 
 	font_size = EditorSettings::get_singleton()->get("interface/editor/code_font_size");
 
@@ -1668,7 +1640,6 @@ void CodeTextEditor::_notification(int p_what) {
 				update_toggle_scripts_button();
 			}
 			_update_text_editor_theme();
-			_update_font();
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			error_button->set_icon(get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons")));
