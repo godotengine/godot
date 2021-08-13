@@ -48,7 +48,7 @@ Error VulkanContextIPhone::window_create(DisplayServer::WindowID p_window_id, Di
 
 	VkSurfaceKHR surface;
 	VkResult err =
-			vkCreateIOSSurfaceMVK(_get_instance(), &createInfo, nullptr, &surface);
+			vkCreateIOSSurfaceMVK(get_instance(), &createInfo, nullptr, &surface);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
 	return _window_create(p_window_id, p_vsync_mode, surface, p_width, p_height);
