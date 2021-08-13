@@ -79,6 +79,7 @@ public:
 	Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) override;
 	Error kill(const ProcessID &p_pid) override;
 	int get_process_id() const override;
+	bool is_process_running(const ProcessID &p_pid) const override;
 	int get_processor_count() const override;
 	int get_default_thread_pool_size() const override { return 1; }
 

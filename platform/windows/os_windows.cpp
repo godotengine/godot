@@ -517,6 +517,25 @@ int OS_Windows::get_process_id() const {
 	return _getpid();
 }
 
+bool OS_Windows::is_process_running(const ProcessID &p_pid) const {
+	if (!process_map->has(p_pid)) {
+		return false;
+	}
+
+	const PROCESS_INFORMATION &pi = (*process_map)[p_pid].pi;
+
+	DWORD dw_exit_code = 0;
+	if (!GetExitCodeProcess(pi.hProcess, &dw_exit_code)) {
+		return false;
+	}
+
+	if (dw_exit_code != STILL_ACTIVE) {
+		return false;
+	}
+
+	return true;
+}
+
 Error OS_Windows::set_cwd(const String &p_cwd) {
 	if (_wchdir((LPCWSTR)(p_cwd.utf16().get_data())) != 0) {
 		return ERR_CANT_OPEN;

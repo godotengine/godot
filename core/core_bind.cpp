@@ -269,6 +269,10 @@ Error OS::kill(int p_pid) {
 	return ::OS::get_singleton()->kill(p_pid);
 }
 
+bool OS::is_process_running(int p_pid) const {
+	return ::OS::get_singleton()->is_process_running(p_pid);
+}
+
 int OS::get_process_id() const {
 	return ::OS::get_singleton()->get_process_id();
 }
@@ -571,6 +575,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_instance", "arguments"), &OS::create_instance);
 	ClassDB::bind_method(D_METHOD("kill", "pid"), &OS::kill);
 	ClassDB::bind_method(D_METHOD("shell_open", "uri"), &OS::shell_open);
+	ClassDB::bind_method(D_METHOD("is_process_running", "pid"), &OS::is_process_running);
 	ClassDB::bind_method(D_METHOD("get_process_id"), &OS::get_process_id);
 
 	ClassDB::bind_method(D_METHOD("get_environment", "variable"), &OS::get_environment);

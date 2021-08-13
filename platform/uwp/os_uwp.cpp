@@ -647,6 +647,10 @@ Error OS_UWP::kill(const ProcessID &p_pid) {
 	return FAILED;
 }
 
+bool OS_UWP::is_process_running(const ProcessID &p_pid) const {
+	return false;
+}
+
 Error OS_UWP::set_cwd(const String &p_cwd) {
 	return FAILED;
 }
