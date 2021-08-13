@@ -81,19 +81,6 @@
 				Unmarks [code]theme_type[/code] as being a variation of any other type.
 			</description>
 		</method>
-		<method name="copy_default_theme">
-			<return type="void" />
-			<description>
-				Sets the theme's values to a copy of the default theme values.
-			</description>
-		</method>
-		<method name="copy_theme">
-			<return type="void" />
-			<argument index="0" name="other" type="Theme" />
-			<description>
-				Sets the theme's values to a copy of a given theme.
-			</description>
-		</method>
 		<method name="get_color" qualifiers="const">
 			<return type="Color" />
 			<argument index="0" name="name" type="StringName" />
@@ -338,6 +325,14 @@
 			<argument index="1" name="base_type" type="StringName" />
 			<description>
 				Returns [code]true[/code] if [code]theme_type[/code] is marked as a variation of [code]base_type[/code] in this theme.
+			</description>
+		</method>
+		<method name="merge_with">
+			<return type="void" />
+			<argument index="0" name="other" type="Theme" />
+			<description>
+				Adds missing and overrides existing definitions with values from the [code]other[/code] [Theme].
+				[b]Note:[/b] This modifies the current theme. If you want to merge two themes together without modifying either one, create a new empty theme and merge the other two into it one after another.
 			</description>
 		</method>
 		<method name="rename_color">

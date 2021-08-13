@@ -3909,6 +3909,11 @@ void CanvasItemEditor::_notification(int p_what) {
 		anchors_popup->add_icon_item(get_theme_icon(SNAME("ControlAlignWide"), SNAME("EditorIcons")), TTR("Full Rect"), ANCHORS_PRESET_WIDE);
 
 		anchor_mode_button->set_icon(get_theme_icon(SNAME("Anchor"), SNAME("EditorIcons")));
+
+		info_overlay->get_theme()->set_stylebox("normal", "Label", get_theme_stylebox(SNAME("CanvasItemInfoOverlay"), SNAME("EditorStyles")));
+		warning_child_of_container->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+		warning_child_of_container->add_theme_font_override("font", get_theme_font(SNAME("main"), SNAME("EditorFonts")));
+		warning_child_of_container->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("main_size"), SNAME("EditorFonts")));
 	}
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
@@ -5280,21 +5285,13 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	info_overlay->add_theme_constant_override("separation", 10);
 	viewport_scrollable->add_child(info_overlay);
 
+	// Make sure all labels inside of the container are styled the same.
 	Theme *info_overlay_theme = memnew(Theme);
-	info_overlay_theme->copy_default_theme();
 	info_overlay->set_theme(info_overlay_theme);
-
-	StyleBoxFlat *info_overlay_label_stylebox = memnew(StyleBoxFlat);
-	info_overlay_label_stylebox->set_bg_color(Color(0.0, 0.0, 0.0, 0.2));
-	info_overlay_label_stylebox->set_expand_margin_size_all(4);
-	info_overlay_theme->set_stylebox("normal", "Label", info_overlay_label_stylebox);
 
 	warning_child_of_container = memnew(Label);
 	warning_child_of_container->hide();
 	warning_child_of_container->set_text(TTR("Warning: Children of a container get their position and size determined only by their parent."));
-	warning_child_of_container->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("warning_color"), SNAME("Editor")));
-	warning_child_of_container->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("main"), SNAME("EditorFonts")));
-	warning_child_of_container->add_theme_font_size_override("font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size(SNAME("main_size"), SNAME("EditorFonts")));
 	add_control_to_info_overlay(warning_child_of_container);
 
 	h_scroll = memnew(HScrollBar);
