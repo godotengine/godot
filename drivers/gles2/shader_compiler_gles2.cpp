@@ -549,7 +549,7 @@ String ShaderCompilerGLES2::_dump_node_code(const SL::Node *p_node, int p_level,
 			SL::VariableNode *var_node = (SL::VariableNode *)p_node;
 			bool use_fragment_varying = false;
 
-			if (current_func_name != vertex_name) {
+			if (!var_node->is_local && current_func_name != vertex_name) {
 				if (p_assigning) {
 					if (shader->varyings.has(var_node->name)) {
 						use_fragment_varying = true;
@@ -650,7 +650,7 @@ String ShaderCompilerGLES2::_dump_node_code(const SL::Node *p_node, int p_level,
 			SL::ArrayNode *arr_node = (SL::ArrayNode *)p_node;
 			bool use_fragment_varying = false;
 
-			if (current_func_name != vertex_name) {
+			if (!arr_node->is_local && current_func_name != vertex_name) {
 				if (arr_node->assign_expression != nullptr) {
 					use_fragment_varying = true;
 				} else {
