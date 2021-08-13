@@ -259,31 +259,31 @@ void JoypadIPhone::start_processing() {
 			int joy_id = [self getJoyIdForController:controller];
 
 			if (element == gamepad.buttonA) {
-				Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_A,
+				Input::get_singleton()->joy_button(joy_id, JoyButton::A,
 						gamepad.buttonA.isPressed);
 			} else if (element == gamepad.buttonB) {
-				Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_B,
+				Input::get_singleton()->joy_button(joy_id, JoyButton::B,
 						gamepad.buttonB.isPressed);
 			} else if (element == gamepad.buttonX) {
-				Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_X,
+				Input::get_singleton()->joy_button(joy_id, JoyButton::X,
 						gamepad.buttonX.isPressed);
 			} else if (element == gamepad.buttonY) {
-				Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_Y,
+				Input::get_singleton()->joy_button(joy_id, JoyButton::Y,
 						gamepad.buttonY.isPressed);
 			} else if (element == gamepad.leftShoulder) {
-				Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_LEFT_SHOULDER,
+				Input::get_singleton()->joy_button(joy_id, JoyButton::LEFT_SHOULDER,
 						gamepad.leftShoulder.isPressed);
 			} else if (element == gamepad.rightShoulder) {
-				Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_RIGHT_SHOULDER,
+				Input::get_singleton()->joy_button(joy_id, JoyButton::RIGHT_SHOULDER,
 						gamepad.rightShoulder.isPressed);
 			} else if (element == gamepad.dpad) {
-				Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_UP,
+				Input::get_singleton()->joy_button(joy_id, JoyButton::DPAD_UP,
 						gamepad.dpad.up.isPressed);
-				Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_DOWN,
+				Input::get_singleton()->joy_button(joy_id, JoyButton::DPAD_DOWN,
 						gamepad.dpad.down.isPressed);
-				Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_LEFT,
+				Input::get_singleton()->joy_button(joy_id, JoyButton::DPAD_LEFT,
 						gamepad.dpad.left.isPressed);
-				Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_RIGHT,
+				Input::get_singleton()->joy_button(joy_id, JoyButton::DPAD_RIGHT,
 						gamepad.dpad.right.isPressed);
 			};
 
@@ -291,20 +291,20 @@ void JoypadIPhone::start_processing() {
 			jx.min = -1;
 			if (element == gamepad.leftThumbstick) {
 				jx.value = gamepad.leftThumbstick.xAxis.value;
-				Input::get_singleton()->joy_axis(joy_id, JOY_AXIS_LEFT_X, jx);
+				Input::get_singleton()->joy_axis(joy_id, JoyAxis::LEFT_X, jx);
 				jx.value = -gamepad.leftThumbstick.yAxis.value;
-				Input::get_singleton()->joy_axis(joy_id, JOY_AXIS_LEFT_Y, jx);
+				Input::get_singleton()->joy_axis(joy_id, JoyAxis::LEFT_Y, jx);
 			} else if (element == gamepad.rightThumbstick) {
 				jx.value = gamepad.rightThumbstick.xAxis.value;
-				Input::get_singleton()->joy_axis(joy_id, JOY_AXIS_RIGHT_X, jx);
+				Input::get_singleton()->joy_axis(joy_id, JoyAxis::RIGHT_X, jx);
 				jx.value = -gamepad.rightThumbstick.yAxis.value;
-				Input::get_singleton()->joy_axis(joy_id, JOY_AXIS_RIGHT_Y, jx);
+				Input::get_singleton()->joy_axis(joy_id, JoyAxis::RIGHT_Y, jx);
 			} else if (element == gamepad.leftTrigger) {
 				jx.value = gamepad.leftTrigger.value;
-				Input::get_singleton()->joy_axis(joy_id, JOY_AXIS_TRIGGER_LEFT, jx);
+				Input::get_singleton()->joy_axis(joy_id, JoyAxis::TRIGGER_LEFT, jx);
 			} else if (element == gamepad.rightTrigger) {
 				jx.value = gamepad.rightTrigger.value;
-				Input::get_singleton()->joy_axis(joy_id, JOY_AXIS_TRIGGER_RIGHT, jx);
+				Input::get_singleton()->joy_axis(joy_id, JoyAxis::TRIGGER_RIGHT, jx);
 			};
 		};
 	} else if (controller.microGamepad != nil) {
@@ -319,18 +319,18 @@ void JoypadIPhone::start_processing() {
 			int joy_id = [self getJoyIdForController:controller];
 
 			if (element == gamepad.buttonA) {
-				Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_A,
+				Input::get_singleton()->joy_button(joy_id, JoyButton::A,
 						gamepad.buttonA.isPressed);
 			} else if (element == gamepad.buttonX) {
-				Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_X,
+				Input::get_singleton()->joy_button(joy_id, JoyButton::X,
 						gamepad.buttonX.isPressed);
 			} else if (element == gamepad.dpad) {
-				Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_UP,
+				Input::get_singleton()->joy_button(joy_id, JoyButton::DPAD_UP,
 						gamepad.dpad.up.isPressed);
-				Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_DOWN,
+				Input::get_singleton()->joy_button(joy_id, JoyButton::DPAD_DOWN,
 						gamepad.dpad.down.isPressed);
-				Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_LEFT, gamepad.dpad.left.isPressed);
-				Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_RIGHT, gamepad.dpad.right.isPressed);
+				Input::get_singleton()->joy_button(joy_id, JoyButton::DPAD_LEFT, gamepad.dpad.left.isPressed);
+				Input::get_singleton()->joy_button(joy_id, JoyButton::DPAD_RIGHT, gamepad.dpad.right.isPressed);
 			};
 		};
 	}

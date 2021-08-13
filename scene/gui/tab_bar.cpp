@@ -143,7 +143,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP && !mb->is_command_pressed()) {
+		if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP && !mb->is_command_pressed()) {
 			if (scrolling_enabled && buttons_visible) {
 				if (offset > 0) {
 					offset--;
@@ -152,7 +152,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && !mb->is_command_pressed()) {
+		if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN && !mb->is_command_pressed()) {
 			if (scrolling_enabled && buttons_visible) {
 				if (missing_right) {
 					offset++;
@@ -162,7 +162,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (rb_pressing && !mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (rb_pressing && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 			if (rb_hover != -1) {
 				// pressed
 				emit_signal(SNAME("tab_rmb_clicked"), rb_hover);
@@ -172,7 +172,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 			update();
 		}
 
-		if (cb_pressing && !mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (cb_pressing && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 			if (cb_hover != -1) {
 				// pressed
 				emit_signal(SNAME("tab_close_pressed"), cb_hover);
@@ -182,7 +182,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 			update();
 		}
 
-		if (mb->is_pressed() && (mb->get_button_index() == MOUSE_BUTTON_LEFT || (select_with_rmb && mb->get_button_index() == MOUSE_BUTTON_RIGHT))) {
+		if (mb->is_pressed() && (mb->get_button_index() == MouseButton::LEFT || (select_with_rmb && mb->get_button_index() == MouseButton::RIGHT))) {
 			// clicks
 			Point2 pos = mb->get_position();
 

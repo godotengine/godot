@@ -115,8 +115,8 @@
 
 - (void)deleteText:(NSInteger)charactersToDelete {
 	for (int i = 0; i < charactersToDelete; i++) {
-		DisplayServerIPhone::get_singleton()->key(KEY_BACKSPACE, true);
-		DisplayServerIPhone::get_singleton()->key(KEY_BACKSPACE, false);
+		DisplayServerIPhone::get_singleton()->key(Key::BACKSPACE, true);
+		DisplayServerIPhone::get_singleton()->key(Key::BACKSPACE, false);
 	}
 }
 
@@ -129,10 +129,10 @@
 
 		switch (character) {
 			case 10:
-				character = KEY_ENTER;
+				character = (int)Key::ENTER;
 				break;
 			case 8198:
-				character = KEY_SPACE;
+				character = (int)Key::SPACE;
 				break;
 			default:
 				break;

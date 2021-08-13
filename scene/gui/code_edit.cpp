@@ -263,19 +263,19 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 
 			switch (mb->get_button_index()) {
-				case MOUSE_BUTTON_WHEEL_UP: {
+				case MouseButton::WHEEL_UP: {
 					if (code_completion_current_selected > 0) {
 						code_completion_current_selected--;
 						update();
 					}
 				} break;
-				case MOUSE_BUTTON_WHEEL_DOWN: {
+				case MouseButton::WHEEL_DOWN: {
 					if (code_completion_current_selected < code_completion_options.size() - 1) {
 						code_completion_current_selected++;
 						update();
 					}
 				} break;
-				case MOUSE_BUTTON_LEFT: {
+				case MouseButton::LEFT: {
 					code_completion_current_selected = CLAMP(code_completion_line_ofs + (mb->get_position().y - code_completion_rect.position.y) / get_line_height(), 0, code_completion_options.size() - 1);
 					if (mb->is_double_click()) {
 						confirm_code_completion();
@@ -300,7 +300,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			int line = pos.y;
 			int col = pos.x;
 
-			if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+			if (mb->get_button_index() == MouseButton::LEFT) {
 				if (is_line_folded(line)) {
 					int wrap_index = get_line_wrap_index_at_column(line, col);
 					if (wrap_index == get_line_wrap_count(line)) {
@@ -314,7 +314,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				}
 			}
 		} else {
-			if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+			if (mb->get_button_index() == MouseButton::LEFT) {
 				if (mb->is_command_pressed() && symbol_lookup_word != String()) {
 					Vector2i mpos = mb->get_position();
 					if (is_layout_rtl()) {
@@ -340,7 +340,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 
 		if (symbol_lookup_on_click_enabled) {
-			if (mm->is_command_pressed() && mm->get_button_mask() == 0 && !is_dragging_cursor()) {
+			if (mm->is_command_pressed() && mm->get_button_mask() == MouseButton::NONE && !is_dragging_cursor()) {
 				symbol_lookup_new_word = get_word_at_pos(mpos);
 				if (symbol_lookup_new_word != symbol_lookup_word) {
 					emit_signal(SNAME("symbol_validate"), symbol_lookup_new_word);
@@ -360,9 +360,9 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 	/* Ctrl + Hover symbols */
 #ifdef OSX_ENABLED
-	if (k->get_keycode() == KEY_META) {
+	if (k->get_keycode() == Key::META) {
 #else
-	if (k->get_keycode() == KEY_CTRL) {
+	if (k->get_keycode() == Key::CTRL) {
 #endif
 		if (symbol_lookup_on_click_enabled) {
 			if (k->is_pressed() && !is_dragging_cursor()) {
@@ -378,7 +378,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	}
 
 	/* If a modifier has been pressed, and nothing else, return. */
-	if (!k->is_pressed() || k->get_keycode() == KEY_CTRL || k->get_keycode() == KEY_ALT || k->get_keycode() == KEY_SHIFT || k->get_keycode() == KEY_META) {
+	if (!k->is_pressed() || k->get_keycode() == Key::CTRL || k->get_keycode() == Key::ALT || k->get_keycode() == Key::SHIFT || k->get_keycode() == Key::META) {
 		return;
 	}
 

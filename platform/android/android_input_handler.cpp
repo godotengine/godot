@@ -45,7 +45,7 @@ void AndroidInputHandler::process_joy_event(AndroidInputHandler::JoypadEvent p_e
 			Input::get_singleton()->joy_axis(p_event.device, (JoyAxis)p_event.index, value);
 			break;
 		case JOY_EVENT_HAT:
-			Input::get_singleton()->joy_hat(p_event.device, (HatMask)p_event.hat);
+			Input::get_singleton()->joy_hat(p_event.device, p_event.hat);
 			break;
 		default:
 			return;
@@ -82,37 +82,37 @@ void AndroidInputHandler::process_key_event(int p_keycode, int p_scancode, int p
 	Ref<InputEventKey> ev;
 	ev.instantiate();
 	int val = unicode;
-	int keycode = android_get_keysym(p_keycode);
-	int phy_keycode = android_get_keysym(p_scancode);
+	Key keycode = android_get_keysym(p_keycode);
+	Key phy_keycode = android_get_keysym(p_scancode);
 
-	if (keycode == KEY_SHIFT) {
+	if (keycode == Key::SHIFT) {
 		shift_mem = p_pressed;
 	}
-	if (keycode == KEY_ALT) {
+	if (keycode == Key::ALT) {
 		alt_mem = p_pressed;
 	}
-	if (keycode == KEY_CTRL) {
+	if (keycode == Key::CTRL) {
 		control_mem = p_pressed;
 	}
-	if (keycode == KEY_META) {
+	if (keycode == Key::META) {
 		meta_mem = p_pressed;
 	}
 
-	ev->set_keycode((Key)keycode);
-	ev->set_physical_keycode((Key)phy_keycode);
+	ev->set_keycode(keycode);
+	ev->set_physical_keycode(phy_keycode);
 	ev->set_unicode(val);
 	ev->set_pressed(p_pressed);
 
 	_set_key_modifier_state(ev);
 
 	if (val == '\n') {
-		ev->set_keycode(KEY_ENTER);
+		ev->set_keycode(Key::ENTER);
 	} else if (val == 61448) {
-		ev->set_keycode(KEY_BACKSPACE);
-		ev->set_unicode(KEY_BACKSPACE);
+		ev->set_keycode(Key::BACKSPACE);
+		ev->set_unicode((char32_t)Key::BACKSPACE);
 	} else if (val == 61453) {
-		ev->set_keycode(KEY_ENTER);
-		ev->set_unicode(KEY_ENTER);
+		ev->set_keycode(Key::ENTER);
+		ev->set_unicode((char32_t)Key::ENTER);
 	} else if (p_keycode == 4) {
 		if (DisplayServerAndroid *dsa = Object::cast_to<DisplayServerAndroid>(DisplayServer::get_singleton())) {
 			dsa->send_window_event(DisplayServer::WINDOW_EVENT_GO_BACK_REQUEST, true);
@@ -305,15 +305,15 @@ void AndroidInputHandler::process_mouse_event(int input_device, int event_action
 			ev->set_pressed(true);
 			buttons_state = event_buttons_mask;
 			if (event_vertical_factor > 0) {
-				_wheel_button_click(event_buttons_mask, ev, MOUSE_BUTTON_WHEEL_UP, event_vertical_factor);
+				_wheel_button_click(event_buttons_mask, ev, MouseButton::WHEEL_UP, event_vertical_factor);
 			} else if (event_vertical_factor < 0) {
-				_wheel_button_click(event_buttons_mask, ev, MOUSE_BUTTON_WHEEL_DOWN, -event_vertical_factor);
+				_wheel_button_click(event_buttons_mask, ev, MouseButton::WHEEL_DOWN, -event_vertical_factor);
 			}
 
 			if (event_horizontal_factor > 0) {
-				_wheel_button_click(event_buttons_mask, ev, MOUSE_BUTTON_WHEEL_RIGHT, event_horizontal_factor);
+				_wheel_button_click(event_buttons_mask, ev, MouseButton::WHEEL_RIGHT, event_horizontal_factor);
 			} else if (event_horizontal_factor < 0) {
-				_wheel_button_click(event_buttons_mask, ev, MOUSE_BUTTON_WHEEL_LEFT, -event_horizontal_factor);
+				_wheel_button_click(event_buttons_mask, ev, MouseButton::WHEEL_LEFT, -event_horizontal_factor);
 			}
 		} break;
 	}
@@ -323,7 +323,7 @@ void AndroidInputHandler::_wheel_button_click(MouseButton event_buttons_mask, co
 	Ref<InputEventMouseButton> evd = ev->duplicate();
 	_set_key_modifier_state(evd);
 	evd->set_button_index(wheel_button);
-	evd->set_button_mask(MouseButton(event_buttons_mask ^ (1 << (wheel_button - 1))));
+	evd->set_button_mask(MouseButton(event_buttons_mask ^ mouse_button_to_mask(wheel_button)));
 	evd->set_factor(factor);
 	Input::get_singleton()->parse_input_event(evd);
 	Ref<InputEventMouseButton> evdd = evd->duplicate();
@@ -339,7 +339,7 @@ void AndroidInputHandler::process_double_tap(int event_android_button_mask, Poin
 	_set_key_modifier_state(ev);
 	ev->set_position(p_pos);
 	ev->set_global_position(p_pos);
-	ev->set_pressed(event_button_mask != 0);
+	ev->set_pressed(event_button_mask != MouseButton::NONE);
 	ev->set_button_index(_button_index_from_mask(event_button_mask));
 	ev->set_button_mask(event_button_mask);
 	ev->set_double_click(true);
@@ -348,37 +348,37 @@ void AndroidInputHandler::process_double_tap(int event_android_button_mask, Poin
 
 MouseButton AndroidInputHandler::_button_index_from_mask(MouseButton button_mask) {
 	switch (button_mask) {
-		case MOUSE_BUTTON_MASK_LEFT:
-			return MOUSE_BUTTON_LEFT;
-		case MOUSE_BUTTON_MASK_RIGHT:
-			return MOUSE_BUTTON_RIGHT;
-		case MOUSE_BUTTON_MASK_MIDDLE:
-			return MOUSE_BUTTON_MIDDLE;
-		case MOUSE_BUTTON_MASK_XBUTTON1:
-			return MOUSE_BUTTON_XBUTTON1;
-		case MOUSE_BUTTON_MASK_XBUTTON2:
-			return MOUSE_BUTTON_XBUTTON2;
+		case MouseButton::MASK_LEFT:
+			return MouseButton::LEFT;
+		case MouseButton::MASK_RIGHT:
+			return MouseButton::RIGHT;
+		case MouseButton::MASK_MIDDLE:
+			return MouseButton::MIDDLE;
+		case MouseButton::MASK_XBUTTON1:
+			return MouseButton::MB_XBUTTON1;
+		case MouseButton::MASK_XBUTTON2:
+			return MouseButton::MB_XBUTTON2;
 		default:
-			return MOUSE_BUTTON_NONE;
+			return MouseButton::NONE;
 	}
 }
 
 MouseButton AndroidInputHandler::_android_button_mask_to_godot_button_mask(int android_button_mask) {
-	MouseButton godot_button_mask = MOUSE_BUTTON_NONE;
+	MouseButton godot_button_mask = MouseButton::NONE;
 	if (android_button_mask & AMOTION_EVENT_BUTTON_PRIMARY) {
-		godot_button_mask |= MOUSE_BUTTON_MASK_LEFT;
+		godot_button_mask |= MouseButton::MASK_LEFT;
 	}
 	if (android_button_mask & AMOTION_EVENT_BUTTON_SECONDARY) {
-		godot_button_mask |= MOUSE_BUTTON_MASK_RIGHT;
+		godot_button_mask |= MouseButton::MASK_RIGHT;
 	}
 	if (android_button_mask & AMOTION_EVENT_BUTTON_TERTIARY) {
-		godot_button_mask |= MOUSE_BUTTON_MASK_MIDDLE;
+		godot_button_mask |= MouseButton::MASK_MIDDLE;
 	}
 	if (android_button_mask & AMOTION_EVENT_BUTTON_BACK) {
-		godot_button_mask |= MOUSE_BUTTON_MASK_XBUTTON1;
+		godot_button_mask |= MouseButton::MASK_XBUTTON1;
 	}
 	if (android_button_mask & AMOTION_EVENT_BUTTON_FORWARD) {
-		godot_button_mask |= MOUSE_BUTTON_MASK_XBUTTON2;
+		godot_button_mask |= MouseButton::MASK_XBUTTON2;
 	}
 
 	return godot_button_mask;

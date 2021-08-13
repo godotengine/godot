@@ -36,8 +36,8 @@
 
 /////////////////////////////////////////
 
-// Maps to 2*axis if value is neg, or + 1 if value is pos.
-static const char *_joy_axis_descriptions[JOY_AXIS_MAX * 2] = {
+// Maps to 2*axis if value is neg, or 2*axis+1 if value is pos.
+static const char *_joy_axis_descriptions[(size_t)JoyAxis::MAX * 2] = {
 	TTRC("Left Stick Left, Joystick 0 Left"),
 	TTRC("Left Stick Right, Joystick 0 Right"),
 	TTRC("Left Stick Up, Joystick 0 Up"),
@@ -67,11 +67,11 @@ String InputEventConfigurationDialog::get_event_text(const Ref<InputEvent> &p_ev
 	Ref<InputEventJoypadMotion> jpmotion = p_event;
 	if (jpmotion.is_valid()) {
 		String desc = TTR("Unknown Joypad Axis");
-		if (jpmotion->get_axis() < JOY_AXIS_MAX) {
-			desc = RTR(_joy_axis_descriptions[2 * jpmotion->get_axis() + (jpmotion->get_axis_value() < 0 ? 0 : 1)]);
+		if (jpmotion->get_axis() < JoyAxis::MAX) {
+			desc = RTR(_joy_axis_descriptions[2 * (size_t)jpmotion->get_axis() + (jpmotion->get_axis_value() < 0 ? 0 : 1)]);
 		}
 
-		return vformat("Joypad Axis %s %s (%s)", itos(jpmotion->get_axis()), jpmotion->get_axis_value() < 0 ? "-" : "+", desc);
+		return vformat("Joypad Axis %s %s (%s)", itos((int64_t)jpmotion->get_axis()), jpmotion->get_axis_value() < 0 ? "-" : "+", desc);
 	} else {
 		return p_event->as_text();
 	}
@@ -108,7 +108,7 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event) {
 
 		if (k.is_valid()) {
 			show_phys_key = true;
-			physical_key_checkbox->set_pressed(k->get_physical_keycode() != 0 && k->get_keycode() == 0);
+			physical_key_checkbox->set_pressed(k->get_physical_keycode() != Key::NONE && k->get_keycode() == Key::NONE);
 
 		} else if (joyb.is_valid() || joym.is_valid() || mb.is_valid()) {
 			show_device = true;
@@ -268,9 +268,9 @@ void InputEventConfigurationDialog::_listen_window_input(const Ref<InputEvent> &
 		k->set_pressed(false); // to avoid serialisation of 'pressed' property - doesn't matter for actions anyway.
 		// Maintain physical keycode option state
 		if (physical_key_checkbox->is_pressed()) {
-			k->set_keycode(KEY_NONE);
+			k->set_keycode(Key::NONE);
 		} else {
-			k->set_physical_keycode(KEY_NONE);
+			k->set_physical_keycode(Key::NONE);
 		}
 	}
 
@@ -325,7 +325,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 		mouse_root->set_collapsed(collapse);
 		mouse_root->set_meta("__type", INPUT_MOUSE_BUTTON);
 
-		MouseButton mouse_buttons[9] = { MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE, MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN, MOUSE_BUTTON_WHEEL_LEFT, MOUSE_BUTTON_WHEEL_RIGHT, MOUSE_BUTTON_XBUTTON1, MOUSE_BUTTON_XBUTTON2 };
+		MouseButton mouse_buttons[9] = { MouseButton::LEFT, MouseButton::RIGHT, MouseButton::MIDDLE, MouseButton::WHEEL_UP, MouseButton::WHEEL_DOWN, MouseButton::WHEEL_LEFT, MouseButton::WHEEL_RIGHT, MouseButton::MB_XBUTTON1, MouseButton::MB_XBUTTON2 };
 		for (int i = 0; i < 9; i++) {
 			Ref<InputEventMouseButton> mb;
 			mb.instantiate();
@@ -349,7 +349,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 		joyb_root->set_collapsed(collapse);
 		joyb_root->set_meta("__type", INPUT_JOY_BUTTON);
 
-		for (int i = 0; i < JOY_BUTTON_MAX; i++) {
+		for (int i = 0; i < (int)JoyButton::MAX; i++) {
 			Ref<InputEventJoypadButton> joyb;
 			joyb.instantiate();
 			joyb->set_button_index((JoyButton)i);
@@ -372,7 +372,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 		joya_root->set_collapsed(collapse);
 		joya_root->set_meta("__type", INPUT_JOY_MOTION);
 
-		for (int i = 0; i < JOY_AXIS_MAX * 2; i++) {
+		for (int i = 0; i < (int)JoyAxis::MAX * 2; i++) {
 			int axis = i / 2;
 			int direction = (i & 1) ? 1 : -1;
 			Ref<InputEventJoypadMotion> joym;
@@ -453,10 +453,10 @@ void InputEventConfigurationDialog::_physical_keycode_toggled(bool p_checked) {
 
 	if (p_checked) {
 		k->set_physical_keycode(k->get_keycode());
-		k->set_keycode(KEY_NONE);
+		k->set_keycode(Key::NONE);
 	} else {
 		k->set_keycode((Key)k->get_physical_keycode());
-		k->set_physical_keycode(KEY_NONE);
+		k->set_physical_keycode(Key::NONE);
 	}
 
 	_set_event(k);
@@ -480,9 +480,9 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 
 			if (physical_key_checkbox->is_pressed()) {
 				k->set_physical_keycode(keycode);
-				k->set_keycode(KEY_NONE);
+				k->set_keycode(Key::NONE);
 			} else {
-				k->set_physical_keycode(KEY_NONE);
+				k->set_physical_keycode(Key::NONE);
 				k->set_keycode(keycode);
 			}
 

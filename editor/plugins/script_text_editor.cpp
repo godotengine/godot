@@ -1462,7 +1462,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		Array files = d["files"];
 
 		String text_to_drop;
-		bool preload = Input::get_singleton()->is_key_pressed(KEY_CTRL);
+		bool preload = Input::get_singleton()->is_key_pressed(Key::CTRL);
 		for (int i = 0; i < files.size(); i++) {
 			if (i > 0) {
 				text_to_drop += ", ";
@@ -1526,7 +1526,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	bool create_menu = false;
 
 	CodeEdit *tx = code_editor->get_text_editor();
-	if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_RIGHT && mb->is_pressed()) {
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
 		local_pos = mb->get_global_position() - tx->get_global_position();
 		create_menu = true;
 	} else if (k.is_valid() && k->is_action("ui_menu", true)) {
@@ -1804,9 +1804,9 @@ void ScriptTextEditor::_enable_code_editor() {
 
 	edit_menu->get_popup()->add_child(convert_case);
 	edit_menu->get_popup()->add_submenu_item(TTR("Convert Case"), "convert_case");
-	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/convert_to_uppercase", TTR("Uppercase"), KEY_MASK_SHIFT | KEY_F4), EDIT_TO_UPPERCASE);
-	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/convert_to_lowercase", TTR("Lowercase"), KEY_MASK_SHIFT | KEY_F5), EDIT_TO_LOWERCASE);
-	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/capitalize", TTR("Capitalize"), KEY_MASK_SHIFT | KEY_F6), EDIT_CAPITALIZE);
+	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/convert_to_uppercase", TTR("Uppercase"), KeyModifierMask::SHIFT | Key::F4), EDIT_TO_UPPERCASE);
+	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/convert_to_lowercase", TTR("Lowercase"), KeyModifierMask::SHIFT | Key::F5), EDIT_TO_LOWERCASE);
+	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/capitalize", TTR("Capitalize"), KeyModifierMask::SHIFT | Key::F6), EDIT_CAPITALIZE);
 	convert_case->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
 
 	edit_menu->get_popup()->add_child(highlighter_menu);
@@ -1953,60 +1953,60 @@ static ScriptEditorBase *create_editor(const RES &p_resource) {
 }
 
 void ScriptTextEditor::register_editor() {
-	ED_SHORTCUT("script_text_editor/move_up", TTR("Move Up"), KEY_MASK_ALT | KEY_UP);
-	ED_SHORTCUT("script_text_editor/move_down", TTR("Move Down"), KEY_MASK_ALT | KEY_DOWN);
-	ED_SHORTCUT("script_text_editor/delete_line", TTR("Delete Line"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_K);
+	ED_SHORTCUT("script_text_editor/move_up", TTR("Move Up"), KeyModifierMask::ALT | Key::UP);
+	ED_SHORTCUT("script_text_editor/move_down", TTR("Move Down"), KeyModifierMask::ALT | Key::DOWN);
+	ED_SHORTCUT("script_text_editor/delete_line", TTR("Delete Line"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::K);
 
 	// Leave these at zero, same can be accomplished with tab/shift-tab, including selection.
 	// The next/previous in history shortcut in this case makes a lot more sense.
 
-	ED_SHORTCUT("script_text_editor/indent_left", TTR("Indent Left"), KEY_NONE);
-	ED_SHORTCUT("script_text_editor/indent_right", TTR("Indent Right"), KEY_NONE);
-	ED_SHORTCUT("script_text_editor/toggle_comment", TTR("Toggle Comment"), KEY_MASK_CMD | KEY_K);
-	ED_SHORTCUT("script_text_editor/toggle_fold_line", TTR("Fold/Unfold Line"), KEY_MASK_ALT | KEY_F);
-	ED_SHORTCUT("script_text_editor/fold_all_lines", TTR("Fold All Lines"), KEY_NONE);
-	ED_SHORTCUT("script_text_editor/unfold_all_lines", TTR("Unfold All Lines"), KEY_NONE);
-	ED_SHORTCUT("script_text_editor/duplicate_selection", TTR("Duplicate Selection"), KEY_MASK_SHIFT | KEY_MASK_CMD | KEY_D);
-	ED_SHORTCUT_OVERRIDE("script_text_editor/duplicate_selection", "macos", KEY_MASK_SHIFT | KEY_MASK_CMD | KEY_C);
-	ED_SHORTCUT("script_text_editor/evaluate_selection", TTR("Evaluate Selection"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_E);
-	ED_SHORTCUT("script_text_editor/trim_trailing_whitespace", TTR("Trim Trailing Whitespace"), KEY_MASK_CMD | KEY_MASK_ALT | KEY_T);
-	ED_SHORTCUT("script_text_editor/convert_indent_to_spaces", TTR("Convert Indent to Spaces"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_Y);
-	ED_SHORTCUT("script_text_editor/convert_indent_to_tabs", TTR("Convert Indent to Tabs"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_I);
-	ED_SHORTCUT("script_text_editor/auto_indent", TTR("Auto Indent"), KEY_MASK_CMD | KEY_I);
+	ED_SHORTCUT("script_text_editor/indent_left", TTR("Indent Left"), Key::NONE);
+	ED_SHORTCUT("script_text_editor/indent_right", TTR("Indent Right"), Key::NONE);
+	ED_SHORTCUT("script_text_editor/toggle_comment", TTR("Toggle Comment"), KeyModifierMask::CMD | Key::K);
+	ED_SHORTCUT("script_text_editor/toggle_fold_line", TTR("Fold/Unfold Line"), KeyModifierMask::ALT | Key::F);
+	ED_SHORTCUT("script_text_editor/fold_all_lines", TTR("Fold All Lines"), Key::NONE);
+	ED_SHORTCUT("script_text_editor/unfold_all_lines", TTR("Unfold All Lines"), Key::NONE);
+	ED_SHORTCUT("script_text_editor/duplicate_selection", TTR("Duplicate Selection"), KeyModifierMask::SHIFT | KeyModifierMask::CMD | Key::D);
+	ED_SHORTCUT_OVERRIDE("script_text_editor/duplicate_selection", "macos", KeyModifierMask::SHIFT | KeyModifierMask::CMD | Key::C);
+	ED_SHORTCUT("script_text_editor/evaluate_selection", TTR("Evaluate Selection"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::E);
+	ED_SHORTCUT("script_text_editor/trim_trailing_whitespace", TTR("Trim Trailing Whitespace"), KeyModifierMask::CMD | KeyModifierMask::ALT | Key::T);
+	ED_SHORTCUT("script_text_editor/convert_indent_to_spaces", TTR("Convert Indent to Spaces"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::Y);
+	ED_SHORTCUT("script_text_editor/convert_indent_to_tabs", TTR("Convert Indent to Tabs"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::I);
+	ED_SHORTCUT("script_text_editor/auto_indent", TTR("Auto Indent"), KeyModifierMask::CMD | Key::I);
 
-	ED_SHORTCUT_AND_COMMAND("script_text_editor/find", TTR("Find..."), KEY_MASK_CMD | KEY_F);
+	ED_SHORTCUT_AND_COMMAND("script_text_editor/find", TTR("Find..."), KeyModifierMask::CMD | Key::F);
 
-	ED_SHORTCUT("script_text_editor/find_next", TTR("Find Next"), KEY_F3);
-	ED_SHORTCUT_OVERRIDE("script_text_editor/find_next", "macos", KEY_MASK_CMD | KEY_G);
+	ED_SHORTCUT("script_text_editor/find_next", TTR("Find Next"), Key::F3);
+	ED_SHORTCUT_OVERRIDE("script_text_editor/find_next", "macos", KeyModifierMask::CMD | Key::G);
 
-	ED_SHORTCUT("script_text_editor/find_previous", TTR("Find Previous"), KEY_MASK_SHIFT | KEY_F3);
-	ED_SHORTCUT_OVERRIDE("script_text_editor/find_previous", "macos", KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_G);
+	ED_SHORTCUT("script_text_editor/find_previous", TTR("Find Previous"), KeyModifierMask::SHIFT | Key::F3);
+	ED_SHORTCUT_OVERRIDE("script_text_editor/find_previous", "macos", KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::G);
 
-	ED_SHORTCUT_AND_COMMAND("script_text_editor/replace", TTR("Replace..."), KEY_MASK_CMD | KEY_R);
-	ED_SHORTCUT_OVERRIDE("script_text_editor/replace", "macos", KEY_MASK_ALT | KEY_MASK_CMD | KEY_F);
+	ED_SHORTCUT_AND_COMMAND("script_text_editor/replace", TTR("Replace..."), KeyModifierMask::CMD | Key::R);
+	ED_SHORTCUT_OVERRIDE("script_text_editor/replace", "macos", KeyModifierMask::ALT | KeyModifierMask::CMD | Key::F);
 
-	ED_SHORTCUT("script_text_editor/find_in_files", TTR("Find in Files..."), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_F);
-	ED_SHORTCUT("script_text_editor/replace_in_files", TTR("Replace in Files..."), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_R);
+	ED_SHORTCUT("script_text_editor/find_in_files", TTR("Find in Files..."), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::F);
+	ED_SHORTCUT("script_text_editor/replace_in_files", TTR("Replace in Files..."), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::R);
 
-	ED_SHORTCUT("script_text_editor/contextual_help", TTR("Contextual Help"), KEY_MASK_ALT | KEY_F1);
-	ED_SHORTCUT_OVERRIDE("script_text_editor/contextual_help", "macos", KEY_MASK_ALT | KEY_MASK_SHIFT | KEY_SPACE);
+	ED_SHORTCUT("script_text_editor/contextual_help", TTR("Contextual Help"), KeyModifierMask::ALT | Key::F1);
+	ED_SHORTCUT_OVERRIDE("script_text_editor/contextual_help", "macos", KeyModifierMask::ALT | KeyModifierMask::SHIFT | Key::SPACE);
 
-	ED_SHORTCUT("script_text_editor/toggle_bookmark", TTR("Toggle Bookmark"), KEY_MASK_CMD | KEY_MASK_ALT | KEY_B);
-	ED_SHORTCUT("script_text_editor/goto_next_bookmark", TTR("Go to Next Bookmark"), KEY_MASK_CMD | KEY_B);
-	ED_SHORTCUT("script_text_editor/goto_previous_bookmark", TTR("Go to Previous Bookmark"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_B);
-	ED_SHORTCUT("script_text_editor/remove_all_bookmarks", TTR("Remove All Bookmarks"), KEY_NONE);
+	ED_SHORTCUT("script_text_editor/toggle_bookmark", TTR("Toggle Bookmark"), KeyModifierMask::CMD | KeyModifierMask::ALT | Key::B);
+	ED_SHORTCUT("script_text_editor/goto_next_bookmark", TTR("Go to Next Bookmark"), KeyModifierMask::CMD | Key::B);
+	ED_SHORTCUT("script_text_editor/goto_previous_bookmark", TTR("Go to Previous Bookmark"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::B);
+	ED_SHORTCUT("script_text_editor/remove_all_bookmarks", TTR("Remove All Bookmarks"), Key::NONE);
 
-	ED_SHORTCUT("script_text_editor/goto_function", TTR("Go to Function..."), KEY_MASK_ALT | KEY_MASK_CMD | KEY_F);
-	ED_SHORTCUT_OVERRIDE("script_text_editor/goto_function", "macos", KEY_MASK_CTRL | KEY_MASK_CMD | KEY_J);
+	ED_SHORTCUT("script_text_editor/goto_function", TTR("Go to Function..."), KeyModifierMask::ALT | KeyModifierMask::CMD | Key::F);
+	ED_SHORTCUT_OVERRIDE("script_text_editor/goto_function", "macos", KeyModifierMask::CTRL | KeyModifierMask::CMD | Key::J);
 
-	ED_SHORTCUT("script_text_editor/goto_line", TTR("Go to Line..."), KEY_MASK_CMD | KEY_L);
+	ED_SHORTCUT("script_text_editor/goto_line", TTR("Go to Line..."), KeyModifierMask::CMD | Key::L);
 
-	ED_SHORTCUT("script_text_editor/toggle_breakpoint", TTR("Toggle Breakpoint"), KEY_F9);
-	ED_SHORTCUT_OVERRIDE("script_text_editor/toggle_breakpoint", "macos", KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_B);
+	ED_SHORTCUT("script_text_editor/toggle_breakpoint", TTR("Toggle Breakpoint"), Key::F9);
+	ED_SHORTCUT_OVERRIDE("script_text_editor/toggle_breakpoint", "macos", KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::B);
 
-	ED_SHORTCUT("script_text_editor/remove_all_breakpoints", TTR("Remove All Breakpoints"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_F9);
-	ED_SHORTCUT("script_text_editor/goto_next_breakpoint", TTR("Go to Next Breakpoint"), KEY_MASK_CMD | KEY_PERIOD);
-	ED_SHORTCUT("script_text_editor/goto_previous_breakpoint", TTR("Go to Previous Breakpoint"), KEY_MASK_CMD | KEY_COMMA);
+	ED_SHORTCUT("script_text_editor/remove_all_breakpoints", TTR("Remove All Breakpoints"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::F9);
+	ED_SHORTCUT("script_text_editor/goto_next_breakpoint", TTR("Go to Next Breakpoint"), KeyModifierMask::CMD | Key::PERIOD);
+	ED_SHORTCUT("script_text_editor/goto_previous_breakpoint", TTR("Go to Previous Breakpoint"), KeyModifierMask::CMD | Key::COMMA);
 
 	ScriptEditor::register_create_script_editor_function(create_editor);
 }

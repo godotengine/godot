@@ -1172,9 +1172,9 @@ void VisualScriptEditor::_member_selected() {
 
 	if (ti->get_parent() == members->get_root()->get_first_child()) {
 #ifdef OSX_ENABLED
-		bool held_ctrl = Input::get_singleton()->is_key_pressed(KEY_META);
+		bool held_ctrl = Input::get_singleton()->is_key_pressed(Key::META);
 #else
-		bool held_ctrl = Input::get_singleton()->is_key_pressed(KEY_CTRL);
+		bool held_ctrl = Input::get_singleton()->is_key_pressed(Key::CTRL);
 #endif
 		if (held_ctrl) {
 			ERR_FAIL_COND(!script->has_function(selected));
@@ -1952,7 +1952,7 @@ void VisualScriptEditor::input(const Ref<InputEvent> &p_event) {
 void VisualScriptEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> key = p_event;
 
-	if (key.is_valid() && key->is_pressed() && key->get_button_mask() == MOUSE_BUTTON_RIGHT) {
+	if (key.is_valid() && key->is_pressed() && key->get_button_mask() == MouseButton::RIGHT) {
 		saved_position = graph->get_local_mouse_position();
 
 		Point2 gpos = Input::get_singleton()->get_mouse_position();
@@ -2049,7 +2049,7 @@ void VisualScriptEditor::_fn_name_box_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventKey> key = p_event;
-	if (key.is_valid() && key->is_pressed() && key->get_keycode() == KEY_ENTER) {
+	if (key.is_valid() && key->is_pressed() && key->get_keycode() == Key::ENTER) {
 		function_name_edit->hide();
 		_rename_function(selected, function_name_box->get_text());
 		function_name_box->clear();
@@ -2108,7 +2108,7 @@ bool VisualScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 						String(d["type"]) == "nodes")) {
 			if (String(d["type"]) == "obj_property") {
 #ifdef OSX_ENABLED
-				const_cast<VisualScriptEditor *>(this)->_show_hint(vformat(TTR("Hold %s to drop a Getter. Hold Shift to drop a generic signature."), find_keycode_name(KEY_META)));
+				const_cast<VisualScriptEditor *>(this)->_show_hint(vformat(TTR("Hold %s to drop a Getter. Hold Shift to drop a generic signature."), find_keycode_name(Key::META)));
 #else
 				const_cast<VisualScriptEditor *>(this)->_show_hint(TTR("Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."));
 #endif
@@ -2116,7 +2116,7 @@ bool VisualScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 
 			if (String(d["type"]) == "nodes") {
 #ifdef OSX_ENABLED
-				const_cast<VisualScriptEditor *>(this)->_show_hint(vformat(TTR("Hold %s to drop a simple reference to the node."), find_keycode_name(KEY_META)));
+				const_cast<VisualScriptEditor *>(this)->_show_hint(vformat(TTR("Hold %s to drop a simple reference to the node."), find_keycode_name(Key::META)));
 #else
 				const_cast<VisualScriptEditor *>(this)->_show_hint(TTR("Hold Ctrl to drop a simple reference to the node."));
 #endif
@@ -2124,7 +2124,7 @@ bool VisualScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 
 			if (String(d["type"]) == "visual_script_variable_drag") {
 #ifdef OSX_ENABLED
-				const_cast<VisualScriptEditor *>(this)->_show_hint(vformat(TTR("Hold %s to drop a Variable Setter."), find_keycode_name(KEY_META)));
+				const_cast<VisualScriptEditor *>(this)->_show_hint(vformat(TTR("Hold %s to drop a Variable Setter."), find_keycode_name(Key::META)));
 #else
 				const_cast<VisualScriptEditor *>(this)->_show_hint(TTR("Hold Ctrl to drop a Variable Setter."));
 #endif
@@ -2187,9 +2187,9 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 
 	if (String(d["type"]) == "visual_script_variable_drag") {
 #ifdef OSX_ENABLED
-		bool use_set = Input::get_singleton()->is_key_pressed(KEY_META);
+		bool use_set = Input::get_singleton()->is_key_pressed(Key::META);
 #else
-		bool use_set = Input::get_singleton()->is_key_pressed(KEY_CTRL);
+		bool use_set = Input::get_singleton()->is_key_pressed(Key::CTRL);
 #endif
 		Vector2 pos = _get_pos_in_graph(p_point);
 
@@ -2296,9 +2296,9 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 
 	if (String(d["type"]) == "files") {
 #ifdef OSX_ENABLED
-		bool use_preload = Input::get_singleton()->is_key_pressed(KEY_META);
+		bool use_preload = Input::get_singleton()->is_key_pressed(Key::META);
 #else
-		bool use_preload = Input::get_singleton()->is_key_pressed(KEY_CTRL);
+		bool use_preload = Input::get_singleton()->is_key_pressed(Key::CTRL);
 #endif
 		Vector2 pos = _get_pos_in_graph(p_point);
 
@@ -2359,9 +2359,9 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 		}
 
 #ifdef OSX_ENABLED
-		bool use_node = Input::get_singleton()->is_key_pressed(KEY_META);
+		bool use_node = Input::get_singleton()->is_key_pressed(Key::META);
 #else
-		bool use_node = Input::get_singleton()->is_key_pressed(KEY_CTRL);
+		bool use_node = Input::get_singleton()->is_key_pressed(Key::CTRL);
 #endif
 
 		Array nodes = d["nodes"];
@@ -2409,7 +2409,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	if (String(d["type"]) == "obj_property") {
 		Node *sn = _find_script_node(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root(), script);
 
-		if (!sn && !Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+		if (!sn && !Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
 			EditorNode::get_singleton()->show_warning(vformat(TTR("Can't drop properties because script '%s' is not used in this scene.\nDrop holding 'Shift' to just copy the signature."), get_name()));
 			return;
 		}
@@ -2424,12 +2424,12 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 		Vector2 pos = _get_pos_in_graph(p_point);
 
 #ifdef OSX_ENABLED
-		bool use_get = Input::get_singleton()->is_key_pressed(KEY_META);
+		bool use_get = Input::get_singleton()->is_key_pressed(Key::META);
 #else
-		bool use_get = Input::get_singleton()->is_key_pressed(KEY_CTRL);
+		bool use_get = Input::get_singleton()->is_key_pressed(Key::CTRL);
 #endif
 
-		if (!node || Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+		if (!node || Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
 			if (use_get) {
 				undo_redo->create_action(TTR("Add Getter Property"));
 			} else {
@@ -4554,11 +4554,11 @@ void VisualScriptEditor::free_clipboard() {
 static void register_editor_callback() {
 	ScriptEditor::register_create_script_editor_function(create_editor);
 
-	ED_SHORTCUT("visual_script_editor/toggle_breakpoint", TTR("Toggle Breakpoint"), KEY_F9);
-	ED_SHORTCUT("visual_script_editor/find_node_type", TTR("Find Node Type"), KEY_MASK_CMD + KEY_F);
-	ED_SHORTCUT("visual_script_editor/create_function", TTR("Make Function"), KEY_MASK_CMD + KEY_G);
-	ED_SHORTCUT("visual_script_editor/refresh_nodes", TTR("Refresh Graph"), KEY_MASK_CMD + KEY_R);
-	ED_SHORTCUT("visual_script_editor/edit_member", TTR("Edit Member"), KEY_MASK_CMD + KEY_E);
+	ED_SHORTCUT("visual_script_editor/toggle_breakpoint", TTR("Toggle Breakpoint"), Key::F9);
+	ED_SHORTCUT("visual_script_editor/find_node_type", TTR("Find Node Type"), KeyModifierMask::CMD + Key::F);
+	ED_SHORTCUT("visual_script_editor/create_function", TTR("Make Function"), KeyModifierMask::CMD + Key::G);
+	ED_SHORTCUT("visual_script_editor/refresh_nodes", TTR("Refresh Graph"), KeyModifierMask::CMD + Key::R);
+	ED_SHORTCUT("visual_script_editor/edit_member", TTR("Edit Member"), KeyModifierMask::CMD + Key::E);
 }
 
 void VisualScriptEditor::register_editor() {

@@ -46,15 +46,15 @@ void EditorLayoutsDialog::_line_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		switch (k->get_keycode()) {
-			case KEY_KP_ENTER:
-			case KEY_ENTER: {
+			case Key::KP_ENTER:
+			case Key::ENTER: {
 				if (get_hide_on_ok()) {
 					hide();
 				}
 				ok_pressed();
 				set_input_as_handled();
 			} break;
-			case KEY_ESCAPE: {
+			case Key::ESCAPE: {
 				hide();
 				set_input_as_handled();
 			} break;

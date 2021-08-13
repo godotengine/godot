@@ -397,10 +397,10 @@ bool joypad::check_ff_features() {
 	return false;
 }
 
-static int process_hat_value(int p_min, int p_max, int p_value, bool p_offset_hat) {
+static HatMask process_hat_value(int p_min, int p_max, int p_value, bool p_offset_hat) {
 	int range = (p_max - p_min + 1);
 	int value = p_value - p_min;
-	int hat_value = HatMask::HAT_MASK_CENTER;
+	HatMask hat_value = HatMask::CENTER;
 	if (range == 4) {
 		value *= 2;
 	}
@@ -410,31 +410,31 @@ static int process_hat_value(int p_min, int p_max, int p_value, bool p_offset_ha
 
 	switch (value) {
 		case 0:
-			hat_value = (HatMask)HatMask::HAT_MASK_UP;
+			hat_value = HatMask::UP;
 			break;
 		case 1:
-			hat_value = (HatMask)(HatMask::HAT_MASK_UP | HatMask::HAT_MASK_RIGHT);
+			hat_value = (HatMask::UP | HatMask::RIGHT);
 			break;
 		case 2:
-			hat_value = (HatMask)HatMask::HAT_MASK_RIGHT;
+			hat_value = HatMask::RIGHT;
 			break;
 		case 3:
-			hat_value = (HatMask)(HatMask::HAT_MASK_DOWN | HatMask::HAT_MASK_RIGHT);
+			hat_value = (HatMask::DOWN | HatMask::RIGHT);
 			break;
 		case 4:
-			hat_value = (HatMask)HatMask::HAT_MASK_DOWN;
+			hat_value = HatMask::DOWN;
 			break;
 		case 5:
-			hat_value = (HatMask)(HatMask::HAT_MASK_DOWN | HatMask::HAT_MASK_LEFT);
+			hat_value = (HatMask::DOWN | HatMask::LEFT);
 			break;
 		case 6:
-			hat_value = (HatMask)HatMask::HAT_MASK_LEFT;
+			hat_value = HatMask::LEFT;
 			break;
 		case 7:
-			hat_value = (HatMask)(HatMask::HAT_MASK_UP | HatMask::HAT_MASK_LEFT);
+			hat_value = (HatMask::UP | HatMask::LEFT);
 			break;
 		default:
-			hat_value = (HatMask)HatMask::HAT_MASK_CENTER;
+			hat_value = HatMask::CENTER;
 			break;
 	}
 	return hat_value;
@@ -480,8 +480,8 @@ void JoypadOSX::process_joypads() {
 		for (int j = 0; j < joy.hat_elements.size(); j++) {
 			rec_element &elem = joy.hat_elements.write[j];
 			int value = joy.get_hid_element_state(&elem);
-			int hat_value = process_hat_value(elem.min, elem.max, value, joy.offset_hat);
-			input->joy_hat(joy.id, (HatMask)hat_value);
+			HatMask hat_value = process_hat_value(elem.min, elem.max, value, joy.offset_hat);
+			input->joy_hat(joy.id, hat_value);
 		}
 
 		if (joy.ffservice) {

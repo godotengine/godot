@@ -127,7 +127,7 @@ void FindReplaceBar::unhandled_input(const Ref<InputEvent> &p_event) {
 		bool accepted = true;
 
 		switch (k->get_keycode()) {
-			case KEY_ESCAPE: {
+			case Key::ESCAPE: {
 				_hide_bar();
 			} break;
 			default: {
@@ -542,7 +542,7 @@ void FindReplaceBar::_search_text_changed(const String &p_text) {
 }
 
 void FindReplaceBar::_search_text_submitted(const String &p_text) {
-	if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+	if (Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
 		search_prev();
 	} else {
 		search_next();
@@ -553,7 +553,7 @@ void FindReplaceBar::_replace_text_submitted(const String &p_text) {
 	if (selection_only->is_pressed() && text_editor->has_selection()) {
 		_replace_all();
 		_hide_bar();
-	} else if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+	} else if (Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
 		_replace();
 		search_prev();
 	} else {
@@ -766,9 +766,9 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (mb.is_valid()) {
 		if (mb->is_pressed() && mb->is_command_pressed()) {
-			if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
+			if (mb->get_button_index() == MouseButton::WHEEL_UP) {
 				_zoom_in();
-			} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
+			} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 				_zoom_out();
 			}
 		}
@@ -1654,7 +1654,7 @@ void CodeTextEditor::_toggle_scripts_pressed() {
 
 void CodeTextEditor::_error_pressed(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		goto_error();
 	}
 }
@@ -1788,9 +1788,9 @@ void CodeTextEditor::update_toggle_scripts_button() {
 
 CodeTextEditor::CodeTextEditor() {
 	code_complete_func = nullptr;
-	ED_SHORTCUT("script_editor/zoom_in", TTR("Zoom In"), KEY_MASK_CMD | KEY_EQUAL);
-	ED_SHORTCUT("script_editor/zoom_out", TTR("Zoom Out"), KEY_MASK_CMD | KEY_MINUS);
-	ED_SHORTCUT("script_editor/reset_zoom", TTR("Reset Zoom"), KEY_MASK_CMD | KEY_0);
+	ED_SHORTCUT("script_editor/zoom_in", TTR("Zoom In"), KeyModifierMask::CMD | Key::EQUAL);
+	ED_SHORTCUT("script_editor/zoom_out", TTR("Zoom Out"), KeyModifierMask::CMD | Key::MINUS);
+	ED_SHORTCUT("script_editor/reset_zoom", TTR("Reset Zoom"), KeyModifierMask::CMD | Key::KEY_0);
 
 	text_editor = memnew(CodeEdit);
 	add_child(text_editor);

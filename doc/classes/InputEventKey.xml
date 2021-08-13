@@ -11,14 +11,14 @@
 	</tutorials>
 	<methods>
 		<method name="get_keycode_with_modifiers" qualifiers="const">
-			<return type="int" />
+			<return type="int" enum="Key" />
 			<description>
 				Returns the keycode combined with modifier keys such as [kbd]Shift[/kbd] or [kbd]Alt[/kbd]. See also [InputEventWithModifiers].
 				To get a human-readable representation of the [InputEventKey] with modifiers, use [code]OS.get_keycode_string(event.get_keycode_with_modifiers())[/code] where [code]event[/code] is the [InputEventKey].
 			</description>
 		</method>
 		<method name="get_physical_keycode_with_modifiers" qualifiers="const">
-			<return type="int" />
+			<return type="int" enum="Key" />
 			<description>
 				Returns the physical keycode combined with modifier keys such as [kbd]Shift[/kbd] or [kbd]Alt[/kbd]. See also [InputEventWithModifiers].
 				To get a human-readable representation of the [InputEventKey] with modifiers, use [code]OS.get_keycode_string(event.get_physical_keycode_with_modifiers())[/code] where [code]event[/code] is the [InputEventKey].

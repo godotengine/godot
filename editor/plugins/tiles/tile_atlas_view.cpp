@@ -46,7 +46,7 @@ void TileAtlasView::gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid()) {
 		drag_type = DRAG_TYPE_NONE;
 
-		Vector2i scroll_vec = Vector2((mb->get_button_index() == MOUSE_BUTTON_WHEEL_LEFT) - (mb->get_button_index() == MOUSE_BUTTON_WHEEL_RIGHT), (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) - (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN));
+		Vector2i scroll_vec = Vector2((mb->get_button_index() == MouseButton::WHEEL_LEFT) - (mb->get_button_index() == MouseButton::WHEEL_RIGHT), (mb->get_button_index() == MouseButton::WHEEL_UP) - (mb->get_button_index() == MouseButton::WHEEL_DOWN));
 		if (scroll_vec != Vector2()) {
 			if (mb->is_ctrl_pressed()) {
 				if (mb->is_shift_pressed()) {
@@ -69,7 +69,7 @@ void TileAtlasView::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (mb->get_button_index() == MOUSE_BUTTON_MIDDLE || mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
+		if (mb->get_button_index() == MouseButton::MIDDLE || mb->get_button_index() == MouseButton::RIGHT) {
 			if (mb->is_pressed()) {
 				drag_type = DRAG_TYPE_PAN;
 			} else {

@@ -92,7 +92,7 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 	Ref<InputEventMouseButton> mb = p_gui_input;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP && mb->is_pressed()) {
+		if (mb->get_button_index() == MouseButton::WHEEL_UP && mb->is_pressed()) {
 			// only horizontal is enabled, scroll horizontally
 			if (h_scroll->is_visible() && (!v_scroll->is_visible() || mb->is_shift_pressed())) {
 				h_scroll->set_value(h_scroll->get_value() - h_scroll->get_page() / 8 * mb->get_factor());
@@ -101,7 +101,7 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 		}
 
-		if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && mb->is_pressed()) {
+		if (mb->get_button_index() == MouseButton::WHEEL_DOWN && mb->is_pressed()) {
 			// only horizontal is enabled, scroll horizontally
 			if (h_scroll->is_visible() && (!v_scroll->is_visible() || mb->is_shift_pressed())) {
 				h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() / 8 * mb->get_factor());
@@ -110,13 +110,13 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 		}
 
-		if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_LEFT && mb->is_pressed()) {
+		if (mb->get_button_index() == MouseButton::WHEEL_LEFT && mb->is_pressed()) {
 			if (h_scroll->is_visible_in_tree()) {
 				h_scroll->set_value(h_scroll->get_value() - h_scroll->get_page() * mb->get_factor() / 8);
 			}
 		}
 
-		if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_RIGHT && mb->is_pressed()) {
+		if (mb->get_button_index() == MouseButton::WHEEL_RIGHT && mb->is_pressed()) {
 			if (h_scroll->is_visible_in_tree()) {
 				h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * mb->get_factor() / 8);
 			}
@@ -130,7 +130,7 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 			return;
 		}
 
-		if (mb->get_button_index() != MOUSE_BUTTON_LEFT) {
+		if (mb->get_button_index() != MouseButton::LEFT) {
 			return;
 		}
 

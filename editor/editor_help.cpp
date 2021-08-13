@@ -2023,7 +2023,7 @@ void FindBar::unhandled_input(const Ref<InputEvent> &p_event) {
 			bool accepted = true;
 
 			switch (k->get_keycode()) {
-				case KEY_ESCAPE: {
+				case Key::ESCAPE: {
 					_hide_bar();
 				} break;
 				default: {
@@ -2043,7 +2043,7 @@ void FindBar::_search_text_changed(const String &p_text) {
 }
 
 void FindBar::_search_text_submitted(const String &p_text) {
-	if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+	if (Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
 		search_prev();
 	} else {
 		search_next();

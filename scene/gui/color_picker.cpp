@@ -582,7 +582,7 @@ void ColorPicker::_update_text_value() {
 
 void ColorPicker::_sample_input(const Ref<InputEvent> &p_event) {
 	const Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		const Rect2 rect_old = Rect2(Point2(), Size2(sample->get_size().width * 0.5, sample->get_size().height * 0.95));
 		if (rect_old.has_point(mb->get_position())) {
 			// Revert to the old color when left-clicking the old color sample.
@@ -827,7 +827,7 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event, Control *c) {
 	Ref<InputEventMouseButton> bev = p_event;
 
 	if (bev.is_valid()) {
-		if (bev->is_pressed() && bev->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (bev->is_pressed() && bev->get_button_index() == MouseButton::LEFT) {
 			Vector2 center = c->get_size() / 2.0;
 			if (picker_type == SHAPE_VHS_CIRCLE) {
 				real_t dist = center.distance_to(bev->get_position());
@@ -875,7 +875,7 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event, Control *c) {
 			if (!deferred_mode_enabled) {
 				emit_signal(SNAME("color_changed"), color);
 			}
-		} else if (deferred_mode_enabled && !bev->is_pressed() && bev->get_button_index() == MOUSE_BUTTON_LEFT) {
+		} else if (deferred_mode_enabled && !bev->is_pressed() && bev->get_button_index() == MouseButton::LEFT) {
 			emit_signal(SNAME("color_changed"), color);
 			changing_color = false;
 			spinning = false;
@@ -929,7 +929,7 @@ void ColorPicker::_w_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> bev = p_event;
 
 	if (bev.is_valid()) {
-		if (bev->is_pressed() && bev->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (bev->is_pressed() && bev->get_button_index() == MouseButton::LEFT) {
 			changing_color = true;
 			float y = CLAMP((float)bev->get_position().y, 0, w_edit->get_size().height);
 			if (picker_type == SHAPE_VHS_CIRCLE) {
@@ -946,7 +946,7 @@ void ColorPicker::_w_input(const Ref<InputEvent> &p_event) {
 		_update_color();
 		if (!deferred_mode_enabled) {
 			emit_signal(SNAME("color_changed"), color);
-		} else if (!bev->is_pressed() && bev->get_button_index() == MOUSE_BUTTON_LEFT) {
+		} else if (!bev->is_pressed() && bev->get_button_index() == MouseButton::LEFT) {
 			emit_signal(SNAME("color_changed"), color);
 		}
 	}
@@ -977,11 +977,11 @@ void ColorPicker::_preset_input(const Ref<InputEvent> &p_event, const Color &p_c
 	Ref<InputEventMouseButton> bev = p_event;
 
 	if (bev.is_valid()) {
-		if (bev->is_pressed() && bev->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (bev->is_pressed() && bev->get_button_index() == MouseButton::LEFT) {
 			set_pick_color(p_color);
 			_update_color();
 			emit_signal(SNAME("color_changed"), p_color);
-		} else if (bev->is_pressed() && bev->get_button_index() == MOUSE_BUTTON_RIGHT && presets_enabled) {
+		} else if (bev->is_pressed() && bev->get_button_index() == MouseButton::RIGHT && presets_enabled) {
 			erase_preset(p_color);
 			emit_signal(SNAME("preset_removed"), p_color);
 		}
@@ -994,7 +994,7 @@ void ColorPicker::_screen_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseButton> bev = p_event;
-	if (bev.is_valid() && bev->get_button_index() == MOUSE_BUTTON_LEFT && !bev->is_pressed()) {
+	if (bev.is_valid() && bev->get_button_index() == MouseButton::LEFT && !bev->is_pressed()) {
 		emit_signal(SNAME("color_changed"), color);
 		screen->hide();
 	}

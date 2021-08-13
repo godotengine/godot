@@ -1722,48 +1722,48 @@ void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 	const Ref<InputEventMouseButton> mb = p_event;
 
-	if (mb.is_valid() && mb->is_pressed() && mb->is_command_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
+	if (mb.is_valid() && mb->is_pressed() && mb->is_command_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP) {
 		get_zoom()->set_value(get_zoom()->get_value() * 1.05);
 		accept_event();
 	}
 
-	if (mb.is_valid() && mb->is_pressed() && mb->is_command_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
+	if (mb.is_valid() && mb->is_pressed() && mb->is_command_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 		get_zoom()->set_value(get_zoom()->get_value() / 1.05);
 		accept_event();
 	}
 
-	if (mb.is_valid() && mb->is_pressed() && mb->is_alt_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
+	if (mb.is_valid() && mb->is_pressed() && mb->is_alt_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP) {
 		if (track_edit) {
 			track_edit->get_editor()->goto_prev_step(true);
 		}
 		accept_event();
 	}
 
-	if (mb.is_valid() && mb->is_pressed() && mb->is_alt_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
+	if (mb.is_valid() && mb->is_pressed() && mb->is_alt_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 		if (track_edit) {
 			track_edit->get_editor()->goto_next_step(true);
 		}
 		accept_event();
 	}
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT && hsize_rect.has_point(mb->get_position())) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && hsize_rect.has_point(mb->get_position())) {
 		dragging_hsize = true;
 		dragging_hsize_from = mb->get_position().x;
 		dragging_hsize_at = name_limit;
 	}
 
-	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT && dragging_hsize) {
+	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && dragging_hsize) {
 		dragging_hsize = false;
 	}
 	if (mb.is_valid() && mb->get_position().x > get_name_limit() && mb->get_position().x < (get_size().width - get_buttons_width())) {
-		if (!panning_timeline && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (!panning_timeline && mb->get_button_index() == MouseButton::LEFT) {
 			int x = mb->get_position().x - get_name_limit();
 
 			float ofs = x / get_zoom_scale() + get_value();
-			emit_signal(SNAME("timeline_changed"), ofs, false, Input::get_singleton()->is_key_pressed(KEY_ALT));
+			emit_signal(SNAME("timeline_changed"), ofs, false, Input::get_singleton()->is_key_pressed(Key::ALT));
 			dragging_timeline = true;
 		}
-		if (!dragging_timeline && mb->get_button_index() == MOUSE_BUTTON_MIDDLE) {
+		if (!dragging_timeline && mb->get_button_index() == MouseButton::MIDDLE) {
 			int x = mb->get_position().x - get_name_limit();
 			panning_timeline_from = x / get_zoom_scale();
 			panning_timeline = true;
@@ -1771,11 +1771,11 @@ void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (dragging_timeline && mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT && !mb->is_pressed()) {
+	if (dragging_timeline && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed()) {
 		dragging_timeline = false;
 	}
 
-	if (panning_timeline && mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_MIDDLE && !mb->is_pressed()) {
+	if (panning_timeline && mb.is_valid() && mb->get_button_index() == MouseButton::MIDDLE && !mb->is_pressed()) {
 		panning_timeline = false;
 	}
 
@@ -1799,7 +1799,7 @@ void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		if (dragging_timeline) {
 			int x = mm->get_position().x - get_name_limit();
 			float ofs = x / get_zoom_scale() + get_value();
-			emit_signal(SNAME("timeline_changed"), ofs, false, Input::get_singleton()->is_key_pressed(KEY_ALT));
+			emit_signal(SNAME("timeline_changed"), ofs, false, Input::get_singleton()->is_key_pressed(Key::ALT));
 		}
 		if (panning_timeline) {
 			int x = mm->get_position().x - get_name_limit();
@@ -2655,7 +2655,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		Point2 pos = mb->get_position();
 
 		if (check_rect.has_point(pos)) {
@@ -2801,7 +2801,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
 		Point2 pos = mb->get_position();
 		if (pos.x >= timeline->get_name_limit() && pos.x <= get_size().width - timeline->get_buttons_width()) {
 			// Can do something with menu too! show insert key.
@@ -2831,7 +2831,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT && clicking_on_name) {
+	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && clicking_on_name) {
 		if (!path) {
 			path_popup = memnew(Popup);
 			path_popup->set_wrap_controls(true);
@@ -2853,7 +2853,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (mb.is_valid() && moving_selection_attempt) {
-		if (!mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (!mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 			moving_selection_attempt = false;
 			if (moving_selection) {
 				emit_signal(SNAME("move_selection_commit"));
@@ -2864,7 +2864,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			select_single_attempt = -1;
 		}
 
-		if (moving_selection && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
+		if (moving_selection && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
 			moving_selection_attempt = false;
 			moving_selection = false;
 			emit_signal(SNAME("move_selection_cancel"));
@@ -2872,7 +2872,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
-	if (mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT && moving_selection_attempt) {
+	if (mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE && moving_selection_attempt) {
 		if (!moving_selection) {
 			moving_selection = true;
 			emit_signal(SNAME("move_selection_begin"));
@@ -4166,7 +4166,7 @@ bool AnimationTrackEditor::is_selection_active() const {
 }
 
 bool AnimationTrackEditor::is_snap_enabled() const {
-	return snap->is_pressed() ^ Input::get_singleton()->is_key_pressed(KEY_CTRL);
+	return snap->is_pressed() ^ Input::get_singleton()->is_key_pressed(Key::CTRL);
 }
 
 void AnimationTrackEditor::_update_tracks() {
@@ -5147,27 +5147,27 @@ void AnimationTrackEditor::_box_selection_draw() {
 void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
-	if (mb.is_valid() && mb->is_pressed() && mb->is_command_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
+	if (mb.is_valid() && mb->is_pressed() && mb->is_command_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP) {
 		timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() * 1.05);
 		scroll->accept_event();
 	}
 
-	if (mb.is_valid() && mb->is_pressed() && mb->is_command_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
+	if (mb.is_valid() && mb->is_pressed() && mb->is_command_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 		timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() / 1.05);
 		scroll->accept_event();
 	}
 
-	if (mb.is_valid() && mb->is_pressed() && mb->is_alt_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
+	if (mb.is_valid() && mb->is_pressed() && mb->is_alt_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP) {
 		goto_prev_step(true);
 		scroll->accept_event();
 	}
 
-	if (mb.is_valid() && mb->is_pressed() && mb->is_alt_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
+	if (mb.is_valid() && mb->is_pressed() && mb->is_alt_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 		goto_next_step(true);
 		scroll->accept_event();
 	}
 
-	if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
 		if (mb->is_pressed()) {
 			box_selecting = true;
 			box_selecting_from = scroll->get_global_transform().xform(mb->get_position());
@@ -5195,12 +5195,12 @@ void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseMotion> mm = p_event;
 
-	if (mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_MIDDLE) {
+	if (mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_MIDDLE) != MouseButton::NONE) {
 		timeline->set_value(timeline->get_value() - mm->get_relative().x / timeline->get_zoom_scale());
 	}
 
 	if (mm.is_valid() && box_selecting) {
-		if (!(mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT)) {
+		if ((mm->get_button_mask() & MouseButton::MASK_LEFT) == MouseButton::NONE) {
 			// No longer.
 			box_selection->hide();
 			box_selecting = false;
@@ -5349,7 +5349,7 @@ void AnimationTrackEditor::goto_prev_step(bool p_from_mouse_event) {
 	if (step == 0) {
 		step = 1;
 	}
-	if (p_from_mouse_event && Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+	if (p_from_mouse_event && Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
 		// Use more precise snapping when holding Shift.
 		// This is used when scrobbling the timeline using Alt + Mouse wheel.
 		step *= 0.25;
@@ -5372,7 +5372,7 @@ void AnimationTrackEditor::goto_next_step(bool p_from_mouse_event) {
 	if (step == 0) {
 		step = 1;
 	}
-	if (p_from_mouse_event && Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+	if (p_from_mouse_event && Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
 		// Use more precise snapping when holding Shift.
 		// This is used when scrobbling the timeline using Alt + Mouse wheel.
 		// Do not use precise snapping when using the menu action or keyboard shortcut,
@@ -5808,7 +5808,7 @@ float AnimationTrackEditor::snap_time(float p_value, bool p_relative) {
 			snap_increment = step->get_value();
 		}
 
-		if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+		if (Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
 			// Use more precise snapping when holding Shift.
 			snap_increment *= 0.25;
 		}
@@ -5922,10 +5922,10 @@ void AnimationTrackEditor::_pick_track_filter_input(const Ref<InputEvent> &p_ie)
 
 	if (k.is_valid()) {
 		switch (k->get_keycode()) {
-			case KEY_UP:
-			case KEY_DOWN:
-			case KEY_PAGEUP:
-			case KEY_PAGEDOWN: {
+			case Key::UP:
+			case Key::DOWN:
+			case Key::PAGEUP:
+			case Key::PAGEDOWN: {
 				pick_track->get_scene_tree()->get_scene_tree()->gui_input(k);
 				pick_track->get_filter_line_edit()->accept_event();
 			} break;
@@ -6086,14 +6086,14 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	edit->get_popup()->add_item(TTR("Scale Selection"), EDIT_SCALE_SELECTION);
 	edit->get_popup()->add_item(TTR("Scale From Cursor"), EDIT_SCALE_FROM_CURSOR);
 	edit->get_popup()->add_separator();
-	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/duplicate_selection", TTR("Duplicate Selection"), KEY_MASK_CMD | KEY_D), EDIT_DUPLICATE_SELECTION);
-	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/duplicate_selection_transposed", TTR("Duplicate Transposed"), KEY_MASK_SHIFT | KEY_MASK_CMD | KEY_D), EDIT_DUPLICATE_TRANSPOSED);
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/duplicate_selection", TTR("Duplicate Selection"), KeyModifierMask::CMD | Key::D), EDIT_DUPLICATE_SELECTION);
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/duplicate_selection_transposed", TTR("Duplicate Transposed"), KeyModifierMask::SHIFT | KeyModifierMask::CMD | Key::D), EDIT_DUPLICATE_TRANSPOSED);
 	edit->get_popup()->add_separator();
-	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/delete_selection", TTR("Delete Selection"), KEY_DELETE), EDIT_DELETE_SELECTION);
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/delete_selection", TTR("Delete Selection"), Key::KEY_DELETE), EDIT_DELETE_SELECTION);
 
 	edit->get_popup()->add_separator();
-	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/goto_next_step", TTR("Go to Next Step"), KEY_MASK_CMD | KEY_RIGHT), EDIT_GOTO_NEXT_STEP);
-	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/goto_prev_step", TTR("Go to Previous Step"), KEY_MASK_CMD | KEY_LEFT), EDIT_GOTO_PREV_STEP);
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/goto_next_step", TTR("Go to Next Step"), KeyModifierMask::CMD | Key::RIGHT), EDIT_GOTO_NEXT_STEP);
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/goto_prev_step", TTR("Go to Previous Step"), KeyModifierMask::CMD | Key::LEFT), EDIT_GOTO_PREV_STEP);
 	edit->get_popup()->add_separator();
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/apply_reset", TTR("Apply Reset")), EDIT_APPLY_RESET);
 	edit->get_popup()->add_separator();

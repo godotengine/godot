@@ -571,7 +571,7 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 		if (is_layout_rtl()) {
 			mpos.x = get_size().x - mpos.x;
 		}
-		bool button_left = me->get_button_mask() & MOUSE_BUTTON_MASK_LEFT;
+		bool button_left = (me->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE;
 
 		bool new_keying_hover = keying_rect.has_point(mpos) && !button_left;
 		if (new_keying_hover != keying_hover) {
@@ -600,7 +600,7 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		Vector2 mpos = mb->get_position();
 		if (is_layout_rtl()) {
 			mpos.x = get_size().x - mpos.x;
@@ -647,7 +647,7 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 			update();
 			emit_signal(SNAME("property_checked"), property, checked);
 		}
-	} else if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
+	} else if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
 		_update_popup();
 		menu->set_position(get_screen_position() + get_local_mouse_position());
 		menu->set_size(Vector2(1, 1));
@@ -1222,7 +1222,7 @@ void EditorInspectorSection::_notification(int p_what) {
 			Color c = bg_color;
 			c.a *= 0.4;
 			if (foldable && header_rect.has_point(get_local_mouse_position())) {
-				c = c.lightened(Input::get_singleton()->is_mouse_button_pressed(MOUSE_BUTTON_LEFT) ? -0.05 : 0.2);
+				c = c.lightened(Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT) ? -0.05 : 0.2);
 			}
 			draw_rect(header_rect, c);
 
@@ -1340,7 +1340,7 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
 		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
 		if (mb->get_position().y > font->get_height(font_size)) { //clicked outside
@@ -1543,7 +1543,7 @@ void EditorInspectorArray::_panel_gui_input(Ref<InputEvent> p_event, int p_index
 	if (key_ref.is_valid()) {
 		const InputEventKey &key = **key_ref;
 
-		if (array_elements[p_index].panel->has_focus() && key.is_pressed() && key.get_keycode() == KEY_DELETE) {
+		if (array_elements[p_index].panel->has_focus() && key.is_pressed() && key.get_keycode() == Key::KEY_DELETE) {
 			_move_element(begin_array_index + p_index, -1);
 			array_elements[p_index].panel->accept_event();
 		}
@@ -1551,7 +1551,7 @@ void EditorInspectorArray::_panel_gui_input(Ref<InputEvent> p_event, int p_index
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
+		if (mb->get_button_index() == MouseButton::RIGHT) {
 			popup_array_index_pressed = begin_array_index + p_index;
 			rmb_popup->set_item_disabled(OPTION_MOVE_UP, popup_array_index_pressed == 0);
 			rmb_popup->set_item_disabled(OPTION_MOVE_DOWN, popup_array_index_pressed == count - 1);
@@ -3576,7 +3576,7 @@ EditorInspector::EditorInspector() {
 		refresh_countdown = 0.33;
 	}
 
-	ED_SHORTCUT("property_editor/copy_property", TTR("Copy Property"), KEY_MASK_CMD | KEY_C);
-	ED_SHORTCUT("property_editor/paste_property", TTR("Paste Property"), KEY_MASK_CMD | KEY_V);
-	ED_SHORTCUT("property_editor/copy_property_path", TTR("Copy Property Path"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_C);
+	ED_SHORTCUT("property_editor/copy_property", TTR("Copy Property"), KeyModifierMask::CMD | Key::C);
+	ED_SHORTCUT("property_editor/paste_property", TTR("Paste Property"), KeyModifierMask::CMD | Key::V);
+	ED_SHORTCUT("property_editor/copy_property_path", TTR("Copy Property Path"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::C);
 }

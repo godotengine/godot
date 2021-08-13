@@ -88,7 +88,7 @@ void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventKey> k = p_event;
 
-	if (k.is_valid() && k->is_pressed() && k->get_keycode() == KEY_DELETE && grabbed != -1) {
+	if (k.is_valid() && k->is_pressed() && k->get_keycode() == Key::KEY_DELETE && grabbed != -1) {
 		points.remove(grabbed);
 		grabbed = -1;
 		grabbing = false;
@@ -99,14 +99,14 @@ void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 	// Show color picker on double click.
-	if (mb.is_valid() && mb->get_button_index() == 1 && mb->is_double_click() && mb->is_pressed()) {
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_double_click() && mb->is_pressed()) {
 		grabbed = _get_point_from_pos(mb->get_position().x);
 		_show_color_picker();
 		accept_event();
 	}
 
 	// Delete point on right click.
-	if (mb.is_valid() && mb->get_button_index() == 2 && mb->is_pressed()) {
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
 		grabbed = _get_point_from_pos(mb->get_position().x);
 		if (grabbed != -1) {
 			points.remove(grabbed);
@@ -119,7 +119,7 @@ void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	// Hold alt key to duplicate selected color.
-	if (mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed() && mb->is_alt_pressed()) {
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed() && mb->is_alt_pressed()) {
 		int x = mb->get_position().x;
 		grabbed = _get_point_from_pos(x);
 
@@ -143,7 +143,7 @@ void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	// Select.
-	if (mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed()) {
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
 		update();
 		int x = mb->get_position().x;
 		int total_w = get_size().width - get_size().height - draw_spacing;
@@ -209,7 +209,7 @@ void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
 		emit_signal(SNAME("ramp_changed"));
 	}
 
-	if (mb.is_valid() && mb->get_button_index() == 1 && !mb->is_pressed()) {
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed()) {
 		if (grabbing) {
 			grabbing = false;
 			emit_signal(SNAME("ramp_changed"));

@@ -438,7 +438,7 @@ void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseMotion> mm = p_ev;
 
 	if (
-			(mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT && mb->is_pressed()) ||
+			(mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) ||
 			(mm.is_valid())) {
 		int x = me->get_position().x - 1;
 		x = x * frame_metrics.size() / graph->get_size().width;
@@ -453,7 +453,7 @@ void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 			x = frame_metrics.size() - 1;
 		}
 
-		if (mb.is_valid() || mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
+		if (mb.is_valid() || (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
 			updating_frame = true;
 
 			if (x < total_metrics)

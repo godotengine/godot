@@ -1500,13 +1500,13 @@ String DisplayServerWindows::keyboard_get_layout_language(int p_index) const {
 }
 
 Key DisplayServerWindows::keyboard_get_keycode_from_physical(Key p_keycode) const {
-	unsigned int modifiers = p_keycode & KEY_MODIFIER_MASK;
-	Key keycode_no_mod = (Key)(p_keycode & KEY_CODE_MASK);
+	Key modifiers = p_keycode & KeyModifierMask::MODIFIER_MASK;
+	Key keycode_no_mod = (Key)(p_keycode & KeyModifierMask::CODE_MASK);
 
-	if (keycode_no_mod == KEY_PRINT ||
-			keycode_no_mod == KEY_KP_ADD ||
-			keycode_no_mod == KEY_KP_5 ||
-			(keycode_no_mod >= KEY_0 && keycode_no_mod <= KEY_9)) {
+	if (keycode_no_mod == Key::PRINT ||
+			keycode_no_mod == Key::KP_ADD ||
+			keycode_no_mod == Key::KP_5 ||
+			(keycode_no_mod >= Key::KEY_0 && keycode_no_mod <= Key::KEY_9)) {
 		return p_keycode;
 	}
 
@@ -1526,10 +1526,10 @@ Key DisplayServerWindows::keyboard_get_keycode_from_physical(Key p_keycode) cons
 	// we limit these to ASCII to fix some layouts, including Arabic ones
 	if (char_code >= 32 && char_code <= 127) {
 		// Godot uses 'braces' instead of 'brackets'
-		if (char_code == KEY_BRACKETLEFT || char_code == KEY_BRACKETRIGHT) {
+		if (char_code == (unsigned int)Key::BRACKETLEFT || char_code == (unsigned int)Key::BRACKETRIGHT) {
 			char_code += 32;
 		}
-		return (Key)(char_code | modifiers);
+		return (Key)(char_code | (unsigned int)modifiers);
 	}
 
 	return (Key)(KeyMappingWindows::get_keysym(vk) | modifiers);
@@ -2466,41 +2466,41 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			switch (uMsg) {
 				case WM_LBUTTONDOWN: {
 					mb->set_pressed(true);
-					mb->set_button_index(MOUSE_BUTTON_LEFT);
+					mb->set_button_index(MouseButton::LEFT);
 				} break;
 				case WM_LBUTTONUP: {
 					mb->set_pressed(false);
-					mb->set_button_index(MOUSE_BUTTON_LEFT);
+					mb->set_button_index(MouseButton::LEFT);
 				} break;
 				case WM_MBUTTONDOWN: {
 					mb->set_pressed(true);
-					mb->set_button_index(MOUSE_BUTTON_MIDDLE);
+					mb->set_button_index(MouseButton::MIDDLE);
 				} break;
 				case WM_MBUTTONUP: {
 					mb->set_pressed(false);
-					mb->set_button_index(MOUSE_BUTTON_MIDDLE);
+					mb->set_button_index(MouseButton::MIDDLE);
 				} break;
 				case WM_RBUTTONDOWN: {
 					mb->set_pressed(true);
-					mb->set_button_index(MOUSE_BUTTON_RIGHT);
+					mb->set_button_index(MouseButton::RIGHT);
 				} break;
 				case WM_RBUTTONUP: {
 					mb->set_pressed(false);
-					mb->set_button_index(MOUSE_BUTTON_RIGHT);
+					mb->set_button_index(MouseButton::RIGHT);
 				} break;
 				case WM_LBUTTONDBLCLK: {
 					mb->set_pressed(true);
-					mb->set_button_index(MOUSE_BUTTON_LEFT);
+					mb->set_button_index(MouseButton::LEFT);
 					mb->set_double_click(true);
 				} break;
 				case WM_RBUTTONDBLCLK: {
 					mb->set_pressed(true);
-					mb->set_button_index(MOUSE_BUTTON_RIGHT);
+					mb->set_button_index(MouseButton::RIGHT);
 					mb->set_double_click(true);
 				} break;
 				case WM_MBUTTONDBLCLK: {
 					mb->set_pressed(true);
-					mb->set_button_index(MOUSE_BUTTON_MIDDLE);
+					mb->set_button_index(MouseButton::MIDDLE);
 					mb->set_double_click(true);
 				} break;
 				case WM_MOUSEWHEEL: {
@@ -2511,9 +2511,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					}
 
 					if (motion > 0) {
-						mb->set_button_index(MOUSE_BUTTON_WHEEL_UP);
+						mb->set_button_index(MouseButton::WHEEL_UP);
 					} else {
-						mb->set_button_index(MOUSE_BUTTON_WHEEL_DOWN);
+						mb->set_button_index(MouseButton::WHEEL_DOWN);
 					}
 					mb->set_factor(fabs((double)motion / (double)WHEEL_DELTA));
 				} break;
@@ -2525,34 +2525,34 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					}
 
 					if (motion < 0) {
-						mb->set_button_index(MOUSE_BUTTON_WHEEL_LEFT);
+						mb->set_button_index(MouseButton::WHEEL_LEFT);
 					} else {
-						mb->set_button_index(MOUSE_BUTTON_WHEEL_RIGHT);
+						mb->set_button_index(MouseButton::WHEEL_RIGHT);
 					}
 					mb->set_factor(fabs((double)motion / (double)WHEEL_DELTA));
 				} break;
 				case WM_XBUTTONDOWN: {
 					mb->set_pressed(true);
 					if (HIWORD(wParam) == XBUTTON1) {
-						mb->set_button_index(MOUSE_BUTTON_XBUTTON1);
+						mb->set_button_index(MouseButton::MB_XBUTTON1);
 					} else {
-						mb->set_button_index(MOUSE_BUTTON_XBUTTON2);
+						mb->set_button_index(MouseButton::MB_XBUTTON2);
 					}
 				} break;
 				case WM_XBUTTONUP: {
 					mb->set_pressed(false);
 					if (HIWORD(wParam) == XBUTTON1) {
-						mb->set_button_index(MOUSE_BUTTON_XBUTTON1);
+						mb->set_button_index(MouseButton::MB_XBUTTON1);
 					} else {
-						mb->set_button_index(MOUSE_BUTTON_XBUTTON2);
+						mb->set_button_index(MouseButton::MB_XBUTTON2);
 					}
 				} break;
 				case WM_XBUTTONDBLCLK: {
 					mb->set_pressed(true);
 					if (HIWORD(wParam) == XBUTTON1) {
-						mb->set_button_index(MOUSE_BUTTON_XBUTTON1);
+						mb->set_button_index(MouseButton::MB_XBUTTON1);
 					} else {
-						mb->set_button_index(MOUSE_BUTTON_XBUTTON2);
+						mb->set_button_index(MouseButton::MB_XBUTTON2);
 					}
 					mb->set_double_click(true);
 				} break;
@@ -2566,9 +2566,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mb->set_alt_pressed(alt_mem);
 			// mb->is_alt_pressed()=(wParam&MK_MENU)!=0;
 			if (mb->is_pressed()) {
-				last_button_state |= MouseButton(1 << (mb->get_button_index() - 1));
+				last_button_state |= mouse_button_to_mask(mb->get_button_index());
 			} else {
-				last_button_state &= (MouseButton) ~(1 << (mb->get_button_index() - 1));
+				last_button_state &= ~mouse_button_to_mask(mb->get_button_index());
 			}
 			mb->set_button_mask(last_button_state);
 
@@ -2604,11 +2604,11 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mb->set_global_position(mb->get_position());
 
 			Input::get_singleton()->parse_input_event(mb);
-			if (mb->is_pressed() && mb->get_button_index() > 3 && mb->get_button_index() < 8) {
+			if (mb->is_pressed() && mb->get_button_index() >= MouseButton::WHEEL_UP && mb->get_button_index() <= MouseButton::WHEEL_RIGHT) {
 				// Send release for mouse wheel.
 				Ref<InputEventMouseButton> mbd = mb->duplicate();
 				mbd->set_window_id(window_id);
-				last_button_state &= (MouseButton) ~(1 << (mbd->get_button_index() - 1));
+				last_button_state &= ~mouse_button_to_mask(mbd->get_button_index());
 				mbd->set_button_mask(last_button_state);
 				mbd->set_pressed(false);
 				Input::get_singleton()->parse_input_event(mbd);
@@ -2958,7 +2958,7 @@ void DisplayServerWindows::_process_key_events() {
 
 				if ((ke.lParam & (1 << 24)) && (ke.wParam == VK_RETURN)) {
 					// Special case for Numpad Enter key.
-					k->set_keycode(KEY_KP_ENTER);
+					k->set_keycode(Key::KP_ENTER);
 				} else {
 					k->set_keycode((Key)KeyMappingWindows::get_keysym(ke.wParam));
 				}

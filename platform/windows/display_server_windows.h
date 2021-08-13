@@ -410,7 +410,7 @@ class DisplayServerWindows : public DisplayServer {
 	bool shift_mem = false;
 	bool control_mem = false;
 	bool meta_mem = false;
-	MouseButton last_button_state = MOUSE_BUTTON_NONE;
+	MouseButton last_button_state = MouseButton::NONE;
 	bool use_raw_input = false;
 	bool drop_events = false;
 	bool in_dispatch_input_event = false;

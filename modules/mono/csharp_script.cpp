@@ -1355,7 +1355,7 @@ void CSharpLanguage::_editor_init_callback() {
 
 	// Enable it as a plugin
 	EditorNode::add_editor_plugin(godotsharp_editor);
-	ED_SHORTCUT("mono/build_solution", TTR("Build Solution"), KEY_MASK_ALT | KEY_B);
+	ED_SHORTCUT("mono/build_solution", TTR("Build Solution"), KeyModifierMask::ALT | Key::B);
 	godotsharp_editor->enable_plugin();
 
 	get_singleton()->godotsharp_editor = godotsharp_editor;

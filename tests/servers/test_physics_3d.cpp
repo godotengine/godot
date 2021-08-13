@@ -245,12 +245,12 @@ protected:
 public:
 	virtual void input_event(const Ref<InputEvent> &p_event) {
 		Ref<InputEventMouseMotion> mm = p_event;
-		if (mm.is_valid() && mm->get_button_mask() & 4) {
+		if (mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_MIDDLE) != MouseButton::NONE) {
 			ofs_y -= mm->get_relative().y / 200.0;
 			ofs_x += mm->get_relative().x / 200.0;
 		}
 
-		if (mm.is_valid() && mm->get_button_mask() & 1) {
+		if (mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
 			real_t y = -mm->get_relative().y / 20.0;
 			real_t x = mm->get_relative().x / 20.0;
 

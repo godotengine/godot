@@ -151,7 +151,7 @@ public:
 
 	void set_modifiers_from_event(const InputEventWithModifiers *event);
 
-	uint32_t get_modifiers_mask() const;
+	Key get_modifiers_mask() const;
 
 	virtual String as_text() const override;
 	virtual String to_string() override;
@@ -164,8 +164,8 @@ class InputEventKey : public InputEventWithModifiers {
 
 	bool pressed = false; /// otherwise release
 
-	Key keycode = KEY_NONE; // Key enum, without modifier masks.
-	Key physical_keycode = KEY_NONE;
+	Key keycode = Key::NONE; // Key enum, without modifier masks.
+	Key physical_keycode = Key::NONE;
 	uint32_t unicode = 0; ///unicode
 
 	bool echo = false; /// true if this is an echo key
@@ -183,14 +183,14 @@ public:
 	void set_physical_keycode(Key p_keycode);
 	Key get_physical_keycode() const;
 
-	void set_unicode(uint32_t p_unicode);
-	uint32_t get_unicode() const;
+	void set_unicode(char32_t p_unicode);
+	char32_t get_unicode() const;
 
 	void set_echo(bool p_enable);
 	virtual bool is_echo() const override;
 
-	uint32_t get_keycode_with_modifiers() const;
-	uint32_t get_physical_keycode_with_modifiers() const;
+	Key get_keycode_with_modifiers() const;
+	Key get_physical_keycode_with_modifiers() const;
 
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const override;
 	virtual bool is_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const override;
@@ -208,7 +208,7 @@ public:
 class InputEventMouse : public InputEventWithModifiers {
 	GDCLASS(InputEventMouse, InputEventWithModifiers);
 
-	int button_mask = 0;
+	MouseButton button_mask = MouseButton::NONE;
 
 	Vector2 pos;
 	Vector2 global_pos;
@@ -217,8 +217,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_button_mask(int p_mask);
-	int get_button_mask() const;
+	void set_button_mask(MouseButton p_mask);
+	MouseButton get_button_mask() const;
 
 	void set_position(const Vector2 &p_pos);
 	Vector2 get_position() const;
@@ -233,7 +233,7 @@ class InputEventMouseButton : public InputEventMouse {
 	GDCLASS(InputEventMouseButton, InputEventMouse);
 
 	float factor = 1;
-	MouseButton button_index = MOUSE_BUTTON_NONE;
+	MouseButton button_index = MouseButton::NONE;
 	bool pressed = false; //otherwise released
 	bool double_click = false; //last even less than double click time
 
@@ -501,7 +501,7 @@ class InputEventMIDI : public InputEvent {
 	GDCLASS(InputEventMIDI, InputEvent);
 
 	int channel = 0;
-	MIDIMessage message = MIDI_MESSAGE_NONE;
+	MIDIMessage message = MIDIMessage::NONE;
 	int pitch = 0;
 	int velocity = 0;
 	int instrument = 0;

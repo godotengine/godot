@@ -475,7 +475,7 @@ double AnimationPlayerEditor::_get_editor_step() const {
 		ERR_FAIL_COND_V(!anim.is_valid(), 0.0);
 
 		// Use more precise snapping when holding Shift
-		return Input::get_singleton()->is_key_pressed(KEY_SHIFT) ? anim->get_step() * 0.25 : anim->get_step();
+		return Input::get_singleton()->is_key_pressed(Key::SHIFT) ? anim->get_step() * 0.25 : anim->get_step();
 	}
 
 	return 0.0;
@@ -1229,7 +1229,7 @@ void AnimationPlayerEditor::unhandled_key_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventKey> k = p_ev;
 	if (is_visible_in_tree() && k.is_valid() && k->is_pressed() && !k->is_echo() && !k->is_alt_pressed() && !k->is_ctrl_pressed() && !k->is_meta_pressed()) {
 		switch (k->get_keycode()) {
-			case KEY_A: {
+			case Key::A: {
 				if (!k->is_shift_pressed()) {
 					_play_bw_from_pressed();
 				} else {
@@ -1237,11 +1237,11 @@ void AnimationPlayerEditor::unhandled_key_input(const Ref<InputEvent> &p_ev) {
 				}
 				accept_event();
 			} break;
-			case KEY_S: {
+			case Key::S: {
 				_stop_pressed();
 				accept_event();
 			} break;
-			case KEY_D: {
+			case Key::D: {
 				if (!k->is_shift_pressed()) {
 					_play_from_pressed();
 				} else {

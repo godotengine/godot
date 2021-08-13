@@ -309,7 +309,7 @@ void ScriptEditorQuickOpen::_text_changed(const String &p_newtext) {
 void ScriptEditorQuickOpen::_sbox_input(const Ref<InputEvent> &p_ie) {
 	Ref<InputEventKey> k = p_ie;
 
-	if (k.is_valid() && (k->get_keycode() == KEY_UP || k->get_keycode() == KEY_DOWN || k->get_keycode() == KEY_PAGEUP || k->get_keycode() == KEY_PAGEDOWN)) {
+	if (k.is_valid() && (k->get_keycode() == Key::UP || k->get_keycode() == Key::DOWN || k->get_keycode() == Key::PAGEUP || k->get_keycode() == Key::PAGEDOWN)) {
 		search_options->gui_input(k);
 		search_box->accept_event();
 	}
@@ -1724,7 +1724,7 @@ void ScriptEditor::_help_overview_selected(int p_idx) {
 }
 
 void ScriptEditor::_script_selected(int p_idx) {
-	grab_focus_block = !Input::get_singleton()->is_mouse_button_pressed(MOUSE_BUTTON_LEFT); //amazing hack, simply amazing
+	grab_focus_block = !Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT); //amazing hack, simply amazing
 
 	_go_to_tab(script_list->get_item_metadata(p_idx));
 	grab_focus_block = false;
@@ -2951,11 +2951,11 @@ void ScriptEditor::input(const Ref<InputEvent> &p_event) {
 		// This must be hardcoded as the editor shortcuts dialog doesn't allow assigning
 		// more than one shortcut per action.
 		if (mb.is_valid() && mb->is_pressed() && is_visible_in_tree()) {
-			if (mb->get_button_index() == MOUSE_BUTTON_XBUTTON1) {
+			if (mb->get_button_index() == MouseButton::MB_XBUTTON1) {
 				_history_back();
 			}
 
-			if (mb->get_button_index() == MOUSE_BUTTON_XBUTTON2) {
+			if (mb->get_button_index() == MouseButton::MB_XBUTTON2) {
 				_history_forward();
 			}
 		}
@@ -2996,7 +2996,7 @@ void ScriptEditor::_script_list_gui_input(const Ref<InputEvent> &ev) {
 	Ref<InputEventMouseButton> mb = ev;
 	if (mb.is_valid() && mb->is_pressed()) {
 		switch (mb->get_button_index()) {
-			case MOUSE_BUTTON_MIDDLE: {
+			case MouseButton::MIDDLE: {
 				// Right-click selects automatically; middle-click does not.
 				int idx = script_list->get_item_at_position(mb->get_position(), true);
 				if (idx >= 0) {
@@ -3006,7 +3006,7 @@ void ScriptEditor::_script_list_gui_input(const Ref<InputEvent> &ev) {
 				}
 			} break;
 
-			case MOUSE_BUTTON_RIGHT: {
+			case MouseButton::RIGHT: {
 				_make_script_list_context_menu();
 			} break;
 			default:
@@ -3276,15 +3276,15 @@ void ScriptEditor::_update_selected_editor_menu() {
 	EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_current_tab_control());
 	script_search_menu->get_popup()->clear();
 	if (eh) {
-		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find", TTR("Find..."), KEY_MASK_CMD | KEY_F), HELP_SEARCH_FIND);
-		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_next", TTR("Find Next"), KEY_F3), HELP_SEARCH_FIND_NEXT);
-		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_previous", TTR("Find Previous"), KEY_MASK_SHIFT | KEY_F3), HELP_SEARCH_FIND_PREVIOUS);
+		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find", TTR("Find..."), KeyModifierMask::CMD | Key::F), HELP_SEARCH_FIND);
+		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_next", TTR("Find Next"), Key::F3), HELP_SEARCH_FIND_NEXT);
+		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_previous", TTR("Find Previous"), KeyModifierMask::SHIFT | Key::F3), HELP_SEARCH_FIND_PREVIOUS);
 		script_search_menu->get_popup()->add_separator();
-		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_in_files", TTR("Find in Files"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_F), SEARCH_IN_FILES);
+		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_in_files", TTR("Find in Files"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::F), SEARCH_IN_FILES);
 		script_search_menu->show();
 	} else {
 		if (tab_container->get_child_count() == 0) {
-			script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_in_files", TTR("Find in Files"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_F), SEARCH_IN_FILES);
+			script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_in_files", TTR("Find in Files"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::F), SEARCH_IN_FILES);
 			script_search_menu->show();
 		} else {
 			script_search_menu->hide();
@@ -3668,11 +3668,11 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	find_replace_bar->hide();
 
 	ED_SHORTCUT("script_editor/window_sort", TTR("Sort"));
-	ED_SHORTCUT("script_editor/window_move_up", TTR("Move Up"), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_UP);
-	ED_SHORTCUT("script_editor/window_move_down", TTR("Move Down"), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_DOWN);
-	// FIXME: These should be `KEY_GREATER` and `KEY_LESS` but those don't work.
-	ED_SHORTCUT("script_editor/next_script", TTR("Next Script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_PERIOD);
-	ED_SHORTCUT("script_editor/prev_script", TTR("Previous Script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_COMMA);
+	ED_SHORTCUT("script_editor/window_move_up", TTR("Move Up"), KeyModifierMask::SHIFT | KeyModifierMask::ALT | Key::UP);
+	ED_SHORTCUT("script_editor/window_move_down", TTR("Move Down"), KeyModifierMask::SHIFT | KeyModifierMask::ALT | Key::DOWN);
+	// FIXME: These should be `Key::GREATER` and `Key::LESS` but those don't work.
+	ED_SHORTCUT("script_editor/next_script", TTR("Next Script"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::PERIOD);
+	ED_SHORTCUT("script_editor/prev_script", TTR("Previous Script"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::COMMA);
 	set_process_input(true);
 	set_process_unhandled_input(true);
 
@@ -3685,7 +3685,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/new", TTR("New Script...")), FILE_NEW);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/new_textfile", TTR("New Text File...")), FILE_NEW_TEXTFILE);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/open", TTR("Open...")), FILE_OPEN);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reopen_closed_script", TTR("Reopen Closed Script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_T), FILE_REOPEN_CLOSED);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reopen_closed_script", TTR("Reopen Closed Script"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::T), FILE_REOPEN_CLOSED);
 	file_menu->get_popup()->add_submenu_item(TTR("Open Recent"), "RecentScripts", FILE_OPEN_RECENT);
 
 	recent_scripts = memnew(PopupMenu);
@@ -3695,17 +3695,17 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	_update_recent_scripts();
 
 	file_menu->get_popup()->add_separator();
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save", TTR("Save"), KEY_MASK_ALT | KEY_MASK_CMD | KEY_S), FILE_SAVE);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save", TTR("Save"), KeyModifierMask::ALT | KeyModifierMask::CMD | Key::S), FILE_SAVE);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_as", TTR("Save As...")), FILE_SAVE_AS);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_all", TTR("Save All"), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_S), FILE_SAVE_ALL);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_all", TTR("Save All"), KeyModifierMask::SHIFT | KeyModifierMask::ALT | Key::S), FILE_SAVE_ALL);
 	file_menu->get_popup()->add_separator();
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reload_script_soft", TTR("Soft Reload Script"), KEY_MASK_CMD | KEY_MASK_ALT | KEY_R), FILE_TOOL_RELOAD_SOFT);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reload_script_soft", TTR("Soft Reload Script"), KeyModifierMask::CMD | KeyModifierMask::ALT | Key::R), FILE_TOOL_RELOAD_SOFT);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/copy_path", TTR("Copy Script Path")), FILE_COPY_PATH);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/show_in_file_system", TTR("Show in FileSystem")), SHOW_IN_FILE_SYSTEM);
 	file_menu->get_popup()->add_separator();
 
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/history_previous", TTR("History Previous"), KEY_MASK_ALT | KEY_LEFT), WINDOW_PREV);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/history_next", TTR("History Next"), KEY_MASK_ALT | KEY_RIGHT), WINDOW_NEXT);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/history_previous", TTR("History Previous"), KeyModifierMask::ALT | Key::LEFT), WINDOW_PREV);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/history_next", TTR("History Next"), KeyModifierMask::ALT | Key::RIGHT), WINDOW_NEXT);
 	file_menu->get_popup()->add_separator();
 
 	file_menu->get_popup()->add_submenu_item(TTR("Theme"), "Theme", FILE_THEME);
@@ -3722,16 +3722,16 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	theme_submenu->add_shortcut(ED_SHORTCUT("script_editor/save_theme_as", TTR("Save Theme As...")), THEME_SAVE_AS);
 
 	file_menu->get_popup()->add_separator();
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_file", TTR("Close"), KEY_MASK_CMD | KEY_W), FILE_CLOSE);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_file", TTR("Close"), KeyModifierMask::CMD | Key::W), FILE_CLOSE);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_all", TTR("Close All")), CLOSE_ALL);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_other_tabs", TTR("Close Other Tabs")), CLOSE_OTHER_TABS);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_docs", TTR("Close Docs")), CLOSE_DOCS);
 
 	file_menu->get_popup()->add_separator();
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/run_file", TTR("Run"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_X), FILE_RUN);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/run_file", TTR("Run"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::X), FILE_RUN);
 
 	file_menu->get_popup()->add_separator();
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/toggle_scripts_panel", TTR("Toggle Scripts Panel"), KEY_MASK_CMD | KEY_BACKSLASH), TOGGLE_SCRIPTS_PANEL);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/toggle_scripts_panel", TTR("Toggle Scripts Panel"), KeyModifierMask::CMD | Key::BACKSLASH), TOGGLE_SCRIPTS_PANEL);
 	file_menu->get_popup()->connect("id_pressed", callable_mp(this, &ScriptEditor::_menu_option));
 
 	script_search_menu = memnew(MenuButton);
@@ -3984,7 +3984,7 @@ ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 	EDITOR_DEF("text_editor/external/exec_flags", "{file}");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "text_editor/external/exec_flags", PROPERTY_HINT_PLACEHOLDER_TEXT, "Call flags with placeholders: {project}, {file}, {col}, {line}."));
 
-	ED_SHORTCUT("script_editor/reopen_closed_script", TTR("Reopen Closed Script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_T);
+	ED_SHORTCUT("script_editor/reopen_closed_script", TTR("Reopen Closed Script"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::T);
 	ED_SHORTCUT("script_editor/clear_recent", TTR("Clear Recent Scripts"));
 }
 

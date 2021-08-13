@@ -164,7 +164,7 @@ void EditorSettingsDialog::unhandled_input(const Ref<InputEvent> &p_event) {
 			handled = true;
 		}
 
-		if (k->get_keycode_with_modifiers() == (KEY_MASK_CMD | KEY_F)) {
+		if (k->get_keycode_with_modifiers() == (KeyModifierMask::CMD | Key::F)) {
 			_focus_current_search_box();
 			handled = true;
 		}

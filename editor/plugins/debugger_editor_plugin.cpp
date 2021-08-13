@@ -41,10 +41,10 @@
 DebuggerEditorPlugin::DebuggerEditorPlugin(EditorNode *p_editor, MenuButton *p_debug_menu) {
 	EditorDebuggerServer::initialize();
 
-	ED_SHORTCUT("debugger/step_into", TTR("Step Into"), KEY_F11);
-	ED_SHORTCUT("debugger/step_over", TTR("Step Over"), KEY_F10);
+	ED_SHORTCUT("debugger/step_into", TTR("Step Into"), Key::F11);
+	ED_SHORTCUT("debugger/step_over", TTR("Step Over"), Key::F10);
 	ED_SHORTCUT("debugger/break", TTR("Break"));
-	ED_SHORTCUT("debugger/continue", TTR("Continue"), KEY_F12);
+	ED_SHORTCUT("debugger/continue", TTR("Continue"), Key::F12);
 	ED_SHORTCUT("debugger/keep_debugger_open", TTR("Keep Debugger Open"));
 	ED_SHORTCUT("debugger/debug_with_external_editor", TTR("Debug with External Editor"));
 
