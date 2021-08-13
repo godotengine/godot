@@ -195,11 +195,11 @@ void EditorSpinSlider::_update_value_input_stylebox() {
 	if (!value_input) {
 		return;
 	}
+
 	// Add a left margin to the stylebox to make the number align with the Label
 	// when it's edited. The LineEdit "focus" stylebox uses the "normal" stylebox's
 	// default margins.
-	Ref<StyleBoxFlat> stylebox =
-			EditorNode::get_singleton()->get_theme_base()->get_theme_stylebox(SNAME("normal"), SNAME("LineEdit"))->duplicate();
+	Ref<StyleBox> stylebox = get_theme_stylebox(SNAME("normal"), SNAME("LineEdit"))->duplicate();
 	// EditorSpinSliders with a label have more space on the left, so add an
 	// higher margin to match the location where the text begins.
 	// The margin values below were determined by empirical testing.
@@ -210,188 +210,197 @@ void EditorSpinSlider::_update_value_input_stylebox() {
 		stylebox->set_default_margin(SIDE_LEFT, (get_label() != String() ? 23 : 16) * EDSCALE);
 		stylebox->set_default_margin(SIDE_RIGHT, 0);
 	}
+
 	value_input->add_theme_style_override("normal", stylebox);
 }
-void EditorSpinSlider::_notification(int p_what) {
-	if (p_what == NOTIFICATION_WM_WINDOW_FOCUS_OUT ||
-			p_what == NOTIFICATION_WM_WINDOW_FOCUS_IN ||
-			p_what == NOTIFICATION_EXIT_TREE) {
-		if (grabbing_spinner) {
-			grabber->hide();
-			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
-			grabbing_spinner = false;
-			grabbing_spinner_attempt = false;
-		}
+
+void EditorSpinSlider::_draw_spin_slider() {
+	updown_offset = -1;
+
+	RID ci = get_canvas_item();
+	bool rtl = is_layout_rtl();
+	Vector2 size = get_size();
+
+	Ref<StyleBox> sb = get_theme_stylebox(SNAME("normal"), SNAME("LineEdit"));
+	if (!flat) {
+		draw_style_box(sb, Rect2(Vector2(), size));
+	}
+	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("LineEdit"));
+	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("LineEdit"));
+	int sep_base = 4 * EDSCALE;
+	int sep = sep_base + sb->get_offset().x; //make it have the same margin on both sides, looks better
+
+	int label_width = font->get_string_size(label, font_size).width;
+	int number_width = size.width - sb->get_minimum_size().width - label_width - sep;
+
+	Ref<Texture2D> updown = get_theme_icon(SNAME("updown"), SNAME("SpinBox"));
+
+	if (get_step() == 1) {
+		number_width -= updown->get_width();
 	}
 
-	if (p_what == NOTIFICATION_READY || p_what == NOTIFICATION_THEME_CHANGED) {
-		_update_value_input_stylebox();
+	String numstr = get_text_value();
+
+	int vofs = (size.height - font->get_height(font_size)) / 2 + font->get_ascent(font_size);
+
+	Color fc = get_theme_color(SNAME("font_color"), SNAME("LineEdit"));
+	Color lc;
+	if (use_custom_label_color) {
+		lc = custom_label_color;
+	} else {
+		lc = fc;
 	}
 
-	if (p_what == NOTIFICATION_DRAW) {
-		updown_offset = -1;
-
-		RID ci = get_canvas_item();
-		bool rtl = is_layout_rtl();
-		Vector2 size = get_size();
-
-		Ref<StyleBox> sb = get_theme_stylebox(SNAME("normal"), SNAME("LineEdit"));
-		if (!flat) {
-			draw_style_box(sb, Rect2(Vector2(), size));
-		}
-		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("LineEdit"));
-		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("LineEdit"));
-		int sep_base = 4 * EDSCALE;
-		int sep = sep_base + sb->get_offset().x; //make it have the same margin on both sides, looks better
-
-		int label_width = font->get_string_size(label, font_size).width;
-		int number_width = size.width - sb->get_minimum_size().width - label_width - sep;
-
-		Ref<Texture2D> updown = get_theme_icon(SNAME("updown"), SNAME("SpinBox"));
-
-		if (get_step() == 1) {
-			number_width -= updown->get_width();
-		}
-
-		String numstr = get_text_value();
-
-		int vofs = (size.height - font->get_height(font_size)) / 2 + font->get_ascent(font_size);
-
-		Color fc = get_theme_color(SNAME("font_color"), SNAME("LineEdit"));
-		Color lc;
-		if (use_custom_label_color) {
-			lc = custom_label_color;
-		} else {
-			lc = fc;
-		}
-
-		if (flat && label != String()) {
-			Color label_bg_color = get_theme_color(SNAME("dark_color_3"), SNAME("Editor"));
-			if (rtl) {
-				draw_rect(Rect2(Vector2(size.width - (sb->get_offset().x * 2 + label_width), 0), Vector2(sb->get_offset().x * 2 + label_width, size.height)), label_bg_color);
-			} else {
-				draw_rect(Rect2(Vector2(), Vector2(sb->get_offset().x * 2 + label_width, size.height)), label_bg_color);
-			}
-		}
-
-		if (has_focus()) {
-			Ref<StyleBox> focus = get_theme_stylebox(SNAME("focus"), SNAME("LineEdit"));
-			draw_style_box(focus, Rect2(Vector2(), size));
-		}
-
+	if (flat && label != String()) {
+		Color label_bg_color = get_theme_color(SNAME("dark_color_3"), SNAME("Editor"));
 		if (rtl) {
-			draw_string(font, Vector2(Math::round(size.width - sb->get_offset().x - label_width), vofs), label, HALIGN_RIGHT, -1, font_size, lc * Color(1, 1, 1, 0.5));
+			draw_rect(Rect2(Vector2(size.width - (sb->get_offset().x * 2 + label_width), 0), Vector2(sb->get_offset().x * 2 + label_width, size.height)), label_bg_color);
 		} else {
-			draw_string(font, Vector2(Math::round(sb->get_offset().x), vofs), label, HALIGN_LEFT, -1, font_size, lc * Color(1, 1, 1, 0.5));
+			draw_rect(Rect2(Vector2(), Vector2(sb->get_offset().x * 2 + label_width, size.height)), label_bg_color);
 		}
+	}
 
-		int suffix_start = numstr.length();
-		RID num_rid = TS->create_shaped_text();
-		TS->shaped_text_add_string(num_rid, numstr + U"\u2009" + suffix, font->get_rids(), font_size);
+	if (has_focus()) {
+		Ref<StyleBox> focus = get_theme_stylebox(SNAME("focus"), SNAME("LineEdit"));
+		draw_style_box(focus, Rect2(Vector2(), size));
+	}
 
-		float text_start = rtl ? Math::round(sb->get_offset().x) : Math::round(sb->get_offset().x + label_width + sep);
-		Vector2 text_ofs = rtl ? Vector2(text_start + (number_width - TS->shaped_text_get_width(num_rid)), vofs) : Vector2(text_start, vofs);
-		const Vector<TextServer::Glyph> visual = TS->shaped_text_get_glyphs(num_rid);
-		int v_size = visual.size();
-		const TextServer::Glyph *glyphs = visual.ptr();
-		for (int i = 0; i < v_size; i++) {
-			for (int j = 0; j < glyphs[i].repeat; j++) {
-				if (text_ofs.x >= text_start && (text_ofs.x + glyphs[i].advance) <= (text_start + number_width)) {
-					Color color = fc;
-					if (glyphs[i].start >= suffix_start) {
-						color.a *= 0.4;
-					}
-					if (glyphs[i].font_rid != RID()) {
-						TS->font_draw_glyph(glyphs[i].font_rid, ci, glyphs[i].font_size, text_ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, color);
-					} else if ((glyphs[i].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
-						TS->draw_hex_code_box(ci, glyphs[i].font_size, text_ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, color);
-					}
+	if (rtl) {
+		draw_string(font, Vector2(Math::round(size.width - sb->get_offset().x - label_width), vofs), label, HALIGN_RIGHT, -1, font_size, lc * Color(1, 1, 1, 0.5));
+	} else {
+		draw_string(font, Vector2(Math::round(sb->get_offset().x), vofs), label, HALIGN_LEFT, -1, font_size, lc * Color(1, 1, 1, 0.5));
+	}
+
+	int suffix_start = numstr.length();
+	RID num_rid = TS->create_shaped_text();
+	TS->shaped_text_add_string(num_rid, numstr + U"\u2009" + suffix, font->get_rids(), font_size);
+
+	float text_start = rtl ? Math::round(sb->get_offset().x) : Math::round(sb->get_offset().x + label_width + sep);
+	Vector2 text_ofs = rtl ? Vector2(text_start + (number_width - TS->shaped_text_get_width(num_rid)), vofs) : Vector2(text_start, vofs);
+	const Vector<TextServer::Glyph> visual = TS->shaped_text_get_glyphs(num_rid);
+	int v_size = visual.size();
+	const TextServer::Glyph *glyphs = visual.ptr();
+	for (int i = 0; i < v_size; i++) {
+		for (int j = 0; j < glyphs[i].repeat; j++) {
+			if (text_ofs.x >= text_start && (text_ofs.x + glyphs[i].advance) <= (text_start + number_width)) {
+				Color color = fc;
+				if (glyphs[i].start >= suffix_start) {
+					color.a *= 0.4;
 				}
-				text_ofs.x += glyphs[i].advance;
+				if (glyphs[i].font_rid != RID()) {
+					TS->font_draw_glyph(glyphs[i].font_rid, ci, glyphs[i].font_size, text_ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, color);
+				} else if ((glyphs[i].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
+					TS->draw_hex_code_box(ci, glyphs[i].font_size, text_ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, color);
+				}
 			}
+			text_ofs.x += glyphs[i].advance;
 		}
-		TS->free(num_rid);
+	}
+	TS->free(num_rid);
 
-		if (get_step() == 1) {
-			Ref<Texture2D> updown2 = get_theme_icon(SNAME("updown"), SNAME("SpinBox"));
-			int updown_vofs = (size.height - updown2->get_height()) / 2;
-			if (rtl) {
-				updown_offset = sb->get_margin(SIDE_LEFT);
+	if (get_step() == 1) {
+		Ref<Texture2D> updown2 = get_theme_icon(SNAME("updown"), SNAME("SpinBox"));
+		int updown_vofs = (size.height - updown2->get_height()) / 2;
+		if (rtl) {
+			updown_offset = sb->get_margin(SIDE_LEFT);
+		} else {
+			updown_offset = size.width - sb->get_margin(SIDE_RIGHT) - updown2->get_width();
+		}
+		Color c(1, 1, 1);
+		if (hover_updown) {
+			c *= Color(1.2, 1.2, 1.2);
+		}
+		draw_texture(updown2, Vector2(updown_offset, updown_vofs), c);
+		if (grabber->is_visible()) {
+			grabber->hide();
+		}
+	} else if (!hide_slider) {
+		int grabber_w = 4 * EDSCALE;
+		int width = size.width - sb->get_minimum_size().width - grabber_w;
+		int ofs = sb->get_offset().x;
+		int svofs = (size.height + vofs) / 2 - 1;
+		Color c = fc;
+		c.a = 0.2;
+
+		draw_rect(Rect2(ofs, svofs + 1, width, 2 * EDSCALE), c);
+		int gofs = get_as_ratio() * width;
+		c.a = 0.9;
+		Rect2 grabber_rect = Rect2(ofs + gofs, svofs + 1, grabber_w, 2 * EDSCALE);
+		draw_rect(grabber_rect, c);
+
+		grabbing_spinner_mouse_pos = get_global_position() + grabber_rect.position + grabber_rect.size * 0.5;
+
+		bool display_grabber = (mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !(value_input_popup && value_input_popup->is_visible());
+		if (grabber->is_visible() != display_grabber) {
+			if (display_grabber) {
+				grabber->show();
 			} else {
-				updown_offset = size.width - sb->get_margin(SIDE_RIGHT) - updown2->get_width();
-			}
-			Color c(1, 1, 1);
-			if (hover_updown) {
-				c *= Color(1.2, 1.2, 1.2);
-			}
-			draw_texture(updown2, Vector2(updown_offset, updown_vofs), c);
-			if (grabber->is_visible()) {
 				grabber->hide();
 			}
-		} else if (!hide_slider) {
-			int grabber_w = 4 * EDSCALE;
-			int width = size.width - sb->get_minimum_size().width - grabber_w;
-			int ofs = sb->get_offset().x;
-			int svofs = (size.height + vofs) / 2 - 1;
-			Color c = fc;
-			c.a = 0.2;
+		}
 
-			draw_rect(Rect2(ofs, svofs + 1, width, 2 * EDSCALE), c);
-			int gofs = get_as_ratio() * width;
-			c.a = 0.9;
-			Rect2 grabber_rect = Rect2(ofs + gofs, svofs + 1, grabber_w, 2 * EDSCALE);
-			draw_rect(grabber_rect, c);
-
-			grabbing_spinner_mouse_pos = get_global_position() + grabber_rect.position + grabber_rect.size * 0.5;
-
-			bool display_grabber = (mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !(value_input_popup && value_input_popup->is_visible());
-			if (grabber->is_visible() != display_grabber) {
-				if (display_grabber) {
-					grabber->show();
-				} else {
-					grabber->hide();
-				}
+		if (display_grabber) {
+			Ref<Texture2D> grabber_tex;
+			if (mouse_over_grabber) {
+				grabber_tex = get_theme_icon(SNAME("grabber_highlight"), SNAME("HSlider"));
+			} else {
+				grabber_tex = get_theme_icon(SNAME("grabber"), SNAME("HSlider"));
 			}
 
-			if (display_grabber) {
-				Ref<Texture2D> grabber_tex;
-				if (mouse_over_grabber) {
-					grabber_tex = get_theme_icon(SNAME("grabber_highlight"), SNAME("HSlider"));
-				} else {
-					grabber_tex = get_theme_icon(SNAME("grabber"), SNAME("HSlider"));
-				}
-
-				if (grabber->get_texture() != grabber_tex) {
-					grabber->set_texture(grabber_tex);
-				}
-
-				Vector2 scale = get_global_transform_with_canvas().get_scale();
-				grabber->set_scale(scale);
-				grabber->set_size(Size2(0, 0));
-				grabber->set_position(get_global_position() + (grabber_rect.position + grabber_rect.size * 0.5 - grabber->get_size() * 0.5) * scale);
-
-				if (mousewheel_over_grabber) {
-					Input::get_singleton()->warp_mouse_position(grabber->get_position() + grabber_rect.size);
-				}
-
-				grabber_range = width;
+			if (grabber->get_texture() != grabber_tex) {
+				grabber->set_texture(grabber_tex);
 			}
-		}
-	}
 
-	if (p_what == NOTIFICATION_MOUSE_ENTER) {
-		mouse_over_spin = true;
-		update();
-	}
-	if (p_what == NOTIFICATION_MOUSE_EXIT) {
-		mouse_over_spin = false;
-		update();
-	}
-	if (p_what == NOTIFICATION_FOCUS_ENTER) {
-		if ((Input::get_singleton()->is_action_pressed("ui_focus_next") || Input::get_singleton()->is_action_pressed("ui_focus_prev")) && !value_input_just_closed) {
-			_focus_entered();
+			Vector2 scale = get_global_transform_with_canvas().get_scale();
+			grabber->set_scale(scale);
+			grabber->set_size(Size2(0, 0));
+			grabber->set_position(get_global_position() + (grabber_rect.position + grabber_rect.size * 0.5 - grabber->get_size() * 0.5) * scale);
+
+			if (mousewheel_over_grabber) {
+				Input::get_singleton()->warp_mouse_position(grabber->get_position() + grabber_rect.size);
+			}
+
+			grabber_range = width;
 		}
-		value_input_just_closed = false;
+	}
+}
+
+void EditorSpinSlider::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED:
+			_update_value_input_stylebox();
+			break;
+
+		case NOTIFICATION_DRAW:
+			_draw_spin_slider();
+			break;
+
+		case NOTIFICATION_WM_WINDOW_FOCUS_IN:
+		case NOTIFICATION_WM_WINDOW_FOCUS_OUT:
+		case NOTIFICATION_EXIT_TREE:
+			if (grabbing_spinner) {
+				grabber->hide();
+				Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+				grabbing_spinner = false;
+				grabbing_spinner_attempt = false;
+			}
+			break;
+
+		case NOTIFICATION_MOUSE_ENTER:
+			mouse_over_spin = true;
+			update();
+			break;
+		case NOTIFICATION_MOUSE_EXIT:
+			mouse_over_spin = false;
+			update();
+			break;
+		case NOTIFICATION_FOCUS_ENTER:
+			if ((Input::get_singleton()->is_action_pressed("ui_focus_next") || Input::get_singleton()->is_action_pressed("ui_focus_prev")) && !value_input_just_closed) {
+				_focus_entered();
+			}
+			value_input_just_closed = false;
+			break;
 	}
 }
 
@@ -567,8 +576,10 @@ void EditorSpinSlider::_ensure_input_popup() {
 	if (value_input_popup) {
 		return;
 	}
+
 	value_input_popup = memnew(Popup);
 	add_child(value_input_popup);
+
 	value_input = memnew(LineEdit);
 	value_input_popup->add_child(value_input);
 	value_input_popup->set_wrap_controls(true);
@@ -576,6 +587,7 @@ void EditorSpinSlider::_ensure_input_popup() {
 	value_input_popup->connect("popup_hide", callable_mp(this, &EditorSpinSlider::_value_input_closed));
 	value_input->connect("text_submitted", callable_mp(this, &EditorSpinSlider::_value_input_submitted));
 	value_input->connect("focus_exited", callable_mp(this, &EditorSpinSlider::_value_focus_exited));
+
 	if (is_inside_tree()) {
 		_update_value_input_stylebox();
 	}
