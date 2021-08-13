@@ -34,6 +34,7 @@
 #include "core/object/method_bind.h"
 #include "core/object/object.h"
 #include "core/string/print_string.h"
+#include "core/templates/local_vector.h"
 
 /** To bind more then 6 parameters include this:
  *
@@ -228,6 +229,7 @@ public:
 	static void get_direct_inheriters_from_class(const StringName &p_class, List<StringName> *p_classes);
 	static StringName get_parent_class_nocheck(const StringName &p_class);
 	static StringName get_parent_class(const StringName &p_class);
+	static StringName get_common_ancestor_of_classes(const LocalVector<StringName> &p_classes);
 	static StringName get_compatibility_remapped_class(const StringName &p_class);
 	static bool class_exists(const StringName &p_class);
 	static bool is_parent_class(const StringName &p_class, const StringName &p_inherits);

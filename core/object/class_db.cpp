@@ -310,6 +310,47 @@ StringName ClassDB::get_parent_class_nocheck(const StringName &p_class) {
 	return ti->inherits;
 }
 
+StringName ClassDB::get_common_ancestor_of_classes(const LocalVector<StringName> &p_classes) {
+	ERR_FAIL_COND_V(p_classes.size() < 2, StringName());
+
+	OBJTYPE_RLOCK;
+
+	LocalVector<LocalVector<StringName>> chains;
+	chains.resize(p_classes.size());
+	uint32_t min_chain_length = 999999;
+	for (uint32_t i = 0; i < p_classes.size(); ++i) {
+		StringName c = p_classes[i];
+		while (c) {
+			chains[i].push_back(c);
+			c = ClassDB::get_parent_class_nocheck(c);
+		}
+		chains[i].invert();
+		min_chain_length = MIN(min_chain_length, chains[i].size());
+	}
+
+#ifdef DEBUG_ENABLED
+	for (uint32_t i = 0; i < chains.size(); ++i) {
+		CRASH_COND(chains[i][0] != SNAME("Object"));
+	}
+#endif
+
+	uint32_t last_equal_idx = 0; // Object
+	while (last_equal_idx + 1 < min_chain_length) {
+		bool all_equal = true;
+		for (uint32_t i = 1; i < chains.size(); ++i) {
+			if (chains[i][last_equal_idx + 1] != chains[0][last_equal_idx + 1]) {
+				all_equal = false;
+				break;
+			}
+		}
+		if (!all_equal) {
+			break;
+		}
+		++last_equal_idx;
+	}
+	return chains[0][last_equal_idx];
+}
+
 StringName ClassDB::get_compatibility_remapped_class(const StringName &p_class) {
 	if (classes.has(p_class)) {
 		return p_class;

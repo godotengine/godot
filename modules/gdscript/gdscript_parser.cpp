@@ -3540,8 +3540,11 @@ String GDScriptParser::DataType::to_string() const {
 		case NATIVE:
 			if (is_meta_type) {
 				return GDScriptNativeClass::get_class_static();
+			} else if (!specific_native_types_array.is_empty()) {
+				return specific_native_types.operator String();
+			} else {
+				return native_type.operator String();
 			}
-			return native_type.operator String();
 		case CLASS:
 			if (is_meta_type) {
 				return GDScript::get_class_static();

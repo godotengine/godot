@@ -39,6 +39,7 @@
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/list.h"
+#include "core/templates/local_vector.h"
 #include "core/templates/map.h"
 #include "core/templates/vector.h"
 #include "core/variant/variant.h"
@@ -127,6 +128,8 @@ public:
 
 		Variant::Type builtin_type = Variant::NIL;
 		StringName native_type;
+		LocalVector<StringName> specific_native_types_array;
+		StringName specific_native_types;
 		StringName enum_type; // Enum name or the value name in an enum.
 		Ref<Script> script_type;
 		String script_path;
@@ -180,6 +183,10 @@ public:
 				case BUILTIN:
 					return builtin_type == p_other.builtin_type;
 				case NATIVE:
+					if (specific_native_types != p_other.specific_native_types) {
+						return false;
+					}
+					[[fallthrough]];
 				case ENUM:
 					return native_type == p_other.native_type;
 				case ENUM_VALUE:
@@ -207,6 +214,8 @@ public:
 			is_coroutine = p_other.is_coroutine;
 			builtin_type = p_other.builtin_type;
 			native_type = p_other.native_type;
+			specific_native_types_array = p_other.specific_native_types_array;
+			specific_native_types = p_other.specific_native_types;
 			enum_type = p_other.enum_type;
 			script_type = p_other.script_type;
 			script_path = p_other.script_path;

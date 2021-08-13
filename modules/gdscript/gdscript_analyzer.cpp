@@ -3167,7 +3167,23 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 	result.builtin_type = p_property.type;
 	if (p_property.type == Variant::OBJECT) {
 		result.kind = GDScriptParser::DataType::NATIVE;
-		result.native_type = p_property.class_name == StringName() ? "Object" : p_property.class_name;
+		if (p_property.class_name == StringName()) {
+			result.native_type = "Object";
+		} else {
+			String cn = p_property.class_name;
+			if (cn.find_char(',') != -1) {
+				PackedStringArray names = cn.split(",", false);
+				names.sort();
+				result.specific_native_types = String(",").join(names);
+				for (const String &n : names) {
+					result.specific_native_types_array.push_back(n);
+				}
+				// Let's work out a sensible type that will be used in any check unaware of the specific types
+				result.native_type = ClassDB::get_common_ancestor_of_classes(result.specific_native_types_array);
+			} else {
+				result.native_type = p_property.class_name;
+			}
+		}
 	} else {
 		result.kind = GDScriptParser::DataType::BUILTIN;
 		result.builtin_type = p_property.type;
@@ -3454,6 +3470,26 @@ GDScriptParser::DataType GDScriptAnalyzer::get_operation_type(Variant::Operator 
 
 // TODO: Add safe/unsafe return variable (for variant cases)
 bool GDScriptAnalyzer::is_type_compatible(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion) const {
+	if (!_is_type_compatible_impl(p_target, p_source, p_allow_implicit_conversion)) {
+		return false;
+	}
+	// If there are specific types, we must check if at least one is compatible
+	if (p_target.kind == GDScriptParser::DataType::NATIVE && !p_target.specific_native_types_array.is_empty()) {
+		GDScriptParser::DataType specific_target_type = p_target;
+		specific_target_type.specific_native_types_array.clear();
+		for (uint32_t i = 0; i < p_target.specific_native_types_array.size(); ++i) {
+			specific_target_type.native_type = p_target.specific_native_types_array[i];
+			if (_is_type_compatible_impl(specific_target_type, p_source, p_allow_implicit_conversion)) {
+				return true;
+			}
+		}
+		return false;
+	} else {
+		return true;
+	}
+}
+
+bool GDScriptAnalyzer::_is_type_compatible_impl(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion) const {
 	// These return "true" so it doesn't affect users negatively.
 	ERR_FAIL_COND_V_MSG(!p_target.is_set(), true, "Parser bug (please report): Trying to check compatibility of unset target type");
 	ERR_FAIL_COND_V_MSG(!p_source.is_set(), true, "Parser bug (please report): Trying to check compatibility of unset value type");

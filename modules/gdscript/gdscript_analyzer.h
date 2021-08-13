@@ -107,6 +107,7 @@ class GDScriptAnalyzer {
 	GDScriptParser::DataType get_operation_type(Variant::Operator p_operation, const GDScriptParser::DataType &p_a, bool &r_valid, const GDScriptParser::Node *p_source);
 	void update_array_literal_element_type(const GDScriptParser::DataType &p_base_type, GDScriptParser::ArrayNode *p_array_literal);
 	bool is_type_compatible(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion = false) const;
+	bool _is_type_compatible_impl(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion) const;
 	void push_error(const String &p_message, const GDScriptParser::Node *p_origin);
 	void mark_node_unsafe(const GDScriptParser::Node *p_node);
 	bool class_exists(const StringName &p_class) const;
