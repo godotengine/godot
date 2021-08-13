@@ -2899,9 +2899,8 @@ void VisualScriptEditor::_graph_connected(const String &p_from, int p_from_slot,
 		if (!converted) {
 			undo_redo->add_do_method(script.ptr(), "data_connect", p_from.to_int(), from_port, p_to.to_int(), to_port);
 			undo_redo->add_undo_method(script.ptr(), "data_disconnect", p_from.to_int(), from_port, p_to.to_int(), to_port);
-		}
-		// Update nodes in graph
-		if (!converted) {
+
+			// Update nodes in graph
 			undo_redo->add_do_method(this, "_update_graph", p_from.to_int());
 			undo_redo->add_do_method(this, "_update_graph", p_to.to_int());
 			undo_redo->add_undo_method(this, "_update_graph", p_from.to_int());
