@@ -142,15 +142,15 @@ void DocData::merge_from(const DocData &p_data) {
 		}
 
 		for (int i = 0; i < c.theme_properties.size(); i++) {
-			PropertyDoc &p = c.theme_properties.write[i];
+			ThemeItemDoc &ti = c.theme_properties.write[i];
 
 			for (int j = 0; j < cf.theme_properties.size(); j++) {
-				if (cf.theme_properties[j].name != p.name) {
+				if (cf.theme_properties[j].name != ti.name || cf.theme_properties[j].data_type != ti.data_type) {
 					continue;
 				}
-				const PropertyDoc &pf = cf.theme_properties[j];
+				const ThemeItemDoc &pf = cf.theme_properties[j];
 
-				p.description = pf.description;
+				ti.description = pf.description;
 				break;
 			}
 		}
@@ -454,52 +454,59 @@ void DocData::generate(bool p_basic_types) {
 			c.constants.push_back(constant);
 		}
 
-		//theme stuff
-
+		// Theme items.
 		{
 			List<StringName> l;
-			Theme::get_default()->get_constant_list(cname, &l);
+
+			Theme::get_default()->get_color_list(cname, &l);
 			for (List<StringName>::Element *E = l.front(); E; E = E->next()) {
-				PropertyDoc pd;
-				pd.name = E->get();
-				pd.type = "int";
-				pd.default_value = itos(Theme::get_default()->get_constant(E->get(), cname));
-				c.theme_properties.push_back(pd);
+				ThemeItemDoc tid;
+				tid.name = E->get();
+				tid.type = "Color";
+				tid.data_type = "color";
+				tid.default_value = Variant(Theme::get_default()->get_color(E->get(), cname)).get_construct_string();
+				c.theme_properties.push_back(tid);
 			}
 
 			l.clear();
-			Theme::get_default()->get_color_list(cname, &l);
+			Theme::get_default()->get_constant_list(cname, &l);
 			for (List<StringName>::Element *E = l.front(); E; E = E->next()) {
-				PropertyDoc pd;
-				pd.name = E->get();
-				pd.type = "Color";
-				pd.default_value = Variant(Theme::get_default()->get_color(E->get(), cname)).get_construct_string();
-				c.theme_properties.push_back(pd);
+				ThemeItemDoc tid;
+				tid.name = E->get();
+				tid.type = "int";
+				tid.data_type = "constant";
+				tid.default_value = itos(Theme::get_default()->get_constant(E->get(), cname));
+				c.theme_properties.push_back(tid);
+			}
+
+			l.clear();
+			Theme::get_default()->get_font_list(cname, &l);
+			for (List<StringName>::Element *E = l.front(); E; E = E->next()) {
+				ThemeItemDoc tid;
+				tid.name = E->get();
+				tid.type = "Font";
+				tid.data_type = "font";
+				c.theme_properties.push_back(tid);
 			}
 
 			l.clear();
 			Theme::get_default()->get_icon_list(cname, &l);
 			for (List<StringName>::Element *E = l.front(); E; E = E->next()) {
-				PropertyDoc pd;
-				pd.name = E->get();
-				pd.type = "Texture";
-				c.theme_properties.push_back(pd);
+				ThemeItemDoc tid;
+				tid.name = E->get();
+				tid.type = "Texture";
+				tid.data_type = "icon";
+				c.theme_properties.push_back(tid);
 			}
-			l.clear();
-			Theme::get_default()->get_font_list(cname, &l);
-			for (List<StringName>::Element *E = l.front(); E; E = E->next()) {
-				PropertyDoc pd;
-				pd.name = E->get();
-				pd.type = "Font";
-				c.theme_properties.push_back(pd);
-			}
+
 			l.clear();
 			Theme::get_default()->get_stylebox_list(cname, &l);
 			for (List<StringName>::Element *E = l.front(); E; E = E->next()) {
-				PropertyDoc pd;
-				pd.name = E->get();
-				pd.type = "StyleBox";
-				c.theme_properties.push_back(pd);
+				ThemeItemDoc tid;
+				tid.name = E->get();
+				tid.type = "StyleBox";
+				tid.data_type = "style";
+				c.theme_properties.push_back(tid);
 			}
 		}
 
@@ -925,12 +932,14 @@ Error DocData::_load(Ref<XMLParser> parser) {
 							String name3 = parser->get_node_name();
 
 							if (name3 == "theme_item") {
-								PropertyDoc prop2;
+								ThemeItemDoc prop2;
 
 								ERR_FAIL_COND_V(!parser->has_attribute("name"), ERR_FILE_CORRUPT);
 								prop2.name = parser->get_attribute_value("name");
 								ERR_FAIL_COND_V(!parser->has_attribute("type"), ERR_FILE_CORRUPT);
 								prop2.type = parser->get_attribute_value("type");
+								ERR_FAIL_COND_V(!parser->has_attribute("data_type"), ERR_FILE_CORRUPT);
+								prop2.data_type = parser->get_attribute_value("data_type");
 								if (!parser->is_empty()) {
 									parser->read();
 									if (parser->get_node_type() == XMLParser::NODE_TEXT) {
@@ -1159,15 +1168,15 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 
 			_write_string(f, 1, "<theme_items>");
 			for (int i = 0; i < c.theme_properties.size(); i++) {
-				const PropertyDoc &p = c.theme_properties[i];
+				const ThemeItemDoc &ti = c.theme_properties[i];
 
-				if (p.default_value != "") {
-					_write_string(f, 2, "<theme_item name=\"" + p.name + "\" type=\"" + p.type + "\" default=\"" + p.default_value.xml_escape(true) + "\">");
+				if (ti.default_value != "") {
+					_write_string(f, 2, "<theme_item name=\"" + ti.name + "\" data_type=\"" + ti.data_type + "\" type=\"" + ti.type + "\" default=\"" + ti.default_value.xml_escape(true) + "\">");
 				} else {
-					_write_string(f, 2, "<theme_item name=\"" + p.name + "\" type=\"" + p.type + "\">");
+					_write_string(f, 2, "<theme_item name=\"" + ti.name + "\" data_type=\"" + ti.data_type + "\" type=\"" + ti.type + "\">");
 				}
 
-				_write_string(f, 3, p.description.strip_edges().xml_escape());
+				_write_string(f, 3, ti.description.strip_edges().xml_escape());
 
 				_write_string(f, 2, "</theme_item>");
 			}
