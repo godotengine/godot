@@ -353,7 +353,7 @@ void PanoramaSkyMaterial::_update_shader() {
 		RS::get_singleton()->shader_set_code(shader, R"(
 shader_type sky;
 
-uniform sampler2D source_panorama : filter_linear;
+uniform sampler2D source_panorama : filter_linear, hint_albedo;
 
 void sky() {
 	COLOR = texture(source_panorama, SKY_COORDS).rgb;
@@ -576,7 +576,7 @@ uniform vec4 ground_color : hint_color = vec4(1.0);
 uniform float exposure : hint_range(0, 128) = 0.1;
 uniform float dither_strength : hint_range(0, 10) = 1.0;
 
-uniform sampler2D night_sky : hint_black;
+uniform sampler2D night_sky : hint_black_albedo;
 
 const vec3 UP = vec3( 0.0, 1.0, 0.0 );
 
