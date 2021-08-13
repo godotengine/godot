@@ -72,7 +72,7 @@ void CodeEdit::_notification(int p_what) {
 			can_fold_icon = get_theme_icon(SNAME("can_fold"));
 			folded_icon = get_theme_icon(SNAME("folded"));
 
-			code_completion_max_width = get_theme_constant(SNAME("completion_max_width")) * font->get_char_size('x').x;
+			code_completion_max_width = get_theme_constant(SNAME("completion_max_width"));
 			code_completion_max_lines = get_theme_constant(SNAME("completion_lines"));
 			code_completion_scroll_width = get_theme_constant(SNAME("completion_scroll_width"));
 			code_completion_scroll_color = get_theme_color(SNAME("completion_scroll_color"));
@@ -2652,6 +2652,8 @@ TypedArray<String> CodeEdit::_get_delimiters(DelimiterType p_type) const {
 /* Code Completion */
 void CodeEdit::_filter_code_completion_candidates() {
 	ScriptInstance *si = get_script_instance();
+	int line_height = get_line_height();
+
 	if (si && si->has_method("_filter_code_completion_candidates")) {
 		code_completion_options.clear();
 		code_completion_base = "";
@@ -2691,11 +2693,16 @@ void CodeEdit::_filter_code_completion_candidates() {
 			option.icon = completion_options[i].get("icon");
 			option.default_value = completion_options[i].get("default_value");
 
-			max_width = MAX(max_width, font->get_string_size(option.display).width);
+			int offset = 0;
+			if (option.default_value.get_type() == Variant::COLOR) {
+				offset = line_height;
+			}
+
+			max_width = MAX(max_width, font->get_string_size(option.display, font_size).width + offset);
 			code_completion_options.push_back(option);
 		}
 
-		code_completion_longest_line = MIN(max_width, code_completion_max_width);
+		code_completion_longest_line = MIN(max_width, code_completion_max_width * font_size);
 		code_completion_current_selected = 0;
 		code_completion_active = true;
 		update();
@@ -2783,6 +2790,11 @@ void CodeEdit::_filter_code_completion_candidates() {
 			option.display = option.display.unquote().quote("'");
 		}
 
+		int offset = 0;
+		if (option.default_value.get_type() == Variant::COLOR) {
+			offset = line_height;
+		}
+
 		if (in_string != -1) {
 			String quote = single_quote ? "'" : "\"";
 			option.display = option.display.unquote().quote(quote);
@@ -2795,7 +2807,7 @@ void CodeEdit::_filter_code_completion_candidates() {
 
 		if (string_to_complete.length() == 0) {
 			code_completion_options.push_back(option);
-			max_width = MAX(max_width, font->get_string_size(option.display).width);
+			max_width = MAX(max_width, font->get_string_size(option.display, font_size).width + offset);
 			continue;
 		}
 
@@ -2844,7 +2856,7 @@ void CodeEdit::_filter_code_completion_candidates() {
 			} else {
 				completion_options_subseq.push_back(option);
 			}
-			max_width = MAX(max_width, font->get_string_size(option.display).width);
+			max_width = MAX(max_width, font->get_string_size(option.display, font_size).width + offset);
 			/* Matched the whole subsequence in s_lower. */
 		} else if (!*ssq_lower) {
 			/* Finished matching in the first s.length() characters. */
@@ -2853,7 +2865,7 @@ void CodeEdit::_filter_code_completion_candidates() {
 			} else {
 				completion_options_subseq_casei.push_back(option);
 			}
-			max_width = MAX(max_width, font->get_string_size(option.display).width);
+			max_width = MAX(max_width, font->get_string_size(option.display, font_size).width + offset);
 		}
 	}
 
@@ -2873,7 +2885,7 @@ void CodeEdit::_filter_code_completion_candidates() {
 		return;
 	}
 
-	code_completion_longest_line = MIN(max_width, code_completion_max_width);
+	code_completion_longest_line = MIN(max_width, code_completion_max_width * font_size);
 	code_completion_current_selected = 0;
 	code_completion_active = true;
 	update();
