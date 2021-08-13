@@ -357,11 +357,13 @@ public:
 		virtual DataType get_datatype() const { return datatype_cache; }
 		virtual String get_datatype_name() const { return String(struct_name); }
 		bool is_const;
+		bool is_local;
 
 		VariableNode() :
 				Node(TYPE_VARIABLE),
 				datatype_cache(TYPE_VOID),
-				is_const(false) {}
+				is_const(false),
+				is_local(false) {}
 	};
 
 	struct VariableDeclarationNode : public Node {
@@ -393,6 +395,7 @@ public:
 		Node *call_expression;
 		Node *assign_expression;
 		bool is_const;
+		bool is_local;
 
 		virtual DataType get_datatype() const { return datatype_cache; }
 		virtual String get_datatype_name() const { return String(struct_name); }
@@ -403,7 +406,8 @@ public:
 				index_expression(nullptr),
 				call_expression(nullptr),
 				assign_expression(nullptr),
-				is_const(false) {}
+				is_const(false),
+				is_local(false) {}
 	};
 
 	struct ArrayConstructNode : public Node {
