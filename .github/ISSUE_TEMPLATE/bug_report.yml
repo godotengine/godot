@@ -5,7 +5,7 @@ body:
 - type: markdown
   attributes:
     value: |
-      - Read our [CONTRIBUTING.md guide](CONTRIBUTING.md#reporting-bugs) on reporting bugs.
+      - Read our [CONTRIBUTING.md guide](https://github.com/godotengine/godot/blob/master/CONTRIBUTING.md#reporting-bugs) on reporting bugs.
       - Write a descriptive issue title above.
       - Search [open](https://github.com/godotengine/godot/issues) and [closed](https://github.com/godotengine/godot/issues?q=is%3Aissue+is%3Aclosed) issues to ensure it has not already been reported.
       - Verify that you are using a [supported Godot version](https://docs.godotengine.org/en/stable/about/release_policy.html).
