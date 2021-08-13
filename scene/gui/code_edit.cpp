@@ -2918,7 +2918,10 @@ void CodeEdit::_text_changed() {
 	while (lc /= 10) {
 		line_number_digits++;
 	}
-	set_gutter_width(line_number_gutter, (line_number_digits + 1) * font->get_char_size('0', 0, font_size).width);
+
+	if (font.is_valid()) {
+		set_gutter_width(line_number_gutter, (line_number_digits + 1) * font->get_char_size('0', 0, font_size).width);
+	}
 
 	lc = get_line_count();
 	int line_change_size = (lines_edited_to - lines_edited_from);
