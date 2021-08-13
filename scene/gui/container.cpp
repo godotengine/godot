@@ -134,7 +134,7 @@ void Container::fit_child_in_rect(Control *p_child, const Rect2 &p_rect) {
 	p_child->set_scale(Vector2(1, 1));
 }
 
-void Container::queue_sort(bool p_ignore_sort_disabled) {
+void Container::queue_sort(bool p_ignore_child_manipulation_disabled) {
 	if (!is_inside_tree()) {
 		return;
 	}
@@ -143,7 +143,7 @@ void Container::queue_sort(bool p_ignore_sort_disabled) {
 		return;
 	}
 
-	MessageQueue::get_singleton()->push_call(this, "_sort_children", sort_disabled && !p_ignore_sort_disabled);
+	MessageQueue::get_singleton()->push_call(this, "_sort_children", child_manipulation_disabled && !p_ignore_child_manipulation_disabled);
 	pending_sort = true;
 }
 
@@ -179,23 +179,23 @@ String Container::get_configuration_warning() const {
 	return warning;
 }
 
-void Container::set_sort_disabled(bool p_disabled) {
-	sort_disabled = p_disabled;
+void Container::set_child_manipulation_disabled(bool p_disabled) {
+	child_manipulation_disabled = p_disabled;
 }
 
-bool Container::is_sort_disabled() const {
-	return sort_disabled;
+bool Container::is_child_manipulation_disabled() const {
+	return child_manipulation_disabled;
 }
 
 void Container::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_sort_children"), &Container::_sort_children);
 	ClassDB::bind_method(D_METHOD("_child_minsize_changed"), &Container::_child_minsize_changed);
-	ClassDB::bind_method(D_METHOD("queue_sort", "ignore_sort_disabled"), &Container::queue_sort, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("queue_sort", "ignore_child_manipulation_disabled"), &Container::queue_sort, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("fit_child_in_rect", "child", "rect"), &Container::fit_child_in_rect);
-	ClassDB::bind_method(D_METHOD("set_sort_disabled", "disabled"), &Container::set_sort_disabled);
-	ClassDB::bind_method(D_METHOD("is_sort_disabled"), &Container::is_sort_disabled);
+	ClassDB::bind_method(D_METHOD("set_child_manipulation_disabled", "disabled"), &Container::set_child_manipulation_disabled);
+	ClassDB::bind_method(D_METHOD("is_child_manipulation_disabled"), &Container::is_child_manipulation_disabled);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sort_disabled"), "set_sort_disabled", "is_sort_disabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "child_manipulation_disabled"), "set_child_manipulation_disabled", "is_child_manipulation_disabled");
 
 	BIND_CONSTANT(NOTIFICATION_SORT_CHILDREN);
 	ADD_SIGNAL(MethodInfo("sort_children"));
@@ -203,5 +203,5 @@ void Container::_bind_methods() {
 
 Container::Container() {
 	pending_sort = false;
-	sort_disabled = false;
+	child_manipulation_disabled = false;
 }

@@ -41,7 +41,7 @@ class Container : public Control {
 	void _child_minsize_changed();
 
 protected:
-	void queue_sort(bool p_ignore_sort_disabled = false);
+	void queue_sort(bool p_ignore_child_manipulation_disabled = false);
 	virtual void add_child_notify(Node *p_child);
 	virtual void move_child_notify(Node *p_child);
 	virtual void remove_child_notify(Node *p_child);
@@ -50,7 +50,7 @@ protected:
 	static void _bind_methods();
 
 private:
-	bool sort_disabled = false;
+	bool child_manipulation_disabled = false;
 
 public:
 	enum {
@@ -61,8 +61,8 @@ public:
 
 	virtual String get_configuration_warning() const;
 
-	void set_sort_disabled(bool p_disabled);
-	bool is_sort_disabled() const;
+	void set_child_manipulation_disabled(bool p_disabled);
+	bool is_child_manipulation_disabled() const;
 
 	Container();
 };
