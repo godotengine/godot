@@ -363,6 +363,15 @@ int OS_Unix::get_process_id() const {
 	return getpid();
 };
 
+bool OS_Unix::is_process_running(const ProcessID &p_pid) const {
+	int status = 0;
+	if (waitpid(p_pid, &status, WNOHANG) != 0) {
+		return false;
+	}
+
+	return true;
+}
+
 bool OS_Unix::has_environment(const String &p_var) const {
 	return getenv(p_var.utf8().get_data()) != nullptr;
 }

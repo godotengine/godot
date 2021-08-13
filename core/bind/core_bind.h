@@ -249,6 +249,7 @@ public:
 	Error kill(int p_pid);
 	Error shell_open(String p_uri);
 
+	bool is_process_running(int p_pid) const;
 	int get_process_id() const;
 
 	bool has_environment(const String &p_var) const;
