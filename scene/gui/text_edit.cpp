@@ -1110,20 +1110,37 @@ void TextEdit::_notification(int p_what) {
 												t_caret.size.y = h;
 											}
 											t_caret.position += Vector2(char_margin + ofs_x, ofs_y);
+											draw_rect(t_caret, caret_color, overtype_mode);
 
-											draw_rect(t_caret, caret_color, false);
+											if (l_caret != Rect2() && l_dir != t_dir) {
+												l_caret.position += Vector2(char_margin + ofs_x, ofs_y);
+												l_caret.size.x = caret_width;
+												draw_rect(l_caret, caret_color * Color(1, 1, 1, 0.5));
+											}
 										} else { // End of the line.
-											if (overtype_mode) {
-												l_caret.position.y = TS->shaped_text_get_descent(rid);
+											if (gl_size > 0) {
+												// Adjust for actual line dimensions.
+												if (overtype_mode) {
+													l_caret.position.y = TS->shaped_text_get_descent(rid);
+													l_caret.size.y = caret_width;
+												} else {
+													l_caret.position.y = -TS->shaped_text_get_ascent(rid);
+													l_caret.size.y = h;
+												}
+											} else if (overtype_mode) {
+												l_caret.position.y += l_caret.size.y;
 												l_caret.size.y = caret_width;
+											}
+											if (l_caret.position.x >= TS->shaped_text_get_size(rid).x) {
+												l_caret.size.x = font->get_char_size('m', 0, font_size).x;
 											} else {
-												l_caret.position.y = -TS->shaped_text_get_ascent(rid);
-												l_caret.size.y = h;
+												l_caret.size.x = 3 * caret_width;
 											}
 											l_caret.position += Vector2(char_margin + ofs_x, ofs_y);
-											l_caret.size.x = font->get_char_size('M', 0, font_size).x;
-
-											draw_rect(l_caret, caret_color, false);
+											if (l_dir == TextServer::DIRECTION_RTL) {
+												l_caret.position.x -= l_caret.size.x;
+											}
+											draw_rect(l_caret, caret_color, overtype_mode);
 										}
 									} else {
 										// Normal caret.
