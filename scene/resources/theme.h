@@ -187,6 +187,7 @@ public:
 
 	void copy_default_theme();
 	void copy_theme(const Ref<Theme> &p_other);
+	void merge_with(const Ref<Theme> &p_other);
 	void clear();
 
 	Theme();

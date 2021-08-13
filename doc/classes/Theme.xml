@@ -275,6 +275,14 @@
 				Returns [code]false[/code] if the theme does not have [code]node_type[/code].
 			</description>
 		</method>
+		<method name="merge_with">
+			<return type="void" />
+			<argument index="0" name="other" type="Theme" />
+			<description>
+				Adds missing and overrides existing definitions with values from the [code]other[/code] [Theme].
+				[b]Note:[/b] This modifies the current theme. If you want to merge two themes together without modifying either one, create a new empty theme and merge the other two into it one after another.
+			</description>
+		</method>
 		<method name="rename_color">
 			<return type="void" />
 			<argument index="0" name="old_name" type="String" />
