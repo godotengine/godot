@@ -32,7 +32,6 @@
 
 #include "collision_object_3d.h"
 #include "core/math/geometry_2d.h"
-#include "scene/resources/concave_polygon_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
 
 void CollisionPolygon3D::_build_polygon() {

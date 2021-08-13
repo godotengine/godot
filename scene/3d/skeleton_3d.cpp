@@ -30,12 +30,8 @@
 
 #include "skeleton_3d.h"
 
-#include "core/config/engine.h"
-#include "core/config/project_settings.h"
 #include "core/object/message_queue.h"
-#include "core/variant/type_info.h"
 #include "scene/3d/physics_body_3d.h"
-#include "scene/resources/surface_tool.h"
 #include "scene/scene_string_names.h"
 
 void SkinReference::_skin_changed() {

@@ -31,8 +31,6 @@
 #ifndef VOXEL_LIGHT_BAKER_H
 #define VOXEL_LIGHT_BAKER_H
 
-#include "core/math/vector3i.h"
-#include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/multimesh.h"
 
 class Voxelizer {

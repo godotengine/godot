@@ -30,14 +30,8 @@
 
 #include "physics_body_3d.h"
 
-#include "core/config/engine.h"
 #include "core/core_string_names.h"
-#include "core/object/class_db.h"
-#include "core/templates/list.h"
-#include "core/templates/rid.h"
-#include "scene/3d/collision_shape_3d.h"
 #include "scene/scene_string_names.h"
-#include "servers/navigation_server_3d.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/plugins/node_3d_editor_plugin.h"

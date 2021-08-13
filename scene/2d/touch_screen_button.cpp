@@ -30,11 +30,8 @@
 
 #include "touch_screen_button.h"
 
-#include "core/input/input.h"
-#include "core/input/input_map.h"
-#include "core/os/os.h"
 #include "scene/main/window.h"
-#
+
 void TouchScreenButton::set_texture(const Ref<Texture2D> &p_texture) {
 	texture = p_texture;
 	update();

@@ -30,8 +30,6 @@
 
 #include "timer.h"
 
-#include "core/config/engine.h"
-
 void Timer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {

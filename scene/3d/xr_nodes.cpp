@@ -30,9 +30,8 @@
 
 #include "xr_nodes.h"
 
-#include "core/input/input.h"
+#include "scene/main/viewport.h"
 #include "servers/xr/xr_interface.h"
-#include "servers/xr_server.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -30,10 +30,6 @@
 
 #include "visible_on_screen_notifier_3d.h"
 
-#include "core/config/engine.h"
-#include "scene/3d/camera_3d.h"
-#include "scene/3d/physics_body_3d.h"
-#include "scene/animation/animation_player.h"
 #include "scene/scene_string_names.h"
 
 void VisibleOnScreenNotifier3D::_visibility_enter() {

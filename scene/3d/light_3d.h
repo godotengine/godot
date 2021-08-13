@@ -32,8 +32,6 @@
 #define LIGHT_3D_H
 
 #include "scene/3d/visual_instance_3d.h"
-#include "scene/resources/texture.h"
-#include "servers/rendering_server.h"
 
 class Light3D : public VisualInstance3D {
 	GDCLASS(Light3D, VisualInstance3D);

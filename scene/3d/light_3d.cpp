@@ -30,10 +30,6 @@
 
 #include "light_3d.h"
 
-#include "core/config/engine.h"
-#include "core/config/project_settings.h"
-#include "scene/resources/surface_tool.h"
-
 bool Light3D::_can_gizmo_scale() const {
 	return false;
 }

@@ -31,10 +31,7 @@
 #ifndef VISUAL_INSTANCE_H
 #define VISUAL_INSTANCE_H
 
-#include "core/math/face3.h"
-#include "core/templates/rid.h"
 #include "scene/3d/node_3d.h"
-#include "scene/resources/material.h"
 
 class VisualInstance3D : public Node3D {
 	GDCLASS(VisualInstance3D, Node3D);

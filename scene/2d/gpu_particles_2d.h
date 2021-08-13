@@ -31,9 +31,7 @@
 #ifndef PARTICLES_2D_H
 #define PARTICLES_2D_H
 
-#include "core/templates/rid.h"
 #include "scene/2d/node_2d.h"
-#include "scene/resources/texture.h"
 
 class GPUParticles2D : public Node2D {
 private:

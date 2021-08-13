@@ -31,26 +31,23 @@
 #ifndef VIEWPORT_H
 #define VIEWPORT_H
 
-#include "core/math/transform_2d.h"
-#include "core/templates/pair.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
-#include "scene/resources/world_2d.h"
-#include "servers/display_server.h"
-#include "servers/rendering_server.h"
 
 class Camera3D;
-class Camera2D;
+class CollisionObject3D;
 class Listener3D;
-class Control;
+class World3D;
+
+class Camera2D;
 class CanvasItem;
 class CanvasLayer;
-class Panel;
+class Control;
 class Label;
-class Timer;
-class Viewport;
-class CollisionObject3D;
 class SceneTreeTimer;
+class Viewport;
+class Window;
+class World2D;
 
 class ViewportTexture : public Texture2D {
 	GDCLASS(ViewportTexture, Texture2D);

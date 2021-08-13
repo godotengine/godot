@@ -31,8 +31,6 @@
 #include "tile_map.h"
 
 #include "core/io/marshalls.h"
-#include "core/math/geometry_2d.h"
-#include "core/os/os.h"
 
 #include "servers/navigation_server_2d.h"
 

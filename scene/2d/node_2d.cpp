@@ -30,11 +30,6 @@
 
 #include "node_2d.h"
 
-#include "core/object/message_queue.h"
-#include "scene/gui/control.h"
-#include "scene/main/window.h"
-#include "servers/rendering_server.h"
-
 #ifdef TOOLS_ENABLED
 Dictionary Node2D::_edit_get_state() const {
 	Dictionary state;

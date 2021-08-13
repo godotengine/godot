@@ -30,7 +30,6 @@
 
 #include "animated_sprite_2d.h"
 
-#include "core/os/os.h"
 #include "scene/main/viewport.h"
 #include "scene/scene_string_names.h"
 

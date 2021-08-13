@@ -31,10 +31,8 @@
 #include "window.h"
 
 #include "core/debugger/engine_debugger.h"
-#include "core/os/keyboard.h"
 #include "core/string/translation.h"
 #include "scene/gui/control.h"
-#include "scene/resources/font.h"
 #include "scene/scene_string_names.h"
 
 void Window::set_title(const String &p_title) {

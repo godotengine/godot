@@ -32,8 +32,8 @@
 
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/gpu_particles_3d.h"
+#include "scene/main/viewport.h"
 #include "scene/resources/particles_material.h"
-#include "servers/rendering_server.h"
 
 AABB CPUParticles3D::get_aabb() const {
 	return AABB();

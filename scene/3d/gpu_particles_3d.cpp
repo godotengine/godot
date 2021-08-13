@@ -30,10 +30,7 @@
 
 #include "gpu_particles_3d.h"
 
-#include "core/os/os.h"
 #include "scene/resources/particles_material.h"
-
-#include "servers/rendering_server.h"
 
 AABB GPUParticles3D::get_aabb() const {
 	return AABB();
@@ -487,6 +484,7 @@ void GPUParticles3D::set_skin(const Ref<Skin> &p_skin) {
 	skin = p_skin;
 	_skinning_changed();
 }
+
 Ref<Skin> GPUParticles3D::get_skin() const {
 	return skin;
 }

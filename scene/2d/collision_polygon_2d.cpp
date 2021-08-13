@@ -31,7 +31,6 @@
 #include "collision_polygon_2d.h"
 
 #include "collision_object_2d.h"
-#include "core/config/engine.h"
 #include "core/math/geometry_2d.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"

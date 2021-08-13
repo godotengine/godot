@@ -32,7 +32,6 @@
 #define NODE_3D_H
 
 #include "scene/main/node.h"
-#include "scene/main/scene_tree.h"
 
 class Node3DGizmo : public RefCounted {
 	GDCLASS(Node3DGizmo, RefCounted);
