@@ -2587,7 +2587,10 @@ RID CameraTexture::get_rid() const {
 	if (feed.is_valid()) {
 		return feed->get_texture(which_feed);
 	} else {
-		return RID();
+		if (_texture.is_null()) {
+			_texture = RenderingServer::get_singleton()->texture_2d_placeholder_create();
+		}
+		return _texture;
 	}
 }
 
@@ -2643,5 +2646,7 @@ bool CameraTexture::get_camera_active() const {
 CameraTexture::CameraTexture() {}
 
 CameraTexture::~CameraTexture() {
-	// nothing to do here yet
+	if (_texture.is_valid()) {
+		RenderingServer::get_singleton()->free(_texture);
+	}
 }
