@@ -193,16 +193,16 @@ void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_
 	};
 
 	static const MacOSIconInfo icon_infos[] = {
-		{ "ic10", "", true, 1024 }, //1024x1024 32-bit PNG and 512x512@2x 32-bit "retina" PNG
+		{ "ic10", "", true, 1024 }, //1024×1024 32-bit PNG and 512×512@2x 32-bit "retina" PNG
 		{ "ic09", "", true, 512 }, //512×512 32-bit PNG
-		{ "ic14", "", true, 512 }, //256x256@2x 32-bit "retina" PNG
+		{ "ic14", "", true, 512 }, //256×256@2x 32-bit "retina" PNG
 		{ "ic08", "", true, 256 }, //256×256 32-bit PNG
-		{ "ic13", "", true, 256 }, //128x128@2x 32-bit "retina" PNG
-		{ "ic07", "", true, 128 }, //128x128 32-bit PNG
-		{ "ic12", "", true, 64 }, //32x32@2x 32-bit "retina" PNG
-		{ "ic11", "", true, 32 }, //16x16@2x 32-bit "retina" PNG
-		{ "il32", "l8mk", false, 32 }, //32x32 24-bit RLE + 8-bit uncompressed mask
-		{ "is32", "s8mk", false, 16 } //16x16 24-bit RLE + 8-bit uncompressed mask
+		{ "ic13", "", true, 256 }, //128×128@2x 32-bit "retina" PNG
+		{ "ic07", "", true, 128 }, //128×128 32-bit PNG
+		{ "ic12", "", true, 64 }, //32×32@2× 32-bit "retina" PNG
+		{ "ic11", "", true, 32 }, //16×16@2× 32-bit "retina" PNG
+		{ "il32", "l8mk", false, 32 }, //32×32 24-bit RLE + 8-bit uncompressed mask
+		{ "is32", "s8mk", false, 16 } //16×16 24-bit RLE + 8-bit uncompressed mask
 	};
 
 	for (uint64_t i = 0; i < (sizeof(icon_infos) / sizeof(icon_infos[0])); ++i) {
