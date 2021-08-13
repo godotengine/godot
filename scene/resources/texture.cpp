@@ -78,7 +78,7 @@ void Texture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_data"), &Texture::get_data);
 
 	ADD_GROUP("Flags", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Mipmaps,Repeat,Filter,Anisotropic Linear,Convert to Linear,Mirrored Repeat,Video Surface"), "set_flags", "get_flags");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Mipmaps,Repeat,Filter,Anisotropic Filter,Convert to Linear,Mirrored Repeat,Video Surface"), "set_flags", "get_flags");
 	ADD_GROUP("", "");
 
 	BIND_ENUM_CONSTANT(FLAGS_DEFAULT);
@@ -2381,7 +2381,6 @@ void TextureLayered::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_height"), &TextureLayered::get_height);
 	ClassDB::bind_method(D_METHOD("get_depth"), &TextureLayered::get_depth);
 
-	ClassDB::bind_method(D_METHOD("create", "width", "height", "depth", "format", "flags"), &TextureLayered::create, DEFVAL(FLAGS_DEFAULT));
 	ClassDB::bind_method(D_METHOD("set_layer_data", "image", "layer"), &TextureLayered::set_layer_data);
 	ClassDB::bind_method(D_METHOD("get_layer_data", "layer"), &TextureLayered::get_layer_data);
 	ClassDB::bind_method(D_METHOD("set_data_partial", "image", "x_offset", "y_offset", "layer", "mipmap"), &TextureLayered::set_data_partial, DEFVAL(0));
@@ -2389,19 +2388,21 @@ void TextureLayered::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &TextureLayered::_set_data);
 	ClassDB::bind_method(D_METHOD("_get_data"), &TextureLayered::_get_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Mipmaps,Repeat,Filter"), "set_flags", "get_flags");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Mipmaps,Repeat,Filter,Anisotropic Filter"), "set_flags", "get_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_data", "_get_data");
 
+	BIND_ENUM_CONSTANT(FLAGS_DEFAULT_TEXTURE_ARRAY);
+	BIND_ENUM_CONSTANT(FLAGS_DEFAULT_TEXTURE_3D);
 	BIND_ENUM_CONSTANT(FLAG_MIPMAPS);
 	BIND_ENUM_CONSTANT(FLAG_REPEAT);
 	BIND_ENUM_CONSTANT(FLAG_FILTER);
-	BIND_ENUM_CONSTANT(FLAGS_DEFAULT);
+	BIND_ENUM_CONSTANT(FLAG_ANISOTROPIC_FILTER);
 }
 
 TextureLayered::TextureLayered(bool p_3d) {
 	is_3d = p_3d;
+	flags = p_3d ? FLAGS_DEFAULT_TEXTURE_3D : FLAGS_DEFAULT_TEXTURE_ARRAY;
 	format = Image::FORMAT_MAX;
-	flags = FLAGS_DEFAULT;
 
 	width = 0;
 	height = 0;
@@ -2414,6 +2415,14 @@ TextureLayered::~TextureLayered() {
 	if (texture.is_valid()) {
 		VS::get_singleton()->free(texture);
 	}
+}
+
+void Texture3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("create", "width", "height", "depth", "format", "flags"), &Texture3D::create, DEFVAL(FLAGS_DEFAULT_TEXTURE_3D));
+}
+
+void TextureArray::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("create", "width", "height", "depth", "format", "flags"), &TextureArray::create, DEFVAL(FLAGS_DEFAULT_TEXTURE_ARRAY));
 }
 
 RES ResourceFormatLoaderTextureLayered::load(const String &p_path, const String &p_original_path, Error *r_error) {
