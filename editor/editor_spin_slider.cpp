@@ -188,156 +188,162 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void EditorSpinSlider::_notification(int p_what) {
-	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_OUT ||
-			p_what == MainLoop::NOTIFICATION_WM_FOCUS_IN ||
-			p_what == NOTIFICATION_EXIT_TREE) {
-		if (grabbing_spinner) {
+void EditorSpinSlider::_draw_spin_slider() {
+	updown_offset = -1;
+
+	Ref<StyleBox> sb = get_stylebox("normal", "LineEdit");
+	if (!flat) {
+		draw_style_box(sb, Rect2(Vector2(), get_size()));
+	}
+	Ref<Font> font = get_font("font", "LineEdit");
+	int sep_base = 4 * EDSCALE;
+	int sep = sep_base + sb->get_offset().x; //make it have the same margin on both sides, looks better
+
+	int string_width = font->get_string_size(label).width;
+	int number_width = get_size().width - sb->get_minimum_size().width - string_width - sep;
+
+	Ref<Texture> updown = get_icon("updown", "SpinBox");
+
+	if (get_step() == 1) {
+		number_width -= updown->get_width();
+	}
+
+	String numstr = get_text_value();
+
+	int vofs = (get_size().height - font->get_height()) / 2 + font->get_ascent();
+
+	Color fc = get_color("font_color", "LineEdit");
+	Color lc;
+	if (use_custom_label_color) {
+		lc = custom_label_color;
+	} else {
+		lc = fc;
+	}
+
+	if (flat && label != String()) {
+		Color label_bg_color = get_color("dark_color_3", "Editor");
+		draw_rect(Rect2(Vector2(), Vector2(sb->get_offset().x * 2 + string_width, get_size().height)), label_bg_color);
+	}
+
+	if (has_focus()) {
+		Ref<StyleBox> focus = get_stylebox("focus", "LineEdit");
+		draw_style_box(focus, Rect2(Vector2(), get_size()));
+	}
+
+	draw_string(font, Vector2(Math::round(sb->get_offset().x), vofs), label, lc * Color(1, 1, 1, 0.5));
+
+	draw_string(font, Vector2(Math::round(sb->get_offset().x + string_width + sep), vofs), numstr, fc, number_width);
+
+	if (get_step() == 1) {
+		Ref<Texture> updown2 = get_icon("updown", "SpinBox");
+		int updown_vofs = (get_size().height - updown2->get_height()) / 2;
+		updown_offset = get_size().width - sb->get_margin(MARGIN_RIGHT) - updown2->get_width();
+		Color c(1, 1, 1);
+		if (hover_updown) {
+			c *= Color(1.2, 1.2, 1.2);
+		}
+		draw_texture(updown2, Vector2(updown_offset, updown_vofs), c);
+		if (grabber->is_visible()) {
 			grabber->hide();
-			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
-			grabbing_spinner = false;
-			grabbing_spinner_attempt = false;
 		}
-	}
+	} else if (!hide_slider) {
+		int grabber_w = 4 * EDSCALE;
+		int width = get_size().width - sb->get_minimum_size().width - grabber_w;
+		int ofs = sb->get_offset().x;
+		int svofs = (get_size().height + vofs) / 2 - 1;
+		Color c = fc;
+		c.a = 0.2;
 
-	if (p_what == NOTIFICATION_READY) {
-		// Add a left margin to the stylebox to make the number align with the Label
-		// when it's edited. The LineEdit "focus" stylebox uses the "normal" stylebox's
-		// default margins.
-		Ref<StyleBoxFlat> stylebox =
-				EditorNode::get_singleton()->get_theme_base()->get_stylebox("normal", "LineEdit")->duplicate();
-		// EditorSpinSliders with a label have more space on the left, so add an
-		// higher margin to match the location where the text begins.
-		// The margin values below were determined by empirical testing.
-		stylebox->set_default_margin(MARGIN_LEFT, (get_label() != String() ? 23 : 16) * EDSCALE);
-		value_input->add_style_override("normal", stylebox);
-	}
+		draw_rect(Rect2(ofs, svofs + 1, width, 2 * EDSCALE), c);
+		int gofs = get_as_ratio() * width;
+		c.a = 0.9;
+		Rect2 grabber_rect = Rect2(ofs + gofs, svofs + 1, grabber_w, 2 * EDSCALE);
+		draw_rect(grabber_rect, c);
 
-	if (p_what == NOTIFICATION_DRAW) {
-		updown_offset = -1;
-
-		Ref<StyleBox> sb = get_stylebox("normal", "LineEdit");
-		if (!flat) {
-			draw_style_box(sb, Rect2(Vector2(), get_size()));
-		}
-		Ref<Font> font = get_font("font", "LineEdit");
-		int sep_base = 4 * EDSCALE;
-		int sep = sep_base + sb->get_offset().x; //make it have the same margin on both sides, looks better
-
-		int string_width = font->get_string_size(label).width;
-		int number_width = get_size().width - sb->get_minimum_size().width - string_width - sep;
-
-		Ref<Texture> updown = get_icon("updown", "SpinBox");
-
-		if (get_step() == 1) {
-			number_width -= updown->get_width();
-		}
-
-		String numstr = get_text_value();
-
-		int vofs = (get_size().height - font->get_height()) / 2 + font->get_ascent();
-
-		Color fc = get_color("font_color", "LineEdit");
-		Color lc;
-		if (use_custom_label_color) {
-			lc = custom_label_color;
-		} else {
-			lc = fc;
-		}
-
-		if (flat && label != String()) {
-			Color label_bg_color = get_color("dark_color_3", "Editor");
-			draw_rect(Rect2(Vector2(), Vector2(sb->get_offset().x * 2 + string_width, get_size().height)), label_bg_color);
-		}
-
-		if (has_focus()) {
-			Ref<StyleBox> focus = get_stylebox("focus", "LineEdit");
-			draw_style_box(focus, Rect2(Vector2(), get_size()));
-		}
-
-		draw_string(font, Vector2(Math::round(sb->get_offset().x), vofs), label, lc * Color(1, 1, 1, 0.5));
-
-		draw_string(font, Vector2(Math::round(sb->get_offset().x + string_width + sep), vofs), numstr, fc, number_width);
-
-		if (get_step() == 1) {
-			Ref<Texture> updown2 = get_icon("updown", "SpinBox");
-			int updown_vofs = (get_size().height - updown2->get_height()) / 2;
-			updown_offset = get_size().width - sb->get_margin(MARGIN_RIGHT) - updown2->get_width();
-			Color c(1, 1, 1);
-			if (hover_updown) {
-				c *= Color(1.2, 1.2, 1.2);
-			}
-			draw_texture(updown2, Vector2(updown_offset, updown_vofs), c);
-			if (grabber->is_visible()) {
+		bool display_grabber = (mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !value_input->is_visible();
+		if (grabber->is_visible() != display_grabber) {
+			if (display_grabber) {
+				grabber->show();
+			} else {
 				grabber->hide();
 			}
-		} else if (!hide_slider) {
-			int grabber_w = 4 * EDSCALE;
-			int width = get_size().width - sb->get_minimum_size().width - grabber_w;
-			int ofs = sb->get_offset().x;
-			int svofs = (get_size().height + vofs) / 2 - 1;
-			Color c = fc;
-			c.a = 0.2;
+		}
 
-			draw_rect(Rect2(ofs, svofs + 1, width, 2 * EDSCALE), c);
-			int gofs = get_as_ratio() * width;
-			c.a = 0.9;
-			Rect2 grabber_rect = Rect2(ofs + gofs, svofs + 1, grabber_w, 2 * EDSCALE);
-			draw_rect(grabber_rect, c);
-
-			bool display_grabber = (mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !value_input->is_visible();
-			if (grabber->is_visible() != display_grabber) {
-				if (display_grabber) {
-					grabber->show();
-				} else {
-					grabber->hide();
-				}
+		if (display_grabber) {
+			Ref<Texture> grabber_tex;
+			if (mouse_over_grabber) {
+				grabber_tex = get_icon("grabber_highlight", "HSlider");
+			} else {
+				grabber_tex = get_icon("grabber", "HSlider");
 			}
 
-			if (display_grabber) {
-				Ref<Texture> grabber_tex;
-				if (mouse_over_grabber) {
-					grabber_tex = get_icon("grabber_highlight", "HSlider");
-				} else {
-					grabber_tex = get_icon("grabber", "HSlider");
-				}
-
-				if (grabber->get_texture() != grabber_tex) {
-					grabber->set_texture(grabber_tex);
-				}
-
-				Vector2 scale = get_global_transform_with_canvas().get_scale();
-				grabber->set_scale(scale);
-				grabber->set_size(Size2(0, 0));
-				grabber->set_position(get_global_position() + (grabber_rect.position + grabber_rect.size * 0.5 - grabber->get_size() * 0.5) * scale);
-
-				if (mousewheel_over_grabber) {
-					Input::get_singleton()->warp_mouse_position(grabber->get_position() + grabber_rect.size);
-				}
-
-				grabber_range = width;
+			if (grabber->get_texture() != grabber_tex) {
+				grabber->set_texture(grabber_tex);
 			}
-		}
-	}
 
-	if (p_what == NOTIFICATION_MOUSE_ENTER) {
-		mouse_over_spin = true;
-		update();
-	}
-	if (p_what == NOTIFICATION_MOUSE_EXIT) {
-		mouse_over_spin = false;
-		update();
-	}
-	if (p_what == NOTIFICATION_FOCUS_ENTER) {
-		/* Sorry, I don't like this, it makes navigating the different fields with arrows more difficult.
-		 * Just press enter to edit.
-		 * if (Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT) && !value_input_just_closed) {
-			_focus_entered();
-		}*/
-		if ((Input::get_singleton()->is_action_pressed("ui_focus_next") || Input::get_singleton()->is_action_pressed("ui_focus_prev")) && !value_input_just_closed) {
-			_focus_entered();
+			Vector2 scale = get_global_transform_with_canvas().get_scale();
+			grabber->set_scale(scale);
+			grabber->set_size(Size2(0, 0));
+			grabber->set_position(get_global_position() + (grabber_rect.position + grabber_rect.size * 0.5 - grabber->get_size() * 0.5) * scale);
+
+			if (mousewheel_over_grabber) {
+				Input::get_singleton()->warp_mouse_position(grabber->get_position() + grabber_rect.size);
+			}
+
+			grabber_range = width;
 		}
-		value_input_just_closed = false;
+	}
+}
+
+void EditorSpinSlider::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			// Add a left margin to the stylebox to make the number align with the Label
+			// when it's edited. The LineEdit "focus" stylebox uses the "normal" stylebox's
+			// default margins.
+			Ref<StyleBox> stylebox = get_stylebox("normal", "LineEdit")->duplicate();
+			// EditorSpinSliders with a label have more space on the left, so add an
+			// higher margin to match the location where the text begins.
+			// The margin values below were determined by empirical testing.
+			stylebox->set_default_margin(MARGIN_LEFT, (get_label() != String() ? 23 : 16) * EDSCALE);
+			value_input->add_style_override("normal", stylebox);
+		} break;
+
+		case NOTIFICATION_DRAW:
+			_draw_spin_slider();
+			break;
+
+		case MainLoop::NOTIFICATION_WM_FOCUS_IN:
+		case MainLoop::NOTIFICATION_WM_FOCUS_OUT:
+		case NOTIFICATION_EXIT_TREE:
+			if (grabbing_spinner) {
+				grabber->hide();
+				Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+				grabbing_spinner = false;
+				grabbing_spinner_attempt = false;
+			}
+			break;
+
+		case NOTIFICATION_MOUSE_ENTER:
+			mouse_over_spin = true;
+			update();
+			break;
+		case NOTIFICATION_MOUSE_EXIT:
+			mouse_over_spin = false;
+			update();
+			break;
+		case NOTIFICATION_FOCUS_ENTER:
+			/* Sorry, I don't like this, it makes navigating the different fields with arrows more difficult.
+			* Just press enter to edit.
+			* if (Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT) && !value_input_just_closed) {
+				_focus_entered();
+			}*/
+			if ((Input::get_singleton()->is_action_pressed("ui_focus_next") || Input::get_singleton()->is_action_pressed("ui_focus_prev")) && !value_input_just_closed) {
+				_focus_entered();
+			}
+			value_input_just_closed = false;
+			break;
 	}
 }
 
