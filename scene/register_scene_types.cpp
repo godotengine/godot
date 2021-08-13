@@ -557,7 +557,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeIntOp);
 	GDREGISTER_CLASS(VisualShaderNodeVectorOp);
 	GDREGISTER_CLASS(VisualShaderNodeColorOp);
-	GDREGISTER_CLASS(VisualShaderNodeTransformMult);
+	GDREGISTER_CLASS(VisualShaderNodeTransformOp);
 	GDREGISTER_CLASS(VisualShaderNodeTransformVecMult);
 	GDREGISTER_CLASS(VisualShaderNodeFloatFunc);
 	GDREGISTER_CLASS(VisualShaderNodeIntFunc);
@@ -983,6 +983,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("VisualShaderNodeVectorScalarSmoothStep", "VisualShaderNodeSmoothStep");
 	ClassDB::add_compatibility_class("VisualShaderNodeVectorScalarStep", "VisualShaderNodeStep");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarSwitch", "VisualShaderNodeSwitch");
+	ClassDB::add_compatibility_class("VisualShaderNodeScalarTransformMult", "VisualShaderNodeTransformOp");
 	ClassDB::add_compatibility_class("World", "World3D");
 	ClassDB::add_compatibility_class("StreamTexture", "StreamTexture2D");
 	ClassDB::add_compatibility_class("Light2D", "PointLight2D");
