@@ -373,26 +373,38 @@ void main() {
 //use medium precision for floats on mobile.
 
 precision mediump float;
+precision highp int;
 
 /* Specialization Constants */
 
-/* Specialization Constants (Toggles) */
+#if !defined(MODE_RENDER_DEPTH)
 
-layout(constant_id = 0) const bool sc_use_forward_gi = false;
-layout(constant_id = 1) const bool sc_use_light_projector = false;
-layout(constant_id = 2) const bool sc_use_light_soft_shadows = false;
-layout(constant_id = 3) const bool sc_use_directional_soft_shadows = false;
+#if !defined(MODE_UNSHADED)
 
-/* Specialization Constants (Values) */
+layout(constant_id = 0) const bool sc_use_light_projector = false;
+layout(constant_id = 1) const bool sc_use_light_soft_shadows = false;
+layout(constant_id = 2) const bool sc_use_directional_soft_shadows = false;
 
-layout(constant_id = 6) const uint sc_soft_shadow_samples = 4;
-layout(constant_id = 7) const uint sc_penumbra_shadow_samples = 4;
+layout(constant_id = 3) const uint sc_soft_shadow_samples = 4;
+layout(constant_id = 4) const uint sc_penumbra_shadow_samples = 4;
 
-layout(constant_id = 8) const uint sc_directional_soft_shadow_samples = 4;
-layout(constant_id = 9) const uint sc_directional_penumbra_shadow_samples = 4;
+layout(constant_id = 5) const uint sc_directional_soft_shadow_samples = 4;
+layout(constant_id = 6) const uint sc_directional_penumbra_shadow_samples = 4;
 
-layout(constant_id = 10) const bool sc_decal_use_mipmaps = true;
-layout(constant_id = 11) const bool sc_projector_use_mipmaps = true;
+layout(constant_id = 8) const bool sc_projector_use_mipmaps = true;
+
+layout(constant_id = 9) const bool sc_disable_omni_lights = false;
+layout(constant_id = 10) const bool sc_disable_spot_lights = false;
+layout(constant_id = 11) const bool sc_disable_reflection_probes = false;
+layout(constant_id = 12) const bool sc_disable_directional_lights = false;
+
+#endif //!MODE_UNSHADED
+
+layout(constant_id = 7) const bool sc_decal_use_mipmaps = true;
+layout(constant_id = 13) const bool sc_disable_decals = false;
+layout(constant_id = 14) const bool sc_disable_fog = false;
+
+#endif //!MODE_RENDER_DEPTH
 
 /* Include our forward mobile UBOs definitions etc. */
 #include "scene_forward_mobile_inc.glsl"
@@ -735,7 +747,7 @@ void main() {
 	// to maximize VGPR usage
 	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
 
-	if (scene_data.fog_enabled) {
+	if (!sc_disable_fog && scene_data.fog_enabled) {
 		fog = fog_process(vertex);
 	}
 
@@ -753,7 +765,7 @@ void main() {
 	vec3 vertex_ddx = dFdx(vertex);
 	vec3 vertex_ddy = dFdy(vertex);
 
-	{ //Decals
+	if (!sc_disable_decals) { //Decals
 		// must implement
 
 		uint decal_indices = draw_call.decals.x;
@@ -774,25 +786,35 @@ void main() {
 				continue; //out of decal
 			}
 
-			//we need ddx/ddy for mipmaps, so simulate them
-			vec2 ddx = (decals.data[decal_index].xform * vec4(vertex_ddx, 0.0)).xz;
-			vec2 ddy = (decals.data[decal_index].xform * vec4(vertex_ddy, 0.0)).xz;
-
 			float fade = pow(1.0 - (uv_local.y > 0.0 ? uv_local.y : -uv_local.y), uv_local.y > 0.0 ? decals.data[decal_index].upper_fade : decals.data[decal_index].lower_fade);
 
 			if (decals.data[decal_index].normal_fade > 0.0) {
 				fade *= smoothstep(decals.data[decal_index].normal_fade, 1.0, dot(normal_interp, decals.data[decal_index].normal) * 0.5 + 0.5);
 			}
 
+			//we need ddx/ddy for mipmaps, so simulate them
+			vec2 ddx = (decals.data[decal_index].xform * vec4(vertex_ddx, 0.0)).xz;
+			vec2 ddy = (decals.data[decal_index].xform * vec4(vertex_ddy, 0.0)).xz;
+
 			if (decals.data[decal_index].albedo_rect != vec4(0.0)) {
 				//has albedo
-				vec4 decal_albedo = textureGrad(sampler2D(decal_atlas_srgb, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), uv_local.xz * decals.data[decal_index].albedo_rect.zw + decals.data[decal_index].albedo_rect.xy, ddx * decals.data[decal_index].albedo_rect.zw, ddy * decals.data[decal_index].albedo_rect.zw);
+				vec4 decal_albedo;
+				if (sc_decal_use_mipmaps) {
+					decal_albedo = textureGrad(sampler2D(decal_atlas_srgb, decal_sampler), uv_local.xz * decals.data[decal_index].albedo_rect.zw + decals.data[decal_index].albedo_rect.xy, ddx * decals.data[decal_index].albedo_rect.zw, ddy * decals.data[decal_index].albedo_rect.zw);
+				} else {
+					decal_albedo = textureLod(sampler2D(decal_atlas_srgb, decal_sampler), uv_local.xz * decals.data[decal_index].albedo_rect.zw + decals.data[decal_index].albedo_rect.xy, 0.0);
+				}
 				decal_albedo *= decals.data[decal_index].modulate;
 				decal_albedo.a *= fade;
 				albedo = mix(albedo, decal_albedo.rgb, decal_albedo.a * decals.data[decal_index].albedo_mix);
 
 				if (decals.data[decal_index].normal_rect != vec4(0.0)) {
-					vec3 decal_normal = textureGrad(sampler2D(decal_atlas, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), uv_local.xz * decals.data[decal_index].normal_rect.zw + decals.data[decal_index].normal_rect.xy, ddx * decals.data[decal_index].normal_rect.zw, ddy * decals.data[decal_index].normal_rect.zw).xyz;
+					vec3 decal_normal;
+					if (sc_decal_use_mipmaps) {
+						decal_normal = textureGrad(sampler2D(decal_atlas, decal_sampler), uv_local.xz * decals.data[decal_index].normal_rect.zw + decals.data[decal_index].normal_rect.xy, ddx * decals.data[decal_index].normal_rect.zw, ddy * decals.data[decal_index].normal_rect.zw).xyz;
+					} else {
+						decal_normal = textureLod(sampler2D(decal_atlas, decal_sampler), uv_local.xz * decals.data[decal_index].normal_rect.zw + decals.data[decal_index].normal_rect.xy, 0.0).xyz;
+					}
 					decal_normal.xy = decal_normal.xy * vec2(2.0, -2.0) - vec2(1.0, -1.0); //users prefer flipped y normal maps in most authoring software
 					decal_normal.z = sqrt(max(0.0, 1.0 - dot(decal_normal.xy, decal_normal.xy)));
 					//convert to view space, use xzy because y is up
@@ -802,7 +824,12 @@ void main() {
 				}
 
 				if (decals.data[decal_index].orm_rect != vec4(0.0)) {
-					vec3 decal_orm = textureGrad(sampler2D(decal_atlas, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), uv_local.xz * decals.data[decal_index].orm_rect.zw + decals.data[decal_index].orm_rect.xy, ddx * decals.data[decal_index].orm_rect.zw, ddy * decals.data[decal_index].orm_rect.zw).xyz;
+					vec3 decal_orm;
+					if (sc_decal_use_mipmaps) {
+						decal_orm = textureGrad(sampler2D(decal_atlas, decal_sampler), uv_local.xz * decals.data[decal_index].orm_rect.zw + decals.data[decal_index].orm_rect.xy, ddx * decals.data[decal_index].orm_rect.zw, ddy * decals.data[decal_index].orm_rect.zw).xyz;
+					} else {
+						decal_orm = textureLod(sampler2D(decal_atlas, decal_sampler), uv_local.xz * decals.data[decal_index].orm_rect.zw + decals.data[decal_index].orm_rect.xy, 0.0).xyz;
+					}
 					ao = mix(ao, decal_orm.r, decal_albedo.a);
 					roughness = mix(roughness, decal_orm.g, decal_albedo.a);
 					metallic = mix(metallic, decal_orm.b, decal_albedo.a);
@@ -811,7 +838,11 @@ void main() {
 
 			if (decals.data[decal_index].emission_rect != vec4(0.0)) {
 				//emission is additive, so its independent from albedo
-				emission += textureGrad(sampler2D(decal_atlas_srgb, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), uv_local.xz * decals.data[decal_index].emission_rect.zw + decals.data[decal_index].emission_rect.xy, ddx * decals.data[decal_index].emission_rect.zw, ddy * decals.data[decal_index].emission_rect.zw).xyz * decals.data[decal_index].emission_energy * fade;
+				if (sc_decal_use_mipmaps) {
+					emission += textureGrad(sampler2D(decal_atlas_srgb, decal_sampler), uv_local.xz * decals.data[decal_index].emission_rect.zw + decals.data[decal_index].emission_rect.xy, ddx * decals.data[decal_index].emission_rect.zw, ddy * decals.data[decal_index].emission_rect.zw).xyz * decals.data[decal_index].emission_energy * fade;
+				} else {
+					emission += textureLod(sampler2D(decal_atlas_srgb, decal_sampler), uv_local.xz * decals.data[decal_index].emission_rect.zw + decals.data[decal_index].emission_rect.xy, 0.0).xyz * decals.data[decal_index].emission_energy * fade;
+				}
 			}
 		}
 	} //Decals
@@ -951,7 +982,7 @@ void main() {
 
 	// skipping ssao, do we remove ssao totally?
 
-	{ //Reflection probes
+	if (!sc_disable_reflection_probes) { //Reflection probes
 		vec4 reflection_accum = vec4(0.0, 0.0, 0.0, 0.0);
 		vec4 ambient_accum = vec4(0.0, 0.0, 0.0, 0.0);
 
@@ -1017,7 +1048,7 @@ void main() {
 // LIGHTING
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
-	{ //directional light
+	if (!sc_disable_directional_lights) { //directional light
 
 		// Do shadow and lighting in two passes to reduce register pressure
 		uint shadow0 = 0;
@@ -1347,7 +1378,7 @@ void main() {
 		}
 	} //directional light
 
-	{ //omni lights
+	if (!sc_disable_omni_lights) { //omni lights
 		uint light_indices = draw_call.omni_lights.x;
 		for (uint i = 0; i < 8; i++) {
 			uint light_index = light_indices & 0xFF;
@@ -1394,7 +1425,7 @@ void main() {
 		}
 	} //omni lights
 
-	{ //spot lights
+	if (!sc_disable_spot_lights) { //spot lights
 
 		uint light_indices = draw_call.spot_lights.x;
 		for (uint i = 0; i < 8; i++) {
