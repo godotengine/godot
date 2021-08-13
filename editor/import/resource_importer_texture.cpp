@@ -256,7 +256,8 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 
 	switch (p_compress_mode) {
 		case COMPRESS_LOSSLESS: {
-			bool lossless_force_png = ProjectSettings::get_singleton()->get("rendering/misc/lossless_compression/force_png");
+			bool lossless_force_png = ProjectSettings::get_singleton()->get("rendering/misc/lossless_compression/force_png") ||
+					!Image::_webp_mem_loader_func; // WebP module disabled.
 			bool use_webp = !lossless_force_png && p_image->get_width() <= 16383 && p_image->get_height() <= 16383; // WebP has a size limit
 			Ref<Image> image = p_image->duplicate();
 			if (p_mipmaps) {
