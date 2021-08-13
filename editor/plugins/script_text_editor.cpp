@@ -1390,6 +1390,7 @@ bool ScriptTextEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_
 	if (d.has("type") && (String(d["type"]) == "resource" ||
 								 String(d["type"]) == "files" ||
 								 String(d["type"]) == "nodes" ||
+								 String(d["type"]) == "obj_property" ||
 								 String(d["type"]) == "files_and_dirs")) {
 		return true;
 	}
@@ -1490,6 +1491,15 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 			String path = sn->get_path_to(node);
 			text_to_drop += "\"" + path.c_escape() + "\"";
 		}
+
+		te->set_caret_line(row);
+		te->set_caret_column(col);
+		te->insert_text_at_caret(text_to_drop);
+	}
+
+	if (d.has("type") && String(d["type"]) == "obj_property") {
+		const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", false) ? "'" : "\"";
+		const String text_to_drop = String(d["property"]).c_escape().quote(quote_style);
 
 		te->set_caret_line(row);
 		te->set_caret_column(col);
