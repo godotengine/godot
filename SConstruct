@@ -119,6 +119,7 @@ opts.Add(BoolVariable("tools", "Build the tools (a.k.a. the Godot editor)", True
 opts.Add(EnumVariable("target", "Compilation target", "debug", ("debug", "release_debug", "release")))
 opts.Add("arch", "Platform-dependent architecture (arm/arm64/x86/x64/mips/...)", "")
 opts.Add(EnumVariable("bits", "Target platform bits", "default", ("default", "32", "64")))
+opts.Add(EnumVariable("float", "Floating-point precision", "default", ("default", "32", "64")))
 opts.Add(EnumVariable("optimize", "Optimization type", "speed", ("speed", "size", "none")))
 opts.Add(BoolVariable("production", "Set defaults to build Godot for use in production", False))
 opts.Add(BoolVariable("use_lto", "Use link-time optimization", False))
@@ -130,6 +131,7 @@ opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver", False))
 opts.Add(BoolVariable("vulkan", "Enable the vulkan video driver", True))
 opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
 opts.Add(BoolVariable("custom_modules_recursive", "Detect custom modules recursively for each specified path.", True))
+opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loader dynamically", True))
 
 # Advanced options
 opts.Add(BoolVariable("dev", "If yes, alias for verbose=yes warnings=extra werror=yes", False))
@@ -173,7 +175,6 @@ opts.Add(BoolVariable("builtin_pcre2_with_jit", "Use JIT compiler for the built-
 opts.Add(BoolVariable("builtin_recast", "Use the built-in Recast library", True))
 opts.Add(BoolVariable("builtin_rvo2", "Use the built-in RVO2 library", True))
 opts.Add(BoolVariable("builtin_squish", "Use the built-in squish library", True))
-opts.Add(BoolVariable("builtin_vulkan", "Use the built-in Vulkan loader library and headers", True))
 opts.Add(BoolVariable("builtin_xatlas", "Use the built-in xatlas library", True))
 opts.Add(BoolVariable("builtin_zlib", "Use the built-in zlib library", True))
 opts.Add(BoolVariable("builtin_zstd", "Use the built-in Zstd library", True))
@@ -201,7 +202,13 @@ elif env_base["p"] != "":
     selected_platform = env_base["p"]
 else:
     # Missing `platform` argument, try to detect platform automatically
-    if sys.platform.startswith("linux"):
+    if (
+        sys.platform.startswith("linux")
+        or sys.platform.startswith("dragonfly")
+        or sys.platform.startswith("freebsd")
+        or sys.platform.startswith("netbsd")
+        or sys.platform.startswith("openbsd")
+    ):
         selected_platform = "linuxbsd"
     elif sys.platform == "darwin":
         selected_platform = "osx"
@@ -320,6 +327,9 @@ if env_base["no_editor_splash"]:
 
 if not env_base["deprecated"]:
     env_base.Append(CPPDEFINES=["DISABLE_DEPRECATED"])
+
+if env_base["float"] == "64":
+    env_base.Append(CPPDEFINES=["REAL_T_IS_DOUBLE"])
 
 if selected_platform in platform_list:
     tmppath = "./platform/" + selected_platform
@@ -506,13 +516,17 @@ if selected_platform in platform_list:
         if env["werror"]:
             env.Append(CCFLAGS=["/WX"])
     else:  # GCC, Clang
-        gcc_common_warnings = []
+        common_warnings = []
 
         if methods.using_gcc(env):
-            gcc_common_warnings += ["-Wshadow-local", "-Wno-misleading-indentation"]
+            common_warnings += ["-Wshadow-local", "-Wno-misleading-indentation"]
+        elif methods.using_clang(env) or methods.using_emcc(env):
+            # We often implement `operator<` for structs of pointers as a requirement
+            # for putting them in `Set` or `Map`. We don't mind about unreliable ordering.
+            common_warnings += ["-Wno-ordered-compare-function-pointers"]
 
         if env["warnings"] == "extra":
-            env.Append(CCFLAGS=["-Wall", "-Wextra", "-Wwrite-strings", "-Wno-unused-parameter"] + gcc_common_warnings)
+            env.Append(CCFLAGS=["-Wall", "-Wextra", "-Wwrite-strings", "-Wno-unused-parameter"] + common_warnings)
             env.Append(CXXFLAGS=["-Wctor-dtor-privacy", "-Wnon-virtual-dtor"])
             if methods.using_gcc(env):
                 env.Append(
@@ -528,12 +542,12 @@ if selected_platform in platform_list:
                 env.Append(CXXFLAGS=["-Wplacement-new=1"])
                 if cc_version_major >= 9:
                     env.Append(CCFLAGS=["-Wattribute-alias=2"])
-            elif methods.using_clang(env):
+            elif methods.using_clang(env) or methods.using_emcc(env):
                 env.Append(CCFLAGS=["-Wimplicit-fallthrough"])
         elif env["warnings"] == "all":
-            env.Append(CCFLAGS=["-Wall"] + gcc_common_warnings)
+            env.Append(CCFLAGS=["-Wall"] + common_warnings)
         elif env["warnings"] == "moderate":
-            env.Append(CCFLAGS=["-Wall", "-Wno-unused"] + gcc_common_warnings)
+            env.Append(CCFLAGS=["-Wall", "-Wno-unused"] + common_warnings)
         else:  # 'no'
             env.Append(CCFLAGS=["-w"])
 
@@ -544,7 +558,7 @@ if selected_platform in platform_list:
                 env.Append(CXXFLAGS=["-Wno-error=cpp"])
                 if cc_version_major == 7:  # Bogus warning fixed in 8+.
                     env.Append(CCFLAGS=["-Wno-error=strict-overflow"])
-            else:
+            elif methods.using_clang(env) or methods.using_emcc(env):
                 env.Append(CXXFLAGS=["-Wno-error=#warnings"])
         else:  # always enable those errors
             env.Append(CCFLAGS=["-Werror=return-type"])
@@ -553,6 +567,9 @@ if selected_platform in platform_list:
         suffix = "." + detect.get_program_suffix()
     else:
         suffix = "." + selected_platform
+
+    if env_base["float"] == "64":
+        suffix += ".double"
 
     if env["target"] == "release":
         if env["tools"]:

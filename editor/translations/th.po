@@ -356,6 +356,7 @@ msgstr "เปลี่ยนโหมดการวนซ้ำแอนิเ
 msgid "Remove Anim Track"
 msgstr "ลบแทร็กแอนิเมชัน"
 
+#. TRANSLATORS: %s will be replaced by a phrase describing the target of track.
 #: editor/animation_track_editor.cpp
 msgid "Create NEW track for %s and insert key?"
 msgstr "เพิ่มแทร็กใหม่สำหรับ %s และเพิ่มคีย์?"
@@ -380,9 +381,27 @@ msgstr "สร้าง"
 msgid "Anim Insert"
 msgstr "แทรกแอนิเมชัน"
 
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "node '%s'"
+msgstr "เปิด '%s' ไม่ได้"
+
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "animation"
+msgstr "แอนิเมชัน"
+
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
 msgstr "ตัวเล่นอนิเมชั่นไม่สามารถเล่นอนิเมชั่นด้วยตัวมันเองได้ เล่นได้เฉพาะตัวเล่นอื่นเท่านั้น"
+
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "property '%s'"
+msgstr "ไม่พบคุณสมบัติ '%s'"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -954,7 +973,7 @@ msgstr "สร้าง %s ใหม่"
 msgid "No results for \"%s\"."
 msgstr "ไม่มีผลลัพธ์สำหรับ \"%s\""
 
-#: editor/create_dialog.cpp
+#: editor/create_dialog.cpp editor/property_selector.cpp
 msgid "No description available for %s."
 msgstr ""
 
@@ -2290,6 +2309,17 @@ msgid "New Window"
 msgstr "หน้าต่างใหม่"
 
 #: editor/editor_node.cpp
+msgid ""
+"Spins when the editor window redraws.\n"
+"Update Continuously is enabled, which can increase power usage. Click to "
+"disable it."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Spins when the editor window redraws."
+msgstr "หมุนเมื่อมีการวาดหน้าต่างโปรแกรมใหม"
+
+#: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
 msgstr "ทรัพยากรที่นำเข้ามา ไม่สามารถบันทึกได้"
 
@@ -3122,10 +3152,6 @@ msgid "Save & Restart"
 msgstr "บันทึกและเริ่มใหม่"
 
 #: editor/editor_node.cpp
-msgid "Spins when the editor window redraws."
-msgstr "หมุนเมื่อมีการวาดหน้าต่างโปรแกรมใหม"
-
-#: editor/editor_node.cpp
 msgid "Update Continuously"
 msgstr "อัพเดทอย่างต่อเนื่อง"
 
@@ -3774,6 +3800,16 @@ msgstr "ค่าเริ่มต้นในการนับ"
 #, fuzzy
 msgid "Download from:"
 msgstr "ดาวน์โหลดผิดพลาด"
+
+#: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Open in Web Browser"
+msgstr "รันในเบราเซอร์"
+
+#: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Copy Mirror URL"
+msgstr "คัดลอกผิดพลาด"
 
 #: editor/export_template_manager.cpp
 msgid "Download and Install"
@@ -8592,6 +8628,12 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"Select a theme type from the list to edit its items.\n"
+"You can add a custom type or import a type with its items from another theme."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
 msgid "Remove All Color Items"
 msgstr "ลบทั้งหมด"
@@ -8620,6 +8662,12 @@ msgstr "ลบทั้งหมด"
 #, fuzzy
 msgid "Remove All StyleBox Items"
 msgstr "ลบทั้งหมด"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"This theme type is empty.\n"
+"Add more items to it manually or by importing from another theme."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -12217,6 +12265,16 @@ msgstr "ปรับความสูงทรงแคปซูล"
 msgid "Change Ray Shape Length"
 msgstr "ปรับความยาวรังสี"
 
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Room Point Position"
+msgstr "กำหนดพิกัดจุดเส้นโค้ง"
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Portal Point Position"
+msgstr "กำหนดพิกัดจุดเส้นโค้ง"
+
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Radius"
 msgstr "ปรับรัศมีทรงกระบอก"
@@ -13909,6 +13967,42 @@ msgstr ""
 msgid "There should only be one RoomManager in the SceneTree."
 msgstr ""
 
+#: scene/3d/room_manager.cpp
+msgid ""
+"RoomList path is invalid.\n"
+"Please check the RoomList branch has been assigned in the RoomManager."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "RoomList contains no Rooms, aborting."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "Misnamed nodes detected, check output log for details. Aborting."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "Portal link room not found, check output log for details."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Portal autolink failed, check output log for details.\n"
+"Check the portal is facing outwards from the source room."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Room overlap detected, cameras may work incorrectly in overlapping area.\n"
+"Check output log for details."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Error calculating room bounds.\n"
+"Ensure all rooms contain geometry or manual bounds."
+msgstr ""
+
 #: scene/3d/soft_body.cpp
 msgid "This body will be ignored until you set a mesh."
 msgstr "วัตถุนี้จะถูกละเว้นจนกว่าจะตั้ง mesh"
@@ -15119,9 +15213,6 @@ msgstr "ค่าคงที่ไม่สามารถแก้ไขได
 
 #~ msgid "I see..."
 #~ msgstr "ตกลง..."
-
-#~ msgid "Can't open '%s'."
-#~ msgstr "เปิด '%s' ไม่ได้"
 
 #~ msgid "Ugh"
 #~ msgstr "เออะ"

@@ -314,8 +314,8 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_text_get_preserve_control", "shaped"), &TextServer::shaped_text_get_preserve_control);
 
 	ClassDB::bind_method(D_METHOD("shaped_text_add_string", "shaped", "text", "fonts", "size", "opentype_features", "language"), &TextServer::shaped_text_add_string, DEFVAL(Dictionary()), DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("shaped_text_add_object", "shaped", "key", "size", "inline_align", "length"), &TextServer::shaped_text_add_object, DEFVAL(VALIGN_CENTER), DEFVAL(1));
-	ClassDB::bind_method(D_METHOD("shaped_text_resize_object", "shaped", "key", "size", "inline_align"), &TextServer::shaped_text_resize_object, DEFVAL(VALIGN_CENTER));
+	ClassDB::bind_method(D_METHOD("shaped_text_add_object", "shaped", "key", "size", "inline_align", "length"), &TextServer::shaped_text_add_object, DEFVAL(INLINE_ALIGN_CENTER), DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("shaped_text_resize_object", "shaped", "key", "size", "inline_align"), &TextServer::shaped_text_resize_object, DEFVAL(INLINE_ALIGN_CENTER));
 
 	ClassDB::bind_method(D_METHOD("shaped_text_substr", "shaped", "start", "length"), &TextServer::shaped_text_substr);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_parent", "shaped"), &TextServer::shaped_text_get_parent);
@@ -739,6 +739,11 @@ Vector<Vector2i> TextServer::shaped_text_get_word_breaks(RID p_shaped, int p_gra
 	return words;
 }
 
+TextServer::TrimData TextServer::shaped_text_get_trim_data(RID p_shaped) const {
+	WARN_PRINT("Getting overrun data not supported by this TextServer.");
+	return TrimData();
+}
+
 void TextServer::shaped_text_get_carets(RID p_shaped, int p_position, Rect2 &p_leading_caret, Direction &p_leading_dir, Rect2 &p_trailing_caret, Direction &p_trailing_dir) const {
 	Vector<Rect2> carets;
 	const Vector<TextServer::Glyph> visual = shaped_text_get_glyphs(p_shaped);
@@ -976,7 +981,7 @@ Vector<Vector2> TextServer::shaped_text_get_selection(RID p_shaped, int p_start,
 							ranges.push_back(Vector2(off + char_adv * (glyphs[i].end - start), off + advance));
 						}
 					}
-					// Selection range is within grapheme
+					// Selection range is within grapheme.
 					if (glyphs[i].start < start && glyphs[i].end > end) {
 						float advance = 0.f;
 						for (int j = 0; j < glyphs[i].count; j++) {
@@ -1137,10 +1142,26 @@ void TextServer::shaped_text_draw(RID p_shaped, RID p_canvas, const Vector2 &p_p
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
 	bool hex_codes = shaped_text_get_preserve_control(p_shaped) || shaped_text_get_preserve_invalid(p_shaped);
 
+	bool rtl = shaped_text_get_direction(p_shaped) == DIRECTION_RTL;
+	TrimData trim_data = shaped_text_get_trim_data(p_shaped);
+
 	int v_size = visual.size();
 	const Glyph *glyphs = visual.ptr();
 
 	Vector2 ofs = p_pos;
+	// Draw RTL ellipsis string when needed.
+	if (rtl && trim_data.ellipsis_pos >= 0) {
+		for (int i = trim_data.ellipsis_glyph_buf.size() - 1; i >= 0; i--) {
+			for (int j = 0; j < trim_data.ellipsis_glyph_buf[i].repeat; j++) {
+				font_draw_glyph(trim_data.ellipsis_glyph_buf[i].font_rid, p_canvas, trim_data.ellipsis_glyph_buf[i].font_size, ofs + Vector2(trim_data.ellipsis_glyph_buf[i].x_off, trim_data.ellipsis_glyph_buf[i].y_off), trim_data.ellipsis_glyph_buf[i].index, p_color);
+				if (orientation == ORIENTATION_HORIZONTAL) {
+					ofs.x += trim_data.ellipsis_glyph_buf[i].advance;
+				} else {
+					ofs.y += trim_data.ellipsis_glyph_buf[i].advance;
+				}
+			}
+		}
+	}
 	// Draw at the baseline.
 	for (int i = 0; i < v_size; i++) {
 		for (int j = 0; j < glyphs[i].repeat; j++) {
@@ -1170,6 +1191,18 @@ void TextServer::shaped_text_draw(RID p_shaped, RID p_canvas, const Vector2 &p_p
 					}
 				}
 			}
+			if (trim_data.trim_pos >= 0) {
+				if (rtl) {
+					if (i < trim_data.trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
+						continue;
+					}
+				} else {
+					if (i >= trim_data.trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
+						break;
+					}
+				}
+			}
+
 			if (glyphs[i].font_rid != RID()) {
 				font_draw_glyph(glyphs[i].font_rid, p_canvas, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, p_color);
 			} else if (hex_codes && ((glyphs[i].flags & GRAPHEME_IS_VIRTUAL) != GRAPHEME_IS_VIRTUAL)) {
@@ -1182,15 +1215,44 @@ void TextServer::shaped_text_draw(RID p_shaped, RID p_canvas, const Vector2 &p_p
 			}
 		}
 	}
+	// Draw LTR ellipsis string when needed.
+	if (!rtl && trim_data.ellipsis_pos >= 0) {
+		for (int i = 0; i < trim_data.ellipsis_glyph_buf.size(); i++) {
+			for (int j = 0; j < trim_data.ellipsis_glyph_buf[i].repeat; j++) {
+				font_draw_glyph(trim_data.ellipsis_glyph_buf[i].font_rid, p_canvas, trim_data.ellipsis_glyph_buf[i].font_size, ofs + Vector2(trim_data.ellipsis_glyph_buf[i].x_off, trim_data.ellipsis_glyph_buf[i].y_off), trim_data.ellipsis_glyph_buf[i].index, p_color);
+				if (orientation == ORIENTATION_HORIZONTAL) {
+					ofs.x += trim_data.ellipsis_glyph_buf[i].advance;
+				} else {
+					ofs.y += trim_data.ellipsis_glyph_buf[i].advance;
+				}
+			}
+		}
+	}
 }
 
 void TextServer::shaped_text_draw_outline(RID p_shaped, RID p_canvas, const Vector2 &p_pos, float p_clip_l, float p_clip_r, int p_outline_size, const Color &p_color) const {
 	const Vector<TextServer::Glyph> visual = shaped_text_get_glyphs(p_shaped);
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
 
+	bool rtl = (shaped_text_get_direction(p_shaped) == DIRECTION_RTL);
+	TrimData trim_data = shaped_text_get_trim_data(p_shaped);
+
 	int v_size = visual.size();
 	const Glyph *glyphs = visual.ptr();
 	Vector2 ofs = p_pos;
+	// Draw RTL ellipsis string when needed.
+	if (rtl && trim_data.ellipsis_pos >= 0) {
+		for (int i = trim_data.ellipsis_glyph_buf.size() - 1; i >= 0; i--) {
+			for (int j = 0; j < trim_data.ellipsis_glyph_buf[i].repeat; j++) {
+				font_draw_glyph(trim_data.ellipsis_glyph_buf[i].font_rid, p_canvas, trim_data.ellipsis_glyph_buf[i].font_size, ofs + Vector2(trim_data.ellipsis_glyph_buf[i].x_off, trim_data.ellipsis_glyph_buf[i].y_off), trim_data.ellipsis_glyph_buf[i].index, p_color);
+				if (orientation == ORIENTATION_HORIZONTAL) {
+					ofs.x += trim_data.ellipsis_glyph_buf[i].advance;
+				} else {
+					ofs.y += trim_data.ellipsis_glyph_buf[i].advance;
+				}
+			}
+		}
+	}
 	// Draw at the baseline.
 	for (int i = 0; i < v_size; i++) {
 		for (int j = 0; j < glyphs[i].repeat; j++) {
@@ -1220,6 +1282,17 @@ void TextServer::shaped_text_draw_outline(RID p_shaped, RID p_canvas, const Vect
 					}
 				}
 			}
+			if (trim_data.trim_pos >= 0) {
+				if (rtl) {
+					if (i < trim_data.trim_pos) {
+						continue;
+					}
+				} else {
+					if (i >= trim_data.trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
+						break;
+					}
+				}
+			}
 			if (glyphs[i].font_rid != RID()) {
 				font_draw_glyph_outline(glyphs[i].font_rid, p_canvas, glyphs[i].font_size, p_outline_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, p_color);
 			}
@@ -1227,6 +1300,19 @@ void TextServer::shaped_text_draw_outline(RID p_shaped, RID p_canvas, const Vect
 				ofs.x += glyphs[i].advance;
 			} else {
 				ofs.y += glyphs[i].advance;
+			}
+		}
+	}
+	// Draw LTR ellipsis string when needed.
+	if (!rtl && trim_data.ellipsis_pos >= 0) {
+		for (int i = 0; i < trim_data.ellipsis_glyph_buf.size(); i++) {
+			for (int j = 0; j < trim_data.ellipsis_glyph_buf[i].repeat; j++) {
+				font_draw_glyph(trim_data.ellipsis_glyph_buf[i].font_rid, p_canvas, trim_data.ellipsis_glyph_buf[i].font_size, ofs + Vector2(trim_data.ellipsis_glyph_buf[i].x_off, trim_data.ellipsis_glyph_buf[i].y_off), trim_data.ellipsis_glyph_buf[i].index, p_color);
+				if (orientation == ORIENTATION_HORIZONTAL) {
+					ofs.x += trim_data.ellipsis_glyph_buf[i].advance;
+				} else {
+					ofs.y += trim_data.ellipsis_glyph_buf[i].advance;
+				}
 			}
 		}
 	}

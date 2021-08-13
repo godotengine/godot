@@ -138,7 +138,7 @@ void NavigationMeshGenerator::_add_faces(const PackedVector3Array &p_faces, cons
 	}
 }
 
-void NavigationMeshGenerator::_parse_geometry(Transform3D p_accumulated_transform, Node *p_node, Vector<float> &p_verticies, Vector<int> &p_indices, int p_generate_from, uint32_t p_collision_mask, bool p_recurse_children) {
+void NavigationMeshGenerator::_parse_geometry(Transform3D p_accumulated_transform, Node *p_node, Vector<float> &p_verticies, Vector<int> &p_indices, NavigationMesh::ParsedGeometryType p_generate_from, uint32_t p_collision_mask, bool p_recurse_children) {
 	if (Object::cast_to<MeshInstance3D>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
 		MeshInstance3D *mesh_instance = Object::cast_to<MeshInstance3D>(p_node);
 		Ref<Mesh> mesh = mesh_instance->get_mesh();
@@ -187,7 +187,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform3D p_accumulated_transfor
 						Ref<CapsuleMesh> capsule_mesh;
 						capsule_mesh.instantiate();
 						capsule_mesh->set_radius(capsule->get_radius());
-						capsule_mesh->set_mid_height(capsule->get_height() / 2.0);
+						capsule_mesh->set_height(capsule->get_height());
 						mesh = capsule_mesh;
 					}
 
@@ -515,7 +515,7 @@ void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node)
 
 	Transform3D navmesh_xform = Object::cast_to<Node3D>(p_node)->get_transform().affine_inverse();
 	for (Node *E : parse_nodes) {
-		int geometry_type = p_nav_mesh->get_parsed_geometry_type();
+		NavigationMesh::ParsedGeometryType geometry_type = p_nav_mesh->get_parsed_geometry_type();
 		uint32_t collision_mask = p_nav_mesh->get_collision_mask();
 		bool recurse_children = p_nav_mesh->get_source_geometry_mode() != NavigationMesh::SOURCE_GEOMETRY_GROUPS_EXPLICIT;
 		_parse_geometry(navmesh_xform, E, vertices, indices, geometry_type, collision_mask, recurse_children);

@@ -238,11 +238,15 @@ private:
 		TONEMAP_MODE_BICUBIC_GLOW_FILTER,
 		TONEMAP_MODE_1D_LUT,
 		TONEMAP_MODE_BICUBIC_GLOW_FILTER_1D_LUT,
+		TONEMAP_MODE_SUBPASS,
+		TONEMAP_MODE_SUBPASS_1D_LUT,
 
 		TONEMAP_MODE_NORMAL_MULTIVIEW,
 		TONEMAP_MODE_BICUBIC_GLOW_FILTER_MULTIVIEW,
 		TONEMAP_MODE_1D_LUT_MULTIVIEW,
 		TONEMAP_MODE_BICUBIC_GLOW_FILTER_1D_LUT_MULTIVIEW,
+		TONEMAP_MODE_SUBPASS_MULTIVIEW,
+		TONEMAP_MODE_SUBPASS_1D_LUT_MULTIVIEW,
 
 		TONEMAP_MODE_MAX
 	};
@@ -718,6 +722,7 @@ private:
 	RID index_array;
 
 	Map<RID, RID> texture_to_uniform_set_cache;
+	Map<RID, RID> input_to_uniform_set_cache;
 
 	Map<RID, RID> image_to_uniform_set_cache;
 
@@ -751,6 +756,7 @@ private:
 	Map<TextureSamplerPair, RID> texture_sampler_to_compute_uniform_set_cache;
 
 	RID _get_uniform_set_from_image(RID p_texture);
+	RID _get_uniform_set_for_input(RID p_texture);
 	RID _get_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps = false);
 	RID _get_compute_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps = false);
 	RID _get_compute_uniform_set_from_texture_and_sampler(RID p_texture, RID p_sampler);
@@ -842,6 +848,7 @@ public:
 	};
 
 	void tonemapper(RID p_source_color, RID p_dst_framebuffer, const TonemapSettings &p_settings);
+	void tonemapper(RD::DrawListID p_subpass_draw_list, RID p_source_color, RD::FramebufferFormatID p_dst_format_id, const TonemapSettings &p_settings);
 
 	void gather_ssao(RD::ComputeListID p_compute_list, const Vector<RID> p_ao_slices, const SSAOSettings &p_settings, bool p_adaptive_base_pass, RID p_gather_uniform_set, RID p_importance_map_uniform_set);
 	void generate_ssao(RID p_depth_buffer, RID p_normal_buffer, RID p_depth_mipmaps_texture, const Vector<RID> &depth_mipmaps, RID p_ao, const Vector<RID> p_ao_slices, RID p_ao_pong, const Vector<RID> p_ao_pong_slices, RID p_upscale_buffer, RID p_importance_map, RID p_importance_map_pong, const CameraMatrix &p_projection, const SSAOSettings &p_settings, bool p_invalidate_uniform_sets, RID &r_downsample_uniform_set, RID &r_gather_uniform_set, RID &r_importance_map_uniform_set);

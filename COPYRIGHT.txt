@@ -438,17 +438,22 @@ Copyright: 2011, Khaled Mamou
   2003-2009, Erwin Coumans
 License: BSD-3-clause
 
+Files: ./thirdparty/volk/
+Comment: volk
+Copyright: 2018-2019, Arseny Kapoulkine
+License: Expat
+
 Files: ./thirdparty/vulkan/
-Comment: Vulkan Ecosystem Components (Vulkan ICD loader and headers)
-Copyright: 2014-2020, The Khronos Group Inc.
-  2014-2020, Valve Corporation
-  2014-2020, LunarG, Inc.
-  2015-2020, Google Inc.
+Comment: Vulkan Headers
+Copyright: 2014-2021, The Khronos Group Inc.
+  2014-2021, Valve Corporation
+  2014-2021, LunarG, Inc.
+  2015-2021, Google Inc.
 License: Apache-2.0
 
 Files: ./thirdparty/vulkan/vk_mem_alloc.h
 Comment: Vulkan Memory Allocator
-Copyright: 2017-2019, Advanced Micro Devices, Inc.
+Copyright: 2017-2021, Advanced Micro Devices, Inc.
 License: Expat
 
 Files: ./thirdparty/wslay/

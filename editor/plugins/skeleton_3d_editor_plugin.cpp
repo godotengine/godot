@@ -386,7 +386,7 @@ PhysicalBone3D *Skeleton3DEditor::create_physical_bone(int bone_id, int bone_chi
 	const real_t radius(half_height * 0.2);
 
 	CapsuleShape3D *bone_shape_capsule = memnew(CapsuleShape3D);
-	bone_shape_capsule->set_height((half_height - radius) * 2);
+	bone_shape_capsule->set_height(half_height * 2);
 	bone_shape_capsule->set_radius(radius);
 
 	CollisionShape3D *bone_shape = memnew(CollisionShape3D);
@@ -397,7 +397,7 @@ PhysicalBone3D *Skeleton3DEditor::create_physical_bone(int bone_id, int bone_chi
 	bone_shape->set_transform(capsule_transform);
 
 	Transform3D body_transform;
-	body_transform.set_look_at(Vector3(0, 0, 0), child_rest.origin);
+	body_transform.basis = Basis::looking_at(child_rest.origin);
 	body_transform.origin = body_transform.basis.xform(Vector3(0, 0, -half_height));
 
 	Transform3D joint_transform;

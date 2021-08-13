@@ -45,9 +45,6 @@
 #include "platform/iphone/vulkan_context_iphone.h"
 #endif
 
-extern void godot_ios_plugins_initialize();
-extern void godot_ios_plugins_deinitialize();
-
 class OSIPhone : public OS_Unix {
 private:
 	static HashMap<String, void *> dynamic_symbol_lookup_table;

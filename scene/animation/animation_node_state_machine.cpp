@@ -286,7 +286,7 @@ bool AnimationNodeStateMachinePlayback::_travel(AnimationNodeStateMachine *p_sta
 	return true;
 }
 
-float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_state_machine, float p_time, bool p_seek) {
+double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_state_machine, double p_time, bool p_seek) {
 	//if not playing and it can restart, then restart
 	if (!playing && start_request == StringName()) {
 		if (!stop_request && p_state_machine->start_node) {
@@ -790,7 +790,7 @@ Vector2 AnimationNodeStateMachine::get_graph_offset() const {
 	return graph_offset;
 }
 
-float AnimationNodeStateMachine::process(float p_time, bool p_seek) {
+double AnimationNodeStateMachine::process(double p_time, bool p_seek) {
 	Ref<AnimationNodeStateMachinePlayback> playback = get_parameter(this->playback);
 	ERR_FAIL_COND_V(playback.is_null(), 0.0);
 

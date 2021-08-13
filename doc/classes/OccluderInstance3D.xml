@@ -7,17 +7,19 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="get_bake_mask_bit" qualifiers="const">
+		<method name="get_bake_mask_value" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="layer" type="int" />
+			<argument index="0" name="layer_number" type="int" />
 			<description>
+				Returns whether or not the specified layer of the [member bake_mask] is enabled, given a [code]layer_number[/code] between 1 and 20.
 			</description>
 		</method>
-		<method name="set_bake_mask_bit">
+		<method name="set_bake_mask_value">
 			<return type="void" />
-			<argument index="0" name="layer" type="int" />
-			<argument index="1" name="enabled" type="bool" />
+			<argument index="0" name="layer_number" type="int" />
+			<argument index="1" name="value" type="bool" />
 			<description>
+				Based on [code]value[/code], enables or disables the specified layer in the [member bake_mask], given a [code]layer_number[/code] between 1 and 20.
 			</description>
 		</method>
 	</methods>

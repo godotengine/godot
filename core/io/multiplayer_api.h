@@ -32,6 +32,7 @@
 #define MULTIPLAYER_API_H
 
 #include "core/io/multiplayer_peer.h"
+#include "core/io/resource_uid.h"
 #include "core/object/ref_counted.h"
 
 class MultiplayerAPI : public RefCounted {
@@ -43,6 +44,12 @@ public:
 		RPC_MODE_REMOTE, // Using rpc() on it will call method in all remote peers
 		RPC_MODE_MASTER, // Using rpc() on it will call method on wherever the master is, be it local or remote
 		RPC_MODE_PUPPET, // Using rpc() on it will call method for all puppets
+	};
+
+	enum SpawnMode {
+		SPAWN_MODE_NONE,
+		SPAWN_MODE_SERVER,
+		SPAWN_MODE_CUSTOM,
 	};
 
 	struct RPCConfig {
@@ -82,10 +89,12 @@ private:
 	};
 
 	Ref<MultiplayerPeer> network_peer;
+	Map<ResourceUID::ID, SpawnMode> spawnables;
 	int rpc_sender_id = 0;
 	Set<int> connected_peers;
 	HashMap<NodePath, PathSentCache> path_send_cache;
 	Map<int, PathGetCache> path_get_cache;
+	Map<ObjectID, ResourceUID::ID> replicated_nodes;
 	int last_send_cache_id;
 	Vector<uint8_t> packet_cache;
 	Node *root_node = nullptr;
@@ -97,6 +106,7 @@ protected:
 	void _process_packet(int p_from, const uint8_t *p_packet, int p_packet_len);
 	void _process_simplify_path(int p_from, const uint8_t *p_packet, int p_packet_len);
 	void _process_confirm_path(int p_from, const uint8_t *p_packet, int p_packet_len);
+	void _process_spawn_despawn(int p_from, const uint8_t *p_packet, int p_packet_len, bool p_spawn);
 	Node *_process_get_node(int p_from, const uint8_t *p_packet, uint32_t p_node_target, int p_packet_len);
 	void _process_rpc(Node *p_node, const uint16_t p_rpc_method_id, int p_from, const uint8_t *p_packet, int p_packet_len, int p_offset);
 	void _process_raw(int p_from, const uint8_t *p_packet, int p_packet_len);
@@ -113,6 +123,8 @@ public:
 		NETWORK_COMMAND_SIMPLIFY_PATH,
 		NETWORK_COMMAND_CONFIRM_PATH,
 		NETWORK_COMMAND_RAW,
+		NETWORK_COMMAND_SPAWN,
+		NETWORK_COMMAND_DESPAWN,
 	};
 
 	enum NetworkNodeIdCompression {
@@ -154,10 +166,17 @@ public:
 	void set_allow_object_decoding(bool p_enable);
 	bool is_object_decoding_allowed() const;
 
+	Error spawnable_config(const ResourceUID::ID &p_id, SpawnMode p_mode);
+	Error send_despawn(int p_peer_id, const ResourceUID::ID &p_scene_id, const NodePath &p_path, const PackedByteArray &p_data = PackedByteArray());
+	Error send_spawn(int p_peer_id, const ResourceUID::ID &p_scene_id, const NodePath &p_path, const PackedByteArray &p_data = PackedByteArray());
+	Error _send_spawn_despawn(int p_peer_id, const ResourceUID::ID &p_scene_id, const NodePath &p_path, const uint8_t *p_data, int p_data_len, bool p_spawn);
+	void scene_enter_exit_notify(const String &p_scene, const Node *p_node, bool p_enter);
+
 	MultiplayerAPI();
 	~MultiplayerAPI();
 };
 
 VARIANT_ENUM_CAST(MultiplayerAPI::RPCMode);
+VARIANT_ENUM_CAST(MultiplayerAPI::SpawnMode);
 
 #endif // MULTIPLAYER_API_H

@@ -29,7 +29,11 @@
 /*************************************************************************/
 
 #include "vulkan_context_win.h"
-#include <vulkan/vulkan_win32.h>
+#ifdef USE_VOLK
+#include <volk.h>
+#else
+#include <vulkan/vulkan.h>
+#endif
 
 const char *VulkanContextWindows::_get_platform_surface_extension() const {
 	return VK_KHR_WIN32_SURFACE_EXTENSION_NAME;
@@ -43,7 +47,7 @@ int VulkanContextWindows::window_create(DisplayServer::WindowID p_window_id, Dis
 	createInfo.hinstance = p_instance;
 	createInfo.hwnd = p_window;
 	VkSurfaceKHR surface;
-	VkResult err = vkCreateWin32SurfaceKHR(_get_instance(), &createInfo, nullptr, &surface);
+	VkResult err = vkCreateWin32SurfaceKHR(get_instance(), &createInfo, nullptr, &surface);
 	ERR_FAIL_COND_V(err, -1);
 	return _window_create(p_window_id, p_vsync_mode, surface, p_width, p_height);
 }

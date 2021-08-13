@@ -422,7 +422,7 @@ public:
 		TEXTURE_USAGE_CAN_UPDATE_BIT = (1 << 6),
 		TEXTURE_USAGE_CAN_COPY_FROM_BIT = (1 << 7),
 		TEXTURE_USAGE_CAN_COPY_TO_BIT = (1 << 8),
-		TEXTURE_USAGE_RESOLVE_ATTACHMENT_BIT = (1 << 9),
+		TEXTURE_USAGE_INPUT_ATTACHMENT_BIT = (1 << 9),
 	};
 
 	enum TextureSwizzle {
@@ -1065,6 +1065,7 @@ public:
 	virtual void draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect) = 0;
 	virtual void draw_list_disable_scissor(DrawListID p_list) = 0;
 
+	virtual uint32_t draw_list_get_current_pass() = 0;
 	virtual DrawListID draw_list_switch_to_next_pass() = 0;
 	virtual Error draw_list_switch_to_next_pass_split(uint32_t p_splits, DrawListID *r_split_ids) = 0;
 

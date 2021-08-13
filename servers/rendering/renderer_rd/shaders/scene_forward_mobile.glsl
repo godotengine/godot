@@ -59,27 +59,27 @@ layout(location = 11) in vec4 weight_attrib;
 
 /* Varyings */
 
-layout(location = 0) out vec3 vertex_interp;
+layout(location = 0) highp out vec3 vertex_interp;
 
 #ifdef NORMAL_USED
-layout(location = 1) out vec3 normal_interp;
+layout(location = 1) mediump out vec3 normal_interp;
 #endif
 
 #if defined(COLOR_USED)
-layout(location = 2) out vec4 color_interp;
+layout(location = 2) mediump out vec4 color_interp;
 #endif
 
 #ifdef UV_USED
-layout(location = 3) out vec2 uv_interp;
+layout(location = 3) mediump out vec2 uv_interp;
 #endif
 
 #if defined(UV2_USED) || defined(USE_LIGHTMAP)
-layout(location = 4) out vec2 uv2_interp;
+layout(location = 4) mediump out vec2 uv2_interp;
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-layout(location = 5) out vec3 tangent_interp;
-layout(location = 6) out vec3 binormal_interp;
+layout(location = 5) mediump out vec3 tangent_interp;
+layout(location = 6) mediump out vec3 binormal_interp;
 #endif
 
 #ifdef MATERIAL_UNIFORMS_USED
@@ -370,6 +370,10 @@ void main() {
 
 #VERSION_DEFINES
 
+//use medium precision for floats on mobile.
+
+precision mediump float;
+
 /* Specialization Constants */
 
 /* Specialization Constants (Toggles) */
@@ -395,32 +399,32 @@ layout(constant_id = 11) const bool sc_projector_use_mipmaps = true;
 
 /* Varyings */
 
-layout(location = 0) in vec3 vertex_interp;
+layout(location = 0) highp in vec3 vertex_interp;
 
 #ifdef NORMAL_USED
-layout(location = 1) in vec3 normal_interp;
+layout(location = 1) mediump in vec3 normal_interp;
 #endif
 
 #if defined(COLOR_USED)
-layout(location = 2) in vec4 color_interp;
+layout(location = 2) mediump in vec4 color_interp;
 #endif
 
 #ifdef UV_USED
-layout(location = 3) in vec2 uv_interp;
+layout(location = 3) mediump in vec2 uv_interp;
 #endif
 
 #if defined(UV2_USED) || defined(USE_LIGHTMAP)
-layout(location = 4) in vec2 uv2_interp;
+layout(location = 4) mediump in vec2 uv2_interp;
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-layout(location = 5) in vec3 tangent_interp;
-layout(location = 6) in vec3 binormal_interp;
+layout(location = 5) mediump in vec3 tangent_interp;
+layout(location = 6) mediump in vec3 binormal_interp;
 #endif
 
 #ifdef MODE_DUAL_PARABOLOID
 
-layout(location = 8) in float dp_clip;
+layout(location = 8) highp in float dp_clip;
 
 #endif
 
@@ -490,6 +494,11 @@ layout(location = 0) out vec4 frag_color;
 #include "scene_forward_aa_inc.glsl"
 
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
+
+/* Make a default specular mode SPECULAR_SCHLICK_GGX. */
+#if !defined(SPECULAR_DISABLED) && !defined(SPECULAR_SCHLICK_GGX) && !defined(SPECULAR_BLINN) && !defined(SPECULAR_PHONG) && !defined(SPECULAR_TOON)
+#define SPECULAR_SCHLICK_GGX
+#endif
 
 #include "scene_forward_lights_inc.glsl"
 
@@ -843,6 +852,8 @@ void main() {
 		specular_light = textureLod(samplerCube(radiance_cubemap, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), ref_vec, roughness * MAX_ROUGHNESS_LOD).rgb;
 
 #endif //USE_RADIANCE_CUBEMAP_ARRAY
+		float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
+		specular_light *= horizon * horizon;
 		specular_light *= scene_data.ambient_light_color_energy.a;
 	}
 

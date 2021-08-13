@@ -338,30 +338,34 @@ void ParticlesMaterial::_update_shader() {
 	}
 
 	if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
-		code += "		float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
-		code += "		angle1_rad += direction.x != 0.0 ? atan(direction.y, direction.x) : sign(direction.y) * (pi / 2.0);\n";
-		code += "		vec3 rot = vec3(cos(angle1_rad), sin(angle1_rad), 0.0);\n";
-		code += "		VELOCITY = rot * initial_linear_velocity * mix(1.0, rand_from_seed(alt_seed), initial_linear_velocity_random);\n";
+		code += "		{\n";
+		code += "			float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
+		code += "			angle1_rad += direction.x != 0.0 ? atan(direction.y, direction.x) : sign(direction.y) * (pi / 2.0);\n";
+		code += "			vec3 rot = vec3(cos(angle1_rad), sin(angle1_rad), 0.0);\n";
+		code += "			VELOCITY = rot * initial_linear_velocity * mix(1.0, rand_from_seed(alt_seed), initial_linear_velocity_random);\n";
+		code += "		}\n";
 
 	} else {
 		//initiate velocity spread in 3D
-		code += "		float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
-		code += "		float angle2_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad * (1.0 - flatness);\n";
-		code += "		vec3 direction_xz = vec3(sin(angle1_rad), 0.0, cos(angle1_rad));\n";
-		code += "		vec3 direction_yz = vec3(0.0, sin(angle2_rad), cos(angle2_rad));\n";
-		code += "		direction_yz.z = direction_yz.z / max(0.0001,sqrt(abs(direction_yz.z))); // better uniform distribution\n";
-		code += "		vec3 spread_direction = vec3(direction_xz.x * direction_yz.z, direction_yz.y, direction_xz.z * direction_yz.z);\n";
-		code += "		vec3 direction_nrm = normalize(direction);\n";
-		code += "		// rotate spread to direction\n";
-		code += "		vec3 binormal = cross(vec3(0.0, 1.0, 0.0), direction_nrm);\n";
-		code += "		if (length(binormal) < 0.0001) {\n";
-		code += "			// direction is parallel to Y. Choose Z as the binormal.\n";
-		code += "			binormal = vec3(0.0, 0.0, 1.0);\n";
+		code += "		{\n";
+		code += "			float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
+		code += "			float angle2_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad * (1.0 - flatness);\n";
+		code += "			vec3 direction_xz = vec3(sin(angle1_rad), 0.0, cos(angle1_rad));\n";
+		code += "			vec3 direction_yz = vec3(0.0, sin(angle2_rad), cos(angle2_rad));\n";
+		code += "			direction_yz.z = direction_yz.z / max(0.0001,sqrt(abs(direction_yz.z))); // better uniform distribution\n";
+		code += "			vec3 spread_direction = vec3(direction_xz.x * direction_yz.z, direction_yz.y, direction_xz.z * direction_yz.z);\n";
+		code += "			vec3 direction_nrm = length(direction) > 0.0 ? normalize(direction) : vec3(0.0, 0.0, 1.0);\n";
+		code += "			// rotate spread to direction\n";
+		code += "			vec3 binormal = cross(vec3(0.0, 1.0, 0.0), direction_nrm);\n";
+		code += "			if (length(binormal) < 0.0001) {\n";
+		code += "				// direction is parallel to Y. Choose Z as the binormal.\n";
+		code += "				binormal = vec3(0.0, 0.0, 1.0);\n";
+		code += "			}\n";
+		code += "			binormal = normalize(binormal);\n";
+		code += "			vec3 normal = cross(binormal, direction_nrm);\n";
+		code += "			spread_direction = binormal * spread_direction.x + normal * spread_direction.y + direction_nrm * spread_direction.z;\n";
+		code += "			VELOCITY = spread_direction * initial_linear_velocity * mix(1.0, rand_from_seed(alt_seed), initial_linear_velocity_random);\n";
 		code += "		}\n";
-		code += "		binormal = normalize(binormal);\n";
-		code += "		vec3 normal = cross(binormal, direction_nrm);\n";
-		code += "		spread_direction = binormal * spread_direction.x + normal * spread_direction.y + direction_nrm * spread_direction.z;\n";
-		code += "		VELOCITY = spread_direction * initial_linear_velocity * mix(1.0, rand_from_seed(alt_seed), initial_linear_velocity_random);\n";
 	}
 	code += "	}\n";
 
@@ -393,16 +397,20 @@ void ParticlesMaterial::_update_shader() {
 
 			if (emission_shape == EMISSION_SHAPE_DIRECTED_POINTS) {
 				if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
-					code += "		mat2 rotm;";
-					code += "		rotm[0] = texelFetch(emission_texture_normal, emission_tex_ofs, 0).xy;\n";
-					code += "		rotm[1] = rotm[0].yx * vec2(1.0, -1.0);\n";
-					code += "		if (RESTART_VELOCITY) VELOCITY.xy = rotm * VELOCITY.xy;\n";
+					code += "		{\n";
+					code += "			mat2 rotm;";
+					code += "			rotm[0] = texelFetch(emission_texture_normal, emission_tex_ofs, 0).xy;\n";
+					code += "			rotm[1] = rotm[0].yx * vec2(1.0, -1.0);\n";
+					code += "			if (RESTART_VELOCITY) VELOCITY.xy = rotm * VELOCITY.xy;\n";
+					code += "		}\n";
 				} else {
-					code += "		vec3 normal = texelFetch(emission_texture_normal, emission_tex_ofs, 0).xyz;\n";
-					code += "		vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);\n";
-					code += "		vec3 tangent = normalize(cross(v0, normal));\n";
-					code += "		vec3 bitangent = normalize(cross(tangent, normal));\n";
-					code += "		if (RESTART_VELOCITY) VELOCITY = mat3(tangent, bitangent, normal) * VELOCITY;\n";
+					code += "		{\n";
+					code += "			vec3 normal = texelFetch(emission_texture_normal, emission_tex_ofs, 0).xyz;\n";
+					code += "			vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);\n";
+					code += "			vec3 tangent = normalize(cross(v0, normal));\n";
+					code += "			vec3 bitangent = normalize(cross(tangent, normal));\n";
+					code += "			if (RESTART_VELOCITY) VELOCITY = mat3(tangent, bitangent, normal) * VELOCITY;\n";
+					code += "		}\n";
 				}
 			}
 		} break;
@@ -988,7 +996,7 @@ void ParticlesMaterial::set_emission_shape(EmissionShape p_shape) {
 	_queue_shader_change();
 }
 
-void ParticlesMaterial::set_emission_sphere_radius(float p_radius) {
+void ParticlesMaterial::set_emission_sphere_radius(real_t p_radius) {
 	emission_sphere_radius = p_radius;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_sphere_radius, p_radius);
 }
@@ -1027,17 +1035,17 @@ void ParticlesMaterial::set_emission_ring_axis(Vector3 p_axis) {
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ring_axis, p_axis);
 }
 
-void ParticlesMaterial::set_emission_ring_height(float p_height) {
+void ParticlesMaterial::set_emission_ring_height(real_t p_height) {
 	emission_ring_height = p_height;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ring_height, p_height);
 }
 
-void ParticlesMaterial::set_emission_ring_radius(float p_radius) {
+void ParticlesMaterial::set_emission_ring_radius(real_t p_radius) {
 	emission_ring_radius = p_radius;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ring_radius, p_radius);
 }
 
-void ParticlesMaterial::set_emission_ring_inner_radius(float p_radius) {
+void ParticlesMaterial::set_emission_ring_inner_radius(real_t p_radius) {
 	emission_ring_inner_radius = p_radius;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ring_inner_radius, p_radius);
 }
@@ -1046,7 +1054,7 @@ ParticlesMaterial::EmissionShape ParticlesMaterial::get_emission_shape() const {
 	return emission_shape;
 }
 
-float ParticlesMaterial::get_emission_sphere_radius() const {
+real_t ParticlesMaterial::get_emission_sphere_radius() const {
 	return emission_sphere_radius;
 }
 
@@ -1074,15 +1082,15 @@ Vector3 ParticlesMaterial::get_emission_ring_axis() const {
 	return emission_ring_axis;
 }
 
-float ParticlesMaterial::get_emission_ring_height() const {
+real_t ParticlesMaterial::get_emission_ring_height() const {
 	return emission_ring_height;
 }
 
-float ParticlesMaterial::get_emission_ring_radius() const {
+real_t ParticlesMaterial::get_emission_ring_radius() const {
 	return emission_ring_radius;
 }
 
-float ParticlesMaterial::get_emission_ring_inner_radius() const {
+real_t ParticlesMaterial::get_emission_ring_inner_radius() const {
 	return emission_ring_inner_radius;
 }
 
@@ -1099,12 +1107,12 @@ Vector3 ParticlesMaterial::get_gravity() const {
 	return gravity;
 }
 
-void ParticlesMaterial::set_lifetime_randomness(float p_lifetime) {
+void ParticlesMaterial::set_lifetime_randomness(double p_lifetime) {
 	lifetime_randomness = p_lifetime;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->lifetime_randomness, lifetime_randomness);
 }
 
-float ParticlesMaterial::get_lifetime_randomness() const {
+double ParticlesMaterial::get_lifetime_randomness() const {
 	return lifetime_randomness;
 }
 
@@ -1161,11 +1169,12 @@ ParticlesMaterial::SubEmitterMode ParticlesMaterial::get_sub_emitter_mode() cons
 	return sub_emitter_mode;
 }
 
-void ParticlesMaterial::set_sub_emitter_frequency(float p_frequency) {
+void ParticlesMaterial::set_sub_emitter_frequency(double p_frequency) {
 	sub_emitter_frequency = p_frequency;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->sub_emitter_frequency, 1.0 / p_frequency); //pass delta instead of frequency, since its easier to compute
 }
-float ParticlesMaterial::get_sub_emitter_frequency() const {
+
+double ParticlesMaterial::get_sub_emitter_frequency() const {
 	return sub_emitter_frequency;
 }
 

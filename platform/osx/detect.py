@@ -25,12 +25,6 @@ def get_opts():
         ("osxcross_sdk", "OSXCross SDK version", "darwin16"),
         ("MACOS_SDK_PATH", "Path to the macOS SDK", ""),
         ("VULKAN_SDK_PATH", "Path to the Vulkan SDK", ""),
-        BoolVariable(
-            "use_static_mvk",
-            "Link MoltenVK statically as Level-0 driver (better portability) or use Vulkan ICD loader (enables"
-            " validation layers)",
-            False,
-        ),
         EnumVariable("macports_clang", "Build using Clang from MacPorts", "no", ("no", "5.0", "devel")),
         BoolVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", True),
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
@@ -188,12 +182,10 @@ def configure(env):
     )
     env.Append(LIBS=["pthread", "z"])
 
-    env.Append(CPPDEFINES=["VULKAN_ENABLED"])
-    env.Append(LINKFLAGS=["-framework", "Metal", "-framework", "QuartzCore", "-framework", "IOSurface"])
-    if env["use_static_mvk"]:
-        env.Append(LINKFLAGS=["-L$VULKAN_SDK_PATH/MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/", "-lMoltenVK"])
-        env["builtin_vulkan"] = False
-    elif not env["builtin_vulkan"]:
-        env.Append(LIBS=["vulkan"])
+    if env["vulkan"]:
+        env.Append(CPPDEFINES=["VULKAN_ENABLED"])
+        env.Append(LINKFLAGS=["-framework", "Metal", "-framework", "QuartzCore", "-framework", "IOSurface"])
+        if not env["use_volk"]:
+            env.Append(LINKFLAGS=["-L$VULKAN_SDK_PATH/MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/", "-lMoltenVK"])
 
     # env.Append(CPPDEFINES=['GLES_ENABLED', 'OPENGL_ENABLED'])

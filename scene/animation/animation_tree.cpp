@@ -85,7 +85,7 @@ void AnimationNode::get_child_nodes(List<ChildNode> *r_child_nodes) {
 	}
 }
 
-void AnimationNode::blend_animation(const StringName &p_animation, float p_time, float p_delta, bool p_seeked, float p_blend) {
+void AnimationNode::blend_animation(const StringName &p_animation, real_t p_time, real_t p_delta, bool p_seeked, real_t p_blend) {
 	ERR_FAIL_COND(!state);
 	ERR_FAIL_COND(!state->player->has_animation(p_animation));
 
@@ -115,13 +115,13 @@ void AnimationNode::blend_animation(const StringName &p_animation, float p_time,
 	state->animation_states.push_back(anim_state);
 }
 
-float AnimationNode::_pre_process(const StringName &p_base_path, AnimationNode *p_parent, State *p_state, float p_time, bool p_seek, const Vector<StringName> &p_connections) {
+real_t AnimationNode::_pre_process(const StringName &p_base_path, AnimationNode *p_parent, State *p_state, real_t p_time, bool p_seek, const Vector<StringName> &p_connections) {
 	base_path = p_base_path;
 	parent = p_parent;
 	connections = p_connections;
 	state = p_state;
 
-	float t = process(p_time, p_seek);
+	real_t t = process(p_time, p_seek);
 
 	state = nullptr;
 	parent = nullptr;
@@ -140,7 +140,7 @@ void AnimationNode::make_invalid(const String &p_reason) {
 	state->invalid_reasons += String::utf8("•  ") + p_reason;
 }
 
-float AnimationNode::blend_input(int p_input, float p_time, bool p_seek, float p_blend, FilterAction p_filter, bool p_optimize) {
+real_t AnimationNode::blend_input(int p_input, real_t p_time, bool p_seek, real_t p_blend, FilterAction p_filter, bool p_optimize) {
 	ERR_FAIL_INDEX_V(p_input, inputs.size(), 0);
 	ERR_FAIL_COND_V(!state, 0);
 
@@ -158,8 +158,8 @@ float AnimationNode::blend_input(int p_input, float p_time, bool p_seek, float p
 	Ref<AnimationNode> node = blend_tree->get_node(node_name);
 
 	//inputs.write[p_input].last_pass = state->last_pass;
-	float activity = 0.0;
-	float ret = _blend_node(node_name, blend_tree->get_node_connection_array(node_name), nullptr, node, p_time, p_seek, p_blend, p_filter, p_optimize, &activity);
+	real_t activity = 0.0;
+	real_t ret = _blend_node(node_name, blend_tree->get_node_connection_array(node_name), nullptr, node, p_time, p_seek, p_blend, p_filter, p_optimize, &activity);
 
 	Vector<AnimationTree::Activity> *activity_ptr = state->tree->input_activity_map.getptr(base_path);
 
@@ -170,11 +170,11 @@ float AnimationNode::blend_input(int p_input, float p_time, bool p_seek, float p
 	return ret;
 }
 
-float AnimationNode::blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter, bool p_optimize) {
+real_t AnimationNode::blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, real_t p_time, bool p_seek, real_t p_blend, FilterAction p_filter, bool p_optimize) {
 	return _blend_node(p_sub_path, Vector<StringName>(), this, p_node, p_time, p_seek, p_blend, p_filter, p_optimize);
 }
 
-float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter, bool p_optimize, float *r_max) {
+real_t AnimationNode::_blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, real_t p_time, bool p_seek, real_t p_blend, FilterAction p_filter, bool p_optimize, real_t *r_max) {
 	ERR_FAIL_COND_V(!p_node.is_valid(), 0);
 	ERR_FAIL_COND_V(!state, 0);
 
@@ -184,8 +184,8 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 		p_node->blends.resize(blend_count);
 	}
 
-	float *blendw = p_node->blends.ptrw();
-	const float *blendr = blends.ptr();
+	real_t *blendw = p_node->blends.ptrw();
+	const real_t *blendr = blends.ptr();
 
 	bool any_valid = false;
 
@@ -328,7 +328,7 @@ void AnimationNode::remove_input(int p_index) {
 	emit_changed();
 }
 
-float AnimationNode::process(float p_time, bool p_seek) {
+double AnimationNode::process(double p_time, bool p_seek) {
 	if (get_script_instance()) {
 		return get_script_instance()->call("_process", p_time, p_seek);
 	}
@@ -718,7 +718,7 @@ void AnimationTree::_clear_caches() {
 	cache_valid = false;
 }
 
-void AnimationTree::_process_graph(float p_delta) {
+void AnimationTree::_process_graph(real_t p_delta) {
 	_update_properties(); //if properties need updating, update them
 
 	//check all tracks, see if they need modification
@@ -790,7 +790,7 @@ void AnimationTree::_process_graph(float p_delta) {
 		// root source blends
 
 		root->blends.resize(state.track_count);
-		float *src_blendsw = root->blends.ptrw();
+		real_t *src_blendsw = root->blends.ptrw();
 		for (int i = 0; i < state.track_count; i++) {
 			src_blendsw[i] = 1.0; //by default all go to 1 for the root input
 		}
@@ -818,9 +818,9 @@ void AnimationTree::_process_graph(float p_delta) {
 
 		for (const AnimationNode::AnimationState &as : state.animation_states) {
 			Ref<Animation> a = as.animation;
-			float time = as.time;
-			float delta = as.delta;
-			float weight = as.blend;
+			double time = as.time;
+			double delta = as.delta;
+			real_t weight = as.blend;
 			bool seeked = as.seeked;
 
 			for (int i = 0; i < a->get_track_count(); i++) {
@@ -840,7 +840,7 @@ void AnimationTree::_process_graph(float p_delta) {
 
 				ERR_CONTINUE(blend_idx < 0 || blend_idx >= state.track_count);
 
-				float blend = (*as.track_blends)[blend_idx] * weight;
+				real_t blend = (*as.track_blends)[blend_idx] * weight;
 
 				if (blend < CMP_EPSILON) {
 					continue; //nothing to blend
@@ -860,7 +860,7 @@ void AnimationTree::_process_graph(float p_delta) {
 								t->scale = Vector3(1, 1, 1);
 							}
 
-							float prev_time = time - delta;
+							real_t prev_time = time - delta;
 							if (prev_time < 0) {
 								if (!a->has_loop()) {
 									prev_time = 0;
@@ -928,7 +928,7 @@ void AnimationTree::_process_graph(float p_delta) {
 								t->rot = rot;
 								t->rot_blend_accum = blend;
 							} else {
-								float rot_total = t->rot_blend_accum + blend;
+								real_t rot_total = t->rot_blend_accum + blend;
 								t->rot = rot.slerp(t->rot, t->rot_blend_accum / rot_total).normalized();
 								t->rot_blend_accum = rot_total;
 							}
@@ -1003,7 +1003,7 @@ void AnimationTree::_process_graph(float p_delta) {
 					case Animation::TYPE_BEZIER: {
 						TrackCacheBezier *t = static_cast<TrackCacheBezier *>(track);
 
-						float bezier = a->bezier_track_interpolate(i, time);
+						real_t bezier = a->bezier_track_interpolate(i, time);
 
 						if (t->process_pass != process_pass) {
 							t->value = bezier;
@@ -1029,10 +1029,10 @@ void AnimationTree::_process_graph(float p_delta) {
 								t->playing = false;
 								playing_caches.erase(t);
 							} else {
-								float start_ofs = a->audio_track_get_key_start_offset(i, idx);
+								real_t start_ofs = a->audio_track_get_key_start_offset(i, idx);
 								start_ofs += time - a->track_get_key_time(i, idx);
-								float end_ofs = a->audio_track_get_key_end_offset(i, idx);
-								float len = stream->get_length();
+								real_t end_ofs = a->audio_track_get_key_end_offset(i, idx);
+								real_t len = stream->get_length();
 
 								if (start_ofs > len - end_ofs) {
 									t->object->call("stop");
@@ -1068,9 +1068,9 @@ void AnimationTree::_process_graph(float p_delta) {
 									t->playing = false;
 									playing_caches.erase(t);
 								} else {
-									float start_ofs = a->audio_track_get_key_start_offset(i, idx);
-									float end_ofs = a->audio_track_get_key_end_offset(i, idx);
-									float len = stream->get_length();
+									real_t start_ofs = a->audio_track_get_key_start_offset(i, idx);
+									real_t end_ofs = a->audio_track_get_key_end_offset(i, idx);
+									real_t len = stream->get_length();
 
 									t->object->call("set_stream", stream);
 									t->object->call("play", start_ofs);
@@ -1093,7 +1093,7 @@ void AnimationTree::_process_graph(float p_delta) {
 								if (!loop && time < t->start) {
 									stop = true;
 								} else if (t->len > 0) {
-									float len = t->start > time ? (a->get_length() - t->start) + time : time - t->start;
+									real_t len = t->start > time ? (a->get_length() - t->start) + time : time - t->start;
 
 									if (len > t->len) {
 										stop = true;
@@ -1109,7 +1109,7 @@ void AnimationTree::_process_graph(float p_delta) {
 							}
 						}
 
-						float db = Math::linear2db(MAX(blend, 0.00001));
+						real_t db = Math::linear2db(MAX(blend, 0.00001));
 						if (t->object->has_method("set_unit_db")) {
 							t->object->call("set_unit_db", db);
 						} else {
@@ -1132,7 +1132,7 @@ void AnimationTree::_process_graph(float p_delta) {
 								continue;
 							}
 
-							float pos = a->track_get_key_time(i, idx);
+							double pos = a->track_get_key_time(i, idx);
 
 							StringName anim_name = a->animation_track_get_key_animation(i, idx);
 							if (String(anim_name) == "[stop]" || !player2->has_animation(anim_name)) {
@@ -1141,10 +1141,10 @@ void AnimationTree::_process_graph(float p_delta) {
 
 							Ref<Animation> anim = player2->get_animation(anim_name);
 
-							float at_anim_pos;
+							real_t at_anim_pos;
 
 							if (anim->has_loop()) {
-								at_anim_pos = Math::fposmod(time - pos, anim->get_length()); //seek to loop
+								at_anim_pos = Math::fposmod(time - pos, (double)anim->get_length()); //seek to loop
 							} else {
 								at_anim_pos = MAX(anim->get_length(), time - pos); //seek to end
 							}
@@ -1238,7 +1238,7 @@ void AnimationTree::_process_graph(float p_delta) {
 	}
 }
 
-void AnimationTree::advance(float p_time) {
+void AnimationTree::advance(real_t p_time) {
 	_process_graph(p_time);
 }
 
@@ -1443,7 +1443,7 @@ void AnimationTree::rename_parameter(const String &p_base, const String &p_new_b
 	_update_properties();
 }
 
-float AnimationTree::get_connection_activity(const StringName &p_path, int p_connection) const {
+real_t AnimationTree::get_connection_activity(const StringName &p_path, int p_connection) const {
 	if (!input_activity_map_get.has(p_path)) {
 		return 0;
 	}

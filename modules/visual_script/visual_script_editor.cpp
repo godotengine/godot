@@ -2323,10 +2323,6 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 				pset.instantiate();
 				pset->set_call_mode(VisualScriptPropertySet::CALL_MODE_INSTANCE);
 				pset->set_base_type(obj->get_class());
-				/*if (use_value) {
-						pset->set_use_builtin_value(true);
-						pset->set_builtin_value(d["value"]);
-					}*/
 				vnode = pset;
 			} else {
 				Ref<VisualScriptPropertyGet> pget;

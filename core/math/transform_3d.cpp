@@ -71,40 +71,12 @@ void Transform3D::rotate_basis(const Vector3 &p_axis, real_t p_phi) {
 
 Transform3D Transform3D::looking_at(const Vector3 &p_target, const Vector3 &p_up) const {
 	Transform3D t = *this;
-	t.set_look_at(origin, p_target, p_up);
+	t.basis = Basis::looking_at(p_target - origin, p_up);
 	return t;
 }
 
 void Transform3D::set_look_at(const Vector3 &p_eye, const Vector3 &p_target, const Vector3 &p_up) {
-#ifdef MATH_CHECKS
-	ERR_FAIL_COND(p_eye == p_target);
-	ERR_FAIL_COND(p_up.length() == 0);
-#endif
-	// Reference: MESA source code
-	Vector3 v_x, v_y, v_z;
-
-	/* Make rotation matrix */
-
-	/* Z vector */
-	v_z = p_eye - p_target;
-
-	v_z.normalize();
-
-	v_y = p_up;
-
-	v_x = v_y.cross(v_z);
-#ifdef MATH_CHECKS
-	ERR_FAIL_COND(v_x.length() == 0);
-#endif
-
-	/* Recompute Y = Z cross X */
-	v_y = v_z.cross(v_x);
-
-	v_x.normalize();
-	v_y.normalize();
-
-	basis.set(v_x, v_y, v_z);
-
+	basis = Basis::looking_at(p_target - p_eye, p_up);
 	origin = p_eye;
 }
 

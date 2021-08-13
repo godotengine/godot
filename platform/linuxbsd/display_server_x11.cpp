@@ -2207,7 +2207,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 
 		if (status == XLookupChars) {
 			bool keypress = xkeyevent->type == KeyPress;
-			unsigned int keycode = KeyMappingX11::get_keycode(keysym_keycode);
+			Key keycode = KeyMappingX11::get_keycode(keysym_keycode);
 			unsigned int physical_keycode = KeyMappingX11::get_scancode(xkeyevent->keycode);
 
 			if (keycode >= 'a' && keycode <= 'z') {
@@ -2224,7 +2224,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 				}
 
 				if (keycode == 0) {
-					keycode = physical_keycode;
+					keycode = (Key)physical_keycode;
 				}
 
 				_get_key_modifier_state(xkeyevent->state, k);
@@ -2236,7 +2236,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 
 				k->set_keycode(keycode);
 
-				k->set_physical_keycode(physical_keycode);
+				k->set_physical_keycode((Key)physical_keycode);
 
 				k->set_echo(false);
 
@@ -2271,7 +2271,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	// KeyMappingX11 just translated the X11 keysym to a PIGUI
 	// keysym, so it works in all platforms the same.
 
-	unsigned int keycode = KeyMappingX11::get_keycode(keysym_keycode);
+	Key keycode = KeyMappingX11::get_keycode(keysym_keycode);
 	unsigned int physical_keycode = KeyMappingX11::get_scancode(xkeyevent->keycode);
 
 	/* Phase 3, obtain a unicode character from the keysym */
@@ -2292,12 +2292,12 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 
 	bool keypress = xkeyevent->type == KeyPress;
 
-	if (physical_keycode == 0 && keycode == 0 && unicode == 0) {
+	if (physical_keycode == 0 && keycode == KEY_NONE && unicode == 0) {
 		return;
 	}
 
-	if (keycode == 0) {
-		keycode = physical_keycode;
+	if (keycode == KEY_NONE) {
+		keycode = (Key)physical_keycode;
 	}
 
 	/* Phase 5, determine modifier mask */
@@ -2360,11 +2360,11 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	k->set_pressed(keypress);
 
 	if (keycode >= 'a' && keycode <= 'z') {
-		keycode -= 'a' - 'A';
+		keycode -= int('a' - 'A');
 	}
 
 	k->set_keycode(keycode);
-	k->set_physical_keycode(physical_keycode);
+	k->set_physical_keycode((Key)physical_keycode);
 	k->set_unicode(unicode);
 	k->set_echo(p_echo);
 

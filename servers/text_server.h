@@ -59,7 +59,8 @@ public:
 		JUSTIFICATION_KASHIDA = 1 << 0,
 		JUSTIFICATION_WORD_BOUND = 1 << 1,
 		JUSTIFICATION_TRIM_EDGE_SPACES = 1 << 2,
-		JUSTIFICATION_AFTER_LAST_TAB = 1 << 3
+		JUSTIFICATION_AFTER_LAST_TAB = 1 << 3,
+		JUSTIFICATION_CONSTRAIN_ELLIPSIS = 1 << 4,
 	};
 
 	enum LineBreakFlag {
@@ -67,7 +68,7 @@ public:
 		BREAK_MANDATORY = 1 << 4,
 		BREAK_WORD_BOUND = 1 << 5,
 		BREAK_GRAPHEME_BOUND = 1 << 6,
-		BREAK_WORD_BOUND_ADAPTIVE = 1 << 5 | 1 << 7
+		BREAK_WORD_BOUND_ADAPTIVE = 1 << 5 | 1 << 7,
 	};
 
 	enum TextOverrunFlag {
@@ -75,7 +76,8 @@ public:
 		OVERRUN_TRIM = 1 << 0,
 		OVERRUN_TRIM_WORD_ONLY = 1 << 1,
 		OVERRUN_ADD_ELLIPSIS = 1 << 2,
-		OVERRUN_ENFORCE_ELLIPSIS = 1 << 3
+		OVERRUN_ENFORCE_ELLIPSIS = 1 << 3,
+		OVERRUN_JUSTIFICATION_AWARE = 1 << 4,
 	};
 
 	enum GraphemeFlag {
@@ -154,6 +156,12 @@ public:
 		}
 	};
 
+	struct TrimData {
+		int trim_pos = -1;
+		int ellipsis_pos = -1;
+		Vector<TextServer::Glyph> ellipsis_glyph_buf;
+	};
+
 	struct ShapedTextData {
 		/* Source data */
 		RID parent; // Substring parent ShapedTextData.
@@ -181,7 +189,7 @@ public:
 
 		struct EmbeddedObject {
 			int pos = 0;
-			VAlign inline_align = VALIGN_TOP;
+			InlineAlign inline_align = INLINE_ALIGN_CENTER;
 			Rect2 rect;
 		};
 		Map<Variant, EmbeddedObject> objects;
@@ -192,6 +200,7 @@ public:
 		bool line_breaks_valid = false; // Line and word break flags are populated (and virtual zero width spaces inserted).
 		bool justification_ops_valid = false; // Virtual elongation glyphs are added to the string.
 		bool sort_valid = false;
+		bool text_trimmed = false;
 
 		bool preserve_invalid = true; // Draw hex code box instead of missing characters.
 		bool preserve_control = false; // Draw control characters.
@@ -199,9 +208,13 @@ public:
 		float ascent = 0.f; // Ascent for horizontal layout, 1/2 of width for vertical.
 		float descent = 0.f; // Descent for horizontal layout, 1/2 of width for vertical.
 		float width = 0.f; // Width for horizontal layout, height for vertical.
+		float width_trimmed = 0.f;
 
 		float upos = 0.f;
 		float uthk = 0.f;
+
+		TrimData overrun_trim_data;
+		bool fit_width_minimum_reached = false;
 
 		Vector<TextServer::Glyph> glyphs;
 		Vector<TextServer::Glyph> glyphs_logical;
@@ -332,8 +345,8 @@ public:
 	virtual bool shaped_text_get_preserve_control(RID p_shaped) const = 0;
 
 	virtual bool shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "") = 0;
-	virtual bool shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, VAlign p_inline_align = VALIGN_CENTER, int p_length = 1) = 0;
-	virtual bool shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, VAlign p_inline_align = VALIGN_CENTER) = 0;
+	virtual bool shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER, int p_length = 1) = 0;
+	virtual bool shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER) = 0;
 
 	virtual RID shaped_text_substr(RID p_shaped, int p_start, int p_length) const = 0; // Copy shaped substring (e.g. line break) without reshaping, but correctly reordered, preservers range.
 	virtual RID shaped_text_get_parent(RID p_shaped) const = 0;
@@ -357,7 +370,8 @@ public:
 	virtual Vector<Vector2i> shaped_text_get_line_breaks(RID p_shaped, float p_width, int p_start = 0, uint8_t /*TextBreakFlag*/ p_break_flags = BREAK_MANDATORY | BREAK_WORD_BOUND) const;
 	virtual Vector<Vector2i> shaped_text_get_word_breaks(RID p_shaped, int p_grapheme_flags = GRAPHEME_IS_SPACE | GRAPHEME_IS_PUNCTUATION) const;
 
-	virtual void shaped_text_overrun_trim_to_width(RID p_shaped, float p_width, uint8_t p_clip_flags) = 0;
+	virtual TrimData shaped_text_get_trim_data(RID p_shaped) const;
+	virtual void shaped_text_overrun_trim_to_width(RID p_shaped, float p_width, uint8_t p_trim_flags) = 0;
 	virtual Array shaped_text_get_objects(RID p_shaped) const = 0;
 	virtual Rect2 shaped_text_get_object_rect(RID p_shaped, Variant p_key) const = 0;
 

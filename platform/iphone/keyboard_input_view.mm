@@ -138,8 +138,8 @@
 				break;
 		}
 
-		DisplayServerIPhone::get_singleton()->key(character, true);
-		DisplayServerIPhone::get_singleton()->key(character, false);
+		DisplayServerIPhone::get_singleton()->key((Key)character, true);
+		DisplayServerIPhone::get_singleton()->key((Key)character, false);
 	}
 }
 

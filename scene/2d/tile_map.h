@@ -213,8 +213,8 @@ private:
 	// Rect.
 	Rect2 rect_cache;
 	bool rect_cache_dirty = true;
-	Rect2 used_size_cache;
-	bool used_size_cache_dirty = true;
+	Rect2i used_rect_cache;
+	bool used_rect_cache_dirty = true;
 
 	// TileMap layers.
 	struct TileMapLayer {

@@ -85,7 +85,7 @@ public:
 	virtual void end_frame(bool p_swap_buffers) = 0;
 	virtual void finalize() = 0;
 	virtual uint64_t get_frame_number() const = 0;
-	virtual float get_frame_delta_time() const = 0;
+	virtual double get_frame_delta_time() const = 0;
 
 	virtual bool is_low_end() const = 0;
 	virtual bool is_xr_enabled() const;

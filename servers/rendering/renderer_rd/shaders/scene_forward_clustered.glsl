@@ -466,6 +466,11 @@ layout(location = 0) out vec4 frag_color;
 
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
+/* Make a default specular mode SPECULAR_SCHLICK_GGX. */
+#if !defined(SPECULAR_DISABLED) && !defined(SPECULAR_SCHLICK_GGX) && !defined(SPECULAR_BLINN) && !defined(SPECULAR_PHONG) && !defined(SPECULAR_TOON)
+#define SPECULAR_SCHLICK_GGX
+#endif
+
 #include "scene_forward_lights_inc.glsl"
 
 #include "scene_forward_gi_inc.glsl"
@@ -907,6 +912,8 @@ void main() {
 		specular_light = textureLod(samplerCube(radiance_cubemap, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), ref_vec, roughness * MAX_ROUGHNESS_LOD).rgb;
 
 #endif //USE_RADIANCE_CUBEMAP_ARRAY
+		float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
+		specular_light *= horizon * horizon;
 		specular_light *= scene_data.ambient_light_color_energy.a;
 	}
 

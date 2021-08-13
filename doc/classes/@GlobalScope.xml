@@ -96,7 +96,7 @@
 			<argument index="0" name="bytes" type="PackedByteArray" />
 			<description>
 				Decodes a byte array back to a [Variant] value. Decoding objects is allowed.
-				[b]WARNING:[/b] Deserialized object can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).
+				[b]Warning:[/b] Deserialized object can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).
 			</description>
 		</method>
 		<method name="cartesian2polar">
@@ -210,6 +210,13 @@
 			<argument index="1" name="curve" type="float" />
 			<description>
 				Easing function, based on exponent. The curve values are: 0 is constant, 1 is linear, 0 to 1 is ease-in, 1+ is ease out. Negative values are in-out/out in.
+			</description>
+		</method>
+		<method name="error_string">
+			<return type="String" />
+			<argument index="0" name="error" type="int" />
+			<description>
+				Returns a human-readable name for the given error code.
 			</description>
 		</method>
 		<method name="exp">
@@ -511,7 +518,7 @@
 				nearest_po2(0) # Returns 0 (this may not be what you expect)
 				nearest_po2(-1) # Returns 0 (this may not be what you expect)
 				[/codeblock]
-				[b]WARNING:[/b] Due to the way it is implemented, this function returns [code]0[/code] rather than [code]1[/code] for non-positive values of [code]value[/code] (in reality, 1 is the smallest integer power of 2).
+				[b]Warning:[/b] Due to the way it is implemented, this function returns [code]0[/code] rather than [code]1[/code] for non-positive values of [code]value[/code] (in reality, 1 is the smallest integer power of 2).
 			</description>
 		</method>
 		<method name="polar2cartesian">
@@ -1127,6 +1134,36 @@
 		</constant>
 		<constant name="VALIGN_BOTTOM" value="2" enum="VAlign">
 			Vertical bottom alignment, usually for text-derived classes.
+		</constant>
+		<constant name="INLINE_ALIGN_TOP_TO" value="0" enum="InlineAlign">
+			Aligns the top of the inline object (e.g. image, table) to the position of the text specified by [code]INLINE_ALIGN_TO_*[/code] constant.
+		</constant>
+		<constant name="INLINE_ALIGN_CENTER_TO" value="1" enum="InlineAlign">
+			Aligns the center of the inline object (e.g. image, table) to the position of the text specified by [code]INLINE_ALIGN_TO_*[/code] constant.
+		</constant>
+		<constant name="INLINE_ALIGN_BOTTOM_TO" value="2" enum="InlineAlign">
+			Aligns the bottom of the inline object (e.g. image, table) to the position of the text specified by [code]INLINE_ALIGN_TO_*[/code] constant.
+		</constant>
+		<constant name="INLINE_ALIGN_TO_TOP" value="0" enum="InlineAlign">
+			Aligns the position of the inline object (e.g. image, table) specified by [code]INLINE_ALIGN_*_TO[/code] constant to the top of the text.
+		</constant>
+		<constant name="INLINE_ALIGN_TO_CENTER" value="4" enum="InlineAlign">
+			Aligns the position of the inline object (e.g. image, table) specified by [code]INLINE_ALIGN_*_TO[/code] constant to the center of the text.
+		</constant>
+		<constant name="INLINE_ALIGN_TO_BASELINE" value="8" enum="InlineAlign">
+			Aligns the position of the inline object (e.g. image, table) specified by [code]INLINE_ALIGN_*_TO[/code] constant to the baseline of the text.
+		</constant>
+		<constant name="INLINE_ALIGN_TO_BOTTOM" value="12" enum="InlineAlign">
+			Aligns inline object (e.g. image, table) to the bottom of the text.
+		</constant>
+		<constant name="INLINE_ALIGN_TOP" value="0" enum="InlineAlign">
+			Aligns top of the inline object (e.g. image, table) to the top of the text. Equvalent to [code]INLINE_ALIGN_TOP_TO | INLINE_ALIGN_TO_TOP[/code].
+		</constant>
+		<constant name="INLINE_ALIGN_CENTER" value="5" enum="InlineAlign">
+			Aligns center of the inline object (e.g. image, table) to the center of the text. Equvalent to [code]INLINE_ALIGN_CENTER_TO | INLINE_ALIGN_TO_CENTER[/code].
+		</constant>
+		<constant name="INLINE_ALIGN_BOTTOM" value="14" enum="InlineAlign">
+			Aligns bottom of the inline object (e.g. image, table) to the bottom of the text. Equvalent to [code]INLINE_ALIGN_BOTTOM_TO | INLINE_ALIGN_TO_BOTTOM[/code].
 		</constant>
 		<constant name="SPKEY" value="16777216">
 			Keycodes with this bit applied are non-printable.
@@ -2276,6 +2313,8 @@
 		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS" value="23" enum="PropertyHint">
 			Hints that an image is compressed using lossless compression.
 		</constant>
+		<constant name="PROPERTY_HINT_OBJECT_ID" value="24" enum="PropertyHint">
+		</constant>
 		<constant name="PROPERTY_HINT_TYPE_STRING" value="25" enum="PropertyHint">
 			Hint that a property represents a particular type. If a property is [constant TYPE_STRING], allows to set a type from the create dialog. If you need to create an [Array] to contain elements of a specific type, the [code]hint_string[/code] must encode nested types using [code]":"[/code] and [code]"/"[/code] for specifying [Resource] types. For instance:
 			[codeblock]
@@ -2285,6 +2324,38 @@
 			hint_string = "%s:%s/%s:Resource" % [TYPE_ARRAY, TYPE_OBJECT, TYPE_OBJECT] # Two-dimensional array of resources.
 			[/codeblock]
 			[b]Note:[/b] the final colon is required to specify for properly detecting built-in types.
+		</constant>
+		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="26" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_METHOD_OF_VARIANT_TYPE" value="27" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_METHOD_OF_BASE_TYPE" value="28" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_METHOD_OF_INSTANCE" value="29" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_METHOD_OF_SCRIPT" value="30" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE" value="31" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_PROPERTY_OF_BASE_TYPE" value="32" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_PROPERTY_OF_INSTANCE" value="33" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_PROPERTY_OF_SCRIPT" value="34" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_OBJECT_TOO_BIG" value="35" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_NODE_PATH_VALID_TYPES" value="36" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_SAVE_FILE" value="37" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="38" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="39" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_MAX" value="40" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags">
 		</constant>
 		<constant name="PROPERTY_USAGE_STORAGE" value="1" enum="PropertyUsageFlags">
 			The property is serialized and saved in the scene file (default).
@@ -2324,6 +2395,36 @@
 		</constant>
 		<constant name="PROPERTY_USAGE_SCRIPT_VARIABLE" value="8192" enum="PropertyUsageFlags">
 			The property is a script variable which should be serialized and saved in the scene file.
+		</constant>
+		<constant name="PROPERTY_USAGE_STORE_IF_NULL" value="16384" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_ANIMATE_AS_TRIGGER" value="32768" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED" value="65536" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="131072" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_CLASS_IS_ENUM" value="262144" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_NIL_IS_VARIANT" value="524288" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_INTERNAL" value="1048576" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE" value="2097152" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_HIGH_END_GFX" value="4194304" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT" value="8388608" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT" value="16777216" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_KEYING_INCREMENTS" value="33554432" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_DEFERRED_SET_RESOURCE" value="67108864" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT" value="134217728" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_EDITOR_BASIC_SETTING" value="268435456" enum="PropertyUsageFlags">
 		</constant>
 		<constant name="PROPERTY_USAGE_DEFAULT" value="7" enum="PropertyUsageFlags">
 			Default usage (storage, editor and network).

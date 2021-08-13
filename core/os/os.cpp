@@ -178,7 +178,7 @@ static void _OS_printres(Object *p_obj) {
 		return;
 	}
 
-	String str = itos(res->get_instance_id()) + String(res->get_class()) + ":" + String(res->get_name()) + " - " + res->get_path();
+	String str = vformat("%s - %s - %s", res->to_string(), res->get_name(), res->get_path());
 	if (_OSPRF) {
 		_OSPRF->store_line(str);
 	} else {

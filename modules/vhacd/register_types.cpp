@@ -33,7 +33,7 @@
 #include "thirdparty/vhacd/public/VHACD.h"
 
 static Vector<Vector<Face3>> convex_decompose(const Vector<Face3> &p_faces, int p_max_convex_hulls = -1) {
-	Vector<float> vertices;
+	Vector<real_t> vertices;
 	vertices.resize(p_faces.size() * 9);
 	Vector<uint32_t> indices;
 	indices.resize(p_faces.size() * 3);

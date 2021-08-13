@@ -124,7 +124,7 @@ Point2 XRCamera3D::unproject_position(const Vector3 &p_pos) const {
 	return res;
 };
 
-Vector3 XRCamera3D::project_position(const Point2 &p_point, float p_z_depth) const {
+Vector3 XRCamera3D::project_position(const Point2 &p_point, real_t p_z_depth) const {
 	// get our XRServer
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, Vector3());
@@ -544,7 +544,7 @@ void XROrigin3D::clear_tracked_camera_if(XRCamera3D *p_tracked_camera) {
 	};
 };
 
-float XROrigin3D::get_world_scale() const {
+real_t XROrigin3D::get_world_scale() const {
 	// get our XRServer
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, 1.0);
@@ -552,7 +552,7 @@ float XROrigin3D::get_world_scale() const {
 	return xr_server->get_world_scale();
 };
 
-void XROrigin3D::set_world_scale(float p_world_scale) {
+void XROrigin3D::set_world_scale(real_t p_world_scale) {
 	// get our XRServer
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);

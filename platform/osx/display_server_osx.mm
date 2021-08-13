@@ -318,8 +318,16 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 	}
 	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
 
-	_get_mouse_pos(wd, [wd.window_object mouseLocationOutsideOfEventStream]);
-	Input::get_singleton()->set_mouse_position(wd.mouse_pos);
+	if (DS_OSX->mouse_mode == DisplayServer::MOUSE_MODE_CAPTURED) {
+		const NSRect contentRect = [wd.window_view frame];
+		NSRect pointInWindowRect = NSMakeRect(contentRect.size.width / 2, contentRect.size.height / 2, 0, 0);
+		NSPoint pointOnScreen = [[wd.window_view window] convertRectToScreen:pointInWindowRect].origin;
+		CGPoint lMouseWarpPos = { pointOnScreen.x, CGDisplayBounds(CGMainDisplayID()).size.height - pointOnScreen.y };
+		CGWarpMouseCursorPosition(lMouseWarpPos);
+	} else {
+		_get_mouse_pos(wd, [wd.window_object mouseLocationOutsideOfEventStream]);
+		Input::get_singleton()->set_mouse_position(wd.mouse_pos);
+	}
 
 	DS_OSX->window_focused = true;
 	DS_OSX->_send_window_event(wd, DisplayServerOSX::WINDOW_EVENT_FOCUS_IN);
@@ -577,7 +585,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 		ke.pressed = true;
 		ke.echo = false;
 		ke.raw = false; // IME input event
-		ke.keycode = 0;
+		ke.keycode = KEY_NONE;
 		ke.physical_keycode = 0;
 		ke.unicode = codepoint;
 
@@ -920,9 +928,9 @@ static bool isNumpadKey(unsigned int key) {
 
 // Translates a OS X keycode to a Godot keycode
 //
-static int translateKey(unsigned int key) {
+static Key translateKey(unsigned int key) {
 	// Keyboard symbol translation table
-	static const unsigned int table[128] = {
+	static const Key table[128] = {
 		/* 00 */ KEY_A,
 		/* 01 */ KEY_S,
 		/* 02 */ KEY_D,
@@ -1062,7 +1070,7 @@ static int translateKey(unsigned int key) {
 
 struct _KeyCodeMap {
 	UniChar kchar;
-	int kcode;
+	Key kcode;
 };
 
 static const _KeyCodeMap _keycodes[55] = {
@@ -1123,7 +1131,7 @@ static const _KeyCodeMap _keycodes[55] = {
 	{ '/', KEY_SLASH }
 };
 
-static int remapKey(unsigned int key, unsigned int state) {
+static Key remapKey(unsigned int key, unsigned int state) {
 	if (isNumpadKey(key)) {
 		return translateKey(key);
 	}
@@ -3263,7 +3271,7 @@ void DisplayServerOSX::_process_key_events() {
 			k->set_pressed(ke.pressed);
 			k->set_echo(ke.echo);
 			k->set_keycode(ke.keycode);
-			k->set_physical_keycode(ke.physical_keycode);
+			k->set_physical_keycode((Key)ke.physical_keycode);
 			k->set_unicode(ke.unicode);
 
 			_push_input(k);
@@ -3276,8 +3284,8 @@ void DisplayServerOSX::_process_key_events() {
 				_get_key_modifier_state(ke.osx_state, k);
 				k->set_pressed(ke.pressed);
 				k->set_echo(ke.echo);
-				k->set_keycode(0);
-				k->set_physical_keycode(0);
+				k->set_keycode(KEY_NONE);
+				k->set_physical_keycode(KEY_NONE);
 				k->set_unicode(ke.unicode);
 
 				_push_input(k);
@@ -3290,7 +3298,7 @@ void DisplayServerOSX::_process_key_events() {
 				k->set_pressed(ke.pressed);
 				k->set_echo(ke.echo);
 				k->set_keycode(ke.keycode);
-				k->set_physical_keycode(ke.physical_keycode);
+				k->set_physical_keycode((Key)ke.physical_keycode);
 
 				if (i + 1 < key_event_pos && key_event_buffer[i + 1].keycode == 0) {
 					k->set_unicode(key_event_buffer[i + 1].unicode);

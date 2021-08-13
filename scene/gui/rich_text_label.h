@@ -161,7 +161,7 @@ private:
 
 	struct ItemImage : public Item {
 		Ref<Texture2D> image;
-		VAlign inline_align = VALIGN_TOP;
+		InlineAlign inline_align = INLINE_ALIGN_CENTER;
 		Size2 size;
 		Color color;
 		ItemImage() { type = ITEM_IMAGE; }
@@ -248,7 +248,7 @@ private:
 
 		int total_width = 0;
 		int total_height = 0;
-		VAlign inline_align = VALIGN_TOP;
+		InlineAlign inline_align = INLINE_ALIGN_TOP;
 		ItemTable() { type = ITEM_TABLE; }
 	};
 
@@ -260,7 +260,7 @@ private:
 	};
 
 	struct ItemFX : public Item {
-		float elapsed_time = 0.f;
+		double elapsed_time = 0.f;
 	};
 
 	struct ItemShake : public ItemFX {
@@ -440,7 +440,7 @@ private:
 	void _fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack);
 
 	void _update_scroll();
-	void _update_fx(ItemFrame *p_frame, float p_delta_time);
+	void _update_fx(ItemFrame *p_frame, double p_delta_time);
 	void _scroll_changed(double);
 
 	void _gui_input(Ref<InputEvent> p_event);
@@ -463,7 +463,7 @@ private:
 public:
 	String get_text();
 	void add_text(const String &p_text);
-	void add_image(const Ref<Texture2D> &p_image, const int p_width = 0, const int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), VAlign p_align = VALIGN_TOP);
+	void add_image(const Ref<Texture2D> &p_image, const int p_width = 0, const int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlign p_align = INLINE_ALIGN_CENTER);
 	void add_newline();
 	bool remove_line(const int p_line);
 	void push_dropcap(const String &p_string, const Ref<Font> &p_font, int p_size, const Rect2 &p_dropcap_margins = Rect2(), const Color &p_color = Color(1, 1, 1), int p_ol_size = 0, const Color &p_ol_color = Color(0, 0, 0, 0));
@@ -484,7 +484,7 @@ public:
 	void push_indent(int p_level);
 	void push_list(int p_level, ListType p_list, bool p_capitalize);
 	void push_meta(const Variant &p_meta);
-	void push_table(int p_columns, VAlign p_align = VALIGN_TOP);
+	void push_table(int p_columns, InlineAlign p_align = INLINE_ALIGN_TOP);
 	void push_fade(int p_start_index, int p_length);
 	void push_shake(int p_strength, float p_rate);
 	void push_wave(float p_frequency, float p_amplitude);

@@ -2445,7 +2445,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					} else {
 						mb->set_button_index(MOUSE_BUTTON_WHEEL_DOWN);
 					}
-
+					mb->set_factor(fabs((double)motion / (double)WHEEL_DELTA));
 				} break;
 				case WM_MOUSEHWHEEL: {
 					mb->set_pressed(true);
@@ -2456,11 +2456,10 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 					if (motion < 0) {
 						mb->set_button_index(MOUSE_BUTTON_WHEEL_LEFT);
-						mb->set_factor(fabs((double)motion / (double)WHEEL_DELTA));
 					} else {
 						mb->set_button_index(MOUSE_BUTTON_WHEEL_RIGHT);
-						mb->set_factor(fabs((double)motion / (double)WHEEL_DELTA));
 					}
+					mb->set_factor(fabs((double)motion / (double)WHEEL_DELTA));
 				} break;
 				case WM_XBUTTONDOWN: {
 					mb->set_pressed(true);
@@ -2856,8 +2855,8 @@ void DisplayServerWindows::_process_key_events() {
 					k->set_ctrl_pressed(ke.control);
 					k->set_meta_pressed(ke.meta);
 					k->set_pressed(true);
-					k->set_keycode(KeyMappingWindows::get_keysym(ke.wParam));
-					k->set_physical_keycode(KeyMappingWindows::get_scansym((ke.lParam >> 16) & 0xFF, ke.lParam & (1 << 24)));
+					k->set_keycode((Key)KeyMappingWindows::get_keysym(ke.wParam));
+					k->set_physical_keycode((Key)(KeyMappingWindows::get_scansym((ke.lParam >> 16) & 0xFF, ke.lParam & (1 << 24))));
 					k->set_unicode(unicode);
 					if (k->get_unicode() && gr_mem) {
 						k->set_alt_pressed(false);
@@ -2889,10 +2888,10 @@ void DisplayServerWindows::_process_key_events() {
 					// Special case for Numpad Enter key
 					k->set_keycode(KEY_KP_ENTER);
 				} else {
-					k->set_keycode(KeyMappingWindows::get_keysym(ke.wParam));
+					k->set_keycode((Key)KeyMappingWindows::get_keysym(ke.wParam));
 				}
 
-				k->set_physical_keycode(KeyMappingWindows::get_scansym((ke.lParam >> 16) & 0xFF, ke.lParam & (1 << 24)));
+				k->set_physical_keycode((Key)(KeyMappingWindows::get_scansym((ke.lParam >> 16) & 0xFF, ke.lParam & (1 << 24))));
 
 				if (i + 1 < key_event_pos && key_event_buffer[i + 1].uMsg == WM_CHAR) {
 					char32_t unicode = key_event_buffer[i + 1].wParam;

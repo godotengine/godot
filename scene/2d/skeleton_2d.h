@@ -49,8 +49,8 @@ class Bone2D : public Node2D {
 	Transform2D rest;
 
 	bool autocalculate_length_and_angle = true;
-	float length = 16;
-	float bone_angle = 0;
+	real_t length = 16;
+	real_t bone_angle = 0;
 
 	int skeleton_index = -1;
 
@@ -85,10 +85,10 @@ public:
 
 	void set_autocalculate_length_and_angle(bool p_autocalculate);
 	bool get_autocalculate_length_and_angle() const;
-	void set_length(float p_length);
-	float get_length() const;
-	void set_bone_angle(float p_angle);
-	float get_bone_angle() const;
+	void set_length(real_t p_length);
+	real_t get_length() const;
+	void set_bone_angle(real_t p_angle);
+	real_t get_bone_angle() const;
 
 	int get_index_in_skeleton() const;
 
@@ -122,7 +122,7 @@ class Skeleton2D : public Node2D {
 
 		//Transform2D local_pose_cache;
 		Transform2D local_pose_override;
-		float local_pose_override_amount = 0;
+		real_t local_pose_override_amount = 0;
 		bool local_pose_override_persistent = false;
 	};
 
@@ -153,12 +153,12 @@ public:
 
 	RID get_skeleton() const;
 
-	void set_bone_local_pose_override(int p_bone_idx, Transform2D p_override, float p_amount, bool p_persistent = true);
+	void set_bone_local_pose_override(int p_bone_idx, Transform2D p_override, real_t p_amount, bool p_persistent = true);
 	Transform2D get_bone_local_pose_override(int p_bone_idx);
 
 	Ref<SkeletonModificationStack2D> get_modification_stack() const;
 	void set_modification_stack(Ref<SkeletonModificationStack2D> p_stack);
-	void execute_modifications(float p_delta, int p_execution_mode);
+	void execute_modifications(real_t p_delta, int p_execution_mode);
 
 	Skeleton2D();
 	~Skeleton2D();

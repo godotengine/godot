@@ -889,8 +889,8 @@ ExportTemplateManager::ExportTemplateManager() {
 	request_mirrors->connect("request_completed", callable_mp(this, &ExportTemplateManager::_refresh_mirrors_completed));
 
 	mirror_options_button = memnew(MenuButton);
-	mirror_options_button->get_popup()->add_item("Open in Web Browser", VISIT_WEB_MIRROR);
-	mirror_options_button->get_popup()->add_item("Copy Mirror URL", COPY_MIRROR_URL);
+	mirror_options_button->get_popup()->add_item(TTR("Open in Web Browser"), VISIT_WEB_MIRROR);
+	mirror_options_button->get_popup()->add_item(TTR("Copy Mirror URL"), COPY_MIRROR_URL);
 	download_install_hb->add_child(mirror_options_button);
 	mirror_options_button->get_popup()->connect("id_pressed", callable_mp(this, &ExportTemplateManager::_mirror_options_button_cbk));
 

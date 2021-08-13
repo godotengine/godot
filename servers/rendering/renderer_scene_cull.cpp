@@ -1866,7 +1866,7 @@ void RendererSceneCull::_update_instance_lightmap_captures(Instance *p_instance)
 		//rotate it
 		Basis rot = lightmap->transform.basis.orthonormalized();
 		for (int i = 0; i < 3; i++) {
-			float csh[9];
+			real_t csh[9];
 			for (int j = 0; j < 9; j++) {
 				csh[j] = sh[j][i];
 			}
@@ -1878,7 +1878,7 @@ void RendererSceneCull::_update_instance_lightmap_captures(Instance *p_instance)
 
 		Vector3 inner_pos = ((lm_pos - bounds.position) / bounds.size) * 2.0 - Vector3(1.0, 1.0, 1.0);
 
-		float blend = MAX(inner_pos.x, MAX(inner_pos.y, inner_pos.z));
+		real_t blend = MAX(inner_pos.x, MAX(inner_pos.y, inner_pos.z));
 		//make blend more rounded
 		blend = Math::lerp(inner_pos.length(), blend, blend);
 		blend *= blend;

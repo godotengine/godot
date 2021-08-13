@@ -245,6 +245,7 @@ void ItemList::set_item_custom_bg_color(int p_idx, const Color &p_custom_bg_colo
 	ERR_FAIL_INDEX(p_idx, items.size());
 
 	items.write[p_idx].custom_bg = p_custom_bg_color;
+	update();
 }
 
 Color ItemList::get_item_custom_bg_color(int p_idx) const {
@@ -257,6 +258,7 @@ void ItemList::set_item_custom_fg_color(int p_idx, const Color &p_custom_fg_colo
 	ERR_FAIL_INDEX(p_idx, items.size());
 
 	items.write[p_idx].custom_fg = p_custom_fg_color;
+	update();
 }
 
 Color ItemList::get_item_custom_fg_color(int p_idx) const {

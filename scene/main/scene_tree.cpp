@@ -1341,7 +1341,7 @@ SceneTree::SceneTree() {
 	set_multiplayer(Ref<MultiplayerAPI>(memnew(MultiplayerAPI)));
 
 	//root->set_world_2d( Ref<World2D>( memnew( World2D )));
-	root->set_as_audio_listener(true);
+	root->set_as_audio_listener_3d(true);
 	root->set_as_audio_listener_2d(true);
 	current_scene = nullptr;
 

@@ -44,7 +44,11 @@
 #endif
 #include "vk_mem_alloc.h"
 
+#ifdef USE_VOLK
+#include <volk.h>
+#else
 #include <vulkan/vulkan.h>
+#endif
 
 class VulkanContext;
 
@@ -1149,6 +1153,7 @@ public:
 	virtual void draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect);
 	virtual void draw_list_disable_scissor(DrawListID p_list);
 
+	virtual uint32_t draw_list_get_current_pass();
 	virtual DrawListID draw_list_switch_to_next_pass();
 	virtual Error draw_list_switch_to_next_pass_split(uint32_t p_splits, DrawListID *r_split_ids);
 

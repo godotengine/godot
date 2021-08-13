@@ -345,6 +345,7 @@ msgstr "অ্যানিমেশনের লুপ মোড পরিবর
 msgid "Remove Anim Track"
 msgstr "অ্যানিমেশন (Anim) ট্র্যাক রিমুভ করুন"
 
+#. TRANSLATORS: %s will be replaced by a phrase describing the target of track.
 #: editor/animation_track_editor.cpp
 msgid "Create NEW track for %s and insert key?"
 msgstr "%s এর জন্য নতুন ট্র্যাক/পথ তৈরি করতে এবং চাবি প্রবেশ করাতে চান?"
@@ -369,9 +370,27 @@ msgstr "তৈরি করুন"
 msgid "Anim Insert"
 msgstr "অ্যানিমেশনে (Anim) অন্তর্ভুক্ত করুন"
 
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "node '%s'"
+msgstr "'..' তে পরিচালনা করা সম্ভব নয়"
+
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "animation"
+msgstr "অ্যানিমেশন"
+
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
 msgstr "অ্যানিমেশনপ্লেয়ার নিজেই অ্যানিমেট করতে পারে না, কেবল অন্য প্লেয়ার।"
+
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "property '%s'"
+msgstr "প্রপার্টি:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -969,7 +988,7 @@ msgstr "নতুন তৈরি করুন"
 msgid "No results for \"%s\"."
 msgstr ""
 
-#: editor/create_dialog.cpp
+#: editor/create_dialog.cpp editor/property_selector.cpp
 msgid "No description available for %s."
 msgstr ""
 
@@ -2392,6 +2411,18 @@ msgid "New Window"
 msgstr "উইন্ডো"
 
 #: editor/editor_node.cpp
+msgid ""
+"Spins when the editor window redraws.\n"
+"Update Continuously is enabled, which can increase power usage. Click to "
+"disable it."
+msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Spins when the editor window redraws."
+msgstr "এডিটরের পুন-অঙ্কনে এটি ঘূর্ণন করে!"
+
+#: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
 msgstr ""
 
@@ -3286,11 +3317,6 @@ msgstr "সংরক্ষণ এবং পুন-ইম্পোর্ট ক�
 
 #: editor/editor_node.cpp
 #, fuzzy
-msgid "Spins when the editor window redraws."
-msgstr "এডিটরের পুন-অঙ্কনে এটি ঘূর্ণন করে!"
-
-#: editor/editor_node.cpp
-#, fuzzy
 msgid "Update Continuously"
 msgstr "অবিচ্ছিন্ন/নিরবচ্ছিন্ন"
 
@@ -3977,6 +4003,16 @@ msgstr ""
 #, fuzzy
 msgid "Download from:"
 msgstr "নীচে"
+
+#: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Open in Web Browser"
+msgstr "ব্রাউস"
+
+#: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Copy Mirror URL"
+msgstr "ভুল/সমস্যা-সমূহ লোড করুন"
 
 #: editor/export_template_manager.cpp
 msgid "Download and Install"
@@ -9179,6 +9215,12 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"Select a theme type from the list to edit its items.\n"
+"You can add a custom type or import a type with its items from another theme."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
 msgid "Remove All Color Items"
 msgstr "ক্লাসের আইটেম অপসারণ করুন"
@@ -9207,6 +9249,12 @@ msgstr "ক্লাসের আইটেম অপসারণ করুন"
 #, fuzzy
 msgid "Remove All StyleBox Items"
 msgstr "ক্লাসের আইটেম অপসারণ করুন"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"This theme type is empty.\n"
+"Add more items to it manually or by importing from another theme."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -13015,6 +13063,16 @@ msgstr "Capsule Shape এর উচ্চতা পরিবর্তন কর�
 msgid "Change Ray Shape Length"
 msgstr "Ray Shape এর দৈর্ঘ্য পরিবর্তন করুন"
 
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Room Point Position"
+msgstr "বক্ররেখার বিন্দুর স্থান নির্ধারণ করুন"
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Portal Point Position"
+msgstr "বক্ররেখার বিন্দুর স্থান নির্ধারণ করুন"
+
 #: modules/csg/csg_gizmos.cpp
 #, fuzzy
 msgid "Change Cylinder Radius"
@@ -14801,6 +14859,42 @@ msgstr ""
 msgid "There should only be one RoomManager in the SceneTree."
 msgstr ""
 
+#: scene/3d/room_manager.cpp
+msgid ""
+"RoomList path is invalid.\n"
+"Please check the RoomList branch has been assigned in the RoomManager."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "RoomList contains no Rooms, aborting."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "Misnamed nodes detected, check output log for details. Aborting."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "Portal link room not found, check output log for details."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Portal autolink failed, check output log for details.\n"
+"Check the portal is facing outwards from the source room."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Room overlap detected, cameras may work incorrectly in overlapping area.\n"
+"Check output log for details."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Error calculating room bounds.\n"
+"Ensure all rooms contain geometry or manual bounds."
+msgstr ""
+
 #: scene/3d/soft_body.cpp
 msgid "This body will be ignored until you set a mesh."
 msgstr ""
@@ -16017,10 +16111,6 @@ msgstr ""
 
 #~ msgid "I see..."
 #~ msgstr "বুঝলাম..."
-
-#, fuzzy
-#~ msgid "Can't open '%s'."
-#~ msgstr "'..' তে পরিচালনা করা সম্ভব নয়"
 
 #~ msgid "Ugh"
 #~ msgstr "আহ্‌"

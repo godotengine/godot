@@ -60,6 +60,8 @@ public:
 	virtual void set_transform(const Transform2D &p_transform) = 0;
 	virtual Transform2D get_transform() const = 0;
 
+	virtual Vector2 get_velocity_at_local_position(const Vector2 &p_position) const = 0;
+
 	virtual void add_central_force(const Vector2 &p_force) = 0;
 	virtual void add_force(const Vector2 &p_force, const Vector2 &p_position = Vector2()) = 0;
 	virtual void add_torque(real_t p_torque) = 0;
@@ -208,7 +210,7 @@ class PhysicsServer2D : public Object {
 
 	static PhysicsServer2D *singleton;
 
-	virtual bool _body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin = 0.08, const Ref<PhysicsTestMotionResult2D> &p_result = Ref<PhysicsTestMotionResult2D>(), bool p_exclude_raycast_shapes = true, const Vector<RID> &p_exclude = Vector<RID>());
+	virtual bool _body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, real_t p_margin = 0.08, const Ref<PhysicsTestMotionResult2D> &p_result = Ref<PhysicsTestMotionResult2D>(), const Vector<RID> &p_exclude = Vector<RID>());
 
 protected:
 	static void _bind_methods();
@@ -218,7 +220,6 @@ public:
 
 	enum ShapeType {
 		SHAPE_LINE, ///< plane:"plane"
-		SHAPE_RAY, ///< float:"length"
 		SHAPE_SEGMENT, ///< float:"length"
 		SHAPE_CIRCLE, ///< float:"radius"
 		SHAPE_RECTANGLE, ///< vec3:"extents"
@@ -229,7 +230,6 @@ public:
 	};
 
 	virtual RID line_shape_create() = 0;
-	virtual RID ray_shape_create() = 0;
 	virtual RID segment_shape_create() = 0;
 	virtual RID circle_shape_create() = 0;
 	virtual RID rectangle_shape_create() = 0;
@@ -481,7 +481,7 @@ public:
 		Variant collider_metadata;
 	};
 
-	virtual bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin = 0.08, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true, const Set<RID> &p_exclude = Set<RID>()) = 0;
+	virtual bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, real_t p_margin = 0.08, MotionResult *r_result = nullptr, const Set<RID> &p_exclude = Set<RID>()) = 0;
 
 	struct SeparationResult {
 		real_t collision_depth;
@@ -494,8 +494,6 @@ public:
 		int collider_shape;
 		Variant collider_metadata;
 	};
-
-	virtual int body_test_ray_separation(RID p_body, const Transform2D &p_transform, bool p_infinite_inertia, Vector2 &r_recover_motion, SeparationResult *r_results, int p_result_max, real_t p_margin = 0.08) = 0;
 
 	/* JOINT API */
 

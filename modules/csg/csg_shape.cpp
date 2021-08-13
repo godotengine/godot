@@ -29,8 +29,8 @@
 /*************************************************************************/
 
 #include "csg_shape.h"
+
 #include "core/math/geometry_2d.h"
-#include "scene/3d/path_3d.h"
 
 void CSGShape3D::set_use_collision(bool p_enable) {
 	if (use_collision == p_enable) {
@@ -88,36 +88,40 @@ uint32_t CSGShape3D::get_collision_mask() const {
 	return collision_mask;
 }
 
-void CSGShape3D::set_collision_mask_bit(int p_bit, bool p_value) {
-	ERR_FAIL_INDEX_MSG(p_bit, 32, "Collision mask bit must be between 0 and 31 inclusive.");
+void CSGShape3D::set_collision_layer_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 32, "Collision layer number must be between 1 and 32 inclusive.");
+	uint32_t collision_layer = get_collision_layer();
+	if (p_value) {
+		collision_layer |= 1 << (p_layer_number - 1);
+	} else {
+		collision_layer &= ~(1 << (p_layer_number - 1));
+	}
+	set_collision_layer(collision_layer);
+}
+
+bool CSGShape3D::get_collision_layer_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Collision layer number must be between 1 and 32 inclusive.");
+	return get_collision_layer() & (1 << (p_layer_number - 1));
+}
+
+void CSGShape3D::set_collision_mask_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 32, "Collision layer number must be between 1 and 32 inclusive.");
 	uint32_t mask = get_collision_mask();
 	if (p_value) {
-		mask |= 1 << p_bit;
+		mask |= 1 << (p_layer_number - 1);
 	} else {
-		mask &= ~(1 << p_bit);
+		mask &= ~(1 << (p_layer_number - 1));
 	}
 	set_collision_mask(mask);
 }
 
-bool CSGShape3D::get_collision_mask_bit(int p_bit) const {
-	ERR_FAIL_INDEX_V_MSG(p_bit, 32, false, "Collision mask bit must be between 0 and 31 inclusive.");
-	return get_collision_mask() & (1 << p_bit);
-}
-
-void CSGShape3D::set_collision_layer_bit(int p_bit, bool p_value) {
-	ERR_FAIL_INDEX_MSG(p_bit, 32, "Collision layer bit must be between 0 and 31 inclusive.");
-	uint32_t layer = get_collision_layer();
-	if (p_value) {
-		layer |= 1 << p_bit;
-	} else {
-		layer &= ~(1 << p_bit);
-	}
-	set_collision_layer(layer);
-}
-
-bool CSGShape3D::get_collision_layer_bit(int p_bit) const {
-	ERR_FAIL_INDEX_V_MSG(p_bit, 32, false, "Collision layer bit must be between 0 and 31 inclusive.");
-	return get_collision_layer() & (1 << p_bit);
+bool CSGShape3D::get_collision_mask_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Collision layer number must be between 1 and 32 inclusive.");
+	return get_collision_mask() & (1 << (p_layer_number - 1));
 }
 
 bool CSGShape3D::is_root_shape() const {
@@ -605,11 +609,11 @@ void CSGShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_mask", "mask"), &CSGShape3D::set_collision_mask);
 	ClassDB::bind_method(D_METHOD("get_collision_mask"), &CSGShape3D::get_collision_mask);
 
-	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &CSGShape3D::set_collision_mask_bit);
-	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &CSGShape3D::get_collision_mask_bit);
+	ClassDB::bind_method(D_METHOD("set_collision_mask_value", "layer_number", "value"), &CSGShape3D::set_collision_mask_value);
+	ClassDB::bind_method(D_METHOD("get_collision_mask_value", "layer_number"), &CSGShape3D::get_collision_mask_value);
 
-	ClassDB::bind_method(D_METHOD("set_collision_layer_bit", "bit", "value"), &CSGShape3D::set_collision_layer_bit);
-	ClassDB::bind_method(D_METHOD("get_collision_layer_bit", "bit"), &CSGShape3D::get_collision_layer_bit);
+	ClassDB::bind_method(D_METHOD("set_collision_layer_value", "layer_number", "value"), &CSGShape3D::set_collision_layer_value);
+	ClassDB::bind_method(D_METHOD("get_collision_layer_value", "layer_number"), &CSGShape3D::get_collision_layer_value);
 
 	ClassDB::bind_method(D_METHOD("set_calculate_tangents", "enabled"), &CSGShape3D::set_calculate_tangents);
 	ClassDB::bind_method(D_METHOD("is_calculating_tangents"), &CSGShape3D::is_calculating_tangents);
@@ -1676,109 +1680,80 @@ CSGTorus3D::CSGTorus3D() {
 ///////////////
 
 CSGBrush *CSGPolygon3D::_build_brush() {
-	// set our bounding box
-
-	if (polygon.size() < 3) {
-		return memnew(CSGBrush);
-	}
-
-	Vector<Point2> final_polygon = polygon;
-
-	if (Triangulate::get_area(final_polygon) > 0) {
-		final_polygon.reverse();
-	}
-
-	Vector<int> triangles = Geometry2D::triangulate_polygon(final_polygon);
-
-	if (triangles.size() < 3) {
-		return memnew(CSGBrush);
-	}
-
-	Path3D *path = nullptr;
-	Ref<Curve3D> curve;
-
-	// get bounds for our polygon
-	Vector2 final_polygon_min;
-	Vector2 final_polygon_max;
-	for (int i = 0; i < final_polygon.size(); i++) {
-		Vector2 p = final_polygon[i];
-		if (i == 0) {
-			final_polygon_min = p;
-			final_polygon_max = final_polygon_min;
-		} else {
-			if (p.x < final_polygon_min.x) {
-				final_polygon_min.x = p.x;
-			}
-			if (p.y < final_polygon_min.y) {
-				final_polygon_min.y = p.y;
-			}
-
-			if (p.x > final_polygon_max.x) {
-				final_polygon_max.x = p.x;
-			}
-			if (p.y > final_polygon_max.y) {
-				final_polygon_max.y = p.y;
-			}
-		}
-	}
-	Vector2 final_polygon_size = final_polygon_max - final_polygon_min;
-
-	if (mode == MODE_PATH) {
-		if (!has_node(path_node)) {
-			return memnew(CSGBrush);
-		}
-		Node *n = get_node(path_node);
-		if (!n) {
-			return memnew(CSGBrush);
-		}
-		path = Object::cast_to<Path3D>(n);
-		if (!path) {
-			return memnew(CSGBrush);
-		}
-
-		if (path != path_cache) {
-			if (path_cache) {
-				path_cache->disconnect("tree_exited", callable_mp(this, &CSGPolygon3D::_path_exited));
-				path_cache->disconnect("curve_changed", callable_mp(this, &CSGPolygon3D::_path_changed));
-				path_cache = nullptr;
-			}
-
-			path_cache = path;
-
-			path_cache->connect("tree_exited", callable_mp(this, &CSGPolygon3D::_path_exited));
-			path_cache->connect("curve_changed", callable_mp(this, &CSGPolygon3D::_path_changed));
-		}
-		curve = path->get_curve();
-		if (curve.is_null()) {
-			return memnew(CSGBrush);
-		}
-		if (curve->get_baked_length() <= 0) {
-			return memnew(CSGBrush);
-		}
-	}
 	CSGBrush *brush = memnew(CSGBrush);
 
-	int face_count = 0;
+	if (polygon.size() < 3) {
+		return brush;
+	}
 
+	// Triangulate polygon shape.
+	Vector<Point2> shape_polygon = polygon;
+	if (Triangulate::get_area(shape_polygon) > 0) {
+		shape_polygon.reverse();
+	}
+	int shape_sides = shape_polygon.size();
+	Vector<int> shape_faces = Geometry2D::triangulate_polygon(shape_polygon);
+	ERR_FAIL_COND_V_MSG(shape_faces.size() < 3, brush, "Failed to triangulate CSGPolygon");
+
+	// Get polygon enclosing Rect2.
+	Rect2 shape_rect(shape_polygon[0], Vector2());
+	for (int i = 1; i < shape_sides; i++) {
+		shape_rect.expand_to(shape_polygon[i]);
+	}
+
+	// If MODE_PATH, check if curve has changed.
+	Ref<Curve3D> curve;
+	if (mode == MODE_PATH) {
+		Path3D *current_path = Object::cast_to<Path3D>(get_node_or_null(path_node));
+		if (path != current_path) {
+			if (path) {
+				path->disconnect("tree_exited", callable_mp(this, &CSGPolygon3D::_path_exited));
+				path->disconnect("curve_changed", callable_mp(this, &CSGPolygon3D::_path_changed));
+			}
+			path = current_path;
+			if (path) {
+				path->connect("tree_exited", callable_mp(this, &CSGPolygon3D::_path_exited));
+				path->connect("curve_changed", callable_mp(this, &CSGPolygon3D::_path_changed));
+			}
+		}
+
+		if (!path) {
+			return brush;
+		}
+
+		curve = path->get_curve();
+		if (curve.is_null() || curve->get_point_count() < 2) {
+			return brush;
+		}
+	}
+
+	// Calculate the number extrusions, ends and faces.
+	int extrusions = 0;
+	int extrusion_face_count = shape_sides * 2;
+	int end_count = 0;
+	int shape_face_count = shape_faces.size() / 3;
 	switch (mode) {
 		case MODE_DEPTH:
-			face_count = triangles.size() * 2 / 3 + (final_polygon.size()) * 2;
+			extrusions = 1;
+			end_count = 2;
 			break;
 		case MODE_SPIN:
-			face_count = (spin_degrees < 360 ? triangles.size() * 2 / 3 : 0) + (final_polygon.size()) * 2 * spin_sides;
+			extrusions = spin_sides;
+			if (spin_degrees < 360) {
+				end_count = 2;
+			}
 			break;
 		case MODE_PATH: {
-			float bl = curve->get_baked_length();
-			int splits = MAX(2, Math::ceil(bl / path_interval));
-			if (path_joined) {
-				face_count = splits * final_polygon.size() * 2;
-			} else {
-				face_count = triangles.size() * 2 / 3 + splits * final_polygon.size() * 2;
+			extrusions = Math::ceil(1.0 * curve->get_point_count() / path_interval);
+			if (!path_joined) {
+				end_count = 2;
+				extrusions -= 1;
 			}
 		} break;
 	}
+	int face_count = extrusions * extrusion_face_count + end_count * shape_face_count;
 
-	bool invert_val = is_inverting_faces();
+	// Intialize variables used to create the mesh.
 	Ref<Material> material = get_material();
 
 	Vector<Vector3> faces;
@@ -1789,361 +1764,215 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 	faces.resize(face_count * 3);
 	uvs.resize(face_count * 3);
-
 	smooth.resize(face_count);
 	materials.resize(face_count);
 	invert.resize(face_count);
 
-	AABB aabb; //must be computed
-	{
-		Vector3 *facesw = faces.ptrw();
-		Vector2 *uvsw = uvs.ptrw();
-		bool *smoothw = smooth.ptrw();
-		Ref<Material> *materialsw = materials.ptrw();
-		bool *invertw = invert.ptrw();
+	Vector3 *facesw = faces.ptrw();
+	Vector2 *uvsw = uvs.ptrw();
+	bool *smoothw = smooth.ptrw();
+	Ref<Material> *materialsw = materials.ptrw();
+	bool *invertw = invert.ptrw();
 
-		int face = 0;
+	int face = 0;
+	Transform3D base_xform;
+	Transform3D current_xform;
+	Transform3D previous_xform;
+	double u_step = 1.0 / extrusions;
+	double v_step = 1.0 / shape_sides;
+	double spin_step = Math::deg2rad(spin_degrees / spin_sides);
+	double extrusion_step = 1.0 / extrusions;
+	if (mode == MODE_PATH) {
+		if (path_joined) {
+			extrusion_step = 1.0 / (extrusions - 1);
+		}
+		extrusion_step *= curve->get_baked_length();
+	}
+
+	if (mode == MODE_PATH) {
+		if (!path_local) {
+			base_xform = path->get_global_transform();
+		}
+
+		Vector3 current_point = curve->interpolate_baked(0);
+		Vector3 next_point = curve->interpolate_baked(extrusion_step);
+		Vector3 current_up = Vector3(0, 1, 0);
+		Vector3 direction = next_point - current_point;
+
+		if (path_joined) {
+			Vector3 last_point = curve->interpolate_baked(curve->get_baked_length());
+			direction = next_point - last_point;
+		}
+
+		switch (path_rotation) {
+			case PATH_ROTATION_POLYGON:
+				direction = Vector3(0, 0, -1);
+				break;
+			case PATH_ROTATION_PATH:
+				break;
+			case PATH_ROTATION_PATH_FOLLOW:
+				current_up = curve->interpolate_baked_up_vector(0);
+				break;
+		}
+
+		Transform3D facing = Transform3D().looking_at(direction, current_up);
+		current_xform = base_xform.translated(current_point) * facing;
+	}
+
+	// Create the mesh.
+	if (end_count > 0) {
+		// Add front end face.
+		for (int face_idx = 0; face_idx < shape_face_count; face_idx++) {
+			for (int face_vertex_idx = 0; face_vertex_idx < 3; face_vertex_idx++) {
+				// We need to reverse the rotation of the shape face vertices.
+				int index = shape_faces[face_idx * 3 + 2 - face_vertex_idx];
+				Point2 p = shape_polygon[index];
+				Point2 uv = (p - shape_rect.position) / shape_rect.size;
+
+				// Use the left side of the bottom half of the y-inverted texture.
+				uv.x = uv.x / 2;
+				uv.y = 1 - (uv.y / 2);
+
+				facesw[face * 3 + face_vertex_idx] = current_xform.xform(Vector3(p.x, p.y, 0));
+				uvsw[face * 3 + face_vertex_idx] = uv;
+			}
+
+			smoothw[face] = false;
+			materialsw[face] = material;
+			invertw[face] = invert_faces;
+			face++;
+		}
+	}
+
+	// Add extrusion faces.
+	for (int x0 = 0; x0 < extrusions; x0++) {
+		previous_xform = current_xform;
 
 		switch (mode) {
 			case MODE_DEPTH: {
-				//add triangles, front and back
-				for (int i = 0; i < 2; i++) {
-					for (int j = 0; j < triangles.size(); j += 3) {
-						for (int k = 0; k < 3; k++) {
-							int src[3] = { 0, i == 0 ? 1 : 2, i == 0 ? 2 : 1 };
-							Vector2 p = final_polygon[triangles[j + src[k]]];
-							Vector3 v = Vector3(p.x, p.y, 0);
-							if (i == 0) {
-								v.z -= depth;
-							}
-							facesw[face * 3 + k] = v;
-							uvsw[face * 3 + k] = (p - final_polygon_min) / final_polygon_size;
-							if (i == 0) {
-								uvsw[face * 3 + k].x = 1.0 - uvsw[face * 3 + k].x; /* flip x */
-							}
-						}
-
-						smoothw[face] = false;
-						materialsw[face] = material;
-						invertw[face] = invert_val;
-						face++;
-					}
-				}
-
-				//add triangles for depth
-				for (int i = 0; i < final_polygon.size(); i++) {
-					int i_n = (i + 1) % final_polygon.size();
-
-					Vector3 v[4] = {
-						Vector3(final_polygon[i].x, final_polygon[i].y, -depth),
-						Vector3(final_polygon[i_n].x, final_polygon[i_n].y, -depth),
-						Vector3(final_polygon[i_n].x, final_polygon[i_n].y, 0),
-						Vector3(final_polygon[i].x, final_polygon[i].y, 0),
-					};
-
-					Vector2 u[4] = {
-						Vector2(0, 0),
-						Vector2(0, 1),
-						Vector2(1, 1),
-						Vector2(1, 0)
-					};
-
-					// face 1
-					facesw[face * 3 + 0] = v[0];
-					facesw[face * 3 + 1] = v[1];
-					facesw[face * 3 + 2] = v[2];
-
-					uvsw[face * 3 + 0] = u[0];
-					uvsw[face * 3 + 1] = u[1];
-					uvsw[face * 3 + 2] = u[2];
-
-					smoothw[face] = smooth_faces;
-					invertw[face] = invert_val;
-					materialsw[face] = material;
-
-					face++;
-
-					// face 2
-					facesw[face * 3 + 0] = v[2];
-					facesw[face * 3 + 1] = v[3];
-					facesw[face * 3 + 2] = v[0];
-
-					uvsw[face * 3 + 0] = u[2];
-					uvsw[face * 3 + 1] = u[3];
-					uvsw[face * 3 + 2] = u[0];
-
-					smoothw[face] = smooth_faces;
-					invertw[face] = invert_val;
-					materialsw[face] = material;
-
-					face++;
-				}
-
+				current_xform.translate(Vector3(0, 0, -depth));
 			} break;
 			case MODE_SPIN: {
-				for (int i = 0; i < spin_sides; i++) {
-					float inci = float(i) / spin_sides;
-					float inci_n = float((i + 1)) / spin_sides;
-
-					float angi = -Math::deg2rad(inci * spin_degrees);
-					float angi_n = -Math::deg2rad(inci_n * spin_degrees);
-
-					Vector3 normali = Vector3(Math::cos(angi), 0, Math::sin(angi));
-					Vector3 normali_n = Vector3(Math::cos(angi_n), 0, Math::sin(angi_n));
-
-					//add triangles for depth
-					for (int j = 0; j < final_polygon.size(); j++) {
-						int j_n = (j + 1) % final_polygon.size();
-
-						Vector3 v[4] = {
-							Vector3(normali.x * final_polygon[j].x, final_polygon[j].y, normali.z * final_polygon[j].x),
-							Vector3(normali.x * final_polygon[j_n].x, final_polygon[j_n].y, normali.z * final_polygon[j_n].x),
-							Vector3(normali_n.x * final_polygon[j_n].x, final_polygon[j_n].y, normali_n.z * final_polygon[j_n].x),
-							Vector3(normali_n.x * final_polygon[j].x, final_polygon[j].y, normali_n.z * final_polygon[j].x),
-						};
-
-						Vector2 u[4] = {
-							Vector2(0, 0),
-							Vector2(0, 1),
-							Vector2(1, 1),
-							Vector2(1, 0)
-						};
-
-						// face 1
-						facesw[face * 3 + 0] = v[0];
-						facesw[face * 3 + 1] = v[2];
-						facesw[face * 3 + 2] = v[1];
-
-						uvsw[face * 3 + 0] = u[0];
-						uvsw[face * 3 + 1] = u[2];
-						uvsw[face * 3 + 2] = u[1];
-
-						smoothw[face] = smooth_faces;
-						invertw[face] = invert_val;
-						materialsw[face] = material;
-
-						face++;
-
-						// face 2
-						facesw[face * 3 + 0] = v[2];
-						facesw[face * 3 + 1] = v[0];
-						facesw[face * 3 + 2] = v[3];
-
-						uvsw[face * 3 + 0] = u[2];
-						uvsw[face * 3 + 1] = u[0];
-						uvsw[face * 3 + 2] = u[3];
-
-						smoothw[face] = smooth_faces;
-						invertw[face] = invert_val;
-						materialsw[face] = material;
-
-						face++;
-					}
-
-					if (i == 0 && spin_degrees < 360) {
-						for (int j = 0; j < triangles.size(); j += 3) {
-							for (int k = 0; k < 3; k++) {
-								int src[3] = { 0, 2, 1 };
-								Vector2 p = final_polygon[triangles[j + src[k]]];
-								Vector3 v = Vector3(p.x, p.y, 0);
-								facesw[face * 3 + k] = v;
-								uvsw[face * 3 + k] = (p - final_polygon_min) / final_polygon_size;
-							}
-
-							smoothw[face] = false;
-							materialsw[face] = material;
-							invertw[face] = invert_val;
-							face++;
-						}
-					}
-
-					if (i == spin_sides - 1 && spin_degrees < 360) {
-						for (int j = 0; j < triangles.size(); j += 3) {
-							for (int k = 0; k < 3; k++) {
-								int src[3] = { 0, 1, 2 };
-								Vector2 p = final_polygon[triangles[j + src[k]]];
-								Vector3 v = Vector3(normali_n.x * p.x, p.y, normali_n.z * p.x);
-								facesw[face * 3 + k] = v;
-								uvsw[face * 3 + k] = (p - final_polygon_min) / final_polygon_size;
-								uvsw[face * 3 + k].x = 1.0 - uvsw[face * 3 + k].x; /* flip x */
-							}
-
-							smoothw[face] = false;
-							materialsw[face] = material;
-							invertw[face] = invert_val;
-							face++;
-						}
-					}
-				}
+				current_xform.rotate(Vector3(0, 1, 0), spin_step);
 			} break;
 			case MODE_PATH: {
-				float bl = curve->get_baked_length();
-				int splits = MAX(2, Math::ceil(bl / path_interval));
-				float u1 = 0.0;
-				float u2 = path_continuous_u ? 0.0 : 1.0;
-
-				Transform3D path_to_this;
-				if (!path_local) {
-					// center on paths origin
-					path_to_this = get_global_transform().affine_inverse() * path->get_global_transform();
-				}
-
-				Transform3D prev_xf;
-
-				Vector3 lookat_dir;
-
-				if (path_rotation == PATH_ROTATION_POLYGON) {
-					lookat_dir = (path->get_global_transform().affine_inverse() * get_global_transform()).xform(Vector3(0, 0, -1));
-				} else {
-					Vector3 p1, p2;
-					p1 = curve->interpolate_baked(0);
-					p2 = curve->interpolate_baked(0.1);
-					lookat_dir = (p2 - p1).normalized();
-				}
-
-				for (int i = 0; i <= splits; i++) {
-					float ofs = i * path_interval;
-					if (ofs > bl) {
-						ofs = bl;
-					}
-					if (i == splits && path_joined) {
-						ofs = 0.0;
-					}
-
-					Transform3D xf;
-					xf.origin = curve->interpolate_baked(ofs);
-
-					Vector3 local_dir;
-
-					if (path_rotation == PATH_ROTATION_PATH_FOLLOW && ofs > 0) {
-						//before end
-						Vector3 p1 = curve->interpolate_baked(ofs - 0.1);
-						Vector3 p2 = curve->interpolate_baked(ofs);
-						local_dir = (p2 - p1).normalized();
-
+				double previous_offset = x0 * extrusion_step;
+				double current_offset = (x0 + 1) * extrusion_step;
+				double next_offset = (x0 + 2) * extrusion_step;
+				if (x0 == extrusions - 1) {
+					if (path_joined) {
+						current_offset = 0;
+						next_offset = extrusion_step;
 					} else {
-						local_dir = lookat_dir;
+						next_offset = current_offset;
 					}
-
-					xf = xf.looking_at(xf.origin + local_dir, Vector3(0, 1, 0));
-					Basis rot(Vector3(0, 0, 1), curve->interpolate_baked_tilt(ofs));
-
-					xf = xf * rot; //post mult
-
-					xf = path_to_this * xf;
-
-					if (i > 0) {
-						if (path_continuous_u) {
-							u1 = u2;
-							u2 += (prev_xf.origin - xf.origin).length();
-						};
-
-						//put triangles where they belong
-						//add triangles for depth
-						for (int j = 0; j < final_polygon.size(); j++) {
-							int j_n = (j + 1) % final_polygon.size();
-
-							Vector3 v[4] = {
-								prev_xf.xform(Vector3(final_polygon[j].x, final_polygon[j].y, 0)),
-								prev_xf.xform(Vector3(final_polygon[j_n].x, final_polygon[j_n].y, 0)),
-								xf.xform(Vector3(final_polygon[j_n].x, final_polygon[j_n].y, 0)),
-								xf.xform(Vector3(final_polygon[j].x, final_polygon[j].y, 0)),
-							};
-
-							Vector2 u[4] = {
-								Vector2(u1, 1),
-								Vector2(u1, 0),
-								Vector2(u2, 0),
-								Vector2(u2, 1)
-							};
-
-							// face 1
-							facesw[face * 3 + 0] = v[0];
-							facesw[face * 3 + 1] = v[1];
-							facesw[face * 3 + 2] = v[2];
-
-							uvsw[face * 3 + 0] = u[0];
-							uvsw[face * 3 + 1] = u[1];
-							uvsw[face * 3 + 2] = u[2];
-
-							smoothw[face] = smooth_faces;
-							invertw[face] = invert_val;
-							materialsw[face] = material;
-
-							face++;
-
-							// face 2
-							facesw[face * 3 + 0] = v[2];
-							facesw[face * 3 + 1] = v[3];
-							facesw[face * 3 + 2] = v[0];
-
-							uvsw[face * 3 + 0] = u[2];
-							uvsw[face * 3 + 1] = u[3];
-							uvsw[face * 3 + 2] = u[0];
-
-							smoothw[face] = smooth_faces;
-							invertw[face] = invert_val;
-							materialsw[face] = material;
-
-							face++;
-						}
-					}
-
-					if (i == 0 && !path_joined) {
-						for (int j = 0; j < triangles.size(); j += 3) {
-							for (int k = 0; k < 3; k++) {
-								int src[3] = { 0, 1, 2 };
-								Vector2 p = final_polygon[triangles[j + src[k]]];
-								Vector3 v = Vector3(p.x, p.y, 0);
-								facesw[face * 3 + k] = xf.xform(v);
-								uvsw[face * 3 + k] = (p - final_polygon_min) / final_polygon_size;
-							}
-
-							smoothw[face] = false;
-							materialsw[face] = material;
-							invertw[face] = invert_val;
-							face++;
-						}
-					}
-
-					if (i == splits && !path_joined) {
-						for (int j = 0; j < triangles.size(); j += 3) {
-							for (int k = 0; k < 3; k++) {
-								int src[3] = { 0, 2, 1 };
-								Vector2 p = final_polygon[triangles[j + src[k]]];
-								Vector3 v = Vector3(p.x, p.y, 0);
-								facesw[face * 3 + k] = xf.xform(v);
-								uvsw[face * 3 + k] = (p - final_polygon_min) / final_polygon_size;
-								uvsw[face * 3 + k].x = 1.0 - uvsw[face * 3 + k].x; /* flip x */
-							}
-
-							smoothw[face] = false;
-							materialsw[face] = material;
-							invertw[face] = invert_val;
-							face++;
-						}
-					}
-
-					prev_xf = xf;
 				}
 
+				Vector3 previous_point = curve->interpolate_baked(previous_offset);
+				Vector3 current_point = curve->interpolate_baked(current_offset);
+				Vector3 next_point = curve->interpolate_baked(next_offset);
+				Vector3 current_up = Vector3(0, 1, 0);
+				Vector3 direction = next_point - previous_point;
+
+				switch (path_rotation) {
+					case PATH_ROTATION_POLYGON:
+						direction = Vector3(0, 0, -1);
+						break;
+					case PATH_ROTATION_PATH:
+						break;
+					case PATH_ROTATION_PATH_FOLLOW:
+						current_up = curve->interpolate_baked_up_vector(current_offset);
+						break;
+				}
+
+				Transform3D facing = Transform3D().looking_at(direction, current_up);
+				current_xform = base_xform.translated(current_point) * facing;
 			} break;
 		}
 
-		if (face != face_count) {
-			ERR_PRINT("Face mismatch bug! fix code");
+		double u0 = x0 * u_step;
+		double u1 = ((x0 + 1) * u_step);
+		if (mode == MODE_PATH && !path_continuous_u) {
+			u0 = 0.0;
+			u1 = 1.0;
 		}
-		for (int i = 0; i < face_count * 3; i++) {
-			if (i == 0) {
-				aabb.position = facesw[i];
-			} else {
-				aabb.expand_to(facesw[i]);
-			}
 
-			// invert UVs on the Y-axis OpenGL = upside down
-			uvsw[i].y = 1.0 - uvsw[i].y;
+		for (int y0 = 0; y0 < shape_sides; y0++) {
+			int y1 = (y0 + 1) % shape_sides;
+			// Use the top half of the texture.
+			double v0 = (y0 * v_step) / 2;
+			double v1 = ((y0 + 1) * v_step) / 2;
+
+			Vector3 v[4] = {
+				previous_xform.xform(Vector3(shape_polygon[y0].x, shape_polygon[y0].y, 0)),
+				current_xform.xform(Vector3(shape_polygon[y0].x, shape_polygon[y0].y, 0)),
+				current_xform.xform(Vector3(shape_polygon[y1].x, shape_polygon[y1].y, 0)),
+				previous_xform.xform(Vector3(shape_polygon[y1].x, shape_polygon[y1].y, 0)),
+			};
+
+			Vector2 u[4] = {
+				Vector2(u0, v0),
+				Vector2(u1, v0),
+				Vector2(u1, v1),
+				Vector2(u0, v1),
+			};
+
+			// Face 1
+			facesw[face * 3 + 0] = v[0];
+			facesw[face * 3 + 1] = v[1];
+			facesw[face * 3 + 2] = v[2];
+
+			uvsw[face * 3 + 0] = u[0];
+			uvsw[face * 3 + 1] = u[1];
+			uvsw[face * 3 + 2] = u[2];
+
+			smoothw[face] = smooth_faces;
+			invertw[face] = invert_faces;
+			materialsw[face] = material;
+
+			face++;
+
+			// Face 2
+			facesw[face * 3 + 0] = v[2];
+			facesw[face * 3 + 1] = v[3];
+			facesw[face * 3 + 2] = v[0];
+
+			uvsw[face * 3 + 0] = u[2];
+			uvsw[face * 3 + 1] = u[3];
+			uvsw[face * 3 + 2] = u[0];
+
+			smoothw[face] = smooth_faces;
+			invertw[face] = invert_faces;
+			materialsw[face] = material;
+
+			face++;
 		}
 	}
+
+	if (end_count > 1) {
+		// Add back end face.
+		for (int face_idx = 0; face_idx < shape_face_count; face_idx++) {
+			for (int face_vertex_idx = 0; face_vertex_idx < 3; face_vertex_idx++) {
+				int index = shape_faces[face_idx * 3 + face_vertex_idx];
+				Point2 p = shape_polygon[index];
+				Point2 uv = (p - shape_rect.position) / shape_rect.size;
+
+				// Use the x-inverted ride side of the bottom half of the y-inverted texture.
+				uv.x = 1 - uv.x / 2;
+				uv.y = 1 - (uv.y / 2);
+
+				facesw[face * 3 + face_vertex_idx] = current_xform.xform(Vector3(p.x, p.y, 0));
+				uvsw[face * 3 + face_vertex_idx] = uv;
+			}
+
+			smoothw[face] = false;
+			materialsw[face] = material;
+			invertw[face] = invert_faces;
+			face++;
+		}
+	}
+
+	ERR_FAIL_COND_V_MSG(face != face_count, brush, "Bug: Failed to create the CSGPolygon mesh correctly.");
 
 	brush->build_from_faces(faces, uvs, smooth, materials, invert);
 
@@ -2152,10 +1981,10 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 void CSGPolygon3D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_EXIT_TREE) {
-		if (path_cache) {
-			path_cache->disconnect("tree_exited", callable_mp(this, &CSGPolygon3D::_path_exited));
-			path_cache->disconnect("curve_changed", callable_mp(this, &CSGPolygon3D::_path_changed));
-			path_cache = nullptr;
+		if (path) {
+			path->disconnect("tree_exited", callable_mp(this, &CSGPolygon3D::_path_exited));
+			path->disconnect("curve_changed", callable_mp(this, &CSGPolygon3D::_path_changed));
+			path = nullptr;
 		}
 	}
 }
@@ -2180,7 +2009,7 @@ void CSGPolygon3D::_path_changed() {
 }
 
 void CSGPolygon3D::_path_exited() {
-	path_cache = nullptr;
+	path = nullptr;
 }
 
 void CSGPolygon3D::_bind_methods() {
@@ -2202,10 +2031,10 @@ void CSGPolygon3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_path_node", "path"), &CSGPolygon3D::set_path_node);
 	ClassDB::bind_method(D_METHOD("get_path_node"), &CSGPolygon3D::get_path_node);
 
-	ClassDB::bind_method(D_METHOD("set_path_interval", "distance"), &CSGPolygon3D::set_path_interval);
+	ClassDB::bind_method(D_METHOD("set_path_interval", "interval"), &CSGPolygon3D::set_path_interval);
 	ClassDB::bind_method(D_METHOD("get_path_interval"), &CSGPolygon3D::get_path_interval);
 
-	ClassDB::bind_method(D_METHOD("set_path_rotation", "mode"), &CSGPolygon3D::set_path_rotation);
+	ClassDB::bind_method(D_METHOD("set_path_rotation", "path_rotation"), &CSGPolygon3D::set_path_rotation);
 	ClassDB::bind_method(D_METHOD("get_path_rotation"), &CSGPolygon3D::get_path_rotation);
 
 	ClassDB::bind_method(D_METHOD("set_path_local", "enable"), &CSGPolygon3D::set_path_local);
@@ -2228,11 +2057,11 @@ void CSGPolygon3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Depth,Spin,Path"), "set_mode", "get_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth", PROPERTY_HINT_RANGE, "0.001,1000.0,0.001,or_greater,exp"), "set_depth", "get_depth");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth", PROPERTY_HINT_RANGE, "0.01,100.0,0.01,or_greater,exp"), "set_depth", "get_depth");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "spin_degrees", PROPERTY_HINT_RANGE, "1,360,0.1"), "set_spin_degrees", "get_spin_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "spin_sides", PROPERTY_HINT_RANGE, "3,64,1"), "set_spin_sides", "get_spin_sides");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "path_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Path3D"), "set_path_node", "get_path_node");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_interval", PROPERTY_HINT_RANGE, "0.001,1000.0,0.001,or_greater,exp"), "set_path_interval", "get_path_interval");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_interval", PROPERTY_HINT_RANGE, "0.1,1.0,0.05,exp"), "set_path_interval", "get_path_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_rotation", PROPERTY_HINT_ENUM, "Polygon,Path,PathFollow"), "set_path_rotation", "get_path_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_local"), "set_path_local", "is_path_local");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_continuous_u"), "set_path_continuous_u", "is_path_continuous_u");
@@ -2301,7 +2130,7 @@ float CSGPolygon3D::get_spin_degrees() const {
 	return spin_degrees;
 }
 
-void CSGPolygon3D::set_spin_sides(const int p_spin_sides) {
+void CSGPolygon3D::set_spin_sides(int p_spin_sides) {
 	ERR_FAIL_COND(p_spin_sides < 3);
 	spin_sides = p_spin_sides;
 	_make_dirty();
@@ -2323,7 +2152,7 @@ NodePath CSGPolygon3D::get_path_node() const {
 }
 
 void CSGPolygon3D::set_path_interval(float p_interval) {
-	ERR_FAIL_COND_MSG(p_interval < 0.001, "Path interval cannot be smaller than 0.001.");
+	ERR_FAIL_COND_MSG(p_interval <= 0 || p_interval > 1, "Path interval must be greater than 0 and less than or equal to 1.0.");
 	path_interval = p_interval;
 	_make_dirty();
 	update_gizmos();
@@ -2400,10 +2229,10 @@ CSGPolygon3D::CSGPolygon3D() {
 	spin_degrees = 360;
 	spin_sides = 8;
 	smooth_faces = false;
-	path_interval = 1;
-	path_rotation = PATH_ROTATION_PATH;
+	path_interval = 1.0;
+	path_rotation = PATH_ROTATION_PATH_FOLLOW;
 	path_local = false;
-	path_continuous_u = false;
+	path_continuous_u = true;
 	path_joined = false;
-	path_cache = nullptr;
+	path = nullptr;
 }

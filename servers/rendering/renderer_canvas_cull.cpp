@@ -639,17 +639,19 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 
 			j2 = j + 1;
 
-			Vector2 tangent = ((t + prev_t).normalized()) * p_width * 0.5;
+			Vector2 dir = (t + prev_t).normalized();
+			Vector2 tangent = dir * p_width * 0.5;
+			Vector2 border = dir * 2.0;
 			Vector2 pos = p_points[i];
 
 			points_ptr[j] = pos + tangent;
 			points_ptr[j2] = pos - tangent;
 
-			points_top_ptr[j] = pos + tangent + tangent;
+			points_top_ptr[j] = pos + tangent + border;
 			points_top_ptr[j2] = pos + tangent;
 
 			points_bottom_ptr[j] = pos - tangent;
-			points_bottom_ptr[j2] = pos - tangent - tangent;
+			points_bottom_ptr[j2] = pos - tangent - border;
 
 			if (i < p_colors.size()) {
 				color = p_colors[i];

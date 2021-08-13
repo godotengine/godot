@@ -82,6 +82,7 @@ static Ref<ResourceFormatLoaderImage> resource_format_image;
 static Ref<TranslationLoaderPO> resource_format_po;
 static Ref<ResourceFormatSaverCrypto> resource_format_saver_crypto;
 static Ref<ResourceFormatLoaderCrypto> resource_format_loader_crypto;
+static Ref<NativeExtensionResourceLoader> resource_loader_native_extension;
 
 static _ResourceLoader *_resource_loader = nullptr;
 static _ResourceSaver *_resource_saver = nullptr;
@@ -234,6 +235,9 @@ void register_core_types() {
 
 	native_extension_manager = memnew(NativeExtensionManager);
 
+	resource_loader_native_extension.instantiate();
+	ResourceLoader::add_resource_format_loader(resource_loader_native_extension);
+
 	ip = IP::create();
 
 	_geometry_2d = memnew(_Geometry2D);
@@ -298,6 +302,7 @@ void register_core_singletons() {
 
 void register_core_extensions() {
 	// Hardcoded for now.
+	NativeExtension::initialize_native_extensions();
 	if (ProjectSettings::get_singleton()->has_setting("native_extensions/paths")) {
 		Vector<String> paths = ProjectSettings::get_singleton()->get("native_extensions/paths");
 		for (int i = 0; i < paths.size(); i++) {
@@ -348,6 +353,9 @@ void unregister_core_types() {
 	if (ip) {
 		memdelete(ip);
 	}
+
+	ResourceLoader::remove_resource_format_loader(resource_loader_native_extension);
+	resource_loader_native_extension.unref();
 
 	ResourceLoader::finalize();
 

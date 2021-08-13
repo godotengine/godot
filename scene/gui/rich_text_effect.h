@@ -59,7 +59,7 @@ public:
 	bool outline = false;
 	Point2 offset;
 	Color color;
-	float elapsed_time = 0.0f;
+	double elapsed_time = 0.0f;
 	Dictionary environment;
 	uint32_t glpyh_index = 0;
 	RID font;
@@ -69,8 +69,8 @@ public:
 
 	Vector2i get_range() { return range; }
 	void set_range(const Vector2i &p_range) { range = p_range; }
-	float get_elapsed_time() { return elapsed_time; }
-	void set_elapsed_time(float p_elapsed_time) { elapsed_time = p_elapsed_time; }
+	double get_elapsed_time() { return elapsed_time; }
+	void set_elapsed_time(double p_elapsed_time) { elapsed_time = p_elapsed_time; }
 	bool is_visible() { return visibility; }
 	void set_visibility(bool p_visibility) { visibility = p_visibility; }
 	bool is_outline() { return outline; }
