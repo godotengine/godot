@@ -4228,6 +4228,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				IdentifierType ident_type;
 				int array_size = 0;
 				StringName struct_name;
+				bool is_local = false;
 
 				if (p_block && p_block->block_tag != SubClassTag::TAG_GLOBAL) {
 					int idx = 0;
@@ -4284,6 +4285,8 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					} else {
 						last_type = ident_type;
 					}
+
+					is_local = ident_type == IDENTIFIER_LOCAL_VAR || ident_type == IDENTIFIER_FUNCTION_ARGUMENT;
 				}
 
 				Node *index_expression = nullptr;
@@ -4358,6 +4361,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					arrname->assign_expression = assign_expression;
 					arrname->is_const = is_const;
 					arrname->array_size = array_size;
+					arrname->is_local = is_local;
 					expr = arrname;
 				} else {
 					VariableNode *varname = alloc_node<VariableNode>();
@@ -4365,6 +4369,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					varname->datatype_cache = data_type;
 					varname->is_const = is_const;
 					varname->struct_name = struct_name;
+					varname->is_local = is_local;
 					expr = varname;
 				}
 #ifdef DEBUG_ENABLED
