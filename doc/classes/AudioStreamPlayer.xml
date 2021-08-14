@@ -6,6 +6,7 @@
 	<description>
 		Plays an audio stream non-positionally.
 		To play audio positionally, use [AudioStreamPlayer2D] or [AudioStreamPlayer3D] instead of [AudioStreamPlayer].
+		However, if you want manual control of stereo (left/right) volumes, this will work.
 	</description>
 	<tutorials>
 		<link title="Audio streams">https://docs.godotengine.org/en/latest/tutorials/audio/audio_streams.html</link>
@@ -72,7 +73,15 @@
 			If [code]true[/code], the playback is paused. You can resume it by setting [code]stream_paused[/code] to [code]false[/code].
 		</member>
 		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" default="0.0">
-			Volume of sound, in dB.
+			Volume of sound, in dB. (To convert to dB, try [code]linear2db[/code].)
+		</member>
+		<member name="volume_scale_l" type="float" setter="set_volume_scale_l" getter="get_volume_scale_l" default="1.0">
+			Volume scale for left channel in linear (0.0 is silent, 1.0 is full volume) form.
+			Can be used to forcefully globally pan sounds without relying on the camera.
+		</member>
+		<member name="volume_scale_r" type="float" setter="set_volume_scale_r" getter="get_volume_scale_r" default="1.0">
+			Volume scale for right channel in linear (0.0 is silent, 1.0 is full volume) form.
+			Can be used to forcefully globally pan sounds without relying on the camera.
 		</member>
 	</members>
 	<signals>
