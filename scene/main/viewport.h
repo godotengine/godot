@@ -34,10 +34,12 @@
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 
+#ifndef _3D_DISABLED
 class Camera3D;
 class CollisionObject3D;
 class Listener3D;
 class World3D;
+#endif // _3D_DISABLED
 
 class Camera2D;
 class CanvasItem;
@@ -573,6 +575,7 @@ public:
 
 	void pass_mouse_focus_to(Viewport *p_viewport, Control *p_control);
 
+#ifndef _3D_DISABLED
 	bool use_xr = false;
 	friend class Listener3D;
 	Listener3D *listener_3d = nullptr;
@@ -644,6 +647,7 @@ public:
 
 	void set_use_xr(bool p_use_xr);
 	bool is_using_xr();
+#endif // _3D_DISABLED
 
 	Viewport();
 	~Viewport();

@@ -90,7 +90,7 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 		ERR_FAIL_COND_V(p_args.size() < 1, ERR_INVALID_DATA);
 		Transform2D transform = p_args[1];
 		scene_tree->get_root()->set_canvas_transform_override(transform);
-
+#ifndef _3D_DISABLED
 	} else if (p_msg == "override_camera_3D:set") {
 		ERR_FAIL_COND_V(p_args.size() < 1, ERR_INVALID_DATA);
 		bool enable = p_args[0];
@@ -109,7 +109,7 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 			scene_tree->get_root()->set_camera_3d_override_orthogonal(size_or_fov, near, far);
 		}
 		scene_tree->get_root()->set_camera_3d_override_transform(transform);
-
+#endif // _3D_DISABLED
 	} else if (p_msg == "set_object_property") {
 		ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
 		_set_object_property(p_args[0], p_args[1], p_args[2]);
