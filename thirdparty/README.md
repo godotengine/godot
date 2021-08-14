@@ -602,7 +602,7 @@ Godot. Please check the file to know what's new.
 ## spirv-reflect
 
 - Upstream: https://github.com/KhronosGroup/SPIRV-Reflect
-- Version: git (c0ce03a43ca77fedb5abfd1976ae2fd0eeb0e611, 2021)
+- Version: git (272e050728de8d4a4ce9e7101c1244e6ff56e5b0, 2021)
 - License: Apache 2.0
 
 Files extracted from upstream source:
