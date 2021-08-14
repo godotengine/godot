@@ -483,6 +483,15 @@ private:
 
 		Blur blur[2]; //the second one starts from the first mipmap
 
+		struct WeightBuffers {
+			RID weight;
+			RID fb; // FB with both texture and weight
+		};
+
+		// 2 full size, 2 half size
+		WeightBuffers weight_buffers[4]; // Only used in raster
+		RID base_weight_fb; // base buffer for weight
+
 		struct Luminance {
 			Vector<RID> reduce;
 			RID current;

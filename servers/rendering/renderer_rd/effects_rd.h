@@ -35,6 +35,7 @@
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/shaders/blur_raster.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/bokeh_dof.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/bokeh_dof_raster.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/copy.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/copy_to_fb.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/cube_to_dp.glsl.gen.h"
@@ -72,10 +73,7 @@ private:
 		BLUR_MODE_GAUSSIAN_BLUR,
 		BLUR_MODE_GAUSSIAN_GLOW,
 		BLUR_MODE_GAUSSIAN_GLOW_AUTO_EXPOSURE,
-
-		BLUR_MODE_DOF_LOW,
-		BLUR_MODE_DOF_MEDIUM,
-		BLUR_MODE_DOF_HIGH,
+		BLUR_MODE_COPY,
 
 		BLUR_MODE_MAX
 	};
@@ -84,8 +82,6 @@ private:
 		BLUR_FLAG_HORIZONTAL = (1 << 0),
 		BLUR_FLAG_USE_ORTHOGONAL_PROJECTION = (1 << 1),
 		BLUR_FLAG_GLOW_FIRST_PASS = (1 << 2),
-		BLUR_FLAG_DOF_FAR = (1 << 3),
-		BLUR_FLAG_DOF_NEAR = (1 << 4),
 	};
 
 	struct BlurRasterPushConstant {
@@ -103,19 +99,6 @@ private:
 		float glow_white;
 		float glow_luminance_cap;
 		float glow_auto_exposure_grey;
-
-		//dof
-		float dof_far_begin;
-		float dof_far_end;
-		float dof_near_begin;
-		float dof_near_end;
-
-		float dof_radius;
-		float dof_pad[3];
-
-		float dof_dir[2];
-		float camera_z_far;
-		float camera_z_near;
 	};
 
 	struct BlurRaster {
@@ -252,29 +235,29 @@ private:
 	};
 
 	struct TonemapPushConstant {
-		float bcs[3];
-		uint32_t use_bcs;
+		float bcs[3]; // 12 - 12
+		uint32_t use_bcs; //  4 - 16
 
-		uint32_t use_glow;
-		uint32_t use_auto_exposure;
-		uint32_t use_color_correction;
-		uint32_t tonemapper;
+		uint32_t use_glow; //  4 - 20
+		uint32_t use_auto_exposure; //  4 - 24
+		uint32_t use_color_correction; //  4 - 28
+		uint32_t tonemapper; //  4 - 32
 
-		uint32_t glow_texture_size[2];
-		float glow_intensity;
-		uint32_t pad3;
+		uint32_t glow_texture_size[2]; //  8 - 40
+		float glow_intensity; //  4 - 44
+		uint32_t pad3; //  4 - 48
 
-		uint32_t glow_mode;
-		float glow_levels[7];
+		uint32_t glow_mode; //  4 - 52
+		float glow_levels[7]; // 28 - 80
 
-		float exposure;
-		float white;
-		float auto_exposure_grey;
-		uint32_t pad2;
+		float exposure; //  4 - 84
+		float white; //  4 - 88
+		float auto_exposure_grey; //  4 - 92
+		uint32_t pad2; //  4 - 96
 
-		float pixel_size[2];
-		uint32_t use_fxaa;
-		uint32_t use_debanding;
+		float pixel_size[2]; //  8 - 104
+		uint32_t use_fxaa; //  4 - 108
+		uint32_t use_debanding; //  4 - 112
 	};
 
 	/* tonemap actually writes to a framebuffer, which is
@@ -375,7 +358,9 @@ private:
 	enum BokehMode {
 		BOKEH_GEN_BLUR_SIZE,
 		BOKEH_GEN_BOKEH_BOX,
+		BOKEH_GEN_BOKEH_BOX_NOWEIGHT,
 		BOKEH_GEN_BOKEH_HEXAGONAL,
+		BOKEH_GEN_BOKEH_HEXAGONAL_NOWEIGHT,
 		BOKEH_GEN_BOKEH_CIRCULAR,
 		BOKEH_COMPOSITE,
 		BOKEH_MAX
@@ -383,9 +368,11 @@ private:
 
 	struct Bokeh {
 		BokehPushConstant push_constant;
-		BokehDofShaderRD shader;
+		BokehDofShaderRD compute_shader;
+		BokehDofRasterShaderRD raster_shader;
 		RID shader_version;
-		RID pipelines[BOKEH_MAX];
+		RID compute_pipelines[BOKEH_MAX];
+		PipelineCacheRD raster_pipelines[BOKEH_MAX];
 	} bokeh;
 
 	enum SSAOMode {
@@ -784,8 +771,26 @@ public:
 	void luminance_reduction(RID p_source_texture, const Size2i p_source_size, const Vector<RID> p_reduce, RID p_prev_luminance, float p_min_luminance, float p_max_luminance, float p_adjust, bool p_set = false);
 	void luminance_reduction_raster(RID p_source_texture, const Size2i p_source_size, const Vector<RID> p_reduce, Vector<RID> p_fb, RID p_prev_luminance, float p_min_luminance, float p_max_luminance, float p_adjust, bool p_set = false);
 
-	void bokeh_dof(RID p_base_texture, RID p_depth_texture, const Size2i &p_base_texture_size, RID p_secondary_texture, RID p_bokeh_texture1, RID p_bokeh_texture2, bool p_dof_far, float p_dof_far_begin, float p_dof_far_size, bool p_dof_near, float p_dof_near_begin, float p_dof_near_size, float p_bokeh_size, RS::DOFBokehShape p_bokeh_shape, RS::DOFBlurQuality p_quality, bool p_use_jitter, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal);
-	void blur_dof_raster(RID p_base_texture, RID p_depth_texture, const Size2i &p_base_texture_size, RID p_base_fb, RID p_secondary_texture, RID p_secondary_fb, bool p_dof_far, float p_dof_far_begin, float p_dof_far_size, bool p_dof_near, float p_dof_near_begin, float p_dof_near_size, float p_dof_blur_amount, RS::DOFBlurQuality p_quality, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal);
+	struct BokehBuffers {
+		// bokeh buffers
+
+		// textures
+		Size2i base_texture_size;
+		RID base_texture;
+		RID depth_texture;
+		RID secondary_texture;
+		RID half_texture[2];
+
+		// raster only
+		RID base_fb;
+		RID secondary_fb; // with weights
+		RID half_fb[2]; // with weights
+		RID base_weight_fb;
+		RID weight_texture[4];
+	};
+
+	void bokeh_dof(const BokehBuffers &p_buffers, bool p_dof_far, float p_dof_far_begin, float p_dof_far_size, bool p_dof_near, float p_dof_near_begin, float p_dof_near_size, float p_bokeh_size, RS::DOFBokehShape p_bokeh_shape, RS::DOFBlurQuality p_quality, bool p_use_jitter, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal);
+	void bokeh_dof_raster(const BokehBuffers &p_buffers, bool p_dof_far, float p_dof_far_begin, float p_dof_far_size, bool p_dof_near, float p_dof_near_begin, float p_dof_near_size, float p_dof_blur_amount, RenderingServer::DOFBokehShape p_bokeh_shape, RS::DOFBlurQuality p_quality, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal);
 
 	struct TonemapSettings {
 		bool use_glow = false;
