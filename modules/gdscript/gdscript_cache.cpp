@@ -51,7 +51,9 @@ GDScriptParser *GDScriptParserRef::get_parser() const {
 Error GDScriptParserRef::raise_status(Status p_new_status) {
 	ERR_FAIL_COND_V(parser == nullptr, ERR_INVALID_DATA);
 
-	Error result = OK;
+	if (result != OK) {
+		return result;
+	}
 
 	while (p_new_status > status) {
 		switch (status) {
@@ -86,14 +88,6 @@ Error GDScriptParserRef::raise_status(Status p_new_status) {
 			}
 		}
 		if (result != OK) {
-			if (parser != nullptr) {
-				memdelete(parser);
-				parser = nullptr;
-			}
-			if (analyzer != nullptr) {
-				memdelete(analyzer);
-				analyzer = nullptr;
-			}
 			return result;
 		}
 	}
