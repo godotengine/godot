@@ -50,7 +50,8 @@ class PagedAllocator {
 	SpinLock spin_lock;
 
 public:
-	T *alloc() {
+	template <class... Args>
+	T *alloc(const Args &&...p_args) {
 		if (thread_safe) {
 			spin_lock.lock();
 		}
@@ -75,7 +76,7 @@ public:
 		if (thread_safe) {
 			spin_lock.unlock();
 		}
-		memnew_placement(alloc, T);
+		memnew_placement(alloc, T(p_args...));
 		return alloc;
 	}
 
