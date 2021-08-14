@@ -211,6 +211,16 @@ class SpatialEditorViewport : public Control {
 		VIEW_PORTAL_CULLING,
 	};
 
+	enum ViewType {
+		VIEW_TYPE_USER,
+		VIEW_TYPE_TOP,
+		VIEW_TYPE_BOTTOM,
+		VIEW_TYPE_LEFT,
+		VIEW_TYPE_RIGHT,
+		VIEW_TYPE_FRONT,
+		VIEW_TYPE_REAR,
+	};
+
 public:
 	enum {
 		GIZMO_BASE_LAYER = 27,
@@ -233,7 +243,7 @@ public:
 
 private:
 	int index;
-	String name;
+	ViewType view_type;
 	void _menu_option(int p_option);
 	void _set_auto_orthogonal();
 	Spatial *preview_node;
