@@ -252,7 +252,7 @@ void PinJoint2D::_notification(int p_what) {
 }
 
 void PinJoint2D::_configure_joint(RID p_joint, PhysicsBody2D *body_a, PhysicsBody2D *body_b) {
-	PhysicsServer2D::get_singleton()->joint_make_pin(p_joint, get_global_transform().get_origin(), body_a->get_rid(), body_b ? body_b->get_rid() : RID());
+	PhysicsServer2D::get_singleton()->joint_make_pin(p_joint, get_global_position(), body_a->get_rid(), body_b ? body_b->get_rid() : RID());
 	PhysicsServer2D::get_singleton()->pin_joint_set_param(p_joint, PhysicsServer2D::PIN_JOINT_SOFTNESS, softness);
 }
 

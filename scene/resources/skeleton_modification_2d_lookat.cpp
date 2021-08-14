@@ -147,7 +147,7 @@ void SkeletonModification2DLookAt::_execute(float p_delta) {
 	// Look at the target!
 	operation_transform = operation_transform.looking_at(target_trans.get_origin());
 	// Apply whatever scale it had prior to looking_at
-	operation_transform.set_scale(operation_bone->get_global_transform().get_scale());
+	operation_transform.set_scale(operation_bone->get_global_scale());
 
 	// Account for the direction the bone faces in:
 	operation_transform.set_rotation(operation_transform.get_rotation() - operation_bone->get_bone_angle());

@@ -325,7 +325,7 @@ bool Bone2D::_editor_get_bone_shape(Vector<Vector2> *p_shape, Vector<Vector2> *p
 
 	Vector2 rel;
 	if (p_other_bone) {
-		rel = (p_other_bone->get_global_transform().get_origin() - get_global_transform().get_origin());
+		rel = (p_other_bone->get_global_position() - get_global_position());
 		rel = rel.rotated(-get_global_rotation()); // Undo Bone2D node's rotation so its drawn correctly regardless of the node's rotation
 	} else {
 		real_t angle_to_use = get_rotation() + bone_angle;
@@ -454,7 +454,7 @@ void Bone2D::calculate_length_and_rotation() {
 		for (int i = 0; i < child_count; i++) {
 			Bone2D *child = Object::cast_to<Bone2D>(get_child(i));
 			if (child) {
-				Vector2 child_local_pos = to_local(child->get_global_transform().get_origin());
+				Vector2 child_local_pos = to_local(child->get_global_position());
 				length = child_local_pos.length();
 				bone_angle = Math::atan2(child_local_pos.normalized().y, child_local_pos.normalized().x);
 				calculated = true;

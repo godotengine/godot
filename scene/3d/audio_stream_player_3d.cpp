@@ -428,7 +428,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 				if (area && area->is_using_reverb_bus() && area->get_reverb_uniformity() > 0) {
 					area_sound_pos = space_state->get_closest_point_to_object_volume(area->get_rid(), listener_node->get_global_transform().origin);
-					listener_area_pos = listener_node->get_global_transform().affine_inverse().xform(area_sound_pos);
+					listener_area_pos = listener_node->to_local(area_sound_pos);
 				}
 
 				if (max_distance > 0) {

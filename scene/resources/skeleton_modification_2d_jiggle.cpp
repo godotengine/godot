@@ -171,7 +171,7 @@ void SkeletonModification2DJiggle::_execute_jiggle_joint(int p_joint_idx, Node2D
 	}
 
 	Transform2D operation_bone_trans = operation_bone->get_global_transform();
-	Vector2 target_position = p_target->get_global_transform().get_origin();
+	Vector2 target_position = p_target->get_global_position();
 
 	jiggle_data_chain.write[p_joint_idx].force = (target_position - jiggle_data_chain[p_joint_idx].dynamic_position) * jiggle_data_chain[p_joint_idx].stiffness * p_delta;
 
@@ -215,7 +215,7 @@ void SkeletonModification2DJiggle::_execute_jiggle_joint(int p_joint_idx, Node2D
 	operation_bone_trans.set_rotation(operation_bone_trans.get_rotation() - operation_bone->get_bone_angle());
 
 	// Reset scale
-	operation_bone_trans.set_scale(operation_bone->get_global_transform().get_scale());
+	operation_bone_trans.set_scale(operation_bone->get_global_scale());
 
 	operation_bone->set_global_transform(operation_bone_trans);
 	stack->skeleton->set_bone_local_pose_override(jiggle_data_chain[p_joint_idx].bone_idx, operation_bone->get_transform(), stack->strength, true);
@@ -244,7 +244,7 @@ void SkeletonModification2DJiggle::_setup_modification(SkeletonModificationStack
 				int bone_idx = jiggle_data_chain[i].bone_idx;
 				if (bone_idx > 0 && bone_idx < stack->skeleton->get_bone_count()) {
 					Bone2D *bone2d_node = stack->skeleton->get_bone(bone_idx);
-					jiggle_data_chain.write[i].dynamic_position = bone2d_node->get_global_transform().get_origin();
+					jiggle_data_chain.write[i].dynamic_position = bone2d_node->get_global_position();
 				}
 			}
 		}
