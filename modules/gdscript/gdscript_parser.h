@@ -161,6 +161,10 @@ public:
 			container_element_type = nullptr;
 		}
 
+		bool is_typed_container_type() const;
+
+		GDScriptParser::DataType get_typed_container_type() const;
+
 		bool operator==(const DataType &p_other) const {
 			if (type_source == UNDETECTED || p_other.type_source == UNDETECTED) {
 				return true; // Can be consireded equal for parsing purposes.
