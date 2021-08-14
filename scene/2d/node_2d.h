@@ -38,19 +38,17 @@ class Node2D : public CanvasItem {
 
 	Point2 pos;
 	real_t angle = 0.0;
-	Size2 _scale = Vector2(1, 1);
+	Size2 scale = Vector2(1, 1);
 	real_t skew = 0.0;
+
 	int z_index = 0;
 	bool z_relative = true;
 	bool y_sort_enabled = false;
 
-	Transform2D _mat;
+	Transform2D transform;
 
-	bool _xform_dirty = false;
-
+	void re_create_full_transform();
 	void _update_transform();
-
-	void _update_xform_values();
 
 protected:
 	static void _bind_methods();
