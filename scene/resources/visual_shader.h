@@ -435,6 +435,7 @@ public:
 		QUAL_NONE,
 		QUAL_GLOBAL,
 		QUAL_INSTANCE,
+		QUAL_MAX,
 	};
 
 private:

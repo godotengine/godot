@@ -18,6 +18,7 @@
 		<constant name="OP_TYPE_VECTOR" value="1" enum="OpType">
 		</constant>
 		<constant name="OP_TYPE_MAX" value="2" enum="OpType">
+			Represents the size of the [enum OpType] enum.
 		</constant>
 	</constants>
 </class>

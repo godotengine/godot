@@ -94,5 +94,8 @@
 			}
 			[/codeblock]
 		</constant>
+		<constant name="OP_MAX" value="9" enum="Operator">
+			Represents the size of the [enum Operator] enum.
+		</constant>
 	</constants>
 </class>
