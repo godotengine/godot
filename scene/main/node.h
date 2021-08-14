@@ -202,6 +202,7 @@ protected:
 	static String _get_name_num_separator();
 
 	friend class SceneState;
+	friend class MultiplayerAPI;
 
 	void _add_child_nocheck(Node *p_child, const StringName &p_name);
 	void _set_owner_nocheck(Node *p_owner);
@@ -339,11 +340,11 @@ public:
 
 	/* PROCESSING */
 	void set_physics_process(bool p_process);
-	float get_physics_process_delta_time() const;
+	double get_physics_process_delta_time() const;
 	bool is_physics_processing() const;
 
 	void set_process(bool p_process);
-	float get_process_delta_time() const;
+	double get_process_delta_time() const;
 	bool is_processing() const;
 
 	void set_physics_process_internal(bool p_process_internal);

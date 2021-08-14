@@ -812,6 +812,7 @@ class CameraTexture : public Texture2D {
 	GDCLASS(CameraTexture, Texture2D);
 
 private:
+	mutable RID _texture;
 	int camera_feed_id = 0;
 	CameraServer::FeedImage which_feed = CameraServer::FEED_RGBA_IMAGE;
 

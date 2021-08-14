@@ -195,18 +195,22 @@ uint32_t OccluderInstance3D::get_bake_mask() const {
 	return bake_mask;
 }
 
-void OccluderInstance3D::set_bake_mask_bit(int p_layer, bool p_enable) {
-	ERR_FAIL_INDEX(p_layer, 32);
-	if (p_enable) {
-		set_bake_mask(bake_mask | (1 << p_layer));
+void OccluderInstance3D::set_bake_mask_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Render layer number must be between 1 and 20 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 20, "Render layer number must be between 1 and 20 inclusive.");
+	uint32_t mask = get_bake_mask();
+	if (p_value) {
+		mask |= 1 << (p_layer_number - 1);
 	} else {
-		set_bake_mask(bake_mask & (~(1 << p_layer)));
+		mask &= ~(1 << (p_layer_number - 1));
 	}
+	set_bake_mask(mask);
 }
 
-bool OccluderInstance3D::get_bake_mask_bit(int p_layer) const {
-	ERR_FAIL_INDEX_V(p_layer, 32, false);
-	return (bake_mask & (1 << p_layer));
+bool OccluderInstance3D::get_bake_mask_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Render layer number must be between 1 and 20 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 20, false, "Render layer number must be between 1 and 20 inclusive.");
+	return bake_mask & (1 << (p_layer_number - 1));
 }
 
 bool OccluderInstance3D::_bake_material_check(Ref<Material> p_material) {
@@ -345,8 +349,8 @@ TypedArray<String> OccluderInstance3D::get_configuration_warnings() const {
 void OccluderInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bake_mask", "mask"), &OccluderInstance3D::set_bake_mask);
 	ClassDB::bind_method(D_METHOD("get_bake_mask"), &OccluderInstance3D::get_bake_mask);
-	ClassDB::bind_method(D_METHOD("set_bake_mask_bit", "layer", "enabled"), &OccluderInstance3D::set_bake_mask_bit);
-	ClassDB::bind_method(D_METHOD("get_bake_mask_bit", "layer"), &OccluderInstance3D::get_bake_mask_bit);
+	ClassDB::bind_method(D_METHOD("set_bake_mask_value", "layer_number", "value"), &OccluderInstance3D::set_bake_mask_value);
+	ClassDB::bind_method(D_METHOD("get_bake_mask_value", "layer_number"), &OccluderInstance3D::get_bake_mask_value);
 
 	ClassDB::bind_method(D_METHOD("set_occluder", "occluder"), &OccluderInstance3D::set_occluder);
 	ClassDB::bind_method(D_METHOD("get_occluder"), &OccluderInstance3D::get_occluder);

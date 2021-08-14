@@ -540,13 +540,13 @@ public:
 	void particles_emit(RID p_particles, const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) override {}
 	void particles_set_emitting(RID p_particles, bool p_emitting) override {}
 	void particles_set_amount(RID p_particles, int p_amount) override {}
-	void particles_set_lifetime(RID p_particles, float p_lifetime) override {}
+	void particles_set_lifetime(RID p_particles, double p_lifetime) override {}
 	void particles_set_one_shot(RID p_particles, bool p_one_shot) override {}
-	void particles_set_pre_process_time(RID p_particles, float p_time) override {}
-	void particles_set_explosiveness_ratio(RID p_particles, float p_ratio) override {}
-	void particles_set_randomness_ratio(RID p_particles, float p_ratio) override {}
+	void particles_set_pre_process_time(RID p_particles, double p_time) override {}
+	void particles_set_explosiveness_ratio(RID p_particles, real_t p_ratio) override {}
+	void particles_set_randomness_ratio(RID p_particles, real_t p_ratio) override {}
 	void particles_set_custom_aabb(RID p_particles, const AABB &p_aabb) override {}
-	void particles_set_speed_scale(RID p_particles, float p_scale) override {}
+	void particles_set_speed_scale(RID p_particles, double p_scale) override {}
 	void particles_set_use_local_coordinates(RID p_particles, bool p_enable) override {}
 	void particles_set_process_material(RID p_particles, RID p_material) override {}
 	void particles_set_fixed_fps(RID p_particles, int p_fps) override {}
@@ -554,11 +554,11 @@ public:
 	void particles_set_fractional_delta(RID p_particles, bool p_enable) override {}
 	void particles_set_subemitter(RID p_particles, RID p_subemitter_particles) override {}
 	void particles_set_view_axis(RID p_particles, const Vector3 &p_axis, const Vector3 &p_up_axis) override {}
-	void particles_set_collision_base_size(RID p_particles, float p_size) override {}
+	void particles_set_collision_base_size(RID p_particles, real_t p_size) override {}
 
 	void particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align) override {}
 
-	void particles_set_trails(RID p_particles, bool p_enable, float p_length) override {}
+	void particles_set_trails(RID p_particles, bool p_enable, double p_length) override {}
 	void particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses) override {}
 
 	void particles_restart(RID p_particles) override {}
@@ -591,11 +591,11 @@ public:
 	void particles_collision_initialize(RID p_rid) override {}
 	void particles_collision_set_collision_type(RID p_particles_collision, RS::ParticlesCollisionType p_type) override {}
 	void particles_collision_set_cull_mask(RID p_particles_collision, uint32_t p_cull_mask) override {}
-	void particles_collision_set_sphere_radius(RID p_particles_collision, float p_radius) override {}
+	void particles_collision_set_sphere_radius(RID p_particles_collision, real_t p_radius) override {}
 	void particles_collision_set_box_extents(RID p_particles_collision, const Vector3 &p_extents) override {}
-	void particles_collision_set_attractor_strength(RID p_particles_collision, float p_strength) override {}
-	void particles_collision_set_attractor_directionality(RID p_particles_collision, float p_directionality) override {}
-	void particles_collision_set_attractor_attenuation(RID p_particles_collision, float p_curve) override {}
+	void particles_collision_set_attractor_strength(RID p_particles_collision, real_t p_strength) override {}
+	void particles_collision_set_attractor_directionality(RID p_particles_collision, real_t p_directionality) override {}
+	void particles_collision_set_attractor_attenuation(RID p_particles_collision, real_t p_curve) override {}
 	void particles_collision_set_field_texture(RID p_particles_collision, RID p_texture) override {}
 	void particles_collision_height_field_update(RID p_particles_collision) override {}
 	void particles_collision_set_height_field_resolution(RID p_particles_collision, RS::ParticlesCollisionHeightfieldResolution p_resolution) override {}
@@ -724,7 +724,7 @@ public:
 class RasterizerDummy : public RendererCompositor {
 private:
 	uint64_t frame = 1;
-	float delta = 0;
+	double delta = 0;
 
 protected:
 	RasterizerCanvasDummy canvas;
@@ -765,7 +765,7 @@ public:
 
 	bool is_low_end() const override { return true; }
 	uint64_t get_frame_number() const override { return frame; }
-	float get_frame_delta_time() const override { return delta; }
+	double get_frame_delta_time() const override { return delta; }
 
 	RasterizerDummy() {}
 	~RasterizerDummy() {}

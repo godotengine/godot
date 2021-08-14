@@ -108,7 +108,7 @@ class CapsuleMesh : public PrimitiveMesh {
 
 private:
 	float radius = 1.0;
-	float mid_height = 1.0;
+	float height = 3.0;
 	int radial_segments = 64;
 	int rings = 8;
 
@@ -120,8 +120,8 @@ public:
 	void set_radius(const float p_radius);
 	float get_radius() const;
 
-	void set_mid_height(const float p_mid_height);
-	float get_mid_height() const;
+	void set_height(const float p_height);
+	float get_height() const;
 
 	void set_radial_segments(const int p_segments);
 	int get_radial_segments() const;

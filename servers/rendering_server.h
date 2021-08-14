@@ -613,13 +613,13 @@ public:
 	virtual void particles_set_emitting(RID p_particles, bool p_enable) = 0;
 	virtual bool particles_get_emitting(RID p_particles) = 0;
 	virtual void particles_set_amount(RID p_particles, int p_amount) = 0;
-	virtual void particles_set_lifetime(RID p_particles, float p_lifetime) = 0;
+	virtual void particles_set_lifetime(RID p_particles, double p_lifetime) = 0;
 	virtual void particles_set_one_shot(RID p_particles, bool p_one_shot) = 0;
-	virtual void particles_set_pre_process_time(RID p_particles, float p_time) = 0;
+	virtual void particles_set_pre_process_time(RID p_particles, double p_time) = 0;
 	virtual void particles_set_explosiveness_ratio(RID p_particles, float p_ratio) = 0;
 	virtual void particles_set_randomness_ratio(RID p_particles, float p_ratio) = 0;
 	virtual void particles_set_custom_aabb(RID p_particles, const AABB &p_aabb) = 0;
-	virtual void particles_set_speed_scale(RID p_particles, float p_scale) = 0;
+	virtual void particles_set_speed_scale(RID p_particles, double p_scale) = 0;
 	virtual void particles_set_use_local_coordinates(RID p_particles, bool p_enable) = 0;
 	virtual void particles_set_process_material(RID p_particles, RID p_material) = 0;
 	virtual void particles_set_fixed_fps(RID p_particles, int p_fps) = 0;
@@ -687,11 +687,11 @@ public:
 
 	virtual void particles_collision_set_collision_type(RID p_particles_collision, ParticlesCollisionType p_type) = 0;
 	virtual void particles_collision_set_cull_mask(RID p_particles_collision, uint32_t p_cull_mask) = 0;
-	virtual void particles_collision_set_sphere_radius(RID p_particles_collision, float p_radius) = 0; //for spheres
+	virtual void particles_collision_set_sphere_radius(RID p_particles_collision, real_t p_radius) = 0; //for spheres
 	virtual void particles_collision_set_box_extents(RID p_particles_collision, const Vector3 &p_extents) = 0; //for non-spheres
-	virtual void particles_collision_set_attractor_strength(RID p_particles_collision, float p_strength) = 0;
-	virtual void particles_collision_set_attractor_directionality(RID p_particles_collision, float p_directionality) = 0;
-	virtual void particles_collision_set_attractor_attenuation(RID p_particles_collision, float p_curve) = 0;
+	virtual void particles_collision_set_attractor_strength(RID p_particles_collision, real_t p_strength) = 0;
+	virtual void particles_collision_set_attractor_directionality(RID p_particles_collision, real_t p_directionality) = 0;
+	virtual void particles_collision_set_attractor_attenuation(RID p_particles_collision, real_t p_curve) = 0;
 	virtual void particles_collision_set_field_texture(RID p_particles_collision, RID p_texture) = 0; //for SDF and vector field, heightfield is dynamic
 
 	virtual void particles_collision_height_field_update(RID p_particles_collision) = 0; //for SDF and vector field
@@ -900,8 +900,8 @@ public:
 	virtual void viewport_set_debug_draw(RID p_viewport, ViewportDebugDraw p_draw) = 0;
 
 	virtual void viewport_set_measure_render_time(RID p_viewport, bool p_enable) = 0;
-	virtual float viewport_get_measured_render_time_cpu(RID p_viewport) const = 0;
-	virtual float viewport_get_measured_render_time_gpu(RID p_viewport) const = 0;
+	virtual double viewport_get_measured_render_time_cpu(RID p_viewport) const = 0;
+	virtual double viewport_get_measured_render_time_gpu(RID p_viewport) const = 0;
 
 	/* SKY API */
 
@@ -1436,15 +1436,15 @@ public:
 
 	struct FrameProfileArea {
 		String name;
-		float gpu_msec;
-		float cpu_msec;
+		double gpu_msec;
+		double cpu_msec;
 	};
 
 	virtual void set_frame_profiling_enabled(bool p_enable) = 0;
 	virtual Vector<FrameProfileArea> get_frame_profile() = 0;
 	virtual uint64_t get_frame_profile_frame() = 0;
 
-	virtual float get_frame_setup_time_cpu() const = 0;
+	virtual double get_frame_setup_time_cpu() const = 0;
 
 	virtual void gi_set_use_half_resolution(bool p_enable) = 0;
 
@@ -1457,7 +1457,7 @@ public:
 
 	virtual void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) = 0;
 
-	virtual RID make_sphere_mesh(int p_lats, int p_lons, float p_radius);
+	virtual RID make_sphere_mesh(int p_lats, int p_lons, real_t p_radius);
 
 	virtual void mesh_add_surface_from_mesh_data(RID p_mesh, const Geometry3D::MeshData &p_mesh_data);
 	virtual void mesh_add_surface_from_planes(RID p_mesh, const Vector<Plane> &p_planes);

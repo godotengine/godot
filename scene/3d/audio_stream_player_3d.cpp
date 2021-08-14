@@ -30,11 +30,10 @@
 
 #include "audio_stream_player_3d.h"
 
-#include "core/config/engine.h"
 #include "scene/3d/area_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/listener_3d.h"
-#include "scene/main/window.h"
+#include "scene/main/viewport.h"
 
 // Based on "A Novel Multichannel Panning Method for Standard and Arbitrary Loudspeaker Configurations" by Ramy Sadek and Chris Kyriakakis (2004)
 // Speaker-Placement Correction Amplitude Panning (SPCAP)
@@ -407,14 +406,14 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 			for (const Set<Camera3D *>::Element *E = world_3d->get_cameras().front(); E; E = E->next()) {
 				Camera3D *camera = E->get();
 				Viewport *vp = camera->get_viewport();
-				if (!vp->is_audio_listener()) {
+				if (!vp->is_audio_listener_3d()) {
 					continue;
 				}
 
 				bool listener_is_camera = true;
 				Node3D *listener_node = camera;
 
-				Listener3D *listener = vp->get_listener();
+				Listener3D *listener = vp->get_listener_3d();
 				if (listener) {
 					listener_node = listener;
 					listener_is_camera = false;
@@ -429,7 +428,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 				if (area && area->is_using_reverb_bus() && area->get_reverb_uniformity() > 0) {
 					area_sound_pos = space_state->get_closest_point_to_object_volume(area->get_rid(), listener_node->get_global_transform().origin);
-					listener_area_pos = listener_node->get_global_transform().affine_inverse().xform(area_sound_pos);
+					listener_area_pos = listener_node->to_local(area_sound_pos);
 				}
 
 				if (max_distance > 0) {

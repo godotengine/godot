@@ -37,7 +37,7 @@
 # Stefano Merazzi <asso99@hotmail.com>, 2019.
 # Sinapse X <sinapsex13@gmail.com>, 2019.
 # Micila Micillotto <micillotto@gmail.com>, 2019, 2020, 2021.
-# Mirko Soppelsa <miknsop@gmail.com>, 2019, 2020.
+# Mirko Soppelsa <miknsop@gmail.com>, 2019, 2020, 2021.
 # No <kingofwizards.kw7@gmail.com>, 2019.
 # StarFang208 <polaritymanx@yahoo.it>, 2019.
 # Katia Piazza <gydey@ridiculousglitch.com>, 2019.
@@ -64,8 +64,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-07-26 14:18+0000\n"
-"Last-Translator: Riteo Siuga <riteo@posteo.net>\n"
+"PO-Revision-Date: 2021-08-10 21:39+0000\n"
+"Last-Translator: Mirko <miknsop@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -73,7 +73,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.7.2-dev\n"
+"X-Generator: Weblate 4.8-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -394,6 +394,7 @@ msgstr "Cambia la modalità del ciclo di un'animazione"
 msgid "Remove Anim Track"
 msgstr "Rimuovi una traccia d'animazione"
 
+#. TRANSLATORS: %s will be replaced by a phrase describing the target of track.
 #: editor/animation_track_editor.cpp
 msgid "Create NEW track for %s and insert key?"
 msgstr "Creare una NUOVA traccia per %s e inserire la chiave?"
@@ -418,9 +419,27 @@ msgstr "Crea"
 msgid "Anim Insert"
 msgstr "Inserisci un'animazione"
 
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "node '%s'"
+msgstr "Impossibile aprire '%s'."
+
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "animation"
+msgstr "Animazione"
+
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
 msgstr "AnimationPlayer non può animare se stesso, solo altri nodi."
+
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "property '%s'"
+msgstr "Non esiste nessuna proprietà \"%s\"."
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -1005,7 +1024,7 @@ msgstr "Crea un nuovo %s"
 msgid "No results for \"%s\"."
 msgstr "Nessun risultato per \"%s\"."
 
-#: editor/create_dialog.cpp
+#: editor/create_dialog.cpp editor/property_selector.cpp
 msgid "No description available for %s."
 msgstr ""
 
@@ -2372,6 +2391,17 @@ msgid "New Window"
 msgstr "Nuova Finestra"
 
 #: editor/editor_node.cpp
+msgid ""
+"Spins when the editor window redraws.\n"
+"Update Continuously is enabled, which can increase power usage. Click to "
+"disable it."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Spins when the editor window redraws."
+msgstr "Gira quando la finestra dell'editor viene ridisegnata."
+
+#: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
 msgstr "Le risorse importate non possono essere salvate."
 
@@ -3248,10 +3278,6 @@ msgid "Save & Restart"
 msgstr "Salva e riavvia"
 
 #: editor/editor_node.cpp
-msgid "Spins when the editor window redraws."
-msgstr "Gira quando la finestra dell'editor viene ridisegnata."
-
-#: editor/editor_node.cpp
 msgid "Update Continuously"
 msgstr "Aggiorna continuamente"
 
@@ -3499,7 +3525,6 @@ msgid "Inclusive"
 msgstr "Inclusivo"
 
 #: editor/editor_profiler.cpp
-#, fuzzy
 msgid "Self"
 msgstr "Se stesso"
 
@@ -3928,6 +3953,16 @@ msgstr "Valore iniziale per il contatore"
 #, fuzzy
 msgid "Download from:"
 msgstr "Errore durante il download"
+
+#: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Open in Web Browser"
+msgstr "Esegui nel Browser"
+
+#: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Copy Mirror URL"
+msgstr "Copia Errore"
 
 #: editor/export_template_manager.cpp
 msgid "Download and Install"
@@ -7908,9 +7943,8 @@ msgid "Translate"
 msgstr "Trasla:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Scale"
-msgstr "Scala:"
+msgstr "Scala"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
@@ -8855,6 +8889,12 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"Select a theme type from the list to edit its items.\n"
+"You can add a custom type or import a type with its items from another theme."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
 msgid "Remove All Color Items"
 msgstr "Rimuovi tutti gli elementi"
@@ -8883,6 +8923,12 @@ msgstr "Rimuovi tutti gli elementi"
 #, fuzzy
 msgid "Remove All StyleBox Items"
 msgstr "Rimuovi tutti gli elementi"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"This theme type is empty.\n"
+"Add more items to it manually or by importing from another theme."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -12574,6 +12620,16 @@ msgstr "Modifica Altezza di Forma del Cilindro"
 msgid "Change Ray Shape Length"
 msgstr "Cambia lunghezza Ray Shape"
 
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Room Point Position"
+msgstr "Imposta Posizione Punto Curva"
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Portal Point Position"
+msgstr "Imposta Posizione Punto Curva"
+
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Radius"
 msgstr "Modifica Raggio del Cilindro"
@@ -13569,7 +13625,7 @@ msgstr ""
 #: platform/android/export/export.cpp
 #, fuzzy
 msgid "Exporting for Android"
-msgstr "Esportando Tutto"
+msgstr "Esportazione per Android"
 
 #: platform/android/export/export.cpp
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
@@ -14375,6 +14431,42 @@ msgstr ""
 
 #: scene/3d/room_manager.cpp
 msgid "There should only be one RoomManager in the SceneTree."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"RoomList path is invalid.\n"
+"Please check the RoomList branch has been assigned in the RoomManager."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "RoomList contains no Rooms, aborting."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "Misnamed nodes detected, check output log for details. Aborting."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "Portal link room not found, check output log for details."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Portal autolink failed, check output log for details.\n"
+"Check the portal is facing outwards from the source room."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Room overlap detected, cameras may work incorrectly in overlapping area.\n"
+"Check output log for details."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Error calculating room bounds.\n"
+"Ensure all rooms contain geometry or manual bounds."
 msgstr ""
 
 #: scene/3d/soft_body.cpp
@@ -15640,9 +15732,6 @@ msgstr "Le constanti non possono essere modificate."
 
 #~ msgid "I see..."
 #~ msgstr "Capisco..."
-
-#~ msgid "Can't open '%s'."
-#~ msgstr "Impossibile aprire '%s'."
 
 #~ msgid "Ugh"
 #~ msgstr "Ugh"

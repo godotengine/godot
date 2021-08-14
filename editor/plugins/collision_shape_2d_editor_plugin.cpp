@@ -36,10 +36,9 @@
 #include "scene/resources/circle_shape_2d.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
-#include "scene/resources/line_shape_2d.h"
-#include "scene/resources/ray_shape_2d.h"
 #include "scene/resources/rectangle_shape_2d.h"
 #include "scene/resources/segment_shape_2d.h"
+#include "scene/resources/world_margin_shape_2d.h"
 
 void CollisionShape2DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
@@ -75,22 +74,13 @@ Variant CollisionShape2DEditor::get_handle_value(int idx) const {
 		case CONVEX_POLYGON_SHAPE: {
 		} break;
 
-		case LINE_SHAPE: {
-			Ref<LineShape2D> line = node->get_shape();
+		case WORLD_MARGIN_SHAPE: {
+			Ref<WorldMarginShape2D> line = node->get_shape();
 
 			if (idx == 0) {
 				return line->get_distance();
 			} else {
 				return line->get_normal();
-			}
-
-		} break;
-
-		case RAY_SHAPE: {
-			Ref<RayShape2D> ray = node->get_shape();
-
-			if (idx == 0) {
-				return ray->get_length();
 			}
 
 		} break;
@@ -130,7 +120,7 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 				if (idx == 0) {
 					capsule->set_radius(parameter);
 				} else if (idx == 1) {
-					capsule->set_height(parameter * 2 - capsule->get_radius() * 2);
+					capsule->set_height(parameter * 2);
 				}
 
 				canvas_item_editor->update_viewport();
@@ -152,9 +142,9 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 		case CONVEX_POLYGON_SHAPE: {
 		} break;
 
-		case LINE_SHAPE: {
+		case WORLD_MARGIN_SHAPE: {
 			if (idx < 2) {
-				Ref<LineShape2D> line = node->get_shape();
+				Ref<WorldMarginShape2D> line = node->get_shape();
 
 				if (idx == 0) {
 					line->set_distance(p_point.length());
@@ -164,15 +154,6 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 
 				canvas_item_editor->update_viewport();
 			}
-
-		} break;
-
-		case RAY_SHAPE: {
-			Ref<RayShape2D> ray = node->get_shape();
-
-			ray->set_length(Math::abs(p_point.y));
-
-			canvas_item_editor->update_viewport();
 
 		} break;
 
@@ -260,8 +241,8 @@ void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
 			// Cannot be edited directly, use CollisionPolygon2D instead.
 		} break;
 
-		case LINE_SHAPE: {
-			Ref<LineShape2D> line = node->get_shape();
+		case WORLD_MARGIN_SHAPE: {
+			Ref<WorldMarginShape2D> line = node->get_shape();
 
 			if (idx == 0) {
 				undo_redo->add_do_method(line.ptr(), "set_distance", line->get_distance());
@@ -274,16 +255,6 @@ void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
 				undo_redo->add_undo_method(line.ptr(), "set_normal", p_org);
 				undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 			}
-
-		} break;
-
-		case RAY_SHAPE: {
-			Ref<RayShape2D> ray = node->get_shape();
-
-			undo_redo->add_do_method(ray.ptr(), "set_length", ray->get_length());
-			undo_redo->add_do_method(canvas_item_editor, "update_viewport");
-			undo_redo->add_undo_method(ray.ptr(), "set_length", p_org);
-			undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 
 		} break;
 
@@ -426,10 +397,8 @@ void CollisionShape2DEditor::_get_current_shape_type() {
 		shape_type = CONCAVE_POLYGON_SHAPE;
 	} else if (Object::cast_to<ConvexPolygonShape2D>(*s)) {
 		shape_type = CONVEX_POLYGON_SHAPE;
-	} else if (Object::cast_to<LineShape2D>(*s)) {
-		shape_type = LINE_SHAPE;
-	} else if (Object::cast_to<RayShape2D>(*s)) {
-		shape_type = RAY_SHAPE;
+	} else if (Object::cast_to<WorldMarginShape2D>(*s)) {
+		shape_type = WORLD_MARGIN_SHAPE;
 	} else if (Object::cast_to<RectangleShape2D>(*s)) {
 		shape_type = RECTANGLE_SHAPE;
 	} else if (Object::cast_to<SegmentShape2D>(*s)) {
@@ -471,8 +440,8 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 			float radius = shape->get_radius();
 			float height = shape->get_height() / 2;
 
-			handles.write[0] = Point2(radius, height);
-			handles.write[1] = Point2(0, height + radius);
+			handles.write[0] = Point2(radius, 0);
+			handles.write[1] = Point2(0, height);
 
 			p_overlay->draw_texture(h, gt.xform(handles[0]) - size);
 			p_overlay->draw_texture(h, gt.xform(handles[1]) - size);
@@ -495,8 +464,8 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 		case CONVEX_POLYGON_SHAPE: {
 		} break;
 
-		case LINE_SHAPE: {
-			Ref<LineShape2D> shape = node->get_shape();
+		case WORLD_MARGIN_SHAPE: {
+			Ref<WorldMarginShape2D> shape = node->get_shape();
 
 			handles.resize(2);
 			handles.write[0] = shape->get_normal() * shape->get_distance();
@@ -504,16 +473,6 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 
 			p_overlay->draw_texture(h, gt.xform(handles[0]) - size);
 			p_overlay->draw_texture(h, gt.xform(handles[1]) - size);
-
-		} break;
-
-		case RAY_SHAPE: {
-			Ref<RayShape2D> shape = node->get_shape();
-
-			handles.resize(1);
-			handles.write[0] = Point2(0, shape->get_length());
-
-			p_overlay->draw_texture(h, gt.xform(handles[0]) - size);
 
 		} break;
 

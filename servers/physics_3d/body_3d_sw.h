@@ -389,6 +389,8 @@ public:
 	virtual void set_transform(const Transform3D &p_transform) override { body->set_state(PhysicsServer3D::BODY_STATE_TRANSFORM, p_transform); }
 	virtual Transform3D get_transform() const override { return body->get_transform(); }
 
+	virtual Vector3 get_velocity_at_local_position(const Vector3 &p_position) const override { return body->get_velocity_in_local_point(p_position); }
+
 	virtual void add_central_force(const Vector3 &p_force) override { body->add_central_force(p_force); }
 	virtual void add_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) override {
 		body->add_force(p_force, p_position);

@@ -758,8 +758,8 @@ void EditorHelp::_update_doc() {
 
 			if (cd.theme_properties[i].description != "") {
 				class_desc->push_font(doc_font);
-				class_desc->add_text("  ");
 				class_desc->push_color(comment_color);
+				class_desc->add_text(U" – ");
 				_add_text(DTR(cd.theme_properties[i].description));
 				class_desc->pop();
 				class_desc->pop();
@@ -941,8 +941,7 @@ void EditorHelp::_update_doc() {
 					if (enum_list[i].description != "") {
 						class_desc->push_font(doc_font);
 						class_desc->push_color(comment_color);
-						static const char32_t dash[6] = { ' ', ' ', 0x2013 /* en dash */, ' ', ' ', 0 };
-						class_desc->add_text(String(dash));
+						class_desc->add_text(U" – ");
 						_add_text(DTR(enum_list[i].description));
 						class_desc->pop();
 						class_desc->pop();
@@ -1011,8 +1010,7 @@ void EditorHelp::_update_doc() {
 				if (constants[i].description != "") {
 					class_desc->push_font(doc_font);
 					class_desc->push_color(comment_color);
-					static const char32_t dash[6] = { ' ', ' ', 0x2013 /* en dash */, ' ', ' ', 0 };
-					class_desc->add_text(String(dash));
+					class_desc->add_text(U" – ");
 					_add_text(DTR(constants[i].description));
 					class_desc->pop();
 					class_desc->pop();

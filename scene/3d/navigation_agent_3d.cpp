@@ -30,7 +30,6 @@
 
 #include "navigation_agent_3d.h"
 
-#include "core/config/engine.h"
 #include "servers/navigation_server_3d.h"
 
 void NavigationAgent3D::_bind_methods() {

@@ -887,7 +887,7 @@ Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 				text += "\n" + property_doc;
 			}
 		}
-		help_bit->set_text(text);
+		help_bit->call_deferred(SNAME("set_text"), text); //hack so it uses proper theme once inside scene
 	}
 
 	return help_bit;
@@ -1102,7 +1102,7 @@ Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) cons
 				text += "\n" + property_doc;
 			}
 		}
-		help_bit->set_text(text); //hack so it uses proper theme once inside scene
+		help_bit->call_deferred(SNAME("set_text"), text); //hack so it uses proper theme once inside scene
 	}
 
 	return help_bit;
@@ -1907,8 +1907,7 @@ void EditorInspector::update_tree() {
 					}
 
 					Vector<String> slices = propname.operator String().split("/");
-					if (slices.size() == 2 && slices[0].begins_with("custom_")) {
-						// Likely a theme property.
+					if (slices.size() == 2 && slices[0].begins_with("theme_override_")) {
 						for (int i = 0; i < F->get().theme_properties.size(); i++) {
 							if (F->get().theme_properties[i].name == slices[1]) {
 								descr = DTR(F->get().theme_properties[i].description);

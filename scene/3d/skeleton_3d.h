@@ -31,7 +31,6 @@
 #ifndef SKELETON_3D_H
 #define SKELETON_3D_H
 
-#include "core/templates/rid.h"
 #include "scene/3d/node_3d.h"
 #include "scene/resources/skin.h"
 
@@ -85,7 +84,7 @@ private:
 		bool custom_pose_enable = false;
 		Transform3D custom_pose;
 
-		float global_pose_override_amount = 0.0;
+		real_t global_pose_override_amount = 0.0;
 		bool global_pose_override_reset = false;
 		Transform3D global_pose_override;
 
@@ -147,7 +146,7 @@ public:
 	Transform3D get_bone_global_pose_no_override(int p_bone) const;
 
 	void clear_bones_global_pose_override();
-	void set_bone_global_pose_override(int p_bone, const Transform3D &p_pose, float p_amount, bool p_persistent = false);
+	void set_bone_global_pose_override(int p_bone, const Transform3D &p_pose, real_t p_amount, bool p_persistent = false);
 
 	void set_bone_enabled(int p_bone, bool p_enabled);
 	bool is_bone_enabled(int p_bone) const;

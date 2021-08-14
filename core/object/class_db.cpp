@@ -505,11 +505,12 @@ thread_local bool initializing_with_extension = false;
 thread_local ObjectNativeExtension *initializing_extension = nullptr;
 thread_local GDExtensionClassInstancePtr initializing_extension_instance = nullptr;
 
-void ClassDB::instance_get_native_extension_data(ObjectNativeExtension **r_extension, GDExtensionClassInstancePtr *r_extension_instance) {
+void ClassDB::instance_get_native_extension_data(ObjectNativeExtension **r_extension, GDExtensionClassInstancePtr *r_extension_instance, Object *p_base) {
 	if (initializing_with_extension) {
 		*r_extension = initializing_extension;
 		*r_extension_instance = initializing_extension_instance;
 		initializing_with_extension = false;
+		initializing_extension->set_object_instance(*r_extension_instance, p_base);
 	} else {
 		*r_extension = nullptr;
 		*r_extension_instance = nullptr;
@@ -1592,7 +1593,7 @@ void ClassDB::register_extension_class(ObjectNativeExtension *p_extension) {
 	GLOBAL_LOCK_FUNCTION;
 
 	ERR_FAIL_COND_MSG(classes.has(p_extension->class_name), "Class already registered: " + String(p_extension->class_name));
-	ERR_FAIL_COND_MSG(classes.has(p_extension->parent_class_name), "Parent class name for extension class not found: " + String(p_extension->parent_class_name));
+	ERR_FAIL_COND_MSG(!classes.has(p_extension->parent_class_name), "Parent class name for extension class not found: " + String(p_extension->parent_class_name));
 
 	ClassInfo *parent = classes.getptr(p_extension->parent_class_name);
 
@@ -1604,6 +1605,7 @@ void ClassDB::register_extension_class(ObjectNativeExtension *p_extension) {
 	c.inherits = parent->name;
 	c.class_ptr = parent->class_ptr;
 	c.inherits_ptr = parent;
+	c.exposed = true;
 
 	classes[p_extension->class_name] = c;
 }

@@ -56,7 +56,7 @@ public:
 	Transform2D pre_drag_xform;
 	Rect2 pre_drag_rect;
 
-	List<float> pre_drag_bones_length;
+	List<real_t> pre_drag_bones_length;
 	List<Dictionary> pre_drag_bones_undo_state;
 
 	Dictionary undo_state;
@@ -540,7 +540,7 @@ private:
 	VSplitContainer *bottom_split;
 
 	void _update_context_menu_stylebox();
-	void _popup_warning_temporarily(Control *p_control, const float p_duration);
+	void _popup_warning_temporarily(Control *p_control, const double p_duration);
 	void _popup_warning_depop(Control *p_control);
 
 	void _set_owner_for_node_and_children(Node *p_node, Node *p_owner);
@@ -639,8 +639,10 @@ public:
 class CanvasItemEditorViewport : public Control {
 	GDCLASS(CanvasItemEditorViewport, Control);
 
-	String default_type;
-	Vector<String> types;
+	// The type of node that will be created when dropping texture into the viewport.
+	String default_texture_node_type;
+	// Node types that are available to select from when dropping texture into viewport.
+	Vector<String> texture_node_types;
 
 	Vector<String> selected_files;
 	Node *target_node;
@@ -649,7 +651,7 @@ class CanvasItemEditorViewport : public Control {
 	EditorNode *editor;
 	EditorData *editor_data;
 	CanvasItemEditor *canvas_item_editor;
-	Node2D *preview_node;
+	Control *preview_node;
 	AcceptDialog *accept;
 	AcceptDialog *selector;
 	Label *selector_label;
@@ -662,6 +664,7 @@ class CanvasItemEditorViewport : public Control {
 	void _on_select_type(Object *selected);
 	void _on_change_type_confirmed();
 	void _on_change_type_closed();
+	Node *_make_texture_node_type(String texture_node_type);
 
 	void _create_preview(const Vector<String> &files) const;
 	void _remove_preview();

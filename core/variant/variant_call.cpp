@@ -1709,7 +1709,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Transform2D, interpolate_with, sarray("xform", "weight"), varray());
 	bind_method(Transform2D, is_equal_approx, sarray("xform"), varray());
 	bind_method(Transform2D, set_rotation, sarray("rotation"), varray());
-	bind_method(Transform2D, looking_at, sarray("target"), varray(Transform2D()));
+	bind_method(Transform2D, looking_at, sarray("target"), varray(Vector2()));
 
 	/* Basis */
 
@@ -1728,6 +1728,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Basis, slerp, sarray("to", "weight"), varray());
 	bind_method(Basis, is_equal_approx, sarray("b"), varray());
 	bind_method(Basis, get_rotation_quaternion, sarray(), varray());
+	bind_static_method(Basis, looking_at, sarray("target", "up"), varray(Vector3(0, 1, 0)));
 
 	/* AABB */
 

@@ -49,7 +49,11 @@
 #if defined(VULKAN_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #import <QuartzCore/CAMetalLayer.h>
-#include <vulkan/vulkan_metal.h>
+#ifdef USE_VOLK
+#include <volk.h>
+#else
+#include <vulkan/vulkan.h>
+#endif
 #endif
 
 // Initialization order between compilation units is not guaranteed,
@@ -145,8 +149,6 @@ void OSIPhone::deinitialize_modules() {
 	if (ios) {
 		memdelete(ios);
 	}
-
-	godot_ios_plugins_deinitialize();
 }
 
 void OSIPhone::set_main_loop(MainLoop *p_main_loop) {
@@ -183,8 +185,6 @@ bool OSIPhone::iterate() {
 }
 
 void OSIPhone::start() {
-	godot_ios_plugins_initialize();
-
 	Main::start();
 
 	if (joypad_iphone) {

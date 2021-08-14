@@ -30,15 +30,11 @@
 
 #include "light_3d.h"
 
-#include "core/config/engine.h"
-#include "core/config/project_settings.h"
-#include "scene/resources/surface_tool.h"
-
 bool Light3D::_can_gizmo_scale() const {
 	return false;
 }
 
-void Light3D::set_param(Param p_param, float p_value) {
+void Light3D::set_param(Param p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	param[p_param] = p_value;
 
@@ -53,7 +49,7 @@ void Light3D::set_param(Param p_param, float p_value) {
 	}
 }
 
-float Light3D::get_param(Param p_param) const {
+real_t Light3D::get_param(Param p_param) const {
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 	return param[p_param];
 }
@@ -128,8 +124,8 @@ AABB Light3D::get_aabb() const {
 		return AABB(Vector3(-1, -1, -1) * param[PARAM_RANGE], Vector3(2, 2, 2) * param[PARAM_RANGE]);
 
 	} else if (type == RenderingServer::LIGHT_SPOT) {
-		float len = param[PARAM_RANGE];
-		float size = Math::tan(Math::deg2rad(param[PARAM_SPOT_ANGLE])) * len;
+		real_t len = param[PARAM_RANGE];
+		real_t size = Math::tan(Math::deg2rad(param[PARAM_SPOT_ANGLE])) * len;
 		return AABB(Vector3(-size, -size, -len), Vector3(size * 2, size * 2, len));
 	}
 
@@ -213,6 +209,10 @@ void Light3D::_validate_property(PropertyInfo &property) const {
 	}
 
 	if (get_light_type() == RS::LIGHT_DIRECTIONAL && property.name == "light_specular") {
+		property.usage = PROPERTY_USAGE_NONE;
+	}
+
+	if (get_light_type() == RS::LIGHT_SPOT && property.name == "shadow_normal_bias") {
 		property.usage = PROPERTY_USAGE_NONE;
 	}
 
@@ -344,7 +344,7 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 	set_param(PARAM_SHADOW_FADE_START, 0.8);
 	set_param(PARAM_SHADOW_PANCAKE_SIZE, 20.0);
 	set_param(PARAM_SHADOW_BLUR, 1.0);
-	set_param(PARAM_SHADOW_BIAS, 0.02);
+	set_param(PARAM_SHADOW_BIAS, 0.03);
 	set_param(PARAM_SHADOW_NORMAL_BIAS, 1.0);
 	set_param(PARAM_TRANSMITTANCE_BIAS, 0.05);
 	set_param(PARAM_SHADOW_VOLUMETRIC_FOG_FADE, 0.1);
@@ -426,7 +426,8 @@ DirectionalLight3D::DirectionalLight3D() :
 	set_param(PARAM_SHADOW_FADE_START, 0.8);
 	// Increase the default shadow bias to better suit most scenes.
 	// Leave normal bias untouched as it doesn't benefit DirectionalLight3D as much as OmniLight3D.
-	set_param(PARAM_SHADOW_BIAS, 0.05);
+	set_param(PARAM_SHADOW_BIAS, 0.1);
+	set_param(PARAM_SHADOW_NORMAL_BIAS, 1.0);
 	set_shadow_mode(SHADOW_PARALLEL_4_SPLITS);
 	blend_splits = false;
 }

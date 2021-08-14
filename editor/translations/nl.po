@@ -48,12 +48,13 @@
 # Arthur de Roos <arthur.de.roos@gmail.com>, 2021.
 # Vancha March <tjipkevdh@gmail.com>, 2021.
 # Hugo van de Kuilen <hugo.vandekuilen1234567890@gmail.com>, 2021.
+# tobeqz <vanveenjorik+tobeqz@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-08-02 02:00+0000\n"
-"Last-Translator: Hugo van de Kuilen <hugo.vandekuilen1234567890@gmail.com>\n"
+"PO-Revision-Date: 2021-08-06 19:42+0000\n"
+"Last-Translator: tobeqz <vanveenjorik+tobeqz@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -384,6 +385,7 @@ msgstr "Animatielusmodus veranderen"
 msgid "Remove Anim Track"
 msgstr "Verwijder Anim Track"
 
+#. TRANSLATORS: %s will be replaced by a phrase describing the target of track.
 #: editor/animation_track_editor.cpp
 msgid "Create NEW track for %s and insert key?"
 msgstr "NIEUW spoor aanmaken voor %s en sleutel invoegen?"
@@ -408,9 +410,27 @@ msgstr "Maken"
 msgid "Anim Insert"
 msgstr "Anim Invoegen"
 
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "node '%s'"
+msgstr "Kan '%s' niet openen."
+
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "animation"
+msgstr "Animatie"
+
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
 msgstr "Animatie-Speler kan zichzelf niet animeren, alleen andere spelers."
+
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "property '%s'"
+msgstr "Eigenschap '%s' bestaat niet."
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -622,9 +642,8 @@ msgid "Go to Previous Step"
 msgstr "Ga naar Vorige Stap"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Apply Reset"
-msgstr "Resetten"
+msgstr "Reset"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize Animation"
@@ -643,9 +662,8 @@ msgid "Use Bezier Curves"
 msgstr "Gebruik Bezier Curves"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Create RESET Track(s)"
-msgstr "Plak sporen"
+msgstr "Creëer RESET Track(s)"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
@@ -992,9 +1010,9 @@ msgstr "%s opstellen"
 msgid "No results for \"%s\"."
 msgstr "Geen resultaten voor \"%s\"."
 
-#: editor/create_dialog.cpp
+#: editor/create_dialog.cpp editor/property_selector.cpp
 msgid "No description available for %s."
-msgstr ""
+msgstr "Geen beschrijving beschikbaar voor %s."
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
@@ -1094,7 +1112,6 @@ msgid "Owners Of:"
 msgstr "Eigenaren van:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Remove the selected files from the project? (Cannot be undone.)\n"
 "Depending on your filesystem configuration, the files will either be moved "
@@ -1102,11 +1119,10 @@ msgid ""
 msgstr ""
 "Geselecteerde bestanden uit het project verwijderen? (Kan niet ongedaan "
 "gemaakt worden)\n"
-"De bestanden kunnen mogelijk vanuit de prullenbak van het systeem hersteld "
-"worden."
+"Bestanden kunnen naar de prullenbak gestuurd worden of permanent verwijderd "
+"worden, afhankelijk van uw bestandssysteem."
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
@@ -1117,8 +1133,8 @@ msgstr ""
 "De bestanden die verwijderd worden zijn nodig om andere bronnen te laten "
 "werken.\n"
 "Toch verwijderen? (Onomkeerbaar)\n"
-"De bestanden kunnen mogelijk vanuit de prullenbak van het systeem hersteld "
-"worden."
+"De bestanden kunnen naar de prullenbak gestuurd worden of permanent "
+"verwijderd worden, afhankelijk van uw bestandssysteem."
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
@@ -1288,7 +1304,6 @@ msgid "Licenses"
 msgstr "Licenties"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
 msgstr "Fout bij het openen van het pakketbestand, geen zip-formaat."
 
@@ -1300,29 +1315,28 @@ msgstr "%s (bestaat al)"
 #: editor/editor_asset_installer.cpp
 msgid "Contents of asset \"%s\" - %d file(s) conflict with your project:"
 msgstr ""
+"Inhoud van asset \"%s\" - %d bestand(en) zijn in conflict met uw project:"
 
 #: editor/editor_asset_installer.cpp
 msgid "Contents of asset \"%s\" - No files conflict with your project:"
 msgstr ""
+"Inhoud van asset \"%s\" - Geen bestanden hebben een conflict met uw project:"
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "Bronnen aan het uitpakken"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "The following files failed extraction from asset \"%s\":"
-msgstr "De volgende bestanden konden niet worden uitgepakt:"
+msgstr "De volgende bestanden konden niet worden uitgepakt uit \"%s\":"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "(and %s more files)"
-msgstr "En nog %s bestand(en)."
+msgstr "(en nog %s bestanden)"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Asset \"%s\" installed successfully!"
-msgstr "Pakket succesvol geïnstalleerd!"
+msgstr "Asset \"%s\" succesvol geïnstalleerd!"
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -1334,9 +1348,8 @@ msgid "Install"
 msgstr "Installeer"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Asset Installer"
-msgstr "Pakketinstalleerder"
+msgstr "Assetinstalleerder"
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
@@ -1399,7 +1412,6 @@ msgid "Bypass"
 msgstr "Omleiden"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Bus Options"
 msgstr "Audiobusopties"
 
@@ -1567,13 +1579,12 @@ msgid "Can't add autoload:"
 msgstr "Autoload kan niet toevoegd worden:"
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "%s is an invalid path. File does not exist."
-msgstr "Bestand bestaat niet."
+msgstr "%s is een ongeldig pad. Bestand bestaat niet."
 
 #: editor/editor_autoload_settings.cpp
 msgid "%s is an invalid path. Not in resource path (res://)."
-msgstr ""
+msgstr "%s is een ongeldig pad. Niet in bron pad (res://)."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -1773,7 +1784,7 @@ msgstr "Importtabblad"
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to view and edit 3D scenes."
-msgstr ""
+msgstr "Laat u 3D scenes weergeven en bewerken."
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to edit scripts using the integrated script editor."
@@ -2343,6 +2354,17 @@ msgstr "Uitgaande RSET"
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
 msgstr "Nieuw Venster"
+
+#: editor/editor_node.cpp
+msgid ""
+"Spins when the editor window redraws.\n"
+"Update Continuously is enabled, which can increase power usage. Click to "
+"disable it."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Spins when the editor window redraws."
+msgstr "Draait wanneer het editor venster wordt hertekend."
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
@@ -3205,10 +3227,6 @@ msgid "Save & Restart"
 msgstr "Opslaan & Herstarten"
 
 #: editor/editor_node.cpp
-msgid "Spins when the editor window redraws."
-msgstr "Draait wanneer het editor venster wordt hertekend."
-
-#: editor/editor_node.cpp
 msgid "Update Continuously"
 msgstr "Continu Bijwerken"
 
@@ -3872,6 +3890,16 @@ msgstr "Initiële waarde van teller"
 #, fuzzy
 msgid "Download from:"
 msgstr "Downloadfout"
+
+#: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Open in Web Browser"
+msgstr "Uitvoeren in Browser"
+
+#: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Copy Mirror URL"
+msgstr "Kopieer Fout"
 
 #: editor/export_template_manager.cpp
 msgid "Download and Install"
@@ -8745,6 +8773,12 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"Select a theme type from the list to edit its items.\n"
+"You can add a custom type or import a type with its items from another theme."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
 msgid "Remove All Color Items"
 msgstr "Verwijder Alle Items"
@@ -8773,6 +8807,12 @@ msgstr "Verwijder Alle Items"
 #, fuzzy
 msgid "Remove All StyleBox Items"
 msgstr "Verwijder Alle Items"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"This theme type is empty.\n"
+"Add more items to it manually or by importing from another theme."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -12447,6 +12487,16 @@ msgstr "Wijzig Cylinder Vorm Hoogte"
 msgid "Change Ray Shape Length"
 msgstr "Wijzig Ray Vorm Lengte"
 
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Room Point Position"
+msgstr "Zet Curve Punt Positie"
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Portal Point Position"
+msgstr "Zet Curve Punt Positie"
+
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Radius"
 msgstr "Wijzig Cylinder Straal"
@@ -14216,6 +14266,42 @@ msgstr ""
 msgid "There should only be one RoomManager in the SceneTree."
 msgstr ""
 
+#: scene/3d/room_manager.cpp
+msgid ""
+"RoomList path is invalid.\n"
+"Please check the RoomList branch has been assigned in the RoomManager."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "RoomList contains no Rooms, aborting."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "Misnamed nodes detected, check output log for details. Aborting."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "Portal link room not found, check output log for details."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Portal autolink failed, check output log for details.\n"
+"Check the portal is facing outwards from the source room."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Room overlap detected, cameras may work incorrectly in overlapping area.\n"
+"Check output log for details."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Error calculating room bounds.\n"
+"Ensure all rooms contain geometry or manual bounds."
+msgstr ""
+
 #: scene/3d/soft_body.cpp
 msgid "This body will be ignored until you set a mesh."
 msgstr "Dit lichaam zal worden genegeerd totdat je een mesh instelt."
@@ -15414,9 +15500,6 @@ msgstr "Constanten kunnen niet worden aangepast."
 
 #~ msgid "I see..."
 #~ msgstr "Ik snap het..."
-
-#~ msgid "Can't open '%s'."
-#~ msgstr "Kan '%s' niet openen."
 
 #~ msgid "Ugh"
 #~ msgstr "Oeps"

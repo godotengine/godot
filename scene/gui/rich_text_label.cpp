@@ -1323,7 +1323,7 @@ void RichTextLabel::_update_scroll() {
 	}
 }
 
-void RichTextLabel::_update_fx(RichTextLabel::ItemFrame *p_frame, float p_delta_time) {
+void RichTextLabel::_update_fx(RichTextLabel::ItemFrame *p_frame, double p_delta_time) {
 	Item *it = p_frame;
 	while (it) {
 		ItemFX *ifx = nullptr;
@@ -1441,7 +1441,7 @@ void RichTextLabel::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (is_visible_in_tree()) {
-				float dt = get_process_delta_time();
+				double dt = get_process_delta_time();
 				_update_fx(main, dt);
 				update();
 			}
@@ -2289,7 +2289,7 @@ void RichTextLabel::_remove_item(Item *p_item, const int p_line, const int p_sub
 	}
 }
 
-void RichTextLabel::add_image(const Ref<Texture2D> &p_image, const int p_width, const int p_height, const Color &p_color, VAlign p_align) {
+void RichTextLabel::add_image(const Ref<Texture2D> &p_image, const int p_width, const int p_height, const Color &p_color, InlineAlign p_align) {
 	if (current->type == ITEM_TABLE) {
 		return;
 	}
@@ -2534,7 +2534,7 @@ void RichTextLabel::push_meta(const Variant &p_meta) {
 	_add_item(item, true);
 }
 
-void RichTextLabel::push_table(int p_columns, VAlign p_align) {
+void RichTextLabel::push_table(int p_columns, InlineAlign p_align) {
 	ERR_FAIL_COND(p_columns < 1);
 	ItemTable *item = memnew(ItemTable);
 
@@ -2897,18 +2897,35 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 				columns = 1;
 			}
 
-			VAlign align = VALIGN_TOP;
-			if (subtag.size() > 1) {
+			int align = INLINE_ALIGN_TOP;
+			if (subtag.size() > 2) {
 				if (subtag[1] == "top" || subtag[1] == "t") {
-					align = VALIGN_TOP;
+					align = INLINE_ALIGN_TOP_TO;
 				} else if (subtag[1] == "center" || subtag[1] == "c") {
-					align = VALIGN_CENTER;
+					align = INLINE_ALIGN_CENTER_TO;
 				} else if (subtag[1] == "bottom" || subtag[1] == "b") {
-					align = VALIGN_BOTTOM;
+					align = INLINE_ALIGN_BOTTOM_TO;
+				}
+				if (subtag[2] == "top" || subtag[2] == "t") {
+					align |= INLINE_ALIGN_TO_TOP;
+				} else if (subtag[2] == "center" || subtag[2] == "c") {
+					align |= INLINE_ALIGN_TO_CENTER;
+				} else if (subtag[2] == "baseline" || subtag[2] == "l") {
+					align |= INLINE_ALIGN_TO_BASELINE;
+				} else if (subtag[2] == "bottom" || subtag[2] == "b") {
+					align |= INLINE_ALIGN_TO_BOTTOM;
+				}
+			} else if (subtag.size() > 1) {
+				if (subtag[1] == "top" || subtag[1] == "t") {
+					align = INLINE_ALIGN_TOP;
+				} else if (subtag[1] == "center" || subtag[1] == "c") {
+					align = INLINE_ALIGN_CENTER;
+				} else if (subtag[1] == "bottom" || subtag[1] == "b") {
+					align = INLINE_ALIGN_BOTTOM;
 				}
 			}
 
-			push_table(columns, align);
+			push_table(columns, (InlineAlign)align);
 			pos = brk_end + 1;
 			tag_stack.push_front("table");
 		} else if (tag == "cell") {
@@ -3187,15 +3204,34 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 			pos = end;
 			tag_stack.push_front(bbcode_name);
 		} else if (tag.begins_with("img")) {
-			VAlign align = VALIGN_TOP;
+			int align = INLINE_ALIGN_CENTER;
 			if (tag.begins_with("img=")) {
-				String al = tag.substr(4, tag.length());
-				if (al == "top" || al == "t") {
-					align = VALIGN_TOP;
-				} else if (al == "center" || al == "c") {
-					align = VALIGN_CENTER;
-				} else if (al == "bottom" || al == "b") {
-					align = VALIGN_BOTTOM;
+				Vector<String> subtag = tag.substr(4, tag.length()).split(",");
+				if (subtag.size() > 1) {
+					if (subtag[0] == "top" || subtag[0] == "t") {
+						align = INLINE_ALIGN_TOP_TO;
+					} else if (subtag[0] == "center" || subtag[0] == "c") {
+						align = INLINE_ALIGN_CENTER_TO;
+					} else if (subtag[0] == "bottom" || subtag[0] == "b") {
+						align = INLINE_ALIGN_BOTTOM_TO;
+					}
+					if (subtag[1] == "top" || subtag[1] == "t") {
+						align |= INLINE_ALIGN_TO_TOP;
+					} else if (subtag[1] == "center" || subtag[1] == "c") {
+						align |= INLINE_ALIGN_TO_CENTER;
+					} else if (subtag[1] == "baseline" || subtag[1] == "l") {
+						align |= INLINE_ALIGN_TO_BASELINE;
+					} else if (subtag[1] == "bottom" || subtag[1] == "b") {
+						align |= INLINE_ALIGN_TO_BOTTOM;
+					}
+				} else if (subtag.size() > 0) {
+					if (subtag[0] == "top" || subtag[0] == "t") {
+						align = INLINE_ALIGN_TOP;
+					} else if (subtag[0] == "center" || subtag[0] == "c") {
+						align = INLINE_ALIGN_CENTER;
+					} else if (subtag[0] == "bottom" || subtag[0] == "b") {
+						align = INLINE_ALIGN_BOTTOM;
+					}
 				}
 			}
 
@@ -3236,7 +3272,7 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 					}
 				}
 
-				add_image(texture, width, height, color, align);
+				add_image(texture, width, height, color, (InlineAlign)align);
 			}
 
 			pos = end;
@@ -3961,7 +3997,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_text"), &RichTextLabel::get_text);
 	ClassDB::bind_method(D_METHOD("add_text", "text"), &RichTextLabel::add_text);
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &RichTextLabel::set_text);
-	ClassDB::bind_method(D_METHOD("add_image", "image", "width", "height", "color", "inline_align"), &RichTextLabel::add_image, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(VALIGN_TOP));
+	ClassDB::bind_method(D_METHOD("add_image", "image", "width", "height", "color", "inline_align"), &RichTextLabel::add_image, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGN_CENTER));
 	ClassDB::bind_method(D_METHOD("newline"), &RichTextLabel::add_newline);
 	ClassDB::bind_method(D_METHOD("remove_line", "line"), &RichTextLabel::remove_line);
 	ClassDB::bind_method(D_METHOD("push_font", "font"), &RichTextLabel::push_font);
@@ -3981,7 +4017,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("push_meta", "data"), &RichTextLabel::push_meta);
 	ClassDB::bind_method(D_METHOD("push_underline"), &RichTextLabel::push_underline);
 	ClassDB::bind_method(D_METHOD("push_strikethrough"), &RichTextLabel::push_strikethrough);
-	ClassDB::bind_method(D_METHOD("push_table", "columns", "inline_align"), &RichTextLabel::push_table, DEFVAL(VALIGN_TOP));
+	ClassDB::bind_method(D_METHOD("push_table", "columns", "inline_align"), &RichTextLabel::push_table, DEFVAL(INLINE_ALIGN_TOP));
 	ClassDB::bind_method(D_METHOD("push_dropcap", "string", "font", "size", "dropcap_margins", "color", "outline_size", "outline_color"), &RichTextLabel::push_dropcap, DEFVAL(Rect2()), DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(Color(0, 0, 0, 0)));
 	ClassDB::bind_method(D_METHOD("set_table_column_expand", "column", "expand", "ratio"), &RichTextLabel::set_table_column_expand);
 	ClassDB::bind_method(D_METHOD("set_cell_row_background_color", "odd_row_bg", "even_row_bg"), &RichTextLabel::set_cell_row_background_color);

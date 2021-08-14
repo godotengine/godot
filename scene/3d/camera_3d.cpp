@@ -31,10 +31,8 @@
 #include "camera_3d.h"
 
 #include "collision_object_3d.h"
-#include "core/config/engine.h"
 #include "core/math/camera_matrix.h"
-#include "scene/resources/material.h"
-#include "scene/resources/surface_tool.h"
+#include "scene/main/viewport.h"
 
 void Camera3D::_update_audio_listener_state() {
 }
@@ -153,7 +151,7 @@ Transform3D Camera3D::get_camera_transform() const {
 	return tr;
 }
 
-void Camera3D::set_perspective(float p_fovy_degrees, float p_z_near, float p_z_far) {
+void Camera3D::set_perspective(real_t p_fovy_degrees, real_t p_z_near, real_t p_z_far) {
 	if (!force_change && fov == p_fovy_degrees && p_z_near == near && p_z_far == far && mode == PROJECTION_PERSPECTIVE) {
 		return;
 	}
@@ -168,7 +166,7 @@ void Camera3D::set_perspective(float p_fovy_degrees, float p_z_near, float p_z_f
 	force_change = false;
 }
 
-void Camera3D::set_orthogonal(float p_size, float p_z_near, float p_z_far) {
+void Camera3D::set_orthogonal(real_t p_size, real_t p_z_near, real_t p_z_far) {
 	if (!force_change && size == p_size && p_z_near == near && p_z_far == far && mode == PROJECTION_ORTHOGONAL) {
 		return;
 	}
@@ -184,7 +182,7 @@ void Camera3D::set_orthogonal(float p_size, float p_z_near, float p_z_far) {
 	update_gizmos();
 }
 
-void Camera3D::set_frustum(float p_size, Vector2 p_offset, float p_z_near, float p_z_far) {
+void Camera3D::set_frustum(real_t p_size, Vector2 p_offset, real_t p_z_near, real_t p_z_far) {
 	if (!force_change && size == p_size && frustum_offset == p_offset && p_z_near == near && p_z_far == far && mode == PROJECTION_FRUSTUM) {
 		return;
 	}
@@ -295,7 +293,7 @@ Vector3 Camera3D::project_ray_origin(const Point2 &p_pos) const {
 		return get_camera_transform().origin;
 	} else {
 		Vector2 pos = cpos / viewport_size;
-		float vsize, hsize;
+		real_t vsize, hsize;
 		if (keep_aspect == KEEP_WIDTH) {
 			vsize = size / viewport_size.aspect();
 			hsize = size;
@@ -368,7 +366,7 @@ Point2 Camera3D::unproject_position(const Vector3 &p_pos) const {
 	return res;
 }
 
-Vector3 Camera3D::project_position(const Point2 &p_point, float p_z_depth) const {
+Vector3 Camera3D::project_position(const Point2 &p_point, real_t p_z_depth) const {
 	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector3(), "Camera is not inside scene.");
 
 	if (p_z_depth == 0 && mode != PROJECTION_ORTHOGONAL) {
@@ -499,8 +497,8 @@ void Camera3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_position_in_frustum", "world_point"), &Camera3D::is_position_in_frustum);
 	ClassDB::bind_method(D_METHOD("get_camera_rid"), &Camera3D::get_camera);
 
-	ClassDB::bind_method(D_METHOD("set_cull_mask_bit", "layer", "enable"), &Camera3D::set_cull_mask_bit);
-	ClassDB::bind_method(D_METHOD("get_cull_mask_bit", "layer"), &Camera3D::get_cull_mask_bit);
+	ClassDB::bind_method(D_METHOD("set_cull_mask_value", "layer_number", "value"), &Camera3D::set_cull_mask_value);
+	ClassDB::bind_method(D_METHOD("get_cull_mask_value", "layer_number"), &Camera3D::get_cull_mask_value);
 
 	//ClassDB::bind_method(D_METHOD("_camera_make_current"),&Camera::_camera_make_current );
 
@@ -531,15 +529,15 @@ void Camera3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_PHYSICS_STEP);
 }
 
-float Camera3D::get_fov() const {
+real_t Camera3D::get_fov() const {
 	return fov;
 }
 
-float Camera3D::get_size() const {
+real_t Camera3D::get_size() const {
 	return size;
 }
 
-float Camera3D::get_near() const {
+real_t Camera3D::get_near() const {
 	return near;
 }
 
@@ -547,7 +545,7 @@ Vector2 Camera3D::get_frustum_offset() const {
 	return frustum_offset;
 }
 
-float Camera3D::get_far() const {
+real_t Camera3D::get_far() const {
 	return far;
 }
 
@@ -555,19 +553,19 @@ Camera3D::Projection Camera3D::get_projection() const {
 	return mode;
 }
 
-void Camera3D::set_fov(float p_fov) {
+void Camera3D::set_fov(real_t p_fov) {
 	ERR_FAIL_COND(p_fov < 1 || p_fov > 179);
 	fov = p_fov;
 	_update_camera_mode();
 }
 
-void Camera3D::set_size(float p_size) {
+void Camera3D::set_size(real_t p_size) {
 	ERR_FAIL_COND(p_size < 0.1 || p_size > 16384);
 	size = p_size;
 	_update_camera_mode();
 }
 
-void Camera3D::set_near(float p_near) {
+void Camera3D::set_near(real_t p_near) {
 	near = p_near;
 	_update_camera_mode();
 }
@@ -577,7 +575,7 @@ void Camera3D::set_frustum_offset(Vector2 p_offset) {
 	_update_camera_mode();
 }
 
-void Camera3D::set_far(float p_far) {
+void Camera3D::set_far(real_t p_far) {
 	far = p_far;
 	_update_camera_mode();
 }
@@ -592,18 +590,22 @@ uint32_t Camera3D::get_cull_mask() const {
 	return layers;
 }
 
-void Camera3D::set_cull_mask_bit(int p_layer, bool p_enable) {
-	ERR_FAIL_INDEX(p_layer, 32);
-	if (p_enable) {
-		set_cull_mask(layers | (1 << p_layer));
+void Camera3D::set_cull_mask_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Render layer number must be between 1 and 20 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 20, "Render layer number must be between 1 and 20 inclusive.");
+	uint32_t mask = get_cull_mask();
+	if (p_value) {
+		mask |= 1 << (p_layer_number - 1);
 	} else {
-		set_cull_mask(layers & (~(1 << p_layer)));
+		mask &= ~(1 << (p_layer_number - 1));
 	}
+	set_cull_mask(mask);
 }
 
-bool Camera3D::get_cull_mask_bit(int p_layer) const {
-	ERR_FAIL_INDEX_V(p_layer, 32, false);
-	return (layers & (1 << p_layer));
+bool Camera3D::get_cull_mask_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Render layer number must be between 1 and 20 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 20, false, "Render layer number must be between 1 and 20 inclusive.");
+	return layers & (1 << (p_layer_number - 1));
 }
 
 Vector<Plane> Camera3D::get_frustum() const {
@@ -630,21 +632,21 @@ bool Camera3D::is_position_in_frustum(const Vector3 &p_position) const {
 	return true;
 }
 
-void Camera3D::set_v_offset(float p_offset) {
+void Camera3D::set_v_offset(real_t p_offset) {
 	v_offset = p_offset;
 	_update_camera();
 }
 
-float Camera3D::get_v_offset() const {
+real_t Camera3D::get_v_offset() const {
 	return v_offset;
 }
 
-void Camera3D::set_h_offset(float p_offset) {
+void Camera3D::set_h_offset(real_t p_offset) {
 	h_offset = p_offset;
 	_update_camera();
 }
 
-float Camera3D::get_h_offset() const {
+real_t Camera3D::get_h_offset() const {
 	return h_offset;
 }
 
@@ -672,11 +674,11 @@ Camera3D::~Camera3D() {
 
 ////////////////////////////////////////
 
-void ClippedCamera3D::set_margin(float p_margin) {
+void ClippedCamera3D::set_margin(real_t p_margin) {
 	margin = p_margin;
 }
 
-float ClippedCamera3D::get_margin() const {
+real_t ClippedCamera3D::get_margin() const {
 	return margin;
 }
 
@@ -746,7 +748,7 @@ void ClippedCamera3D::_notification(int p_what) {
 		xf.origin = ray_from;
 		xf.orthonormalize();
 
-		float closest_safe = 1.0f, closest_unsafe = 1.0f;
+		real_t closest_safe = 1.0f, closest_unsafe = 1.0f;
 		if (dspace->cast_motion(pyramid_shape, xf, cam_pos - ray_from, margin, closest_safe, closest_unsafe, exclude, collision_mask, clip_to_bodies, clip_to_areas)) {
 			clip_offset = cam_pos.distance_to(ray_from + (cam_pos - ray_from) * closest_safe);
 		}
@@ -767,20 +769,22 @@ uint32_t ClippedCamera3D::get_collision_mask() const {
 	return collision_mask;
 }
 
-void ClippedCamera3D::set_collision_mask_bit(int p_bit, bool p_value) {
-	ERR_FAIL_INDEX_MSG(p_bit, 32, "Collision layer bit must be between 0 and 31 inclusive.");
+void ClippedCamera3D::set_collision_mask_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 32, "Collision layer number must be between 1 and 32 inclusive.");
 	uint32_t mask = get_collision_mask();
 	if (p_value) {
-		mask |= 1 << p_bit;
+		mask |= 1 << (p_layer_number - 1);
 	} else {
-		mask &= ~(1 << p_bit);
+		mask &= ~(1 << (p_layer_number - 1));
 	}
 	set_collision_mask(mask);
 }
 
-bool ClippedCamera3D::get_collision_mask_bit(int p_bit) const {
-	ERR_FAIL_INDEX_V_MSG(p_bit, 32, false, "Collision mask bit must be between 0 and 31 inclusive.");
-	return get_collision_mask() & (1 << p_bit);
+bool ClippedCamera3D::get_collision_mask_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Collision layer number must be between 1 and 32 inclusive.");
+	return get_collision_mask() & (1 << (p_layer_number - 1));
 }
 
 void ClippedCamera3D::add_exception_rid(const RID &p_rid) {
@@ -813,7 +817,7 @@ void ClippedCamera3D::clear_exceptions() {
 	exclude.clear();
 }
 
-float ClippedCamera3D::get_clip_offset() const {
+real_t ClippedCamera3D::get_clip_offset() const {
 	return clip_offset;
 }
 
@@ -843,8 +847,8 @@ void ClippedCamera3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_mask", "mask"), &ClippedCamera3D::set_collision_mask);
 	ClassDB::bind_method(D_METHOD("get_collision_mask"), &ClippedCamera3D::get_collision_mask);
 
-	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &ClippedCamera3D::set_collision_mask_bit);
-	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &ClippedCamera3D::get_collision_mask_bit);
+	ClassDB::bind_method(D_METHOD("set_collision_mask_value", "layer_number", "value"), &ClippedCamera3D::set_collision_mask_value);
+	ClassDB::bind_method(D_METHOD("get_collision_mask_value", "layer_number"), &ClippedCamera3D::get_collision_mask_value);
 
 	ClassDB::bind_method(D_METHOD("add_exception_rid", "rid"), &ClippedCamera3D::add_exception_rid);
 	ClassDB::bind_method(D_METHOD("add_exception", "node"), &ClippedCamera3D::add_exception);

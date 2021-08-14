@@ -653,6 +653,7 @@ enum OldArrayFormat {
 
 };
 
+#ifndef DISABLE_DEPRECATED
 static Array _convert_old_array(const Array &p_old) {
 	Array new_array;
 	new_array.resize(Mesh::ARRAY_MAX);
@@ -677,6 +678,7 @@ static Mesh::PrimitiveType _old_primitives[7] = {
 	Mesh::PRIMITIVE_TRIANGLE_STRIP,
 	Mesh::PRIMITIVE_TRIANGLE_STRIP
 };
+#endif // DISABLE_DEPRECATED
 
 void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint32_t p_old_format, uint32_t p_new_format, uint32_t p_elements, Vector<uint8_t> &vertex_data, Vector<uint8_t> &attribute_data, Vector<uint8_t> &skin_data) {
 	uint32_t dst_vertex_stride;

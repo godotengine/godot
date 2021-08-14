@@ -863,6 +863,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("bar_arrow", "ColorPicker", make_icon(bar_arrow_png));
 	theme->set_icon("picker_cursor", "ColorPicker", make_icon(picker_cursor_png));
 
+	// ColorPickerButton
+
 	theme->set_icon("bg", "ColorPickerButton", make_icon(mini_checkerboard_png));
 
 	// TooltipPanel
@@ -953,6 +955,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("more", "GraphEdit", make_icon(icon_zoom_more_png));
 	theme->set_icon("snap", "GraphEdit", make_icon(icon_snap_grid_png));
 	theme->set_icon("minimap", "GraphEdit", make_icon(icon_grid_minimap_png));
+	theme->set_icon("layout", "GraphEdit", make_icon(icon_grid_layout_png));
 	theme->set_stylebox("bg", "GraphEdit", make_stylebox(tree_bg_png, 4, 4, 4, 5));
 	theme->set_color("grid_minor", "GraphEdit", Color(1, 1, 1, 0.05));
 	theme->set_color("grid_major", "GraphEdit", Color(1, 1, 1, 0.2));
@@ -964,7 +967,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// Visual Node Ports
 
-	theme->set_constant("port_grab_distance_horizontal", "GraphEdit", 48 * scale);
+	theme->set_constant("port_grab_distance_horizontal", "GraphEdit", 24 * scale);
 	theme->set_constant("port_grab_distance_vertical", "GraphEdit", 6 * scale);
 
 	theme->set_stylebox("bg", "GraphEditMinimap", make_flat_stylebox(Color(0.24, 0.24, 0.24), 0, 0, 0, 0));

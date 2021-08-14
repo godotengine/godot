@@ -2207,7 +2207,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 
 		if (status == XLookupChars) {
 			bool keypress = xkeyevent->type == KeyPress;
-			unsigned int keycode = KeyMappingX11::get_keycode(keysym_keycode);
+			Key keycode = KeyMappingX11::get_keycode(keysym_keycode);
 			unsigned int physical_keycode = KeyMappingX11::get_scancode(xkeyevent->keycode);
 
 			if (keycode >= 'a' && keycode <= 'z') {
@@ -2224,7 +2224,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 				}
 
 				if (keycode == 0) {
-					keycode = physical_keycode;
+					keycode = (Key)physical_keycode;
 				}
 
 				_get_key_modifier_state(xkeyevent->state, k);
@@ -2236,7 +2236,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 
 				k->set_keycode(keycode);
 
-				k->set_physical_keycode(physical_keycode);
+				k->set_physical_keycode((Key)physical_keycode);
 
 				k->set_echo(false);
 
@@ -2247,7 +2247,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 					k->set_shift_pressed(true);
 				}
 
-				Input::get_singleton()->accumulate_input_event(k);
+				Input::get_singleton()->parse_input_event(k);
 			}
 			memfree(utf8string);
 			return;
@@ -2271,7 +2271,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	// KeyMappingX11 just translated the X11 keysym to a PIGUI
 	// keysym, so it works in all platforms the same.
 
-	unsigned int keycode = KeyMappingX11::get_keycode(keysym_keycode);
+	Key keycode = KeyMappingX11::get_keycode(keysym_keycode);
 	unsigned int physical_keycode = KeyMappingX11::get_scancode(xkeyevent->keycode);
 
 	/* Phase 3, obtain a unicode character from the keysym */
@@ -2292,12 +2292,12 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 
 	bool keypress = xkeyevent->type == KeyPress;
 
-	if (physical_keycode == 0 && keycode == 0 && unicode == 0) {
+	if (physical_keycode == 0 && keycode == KEY_NONE && unicode == 0) {
 		return;
 	}
 
-	if (keycode == 0) {
-		keycode = physical_keycode;
+	if (keycode == KEY_NONE) {
+		keycode = (Key)physical_keycode;
 	}
 
 	/* Phase 5, determine modifier mask */
@@ -2360,11 +2360,11 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	k->set_pressed(keypress);
 
 	if (keycode >= 'a' && keycode <= 'z') {
-		keycode -= 'a' - 'A';
+		keycode -= int('a' - 'A');
 	}
 
 	k->set_keycode(keycode);
-	k->set_physical_keycode(physical_keycode);
+	k->set_physical_keycode((Key)physical_keycode);
 	k->set_unicode(unicode);
 	k->set_echo(p_echo);
 
@@ -2396,7 +2396,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 		}
 	}
 
-	Input::get_singleton()->accumulate_input_event(k);
+	Input::get_singleton()->parse_input_event(k);
 }
 
 Atom DisplayServerX11::_process_selection_request_target(Atom p_target, Window p_requestor, Atom p_property) const {
@@ -2883,13 +2883,13 @@ void DisplayServerX11::process_events() {
 								// in a spurious mouse motion event being sent to Godot; remember it to be able to filter it out
 								xi.mouse_pos_to_filter = pos;
 							}
-							Input::get_singleton()->accumulate_input_event(st);
+							Input::get_singleton()->parse_input_event(st);
 						} else {
 							if (!xi.state.has(index)) { // Defensive
 								break;
 							}
 							xi.state.erase(index);
-							Input::get_singleton()->accumulate_input_event(st);
+							Input::get_singleton()->parse_input_event(st);
 						}
 					} break;
 
@@ -2906,7 +2906,7 @@ void DisplayServerX11::process_events() {
 							sd->set_index(index);
 							sd->set_position(pos);
 							sd->set_relative(pos - curr_pos_elem->value());
-							Input::get_singleton()->accumulate_input_event(sd);
+							Input::get_singleton()->parse_input_event(sd);
 
 							curr_pos_elem->value() = pos;
 						}
@@ -3058,7 +3058,7 @@ void DisplayServerX11::process_events() {
 					st->set_index(E->key());
 					st->set_window_id(window_id);
 					st->set_position(E->get());
-					Input::get_singleton()->accumulate_input_event(st);
+					Input::get_singleton()->parse_input_event(st);
 				}
 				xi.state.clear();
 #endif
@@ -3156,7 +3156,7 @@ void DisplayServerX11::process_events() {
 									mb->set_window_id(window_id_other);
 									mb->set_position(Vector2(x, y));
 									mb->set_global_position(mb->get_position());
-									Input::get_singleton()->accumulate_input_event(mb);
+									Input::get_singleton()->parse_input_event(mb);
 								}
 								break;
 							}
@@ -3164,7 +3164,7 @@ void DisplayServerX11::process_events() {
 					}
 				}
 
-				Input::get_singleton()->accumulate_input_event(mb);
+				Input::get_singleton()->parse_input_event(mb);
 
 			} break;
 			case MotionNotify: {
@@ -3280,7 +3280,7 @@ void DisplayServerX11::process_events() {
 				// this is so that the relative motion doesn't get messed up
 				// after we regain focus.
 				if (focused) {
-					Input::get_singleton()->accumulate_input_event(mm);
+					Input::get_singleton()->parse_input_event(mm);
 				} else {
 					// Propagate the event to the focused window,
 					// because it's received only on the topmost window.
@@ -3300,7 +3300,7 @@ void DisplayServerX11::process_events() {
 							mm->set_position(pos_focused);
 							mm->set_global_position(pos_focused);
 							mm->set_speed(Input::get_singleton()->get_last_mouse_speed());
-							Input::get_singleton()->accumulate_input_event(mm);
+							Input::get_singleton()->parse_input_event(mm);
 
 							break;
 						}
@@ -3433,7 +3433,7 @@ void DisplayServerX11::process_events() {
 		*/
 	}
 
-	Input::get_singleton()->flush_accumulated_events();
+	Input::get_singleton()->flush_buffered_events();
 }
 
 void DisplayServerX11::release_rendering_thread() {

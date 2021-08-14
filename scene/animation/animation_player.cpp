@@ -341,7 +341,7 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 	}
 }
 
-void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float p_time, float p_delta, float p_interp, bool p_is_current, bool p_seeked, bool p_started) {
+void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double p_time, double p_delta, float p_interp, bool p_is_current, bool p_seeked, bool p_started) {
 	_ensure_node_caches(p_anim);
 	ERR_FAIL_COND(p_anim->node_cache.size() != p_anim->animation->get_track_count());
 
@@ -723,7 +723,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 						continue;
 					}
 
-					float pos = a->track_get_key_time(i, idx);
+					double pos = a->track_get_key_time(i, idx);
 
 					StringName anim_name = a->animation_track_get_key_animation(i, idx);
 					if (String(anim_name) == "[stop]" || !player->has_animation(anim_name)) {
@@ -732,12 +732,12 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 					Ref<Animation> anim = player->get_animation(anim_name);
 
-					float at_anim_pos;
+					double at_anim_pos;
 
 					if (anim->has_loop()) {
-						at_anim_pos = Math::fposmod(p_time - pos, anim->get_length()); //seek to loop
+						at_anim_pos = Math::fposmod(p_time - pos, (double)anim->get_length()); //seek to loop
 					} else {
-						at_anim_pos = MAX(anim->get_length(), p_time - pos); //seek to end
+						at_anim_pos = MAX((double)anim->get_length(), p_time - pos); //seek to end
 					}
 
 					if (player->is_playing() || p_seeked) {
@@ -776,11 +776,11 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 	}
 }
 
-void AnimationPlayer::_animation_process_data(PlaybackData &cd, float p_delta, float p_blend, bool p_seeked, bool p_started) {
-	float delta = p_delta * speed_scale * cd.speed_scale;
-	float next_pos = cd.pos + delta;
+void AnimationPlayer::_animation_process_data(PlaybackData &cd, double p_delta, float p_blend, bool p_seeked, bool p_started) {
+	double delta = p_delta * speed_scale * cd.speed_scale;
+	double next_pos = cd.pos + delta;
 
-	float len = cd.from->animation->get_length();
+	real_t len = cd.from->animation->get_length();
 	bool loop = cd.from->animation->has_loop();
 
 	if (!loop) {
@@ -808,7 +808,7 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd, float p_delta, f
 		}
 
 	} else {
-		float looped_next_pos = Math::fposmod(next_pos, len);
+		double looped_next_pos = Math::fposmod(next_pos, (double)len);
 		if (looped_next_pos == 0 && next_pos != 0) {
 			// Loop multiples of the length to it, rather than 0
 			// so state at time=length is previewable in the editor
@@ -823,7 +823,7 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd, float p_delta, f
 	_animation_process_animation(cd.from, cd.pos, delta, p_blend, &cd == &playback.current, p_seeked, p_started);
 }
 
-void AnimationPlayer::_animation_process2(float p_delta, bool p_started) {
+void AnimationPlayer::_animation_process2(double p_delta, bool p_started) {
 	Playback &c = playback;
 
 	accum_pass++;
@@ -927,7 +927,7 @@ void AnimationPlayer::_animation_update_transforms() {
 	cache_update_bezier_size = 0;
 }
 
-void AnimationPlayer::_animation_process(float p_delta) {
+void AnimationPlayer::_animation_process(double p_delta) {
 	if (playback.current.from) {
 		end_reached = false;
 		end_notify = false;
@@ -1283,7 +1283,7 @@ float AnimationPlayer::get_playing_speed() const {
 	return speed_scale * playback.current.speed_scale;
 }
 
-void AnimationPlayer::seek(float p_time, bool p_update) {
+void AnimationPlayer::seek(double p_time, bool p_update) {
 	if (!playback.current.from) {
 		if (playback.assigned) {
 			ERR_FAIL_COND(!animation_set.has(playback.assigned));
@@ -1299,7 +1299,7 @@ void AnimationPlayer::seek(float p_time, bool p_update) {
 	}
 }
 
-void AnimationPlayer::seek_delta(float p_time, float p_delta) {
+void AnimationPlayer::seek_delta(double p_time, float p_delta) {
 	if (!playback.current.from) {
 		if (playback.assigned) {
 			ERR_FAIL_COND(!animation_set.has(playback.assigned));
@@ -1493,7 +1493,7 @@ NodePath AnimationPlayer::get_root() const {
 
 void AnimationPlayer::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 #ifdef TOOLS_ENABLED
-	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", 0) ? "'" : "\"";
+	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 #else
 	const String quote_style = "\"";
 #endif
@@ -1502,8 +1502,8 @@ void AnimationPlayer::get_argument_options(const StringName &p_function, int p_i
 	if (p_idx == 0 && (p_function == "play" || p_function == "play_backwards" || p_function == "remove_animation" || p_function == "has_animation" || p_function == "queue")) {
 		List<StringName> al;
 		get_animation_list(&al);
-		for (const StringName &E : al) {
-			r_options->push_back(quote_style + String(E) + quote_style);
+		for (const StringName &name : al) {
+			r_options->push_back(String(name).quote(quote_style));
 		}
 	}
 	Node::get_argument_options(p_function, p_idx, r_options);

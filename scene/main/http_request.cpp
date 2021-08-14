@@ -30,7 +30,7 @@
 
 #include "http_request.h"
 #include "core/io/compression.h"
-#include "core/string/ustring.h"
+#include "scene/main/timer.h"
 
 void HTTPRequest::_redirect_request(const String &p_new_url) {
 }

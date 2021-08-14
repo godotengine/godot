@@ -142,7 +142,7 @@ void SkeletonModification2DTwoBoneIK::_execute(float p_delta) {
 	// http://theorangeduck.com/page/simple-two-joint
 	// https://www.alanzucconi.com/2018/05/02/ik-2d-2/
 	// With modifications by TwistedTwigleg
-	Vector2 target_difference = target->get_global_transform().get_origin() - joint_one_bone->get_global_transform().get_origin();
+	Vector2 target_difference = target->get_global_position() - joint_one_bone->get_global_position();
 	float joint_one_to_target = target_difference.length();
 	float angle_atan = Math::atan2(target_difference.y, target_difference.x);
 
@@ -206,7 +206,7 @@ void SkeletonModification2DTwoBoneIK::_draw_editor_gizmo() {
 		return;
 	}
 	stack->skeleton->draw_set_transform(
-			stack->skeleton->get_global_transform().affine_inverse().xform(operation_bone_one->get_global_position()),
+			stack->skeleton->to_local(operation_bone_one->get_global_position()),
 			operation_bone_one->get_global_rotation() - stack->skeleton->get_global_rotation());
 
 	Color bone_ik_color = Color(1.0, 0.65, 0.0, 0.4);

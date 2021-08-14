@@ -13,6 +13,7 @@
 		On each of these calls, the "add" functions can be called.
 	</description>
 	<tutorials>
+		<link title="Inspector plugins">https://docs.godotengine.org/en/latest/tutorials/plugins/editor/inspector_plugins.html</link>
 	</tutorials>
 	<methods>
 		<method name="_can_handle" qualifiers="virtual">
@@ -56,7 +57,7 @@
 			<return type="void" />
 			<argument index="0" name="control" type="Control" />
 			<description>
-				Adds a custom control, not necessarily a property editor.
+				Adds a custom control, which is not necessarily a property editor.
 			</description>
 		</method>
 		<method name="add_property_editor">
@@ -64,7 +65,7 @@
 			<argument index="0" name="property" type="String" />
 			<argument index="1" name="editor" type="Control" />
 			<description>
-				Adds a property editor, this must inherit [EditorProperty].
+				Adds a property editor for an individual property. The [code]editor[/code] control must extend [EditorProperty].
 			</description>
 		</method>
 		<method name="add_property_editor_for_multiple_properties">
@@ -73,7 +74,7 @@
 			<argument index="1" name="properties" type="PackedStringArray" />
 			<argument index="2" name="editor" type="Control" />
 			<description>
-				Adds an editor that allows modifying multiple properties, this must inherit [EditorProperty].
+				Adds an editor that allows modifying multiple properties. The [code]editor[/code] control must extend [EditorProperty].
 			</description>
 		</method>
 	</methods>

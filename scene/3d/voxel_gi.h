@@ -31,7 +31,6 @@
 #ifndef VOXEL_GI_H
 #define VOXEL_GI_H
 
-#include "multimesh_instance_3d.h"
 #include "scene/3d/visual_instance_3d.h"
 
 class VoxelGIData : public Resource {

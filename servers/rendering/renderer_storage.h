@@ -468,23 +468,23 @@ public:
 	virtual bool particles_get_emitting(RID p_particles) = 0;
 
 	virtual void particles_set_amount(RID p_particles, int p_amount) = 0;
-	virtual void particles_set_lifetime(RID p_particles, float p_lifetime) = 0;
+	virtual void particles_set_lifetime(RID p_particles, double p_lifetime) = 0;
 	virtual void particles_set_one_shot(RID p_particles, bool p_one_shot) = 0;
-	virtual void particles_set_pre_process_time(RID p_particles, float p_time) = 0;
-	virtual void particles_set_explosiveness_ratio(RID p_particles, float p_ratio) = 0;
-	virtual void particles_set_randomness_ratio(RID p_particles, float p_ratio) = 0;
+	virtual void particles_set_pre_process_time(RID p_particles, double p_time) = 0;
+	virtual void particles_set_explosiveness_ratio(RID p_particles, real_t p_ratio) = 0;
+	virtual void particles_set_randomness_ratio(RID p_particles, real_t p_ratio) = 0;
 	virtual void particles_set_custom_aabb(RID p_particles, const AABB &p_aabb) = 0;
-	virtual void particles_set_speed_scale(RID p_particles, float p_scale) = 0;
+	virtual void particles_set_speed_scale(RID p_particles, double p_scale) = 0;
 	virtual void particles_set_use_local_coordinates(RID p_particles, bool p_enable) = 0;
 	virtual void particles_set_process_material(RID p_particles, RID p_material) = 0;
 	virtual void particles_set_fixed_fps(RID p_particles, int p_fps) = 0;
 	virtual void particles_set_interpolate(RID p_particles, bool p_enable) = 0;
 	virtual void particles_set_fractional_delta(RID p_particles, bool p_enable) = 0;
-	virtual void particles_set_collision_base_size(RID p_particles, float p_size) = 0;
+	virtual void particles_set_collision_base_size(RID p_particles, real_t p_size) = 0;
 
 	virtual void particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align) = 0;
 
-	virtual void particles_set_trails(RID p_particles, bool p_enable, float p_length) = 0;
+	virtual void particles_set_trails(RID p_particles, bool p_enable, double p_length) = 0;
 	virtual void particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses) = 0;
 
 	virtual void particles_restart(RID p_particles) = 0;
@@ -523,11 +523,11 @@ public:
 
 	virtual void particles_collision_set_collision_type(RID p_particles_collision, RS::ParticlesCollisionType p_type) = 0;
 	virtual void particles_collision_set_cull_mask(RID p_particles_collision, uint32_t p_cull_mask) = 0;
-	virtual void particles_collision_set_sphere_radius(RID p_particles_collision, float p_radius) = 0; //for spheres
+	virtual void particles_collision_set_sphere_radius(RID p_particles_collision, real_t p_radius) = 0; //for spheres
 	virtual void particles_collision_set_box_extents(RID p_particles_collision, const Vector3 &p_extents) = 0; //for non-spheres
-	virtual void particles_collision_set_attractor_strength(RID p_particles_collision, float p_strength) = 0;
-	virtual void particles_collision_set_attractor_directionality(RID p_particles_collision, float p_directionality) = 0;
-	virtual void particles_collision_set_attractor_attenuation(RID p_particles_collision, float p_curve) = 0;
+	virtual void particles_collision_set_attractor_strength(RID p_particles_collision, real_t p_strength) = 0;
+	virtual void particles_collision_set_attractor_directionality(RID p_particles_collision, real_t p_directionality) = 0;
+	virtual void particles_collision_set_attractor_attenuation(RID p_particles_collision, real_t p_curve) = 0;
 	virtual void particles_collision_set_field_texture(RID p_particles_collision, RID p_texture) = 0; //for SDF and vector field, heightfield is dynamic
 	virtual void particles_collision_height_field_update(RID p_particles_collision) = 0; //for SDF and vector field
 	virtual void particles_collision_set_height_field_resolution(RID p_particles_collision, RS::ParticlesCollisionHeightfieldResolution p_resolution) = 0; //for SDF and vector field

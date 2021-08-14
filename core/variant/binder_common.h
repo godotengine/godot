@@ -33,6 +33,7 @@
 
 #include "core/input/input_enums.h"
 #include "core/object/object.h"
+#include "core/os/keyboard.h"
 #include "core/templates/list.h"
 #include "core/templates/simple_type.h"
 #include "core/typedefs.h"
@@ -96,11 +97,14 @@ VARIANT_ENUM_CAST(HatDir);
 VARIANT_ENUM_CAST(HatMask);
 VARIANT_ENUM_CAST(JoyAxis);
 VARIANT_ENUM_CAST(JoyButton);
+VARIANT_ENUM_CAST(Key);
+VARIANT_ENUM_CAST(KeyModifierMask);
 VARIANT_ENUM_CAST(MIDIMessage);
 VARIANT_ENUM_CAST(MouseButton);
 VARIANT_ENUM_CAST(Orientation);
 VARIANT_ENUM_CAST(HAlign);
 VARIANT_ENUM_CAST(VAlign);
+VARIANT_ENUM_CAST(InlineAlign);
 VARIANT_ENUM_CAST(PropertyHint);
 VARIANT_ENUM_CAST(PropertyUsageFlags);
 VARIANT_ENUM_CAST(Variant::Type);

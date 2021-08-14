@@ -261,11 +261,11 @@ void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, in
 		sign = -1;
 	}
 
-	float global_rate_scale = AudioServer::get_singleton()->get_global_rate_scale();
-	float base_rate = AudioServer::get_singleton()->get_mix_rate() * global_rate_scale;
+	float base_rate = AudioServer::get_singleton()->get_mix_rate();
 	float srate = base->mix_rate;
 	srate *= p_rate_scale;
-	float fincrement = srate / base_rate;
+	float playback_speed_scale = AudioServer::get_singleton()->get_playback_speed_scale();
+	float fincrement = (srate * playback_speed_scale) / base_rate;
 	int32_t increment = int32_t(MAX(fincrement * MIX_FRAC_LEN, 1));
 	increment *= sign;
 

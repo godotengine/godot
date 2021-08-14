@@ -216,8 +216,8 @@ public:
 	virtual bool shaped_text_get_preserve_control(RID p_shaped) const override;
 
 	virtual bool shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "") override;
-	virtual bool shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, VAlign p_inline_align = VALIGN_CENTER, int p_length = 1) override;
-	virtual bool shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, VAlign p_inline_align = VALIGN_CENTER) override;
+	virtual bool shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER, int p_length = 1) override;
+	virtual bool shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER) override;
 
 	virtual RID shaped_text_substr(RID p_shaped, int p_start, int p_length) const override;
 	virtual RID shaped_text_get_parent(RID p_shaped) const override;
@@ -229,7 +229,8 @@ public:
 	virtual bool shaped_text_update_breaks(RID p_shaped) override;
 	virtual bool shaped_text_update_justification_ops(RID p_shaped) override;
 
-	virtual void shaped_text_overrun_trim_to_width(RID p_shaped, float p_width, uint8_t p_clip_flags) override;
+	virtual void shaped_text_overrun_trim_to_width(RID p_shaped, float p_width, uint8_t p_trim_flags) override;
+	virtual TrimData shaped_text_get_trim_data(RID p_shaped) const override;
 
 	virtual bool shaped_text_is_ready(RID p_shaped) const override;
 

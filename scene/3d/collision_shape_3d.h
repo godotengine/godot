@@ -33,6 +33,7 @@
 
 #include "scene/3d/node_3d.h"
 #include "scene/resources/shape_3d.h"
+
 class CollisionObject3D;
 class CollisionShape3D : public Node3D {
 	GDCLASS(CollisionShape3D, Node3D);

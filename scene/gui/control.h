@@ -220,6 +220,7 @@ private:
 		NodePath focus_next;
 		NodePath focus_prev;
 
+		bool bulk_theme_override = false;
 		HashMap<StringName, Ref<Texture2D>> icon_override;
 		HashMap<StringName, Ref<StyleBox>> style_override;
 		HashMap<StringName, Ref<Font>> font_override;
@@ -241,6 +242,7 @@ private:
 	void _set_size(const Size2 &p_size);
 
 	void _theme_changed();
+	void _notify_theme_changed();
 
 	void _update_minimum_size();
 
@@ -451,6 +453,9 @@ public:
 	MouseFilter get_mouse_filter() const;
 
 	/* SKINNING */
+
+	void begin_bulk_theme_override();
+	void end_bulk_theme_override();
 
 	void add_theme_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon);
 	void add_theme_style_override(const StringName &p_name, const Ref<StyleBox> &p_style);

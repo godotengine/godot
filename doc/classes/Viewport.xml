@@ -169,7 +169,7 @@
 		<member name="audio_listener_enable_2d" type="bool" setter="set_as_audio_listener_2d" getter="is_audio_listener_2d" default="false">
 			If [code]true[/code], the viewport will process 2D audio streams.
 		</member>
-		<member name="audio_listener_enable_3d" type="bool" setter="set_as_audio_listener" getter="is_audio_listener" default="false">
+		<member name="audio_listener_enable_3d" type="bool" setter="set_as_audio_listener_3d" getter="is_audio_listener_3d" default="false">
 			If [code]true[/code], the viewport will process 3D audio streams.
 		</member>
 		<member name="canvas_item_default_texture_filter" type="int" setter="set_default_canvas_item_texture_filter" getter="get_default_canvas_item_texture_filter" enum="Viewport.DefaultCanvasItemTextureFilter" default="1">
@@ -296,19 +296,19 @@
 			Represents the size of the [enum ShadowAtlasQuadrantSubdiv] enum.
 		</constant>
 		<constant name="MSAA_DISABLED" value="0" enum="MSAA">
-			Multisample antialiasing mode disabled. This is the default value, and also the fastest setting.
+			Multisample antialiasing mode disabled. This is the default value, and is also the fastest setting.
 		</constant>
 		<constant name="MSAA_2X" value="1" enum="MSAA">
-			Use 2x Multisample Antialiasing.
+			Use 2× Multisample Antialiasing. This has a moderate performance cost. It helps reduce aliasing noticeably, but 4× MSAA still looks substantially better.
 		</constant>
 		<constant name="MSAA_4X" value="2" enum="MSAA">
-			Use 4x Multisample Antialiasing.
+			Use 4× Multisample Antialiasing. This has a significant performance cost, and is generally a good compromise between performance and quality.
 		</constant>
 		<constant name="MSAA_8X" value="3" enum="MSAA">
-			Use 8x Multisample Antialiasing. Likely unsupported on low-end and older hardware.
+			Use 8× Multisample Antialiasing. This has a very high performance cost. The difference between 4× and 8× MSAA may not always be visible in real gameplay conditions. Likely unsupported on low-end and older hardware.
 		</constant>
 		<constant name="MSAA_16X" value="4" enum="MSAA">
-			Use 16x Multisample Antialiasing. Likely unsupported on medium and low-end hardware.
+			Use 16× Multisample Antialiasing. This has a very high performance cost. The difference between 8× and 16× MSAA may not always be visible in real gameplay conditions. Likely unsupported on medium and low-end hardware.
 		</constant>
 		<constant name="MSAA_MAX" value="5" enum="MSAA">
 			Represents the size of the [enum MSAA] enum.

@@ -259,11 +259,11 @@ real_t PinJoint3D::get_param(Param p_param) const {
 
 void PinJoint3D::_configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
 	Vector3 pinpos = get_global_transform().origin;
-	Vector3 local_a = body_a->get_global_transform().affine_inverse().xform(pinpos);
+	Vector3 local_a = body_a->to_local(pinpos);
 	Vector3 local_b;
 
 	if (body_b) {
-		local_b = body_b->get_global_transform().affine_inverse().xform(pinpos);
+		local_b = body_b->to_local(pinpos);
 	} else {
 		local_b = pinpos;
 	}

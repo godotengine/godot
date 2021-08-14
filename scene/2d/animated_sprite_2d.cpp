@@ -30,7 +30,6 @@
 
 #include "animated_sprite_2d.h"
 
-#include "core/os/os.h"
 #include "scene/main/viewport.h"
 #include "scene/scene_string_names.h"
 
@@ -159,12 +158,12 @@ void AnimatedSprite2D::_notification(int p_what) {
 				return;
 			}
 
-			float speed = frames->get_animation_speed(animation) * speed_scale;
+			double speed = frames->get_animation_speed(animation) * speed_scale;
 			if (speed == 0) {
 				return; //do nothing
 			}
 
-			float remaining = get_process_delta_time();
+			double remaining = get_process_delta_time();
 
 			while (remaining) {
 				if (timeout <= 0) {
@@ -205,7 +204,7 @@ void AnimatedSprite2D::_notification(int p_what) {
 					emit_signal(SceneStringNames::get_singleton()->frame_changed);
 				}
 
-				float to_process = MIN(timeout, remaining);
+				double to_process = MIN(timeout, remaining);
 				remaining -= to_process;
 				timeout -= to_process;
 			}
@@ -310,8 +309,8 @@ int AnimatedSprite2D::get_frame() const {
 	return frame;
 }
 
-void AnimatedSprite2D::set_speed_scale(float p_speed_scale) {
-	float elapsed = _get_frame_duration() - timeout;
+void AnimatedSprite2D::set_speed_scale(double p_speed_scale) {
+	double elapsed = _get_frame_duration() - timeout;
 
 	speed_scale = MAX(p_speed_scale, 0.0f);
 
@@ -320,7 +319,7 @@ void AnimatedSprite2D::set_speed_scale(float p_speed_scale) {
 	timeout -= elapsed;
 }
 
-float AnimatedSprite2D::get_speed_scale() const {
+double AnimatedSprite2D::get_speed_scale() const {
 	return speed_scale;
 }
 
@@ -402,9 +401,9 @@ bool AnimatedSprite2D::is_playing() const {
 	return playing;
 }
 
-float AnimatedSprite2D::_get_frame_duration() {
+double AnimatedSprite2D::_get_frame_duration() {
 	if (frames.is_valid() && frames->has_animation(animation)) {
-		float speed = frames->get_animation_speed(animation) * speed_scale;
+		double speed = frames->get_animation_speed(animation) * speed_scale;
 		if (speed > 0) {
 			return 1.0 / speed;
 		}

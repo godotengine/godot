@@ -32,10 +32,12 @@
 #define WINDOW_H
 
 #include "scene/main/viewport.h"
-#include "scene/resources/theme.h"
-#include "servers/display_server.h"
 
 class Control;
+class Font;
+class StyleBox;
+class Theme;
+
 class Window : public Viewport {
 	GDCLASS(Window, Viewport)
 public:

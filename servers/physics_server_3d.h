@@ -62,6 +62,8 @@ public:
 	virtual void set_transform(const Transform3D &p_transform) = 0;
 	virtual Transform3D get_transform() const = 0;
 
+	virtual Vector3 get_velocity_at_local_position(const Vector3 &p_position) const = 0;
+
 	virtual void add_central_force(const Vector3 &p_force) = 0;
 	virtual void add_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) = 0;
 	virtual void add_torque(const Vector3 &p_torque) = 0;
@@ -210,7 +212,7 @@ class PhysicsServer3D : public Object {
 
 	static PhysicsServer3D *singleton;
 
-	virtual bool _body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia, real_t p_margin = 0.001, const Ref<PhysicsTestMotionResult3D> &p_result = Ref<PhysicsTestMotionResult3D>());
+	virtual bool _body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin = 0.001, const Ref<PhysicsTestMotionResult3D> &p_result = Ref<PhysicsTestMotionResult3D>(), const Vector<RID> &p_exclude = Vector<RID>());
 
 protected:
 	static void _bind_methods();
@@ -220,7 +222,6 @@ public:
 
 	enum ShapeType {
 		SHAPE_PLANE, ///< plane:"plane"
-		SHAPE_RAY, ///< float:"length"
 		SHAPE_SPHERE, ///< float:"radius"
 		SHAPE_BOX, ///< vec3:"extents"
 		SHAPE_CAPSULE, ///< dict( float:"radius", float:"height"):capsule
@@ -235,7 +236,6 @@ public:
 	RID shape_create(ShapeType p_shape);
 
 	virtual RID plane_shape_create() = 0;
-	virtual RID ray_shape_create() = 0;
 	virtual RID sphere_shape_create() = 0;
 	virtual RID box_shape_create() = 0;
 	virtual RID capsule_shape_create() = 0;
@@ -489,21 +489,7 @@ public:
 		Variant collider_metadata;
 	};
 
-	virtual bool body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia, real_t p_margin = 0.001, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true) = 0;
-
-	struct SeparationResult {
-		real_t collision_depth;
-		Vector3 collision_point;
-		Vector3 collision_normal;
-		Vector3 collider_velocity;
-		int collision_local_shape;
-		ObjectID collider_id;
-		RID collider;
-		int collider_shape;
-		Variant collider_metadata;
-	};
-
-	virtual int body_test_ray_separation(RID p_body, const Transform3D &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, SeparationResult *r_results, int p_result_max, real_t p_margin = 0.001) = 0;
+	virtual bool body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin = 0.001, MotionResult *r_result = nullptr, const Set<RID> &p_exclude = Set<RID>()) = 0;
 
 	/* SOFT BODY */
 

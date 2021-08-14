@@ -38,7 +38,11 @@
 #include "core/templates/rid_owner.h"
 #include "servers/display_server.h"
 
+#ifdef USE_VOLK
+#include <volk.h>
+#else
 #include <vulkan/vulkan.h>
+#endif
 
 class VulkanContext {
 public:
@@ -229,10 +233,6 @@ protected:
 
 	Error _get_preferred_validation_layers(uint32_t *count, const char *const **names);
 
-	VkInstance _get_instance() {
-		return inst;
-	}
-
 public:
 	uint32_t get_vulkan_major() const { return vulkan_major; };
 	uint32_t get_vulkan_minor() const { return vulkan_minor; };
@@ -241,6 +241,7 @@ public:
 
 	VkDevice get_device();
 	VkPhysicalDevice get_physical_device();
+	VkInstance get_instance() { return inst; }
 	int get_swapchain_image_count() const;
 	uint32_t get_graphics_queue() const;
 

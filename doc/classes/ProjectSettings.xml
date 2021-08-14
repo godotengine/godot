@@ -423,6 +423,8 @@
 		<member name="debug/settings/stdout/print_fps" type="bool" setter="" getter="" default="false">
 			Print frames per second to standard output every second.
 		</member>
+		<member name="debug/settings/stdout/print_gpu_profile" type="bool" setter="" getter="" default="false">
+		</member>
 		<member name="debug/settings/stdout/verbose_stdout" type="bool" setter="" getter="" default="false">
 			Print more information to standard output when running. It displays information such as memory leaks, which scenes and resources are being loaded, etc.
 		</member>
@@ -715,6 +717,12 @@
 			Default [InputEventAction] to move up in the UI.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
+		<member name="input_devices/buffering/agile_event_flushing" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], key/touch/joystick events will be flushed just before every idle and physics frame.
+			If [code]false[/code], such events will be flushed only once per process frame, between iterations of the engine.
+			Enabling this can greatly improve the responsiveness to input, specially in devices that need to run multiple physics frames per visible (process) frame, because they can't run at the target frame rate.
+			[b]Note:[/b] Currently implemented only on Android.
+		</member>
 		<member name="input_devices/pen_tablet/driver" type="String" setter="" getter="">
 			Specifies the tablet driver to use. If left empty, the default driver will be used.
 		</member>
@@ -741,14 +749,39 @@
 		<member name="internationalization/locale/test" type="String" setter="" getter="" default="&quot;&quot;">
 			If non-empty, this locale will be used when running the project from the editor.
 		</member>
+		<member name="internationalization/pseudolocalization/double_vowels" type="bool" setter="" getter="" default="false">
+			Double vowels in strings during pseudolocalization to simulate the lengthening of text due to localization.
+		</member>
+		<member name="internationalization/pseudolocalization/expansion_ratio" type="float" setter="" getter="" default="0.0">
+			The expansion ratio to use during pseudolocalization. A value of [code]0.3[/code] is sufficient for most practical purposes, and will increase the length of each string by 30%.
+		</member>
+		<member name="internationalization/pseudolocalization/fake_bidi" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], emulate bidirectional (right-to-left) text when pseudolocalization is enabled. This can be used to spot issues with RTL layout and UI mirroring that will crop up if the project is localized to RTL languages such as Arabic or Hebrew.
+		</member>
+		<member name="internationalization/pseudolocalization/override" type="bool" setter="" getter="" default="false">
+			Replace all characters in the string with [code]*[/code]. Useful for finding non-localizable strings.
+		</member>
+		<member name="internationalization/pseudolocalization/prefix" type="String" setter="" getter="" default="&quot;[&quot;">
+			Prefix that will be prepended to the pseudolocalized string.
+		</member>
+		<member name="internationalization/pseudolocalization/replace_with_accents" type="bool" setter="" getter="" default="true">
+			Replace all characters with their accented variants during pseudolocalization.
+		</member>
+		<member name="internationalization/pseudolocalization/skip_placeholders" type="bool" setter="" getter="" default="true">
+			Skip placeholders for string formatting like [code]%s[/code] or [code]%f[/code] during pseudolocalization. Useful to identify strings which need additional control characters to display correctly.
+		</member>
+		<member name="internationalization/pseudolocalization/suffix" type="String" setter="" getter="" default="&quot;]&quot;">
+			Suffix that will be appended to the pseudolocalized string.
+		</member>
+		<member name="internationalization/pseudolocalization/use_pseudolocalization" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], enables pseudolocalization for the project. This can be used to spot untranslatable strings or layout issues that may occur once the project is localized to languages that have longer strings than the source language.
+			[b]Note:[/b] This property is only read when the project starts. To toggle pseudolocalization at run-time, use [member TranslationServer.pseudolocalization_enabled] instead.
+		</member>
 		<member name="internationalization/rendering/force_right_to_left_layout_direction" type="bool" setter="" getter="" default="false">
 			Force layout direction and text writing direction to RTL for all locales.
 		</member>
 		<member name="internationalization/rendering/text_driver" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies the [TextServer] to use. If left empty, the default will be used.
-		</member>
-		<member name="layer_names/2d_navigation/layer_0" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D navigation layer 0. If left empty, the layer will display as "Layer 0".
 		</member>
 		<member name="layer_names/2d_navigation/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 1. If left empty, the layer will display as "Layer 1".
@@ -825,6 +858,9 @@
 		<member name="layer_names/2d_navigation/layer_31" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 31. If left empty, the layer will display as "Layer 31".
 		</member>
+		<member name="layer_names/2d_navigation/layer_32" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 32. If left empty, the layer will display as "Layer 32".
+		</member>
 		<member name="layer_names/2d_navigation/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 4. If left empty, the layer will display as "Layer 4".
 		</member>
@@ -842,9 +878,6 @@
 		</member>
 		<member name="layer_names/2d_navigation/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 9. If left empty, the layer will display as "Layer 9".
-		</member>
-		<member name="layer_names/2d_physics/layer_0" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D physics layer 0. If left empty, the layer will display as "Layer 0".
 		</member>
 		<member name="layer_names/2d_physics/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D physics layer 1. If left empty, the layer will display as "Layer 1".
@@ -921,6 +954,9 @@
 		<member name="layer_names/2d_physics/layer_31" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D physics layer 31. If left empty, the layer will display as "Layer 31".
 		</member>
+		<member name="layer_names/2d_physics/layer_32" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 32. If left empty, the layer will display as "Layer 32".
+		</member>
 		<member name="layer_names/2d_physics/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D physics layer 4. If left empty, the layer will display as "Layer 4".
 		</member>
@@ -938,9 +974,6 @@
 		</member>
 		<member name="layer_names/2d_physics/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D physics layer 9. If left empty, the layer will display as "Layer 9".
-		</member>
-		<member name="layer_names/2d_render/layer_0" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D render layer 0. If left empty, the layer will display as "Layer 0".
 		</member>
 		<member name="layer_names/2d_render/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D render layer 1. If left empty, the layer will display as "Layer 1".
@@ -978,6 +1011,9 @@
 		<member name="layer_names/2d_render/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D render layer 2. If left empty, the layer will display as "Layer 2".
 		</member>
+		<member name="layer_names/2d_render/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D render layer 20. If left empty, the layer will display as "Layer 20".
+		</member>
 		<member name="layer_names/2d_render/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D render layer 3. If left empty, the layer will display as "Layer 3".
 		</member>
@@ -998,9 +1034,6 @@
 		</member>
 		<member name="layer_names/2d_render/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D render layer 9. If left empty, the layer will display as "Layer 9".
-		</member>
-		<member name="layer_names/3d_navigation/layer_0" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D navigation layer 0. If left empty, the layer will display as "Layer 0".
 		</member>
 		<member name="layer_names/3d_navigation/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 1. If left empty, the layer will display as "Layer 1".
@@ -1077,6 +1110,9 @@
 		<member name="layer_names/3d_navigation/layer_31" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 31. If left empty, the layer will display as "Layer 31".
 		</member>
+		<member name="layer_names/3d_navigation/layer_32" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 32. If left empty, the layer will display as "Layer 32".
+		</member>
 		<member name="layer_names/3d_navigation/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 4. If left empty, the layer will display as "Layer 4".
 		</member>
@@ -1094,9 +1130,6 @@
 		</member>
 		<member name="layer_names/3d_navigation/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 9. If left empty, the layer will display as "Layer 9".
-		</member>
-		<member name="layer_names/3d_physics/layer_0" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D physics layer 0. If left empty, the layer will display as "Layer 0".
 		</member>
 		<member name="layer_names/3d_physics/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D physics layer 1. If left empty, the layer will display as "Layer 1".
@@ -1173,6 +1206,9 @@
 		<member name="layer_names/3d_physics/layer_31" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D physics layer 31. If left empty, the layer will display as "Layer 31".
 		</member>
+		<member name="layer_names/3d_physics/layer_32" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 32. If left empty, the layer will display as "Layer 32".
+		</member>
 		<member name="layer_names/3d_physics/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D physics layer 4. If left empty, the layer will display as "Layer 4".
 		</member>
@@ -1190,9 +1226,6 @@
 		</member>
 		<member name="layer_names/3d_physics/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D physics layer 9. If left empty, the layer will display as "Layer 9".
-		</member>
-		<member name="layer_names/3d_render/layer_0" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D render layer 0. If left empty, the layer will display as "Layer 0".
 		</member>
 		<member name="layer_names/3d_render/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D render layer 1. If left empty, the layer will display as "Layer 1".
@@ -1229,6 +1262,9 @@
 		</member>
 		<member name="layer_names/3d_render/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D render layer 2. If left empty, the layer will display as "Layer 2".
+		</member>
+		<member name="layer_names/3d_render/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D render layer 20. If left empty, the layer will display as "Layer 20".
 		</member>
 		<member name="layer_names/3d_render/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D render layer 3. If left empty, the layer will display as "Layer 3".
@@ -1316,7 +1352,7 @@
 		</member>
 		<member name="physics/2d/default_angular_damp" type="float" setter="" getter="" default="1.0">
 			The default angular damp in 2D.
-			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_fps], [code]60[/code] by default) will bring the object to a stop in one iteration.
+			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_ticks_per_second], [code]60[/code] by default) will bring the object to a stop in one iteration.
 		</member>
 		<member name="physics/2d/default_gravity" type="float" setter="" getter="" default="980.0">
 			The default gravity strength in 2D (in pixels per second squared).
@@ -1348,7 +1384,7 @@
 		</member>
 		<member name="physics/2d/default_linear_damp" type="float" setter="" getter="" default="0.1">
 			The default linear damp in 2D.
-			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_fps], [code]60[/code] by default) will bring the object to a stop in one iteration.
+			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_ticks_per_second], [code]60[/code] by default) will bring the object to a stop in one iteration.
 		</member>
 		<member name="physics/2d/physics_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
 			Sets which physics engine to use for 2D physics.
@@ -1368,7 +1404,7 @@
 		</member>
 		<member name="physics/3d/default_angular_damp" type="float" setter="" getter="" default="0.1">
 			The default angular damp in 3D.
-			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_fps], [code]60[/code] by default) will bring the object to a stop in one iteration.
+			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_ticks_per_second], [code]60[/code] by default) will bring the object to a stop in one iteration.
 		</member>
 		<member name="physics/3d/default_gravity" type="float" setter="" getter="" default="9.8">
 			The default gravity strength in 3D (in meters per second squared).
@@ -1400,7 +1436,7 @@
 		</member>
 		<member name="physics/3d/default_linear_damp" type="float" setter="" getter="" default="0.1">
 			The default linear damp in 3D.
-			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_fps], [code]60[/code] by default) will bring the object to a stop in one iteration.
+			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_ticks_per_second], [code]60[/code] by default) will bring the object to a stop in one iteration.
 		</member>
 		<member name="physics/3d/physics_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
 			Sets which physics engine to use for 3D physics.
@@ -1418,14 +1454,14 @@
 		<member name="physics/common/enable_object_picking" type="bool" setter="" getter="" default="true">
 			Enables [member Viewport.physics_object_picking] on the root viewport.
 		</member>
-		<member name="physics/common/physics_fps" type="int" setter="" getter="" default="60">
-			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run.
-			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.iterations_per_second] instead.
-		</member>
 		<member name="physics/common/physics_jitter_fix" type="float" setter="" getter="" default="0.5">
 			Controls how much physics ticks are synchronized with real time. For 0 or less, the ticks are synchronized. Such values are recommended for network games, where clock synchronization matters. Higher values cause higher deviation of in-game clock and real clock, but allows smoothing out framerate jitters. The default value of 0.5 should be fine for most; values above 2 could cause the game to react to dropped frames with a noticeable delay and are not recommended.
 			[b]Note:[/b] For best results, when using a custom physics interpolation solution, the physics jitter fix should be disabled by setting [member physics/common/physics_jitter_fix] to [code]0[/code].
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_jitter_fix] instead.
+		</member>
+		<member name="physics/common/physics_ticks_per_second" type="int" setter="" getter="" default="60">
+			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run.
+			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_ticks_per_second] instead.
 		</member>
 		<member name="rendering/2d/sdf/oversize" type="int" setter="" getter="" default="1">
 		</member>
@@ -1452,7 +1488,7 @@
 		</member>
 		<member name="rendering/anti_aliasing/screen_space_roughness_limiter/limit" type="float" setter="" getter="" default="0.18">
 		</member>
-		<member name="rendering/camera/depth_of_field/depth_of_field_bokeh_quality" type="int" setter="" getter="" default="2">
+		<member name="rendering/camera/depth_of_field/depth_of_field_bokeh_quality" type="int" setter="" getter="" default="1">
 			Sets the quality of the depth of field effect. Higher quality takes more samples, which is slower but looks smoother.
 		</member>
 		<member name="rendering/camera/depth_of_field/depth_of_field_bokeh_shape" type="int" setter="" getter="" default="1">
@@ -1683,9 +1719,11 @@
 		</member>
 		<member name="rendering/textures/default_filters/anisotropic_filtering_level" type="int" setter="" getter="" default="2">
 			Sets the maximum number of samples to take when using anisotropic filtering on textures (as a power of two). A higher sample count will result in sharper textures at oblique angles, but is more expensive to compute. A value of [code]0[/code] forcibly disables anisotropic filtering, even on materials where it is enabled.
+			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this setting at run-time.
 		</member>
 		<member name="rendering/textures/default_filters/use_nearest_mipmap_filter" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses nearest-neighbor mipmap filtering when using mipmaps (also called "bilinear filtering"), which will result in visible seams appearing between mipmap stages. This may increase performance in mobile as less memory bandwidth is used. If [code]false[/code], linear mipmap filtering (also called "trilinear filtering") is used.
+			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this setting at run-time.
 		</member>
 		<member name="rendering/textures/light_projectors/filter" type="int" setter="" getter="" default="3">
 		</member>

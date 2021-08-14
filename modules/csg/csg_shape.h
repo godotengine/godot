@@ -34,6 +34,7 @@
 #define CSGJS_HEADER_ONLY
 
 #include "csg.h"
+#include "scene/3d/path_3d.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
 #include "thirdparty/misc/mikktspace.h"
@@ -83,14 +84,14 @@ private:
 		Vector<Vector3> vertices;
 		Vector<Vector3> normals;
 		Vector<Vector2> uvs;
-		Vector<float> tans;
+		Vector<real_t> tans;
 		Ref<Material> material;
 		int last_added = 0;
 
 		Vector3 *verticesw = nullptr;
 		Vector3 *normalsw = nullptr;
 		Vector2 *uvsw = nullptr;
-		float *tansw = nullptr;
+		real_t *tansw = nullptr;
 	};
 
 	//mikktspace callbacks
@@ -136,11 +137,11 @@ public:
 	void set_collision_mask(uint32_t p_mask);
 	uint32_t get_collision_mask() const;
 
-	void set_collision_layer_bit(int p_bit, bool p_value);
-	bool get_collision_layer_bit(int p_bit) const;
+	void set_collision_layer_value(int p_layer_number, bool p_value);
+	bool get_collision_layer_value(int p_layer_number) const;
 
-	void set_collision_mask_bit(int p_bit, bool p_value);
-	bool get_collision_mask_bit(int p_bit) const;
+	void set_collision_mask_value(int p_layer_number, bool p_value);
+	bool get_collision_mask_value(int p_layer_number) const;
 
 	void set_snap(float p_snap);
 	float get_snap() const;
@@ -168,10 +169,8 @@ public:
 class CSGPrimitive3D : public CSGShape3D {
 	GDCLASS(CSGPrimitive3D, CSGShape3D);
 
-private:
-	bool invert_faces;
-
 protected:
+	bool invert_faces;
 	CSGBrush *_create_brush_from_arrays(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uv, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials);
 	static void _bind_methods();
 
@@ -361,7 +360,7 @@ private:
 	PathRotation path_rotation;
 	bool path_local;
 
-	Node *path_cache;
+	Path3D *path;
 
 	bool smooth_faces;
 	bool path_continuous_u;

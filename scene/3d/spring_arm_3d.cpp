@@ -30,11 +30,6 @@
 
 #include "spring_arm_3d.h"
 
-#include "core/config/engine.h"
-#include "scene/3d/collision_object_3d.h"
-#include "scene/resources/sphere_shape_3d.h"
-#include "servers/physics_server_3d.h"
-
 void SpringArm3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:

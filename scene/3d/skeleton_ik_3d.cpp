@@ -85,7 +85,7 @@ bool FabrikInverseKinematic::build_chain(Task *p_task, bool p_force_simple_chain
 			chain_sub_tip = p_task->skeleton->get_bone_parent(chain_sub_tip);
 		}
 
-		BoneId middle_chain_item_id = (((float)sub_chain_size) * 0.5);
+		BoneId middle_chain_item_id = (BoneId)(sub_chain_size * 0.5);
 
 		// Build chain by reading chain ids in reverse order
 		// For each chain item id will be created a ChainItem if doesn't exists

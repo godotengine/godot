@@ -306,6 +306,18 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="begin_bulk_theme_override">
+			<return type="void" />
+			<description>
+				Prevents [code]*_theme_*_override[/code] methods from emitting [constant NOTIFICATION_THEME_CHANGED] until [method end_bulk_theme_override] is called.
+			</description>
+		</method>
+		<method name="end_bulk_theme_override">
+			<return type="void" />
+			<description>
+				Ends a bulk theme override update. See [method begin_bulk_theme_override].
+			</description>
+		</method>
 		<method name="find_next_valid_focus" qualifiers="const">
 			<return type="Control" />
 			<description>

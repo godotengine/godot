@@ -1340,9 +1340,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	{
 		window_vsync_mode = DisplayServer::VSyncMode(int(GLOBAL_DEF("display/window/vsync/vsync_mode", DisplayServer::VSyncMode::VSYNC_ENABLED)));
 	}
-	Engine::get_singleton()->set_iterations_per_second(GLOBAL_DEF_BASIC("physics/common/physics_fps", 60));
-	ProjectSettings::get_singleton()->set_custom_property_info("physics/common/physics_fps",
-			PropertyInfo(Variant::INT, "physics/common/physics_fps",
+	Engine::get_singleton()->set_physics_ticks_per_second(GLOBAL_DEF_BASIC("physics/common/physics_ticks_per_second", 60));
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/common/physics_ticks_per_second",
+			PropertyInfo(Variant::INT, "physics/common/physics_ticks_per_second",
 					PROPERTY_HINT_RANGE, "1,1000,1"));
 	Engine::get_singleton()->set_physics_jitter_fix(GLOBAL_DEF("physics/common/physics_jitter_fix", 0.5));
 	Engine::get_singleton()->set_target_fps(GLOBAL_DEF("debug/settings/fps/force_fps", 0));
@@ -1352,6 +1352,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					PROPERTY_HINT_RANGE, "0,1000,1"));
 
 	GLOBAL_DEF("debug/settings/stdout/print_fps", false);
+	GLOBAL_DEF("debug/settings/stdout/print_gpu_profile", false);
 	GLOBAL_DEF("debug/settings/stdout/verbose_stdout", false);
 
 	if (!OS::get_singleton()->_verbose_stdout) { // Not manually overridden.
@@ -1591,7 +1592,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	rendering_server->init();
 	rendering_server->set_render_loop_enabled(!disable_render_loop);
 
-	if (profile_gpu) {
+	if (profile_gpu || (!editor && bool(GLOBAL_GET("debug/settings/stdout/print_gpu_profile")))) {
 		rendering_server->set_print_gpu_profile(true);
 	}
 
@@ -1734,6 +1735,8 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	Input *id = Input::get_singleton();
 	if (id) {
+		agile_input_event_flushing = GLOBAL_DEF("input_devices/buffering/agile_event_flushing", false);
+
 		if (bool(GLOBAL_DEF("input_devices/pointing/emulate_touch_from_mouse", false)) &&
 				!(editor || project_manager)) {
 			bool found_touchscreen = false;
@@ -2441,6 +2444,7 @@ uint32_t Main::frames = 0;
 uint32_t Main::frame = 0;
 bool Main::force_redraw_requested = false;
 int Main::iterating = 0;
+bool Main::agile_input_event_flushing = false;
 
 bool Main::is_iterating() {
 	return iterating > 0;
@@ -2463,12 +2467,12 @@ bool Main::iteration() {
 
 	uint64_t ticks_elapsed = ticks - last_ticks;
 
-	int physics_fps = Engine::get_singleton()->get_iterations_per_second();
-	float physics_step = 1.0 / physics_fps;
+	int physics_ticks_per_second = Engine::get_singleton()->get_physics_ticks_per_second();
+	float physics_step = 1.0 / physics_ticks_per_second;
 
 	float time_scale = Engine::get_singleton()->get_time_scale();
 
-	MainFrameTime advance = main_timer_sync.advance(physics_step, physics_fps);
+	MainFrameTime advance = main_timer_sync.advance(physics_step, physics_ticks_per_second);
 	double process_step = advance.process_step;
 	double scaled_step = process_step * time_scale;
 
@@ -2490,9 +2494,13 @@ bool Main::iteration() {
 
 	bool exit = false;
 
-	Engine::get_singleton()->_in_physics = true;
-
 	for (int iters = 0; iters < advance.physics_steps; ++iters) {
+		if (Input::get_singleton()->is_using_input_buffering() && agile_input_event_flushing) {
+			Input::get_singleton()->flush_buffered_events();
+		}
+
+		Engine::get_singleton()->_in_physics = true;
+
 		uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
 
 		PhysicsServer3D::get_singleton()->sync();
@@ -2521,9 +2529,13 @@ bool Main::iteration() {
 		physics_process_ticks = MAX(physics_process_ticks, OS::get_singleton()->get_ticks_usec() - physics_begin); // keep the largest one for reference
 		physics_process_max = MAX(OS::get_singleton()->get_ticks_usec() - physics_begin, physics_process_max);
 		Engine::get_singleton()->_physics_frames++;
+
+		Engine::get_singleton()->_in_physics = false;
 	}
 
-	Engine::get_singleton()->_in_physics = false;
+	if (Input::get_singleton()->is_using_input_buffering() && agile_input_event_flushing) {
+		Input::get_singleton()->flush_buffered_events();
+	}
 
 	uint64_t process_begin = OS::get_singleton()->get_ticks_usec();
 
@@ -2585,6 +2597,11 @@ bool Main::iteration() {
 	}
 
 	iterating--;
+
+	// Needed for OSs using input buffering regardless accumulation (like Android)
+	if (Input::get_singleton()->is_using_input_buffering() && !agile_input_event_flushing) {
+		Input::get_singleton()->flush_buffered_events();
+	}
 
 	if (fixed_fps != -1) {
 		return exit;

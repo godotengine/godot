@@ -217,7 +217,7 @@
 		</method>
 		<method name="is_key_pressed" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="keycode" type="int" />
+			<argument index="0" name="keycode" type="int" enum="Key" />
 			<description>
 				Returns [code]true[/code] if you are pressing the key in the current keyboard layout. You can pass a [enum Key] constant.
 			</description>

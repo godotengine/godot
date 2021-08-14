@@ -74,8 +74,6 @@ static void gdnative_variant_destroy(GDNativeVariantPtr p_self) {
 
 // variant type
 
-#define memnew_placement_custom(m_placement, m_class, m_constr) _post_initialize(new (m_placement, sizeof(m_class), "") m_constr)
-
 static void gdnative_variant_call(GDNativeVariantPtr p_self, const GDNativeStringNamePtr p_method, const GDNativeVariantPtr *p_args, const GDNativeInt p_argcount, GDNativeVariantPtr r_return, GDNativeCallError *r_error) {
 	Variant *self = (Variant *)p_self;
 	const StringName *method = (const StringName *)p_method;
@@ -83,7 +81,7 @@ static void gdnative_variant_call(GDNativeVariantPtr p_self, const GDNativeStrin
 	Variant ret;
 	Callable::CallError error;
 	self->call(*method, args, p_argcount, ret, error);
-	memnew_placement_custom(r_return, Variant, Variant(ret));
+	memnew_placement(r_return, Variant(ret));
 
 	if (r_error) {
 		r_error->error = (GDNativeCallErrorType)(error.error);
@@ -99,7 +97,7 @@ static void gdnative_variant_call_static(GDNativeVariantType p_type, const GDNat
 	Variant ret;
 	Callable::CallError error;
 	Variant::call_static(type, *method, args, p_argcount, ret, error);
-	memnew_placement_custom(r_return, Variant, Variant(ret));
+	memnew_placement(r_return, Variant(ret));
 
 	if (r_error) {
 		r_error->error = (GDNativeCallErrorType)error.error;
@@ -164,7 +162,7 @@ static void gdnative_variant_get(const GDNativeVariantPtr p_self, const GDNative
 	const Variant *key = (const Variant *)p_key;
 
 	bool valid;
-	memnew_placement_custom(r_ret, Variant, Variant(self->get(*key, &valid)));
+	memnew_placement(r_ret, Variant(self->get(*key, &valid)));
 	*r_valid = valid;
 }
 
@@ -173,7 +171,7 @@ static void gdnative_variant_get_named(const GDNativeVariantPtr p_self, const GD
 	const StringName *key = (const StringName *)p_key;
 
 	bool valid;
-	memnew_placement_custom(r_ret, Variant, Variant(self->get_named(*key, valid)));
+	memnew_placement(r_ret, Variant(self->get_named(*key, valid)));
 	*r_valid = valid;
 }
 
@@ -182,7 +180,7 @@ static void gdnative_variant_get_keyed(const GDNativeVariantPtr p_self, const GD
 	const Variant *key = (const Variant *)p_key;
 
 	bool valid;
-	memnew_placement_custom(r_ret, Variant, Variant(self->get_keyed(*key, valid)));
+	memnew_placement(r_ret, Variant(self->get_keyed(*key, valid)));
 	*r_valid = valid;
 }
 
@@ -191,7 +189,7 @@ static void gdnative_variant_get_indexed(const GDNativeVariantPtr p_self, GDNati
 
 	bool valid;
 	bool oob;
-	memnew_placement_custom(r_ret, Variant, Variant(self->get_indexed(p_index, valid, oob)));
+	memnew_placement(r_ret, Variant(self->get_indexed(p_index, valid, oob)));
 	*r_valid = valid;
 	*r_oob = oob;
 }
@@ -222,7 +220,7 @@ static void gdnative_variant_iter_get(const GDNativeVariantPtr p_self, GDNativeV
 	Variant *iter = (Variant *)r_iter;
 
 	bool valid;
-	memnew_placement_custom(r_ret, Variant, Variant(self->iter_next(*iter, valid)));
+	memnew_placement(r_ret, Variant(self->iter_next(*iter, valid)));
 	*r_valid = valid;
 }
 
@@ -254,12 +252,12 @@ static void gdnative_variant_interpolate(const GDNativeVariantPtr p_a, const GDN
 
 static void gdnative_variant_duplicate(const GDNativeVariantPtr p_self, GDNativeVariantPtr r_ret, GDNativeBool p_deep) {
 	const Variant *self = (const Variant *)p_self;
-	memnew_placement_custom(r_ret, Variant, Variant(self->duplicate(p_deep)));
+	memnew_placement(r_ret, Variant(self->duplicate(p_deep)));
 }
 
 static void gdnative_variant_stringify(const GDNativeVariantPtr p_self, GDNativeStringPtr r_ret) {
 	const Variant *self = (const Variant *)p_self;
-	memnew_placement_custom(r_ret, String, String(*self));
+	memnew_placement(r_ret, String(*self));
 }
 
 static GDNativeVariantType gdnative_variant_get_type(const GDNativeVariantPtr p_self) {
@@ -288,7 +286,7 @@ static GDNativeBool gdnative_variant_has_key(const GDNativeVariantPtr p_self, co
 
 static void gdnative_variant_get_type_name(GDNativeVariantType p_type, GDNativeStringPtr r_ret) {
 	String name = Variant::get_type_name((Variant::Type)p_type);
-	memnew_placement_custom(r_ret, String, String(name));
+	memnew_placement(r_ret, String(name));
 }
 
 static GDNativeBool gdnative_variant_can_convert(GDNativeVariantType p_from, GDNativeVariantType p_to) {
@@ -297,6 +295,161 @@ static GDNativeBool gdnative_variant_can_convert(GDNativeVariantType p_from, GDN
 
 static GDNativeBool gdnative_variant_can_convert_strict(GDNativeVariantType p_from, GDNativeVariantType p_to) {
 	return Variant::can_convert_strict((Variant::Type)p_from, (Variant::Type)p_to);
+}
+
+// Variant interaction.
+static GDNativeVariantFromTypeConstructorFunc gdnative_get_variant_from_type_constructor(GDNativeVariantType p_type) {
+	switch (p_type) {
+		case GDNATIVE_VARIANT_TYPE_BOOL:
+			return VariantTypeConstructor<bool>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_INT:
+			return VariantTypeConstructor<int64_t>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_FLOAT:
+			return VariantTypeConstructor<double>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_STRING:
+			return VariantTypeConstructor<String>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_VECTOR2:
+			return VariantTypeConstructor<Vector2>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_VECTOR2I:
+			return VariantTypeConstructor<Vector2i>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_RECT2:
+			return VariantTypeConstructor<Rect2>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_RECT2I:
+			return VariantTypeConstructor<Rect2i>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_VECTOR3:
+			return VariantTypeConstructor<Vector3>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_VECTOR3I:
+			return VariantTypeConstructor<Vector3i>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_TRANSFORM2D:
+			return VariantTypeConstructor<Transform2D>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_PLANE:
+			return VariantTypeConstructor<Plane>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_QUATERNION:
+			return VariantTypeConstructor<Quaternion>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_AABB:
+			return VariantTypeConstructor<AABB>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_BASIS:
+			return VariantTypeConstructor<Basis>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_TRANSFORM3D:
+			return VariantTypeConstructor<Transform3D>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_COLOR:
+			return VariantTypeConstructor<Color>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_STRING_NAME:
+			return VariantTypeConstructor<StringName>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_NODE_PATH:
+			return VariantTypeConstructor<NodePath>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_RID:
+			return VariantTypeConstructor<RID>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_OBJECT:
+			return VariantTypeConstructor<Object *>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_CALLABLE:
+			return VariantTypeConstructor<Callable>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_SIGNAL:
+			return VariantTypeConstructor<Signal>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_DICTIONARY:
+			return VariantTypeConstructor<Dictionary>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_ARRAY:
+			return VariantTypeConstructor<Array>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_PACKED_BYTE_ARRAY:
+			return VariantTypeConstructor<PackedByteArray>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_PACKED_INT32_ARRAY:
+			return VariantTypeConstructor<PackedInt32Array>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_PACKED_INT64_ARRAY:
+			return VariantTypeConstructor<PackedInt64Array>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_PACKED_FLOAT32_ARRAY:
+			return VariantTypeConstructor<PackedFloat32Array>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_PACKED_FLOAT64_ARRAY:
+			return VariantTypeConstructor<PackedFloat64Array>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_PACKED_STRING_ARRAY:
+			return VariantTypeConstructor<PackedStringArray>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_PACKED_VECTOR2_ARRAY:
+			return VariantTypeConstructor<PackedVector2Array>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_PACKED_VECTOR3_ARRAY:
+			return VariantTypeConstructor<PackedVector3Array>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_PACKED_COLOR_ARRAY:
+			return VariantTypeConstructor<PackedColorArray>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_NIL:
+		case GDNATIVE_VARIANT_TYPE_VARIANT_MAX:
+			ERR_FAIL_V_MSG(nullptr, "Getting Variant conversion function with invalid type");
+	}
+	ERR_FAIL_V_MSG(nullptr, "Getting Variant conversion function with invalid type");
+}
+
+static GDNativeTypeFromVariantConstructorFunc gdnative_get_type_from_variant_constructor(GDNativeVariantType p_type) {
+	switch (p_type) {
+		case GDNATIVE_VARIANT_TYPE_BOOL:
+			return VariantTypeConstructor<bool>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_INT:
+			return VariantTypeConstructor<int64_t>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_FLOAT:
+			return VariantTypeConstructor<double>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_STRING:
+			return VariantTypeConstructor<String>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_VECTOR2:
+			return VariantTypeConstructor<Vector2>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_VECTOR2I:
+			return VariantTypeConstructor<Vector2i>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_RECT2:
+			return VariantTypeConstructor<Rect2>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_RECT2I:
+			return VariantTypeConstructor<Rect2i>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_VECTOR3:
+			return VariantTypeConstructor<Vector3>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_VECTOR3I:
+			return VariantTypeConstructor<Vector3i>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_TRANSFORM2D:
+			return VariantTypeConstructor<Transform2D>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_PLANE:
+			return VariantTypeConstructor<Plane>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_QUATERNION:
+			return VariantTypeConstructor<Quaternion>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_AABB:
+			return VariantTypeConstructor<AABB>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_BASIS:
+			return VariantTypeConstructor<Basis>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_TRANSFORM3D:
+			return VariantTypeConstructor<Transform3D>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_COLOR:
+			return VariantTypeConstructor<Color>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_STRING_NAME:
+			return VariantTypeConstructor<StringName>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_NODE_PATH:
+			return VariantTypeConstructor<NodePath>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_RID:
+			return VariantTypeConstructor<RID>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_OBJECT:
+			return VariantTypeConstructor<Object *>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_CALLABLE:
+			return VariantTypeConstructor<Callable>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_SIGNAL:
+			return VariantTypeConstructor<Signal>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_DICTIONARY:
+			return VariantTypeConstructor<Dictionary>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_ARRAY:
+			return VariantTypeConstructor<Array>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_PACKED_BYTE_ARRAY:
+			return VariantTypeConstructor<PackedByteArray>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_PACKED_INT32_ARRAY:
+			return VariantTypeConstructor<PackedInt32Array>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_PACKED_INT64_ARRAY:
+			return VariantTypeConstructor<PackedInt64Array>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_PACKED_FLOAT32_ARRAY:
+			return VariantTypeConstructor<PackedFloat32Array>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_PACKED_FLOAT64_ARRAY:
+			return VariantTypeConstructor<PackedFloat64Array>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_PACKED_STRING_ARRAY:
+			return VariantTypeConstructor<PackedStringArray>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_PACKED_VECTOR2_ARRAY:
+			return VariantTypeConstructor<PackedVector2Array>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_PACKED_VECTOR3_ARRAY:
+			return VariantTypeConstructor<PackedVector3Array>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_PACKED_COLOR_ARRAY:
+			return VariantTypeConstructor<PackedColorArray>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_NIL:
+		case GDNATIVE_VARIANT_TYPE_VARIANT_MAX:
+			ERR_FAIL_V_MSG(nullptr, "Getting Variant conversion function with invalid type");
+	}
+	ERR_FAIL_V_MSG(nullptr, "Getting Variant conversion function with invalid type");
 }
 
 // ptrcalls
@@ -315,6 +468,9 @@ static GDNativePtrBuiltInMethod gdnative_variant_get_ptr_builtin_method(GDNative
 }
 static GDNativePtrConstructor gdnative_variant_get_ptr_constructor(GDNativeVariantType p_type, int32_t p_constructor) {
 	return (GDNativePtrConstructor)Variant::get_ptr_constructor(Variant::Type(p_type), p_constructor);
+}
+static GDNativePtrDestructor gdnative_variant_get_ptr_destructor(GDNativeVariantType p_type) {
+	return (GDNativePtrDestructor)Variant::get_ptr_destructor(Variant::Type(p_type));
 }
 static void gdnative_variant_construct(GDNativeVariantType p_type, GDNativeVariantPtr p_base, const GDNativeVariantPtr *p_args, int32_t p_argument_count, GDNativeCallError *r_error) {
 	memnew_placement(p_base, Variant);
@@ -350,7 +506,7 @@ static GDNativePtrKeyedChecker gdnative_variant_get_ptr_keyed_checker(GDNativeVa
 	return (GDNativePtrKeyedChecker)Variant::get_member_ptr_keyed_checker(Variant::Type(p_type));
 }
 static void gdnative_variant_get_constant_value(GDNativeVariantType p_type, const char *p_constant, GDNativeVariantPtr r_ret) {
-	memnew_placement_custom(r_ret, Variant, Variant(Variant::get_constant_value(Variant::Type(p_type), p_constant)));
+	memnew_placement(r_ret, Variant(Variant::get_constant_value(Variant::Type(p_type), p_constant)));
 }
 static GDNativePtrUtilityFunction gdnative_variant_get_ptr_utility_function(const char *p_function, GDNativeInt p_hash) {
 	StringName function = p_function;
@@ -521,9 +677,14 @@ static GDNativeObjectPtr gdnative_global_get_singleton(const char *p_name) {
 	return (GDNativeObjectPtr)Engine::get_singleton()->get_singleton_object(String(p_name));
 }
 
-static void *gdnative_object_get_instance_binding(GDNativeObjectPtr p_instance, void *p_token, GDNativeInstanceBindingCallbacks *p_callbacks) {
+static void *gdnative_object_get_instance_binding(GDNativeObjectPtr p_instance, void *p_token, const GDNativeInstanceBindingCallbacks *p_callbacks) {
 	Object *o = (Object *)p_instance;
 	return o->get_instance_binding(p_token, p_callbacks);
+}
+
+static void gdnative_object_set_instance_binding(GDNativeObjectPtr p_instance, void *p_token, void *p_binding, const GDNativeInstanceBindingCallbacks *p_callbacks) {
+	Object *o = (Object *)p_instance;
+	o->set_instance_binding(p_token, p_binding, p_callbacks);
 }
 
 static GDNativeObjectPtr gdnative_object_get_instance_from_id(GDObjectInstanceID p_instance_id) {
@@ -626,15 +787,15 @@ void gdnative_setup_interface(GDNativeInterface *p_interface) {
 	gdni.variant_can_convert = gdnative_variant_can_convert;
 	gdni.variant_can_convert_strict = gdnative_variant_can_convert_strict;
 
-	//ptrcalls
-#if 0
-	GDNativeVariantFromTypeConstructorFunc (*get_variant_from_type_constructor)(GDNativeVariantType p_type);
-	GDNativeTypeFromVariantConstructorFunc (*get_variant_to_type_constructor)(GDNativeVariantType p_type);
-#endif
+	gdni.get_variant_from_type_constructor = gdnative_get_variant_from_type_constructor;
+	gdni.get_variant_to_type_constructor = gdnative_get_type_from_variant_constructor;
+
+	// ptrcalls.
 
 	gdni.variant_get_ptr_operator_evaluator = gdnative_variant_get_ptr_operator_evaluator;
 	gdni.variant_get_ptr_builtin_method = gdnative_variant_get_ptr_builtin_method;
 	gdni.variant_get_ptr_constructor = gdnative_variant_get_ptr_constructor;
+	gdni.variant_get_ptr_destructor = gdnative_variant_get_ptr_destructor;
 	gdni.variant_construct = gdnative_variant_construct;
 	gdni.variant_get_ptr_setter = gdnative_variant_get_ptr_setter;
 	gdni.variant_get_ptr_getter = gdnative_variant_get_ptr_getter;
@@ -672,6 +833,7 @@ void gdnative_setup_interface(GDNativeInterface *p_interface) {
 	gdni.object_destroy = gdnative_object_destroy;
 	gdni.global_get_singleton = gdnative_global_get_singleton;
 	gdni.object_get_instance_binding = gdnative_object_get_instance_binding;
+	gdni.object_set_instance_binding = gdnative_object_set_instance_binding;
 
 	gdni.object_cast_to = gdnative_object_cast_to;
 	gdni.object_get_instance_from_id = gdnative_object_get_instance_from_id;

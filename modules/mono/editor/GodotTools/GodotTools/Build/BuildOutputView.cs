@@ -285,7 +285,7 @@ namespace GodotTools.Build
                     break;
             }
 
-            buildLog.CursorSetLine(line);
+            buildLog.SetCaretLine(line);
         }
 
         public void RestartBuild()
@@ -384,7 +384,7 @@ namespace GodotTools.Build
 
             buildLog = new TextEdit
             {
-                Readonly = true,
+                Editable = false,
                 SizeFlagsVertical = (int)SizeFlags.ExpandFill,
                 SizeFlagsHorizontal = (int)SizeFlags.ExpandFill // Avoid being squashed by the issues list
             };

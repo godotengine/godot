@@ -29,11 +29,6 @@
 /*************************************************************************/
 
 #include "voxelizer.h"
-#include "core/math/geometry_3d.h"
-#include "core/os/os.h"
-#include "core/os/threaded_array_processor.h"
-
-#include <stdlib.h>
 
 static _FORCE_INLINE_ void get_uv_and_normal(const Vector3 &p_pos, const Vector3 *p_vtx, const Vector2 *p_uv, const Vector3 *p_normal, Vector2 &r_uv, Vector3 &r_normal) {
 	if (p_pos.is_equal_approx(p_vtx[0])) {
@@ -56,20 +51,20 @@ static _FORCE_INLINE_ void get_uv_and_normal(const Vector3 &p_pos, const Vector3
 	Vector3 v1 = p_vtx[2] - p_vtx[0];
 	Vector3 v2 = p_pos - p_vtx[0];
 
-	float d00 = v0.dot(v0);
-	float d01 = v0.dot(v1);
-	float d11 = v1.dot(v1);
-	float d20 = v2.dot(v0);
-	float d21 = v2.dot(v1);
-	float denom = (d00 * d11 - d01 * d01);
+	real_t d00 = v0.dot(v0);
+	real_t d01 = v0.dot(v1);
+	real_t d11 = v1.dot(v1);
+	real_t d20 = v2.dot(v0);
+	real_t d21 = v2.dot(v1);
+	real_t denom = (d00 * d11 - d01 * d01);
 	if (denom == 0) {
 		r_uv = p_uv[0];
 		r_normal = p_normal[0];
 		return;
 	}
-	float v = (d11 * d20 - d01 * d21) / denom;
-	float w = (d00 * d21 - d01 * d20) / denom;
-	float u = 1.0f - v - w;
+	real_t v = (d11 * d20 - d01 * d21) / denom;
+	real_t w = (d00 * d21 - d01 * d20) / denom;
+	real_t u = 1.0f - v - w;
 
 	r_uv = p_uv[0] * u + p_uv[1] * v + p_uv[2] * w;
 	r_normal = (p_normal[0] * u + p_normal[1] * v + p_normal[2] * w).normalized();
@@ -81,7 +76,7 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 
 		//find best axis to map to, for scanning values
 		int closest_axis = 0;
-		float closest_dot = 0;
+		real_t closest_dot = 0;
 
 		Plane plane = Plane(p_vtx[0], p_vtx[1], p_vtx[2]);
 		Vector3 normal = plane.normal;
@@ -89,7 +84,7 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 		for (int i = 0; i < 3; i++) {
 			Vector3 axis;
 			axis[i] = 1.0;
-			float dot = ABS(normal.dot(axis));
+			real_t dot = ABS(normal.dot(axis));
 			if (i == 0 || dot > closest_dot) {
 				closest_axis = i;
 				closest_dot = dot;
@@ -103,8 +98,8 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 		Vector3 t2;
 		t2[(closest_axis + 2) % 3] = 1.0;
 
-		t1 *= p_aabb.size[(closest_axis + 1) % 3] / float(color_scan_cell_width);
-		t2 *= p_aabb.size[(closest_axis + 2) % 3] / float(color_scan_cell_width);
+		t1 *= p_aabb.size[(closest_axis + 1) % 3] / real_t(color_scan_cell_width);
+		t2 *= p_aabb.size[(closest_axis + 2) % 3] / real_t(color_scan_cell_width);
 
 		Color albedo_accum;
 		Color emission_accum;
@@ -114,10 +109,10 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 
 		//map to a grid average in the best axis for this face
 		for (int i = 0; i < color_scan_cell_width; i++) {
-			Vector3 ofs_i = float(i) * t1;
+			Vector3 ofs_i = real_t(i) * t1;
 
 			for (int j = 0; j < color_scan_cell_width; j++) {
-				Vector3 ofs_j = float(j) * t2;
+				Vector3 ofs_j = real_t(j) * t2;
 
 				Vector3 from = p_aabb.position + ofs_i + ofs_j;
 				Vector3 to = from + t1 + t2 + axis * p_aabb.size[closest_axis];
@@ -155,8 +150,8 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 					lnormal = normal;
 				}
 
-				int uv_x = CLAMP(int(Math::fposmod(uv.x, 1.0f) * bake_texture_size), 0, bake_texture_size - 1);
-				int uv_y = CLAMP(int(Math::fposmod(uv.y, 1.0f) * bake_texture_size), 0, bake_texture_size - 1);
+				int uv_x = CLAMP(int(Math::fposmod(uv.x, (real_t)1.0) * bake_texture_size), 0, bake_texture_size - 1);
+				int uv_y = CLAMP(int(Math::fposmod(uv.y, (real_t)1.0) * bake_texture_size), 0, bake_texture_size - 1);
 
 				int ofs = uv_y * bake_texture_size + uv_x;
 				albedo_accum.r += p_material.albedo[ofs].r;
@@ -187,8 +182,8 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 				lnormal = normal;
 			}
 
-			int uv_x = CLAMP(Math::fposmod(uv.x, 1.0f) * bake_texture_size, 0, bake_texture_size - 1);
-			int uv_y = CLAMP(Math::fposmod(uv.y, 1.0f) * bake_texture_size, 0, bake_texture_size - 1);
+			int uv_x = CLAMP(Math::fposmod(uv.x, (real_t)1.0) * bake_texture_size, 0, bake_texture_size - 1);
+			int uv_y = CLAMP(Math::fposmod(uv.y, (real_t)1.0) * bake_texture_size, 0, bake_texture_size - 1);
 
 			int ofs = uv_y * bake_texture_size + uv_x;
 
@@ -636,7 +631,7 @@ void Voxelizer::begin_bake(int p_subdiv, const AABB &p_bounds) {
 		}
 
 		axis_cell_size[i] = axis_cell_size[longest_axis];
-		float axis_size = po2_bounds.size[longest_axis];
+		real_t axis_size = po2_bounds.size[longest_axis];
 
 		//shrink until fit subdiv
 		while (axis_size / 2.0 >= po2_bounds.size[i]) {
@@ -954,7 +949,7 @@ Ref<MultiMesh> Voxelizer::create_debug_multimesh() {
 			Vector3 face_points[4];
 
 			for (int j = 0; j < 4; j++) {
-				float v[3];
+				real_t v[3];
 				v[0] = 1.0;
 				v[1] = 1 - 2 * ((j >> 1) & 1);
 				v[2] = v[1] * (1 - 2 * (j & 1));

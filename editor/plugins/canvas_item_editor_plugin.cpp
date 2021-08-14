@@ -41,6 +41,7 @@
 #include "editor/editor_settings.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
+#include "scene/2d/cpu_particles_2d.h"
 #include "scene/2d/gpu_particles_2d.h"
 #include "scene/2d/light_2d.h"
 #include "scene/2d/polygon_2d.h"
@@ -486,11 +487,11 @@ void CanvasItemEditor::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
 		}
 
 		if (k->is_pressed() && !k->is_ctrl_pressed() && !k->is_echo()) {
-			if ((grid_snap_active || show_grid) && multiply_grid_step_shortcut.is_valid() && multiply_grid_step_shortcut->is_shortcut(p_ev)) {
+			if ((grid_snap_active || show_grid) && multiply_grid_step_shortcut.is_valid() && multiply_grid_step_shortcut->matches_event(p_ev)) {
 				// Multiply the grid size
 				grid_step_multiplier = MIN(grid_step_multiplier + 1, 12);
 				viewport->update();
-			} else if ((grid_snap_active || show_grid) && divide_grid_step_shortcut.is_valid() && divide_grid_step_shortcut->is_shortcut(p_ev)) {
+			} else if ((grid_snap_active || show_grid) && divide_grid_step_shortcut.is_valid() && divide_grid_step_shortcut->matches_event(p_ev)) {
 				// Divide the grid size
 				Point2 new_grid_step = grid_step * Math::pow(2.0, grid_step_multiplier - 1);
 				if (new_grid_step.x >= 1.0 && new_grid_step.y >= 1.0) {
@@ -1192,30 +1193,30 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid()) {
 		if (k->is_pressed()) {
-			if (ED_GET_SHORTCUT("canvas_item_editor/zoom_3.125_percent")->is_shortcut(p_event)) {
+			if (ED_GET_SHORTCUT("canvas_item_editor/zoom_3.125_percent")->matches_event(p_event)) {
 				_update_zoom((1.0 / 32.0) * MAX(1, EDSCALE));
-			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_6.25_percent")->is_shortcut(p_event)) {
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_6.25_percent")->matches_event(p_event)) {
 				_update_zoom((1.0 / 16.0) * MAX(1, EDSCALE));
-			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_12.5_percent")->is_shortcut(p_event)) {
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_12.5_percent")->matches_event(p_event)) {
 				_update_zoom((1.0 / 8.0) * MAX(1, EDSCALE));
-			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_25_percent")->is_shortcut(p_event)) {
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_25_percent")->matches_event(p_event)) {
 				_update_zoom((1.0 / 4.0) * MAX(1, EDSCALE));
-			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_50_percent")->is_shortcut(p_event)) {
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_50_percent")->matches_event(p_event)) {
 				_update_zoom((1.0 / 2.0) * MAX(1, EDSCALE));
-			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_100_percent")->is_shortcut(p_event)) {
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_100_percent")->matches_event(p_event)) {
 				_update_zoom(1.0 * MAX(1, EDSCALE));
-			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_200_percent")->is_shortcut(p_event)) {
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_200_percent")->matches_event(p_event)) {
 				_update_zoom(2.0 * MAX(1, EDSCALE));
-			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_400_percent")->is_shortcut(p_event)) {
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_400_percent")->matches_event(p_event)) {
 				_update_zoom(4.0 * MAX(1, EDSCALE));
-			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_800_percent")->is_shortcut(p_event)) {
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_800_percent")->matches_event(p_event)) {
 				_update_zoom(8.0 * MAX(1, EDSCALE));
-			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_1600_percent")->is_shortcut(p_event)) {
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_1600_percent")->matches_event(p_event)) {
 				_update_zoom(16.0 * MAX(1, EDSCALE));
 			}
 		}
 
-		bool is_pan_key = pan_view_shortcut.is_valid() && pan_view_shortcut->is_shortcut(p_event);
+		bool is_pan_key = pan_view_shortcut.is_valid() && pan_view_shortcut->matches_event(p_event);
 
 		if (is_pan_key && (EditorSettings::get_singleton()->get("editors/2d/simple_panning") || drag_type != DRAG_NONE)) {
 			if (!panning) {
@@ -4073,7 +4074,7 @@ void CanvasItemEditor::_popup_warning_depop(Control *p_control) {
 	info_overlay->set_offset(SIDE_LEFT, (show_rulers ? RULER_WIDTH : 0) + 10);
 }
 
-void CanvasItemEditor::_popup_warning_temporarily(Control *p_control, const float p_duration) {
+void CanvasItemEditor::_popup_warning_temporarily(Control *p_control, const double p_duration) {
 	Timer *timer;
 	if (!popup_temporarily_timers.has(p_control)) {
 		timer = memnew(Timer);
@@ -5740,7 +5741,7 @@ void CanvasItemEditorViewport::_on_change_type_confirmed() {
 	}
 
 	CheckBox *check = Object::cast_to<CheckBox>(button_group->get_pressed_button());
-	default_type = check->get_text();
+	default_texture_node_type = check->get_text();
 	_perform_drop_data();
 	selector->hide();
 }
@@ -5832,14 +5833,13 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 	child->set_name(name);
 
 	Ref<Texture2D> texture = Ref<Texture2D>(Object::cast_to<Texture2D>(ResourceCache::get(path)));
-	Size2 texture_size = texture->get_size();
 
 	if (parent) {
 		editor_data->get_undo_redo().add_do_method(parent, "add_child", child);
 		editor_data->get_undo_redo().add_do_method(child, "set_owner", editor->get_edited_scene());
 		editor_data->get_undo_redo().add_do_reference(child);
 		editor_data->get_undo_redo().add_undo_method(parent, "remove_child", child);
-	} else { // if we haven't parent, lets try to make a child as a parent.
+	} else { // If no parent is selected, set as root node of the scene.
 		editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", child);
 		editor_data->get_undo_redo().add_do_method(child, "set_owner", editor->get_edited_scene());
 		editor_data->get_undo_redo().add_do_reference(child);
@@ -5853,28 +5853,23 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 		editor_data->get_undo_redo().add_undo_method(ed, "live_debug_remove_node", NodePath(String(editor->get_edited_scene()->get_path_to(parent)) + "/" + new_name));
 	}
 
-	// handle with different property for texture
-	String property = "texture";
-	List<PropertyInfo> props;
-	child->get_property_list(&props);
-	for (const PropertyInfo &E : props) {
-		if (E.name == "config/texture") { // Particles2D
-			property = "config/texture";
-			break;
-		} else if (E.name == "texture/texture") { // Polygon2D
-			property = "texture/texture";
-			break;
-		} else if (E.name == "normal") { // TouchScreenButton
-			property = "normal";
-			break;
-		}
+	String node_class = child->get_class();
+	if (node_class == "Polygon2D") {
+		editor_data->get_undo_redo().add_do_property(child, "texture/texture", texture);
+	} else if (node_class == "TouchScreenButton") {
+		editor_data->get_undo_redo().add_do_property(child, "normal", texture);
+	} else if (node_class == "TextureButton") {
+		editor_data->get_undo_redo().add_do_property(child, "texture_button", texture);
+	} else {
+		editor_data->get_undo_redo().add_do_property(child, "texture", texture);
 	}
-	editor_data->get_undo_redo().add_do_property(child, property, texture);
 
 	// make visible for certain node type
-	if (default_type == "NinePatchRect") {
-		editor_data->get_undo_redo().add_do_property(child, "rect/size", texture_size);
-	} else if (default_type == "Polygon2D") {
+	if (ClassDB::is_parent_class(node_class, "Control")) {
+		Size2 texture_size = texture->get_size();
+		editor_data->get_undo_redo().add_do_property(child, "rect_size", texture_size);
+	} else if (node_class == "Polygon2D") {
+		Size2 texture_size = texture->get_size();
 		Vector<Vector2> list;
 		list.push_back(Vector2(0, 0));
 		list.push_back(Vector2(texture_size.width, 0));
@@ -5975,23 +5970,7 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 		} else {
 			Ref<Texture2D> texture = Ref<Texture2D>(Object::cast_to<Texture2D>(*res));
 			if (texture != nullptr && texture.is_valid()) {
-				Node *child;
-				if (default_type == "Light2D") {
-					child = memnew(Light2D);
-				} else if (default_type == "GPUParticles2D") {
-					child = memnew(GPUParticles2D);
-				} else if (default_type == "Polygon2D") {
-					child = memnew(Polygon2D);
-				} else if (default_type == "TouchScreenButton") {
-					child = memnew(TouchScreenButton);
-				} else if (default_type == "TextureRect") {
-					child = memnew(TextureRect);
-				} else if (default_type == "NinePatchRect") {
-					child = memnew(NinePatchRect);
-				} else {
-					child = memnew(Sprite2D); // default
-				}
-
+				Node *child = _make_texture_node_type(default_texture_node_type);
 				_create_nodes(target_node, child, path, drop_pos);
 			}
 		}
@@ -6029,13 +6008,7 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 						continue;
 					}
 					memdelete(instantiated_scene);
-				} else if (type == "Texture2D" ||
-						   type == "ImageTexture" ||
-						   type == "ViewportTexture" ||
-						   type == "CurveTexture" ||
-						   type == "GradientTexture" ||
-						   type == "StreamTexture2D" ||
-						   type == "AtlasTexture") {
+				} else if (ClassDB::is_parent_class(type, "Texture2D")) {
 					Ref<Texture2D> texture = Ref<Texture2D>(Object::cast_to<Texture2D>(*res));
 					if (!texture.is_valid()) {
 						continue;
@@ -6052,7 +6025,7 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 				}
 				Transform2D trans = canvas_item_editor->get_canvas_transform();
 				preview_node->set_position((p_point - trans.get_origin()) / trans.get_scale().x);
-				label->set_text(vformat(TTR("Adding %s..."), default_type));
+				label->set_text(vformat(TTR("Adding %s..."), default_texture_node_type));
 			}
 			return can_instantiate;
 		}
@@ -6068,9 +6041,9 @@ void CanvasItemEditorViewport::_show_resource_type_selector() {
 
 	for (int i = 0; i < btn_list.size(); i++) {
 		CheckBox *check = Object::cast_to<CheckBox>(btn_list[i]);
-		check->set_pressed(check->get_text() == default_type);
+		check->set_pressed(check->get_text() == default_texture_node_type);
 	}
-	selector->set_title(vformat(TTR("Add %s"), default_type));
+	selector->set_title(vformat(TTR("Add %s"), default_texture_node_type));
 	selector->popup_centered();
 }
 
@@ -6126,6 +6099,30 @@ void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p
 	}
 }
 
+Node *CanvasItemEditorViewport::_make_texture_node_type(String texture_node_type) {
+	Node *node = nullptr;
+	if (texture_node_type == "Sprite2D") {
+		node = memnew(Sprite2D);
+	} else if (texture_node_type == "PointLight2D") {
+		node = memnew(PointLight2D);
+	} else if (texture_node_type == "CPUParticles2D") {
+		node = memnew(CPUParticles2D);
+	} else if (texture_node_type == "GPUParticles2D") {
+		node = memnew(GPUParticles2D);
+	} else if (texture_node_type == "Polygon2D") {
+		node = memnew(Polygon2D);
+	} else if (texture_node_type == "TouchScreenButton") {
+		node = memnew(TouchScreenButton);
+	} else if (texture_node_type == "TextureRect") {
+		node = memnew(TextureRect);
+	} else if (texture_node_type == "TextureButton") {
+		node = memnew(TextureButton);
+	} else if (texture_node_type == "NinePatchRect") {
+		node = memnew(NinePatchRect);
+	}
+	return node;
+}
+
 void CanvasItemEditorViewport::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -6145,22 +6142,24 @@ void CanvasItemEditorViewport::_bind_methods() {
 }
 
 CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasItemEditor *p_canvas_item_editor) {
-	default_type = "Sprite2D";
+	default_texture_node_type = "Sprite2D";
 	// Node2D
-	types.push_back("Sprite2D");
-	types.push_back("Light2D");
-	types.push_back("GPUParticles2D");
-	types.push_back("Polygon2D");
-	types.push_back("TouchScreenButton");
+	texture_node_types.push_back("Sprite2D");
+	texture_node_types.push_back("PointLight2D");
+	texture_node_types.push_back("CPUParticles2D");
+	texture_node_types.push_back("GPUParticles2D");
+	texture_node_types.push_back("Polygon2D");
+	texture_node_types.push_back("TouchScreenButton");
 	// Control
-	types.push_back("TextureRect");
-	types.push_back("NinePatchRect");
+	texture_node_types.push_back("TextureRect");
+	texture_node_types.push_back("TextureButton");
+	texture_node_types.push_back("NinePatchRect");
 
 	target_node = nullptr;
 	editor = p_node;
 	editor_data = editor->get_scene_tree_dock()->get_editor_data();
 	canvas_item_editor = p_canvas_item_editor;
-	preview_node = memnew(Node2D);
+	preview_node = memnew(Control);
 
 	accept = memnew(AcceptDialog);
 	editor->get_gui_base()->add_child(accept);
@@ -6182,10 +6181,10 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 	btn_group->set_h_size_flags(0);
 
 	button_group.instantiate();
-	for (int i = 0; i < types.size(); i++) {
+	for (int i = 0; i < texture_node_types.size(); i++) {
 		CheckBox *check = memnew(CheckBox);
 		btn_group->add_child(check);
-		check->set_text(types[i]);
+		check->set_text(texture_node_types[i]);
 		check->connect("button_down", callable_mp(this, &CanvasItemEditorViewport::_on_select_type), varray(check));
 		check->set_button_group(button_group);
 	}

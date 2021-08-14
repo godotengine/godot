@@ -166,13 +166,13 @@ void SkeletonModification2D::editor_draw_angle_constraints(Bone2D *p_operation_b
 
 			if (operation_bone_parent_bone) {
 				stack->skeleton->draw_set_transform(
-						stack->skeleton->get_global_transform().affine_inverse().xform(p_operation_bone->get_global_position()),
+						stack->skeleton->to_local(p_operation_bone->get_global_position()),
 						operation_bone_parent_bone->get_global_rotation() - stack->skeleton->get_global_rotation());
 			} else {
-				stack->skeleton->draw_set_transform(stack->skeleton->get_global_transform().affine_inverse().xform(p_operation_bone->get_global_position()));
+				stack->skeleton->draw_set_transform(stack->skeleton->to_local(p_operation_bone->get_global_position()));
 			}
 		} else {
-			stack->skeleton->draw_set_transform(stack->skeleton->get_global_transform().affine_inverse().xform(p_operation_bone->get_global_position()));
+			stack->skeleton->draw_set_transform(stack->skeleton->to_local(p_operation_bone->get_global_position()));
 		}
 
 		if (p_constraint_inverted) {
@@ -186,7 +186,7 @@ void SkeletonModification2D::editor_draw_angle_constraints(Bone2D *p_operation_b
 		stack->skeleton->draw_line(Vector2(0, 0), Vector2(Math::cos(arc_angle_max), Math::sin(arc_angle_max)) * p_operation_bone->get_length(), bone_ik_color, 1.0);
 
 	} else {
-		stack->skeleton->draw_set_transform(stack->skeleton->get_global_transform().affine_inverse().xform(p_operation_bone->get_global_position()));
+		stack->skeleton->draw_set_transform(stack->skeleton->to_local(p_operation_bone->get_global_position()));
 		stack->skeleton->draw_arc(Vector2(0, 0), p_operation_bone->get_length(), 0, Math_PI * 2, 32, bone_ik_color, 1.0);
 		stack->skeleton->draw_line(Vector2(0, 0), Vector2(1, 0) * p_operation_bone->get_length(), bone_ik_color, 1.0);
 	}

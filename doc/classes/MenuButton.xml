@@ -44,46 +44,46 @@
 	<constants>
 	</constants>
 	<theme_items>
-		<theme_item name="disabled" type="StyleBox">
+		<theme_item name="disabled" data_type="style" type="StyleBox">
 			[StyleBox] used when the [MenuButton] is disabled.
 		</theme_item>
-		<theme_item name="focus" type="StyleBox">
+		<theme_item name="focus" data_type="style" type="StyleBox">
 			[StyleBox] used when the [MenuButton] is focused. It is displayed over the current [StyleBox], so using [StyleBoxEmpty] will just disable the focus visual effect.
 		</theme_item>
-		<theme_item name="font" type="Font">
+		<theme_item name="font" data_type="font" type="Font">
 			[Font] of the [MenuButton]'s text.
 		</theme_item>
-		<theme_item name="font_color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
+		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
 			Default text [Color] of the [MenuButton].
 		</theme_item>
-		<theme_item name="font_disabled_color" type="Color" default="Color(1, 1, 1, 0.3)">
+		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(1, 1, 1, 0.3)">
 			Text [Color] used when the [MenuButton] is disabled.
 		</theme_item>
-		<theme_item name="font_hover_color" type="Color" default="Color(0.94, 0.94, 0.94, 1)">
+		<theme_item name="font_hover_color" data_type="color" type="Color" default="Color(0.94, 0.94, 0.94, 1)">
 			Text [Color] used when the [MenuButton] is being hovered.
 		</theme_item>
-		<theme_item name="font_outline_color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The tint of text outline of the [MenuButton].
 		</theme_item>
-		<theme_item name="font_pressed_color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="font_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Text [Color] used when the [MenuButton] is being pressed.
 		</theme_item>
-		<theme_item name="font_size" type="int">
+		<theme_item name="font_size" data_type="font_size" type="int">
 			Font size of the [MenuButton]'s text.
 		</theme_item>
-		<theme_item name="hover" type="StyleBox">
+		<theme_item name="hover" data_type="style" type="StyleBox">
 			[StyleBox] used when the [MenuButton] is being hovered.
 		</theme_item>
-		<theme_item name="hseparation" type="int" default="3">
+		<theme_item name="hseparation" data_type="constant" type="int" default="3">
 			The horizontal space between [MenuButton]'s icon and text.
 		</theme_item>
-		<theme_item name="normal" type="StyleBox">
+		<theme_item name="normal" data_type="style" type="StyleBox">
 			Default [StyleBox] for the [MenuButton].
 		</theme_item>
-		<theme_item name="outline_size" type="int" default="0">
+		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.
 		</theme_item>
-		<theme_item name="pressed" type="StyleBox">
+		<theme_item name="pressed" data_type="style" type="StyleBox">
 			[StyleBox] used when the [MenuButton] is being pressed.
 		</theme_item>
 	</theme_items>

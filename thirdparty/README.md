@@ -31,14 +31,9 @@ Files extracted from upstream source:
 
 ## certs
 
-- Upstream: Mozilla, via https://apps.fedoraproject.org/packages/ca-certificates
-- Version: 2018.2.26 (2018)
+- Upstream: Mozilla, via https://github.com/bagder/ca-bundle
+- Version: git (8b263a18fca98ea371e54227837321c5cdaa1ba7, 2021)
 - License: MPL 2.0
-
-File extracted from a recent Fedora install:
-/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
-(It can't be extracted directly from the package,
-as it's generated on the user's system.)
 
 
 ## cvtt
@@ -665,31 +660,40 @@ They can be reapplied using the patches included in the `vhacd`
 folder.
 
 
+## volk
+
+- Upstream: https://github.com/zeux/volk
+- Version: git (d75c007f375f35612dba3de512ac73f10bf9aa0e, 2021)
+- License: MIT
+
+The volk commit should match the version of the Vulkan headers defined below.
+
+Files extracted from upstream source:
+
+- `volk.h`, `volk.c`
+- `LICENSE.md`
+
+
 ## vulkan
 
-- Upstream: https://github.com/KhronosGroup/Vulkan-Loader
-- Version: sdk-1.2.162.0 (7a313093b5c4af964d50a5a64e73d7df6152ea3f, 2020)
+- Upstream: https://github.com/KhronosGroup/Vulkan-Headers
+- Version: sdk-1.2.182.0 (37164a5726f7e6113810f9557903a117498421cf, 2021)
 - License: Apache 2.0
 
 Unless there is a specific reason to package a more recent version, please stick
 to Vulkan SDK releases (prefixed by `sdk-`) for all components.
 
-NOTE: Use `scripts/update_deps.py --ref <version>` in the Loader git repository
-to retrieve the `Vulkan-Headers` repository matching the loader version.
-
 Files extracted from upstream source:
 
-- `Vulkan-Headers/include/` as `include/`
-- All `.c` and `.h` files in `loader/` and `loader/generated/`, put in a common
-  `loader/` folder
+- `include/`
 - `LICENSE.txt`
 
 `vk_enum_string_helper.h` is taken from the matching `Vulkan-ValidationLayers`
 SDK release: https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/layers/generated/vk_enum_string_helper.h
 
 `vk_mem_alloc.h` is taken from https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
-Version: 2.3.0 (2019)
-`vk_mem_alloc.cpp` and `android/vk_mem_alloc.cpp` are Godot files and should be preserved on updates.
+Version: 3.0.0-development (2021-06-21), branch `feature-small-buffers`, commit `cfea2f72851f9ee4a399769f18865047b83711f1`
+`vk_mem_alloc.cpp` is a Godot file and should be preserved on updates.
 
 Patches in the `patches` directory should be re-applied after updates.
 

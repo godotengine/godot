@@ -145,34 +145,6 @@ public:
 	PlaneShape3DSW();
 };
 
-class RayShape3DSW : public Shape3DSW {
-	real_t length;
-	bool slips_on_slope;
-
-	void _setup(real_t p_length, bool p_slips_on_slope);
-
-public:
-	real_t get_length() const;
-	bool get_slips_on_slope() const;
-
-	virtual real_t get_area() const { return 0.0; }
-	virtual PhysicsServer3D::ShapeType get_type() const { return PhysicsServer3D::SHAPE_RAY; }
-	virtual void project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const;
-	virtual Vector3 get_support(const Vector3 &p_normal) const;
-	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const;
-
-	virtual bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const;
-	virtual bool intersect_point(const Vector3 &p_point) const;
-	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const;
-
-	virtual Vector3 get_moment_of_inertia(real_t p_mass) const;
-
-	virtual void set_data(const Variant &p_data);
-	virtual Variant get_data() const;
-
-	RayShape3DSW();
-};
-
 class SphereShape3DSW : public Shape3DSW {
 	real_t radius;
 
@@ -235,7 +207,7 @@ public:
 	_FORCE_INLINE_ real_t get_height() const { return height; }
 	_FORCE_INLINE_ real_t get_radius() const { return radius; }
 
-	virtual real_t get_area() const { return 4.0 / 3.0 * Math_PI * radius * radius * radius + height * Math_PI * radius * radius; }
+	virtual real_t get_area() const { return 4.0 / 3.0 * Math_PI * radius * radius * radius + (height - radius * 2.0) * Math_PI * radius * radius; }
 
 	virtual PhysicsServer3D::ShapeType get_type() const { return PhysicsServer3D::SHAPE_CAPSULE; }
 
@@ -389,12 +361,12 @@ public:
 };
 
 struct HeightMapShape3DSW : public ConcaveShape3DSW {
-	Vector<float> heights;
+	Vector<real_t> heights;
 	int width = 0;
 	int depth = 0;
 	Vector3 local_origin;
 
-	_FORCE_INLINE_ float _get_height(int p_x, int p_z) const {
+	_FORCE_INLINE_ real_t _get_height(int p_x, int p_z) const {
 		return heights[(p_z * width) + p_x];
 	}
 
@@ -406,10 +378,10 @@ struct HeightMapShape3DSW : public ConcaveShape3DSW {
 
 	void _get_cell(const Vector3 &p_point, int &r_x, int &r_y, int &r_z) const;
 
-	void _setup(const Vector<float> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height);
+	void _setup(const Vector<real_t> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height);
 
 public:
-	Vector<float> get_heights() const;
+	Vector<real_t> get_heights() const;
 	int get_width() const;
 	int get_depth() const;
 

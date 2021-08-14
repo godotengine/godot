@@ -17,8 +17,8 @@
 		<member name="collide_with_bodies" type="bool" setter="set_collide_with_bodies" getter="is_collide_with_bodies_enabled" default="true">
 			If [code]true[/code], the query will take [PhysicsBody2D]s into account.
 		</member>
-		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="2147483647">
-			The physics layer(s) the query will take into account (as a bitmask). See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="2147483647">
+			The physics layers the query will detect (as a bitmask). By default, all collision layers are detected. See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
 		<member name="exclude" type="Array" setter="set_exclude" getter="get_exclude" default="[]">
 			The list of objects or object [RID]s that will be excluded from collisions.

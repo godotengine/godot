@@ -1804,6 +1804,10 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 		image_create_info.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 	}
 
+	if (p_format.usage_bits & TEXTURE_USAGE_INPUT_ATTACHMENT_BIT) {
+		image_create_info.usage |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+	}
+
 	if (p_format.usage_bits & TEXTURE_USAGE_CAN_UPDATE_BIT) {
 		image_create_info.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 	}
@@ -2132,6 +2136,10 @@ RID RenderingDeviceVulkan::texture_create_shared(const TextureView &p_view, RID 
 			if (texture_is_format_supported_for_usage(p_view.format_override, TEXTURE_USAGE_COLOR_ATTACHMENT_BIT)) {
 				usage_info.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 			}
+		}
+
+		if (texture.usage_flags & TEXTURE_USAGE_INPUT_ATTACHMENT_BIT) {
+			usage_info.usage |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
 		}
 
 		if (texture.usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
@@ -3275,8 +3283,8 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 	for (int i = 0; i < p_attachments.size(); i++) {
 		ERR_FAIL_INDEX_V(p_attachments[i].format, DATA_FORMAT_MAX, VK_NULL_HANDLE);
 		ERR_FAIL_INDEX_V(p_attachments[i].samples, TEXTURE_SAMPLES_MAX, VK_NULL_HANDLE);
-		ERR_FAIL_COND_V_MSG(!(p_attachments[i].usage_flags & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_RESOLVE_ATTACHMENT_BIT)),
-				VK_NULL_HANDLE, "Texture format for index (" + itos(i) + ") requires an attachment (depth, stencil or resolve) bit set.");
+		ERR_FAIL_COND_V_MSG(!(p_attachments[i].usage_flags & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_INPUT_ATTACHMENT_BIT)),
+				VK_NULL_HANDLE, "Texture format for index (" + itos(i) + ") requires an attachment (color, depth, input or stencil) bit set.");
 
 		VkAttachmentDescription description = {};
 		description.flags = 0;
@@ -3291,13 +3299,25 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		// Also, each UNDEFINED will do an immediate layout transition (write), s.t. we must ensure execution synchronization vs.
 		// the read. If this is a performance issue, one could track the actual last accessor of each resource, adding only that
 		// stage
+
 		switch (is_depth ? p_initial_depth_action : p_initial_action) {
 			case INITIAL_ACTION_CLEAR_REGION:
 			case INITIAL_ACTION_CLEAR: {
-				description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-				description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-				description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
-				dependency_from_external.srcStageMask |= reading_stages;
+				if (p_attachments[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
+					description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+					description.initialLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+				} else if (p_attachments[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+					description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+					description.initialLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+					dependency_from_external.srcStageMask |= reading_stages;
+				} else {
+					description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+					description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
+					dependency_from_external.srcStageMask |= reading_stages;
+				}
 			} break;
 			case INITIAL_ACTION_KEEP: {
 				if (p_attachments[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
@@ -3355,7 +3375,58 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 			}
 		}
 
-		switch (is_depth ? p_final_depth_action : p_final_action) {
+		bool used_last = false;
+
+		{
+			int last_pass = p_passes.size() - 1;
+
+			if (is_depth) {
+				//likely missing depth resolve?
+				if (p_passes[last_pass].depth_attachment == i) {
+					used_last = true;
+				}
+			} else {
+				if (p_passes[last_pass].resolve_attachments.size()) {
+					//if using resolve attachments, check resolve attachments
+					for (int j = 0; j < p_passes[last_pass].resolve_attachments.size(); j++) {
+						if (p_passes[last_pass].resolve_attachments[j] == i) {
+							used_last = true;
+							break;
+						}
+					}
+				} else {
+					for (int j = 0; j < p_passes[last_pass].color_attachments.size(); j++) {
+						if (p_passes[last_pass].color_attachments[j] == i) {
+							used_last = true;
+							break;
+						}
+					}
+				}
+			}
+
+			if (!used_last) {
+				for (int j = 0; j < p_passes[last_pass].preserve_attachments.size(); j++) {
+					if (p_passes[last_pass].preserve_attachments[j] == i) {
+						used_last = true;
+						break;
+					}
+				}
+			}
+		}
+
+		FinalAction final_action = p_final_action;
+		FinalAction final_depth_action = p_final_depth_action;
+
+		if (!used_last) {
+			if (is_depth) {
+				final_depth_action = FINAL_ACTION_DISCARD;
+
+			} else {
+				final_action = FINAL_ACTION_DISCARD;
+			}
+		}
+
+		switch (is_depth ? final_depth_action : final_action) {
 			case FINAL_ACTION_READ: {
 				if (p_attachments[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
 					description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -3473,7 +3544,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 				reference.layout = VK_IMAGE_LAYOUT_UNDEFINED;
 			} else {
 				ERR_FAIL_INDEX_V_MSG(attachment, p_attachments.size(), VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), input attachment (" + itos(j) + ").");
-				ERR_FAIL_COND_V_MSG(!(p_attachments[attachment].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT), VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it's marked as depth, but it's not usable as input attachment.");
+				ERR_FAIL_COND_V_MSG(!(p_attachments[attachment].usage_flags & TEXTURE_USAGE_INPUT_ATTACHMENT_BIT), VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it isn't marked as an input texture.");
 				ERR_FAIL_COND_V_MSG(attachment_last_pass[attachment] == i, VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it already was used for something else before in this pass.");
 				reference.attachment = attachment;
 				reference.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -3497,30 +3568,15 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 			} else {
 				ERR_FAIL_INDEX_V_MSG(attachment, p_attachments.size(), VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), resolve attachment (" + itos(j) + ").");
 				ERR_FAIL_COND_V_MSG(pass->color_attachments[j] == FramebufferPass::ATTACHMENT_UNUSED, VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), resolve attachment (" + itos(j) + "), the respective color attachment is marked as unused.");
-				ERR_FAIL_COND_V_MSG(!(p_attachments[attachment].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT), VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it's marked as depth, but it's not usable as resolve attachment.");
+				ERR_FAIL_COND_V_MSG(!(p_attachments[attachment].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT), VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), resolve attachment, it isn't marked as a color texture.");
 				ERR_FAIL_COND_V_MSG(attachment_last_pass[attachment] == i, VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it already was used for something else before in this pass.");
 				bool multisample = p_attachments[attachment].samples > TEXTURE_SAMPLES_1;
 				ERR_FAIL_COND_V_MSG(multisample, VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), resolve attachments can't be multisample.");
 				reference.attachment = attachment;
-				reference.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				attachment_last_pass[attachment] = i;
 			}
 			resolve_references.push_back(reference);
-		}
-
-		LocalVector<uint32_t> &preserve_references = preserve_reference_array[i];
-
-		for (int j = 0; j < pass->preserve_attachments.size(); j++) {
-			int32_t attachment = pass->preserve_attachments[j];
-
-			ERR_FAIL_COND_V_MSG(attachment == FramebufferPass::ATTACHMENT_UNUSED, VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), preserve attachment (" + itos(j) + "). Preserve attachments can't be unused.");
-
-			ERR_FAIL_INDEX_V_MSG(attachment, p_attachments.size(), VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), preserve attachment (" + itos(j) + ").");
-			ERR_FAIL_COND_V_MSG(attachment_last_pass[attachment] == i, VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it already was used for something else before in this pass.");
-
-			attachment_last_pass[attachment] = i;
-
-			preserve_references.push_back(attachment);
 		}
 
 		VkAttachmentReference &depth_stencil_reference = depth_reference_array[i];
@@ -3544,6 +3600,22 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		} else {
 			depth_stencil_reference.attachment = VK_ATTACHMENT_UNUSED;
 			depth_stencil_reference.layout = VK_IMAGE_LAYOUT_UNDEFINED;
+		}
+
+		LocalVector<uint32_t> &preserve_references = preserve_reference_array[i];
+
+		for (int j = 0; j < pass->preserve_attachments.size(); j++) {
+			int32_t attachment = pass->preserve_attachments[j];
+
+			ERR_FAIL_COND_V_MSG(attachment == FramebufferPass::ATTACHMENT_UNUSED, VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), preserve attachment (" + itos(j) + "). Preserve attachments can't be unused.");
+
+			ERR_FAIL_INDEX_V_MSG(attachment, p_attachments.size(), VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), preserve attachment (" + itos(j) + ").");
+
+			if (attachment_last_pass[attachment] != i) {
+				//preserve can still be used to keep depth or color from being discarded after use
+				attachment_last_pass[attachment] = i;
+				preserve_references.push_back(attachment);
+			}
 		}
 
 		VkSubpassDescription &subpass = subpasses[i];
@@ -3632,8 +3704,10 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		render_pass_create_info.pDependencies = nullptr;
 	}
 
+	// These are only used if we use multiview but we need to define them in scope.
 	const uint32_t view_mask = (1 << p_view_count) - 1;
 	const uint32_t correlation_mask = (1 << p_view_count) - 1;
+	Vector<uint32_t> view_masks;
 	VkRenderPassMultiviewCreateInfo render_pass_multiview_create_info;
 
 	if (p_view_count > 1) {
@@ -3645,10 +3719,15 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		// Make sure we limit this to the number of views we support.
 		ERR_FAIL_COND_V_MSG(p_view_count > capabilities.max_view_count, VK_NULL_HANDLE, "Hardware does not support requested number of views for Multiview render pass");
 
+		// Set view masks for each subpass
+		for (uint32_t i = 0; i < subpasses.size(); i++) {
+			view_masks.push_back(view_mask);
+		};
+
 		render_pass_multiview_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
 		render_pass_multiview_create_info.pNext = nullptr;
-		render_pass_multiview_create_info.subpassCount = 1;
-		render_pass_multiview_create_info.pViewMasks = &view_mask;
+		render_pass_multiview_create_info.subpassCount = subpasses.size();
+		render_pass_multiview_create_info.pViewMasks = view_masks.ptr();
 		render_pass_multiview_create_info.dependencyCount = 0;
 		render_pass_multiview_create_info.pViewOffsets = nullptr;
 		render_pass_multiview_create_info.correlationMaskCount = 1;
@@ -3746,7 +3825,7 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_c
 	VkRenderPass render_pass;
 	VkResult res = vkCreateRenderPass(device, &render_pass_create_info, nullptr, &render_pass);
 
-	ERR_FAIL_COND_V_MSG(res, VK_NULL_HANDLE, "vkCreateRenderPass for empty fb failed with error " + itos(res) + ".");
+	ERR_FAIL_COND_V_MSG(res, 0, "vkCreateRenderPass for empty fb failed with error " + itos(res) + ".");
 
 	if (render_pass == VK_NULL_HANDLE) { //was likely invalid
 		return INVALID_ID;
@@ -4506,6 +4585,7 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 						} break;
 						case SPV_REFLECT_DESCRIPTOR_TYPE_INPUT_ATTACHMENT: {
 							info.type = UNIFORM_TYPE_INPUT_ATTACHMENT;
+							need_array_dimensions = true;
 						} break;
 						case SPV_REFLECT_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR: {
 							ERR_PRINT("Acceleration structure not supported.");
@@ -5490,7 +5570,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 					img_info.sampler = *sampler;
 					img_info.imageView = texture->view;
 
-					if (texture->usage_flags & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_RESOLVE_ATTACHMENT_BIT)) {
+					if (texture->usage_flags & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_INPUT_ATTACHMENT_BIT)) {
 						UniformSet::AttachableTexture attachable_texture;
 						attachable_texture.bind = set_uniform.binding;
 						attachable_texture.texture = texture->owner.is_valid() ? texture->owner : uniform.ids[j + 1];
@@ -5543,7 +5623,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 					img_info.sampler = VK_NULL_HANDLE;
 					img_info.imageView = texture->view;
 
-					if (texture->usage_flags & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_RESOLVE_ATTACHMENT_BIT)) {
+					if (texture->usage_flags & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_INPUT_ATTACHMENT_BIT)) {
 						UniformSet::AttachableTexture attachable_texture;
 						attachable_texture.bind = set_uniform.binding;
 						attachable_texture.texture = texture->owner.is_valid() ? texture->owner : uniform.ids[j];
@@ -7416,6 +7496,10 @@ void RenderingDeviceVulkan::draw_list_disable_scissor(DrawListID p_list) {
 	vkCmdSetScissor(dl->command_buffer, 0, 1, &scissor);
 }
 
+uint32_t RenderingDeviceVulkan::draw_list_get_current_pass() {
+	return draw_list_current_subpass;
+}
+
 RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_switch_to_next_pass() {
 	ERR_FAIL_COND_V(draw_list == nullptr, INVALID_ID);
 	ERR_FAIL_COND_V(draw_list_current_subpass >= draw_list_subpass_count - 1, INVALID_FORMAT_ID);
@@ -8710,6 +8794,7 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 		memset(&allocatorInfo, 0, sizeof(VmaAllocatorCreateInfo));
 		allocatorInfo.physicalDevice = p_context->get_physical_device();
 		allocatorInfo.device = device;
+		allocatorInfo.instance = p_context->get_instance();
 		vmaCreateAllocator(&allocatorInfo, &allocator);
 	}
 
@@ -8844,6 +8929,7 @@ void RenderingDeviceVulkan::_free_rids(T &p_owner, const char *p_type) {
 }
 
 void RenderingDeviceVulkan::capture_timestamp(const String &p_name) {
+	ERR_FAIL_COND_MSG(draw_list != nullptr, "Capturing timestamps during draw list creation is not allowed. Offending timestap was: " + p_name);
 	ERR_FAIL_COND(frames[frame].timestamp_count >= max_timestamp_query_elements);
 
 	//this should be optional for profiling, else it will slow things down

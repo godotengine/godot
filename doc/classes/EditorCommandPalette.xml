@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorCommandPalette" inherits="ConfirmationDialog" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_command">
+			<return type="void" />
+			<argument index="0" name="command_name" type="String" />
+			<argument index="1" name="key_name" type="String" />
+			<argument index="2" name="binded_callable" type="Callable" />
+			<argument index="3" name="shortcut_text" type="String" default="&quot;None&quot;" />
+			<description>
+			</description>
+		</method>
+		<method name="remove_command">
+			<return type="void" />
+			<argument index="0" name="key_name" type="String" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" override="true" default="false" />
+	</members>
+	<constants>
+	</constants>
+</class>

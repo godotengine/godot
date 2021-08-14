@@ -11,7 +11,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="height" type="float" setter="set_height" getter="get_height" default="20.0">
+		<member name="height" type="float" setter="set_height" getter="get_height" default="30.0">
 			The capsule's height.
 		</member>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="10.0">

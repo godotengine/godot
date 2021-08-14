@@ -31,14 +31,9 @@
 #include "lightmap_gi.h"
 
 #include "core/io/config_file.h"
-#include "core/io/dir_access.h"
-#include "core/io/file_access.h"
-#include "core/io/resource_saver.h"
-#include "core/math/camera_matrix.h"
 #include "core/math/delaunay_3d.h"
-#include "core/os/os.h"
-#include "core/templates/sort_array.h"
 #include "lightmap_probe.h"
+#include "scene/3d/mesh_instance_3d.h"
 
 void LightmapGIData::add_user(const NodePath &p_path, const Rect2 &p_uv_scale, int p_slice_index, int32_t p_sub_instance) {
 	User user;

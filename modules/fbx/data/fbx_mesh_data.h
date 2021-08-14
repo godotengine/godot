@@ -64,7 +64,7 @@ struct SurfaceData {
 };
 
 struct VertexWeightMapping {
-	Vector<real_t> weights;
+	Vector<float> weights;
 	Vector<int> bones;
 	// This extra vector is used because the bone id is computed in a second step.
 	// TODO Get rid of this extra step is a good idea.

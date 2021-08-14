@@ -85,7 +85,7 @@ public:
 		bool pressed = false;
 		bool echo = false;
 		bool raw = false;
-		uint32_t keycode = 0;
+		Key keycode = KEY_NONE;
 		uint32_t physical_keycode = 0;
 		uint32_t unicode = 0;
 	};

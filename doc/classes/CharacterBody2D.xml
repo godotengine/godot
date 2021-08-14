@@ -21,10 +21,10 @@
 				Returns the surface normal of the floor at the last collision point. Only valid after calling [method move_and_slide] and when [method is_on_floor] returns [code]true[/code].
 			</description>
 		</method>
-		<method name="get_floor_velocity" qualifiers="const">
+		<method name="get_platform_velocity" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the linear velocity of the floor at the last collision point. Only valid after calling [method move_and_slide] and when [method is_on_floor] returns [code]true[/code].
+				Returns the linear velocity of the platform at the last collision point. Only valid after calling [method move_and_slide].
 			</description>
 		</method>
 		<method name="get_slide_collision">
@@ -61,10 +61,22 @@
 				Returns [code]true[/code] if the body collided with the ceiling on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code].
 			</description>
 		</method>
+		<method name="is_on_ceiling_only" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the body collided only with the ceiling on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code].
+			</description>
+		</method>
 		<method name="is_on_floor" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the body collided with the floor on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code].
+			</description>
+		</method>
+		<method name="is_on_floor_only" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the body collided only with the floor on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code].
 			</description>
 		</method>
 		<method name="is_on_wall" qualifiers="const">
@@ -73,12 +85,19 @@
 				Returns [code]true[/code] if the body collided with a wall on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code].
 			</description>
 		</method>
+		<method name="is_on_wall_only" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the body collided only with a wall on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code].
+			</description>
+		</method>
 		<method name="move_and_slide">
 			<return type="void" />
 			<description>
 				Moves the body based on [member linear_velocity]. If the body collides with another, it will slide along the other body rather than stop immediately. If the other body is a [CharacterBody2D] or [RigidBody2D], it will also be affected by the motion of the other body. You can use this to make moving and rotating platforms, or to make nodes push other nodes.
 				This method should be used in [method Node._physics_process] (or in a method called by [method Node._physics_process]), as it uses the physics step's [code]delta[/code] value automatically in calculations. Otherwise, the simulation will run at an incorrect speed.
 				Modifies [member linear_velocity] if a slide collision occurred. To get detailed information about collisions that occurred, use [method get_slide_collision].
+				When the body touches a moving platform, the platform's velocity is automatically added to the body motion. If a collision occurs due to the platform's motion, it will always be first in the slide collisions.
 			</description>
 		</method>
 	</methods>
@@ -89,11 +108,19 @@
 			A higher value means it's more flexible for detecting collision, which helps with consistently detecting walls and floors.
 			A lower value forces the collision algorithm to use more exact detection, so it can be used in cases that specifically require precision, e.g at very low scale to avoid visible jittering, or for stability with a stack of character bodies.
 		</member>
+		<member name="constant_speed_on_floor" type="bool" setter="set_constant_speed_on_floor_enabled" getter="is_constant_speed_on_floor_enabled" default="false">
+			If [code]false[/code] (by default), the body will move faster on downward slopes and slower on upward slopes.
+			If [code]true[/code], the body will always move at the same speed on the ground no matter the slope. Note that you need to use [member floor_snap_length] to stick along a downward slope at constant speed.
+		</member>
+		<member name="exclude_body_layers" type="int" setter="set_exclude_body_layers" getter="get_exclude_body_layers" default="0">
+			Collision layers that will be excluded for detecting bodies that will act as moving platforms to be followed by the [CharacterBody2D]. By default, all touching bodies are detected and propagate their velocity. You can add excluded layers to ignore bodies that are contained in these layers.
+		</member>
 		<member name="floor_max_angle" type="float" setter="set_floor_max_angle" getter="get_floor_max_angle" default="0.785398">
 			Maximum angle (in radians) where a slope is still considered a floor (or a ceiling), rather than a wall, when calling [method move_and_slide]. The default value equals 45 degrees.
 		</member>
-		<member name="infinite_inertia" type="bool" setter="set_infinite_inertia_enabled" getter="is_infinite_inertia_enabled" default="true">
-			If [code]true[/code], the body will be able to push [RigidBody2D] nodes when calling [method move_and_slide], but it also won't detect any collisions with them. If [code]false[/code], it will interact with [RigidBody2D] nodes like with [StaticBody2D].
+		<member name="floor_snap_length" type="float" setter="set_floor_snap_length" getter="get_floor_snap_length" default="0.0">
+			Sets a snapping distance. When set to a value different from [code]0.0[/code], the body is kept attached to slopes when calling [method move_and_slide]. The snapping vector is determined by the given distance along the opposite direction of the [member up_direction].
+			As long as the snapping vector is in contact with the ground and the body moves against `up_direction`, the body will remain attached to the surface. Snapping is not applied if the body moves along `up_direction`, so it will be able to detach from the ground when jumping.
 		</member>
 		<member name="linear_velocity" type="Vector2" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector2(0, 0)">
 			Current velocity vector in pixels per second, used and modified during calls to [method move_and_slide].
@@ -101,9 +128,11 @@
 		<member name="max_slides" type="int" setter="set_max_slides" getter="get_max_slides" default="4">
 			Maximum number of times the body can change direction before it stops when calling [method move_and_slide].
 		</member>
-		<member name="snap" type="Vector2" setter="set_snap" getter="get_snap" default="Vector2(0, 0)">
-			When set to a value different from [code]Vector2(0, 0)[/code], the body is kept attached to slopes when calling [method move_and_slide].
-			As long as the [code]snap[/code] vector is in contact with the ground, the body will remain attached to the surface. This means you must disable snap in order to jump, for example. You can do this by setting [code]snap[/code] to [code]Vector2(0, 0)[/code].
+		<member name="move_on_floor_only" type="bool" setter="set_move_on_floor_only_enabled" getter="is_move_on_floor_only_enabled" default="true">
+			If [code]true[/code], the body will be able to move on the floor only, this option avoids to be able to walk on walls, it will however allow to slide down along them.
+		</member>
+		<member name="slide_on_ceiling" type="bool" setter="set_slide_on_ceiling_enabled" getter="is_slide_on_ceiling_enabled" default="true">
+			If [code]true[/code], during a jump against the ceiling, the body will slide, if [code]false[/code] it will be stopped and will fall vertically.
 		</member>
 		<member name="stop_on_slope" type="bool" setter="set_stop_on_slope_enabled" getter="is_stop_on_slope_enabled" default="false">
 			If [code]true[/code], the body will not slide on slopes when you include gravity in [code]linear_velocity[/code] when calling [method move_and_slide] and the body is standing still.

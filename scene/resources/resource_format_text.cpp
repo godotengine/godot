@@ -558,6 +558,12 @@ Error ResourceLoaderText::load() {
 
 		resource_current++;
 
+		int_resources[id] = res; //always assign int resources
+		if (do_assign && cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
+			res->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE);
+			res->set_scene_unique_id(id);
+		}
+
 		while (true) {
 			String assign;
 			Variant value;
@@ -583,12 +589,6 @@ Error ResourceLoaderText::load() {
 				_printerr();
 				return error;
 			}
-		}
-
-		int_resources[id] = res; //always assign int resources
-		if (do_assign && cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
-			res->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE);
-			res->set_scene_unique_id(id);
 		}
 
 		if (progress && resources_total > 0) {

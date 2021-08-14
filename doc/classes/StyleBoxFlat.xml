@@ -121,7 +121,7 @@
 		<member name="anti_aliasing" type="bool" setter="set_anti_aliased" getter="is_anti_aliased" default="true">
 			Antialiasing draws a small ring around the edges, which fades to transparency. As a result, edges look much smoother. This is only noticeable when using rounded corners.
 		</member>
-		<member name="anti_aliasing_size" type="int" setter="set_aa_size" getter="get_aa_size" default="1">
+		<member name="anti_aliasing_size" type="float" setter="set_aa_size" getter="get_aa_size" default="0.625">
 			This changes the size of the faded ring. Higher values can be used to achieve a "blurry" effect.
 		</member>
 		<member name="bg_color" type="Color" setter="set_bg_color" getter="get_bg_color" default="Color(0.6, 0.6, 0.6, 1)">

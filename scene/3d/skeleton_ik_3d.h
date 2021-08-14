@@ -33,11 +33,6 @@
 
 #ifndef _3D_DISABLED
 
-/**
- * @author AndreaCatania
- */
-
-#include "core/math/transform_3d.h"
 #include "scene/3d/skeleton_3d.h"
 
 class FabrikInverseKinematic {

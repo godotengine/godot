@@ -77,6 +77,26 @@ class TranslationServer : public Object {
 
 	bool enabled = true;
 
+	bool pseudolocalization_enabled = false;
+	bool pseudolocalization_accents_enabled = false;
+	bool pseudolocalization_double_vowels_enabled = false;
+	bool pseudolocalization_fake_bidi_enabled = false;
+	bool pseudolocalization_override_enabled = false;
+	bool pseudolocalization_skip_placeholders_enabled = false;
+	bool editor_pseudolocalization = false;
+	float expansion_ratio = 0.0;
+	String pseudolocalization_prefix;
+	String pseudolocalization_suffix;
+
+	StringName tool_pseudolocalize(const StringName &p_message) const;
+	String get_override_string(String &p_message) const;
+	String double_vowels(String &p_message) const;
+	String replace_with_accented_string(String &p_message) const;
+	String wrap_with_fakebidi_characters(String &p_message) const;
+	String add_padding(String &p_message, int p_length) const;
+	const char32_t *get_accented_version(char32_t p_character) const;
+	bool is_placeholder(String &p_message, int p_index) const;
+
 	static TranslationServer *singleton;
 	bool _load_translations(const String &p_from);
 
@@ -103,6 +123,13 @@ public:
 
 	StringName translate(const StringName &p_message, const StringName &p_context = "") const;
 	StringName translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
+
+	StringName pseudolocalize(const StringName &p_message) const;
+
+	bool is_pseudolocalization_enabled() const;
+	void set_pseudolocalization_enabled(bool p_enabled);
+	void set_editor_pseudolocalization(bool p_enabled);
+	void reload_pseudolocalization();
 
 	static Vector<String> get_all_locales();
 	static Vector<String> get_all_locale_names();

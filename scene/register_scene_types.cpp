@@ -148,7 +148,6 @@
 #include "scene/resources/gradient.h"
 #include "scene/resources/height_map_shape_3d.h"
 #include "scene/resources/immediate_mesh.h"
-#include "scene/resources/line_shape_2d.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/mesh_data_tool.h"
@@ -158,8 +157,6 @@
 #include "scene/resources/physics_material.h"
 #include "scene/resources/polygon_path_finder.h"
 #include "scene/resources/primitive_meshes.h"
-#include "scene/resources/ray_shape_2d.h"
-#include "scene/resources/ray_shape_3d.h"
 #include "scene/resources/rectangle_shape_2d.h"
 #include "scene/resources/resource_format_text.h"
 #include "scene/resources/segment_shape_2d.h"
@@ -189,6 +186,7 @@
 #include "scene/resources/visual_shader_sdf_nodes.h"
 #include "scene/resources/world_2d.h"
 #include "scene/resources/world_3d.h"
+#include "scene/resources/world_margin_shape_2d.h"
 #include "scene/resources/world_margin_shape_3d.h"
 #include "scene/scene_string_names.h"
 
@@ -559,7 +557,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeIntOp);
 	GDREGISTER_CLASS(VisualShaderNodeVectorOp);
 	GDREGISTER_CLASS(VisualShaderNodeColorOp);
-	GDREGISTER_CLASS(VisualShaderNodeTransformMult);
+	GDREGISTER_CLASS(VisualShaderNodeTransformOp);
 	GDREGISTER_CLASS(VisualShaderNodeTransformVecMult);
 	GDREGISTER_CLASS(VisualShaderNodeFloatFunc);
 	GDREGISTER_CLASS(VisualShaderNodeIntFunc);
@@ -747,7 +745,6 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 	GDREGISTER_VIRTUAL_CLASS(Shape3D);
-	GDREGISTER_CLASS(RayShape3D);
 	GDREGISTER_CLASS(SphereShape3D);
 	GDREGISTER_CLASS(BoxShape3D);
 	GDREGISTER_CLASS(CapsuleShape3D);
@@ -826,9 +823,8 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 	GDREGISTER_VIRTUAL_CLASS(Shape2D);
-	GDREGISTER_CLASS(LineShape2D);
+	GDREGISTER_CLASS(WorldMarginShape2D);
 	GDREGISTER_CLASS(SegmentShape2D);
-	GDREGISTER_CLASS(RayShape2D);
 	GDREGISTER_CLASS(CircleShape2D);
 	GDREGISTER_CLASS(RectangleShape2D);
 	GDREGISTER_CLASS(CapsuleShape2D);
@@ -914,6 +910,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("KinematicBody2D", "CharacterBody2D");
 	ClassDB::add_compatibility_class("KinematicCollision", "KinematicCollision3D");
 	ClassDB::add_compatibility_class("Light", "Light3D");
+	ClassDB::add_compatibility_class("LineShape2D", "WorldMarginShape2D");
 	ClassDB::add_compatibility_class("Listener", "Listener3D");
 	ClassDB::add_compatibility_class("MeshInstance", "MeshInstance3D");
 	ClassDB::add_compatibility_class("MultiMeshInstance", "MultiMeshInstance3D");
@@ -948,7 +945,6 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("ProceduralSky", "Sky");
 	ClassDB::add_compatibility_class("ProximityGroup", "ProximityGroup3D");
 	ClassDB::add_compatibility_class("RayCast", "RayCast3D");
-	ClassDB::add_compatibility_class("RayShape", "RayShape3D");
 	ClassDB::add_compatibility_class("RemoteTransform", "RemoteTransform3D");
 	ClassDB::add_compatibility_class("RigidBody", "RigidBody3D");
 	ClassDB::add_compatibility_class("Shape", "Shape3D");
@@ -988,6 +984,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("VisualShaderNodeVectorScalarSmoothStep", "VisualShaderNodeSmoothStep");
 	ClassDB::add_compatibility_class("VisualShaderNodeVectorScalarStep", "VisualShaderNodeStep");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarSwitch", "VisualShaderNodeSwitch");
+	ClassDB::add_compatibility_class("VisualShaderNodeScalarTransformMult", "VisualShaderNodeTransformOp");
 	ClassDB::add_compatibility_class("World", "World3D");
 	ClassDB::add_compatibility_class("StreamTexture", "StreamTexture2D");
 	ClassDB::add_compatibility_class("Light2D", "PointLight2D");
@@ -999,15 +996,15 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 	for (int i = 0; i < 20; i++) {
-		GLOBAL_DEF_BASIC(vformat("layer_names/2d_render/layer_%d", i), "");
-		GLOBAL_DEF_BASIC(vformat("layer_names/3d_render/layer_%d", i), "");
+		GLOBAL_DEF_BASIC(vformat("layer_names/2d_render/layer_%d", i + 1), "");
+		GLOBAL_DEF_BASIC(vformat("layer_names/3d_render/layer_%d", i + 1), "");
 	}
 
 	for (int i = 0; i < 32; i++) {
-		GLOBAL_DEF_BASIC(vformat("layer_names/2d_physics/layer_%d", i), "");
-		GLOBAL_DEF_BASIC(vformat("layer_names/2d_navigation/layer_%d", i), "");
-		GLOBAL_DEF_BASIC(vformat("layer_names/3d_physics/layer_%d", i), "");
-		GLOBAL_DEF_BASIC(vformat("layer_names/3d_navigation/layer_%d", i), "");
+		GLOBAL_DEF_BASIC(vformat("layer_names/2d_physics/layer_%d", i + 1), "");
+		GLOBAL_DEF_BASIC(vformat("layer_names/2d_navigation/layer_%d", i + 1), "");
+		GLOBAL_DEF_BASIC(vformat("layer_names/3d_physics/layer_%d", i + 1), "");
+		GLOBAL_DEF_BASIC(vformat("layer_names/3d_navigation/layer_%d", i + 1), "");
 	}
 
 	bool default_theme_hidpi = GLOBAL_DEF("gui/theme/use_hidpi", false);

@@ -1648,19 +1648,10 @@ void VisualShader::_update_shader() const {
 	{
 		//fill render mode enums
 		int idx = 0;
-		bool specular = false;
 		while (render_mode_enums[idx].string) {
 			if (shader_mode == render_mode_enums[idx].mode) {
-				if (shader_mode == Shader::MODE_SPATIAL) {
-					if (String(render_mode_enums[idx].string) == "specular") {
-						specular = true;
-					}
-				}
-				if (modes.has(render_mode_enums[idx].string) || specular) {
-					int which = 0;
-					if (modes.has(render_mode_enums[idx].string)) {
-						which = modes[render_mode_enums[idx].string];
-					}
+				if (modes.has(render_mode_enums[idx].string)) {
+					int which = modes[render_mode_enums[idx].string];
 					int count = 0;
 					for (int i = 0; i < ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode)).size(); i++) {
 						String mode = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode))[i];
@@ -3090,10 +3081,84 @@ String VisualShaderNodeUniform::get_warning(Shader::Mode p_mode, VisualShader::T
 	List<String> keyword_list;
 	ShaderLanguage::get_keyword_list(&keyword_list);
 	if (keyword_list.find(uniform_name)) {
-		return TTR("Uniform name cannot be equal to a shader keyword. Choose another name.");
+		return TTR("Shader keywords cannot be used as uniform names.\nChoose another name.");
 	}
 	if (!is_qualifier_supported(qualifier)) {
-		return "This uniform type does not support that qualifier.";
+		String qualifier_str;
+		switch (qualifier) {
+			case QUAL_NONE:
+				break;
+			case QUAL_GLOBAL:
+				qualifier_str = "global";
+				break;
+			case QUAL_INSTANCE:
+				qualifier_str = "instance";
+				break;
+		}
+		return vformat(TTR("This uniform type does not support the '%s' qualifier."), qualifier_str);
+	} else if (qualifier == Qualifier::QUAL_GLOBAL) {
+		RS::GlobalVariableType gvt = RS::get_singleton()->global_variable_get_type(uniform_name);
+		if (gvt == RS::GLOBAL_VAR_TYPE_MAX) {
+			return vformat(TTR("Global uniform '%s' does not exist.\nCreate it in the Project Settings."), uniform_name);
+		}
+		bool incompatible_type = false;
+		switch (gvt) {
+			case RS::GLOBAL_VAR_TYPE_FLOAT: {
+				if (!Object::cast_to<VisualShaderNodeFloatUniform>(this)) {
+					incompatible_type = true;
+				}
+			} break;
+			case RS::GLOBAL_VAR_TYPE_INT: {
+				if (!Object::cast_to<VisualShaderNodeIntUniform>(this)) {
+					incompatible_type = true;
+				}
+			} break;
+			case RS::GLOBAL_VAR_TYPE_BOOL: {
+				if (!Object::cast_to<VisualShaderNodeBooleanUniform>(this)) {
+					incompatible_type = true;
+				}
+			} break;
+			case RS::GLOBAL_VAR_TYPE_COLOR: {
+				if (!Object::cast_to<VisualShaderNodeColorUniform>(this)) {
+					incompatible_type = true;
+				}
+			} break;
+			case RS::GLOBAL_VAR_TYPE_VEC3: {
+				if (!Object::cast_to<VisualShaderNodeVec3Uniform>(this)) {
+					incompatible_type = true;
+				}
+			} break;
+			case RS::GLOBAL_VAR_TYPE_TRANSFORM: {
+				if (!Object::cast_to<VisualShaderNodeTransformUniform>(this)) {
+					incompatible_type = true;
+				}
+			} break;
+			case RS::GLOBAL_VAR_TYPE_SAMPLER2D: {
+				if (!Object::cast_to<VisualShaderNodeTextureUniform>(this)) {
+					incompatible_type = true;
+				}
+			} break;
+			case RS::GLOBAL_VAR_TYPE_SAMPLER3D: {
+				if (!Object::cast_to<VisualShaderNodeTexture3DUniform>(this)) {
+					incompatible_type = true;
+				}
+			} break;
+			case RS::GLOBAL_VAR_TYPE_SAMPLER2DARRAY: {
+				if (!Object::cast_to<VisualShaderNodeTexture2DArrayUniform>(this)) {
+					incompatible_type = true;
+				}
+			} break;
+			case RS::GLOBAL_VAR_TYPE_SAMPLERCUBE: {
+				if (!Object::cast_to<VisualShaderNodeCubemapUniform>(this)) {
+					incompatible_type = true;
+				}
+			} break;
+			default:
+				break;
+		}
+		if (incompatible_type) {
+			return vformat(TTR("Global uniform '%s' has an incompatible type for this kind of node.\nChange it in the Project Settings."), uniform_name);
+		}
 	}
 
 	return String();

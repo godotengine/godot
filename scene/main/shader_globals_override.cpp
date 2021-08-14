@@ -30,8 +30,7 @@
 
 #include "shader_globals_override.h"
 
-#include "core/core_string_names.h"
-#include "scene/main/window.h"
+#include "scene/3d/node_3d.h"
 #include "scene/scene_string_names.h"
 
 StringName *ShaderGlobalsOverride::_remap(const StringName &p_name) const {

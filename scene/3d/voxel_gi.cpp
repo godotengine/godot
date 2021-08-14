@@ -30,9 +30,8 @@
 
 #include "voxel_gi.h"
 
-#include "core/os/os.h"
-
 #include "mesh_instance_3d.h"
+#include "multimesh_instance_3d.h"
 #include "voxelizer.h"
 
 void VoxelGIData::_set_data(const Dictionary &p_data) {
