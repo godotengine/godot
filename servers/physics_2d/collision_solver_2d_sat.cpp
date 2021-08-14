@@ -1114,12 +1114,12 @@ static void _collision_convex_polygon_convex_polygon(const Shape2DSW *p_a, const
 bool sat_2d_calculate_penetration(const Shape2DSW *p_shape_A, const Transform2D &p_transform_A, const Vector2 &p_motion_A, const Shape2DSW *p_shape_B, const Transform2D &p_transform_B, const Vector2 &p_motion_B, CollisionSolver2DSW::CallbackResult p_result_callback, void *p_userdata, bool p_swap, Vector2 *sep_axis, real_t p_margin_A, real_t p_margin_B) {
 	PhysicsServer2D::ShapeType type_A = p_shape_A->get_type();
 
-	ERR_FAIL_COND_V(type_A == PhysicsServer2D::SHAPE_LINE, false);
+	ERR_FAIL_COND_V(type_A == PhysicsServer2D::SHAPE_WORLD_MARGIN, false);
 	ERR_FAIL_COND_V(p_shape_A->is_concave(), false);
 
 	PhysicsServer2D::ShapeType type_B = p_shape_B->get_type();
 
-	ERR_FAIL_COND_V(type_B == PhysicsServer2D::SHAPE_LINE, false);
+	ERR_FAIL_COND_V(type_B == PhysicsServer2D::SHAPE_WORLD_MARGIN, false);
 	ERR_FAIL_COND_V(p_shape_B->is_concave(), false);
 
 	static const CollisionFunc collision_table[5][5] = {

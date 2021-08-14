@@ -34,14 +34,14 @@
 #define collision_solver sat_2d_calculate_penetration
 //#define collision_solver gjk_epa_calculate_penetration
 
-bool CollisionSolver2DSW::solve_static_line(const Shape2DSW *p_shape_A, const Transform2D &p_transform_A, const Shape2DSW *p_shape_B, const Transform2D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result) {
-	const LineShape2DSW *line = static_cast<const LineShape2DSW *>(p_shape_A);
-	if (p_shape_B->get_type() == PhysicsServer2D::SHAPE_LINE) {
+bool CollisionSolver2DSW::solve_static_world_margin(const Shape2DSW *p_shape_A, const Transform2D &p_transform_A, const Shape2DSW *p_shape_B, const Transform2D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result) {
+	const WorldMarginShape2DSW *world_margin = static_cast<const WorldMarginShape2DSW *>(p_shape_A);
+	if (p_shape_B->get_type() == PhysicsServer2D::SHAPE_WORLD_MARGIN) {
 		return false;
 	}
 
-	Vector2 n = p_transform_A.basis_xform(line->get_normal()).normalized();
-	Vector2 p = p_transform_A.xform(line->get_normal() * line->get_d());
+	Vector2 n = p_transform_A.basis_xform(world_margin->get_normal()).normalized();
+	Vector2 p = p_transform_A.xform(world_margin->get_normal() * world_margin->get_d());
 	real_t d = n.dot(p);
 
 	Vector2 supports[2];
@@ -166,15 +166,15 @@ bool CollisionSolver2DSW::solve(const Shape2DSW *p_shape_A, const Transform2D &p
 		swap = true;
 	}
 
-	if (type_A == PhysicsServer2D::SHAPE_LINE) {
-		if (type_B == PhysicsServer2D::SHAPE_LINE) {
+	if (type_A == PhysicsServer2D::SHAPE_WORLD_MARGIN) {
+		if (type_B == PhysicsServer2D::SHAPE_WORLD_MARGIN) {
 			return false;
 		}
 
 		if (swap) {
-			return solve_static_line(p_shape_B, p_transform_B, p_shape_A, p_transform_A, p_result_callback, p_userdata, true);
+			return solve_static_world_margin(p_shape_B, p_transform_B, p_shape_A, p_transform_A, p_result_callback, p_userdata, true);
 		} else {
-			return solve_static_line(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false);
+			return solve_static_world_margin(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false);
 		}
 
 	} else if (concave_B) {

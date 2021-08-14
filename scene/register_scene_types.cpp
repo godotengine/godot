@@ -148,7 +148,6 @@
 #include "scene/resources/gradient.h"
 #include "scene/resources/height_map_shape_3d.h"
 #include "scene/resources/immediate_mesh.h"
-#include "scene/resources/line_shape_2d.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/mesh_data_tool.h"
@@ -187,6 +186,7 @@
 #include "scene/resources/visual_shader_sdf_nodes.h"
 #include "scene/resources/world_2d.h"
 #include "scene/resources/world_3d.h"
+#include "scene/resources/world_margin_shape_2d.h"
 #include "scene/resources/world_margin_shape_3d.h"
 #include "scene/scene_string_names.h"
 
@@ -823,7 +823,7 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 	GDREGISTER_VIRTUAL_CLASS(Shape2D);
-	GDREGISTER_CLASS(LineShape2D);
+	GDREGISTER_CLASS(WorldMarginShape2D);
 	GDREGISTER_CLASS(SegmentShape2D);
 	GDREGISTER_CLASS(CircleShape2D);
 	GDREGISTER_CLASS(RectangleShape2D);
@@ -910,6 +910,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("KinematicBody2D", "CharacterBody2D");
 	ClassDB::add_compatibility_class("KinematicCollision", "KinematicCollision3D");
 	ClassDB::add_compatibility_class("Light", "Light3D");
+	ClassDB::add_compatibility_class("LineShape2D", "WorldMarginShape2D");
 	ClassDB::add_compatibility_class("Listener", "Listener3D");
 	ClassDB::add_compatibility_class("MeshInstance", "MeshInstance3D");
 	ClassDB::add_compatibility_class("MultiMeshInstance", "MultiMeshInstance3D");

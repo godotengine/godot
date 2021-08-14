@@ -87,7 +87,7 @@ public:
 		Vector2 *ptr;
 	};
 
-	virtual RID line_shape_create() override;
+	virtual RID world_margin_shape_create() override;
 	virtual RID segment_shape_create() override;
 	virtual RID circle_shape_create() override;
 	virtual RID rectangle_shape_create() override;
