@@ -1398,8 +1398,7 @@ void GDScriptAnalyzer::resolve_parameter(GDScriptParser::ParameterNode *p_parame
 	}
 
 	if (p_parameter->datatype_specifier != nullptr) {
-		resolve_datatype(p_parameter->datatype_specifier);
-		result = p_parameter->datatype_specifier->get_datatype();
+		result = resolve_datatype(p_parameter->datatype_specifier);
 		result.is_meta_type = false;
 
 		if (p_parameter->default_value != nullptr) {
