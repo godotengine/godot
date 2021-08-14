@@ -60,8 +60,7 @@ private:
 	float mix_volume_db = 0.0;
 	float pitch_scale = 1.0;
 	float volume_db = 0.0;
-	float volume_scale_l = 1.0;
-	float volume_scale_r = 1.0;
+	AudioFrame volume_scale = AudioFrame(1.0, 1.0);
 	bool autoplay = false;
 	bool stream_paused = false;
 	bool stream_paused_fade = false;

@@ -83,7 +83,7 @@ void AudioStreamPlayer::_mix_internal(bool p_fadeout) {
 	float vol_inc = (Math::db2linear(target_volume) - vol) / float(buffer_size);
 
 	for (int i = 0; i < buffer_size; i++) {
-		buffer[i] *= AudioFrame(vol * volume_scale_l, vol * volume_scale_r);
+		buffer[i] *= vol * volume_scale;
 		vol += vol_inc;
 	}
 
@@ -184,7 +184,7 @@ void AudioStreamPlayer::set_stream(Ref<AudioStream> p_stream) {
 		float vol_inc = (Math::db2linear(target_volume) - vol) / float(buffer_size);
 
 		for (int i = 0; i < buffer_size; i++) {
-			buffer[i] *= vol;
+			buffer[i] *= vol * volume_scale;
 			vol += vol_inc;
 		}
 
@@ -226,17 +226,17 @@ float AudioStreamPlayer::get_volume_db() const {
 }
 
 void AudioStreamPlayer::set_volume_scale_l(float p_volume) {
-	volume_scale_l = p_volume;
+	volume_scale.l = p_volume;
 }
 float AudioStreamPlayer::get_volume_scale_l() const {
-	return volume_scale_l;
+	return volume_scale.l;
 }
 
 void AudioStreamPlayer::set_volume_scale_r(float p_volume) {
-	volume_scale_r = p_volume;
+	volume_scale.r = p_volume;
 }
 float AudioStreamPlayer::get_volume_scale_r() const {
-	return volume_scale_r;
+	return volume_scale.r;
 }
 
 void AudioStreamPlayer::set_pitch_scale(float p_pitch_scale) {
