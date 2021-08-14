@@ -2351,7 +2351,10 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 				result.enum_type = name;
 				p_identifier->set_datatype(result);
 			} else {
-				push_error(vformat(R"(Cannot find value "%s" in "%s".)", name, base.to_string()), p_identifier);
+				// Consider as a Dictionary
+				GDScriptParser::DataType dummy;
+				dummy.kind = GDScriptParser::DataType::VARIANT;
+				p_identifier->set_datatype(dummy);
 			}
 		} else {
 			push_error(R"(Cannot get property from enum value.)", p_identifier);
