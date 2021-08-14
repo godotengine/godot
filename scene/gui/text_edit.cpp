@@ -5932,6 +5932,7 @@ TextEdit::TextEdit() {
 	set_focus_mode(FOCUS_ALL);
 	_update_caches();
 	set_default_cursor_shape(CURSOR_IBEAM);
+	_generate_context_menu()
 
 	text.set_tab_size(text.get_tab_size());
 	text.clear();
