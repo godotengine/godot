@@ -143,6 +143,16 @@ class Node3DEditorViewport : public Control {
 		VIEW_MAX
 	};
 
+	enum ViewType {
+		VIEW_TYPE_USER,
+		VIEW_TYPE_TOP,
+		VIEW_TYPE_BOTTOM,
+		VIEW_TYPE_LEFT,
+		VIEW_TYPE_RIGHT,
+		VIEW_TYPE_FRONT,
+		VIEW_TYPE_REAR,
+	};
+
 public:
 	enum {
 		GIZMO_BASE_LAYER = 27,
@@ -172,7 +182,7 @@ private:
 	int gpu_time_history_index;
 
 	int index;
-	String name;
+	ViewType view_type;
 	void _menu_option(int p_option);
 	void _set_auto_orthogonal();
 	Node3D *preview_node;
