@@ -7057,7 +7057,7 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT("editor/command_palette", TTR("Open Command Palette"), KEY_MASK_CTRL | KEY_MASK_SHIFT | KEY_P);
 #endif
 	ED_SHORTCUT_AND_COMMAND("editor/editor_next", TTR("Next Editor Tab"));
-	ED_SHORTCUT_AND_COMMAND("editor/editor_prev", TTR("Next Editor Tab"));
+	ED_SHORTCUT_AND_COMMAND("editor/editor_prev", TTR("Previous Editor Tab"));
 
 	screenshot_timer = memnew(Timer);
 	screenshot_timer->set_one_shot(true);
