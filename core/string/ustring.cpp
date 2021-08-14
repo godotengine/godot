@@ -54,32 +54,36 @@
 
 static const int MAX_DECIMALS = 32;
 
-static _FORCE_INLINE_ bool is_digit(char32_t c) {
-	return (c >= '0' && c <= '9');
-}
-
-static _FORCE_INLINE_ bool is_hex_digit(char32_t c) {
-	return (is_digit(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
-}
-
-static _FORCE_INLINE_ bool is_upper_case(char32_t c) {
-	return (c >= 'A' && c <= 'Z');
-}
-
-static _FORCE_INLINE_ bool is_lower_case(char32_t c) {
-	return (c >= 'a' && c <= 'z');
-}
-
-static _FORCE_INLINE_ char32_t lower_case(char32_t c) {
-	return (is_upper_case(c) ? (c + ('a' - 'A')) : c);
-}
-
 const char CharString::_null = 0;
 const char16_t Char16String::_null = 0;
 const char32_t String::_null = 0;
 
+bool is_digit(char32_t c) {
+	return (c >= '0' && c <= '9');
+}
+
+bool is_hex_digit(char32_t c) {
+	return (is_digit(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
+}
+
+bool is_upper_case(char32_t c) {
+	return (c >= 'A' && c <= 'Z');
+}
+
+bool is_lower_case(char32_t c) {
+	return (c >= 'a' && c <= 'z');
+}
+
+bool is_alphabetic(char32_t c) {
+	return is_lower_case(c) || is_upper_case(c);
+}
+
 bool is_symbol(char32_t c) {
 	return c != '_' && ((c >= '!' && c <= '/') || (c >= ':' && c <= '@') || (c >= '[' && c <= '`') || (c >= '{' && c <= '~') || c == '\t' || c == ' ');
+}
+
+char32_t lower_case(char32_t c) {
+	return (is_upper_case(c) ? (c + ('a' - 'A')) : c);
 }
 
 bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end) {

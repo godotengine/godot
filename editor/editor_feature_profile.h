@@ -176,6 +176,7 @@ protected:
 public:
 	Ref<EditorFeatureProfile> get_current_profile();
 	void notify_changed();
+	bool is_class_disabled(const StringName &p_class) const;
 
 	static EditorFeatureProfileManager *get_singleton() { return singleton; }
 	EditorFeatureProfileManager();

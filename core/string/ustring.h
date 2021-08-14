@@ -529,7 +529,15 @@ String DTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 String RTR(const String &p_text, const String &p_context = "");
 String RTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context = "");
 
+bool is_digit(char32_t c);
+bool is_hex_digit(char32_t c);
+bool is_upper_case(char32_t c);
+bool is_lower_case(char32_t c);
+bool is_alphabetic(char32_t c);
 bool is_symbol(char32_t c);
+
+char32_t lower_case(char32_t c);
+
 bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end);
 
 _FORCE_INLINE_ void sarray_add_str(Vector<String> &arr) {

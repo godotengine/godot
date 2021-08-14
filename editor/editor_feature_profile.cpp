@@ -844,6 +844,10 @@ Ref<EditorFeatureProfile> EditorFeatureProfileManager::get_current_profile() {
 	return current;
 }
 
+bool EditorFeatureProfileManager::is_class_disabled(const StringName &p_class) const {
+	return !current.is_null() && current->is_class_disabled(p_class);
+}
+
 EditorFeatureProfileManager *EditorFeatureProfileManager::singleton = nullptr;
 
 void EditorFeatureProfileManager::_bind_methods() {
