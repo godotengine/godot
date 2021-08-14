@@ -5642,6 +5642,11 @@ float AnimationTrackEditor::snap_time(float p_value, bool p_relative) {
 			snap_increment = step->get_value();
 		}
 
+		if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+			// Use more precise snapping when holding Shift.
+			snap_increment *= 0.25;
+		}
+
 		if (p_relative) {
 			double rel = Math::fmod(timeline->get_value(), snap_increment);
 			p_value = Math::snapped(p_value + rel, snap_increment) - rel;
