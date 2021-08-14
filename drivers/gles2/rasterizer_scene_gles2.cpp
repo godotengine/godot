@@ -1420,6 +1420,9 @@ bool RasterizerSceneGLES2::_setup_material(RasterizerStorageGLES2::Material *p_m
 				case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK: {
 					glBindTexture(GL_TEXTURE_2D, storage->resources.black_tex);
 				} break;
+				case ShaderLanguage::ShaderNode::Uniform::HINT_TRANSPARENT: {
+					glBindTexture(GL_TEXTURE_2D, storage->resources.transparent_tex);
+				} break;
 				case ShaderLanguage::ShaderNode::Uniform::HINT_ANISO: {
 					glBindTexture(GL_TEXTURE_2D, storage->resources.aniso_tex);
 				} break;

@@ -140,6 +140,7 @@ public:
 	struct Resources {
 		GLuint white_tex;
 		GLuint black_tex;
+		GLuint transparent_tex;
 		GLuint normal_tex;
 		GLuint aniso_tex;
 		GLuint depth_tex;

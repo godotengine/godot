@@ -1682,6 +1682,9 @@ void RasterizerCanvasGLES2::_legacy_canvas_render_item(Item *p_ci, RenderItemSta
 						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK: {
 							glBindTexture(GL_TEXTURE_2D, storage->resources.black_tex);
 						} break;
+						case ShaderLanguage::ShaderNode::Uniform::HINT_TRANSPARENT: {
+							glBindTexture(GL_TEXTURE_2D, storage->resources.transparent_tex);
+						} break;
 						case ShaderLanguage::ShaderNode::Uniform::HINT_ANISO: {
 							glBindTexture(GL_TEXTURE_2D, storage->resources.aniso_tex);
 						} break;
@@ -2043,6 +2046,9 @@ void RasterizerCanvasGLES2::render_joined_item(const BItemJoined &p_bij, RenderI
 						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO:
 						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK: {
 							glBindTexture(GL_TEXTURE_2D, storage->resources.black_tex);
+						} break;
+						case ShaderLanguage::ShaderNode::Uniform::HINT_TRANSPARENT: {
+							glBindTexture(GL_TEXTURE_2D, storage->resources.transparent_tex);
 						} break;
 						case ShaderLanguage::ShaderNode::Uniform::HINT_ANISO: {
 							glBindTexture(GL_TEXTURE_2D, storage->resources.aniso_tex);

@@ -198,6 +198,7 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"RENDER_MODE",
 	"HINT_WHITE_TEXTURE",
 	"HINT_BLACK_TEXTURE",
+	"HINT_TRANSPARENT_TEXTURE",
 	"HINT_NORMAL_TEXTURE",
 	"HINT_ANISO_TEXTURE",
 	"HINT_ALBEDO_TEXTURE",
@@ -295,6 +296,7 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_RENDER_MODE, "render_mode" },
 	{ TK_HINT_WHITE_TEXTURE, "hint_white" },
 	{ TK_HINT_BLACK_TEXTURE, "hint_black" },
+	{ TK_HINT_TRANSPARENT_TEXTURE, "hint_transparent" },
 	{ TK_HINT_NORMAL_TEXTURE, "hint_normal" },
 	{ TK_HINT_ANISO_TEXTURE, "hint_aniso" },
 	{ TK_HINT_ALBEDO_TEXTURE, "hint_albedo" },
@@ -5977,6 +5979,8 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 							uniform2.hint = ShaderNode::Uniform::HINT_WHITE;
 						} else if (tk.type == TK_HINT_BLACK_TEXTURE) {
 							uniform2.hint = ShaderNode::Uniform::HINT_BLACK;
+						} else if (tk.type == TK_HINT_TRANSPARENT_TEXTURE) {
+							uniform2.hint = ShaderNode::Uniform::HINT_TRANSPARENT;
 						} else if (tk.type == TK_HINT_NORMAL_TEXTURE) {
 							uniform2.hint = ShaderNode::Uniform::HINT_NORMAL;
 						} else if (tk.type == TK_HINT_ANISO_TEXTURE) {
