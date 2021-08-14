@@ -467,7 +467,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	List<StringName> global_classes;
 	ScriptServer::get_global_class_list(&global_classes);
 	for (const StringName &E : global_classes) {
-		keywords[String(E)] = usertype_color;
+		keywords[E] = usertype_color;
 	}
 
 	/* Autoloads. */
@@ -486,7 +486,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	List<String> core_types;
 	gdscript->get_core_type_words(&core_types);
 	for (const String &E : core_types) {
-		keywords[E] = basetype_color;
+		keywords[StringName(E)] = basetype_color;
 	}
 
 	/* Reserved words. */
@@ -496,9 +496,9 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	gdscript->get_reserved_words(&keyword_list);
 	for (const String &E : keyword_list) {
 		if (gdscript->is_control_flow_keyword(E)) {
-			keywords[E] = control_flow_keyword_color;
+			keywords[StringName(E)] = control_flow_keyword_color;
 		} else {
-			keywords[E] = keyword_color;
+			keywords[StringName(E)] = keyword_color;
 		}
 	}
 
