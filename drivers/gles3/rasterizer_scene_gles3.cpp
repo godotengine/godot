@@ -1195,6 +1195,9 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK: {
 							tex = storage->resources.black_tex;
 						} break;
+						case ShaderLanguage::ShaderNode::Uniform::HINT_TRANSPARENT: {
+							tex = storage->resources.transparent_tex;
+						} break;
 						case ShaderLanguage::ShaderNode::Uniform::HINT_ANISO: {
 							tex = storage->resources.aniso_tex;
 						} break;
