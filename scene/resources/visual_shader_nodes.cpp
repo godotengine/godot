@@ -5581,12 +5581,16 @@ String get_sampler_hint(VisualShaderNodeTextureUniform::TextureType p_texture_ty
 			case VisualShaderNodeTextureUniform::TYPE_DATA:
 				if (p_color_default == VisualShaderNodeTextureUniform::COLOR_DEFAULT_BLACK) {
 					type_code = "hint_default_black";
+				} else if (p_color_default == VisualShaderNodeTextureUniform::COLOR_DEFAULT_TRANSPARENT) {
+					type_code = "hint_default_transparent";
 				}
 				break;
 			case VisualShaderNodeTextureUniform::TYPE_COLOR:
 				type_code = "source_color";
 				if (p_color_default == VisualShaderNodeTextureUniform::COLOR_DEFAULT_BLACK) {
 					type_code += ", hint_default_black";
+				} else if (p_color_default == VisualShaderNodeTextureUniform::COLOR_DEFAULT_TRANSPARENT) {
+					type_code += ", hint_default_transparent";
 				}
 				break;
 			case VisualShaderNodeTextureUniform::TYPE_NORMAL_MAP:
@@ -5812,7 +5816,7 @@ void VisualShaderNodeTextureUniform::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_texture_repeat"), &VisualShaderNodeTextureUniform::get_texture_repeat);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_type", PROPERTY_HINT_ENUM, "Data,Color,Normal Map,Anisotropic"), "set_texture_type", "get_texture_type");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "color_default", PROPERTY_HINT_ENUM, "White,Black"), "set_color_default", "get_color_default");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "color_default", PROPERTY_HINT_ENUM, "White,Black,Transparent"), "set_color_default", "get_color_default");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Default,Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_repeat", PROPERTY_HINT_ENUM, "Default,Enabled,Disabled"), "set_texture_repeat", "get_texture_repeat");
 
@@ -5824,6 +5828,7 @@ void VisualShaderNodeTextureUniform::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(COLOR_DEFAULT_WHITE);
 	BIND_ENUM_CONSTANT(COLOR_DEFAULT_BLACK);
+	BIND_ENUM_CONSTANT(COLOR_DEFAULT_TRANSPARENT);
 	BIND_ENUM_CONSTANT(COLOR_DEFAULT_MAX);
 
 	BIND_ENUM_CONSTANT(FILTER_DEFAULT);
