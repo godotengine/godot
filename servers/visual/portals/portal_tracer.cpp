@@ -167,10 +167,10 @@ void PortalTracer::cull_roamers(const VSRoom &p_room, const LocalVector<Plane> &
 			continue;
 		}
 
-		// mark as done
-		moving.last_tick_hit = _tick;
-
 		if (test_cull_inside(moving.exact_aabb, p_planes)) {
+			// mark as done (and on visible list)
+			moving.last_tick_hit = _tick;
+
 			_result->visible_roamer_pool_ids.push_back(pool_id);
 		}
 	}
