@@ -6281,7 +6281,7 @@ bool CanvasItemEditorViewport::_cyclical_dependency_exists(const String &p_targe
 void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &path, const Point2 &p_point) {
 	// Adjust casing according to project setting. The file name is expected to be in snake_case, but will work for others.
 	String name = path.get_file().get_basename();
-	switch (ProjectSettings::get_singleton()->get("editor/node_naming/name_casing").operator int()) {
+	switch (ProjectSettings::get_singleton()->get("node/name_casing").operator int()) {
 		case NAME_CASING_PASCAL_CASE:
 			name = name.capitalize().replace(" ", "");
 			break;
