@@ -30,12 +30,12 @@
 
 #include "vector3i.h"
 
-void Vector3i::set_axis(int p_axis, int32_t p_value) {
+void Vector3i::set_axis(const int p_axis, const int32_t p_value) {
 	ERR_FAIL_INDEX(p_axis, 3);
 	coord[p_axis] = p_value;
 }
 
-int32_t Vector3i::get_axis(int p_axis) const {
+int32_t Vector3i::get_axis(const int p_axis) const {
 	ERR_FAIL_INDEX_V(p_axis, 3, 0);
 	return operator[](p_axis);
 }
