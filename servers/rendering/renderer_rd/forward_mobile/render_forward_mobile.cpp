@@ -414,7 +414,8 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 		RD::Uniform u;
 		u.binding = 9;
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-		RID texture = (false && rb && rb->depth.is_valid()) ? rb->depth : storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE);
+		RID dbt = rb ? render_buffers_get_back_depth_texture(p_render_data->render_buffers) : RID();
+		RID texture = (dbt.is_valid()) ? dbt : storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE);
 		u.ids.push_back(texture);
 		uniforms.push_back(u);
 	}
@@ -750,6 +751,16 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			RD::get_singleton()->draw_list_end(RD::BARRIER_MASK_ALL);
 
 			RD::get_singleton()->draw_command_end_label(); // Render 3D Pass / Render Reflection Probe Pass
+		}
+
+		if (scene_state.used_screen_texture) {
+			// Copy screen texture to backbuffer so we can read from it
+			_render_buffers_copy_screen_texture(p_render_data);
+		}
+
+		if (scene_state.used_depth_texture) {
+			// Copy depth texture to backbuffer so we can read from it
+			_render_buffers_copy_depth_texture(p_render_data);
 		}
 
 		// transparent pass

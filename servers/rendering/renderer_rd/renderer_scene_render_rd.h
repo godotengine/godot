@@ -134,6 +134,8 @@ protected:
 
 	void _pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_gi, RID p_normal_roughness_buffer, RID p_voxel_gi_buffer);
 
+	void _render_buffers_copy_screen_texture(const RenderDataRD *p_render_data);
+	void _render_buffers_copy_depth_texture(const RenderDataRD *p_render_data);
 	void _render_buffers_post_process_and_tonemap(const RenderDataRD *p_render_data);
 	void _post_process_subpass(RID p_source_texture, RID p_framebuffer, const RenderDataRD *p_render_data);
 	void _disable_clear_request(const RenderDataRD *p_render_data);
@@ -492,6 +494,9 @@ private:
 		WeightBuffers weight_buffers[4]; // Only used in raster
 		RID base_weight_fb; // base buffer for weight
 
+		RID depth_back_texture;
+		RID depth_back_fb; // only used on mobile
+
 		struct Luminance {
 			Vector<RID> reduce;
 			RID current;
@@ -535,6 +540,7 @@ private:
 
 	void _free_render_buffer_data(RenderBuffers *rb);
 	void _allocate_blur_textures(RenderBuffers *rb);
+	void _allocate_depth_backbuffer_textures(RenderBuffers *rb);
 	void _allocate_luminance_textures(RenderBuffers *rb);
 
 	void _render_buffers_debug_draw(RID p_render_buffers, RID p_shadow_atlas, RID p_occlusion_buffer);
@@ -1183,6 +1189,7 @@ public:
 
 	RID render_buffers_get_ao_texture(RID p_render_buffers);
 	RID render_buffers_get_back_buffer_texture(RID p_render_buffers);
+	RID render_buffers_get_back_depth_texture(RID p_render_buffers);
 	RID render_buffers_get_voxel_gi_buffer(RID p_render_buffers);
 	RID render_buffers_get_default_voxel_gi_buffer();
 	RID render_buffers_get_gi_ambient_texture(RID p_render_buffers);
