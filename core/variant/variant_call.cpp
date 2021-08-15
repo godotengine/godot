@@ -1248,6 +1248,51 @@ uint32_t Variant::get_builtin_method_hash(Variant::Type p_type, const StringName
 	return hash_fmix32(hash);
 }
 
+void Variant::get_method_list_by_type(List<MethodInfo> *p_list, Variant::Type p_type) {
+	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
+	for (const StringName &E : builtin_method_names[p_type]) {
+		const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(E);
+		ERR_CONTINUE(!method);
+
+		MethodInfo mi;
+		mi.name = E;
+
+		//return type
+		if (method->has_return_type) {
+			mi.return_val.type = method->return_type;
+			if (mi.return_val.type == Variant::NIL) {
+				mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+			}
+		}
+
+		if (method->is_const) {
+			mi.flags |= METHOD_FLAG_CONST;
+		}
+		if (method->is_vararg) {
+			mi.flags |= METHOD_FLAG_VARARG;
+		}
+		if (method->is_static) {
+			mi.flags |= METHOD_FLAG_STATIC;
+		}
+		for (int i = 0; i < method->argument_count; i++) {
+			PropertyInfo pi;
+#ifdef DEBUG_METHODS_ENABLED
+			pi.name = method->argument_names[i];
+#else
+			pi.name = "arg" + itos(i + 1);
+#endif
+			pi.type = method->get_argument_type(i);
+			if (pi.type == Variant::NIL) {
+				pi.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+			}
+			mi.arguments.push_back(pi);
+		}
+
+		mi.default_arguments = method->default_arguments;
+		p_list->push_back(mi);
+	}
+}
+
 void Variant::get_method_list(List<MethodInfo> *p_list) const {
 	if (type == OBJECT) {
 		Object *obj = get_validated_object();
@@ -1255,47 +1300,7 @@ void Variant::get_method_list(List<MethodInfo> *p_list) const {
 			obj->get_method_list(p_list);
 		}
 	} else {
-		for (const StringName &E : builtin_method_names[type]) {
-			const VariantBuiltInMethodInfo *method = builtin_method_info[type].lookup_ptr(E);
-			ERR_CONTINUE(!method);
-
-			MethodInfo mi;
-			mi.name = E;
-
-			//return type
-			if (method->has_return_type) {
-				mi.return_val.type = method->return_type;
-				if (mi.return_val.type == Variant::NIL) {
-					mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
-				}
-			}
-
-			if (method->is_const) {
-				mi.flags |= METHOD_FLAG_CONST;
-			}
-			if (method->is_vararg) {
-				mi.flags |= METHOD_FLAG_VARARG;
-			}
-			if (method->is_static) {
-				mi.flags |= METHOD_FLAG_STATIC;
-			}
-			for (int i = 0; i < method->argument_count; i++) {
-				PropertyInfo pi;
-#ifdef DEBUG_METHODS_ENABLED
-				pi.name = method->argument_names[i];
-#else
-				pi.name = "arg" + itos(i + 1);
-#endif
-				pi.type = method->get_argument_type(i);
-				if (pi.type == Variant::NIL) {
-					pi.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
-				}
-				mi.arguments.push_back(pi);
-			}
-
-			mi.default_arguments = method->default_arguments;
-			p_list->push_back(mi);
-		}
+		Variant::get_method_list_by_type(p_list, type);
 	}
 }
 

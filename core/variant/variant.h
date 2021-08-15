@@ -601,6 +601,8 @@ public:
 	static String get_call_error_text(Object *p_base, const StringName &p_method, const Variant **p_argptrs, int p_argcount, const Callable::CallError &ce);
 	static String get_callable_error_text(const Callable &p_callable, const Variant **p_argptrs, int p_argcount, const Callable::CallError &ce);
 
+	static void get_method_list_by_type(List<MethodInfo> *p_list, Variant::Type p_type);
+
 	//dynamic (includes Object)
 	void get_method_list(List<MethodInfo> *p_list) const;
 	bool has_method(const StringName &p_method) const;

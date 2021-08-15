@@ -2045,7 +2045,26 @@ bool ClassDB::is_class_enabled(StringName p_class) const {
 	return ::ClassDB::is_class_enabled(p_class);
 }
 
+Array ClassDB::get_variant_method_list(Variant::Type p_type) const {
+	List<MethodInfo> methods;
+	Variant::get_method_list_by_type(&methods, p_type);
+	Array ret;
+
+	for (const MethodInfo &E : methods) {
+#ifdef DEBUG_METHODS_ENABLED
+		ret.push_back(E.operator Dictionary());
+#else
+		Dictionary dict;
+		dict["name"] = E.name;
+		ret.push_back(dict);
+#endif
+	}
+
+	return ret;
+}
+
 void ClassDB::_bind_methods() {
+	::ClassDB::bind_method(D_METHOD("get_variant_method_list", "type"), &ClassDB::get_variant_method_list);
 	::ClassDB::bind_method(D_METHOD("get_class_list"), &ClassDB::get_class_list);
 	::ClassDB::bind_method(D_METHOD("get_inheriters_from_class", "class"), &ClassDB::get_inheriters_from_class);
 	::ClassDB::bind_method(D_METHOD("get_parent_class", "class"), &ClassDB::get_parent_class);

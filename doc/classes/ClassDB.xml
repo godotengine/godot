@@ -169,6 +169,13 @@
 				Returns the parent class of [param class].
 			</description>
 		</method>
+		<method name="get_variant_method_list" qualifiers="const">
+			<return type="Array" />
+			<argument index="0" name="type" type="int" enum="Variant.Type" />
+			<description>
+				Returns an array of methods of built-in [code]class[/code] like [code]String[/code] or [code]Vector2[/code].
+			</description>
+		</method>
 		<method name="instantiate" qualifiers="const">
 			<return type="Variant" />
 			<param index="0" name="class" type="StringName" />
