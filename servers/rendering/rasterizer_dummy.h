@@ -197,7 +197,7 @@ public:
 
 	TypedArray<Image> bake_render_uv2(RID p_base, const Vector<RID> &p_material_overrides, const Size2i &p_image_size) override { return TypedArray<Image>(); }
 
-	bool free(RID p_rid) override { return true; }
+	bool free(RID p_rid) override { return false; }
 	void update() override {}
 	void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) override {}
 
@@ -664,8 +664,9 @@ public:
 			DummyTexture *texture = texture_owner.getornull(p_rid);
 			texture_owner.free(p_rid);
 			memdelete(texture);
+			return true;
 		}
-		return true;
+		return false;
 	}
 
 	virtual void update_memory_info() override {}
