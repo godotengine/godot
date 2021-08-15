@@ -212,6 +212,8 @@ public:
 
 	bool can_use_threads() const;
 
+	void print_backtrace() const;
+
 	bool is_userfs_persistent() const;
 
 	bool is_stdout_verbose() const;

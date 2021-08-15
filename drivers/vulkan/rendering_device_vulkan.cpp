@@ -8330,6 +8330,7 @@ void RenderingDeviceVulkan::_free_internal(RID p_id) {
 		frames[frame].compute_pipelines_to_dispose_of.push_back(*pipeline);
 		compute_pipeline_owner.free(p_id);
 	} else {
+		OS::get_singleton()->print_backtrace();
 		ERR_PRINT("Attempted to free invalid ID: " + itos(p_id.get_id()));
 	}
 }

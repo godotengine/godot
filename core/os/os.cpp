@@ -47,6 +47,9 @@ OS *OS::get_singleton() {
 	return singleton;
 }
 
+void OS::print_backtrace() {
+}
+
 uint64_t OS::get_ticks_msec() const {
 	return get_ticks_usec() / 1000ULL;
 }

@@ -94,6 +94,8 @@ public:
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 
+	virtual void print_backtrace() override;
+
 	void run();
 
 	virtual void disable_crash_handler() override;

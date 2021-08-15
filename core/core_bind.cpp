@@ -205,6 +205,10 @@ void _OS::alert(const String &p_alert, const String &p_title) {
 	OS::get_singleton()->alert(p_alert, p_title);
 }
 
+void _OS::print_backtrace() const {
+	OS::get_singleton()->print_backtrace();
+}
+
 String _OS::get_executable_path() const {
 	return OS::get_singleton()->get_executable_path();
 }

@@ -51,6 +51,68 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <cxxabi.h>
+#include <execinfo.h>
+#include <signal.h>
+
+void OS_LinuxBSD::print_backtrace() {
+	if (OS::get_singleton() == nullptr) {
+		abort();
+	}
+
+	void *bt_buffer[256];
+	size_t size = backtrace(bt_buffer, 256);
+	String _execpath = OS::get_singleton()->get_executable_path();
+
+	char **strings = backtrace_symbols(bt_buffer, size);
+	if (strings) {
+		for (size_t i = 1; i < size; i++) {
+			char fname[1024];
+			Dl_info info;
+
+			snprintf(fname, 1024, "%s", strings[i]);
+
+			// Try to demangle the function name to provide a more readable one
+			if (dladdr(bt_buffer[i], &info) && info.dli_sname) {
+				if (info.dli_sname[0] == '_') {
+					int status;
+					char *demangled = abi::__cxa_demangle(info.dli_sname, nullptr, nullptr, &status);
+
+					if (status == 0 && demangled) {
+						snprintf(fname, 1024, "%s", demangled);
+					}
+
+					if (demangled) {
+						free(demangled);
+					}
+				}
+			}
+
+			List<String> args;
+
+			char str[1024];
+			snprintf(str, 1024, "%p", bt_buffer[i]);
+			args.push_back(str);
+			args.push_back("-e");
+			args.push_back(_execpath);
+
+			String output = "";
+
+			// Try to get the file/line number using addr2line
+			int ret;
+			Error err = OS::get_singleton()->execute(String("addr2line"), args, &output, &ret);
+			if (err == OK) {
+				output.erase(output.length() - 1, 1);
+			}
+
+			fprintf(stderr, "[%ld] %s (%s)\n", (long int)i, fname, output.utf8().get_data());
+		}
+
+		free(strings);
+	}
+	fprintf(stderr, "-- END OF BACKTRACE --\n");
+}
+
 void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
 	const char *message_programs[] = { "zenity", "kdialog", "Xdialog", "xmessage" };
 
