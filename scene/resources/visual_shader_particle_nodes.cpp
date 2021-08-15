@@ -402,15 +402,16 @@ String VisualShaderNodeParticleRandomness::generate_code(Shader::Mode p_mode, Vi
 }
 
 void VisualShaderNodeParticleRandomness::set_op_type(OpType p_op_type) {
-	ERR_FAIL_INDEX((int)p_op_type, OP_TYPE_MAX);
-	if (p_op_type != op_type) {
-		if (p_op_type == OP_TYPE_SCALAR) {
-			set_input_port_default_value(0, 0.0);
-			set_input_port_default_value(1, 1.0);
-		} else {
-			set_input_port_default_value(0, Vector3(-1.0, -1.0, -1.0));
-			set_input_port_default_value(1, Vector3(1.0, 1.0, 1.0));
-		}
+	ERR_FAIL_INDEX(int(p_op_type), int(OP_TYPE_MAX));
+	if (op_type == p_op_type) {
+		return;
+	}
+	if (p_op_type == OP_TYPE_SCALAR) {
+		set_input_port_default_value(0, 0.0);
+		set_input_port_default_value(1, 1.0);
+	} else {
+		set_input_port_default_value(0, Vector3(-1.0, -1.0, -1.0));
+		set_input_port_default_value(1, Vector3(1.0, 1.0, 1.0));
 	}
 	op_type = p_op_type;
 	emit_changed();
@@ -500,8 +501,6 @@ String VisualShaderNodeParticleAccelerator::generate_code(Shader::Mode p_mode, V
 			code += "	__vec3_buff1 = cross(__ndiff, normalize(" + (p_input_vars[2].is_empty() ? "vec3" + (String)get_input_port_default_value(2) : p_input_vars[2]) + "));\n";
 			code += "	" + p_output_vars[0] + " = length(__vec3_buff1) > 0.0 ? normalize(__vec3_buff1) * (" + (p_input_vars[0].is_empty() ? "vec3" + (String)get_input_port_default_value(0) : p_input_vars[0]) + " * mix(1.0, __rand_from_seed(__seed), " + (p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + ")) : vec3(0.0);\n";
 			break;
-		case MODE_MAX:
-			break;
 		default:
 			break;
 	}
@@ -510,6 +509,10 @@ String VisualShaderNodeParticleAccelerator::generate_code(Shader::Mode p_mode, V
 }
 
 void VisualShaderNodeParticleAccelerator::set_mode(Mode p_mode) {
+	ERR_FAIL_INDEX(int(p_mode), int(MODE_MAX));
+	if (mode == p_mode) {
+		return;
+	}
 	mode = p_mode;
 	emit_changed();
 }

@@ -22,5 +22,8 @@
 		<constant name="FUNC_TRANSPOSE" value="1" enum="Function">
 			Perform the transpose operation on the [Transform3D] matrix.
 		</constant>
+		<constant name="FUNC_MAX" value="2" enum="Function">
+			Represents the size of the [enum Function] enum.
+		</constant>
 	</constants>
 </class>

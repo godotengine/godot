@@ -112,5 +112,8 @@
 		<constant name="FUNC_ONEMINUS" value="31" enum="Function">
 			Subtracts scalar [code]x[/code] from 1 (i.e. [code]1 - x[/code]).
 		</constant>
+		<constant name="FUNC_MAX" value="32" enum="Function">
+			Represents the size of the [enum Function] enum.
+		</constant>
 	</constants>
 </class>
