@@ -3499,6 +3499,11 @@ bool GDScriptAnalyzer::is_type_compatible(const GDScriptParser::DataType &p_targ
 		if (p_source.kind == GDScriptParser::DataType::BUILTIN && p_source.builtin_type == Variant::INT) {
 			return true;
 		}
+		if (p_source.kind == GDScriptParser::DataType::ENUM) {
+			if (p_source.native_type == p_target.native_type) {
+				return true;
+			}
+		}
 		if (p_source.kind == GDScriptParser::DataType::ENUM_VALUE) {
 			if (p_source.native_type == p_target.native_type && p_target.enum_values.has(p_source.enum_type)) {
 				return true;
