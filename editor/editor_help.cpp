@@ -1125,10 +1125,10 @@ void EditorHelp::_update_doc() {
 					if (method_map[cd.properties[i].setter].arguments.size() > 1) {
 						// Setters with additional arguments are exposed in the method list, so we link them here for quick access.
 						class_desc->push_meta("@method " + cd.properties[i].setter);
-						class_desc->add_text(cd.properties[i].setter + TTR("(value)"));
+						class_desc->add_text(cd.properties[i].setter + "(value)");
 						class_desc->pop();
 					} else {
-						class_desc->add_text(cd.properties[i].setter + TTR("(value)"));
+						class_desc->add_text(cd.properties[i].setter + "(value)");
 					}
 					class_desc->pop(); // color
 					class_desc->push_color(comment_color);
