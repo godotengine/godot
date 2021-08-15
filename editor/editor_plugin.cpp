@@ -311,7 +311,7 @@ bool EditorInterface::is_distraction_free_mode_enabled() const {
 }
 
 EditorCommandPalette *EditorInterface::get_command_palette() const {
-	return EditorNode::get_singleton()->get_editor_command_palette();
+	return EditorCommandPalette::get_singleton();
 }
 
 EditorInterface *EditorInterface::singleton = nullptr;
