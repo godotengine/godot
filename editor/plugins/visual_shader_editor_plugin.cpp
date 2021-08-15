@@ -859,15 +859,15 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		node->add_child(expression_box);
 		register_expression_edit(p_id, expression_box);
 
-		Color background_color = EDITOR_GET("text_editor/highlighting/background_color");
-		Color text_color = EDITOR_GET("text_editor/highlighting/text_color");
-		Color keyword_color = EDITOR_GET("text_editor/highlighting/keyword_color");
-		Color control_flow_keyword_color = EDITOR_GET("text_editor/highlighting/control_flow_keyword_color");
-		Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
-		Color symbol_color = EDITOR_GET("text_editor/highlighting/symbol_color");
-		Color function_color = EDITOR_GET("text_editor/highlighting/function_color");
-		Color number_color = EDITOR_GET("text_editor/highlighting/number_color");
-		Color members_color = EDITOR_GET("text_editor/highlighting/member_variable_color");
+		Color background_color = EDITOR_GET("text_editor/theme/highlighting/background_color");
+		Color text_color = EDITOR_GET("text_editor/theme/highlighting/text_color");
+		Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
+		Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
+		Color comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
+		Color symbol_color = EDITOR_GET("text_editor/theme/highlighting/symbol_color");
+		Color function_color = EDITOR_GET("text_editor/theme/highlighting/function_color");
+		Color number_color = EDITOR_GET("text_editor/theme/highlighting/number_color");
+		Color members_color = EDITOR_GET("text_editor/theme/highlighting/member_variable_color");
 
 		expression_box->set_syntax_highlighter(expression_syntax_highlighter);
 		expression_box->add_theme_color_override("background_color", background_color);
@@ -3112,15 +3112,15 @@ void VisualShaderEditor::_notification(int p_what) {
 		preview_shader->set_icon(Control::get_theme_icon(SNAME("Shader"), SNAME("EditorIcons")));
 
 		{
-			Color background_color = EDITOR_GET("text_editor/highlighting/background_color");
-			Color text_color = EDITOR_GET("text_editor/highlighting/text_color");
+			Color background_color = EDITOR_GET("text_editor/theme/highlighting/background_color");
+			Color text_color = EDITOR_GET("text_editor/theme/highlighting/text_color");
 			Color keyword_color = EDITOR_GET("text_editor/highlighting/keyword_color");
-			Color control_flow_keyword_color = EDITOR_GET("text_editor/highlighting/control_flow_keyword_color");
-			Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
-			Color symbol_color = EDITOR_GET("text_editor/highlighting/symbol_color");
-			Color function_color = EDITOR_GET("text_editor/highlighting/function_color");
-			Color number_color = EDITOR_GET("text_editor/highlighting/number_color");
-			Color members_color = EDITOR_GET("text_editor/highlighting/member_variable_color");
+			Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
+			Color comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
+			Color symbol_color = EDITOR_GET("text_editor/theme/highlighting/symbol_color");
+			Color function_color = EDITOR_GET("text_editor/theme/highlighting/function_color");
+			Color number_color = EDITOR_GET("text_editor/theme/highlighting/number_color");
+			Color members_color = EDITOR_GET("text_editor/theme/highlighting/member_variable_color");
 
 			preview_text->add_theme_color_override("background_color", background_color);
 
@@ -3786,7 +3786,7 @@ void VisualShaderEditor::_update_preview() {
 		preview_text->set_line_background_color(i, Color(0, 0, 0, 0));
 	}
 	if (err != OK) {
-		Color error_line_color = EDITOR_GET("text_editor/highlighting/mark_color");
+		Color error_line_color = EDITOR_GET("text_editor/theme/highlighting/mark_color");
 		preview_text->set_line_background_color(sl.get_error_line() - 1, error_line_color);
 		error_panel->show();
 

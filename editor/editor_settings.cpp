@@ -492,68 +492,73 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Theme
 	_initial_set("text_editor/theme/color_theme", "Default");
 	hints["text_editor/theme/color_theme"] = PropertyInfo(Variant::STRING, "text_editor/theme/color_theme", PROPERTY_HINT_ENUM, "Default,Godot 2,Custom");
-	_initial_set("text_editor/theme/line_spacing", 6);
-	hints["text_editor/theme/line_spacing"] = PropertyInfo(Variant::INT, "text_editor/theme/line_spacing", PROPERTY_HINT_RANGE, "0,50,1");
 
+	// Theme: Highlighting
 	_load_godot2_text_editor_theme();
 
-	// Highlighting
-	_initial_set("text_editor/highlighting/highlight_all_occurrences", true);
-	_initial_set("text_editor/highlighting/highlight_current_line", true);
-	_initial_set("text_editor/highlighting/highlight_type_safe_lines", true);
-
-	// Indent
-	_initial_set("text_editor/indent/type", 0);
-	hints["text_editor/indent/type"] = PropertyInfo(Variant::INT, "text_editor/indent/type", PROPERTY_HINT_ENUM, "Tabs,Spaces");
-	_initial_set("text_editor/indent/size", 4);
-	hints["text_editor/indent/size"] = PropertyInfo(Variant::INT, "text_editor/indent/size", PROPERTY_HINT_RANGE, "1, 64, 1"); // size of 0 crashes.
-	_initial_set("text_editor/indent/auto_indent", true);
-	_initial_set("text_editor/indent/convert_indent_on_save", true);
-	_initial_set("text_editor/indent/draw_tabs", true);
-	_initial_set("text_editor/indent/draw_spaces", false);
-
-	// Navigation
-	_initial_set("text_editor/navigation/smooth_scrolling", true);
-	_initial_set("text_editor/navigation/v_scroll_speed", 80);
-	_initial_set("text_editor/navigation/show_minimap", true);
-	_initial_set("text_editor/navigation/minimap_width", 80);
-	hints["text_editor/navigation/minimap_width"] = PropertyInfo(Variant::INT, "text_editor/navigation/minimap_width", PROPERTY_HINT_RANGE, "50,250,1");
-
 	// Appearance
-	_initial_set("text_editor/appearance/show_line_numbers", true);
-	_initial_set("text_editor/appearance/line_numbers_zero_padded", false);
-	_initial_set("text_editor/appearance/show_bookmark_gutter", true);
-	_initial_set("text_editor/appearance/show_info_gutter", true);
-	_initial_set("text_editor/appearance/code_folding", true);
-	_initial_set("text_editor/appearance/word_wrap", 0);
-	hints["text_editor/appearance/word_wrap"] = PropertyInfo(Variant::INT, "text_editor/appearance/word_wrap", PROPERTY_HINT_ENUM, "None,Boundary");
+	// Appearance: Caret
+	_initial_set("text_editor/appearance/caret/type", 0);
+	hints["text_editor/appearance/caret/type"] = PropertyInfo(Variant::INT, "text_editor/appearance/caret/type", PROPERTY_HINT_ENUM, "Line,Block");
+	_initial_set("text_editor/appearance/caret/caret_blink", true);
+	_initial_set("text_editor/appearance/caret/caret_blink_speed", 0.5);
+	hints["text_editor/appearance/caret/caret_blink_speed"] = PropertyInfo(Variant::FLOAT, "text_editor/appearance/caret/caret_blink_speed", PROPERTY_HINT_RANGE, "0.1, 10, 0.01");
+	_initial_set("text_editor/appearance/caret/highlight_current_line", true);
+	_initial_set("text_editor/appearance/caret/highlight_all_occurrences", true);
 
-	_initial_set("text_editor/appearance/show_line_length_guidelines", true);
-	_initial_set("text_editor/appearance/line_length_guideline_soft_column", 80);
-	hints["text_editor/appearance/line_length_guideline_soft_column"] = PropertyInfo(Variant::INT, "text_editor/appearance/line_length_guideline_soft_column", PROPERTY_HINT_RANGE, "20, 160, 1");
-	_initial_set("text_editor/appearance/line_length_guideline_hard_column", 100);
-	hints["text_editor/appearance/line_length_guideline_hard_column"] = PropertyInfo(Variant::INT, "text_editor/appearance/line_length_guideline_hard_column", PROPERTY_HINT_RANGE, "20, 160, 1");
+	// Appearance: Guidelines
+	_initial_set("text_editor/appearance/guidelines/show_line_length_guidelines", true);
+	_initial_set("text_editor/appearance/guidelines/line_length_guideline_soft_column", 80);
+	hints["text_editor/appearance/guidelines/line_length_guideline_soft_column"] = PropertyInfo(Variant::INT, "text_editor/appearance/guidelines/line_length_guideline_soft_column", PROPERTY_HINT_RANGE, "20, 160, 1");
+	_initial_set("text_editor/appearance/guidelines/line_length_guideline_hard_column", 100);
+	hints["text_editor/appearance/guidelines/line_length_guideline_hard_column"] = PropertyInfo(Variant::INT, "text_editor/appearance/guidelines/line_length_guideline_hard_column", PROPERTY_HINT_RANGE, "20, 160, 1");
+
+	// Appearance: Gutters
+	_initial_set("text_editor/appearance/gutters/show_line_numbers", true);
+	_initial_set("text_editor/appearance/gutters/line_numbers_zero_padded", false);
+	_initial_set("text_editor/appearance/gutters/highlight_type_safe_lines", true);
+	_initial_set("text_editor/appearance/gutters/show_bookmark_gutter", true);
+	_initial_set("text_editor/appearance/gutters/show_info_gutter", true);
+
+	// Appearance: Minimap
+	_initial_set("text_editor/appearance/minimap/show_minimap", true);
+	_initial_set("text_editor/appearance/minimap/minimap_width", 80);
+	hints["text_editor/appearance/minimap/minimap_width"] = PropertyInfo(Variant::INT, "text_editor/appearance/minimap/minimap_width", PROPERTY_HINT_RANGE, "50,250,1");
+
+	// Appearance: Lines
+	_initial_set("text_editor/appearance/lines/code_folding", true);
+	_initial_set("text_editor/appearance/lines/word_wrap", 0);
+	hints["text_editor/appearance/lines/word_wrap"] = PropertyInfo(Variant::INT, "text_editor/appearance/lines/word_wrap", PROPERTY_HINT_ENUM, "None,Boundary");
+
+	// Appearance: Whitespace
+	_initial_set("text_editor/appearance/whitespace/draw_tabs", true);
+	_initial_set("text_editor/appearance/whitespace/draw_spaces", false);
+	_initial_set("text_editor/appearance/whitespace/line_spacing", 6);
+	hints["text_editor/appearance/whitespace/line_spacing"] = PropertyInfo(Variant::INT, "text_editor/appearance/whitespace/line_spacing", PROPERTY_HINT_RANGE, "0,50,1");
+
+	// Behavior
+	// Behavior: Navigation
+	_initial_set("text_editor/behavior/navigation/move_caret_on_right_click", true);
+	_initial_set("text_editor/behavior/navigation/scroll_past_end_of_file", false);
+	_initial_set("text_editor/behavior/navigation/smooth_scrolling", true);
+	_initial_set("text_editor/behavior/navigation/v_scroll_speed", 80);
+
+	// Behavior: Indent
+	_initial_set("text_editor/behavior/indent/type", 0);
+	hints["text_editor/behavior/indent/type"] = PropertyInfo(Variant::INT, "text_editor/behavior/indent/type", PROPERTY_HINT_ENUM, "Tabs,Spaces");
+	_initial_set("text_editor/behavior/indent/size", 4);
+	hints["text_editor/behavior/indent/size"] = PropertyInfo(Variant::INT, "text_editor/behavior/indent/size", PROPERTY_HINT_RANGE, "1, 64, 1"); // size of 0 crashes.
+	_initial_set("text_editor/behavior/indent/auto_indent", true);
+
+	// Behavior: Files
+	_initial_set("text_editor/behavior/files/trim_trailing_whitespace_on_save", false);
+	_initial_set("text_editor/behavior/files/autosave_interval_secs", 0);
+	_initial_set("text_editor/behavior/files/restore_scripts_on_load", true);
+	_initial_set("text_editor/behavior/files/convert_indent_on_save", true);
 
 	// Script list
 	_initial_set("text_editor/script_list/show_members_overview", true);
-
-	// Files
-	_initial_set("text_editor/files/trim_trailing_whitespace_on_save", false);
-	_initial_set("text_editor/files/autosave_interval_secs", 0);
-	_initial_set("text_editor/files/restore_scripts_on_load", true);
-
-	// Tools
-	_initial_set("text_editor/tools/create_signal_callbacks", true);
-	_initial_set("text_editor/tools/sort_members_outline_alphabetically", false);
-
-	// Cursor
-	_initial_set("text_editor/cursor/scroll_past_end_of_file", false);
-	_initial_set("text_editor/cursor/type", 0);
-	hints["text_editor/cursor/type"] = PropertyInfo(Variant::INT, "text_editor/cursor/type", PROPERTY_HINT_ENUM, "Line,Block");
-	_initial_set("text_editor/cursor/caret_blink", true);
-	_initial_set("text_editor/cursor/caret_blink_speed", 0.5);
-	hints["text_editor/cursor/caret_blink_speed"] = PropertyInfo(Variant::FLOAT, "text_editor/cursor/caret_blink_speed", PROPERTY_HINT_RANGE, "0.1, 10, 0.01");
-	_initial_set("text_editor/cursor/right_click_moves_caret", true);
+	_initial_set("text_editor/script_list/sort_members_outline_alphabetically", false);
 
 	// Completion
 	_initial_set("text_editor/completion/idle_parse_delay", 2.0);
@@ -777,41 +782,41 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 void EditorSettings::_load_godot2_text_editor_theme() {
 	// Godot 2 is only a dark theme; it doesn't have a light theme counterpart.
-	_initial_set("text_editor/highlighting/symbol_color", Color(0.73, 0.87, 1.0));
-	_initial_set("text_editor/highlighting/keyword_color", Color(1.0, 1.0, 0.7));
-	_initial_set("text_editor/highlighting/control_flow_keyword_color", Color(1.0, 0.85, 0.7));
-	_initial_set("text_editor/highlighting/base_type_color", Color(0.64, 1.0, 0.83));
-	_initial_set("text_editor/highlighting/engine_type_color", Color(0.51, 0.83, 1.0));
-	_initial_set("text_editor/highlighting/user_type_color", Color(0.42, 0.67, 0.93));
-	_initial_set("text_editor/highlighting/comment_color", Color(0.4, 0.4, 0.4));
-	_initial_set("text_editor/highlighting/string_color", Color(0.94, 0.43, 0.75));
-	_initial_set("text_editor/highlighting/background_color", Color(0.13, 0.12, 0.15));
-	_initial_set("text_editor/highlighting/completion_background_color", Color(0.17, 0.16, 0.2));
-	_initial_set("text_editor/highlighting/completion_selected_color", Color(0.26, 0.26, 0.27));
-	_initial_set("text_editor/highlighting/completion_existing_color", Color(0.13, 0.87, 0.87, 0.87));
-	_initial_set("text_editor/highlighting/completion_scroll_color", Color(1, 1, 1));
-	_initial_set("text_editor/highlighting/completion_font_color", Color(0.67, 0.67, 0.67));
-	_initial_set("text_editor/highlighting/text_color", Color(0.67, 0.67, 0.67));
-	_initial_set("text_editor/highlighting/line_number_color", Color(0.67, 0.67, 0.67, 0.4));
-	_initial_set("text_editor/highlighting/safe_line_number_color", Color(0.67, 0.78, 0.67, 0.6));
-	_initial_set("text_editor/highlighting/caret_color", Color(0.67, 0.67, 0.67));
-	_initial_set("text_editor/highlighting/caret_background_color", Color(0, 0, 0));
-	_initial_set("text_editor/highlighting/text_selected_color", Color(0, 0, 0));
-	_initial_set("text_editor/highlighting/selection_color", Color(0.41, 0.61, 0.91, 0.35));
-	_initial_set("text_editor/highlighting/brace_mismatch_color", Color(1, 0.2, 0.2));
-	_initial_set("text_editor/highlighting/current_line_color", Color(0.3, 0.5, 0.8, 0.15));
-	_initial_set("text_editor/highlighting/line_length_guideline_color", Color(0.3, 0.5, 0.8, 0.1));
-	_initial_set("text_editor/highlighting/word_highlighted_color", Color(0.8, 0.9, 0.9, 0.15));
-	_initial_set("text_editor/highlighting/number_color", Color(0.92, 0.58, 0.2));
-	_initial_set("text_editor/highlighting/function_color", Color(0.4, 0.64, 0.81));
-	_initial_set("text_editor/highlighting/member_variable_color", Color(0.9, 0.31, 0.35));
-	_initial_set("text_editor/highlighting/mark_color", Color(1.0, 0.4, 0.4, 0.4));
-	_initial_set("text_editor/highlighting/bookmark_color", Color(0.08, 0.49, 0.98));
-	_initial_set("text_editor/highlighting/breakpoint_color", Color(0.9, 0.29, 0.3));
-	_initial_set("text_editor/highlighting/executing_line_color", Color(0.98, 0.89, 0.27));
-	_initial_set("text_editor/highlighting/code_folding_color", Color(0.8, 0.8, 0.8, 0.8));
-	_initial_set("text_editor/highlighting/search_result_color", Color(0.05, 0.25, 0.05, 1));
-	_initial_set("text_editor/highlighting/search_result_border_color", Color(0.41, 0.61, 0.91, 0.38));
+	_initial_set("text_editor/theme/highlighting/symbol_color", Color(0.73, 0.87, 1.0));
+	_initial_set("text_editor/theme/highlighting/keyword_color", Color(1.0, 1.0, 0.7));
+	_initial_set("text_editor/theme/highlighting/control_flow_keyword_color", Color(1.0, 0.85, 0.7));
+	_initial_set("text_editor/theme/highlighting/base_type_color", Color(0.64, 1.0, 0.83));
+	_initial_set("text_editor/theme/highlighting/engine_type_color", Color(0.51, 0.83, 1.0));
+	_initial_set("text_editor/theme/highlighting/user_type_color", Color(0.42, 0.67, 0.93));
+	_initial_set("text_editor/theme/highlighting/comment_color", Color(0.4, 0.4, 0.4));
+	_initial_set("text_editor/theme/highlighting/string_color", Color(0.94, 0.43, 0.75));
+	_initial_set("text_editor/theme/highlighting/background_color", Color(0.13, 0.12, 0.15));
+	_initial_set("text_editor/theme/highlighting/completion_background_color", Color(0.17, 0.16, 0.2));
+	_initial_set("text_editor/theme/highlighting/completion_selected_color", Color(0.26, 0.26, 0.27));
+	_initial_set("text_editor/theme/highlighting/completion_existing_color", Color(0.13, 0.87, 0.87, 0.87));
+	_initial_set("text_editor/theme/highlighting/completion_scroll_color", Color(1, 1, 1));
+	_initial_set("text_editor/theme/highlighting/completion_font_color", Color(0.67, 0.67, 0.67));
+	_initial_set("text_editor/theme/highlighting/text_color", Color(0.67, 0.67, 0.67));
+	_initial_set("text_editor/theme/highlighting/line_number_color", Color(0.67, 0.67, 0.67, 0.4));
+	_initial_set("text_editor/theme/highlighting/safe_line_number_color", Color(0.67, 0.78, 0.67, 0.6));
+	_initial_set("text_editor/theme/highlighting/caret_color", Color(0.67, 0.67, 0.67));
+	_initial_set("text_editor/theme/highlighting/caret_background_color", Color(0, 0, 0));
+	_initial_set("text_editor/theme/highlighting/text_selected_color", Color(0, 0, 0));
+	_initial_set("text_editor/theme/highlighting/selection_color", Color(0.41, 0.61, 0.91, 0.35));
+	_initial_set("text_editor/theme/highlighting/brace_mismatch_color", Color(1, 0.2, 0.2));
+	_initial_set("text_editor/theme/highlighting/current_line_color", Color(0.3, 0.5, 0.8, 0.15));
+	_initial_set("text_editor/theme/highlighting/line_length_guideline_color", Color(0.3, 0.5, 0.8, 0.1));
+	_initial_set("text_editor/theme/highlighting/word_highlighted_color", Color(0.8, 0.9, 0.9, 0.15));
+	_initial_set("text_editor/theme/highlighting/number_color", Color(0.92, 0.58, 0.2));
+	_initial_set("text_editor/theme/highlighting/function_color", Color(0.4, 0.64, 0.81));
+	_initial_set("text_editor/theme/highlighting/member_variable_color", Color(0.9, 0.31, 0.35));
+	_initial_set("text_editor/theme/highlighting/mark_color", Color(1.0, 0.4, 0.4, 0.4));
+	_initial_set("text_editor/theme/highlighting/bookmark_color", Color(0.08, 0.49, 0.98));
+	_initial_set("text_editor/theme/highlighting/breakpoint_color", Color(0.9, 0.29, 0.3));
+	_initial_set("text_editor/theme/highlighting/executing_line_color", Color(0.98, 0.89, 0.27));
+	_initial_set("text_editor/theme/highlighting/code_folding_color", Color(0.8, 0.8, 0.8, 0.8));
+	_initial_set("text_editor/theme/highlighting/search_result_color", Color(0.05, 0.25, 0.05, 1));
+	_initial_set("text_editor/theme/highlighting/search_result_border_color", Color(0.41, 0.61, 0.91, 0.38));
 }
 
 bool EditorSettings::_save_text_editor_theme(String p_file) {
@@ -823,8 +828,8 @@ bool EditorSettings::_save_text_editor_theme(String p_file) {
 	keys.sort();
 
 	for (const String &key : keys) {
-		if (key.begins_with("text_editor/highlighting/") && key.find("color") >= 0) {
-			cf->set_value(theme_section, key.replace("text_editor/highlighting/", ""), ((Color)props[key].variant).to_html());
+		if (key.begins_with("text_editor/theme/highlighting/") && key.find("color") >= 0) {
+			cf->set_value(theme_section, key.replace("text_editor/theme/highlighting/", ""), ((Color)props[key].variant).to_html());
 		}
 	}
 
@@ -1340,10 +1345,10 @@ void EditorSettings::load_text_editor_theme() {
 		String val = cf->get_value("color_theme", key);
 
 		// don't load if it's not already there!
-		if (has_setting("text_editor/highlighting/" + key)) {
+		if (has_setting("text_editor/theme/highlighting/" + key)) {
 			// make sure it is actually a color
 			if (val.is_valid_html_color() && key.find("color") >= 0) {
-				props["text_editor/highlighting/" + key].variant = Color::html(val); // change manually to prevent "Settings changed" console spam
+				props["text_editor/theme/highlighting/" + key].variant = Color::html(val); // change manually to prevent "Settings changed" console spam
 			}
 		}
 	}

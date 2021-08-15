@@ -433,7 +433,7 @@ void TextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 			int row = pos.y;
 			int col = pos.x;
 
-			tx->set_move_caret_on_right_click_enabled(EditorSettings::get_singleton()->get("text_editor/cursor/right_click_moves_caret"));
+			tx->set_move_caret_on_right_click_enabled(EditorSettings::get_singleton()->get("text_editor/behavior/navigation/move_caret_on_right_click"));
 			bool can_fold = tx->can_fold_line(row);
 			bool is_folded = tx->is_line_folded(row);
 

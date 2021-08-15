@@ -94,13 +94,13 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 	highlighter->clear_member_keyword_colors();
 	highlighter->clear_color_regions();
 
-	highlighter->set_symbol_color(EDITOR_GET("text_editor/highlighting/symbol_color"));
-	highlighter->set_function_color(EDITOR_GET("text_editor/highlighting/function_color"));
-	highlighter->set_number_color(EDITOR_GET("text_editor/highlighting/number_color"));
-	highlighter->set_member_variable_color(EDITOR_GET("text_editor/highlighting/member_variable_color"));
+	highlighter->set_symbol_color(EDITOR_GET("text_editor/theme/highlighting/symbol_color"));
+	highlighter->set_function_color(EDITOR_GET("text_editor/theme/highlighting/function_color"));
+	highlighter->set_number_color(EDITOR_GET("text_editor/theme/highlighting/number_color"));
+	highlighter->set_member_variable_color(EDITOR_GET("text_editor/theme/highlighting/member_variable_color"));
 
 	/* Engine types. */
-	const Color type_color = EDITOR_GET("text_editor/highlighting/engine_type_color");
+	const Color type_color = EDITOR_GET("text_editor/theme/highlighting/engine_type_color");
 	List<StringName> types;
 	ClassDB::get_class_list(&types);
 	for (const StringName &E : types) {
@@ -112,7 +112,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 	}
 
 	/* User types. */
-	const Color usertype_color = EDITOR_GET("text_editor/highlighting/user_type_color");
+	const Color usertype_color = EDITOR_GET("text_editor/theme/highlighting/user_type_color");
 	List<StringName> global_classes;
 	ScriptServer::get_global_class_list(&global_classes);
 	for (const StringName &E : global_classes) {
@@ -131,7 +131,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 	const Ref<Script> script = _get_edited_resource();
 	if (script.is_valid()) {
 		/* Core types. */
-		const Color basetype_color = EDITOR_GET("text_editor/highlighting/base_type_color");
+		const Color basetype_color = EDITOR_GET("text_editor/theme/highlighting/base_type_color");
 		List<String> core_types;
 		script->get_language()->get_core_type_words(&core_types);
 		for (const String &E : core_types) {
@@ -139,8 +139,8 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		}
 
 		/* Reserved words. */
-		const Color keyword_color = EDITOR_GET("text_editor/highlighting/keyword_color");
-		const Color control_flow_keyword_color = EDITOR_GET("text_editor/highlighting/control_flow_keyword_color");
+		const Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
+		const Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
 		List<String> keywords;
 		script->get_language()->get_reserved_words(&keywords);
 		for (const String &E : keywords) {
@@ -152,7 +152,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		}
 
 		/* Member types. */
-		const Color member_variable_color = EDITOR_GET("text_editor/highlighting/member_variable_color");
+		const Color member_variable_color = EDITOR_GET("text_editor/theme/highlighting/member_variable_color");
 		StringName instance_base = script->get_instance_base_type();
 		if (instance_base != StringName()) {
 			List<PropertyInfo> plist;
@@ -176,7 +176,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		}
 
 		/* Comments */
-		const Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
+		const Color comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
 		List<String> comments;
 		script->get_language()->get_comment_delimiters(&comments);
 		for (const String &comment : comments) {
@@ -186,7 +186,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		}
 
 		/* Strings */
-		const Color string_color = EDITOR_GET("text_editor/highlighting/string_color");
+		const Color string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
 		List<String> strings;
 		script->get_language()->get_string_delimiters(&strings);
 		for (const String &string : strings) {
@@ -961,7 +961,7 @@ bool ScriptEditor::_test_script_times_on_disk(RES p_for_script) {
 
 	bool need_ask = false;
 	bool need_reload = false;
-	bool use_autoreload = bool(EDITOR_DEF("text_editor/files/auto_reload_scripts_on_external_change", false));
+	bool use_autoreload = bool(EDITOR_DEF("text_editor/behavior/files/auto_reload_scripts_on_external_change", false));
 
 	for (int i = 0; i < tab_container->get_child_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
@@ -1712,7 +1712,7 @@ void ScriptEditor::_update_members_overview_visibility() {
 }
 
 void ScriptEditor::_toggle_members_overview_alpha_sort(bool p_alphabetic_sort) {
-	EditorSettings::get_singleton()->set("text_editor/tools/sort_members_outline_alphabetically", p_alphabetic_sort);
+	EditorSettings::get_singleton()->set("text_editor/script_list/sort_members_outline_alphabetically", p_alphabetic_sort);
 	_update_members_overview();
 }
 
@@ -1725,7 +1725,7 @@ void ScriptEditor::_update_members_overview() {
 	}
 
 	Vector<String> functions = se->get_functions();
-	if (EditorSettings::get_singleton()->get("text_editor/tools/sort_members_outline_alphabetically")) {
+	if (EditorSettings::get_singleton()->get("text_editor/script_list/sort_members_outline_alphabetically")) {
 		functions.sort();
 	}
 
@@ -2104,7 +2104,7 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 	const bool use_external_editor =
 			EditorSettings::get_singleton()->get("text_editor/external/use_external_editor") ||
 			(script.is_valid() && script->get_language()->overrides_external_editor());
-	const bool open_dominant = EditorSettings::get_singleton()->get("text_editor/files/open_dominant_script_on_scene_change");
+	const bool open_dominant = EditorSettings::get_singleton()->get("text_editor/behavior/files/open_dominant_script_on_scene_change");
 
 	const bool should_open = (open_dominant && !use_external_editor) || !EditorNode::get_singleton()->is_changing_scene();
 
@@ -2469,9 +2469,9 @@ void ScriptEditor::_save_layout() {
 }
 
 void ScriptEditor::_editor_settings_changed() {
-	trim_trailing_whitespace_on_save = EditorSettings::get_singleton()->get("text_editor/files/trim_trailing_whitespace_on_save");
-	convert_indent_on_save = EditorSettings::get_singleton()->get("text_editor/indent/convert_indent_on_save");
-	use_space_indentation = EditorSettings::get_singleton()->get("text_editor/indent/type");
+	trim_trailing_whitespace_on_save = EditorSettings::get_singleton()->get("text_editor/behavior/files/trim_trailing_whitespace_on_save");
+	convert_indent_on_save = EditorSettings::get_singleton()->get("text_editor/behavior/files/convert_indent_on_save");
+	use_space_indentation = EditorSettings::get_singleton()->get("text_editor/behavior/indent/type");
 
 	members_overview_enabled = EditorSettings::get_singleton()->get("text_editor/script_list/show_members_overview");
 	help_overview_enabled = EditorSettings::get_singleton()->get("text_editor/help/show_help_index");
@@ -2498,7 +2498,7 @@ void ScriptEditor::_editor_settings_changed() {
 	_update_script_colors();
 	_update_script_names();
 
-	ScriptServer::set_reload_scripts_on_save(EDITOR_DEF("text_editor/files/auto_reload_and_parse_scripts_on_save", true));
+	ScriptServer::set_reload_scripts_on_save(EDITOR_DEF("text_editor/behavior/files/auto_reload_and_parse_scripts_on_save", true));
 }
 
 void ScriptEditor::_filesystem_changed() {
@@ -2537,7 +2537,7 @@ void ScriptEditor::_update_autosave_timer() {
 		return;
 	}
 
-	float autosave_time = EditorSettings::get_singleton()->get("text_editor/files/autosave_interval_secs");
+	float autosave_time = EditorSettings::get_singleton()->get("text_editor/behavior/files/autosave_interval_secs");
 	if (autosave_time > 0) {
 		autosave_timer->set_wait_time(autosave_time);
 		autosave_timer->start();
@@ -2827,7 +2827,7 @@ void ScriptEditor::_make_script_list_context_menu() {
 }
 
 void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
-	if (!bool(EDITOR_DEF("text_editor/files/restore_scripts_on_load", true))) {
+	if (!bool(EDITOR_DEF("text_editor/behavior/files/restore_scripts_on_load", true))) {
 		return;
 	}
 
@@ -3120,7 +3120,7 @@ void ScriptEditor::set_scene_root_script(Ref<Script> p_script) {
 	const bool use_external_editor =
 			EditorSettings::get_singleton()->get("text_editor/external/use_external_editor") ||
 			(p_script.is_valid() && p_script->get_language()->overrides_external_editor());
-	const bool open_dominant = EditorSettings::get_singleton()->get("text_editor/files/open_dominant_script_on_scene_change");
+	const bool open_dominant = EditorSettings::get_singleton()->get("text_editor/behavior/files/open_dominant_script_on_scene_change");
 
 	if (open_dominant && !use_external_editor && p_script.is_valid()) {
 		edit(p_script);
@@ -3367,7 +3367,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	members_overview_alphabeta_sort_button->set_flat(true);
 	members_overview_alphabeta_sort_button->set_tooltip(TTR("Toggle alphabetical sorting of the method list."));
 	members_overview_alphabeta_sort_button->set_toggle_mode(true);
-	members_overview_alphabeta_sort_button->set_pressed(EditorSettings::get_singleton()->get("text_editor/tools/sort_members_outline_alphabetically"));
+	members_overview_alphabeta_sort_button->set_pressed(EditorSettings::get_singleton()->get("text_editor/script_list/sort_members_outline_alphabetically"));
 	members_overview_alphabeta_sort_button->connect("toggled", callable_mp(this, &ScriptEditor::_toggle_members_overview_alpha_sort));
 
 	buttons_hbox->add_child(members_overview_alphabeta_sort_button);
@@ -3604,9 +3604,9 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	history_pos = -1;
 
 	edit_pass = 0;
-	trim_trailing_whitespace_on_save = EditorSettings::get_singleton()->get("text_editor/files/trim_trailing_whitespace_on_save");
-	convert_indent_on_save = EditorSettings::get_singleton()->get("text_editor/indent/convert_indent_on_save");
-	use_space_indentation = EditorSettings::get_singleton()->get("text_editor/indent/type");
+	trim_trailing_whitespace_on_save = EditorSettings::get_singleton()->get("text_editor/behavior/files/trim_trailing_whitespace_on_save");
+	convert_indent_on_save = EditorSettings::get_singleton()->get("text_editor/behavior/files/convert_indent_on_save");
+	use_space_indentation = EditorSettings::get_singleton()->get("text_editor/behavior/indent/type");
 
 	ScriptServer::edit_request_func = _open_script_request;
 
@@ -3703,9 +3703,9 @@ ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 
 	script_editor->hide();
 
-	EDITOR_DEF("text_editor/files/auto_reload_scripts_on_external_change", true);
-	ScriptServer::set_reload_scripts_on_save(EDITOR_DEF("text_editor/files/auto_reload_and_parse_scripts_on_save", true));
-	EDITOR_DEF("text_editor/files/open_dominant_script_on_scene_change", true);
+	EDITOR_DEF("text_editor/behavior/files/auto_reload_scripts_on_external_change", true);
+	ScriptServer::set_reload_scripts_on_save(EDITOR_DEF("text_editor/behavior/files/auto_reload_and_parse_scripts_on_save", true));
+	EDITOR_DEF("text_editor/behavior/files/open_dominant_script_on_scene_change", true);
 	EDITOR_DEF("text_editor/external/use_external_editor", false);
 	EDITOR_DEF("text_editor/external/exec_path", "");
 	EDITOR_DEF("text_editor/script_list/script_temperature_enabled", true);

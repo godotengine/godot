@@ -542,10 +542,10 @@ String CSharpLanguage::make_function(const String &, const String &, const Packe
 String CSharpLanguage::_get_indentation() const {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
-		bool use_space_indentation = EDITOR_DEF("text_editor/indent/type", 0);
+		bool use_space_indentation = EDITOR_DEF("text_editor/behavior/indent/type", 0);
 
 		if (use_space_indentation) {
-			int indent_size = EDITOR_DEF("text_editor/indent/size", 4);
+			int indent_size = EDITOR_DEF("text_editor/behavior/indent/size", 4);
 
 			String space_indent = "";
 			for (int i = 0; i < indent_size; i++) {

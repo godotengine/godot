@@ -505,12 +505,12 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size
 	int thumbnail_size = MAX(p_size.x, p_size.y);
 	img->create(thumbnail_size, thumbnail_size, false, Image::FORMAT_RGBA8);
 
-	Color bg_color = EditorSettings::get_singleton()->get("text_editor/highlighting/background_color");
-	Color keyword_color = EditorSettings::get_singleton()->get("text_editor/highlighting/keyword_color");
-	Color control_flow_keyword_color = EditorSettings::get_singleton()->get("text_editor/highlighting/control_flow_keyword_color");
-	Color text_color = EditorSettings::get_singleton()->get("text_editor/highlighting/text_color");
-	Color symbol_color = EditorSettings::get_singleton()->get("text_editor/highlighting/symbol_color");
-	Color comment_color = EditorSettings::get_singleton()->get("text_editor/highlighting/comment_color");
+	Color bg_color = EditorSettings::get_singleton()->get("text_editor/theme/highlighting/background_color");
+	Color keyword_color = EditorSettings::get_singleton()->get("text_editor/theme/highlighting/keyword_color");
+	Color control_flow_keyword_color = EditorSettings::get_singleton()->get("text_editor/theme/highlighting/control_flow_keyword_color");
+	Color text_color = EditorSettings::get_singleton()->get("text_editor/theme/highlighting/text_color");
+	Color symbol_color = EditorSettings::get_singleton()->get("text_editor/theme/highlighting/symbol_color");
+	Color comment_color = EditorSettings::get_singleton()->get("text_editor/theme/highlighting/comment_color");
 
 	if (bg_color.a == 0) {
 		bg_color = Color(0, 0, 0, 0);

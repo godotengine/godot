@@ -166,8 +166,8 @@ void ScriptTextEditor::enable_editor() {
 void ScriptTextEditor::_load_theme_settings() {
 	CodeEdit *text_edit = code_editor->get_text_editor();
 
-	Color updated_marked_line_color = EDITOR_GET("text_editor/highlighting/mark_color");
-	Color updated_safe_line_number_color = EDITOR_GET("text_editor/highlighting/safe_line_number_color");
+	Color updated_marked_line_color = EDITOR_GET("text_editor/theme/highlighting/mark_color");
+	Color updated_safe_line_number_color = EDITOR_GET("text_editor/theme/highlighting/safe_line_number_color");
 
 	bool safe_line_number_color_updated = updated_safe_line_number_color != safe_line_number_color;
 	bool marked_line_color_updated = updated_marked_line_color != marked_line_color;
@@ -294,7 +294,7 @@ bool ScriptTextEditor::show_members_overview() {
 }
 
 void ScriptTextEditor::update_settings() {
-	code_editor->get_text_editor()->set_gutter_draw(connection_gutter, EditorSettings::get_singleton()->get("text_editor/appearance/show_info_gutter"));
+	code_editor->get_text_editor()->set_gutter_draw(connection_gutter, EditorSettings::get_singleton()->get("text_editor/appearance/gutters/show_info_gutter"));
 	code_editor->update_editor_settings();
 }
 
@@ -506,7 +506,7 @@ void ScriptTextEditor::_validate_script() {
 	}
 	errors_panel->pop(); // Table
 
-	bool highlight_safe = EDITOR_DEF("text_editor/highlighting/highlight_type_safe_lines", true);
+	bool highlight_safe = EDITOR_DEF("text_editor/appearance/gutters/highlight_type_safe_lines", true);
 	bool last_is_safe = false;
 	for (int i = 0; i < te->get_line_count(); i++) {
 		if (errors.is_empty()) {
@@ -1527,7 +1527,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 		int row = pos.y;
 		int col = pos.x;
 
-		tx->set_move_caret_on_right_click_enabled(EditorSettings::get_singleton()->get("text_editor/cursor/right_click_moves_caret"));
+		tx->set_move_caret_on_right_click_enabled(EditorSettings::get_singleton()->get("text_editor/behavior/navigation/move_caret_on_right_click"));
 		if (tx->is_move_caret_on_right_click_enabled()) {
 			if (tx->has_selection()) {
 				int from_line = tx->get_selection_from_line();
