@@ -96,7 +96,7 @@ void ShaderTextEditor::set_warnings_panel(RichTextLabel *p_warnings_panel) {
 
 void ShaderTextEditor::_load_theme_settings() {
 	CodeEdit *text_editor = get_text_editor();
-	Color updated_marked_line_color = EDITOR_GET("text_editor/highlighting/mark_color");
+	Color updated_marked_line_color = EDITOR_GET("text_editor/theme/highlighting/mark_color");
 	if (updated_marked_line_color != marked_line_color) {
 		for (int i = 0; i < text_editor->get_line_count(); i++) {
 			if (text_editor->get_line_background_color(i) == marked_line_color) {
@@ -106,17 +106,17 @@ void ShaderTextEditor::_load_theme_settings() {
 		marked_line_color = updated_marked_line_color;
 	}
 
-	syntax_highlighter->set_number_color(EDITOR_GET("text_editor/highlighting/number_color"));
-	syntax_highlighter->set_symbol_color(EDITOR_GET("text_editor/highlighting/symbol_color"));
-	syntax_highlighter->set_function_color(EDITOR_GET("text_editor/highlighting/function_color"));
-	syntax_highlighter->set_member_variable_color(EDITOR_GET("text_editor/highlighting/member_variable_color"));
+	syntax_highlighter->set_number_color(EDITOR_GET("text_editor/theme/highlighting/number_color"));
+	syntax_highlighter->set_symbol_color(EDITOR_GET("text_editor/theme/highlighting/symbol_color"));
+	syntax_highlighter->set_function_color(EDITOR_GET("text_editor/theme/highlighting/function_color"));
+	syntax_highlighter->set_member_variable_color(EDITOR_GET("text_editor/theme/highlighting/member_variable_color"));
 
 	syntax_highlighter->clear_keyword_colors();
 
 	List<String> keywords;
 	ShaderLanguage::get_keyword_list(&keywords);
-	const Color keyword_color = EDITOR_GET("text_editor/highlighting/keyword_color");
-	const Color control_flow_keyword_color = EDITOR_GET("text_editor/highlighting/control_flow_keyword_color");
+	const Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
+	const Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
 
 	for (const String &E : keywords) {
 		if (ShaderLanguage::is_control_flow_keyword(E)) {
@@ -142,14 +142,14 @@ void ShaderTextEditor::_load_theme_settings() {
 		}
 	}
 
-	const Color member_variable_color = EDITOR_GET("text_editor/highlighting/member_variable_color");
+	const Color member_variable_color = EDITOR_GET("text_editor/theme/highlighting/member_variable_color");
 
 	for (const String &E : built_ins) {
 		syntax_highlighter->add_keyword_color(E, member_variable_color);
 	}
 
 	// Colorize comments.
-	const Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
+	const Color comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
 	syntax_highlighter->clear_color_regions();
 	syntax_highlighter->add_color_region("/*", "*/", comment_color, false);
 	syntax_highlighter->add_color_region("//", "", comment_color, true);
@@ -397,7 +397,7 @@ void ShaderEditor::_notification(int p_what) {
 void ShaderEditor::_editor_settings_changed() {
 	shader_editor->update_editor_settings();
 
-	shader_editor->get_text_editor()->add_theme_constant_override("line_spacing", EditorSettings::get_singleton()->get("text_editor/theme/line_spacing"));
+	shader_editor->get_text_editor()->add_theme_constant_override("line_spacing", EditorSettings::get_singleton()->get("text_editor/appearance/whitespace/line_spacing"));
 	shader_editor->get_text_editor()->set_draw_breakpoints_gutter(false);
 	shader_editor->get_text_editor()->set_draw_executing_lines_gutter(false);
 }
@@ -483,7 +483,7 @@ void ShaderEditor::_check_for_external_edit() {
 		return;
 	}
 
-	bool use_autoreload = bool(EDITOR_DEF("text_editor/files/auto_reload_scripts_on_external_change", false));
+	bool use_autoreload = bool(EDITOR_DEF("text_editor/behavior/files/auto_reload_scripts_on_external_change", false));
 	if (shader->get_last_modified_time() != FileAccess::get_modified_time(shader->get_path())) {
 		if (use_autoreload) {
 			_reload_shader_from_disk();
@@ -555,7 +555,7 @@ void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 			Point2i pos = tx->get_line_column_at_pos(mb->get_global_position() - tx->get_global_position());
 			int row = pos.y;
 			int col = pos.x;
-			tx->set_move_caret_on_right_click_enabled(EditorSettings::get_singleton()->get("text_editor/cursor/right_click_moves_caret"));
+			tx->set_move_caret_on_right_click_enabled(EditorSettings::get_singleton()->get("text_editor/behavior/navigation/move_caret_on_right_click"));
 
 			if (tx->is_move_caret_on_right_click_enabled()) {
 				if (tx->has_selection()) {
