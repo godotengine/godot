@@ -183,7 +183,7 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::clear() {
 	}
 }
 
-void RenderForwardClustered::RenderBufferDataForwardClustered::configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, uint32_t p_view_count) {
+void RenderForwardClustered::RenderBufferDataForwardClustered::configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, bool p_use_32_bpc_depth, uint32_t p_view_count) {
 	clear();
 
 	ERR_FAIL_COND_MSG(p_view_count != 1, "Multiple views is currently not supported in this renderer, please use the mobile renderer for VR support");
@@ -212,7 +212,14 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::configure(RID p_c
 		}
 	} else {
 		RD::TextureFormat tf;
-		tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+		if (p_use_32_bpc_depth) {
+			// 32 bpc. Can be useful for advanced shaders, but should not be used
+			// for general-purpose rendering as it's slower.
+			tf.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
+		} else {
+			// 16 bpc. This is the default HDR mode.
+			tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+		}
 		tf.width = p_width;
 		tf.height = p_height;
 		tf.texture_type = RD::TEXTURE_TYPE_2D;

@@ -293,6 +293,7 @@ private:
 	MSAA msaa = MSAA_DISABLED;
 	ScreenSpaceAA screen_space_aa = SCREEN_SPACE_AA_DISABLED;
 	bool use_debanding = false;
+	bool use_32_bpc_depth = false;
 	float lod_threshold = 1.0;
 	bool use_occlusion_culling = false;
 
@@ -513,6 +514,9 @@ public:
 
 	void set_use_debanding(bool p_use_debanding);
 	bool is_using_debanding() const;
+
+	void set_use_32_bpc_depth(bool p_enable);
+	bool is_using_32_bpc_depth() const;
 
 	void set_lod_threshold(float p_pixels);
 	float get_lod_threshold() const;

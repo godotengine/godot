@@ -851,6 +851,8 @@ public:
 
 	virtual void viewport_set_use_debanding(RID p_viewport, bool p_use_debanding) = 0;
 
+	virtual void viewport_set_use_32_bpc_depth(RID p_viewport, bool p_use_32_bpc_depth) = 0;
+
 	virtual void viewport_set_lod_threshold(RID p_viewport, float p_pixels) = 0;
 
 	virtual void viewport_set_use_occlusion_culling(RID p_viewport, bool p_use_debanding) = 0;

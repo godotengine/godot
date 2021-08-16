@@ -3176,6 +3176,13 @@
 				Sets when the viewport should be updated. See [enum ViewportUpdateMode] constants for options.
 			</description>
 		</method>
+		<method name="viewport_set_use_32_bpc_depth">
+			<return type="void" />
+			<argument index="0" name="viewport" type="RID" />
+			<argument index="1" name="enable" type="bool" />
+			<description>
+			</description>
+		</method>
 		<method name="viewport_set_use_debanding">
 			<return type="void" />
 			<argument index="0" name="viewport" type="RID" />

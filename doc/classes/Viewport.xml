@@ -247,7 +247,13 @@
 		<member name="transparent_bg" type="bool" setter="set_transparent_background" getter="has_transparent_background" default="false">
 			If [code]true[/code], the viewport should render its background as transparent.
 		</member>
+		<member name="use_32_bpc_depth" type="bool" setter="set_use_32_bpc_depth" getter="get_use_32_bpc_depth" default="false">
+			If [code]true[/code], allocates the root [Viewport]'s framebuffer with full floating-point precision (32-bit) instead of half floating-point precision (16-bit).
+			[b]Note:[/b] Enabling this setting does not improve rendering quality. Using full floating-point precision is slower, and is generally only needed for advanced shaders that require a high level of precision. To reduce banding, enable [member use_debanding] instead.
+			[b]Note:[/b] Only available on the Vulkan Clustered backend, not the Vulkan Mobile backend.
+		</member>
 		<member name="use_debanding" type="bool" setter="set_use_debanding" getter="is_using_debanding" default="false">
+			If [code]true[/code], uses a fast post-processing filter to make banding significantly less visible. In some cases, debanding may introduce a slightly noticeable dithering pattern. It's recommended to enable debanding only when actually needed since the dithering pattern will make lossless-compressed screenshots larger.
 		</member>
 		<member name="use_occlusion_culling" type="bool" setter="set_use_occlusion_culling" getter="is_using_occlusion_culling" default="false">
 		</member>
