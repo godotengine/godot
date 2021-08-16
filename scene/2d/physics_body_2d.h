@@ -271,16 +271,16 @@ class CharacterBody2D : public PhysicsBody2D {
 private:
 	real_t margin = 0.08;
 
-	bool stop_on_slope = false;
-	bool constant_speed_on_floor = false;
-	bool move_on_floor_only = true;
+	bool floor_stop_on_slope = false;
+	bool floor_constant_speed = false;
+	bool floor_block_on_wall = true;
 	bool slide_on_ceiling = true;
 	int max_slides = 4;
 	int platform_layer;
 	real_t floor_max_angle = Math::deg2rad((real_t)45.0);
 	float floor_snap_length = 0;
 	Vector2 up_direction = Vector2(0.0, -1.0);
-	uint32_t exclude_body_layers = 0;
+	uint32_t moving_platform_ignore_layers = 0;
 	Vector2 linear_velocity;
 
 	Vector2 floor_normal;
@@ -296,14 +296,14 @@ private:
 	void set_safe_margin(real_t p_margin);
 	real_t get_safe_margin() const;
 
-	bool is_stop_on_slope_enabled() const;
-	void set_stop_on_slope_enabled(bool p_enabled);
+	bool is_floor_stop_on_slope_enabled() const;
+	void set_floor_stop_on_slope_enabled(bool p_enabled);
 
-	bool is_constant_speed_on_floor_enabled() const;
-	void set_constant_speed_on_floor_enabled(bool p_enabled);
+	bool is_floor_constant_speed_enabled() const;
+	void set_floor_constant_speed_enabled(bool p_enabled);
 
-	bool is_move_on_floor_only_enabled() const;
-	void set_move_on_floor_only_enabled(bool p_enabled);
+	bool is_floor_block_on_wall_enabled() const;
+	void set_floor_block_on_wall_enabled(bool p_enabled);
 
 	bool is_slide_on_ceiling_enabled() const;
 	void set_slide_on_ceiling_enabled(bool p_enabled);
@@ -317,10 +317,11 @@ private:
 	real_t get_floor_snap_length();
 	void set_floor_snap_length(real_t p_floor_snap_length);
 
-	uint32_t get_exclude_body_layers() const;
-	void set_exclude_body_layers(const uint32_t p_exclude_layer);
+	uint32_t get_moving_platform_ignore_layers() const;
+	void set_moving_platform_ignore_layers(const uint32_t p_exclude_layer);
 
 	Ref<KinematicCollision2D> _get_slide_collision(int p_bounce);
+	Ref<KinematicCollision2D> _get_last_slide_collision();
 	const Vector2 &get_up_direction() const;
 	bool _on_floor_if_snapped(bool was_on_floor, bool vel_dir_facing_up);
 	void set_up_direction(const Vector2 &p_up_direction);
@@ -333,7 +334,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void move_and_slide();
+	bool move_and_slide();
 
 	const Vector2 &get_linear_velocity() const;
 	void set_linear_velocity(const Vector2 &p_velocity);
@@ -345,9 +346,10 @@ public:
 	bool is_on_ceiling() const;
 	bool is_on_ceiling_only() const;
 	Vector2 get_floor_normal() const;
+	real_t get_floor_angle(const Vector2 &p_up_direction = Vector2(0.0, -1.0)) const;
 	Vector2 get_platform_velocity() const;
 
-	int get_slide_count() const;
+	int get_slide_collision_count() const;
 	PhysicsServer2D::MotionResult get_slide_collision(int p_bounce) const;
 
 	CharacterBody2D();
@@ -370,6 +372,7 @@ public:
 	Vector2 get_normal() const;
 	Vector2 get_travel() const;
 	Vector2 get_remainder() const;
+	real_t get_angle(const Vector2 &p_up_direction = Vector2(0.0, -1.0)) const;
 	Object *get_local_shape() const;
 	Object *get_collider() const;
 	ObjectID get_collider_id() const;

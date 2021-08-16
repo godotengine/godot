@@ -600,7 +600,7 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, co
 	if (!shapes_found) {
 		if (r_result) {
 			*r_result = PhysicsServer3D::MotionResult();
-			r_result->motion = p_motion;
+			r_result->travel = p_motion;
 		}
 
 		return false;
@@ -879,9 +879,9 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, co
 				Vector3 rel_vec = rcd.best_contact - (body->get_transform().origin + body->get_center_of_mass());
 				r_result->collider_velocity = body->get_linear_velocity() + (body->get_angular_velocity()).cross(rel_vec);
 
-				r_result->motion = safe * p_motion;
+				r_result->travel = safe * p_motion;
 				r_result->remainder = p_motion - safe * p_motion;
-				r_result->motion += (body_transform.get_origin() - p_from.get_origin());
+				r_result->travel += (body_transform.get_origin() - p_from.get_origin());
 			}
 
 			collided = true;
@@ -889,9 +889,9 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, co
 	}
 
 	if (!collided && r_result) {
-		r_result->motion = p_motion;
+		r_result->travel = p_motion;
 		r_result->remainder = Vector3();
-		r_result->motion += (body_transform.get_origin() - p_from.get_origin());
+		r_result->travel += (body_transform.get_origin() - p_from.get_origin());
 	}
 
 	return collided;

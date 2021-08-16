@@ -16,13 +16,26 @@
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
+		<method name="get_floor_angle" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="up_direction" type="Vector3" default="Vector3(0, 1, 0)" />
+			<description>
+				Returns the floor's collision angle at the last collision point according to [code]up_direction[/code], which is [code]Vector3.UP[/code] by default. This value is always positive and only valid after calling [method move_and_slide] and when [method is_on_floor] returns [code]true[/code].
+			</description>
+		</method>
 		<method name="get_floor_normal" qualifiers="const">
 			<return type="Vector3" />
 			<description>
 				Returns the surface normal of the floor at the last collision point. Only valid after calling [method move_and_slide] and when [method is_on_floor] returns [code]true[/code].
 			</description>
 		</method>
-		<method name="get_floor_velocity" qualifiers="const">
+		<method name="get_last_slide_collision">
+			<return type="KinematicCollision3D" />
+			<description>
+				Returns a [KinematicCollision3D], which contains information about the latest collision that occurred during the last call to [method move_and_slide].
+			</description>
+		</method>
+		<method name="get_platform_velocity" qualifiers="const">
 			<return type="Vector3" />
 			<description>
 				Returns the linear velocity of the floor at the last collision point. Only valid after calling [method move_and_slide] and when [method is_on_floor] returns [code]true[/code].
@@ -32,10 +45,10 @@
 			<return type="KinematicCollision3D" />
 			<argument index="0" name="slide_idx" type="int" />
 			<description>
-				Returns a [KinematicCollision3D], which contains information about a collision that occurred during the last call to [method move_and_slide]. Since the body can collide several times in a single call to [method move_and_slide], you must specify the index of the collision in the range 0 to ([method get_slide_count] - 1).
+				Returns a [KinematicCollision3D], which contains information about a collision that occurred during the last call to [method move_and_slide]. Since the body can collide several times in a single call to [method move_and_slide], you must specify the index of the collision in the range 0 to ([method get_slide_collision_count] - 1).
 			</description>
 		</method>
-		<method name="get_slide_count" qualifiers="const">
+		<method name="get_slide_collision_count" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the number of times the body collided and changed direction during the last call to [method move_and_slide].
@@ -47,10 +60,22 @@
 				Returns [code]true[/code] if the body collided with the ceiling on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code].
 			</description>
 		</method>
+		<method name="is_on_ceiling_only" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the body collided only with the ceiling on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code].
+			</description>
+		</method>
 		<method name="is_on_floor" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the body collided with the floor on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code].
+			</description>
+		</method>
+		<method name="is_on_floor_only" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the body collided only with the floor on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code].
 			</description>
 		</method>
 		<method name="is_on_wall" qualifiers="const">
@@ -59,13 +84,20 @@
 				Returns [code]true[/code] if the body collided with a wall on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code].
 			</description>
 		</method>
+		<method name="is_on_wall_only" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the body collided only with a wall on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code].
+			</description>
+		</method>
 		<method name="move_and_slide">
-			<return type="void" />
+			<return type="bool" />
 			<description>
 				Moves the body based on [member linear_velocity]. If the body collides with another, it will slide along the other body rather than stop immediately. If the other body is a [CharacterBody3D] or [RigidBody3D], it will also be affected by the motion of the other body. You can use this to make moving and rotating platforms, or to make nodes push other nodes.
 				This method should be used in [method Node._physics_process] (or in a method called by [method Node._physics_process]), as it uses the physics step's [code]delta[/code] value automatically in calculations. Otherwise, the simulation will run at an incorrect speed.
-				Modifies [member linear_velocity] if a slide collision occurred. To get detailed information about collisions that occurred, use [method get_slide_collision].
+				Modifies [member linear_velocity] if a slide collision occurred. To get the latest collision call [method get_last_slide_collision], for more detailed information about collisions that occurred, use [method get_slide_collision].
 				When the body touches a moving platform, the platform's velocity is automatically added to the body motion. If a collision occurs due to the platform's motion, it will always be first in the slide collisions.
+				Returns [code]true[/code] if the body collided, otherwise, returns [code]false[/code].
 			</description>
 		</method>
 	</methods>
@@ -79,6 +111,9 @@
 		<member name="floor_max_angle" type="float" setter="set_floor_max_angle" getter="get_floor_max_angle" default="0.785398">
 			Maximum angle (in radians) where a slope is still considered a floor (or a ceiling), rather than a wall, when calling [method move_and_slide]. The default value equals 45 degrees.
 		</member>
+		<member name="floor_stop_on_slope" type="bool" setter="set_floor_stop_on_slope_enabled" getter="is_floor_stop_on_slope_enabled" default="false">
+			If [code]true[/code], the body will not slide on slopes when you include gravity in [code]linear_velocity[/code] when calling [method move_and_slide] and the body is standing still.
+		</member>
 		<member name="linear_velocity" type="Vector3" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector3(0, 0, 0)">
 			Current velocity vector (typically meters per second), used and modified during calls to [method move_and_slide].
 		</member>
@@ -88,9 +123,6 @@
 		<member name="snap" type="Vector3" setter="set_snap" getter="get_snap" default="Vector3(0, 0, 0)">
 			When set to a value different from [code]Vector3(0, 0, 0)[/code], the body is kept attached to slopes when calling [method move_and_slide].
 			As long as the [code]snap[/code] vector is in contact with the ground, the body will remain attached to the surface. This means you must disable snap in order to jump, for example. You can do this by setting [code]snap[/code] to [code]Vector3(0, 0, 0)[/code].
-		</member>
-		<member name="stop_on_slope" type="bool" setter="set_stop_on_slope_enabled" getter="is_stop_on_slope_enabled" default="false">
-			If [code]true[/code], the body will not slide on slopes when you include gravity in [code]linear_velocity[/code] when calling [method move_and_slide] and the body is standing still.
 		</member>
 		<member name="up_direction" type="Vector3" setter="set_up_direction" getter="get_up_direction" default="Vector3(0, 1, 0)">
 			Direction vector used to determine what is a wall and what is a floor (or a ceiling), rather than a wall, when calling [method move_and_slide]. Defaults to [code]Vector3.UP[/code]. If set to [code]Vector3(0, 0, 0)[/code], everything is considered a wall. This is useful for topdown games.

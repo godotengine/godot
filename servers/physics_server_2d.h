@@ -465,7 +465,7 @@ public:
 	virtual PhysicsDirectBodyState2D *body_get_direct_state(RID p_body) = 0;
 
 	struct MotionResult {
-		Vector2 motion;
+		Vector2 travel;
 		Vector2 remainder;
 
 		Vector2 collision_point;
@@ -479,6 +479,10 @@ public:
 		RID collider;
 		int collider_shape = 0;
 		Variant collider_metadata;
+
+		real_t get_angle(Vector2 p_up_direction) const {
+			return Math::acos(collision_normal.dot(p_up_direction));
+		}
 	};
 
 	virtual bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, real_t p_margin = 0.08, MotionResult *r_result = nullptr, const Set<RID> &p_exclude = Set<RID>()) = 0;
@@ -588,8 +592,8 @@ protected:
 public:
 	PhysicsServer2D::MotionResult *get_result_ptr() const { return const_cast<PhysicsServer2D::MotionResult *>(&result); }
 
-	Vector2 get_motion() const;
-	Vector2 get_motion_remainder() const;
+	Vector2 get_travel() const;
+	Vector2 get_remainder() const;
 
 	Vector2 get_collision_point() const;
 	Vector2 get_collision_normal() const;

@@ -473,7 +473,7 @@ public:
 	virtual PhysicsDirectBodyState3D *body_get_direct_state(RID p_body) = 0;
 
 	struct MotionResult {
-		Vector3 motion;
+		Vector3 travel;
 		Vector3 remainder;
 
 		Vector3 collision_point;
@@ -487,6 +487,10 @@ public:
 		RID collider;
 		int collider_shape = 0;
 		Variant collider_metadata;
+
+		real_t get_angle(Vector3 p_up_direction) const {
+			return Math::acos(collision_normal.dot(p_up_direction));
+		}
 	};
 
 	virtual bool body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin = 0.001, MotionResult *r_result = nullptr, const Set<RID> &p_exclude = Set<RID>()) = 0;
@@ -752,8 +756,8 @@ protected:
 public:
 	PhysicsServer3D::MotionResult *get_result_ptr() const { return const_cast<PhysicsServer3D::MotionResult *>(&result); }
 
-	Vector3 get_motion() const;
-	Vector3 get_motion_remainder() const;
+	Vector3 get_travel() const;
+	Vector3 get_remainder() const;
 
 	Vector3 get_collision_point() const;
 	Vector3 get_collision_normal() const;
