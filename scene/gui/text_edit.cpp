@@ -2812,7 +2812,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 		_reset_caret_blink_timer();
 
-		// Save here for insert mode, just in case it is cleared in the following section.
+		// Save here for insert mode as well as arrow navigation, just in case it is cleared in the following section.
 		bool had_selection = selection.active;
 
 		// Stuff to do when selection is active.
@@ -3168,6 +3168,11 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			case KEY_LEFT: {
 				if (k->get_shift()) {
 					_pre_shift_selection();
+				} else if (had_selection && !k->get_command() && !k->get_alt()) {
+					cursor_set_line(selection.from_line);
+					cursor_set_column(selection.from_column);
+					deselect();
+					break;
 #ifdef APPLE_STYLE_KEYS
 				} else {
 #else
@@ -3245,6 +3250,11 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			case KEY_RIGHT: {
 				if (k->get_shift()) {
 					_pre_shift_selection();
+				} else if (had_selection && !k->get_command() && !k->get_alt()) {
+					cursor_set_line(selection.to_line);
+					cursor_set_column(selection.to_column);
+					deselect();
+					break;
 #ifdef APPLE_STYLE_KEYS
 				} else {
 #else
