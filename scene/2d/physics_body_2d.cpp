@@ -1212,7 +1212,7 @@ Vector2 KinematicBody2D::move_and_slide_with_snap(const Vector2 &p_linear_veloci
 	bool was_on_floor = on_floor;
 
 	Vector2 ret = move_and_slide(p_linear_velocity, up_direction, p_stop_on_slope, p_max_slides, p_floor_max_angle, p_infinite_inertia);
-	if (!was_on_floor || p_snap == Vector2()) {
+	if (!was_on_floor || p_snap == Vector2() || on_floor) {
 		return ret;
 	}
 
