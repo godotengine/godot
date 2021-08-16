@@ -212,6 +212,7 @@ ShaderTypes::ShaderTypes() {
 
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("unshaded");
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("wireframe");
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back("disable_alpha");
 
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("diffuse_lambert");
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("diffuse_lambert_wrap");
