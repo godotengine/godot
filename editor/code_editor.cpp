@@ -1429,13 +1429,13 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 void CodeTextEditor::goto_line(int p_line) {
 	text_editor->deselect();
 	text_editor->unfold_line(p_line);
-	text_editor->call_deferred(SNAME("cursor_set_line"), p_line);
+	text_editor->call_deferred(SNAME("set_caret_line"), p_line);
 }
 
 void CodeTextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
 	text_editor->unfold_line(p_line);
-	text_editor->call_deferred(SNAME("cursor_set_line"), p_line);
-	text_editor->call_deferred(SNAME("cursor_set_column"), p_begin);
+	text_editor->call_deferred(SNAME("set_caret_line"), p_line);
+	text_editor->call_deferred(SNAME("set_caret_column"), p_begin);
 	text_editor->select(p_line, p_begin, p_line, p_end);
 }
 
