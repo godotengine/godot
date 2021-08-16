@@ -78,6 +78,9 @@ layout(push_constant, binding = 0, std430) uniform Params {
 	vec3 world_size;
 	float bias;
 
+	float bounce_indirect_energy;
+	uint pad[3];
+
 	vec3 to_cell_offset;
 	uint ray_from;
 
@@ -371,7 +374,7 @@ void main() {
 	//keep for lightprobes
 	imageStore(primary_dynamic, ivec3(atlas_pos, params.atlas_slice), vec4(dynamic_light, 1.0));
 
-	dynamic_light += static_light * albedo; //send for bounces
+	dynamic_light += static_light * albedo * params.bounce_indirect_energy; //send for bounces
 	imageStore(dest_light, ivec3(atlas_pos, params.atlas_slice), vec4(dynamic_light, 1.0));
 
 #ifdef USE_SH_LIGHTMAPS

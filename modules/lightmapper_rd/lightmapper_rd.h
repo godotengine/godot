@@ -214,6 +214,9 @@ class LightmapperRD : public Lightmapper {
 		float world_size[3] = {};
 		float bias = 0.0;
 
+		float bounce_indirect_energy = 1.0;
+		uint32_t pad[3] = {};
+
 		float to_cell_offset[3] = {};
 		uint32_t ray_from = 0;
 
@@ -240,7 +243,7 @@ public:
 	virtual void add_omni_light(bool p_static, const Vector3 &p_position, const Color &p_color, float p_energy, float p_range, float p_attenuation, float p_size) override;
 	virtual void add_spot_light(bool p_static, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size) override;
 	virtual void add_probe(const Vector3 &p_position) override;
-	virtual BakeError bake(BakeQuality p_quality, bool p_use_denoiser, int p_bounces, float p_bias, int p_max_texture_size, bool p_bake_sh, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function = nullptr, void *p_bake_userdata = nullptr) override;
+	virtual BakeError bake(BakeQuality p_quality, bool p_use_denoiser, int p_bounces, float p_bounce_indirect_energy, float p_bias, int p_max_texture_size, bool p_bake_sh, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function = nullptr, void *p_bake_userdata = nullptr) override;
 
 	int get_bake_texture_count() const override;
 	Ref<Image> get_bake_texture(int p_index) const override;

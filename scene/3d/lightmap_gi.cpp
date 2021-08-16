@@ -951,7 +951,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		}
 	}
 
-	Lightmapper::BakeError bake_err = lightmapper->bake(Lightmapper::BakeQuality(bake_quality), use_denoiser, bounces, bias, max_texture_size, directional, Lightmapper::GenerateProbes(gen_probes), environment_image, environment_transform, _lightmap_bake_step_function, &bsud);
+	Lightmapper::BakeError bake_err = lightmapper->bake(Lightmapper::BakeQuality(bake_quality), use_denoiser, bounces, bounce_indirect_energy, bias, max_texture_size, directional, Lightmapper::GenerateProbes(gen_probes), environment_image, environment_transform, _lightmap_bake_step_function, &bsud);
 
 	if (bake_err == Lightmapper::BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES) {
 		return BAKE_ERROR_MESHES_INVALID;
@@ -1334,6 +1334,15 @@ int LightmapGI::get_bounces() const {
 	return bounces;
 }
 
+void LightmapGI::set_bounce_indirect_energy(float p_indirect_energy) {
+	ERR_FAIL_COND(p_indirect_energy < 0.0);
+	bounce_indirect_energy = p_indirect_energy;
+}
+
+float LightmapGI::get_bounce_indirect_energy() const {
+	return bounce_indirect_energy;
+}
+
 void LightmapGI::set_bias(float p_bias) {
 	ERR_FAIL_COND(p_bias < 0.00001);
 	bias = p_bias;
@@ -1382,6 +1391,9 @@ void LightmapGI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bounces", "bounces"), &LightmapGI::set_bounces);
 	ClassDB::bind_method(D_METHOD("get_bounces"), &LightmapGI::get_bounces);
 
+	ClassDB::bind_method(D_METHOD("set_bounce_indirect_energy", "bounce_indirect_energy"), &LightmapGI::set_bounce_indirect_energy);
+	ClassDB::bind_method(D_METHOD("get_bounce_indirect_energy"), &LightmapGI::get_bounce_indirect_energy);
+
 	ClassDB::bind_method(D_METHOD("set_generate_probes", "subdivision"), &LightmapGI::set_generate_probes);
 	ClassDB::bind_method(D_METHOD("get_generate_probes"), &LightmapGI::get_generate_probes);
 
@@ -1417,6 +1429,7 @@ void LightmapGI::_bind_methods() {
 	ADD_GROUP("Tweaks", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "quality", PROPERTY_HINT_ENUM, "Low,Medium,High,Ultra"), "set_bake_quality", "get_bake_quality");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bounces", PROPERTY_HINT_RANGE, "0,16,1"), "set_bounces", "get_bounces");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bounce_indirect_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_bounce_indirect_energy", "get_bounce_indirect_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "directional"), "set_directional", "is_directional");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interior"), "set_interior", "is_interior");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_denoiser"), "set_use_denoiser", "is_using_denoiser");

@@ -618,7 +618,7 @@ void LightmapperRD::_raster_geometry(RenderingDevice *rd, Size2i atlas_size, int
 	}
 }
 
-LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_denoiser, int p_bounces, float p_bias, int p_max_texture_size, bool p_bake_sh, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function, void *p_bake_userdata) {
+LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_denoiser, int p_bounces, float p_bounce_indirect_energy, float p_bias, int p_max_texture_size, bool p_bake_sh, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function, void *p_bake_userdata) {
 	if (p_step_function) {
 		p_step_function(0.0, TTR("Begin Bake"), p_bake_userdata, true);
 	}
@@ -990,6 +990,10 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		push_constant.to_cell_offset[1] = bounds.position.y;
 		push_constant.to_cell_offset[2] = bounds.position.z;
 		push_constant.bias = p_bias;
+		push_constant.bounce_indirect_energy = p_bounce_indirect_energy;
+		push_constant.pad[0] = 0;
+		push_constant.pad[1] = 0;
+		push_constant.pad[2] = 0;
 		push_constant.to_cell_size[0] = (1.0 / bounds.size.x) * float(grid_size);
 		push_constant.to_cell_size[1] = (1.0 / bounds.size.y) * float(grid_size);
 		push_constant.to_cell_size[2] = (1.0 / bounds.size.z) * float(grid_size);

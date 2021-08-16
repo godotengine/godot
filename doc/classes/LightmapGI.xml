@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="LightmapGI" inherits="VisualInstance3D" version="4.0">
 	<brief_description>
+		Prerendered light map for a scene.
 	</brief_description>
 	<description>
+		Baked lightmaps are an alternative workflow for adding indirect (or baked) lighting to a scene. Unlike the [VoxelGI] approach or [Environment]'s SDFGI, baked lightmaps work fine on low-end PCs and mobile devices as they consume almost no resources in run-time. Depending on the lights' configuration, the lightmap can store indirect lighting only, or store both direct and indirect lighting.
+		[b]Note:[/b] Due to how lightmaps work, most properties only have a visible effect once lightmaps are baked again.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -10,8 +13,14 @@
 	</methods>
 	<members>
 		<member name="bias" type="float" setter="set_bias" getter="get_bias" default="0.0005">
+			Raycasting bias used during baking to avoid floating point precision issues.
+		</member>
+		<member name="bounce_indirect_energy" type="float" setter="set_bounce_indirect_energy" getter="get_bounce_indirect_energy" default="1.0">
+			The energy multiplier for each bounce. Higher values will make indirect lighting brighter. A value of [code]1.0[/code] represents physically accurate behavior, but higher values can be used to make indirect lighting propagate more visibly when using a low number of bounces. This can be used to speed up bake times by lowering the number of [member bounces] then increasing [member bounce_indirect_energy].
+			[b]Note:[/b] [member bounce_indirect_energy] only has an effect if [member bounces] is set to a value greater than or equal to [code]1[/code].
 		</member>
 		<member name="bounces" type="int" setter="set_bounces" getter="get_bounces" default="1">
+			Number of light bounces that are taken into account during baking. A higher amount of bounces will make the bake appear brighter and more natural overall, at the cost of making bake times longer. Due to the non-linear nature of light, there are diminishing returns to increasing the number of bounces.
 		</member>
 		<member name="directional" type="bool" setter="set_directional" getter="is_directional" default="false">
 		</member>
