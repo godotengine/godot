@@ -209,6 +209,12 @@ void InspectorDock::_paste_resource() const {
 	}
 }
 
+void InspectorDock::_prepare_resource_extra_popup() {
+	RES r = EditorSettings::get_singleton()->get_resource_clipboard();
+	PopupMenu *popup = resource_extra_button->get_popup();
+	popup->set_item_disabled(popup->get_item_index(RESOURCE_EDIT_CLIPBOARD), r.is_null());
+}
+
 void InspectorDock::_prepare_history() {
 	EditorHistory *editor_history = EditorNode::get_singleton()->get_editor_history();
 
@@ -367,6 +373,7 @@ void InspectorDock::_bind_methods() {
 	ClassDB::bind_method("_unref_resource", &InspectorDock::_unref_resource);
 	ClassDB::bind_method("_paste_resource", &InspectorDock::_paste_resource);
 	ClassDB::bind_method("_copy_resource", &InspectorDock::_copy_resource);
+	ClassDB::bind_method("_prepare_resource_extra_popup", &InspectorDock::_prepare_resource_extra_popup);
 
 	ClassDB::bind_method("_select_history", &InspectorDock::_select_history);
 	ClassDB::bind_method("_prepare_history", &InspectorDock::_prepare_history);
@@ -528,6 +535,7 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	resource_extra_button->set_icon(get_icon("GuiTabMenuHl", "EditorIcons"));
 	resource_extra_button->set_tooltip(TTR("Extra resource options."));
 	general_options_hb->add_child(resource_extra_button);
+	resource_extra_button->connect("about_to_show", this, "_prepare_resource_extra_popup");
 	resource_extra_button->get_popup()->add_icon_shortcut(get_icon("ActionPaste", "EditorIcons"), ED_SHORTCUT("property_editor/paste_resource", TTR("Edit Resource from Clipboard")), RESOURCE_EDIT_CLIPBOARD);
 	resource_extra_button->get_popup()->add_icon_shortcut(get_icon("ActionCopy", "EditorIcons"), ED_SHORTCUT("property_editor/copy_resource", TTR("Copy Resource")), RESOURCE_COPY);
 	resource_extra_button->get_popup()->set_item_disabled(1, true);
