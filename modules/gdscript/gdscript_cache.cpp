@@ -200,7 +200,9 @@ Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_erro
 	if (singleton->full_gdscript_cache.has(p_path)) {
 		return singleton->full_gdscript_cache[p_path];
 	}
+
 	Ref<GDScript> script = get_shallow_script(p_path);
+	ERR_FAIL_COND_V(script.is_null(), Ref<GDScript>());
 
 	r_error = script->load_source_code(p_path);
 
