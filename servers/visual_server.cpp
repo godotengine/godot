@@ -333,10 +333,18 @@ RID VisualServer::get_white_texture() {
 // Resulting 2D vector in range [-1, 1]
 // See http://jcgt.org/published/0003/02/01/ for details
 Vector2 VisualServer::norm_to_oct(const Vector3 v) {
-	const float invL1Norm = (1.0f) / (Math::absf(v.x) + Math::absf(v.y) + Math::absf(v.z));
+	const float L1Norm = Math::absf(v.x) + Math::absf(v.y) + Math::absf(v.z);
+
+	// NOTE: this will mean it decompresses to 0,0,1
+	// Discussed heavily here: https://github.com/godotengine/godot/pull/51268 as to why we did this
+	if (Math::is_zero_approx(L1Norm)) {
+		WARN_PRINT_ONCE("Octahedral compression cannot be used to compress a zero-length vector, please use normalized normal values or disable octahedral compression")
+		return Vector2(0, 0);
+	}
+
+	const float invL1Norm = 1.0f / L1Norm;
 
 	Vector2 res;
-
 	if (v.z < 0.0f) {
 		res.x = (1.0f - Math::absf(v.y * invL1Norm)) * SGN(v.x);
 		res.y = (1.0f - Math::absf(v.x * invL1Norm)) * SGN(v.y);
