@@ -426,7 +426,7 @@ Ref<StandardMaterial3D> FBXMaterial::import_material(ImportState &state) {
 				// meaning is that approx equal to zero is disabled not actually zero. ;)
 				if (real_value && Math::is_zero_approx(real_value->Value())) {
 					print_verbose("clearcoat real value: " + rtos(real_value->Value()));
-					spatial_material->set_clearcoat_gloss(1.0 - real_value->Value());
+					spatial_material->set_clearcoat_roughness(real_value->Value());
 				} else {
 					print_error("unsupported value type for clearcoat gloss");
 				}
