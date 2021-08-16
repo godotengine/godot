@@ -347,10 +347,9 @@ public:
 		SCREEN_ORIENTATION_SENSOR,
 	};
 
-	String get_system_dir(SystemDir p_dir) const;
+	String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const;
 
 	String get_user_data_dir() const;
-	String get_external_data_dir() const;
 	String get_config_dir() const;
 	String get_data_dir() const;
 	String get_cache_dir() const;

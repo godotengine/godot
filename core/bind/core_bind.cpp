@@ -1081,10 +1081,6 @@ String _OS::get_user_data_dir() const {
 	return OS::get_singleton()->get_user_data_dir();
 };
 
-String _OS::get_external_data_dir() const {
-	return OS::get_singleton()->get_external_data_dir();
-}
-
 Error _OS::native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
 	return OS::get_singleton()->native_video_play(p_path, p_volume, p_audio_track, p_subtitle_track);
 };
@@ -1160,8 +1156,8 @@ bool _OS::is_keep_screen_on() const {
 	return OS::get_singleton()->is_keep_screen_on();
 }
 
-String _OS::get_system_dir(SystemDir p_dir) const {
-	return OS::get_singleton()->get_system_dir(OS::SystemDir(p_dir));
+String _OS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
+	return OS::get_singleton()->get_system_dir(OS::SystemDir(p_dir), p_shared_storage);
 }
 
 String _OS::get_scancode_string(uint32_t p_code) const {
@@ -1370,8 +1366,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_dynamic_memory_usage"), &_OS::get_dynamic_memory_usage);
 
 	ClassDB::bind_method(D_METHOD("get_user_data_dir"), &_OS::get_user_data_dir);
-	ClassDB::bind_method(D_METHOD("get_external_data_dir"), &_OS::get_external_data_dir);
-	ClassDB::bind_method(D_METHOD("get_system_dir", "dir"), &_OS::get_system_dir);
+	ClassDB::bind_method(D_METHOD("get_system_dir", "dir", "shared_storage"), &_OS::get_system_dir, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_config_dir"), &_OS::get_config_dir);
 	ClassDB::bind_method(D_METHOD("get_data_dir"), &_OS::get_data_dir);
 	ClassDB::bind_method(D_METHOD("get_cache_dir"), &_OS::get_cache_dir);
