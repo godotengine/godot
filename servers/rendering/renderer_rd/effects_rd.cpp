@@ -2098,10 +2098,9 @@ EffectsRD::EffectsRD(bool p_prefer_raster_effects) {
 		}
 	} else {
 		bokeh.compute_shader.initialize(bokeh_modes);
-
-		bokeh.shader_version = bokeh.compute_shader.version_create();
 		bokeh.compute_shader.set_variant_enabled(BOKEH_GEN_BOKEH_BOX_NOWEIGHT, false);
 		bokeh.compute_shader.set_variant_enabled(BOKEH_GEN_BOKEH_HEXAGONAL_NOWEIGHT, false);
+		bokeh.shader_version = bokeh.compute_shader.version_create();
 
 		for (int i = 0; i < BOKEH_MAX; i++) {
 			if (bokeh.compute_shader.is_variant_enabled(i)) {
