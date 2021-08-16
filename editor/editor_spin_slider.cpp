@@ -221,7 +221,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 	bool rtl = is_layout_rtl();
 	Vector2 size = get_size();
 
-	Ref<StyleBox> sb = get_theme_stylebox(SNAME("normal"), SNAME("LineEdit"));
+	Ref<StyleBox> sb = get_theme_stylebox(is_read_only() ? SNAME("read_only") : SNAME("normal"), SNAME("LineEdit"));
 	if (!flat) {
 		draw_style_box(sb, Rect2(Vector2(), size));
 	}
@@ -233,7 +233,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 	int label_width = font->get_string_size(label, font_size).width;
 	int number_width = size.width - sb->get_minimum_size().width - label_width - sep;
 
-	Ref<Texture2D> updown = get_theme_icon(SNAME("updown"), SNAME("SpinBox"));
+	Ref<Texture2D> updown = get_theme_icon(is_read_only() ? SNAME("updown_disabled") : SNAME("updown"), SNAME("SpinBox"));
 
 	if (get_step() == 1) {
 		number_width -= updown->get_width();
@@ -243,7 +243,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 	int vofs = (size.height - font->get_height(font_size)) / 2 + font->get_ascent(font_size);
 
-	Color fc = get_theme_color(SNAME("font_color"), SNAME("LineEdit"));
+	Color fc = get_theme_color(is_read_only() ? SNAME("font_uneditable_color") : SNAME("font_color"), SNAME("LineEdit"));
 	Color lc;
 	if (use_custom_label_color) {
 		lc = custom_label_color;
@@ -299,7 +299,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 	TS->free(num_rid);
 
 	if (get_step() == 1) {
-		Ref<Texture2D> updown2 = get_theme_icon(SNAME("updown"), SNAME("SpinBox"));
+		Ref<Texture2D> updown2 = get_theme_icon(is_read_only() ? SNAME("updown_disabled") : SNAME("updown"), SNAME("SpinBox"));
 		int updown_vofs = (size.height - updown2->get_height()) / 2;
 		if (rtl) {
 			updown_offset = sb->get_margin(SIDE_LEFT);

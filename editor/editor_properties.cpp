@@ -51,6 +51,10 @@ EditorPropertyNil::EditorPropertyNil() {
 
 ///////////////////// TEXT /////////////////////////
 
+void EditorPropertyText::_set_read_only(bool p_read_only) {
+	text->set_editable(!p_read_only);
+};
+
 void EditorPropertyText::_text_submitted(const String &p_string) {
 	if (updating) {
 		return;
@@ -107,6 +111,11 @@ EditorPropertyText::EditorPropertyText() {
 }
 
 ///////////////////// MULTILINE TEXT /////////////////////////
+
+void EditorPropertyMultilineText::_set_read_only(bool p_read_only) {
+	text->set_editable(!p_read_only);
+	open_big_text->set_disabled(p_read_only);
+};
 
 void EditorPropertyMultilineText::_big_text_changed() {
 	text->set_text(big_text->get_text());
@@ -179,6 +188,11 @@ EditorPropertyMultilineText::EditorPropertyMultilineText() {
 }
 
 ///////////////////// TEXT ENUM /////////////////////////
+
+void EditorPropertyTextEnum::_set_read_only(bool p_read_only) {
+	option_button->set_disabled(p_read_only);
+	edit_button->set_disabled(p_read_only);
+};
 
 void EditorPropertyTextEnum::_emit_changed_value(String p_string) {
 	if (string_name) {
@@ -328,6 +342,11 @@ EditorPropertyTextEnum::EditorPropertyTextEnum() {
 
 ///////////////////// PATH /////////////////////////
 
+void EditorPropertyPath::_set_read_only(bool p_read_only) {
+	path->set_editable(!p_read_only);
+	path_edit->set_disabled(p_read_only);
+};
+
 void EditorPropertyPath::_path_selected(const String &p_path) {
 	emit_changed(get_edited_property(), p_path);
 	update_property();
@@ -420,6 +439,10 @@ EditorPropertyPath::EditorPropertyPath() {
 
 ///////////////////// CLASS NAME /////////////////////////
 
+void EditorPropertyClassName::_set_read_only(bool p_read_only) {
+	property->set_disabled(p_read_only);
+};
+
 void EditorPropertyClassName::setup(const String &p_base_type, const String &p_selected_type) {
 	base_type = p_base_type;
 	dialog->set_base_type(base_type);
@@ -460,6 +483,10 @@ EditorPropertyClassName::EditorPropertyClassName() {
 }
 
 ///////////////////// MEMBER /////////////////////////
+
+void EditorPropertyMember::_set_read_only(bool p_read_only) {
+	property->set_disabled(p_read_only);
+};
 
 void EditorPropertyMember::_property_selected(const String &p_selected) {
 	emit_changed(get_edited_property(), p_selected);
@@ -557,6 +584,11 @@ EditorPropertyMember::EditorPropertyMember() {
 }
 
 ///////////////////// CHECK /////////////////////////
+
+void EditorPropertyCheck::_set_read_only(bool p_read_only) {
+	checkbox->set_disabled(p_read_only);
+};
+
 void EditorPropertyCheck::_checkbox_pressed() {
 	emit_changed(get_edited_property(), checkbox->is_pressed());
 }
@@ -579,6 +611,10 @@ EditorPropertyCheck::EditorPropertyCheck() {
 }
 
 ///////////////////// ENUM /////////////////////////
+
+void EditorPropertyEnum::_set_read_only(bool p_read_only) {
+	options->set_disabled(p_read_only);
+};
 
 void EditorPropertyEnum::_option_selected(int p_which) {
 	int64_t val = options->get_item_metadata(p_which);
@@ -627,6 +663,12 @@ EditorPropertyEnum::EditorPropertyEnum() {
 }
 
 ///////////////////// FLAGS /////////////////////////
+
+void EditorPropertyFlags::_set_read_only(bool p_read_only) {
+	for (CheckBox *check : flags) {
+		check->set_disabled(p_read_only);
+	}
+};
 
 void EditorPropertyFlags::_flag_toggled() {
 	uint32_t value = 0;
@@ -698,6 +740,7 @@ private:
 	bool expanded = false;
 	int expansion_rows = 0;
 	int hovered_index = -1;
+	bool read_only = false;
 
 	Size2 get_grid_size() const {
 		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
@@ -711,6 +754,10 @@ public:
 	int layer_count = 0;
 	Vector<String> names;
 	Vector<String> tooltips;
+
+	void set_read_only(bool p_read_only) {
+		read_only = p_read_only;
+	}
 
 	virtual Size2 get_minimum_size() const override {
 		Size2 min_size = get_grid_size();
@@ -736,6 +783,9 @@ public:
 	}
 
 	void gui_input(const Ref<InputEvent> &p_ev) override {
+		if (read_only) {
+			return;
+		}
 		const Ref<InputEventMouseMotion> mm = p_ev;
 		if (mm.is_valid()) {
 			bool expand_was_hovered = expand_hovered;
@@ -799,12 +849,12 @@ public:
 				const int bsize = (grid_size.height * 80 / 100) / 2;
 				const int h = bsize * 2 + 1;
 
-				Color color = get_theme_color(SNAME("highlight_color"), SNAME("Editor"));
+				Color color = get_theme_color(read_only ? SNAME("disabled_highlight_color") : SNAME("highlight_color"), SNAME("Editor"));
 
-				Color text_color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
+				Color text_color = get_theme_color(read_only ? SNAME("disabled_font_color") : SNAME("font_color"), SNAME("Editor"));
 				text_color.a *= 0.5;
 
-				Color text_color_on = get_theme_color(SNAME("font_hover_color"), SNAME("Editor"));
+				Color text_color_on = get_theme_color(read_only ? SNAME("disabled_font_color") : SNAME("font_hover_color"), SNAME("Editor"));
 				text_color_on.a *= 0.7;
 
 				const int vofs = (grid_size.height - h) / 2;
@@ -933,6 +983,11 @@ public:
 	static void _bind_methods() {
 		ADD_SIGNAL(MethodInfo("flag_changed", PropertyInfo(Variant::INT, "flag")));
 	}
+};
+
+void EditorPropertyLayers::_set_read_only(bool p_read_only) {
+	button->set_disabled(p_read_only);
+	grid->set_read_only(p_read_only);
 };
 
 void EditorPropertyLayers::_grid_changed(uint32_t p_grid) {
@@ -1071,6 +1126,10 @@ EditorPropertyLayers::EditorPropertyLayers() {
 
 ///////////////////// INT /////////////////////////
 
+void EditorPropertyInteger::_set_read_only(bool p_read_only) {
+	spin->set_read_only(p_read_only);
+};
+
 void EditorPropertyInteger::_value_changed(int64_t val) {
 	if (setting) {
 		return;
@@ -1113,6 +1172,10 @@ EditorPropertyInteger::EditorPropertyInteger() {
 
 ///////////////////// OBJECT ID /////////////////////////
 
+void EditorPropertyObjectID::_set_read_only(bool p_read_only) {
+	edit->set_disabled(p_read_only);
+};
+
 void EditorPropertyObjectID::_edit_pressed() {
 	emit_signal(SNAME("object_id_selected"), get_edited_property(), get_edited_object()->get(get_edited_property()));
 }
@@ -1150,6 +1213,10 @@ EditorPropertyObjectID::EditorPropertyObjectID() {
 }
 
 ///////////////////// FLOAT /////////////////////////
+
+void EditorPropertyFloat::_set_read_only(bool p_read_only) {
+	spin->set_read_only(p_read_only);
+};
 
 void EditorPropertyFloat::_value_changed(double val) {
 	if (setting) {
@@ -1197,7 +1264,14 @@ EditorPropertyFloat::EditorPropertyFloat() {
 
 ///////////////////// EASING /////////////////////////
 
+void EditorPropertyEasing::_set_read_only(bool p_read_only) {
+	spin->set_read_only(p_read_only);
+};
+
 void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
+	if (is_read_only()) {
+		return;
+	}
 	const Ref<InputEventMouseButton> mb = p_ev;
 	if (mb.is_valid()) {
 		if (mb->is_double_click() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
@@ -1271,12 +1345,12 @@ void EditorPropertyEasing::_draw_easing() {
 
 	const Ref<Font> f = get_theme_font(SNAME("font"), SNAME("Label"));
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
-	const Color font_color = get_theme_color(SNAME("font_color"), SNAME("Label"));
+	const Color font_color = get_theme_color(is_read_only() ? SNAME("font_uneditable_color") : SNAME("font_color"), SNAME("LineEdit"));
 	Color line_color;
 	if (dragging) {
 		line_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 	} else {
-		line_color = get_theme_color(SNAME("font_color"), SNAME("Label")) * Color(1, 1, 1, 0.9);
+		line_color = get_theme_color(is_read_only() ? SNAME("font_uneditable_color") : SNAME("font_color"), SNAME("LineEdit")) * Color(1, 1, 1, 0.9);
 	}
 
 	Vector<Point2> points;
@@ -1409,6 +1483,12 @@ EditorPropertyEasing::EditorPropertyEasing() {
 
 ///////////////////// VECTOR2 /////////////////////////
 
+void EditorPropertyVector2::_set_read_only(bool p_read_only) {
+	for (int i = 0; i < 2; i++) {
+		spin[i]->set_read_only(p_read_only);
+	}
+};
+
 void EditorPropertyVector2::_value_changed(double val, const String &p_name) {
 	if (setting) {
 		return;
@@ -1491,6 +1571,12 @@ EditorPropertyVector2::EditorPropertyVector2(bool p_force_wide) {
 }
 
 ///////////////////// RECT2 /////////////////////////
+
+void EditorPropertyRect2::_set_read_only(bool p_read_only) {
+	for (int i = 0; i < 4; i++) {
+		spin[i]->set_read_only(p_read_only);
+	}
+};
 
 void EditorPropertyRect2::_value_changed(double val, const String &p_name) {
 	if (setting) {
@@ -1588,6 +1674,12 @@ EditorPropertyRect2::EditorPropertyRect2(bool p_force_wide) {
 }
 
 ///////////////////// VECTOR3 /////////////////////////
+
+void EditorPropertyVector3::_set_read_only(bool p_read_only) {
+	for (int i = 0; i < 3; i++) {
+		spin[i]->set_read_only(p_read_only);
+	}
+};
 
 void EditorPropertyVector3::_value_changed(double val, const String &p_name) {
 	if (setting) {
@@ -1701,6 +1793,12 @@ EditorPropertyVector3::EditorPropertyVector3(bool p_force_wide) {
 
 ///////////////////// VECTOR2i /////////////////////////
 
+void EditorPropertyVector2i::_set_read_only(bool p_read_only) {
+	for (int i = 0; i < 2; i++) {
+		spin[i]->set_read_only(p_read_only);
+	}
+};
+
 void EditorPropertyVector2i::_value_changed(double val, const String &p_name) {
 	if (setting) {
 		return;
@@ -1783,6 +1881,12 @@ EditorPropertyVector2i::EditorPropertyVector2i(bool p_force_wide) {
 }
 
 ///////////////////// RECT2i /////////////////////////
+
+void EditorPropertyRect2i::_set_read_only(bool p_read_only) {
+	for (int i = 0; i < 4; i++) {
+		spin[i]->set_read_only(p_read_only);
+	}
+};
 
 void EditorPropertyRect2i::_value_changed(double val, const String &p_name) {
 	if (setting) {
@@ -1881,6 +1985,12 @@ EditorPropertyRect2i::EditorPropertyRect2i(bool p_force_wide) {
 
 ///////////////////// VECTOR3i /////////////////////////
 
+void EditorPropertyVector3i::_set_read_only(bool p_read_only) {
+	for (int i = 0; i < 3; i++) {
+		spin[i]->set_read_only(p_read_only);
+	}
+};
+
 void EditorPropertyVector3i::_value_changed(double val, const String &p_name) {
 	if (setting) {
 		return;
@@ -1964,6 +2074,12 @@ EditorPropertyVector3i::EditorPropertyVector3i(bool p_force_wide) {
 }
 
 ///////////////////// PLANE /////////////////////////
+
+void EditorPropertyPlane::_set_read_only(bool p_read_only) {
+	for (int i = 0; i < 4; i++) {
+		spin[i]->set_read_only(p_read_only);
+	}
+};
 
 void EditorPropertyPlane::_value_changed(double val, const String &p_name) {
 	if (setting) {
@@ -2052,6 +2168,12 @@ EditorPropertyPlane::EditorPropertyPlane(bool p_force_wide) {
 
 ///////////////////// QUATERNION /////////////////////////
 
+void EditorPropertyQuaternion::_set_read_only(bool p_read_only) {
+	for (int i = 0; i < 4; i++) {
+		spin[i]->set_read_only(p_read_only);
+	}
+};
+
 void EditorPropertyQuaternion::_value_changed(double val, const String &p_name) {
 	if (setting) {
 		return;
@@ -2136,6 +2258,12 @@ EditorPropertyQuaternion::EditorPropertyQuaternion() {
 
 ///////////////////// AABB /////////////////////////
 
+void EditorPropertyAABB::_set_read_only(bool p_read_only) {
+	for (int i = 0; i < 6; i++) {
+		spin[i]->set_read_only(p_read_only);
+	}
+};
+
 void EditorPropertyAABB::_value_changed(double val, const String &p_name) {
 	if (setting) {
 		return;
@@ -2213,6 +2341,12 @@ EditorPropertyAABB::EditorPropertyAABB() {
 
 ///////////////////// TRANSFORM2D /////////////////////////
 
+void EditorPropertyTransform2D::_set_read_only(bool p_read_only) {
+	for (int i = 0; i < 6; i++) {
+		spin[i]->set_read_only(p_read_only);
+	}
+};
+
 void EditorPropertyTransform2D::_value_changed(double val, const String &p_name) {
 	if (setting) {
 		return;
@@ -2288,6 +2422,12 @@ EditorPropertyTransform2D::EditorPropertyTransform2D() {
 }
 
 ///////////////////// BASIS /////////////////////////
+
+void EditorPropertyBasis::_set_read_only(bool p_read_only) {
+	for (int i = 0; i < 9; i++) {
+		spin[i]->set_read_only(p_read_only);
+	}
+};
 
 void EditorPropertyBasis::_value_changed(double val, const String &p_name) {
 	if (setting) {
@@ -2370,6 +2510,12 @@ EditorPropertyBasis::EditorPropertyBasis() {
 }
 
 ///////////////////// TRANSFORM /////////////////////////
+
+void EditorPropertyTransform3D::_set_read_only(bool p_read_only) {
+	for (int i = 0; i < 12; i++) {
+		spin[i]->set_read_only(p_read_only);
+	}
+};
 
 void EditorPropertyTransform3D::_value_changed(double val, const String &p_name) {
 	if (setting) {
@@ -2461,6 +2607,10 @@ EditorPropertyTransform3D::EditorPropertyTransform3D() {
 
 ////////////// COLOR PICKER //////////////////////
 
+void EditorPropertyColor::_set_read_only(bool p_read_only) {
+	picker->set_disabled(p_read_only);
+};
+
 void EditorPropertyColor::_color_changed(const Color &p_color) {
 	// Cancel the color change if the current color is identical to the new one.
 	if (get_edited_object()->get(get_edited_property()) == p_color) {
@@ -2532,6 +2682,11 @@ EditorPropertyColor::EditorPropertyColor() {
 }
 
 ////////////// NODE PATH //////////////////////
+
+void EditorPropertyNodePath::_set_read_only(bool p_read_only) {
+	assign->set_disabled(p_read_only);
+	clear->set_disabled(p_read_only);
+};
 
 void EditorPropertyNodePath::_node_selected(const NodePath &p_path) {
 	NodePath path = p_path;
@@ -2677,6 +2832,10 @@ EditorPropertyRID::EditorPropertyRID() {
 }
 
 ////////////// RESOURCE //////////////////////
+
+void EditorPropertyResource::_set_read_only(bool p_read_only) {
+	resource_picker->set_editable(!p_read_only);
+};
 
 void EditorPropertyResource::_resource_selected(const RES &p_resource) {
 	if (use_sub_inspector) {

@@ -674,7 +674,7 @@ void LineEdit::_notification(int p_what) {
 			int y_ofs = style->get_offset().y + (y_area - text_height) / 2;
 
 			Color selection_color = get_theme_color(SNAME("selection_color"));
-			Color font_color = is_editable() ? get_theme_color(SNAME("font_color")) : get_theme_color(SNAME("font_uneditable_color"));
+			Color font_color = get_theme_color(is_editable() ? SNAME("font_color") : SNAME("font_uneditable_color"));
 			Color font_selected_color = get_theme_color(SNAME("font_selected_color"));
 			Color caret_color = get_theme_color(SNAME("caret_color"));
 
