@@ -809,6 +809,7 @@ public:
 	void *get_instance_binding(void *p_token, const GDNativeInstanceBindingCallbacks *p_callbacks);
 	// Used on creation by binding only.
 	void set_instance_binding(void *p_token, void *p_binding, const GDNativeInstanceBindingCallbacks *p_callbacks);
+	bool has_instance_binding(void *p_token);
 
 	void clear_internal_resource_paths();
 

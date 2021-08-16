@@ -1811,6 +1811,21 @@ void *Object::get_instance_binding(void *p_token, const GDNativeInstanceBindingC
 	return binding;
 }
 
+bool Object::has_instance_binding(void *p_token) {
+	bool found = false;
+	_instance_binding_mutex.lock();
+	for (uint32_t i = 0; i < _instance_binding_count; i++) {
+		if (_instance_bindings[i].token == p_token) {
+			found = true;
+			break;
+		}
+	}
+
+	_instance_binding_mutex.unlock();
+
+	return found;
+}
+
 void Object::_construct_object(bool p_reference) {
 	type_is_reference = p_reference;
 	_instance_id = ObjectDB::add_instance(this);

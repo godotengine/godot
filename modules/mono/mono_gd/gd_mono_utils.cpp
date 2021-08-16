@@ -54,7 +54,6 @@
 namespace GDMonoUtils {
 
 MonoObject *unmanaged_get_managed(Object *unmanaged) {
-#if 0
 	if (!unmanaged) {
 		return nullptr;
 	}
@@ -69,22 +68,10 @@ MonoObject *unmanaged_get_managed(Object *unmanaged) {
 
 	// If the owner does not have a CSharpInstance...
 
-	void *data = unmanaged->get_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index());
-
+	void *data = CSharpLanguage::get_instance_binding(unmanaged);
 	ERR_FAIL_NULL_V(data, nullptr);
-
 	CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)data)->value();
-
-	if (!script_binding.inited) {
-		MutexLock lock(CSharpLanguage::get_singleton()->get_language_bind_mutex());
-
-		if (!script_binding.inited) { // Other thread may have set it up
-			// Already had a binding that needs to be setup
-			CSharpLanguage::get_singleton()->setup_csharp_script_binding(script_binding, unmanaged);
-
-			ERR_FAIL_COND_V(!script_binding.inited, nullptr);
-		}
-	}
+	ERR_FAIL_COND_V(!script_binding.inited, nullptr);
 
 	MonoGCHandleData &gchandle = script_binding.gchandle;
 
@@ -121,8 +108,6 @@ MonoObject *unmanaged_get_managed(Object *unmanaged) {
 	}
 
 	return mono_object;
-#endif
-	return nullptr;
 }
 
 void set_main_thread(MonoThread *p_thread) {

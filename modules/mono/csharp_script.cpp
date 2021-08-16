@@ -82,6 +82,12 @@ static bool _create_project_solution_if_needed() {
 
 CSharpLanguage *CSharpLanguage::singleton = nullptr;
 
+GDNativeInstanceBindingCallbacks CSharpLanguage::_instance_binding_callbacks = {
+	&_instance_binding_create_callback,
+	&_instance_binding_free_callback,
+	&_instance_binding_reference_callback
+};
+
 String CSharpLanguage::get_name() const {
 	return "C#";
 }
@@ -1444,46 +1450,46 @@ bool CSharpLanguage::setup_csharp_script_binding(CSharpScriptBinding &r_script_b
 	return true;
 }
 
-void *CSharpLanguage::alloc_instance_binding_data(Object *p_object) {
-	MutexLock lock(language_bind_mutex);
+Map<Object *, CSharpScriptBinding>::Element *CSharpLanguage::insert_script_binding(Object *p_object, const CSharpScriptBinding &p_script_binding) {
+	return script_bindings.insert(p_object, p_script_binding);
+}
 
-	Map<Object *, CSharpScriptBinding>::Element *match = script_bindings.find(p_object);
+void *CSharpLanguage::_instance_binding_create_callback(void *, void *p_instance) {
+	CSharpLanguage *csharp_lang = CSharpLanguage::get_singleton();
+
+	MutexLock lock(csharp_lang->language_bind_mutex);
+
+	Map<Object *, CSharpScriptBinding>::Element *match = csharp_lang->script_bindings.find((Object *)p_instance);
 	if (match) {
 		return (void *)match;
 	}
 
 	CSharpScriptBinding script_binding;
 
-	if (!setup_csharp_script_binding(script_binding, p_object)) {
-		return nullptr;
-	}
-
-	return (void *)insert_script_binding(p_object, script_binding);
+	return (void *)csharp_lang->insert_script_binding((Object *)p_instance, script_binding);
 }
 
-Map<Object *, CSharpScriptBinding>::Element *CSharpLanguage::insert_script_binding(Object *p_object, const CSharpScriptBinding &p_script_binding) {
-	return script_bindings.insert(p_object, p_script_binding);
-}
+void CSharpLanguage::_instance_binding_free_callback(void *, void *, void *p_binding) {
+	CSharpLanguage *csharp_lang = CSharpLanguage::get_singleton();
 
-void CSharpLanguage::free_instance_binding_data(void *p_data) {
 	if (GDMono::get_singleton() == nullptr) {
 #ifdef DEBUG_ENABLED
-		CRASH_COND(!script_bindings.is_empty());
+		CRASH_COND(!csharp_lang->script_bindings.is_empty());
 #endif
 		// Mono runtime finalized, all the gchandle bindings were already released
 		return;
 	}
 
-	if (finalizing) {
+	if (csharp_lang->finalizing) {
 		return; // inside CSharpLanguage::finish(), all the gchandle bindings are released there
 	}
 
 	GD_MONO_ASSERT_THREAD_ATTACHED;
 
 	{
-		MutexLock lock(language_bind_mutex);
+		MutexLock lock(csharp_lang->language_bind_mutex);
 
-		Map<Object *, CSharpScriptBinding>::Element *data = (Map<Object *, CSharpScriptBinding>::Element *)p_data;
+		Map<Object *, CSharpScriptBinding>::Element *data = (Map<Object *, CSharpScriptBinding>::Element *)p_binding;
 
 		CSharpScriptBinding &script_binding = data->value();
 
@@ -1497,62 +1503,21 @@ void CSharpLanguage::free_instance_binding_data(void *p_data) {
 			script_binding.gchandle.release();
 		}
 
-		script_bindings.erase(data);
+		csharp_lang->script_bindings.erase(data);
 	}
 }
 
-void CSharpLanguage::refcount_incremented_instance_binding(Object *p_object) {
-#if 0
-	RefCounted *rc_owner = Object::cast_to<RefCounted>(p_object);
+GDNativeBool CSharpLanguage::_instance_binding_reference_callback(void *p_token, void *p_binding, GDNativeBool p_reference) {
+	CRASH_COND(!p_binding);
+
+	CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)p_binding)->get();
+
+	RefCounted *rc_owner = Object::cast_to<RefCounted>(script_binding.owner);
 
 #ifdef DEBUG_ENABLED
 	CRASH_COND(!rc_owner);
-	CRASH_COND(!p_object->has_script_instance_binding(get_language_index()));
 #endif
 
-	void *data = p_object->get_script_instance_binding(get_language_index());
-	CRASH_COND(!data);
-
-	CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)data)->get();
-	MonoGCHandleData &gchandle = script_binding.gchandle;
-
-	if (!script_binding.inited) {
-		return;
-	}
-
-	if (rc_owner->reference_get_count() > 1 && gchandle.is_weak()) { // The managed side also holds a reference, hence 1 instead of 0
-		GD_MONO_SCOPE_THREAD_ATTACH;
-
-		// The reference count was increased after the managed side was the only one referencing our owner.
-		// This means the owner is being referenced again by the unmanaged side,
-		// so the owner must hold the managed side alive again to avoid it from being GCed.
-
-		MonoObject *target = gchandle.get_target();
-		if (!target) {
-			return; // Called after the managed side was collected, so nothing to do here
-		}
-
-		// Release the current weak handle and replace it with a strong handle.
-		MonoGCHandleData strong_gchandle = MonoGCHandleData::new_strong_handle(target);
-		gchandle.release();
-		gchandle = strong_gchandle;
-	}
-#endif
-}
-
-bool CSharpLanguage::refcount_decremented_instance_binding(Object *p_object) {
-#if 0
-	RefCounted *rc_owner = Object::cast_to<RefCounted>(p_object);
-
-#ifdef DEBUG_ENABLED
-	CRASH_COND(!rc_owner);
-	CRASH_COND(!p_object->has_script_instance_binding(get_language_index()));
-#endif
-
-	void *data = p_object->get_script_instance_binding(get_language_index());
-	CRASH_COND(!data);
-
-	CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)data)->get();
 	MonoGCHandleData &gchandle = script_binding.gchandle;
 
 	int refcount = rc_owner->reference_get_count();
@@ -1561,28 +1526,87 @@ bool CSharpLanguage::refcount_decremented_instance_binding(Object *p_object) {
 		return refcount == 0;
 	}
 
-	if (refcount == 1 && !gchandle.is_released() && !gchandle.is_weak()) { // The managed side also holds a reference, hence 1 instead of 0
-		GD_MONO_SCOPE_THREAD_ATTACH;
+	if (p_reference) {
+		// Refcount incremented
+		if (refcount > 1 && gchandle.is_weak()) { // The managed side also holds a reference, hence 1 instead of 0
+			GD_MONO_SCOPE_THREAD_ATTACH;
 
-		// If owner owner is no longer referenced by the unmanaged side,
-		// the managed instance takes responsibility of deleting the owner when GCed.
+			// The reference count was increased after the managed side was the only one referencing our owner.
+			// This means the owner is being referenced again by the unmanaged side,
+			// so the owner must hold the managed side alive again to avoid it from being GCed.
 
-		MonoObject *target = gchandle.get_target();
-		if (!target) {
-			return refcount == 0; // Called after the managed side was collected, so nothing to do here
+			MonoObject *target = gchandle.get_target();
+			if (!target) {
+				return false; // Called after the managed side was collected, so nothing to do here
+			}
+
+			// Release the current weak handle and replace it with a strong handle.
+			MonoGCHandleData strong_gchandle = MonoGCHandleData::new_strong_handle(target);
+			gchandle.release();
+			gchandle = strong_gchandle;
 		}
 
-		// Release the current strong handle and replace it with a weak handle.
-		MonoGCHandleData weak_gchandle = MonoGCHandleData::new_weak_handle(target);
-		gchandle.release();
-		gchandle = weak_gchandle;
-
 		return false;
+	} else {
+		// Refcount decremented
+		if (refcount == 1 && !gchandle.is_released() && !gchandle.is_weak()) { // The managed side also holds a reference, hence 1 instead of 0
+			GD_MONO_SCOPE_THREAD_ATTACH;
+
+			// If owner owner is no longer referenced by the unmanaged side,
+			// the managed instance takes responsibility of deleting the owner when GCed.
+
+			MonoObject *target = gchandle.get_target();
+			if (!target) {
+				return refcount == 0; // Called after the managed side was collected, so nothing to do here
+			}
+
+			// Release the current strong handle and replace it with a weak handle.
+			MonoGCHandleData weak_gchandle = MonoGCHandleData::new_weak_handle(target);
+			gchandle.release();
+			gchandle = weak_gchandle;
+
+			return false;
+		}
+
+		return refcount == 0;
+	}
+}
+
+void *CSharpLanguage::get_instance_binding(Object *p_object) {
+	void *binding = p_object->get_instance_binding(get_singleton(), &_instance_binding_callbacks);
+
+	// Initially this was in `_instance_binding_create_callback`. However, after the new instance
+	// binding re-write it was resulting in a deadlock in `_instance_binding_reference`, as
+	// `setup_csharp_script_binding` may call `reference()`. It was moved here outside to fix that.
+
+	if (binding) {
+		CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)binding)->value();
+
+		if (!script_binding.inited) {
+			MutexLock lock(CSharpLanguage::get_singleton()->get_language_bind_mutex());
+
+			if (!script_binding.inited) { // Another thread may have set it up
+				CSharpLanguage::get_singleton()->setup_csharp_script_binding(script_binding, p_object);
+			}
+		}
 	}
 
-	return refcount == 0;
+	return binding;
+}
+
+void *CSharpLanguage::get_existing_instance_binding(Object *p_object) {
+#ifdef DEBUG_ENABLED
+	CRASH_COND(p_object->has_instance_binding(p_object));
 #endif
-	return false;
+	return p_object->get_instance_binding(get_singleton(), &_instance_binding_callbacks);
+}
+
+void CSharpLanguage::set_instance_binding(Object *p_object, void *p_binding) {
+	p_object->set_instance_binding(get_singleton(), p_binding, &_instance_binding_callbacks);
+}
+
+bool CSharpLanguage::has_instance_binding(Object *p_object) {
+	return p_object->has_instance_binding(get_singleton());
 }
 
 CSharpInstance *CSharpInstance::create_for_managed_type(Object *p_owner, CSharpScript *p_script, const MonoGCHandleData &p_gchandle) {
@@ -2260,28 +2284,15 @@ CSharpInstance::~CSharpInstance() {
 		// Otherwise, the unsafe reference debug checks will incorrectly detect a bug.
 		bool die = _unreference_owner_unsafe();
 		CRASH_COND(die); // `owner_keep_alive` holds a reference, so it can't die
-#if 0
-		void *data = owner->get_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index());
 
-
+		void *data = CSharpLanguage::get_instance_binding(owner);
 		CRASH_COND(data == nullptr);
-
 		CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)data)->get();
-
-		if (!script_binding.inited) {
-			MutexLock lock(CSharpLanguage::get_singleton()->get_language_bind_mutex());
-
-			if (!script_binding.inited) { // Other thread may have set it up
-				// Already had a binding that needs to be setup
-				CSharpLanguage::get_singleton()->setup_csharp_script_binding(script_binding, owner);
-				CRASH_COND(!script_binding.inited);
-			}
-		}
+		CRASH_COND(!script_binding.inited);
 
 #ifdef DEBUG_ENABLED
 		// The "instance binding" holds a reference so the refcount should be at least 2 before `scope_keep_owner_alive` goes out of scope
 		CRASH_COND(rc_owner->reference_get_count() <= 1);
-#endif
 #endif
 	}
 
@@ -3100,10 +3111,10 @@ CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_arg
 		// Hold it alive. Important if we have to dispose a script instance binding before creating the CSharpInstance.
 		ref = Ref<RefCounted>(static_cast<RefCounted *>(p_owner));
 	}
-#if 0
+
 	// If the object had a script instance binding, dispose it before adding the CSharpInstance
-	if (p_owner->has_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index())) {
-		void *data = p_owner->get_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index());
+	if (CSharpLanguage::has_instance_binding(p_owner)) {
+		void *data = CSharpLanguage::get_existing_instance_binding(p_owner);
 		CRASH_COND(data == nullptr);
 
 		CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)data)->get();
@@ -3122,7 +3133,7 @@ CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_arg
 			script_binding.inited = false;
 		}
 	}
-#endif
+
 	CSharpInstance *instance = memnew(CSharpInstance(Ref<CSharpScript>(this)));
 	instance->base_ref_counted = p_is_ref_counted;
 	instance->owner = p_owner;
@@ -3192,7 +3203,7 @@ Variant CSharpScript::_new(const Variant **p_args, int p_argcount, Callable::Cal
 	CSharpInstance *instance = _create_instance(p_args, p_argcount, owner, r != nullptr, r_error);
 	if (!instance) {
 		if (ref.is_null()) {
-			memdelete(owner); //no owner, sorry
+			memdelete(owner); // no owner, sorry
 		}
 		return Variant();
 	}
