@@ -3849,6 +3849,18 @@ VS::BlendShapeMode RasterizerStorageGLES3::mesh_get_blend_shape_mode(RID p_mesh)
 	return mesh->blend_shape_mode;
 }
 
+void RasterizerStorageGLES3::mesh_set_blend_shape_values(RID p_mesh, PoolVector<float> p_values) {
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND(!mesh);
+	mesh->blend_shape_values = p_values;
+}
+
+PoolVector<float> RasterizerStorageGLES3::mesh_get_blend_shape_values(RID p_mesh) const {
+	const Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh, PoolVector<float>());
+	return mesh->blend_shape_values;
+}
+
 void RasterizerStorageGLES3::mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data) {
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);

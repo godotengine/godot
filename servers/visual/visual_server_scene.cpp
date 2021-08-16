@@ -518,7 +518,7 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 			instance->base_data = nullptr;
 		}
 
-		instance->blend_values.clear();
+		instance->blend_values = PoolRealArray();
 
 		for (int i = 0; i < instance->materials.size(); i++) {
 			if (instance->materials[i].is_valid()) {
@@ -714,7 +714,8 @@ void VisualServerScene::instance_set_blend_shape_weight(RID p_instance, int p_sh
 	}
 
 	ERR_FAIL_INDEX(p_shape, instance->blend_values.size());
-	instance->blend_values.write[p_shape] = p_weight;
+	instance->blend_values.write().ptr()[p_shape] = p_weight;
+	VSG::storage->mesh_set_blend_shape_values(instance->base, instance->blend_values);
 }
 
 void VisualServerScene::instance_set_surface_material(RID p_instance, int p_surface, RID p_material) {
@@ -3806,7 +3807,7 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 			if (new_blend_shape_count != p_instance->blend_values.size()) {
 				p_instance->blend_values.resize(new_blend_shape_count);
 				for (int i = 0; i < new_blend_shape_count; i++) {
-					p_instance->blend_values.write[i] = 0;
+					p_instance->blend_values.write().ptr()[i] = 0;
 				}
 			}
 		}

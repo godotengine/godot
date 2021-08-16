@@ -715,6 +715,7 @@ public:
 		Vector<Surface *> surfaces;
 		int blend_shape_count;
 		VS::BlendShapeMode blend_shape_mode;
+		PoolRealArray blend_shape_values;
 		AABB custom_aabb;
 		mutable uint64_t last_pass;
 		SelfList<MultiMesh>::List multimeshes;
@@ -745,6 +746,9 @@ public:
 
 	virtual void mesh_set_blend_shape_mode(RID p_mesh, VS::BlendShapeMode p_mode);
 	virtual VS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const;
+
+	virtual void mesh_set_blend_shape_values(RID p_mesh, PoolVector<float> p_values);
+	virtual PoolVector<float> mesh_get_blend_shape_values(RID p_mesh) const;
 
 	virtual void mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data);
 
