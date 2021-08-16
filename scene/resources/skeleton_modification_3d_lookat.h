@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  bone_attachment_3d.h                                                 */
+/*  skeleton_modification_3d_lookat.h                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,70 +28,62 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BONE_ATTACHMENT_H
-#define BONE_ATTACHMENT_H
-
 #include "scene/3d/skeleton_3d.h"
+#include "scene/resources/skeleton_modification_3d.h"
 
-class BoneAttachment3D : public Node3D {
-	GDCLASS(BoneAttachment3D, Node3D);
+#ifndef SKELETONMODIFICATION3DLOOKAT_H
+#define SKELETONMODIFICATION3DLOOKAT_H
 
-	bool bound = false;
-	String bone_name;
+class SkeletonModification3DLookAt : public SkeletonModification3D {
+	GDCLASS(SkeletonModification3DLookAt, SkeletonModification3D);
+
+private:
+	String bone_name = "";
 	int bone_idx = -1;
+	NodePath target_node;
+	ObjectID target_node_cache;
 
-	bool override_pose = false;
-	int override_mode = 0;
-	bool _override_dirty = false;
+	Vector3 additional_rotation = Vector3(1, 0, 0);
+	bool lock_rotation_to_plane = false;
+	int lock_rotation_plane = ROTATION_PLANE_X;
 
-	enum OVERRIDE_MODES {
-		MODE_GLOBAL_POSE,
-		MODE_LOCAL_POSE,
-		MODE_CUSTOM_POSE
-	};
-
-	bool use_external_skeleton = false;
-	NodePath external_skeleton_node;
-	ObjectID external_skeleton_node_cache;
-
-	void _check_bind();
-	void _check_unbind();
-
-	void _transform_changed();
-	void _update_external_skeleton_cache();
-	Skeleton3D *_get_skeleton3d();
+	void update_cache();
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const override;
+	static void _bind_methods();
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 	bool _set(const StringName &p_path, const Variant &p_value);
 	void _get_property_list(List<PropertyInfo> *p_list) const;
-	void _notification(int p_what);
-
-	static void _bind_methods();
 
 public:
-	virtual TypedArray<String> get_configuration_warnings() const override;
+	enum ROTATION_PLANE {
+		ROTATION_PLANE_X,
+		ROTATION_PLANE_Y,
+		ROTATION_PLANE_Z
+	};
 
-	void set_bone_name(const String &p_name);
+	virtual void _execute(real_t p_delta) override;
+	virtual void _setup_modification(SkeletonModificationStack3D *p_stack) override;
+
+	void set_bone_name(String p_name);
 	String get_bone_name() const;
 
-	void set_bone_idx(const int &p_idx);
-	int get_bone_idx() const;
+	void set_bone_index(int p_idx);
+	int get_bone_index() const;
 
-	void set_override_pose(bool p_override);
-	bool get_override_pose() const;
-	void set_override_mode(int p_mode);
-	int get_override_mode() const;
+	void set_target_node(const NodePath &p_target_node);
+	NodePath get_target_node() const;
 
-	void set_use_external_skeleton(bool p_external_skeleton);
-	bool get_use_external_skeleton() const;
-	void set_external_skeleton(NodePath p_skeleton);
-	NodePath get_external_skeleton() const;
+	void set_additional_rotation(Vector3 p_offset);
+	Vector3 get_additional_rotation() const;
 
-	virtual void on_bone_pose_update(int p_bone_index);
+	void set_lock_rotation_to_plane(bool p_lock_to_plane);
+	bool get_lock_rotation_to_plane() const;
+	void set_lock_rotation_plane(int p_plane);
+	int get_lock_rotation_plane() const;
 
-	BoneAttachment3D();
+	SkeletonModification3DLookAt();
+	~SkeletonModification3DLookAt();
 };
 
-#endif // BONE_ATTACHMENT_H
+#endif //SKELETONMODIFICATION3DLOOKAT_H

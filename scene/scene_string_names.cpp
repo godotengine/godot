@@ -63,6 +63,7 @@ SceneStringNames::SceneStringNames() {
 	animation_started = StaticCString::create("animation_started");
 
 	pose_updated = StaticCString::create("pose_updated");
+	bone_pose_changed = StaticCString::create("bone_pose_changed");
 
 	mouse_entered = StaticCString::create("mouse_entered");
 	mouse_exited = StaticCString::create("mouse_exited");

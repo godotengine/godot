@@ -381,6 +381,18 @@ Quaternion Basis::get_rotation_quaternion() const {
 	return m.get_quaternion();
 }
 
+void Basis::rotate_to_align(Vector3 p_start_direction, Vector3 p_end_direction) {
+	// Takes two vectors and rotates the basis from the first vector to the second vector.
+	// Adopted from: https://gist.github.com/kevinmoran/b45980723e53edeb8a5a43c49f134724
+	const Vector3 axis = p_start_direction.cross(p_end_direction).normalized();
+	if (axis.length_squared() != 0) {
+		real_t dot = p_start_direction.dot(p_end_direction);
+		dot = CLAMP(dot, -1.0, 1.0);
+		const real_t angle_rads = Math::acos(dot);
+		set_axis_angle(axis, angle_rads);
+	}
+}
+
 void Basis::get_rotation_axis_angle(Vector3 &p_axis, real_t &p_angle) const {
 	// Assumes that the matrix can be decomposed into a proper rotation and scaling matrix as M = R.S,
 	// and returns the Euler angles corresponding to the rotation part, complementing get_scale().

@@ -168,7 +168,15 @@
 #include "scene/resources/skeleton_modification_2d_physicalbones.h"
 #include "scene/resources/skeleton_modification_2d_stackholder.h"
 #include "scene/resources/skeleton_modification_2d_twoboneik.h"
+#include "scene/resources/skeleton_modification_3d.h"
+#include "scene/resources/skeleton_modification_3d_ccdik.h"
+#include "scene/resources/skeleton_modification_3d_fabrik.h"
+#include "scene/resources/skeleton_modification_3d_jiggle.h"
+#include "scene/resources/skeleton_modification_3d_lookat.h"
+#include "scene/resources/skeleton_modification_3d_stackholder.h"
+#include "scene/resources/skeleton_modification_3d_twoboneik.h"
 #include "scene/resources/skeleton_modification_stack_2d.h"
+#include "scene/resources/skeleton_modification_stack_3d.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/sky_material.h"
 #include "scene/resources/sphere_shape_3d.h"
@@ -753,6 +761,15 @@ void register_scene_types() {
 	GDREGISTER_CLASS(WorldMarginShape3D);
 	GDREGISTER_CLASS(ConvexPolygonShape3D);
 	GDREGISTER_CLASS(ConcavePolygonShape3D);
+
+	ClassDB::register_class<SkeletonModificationStack3D>();
+	ClassDB::register_class<SkeletonModification3D>();
+	ClassDB::register_class<SkeletonModification3DLookAt>();
+	ClassDB::register_class<SkeletonModification3DCCDIK>();
+	ClassDB::register_class<SkeletonModification3DFABRIK>();
+	ClassDB::register_class<SkeletonModification3DJiggle>();
+	ClassDB::register_class<SkeletonModification3DTwoBoneIK>();
+	ClassDB::register_class<SkeletonModification3DStackHolder>();
 
 	OS::get_singleton()->yield(); //may take time to init
 
