@@ -30,6 +30,8 @@
 
 #include "particles_material.h"
 
+#include "core/version.h"
+
 Mutex ParticlesMaterial::material_mutex;
 SelfList<ParticlesMaterial>::List *ParticlesMaterial::dirty_materials = nullptr;
 Map<ParticlesMaterial::MaterialKey, ParticlesMaterial::ShaderData> ParticlesMaterial::shader_map;
@@ -141,7 +143,10 @@ void ParticlesMaterial::_update_shader() {
 
 	//must create a shader!
 
-	String code = "shader_type particles;\n";
+	// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
+	String code = "// NOTE: Shader automatically converted from " VERSION_NAME " " VERSION_FULL_CONFIG "'s ParticlesMaterial.\n\n";
+
+	code += "shader_type particles;\n";
 
 	if (collision_scale) {
 		code += "render_mode collision_use_scale;\n";

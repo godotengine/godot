@@ -30,6 +30,8 @@
 
 #include "sky_material.h"
 
+#include "core/version.h"
+
 Mutex ProceduralSkyMaterial::shader_mutex;
 RID ProceduralSkyMaterial::shader;
 
@@ -204,7 +206,10 @@ void ProceduralSkyMaterial::_update_shader() {
 	if (shader.is_null()) {
 		shader = RS::get_singleton()->shader_create();
 
+		// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
 		RS::get_singleton()->shader_set_code(shader, R"(
+// NOTE: Shader automatically converted from )" VERSION_NAME " " VERSION_FULL_CONFIG R"('s ProceduralSkyMaterial.
+
 shader_type sky;
 
 uniform vec4 sky_top_color : hint_color = vec4(0.35, 0.46, 0.71, 1.0);
@@ -350,7 +355,10 @@ void PanoramaSkyMaterial::_update_shader() {
 	if (shader.is_null()) {
 		shader = RS::get_singleton()->shader_create();
 
+		// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
 		RS::get_singleton()->shader_set_code(shader, R"(
+// NOTE: Shader automatically converted from )" VERSION_NAME " " VERSION_FULL_CONFIG R"('s PanoramaSkyMaterial.
+
 shader_type sky;
 
 uniform sampler2D source_panorama : filter_linear, hint_albedo;
@@ -561,7 +569,10 @@ void PhysicalSkyMaterial::_update_shader() {
 	if (shader.is_null()) {
 		shader = RS::get_singleton()->shader_create();
 
+		// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
 		RS::get_singleton()->shader_set_code(shader, R"(
+// NOTE: Shader automatically converted from )" VERSION_NAME " " VERSION_FULL_CONFIG R"('s PhysicalSkyMaterial.
+
 shader_type sky;
 
 uniform float rayleigh : hint_range(0, 64) = 2.0;
