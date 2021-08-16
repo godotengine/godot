@@ -4332,7 +4332,9 @@ bool TextEdit::is_highlight_all_occurrences_enabled() const {
 void TextEdit::set_draw_control_chars(bool p_draw_control_chars) {
 	if (draw_control_chars != p_draw_control_chars) {
 		draw_control_chars = p_draw_control_chars;
-		menu->set_item_checked(menu->get_item_index(MENU_DISPLAY_UCC), draw_control_chars);
+		if (menu) {
+			menu->set_item_checked(menu->get_item_index(MENU_DISPLAY_UCC), draw_control_chars);
+		}
 		text.set_draw_control_chars(draw_control_chars);
 		text.invalidate_all();
 		update();
