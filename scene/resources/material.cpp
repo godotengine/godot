@@ -32,6 +32,7 @@
 
 #include "core/engine.h"
 #include "core/project_settings.h"
+#include "core/version.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
@@ -386,7 +387,10 @@ void SpatialMaterial::_update_shader() {
 
 	//must create a shader!
 
-	String code = "shader_type spatial;\nrender_mode ";
+	// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
+	String code = "// NOTE: Shader automatically converted from " VERSION_NAME " " VERSION_FULL_CONFIG "'s SpatialMaterial.\n\n";
+
+	code += "shader_type spatial;\nrender_mode ";
 	switch (blend_mode) {
 		case BLEND_MODE_MIX:
 			code += "blend_mix";
