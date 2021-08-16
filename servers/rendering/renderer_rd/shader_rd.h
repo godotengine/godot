@@ -142,9 +142,7 @@ public:
 		ERR_FAIL_COND_V(!variants_enabled[p_variant], RID());
 
 		Version *version = version_owner.getornull(p_version);
-		if (!version) {
-			return RID();
-		}
+		ERR_FAIL_COND_V(!version, RID());
 
 		if (version->dirty) {
 			_compile_version(version);
