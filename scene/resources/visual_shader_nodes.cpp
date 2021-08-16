@@ -260,8 +260,12 @@ bool VisualShaderNodeColorConstant::is_output_port_expandable(int p_port) const 
 
 String VisualShaderNodeColorConstant::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String code;
-	code += "	" + p_output_vars[0] + " = " + vformat("vec3(%.6f, %.6f, %.6f)", constant.r, constant.g, constant.b) + ";\n";
-	code += "	" + p_output_vars[1] + " = " + vformat("%.6f", constant.a) + ";\n";
+	Color color = constant;
+	if (p_mode != Shader::MODE_CANVAS_ITEM) {
+		color = color.to_linear();
+	}
+	code += "	" + p_output_vars[0] + " = " + vformat("vec3(%.6f, %.6f, %.6f)", color.r, color.g, color.b) + ";\n";
+	code += "	" + p_output_vars[1] + " = " + vformat("%.6f", color.a) + ";\n";
 
 	return code;
 }
