@@ -1100,11 +1100,6 @@ private:
 		Dependency dependency;
 	};
 
-	VoxelGiSdfShaderRD voxel_gi_sdf_shader;
-	RID voxel_gi_sdf_shader_version;
-	RID voxel_gi_sdf_shader_version_shader;
-	RID voxel_gi_sdf_shader_pipeline;
-
 	mutable RID_Owner<VoxelGI, true> voxel_gi_owner;
 
 	/* REFLECTION PROBE */

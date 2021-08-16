@@ -4442,7 +4442,10 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 }
 #endif
 
-#define SHADER_BINARY_VERSION 1
+//version 1: initial
+//version 2: Added shader name
+
+#define SHADER_BINARY_VERSION 2
 
 String RenderingDeviceVulkan::shader_get_binary_cache_key() const {
 	return "Vulkan-SV" + itos(SHADER_BINARY_VERSION);
@@ -4476,9 +4479,10 @@ struct RenderingDeviceVulkanShaderBinaryData {
 	uint32_t push_constant_size;
 	uint32_t push_constants_vk_stage;
 	uint32_t stage_count;
+	uint32_t shader_name_len;
 };
 
-Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv) {
+Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name) {
 	RenderingDeviceVulkanShaderBinaryData binary_data;
 	binary_data.vertex_input_mask = 0;
 	binary_data.fragment_outputs = 0;
@@ -4835,8 +4839,18 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 	binary_data.set_count = uniform_info.size();
 	binary_data.stage_count = p_spirv.size();
 
+	CharString shader_name_utf = p_shader_name.utf8();
+
+	binary_data.shader_name_len = shader_name_utf.length();
+
 	uint32_t total_size = sizeof(uint32_t) * 3; //header + version + main datasize;
 	total_size += sizeof(RenderingDeviceVulkanShaderBinaryData);
+
+	total_size += binary_data.shader_name_len;
+
+	if ((binary_data.shader_name_len % 4) != 0) { //alignment rules are really strange
+		total_size += 4 - (binary_data.shader_name_len % 4);
+	}
 
 	for (int i = 0; i < uniform_info.size(); i++) {
 		total_size += sizeof(uint32_t);
@@ -4864,6 +4878,12 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 		offset += sizeof(uint32_t);
 		memcpy(binptr + offset, &binary_data, sizeof(RenderingDeviceVulkanShaderBinaryData));
 		offset += sizeof(RenderingDeviceVulkanShaderBinaryData);
+		memcpy(binptr + offset, shader_name_utf.ptr(), binary_data.shader_name_len);
+		offset += binary_data.shader_name_len;
+
+		if ((binary_data.shader_name_len % 4) != 0) { //alignment rules are really strange
+			offset += 4 - (binary_data.shader_name_len % 4);
+		}
 
 		for (int i = 0; i < uniform_info.size(); i++) {
 			int count = uniform_info[i].size();
@@ -4933,6 +4953,16 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 	uint32_t compute_local_size[3] = { binary_data.compute_local_size[0], binary_data.compute_local_size[1], binary_data.compute_local_size[2] };
 
 	read_offset += sizeof(uint32_t) * 3 + bin_data_size;
+
+	String name;
+
+	if (binary_data.shader_name_len) {
+		name.parse_utf8((const char *)(binptr + read_offset), binary_data.shader_name_len);
+		read_offset += binary_data.shader_name_len;
+		if ((binary_data.shader_name_len % 4) != 0) { //alignment rules are really strange
+			read_offset += 4 - (binary_data.shader_name_len % 4);
+		}
+	}
 
 	Vector<Vector<VkDescriptorSetLayoutBinding>> set_bindings;
 	Vector<Vector<UniformInfo>> uniform_info;
@@ -5088,6 +5118,7 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 	shader.compute_local_size[1] = compute_local_size[1];
 	shader.compute_local_size[2] = compute_local_size[2];
 	shader.specialization_constants = specialization_constants;
+	shader.name = name;
 
 	String error_text;
 
@@ -6449,7 +6480,6 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 				specialization_info.write[i].pData = data_ptr;
 				specialization_info.write[i].mapEntryCount = specialization_map_entries[i].size();
 				specialization_info.write[i].pMapEntries = specialization_map_entries[i].ptr();
-
 				pipeline_stages.write[i].pSpecializationInfo = specialization_info.ptr() + i;
 			}
 		}
@@ -6476,7 +6506,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 
 	RenderPipeline pipeline;
 	VkResult err = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &graphics_pipeline_create_info, nullptr, &pipeline.pipeline);
-	ERR_FAIL_COND_V_MSG(err, RID(), "vkCreateGraphicsPipelines failed with error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, RID(), "vkCreateGraphicsPipelines failed with error " + itos(err) + " for shader '" + shader->name + "'.");
 
 	pipeline.set_formats = shader->set_formats;
 	pipeline.push_constant_stages = shader->push_constant.push_constants_vk_stage;

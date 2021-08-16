@@ -1914,7 +1914,7 @@ EffectsRD::EffectsRD(bool p_prefer_raster_effects) {
 		}
 	}
 
-	{ // Initialize copy
+	if (!prefer_raster_effects) { // Initialize copy
 		Vector<String> copy_modes;
 		copy_modes.push_back("\n#define MODE_GAUSSIAN_BLUR\n");
 		copy_modes.push_back("\n#define MODE_GAUSSIAN_BLUR\n#define DST_IMAGE_8BIT\n");
@@ -2113,7 +2113,7 @@ EffectsRD::EffectsRD(bool p_prefer_raster_effects) {
 		}
 	}
 
-	{
+	if (!prefer_raster_effects) {
 		// Initialize ssao
 
 		RD::SamplerState sampler;
@@ -2257,7 +2257,7 @@ EffectsRD::EffectsRD(bool p_prefer_raster_effects) {
 		ERR_FAIL_COND(pipeline != SSAO_MAX);
 	}
 
-	{
+	if (!prefer_raster_effects) {
 		// Initialize roughness limiter
 		Vector<String> shader_modes;
 		shader_modes.push_back("");
@@ -2355,7 +2355,7 @@ EffectsRD::EffectsRD(bool p_prefer_raster_effects) {
 		}
 	}
 
-	{
+	if (!prefer_raster_effects) {
 		Vector<String> specular_modes;
 		specular_modes.push_back("\n#define MODE_MERGE\n");
 		specular_modes.push_back("\n#define MODE_MERGE\n#define MODE_SSR\n");
@@ -2391,72 +2391,74 @@ EffectsRD::EffectsRD(bool p_prefer_raster_effects) {
 		}
 	}
 
-	{
-		Vector<String> ssr_modes;
-		ssr_modes.push_back("\n");
-		ssr_modes.push_back("\n#define MODE_ROUGH\n");
+	if (!prefer_raster_effects) {
+		{
+			Vector<String> ssr_modes;
+			ssr_modes.push_back("\n");
+			ssr_modes.push_back("\n#define MODE_ROUGH\n");
 
-		ssr.shader.initialize(ssr_modes);
+			ssr.shader.initialize(ssr_modes);
 
-		ssr.shader_version = ssr.shader.version_create();
+			ssr.shader_version = ssr.shader.version_create();
 
-		for (int i = 0; i < SCREEN_SPACE_REFLECTION_MAX; i++) {
-			ssr.pipelines[i] = RD::get_singleton()->compute_pipeline_create(ssr.shader.version_get_shader(ssr.shader_version, i));
+			for (int i = 0; i < SCREEN_SPACE_REFLECTION_MAX; i++) {
+				ssr.pipelines[i] = RD::get_singleton()->compute_pipeline_create(ssr.shader.version_get_shader(ssr.shader_version, i));
+			}
 		}
-	}
 
-	{
-		Vector<String> ssr_filter_modes;
-		ssr_filter_modes.push_back("\n");
-		ssr_filter_modes.push_back("\n#define VERTICAL_PASS\n");
+		{
+			Vector<String> ssr_filter_modes;
+			ssr_filter_modes.push_back("\n");
+			ssr_filter_modes.push_back("\n#define VERTICAL_PASS\n");
 
-		ssr_filter.shader.initialize(ssr_filter_modes);
+			ssr_filter.shader.initialize(ssr_filter_modes);
 
-		ssr_filter.shader_version = ssr_filter.shader.version_create();
+			ssr_filter.shader_version = ssr_filter.shader.version_create();
 
-		for (int i = 0; i < SCREEN_SPACE_REFLECTION_FILTER_MAX; i++) {
-			ssr_filter.pipelines[i] = RD::get_singleton()->compute_pipeline_create(ssr_filter.shader.version_get_shader(ssr_filter.shader_version, i));
+			for (int i = 0; i < SCREEN_SPACE_REFLECTION_FILTER_MAX; i++) {
+				ssr_filter.pipelines[i] = RD::get_singleton()->compute_pipeline_create(ssr_filter.shader.version_get_shader(ssr_filter.shader_version, i));
+			}
 		}
-	}
 
-	{
-		Vector<String> ssr_scale_modes;
-		ssr_scale_modes.push_back("\n");
+		{
+			Vector<String> ssr_scale_modes;
+			ssr_scale_modes.push_back("\n");
 
-		ssr_scale.shader.initialize(ssr_scale_modes);
+			ssr_scale.shader.initialize(ssr_scale_modes);
 
-		ssr_scale.shader_version = ssr_scale.shader.version_create();
+			ssr_scale.shader_version = ssr_scale.shader.version_create();
 
-		ssr_scale.pipeline = RD::get_singleton()->compute_pipeline_create(ssr_scale.shader.version_get_shader(ssr_scale.shader_version, 0));
-	}
-
-	{
-		Vector<String> sss_modes;
-		sss_modes.push_back("\n#define USE_11_SAMPLES\n");
-		sss_modes.push_back("\n#define USE_17_SAMPLES\n");
-		sss_modes.push_back("\n#define USE_25_SAMPLES\n");
-
-		sss.shader.initialize(sss_modes);
-
-		sss.shader_version = sss.shader.version_create();
-
-		for (int i = 0; i < sss_modes.size(); i++) {
-			sss.pipelines[i] = RD::get_singleton()->compute_pipeline_create(sss.shader.version_get_shader(sss.shader_version, i));
+			ssr_scale.pipeline = RD::get_singleton()->compute_pipeline_create(ssr_scale.shader.version_get_shader(ssr_scale.shader_version, 0));
 		}
-	}
 
-	{
-		Vector<String> resolve_modes;
-		resolve_modes.push_back("\n#define MODE_RESOLVE_GI\n");
-		resolve_modes.push_back("\n#define MODE_RESOLVE_GI\n#define VOXEL_GI_RESOLVE\n");
-		resolve_modes.push_back("\n#define MODE_RESOLVE_DEPTH\n");
+		{
+			Vector<String> sss_modes;
+			sss_modes.push_back("\n#define USE_11_SAMPLES\n");
+			sss_modes.push_back("\n#define USE_17_SAMPLES\n");
+			sss_modes.push_back("\n#define USE_25_SAMPLES\n");
 
-		resolve.shader.initialize(resolve_modes);
+			sss.shader.initialize(sss_modes);
 
-		resolve.shader_version = resolve.shader.version_create();
+			sss.shader_version = sss.shader.version_create();
 
-		for (int i = 0; i < RESOLVE_MODE_MAX; i++) {
-			resolve.pipelines[i] = RD::get_singleton()->compute_pipeline_create(resolve.shader.version_get_shader(resolve.shader_version, i));
+			for (int i = 0; i < sss_modes.size(); i++) {
+				sss.pipelines[i] = RD::get_singleton()->compute_pipeline_create(sss.shader.version_get_shader(sss.shader_version, i));
+			}
+		}
+
+		{
+			Vector<String> resolve_modes;
+			resolve_modes.push_back("\n#define MODE_RESOLVE_GI\n");
+			resolve_modes.push_back("\n#define MODE_RESOLVE_GI\n#define VOXEL_GI_RESOLVE\n");
+			resolve_modes.push_back("\n#define MODE_RESOLVE_DEPTH\n");
+
+			resolve.shader.initialize(resolve_modes);
+
+			resolve.shader_version = resolve.shader.version_create();
+
+			for (int i = 0; i < RESOLVE_MODE_MAX; i++) {
+				resolve.pipelines[i] = RD::get_singleton()->compute_pipeline_create(resolve.shader.version_get_shader(resolve.shader_version, i));
+			}
 		}
 	}
 
@@ -2522,10 +2524,6 @@ EffectsRD::~EffectsRD() {
 	RD::get_singleton()->free(index_buffer); //array gets freed as dependency
 	RD::get_singleton()->free(filter.coefficient_buffer);
 
-	RD::get_singleton()->free(ssao.mirror_sampler);
-	RD::get_singleton()->free(ssao.gather_constants_buffer);
-	RD::get_singleton()->free(ssao.importance_map_load_counter);
-
 	if (prefer_raster_effects) {
 		blur_raster.shader.version_free(blur_raster.shader_version);
 		bokeh.raster_shader.version_free(blur_raster.shader_version);
@@ -2540,21 +2538,27 @@ EffectsRD::~EffectsRD() {
 		cubemap_downsampler.compute_shader.version_free(cubemap_downsampler.shader_version);
 		filter.compute_shader.version_free(filter.shader_version);
 	}
-	copy.shader.version_free(copy.shader_version);
+	if (!prefer_raster_effects) {
+		copy.shader.version_free(copy.shader_version);
+		resolve.shader.version_free(resolve.shader_version);
+		specular_merge.shader.version_free(specular_merge.shader_version);
+		ssao.blur_shader.version_free(ssao.blur_shader_version);
+		ssao.gather_shader.version_free(ssao.gather_shader_version);
+		ssao.downsample_shader.version_free(ssao.downsample_shader_version);
+		ssao.interleave_shader.version_free(ssao.interleave_shader_version);
+		ssao.importance_map_shader.version_free(ssao.importance_map_shader_version);
+		roughness_limiter.shader.version_free(roughness_limiter.shader_version);
+		ssr.shader.version_free(ssr.shader_version);
+		ssr_filter.shader.version_free(ssr_filter.shader_version);
+		ssr_scale.shader.version_free(ssr_scale.shader_version);
+		sss.shader.version_free(sss.shader_version);
+
+		RD::get_singleton()->free(ssao.mirror_sampler);
+		RD::get_singleton()->free(ssao.gather_constants_buffer);
+		RD::get_singleton()->free(ssao.importance_map_load_counter);
+	}
 	copy_to_fb.shader.version_free(copy_to_fb.shader_version);
 	cube_to_dp.shader.version_free(cube_to_dp.shader_version);
-	resolve.shader.version_free(resolve.shader_version);
-	roughness_limiter.shader.version_free(roughness_limiter.shader_version);
 	sort.shader.version_free(sort.shader_version);
-	specular_merge.shader.version_free(specular_merge.shader_version);
-	ssao.blur_shader.version_free(ssao.blur_shader_version);
-	ssao.gather_shader.version_free(ssao.gather_shader_version);
-	ssao.downsample_shader.version_free(ssao.downsample_shader_version);
-	ssao.interleave_shader.version_free(ssao.interleave_shader_version);
-	ssao.importance_map_shader.version_free(ssao.importance_map_shader_version);
-	ssr.shader.version_free(ssr.shader_version);
-	ssr_filter.shader.version_free(ssr_filter.shader_version);
-	ssr_scale.shader.version_free(ssr_scale.shader_version);
-	sss.shader.version_free(sss.shader_version);
 	tonemap.shader.version_free(tonemap.shader_version);
 }
