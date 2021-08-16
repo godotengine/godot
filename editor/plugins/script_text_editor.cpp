@@ -791,6 +791,10 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 			script->update_exports();
 		}
 	}
+
+	if (auto_reload_running_scripts) {
+		_live_auto_reload_running_scripts();
+	}
 }
 
 void ScriptTextEditor::_code_complete_scripts(void *p_ud, const String &p_code, List<ScriptCodeCompletionOption> *r_options, bool &r_force) {
