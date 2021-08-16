@@ -27,6 +27,8 @@ layout(location = 0) in highp vec4 vertex_attrib;
 /* clang-format on */
 #ifdef ENABLE_OCTAHEDRAL_COMPRESSION
 layout(location = 1) in vec4 normal_tangent_attrib;
+#else
+layout(location = 1) in vec3 normal_attrib;
 #endif
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
 #ifdef ENABLE_OCTAHEDRAL_COMPRESSION
