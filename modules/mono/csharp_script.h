@@ -401,7 +401,18 @@ class CSharpLanguage : public ScriptLanguage {
 	static void _editor_init_callback();
 #endif
 
+	static void *_instance_binding_create_callback(void *p_token, void *p_instance);
+	static void _instance_binding_free_callback(void *p_token, void *p_instance, void *p_binding);
+	static GDNativeBool _instance_binding_reference_callback(void *p_token, void *p_binding, GDNativeBool p_reference);
+
+	static GDNativeInstanceBindingCallbacks _instance_binding_callbacks;
+
 public:
+	static void *get_instance_binding(Object *p_object);
+	static void *get_existing_instance_binding(Object *p_object);
+	static void set_instance_binding(Object *p_object, void *p_binding);
+	static bool has_instance_binding(Object *p_object);
+
 	StringNameCache string_names;
 
 	const Mutex &get_language_bind_mutex() { return language_bind_mutex; }
@@ -506,12 +517,6 @@ public:
 	/* THREAD ATTACHING */
 	void thread_enter() override;
 	void thread_exit() override;
-
-	// Don't use these. I'm watching you
-	void *alloc_instance_binding_data(Object *p_object) override;
-	void free_instance_binding_data(void *p_data) override;
-	void refcount_incremented_instance_binding(Object *p_object) override;
-	bool refcount_decremented_instance_binding(Object *p_object) override;
 
 	Map<Object *, CSharpScriptBinding>::Element *insert_script_binding(Object *p_object, const CSharpScriptBinding &p_script_binding);
 	bool setup_csharp_script_binding(CSharpScriptBinding &r_script_binding, Object *p_object);
