@@ -86,6 +86,7 @@ void MenuButton::_popup_visibility_changed(bool p_visible) {
 }
 
 void MenuButton::pressed() {
+	emit_signal(SNAME("about_to_popup"));
 	Size2 size = get_size();
 
 	Point2 gp = get_screen_position();
