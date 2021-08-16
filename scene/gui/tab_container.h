@@ -57,7 +57,6 @@ private:
 	bool menu_hovered = false;
 	int highlight_arrow = -1;
 	TabAlign align = ALIGN_CENTER;
-	Control *_get_tab(int p_idx) const;
 	int _get_top_margin() const;
 	mutable ObjectID popup_obj_id;
 	bool drag_to_rearrange_enabled = false;
