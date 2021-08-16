@@ -1104,14 +1104,12 @@ bool CharacterBody2D::move_and_slide() {
 
 	for (int iteration = 0; iteration < max_slides; ++iteration) {
 		PhysicsServer2D::MotionResult result;
-		bool found_collision = false;
 
 		Vector2 prev_position = get_global_transform().elements[2];
 
 		bool collided = move_and_collide(motion, result, margin, false, !sliding_enabled);
 
 		if (collided) {
-			found_collision = true;
 			motion_results.push_back(result);
 			_set_collision_direction(result);
 
@@ -1136,7 +1134,7 @@ bool CharacterBody2D::move_and_slide() {
 			// Move on floor only checks.
 			if (floor_block_on_wall && on_wall && motion_slide_up.dot(result.collision_normal) <= 0) {
 				// Avoid to move forward on a wall if floor_block_on_wall is true.
-				if (was_on_floor && !is_on_floor_only() && !vel_dir_facing_up) {
+				if (was_on_floor && !on_floor && !vel_dir_facing_up) {
 					// If the movement is large the body can be prevented from reaching the walls.
 					if (result.travel.length() <= margin) {
 						// Cancels the motion.
@@ -1155,7 +1153,7 @@ bool CharacterBody2D::move_and_slide() {
 					break;
 				}
 				// Prevents the body from being able to climb a slope when it moves forward against the wall.
-				else if (!is_on_floor_only()) {
+				else if (!on_floor) {
 					motion = up_direction * up_direction.dot(result.remainder);
 					motion = motion.slide(result.collision_normal);
 				} else {
@@ -1166,9 +1164,7 @@ bool CharacterBody2D::move_and_slide() {
 			else if (floor_constant_speed && is_on_floor_only() && can_apply_constant_speed && was_on_floor && motion.dot(result.collision_normal) < 0) {
 				can_apply_constant_speed = false;
 				Vector2 motion_slide_norm = result.remainder.slide(result.collision_normal).normalized();
-				if (!motion_slide_norm.is_equal_approx(Vector2())) {
-					motion = motion_slide_norm * (motion_slide_up.length() - result.travel.slide(up_direction).length() - last_travel.slide(up_direction).length());
-				}
+				motion = motion_slide_norm * (motion_slide_up.length() - result.travel.slide(up_direction).length() - last_travel.slide(up_direction).length());
 			}
 			// Regular sliding, the last part of the test handle the case when you don't want to slide on the ceiling.
 			else if ((sliding_enabled || !on_floor) && (!on_ceiling || slide_on_ceiling || !vel_dir_facing_up)) {
@@ -1209,17 +1205,15 @@ bool CharacterBody2D::move_and_slide() {
 			set_global_transform(gt);
 
 			Vector2 motion_slide_norm = motion.slide(prev_floor_normal).normalized();
-			if (!motion_slide_norm.is_equal_approx(Vector2())) {
-				motion = motion_slide_norm * (motion_slide_up.length());
-				found_collision = true;
-			}
+			motion = motion_slide_norm * (motion_slide_up.length());
+			collided = true;
 		}
 
 		can_apply_constant_speed = !can_apply_constant_speed && !sliding_enabled;
 		sliding_enabled = true;
 		first_slide = false;
 
-		if (!found_collision || motion.is_equal_approx(Vector2())) {
+		if (!collided || motion.is_equal_approx(Vector2())) {
 			break;
 		}
 	}
