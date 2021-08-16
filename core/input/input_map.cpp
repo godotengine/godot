@@ -222,11 +222,12 @@ bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const Str
 
 	Ref<InputEventAction> input_event_action = p_event;
 	if (input_event_action.is_valid()) {
+		bool pressed = input_event_action->is_pressed();
 		if (p_pressed != nullptr) {
-			*p_pressed = input_event_action->is_pressed();
+			*p_pressed = pressed;
 		}
 		if (p_strength != nullptr) {
-			*p_strength = (p_pressed != nullptr && *p_pressed) ? input_event_action->get_strength() : 0.0f;
+			*p_strength = pressed ? input_event_action->get_strength() : 0.0f;
 		}
 		return input_event_action->get_action() == p_action;
 	}
