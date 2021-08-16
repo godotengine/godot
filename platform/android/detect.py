@@ -26,7 +26,7 @@ def get_opts():
     return [
         ("ANDROID_NDK_ROOT", "Path to the Android NDK", get_android_ndk_root()),
         ("ANDROID_SDK_ROOT", "Path to the Android SDK", get_android_sdk_root()),
-        ("ndk_platform", 'Target platform (android-<api>, e.g. "android-18")', "android-18"),
+        ("ndk_platform", 'Target platform (android-<api>, e.g. "android-19")', "android-19"),
         EnumVariable("android_arch", "Target architecture", "armv7", ("armv7", "arm64v8", "x86", "x86_64")),
         BoolVariable("android_neon", "Enable NEON support (armv7 only)", True),
     ]
