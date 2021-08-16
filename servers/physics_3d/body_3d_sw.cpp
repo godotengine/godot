@@ -578,7 +578,7 @@ void Body3DSW::integrate_velocities(real_t p_step) {
 	real_t ang_vel = total_angular_velocity.length();
 	Transform3D transform = get_transform();
 
-	if (ang_vel != 0.0) {
+	if (!Math::is_zero_approx(ang_vel)) {
 		Vector3 ang_vel_axis = total_angular_velocity / ang_vel;
 		Basis rot(ang_vel_axis, ang_vel * p_step);
 		Basis identity3(1, 0, 0, 0, 1, 0, 0, 0, 1);
