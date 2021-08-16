@@ -2222,6 +2222,7 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 			p_shader->spatial.uses_alpha_scissor = false;
 			p_shader->spatial.uses_discard = false;
 			p_shader->spatial.unshaded = false;
+			p_shader->spatial.disable_alpha = false;
 			p_shader->spatial.no_depth_test = false;
 			p_shader->spatial.uses_sss = false;
 			p_shader->spatial.uses_time = false;
@@ -2249,6 +2250,7 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 			shaders.actions_scene.render_mode_values["cull_disabled"] = Pair<int *, int>(&p_shader->spatial.cull_mode, Shader::Spatial::CULL_MODE_DISABLED);
 
 			shaders.actions_scene.render_mode_flags["unshaded"] = &p_shader->spatial.unshaded;
+			shaders.actions_scene.render_mode_flags["disable_alpha"] = &p_shader->spatial.disable_alpha;
 			shaders.actions_scene.render_mode_flags["depth_test_disable"] = &p_shader->spatial.no_depth_test;
 
 			shaders.actions_scene.render_mode_flags["vertex_lighting"] = &p_shader->spatial.uses_vertex_lighting;
@@ -3164,7 +3166,7 @@ void RasterizerStorageGLES3::_update_material(Material *material) {
 
 		if (material->shader && material->shader->mode == VS::SHADER_SPATIAL) {
 			if (material->shader->spatial.blend_mode == Shader::Spatial::BLEND_MODE_MIX &&
-					(!material->shader->spatial.uses_alpha || material->shader->spatial.depth_draw_mode == Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS)) {
+					(material->shader->spatial.disable_alpha || !material->shader->spatial.uses_alpha || material->shader->spatial.depth_draw_mode == Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS)) {
 				can_cast_shadow = true;
 			}
 
