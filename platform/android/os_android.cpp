@@ -51,6 +51,23 @@
 #include "java_godot_io_wrapper.h"
 #include "java_godot_wrapper.h"
 
+String _remove_symlink(const String &dir) {
+	// Workaround for Android 6.0+ using a symlink.
+	// Save the current directory.
+	char current_dir_name[2048];
+	getcwd(current_dir_name, 2048);
+	// Change directory to the external data directory.
+	chdir(dir.utf8().get_data());
+	// Get the actual directory without the potential symlink.
+	char dir_name_wihout_symlink[2048];
+	getcwd(dir_name_wihout_symlink, 2048);
+	// Convert back to a String.
+	String dir_without_symlink(dir_name_wihout_symlink);
+	// Restore original current directory.
+	chdir(current_dir_name);
+	return dir_without_symlink;
+}
+
 class AndroidLogger : public Logger {
 public:
 	virtual void logv(const char *p_format, va_list p_list, bool p_err) {
@@ -802,34 +819,28 @@ int OS_Android::get_screen_dpi(int p_screen) const {
 	return godot_io_java->get_screen_dpi();
 }
 
-String OS_Android::get_user_data_dir() const {
+String OS_Android::get_data_path() const {
+	return get_user_data_dir();
+}
 
+String OS_Android::get_user_data_dir() const {
 	if (data_dir_cache != String())
 		return data_dir_cache;
 
 	String data_dir = godot_io_java->get_user_data_dir();
 	if (data_dir != "") {
-
-		//store current dir
-		char real_current_dir_name[2048];
-		getcwd(real_current_dir_name, 2048);
-
-		//go to data dir
-		chdir(data_dir.utf8().get_data());
-
-		//get actual data dir, so we resolve potential symlink (Android 6.0+ seems to use symlink)
-		char data_current_dir_name[2048];
-		getcwd(data_current_dir_name, 2048);
-
-		//cache by parsing utf8
-		data_dir_cache.parse_utf8(data_current_dir_name);
-
-		//restore original dir so we don't mess things up
-		chdir(real_current_dir_name);
-
+		data_dir_cache = _remove_symlink(data_dir);
 		return data_dir_cache;
 	}
+	return ".";
+}
 
+String OS_Android::get_cache_path() const {
+	String cache_dir = godot_io_java->get_cache_dir();
+	if (cache_dir != "") {
+		cache_dir = _remove_symlink(cache_dir);
+		return cache_dir;
+	}
 	return ".";
 }
 
@@ -869,9 +880,8 @@ void OS_Android::native_video_pause() {
 	godot_io_java->pause_video();
 }
 
-String OS_Android::get_system_dir(SystemDir p_dir) const {
-
-	return godot_io_java->get_system_dir(p_dir);
+String OS_Android::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
+	return godot_io_java->get_system_dir(p_dir, p_shared_storage);
 }
 
 void OS_Android::native_video_stop() {

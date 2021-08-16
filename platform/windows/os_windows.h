@@ -535,7 +535,7 @@ public:
 	virtual String get_cache_path() const;
 	virtual String get_godot_dir_name() const;
 
-	virtual String get_system_dir(SystemDir p_dir) const;
+	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const;
 	virtual String get_user_data_dir() const;
 
 	virtual String get_unique_id() const;
