@@ -96,18 +96,6 @@ class Body3DSW : public CollisionObject3DSW {
 
 	Map<Constraint3DSW *, int> constraint_map;
 
-	struct AreaCMP {
-		Area3DSW *area;
-		int refCount;
-		_FORCE_INLINE_ bool operator==(const AreaCMP &p_cmp) const { return area->get_self() == p_cmp.area->get_self(); }
-		_FORCE_INLINE_ bool operator<(const AreaCMP &p_cmp) const { return area->get_priority() < p_cmp.area->get_priority(); }
-		_FORCE_INLINE_ AreaCMP() {}
-		_FORCE_INLINE_ AreaCMP(Area3DSW *p_area) {
-			area = p_area;
-			refCount = 1;
-		}
-	};
-
 	Vector<AreaCMP> areas;
 
 	struct Contact {

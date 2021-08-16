@@ -928,6 +928,19 @@ void SoftBody3DSW::apply_forces() {
 	}
 }
 
+void SoftBody3DSW::_compute_area_gravity(const Area3DSW *p_area) {
+	if (p_area->is_gravity_point()) {
+		if (p_area->get_gravity_distance_scale() > 0) {
+			Vector3 v = p_area->get_transform().xform(p_area->get_gravity_vector()) - get_transform().get_origin();
+			gravity += v.normalized() * (p_area->get_gravity() / Math::pow(v.length() * p_area->get_gravity_distance_scale() + 1, 2));
+		} else {
+			gravity += (p_area->get_transform().xform(p_area->get_gravity_vector()) - get_transform().get_origin()).normalized() * p_area->get_gravity();
+		}
+	} else {
+		gravity += p_area->get_gravity_vector() * p_area->get_gravity();
+	}
+}
+
 void SoftBody3DSW::predict_motion(real_t p_delta) {
 	const real_t inv_delta = 1.0 / p_delta;
 
@@ -935,9 +948,35 @@ void SoftBody3DSW::predict_motion(real_t p_delta) {
 
 	Area3DSW *def_area = get_space()->get_default_area();
 	ERR_FAIL_COND(!def_area);
+	gravity = def_area->get_gravity_vector() * def_area->get_gravity();
+
+	int ac = areas.size();
+	bool stopped = false;
+
+	if (ac) {
+		areas.sort();
+		const AreaCMP *aa = &areas[0];
+		for (int i = ac - 1; i >= 0 && !stopped; i--) {
+			PhysicsServer3D::AreaSpaceOverrideMode mode = aa[i].area->get_space_override_mode();
+			switch (mode) {
+				case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE:
+				case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
+					_compute_area_gravity(aa[i].area);
+					stopped = mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE;
+				} break;
+				case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE:
+				case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
+					gravity = Vector3(0, 0, 0);
+					_compute_area_gravity(aa[i].area);
+					stopped = mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE;
+				} break;
+				default: {
+				}
+			}
+		}
+	}
 
 	// Apply forces.
-	Vector3 gravity = def_area->get_gravity_vector() * def_area->get_gravity();
 	add_velocity(gravity * p_delta);
 	apply_forces();
 
