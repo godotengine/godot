@@ -65,12 +65,27 @@ protected:
 	};
 
 	enum {
-		SPEC_CONSTANT_SOFT_SHADOW_SAMPLES = 6,
-		SPEC_CONSTANT_PENUMBRA_SHADOW_SAMPLES = 7,
-		SPEC_CONSTANT_DIRECTIONAL_SOFT_SHADOW_SAMPLES = 8,
-		SPEC_CONSTANT_DIRECTIONAL_PENUMBRA_SHADOW_SAMPLES = 9,
-		SPEC_CONSTANT_DECAL_FILTER = 10,
-		SPEC_CONSTANT_PROJECTOR_FILTER = 11,
+
+		SPEC_CONSTANT_USING_PROJECTOR = 0,
+		SPEC_CONSTANT_USING_SOFT_SHADOWS = 1,
+		SPEC_CONSTANT_USING_DIRECTIONAL_SOFT_SHADOWS = 2,
+
+		SPEC_CONSTANT_SOFT_SHADOW_SAMPLES = 3,
+		SPEC_CONSTANT_PENUMBRA_SHADOW_SAMPLES = 4,
+		SPEC_CONSTANT_DIRECTIONAL_SOFT_SHADOW_SAMPLES = 5,
+		SPEC_CONSTANT_DIRECTIONAL_PENUMBRA_SHADOW_SAMPLES = 6,
+
+		SPEC_CONSTANT_DECAL_USE_MIPMAPS = 7,
+		SPEC_CONSTANT_PROJECTOR_USE_MIPMAPS = 8,
+
+		SPEC_CONSTANT_DISABLE_OMNI_LIGHTS = 9,
+		SPEC_CONSTANT_DISABLE_SPOT_LIGHTS = 10,
+		SPEC_CONSTANT_DISABLE_REFLECTION_PROBES = 11,
+		SPEC_CONSTANT_DISABLE_DIRECTIONAL_LIGHTS = 12,
+
+		SPEC_CONSTANT_DISABLE_DECALS = 13,
+		SPEC_CONSTANT_DISABLE_FOG = 14,
+
 	};
 
 	enum {
@@ -159,6 +174,7 @@ protected:
 		bool force_wireframe = false;
 		Vector2 uv_offset;
 		Plane lod_plane;
+		uint32_t spec_constant_base_flags = 0;
 		float lod_distance_multiplier = 0.0;
 		float screen_lod_threshold = 0.0;
 		RD::FramebufferFormatID framebuffer_format = 0;
@@ -166,7 +182,7 @@ protected:
 		uint32_t barrier = RD::BARRIER_MASK_ALL;
 		uint32_t subpass = 0;
 
-		RenderListParameters(GeometryInstanceSurfaceDataCache **p_elements, RenderElementInfo *p_element_info, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, RID p_render_pass_uniform_set, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2(), const Plane &p_lod_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_lod_threshold = 0.0, uint32_t p_view_count = 1, uint32_t p_element_offset = 0, uint32_t p_barrier = RD::BARRIER_MASK_ALL) {
+		RenderListParameters(GeometryInstanceSurfaceDataCache **p_elements, RenderElementInfo *p_element_info, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, RID p_render_pass_uniform_set, uint32_t p_spec_constant_base_flags = 0, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2(), const Plane &p_lod_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_lod_threshold = 0.0, uint32_t p_view_count = 1, uint32_t p_element_offset = 0, uint32_t p_barrier = RD::BARRIER_MASK_ALL) {
 			elements = p_elements;
 			element_info = p_element_info;
 			element_count = p_element_count;
@@ -182,6 +198,7 @@ protected:
 			screen_lod_threshold = p_screen_lod_threshold;
 			element_offset = p_element_offset;
 			barrier = p_barrier;
+			spec_constant_base_flags = p_spec_constant_base_flags;
 		}
 	};
 
@@ -526,6 +543,8 @@ protected:
 		RID transforms_uniform_set;
 		float depth = 0;
 		bool mirror = false;
+		bool use_projector = false;
+		bool use_soft_shadow = false;
 		Transform3D transform;
 		bool store_transform_cache = true; // if true we copy our transform into our PushConstant, if false we use our transforms UBO and clear our PushConstants transform
 		bool non_uniform_scale = false;
@@ -584,7 +603,7 @@ protected:
 				dirty_list_element(this) {}
 	};
 
-	_FORCE_INLINE_ void _fill_push_constant_instance_indices(GeometryInstanceForwardMobile::PushConstant *p_push_constant, const GeometryInstanceForwardMobile *p_instance);
+	_FORCE_INLINE_ void _fill_push_constant_instance_indices(GeometryInstanceForwardMobile::PushConstant *p_push_constant, uint32_t &spec_constants, const GeometryInstanceForwardMobile *p_instance);
 
 	void _update_shader_quality_settings() override;
 
