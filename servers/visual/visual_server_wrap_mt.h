@@ -505,9 +505,11 @@ public:
 	FUNCRID(occluder)
 	FUNC3(occluder_set_scenario, RID, RID, OccluderType)
 	FUNC2(occluder_spheres_update, RID, const Vector<Plane> &)
+	FUNC3(occluder_mesh_update, RID, const Vector<Geometry::MeshData::Face> &, const Vector<Vector3> &)
 	FUNC2(occluder_set_transform, RID, const Transform &)
 	FUNC2(occluder_set_active, RID, bool)
 	FUNC1(set_use_occlusion_culling, bool)
+	FUNC1RC(Geometry::MeshData, occlusion_debug_get_current_polys, RID)
 
 	// Rooms
 	FUNCRID(room)

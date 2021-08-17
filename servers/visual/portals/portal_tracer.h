@@ -41,6 +41,7 @@
 //#define PORTAL_RENDERER_STORE_MOVING_RIDS
 #endif
 
+struct CameraMatrix;
 class PortalRenderer;
 struct VSRoom;
 
@@ -113,7 +114,10 @@ public:
 
 	// special function for occlusion culling only that does not use portals / rooms,
 	// but allows using occluders with the main scene
-	int occlusion_cull(PortalRenderer &p_portal_renderer, const Vector3 &p_point, const Vector<Plane> &p_convex, VSInstance **p_result_array, int p_num_results);
+	int occlusion_cull(PortalRenderer &p_portal_renderer, const Vector3 &p_point, const Vector3 &p_cam_dir, const CameraMatrix &p_cam_matrix, const Vector<Plane> &p_convex, VSInstance **p_result_array, int p_num_results);
+
+	PortalOcclusionCuller &get_occlusion_culler() { return _occlusion_culler; }
+	const PortalOcclusionCuller &get_occlusion_culler() const { return _occlusion_culler; }
 
 private:
 	// main tracing function is recursive

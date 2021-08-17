@@ -31,6 +31,7 @@
 #include "room_manager_editor_plugin.h"
 
 #include "editor/spatial_editor_gizmos.h"
+#include "scene/resources/occluder_shape_mesh.h"
 
 void RoomManagerEditorPlugin::_flip_portals() {
 	if (_room_manager) {
@@ -212,6 +213,13 @@ PortalEditorPlugin::~PortalEditorPlugin() {
 
 ///////////////////////
 
+void OccluderEditorPlugin::_bake() {
+	if (get_mesh() && _occluder) {
+		get_mesh()->bake(_occluder);
+		_occluder->update_gizmo();
+	}
+}
+
 void OccluderEditorPlugin::_center() {
 	if (_occluder && _occluder->is_inside_tree()) {
 		Ref<OccluderShape> ref = _occluder->get_shape();
@@ -255,16 +263,34 @@ bool OccluderEditorPlugin::handles(Object *p_object) const {
 	return p_object->is_class("Occluder");
 }
 
+OccluderShapeMesh *OccluderEditorPlugin::get_mesh() const {
+	if (_occluder) {
+		Ref<OccluderShape> ref = _occluder->get_shape();
+
+		if (ref.is_valid()) {
+			return Object::cast_to<OccluderShapeMesh>(ref.ptr());
+		}
+	}
+
+	return nullptr;
+}
+
 void OccluderEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		button_center->show();
+
+		if (get_mesh()) {
+			button_bake->show();
+		}
 	} else {
 		button_center->hide();
+		button_bake->hide();
 	}
 }
 
 void OccluderEditorPlugin::_bind_methods() {
 	ClassDB::bind_method("_center", &OccluderEditorPlugin::_center);
+	ClassDB::bind_method("_bake", &OccluderEditorPlugin::_bake);
 }
 
 OccluderEditorPlugin::OccluderEditorPlugin(EditorNode *p_node) {
@@ -276,6 +302,13 @@ OccluderEditorPlugin::OccluderEditorPlugin(EditorNode *p_node) {
 	button_center->hide();
 	button_center->connect("pressed", this, "_center");
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, button_center);
+
+	button_bake = memnew(ToolButton);
+	button_bake->set_icon(editor->get_gui_base()->get_icon("Bake", "EditorIcons"));
+	button_bake->set_text(TTR("Bake"));
+	button_bake->hide();
+	button_bake->connect("pressed", this, "_bake");
+	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, button_bake);
 
 	undo_redo = EditorNode::get_undo_redo();
 

@@ -62,6 +62,7 @@
 #include "scene/resources/cylinder_shape.h"
 #include "scene/resources/height_map_shape.h"
 #include "scene/resources/occluder_shape.h"
+#include "scene/resources/occluder_shape_mesh.h"
 #include "scene/resources/plane_shape.h"
 #include "scene/resources/primitive_meshes.h"
 #include "scene/resources/ray_shape.h"
@@ -4946,6 +4947,8 @@ PortalSpatialGizmo::PortalSpatialGizmo(Portal *p_portal) {
 OccluderGizmoPlugin::OccluderGizmoPlugin() {
 	Color color_occluder = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/occluder", Color(1.0, 0.0, 1.0));
 	create_material("occluder", color_occluder, false, true, false);
+	create_material("occluder_mesh", Color(1.0, 0.0, 1.0, 0.3), false, false, true);
+	create_material("occluder_current_mesh", Color(0.0, 1.0, 1.0, 0.3), false, false, true);
 
 	create_handle_material("occluder_handle");
 	create_handle_material("extra_handle", false, SpatialEditor::get_singleton()->get_icon("EditorInternalHandle", "EditorIcons"));
@@ -5134,6 +5137,21 @@ OccluderShapeSphere *OccluderSpatialGizmo::get_occluder_shape_sphere() {
 	return occ_sphere;
 }
 
+const OccluderShapeMesh *OccluderSpatialGizmo::get_occluder_shape_mesh() const {
+	if (!_occluder) {
+		return nullptr;
+	}
+
+	Ref<OccluderShape> rshape = _occluder->get_shape();
+	if (rshape.is_null() || !rshape.is_valid()) {
+		return nullptr;
+	}
+
+	const OccluderShape *shape = rshape.ptr();
+	const OccluderShapeMesh *occ_mesh = Object::cast_to<OccluderShapeMesh>(shape);
+	return occ_mesh;
+}
+
 const OccluderShapeSphere *OccluderSpatialGizmo::get_occluder_shape_sphere() const {
 	if (!_occluder) {
 		return nullptr;
@@ -5155,6 +5173,9 @@ void OccluderSpatialGizmo::redraw() {
 	if (!_occluder) {
 		return;
 	}
+
+	Transform occluder_tr = _occluder->get_global_transform();
+	Transform occluder_tr_inv = occluder_tr.affine_inverse();
 
 	Ref<Material> material_occluder = gizmo_plugin->get_material("occluder", this);
 	Color color(1, 1, 1, 1);
@@ -5204,6 +5225,98 @@ void OccluderSpatialGizmo::redraw() {
 		Ref<Material> material_extra_handle = gizmo_plugin->get_material("extra_handle", this);
 		add_handles(handles, material_handle);
 		add_handles(radius_handles, material_extra_handle, false, true);
+	}
+
+	const OccluderShapeMesh *occ_mesh = get_occluder_shape_mesh();
+	if (occ_mesh) {
+		const Geometry::MeshData &md = occ_mesh->get_mesh_data();
+		if (!md.faces.size()) {
+			return;
+		}
+
+		Vector<Vector3> points;
+		Vector<Vector3> lines;
+
+		for (int n = 0; n < md.faces.size(); n++) {
+			const Geometry::MeshData::Face &face = md.faces[n];
+
+			//print_line("face " + itos(n) + " numinds : " + itos(face.indices.size()));
+
+			for (int c = 0; c < face.indices.size(); c++) {
+				int i0 = face.indices[c];
+				int i1 = face.indices[(c + 1) % face.indices.size()];
+				lines.push_back(md.vertices[i0]);
+				lines.push_back(md.vertices[i1]);
+			}
+
+			Vector3 normal_push = face.plane.normal * 0.001;
+
+			for (int c = 2; c < face.indices.size(); c++) {
+				int i0 = face.indices[0];
+				int i1 = face.indices[c - 1];
+				int i2 = face.indices[c];
+
+				points.push_back(md.vertices[i0] + normal_push);
+				points.push_back(md.vertices[i1] + normal_push);
+				points.push_back(md.vertices[i2] + normal_push);
+			}
+		}
+
+		{
+			Ref<ArrayMesh> mesh = memnew(ArrayMesh);
+			Array array;
+			array.resize(Mesh::ARRAY_MAX);
+			array[Mesh::ARRAY_VERTEX] = points;
+			//array[Mesh::ARRAY_COLOR] = cols_portal;
+			mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, array);
+			Ref<Material> material_mesh = gizmo_plugin->get_material("occluder_mesh", this);
+			add_mesh(mesh, false, Ref<SkinReference>(), material_mesh);
+		}
+
+		add_lines(lines, material_occluder, false, color);
+
+		// get the active polys from the visual server
+		if (_occluder->is_inside_world() && _occluder->get_world().is_valid()) {
+			RID scenario = _occluder->get_world()->get_scenario();
+			if (scenario.is_valid()) {
+				Vector<Vector3> curr_verts;
+
+				Geometry::MeshData omd = VisualServer::get_singleton()->occlusion_debug_get_current_polys(scenario);
+
+				for (int n = 0; n < omd.faces.size(); n++) {
+					const Geometry::MeshData::Face &face = omd.faces[n];
+
+					// note that the faces in the visual server are in WORLD SPACE (transformed by the last
+					// transform we sent) so we need to back transform them to local space to display in the gizmo.
+
+					// triangle fan
+					for (int c = 2; c < face.indices.size(); c++) {
+						curr_verts.push_back(occluder_tr_inv.xform(omd.vertices[face.indices[0]]));
+						curr_verts.push_back(occluder_tr_inv.xform(omd.vertices[face.indices[c - 1]]));
+						curr_verts.push_back(occluder_tr_inv.xform(omd.vertices[face.indices[c]]));
+					}
+
+					// debug output
+					//					print_line("// " + itos(face.indices.size()) + " verts");
+					//					for (int c=0; c<face.indices.size(); c++)
+					//					{
+					//						const Vector3 &pt = omd.vertices[face.indices[c]];
+					//						print_line("verts.push_back(Vector3" + String(Variant(pt)) + ";");
+					//					}
+				} // for n through faces
+
+				if (curr_verts.size()) {
+					Ref<ArrayMesh> mesh = memnew(ArrayMesh);
+					Array array;
+					array.resize(Mesh::ARRAY_MAX);
+					array[Mesh::ARRAY_VERTEX] = curr_verts;
+					mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, array);
+					Ref<Material> material_current_mesh = gizmo_plugin->get_material("occluder_current_mesh", this);
+					add_mesh(mesh, false, Ref<SkinReference>(), material_current_mesh);
+				}
+
+			} // scenario
+		} // inside world
 	}
 }
 

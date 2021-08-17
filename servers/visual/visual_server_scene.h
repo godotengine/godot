@@ -638,9 +638,13 @@ public:
 	virtual RID occluder_create();
 	virtual void occluder_set_scenario(RID p_occluder, RID p_scenario, VisualServer::OccluderType p_type);
 	virtual void occluder_spheres_update(RID p_occluder, const Vector<Plane> &p_spheres);
+	virtual void occluder_mesh_update(RID p_occluder, const Vector<Geometry::MeshData::Face> &p_faces, const Vector<Vector3> &p_vertices);
 	virtual void occluder_set_transform(RID p_occluder, const Transform &p_xform);
 	virtual void occluder_set_active(RID p_occluder, bool p_active);
 	virtual void set_use_occlusion_culling(bool p_enable);
+
+	// editor only .. slow
+	virtual Geometry::MeshData occlusion_debug_get_current_polys(RID p_scenario) const;
 
 	// Rooms
 	struct Room : RID_Data {
@@ -684,7 +688,7 @@ public:
 	virtual Vector<ObjectID> instances_cull_convex(const Vector<Plane> &p_convex, RID p_scenario = RID()) const;
 
 	// internal (uses portals when available)
-	int _cull_convex_from_point(Scenario *p_scenario, const Vector3 &p_point, const Vector<Plane> &p_convex, Instance **p_result_array, int p_result_max, int32_t &r_previous_room_id_hint, uint32_t p_mask = 0xFFFFFFFF);
+	int _cull_convex_from_point(Scenario *p_scenario, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, const Vector<Plane> &p_convex, Instance **p_result_array, int p_result_max, int32_t &r_previous_room_id_hint, uint32_t p_mask = 0xFFFFFFFF);
 	void _rooms_instance_update(Instance *p_instance, const AABB &p_aabb);
 
 	virtual void instance_geometry_set_flag(RID p_instance, VS::InstanceFlags p_flags, bool p_enabled);

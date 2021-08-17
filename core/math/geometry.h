@@ -1072,6 +1072,9 @@ public:
 	static PoolVector<Plane> build_cylinder_planes(real_t p_radius, real_t p_height, int p_sides, Vector3::Axis p_axis = Vector3::AXIS_Z);
 	static PoolVector<Plane> build_capsule_planes(real_t p_radius, real_t p_height, int p_sides, int p_lats, Vector3::Axis p_axis = Vector3::AXIS_Z);
 	static void sort_polygon_winding(Vector<Vector2> &r_verts, bool p_clockwise = true);
+	static bool make_polygon_convex(Vector<Vector3> &r_verts, const Vector3 &p_poly_normal, bool p_clockwise = true, real_t p_epsilon = 0.005);
+	static Vector3 find_point_average(const Vector<Vector3> &p_verts);
+	static real_t find_polygon_area(const Vector3 *p_verts, int p_num_verts);
 
 	static void make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size);
 

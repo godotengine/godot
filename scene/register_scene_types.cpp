@@ -215,6 +215,7 @@
 #include "scene/resources/environment.h"
 #include "scene/resources/mesh_library.h"
 #include "scene/resources/occluder_shape.h"
+#include "scene/resources/occluder_shape_mesh.h"
 #endif
 
 static Ref<ResourceFormatSaverText> resource_saver_text;
@@ -654,6 +655,7 @@ void register_scene_types() {
 	ClassDB::register_class<ConcavePolygonShape>();
 	ClassDB::register_virtual_class<OccluderShape>();
 	ClassDB::register_class<OccluderShapeSphere>();
+	ClassDB::register_class<OccluderShapeMesh>();
 
 	OS::get_singleton()->yield(); //may take time to init
 

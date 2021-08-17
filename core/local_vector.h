@@ -255,4 +255,8 @@ public:
 	}
 };
 
+// Integer default version
+template <class T, class I = int32_t, bool force_trivial = false>
+class LocalVectori : public LocalVector<T, I, force_trivial> {};
+
 #endif // LOCAL_VECTOR_H

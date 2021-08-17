@@ -401,7 +401,14 @@ bool Portal::create_from_mesh_instance(const MeshInstance *p_mi) {
 
 	// change the portal transform to match our plane and the center of the portal
 	Transform tr_global;
-	tr_global.set_look_at(Vector3(0, 0, 0), _plane.normal, Vector3(0, 1, 0));
+
+	// prevent warnings when poly normal matches the up vector
+	Vector3 up(0, 1, 0);
+	if (Math::abs(_plane.normal.dot(up)) > 0.9) {
+		up = Vector3(1, 0, 0);
+	}
+
+	tr_global.set_look_at(Vector3(0, 0, 0), _plane.normal, up);
 	tr_global.origin = _pt_center_world;
 
 	// We can't directly set this global transform on the portal, because the parent node may already

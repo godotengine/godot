@@ -116,15 +116,21 @@ public:
 
 ///////////////////////
 
+class OccluderShapeMesh;
+
 class OccluderEditorPlugin : public EditorPlugin {
 	GDCLASS(OccluderEditorPlugin, EditorPlugin);
 
 	Occluder *_occluder;
 	ToolButton *button_center;
+	ToolButton *button_bake;
 	EditorNode *editor;
 	UndoRedo *undo_redo;
 
 	void _center();
+	void _bake();
+
+	OccluderShapeMesh *get_mesh() const;
 
 protected:
 	static void _bind_methods();

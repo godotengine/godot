@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OccluderShapeMesh" inherits="OccluderShape" version="3.4">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_bake_mask_value" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="layer_number" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_bake_mask_value">
+			<return type="void" />
+			<argument index="0" name="layer_number" type="int" />
+			<argument index="1" name="value" type="bool" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="bake_mask" type="int" setter="set_bake_mask" getter="get_bake_mask" default="4294967295">
+		</member>
+		<member name="bake_path" type="NodePath" setter="set_bake_path" getter="get_bake_path" default="NodePath(&quot;&quot;)">
+		</member>
+		<member name="plane_angle" type="float" setter="set_plane_simplify_angle" getter="get_plane_simplify_angle" default="11.0">
+		</member>
+		<member name="remove_floor" type="int" setter="set_remove_floor" getter="get_remove_floor" default="20">
+		</member>
+		<member name="simplify" type="float" setter="set_simplify" getter="get_simplify" default="0.0">
+		</member>
+		<member name="threshold_input_size" type="float" setter="set_threshold_input_size" getter="get_threshold_input_size" default="1.0">
+		</member>
+		<member name="threshold_output_size" type="float" setter="set_threshold_output_size" getter="get_threshold_output_size" default="1.0">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

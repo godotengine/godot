@@ -39,6 +39,7 @@
 #include "core/math/vector3.h"
 #include "core/object_id.h"
 #include "core/rid.h"
+#include "portal_defines.h"
 
 // visual server scene instance.
 // we can't have a pointer to nested class outside of visual server scene...
@@ -390,6 +391,7 @@ struct VSOccluder {
 	enum Type : uint32_t {
 		OT_UNDEFINED,
 		OT_SPHERE,
+		OT_MESH,
 		OT_NUM_TYPES,
 	} type;
 
@@ -440,6 +442,23 @@ struct Sphere {
 		return true;
 	}
 };
+
+struct Poly {
+	static const int MAX_POLY_VERTS = PortalDefines::OCCLUSION_POLY_MAX_VERTS;
+	void create() {
+		num_verts = 0;
+	}
+	void flip() {
+		plane = -plane;
+		for (int n = 0; n < num_verts / 2; n++) {
+			SWAP(verts[n], verts[num_verts - n - 1]);
+		}
+	}
+	Plane plane;
+	int num_verts;
+	Vector3 verts[MAX_POLY_VERTS];
+};
+
 } // namespace Occlusion
 
 struct VSOccluder_Sphere {
@@ -450,6 +469,15 @@ struct VSOccluder_Sphere {
 
 	Occlusion::Sphere local;
 	Occlusion::Sphere world;
+};
+
+struct VSOccluder_Mesh {
+	void create() {
+		poly_local.create();
+		poly_world.create();
+	}
+	Occlusion::Poly poly_local;
+	Occlusion::Poly poly_world;
 };
 
 #endif

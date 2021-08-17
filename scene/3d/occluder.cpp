@@ -31,6 +31,7 @@
 #include "occluder.h"
 
 #include "core/engine.h"
+#include "servers/visual/portals/portal_occlusion_culler.h"
 
 void Occluder::resource_changed(RES res) {
 	update_gizmo();
@@ -106,11 +107,21 @@ void Occluder::_notification(int p_what) {
 				_shape->update_shape_to_visual_server();
 				_shape->update_transform_to_visual_server(get_global_transform());
 			}
+#ifdef TOOLS_ENABLED
+			if (Engine::get_singleton()->is_editor_hint()) {
+				set_process_internal(true);
+			}
+#endif
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
 			if (_shape.is_valid()) {
 				_shape->notification_exit_world();
 			}
+#ifdef TOOLS_ENABLED
+			if (Engine::get_singleton()->is_editor_hint()) {
+				set_process_internal(false);
+			}
+#endif
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (_shape.is_valid() && is_inside_tree()) {
@@ -126,6 +137,12 @@ void Occluder::_notification(int p_what) {
 					update_configuration_warning();
 				}
 #endif
+			}
+		} break;
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (PortalOcclusionCuller::_redraw_gizmo) {
+				PortalOcclusionCuller::_redraw_gizmo = false;
+				update_gizmo();
 			}
 		} break;
 	}

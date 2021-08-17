@@ -2697,6 +2697,8 @@ VisualServer::VisualServer() {
 	// Occlusion culling
 	GLOBAL_DEF("rendering/misc/occlusion_culling/max_active_spheres", 8);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/misc/occlusion_culling/max_active_spheres", PropertyInfo(Variant::INT, "rendering/misc/occlusion_culling/max_active_spheres", PROPERTY_HINT_RANGE, "0,64"));
+	GLOBAL_DEF("rendering/misc/occlusion_culling/max_active_polys", 8);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/misc/occlusion_culling/max_active_polys", PropertyInfo(Variant::INT, "rendering/misc/occlusion_culling/max_active_polys", PROPERTY_HINT_RANGE, "0,64"));
 }
 
 VisualServer::~VisualServer() {

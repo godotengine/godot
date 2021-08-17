@@ -30,6 +30,7 @@
 
 #include "geometry.h"
 
+#include "core/local_vector.h"
 #include "core/print_string.h"
 
 #include "thirdparty/misc/clipper.hpp"
@@ -1361,6 +1362,126 @@ Vector<Geometry::PackRectsResult> Geometry::partial_pack_rects(const Vector<Vect
 	}
 
 	return ret;
+}
+
+// Expects a list of vertices sorted by winding (use sort_polygon_winding beforehand).
+// Returns a subset list of these forming a convex poly, or false if fails.
+bool Geometry::make_polygon_convex(Vector<Vector3> &r_verts, const Vector3 &p_poly_normal, bool p_clockwise, real_t p_epsilon) {
+	// cannot sort less than 3 verts
+	if (r_verts.size() < 3) {
+		return false;
+	}
+
+	// simplify the problem to 2d
+	Vector3 center = find_point_average(r_verts);
+
+	// change the portal transform to match our plane and the center of the portal
+	Transform tr;
+
+	// prevent warnings when poly normal matches the up vector
+	Vector3 up(0, 1, 0);
+	if (Math::abs(p_poly_normal.dot(up)) > 0.9) {
+		up = Vector3(1, 0, 0);
+	}
+
+	tr.set_look_at(Vector3(0, 0, 0), p_poly_normal, up);
+	tr.origin = center;
+	Transform tr_inv = tr.affine_inverse();
+
+	struct IndexedPoint {
+		// used for sort
+		bool operator<(const IndexedPoint &p_ip2) const { return pos < p_ip2.pos; }
+		Vector2 pos;
+		uint32_t idx;
+	};
+
+	Vector<IndexedPoint> P;
+	for (int n = 0; n < r_verts.size(); n++) {
+		Vector3 pt = tr_inv.xform(r_verts[n]);
+
+		IndexedPoint ip;
+		ip.pos = Vector2(pt.x, pt.y);
+		ip.idx = n;
+
+		P.push_back(ip);
+	}
+
+	//	sort_polygon_winding(pts2);
+
+	// indexed version of convex hull 2d
+	Vector<IndexedPoint> H;
+	{
+		int n = P.size(), k = 0;
+		H.resize(2 * n);
+
+		// Sort points lexicographically.
+		P.sort();
+
+		// Build lower hull.
+		for (int i = 0; i < n; ++i) {
+			while (k >= 2 && vec2_cross(H[k - 2].pos, H[k - 1].pos, P[i].pos) <= 0) {
+				k--;
+			}
+			H.write[k++] = P[i];
+		}
+
+		// Build upper hull.
+		for (int i = n - 2, t = k + 1; i >= 0; i--) {
+			while (k >= t && vec2_cross(H[k - 2].pos, H[k - 1].pos, P[i].pos) <= 0) {
+				k--;
+			}
+			H.write[k++] = P[i];
+		}
+
+		H.resize(k);
+		// result is in H
+	}
+
+	// output .. the last vert of the hull is the same as the first so we can ignore
+	Vector<Vector3> orig_verts = r_verts;
+	r_verts.resize(H.size() - 1);
+	for (int n = 0; n < r_verts.size(); n++) {
+		r_verts.set(n, orig_verts[H[n].idx]);
+	}
+
+	if (p_clockwise) {
+		r_verts.invert();
+	}
+
+	return true;
+}
+
+// Expects polygon as a triangle fan
+real_t Geometry::find_polygon_area(const Vector3 *p_verts, int p_num_verts) {
+	if (!p_verts || (p_num_verts < 3)) {
+		return 0.0;
+	}
+
+	Face3 f;
+	f.vertex[0] = p_verts[0];
+	f.vertex[1] = p_verts[1];
+	f.vertex[2] = p_verts[1];
+
+	real_t area = 0.0;
+
+	for (int n = 2; n < p_num_verts; n++) {
+		f.vertex[1] = f.vertex[2];
+		f.vertex[2] = p_verts[n];
+		area += Math::sqrt(f.get_twice_area_squared());
+	}
+
+	return area * 0.5;
+}
+
+Vector3 Geometry::find_point_average(const Vector<Vector3> &p_verts) {
+	Vector3 pt = Vector3(0, 0, 0);
+
+	for (int n = 0; n < p_verts.size(); n++) {
+		pt += p_verts[n];
+	}
+	pt /= p_verts.size();
+
+	return pt;
 }
 
 // adapted from:
