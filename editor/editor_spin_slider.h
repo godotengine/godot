@@ -81,6 +81,7 @@ class EditorSpinSlider : public Range {
 
 	void _update_value_input_stylebox();
 	void _ensure_input_popup();
+	void _draw_spin_slider();
 
 protected:
 	void _notification(int p_what);
