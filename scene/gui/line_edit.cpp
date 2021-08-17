@@ -51,6 +51,11 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 	if (b.is_valid()) {
 		if (b->is_pressed() && b->get_button_index() == BUTTON_RIGHT && context_menu_enabled) {
+			if (editable) {
+				menu->set_item_disabled(menu->get_item_index(MENU_UNDO), !has_undo());
+				menu->set_item_disabled(menu->get_item_index(MENU_REDO), !has_redo());
+			}
+
 			menu->set_position(get_global_transform().xform(get_local_mouse_position()));
 			menu->set_size(Vector2(1, 1));
 			menu->set_scale(get_global_transform().get_scale());
@@ -553,6 +558,11 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 				} break;
 				case KEY_MENU: {
 					if (context_menu_enabled) {
+						if (editable) {
+							menu->set_item_disabled(menu->get_item_index(MENU_UNDO), !has_undo());
+							menu->set_item_disabled(menu->get_item_index(MENU_REDO), !has_redo());
+						}
+
 						Point2 pos = Point2(get_cursor_pixel_pos(), (get_size().y + get_font("font")->get_height()) / 2);
 						menu->set_position(get_global_transform().xform(pos));
 						menu->set_size(Vector2(1, 1));
@@ -992,6 +1002,17 @@ void LineEdit::paste_text() {
 			text_changed_dirty = true;
 		}
 	}
+}
+
+bool LineEdit::has_undo() const {
+	if (undo_stack_pos == nullptr) {
+		return undo_stack.size() > 1;
+	}
+	return undo_stack_pos != undo_stack.front();
+}
+
+bool LineEdit::has_redo() const {
+	return undo_stack_pos != nullptr && undo_stack_pos != undo_stack.back();
 }
 
 void LineEdit::undo() {

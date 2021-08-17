@@ -2520,6 +2520,11 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					}
 				}
 
+				if (!readonly) {
+					menu->set_item_disabled(menu->get_item_index(MENU_UNDO), !has_undo());
+					menu->set_item_disabled(menu->get_item_index(MENU_REDO), !has_redo());
+				}
+
 				menu->set_position(get_global_transform().xform(get_local_mouse_position()));
 				menu->set_size(Vector2(1, 1));
 				menu->set_scale(get_global_transform().get_scale());
@@ -3787,6 +3792,11 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 			case KEY_MENU: {
 				if (context_menu_enabled) {
+					if (!readonly) {
+						menu->set_item_disabled(menu->get_item_index(MENU_UNDO), !has_undo());
+						menu->set_item_disabled(menu->get_item_index(MENU_REDO), !has_redo());
+					}
+
 					menu->set_position(get_global_transform().xform(_get_cursor_pixel_pos()));
 					menu->set_size(Vector2(1, 1));
 					menu->set_scale(get_global_transform().get_scale());
@@ -6110,6 +6120,18 @@ void TextEdit::_clear_redo() {
 	}
 }
 
+bool TextEdit::has_undo() const {
+	if (undo_stack_pos == nullptr) {
+		int pending = current_op.type == TextOperation::TYPE_NONE ? 0 : 1;
+		return undo_stack.size() + pending > 0;
+	}
+	return undo_stack_pos != undo_stack.front();
+}
+
+bool TextEdit::has_redo() const {
+	return undo_stack_pos != nullptr;
+}
+
 void TextEdit::undo() {
 	_push_current_op();
 
@@ -7088,6 +7110,8 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_word_under_cursor"), &TextEdit::get_word_under_cursor);
 	ClassDB::bind_method(D_METHOD("search", "key", "flags", "from_line", "from_column"), &TextEdit::_search_bind);
 
+	ClassDB::bind_method(D_METHOD("has_undo"), &TextEdit::has_undo);
+	ClassDB::bind_method(D_METHOD("has_redo"), &TextEdit::has_redo);
 	ClassDB::bind_method(D_METHOD("undo"), &TextEdit::undo);
 	ClassDB::bind_method(D_METHOD("redo"), &TextEdit::redo);
 	ClassDB::bind_method(D_METHOD("clear_undo_history"), &TextEdit::clear_undo_history);
