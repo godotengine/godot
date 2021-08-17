@@ -1206,11 +1206,10 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	}
 
 	tree->connect("cell_selected", callable_mp(this, &SceneTreeEditor::_selected_changed));
-	tree->connect("item_edited", callable_mp(this, &SceneTreeEditor::_renamed), varray(), CONNECT_DEFERRED);
+	tree->connect("item_edited", callable_mp(this, &SceneTreeEditor::_renamed));
 	tree->connect("multi_selected", callable_mp(this, &SceneTreeEditor::_cell_multi_selected));
 	tree->connect("button_pressed", callable_mp(this, &SceneTreeEditor::_cell_button_pressed));
 	tree->connect("nothing_selected", callable_mp(this, &SceneTreeEditor::_deselect_items));
-	//tree->connect("item_edited", this,"_renamed",Vector<Variant>(),true);
 
 	error = memnew(AcceptDialog);
 	add_child(error);
