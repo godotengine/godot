@@ -1176,11 +1176,6 @@ bool CharacterBody3D::move_and_slide() {
 		}
 	}
 
-	if (!on_floor && !on_wall) {
-		// Add last platform velocity when just left a moving platform.
-		linear_velocity += current_floor_velocity;
-	}
-
 	if (was_on_floor && snap != Vector3()) {
 		// Apply snap.
 		Transform3D gt = get_global_transform();
@@ -1211,6 +1206,11 @@ bool CharacterBody3D::move_and_slide() {
 				set_global_transform(gt);
 			}
 		}
+	}
+
+	if (!on_floor && !on_wall) {
+		// Add last platform velocity when just left a moving platform.
+		linear_velocity += current_floor_velocity;
 	}
 
 	return motion_results.size() > 0;
