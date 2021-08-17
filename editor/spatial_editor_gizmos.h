@@ -505,15 +505,27 @@ public:
 };
 
 class Occluder;
+class OccluderShape;
 class OccluderShapeSphere;
+class OccluderShapePolygon;
 
 class OccluderSpatialGizmo : public EditorSpatialGizmo {
 	GDCLASS(OccluderSpatialGizmo, EditorSpatialGizmo);
 
 	Occluder *_occluder = nullptr;
 
-	OccluderShapeSphere *get_occluder_shape_sphere();
+	const OccluderShape *get_occluder_shape() const;
 	const OccluderShapeSphere *get_occluder_shape_sphere() const;
+	const OccluderShapePolygon *get_occluder_shape_poly() const;
+	OccluderShape *get_occluder_shape();
+	OccluderShapeSphere *get_occluder_shape_sphere();
+	OccluderShapePolygon *get_occluder_shape_poly();
+
+	Color _color_poly_front;
+	Color _color_poly_back;
+	Color _color_hole;
+
+	void _redraw_poly(bool p_hole, const Vector<Vector2> &p_pts, const PoolVector<Vector2> &p_pts_raw);
 
 public:
 	virtual String get_handle_name(int p_idx) const;

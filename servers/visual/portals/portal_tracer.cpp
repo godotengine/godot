@@ -532,7 +532,9 @@ void PortalTracer::trace_recursive(const TraceParams &p_params, int p_depth, int
 	} // for p through portals
 }
 
-int PortalTracer::occlusion_cull(PortalRenderer &p_portal_renderer, const Vector3 &p_point, const Vector<Plane> &p_convex, VSInstance **p_result_array, int p_num_results) {
+int PortalTracer::occlusion_cull(PortalRenderer &p_portal_renderer, const Vector3 &p_point, const Vector3 &p_cam_dir, const CameraMatrix &p_cam_matrix, const Vector<Plane> &p_convex, VSInstance **p_result_array, int p_num_results) {
+	_occlusion_culler.prepare_camera(p_cam_matrix, p_cam_dir);
+
 	// silly conversion of vector to local vector
 	// can this be avoided? NYI
 	// pretty cheap anyway as it will just copy 6 planes, max a few times per frame...

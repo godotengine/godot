@@ -585,9 +585,11 @@ public:
 	BIND0R(RID, occluder_create)
 	BIND3(occluder_set_scenario, RID, RID, OccluderType)
 	BIND2(occluder_spheres_update, RID, const Vector<Plane> &)
+	BIND2(occluder_mesh_update, RID, const Geometry::OccluderMeshData &)
 	BIND2(occluder_set_transform, RID, const Transform &)
 	BIND2(occluder_set_active, RID, bool)
 	BIND1(set_use_occlusion_culling, bool)
+	BIND1RC(Geometry::MeshData, occlusion_debug_get_current_polys, RID)
 
 	// Rooms
 	BIND0R(RID, room_create)

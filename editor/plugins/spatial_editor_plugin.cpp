@@ -3674,7 +3674,11 @@ AABB SpatialEditorViewport::_calculate_spatial_bounds(const Spatial *p_parent, b
 	}
 
 	if (bounds.size == Vector3() && p_parent->get_class_name() != StringName("Spatial")) {
+#ifdef TOOLS_ENABLED
+		bounds = p_parent->get_fallback_gizmo_aabb();
+#else
 		bounds = AABB(Vector3(-0.2, -0.2, -0.2), Vector3(0.4, 0.4, 0.4));
+#endif
 	}
 
 	if (!p_exclude_toplevel_transform) {

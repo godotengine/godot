@@ -555,11 +555,17 @@ public:
 		double dot11 = v1.dot(v1);
 		double dot12 = v1.dot(v2);
 
+		// Check for divide by zero
+		double denom = dot00 * dot11 - dot01 * dot01;
+		if (denom == 0.0) {
+			return Vector3(0.0, 0.0, 0.0);
+		}
+
 		// Compute barycentric coordinates
-		double invDenom = 1.0f / (dot00 * dot11 - dot01 * dot01);
+		double invDenom = 1.0 / denom;
 		double b2 = (dot11 * dot02 - dot01 * dot12) * invDenom;
 		double b1 = (dot00 * dot12 - dot01 * dot02) * invDenom;
-		double b0 = 1.0f - b2 - b1;
+		double b0 = 1.0 - b2 - b1;
 		return Vector3(b0, b1, b2);
 	}
 
@@ -978,6 +984,24 @@ public:
 		Vector<Vector3> vertices;
 
 		void optimize_vertices();
+		void clear();
+	};
+
+	// Occluder Meshes contain convex faces which may contain 0 to many convex holes.
+	// (holes are analogous to portals)
+	struct OccluderMeshData {
+		struct Hole {
+			LocalVectori<uint32_t> indices;
+		};
+		struct Face {
+			Plane plane;
+			bool two_way = false;
+			LocalVectori<uint32_t> indices;
+			LocalVectori<Hole> holes;
+		};
+		LocalVectori<Face> faces;
+		LocalVectori<Vector3> vertices;
+		void clear();
 	};
 
 	_FORCE_INLINE_ static int get_uv84_normal_bit(const Vector3 &p_vector) {
@@ -1070,6 +1094,7 @@ public:
 	static PoolVector<Plane> build_cylinder_planes(real_t p_radius, real_t p_height, int p_sides, Vector3::Axis p_axis = Vector3::AXIS_Z);
 	static PoolVector<Plane> build_capsule_planes(real_t p_radius, real_t p_height, int p_sides, int p_lats, Vector3::Axis p_axis = Vector3::AXIS_Z);
 	static void sort_polygon_winding(Vector<Vector2> &r_verts, bool p_clockwise = true);
+	static real_t find_polygon_area(const Vector3 *p_verts, int p_num_verts);
 
 	static void make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size);
 

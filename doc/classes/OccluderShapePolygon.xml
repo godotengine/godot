@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OccluderShapePolygon" inherits="OccluderShape" version="3.5">
+	<brief_description>
+		Polygon occlusion primitive for use with the [Occluder] node.
+	</brief_description>
+	<description>
+		[OccluderShape]s are resources used by [Occluder] nodes, allowing geometric occlusion culling.
+		The polygon must be a convex polygon. The polygon points can be created and deleted either in the Editor inspector or by calling [code]set_polygon_points[/code]. The points of the edges can be set by dragging the handles in the Editor viewport.
+		Additionally each polygon occluder can optionally support a single hole. If you add at least three points in the Editor inspector to the hole, you can drag the edge points of the hole in the Editor viewport.
+		In general, the lower the number of edges in polygons and holes, the faster the system will operate at runtime, so in most cases you will want to use 4 points for each.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="set_hole_point">
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<argument index="1" name="position" type="Vector2" />
+			<description>
+				Sets an individual hole point position.
+			</description>
+		</method>
+		<method name="set_polygon_point">
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<argument index="1" name="position" type="Vector2" />
+			<description>
+				Sets an individual polygon point position.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="hole_points" type="PoolVector2Array" setter="set_hole_points" getter="get_hole_points" default="PoolVector2Array(  )">
+			Allows changing the hole geometry from code.
+		</member>
+		<member name="polygon_points" type="PoolVector2Array" setter="set_polygon_points" getter="get_polygon_points" default="PoolVector2Array( 1, -1, 1, 1, -1, 1, -1, -1 )">
+			Allows changing the polygon geometry from code.
+		</member>
+		<member name="two_way" type="bool" setter="set_two_way" getter="is_two_way" default="true">
+			Specifies whether the occluder should operate one way only, or from both sides.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

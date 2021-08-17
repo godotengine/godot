@@ -63,6 +63,12 @@ void OccluderShape::notification_exit_world() {
 	VisualServer::get_singleton()->occluder_set_scenario(_shape, RID(), VisualServer::OCCLUDER_TYPE_UNDEFINED);
 }
 
+#ifdef TOOLS_ENABLED
+AABB OccluderShape::get_fallback_gizmo_aabb() const {
+	return AABB(Vector3(-0.5, -0.5, -0.5), Vector3(1, 1, 1));
+}
+#endif
+
 //////////////////////////////////////////////
 
 void OccluderShapeSphere::_bind_methods() {
@@ -74,6 +80,29 @@ void OccluderShapeSphere::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "spheres", PROPERTY_HINT_NONE, itos(Variant::PLANE) + ":"), "set_spheres", "get_spheres");
 }
+
+#ifdef TOOLS_ENABLED
+void OccluderShapeSphere::_update_aabb() {
+	_aabb_local = AABB();
+
+	if (!_spheres.size()) {
+		return;
+	}
+
+	_aabb_local.position = _spheres[0].normal;
+
+	for (int n = 0; n < _spheres.size(); n++) {
+		AABB bb(_spheres[n].normal, Vector3(0, 0, 0));
+		bb.grow_by(_spheres[n].d);
+		_aabb_local.merge_with(bb);
+	}
+}
+
+AABB OccluderShapeSphere::get_fallback_gizmo_aabb() const {
+	return _aabb_local;
+}
+
+#endif
 
 void OccluderShapeSphere::update_shape_to_visual_server() {
 	VisualServer::get_singleton()->occluder_spheres_update(get_shape(), _spheres);
@@ -188,6 +217,8 @@ void OccluderShapeSphere::set_spheres(const Vector<Plane> &p_spheres) {
 	if (adding_in_editor) {
 		_spheres.set(_spheres.size() - 1, Plane(Vector3(), 1.0));
 	}
+
+	_update_aabb();
 #endif
 
 	notify_change_to_owners();
@@ -198,6 +229,9 @@ void OccluderShapeSphere::set_sphere_position(int p_idx, const Vector3 &p_positi
 		Plane p = _spheres[p_idx];
 		p.normal = p_position;
 		_spheres.set(p_idx, p);
+#ifdef TOOLS_ENABLED
+		_update_aabb();
+#endif
 		notify_change_to_owners();
 	}
 }
@@ -207,6 +241,9 @@ void OccluderShapeSphere::set_sphere_radius(int p_idx, real_t p_radius) {
 		Plane p = _spheres[p_idx];
 		p.d = MAX(p_radius, _min_radius);
 		_spheres.set(p_idx, p);
+#ifdef TOOLS_ENABLED
+		_update_aabb();
+#endif
 		notify_change_to_owners();
 	}
 }
