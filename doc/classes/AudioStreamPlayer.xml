@@ -79,7 +79,7 @@
 			If [code]true[/code], the playback is paused. You can resume it by setting [code]stream_paused[/code] to [code]false[/code].
 		</member>
 		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" default="0.0">
-			Volume of sound, in dB. If you have a linear scale value and wish to convert it to dB, use [method @GlobalScope.linear2db].
+			Volume of sound, in dB. If you have a linear scale value and wish to convert it to dB, use [method @GDScript.linear2db].
 		</member>
 		<member name="volume_scale_l" type="float" setter="set_volume_scale_l" getter="get_volume_scale_l" default="1.0">
 			Volume scale for left channel in linear (0.0 is silent, 1.0 is full volume) form. Can be used to forcefully globally pan sounds without relying on the camera.
