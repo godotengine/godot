@@ -659,6 +659,8 @@ public:
 	void begin_complex_operation();
 	void end_complex_operation();
 
+	bool has_undo() const;
+	bool has_redo() const;
 	void undo();
 	void redo();
 	void clear_undo_history();
