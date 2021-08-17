@@ -9310,15 +9310,6 @@ RendererStorageRD::RendererStorageRD() {
 		}
 	}
 
-	{
-		Vector<String> sdf_versions;
-		sdf_versions.push_back(""); //one only
-		voxel_gi_sdf_shader.initialize(sdf_versions);
-		voxel_gi_sdf_shader_version = voxel_gi_sdf_shader.version_create();
-		voxel_gi_sdf_shader_version_shader = voxel_gi_sdf_shader.version_get_shader(voxel_gi_sdf_shader_version, 0);
-		voxel_gi_sdf_shader_pipeline = RD::get_singleton()->compute_pipeline_create(voxel_gi_sdf_shader_version_shader);
-	}
-
 	using_lightmap_array = true; // high end
 	if (using_lightmap_array) {
 		uint32_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
@@ -9538,7 +9529,6 @@ RendererStorageRD::~RendererStorageRD() {
 		RD::get_singleton()->free(mesh_default_rd_buffers[i]);
 	}
 
-	voxel_gi_sdf_shader.version_free(voxel_gi_sdf_shader_version);
 	particles_shader.copy_shader.version_free(particles_shader.copy_shader_version);
 	rt_sdf.shader.version_free(rt_sdf.shader_version);
 

@@ -4066,7 +4066,7 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData 
 
 	render_state.voxel_gi_count = 0;
 
-	if (rb != nullptr) {
+	if (rb != nullptr && is_dynamic_gi_supported()) {
 		if (rb->sdfgi) {
 			rb->sdfgi->update_cascades();
 			rb->sdfgi->pre_process_gi(render_data.cam_transform, &render_data, this);
@@ -4587,10 +4587,12 @@ uint32_t RendererSceneRenderRD::get_max_elements() const {
 }
 
 RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
-	max_cluster_elements = get_max_elements();
-
 	storage = p_storage;
 	singleton = this;
+}
+
+void RendererSceneRenderRD::init() {
+	max_cluster_elements = get_max_elements();
 
 	directional_shadow.size = GLOBAL_GET("rendering/shadows/directional_shadow/size");
 	directional_shadow.use_16_bits = GLOBAL_GET("rendering/shadows/directional_shadow/16_bits");

@@ -2630,7 +2630,7 @@ RenderForwardMobile::RenderForwardMobile(RendererStorageRD *p_storage) :
 		defines += "\n#define USE_RADIANCE_CUBEMAP_ARRAY \n";
 	}
 	// defines += "\n#define SDFGI_OCT_SIZE " + itos(gi.sdfgi_get_lightprobe_octahedron_size()) + "\n";
-	defines += "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(get_max_directional_lights()) + "\n";
+	defines += "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(MAX_DIRECTIONAL_LIGHTS) + "\n";
 
 	{
 		//lightmaps

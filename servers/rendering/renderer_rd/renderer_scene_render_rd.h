@@ -1290,6 +1290,8 @@ public:
 	virtual bool is_volumetric_supported() const;
 	virtual uint32_t get_max_elements() const;
 
+	void init();
+
 	RendererSceneRenderRD(RendererStorageRD *p_storage);
 	~RendererSceneRenderRD();
 };

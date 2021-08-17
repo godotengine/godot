@@ -2812,8 +2812,6 @@ void RendererSceneGIRD::init(RendererStorageRD *p_storage, RendererSceneSkyRD *p
 	{
 		//kinda complicated to compute the amount of slots, we try to use as many as we can
 
-		voxel_gi_max_lights = 32;
-
 		voxel_gi_lights = memnew_arr(VoxelGILight, voxel_gi_max_lights);
 		voxel_gi_lights_uniform = RD::get_singleton()->uniform_buffer_create(voxel_gi_max_lights * sizeof(VoxelGILight));
 		voxel_gi_quality = RS::VoxelGIQuality(CLAMP(int(GLOBAL_GET("rendering/global_illumination/voxel_gi/quality")), 0, 1));
@@ -3009,7 +3007,9 @@ void RendererSceneGIRD::free() {
 	sdfgi_shader.integrate.version_free(sdfgi_shader.integrate_shader);
 	sdfgi_shader.preprocess.version_free(sdfgi_shader.preprocess_shader);
 
-	memdelete_arr(voxel_gi_lights);
+	if (voxel_gi_lights) {
+		memdelete_arr(voxel_gi_lights);
+	}
 }
 
 RendererSceneGIRD::SDFGI *RendererSceneGIRD::create_sdfgi(RendererSceneEnvironmentRD *p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size) {

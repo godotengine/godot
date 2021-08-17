@@ -110,8 +110,8 @@ private:
 		float pad[3];
 	};
 
-	VoxelGILight *voxel_gi_lights;
-	uint32_t voxel_gi_max_lights;
+	VoxelGILight *voxel_gi_lights = nullptr;
+	uint32_t voxel_gi_max_lights = 32;
 	RID voxel_gi_lights_uniform;
 
 	enum {

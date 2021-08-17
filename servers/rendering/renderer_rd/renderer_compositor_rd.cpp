@@ -281,6 +281,8 @@ RendererCompositorRD::RendererCompositorRD() {
 		scene = memnew(RendererSceneRenderImplementation::RenderForwardClustered(storage));
 	}
 
+	scene->init();
+
 	// now we're ready to create our effects,
 	storage->init_effects(!scene->_render_buffers_can_be_storage());
 }
