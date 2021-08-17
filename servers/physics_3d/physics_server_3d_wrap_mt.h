@@ -79,6 +79,7 @@ public:
 
 	//FUNC1RID(shape,ShapeType); todo fix
 	FUNCRID(plane_shape)
+	FUNCRID(ray_shape)
 	FUNCRID(sphere_shape)
 	FUNCRID(box_shape)
 	FUNCRID(capsule_shape)

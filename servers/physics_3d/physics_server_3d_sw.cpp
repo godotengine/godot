@@ -48,6 +48,12 @@ RID PhysicsServer3DSW::plane_shape_create() {
 	shape->set_self(rid);
 	return rid;
 }
+RID PhysicsServer3DSW::ray_shape_create() {
+	Shape3DSW *shape = memnew(RayShape3DSW);
+	RID rid = shape_owner.make_rid(shape);
+	shape->set_self(rid);
+	return rid;
+}
 RID PhysicsServer3DSW::sphere_shape_create() {
 	Shape3DSW *shape = memnew(SphereShape3DSW);
 	RID rid = shape_owner.make_rid(shape);

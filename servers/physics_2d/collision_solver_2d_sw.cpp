@@ -73,6 +73,49 @@ bool CollisionSolver2DSW::solve_static_world_margin(const Shape2DSW *p_shape_A, 
 	return found;
 }
 
+bool CollisionSolver2DSW::solve_raycast(const Shape2DSW *p_shape_A, const Vector2 &p_motion_A, const Transform2D &p_transform_A, const Shape2DSW *p_shape_B, const Transform2D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result, Vector2 *sep_axis) {
+	const RayShape2DSW *ray = static_cast<const RayShape2DSW *>(p_shape_A);
+	if (p_shape_B->get_type() == PhysicsServer2D::SHAPE_RAY) {
+		return false;
+	}
+
+	Vector2 from = p_transform_A.get_origin();
+	Vector2 to = from + p_transform_A[1] * ray->get_length();
+	if (p_motion_A != Vector2()) {
+		//not the best but should be enough
+		Vector2 normal = (to - from).normalized();
+		to += normal * MAX(0.0, normal.dot(p_motion_A));
+	}
+	Vector2 support_A = to;
+
+	Transform2D invb = p_transform_B.affine_inverse();
+	from = invb.xform(from);
+	to = invb.xform(to);
+
+	Vector2 p, n;
+	if (!p_shape_B->intersect_segment(from, to, p, n)) {
+		if (sep_axis) {
+			*sep_axis = p_transform_A[1].normalized();
+		}
+		return false;
+	}
+
+	Vector2 support_B = p_transform_B.xform(p);
+	if (ray->get_slips_on_slope()) {
+		Vector2 global_n = invb.basis_xform_inv(n).normalized();
+		support_B = support_A + (support_B - support_A).length() * global_n;
+	}
+
+	if (p_result_callback) {
+		if (p_swap_result) {
+			p_result_callback(support_B, support_A, p_userdata);
+		} else {
+			p_result_callback(support_A, support_B, p_userdata);
+		}
+	}
+	return true;
+}
+
 struct _ConcaveCollisionInfo2D {
 	const Transform2D *transform_A;
 	const Shape2DSW *shape_A;
@@ -175,6 +218,17 @@ bool CollisionSolver2DSW::solve(const Shape2DSW *p_shape_A, const Transform2D &p
 			return solve_static_world_margin(p_shape_B, p_transform_B, p_shape_A, p_transform_A, p_result_callback, p_userdata, true);
 		} else {
 			return solve_static_world_margin(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false);
+		}
+
+	} else if (type_A == PhysicsServer2D::SHAPE_RAY) {
+		if (type_B == PhysicsServer2D::SHAPE_RAY) {
+			return false; //no ray-ray
+		}
+
+		if (swap) {
+			return solve_raycast(p_shape_B, p_motion_B, p_transform_B, p_shape_A, p_transform_A, p_result_callback, p_userdata, true, sep_axis);
+		} else {
+			return solve_raycast(p_shape_A, p_motion_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false, sep_axis);
 		}
 
 	} else if (concave_B) {

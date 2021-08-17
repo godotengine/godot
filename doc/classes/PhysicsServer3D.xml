@@ -849,6 +849,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="ray_shape_create">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="set_active">
 			<return type="void" />
 			<argument index="0" name="active" type="bool" />
@@ -1171,31 +1176,34 @@
 		<constant name="SHAPE_PLANE" value="0" enum="ShapeType">
 			The [Shape3D] is a [WorldMarginShape3D].
 		</constant>
-		<constant name="SHAPE_SPHERE" value="1" enum="ShapeType">
+		<constant name="SHAPE_RAY" value="1" enum="ShapeType">
+			The [Shape3D] is a [RayShape3D].
+		</constant>
+		<constant name="SHAPE_SPHERE" value="2" enum="ShapeType">
 			The [Shape3D] is a [SphereShape3D].
 		</constant>
-		<constant name="SHAPE_BOX" value="2" enum="ShapeType">
+		<constant name="SHAPE_BOX" value="3" enum="ShapeType">
 			The [Shape3D] is a [BoxShape3D].
 		</constant>
-		<constant name="SHAPE_CAPSULE" value="3" enum="ShapeType">
+		<constant name="SHAPE_CAPSULE" value="4" enum="ShapeType">
 			The [Shape3D] is a [CapsuleShape3D].
 		</constant>
-		<constant name="SHAPE_CYLINDER" value="4" enum="ShapeType">
+		<constant name="SHAPE_CYLINDER" value="5" enum="ShapeType">
 			The [Shape3D] is a [CylinderShape3D].
 		</constant>
-		<constant name="SHAPE_CONVEX_POLYGON" value="5" enum="ShapeType">
+		<constant name="SHAPE_CONVEX_POLYGON" value="6" enum="ShapeType">
 			The [Shape3D] is a [ConvexPolygonShape3D].
 		</constant>
-		<constant name="SHAPE_CONCAVE_POLYGON" value="6" enum="ShapeType">
+		<constant name="SHAPE_CONCAVE_POLYGON" value="7" enum="ShapeType">
 			The [Shape3D] is a [ConcavePolygonShape3D].
 		</constant>
-		<constant name="SHAPE_HEIGHTMAP" value="7" enum="ShapeType">
+		<constant name="SHAPE_HEIGHTMAP" value="8" enum="ShapeType">
 			The [Shape3D] is a [HeightMapShape3D].
 		</constant>
-		<constant name="SHAPE_SOFT_BODY" value="8" enum="ShapeType">
+		<constant name="SHAPE_SOFT_BODY" value="9" enum="ShapeType">
 			The [Shape3D] is a [SoftBody3D].
 		</constant>
-		<constant name="SHAPE_CUSTOM" value="9" enum="ShapeType">
+		<constant name="SHAPE_CUSTOM" value="10" enum="ShapeType">
 			This constant is used internally by the engine. Any attempt to create this kind of shape results in an error.
 		</constant>
 		<constant name="AREA_PARAM_GRAVITY" value="0" enum="AreaParameter">
