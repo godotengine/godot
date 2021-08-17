@@ -70,6 +70,7 @@ void EditorCommandPalette::_update_command_search(const String &search_text) {
 		r.key_name = command_keys[i];
 		r.display_name = commands[r.key_name].name;
 		r.shortcut_text = commands[r.key_name].shortcut;
+		r.last_used = commands[r.key_name].last_used;
 
 		if (search_text.is_subsequence_ofi(r.display_name)) {
 			if (!search_text.is_empty()) {
@@ -93,6 +94,9 @@ void EditorCommandPalette::_update_command_search(const String &search_text) {
 
 	if (!search_text.is_empty()) {
 		SortArray<CommandEntry, CommandEntryComparator> sorter;
+		sorter.sort(entries.ptrw(), entries.size());
+	} else {
+		SortArray<CommandEntry, CommandHistoryComparator> sorter;
 		sorter.sort(entries.ptrw(), entries.size());
 	}
 
@@ -213,7 +217,9 @@ void EditorCommandPalette::_add_command(String p_command_name, String p_key_name
 
 void EditorCommandPalette::execute_command(String &p_command_key) {
 	ERR_FAIL_COND_MSG(!commands.has(p_command_key), p_command_key + " not found.");
+	commands[p_command_key].last_used = OS::get_singleton()->get_unix_time();
 	commands[p_command_key].callable.call_deferred(nullptr, 0);
+	_save_history();
 }
 
 void EditorCommandPalette::register_shortcuts_as_command() {
@@ -230,6 +236,14 @@ void EditorCommandPalette::register_shortcuts_as_command() {
 		key = unregistered_shortcuts.next(key);
 	}
 	unregistered_shortcuts.clear();
+
+	// Load command use history.
+	Dictionary command_history = EditorSettings::get_singleton()->get_project_metadata("command_palette", "command_history", Dictionary());
+	Array history_entries = command_history.keys();
+	for (int i = 0; i < history_entries.size(); i++) {
+		const String &history_key = history_entries[i];
+		commands[history_key].last_used = command_history[history_key];
+	}
 }
 
 Ref<Shortcut> EditorCommandPalette::add_shortcut_command(const String &p_command, const String &p_key, Ref<Shortcut> p_shortcut) {
@@ -250,6 +264,19 @@ Ref<Shortcut> EditorCommandPalette::add_shortcut_command(const String &p_command
 
 void EditorCommandPalette::_theme_changed() {
 	command_search_box->set_right_icon(search_options->get_theme_icon("Search", "EditorIcons"));
+}
+
+void EditorCommandPalette::_save_history() const {
+	Dictionary command_history;
+	List<String> command_keys;
+	commands.get_key_list(&command_keys);
+
+	for (const String &key : command_keys) {
+		if (commands[key].last_used > 0) {
+			command_history[key] = commands[key].last_used;
+		}
+	}
+	EditorSettings::get_singleton()->set_project_metadata("command_palette", "command_history", command_history);
 }
 
 EditorCommandPalette *EditorCommandPalette::get_singleton() {
