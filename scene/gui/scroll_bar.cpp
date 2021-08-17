@@ -79,12 +79,16 @@ void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 			double total = orientation == VERTICAL ? get_size().height : get_size().width;
 
 			if (ofs < decr_size) {
+				decr_active = true;
 				set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+				update();
 				return;
 			}
 
 			if (ofs > total - incr_size) {
+				incr_active = true;
 				set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+				update();
 				return;
 			}
 
@@ -129,6 +133,8 @@ void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 			}
 
 		} else {
+			incr_active = false;
+			decr_active = false;
 			drag.active = false;
 			update();
 		}
@@ -214,8 +220,24 @@ void ScrollBar::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {
 		RID ci = get_canvas_item();
 
-		Ref<Texture> decr = highlight == HIGHLIGHT_DECR ? get_icon("decrement_highlight") : get_icon("decrement");
-		Ref<Texture> incr = highlight == HIGHLIGHT_INCR ? get_icon("increment_highlight") : get_icon("increment");
+		Ref<Texture> decr, incr;
+
+		if (decr_active) {
+			decr = get_icon("decrement_pressed");
+		} else if (highlight == HIGHLIGHT_DECR) {
+			decr = get_icon("decrement_highlight");
+		} else {
+			decr = get_icon("decrement");
+		}
+
+		if (incr_active) {
+			incr = get_icon("increment_pressed");
+		} else if (highlight == HIGHLIGHT_INCR) {
+			incr = get_icon("increment_highlight");
+		} else {
+			incr = get_icon("increment");
+		}
+
 		Ref<StyleBox> bg = has_focus() ? get_stylebox("scroll_focus") : get_stylebox("scroll");
 
 		Ref<StyleBox> grabber;
