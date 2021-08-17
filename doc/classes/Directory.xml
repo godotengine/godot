@@ -187,7 +187,7 @@
 			<argument index="0" name="from" type="String" />
 			<argument index="1" name="to" type="String" />
 			<description>
-				Renames (move) the [code]from[/code] file to the [code]to[/code] destination. Both arguments should be paths to files, either relative or absolute. If the destination file exists and is not access-protected, it will be overwritten.
+				Renames (move) the [code]from[/code] file or directory to the [code]to[/code] destination. Both arguments should be paths to files or directories, either relative or absolute. If the destination file or directory exists and is not access-protected, it will be overwritten.
 				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>

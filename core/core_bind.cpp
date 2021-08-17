@@ -1555,15 +1555,17 @@ Error _Directory::copy(String p_from, String p_to) {
 
 Error _Directory::rename(String p_from, String p_to) {
 	ERR_FAIL_COND_V_MSG(!is_open(), ERR_UNCONFIGURED, "Directory must be opened before use.");
+	ERR_FAIL_COND_V_MSG(p_from.is_empty() || p_from == "." || p_from == "..", ERR_INVALID_PARAMETER, "Invalid path to rename.");
+
 	if (!p_from.is_rel_path()) {
 		DirAccess *d = DirAccess::create_for_path(p_from);
-		ERR_FAIL_COND_V_MSG(!d->file_exists(p_from), ERR_DOES_NOT_EXIST, "File does not exist.");
+		ERR_FAIL_COND_V_MSG(!d->file_exists(p_from) && !d->dir_exists(p_from), ERR_DOES_NOT_EXIST, "File or directory does not exist.");
 		Error err = d->rename(p_from, p_to);
 		memdelete(d);
 		return err;
 	}
 
-	ERR_FAIL_COND_V_MSG(!d->file_exists(p_from), ERR_DOES_NOT_EXIST, "File does not exist.");
+	ERR_FAIL_COND_V_MSG(!d->file_exists(p_from) && !d->dir_exists(p_from), ERR_DOES_NOT_EXIST, "File or directory does not exist.");
 	return d->rename(p_from, p_to);
 }
 
