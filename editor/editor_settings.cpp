@@ -1612,7 +1612,7 @@ void EditorSettings::set_builtin_action_override(const String &p_name, const Arr
 	}
 
 	// Update the shortcut (if it is used somewhere in the editor) to be the first event of the new list.
-	if (shortcuts.has(p_name)) {
+	if (shortcuts.has(p_name) && !event_list.is_empty()) {
 		shortcuts[p_name]->set_event(event_list.front()->get());
 	}
 }
