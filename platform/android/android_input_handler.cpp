@@ -360,7 +360,7 @@ int AndroidInputHandler::_android_button_mask_to_godot_button_mask(int android_b
 	if (android_button_mask & AMOTION_EVENT_BUTTON_BACK) {
 		godot_button_mask |= BUTTON_MASK_XBUTTON1;
 	}
-	if (android_button_mask & AMOTION_EVENT_BUTTON_SECONDARY) {
+	if (android_button_mask & AMOTION_EVENT_BUTTON_FORWARD) {
 		godot_button_mask |= BUTTON_MASK_XBUTTON2;
 	}
 
