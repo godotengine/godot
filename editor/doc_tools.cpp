@@ -245,9 +245,6 @@ void DocTools::generate(bool p_basic_types) {
 		}
 
 		String cname = name;
-		if (cname.begins_with("_")) { //proxy class
-			cname = cname.substr(1, name.length());
-		}
 
 		class_list[cname] = DocData::ClassDoc();
 		DocData::ClassDoc &c = class_list[cname];
@@ -739,9 +736,6 @@ void DocTools::generate(bool p_basic_types) {
 			pd.type = s.ptr->get_class();
 			while (String(ClassDB::get_parent_class(pd.type)) != "Object") {
 				pd.type = ClassDB::get_parent_class(pd.type);
-			}
-			if (pd.type.begins_with("_")) {
-				pd.type = pd.type.substr(1, pd.type.length());
 			}
 			c.properties.push_back(pd);
 		}

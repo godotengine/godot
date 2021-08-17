@@ -104,11 +104,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 	List<StringName> types;
 	ClassDB::get_class_list(&types);
 	for (const StringName &E : types) {
-		String n = E;
-		if (n.begins_with("_")) {
-			n = n.substr(1, n.length());
-		}
-		highlighter->add_keyword_color(n, type_color);
+		highlighter->add_keyword_color(E, type_color);
 	}
 
 	/* User types. */
