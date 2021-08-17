@@ -268,8 +268,35 @@ VARIANT_ENUM_CAST(RigidBody2D::CCDMode);
 class CharacterBody2D : public PhysicsBody2D {
 	GDCLASS(CharacterBody2D, PhysicsBody2D);
 
+public:
+	enum MotionMode {
+		MOTION_MODE_GROUNDED,
+		MOTION_MODE_FREE,
+	};
+	bool move_and_slide();
+
+	const Vector2 &get_linear_velocity() const;
+	void set_linear_velocity(const Vector2 &p_velocity);
+
+	bool is_on_floor() const;
+	bool is_on_floor_only() const;
+	bool is_on_wall() const;
+	bool is_on_wall_only() const;
+	bool is_on_ceiling() const;
+	bool is_on_ceiling_only() const;
+	Vector2 get_floor_normal() const;
+	real_t get_floor_angle(const Vector2 &p_up_direction = Vector2(0.0, -1.0)) const;
+	Vector2 get_platform_velocity() const;
+
+	int get_slide_collision_count() const;
+	PhysicsServer2D::MotionResult get_slide_collision(int p_bounce) const;
+
+	CharacterBody2D();
+	~CharacterBody2D();
+
 private:
 	real_t margin = 0.08;
+	MotionMode motion_mode = MOTION_MODE_GROUNDED;
 
 	bool floor_stop_on_slope = false;
 	bool floor_constant_speed = false;
@@ -279,6 +306,7 @@ private:
 	int platform_layer;
 	real_t floor_max_angle = Math::deg2rad((real_t)45.0);
 	float floor_snap_length = 0;
+	real_t free_mode_min_slide_angle = Math::deg2rad((real_t)15.0);
 	Vector2 up_direction = Vector2(0.0, -1.0);
 	uint32_t moving_platform_ignore_layers = 0;
 	Vector2 linear_velocity;
@@ -317,8 +345,17 @@ private:
 	real_t get_floor_snap_length();
 	void set_floor_snap_length(real_t p_floor_snap_length);
 
+	real_t get_free_mode_min_slide_angle() const;
+	void set_free_mode_min_slide_angle(real_t p_radians);
+
 	uint32_t get_moving_platform_ignore_layers() const;
 	void set_moving_platform_ignore_layers(const uint32_t p_exclude_layer);
+
+	void set_motion_mode(MotionMode p_mode);
+	MotionMode get_motion_mode() const;
+
+	void _move_and_slide_free(real_t p_delta);
+	void _move_and_slide_grounded(real_t p_delta, bool p_was_on_floor, const Vector2 &p_prev_platform_velocity);
 
 	Ref<KinematicCollision2D> _get_slide_collision(int p_bounce);
 	Ref<KinematicCollision2D> _get_last_slide_collision();
@@ -332,29 +369,10 @@ private:
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-
-public:
-	bool move_and_slide();
-
-	const Vector2 &get_linear_velocity() const;
-	void set_linear_velocity(const Vector2 &p_velocity);
-
-	bool is_on_floor() const;
-	bool is_on_floor_only() const;
-	bool is_on_wall() const;
-	bool is_on_wall_only() const;
-	bool is_on_ceiling() const;
-	bool is_on_ceiling_only() const;
-	Vector2 get_floor_normal() const;
-	real_t get_floor_angle(const Vector2 &p_up_direction = Vector2(0.0, -1.0)) const;
-	Vector2 get_platform_velocity() const;
-
-	int get_slide_collision_count() const;
-	PhysicsServer2D::MotionResult get_slide_collision(int p_bounce) const;
-
-	CharacterBody2D();
-	~CharacterBody2D();
+	virtual void _validate_property(PropertyInfo &property) const override;
 };
+
+VARIANT_ENUM_CAST(CharacterBody2D::MotionMode);
 
 class KinematicCollision2D : public RefCounted {
 	GDCLASS(KinematicCollision2D, RefCounted);
