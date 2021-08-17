@@ -167,6 +167,7 @@ public:
 #ifdef TOOLS_ENABLED
 	virtual Transform get_global_gizmo_transform() const;
 	virtual Transform get_local_gizmo_transform() const;
+	virtual AABB get_fallback_gizmo_aabb() const;
 #endif
 
 	void set_as_toplevel(bool p_enabled);

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  occluder.h                                                           */
+/*  portal_defines.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,39 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OCCLUDER_H
-#define OCCLUDER_H
+#ifndef PORTAL_DEFINES_H
+#define PORTAL_DEFINES_H
 
-#include "scene/3d/spatial.h"
-#include "scene/resources/occluder_shape.h"
+// This file is to allow constants etc to be accessible from outside the visual server,
+// while keeping the dependencies to an absolute minimum.
 
-class Occluder : public Spatial {
-	GDCLASS(Occluder, Spatial);
-
-	friend class OccluderSpatialGizmo;
-	friend class OccluderEditorPlugin;
-
-	Ref<OccluderShape> _shape;
-
-	void resource_changed(RES res);
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-
-public:
-	void set_shape(const Ref<OccluderShape> &p_shape);
-	Ref<OccluderShape> get_shape() const;
-
-	String get_configuration_warning() const;
-
-#ifdef TOOLS_ENABLED
-	// for editor gizmo
-	virtual AABB get_fallback_gizmo_aabb() const;
-#endif
-
-	Occluder();
-	~Occluder();
+struct PortalDefines {
+	static const int OCCLUSION_POLY_MAX_VERTS = 8;
+	static const int OCCLUSION_POLY_MAX_HOLES = 4;
 };
 
-#endif // OCCLUDER_H
+#endif // PORTAL_DEFINES_H

@@ -30,6 +30,7 @@
 
 #include "geometry.h"
 
+#include "core/local_vector.h"
 #include "core/print_string.h"
 
 #include "thirdparty/misc/clipper.hpp"
@@ -52,6 +53,17 @@ bool Geometry::is_point_in_polygon(const Vector2 &p_point, const Vector<Vector2>
 	return false;
 }
 */
+
+void Geometry::OccluderMeshData::clear() {
+	faces.clear();
+	vertices.clear();
+}
+
+void Geometry::MeshData::clear() {
+	faces.clear();
+	edges.clear();
+	vertices.clear();
+}
 
 void Geometry::MeshData::optimize_vertices() {
 	Map<int, int> vtx_remap;
@@ -1361,6 +1373,28 @@ Vector<Geometry::PackRectsResult> Geometry::partial_pack_rects(const Vector<Vect
 	}
 
 	return ret;
+}
+
+// Expects polygon as a triangle fan
+real_t Geometry::find_polygon_area(const Vector3 *p_verts, int p_num_verts) {
+	if (!p_verts || (p_num_verts < 3)) {
+		return 0.0;
+	}
+
+	Face3 f;
+	f.vertex[0] = p_verts[0];
+	f.vertex[1] = p_verts[1];
+	f.vertex[2] = p_verts[1];
+
+	real_t area = 0.0;
+
+	for (int n = 2; n < p_num_verts; n++) {
+		f.vertex[1] = f.vertex[2];
+		f.vertex[2] = p_verts[n];
+		area += Math::sqrt(f.get_twice_area_squared());
+	}
+
+	return area * 0.5;
 }
 
 // adapted from:
