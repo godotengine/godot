@@ -239,6 +239,14 @@ float AudioStreamPlayer::get_volume_scale_r() const {
 	return volume_scale.r;
 }
 
+void AudioStreamPlayer::set_volume_balance(float p_balance) {
+	// the 2.0 on left/right is critical to preserving loudness.
+	// a balance of 0.0 ought to be a no-op, which means a scale of 1.0,1.0
+	// therefore, left/right need to be scaled to 2.0 to compensate.
+	volume_scale.l = MIN(2.0, MAX(0.0, 1.0 - p_balance));
+	volume_scale.r = MIN(2.0, MAX(0.0, 1.0 + p_balance));
+}
+
 void AudioStreamPlayer::set_pitch_scale(float p_pitch_scale) {
 	ERR_FAIL_COND(p_pitch_scale <= 0.0);
 	pitch_scale = p_pitch_scale;
@@ -381,6 +389,8 @@ void AudioStreamPlayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_volume_scale_r", "volume_scale_r"), &AudioStreamPlayer::set_volume_scale_r);
 	ClassDB::bind_method(D_METHOD("get_volume_scale_r"), &AudioStreamPlayer::get_volume_scale_r);
+
+	ClassDB::bind_method(D_METHOD("set_volume_balance", "balance"), &AudioStreamPlayer::set_volume_balance);
 
 	ClassDB::bind_method(D_METHOD("set_pitch_scale", "pitch_scale"), &AudioStreamPlayer::set_pitch_scale);
 	ClassDB::bind_method(D_METHOD("get_pitch_scale"), &AudioStreamPlayer::get_pitch_scale);

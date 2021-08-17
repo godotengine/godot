@@ -96,6 +96,8 @@ public:
 	void set_volume_scale_r(float p_volume);
 	float get_volume_scale_r() const;
 
+	void set_volume_balance(float p_balance);
+
 	void set_pitch_scale(float p_pitch_scale);
 	float get_pitch_scale() const;
 
