@@ -42,6 +42,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.SparseArray;
@@ -344,7 +345,11 @@ public class GodotIO {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 				Log.w(TAG, "Shared storage access is limited on Android 10 and higher.");
 			}
-			return Environment.getExternalStoragePublicDirectory(what).getAbsolutePath();
+			if (TextUtils.isEmpty(what)) {
+				return Environment.getExternalStorageDirectory().getAbsolutePath();
+			} else {
+				return Environment.getExternalStoragePublicDirectory(what).getAbsolutePath();
+			}
 		} else {
 			return activity.getExternalFilesDir(what).getAbsolutePath();
 		}
