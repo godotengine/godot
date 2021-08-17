@@ -115,8 +115,8 @@ public:
 	String get_current_action_name() const;
 	void clear_history(bool p_increase_version = true);
 
-	bool has_undo();
-	bool has_redo();
+	bool has_undo() const;
+	bool has_redo() const;
 
 	uint64_t get_version() const;
 

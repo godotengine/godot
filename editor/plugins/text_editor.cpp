@@ -480,6 +480,7 @@ void TextEditor::_bind_methods() {
 	ClassDB::bind_method("_edit_option", &TextEditor::_edit_option);
 	ClassDB::bind_method("_change_syntax_highlighter", &TextEditor::_change_syntax_highlighter);
 	ClassDB::bind_method("_text_edit_gui_input", &TextEditor::_text_edit_gui_input);
+	ClassDB::bind_method("_prepare_edit_menu", &TextEditor::_prepare_edit_menu);
 }
 
 static ScriptEditorBase *create_editor(const RES &p_resource) {
@@ -539,6 +540,13 @@ void TextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	}
 }
 
+void TextEditor::_prepare_edit_menu() {
+	const TextEdit *tx = code_editor->get_text_edit();
+	PopupMenu *popup = edit_menu->get_popup();
+	popup->set_item_disabled(popup->get_item_index(EDIT_UNDO), !tx->has_undo());
+	popup->set_item_disabled(popup->get_item_index(EDIT_REDO), !tx->has_redo());
+}
+
 void TextEditor::_make_context_menu(bool p_selection, bool p_can_fold, bool p_is_folded, Vector2 p_position) {
 	context_menu->clear();
 	if (p_selection) {
@@ -564,6 +572,10 @@ void TextEditor::_make_context_menu(bool p_selection, bool p_can_fold, bool p_is
 	if (p_can_fold || p_is_folded) {
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_fold_line"), EDIT_TOGGLE_FOLD_LINE);
 	}
+
+	const TextEdit *tx = code_editor->get_text_edit();
+	context_menu->set_item_disabled(context_menu->get_item_index(EDIT_UNDO), !tx->has_undo());
+	context_menu->set_item_disabled(context_menu->get_item_index(EDIT_REDO), !tx->has_redo());
 
 	context_menu->set_position(get_global_transform().xform(p_position));
 	context_menu->set_size(Vector2(1, 1));
@@ -609,6 +621,7 @@ TextEditor::TextEditor() {
 	edit_hb->add_child(edit_menu);
 	edit_menu->set_text(TTR("Edit"));
 	edit_menu->set_switch_on_hover(true);
+	edit_menu->connect("about_to_show", this, "_prepare_edit_menu");
 	edit_menu->get_popup()->connect("id_pressed", this, "_edit_option");
 
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/undo"), EDIT_UNDO);

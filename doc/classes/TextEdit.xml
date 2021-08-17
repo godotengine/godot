@@ -192,6 +192,18 @@
 				Returns whether the specified [code]keyword[/code] has a color set to it or not.
 			</description>
 		</method>
+		<method name="has_redo" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if a "redo" action is available.
+			</description>
+		</method>
+		<method name="has_undo" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if an "undo" action is available.
+			</description>
+		</method>
 		<method name="insert_text_at_cursor">
 			<return type="void" />
 			<argument index="0" name="text" type="String" />
