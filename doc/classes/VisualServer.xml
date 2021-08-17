@@ -2531,6 +2531,13 @@
 				The default value is [code]1.0[/code], which means [code]TIME[/code] will count the real time as it goes by, without narrowing or stretching it.
 			</description>
 		</method>
+		<method name="set_use_occlusion_culling">
+			<return type="void" />
+			<argument index="0" name="enable" type="bool" />
+			<description>
+				Enables or disables occlusion culling.
+			</description>
+		</method>
 		<method name="shader_create">
 			<return type="RID" />
 			<description>

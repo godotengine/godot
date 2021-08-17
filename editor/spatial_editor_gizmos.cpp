@@ -42,6 +42,7 @@
 #include "scene/3d/listener.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/navigation_mesh.h"
+#include "scene/3d/occluder.h"
 #include "scene/3d/particles.h"
 #include "scene/3d/physics_joint.h"
 #include "scene/3d/portal.h"
@@ -60,6 +61,7 @@
 #include "scene/resources/convex_polygon_shape.h"
 #include "scene/resources/cylinder_shape.h"
 #include "scene/resources/height_map_shape.h"
+#include "scene/resources/occluder_shape.h"
 #include "scene/resources/plane_shape.h"
 #include "scene/resources/primitive_meshes.h"
 #include "scene/resources/ray_shape.h"
@@ -4937,4 +4939,275 @@ PortalSpatialGizmo::PortalSpatialGizmo(Portal *p_portal) {
 
 	_color_portal_front = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/portal_front", Color(0.05, 0.05, 1.0, 0.3));
 	_color_portal_back = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/portal_back", Color(1.0, 1.0, 0.0, 0.15));
+}
+
+/////////////////////
+
+OccluderGizmoPlugin::OccluderGizmoPlugin() {
+	Color color_occluder = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/occluder", Color(1.0, 0.0, 1.0));
+	create_material("occluder", color_occluder, false, true, false);
+
+	create_handle_material("occluder_handle");
+	create_handle_material("extra_handle", false, SpatialEditor::get_singleton()->get_icon("EditorInternalHandle", "EditorIcons"));
+}
+
+Ref<EditorSpatialGizmo> OccluderGizmoPlugin::create_gizmo(Spatial *p_spatial) {
+	Ref<OccluderSpatialGizmo> ref;
+
+	Occluder *occluder = Object::cast_to<Occluder>(p_spatial);
+	if (occluder) {
+		ref = Ref<OccluderSpatialGizmo>(memnew(OccluderSpatialGizmo(occluder)));
+	}
+
+	return ref;
+}
+
+bool OccluderGizmoPlugin::has_gizmo(Spatial *p_spatial) {
+	if (Object::cast_to<Occluder>(p_spatial)) {
+		return true;
+	}
+
+	return false;
+}
+
+String OccluderGizmoPlugin::get_name() const {
+	return "Occluder";
+}
+
+int OccluderGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+//////////////////////
+
+String OccluderSpatialGizmo::get_handle_name(int p_idx) const {
+	const OccluderShapeSphere *occ_sphere = get_occluder_shape_sphere();
+	if (occ_sphere) {
+		int num_spheres = occ_sphere->get_spheres().size();
+
+		if (p_idx >= num_spheres) {
+			p_idx -= num_spheres;
+			return "Radius " + itos(p_idx);
+		} else {
+			return "Sphere " + itos(p_idx);
+		}
+	}
+
+	return "Unknown";
+}
+
+Variant OccluderSpatialGizmo::get_handle_value(int p_idx) {
+	const OccluderShapeSphere *occ_sphere = get_occluder_shape_sphere();
+	if (occ_sphere) {
+		Vector<Plane> spheres = occ_sphere->get_spheres();
+		int num_spheres = spheres.size();
+
+		if (p_idx >= num_spheres) {
+			p_idx -= num_spheres;
+			return spheres[p_idx].d;
+		} else {
+			return spheres[p_idx].normal;
+		}
+	}
+
+	return 0;
+}
+
+void OccluderSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p_point) {
+	if (!_occluder) {
+		return;
+	}
+
+	Transform tr = _occluder->get_global_transform();
+	Transform tr_inv = tr.affine_inverse();
+
+	// selection ray
+	Vector3 ray_from = p_camera->project_ray_origin(p_point);
+	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
+	Vector3 camera_dir = p_camera->get_transform().basis.get_axis(2);
+
+	// find the smallest camera axis, we will only transform the handles on 2 axes max,
+	// to try and make things more user friendly (it is confusing trying to change 3d position
+	// from a 2d view)
+	int biggest_axis = 0;
+	real_t biggest = 0.0;
+	for (int n = 0; n < 3; n++) {
+		real_t val = Math::abs(camera_dir.get_axis(n));
+		if (val > biggest) {
+			biggest = val;
+			biggest_axis = n;
+		}
+	}
+
+	// find world space of selected point
+	OccluderShapeSphere *occ_sphere = get_occluder_shape_sphere();
+	if (occ_sphere) {
+		Vector<Plane> spheres = occ_sphere->get_spheres();
+		int num_spheres = spheres.size();
+
+		// radius?
+		bool is_radius = false;
+
+		if (p_idx >= num_spheres) {
+			p_idx -= num_spheres;
+			is_radius = true;
+		}
+
+		Vector3 pt_world = spheres[p_idx].normal;
+		pt_world = tr.xform(pt_world);
+		Vector3 pt_world_center = pt_world;
+
+		// a plane between the radius point and the centre
+		Plane plane;
+		if (is_radius) {
+			plane = Plane(Vector3(0, 0, 1), pt_world.z);
+		} else {
+			plane = Plane(pt_world, camera_dir);
+		}
+
+		Vector3 inters;
+		if (plane.intersects_ray(ray_from, ray_dir, &inters)) {
+			if (SpatialEditor::get_singleton()->is_snap_enabled()) {
+				float snap = SpatialEditor::get_singleton()->get_translate_snap();
+				inters.snap(Vector3(snap, snap, snap));
+			}
+
+			if (is_radius) {
+				pt_world = inters;
+
+				// new radius is simply the dist between this point and the centre of the sphere
+				real_t radius = (pt_world - pt_world_center).length();
+				occ_sphere->set_sphere_radius(p_idx, radius);
+			} else {
+				for (int n = 0; n < 3; n++) {
+					if (n != biggest_axis) {
+						pt_world.set_axis(n, inters.get_axis(n));
+					}
+				}
+
+				Vector3 pt_local = tr_inv.xform(pt_world);
+				occ_sphere->set_sphere_position(p_idx, pt_local);
+			}
+
+			return;
+		}
+	}
+}
+
+void OccluderSpatialGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p_cancel) {
+	OccluderShapeSphere *occ_sphere = get_occluder_shape_sphere();
+	if (occ_sphere) {
+		Vector<Plane> spheres = occ_sphere->get_spheres();
+		int num_spheres = spheres.size();
+
+		UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
+
+		if (p_idx >= num_spheres) {
+			p_idx -= num_spheres;
+
+			ur->create_action(TTR("Set Occluder Sphere Radius"));
+			ur->add_do_method(occ_sphere, "set_sphere_radius", p_idx, spheres[p_idx].d);
+			ur->add_undo_method(occ_sphere, "set_sphere_radius", p_idx, p_restore);
+		} else {
+			ur->create_action(TTR("Set Occluder Sphere Position"));
+			ur->add_do_method(occ_sphere, "set_sphere_position", p_idx, spheres[p_idx].normal);
+			ur->add_undo_method(occ_sphere, "set_sphere_position", p_idx, p_restore);
+		}
+
+		ur->commit_action();
+		_occluder->property_list_changed_notify();
+	}
+}
+
+OccluderShapeSphere *OccluderSpatialGizmo::get_occluder_shape_sphere() {
+	if (!_occluder) {
+		return nullptr;
+	}
+
+	Ref<OccluderShape> rshape = _occluder->get_shape();
+	if (rshape.is_null() || !rshape.is_valid()) {
+		return nullptr;
+	}
+
+	OccluderShape *shape = rshape.ptr();
+	OccluderShapeSphere *occ_sphere = Object::cast_to<OccluderShapeSphere>(shape);
+	return occ_sphere;
+}
+
+const OccluderShapeSphere *OccluderSpatialGizmo::get_occluder_shape_sphere() const {
+	if (!_occluder) {
+		return nullptr;
+	}
+
+	Ref<OccluderShape> rshape = _occluder->get_shape();
+	if (rshape.is_null() || !rshape.is_valid()) {
+		return nullptr;
+	}
+
+	const OccluderShape *shape = rshape.ptr();
+	const OccluderShapeSphere *occ_sphere = Object::cast_to<OccluderShapeSphere>(shape);
+	return occ_sphere;
+}
+
+void OccluderSpatialGizmo::redraw() {
+	clear();
+
+	if (!_occluder) {
+		return;
+	}
+
+	Ref<Material> material_occluder = gizmo_plugin->get_material("occluder", this);
+	Color color(1, 1, 1, 1);
+
+	const OccluderShapeSphere *occ_sphere = get_occluder_shape_sphere();
+	if (occ_sphere) {
+		Vector<Plane> spheres = occ_sphere->get_spheres();
+		if (!spheres.size()) {
+			return;
+		}
+
+		Vector<Vector3> points;
+		Vector<Vector3> handles;
+		Vector<Vector3> radius_handles;
+
+		for (int n = 0; n < spheres.size(); n++) {
+			const Plane &p = spheres[n];
+
+			real_t r = p.d;
+			Vector3 offset = p.normal;
+			handles.push_back(offset);
+
+			// add a handle for the radius
+			radius_handles.push_back(offset + Vector3(r, 0, 0));
+
+			const int deg_change = 4;
+
+			for (int i = 0; i <= 360; i += deg_change) {
+				real_t ra = Math::deg2rad((real_t)i);
+				real_t rb = Math::deg2rad((real_t)i + deg_change);
+				Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r;
+				Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r;
+
+				points.push_back(offset + Vector3(a.x, 0, a.y));
+				points.push_back(offset + Vector3(b.x, 0, b.y));
+				points.push_back(offset + Vector3(0, a.x, a.y));
+				points.push_back(offset + Vector3(0, b.x, b.y));
+				points.push_back(offset + Vector3(a.x, a.y, 0));
+				points.push_back(offset + Vector3(b.x, b.y, 0));
+			}
+		} // for n through spheres
+
+		add_lines(points, material_occluder, false, color);
+
+		// handles
+		Ref<Material> material_handle = gizmo_plugin->get_material("occluder_handle", this);
+		Ref<Material> material_extra_handle = gizmo_plugin->get_material("extra_handle", this);
+		add_handles(handles, material_handle);
+		add_handles(radius_handles, material_extra_handle, false, true);
+	}
+}
+
+OccluderSpatialGizmo::OccluderSpatialGizmo(Occluder *p_occluder) {
+	_occluder = p_occluder;
+	set_spatial_node(p_occluder);
 }

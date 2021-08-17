@@ -491,4 +491,38 @@ public:
 	PortalGizmoPlugin();
 };
 
+class Occluder;
+class OccluderShapeSphere;
+
+class OccluderSpatialGizmo : public EditorSpatialGizmo {
+	GDCLASS(OccluderSpatialGizmo, EditorSpatialGizmo);
+
+	Occluder *_occluder = nullptr;
+
+	OccluderShapeSphere *get_occluder_shape_sphere();
+	const OccluderShapeSphere *get_occluder_shape_sphere() const;
+
+public:
+	virtual String get_handle_name(int p_idx) const;
+	virtual Variant get_handle_value(int p_idx);
+	virtual void set_handle(int p_idx, Camera *p_camera, const Point2 &p_point);
+	virtual void commit_handle(int p_idx, const Variant &p_restore, bool p_cancel = false);
+	virtual void redraw();
+
+	OccluderSpatialGizmo(Occluder *p_occluder = nullptr);
+};
+
+class OccluderGizmoPlugin : public EditorSpatialGizmoPlugin {
+	GDCLASS(OccluderGizmoPlugin, EditorSpatialGizmoPlugin);
+
+protected:
+	virtual bool has_gizmo(Spatial *p_spatial);
+	String get_name() const;
+	int get_priority() const;
+	Ref<EditorSpatialGizmo> create_gizmo(Spatial *p_spatial);
+
+public:
+	OccluderGizmoPlugin();
+};
+
 #endif // SPATIAL_EDITOR_GIZMOS_H

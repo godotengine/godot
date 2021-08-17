@@ -34,6 +34,8 @@
 #include "core/local_vector.h"
 #include "core/math/aabb.h"
 #include "core/math/plane.h"
+#include "core/math/quat.h"
+#include "core/math/transform.h"
 #include "core/math/vector3.h"
 #include "core/object_id.h"
 #include "core/rid.h"
@@ -52,6 +54,7 @@ typedef uint32_t RoomHandle;
 typedef uint32_t RoomGroupHandle;
 typedef uint32_t OcclusionHandle;
 typedef uint32_t RGhostHandle;
+typedef uint32_t OccluderHandle;
 
 struct VSPortal {
 	enum ClipResult {
@@ -184,6 +187,9 @@ public:
 	// used in PVS calculation
 	Vector3 _pt_center;
 
+	// used for occlusion culling with occluders
+	real_t _bounding_sphere_radius = 0.0;
+
 	// portal plane
 	Plane _plane;
 
@@ -300,12 +306,26 @@ struct VSRoom {
 		return false;
 	}
 
+	bool remove_occluder(uint32_t p_pool_id) {
+		for (unsigned int n = 0; n < _occluder_pool_ids.size(); n++) {
+			if (_occluder_pool_ids[n] == p_pool_id) {
+				_occluder_pool_ids.remove_unordered(n);
+				return true;
+			}
+		}
+		return false;
+	}
+
 	void add_roamer(uint32_t p_pool_id) {
 		_roamer_pool_ids.push_back(p_pool_id);
 	}
 
 	void add_rghost(uint32_t p_pool_id) {
 		_rghost_pool_ids.push_back(p_pool_id);
+	}
+
+	void add_occluder(uint32_t p_pool_id) {
+		_occluder_pool_ids.push_back(p_pool_id);
 	}
 
 	// keep a list of statics in the room .. statics may appear
@@ -349,9 +369,87 @@ struct VSRoom {
 	LocalVector<uint32_t, int32_t> _roamer_pool_ids;
 	LocalVector<uint32_t, int32_t> _rghost_pool_ids;
 
+	// only using uint here for compatibility with TrackedPoolList,
+	// as we will use either this or TrackedPoolList for occlusion testing
+	LocalVector<uint32_t, uint32_t> _occluder_pool_ids;
+
 	// keep track of which roomgroups the room is in, that
 	// way we can switch on and off roomgroups as they enter / exit view
 	LocalVector<uint32_t, int32_t> _roomgroup_ids;
+};
+
+struct VSOccluder {
+	void create() {
+		type = OT_UNDEFINED;
+		room_id = -1;
+		dirty = false;
+		active = true;
+	}
+
+	// these should match the values in VisualServer::OccluderType
+	enum Type : uint32_t {
+		OT_UNDEFINED,
+		OT_SPHERE,
+		OT_NUM_TYPES,
+	} type;
+
+	// which is the primary room this group of occluders is in
+	// (it may sprawl into multiple rooms)
+	int32_t room_id;
+
+	// location for finding the room
+	Vector3 pt_center;
+
+	// global xform
+	Transform xform;
+
+	// whether world space need calculating
+	bool dirty;
+
+	// controlled by the visible flag on the occluder
+	bool active;
+
+	// ids of multiple objects in the appropriate occluder pool
+	LocalVector<uint32_t, int32_t> list_ids;
+};
+
+namespace Occlusion {
+struct Sphere {
+	Vector3 pos;
+	real_t radius;
+
+	void create() { radius = 0.0; }
+	void from_plane(const Plane &p_plane) {
+		pos = p_plane.normal;
+		// Disallow negative radius. Even zero radius should not really be sent.
+		radius = MAX(p_plane.d, 0.0);
+	}
+
+	bool intersect_ray(const Vector3 &p_ray_origin, const Vector3 &p_ray_dir, real_t &r_dist, real_t radius_squared) const {
+		Vector3 offset = pos - p_ray_origin;
+		real_t c2 = offset.length_squared();
+
+		real_t v = offset.dot(p_ray_dir);
+		real_t d = radius_squared - (c2 - (v * v));
+
+		if (d < 0.0) {
+			return false;
+		}
+
+		r_dist = (v - Math::sqrt(d));
+		return true;
+	}
+};
+} // namespace Occlusion
+
+struct VSOccluder_Sphere {
+	void create() {
+		local.create();
+		world.create();
+	}
+
+	Occlusion::Sphere local;
+	Occlusion::Sphere world;
 };
 
 #endif

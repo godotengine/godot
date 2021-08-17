@@ -82,6 +82,9 @@ RoomManagerEditorPlugin::RoomManagerEditorPlugin(EditorNode *p_node) {
 
 	Ref<PortalGizmoPlugin> portal_gizmo_plugin = Ref<PortalGizmoPlugin>(memnew(PortalGizmoPlugin));
 	SpatialEditor::get_singleton()->add_gizmo_plugin(portal_gizmo_plugin);
+
+	Ref<OccluderGizmoPlugin> occluder_gizmo_plugin = Ref<OccluderGizmoPlugin>(memnew(OccluderGizmoPlugin));
+	SpatialEditor::get_singleton()->add_gizmo_plugin(occluder_gizmo_plugin);
 }
 
 RoomManagerEditorPlugin::~RoomManagerEditorPlugin() {
@@ -205,4 +208,79 @@ PortalEditorPlugin::PortalEditorPlugin(EditorNode *p_node) {
 }
 
 PortalEditorPlugin::~PortalEditorPlugin() {
+}
+
+///////////////////////
+
+void OccluderEditorPlugin::_center() {
+	if (_occluder && _occluder->is_inside_tree()) {
+		Ref<OccluderShape> ref = _occluder->get_shape();
+
+		if (ref.is_valid()) {
+			Spatial *parent = Object::cast_to<Spatial>(_occluder->get_parent());
+			if (parent) {
+				real_t snap = 0.0;
+
+				if (Engine::get_singleton()->is_editor_hint()) {
+					if (SpatialEditor::get_singleton() && SpatialEditor::get_singleton()->is_snap_enabled()) {
+						snap = SpatialEditor::get_singleton()->get_translate_snap();
+					}
+				}
+
+				Transform old_local_xform = _occluder->get_transform();
+				Transform new_local_xform = ref->center_node(_occluder->get_global_transform(), parent->get_global_transform(), snap);
+				_occluder->property_list_changed_notify();
+
+				undo_redo->create_action(TTR("Occluder Set Transform"));
+				undo_redo->add_do_method(_occluder, "set_transform", new_local_xform);
+				undo_redo->add_undo_method(_occluder, "set_transform", old_local_xform);
+				undo_redo->commit_action();
+
+				_occluder->update_gizmo();
+			}
+		}
+	}
+}
+
+void OccluderEditorPlugin::edit(Object *p_object) {
+	Occluder *p = Object::cast_to<Occluder>(p_object);
+	if (!p) {
+		return;
+	}
+
+	_occluder = p;
+}
+
+bool OccluderEditorPlugin::handles(Object *p_object) const {
+	return p_object->is_class("Occluder");
+}
+
+void OccluderEditorPlugin::make_visible(bool p_visible) {
+	if (p_visible) {
+		button_center->show();
+	} else {
+		button_center->hide();
+	}
+}
+
+void OccluderEditorPlugin::_bind_methods() {
+	ClassDB::bind_method("_center", &OccluderEditorPlugin::_center);
+}
+
+OccluderEditorPlugin::OccluderEditorPlugin(EditorNode *p_node) {
+	editor = p_node;
+
+	button_center = memnew(ToolButton);
+	button_center->set_icon(editor->get_gui_base()->get_icon("EditorPosition", "EditorIcons"));
+	button_center->set_text(TTR("Center Node"));
+	button_center->hide();
+	button_center->connect("pressed", this, "_center");
+	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, button_center);
+
+	undo_redo = EditorNode::get_undo_redo();
+
+	_occluder = nullptr;
+}
+
+OccluderEditorPlugin::~OccluderEditorPlugin() {
 }

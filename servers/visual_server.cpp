@@ -2172,6 +2172,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_feature", "feature"), &VisualServer::has_feature);
 	ClassDB::bind_method(D_METHOD("has_os_feature", "feature"), &VisualServer::has_os_feature);
 	ClassDB::bind_method(D_METHOD("set_debug_generate_wireframes", "generate"), &VisualServer::set_debug_generate_wireframes);
+	ClassDB::bind_method(D_METHOD("set_use_occlusion_culling", "enable"), &VisualServer::set_use_occlusion_culling);
 
 	ClassDB::bind_method(D_METHOD("is_render_loop_enabled"), &VisualServer::is_render_loop_enabled);
 	ClassDB::bind_method(D_METHOD("set_render_loop_enabled", "enabled"), &VisualServer::set_render_loop_enabled);
@@ -2620,6 +2621,10 @@ VisualServer::VisualServer() {
 	GLOBAL_DEF("rendering/portals/optimize/remove_danglers", true);
 	GLOBAL_DEF("rendering/portals/debug/logging", true);
 	GLOBAL_DEF("rendering/portals/advanced/flip_imported_portals", false);
+
+	// Occlusion culling
+	GLOBAL_DEF("rendering/misc/occlusion_culling/max_active_spheres", 8);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/misc/occlusion_culling/max_active_spheres", PropertyInfo(Variant::INT, "rendering/misc/occlusion_culling/max_active_spheres", PROPERTY_HINT_RANGE, "0,64"));
 }
 
 VisualServer::~VisualServer() {
