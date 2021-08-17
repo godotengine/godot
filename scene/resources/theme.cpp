@@ -1350,40 +1350,36 @@ void Theme::clear() {
 	_emit_theme_changed();
 }
 
-void Theme::copy_default_theme() {
-	Ref<Theme> default_theme2 = get_default();
-	copy_theme(default_theme2);
-}
-
-void Theme::copy_theme(const Ref<Theme> &p_other) {
+void Theme::merge_with(const Ref<Theme> &p_other) {
 	if (p_other.is_null()) {
-		clear();
 		return;
 	}
 
 	_freeze_change_propagation();
 
-	// These items need reconnecting, so add them normally.
+	// Colors.
 	{
 		const StringName *K = nullptr;
-		while ((K = p_other->icon_map.next(K))) {
+		while ((K = p_other->color_map.next(K))) {
 			const StringName *L = nullptr;
-			while ((L = p_other->icon_map[*K].next(L))) {
-				set_icon(*L, *K, p_other->icon_map[*K][*L]);
+			while ((L = p_other->color_map[*K].next(L))) {
+				set_color(*L, *K, p_other->color_map[*K][*L]);
 			}
 		}
 	}
 
+	// Constants.
 	{
 		const StringName *K = nullptr;
-		while ((K = p_other->style_map.next(K))) {
+		while ((K = p_other->constant_map.next(K))) {
 			const StringName *L = nullptr;
-			while ((L = p_other->style_map[*K].next(L))) {
-				set_stylebox(*L, *K, p_other->style_map[*K][*L]);
+			while ((L = p_other->constant_map[*K].next(L))) {
+				set_constant(*L, *K, p_other->constant_map[*K][*L]);
 			}
 		}
 	}
 
+	// Fonts.
 	{
 		const StringName *K = nullptr;
 		while ((K = p_other->font_map.next(K))) {
@@ -1394,13 +1390,46 @@ void Theme::copy_theme(const Ref<Theme> &p_other) {
 		}
 	}
 
-	// These items can be simply copied.
-	font_size_map = p_other->font_size_map;
-	color_map = p_other->color_map;
-	constant_map = p_other->constant_map;
+	// Font sizes.
+	{
+		const StringName *K = nullptr;
+		while ((K = p_other->font_size_map.next(K))) {
+			const StringName *L = nullptr;
+			while ((L = p_other->font_size_map[*K].next(L))) {
+				set_font_size(*L, *K, p_other->font_size_map[*K][*L]);
+			}
+		}
+	}
 
-	variation_map = p_other->variation_map;
-	variation_base_map = p_other->variation_base_map;
+	// Icons.
+	{
+		const StringName *K = nullptr;
+		while ((K = p_other->icon_map.next(K))) {
+			const StringName *L = nullptr;
+			while ((L = p_other->icon_map[*K].next(L))) {
+				set_icon(*L, *K, p_other->icon_map[*K][*L]);
+			}
+		}
+	}
+
+	// Styleboxes.
+	{
+		const StringName *K = nullptr;
+		while ((K = p_other->style_map.next(K))) {
+			const StringName *L = nullptr;
+			while ((L = p_other->style_map[*K].next(L))) {
+				set_stylebox(*L, *K, p_other->style_map[*K][*L]);
+			}
+		}
+	}
+
+	// Type variations.
+	{
+		const StringName *K = nullptr;
+		while ((K = p_other->variation_map.next(K))) {
+			set_type_variation(*K, p_other->variation_map[*K]);
+		}
+	}
 
 	_unfreeze_and_propagate_changes();
 }
@@ -1534,8 +1563,6 @@ void Theme::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_constant_list", "theme_type"), &Theme::_get_constant_list);
 	ClassDB::bind_method(D_METHOD("get_constant_type_list"), &Theme::_get_constant_type_list);
 
-	ClassDB::bind_method(D_METHOD("clear"), &Theme::clear);
-
 	ClassDB::bind_method(D_METHOD("set_default_font", "font"), &Theme::set_default_theme_font);
 	ClassDB::bind_method(D_METHOD("get_default_font"), &Theme::get_default_theme_font);
 
@@ -1558,8 +1585,8 @@ void Theme::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_type_list"), &Theme::_get_type_list);
 
-	ClassDB::bind_method("copy_default_theme", &Theme::copy_default_theme);
-	ClassDB::bind_method(D_METHOD("copy_theme", "other"), &Theme::copy_theme);
+	ClassDB::bind_method(D_METHOD("merge_with", "other"), &Theme::merge_with);
+	ClassDB::bind_method(D_METHOD("clear"), &Theme::clear);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "default_font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_default_font", "get_default_font");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_font_size"), "set_default_font_size", "get_default_font_size");

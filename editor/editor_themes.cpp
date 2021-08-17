@@ -595,6 +595,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("panel", "PanelContainer", style_menu);
 	theme->set_stylebox("MenuPanel", "EditorStyles", style_menu);
 
+	// CanvasItem Editor
+	Ref<StyleBoxFlat> style_canvas_editor_info = make_flat_stylebox(Color(0.0, 0.0, 0.0, 0.2));
+	style_canvas_editor_info->set_expand_margin_size_all(4 * EDSCALE);
+	theme->set_stylebox("CanvasItemInfoOverlay", "EditorStyles", style_canvas_editor_info);
+
 	// Script Editor
 	theme->set_stylebox("ScriptEditorPanel", "EditorStyles", make_empty_stylebox(default_margin_size, 0, default_margin_size, default_margin_size));
 	theme->set_stylebox("ScriptEditor", "EditorStyles", make_empty_stylebox(0, 0, 0, 0));
@@ -1499,15 +1504,14 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 }
 
 Ref<Theme> create_custom_theme(const Ref<Theme> p_theme) {
-	Ref<Theme> theme;
+	Ref<Theme> theme = create_editor_theme(p_theme);
 
-	const String custom_theme = EditorSettings::get_singleton()->get("interface/theme/custom_theme");
-	if (custom_theme != "") {
-		theme = ResourceLoader::load(custom_theme);
-	}
-
-	if (!theme.is_valid()) {
-		theme = create_editor_theme(p_theme);
+	const String custom_theme_path = EditorSettings::get_singleton()->get("interface/theme/custom_theme");
+	if (custom_theme_path != "") {
+		Ref<Theme> custom_theme = ResourceLoader::load(custom_theme_path);
+		if (custom_theme.is_valid()) {
+			theme->merge_with(custom_theme);
+		}
 	}
 
 	return theme;

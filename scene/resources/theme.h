@@ -210,8 +210,7 @@ public:
 	void get_type_list(List<StringName> *p_list) const;
 	void get_type_dependencies(const StringName &p_base_type, const StringName &p_type_variant, List<StringName> *p_list);
 
-	void copy_default_theme();
-	void copy_theme(const Ref<Theme> &p_other);
+	void merge_with(const Ref<Theme> &p_other);
 	void clear();
 
 	Theme();
