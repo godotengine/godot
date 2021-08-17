@@ -166,13 +166,13 @@
 				This is useful mostly to check if something changed from a saved version.
 			</description>
 		</method>
-		<method name="has_redo">
+		<method name="has_redo" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if a "redo" action is available.
 			</description>
 		</method>
-		<method name="has_undo">
+		<method name="has_undo" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if an "undo" action is available.

@@ -405,11 +405,11 @@ String UndoRedo::get_current_action_name() const {
 	return actions[current_action].name;
 }
 
-bool UndoRedo::has_undo() {
+bool UndoRedo::has_undo() const {
 	return current_action >= 0;
 }
 
-bool UndoRedo::has_redo() {
+bool UndoRedo::has_redo() const {
 	return (current_action + 1) < actions.size();
 }
 

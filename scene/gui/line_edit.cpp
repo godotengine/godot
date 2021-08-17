@@ -946,6 +946,17 @@ void LineEdit::paste_text() {
 	}
 }
 
+bool LineEdit::has_undo() const {
+	if (undo_stack_pos == nullptr) {
+		return undo_stack.size() > 1;
+	}
+	return undo_stack_pos != undo_stack.front();
+}
+
+bool LineEdit::has_redo() const {
+	return undo_stack_pos != nullptr && undo_stack_pos != undo_stack.back();
+}
+
 void LineEdit::undo() {
 	if (!editable) {
 		return;
@@ -2277,6 +2288,11 @@ void LineEdit::_ensure_menu() {
 	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_AUTO), text_direction == TEXT_DIRECTION_AUTO);
 	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_LTR), text_direction == TEXT_DIRECTION_LTR);
 	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_RTL), text_direction == TEXT_DIRECTION_RTL);
+
+	if (editable) {
+		menu->set_item_disabled(menu->get_item_index(MENU_UNDO), !has_undo());
+		menu->set_item_disabled(menu->get_item_index(MENU_REDO), !has_redo());
+	}
 }
 
 LineEdit::LineEdit() {

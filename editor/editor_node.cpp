@@ -2592,26 +2592,26 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 		case EDIT_UNDO: {
 			if (Input::get_singleton()->get_mouse_button_mask() & 0x7) {
-				log->add_message("Can't undo while mouse buttons are pressed.", EditorLog::MSG_TYPE_EDITOR);
+				log->add_message(TTR("Can't undo while mouse buttons are pressed."), EditorLog::MSG_TYPE_EDITOR);
 			} else {
 				String action = editor_data.get_undo_redo().get_current_action_name();
 
 				if (!editor_data.get_undo_redo().undo()) {
-					log->add_message("Nothing to undo.", EditorLog::MSG_TYPE_EDITOR);
+					log->add_message(TTR("Nothing to undo."), EditorLog::MSG_TYPE_EDITOR);
 				} else if (action != "") {
-					log->add_message("Undo: " + action, EditorLog::MSG_TYPE_EDITOR);
+					log->add_message(vformat(TTR("Undo: %s"), action), EditorLog::MSG_TYPE_EDITOR);
 				}
 			}
 		} break;
 		case EDIT_REDO: {
 			if (Input::get_singleton()->get_mouse_button_mask() & 0x7) {
-				log->add_message("Can't redo while mouse buttons are pressed.", EditorLog::MSG_TYPE_EDITOR);
+				log->add_message(TTR("Can't redo while mouse buttons are pressed."), EditorLog::MSG_TYPE_EDITOR);
 			} else {
 				if (!editor_data.get_undo_redo().redo()) {
-					log->add_message("Nothing to redo.", EditorLog::MSG_TYPE_EDITOR);
+					log->add_message(TTR("Nothing to redo."), EditorLog::MSG_TYPE_EDITOR);
 				} else {
 					String action = editor_data.get_undo_redo().get_current_action_name();
-					log->add_message("Redo: " + action, EditorLog::MSG_TYPE_EDITOR);
+					log->add_message(vformat(TTR("Redo: %s"), action), EditorLog::MSG_TYPE_EDITOR);
 				}
 			}
 		} break;
@@ -3014,8 +3014,13 @@ void EditorNode::_update_file_menu_opened() {
 	close_scene_sc->set_name(TTR("Close Scene"));
 	Ref<Shortcut> reopen_closed_scene_sc = ED_GET_SHORTCUT("editor/reopen_closed_scene");
 	reopen_closed_scene_sc->set_name(TTR("Reopen Closed Scene"));
+
 	PopupMenu *pop = file_menu->get_popup();
 	pop->set_item_disabled(pop->get_item_index(FILE_OPEN_PREV), previous_scenes.is_empty());
+
+	const UndoRedo &undo_redo = editor_data.get_undo_redo();
+	pop->set_item_disabled(pop->get_item_index(EDIT_UNDO), !undo_redo.has_undo());
+	pop->set_item_disabled(pop->get_item_index(EDIT_REDO), !undo_redo.has_redo());
 }
 
 void EditorNode::_update_file_menu_closed() {

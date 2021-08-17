@@ -1628,6 +1628,13 @@ void ScriptTextEditor::_color_changed(const Color &p_color) {
 	code_editor->get_text_editor()->update();
 }
 
+void ScriptTextEditor::_prepare_edit_menu() {
+	const CodeEdit *tx = code_editor->get_text_editor();
+	PopupMenu *popup = edit_menu->get_popup();
+	popup->set_item_disabled(popup->get_item_index(EDIT_UNDO), !tx->has_undo());
+	popup->set_item_disabled(popup->get_item_index(EDIT_REDO), !tx->has_redo());
+}
+
 void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, bool p_goto_definition, Vector2 p_pos) {
 	context_menu->clear();
 	context_menu->add_shortcut(ED_GET_SHORTCUT("ui_undo"), EDIT_UNDO);
@@ -1666,6 +1673,10 @@ void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p
 			context_menu->add_item(TTR("Pick Color"), EDIT_PICK_COLOR);
 		}
 	}
+
+	const CodeEdit *tx = code_editor->get_text_editor();
+	context_menu->set_item_disabled(context_menu->get_item_index(EDIT_UNDO), !tx->has_undo());
+	context_menu->set_item_disabled(context_menu->get_item_index(EDIT_REDO), !tx->has_redo());
 
 	context_menu->set_position(get_global_transform().xform(p_pos));
 	context_menu->set_size(Vector2(1, 1));
@@ -1752,6 +1763,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	search_menu->get_popup()->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
 
 	edit_hb->add_child(edit_menu);
+	edit_menu->connect("about_to_popup", callable_mp(this, &ScriptTextEditor::_prepare_edit_menu));
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_undo"), EDIT_UNDO);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_redo"), EDIT_REDO);
 	edit_menu->get_popup()->add_separator();

@@ -2963,6 +2963,18 @@ void TextEdit::end_complex_operation() {
 	undo_stack.back()->get().chain_backward = true;
 }
 
+bool TextEdit::has_undo() const {
+	if (undo_stack_pos == nullptr) {
+		int pending = current_op.type == TextOperation::TYPE_NONE ? 0 : 1;
+		return undo_stack.size() + pending > 0;
+	}
+	return undo_stack_pos != undo_stack.front();
+}
+
+bool TextEdit::has_redo() const {
+	return undo_stack_pos != nullptr;
+}
+
 void TextEdit::undo() {
 	if (!editable) {
 		return;
@@ -4482,6 +4494,8 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("begin_complex_operation"), &TextEdit::begin_complex_operation);
 	ClassDB::bind_method(D_METHOD("end_complex_operation"), &TextEdit::end_complex_operation);
 
+	ClassDB::bind_method(D_METHOD("has_undo"), &TextEdit::has_undo);
+	ClassDB::bind_method(D_METHOD("has_redo"), &TextEdit::has_redo);
 	ClassDB::bind_method(D_METHOD("undo"), &TextEdit::undo);
 	ClassDB::bind_method(D_METHOD("redo"), &TextEdit::redo);
 	ClassDB::bind_method(D_METHOD("clear_undo_history"), &TextEdit::clear_undo_history);
@@ -5070,6 +5084,11 @@ void TextEdit::_generate_context_menu() {
 	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_AUTO), text_direction == TEXT_DIRECTION_AUTO);
 	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_LTR), text_direction == TEXT_DIRECTION_LTR);
 	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_RTL), text_direction == TEXT_DIRECTION_RTL);
+
+	if (editable) {
+		menu->set_item_disabled(menu->get_item_index(MENU_UNDO), !has_undo());
+		menu->set_item_disabled(menu->get_item_index(MENU_REDO), !has_redo());
+	}
 }
 
 int TextEdit::_get_menu_action_accelerator(const String &p_action) {
