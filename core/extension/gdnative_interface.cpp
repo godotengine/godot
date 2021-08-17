@@ -663,7 +663,23 @@ static const char32_t *gdnative_string_operator_index_const(const GDNativeString
 
 /* OBJECT API */
 
-static void gdnative_object_method_bind_ptrcall(GDNativeMethodBindPtr p_method_bind, GDNativeObjectPtr p_instance, const GDNativeTypePtr *p_args, GDNativeTypePtr p_ret) {
+static void gdnative_object_method_bind_call(const GDNativeMethodBindPtr p_method_bind, GDNativeObjectPtr p_instance, const GDNativeVariantPtr *p_args, GDNativeInt p_arg_count, GDNativeVariantPtr r_return, GDNativeCallError *r_error) {
+	MethodBind *mb = (MethodBind *)p_method_bind;
+	Object *o = (Object *)p_instance;
+	const Variant **args = (const Variant **)p_args;
+	Callable::CallError error;
+
+	Variant ret = mb->call(o, args, p_arg_count, error);
+	memnew_placement(r_return, Variant(ret));
+
+	if (r_error) {
+		r_error->error = (GDNativeCallErrorType)(error.error);
+		r_error->argument = error.argument;
+		r_error->expected = error.expected;
+	}
+}
+
+static void gdnative_object_method_bind_ptrcall(const GDNativeMethodBindPtr p_method_bind, GDNativeObjectPtr p_instance, const GDNativeTypePtr *p_args, GDNativeTypePtr p_ret) {
 	MethodBind *mb = (MethodBind *)p_method_bind;
 	Object *o = (Object *)p_instance;
 	mb->ptrcall(o, (const void **)p_args, p_ret);
@@ -829,6 +845,7 @@ void gdnative_setup_interface(GDNativeInterface *p_interface) {
 
 	/* OBJECT */
 
+	gdni.object_method_bind_call = gdnative_object_method_bind_call;
 	gdni.object_method_bind_ptrcall = gdnative_object_method_bind_ptrcall;
 	gdni.object_destroy = gdnative_object_destroy;
 	gdni.global_get_singleton = gdnative_global_get_singleton;
