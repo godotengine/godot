@@ -1396,7 +1396,13 @@ String String::num(double p_num, int p_decimals) {
 #ifndef NO_USE_STDLIB
 
 	if (p_decimals < 0) {
-		p_decimals = 14 - (int)floor(log10(p_num));
+		p_decimals = 14;
+		const double abs_num = ABS(p_num);
+		if (abs_num > 10) {
+			// We want to align the digits to the above sane default, so we only
+			// need to subtract log10 for numbers with a positive power of ten.
+			p_decimals -= (int)floor(log10(abs_num));
+		}
 	}
 	if (p_decimals > MAX_DECIMALS) {
 		p_decimals = MAX_DECIMALS;
@@ -1625,24 +1631,31 @@ String String::num_real(double p_num, bool p_trailing) {
 
 	String s;
 	String sd;
-	/* integer part */
+
+	// Integer part.
 
 	bool neg = p_num < 0;
 	p_num = ABS(p_num);
 	int intn = (int)p_num;
 
-	/* decimal part */
+	// Decimal part.
 
-	if ((int)p_num != p_num) {
-		double dec = p_num - (double)((int)p_num);
+	if (intn != p_num) {
+		double dec = p_num - (double)(intn);
 
 		int digit = 0;
 
 #if REAL_T_IS_DOUBLE
-		int decimals = 14 - (int)floor(log10(p_num));
+		int decimals = 14;
 #else
-		int decimals = 6 - (int)floor(log10(p_num));
+		int decimals = 6;
 #endif
+		// We want to align the digits to the above sane default, so we only
+		// need to subtract log10 for numbers with a positive power of ten.
+		if (p_num > 10) {
+			decimals -= (int)floor(log10(p_num));
+		}
+
 		if (decimals > MAX_DECIMALS) {
 			decimals = MAX_DECIMALS;
 		}
