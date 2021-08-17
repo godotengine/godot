@@ -376,7 +376,7 @@ Vector3 VisualServer::oct_to_norm(const Vector2 v) {
 	float t = MAX(-res.z, 0.0f);
 	res.x += t * -SGN(res.x);
 	res.y += t * -SGN(res.y);
-	return res;
+	return res.normalized();
 }
 
 // Convert Octohedron-mapped normalized tangent vector back to Cartesian
