@@ -300,7 +300,7 @@ void Window::_propagate_window_notification(Node *p_node, int p_notification) {
 		Node *child = p_node->get_child(i);
 		Window *window = Object::cast_to<Window>(child);
 		if (window) {
-			break;
+			continue;
 		}
 		_propagate_window_notification(child, p_notification);
 	}
