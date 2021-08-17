@@ -44,7 +44,7 @@
 		</method>
 		<method name="set_volume_balance">
 			<return type="void" />
-			<argument index="0" name="balance" type="float" default="0.0" />
+			<argument index="0" name="balance" type="float" />
 			<description>
 				Sets the [code]volume_scale_l[/code] and [code]volume_scale_r[/code] values to achieve a given balanced (loudness-preserving) pan. Balance is measured from -1.0 (left) to 1.0 (right).
 			</description>
