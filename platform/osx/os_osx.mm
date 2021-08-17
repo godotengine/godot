@@ -395,7 +395,7 @@ String OS_OSX::get_godot_dir_name() const {
 	return String(VERSION_SHORT_NAME).capitalize();
 }
 
-String OS_OSX::get_system_dir(SystemDir p_dir) const {
+String OS_OSX::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	NSSearchPathDirectory id;
 	bool found = true;
 

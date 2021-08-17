@@ -235,18 +235,20 @@ String _get_activity_tag(const Ref<EditorExportPreset> &p_preset) {
 	return manifest_activity_text;
 }
 
-String _get_application_tag(const Ref<EditorExportPreset> &p_preset) {
+String _get_application_tag(const Ref<EditorExportPreset> &p_preset, bool p_has_storage_permission) {
 	String manifest_application_text = vformat(
 			"    <application android:label=\"@string/godot_project_name_string\"\n"
 			"        android:allowBackup=\"%s\"\n"
 			"        android:icon=\"@mipmap/icon\"\n"
 			"        android:isGame=\"%s\"\n"
 			"        android:hasFragileUserData=\"%s\"\n"
-			"        tools:replace=\"android:allowBackup,android:isGame,android:hasFragileUserData\"\n"
+			"        android:requestLegacyExternalStorage=\"%s\"\n"
+			"        tools:replace=\"android:allowBackup,android:isGame,android:hasFragileUserData,android:requestLegacyExternalStorage\"\n"
 			"        tools:ignore=\"GoogleAppIndexingWarning\">\n\n",
 			bool_to_string(p_preset->get("user_data_backup/allow")),
 			bool_to_string(p_preset->get("package/classify_as_game")),
-			bool_to_string(p_preset->get("package/retain_data_on_uninstall")));
+			bool_to_string(p_preset->get("package/retain_data_on_uninstall")),
+			bool_to_string(p_has_storage_permission));
 
 	manifest_application_text += _get_activity_tag(p_preset);
 	manifest_application_text += "    </application>\n";
