@@ -173,12 +173,15 @@ void Skeleton3D::_update_process_order() {
 	parentless_bones.clear();
 
 	for (int i = 0; i < len; i++) {
+		bonesptr[i].child_bones.clear();
+	}
+
+	for (int i = 0; i < len; i++) {
 		if (bonesptr[i].parent >= len) {
 			//validate this just in case
 			ERR_PRINT("Bone " + itos(i) + " has invalid parent: " + itos(bonesptr[i].parent));
 			bonesptr[i].parent = -1;
 		}
-		bonesptr[i].child_bones.clear();
 
 		if (bonesptr[i].parent != -1) {
 			int parent_bone_idx = bonesptr[i].parent;
