@@ -228,7 +228,7 @@
 			[b]Note:[/b] Requires [member usage] to be set to [constant USAGE_3D] or [constant USAGE_3D_NO_EFFECTS], since HDR is not supported for 2D.
 		</member>
 		<member name="keep_3d_linear" type="bool" setter="set_keep_3d_linear" getter="get_keep_3d_linear" default="false">
-			If [code]true[/code], the result after 3D rendering will not have a linear to sRGB color conversion applied. This is important when the viewport is used as a render target where the result is used as a texture on a 3D object rendered in another viewport. It is also important if the viewport is used to create data that is not color based (noise, heightmaps, pickmaps, etc.). Do not enable this when the viewport is used as a texture on a 2D object or if the viewport is your final output.
+			If [code]true[/code], the result after 3D rendering will not have a linear to sRGB color conversion applied. This is important when the viewport is used as a render target where the result is used as a texture on a 3D object rendered in another viewport. It is also important if the viewport is used to create data that is not color based (noise, heightmaps, pickmaps, etc.). Do not enable this when the viewport is used as a texture on a 2D object or if the viewport is your final output. For the GLES2 driver this will convert the sRGB output to linear, this should only be used for VR plugins that require input in linear color space!
 		</member>
 		<member name="msaa" type="int" setter="set_msaa" getter="get_msaa" enum="Viewport.MSAA" default="0">
 			The multisample anti-aliasing mode. A higher number results in smoother edges at the cost of significantly worse performance. A value of 4 is best unless targeting very high-end systems.

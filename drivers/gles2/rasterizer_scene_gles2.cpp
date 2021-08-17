@@ -2655,6 +2655,11 @@ void RasterizerSceneGLES2::_draw_sky(RasterizerStorageGLES2::Sky *p_sky, const C
 	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_CUBEMAP, false);
 	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_COPY_SECTION, false);
 	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_CUSTOM_ALPHA, false);
+	if (storage->frame.current_rt) {
+		storage->shaders.copy.set_conditional(CopyShaderGLES2::OUTPUT_LINEAR, storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_KEEP_3D_LINEAR]);
+	} else {
+		storage->shaders.copy.set_conditional(CopyShaderGLES2::OUTPUT_LINEAR, false);
+	}
 	storage->shaders.copy.bind();
 	storage->shaders.copy.set_uniform(CopyShaderGLES2::MULTIPLIER, p_energy);
 
@@ -2678,6 +2683,7 @@ void RasterizerSceneGLES2::_draw_sky(RasterizerStorageGLES2::Sky *p_sky, const C
 	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_PANORAMA, false);
 	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_MULTIPLIER, false);
 	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_CUBEMAP, false);
+	storage->shaders.copy.set_conditional(CopyShaderGLES2::OUTPUT_LINEAR, false);
 }
 
 void RasterizerSceneGLES2::_post_process(Environment *env, const CameraMatrix &p_cam_projection) {
@@ -3312,7 +3318,15 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 	}
 
 	if (!env || env->bg_mode != VS::ENV_BG_KEEP) {
-		glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a);
+		if (storage->frame.current_rt && storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_KEEP_3D_LINEAR]) {
+			// convert to linear here
+			Color linear_color = clear_color.to_linear();
+			glClearColor(linear_color.r, linear_color.g, linear_color.b, linear_color.a);
+
+			// leave clear_color in sRGB as most of the render pipeline remains in sRGB color space until writing out to frag_color
+		} else {
+			glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a);
+		}
 		glClear(GL_COLOR_BUFFER_BIT);
 	}
 
@@ -3414,6 +3428,13 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 		env_radiance_tex = 0; //do not use radiance texture on interiors
 		state.default_ambient = Color(0, 0, 0, 1); //black as default ambient for interior
 		state.default_bg = Color(0, 0, 0, 1); //black as default background for interior
+	}
+
+	// make sure we set our output mode correctly
+	if (storage->frame.current_rt) {
+		state.scene_shader.set_conditional(SceneShaderGLES2::OUTPUT_LINEAR, storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_KEEP_3D_LINEAR]);
+	} else {
+		state.scene_shader.set_conditional(SceneShaderGLES2::OUTPUT_LINEAR, false);
 	}
 
 	// render opaque things first
@@ -3519,6 +3540,9 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 		storage->_copy_screen();
 	}
 #endif
+
+	// return to default
+	state.scene_shader.set_conditional(SceneShaderGLES2::OUTPUT_LINEAR, false);
 }
 
 void RasterizerSceneGLES2::render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count) {
@@ -3736,6 +3760,7 @@ void RasterizerSceneGLES2::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 	}
 
 	state.scene_shader.set_conditional(SceneShaderGLES2::RENDER_DEPTH, true);
+	state.scene_shader.set_conditional(SceneShaderGLES2::OUTPUT_LINEAR, false); // just in case, should be false already
 
 	_render_render_list(render_list.elements, render_list.element_count, light_transform, light_projection, 0, RID(), nullptr, 0, bias, normal_bias, flip_facing, false, true);
 

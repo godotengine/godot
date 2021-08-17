@@ -334,15 +334,49 @@ void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target, const Re
 	RasterizerStorageGLES3::RenderTarget *rt = storage->render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 
-	Size2 win_size = OS::get_singleton()->get_window_size();
-	if (rt->external.fbo != 0) {
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->external.fbo);
+	if (rt->flags[RasterizerStorage::RENDER_TARGET_KEEP_3D_LINEAR]) {
+		// We need to add an sRGB conversion here as we kept our buffer linear (+ a little tone mapping).
+
+		canvas->_set_texture_rect_mode(true);
+
+		canvas->state.canvas_shader.set_custom_shader(0);
+		canvas->state.canvas_shader.set_conditional(CanvasShaderGLES3::LINEAR_TO_SRGB, true);
+		canvas->state.canvas_shader.bind();
+
+		canvas->canvas_begin();
+
+		glDisable(GL_BLEND);
+
+		// render to our framebuffer
+		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
+
+		// output our texture
+		glActiveTexture(GL_TEXTURE0);
+		if (rt->external.fbo != 0) {
+			glBindTexture(GL_TEXTURE_2D, rt->external.color);
+		} else {
+			glBindTexture(GL_TEXTURE_2D, rt->color);
+		}
+
+		canvas->draw_generic_textured_rect(p_screen_rect, Rect2(0, 0, 1, -1));
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+		canvas->canvas_end();
+
+		canvas->state.canvas_shader.set_conditional(CanvasShaderGLES3::LINEAR_TO_SRGB, false);
 	} else {
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->fbo);
+		// No conversion needed, take the faster approach
+
+		Size2 win_size = OS::get_singleton()->get_window_size();
+		if (rt->external.fbo != 0) {
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->external.fbo);
+		} else {
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->fbo);
+		}
+		glReadBuffer(GL_COLOR_ATTACHMENT0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
+		glBlitFramebuffer(0, 0, rt->width, rt->height, p_screen_rect.position.x, win_size.height - p_screen_rect.position.y - p_screen_rect.size.height, p_screen_rect.position.x + p_screen_rect.size.width, win_size.height - p_screen_rect.position.y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 	}
-	glReadBuffer(GL_COLOR_ATTACHMENT0);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
-	glBlitFramebuffer(0, 0, rt->width, rt->height, p_screen_rect.position.x, win_size.height - p_screen_rect.position.y - p_screen_rect.size.height, p_screen_rect.position.x + p_screen_rect.size.width, win_size.height - p_screen_rect.position.y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
 
 void RasterizerGLES3::output_lens_distorted_to_screen(RID p_render_target, const Rect2 &p_screen_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample) {
