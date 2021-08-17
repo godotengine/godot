@@ -52,9 +52,12 @@ void SoftBodyVisualServerHandler::prepare(RID p_mesh, int p_surface) {
 	const int surface_vertex_len = VS::get_singleton()->mesh_surface_get_array_len(mesh, p_surface);
 	const int surface_index_len = VS::get_singleton()->mesh_surface_get_array_index_len(mesh, p_surface);
 	uint32_t surface_offsets[VS::ARRAY_MAX];
+	uint32_t surface_strides[VS::ARRAY_MAX];
 
 	buffer = VS::get_singleton()->mesh_surface_get_array(mesh, surface);
-	stride = VS::get_singleton()->mesh_surface_make_offsets_from_format(surface_format, surface_vertex_len, surface_index_len, surface_offsets);
+	VS::get_singleton()->mesh_surface_make_offsets_from_format(surface_format, surface_vertex_len, surface_index_len, surface_offsets, surface_strides);
+	ERR_FAIL_COND(surface_strides[VS::ARRAY_VERTEX] != surface_strides[VS::ARRAY_NORMAL]);
+	stride = surface_strides[VS::ARRAY_VERTEX];
 	offset_vertices = surface_offsets[VS::ARRAY_VERTEX];
 	offset_normal = surface_offsets[VS::ARRAY_NORMAL];
 }
