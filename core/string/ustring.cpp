@@ -39,12 +39,9 @@
 #include "core/string/ucaps.h"
 #include "core/variant/variant.h"
 
-#include <cstdint>
-
-#ifndef NO_USE_STDLIB
 #include <stdio.h>
 #include <stdlib.h>
-#endif
+#include <cstdint>
 
 #ifdef _MSC_VER
 #define _CRT_SECURE_NO_WARNINGS // to disable build-time warning which suggested to use strcpy_s instead strcpy
@@ -1393,7 +1390,6 @@ String String::num(double p_num, int p_decimals) {
 			return "inf";
 		}
 	}
-#ifndef NO_USE_STDLIB
 
 	if (p_decimals < 0) {
 		p_decimals = 14;
@@ -1466,87 +1462,6 @@ String String::num(double p_num, int p_decimals) {
 	}
 
 	return buf;
-#else
-
-	String s;
-	String sd;
-	/* integer part */
-
-	bool neg = p_num < 0;
-	p_num = ABS(p_num);
-	int intn = (int)p_num;
-
-	/* decimal part */
-
-	if (p_decimals > 0 || (p_decimals == -1 && (int)p_num != p_num)) {
-		double dec = p_num - (double)((int)p_num);
-
-		int digit = 0;
-		if (p_decimals > MAX_DECIMALS) {
-			p_decimals = MAX_DECIMALS;
-		}
-
-		int dec_int = 0;
-		int dec_max = 0;
-
-		while (true) {
-			dec *= 10.0;
-			dec_int = dec_int * 10 + (int)dec % 10;
-			dec_max = dec_max * 10 + 9;
-			digit++;
-
-			if (p_decimals == -1) {
-				if (digit == MAX_DECIMALS) { //no point in going to infinite
-					break;
-				}
-
-				if (dec - (double)((int)dec) < 1e-6) {
-					break;
-				}
-			}
-
-			if (digit == p_decimals) {
-				break;
-			}
-		}
-		dec *= 10;
-		int last = (int)dec % 10;
-
-		if (last > 5) {
-			if (dec_int == dec_max) {
-				dec_int = 0;
-				intn++;
-			} else {
-				dec_int++;
-			}
-		}
-
-		String decimal;
-		for (int i = 0; i < digit; i++) {
-			char num[2] = { 0, 0 };
-			num[0] = '0' + dec_int % 10;
-			decimal = num + decimal;
-			dec_int /= 10;
-		}
-		sd = '.' + decimal;
-	}
-
-	if (intn == 0)
-
-		s = "0";
-	else {
-		while (intn) {
-			char32_t num = '0' + (intn % 10);
-			intn /= 10;
-			s = num + s;
-		}
-	}
-
-	s = s + sd;
-	if (neg)
-		s = "-" + s;
-	return s;
-#endif
 }
 
 String String::num_int64(int64_t p_num, int base, bool capitalize_hex) {
@@ -1733,7 +1648,6 @@ String String::num_scientific(double p_num) {
 			return "inf";
 		}
 	}
-#ifndef NO_USE_STDLIB
 
 	char buf[256];
 
@@ -1756,10 +1670,6 @@ String String::num_scientific(double p_num) {
 	buf[255] = 0;
 
 	return buf;
-#else
-
-	return String::num(p_num);
-#endif
 }
 
 String String::md5(const uint8_t *p_md5) {
