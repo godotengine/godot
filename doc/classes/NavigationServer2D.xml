@@ -170,10 +170,11 @@
 		<method name="map_get_path" qualifiers="const">
 			<return type="PackedVector2Array" />
 			<argument index="0" name="map" type="RID" />
-			<argument index="1" name="origin" type="Vector2" />
-			<argument index="2" name="destination" type="Vector2" />
-			<argument index="3" name="optimize" type="bool" />
-			<argument index="4" name="layers" type="int" default="1" />
+			<argument index="1" name="agent" type="RID" />
+			<argument index="2" name="origin" type="Vector2" />
+			<argument index="3" name="destination" type="Vector2" />
+			<argument index="4" name="optimize" type="bool" />
+			<argument index="5" name="layers" type="int" default="1" />
 			<description>
 				Returns the navigation path to reach the destination from the origin. [code]layers[/code] is a bitmask of all region layers that are allowed to be in the path.
 			</description>

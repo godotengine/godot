@@ -98,7 +98,7 @@ public:
 	COMMAND_2(map_set_edge_connection_margin, RID, p_map, real_t, p_connection_margin);
 	virtual real_t map_get_edge_connection_margin(RID p_map) const override;
 
-	virtual Vector<Vector3> map_get_path(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_layers = 1) const override;
+	virtual Vector<Vector3> map_get_path(RID p_map, RID p_agent, Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_layers = 1) const override;
 
 	virtual Vector3 map_get_closest_point_to_segment(RID p_map, const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision = false) const override;
 	virtual Vector3 map_get_closest_point(RID p_map, const Vector3 &p_point) const override;
@@ -114,8 +114,8 @@ public:
 	COMMAND_2(region_set_layers, RID, p_region, uint32_t, p_layers);
 	virtual uint32_t region_get_layers(RID p_region) const override;
 	COMMAND_2(region_set_transform, RID, p_region, Transform3D, p_transform);
-	COMMAND_2(region_set_navmesh, RID, p_region, Ref<NavigationMesh>, p_nav_mesh);
-	virtual void region_bake_navmesh(Ref<NavigationMesh> r_mesh, Node *p_node) const override;
+	COMMAND_2(region_set_navmesh, RID, p_region, Ref<Resource>, p_mesh);
+	virtual void region_bake_navmesh(Ref<Resource> r_mesh, Node *p_node) const override;
 	virtual int region_get_connections_count(RID p_region) const override;
 	virtual Vector3 region_get_connection_pathway_start(RID p_region, int p_connection_id) const override;
 	virtual Vector3 region_get_connection_pathway_end(RID p_region, int p_connection_id) const override;

@@ -198,7 +198,7 @@ real_t GodotNavigationServer::map_get_edge_connection_margin(RID p_map) const {
 	return map->get_edge_connection_margin();
 }
 
-Vector<Vector3> GodotNavigationServer::map_get_path(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_layers) const {
+Vector<Vector3> GodotNavigationServer::map_get_path(RID p_map, RID p_agent, Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_layers) const {
 	const NavMap *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_COND_V(map == nullptr, Vector<Vector3>());
 
@@ -323,20 +323,20 @@ uint32_t GodotNavigationServer::region_get_layers(RID p_region) const {
 	return region->get_layers();
 }
 
-COMMAND_2(region_set_navmesh, RID, p_region, Ref<NavigationMesh>, p_nav_mesh) {
+COMMAND_2(region_set_navmesh, RID, p_region, Ref<Resource>, p_mesh) {
 	NavRegion *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_COND(region == nullptr);
 
-	region->set_mesh(p_nav_mesh);
+	region->set_mesh(p_mesh);
 }
 
-void GodotNavigationServer::region_bake_navmesh(Ref<NavigationMesh> r_mesh, Node *p_node) const {
-	ERR_FAIL_COND(r_mesh.is_null());
+void GodotNavigationServer::region_bake_navmesh(Ref<Resource> p_mesh, Node *p_node) const {
+	ERR_FAIL_COND(p_mesh.is_null());
 	ERR_FAIL_COND(p_node == nullptr);
 
 #ifndef _3D_DISABLED
-	NavigationMeshGenerator::get_singleton()->clear(r_mesh);
-	NavigationMeshGenerator::get_singleton()->bake(r_mesh, p_node);
+	NavigationMeshGenerator::get_singleton()->clear(p_mesh);
+	NavigationMeshGenerator::get_singleton()->bake(p_mesh, p_node);
 #endif
 }
 

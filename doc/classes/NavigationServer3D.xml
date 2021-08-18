@@ -188,10 +188,11 @@
 		<method name="map_get_path" qualifiers="const">
 			<return type="PackedVector3Array" />
 			<argument index="0" name="map" type="RID" />
-			<argument index="1" name="origin" type="Vector3" />
-			<argument index="2" name="destination" type="Vector3" />
-			<argument index="3" name="optimize" type="bool" />
-			<argument index="4" name="layers" type="int" default="1" />
+			<argument index="1" name="agent" type="RID" />
+			<argument index="2" name="origin" type="Vector3" />
+			<argument index="3" name="destination" type="Vector3" />
+			<argument index="4" name="optimize" type="bool" />
+			<argument index="5" name="layers" type="int" default="1" />
 			<description>
 				Returns the navigation path to reach the destination from the origin. [code]layers[/code] is a bitmask of all region layers that are allowed to be in the path.
 			</description>
@@ -260,7 +261,7 @@
 		</method>
 		<method name="region_bake_navmesh" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="mesh" type="NavigationMesh" />
+			<argument index="0" name="mesh" type="Resource" />
 			<argument index="1" name="node" type="Node" />
 			<description>
 				Bakes the navigation mesh.
@@ -328,7 +329,7 @@
 		<method name="region_set_navmesh" qualifiers="const">
 			<return type="void" />
 			<argument index="0" name="region" type="RID" />
-			<argument index="1" name="nav_mesh" type="NavigationMesh" />
+			<argument index="1" name="mesh" type="Resource" />
 			<description>
 				Sets the navigation mesh for the region.
 			</description>

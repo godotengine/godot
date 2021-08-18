@@ -327,7 +327,7 @@ void NavigationAgent2D::update_navigation() {
 	}
 
 	if (reload_path) {
-		navigation_path = NavigationServer2D::get_singleton()->map_get_path(agent_parent->get_world_2d()->get_navigation_map(), o, target_location, true, navigable_layers);
+		navigation_path = NavigationServer2D::get_singleton()->map_get_path(agent_parent->get_world_2d()->get_navigation_map(), get_rid(), o, target_location, true, navigable_layers);
 		navigation_finished = false;
 		nav_path_index = 0;
 		emit_signal(SNAME("path_changed"));
