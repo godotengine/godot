@@ -428,7 +428,7 @@ void SpatialEditorViewport::_clear_selected() {
 	editor_selection->clear();
 }
 
-void SpatialEditorViewport::_select_clicked(bool p_append, bool p_single) {
+void SpatialEditorViewport::_select_clicked(bool p_append, bool p_single, bool p_allow_locked) {
 	if (!clicked) {
 		return;
 	}
@@ -439,16 +439,18 @@ void SpatialEditorViewport::_select_clicked(bool p_append, bool p_single) {
 		return;
 	}
 
-	// Replace the node by the group if grouped
-	while (node && node != editor->get_edited_scene()->get_parent()) {
-		Spatial *selected_tmp = Object::cast_to<Spatial>(node);
-		if (selected_tmp && node->has_meta("_edit_group_")) {
-			selected = selected_tmp;
+	if (!p_allow_locked) {
+		// Replace the node by the group if grouped.
+		while (node && node != editor->get_edited_scene()->get_parent()) {
+			Spatial *selected_tmp = Object::cast_to<Spatial>(node);
+			if (selected_tmp && node->has_meta("_edit_group_")) {
+				selected = selected_tmp;
+			}
+			node = node->get_parent();
 		}
-		node = node->get_parent();
 	}
 
-	if (!_is_node_locked(selected)) {
+	if (p_allow_locked || !_is_node_locked(selected)) {
 		_select(selected, clicked_wants_append, true);
 	}
 }
@@ -1082,12 +1084,13 @@ void SpatialEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 
 	clicked_wants_append = b->get_shift();
 
+	bool allow_locked = b->get_alt() && spatial_editor->get_tool_mode() != SpatialEditor::TOOL_MODE_LIST_SELECT;
 	if (selection_results.size() == 1) {
 		clicked = selection_results[0].item->get_instance_id();
 		selection_results.clear();
 
 		if (clicked) {
-			_select_clicked(clicked_wants_append, true);
+			_select_clicked(clicked_wants_append, true, allow_locked);
 			clicked = 0;
 		}
 
@@ -1102,14 +1105,42 @@ void SpatialEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 
 			String node_path = "/" + root_name + "/" + root_path.rel_path_to(spat->get_path());
 
-			selection_menu->add_item(spat->get_name());
+			int locked = 0;
+			if (_is_node_locked(spat)) {
+				locked = 1;
+			} else {
+				Node *ed_scene = editor->get_edited_scene();
+				Node *node = spat;
+
+				while (node && node != ed_scene->get_parent()) {
+					Spatial *selected_tmp = Object::cast_to<Spatial>(node);
+					if (selected_tmp && node->has_meta("_edit_group_")) {
+						locked = 2;
+					}
+					node = node->get_parent();
+				}
+			}
+
+			if (!allow_locked && locked > 0) {
+				continue;
+			}
+
+			String suffix = String();
+			if (locked == 1) {
+				suffix = " (" + TTR("Locked") + ")";
+			} else if (locked == 2) {
+				suffix = " (" + TTR("Grouped") + ")";
+			}
+			selection_menu->add_item((String)spat->get_name() + suffix);
 			selection_menu->set_item_icon(i, icon);
 			selection_menu->set_item_metadata(i, node_path);
 			selection_menu->set_item_tooltip(i, String(spat->get_name()) + "\nType: " + spat->get_class() + "\nPath: " + node_path);
 		}
 
-		selection_menu->set_global_position(b->get_global_position());
-		selection_menu->popup();
+		if (selection_menu->get_item_count() > 0) {
+			selection_menu->set_global_position(b->get_global_position());
+			selection_menu->popup();
+		}
 	}
 }
 
@@ -3198,7 +3229,7 @@ void SpatialEditorViewport::_selection_result_pressed(int p_result) {
 	clicked = selection_results[p_result].item->get_instance_id();
 
 	if (clicked) {
-		_select_clicked(clicked_wants_append, true);
+		_select_clicked(clicked_wants_append, true, spatial_editor->get_tool_mode() != SpatialEditor::TOOL_MODE_LIST_SELECT);
 		clicked = 0;
 	}
 }
