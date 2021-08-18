@@ -459,11 +459,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	List<StringName> types;
 	ClassDB::get_class_list(&types);
 	for (const StringName &E : types) {
-		String n = E;
-		if (n.begins_with("_")) {
-			n = n.substr(1, n.length());
-		}
-		keywords[n] = types_color;
+		keywords[E] = types_color;
 	}
 
 	/* User types. */

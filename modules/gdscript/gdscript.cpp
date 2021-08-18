@@ -1644,16 +1644,11 @@ void GDScriptLanguage::init() {
 	List<StringName> class_list;
 	ClassDB::get_class_list(&class_list);
 	for (const StringName &n : class_list) {
-		String s = String(n);
-		if (s.begins_with("_")) {
-			s = s.substr(1, s.length());
-		}
-
-		if (globals.has(s)) {
+		if (globals.has(n)) {
 			continue;
 		}
 		Ref<GDScriptNativeClass> nc = memnew(GDScriptNativeClass(n));
-		_add_global(s, nc);
+		_add_global(n, nc);
 	}
 
 	//populate singletons

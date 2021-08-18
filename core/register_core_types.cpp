@@ -85,18 +85,18 @@ static Ref<ResourceFormatSaverCrypto> resource_format_saver_crypto;
 static Ref<ResourceFormatLoaderCrypto> resource_format_loader_crypto;
 static Ref<NativeExtensionResourceLoader> resource_loader_native_extension;
 
-static _ResourceLoader *_resource_loader = nullptr;
-static _ResourceSaver *_resource_saver = nullptr;
-static _OS *_os = nullptr;
-static _Engine *_engine = nullptr;
-static _ClassDB *_classdb = nullptr;
-static _Marshalls *_marshalls = nullptr;
-static _EngineDebugger *_engine_debugger = nullptr;
+static core_bind::ResourceLoader *_resource_loader = nullptr;
+static core_bind::ResourceSaver *_resource_saver = nullptr;
+static core_bind::OS *_os = nullptr;
+static core_bind::Engine *_engine = nullptr;
+static core_bind::special::ClassDB *_classdb = nullptr;
+static core_bind::Marshalls *_marshalls = nullptr;
+static core_bind::EngineDebugger *_engine_debugger = nullptr;
 
 static IP *ip = nullptr;
 
-static _Geometry2D *_geometry_2d = nullptr;
-static _Geometry3D *_geometry_3d = nullptr;
+static core_bind::Geometry2D *_geometry_2d = nullptr;
+static core_bind::Geometry3D *_geometry_3d = nullptr;
 
 extern Mutex _global_mutex;
 
@@ -205,11 +205,11 @@ void register_core_types() {
 	GDREGISTER_CLASS(ResourceFormatLoader);
 	GDREGISTER_CLASS(ResourceFormatSaver);
 
-	GDREGISTER_CLASS(_File);
-	GDREGISTER_CLASS(_Directory);
-	GDREGISTER_CLASS(_Thread);
-	GDREGISTER_CLASS(_Mutex);
-	GDREGISTER_CLASS(_Semaphore);
+	GDREGISTER_CLASS(core_bind::File);
+	GDREGISTER_CLASS(core_bind::Directory);
+	GDREGISTER_CLASS(core_bind::Thread);
+	GDREGISTER_CLASS(core_bind::Mutex);
+	GDREGISTER_CLASS(core_bind::Semaphore);
 
 	GDREGISTER_CLASS(XMLParser);
 	GDREGISTER_CLASS(JSON);
@@ -242,16 +242,16 @@ void register_core_types() {
 
 	ip = IP::create();
 
-	_geometry_2d = memnew(_Geometry2D);
-	_geometry_3d = memnew(_Geometry3D);
+	_geometry_2d = memnew(core_bind::Geometry2D);
+	_geometry_3d = memnew(core_bind::Geometry3D);
 
-	_resource_loader = memnew(_ResourceLoader);
-	_resource_saver = memnew(_ResourceSaver);
-	_os = memnew(_OS);
-	_engine = memnew(_Engine);
-	_classdb = memnew(_ClassDB);
-	_marshalls = memnew(_Marshalls);
-	_engine_debugger = memnew(_EngineDebugger);
+	_resource_loader = memnew(core_bind::ResourceLoader);
+	_resource_saver = memnew(core_bind::ResourceSaver);
+	_os = memnew(core_bind::OS);
+	_engine = memnew(core_bind::Engine);
+	_classdb = memnew(core_bind::special::ClassDB);
+	_marshalls = memnew(core_bind::Marshalls);
+	_engine_debugger = memnew(core_bind::EngineDebugger);
 }
 
 void register_core_settings() {
@@ -268,35 +268,35 @@ void register_core_settings() {
 void register_core_singletons() {
 	GDREGISTER_CLASS(ProjectSettings);
 	GDREGISTER_VIRTUAL_CLASS(IP);
-	GDREGISTER_CLASS(_Geometry2D);
-	GDREGISTER_CLASS(_Geometry3D);
-	GDREGISTER_CLASS(_ResourceLoader);
-	GDREGISTER_CLASS(_ResourceSaver);
-	GDREGISTER_CLASS(_OS);
-	GDREGISTER_CLASS(_Engine);
-	GDREGISTER_CLASS(_ClassDB);
-	GDREGISTER_CLASS(_Marshalls);
+	GDREGISTER_CLASS(core_bind::Geometry2D);
+	GDREGISTER_CLASS(core_bind::Geometry3D);
+	GDREGISTER_CLASS(core_bind::ResourceLoader);
+	GDREGISTER_CLASS(core_bind::ResourceSaver);
+	GDREGISTER_CLASS(core_bind::OS);
+	GDREGISTER_CLASS(core_bind::Engine);
+	GDREGISTER_CLASS(core_bind::special::ClassDB);
+	GDREGISTER_CLASS(core_bind::Marshalls);
 	GDREGISTER_CLASS(TranslationServer);
 	GDREGISTER_VIRTUAL_CLASS(Input);
 	GDREGISTER_CLASS(InputMap);
 	GDREGISTER_CLASS(Expression);
-	GDREGISTER_CLASS(_EngineDebugger);
+	GDREGISTER_CLASS(core_bind::EngineDebugger);
 	GDREGISTER_CLASS(Time);
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ProjectSettings", ProjectSettings::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("IP", IP::get_singleton(), "IP"));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry2D", _Geometry2D::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry3D", _Geometry3D::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceLoader", _ResourceLoader::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceSaver", _ResourceSaver::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("OS", _OS::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Engine", _Engine::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry2D", core_bind::Geometry2D::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry3D", core_bind::Geometry3D::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceLoader", core_bind::ResourceLoader::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceSaver", core_bind::ResourceSaver::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("OS", core_bind::OS::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Engine", core_bind::Engine::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ClassDB", _classdb));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Marshalls", _Marshalls::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Marshalls", core_bind::Marshalls::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("TranslationServer", TranslationServer::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Input", Input::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("InputMap", InputMap::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("EngineDebugger", _EngineDebugger::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("EngineDebugger", core_bind::EngineDebugger::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Time", Time::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NativeExtensionManager", NativeExtensionManager::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceUID", ResourceUID::get_singleton()));

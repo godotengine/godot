@@ -332,28 +332,33 @@ public:
 	~VisualScriptEditor();
 };
 
+namespace vs_bind {
+
 // Singleton
-class _VisualScriptEditor : public Object {
-	GDCLASS(_VisualScriptEditor, Object);
+class VisualScriptEditor : public Object {
+	GDCLASS(VisualScriptEditor, Object);
 
 	friend class VisualScriptLanguage;
 
 protected:
 	static void _bind_methods();
-	static _VisualScriptEditor *singleton;
+	static VisualScriptEditor *singleton;
 
 	static Map<String, REF> custom_nodes;
 	static Ref<VisualScriptNode> create_node_custom(const String &p_name);
 
 public:
-	static _VisualScriptEditor *get_singleton() { return singleton; }
+	static VisualScriptEditor *get_singleton() { return singleton; }
 
 	void add_custom_node(const String &p_name, const String &p_category, const Ref<Script> &p_script);
 	void remove_custom_node(const String &p_name, const String &p_category);
 
-	_VisualScriptEditor();
-	~_VisualScriptEditor();
+	VisualScriptEditor();
+	~VisualScriptEditor();
 };
+
+} // namespace vs_bind
+
 #endif
 
 #endif // VISUALSCRIPT_EDITOR_H

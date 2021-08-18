@@ -111,11 +111,7 @@ public:
 				}
 
 				if (!ClassDB::is_parent_class(obj->get_class_name(), native_type)) {
-					// Try with underscore prefix
-					StringName underscore_native_type = "_" + native_type;
-					if (!ClassDB::is_parent_class(obj->get_class_name(), underscore_native_type)) {
-						return false;
-					}
+					return false;
 				}
 				return true;
 			} break;
