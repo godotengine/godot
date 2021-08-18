@@ -39,7 +39,6 @@ class ParticlesMaterial : public Material {
 
 public:
 	enum Parameter {
-
 		PARAM_INITIAL_LINEAR_VELOCITY,
 		PARAM_ANGULAR_VELOCITY,
 		PARAM_ORBIT_VELOCITY,
@@ -55,6 +54,7 @@ public:
 		PARAM_MAX
 	};
 
+	// When extending, make sure not to overflow the size of the MaterialKey below.
 	enum Flags {
 		FLAG_ALIGN_Y_TO_VELOCITY,
 		FLAG_ROTATE_Y,
@@ -62,6 +62,7 @@ public:
 		FLAG_MAX
 	};
 
+	// When extending, make sure not to overflow the size of the MaterialKey below.
 	enum EmissionShape {
 		EMISSION_SHAPE_POINT,
 		EMISSION_SHAPE_SPHERE,
@@ -74,11 +75,13 @@ public:
 
 private:
 	union MaterialKey {
+		// The bit size of the struct must be kept below or equal to 32 bits.
+		// Consider this when extending Flags, or EmissionShape.
 		struct {
 			uint32_t texture_mask : 16;
 			uint32_t texture_color : 1;
 			uint32_t flags : 4;
-			uint32_t emission_shape : 2;
+			uint32_t emission_shape : 3;
 			uint32_t trail_size_texture : 1;
 			uint32_t trail_color_texture : 1;
 			uint32_t invalid_key : 1;
