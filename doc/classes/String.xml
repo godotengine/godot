@@ -410,6 +410,21 @@
 			<argument index="0" name="number" type="float" />
 			<argument index="1" name="decimals" type="int" default="-1" />
 			<description>
+				Converts a [float] to a string representation of a decimal number.
+				The number of decimal places can be specified with [code]decimals[/code]. If [code]decimals[/code] is [code]-1[/code] (default), decimal places will be automatically adjusted so that the string representation has 14 significant digits (counting both digits to the left and the right of the decimal point).
+				Trailing zeros are not included in the string. The last digit will be rounded and not truncated.
+				Some examples:
+				[codeblock]
+				String.num(3.141593)     # "3.141593"
+				String.num(3.141593, 3)  # "3.142"
+				String.num(3.14159300)   # "3.141593", no trailing zeros.
+				# Last digit will be rounded up here, which reduces total digit count since
+				# trailing zeros are removed:
+				String.num(42.129999, 5) # "42.13"
+				# If `decimals` is not specified, the total amount of significant digits is 14:
+				String.num(-0.0000012345432123454321)     # "-0.00000123454321"
+				String.num(-10000.0000012345432123454321) # "-10000.0000012345"
+				[/codeblock]
 			</description>
 		</method>
 		<method name="num_scientific" qualifiers="static">

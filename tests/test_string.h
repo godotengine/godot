@@ -350,6 +350,9 @@ TEST_CASE("[String] Insertion") {
 }
 
 TEST_CASE("[String] Number to string") {
+	CHECK(String::num(0) == "0");
+	CHECK(String::num(0.0) == "0"); // No trailing zeros.
+	CHECK(String::num(-0.0) == "-0"); // Includes sign even for zero.
 	CHECK(String::num(3.141593) == "3.141593");
 	CHECK(String::num(3.141593, 3) == "3.142");
 	CHECK(String::num_real(3.141593) == "3.141593");
@@ -357,6 +360,27 @@ TEST_CASE("[String] Number to string") {
 	CHECK(String::num_int64(3141593) == "3141593");
 	CHECK(String::num_int64(0xA141593, 16) == "a141593");
 	CHECK(String::num_int64(0xA141593, 16, true) == "A141593");
+	CHECK(String::num(42.100023, 4) == "42.1"); // No trailing zeros.
+
+	// Checks doubles with many decimal places.
+	CHECK(String::num(0.0000012345432123454321, -1) == "0.00000123454321"); // -1 uses 14 as sane default.
+	CHECK(String::num(0.0000012345432123454321) == "0.00000123454321"); // -1 is the default value.
+	CHECK(String::num(-0.0000012345432123454321) == "-0.00000123454321");
+	CHECK(String::num(-10000.0000012345432123454321) == "-10000.0000012345");
+	CHECK(String::num(0.0000000000012345432123454321) == "0.00000000000123");
+	CHECK(String::num(0.0000000000012345432123454321, 3) == "0");
+
+	// Note: When relevant (remainder > 0.5), the last digit gets rounded up,
+	// which can also lead to not include a trailing zero, e.g. "...89" -> "...9".
+	CHECK(String::num(0.0000056789876567898765) == "0.00000567898766"); // Should round last digit.
+	CHECK(String::num(10000.000005678999999999) == "10000.000005679"); // We cut at ...789|99 which is rounded to ...79, so only 13 decimals.
+	CHECK(String::num(42.12999999, 6) == "42.13"); // Also happens with lower decimals count.
+
+	// 32 is MAX_DECIMALS. We can't reliably store that many so we can't compare against a string,
+	// but we can check that the string length is 34 (32 + 2 for "0.").
+	CHECK(String::num(0.00000123456789987654321123456789987654321, 32).length() == 34);
+	CHECK(String::num(0.00000123456789987654321123456789987654321, 42).length() == 34); // Should enforce MAX_DECIMALS.
+	CHECK(String::num(10000.00000123456789987654321123456789987654321, 42).length() == 38); // 32 decimals + "10000.".
 }
 
 TEST_CASE("[String] String to integer") {
