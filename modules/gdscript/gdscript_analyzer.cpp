@@ -1717,11 +1717,19 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 
 	GDScriptParser::DataType left_type;
 	if (p_binary_op->left_operand) {
-		left_type = p_binary_op->left_operand->get_datatype();
+		if (p_binary_op->left_operand->is_constant) {
+			left_type = type_from_variant(p_binary_op->left_operand->reduced_value, p_binary_op->left_operand);
+		} else {
+			left_type = p_binary_op->left_operand->get_datatype();
+		}
 	}
 	GDScriptParser::DataType right_type;
 	if (p_binary_op->right_operand) {
-		right_type = p_binary_op->right_operand->get_datatype();
+		if (p_binary_op->right_operand->is_constant) {
+			right_type = type_from_variant(p_binary_op->right_operand->reduced_value, p_binary_op->right_operand);
+		} else {
+			right_type = p_binary_op->right_operand->get_datatype();
+		}
 	}
 
 	if (!left_type.is_set() || !right_type.is_set()) {
