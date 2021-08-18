@@ -983,6 +983,9 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 
 	btVector3 motion;
 	G_TO_B(p_motion, motion);
+	real_t total_length = motion.length();
+	real_t unsafe_fraction = 1.0;
+	real_t safe_fraction = 1.0;
 	{
 		// Phase two - sweep test, from a secure position without margin
 
@@ -1032,6 +1035,15 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 			dynamicsWorld->convexSweepTest(convex_shape_test, shape_world_from, shape_world_to, btResult, dynamicsWorld->getDispatchInfo().m_allowedCcdPenetration);
 
 			if (btResult.hasHit()) {
+				if (total_length > CMP_EPSILON) {
+					real_t hit_fraction = btResult.m_closestHitFraction * motion.length() / total_length;
+					if (hit_fraction < unsafe_fraction) {
+						unsafe_fraction = hit_fraction;
+						real_t margin = p_body->get_kinematic_utilities()->safe_margin;
+						safe_fraction = MAX(hit_fraction - (1 - ((total_length - margin) / total_length)), 0);
+					}
+				}
+
 				/// Since for each sweep test I fix the motion of new shapes in base the recover result,
 				/// if another shape will hit something it means that has a deepest penetration respect the previous shape
 				motion *= btResult.m_closestHitFraction;
@@ -1068,6 +1080,9 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 				r_result->collider_id = collisionObject->get_instance_id();
 				r_result->collider_shape = r_recover_result.other_compound_shape_index;
 				r_result->collision_local_shape = r_recover_result.local_shape_most_recovered;
+				r_result->collision_depth = Math::abs(r_recover_result.penetration_distance);
+				r_result->collision_safe_fraction = safe_fraction;
+				r_result->collision_unsafe_fraction = unsafe_fraction;
 
 #if debug_test_motion
 				Vector3 sup_line2;
