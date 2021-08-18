@@ -180,7 +180,6 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 	}
 
 	int wofs = margin;
-	int spaces_size = 0;
 	int align_ofs = 0;
 
 	if (p_mode != PROCESS_CACHE && align != ALIGN_FILL) {
@@ -248,7 +247,6 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 		line_ascent = 0;                                                                                                                                        \
 		line_descent = 0;                                                                                                                                       \
 		spaces = 0;                                                                                                                                             \
-		spaces_size = 0;                                                                                                                                        \
 		wofs = begin;                                                                                                                                           \
 		align_ofs = 0;                                                                                                                                          \
 		if (p_mode != PROCESS_CACHE) {                                                                                                                          \
@@ -449,9 +447,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					fh = line_ascent + line_descent;
 
 					if (end && c[end - 1] == ' ') {
-						if (p_mode == PROCESS_CACHE) {
-							spaces_size += font->get_char_size(' ').width;
-						} else if (align == ALIGN_FILL) {
+						if (align == ALIGN_FILL) {
 							int ln = MIN(l.offset_caches.size() - 1, line);
 							if (l.space_caches[ln]) {
 								align_ofs = spaces * l.offset_caches[ln] / l.space_caches[ln];

@@ -2700,21 +2700,19 @@ void RasterizerSceneGLES2::_post_process(Environment *env, const CameraMatrix &p
 	}
 	use_post_process = use_post_process || storage->frame.current_rt->use_fxaa;
 
-	GLuint next_buffer;
-
-	if (use_post_process) {
-		next_buffer = storage->frame.current_rt->mip_maps[0].sizes[0].fbo;
-	} else if (storage->frame.current_rt->external.fbo != 0) {
-		next_buffer = storage->frame.current_rt->external.fbo;
-	} else {
-		// set next_buffer to front buffer so multisample blit can happen if needed
-		next_buffer = storage->frame.current_rt->fbo;
-	}
-
 	// If using multisample buffer, resolve to post_process_effect buffer or to front buffer
 	if (storage->frame.current_rt && storage->frame.current_rt->multisample_active) {
-#ifdef GLES_OVER_GL
+		GLuint next_buffer;
+		if (use_post_process) {
+			next_buffer = storage->frame.current_rt->mip_maps[0].sizes[0].fbo;
+		} else if (storage->frame.current_rt->external.fbo != 0) {
+			next_buffer = storage->frame.current_rt->external.fbo;
+		} else {
+			// set next_buffer to front buffer so multisample blit can happen if needed
+			next_buffer = storage->frame.current_rt->fbo;
+		}
 
+#ifdef GLES_OVER_GL
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, storage->frame.current_rt->multisample_fbo);
 		glReadBuffer(GL_COLOR_ATTACHMENT0);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, next_buffer);
@@ -2736,6 +2734,7 @@ void RasterizerSceneGLES2::_post_process(Environment *env, const CameraMatrix &p
 		_copy_texture_to_buffer(storage->frame.current_rt->multisample_color, next_buffer);
 #else
 		// TODO: any other platform not supported? this will fail.. maybe we should just call _copy_texture_to_buffer here as well?
+		(void)next_buffer; // Silence warning as it's unused.
 #endif
 	} else if (use_post_process) {
 		if (storage->frame.current_rt->external.fbo != 0) {
