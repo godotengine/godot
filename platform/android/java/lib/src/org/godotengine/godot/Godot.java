@@ -331,22 +331,8 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	}
 
 	public void restart() {
-		// HACK:
-		//
-		// Currently it's very hard to properly deinitialize Godot on Android to restart the game
-		// from scratch. Therefore, we need to kill the whole app process and relaunch it.
-		//
-		// Restarting only the activity, wouldn't be enough unless it did proper cleanup (including
-		// releasing and reloading native libs or resetting their state somehow and clearing statics).
-		//
-		// Using instrumentation is a way of making the whole app process restart, because Android
-		// will kill any process of the same package which was already running.
-		//
-		final Activity activity = getActivity();
-		if (activity != null) {
-			Bundle args = new Bundle();
-			args.putParcelable("intent", mCurrentIntent);
-			activity.startInstrumentation(new ComponentName(activity, GodotInstrumentation.class), null, args);
+		if (godotHost != null) {
+			godotHost.onGodotRestartRequested(this);
 		}
 	}
 
