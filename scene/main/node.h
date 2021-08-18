@@ -202,7 +202,7 @@ protected:
 	static String _get_name_num_separator();
 
 	friend class SceneState;
-	friend class MultiplayerAPI;
+	friend class MultiplayerReplicator;
 
 	void _add_child_nocheck(Node *p_child, const StringName &p_name);
 	void _set_owner_nocheck(Node *p_owner);

@@ -49,6 +49,7 @@
 #include "core/io/marshalls.h"
 #include "core/io/multiplayer_api.h"
 #include "core/io/multiplayer_peer.h"
+#include "core/io/multiplayer_replicator.h"
 #include "core/io/packed_data_container.h"
 #include "core/io/packet_peer.h"
 #include "core/io/packet_peer_dtls.h"
@@ -193,6 +194,7 @@ void register_core_types() {
 	ResourceLoader::add_resource_format_loader(resource_format_loader_crypto);
 
 	GDREGISTER_VIRTUAL_CLASS(MultiplayerPeer);
+	GDREGISTER_VIRTUAL_CLASS(MultiplayerReplicator);
 	GDREGISTER_CLASS(MultiplayerAPI);
 	GDREGISTER_CLASS(MainLoop);
 	GDREGISTER_CLASS(Translation);
