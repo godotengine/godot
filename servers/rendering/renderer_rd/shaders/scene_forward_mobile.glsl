@@ -92,7 +92,7 @@ layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms
 
 #ifdef MODE_DUAL_PARABOLOID
 
-layout(location = 8) out float dp_clip;
+layout(location = 8) out highp float dp_clip;
 
 #endif
 
@@ -370,11 +370,6 @@ void main() {
 
 #VERSION_DEFINES
 
-//use medium precision for floats on mobile.
-
-precision mediump float;
-precision highp int;
-
 /* Specialization Constants */
 
 #if !defined(MODE_RENDER_DEPTH)
@@ -498,7 +493,7 @@ layout(location = 0) out vec4 diffuse_buffer; //diffuse (rgb) and roughness
 layout(location = 1) out vec4 specular_buffer; //specular and SSS (subsurface scatter)
 #else
 
-layout(location = 0) out vec4 frag_color;
+layout(location = 0) out mediump vec4 frag_color;
 #endif // MODE_MULTIPLE_RENDER_TARGETS
 
 #endif // RENDER DEPTH

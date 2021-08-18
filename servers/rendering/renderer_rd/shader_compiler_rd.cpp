@@ -213,7 +213,7 @@ static String _interpstr(SL::DataInterpolation p_interp) {
 	return "";
 }
 
-static String _prestr(SL::DataPrecision p_pres) {
+static String _prestr(SL::DataPrecision p_pres, bool p_force_highp = false) {
 	switch (p_pres) {
 		case SL::PRECISION_LOWP:
 			return "lowp ";
@@ -222,7 +222,7 @@ static String _prestr(SL::DataPrecision p_pres) {
 		case SL::PRECISION_HIGHP:
 			return "highp ";
 		case SL::PRECISION_DEFAULT:
-			return "";
+			return p_force_highp ? "highp " : "";
 	}
 	return "";
 }
@@ -617,7 +617,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 					//this is an integer to index the global table
 					ucode += _typestr(ShaderLanguage::TYPE_UINT);
 				} else {
-					ucode += _prestr(uniform.precision);
+					ucode += _prestr(uniform.precision, ShaderLanguage::is_float_type(uniform.type));
 					ucode += _typestr(uniform.type);
 				}
 
@@ -742,7 +742,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 
 				String vcode;
 				String interp_mode = _interpstr(varying.interpolation);
-				vcode += _prestr(varying.precision);
+				vcode += _prestr(varying.precision, ShaderLanguage::is_float_type(varying.type));
 				vcode += _typestr(varying.type);
 				vcode += " " + _mkid(varying_name);
 				if (varying.array_size > 0) {
@@ -777,7 +777,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 				const SL::ShaderNode::Constant &cnode = pnode->vconstants[i];
 				String gcode;
 				gcode += "const ";
-				gcode += _prestr(cnode.precision);
+				gcode += _prestr(cnode.precision, ShaderLanguage::is_float_type(cnode.type));
 				if (cnode.type == SL::TYPE_STRUCT) {
 					gcode += _mkid(cnode.type_str);
 				} else {
