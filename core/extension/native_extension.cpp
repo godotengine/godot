@@ -154,6 +154,7 @@ void NativeExtension::_register_extension_class(const GDNativeExtensionClassLibr
 	extension->native_extension.create_instance = p_extension_funcs->create_instance_func;
 	extension->native_extension.set_object_instance = p_extension_funcs->object_instance_func;
 	extension->native_extension.free_instance = p_extension_funcs->free_instance_func;
+	extension->native_extension.get_virtual = p_extension_funcs->get_virtual_func;
 
 	ClassDB::register_extension_class(&extension->native_extension);
 }
