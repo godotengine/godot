@@ -1958,8 +1958,8 @@
 			<argument index="0" name="format" type="int" />
 			<argument index="1" name="vertex_len" type="int" />
 			<argument index="2" name="index_len" type="int" />
+			<argument index="3" name="array_index" type="int" />
 			<description>
-				Function is unused in Godot 3.x.
 			</description>
 		</method>
 		<method name="mesh_surface_get_index_array" qualifiers="const">

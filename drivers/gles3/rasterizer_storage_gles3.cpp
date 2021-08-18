@@ -3349,7 +3349,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 	}
 
 	//bool has_morph = p_blend_shapes.size();
-	bool use_split_stream = GLOBAL_GET("rendering/mesh_storage/split_stream");
+	bool use_split_stream = GLOBAL_GET("rendering/mesh_storage/split_stream") && !(p_format & VS::ARRAY_FLAG_USE_DYNAMIC_UPDATE);
 
 	Surface::Attrib attribs[VS::ARRAY_MAX];
 
@@ -3424,7 +3424,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 			case VS::ARRAY_TANGENT: {
 				if (p_format & VS::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION) {
 					attribs[i].enabled = false;
-					if (p_format & VS::ARRAY_COMPRESS_TANGENT) {
+					if (p_format & VS::ARRAY_COMPRESS_TANGENT && p_format & VS::ARRAY_COMPRESS_NORMAL) {
 						// normal and tangent will each be oct16 (2 bytes each)
 						// pack into single vec4<GL_BYTE> for memory bandwidth
 						// savings while keeping 4 byte alignment
