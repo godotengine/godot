@@ -167,12 +167,29 @@ TreeItem::TreeCellMode TreeItem::get_cell_mode(int p_column) const {
 void TreeItem::set_checked(int p_column, bool p_checked) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	cells.write[p_column].checked = p_checked;
+	cells.write[p_column].indeterminate = false;
+	_changed_notify(p_column);
+}
+
+void TreeItem::set_indeterminate(int p_column, bool p_indeterminate) {
+	ERR_FAIL_INDEX(p_column, cells.size());
+	// Prevent uncheck if indeterminate set to false twice
+	if (p_indeterminate == cells[p_column].indeterminate) {
+		return;
+	}
+	cells.write[p_column].indeterminate = p_indeterminate;
+	cells.write[p_column].checked = false;
 	_changed_notify(p_column);
 }
 
 bool TreeItem::is_checked(int p_column) const {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), false);
 	return cells[p_column].checked;
+}
+
+bool TreeItem::is_indeterminate(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), false);
+	return cells[p_column].indeterminate;
 }
 
 void TreeItem::set_text(int p_column, String p_text) {
@@ -1042,7 +1059,9 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cell_mode", "column"), &TreeItem::get_cell_mode);
 
 	ClassDB::bind_method(D_METHOD("set_checked", "column", "checked"), &TreeItem::set_checked);
+	ClassDB::bind_method(D_METHOD("set_indeterminate", "column", "indeterminate"), &TreeItem::set_indeterminate);
 	ClassDB::bind_method(D_METHOD("is_checked", "column"), &TreeItem::is_checked);
+	ClassDB::bind_method(D_METHOD("is_indeterminate", "column"), &TreeItem::is_indeterminate);
 
 	ClassDB::bind_method(D_METHOD("set_text", "column", "text"), &TreeItem::set_text);
 	ClassDB::bind_method(D_METHOD("get_text", "column"), &TreeItem::get_text);
@@ -1228,6 +1247,7 @@ void Tree::update_cache() {
 
 	cache.checked = get_theme_icon(SNAME("checked"));
 	cache.unchecked = get_theme_icon(SNAME("unchecked"));
+	cache.indeterminate = get_theme_icon(SNAME("indeterminate"));
 	if (is_layout_rtl()) {
 		cache.arrow_collapsed = get_theme_icon(SNAME("arrow_collapsed_mirrored"));
 	} else {
@@ -1721,10 +1741,13 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				case TreeItem::CELL_MODE_CHECK: {
 					Ref<Texture2D> checked = cache.checked;
 					Ref<Texture2D> unchecked = cache.unchecked;
+					Ref<Texture2D> indeterminate = cache.indeterminate;
 					Point2i check_ofs = item_rect.position;
 					check_ofs.y += Math::floor((real_t)(item_rect.size.y - checked->get_height()) / 2);
 
-					if (p_item->cells[i].checked) {
+					if (p_item->cells[i].indeterminate) {
+						indeterminate->draw(ci, check_ofs);
+					} else if (p_item->cells[i].checked) {
 						checked->draw(ci, check_ofs);
 					} else {
 						unchecked->draw(ci, check_ofs);

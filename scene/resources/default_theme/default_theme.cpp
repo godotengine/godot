@@ -704,6 +704,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_icon("checked", "Tree", make_icon(checked_png));
 	theme->set_icon("unchecked", "Tree", make_icon(unchecked_png));
+	theme->set_icon("indeterminate", "Tree", make_icon(indeterminate_png));
 	theme->set_icon("updown", "Tree", make_icon(updown_png));
 	theme->set_icon("select_arrow", "Tree", make_icon(dropdown_png));
 	theme->set_icon("arrow", "Tree", make_icon(arrow_down_png));
