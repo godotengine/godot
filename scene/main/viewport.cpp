@@ -2548,7 +2548,7 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 	//if the event is a mouse button, we need to check whether another window was clicked
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+	if (mb.is_valid() && mb->is_pressed()) {
 		bool click_on_window = false;
 		for (int i = gui.sub_windows.size() - 1; i >= 0; i--) {
 			SubWindow &sw = gui.sub_windows.write[i];
@@ -2612,14 +2612,10 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 				click_on_window = true;
 			}
 
-			if (click_on_window) {
-				break;
+			if (!click_on_window && gui.subwindow_focused) {
+				//no window found and clicked, remove focus
+				_sub_window_grab_focus(nullptr);
 			}
-		}
-
-		if (!click_on_window && gui.subwindow_focused) {
-			//no window found and clicked, remove focus
-			_sub_window_grab_focus(nullptr);
 		}
 	}
 
@@ -2686,6 +2682,8 @@ void Viewport::input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 	}
 
 	if (is_embedding_subwindows() && _sub_windows_forward_input(p_event)) {
+		get_tree()->_call_input_pause(input_group, "_input", ev, this); //not a bug, must happen before GUI, order is _input -> gui input -> _unhandled input
+		_gui_input_event(ev);
 		set_input_as_handled();
 		return;
 	}
