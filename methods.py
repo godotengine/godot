@@ -948,9 +948,12 @@ def show_progress(env):
             return total_size
 
     def progress_finish(target, source, env):
-        with open(node_count_data["fname"], "w") as f:
-            f.write("%d\n" % node_count_data["count"])
-        progressor.delete(progressor.file_list())
+        try:
+            with open(node_count_data["fname"], "w") as f:
+                f.write("%d\n" % node_count_data["count"])
+            progressor.delete(progressor.file_list())
+        except Exception:
+            pass
 
     try:
         with open(node_count_data["fname"]) as f:
