@@ -621,7 +621,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 					Transform2D col_obj_shape_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 
-					if (col_obj->is_shape_set_as_one_way_collision(shape_idx)) {
+					if (body_shape->allows_one_way_collision() && col_obj->is_shape_set_as_one_way_collision(shape_idx)) {
 						cbk.valid_dir = col_obj_shape_xform.get_axis(1).normalized();
 
 						real_t owc_margin = col_obj->get_shape_one_way_collision_margin(shape_idx);
@@ -762,7 +762,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 				//test initial overlap
 				if (CollisionSolver2DSW::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj_shape_xform, Vector2(), nullptr, nullptr, nullptr, 0)) {
-					if (col_obj->is_shape_set_as_one_way_collision(col_shape_idx)) {
+					if (body_shape->allows_one_way_collision() && col_obj->is_shape_set_as_one_way_collision(col_shape_idx)) {
 						Vector2 direction = col_obj_shape_xform.get_axis(1).normalized();
 						if (motion_normal.dot(direction) < 0) {
 							continue;
@@ -806,7 +806,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 					}
 				}
 
-				if (col_obj->is_shape_set_as_one_way_collision(col_shape_idx)) {
+				if (body_shape->allows_one_way_collision() && col_obj->is_shape_set_as_one_way_collision(col_shape_idx)) {
 					Vector2 cd[2];
 					PhysicsServer2DSW::CollCbkData cbk;
 					cbk.max = 1;
@@ -904,7 +904,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 				Transform2D col_obj_shape_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 
-				if (col_obj->is_shape_set_as_one_way_collision(shape_idx)) {
+				if (body_shape->allows_one_way_collision() && col_obj->is_shape_set_as_one_way_collision(shape_idx)) {
 					rcd.valid_dir = col_obj_shape_xform.get_axis(1).normalized();
 
 					real_t owc_margin = col_obj->get_shape_one_way_collision_margin(shape_idx);

@@ -89,11 +89,11 @@ bool CollisionSolver3DSW::solve_static_plane(const Shape3DSW *p_shape_A, const T
 	return found;
 }
 
-bool CollisionSolver3DSW::solve_ray(const Shape3DSW *p_shape_A, const Transform3D &p_transform_A, const Shape3DSW *p_shape_B, const Transform3D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result) {
+bool CollisionSolver3DSW::solve_ray(const Shape3DSW *p_shape_A, const Transform3D &p_transform_A, const Shape3DSW *p_shape_B, const Transform3D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result, real_t p_margin) {
 	const RayShape3DSW *ray = static_cast<const RayShape3DSW *>(p_shape_A);
 
 	Vector3 from = p_transform_A.origin;
-	Vector3 to = from + p_transform_A.basis.get_axis(2) * ray->get_length();
+	Vector3 to = from + p_transform_A.basis.get_axis(2) * (ray->get_length() + p_margin);
 	Vector3 support_A = to;
 
 	Transform3D ai = p_transform_B.affine_inverse();
@@ -103,6 +103,16 @@ bool CollisionSolver3DSW::solve_ray(const Shape3DSW *p_shape_A, const Transform3
 
 	Vector3 p, n;
 	if (!p_shape_B->intersect_segment(from, to, p, n)) {
+		return false;
+	}
+
+	// Discard contacts when the ray is fully contained inside the shape.
+	if (n == Vector3()) {
+		return false;
+	}
+
+	// Discard contacts in the wrong direction.
+	if (n.dot(from - to) < CMP_EPSILON) {
 		return false;
 	}
 
@@ -370,9 +380,9 @@ bool CollisionSolver3DSW::solve_static(const Shape3DSW *p_shape_A, const Transfo
 		}
 
 		if (swap) {
-			return solve_ray(p_shape_B, p_transform_B, p_shape_A, p_transform_A, p_result_callback, p_userdata, true);
+			return solve_ray(p_shape_B, p_transform_B, p_shape_A, p_transform_A, p_result_callback, p_userdata, true, p_margin_B);
 		} else {
-			return solve_ray(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false);
+			return solve_ray(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false, p_margin_A);
 		}
 
 	} else if (type_B == PhysicsServer3D::SHAPE_SOFT_BODY) {

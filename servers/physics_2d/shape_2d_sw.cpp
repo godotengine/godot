@@ -570,14 +570,7 @@ bool ConvexPolygonShape2DSW::intersect_segment(const Vector2 &p_begin, const Vec
 		}
 	}
 
-	if (inters) {
-		if (n.dot(r_normal) > 0) {
-			r_normal = -r_normal;
-		}
-	}
-
-	//return get_aabb().intersects_segment(p_begin,p_end,&r_point,&r_normal);
-	return inters; //todo
+	return inters;
 }
 
 real_t ConvexPolygonShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {

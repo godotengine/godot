@@ -64,6 +64,8 @@ public:
 	_FORCE_INLINE_ Rect2 get_aabb() const { return aabb; }
 	_FORCE_INLINE_ bool is_configured() const { return configured; }
 
+	virtual bool allows_one_way_collision() const { return true; }
+
 	virtual bool is_concave() const { return false; }
 
 	virtual bool contains_point(const Vector2 &p_point) const = 0;
@@ -186,6 +188,8 @@ public:
 	_FORCE_INLINE_ bool get_slips_on_slope() const { return slips_on_slope; }
 
 	virtual PhysicsServer2D::ShapeType get_type() const { return PhysicsServer2D::SHAPE_RAY; }
+
+	virtual bool allows_one_way_collision() const override { return false; }
 
 	virtual void project_rangev(const Vector2 &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const { project_range(p_normal, p_transform, r_min, r_max); }
 	virtual void get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const;
