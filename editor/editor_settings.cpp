@@ -1484,7 +1484,7 @@ Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
 
 	Ref<Shortcut> sc;
 	const Map<String, List<Ref<InputEvent>>>::Element *builtin_override = builtin_action_overrides.find(p_name);
-	if (builtin_override) {
+	if (builtin_override && !builtin_override->get().is_empty()) {
 		sc.instantiate();
 		sc->set_event(builtin_override->get().front()->get());
 		sc->set_name(InputMap::get_singleton()->get_builtin_display_name(p_name));
@@ -1493,7 +1493,7 @@ Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
 	// If there was no override, check the default builtins to see if it has an InputEvent for the provided name.
 	if (sc.is_null()) {
 		const OrderedHashMap<String, List<Ref<InputEvent>>>::ConstElement builtin_default = InputMap::get_singleton()->get_builtins().find(p_name);
-		if (builtin_default) {
+		if (builtin_default && !builtin_default.get().is_empty()) {
 			sc.instantiate();
 			sc->set_event(builtin_default.get().front()->get());
 			sc->set_name(InputMap::get_singleton()->get_builtin_display_name(p_name));
@@ -1613,7 +1613,7 @@ void EditorSettings::set_builtin_action_override(const String &p_name, const Arr
 
 	// Update the shortcut (if it is used somewhere in the editor) to be the first event of the new list.
 	if (shortcuts.has(p_name)) {
-		shortcuts[p_name]->set_event(event_list.front()->get());
+		shortcuts[p_name]->set_event(event_list.is_empty() ? Ref<InputEvent>() : event_list.front()->get());
 	}
 }
 
