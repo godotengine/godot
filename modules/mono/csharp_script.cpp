@@ -2870,8 +2870,13 @@ int CSharpScript::_try_get_member_export_hint(IMonoClassMember *p_member, Manage
 
 		ERR_FAIL_COND_V_MSG(hint_res == -1, -1, "Error while trying to determine information about the array element type.");
 
-		// Format: type/hint:hint_string
-		r_hint_string = itos(elem_variant_type) + "/" + itos(elem_hint) + ":" + elem_hint_string;
+		MonoObject *attr = p_member->get_attribute(CACHED_CLASS(ExportAttribute));
+		if (PropertyHint(CACHED_FIELD(ExportAttribute, hint)->get_int_value(attr)) == PROPERTY_HINT_ENUM) {
+			r_hint_string = itos(elem_variant_type) + "/" + itos(PROPERTY_HINT_ENUM) + ":" + CACHED_FIELD(ExportAttribute, hintString)->get_string_value(attr);
+		} else {
+			// Format: type/hint:hint_string
+			r_hint_string = itos(elem_variant_type) + "/" + itos(elem_hint) + ":" + elem_hint_string;
+		}
 		r_hint = PROPERTY_HINT_TYPE_STRING;
 
 	} else if (p_allow_generics && p_variant_type == Variant::DICTIONARY) {
