@@ -32,6 +32,7 @@
 #include "core/message_queue.h"
 #include "core/method_bind_ext.gen.inc"
 #include "core/os/input.h"
+#include "core/version.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/font.h"
@@ -89,7 +90,10 @@ void CanvasItemMaterial::_update_shader() {
 
 	//must create a shader!
 
-	String code = "shader_type canvas_item;\nrender_mode ";
+	// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
+	String code = "// NOTE: Shader automatically converted from " VERSION_NAME " " VERSION_FULL_CONFIG "'s CanvasItemMaterial.\n\n";
+
+	code += "shader_type canvas_item;\nrender_mode ";
 	switch (blend_mode) {
 		case BLEND_MODE_MIX:
 			code += "blend_mix";
