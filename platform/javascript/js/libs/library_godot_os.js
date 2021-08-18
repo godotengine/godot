@@ -106,7 +106,7 @@ autoAddDeps(GodotConfig, '$GodotConfig');
 mergeInto(LibraryManager.library, GodotConfig);
 
 const GodotFS = {
-	$GodotFS__deps: ['$FS', '$IDBFS', '$GodotRuntime'],
+	$GodotFS__deps: ['$ERRNO_CODES', '$FS', '$IDBFS', '$GodotRuntime'],
 	$GodotFS__postset: [
 		'Module["initFS"] = GodotFS.init;',
 		'Module["copyToFS"] = GodotFS.copy_to_fs;',
