@@ -2877,6 +2877,27 @@ bool ShaderLanguage::is_scalar_type(DataType p_type) {
 	return p_type == TYPE_BOOL || p_type == TYPE_INT || p_type == TYPE_UINT || p_type == TYPE_FLOAT;
 }
 
+bool ShaderLanguage::is_float_type(DataType p_type) {
+	switch (p_type) {
+		case TYPE_FLOAT:
+		case TYPE_VEC2:
+		case TYPE_VEC3:
+		case TYPE_VEC4:
+		case TYPE_MAT2:
+		case TYPE_MAT3:
+		case TYPE_MAT4:
+		case TYPE_SAMPLER2D:
+		case TYPE_SAMPLER2DARRAY:
+		case TYPE_SAMPLER3D:
+		case TYPE_SAMPLERCUBE:
+		case TYPE_SAMPLERCUBEARRAY: {
+			return true;
+		}
+		default: {
+			return false;
+		}
+	}
+}
 bool ShaderLanguage::is_sampler_type(DataType p_type) {
 	return p_type == TYPE_SAMPLER2D ||
 		   p_type == TYPE_ISAMPLER2D ||
