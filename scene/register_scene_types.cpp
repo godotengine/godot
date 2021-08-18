@@ -812,7 +812,6 @@ void register_scene_types() {
 	GDREGISTER_CLASS(Font);
 	GDREGISTER_CLASS(Curve);
 
-	GDREGISTER_CLASS(TextFile);
 	GDREGISTER_CLASS(TextLine);
 	GDREGISTER_CLASS(TextParagraph);
 

@@ -3114,7 +3114,7 @@ void VisualShaderEditor::_notification(int p_what) {
 		{
 			Color background_color = EDITOR_GET("text_editor/theme/highlighting/background_color");
 			Color text_color = EDITOR_GET("text_editor/theme/highlighting/text_color");
-			Color keyword_color = EDITOR_GET("text_editor/highlighting/keyword_color");
+			Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
 			Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
 			Color comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
 			Color symbol_color = EDITOR_GET("text_editor/theme/highlighting/symbol_color");
