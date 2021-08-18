@@ -939,7 +939,6 @@ private:
 		const char *name;
 		DataType rettype;
 		const DataType args[MAX_ARGS];
-		const char *args_names[MAX_ARGS];
 		SubClassTag tag;
 		bool high_end;
 	};

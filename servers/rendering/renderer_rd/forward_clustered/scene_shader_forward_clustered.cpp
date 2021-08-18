@@ -131,9 +131,8 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 
 	SceneShaderForwardClustered *shader_singleton = (SceneShaderForwardClustered *)SceneShaderForwardClustered::singleton;
 	Error err = shader_singleton->compiler.compile(RS::SHADER_SPATIAL, code, &actions, path, gen_code);
-	if (err != OK) {
-		return;
-	}
+
+	ERR_FAIL_COND(err != OK);
 
 	if (version.is_null()) {
 		version = shader_singleton->shader.version_create();

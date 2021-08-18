@@ -121,7 +121,7 @@ void EditorPropertyMultilineText::_open_big_text() {
 	if (!big_text_dialog) {
 		big_text = memnew(TextEdit);
 		big_text->connect("text_changed", callable_mp(this, &EditorPropertyMultilineText::_big_text_changed));
-		big_text->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
+		big_text->set_wrap_enabled(true);
 		big_text_dialog = memnew(AcceptDialog);
 		big_text_dialog->add_child(big_text);
 		big_text_dialog->set_title(TTR("Edit Text:"));
@@ -166,7 +166,7 @@ EditorPropertyMultilineText::EditorPropertyMultilineText() {
 	set_bottom_editor(hb);
 	text = memnew(TextEdit);
 	text->connect("text_changed", callable_mp(this, &EditorPropertyMultilineText::_text_changed));
-	text->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
+	text->set_wrap_enabled(true);
 	add_focusable(text);
 	hb->add_child(text);
 	text->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -837,7 +837,7 @@ public:
 							Vector2 offset;
 							offset.y = rect2.size.y * 0.75;
 
-							draw_string(font, rect2.position + offset, itos(layer_index + 1), HALIGN_CENTER, rect2.size.x, -1, on ? text_color_on : text_color);
+							draw_string(font, rect2.position + offset, itos(layer_index), HALIGN_CENTER, rect2.size.x, -1, on ? text_color_on : text_color);
 
 							ofs.x += bsize + 1;
 
@@ -993,12 +993,12 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 	for (int i = 0; i < layer_count; i++) {
 		String name;
 
-		if (ProjectSettings::get_singleton()->has_setting(basename + vformat("/layer_%d", i + 1))) {
-			name = ProjectSettings::get_singleton()->get(basename + vformat("/layer_%d", i + 1));
+		if (ProjectSettings::get_singleton()->has_setting(basename + vformat("/layer_%d", i))) {
+			name = ProjectSettings::get_singleton()->get(basename + vformat("/layer_%d", i));
 		}
 
 		if (name == "") {
-			name = vformat(TTR("Layer %d"), i + 1);
+			name = vformat(TTR("Layer %d"), i);
 		}
 
 		names.push_back(name);
@@ -2854,10 +2854,6 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 		EditorScriptPicker *script_picker = memnew(EditorScriptPicker);
 		script_picker->set_script_owner(Object::cast_to<Node>(p_object));
 		resource_picker = script_picker;
-	} else if (p_path == "shader" && p_base_type == "Shader" && Object::cast_to<ShaderMaterial>(p_object)) {
-		EditorShaderPicker *shader_picker = memnew(EditorShaderPicker);
-		shader_picker->set_edited_material(Object::cast_to<ShaderMaterial>(p_object));
-		resource_picker = shader_picker;
 	} else {
 		resource_picker = memnew(EditorResourcePicker);
 	}

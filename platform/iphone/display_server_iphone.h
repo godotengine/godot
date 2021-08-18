@@ -41,11 +41,7 @@
 #include "vulkan_context_iphone.h"
 
 #import <QuartzCore/CAMetalLayer.h>
-#ifdef USE_VOLK
-#include <volk.h>
-#else
-#include <vulkan/vulkan.h>
-#endif
+#include <vulkan/vulkan_metal.h>
 #endif
 
 class DisplayServerIPhone : public DisplayServer {
@@ -109,7 +105,7 @@ public:
 
 	// MARK: Keyboard
 
-	void key(Key p_key, bool p_pressed);
+	void key(uint32_t p_key, bool p_pressed);
 
 	// MARK: Motion
 

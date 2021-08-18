@@ -4575,10 +4575,7 @@ bool VisualShaderNodeTransformUniform::is_use_prop_slots() const {
 }
 
 bool VisualShaderNodeTransformUniform::is_qualifier_supported(Qualifier p_qual) const {
-	if (p_qual == Qualifier::QUAL_INSTANCE) {
-		return false;
-	}
-	return true;
+	return true; // all qualifiers are supported
 }
 
 bool VisualShaderNodeTransformUniform::is_convertible_to_constant() const {

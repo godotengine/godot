@@ -3453,7 +3453,6 @@ void RendererStorageRD::multimesh_allocate_data(RID p_multimesh, int p_instances
 	if (multimesh->buffer.is_valid()) {
 		RD::get_singleton()->free(multimesh->buffer);
 		multimesh->buffer = RID();
-		multimesh->uniform_set_2d = RID(); //cleared by dependency
 		multimesh->uniform_set_3d = RID(); //cleared by dependency
 	}
 
@@ -4092,7 +4091,7 @@ void RendererStorageRD::particles_set_amount(RID p_particles, int p_amount) {
 	particles->dependency.changed_notify(DEPENDENCY_CHANGED_PARTICLES);
 }
 
-void RendererStorageRD::particles_set_lifetime(RID p_particles, double p_lifetime) {
+void RendererStorageRD::particles_set_lifetime(RID p_particles, float p_lifetime) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	particles->lifetime = p_lifetime;
@@ -4104,17 +4103,17 @@ void RendererStorageRD::particles_set_one_shot(RID p_particles, bool p_one_shot)
 	particles->one_shot = p_one_shot;
 }
 
-void RendererStorageRD::particles_set_pre_process_time(RID p_particles, double p_time) {
+void RendererStorageRD::particles_set_pre_process_time(RID p_particles, float p_time) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	particles->pre_process_time = p_time;
 }
-void RendererStorageRD::particles_set_explosiveness_ratio(RID p_particles, real_t p_ratio) {
+void RendererStorageRD::particles_set_explosiveness_ratio(RID p_particles, float p_ratio) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	particles->explosiveness = p_ratio;
 }
-void RendererStorageRD::particles_set_randomness_ratio(RID p_particles, real_t p_ratio) {
+void RendererStorageRD::particles_set_randomness_ratio(RID p_particles, float p_ratio) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	particles->randomness = p_ratio;
@@ -4127,7 +4126,7 @@ void RendererStorageRD::particles_set_custom_aabb(RID p_particles, const AABB &p
 	particles->dependency.changed_notify(DEPENDENCY_CHANGED_AABB);
 }
 
-void RendererStorageRD::particles_set_speed_scale(RID p_particles, double p_scale) {
+void RendererStorageRD::particles_set_speed_scale(RID p_particles, float p_scale) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
@@ -4170,7 +4169,7 @@ void RendererStorageRD::particles_set_fractional_delta(RID p_particles, bool p_e
 	particles->fractional_delta = p_enable;
 }
 
-void RendererStorageRD::particles_set_trails(RID p_particles, bool p_enable, double p_length) {
+void RendererStorageRD::particles_set_trails(RID p_particles, bool p_enable, float p_length) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	ERR_FAIL_COND(p_length < 0.1);
@@ -4206,7 +4205,7 @@ void RendererStorageRD::particles_set_trail_bind_poses(RID p_particles, const Ve
 	particles->dependency.changed_notify(DEPENDENCY_CHANGED_PARTICLES);
 }
 
-void RendererStorageRD::particles_set_collision_base_size(RID p_particles, real_t p_size) {
+void RendererStorageRD::particles_set_collision_base_size(RID p_particles, float p_size) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
@@ -4443,7 +4442,7 @@ void RendererStorageRD::particles_set_canvas_sdf_collision(RID p_particles, bool
 	particles->sdf_collision_texture = p_texture;
 }
 
-void RendererStorageRD::_particles_process(Particles *p_particles, double p_delta) {
+void RendererStorageRD::_particles_process(Particles *p_particles, float p_delta) {
 	if (p_particles->particles_material_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(p_particles->particles_material_uniform_set)) {
 		Vector<RD::Uniform> uniforms;
 
@@ -4492,7 +4491,7 @@ void RendererStorageRD::_particles_process(Particles *p_particles, double p_delt
 		p_particles->particles_material_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.default_shader_rd, 1);
 	}
 
-	double new_phase = Math::fmod((double)p_particles->phase + (p_delta / p_particles->lifetime) * p_particles->speed_scale, 1.0);
+	float new_phase = Math::fmod((float)p_particles->phase + (p_delta / p_particles->lifetime) * p_particles->speed_scale, (float)1.0);
 
 	//move back history (if there is any)
 	for (uint32_t i = p_particles->frame_history.size() - 1; i > 0; i--) {
@@ -5132,14 +5131,14 @@ void RendererStorageRD::update_particles() {
 		bool zero_time_scale = Engine::get_singleton()->get_time_scale() <= 0.0;
 
 		if (particles->clear && particles->pre_process_time > 0.0) {
-			double frame_time;
+			float frame_time;
 			if (fixed_fps > 0) {
 				frame_time = 1.0 / fixed_fps;
 			} else {
 				frame_time = 1.0 / 30.0;
 			}
 
-			double todo = particles->pre_process_time;
+			float todo = particles->pre_process_time;
 
 			while (todo >= 0) {
 				_particles_process(particles, frame_time);
@@ -5148,8 +5147,8 @@ void RendererStorageRD::update_particles() {
 		}
 
 		if (fixed_fps > 0) {
-			double frame_time;
-			double decr;
+			float frame_time;
+			float decr;
 			if (zero_time_scale) {
 				frame_time = 0.0;
 				decr = 1.0 / fixed_fps;
@@ -5157,13 +5156,13 @@ void RendererStorageRD::update_particles() {
 				frame_time = 1.0 / fixed_fps;
 				decr = frame_time;
 			}
-			double delta = RendererCompositorRD::singleton->get_frame_delta_time();
+			float delta = RendererCompositorRD::singleton->get_frame_delta_time();
 			if (delta > 0.1) { //avoid recursive stalls if fps goes below 10
 				delta = 0.1;
 			} else if (delta <= 0.0) { //unlikely but..
 				delta = 0.001;
 			}
-			double todo = particles->frame_remainder + delta;
+			float todo = particles->frame_remainder + delta;
 
 			while (todo >= frame_time) {
 				_particles_process(particles, frame_time);
@@ -5464,7 +5463,7 @@ void RendererStorageRD::particles_collision_set_cull_mask(RID p_particles_collis
 	particles_collision->cull_mask = p_cull_mask;
 }
 
-void RendererStorageRD::particles_collision_set_sphere_radius(RID p_particles_collision, real_t p_radius) {
+void RendererStorageRD::particles_collision_set_sphere_radius(RID p_particles_collision, float p_radius) {
 	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
 	ERR_FAIL_COND(!particles_collision);
 
@@ -5480,21 +5479,21 @@ void RendererStorageRD::particles_collision_set_box_extents(RID p_particles_coll
 	particles_collision->dependency.changed_notify(DEPENDENCY_CHANGED_AABB);
 }
 
-void RendererStorageRD::particles_collision_set_attractor_strength(RID p_particles_collision, real_t p_strength) {
+void RendererStorageRD::particles_collision_set_attractor_strength(RID p_particles_collision, float p_strength) {
 	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
 	ERR_FAIL_COND(!particles_collision);
 
 	particles_collision->attractor_strength = p_strength;
 }
 
-void RendererStorageRD::particles_collision_set_attractor_directionality(RID p_particles_collision, real_t p_directionality) {
+void RendererStorageRD::particles_collision_set_attractor_directionality(RID p_particles_collision, float p_directionality) {
 	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
 	ERR_FAIL_COND(!particles_collision);
 
 	particles_collision->attractor_directionality = p_directionality;
 }
 
-void RendererStorageRD::particles_collision_set_attractor_attenuation(RID p_particles_collision, real_t p_curve) {
+void RendererStorageRD::particles_collision_set_attractor_attenuation(RID p_particles_collision, float p_curve) {
 	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
 	ERR_FAIL_COND(!particles_collision);
 
@@ -9129,42 +9128,26 @@ RendererStorageRD::RendererStorageRD() {
 				} break;
 				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS: {
 					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
-					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
-					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
-						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
-					} else {
-						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
-					}
+					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
 				} break;
 				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS: {
 					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
 					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
-					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
-						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
-					} else {
-						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
-					}
+					sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
 
 				} break;
 				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC: {
 					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
-					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
-					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
-						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
-					} else {
-						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
-					}
+					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
 					sampler_state.use_anisotropy = true;
 					sampler_state.anisotropy_max = 1 << int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level"));
 				} break;
 				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC: {
 					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
 					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
-					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
-						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
-					} else {
-						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
-					}
+					sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
 					sampler_state.use_anisotropy = true;
 					sampler_state.anisotropy_max = 1 << int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level"));
 

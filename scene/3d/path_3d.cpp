@@ -94,13 +94,13 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 		return;
 	}
 
-	real_t bl = c->get_baked_length();
+	float bl = c->get_baked_length();
 	if (bl == 0.0) {
 		return;
 	}
-	real_t bi = c->get_bake_interval();
-	real_t o_next = offset + bi;
-	real_t o_prev = offset - bi;
+	float bi = c->get_bake_interval();
+	float o_next = offset + bi;
+	float o_prev = offset - bi;
 
 	if (loop) {
 		o_next = Math::fposmod(o_next, bl);
@@ -120,7 +120,7 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 	// will be replaced by "Vector3(h_offset, v_offset, 0)" where it was formerly used
 
 	if (rotation_mode == ROTATION_ORIENTED) {
-		Vector3 forward = c->interpolate_baked(o_next, cubic) - pos;
+		Vector3 forward = c->interpolate_baked(o_next, cubic);
 
 		// Try with the previous position
 		if (forward.length_squared() < CMP_EPSILON2) {
@@ -169,8 +169,8 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 			Vector3 t_cur = (c->interpolate_baked(offset + delta_offset, cubic) - pos).normalized();
 
 			Vector3 axis = t_prev.cross(t_cur);
-			real_t dot = t_prev.dot(t_cur);
-			real_t angle = Math::acos(CLAMP(dot, -1, 1));
+			float dot = t_prev.dot(t_cur);
+			float angle = Math::acos(CLAMP(dot, -1, 1));
 
 			if (likely(!Math::is_zero_approx(angle))) {
 				if (rotation_mode == ROTATION_Y) {
@@ -189,7 +189,7 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 			}
 
 			// do the additional tilting
-			real_t tilt_angle = c->interpolate_baked_tilt(offset);
+			float tilt_angle = c->interpolate_baked_tilt(offset);
 			Vector3 tilt_axis = t_cur; // not sure what tilt is supposed to do, is this correct??
 
 			if (likely(!Math::is_zero_approx(Math::abs(tilt_angle)))) {
@@ -244,7 +244,7 @@ bool PathFollow3D::get_cubic_interpolation() const {
 
 void PathFollow3D::_validate_property(PropertyInfo &property) const {
 	if (property.name == "offset") {
-		real_t max = 10000;
+		float max = 10000;
 		if (path && path->get_curve().is_valid()) {
 			max = path->get_curve()->get_baked_length();
 		}
@@ -307,13 +307,13 @@ void PathFollow3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(ROTATION_ORIENTED);
 }
 
-void PathFollow3D::set_offset(real_t p_offset) {
+void PathFollow3D::set_offset(float p_offset) {
 	delta_offset = p_offset - offset;
 	offset = p_offset;
 
 	if (path) {
 		if (path->get_curve().is_valid()) {
-			real_t path_length = path->get_curve()->get_baked_length();
+			float path_length = path->get_curve()->get_baked_length();
 
 			if (loop) {
 				offset = Math::fposmod(offset, path_length);
@@ -329,39 +329,39 @@ void PathFollow3D::set_offset(real_t p_offset) {
 	}
 }
 
-void PathFollow3D::set_h_offset(real_t p_h_offset) {
+void PathFollow3D::set_h_offset(float p_h_offset) {
 	h_offset = p_h_offset;
 	if (path) {
 		_update_transform();
 	}
 }
 
-real_t PathFollow3D::get_h_offset() const {
+float PathFollow3D::get_h_offset() const {
 	return h_offset;
 }
 
-void PathFollow3D::set_v_offset(real_t p_v_offset) {
+void PathFollow3D::set_v_offset(float p_v_offset) {
 	v_offset = p_v_offset;
 	if (path) {
 		_update_transform();
 	}
 }
 
-real_t PathFollow3D::get_v_offset() const {
+float PathFollow3D::get_v_offset() const {
 	return v_offset;
 }
 
-real_t PathFollow3D::get_offset() const {
+float PathFollow3D::get_offset() const {
 	return offset;
 }
 
-void PathFollow3D::set_unit_offset(real_t p_unit_offset) {
+void PathFollow3D::set_unit_offset(float p_unit_offset) {
 	if (path && path->get_curve().is_valid() && path->get_curve()->get_baked_length()) {
 		set_offset(p_unit_offset * path->get_curve()->get_baked_length());
 	}
 }
 
-real_t PathFollow3D::get_unit_offset() const {
+float PathFollow3D::get_unit_offset() const {
 	if (path && path->get_curve().is_valid() && path->get_curve()->get_baked_length()) {
 		return get_offset() / path->get_curve()->get_baked_length();
 	} else {

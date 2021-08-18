@@ -128,9 +128,9 @@ namespace Godot
             return godot_icall_GD_randi_range(from, to);
         }
 
-        public static uint RandFromSeed(ref ulong seed)
+        public static uint RandSeed(ulong seed, out ulong newSeed)
         {
-            return godot_icall_GD_rand_seed(seed, out seed);
+            return godot_icall_GD_rand_seed(seed, out newSeed);
         }
 
         public static IEnumerable<int> Range(int end)

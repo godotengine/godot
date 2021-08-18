@@ -1246,8 +1246,6 @@ void AnimationPlayerEditor::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
 				}
 				accept_event();
 			} break;
-			default:
-				break;
 		}
 	}
 }

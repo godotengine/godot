@@ -408,14 +408,10 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 	node->connect("dragged", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_node_dragged), varray(p_id));
 
 	Control *custom_editor = nullptr;
-	int port_offset = 1;
-
-	Control *content_offset = memnew(Control);
-	content_offset->set_custom_minimum_size(Size2(0, 5 * EDSCALE));
-	node->add_child(content_offset);
+	int port_offset = 0;
 
 	if (is_group) {
-		port_offset += 1;
+		port_offset += 2;
 	}
 
 	if (is_resizable) {
@@ -452,7 +448,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		if (vsnode->get_input_port_count() == 0 && vsnode->get_output_port_count() == 1 && vsnode->get_output_port_name(0) == "") {
 			//shortcut
 			VisualShaderNode::PortType port_right = vsnode->get_output_port_type(0);
-			node->set_slot(1, false, VisualShaderNode::PORT_TYPE_SCALAR, Color(), true, port_right, type_color[port_right]);
+			node->set_slot(0, false, VisualShaderNode::PORT_TYPE_SCALAR, Color(), true, port_right, type_color[port_right]);
 			if (!vsnode->is_use_prop_slots()) {
 				return;
 			}
@@ -586,26 +582,22 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		if (is_curve) {
 			VisualShaderNode::PortType port_left = vsnode->get_input_port_type(0);
 			VisualShaderNode::PortType port_right = vsnode->get_output_port_type(0);
-			node->set_slot(1, true, port_left, type_color[port_left], true, port_right, type_color[port_right]);
+			node->set_slot(0, true, port_left, type_color[port_left], true, port_right, type_color[port_right]);
 
 			VisualShaderEditor::get_singleton()->call_deferred(SNAME("_set_node_size"), (int)p_type, p_id, size);
 		}
 
 		if (vsnode->is_use_prop_slots()) {
-			String error = vsnode->get_warning(visual_shader->get_mode(), p_type);
-			if (error != String()) {
-				Label *error_label = memnew(Label);
-				error_label->add_theme_color_override("font_color", VisualShaderEditor::get_singleton()->get_theme_color(SNAME("error_color"), SNAME("Editor")));
-				error_label->set_text(error);
-				node->add_child(error_label);
-			}
-
 			return;
 		}
 		custom_editor = nullptr;
 	}
 
 	if (is_group) {
+		offset = memnew(Control);
+		offset->set_custom_minimum_size(Size2(0, 6 * EDSCALE));
+		node->add_child(offset);
+
 		if (group_node->is_editable()) {
 			HBoxContainer *hb2 = memnew(HBoxContainer);
 
@@ -1015,7 +1007,6 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 		const Dictionary vs_version = visual_shader->get_engine_version();
 		if (!vs_version.has_all(components)) {
 			visual_shader->update_engine_version(engine_version);
-			print_line(vformat(TTR("The shader (\"%s\") has been updated to correspond Godot %s.%s version."), visual_shader->get_path(), engine_version["major"], engine_version["minor"]));
 		} else {
 			for (int i = 0; i < components.size(); i++) {
 				if (vs_version[components[i]] != engine_version[components[i]]) {
@@ -2037,8 +2028,6 @@ void VisualShaderEditor::_uniform_line_edit_changed(const String &p_text, int p_
 	undo_redo->add_undo_method(node.ptr(), "set_uniform_name", node->get_uniform_name());
 	undo_redo->add_do_method(graph_plugin.ptr(), "set_uniform_name", type, p_node_id, validated_name);
 	undo_redo->add_undo_method(graph_plugin.ptr(), "set_uniform_name", type, p_node_id, node->get_uniform_name());
-	undo_redo->add_do_method(graph_plugin.ptr(), "update_node_deferred", type, p_node_id);
-	undo_redo->add_undo_method(graph_plugin.ptr(), "update_node_deferred", type, p_node_id);
 
 	undo_redo->add_do_method(this, "_update_uniforms", true);
 	undo_redo->add_undo_method(this, "_update_uniforms", true);
@@ -2371,7 +2360,6 @@ void VisualShaderEditor::_add_node(int p_idx, int p_op_idx, String p_resource_pa
 		position += graph->get_size() * 0.5;
 		position /= EDSCALE;
 	}
-	position /= graph->get_zoom();
 	saved_node_pos_dirty = false;
 
 	int id_to_use = visual_shader->get_valid_node_id(type);
@@ -3978,7 +3966,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	preview_text->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	preview_text->set_syntax_highlighter(syntax_highlighter);
 	preview_text->set_draw_line_numbers(true);
-	preview_text->set_editable(false);
+	preview_text->set_readonly(true);
 
 	error_panel = memnew(PanelContainer);
 	preview_vbox->add_child(error_panel);

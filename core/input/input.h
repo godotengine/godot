@@ -33,7 +33,6 @@
 
 #include "core/input/input_event.h"
 #include "core/object/object.h"
-#include "core/os/keyboard.h"
 #include "core/os/thread_safe.h"
 
 class Input : public Object {
@@ -245,7 +244,7 @@ public:
 
 	static Input *get_singleton();
 
-	bool is_key_pressed(Key p_keycode) const;
+	bool is_key_pressed(int p_keycode) const;
 	bool is_mouse_button_pressed(MouseButton p_button) const;
 	bool is_joy_button_pressed(int p_device, JoyButton p_button) const;
 	bool is_action_pressed(const StringName &p_action, bool p_exact = false) const;

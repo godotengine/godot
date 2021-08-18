@@ -30,7 +30,6 @@
 
 #include "editor/import/editor_importer_bake_reset.h"
 
-#include "core/error/error_list.h"
 #include "core/error/error_macros.h"
 #include "core/math/transform_3d.h"
 #include "editor/import/scene_importer_mesh_node_3d.h"
@@ -152,20 +151,13 @@ void BakeReset::_align_animations(AnimationPlayer *p_ap, const Map<StringName, B
 }
 
 void BakeReset::_fetch_reset_animation(AnimationPlayer *p_ap, Map<StringName, BakeResetRestBone> &r_rest_bones, const String &p_bake_anim) {
-	if (!p_ap) {
-		return;
-	}
+	ERR_FAIL_NULL(p_ap);
 	List<StringName> anim_names;
 	p_ap->get_animation_list(&anim_names);
 	Node *root = p_ap->get_owner();
 	ERR_FAIL_NULL(root);
-	if (!p_ap->has_animation(p_bake_anim)) {
-		return;
-	}
 	Ref<Animation> a = p_ap->get_animation(p_bake_anim);
-	if (a.is_null()) {
-		return;
-	}
+	ERR_FAIL_NULL(a);
 	for (int32_t track = 0; track < a->get_track_count(); track++) {
 		NodePath path = a->track_get_path(track);
 		String string_path = path;
@@ -179,10 +171,7 @@ void BakeReset::_fetch_reset_animation(AnimationPlayer *p_ap, Map<StringName, Ba
 			Quaternion rot;
 			Vector3 scale;
 			Error err = a->transform_track_get_key(track, key_i, &loc, &rot, &scale);
-			if (err != OK) {
-				ERR_PRINT_ONCE("Reset animation baker can't get key.");
-				continue;
-			}
+			ERR_CONTINUE(err);
 			rot.normalize();
 			Basis rot_basis = Basis(rot, scale);
 			BakeResetRestBone rest_bone;

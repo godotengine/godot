@@ -249,10 +249,10 @@ void InputEventConfigurationDialog::_listen_window_input(const Ref<InputEvent> &
 		// Maintain physical keycode option state
 		if (physical_key_checkbox->is_pressed()) {
 			k->set_physical_keycode(k->get_keycode());
-			k->set_keycode(KEY_NONE);
+			k->set_keycode(0);
 		} else {
-			k->set_keycode((Key)k->get_physical_keycode());
-			k->set_physical_keycode(KEY_NONE);
+			k->set_keycode(k->get_physical_keycode());
+			k->set_physical_keycode(0);
 		}
 	}
 
@@ -435,10 +435,10 @@ void InputEventConfigurationDialog::_physical_keycode_toggled(bool p_checked) {
 
 	if (p_checked) {
 		k->set_physical_keycode(k->get_keycode());
-		k->set_keycode(KEY_NONE);
+		k->set_keycode(0);
 	} else {
-		k->set_keycode((Key)k->get_physical_keycode());
-		k->set_physical_keycode(KEY_NONE);
+		k->set_keycode(k->get_physical_keycode());
+		k->set_physical_keycode(0);
 	}
 
 	_set_event(k);
@@ -452,20 +452,20 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 		return;
 	}
 
-	InputEventConfigurationDialog::InputType input_type = (InputEventConfigurationDialog::InputType)(int)selected->get_parent()->get_meta("__type");
+	int input_type = selected->get_parent()->get_meta("__type");
 
 	switch (input_type) {
 		case InputEventConfigurationDialog::INPUT_KEY: {
-			Key keycode = (Key)(int)selected->get_meta("__keycode");
+			int kc = selected->get_meta("__keycode");
 			Ref<InputEventKey> k;
 			k.instantiate();
 
 			if (physical_key_checkbox->is_pressed()) {
-				k->set_physical_keycode(keycode);
-				k->set_keycode(KEY_NONE);
+				k->set_physical_keycode(kc);
+				k->set_keycode(0);
 			} else {
-				k->set_physical_keycode(KEY_NONE);
-				k->set_keycode(keycode);
+				k->set_physical_keycode(0);
+				k->set_keycode(kc);
 			}
 
 			// Maintain modifier state from checkboxes
@@ -479,10 +479,10 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 			_set_event(k);
 		} break;
 		case InputEventConfigurationDialog::INPUT_MOUSE_BUTTON: {
-			MouseButton idx = (MouseButton)(int)selected->get_meta("__index");
+			int idx = selected->get_meta("__index");
 			Ref<InputEventMouseButton> mb;
 			mb.instantiate();
-			mb->set_button_index(idx);
+			mb->set_button_index((MouseButton)idx);
 			// Maintain modifier state from checkboxes
 			mb->set_alt_pressed(mod_checkboxes[MOD_ALT]->is_pressed());
 			mb->set_shift_pressed(mod_checkboxes[MOD_SHIFT]->is_pressed());
@@ -494,20 +494,22 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 			_set_event(mb);
 		} break;
 		case InputEventConfigurationDialog::INPUT_JOY_BUTTON: {
-			JoyButton idx = (JoyButton)(int)selected->get_meta("__index");
-			Ref<InputEventJoypadButton> jb = InputEventJoypadButton::create_reference(idx);
+			int idx = selected->get_meta("__index");
+			Ref<InputEventJoypadButton> jb = InputEventJoypadButton::create_reference((JoyButton)idx);
 			_set_event(jb);
 		} break;
 		case InputEventConfigurationDialog::INPUT_JOY_MOTION: {
-			JoyAxis axis = (JoyAxis)(int)selected->get_meta("__axis");
+			int axis = selected->get_meta("__axis");
 			int value = selected->get_meta("__value");
 
 			Ref<InputEventJoypadMotion> jm;
 			jm.instantiate();
-			jm->set_axis(axis);
+			jm->set_axis((JoyAxis)axis);
 			jm->set_axis_value(value);
 			_set_event(jm);
 		} break;
+		default:
+			break;
 	}
 }
 

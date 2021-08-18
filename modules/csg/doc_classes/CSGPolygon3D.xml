@@ -4,7 +4,7 @@
 		Extrudes a 2D polygon shape to create a 3D mesh.
 	</brief_description>
 	<description>
-		An array of 2D points is extruded to quickly and easily create a variety of 3D meshes.
+		This node takes a 2D polygon shape and extrudes it to create a 3D mesh.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -12,65 +12,63 @@
 	</methods>
 	<members>
 		<member name="depth" type="float" setter="set_depth" getter="get_depth" default="1.0">
-			When [member mode] is [constant MODE_DEPTH], the depth of the extrusion.
+			Extrusion depth when [member mode] is [constant MODE_DEPTH].
 		</member>
 		<member name="material" type="Material" setter="set_material" getter="get_material">
-			Material to use for the resulting mesh. The UV maps the top half of the material to the extruded shape (U along the length of the extrusions and V around the outline of the [member polygon]), the bottom-left quarter to the front end face, and the bottom-right quarter to the back end face.
+			Material to use for the resulting mesh.
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="CSGPolygon3D.Mode" default="0">
-			The [member mode] used to extrude the [member polygon].
+			Extrusion mode.
 		</member>
 		<member name="path_continuous_u" type="bool" setter="set_path_continuous_u" getter="is_path_continuous_u">
-			When [member mode] is [constant MODE_PATH], by default, the top half of the [member material] is stretched along the entire length of the extruded shape. If [code]false[/code] the top half of the material is repeated every step of the extrusion.
+			If [code]true[/code] the u component of our uv will continuously increase in unison with the distance traveled along our path when [member mode] is [constant MODE_PATH].
 		</member>
 		<member name="path_interval" type="float" setter="set_path_interval" getter="get_path_interval">
-			When [member mode] is [constant MODE_PATH], the path interval or ratio of path points to extrusions.
+			Interval at which a new extrusion slice is added along the path when [member mode] is [constant MODE_PATH].
 		</member>
 		<member name="path_joined" type="bool" setter="set_path_joined" getter="is_path_joined">
-			When [member mode] is [constant MODE_PATH], if [code]true[/code] the ends of the path are joined, by adding an extrusion between the last and first points of the path.
+			If [code]true[/code] the start and end of our path are joined together ensuring there is no seam when [member mode] is [constant MODE_PATH].
 		</member>
 		<member name="path_local" type="bool" setter="set_path_local" getter="is_path_local">
-			When [member mode] is [constant MODE_PATH], if [code]true[/code] the [Transform3D] of the [CSGPolygon3D] is used as the starting point for the extrusions, not the [Transform3D] of the [member path_node].
+			If [code]false[/code] we extrude centered on our path, if [code]true[/code] we extrude in relation to the position of our CSGPolygon3D when [member mode] is [constant MODE_PATH].
 		</member>
 		<member name="path_node" type="NodePath" setter="set_path_node" getter="get_path_node">
-			When [member mode] is [constant MODE_PATH], the location of the [Path3D] object used to extrude the [member polygon].
+			The [Shape3D] object containing the path along which we extrude when [member mode] is [constant MODE_PATH].
 		</member>
 		<member name="path_rotation" type="int" setter="set_path_rotation" getter="get_path_rotation" enum="CSGPolygon3D.PathRotation">
-			When [member mode] is [constant MODE_PATH], the [enum PathRotation] method used to rotate the [member polygon] as it is extruded.
+			The method by which each slice is rotated along the path when [member mode] is [constant MODE_PATH].
 		</member>
 		<member name="polygon" type="PackedVector2Array" setter="set_polygon" getter="get_polygon" default="PackedVector2Array(0, 0, 0, 1, 1, 1, 1, 0)">
-			The point array that defines the 2D polygon that is extruded.
+			Point array that defines the shape that we'll extrude.
 		</member>
 		<member name="smooth_faces" type="bool" setter="set_smooth_faces" getter="get_smooth_faces" default="false">
-			If [code]true[/code], applies smooth shading to the extrusions.
+			Generates smooth normals so smooth shading is applied to our mesh.
 		</member>
 		<member name="spin_degrees" type="float" setter="set_spin_degrees" getter="get_spin_degrees">
-			When [member mode] is [constant MODE_SPIN], the total number of degrees the [member polygon] is rotated when extruding.
+			Degrees to rotate our extrusion for each slice when [member mode] is [constant MODE_SPIN].
 		</member>
 		<member name="spin_sides" type="int" setter="set_spin_sides" getter="get_spin_sides">
-			When [member mode] is [constant MODE_SPIN], the number of extrusions made.
+			Number of extrusion when [member mode] is [constant MODE_SPIN].
 		</member>
 	</members>
 	<constants>
 		<constant name="MODE_DEPTH" value="0" enum="Mode">
-			The [member polygon] shape is extruded along the negative Z axis.
+			Shape3D is extruded to [member depth].
 		</constant>
 		<constant name="MODE_SPIN" value="1" enum="Mode">
-			The [member polygon] shape is extruded by rotating it around the Y axis.
+			Shape3D is extruded by rotating it around an axis.
 		</constant>
 		<constant name="MODE_PATH" value="2" enum="Mode">
-			The [member polygon] shape is extruded along the [Path3D] specified in [member path_node].
+			Shape3D is extruded along a path set by a [Shape3D] set in [member path_node].
 		</constant>
 		<constant name="PATH_ROTATION_POLYGON" value="0" enum="PathRotation">
-			The [member polygon] shape is not rotated.
-			[b]Note:[/b] Requires the path Z coordinates to continually decrease to ensure viable shapes.
+			Slice is not rotated.
 		</constant>
 		<constant name="PATH_ROTATION_PATH" value="1" enum="PathRotation">
-			The [member polygon] shape is rotated along the path, but it is not rotated around the path axis.
-			[b]Note:[/b] Requires the path Z coordinates to continually decrease to ensure viable shapes.
+			Slice is rotated around the up vector of the path.
 		</constant>
 		<constant name="PATH_ROTATION_PATH_FOLLOW" value="2" enum="PathRotation">
-			The [member polygon] shape follows the path and its rotations around the path axis.
+			Slice is rotate to match the path exactly.
 		</constant>
 	</constants>
 </class>

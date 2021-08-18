@@ -35,8 +35,8 @@
 #include "core/io/resource_loader.h"
 #include "core/object/ref_counted.h"
 
-class NativeExtension : public Resource {
-	GDCLASS(NativeExtension, Resource)
+class NativeExtension : public RefCounted {
+	GDCLASS(NativeExtension, RefCounted)
 
 	void *library = nullptr; // pointer if valid,
 

@@ -35,11 +35,12 @@
 				Returns the distance the camera has been offset due to a collision.
 			</description>
 		</method>
-		<method name="get_collision_mask_value" qualifiers="const">
+		<method name="get_collision_mask_bit" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="layer_number" type="int" />
+			<argument index="0" name="bit" type="int" />
 			<description>
-				Returns whether or not the specified layer of the [member collision_mask] is enabled, given a [code]layer_number[/code] between 1 and 32.
+				Returns [code]true[/code] if the specified bit index is on.
+				[b]Note:[/b] Bit indices range from 0-19.
 			</description>
 		</method>
 		<method name="remove_exception">
@@ -56,12 +57,13 @@
 				Removes a collision exception with the specified [RID].
 			</description>
 		</method>
-		<method name="set_collision_mask_value">
+		<method name="set_collision_mask_bit">
 			<return type="void" />
-			<argument index="0" name="layer_number" type="int" />
+			<argument index="0" name="bit" type="int" />
 			<argument index="1" name="value" type="bool" />
 			<description>
-				Based on [code]value[/code], enables or disables the specified layer in the [member collision_mask], given a [code]layer_number[/code] between 1 and 32.
+				Sets the specified bit index to the [code]value[/code].
+				[b]Note:[/b] Bit indices range from 0-19.
 			</description>
 		</method>
 	</methods>

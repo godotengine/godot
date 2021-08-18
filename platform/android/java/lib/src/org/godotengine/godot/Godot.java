@@ -657,6 +657,8 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 
 		super.onDestroy();
 
+		// TODO: This is a temp solution. The proper fix will involve tracking down and properly shutting down each
+		// native Godot components that is started in Godot#onVideoInit.
 		forceQuit();
 	}
 
@@ -840,11 +842,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	}
 
 	private void forceQuit() {
-		// TODO: This is a temp solution. The proper fix will involve tracking down and properly shutting down each
-		// native Godot components that is started in Godot#onVideoInit.
-		if (godotHost != null) {
-			godotHost.onGodotForceQuit(this);
-		}
+		System.exit(0);
 	}
 
 	private boolean obbIsCorrupted(String f, String main_pack_md5) {

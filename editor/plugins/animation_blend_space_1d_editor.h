@@ -92,7 +92,7 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 	PopupMenu *animations_menu;
 	Vector<String> animations_to_add;
 	float add_point_pos;
-	Vector<real_t> points;
+	Vector<float> points;
 
 	bool dragging_selected_attempt;
 	bool dragging_selected;

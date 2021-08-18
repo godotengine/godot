@@ -80,7 +80,7 @@ bool EditorSettings::_set_only(const StringName &p_name, const Variant &p_value)
 
 			Ref<Shortcut> sc;
 			sc.instantiate();
-			sc->set_event(shortcut);
+			sc->set_shortcut(shortcut);
 			add_shortcut(name, sc);
 		}
 
@@ -153,13 +153,13 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 				}
 
 				Ref<InputEvent> original = sc->get_meta("original");
-				if (sc->matches_event(original) || (original.is_null() && sc->get_event().is_null())) {
+				if (sc->is_shortcut(original) || (original.is_null() && sc->get_shortcut().is_null())) {
 					continue; //not changed from default, don't save
 				}
 			}
 
 			arr.push_back(E->key());
-			arr.push_back(sc->get_event());
+			arr.push_back(sc->get_shortcut());
 		}
 		r_ret = arr;
 		return true;
@@ -374,11 +374,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("interface/editor/display_scale", 0);
 	// Display what the Auto display scale setting effectively corresponds to.
 	float scale = get_auto_display_scale();
-
-	_initial_set("interface/editor/enable_debugging_pseudolocalization", false);
-	set_restart_if_changed("interface/editor/enable_debugging_pseudolocalization", true);
-	// Use pseudolocalization in editor.
-
 	hints["interface/editor/display_scale"] = PropertyInfo(Variant::INT, "interface/editor/display_scale", PROPERTY_HINT_ENUM, vformat("Auto (%d%%),75%%,100%%,125%%,150%%,175%%,200%%,Custom", Math::round(scale * 100)), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	_initial_set("interface/editor/custom_display_scale", 1.0f);
 	hints["interface/editor/custom_display_scale"] = PropertyInfo(Variant::FLOAT, "interface/editor/custom_display_scale", PROPERTY_HINT_RANGE, "0.5,3,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
@@ -525,9 +520,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/appearance/show_bookmark_gutter", true);
 	_initial_set("text_editor/appearance/show_info_gutter", true);
 	_initial_set("text_editor/appearance/code_folding", true);
-	_initial_set("text_editor/appearance/word_wrap", 0);
-	hints["text_editor/appearance/word_wrap"] = PropertyInfo(Variant::INT, "text_editor/appearance/word_wrap", PROPERTY_HINT_ENUM, "None,Boundary");
-
+	_initial_set("text_editor/appearance/word_wrap", false);
 	_initial_set("text_editor/appearance/show_line_length_guidelines", true);
 	_initial_set("text_editor/appearance/line_length_guideline_soft_column", 80);
 	hints["text_editor/appearance/line_length_guideline_soft_column"] = PropertyInfo(Variant::INT, "text_editor/appearance/line_length_guideline_soft_column", PROPERTY_HINT_RANGE, "20, 160, 1");
@@ -548,8 +541,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Cursor
 	_initial_set("text_editor/cursor/scroll_past_end_of_file", false);
-	_initial_set("text_editor/cursor/type", 0);
-	hints["text_editor/cursor/type"] = PropertyInfo(Variant::INT, "text_editor/cursor/type", PROPERTY_HINT_ENUM, "Line,Block");
+	_initial_set("text_editor/cursor/block_caret", false);
 	_initial_set("text_editor/cursor/caret_blink", true);
 	_initial_set("text_editor/cursor/caret_blink_speed", 0.5);
 	hints["text_editor/cursor/caret_blink_speed"] = PropertyInfo(Variant::FLOAT, "text_editor/cursor/caret_blink_speed", PROPERTY_HINT_RANGE, "0.1, 10, 0.01");
@@ -961,11 +953,11 @@ fail:
 }
 
 void EditorSettings::setup_language() {
-	TranslationServer::get_singleton()->set_editor_pseudolocalization(get("interface/editor/enable_debugging_pseudolocalization"));
 	String lang = get("interface/editor/editor_language");
 	if (lang == "en") {
 		return; // Default, nothing to do.
 	}
+
 	// Load editor translation for configured/detected locale.
 	EditorTranslationList *etl = _editor_translations;
 	while (etl->data) {
@@ -1465,7 +1457,7 @@ bool EditorSettings::is_shortcut(const String &p_name, const Ref<InputEvent> &p_
 	const Map<String, Ref<Shortcut>>::Element *E = shortcuts.find(p_name);
 	ERR_FAIL_COND_V_MSG(!E, false, "Unknown Shortcut: " + p_name + ".");
 
-	return E->get()->matches_event(p_event);
+	return E->get()->is_shortcut(p_event);
 }
 
 Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
@@ -1481,7 +1473,7 @@ Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
 	const Map<String, List<Ref<InputEvent>>>::Element *builtin_override = builtin_action_overrides.find(p_name);
 	if (builtin_override) {
 		sc.instantiate();
-		sc->set_event(builtin_override->get().front()->get());
+		sc->set_shortcut(builtin_override->get().front()->get());
 		sc->set_name(InputMap::get_singleton()->get_builtin_display_name(p_name));
 	}
 
@@ -1490,7 +1482,7 @@ Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
 		const OrderedHashMap<String, List<Ref<InputEvent>>>::ConstElement builtin_default = InputMap::get_singleton()->get_builtins().find(p_name);
 		if (builtin_default) {
 			sc.instantiate();
-			sc->set_event(builtin_default.get().front()->get());
+			sc->set_shortcut(builtin_default.get().front()->get());
 			sc->set_name(InputMap::get_singleton()->get_builtin_display_name(p_name));
 		}
 	}
@@ -1522,7 +1514,7 @@ Ref<Shortcut> ED_GET_SHORTCUT(const String &p_path) {
 	return sc;
 }
 
-Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, Key p_keycode) {
+Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p_keycode) {
 #ifdef OSX_ENABLED
 	// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
 	if (p_keycode == KEY_DELETE) {
@@ -1546,7 +1538,7 @@ Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, Key p_keyc
 		Ref<Shortcut> sc;
 		sc.instantiate();
 		sc->set_name(p_name);
-		sc->set_event(ie);
+		sc->set_shortcut(ie);
 		sc->set_meta("original", ie);
 		return sc;
 	}
@@ -1560,7 +1552,7 @@ Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, Key p_keyc
 
 	sc.instantiate();
 	sc->set_name(p_name);
-	sc->set_event(ie);
+	sc->set_shortcut(ie);
 	sc->set_meta("original", ie); //to compare against changes
 	EditorSettings::get_singleton()->add_shortcut(p_path, sc);
 
@@ -1608,7 +1600,7 @@ void EditorSettings::set_builtin_action_override(const String &p_name, const Arr
 
 	// Update the shortcut (if it is used somewhere in the editor) to be the first event of the new list.
 	if (shortcuts.has(p_name)) {
-		shortcuts[p_name]->set_event(event_list.front()->get());
+		shortcuts[p_name]->set_shortcut(event_list.front()->get());
 	}
 }
 

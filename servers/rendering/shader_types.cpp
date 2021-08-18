@@ -31,20 +31,16 @@
 #include "shader_types.h"
 #include "core/math/math_defs.h"
 
-const Map<StringName, ShaderLanguage::FunctionInfo> &ShaderTypes::get_functions(RS::ShaderMode p_mode) const {
+const Map<StringName, ShaderLanguage::FunctionInfo> &ShaderTypes::get_functions(RS::ShaderMode p_mode) {
 	return shader_modes[p_mode].functions;
 }
 
-const Vector<StringName> &ShaderTypes::get_modes(RS::ShaderMode p_mode) const {
+const Vector<StringName> &ShaderTypes::get_modes(RS::ShaderMode p_mode) {
 	return shader_modes[p_mode].modes;
 }
 
-const Set<String> &ShaderTypes::get_types() const {
+const Set<String> &ShaderTypes::get_types() {
 	return shader_types;
-}
-
-const List<String> &ShaderTypes::get_types_list() const {
-	return shader_types_list;
 }
 
 ShaderTypes *ShaderTypes::singleton = nullptr;
@@ -444,12 +440,8 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SKY].modes.push_back("use_quarter_res_pass");
 	shader_modes[RS::SHADER_SKY].modes.push_back("disable_fog");
 
-	shader_types_list.push_back("spatial");
-	shader_types_list.push_back("canvas_item");
-	shader_types_list.push_back("particles");
-	shader_types_list.push_back("sky");
-
-	for (int i = 0; i < shader_types_list.size(); i++) {
-		shader_types.insert(shader_types_list[i]);
-	}
+	shader_types.insert("spatial");
+	shader_types.insert("canvas_item");
+	shader_types.insert("particles");
+	shader_types.insert("sky");
 }

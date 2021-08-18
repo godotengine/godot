@@ -34,7 +34,7 @@
 
 struct _XTranslatePair {
 	KeySym keysym;
-	Key keycode;
+	unsigned int keycode;
 };
 
 static _XTranslatePair _xkeysym_to_keycode[] = {
@@ -176,7 +176,7 @@ static _XTranslatePair _xkeysym_to_keycode[] = {
 	{ XF86XK_LaunchC, KEY_LAUNCHE },
 	{ XF86XK_LaunchD, KEY_LAUNCHF },
 
-	{ 0, KEY_NONE }
+	{ 0, 0 }
 };
 
 struct _TranslatePair {
@@ -309,11 +309,11 @@ unsigned int KeyMappingX11::get_scancode(unsigned int p_code) {
 	return keycode;
 }
 
-Key KeyMappingX11::get_keycode(KeySym p_keysym) {
+unsigned int KeyMappingX11::get_keycode(KeySym p_keysym) {
 	// kinda bruteforce.. could optimize.
 
 	if (p_keysym < 0x100) { // Latin 1, maps 1-1
-		return (Key)p_keysym;
+		return p_keysym;
 	}
 
 	// look for special key
@@ -323,14 +323,14 @@ Key KeyMappingX11::get_keycode(KeySym p_keysym) {
 		}
 	}
 
-	return KEY_NONE;
+	return 0;
 }
 
-KeySym KeyMappingX11::get_keysym(Key p_code) {
+KeySym KeyMappingX11::get_keysym(unsigned int p_code) {
 	// kinda bruteforce.. could optimize.
 
 	if (p_code < 0x100) { // Latin 1, maps 1-1
-		return (KeySym)p_code;
+		return p_code;
 	}
 
 	// look for special key
@@ -340,7 +340,7 @@ KeySym KeyMappingX11::get_keysym(Key p_code) {
 		}
 	}
 
-	return (KeySym)KEY_NONE;
+	return 0;
 }
 
 /***** UNICODE CONVERSION ******/

@@ -47,14 +47,14 @@
 		<method name="get_tooltip_text" qualifiers="const">
 			<return type="String" />
 			<description>
-				Must be implemented to provide a custom tooltip to the property editor.
+				Override if you want to allow a custom tooltip over your property.
 			</description>
 		</method>
 		<method name="set_bottom_editor">
 			<return type="void" />
 			<argument index="0" name="editor" type="Control" />
 			<description>
-				Puts the [code]editor[/code] control below the property label. The control must be previously added using [method Node.add_child].
+				Adds controls with this function if you want them on the bottom (below the label).
 			</description>
 		</method>
 	</methods>

@@ -589,13 +589,13 @@ MainLoop *test() {
 	{
 		Vector3 v(1, 2, 3);
 		v.normalize();
-		real_t a = 0.3;
+		float a = 0.3;
 
 		Basis m(v, a);
 
 		Vector3 v2(7, 3, 1);
 		v2.normalize();
-		real_t a2 = 0.8;
+		float a2 = 0.8;
 
 		Basis m2(v2, a2);
 

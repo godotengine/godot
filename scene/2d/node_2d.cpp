@@ -170,10 +170,10 @@ void Node2D::set_scale(const Size2 &p_scale) {
 	}
 	_scale = p_scale;
 	// Avoid having 0 scale values, can lead to errors in physics and rendering.
-	if (Math::is_zero_approx(_scale.x)) {
+	if (_scale.x == 0) {
 		_scale.x = CMP_EPSILON;
 	}
-	if (Math::is_zero_approx(_scale.y)) {
+	if (_scale.y == 0) {
 		_scale.y = CMP_EPSILON;
 	}
 	_update_transform();

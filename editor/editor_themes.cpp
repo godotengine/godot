@@ -1048,7 +1048,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_readonly_color", "LineEdit", font_readonly_color);
 	theme->set_color("caret_color", "TextEdit", font_color);
 	theme->set_color("selection_color", "TextEdit", selection_color);
-	theme->set_constant("line_spacing", "TextEdit", 4 * EDSCALE);
 
 	// CodeEdit
 	theme->set_stylebox("normal", "CodeEdit", style_widget);
@@ -1063,7 +1062,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_color", "CodeEdit", font_color);
 	theme->set_color("caret_color", "CodeEdit", font_color);
 	theme->set_color("selection_color", "CodeEdit", selection_color);
-	theme->set_constant("line_spacing", "CodeEdit", 4 * EDSCALE);
 
 	// H/VSplitContainer
 	theme->set_stylebox("bg", "VSplitContainer", make_stylebox(theme->get_icon("GuiVsplitBg", "EditorIcons"), 1, 1, 1, 1));
@@ -1234,7 +1232,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("reset", "GraphEdit", theme->get_icon("ZoomReset", "EditorIcons"));
 	theme->set_icon("snap", "GraphEdit", theme->get_icon("SnapGrid", "EditorIcons"));
 	theme->set_icon("minimap", "GraphEdit", theme->get_icon("GridMinimap", "EditorIcons"));
-	theme->set_icon("layout", "GraphEdit", theme->get_icon("GridLayout", "EditorIcons"));
 	theme->set_constant("bezier_len_pos", "GraphEdit", 80 * EDSCALE);
 	theme->set_constant("bezier_len_neg", "GraphEdit", 160 * EDSCALE);
 
@@ -1348,7 +1345,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("folder_icon_modulate", "FileDialog", (dark_theme ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25)).lerp(accent_color, 0.7));
 	theme->set_color("files_disabled", "FileDialog", font_disabled_color);
 
-	// ColorPicker
+	// color picker
 	theme->set_constant("margin", "ColorPicker", popup_margin_size);
 	theme->set_constant("sv_width", "ColorPicker", 256 * EDSCALE);
 	theme->set_constant("sv_height", "ColorPicker", 256 * EDSCALE);
@@ -1361,7 +1358,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("bar_arrow", "ColorPicker", theme->get_icon("ColorPickerBarArrow", "EditorIcons"));
 	theme->set_icon("picker_cursor", "ColorPicker", theme->get_icon("PickerCursor", "EditorIcons"));
 
-	// ColorPickerButton
 	theme->set_icon("bg", "ColorPickerButton", theme->get_icon("GuiMiniCheckerboard", "EditorIcons"));
 
 	// Information on 3D viewport

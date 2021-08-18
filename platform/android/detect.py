@@ -367,13 +367,8 @@ def configure(env):
     )
 
     env.Prepend(CPPPATH=["#platform/android"])
-    env.Append(CPPDEFINES=["ANDROID_ENABLED", "UNIX_ENABLED", "NO_FCNTL"])
-    env.Append(LIBS=["OpenSLES", "EGL", "GLESv2", "android", "log", "z", "dl"])
-
-    if env["vulkan"]:
-        env.Append(CPPDEFINES=["VULKAN_ENABLED"])
-        if not env["use_volk"]:
-            env.Append(LIBS=["vulkan"])
+    env.Append(CPPDEFINES=["ANDROID_ENABLED", "UNIX_ENABLED", "VULKAN_ENABLED", "NO_FCNTL"])
+    env.Append(LIBS=["OpenSLES", "EGL", "GLESv2", "vulkan", "android", "log", "z", "dl"])
 
 
 # Return the project NDK version.

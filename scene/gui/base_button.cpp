@@ -145,9 +145,6 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 
 	if (status.press_attempt && status.pressing_inside) {
 		if (toggle_mode) {
-			if (Object::cast_to<InputEventShortcut>(*p_event)) {
-				action_mode = ACTION_MODE_BUTTON_PRESS; // HACK.
-			}
 			if ((p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_PRESS) || (!p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
 				if (action_mode == ACTION_MODE_BUTTON_PRESS) {
 					status.press_attempt = false;
@@ -348,7 +345,7 @@ void BaseButton::_unhandled_key_input(Ref<InputEvent> p_event) {
 		return;
 	}
 
-	if (!is_disabled() && is_visible_in_tree() && !p_event->is_echo() && shortcut.is_valid() && shortcut->matches_event(p_event)) {
+	if (!is_disabled() && is_visible_in_tree() && !p_event->is_echo() && shortcut.is_valid() && shortcut->is_shortcut(p_event)) {
 		on_action_event(p_event);
 		accept_event();
 	}
@@ -356,7 +353,7 @@ void BaseButton::_unhandled_key_input(Ref<InputEvent> p_event) {
 
 String BaseButton::get_tooltip(const Point2 &p_pos) const {
 	String tooltip = Control::get_tooltip(p_pos);
-	if (shortcut_in_tooltip && shortcut.is_valid() && shortcut->has_valid_event()) {
+	if (shortcut_in_tooltip && shortcut.is_valid() && shortcut->is_valid()) {
 		String text = shortcut->get_name() + " (" + shortcut->get_as_text() + ")";
 		if (tooltip != String() && shortcut->get_name().nocasecmp_to(tooltip) != 0) {
 			text += "\n" + tooltip;

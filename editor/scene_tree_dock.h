@@ -49,7 +49,6 @@
 #include "scene_tree_editor.h"
 
 class EditorNode;
-class ShaderCreateDialog;
 
 class SceneTreeDock : public VBoxContainer {
 	GDCLASS(SceneTreeDock, VBoxContainer);
@@ -139,7 +138,6 @@ class SceneTreeDock : public VBoxContainer {
 	HashMap<String, Map<RES, RES>> clipboard_resource_remap;
 
 	ScriptCreateDialog *script_create_dialog;
-	ShaderCreateDialog *shader_create_dialog;
 	AcceptDialog *accept;
 	ConfirmationDialog *delete_dialog;
 	ConfirmationDialog *editable_instance_remove_dialog;
@@ -168,8 +166,6 @@ class SceneTreeDock : public VBoxContainer {
 	VBoxContainer *create_root_dialog;
 	String selected_favorite_root;
 
-	Ref<ShaderMaterial> selected_shader_material;
-
 	void _add_children_to_popup(Object *p_obj, int p_depth);
 
 	void _node_reparent(NodePath p_path, bool p_keep_global_xform);
@@ -196,9 +192,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _node_selected();
 	void _node_renamed();
 	void _script_created(Ref<Script> p_script);
-	void _shader_created(Ref<Shader> p_shader);
 	void _script_creation_closed();
-	void _shader_creation_closed();
 
 	void _delete_confirm(bool p_cut = false);
 
@@ -293,9 +287,6 @@ public:
 
 	void attach_script_to_selected(bool p_extend);
 	void open_script_dialog(Node *p_for_node, bool p_extend);
-
-	void attach_shader_to_selected();
-	void open_shader_dialog(Ref<ShaderMaterial> &p_for_material);
 
 	void open_add_child_dialog();
 	void open_instance_child_dialog();

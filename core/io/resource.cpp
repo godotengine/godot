@@ -552,7 +552,5 @@ void ResourceCache::dump(const char *p_file, bool p_short) {
 	}
 
 	lock.read_unlock();
-#else
-	WARN_PRINT("ResourceCache::dump only with in debug builds.");
 #endif
 }

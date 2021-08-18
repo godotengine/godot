@@ -35,7 +35,6 @@
 #include "editor/editor_plugin.h"
 #include "editor/editor_scale.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
-#include "scene/3d/camera_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/3d/world_environment.h"
@@ -43,6 +42,7 @@
 #include "scene/resources/environment.h"
 #include "scene/resources/sky_material.h"
 
+class Camera3D;
 class Node3DEditor;
 class Node3DEditorViewport;
 class SubViewportContainer;
@@ -166,9 +166,9 @@ public:
 	};
 
 private:
-	double cpu_time_history[FRAME_TIME_HISTORY];
+	float cpu_time_history[FRAME_TIME_HISTORY];
 	int cpu_time_history_index;
-	double gpu_time_history[FRAME_TIME_HISTORY];
+	float gpu_time_history[FRAME_TIME_HISTORY];
 	int gpu_time_history_index;
 
 	int index;
@@ -336,7 +336,7 @@ private:
 
 	String last_message;
 	String message;
-	double message_time;
+	float message_time;
 
 	void set_message(String p_message, float p_time = 5);
 
@@ -521,9 +521,6 @@ private:
 	bool grid_visible[3]; //currently visible
 	bool grid_enable[3]; //should be always visible if true
 	bool grid_enabled;
-	bool grid_init_draw = false;
-	Camera3D::Projection grid_camera_last_update_perspective;
-	Vector3 grid_camera_last_update_position = Vector3();
 
 	Ref<ArrayMesh> move_gizmo[3], move_plane_gizmo[3], rotate_gizmo[4], scale_gizmo[3], scale_plane_gizmo[3];
 	Ref<StandardMaterial3D> gizmo_color[3];
@@ -625,6 +622,7 @@ private:
 	void _menu_gizmo_toggled(int p_option);
 	void _update_camera_override_button(bool p_game_running);
 	void _update_camera_override_viewport(Object *p_viewport);
+
 	HBoxContainer *hbc_menu;
 	// Used for secondary menu items which are displayed depending on the currently selected node
 	// (such as MeshInstance's "Mesh" menu).
