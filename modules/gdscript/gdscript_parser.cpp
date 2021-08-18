@@ -7073,9 +7073,11 @@ GDScriptParser::DataType GDScriptParser::_reduce_function_call_type(const Operat
 	DataType return_type;
 	List<DataType> arg_types;
 	int default_args_count = 0;
-	int arg_count = p_call->arguments.size();
 	String callee_name;
 	bool is_vararg = false;
+#ifdef DEBUG_ENABLED
+	int arg_count = p_call->arguments.size();
+#endif
 
 	switch (p_call->arguments[0]->type) {
 		case GDScriptParser::Node::TYPE_TYPE: {
@@ -7186,7 +7188,9 @@ GDScriptParser::DataType GDScriptParser::_reduce_function_call_type(const Operat
 
 			default_args_count = mi.default_arguments.size();
 			callee_name = mi.name;
+#ifdef DEBUG_ENABLED
 			arg_count -= 1;
+#endif
 
 			// Check each argument type
 			for (List<PropertyInfo>::Element *E = mi.arguments.front(); E; E = E->next()) {
@@ -7213,7 +7217,9 @@ GDScriptParser::DataType GDScriptParser::_reduce_function_call_type(const Operat
 
 			IdentifierNode *func_id = static_cast<IdentifierNode *>(p_call->arguments[arg_id]);
 			callee_name = func_id->name;
+#ifdef DEBUG_ENABLED
 			arg_count -= 1 + arg_id;
+#endif
 
 			DataType base_type;
 			if (p_call->op == OperatorNode::OP_PARENT_CALL) {
@@ -7392,7 +7398,6 @@ GDScriptParser::DataType GDScriptParser::_reduce_function_call_type(const Operat
 			}
 		}
 	}
-
 #endif // DEBUG_ENABLED
 
 	return return_type;
