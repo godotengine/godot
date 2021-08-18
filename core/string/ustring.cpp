@@ -1551,19 +1551,21 @@ String String::num_real(double p_num, bool p_trailing) {
 
 	bool neg = p_num < 0;
 	p_num = ABS(p_num);
-	int intn = (int)p_num;
+	int64_t intn = (int64_t)p_num;
 
 	// Decimal part.
 
 	if (intn != p_num) {
-		double dec = p_num - (double)(intn);
+		double dec = p_num - (double)intn;
 
 		int digit = 0;
 
-#if REAL_T_IS_DOUBLE
+#ifdef REAL_T_IS_DOUBLE
 		int decimals = 14;
+		double tolerance = 1e-14;
 #else
 		int decimals = 6;
+		double tolerance = 1e-6;
 #endif
 		// We want to align the digits to the above sane default, so we only
 		// need to subtract log10 for numbers with a positive power of ten.
@@ -1575,16 +1577,21 @@ String String::num_real(double p_num, bool p_trailing) {
 			decimals = MAX_DECIMALS;
 		}
 
-		int dec_int = 0;
-		int dec_max = 0;
+		// In case the value ends up ending in "99999", we want to add a
+		// tiny bit to the value we're checking when deciding when to stop,
+		// so we multiply by slightly above 1 (1 + 1e-7 or 1e-15).
+		double check_multiplier = 1 + tolerance / 10;
+
+		int64_t dec_int = 0;
+		int64_t dec_max = 0;
 
 		while (true) {
 			dec *= 10.0;
-			dec_int = dec_int * 10 + (int)dec % 10;
+			dec_int = dec_int * 10 + (int64_t)dec % 10;
 			dec_max = dec_max * 10 + 9;
 			digit++;
 
-			if ((dec - (double)((int)dec)) < 1e-6) {
+			if ((dec - (double)(int64_t)(dec * check_multiplier)) < tolerance) {
 				break;
 			}
 
@@ -1594,7 +1601,7 @@ String String::num_real(double p_num, bool p_trailing) {
 		}
 
 		dec *= 10;
-		int last = (int)dec % 10;
+		int last = (int64_t)dec % 10;
 
 		if (last > 5) {
 			if (dec_int == dec_max) {
@@ -3555,7 +3562,7 @@ String String::strip_edges(bool left, bool right) const {
 	}
 
 	if (right) {
-		for (int i = (int)(len - 1); i >= 0; i--) {
+		for (int i = len - 1; i >= 0; i--) {
 			if (operator[](i) <= 32) {
 				end--;
 			} else {

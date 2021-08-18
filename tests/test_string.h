@@ -355,12 +355,22 @@ TEST_CASE("[String] Number to string") {
 	CHECK(String::num(-0.0) == "-0"); // Includes sign even for zero.
 	CHECK(String::num(3.141593) == "3.141593");
 	CHECK(String::num(3.141593, 3) == "3.142");
-	CHECK(String::num_real(3.141593) == "3.141593");
 	CHECK(String::num_scientific(30000000) == "3e+07");
 	CHECK(String::num_int64(3141593) == "3141593");
 	CHECK(String::num_int64(0xA141593, 16) == "a141593");
 	CHECK(String::num_int64(0xA141593, 16, true) == "A141593");
 	CHECK(String::num(42.100023, 4) == "42.1"); // No trailing zeros.
+
+	// String::num_real tests.
+	CHECK(String::num_real(3.141593) == "3.141593");
+	CHECK(String::num_real(3.141) == "3.141"); // No trailing zeros.
+#ifdef REAL_T_IS_DOUBLE
+	CHECK_MESSAGE(String::num_real(Math_PI) == "3.14159265358979", "Prints the appropriate amount of digits for real_t = double.");
+	CHECK_MESSAGE(String::num_real(3.1415f) == "3.14149999618530", "Prints more digits of 32-bit float when real_t = double (ones that would be reliable for double).");
+#else
+	CHECK_MESSAGE(String::num_real(Math_PI) == "3.141593", "Prints the appropriate amount of digits for real_t = float.");
+	CHECK_MESSAGE(String::num_real(3.1415f) == "3.1415", "Prints only reliable digits of 32-bit float when real_t = float.");
+#endif // REAL_T_IS_DOUBLE
 
 	// Checks doubles with many decimal places.
 	CHECK(String::num(0.0000012345432123454321, -1) == "0.00000123454321"); // -1 uses 14 as sane default.
