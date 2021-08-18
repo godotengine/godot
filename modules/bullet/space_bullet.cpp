@@ -965,6 +965,11 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 	G_TO_B(p_from, body_transform);
 	UNSCALE_BT_BASIS(body_transform);
 
+	if (!p_body->get_kinematic_utilities()) {
+		p_body->init_kinematic_utilities();
+		p_body->reload_kinematic_shapes();
+	}
+
 	btVector3 initial_recover_motion(0, 0, 0);
 	{ /// Phase one - multi shapes depenetration using margin
 		for (int t(RECOVERING_MOVEMENT_CYCLES); 0 < t; --t) {
@@ -1086,6 +1091,11 @@ int SpaceBullet::test_ray_separation(RigidBodyBullet *p_body, const Transform &p
 	btTransform body_transform;
 	G_TO_B(p_transform, body_transform);
 	UNSCALE_BT_BASIS(body_transform);
+
+	if (!p_body->get_kinematic_utilities()) {
+		p_body->init_kinematic_utilities();
+		p_body->reload_kinematic_shapes();
+	}
 
 	btVector3 recover_motion(0, 0, 0);
 
