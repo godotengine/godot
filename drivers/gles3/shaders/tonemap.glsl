@@ -325,20 +325,20 @@ vec3 screen_space_dither(vec2 frag_coord) {
 
 // Adapted from https://github.com/DadSchoorse/vkBasalt/blob/b929505ba71dea21d6c32a5a59f2d241592b30c4/src/shader/cas.frag.glsl
 // (MIT license).
-vec3 apply_cas(vec3 color, vec2 uv_interp, float sharpen_intensity) {
+vec3 apply_cas(vec3 color, float exposure, vec2 uv_interp, float sharpen_intensity) {
 	// Fetch a 3x3 neighborhood around the pixel 'e',
 	//  a b c
 	//  d(e)f
 	//  g h i
-	vec3 a = textureLodOffset(source, uv_interp, 0.0, ivec2(-1, -1)).rgb;
-	vec3 b = textureLodOffset(source, uv_interp, 0.0, ivec2(0, -1)).rgb;
-	vec3 c = textureLodOffset(source, uv_interp, 0.0, ivec2(1, -1)).rgb;
-	vec3 d = textureLodOffset(source, uv_interp, 0.0, ivec2(-1, 0)).rgb;
+	vec3 a = textureLodOffset(source, uv_interp, 0.0, ivec2(-1, -1)).rgb * exposure;
+	vec3 b = textureLodOffset(source, uv_interp, 0.0, ivec2(0, -1)).rgb * exposure;
+	vec3 c = textureLodOffset(source, uv_interp, 0.0, ivec2(1, -1)).rgb * exposure;
+	vec3 d = textureLodOffset(source, uv_interp, 0.0, ivec2(-1, 0)).rgb * exposure;
 	vec3 e = color.rgb;
-	vec3 f = textureLodOffset(source, uv_interp, 0.0, ivec2(1, 0)).rgb;
-	vec3 g = textureLodOffset(source, uv_interp, 0.0, ivec2(-1, 1)).rgb;
-	vec3 h = textureLodOffset(source, uv_interp, 0.0, ivec2(0, 1)).rgb;
-	vec3 i = textureLodOffset(source, uv_interp, 0.0, ivec2(1, 1)).rgb;
+	vec3 f = textureLodOffset(source, uv_interp, 0.0, ivec2(1, 0)).rgb * exposure;
+	vec3 g = textureLodOffset(source, uv_interp, 0.0, ivec2(-1, 1)).rgb * exposure;
+	vec3 h = textureLodOffset(source, uv_interp, 0.0, ivec2(0, 1)).rgb * exposure;
+	vec3 i = textureLodOffset(source, uv_interp, 0.0, ivec2(1, 1)).rgb * exposure;
 
 	// Soft min and max.
 	//  a b c             b
@@ -391,7 +391,7 @@ void main() {
 #ifdef USE_SHARPENING
 	// CAS gives best results when applied after tonemapping, but `source` isn't tonemapped.
 	// As a workaround, apply CAS before tonemapping so that the image still has a correct appearance when tonemapped.
-	color = apply_cas(color, uv_interp, sharpen_intensity);
+	color = apply_cas(color, full_exposure, uv_interp, sharpen_intensity);
 #endif
 
 #ifdef USE_DEBANDING
