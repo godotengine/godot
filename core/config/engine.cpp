@@ -211,7 +211,7 @@ Object *Engine::get_singleton_object(const StringName &p_name) const {
 }
 
 bool Engine::is_singleton_user_created(const StringName &p_name) const {
-	ERR_FAIL_COND_V(!singleton_ptrs.has(p_name), false);
+	ERR_FAIL_COND_V_MSG(!singleton_ptrs.has(p_name), false, "Trying to check for non existent singleton - `" + p_name + "`.");
 
 	for (const Singleton &E : singletons) {
 		if (E.name == p_name && E.user_created) {
@@ -222,7 +222,7 @@ bool Engine::is_singleton_user_created(const StringName &p_name) const {
 	return false;
 }
 void Engine::remove_singleton(const StringName &p_name) {
-	ERR_FAIL_COND(!singleton_ptrs.has(p_name));
+	ERR_FAIL_COND_MSG(!singleton_ptrs.has(p_name), "Trying to remove non existent singleton - `" + p_name + "`.");
 
 	for (List<Singleton>::Element *E = singletons.front(); E; E = E->next()) {
 		if (E->get().name == p_name) {

@@ -354,7 +354,7 @@ void ImportDock::_preset_selected(int p_idx) {
 			_update_preset_menu();
 		} break;
 		case ITEM_LOAD_DEFAULT: {
-			ERR_FAIL_COND(!ProjectSettings::get_singleton()->has_setting("importer_defaults/" + params->importer->get_importer_name()));
+			ERR_FAIL_COND_MSG(!ProjectSettings::get_singleton()->has_setting("importer_defaults/" + params->importer->get_importer_name()), "Missing \"importer_defaults/" + params->importer->get_importer_name() + "\" setting in project settings.");
 
 			Dictionary d = ProjectSettings::get_singleton()->get("importer_defaults/" + params->importer->get_importer_name());
 			List<Variant> v;

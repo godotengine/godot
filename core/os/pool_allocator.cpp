@@ -548,7 +548,7 @@ void PoolAllocator::create_pool(void *p_mem, int p_size, int p_max_entries) {
 
 PoolAllocator::PoolAllocator(int p_size, bool p_needs_locking, int p_max_entries) {
 	mem_ptr = memalloc(p_size);
-	ERR_FAIL_COND(!mem_ptr);
+	ERR_FAIL_COND_MSG(!mem_ptr, "Failed to allocate memory in PoolAllocator.");
 	align = 1;
 	create_pool(mem_ptr, p_size, p_max_entries);
 	needs_locking = p_needs_locking;

@@ -417,7 +417,7 @@ bool CodeHighlighter::has_keyword_color(const String &p_keyword) const {
 }
 
 Color CodeHighlighter::get_keyword_color(const String &p_keyword) const {
-	ERR_FAIL_COND_V(!keywords.has(p_keyword), Color());
+	ERR_FAIL_COND_V_MSG(!keywords.has(p_keyword), Color(), "Missing \"" + p_keyword + "\" color in code highlighter keyword colors.");
 	return keywords[p_keyword];
 }
 
@@ -451,7 +451,7 @@ bool CodeHighlighter::has_member_keyword_color(const String &p_member_keyword) c
 }
 
 Color CodeHighlighter::get_member_keyword_color(const String &p_member_keyword) const {
-	ERR_FAIL_COND_V(!member_keywords.has(p_member_keyword), Color());
+	ERR_FAIL_COND_V_MSG(!member_keywords.has(p_member_keyword), Color(), "Missing \"" + p_member_keyword + "\" color in code highlighter member keyword colors.");
 	return member_keywords[p_member_keyword];
 }
 

@@ -75,7 +75,7 @@ void BackgroundProgress::_update() {
 void BackgroundProgress::_task_step(const String &p_task, int p_step) {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND(!tasks.has(p_task));
+	ERR_FAIL_COND_MSG(!tasks.has(p_task), "Task '" + p_task + "' not exists.");
 
 	Task &t = tasks[p_task];
 	if (p_step < 0) {
@@ -88,7 +88,7 @@ void BackgroundProgress::_task_step(const String &p_task, int p_step) {
 void BackgroundProgress::_end_task(const String &p_task) {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND(!tasks.has(p_task));
+	ERR_FAIL_COND_MSG(!tasks.has(p_task), "Task '" + p_task + "' not exists.");
 	Task &t = tasks[p_task];
 
 	memdelete(t.hb);
@@ -185,7 +185,7 @@ void ProgressDialog::add_task(const String &p_task, const String &p_label, int p
 }
 
 bool ProgressDialog::task_step(const String &p_task, const String &p_state, int p_step, bool p_force_redraw) {
-	ERR_FAIL_COND_V(!tasks.has(p_task), cancelled);
+	ERR_FAIL_COND_V_MSG(!tasks.has(p_task), cancelled, "Task '" + p_task + "' not exists.");
 
 	if (!p_force_redraw) {
 		uint64_t tus = OS::get_singleton()->get_ticks_usec();
@@ -212,7 +212,7 @@ bool ProgressDialog::task_step(const String &p_task, const String &p_state, int 
 }
 
 void ProgressDialog::end_task(const String &p_task) {
-	ERR_FAIL_COND(!tasks.has(p_task));
+	ERR_FAIL_COND_MSG(!tasks.has(p_task), "Task '" + p_task + "' not exists.");
 	Task &t = tasks[p_task];
 
 	memdelete(t.vb);

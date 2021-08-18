@@ -458,7 +458,7 @@ void Skeleton3D::add_bone(const String &p_name) {
 	ERR_FAIL_COND(p_name == "" || p_name.find(":") != -1 || p_name.find("/") != -1);
 
 	for (int i = 0; i < bones.size(); i++) {
-		ERR_FAIL_COND(bones[i].name == p_name);
+		ERR_FAIL_COND_MSG(bones[i].name == p_name, "Bone \"" + p_name + "\" already exists in Skeleton3D.");
 	}
 
 	Bone b;
@@ -491,7 +491,7 @@ void Skeleton3D::set_bone_name(int p_bone, const String &p_name) {
 
 	for (int i = 0; i < bone_size; i++) {
 		if (i != p_bone) {
-			ERR_FAIL_COND(bones[i].name == p_name);
+			ERR_FAIL_COND_MSG(bones[i].name == p_name, "Bone \"" + p_name + "\" already exists in Skeleton3D.");
 		}
 	}
 

@@ -273,7 +273,7 @@ void MessageQueue::flush() {
 
 	if (flushing) {
 		_THREAD_SAFE_UNLOCK_
-		ERR_FAIL_COND(flushing); //already flushing, you did something odd
+		ERR_FAIL_COND_MSG(flushing, "Godot is already flushing MessageQueue."); //already flushing, you did something odd
 	}
 	flushing = true;
 

@@ -195,7 +195,7 @@ Error ResourceFormatSaverCrypto::save(const String &p_path, const RES &p_resourc
 		String el = p_path.get_extension().to_lower();
 		err = key->save(p_path, el == "pub");
 	} else {
-		ERR_FAIL_V(ERR_INVALID_PARAMETER);
+		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Resource must be valid key or certificate.");
 	}
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save Crypto resource to file '" + p_path + "'.");
 	return OK;

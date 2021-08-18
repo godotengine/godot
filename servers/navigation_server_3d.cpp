@@ -93,7 +93,7 @@ NavigationServer3D *NavigationServer3D::get_singleton_mut() {
 }
 
 NavigationServer3D::NavigationServer3D() {
-	ERR_FAIL_COND(singleton != nullptr);
+	ERR_FAIL_COND_MSG(singleton != nullptr, "NavigationServer3D singleton already exists.");
 	singleton = this;
 }
 

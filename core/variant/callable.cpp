@@ -386,13 +386,13 @@ Error Signal::connect(const Callable &p_callable, const Vector<Variant> &p_binds
 
 void Signal::disconnect(const Callable &p_callable) {
 	Object *object = get_object();
-	ERR_FAIL_COND(!object);
+	ERR_FAIL_COND_MSG(!object, "Object was removed before disconnection.");
 	object->disconnect(name, p_callable);
 }
 
 bool Signal::is_connected(const Callable &p_callable) const {
 	Object *object = get_object();
-	ERR_FAIL_COND_V(!object, false);
+	ERR_FAIL_COND_V_MSG(!object, false, "Object was removed before checking connection.");
 
 	return object->is_connected(name, p_callable);
 }

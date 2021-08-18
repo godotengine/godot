@@ -1070,28 +1070,28 @@ bool Variant::has_builtin_method(Variant::Type p_type, const StringName &p_metho
 Variant::ValidatedBuiltInMethod Variant::get_validated_builtin_method(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, nullptr);
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
-	ERR_FAIL_COND_V(!method, nullptr);
+	ERR_FAIL_COND_V_MSG(!method, nullptr, "Cannot find \"" + p_method + "\" method in \"" + Variant::get_type_name(p_type) + "\" class.");
 	return method->validated_call;
 }
 
 Variant::PTRBuiltInMethod Variant::get_ptr_builtin_method(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, nullptr);
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
-	ERR_FAIL_COND_V(!method, nullptr);
+	ERR_FAIL_COND_V_MSG(!method, nullptr, "Cannot find \"" + p_method + "\" method in \"" + Variant::get_type_name(p_type) + "\" class.");
 	return method->ptrcall;
 }
 
 int Variant::get_builtin_method_argument_count(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, 0);
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
-	ERR_FAIL_COND_V(!method, 0);
+	ERR_FAIL_COND_V_MSG(!method, 0, "Cannot find \"" + p_method + "\" method in \"" + Variant::get_type_name(p_type) + "\" class.");
 	return method->argument_count;
 }
 
 Variant::Type Variant::get_builtin_method_argument_type(Variant::Type p_type, const StringName &p_method, int p_argument) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, Variant::NIL);
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
-	ERR_FAIL_COND_V(!method, Variant::NIL);
+	ERR_FAIL_COND_V_MSG(!method, Variant::NIL, "Cannot find \"" + p_method + "\" method in \"" + Variant::get_type_name(p_type) + "\" class.");
 	ERR_FAIL_INDEX_V(p_argument, method->argument_count, Variant::NIL);
 	return method->get_argument_type(p_argument);
 }
@@ -1099,7 +1099,7 @@ Variant::Type Variant::get_builtin_method_argument_type(Variant::Type p_type, co
 String Variant::get_builtin_method_argument_name(Variant::Type p_type, const StringName &p_method, int p_argument) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, String());
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
-	ERR_FAIL_COND_V(!method, String());
+	ERR_FAIL_COND_V_MSG(!method, String(), "Cannot find \"" + p_method + "\" method in \"" + Variant::get_type_name(p_type) + "\" class.");
 #ifdef DEBUG_METHODS_ENABLED
 	ERR_FAIL_INDEX_V(p_argument, method->argument_count, String());
 	return method->argument_names[p_argument];
@@ -1111,14 +1111,14 @@ String Variant::get_builtin_method_argument_name(Variant::Type p_type, const Str
 Vector<Variant> Variant::get_builtin_method_default_arguments(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, Vector<Variant>());
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
-	ERR_FAIL_COND_V(!method, Vector<Variant>());
+	ERR_FAIL_COND_V_MSG(!method, Vector<Variant>(), "Cannot find \"" + p_method + "\" method in \"" + Variant::get_type_name(p_type) + "\" class.");
 	return method->default_arguments;
 }
 
 bool Variant::has_builtin_method_return_value(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
-	ERR_FAIL_COND_V(!method, false);
+	ERR_FAIL_COND_V_MSG(!method, false, "Cannot find \"" + p_method + "\" method in \"" + Variant::get_type_name(p_type) + "\" class.");
 	return method->has_return_type;
 }
 
@@ -1137,35 +1137,35 @@ int Variant::get_builtin_method_count(Variant::Type p_type) {
 Variant::Type Variant::get_builtin_method_return_type(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, Variant::NIL);
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
-	ERR_FAIL_COND_V(!method, Variant::NIL);
+	ERR_FAIL_COND_V_MSG(!method, Variant::NIL, "Cannot find \"" + p_method + "\" method in \"" + Variant::get_type_name(p_type) + "\" class.");
 	return method->return_type;
 }
 
 bool Variant::is_builtin_method_const(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
-	ERR_FAIL_COND_V(!method, false);
+	ERR_FAIL_COND_V_MSG(!method, false, "Cannot find \"" + p_method + "\" method in \"" + Variant::get_type_name(p_type) + "\" class.");
 	return method->is_const;
 }
 
 bool Variant::is_builtin_method_static(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
-	ERR_FAIL_COND_V(!method, false);
+	ERR_FAIL_COND_V_MSG(!method, false, "Cannot find \"" + p_method + "\" method in \"" + Variant::get_type_name(p_type) + "\" class.");
 	return method->is_static;
 }
 
 bool Variant::is_builtin_method_vararg(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
-	ERR_FAIL_COND_V(!method, false);
+	ERR_FAIL_COND_V_MSG(!method, false, "Cannot find \"" + p_method + "\" method in \"" + Variant::get_type_name(p_type) + "\" class.");
 	return method->is_vararg;
 }
 
 uint32_t Variant::get_builtin_method_hash(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, 0);
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
-	ERR_FAIL_COND_V(!method, 0);
+	ERR_FAIL_COND_V_MSG(!method, 0, "Cannot find \"" + p_method + "\" method in \"" + Variant::get_type_name(p_type) + "\" class.");
 	uint32_t hash = hash_djb2_one_32(method->is_const);
 	hash = hash_djb2_one_32(method->is_static, hash);
 	hash = hash_djb2_one_32(method->is_vararg, hash);
@@ -1190,7 +1190,7 @@ void Variant::get_method_list(List<MethodInfo> *p_list) const {
 	} else {
 		for (const StringName &E : builtin_method_names[type]) {
 			const VariantBuiltInMethodInfo *method = builtin_method_info[type].lookup_ptr(E);
-			ERR_CONTINUE(!method);
+			ERR_CONTINUE_MSG(!method, "Cannot find \"" + E + "\" method in \"" + Variant::get_type_name(type) + "\" class.");
 
 			MethodInfo mi;
 			mi.name = E;

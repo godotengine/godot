@@ -1623,7 +1623,7 @@ void GDScriptLanguage::add_named_global_constant(const StringName &p_name, const
 }
 
 void GDScriptLanguage::remove_named_global_constant(const StringName &p_name) {
-	ERR_FAIL_COND(!named_globals.has(p_name));
+	ERR_FAIL_COND_MSG(!named_globals.has(p_name), "Cannot remove \"" + p_name + "\" from named global constants.");
 	named_globals.erase(p_name);
 }
 

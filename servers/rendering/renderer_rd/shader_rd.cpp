@@ -443,7 +443,7 @@ void ShaderRD::_save_to_cache(Version *p_version) {
 	String path = shader_cache_dir.plus_file(name).plus_file(base_sha256).plus_file(sha1) + ".cache";
 
 	FileAccessRef f = FileAccess::open(path, FileAccess::WRITE);
-	ERR_FAIL_COND(!f);
+	ERR_FAIL_COND_MSG(!f, "Failed to open file `" + path + "`.");
 	f->store_buffer((const uint8_t *)shader_file_header, 4);
 	f->store_32(cache_file_version); //file version
 	uint32_t variant_count = variant_defines.size();
@@ -650,7 +650,7 @@ void ShaderRD::initialize(const Vector<String> &p_variant_defines, const String 
 		base_sha256 = hash_build.as_string().sha256_text();
 
 		DirAccessRef d = DirAccess::open(shader_cache_dir);
-		ERR_FAIL_COND(!d);
+		ERR_FAIL_COND_MSG(!d, "Failed to open directory `" + shader_cache_dir + "`.");
 		if (d->change_dir(name) != OK) {
 			Error err = d->make_dir(name);
 			ERR_FAIL_COND(err != OK);

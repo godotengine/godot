@@ -1130,7 +1130,7 @@ static void register_utility_function(const String &p_name, const Vector<String>
 		name = name.substr(1, name.length() - 1);
 	}
 	StringName sname = name;
-	ERR_FAIL_COND(utility_function_table.has(sname));
+	ERR_FAIL_COND_MSG(utility_function_table.has(sname), "Function \"" + name + "\" was already registered as utility function.");
 
 	VariantUtilityFunctionInfo bfi;
 	bfi.call_utility = T::call;

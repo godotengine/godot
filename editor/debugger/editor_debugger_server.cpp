@@ -99,7 +99,7 @@ EditorDebuggerServer *EditorDebuggerServer::create(const String &p_protocol) {
 }
 
 void EditorDebuggerServer::register_protocol_handler(const String &p_protocol, CreateServerFunc p_func) {
-	ERR_FAIL_COND(protocols.has(p_protocol));
+	ERR_FAIL_COND_MSG(protocols.has(p_protocol), "Protocol `" + p_protocol + "` is already registered.");
 	protocols[p_protocol] = p_func;
 }
 

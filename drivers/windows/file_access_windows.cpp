@@ -50,7 +50,7 @@
 #endif
 
 void FileAccessWindows::check_errors() const {
-	ERR_FAIL_COND(!f);
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
 	if (feof(f)) {
 		last_error = ERR_FILE_EOF;
@@ -195,7 +195,7 @@ bool FileAccessWindows::is_open() const {
 }
 
 void FileAccessWindows::seek(uint64_t p_position) {
-	ERR_FAIL_COND(!f);
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
 	last_error = OK;
 	if (_fseeki64(f, p_position, SEEK_SET)) {
@@ -205,7 +205,7 @@ void FileAccessWindows::seek(uint64_t p_position) {
 }
 
 void FileAccessWindows::seek_end(int64_t p_position) {
-	ERR_FAIL_COND(!f);
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
 	if (_fseeki64(f, p_position, SEEK_END)) {
 		check_errors();
@@ -275,7 +275,7 @@ Error FileAccessWindows::get_error() const {
 }
 
 void FileAccessWindows::flush() {
-	ERR_FAIL_COND(!f);
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
 	fflush(f);
 	if (prev_op == WRITE) {
@@ -284,7 +284,7 @@ void FileAccessWindows::flush() {
 }
 
 void FileAccessWindows::store_8(uint8_t p_dest) {
-	ERR_FAIL_COND(!f);
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
 	if (flags == READ_WRITE || flags == WRITE_READ) {
 		if (prev_op == READ) {
@@ -298,7 +298,7 @@ void FileAccessWindows::store_8(uint8_t p_dest) {
 }
 
 void FileAccessWindows::store_buffer(const uint8_t *p_src, uint64_t p_length) {
-	ERR_FAIL_COND(!f);
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 	ERR_FAIL_COND(!p_src && p_length > 0);
 
 	if (flags == READ_WRITE || flags == WRITE_READ) {

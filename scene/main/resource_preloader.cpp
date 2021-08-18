@@ -97,12 +97,12 @@ void ResourcePreloader::add_resource(const StringName &p_name, const RES &p_reso
 }
 
 void ResourcePreloader::remove_resource(const StringName &p_name) {
-	ERR_FAIL_COND(!resources.has(p_name));
+	ERR_FAIL_COND_MSG(!resources.has(p_name), "Resource `" + p_name + "` wasn't preloaded");
 	resources.erase(p_name);
 }
 
 void ResourcePreloader::rename_resource(const StringName &p_from_name, const StringName &p_to_name) {
-	ERR_FAIL_COND(!resources.has(p_from_name));
+	ERR_FAIL_COND_MSG(!resources.has(p_from_name), "Resource `" + p_from_name + "` wasn't preloaded");
 
 	RES res = resources[p_from_name];
 

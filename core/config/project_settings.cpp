@@ -946,7 +946,7 @@ void ProjectSettings::_add_property_info_bind(const Dictionary &p_info) {
 
 	PropertyInfo pinfo;
 	pinfo.name = p_info["name"];
-	ERR_FAIL_COND(!props.has(pinfo.name));
+	ERR_FAIL_COND_MSG(!props.has(pinfo.name), "Request for nonexistent project setting: " + pinfo.name + ".");
 	pinfo.type = Variant::Type(p_info["type"].operator int());
 	ERR_FAIL_INDEX(pinfo.type, Variant::VARIANT_MAX);
 
@@ -961,7 +961,7 @@ void ProjectSettings::_add_property_info_bind(const Dictionary &p_info) {
 }
 
 void ProjectSettings::set_custom_property_info(const String &p_prop, const PropertyInfo &p_info) {
-	ERR_FAIL_COND(!props.has(p_prop));
+	ERR_FAIL_COND_MSG(!props.has(p_prop), "Request for nonexistent project setting: " + p_prop + ".");
 	custom_prop_info[p_prop] = p_info;
 	custom_prop_info[p_prop].name = p_prop;
 }

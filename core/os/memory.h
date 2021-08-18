@@ -144,7 +144,7 @@ T *memnew_arr_template(size_t p_elements) {
 	size_t len = sizeof(T) * p_elements;
 	uint64_t *mem = (uint64_t *)Memory::alloc_static(len, true);
 	T *failptr = nullptr; //get rid of a warning
-	ERR_FAIL_COND_V(!mem, failptr);
+	ERR_FAIL_COND_V_MSG(!mem, failptr, "Failed to allocate array of objects.");
 	*(mem - 1) = p_elements;
 
 	if (!__has_trivial_constructor(T)) {

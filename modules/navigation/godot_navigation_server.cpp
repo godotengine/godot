@@ -496,7 +496,7 @@ COMMAND_1(free, RID, p_object) {
 		agent_owner.free(p_object);
 
 	} else {
-		ERR_FAIL_COND("Invalid ID.");
+		ERR_FAIL_MSG("Trying to free invalid ID: " + itos(p_object.get_id()) + ".");
 	}
 }
 
