@@ -61,6 +61,7 @@ public:
 		PARAM_MAX
 	};
 
+	// When extending, make sure not to overflow the size of the MaterialKey below.
 	enum ParticleFlags {
 		PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY,
 		PARTICLE_FLAG_ROTATE_Y,
@@ -68,6 +69,7 @@ public:
 		PARTICLE_FLAG_MAX
 	};
 
+	// When extending, make sure not to overflow the size of the MaterialKey below.
 	enum EmissionShape {
 		EMISSION_SHAPE_POINT,
 		EMISSION_SHAPE_SPHERE,
@@ -78,6 +80,7 @@ public:
 		EMISSION_SHAPE_MAX
 	};
 
+	// When extending, make sure not to overflow the size of the MaterialKey below.
 	enum SubEmitterMode {
 		SUB_EMITTER_DISABLED,
 		SUB_EMITTER_CONSTANT,
@@ -88,11 +91,13 @@ public:
 
 private:
 	union MaterialKey {
+		// The bit size of the struct must be kept below or equal to 32 bits.
+		// Consider this when extending ParticleFlags, EmissionShape, or SubEmitterMode.
 		struct {
 			uint32_t texture_mask : 16;
 			uint32_t texture_color : 1;
 			uint32_t particle_flags : 4;
-			uint32_t emission_shape : 2;
+			uint32_t emission_shape : 3;
 			uint32_t invalid_key : 1;
 			uint32_t has_emission_color : 1;
 			uint32_t sub_emitter : 2;
