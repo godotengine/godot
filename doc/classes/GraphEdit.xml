@@ -10,6 +10,25 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_is_in_input_hotzone" qualifiers="virtual">
+			<return type="bool" />
+			<argument index="0" name="graph_node" type="NodePath" />
+			<argument index="1" name="slot_index" type="int" />
+			<argument index="2" name="mouse_position" type="Vector2" />
+			<description>
+				Returns whether the [code]mouse_position[/code] is in the input hot zone.
+				By default, a hot zone is a [Rect2] positioned such that its center is at [code]get_node(graph_node)[/code].[method GraphNode.get_connection_input_position]([code]slot_index[/code]) (For output's case, call [method GraphNode.get_connection_output_position] instead). The hot zone's width is twice the Theme Property [code]port_grab_distance_horizontal[/code], and its height is twice the [code]port_grab_distance_vertical[/code].
+			</description>
+		</method>
+		<method name="_is_in_output_hotzone" qualifiers="virtual">
+			<return type="bool" />
+			<argument index="0" name="graph_node" type="NodePath" />
+			<argument index="1" name="slot_index" type="int" />
+			<argument index="2" name="mouse_position" type="Vector2" />
+			<description>
+				Returns whether the [code]mouse_position[/code] is in the output hot zone. For more information on hot zones, see [method _is_in_input_hotzone].
+			</description>
+		</method>
 		<method name="add_valid_connection_type">
 			<return type="void" />
 			<argument index="0" name="from_type" type="int" />
