@@ -9398,6 +9398,8 @@ RendererStorageRD::RendererStorageRD() {
 		particles_shader.default_shader = shader_allocate();
 		shader_initialize(particles_shader.default_shader);
 		shader_set_code(particles_shader.default_shader, R"(
+// Default particles shader.
+
 shader_type particles;
 
 void process() {

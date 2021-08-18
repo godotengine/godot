@@ -106,6 +106,8 @@ void TextureLayeredEditor::_update_material() {
 void TextureLayeredEditor::_make_shaders() {
 	shaders[0].instantiate();
 	shaders[0]->set_code(R"(
+// TextureLayeredEditor preview shader (2D array).
+
 shader_type canvas_item;
 
 uniform sampler2DArray tex;
@@ -118,6 +120,8 @@ void fragment() {
 
 	shaders[1].instantiate();
 	shaders[1]->set_code(R"(
+// TextureLayeredEditor preview shader (cubemap).
+
 shader_type canvas_item;
 
 uniform samplerCube tex;
@@ -132,6 +136,8 @@ void fragment() {
 
 	shaders[2].instantiate();
 	shaders[2]->set_code(R"(
+// TextureLayeredEditor preview shader (cubemap array).
+
 shader_type canvas_item;
 
 uniform samplerCubeArray tex;

@@ -1736,6 +1736,8 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 
 	onion.capture.shader = Ref<Shader>(memnew(Shader));
 	onion.capture.shader->set_code(R"(
+// Animation editor onion skinning shader.
+
 shader_type canvas_item;
 
 uniform vec4 bkg_color;
