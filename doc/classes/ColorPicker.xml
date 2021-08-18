@@ -116,7 +116,7 @@
 		</theme_item>
 		<theme_item name="picker_cursor" data_type="icon" type="Texture2D">
 		</theme_item>
-		<theme_item name="preset_bg" data_type="icon" type="Texture2D">
+		<theme_item name="sample_bg" data_type="icon" type="Texture2D">
 		</theme_item>
 		<theme_item name="screen_picker" data_type="icon" type="Texture2D">
 			The icon for the screen color picker button.
