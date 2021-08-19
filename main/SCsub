@@ -2,7 +2,15 @@
 
 Import("env")
 
+import os
+
 import main_builders
+
+# Fix for building Godot 4.0+ after having previously built older versions
+# This generated file is left over, ignored by Git and needs to be deleted
+# See discussion in https://github.com/godotengine/godot/issues/51209
+if os.path.isfile("default_controller_mappings.gen.cpp"):
+    os.remove("default_controller_mappings.gen.cpp")
 
 env.main_sources = []
 
