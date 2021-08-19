@@ -35,7 +35,7 @@
 class RayShape3D : public Shape3D {
 	GDCLASS(RayShape3D, Shape3D);
 	float length = 1.0;
-	bool slips_on_slope = false;
+	bool slide_on_slope = false;
 
 protected:
 	static void _bind_methods();
@@ -45,8 +45,8 @@ public:
 	void set_length(float p_length);
 	float get_length() const;
 
-	void set_slips_on_slope(bool p_active);
-	bool get_slips_on_slope() const;
+	void set_slide_on_slope(bool p_active);
+	bool get_slide_on_slope() const;
 
 	virtual Vector<Vector3> get_debug_mesh_lines() const override;
 	virtual real_t get_enclosing_radius() const override;

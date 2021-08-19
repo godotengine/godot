@@ -117,7 +117,7 @@ bool CollisionSolver3DSW::solve_ray(const Shape3DSW *p_shape_A, const Transform3
 	}
 
 	Vector3 support_B = p_transform_B.xform(p);
-	if (ray->get_slips_on_slope()) {
+	if (ray->get_slide_on_slope()) {
 		Vector3 global_n = ai.basis.xform_inv(n).normalized();
 		support_B = support_A + (support_B - support_A).length() * global_n;
 	}

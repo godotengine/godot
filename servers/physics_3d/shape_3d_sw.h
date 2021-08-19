@@ -136,13 +136,13 @@ public:
 
 class RayShape3DSW : public Shape3DSW {
 	real_t length;
-	bool slips_on_slope;
+	bool slide_on_slope;
 
-	void _setup(real_t p_length, bool p_slips_on_slope);
+	void _setup(real_t p_length, bool p_slide_on_slope);
 
 public:
 	real_t get_length() const;
-	bool get_slips_on_slope() const;
+	bool get_slide_on_slope() const;
 
 	virtual real_t get_area() const { return 0.0; }
 	virtual PhysicsServer3D::ShapeType get_type() const { return PhysicsServer3D::SHAPE_RAY; }

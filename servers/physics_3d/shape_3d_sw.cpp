@@ -170,8 +170,8 @@ real_t RayShape3DSW::get_length() const {
 	return length;
 }
 
-bool RayShape3DSW::get_slips_on_slope() const {
-	return slips_on_slope;
+bool RayShape3DSW::get_slide_on_slope() const {
+	return slide_on_slope;
 }
 
 void RayShape3DSW::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
@@ -226,27 +226,27 @@ Vector3 RayShape3DSW::get_moment_of_inertia(real_t p_mass) const {
 	return Vector3();
 }
 
-void RayShape3DSW::_setup(real_t p_length, bool p_slips_on_slope) {
+void RayShape3DSW::_setup(real_t p_length, bool p_slide_on_slope) {
 	length = p_length;
-	slips_on_slope = p_slips_on_slope;
+	slide_on_slope = p_slide_on_slope;
 	configure(AABB(Vector3(0, 0, 0), Vector3(0.1, 0.1, length)));
 }
 
 void RayShape3DSW::set_data(const Variant &p_data) {
 	Dictionary d = p_data;
-	_setup(d["length"], d["slips_on_slope"]);
+	_setup(d["length"], d["slide_on_slope"]);
 }
 
 Variant RayShape3DSW::get_data() const {
 	Dictionary d;
 	d["length"] = length;
-	d["slips_on_slope"] = slips_on_slope;
+	d["slide_on_slope"] = slide_on_slope;
 	return d;
 }
 
 RayShape3DSW::RayShape3DSW() {
 	length = 1;
-	slips_on_slope = false;
+	slide_on_slope = false;
 }
 
 /********** SPHERE *************/

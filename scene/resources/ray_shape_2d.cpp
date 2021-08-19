@@ -36,7 +36,7 @@
 void RayShape2D::_update_shape() {
 	Dictionary d;
 	d["length"] = length;
-	d["slips_on_slope"] = slips_on_slope;
+	d["slide_on_slope"] = slide_on_slope;
 	PhysicsServer2D::get_singleton()->shape_set_data(get_rid(), d);
 	emit_changed();
 }
@@ -88,11 +88,11 @@ void RayShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_length", "length"), &RayShape2D::set_length);
 	ClassDB::bind_method(D_METHOD("get_length"), &RayShape2D::get_length);
 
-	ClassDB::bind_method(D_METHOD("set_slips_on_slope", "active"), &RayShape2D::set_slips_on_slope);
-	ClassDB::bind_method(D_METHOD("get_slips_on_slope"), &RayShape2D::get_slips_on_slope);
+	ClassDB::bind_method(D_METHOD("set_slide_on_slope", "active"), &RayShape2D::set_slide_on_slope);
+	ClassDB::bind_method(D_METHOD("get_slide_on_slope"), &RayShape2D::get_slide_on_slope);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length"), "set_length", "get_length");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "slips_on_slope"), "set_slips_on_slope", "get_slips_on_slope");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "slide_on_slope"), "set_slide_on_slope", "get_slide_on_slope");
 }
 
 void RayShape2D::set_length(real_t p_length) {
@@ -104,13 +104,13 @@ real_t RayShape2D::get_length() const {
 	return length;
 }
 
-void RayShape2D::set_slips_on_slope(bool p_active) {
-	slips_on_slope = p_active;
+void RayShape2D::set_slide_on_slope(bool p_active) {
+	slide_on_slope = p_active;
 	_update_shape();
 }
 
-bool RayShape2D::get_slips_on_slope() const {
-	return slips_on_slope;
+bool RayShape2D::get_slide_on_slope() const {
+	return slide_on_slope;
 }
 
 RayShape2D::RayShape2D() :
