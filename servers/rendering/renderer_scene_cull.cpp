@@ -2180,8 +2180,6 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 
 					p_scenario->indexers[Scenario::INDEXER_GEOMETRY].convex_query(planes.ptr(), planes.size(), points.ptr(), points.size(), cull_convex);
 
-					Plane near_plane(light_transform.origin, light_transform.basis.get_axis(2) * z);
-
 					RendererSceneRender::RenderShadowData &shadow_data = render_shadow_data[max_shadows_used++];
 
 					for (int j = 0; j < (int)instance_shadow_cull_result.size(); j++) {
@@ -2215,7 +2213,7 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 
 				real_t radius = RSG::storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_RANGE);
 				CameraMatrix cm;
-				cm.set_perspective(90, 1, 0.01, radius);
+				cm.set_perspective(90, 1, radius * 0.005f, radius);
 
 				for (int i = 0; i < 6; i++) {
 					RENDER_TIMESTAMP("Culling Shadow Cube side" + itos(i));
@@ -2301,7 +2299,7 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 			real_t angle = RSG::storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_SPOT_ANGLE);
 
 			CameraMatrix cm;
-			cm.set_perspective(angle * 2.0, 1.0, 0.01, radius);
+			cm.set_perspective(angle * 2.0, 1.0, 0.005f * radius, radius);
 
 			Vector<Plane> planes = cm.get_projection_planes(light_transform);
 
@@ -2794,12 +2792,9 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 
 	//rasterizer->set_camera(p_camera_data->main_transform, p_camera_data.main_projection, p_camera_data.is_ortogonal);
 
-	Vector<Plane> planes = p_camera_data->main_projection.get_projection_planes(p_camera_data->main_transform);
-
-	Plane near_plane(p_camera_data->main_transform.origin, -p_camera_data->main_transform.basis.get_axis(2).normalized());
-
 	/* STEP 2 - CULL */
 
+	Vector<Plane> planes = p_camera_data->main_projection.get_projection_planes(p_camera_data->main_transform);
 	cull.frustum = Frustum(planes);
 
 	Vector<RID> directional_lights;

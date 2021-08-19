@@ -212,10 +212,6 @@ void Light3D::_validate_property(PropertyInfo &property) const {
 		property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (get_light_type() == RS::LIGHT_SPOT && property.name == "shadow_normal_bias") {
-		property.usage = PROPERTY_USAGE_NONE;
-	}
-
 	if (get_light_type() == RS::LIGHT_DIRECTIONAL && property.name == "light_projector") {
 		property.usage = PROPERTY_USAGE_NONE;
 	}
@@ -425,9 +421,7 @@ DirectionalLight3D::DirectionalLight3D() :
 	set_param(PARAM_SHADOW_MAX_DISTANCE, 100);
 	set_param(PARAM_SHADOW_FADE_START, 0.8);
 	// Increase the default shadow bias to better suit most scenes.
-	// Leave normal bias untouched as it doesn't benefit DirectionalLight3D as much as OmniLight3D.
 	set_param(PARAM_SHADOW_BIAS, 0.1);
-	set_param(PARAM_SHADOW_NORMAL_BIAS, 1.0);
 	set_shadow_mode(SHADOW_PARALLEL_4_SPLITS);
 	blend_splits = false;
 }
@@ -468,8 +462,7 @@ OmniLight3D::OmniLight3D() :
 		Light3D(RenderingServer::LIGHT_OMNI) {
 	set_shadow_mode(SHADOW_CUBE);
 	// Increase the default shadow biases to better suit most scenes.
-	set_param(PARAM_SHADOW_BIAS, 0.1);
-	set_param(PARAM_SHADOW_NORMAL_BIAS, 2.0);
+	set_param(PARAM_SHADOW_BIAS, 0.2);
 }
 
 TypedArray<String> SpotLight3D::get_configuration_warnings() const {
