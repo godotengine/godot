@@ -261,6 +261,7 @@ void Camera2D::_notification(int p_what) {
 				if (viewport && !(custom_viewport && !ObjectDB::get_instance(custom_viewport_id))) {
 					viewport->set_canvas_transform(Transform2D());
 					clear_current();
+					current = true;
 				}
 			}
 			remove_from_group(group_name);
