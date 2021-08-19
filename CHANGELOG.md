@@ -5,6 +5,112 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
+## [3.3.3] - 2021-08-19
+
+See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-3-3) for details.
+
+### Added
+
+#### Input
+
+- [Add `action_get_deadzone()` method to InputMap](https://github.com/godotengine/godot/pull/50065).
+
+#### Porting
+
+- [Android: Add partial support for Android scoped storage](https://github.com/godotengine/godot/pull/50359).
+
+### Changed
+
+#### Nodes
+
+- [GraphEdit: Allow higher and lower maximum zoom values](https://github.com/godotengine/godot/pull/49437).
+
+#### Porting
+
+- [Android: Target API level 30, raise min API level to 19](https://github.com/godotengine/godot/pull/50359).
+- [HTML5: Raise default initial memory to 32 MiB](https://github.com/godotengine/godot/pull/50422).
+
+### Fixed
+
+#### Audio
+
+- [Fix cubic resampling algorithm](https://github.com/godotengine/godot/pull/51082).
+
+#### Core
+
+- [Save binary `ProjectSettings` key length properly](https://github.com/godotengine/godot/pull/49649).
+
+#### C#
+
+- [Fix C# bindings generator for default value types](https://github.com/godotengine/godot/pull/49702).
+- [Ignore paths with invalid chars in `PathWhich`](https://github.com/godotengine/godot/pull/50918).
+
+#### Editor
+
+- [Fix slow load/save of scenes with many instances of the same script](https://github.com/godotengine/godot/pull/49570).
+- [Fix logic for showing tilemap debug collision](https://github.com/godotengine/godot/pull/49075).
+- [Fix handling of HiDPI scaling for the curve editor's handles](https://github.com/godotengine/godot/pull/50627).
+
+#### GDScript
+
+- [LSP: Translate file path to URI on LSP symbol requests](https://github.com/godotengine/godot/pull/49687).
+- [LSP: Implement `didClose` notification](https://github.com/godotengine/godot/pull/50277).
+- LSP: Fix [`SymbolKind` reporting wrong types](https://github.com/godotengine/godot/pull/50914) and [`get_node()` parsing](https://github.com/godotengine/godot/pull/51283).
+
+#### Import
+
+- [glTF: Fix mesh nodes which are also bones](https://github.com/godotengine/godot/pull/49119).
+- [Fix loading RLE compressed TGA files](https://github.com/godotengine/godot/pull/49603).
+
+#### Input
+
+- [Fix game controllers ignoring the last listed button](https://github.com/godotengine/godot/pull/48934).
+
+#### Networking
+
+- [Fix parsing some IPv6 URLs for WebSocket](https://github.com/godotengine/godot/pull/48205).
+- [WebsocketPeer outbound buffer fixes and buffer size query](https://github.com/godotengine/godot/pull/51037).
+- [Fix IP address resolution incorrectly locking the main thread](https://github.com/godotengine/godot/pull/51212).
+
+#### Nodes
+
+- [GridMap: Fix erasing octants in the wrong order](https://github.com/godotengine/godot/pull/50052).
+- [PathFollow: Fix forward calculation for the position at the end of the curve](https://github.com/godotengine/godot/pull/50986).
+- [RichTextLabel: Fix auto-wrapping on CJK texts](https://github.com/godotengine/godot/pull/49280).
+- [SkeletonIK: Fixed issue where bones become detached if multiple SkeletonIK nodes are used](https://github.com/godotengine/godot/pull/49031).
+
+#### Physics
+
+- [Avoid NaNs when calculating inertias for bodies without mass/area](https://github.com/godotengine/godot/pull/49185).
+- [Ignore disabled shapes for mass property calculations](https://github.com/godotengine/godot/pull/49699).
+
+#### Porting
+
+- [Android: Add GDNative libraries to Android custom Gradle builds](https://github.com/godotengine/godot/pull/49912).
+- [Android: Disable resource optimizations for legacy release builds](https://github.com/godotengine/godot/pull/50664).
+- [Android: Resolve issue where the Godot app remains stuck when resuming](https://github.com/godotengine/godot/pull/51584).
+- [iOS: Fix plugin configuration loading](https://github.com/godotengine/godot/pull/50433).
+- [iOS: Remove duplicate orientation settings in the iOS export preset](https://github.com/godotengine/godot/pull/48943).
+- [Linux: Fix crash when using ALSA MIDI with PulseAudio](https://github.com/godotengine/godot/pull/48350).
+- [macOS: Fix custom mouse cursor not set after mouse mode change](https://github.com/godotengine/godot/pull/49848).
+- [Windows: Fix platform file access to allow file sharing with external programs](https://github.com/godotengine/godot/pull/51430).
+- [Windows: Fix code signing with `osslsigncode` from Linux/macOS](https://github.com/godotengine/godot/pull/49985).
+- [Fix `Directory::get_space_left()` result on macOS and Linux](https://github.com/godotengine/godot/pull/49222).
+
+#### Rendering
+
+- [Fix potential BakedLightmap crash](https://github.com/godotengine/godot/pull/50150).
+- [VisualServer now sorts based on AABB position](https://github.com/godotengine/godot/pull/43506).
+- [Fixes depth sorting of meshes with transparent textures](https://github.com/godotengine/godot/pull/50721).
+- [Fix CanvasItem bounding rect calculation in some cases](https://github.com/godotengine/godot/pull/49160).
+- [Fix flipped binormal in SpatialMaterial triplanar mapping](https://github.com/godotengine/godot/pull/49950).
+
+#### Thirdparty
+
+- mbedtls updated to version 2.16.11 (security fix).
+- CA root certificates updated to 2021-07-05 bundle from Mozilla.
+
+
 ## [3.3.2] - 2021-05-24
 
 See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-3-2) for details.
@@ -1802,6 +1908,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
   - Only WebAssembly is supported now, since all browsers supporting WebGL 2.0 also support WebAssembly.
 
 
+[3.3.3]: https://downloads.tuxfamily.org/godotengine/3.3.3/Godot_v3.3.3-stable_changelog_chrono.txt
 [3.3.2]: https://downloads.tuxfamily.org/godotengine/3.3.2/Godot_v3.3.2-stable_changelog_chrono.txt
 [3.3.1]: https://downloads.tuxfamily.org/godotengine/3.3.1/Godot_v3.3.1-stable_changelog_chrono.txt
 [3.3]: https://downloads.tuxfamily.org/godotengine/3.3/Godot_v3.3-stable_changelog_chrono.txt
