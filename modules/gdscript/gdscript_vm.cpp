@@ -174,7 +174,7 @@ void (*type_init_function_table[])(Variant *) = {
 	&VariantInitializer<StringName>::init, // STRING_NAME.
 	&VariantInitializer<NodePath>::init, // NODE_PATH.
 	&VariantInitializer<RID>::init, // RID.
-	&VariantTypeAdjust<Object *>::adjust, // OBJECT.
+	&VariantInitializer<Object *>::init, // OBJECT.
 	&VariantInitializer<Callable>::init, // CALLABLE.
 	&VariantInitializer<Signal>::init, // SIGNAL.
 	&VariantInitializer<Dictionary>::init, // DICTIONARY.
