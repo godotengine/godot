@@ -4114,7 +4114,7 @@ Variant CollisionShape3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p
 
 	if (Object::cast_to<CapsuleShape3D>(*s)) {
 		Ref<CapsuleShape3D> cs2 = s;
-		return p_id == 0 ? cs2->get_radius() : cs2->get_height();
+		return Vector2(cs2->get_radius(), cs2->get_height());
 	}
 
 	if (Object::cast_to<CylinderShape3D>(*s)) {
@@ -4261,12 +4261,11 @@ void CollisionShape3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo
 
 	if (Object::cast_to<CapsuleShape3D>(*s)) {
 		Ref<CapsuleShape3D> ss = s;
+		Vector2 values = p_restore;
+
 		if (p_cancel) {
-			if (p_id == 0) {
-				ss->set_radius(p_restore);
-			} else {
-				ss->set_height(p_restore);
-			}
+			ss->set_radius(values[0]);
+			ss->set_height(values[1]);
 			return;
 		}
 
@@ -4274,12 +4273,12 @@ void CollisionShape3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo
 		if (p_id == 0) {
 			ur->create_action(TTR("Change Capsule Shape Radius"));
 			ur->add_do_method(ss.ptr(), "set_radius", ss->get_radius());
-			ur->add_undo_method(ss.ptr(), "set_radius", p_restore);
 		} else {
 			ur->create_action(TTR("Change Capsule Shape Height"));
 			ur->add_do_method(ss.ptr(), "set_height", ss->get_height());
-			ur->add_undo_method(ss.ptr(), "set_height", p_restore);
 		}
+		ur->add_undo_method(ss.ptr(), "set_radius", values[0]);
+		ur->add_undo_method(ss.ptr(), "set_height", values[1]);
 
 		ur->commit_action();
 	}

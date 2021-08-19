@@ -50,12 +50,7 @@ Variant CollisionShape2DEditor::get_handle_value(int idx) const {
 	switch (shape_type) {
 		case CAPSULE_SHAPE: {
 			Ref<CapsuleShape2D> capsule = node->get_shape();
-
-			if (idx == 0) {
-				return capsule->get_radius();
-			} else if (idx == 1) {
-				return capsule->get_height();
-			}
+			return Vector2(capsule->get_radius(), capsule->get_height());
 
 		} break;
 
@@ -209,17 +204,17 @@ void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
 		case CAPSULE_SHAPE: {
 			Ref<CapsuleShape2D> capsule = node->get_shape();
 
+			Vector2 values = p_org;
+
 			if (idx == 0) {
 				undo_redo->add_do_method(capsule.ptr(), "set_radius", capsule->get_radius());
-				undo_redo->add_do_method(canvas_item_editor, "update_viewport");
-				undo_redo->add_undo_method(capsule.ptr(), "set_radius", p_org);
-				undo_redo->add_do_method(canvas_item_editor, "update_viewport");
 			} else if (idx == 1) {
 				undo_redo->add_do_method(capsule.ptr(), "set_height", capsule->get_height());
-				undo_redo->add_do_method(canvas_item_editor, "update_viewport");
-				undo_redo->add_undo_method(capsule.ptr(), "set_height", p_org);
-				undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 			}
+			undo_redo->add_do_method(canvas_item_editor, "update_viewport");
+			undo_redo->add_undo_method(capsule.ptr(), "set_radius", values[0]);
+			undo_redo->add_undo_method(capsule.ptr(), "set_height", values[1]);
+			undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 
 		} break;
 

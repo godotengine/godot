@@ -354,6 +354,7 @@ public:
 	static void add_property_subgroup(const StringName &p_class, const String &p_name, const String &p_prefix = "");
 	static void add_property(const StringName &p_class, const PropertyInfo &p_pinfo, const StringName &p_setter, const StringName &p_getter, int p_index = -1);
 	static void set_property_default_value(const StringName &p_class, const StringName &p_name, const Variant &p_default);
+	static void add_linked_property(const StringName &p_class, const String &p_property, const String &p_linked_property);
 	static void get_property_list(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance = false, const Object *p_validator = nullptr);
 	static bool get_property_info(const StringName &p_class, const StringName &p_property, PropertyInfo *r_info, bool p_no_inheritance = false, const Object *p_validator = nullptr);
 	static bool set_property(Object *p_object, const StringName &p_property, const Variant &p_value, bool *r_valid = nullptr);

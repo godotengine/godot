@@ -1068,6 +1068,20 @@ void ClassDB::set_property_default_value(const StringName &p_class, const String
 	default_values[p_class][p_name] = p_default;
 }
 
+void ClassDB::add_linked_property(const StringName &p_class, const String &p_property, const String &p_linked_property) {
+#ifdef TOOLS_ENABLED
+	OBJTYPE_WLOCK;
+	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_COND(!type);
+
+	ERR_FAIL_COND(!type->property_map.has(p_property));
+	ERR_FAIL_COND(!type->property_map.has(p_linked_property));
+
+	PropertyInfo &pinfo = type->property_map[p_property];
+	pinfo.linked_properties.push_back(p_linked_property);
+#endif
+}
+
 void ClassDB::get_property_list(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator) {
 	OBJTYPE_RLOCK;
 

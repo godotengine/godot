@@ -81,7 +81,7 @@ void CapsuleShape3D::_update_shape() {
 void CapsuleShape3D::set_radius(float p_radius) {
 	radius = p_radius;
 	if (radius > height * 0.5) {
-		radius = height * 0.5;
+		height = radius * 2.0;
 	}
 	_update_shape();
 	notify_change_to_owners();
@@ -94,7 +94,7 @@ float CapsuleShape3D::get_radius() const {
 void CapsuleShape3D::set_height(float p_height) {
 	height = p_height;
 	if (radius > height * 0.5) {
-		height = radius * 2;
+		radius = height * 0.5;
 	}
 	_update_shape();
 	notify_change_to_owners();
@@ -112,6 +112,8 @@ void CapsuleShape3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.001,4096,0.001"), "set_radius", "get_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,4096,0.001"), "set_height", "get_height");
+	ADD_LINKED_PROPERTY("radius", "height");
+	ADD_LINKED_PROPERTY("height", "radius");
 }
 
 CapsuleShape3D::CapsuleShape3D() :
