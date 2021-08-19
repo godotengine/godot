@@ -768,21 +768,24 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 
 				call_deferred(SNAME("_update_property"));
 			}
-		}
-		if (delete_rect.has_point(mpos)) {
+		} else if (delete_rect.has_point(mpos)) {
 			emit_signal(SNAME("property_deleted"), property);
 		}
 
-		if (revert_rect.has_point(mpos)) {
+		else if (revert_rect.has_point(mpos)) {
 			Variant revert_value = EditorPropertyRevert::get_property_revert_value(object, property);
 			emit_changed(property, revert_value);
 			update_property();
 		}
 
-		if (check_rect.has_point(mpos)) {
+		else if (check_rect.has_point(mpos)) {
 			checked = !checked;
 			update();
 			emit_signal(SNAME("property_checked"), property, checked);
+		}
+
+		else if (mb.is_valid() && mb->is_double_click() && (EDITOR_GET("interface/inspector/copy_property_name_on_doubleclick"))) {
+			DisplayServer::get_singleton()->clipboard_set(property);
 		}
 	}
 }
@@ -974,6 +977,7 @@ EditorProperty::EditorProperty() {
 	label_reference = nullptr;
 	bottom_editor = nullptr;
 	delete_hover = false;
+	set_mouse_filter(Control::MouseFilter::MOUSE_FILTER_STOP);
 }
 
 ////////////////////////////////////////////////
