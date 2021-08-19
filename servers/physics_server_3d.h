@@ -212,7 +212,7 @@ class PhysicsServer3D : public Object {
 
 	static PhysicsServer3D *singleton;
 
-	virtual bool _body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin = 0.001, const Ref<PhysicsTestMotionResult3D> &p_result = Ref<PhysicsTestMotionResult3D>(), const Vector<RID> &p_exclude = Vector<RID>());
+	virtual bool _body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin = 0.001, const Ref<PhysicsTestMotionResult3D> &p_result = Ref<PhysicsTestMotionResult3D>(), bool p_collide_separation_ray = false, const Vector<RID> &p_exclude = Vector<RID>());
 
 protected:
 	static void _bind_methods();
@@ -499,7 +499,7 @@ public:
 		}
 	};
 
-	virtual bool body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin = 0.001, MotionResult *r_result = nullptr, const Set<RID> &p_exclude = Set<RID>()) = 0;
+	virtual bool body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin = 0.001, MotionResult *r_result = nullptr, bool p_collide_separation_ray = false, const Set<RID> &p_exclude = Set<RID>()) = 0;
 
 	/* SOFT BODY */
 

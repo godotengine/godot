@@ -447,7 +447,7 @@ void PhysicsTestMotionResult3D::_bind_methods() {
 
 ///////////////////////////////////////
 
-bool PhysicsServer3D::_body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin, const Ref<PhysicsTestMotionResult3D> &p_result, const Vector<RID> &p_exclude) {
+bool PhysicsServer3D::_body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin, const Ref<PhysicsTestMotionResult3D> &p_result, bool p_collide_separation_ray, const Vector<RID> &p_exclude) {
 	MotionResult *r = nullptr;
 	if (p_result.is_valid()) {
 		r = p_result->get_result_ptr();
@@ -456,7 +456,7 @@ bool PhysicsServer3D::_body_test_motion(RID p_body, const Transform3D &p_from, c
 	for (int i = 0; i < p_exclude.size(); i++) {
 		exclude.insert(p_exclude[i]);
 	}
-	return body_test_motion(p_body, p_from, p_motion, p_margin, r, exclude);
+	return body_test_motion(p_body, p_from, p_motion, p_margin, r, p_collide_separation_ray, exclude);
 }
 
 RID PhysicsServer3D::shape_create(ShapeType p_shape) {
@@ -612,7 +612,7 @@ void PhysicsServer3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("body_set_ray_pickable", "body", "enable"), &PhysicsServer3D::body_set_ray_pickable);
 
-	ClassDB::bind_method(D_METHOD("body_test_motion", "body", "from", "motion", "margin", "result", "exclude"), &PhysicsServer3D::_body_test_motion, DEFVAL(0.001), DEFVAL(Variant()), DEFVAL(Array()));
+	ClassDB::bind_method(D_METHOD("body_test_motion", "body", "from", "motion", "margin", "result", "collide_separation_ray", "exclude"), &PhysicsServer3D::_body_test_motion, DEFVAL(0.001), DEFVAL(Variant()), DEFVAL(false), DEFVAL(Array()));
 
 	ClassDB::bind_method(D_METHOD("body_get_direct_state", "body"), &PhysicsServer3D::body_get_direct_state);
 

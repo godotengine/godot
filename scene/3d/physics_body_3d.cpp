@@ -111,9 +111,9 @@ Ref<KinematicCollision3D> PhysicsBody3D::_move(const Vector3 &p_motion, bool p_t
 	return Ref<KinematicCollision3D>();
 }
 
-bool PhysicsBody3D::move_and_collide(const Vector3 &p_motion, PhysicsServer3D::MotionResult &r_result, real_t p_margin, bool p_test_only, bool p_cancel_sliding, const Set<RID> &p_exclude) {
+bool PhysicsBody3D::move_and_collide(const Vector3 &p_motion, PhysicsServer3D::MotionResult &r_result, real_t p_margin, bool p_test_only, bool p_cancel_sliding, bool p_collide_separation_ray, const Set<RID> &p_exclude) {
 	Transform3D gt = get_global_transform();
-	bool colliding = PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_margin, &r_result, p_exclude);
+	bool colliding = PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_margin, &r_result, p_collide_separation_ray, p_exclude);
 
 	// Restore direction of motion to be along original motion,
 	// in order to avoid sliding due to recovery,
@@ -1113,7 +1113,7 @@ bool CharacterBody3D::move_and_slide() {
 		PhysicsServer3D::MotionResult floor_result;
 		Set<RID> exclude;
 		exclude.insert(on_floor_body);
-		if (move_and_collide(current_floor_velocity * delta, floor_result, margin, false, false, exclude)) {
+		if (move_and_collide(current_floor_velocity * delta, floor_result, margin, false, false, false, exclude)) {
 			motion_results.push_back(floor_result);
 			_set_collision_direction(floor_result);
 		}
@@ -1174,7 +1174,7 @@ bool CharacterBody3D::move_and_slide() {
 		// Apply snap.
 		Transform3D gt = get_global_transform();
 		PhysicsServer3D::MotionResult result;
-		if (move_and_collide(snap, result, margin, true, false)) {
+		if (move_and_collide(snap, result, margin, true, false, true)) {
 			bool apply = true;
 			if (up_direction != Vector3()) {
 				if (result.get_angle(up_direction) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) {

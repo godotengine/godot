@@ -528,7 +528,7 @@ int Space2DSW::_cull_aabb_for_body(Body2DSW *p_body, const Rect2 &p_aabb) {
 	return amount;
 }
 
-bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, const Vector2 &p_motion, real_t p_margin, PhysicsServer2D::MotionResult *r_result, const Set<RID> &p_exclude) {
+bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, const Vector2 &p_motion, real_t p_margin, PhysicsServer2D::MotionResult *r_result, bool p_collide_separation_ray, const Set<RID> &p_exclude) {
 	//give me back regular physics engine logic
 	//this is madness
 	//and most people using this function will think
@@ -726,6 +726,16 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 			}
 
 			Shape2DSW *body_shape = p_body->get_shape(body_shape_idx);
+
+			// Colliding separation rays allows to properly snap to the ground,
+			// otherwise it's not needed in regular motion.
+			if (!p_collide_separation_ray && (body_shape->get_type() == PhysicsServer2D::SHAPE_RAY)) {
+				// When slips on slope is on, separation ray shape acts like a regular shape.
+				if (!static_cast<RayShape2DSW *>(body_shape)->get_slips_on_slope()) {
+					continue;
+				}
+			}
+
 			Transform2D body_shape_xform = body_transform * p_body->get_shape_transform(body_shape_idx);
 
 			bool stuck = false;
