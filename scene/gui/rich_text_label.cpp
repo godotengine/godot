@@ -400,7 +400,11 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 	String text;
 	Item *it_to = (p_line + 1 < p_frame->lines.size()) ? p_frame->lines[p_line + 1].from : nullptr;
 	for (Item *it = l.from; it && it != it_to; it = _get_next_item(it)) {
-		if (visible_characters >= 0 && l.char_offset + l.char_count > visible_characters) {
+		if (it->type == ITEM_TEXT) {
+			ItemText *t = (ItemText *)it;
+			l.char_count = t->text.length();
+		}
+		if (visible_characters >= 0 && l.char_offset > visible_characters) {
 			break;
 		}
 		switch (it->type) {
@@ -442,13 +446,13 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 				Dictionary font_ftr = _find_font_features(it);
 				String lang = _find_language(it);
 				String tx = t->text;
-				if (visible_characters >= 0 && l.char_offset + l.char_count + tx.length() > visible_characters) {
-					tx = tx.substr(0, l.char_offset + l.char_count + tx.length() - visible_characters);
+				if (visible_characters >= 0 && l.char_offset + l.char_count > visible_characters) {
+					tx = tx.substr(0, visible_characters - l.char_offset);
 				}
 
 				l.text_buf->add_string(tx, font, font_size, font_ftr, lang);
 				text += tx;
-				l.char_count += tx.length();
+
 			} break;
 			case ITEM_IMAGE: {
 				ItemImage *img = (ItemImage *)it;
@@ -4173,16 +4177,20 @@ void RichTextLabel::_bind_methods() {
 }
 
 void RichTextLabel::set_visible_characters(int p_visible) {
-	visible_characters = p_visible;
-	if (p_visible == -1) {
-		percent_visible = 1;
-	} else {
-		int total_char_count = get_total_character_count();
-		if (total_char_count > 0) {
-			percent_visible = (float)p_visible / (float)total_char_count;
+	if (visible_characters != p_visible) {
+		visible_characters = p_visible;
+		if (p_visible == -1) {
+			percent_visible = 1;
+		} else {
+			int total_char_count = get_total_character_count();
+			if (total_char_count > 0) {
+				percent_visible = (float)p_visible / (float)total_char_count;
+			}
 		}
+		main->first_invalid_line = 0; //invalidate ALL
+		_validate_line_caches(main);
+		update();
 	}
-	update();
 }
 
 int RichTextLabel::get_visible_characters() const {
