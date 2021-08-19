@@ -222,7 +222,7 @@ public:
 
 	enum ShapeType {
 		SHAPE_PLANE, ///< plane:"plane"
-		SHAPE_RAY, ///< float:"length"
+		SHAPE_SEPARATION_RAY, ///< float:"length"
 		SHAPE_SPHERE, ///< float:"radius"
 		SHAPE_BOX, ///< vec3:"extents"
 		SHAPE_CAPSULE, ///< dict( float:"radius", float:"height"):capsule
@@ -237,7 +237,7 @@ public:
 	RID shape_create(ShapeType p_shape);
 
 	virtual RID plane_shape_create() = 0;
-	virtual RID ray_shape_create() = 0;
+	virtual RID separation_ray_shape_create() = 0;
 	virtual RID sphere_shape_create() = 0;
 	virtual RID box_shape_create() = 0;
 	virtual RID capsule_shape_create() = 0;

@@ -143,7 +143,7 @@ Variant WorldMarginShape2DSW::get_data() const {
 /*********************************************************/
 /*********************************************************/
 
-void RayShape2DSW::get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const {
+void SeparationRayShape2DSW::get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const {
 	r_amount = 1;
 
 	if (p_normal.y > 0) {
@@ -153,26 +153,26 @@ void RayShape2DSW::get_supports(const Vector2 &p_normal, Vector2 *r_supports, in
 	}
 }
 
-bool RayShape2DSW::contains_point(const Vector2 &p_point) const {
+bool SeparationRayShape2DSW::contains_point(const Vector2 &p_point) const {
 	return false;
 }
 
-bool RayShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const {
+bool SeparationRayShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const {
 	return false; //rays can't be intersected
 }
 
-real_t RayShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
+real_t SeparationRayShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
 	return 0; //rays are mass-less
 }
 
-void RayShape2DSW::set_data(const Variant &p_data) {
+void SeparationRayShape2DSW::set_data(const Variant &p_data) {
 	Dictionary d = p_data;
 	length = d["length"];
 	slide_on_slope = d["slide_on_slope"];
 	configure(Rect2(0, 0, 0.001, length));
 }
 
-Variant RayShape2DSW::get_data() const {
+Variant SeparationRayShape2DSW::get_data() const {
 	Dictionary d;
 	d["length"] = length;
 	d["slide_on_slope"] = slide_on_slope;

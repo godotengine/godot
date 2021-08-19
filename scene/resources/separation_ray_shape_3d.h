@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  ray_shape_3d.h                                                       */
+/*  separation_ray_shape_3d.h                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RAY_SHAPE_H
-#define RAY_SHAPE_H
+#ifndef SEPARATION_RAY_SHAPE_H
+#define SEPARATION_RAY_SHAPE_H
 #include "scene/resources/shape_3d.h"
 
-class RayShape3D : public Shape3D {
-	GDCLASS(RayShape3D, Shape3D);
+class SeparationRayShape3D : public Shape3D {
+	GDCLASS(SeparationRayShape3D, Shape3D);
 	float length = 1.0;
 	bool slide_on_slope = false;
 
@@ -51,6 +51,6 @@ public:
 	virtual Vector<Vector3> get_debug_mesh_lines() const override;
 	virtual real_t get_enclosing_radius() const override;
 
-	RayShape3D();
+	SeparationRayShape3D();
 };
-#endif // RAY_SHAPE_H
+#endif // SEPARATION_RAY_SHAPE_H

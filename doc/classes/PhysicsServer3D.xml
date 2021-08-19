@@ -850,7 +850,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="ray_shape_create">
+		<method name="separation_ray_shape_create">
 			<return type="RID" />
 			<description>
 			</description>
@@ -1177,8 +1177,8 @@
 		<constant name="SHAPE_PLANE" value="0" enum="ShapeType">
 			The [Shape3D] is a [WorldMarginShape3D].
 		</constant>
-		<constant name="SHAPE_RAY" value="1" enum="ShapeType">
-			The [Shape3D] is a [RayShape3D].
+		<constant name="SHAPE_SEPARATION_RAY" value="1" enum="ShapeType">
+			The [Shape3D] is a [SeparationRayShape3D].
 		</constant>
 		<constant name="SHAPE_SPHERE" value="2" enum="ShapeType">
 			The [Shape3D] is a [SphereShape3D].

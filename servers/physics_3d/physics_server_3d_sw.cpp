@@ -48,8 +48,8 @@ RID PhysicsServer3DSW::plane_shape_create() {
 	shape->set_self(rid);
 	return rid;
 }
-RID PhysicsServer3DSW::ray_shape_create() {
-	Shape3DSW *shape = memnew(RayShape3DSW);
+RID PhysicsServer3DSW::separation_ray_shape_create() {
+	Shape3DSW *shape = memnew(SeparationRayShape3DSW);
 	RID rid = shape_owner.make_rid(shape);
 	shape->set_self(rid);
 	return rid;

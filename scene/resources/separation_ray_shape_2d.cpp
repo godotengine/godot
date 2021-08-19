@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  ray_shape_2d.cpp                                                     */
+/*  separation_ray_shape_2d.cpp                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "ray_shape_2d.h"
+#include "separation_ray_shape_2d.h"
 
 #include "servers/physics_server_2d.h"
 #include "servers/rendering_server.h"
 
-void RayShape2D::_update_shape() {
+void SeparationRayShape2D::_update_shape() {
 	Dictionary d;
 	d["length"] = length;
 	d["slide_on_slope"] = slide_on_slope;
@@ -41,7 +41,7 @@ void RayShape2D::_update_shape() {
 	emit_changed();
 }
 
-void RayShape2D::draw(const RID &p_to_rid, const Color &p_color) {
+void SeparationRayShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 	const Vector2 target_position = Vector2(0, get_length());
 
 	const float max_arrow_size = 6;
@@ -72,7 +72,7 @@ void RayShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 	RS::get_singleton()->canvas_item_add_primitive(p_to_rid, pts, cols, Vector<Point2>(), RID());
 }
 
-Rect2 RayShape2D::get_rect() const {
+Rect2 SeparationRayShape2D::get_rect() const {
 	Rect2 rect;
 	rect.position = Vector2();
 	rect.expand_to(Vector2(0, length));
@@ -80,40 +80,40 @@ Rect2 RayShape2D::get_rect() const {
 	return rect;
 }
 
-real_t RayShape2D::get_enclosing_radius() const {
+real_t SeparationRayShape2D::get_enclosing_radius() const {
 	return length;
 }
 
-void RayShape2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_length", "length"), &RayShape2D::set_length);
-	ClassDB::bind_method(D_METHOD("get_length"), &RayShape2D::get_length);
+void SeparationRayShape2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_length", "length"), &SeparationRayShape2D::set_length);
+	ClassDB::bind_method(D_METHOD("get_length"), &SeparationRayShape2D::get_length);
 
-	ClassDB::bind_method(D_METHOD("set_slide_on_slope", "active"), &RayShape2D::set_slide_on_slope);
-	ClassDB::bind_method(D_METHOD("get_slide_on_slope"), &RayShape2D::get_slide_on_slope);
+	ClassDB::bind_method(D_METHOD("set_slide_on_slope", "active"), &SeparationRayShape2D::set_slide_on_slope);
+	ClassDB::bind_method(D_METHOD("get_slide_on_slope"), &SeparationRayShape2D::get_slide_on_slope);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length"), "set_length", "get_length");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "slide_on_slope"), "set_slide_on_slope", "get_slide_on_slope");
 }
 
-void RayShape2D::set_length(real_t p_length) {
+void SeparationRayShape2D::set_length(real_t p_length) {
 	length = p_length;
 	_update_shape();
 }
 
-real_t RayShape2D::get_length() const {
+real_t SeparationRayShape2D::get_length() const {
 	return length;
 }
 
-void RayShape2D::set_slide_on_slope(bool p_active) {
+void SeparationRayShape2D::set_slide_on_slope(bool p_active) {
 	slide_on_slope = p_active;
 	_update_shape();
 }
 
-bool RayShape2D::get_slide_on_slope() const {
+bool SeparationRayShape2D::get_slide_on_slope() const {
 	return slide_on_slope;
 }
 
-RayShape2D::RayShape2D() :
-		Shape2D(PhysicsServer2D::get_singleton()->ray_shape_create()) {
+SeparationRayShape2D::SeparationRayShape2D() :
+		Shape2D(PhysicsServer2D::get_singleton()->separation_ray_shape_create()) {
 	_update_shape();
 }

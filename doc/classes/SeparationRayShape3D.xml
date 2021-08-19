@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RayShape2D" inherits="Shape2D" version="4.0">
+<class name="SeparationRayShape3D" inherits="Shape3D" version="4.0">
 	<brief_description>
-		Ray shape for 2D collisions.
+		Separation ray shape for 3D collisions.
 	</brief_description>
 	<description>
-		Ray shape for 2D collisions. A ray is not really a collision body; instead, it tries to separate itself from whatever is touching its far endpoint. It's often useful for characters.
+		Separation ray shape for 3D collisions, which can be set into a [PhysicsBody3D] or [Area3D]. A ray is not really a collision body; instead, it tries to separate itself from whatever is touching its far endpoint. It's often useful for characters.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 	</methods>
 	<members>
-		<member name="length" type="float" setter="set_length" getter="get_length" default="20.0">
+		<member name="length" type="float" setter="set_length" getter="get_length" default="1.0">
 			The ray's length.
 		</member>
 		<member name="slide_on_slope" type="bool" setter="set_slide_on_slope" getter="get_slide_on_slope" default="false">

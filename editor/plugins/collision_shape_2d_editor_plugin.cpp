@@ -36,9 +36,9 @@
 #include "scene/resources/circle_shape_2d.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
-#include "scene/resources/ray_shape_2d.h"
 #include "scene/resources/rectangle_shape_2d.h"
 #include "scene/resources/segment_shape_2d.h"
+#include "scene/resources/separation_ray_shape_2d.h"
 #include "scene/resources/world_margin_shape_2d.h"
 
 void CollisionShape2DEditor::_node_removed(Node *p_node) {
@@ -81,8 +81,8 @@ Variant CollisionShape2DEditor::get_handle_value(int idx) const {
 
 		} break;
 
-		case RAY_SHAPE: {
-			Ref<RayShape2D> ray = node->get_shape();
+		case SEPARATION_RAY_SHAPE: {
+			Ref<SeparationRayShape2D> ray = node->get_shape();
 
 			if (idx == 0) {
 				return ray->get_length();
@@ -162,8 +162,8 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 
 		} break;
 
-		case RAY_SHAPE: {
-			Ref<RayShape2D> ray = node->get_shape();
+		case SEPARATION_RAY_SHAPE: {
+			Ref<SeparationRayShape2D> ray = node->get_shape();
 
 			ray->set_length(Math::abs(p_point.y));
 
@@ -272,8 +272,8 @@ void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
 
 		} break;
 
-		case RAY_SHAPE: {
-			Ref<RayShape2D> ray = node->get_shape();
+		case SEPARATION_RAY_SHAPE: {
+			Ref<SeparationRayShape2D> ray = node->get_shape();
 
 			undo_redo->add_do_method(ray.ptr(), "set_length", ray->get_length());
 			undo_redo->add_do_method(canvas_item_editor, "update_viewport");
@@ -423,8 +423,8 @@ void CollisionShape2DEditor::_get_current_shape_type() {
 		shape_type = CONVEX_POLYGON_SHAPE;
 	} else if (Object::cast_to<WorldMarginShape2D>(*s)) {
 		shape_type = WORLD_MARGIN_SHAPE;
-	} else if (Object::cast_to<RayShape2D>(*s)) {
-		shape_type = RAY_SHAPE;
+	} else if (Object::cast_to<SeparationRayShape2D>(*s)) {
+		shape_type = SEPARATION_RAY_SHAPE;
 	} else if (Object::cast_to<RectangleShape2D>(*s)) {
 		shape_type = RECTANGLE_SHAPE;
 	} else if (Object::cast_to<SegmentShape2D>(*s)) {
@@ -502,8 +502,8 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 
 		} break;
 
-		case RAY_SHAPE: {
-			Ref<RayShape2D> shape = node->get_shape();
+		case SEPARATION_RAY_SHAPE: {
+			Ref<SeparationRayShape2D> shape = node->get_shape();
 
 			handles.resize(1);
 			handles.write[0] = Point2(0, shape->get_length());

@@ -729,9 +729,9 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 			// Colliding separation rays allows to properly snap to the ground,
 			// otherwise it's not needed in regular motion.
-			if (!p_collide_separation_ray && (body_shape->get_type() == PhysicsServer2D::SHAPE_RAY)) {
+			if (!p_collide_separation_ray && (body_shape->get_type() == PhysicsServer2D::SHAPE_SEPARATION_RAY)) {
 				// When slide on slope is on, separation ray shape acts like a regular shape.
-				if (!static_cast<RayShape2DSW *>(body_shape)->get_slide_on_slope()) {
+				if (!static_cast<SeparationRayShape2DSW *>(body_shape)->get_slide_on_slope()) {
 					continue;
 				}
 			}

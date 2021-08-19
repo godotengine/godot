@@ -80,7 +80,7 @@ public:
 
 	//FUNC1RID(shape,ShapeType); todo fix
 	FUNCRID(world_margin_shape)
-	FUNCRID(ray_shape)
+	FUNCRID(separation_ray_shape)
 	FUNCRID(segment_shape)
 	FUNCRID(circle_shape)
 	FUNCRID(rectangle_shape)

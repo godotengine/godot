@@ -1115,13 +1115,13 @@ bool sat_2d_calculate_penetration(const Shape2DSW *p_shape_A, const Transform2D 
 	PhysicsServer2D::ShapeType type_A = p_shape_A->get_type();
 
 	ERR_FAIL_COND_V(type_A == PhysicsServer2D::SHAPE_WORLD_MARGIN, false);
-	ERR_FAIL_COND_V(type_A == PhysicsServer2D::SHAPE_RAY, false);
+	ERR_FAIL_COND_V(type_A == PhysicsServer2D::SHAPE_SEPARATION_RAY, false);
 	ERR_FAIL_COND_V(p_shape_A->is_concave(), false);
 
 	PhysicsServer2D::ShapeType type_B = p_shape_B->get_type();
 
 	ERR_FAIL_COND_V(type_B == PhysicsServer2D::SHAPE_WORLD_MARGIN, false);
-	ERR_FAIL_COND_V(type_B == PhysicsServer2D::SHAPE_RAY, false);
+	ERR_FAIL_COND_V(type_B == PhysicsServer2D::SHAPE_SEPARATION_RAY, false);
 	ERR_FAIL_COND_V(p_shape_B->is_concave(), false);
 
 	static const CollisionFunc collision_table[5][5] = {

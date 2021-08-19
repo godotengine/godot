@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  ray_shape_3d.cpp                                                     */
+/*  separation_ray_shape_2d.h                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,64 +28,34 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "ray_shape_3d.h"
+#ifndef SEPARATION_RAY_SHAPE_2D_H
+#define SEPARATION_RAY_SHAPE_2D_H
 
-#include "servers/physics_server_3d.h"
+#include "scene/resources/shape_2d.h"
 
-Vector<Vector3> RayShape3D::get_debug_mesh_lines() const {
-	Vector<Vector3> points;
-	points.push_back(Vector3());
-	points.push_back(Vector3(0, 0, get_length()));
+class SeparationRayShape2D : public Shape2D {
+	GDCLASS(SeparationRayShape2D, Shape2D);
 
-	return points;
-}
+	real_t length = 20.0;
+	bool slide_on_slope = false;
 
-real_t RayShape3D::get_enclosing_radius() const {
-	return length;
-}
+	void _update_shape();
 
-void RayShape3D::_update_shape() {
-	Dictionary d;
-	d["length"] = length;
-	d["slide_on_slope"] = slide_on_slope;
-	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), d);
-	Shape3D::_update_shape();
-}
+protected:
+	static void _bind_methods();
 
-void RayShape3D::set_length(float p_length) {
-	length = p_length;
-	_update_shape();
-	notify_change_to_owners();
-}
+public:
+	void set_length(real_t p_length);
+	real_t get_length() const;
 
-float RayShape3D::get_length() const {
-	return length;
-}
+	void set_slide_on_slope(bool p_active);
+	bool get_slide_on_slope() const;
 
-void RayShape3D::set_slide_on_slope(bool p_active) {
-	slide_on_slope = p_active;
-	_update_shape();
-	notify_change_to_owners();
-}
+	virtual void draw(const RID &p_to_rid, const Color &p_color) override;
+	virtual Rect2 get_rect() const override;
+	virtual real_t get_enclosing_radius() const override;
 
-bool RayShape3D::get_slide_on_slope() const {
-	return slide_on_slope;
-}
+	SeparationRayShape2D();
+};
 
-void RayShape3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_length", "length"), &RayShape3D::set_length);
-	ClassDB::bind_method(D_METHOD("get_length"), &RayShape3D::get_length);
-
-	ClassDB::bind_method(D_METHOD("set_slide_on_slope", "active"), &RayShape3D::set_slide_on_slope);
-	ClassDB::bind_method(D_METHOD("get_slide_on_slope"), &RayShape3D::get_slide_on_slope);
-
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length", PROPERTY_HINT_RANGE, "0,4096,0.001"), "set_length", "get_length");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "slide_on_slope"), "set_slide_on_slope", "get_slide_on_slope");
-}
-
-RayShape3D::RayShape3D() :
-		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_RAY)) {
-	/* Code copied from setters to prevent the use of uninitialized variables */
-	_update_shape();
-	notify_change_to_owners();
-}
+#endif // SEPARATION_RAY_SHAPE_2D_H

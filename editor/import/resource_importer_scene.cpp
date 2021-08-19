@@ -45,8 +45,8 @@
 #include "scene/resources/animation.h"
 #include "scene/resources/box_shape_3d.h"
 #include "scene/resources/packed_scene.h"
-#include "scene/resources/ray_shape_3d.h"
 #include "scene/resources/resource_format_text.h"
+#include "scene/resources/separation_ray_shape_3d.h"
 #include "scene/resources/sphere_shape_3d.h"
 #include "scene/resources/surface_tool.h"
 #include "scene/resources/world_margin_shape_3d.h"
@@ -381,7 +381,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 				boxShape->set_size(Vector3(2, 2, 2));
 				colshape->set_shape(boxShape);
 			} else if (empty_draw_type == "SINGLE_ARROW") {
-				RayShape3D *rayShape = memnew(RayShape3D);
+				SeparationRayShape3D *rayShape = memnew(SeparationRayShape3D);
 				rayShape->set_length(1);
 				colshape->set_shape(rayShape);
 				Object::cast_to<Node3D>(sb)->rotate_x(Math_PI / 2);

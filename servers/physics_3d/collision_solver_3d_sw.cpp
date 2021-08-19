@@ -89,8 +89,8 @@ bool CollisionSolver3DSW::solve_static_plane(const Shape3DSW *p_shape_A, const T
 	return found;
 }
 
-bool CollisionSolver3DSW::solve_ray(const Shape3DSW *p_shape_A, const Transform3D &p_transform_A, const Shape3DSW *p_shape_B, const Transform3D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result, real_t p_margin) {
-	const RayShape3DSW *ray = static_cast<const RayShape3DSW *>(p_shape_A);
+bool CollisionSolver3DSW::solve_separation_ray(const Shape3DSW *p_shape_A, const Transform3D &p_transform_A, const Shape3DSW *p_shape_B, const Transform3D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result, real_t p_margin) {
+	const SeparationRayShape3DSW *ray = static_cast<const SeparationRayShape3DSW *>(p_shape_A);
 
 	Vector3 from = p_transform_A.origin;
 	Vector3 to = from + p_transform_A.basis.get_axis(2) * (ray->get_length() + p_margin);
@@ -361,7 +361,7 @@ bool CollisionSolver3DSW::solve_static(const Shape3DSW *p_shape_A, const Transfo
 		if (type_B == PhysicsServer3D::SHAPE_PLANE) {
 			return false;
 		}
-		if (type_B == PhysicsServer3D::SHAPE_RAY) {
+		if (type_B == PhysicsServer3D::SHAPE_SEPARATION_RAY) {
 			return false;
 		}
 		if (type_B == PhysicsServer3D::SHAPE_SOFT_BODY) {
@@ -374,15 +374,15 @@ bool CollisionSolver3DSW::solve_static(const Shape3DSW *p_shape_A, const Transfo
 			return solve_static_plane(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false);
 		}
 
-	} else if (type_A == PhysicsServer3D::SHAPE_RAY) {
-		if (type_B == PhysicsServer3D::SHAPE_RAY) {
+	} else if (type_A == PhysicsServer3D::SHAPE_SEPARATION_RAY) {
+		if (type_B == PhysicsServer3D::SHAPE_SEPARATION_RAY) {
 			return false;
 		}
 
 		if (swap) {
-			return solve_ray(p_shape_B, p_transform_B, p_shape_A, p_transform_A, p_result_callback, p_userdata, true, p_margin_B);
+			return solve_separation_ray(p_shape_B, p_transform_B, p_shape_A, p_transform_A, p_result_callback, p_userdata, true, p_margin_B);
 		} else {
-			return solve_ray(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false, p_margin_A);
+			return solve_separation_ray(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false, p_margin_A);
 		}
 
 	} else if (type_B == PhysicsServer3D::SHAPE_SOFT_BODY) {

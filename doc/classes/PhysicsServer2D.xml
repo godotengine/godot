@@ -717,17 +717,17 @@
 				Sets a joint parameter. See [enum JointParam] for a list of available parameters.
 			</description>
 		</method>
-		<method name="ray_shape_create">
-			<return type="RID" />
-			<description>
-			</description>
-		</method>
 		<method name="rectangle_shape_create">
 			<return type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="segment_shape_create">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="separation_ray_shape_create">
 			<return type="RID" />
 			<description>
 			</description>
@@ -846,7 +846,8 @@
 		<constant name="SHAPE_WORLD_MARGIN" value="0" enum="ShapeType">
 			This is the constant for creating world margin shapes. A world margin shape is an [i]infinite[/i] line with an origin point, and a normal. Thus, it can be used for front/behind checks.
 		</constant>
-		<constant name="SHAPE_RAY" value="1" enum="ShapeType">
+		<constant name="SHAPE_SEPARATION_RAY" value="1" enum="ShapeType">
+			This is the constant for creating separation ray shapes. A separation ray is defined by a length and separates itself from what is touching its far endpoint. Useful for character controllers.
 		</constant>
 		<constant name="SHAPE_SEGMENT" value="2" enum="ShapeType">
 			This is the constant for creating segment shapes. A segment shape is a [i]finite[/i] line from a point A to a point B. It can be checked for intersections.

@@ -73,9 +73,9 @@ bool CollisionSolver2DSW::solve_static_world_margin(const Shape2DSW *p_shape_A, 
 	return found;
 }
 
-bool CollisionSolver2DSW::solve_raycast(const Shape2DSW *p_shape_A, const Vector2 &p_motion_A, const Transform2D &p_transform_A, const Shape2DSW *p_shape_B, const Transform2D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result, Vector2 *r_sep_axis, real_t p_margin) {
-	const RayShape2DSW *ray = static_cast<const RayShape2DSW *>(p_shape_A);
-	if (p_shape_B->get_type() == PhysicsServer2D::SHAPE_RAY) {
+bool CollisionSolver2DSW::solve_separation_ray(const Shape2DSW *p_shape_A, const Vector2 &p_motion_A, const Transform2D &p_transform_A, const Shape2DSW *p_shape_B, const Transform2D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result, Vector2 *r_sep_axis, real_t p_margin) {
+	const SeparationRayShape2DSW *ray = static_cast<const SeparationRayShape2DSW *>(p_shape_A);
+	if (p_shape_B->get_type() == PhysicsServer2D::SHAPE_SEPARATION_RAY) {
 		return false;
 	}
 
@@ -236,15 +236,15 @@ bool CollisionSolver2DSW::solve(const Shape2DSW *p_shape_A, const Transform2D &p
 			return solve_static_world_margin(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false);
 		}
 
-	} else if (type_A == PhysicsServer2D::SHAPE_RAY) {
-		if (type_B == PhysicsServer2D::SHAPE_RAY) {
+	} else if (type_A == PhysicsServer2D::SHAPE_SEPARATION_RAY) {
+		if (type_B == PhysicsServer2D::SHAPE_SEPARATION_RAY) {
 			return false; //no ray-ray
 		}
 
 		if (swap) {
-			return solve_raycast(p_shape_B, p_motion_B, p_transform_B, p_shape_A, p_transform_A, p_result_callback, p_userdata, true, r_sep_axis, p_margin_B);
+			return solve_separation_ray(p_shape_B, p_motion_B, p_transform_B, p_shape_A, p_transform_A, p_result_callback, p_userdata, true, r_sep_axis, p_margin_B);
 		} else {
-			return solve_raycast(p_shape_A, p_motion_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false, r_sep_axis, p_margin_A);
+			return solve_separation_ray(p_shape_A, p_motion_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false, r_sep_axis, p_margin_A);
 		}
 
 	} else if (concave_B) {

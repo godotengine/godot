@@ -166,21 +166,21 @@ PlaneShape3DSW::PlaneShape3DSW() {
 
 //
 
-real_t RayShape3DSW::get_length() const {
+real_t SeparationRayShape3DSW::get_length() const {
 	return length;
 }
 
-bool RayShape3DSW::get_slide_on_slope() const {
+bool SeparationRayShape3DSW::get_slide_on_slope() const {
 	return slide_on_slope;
 }
 
-void RayShape3DSW::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
+void SeparationRayShape3DSW::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
 	// don't think this will be even used
 	r_min = 0;
 	r_max = 1;
 }
 
-Vector3 RayShape3DSW::get_support(const Vector3 &p_normal) const {
+Vector3 SeparationRayShape3DSW::get_support(const Vector3 &p_normal) const {
 	if (p_normal.z > 0) {
 		return Vector3(0, 0, length);
 	} else {
@@ -188,7 +188,7 @@ Vector3 RayShape3DSW::get_support(const Vector3 &p_normal) const {
 	}
 }
 
-void RayShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const {
+void SeparationRayShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const {
 	if (Math::abs(p_normal.z) < _EDGE_IS_VALID_SUPPORT_THRESHOLD) {
 		r_amount = 2;
 		r_type = FEATURE_EDGE;
@@ -205,15 +205,15 @@ void RayShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_s
 	}
 }
 
-bool RayShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const {
+bool SeparationRayShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const {
 	return false; //simply not possible
 }
 
-bool RayShape3DSW::intersect_point(const Vector3 &p_point) const {
+bool SeparationRayShape3DSW::intersect_point(const Vector3 &p_point) const {
 	return false; //simply not possible
 }
 
-Vector3 RayShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
+Vector3 SeparationRayShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
 	Vector3 s[2] = {
 		Vector3(0, 0, 0),
 		Vector3(0, 0, length)
@@ -222,29 +222,29 @@ Vector3 RayShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
 	return Geometry3D::get_closest_point_to_segment(p_point, s);
 }
 
-Vector3 RayShape3DSW::get_moment_of_inertia(real_t p_mass) const {
+Vector3 SeparationRayShape3DSW::get_moment_of_inertia(real_t p_mass) const {
 	return Vector3();
 }
 
-void RayShape3DSW::_setup(real_t p_length, bool p_slide_on_slope) {
+void SeparationRayShape3DSW::_setup(real_t p_length, bool p_slide_on_slope) {
 	length = p_length;
 	slide_on_slope = p_slide_on_slope;
 	configure(AABB(Vector3(0, 0, 0), Vector3(0.1, 0.1, length)));
 }
 
-void RayShape3DSW::set_data(const Variant &p_data) {
+void SeparationRayShape3DSW::set_data(const Variant &p_data) {
 	Dictionary d = p_data;
 	_setup(d["length"], d["slide_on_slope"]);
 }
 
-Variant RayShape3DSW::get_data() const {
+Variant SeparationRayShape3DSW::get_data() const {
 	Dictionary d;
 	d["length"] = length;
 	d["slide_on_slope"] = slide_on_slope;
 	return d;
 }
 
-RayShape3DSW::RayShape3DSW() {
+SeparationRayShape3DSW::SeparationRayShape3DSW() {
 	length = 1;
 	slide_on_slope = false;
 }

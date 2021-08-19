@@ -2273,13 +2273,13 @@ bool sat_calculate_penetration(const Shape3DSW *p_shape_A, const Transform3D &p_
 	PhysicsServer3D::ShapeType type_A = p_shape_A->get_type();
 
 	ERR_FAIL_COND_V(type_A == PhysicsServer3D::SHAPE_PLANE, false);
-	ERR_FAIL_COND_V(type_A == PhysicsServer3D::SHAPE_RAY, false);
+	ERR_FAIL_COND_V(type_A == PhysicsServer3D::SHAPE_SEPARATION_RAY, false);
 	ERR_FAIL_COND_V(p_shape_A->is_concave(), false);
 
 	PhysicsServer3D::ShapeType type_B = p_shape_B->get_type();
 
 	ERR_FAIL_COND_V(type_B == PhysicsServer3D::SHAPE_PLANE, false);
-	ERR_FAIL_COND_V(type_B == PhysicsServer3D::SHAPE_RAY, false);
+	ERR_FAIL_COND_V(type_B == PhysicsServer3D::SHAPE_SEPARATION_RAY, false);
 	ERR_FAIL_COND_V(p_shape_B->is_concave(), false);
 
 	static const CollisionFunc collision_table[6][6] = {

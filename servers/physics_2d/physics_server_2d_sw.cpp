@@ -45,8 +45,8 @@ RID PhysicsServer2DSW::_shape_create(ShapeType p_shape) {
 		case SHAPE_WORLD_MARGIN: {
 			shape = memnew(WorldMarginShape2DSW);
 		} break;
-		case SHAPE_RAY: {
-			shape = memnew(RayShape2DSW);
+		case SHAPE_SEPARATION_RAY: {
+			shape = memnew(SeparationRayShape2DSW);
 		} break;
 		case SHAPE_SEGMENT: {
 			shape = memnew(SegmentShape2DSW);
@@ -82,8 +82,8 @@ RID PhysicsServer2DSW::world_margin_shape_create() {
 	return _shape_create(SHAPE_WORLD_MARGIN);
 }
 
-RID PhysicsServer2DSW::ray_shape_create() {
-	return _shape_create(SHAPE_RAY);
+RID PhysicsServer2DSW::separation_ray_shape_create() {
+	return _shape_create(SHAPE_SEPARATION_RAY);
 }
 
 RID PhysicsServer2DSW::segment_shape_create() {

@@ -179,7 +179,7 @@ public:
 	}
 };
 
-class RayShape2DSW : public Shape2DSW {
+class SeparationRayShape2DSW : public Shape2DSW {
 	real_t length;
 	bool slide_on_slope;
 
@@ -187,19 +187,19 @@ public:
 	_FORCE_INLINE_ real_t get_length() const { return length; }
 	_FORCE_INLINE_ bool get_slide_on_slope() const { return slide_on_slope; }
 
-	virtual PhysicsServer2D::ShapeType get_type() const { return PhysicsServer2D::SHAPE_RAY; }
+	virtual PhysicsServer2D::ShapeType get_type() const override { return PhysicsServer2D::SHAPE_SEPARATION_RAY; }
 
 	virtual bool allows_one_way_collision() const override { return false; }
 
-	virtual void project_rangev(const Vector2 &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const { project_range(p_normal, p_transform, r_min, r_max); }
-	virtual void get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const;
+	virtual void project_rangev(const Vector2 &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const override { project_range(p_normal, p_transform, r_min, r_max); }
+	virtual void get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const override;
 
-	virtual bool contains_point(const Vector2 &p_point) const;
-	virtual bool intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const;
-	virtual real_t get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const;
+	virtual bool contains_point(const Vector2 &p_point) const override;
+	virtual bool intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const override;
+	virtual real_t get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const override;
 
-	virtual void set_data(const Variant &p_data);
-	virtual Variant get_data() const;
+	virtual void set_data(const Variant &p_data) override;
+	virtual Variant get_data() const override;
 
 	_FORCE_INLINE_ void project_range(const Vector2 &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const {
 		//real large
@@ -212,8 +212,8 @@ public:
 
 	DEFAULT_PROJECT_RANGE_CAST
 
-	_FORCE_INLINE_ RayShape2DSW() {}
-	_FORCE_INLINE_ RayShape2DSW(real_t p_length) { length = p_length; }
+	_FORCE_INLINE_ SeparationRayShape2DSW() {}
+	_FORCE_INLINE_ SeparationRayShape2DSW(real_t p_length) { length = p_length; }
 };
 
 class SegmentShape2DSW : public Shape2DSW {

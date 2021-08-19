@@ -220,7 +220,7 @@ public:
 
 	enum ShapeType {
 		SHAPE_WORLD_MARGIN, ///< plane:"plane"
-		SHAPE_RAY, ///< float:"length"
+		SHAPE_SEPARATION_RAY, ///< float:"length"
 		SHAPE_SEGMENT, ///< float:"length"
 		SHAPE_CIRCLE, ///< float:"radius"
 		SHAPE_RECTANGLE, ///< vec3:"extents"
@@ -231,7 +231,7 @@ public:
 	};
 
 	virtual RID world_margin_shape_create() = 0;
-	virtual RID ray_shape_create() = 0;
+	virtual RID separation_ray_shape_create() = 0;
 	virtual RID segment_shape_create() = 0;
 	virtual RID circle_shape_create() = 0;
 	virtual RID rectangle_shape_create() = 0;

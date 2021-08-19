@@ -463,8 +463,8 @@ RID PhysicsServer3D::shape_create(ShapeType p_shape) {
 	switch (p_shape) {
 		case SHAPE_PLANE:
 			return plane_shape_create();
-		case SHAPE_RAY:
-			return ray_shape_create();
+		case SHAPE_SEPARATION_RAY:
+			return separation_ray_shape_create();
 		case SHAPE_SPHERE:
 			return sphere_shape_create();
 		case SHAPE_BOX:
@@ -490,7 +490,7 @@ void PhysicsServer3D::_bind_methods() {
 #ifndef _3D_DISABLED
 
 	ClassDB::bind_method(D_METHOD("plane_shape_create"), &PhysicsServer3D::plane_shape_create);
-	ClassDB::bind_method(D_METHOD("ray_shape_create"), &PhysicsServer3D::ray_shape_create);
+	ClassDB::bind_method(D_METHOD("separation_ray_shape_create"), &PhysicsServer3D::separation_ray_shape_create);
 	ClassDB::bind_method(D_METHOD("sphere_shape_create"), &PhysicsServer3D::sphere_shape_create);
 	ClassDB::bind_method(D_METHOD("box_shape_create"), &PhysicsServer3D::box_shape_create);
 	ClassDB::bind_method(D_METHOD("capsule_shape_create"), &PhysicsServer3D::capsule_shape_create);
@@ -751,7 +751,7 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_process_info", "process_info"), &PhysicsServer3D::get_process_info);
 
 	BIND_ENUM_CONSTANT(SHAPE_PLANE);
-	BIND_ENUM_CONSTANT(SHAPE_RAY);
+	BIND_ENUM_CONSTANT(SHAPE_SEPARATION_RAY);
 	BIND_ENUM_CONSTANT(SHAPE_SPHERE);
 	BIND_ENUM_CONSTANT(SHAPE_BOX);
 	BIND_ENUM_CONSTANT(SHAPE_CAPSULE);
