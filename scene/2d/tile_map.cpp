@@ -782,7 +782,7 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 					// Get the tile data.
 					TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
 					Ref<ShaderMaterial> mat = tile_data->tile_get_material();
-					int z_index = layers[q.layer].z_index + tile_data->get_z_index();
+					int z_index = tile_data->get_z_index();
 
 					// Quandrant pos.
 					Vector2 position = map_to_world(q.coords * get_effective_quadrant_size(q.layer));
