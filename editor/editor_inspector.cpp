@@ -2662,6 +2662,7 @@ void EditorInspector::update_tree() {
 		if (category_vbox == nullptr) {
 			category_vbox = memnew(VBoxContainer);
 			main_vbox->add_child(category_vbox);
+			main_vbox->notification(NOTIFICATION_SORT_CHILDREN);
 		}
 
 		// Find the correct section/vbox to add the property editor to.
