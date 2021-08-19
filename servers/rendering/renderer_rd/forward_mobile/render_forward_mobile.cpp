@@ -86,12 +86,13 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::clear() {
 void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, uint32_t p_view_count) {
 	clear();
 
-	bool is_half_resolution = false; // Set this once we support this feature.
-
 	msaa = p_msaa;
+
+	Size2i target_size = RD::get_singleton()->texture_size(p_target_buffer);
 
 	width = p_width;
 	height = p_height;
+	bool is_scaled = (target_size.width != p_width) || (target_size.height != p_height);
 	view_count = p_view_count;
 
 	color = p_color_buffer;
@@ -124,7 +125,7 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_b
 		passes.push_back(pass);
 		color_fbs[FB_CONFIG_THREE_SUBPASSES] = RD::get_singleton()->framebuffer_create_multipass(fb, passes, RenderingDevice::INVALID_ID, view_count);
 
-		if (!is_half_resolution) {
+		if (!is_scaled) {
 			// - add blit to 2D pass
 			fb.push_back(p_target_buffer); // 2 - target buffer
 
@@ -211,7 +212,7 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_b
 				color_fbs[FB_CONFIG_ONE_PASS] = RD::get_singleton()->framebuffer_create_multipass(fb, one_pass_with_resolve, RenderingDevice::INVALID_ID, view_count);
 			}
 
-			if (!is_half_resolution) {
+			if (!is_scaled) {
 				// - add blit to 2D pass
 				fb.push_back(p_target_buffer); // 3 - target buffer
 				RD::FramebufferPass blit_pass;
@@ -497,7 +498,6 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	bool using_subpass_transparent = true;
 	bool using_subpass_post_process = true;
 
-	bool is_half_resolution = false; // Set this once we support this feature.
 	bool using_ssr = false; // I don't think we support this in our mobile renderer so probably should phase it out
 	bool using_sss = false; // I don't think we support this in our mobile renderer so probably should phase it out
 
@@ -518,7 +518,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		screen_size.x = render_buffer->width;
 		screen_size.y = render_buffer->height;
 
-		if (is_half_resolution) {
+		if (render_buffer->color_fbs[FB_CONFIG_FOUR_SUBPASSES].is_null()) {
 			// can't do blit subpass
 			using_subpass_post_process = false;
 		} else if (env && (env->glow_enabled || env->auto_exposure || camera_effects_uses_dof(p_render_data->camera_effects))) {
