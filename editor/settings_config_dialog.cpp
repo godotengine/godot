@@ -250,6 +250,8 @@ void EditorSettingsDialog::_update_shortcuts() {
 
 	sections["Common"] = common_section;
 	common_section->set_text(0, TTR("Common"));
+	common_section->set_selectable(0, false);
+	common_section->set_selectable(1, false);
 	if (collapsed.has("Common")) {
 		common_section->set_collapsed(collapsed["Common"]);
 	}
@@ -343,14 +345,16 @@ void EditorSettingsDialog::_update_shortcuts() {
 
 			String item_name = section_name.capitalize();
 			section->set_text(0, item_name);
+			section->set_selectable(0, false);
+			section->set_selectable(1, false);
+			section->set_custom_bg_color(0, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
+			section->set_custom_bg_color(1, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
 
 			if (collapsed.has(item_name)) {
 				section->set_collapsed(collapsed[item_name]);
 			}
 
 			sections[section_name] = section;
-			section->set_custom_bg_color(0, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
-			section->set_custom_bg_color(1, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
 		}
 
 		// Don't match unassigned shortcuts when searching for assigned keys in search results.

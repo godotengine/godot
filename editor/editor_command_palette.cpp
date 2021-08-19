@@ -70,8 +70,12 @@ void EditorCommandPalette::_update_command_search(const String &search_text) {
 		r.key_name = command_keys[i];
 		r.display_name = commands[r.key_name].name;
 		r.shortcut_text = commands[r.key_name].shortcut;
+
 		if (search_text.is_subsequence_ofi(r.display_name)) {
-			r.score = _score_path(search_text, r.display_name.to_lower());
+			if (!search_text.is_empty()) {
+				r.score = _score_path(search_text, r.display_name.to_lower());
+			}
+
 			entries.push_back(r);
 		}
 	}
@@ -81,60 +85,55 @@ void EditorCommandPalette::_update_command_search(const String &search_text) {
 	TreeItem *root = search_options->get_root();
 	root->clear_children();
 
-	if (entries.size() > 0) {
-		if (!search_text.is_empty()) {
-			SortArray<CommandEntry, CommandEntryComparator> sorter;
-			sorter.sort(entries.ptrw(), entries.size());
-		}
+	if (entries.is_empty()) {
+		get_ok_button()->set_disabled(true);
 
-		const int entry_limit = MIN(entries.size(), 300);
-		for (int i = 0; i < entry_limit; i++) {
-			String section_name = entries[i].key_name.get_slice("/", 0);
-			TreeItem *section;
+		return;
+	}
 
-			if (sections.has(section_name)) {
-				section = sections[section_name];
-			} else {
-				section = search_options->create_item(root);
+	if (!search_text.is_empty()) {
+		SortArray<CommandEntry, CommandEntryComparator> sorter;
+		sorter.sort(entries.ptrw(), entries.size());
+	}
 
-				if (!first_section) {
-					first_section = section;
-				}
+	const int entry_limit = MIN(entries.size(), 300);
+	for (int i = 0; i < entry_limit; i++) {
+		String section_name = entries[i].key_name.get_slice("/", 0);
+		TreeItem *section;
 
-				String item_name = section_name.capitalize();
-				section->set_text(0, item_name);
+		if (sections.has(section_name)) {
+			section = sections[section_name];
+		} else {
+			section = search_options->create_item(root);
 
-				sections[section_name] = section;
-				section->set_custom_bg_color(0, search_options->get_theme_color("prop_subsection", "Editor"));
-				section->set_custom_bg_color(1, search_options->get_theme_color("prop_subsection", "Editor"));
+			if (!first_section) {
+				first_section = section;
 			}
 
-			TreeItem *ti = search_options->create_item(section);
-			String shortcut_text = entries[i].shortcut_text == "None" ? "" : entries[i].shortcut_text;
-			ti->set_text(0, entries[i].display_name);
-			ti->set_metadata(0, entries[i].key_name);
-			ti->set_text_align(1, TreeItem::TextAlign::ALIGN_RIGHT);
-			ti->set_text(1, shortcut_text);
-			Color c = Color(1, 1, 1, 0.5);
-			ti->set_custom_color(1, c);
+			String item_name = section_name.capitalize();
+			section->set_text(0, item_name);
+			section->set_selectable(0, false);
+			section->set_selectable(1, false);
+			section->set_custom_bg_color(0, search_options->get_theme_color("prop_subsection", "Editor"));
+			section->set_custom_bg_color(1, search_options->get_theme_color("prop_subsection", "Editor"));
+
+			sections[section_name] = section;
 		}
 
-		TreeItem *to_select = first_section->get_first_child();
-		to_select->select(0);
-		to_select->set_as_cursor(0);
-		search_options->scroll_to_item(to_select);
-
-		get_ok_button()->set_disabled(false);
-	} else {
-		TreeItem *ti = search_options->create_item(root);
-		ti->set_text(0, TTR("No matching commands found"));
-		ti->set_metadata(0, "");
-		Color c = Color(0.5, 0.5, 0.5, 0.5);
-		ti->set_custom_color(0, c);
-		search_options->deselect_all();
-
-		get_ok_button()->set_disabled(true);
+		TreeItem *ti = search_options->create_item(section);
+		String shortcut_text = entries[i].shortcut_text == "None" ? "" : entries[i].shortcut_text;
+		ti->set_text(0, entries[i].display_name);
+		ti->set_metadata(0, entries[i].key_name);
+		ti->set_text_align(1, TreeItem::TextAlign::ALIGN_RIGHT);
+		ti->set_text(1, shortcut_text);
+		Color c = Color(1, 1, 1, 0.5);
+		ti->set_custom_color(1, c);
 	}
+
+	TreeItem *to_select = first_section->get_first_child();
+	to_select->select(0);
+	to_select->set_as_cursor(0);
+	search_options->ensure_cursor_is_visible();
 }
 
 void EditorCommandPalette::_bind_methods() {
@@ -169,8 +168,11 @@ void EditorCommandPalette::_confirmed() {
 
 void EditorCommandPalette::open_popup() {
 	popup_centered_clamped(Size2i(600, 440), 0.8f);
+
 	command_search_box->clear();
 	command_search_box->grab_focus();
+
+	search_options->scroll_to_item(search_options->get_root());
 }
 
 void EditorCommandPalette::get_actions_list(List<String> *p_list) const {
@@ -258,6 +260,9 @@ EditorCommandPalette *EditorCommandPalette::get_singleton() {
 }
 
 EditorCommandPalette::EditorCommandPalette() {
+	set_hide_on_ok(false);
+	connect("confirmed", callable_mp(this, &EditorCommandPalette::_confirmed));
+
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	vbc->connect("theme_changed", callable_mp(this, &EditorCommandPalette::_theme_changed));
 	add_child(vbc);
@@ -275,18 +280,15 @@ EditorCommandPalette::EditorCommandPalette() {
 
 	search_options = memnew(Tree);
 	search_options->connect("item_activated", callable_mp(this, &EditorCommandPalette::_confirmed));
+	search_options->connect("item_selected", callable_mp((BaseButton *)get_ok_button(), &BaseButton::set_disabled), varray(false));
+	search_options->connect("nothing_selected", callable_mp((BaseButton *)get_ok_button(), &BaseButton::set_disabled), varray(true));
 	search_options->create_item();
 	search_options->set_hide_root(true);
-	search_options->set_hide_folding(true);
-	search_options->add_theme_constant_override("draw_guides", 1);
 	search_options->set_columns(2);
 	search_options->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	search_options->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_options->set_column_custom_minimum_width(0, int(8 * EDSCALE));
 	vbc->add_child(search_options, true);
-
-	connect("confirmed", callable_mp(this, &EditorCommandPalette::_confirmed));
-	set_hide_on_ok(false);
 }
 
 Ref<Shortcut> ED_SHORTCUT_AND_COMMAND(const String &p_path, const String &p_name, Key p_keycode, String p_command_name) {
