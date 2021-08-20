@@ -1884,10 +1884,10 @@ FRAGMENT_SHADER_CODE
 		{ //read radiance from dual paraboloid
 
 			vec3 ref_vec = reflect(-eye_vec, normal);
+			float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
 			ref_vec = normalize((radiance_inverse_xform * vec4(ref_vec, 0.0)).xyz);
 			vec3 radiance = textureDualParaboloid(radiance_map, ref_vec, roughness) * bg_energy;
 			env_reflection_light = radiance;
-			float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
 			env_reflection_light *= horizon * horizon;
 		}
 	}
