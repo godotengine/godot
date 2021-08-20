@@ -42,9 +42,6 @@
 #include "visual_script_yield_nodes.h"
 
 VisualScriptLanguage *visual_script_language = nullptr;
-#ifdef TOOLS_ENABLED
-static vs_bind::VisualScriptEditor *vs_editor_singleton = nullptr;
-#endif
 
 void register_visual_script_types() {
 	visual_script_language = memnew(VisualScriptLanguage);
@@ -116,7 +113,6 @@ void register_visual_script_types() {
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
 	GDREGISTER_CLASS(vs_bind::VisualScriptEditor);
 	ClassDB::set_current_api(ClassDB::API_CORE);
-	vs_editor_singleton = memnew(vs_bind::VisualScriptEditor);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("VisualScriptEditor", vs_bind::VisualScriptEditor::get_singleton()));
 
 	VisualScriptEditor::register_editor();
@@ -130,9 +126,6 @@ void unregister_visual_script_types() {
 
 #ifdef TOOLS_ENABLED
 	VisualScriptEditor::free_clipboard();
-	if (vs_editor_singleton) {
-		memdelete(vs_editor_singleton);
-	}
 #endif
 	if (visual_script_language) {
 		memdelete(visual_script_language);
