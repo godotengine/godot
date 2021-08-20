@@ -901,11 +901,13 @@ static Ref<VisualScriptNode> create_function_call_node(const String &p_name) {
 //////////////////////////////////////////
 
 int VisualScriptPropertySet::get_output_sequence_port_count() const {
-	return 1;
+	return call_mode != CALL_MODE_BASIC_TYPE ? 1 : 0;
+	//return 1; //Adding a sequence port to set_basic_type breaks backwards compatibility
 }
 
 bool VisualScriptPropertySet::has_input_sequence_port() const {
-	return 1;
+	return call_mode != CALL_MODE_BASIC_TYPE;
+	//return 1; //Adding a sequence port to set_basic_type breaks backwards compatibility
 }
 
 Node *VisualScriptPropertySet::_get_base_node() const {
