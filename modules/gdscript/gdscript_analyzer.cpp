@@ -30,6 +30,7 @@
 
 #include "gdscript_analyzer.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
@@ -3335,7 +3336,11 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::CallNode *p_source
 
 	MethodInfo info;
 	if (ClassDB::get_method_info(base_native, function_name, &info)) {
-		return function_signature_from_info(info, r_return_type, r_par_types, r_default_arg_count, r_static, r_vararg);
+		bool valid = function_signature_from_info(info, r_return_type, r_par_types, r_default_arg_count, r_static, r_vararg);
+		if (valid && Engine::get_singleton()->has_singleton(base_native)) {
+			r_static = true;
+		}
+		return valid;
 	}
 
 	return false;
