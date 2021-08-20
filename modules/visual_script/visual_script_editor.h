@@ -43,13 +43,12 @@ class VisualScriptEditorVariableEdit;
 
 #ifdef TOOLS_ENABLED
 
+// TODO: Maybe this class should be refactored.
+// See https://github.com/godotengine/godot/issues/51913
 class VisualScriptEditor : public ScriptEditorBase {
-	GDCLASS(VisualScriptEditor, ScriptEditorBase);
-
 	enum {
 		TYPE_SEQUENCE = 1000,
 		INDEX_BASE_SEQUENCE = 1024
-
 	};
 
 	enum {
@@ -71,7 +70,6 @@ class VisualScriptEditor : public ScriptEditorBase {
 	enum MemberAction {
 		MEMBER_EDIT,
 		MEMBER_REMOVE
-
 	};
 
 	enum MemberType {
