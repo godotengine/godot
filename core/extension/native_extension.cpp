@@ -35,6 +35,8 @@
 #include "core/object/method_bind.h"
 #include "core/os/os.h"
 
+const char *NativeExtension::EXTENSION_LIST_CONFIG_FILE = "res://.godot/extension_list.cfg";
+
 class NativeExtensionMethodBind : public MethodBind {
 	GDNativeExtensionClassMethodCall call_func;
 	GDNativeExtensionClassMethodPtrCall ptrcall_func;

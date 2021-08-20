@@ -4798,6 +4798,32 @@ String EditorNode::get_run_playing_scene() const {
 	return run_filename;
 }
 
+void EditorNode::_immediate_dialog_confirmed() {
+	immediate_dialog_confirmed = true;
+}
+bool EditorNode::immediate_confirmation_dialog(const String &p_text, const String &p_ok_text, const String &p_cancel_text) {
+	ConfirmationDialog *cd = memnew(ConfirmationDialog);
+	cd->set_text(p_text);
+	cd->get_ok_button()->set_text(p_ok_text);
+	cd->get_cancel_button()->set_text(p_cancel_text);
+	cd->connect("confirmed", callable_mp(singleton, &EditorNode::_immediate_dialog_confirmed));
+	singleton->gui_base->add_child(cd);
+
+	cd->popup_centered();
+
+	while (true) {
+		OS::get_singleton()->delay_usec(1);
+		DisplayServer::get_singleton()->process_events();
+		Main::iteration();
+		if (singleton->immediate_dialog_confirmed || !cd->is_visible()) {
+			break;
+		}
+	}
+
+	memdelete(cd);
+	return singleton->immediate_dialog_confirmed;
+}
+
 int EditorNode::get_current_tab() {
 	return scene_tabs->get_current_tab();
 }
@@ -6792,7 +6818,6 @@ EditorNode::EditorNode() {
 
 	preview_gen = memnew(AudioStreamPreviewGenerator);
 	add_child(preview_gen);
-	//plugin stuff
 
 	add_editor_plugin(memnew(DebuggerEditorPlugin(this, debug_menu)));
 	add_editor_plugin(memnew(DebugAdapterServer()));
