@@ -927,11 +927,6 @@ void Viewport::set_world_2d(const Ref<World2D> &p_world_2d) {
 		return;
 	}
 
-	if (parent && parent->find_world_2d() == p_world_2d) {
-		WARN_PRINT("Unable to use parent world_2d as world_2d");
-		return;
-	}
-
 	if (is_inside_tree()) {
 		RenderingServer::get_singleton()->viewport_remove_canvas(viewport, current_canvas);
 	}
