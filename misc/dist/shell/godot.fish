@@ -79,6 +79,7 @@ complete -c godot -l print-fps -d "Print the frames per second to the stdout"
 # Standalone tools:
 complete -c godot -s s -l script -d "Run a script" -r
 complete -c godot -l check-only -d "Only parse for errors and quit (use with --script)"
+complete -c godot -l convert-to-godot4 -d "Converts project from Godot 3 to Godot 4"
 complete -c godot -l export -d "Export the project using the given preset and matching release template" -x
 complete -c godot -l export-debug -d "Same as --export, but using the debug template" -x
 complete -c godot -l export-pack -d "Same as --export, but only export the game pack for the given preset" -x

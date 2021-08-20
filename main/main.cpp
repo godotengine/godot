@@ -82,6 +82,7 @@
 
 #ifdef TOOLS_ENABLED
 
+#include "editor/converter.cpp"
 #include "editor/doc_data_class_path.gen.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_node.h"
@@ -368,6 +369,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  -s, --script <script>                        Run a script.\n");
 	OS::get_singleton()->print("  --check-only                                 Only parse for errors and quit (use with --script).\n");
 #ifdef TOOLS_ENABLED
+	OS::get_singleton()->print("  --convert-to-godot4                          Converts project from Godot 3 to Godot 4.\n");
 	OS::get_singleton()->print("  --export <preset> <path>                     Export the project using the given preset and matching release template. The preset name should match one defined in export_presets.cfg.\n");
 	OS::get_singleton()->print("                                               <path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. 'builds/game.exe'). The target directory should exist.\n");
 	OS::get_singleton()->print("  --export-debug <preset> <path>               Same as --export, but using the debug template.\n");
@@ -903,6 +905,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			cmdline_tool = true;
 			main_args.push_back(I->get());
 		} else if (I->get() == "--doctool") {
+			// Actually handling is done in start().
+			cmdline_tool = true;
+			main_args.push_back(I->get());
+		} else if (I->get() == "--convert-to-godot4") {
 			// Actually handling is done in start().
 			cmdline_tool = true;
 			main_args.push_back(I->get());
@@ -1856,6 +1862,7 @@ bool Main::start() {
 	String _export_preset;
 	bool export_debug = false;
 	bool export_pack_only = false;
+	bool converting_project = false;
 #endif
 
 	main_timer_sync.init(OS::get_singleton()->get_ticks_usec());
@@ -1871,6 +1878,8 @@ bool Main::start() {
 #ifdef TOOLS_ENABLED
 		} else if (args[i] == "--no-docbase") {
 			doc_base = false;
+		} else if (args[i] == "--convert-to-godot4") {
+			converting_project = true;
 		} else if (args[i] == "-e" || args[i] == "--editor") {
 			editor = true;
 		} else if (args[i] == "-p" || args[i] == "--project-manager") {
@@ -2014,6 +2023,15 @@ bool Main::start() {
 		NativeExtensionAPIDump::generate_extension_json_file("extension_api.json");
 		return false;
 	}
+
+	// TODO properly convert script
+
+	if (converting_project) {
+		print_line("CONVERTING PROJECT");
+		converter();
+		return false;
+	}
+
 #endif
 
 	if (script == "" && game_path == "" && String(GLOBAL_GET("application/run/main_scene")) != "") {

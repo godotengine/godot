@@ -65,6 +65,7 @@ _arguments \
   '--print-fps[print the frames per second to the stdout]' \
   '(-s, --script)'{-s,--script}'[run a script]:path to script:_files' \
   '--check-only[only parse for errors and quit (use with --script)]' \
+  '--convert-to-godot4'converts project from Godot 3 to Godot 4' \
   '--export[export the project using the given preset and matching release template]:export preset name' \
   '--export-debug[same as --export, but using the debug template]:export preset name' \
   '--export-pack[same as --export, but only export the game pack for the given preset]:export preset name' \
