@@ -1435,7 +1435,7 @@ void RichTextLabel::_notification(int p_what) {
 			while (ofs.y < size.height && from_line < main->lines.size()) {
 				visible_paragraph_count++;
 				visible_line_count += _draw_line(main, from_line, ofs, text_rect.size.x, base_color, outline_size, outline_color, font_shadow_color, use_outline, shadow_ofs);
-				ofs.y += main->lines[from_line].text_buf->get_size().y;
+				ofs.y += main->lines[from_line].text_buf->get_size().y + get_theme_constant(SNAME("line_separation"));
 				from_line++;
 			}
 		} break;
