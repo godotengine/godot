@@ -536,6 +536,8 @@ class BindingsGenerator {
 		StringName type_Object = StaticCString::create("Object");
 		StringName type_RefCounted = StaticCString::create("RefCounted");
 		StringName type_RID = StaticCString::create("RID");
+		StringName type_Callable = StaticCString::create("Callable");
+		StringName type_Signal = StaticCString::create("Signal");
 		StringName type_String = StaticCString::create("String");
 		StringName type_StringName = StaticCString::create("StringName");
 		StringName type_NodePath = StaticCString::create("NodePath");
