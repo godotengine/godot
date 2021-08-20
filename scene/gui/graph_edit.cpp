@@ -2145,7 +2145,7 @@ void GraphEdit::arrange_nodes() {
 		largest_node_size = 0.0f;
 	}
 
-	emit_signal("begin_node_move");
+	emit_signal(SNAME("begin_node_move"));
 	for (const Set<StringName>::Element *E = selected_nodes.front(); E; E = E->next()) {
 		GraphNode *gn = Object::cast_to<GraphNode>(node_names[E->get()]);
 		gn->set_drag(true);
@@ -2158,7 +2158,7 @@ void GraphEdit::arrange_nodes() {
 		gn->set_position_offset(pos);
 		gn->set_drag(false);
 	}
-	emit_signal("end_node_move");
+	emit_signal(SNAME("end_node_move"));
 	arranging_graph = false;
 }
 

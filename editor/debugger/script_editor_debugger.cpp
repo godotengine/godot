@@ -396,15 +396,15 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 				s->select(0);
 			}
 		}
-		emit_signal("stack_dump", stack_dump_info);
+		emit_signal(SNAME("stack_dump"), stack_dump_info);
 	} else if (p_msg == "stack_frame_vars") {
 		inspector->clear_stack_variables();
 		ERR_FAIL_COND(p_data.size() != 1);
-		emit_signal("stack_frame_vars", p_data[0]);
+		emit_signal(SNAME("stack_frame_vars"), p_data[0]);
 
 	} else if (p_msg == "stack_frame_var") {
 		inspector->add_stack_variable(p_data);
-		emit_signal("stack_frame_var", p_data);
+		emit_signal(SNAME("stack_frame_var"), p_data);
 
 	} else if (p_msg == "output") {
 		ERR_FAIL_COND(p_data.size() != 2);
@@ -433,7 +433,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 				} break;
 			}
 			EditorNode::get_log()->add_message(output_strings[i], msg_type);
-			emit_signal("output", output_strings[i]);
+			emit_signal(SNAME("output"), output_strings[i]);
 		}
 	} else if (p_msg == "performance:profile_frame") {
 		Vector<float> frame_data;

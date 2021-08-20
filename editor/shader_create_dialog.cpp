@@ -190,7 +190,7 @@ void ShaderCreateDialog::_create_new() {
 		}
 	}
 
-	emit_signal("shader_created", shader);
+	emit_signal(SNAME("shader_created"), shader);
 	hide();
 }
 
@@ -203,7 +203,7 @@ void ShaderCreateDialog::_load_exist() {
 		return;
 	}
 
-	emit_signal("shader_created", p_shader);
+	emit_signal(SNAME("shader_created"), p_shader);
 	hide();
 }
 
@@ -404,18 +404,18 @@ String ShaderCreateDialog::_validate_path(const String &p_path) {
 void ShaderCreateDialog::_msg_script_valid(bool valid, const String &p_msg) {
 	error_label->set_text("- " + p_msg);
 	if (valid) {
-		error_label->add_theme_color_override("font_color", gc->get_theme_color("success_color", "Editor"));
+		error_label->add_theme_color_override("font_color", gc->get_theme_color(SNAME("success_color"), SNAME("Editor")));
 	} else {
-		error_label->add_theme_color_override("font_color", gc->get_theme_color("error_color", "Editor"));
+		error_label->add_theme_color_override("font_color", gc->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 	}
 }
 
 void ShaderCreateDialog::_msg_path_valid(bool valid, const String &p_msg) {
 	path_error_label->set_text("- " + p_msg);
 	if (valid) {
-		path_error_label->add_theme_color_override("font_color", gc->get_theme_color("success_color", "Editor"));
+		path_error_label->add_theme_color_override("font_color", gc->get_theme_color(SNAME("success_color"), SNAME("Editor")));
 	} else {
-		path_error_label->add_theme_color_override("font_color", gc->get_theme_color("error_color", "Editor"));
+		path_error_label->add_theme_color_override("font_color", gc->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 	}
 }
 

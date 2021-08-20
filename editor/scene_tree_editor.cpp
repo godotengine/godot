@@ -520,7 +520,7 @@ void SceneTreeEditor::_node_removed(Node *p_node) {
 
 	if (p_node == selected) {
 		selected = nullptr;
-		emit_signal("node_selected");
+		emit_signal(SNAME("node_selected"));
 	}
 }
 
@@ -628,7 +628,7 @@ void SceneTreeEditor::_selected_changed() {
 	selected = get_node(np);
 
 	blocked++;
-	emit_signal("node_selected");
+	emit_signal(SNAME("node_selected"));
 	blocked--;
 }
 
@@ -755,7 +755,7 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 	}
 
 	if (p_emit_selected) {
-		emit_signal("node_selected");
+		emit_signal(SNAME("node_selected"));
 	}
 }
 
