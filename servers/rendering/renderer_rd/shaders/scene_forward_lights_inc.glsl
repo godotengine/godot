@@ -433,6 +433,8 @@ float sample_directional_soft_shadow(texture2D shadow, vec3 pssm_coord, vec2 tex
 
 #endif //USE_NO_SHADOWS
 
+precision mediump float;
+
 float get_omni_attenuation(float distance, float inv_range, float decay) {
 	float nd = distance * inv_range;
 	nd *= nd;

@@ -4452,8 +4452,9 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 
 //version 1: initial
 //version 2: Added shader name
+//version 3: fixed bug regarding to storing booleans
 
-#define SHADER_BINARY_VERSION 2
+#define SHADER_BINARY_VERSION 3
 
 String RenderingDeviceVulkan::shader_get_binary_cache_key() const {
 	return "Vulkan-SV" + itos(SHADER_BINARY_VERSION);
@@ -4687,6 +4688,7 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 						int32_t existing = -1;
 						RenderingDeviceVulkanShaderBinarySpecializationConstant sconst;
 						sconst.constant_id = spec_constants[j]->constant_id;
+						sconst.int_value = 0; // clear memory since bool may be smaller
 						switch (spec_constants[j]->constant_type) {
 							case SPV_REFLECT_SPECIALIZATION_CONSTANT_BOOL: {
 								sconst.type = PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
