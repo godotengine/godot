@@ -2048,7 +2048,6 @@ void GraphEdit::arrange_nodes() {
 
 		if (gn->is_selected()) {
 			selected_nodes.insert(gn->get_name());
-			origin = origin < gn->get_position_offset() ? origin : gn->get_position_offset();
 			Set<StringName> s;
 			for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
 				GraphNode *p_from = Object::cast_to<GraphNode>(node_names[E->get().from]);
@@ -2070,6 +2069,11 @@ void GraphEdit::arrange_nodes() {
 			}
 			upper_neighbours.set(gn->get_name(), s);
 		}
+	}
+
+	if (!selected_nodes.size()) {
+		arranging_graph = false;
+		return;
 	}
 
 	HashMap<int, Vector<StringName>> layers = _layering(selected_nodes, upper_neighbours);
@@ -2098,16 +2102,16 @@ void GraphEdit::arrange_nodes() {
 	for (const Set<StringName>::Element *E = block_heads.front(); E; E = E->next()) {
 		_place_block(E->get(), gap_v, layers, root, align, node_names, inner_shift, sink, shift, new_positions);
 	}
+	origin.y = Object::cast_to<GraphNode>(node_names[layers[0][0]])->get_position_offset().y - (new_positions[layers[0][0]].y + (float)inner_shift[layers[0][0]]);
+	origin.x = Object::cast_to<GraphNode>(node_names[layers[0][0]])->get_position_offset().x;
 
 	for (const Set<StringName>::Element *E = block_heads.front(); E; E = E->next()) {
 		StringName u = E->get();
-		StringName prev = u;
 		float start_from = origin.y + new_positions[E->get()].y;
 		do {
 			Vector2 cal_pos;
 			cal_pos.y = start_from + (real_t)inner_shift[u];
 			new_positions.set(u, cal_pos);
-			prev = u;
 			u = align[u];
 		} while (u != E->get());
 	}
@@ -2130,10 +2134,11 @@ void GraphEdit::arrange_nodes() {
 			if (current_node_size == largest_node_size) {
 				cal_pos.x = start_from;
 			} else {
-				float current_node_start_pos;
-				if (current_node_size >= largest_node_size / 2) {
-					current_node_start_pos = start_from;
-				} else {
+				float current_node_start_pos = start_from;
+				if (current_node_size < largest_node_size / 2) {
+					if (!(i || j)) {
+						start_from -= (largest_node_size - current_node_size);
+					}
 					current_node_start_pos = start_from + largest_node_size - current_node_size;
 				}
 				cal_pos.x = current_node_start_pos;
