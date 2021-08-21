@@ -32,11 +32,9 @@
 
 #ifdef TOOLS_ENABLED
 #include "navigation_mesh_editor_plugin.h"
-#endif
-
-#ifndef TOOLS_ENABLED
+#else
 #include "core/engine.h"
-#endif // !TOOLS_ENABLED
+#endif
 
 #include "navigation_mesh_generator.h"
 

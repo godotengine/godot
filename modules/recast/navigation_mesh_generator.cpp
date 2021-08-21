@@ -297,17 +297,11 @@ void EditorNavigationMeshGenerator::_convert_detail_mesh_to_native_navigation_me
 }
 
 #ifdef TOOLS_ENABLED
-
 void EditorNavigationMeshGenerator::_build_recast_navigation_mesh(Ref<NavigationMesh> p_nav_mesh, 
 		rcHeightfield *hf, rcCompactHeightfield *chf, rcContourSet *cset, rcPolyMesh *poly_mesh, rcPolyMeshDetail *detail_mesh,
 		Vector<float> &vertices, Vector<int> &indices , EditorProgress *ep = NULL) {
-	
-
-#endif
-
-#ifndef TOOLS_ENABLED
-
-	void EditorNavigationMeshGenerator::_build_recast_navigation_mesh(Ref<NavigationMesh> p_nav_mesh,
+#else
+void EditorNavigationMeshGenerator::_build_recast_navigation_mesh(Ref<NavigationMesh> p_nav_mesh,
 			rcHeightfield * hf, rcCompactHeightfield * chf, rcContourSet * cset, rcPolyMesh * poly_mesh, rcPolyMeshDetail * detail_mesh,
 			Vector<float> & vertices, Vector<int> & indices) {
 #endif
@@ -395,10 +389,8 @@ rcContext ctx;
 	}
 
 #ifdef TOOLS_ENABLED
-
 	if(ep)
 		ep->step(TTR("Constructing compact heightfield..."), 5);
-
 #endif
 
 	chf = rcAllocCompactHeightfield();
@@ -410,7 +402,6 @@ rcContext ctx;
 	hf = nullptr;
 
 #ifdef TOOLS_ENABLED
-
 	if(ep)
 		ep->step(TTR("Eroding walkable area..."), 6);
 #endif
@@ -418,7 +409,6 @@ rcContext ctx;
 	ERR_FAIL_COND(!rcErodeWalkableArea(&ctx, cfg.walkableRadius, *chf));
 
 #ifdef TOOLS_ENABLED
-
 	if(ep)
 		ep->step(TTR("Partitioning..."), 7);
 #endif
@@ -433,7 +423,6 @@ rcContext ctx;
 	}
 
 #ifdef TOOLS_ENABLED
-
 	if(ep)
 		ep->step(TTR("Creating contours..."), 8);
 #endif
@@ -444,7 +433,6 @@ rcContext ctx;
 	ERR_FAIL_COND(!rcBuildContours(&ctx, *chf, cfg.maxSimplificationError, cfg.maxEdgeLen, *cset));
 
 #ifdef TOOLS_ENABLED
-
 	if(ep)
 		ep->step(TTR("Creating polymesh..."), 9);
 #endif
@@ -462,7 +450,6 @@ rcContext ctx;
 	cset = nullptr;
 
 #ifdef TOOLS_ENABLED
-
 	if(ep)
 		ep->step(TTR("Converting to native navigation mesh..."), 10);
 #endif 
@@ -545,7 +532,6 @@ void EditorNavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p
 	}
 
 #ifdef TOOLS_ENABLED
-
 	 if (ep) {
 		ep->step(TTR("Done!"), 11);
 		memdelete(ep);

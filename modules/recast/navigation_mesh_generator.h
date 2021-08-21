@@ -57,14 +57,11 @@ protected:
 	static void _build_recast_navigation_mesh(Ref<NavigationMesh> p_nav_mesh,
 			rcHeightfield *hf, rcCompactHeightfield *chf, rcContourSet *cset, rcPolyMesh *poly_mesh,
 			rcPolyMeshDetail *detail_mesh, Vector<float> &vertices, Vector<int> &indices , EditorProgress *ep);
-#endif
-#ifndef TOOLS_ENABLED
+#else
 	static void _build_recast_navigation_mesh(Ref<NavigationMesh> p_nav_mesh,
 			rcHeightfield *hf, rcCompactHeightfield *chf, rcContourSet *cset, rcPolyMesh *poly_mesh,
 			rcPolyMeshDetail *detail_mesh, Vector<float> &vertices, Vector<int> &indices);
-#endif // !TOOLS_ENABLED
-
-	
+#endif 
 
 public:
 	static EditorNavigationMeshGenerator *get_singleton();
