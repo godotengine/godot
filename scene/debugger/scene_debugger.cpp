@@ -88,7 +88,7 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 
 	} else if (p_msg == "override_camera_2D:transform") {
 		ERR_FAIL_COND_V(p_args.size() < 1, ERR_INVALID_DATA);
-		Transform2D transform = p_args[1];
+		Transform2D transform = p_args[0];
 		scene_tree->get_root()->set_canvas_transform_override(transform);
 #ifndef _3D_DISABLED
 	} else if (p_msg == "override_camera_3D:set") {
