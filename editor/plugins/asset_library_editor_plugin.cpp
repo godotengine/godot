@@ -886,6 +886,8 @@ void EditorAssetLibrary::_request_image(ObjectID p_for, String p_image_url, Imag
 }
 
 void EditorAssetLibrary::_repository_changed(int p_repository_id) {
+	filter->set_editable(false);
+
 	host = repository->get_item_metadata(p_repository_id);
 	if (templates_only) {
 		_api_request("configure", REQUESTING_CONFIG, "?type=project");
@@ -1128,6 +1130,8 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 					category_map[cat["id"]] = name;
 				}
 			}
+
+			filter->set_editable(true);
 
 			_search();
 		} break;
