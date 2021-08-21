@@ -33,6 +33,7 @@
 
 #include "camera_osx.h"
 #include "servers/camera/camera_feed.h"
+
 #import <AVFoundation/AVFoundation.h>
 
 //////////////////////////////////////////////////////////////////////////
@@ -253,10 +254,25 @@ CameraFeedOSX::~CameraFeedOSX() {
 
 bool CameraFeedOSX::activate_feed() {
 	if (capture_session) {
-		// already recording!
+		// Already recording!
 	} else {
-		// start camera capture
-		capture_session = [[MyCaptureSession alloc] initForFeed:this andDevice:device];
+		// Start camera capture, check permission.
+		if (@available(macOS 10.14, *)) {
+			AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
+			if (status == AVAuthorizationStatusAuthorized) {
+				capture_session = [[MyCaptureSession alloc] initForFeed:this andDevice:device];
+			} else if (status == AVAuthorizationStatusNotDetermined) {
+				// Request permission.
+				[AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo
+										 completionHandler:^(BOOL granted) {
+											 if (granted) {
+												 capture_session = [[MyCaptureSession alloc] initForFeed:this andDevice:device];
+											 }
+										 }];
+			}
+		} else {
+			capture_session = [[MyCaptureSession alloc] initForFeed:this andDevice:device];
+		}
 	};
 
 	return true;
