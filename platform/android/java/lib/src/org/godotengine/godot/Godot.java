@@ -317,7 +317,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	@SuppressLint("MissingPermission")
 	@Keep
 	private void vibrate(int durationMs) {
-		if (requestPermission("VIBRATE")) {
+		if (durationMs > 0 && requestPermission("VIBRATE")) {
 			Vibrator v = (Vibrator)getContext().getSystemService(Context.VIBRATOR_SERVICE);
 			if (v != null) {
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
