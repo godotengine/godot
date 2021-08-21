@@ -7957,13 +7957,13 @@ void RenderingDeviceVulkan::compute_list_bind_uniform_set(ComputeListID p_list, 
 
 				textures_to_storage[i]->used_in_compute = false;
 				textures_to_storage[i]->used_in_raster = false;
-				textures_to_storage[i]->used_in_compute = false;
+				textures_to_storage[i]->used_in_transfer = false;
 
 			} else {
 				src_access_flags = 0;
 				textures_to_storage[i]->used_in_compute = false;
 				textures_to_storage[i]->used_in_raster = false;
-				textures_to_storage[i]->used_in_compute = false;
+				textures_to_storage[i]->used_in_transfer = false;
 				textures_to_storage[i]->used_in_frame = frames_drawn;
 			}
 

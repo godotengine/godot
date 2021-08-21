@@ -571,8 +571,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	List<String>::Element *I = args.front();
 
-	I = args.front();
-
 	while (I) {
 		I->get() = unescape_cmdline(I->get().strip_edges());
 		I = I->next();

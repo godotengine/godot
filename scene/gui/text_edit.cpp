@@ -2150,7 +2150,6 @@ void TextEdit::_delete(bool p_word, bool p_all_to_right) {
 		next_column = column;
 	} else {
 		// Delete one character
-		next_column = caret.column < curline_len ? (caret.column + 1) : 0;
 		if (caret_mid_grapheme_enabled) {
 			next_column = caret.column < curline_len ? (caret.column + 1) : 0;
 		} else {
