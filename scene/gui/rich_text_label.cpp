@@ -180,7 +180,6 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 	}
 
 	int wofs = margin;
-	int spaces_size = 0;
 	int align_ofs = 0;
 
 	if (p_mode != PROCESS_CACHE && align != ALIGN_FILL) {
@@ -248,7 +247,6 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 		line_ascent = 0;                                                                                                                                        \
 		line_descent = 0;                                                                                                                                       \
 		spaces = 0;                                                                                                                                             \
-		spaces_size = 0;                                                                                                                                        \
 		wofs = begin;                                                                                                                                           \
 		align_ofs = 0;                                                                                                                                          \
 		if (p_mode != PROCESS_CACHE) {                                                                                                                          \
