@@ -161,6 +161,7 @@ class Curve2D : public Resource {
 
 	mutable bool baked_cache_dirty = false;
 	mutable PackedVector2Array baked_point_cache;
+	mutable PackedFloat32Array baked_dist_cache;
 	mutable float baked_max_ofs = 0.0;
 
 	void _bake() const;
@@ -224,6 +225,7 @@ class Curve3D : public Resource {
 	mutable PackedVector3Array baked_point_cache;
 	mutable Vector<real_t> baked_tilt_cache;
 	mutable PackedVector3Array baked_up_vector_cache;
+	mutable PackedFloat32Array baked_dist_cache;
 	mutable float baked_max_ofs = 0.0;
 
 	void _bake() const;
