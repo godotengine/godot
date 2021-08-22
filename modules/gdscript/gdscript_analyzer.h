@@ -61,6 +61,7 @@ class GDScriptAnalyzer {
 	void resolve_suite(GDScriptParser::SuiteNode *p_suite);
 	void resolve_if(GDScriptParser::IfNode *p_if);
 	void resolve_for(GDScriptParser::ForNode *p_for);
+	void resolve_for_if_clause(GDScriptParser::ForIfClauseNode *p_for_if_clause);
 	void resolve_while(GDScriptParser::WhileNode *p_while);
 	void resolve_variable(GDScriptParser::VariableNode *p_variable);
 	void resolve_constant(GDScriptParser::ConstantNode *p_constant);

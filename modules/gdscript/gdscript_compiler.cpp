@@ -381,23 +381,90 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			GDScriptDataType array_type = _gdtype_from_datatype(an->get_datatype());
 			GDScriptCodeGenerator::Address result = codegen.add_temporary(array_type);
 
-			for (int i = 0; i < an->elements.size(); i++) {
-				GDScriptCodeGenerator::Address val = _parse_expression(codegen, r_error, an->elements[i]);
+			if (an->for_if_clauses.size() > 0 && an->template_expression != nullptr) {
+				gen->write_construct_array(result, values);
+
+				for (int i = 0; i < an->for_if_clauses.size(); i++) {
+					const GDScriptParser::ForIfClauseNode *for_if_clause = an->for_if_clauses[i];
+
+					codegen.start_block();
+					GDScriptCodeGenerator::Address iterator = codegen.add_local(for_if_clause->variable->name, _gdtype_from_datatype(for_if_clause->variable->get_datatype()));
+					
+					gen->start_for(iterator.type, _gdtype_from_datatype(for_if_clause->list->get_datatype()));
+					
+					GDScriptCodeGenerator::Address list = _parse_expression(codegen, r_error, for_if_clause->list);
+
+					if (r_error) {
+						return GDScriptCodeGenerator::Address();
+					}
+
+					gen->write_for_assignment(iterator, list);
+
+					if (list.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+						codegen.generator->pop_temporary();
+					}
+
+					gen->write_for();
+
+					if (for_if_clause->if_condition != nullptr) {
+						GDScriptCodeGenerator::Address condition = _parse_expression(codegen, r_error, for_if_clause->if_condition);
+
+						if (r_error) {
+							return GDScriptCodeGenerator::Address();
+						}
+
+						gen->write_if(condition);
+
+						if (condition.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+							codegen.generator->pop_temporary();
+						}
+
+						gen->start_block();
+					}
+				}
+
+				GDScriptCodeGenerator::Address template_expression = _parse_expression(codegen, r_error, an->template_expression);
 				if (r_error) {
 					return GDScriptCodeGenerator::Address();
 				}
-				values.push_back(val);
-			}
 
-			if (array_type.has_container_element_type()) {
-				gen->write_construct_typed_array(result, array_type.get_container_element_type(), values);
+				values.push_back(template_expression);
+				gen->write_call_builtin_type(result, result, Variant::Type::ARRAY, "push_back", values);
+
+				for (int i = 0; i < an->for_if_clauses.size(); i++) {
+					const GDScriptParser::ForIfClauseNode *for_if_clause = an->for_if_clauses[i];
+
+					if (for_if_clause->if_condition != nullptr) {
+						gen->end_block();
+						gen->write_endif();
+					}
+
+					gen->write_endfor();
+					codegen.end_block();
+				}
+
+				if (template_expression.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+					codegen.generator->pop_temporary();
+				}
 			} else {
-				gen->write_construct_array(result, values);
-			}
+				for (int i = 0; i < an->elements.size(); i++) {
+					GDScriptCodeGenerator::Address val = _parse_expression(codegen, r_error, an->elements[i]);
+					if (r_error) {
+						return GDScriptCodeGenerator::Address();
+					}
+					values.push_back(val);
+				}
 
-			for (int i = 0; i < values.size(); i++) {
-				if (values[i].mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					gen->pop_temporary();
+				if (array_type.has_container_element_type()) {
+					gen->write_construct_typed_array(result, array_type.get_container_element_type(), values);
+				} else {
+					gen->write_construct_array(result, values);
+				}
+
+				for (int i = 0; i < values.size(); i++) {
+					if (values[i].mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+						gen->pop_temporary();
+					}
 				}
 			}
 
@@ -414,39 +481,126 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			dict_type.builtin_type = Variant::DICTIONARY;
 			GDScriptCodeGenerator::Address result = codegen.add_temporary(dict_type);
 
-			for (int i = 0; i < dn->elements.size(); i++) {
+			if (dn->for_if_clauses.size() > 0 && dn->template_keyvalue.key != nullptr && dn->template_keyvalue.value != nullptr) {
+				gen->write_construct_dictionary(result, elements);
+
+				for (int i = 0; i < dn->for_if_clauses.size(); i++) {
+					const GDScriptParser::ForIfClauseNode *for_if_clause = dn->for_if_clauses[i];
+
+					codegen.start_block();
+					GDScriptCodeGenerator::Address iterator = codegen.add_local(for_if_clause->variable->name, _gdtype_from_datatype(for_if_clause->variable->get_datatype()));
+					
+					gen->start_for(iterator.type, _gdtype_from_datatype(for_if_clause->list->get_datatype()));
+					
+					GDScriptCodeGenerator::Address list = _parse_expression(codegen, r_error, for_if_clause->list);
+
+					if (r_error) {
+						return GDScriptCodeGenerator::Address();
+					}
+
+					gen->write_for_assignment(iterator, list);
+
+					if (list.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+						codegen.generator->pop_temporary();
+					}
+
+					gen->write_for();
+
+					if (for_if_clause->if_condition != nullptr) {
+						GDScriptCodeGenerator::Address condition = _parse_expression(codegen, r_error, for_if_clause->if_condition);
+
+						if (r_error) {
+							return GDScriptCodeGenerator::Address();
+						}
+
+						gen->write_if(condition);
+
+						if (condition.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+							codegen.generator->pop_temporary();
+						}
+
+						gen->start_block();
+					}
+				}
+
 				// Key.
-				GDScriptCodeGenerator::Address element;
+				GDScriptCodeGenerator::Address key;
 				switch (dn->style) {
 					case GDScriptParser::DictionaryNode::PYTHON_DICT:
 						// Python-style: key is any expression.
-						element = _parse_expression(codegen, r_error, dn->elements[i].key);
+						key = _parse_expression(codegen, r_error, dn->template_keyvalue.key);
 						if (r_error) {
 							return GDScriptCodeGenerator::Address();
 						}
 						break;
 					case GDScriptParser::DictionaryNode::LUA_TABLE:
 						// Lua-style: key is an identifier interpreted as StringName.
-						StringName key = static_cast<const GDScriptParser::IdentifierNode *>(dn->elements[i].key)->name;
-						element = codegen.add_constant(key);
+						StringName key_id = static_cast<const GDScriptParser::IdentifierNode *>(dn->template_keyvalue.key)->name;
+						key = codegen.add_constant(key_id);
 						break;
 				}
 
-				elements.push_back(element);
-
-				element = _parse_expression(codegen, r_error, dn->elements[i].value);
+				GDScriptCodeGenerator::Address value = _parse_expression(codegen, r_error, dn->template_keyvalue.value);
 				if (r_error) {
 					return GDScriptCodeGenerator::Address();
 				}
 
-				elements.push_back(element);
-			}
+				gen->write_assign_dictionary_value(result, key, value);
 
-			gen->write_construct_dictionary(result, elements);
+				for (int i = 0; i < dn->for_if_clauses.size(); i++) {
+					const GDScriptParser::ForIfClauseNode *for_if_clause = dn->for_if_clauses[i];
 
-			for (int i = 0; i < elements.size(); i++) {
-				if (elements[i].mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					gen->pop_temporary();
+					if (for_if_clause->if_condition != nullptr) {
+						gen->end_block();
+						gen->write_endif();
+					}
+
+					gen->write_endfor();
+					codegen.end_block();
+				}
+
+				if (key.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+					codegen.generator->pop_temporary();
+				}
+
+				if (value.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+					codegen.generator->pop_temporary();
+				}
+			} else {
+				for (int i = 0; i < dn->elements.size(); i++) {
+					// Key.
+					GDScriptCodeGenerator::Address element;
+					switch (dn->style) {
+						case GDScriptParser::DictionaryNode::PYTHON_DICT:
+							// Python-style: key is any expression.
+							element = _parse_expression(codegen, r_error, dn->elements[i].key);
+							if (r_error) {
+								return GDScriptCodeGenerator::Address();
+							}
+							break;
+						case GDScriptParser::DictionaryNode::LUA_TABLE:
+							// Lua-style: key is an identifier interpreted as StringName.
+							StringName key = static_cast<const GDScriptParser::IdentifierNode *>(dn->elements[i].key)->name;
+							element = codegen.add_constant(key);
+							break;
+					}
+
+					elements.push_back(element);
+
+					element = _parse_expression(codegen, r_error, dn->elements[i].value);
+					if (r_error) {
+						return GDScriptCodeGenerator::Address();
+					}
+
+					elements.push_back(element);
+				}
+
+				gen->write_construct_dictionary(result, elements);
+
+				for (int i = 0; i < elements.size(); i++) {
+					if (elements[i].mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+						gen->pop_temporary();
+					}
 				}
 			}
 

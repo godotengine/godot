@@ -2399,7 +2399,13 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_array(ExpressionNode *p_pr
 			if (element == nullptr) {
 				push_error(R"(Expected expression as array element.)");
 			} else {
-				array->elements.push_back(element);
+				if (array->elements.size() == 0 && check(GDScriptTokenizer::Token::FOR)) {
+					array->template_expression = element;
+					parse_for_if_clauses(array->for_if_clauses);
+					break;
+				} else {
+					array->elements.push_back(element);
+				}
 			}
 		} while (match(GDScriptTokenizer::Token::COMMA) && !is_at_end());
 	}
@@ -2407,6 +2413,30 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_array(ExpressionNode *p_pr
 	consume(GDScriptTokenizer::Token::BRACKET_CLOSE, R"(Expected closing "]" after array elements.)");
 
 	return array;
+}
+
+void GDScriptParser::parse_for_if_clauses(Vector<ForIfClauseNode *>& clauses) {
+	do {
+		ForIfClauseNode *clause = alloc_node<ForIfClauseNode>();
+
+		consume(GDScriptTokenizer::Token::FOR, R"(Expected "for" for for-if-clause)");
+
+		if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected loop variable name after "for".)")) {
+			clause->variable = parse_identifier();
+		}
+
+		consume(GDScriptTokenizer::Token::IN, R"(Expected "in")");
+
+		clause->list = parse_precedence(PREC_LOGIC_OR, false);
+
+		if (check(GDScriptTokenizer::Token::IF)) {
+			consume(GDScriptTokenizer::Token::IF, "R(Expected If)");
+			clause->if_condition = parse_expression(false);
+		}
+
+		clauses.push_back(clause);
+
+	} while (check(GDScriptTokenizer::Token::FOR));
 }
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode *p_previous_operand, bool p_can_assign) {
@@ -2476,6 +2506,12 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 			ExpressionNode *value = parse_expression(false);
 			if (value == nullptr) {
 				push_error(R"(Expected expression as dictionary value.)");
+			}
+
+			if (dictionary->elements.size() == 0 && check(GDScriptTokenizer::Token::FOR)) {
+				dictionary->template_keyvalue = { key, value };
+				parse_for_if_clauses(dictionary->for_if_clauses);
+				break;
 			}
 
 			if (key != nullptr && value != nullptr) {

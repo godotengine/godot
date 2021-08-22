@@ -828,6 +828,9 @@ void GDScriptAnalyzer::resolve_node(GDScriptParser::Node *p_node) {
 		case GDScriptParser::Node::FOR:
 			resolve_for(static_cast<GDScriptParser::ForNode *>(p_node));
 			break;
+		case GDScriptParser::Node::FOR_IF_CLAUSE:
+			resolve_for_if_clause(static_cast<GDScriptParser::ForIfClauseNode *>(p_node));
+			break;
 		case GDScriptParser::Node::FUNCTION:
 			resolve_function_signature(static_cast<GDScriptParser::FunctionNode *>(p_node));
 			resolve_function_body(static_cast<GDScriptParser::FunctionNode *>(p_node));
@@ -1103,6 +1106,10 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 		is_shadowing(p_for->variable, R"("for" iterator variable)");
 	}
 #endif
+}
+
+void GDScriptAnalyzer::resolve_for_if_clause(GDScriptParser::ForIfClauseNode *p_for_if_clause) {
+	// TODO: This should attempt to resolve for errors
 }
 
 void GDScriptAnalyzer::resolve_while(GDScriptParser::WhileNode *p_while) {
@@ -1515,6 +1522,7 @@ void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expre
 		case GDScriptParser::Node::CONTINUE:
 		case GDScriptParser::Node::ENUM:
 		case GDScriptParser::Node::FOR:
+		case GDScriptParser::Node::FOR_IF_CLAUSE:
 		case GDScriptParser::Node::FUNCTION:
 		case GDScriptParser::Node::IF:
 		case GDScriptParser::Node::MATCH:

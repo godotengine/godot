@@ -72,6 +72,7 @@ public:
 	struct EnumNode;
 	struct ExpressionNode;
 	struct ForNode;
+	struct ForIfClauseNode;
 	struct FunctionNode;
 	struct GetNodeNode;
 	struct IdentifierNode;
@@ -264,6 +265,7 @@ public:
 			DICTIONARY,
 			ENUM,
 			FOR,
+			FOR_IF_CLAUSE,
 			FUNCTION,
 			GET_NODE,
 			IDENTIFIER,
@@ -335,6 +337,9 @@ public:
 
 	struct ArrayNode : public ExpressionNode {
 		Vector<ExpressionNode *> elements;
+		ExpressionNode* template_expression;
+		Vector<ForIfClauseNode *> for_if_clauses;
+
 
 		ArrayNode() {
 			type = ARRAY;
@@ -700,6 +705,9 @@ public:
 		};
 		Vector<Pair> elements;
 
+		Pair template_keyvalue;
+		Vector<ForIfClauseNode *> for_if_clauses;
+
 		enum Style {
 			LUA_TABLE,
 			PYTHON_DICT,
@@ -718,6 +726,16 @@ public:
 
 		ForNode() {
 			type = FOR;
+		}
+	};
+
+	struct ForIfClauseNode : public Node {
+		IdentifierNode *variable = nullptr;
+		ExpressionNode *list = nullptr;
+		ExpressionNode *if_condition = nullptr;
+
+		ForIfClauseNode() {
+			type = FOR_IF_CLAUSE;
 		}
 	};
 
@@ -1354,6 +1372,7 @@ private:
 	BreakNode *parse_break();
 	ContinueNode *parse_continue();
 	ForNode *parse_for();
+	void parse_for_if_clauses(Vector<ForIfClauseNode *>& output_clauses);
 	IfNode *parse_if(const String &p_token = "if");
 	MatchNode *parse_match();
 	MatchBranchNode *parse_match_branch();

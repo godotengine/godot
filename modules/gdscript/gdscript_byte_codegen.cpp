@@ -1282,6 +1282,13 @@ void GDScriptByteCodeGenerator::write_construct_dictionary(const Address &p_targ
 	append(p_arguments.size() / 2); // This is number of key-value pairs, so only half of actual arguments.
 }
 
+void GDScriptByteCodeGenerator::write_assign_dictionary_value(const Address &p_target, const Address &p_key, const Address &p_value) {
+	append(GDScriptFunction::OPCODE_ASSIGN_DICTIONARY_VALUE, 3);
+	append(p_target);
+	append(p_key);
+	append(p_value);
+}
+
 void GDScriptByteCodeGenerator::write_await(const Address &p_target, const Address &p_operand) {
 	append(GDScriptFunction::OPCODE_AWAIT, 1);
 	append(p_operand);

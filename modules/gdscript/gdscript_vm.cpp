@@ -224,6 +224,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_CONSTRUCT_ARRAY,                    \
 		&&OPCODE_CONSTRUCT_TYPED_ARRAY,              \
 		&&OPCODE_CONSTRUCT_DICTIONARY,               \
+		&&OPCODE_ASSIGN_DICTIONARY_VALUE,            \
 		&&OPCODE_CALL,                               \
 		&&OPCODE_CALL_RETURN,                        \
 		&&OPCODE_CALL_ASYNC,                         \
@@ -1433,6 +1434,20 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				*dst = dict;
 
 				ip += 2;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_ASSIGN_DICTIONARY_VALUE) {
+				CHECK_SPACE(4);
+
+				GET_INSTRUCTION_ARG(variant, 0);
+				GET_INSTRUCTION_ARG(k, 1);
+				GET_INSTRUCTION_ARG(v, 2);
+
+				Dictionary *dict = VariantInternal::get_dictionary(variant);
+				(*dict)[*k] = *v;
+
+				ip += 4;
 			}
 			DISPATCH_OPCODE;
 
