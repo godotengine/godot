@@ -819,19 +819,21 @@ PackedVector2Array GraphEdit::get_connection_line(const Vector2 &p_from, const V
 	return curve.tessellate();
 }
 
-void GraphEdit::_draw_connection_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width) {
-	Vector<Vector2> points = get_connection_line(p_from, p_to);
+void GraphEdit::_draw_connection_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width, float p_zoom) {
+	Vector<Vector2> points = get_connection_line(p_from / p_zoom, p_to / p_zoom);
+	Vector<Vector2> scaled_points;
 	Vector<Color> colors;
 	float length = p_from.distance_to(p_to);
 	for (int i = 0; i < points.size(); i++) {
 		float d = p_from.distance_to(points[i]) / length;
 		colors.push_back(p_color.lerp(p_to_color, d));
+		scaled_points.push_back(points[i] * p_zoom);
 	}
 
 #ifdef TOOLS_ENABLED
-	p_where->draw_polyline_colors(points, colors, Math::floor(p_width * EDSCALE), lines_antialiased);
+	p_where->draw_polyline_colors(scaled_points, colors, Math::floor(p_width * EDSCALE), lines_antialiased);
 #else
-	p_where->draw_polyline_colors(points, colors, p_width, lines_antialiased);
+	p_where->draw_polyline_colors(scaled_points, colors, p_width, lines_antialiased);
 #endif
 }
 
@@ -878,7 +880,7 @@ void GraphEdit::_connections_layer_draw() {
 			color = color.lerp(activity_color, E->get().activity);
 			tocolor = tocolor.lerp(activity_color, E->get().activity);
 		}
-		_draw_connection_line(connections_layer, frompos, topos, color, tocolor, lines_thickness);
+		_draw_connection_line(connections_layer, frompos, topos, color, tocolor, lines_thickness, zoom);
 	}
 
 	while (to_erase.size()) {
@@ -917,7 +919,7 @@ void GraphEdit::_top_layer_draw() {
 		if (!connecting_out) {
 			SWAP(pos, topos);
 		}
-		_draw_connection_line(top_layer, pos, topos, col, col, lines_thickness);
+		_draw_connection_line(top_layer, pos, topos, col, col, lines_thickness, zoom);
 	}
 
 	if (box_selecting) {
@@ -1021,7 +1023,7 @@ void GraphEdit::_minimap_draw() {
 			from_color = from_color.lerp(activity_color, E.activity);
 			to_color = to_color.lerp(activity_color, E.activity);
 		}
-		_draw_connection_line(minimap, from_position, to_position, from_color, to_color, 1.0);
+		_draw_connection_line(minimap, from_position, to_position, from_color, to_color, 0.1, minimap->_convert_from_graph_position(Vector2(zoom, zoom)).length());
 	}
 
 	// Draw the "camera" viewport.
