@@ -412,7 +412,6 @@ bool SceneTree::physics_process(double p_time) {
 
 	MainLoop::physics_process(p_time);
 	physics_process_time = p_time;
-	physics_total_time += p_time;
 
 	emit_signal(SNAME("physics_frame"));
 
@@ -439,7 +438,6 @@ bool SceneTree::process(double p_time) {
 	MainLoop::process(p_time);
 
 	process_time = p_time;
-	process_total_time += p_time;
 
 	if (multiplayer_poll) {
 		multiplayer->poll();
