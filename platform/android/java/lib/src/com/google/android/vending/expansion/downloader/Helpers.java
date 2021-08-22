@@ -54,7 +54,7 @@ public class Helpers {
 
     /*
      * Parse the Content-Disposition HTTP Header. The format of the header is defined here:
-     * http://www.w3.org/Protocols/rfc2616/rfc2616-sec19.html This header provides a filename for
+     * https://www.w3.org/Protocols/rfc2616/rfc2616-sec19.html This header provides a filename for
      * content that is going to be downloaded to the file system. We only support the attachment
      * type.
      */

@@ -321,7 +321,7 @@ def configure_msvc(env, manual_msvc_config):
 
 def configure_mingw(env):
     # Workaround for MinGW. See:
-    # http://www.scons.org/wiki/LongCmdLinesOnWin32
+    # https://www.scons.org/wiki/LongCmdLinesOnWin32
     env.use_windows_spawn_fix()
 
     ## Build type

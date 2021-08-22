@@ -40,7 +40,7 @@
 *
 * NAME: smbPitchShift.cpp
 * VERSION: 1.2
-* HOME URL: http://blogs.zynaptiq.com/bernsee
+* HOME URL: https://blogs.zynaptiq.com/bernsee
 * KNOWN BUGS: none
 *
 * SYNOPSIS: Routine for doing pitch shifting while maintaining

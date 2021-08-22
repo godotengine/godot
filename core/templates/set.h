@@ -35,7 +35,7 @@
 #include "core/typedefs.h"
 
 // based on the very nice implementation of rb-trees by:
-// https://web.archive.org/web/20120507164830/http://web.mit.edu/~emin/www/source_code/red_black_tree/index.html
+// https://web.archive.org/web/20120507164830/https://web.mit.edu/~emin/www/source_code/red_black_tree/index.html
 
 template <class T, class C = Comparator<T>, class A = DefaultAllocator>
 class Set {

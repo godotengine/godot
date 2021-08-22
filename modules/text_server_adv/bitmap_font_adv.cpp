@@ -225,7 +225,7 @@ hb_font_t *hb_bmp_font_create(BitmapFontDataAdvanced *p_face, int p_size, hb_des
 Error BitmapFontDataAdvanced::load_from_file(const String &p_filename, int p_base_size) {
 	_THREAD_SAFE_METHOD_
 	//fnt format used by angelcode bmfont
-	//http://www.angelcode.com/products/bmfont/
+	//https://www.angelcode.com/products/bmfont/
 
 	FileAccess *f = FileAccess::open(p_filename, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(!f, ERR_FILE_NOT_FOUND, "Can't open font: " + p_filename + ".");

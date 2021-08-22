@@ -288,7 +288,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 #ifndef USE_NO_SHADOWS
 
 // Interleaved Gradient Noise
-// http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare
+// https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare
 float quick_hash(vec2 pos) {
 	const vec3 magic = vec3(0.06711056f, 0.00583715f, 52.9829189f);
 	return fract(magic.z * fract(dot(pos, magic.xy)));

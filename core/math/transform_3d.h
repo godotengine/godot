@@ -155,7 +155,7 @@ _FORCE_INLINE_ Plane Transform3D::xform_inv(const Plane &p_plane) const {
 }
 
 _FORCE_INLINE_ AABB Transform3D::xform(const AABB &p_aabb) const {
-	/* http://dev.theomader.com/transform-bounding-boxes/ */
+	/* https://dev.theomader.com/transform-bounding-boxes/ */
 	Vector3 min = p_aabb.position;
 	Vector3 max = p_aabb.position + p_aabb.size;
 	Vector3 tmin, tmax;

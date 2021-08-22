@@ -316,10 +316,10 @@ if env_base["target"] == "debug":
     # will properly be rebuilt. As such, we only enable them for debug (dev) builds, not release.
 
     # To decide whether to rebuild a file, use the MD5 sum only if the timestamp has changed.
-    # http://scons.org/doc/production/HTML/scons-user/ch06.html#idm139837621851792
+    # https://scons.org/doc/production/HTML/scons-user/ch06.html#idm139837621851792
     env_base.Decider("MD5-timestamp")
     # Use cached implicit dependencies by default. Can be overridden by specifying `--implicit-deps-changed` in the command line.
-    # http://scons.org/doc/production/HTML/scons-user/ch06s04.html
+    # https://scons.org/doc/production/HTML/scons-user/ch06s04.html
     env_base.SetOption("implicit_cache", 1)
 
 if env_base["no_editor_splash"]:

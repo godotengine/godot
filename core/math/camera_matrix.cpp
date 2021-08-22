@@ -341,8 +341,8 @@ bool CameraMatrix::get_endpoints(const Transform3D &p_transform, Vector3 *p_8poi
 Vector<Plane> CameraMatrix::get_projection_planes(const Transform3D &p_transform) const {
 	/** Fast Plane Extraction from combined modelview/projection matrices.
 	 * References:
-	 * https://web.archive.org/web/20011221205252/http://www.markmorley.com/opengl/frustumculling.html
-	 * https://web.archive.org/web/20061020020112/http://www2.ravensoft.com/users/ggribb/plane%20extraction.pdf
+	 * https://web.archive.org/web/20011221205252/https://www.markmorley.com/opengl/frustumculling.html
+	 * https://web.archive.org/web/20061020020112/https://www2.ravensoft.com/users/ggribb/plane%20extraction.pdf
 	 */
 
 	Vector<Plane> planes;

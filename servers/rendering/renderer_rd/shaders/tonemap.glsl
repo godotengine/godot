@@ -349,7 +349,7 @@ vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
 }
 #endif // !SUBPASS
 
-// From http://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
+// From https://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
 // and https://www.shadertoy.com/view/MslGR8 (5th one starting from the bottom)
 // NOTE: `frag_coord` is in pixels (i.e. not normalized UV).
 vec3 screen_space_dither(vec2 frag_coord) {

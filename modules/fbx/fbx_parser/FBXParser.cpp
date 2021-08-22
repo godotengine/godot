@@ -575,7 +575,7 @@ void ReadBinaryDataArray(char type, uint32_t count, const char *&data, const cha
 		std::copy(data, end, buff.begin());
 	} else if (encmode == 1) {
 		// zlib/deflate, next comes ZIP head (0x78 0x01)
-		// see http://www.ietf.org/rfc/rfc1950.txt
+		// see https://www.ietf.org/rfc/rfc1950.txt
 
 		z_stream zstream;
 		zstream.opaque = Z_NULL;

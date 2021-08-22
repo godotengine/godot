@@ -47,7 +47,7 @@ layout(set = 2, binding = 0) uniform sampler2D original_weight;
 #endif
 
 //DOF
-// Bokeh single pass implementation based on http://tuxedolabs.blogspot.com/2018/05/bokeh-depth-of-field-in-single-pass.html
+// Bokeh single pass implementation based on https://tuxedolabs.blogspot.com/2018/05/bokeh-depth-of-field-in-single-pass.html
 
 #ifdef MODE_GEN_BLUR_SIZE
 
