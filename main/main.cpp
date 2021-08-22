@@ -369,7 +369,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  -s, --script <script>                        Run a script.\n");
 	OS::get_singleton()->print("  --check-only                                 Only parse for errors and quit (use with --script).\n");
 #ifdef TOOLS_ENABLED
-	OS::get_singleton()->print("  --convert-to-godot4                          Converts project from Godot 3 to Godot 4.\n");
+	OS::get_singleton()->print("  --convert-to-godot40                         Converts project from Godot 3.x to Godot 4.0.\n");
 	OS::get_singleton()->print("  --export <preset> <path>                     Export the project using the given preset and matching release template. The preset name should match one defined in export_presets.cfg.\n");
 	OS::get_singleton()->print("                                               <path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. 'builds/game.exe'). The target directory should exist.\n");
 	OS::get_singleton()->print("  --export-debug <preset> <path>               Same as --export, but using the debug template.\n");
@@ -908,7 +908,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			// Actually handling is done in start().
 			cmdline_tool = true;
 			main_args.push_back(I->get());
-		} else if (I->get() == "--convert-to-godot4") {
+		} else if (I->get() == "--convert-to-godot40") {
 			// Actually handling is done in start().
 			cmdline_tool = true;
 			main_args.push_back(I->get());
@@ -1878,7 +1878,7 @@ bool Main::start() {
 #ifdef TOOLS_ENABLED
 		} else if (args[i] == "--no-docbase") {
 			doc_base = false;
-		} else if (args[i] == "--convert-to-godot4") {
+		} else if (args[i] == "--convert-to-godot40") {
 			converting_project = true;
 		} else if (args[i] == "-e" || args[i] == "--editor") {
 			editor = true;

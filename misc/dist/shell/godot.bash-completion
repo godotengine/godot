@@ -76,7 +76,7 @@ _complete_godot_options() {
 --build-solutions
 --gdnative-generate-json-api
 --test
---convert-to-godot4
+--convert-to-godot40
 " -- "$1"))
 }
 
