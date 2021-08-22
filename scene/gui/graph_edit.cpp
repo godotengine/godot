@@ -823,9 +823,9 @@ void GraphEdit::_draw_connection_line(CanvasItem *p_where, const Vector2 &p_from
 	Vector<Vector2> points = get_connection_line(p_from / p_zoom, p_to / p_zoom);
 	Vector<Vector2> scaled_points;
 	Vector<Color> colors;
-	float length = p_from.distance_to(p_to);
+	float length = (p_from / p_zoom).distance_to(p_to / p_zoom);
 	for (int i = 0; i < points.size(); i++) {
-		float d = p_from.distance_to(points[i]) / length;
+		float d = (p_from / p_zoom).distance_to(points[i]) / length;
 		colors.push_back(p_color.lerp(p_to_color, d));
 		scaled_points.push_back(points[i] * p_zoom);
 	}
