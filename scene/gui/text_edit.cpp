@@ -1305,7 +1305,7 @@ void TextEdit::_notification(int p_what) {
 	}
 }
 
-void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
+void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	ERR_FAIL_COND(p_gui_input.is_null());
 
 	double prev_v_scroll = v_scroll->get_value();
@@ -4367,7 +4367,7 @@ bool TextEdit::is_drawing_spaces() const {
 
 void TextEdit::_bind_methods() {
 	/*Internal. */
-	ClassDB::bind_method(D_METHOD("_gui_input"), &TextEdit::_gui_input);
+
 	ClassDB::bind_method(D_METHOD("_text_changed_emit"), &TextEdit::_text_changed_emit);
 
 	/* Text */

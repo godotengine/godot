@@ -47,14 +47,14 @@ class MenuButton : public Button {
 	Array _get_items() const;
 	void _set_items(const Array &p_items);
 
-	void _gui_input(Ref<InputEvent> p_event) override;
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 	void _popup_visibility_changed(bool p_visible);
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-	virtual void _unhandled_key_input(Ref<InputEvent> p_event) override;
+	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	virtual void pressed() override;

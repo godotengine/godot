@@ -64,8 +64,7 @@ class MeshEditor : public SubViewportContainer {
 
 protected:
 	void _notification(int p_what);
-	void _gui_input(Ref<InputEvent> p_event);
-	static void _bind_methods();
+	void gui_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	void edit(Ref<Mesh> p_mesh);

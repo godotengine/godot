@@ -88,7 +88,7 @@ void GradientEdit::_show_color_picker() {
 GradientEdit::~GradientEdit() {
 }
 
-void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
+void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventKey> k = p_event;
@@ -458,6 +458,5 @@ Vector<Gradient::Point> &GradientEdit::get_points() {
 }
 
 void GradientEdit::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &GradientEdit::_gui_input);
 	ADD_SIGNAL(MethodInfo("ramp_changed"));
 }

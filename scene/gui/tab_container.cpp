@@ -71,7 +71,7 @@ int TabContainer::_get_top_margin() const {
 	return tab_height + content_height;
 }
 
-void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
+void TabContainer::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventMouseButton> mb = p_event;
@@ -1193,7 +1193,6 @@ bool TabContainer::get_use_hidden_tabs_for_min_size() const {
 }
 
 void TabContainer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &TabContainer::_gui_input);
 	ClassDB::bind_method(D_METHOD("get_tab_count"), &TabContainer::get_tab_count);
 	ClassDB::bind_method(D_METHOD("set_current_tab", "tab_idx"), &TabContainer::set_current_tab);
 	ClassDB::bind_method(D_METHOD("get_current_tab"), &TabContainer::get_current_tab);

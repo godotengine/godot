@@ -320,7 +320,6 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	GDREGISTER_CLASS(Shortcut);
 	GDREGISTER_CLASS(Control);
 	GDREGISTER_CLASS(Button);
 	GDREGISTER_CLASS(Label);

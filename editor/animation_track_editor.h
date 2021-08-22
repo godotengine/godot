@@ -89,7 +89,7 @@ class AnimationTimelineEdit : public Range {
 	float dragging_hsize_from;
 	float dragging_hsize_at;
 
-	void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _track_added(int p_track);
 
 protected:
@@ -195,7 +195,7 @@ protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
-	virtual void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	virtual Variant get_drag_data(const Point2 &p_point) override;

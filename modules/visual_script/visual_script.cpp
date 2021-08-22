@@ -1845,26 +1845,6 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 	max_input_args = 0;
 	max_output_args = 0;
 
-	if (Object::cast_to<Node>(p_owner)) {
-		// Turn on these if they exist and base is a node.
-		Node *node = Object::cast_to<Node>(p_owner);
-		if (p_script->functions.has("_process")) {
-			node->set_process(true);
-		}
-		if (p_script->functions.has("_physics_process")) {
-			node->set_physics_process(true);
-		}
-		if (p_script->functions.has("_input")) {
-			node->set_process_input(true);
-		}
-		if (p_script->functions.has("_unhandled_input")) {
-			node->set_process_unhandled_input(true);
-		}
-		if (p_script->functions.has("_unhandled_key_input")) {
-			node->set_process_unhandled_key_input(true);
-		}
-	}
-
 	// Setup variables.
 	{
 		List<StringName> keys;

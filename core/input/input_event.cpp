@@ -31,8 +31,8 @@
 #include "input_event.h"
 
 #include "core/input/input_map.h"
+#include "core/input/shortcut.h"
 #include "core/os/keyboard.h"
-#include "scene/gui/shortcut.h"
 
 const int InputEvent::DEVICE_ID_TOUCH_MOUSE = -1;
 const int InputEvent::DEVICE_ID_INTERNAL = -2;
@@ -1543,6 +1543,13 @@ void InputEventShortcut::set_shortcut(Ref<Shortcut> p_shortcut) {
 
 Ref<Shortcut> InputEventShortcut::get_shortcut() {
 	return shortcut;
+}
+
+void InputEventShortcut::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_shortcut", "shortcut"), &InputEventShortcut::set_shortcut);
+	ClassDB::bind_method(D_METHOD("get_shortcut"), &InputEventShortcut::get_shortcut);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, "Shortcut"), "set_shortcut", "get_shortcut");
 }
 
 bool InputEventShortcut::is_pressed() const {

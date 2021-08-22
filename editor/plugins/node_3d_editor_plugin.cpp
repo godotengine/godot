@@ -181,7 +181,7 @@ void ViewportRotationControl::_get_sorted_axis(Vector<Axis2D> &r_axis) {
 	r_axis.sort_custom<Axis2DCompare>();
 }
 
-void ViewportRotationControl::_gui_input(Ref<InputEvent> p_event) {
+void ViewportRotationControl::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	const Ref<InputEventMouseButton> mb = p_event;
@@ -250,10 +250,6 @@ void ViewportRotationControl::_on_mouse_exited() {
 
 void ViewportRotationControl::set_viewport(Node3DEditorViewport *p_viewport) {
 	viewport = p_viewport;
-}
-
-void ViewportRotationControl::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &ViewportRotationControl::_gui_input);
 }
 
 void Node3DEditorViewport::_update_camera(real_t p_interp_delta) {
@@ -4428,7 +4424,7 @@ Node3DEditorViewport::~Node3DEditorViewport() {
 
 //////////////////////////////////////////////////////////////
 
-void Node3DEditorViewportContainer::_gui_input(const Ref<InputEvent> &p_event) {
+void Node3DEditorViewportContainer::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventMouseButton> mb = p_event;
@@ -4718,10 +4714,6 @@ void Node3DEditorViewportContainer::set_view(View p_view) {
 
 Node3DEditorViewportContainer::View Node3DEditorViewportContainer::get_view() {
 	return view;
-}
-
-void Node3DEditorViewportContainer::_bind_methods() {
-	ClassDB::bind_method("_gui_input", &Node3DEditorViewportContainer::_gui_input);
 }
 
 Node3DEditorViewportContainer::Node3DEditorViewportContainer() {
@@ -6512,7 +6504,7 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 	}
 }
 
-void Node3DEditor::_unhandled_key_input(Ref<InputEvent> p_event) {
+void Node3DEditor::unhandled_key_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (!is_visible_in_tree()) {
@@ -6890,7 +6882,6 @@ void Node3DEditor::_register_all_gizmos() {
 }
 
 void Node3DEditor::_bind_methods() {
-	ClassDB::bind_method("_unhandled_key_input", &Node3DEditor::_unhandled_key_input);
 	ClassDB::bind_method("_get_editor_data", &Node3DEditor::_get_editor_data);
 	ClassDB::bind_method("_request_gizmo", &Node3DEditor::_request_gizmo);
 	ClassDB::bind_method("_clear_subgizmo_selection", &Node3DEditor::_clear_subgizmo_selection);

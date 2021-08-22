@@ -692,7 +692,7 @@ bool EditorProperty::is_selected() const {
 	return selected;
 }
 
-void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
+void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (property == StringName()) {
@@ -919,8 +919,6 @@ void EditorProperty::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_edited_property"), &EditorProperty::get_edited_property);
 	ClassDB::bind_method(D_METHOD("get_edited_object"), &EditorProperty::get_edited_object);
-
-	ClassDB::bind_method(D_METHOD("_gui_input"), &EditorProperty::_gui_input);
 
 	ClassDB::bind_method(D_METHOD("get_tooltip_text"), &EditorProperty::get_tooltip_text);
 	ClassDB::bind_method(D_METHOD("update_property"), &EditorProperty::update_property);
@@ -1319,7 +1317,7 @@ void EditorInspectorSection::setup(const String &p_section, const String &p_labe
 	}
 }
 
-void EditorInspectorSection::_gui_input(const Ref<InputEvent> &p_event) {
+void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (!foldable) {
@@ -1378,7 +1376,6 @@ void EditorInspectorSection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_vbox"), &EditorInspectorSection::get_vbox);
 	ClassDB::bind_method(D_METHOD("unfold"), &EditorInspectorSection::unfold);
 	ClassDB::bind_method(D_METHOD("fold"), &EditorInspectorSection::fold);
-	ClassDB::bind_method(D_METHOD("_gui_input"), &EditorInspectorSection::_gui_input);
 }
 
 EditorInspectorSection::EditorInspectorSection() {

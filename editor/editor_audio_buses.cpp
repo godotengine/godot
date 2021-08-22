@@ -530,7 +530,7 @@ void EditorAudioBus::_effect_add(int p_which) {
 	ur->commit_action();
 }
 
-void EditorAudioBus::_gui_input(const Ref<InputEvent> &p_event) {
+void EditorAudioBus::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventMouseButton> mb = p_event;
@@ -744,7 +744,7 @@ void EditorAudioBus::_effect_rmb(const Vector2 &p_pos) {
 void EditorAudioBus::_bind_methods() {
 	ClassDB::bind_method("update_bus", &EditorAudioBus::update_bus);
 	ClassDB::bind_method("update_send", &EditorAudioBus::update_send);
-	ClassDB::bind_method("_gui_input", &EditorAudioBus::_gui_input);
+
 	ClassDB::bind_method("_get_drag_data_fw", &EditorAudioBus::get_drag_data_fw);
 	ClassDB::bind_method("_can_drop_data_fw", &EditorAudioBus::can_drop_data_fw);
 	ClassDB::bind_method("_drop_data_fw", &EditorAudioBus::drop_data_fw);

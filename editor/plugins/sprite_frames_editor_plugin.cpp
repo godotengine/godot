@@ -40,7 +40,7 @@
 #include "scene/gui/margin_container.h"
 #include "scene/gui/panel_container.h"
 
-void SpriteFramesEditor::_gui_input(Ref<InputEvent> p_event) {
+void SpriteFramesEditor::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void SpriteFramesEditor::_open_sprite_sheet() {

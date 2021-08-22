@@ -31,10 +31,10 @@
 #ifndef POPUP_MENU_H
 #define POPUP_MENU_H
 
+#include "core/input/shortcut.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/scroll_container.h"
-#include "scene/gui/shortcut.h"
 #include "scene/resources/text_line.h"
 
 class PopupMenu : public Popup {
@@ -107,7 +107,7 @@ class PopupMenu : public Popup {
 
 	void _shape_item(int p_item);
 
-	void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event);
 	void _activate_submenu(int p_over);
 	void _submenu_timeout();
 

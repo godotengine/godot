@@ -508,9 +508,9 @@ public:
 	Vector2 get_camera_coords(const Vector2 &p_viewport_coords) const;
 	Vector2 get_camera_rect_size() const;
 
-	void input_text(const String &p_text);
-	void input(const Ref<InputEvent> &p_event, bool p_local_coords = false);
-	void unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coords = false);
+	void push_text_input(const String &p_text);
+	void push_input(const Ref<InputEvent> &p_event, bool p_local_coords = false);
+	void push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coords = false);
 
 	void set_disable_input(bool p_disable);
 	bool is_input_disabled() const;

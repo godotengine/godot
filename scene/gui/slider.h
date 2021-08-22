@@ -50,7 +50,7 @@ class Slider : public Range {
 	bool scrollable = true;
 
 protected:
-	void _gui_input(Ref<InputEvent> p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _notification(int p_what);
 	static void _bind_methods();
 	bool ticks_on_borders = false;

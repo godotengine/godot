@@ -35,9 +35,6 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 
-void ResourcePreloaderEditor::_gui_input(Ref<InputEvent> p_event) {
-}
-
 void ResourcePreloaderEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		load->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
@@ -335,7 +332,6 @@ void ResourcePreloaderEditor::drop_data_fw(const Point2 &p_point, const Variant 
 }
 
 void ResourcePreloaderEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &ResourcePreloaderEditor::_gui_input);
 	ClassDB::bind_method(D_METHOD("_update_library"), &ResourcePreloaderEditor::_update_library);
 	ClassDB::bind_method(D_METHOD("_remove_resource", "to_remove"), &ResourcePreloaderEditor::_remove_resource);
 

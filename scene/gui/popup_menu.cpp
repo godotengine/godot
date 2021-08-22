@@ -251,7 +251,7 @@ void PopupMenu::_submenu_timeout() {
 	submenu_over = -1;
 }
 
-void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
+void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (p_event->is_action("ui_down") && p_event->is_pressed()) {
@@ -1581,8 +1581,6 @@ void PopupMenu::take_mouse_focus() {
 }
 
 void PopupMenu::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &PopupMenu::_gui_input);
-
 	ClassDB::bind_method(D_METHOD("add_item", "label", "id", "accel"), &PopupMenu::add_item, DEFVAL(-1), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("add_icon_item", "texture", "label", "id", "accel"), &PopupMenu::add_icon_item, DEFVAL(-1), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("add_check_item", "label", "id", "accel"), &PopupMenu::add_check_item, DEFVAL(-1), DEFVAL(0));
@@ -1708,7 +1706,7 @@ PopupMenu::PopupMenu() {
 	scroll_container->add_child(control);
 	control->connect("draw", callable_mp(this, &PopupMenu::_draw_items));
 
-	connect("window_input", callable_mp(this, &PopupMenu::_gui_input));
+	connect("window_input", callable_mp(this, &PopupMenu::gui_input));
 
 	submenu_timer = memnew(Timer);
 	submenu_timer->set_wait_time(0.3);

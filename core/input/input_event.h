@@ -548,6 +548,9 @@ class InputEventShortcut : public InputEvent {
 
 	Ref<Shortcut> shortcut;
 
+protected:
+	static void _bind_methods();
+
 public:
 	void set_shortcut(Ref<Shortcut> p_shortcut);
 	Ref<Shortcut> get_shortcut();

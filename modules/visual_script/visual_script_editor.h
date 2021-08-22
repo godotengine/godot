@@ -234,7 +234,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	void _generic_search(String p_base_type = "", Vector2 pos = Vector2(), bool node_centered = false);
 
-	void _input(const Ref<InputEvent> &p_event);
+	virtual void input(const Ref<InputEvent> &p_event) override;
 	void _graph_gui_input(const Ref<InputEvent> &p_event);
 	void _members_gui_input(const Ref<InputEvent> &p_event);
 	void _fn_name_box_input(const Ref<InputEvent> &p_event);

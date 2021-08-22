@@ -248,7 +248,7 @@ private:
 	void _text_changed();
 
 protected:
-	void _gui_input(const Ref<InputEvent> &p_gui_input) override;
+	void gui_input(const Ref<InputEvent> &p_gui_input) override;
 	void _notification(int p_what);
 
 	static void _bind_methods();

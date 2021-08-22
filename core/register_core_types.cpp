@@ -41,6 +41,7 @@
 #include "core/extension/native_extension_manager.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
+#include "core/input/shortcut.h"
 #include "core/io/config_file.h"
 #include "core/io/dtls_server.h"
 #include "core/io/http_client.h"
@@ -145,10 +146,12 @@ void register_core_types() {
 	GDREGISTER_CLASS(Resource);
 	GDREGISTER_CLASS(Image);
 
+	GDREGISTER_CLASS(Shortcut);
 	GDREGISTER_VIRTUAL_CLASS(InputEvent);
 	GDREGISTER_VIRTUAL_CLASS(InputEventWithModifiers);
 	GDREGISTER_VIRTUAL_CLASS(InputEventFromWindow);
 	GDREGISTER_CLASS(InputEventKey);
+	GDREGISTER_CLASS(InputEventShortcut);
 	GDREGISTER_VIRTUAL_CLASS(InputEventMouse);
 	GDREGISTER_CLASS(InputEventMouseButton);
 	GDREGISTER_CLASS(InputEventMouseMotion);

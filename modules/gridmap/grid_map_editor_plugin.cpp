@@ -790,7 +790,7 @@ void GridMapEditor::_sbox_input(const Ref<InputEvent> &p_ie) {
 
 	if (k.is_valid() && (k->get_keycode() == KEY_UP || k->get_keycode() == KEY_DOWN || k->get_keycode() == KEY_PAGEUP || k->get_keycode() == KEY_PAGEDOWN)) {
 		// Forward the key input to the ItemList so it can be scrolled
-		mesh_library_palette->call("_gui_input", k);
+		mesh_library_palette->gui_input(k);
 		search_box->accept_event();
 	}
 }

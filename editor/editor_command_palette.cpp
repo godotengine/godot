@@ -149,7 +149,7 @@ void EditorCommandPalette::_sbox_input(const Ref<InputEvent> &p_ie) {
 			case KEY_DOWN:
 			case KEY_PAGEUP:
 			case KEY_PAGEDOWN: {
-				search_options->call("_gui_input", k);
+				search_options->gui_input(k);
 			} break;
 			default:
 				break;
@@ -226,7 +226,7 @@ void EditorCommandPalette::register_shortcuts_as_command() {
 		ev.instantiate();
 		ev->set_shortcut(shortcut);
 		String shortcut_text = String(shortcut->get_as_text());
-		add_command(command_name, *key, callable_mp(EditorNode::get_singleton()->get_viewport(), &Viewport::unhandled_input), varray(ev, false), shortcut_text);
+		add_command(command_name, *key, callable_mp(EditorNode::get_singleton()->get_viewport(), &Viewport::push_unhandled_input), varray(ev, false), shortcut_text);
 		key = unregistered_shortcuts.next(key);
 	}
 	unregistered_shortcuts.clear();
@@ -238,7 +238,7 @@ Ref<Shortcut> EditorCommandPalette::add_shortcut_command(const String &p_command
 		ev.instantiate();
 		ev->set_shortcut(p_shortcut);
 		String shortcut_text = String(p_shortcut->get_as_text());
-		add_command(p_command, p_key, callable_mp(EditorNode::get_singleton()->get_viewport(), &Viewport::unhandled_input), varray(ev, false), shortcut_text);
+		add_command(p_command, p_key, callable_mp(EditorNode::get_singleton()->get_viewport(), &Viewport::push_unhandled_input), varray(ev, false), shortcut_text);
 	} else {
 		const String key_name = String(p_key);
 		const String command_name = String(p_command);

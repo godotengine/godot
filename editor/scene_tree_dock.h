@@ -210,8 +210,8 @@ class SceneTreeDock : public VBoxContainer {
 	void _node_prerenamed(Node *p_node, const String &p_new_name);
 
 	void _nodes_drag_begin();
-	void _input(Ref<InputEvent> p_event);
-	void _unhandled_key_input(Ref<InputEvent> p_event);
+	virtual void input(const Ref<InputEvent> &p_event) override;
+	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 
 	void _import_subscene();
 

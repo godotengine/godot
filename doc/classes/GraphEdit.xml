@@ -10,7 +10,7 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_get_connection_line" qualifiers="virtual">
+		<method name="_get_connection_line" qualifiers="virtual const">
 			<return type="PackedVector2Array" />
 			<argument index="0" name="from" type="Vector2" />
 			<argument index="1" name="to" type="Vector2" />

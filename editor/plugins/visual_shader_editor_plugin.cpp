@@ -3171,7 +3171,7 @@ void VisualShaderEditor::_sbox_input(const Ref<InputEvent> &p_ie) {
 								 ie->get_keycode() == KEY_DOWN ||
 								 ie->get_keycode() == KEY_ENTER ||
 								 ie->get_keycode() == KEY_KP_ENTER)) {
-		members->call("_gui_input", ie);
+		members->gui_input(ie);
 		node_filter->accept_event();
 	}
 }

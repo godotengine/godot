@@ -34,9 +34,6 @@
 #include "core/io/resource_loader.h"
 #include "editor/editor_settings.h"
 
-void Texture3DEditor::_gui_input(Ref<InputEvent> p_event) {
-}
-
 void Texture3DEditor::_texture_rect_draw() {
 	texture_rect->draw_rect(Rect2(Point2(), texture_rect->get_size()), Color(1, 1, 1, 1));
 }
@@ -145,7 +142,6 @@ void Texture3DEditor::edit(Ref<Texture3D> p_texture) {
 }
 
 void Texture3DEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &Texture3DEditor::_gui_input);
 	ClassDB::bind_method(D_METHOD("_layer_changed"), &Texture3DEditor::_layer_changed);
 }
 

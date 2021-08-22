@@ -52,7 +52,7 @@ String EditorSpinSlider::get_text_value() const {
 	return TS->format_number(String::num(get_value(), Math::range_step_decimals(get_step())));
 }
 
-void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
+void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (read_only) {
@@ -563,8 +563,6 @@ void EditorSpinSlider::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_flat", "flat"), &EditorSpinSlider::set_flat);
 	ClassDB::bind_method(D_METHOD("is_flat"), &EditorSpinSlider::is_flat);
-
-	ClassDB::bind_method(D_METHOD("_gui_input"), &EditorSpinSlider::_gui_input);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "label"), "set_label", "get_label");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");

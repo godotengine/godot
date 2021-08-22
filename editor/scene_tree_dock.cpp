@@ -62,7 +62,7 @@ void SceneTreeDock::_quick_open() {
 	instantiate_scenes(quick_open->get_selected_files(), scene_tree->get_selected());
 }
 
-void SceneTreeDock::_input(Ref<InputEvent> p_event) {
+void SceneTreeDock::input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventMouseButton> mb = p_event;
@@ -72,7 +72,7 @@ void SceneTreeDock::_input(Ref<InputEvent> p_event) {
 	}
 }
 
-void SceneTreeDock::_unhandled_key_input(Ref<InputEvent> p_event) {
+void SceneTreeDock::unhandled_key_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (get_focus_owner() && get_focus_owner()->is_text_field()) {
@@ -3163,8 +3163,7 @@ void SceneTreeDock::_create_remap_for_resource(RES p_resource, Map<RES, RES> &r_
 
 void SceneTreeDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_owners"), &SceneTreeDock::_set_owners);
-	ClassDB::bind_method(D_METHOD("_unhandled_key_input"), &SceneTreeDock::_unhandled_key_input);
-	ClassDB::bind_method(D_METHOD("_input"), &SceneTreeDock::_input);
+
 	ClassDB::bind_method(D_METHOD("_update_script_button"), &SceneTreeDock::_update_script_button);
 
 	ClassDB::bind_method(D_METHOD("instantiate"), &SceneTreeDock::instantiate);

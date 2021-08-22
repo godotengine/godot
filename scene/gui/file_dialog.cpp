@@ -95,7 +95,7 @@ void FileDialog::_notification(int p_what) {
 	}
 }
 
-void FileDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
+void FileDialog::unhandled_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventKey> k = p_event;
@@ -854,8 +854,6 @@ void FileDialog::_update_drives() {
 bool FileDialog::default_show_hidden_files = false;
 
 void FileDialog::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_unhandled_input"), &FileDialog::_unhandled_input);
-
 	ClassDB::bind_method(D_METHOD("_cancel_pressed"), &FileDialog::_cancel_pressed);
 
 	ClassDB::bind_method(D_METHOD("clear_filters"), &FileDialog::clear_filters);
