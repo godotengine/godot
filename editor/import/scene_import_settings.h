@@ -84,6 +84,8 @@ class SceneImportSettings : public ConfirmationDialog {
 	MeshInstance3D *mesh_preview;
 	Ref<SphereMesh> material_preview;
 
+	Ref<StandardMaterial3D> collider_mat;
+
 	float cam_rot_x;
 	float cam_rot_y;
 	float cam_zoom;
@@ -145,6 +147,7 @@ class SceneImportSettings : public ConfirmationDialog {
 
 	bool selecting = false;
 
+	void _update_view_gizmos();
 	void _update_camera();
 	void _select(Tree *p_from, String p_type, String p_id);
 	void _material_tree_selected();
@@ -190,6 +193,7 @@ protected:
 	void _notification(int p_what);
 
 public:
+	void update_view();
 	void open_settings(const String &p_path);
 	static SceneImportSettings *get_singleton();
 	SceneImportSettings();

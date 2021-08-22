@@ -274,7 +274,8 @@ Node *MeshInstance3D::create_multiple_convex_collisions_node() {
 		return nullptr;
 	}
 
-	Vector<Ref<Shape3D>> shapes = mesh->convex_decompose();
+	Mesh::ConvexDecompositionSettings settings;
+	Vector<Ref<Shape3D>> shapes = mesh->convex_decompose(settings);
 	if (!shapes.size()) {
 		return nullptr;
 	}
