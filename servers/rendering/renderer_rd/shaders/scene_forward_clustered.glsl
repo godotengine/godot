@@ -118,7 +118,7 @@ void main() {
 
 	mat3 world_normal_matrix;
 	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_NON_UNIFORM_SCALE)) {
-		world_normal_matrix = inverse(mat3(world_matrix));
+		world_normal_matrix = transpose(inverse(mat3(world_matrix)));
 	} else {
 		world_normal_matrix = mat3(world_matrix);
 	}
