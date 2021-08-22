@@ -130,12 +130,6 @@ float EditorQuickOpen::_score_path(const String &p_search, const String &p_path)
 		return score * (1.0f - 0.1f * (float(pos) / file.length()));
 	}
 
-	// Positive bias for matches close to the end of the path.
-	pos = p_path.rfindn(p_search);
-	if (pos != -1) {
-		return 1.1f + 0.09 / (p_path.length() - pos + 1);
-	}
-
 	// Similarity
 	return p_path.to_lower().similarity(p_search.to_lower());
 }
