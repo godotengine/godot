@@ -1420,6 +1420,8 @@ void SphereMesh::_create_mesh_array(Array &p_arr) const {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z;
 
+	float scale = height * (is_hemisphere ? 1.0 : 0.5);
+
 	// set our bounding box
 
 	Vector<Vector3> points;
@@ -1443,7 +1445,7 @@ void SphereMesh::_create_mesh_array(Array &p_arr) const {
 
 		v /= (rings + 1);
 		w = sin(Math_PI * v);
-		y = height * (is_hemisphere ? 1.0 : 0.5) * cos(Math_PI * v);
+		y = scale * cos(Math_PI * v);
 
 		for (i = 0; i <= radial_segments; i++) {
 			float u = i;
@@ -1458,7 +1460,8 @@ void SphereMesh::_create_mesh_array(Array &p_arr) const {
 			} else {
 				Vector3 p = Vector3(x * radius * w, y, z * radius * w);
 				points.push_back(p);
-				normals.push_back(p.normalized());
+				Vector3 normal = Vector3(x * radius * w * scale, y / scale, z * radius * w * scale);
+				normals.push_back(normal.normalized());
 			};
 			ADD_TANGENT(z, 0.0, -x, 1.0)
 			uvs.push_back(Vector2(u, v));
