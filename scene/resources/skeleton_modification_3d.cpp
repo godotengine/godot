@@ -32,11 +32,7 @@
 #include "scene/3d/skeleton_3d.h"
 
 void SkeletonModification3D::_execute(real_t p_delta) {
-	if (get_script_instance()) {
-		if (get_script_instance()->has_method("execute")) {
-			get_script_instance()->call("execute", p_delta);
-		}
-	}
+	GDVIRTUAL_CALL(_execute, p_delta);
 
 	if (!enabled)
 		return;
@@ -50,11 +46,7 @@ void SkeletonModification3D::_setup_modification(SkeletonModificationStack3D *p_
 		WARN_PRINT("Could not setup modification with name " + this->get_name());
 	}
 
-	if (get_script_instance()) {
-		if (get_script_instance()->has_method("setup_modification")) {
-			get_script_instance()->call("setup_modification", p_stack);
-		}
-	}
+	GDVIRTUAL_CALL(_setup_modification, Ref<SkeletonModificationStack3D>(p_stack));
 }
 
 void SkeletonModification3D::set_enabled(bool p_enabled) {
@@ -148,8 +140,8 @@ int SkeletonModification3D::get_execution_mode() const {
 }
 
 void SkeletonModification3D::_bind_methods() {
-	BIND_VMETHOD(MethodInfo("_execute", PropertyInfo(Variant::FLOAT, "delta")));
-	BIND_VMETHOD(MethodInfo("_setup_modification", PropertyInfo(Variant::OBJECT, "modification_stack", PROPERTY_HINT_RESOURCE_TYPE, "SkeletonModificationStack3D")));
+	GDVIRTUAL_BIND(_execute, "delta");
+	GDVIRTUAL_BIND(_setup_modification, "modification_stack")
 
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &SkeletonModification3D::set_enabled);
 	ClassDB::bind_method(D_METHOD("get_enabled"), &SkeletonModification3D::get_enabled);

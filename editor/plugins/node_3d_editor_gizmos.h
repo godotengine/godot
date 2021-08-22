@@ -33,10 +33,10 @@
 
 #include "core/templates/local_vector.h"
 #include "core/templates/ordered_hash_map.h"
+#include "scene/3d/camera_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
 
-class Camera3D;
 class Timer;
 class EditorNode3DGizmoPlugin;
 
@@ -79,6 +79,19 @@ protected:
 
 	EditorNode3DGizmoPlugin *gizmo_plugin;
 
+	GDVIRTUAL0(_redraw)
+	GDVIRTUAL1RC(String, _get_handle_name, int)
+	GDVIRTUAL1RC(bool, _is_handle_highlighted, int)
+
+	GDVIRTUAL1RC(Variant, _get_handle_value, int)
+	GDVIRTUAL3(_set_handle, int, const Camera3D *, Vector2)
+	GDVIRTUAL3(_commit_handle, int, Variant, bool)
+
+	GDVIRTUAL2RC(int, _subgizmos_intersect_ray, const Camera3D *, Vector2)
+	GDVIRTUAL2RC(Vector<int>, _subgizmos_intersect_frustum, const Camera3D *, TypedArray<Plane>)
+	GDVIRTUAL1RC(Transform3D, _get_subgizmo_transform, int)
+	GDVIRTUAL2(_set_subgizmo_transform, int, Transform3D)
+	GDVIRTUAL3(_commit_subgizmos, Vector<int>, TypedArray<Transform3D>, bool)
 public:
 	void add_lines(const Vector<Vector3> &p_lines, const Ref<Material> &p_material, bool p_billboard = false, const Color &p_modulate = Color(1, 1, 1));
 	void add_vertices(const Vector<Vector3> &p_vertices, const Ref<Material> &p_material, Mesh::PrimitiveType p_primitive_type, bool p_billboard = false, const Color &p_modulate = Color(1, 1, 1));
@@ -144,6 +157,28 @@ protected:
 	static void _bind_methods();
 	virtual bool has_gizmo(Node3D *p_spatial);
 	virtual Ref<EditorNode3DGizmo> create_gizmo(Node3D *p_spatial);
+
+	GDVIRTUAL1RC(bool, _has_gizmo, Node3D *)
+	GDVIRTUAL1RC(Ref<EditorNode3DGizmo>, _create_gizmo, Node3D *)
+
+	GDVIRTUAL0RC(String, _get_gizmo_name)
+	GDVIRTUAL0RC(int, _get_priority)
+	GDVIRTUAL0RC(bool, _can_be_hidden)
+	GDVIRTUAL0RC(bool, _is_selectable_when_hidden)
+
+	GDVIRTUAL1(_redraw, Ref<EditorNode3DGizmo>)
+	GDVIRTUAL2RC(String, _get_handle_name, Ref<EditorNode3DGizmo>, int)
+	GDVIRTUAL2RC(bool, _is_handle_highlighted, Ref<EditorNode3DGizmo>, int)
+	GDVIRTUAL2RC(Variant, _get_handle_value, Ref<EditorNode3DGizmo>, int)
+
+	GDVIRTUAL4(_set_handle, Ref<EditorNode3DGizmo>, int, const Camera3D *, Vector2)
+	GDVIRTUAL4(_commit_handle, Ref<EditorNode3DGizmo>, int, Variant, bool)
+
+	GDVIRTUAL3RC(int, _subgizmos_intersect_ray, Ref<EditorNode3DGizmo>, const Camera3D *, Vector2)
+	GDVIRTUAL3RC(Vector<int>, _subgizmos_intersect_frustum, Ref<EditorNode3DGizmo>, const Camera3D *, TypedArray<Plane>)
+	GDVIRTUAL2RC(Transform3D, _get_subgizmo_transform, Ref<EditorNode3DGizmo>, int)
+	GDVIRTUAL3(_set_subgizmo_transform, Ref<EditorNode3DGizmo>, int, Transform3D)
+	GDVIRTUAL4(_commit_subgizmos, Ref<EditorNode3DGizmo>, Vector<int>, TypedArray<Transform3D>, bool)
 
 public:
 	void create_material(const String &p_name, const Color &p_color, bool p_billboard = false, bool p_on_top = false, bool p_use_vertex_color = false);

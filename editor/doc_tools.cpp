@@ -64,35 +64,42 @@ void DocTools::merge_from(const DocTools &p_data) {
 				if (cf.methods[j].name != m.name) {
 					continue;
 				}
-				if (cf.methods[j].arguments.size() != m.arguments.size()) {
-					continue;
-				}
-				// since polymorphic functions are allowed we need to check the type of
-				// the arguments so we make sure they are different.
-				int arg_count = cf.methods[j].arguments.size();
-				Vector<bool> arg_used;
-				arg_used.resize(arg_count);
-				for (int l = 0; l < arg_count; ++l) {
-					arg_used.write[l] = false;
-				}
-				// also there is no guarantee that argument ordering will match, so we
-				// have to check one by one so we make sure we have an exact match
-				for (int k = 0; k < arg_count; ++k) {
+
+				const char *operator_prefix = "operator "; // Operators use a space at the end, making this prefix an invalid identifier (and differentiating from methods).
+
+				if (cf.methods[j].name == c.name || cf.methods[j].name.begins_with(operator_prefix)) {
+					// Since constructors and operators can repeat, we need to check the type of
+					// the arguments so we make sure they are different.
+
+					if (cf.methods[j].arguments.size() != m.arguments.size()) {
+						continue;
+					}
+
+					int arg_count = cf.methods[j].arguments.size();
+					Vector<bool> arg_used;
+					arg_used.resize(arg_count);
 					for (int l = 0; l < arg_count; ++l) {
-						if (cf.methods[j].arguments[k].type == m.arguments[l].type && !arg_used[l]) {
-							arg_used.write[l] = true;
-							break;
+						arg_used.write[l] = false;
+					}
+					// also there is no guarantee that argument ordering will match, so we
+					// have to check one by one so we make sure we have an exact match
+					for (int k = 0; k < arg_count; ++k) {
+						for (int l = 0; l < arg_count; ++l) {
+							if (cf.methods[j].arguments[k].type == m.arguments[l].type && !arg_used[l]) {
+								arg_used.write[l] = true;
+								break;
+							}
 						}
 					}
-				}
-				bool not_the_same = false;
-				for (int l = 0; l < arg_count; ++l) {
-					if (!arg_used[l]) { // at least one of the arguments was different
-						not_the_same = true;
+					bool not_the_same = false;
+					for (int l = 0; l < arg_count; ++l) {
+						if (!arg_used[l]) { // at least one of the arguments was different
+							not_the_same = true;
+						}
 					}
-				}
-				if (not_the_same) {
-					continue;
+					if (not_the_same) {
+						continue;
+					}
 				}
 
 				const DocData::MethodDoc &mf = cf.methods[j];

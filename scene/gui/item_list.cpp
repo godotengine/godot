@@ -48,6 +48,8 @@ void ItemList::_shape(int p_idx) {
 	} else {
 		item.text_buf->set_flags(TextServer::BREAK_NONE);
 	}
+	item.text_buf->set_text_overrun_behavior(text_overrun_behavior);
+	item.text_buf->set_max_lines_visible(max_text_lines);
 }
 
 int ItemList::add_item(const String &p_item, const Ref<Texture2D> &p_texture, bool p_selectable) {
@@ -453,6 +455,7 @@ void ItemList::set_max_text_lines(int p_lines) {
 		for (int i = 0; i < items.size(); i++) {
 			if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
 				items.write[i].text_buf->set_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND);
+				items.write[i].text_buf->set_max_lines_visible(p_lines);
 			} else {
 				items.write[i].text_buf->set_flags(TextServer::BREAK_NONE);
 			}
@@ -930,8 +933,14 @@ void ItemList::_notification(int p_what) {
 				}
 
 				if (items[i].text != "") {
+					int max_width = -1;
+					if (fixed_column_width) {
+						max_width = fixed_column_width;
+					} else if (same_column_width) {
+						max_width = items[i].rect_cache.size.x;
+					}
+					items.write[i].text_buf->set_width(max_width);
 					Size2 s = items[i].text_buf->get_size();
-					//s.width=MIN(s.width,fixed_column_width);
 
 					if (icon_mode == ICON_MODE_TOP) {
 						minsize.x = MAX(minsize.x, s.width);
@@ -1139,11 +1148,8 @@ void ItemList::_notification(int p_what) {
 
 				if (icon_mode == ICON_MODE_TOP) {
 					pos.x += Math::floor((items[i].rect_cache.size.width - icon_size.width) / 2);
-					pos.y += MIN(
-							Math::floor((items[i].rect_cache.size.height - icon_size.height) / 2),
-							items[i].rect_cache.size.height - items[i].min_rect_cache.size.height);
-					text_ofs.y = icon_size.height + icon_margin;
-					text_ofs.y += items[i].rect_cache.size.height - items[i].min_rect_cache.size.height;
+					pos.y += icon_margin;
+					text_ofs.y = icon_size.height + icon_margin * 2;
 				} else {
 					pos.y += Math::floor((items[i].rect_cache.size.height - icon_size.height) / 2);
 					text_ofs.x = icon_size.width + icon_margin;
@@ -1210,7 +1216,6 @@ void ItemList::_notification(int p_what) {
 						text_ofs.x = size.width - text_ofs.x - max_len;
 					}
 
-					items.write[i].text_buf->set_width(max_len);
 					items.write[i].text_buf->set_align(HALIGN_CENTER);
 
 					if (outline_size > 0 && font_outline_color.a > 0) {
@@ -1488,6 +1493,21 @@ bool ItemList::has_auto_height() const {
 	return auto_height;
 }
 
+void ItemList::set_text_overrun_behavior(TextParagraph::OverrunBehavior p_behavior) {
+	if (text_overrun_behavior != p_behavior) {
+		text_overrun_behavior = p_behavior;
+		for (int i = 0; i < items.size(); i++) {
+			items.write[i].text_buf->set_text_overrun_behavior(p_behavior);
+		}
+		shape_changed = true;
+		update();
+	}
+}
+
+TextParagraph::OverrunBehavior ItemList::get_text_overrun_behavior() const {
+	return text_overrun_behavior;
+}
+
 void ItemList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_item", "text", "icon", "selectable"), &ItemList::add_item, DEFVAL(Variant()), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("add_icon_item", "icon", "selectable"), &ItemList::add_icon_item, DEFVAL(true));
@@ -1599,6 +1619,9 @@ void ItemList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_items"), &ItemList::_set_items);
 	ClassDB::bind_method(D_METHOD("_get_items"), &ItemList::_get_items);
 
+	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &ItemList::set_text_overrun_behavior);
+	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &ItemList::get_text_overrun_behavior);
+
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "items", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_items", "_get_items");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "select_mode", PROPERTY_HINT_ENUM, "Single,Multi"), "set_select_mode", "get_select_mode");
@@ -1606,6 +1629,7 @@ void ItemList::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_rmb_select"), "set_allow_rmb_select", "get_allow_rmb_select");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_text_lines", PROPERTY_HINT_RANGE, "1,10,1,or_greater"), "set_max_text_lines", "get_max_text_lines");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_height"), "set_auto_height", "has_auto_height");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
 	ADD_GROUP("Columns", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_columns", PROPERTY_HINT_RANGE, "0,10,1,or_greater"), "set_max_columns", "get_max_columns");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "same_column_width"), "set_same_column_width", "is_same_column_width");

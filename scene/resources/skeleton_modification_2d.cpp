@@ -44,7 +44,7 @@
 ///////////////////////////////////////
 
 void SkeletonModification2D::_execute(float p_delta) {
-	call("_execute", p_delta);
+	GDVIRTUAL_CALL(_execute, p_delta);
 
 	if (!enabled) {
 		return;
@@ -59,11 +59,11 @@ void SkeletonModification2D::_setup_modification(SkeletonModificationStack2D *p_
 		WARN_PRINT("Could not setup modification with name " + get_name());
 	}
 
-	call("_setup_modification", p_stack);
+	GDVIRTUAL_CALL(_setup_modification, Ref<SkeletonModificationStack2D>(p_stack));
 }
 
 void SkeletonModification2D::_draw_editor_gizmo() {
-	call("_draw_editor_gizmo");
+	GDVIRTUAL_CALL(_draw_editor_gizmo);
 }
 
 void SkeletonModification2D::set_enabled(bool p_enabled) {
@@ -228,9 +228,9 @@ bool SkeletonModification2D::get_editor_draw_gizmo() const {
 }
 
 void SkeletonModification2D::_bind_methods() {
-	BIND_VMETHOD(MethodInfo("_execute", PropertyInfo(Variant::FLOAT, "delta")));
-	BIND_VMETHOD(MethodInfo("_setup_modification", PropertyInfo(Variant::OBJECT, "modification_stack", PROPERTY_HINT_RESOURCE_TYPE, "SkeletonModificationStack2D")));
-	BIND_VMETHOD(MethodInfo("_draw_editor_gizmo"));
+	GDVIRTUAL_BIND(_execute, "delta");
+	GDVIRTUAL_BIND(_setup_modification, "modification_stack")
+	GDVIRTUAL_BIND(_draw_editor_gizmo)
 
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &SkeletonModification2D::set_enabled);
 	ClassDB::bind_method(D_METHOD("get_enabled"), &SkeletonModification2D::get_enabled);

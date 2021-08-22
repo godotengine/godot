@@ -32,8 +32,15 @@
 
 #include "core/object/script_language.h"
 
-void RichTextEffect::_bind_methods() {
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_process_custom_fx", PropertyInfo(Variant::OBJECT, "char_fx", PROPERTY_HINT_RESOURCE_TYPE, "CharFXTransform")));
+CharFXTransform::CharFXTransform() {
+}
+
+CharFXTransform::~CharFXTransform() {
+	environment.clear();
+}
+
+void RichTextEffect::_bind_methods(){
+	GDVIRTUAL_BIND(_process_custom_fx, "char_fx")
 }
 
 Variant RichTextEffect::get_bbcode() const {
@@ -49,15 +56,10 @@ Variant RichTextEffect::get_bbcode() const {
 
 bool RichTextEffect::_process_effect_impl(Ref<CharFXTransform> p_cfx) {
 	bool return_value = false;
-	if (get_script_instance()) {
-		Variant v = get_script_instance()->call("_process_custom_fx", p_cfx);
-		if (v.get_type() != Variant::BOOL) {
-			return_value = false;
-		} else {
-			return_value = (bool)v;
-		}
+	if (GDVIRTUAL_CALL(_process_custom_fx, p_cfx, return_value)) {
+		return return_value;
 	}
-	return return_value;
+	return false;
 }
 
 RichTextEffect::RichTextEffect() {
@@ -100,11 +102,4 @@ void CharFXTransform::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "env"), "set_environment", "get_environment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "glyph_index"), "set_glyph_index", "get_glyph_index");
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "font"), "set_font", "get_font");
-}
-
-CharFXTransform::CharFXTransform() {
-}
-
-CharFXTransform::~CharFXTransform() {
-	environment.clear();
 }

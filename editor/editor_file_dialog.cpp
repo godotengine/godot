@@ -728,6 +728,7 @@ void EditorFileDialog::update_file_list() {
 		item_list->set_icon_mode(ItemList::ICON_MODE_TOP);
 		item_list->set_fixed_column_width(thumbnail_size * 3 / 2);
 		item_list->set_max_text_lines(2);
+		item_list->set_text_overrun_behavior(TextParagraph::OVERRUN_TRIM_ELLIPSIS);
 		item_list->set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
 
 		if (thumbnail_size < 64) {
@@ -1645,6 +1646,7 @@ EditorFileDialog::EditorFileDialog() {
 	item_list->connect("item_rmb_selected", callable_mp(this, &EditorFileDialog::_item_list_item_rmb_selected));
 	item_list->connect("rmb_clicked", callable_mp(this, &EditorFileDialog::_item_list_rmb_clicked));
 	item_list->set_allow_rmb_select(true);
+
 	list_vb->add_child(item_list);
 
 	item_menu = memnew(PopupMenu);

@@ -379,9 +379,7 @@ StringName EditorProperty::get_edited_property() {
 }
 
 void EditorProperty::update_property() {
-	if (get_script_instance()) {
-		get_script_instance()->call("_update_property");
-	}
+	GDVIRTUAL_CALL(_update_property);
 }
 
 void EditorProperty::set_read_only(bool p_read_only) {
@@ -766,7 +764,7 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 					call_deferred(SNAME("emit_changed"), property, object->get(property).operator int64_t() + 1, "", false);
 				}
 
-				call_deferred(SNAME("_update_property"));
+				call_deferred(SNAME("update_property"));
 			}
 		}
 		if (delete_rect.has_point(mpos)) {
@@ -925,6 +923,7 @@ void EditorProperty::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_gui_input"), &EditorProperty::_gui_input);
 
 	ClassDB::bind_method(D_METHOD("get_tooltip_text"), &EditorProperty::get_tooltip_text);
+	ClassDB::bind_method(D_METHOD("update_property"), &EditorProperty::update_property);
 
 	ClassDB::bind_method(D_METHOD("add_focusable", "control"), &EditorProperty::add_focusable);
 	ClassDB::bind_method(D_METHOD("set_bottom_editor", "editor"), &EditorProperty::set_bottom_editor);
@@ -948,7 +947,7 @@ void EditorProperty::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("object_id_selected", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("selected", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::INT, "focusable_idx")));
 
-	BIND_VMETHOD(MethodInfo("_update_property"));
+	GDVIRTUAL_BIND(_update_property)
 }
 
 EditorProperty::EditorProperty() {
@@ -1003,43 +1002,31 @@ void EditorInspectorPlugin::add_property_editor_for_multiple_properties(const St
 }
 
 bool EditorInspectorPlugin::can_handle(Object *p_object) {
-	if (get_script_instance()) {
-		return get_script_instance()->call("_can_handle", p_object);
+	bool success;
+	if (GDVIRTUAL_CALL(_can_handle, p_object, success)) {
+		return success;
 	}
 	return false;
 }
 
 void EditorInspectorPlugin::parse_begin(Object *p_object) {
-	if (get_script_instance()) {
-		get_script_instance()->call("_parse_begin", p_object);
-	}
+	GDVIRTUAL_CALL(_parse_begin);
 }
 
 void EditorInspectorPlugin::parse_category(Object *p_object, const String &p_parse_category) {
-	if (get_script_instance()) {
-		get_script_instance()->call("_parse_category", p_object, p_parse_category);
-	}
+	GDVIRTUAL_CALL(_parse_category, p_object, p_parse_category);
 }
 
 bool EditorInspectorPlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {
-	if (get_script_instance()) {
-		Variant arg[6] = {
-			p_object, p_type, p_path, p_hint, p_hint_text, p_usage
-		};
-		const Variant *argptr[6] = {
-			&arg[0], &arg[1], &arg[2], &arg[3], &arg[4], &arg[5]
-		};
-
-		Callable::CallError err;
-		return get_script_instance()->call("_parse_property", (const Variant **)&argptr, 6, err);
+	bool ret;
+	if (GDVIRTUAL_CALL(_parse_property, p_object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide, ret)) {
+		return ret;
 	}
 	return false;
 }
 
 void EditorInspectorPlugin::parse_end() {
-	if (get_script_instance()) {
-		get_script_instance()->call("_parse_end");
-	}
+	GDVIRTUAL_CALL(_parse_end);
 }
 
 void EditorInspectorPlugin::_bind_methods() {
@@ -1047,11 +1034,11 @@ void EditorInspectorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_property_editor", "property", "editor"), &EditorInspectorPlugin::add_property_editor);
 	ClassDB::bind_method(D_METHOD("add_property_editor_for_multiple_properties", "label", "properties", "editor"), &EditorInspectorPlugin::add_property_editor_for_multiple_properties);
 
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_can_handle", PropertyInfo(Variant::OBJECT, "object")));
-	BIND_VMETHOD(MethodInfo(Variant::NIL, "_parse_begin"));
-	BIND_VMETHOD(MethodInfo(Variant::NIL, "_parse_category", PropertyInfo(Variant::STRING, "category")));
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_parse_property", PropertyInfo(Variant::INT, "type"), PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::INT, "hint"), PropertyInfo(Variant::STRING, "hint_text"), PropertyInfo(Variant::INT, "usage")));
-	BIND_VMETHOD(MethodInfo(Variant::NIL, "_parse_end"));
+	GDVIRTUAL_BIND(_can_handle, "object")
+	GDVIRTUAL_BIND(_parse_begin)
+	GDVIRTUAL_BIND(_parse_category, "object", "category")
+	GDVIRTUAL_BIND(_parse_property, "object", "type", "name", "hint_type", "hint_string", "usage_flags", "wide");
+	GDVIRTUAL_BIND(_parse_end)
 }
 
 ////////////////////////////////////////////////

@@ -665,9 +665,7 @@ Vector<Vector2i> TextServer::shaped_text_get_line_breaks(RID p_shaped, float p_w
 			continue;
 		}
 		if (l_gl[i].count > 0) {
-			//Ignore trailing spaces.
-			bool is_space = (l_gl[i].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE;
-			if ((p_width > 0) && (width + (is_space ? 0 : l_gl[i].advance) > p_width) && (last_safe_break >= 0)) {
+			if ((p_width > 0) && (width + l_gl[i].advance * l_gl[i].repeat > p_width) && (last_safe_break >= 0)) {
 				lines.push_back(Vector2i(line_start, l_gl[last_safe_break].end));
 				line_start = l_gl[last_safe_break].end;
 				i = last_safe_break;
@@ -698,7 +696,7 @@ Vector<Vector2i> TextServer::shaped_text_get_line_breaks(RID p_shaped, float p_w
 				last_safe_break = i;
 			}
 		}
-		width += l_gl[i].advance;
+		width += l_gl[i].advance * l_gl[i].repeat;
 	}
 
 	if (l_size > 0) {

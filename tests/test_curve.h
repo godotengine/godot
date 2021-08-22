@@ -216,6 +216,41 @@ TEST_CASE("[Curve] Custom curve with linear tangents") {
 			Math::is_equal_approx(curve->interpolate_baked(0.7), (real_t)0.8),
 			"Custom free curve should return the expected baked value at offset 0.7 after removing point at invalid index 10.");
 }
+
+TEST_CASE("[Curve2D] Linear sampling should return exact value") {
+	Ref<Curve2D> curve = memnew(Curve2D);
+	int len = 2048;
+
+	curve->add_point(Vector2(0, 0));
+	curve->add_point(Vector2((float)len, 0));
+
+	float baked_length = curve->get_baked_length();
+	CHECK((float)len == baked_length);
+
+	for (int i = 0; i < len; i++) {
+		float expected = (float)i;
+		Vector2 pos = curve->interpolate_baked(expected);
+		CHECK_MESSAGE(pos.x == expected, "interpolate_baked should return exact value");
+	}
+}
+
+TEST_CASE("[Curve3D] Linear sampling should return exact value") {
+	Ref<Curve3D> curve = memnew(Curve3D);
+	int len = 2048;
+
+	curve->add_point(Vector3(0, 0, 0));
+	curve->add_point(Vector3((float)len, 0, 0));
+
+	float baked_length = curve->get_baked_length();
+	CHECK((float)len == baked_length);
+
+	for (int i = 0; i < len; i++) {
+		float expected = (float)i;
+		Vector3 pos = curve->interpolate_baked(expected);
+		CHECK_MESSAGE(pos.x == expected, "interpolate_baked should return exact value");
+	}
+}
+
 } // namespace TestCurve
 
 #endif // TEST_CURVE_H

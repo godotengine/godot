@@ -51,16 +51,17 @@
 #include "scene/resources/world_margin_shape_3d.h"
 
 uint32_t EditorSceneImporter::get_import_flags() const {
-	if (get_script_instance()) {
-		return get_script_instance()->call("_get_import_flags");
+	int ret;
+	if (GDVIRTUAL_CALL(_get_import_flags, ret)) {
+		return ret;
 	}
 
 	ERR_FAIL_V(0);
 }
 
 void EditorSceneImporter::get_extensions(List<String> *r_extensions) const {
-	if (get_script_instance()) {
-		Array arr = get_script_instance()->call("_get_extensions");
+	Vector<String> arr;
+	if (GDVIRTUAL_CALL(_get_extensions, arr)) {
 		for (int i = 0; i < arr.size(); i++) {
 			r_extensions->push_back(arr[i]);
 		}
@@ -71,16 +72,18 @@ void EditorSceneImporter::get_extensions(List<String> *r_extensions) const {
 }
 
 Node *EditorSceneImporter::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
-	if (get_script_instance()) {
-		return get_script_instance()->call("_import_scene", p_path, p_flags, p_bake_fps);
+	Object *ret;
+	if (GDVIRTUAL_CALL(_import_scene, p_path, p_flags, p_bake_fps, ret)) {
+		return Object::cast_to<Node>(ret);
 	}
 
 	ERR_FAIL_V(nullptr);
 }
 
 Ref<Animation> EditorSceneImporter::import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps) {
-	if (get_script_instance()) {
-		return get_script_instance()->call("_import_animation", p_path, p_flags);
+	Ref<Animation> ret;
+	if (GDVIRTUAL_CALL(_import_animation, p_path, p_flags, p_bake_fps, ret)) {
+		return ret;
 	}
 
 	ERR_FAIL_V(nullptr);
@@ -101,15 +104,10 @@ void EditorSceneImporter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("import_scene_from_other_importer", "path", "flags", "bake_fps"), &EditorSceneImporter::import_scene_from_other_importer);
 	ClassDB::bind_method(D_METHOD("import_animation_from_other_importer", "path", "flags", "bake_fps"), &EditorSceneImporter::import_animation_from_other_importer);
 
-	BIND_VMETHOD(MethodInfo(Variant::INT, "_get_import_flags"));
-	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "_get_extensions"));
-
-	MethodInfo mi = MethodInfo(Variant::OBJECT, "_import_scene", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::INT, "flags"), PropertyInfo(Variant::INT, "bake_fps"));
-	mi.return_val.class_name = "Node";
-	BIND_VMETHOD(mi);
-	mi = MethodInfo(Variant::OBJECT, "_import_animation", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::INT, "flags"), PropertyInfo(Variant::INT, "bake_fps"));
-	mi.return_val.class_name = "Animation";
-	BIND_VMETHOD(mi);
+	GDVIRTUAL_BIND(_get_import_flags);
+	GDVIRTUAL_BIND(_get_extensions);
+	GDVIRTUAL_BIND(_import_scene, "path", "flags", "bake_fps");
+	GDVIRTUAL_BIND(_import_animation, "path", "flags", "bake_fps");
 
 	BIND_CONSTANT(IMPORT_SCENE);
 	BIND_CONSTANT(IMPORT_ANIMATION);
@@ -120,13 +118,14 @@ void EditorSceneImporter::_bind_methods() {
 
 /////////////////////////////////
 void EditorScenePostImport::_bind_methods() {
-	BIND_VMETHOD(MethodInfo(Variant::OBJECT, "_post_import", PropertyInfo(Variant::OBJECT, "scene")));
+	GDVIRTUAL_BIND(_post_import, "scene")
 	ClassDB::bind_method(D_METHOD("get_source_file"), &EditorScenePostImport::get_source_file);
 }
 
 Node *EditorScenePostImport::post_import(Node *p_scene) {
-	if (get_script_instance()) {
-		return get_script_instance()->call("_post_import", p_scene);
+	Object *ret;
+	if (GDVIRTUAL_CALL(_post_import, p_scene, ret)) {
+		return Object::cast_to<Node>(ret);
 	}
 
 	return p_scene;

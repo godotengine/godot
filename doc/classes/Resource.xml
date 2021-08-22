@@ -12,12 +12,6 @@
 		<link title="When and how to avoid using nodes for everything">https://docs.godotengine.org/en/latest/getting_started/workflow/best_practices/node_alternatives.html</link>
 	</tutorials>
 	<methods>
-		<method name="_setup_local_to_scene" qualifiers="virtual">
-			<return type="void" />
-			<description>
-				Virtual function which can be overridden to customize the behavior value of [method setup_local_to_scene].
-			</description>
-		</method>
 		<method name="duplicate" qualifiers="const">
 			<return type="Resource" />
 			<argument index="0" name="subresources" type="bool" default="false" />
@@ -54,7 +48,7 @@
 		<method name="setup_local_to_scene">
 			<return type="void" />
 			<description>
-				This method is called when a resource with [member resource_local_to_scene] enabled is loaded from a [PackedScene] instantiation. Its behavior can be customized by overriding [method _setup_local_to_scene] from script.
+				This method is called when a resource with [member resource_local_to_scene] enabled is loaded from a [PackedScene] instantiation. Its behavior can be customized by connecting [signal setup_local_to_scene_requested] from script.
 				For most resources, this method performs no base logic. [ViewportTexture] performs custom logic to properly set the proxy texture and flags in the local viewport.
 			</description>
 		</method>
@@ -82,6 +76,10 @@
 			<description>
 				Emitted whenever the resource changes.
 				[b]Note:[/b] This signal is not emitted automatically for custom resources, which means that you need to create a setter and emit the signal yourself.
+			</description>
+		</signal>
+		<signal name="setup_local_to_scene_requested">
+			<description>
 			</description>
 		</signal>
 	</signals>

@@ -45,7 +45,7 @@ static bool _is_bin_symbol(char32_t c) {
 	return (c == '0' || c == '1');
 }
 
-Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting(int p_line) {
+Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 	Dictionary color_map;
 
 	Type next_type = NONE;
