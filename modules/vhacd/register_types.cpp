@@ -32,7 +32,23 @@
 #include "scene/resources/mesh.h"
 #include "thirdparty/vhacd/public/VHACD.h"
 
-static Vector<Vector<Face3>> convex_decompose(const Vector<Face3> &p_faces, int p_max_convex_hulls = -1) {
+static Vector<Vector<Face3>> convex_decompose(const Vector<Face3> &p_faces, const Mesh::ConvexDecompositionSettings &p_settings) {
+	VHACD::IVHACD::Parameters params;
+	params.m_concavity = p_settings.max_concavity;
+	params.m_alpha = p_settings.symmetry_planes_clipping_bias;
+	params.m_beta = p_settings.revolution_axes_clipping_bias;
+	params.m_minVolumePerCH = p_settings.min_volume_per_convex_hull;
+	params.m_resolution = p_settings.resolution;
+	params.m_maxNumVerticesPerCH = p_settings.max_num_vertices_per_convex_hull;
+	params.m_planeDownsampling = p_settings.plane_downsampling;
+	params.m_convexhullDownsampling = p_settings.convexhull_downsampling;
+	params.m_pca = p_settings.normalize_mesh;
+	params.m_mode = p_settings.mode;
+	params.m_convexhullApproximation = p_settings.convexhull_approximation;
+	params.m_oclAcceleration = true;
+	params.m_maxConvexHulls = p_settings.max_convex_hulls;
+	params.m_projectHullVertices = p_settings.project_hull_vertices;
+
 	Vector<real_t> vertices;
 	vertices.resize(p_faces.size() * 9);
 	Vector<uint32_t> indices;
@@ -45,11 +61,6 @@ static Vector<Vector<Face3>> convex_decompose(const Vector<Face3> &p_faces, int 
 			vertices.write[i * 9 + j * 3 + 2] = p_faces[i].vertex[j].z;
 			indices.write[i * 3 + j] = i * 3 + j;
 		}
-	}
-
-	VHACD::IVHACD::Parameters params;
-	if (p_max_convex_hulls > 0) {
-		params.m_maxConvexHulls = p_max_convex_hulls;
 	}
 
 	VHACD::IVHACD *decomposer = VHACD::CreateVHACD();
