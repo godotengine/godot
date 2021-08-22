@@ -835,7 +835,7 @@ float AudioStreamPlayer3D::get_attenuation_filter_db() const {
 }
 
 void AudioStreamPlayer3D::set_attenuation_model(AttenuationModel p_model) {
-	ERR_FAIL_INDEX((int)p_model, 4);
+	ERR_FAIL_INDEX(p_model, 4);
 	attenuation_model = p_model;
 }
 
@@ -844,7 +844,7 @@ AudioStreamPlayer3D::AttenuationModel AudioStreamPlayer3D::get_attenuation_model
 }
 
 void AudioStreamPlayer3D::set_out_of_range_mode(OutOfRangeMode p_mode) {
-	ERR_FAIL_INDEX((int)p_mode, 2);
+	ERR_FAIL_INDEX(p_mode, 2);
 	out_of_range_mode = p_mode;
 }
 

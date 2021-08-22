@@ -39,20 +39,20 @@ bool StyleBox::test_mask(const Point2 &p_point, const Rect2 &p_rect) const {
 }
 
 void StyleBox::set_default_margin(Side p_side, float p_value) {
-	ERR_FAIL_INDEX((int)p_side, 4);
+	ERR_FAIL_INDEX(p_side, 4);
 
 	margin[p_side] = p_value;
 	emit_changed();
 }
 
 float StyleBox::get_default_margin(Side p_side) const {
-	ERR_FAIL_INDEX_V((int)p_side, 4, 0.0);
+	ERR_FAIL_INDEX_V(p_side, 4, 0.0);
 
 	return margin[p_side];
 }
 
 float StyleBox::get_margin(Side p_side) const {
-	ERR_FAIL_INDEX_V((int)p_side, 4, 0.0);
+	ERR_FAIL_INDEX_V(p_side, 4, 0.0);
 
 	if (margin[p_side] < 0) {
 		return get_style_margin(p_side);
@@ -126,20 +126,20 @@ Ref<Texture2D> StyleBoxTexture::get_texture() const {
 }
 
 void StyleBoxTexture::set_margin_size(Side p_side, float p_size) {
-	ERR_FAIL_INDEX((int)p_side, 4);
+	ERR_FAIL_INDEX(p_side, 4);
 
 	margin[p_side] = p_size;
 	emit_changed();
 }
 
 float StyleBoxTexture::get_margin_size(Side p_side) const {
-	ERR_FAIL_INDEX_V((int)p_side, 4, 0.0);
+	ERR_FAIL_INDEX_V(p_side, 4, 0.0);
 
 	return margin[p_side];
 }
 
 float StyleBoxTexture::get_style_margin(Side p_side) const {
-	ERR_FAIL_INDEX_V((int)p_side, 4, 0.0);
+	ERR_FAIL_INDEX_V(p_side, 4, 0.0);
 
 	return margin[p_side];
 }
@@ -184,7 +184,7 @@ Size2 StyleBoxTexture::get_center_size() const {
 }
 
 void StyleBoxTexture::set_expand_margin_size(Side p_side, float p_size) {
-	ERR_FAIL_INDEX((int)p_side, 4);
+	ERR_FAIL_INDEX(p_side, 4);
 	expand_margin[p_side] = p_size;
 	emit_changed();
 }
@@ -205,7 +205,7 @@ void StyleBoxTexture::set_expand_margin_size_all(float p_expand_margin_size) {
 }
 
 float StyleBoxTexture::get_expand_margin_size(Side p_side) const {
-	ERR_FAIL_INDEX_V((int)p_side, 4, 0);
+	ERR_FAIL_INDEX_V(p_side, 4, 0);
 	return expand_margin[p_side];
 }
 
@@ -223,7 +223,7 @@ Rect2 StyleBoxTexture::get_region_rect() const {
 }
 
 void StyleBoxTexture::set_h_axis_stretch_mode(AxisStretchMode p_mode) {
-	ERR_FAIL_INDEX((int)p_mode, 3);
+	ERR_FAIL_INDEX(p_mode, 3);
 	axis_h = p_mode;
 	emit_changed();
 }
@@ -233,7 +233,7 @@ StyleBoxTexture::AxisStretchMode StyleBoxTexture::get_h_axis_stretch_mode() cons
 }
 
 void StyleBoxTexture::set_v_axis_stretch_mode(AxisStretchMode p_mode) {
-	ERR_FAIL_INDEX((int)p_mode, 3);
+	ERR_FAIL_INDEX(p_mode, 3);
 	axis_v = p_mode;
 	emit_changed();
 }
@@ -342,13 +342,13 @@ int StyleBoxFlat::get_border_width_min() const {
 }
 
 void StyleBoxFlat::set_border_width(Side p_side, int p_width) {
-	ERR_FAIL_INDEX((int)p_side, 4);
+	ERR_FAIL_INDEX(p_side, 4);
 	border_width[p_side] = p_width;
 	emit_changed();
 }
 
 int StyleBoxFlat::get_border_width(Side p_side) const {
-	ERR_FAIL_INDEX_V((int)p_side, 4, 0);
+	ERR_FAIL_INDEX_V(p_side, 4, 0);
 	return border_width[p_side];
 }
 
@@ -379,18 +379,18 @@ void StyleBoxFlat::set_corner_radius_individual(const int radius_top_left, const
 }
 
 void StyleBoxFlat::set_corner_radius(const Corner p_corner, const int radius) {
-	ERR_FAIL_INDEX((int)p_corner, 4);
+	ERR_FAIL_INDEX(p_corner, 4);
 	corner_radius[p_corner] = radius;
 	emit_changed();
 }
 
 int StyleBoxFlat::get_corner_radius(const Corner p_corner) const {
-	ERR_FAIL_INDEX_V((int)p_corner, 4, 0);
+	ERR_FAIL_INDEX_V(p_corner, 4, 0);
 	return corner_radius[p_corner];
 }
 
 void StyleBoxFlat::set_expand_margin_size(Side p_side, float p_size) {
-	ERR_FAIL_INDEX((int)p_side, 4);
+	ERR_FAIL_INDEX(p_side, 4);
 	expand_margin[p_side] = p_size;
 	emit_changed();
 }
@@ -411,7 +411,7 @@ void StyleBoxFlat::set_expand_margin_size_all(float p_expand_margin_size) {
 }
 
 float StyleBoxFlat::get_expand_margin_size(Side p_side) const {
-	ERR_FAIL_INDEX_V((int)p_side, 4, 0.0);
+	ERR_FAIL_INDEX_V(p_side, 4, 0.0);
 	return expand_margin[p_side];
 }
 
@@ -784,7 +784,7 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 }
 
 float StyleBoxFlat::get_style_margin(Side p_side) const {
-	ERR_FAIL_INDEX_V((int)p_side, 4, 0.0);
+	ERR_FAIL_INDEX_V(p_side, 4, 0.0);
 	return border_width[p_side];
 }
 
@@ -950,7 +950,7 @@ void StyleBoxLine::_bind_methods() {
 }
 
 float StyleBoxLine::get_style_margin(Side p_side) const {
-	ERR_FAIL_INDEX_V((int)p_side, 4, 0);
+	ERR_FAIL_INDEX_V(p_side, 4, 0);
 
 	if (vertical) {
 		if (p_side == SIDE_LEFT || p_side == SIDE_RIGHT) {

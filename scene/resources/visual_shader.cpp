@@ -3025,7 +3025,7 @@ String VisualShaderNodeUniform::get_uniform_name() const {
 }
 
 void VisualShaderNodeUniform::set_qualifier(VisualShaderNodeUniform::Qualifier p_qual) {
-	ERR_FAIL_INDEX(int(p_qual), int(QUAL_MAX));
+	ERR_FAIL_INDEX(p_qual, QUAL_MAX);
 	if (qualifier == p_qual) {
 		return;
 	}
@@ -3353,7 +3353,7 @@ bool VisualShaderNodeGroupBase::is_valid_port_name(const String &p_name) const {
 
 void VisualShaderNodeGroupBase::add_input_port(int p_id, int p_type, const String &p_name) {
 	ERR_FAIL_COND(has_input_port(p_id));
-	ERR_FAIL_INDEX(p_type, int(PORT_TYPE_MAX));
+	ERR_FAIL_INDEX(p_type, PORT_TYPE_MAX);
 	ERR_FAIL_COND(!is_valid_port_name(p_name));
 
 	String str = itos(p_id) + "," + itos(p_type) + "," + p_name + ";";
@@ -3429,7 +3429,7 @@ bool VisualShaderNodeGroupBase::has_input_port(int p_id) const {
 
 void VisualShaderNodeGroupBase::add_output_port(int p_id, int p_type, const String &p_name) {
 	ERR_FAIL_COND(has_output_port(p_id));
-	ERR_FAIL_INDEX(p_type, int(PORT_TYPE_MAX));
+	ERR_FAIL_INDEX(p_type, PORT_TYPE_MAX);
 	ERR_FAIL_COND(!is_valid_port_name(p_name));
 
 	String str = itos(p_id) + "," + itos(p_type) + "," + p_name + ";";
@@ -3513,7 +3513,7 @@ void VisualShaderNodeGroupBase::clear_output_ports() {
 
 void VisualShaderNodeGroupBase::set_input_port_type(int p_id, int p_type) {
 	ERR_FAIL_COND(!has_input_port(p_id));
-	ERR_FAIL_INDEX(p_type, int(PORT_TYPE_MAX));
+	ERR_FAIL_INDEX(p_type, PORT_TYPE_MAX);
 
 	if (input_ports[p_id].type == p_type) {
 		return;
@@ -3585,7 +3585,7 @@ String VisualShaderNodeGroupBase::get_input_port_name(int p_id) const {
 
 void VisualShaderNodeGroupBase::set_output_port_type(int p_id, int p_type) {
 	ERR_FAIL_COND(!has_output_port(p_id));
-	ERR_FAIL_INDEX(p_type, int(PORT_TYPE_MAX));
+	ERR_FAIL_INDEX(p_type, PORT_TYPE_MAX);
 
 	if (output_ports[p_id].type == p_type) {
 		return;

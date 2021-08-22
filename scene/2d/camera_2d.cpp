@@ -442,13 +442,13 @@ void Camera2D::clear_current() {
 }
 
 void Camera2D::set_limit(Side p_side, int p_limit) {
-	ERR_FAIL_INDEX((int)p_side, 4);
+	ERR_FAIL_INDEX(p_side, 4);
 	limit[p_side] = p_limit;
 	update();
 }
 
 int Camera2D::get_limit(Side p_side) const {
-	ERR_FAIL_INDEX_V((int)p_side, 4, 0);
+	ERR_FAIL_INDEX_V(p_side, 4, 0);
 	return limit[p_side];
 }
 
@@ -462,13 +462,13 @@ bool Camera2D::is_limit_smoothing_enabled() const {
 }
 
 void Camera2D::set_drag_margin(Side p_side, real_t p_drag_margin) {
-	ERR_FAIL_INDEX((int)p_side, 4);
+	ERR_FAIL_INDEX(p_side, 4);
 	drag_margin[p_side] = p_drag_margin;
 	update();
 }
 
 real_t Camera2D::get_drag_margin(Side p_side) const {
-	ERR_FAIL_INDEX_V((int)p_side, 4, 0);
+	ERR_FAIL_INDEX_V(p_side, 4, 0);
 	return drag_margin[p_side];
 }
 

@@ -2740,7 +2740,7 @@ int RendererStorageRD::mesh_get_blend_shape_count(RID p_mesh) const {
 void RendererStorageRD::mesh_set_blend_shape_mode(RID p_mesh, RS::BlendShapeMode p_mode) {
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
-	ERR_FAIL_INDEX((int)p_mode, 2);
+	ERR_FAIL_INDEX(p_mode, 2);
 
 	mesh->blend_shape_mode = p_mode;
 }

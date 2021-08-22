@@ -1311,7 +1311,7 @@ bool Window::is_clamped_to_embedder() const {
 }
 
 void Window::set_layout_direction(Window::LayoutDirection p_direction) {
-	ERR_FAIL_INDEX((int)p_direction, 4);
+	ERR_FAIL_INDEX(p_direction, 4);
 
 	layout_dir = p_direction;
 	propagate_notification(Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED);

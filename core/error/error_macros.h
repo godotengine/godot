@@ -124,22 +124,22 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  * Ensures an integer index `m_index` is less than `m_size` and greater than or equal to 0.
  * If not, the current function returns.
  */
-#define ERR_FAIL_INDEX(m_index, m_size)                                                                         \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                     \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size)); \
-		return;                                                                                                 \
-	} else                                                                                                      \
+#define ERR_FAIL_INDEX(m_index, m_size)                                                                                                             \
+	if (unlikely(static_cast<int>(m_index) < 0 || static_cast<int>(m_index) >= static_cast<int>(m_size))) {                                         \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, static_cast<int>(m_index), static_cast<int>(m_size), _STR(m_index), _STR(m_size)); \
+		return;                                                                                                                                     \
+	} else                                                                                                                                          \
 		((void)0)
 
 /**
  * Ensures an integer index `m_index` is less than `m_size` and greater than or equal to 0.
  * If not, prints `m_msg` and the current function returns.
  */
-#define ERR_FAIL_INDEX_MSG(m_index, m_size, m_msg)                                                                                \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                       \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), DEBUG_STR(m_msg)); \
-		return;                                                                                                                   \
-	} else                                                                                                                        \
+#define ERR_FAIL_INDEX_MSG(m_index, m_size, m_msg)                                                                                                                    \
+	if (unlikely(static_cast<int>(m_index) < 0 || static_cast<int>(m_index) >= static_cast<int>(m_size))) {                                                           \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, static_cast<int>(m_index), static_cast<int>(m_size), _STR(m_index), _STR(m_size), DEBUG_STR(m_msg)); \
+		return;                                                                                                                                                       \
+	} else                                                                                                                                                            \
 		((void)0)
 
 /**
@@ -149,22 +149,22 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  * Ensures an integer index `m_index` is less than `m_size` and greater than or equal to 0.
  * If not, the current function returns `m_retval`.
  */
-#define ERR_FAIL_INDEX_V(m_index, m_size, m_retval)                                                             \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                     \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size)); \
-		return m_retval;                                                                                        \
-	} else                                                                                                      \
+#define ERR_FAIL_INDEX_V(m_index, m_size, m_retval)                                                                                                 \
+	if (unlikely(static_cast<int>(m_index) < 0 || static_cast<int>(m_index) >= static_cast<int>(m_size))) {                                         \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, static_cast<int>(m_index), static_cast<int>(m_size), _STR(m_index), _STR(m_size)); \
+		return m_retval;                                                                                                                            \
+	} else                                                                                                                                          \
 		((void)0)
 
 /**
  * Ensures an integer index `m_index` is less than `m_size` and greater than or equal to 0.
  * If not, prints `m_msg` and the current function returns `m_retval`.
  */
-#define ERR_FAIL_INDEX_V_MSG(m_index, m_size, m_retval, m_msg)                                                                    \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                       \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), DEBUG_STR(m_msg)); \
-		return m_retval;                                                                                                          \
-	} else                                                                                                                        \
+#define ERR_FAIL_INDEX_V_MSG(m_index, m_size, m_retval, m_msg)                                                                                                        \
+	if (unlikely(static_cast<int>(m_index) < 0 || static_cast<int>(m_index) >= static_cast<int>(m_size))) {                                                           \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, static_cast<int>(m_index), static_cast<int>(m_size), _STR(m_index), _STR(m_size), DEBUG_STR(m_msg)); \
+		return m_retval;                                                                                                                                              \
+	} else                                                                                                                                                            \
 		((void)0)
 
 /**
@@ -175,11 +175,11 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  * Ensures an integer index `m_index` is less than `m_size` and greater than or equal to 0.
  * If not, the application crashes.
  */
-#define CRASH_BAD_INDEX(m_index, m_size)                                                                                  \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                               \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), "", true); \
-		GENERATE_TRAP();                                                                                                  \
-	} else                                                                                                                \
+#define CRASH_BAD_INDEX(m_index, m_size)                                                                                                                      \
+	if (unlikely(static_cast<int>(m_index) < 0 || static_cast<int>(m_index) >= static_cast<int>(m_size))) {                                                   \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, static_cast<int>(m_index), static_cast<int>(m_size), _STR(m_index), _STR(m_size), "", true); \
+		GENERATE_TRAP();                                                                                                                                      \
+	} else                                                                                                                                                    \
 		((void)0)
 
 /**
@@ -189,11 +189,11 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  * Ensures an integer index `m_index` is less than `m_size` and greater than or equal to 0.
  * If not, prints `m_msg` and the application crashes.
  */
-#define CRASH_BAD_INDEX_MSG(m_index, m_size, m_msg)                                                                                     \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                             \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), DEBUG_STR(m_msg), true); \
-		GENERATE_TRAP();                                                                                                                \
-	} else                                                                                                                              \
+#define CRASH_BAD_INDEX_MSG(m_index, m_size, m_msg)                                                                                                                         \
+	if (unlikely(static_cast<int>(m_index) < 0 || static_cast<int>(m_index) >= static_cast<int>(m_size))) {                                                                 \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, static_cast<int>(m_index), static_cast<int>(m_size), _STR(m_index), _STR(m_size), DEBUG_STR(m_msg), true); \
+		GENERATE_TRAP();                                                                                                                                                    \
+	} else                                                                                                                                                                  \
 		((void)0)
 
 // Unsigned integer index out of bounds error macros.
@@ -205,22 +205,22 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  * Ensures an unsigned integer index `m_index` is less than `m_size`.
  * If not, the current function returns.
  */
-#define ERR_FAIL_UNSIGNED_INDEX(m_index, m_size)                                                                \
-	if (unlikely((m_index) >= (m_size))) {                                                                      \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size)); \
-		return;                                                                                                 \
-	} else                                                                                                      \
+#define ERR_FAIL_UNSIGNED_INDEX(m_index, m_size)                                                                                                                      \
+	if (unlikely(static_cast<unsigned int>(m_index) >= static_cast<unsigned int>(m_size))) {                                                                          \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, static_cast<unsigned int>(m_index), static_cast<unsigned int>(m_size), _STR(m_index), _STR(m_size)); \
+		return;                                                                                                                                                       \
+	} else                                                                                                                                                            \
 		((void)0)
 
 /**
  * Ensures an unsigned integer index `m_index` is less than `m_size`.
  * If not, prints `m_msg` and the current function returns.
  */
-#define ERR_FAIL_UNSIGNED_INDEX_MSG(m_index, m_size, m_msg)                                                                       \
-	if (unlikely((m_index) >= (m_size))) {                                                                                        \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), DEBUG_STR(m_msg)); \
-		return;                                                                                                                   \
-	} else                                                                                                                        \
+#define ERR_FAIL_UNSIGNED_INDEX_MSG(m_index, m_size, m_msg)                                                                                                                             \
+	if (unlikely(static_cast<unsigned int>(m_index) >= static_cast<unsigned int>(m_size))) {                                                                                            \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, static_cast<unsigned int>(m_index), static_cast<unsigned int>(m_size), _STR(m_index), _STR(m_size), DEBUG_STR(m_msg)); \
+		return;                                                                                                                                                                         \
+	} else                                                                                                                                                                              \
 		((void)0)
 
 /**
@@ -230,22 +230,22 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  * Ensures an unsigned integer index `m_index` is less than `m_size`.
  * If not, the current function returns `m_retval`.
  */
-#define ERR_FAIL_UNSIGNED_INDEX_V(m_index, m_size, m_retval)                                                    \
-	if (unlikely((m_index) >= (m_size))) {                                                                      \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size)); \
-		return m_retval;                                                                                        \
-	} else                                                                                                      \
+#define ERR_FAIL_UNSIGNED_INDEX_V(m_index, m_size, m_retval)                                                                                                          \
+	if (unlikely(static_cast<unsigned int>(m_index) >= static_cast<unsigned int>(m_size))) {                                                                          \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, static_cast<unsigned int>(m_index), static_cast<unsigned int>(m_size), _STR(m_index), _STR(m_size)); \
+		return m_retval;                                                                                                                                              \
+	} else                                                                                                                                                            \
 		((void)0)
 
 /**
  * Ensures an unsigned integer index `m_index` is less than `m_size`.
  * If not, prints `m_msg` and the current function returns `m_retval`.
  */
-#define ERR_FAIL_UNSIGNED_INDEX_V_MSG(m_index, m_size, m_retval, m_msg)                                                           \
-	if (unlikely((m_index) >= (m_size))) {                                                                                        \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), DEBUG_STR(m_msg)); \
-		return m_retval;                                                                                                          \
-	} else                                                                                                                        \
+#define ERR_FAIL_UNSIGNED_INDEX_V_MSG(m_index, m_size, m_retval, m_msg)                                                                                                                 \
+	if (unlikely(static_cast<unsigned int>(m_index) >= static_cast<unsigned int>(m_size))) {                                                                                            \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, static_cast<unsigned int>(m_index), static_cast<unsigned int>(m_size), _STR(m_index), _STR(m_size), DEBUG_STR(m_msg)); \
+		return m_retval;                                                                                                                                                                \
+	} else                                                                                                                                                                              \
 		((void)0)
 
 /**
@@ -256,11 +256,11 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  * Ensures an unsigned integer index `m_index` is less than `m_size`.
  * If not, the application crashes.
  */
-#define CRASH_BAD_UNSIGNED_INDEX(m_index, m_size)                                                                         \
-	if (unlikely((m_index) >= (m_size))) {                                                                                \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), "", true); \
-		GENERATE_TRAP();                                                                                                  \
-	} else                                                                                                                \
+#define CRASH_BAD_UNSIGNED_INDEX(m_index, m_size)                                                                                                                               \
+	if (unlikely(static_cast<unsigned int>(m_index) >= static_cast<unsigned int>(m_size))) {                                                                                    \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, static_cast<unsigned int>(m_index), static_cast<unsigned int>(m_size), _STR(m_index), _STR(m_size), "", true); \
+		GENERATE_TRAP();                                                                                                                                                        \
+	} else                                                                                                                                                                      \
 		((void)0)
 
 /**
@@ -270,11 +270,11 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  * Ensures an unsigned integer index `m_index` is less than `m_size`.
  * If not, prints `m_msg` and the application crashes.
  */
-#define CRASH_BAD_UNSIGNED_INDEX_MSG(m_index, m_size, m_msg)                                                                            \
-	if (unlikely((m_index) >= (m_size))) {                                                                                              \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), DEBUG_STR(m_msg), true); \
-		GENERATE_TRAP();                                                                                                                \
-	} else                                                                                                                              \
+#define CRASH_BAD_UNSIGNED_INDEX_MSG(m_index, m_size, m_msg)                                                                                                                                  \
+	if (unlikely(static_cast<unsigned int>(m_index) >= static_cast<unsigned int>(m_size))) {                                                                                                  \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, static_cast<unsigned int>(m_index), static_cast<unsigned int>(m_size), _STR(m_index), _STR(m_size), DEBUG_STR(m_msg), true); \
+		GENERATE_TRAP();                                                                                                                                                                      \
+	} else                                                                                                                                                                                    \
 		((void)0)
 
 // Null reference error macros.

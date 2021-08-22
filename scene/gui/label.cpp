@@ -505,7 +505,7 @@ int Label::get_visible_line_count() const {
 }
 
 void Label::set_align(Align p_align) {
-	ERR_FAIL_INDEX((int)p_align, 4);
+	ERR_FAIL_INDEX(p_align, 4);
 	if (align != p_align) {
 		if (align == ALIGN_FILL || p_align == ALIGN_FILL) {
 			lines_dirty = true; // Reshape lines.
@@ -520,7 +520,7 @@ Label::Align Label::get_align() const {
 }
 
 void Label::set_valign(VAlign p_align) {
-	ERR_FAIL_INDEX((int)p_align, 4);
+	ERR_FAIL_INDEX(p_align, 4);
 	valign = p_align;
 	update();
 }
