@@ -32,12 +32,18 @@
 #define RESOURCE_SAVER_H
 
 #include "core/io/resource.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/script_language.h"
 
 class ResourceFormatSaver : public RefCounted {
 	GDCLASS(ResourceFormatSaver, RefCounted);
 
 protected:
 	static void _bind_methods();
+
+	GDVIRTUAL3R(int64_t, _save, String, RES, uint32_t)
+	GDVIRTUAL1RC(bool, _recognize, RES)
+	GDVIRTUAL1RC(Vector<String>, _get_recognized_extensions, RES)
 
 public:
 	virtual Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);

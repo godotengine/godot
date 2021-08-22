@@ -450,7 +450,7 @@ void CodeEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 		if (k->is_action("ui_text_backspace", true)) {
 			backspace();
-			_filter_code_completion_candidates();
+			_filter_code_completion_candidates_impl();
 			accept_event();
 			return;
 		}
@@ -522,7 +522,7 @@ void CodeEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 	TextEdit::_gui_input(p_gui_input);
 
 	if (update_code_completion) {
-		_filter_code_completion_candidates();
+		_filter_code_completion_candidates_impl();
 	}
 }
 
@@ -557,7 +557,7 @@ Control::CursorShape CodeEdit::get_cursor_shape(const Point2 &p_pos) const {
 /* Text manipulation */
 
 // Overridable actions
-void CodeEdit::_handle_unicode_input(const uint32_t p_unicode) {
+void CodeEdit::_handle_unicode_input_internal(const uint32_t p_unicode) {
 	bool had_selection = has_selection();
 	if (had_selection) {
 		begin_complex_operation();
@@ -609,7 +609,7 @@ void CodeEdit::_handle_unicode_input(const uint32_t p_unicode) {
 	}
 }
 
-void CodeEdit::_backspace() {
+void CodeEdit::_backspace_internal() {
 	if (!is_editable()) {
 		return;
 	}
@@ -1739,9 +1739,7 @@ String CodeEdit::get_text_for_code_completion() const {
 }
 
 void CodeEdit::request_code_completion(bool p_force) {
-	ScriptInstance *si = get_script_instance();
-	if (si && si->has_method("_request_code_completion")) {
-		si->call("_request_code_completion", p_force);
+	if (GDVIRTUAL_CALL(_request_code_completion, p_force)) {
 		return;
 	}
 
@@ -1798,7 +1796,7 @@ void CodeEdit::update_code_completion_options(bool p_forced) {
 	code_completion_forced = p_forced;
 	code_completion_option_sources = code_completion_option_submitted;
 	code_completion_option_submitted.clear();
-	_filter_code_completion_candidates();
+	_filter_code_completion_candidates_impl();
 }
 
 TypedArray<Dictionary> CodeEdit::get_code_completion_options() const {
@@ -1855,11 +1853,10 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 		return;
 	}
 
-	ScriptInstance *si = get_script_instance();
-	if (si && si->has_method("_confirm_code_completion")) {
-		si->call("_confirm_code_completion", p_replace);
+	if (GDVIRTUAL_CALL(_confirm_code_completion, p_replace)) {
 		return;
 	}
+
 	begin_complex_operation();
 
 	int caret_line = get_caret_line();
@@ -2179,9 +2176,10 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_code_comletion_prefixes"), &CodeEdit::get_code_completion_prefixes);
 
 	// Overridable
-	BIND_VMETHOD(MethodInfo("_confirm_code_completion", PropertyInfo(Variant::BOOL, "replace")));
-	BIND_VMETHOD(MethodInfo("_request_code_completion", PropertyInfo(Variant::BOOL, "force")));
-	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "_filter_code_completion_candidates", PropertyInfo(Variant::ARRAY, "candidates")));
+
+	GDVIRTUAL_BIND(_confirm_code_completion, "replace")
+	GDVIRTUAL_BIND(_request_code_completion, "force")
+	GDVIRTUAL_BIND(_filter_code_completion_candidates, "candidates")
 
 	/* Line length guidelines */
 	ClassDB::bind_method(D_METHOD("set_line_length_guidelines", "guideline_columns"), &CodeEdit::set_line_length_guidelines);
@@ -2650,11 +2648,10 @@ TypedArray<String> CodeEdit::_get_delimiters(DelimiterType p_type) const {
 }
 
 /* Code Completion */
-void CodeEdit::_filter_code_completion_candidates() {
-	ScriptInstance *si = get_script_instance();
+void CodeEdit::_filter_code_completion_candidates_impl() {
 	int line_height = get_line_height();
 
-	if (si && si->has_method("_filter_code_completion_candidates")) {
+	if (GDVIRTUAL_IS_OVERRIDEN(_filter_code_completion_candidates)) {
 		code_completion_options.clear();
 		code_completion_base = "";
 
@@ -2674,7 +2671,9 @@ void CodeEdit::_filter_code_completion_candidates() {
 			i++;
 		}
 
-		TypedArray<Dictionary> completion_options = si->call("_filter_code_completion_candidates", completion_options_sources);
+		Array completion_options;
+
+		GDVIRTUAL_CALL(_filter_code_completion_candidates, completion_options_sources, completion_options);
 
 		/* No options to complete, cancel. */
 		if (completion_options.size() == 0) {

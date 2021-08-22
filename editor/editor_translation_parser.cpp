@@ -38,15 +38,10 @@
 EditorTranslationParser *EditorTranslationParser::singleton = nullptr;
 
 Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural) {
-	if (!get_script_instance()) {
-		return ERR_UNAVAILABLE;
-	}
+	Array ids;
+	Array ids_ctx_plural;
 
-	if (get_script_instance()->has_method("_parse_file")) {
-		Array ids;
-		Array ids_ctx_plural;
-		get_script_instance()->call("_parse_file", p_path, ids, ids_ctx_plural);
-
+	if (GDVIRTUAL_CALL(_parse_file, p_path, ids, ids_ctx_plural)) {
 		// Add user's extracted translatable messages.
 		for (int i = 0; i < ids.size(); i++) {
 			r_ids->append(ids[i]);
@@ -71,12 +66,8 @@ Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<Str
 }
 
 void EditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_extensions) const {
-	if (!get_script_instance()) {
-		return;
-	}
-
-	if (get_script_instance()->has_method("_get_recognized_extensions")) {
-		Array extensions = get_script_instance()->call("_get_recognized_extensions");
+	Vector<String> extensions;
+	if (GDVIRTUAL_CALL(_get_recognized_extensions, extensions)) {
 		for (int i = 0; i < extensions.size(); i++) {
 			r_extensions->push_back(extensions[i]);
 		}
@@ -86,8 +77,8 @@ void EditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_ex
 }
 
 void EditorTranslationParserPlugin::_bind_methods() {
-	BIND_VMETHOD(MethodInfo(Variant::NIL, "_parse_file", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::ARRAY, "msgids"), PropertyInfo(Variant::ARRAY, "msgids_context_plural")));
-	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "_get_recognized_extensions"));
+	GDVIRTUAL_BIND(_parse_file, "path", "msgids", "msgids_context_plural");
+	GDVIRTUAL_BIND(_get_recognized_extensions);
 }
 
 /////////////////////////

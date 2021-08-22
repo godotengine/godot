@@ -352,9 +352,8 @@ Node *Resource::get_local_scene() const {
 }
 
 void Resource::setup_local_to_scene() {
-	if (get_script_instance()) {
-		get_script_instance()->call("_setup_local_to_scene");
-	}
+	// Can't use GDVIRTUAL in Resource, so this will have to be done with a signal
+	emit_signal(SNAME("setup_local_to_scene_requested"));
 }
 
 Node *(*Resource::_get_local_scene_func)() = nullptr;
@@ -422,12 +421,12 @@ void Resource::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("duplicate", "subresources"), &Resource::duplicate, DEFVAL(false));
 	ADD_SIGNAL(MethodInfo("changed"));
+	ADD_SIGNAL(MethodInfo("setup_local_to_scene_requested"));
+
 	ADD_GROUP("Resource", "resource_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "resource_local_to_scene"), "set_local_to_scene", "is_local_to_scene");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_path", "get_path");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "resource_name"), "set_name", "get_name");
-
-	BIND_VMETHOD(MethodInfo("_setup_local_to_scene"));
 }
 
 Resource::Resource() :

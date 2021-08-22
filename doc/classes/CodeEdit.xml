@@ -17,9 +17,9 @@
 				Override this method to define how the selected entry should be inserted. If [code]replace[/code] is true, any existing text should be replaced.
 			</description>
 		</method>
-		<method name="_filter_code_completion_candidates" qualifiers="virtual">
+		<method name="_filter_code_completion_candidates" qualifiers="virtual const">
 			<return type="Array" />
-			<argument index="0" name="candidates" type="Array" />
+			<argument index="0" name="candidates" type="Dictionary[]" />
 			<description>
 				Override this method to define what items in [code]candidates[/code] should be displayed.
 				Both [code]candidates[/code] and the return is a [Array] of [Dictionary], see [method get_code_completion_option] for [Dictionary] content.

@@ -30,7 +30,7 @@
 		</method>
 		<method name="_handle_unicode_input" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="unicode" type="int" />
+			<argument index="0" name="unicode_char" type="int" />
 			<description>
 				Override this method to define what happens when the types in the provided key [code]unicode[/code].
 			</description>

@@ -219,7 +219,7 @@ private:
 	List<ScriptCodeCompletionOption> code_completion_option_sources;
 	String code_completion_base;
 
-	void _filter_code_completion_candidates();
+	void _filter_code_completion_candidates_impl();
 
 	/* Line length guidelines */
 	TypedArray<int> line_length_guideline_columns;
@@ -256,8 +256,12 @@ protected:
 	/* Text manipulation */
 
 	// Overridable actions
-	virtual void _handle_unicode_input(const uint32_t p_unicode) override;
-	virtual void _backspace() override;
+	virtual void _handle_unicode_input_internal(const uint32_t p_unicode) override;
+	virtual void _backspace_internal() override;
+
+	GDVIRTUAL1(_confirm_code_completion, bool)
+	GDVIRTUAL1(_request_code_completion, bool)
+	GDVIRTUAL1RC(Array, _filter_code_completion_candidates, TypedArray<Dictionary>)
 
 public:
 	/* General overrides */

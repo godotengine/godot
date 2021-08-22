@@ -42,44 +42,37 @@ ResourceSavedCallback ResourceSaver::save_callback = nullptr;
 ResourceSaverGetResourceIDForPath ResourceSaver::save_get_id_for_path = nullptr;
 
 Error ResourceFormatSaver::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
-	if (get_script_instance() && get_script_instance()->has_method("_save")) {
-		return (Error)get_script_instance()->call("_save", p_path, p_resource, p_flags).operator int64_t();
+	int64_t res;
+	if (GDVIRTUAL_CALL(_save, p_path, p_resource, p_flags, res)) {
+		return (Error)res;
 	}
 
 	return ERR_METHOD_NOT_FOUND;
 }
 
 bool ResourceFormatSaver::recognize(const RES &p_resource) const {
-	if (get_script_instance() && get_script_instance()->has_method("_recognize")) {
-		return get_script_instance()->call("_recognize", p_resource);
+	bool success;
+	if (GDVIRTUAL_CALL(_recognize, p_resource, success)) {
+		return success;
 	}
 
 	return false;
 }
 
 void ResourceFormatSaver::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
-	if (get_script_instance() && get_script_instance()->has_method("_get_recognized_extensions")) {
-		PackedStringArray exts = get_script_instance()->call("_get_recognized_extensions", p_resource);
-
-		{
-			const String *r = exts.ptr();
-			for (int i = 0; i < exts.size(); ++i) {
-				p_extensions->push_back(r[i]);
-			}
+	PackedStringArray exts;
+	if (GDVIRTUAL_CALL(_get_recognized_extensions, p_resource, exts)) {
+		const String *r = exts.ptr();
+		for (int i = 0; i < exts.size(); ++i) {
+			p_extensions->push_back(r[i]);
 		}
 	}
 }
 
 void ResourceFormatSaver::_bind_methods() {
-	{
-		PropertyInfo arg0 = PropertyInfo(Variant::STRING, "path");
-		PropertyInfo arg1 = PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource");
-		PropertyInfo arg2 = PropertyInfo(Variant::INT, "flags");
-		BIND_VMETHOD(MethodInfo(Variant::INT, "_save", arg0, arg1, arg2));
-	}
-
-	BIND_VMETHOD(MethodInfo(Variant::PACKED_STRING_ARRAY, "_get_recognized_extensions", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_recognize", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
+	GDVIRTUAL_BIND(_save, "path", "resource", "flags");
+	GDVIRTUAL_BIND(_recognize, "resource");
+	GDVIRTUAL_BIND(_get_recognized_extensions, "resource");
 }
 
 Error ResourceSaver::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
