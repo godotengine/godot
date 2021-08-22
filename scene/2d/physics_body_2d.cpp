@@ -529,9 +529,9 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 		sleeping = state->is_sleeping();
 		emit_signal(SceneStringNames::get_singleton()->sleeping_state_changed);
 	}
-	if (get_script_instance()) {
-		get_script_instance()->call("_integrate_forces", state);
-	}
+
+	GDVIRTUAL_CALL(_integrate_forces, state);
+
 	set_block_transform_notify(false); // want it back
 
 	if (contact_monitor) {
@@ -978,7 +978,7 @@ void RigidBody2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_colliding_bodies"), &RigidBody2D::get_colliding_bodies);
 
-	BIND_VMETHOD(MethodInfo("_integrate_forces", PropertyInfo(Variant::OBJECT, "state", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsDirectBodyState2D")));
+	GDVIRTUAL_BIND(_integrate_forces, "state");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Dynamic,Static,DynamicLocked,Kinematic"), "set_mode", "get_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mass", PROPERTY_HINT_RANGE, "0.01,65535,0.01,exp"), "set_mass", "get_mass");

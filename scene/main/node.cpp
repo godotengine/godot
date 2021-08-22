@@ -54,16 +54,11 @@ int Node::orphan_node_count = 0;
 void Node::_notification(int p_notification) {
 	switch (p_notification) {
 		case NOTIFICATION_PROCESS: {
-			if (get_script_instance()) {
-				Variant time = get_process_delta_time();
-				get_script_instance()->call(SceneStringNames::get_singleton()->_process, time);
-			}
+			GDVIRTUAL_CALL(_process, get_process_delta_time());
+
 		} break;
 		case NOTIFICATION_PHYSICS_PROCESS: {
-			if (get_script_instance()) {
-				Variant time = get_physics_process_delta_time();
-				get_script_instance()->call(SceneStringNames::get_singleton()->_physics_process, time);
-			}
+			GDVIRTUAL_CALL(_physics_process, get_process_delta_time());
 
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
@@ -140,15 +135,14 @@ void Node::_notification(int p_notification) {
 					set_process_unhandled_key_input(true);
 				}
 
-				if (get_script_instance()->has_method(SceneStringNames::get_singleton()->_process)) {
+				if (GDVIRTUAL_IS_OVERRIDEN(_process)) {
 					set_process(true);
 				}
-
-				if (get_script_instance()->has_method(SceneStringNames::get_singleton()->_physics_process)) {
+				if (GDVIRTUAL_IS_OVERRIDEN(_physics_process)) {
 					set_physics_process(true);
 				}
 
-				get_script_instance()->call(SceneStringNames::get_singleton()->_ready);
+				GDVIRTUAL_CALL(_ready);
 			}
 			if (data.filename.length()) {
 				ERR_FAIL_COND(!is_inside_tree());
@@ -221,9 +215,7 @@ void Node::_propagate_enter_tree() {
 
 	notification(NOTIFICATION_ENTER_TREE);
 
-	if (get_script_instance()) {
-		get_script_instance()->call(SceneStringNames::get_singleton()->_enter_tree);
-	}
+	GDVIRTUAL_CALL(_enter_tree);
 
 	emit_signal(SceneStringNames::get_singleton()->tree_entered);
 
@@ -269,9 +261,8 @@ void Node::_propagate_exit_tree() {
 
 	data.blocked--;
 
-	if (get_script_instance()) {
-		get_script_instance()->call(SceneStringNames::get_singleton()->_exit_tree);
-	}
+	GDVIRTUAL_CALL(_exit_tree);
+
 	emit_signal(SceneStringNames::get_singleton()->tree_exiting);
 
 	notification(NOTIFICATION_EXIT_TREE, true);
@@ -2737,11 +2728,13 @@ void Node::_bind_methods() {
 	ADD_GROUP("Editor Description", "editor_");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_description", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_INTERNAL), "set_editor_description", "get_editor_description");
 
-	BIND_VMETHOD(MethodInfo("_process", PropertyInfo(Variant::FLOAT, "delta")));
-	BIND_VMETHOD(MethodInfo("_physics_process", PropertyInfo(Variant::FLOAT, "delta")));
-	BIND_VMETHOD(MethodInfo("_enter_tree"));
-	BIND_VMETHOD(MethodInfo("_exit_tree"));
-	BIND_VMETHOD(MethodInfo("_ready"));
+	GDVIRTUAL_BIND(_process, "delta");
+	GDVIRTUAL_BIND(_physics_process, "delta");
+	GDVIRTUAL_BIND(_enter_tree);
+	GDVIRTUAL_BIND(_exit_tree);
+	GDVIRTUAL_BIND(_ready);
+	GDVIRTUAL_BIND(_get_configuration_warnings);
+
 	BIND_VMETHOD(MethodInfo("_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	BIND_VMETHOD(MethodInfo("_unhandled_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	BIND_VMETHOD(MethodInfo("_unhandled_key_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEventKey")));

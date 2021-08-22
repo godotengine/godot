@@ -282,7 +282,14 @@ struct ObjectNativeExtension {
 };
 
 #define GDVIRTUAL_CALL(m_name, ...) _gdvirtual_##m_name##_call(__VA_ARGS__)
-#define GDVIRTUAL_BIND(m_name) ::ClassDB::add_virtual_method(get_class_static(), _gdvirtual_##m_name##_get_method_info());
+#define GDVIRTUAL_CALL_PTR(m_obj, m_name, ...) m_obj->_gdvirtual_##m_name##_call(__VA_ARGS__)
+#ifdef DEBUG_METHODS_ENABLED
+#define GDVIRTUAL_BIND(m_name, ...) ::ClassDB::add_virtual_method(get_class_static(), _gdvirtual_##m_name##_get_method_info(), true, sarray(__VA_ARGS__));
+#else
+#define GDVIRTUAL_BIND(m_name, ...)
+#endif
+#define GDVIRTUAL_IS_OVERRIDEN(m_name) _gdvirtual_##m_name##_overriden()
+#define GDVIRTUAL_IS_OVERRIDEN_PTR(m_obj, m_name) m_obj->_gdvirtual_##m_name##_overriden()
 
 /*
    the following is an incomprehensible blob of hacks and workarounds to compensate for many of the fallencies in C++. As a plus, this macro pretty much alone defines the object model.

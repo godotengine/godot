@@ -41,6 +41,7 @@ class EditorScript : public RefCounted {
 
 protected:
 	static void _bind_methods();
+	GDVIRTUAL0(_run)
 
 public:
 	void add_root_node(Node *p_node);

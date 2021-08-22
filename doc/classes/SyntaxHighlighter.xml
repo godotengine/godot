@@ -17,7 +17,7 @@
 				Virtual method which can be overridden to clear any local caches.
 			</description>
 		</method>
-		<method name="_get_line_syntax_highlighting" qualifiers="virtual">
+		<method name="_get_line_syntax_highlighting" qualifiers="virtual const">
 			<return type="Dictionary" />
 			<argument index="0" name="line" type="int" />
 			<description>

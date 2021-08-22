@@ -730,14 +730,9 @@ Variant Control::get_drag_data(const Point2 &p_point) {
 		}
 	}
 
-	if (get_script_instance()) {
-		Variant v = p_point;
-		const Variant *p = &v;
-		Callable::CallError ce;
-		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->_get_drag_data, &p, 1, ce);
-		if (ce.error == Callable::CallError::CALL_OK) {
-			return ret;
-		}
+	Variant dd;
+	if (GDVIRTUAL_CALL(_get_drag_data, p_point, dd)) {
+		return dd;
 	}
 
 	return Variant();
@@ -752,16 +747,10 @@ bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const 
 		}
 	}
 
-	if (get_script_instance()) {
-		Variant v = p_point;
-		const Variant *p[2] = { &v, &p_data };
-		Callable::CallError ce;
-		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->_can_drop_data, p, 2, ce);
-		if (ce.error == Callable::CallError::CALL_OK) {
-			return ret;
-		}
+	bool ret;
+	if (GDVIRTUAL_CALL(_can_drop_data, p_point, p_data, ret)) {
+		return ret;
 	}
-
 	return false;
 }
 
@@ -775,15 +764,7 @@ void Control::drop_data(const Point2 &p_point, const Variant &p_data) {
 		}
 	}
 
-	if (get_script_instance()) {
-		Variant v = p_point;
-		const Variant *p[2] = { &v, &p_data };
-		Callable::CallError ce;
-		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->_drop_data, p, 2, ce);
-		if (ce.error == Callable::CallError::CALL_OK) {
-			return;
-		}
-	}
+	GDVIRTUAL_CALL(_drop_data, p_point, p_data);
 }
 
 void Control::force_drag(const Variant &p_data, Control *p_control) {
@@ -800,15 +781,11 @@ void Control::set_drag_preview(Control *p_control) {
 }
 
 Size2 Control::get_minimum_size() const {
-	ScriptInstance *si = const_cast<Control *>(this)->get_script_instance();
-	if (si) {
-		Callable::CallError ce;
-		Variant s = si->call(SceneStringNames::get_singleton()->_get_minimum_size, nullptr, 0, ce);
-		if (ce.error == Callable::CallError::CALL_OK) {
-			return s;
-		}
+	Vector2 ms;
+	if (GDVIRTUAL_CALL(_get_minimum_size, ms)) {
+		return ms;
 	}
-	return Size2();
+	return Vector2();
 }
 
 template <class T>
@@ -2123,8 +2100,9 @@ String Control::get_tooltip(const Point2 &p_pos) const {
 }
 
 Control *Control::make_custom_tooltip(const String &p_text) const {
-	if (get_script_instance()) {
-		return const_cast<Control *>(this)->call("_make_custom_tooltip", p_text);
+	Object *ret = nullptr;
+	if (GDVIRTUAL_CALL(_make_custom_tooltip, p_text, ret)) {
+		return Object::cast_to<Control>(ret);
 	}
 	return nullptr;
 }
@@ -2499,14 +2477,11 @@ Vector<Vector2i> Control::structured_text_parser(StructuredTextParser p_theme_ty
 			}
 		} break;
 		case STRUCTURED_TEXT_CUSTOM: {
-			if (get_script_instance()) {
-				Variant data = get_script_instance()->call(SceneStringNames::get_singleton()->_structured_text_parser, p_args, p_text);
-				if (data.get_type() == Variant::ARRAY) {
-					Array _data = data;
-					for (int i = 0; i < _data.size(); i++) {
-						if (_data[i].get_type() == Variant::VECTOR2I) {
-							ret.push_back(Vector2i(_data[i]));
-						}
+			Array r;
+			if (GDVIRTUAL_CALL(_structured_text_parser, p_args, p_text, r)) {
+				for (int i = 0; i < r.size(); i++) {
+					if (r[i].get_type() == Variant::VECTOR2I) {
+						ret.push_back(Vector2i(r[i]));
 					}
 				}
 			}
@@ -2823,20 +2798,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_auto_translate", "enable"), &Control::set_auto_translate);
 	ClassDB::bind_method(D_METHOD("is_auto_translating"), &Control::is_auto_translating);
 
-	BIND_VMETHOD(MethodInfo("_structured_text_parser", PropertyInfo(Variant::ARRAY, "args"), PropertyInfo(Variant::STRING, "text")));
-
 	BIND_VMETHOD(MethodInfo("_gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
-	BIND_VMETHOD(MethodInfo(Variant::VECTOR2, "_get_minimum_size"));
-
-	MethodInfo get_drag_data = MethodInfo("_get_drag_data", PropertyInfo(Variant::VECTOR2, "position"));
-	get_drag_data.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
-	BIND_VMETHOD(get_drag_data);
-
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_can_drop_data", PropertyInfo(Variant::VECTOR2, "position"), PropertyInfo(Variant::NIL, "data")));
-	BIND_VMETHOD(MethodInfo("_drop_data", PropertyInfo(Variant::VECTOR2, "position"), PropertyInfo(Variant::NIL, "data")));
-	BIND_VMETHOD(MethodInfo(
-			PropertyInfo(Variant::OBJECT, "control", PROPERTY_HINT_RESOURCE_TYPE, "Control"),
-			"_make_custom_tooltip", PropertyInfo(Variant::STRING, "for_text")));
 
 	ADD_GROUP("Anchor", "anchor_");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anchor_left", PROPERTY_HINT_RANGE, "0,1,0.001,or_lesser,or_greater"), "_set_anchor", "get_anchor", SIDE_LEFT);
@@ -2994,5 +2956,12 @@ void Control::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("minimum_size_changed"));
 	ADD_SIGNAL(MethodInfo("theme_changed"));
 
-	GDVIRTUAL_BIND(_has_point);
+	GDVIRTUAL_BIND(_has_point, "position");
+	GDVIRTUAL_BIND(_structured_text_parser, "args", "text");
+	GDVIRTUAL_BIND(_get_minimum_size);
+
+	GDVIRTUAL_BIND(_get_drag_data, "at_position")
+	GDVIRTUAL_BIND(_can_drop_data, "at_position", "data")
+	GDVIRTUAL_BIND(_drop_data, "at_position", "data")
+	GDVIRTUAL_BIND(_make_custom_tooltip, "for_text")
 }

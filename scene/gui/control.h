@@ -273,6 +273,16 @@ private:
 	_FORCE_INLINE_ void _get_theme_type_dependencies(const StringName &p_theme_type, List<StringName> *p_list) const;
 
 	GDVIRTUAL1RC(bool, _has_point, Vector2)
+	GDVIRTUAL2RC(Array, _structured_text_parser, Array, String)
+	GDVIRTUAL0RC(Vector2, _get_minimum_size)
+
+	GDVIRTUAL1RC(Variant, _get_drag_data, Vector2)
+	GDVIRTUAL2RC(bool, _can_drop_data, Vector2, Variant)
+	GDVIRTUAL2(_drop_data, Vector2, Variant)
+	GDVIRTUAL1RC(Object *, _make_custom_tooltip, String)
+
+	//GDVIRTUAL1(_gui_input, Ref<InputEvent>)
+
 protected:
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;

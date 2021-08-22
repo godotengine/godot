@@ -1619,22 +1619,25 @@ void Object::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("script_changed"));
 	ADD_SIGNAL(MethodInfo("property_list_changed"));
 
-	BIND_VMETHOD(MethodInfo("_notification", PropertyInfo(Variant::INT, "what")));
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_set", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::NIL, "value")));
+#define BIND_OBJ_CORE_METHOD(m_method) \
+	::ClassDB::add_virtual_method(get_class_static(), m_method, true, Vector<String>(), true);
+
+	BIND_OBJ_CORE_METHOD(MethodInfo("_notification", PropertyInfo(Variant::INT, "what")));
+	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::BOOL, "_set", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::NIL, "value")));
 #ifdef TOOLS_ENABLED
 	MethodInfo miget("_get", PropertyInfo(Variant::STRING_NAME, "property"));
 	miget.return_val.name = "Variant";
 	miget.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
-	BIND_VMETHOD(miget);
+	BIND_OBJ_CORE_METHOD(miget);
 
 	MethodInfo plget("_get_property_list");
 
 	plget.return_val.type = Variant::ARRAY;
-	BIND_VMETHOD(plget);
+	BIND_OBJ_CORE_METHOD(plget);
 
 #endif
-	BIND_VMETHOD(MethodInfo("_init"));
-	BIND_VMETHOD(MethodInfo(Variant::STRING, "_to_string"));
+	BIND_OBJ_CORE_METHOD(MethodInfo("_init"));
+	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::STRING, "_to_string"));
 
 	BIND_CONSTANT(NOTIFICATION_POSTINITIALIZE);
 	BIND_CONSTANT(NOTIFICATION_PREDELETE);

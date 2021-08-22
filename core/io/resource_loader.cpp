@@ -68,25 +68,28 @@ bool ResourceFormatLoader::recognize_path(const String &p_path, const String &p_
 }
 
 bool ResourceFormatLoader::handles_type(const String &p_type) const {
-	if (get_script_instance() && get_script_instance()->has_method("_handles_type")) {
-		// I guess custom loaders for custom resources should use "Resource"
-		return get_script_instance()->call("_handles_type", p_type);
+	bool success;
+	if (GDVIRTUAL_CALL(_handles_type, p_type, success)) {
+		return success;
 	}
 
 	return false;
 }
 
 String ResourceFormatLoader::get_resource_type(const String &p_path) const {
-	if (get_script_instance() && get_script_instance()->has_method("_get_resource_type")) {
-		return get_script_instance()->call("_get_resource_type", p_path);
+	String ret;
+
+	if (GDVIRTUAL_CALL(_get_resource_type, p_path, ret)) {
+		return ret;
 	}
 
 	return "";
 }
 
 ResourceUID::ID ResourceFormatLoader::get_resource_uid(const String &p_path) const {
-	if (get_script_instance() && get_script_instance()->has_method("_get_resource_uid")) {
-		return get_script_instance()->call("_get_resource_uid", p_path);
+	int64_t uid;
+	if (GDVIRTUAL_CALL(_get_resource_uid, p_path, uid)) {
+		return uid;
 	}
 
 	return ResourceUID::INVALID_ID;
@@ -105,27 +108,26 @@ void ResourceLoader::get_recognized_extensions_for_type(const String &p_type, Li
 }
 
 bool ResourceFormatLoader::exists(const String &p_path) const {
+	bool success;
+	if (GDVIRTUAL_CALL(_exists, p_path, success)) {
+		return success;
+	}
 	return FileAccess::exists(p_path); //by default just check file
 }
 
 void ResourceFormatLoader::get_recognized_extensions(List<String> *p_extensions) const {
-	if (get_script_instance() && get_script_instance()->has_method("_get_recognized_extensions")) {
-		PackedStringArray exts = get_script_instance()->call("_get_recognized_extensions");
-
-		{
-			const String *r = exts.ptr();
-			for (int i = 0; i < exts.size(); ++i) {
-				p_extensions->push_back(r[i]);
-			}
+	PackedStringArray exts;
+	if (GDVIRTUAL_CALL(_get_recognized_extensions, exts)) {
+		const String *r = exts.ptr();
+		for (int i = 0; i < exts.size(); ++i) {
+			p_extensions->push_back(r[i]);
 		}
 	}
 }
 
 RES ResourceFormatLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
-	// Check user-defined loader if there's any. Hard fail if it returns an error.
-	if (get_script_instance() && get_script_instance()->has_method("_load")) {
-		Variant res = get_script_instance()->call("_load", p_path, p_original_path, p_use_sub_threads, p_cache_mode);
-
+	Variant res;
+	if (GDVIRTUAL_CALL(_load, p_path, p_original_path, p_use_sub_threads, p_cache_mode, res)) {
 		if (res.get_type() == Variant::INT) { // Error code, abort.
 			if (r_error) {
 				*r_error = (Error)res.operator int64_t();
@@ -143,48 +145,42 @@ RES ResourceFormatLoader::load(const String &p_path, const String &p_original_pa
 }
 
 void ResourceFormatLoader::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
-	if (get_script_instance() && get_script_instance()->has_method("_get_dependencies")) {
-		PackedStringArray deps = get_script_instance()->call("_get_dependencies", p_path, p_add_types);
-
-		{
-			const String *r = deps.ptr();
-			for (int i = 0; i < deps.size(); ++i) {
-				p_dependencies->push_back(r[i]);
-			}
+	PackedStringArray deps;
+	if (GDVIRTUAL_CALL(_get_dependencies, p_path, p_add_types, deps)) {
+		const String *r = deps.ptr();
+		for (int i = 0; i < deps.size(); ++i) {
+			p_dependencies->push_back(r[i]);
 		}
 	}
 }
 
 Error ResourceFormatLoader::rename_dependencies(const String &p_path, const Map<String, String> &p_map) {
-	if (get_script_instance() && get_script_instance()->has_method("_rename_dependencies")) {
-		Dictionary deps_dict;
-		for (Map<String, String>::Element *E = p_map.front(); E; E = E->next()) {
-			deps_dict[E->key()] = E->value();
-		}
+	Dictionary deps_dict;
+	for (Map<String, String>::Element *E = p_map.front(); E; E = E->next()) {
+		deps_dict[E->key()] = E->value();
+	}
 
-		int64_t res = get_script_instance()->call("_rename_dependencies", deps_dict);
-		return (Error)res;
+	int64_t err;
+	if (GDVIRTUAL_CALL(_rename_dependencies, p_path, deps_dict, err)) {
+		return (Error)err;
 	}
 
 	return OK;
 }
 
 void ResourceFormatLoader::_bind_methods() {
-	{
-		MethodInfo info = MethodInfo(Variant::NIL, "_load", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::STRING, "original_path"), PropertyInfo(Variant::BOOL, "use_sub_threads"), PropertyInfo(Variant::INT, "cache_mode"));
-		info.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
-		BIND_VMETHOD(info);
-	}
-
-	BIND_VMETHOD(MethodInfo(Variant::PACKED_STRING_ARRAY, "_get_recognized_extensions"));
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_handles_type", PropertyInfo(Variant::STRING_NAME, "typename")));
-	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_resource_type", PropertyInfo(Variant::STRING, "path")));
-	BIND_VMETHOD(MethodInfo("_get_dependencies", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::STRING, "add_types")));
-	BIND_VMETHOD(MethodInfo(Variant::INT, "_rename_dependencies", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::STRING, "renames")));
-
 	BIND_ENUM_CONSTANT(CACHE_MODE_IGNORE);
 	BIND_ENUM_CONSTANT(CACHE_MODE_REUSE);
 	BIND_ENUM_CONSTANT(CACHE_MODE_REPLACE);
+
+	GDVIRTUAL_BIND(_get_recognized_extensions);
+	GDVIRTUAL_BIND(_handles_type, "type");
+	GDVIRTUAL_BIND(_get_resource_type, "path");
+	GDVIRTUAL_BIND(_get_resource_uid, "path");
+	GDVIRTUAL_BIND(_get_dependencies, "path", "add_types");
+	GDVIRTUAL_BIND(_rename_dependencies, "path", "renames");
+	GDVIRTUAL_BIND(_exists, "path");
+	GDVIRTUAL_BIND(_load, "path", "original_path", "use_sub_threads", "cache_mode");
 }
 
 ///////////////////////////////////

@@ -102,6 +102,7 @@ private:
 
 	Map<StringName, Variant> cache;
 
+	GDVIRTUAL0(_update_property)
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -191,6 +192,12 @@ class EditorInspectorPlugin : public RefCounted {
 
 protected:
 	static void _bind_methods();
+
+	GDVIRTUAL1RC(bool, _can_handle, Variant)
+	GDVIRTUAL0(_parse_begin)
+	GDVIRTUAL2(_parse_category, Object *, String)
+	GDVIRTUAL7R(bool, _parse_property, Object *, int, String, int, String, int, bool)
+	GDVIRTUAL0(_parse_end)
 
 public:
 	void add_custom_control(Control *control);

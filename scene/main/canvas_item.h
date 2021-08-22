@@ -142,6 +142,7 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	GDVIRTUAL0(_draw)
 public:
 	enum {
 		NOTIFICATION_TRANSFORM_CHANGED = SceneTree::NOTIFICATION_TRANSFORM_CHANGED, //unique

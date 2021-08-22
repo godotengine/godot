@@ -189,6 +189,8 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	GDVIRTUAL1(_integrate_forces, PhysicsDirectBodyState2D *)
+
 public:
 	void set_mode(Mode p_mode);
 	Mode get_mode() const;

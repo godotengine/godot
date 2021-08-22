@@ -32,20 +32,8 @@
 #define RICH_TEXT_EFFECT_H
 
 #include "core/io/resource.h"
-
-class RichTextEffect : public Resource {
-	GDCLASS(RichTextEffect, Resource);
-	OBJ_SAVE_TYPE(RichTextEffect);
-
-protected:
-	static void _bind_methods();
-
-public:
-	Variant get_bbcode() const;
-	bool _process_effect_impl(Ref<class CharFXTransform> p_cfx);
-
-	RichTextEffect();
-};
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/script_language.h"
 
 class CharFXTransform : public RefCounted {
 	GDCLASS(CharFXTransform, RefCounted);
@@ -87,6 +75,22 @@ public:
 
 	Dictionary get_environment() { return environment; }
 	void set_environment(Dictionary p_environment) { environment = p_environment; }
+};
+
+class RichTextEffect : public Resource {
+	GDCLASS(RichTextEffect, Resource);
+	OBJ_SAVE_TYPE(RichTextEffect);
+
+protected:
+	static void _bind_methods();
+
+	GDVIRTUAL1RC(bool, _process_custom_fx, Ref<CharFXTransform>)
+
+public:
+	Variant get_bbcode() const;
+	bool _process_effect_impl(Ref<class CharFXTransform> p_cfx);
+
+	RichTextEffect();
 };
 
 #endif // RICH_TEXT_EFFECT_H

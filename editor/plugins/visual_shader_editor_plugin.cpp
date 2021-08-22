@@ -70,14 +70,15 @@ const int MAX_FLOAT_CONST_DEFS = sizeof(float_constant_defs) / sizeof(FloatConst
 ///////////////////
 
 Control *VisualShaderNodePlugin::create_editor(const Ref<Resource> &p_parent_resource, const Ref<VisualShaderNode> &p_node) {
-	if (get_script_instance()) {
-		return get_script_instance()->call("_create_editor", p_parent_resource, p_node);
+	Object *ret;
+	if (GDVIRTUAL_CALL(_create_editor, p_parent_resource, p_node, ret)) {
+		return Object::cast_to<Control>(ret);
 	}
 	return nullptr;
 }
 
 void VisualShaderNodePlugin::_bind_methods() {
-	BIND_VMETHOD(MethodInfo(Variant::OBJECT, "_create_editor", PropertyInfo(Variant::OBJECT, "parent_resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource"), PropertyInfo(Variant::OBJECT, "for_node", PROPERTY_HINT_RESOURCE_TYPE, "VisualShaderNode")));
+	GDVIRTUAL_BIND(_create_editor, "parent_resource", "visual_shader_node");
 }
 
 ///////////////////

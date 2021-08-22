@@ -349,6 +349,10 @@ protected:
 
 	static void _bind_methods();
 
+	GDVIRTUAL3(_export_file, String, String, Vector<String>)
+	GDVIRTUAL4(_export_begin, Vector<String>, bool, String, uint32_t)
+	GDVIRTUAL0(_export_end)
+
 public:
 	Vector<String> get_ios_frameworks() const;
 	Vector<String> get_ios_embedded_frameworks() const;

@@ -9,7 +9,7 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_compute_cost" qualifiers="virtual">
+		<method name="_compute_cost" qualifiers="virtual const">
 			<return type="float" />
 			<argument index="0" name="from_id" type="int" />
 			<argument index="1" name="to_id" type="int" />
@@ -18,7 +18,7 @@
 				Note that this function is hidden in the default [code]AStar2D[/code] class.
 			</description>
 		</method>
-		<method name="_estimate_cost" qualifiers="virtual">
+		<method name="_estimate_cost" qualifiers="virtual const">
 			<return type="float" />
 			<argument index="0" name="from_id" type="int" />
 			<argument index="1" name="to_id" type="int" />

@@ -113,28 +113,28 @@
 		<link title="Import plugins">https://docs.godotengine.org/en/latest/tutorials/plugins/editor/import_plugins.html</link>
 	</tutorials>
 	<methods>
-		<method name="_get_import_options" qualifiers="virtual">
+		<method name="_get_import_options" qualifiers="virtual const">
 			<return type="Array" />
-			<argument index="0" name="preset" type="int" />
+			<argument index="0" name="preset_index" type="int" />
 			<description>
 				Gets the options and default values for the preset at this index. Returns an Array of Dictionaries with the following keys: [code]name[/code], [code]default_value[/code], [code]property_hint[/code] (optional), [code]hint_string[/code] (optional), [code]usage[/code] (optional).
 			</description>
 		</method>
-		<method name="_get_import_order" qualifiers="virtual">
+		<method name="_get_import_order" qualifiers="virtual const">
 			<return type="int" />
 			<description>
 				Gets the order of this importer to be run when importing resources. Importers with [i]lower[/i] import orders will be called first, and higher values will be called later. Use this to ensure the importer runs after the dependencies are already imported. The default import order is [code]0[/code] unless overridden by a specific importer. See [enum ResourceImporter.ImportOrder] for some predefined values.
 			</description>
 		</method>
-		<method name="_get_importer_name" qualifiers="virtual">
+		<method name="_get_importer_name" qualifiers="virtual const">
 			<return type="String" />
 			<description>
 				Gets the unique name of the importer.
 			</description>
 		</method>
-		<method name="_get_option_visibility" qualifiers="virtual">
+		<method name="_get_option_visibility" qualifiers="virtual const">
 			<return type="bool" />
-			<argument index="0" name="option" type="String" />
+			<argument index="0" name="option_name" type="StringName" />
 			<argument index="1" name="options" type="Dictionary" />
 			<description>
 				This method can be overridden to hide specific import options if conditions are met. This is mainly useful for hiding options that depend on others if one of them is disabled. For example:
@@ -163,50 +163,50 @@
 				Return [code]true[/code] to make all options always visible.
 			</description>
 		</method>
-		<method name="_get_preset_count" qualifiers="virtual">
+		<method name="_get_preset_count" qualifiers="virtual const">
 			<return type="int" />
 			<description>
 				Gets the number of initial presets defined by the plugin. Use [method _get_import_options] to get the default options for the preset and [method _get_preset_name] to get the name of the preset.
 			</description>
 		</method>
-		<method name="_get_preset_name" qualifiers="virtual">
+		<method name="_get_preset_name" qualifiers="virtual const">
 			<return type="String" />
-			<argument index="0" name="preset" type="int" />
+			<argument index="0" name="preset_index" type="int" />
 			<description>
 				Gets the name of the options preset at this index.
 			</description>
 		</method>
-		<method name="_get_priority" qualifiers="virtual">
+		<method name="_get_priority" qualifiers="virtual const">
 			<return type="float" />
 			<description>
 				Gets the priority of this plugin for the recognized extension. Higher priority plugins will be preferred. The default priority is [code]1.0[/code].
 			</description>
 		</method>
-		<method name="_get_recognized_extensions" qualifiers="virtual">
-			<return type="Array" />
+		<method name="_get_recognized_extensions" qualifiers="virtual const">
+			<return type="PackedStringArray" />
 			<description>
 				Gets the list of file extensions to associate with this loader (case-insensitive). e.g. [code]["obj"][/code].
 			</description>
 		</method>
-		<method name="_get_resource_type" qualifiers="virtual">
+		<method name="_get_resource_type" qualifiers="virtual const">
 			<return type="String" />
 			<description>
 				Gets the Godot resource type associated with this loader. e.g. [code]"Mesh"[/code] or [code]"Animation"[/code].
 			</description>
 		</method>
-		<method name="_get_save_extension" qualifiers="virtual">
+		<method name="_get_save_extension" qualifiers="virtual const">
 			<return type="String" />
 			<description>
 				Gets the extension used to save this resource in the [code].godot/imported[/code] directory.
 			</description>
 		</method>
-		<method name="_get_visible_name" qualifiers="virtual">
+		<method name="_get_visible_name" qualifiers="virtual const">
 			<return type="String" />
 			<description>
 				Gets the name to display in the import window. You should choose this name as a continuation to "Import as", e.g. "Import as Special Mesh".
 			</description>
 		</method>
-		<method name="_import" qualifiers="virtual">
+		<method name="_import" qualifiers="virtual const">
 			<return type="int" />
 			<argument index="0" name="source_file" type="String" />
 			<argument index="1" name="save_path" type="String" />

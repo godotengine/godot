@@ -9,13 +9,6 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_subcall" qualifiers="virtual">
-			<return type="Variant" />
-			<argument index="0" name="arguments" type="Variant" />
-			<description>
-				Called by this node.
-			</description>
-		</method>
 	</methods>
 	<constants>
 	</constants>

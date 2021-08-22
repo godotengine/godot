@@ -32,6 +32,8 @@
 #define RESOURCE_LOADER_H
 
 #include "core/io/resource.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/script_language.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
 
@@ -47,6 +49,16 @@ public:
 
 protected:
 	static void _bind_methods();
+
+	GDVIRTUAL0RC(Vector<String>, _get_recognized_extensions)
+	GDVIRTUAL1RC(bool, _handles_type, StringName)
+	GDVIRTUAL1RC(String, _get_resource_type, String)
+	GDVIRTUAL1RC(ResourceUID::ID, _get_resource_uid, String)
+	GDVIRTUAL2RC(Vector<String>, _get_dependencies, String, bool)
+	GDVIRTUAL2RC(int64_t, _rename_dependencies, String, Dictionary)
+	GDVIRTUAL1RC(bool, _exists, String)
+
+	GDVIRTUAL4RC(Variant, _load, String, String, bool, int)
 
 public:
 	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
