@@ -359,14 +359,16 @@ void EditorNode::_version_control_menu_option(int p_idx) {
 }
 
 void EditorNode::_update_title() {
-	String appname = ProjectSettings::get_singleton()->get("application/config/name");
-	String title = appname.empty() ? String(VERSION_FULL_NAME) : String(VERSION_NAME + String(" - ") + appname);
-	String edited = editor_data.get_edited_scene_root() ? editor_data.get_edited_scene_root()->get_filename() : String();
+	const String appname = ProjectSettings::get_singleton()->get("application/config/name");
+	String title = (appname.empty() ? "Unnamed Project" : appname) + String(" - ") + VERSION_NAME;
+	const String edited = editor_data.get_edited_scene_root() ? editor_data.get_edited_scene_root()->get_filename() : String();
 	if (!edited.empty()) {
-		title += " - " + String(edited.get_file());
+		// Display the edited scene name before the program name so that it can be seen in the OS task bar.
+		title = vformat("%s - %s", edited.get_file(), title);
 	}
 	if (unsaved_cache) {
-		title += " (*)";
+		// Display the "modified" mark before anything else so that it can always be seen in the OS task bar.
+		title = vformat("(*) %s", title);
 	}
 
 	OS::get_singleton()->set_window_title(title);
