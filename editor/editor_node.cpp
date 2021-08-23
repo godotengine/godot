@@ -3820,6 +3820,9 @@ void EditorNode::register_editor_types() {
 	GDREGISTER_CLASS(EditorSceneImporterMeshNode3D);
 
 	GDREGISTER_VIRTUAL_CLASS(FileSystemDock);
+	GDREGISTER_VIRTUAL_CLASS(NodeDock);
+	GDREGISTER_VIRTUAL_CLASS(ConnectionsDock);
+	GDREGISTER_VIRTUAL_CLASS(GroupsEditor);
 
 	// FIXME: Is this stuff obsolete, or should it be ported to new APIs?
 	GDREGISTER_CLASS(EditorScenePostImport);

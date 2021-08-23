@@ -84,6 +84,12 @@
 				Returns the editor's [EditorInspector] instance.
 			</description>
 		</method>
+		<method name="get_node_dock">
+			<return type="NodeDock" />
+			<description>
+				Returns the editor's [NodeDock] instance.
+			</description>
+		</method>
 		<method name="get_open_scenes" qualifiers="const">
 			<return type="Array" />
 			<description>

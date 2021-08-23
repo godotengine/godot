@@ -159,7 +159,7 @@ class ConnectionsDock : public VBoxContainer {
 		DISCONNECT
 	};
 
-	Node *selectedNode;
+	Node *selected_node;
 	ConnectionsDockTree *tree;
 	EditorNode *editor;
 
@@ -172,6 +172,8 @@ class ConnectionsDock : public VBoxContainer {
 	LineEdit *search_box;
 
 	Map<StringName, Map<StringName, String>> descr_cache;
+
+	void _update_tree();
 
 	void _filter_changed(const String &p_text);
 
@@ -201,7 +203,8 @@ protected:
 public:
 	void set_undoredo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
 	void set_node(Node *p_node);
-	void update_tree();
+
+	Tree *get_connection_tree();
 
 	ConnectionsDock(EditorNode *p_editor = nullptr);
 	~ConnectionsDock();

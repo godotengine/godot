@@ -525,8 +525,199 @@ struct _ConnectionsDockMethodInfoSort {
 	}
 };
 
+void ConnectionsDock::_update_tree() {
+	tree->clear();
+
+	if (!selected_node) {
+		return;
+	}
+
+	TreeItem *root = tree->create_item();
+
+	List<MethodInfo> node_signals;
+
+	selected_node->get_signal_list(&node_signals);
+
+	bool did_script = false;
+	StringName base = selected_node->get_class();
+
+	while (base) {
+		List<MethodInfo> node_signals2;
+		Ref<Texture2D> icon;
+		String name;
+
+		if (!did_script) {
+			// Get script signals (including signals from any base scripts).
+			Ref<Script> scr = selected_node->get_script();
+			if (scr.is_valid()) {
+				scr->get_script_signal_list(&node_signals2);
+				if (scr->get_path().is_resource_file()) {
+					name = scr->get_path().get_file();
+				} else {
+					name = scr->get_class();
+				}
+
+				if (has_theme_icon(scr->get_class(), "EditorIcons")) {
+					icon = get_theme_icon(scr->get_class(), "EditorIcons");
+				}
+			}
+		} else {
+			ClassDB::get_signal_list(base, &node_signals2, true);
+			if (has_theme_icon(base, "EditorIcons")) {
+				icon = get_theme_icon(base, "EditorIcons");
+			}
+			name = base;
+		}
+
+		if (!icon.is_valid()) {
+			icon = get_theme_icon("Object", "EditorIcons");
+		}
+
+		TreeItem *section_item = nullptr;
+
+		// Create subsections.
+		if (node_signals2.size()) {
+			section_item = tree->create_item(root);
+			section_item->set_text(0, name);
+			section_item->set_icon(0, icon);
+			section_item->set_selectable(0, false);
+			section_item->set_editable(0, false);
+			section_item->set_custom_bg_color(0, get_theme_color("prop_subsection", "Editor"));
+			node_signals2.sort();
+		}
+
+		for (List<MethodInfo>::Element *E = node_signals2.front(); E; E = E->next()) {
+			MethodInfo &mi = E->get();
+
+			StringName signal_name = mi.name;
+			String signaldesc = "(";
+			PackedStringArray argnames;
+
+			String filter_text = search_box->get_text();
+			if (!filter_text.is_subsequence_ofi(signal_name)) {
+				continue;
+			}
+
+			if (mi.arguments.size()) {
+				for (int i = 0; i < mi.arguments.size(); i++) {
+					PropertyInfo &pi = mi.arguments[i];
+
+					if (i > 0) {
+						signaldesc += ", ";
+					}
+					String tname = "var";
+					if (pi.type == Variant::OBJECT && pi.class_name != StringName()) {
+						tname = pi.class_name.operator String();
+					} else if (pi.type != Variant::NIL) {
+						tname = Variant::get_type_name(pi.type);
+					}
+					signaldesc += (pi.name == "" ? String("arg " + itos(i)) : pi.name) + ": " + tname;
+					argnames.push_back(pi.name + ":" + tname);
+				}
+			}
+			signaldesc += ")";
+
+			// Create the children of the subsection - the actual list of signals.
+			TreeItem *signal_item = tree->create_item(section_item);
+			signal_item->set_text(0, String(signal_name) + signaldesc);
+			Dictionary sinfo;
+			sinfo["name"] = signal_name;
+			sinfo["args"] = argnames;
+			signal_item->set_metadata(0, sinfo);
+			signal_item->set_icon(0, get_theme_icon("Signal", "EditorIcons"));
+
+			// Set tooltip with the signal's documentation.
+			{
+				String descr;
+				bool found = false;
+
+				Map<StringName, Map<StringName, String>>::Element *G = descr_cache.find(base);
+				if (G) {
+					Map<StringName, String>::Element *F = G->get().find(signal_name);
+					if (F) {
+						found = true;
+						descr = F->get();
+					}
+				}
+
+				if (!found) {
+					DocTools *dd = EditorHelp::get_doc_data();
+					Map<String, DocData::ClassDoc>::Element *F = dd->class_list.find(base);
+					while (F && descr == String()) {
+						for (int i = 0; i < F->get().signals.size(); i++) {
+							if (F->get().signals[i].name == signal_name.operator String()) {
+								descr = DTR(F->get().signals[i].description);
+								break;
+							}
+						}
+						if (!F->get().inherits.is_empty()) {
+							F = dd->class_list.find(F->get().inherits);
+						} else {
+							break;
+						}
+					}
+					descr_cache[base][signal_name] = descr;
+				}
+
+				// "::" separators used in make_custom_tooltip for formatting.
+				signal_item->set_tooltip(0, String(signal_name) + "::" + signaldesc + "::" + descr);
+			}
+
+			// List existing connections
+			List<Object::Connection> connections;
+			selected_node->get_signal_connection_list(signal_name, &connections);
+
+			for (List<Object::Connection>::Element *F = connections.front(); F; F = F->next()) {
+				Connection cn = F->get();
+				if (!(cn.flags & CONNECT_PERSIST)) {
+					continue;
+				}
+				ConnectDialog::ConnectionData c = cn;
+
+				Node *target = Object::cast_to<Node>(c.target);
+				if (!target) {
+					continue;
+				}
+
+				String path = String(selected_node->get_path_to(target)) + " :: " + c.method + "()";
+				if (c.flags & CONNECT_DEFERRED) {
+					path += " (deferred)";
+				}
+				if (c.flags & CONNECT_ONESHOT) {
+					path += " (oneshot)";
+				}
+				if (c.binds.size()) {
+					path += " binds(";
+					for (int i = 0; i < c.binds.size(); i++) {
+						if (i > 0) {
+							path += ", ";
+						}
+						path += c.binds[i].operator String();
+					}
+					path += ")";
+				}
+
+				TreeItem *connection_item = tree->create_item(signal_item);
+				connection_item->set_text(0, path);
+				Connection cd = c;
+				connection_item->set_metadata(0, cd);
+				connection_item->set_icon(0, get_theme_icon("Slot", "EditorIcons"));
+			}
+		}
+
+		if (!did_script) {
+			did_script = true;
+		} else {
+			base = ClassDB::get_parent_class(base);
+		}
+	}
+
+	connect_button->set_text(TTR("Connect..."));
+	connect_button->set_disabled(true);
+}
+
 void ConnectionsDock::_filter_changed(const String &p_text) {
-	update_tree();
+	_update_tree();
 }
 
 /*
@@ -538,7 +729,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 	ERR_FAIL_COND(!it);
 
 	NodePath dst_path = connect_dialog->get_dst_path();
-	Node *target = selectedNode->get_node(dst_path);
+	Node *target = selected_node->get_node(dst_path);
 	ERR_FAIL_COND(!target);
 
 	ConnectDialog::ConnectionData cToMake;
@@ -595,7 +786,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 		hide();
 	}
 
-	update_tree();
+	_update_tree();
 }
 
 /*
@@ -615,8 +806,8 @@ void ConnectionsDock::_connect(ConnectDialog::ConnectionData cToMake) {
 
 	undo_redo->add_do_method(source, "connect", cToMake.signal, c, cToMake.binds, cToMake.flags);
 	undo_redo->add_undo_method(source, "disconnect", cToMake.signal, c);
-	undo_redo->add_do_method(this, "update_tree");
-	undo_redo->add_undo_method(this, "update_tree");
+	undo_redo->add_do_method(this, "_update_tree");
+	undo_redo->add_undo_method(this, "_update_tree");
 	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree"); //to force redraw of scene tree
 	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
 
@@ -630,14 +821,14 @@ void ConnectionsDock::_disconnect(TreeItem &item) {
 	Connection cd = item.get_metadata(0);
 	ConnectDialog::ConnectionData c = cd;
 
-	ERR_FAIL_COND(c.source != selectedNode); // Shouldn't happen but... Bugcheck.
+	ERR_FAIL_COND(c.source != selected_node); // Shouldn't happen but... Bugcheck.
 
 	undo_redo->create_action(vformat(TTR("Disconnect '%s' from '%s'"), c.signal, c.method));
 
-	undo_redo->add_do_method(selectedNode, "disconnect", c.signal, Callable(c.target, c.method));
-	undo_redo->add_undo_method(selectedNode, "connect", c.signal, Callable(c.target, c.method), c.binds, c.flags);
-	undo_redo->add_do_method(this, "update_tree");
-	undo_redo->add_undo_method(this, "update_tree");
+	undo_redo->add_do_method(selected_node, "disconnect", c.signal, Callable(c.target, c.method));
+	undo_redo->add_undo_method(selected_node, "connect", c.signal, Callable(c.target, c.method), c.binds, c.flags);
+	undo_redo->add_do_method(this, "_update_tree");
+	undo_redo->add_undo_method(this, "_update_tree");
 	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree"); // To force redraw of scene tree.
 	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
 
@@ -662,13 +853,13 @@ void ConnectionsDock::_disconnect_all() {
 	while (child) {
 		Connection cd = child->get_metadata(0);
 		ConnectDialog::ConnectionData c = cd;
-		undo_redo->add_do_method(selectedNode, "disconnect", c.signal, Callable(c.target, c.method));
-		undo_redo->add_undo_method(selectedNode, "connect", c.signal, Callable(c.target, c.method), c.binds, c.flags);
+		undo_redo->add_do_method(selected_node, "disconnect", c.signal, Callable(c.target, c.method));
+		undo_redo->add_undo_method(selected_node, "connect", c.signal, Callable(c.target, c.method), c.binds, c.flags);
 		child = child->get_next();
 	}
 
-	undo_redo->add_do_method(this, "update_tree");
-	undo_redo->add_undo_method(this, "update_tree");
+	undo_redo->add_do_method(this, "_update_tree");
+	undo_redo->add_undo_method(this, "_update_tree");
 	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
 	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
 
@@ -714,7 +905,7 @@ bool ConnectionsDock::_is_item_signal(TreeItem &item) {
 void ConnectionsDock::_open_connection_dialog(TreeItem &item) {
 	String signal = item.get_metadata(0).operator Dictionary()["name"];
 	const String &signalname = signal;
-	String midname = selectedNode->get_name();
+	String midname = selected_node->get_name();
 	for (int i = 0; i < midname.length(); i++) { //TODO: Regex filter may be cleaner.
 		char32_t c = midname[i];
 		if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_')) {
@@ -731,7 +922,7 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &item) {
 		midname[i] = c;
 	}
 
-	Node *dst_node = selectedNode->get_owner() ? selectedNode->get_owner() : selectedNode;
+	Node *dst_node = selected_node->get_owner() ? selected_node->get_owner() : selected_node;
 	if (!dst_node || dst_node->get_script().is_null()) {
 		dst_node = _find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root());
 	}
@@ -739,7 +930,7 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &item) {
 	StringName dst_method = "_on_" + midname + "_" + signal;
 
 	ConnectDialog::ConnectionData c;
-	c.source = selectedNode;
+	c.source = selected_node;
 	c.signal = StringName(signalname);
 	c.target = dst_node;
 	c.method = dst_method;
@@ -773,7 +964,7 @@ void ConnectionsDock::_go_to_script(TreeItem &item) {
 
 	Connection cd = item.get_metadata(0);
 	ConnectDialog::ConnectionData c = cd;
-	ERR_FAIL_COND(c.source != selectedNode); //shouldn't happen but...bugcheck
+	ERR_FAIL_COND(c.source != selected_node); //shouldn't happen but...bugcheck
 
 	if (!c.target) {
 		return;
@@ -826,7 +1017,7 @@ void ConnectionsDock::_handle_slot_menu_option(int option) {
 		} break;
 		case DISCONNECT: {
 			_disconnect(*item);
-			update_tree();
+			_update_tree();
 		} break;
 	}
 }
@@ -864,212 +1055,31 @@ void ConnectionsDock::_connect_pressed() {
 		_open_connection_dialog(*item);
 	} else {
 		_disconnect(*item);
-		update_tree();
+		_update_tree();
 	}
 }
 
 void ConnectionsDock::_notification(int p_what) {
 	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		update_tree();
+		_update_tree();
 	}
 }
 
 void ConnectionsDock::_bind_methods() {
-	ClassDB::bind_method("update_tree", &ConnectionsDock::update_tree);
+	ClassDB::bind_method("_update_tree", &ConnectionsDock::_update_tree);
+
+	ClassDB::bind_method("get_connection_tree", &ConnectionsDock::get_connection_tree);
 }
 
 void ConnectionsDock::set_node(Node *p_node) {
-	selectedNode = p_node;
-	update_tree();
+	selected_node = p_node;
+	if (is_visible_in_tree()) {
+		_update_tree();
+	}
 }
 
-void ConnectionsDock::update_tree() {
-	tree->clear();
-
-	if (!selectedNode) {
-		return;
-	}
-
-	TreeItem *root = tree->create_item();
-
-	List<MethodInfo> node_signals;
-
-	selectedNode->get_signal_list(&node_signals);
-
-	bool did_script = false;
-	StringName base = selectedNode->get_class();
-
-	while (base) {
-		List<MethodInfo> node_signals2;
-		Ref<Texture2D> icon;
-		String name;
-
-		if (!did_script) {
-			// Get script signals (including signals from any base scripts).
-			Ref<Script> scr = selectedNode->get_script();
-			if (scr.is_valid()) {
-				scr->get_script_signal_list(&node_signals2);
-				if (scr->get_path().is_resource_file()) {
-					name = scr->get_path().get_file();
-				} else {
-					name = scr->get_class();
-				}
-
-				if (has_theme_icon(scr->get_class(), "EditorIcons")) {
-					icon = get_theme_icon(scr->get_class(), "EditorIcons");
-				}
-			}
-		} else {
-			ClassDB::get_signal_list(base, &node_signals2, true);
-			if (has_theme_icon(base, SNAME("EditorIcons"))) {
-				icon = get_theme_icon(base, SNAME("EditorIcons"));
-			}
-			name = base;
-		}
-
-		if (!icon.is_valid()) {
-			icon = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
-		}
-
-		TreeItem *section_item = nullptr;
-
-		// Create subsections.
-		if (node_signals2.size()) {
-			section_item = tree->create_item(root);
-			section_item->set_text(0, name);
-			section_item->set_icon(0, icon);
-			section_item->set_selectable(0, false);
-			section_item->set_editable(0, false);
-			section_item->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
-			node_signals2.sort();
-		}
-
-		for (MethodInfo &mi : node_signals2) {
-			StringName signal_name = mi.name;
-			String signaldesc = "(";
-			PackedStringArray argnames;
-
-			String filter_text = search_box->get_text();
-			if (!filter_text.is_subsequence_ofi(signal_name)) {
-				continue;
-			}
-
-			if (mi.arguments.size()) {
-				for (int i = 0; i < mi.arguments.size(); i++) {
-					PropertyInfo &pi = mi.arguments[i];
-
-					if (i > 0) {
-						signaldesc += ", ";
-					}
-					String tname = "var";
-					if (pi.type == Variant::OBJECT && pi.class_name != StringName()) {
-						tname = pi.class_name.operator String();
-					} else if (pi.type != Variant::NIL) {
-						tname = Variant::get_type_name(pi.type);
-					}
-					signaldesc += (pi.name == "" ? String("arg " + itos(i)) : pi.name) + ": " + tname;
-					argnames.push_back(pi.name + ":" + tname);
-				}
-			}
-			signaldesc += ")";
-
-			// Create the children of the subsection - the actual list of signals.
-			TreeItem *signal_item = tree->create_item(section_item);
-			signal_item->set_text(0, String(signal_name) + signaldesc);
-			Dictionary sinfo;
-			sinfo["name"] = signal_name;
-			sinfo["args"] = argnames;
-			signal_item->set_metadata(0, sinfo);
-			signal_item->set_icon(0, get_theme_icon(SNAME("Signal"), SNAME("EditorIcons")));
-
-			// Set tooltip with the signal's documentation.
-			{
-				String descr;
-				bool found = false;
-
-				Map<StringName, Map<StringName, String>>::Element *G = descr_cache.find(base);
-				if (G) {
-					Map<StringName, String>::Element *F = G->get().find(signal_name);
-					if (F) {
-						found = true;
-						descr = F->get();
-					}
-				}
-
-				if (!found) {
-					DocTools *dd = EditorHelp::get_doc_data();
-					Map<String, DocData::ClassDoc>::Element *F = dd->class_list.find(base);
-					while (F && descr == String()) {
-						for (int i = 0; i < F->get().signals.size(); i++) {
-							if (F->get().signals[i].name == signal_name.operator String()) {
-								descr = DTR(F->get().signals[i].description);
-								break;
-							}
-						}
-						if (!F->get().inherits.is_empty()) {
-							F = dd->class_list.find(F->get().inherits);
-						} else {
-							break;
-						}
-					}
-					descr_cache[base][signal_name] = descr;
-				}
-
-				// "::" separators used in make_custom_tooltip for formatting.
-				signal_item->set_tooltip(0, String(signal_name) + "::" + signaldesc + "::" + descr);
-			}
-
-			// List existing connections
-			List<Object::Connection> connections;
-			selectedNode->get_signal_connection_list(signal_name, &connections);
-
-			for (const Object::Connection &F : connections) {
-				Connection cn = F;
-				if (!(cn.flags & CONNECT_PERSIST)) {
-					continue;
-				}
-				ConnectDialog::ConnectionData c = cn;
-
-				Node *target = Object::cast_to<Node>(c.target);
-				if (!target) {
-					continue;
-				}
-
-				String path = String(selectedNode->get_path_to(target)) + " :: " + c.method + "()";
-				if (c.flags & CONNECT_DEFERRED) {
-					path += " (deferred)";
-				}
-				if (c.flags & CONNECT_ONESHOT) {
-					path += " (oneshot)";
-				}
-				if (c.binds.size()) {
-					path += " binds(";
-					for (int i = 0; i < c.binds.size(); i++) {
-						if (i > 0) {
-							path += ", ";
-						}
-						path += c.binds[i].operator String();
-					}
-					path += ")";
-				}
-
-				TreeItem *connection_item = tree->create_item(signal_item);
-				connection_item->set_text(0, path);
-				Connection cd = c;
-				connection_item->set_metadata(0, cd);
-				connection_item->set_icon(0, get_theme_icon(SNAME("Slot"), SNAME("EditorIcons")));
-			}
-		}
-
-		if (!did_script) {
-			did_script = true;
-		} else {
-			base = ClassDB::get_parent_class(base);
-		}
-	}
-
-	connect_button->set_text(TTR("Connect..."));
-	connect_button->set_disabled(true);
+Tree *ConnectionsDock::get_connection_tree() {
+	return tree;
 }
 
 ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {

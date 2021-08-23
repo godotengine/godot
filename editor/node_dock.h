@@ -37,15 +37,25 @@
 class NodeDock : public VBoxContainer {
 	GDCLASS(NodeDock, VBoxContainer);
 
+	struct ModeItem {
+		Control *control = nullptr;
+		Button *button = nullptr;
+	};
+
+	int current_idx = 0;
+	Vector<ModeItem> mode_items;
+
+	Node *current_node = nullptr;
+
+	GridContainer *mode_container;
 	Button *connections_button;
 	Button *groups_button;
 
 	ConnectionsDock *connections;
 	GroupsEditor *groups;
-
-	HBoxContainer *mode_hb;
-
 	Label *select_a_node;
+
+	void _set_current(bool p_toggled, int p_idx);
 
 protected:
 	static void _bind_methods();
@@ -54,12 +64,18 @@ protected:
 public:
 	static NodeDock *singleton;
 
+	void update_lists();
+
+	// Getters
+	ConnectionsDock *get_connections_dock();
+	GroupsEditor *get_group_editor();
+
+	// Modifiers
 	void set_node(Node *p_node);
 
-	void show_groups();
-	void show_connections();
-
-	void update_lists();
+	Button *add_control(Control *p_control, const String &p_title);
+	void remove_control(Control *p_control);
+	void show_control(Control *p_control);
 
 	NodeDock();
 };

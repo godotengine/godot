@@ -402,6 +402,8 @@ void GroupDialog::_bind_methods() {
 
 	ClassDB::bind_method("_rename_group_item", &GroupDialog::_rename_group_item);
 
+	ClassDB::bind_method("_group_selected", &GroupDialog::_group_selected);
+
 	ADD_SIGNAL(MethodInfo("group_edited"));
 }
 
@@ -570,8 +572,8 @@ void GroupsEditor::_add_group(const String &p_group) {
 
 	undo_redo->add_do_method(node, "add_to_group", name, true);
 	undo_redo->add_undo_method(node, "remove_from_group", name);
-	undo_redo->add_do_method(this, "update_tree");
-	undo_redo->add_undo_method(this, "update_tree");
+	undo_redo->add_do_method(this, "_update_tree");
+	undo_redo->add_undo_method(this, "_update_tree");
 
 	// To force redraw of scene tree.
 	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
@@ -598,8 +600,8 @@ void GroupsEditor::_remove_group(Object *p_item, int p_column, int p_id) {
 
 	undo_redo->add_do_method(node, "remove_from_group", name);
 	undo_redo->add_undo_method(node, "add_to_group", name, true);
-	undo_redo->add_do_method(this, "update_tree");
-	undo_redo->add_undo_method(this, "update_tree");
+	undo_redo->add_do_method(this, "_update_tree");
+	undo_redo->add_undo_method(this, "_update_tree");
 
 	// To force redraw of scene tree.
 	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
@@ -614,7 +616,7 @@ struct _GroupInfoComparator {
 	}
 };
 
-void GroupsEditor::update_tree() {
+void GroupsEditor::_update_tree() {
 	tree->clear();
 
 	if (!node) {
@@ -662,7 +664,13 @@ void GroupsEditor::update_tree() {
 
 void GroupsEditor::set_current(Node *p_node) {
 	node = p_node;
-	update_tree();
+	if (is_visible_in_tree()) {
+		_update_tree();
+	}
+}
+
+Tree *GroupsEditor::get_groups_tree() {
+	return tree;
 }
 
 void GroupsEditor::_show_group_dialog() {
@@ -671,7 +679,9 @@ void GroupsEditor::_show_group_dialog() {
 }
 
 void GroupsEditor::_bind_methods() {
-	ClassDB::bind_method("update_tree", &GroupsEditor::update_tree);
+	ClassDB::bind_method("_update_tree", &GroupsEditor::_update_tree);
+
+	ClassDB::bind_method("get_groups_tree", &GroupsEditor::get_groups_tree);
 }
 
 GroupsEditor::GroupsEditor() {
@@ -682,7 +692,7 @@ GroupsEditor::GroupsEditor() {
 	group_dialog = memnew(GroupDialog);
 
 	add_child(group_dialog);
-	group_dialog->connect("group_edited", callable_mp(this, &GroupsEditor::update_tree));
+	group_dialog->connect("group_edited", callable_mp(this, &GroupsEditor::_update_tree));
 
 	Button *group_dialog_button = memnew(Button);
 	group_dialog_button->set_text(TTR("Manage Groups"));

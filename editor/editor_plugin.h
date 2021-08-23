@@ -58,6 +58,7 @@ class EditorToolAddons;
 class EditorPaths;
 class FileSystemDock;
 class ScriptEditor;
+class NodeDock;
 
 class EditorInterface : public Node {
 	GDCLASS(EditorInterface, Node);
@@ -104,6 +105,7 @@ public:
 	EditorFileSystem *get_resource_file_system();
 
 	FileSystemDock *get_file_system_dock();
+	NodeDock *get_node_dock();
 
 	Control *get_base_control();
 	float get_editor_scale() const;
