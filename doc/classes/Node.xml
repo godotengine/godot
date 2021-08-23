@@ -384,7 +384,14 @@
 		<method name="is_displayed_folded" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the node is folded (collapsed) in the Scene dock.
+				Returns [code]true[/code] if the node is folded (collapsed) in the Scene dock. This method is only intended for use with editor tooling.
+			</description>
+		</method>
+		<method name="is_editable_instance" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="node" type="Node" />
+			<description>
+				Returns [code]true[/code] if [code]node[/code] has editable children enabled relative to this node. This method is only intended for use with editor tooling.
 			</description>
 		</method>
 		<method name="is_greater_than" qualifiers="const">
@@ -592,7 +599,15 @@
 			<return type="void" />
 			<argument index="0" name="fold" type="bool" />
 			<description>
-				Sets the folded state of the node in the Scene dock.
+				Sets the folded state of the node in the Scene dock. This method is only intended for use with editor tooling.
+			</description>
+		</method>
+		<method name="set_editable_instance">
+			<return type="void" />
+			<argument index="0" name="node" type="Node" />
+			<argument index="1" name="is_editable" type="bool" />
+			<description>
+				Sets the editable children state of [code]node[/code] relative to this node. This method is only intended for use with editor tooling.
 			</description>
 		</method>
 		<method name="set_editor_description">
