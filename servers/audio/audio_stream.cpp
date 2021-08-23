@@ -33,6 +33,63 @@
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 
+void AudioStreamPlayback::start(float p_from_pos) {
+	if (GDVIRTUAL_CALL(_start, p_from_pos)) {
+		return;
+	}
+	ERR_FAIL_MSG("AudioStreamPlayback::start unimplemented!");
+}
+void AudioStreamPlayback::stop() {
+	if (GDVIRTUAL_CALL(_stop)) {
+		return;
+	}
+	ERR_FAIL_MSG("AudioStreamPlayback::stop unimplemented!");
+}
+bool AudioStreamPlayback::is_playing() const {
+	bool ret;
+	if (GDVIRTUAL_CALL(_is_playing, ret)) {
+		return ret;
+	}
+	ERR_FAIL_V_MSG(false, "AudioStreamPlayback::is_playing unimplemented!");
+}
+
+int AudioStreamPlayback::get_loop_count() const {
+	int ret;
+	if (GDVIRTUAL_CALL(_get_loop_count, ret)) {
+		return ret;
+	}
+	return 0;
+}
+
+float AudioStreamPlayback::get_playback_position() const {
+	float ret;
+	if (GDVIRTUAL_CALL(_get_playback_position, ret)) {
+		return ret;
+	}
+	ERR_FAIL_V_MSG(0, "AudioStreamPlayback::get_playback_position unimplemented!");
+}
+void AudioStreamPlayback::seek(float p_time) {
+	if (GDVIRTUAL_CALL(_seek, p_time)) {
+		return;
+	}
+}
+
+void AudioStreamPlayback::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
+	if (GDVIRTUAL_CALL(_mix, p_buffer, p_rate_scale, p_frames)) {
+		return;
+	}
+	WARN_PRINT_ONCE("AudioStreamPlayback::mix unimplemented!");
+}
+
+void AudioStreamPlayback::_bind_methods() {
+	GDVIRTUAL_BIND(_start, "from_pos")
+	GDVIRTUAL_BIND(_stop)
+	GDVIRTUAL_BIND(_is_playing)
+	GDVIRTUAL_BIND(_get_loop_count)
+	GDVIRTUAL_BIND(_get_playback_position)
+	GDVIRTUAL_BIND(_seek, "position")
+	GDVIRTUAL_BIND(_mix, "buffer", "rate_scale", "frames");
+}
 //////////////////////////////
 
 void AudioStreamPlaybackResampled::_begin_resample() {
@@ -92,8 +149,34 @@ void AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale,
 
 ////////////////////////////////
 
+Ref<AudioStreamPlayback> AudioStream::instance_playback() {
+	Ref<AudioStreamPlayback> ret;
+	if (GDVIRTUAL_CALL(_instance_playback, ret)) {
+		return ret;
+	}
+	ERR_FAIL_V_MSG(Ref<AudioStreamPlayback>(), "Method must be implemented!");
+}
+String AudioStream::get_stream_name() const {
+	String ret;
+	if (GDVIRTUAL_CALL(_get_stream_name, ret)) {
+		return ret;
+	}
+	return String();
+}
+
+float AudioStream::get_length() const {
+	float ret;
+	if (GDVIRTUAL_CALL(_get_length, ret)) {
+		return ret;
+	}
+	return 0;
+}
+
 void AudioStream::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_length"), &AudioStream::get_length);
+	GDVIRTUAL_BIND(_instance_playback);
+	GDVIRTUAL_BIND(_get_stream_name);
+	GDVIRTUAL_BIND(_get_length);
 }
 
 ////////////////////////////////
@@ -358,3 +441,4 @@ void AudioStreamPlaybackRandomPitch::mix(AudioFrame *p_buffer, float p_rate_scal
 AudioStreamPlaybackRandomPitch::~AudioStreamPlaybackRandomPitch() {
 	random_pitch->playbacks.erase(this);
 }
+/////////////////////////////////////////////

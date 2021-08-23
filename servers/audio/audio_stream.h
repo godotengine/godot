@@ -36,20 +36,33 @@
 #include "servers/audio/audio_filter_sw.h"
 #include "servers/audio_server.h"
 
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/script_language.h"
+#include "core/variant/native_ptr.h"
+
 class AudioStreamPlayback : public RefCounted {
 	GDCLASS(AudioStreamPlayback, RefCounted);
 
+protected:
+	static void _bind_methods();
+	GDVIRTUAL1(_start, float)
+	GDVIRTUAL0(_stop)
+	GDVIRTUAL0RC(bool, _is_playing)
+	GDVIRTUAL0RC(int, _get_loop_count)
+	GDVIRTUAL0RC(float, _get_playback_position)
+	GDVIRTUAL1(_seek, float)
+	GDVIRTUAL3(_mix, GDNativePtr<AudioFrame>, float, int)
 public:
-	virtual void start(float p_from_pos = 0.0) = 0;
-	virtual void stop() = 0;
-	virtual bool is_playing() const = 0;
+	virtual void start(float p_from_pos = 0.0);
+	virtual void stop();
+	virtual bool is_playing() const;
 
-	virtual int get_loop_count() const = 0; //times it looped
+	virtual int get_loop_count() const; //times it looped
 
-	virtual float get_playback_position() const = 0;
-	virtual void seek(float p_time) = 0;
+	virtual float get_playback_position() const;
+	virtual void seek(float p_time);
 
-	virtual void mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) = 0;
+	virtual void mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames);
 };
 
 class AudioStreamPlaybackResampled : public AudioStreamPlayback {
@@ -84,11 +97,15 @@ class AudioStream : public Resource {
 protected:
 	static void _bind_methods();
 
-public:
-	virtual Ref<AudioStreamPlayback> instance_playback() = 0;
-	virtual String get_stream_name() const = 0;
+	GDVIRTUAL0RC(Ref<AudioStreamPlayback>, _instance_playback)
+	GDVIRTUAL0RC(String, _get_stream_name)
+	GDVIRTUAL0RC(float, _get_length)
 
-	virtual float get_length() const = 0; //if supported, otherwise return 0
+public:
+	virtual Ref<AudioStreamPlayback> instance_playback();
+	virtual String get_stream_name() const;
+
+	virtual float get_length() const;
 };
 
 // Microphone
