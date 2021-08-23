@@ -438,7 +438,7 @@
 			Opens the file for read and write operations. The file is created if it does not exist, and truncated if it does. The cursor is positioned at the beginning of the file.
 		</constant>
 		<constant name="COMPRESSION_FASTLZ" value="0" enum="CompressionMode">
-			Uses the [url=http://fastlz.org/]FastLZ[/url] compression method.
+			Uses the [url=https://fastlz.org/]FastLZ[/url] compression method.
 		</constant>
 		<constant name="COMPRESSION_DEFLATE" value="1" enum="CompressionMode">
 			Uses the [url=https://en.wikipedia.org/wiki/DEFLATE]DEFLATE[/url] compression method.

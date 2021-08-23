@@ -155,7 +155,7 @@
 			ENet's built-in range encoding. Works well on small packets, but is not the most efficient algorithm on packets larger than 4 KB.
 		</constant>
 		<constant name="COMPRESS_FASTLZ" value="2" enum="CompressionMode">
-			[url=http://fastlz.org/]FastLZ[/url] compression. This option uses less CPU resources compared to [constant COMPRESS_ZLIB], at the expense of using more bandwidth.
+			[url=https://fastlz.org/]FastLZ[/url] compression. This option uses less CPU resources compared to [constant COMPRESS_ZLIB], at the expense of using more bandwidth.
 		</constant>
 		<constant name="COMPRESS_ZLIB" value="3" enum="CompressionMode">
 			[url=https://www.zlib.net/]Zlib[/url] compression. This option uses less bandwidth compared to [constant COMPRESS_FASTLZ], at the expense of using more CPU resources.

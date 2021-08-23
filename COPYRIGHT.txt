@@ -1135,7 +1135,7 @@ License: glslang
  GNU General Public License for more details.
  .
  You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  .
  As a special exception, you may create a larger work that contains
  part or all of the Bison parser skeleton and distribute that work
@@ -1761,7 +1761,7 @@ License: MPL-2.0
  .
    This Source Code Form is subject to the terms of the Mozilla Public
    License, v. 2.0. If a copy of the MPL was not distributed with this
-   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+   file, You can obtain one at https://mozilla.org/MPL/2.0/.
  .
  If it is not possible or desirable to put the notice in a particular
  file, then You may include the notice in a location (such as a LICENSE

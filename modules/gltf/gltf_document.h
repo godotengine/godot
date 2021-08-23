@@ -346,8 +346,8 @@ private:
 	Error _serialize_extensions(Ref<GLTFState> state) const;
 
 public:
-	// http://www.itu.int/rec/R-REC-BT.601
-	// http://www.itu.int/dms_pubrec/itu-r/rec/bt/R-REC-BT.601-7-201103-I!!PDF-E.pdf
+	// https://www.itu.int/rec/R-REC-BT.601
+	// https://www.itu.int/dms_pubrec/itu-r/rec/bt/R-REC-BT.601-7-201103-I!!PDF-E.pdf
 	static constexpr float R_BRIGHTNESS_COEFF = 0.299f;
 	static constexpr float G_BRIGHTNESS_COEFF = 0.587f;
 	static constexpr float B_BRIGHTNESS_COEFF = 0.114f;

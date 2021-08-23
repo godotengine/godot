@@ -4,7 +4,7 @@
 		A class for generating pseudo-random numbers.
 	</brief_description>
 	<description>
-		RandomNumberGenerator is a class for generating pseudo-random numbers. It currently uses [url=http://www.pcg-random.org/]PCG32[/url].
+		RandomNumberGenerator is a class for generating pseudo-random numbers. It currently uses [url=https://www.pcg-random.org/]PCG32[/url].
 		[b]Note:[/b] The underlying algorithm is an implementation detail. As a result, it should not be depended upon for reproducible random streams across Godot versions.
 		To generate a random float number (within a given range) based on a time-dependant seed:
 		[codeblock]
