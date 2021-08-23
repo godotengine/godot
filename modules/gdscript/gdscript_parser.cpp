@@ -1117,7 +1117,6 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum() {
 				}
 				item.custom_value = value;
 			}
-			item.rightmost_column = previous.rightmost_column;
 
 			item.index = enum_node->values.size();
 			enum_node->values.push_back(item);
