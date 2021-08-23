@@ -39,6 +39,13 @@
 #ifdef TOOLS_ENABLED
 
 static String get_type_name(const PropertyInfo &p_info) {
+	if (p_info.type == Variant::INT && (p_info.hint == PROPERTY_HINT_INT_IS_POINTER)) {
+		if (p_info.hint_string == "") {
+			return "void*";
+		} else {
+			return p_info.hint_string + "*";
+		}
+	}
 	if (p_info.type == Variant::INT && (p_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM)) {
 		return String("enum::") + String(p_info.class_name);
 	}
@@ -829,6 +836,20 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 		if (singletons.size()) {
 			api_dump["singletons"] = singletons;
 		}
+	}
+
+	{
+		Array native_structures;
+
+		{
+			Dictionary d;
+			d["name"] = "AudioFrame";
+			d["format"] = "float left,float right";
+
+			native_structures.push_back(d);
+		}
+
+		api_dump["native_structures"] = native_structures;
 	}
 
 	return api_dump;

@@ -2,7 +2,7 @@ proto = """
 #define GDVIRTUAL$VER($RET m_name $ARG) \\
 StringName _gdvirtual_##m_name##_sn = #m_name;\\
 GDNativeExtensionClassCallVirtual _gdvirtual_##m_name = (_get_extension() && _get_extension()->get_virtual) ? _get_extension()->get_virtual(_get_extension()->class_userdata, #m_name) : (GDNativeExtensionClassCallVirtual) nullptr;\\
-bool _gdvirtual_##m_name##_call($CALLARGS) $CONST { \\
+_FORCE_INLINE_ bool _gdvirtual_##m_name##_call($CALLARGS) $CONST { \\
 	ScriptInstance *script_instance = ((Object*)(this))->get_script_instance();\\
 	if (script_instance) {\\
 		Callable::CallError ce; \\
@@ -23,7 +23,7 @@ bool _gdvirtual_##m_name##_call($CALLARGS) $CONST { \\
 \\
     return false;\\
 }\\
-bool _gdvirtual_##m_name##_overriden() const { \\
+_FORCE_INLINE_ bool _gdvirtual_##m_name##_overriden() const { \\
 	ScriptInstance *script_instance = ((Object*)(this))->get_script_instance();\\
 	if (script_instance) {\\
 	    return script_instance->has_method(_gdvirtual_##m_name##_sn);\\
@@ -41,7 +41,6 @@ _FORCE_INLINE_ static MethodInfo _gdvirtual_##m_name##_get_method_info() { \\
     $FILL_METHOD_INFO\\
     return method_info;\\
 }
-
 
 """
 

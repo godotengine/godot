@@ -31,7 +31,14 @@
 #include "doc_data.h"
 
 void DocData::return_doc_from_retinfo(DocData::MethodDoc &p_method, const PropertyInfo &p_retinfo) {
-	if (p_retinfo.type == Variant::INT && p_retinfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
+	if (p_retinfo.type == Variant::INT && p_retinfo.hint == PROPERTY_HINT_INT_IS_POINTER) {
+		p_method.return_type = p_retinfo.hint_string;
+		if (p_method.return_type == "") {
+			p_method.return_type = "void*";
+		} else {
+			p_method.return_type += "*";
+		}
+	} else if (p_retinfo.type == Variant::INT && p_retinfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
 		p_method.return_enum = p_retinfo.class_name;
 		if (p_method.return_enum.begins_with("_")) { //proxy class
 			p_method.return_enum = p_method.return_enum.substr(1, p_method.return_enum.length());
@@ -55,7 +62,14 @@ void DocData::return_doc_from_retinfo(DocData::MethodDoc &p_method, const Proper
 void DocData::argument_doc_from_arginfo(DocData::ArgumentDoc &p_argument, const PropertyInfo &p_arginfo) {
 	p_argument.name = p_arginfo.name;
 
-	if (p_arginfo.type == Variant::INT && p_arginfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
+	if (p_arginfo.type == Variant::INT && p_arginfo.hint == PROPERTY_HINT_INT_IS_POINTER) {
+		p_argument.type = p_arginfo.hint_string;
+		if (p_argument.type == "") {
+			p_argument.type = "void*";
+		} else {
+			p_argument.type += "*";
+		}
+	} else if (p_arginfo.type == Variant::INT && p_arginfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
 		p_argument.enumeration = p_arginfo.class_name;
 		if (p_argument.enumeration.begins_with("_")) { //proxy class
 			p_argument.enumeration = p_argument.enumeration.substr(1, p_argument.enumeration.length());

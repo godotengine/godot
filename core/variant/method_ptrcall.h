@@ -191,6 +191,7 @@ struct PtrToArg<ObjectID> {
 
 // This is for the special cases used by Variant.
 
+// No EncodeT because direct pointer conversion not possible.
 #define MAKE_VECARG(m_type)                                                              \
 	template <>                                                                          \
 	struct PtrToArg<Vector<m_type>> {                                                    \
@@ -236,6 +237,7 @@ struct PtrToArg<ObjectID> {
 		}                                                                                \
 	}
 
+// No EncodeT because direct pointer conversion not possible.
 #define MAKE_VECARG_ALT(m_type, m_type_alt)                                              \
 	template <>                                                                          \
 	struct PtrToArg<Vector<m_type_alt>> {                                                \
@@ -285,6 +287,7 @@ MAKE_VECARG_ALT(String, StringName);
 
 // For stuff that gets converted to Array vectors.
 
+// No EncodeT because direct pointer conversion not possible.
 #define MAKE_VECARR(m_type)                                                    \
 	template <>                                                                \
 	struct PtrToArg<Vector<m_type>> {                                          \
@@ -325,6 +328,7 @@ MAKE_VECARR(Variant);
 MAKE_VECARR(RID);
 MAKE_VECARR(Plane);
 
+// No EncodeT because direct pointer conversion not possible.
 #define MAKE_DVECARR(m_type)                                                   \
 	template <>                                                                \
 	struct PtrToArg<Vector<m_type>> {                                          \
@@ -372,6 +376,7 @@ MAKE_VECARR(Plane);
 
 // Special case for IPAddress.
 
+// No EncodeT because direct pointer conversion not possible.
 #define MAKE_STRINGCONV_BY_REFERENCE(m_type)                                  \
 	template <>                                                               \
 	struct PtrToArg<m_type> {                                                 \
@@ -395,6 +400,7 @@ MAKE_VECARR(Plane);
 
 MAKE_STRINGCONV_BY_REFERENCE(IPAddress);
 
+// No EncodeT because direct pointer conversion not possible.
 template <>
 struct PtrToArg<Vector<Face3>> {
 	_FORCE_INLINE_ static Vector<Face3> convert(const void *p_ptr) {
@@ -429,6 +435,7 @@ struct PtrToArg<Vector<Face3>> {
 	}
 };
 
+// No EncodeT because direct pointer conversion not possible.
 template <>
 struct PtrToArg<const Vector<Face3> &> {
 	_FORCE_INLINE_ static Vector<Face3> convert(const void *p_ptr) {

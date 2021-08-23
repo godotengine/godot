@@ -2351,9 +2351,11 @@
 		</constant>
 		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="38" enum="PropertyHint">
 		</constant>
+		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="40" enum="PropertyHint">
+		</constant>
 		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="39" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="40" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_MAX" value="41" enum="PropertyHint">
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags">
 		</constant>

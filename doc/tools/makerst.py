@@ -1007,6 +1007,8 @@ def format_table(f, data, remove_empty_columns=False):  # type: (TextIO, Iterabl
 
 
 def make_type(klass, state):  # type: (str, State) -> str
+    if klass.find("*") != -1:  # Pointer, ignore
+        return klass
     link_type = klass
     if link_type.endswith("[]"):  # Typed array, strip [] to link to contained type.
         link_type = link_type[:-2]

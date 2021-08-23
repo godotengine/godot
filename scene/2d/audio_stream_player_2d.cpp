@@ -272,8 +272,12 @@ void AudioStreamPlayer2D::set_stream(Ref<AudioStream> p_stream) {
 	}
 
 	if (p_stream.is_valid()) {
-		stream = p_stream;
 		stream_playback = p_stream->instance_playback();
+		if (stream_playback.is_valid()) {
+			stream = p_stream;
+		} else {
+			stream.unref();
+		}
 	}
 
 	AudioServer::get_singleton()->unlock();

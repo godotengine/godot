@@ -140,8 +140,8 @@ void register_server_types() {
 	GDREGISTER_VIRTUAL_CLASS(XRInterface);
 	GDREGISTER_CLASS(XRPositionalTracker);
 
-	GDREGISTER_VIRTUAL_CLASS(AudioStream);
-	GDREGISTER_VIRTUAL_CLASS(AudioStreamPlayback);
+	GDREGISTER_CLASS(AudioStream);
+	GDREGISTER_CLASS(AudioStreamPlayback);
 	GDREGISTER_VIRTUAL_CLASS(AudioStreamPlaybackResampled);
 	GDREGISTER_CLASS(AudioStreamMicrophone);
 	GDREGISTER_CLASS(AudioStreamRandomPitch);
