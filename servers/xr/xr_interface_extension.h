@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  xr_interface_gdnative.h                                              */
+/*  xr_interface_extension.h                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,68 +28,78 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef XR_INTERFACE_GDNATIVE_H
-#define XR_INTERFACE_GDNATIVE_H
+#ifndef XR_INTERFACE_EXTENSION_H
+#define XR_INTERFACE_EXTENSION_H
 
-#include "modules/gdnative/gdnative.h"
 #include "servers/xr/xr_interface.h"
 
-/**
-	@authors Hinsbart & Karroffel & Mux213
+class XRInterfaceExtension : public XRInterface {
+	GDCLASS(XRInterfaceExtension, XRInterface);
 
-	This subclass of our AR/VR interface forms a bridge to GDNative.
-*/
-
-class XRInterfaceGDNative : public XRInterface {
-	GDCLASS(XRInterfaceGDNative, XRInterface);
-
-	void cleanup();
+public:
+private:
+	bool can_add_blits = false;
+	Vector<BlitToScreen> blits;
 
 protected:
-	const godot_xr_interface_gdnative *interface;
-	void *data;
+	_THREAD_SAFE_CLASS_
 
 	static void _bind_methods();
 
 public:
 	/** general interface information **/
-	XRInterfaceGDNative();
-	~XRInterfaceGDNative();
-
-	void set_interface(const godot_xr_interface_gdnative *p_interface);
-
 	virtual StringName get_name() const override;
-	virtual int get_capabilities() const override;
+	virtual uint32_t get_capabilities() const override;
+
+	GDVIRTUAL0RC(StringName, _get_name);
+	GDVIRTUAL0RC(uint32_t, _get_capabilities);
 
 	virtual bool is_initialized() const override;
 	virtual bool initialize() override;
 	virtual void uninitialize() override;
+
+	GDVIRTUAL0RC(bool, _is_initialized);
+	GDVIRTUAL0R(bool, _initialize);
+	GDVIRTUAL0(_uninitialize);
+
+	virtual TrackingStatus get_tracking_status() const override;
+	GDVIRTUAL0RC(uint32_t, _get_tracking_status);
+
+	/** specific to VR **/
+	// nothing yet
 
 	/** specific to AR **/
 	virtual bool get_anchor_detection_is_enabled() const override;
 	virtual void set_anchor_detection_is_enabled(bool p_enable) override;
 	virtual int get_camera_feed_id() override;
 
+	GDVIRTUAL0RC(bool, _get_anchor_detection_is_enabled);
+	GDVIRTUAL1(_set_anchor_detection_is_enabled, bool);
+	GDVIRTUAL0RC(int, _get_camera_feed_id);
+
 	/** rendering and internal **/
-	virtual Size2 get_render_targetsize() override;
+
+	virtual Size2 get_render_target_size() override;
 	virtual uint32_t get_view_count() override;
 	virtual Transform3D get_camera_transform() override;
 	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) override;
-
-	// we expose a Vector<float> version of this function to GDNative
-	Vector<float> _get_projection_for_eye(XRInterface::Eyes p_eye, real_t p_aspect, real_t p_z_near, real_t p_z_far);
-
-	// and a CameraMatrix version to XRServer
 	virtual CameraMatrix get_projection_for_view(uint32_t p_view, real_t p_aspect, real_t p_z_near, real_t p_z_far) override;
 
+	GDVIRTUAL0R(Size2, _get_render_target_size);
+	GDVIRTUAL0R(uint32_t, _get_view_count);
+	GDVIRTUAL0R(Transform3D, _get_camera_transform);
+	GDVIRTUAL2R(Transform3D, _get_transform_for_view, uint32_t, const Transform3D &);
+	GDVIRTUAL4R(PackedFloat64Array, _get_projection_for_view, uint32_t, real_t, real_t, real_t);
+
+	void add_blit(RID p_render_target, Rect2i p_rect, bool p_use_layer = false, uint32_t p_layer = 0, bool p_apply_lens_distortion = false, Vector2 p_eye_center = Vector2(), float p_k1 = 0.0, float p_k2 = 0.0, float p_upscale = 1.0, float p_aspect_ratio = 1.0);
 	virtual Vector<BlitToScreen> commit_views(RID p_render_target, const Rect2 &p_screen_rect) override;
+	GDVIRTUAL2(_commit_views, RID, const Rect2 &);
 
 	virtual void process() override;
 	virtual void notification(int p_what) override;
 
-	// deprecated
-	virtual void commit_for_eye(XRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) override;
-	virtual unsigned int get_external_texture_for_eye(XRInterface::Eyes p_eye) override;
+	GDVIRTUAL0(_process);
+	GDVIRTUAL1(_notification, int);
 };
 
-#endif // XR_INTERFACE_GDNATIVE_H
+#endif // !XR_INTERFACE_EXTENSION_H

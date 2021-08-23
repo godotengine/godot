@@ -199,7 +199,7 @@ StringName WebXRInterfaceJS::get_name() const {
 	return "WebXR";
 };
 
-int WebXRInterfaceJS::get_capabilities() const {
+uint32_t WebXRInterfaceJS::get_capabilities() const {
 	return XRInterface::XR_STEREO | XRInterface::XR_MONO;
 };
 
@@ -254,9 +254,9 @@ bool WebXRInterfaceJS::initialize() {
 void WebXRInterfaceJS::uninitialize() {
 	if (initialized) {
 		XRServer *xr_server = XRServer::get_singleton();
-		if (xr_server != nullptr) {
+		if (xr_server != nullptr && xr_server->get_primary_interface() == this) {
 			// no longer our primary interface
-			xr_server->clear_primary_interface_if(this);
+			xr_server->set_primary_interface(nullptr);
 		}
 
 		godot_webxr_uninitialize();
@@ -285,12 +285,12 @@ Transform3D WebXRInterfaceJS::_js_matrix_to_transform(float *p_js_matrix) {
 	return transform;
 }
 
-Size2 WebXRInterfaceJS::get_render_targetsize() {
+Size2 WebXRInterfaceJS::get_render_target_size() {
 	if (render_targetsize.width != 0 && render_targetsize.height != 0) {
 		return render_targetsize;
 	}
 
-	int *js_size = godot_webxr_get_render_targetsize();
+	int *js_size = godot_webxr_get_render_target_size();
 	if (!initialized || js_size == nullptr) {
 		// As a temporary default (until WebXR is fully initialized), use half the window size.
 		Size2 temp = DisplayServer::get_singleton()->window_get_size();
@@ -363,20 +363,6 @@ CameraMatrix WebXRInterfaceJS::get_projection_for_view(uint32_t p_view, real_t p
 	eye.matrix[3][2] = -(2.0f * p_z_far * p_z_near) / (p_z_far - p_z_near);
 
 	return eye;
-}
-
-unsigned int WebXRInterfaceJS::get_external_texture_for_eye(XRInterface::Eyes p_eye) {
-	if (!initialized) {
-		return 0;
-	}
-	return godot_webxr_get_external_texture_for_eye(p_eye);
-}
-
-void WebXRInterfaceJS::commit_for_eye(XRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) {
-	if (!initialized) {
-		return;
-	}
-	godot_webxr_commit_for_eye(p_eye);
 }
 
 Vector<BlitToScreen> WebXRInterfaceJS::commit_views(RID p_render_target, const Rect2 &p_screen_rect) {
@@ -472,10 +458,6 @@ void WebXRInterfaceJS::_on_controller_changed() {
 			controllers_state[i] = controller_connected;
 		}
 	}
-}
-
-void WebXRInterfaceJS::notification(int p_what) {
-	// Nothing to do here.
 }
 
 WebXRInterfaceJS::WebXRInterfaceJS() {

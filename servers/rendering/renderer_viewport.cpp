@@ -544,7 +544,7 @@ void RendererViewport::draw_viewports() {
 		RSG::storage->render_target_set_as_unused(vp->render_target);
 		if (vp->use_xr && xr_interface.is_valid()) {
 			// override our size, make sure it matches our required size and is created as a stereo target
-			vp->size = xr_interface->get_render_targetsize();
+			vp->size = xr_interface->get_render_target_size();
 			uint32_t view_count = xr_interface->get_view_count();
 			RSG::storage->render_target_set_size(vp->render_target, vp->size.x, vp->size.y, view_count);
 

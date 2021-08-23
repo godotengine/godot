@@ -38,7 +38,6 @@
 #include "net/register_types.h"
 #include "pluginscript/register_types.h"
 #include "videodecoder/register_types.h"
-#include "xr/register_types.h"
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
@@ -267,7 +266,6 @@ void register_gdnative_types() {
 	GDNativeCallRegistry::singleton->register_native_call_type("standard_varcall", cb_standard_varcall);
 
 	register_net_types();
-	register_xr_types();
 	register_nativescript_types();
 	register_pluginscript_types();
 	register_videodecoder_types();
@@ -331,7 +329,6 @@ void unregister_gdnative_types() {
 	unregister_videodecoder_types();
 	unregister_pluginscript_types();
 	unregister_nativescript_types();
-	unregister_xr_types();
 	unregister_net_types();
 
 	memdelete(GDNativeCallRegistry::singleton);
