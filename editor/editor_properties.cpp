@@ -735,7 +735,7 @@ public:
 		return String();
 	}
 
-	void _gui_input(const Ref<InputEvent> &p_ev) {
+	void gui_input(const Ref<InputEvent> &p_ev) override {
 		const Ref<InputEventMouseMotion> mm = p_ev;
 		if (mm.is_valid()) {
 			bool expand_was_hovered = expand_hovered;
@@ -931,7 +931,6 @@ public:
 	}
 
 	static void _bind_methods() {
-		ClassDB::bind_method(D_METHOD("_gui_input"), &EditorPropertyLayersGrid::_gui_input);
 		ADD_SIGNAL(MethodInfo("flag_changed", PropertyInfo(Variant::INT, "flag")));
 	}
 };

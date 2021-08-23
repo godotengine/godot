@@ -1825,8 +1825,6 @@ void FindBar::_notification(int p_what) {
 }
 
 void FindBar::_bind_methods() {
-	ClassDB::bind_method("_unhandled_input", &FindBar::_unhandled_input);
-
 	ADD_SIGNAL(MethodInfo("search"));
 }
 
@@ -1902,7 +1900,7 @@ void FindBar::_hide_bar() {
 	hide();
 }
 
-void FindBar::_unhandled_input(const Ref<InputEvent> &p_event) {
+void FindBar::unhandled_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventKey> k = p_event;

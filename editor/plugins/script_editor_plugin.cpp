@@ -316,7 +316,7 @@ void ScriptEditorQuickOpen::_sbox_input(const Ref<InputEvent> &p_ie) {
 								k->get_keycode() == KEY_DOWN ||
 								k->get_keycode() == KEY_PAGEUP ||
 								k->get_keycode() == KEY_PAGEDOWN)) {
-		search_options->call("_gui_input", k);
+		search_options->gui_input(k);
 		search_box->accept_event();
 	}
 }
@@ -2728,7 +2728,7 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 	}
 }
 
-void ScriptEditor::_unhandled_key_input(const Ref<InputEvent> &p_event) {
+void ScriptEditor::unhandled_key_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (!is_visible_in_tree() || !p_event->is_pressed() || p_event->is_echo()) {
@@ -3272,7 +3272,7 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_update_script_connections", &ScriptEditor::_update_script_connections);
 	ClassDB::bind_method("_help_class_open", &ScriptEditor::_help_class_open);
 	ClassDB::bind_method("_live_auto_reload_running_scripts", &ScriptEditor::_live_auto_reload_running_scripts);
-	ClassDB::bind_method("_unhandled_key_input", &ScriptEditor::_unhandled_key_input);
+
 	ClassDB::bind_method("_update_members_overview", &ScriptEditor::_update_members_overview);
 	ClassDB::bind_method("_update_recent_scripts", &ScriptEditor::_update_recent_scripts);
 

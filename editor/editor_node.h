@@ -530,7 +530,7 @@ private:
 
 	bool convert_old;
 
-	void _unhandled_input(const Ref<InputEvent> &p_event);
+	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
 
 	static void _load_error_notify(void *p_ud, const String &p_text);
 

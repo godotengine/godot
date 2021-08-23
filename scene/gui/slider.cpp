@@ -45,7 +45,7 @@ Size2 Slider::get_minimum_size() const {
 	}
 }
 
-void Slider::_gui_input(Ref<InputEvent> p_event) {
+void Slider::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (!editable) {
@@ -253,7 +253,6 @@ bool Slider::is_scrollable() const {
 }
 
 void Slider::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &Slider::_gui_input);
 	ClassDB::bind_method(D_METHOD("set_ticks", "count"), &Slider::set_ticks);
 	ClassDB::bind_method(D_METHOD("get_ticks"), &Slider::get_ticks);
 

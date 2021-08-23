@@ -99,7 +99,7 @@ private:
 	Overlay overlay = OVERLAY_DISABLED;
 
 protected:
-	void _gui_input(const Ref<InputEvent> &p_ev);
+	virtual void gui_input(const Ref<InputEvent> &p_ev) override;
 	void _notification(int p_what);
 	static void _bind_methods();
 

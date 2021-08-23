@@ -86,7 +86,7 @@ class ScrollBar : public Range {
 	void _drag_node_exit();
 	void _drag_node_input(const Ref<InputEvent> &p_input);
 
-	void _gui_input(Ref<InputEvent> p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 protected:
 	void _notification(int p_what);

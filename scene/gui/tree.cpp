@@ -2768,7 +2768,7 @@ void Tree::_go_down() {
 	accept_event();
 }
 
-void Tree::_gui_input(Ref<InputEvent> p_event) {
+void Tree::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventKey> k = p_event;
@@ -4650,8 +4650,6 @@ bool Tree::get_allow_reselect() const {
 }
 
 void Tree::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &Tree::_gui_input);
-
 	ClassDB::bind_method(D_METHOD("clear"), &Tree::clear);
 	ClassDB::bind_method(D_METHOD("create_item", "parent", "idx"), &Tree::_create_item, DEFVAL(Variant()), DEFVAL(-1));
 

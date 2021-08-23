@@ -403,7 +403,7 @@ void EditorNode::_update_title() {
 	DisplayServer::get_singleton()->window_set_title(title);
 }
 
-void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
+void EditorNode::unhandled_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventKey> k = p_event;
@@ -5588,7 +5588,6 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("_editor_select", &EditorNode::_editor_select);
 	ClassDB::bind_method("_node_renamed", &EditorNode::_node_renamed);
 	ClassDB::bind_method("edit_node", &EditorNode::edit_node);
-	ClassDB::bind_method("_unhandled_input", &EditorNode::_unhandled_input);
 
 	ClassDB::bind_method(D_METHOD("push_item", "object", "property", "inspector_only"), &EditorNode::push_item, DEFVAL(""), DEFVAL(false));
 

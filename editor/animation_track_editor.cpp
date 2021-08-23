@@ -1642,7 +1642,7 @@ void AnimationTimelineEdit::_play_position_draw() {
 	}
 }
 
-void AnimationTimelineEdit::_gui_input(const Ref<InputEvent> &p_event) {
+void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	const Ref<InputEventMouseButton> mb = p_event;
@@ -1754,8 +1754,6 @@ void AnimationTimelineEdit::_track_added(int p_track) {
 }
 
 void AnimationTimelineEdit::_bind_methods() {
-	ClassDB::bind_method("_gui_input", &AnimationTimelineEdit::_gui_input);
-
 	ADD_SIGNAL(MethodInfo("zoom_changed"));
 	ADD_SIGNAL(MethodInfo("name_limit_changed"));
 	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "drag")));
@@ -2551,7 +2549,7 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 	return Control::get_tooltip(p_pos);
 }
 
-void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
+void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (p_event->is_pressed()) {
@@ -2965,8 +2963,6 @@ void AnimationTrackEdit::append_to_selection(const Rect2 &p_box, bool p_deselect
 }
 
 void AnimationTrackEdit::_bind_methods() {
-	ClassDB::bind_method("_gui_input", &AnimationTrackEdit::_gui_input);
-
 	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "drag")));
 	ADD_SIGNAL(MethodInfo("remove_request", PropertyInfo(Variant::INT, "track")));
 	ADD_SIGNAL(MethodInfo("dropped", PropertyInfo(Variant::INT, "from_track"), PropertyInfo(Variant::INT, "to_track")));
@@ -5761,7 +5757,7 @@ void AnimationTrackEditor::_pick_track_filter_input(const Ref<InputEvent> &p_ie)
 			case KEY_DOWN:
 			case KEY_PAGEUP:
 			case KEY_PAGEDOWN: {
-				pick_track->get_scene_tree()->get_scene_tree()->call("_gui_input", k);
+				pick_track->get_scene_tree()->get_scene_tree()->gui_input(k);
 				pick_track->get_filter_line_edit()->accept_event();
 			} break;
 			default:

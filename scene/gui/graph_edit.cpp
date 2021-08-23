@@ -51,10 +51,6 @@ GraphEditFilter::GraphEditFilter(GraphEdit *p_edit) {
 	ge = p_edit;
 }
 
-void GraphEditMinimap::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &GraphEditMinimap::_gui_input);
-}
-
 GraphEditMinimap::GraphEditMinimap(GraphEdit *p_edit) {
 	ge = p_edit;
 
@@ -148,7 +144,7 @@ Vector2 GraphEditMinimap::_convert_to_graph_position(const Vector2 &p_position) 
 	return graph_position;
 }
 
-void GraphEditMinimap::_gui_input(const Ref<InputEvent> &p_ev) {
+void GraphEditMinimap::gui_input(const Ref<InputEvent> &p_ev) {
 	ERR_FAIL_COND(p_ev.is_null());
 
 	if (!ge->is_minimap_enabled()) {
@@ -806,8 +802,9 @@ bool GraphEdit::is_in_hot_zone(const Vector2 &pos, const Vector2 &p_mouse_pos, c
 }
 
 PackedVector2Array GraphEdit::get_connection_line(const Vector2 &p_from, const Vector2 &p_to) {
-	if (get_script_instance() && get_script_instance()->get_script().is_valid() && get_script_instance()->has_method("_get_connection_line")) {
-		return get_script_instance()->call("_get_connection_line", p_from, p_to);
+	Vector<Vector2> ret;
+	if (GDVIRTUAL_CALL(_get_connection_line, p_from, p_to, ret)) {
+		return ret;
 	}
 
 	Curve2D curve;
@@ -1047,7 +1044,7 @@ void GraphEdit::set_selected(Node *p_child) {
 	}
 }
 
-void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
+void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 	ERR_FAIL_COND(p_ev.is_null());
 
 	Ref<InputEventMouseMotion> mm = p_ev;
@@ -2191,7 +2188,6 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_right_disconnects", "enable"), &GraphEdit::set_right_disconnects);
 	ClassDB::bind_method(D_METHOD("is_right_disconnects_enabled"), &GraphEdit::is_right_disconnects_enabled);
 
-	ClassDB::bind_method(D_METHOD("_gui_input"), &GraphEdit::_gui_input);
 	ClassDB::bind_method(D_METHOD("_update_scroll_offset"), &GraphEdit::_update_scroll_offset);
 
 	ClassDB::bind_method(D_METHOD("get_zoom_hbox"), &GraphEdit::get_zoom_hbox);
@@ -2200,7 +2196,7 @@ void GraphEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_selected", "node"), &GraphEdit::set_selected);
 
-	BIND_VMETHOD(MethodInfo(Variant::PACKED_VECTOR2_ARRAY, "_get_connection_line", PropertyInfo(Variant::VECTOR2, "from"), PropertyInfo(Variant::VECTOR2, "to")));
+	GDVIRTUAL_BIND(_get_connection_line, "from", "to")
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "right_disconnects"), "set_right_disconnects", "is_right_disconnects_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scroll_offset"), "set_scroll_ofs", "get_scroll_ofs");

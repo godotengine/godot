@@ -528,7 +528,7 @@ private:
 
 protected:
 	void _notification(int p_what);
-	virtual void _gui_input(const Ref<InputEvent> &p_gui_input);
+	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;
 
 	static void _bind_methods();
 

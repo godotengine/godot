@@ -208,12 +208,27 @@ protected:
 	void _set_owner_nocheck(Node *p_owner);
 	void _set_name_nocheck(const StringName &p_name);
 
+	//call from SceneTree
+	void _call_input(const Ref<InputEvent> &p_event);
+	void _call_unhandled_input(const Ref<InputEvent> &p_event);
+	void _call_unhandled_key_input(const Ref<InputEvent> &p_event);
+
+protected:
+	virtual void input(const Ref<InputEvent> &p_event);
+	virtual void unhandled_input(const Ref<InputEvent> &p_event);
+	virtual void unhandled_key_input(const Ref<InputEvent> &p_key_event);
+
 	GDVIRTUAL1(_process, double)
 	GDVIRTUAL1(_physics_process, double)
 	GDVIRTUAL0(_enter_tree)
 	GDVIRTUAL0(_exit_tree)
 	GDVIRTUAL0(_ready)
 	GDVIRTUAL0RC(Vector<String>, _get_configuration_warnings)
+
+	GDVIRTUAL1(_input, Ref<InputEvent>)
+	GDVIRTUAL1(_unhandled_input, Ref<InputEvent>)
+	GDVIRTUAL1(_unhandled_key_input, Ref<InputEvent>)
+
 public:
 	enum {
 		// you can make your own, but don't use the same numbers as other notifications in other nodes

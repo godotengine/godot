@@ -32,6 +32,7 @@
 
 #include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/object/message_queue.h"
 #include "core/string/translation.h"
 #include "core/templates/pair.h"
 #include "scene/2d/camera_2d.h"
@@ -662,7 +663,7 @@ void Viewport::_process_picking() {
 							}
 
 							if (send_event) {
-								co->_input_event(this, ev, res[i].shape);
+								co->_input_event_call(this, ev, res[i].shape);
 							}
 						}
 					}
@@ -1234,27 +1235,7 @@ void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_inpu
 		Control *control = Object::cast_to<Control>(ci);
 		if (control) {
 			if (control->data.mouse_filter != Control::MOUSE_FILTER_IGNORE) {
-				control->emit_signal(SceneStringNames::get_singleton()->gui_input, ev); //signal should be first, so it's possible to override an event (and then accept it)
-			}
-			if (gui.key_event_accepted) {
-				break;
-			}
-			if (!control->is_inside_tree()) {
-				break;
-			}
-
-			if (control->data.mouse_filter != Control::MOUSE_FILTER_IGNORE) {
-				// Call both script and native methods.
-				Callable::CallError error;
-				Variant event = ev;
-				const Variant *args[1] = { &event };
-				if (control->get_script_instance()) {
-					control->get_script_instance()->call(SceneStringNames::get_singleton()->_gui_input, args, 1, error);
-				}
-				MethodBind *method = ClassDB::get_method(control->get_class_name(), SceneStringNames::get_singleton()->_gui_input);
-				if (method) {
-					method->call(control, args, 1, error);
-				}
+				control->_call_gui_input(ev);
 			}
 
 			if (!control->is_inside_tree() || control->is_set_as_top_level()) {
@@ -1982,10 +1963,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		if (gui.key_focus) {
 			gui.key_event_accepted = false;
 			if (gui.key_focus->can_process()) {
-				gui.key_focus->call(SceneStringNames::get_singleton()->_gui_input, p_event);
-				if (gui.key_focus) { //maybe lost it
-					gui.key_focus->emit_signal(SceneStringNames::get_singleton()->gui_input, p_event);
-				}
+				gui.key_focus->_call_gui_input(p_event);
 			}
 
 			if (gui.key_event_accepted) {
@@ -2205,7 +2183,7 @@ void Viewport::_drop_mouse_focus() {
 			mb->set_global_position(c->get_local_mouse_position());
 			mb->set_button_index(MouseButton(i + 1));
 			mb->set_pressed(false);
-			c->call(SceneStringNames::get_singleton()->_gui_input, mb);
+			c->_call_gui_input(mb);
 		}
 	}
 }
@@ -2317,7 +2295,7 @@ void Viewport::_post_gui_grab_click_focus() {
 				mb->set_position(click);
 				mb->set_button_index(MouseButton(i + 1));
 				mb->set_pressed(false);
-				gui.mouse_focus->call(SceneStringNames::get_singleton()->_gui_input, mb);
+				gui.mouse_focus->_call_gui_input(mb);
 			}
 		}
 
@@ -2335,7 +2313,7 @@ void Viewport::_post_gui_grab_click_focus() {
 				mb->set_position(click);
 				mb->set_button_index(MouseButton(i + 1));
 				mb->set_pressed(true);
-				gui.mouse_focus->call_deferred(SceneStringNames::get_singleton()->_gui_input, mb);
+				MessageQueue::get_singleton()->push_callable(callable_mp(gui.mouse_focus, &Control::_call_gui_input), mb);
 			}
 		}
 	}
@@ -2343,9 +2321,9 @@ void Viewport::_post_gui_grab_click_focus() {
 
 ///////////////////////////////
 
-void Viewport::input_text(const String &p_text) {
+void Viewport::push_text_input(const String &p_text) {
 	if (gui.subwindow_focused) {
-		gui.subwindow_focused->input_text(p_text);
+		gui.subwindow_focused->push_text_input(p_text);
 		return;
 	}
 
@@ -2665,7 +2643,7 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 	return true;
 }
 
-void Viewport::input(const Ref<InputEvent> &p_event, bool p_local_coords) {
+void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 	ERR_FAIL_COND(!is_inside_tree());
 
 	if (disable_input) {
@@ -2695,7 +2673,7 @@ void Viewport::input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 	}
 
 	if (!is_input_handled()) {
-		get_tree()->_call_input_pause(input_group, "_input", ev, this); //not a bug, must happen before GUI, order is _input -> gui input -> _unhandled input
+		get_tree()->_call_input_pause(input_group, SceneTree::CALL_INPUT_TYPE_INPUT, ev, this); //not a bug, must happen before GUI, order is _input -> gui input -> _unhandled input
 	}
 
 	if (!is_input_handled()) {
@@ -2703,10 +2681,9 @@ void Viewport::input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 	}
 
 	event_count++;
-	//get_tree()->call_group(SceneTree::GROUP_CALL_REVERSE|SceneTree::GROUP_CALL_REALTIME|SceneTree::GROUP_CALL_MULIILEVEL,gui_input_group,"_gui_input",ev); //special one for GUI, as controls use their own process check
 }
 
-void Viewport::unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
+void Viewport::push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 	ERR_FAIL_COND(p_event.is_null());
 	ERR_FAIL_COND(!is_inside_tree());
 	local_input_handled = false;
@@ -2727,11 +2704,11 @@ void Viewport::unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coor
 	}
 
 	// Unhandled Input
-	get_tree()->_call_input_pause(unhandled_input_group, "_unhandled_input", ev, this);
+	get_tree()->_call_input_pause(unhandled_input_group, SceneTree::CALL_INPUT_TYPE_UNHANDLED_INPUT, ev, this);
 
 	// Unhandled key Input - used for performance reasons - This is called a lot less than _unhandled_input since it ignores MouseMotion, etc
 	if (!is_input_handled() && (Object::cast_to<InputEventKey>(*ev) != nullptr || Object::cast_to<InputEventShortcut>(*ev) != nullptr)) {
-		get_tree()->_call_input_pause(unhandled_key_input_group, "_unhandled_key_input", ev, this);
+		get_tree()->_call_input_pause(unhandled_key_input_group, SceneTree::CALL_INPUT_TYPE_UNHANDLED_KEY_INPUT, ev, this);
 	}
 
 	if (physics_object_picking && !is_input_handled()) {
@@ -3159,7 +3136,7 @@ void Viewport::_collision_object_3d_input_event(CollisionObject3D *p_object, Cam
 			return; //discarded
 		}
 	}
-	p_object->_input_event(camera_3d, p_input_event, p_pos, p_normal, p_shape);
+	p_object->_input_event_call(camera_3d, p_input_event, p_pos, p_normal, p_shape);
 	physics_last_object_transform = object_transform;
 	physics_last_camera_transform = camera_transform;
 	physics_last_id = id;
@@ -3515,9 +3492,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_physics_object_picking"), &Viewport::get_physics_object_picking);
 
 	ClassDB::bind_method(D_METHOD("get_viewport_rid"), &Viewport::get_viewport_rid);
-	ClassDB::bind_method(D_METHOD("input_text", "text"), &Viewport::input_text);
-	ClassDB::bind_method(D_METHOD("input", "event", "in_local_coords"), &Viewport::input, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("unhandled_input", "event", "in_local_coords"), &Viewport::unhandled_input, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("push_text_input", "text"), &Viewport::push_text_input);
+	ClassDB::bind_method(D_METHOD("push_input", "event", "in_local_coords"), &Viewport::push_input, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("push_unhandled_input", "event", "in_local_coords"), &Viewport::push_unhandled_input, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("get_camera_2d"), &Viewport::get_camera_2d);
 	ClassDB::bind_method(D_METHOD("set_as_audio_listener_2d", "enable"), &Viewport::set_as_audio_listener_2d);

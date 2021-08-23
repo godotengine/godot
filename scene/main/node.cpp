@@ -123,15 +123,15 @@ void Node::_notification(int p_notification) {
 		} break;
 		case NOTIFICATION_READY: {
 			if (get_script_instance()) {
-				if (get_script_instance()->has_method(SceneStringNames::get_singleton()->_input)) {
+				if (GDVIRTUAL_IS_OVERRIDEN(_input)) {
 					set_process_input(true);
 				}
 
-				if (get_script_instance()->has_method(SceneStringNames::get_singleton()->_unhandled_input)) {
+				if (GDVIRTUAL_IS_OVERRIDEN(_unhandled_input)) {
 					set_process_unhandled_input(true);
 				}
 
-				if (get_script_instance()->has_method(SceneStringNames::get_singleton()->_unhandled_key_input)) {
+				if (GDVIRTUAL_IS_OVERRIDEN(_unhandled_key_input)) {
 					set_process_unhandled_key_input(true);
 				}
 
@@ -2487,9 +2487,14 @@ void Node::clear_internal_tree_resource_paths() {
 }
 
 TypedArray<String> Node::get_configuration_warnings() const {
-	if (get_script_instance() && get_script_instance()->get_script().is_valid() &&
-			get_script_instance()->get_script()->is_tool() && get_script_instance()->has_method("_get_configuration_warnings")) {
-		return get_script_instance()->call("_get_configuration_warnings");
+	Vector<String> warnings;
+	if (GDVIRTUAL_CALL(_get_configuration_warnings, warnings)) {
+		TypedArray<String> ret;
+		ret.resize(warnings.size());
+		for (int i = 0; i < warnings.size(); i++) {
+			ret[i] = warnings[i];
+		}
+		return ret;
 	}
 	return Array();
 }
@@ -2533,6 +2538,37 @@ bool Node::is_displayed_folded() const {
 
 void Node::request_ready() {
 	data.ready_first = true;
+}
+
+void Node::_call_input(const Ref<InputEvent> &p_event) {
+	GDVIRTUAL_CALL(_input, p_event);
+	if (!is_inside_tree() || !get_viewport() || get_viewport()->is_input_handled()) {
+		return;
+	}
+	input(p_event);
+}
+void Node::_call_unhandled_input(const Ref<InputEvent> &p_event) {
+	GDVIRTUAL_CALL(_unhandled_input, p_event);
+	if (!is_inside_tree() || !get_viewport() || get_viewport()->is_input_handled()) {
+		return;
+	}
+	unhandled_input(p_event);
+}
+void Node::_call_unhandled_key_input(const Ref<InputEvent> &p_event) {
+	GDVIRTUAL_CALL(_unhandled_key_input, p_event);
+	if (!is_inside_tree() || !get_viewport() || get_viewport()->is_input_handled()) {
+		return;
+	}
+	unhandled_key_input(p_event);
+}
+
+void Node::input(const Ref<InputEvent> &p_event) {
+}
+
+void Node::unhandled_input(const Ref<InputEvent> &p_event) {
+}
+
+void Node::unhandled_key_input(const Ref<InputEvent> &p_key_event) {
 }
 
 void Node::_bind_methods() {
@@ -2734,11 +2770,9 @@ void Node::_bind_methods() {
 	GDVIRTUAL_BIND(_exit_tree);
 	GDVIRTUAL_BIND(_ready);
 	GDVIRTUAL_BIND(_get_configuration_warnings);
-
-	BIND_VMETHOD(MethodInfo("_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
-	BIND_VMETHOD(MethodInfo("_unhandled_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
-	BIND_VMETHOD(MethodInfo("_unhandled_key_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEventKey")));
-	BIND_VMETHOD(MethodInfo(PropertyInfo(Variant::ARRAY, "", PROPERTY_HINT_ARRAY_TYPE, "String"), "_get_configuration_warnings"));
+	GDVIRTUAL_BIND(_input, "event");
+	GDVIRTUAL_BIND(_unhandled_input, "event");
+	GDVIRTUAL_BIND(_unhandled_key_input, "event");
 }
 
 String Node::_get_name_num_separator() {

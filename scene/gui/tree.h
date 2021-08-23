@@ -462,7 +462,6 @@ private:
 
 	void popup_select(int p_option);
 
-	void _gui_input(Ref<InputEvent> p_event);
 	void _notification(int p_what);
 
 	void item_edited(int p_column, TreeItem *p_item, bool p_lmb = true);
@@ -626,6 +625,8 @@ protected:
 	}
 
 public:
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
 	TreeItem *get_item_at_position(const Point2 &p_pos) const;

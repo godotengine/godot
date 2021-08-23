@@ -52,7 +52,7 @@ class GradientEdit : public Control {
 	void _show_color_picker();
 
 protected:
-	void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _notification(int p_what);
 	static void _bind_methods();
 

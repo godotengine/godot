@@ -32,7 +32,7 @@
 
 #include "editor/editor_scale.h"
 
-void MeshEditor::_gui_input(Ref<InputEvent> p_event) {
+void MeshEditor::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventMouseMotion> mm = p_event;
@@ -101,10 +101,6 @@ void MeshEditor::_button_pressed(Node *p_button) {
 	if (p_button == light_2_switch) {
 		light2->set_visible(!light_2_switch->is_pressed());
 	}
-}
-
-void MeshEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &MeshEditor::_gui_input);
 }
 
 MeshEditor::MeshEditor() {

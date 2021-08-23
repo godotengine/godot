@@ -248,7 +248,7 @@ void CodeEdit::_notification(int p_what) {
 	}
 }
 
-void CodeEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
+void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	Ref<InputEventMouseButton> mb = p_gui_input;
 
 	if (mb.is_valid()) {
@@ -354,7 +354,7 @@ void CodeEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 	Ref<InputEventKey> k = p_gui_input;
 	bool update_code_completion = false;
 	if (!k.is_valid()) {
-		TextEdit::_gui_input(p_gui_input);
+		TextEdit::gui_input(p_gui_input);
 		return;
 	}
 
@@ -519,7 +519,7 @@ void CodeEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		set_code_hint("");
 	}
 
-	TextEdit::_gui_input(p_gui_input);
+	TextEdit::gui_input(p_gui_input);
 
 	if (update_code_completion) {
 		_filter_code_completion_candidates_impl();

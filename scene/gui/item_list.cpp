@@ -537,7 +537,7 @@ Size2 ItemList::Item::get_icon_size() const {
 	return size_result;
 }
 
-void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
+void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	double prev_scroll = scroll_bar->get_value();
@@ -1613,8 +1613,6 @@ void ItemList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("ensure_current_is_visible"), &ItemList::ensure_current_is_visible);
 
 	ClassDB::bind_method(D_METHOD("get_v_scroll"), &ItemList::get_v_scroll);
-
-	ClassDB::bind_method(D_METHOD("_gui_input"), &ItemList::_gui_input);
 
 	ClassDB::bind_method(D_METHOD("_set_items"), &ItemList::_set_items);
 	ClassDB::bind_method(D_METHOD("_get_items"), &ItemList::_get_items);

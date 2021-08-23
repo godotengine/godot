@@ -75,8 +75,8 @@ protected:
 	virtual void pressed();
 	virtual void toggled(bool p_pressed);
 	static void _bind_methods();
-	virtual void _gui_input(Ref<InputEvent> p_event);
-	virtual void _unhandled_key_input(Ref<InputEvent> p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 	void _notification(int p_what);
 
 	bool _is_focus_owner_in_shorcut_context() const;

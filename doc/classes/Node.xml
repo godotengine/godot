@@ -43,14 +43,6 @@
 				Call [method update_configuration_warnings] when the warnings need to be updated for this node.
 			</description>
 		</method>
-		<method name="_get_configuration_warnings" qualifiers="virtual">
-			<return type="String[]" />
-			<description>
-				The elements in the array returned from this method are displayed as warnings in the Scene Dock if the script that overrides it is a [code]tool[/code] script.
-				Returning an empty array produces no warnings.
-				Call [method update_configuration_warnings] when the warnings need to be updated for this node.
-			</description>
-		</method>
 		<method name="_input" qualifiers="virtual">
 			<return type="void" />
 			<argument index="0" name="event" type="InputEvent" />
@@ -104,9 +96,9 @@
 		</method>
 		<method name="_unhandled_key_input" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="event" type="InputEventKey" />
+			<argument index="0" name="event" type="InputEvent" />
 			<description>
-				Called when an [InputEventKey] hasn't been consumed by [method _input] or any GUI. The input event propagates up through the node tree until a node consumes it.
+				Called when an [InputEventKey] or [InputEventShortcut] hasn't been consumed by [method _input] or any GUI. The input event propagates up through the node tree until a node consumes it.
 				It is only called if unhandled key input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_unhandled_key_input].
 				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
 				For gameplay input, this and [method _unhandled_input] are usually a better fit than [method _input] as they allow the GUI to intercept the events first.

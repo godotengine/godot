@@ -867,7 +867,7 @@ void SceneMainLoop::_update_listener_2d() {
 
 */
 
-void SceneTree::_call_input_pause(const StringName &p_group, const StringName &p_method, const Ref<InputEvent> &p_input, Viewport *p_viewport) {
+void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_call_type, const Ref<InputEvent> &p_input, Viewport *p_viewport) {
 	Map<StringName, Group>::Element *E = group_map.find(p_group);
 	if (!E) {
 		return;
@@ -886,9 +886,6 @@ void SceneTree::_call_input_pause(const StringName &p_group, const StringName &p
 	int node_count = nodes_copy.size();
 	Node **nodes = nodes_copy.ptrw();
 
-	Variant arg = p_input;
-	const Variant *v[1] = { &arg };
-
 	call_lock++;
 
 	for (int i = node_count - 1; i >= 0; i--) {
@@ -905,14 +902,16 @@ void SceneTree::_call_input_pause(const StringName &p_group, const StringName &p
 			continue;
 		}
 
-		Callable::CallError err;
-		// Call both script and native method.
-		if (n->get_script_instance()) {
-			n->get_script_instance()->call(p_method, (const Variant **)v, 1, err);
-		}
-		MethodBind *method = ClassDB::get_method(n->get_class_name(), p_method);
-		if (method) {
-			method->call(n, (const Variant **)v, 1, err);
+		switch (p_call_type) {
+			case CALL_INPUT_TYPE_INPUT:
+				n->_call_input(p_input);
+				break;
+			case CALL_INPUT_TYPE_UNHANDLED_INPUT:
+				n->_call_unhandled_input(p_input);
+				break;
+			case CALL_INPUT_TYPE_UNHANDLED_KEY_INPUT:
+				n->_call_unhandled_key_input(p_input);
+				break;
 		}
 	}
 

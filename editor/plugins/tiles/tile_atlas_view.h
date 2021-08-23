@@ -62,7 +62,7 @@ private:
 	void _update_zoom_and_panning(bool p_zoom_on_mouse_pos = false);
 	void _zoom_widget_changed();
 	void _center_view();
-	void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 	Map<Vector2, Map<int, Rect2i>> alternative_tiles_rect_cache;
 	void _update_alternative_tiles_rect_cache();

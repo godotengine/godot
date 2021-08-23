@@ -83,7 +83,7 @@ void ScrollContainer::_cancel_drag() {
 	}
 }
 
-void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
+void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 	ERR_FAIL_COND(p_gui_input.is_null());
 
 	double prev_v_scroll = v_scroll->get_value();
@@ -568,7 +568,6 @@ VScrollBar *ScrollContainer::get_v_scrollbar() {
 }
 
 void ScrollContainer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &ScrollContainer::_gui_input);
 	ClassDB::bind_method(D_METHOD("_update_scrollbar_position"), &ScrollContainer::_update_scrollbar_position);
 
 	ClassDB::bind_method(D_METHOD("set_h_scroll", "value"), &ScrollContainer::set_h_scroll);

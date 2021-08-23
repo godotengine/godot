@@ -101,7 +101,7 @@ void CurveEditor::_notification(int p_what) {
 	}
 }
 
-void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
+void CurveEditor::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb_ref = p_event;
 	if (mb_ref.is_valid()) {
 		const InputEventMouseButton &mb = **mb_ref;
@@ -755,10 +755,6 @@ void CurveEditor::_draw() {
 		text_color.a *= 0.4;
 		draw_string(font, Vector2(50 * EDSCALE, font_height), TTR("Right click to add point"), HALIGN_LEFT, -1, font_size, text_color);
 	}
-}
-
-void CurveEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &CurveEditor::on_gui_input);
 }
 
 //---------------

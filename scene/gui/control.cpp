@@ -780,6 +780,20 @@ void Control::set_drag_preview(Control *p_control) {
 	get_viewport()->_gui_set_drag_preview(this, p_control);
 }
 
+void Control::_call_gui_input(const Ref<InputEvent> &p_event) {
+	emit_signal(SceneStringNames::get_singleton()->gui_input, p_event); //signal should be first, so it's possible to override an event (and then accept it)
+	if (!is_inside_tree() || get_viewport()->is_input_handled()) {
+		return; //input was handled, abort
+	}
+	GDVIRTUAL_CALL(_gui_input, p_event);
+	if (!is_inside_tree() || get_viewport()->is_input_handled()) {
+		return; //input was handled, abort
+	}
+	gui_input(p_event);
+}
+void Control::gui_input(const Ref<InputEvent> &p_event) {
+}
+
 Size2 Control::get_minimum_size() const {
 	Vector2 ms;
 	if (GDVIRTUAL_CALL(_get_minimum_size, ms)) {
@@ -2798,8 +2812,6 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_auto_translate", "enable"), &Control::set_auto_translate);
 	ClassDB::bind_method(D_METHOD("is_auto_translating"), &Control::is_auto_translating);
 
-	BIND_VMETHOD(MethodInfo("_gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
-
 	ADD_GROUP("Anchor", "anchor_");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anchor_left", PROPERTY_HINT_RANGE, "0,1,0.001,or_lesser,or_greater"), "_set_anchor", "get_anchor", SIDE_LEFT);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anchor_top", PROPERTY_HINT_RANGE, "0,1,0.001,or_lesser,or_greater"), "_set_anchor", "get_anchor", SIDE_TOP);
@@ -2960,8 +2972,10 @@ void Control::_bind_methods() {
 	GDVIRTUAL_BIND(_structured_text_parser, "args", "text");
 	GDVIRTUAL_BIND(_get_minimum_size);
 
-	GDVIRTUAL_BIND(_get_drag_data, "at_position")
-	GDVIRTUAL_BIND(_can_drop_data, "at_position", "data")
-	GDVIRTUAL_BIND(_drop_data, "at_position", "data")
-	GDVIRTUAL_BIND(_make_custom_tooltip, "for_text")
+	GDVIRTUAL_BIND(_get_drag_data, "at_position");
+	GDVIRTUAL_BIND(_can_drop_data, "at_position", "data");
+	GDVIRTUAL_BIND(_drop_data, "at_position", "data");
+	GDVIRTUAL_BIND(_make_custom_tooltip, "for_text");
+
+	GDVIRTUAL_BIND(_gui_input, "event");
 }

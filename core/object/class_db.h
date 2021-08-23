@@ -425,17 +425,6 @@ public:
 
 #endif
 
-#ifdef TOOLS_ENABLED
-
-#define BIND_VMETHOD(m_method) \
-	::ClassDB::add_virtual_method(get_class_static(), m_method);
-
-#else
-
-#define BIND_VMETHOD(m_method)
-
-#endif
-
 #define GDREGISTER_CLASS(m_class)                    \
 	if (!GD_IS_DEFINED(ClassDB_Disable_##m_class)) { \
 		::ClassDB::register_class<m_class>();        \

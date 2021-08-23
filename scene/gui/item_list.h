@@ -123,7 +123,6 @@ private:
 	void _set_items(const Array &p_items);
 
 	void _scroll_changed(double);
-	void _gui_input(const Ref<InputEvent> &p_event);
 	void _shape(int p_idx);
 
 protected:
@@ -131,6 +130,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
 	int add_item(const String &p_item, const Ref<Texture2D> &p_texture = Ref<Texture2D>(), bool p_selectable = true);
 	int add_icon_item(const Ref<Texture2D> &p_item, bool p_selectable = true);
 

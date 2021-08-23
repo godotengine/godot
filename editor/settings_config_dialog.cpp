@@ -138,7 +138,7 @@ void EditorSettingsDialog::_notification(int p_what) {
 	}
 }
 
-void EditorSettingsDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
+void EditorSettingsDialog::unhandled_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	const Ref<InputEventKey> k = p_event;
@@ -542,7 +542,6 @@ void EditorSettingsDialog::_editor_restart_close() {
 }
 
 void EditorSettingsDialog::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_unhandled_input"), &EditorSettingsDialog::_unhandled_input);
 	ClassDB::bind_method(D_METHOD("_update_shortcuts"), &EditorSettingsDialog::_update_shortcuts);
 	ClassDB::bind_method(D_METHOD("_settings_changed"), &EditorSettingsDialog::_settings_changed);
 }

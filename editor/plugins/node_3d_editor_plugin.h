@@ -74,9 +74,8 @@ class ViewportRotationControl : public Control {
 	const float AXIS_CIRCLE_RADIUS = 8.0f * EDSCALE;
 
 protected:
-	static void _bind_methods();
 	void _notification(int p_what);
-	void _gui_input(Ref<InputEvent> p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _draw();
 	void _draw_axis(const Axis2D &p_axis);
 	void _get_sorted_axis(Vector<Axis2D> &r_axis);
@@ -470,11 +469,10 @@ private:
 	Vector2 drag_begin_pos;
 	Vector2 drag_begin_ratio;
 
-	void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods();
 
 public:
 	void set_view(View p_view);
@@ -744,7 +742,7 @@ private:
 protected:
 	void _notification(int p_what);
 	//void _gui_input(InputEvent p_event);
-	void _unhandled_key_input(Ref<InputEvent> p_event);
+	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 
 	static void _bind_methods();
 

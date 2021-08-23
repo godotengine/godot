@@ -65,7 +65,7 @@ class SpinBox : public Range {
 	inline void _adjust_width_for_icon(const Ref<Texture2D> &icon);
 
 protected:
-	void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 	void _notification(int p_what);
 

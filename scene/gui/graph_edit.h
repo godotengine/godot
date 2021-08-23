@@ -62,8 +62,6 @@ class GraphEditMinimap : public Control {
 	GraphEdit *ge;
 
 protected:
-	static void _bind_methods();
-
 public:
 	GraphEditMinimap(GraphEdit *p_edit);
 
@@ -88,7 +86,7 @@ private:
 	Vector2 _convert_from_graph_position(const Vector2 &p_position);
 	Vector2 _convert_to_graph_position(const Vector2 &p_position);
 
-	void _gui_input(const Ref<InputEvent> &p_ev);
+	virtual void gui_input(const Ref<InputEvent> &p_ev) override;
 
 	void _adjust_graph_scroll(const Vector2 &p_offset);
 };
@@ -178,7 +176,7 @@ private:
 
 	void _update_scroll();
 	void _scroll_moved(double);
-	void _gui_input(const Ref<InputEvent> &p_ev);
+	virtual void gui_input(const Ref<InputEvent> &p_ev) override;
 
 	Control *connections_layer;
 	GraphEditFilter *top_layer;
@@ -254,6 +252,8 @@ protected:
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 	void _notification(int p_what);
+
+	GDVIRTUAL2RC(Vector<Vector2>, _get_connection_line, Vector2, Vector2)
 
 public:
 	Error connect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);

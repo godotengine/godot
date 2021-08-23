@@ -114,7 +114,7 @@ void FindReplaceBar::_notification(int p_what) {
 	}
 }
 
-void FindReplaceBar::_unhandled_input(const Ref<InputEvent> &p_event) {
+void FindReplaceBar::unhandled_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventKey> k = p_event;
@@ -611,7 +611,6 @@ void FindReplaceBar::set_text_edit(CodeTextEditor *p_text_editor) {
 }
 
 void FindReplaceBar::_bind_methods() {
-	ClassDB::bind_method("_unhandled_input", &FindReplaceBar::_unhandled_input);
 	ClassDB::bind_method("_search_current", &FindReplaceBar::search_current);
 
 	ADD_SIGNAL(MethodInfo("search"));
@@ -712,7 +711,7 @@ FindReplaceBar::FindReplaceBar() {
 
 // This function should be used to handle shortcuts that could otherwise
 // be handled too late if they weren't handled here.
-void CodeTextEditor::_input(const Ref<InputEvent> &event) {
+void CodeTextEditor::input(const Ref<InputEvent> &event) {
 	ERR_FAIL_COND(event.is_null());
 
 	const Ref<InputEventKey> key_event = event;
@@ -1753,8 +1752,6 @@ void CodeTextEditor::remove_all_bookmarks() {
 }
 
 void CodeTextEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_input"), &CodeTextEditor::_input);
-
 	ADD_SIGNAL(MethodInfo("validate_script"));
 	ADD_SIGNAL(MethodInfo("load_theme_settings"));
 	ADD_SIGNAL(MethodInfo("show_errors_panel"));

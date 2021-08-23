@@ -76,7 +76,7 @@ private:
 
 protected:
 	void _child_renamed_callback();
-	void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _notification(int p_what);
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void move_child_notify(Node *p_child) override;

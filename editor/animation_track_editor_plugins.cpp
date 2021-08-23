@@ -1035,7 +1035,7 @@ void AnimationTrackEditTypeAudio::drop_data(const Point2 &p_point, const Variant
 	AnimationTrackEdit::drop_data(p_point, p_data);
 }
 
-void AnimationTrackEditTypeAudio::_gui_input(const Ref<InputEvent> &p_event) {
+void AnimationTrackEditTypeAudio::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventMouseMotion> mm = p_event;
@@ -1132,7 +1132,7 @@ void AnimationTrackEditTypeAudio::_gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	AnimationTrackEdit::_gui_input(p_event);
+	AnimationTrackEdit::gui_input(p_event);
 }
 
 ////////////////////

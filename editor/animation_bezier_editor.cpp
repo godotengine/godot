@@ -606,7 +606,7 @@ void AnimationBezierTrackEdit::_select_at_anim(const Ref<Animation> &p_anim, int
 	update();
 }
 
-void AnimationBezierTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
+void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (p_event->is_pressed()) {
@@ -1131,8 +1131,6 @@ void AnimationBezierTrackEdit::set_block_animation_update_ptr(bool *p_block_ptr)
 }
 
 void AnimationBezierTrackEdit::_bind_methods() {
-	ClassDB::bind_method("_gui_input", &AnimationBezierTrackEdit::_gui_input);
-
 	ClassDB::bind_method("_clear_selection", &AnimationBezierTrackEdit::_clear_selection);
 	ClassDB::bind_method("_clear_selection_for_anim", &AnimationBezierTrackEdit::_clear_selection_for_anim);
 	ClassDB::bind_method("_select_at_anim", &AnimationBezierTrackEdit::_select_at_anim);

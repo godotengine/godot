@@ -113,19 +113,6 @@
 				Returns [code]true[/code] if the viewport is currently performing a drag operation.
 			</description>
 		</method>
-		<method name="input">
-			<return type="void" />
-			<argument index="0" name="event" type="InputEvent" />
-			<argument index="1" name="in_local_coords" type="bool" default="false" />
-			<description>
-			</description>
-		</method>
-		<method name="input_text">
-			<return type="void" />
-			<argument index="0" name="text" type="String" />
-			<description>
-			</description>
-		</method>
 		<method name="is_embedding_subwindows" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -133,6 +120,26 @@
 		</method>
 		<method name="is_input_handled" qualifiers="const">
 			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="push_input">
+			<return type="void" />
+			<argument index="0" name="event" type="InputEvent" />
+			<argument index="1" name="in_local_coords" type="bool" default="false" />
+			<description>
+			</description>
+		</method>
+		<method name="push_text_input">
+			<return type="void" />
+			<argument index="0" name="text" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="push_unhandled_input">
+			<return type="void" />
+			<argument index="0" name="event" type="InputEvent" />
+			<argument index="1" name="in_local_coords" type="bool" default="false" />
 			<description>
 			</description>
 		</method>
@@ -148,13 +155,6 @@
 			<argument index="1" name="subdiv" type="int" enum="Viewport.ShadowAtlasQuadrantSubdiv" />
 			<description>
 				Sets the number of subdivisions to use in the specified quadrant. A higher number of subdivisions allows you to have more shadows in the scene at once, but reduces the quality of the shadows. A good practice is to have quadrants with a varying number of subdivisions and to have as few subdivisions as possible.
-			</description>
-		</method>
-		<method name="unhandled_input">
-			<return type="void" />
-			<argument index="0" name="event" type="InputEvent" />
-			<argument index="1" name="in_local_coords" type="bool" default="false" />
-			<description>
 			</description>
 		</method>
 		<method name="warp_mouse">

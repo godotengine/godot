@@ -99,7 +99,7 @@ void SpinBox::_release_mouse() {
 	}
 }
 
-void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
+void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (!is_editable()) {
@@ -258,7 +258,7 @@ void SpinBox::apply() {
 
 void SpinBox::_bind_methods() {
 	//ClassDB::bind_method(D_METHOD("_value_changed"),&SpinBox::_value_changed);
-	ClassDB::bind_method(D_METHOD("_gui_input"), &SpinBox::_gui_input);
+
 	ClassDB::bind_method(D_METHOD("set_align", "align"), &SpinBox::set_align);
 	ClassDB::bind_method(D_METHOD("get_align"), &SpinBox::get_align);
 	ClassDB::bind_method(D_METHOD("set_suffix", "suffix"), &SpinBox::set_suffix);

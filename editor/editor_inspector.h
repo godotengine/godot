@@ -107,7 +107,7 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-	void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	void emit_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field = StringName(), bool p_changing = false);
@@ -252,7 +252,7 @@ class EditorInspectorSection : public Container {
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-	void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	virtual Size2 get_minimum_size() const override;

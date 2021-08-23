@@ -31,9 +31,9 @@
 #ifndef EDITOR_COMMAND_PALETTE_H
 #define EDITOR_COMMAND_PALETTE_H
 
+#include "core/input/shortcut.h"
 #include "core/os/thread_safe.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/shortcut.h"
 #include "scene/gui/tree.h"
 
 class EditorCommandPalette : public ConfirmationDialog {

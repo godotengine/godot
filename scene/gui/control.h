@@ -31,10 +31,10 @@
 #ifndef CONTROL_H
 #define CONTROL_H
 
+#include "core/input/shortcut.h"
 #include "core/math/transform_2d.h"
 #include "core/object/gdvirtual.gen.inc"
 #include "core/templates/rid.h"
-#include "scene/gui/shortcut.h"
 #include "scene/main/canvas_item.h"
 #include "scene/main/node.h"
 #include "scene/main/timer.h"
@@ -263,6 +263,8 @@ private:
 
 	friend class Viewport;
 
+	void _call_gui_input(const Ref<InputEvent> &p_event);
+
 	void _update_minimum_size_cache();
 	friend class Window;
 	static void _propagate_theme_changed(Node *p_at, Control *p_owner, Window *p_owner_window, bool p_assign = true);
@@ -271,17 +273,6 @@ private:
 	static T get_theme_item_in_types(Control *p_theme_owner, Window *p_theme_owner_window, Theme::DataType p_data_type, const StringName &p_name, List<StringName> p_theme_types);
 	static bool has_theme_item_in_types(Control *p_theme_owner, Window *p_theme_owner_window, Theme::DataType p_data_type, const StringName &p_name, List<StringName> p_theme_types);
 	_FORCE_INLINE_ void _get_theme_type_dependencies(const StringName &p_theme_type, List<StringName> *p_list) const;
-
-	GDVIRTUAL1RC(bool, _has_point, Vector2)
-	GDVIRTUAL2RC(Array, _structured_text_parser, Array, String)
-	GDVIRTUAL0RC(Vector2, _get_minimum_size)
-
-	GDVIRTUAL1RC(Variant, _get_drag_data, Vector2)
-	GDVIRTUAL2RC(bool, _can_drop_data, Vector2, Variant)
-	GDVIRTUAL2(_drop_data, Vector2, Variant)
-	GDVIRTUAL1RC(Object *, _make_custom_tooltip, String)
-
-	//GDVIRTUAL1(_gui_input, Ref<InputEvent>)
 
 protected:
 	virtual void add_child_notify(Node *p_child) override;
@@ -300,6 +291,17 @@ protected:
 	virtual void _validate_property(PropertyInfo &property) const override;
 
 	//bind helpers
+
+	GDVIRTUAL1RC(bool, _has_point, Vector2)
+	GDVIRTUAL2RC(Array, _structured_text_parser, Array, String)
+	GDVIRTUAL0RC(Vector2, _get_minimum_size)
+
+	GDVIRTUAL1RC(Variant, _get_drag_data, Vector2)
+	GDVIRTUAL2RC(bool, _can_drop_data, Vector2, Variant)
+	GDVIRTUAL2(_drop_data, Vector2, Variant)
+	GDVIRTUAL1RC(Object *, _make_custom_tooltip, String)
+
+	GDVIRTUAL1(_gui_input, Ref<InputEvent>)
 
 public:
 	enum {
@@ -342,6 +344,8 @@ public:
 
 	virtual Size2 _edit_get_minimum_size() const override;
 #endif
+
+	virtual void gui_input(const Ref<InputEvent> &p_event);
 
 	void accept_event();
 

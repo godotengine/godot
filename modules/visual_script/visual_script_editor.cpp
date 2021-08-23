@@ -1816,7 +1816,7 @@ void VisualScriptEditor::_generic_search(String p_base_type, Vector2 pos, bool n
 	}
 }
 
-void VisualScriptEditor::_input(const Ref<InputEvent> &p_event) {
+void VisualScriptEditor::input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	// GUI input for VS Editor Plugin
@@ -4245,8 +4245,6 @@ void VisualScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_get_drag_data_fw", &VisualScriptEditor::get_drag_data_fw);
 	ClassDB::bind_method("_can_drop_data_fw", &VisualScriptEditor::can_drop_data_fw);
 	ClassDB::bind_method("_drop_data_fw", &VisualScriptEditor::drop_data_fw);
-
-	ClassDB::bind_method("_input", &VisualScriptEditor::_input);
 
 	ClassDB::bind_method("_update_graph_connections", &VisualScriptEditor::_update_graph_connections);
 	ClassDB::bind_method("_update_members", &VisualScriptEditor::_update_members);
