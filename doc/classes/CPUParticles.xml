@@ -100,7 +100,7 @@
 			Rotation randomness ratio.
 		</member>
 		<member name="angular_velocity" type="float" setter="set_param" getter="get_param" default="0.0">
-			Initial angular velocity applied to each particle. Sets the speed of rotation of the particle.
+			Initial angular velocity applied to each particle in [i]degrees[/i] per second. Sets the speed of rotation of the particle.
 		</member>
 		<member name="angular_velocity_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
 			Each particle's angular velocity will vary along this [Curve].
