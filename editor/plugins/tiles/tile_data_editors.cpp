@@ -110,7 +110,7 @@ void DummyObject::clear_dummy_properties() {
 void GenericTilePolygonEditor::_base_control_draw() {
 	ERR_FAIL_COND(!tile_set.is_valid());
 
-	real_t grab_threshold = EDITOR_GET("editors/poly_editor/point_grab_radius");
+	real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 
 	Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
 	const Ref<Texture2D> handle = get_theme_icon(SNAME("EditorPathSharpHandle"), SNAME("EditorIcons"));
@@ -262,7 +262,7 @@ void GenericTilePolygonEditor::_advanced_menu_item_pressed(int p_item_pressed) {
 }
 
 void GenericTilePolygonEditor::_grab_polygon_point(Vector2 p_pos, const Transform2D &p_polygon_xform, int &r_polygon_index, int &r_point_index) {
-	const real_t grab_threshold = EDITOR_GET("editors/poly_editor/point_grab_radius");
+	const real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 	r_polygon_index = -1;
 	r_point_index = -1;
 	float closest_distance = grab_threshold + 1.0;
@@ -280,7 +280,7 @@ void GenericTilePolygonEditor::_grab_polygon_point(Vector2 p_pos, const Transfor
 }
 
 void GenericTilePolygonEditor::_grab_polygon_segment_point(Vector2 p_pos, const Transform2D &p_polygon_xform, int &r_polygon_index, int &r_segment_index, Vector2 &r_point) {
-	const real_t grab_threshold = EDITOR_GET("editors/poly_editor/point_grab_radius");
+	const real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 
 	Point2 point = p_polygon_xform.affine_inverse().xform(p_pos);
 	r_polygon_index = -1;
@@ -340,7 +340,7 @@ void GenericTilePolygonEditor::_snap_to_half_pixel(Point2 &r_point) {
 }
 
 void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) {
-	real_t grab_threshold = EDITOR_GET("editors/poly_editor/point_grab_radius");
+	real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 
 	hovered_polygon_index = -1;
 	hovered_point_index = -1;

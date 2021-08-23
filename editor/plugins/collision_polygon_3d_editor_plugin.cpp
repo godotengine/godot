@@ -138,7 +138,7 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 		Vector<Vector2> poly = node->call("get_polygon");
 
 		//first check if a point is to be added (segment split)
-		real_t grab_threshold = EDITOR_GET("editors/poly_editor/point_grab_radius");
+		real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 
 		switch (mode) {
 			case MODE_CREATE: {

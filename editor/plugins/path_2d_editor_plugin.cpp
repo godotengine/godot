@@ -70,7 +70,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		return false;
 	}
 
-	real_t grab_threshold = EDITOR_GET("editors/poly_editor/point_grab_radius");
+	real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
