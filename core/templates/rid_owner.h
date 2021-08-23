@@ -53,12 +53,14 @@ protected:
 		return rid;
 	}
 
-	static uint64_t _gen_id() {
-		return base_id.increment();
-	}
-
 	static RID _gen_rid() {
 		return _make_from_id(_gen_id());
+	}
+
+	friend struct VariantUtilityFunctions;
+
+	static uint64_t _gen_id() {
+		return base_id.increment();
 	}
 
 public:
