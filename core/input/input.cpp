@@ -240,18 +240,12 @@ bool Input::is_joy_button_pressed(int p_device, JoyButton p_button) const {
 }
 
 bool Input::is_action_pressed(const StringName &p_action, bool p_exact) const {
-#ifdef DEBUG_ENABLED
-	bool has_action = InputMap::get_singleton()->has_action(p_action);
-	ERR_FAIL_COND_V_MSG(!has_action, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
-#endif
+	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
 	return action_state.has(p_action) && action_state[p_action].pressed && (p_exact ? action_state[p_action].exact : true);
 }
 
 bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact) const {
-#ifdef DEBUG_ENABLED
-	bool has_action = InputMap::get_singleton()->has_action(p_action);
-	ERR_FAIL_COND_V_MSG(!has_action, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
-#endif
+	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
 	const Map<StringName, Action>::Element *E = action_state.find(p_action);
 	if (!E) {
 		return false;
@@ -269,10 +263,7 @@ bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact) con
 }
 
 bool Input::is_action_just_released(const StringName &p_action, bool p_exact) const {
-#ifdef DEBUG_ENABLED
-	bool has_action = InputMap::get_singleton()->has_action(p_action);
-	ERR_FAIL_COND_V_MSG(!has_action, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
-#endif
+	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
 	const Map<StringName, Action>::Element *E = action_state.find(p_action);
 	if (!E) {
 		return false;
@@ -290,10 +281,7 @@ bool Input::is_action_just_released(const StringName &p_action, bool p_exact) co
 }
 
 float Input::get_action_strength(const StringName &p_action, bool p_exact) const {
-#ifdef DEBUG_ENABLED
-	bool has_action = InputMap::get_singleton()->has_action(p_action);
-	ERR_FAIL_COND_V_MSG(!has_action, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
-#endif
+	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), 0.0, InputMap::get_singleton()->suggest_actions(p_action));
 	const Map<StringName, Action>::Element *E = action_state.find(p_action);
 	if (!E) {
 		return 0.0f;
