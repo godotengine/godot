@@ -1878,6 +1878,10 @@ bool Main::start() {
 			OS::get_singleton()->set_window_title(appname);
 #endif
 
+			// Define a very small minimum window size to prevent bugs such as GH-37242.
+			// It can still be overridden by the user in a script.
+			OS::get_singleton()->set_min_window_size(Size2(64, 64));
+
 			int shadow_atlas_size = GLOBAL_GET("rendering/quality/shadow_atlas/size");
 			int shadow_atlas_q0_subdiv = GLOBAL_GET("rendering/quality/shadow_atlas/quadrant_0_subdiv");
 			int shadow_atlas_q1_subdiv = GLOBAL_GET("rendering/quality/shadow_atlas/quadrant_1_subdiv");
