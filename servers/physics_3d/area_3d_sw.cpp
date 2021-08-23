@@ -163,6 +163,20 @@ void Area3DSW::set_param(PhysicsServer3D::AreaParameter p_param, const Variant &
 		case PhysicsServer3D::AREA_PARAM_PRIORITY:
 			priority = p_value;
 			break;
+		case PhysicsServer3D::AREA_PARAM_WIND_FORCE_MAGNITUDE:
+			ERR_FAIL_COND_MSG(wind_force_magnitude < 0, "Wind force magnitude must be a non-negative real number, but a negative number was specified.");
+			wind_force_magnitude = p_value;
+			break;
+		case PhysicsServer3D::AREA_PARAM_WIND_SOURCE:
+			wind_source = p_value;
+			break;
+		case PhysicsServer3D::AREA_PARAM_WIND_DIRECTION:
+			wind_direction = p_value;
+			break;
+		case PhysicsServer3D::AREA_PARAM_WIND_ATTENUATION_FACTOR:
+			ERR_FAIL_COND_MSG(wind_attenuation_factor < 0, "Wind attenuation factor must be a non-negative real number, but a negative number was specified.");
+			wind_attenuation_factor = p_value;
+			break;
 	}
 }
 
@@ -184,6 +198,14 @@ Variant Area3DSW::get_param(PhysicsServer3D::AreaParameter p_param) const {
 			return angular_damp;
 		case PhysicsServer3D::AREA_PARAM_PRIORITY:
 			return priority;
+		case PhysicsServer3D::AREA_PARAM_WIND_FORCE_MAGNITUDE:
+			return wind_force_magnitude;
+		case PhysicsServer3D::AREA_PARAM_WIND_SOURCE:
+			return wind_source;
+		case PhysicsServer3D::AREA_PARAM_WIND_DIRECTION:
+			return wind_direction;
+		case PhysicsServer3D::AREA_PARAM_WIND_ATTENUATION_FACTOR:
+			return wind_attenuation_factor;
 	}
 
 	return Variant();

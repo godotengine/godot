@@ -71,6 +71,7 @@ class SoftBody3DSW : public CollisionObject3DSW {
 	};
 
 	struct Face {
+		Vector3 centroid;
 		Node *n[3] = { nullptr, nullptr, nullptr }; // Node pointers
 		Vector3 normal; // Normal
 		real_t ra = 0.0; // Rest area
@@ -114,6 +115,7 @@ class SoftBody3DSW : public CollisionObject3DSW {
 	uint64_t island_step = 0;
 
 	_FORCE_INLINE_ void _compute_area_gravity(const Area3DSW *p_area);
+	_FORCE_INLINE_ Vector3 _compute_area_windforce(const Area3DSW *p_area, const Face *p_face);
 
 public:
 	SoftBody3DSW();
@@ -220,7 +222,7 @@ protected:
 	virtual void _shapes_changed();
 
 private:
-	void update_normals();
+	void update_normals_and_centroids();
 	void update_bounds();
 	void update_constants();
 	void update_area();
@@ -231,7 +233,7 @@ private:
 
 	void add_velocity(const Vector3 &p_velocity);
 
-	void apply_forces();
+	void apply_forces(bool p_has_wind_forces);
 
 	bool create_from_trimesh(const Vector<int> &p_indices, const Vector<Vector3> &p_vertices);
 	void generate_bending_constraints(int p_distance);

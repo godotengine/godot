@@ -1222,6 +1222,18 @@
 		<constant name="AREA_PARAM_PRIORITY" value="7" enum="AreaParameter">
 			Constant to set/get the priority (order of processing) of an area.
 		</constant>
+		<constant name="AREA_PARAM_WIND_FORCE_MAGNITUDE" value="8" enum="AreaParameter">
+			Constant to set/get the magnitude of area-specific wind force.
+		</constant>
+		<constant name="AREA_PARAM_WIND_SOURCE" value="9" enum="AreaParameter">
+			Constant to set/get the 3D vector that specifies the origin from which an area-specific wind blows.
+		</constant>
+		<constant name="AREA_PARAM_WIND_DIRECTION" value="10" enum="AreaParameter">
+			Constant to set/get the 3D vector that specifies the direction in which an area-specific wind blows.
+		</constant>
+		<constant name="AREA_PARAM_WIND_ATTENUATION_FACTOR" value="11" enum="AreaParameter">
+			Constant to set/get the exponential rate at which wind force decreases with distance from its origin.
+		</constant>
 		<constant name="AREA_SPACE_OVERRIDE_DISABLED" value="0" enum="AreaSpaceOverrideMode">
 			This area does not affect gravity/damp. These are generally areas that exist only to detect collisions, and objects entering or exiting them.
 		</constant>
