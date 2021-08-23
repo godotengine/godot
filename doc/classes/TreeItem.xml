@@ -340,6 +340,13 @@
 				Returns [code]true[/code] if column [code]column[/code] is editable.
 			</description>
 		</method>
+		<method name="is_indeterminate" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="column" type="int" />
+			<description>
+				Returns [code]true[/code] if the given column is indeterminate.
+			</description>
+		</method>
 		<method name="is_selectable" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="column" type="int" />
@@ -415,7 +422,7 @@
 			<argument index="0" name="column" type="int" />
 			<argument index="1" name="checked" type="bool" />
 			<description>
-				If [code]true[/code], the column [code]column[/code] is checked.
+				If [code]true[/code], the column [code]column[/code] is checked. Clears column's indeterminate status.
 			</description>
 		</method>
 		<method name="set_custom_as_button">
@@ -505,6 +512,15 @@
 			<argument index="1" name="region" type="Rect2" />
 			<description>
 				Sets the given column's icon's texture region.
+			</description>
+		</method>
+		<method name="set_indeterminate">
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="indeterminate" type="bool" />
+			<description>
+				If [code]true[/code], the column [code]column[/code] is marked indeterminate.
+				[b]Note:[/b] If set [code]true[/code] from [code]false[/code], then column is cleared of checked status.
 			</description>
 		</method>
 		<method name="set_language">

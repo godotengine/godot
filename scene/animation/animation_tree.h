@@ -112,6 +112,14 @@ protected:
 
 	void _set_parent(Object *p_parent);
 
+	GDVIRTUAL0RC(Dictionary, _get_child_nodes)
+	GDVIRTUAL0RC(Array, _get_parameter_list)
+	GDVIRTUAL1RC(Ref<AnimationNode>, _get_child_by_name, StringName)
+	GDVIRTUAL1RC(Variant, _get_parameter_default_value, StringName)
+	GDVIRTUAL2RC(double, _process, double, bool)
+	GDVIRTUAL0RC(String, _get_caption)
+	GDVIRTUAL0RC(bool, _has_filter)
+
 public:
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const;

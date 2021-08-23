@@ -84,7 +84,7 @@ public:
 	virtual String get_data_path() const override;
 	virtual String get_cache_path() const override;
 
-	virtual String get_system_dir(SystemDir p_dir) const override;
+	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const override;
 
 	virtual Error shell_open(String p_uri) override;
 

@@ -59,42 +59,33 @@
 #include "scene/scene_string_names.h"
 
 void EditorResourceConversionPlugin::_bind_methods() {
-	MethodInfo mi;
-	mi.name = "_convert";
-	mi.return_val.type = Variant::OBJECT;
-	mi.return_val.class_name = "Resource";
-	mi.return_val.hint = PROPERTY_HINT_RESOURCE_TYPE;
-	mi.return_val.hint_string = "Resource";
-	mi.arguments.push_back(mi.return_val);
-	mi.arguments[0].name = "resource";
-
-	BIND_VMETHOD(mi)
-
-	mi.name = "_handles";
-	mi.return_val = PropertyInfo(Variant::BOOL, "");
-
-	BIND_VMETHOD(MethodInfo(Variant::STRING, "_converts_to"));
+	GDVIRTUAL_BIND(_converts_to);
+	GDVIRTUAL_BIND(_handles, "resource");
+	GDVIRTUAL_BIND(_convert, "resource");
 }
 
 String EditorResourceConversionPlugin::converts_to() const {
-	if (get_script_instance()) {
-		return get_script_instance()->call("_converts_to");
+	String ret;
+	if (GDVIRTUAL_CALL(_converts_to, ret)) {
+		return ret;
 	}
 
 	return "";
 }
 
 bool EditorResourceConversionPlugin::handles(const Ref<Resource> &p_resource) const {
-	if (get_script_instance()) {
-		return get_script_instance()->call("_handles", p_resource);
+	bool ret;
+	if (GDVIRTUAL_CALL(_handles, p_resource, ret)) {
+		return ret;
 	}
 
 	return false;
 }
 
 Ref<Resource> EditorResourceConversionPlugin::convert(const Ref<Resource> &p_resource) const {
-	if (get_script_instance()) {
-		return get_script_instance()->call("_convert", p_resource);
+	RES ret;
+	if (GDVIRTUAL_CALL(_convert, p_resource, ret)) {
+		return ret;
 	}
 
 	return Ref<Resource>();

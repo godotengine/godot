@@ -45,7 +45,7 @@ static bool _is_bin_symbol(char32_t c) {
 	return (c == '0' || c == '1');
 }
 
-Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting(int p_line) {
+Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 	Dictionary color_map;
 
 	Type next_type = NONE;
@@ -459,11 +459,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	List<StringName> types;
 	ClassDB::get_class_list(&types);
 	for (const StringName &E : types) {
-		String n = E;
-		if (n.begins_with("_")) {
-			n = n.substr(1, n.length());
-		}
-		keywords[n] = types_color;
+		keywords[E] = types_color;
 	}
 
 	/* User types. */

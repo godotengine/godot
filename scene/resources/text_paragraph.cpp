@@ -437,7 +437,8 @@ Size2 TextParagraph::get_non_wraped_size() const {
 Size2 TextParagraph::get_size() const {
 	const_cast<TextParagraph *>(this)->_shape_lines();
 	Size2 size;
-	for (int i = 0; i < lines_rid.size(); i++) {
+	int visible_lines = (max_lines_visible >= 0) ? MIN(max_lines_visible, lines_rid.size()) : lines_rid.size();
+	for (int i = 0; i < visible_lines; i++) {
 		Size2 lsize = TS->shaped_text_get_size(lines_rid[i]);
 		if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
 			size.x = MAX(size.x, lsize.x);
@@ -587,15 +588,15 @@ void TextParagraph::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_colo
 				l_width -= h_offset;
 			}
 		}
-		float length = TS->shaped_text_get_width(lines_rid[i]);
+		float line_width = TS->shaped_text_get_width(lines_rid[i]);
 		if (width > 0) {
 			switch (align) {
 				case HALIGN_FILL:
 					if (TS->shaped_text_get_direction(lines_rid[i]) == TextServer::DIRECTION_RTL) {
 						if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
-							ofs.x += l_width - length;
+							ofs.x += l_width - line_width;
 						} else {
-							ofs.y += l_width - length;
+							ofs.y += l_width - line_width;
 						}
 					}
 					break;
@@ -603,16 +604,16 @@ void TextParagraph::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_colo
 					break;
 				case HALIGN_CENTER: {
 					if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
-						ofs.x += Math::floor((l_width - length) / 2.0);
+						ofs.x += Math::floor((l_width - line_width) / 2.0);
 					} else {
-						ofs.y += Math::floor((l_width - length) / 2.0);
+						ofs.y += Math::floor((l_width - line_width) / 2.0);
 					}
 				} break;
 				case HALIGN_RIGHT: {
 					if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
-						ofs.x += l_width - length;
+						ofs.x += l_width - line_width;
 					} else {
-						ofs.y += l_width - length;
+						ofs.y += l_width - line_width;
 					}
 				} break;
 			}

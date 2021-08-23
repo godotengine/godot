@@ -185,9 +185,8 @@ public:
 	void live_debug_duplicate_node(const NodePath &p_at, const String &p_new_name);
 	void live_debug_reparent_node(const NodePath &p_at, const NodePath &p_new_place, const String &p_new_name, int p_at_pos);
 
-	// Camera
-	void set_camera_override(CameraOverride p_override) { camera_override = p_override; }
-	CameraOverride get_camera_override() { return camera_override; }
+	void set_camera_override(CameraOverride p_override);
+	CameraOverride get_camera_override();
 
 	Error start(const String &p_protocol = "tcp://");
 

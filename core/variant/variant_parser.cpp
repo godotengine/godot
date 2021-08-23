@@ -1423,7 +1423,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 			p_store_string_func(p_store_string_ud, itos(p_variant.operator int64_t()));
 		} break;
 		case Variant::FLOAT: {
-			String s = rtosfix(p_variant.operator real_t());
+			String s = rtosfix(p_variant.operator double());
 			if (s != "inf" && s != "nan") {
 				if (s.find(".") == -1 && s.find("e") == -1) {
 					s += ".0";

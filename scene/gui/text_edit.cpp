@@ -2768,48 +2768,38 @@ Point2i TextEdit::get_next_visible_line_index_offset_from(int p_line_from, int p
 
 // Overridable actions
 void TextEdit::handle_unicode_input(const uint32_t p_unicode) {
-	ScriptInstance *si = get_script_instance();
-	if (si && si->has_method("_handle_unicode_input")) {
-		si->call("_handle_unicode_input", p_unicode);
+	if (GDVIRTUAL_CALL(_handle_unicode_input, p_unicode)) {
 		return;
 	}
-	_handle_unicode_input(p_unicode);
+	_handle_unicode_input_internal(p_unicode);
 }
 
 void TextEdit::backspace() {
-	ScriptInstance *si = get_script_instance();
-	if (si && si->has_method("_backspace")) {
-		si->call("_backspace");
+	if (GDVIRTUAL_CALL(_backspace)) {
 		return;
 	}
-	_backspace();
+	_backspace_internal();
 }
 
 void TextEdit::cut() {
-	ScriptInstance *si = get_script_instance();
-	if (si && si->has_method("_cut")) {
-		si->call("_cut");
+	if (GDVIRTUAL_CALL(_cut)) {
 		return;
 	}
-	_cut();
+	_cut_internal();
 }
 
 void TextEdit::copy() {
-	ScriptInstance *si = get_script_instance();
-	if (si && si->has_method("_copy")) {
-		si->call("_copy");
+	if (GDVIRTUAL_CALL(_copy)) {
 		return;
 	}
-	_copy();
+	_copy_internal();
 }
 
 void TextEdit::paste() {
-	ScriptInstance *si = get_script_instance();
-	if (si && si->has_method("_paste")) {
-		si->call("_paste");
+	if (GDVIRTUAL_CALL(_paste)) {
 		return;
 	}
-	_paste();
+	_paste_internal();
 }
 
 // Context menu.
@@ -2961,6 +2951,18 @@ void TextEdit::end_complex_operation() {
 	}
 
 	undo_stack.back()->get().chain_backward = true;
+}
+
+bool TextEdit::has_undo() const {
+	if (undo_stack_pos == nullptr) {
+		int pending = current_op.type == TextOperation::TYPE_NONE ? 0 : 1;
+		return undo_stack.size() + pending > 0;
+	}
+	return undo_stack_pos != undo_stack.front();
+}
+
+bool TextEdit::has_redo() const {
+	return undo_stack_pos != nullptr;
 }
 
 void TextEdit::undo() {
@@ -4440,12 +4442,11 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("copy"), &TextEdit::copy);
 	ClassDB::bind_method(D_METHOD("paste"), &TextEdit::paste);
 
-	BIND_VMETHOD(MethodInfo("_handle_unicode_input", PropertyInfo(Variant::INT, "unicode")))
-	BIND_VMETHOD(MethodInfo("_backspace"));
-
-	BIND_VMETHOD(MethodInfo("_cut"));
-	BIND_VMETHOD(MethodInfo("_copy"));
-	BIND_VMETHOD(MethodInfo("_paste"));
+	GDVIRTUAL_BIND(_handle_unicode_input, "unicode_char")
+	GDVIRTUAL_BIND(_backspace)
+	GDVIRTUAL_BIND(_cut)
+	GDVIRTUAL_BIND(_copy)
+	GDVIRTUAL_BIND(_paste)
 
 	// Context Menu
 	BIND_ENUM_CONSTANT(MENU_CUT);
@@ -4482,6 +4483,8 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("begin_complex_operation"), &TextEdit::begin_complex_operation);
 	ClassDB::bind_method(D_METHOD("end_complex_operation"), &TextEdit::end_complex_operation);
 
+	ClassDB::bind_method(D_METHOD("has_undo"), &TextEdit::has_undo);
+	ClassDB::bind_method(D_METHOD("has_redo"), &TextEdit::has_redo);
 	ClassDB::bind_method(D_METHOD("undo"), &TextEdit::undo);
 	ClassDB::bind_method(D_METHOD("redo"), &TextEdit::redo);
 	ClassDB::bind_method(D_METHOD("clear_undo_history"), &TextEdit::clear_undo_history);
@@ -4870,7 +4873,7 @@ void TextEdit::_set_symbol_lookup_word(const String &p_symbol) {
 /* Text manipulation */
 
 // Overridable actions
-void TextEdit::_handle_unicode_input(const uint32_t p_unicode) {
+void TextEdit::_handle_unicode_input_internal(const uint32_t p_unicode) {
 	if (!editable) {
 		return;
 	}
@@ -4901,7 +4904,7 @@ void TextEdit::_handle_unicode_input(const uint32_t p_unicode) {
 	}
 }
 
-void TextEdit::_backspace() {
+void TextEdit::_backspace_internal() {
 	if (!editable) {
 		return;
 	}
@@ -4932,7 +4935,7 @@ void TextEdit::_backspace() {
 	set_caret_column(prev_column);
 }
 
-void TextEdit::_cut() {
+void TextEdit::_cut_internal() {
 	if (!editable) {
 		return;
 	}
@@ -4962,7 +4965,7 @@ void TextEdit::_cut() {
 	cut_copy_line = clipboard;
 }
 
-void TextEdit::_copy() {
+void TextEdit::_copy_internal() {
 	if (has_selection()) {
 		DisplayServer::get_singleton()->clipboard_set(get_selected_text());
 		cut_copy_line = "";
@@ -4977,7 +4980,7 @@ void TextEdit::_copy() {
 	}
 }
 
-void TextEdit::_paste() {
+void TextEdit::_paste_internal() {
 	if (!editable) {
 		return;
 	}
@@ -5070,6 +5073,11 @@ void TextEdit::_generate_context_menu() {
 	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_AUTO), text_direction == TEXT_DIRECTION_AUTO);
 	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_LTR), text_direction == TEXT_DIRECTION_LTR);
 	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_RTL), text_direction == TEXT_DIRECTION_RTL);
+
+	if (editable) {
+		menu->set_item_disabled(menu->get_item_index(MENU_UNDO), !has_undo());
+		menu->set_item_disabled(menu->get_item_index(MENU_REDO), !has_redo());
+	}
 }
 
 int TextEdit::_get_menu_action_accelerator(const String &p_action) {

@@ -327,11 +327,13 @@
 		<method name="operator unary+" qualifiers="operator">
 			<return type="int" />
 			<description>
+				Returns the same value as if the [code]+[/code] was not there. Unary [code]+[/code] does nothing, but sometimes it can make your code more readable.
 			</description>
 		</method>
 		<method name="operator unary-" qualifiers="operator">
 			<return type="int" />
 			<description>
+				Returns the negated value of the [int]. If positive, turns the number negative. If negative, turns the number positive. If zero, does nothing.
 			</description>
 		</method>
 		<method name="operator |" qualifiers="operator">

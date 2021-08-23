@@ -61,6 +61,7 @@ public:
 		PARAM_MAX
 	};
 
+	// When extending, make sure not to overflow the size of the MaterialKey below.
 	enum ParticleFlags {
 		PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY,
 		PARTICLE_FLAG_ROTATE_Y,
@@ -68,6 +69,7 @@ public:
 		PARTICLE_FLAG_MAX
 	};
 
+	// When extending, make sure not to overflow the size of the MaterialKey below.
 	enum EmissionShape {
 		EMISSION_SHAPE_POINT,
 		EMISSION_SHAPE_SPHERE,
@@ -78,6 +80,7 @@ public:
 		EMISSION_SHAPE_MAX
 	};
 
+	// When extending, make sure not to overflow the size of the MaterialKey below.
 	enum SubEmitterMode {
 		SUB_EMITTER_DISABLED,
 		SUB_EMITTER_CONSTANT,
@@ -88,11 +91,13 @@ public:
 
 private:
 	union MaterialKey {
+		// The bit size of the struct must be kept below or equal to 32 bits.
+		// Consider this when extending ParticleFlags, EmissionShape, or SubEmitterMode.
 		struct {
 			uint32_t texture_mask : 16;
 			uint32_t texture_color : 1;
 			uint32_t particle_flags : 4;
-			uint32_t emission_shape : 2;
+			uint32_t emission_shape : 3;
 			uint32_t invalid_key : 1;
 			uint32_t has_emission_color : 1;
 			uint32_t sub_emitter : 2;
@@ -149,31 +154,31 @@ private:
 		StringName direction;
 		StringName spread;
 		StringName flatness;
-		StringName initial_linear_velocity;
-		StringName initial_angle;
-		StringName angular_velocity;
-		StringName orbit_velocity;
-		StringName linear_accel;
-		StringName radial_accel;
-		StringName tangent_accel;
-		StringName damping;
-		StringName scale;
-		StringName hue_variation;
-		StringName anim_speed;
-		StringName anim_offset;
+		StringName initial_linear_velocity_min;
+		StringName initial_angle_min;
+		StringName angular_velocity_min;
+		StringName orbit_velocity_min;
+		StringName linear_accel_min;
+		StringName radial_accel_min;
+		StringName tangent_accel_min;
+		StringName damping_min;
+		StringName scale_min;
+		StringName hue_variation_min;
+		StringName anim_speed_min;
+		StringName anim_offset_min;
 
-		StringName initial_linear_velocity_random;
-		StringName initial_angle_random;
-		StringName angular_velocity_random;
-		StringName orbit_velocity_random;
-		StringName linear_accel_random;
-		StringName radial_accel_random;
-		StringName tangent_accel_random;
-		StringName damping_random;
-		StringName scale_random;
-		StringName hue_variation_random;
-		StringName anim_speed_random;
-		StringName anim_offset_random;
+		StringName initial_linear_velocity_max;
+		StringName initial_angle_max;
+		StringName angular_velocity_max;
+		StringName orbit_velocity_max;
+		StringName linear_accel_max;
+		StringName radial_accel_max;
+		StringName tangent_accel_max;
+		StringName damping_max;
+		StringName scale_max;
+		StringName hue_variation_max;
+		StringName anim_speed_max;
+		StringName anim_offset_max;
 
 		StringName angle_texture;
 		StringName angular_velocity_texture;
@@ -225,8 +230,8 @@ private:
 	float spread;
 	float flatness;
 
-	float parameters[PARAM_MAX];
-	float randomness[PARAM_MAX];
+	float params_min[PARAM_MAX];
+	float params_max[PARAM_MAX];
 
 	Ref<Texture2D> tex_parameters[PARAM_MAX];
 	Color color;
@@ -278,11 +283,11 @@ public:
 	void set_flatness(float p_flatness);
 	float get_flatness() const;
 
-	void set_param(Parameter p_param, float p_value);
-	float get_param(Parameter p_param) const;
+	void set_param_min(Parameter p_param, float p_value);
+	float get_param_min(Parameter p_param) const;
 
-	void set_param_randomness(Parameter p_param, float p_value);
-	float get_param_randomness(Parameter p_param) const;
+	void set_param_max(Parameter p_param, float p_value);
+	float get_param_max(Parameter p_param) const;
 
 	void set_param_texture(Parameter p_param, const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_param_texture(Parameter p_param) const;

@@ -599,9 +599,9 @@ void RigidBody3D::_direct_state_changed(Object *p_state) {
 		sleeping = state->is_sleeping();
 		emit_signal(SceneStringNames::get_singleton()->sleeping_state_changed);
 	}
-	if (get_script_instance()) {
-		get_script_instance()->call("_integrate_forces", state);
-	}
+
+	GDVIRTUAL_CALL(_integrate_forces, state);
+
 	set_ignore_transform_notification(false);
 	_on_transform_changed();
 
@@ -1022,7 +1022,7 @@ void RigidBody3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_colliding_bodies"), &RigidBody3D::get_colliding_bodies);
 
-	BIND_VMETHOD(MethodInfo("_integrate_forces", PropertyInfo(Variant::OBJECT, "state", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsDirectBodyState3D")));
+	GDVIRTUAL_BIND(_integrate_forces, "state");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Dynamic,Static,DynamicLocked,Kinematic"), "set_mode", "get_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mass", PROPERTY_HINT_RANGE, "0.01,65535,0.01,exp"), "set_mass", "get_mass");
@@ -1176,11 +1176,6 @@ bool CharacterBody3D::move_and_slide() {
 		}
 	}
 
-	if (!on_floor && !on_wall) {
-		// Add last platform velocity when just left a moving platform.
-		linear_velocity += current_floor_velocity;
-	}
-
 	if (was_on_floor && snap != Vector3()) {
 		// Apply snap.
 		Transform3D gt = get_global_transform();
@@ -1211,6 +1206,11 @@ bool CharacterBody3D::move_and_slide() {
 				set_global_transform(gt);
 			}
 		}
+	}
+
+	if (!on_floor && !on_wall) {
+		// Add last platform velocity when just left a moving platform.
+		linear_velocity += current_floor_velocity;
 	}
 
 	return motion_results.size() > 0;

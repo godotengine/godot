@@ -111,6 +111,7 @@
 				This method should be used in [method Node._physics_process] (or in a method called by [method Node._physics_process]), as it uses the physics step's [code]delta[/code] value automatically in calculations. Otherwise, the simulation will run at an incorrect speed.
 				Modifies [member linear_velocity] if a slide collision occurred. To get the latest collision call [method get_last_slide_collision], for detailed information about collisions that occurred, use [method get_slide_collision].
 				When the body touches a moving platform, the platform's velocity is automatically added to the body motion. If a collision occurs due to the platform's motion, it will always be first in the slide collisions.
+				The general behaviour and available properties change according to the [member motion_mode].
 				Returns [code]true[/code] if the body collided, otherwise, returns [code]false[/code].
 			</description>
 		</method>
@@ -139,11 +140,17 @@
 		<member name="floor_stop_on_slope" type="bool" setter="set_floor_stop_on_slope_enabled" getter="is_floor_stop_on_slope_enabled" default="false">
 			If [code]true[/code], the body will not slide on floor's slopes when you include gravity in [code]linear_velocity[/code] when calling [method move_and_slide] and the body is standing still.
 		</member>
+		<member name="free_mode_min_slide_angle" type="float" setter="set_free_mode_min_slide_angle" getter="get_free_mode_min_slide_angle" default="0.261799">
+			Minimum angle (in radians) where the body is allowed to slide when it encounters a slope. The default value equals 15 degrees.
+		</member>
 		<member name="linear_velocity" type="Vector2" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector2(0, 0)">
 			Current velocity vector in pixels per second, used and modified during calls to [method move_and_slide].
 		</member>
 		<member name="max_slides" type="int" setter="set_max_slides" getter="get_max_slides" default="4">
 			Maximum number of times the body can change direction before it stops when calling [method move_and_slide].
+		</member>
+		<member name="motion_mode" type="int" setter="set_motion_mode" getter="get_motion_mode" enum="CharacterBody2D.MotionMode" default="0">
+			Sets the motion mode which defines the behaviour of [method move_and_slide]. See [enum MotionMode] constants for available modes.
 		</member>
 		<member name="moving_platform_ignore_layers" type="int" setter="set_moving_platform_ignore_layers" getter="get_moving_platform_ignore_layers" default="0">
 			Collision layers that will be excluded for detecting bodies that will act as moving platforms to be followed by the [CharacterBody2D]. By default, all touching bodies are detected and propagate their velocity. You can add excluded layers to ignore bodies that are contained in these layers.
@@ -156,5 +163,11 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="MOTION_MODE_GROUNDED" value="0" enum="MotionMode">
+			Apply when notions of walls, ceiling and floor are relevant. In this mode the body motion will react to slopes (acceleration/slowdown). This mode is suitable for sided games like platformers.
+		</constant>
+		<constant name="MOTION_MODE_FREE" value="1" enum="MotionMode">
+			Apply when there is no notion of floor or ceiling. All collisions will be reported as [code]on_wall[/code]. In this mode, when you slide, the speed will be always constant. This mode is suitable for top-down games.
+		</constant>
 	</constants>
 </class>

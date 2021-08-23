@@ -448,6 +448,7 @@
 		<method name="shader_compile_binary_from_spirv">
 			<return type="PackedByteArray" />
 			<argument index="0" name="spirv_data" type="RDShaderSPIRV" />
+			<argument index="1" name="name" type="String" default="&quot;&quot;" />
 			<description>
 			</description>
 		</method>
@@ -465,8 +466,9 @@
 			</description>
 		</method>
 		<method name="shader_create_from_spirv">
-			<return type="PackedByteArray" />
+			<return type="RID" />
 			<argument index="0" name="spirv_data" type="RDShaderSPIRV" />
+			<argument index="1" name="name" type="String" default="&quot;&quot;" />
 			<description>
 			</description>
 		</method>

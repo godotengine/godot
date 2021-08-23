@@ -504,61 +504,121 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<EditorSceneImpor
 		const Collada::MeshData::Source *normal_src = nullptr;
 		int normal_ofs = 0;
 
-		if (p.sources.has("NORMAL")) {
-			String normal_source_id = p.sources["NORMAL"].source;
-			normal_ofs = p.sources["NORMAL"].offset;
-			ERR_FAIL_COND_V(!meshdata.sources.has(normal_source_id), ERR_INVALID_DATA);
-			normal_src = &meshdata.sources[normal_source_id];
+		{
+			String normal_source_id = "";
+
+			if (p.sources.has("NORMAL")) {
+				normal_source_id = p.sources["NORMAL"].source;
+				normal_ofs = p.sources["NORMAL"].offset;
+			} else if (meshdata.vertices[vertex_src_id].sources.has("NORMAL")) {
+				normal_source_id = meshdata.vertices[vertex_src_id].sources["NORMAL"];
+				normal_ofs = vertex_ofs;
+			}
+
+			if (normal_source_id != "") {
+				ERR_FAIL_COND_V(!meshdata.sources.has(normal_source_id), ERR_INVALID_DATA);
+				normal_src = &meshdata.sources[normal_source_id];
+			}
 		}
 
 		const Collada::MeshData::Source *binormal_src = nullptr;
 		int binormal_ofs = 0;
 
-		if (p.sources.has("TEXBINORMAL")) {
-			String binormal_source_id = p.sources["TEXBINORMAL"].source;
-			binormal_ofs = p.sources["TEXBINORMAL"].offset;
-			ERR_FAIL_COND_V(!meshdata.sources.has(binormal_source_id), ERR_INVALID_DATA);
-			binormal_src = &meshdata.sources[binormal_source_id];
+		{
+			String binormal_source_id = "";
+
+			if (p.sources.has("TEXBINORMAL")) {
+				binormal_source_id = p.sources["TEXBINORMAL"].source;
+				binormal_ofs = p.sources["TEXBINORMAL"].offset;
+			} else if (meshdata.vertices[vertex_src_id].sources.has("TEXBINORMAL")) {
+				binormal_source_id = meshdata.vertices[vertex_src_id].sources["TEXBINORMAL"];
+				binormal_ofs = vertex_ofs;
+			}
+
+			if (binormal_source_id != "") {
+				ERR_FAIL_COND_V(!meshdata.sources.has(binormal_source_id), ERR_INVALID_DATA);
+				binormal_src = &meshdata.sources[binormal_source_id];
+			}
 		}
 
 		const Collada::MeshData::Source *tangent_src = nullptr;
 		int tangent_ofs = 0;
 
-		if (p.sources.has("TEXTANGENT")) {
-			String tangent_source_id = p.sources["TEXTANGENT"].source;
-			tangent_ofs = p.sources["TEXTANGENT"].offset;
-			ERR_FAIL_COND_V(!meshdata.sources.has(tangent_source_id), ERR_INVALID_DATA);
-			tangent_src = &meshdata.sources[tangent_source_id];
+		{
+			String tangent_source_id = "";
+
+			if (p.sources.has("TEXTANGENT")) {
+				tangent_source_id = p.sources["TEXTANGENT"].source;
+				tangent_ofs = p.sources["TEXTANGENT"].offset;
+			} else if (meshdata.vertices[vertex_src_id].sources.has("TEXTANGENT")) {
+				tangent_source_id = meshdata.vertices[vertex_src_id].sources["TEXTANGENT"];
+				tangent_ofs = vertex_ofs;
+			}
+
+			if (tangent_source_id != "") {
+				ERR_FAIL_COND_V(!meshdata.sources.has(tangent_source_id), ERR_INVALID_DATA);
+				tangent_src = &meshdata.sources[tangent_source_id];
+			}
 		}
 
 		const Collada::MeshData::Source *uv_src = nullptr;
 		int uv_ofs = 0;
 
-		if (p.sources.has("TEXCOORD0")) {
-			String uv_source_id = p.sources["TEXCOORD0"].source;
-			uv_ofs = p.sources["TEXCOORD0"].offset;
-			ERR_FAIL_COND_V(!meshdata.sources.has(uv_source_id), ERR_INVALID_DATA);
-			uv_src = &meshdata.sources[uv_source_id];
+		{
+			String uv_source_id = "";
+
+			if (p.sources.has("TEXCOORD0")) {
+				uv_source_id = p.sources["TEXCOORD0"].source;
+				uv_ofs = p.sources["TEXCOORD0"].offset;
+			} else if (meshdata.vertices[vertex_src_id].sources.has("TEXCOORD0")) {
+				uv_source_id = meshdata.vertices[vertex_src_id].sources["TEXCOORD0"];
+				uv_ofs = vertex_ofs;
+			}
+
+			if (uv_source_id != "") {
+				ERR_FAIL_COND_V(!meshdata.sources.has(uv_source_id), ERR_INVALID_DATA);
+				uv_src = &meshdata.sources[uv_source_id];
+			}
 		}
 
 		const Collada::MeshData::Source *uv2_src = nullptr;
 		int uv2_ofs = 0;
 
-		if (p.sources.has("TEXCOORD1")) {
-			String uv2_source_id = p.sources["TEXCOORD1"].source;
-			uv2_ofs = p.sources["TEXCOORD1"].offset;
-			ERR_FAIL_COND_V(!meshdata.sources.has(uv2_source_id), ERR_INVALID_DATA);
-			uv2_src = &meshdata.sources[uv2_source_id];
+		{
+			String uv2_source_id = "";
+
+			if (p.sources.has("TEXCOORD1")) {
+				uv2_source_id = p.sources["TEXCOORD1"].source;
+				uv2_ofs = p.sources["TEXCOORD1"].offset;
+			} else if (meshdata.vertices[vertex_src_id].sources.has("TEXCOORD1")) {
+				uv2_source_id = meshdata.vertices[vertex_src_id].sources["TEXCOORD1"];
+				uv2_ofs = vertex_ofs;
+			}
+
+			if (uv2_source_id != "") {
+				ERR_FAIL_COND_V(!meshdata.sources.has(uv2_source_id), ERR_INVALID_DATA);
+				uv2_src = &meshdata.sources[uv2_source_id];
+			}
 		}
 
 		const Collada::MeshData::Source *color_src = nullptr;
 		int color_ofs = 0;
 
-		if (p.sources.has("COLOR")) {
-			String color_source_id = p.sources["COLOR"].source;
-			color_ofs = p.sources["COLOR"].offset;
-			ERR_FAIL_COND_V(!meshdata.sources.has(color_source_id), ERR_INVALID_DATA);
-			color_src = &meshdata.sources[color_source_id];
+		{
+			String color_source_id = "";
+
+			if (p.sources.has("COLOR")) {
+				color_source_id = p.sources["COLOR"].source;
+				color_ofs = p.sources["COLOR"].offset;
+			} else if (meshdata.vertices[vertex_src_id].sources.has("COLOR")) {
+				color_source_id = meshdata.vertices[vertex_src_id].sources["COLOR"];
+				color_ofs = vertex_ofs;
+			}
+
+			if (color_source_id != "") {
+				ERR_FAIL_COND_V(!meshdata.sources.has(color_source_id), ERR_INVALID_DATA);
+				color_src = &meshdata.sources[color_source_id];
+			}
 		}
 
 		//find largest source..

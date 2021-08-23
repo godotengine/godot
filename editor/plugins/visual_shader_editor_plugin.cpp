@@ -70,14 +70,15 @@ const int MAX_FLOAT_CONST_DEFS = sizeof(float_constant_defs) / sizeof(FloatConst
 ///////////////////
 
 Control *VisualShaderNodePlugin::create_editor(const Ref<Resource> &p_parent_resource, const Ref<VisualShaderNode> &p_node) {
-	if (get_script_instance()) {
-		return get_script_instance()->call("_create_editor", p_parent_resource, p_node);
+	Object *ret;
+	if (GDVIRTUAL_CALL(_create_editor, p_parent_resource, p_node, ret)) {
+		return Object::cast_to<Control>(ret);
 	}
 	return nullptr;
 }
 
 void VisualShaderNodePlugin::_bind_methods() {
-	BIND_VMETHOD(MethodInfo(Variant::OBJECT, "_create_editor", PropertyInfo(Variant::OBJECT, "parent_resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource"), PropertyInfo(Variant::OBJECT, "for_node", PROPERTY_HINT_RESOURCE_TYPE, "VisualShaderNode")));
+	GDVIRTUAL_BIND(_create_editor, "parent_resource", "visual_shader_node");
 }
 
 ///////////////////
@@ -1219,8 +1220,88 @@ void VisualShaderEditor::_update_options_menu() {
 	Vector<AddOption> custom_options;
 	Vector<AddOption> embedded_options;
 
+	static Vector<String> type_filter_exceptions;
+	if (type_filter_exceptions.is_empty()) {
+		type_filter_exceptions.append("VisualShaderNodeExpression");
+	}
+
 	for (int i = 0; i < add_options.size(); i++) {
 		if (!use_filter || add_options[i].name.findn(filter) != -1) {
+			// port type filtering
+			if (members_output_port_type != VisualShaderNode::PORT_TYPE_MAX || members_input_port_type != VisualShaderNode::PORT_TYPE_MAX) {
+				Ref<VisualShaderNode> vsn;
+				int check_result = 0;
+
+				if (!add_options[i].is_custom) {
+					vsn = Ref<VisualShaderNode>(Object::cast_to<VisualShaderNode>(ClassDB::instantiate(add_options[i].type)));
+					if (!vsn.is_valid()) {
+						continue;
+					}
+
+					if (type_filter_exceptions.has(add_options[i].type)) {
+						check_result = 1;
+					}
+
+					Ref<VisualShaderNodeInput> input = Object::cast_to<VisualShaderNodeInput>(vsn.ptr());
+					if (input.is_valid()) {
+						input->set_shader_mode(visual_shader->get_mode());
+						input->set_shader_type(visual_shader->get_shader_type());
+						input->set_input_name(add_options[i].sub_func_str);
+					}
+
+					Ref<VisualShaderNodeExpression> expression = Object::cast_to<VisualShaderNodeExpression>(vsn.ptr());
+					if (expression.is_valid()) {
+						if (members_input_port_type == VisualShaderNode::PORT_TYPE_SAMPLER) {
+							check_result = -1; // expressions creates a port with required type automatically (except for sampler output)
+						}
+					}
+
+					Ref<VisualShaderNodeUniformRef> uniform_ref = Object::cast_to<VisualShaderNodeUniformRef>(vsn.ptr());
+					if (uniform_ref.is_valid()) {
+						check_result = -1;
+
+						if (members_input_port_type != VisualShaderNode::PORT_TYPE_MAX) {
+							for (int j = 0; j < uniform_ref->get_uniforms_count(); j++) {
+								if (visual_shader->is_port_types_compatible(uniform_ref->get_port_type_by_index(j), members_input_port_type)) {
+									check_result = 1;
+									break;
+								}
+							}
+						}
+					}
+				} else {
+					check_result = 1;
+				}
+
+				if (members_output_port_type != VisualShaderNode::PORT_TYPE_MAX) {
+					if (check_result == 0) {
+						for (int j = 0; j < vsn->get_input_port_count(); j++) {
+							if (visual_shader->is_port_types_compatible(vsn->get_input_port_type(j), members_output_port_type)) {
+								check_result = 1;
+								break;
+							}
+						}
+					}
+
+					if (check_result != 1) {
+						continue;
+					}
+				}
+				if (members_input_port_type != VisualShaderNode::PORT_TYPE_MAX) {
+					if (check_result == 0) {
+						for (int j = 0; j < vsn->get_output_port_count(); j++) {
+							if (visual_shader->is_port_types_compatible(vsn->get_output_port_type(j), members_input_port_type)) {
+								check_result = 1;
+								break;
+							}
+						}
+					}
+
+					if (check_result != 1) {
+						continue;
+					}
+				}
+			}
 			if ((add_options[i].func != current_func && add_options[i].func != -1) || !_is_available(add_options[i].mode)) {
 				continue;
 			}
@@ -2588,13 +2669,25 @@ void VisualShaderEditor::_disconnection_request(const String &p_from, int p_from
 void VisualShaderEditor::_connection_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_position) {
 	from_node = p_from.to_int();
 	from_slot = p_from_slot;
-	_show_members_dialog(true);
+	VisualShaderNode::PortType input_port_type = VisualShaderNode::PORT_TYPE_MAX;
+	VisualShaderNode::PortType output_port_type = VisualShaderNode::PORT_TYPE_MAX;
+	Ref<VisualShaderNode> node = visual_shader->get_node(get_current_shader_type(), from_node);
+	if (node.is_valid()) {
+		output_port_type = node->get_output_port_type(from_slot);
+	}
+	_show_members_dialog(true, input_port_type, output_port_type);
 }
 
 void VisualShaderEditor::_connection_from_empty(const String &p_to, int p_to_slot, const Vector2 &p_release_position) {
 	to_node = p_to.to_int();
 	to_slot = p_to_slot;
-	_show_members_dialog(true);
+	VisualShaderNode::PortType input_port_type = VisualShaderNode::PORT_TYPE_MAX;
+	VisualShaderNode::PortType output_port_type = VisualShaderNode::PORT_TYPE_MAX;
+	Ref<VisualShaderNode> node = visual_shader->get_node(get_current_shader_type(), to_node);
+	if (node.is_valid()) {
+		input_port_type = node->get_input_port_type(to_slot);
+	}
+	_show_members_dialog(true, input_port_type, output_port_type);
 }
 
 void VisualShaderEditor::_delete_nodes(int p_type, const List<int> &p_nodes) {
@@ -3036,7 +3129,13 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void VisualShaderEditor::_show_members_dialog(bool at_mouse_pos) {
+void VisualShaderEditor::_show_members_dialog(bool at_mouse_pos, VisualShaderNode::PortType p_input_port_type, VisualShaderNode::PortType p_output_port_type) {
+	if (members_input_port_type != p_input_port_type || members_output_port_type != p_output_port_type) {
+		members_input_port_type = p_input_port_type;
+		members_output_port_type = p_output_port_type;
+		_update_options_menu();
+	}
+
 	if (at_mouse_pos) {
 		saved_node_pos_dirty = true;
 		saved_node_pos = graph->get_local_mouse_position();
@@ -3114,7 +3213,7 @@ void VisualShaderEditor::_notification(int p_what) {
 		{
 			Color background_color = EDITOR_GET("text_editor/theme/highlighting/background_color");
 			Color text_color = EDITOR_GET("text_editor/theme/highlighting/text_color");
-			Color keyword_color = EDITOR_GET("text_editor/highlighting/keyword_color");
+			Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
 			Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
 			Color comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
 			Color symbol_color = EDITOR_GET("text_editor/theme/highlighting/symbol_color");

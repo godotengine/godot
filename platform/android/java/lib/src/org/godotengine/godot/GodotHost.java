@@ -58,4 +58,10 @@ public interface GodotHost {
 	 * Invoked on the UI thread as the last step of the Godot instance clean up phase.
 	 */
 	default void onGodotForceQuit(Godot instance) {}
+
+	/**
+	 * Invoked on the GL thread when the Godot instance wants to be restarted. It's up to the host
+	 * to perform the appropriate action(s).
+	 */
+	default void onGodotRestartRequested(Godot instance) {}
 }

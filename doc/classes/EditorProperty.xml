@@ -57,6 +57,11 @@
 				Puts the [code]editor[/code] control below the property label. The control must be previously added using [method Node.add_child].
 			</description>
 		</method>
+		<method name="update_property">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="checkable" type="bool" setter="set_checkable" getter="is_checkable" default="false">

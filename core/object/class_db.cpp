@@ -1068,6 +1068,20 @@ void ClassDB::set_property_default_value(const StringName &p_class, const String
 	default_values[p_class][p_name] = p_default;
 }
 
+void ClassDB::add_linked_property(const StringName &p_class, const String &p_property, const String &p_linked_property) {
+#ifdef TOOLS_ENABLED
+	OBJTYPE_WLOCK;
+	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_COND(!type);
+
+	ERR_FAIL_COND(!type->property_map.has(p_property));
+	ERR_FAIL_COND(!type->property_map.has(p_linked_property));
+
+	PropertyInfo &pinfo = type->property_map[p_property];
+	pinfo.linked_properties.push_back(p_linked_property);
+#endif
+}
+
 void ClassDB::get_property_list(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator) {
 	OBJTYPE_RLOCK;
 
@@ -1407,7 +1421,7 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const c
 	return p_bind;
 }
 
-void ClassDB::add_virtual_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual) {
+void ClassDB::add_virtual_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual, const Vector<String> &p_arg_names, bool p_object_core) {
 	ERR_FAIL_COND_MSG(!classes.has(p_class), "Request for nonexistent class '" + p_class + "'.");
 
 	OBJTYPE_WLOCK;
@@ -1417,6 +1431,19 @@ void ClassDB::add_virtual_method(const StringName &p_class, const MethodInfo &p_
 	if (p_virtual) {
 		mi.flags |= METHOD_FLAG_VIRTUAL;
 	}
+	if (p_object_core) {
+		mi.flags |= METHOD_FLAG_OBJECT_CORE;
+	}
+	if (p_arg_names.size()) {
+		if (p_arg_names.size() != mi.arguments.size()) {
+			WARN_PRINT("Mismatch argument name count for virtual function: " + String(p_class) + "::" + p_method.name);
+		} else {
+			for (int i = 0; i < p_arg_names.size(); i++) {
+				mi.arguments[i].name = p_arg_names[i];
+			}
+		}
+	}
+
 	classes[p_class].virtual_methods.push_back(mi);
 	classes[p_class].virtual_methods_map[p_method.name] = mi;
 

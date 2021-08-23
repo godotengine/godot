@@ -13,7 +13,7 @@
 			<return type="void" />
 			<argument index="0" name="id" type="int" />
 			<argument index="1" name="restore" type="Variant" />
-			<argument index="2" name="cancel" type="bool" default="false" />
+			<argument index="2" name="cancel" type="bool" />
 			<description>
 				Override this method to commit a handle being edited (handles must have been previously added by [method add_handles]). This usually means creating an [UndoRedo] action for the change, using the current handle value as "do" and the [code]restore[/code] argument as "undo".
 				If the [code]cancel[/code] argument is [code]true[/code], the [code]restore[/code] value should be directly set, without any [UndoRedo] action.
@@ -22,14 +22,14 @@
 		<method name="_commit_subgizmos" qualifiers="virtual">
 			<return type="void" />
 			<argument index="0" name="ids" type="PackedInt32Array" />
-			<argument index="1" name="restore" type="Array" />
-			<argument index="2" name="cancel" type="bool" default="false" />
+			<argument index="1" name="restores" type="Transform3D[]" />
+			<argument index="2" name="cancel" type="bool" />
 			<description>
 				Override this method to commit a group of subgizmos being edited (see [method _subgizmos_intersect_ray] and [method _subgizmos_intersect_frustum]). This usually means creating an [UndoRedo] action for the change, using the current transforms as "do" and the [code]restore[/code] transforms as "undo".
 				If the [code]cancel[/code] argument is [code]true[/code], the [code]restore[/code] transforms should be directly set, without any [UndoRedo] action.
 			</description>
 		</method>
-		<method name="_get_handle_name" qualifiers="virtual">
+		<method name="_get_handle_name" qualifiers="virtual const">
 			<return type="String" />
 			<argument index="0" name="id" type="int" />
 			<description>
@@ -37,21 +37,21 @@
 				Handles can be named for reference to the user when editing.
 			</description>
 		</method>
-		<method name="_get_handle_value" qualifiers="virtual">
+		<method name="_get_handle_value" qualifiers="virtual const">
 			<return type="Variant" />
 			<argument index="0" name="id" type="int" />
 			<description>
 				Override this method to return the current value of a handle. This value will be requested at the start of an edit and used as the [code]restore[/code] argument in [method _commit_handle].
 			</description>
 		</method>
-		<method name="_get_subgizmo_transform" qualifiers="virtual">
+		<method name="_get_subgizmo_transform" qualifiers="virtual const">
 			<return type="Transform3D" />
 			<argument index="0" name="id" type="int" />
 			<description>
 				Override this method to return the current transform of a subgizmo. This transform will be requested at the start of an edit and used as the [code]restore[/code] argument in [method _commit_subgizmos].
 			</description>
 		</method>
-		<method name="_is_handle_highlighted" qualifiers="virtual">
+		<method name="_is_handle_highlighted" qualifiers="virtual const">
 			<return type="bool" />
 			<argument index="0" name="id" type="int" />
 			<description>
@@ -81,15 +81,15 @@
 				Override this method to update the node properties during subgizmo editing (see [method _subgizmos_intersect_ray] and [method _subgizmos_intersect_frustum]). The [code]transform[/code] is given in the Node3D's local coordinate system.
 			</description>
 		</method>
-		<method name="_subgizmos_intersect_frustum" qualifiers="virtual">
+		<method name="_subgizmos_intersect_frustum" qualifiers="virtual const">
 			<return type="PackedInt32Array" />
 			<argument index="0" name="camera" type="Camera3D" />
-			<argument index="1" name="frustum" type="Array" />
+			<argument index="1" name="frustum" type="Plane[]" />
 			<description>
 				Override this method to allow selecting subgizmos using mouse drag box selection. Given a [code]camera[/code] and a [code]frustum[/code], this method should return which subgizmos are contained within the frustum. The [code]frustum[/code] argument consists of an [code]Array[/code] with all the [code]Plane[/code]s that make up the selection frustum. The returned value should contain a list of unique subgizmo identifiers, which can have any non-negative value and will be used in other virtual methods like [method _get_subgizmo_transform] or [method _commit_subgizmos].
 			</description>
 		</method>
-		<method name="_subgizmos_intersect_ray" qualifiers="virtual">
+		<method name="_subgizmos_intersect_ray" qualifiers="virtual const">
 			<return type="int" />
 			<argument index="0" name="camera" type="Camera3D" />
 			<argument index="1" name="point" type="Vector2" />

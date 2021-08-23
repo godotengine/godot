@@ -74,8 +74,8 @@ String RenderingDevice::shader_get_spirv_cache_key() const {
 	return String();
 }
 
-RID RenderingDevice::shader_create_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv) {
-	Vector<uint8_t> bytecode = shader_compile_binary_from_spirv(p_spirv);
+RID RenderingDevice::shader_create_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name) {
+	Vector<uint8_t> bytecode = shader_compile_binary_from_spirv(p_spirv, p_shader_name);
 	ERR_FAIL_COND_V(bytecode.size() == 0, RID());
 	return shader_create_from_bytecode(bytecode);
 }
@@ -192,7 +192,7 @@ Ref<RDShaderSPIRV> RenderingDevice::_shader_compile_spirv_from_source(const Ref<
 	return bytecode;
 }
 
-Vector<uint8_t> RenderingDevice::_shader_compile_binary_from_spirv(const Ref<RDShaderSPIRV> &p_spirv) {
+Vector<uint8_t> RenderingDevice::_shader_compile_binary_from_spirv(const Ref<RDShaderSPIRV> &p_spirv, const String &p_shader_name) {
 	ERR_FAIL_COND_V(p_spirv.is_null(), Vector<uint8_t>());
 
 	Vector<ShaderStageSPIRVData> stage_data;
@@ -209,10 +209,10 @@ Vector<uint8_t> RenderingDevice::_shader_compile_binary_from_spirv(const Ref<RDS
 		stage_data.push_back(sd);
 	}
 
-	return shader_compile_binary_from_spirv(stage_data);
+	return shader_compile_binary_from_spirv(stage_data, p_shader_name);
 }
 
-RID RenderingDevice::_shader_create_from_spirv(const Ref<RDShaderSPIRV> &p_spirv) {
+RID RenderingDevice::_shader_create_from_spirv(const Ref<RDShaderSPIRV> &p_spirv, const String &p_shader_name) {
 	ERR_FAIL_COND_V(p_spirv.is_null(), RID());
 
 	Vector<ShaderStageSPIRVData> stage_data;
@@ -392,8 +392,8 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("index_array_create", "index_buffer", "index_offset", "index_count"), &RenderingDevice::index_array_create);
 
 	ClassDB::bind_method(D_METHOD("shader_compile_spirv_from_source", "shader_source", "allow_cache"), &RenderingDevice::_shader_compile_spirv_from_source, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("shader_compile_binary_from_spirv", "spirv_data"), &RenderingDevice::_shader_compile_binary_from_spirv);
-	ClassDB::bind_method(D_METHOD("shader_create_from_spirv", "spirv_data"), &RenderingDevice::_shader_compile_binary_from_spirv);
+	ClassDB::bind_method(D_METHOD("shader_compile_binary_from_spirv", "spirv_data", "name"), &RenderingDevice::_shader_compile_binary_from_spirv, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("shader_create_from_spirv", "spirv_data", "name"), &RenderingDevice::_shader_create_from_spirv, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("shader_create_from_bytecode", "binary_data"), &RenderingDevice::shader_create_from_bytecode);
 	ClassDB::bind_method(D_METHOD("shader_get_vertex_input_attribute_mask", "shader"), &RenderingDevice::shader_get_vertex_input_attribute_mask);
 

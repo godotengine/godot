@@ -202,12 +202,18 @@ protected:
 	static String _get_name_num_separator();
 
 	friend class SceneState;
-	friend class MultiplayerAPI;
+	friend class MultiplayerReplicator;
 
 	void _add_child_nocheck(Node *p_child, const StringName &p_name);
 	void _set_owner_nocheck(Node *p_owner);
 	void _set_name_nocheck(const StringName &p_name);
 
+	GDVIRTUAL1(_process, double)
+	GDVIRTUAL1(_physics_process, double)
+	GDVIRTUAL0(_enter_tree)
+	GDVIRTUAL0(_exit_tree)
+	GDVIRTUAL0(_ready)
+	GDVIRTUAL0RC(Vector<String>, _get_configuration_warnings)
 public:
 	enum {
 		// you can make your own, but don't use the same numbers as other notifications in other nodes

@@ -653,7 +653,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				ClassDB::get_method_list(class_name, &method_list, true);
 				for (const MethodInfo &F : method_list) {
 					StringName method_name = F.name;
-					if (F.flags & METHOD_FLAG_VIRTUAL) {
+					if ((F.flags & METHOD_FLAG_VIRTUAL) && !(F.flags & METHOD_FLAG_OBJECT_CORE)) {
 						//virtual method
 						const MethodInfo &mi = F;
 						Dictionary d2;

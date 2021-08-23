@@ -552,6 +552,9 @@
 		<theme_item name="hseparation" data_type="constant" type="int" default="4">
 			The horizontal space between item cells. This is also used as the margin at the start of an item when folding is disabled.
 		</theme_item>
+		<theme_item name="indeterminate" data_type="icon" type="Texture2D">
+			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is indeterminate.
+		</theme_item>
 		<theme_item name="item_margin" data_type="constant" type="int" default="12">
 			The horizontal margin at the start of an item. This is used when folding is enabled for the item.
 		</theme_item>

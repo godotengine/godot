@@ -197,12 +197,6 @@
 				Returns the path to the current engine executable.
 			</description>
 		</method>
-		<method name="get_external_data_dir" qualifiers="const">
-			<return type="String" />
-			<description>
-				On Android, returns the absolute directory path where user data can be written to external storage if available. On all other platforms, this will return the same location as [method get_user_data_dir].
-			</description>
-		</method>
 		<method name="get_granted_permissions" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
@@ -270,9 +264,11 @@
 		<method name="get_system_dir" qualifiers="const">
 			<return type="String" />
 			<argument index="0" name="dir" type="int" enum="OS.SystemDir" />
+			<argument index="1" name="shared_storage" type="bool" default="true" />
 			<description>
 				Returns the actual path to commonly used folders across different platforms. Available locations are specified in [enum SystemDir].
 				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows.
+				[b]Note:[/b] Shared storage is implemented on Android and allows to differentiate between app specific and shared directories. Shared directories have additional restrictions on Android.
 			</description>
 		</method>
 		<method name="get_thread_caller_id" qualifiers="const">

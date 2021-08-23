@@ -132,6 +132,8 @@ public:
 		MODE_KINEMATIC,
 	};
 
+	GDVIRTUAL1(_integrate_forces, PhysicsDirectBodyState3D *)
+
 protected:
 	bool can_sleep = true;
 	PhysicsDirectBodyState3D *state = nullptr;

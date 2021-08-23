@@ -43,6 +43,12 @@ class EditorResourcePreviewGenerator : public RefCounted {
 protected:
 	static void _bind_methods();
 
+	GDVIRTUAL1RC(bool, _handles, String)
+	GDVIRTUAL2RC(Ref<Texture2D>, _generate, RES, Vector2i)
+	GDVIRTUAL2RC(Ref<Texture2D>, _generate_from_path, String, Vector2i)
+	GDVIRTUAL0RC(bool, _generate_small_preview_automatically)
+	GDVIRTUAL0RC(bool, _can_generate_small_preview)
+
 public:
 	virtual bool handles(const String &p_type) const;
 	virtual Ref<Texture2D> generate(const RES &p_from, const Size2 &p_size) const;

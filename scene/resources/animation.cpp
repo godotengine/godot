@@ -83,9 +83,11 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 
 				const real_t *r = values.ptr();
 
-				tt->transforms.resize(vcount / 12);
+				int transform3d_size = (int)sizeof(Transform3D);
 
-				for (int i = 0; i < (vcount / 12); i++) {
+				tt->transforms.resize(vcount / transform3d_size);
+
+				for (int i = 0; i < (vcount / transform3d_size); i++) {
 					TKey<TransformKey> &tk = tt->transforms.write[i];
 					const real_t *ofs = &r[i * 12];
 					tk.time = ofs[0];

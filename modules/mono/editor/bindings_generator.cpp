@@ -3130,8 +3130,18 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
 		case Variant::CALLABLE:
+			ERR_FAIL_COND_V_MSG(r_iarg.type.cname != name_cache.type_Callable, false,
+					"Parameter of type '" + String(r_iarg.type.cname) + "' cannot have a default value of type '" + String(name_cache.type_Callable) + "'.");
+			ERR_FAIL_COND_V_MSG(!p_val.is_zero(), false,
+					"Parameter of type '" + String(r_iarg.type.cname) + "' can only have null/zero as the default value.");
+			r_iarg.default_argument = "default";
+			break;
 		case Variant::SIGNAL:
-			CRASH_NOW_MSG("Parameter of type '" + String(r_iarg.type.cname) + "' cannot have a default value.");
+			ERR_FAIL_COND_V_MSG(r_iarg.type.cname != name_cache.type_Signal, false,
+					"Parameter of type '" + String(r_iarg.type.cname) + "' cannot have a default value of type '" + String(name_cache.type_Signal) + "'.");
+			ERR_FAIL_COND_V_MSG(!p_val.is_zero(), false,
+					"Parameter of type '" + String(r_iarg.type.cname) + "' can only have null/zero as the default value.");
+			r_iarg.default_argument = "default";
 			break;
 		default:
 			CRASH_NOW_MSG("Unexpected Variant type: " + itos(p_val.get_type()));

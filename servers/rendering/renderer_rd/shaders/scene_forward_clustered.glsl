@@ -118,7 +118,7 @@ void main() {
 
 	mat3 world_normal_matrix;
 	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_NON_UNIFORM_SCALE)) {
-		world_normal_matrix = inverse(mat3(world_matrix));
+		world_normal_matrix = transpose(inverse(mat3(world_matrix)));
 	} else {
 		world_normal_matrix = mat3(world_matrix);
 	}
@@ -1601,7 +1601,7 @@ void main() {
 					continue; // Statically baked light and object uses lightmap, skip
 				}
 
-				float shadow = light_process_omni_shadow(light_index, vertex, view);
+				float shadow = light_process_omni_shadow(light_index, vertex, normal);
 
 				shadow = blur_shadow(shadow);
 
@@ -1677,7 +1677,7 @@ void main() {
 					continue; // Statically baked light and object uses lightmap, skip
 				}
 
-				float shadow = light_process_spot_shadow(light_index, vertex, view);
+				float shadow = light_process_spot_shadow(light_index, vertex, normal);
 
 				shadow = blur_shadow(shadow);
 

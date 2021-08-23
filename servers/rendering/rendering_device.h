@@ -668,9 +668,9 @@ public:
 	};
 
 	virtual String shader_get_binary_cache_key() const = 0;
-	virtual Vector<uint8_t> shader_compile_binary_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv) = 0;
+	virtual Vector<uint8_t> shader_compile_binary_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name = "") = 0;
 
-	virtual RID shader_create_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv);
+	virtual RID shader_create_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name = "");
 	virtual RID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary) = 0;
 
 	virtual uint32_t shader_get_vertex_input_attribute_mask(RID p_shader) = 0;
@@ -1200,8 +1200,8 @@ protected:
 	RID _vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const TypedArray<RID> &p_src_buffers);
 
 	Ref<RDShaderSPIRV> _shader_compile_spirv_from_source(const Ref<RDShaderSource> &p_source, bool p_allow_cache = true);
-	Vector<uint8_t> _shader_compile_binary_from_spirv(const Ref<RDShaderSPIRV> &p_bytecode);
-	RID _shader_create_from_spirv(const Ref<RDShaderSPIRV> &p_spirv);
+	Vector<uint8_t> _shader_compile_binary_from_spirv(const Ref<RDShaderSPIRV> &p_bytecode, const String &p_shader_name = "");
+	RID _shader_create_from_spirv(const Ref<RDShaderSPIRV> &p_spirv, const String &p_shader_name = "");
 
 	RID _uniform_set_create(const Array &p_uniforms, RID p_shader, uint32_t p_shader_set);
 

@@ -8,12 +8,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_get_extensions" qualifiers="virtual">
-			<return type="Array" />
+		<method name="_get_extensions" qualifiers="virtual const">
+			<return type="PackedStringArray" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_import_flags" qualifiers="virtual">
+		<method name="_get_import_flags" qualifiers="virtual const">
 			<return type="int" />
 			<description>
 			</description>
@@ -27,7 +27,7 @@
 			</description>
 		</method>
 		<method name="_import_scene" qualifiers="virtual">
-			<return type="Node" />
+			<return type="Object" />
 			<argument index="0" name="path" type="String" />
 			<argument index="1" name="flags" type="int" />
 			<argument index="2" name="bake_fps" type="int" />

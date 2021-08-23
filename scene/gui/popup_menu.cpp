@@ -358,9 +358,10 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		int button_idx = b->get_button_index();
-		if (b->is_pressed() || (!b->is_pressed() && during_grabbed_click)) {
-			// Allow activating item by releasing the LMB or any that was down when the popup appeared.
-			// However, if button was not held when opening menu, do not allow release to activate item.
+		if (!b->is_pressed()) {
+			// Activate the item on release of either the left mouse button or
+			// any mouse button held down when the popup was opened.
+			// This allows for opening the popup and triggering an action in a single mouse click.
 			if (button_idx == MOUSE_BUTTON_LEFT || (initial_button_mask & (1 << (button_idx - 1)))) {
 				bool was_during_grabbed_click = during_grabbed_click;
 				during_grabbed_click = false;

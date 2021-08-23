@@ -54,17 +54,17 @@
 /*** SYNTAX HIGHLIGHTER ****/
 
 String EditorSyntaxHighlighter::_get_name() const {
-	ScriptInstance *si = get_script_instance();
-	if (si && si->has_method("_get_name")) {
-		return si->call("_get_name");
+	String ret;
+	if (GDVIRTUAL_CALL(_get_name, ret)) {
+		return ret;
 	}
 	return "Unnamed";
 }
 
 Array EditorSyntaxHighlighter::_get_supported_languages() const {
-	ScriptInstance *si = get_script_instance();
-	if (si && si->has_method("_get_supported_languages")) {
-		return si->call("_get_supported_languages");
+	Array ret;
+	if (GDVIRTUAL_CALL(_get_supported_languages, ret)) {
+		return ret;
 	}
 	return Array();
 }
@@ -81,9 +81,8 @@ Ref<EditorSyntaxHighlighter> EditorSyntaxHighlighter::_create() const {
 void EditorSyntaxHighlighter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_edited_resource"), &EditorSyntaxHighlighter::_get_edited_resource);
 
-	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_name"));
-	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "_get_supported_languages"));
-	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "_get_supported_extentions"));
+	GDVIRTUAL_BIND(_get_name)
+	GDVIRTUAL_BIND(_get_supported_languages)
 }
 
 ////
@@ -104,11 +103,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 	List<StringName> types;
 	ClassDB::get_class_list(&types);
 	for (const StringName &E : types) {
-		String n = E;
-		if (n.begins_with("_")) {
-			n = n.substr(1, n.length());
-		}
-		highlighter->add_keyword_color(n, type_color);
+		highlighter->add_keyword_color(E, type_color);
 	}
 
 	/* User types. */
@@ -227,8 +222,6 @@ void ScriptEditorBase::_bind_methods() {
 	// TODO: This signal is no use for VisualScript.
 	ADD_SIGNAL(MethodInfo("search_in_files_requested", PropertyInfo(Variant::STRING, "text")));
 	ADD_SIGNAL(MethodInfo("replace_in_files_requested", PropertyInfo(Variant::STRING, "text")));
-
-	BIND_VMETHOD(MethodInfo("_add_syntax_highlighter", PropertyInfo(Variant::OBJECT, "highlighter")));
 }
 
 static bool _is_built_in_script(Script *p_script) {
@@ -942,7 +935,10 @@ void ScriptEditor::_res_saved_callback(const Ref<Resource> &p_res) {
 	}
 
 	_update_script_names();
+	_trigger_live_script_reload();
+}
 
+void ScriptEditor::_trigger_live_script_reload() {
 	if (!pending_auto_reload && auto_reload_running_scripts) {
 		call_deferred(SNAME("_live_auto_reload_running_scripts"));
 		pending_auto_reload = true;

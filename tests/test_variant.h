@@ -39,7 +39,7 @@
 namespace TestVariant {
 
 TEST_CASE("[Variant] Writer and parser integer") {
-	int64_t a32 = 2147483648; // 2^31, so out of bounds for 32-bit signed int [-2^31,-2^31-1].
+	int64_t a32 = 2147483648; // 2^31, so out of bounds for 32-bit signed int [-2^31, +2^31-1].
 	String a32_str;
 	VariantWriter::write_to_string(a32, a32_str);
 
@@ -76,34 +76,35 @@ TEST_CASE("[Variant] Writer and parser integer") {
 	CHECK_MESSAGE(b64_int_parsed == 9223372036854775807, "The result should be clamped to max value.");
 }
 
-TEST_CASE("[Variant] Writer and parser float") {
-	// Assuming real_t is double.
-	real_t a64 = 340282346638528859811704183484516925440.0; // std::numeric_limits<real_t>::max()
+TEST_CASE("[Variant] Writer and parser Variant::FLOAT") {
+	// Variant::FLOAT is always 64-bit (C++ double).
+	// This is the maximum non-infinity double-precision float.
+	double a64 = 179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368.0;
 	String a64_str;
 	VariantWriter::write_to_string(a64, a64_str);
 
-	CHECK_MESSAGE(a64_str == "3.40282e+38", "Writes in scientific notation.");
+	CHECK_MESSAGE(a64_str == "1.79769e+308", "Writes in scientific notation.");
 	CHECK_MESSAGE(a64_str != "inf", "Should not overflow.");
 	CHECK_MESSAGE(a64_str != "nan", "The result should be defined.");
 
-	VariantParser::StreamString ss;
 	String errs;
 	int line;
-	Variant b64_parsed;
-	real_t b64_float_parsed;
+	Variant variant_parsed;
+	double float_parsed;
 
-	ss.s = a64_str;
-	VariantParser::parse(&ss, b64_parsed, errs, line);
-	b64_float_parsed = b64_parsed;
-
-	CHECK_MESSAGE(b64_float_parsed == 340282001837565597733306976381245063168.0, "Should parse back.");
+	VariantParser::StreamString bss;
+	bss.s = a64_str;
+	VariantParser::parse(&bss, variant_parsed, errs, line);
+	float_parsed = variant_parsed;
 	// Loses precision, but that's alright.
+	CHECK_MESSAGE(float_parsed == 1.79769e+308, "Should parse back.");
 
-	ss.s = "1.0e+100"; // Float version of Googol!
-	VariantParser::parse(&ss, b64_parsed, errs, line);
-	b64_float_parsed = b64_parsed;
-
-	CHECK_MESSAGE(b64_float_parsed == 340282001837565597733306976381245063168.0, "Should not overflow.");
+	// Approximation of Googol with a double-precision float.
+	VariantParser::StreamString css;
+	css.s = "1.0e+100";
+	VariantParser::parse(&css, variant_parsed, errs, line);
+	float_parsed = variant_parsed;
+	CHECK_MESSAGE(float_parsed == 1.0e+100, "Should match the double literal.");
 }
 
 TEST_CASE("[Variant] Assignment To Bool from Int,Float,String,Vec2,Vec2i,Vec3,Vec3i and Color") {

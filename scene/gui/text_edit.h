@@ -562,12 +562,18 @@ protected:
 	/* Text manipulation */
 
 	// Overridable actions
-	virtual void _handle_unicode_input(const uint32_t p_unicode);
-	virtual void _backspace();
+	virtual void _handle_unicode_input_internal(const uint32_t p_unicode);
+	virtual void _backspace_internal();
 
-	virtual void _cut();
-	virtual void _copy();
-	virtual void _paste();
+	virtual void _cut_internal();
+	virtual void _copy_internal();
+	virtual void _paste_internal();
+
+	GDVIRTUAL1(_handle_unicode_input, int)
+	GDVIRTUAL0(_backspace)
+	GDVIRTUAL0(_cut)
+	GDVIRTUAL0(_copy)
+	GDVIRTUAL0(_paste)
 
 public:
 	/* General overrides. */
@@ -659,6 +665,8 @@ public:
 	void begin_complex_operation();
 	void end_complex_operation();
 
+	bool has_undo() const;
+	bool has_redo() const;
 	void undo();
 	void redo();
 	void clear_undo_history();

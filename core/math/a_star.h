@@ -31,7 +31,9 @@
 #ifndef A_STAR_H
 #define A_STAR_H
 
+#include "core/object/gdvirtual.gen.inc"
 #include "core/object/ref_counted.h"
+#include "core/object/script_language.h"
 #include "core/templates/oa_hash_map.h"
 
 /**
@@ -122,6 +124,9 @@ protected:
 	virtual real_t _estimate_cost(int p_from_id, int p_to_id);
 	virtual real_t _compute_cost(int p_from_id, int p_to_id);
 
+	GDVIRTUAL2RC(real_t, _estimate_cost, int64_t, int64_t)
+	GDVIRTUAL2RC(real_t, _compute_cost, int64_t, int64_t)
+
 public:
 	int get_available_point_id() const;
 
@@ -168,6 +173,9 @@ protected:
 
 	virtual real_t _estimate_cost(int p_from_id, int p_to_id);
 	virtual real_t _compute_cost(int p_from_id, int p_to_id);
+
+	GDVIRTUAL2RC(real_t, _estimate_cost, int64_t, int64_t)
+	GDVIRTUAL2RC(real_t, _compute_cost, int64_t, int64_t)
 
 public:
 	int get_available_point_id() const;

@@ -47,6 +47,8 @@ class VisualShaderNodePlugin : public RefCounted {
 protected:
 	static void _bind_methods();
 
+	GDVIRTUAL2RC(Object *, _create_editor, RES, Ref<VisualShaderNode>)
+
 public:
 	virtual Control *create_editor(const Ref<Resource> &p_parent_resource, const Ref<VisualShaderNode> &p_node);
 };
@@ -160,6 +162,8 @@ class VisualShaderEditor : public VBoxContainer {
 	bool saved_node_pos_dirty;
 
 	ConfirmationDialog *members_dialog;
+	VisualShaderNode::PortType members_input_port_type = VisualShaderNode::PORT_TYPE_MAX;
+	VisualShaderNode::PortType members_output_port_type = VisualShaderNode::PORT_TYPE_MAX;
 	PopupMenu *popup_menu;
 	PopupMenu *constants_submenu = nullptr;
 	MenuButton *tools;
@@ -227,7 +231,7 @@ class VisualShaderEditor : public VBoxContainer {
 	Label *highend_label;
 
 	void _tools_menu_option(int p_idx);
-	void _show_members_dialog(bool at_mouse_pos);
+	void _show_members_dialog(bool at_mouse_pos, VisualShaderNode::PortType p_input_port_type = VisualShaderNode::PORT_TYPE_MAX, VisualShaderNode::PortType p_output_port_type = VisualShaderNode::PORT_TYPE_MAX);
 
 	void _update_graph();
 

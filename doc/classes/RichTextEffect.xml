@@ -23,7 +23,7 @@
 		<link title="RichTextEffect test project (third-party)">https://github.com/Eoin-ONeill-Yokai/Godot-Rich-Text-Effect-Test-Project</link>
 	</tutorials>
 	<methods>
-		<method name="_process_custom_fx" qualifiers="virtual">
+		<method name="_process_custom_fx" qualifiers="virtual const">
 			<return type="bool" />
 			<argument index="0" name="char_fx" type="CharFXTransform" />
 			<description>

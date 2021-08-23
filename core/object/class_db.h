@@ -330,7 +330,7 @@ public:
 
 		if (type->method_map.has(p_name)) {
 			memdelete(bind);
-			// overloading not supported
+			// Overloading not supported
 			ERR_FAIL_V_MSG(nullptr, "Method already bound: " + instance_type + "::" + p_name + ".");
 		}
 		type->method_map[p_name] = bind;
@@ -354,6 +354,7 @@ public:
 	static void add_property_subgroup(const StringName &p_class, const String &p_name, const String &p_prefix = "");
 	static void add_property(const StringName &p_class, const PropertyInfo &p_pinfo, const StringName &p_setter, const StringName &p_getter, int p_index = -1);
 	static void set_property_default_value(const StringName &p_class, const StringName &p_name, const Variant &p_default);
+	static void add_linked_property(const StringName &p_class, const String &p_property, const String &p_linked_property);
 	static void get_property_list(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance = false, const Object *p_validator = nullptr);
 	static bool get_property_info(const StringName &p_class, const StringName &p_property, PropertyInfo *r_info, bool p_no_inheritance = false, const Object *p_validator = nullptr);
 	static bool set_property(Object *p_object, const StringName &p_property, const Variant &p_value, bool *r_valid = nullptr);
@@ -371,7 +372,7 @@ public:
 	static bool get_method_info(const StringName &p_class, const StringName &p_method, MethodInfo *r_info, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
 	static MethodBind *get_method(const StringName &p_class, const StringName &p_name);
 
-	static void add_virtual_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual = true);
+	static void add_virtual_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual = true, const Vector<String> &p_arg_names = Vector<String>(), bool p_object_core = false);
 	static void get_virtual_methods(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance = false);
 
 	static void bind_integer_constant(const StringName &p_class, const StringName &p_enum, const StringName &p_name, int p_constant);
@@ -409,25 +410,25 @@ public:
 #ifdef DEBUG_METHODS_ENABLED
 
 #define BIND_CONSTANT(m_constant) \
-	ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
+	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
 
 #define BIND_ENUM_CONSTANT(m_constant) \
-	ClassDB::bind_integer_constant(get_class_static(), __constant_get_enum_name(m_constant, #m_constant), #m_constant, m_constant);
+	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_enum_name(m_constant, #m_constant), #m_constant, m_constant);
 
 #else
 
 #define BIND_CONSTANT(m_constant) \
-	ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
+	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
 
 #define BIND_ENUM_CONSTANT(m_constant) \
-	ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
+	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
 
 #endif
 
 #ifdef TOOLS_ENABLED
 
 #define BIND_VMETHOD(m_method) \
-	ClassDB::add_virtual_method(get_class_static(), m_method);
+	::ClassDB::add_virtual_method(get_class_static(), m_method);
 
 #else
 
@@ -437,11 +438,11 @@ public:
 
 #define GDREGISTER_CLASS(m_class)                    \
 	if (!GD_IS_DEFINED(ClassDB_Disable_##m_class)) { \
-		ClassDB::register_class<m_class>();          \
+		::ClassDB::register_class<m_class>();        \
 	}
-#define GDREGISTER_VIRTUAL_CLASS(m_class)            \
-	if (!GD_IS_DEFINED(ClassDB_Disable_##m_class)) { \
-		ClassDB::register_virtual_class<m_class>();  \
+#define GDREGISTER_VIRTUAL_CLASS(m_class)             \
+	if (!GD_IS_DEFINED(ClassDB_Disable_##m_class)) {  \
+		::ClassDB::register_virtual_class<m_class>(); \
 	}
 
 #include "core/disabled_classes.gen.h"

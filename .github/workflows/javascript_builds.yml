@@ -6,7 +6,7 @@ env:
   GODOT_BASE_BRANCH: master
   SCONSFLAGS: platform=javascript verbose=yes warnings=extra werror=yes debug_symbols=no --jobs=2
   SCONS_CACHE_LIMIT: 4096
-  EM_VERSION: 2.0.25
+  EM_VERSION: 2.0.27
   EM_CACHE_FOLDER: 'emsdk-cache'
 
 jobs:
@@ -35,6 +35,7 @@ jobs:
             ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
             ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
             ${{github.job}}-${{env.GODOT_BASE_BRANCH}}
+        continue-on-error: true
 
       # Additional cache for Emscripten generated system libraries
       - name: Load Emscripten cache

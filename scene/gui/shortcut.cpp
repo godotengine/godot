@@ -32,7 +32,7 @@
 #include "core/os/keyboard.h"
 
 void Shortcut::set_event(const Ref<InputEvent> &p_event) {
-	ERR_FAIL_COND(Object::cast_to<InputEventShortcut>(*p_event));
+	ERR_FAIL_COND_MSG(Object::cast_to<InputEventShortcut>(*p_event), "Cannot set a shortcut event to an instance of InputEventShortcut.");
 	event = p_event;
 	emit_changed();
 }

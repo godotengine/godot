@@ -934,9 +934,12 @@ def show_progress(env):
 
     def progress_finish(target, source, env):
         nonlocal node_count, progressor
-        with open(node_count_fname, "w") as f:
-            f.write("%d\n" % node_count)
-        progressor.delete(progressor.file_list())
+        try:
+            with open(node_count_fname, "w") as f:
+                f.write("%d\n" % node_count)
+            progressor.delete(progressor.file_list())
+        except Exception:
+            pass
 
     try:
         with open(node_count_fname) as f:

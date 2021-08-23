@@ -81,6 +81,9 @@ protected:
 
 	bool _is_focus_owner_in_shorcut_context() const;
 
+	GDVIRTUAL0(_pressed)
+	GDVIRTUAL1(_toggled, bool)
+
 public:
 	enum DrawMode {
 		DRAW_NORMAL,

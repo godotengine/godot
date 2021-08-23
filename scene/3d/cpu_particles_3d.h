@@ -154,8 +154,8 @@ private:
 	real_t spread = 45.0;
 	real_t flatness = 0.0;
 
-	real_t parameters[PARAM_MAX];
-	real_t randomness[PARAM_MAX] = {};
+	real_t parameters_min[PARAM_MAX];
+	real_t parameters_max[PARAM_MAX] = {};
 
 	Ref<Curve> curve_parameters[PARAM_MAX];
 	Color color = Color(1, 1, 1, 1);
@@ -174,6 +174,11 @@ private:
 	real_t emission_ring_height;
 	real_t emission_ring_radius;
 	real_t emission_ring_inner_radius;
+
+	Ref<Curve> scale_curve_x;
+	Ref<Curve> scale_curve_y;
+	Ref<Curve> scale_curve_z;
+	bool split_scale = false;
 
 	Vector3 gravity = Vector3(0, -9.8, 0);
 
@@ -246,11 +251,11 @@ public:
 	void set_flatness(real_t p_flatness);
 	real_t get_flatness() const;
 
-	void set_param(Parameter p_param, real_t p_value);
-	real_t get_param(Parameter p_param) const;
+	void set_param_min(Parameter p_param, real_t p_value);
+	real_t get_param_min(Parameter p_param) const;
 
-	void set_param_randomness(Parameter p_param, real_t p_value);
-	real_t get_param_randomness(Parameter p_param) const;
+	void set_param_max(Parameter p_param, real_t p_value);
+	real_t get_param_max(Parameter p_param) const;
 
 	void set_param_curve(Parameter p_param, const Ref<Curve> &p_curve);
 	Ref<Curve> get_param_curve(Parameter p_param) const;
@@ -275,6 +280,10 @@ public:
 	void set_emission_ring_height(real_t p_height);
 	void set_emission_ring_radius(real_t p_radius);
 	void set_emission_ring_inner_radius(real_t p_radius);
+	void set_scale_curve_x(Ref<Curve> p_scale_curve);
+	void set_scale_curve_y(Ref<Curve> p_scale_curve);
+	void set_scale_curve_z(Ref<Curve> p_scale_curve);
+	void set_split_scale(bool p_split_scale);
 
 	EmissionShape get_emission_shape() const;
 	real_t get_emission_sphere_radius() const;
@@ -287,6 +296,10 @@ public:
 	real_t get_emission_ring_height() const;
 	real_t get_emission_ring_radius() const;
 	real_t get_emission_ring_inner_radius() const;
+	Ref<Curve> get_scale_curve_x() const;
+	Ref<Curve> get_scale_curve_y() const;
+	Ref<Curve> get_scale_curve_z() const;
+	bool get_split_scale();
 
 	void set_gravity(const Vector3 &p_gravity);
 	Vector3 get_gravity() const;

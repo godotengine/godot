@@ -668,14 +668,14 @@ private:
 		};
 
 		uint32_t emitting;
-		double system_phase;
-		double prev_system_phase;
+		float system_phase;
+		float prev_system_phase;
 		uint32_t cycle;
 
 		real_t explosiveness;
 		real_t randomness;
-		double time;
-		double delta;
+		float time;
+		float delta;
 
 		uint32_t frame;
 		uint32_t pad0;
@@ -812,7 +812,7 @@ private:
 
 	struct ParticlesShader {
 		struct PushConstant {
-			double lifetime;
+			float lifetime;
 			uint32_t clear;
 			uint32_t total_particles;
 			uint32_t trail_size;
@@ -1099,11 +1099,6 @@ private:
 
 		Dependency dependency;
 	};
-
-	VoxelGiSdfShaderRD voxel_gi_sdf_shader;
-	RID voxel_gi_sdf_shader_version;
-	RID voxel_gi_sdf_shader_version_shader;
-	RID voxel_gi_sdf_shader_pipeline;
 
 	mutable RID_Owner<VoxelGI, true> voxel_gi_owner;
 

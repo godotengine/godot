@@ -60,18 +60,8 @@ Node *EditorScript::get_scene() {
 }
 
 void EditorScript::_run() {
-	Ref<Script> s = get_script();
-	ERR_FAIL_COND(!s.is_valid());
-	if (!get_script_instance()) {
-		EditorNode::add_io_error(TTR("Couldn't instance script:") + "\n " + s->get_path() + "\n" + TTR("Did you forget the 'tool' keyword?"));
-		return;
-	}
-
-	Callable::CallError ce;
-	ce.error = Callable::CallError::CALL_OK;
-	get_script_instance()->call("_run", nullptr, 0, ce);
-	if (ce.error != Callable::CallError::CALL_OK) {
-		EditorNode::add_io_error(TTR("Couldn't run script:") + "\n " + s->get_path() + "\n" + TTR("Did you forget the '_run' method?"));
+	if (!GDVIRTUAL_CALL(_run)) {
+		EditorNode::add_io_error(TTR("Couldn't run editor script, did you forget to override the '_run' method?"));
 	}
 }
 
@@ -83,7 +73,7 @@ void EditorScript::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_root_node", "node"), &EditorScript::add_root_node);
 	ClassDB::bind_method(D_METHOD("get_scene"), &EditorScript::get_scene);
 	ClassDB::bind_method(D_METHOD("get_editor_interface"), &EditorScript::get_editor_interface);
-	BIND_VMETHOD(MethodInfo("_run"));
+	GDVIRTUAL_BIND(_run);
 }
 
 EditorScript::EditorScript() {

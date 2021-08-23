@@ -69,7 +69,7 @@ public:
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		Variant ret;
 		GDExtensionClassInstancePtr extension_instance = p_object->_get_extension_instance();
-		GDNativeCallError ce;
+		GDNativeCallError ce{ GDNATIVE_CALL_OK, 0, 0 };
 		call_func(method_userdata, extension_instance, (const GDNativeVariantPtr *)p_args, p_arg_count, (GDNativeVariantPtr)&ret, &ce);
 		r_error.error = Callable::CallError::Error(ce.error);
 		r_error.argument = ce.argument;
@@ -154,6 +154,7 @@ void NativeExtension::_register_extension_class(const GDNativeExtensionClassLibr
 	extension->native_extension.create_instance = p_extension_funcs->create_instance_func;
 	extension->native_extension.set_object_instance = p_extension_funcs->object_instance_func;
 	extension->native_extension.free_instance = p_extension_funcs->free_instance_func;
+	extension->native_extension.get_virtual = p_extension_funcs->get_virtual_func;
 
 	ClassDB::register_extension_class(&extension->native_extension);
 }
@@ -171,7 +172,7 @@ void NativeExtension::_register_extension_class_method(const GDNativeExtensionCl
 
 	ClassDB::bind_method_custom(class_name, method);
 }
-void NativeExtension::_register_extension_class_integer_constant(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_enum_name, const char *p_constant_name, uint32_t p_constant_value) {
+void NativeExtension::_register_extension_class_integer_constant(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_enum_name, const char *p_constant_name, GDNativeInt p_constant_value) {
 	NativeExtension *self = (NativeExtension *)p_library;
 
 	StringName class_name = p_class_name;

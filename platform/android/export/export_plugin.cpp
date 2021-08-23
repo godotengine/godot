@@ -717,6 +717,10 @@ Error EditorExportPlatformAndroid::copy_gradle_so(void *p_userdata, const Shared
 	return OK;
 }
 
+bool EditorExportPlatformAndroid::_has_storage_permission(const Vector<String> &p_permissions) {
+	return p_permissions.find("android.permission.READ_EXTERNAL_STORAGE") != -1 || p_permissions.find("android.permission.WRITE_EXTERNAL_STORAGE") != -1;
+}
+
 void EditorExportPlatformAndroid::_get_permissions(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, Vector<String> &r_permissions) {
 	const char **aperms = android_perms;
 	while (*aperms) {
@@ -763,12 +767,17 @@ void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPres
 	Vector<String> perms;
 	_get_permissions(p_preset, p_give_internet, perms);
 	for (int i = 0; i < perms.size(); i++) {
-		manifest_text += vformat("    <uses-permission android:name=\"%s\" />\n", perms.get(i));
+		String permission = perms.get(i);
+		if (permission == "android.permission.WRITE_EXTERNAL_STORAGE" || permission == "android.permission.READ_EXTERNAL_STORAGE") {
+			manifest_text += vformat("    <uses-permission android:name=\"%s\" android:maxSdkVersion=\"29\" />\n", permission);
+		} else {
+			manifest_text += vformat("    <uses-permission android:name=\"%s\" />\n", permission);
+		}
 	}
 
 	manifest_text += _get_xr_features_tag(p_preset);
 	manifest_text += _get_instrumentation_tag(p_preset);
-	manifest_text += _get_application_tag(p_preset);
+	manifest_text += _get_application_tag(p_preset, _has_storage_permission(perms));
 	manifest_text += "</manifest>\n";
 	String manifest_path = vformat("res://android/build/src/%s/AndroidManifest.xml", (p_debug ? "debug" : "release"));
 
@@ -824,6 +833,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 	Vector<String> perms;
 	// Write permissions into the perms variable.
 	_get_permissions(p_preset, p_give_internet, perms);
+	bool has_storage_permission = _has_storage_permission(perms);
 
 	while (ofs < (uint32_t)p_manifest.size()) {
 		uint32_t chunk = decode_uint32(&p_manifest[ofs]);
@@ -911,6 +921,10 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 						} else {
 							string_table.write[attr_value] = version_name;
 						}
+					}
+
+					if (tname == "application" && attrname == "requestLegacyExternalStorage") {
+						encode_uint32(has_storage_permission ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
 					}
 
 					if (tname == "application" && attrname == "allowBackup") {
@@ -1632,8 +1646,6 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "keystore/release_user"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "keystore/release_password"), ""));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "one_click_deploy/clear_previous_install"), false));
-
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "version/code", PROPERTY_HINT_RANGE, "1,4096,1,or_greater"), 1));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "version/name"), "1.0"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/unique_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "ext.domain.name"), "org.godotengine.$genname"));
@@ -1780,7 +1792,7 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 	int rv;
 	String output;
 
-	bool remove_prev = p_preset->get("one_click_deploy/clear_previous_install");
+	bool remove_prev = EDITOR_GET("export/android/one_click_deploy_clear_previous_install");
 	String version_name = p_preset->get("version/name");
 	String package_name = p_preset->get("package/unique_name");
 

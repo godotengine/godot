@@ -64,7 +64,7 @@ namespace Godot
         /// <summary>
         /// If the string is a path to a file, return the path to the file without the extension.
         /// </summary>
-        public static string BaseName(this string instance)
+        public static string GetBaseName(this string instance)
         {
             int index = instance.LastIndexOf('.');
 
@@ -339,7 +339,7 @@ namespace Godot
         /// <summary>
         /// If the string is a path to a file, return the extension.
         /// </summary>
-        public static string Extension(this string instance)
+        public static string GetExtension(this string instance)
         {
             int pos = instance.FindLast(".");
 

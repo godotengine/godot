@@ -92,7 +92,7 @@ layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms
 
 #ifdef MODE_DUAL_PARABOLOID
 
-layout(location = 8) out float dp_clip;
+layout(location = 8) out highp float dp_clip;
 
 #endif
 
@@ -124,7 +124,7 @@ void main() {
 
 	mat3 world_normal_matrix;
 	if (bool(draw_call.flags & INSTANCE_FLAGS_NON_UNIFORM_SCALE)) {
-		world_normal_matrix = inverse(mat3(world_matrix));
+		world_normal_matrix = transpose(inverse(mat3(world_matrix)));
 	} else {
 		world_normal_matrix = mat3(world_matrix);
 	}
@@ -370,11 +370,6 @@ void main() {
 
 #VERSION_DEFINES
 
-//use medium precision for floats on mobile.
-
-precision mediump float;
-precision highp int;
-
 /* Specialization Constants */
 
 #if !defined(MODE_RENDER_DEPTH)
@@ -498,7 +493,7 @@ layout(location = 0) out vec4 diffuse_buffer; //diffuse (rgb) and roughness
 layout(location = 1) out vec4 specular_buffer; //specular and SSS (subsurface scatter)
 #else
 
-layout(location = 0) out vec4 frag_color;
+layout(location = 0) out mediump vec4 frag_color;
 #endif // MODE_MULTIPLE_RENDER_TARGETS
 
 #endif // RENDER DEPTH
@@ -1392,7 +1387,7 @@ void main() {
 				break;
 			}
 
-			float shadow = light_process_omni_shadow(light_index, vertex, view);
+			float shadow = light_process_omni_shadow(light_index, vertex, normal);
 
 			shadow = blur_shadow(shadow);
 
@@ -1440,7 +1435,7 @@ void main() {
 				break;
 			}
 
-			float shadow = light_process_spot_shadow(light_index, vertex, view);
+			float shadow = light_process_spot_shadow(light_index, vertex, normal);
 
 			shadow = blur_shadow(shadow);
 

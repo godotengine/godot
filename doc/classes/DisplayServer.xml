@@ -649,6 +649,8 @@
 			<argument index="0" name="min_size" type="Vector2i" />
 			<argument index="1" name="window_id" type="int" default="0" />
 			<description>
+				Sets the minimum size for the given window to [code]min_size[/code] (in pixels).
+				[b]Note:[/b] By default, the main window has a minimum size of [code]Vector2i(64, 64)[/code]. This prevents issues that can arise when the window is resized to a near-zero size.
 			</description>
 		</method>
 		<method name="window_set_mode">

@@ -5,24 +5,18 @@
 	</brief_description>
 	<description>
 		Base syntax highlighter resource all editor syntax highlighters extend from, it is used in the [ScriptEditor].
-		Add a syntax highlighter to an individual script by calling [method ScriptEditorBase._add_syntax_highlighter]. To apply to all scripts on open, call [method ScriptEditor.register_syntax_highlighter]
+		Add a syntax highlighter to an individual script by calling ScriptEditorBase._add_syntax_highlighter (currently not working). To apply to all scripts on open, call [method ScriptEditor.register_syntax_highlighter]
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_get_name" qualifiers="virtual">
+		<method name="_get_name" qualifiers="virtual const">
 			<return type="String" />
 			<description>
 				Virtual method which can be overridden to return the syntax highlighter name.
 			</description>
 		</method>
-		<method name="_get_supported_extentions" qualifiers="virtual">
-			<return type="Array" />
-			<description>
-				Virtual method which can be overridden to return the supported file extensions.
-			</description>
-		</method>
-		<method name="_get_supported_languages" qualifiers="virtual">
+		<method name="_get_supported_languages" qualifiers="virtual const">
 			<return type="Array" />
 			<description>
 				Virtual method which can be overridden to return the supported language names.
