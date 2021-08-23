@@ -1422,6 +1422,7 @@ static void _register_variant_builtin_methods() {
 
 	bind_method(String, is_absolute_path, sarray(), varray());
 	bind_method(String, is_rel_path, sarray(), varray());
+	bind_method(String, simplify_path, sarray(), varray());
 	bind_method(String, get_base_dir, sarray(), varray());
 	bind_method(String, get_file, sarray(), varray());
 	bind_method(String, xml_escape, sarray("escape_quotes"), varray(false));
