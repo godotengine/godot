@@ -1,4 +1,4 @@
-/*************************************************************************/
+﻿/*************************************************************************/
 /*  converter.cpp                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
@@ -53,44 +53,8 @@ static const char *enum_renames[][2] = {
 	{ "TYPE_INT_ARRAY", "TYPE_INT64_ARRAY" },
 	{ "TYPE_REAL_ARRAY", "TYPE_FLOAT64_ARRAY" },
 
-	{ "FLAG_ALIGN_Y_TO_VELOCITY", "PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY" }, // CPUParticles2D
-	{ "FLAG_DISABLE_Z", "PARTICLE_FLAG_DISABLE_Z" }, // CPUParticles2D
 	// {"FLAG_MAX", "PARTICLE_FLAG_MAX"}, // CPUParticles2D - used in more classes
-	{ "FLAG_ROTATE_Y", "PARTICLE_FLAG_ROTATE_Y" }, // CPUParticles2D
-	{ "FLAG_USE_BAKED_LIGHT", "GI_MODE_BAKED" }, // GeometryInstance3D
-	{ "COMPRESS_PVRTC4", "COMPRESS_PVRTC1_4" }, //Image
-	{ "FORMAT_PVRTC2", "FORMAT_PVRTC1_2" }, //Image
-	{ "FORMAT_PVRTC2A", "FORMAT_PVRTC1_2A" }, //Image
-	{ "FORMAT_PVRTC4", "FORMAT_PVRTC1_4" }, //Image
-	{ "FORMAT_PVRTC4A", "FORMAT_PVRTC1_4A" }, //Image
-	{ "BAKE_ERROR_INVALID_MESH", "BAKE_ERROR_MESHES_INVALID" }, //LightmapGI
-	{ "NOTIFICATION_APP_PAUSED", "NOTIFICATION_APPLICATION_PAUSED" }, //MainLoop
-	{ "NOTIFICATION_APP_RESUMED", "NOTIFICATION_APPLICATION_RESUMED" }, //MainLoop
-	{ "NOTIFICATION_WM_FOCUS_IN", "NOTIFICATION_APPLICATION_FOCUS_IN" }, //MainLoop
-	{ "NOTIFICATION_WM_FOCUS_OUT", "NOTIFICATION_APPLICATION_FOCUS_OUT" }, //MainLoop
 	{ "ARRAY_COMPRESS_BASE", "ARRAY_COMPRESS_FLAGS_BASE" }, //Mesh
-	{ "RENDER_DRAW_CALLS_IN_FRAME", "RENDER_TOTAL_DRAW_CALLS_IN_FRAME" }, //Performance
-	{ "RENDER_OBJECTS_IN_FRAME", "RENDER_TOTAL_OBJECTS_IN_FRAME" }, //Performance
-	{ "BODY_MODE_CHARACTER", "BODY_MODE_DYNAMIC" }, //PhysicsServer2D
-	{ "DAMPED_STRING_DAMPING", "DAMPED_SPRING_DAMPING" }, //PhysicsServer2D
-	{ "DAMPED_STRING_REST_LENGTH", "DAMPED_SPRING_REST_LENGTH" }, //PhysicsServer2D
-	{ "DAMPED_STRING_STIFFNESS", "DAMPED_SPRING_STIFFNESS" }, //PhysicsServer2D
-	{ "JOINT_DAMPED_SPRING", "JOINT_TYPE_DAMPED_SPRING" }, //PhysicsServer2D
-	{ "JOINT_GROOVE", "JOINT_TYPE_GROOVE" }, //PhysicsServer2D
-	{ "JOINT_PIN", "JOINT_TYPE_PIN" }, //PhysicsServer2D
-	{ "JOINT_6DOF", "JOINT_TYPE_6DOF" }, //PhysicsServer3D
-	{ "JOINT_CONE_TWIST", "JOINT_TYPE_CONE_TWIST" }, //PhysicsServer3D
-	{ "JOINT_HINGE", "JOINT_TYPE_HINGE" }, //PhysicsServer3D
-	{ "JOINT_SLIDER", "JOINT_TYPE_SLIDER" }, //PhysicsServer3D
-	{ "CUBEMAP_BACK", "CUBEMAP_LAYER_BACK" }, //RenderingServer
-	{ "CUBEMAP_BOTTOM", "CUBEMAP_LAYER_BOTTOM" }, //RenderingServer
-	{ "CUBEMAP_FRONT", "CUBEMAP_LAYER_FRONT" }, //RenderingServer
-	{ "CUBEMAP_LEFT", "CUBEMAP_LAYER_LEFT" }, //RenderingServer
-	{ "CUBEMAP_RIGHT", "CUBEMAP_LAYER_RIGHT" }, //RenderingServer
-	{ "CUBEMAP_TOP", "CUBEMAP_LAYER_TOP" }, //RenderingServer
-	{ "INSTANCE_LIGHTMAP_CAPTURE", "INSTANCE_LIGHTMAP" }, //RenderingServer
-	{ "MATH_STEPIFY", "MATH_STEP_DECIMALS" }, //VisualScriptBuiltinFunc
-	{ "TYPE_NORMALMAP", "TYPE_NORMAL_MAP" }, //VisualShaderNodeCubemap
 	{ "ARVR_AR", "XR_AR" }, //XRInterface
 	{ "ARVR_EXCESSIVE_MOTION", "XR_EXCESSIVE_MOTION" }, //XRInterface
 	{ "ARVR_EXTERNAL", "XR_EXTERNAL" }, //XRInterface
@@ -101,13 +65,8 @@ static const char *enum_renames[][2] = {
 	{ "ARVR_NOT_TRACKING", "XR_NOT_TRACKING" }, //XRInterface
 	{ "ARVR_STEREO", "XR_STEREO" }, //XRInterface
 	{ "ARVR_UNKNOWN_TRACKING", "XR_UNKNOWN_TRACKING" }, //XRInterface
-	{ "TRACKER_LEFT_HAND", "TRACKER_HAND_LEFT" }, //XRPositionalTracker
-	{ "TRACKER_RIGHT_HAND", "TRACKER_HAND_RIGHT" }, //XRPositionalTracker
-	{ "KEY_CONTROL", "KEY_CTRL" }, // Globals
-	{ "SIDE_BOTTOM", "MARGIN_BOTTOM" }, //Globals
-	{ "SIDE_LEFT", "MARGIN_LEFT" }, //Globals
-	{ "SIDE_RIGHT", "MARGIN_RIGHT" }, //Globals
-	{ "SIDE_TOP", "MARGIN_TOP" }, //Globals
+	{ "BAKE_ERROR_INVALID_MESH", "BAKE_ERROR_MESHES_INVALID" }, //LightmapGI
+	{ "BODY_MODE_CHARACTER", "BODY_MODE_DYNAMIC" }, //PhysicsServer2D
 	{ "BUTTON_LEFT", "MOUSE_BUTTON_LEFT" }, //Globals
 	{ "BUTTON_MASK_LEFT", "MOUSE_BUTTON_MASK_LEFT" }, //Globals
 	{ "BUTTON_MASK_MIDDLE", "MOUSE_BUTTON_MASK_MIDDLE" }, //Globals
@@ -122,6 +81,47 @@ static const char *enum_renames[][2] = {
 	{ "BUTTON_WHEEL_UP", "MOUSE_BUTTON_WHEEL_UP" }, //Globals
 	{ "BUTTON_XBUTTON1", "MOUSE_BUTTON_XBUTTON1" }, //Globals
 	{ "BUTTON_XBUTTON2", "MOUSE_BUTTON_XBUTTON2" }, //Globals
+	{ "COMPRESS_PVRTC4", "COMPRESS_PVRTC1_4" }, //Image
+	{ "CUBEMAP_BACK", "CUBEMAP_LAYER_BACK" }, //RenderingServer
+	{ "CUBEMAP_BOTTOM", "CUBEMAP_LAYER_BOTTOM" }, //RenderingServer
+	{ "CUBEMAP_FRONT", "CUBEMAP_LAYER_FRONT" }, //RenderingServer
+	{ "CUBEMAP_LEFT", "CUBEMAP_LAYER_LEFT" }, //RenderingServer
+	{ "CUBEMAP_RIGHT", "CUBEMAP_LAYER_RIGHT" }, //RenderingServer
+	{ "CUBEMAP_TOP", "CUBEMAP_LAYER_TOP" }, //RenderingServer
+	{ "DAMPED_STRING_DAMPING", "DAMPED_SPRING_DAMPING" }, //PhysicsServer2D
+	{ "DAMPED_STRING_REST_LENGTH", "DAMPED_SPRING_REST_LENGTH" }, //PhysicsServer2D
+	{ "DAMPED_STRING_STIFFNESS", "DAMPED_SPRING_STIFFNESS" }, //PhysicsServer2D
+	{ "FLAG_ALIGN_Y_TO_VELOCITY", "PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY" }, // CPUParticles2D
+	{ "FLAG_DISABLE_Z", "PARTICLE_FLAG_DISABLE_Z" }, // CPUParticles2D
+	{ "FLAG_ROTATE_Y", "PARTICLE_FLAG_ROTATE_Y" }, // CPUParticles2D
+	{ "FLAG_USE_BAKED_LIGHT", "GI_MODE_BAKED" }, // GeometryInstance3D
+	{ "FORMAT_PVRTC2", "FORMAT_PVRTC1_2" }, //Image
+	{ "FORMAT_PVRTC2A", "FORMAT_PVRTC1_2A" }, //Image
+	{ "FORMAT_PVRTC4", "FORMAT_PVRTC1_4" }, //Image
+	{ "FORMAT_PVRTC4A", "FORMAT_PVRTC1_4A" }, //Image
+	{ "INSTANCE_LIGHTMAP_CAPTURE", "INSTANCE_LIGHTMAP" }, //RenderingServer
+	{ "JOINT_6DOF", "JOINT_TYPE_6DOF" }, //PhysicsServer3D
+	{ "JOINT_CONE_TWIST", "JOINT_TYPE_CONE_TWIST" }, //PhysicsServer3D
+	{ "JOINT_DAMPED_SPRING", "JOINT_TYPE_DAMPED_SPRING" }, //PhysicsServer2D
+	{ "JOINT_GROOVE", "JOINT_TYPE_GROOVE" }, //PhysicsServer2D
+	{ "JOINT_HINGE", "JOINT_TYPE_HINGE" }, //PhysicsServer3D
+	{ "JOINT_PIN", "JOINT_TYPE_PIN" }, //PhysicsServer2D
+	{ "JOINT_SLIDER", "JOINT_TYPE_SLIDER" }, //PhysicsServer3D
+	{ "KEY_CONTROL", "KEY_CTRL" }, // Globals
+	{ "MATH_STEPIFY", "MATH_STEP_DECIMALS" }, //VisualScriptBuiltinFunc
+	{ "NOTIFICATION_APP_PAUSED", "NOTIFICATION_APPLICATION_PAUSED" }, //MainLoop
+	{ "NOTIFICATION_APP_RESUMED", "NOTIFICATION_APPLICATION_RESUMED" }, //MainLoop
+	{ "NOTIFICATION_WM_FOCUS_IN", "NOTIFICATION_APPLICATION_FOCUS_IN" }, //MainLoop
+	{ "NOTIFICATION_WM_FOCUS_OUT", "NOTIFICATION_APPLICATION_FOCUS_OUT" }, //MainLoop
+	{ "RENDER_DRAW_CALLS_IN_FRAME", "RENDER_TOTAL_DRAW_CALLS_IN_FRAME" }, //Performance
+	{ "RENDER_OBJECTS_IN_FRAME", "RENDER_TOTAL_OBJECTS_IN_FRAME" }, //Performance
+	{ "SIDE_BOTTOM", "MARGIN_BOTTOM" }, //Globals
+	{ "SIDE_LEFT", "MARGIN_LEFT" }, //Globals
+	{ "SIDE_RIGHT", "MARGIN_RIGHT" }, //Globals
+	{ "SIDE_TOP", "MARGIN_TOP" }, //Globals
+	{ "TRACKER_LEFT_HAND", "TRACKER_HAND_LEFT" }, //XRPositionalTracker
+	{ "TRACKER_RIGHT_HAND", "TRACKER_HAND_RIGHT" }, //XRPositionalTracker
+	{ "TYPE_NORMALMAP", "TYPE_NORMAL_MAP" }, //VisualShaderNodeCubemap
 
 	{ nullptr, nullptr },
 };
@@ -170,7 +170,7 @@ static const char *function_renames[][2] = {
 	{ "set_anchor_and_margin", "set_anchor_and_offset" }, //  Control
 	{ "set_anchors_and_margins_preset", "set_anchors_and_offsets_preset" }, //  Control
 	{ "set_focus_neighbour", "set_focus_neighbor" }, //  Control
-	// { "get_mode", "get_file_mode"}, // EditorFileDialog - Used in
+	// { "get_mode", "get_file_mode"}, // EditorFileDialog - Used elsewhere
 	{ "set_adjustment_enable", "set_adjustment_enabled" }, // Environment
 	{ "deselect_items", "deselect_all" }, // FileDialog
 	{ "bumpmap_to_normalmap", "bump_map_to_normal_map" }, // Image
@@ -223,7 +223,7 @@ static const char *function_renames[][2] = {
 	{ "set_as_normalmap", "set_as_normal_map" }, // NoiseTexture
 	{ "property_list_changed_notify", "notify_property_list_changed" }, // Object
 	{ "can_instance", "can_instantiate" }, // PackedScene, Script
-	{ "instance", "instantiate" }, // PackedScene
+	{ "instance", "instantiate" }, // PackedScene - Broke FileSystemDock signal
 	// { "set_flag", "set_particle_flag"}, // ParticlesMaterial  - Do not use, other classes also uses this function
 	{ "set_rotate", "set_rotates" }, // PathFollow2D
 	{ "is_static_body", "is_able_to_sleep" }, // PhysicalBone3D - TODO - not sure
@@ -348,6 +348,72 @@ static const char *function_renames[][2] = {
 };
 
 static const char *properties_renames[][2] = {
+	// {"Skeleton3D","Skeleton"}, // Polygon2D - this would rename also classes
+	// {"rotate","rotates"}, // PathFollow2D - probably function exists with same name
+	{ "Debug Shape3D", "Debug Shape" }, // RayCast3D
+	{ "Emission Shape3D", "Emission Shape" }, // ParticlesMaterial
+	{ "caret_moving_by_right_click", "caret_move_on_right_click" }, // TextEdit
+	{ "d", "disatance" }, //WorldMarginShape2D
+	{ "global_rate_scale", "playback_speed_scale" }, // AudioServer
+	{ "group", "button_group" }, // BaseButton
+	{ "region_filter_clip", "region_filter_clip_enabled" }, // Sprite2D
+	{ "syntax_highlighting", "syntax_highlighter" }, // TextEdit
+	{ "translation", "position" }, // Node3D - broke GLTFNode
+	{ nullptr, nullptr },
+};
+
+static const char *signals_renames[][2] = {
+	// { "hide", "hidden" }, // CanvasItem - function with same name exists
+	{ "button_release", "button_released" }, // XRController3D
+	{ "node_unselected", "node_deselected" }, // GraphEdit
+	{ "offset_changed", "position_offset_changed" }, //GraphNode
+	{ "tab_close", "tab_closed" }, //TextEdit
+	{ "tab_hover", "tab_hovered" }, //TextEdit
+	{ "text_entered", "text_submitted" }, // LineEdit
+	{ nullptr, nullptr },
+};
+
+static const char *project_settings_renames[][2] = {
+	{ "audio/channel_disable_threshold_db ", "audio/buses/channel_disable_threshold_db " },
+	{ "audio/channel_disable_time ", "audio/buses/channel_disable_time " },
+	{ "audio/default_bus_layout ", "audio/buses/default_bus_layout" },
+	{ "audio/driver", "audio/driver/driver" },
+	{ "audio/enable_audio_input ", "audio/driver/enable_input" },
+	{ "audio/mix_rate", "audio/driver/mix_rate" },
+	{ "audio/output_latency", "audio/driver/output_latency" },
+	{ "audio/output_latency.web", "audio/driver/output_latency.web" },
+	{ "audio/video_delay_compensation_ms", "audio/video/video_delay_compensation_ms" },
+	{ "display/window/vsync/use_vsync", "display/window/vsync/vsync_mode" },
+	{ "editor/main_run_args", "editor/run/main_run_args" },
+	{ "gui/common/swap_ok_cancel", "gui/common/swap_cancel_ok" },
+	{ "network/limits/debugger_stdout/max_chars_per_second", "network/limits/debugger/max_chars_per_second" },
+	{ "network/limits/debugger_stdout/max_errors_per_second", "network/limits/debugger/max_errors_per_second" },
+	{ "network/limits/debugger_stdout/max_messages_per_frame", "network/limits/debugger/max_queued_messages" },
+	{ "network/limits/debugger_stdout/max_warnings_per_second", "network/limits/debugger/max_warnings_per_second" },
+	{ "network/ssl/certificates", "network/ssl/certificate_bundle_override" },
+	{ "physics/2d/thread_model", "physics/2d/run_on_thread" }, // TODO not sure
+	{ "rendering/environment/default_clear_color", "rendering/environment/defaults/default_clear_color" },
+	{ "rendering/environment/default_environment", "rendering/environment/defaults/default_environment" },
+	{ "rendering/quality/depth_prepass/disable_for_vendors", "rendering/driver/depth_prepass/disable_for_vendors" },
+	{ "rendering/quality/depth_prepass/enable", "rendering/driver/depth_prepass/enable" },
+	{ "rendering/quality/shading/force_blinn_over_ggx", "rendering/shading/overrides/force_blinn_over_ggx" },
+	{ "rendering/quality/shading/force_blinn_over_ggx", "rendering/shading/overrides/force_blinn_over_ggx.mobile" },
+	{ "rendering/quality/shading/force_blinn_over_ggx.mobile", "rendering/shading/overrides/force_lambert_over_burley" },
+	{ "rendering/quality/shading/force_lambert_over_burley", "rendering/shading/overrides/force_lambert_over_burley" },
+	{ "rendering/quality/shading/force_lambert_over_burley.mobile", "rendering/shading/overrides/force_lambert_over_burley.mobile" },
+	{ "rendering/quality/shading/force_vertex_shading", "rendering/shading/overrides/force_vertex_shading" },
+	{ "rendering/quality/shading/force_vertex_shading.mobile", "rendering/shading/overrides/force_vertex_shading.mobile" },
+	{ "rendering/quality/shadow_atlas/quadrant_0_subdiv", "rendering/shadows/shadow_atlas/quadrant_0_subdiv" },
+	{ "rendering/quality/shadow_atlas/quadrant_1_subdiv", "rendering/shadows/shadow_atlas/quadrant_1_subdiv" },
+	{ "rendering/quality/shadow_atlas/quadrant_2_subdiv", "rendering/shadows/shadow_atlas/quadrant_2_subdiv" },
+	{ "rendering/quality/shadow_atlas/quadrant_3_subdiv", "rendering/shadows/shadow_atlas/quadrant_3_subdiv" },
+	{ "rendering/quality/shadow_atlas/size", "rendering/shadows/shadow_atlas/size" },
+	{ "rendering/quality/shadow_atlas/size.mobile", "rendering/shadows/shadow_atlas/size.mobile" },
+	{ "rendering/vram_compression/import_bptc", "rendering/textures/vram_compression/import_bptc" },
+	{ "rendering/vram_compression/import_etc", "rendering/textures/vram_compression/import_etc" },
+	{ "rendering/vram_compression/import_etc2", "rendering/textures/vram_compression/import_etc2" },
+	{ "rendering/vram_compression/import_pvrtc", "rendering/textures/vram_compression/import_pvrtc" },
+	{ "rendering/vram_compression/import_s3tc", "rendering/textures/vram_compression/import_s3tc" },
 	{ nullptr, nullptr },
 };
 
@@ -359,15 +425,17 @@ static const char *shaders_renames[][2] = {
 
 static const char *gdscript_keywords_renames[][2] = {
 	{ "onready", "@onready" },
+	{ "export", "@export" },
+	{ "tool", "@tool" },
 	{ nullptr, nullptr },
 };
 
 static const char *class_renames[][2] = {
-
 	{ "ARVRAnchor", "XRAnchor3D" },
 	{ "ARVRCamera", "XRCamera3D" },
 	{ "ARVRController", "XRController3D" },
 	{ "ARVRInterface", "XRInterface" },
+	{ "ARVRInterfaceGDNative", "Node3D" },
 	{ "ARVROrigin", "XROrigin3D" },
 	{ "ARVRPositionalTracker", "XRPositionalTracker" },
 	{ "ARVRServer", "XRServer" },
@@ -402,6 +470,7 @@ static const char *class_renames[][2] = {
 	{ "ConcavePolygonShape", "ConcavePolygonShape3D" },
 	{ "ConeTwistJoint", "ConeTwistJoint3D" },
 	{ "ConvexPolygonShape", "ConvexPolygonShape3D" },
+	{ "CubeMap", "Cubemap" },
 	{ "CubeMesh", "BoxMesh" },
 	{ "CylinderShape", "CylinderShape3D" },
 	{ "DirectionalLight", "DirectionalLight3D" },
@@ -409,27 +478,35 @@ static const char *class_renames[][2] = {
 	{ "DynamicFontData", "FontData" },
 	{ "EditorSpatialGizmo", "EditorNode3DGizmo" },
 	{ "EditorSpatialGizmoPlugin", "EditorNode3DGizmoPlugin" },
+	{ "ExternalTexture", "ImageTexture" },
+	{ "FuncRef", "Callable" },
+	{ "GDScriptFunctionState", "Node3D" },
+	{ "GDScriptNativeClass", "Node3D" },
 	{ "GIProbe", "VoxelGI" },
 	{ "GIProbeData", "VoxelGIData" },
 	{ "Generic6DOFJoint", "Generic6DOFJoint3D" },
+	{ "Geometry", "Geometry2D" }, // Geometry class is split between Geometry2D and Geometry3D so we need to choose one
 	{ "GeometryInstance", "GeometryInstance3D" },
 	{ "HeightMapShape", "HeightMapShape3D" },
 	{ "HingeJoint", "HingeJoint3D" },
 	{ "IP_Unix", "IPUnix" },
 	{ "ImmediateGeometry", "ImmediateGeometry3D" },
+	{ "ImmediateGeometry3D", "ImmediateMesh" },
 	{ "InterpolatedCamera", "InterpolatedCamera3D" },
+	{ "InterpolatedCamera3D", "Camera3D" },
+	{ "JSONParseResult", "JSON" },
 	{ "Joint", "Joint3D" },
 	{ "KinematicBody", "CharacterBody3D" },
 	{ "KinematicBody2D", "CharacterBody2D" },
 	{ "KinematicCollision", "KinematicCollision3D" },
-	{ "LargeTexture", "ImageTexture" }, //Missing alternative, so probably it good to choose any function
+	{ "LargeTexture", "ImageTexture" },
 	{ "Light", "Light3D" },
 	{ "Light2D", "PointLight2D" },
 	{ "LineShape2D", "WorldMarginShape2D" },
 	{ "Listener", "Listener3D" },
 	{ "MeshInstance", "MeshInstance3D" },
 	{ "MultiMeshInstance", "MultiMeshInstance3D" },
-	{ "Navigation", "Node3D" }, //Missing alternative?
+	{ "Navigation", "Node3D" },
 	{ "Navigation2D", "Node2D" },
 	{ "Navigation2DServer", "NavigationServer2D" },
 	{ "Navigation3D", "Node3D" },
@@ -439,6 +516,8 @@ static const char *class_renames[][2] = {
 	{ "NavigationPolygonInstance", "NavigationRegion2D" },
 	{ "NavigationRegion", "NavigationRegion3D" },
 	{ "NavigationServer", "NavigationServer3D" },
+	{ "NetworkedMultiplayerENet", "ENetMultiplayerPeer" },
+	{ "NetworkedMultiplayerPeer", "MultiplayerPeer" },
 	{ "OmniLight", "OmniLight3D" },
 	{ "PHashTranslation", "OptimizedTranslation" },
 	{ "PanoramaSky", "Sky" },
@@ -461,6 +540,7 @@ static const char *class_renames[][2] = {
 	{ "PhysicsServer", "PhysicsServer3D" },
 	{ "PhysicsShapeQueryParameters", "PhysicsShapeQueryParameters3D" },
 	{ "PhysicsShapeQueryResult", "PhysicsShapeQueryResult3D" },
+	{ "PhysicsTestMotionResult", "PhysicsTestMotionResult2D" }, // PhysicsTestMotionResult class is split between PhysicsTestMotionResult2D and PhysicsTestMotionResult3D so we need to choose one
 	{ "PinJoint", "PinJoint3D" },
 	{ "PlaneShape", "WorldMarginShape3D" },
 	{ "PoolByteArray", "PackedByteArray" },
@@ -475,7 +555,9 @@ static const char *class_renames[][2] = {
 	{ "ProximityGroup", "ProximityGroup3D" },
 	{ "Quat", "Quaternion" },
 	{ "RayCast", "RayCast3D" },
+	{ "Reference", "RefCounted" },
 	{ "RemoteTransform", "RemoteTransform3D" },
+	{ "ResourceInteractiveLoader", "ResourceLoader" },
 	{ "RigidBody", "RigidBody3D" },
 	{ "Shape", "Shape3D" },
 	{ "ShortCut", "Shortcut" },
@@ -494,6 +576,7 @@ static const char *class_renames[][2] = {
 	{ "StaticBody", "StaticBody3D" },
 	{ "StreamTexture", "StreamTexture2D" },
 	{ "TCP_Server", "TCPServer" },
+	{ "TextFile", "Node3D" },
 	{ "Texture", "Texture2D" },
 	{ "TextureArray", "Texture2DArray" },
 	{ "TextureProgress", "TextureProgressBar" },
@@ -510,6 +593,8 @@ static const char *class_renames[][2] = {
 	{ "VisibilityNotifier3D", "VisibleOnScreenNotifier3D" },
 	{ "VisualInstance", "VisualInstance3D" },
 	{ "VisualServer", "RenderingServer" },
+	{ "VisualShaderNodeCubeMap", "VisualShaderNodeCubemap" },
+	{ "VisualShaderNodeCubeMapUniform", "VisualShaderNodeCubemapUniform" },
 	{ "VisualShaderNodeScalarClamp", "VisualShaderNodeClamp" },
 	{ "VisualShaderNodeScalarConstant", "VisualShaderNodeFloatConstant" },
 	{ "VisualShaderNodeScalarFunc", "VisualShaderNodeFloatFunc" },
@@ -519,46 +604,23 @@ static const char *class_renames[][2] = {
 	{ "VisualShaderNodeScalarSwitch", "VisualShaderNodeSwitch" },
 	{ "VisualShaderNodeScalarTransformMult", "VisualShaderNodeTransformOp" },
 	{ "VisualShaderNodeScalarUniform", "VisualShaderNodeFloatUniform" },
+	{ "VisualShaderNodeTransformMult", "VisualShaderNode" },
 	{ "VisualShaderNodeVectorClamp", "VisualShaderNodeClamp" },
 	{ "VisualShaderNodeVectorInterp", "VisualShaderNodeMix" },
 	{ "VisualShaderNodeVectorScalarMix", "VisualShaderNodeMix" },
 	{ "VisualShaderNodeVectorScalarSmoothStep", "VisualShaderNodeSmoothStep" },
 	{ "VisualShaderNodeVectorScalarStep", "VisualShaderNodeStep" },
 	{ "VisualShaderNodeVectorSmoothStep", "VisualShaderNodeSmoothStep" },
+	{ "WebRTCMultiplayer", "WebRTCMultiplayerPeer" },
+	{ "WindowDialog", "Window" },
 	{ "World", "World3D" },
 	{ "XRAnchor", "XRAnchor3D" },
 	{ "XRController", "XRController3D" },
 	{ "XROrigin", "XROrigin3D" },
-	{ "YSort", "Node2D" }, //Missing alternative?
-	{ "Geometry", "Geometry2D" }, // Geometry class is split between Geometry2D and Geometry3D so we need to choose one
-	{ "PhysicsTestMotionResult", "PhysicsTestMotionResult2D" }, // PhysicsTestMotionResult class is split between PhysicsTestMotionResult2D and PhysicsTestMotionResult3D so we need to choose one
-	{ "ExternalTexture", "ImageTexture" }, // ExternalTexture is missing, so we choose ImageTexture as replamencement
-
-	{ "NetworkedMultiplayerPeer", "MultiplayerPeer" },
-	{ "WebRTCMultiplayer", "WebRTCMultiplayerPeer" },
-	{ "ResourceInteractiveLoader", "ResourceLoader" },
-
-	{ "NetworkedMultiplayerENet", "ENetMultiplayerPeer" },
-	{ "JSONParseResult", "JSON" },
+	{ "YSort", "Node2D" },
 
 	{ "RayShape2D", "RayCast2D" }, // TODO looks that this class is not visible
 	{ "RayShape", "RayCast3D" }, // TODO looks that this class is not visible
-
-	{ "WindowDialog", "Window" }, // TODO not sure about it
-	{ "InterpolatedCamera3D", "Camera3D" }, // InterpolatedCamera3D is missing so probably the best is to use Camera3D
-	{ "ImmediateGeometry3D", "ImmediateMesh" },
-	{ "Reference", "RefCounted" },
-
-	{ "VisualShaderNodeCubeMapUniform", "VisualShaderNodeCubemapUniform" },
-	{ "VisualShaderNodeCubeMap", "VisualShaderNodeCubemap" },
-	{ "CubeMap", "Cubemap" },
-	{ "FuncRef", "Callable" },
-
-	{ "VisualShaderNodeTransformMult", "VisualShaderNode" }, // Not sure about it
-	{ "GDScriptNativeClass", "Node3D" }, // Not sure about it
-	{ "GDScriptFunctionState", "Node3D" }, // Not sure about it
-	{ "ARVRInterfaceGDNative", "Node3D" }, // Not sure about it
-	{ "TextFile", "Node3D" }, // TextFile was hided
 
 	{ "CullInstance", "Node3D" }, // Probably this type needs to be added to Godot 4.0, since it is for now only available only in Godot 3.x
 	{ "RoomGroup", "Node3D" }, // Probably this type needs to be added to Godot 4.0, since it is for now only available only in Godot 3.x
@@ -581,10 +643,20 @@ static void rename_enums(String &file_content) {
 static void rename_classes(String &file_content) {
 	int current_index = 0;
 
-	// TODO for now it changes also e.g. Spatial.tscn -> Node3D.tscn which will broke some scripts
+	// TODO Maybe it is better way to not rename gd, tscn and other files which are named are classes
 	while (class_renames[current_index][0]) {
+		RegEx reg_before = RegEx(String("\\b") + class_renames[current_index][0] + ".tscn\\b");
+		file_content = reg_before.sub(file_content, "TEMP_RENAMED_CLASS.tscn", true);
+		RegEx reg_before2 = RegEx(String("\\b") + class_renames[current_index][0] + ".gd\\b");
+		file_content = reg_before2.sub(file_content, "TEMP_RENAMED_CLASS.gd", true);
+
 		RegEx reg = RegEx(String("\\b") + class_renames[current_index][0] + "\\b");
 		file_content = reg.sub(file_content, class_renames[current_index][1], true);
+
+		RegEx reg_after = RegEx("\\bTEMP_RENAMED_CLASS.tscn\\b");
+		file_content = reg_after.sub(file_content, String(class_renames[current_index][0]) + ".tscn", true);
+		RegEx reg_after2 = RegEx("\\bTEMP_RENAMED_CLASS.gd\\b");
+		file_content = reg_after2.sub(file_content, String(class_renames[current_index][0]) + ".gd", true);
 		current_index++;
 	}
 };
@@ -622,6 +694,24 @@ static void rename_gdscript_keywords(String &file_content) {
 	}
 };
 
+static void rename_signals(String &file_content) {
+	int current_index = 0;
+	while (signals_renames[current_index][0]) {
+		RegEx reg = RegEx(String("\\b") + signals_renames[current_index][0] + "\\b");
+		file_content = reg.sub(file_content, signals_renames[current_index][1], true);
+		current_index++;
+	}
+};
+
+static void rename_project_settings(String &file_content) {
+	int current_index = 0;
+	while (project_settings_renames[current_index][0]) {
+		RegEx reg = RegEx(String("\\b") + project_settings_renames[current_index][0] + "\\b");
+		file_content = reg.sub(file_content, project_settings_renames[current_index][1], true);
+		current_index++;
+	}
+};
+
 // Collect files which will be checked, it will not touch txt, mp4, wav etc. files
 static Vector<String> check_for_files() {
 	Vector<String> collected_files = Vector<String>();
@@ -648,7 +738,7 @@ static Vector<String> check_for_files() {
 				} else {
 					bool proper_extension = false;
 					// TODO enable all files
-					if (file_name.ends_with(".gd") || file_name.ends_with(".shader")) // || file_name.ends_with(".tscn") || file_name.ends_with(".tres") || file_name.ends_with(".godot"))|| file_name.ends_with(".cs"))|| file_name.ends_with(".csproj"))
+					if (file_name.ends_with(".gd") || file_name.ends_with(".shader") || file_name.ends_with(".tscn") || file_name.ends_with(".tres") || file_name.ends_with(".godot") || file_name.ends_with(".cs") || file_name.ends_with(".csproj"))
 						proper_extension = true;
 
 					if (proper_extension) {
@@ -698,6 +788,8 @@ static bool validate_names() {
 	valid = valid && validate_array(properties_renames);
 	valid = valid && validate_array(shaders_renames);
 	valid = valid && validate_array(gdscript_keywords_renames);
+	valid = valid && validate_array(signals_renames);
+	valid = valid && validate_array(project_settings_renames);
 
 	return valid;
 }
@@ -749,14 +841,15 @@ static void converter() {
 		ERR_CONTINUE_MSG(err != OK, "Failed to read content of \"" + file_name + "\".");
 		uint64_t hash_before = file_content.hash64();
 
-		if (file_name.ends_with(".gd")) {
+		// TSCN must be the same work exactly same as .gd file because it may contains builtin script
+		if (file_name.ends_with(".gd") || file_name.ends_with(".tscn")) {
+			rename_project_settings(file_content);
 			rename_gdscript_keywords(file_content);
 			rename_classes(file_content);
 			rename_enums(file_content);
 			rename_functions(file_content);
 			rename_properties(file_content);
-		} else if (file_name.ends_with(".tscn")) {
-			rename_classes(file_content);
+			rename_signals(file_content);
 		} else if (file_name.ends_with(".cs")) { // TODO, C# should use different methods
 			rename_classes(file_content);
 		} else if (file_name.ends_with(".shader")) {
@@ -764,7 +857,7 @@ static void converter() {
 		} else if (file_name.ends_with(".csproj")) {
 			//TODO
 		} else if (file_name == "project.godot") {
-			rename_properties(file_content);
+			rename_project_settings(file_content);
 		} else {
 			ERR_PRINT(file_name + " is not supported!");
 			continue;
