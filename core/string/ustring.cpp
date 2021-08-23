@@ -3720,7 +3720,7 @@ String String::humanize_size(uint64_t p_size) {
 
 bool String::is_absolute_path() const {
 	if (length() > 1) {
-		return (operator[](0) == '/' || operator[](0) == '\\' || find(":/") != -1 || find(":\\") != -1);
+		return (operator[](0) == '/' || operator[](0) == '\\' || find(":/") != -1 || find(":\\") != -1) && !(find("..") != -1);
 	} else if ((length()) == 1) {
 		return (operator[](0) == '/' || operator[](0) == '\\');
 	} else {
