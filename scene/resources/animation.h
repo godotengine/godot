@@ -92,6 +92,9 @@ private:
 		Vector3 scale;
 	};
 
+	// Not necessarily the same size as Transform3D. The amount of numbers in Animation::Key and TransformKey.
+	const int32_t TRANSFORM_TRACK_SIZE = 12;
+
 	/* TRANSFORM TRACK */
 
 	struct TransformTrack : public Track {
