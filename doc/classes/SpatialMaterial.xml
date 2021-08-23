@@ -290,16 +290,16 @@
 			If [code]true[/code], the proximity fade effect is enabled. The proximity fade effect fades out each pixel based on its distance to another object.
 		</member>
 		<member name="refraction_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
-			If [code]true[/code], the refraction effect is enabled. Distorts transparency based on light from behind the object.
+			If [code]true[/code], the refraction effect is enabled. Refraction distorts transparency based on light from behind the object. When using the GLES3 backend, the material's roughness value will affect the blurriness of the refraction. Higher roughness values will make the refraction look blurrier.
 		</member>
 		<member name="refraction_scale" type="float" setter="set_refraction" getter="get_refraction">
-			The strength of the refraction effect.
+			The strength of the refraction effect. Higher values result in a more distorted appearance for the refraction.
 		</member>
 		<member name="refraction_texture" type="Texture" setter="set_texture" getter="get_texture">
 			Texture that controls the strength of the refraction per-pixel. Multiplied by [member refraction_scale].
 		</member>
 		<member name="refraction_texture_channel" type="int" setter="set_refraction_texture_channel" getter="get_refraction_texture_channel" enum="SpatialMaterial.TextureChannel">
-			Specifies the channel of the [member ao_texture] in which the ambient occlusion information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored metallic in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use.
+			Specifies the channel of the [member refraction_texture] in which the refraction information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored metallic in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use.
 		</member>
 		<member name="rim" type="float" setter="set_rim" getter="get_rim">
 			Sets the strength of the rim lighting effect.
