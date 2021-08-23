@@ -118,6 +118,7 @@
 		<member name="compression_mode" type="int" setter="set_compression_mode" getter="get_compression_mode" enum="NetworkedMultiplayerENet.CompressionMode" default="1">
 			The compression method used for network packets. These have different tradeoffs of compression speed versus bandwidth, you may need to test which one works best for your use case if you use compression at all.
 			[b]Note:[/b] Most games' network design involve sending many small packets frequently (smaller than 4 KB each). If in doubt, it is recommended to keep the default compression algorithm as it works best on these small packets.
+			[b]Note:[/b] [member compression_mode] must be set to the same value on both the server and all its clients. Clients will fail to connect if the [member compression_mode] set on the client differs from the one set on the server. Prior to Godot 3.4, the default [member compression_mode] was [constant COMPRESS_NONE]. Nonetheless, mixing engine versions between clients and server is not recommended and not officially supported.
 		</member>
 		<member name="dtls_hostname" type="String" setter="set_dtls_hostname" getter="get_dtls_hostname" default="&quot;&quot;">
 			The hostname used for DTLS verification, to be compared against the "CN" value in the certificate provided by the server.
