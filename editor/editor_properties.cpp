@@ -4356,11 +4356,11 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				editor->setup(p_object, p_path, p_hint == PROPERTY_HINT_RESOURCE_TYPE ? p_hint_text : "Resource");
 
 				if (p_hint == PROPERTY_HINT_RESOURCE_TYPE) {
-					String open_in_new = EDITOR_GET("interface/inspector/resources_to_open_in_new_inspector");
-					for (int i = 0; i < open_in_new.get_slice_count(","); i++) {
-						String type = open_in_new.get_slicec(',', i).strip_edges();
+					const PackedStringArray open_in_new_inspector = EDITOR_GET("interface/inspector/resources_to_open_in_new_inspector");
+
+					for (const String &type : open_in_new_inspector) {
 						for (int j = 0; j < p_hint_text.get_slice_count(","); j++) {
-							String inherits = p_hint_text.get_slicec(',', j);
+							const String inherits = p_hint_text.get_slicec(',', j);
 							if (ClassDB::is_parent_class(inherits, type)) {
 								editor->set_use_sub_inspector(false);
 							}
