@@ -43,7 +43,9 @@ Dictionary SyntaxHighlighter::get_line_syntax_highlighting(int p_line) {
 		return color_map;
 	}
 
-	GDVIRTUAL_CALL(_get_line_syntax_highlighting, p_line, color_map);
+	if (!GDVIRTUAL_CALL(_get_line_syntax_highlighting, p_line, color_map)) {
+		color_map = _get_line_syntax_highlighting_impl(p_line);
+	}
 
 	highlighting_cache[p_line] = color_map;
 	return color_map;
