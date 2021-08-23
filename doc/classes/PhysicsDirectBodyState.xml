@@ -156,7 +156,7 @@
 	</methods>
 	<members>
 		<member name="angular_velocity" type="Vector3" setter="set_angular_velocity" getter="get_angular_velocity">
-			The body's rotational velocity.
+			The body's rotational velocity in axis-angle format. The magnitude of the vector is the rotation rate in [i]radians[/i] per second.
 		</member>
 		<member name="center_of_mass" type="Vector3" setter="" getter="get_center_of_mass">
 		</member>
@@ -167,7 +167,7 @@
 			The inverse of the mass of the body.
 		</member>
 		<member name="linear_velocity" type="Vector3" setter="set_linear_velocity" getter="get_linear_velocity">
-			The body's linear velocity.
+			The body's linear velocity in units per second.
 		</member>
 		<member name="principal_inertia_axes" type="Basis" setter="" getter="get_principal_inertia_axes">
 		</member>
