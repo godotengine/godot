@@ -2652,6 +2652,8 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_scene_instance_load_placeholder", "load_placeholder"), &Node::set_scene_instance_load_placeholder);
 	ClassDB::bind_method(D_METHOD("get_scene_instance_load_placeholder"), &Node::get_scene_instance_load_placeholder);
+	ClassDB::bind_method(D_METHOD("set_editable_instance", "node", "is_editable"), &Node::set_editable_instance);
+	ClassDB::bind_method(D_METHOD("is_editable_instance", "node"), &Node::is_editable_instance);
 
 	ClassDB::bind_method(D_METHOD("get_viewport"), &Node::get_viewport);
 
