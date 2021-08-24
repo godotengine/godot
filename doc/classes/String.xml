@@ -239,7 +239,7 @@
 		<method name="is_absolute_path" qualifiers="const">
 			<return type="bool" />
 			<description>
-				If the string is a path to a file or directory, returns [code]true[/code] if the path is absolute.
+				Returns [code]true[/code] if the string is a path to a file or directory and its starting point is explicitly defined. This includes [code]res://[/code], [code]user://[/code], [code]C:\[/code], [code]/[/code], etc.
 			</description>
 		</method>
 		<method name="is_empty" qualifiers="const">
@@ -251,7 +251,7 @@
 		<method name="is_rel_path" qualifiers="const">
 			<return type="bool" />
 			<description>
-				If the string is a path to a file or directory, returns [code]true[/code] if the path is relative.
+				Returns [code]true[/code] if the string is a path to a file or directory and its starting point is implicitly defined within the context it is being used. The starting point may refer to the current directory ([code]./[/code]), or the current [Node].
 			</description>
 		</method>
 		<method name="is_subsequence_of" qualifiers="const">
