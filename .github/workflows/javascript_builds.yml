@@ -9,6 +9,10 @@ env:
   EM_VERSION: 2.0.27
   EM_CACHE_FOLDER: 'emsdk-cache'
 
+concurrency:
+  group: ci-${{github.actor}}-${{github.head_ref || concat(github.ref, github.run_number)}}-${{github.ref}}-javascript
+  cancel-in-progress: true
+
 jobs:
   javascript-template:
     runs-on: "ubuntu-20.04"
