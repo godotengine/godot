@@ -1080,8 +1080,6 @@ void RigidBody3D::_reload_physics_characteristics() {
 #define FLOOR_ANGLE_THRESHOLD 0.01
 
 bool CharacterBody3D::move_and_slide() {
-	Vector3 body_velocity_normal = linear_velocity.normalized();
-
 	bool was_on_floor = on_floor;
 
 	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky
@@ -1111,7 +1109,7 @@ bool CharacterBody3D::move_and_slide() {
 	floor_normal = Vector3();
 	floor_velocity = Vector3();
 
-	if (current_floor_velocity != Vector3() && on_floor_body.is_valid()) {
+	if (!current_floor_velocity.is_equal_approx(Vector3()) && on_floor_body.is_valid()) {
 		PhysicsServer3D::MotionResult floor_result;
 		Set<RID> exclude;
 		exclude.insert(on_floor_body);
@@ -1130,39 +1128,35 @@ bool CharacterBody3D::move_and_slide() {
 
 	for (int iteration = 0; iteration < max_slides; ++iteration) {
 		PhysicsServer3D::MotionResult result;
-		bool found_collision = false;
-
 		bool collided = move_and_collide(motion, result, margin, false, !sliding_enabled);
-		if (!collided) {
-			motion = Vector3(); //clear because no collision happened and motion completed
-		} else {
-			found_collision = true;
-
+		if (collided) {
 			motion_results.push_back(result);
 			_set_collision_direction(result);
 
-			if (on_floor && floor_stop_on_slope) {
-				if ((body_velocity_normal + up_direction).length() < 0.01) {
-					Transform3D gt = get_global_transform();
-					if (result.travel.length() > margin) {
-						gt.origin -= result.travel.slide(up_direction);
-					} else {
-						gt.origin -= result.travel;
-					}
-					set_global_transform(gt);
-					linear_velocity = Vector3();
-					return true;
+			if (on_floor && floor_stop_on_slope && (linear_velocity.normalized() + up_direction).length() < 0.01) {
+				Transform3D gt = get_global_transform();
+				if (result.travel.length() > margin) {
+					gt.origin -= result.travel.slide(up_direction);
+				} else {
+					gt.origin -= result.travel;
 				}
+				set_global_transform(gt);
+				linear_velocity = Vector3();
+				motion = Vector3();
+				break;
+			}
+
+			if (result.remainder.is_equal_approx(Vector3())) {
+				motion = Vector3();
+				break;
 			}
 
 			if (sliding_enabled || !on_floor) {
-				motion = result.remainder.slide(result.collision_normal);
-				linear_velocity = linear_velocity.slide(result.collision_normal);
-
-				for (int j = 0; j < 3; j++) {
-					if (locked_axis & (1 << j)) {
-						linear_velocity[j] = 0.0;
-					}
+				Vector3 slide_motion = result.remainder.slide(result.collision_normal);
+				if (slide_motion.dot(linear_velocity) > 0.0) {
+					motion = slide_motion;
+				} else {
+					motion = Vector3();
 				}
 			} else {
 				motion = result.remainder;
@@ -1171,12 +1165,12 @@ bool CharacterBody3D::move_and_slide() {
 
 		sliding_enabled = true;
 
-		if (!found_collision || motion == Vector3()) {
+		if (!collided || motion.is_equal_approx(Vector3())) {
 			break;
 		}
 	}
 
-	if (was_on_floor && snap != Vector3()) {
+	if (was_on_floor && !on_floor && !snap.is_equal_approx(Vector3())) {
 		// Apply snap.
 		Transform3D gt = get_global_transform();
 		PhysicsServer3D::MotionResult result;
@@ -1211,6 +1205,11 @@ bool CharacterBody3D::move_and_slide() {
 	if (!on_floor && !on_wall) {
 		// Add last platform velocity when just left a moving platform.
 		linear_velocity += current_floor_velocity;
+	}
+
+	// Reset the gravity accumulation when touching the ground.
+	if (on_floor && linear_velocity.dot(up_direction) <= 0) {
+		linear_velocity = linear_velocity.slide(up_direction);
 	}
 
 	return motion_results.size() > 0;
