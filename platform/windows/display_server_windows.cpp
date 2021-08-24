@@ -854,12 +854,13 @@ Size2i DisplayServerWindows::window_get_size(WindowID p_window) const {
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
 	const WindowData &wd = windows[p_window];
 
+	// GetClientRect() returns a zero rect for a minimized window, so we need to get the size in another way.
 	if (wd.minimized) {
 		return Size2(wd.width, wd.height);
 	}
 
 	RECT r;
-	if (GetClientRect(wd.hWnd, &r)) { // Only area inside of window border
+	if (GetClientRect(wd.hWnd, &r)) { // Retrieves area inside of window border.
 		return Size2(r.right - r.left, r.bottom - r.top);
 	}
 	return Size2();
@@ -1900,7 +1901,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		}
 		case WM_GETMINMAXINFO: {
 			if (windows[window_id].resizable && !windows[window_id].fullscreen) {
-				Size2 decor = window_get_size(window_id) - window_get_real_size(window_id); // Size of window decorations
+				// Size of window decorations.
+				Size2 decor = window_get_real_size(window_id) - window_get_size(window_id);
+
 				MINMAXINFO *min_max_info = (MINMAXINFO *)lParam;
 				if (windows[window_id].min_size != Size2()) {
 					min_max_info->ptMinTrackSize.x = windows[window_id].min_size.x + decor.x;
@@ -2563,10 +2566,13 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		} break;
 
 		case WM_SIZE: {
-			// Ignore size when a SIZE_MINIMIZED event is triggered
+			// Ignore window size change when a SIZE_MINIMIZED event is triggered.
 			if (wParam != SIZE_MINIMIZED) {
+				// The new width and height of the client area.
 				int window_w = LOWORD(lParam);
 				int window_h = HIWORD(lParam);
+
+				// Set new value to the size if it isn't preserved.
 				if (window_w > 0 && window_h > 0 && !windows[window_id].preserve_window_size) {
 					windows[window_id].width = window_w;
 					windows[window_id].height = window_h;
@@ -2577,29 +2583,37 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					}
 #endif
 
-				} else {
+				} else { // If the size is preserved.
 					windows[window_id].preserve_window_size = false;
+
+					// Restore the old size.
 					window_set_size(Size2(windows[window_id].width, windows[window_id].height), window_id);
 				}
-			} else {
+			} else { // When the window has been minimized, preserve its size.
 				windows[window_id].preserve_window_size = true;
 			}
 
+			// Call windows rect change callback.
 			if (!windows[window_id].rect_changed_callback.is_null()) {
 				Variant size = Rect2i(windows[window_id].last_pos.x, windows[window_id].last_pos.y, windows[window_id].width, windows[window_id].height);
-				Variant *sizep = &size;
+				Variant *size_ptr = &size;
 				Variant ret;
 				Callable::CallError ce;
-				windows[window_id].rect_changed_callback.call((const Variant **)&sizep, 1, ret, ce);
+				windows[window_id].rect_changed_callback.call((const Variant **)&size_ptr, 1, ret, ce);
 			}
 
+			// The window has been maximized.
 			if (wParam == SIZE_MAXIMIZED) {
 				windows[window_id].maximized = true;
 				windows[window_id].minimized = false;
-			} else if (wParam == SIZE_MINIMIZED) {
+			}
+			// The window has been minimized.
+			else if (wParam == SIZE_MINIMIZED) {
 				windows[window_id].maximized = false;
 				windows[window_id].minimized = true;
-			} else if (wParam == SIZE_RESTORED) {
+			}
+			// The window has been resized, but neither the SIZE_MINIMIZED nor SIZE_MAXIMIZED value applies.
+			else if (wParam == SIZE_RESTORED) {
 				windows[window_id].maximized = false;
 				windows[window_id].minimized = false;
 			}
@@ -2626,7 +2640,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				ZeroMemory(dib_data, dib_size.x * dib_size.y * 4);
 			}
 #endif
-			//return 0;								// Jump Back
 		} break;
 
 		case WM_ENTERSIZEMOVE: {
