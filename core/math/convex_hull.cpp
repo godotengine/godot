@@ -63,6 +63,7 @@ subject to the following restrictions:
 #include "core/math/math_defs.h"
 #include "core/os/memory.h"
 #include "core/paged_allocator.h"
+#include "core/set.h"
 
 #include <string.h>
 
@@ -2257,22 +2258,21 @@ Error ConvexHullComputer::convex_hull(const PoolVector<Vector3> &p_points, Geome
 }
 
 Error ConvexHullComputer::convex_hull(const Vector3 *p_points, int32_t p_point_count, Geometry::MeshData &r_mesh) {
-	r_mesh = Geometry::MeshData(); // clear
+	r_mesh = Geometry::MeshData(); // Clear.
 
 	if (p_point_count == 0) {
-		return FAILED; // matches QuickHull
+		return FAILED; // Matches QuickHull.
 	}
 
 	ConvexHullComputer ch;
 	ch.compute(p_points, p_point_count, -1.0, -1.0);
 
 	r_mesh.vertices = ch.vertices;
+	int vertex_count = r_mesh.vertices.size();
 
 	r_mesh.edges.resize(ch.edges.size());
-	for (uint32_t i = 0; i < ch.edges.size(); i++) {
-		r_mesh.edges.write[i].a = (&ch.edges[i])->get_source_vertex();
-		r_mesh.edges.write[i].b = (&ch.edges[i])->get_target_vertex();
-	}
+	Set<int> edge_set;
+	uint32_t edge_count = 0;
 
 	r_mesh.faces.resize(ch.faces.size());
 	for (uint32_t i = 0; i < ch.faces.size(); i++) {
@@ -2283,25 +2283,39 @@ Error ConvexHullComputer::convex_hull(const Vector3 *p_points, int32_t p_point_c
 		do {
 			face.indices.push_back(e->get_target_vertex());
 
+			int edge_a = e->get_source_vertex();
+			int edge_b = e->get_target_vertex();
+
+			// Ignore duplicate edges.
+			int edge_id = edge_a > edge_b ? edge_a * vertex_count + edge_b : edge_b * vertex_count + edge_a;
+			if (!edge_set.has(edge_id)) {
+				edge_set.insert(edge_id);
+				Geometry::MeshData::Edge &edge = r_mesh.edges.write[edge_count++];
+				edge.a = edge_a;
+				edge.b = edge_b;
+			}
+
 			e = e->get_next_edge_of_face();
 		} while (e != e_start);
 
-		// reverse indices: Godot wants clockwise, but this is counter-clockwise
+		// Reverse indices: Godot wants clockwise, but this is counter-clockwise.
 		if (face.indices.size() > 2) {
-			// reverse all but the first index.
+			// Reverse all but the first index.
 			int *indices = face.indices.ptrw();
 			for (int c = 0; c < (face.indices.size() - 1) / 2; c++) {
 				SWAP(indices[c + 1], indices[face.indices.size() - 1 - c]);
 			}
 		}
 
-		// compute normal
+		// Compute normal.
 		if (face.indices.size() >= 3) {
 			face.plane = Plane(r_mesh.vertices[face.indices[0]], r_mesh.vertices[face.indices[1]], r_mesh.vertices[face.indices[2]]);
 		} else {
 			WARN_PRINT("Too few vertices per face.");
 		}
 	}
+
+	r_mesh.edges.resize(edge_count);
 
 	return OK;
 }
