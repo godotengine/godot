@@ -402,19 +402,11 @@ _FORCE_INLINE_ real_t vec3_dot(const Vector3 &p_a, const Vector3 &p_b) {
 }
 
 real_t Vector3::length() const {
-	real_t x2 = x * x;
-	real_t y2 = y * y;
-	real_t z2 = z * z;
-
-	return Math::sqrt(x2 + y2 + z2);
+	return Math::sqrt(length_squared());
 }
 
 real_t Vector3::length_squared() const {
-	real_t x2 = x * x;
-	real_t y2 = y * y;
-	real_t z2 = z * z;
-
-	return x2 + y2 + z2;
+	return vec3_dot(*this, *this);
 }
 
 void Vector3::normalize() {
