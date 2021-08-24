@@ -1111,8 +1111,7 @@ Vector2 KinematicBody2D::_move_and_slide_internal(const Vector2 &p_linear_veloci
 	float delta = Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time();
 
 	Vector2 current_floor_velocity = floor_velocity;
-
-	if ((on_floor || on_wall) && on_floor_body.is_valid()) {
+	if (on_floor && on_floor_body.is_valid()) {
 		//this approach makes sure there is less delay between the actual body velocity and the one we saved
 		Physics2DDirectBodyState *bs = Physics2DServer::get_singleton()->body_get_direct_state(on_floor_body);
 		if (bs) {
@@ -1234,7 +1233,7 @@ Vector2 KinematicBody2D::_move_and_slide_internal(const Vector2 &p_linear_veloci
 		}
 	}
 
-	if (!on_floor && !on_wall) {
+	if (!on_floor) {
 		// Add last platform velocity when just left a moving platform.
 		return body_velocity + current_floor_velocity;
 	}
@@ -1264,8 +1263,6 @@ void KinematicBody2D::_set_collision_direction(const Collision &p_collision, con
 			on_ceiling = true;
 		} else {
 			on_wall = true;
-			on_floor_body = p_collision.collider_rid;
-			floor_velocity = p_collision.collider_vel;
 		}
 	}
 }
