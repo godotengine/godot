@@ -304,6 +304,26 @@ void Area3DSW::call_queries() {
 	}
 }
 
+void Area3DSW::compute_gravity(const Vector3 &p_position, Vector3 &r_gravity) const {
+	if (is_gravity_point()) {
+		const real_t gravity_distance_scale = get_gravity_distance_scale();
+		Vector3 v = get_transform().xform(get_gravity_vector()) - p_position;
+		if (gravity_distance_scale > 0) {
+			const real_t v_length = v.length();
+			if (v_length > 0) {
+				const real_t v_scaled = v_length * gravity_distance_scale;
+				r_gravity = (v.normalized() * (get_gravity() / (v_scaled * v_scaled)));
+			} else {
+				r_gravity = Vector3();
+			}
+		} else {
+			r_gravity = v.normalized() * get_gravity();
+		}
+	} else {
+		r_gravity = get_gravity_vector() * get_gravity();
+	}
+}
+
 Area3DSW::Area3DSW() :
 		CollisionObject3DSW(TYPE_AREA),
 		monitor_query_list(this),

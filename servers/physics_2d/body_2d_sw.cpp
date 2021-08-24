@@ -352,17 +352,10 @@ void Body2DSW::set_space(Space2DSW *p_space) {
 	first_integration = false;
 }
 
-void Body2DSW::_compute_area_gravity_and_dampenings(const Area2DSW *p_area) {
-	if (p_area->is_gravity_point()) {
-		if (p_area->get_gravity_distance_scale() > 0) {
-			Vector2 v = p_area->get_transform().xform(p_area->get_gravity_vector()) - get_transform().get_origin();
-			gravity += v.normalized() * (p_area->get_gravity() / Math::pow(v.length() * p_area->get_gravity_distance_scale() + 1, 2));
-		} else {
-			gravity += (p_area->get_transform().xform(p_area->get_gravity_vector()) - get_transform().get_origin()).normalized() * p_area->get_gravity();
-		}
-	} else {
-		gravity += p_area->get_gravity_vector() * p_area->get_gravity();
-	}
+void Body2DSW::_compute_area_gravity_and_damping(const Area2DSW *p_area) {
+	Vector2 area_gravity;
+	p_area->compute_gravity(get_transform().get_origin(), area_gravity);
+	gravity += area_gravity;
 
 	area_linear_damp += p_area->get_linear_damp();
 	area_angular_damp += p_area->get_angular_damp();
@@ -391,7 +384,7 @@ void Body2DSW::integrate_forces(real_t p_step) {
 			switch (mode) {
 				case PhysicsServer2D::AREA_SPACE_OVERRIDE_COMBINE:
 				case PhysicsServer2D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
-					_compute_area_gravity_and_dampenings(aa[i].area);
+					_compute_area_gravity_and_damping(aa[i].area);
 					stopped = mode == PhysicsServer2D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE;
 				} break;
 				case PhysicsServer2D::AREA_SPACE_OVERRIDE_REPLACE:
@@ -399,7 +392,7 @@ void Body2DSW::integrate_forces(real_t p_step) {
 					gravity = Vector2(0, 0);
 					area_angular_damp = 0;
 					area_linear_damp = 0;
-					_compute_area_gravity_and_dampenings(aa[i].area);
+					_compute_area_gravity_and_damping(aa[i].area);
 					stopped = mode == PhysicsServer2D::AREA_SPACE_OVERRIDE_REPLACE;
 				} break;
 				default: {
@@ -408,7 +401,7 @@ void Body2DSW::integrate_forces(real_t p_step) {
 		}
 	}
 	if (!stopped) {
-		_compute_area_gravity_and_dampenings(def_area);
+		_compute_area_gravity_and_damping(def_area);
 	}
 	gravity *= gravity_scale;
 

@@ -34,7 +34,6 @@
 #include "collision_object_3d_sw.h"
 #include "core/templates/self_list.h"
 #include "servers/physics_server_3d.h"
-//#include "servers/physics_3d/query_sw.h"
 
 class Space3DSW;
 class Body3DSW;
@@ -101,18 +100,12 @@ class Area3DSW : public CollisionObject3DSW {
 	Map<BodyKey, BodyState> monitored_bodies;
 	Map<BodyKey, BodyState> monitored_areas;
 
-	//virtual void shape_changed_notify(ShapeSW *p_shape);
-	//virtual void shape_deleted_notify(ShapeSW *p_shape);
-
 	Set<Constraint3DSW *> constraints;
 
 	virtual void _shapes_changed();
 	void _queue_monitor_update();
 
 public:
-	//_FORCE_INLINE_ const Transform& get_inverse_transform() const { return inverse_transform; }
-	//_FORCE_INLINE_ SpaceSW* get_owner() { return owner; }
-
 	void set_monitor_callback(ObjectID p_id, const StringName &p_method);
 	_FORCE_INLINE_ bool has_monitor_callback() const { return monitor_callback_id.is_valid(); }
 
@@ -183,6 +176,8 @@ public:
 	void set_space(Space3DSW *p_space);
 
 	void call_queries();
+
+	void compute_gravity(const Vector3 &p_position, Vector3 &r_gravity) const;
 
 	Area3DSW();
 	~Area3DSW();
