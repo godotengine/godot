@@ -210,6 +210,7 @@ void FindReplaceBar::_replace() {
 	}
 	text_editor->end_complex_operation();
 	results_count = -1;
+	_update_matches_label();
 
 	if (selection_enabled && is_selection_only()) {
 		// Reselect in order to keep 'Replace' restricted to selection
