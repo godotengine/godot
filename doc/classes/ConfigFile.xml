@@ -149,6 +149,8 @@
 		</method>
 		<method name="load">
 			<return type="int" enum="Error" />
+			<returns_error number="0"/>
+			<returns_error number="12"/>
 			<argument index="0" name="path" type="String" />
 			<description>
 				Loads the config file specified as a parameter. The file's contents are parsed and loaded in the [ConfigFile] object which the method was called on.

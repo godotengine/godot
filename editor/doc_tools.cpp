@@ -434,6 +434,18 @@ void DocTools::generate(bool p_basic_types) {
 				}
 			}
 
+			Vector<Error> errs = ClassDB::get_method_error_return_values(name, E.name);
+			if (errs.size()) {
+				if (errs.find(OK) == -1) {
+					errs.insert(0, OK);
+				}
+				for (int i = 0; i < errs.size(); i++) {
+					if (method.errors_returned.find(errs[i]) == -1) {
+						method.errors_returned.push_back(errs[i]);
+					}
+				}
+			}
+
 			c.methods.push_back(method);
 		}
 
@@ -874,6 +886,9 @@ static Error _parse_methods(Ref<XMLParser> &parser, Vector<DocData::MethodDoc> &
 							if (parser->has_attribute("enum")) {
 								method.return_enum = parser->get_attribute_value("enum");
 							}
+						} else if (name == "returns_error") {
+							ERR_FAIL_COND_V(!parser->has_attribute("number"), ERR_FILE_CORRUPT);
+							method.errors_returned.push_back(parser->get_attribute_value("number").to_int());
 						} else if (name == "argument") {
 							DocData::ArgumentDoc argument;
 							ERR_FAIL_COND_V(!parser->has_attribute("name"), ERR_FILE_CORRUPT);
@@ -1221,6 +1236,11 @@ Error DocTools::save_classes(const String &p_default_path, const Map<String, Str
 					enum_text = " enum=\"" + m.return_enum + "\"";
 				}
 				_write_string(f, 3, "<return type=\"" + m.return_type + "\"" + enum_text + " />");
+			}
+			if (m.errors_returned.size() > 0) {
+				for (int j = 0; j < m.errors_returned.size(); j++) {
+					_write_string(f, 3, "<returns_error number=\"" + itos(m.errors_returned[j]) + "\"/>");
+				}
 			}
 
 			for (int j = 0; j < m.arguments.size(); j++) {
