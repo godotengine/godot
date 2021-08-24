@@ -363,7 +363,7 @@ private:
 	ItemMeta *meta_hovering = nullptr;
 	Variant current_meta;
 
-	Vector<Ref<RichTextEffect>> custom_effects;
+	Array custom_effects;
 
 	void _invalidate_current_line(ItemFrame *p_frame);
 	void _validate_line_caches(ItemFrame *p_frame);
@@ -577,8 +577,8 @@ public:
 	void set_percent_visible(float p_percent);
 	float get_percent_visible() const;
 
-	void set_effects(const Vector<Variant> &effects);
-	Vector<Variant> get_effects();
+	void set_effects(Array p_effects);
+	Array get_effects();
 
 	void install_effect(const Variant effect);
 
