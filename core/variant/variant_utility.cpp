@@ -35,6 +35,8 @@
 #include "core/object/ref_counted.h"
 #include "core/os/os.h"
 #include "core/templates/oa_hash_map.h"
+#include "core/templates/rid.h"
+#include "core/templates/rid_owner.h"
 #include "core/variant/binder_common.h"
 #include "core/variant/variant_parser.h"
 
@@ -728,6 +730,13 @@ struct VariantUtilityFunctions {
 		}
 		return p_instance.get_validated_object() != nullptr;
 	}
+
+	static inline uint64_t rid_allocate_id() {
+		return RID_AllocBase::_gen_id();
+	}
+	static inline RID rid_from_int64(uint64_t p_base) {
+		return RID::from_uint64(p_base);
+	}
 };
 
 #ifdef DEBUG_METHODS_ENABLED
@@ -1265,6 +1274,9 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(instance_from_id, sarray("instance_id"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDR(is_instance_id_valid, sarray("id"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDR(is_instance_valid, sarray("instance"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+
+	FUNCBINDR(rid_allocate_id, Vector<String>(), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDR(rid_from_int64, sarray("base"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 }
 
 void Variant::_unregister_variant_utility_functions() {

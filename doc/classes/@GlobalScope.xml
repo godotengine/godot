@@ -711,6 +711,19 @@
 			<description>
 			</description>
 		</method>
+		<method name="rid_allocate_id">
+			<return type="int" />
+			<description>
+				Allocate a unique ID which can be used by the implementation to construct a RID. This is used mainly from native extensions to implement servers.
+			</description>
+		</method>
+		<method name="rid_from_int64">
+			<return type="RID" />
+			<argument index="0" name="base" type="int" />
+			<description>
+				Create a RID from an int64. This is used mainly from native extensions to build servers.
+			</description>
+		</method>
 		<method name="round">
 			<return type="float" />
 			<argument index="0" name="x" type="float" />
