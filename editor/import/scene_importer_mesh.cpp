@@ -110,6 +110,12 @@ String EditorSceneImporterMesh::get_surface_name(int p_surface) const {
 	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), String());
 	return surfaces[p_surface].name;
 }
+void EditorSceneImporterMesh::set_surface_name(int p_surface, const String &p_name) {
+	ERR_FAIL_INDEX(p_surface, surfaces.size());
+	surfaces.write[p_surface].name = p_name;
+	mesh.unref();
+}
+
 Array EditorSceneImporterMesh::get_surface_blend_shape_arrays(int p_surface, int p_blend_shape) const {
 	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), Array());
 	ERR_FAIL_INDEX_V(p_blend_shape, surfaces[p_surface].blend_shape_data.size(), Array());
@@ -140,6 +146,7 @@ Ref<Material> EditorSceneImporterMesh::get_surface_material(int p_surface) const
 void EditorSceneImporterMesh::set_surface_material(int p_surface, const Ref<Material> &p_material) {
 	ERR_FAIL_INDEX(p_surface, surfaces.size());
 	surfaces.write[p_surface].material = p_material;
+	mesh.unref();
 }
 
 Basis EditorSceneImporterMesh::compute_rotation_matrix_from_ortho_6d(Vector3 p_x_raw, Vector3 p_y_raw) {
@@ -244,7 +251,7 @@ bool EditorSceneImporterMesh::has_mesh() const {
 	return mesh.is_valid();
 }
 
-Ref<ArrayMesh> EditorSceneImporterMesh::get_mesh(const Ref<Mesh> &p_base) {
+Ref<ArrayMesh> EditorSceneImporterMesh::get_mesh(const Ref<ArrayMesh> &p_base) {
 	ERR_FAIL_COND_V(surfaces.size() == 0, Ref<ArrayMesh>());
 
 	if (mesh.is_null()) {
@@ -838,7 +845,10 @@ void EditorSceneImporterMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_surface_lod_indices", "surface_idx", "lod_idx"), &EditorSceneImporterMesh::get_surface_lod_indices);
 	ClassDB::bind_method(D_METHOD("get_surface_material", "surface_idx"), &EditorSceneImporterMesh::get_surface_material);
 
-	ClassDB::bind_method(D_METHOD("get_mesh"), &EditorSceneImporterMesh::get_mesh);
+	ClassDB::bind_method(D_METHOD("set_surface_name", "surface_idx", "name"), &EditorSceneImporterMesh::set_surface_name);
+	ClassDB::bind_method(D_METHOD("set_surface_material", "surface_idx", "material"), &EditorSceneImporterMesh::set_surface_material);
+
+	ClassDB::bind_method(D_METHOD("get_mesh", "base_mesh"), &EditorSceneImporterMesh::get_mesh, DEFVAL(Ref<ArrayMesh>()));
 	ClassDB::bind_method(D_METHOD("clear"), &EditorSceneImporterMesh::clear);
 
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &EditorSceneImporterMesh::_set_data);
