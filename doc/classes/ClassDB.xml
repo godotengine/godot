@@ -176,6 +176,12 @@
 				Returns the parent class of [code]class[/code].
 			</description>
 		</method>
+		<method name="get_variant_method_list" qualifiers="const">
+			<return type="Array" />
+			<argument index="0" name="type" type="int" enum="Variant.Type" />
+			<description>
+			</description>
+		</method>
 		<method name="instance" qualifiers="const">
 			<return type="Variant" />
 			<argument index="0" name="class" type="String" />

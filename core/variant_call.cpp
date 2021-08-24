@@ -1513,8 +1513,9 @@ Vector<Variant> Variant::get_method_default_arguments(Variant::Type p_type, cons
 	return E->get().default_args;
 }
 
-void Variant::get_method_list(List<MethodInfo> *p_list) const {
-	const _VariantCall::TypeFunc &tf = _VariantCall::type_funcs[type];
+void Variant::get_method_list_by_type(List<MethodInfo> *p_list, Variant::Type p_type) {
+	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
+	const _VariantCall::TypeFunc &tf = _VariantCall::type_funcs[p_type];
 
 	for (const Map<StringName, _VariantCall::FuncData>::Element *E = tf.functions.front(); E; E = E->next()) {
 		const _VariantCall::FuncData &fd = E->get();
@@ -1546,6 +1547,17 @@ void Variant::get_method_list(List<MethodInfo> *p_list) const {
 #endif
 
 		p_list->push_back(mi);
+	}
+}
+
+void Variant::get_method_list(List<MethodInfo> *p_list) const {
+	if (type == OBJECT) {
+		Object *obj = _OBJ_PTR(*this);
+		if (obj) {
+			obj->get_method_list(p_list);
+		}
+	} else {
+		Variant::get_method_list_by_type(p_list, type);
 	}
 }
 

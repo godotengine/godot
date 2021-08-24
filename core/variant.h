@@ -385,6 +385,7 @@ public:
 
 	static Variant construct(const Variant::Type, const Variant **p_args, int p_argcount, CallError &r_error, bool p_strict = true);
 
+	static void get_method_list_by_type(List<MethodInfo> *p_list, Variant::Type p_type);
 	void get_method_list(List<MethodInfo> *p_list) const;
 	bool has_method(const StringName &p_method) const;
 	static Vector<Variant::Type> get_method_argument_types(Variant::Type p_type, const StringName &p_method);
