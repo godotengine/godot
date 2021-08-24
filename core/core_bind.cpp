@@ -2165,12 +2165,39 @@ bool Engine::is_in_physics_frame() const {
 	return ::Engine::get_singleton()->is_in_physics_frame();
 }
 
-bool Engine::has_singleton(const String &p_name) const {
+bool Engine::has_singleton(const StringName &p_name) const {
 	return ::Engine::get_singleton()->has_singleton(p_name);
 }
 
-Object *Engine::get_singleton_object(const String &p_name) const {
+Object *Engine::get_singleton_object(const StringName &p_name) const {
 	return ::Engine::get_singleton()->get_singleton_object(p_name);
+}
+
+void Engine::register_singleton(const StringName &p_name, Object *p_object) {
+	ERR_FAIL_COND_MSG(has_singleton(p_name), "Singleton already registered: " + String(p_name));
+	ERR_FAIL_COND_MSG(p_name.operator String().is_valid_identifier(), "Singleton name is not a valid identifier: " + String(p_name));
+	::Engine::Singleton s;
+	s.class_name = p_name;
+	s.name = p_name;
+	s.ptr = p_object;
+	s.user_created = true;
+	::Engine::get_singleton()->add_singleton(s);
+	;
+}
+void Engine::unregister_singleton(const StringName &p_name) {
+	ERR_FAIL_COND_MSG(!has_singleton(p_name), "Attempt to remove unregisteres singleton: " + String(p_name));
+	ERR_FAIL_COND_MSG(!::Engine::get_singleton()->is_singleton_user_created(p_name), "Attempt to remove non-user created singleton: " + String(p_name));
+	::Engine::get_singleton()->remove_singleton(p_name);
+}
+
+Vector<String> Engine::get_singleton_list() const {
+	List<::Engine::Singleton> singletons;
+	::Engine::get_singleton()->get_singletons(&singletons);
+	Vector<String> ret;
+	for (List<::Engine::Singleton>::Element *E = singletons.front(); E; E = E->next()) {
+		ret.push_back(E->get().name);
+	}
+	return ret;
 }
 
 void Engine::set_editor_hint(bool p_enabled) {
@@ -2219,6 +2246,10 @@ void Engine::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("has_singleton", "name"), &Engine::has_singleton);
 	ClassDB::bind_method(D_METHOD("get_singleton", "name"), &Engine::get_singleton_object);
+
+	ClassDB::bind_method(D_METHOD("register_singleton", "name", "instance"), &Engine::register_singleton);
+	ClassDB::bind_method(D_METHOD("unregister_singleton", "name"), &Engine::unregister_singleton);
+	ClassDB::bind_method(D_METHOD("get_singleton_list"), &Engine::get_singleton_list);
 
 	ClassDB::bind_method(D_METHOD("set_editor_hint", "enabled"), &Engine::set_editor_hint);
 	ClassDB::bind_method(D_METHOD("is_editor_hint"), &Engine::is_editor_hint);

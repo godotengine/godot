@@ -42,6 +42,7 @@ public:
 		StringName name;
 		Object *ptr;
 		StringName class_name; //used for binding generation hinting
+		bool user_created = false;
 		Singleton(const StringName &p_name = StringName(), Object *p_ptr = nullptr, const StringName &p_class_name = StringName());
 	};
 
@@ -109,8 +110,10 @@ public:
 
 	void add_singleton(const Singleton &p_singleton);
 	void get_singletons(List<Singleton> *p_singletons);
-	bool has_singleton(const String &p_name) const;
-	Object *get_singleton_object(const String &p_name) const;
+	bool has_singleton(const StringName &p_name) const;
+	Object *get_singleton_object(const StringName &p_name) const;
+	void remove_singleton(const StringName &p_name);
+	bool is_singleton_user_created(const StringName &p_name) const;
 
 #ifdef TOOLS_ENABLED
 	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) { editor_hint = p_enabled; }
