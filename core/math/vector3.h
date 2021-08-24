@@ -406,7 +406,7 @@ real_t Vector3::length() const {
 }
 
 real_t Vector3::length_squared() const {
-	return vec3_dot(*this, *this);
+	return dot(*this);
 }
 
 void Vector3::normalize() {

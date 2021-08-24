@@ -35,11 +35,11 @@ real_t Vector2::angle() const {
 }
 
 real_t Vector2::length() const {
-	return Math::sqrt(x * x + y * y);
+	return Math::sqrt(length_squared());
 }
 
 real_t Vector2::length_squared() const {
-	return x * x + y * y;
+	return dot(*this);
 }
 
 void Vector2::normalize() {
