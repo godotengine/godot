@@ -2380,7 +2380,11 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_await(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	AwaitNode *await = alloc_node<AwaitNode>();
-	await->to_await = parse_precedence(PREC_AWAIT, false);
+	ExpressionNode *element = parse_precedence(PREC_AWAIT, false);
+	if (element == nullptr) {
+		push_error(R"(Expected signal or coroutine after "await".)");
+	}
+	await->to_await = element;
 
 	current_function->is_coroutine = true;
 
