@@ -666,6 +666,12 @@
 				Returns the similarity index of the text compared to this string. 1 means totally similar and 0 means totally dissimilar.
 			</description>
 		</method>
+		<method name="simplify_path">
+			<return type="bool" />
+			<description>
+				Returns a simplified canonical path.
+			</description>
+		</method>
 		<method name="split">
 			<return type="PoolStringArray" />
 			<argument index="0" name="delimiter" type="String" />
