@@ -4170,10 +4170,30 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 							tokenizer->advance();
 						}
 
+						bool did_parse_type = false;
+						if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
+							// signal argument may have a type parameter.
+							// can't do anything with this right now, but it makes good inline documentation.
+							DataType argtype;
+							if (!_parse_type(argtype)) {
+								_set_error("Expected a type for an argument.");
+								return;
+							}
+							did_parse_type = true;
+						}
+
+						while (tokenizer->get_token() == GDScriptTokenizer::TK_NEWLINE) {
+							tokenizer->advance();
+						}
+
 						if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
 							tokenizer->advance();
 						} else if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
-							_set_error("Expected \",\" or \")\" after a \"signal\" parameter identifier.");
+							if (did_parse_type) {
+								_set_error("Expected \",\" or \")\" after a \"signal\" parameter type.");
+							} else {
+								_set_error("Expected \":\", \",\" or \")\" after a \"signal\" parameter identifier.");
+							}
 							return;
 						}
 					}
