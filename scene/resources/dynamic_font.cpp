@@ -95,7 +95,8 @@ void DynamicFontData::_bind_methods() {
 	BIND_ENUM_CONSTANT(HINTING_LIGHT);
 	BIND_ENUM_CONSTANT(HINTING_NORMAL);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "font_path", PROPERTY_HINT_FILE, "*.ttf,*.otf"), "set_font_path", "get_font_path");
+	// Only WOFF1 is supported as WOFF2 requires a Brotli decompression library to be linked.
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "font_path", PROPERTY_HINT_FILE, "*.ttf,*.otf,*.woff"), "set_font_path", "get_font_path");
 }
 
 DynamicFontData::DynamicFontData() {
@@ -1137,6 +1138,8 @@ RES ResourceFormatLoaderDynamicFont::load(const String &p_path, const String &p_
 void ResourceFormatLoaderDynamicFont::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("ttf");
 	p_extensions->push_back("otf");
+	// Only WOFF1 is supported as WOFF2 requires a Brotli decompression library to be linked.
+	p_extensions->push_back("woff");
 }
 
 bool ResourceFormatLoaderDynamicFont::handles_type(const String &p_type) const {
@@ -1145,7 +1148,7 @@ bool ResourceFormatLoaderDynamicFont::handles_type(const String &p_type) const {
 
 String ResourceFormatLoaderDynamicFont::get_resource_type(const String &p_path) const {
 	String el = p_path.get_extension().to_lower();
-	if (el == "ttf" || el == "otf") {
+	if (el == "ttf" || el == "otf" || el == "woff") {
 		return "DynamicFontData";
 	}
 	return "";
