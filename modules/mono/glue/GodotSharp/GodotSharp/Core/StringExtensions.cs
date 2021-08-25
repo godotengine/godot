@@ -1103,6 +1103,17 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns a simplified canonical path.
+        /// </summary>
+        public static string SimplifyPath(this string instance)
+        {
+            return godot_icall_String_simplify_path(instance);
+        }
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static string godot_icall_String_simplify_path(string str);
+
+        /// <summary>
         /// Split the string by a divisor string, return an array of the substrings.
         /// Example "One,Two,Three" will return ["One","Two","Three"] if split by ",".
         /// </summary>
