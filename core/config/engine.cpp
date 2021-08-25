@@ -199,17 +199,41 @@ bool Engine::is_printing_error_messages() const {
 }
 
 void Engine::add_singleton(const Singleton &p_singleton) {
+	ERR_FAIL_COND_MSG(singleton_ptrs.has(p_singleton.name), "Can't register singleton that already exists: " + String(p_singleton.name));
 	singletons.push_back(p_singleton);
 	singleton_ptrs[p_singleton.name] = p_singleton.ptr;
 }
 
-Object *Engine::get_singleton_object(const String &p_name) const {
+Object *Engine::get_singleton_object(const StringName &p_name) const {
 	const Map<StringName, Object *>::Element *E = singleton_ptrs.find(p_name);
-	ERR_FAIL_COND_V_MSG(!E, nullptr, "Failed to retrieve non-existent singleton '" + p_name + "'.");
+	ERR_FAIL_COND_V_MSG(!E, nullptr, "Failed to retrieve non-existent singleton '" + String(p_name) + "'.");
 	return E->get();
 }
 
-bool Engine::has_singleton(const String &p_name) const {
+bool Engine::is_singleton_user_created(const StringName &p_name) const {
+	ERR_FAIL_COND_V(!singleton_ptrs.has(p_name), false);
+
+	for (const Singleton &E : singletons) {
+		if (E.name == p_name && E.user_created) {
+			return true;
+		}
+	}
+
+	return false;
+}
+void Engine::remove_singleton(const StringName &p_name) {
+	ERR_FAIL_COND(!singleton_ptrs.has(p_name));
+
+	for (List<Singleton>::Element *E = singletons.front(); E; E = E->next()) {
+		if (E->get().name == p_name) {
+			singletons.erase(E);
+			singleton_ptrs.erase(p_name);
+			return;
+		}
+	}
+}
+
+bool Engine::has_singleton(const StringName &p_name) const {
 	return singleton_ptrs.has(p_name);
 }
 

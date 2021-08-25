@@ -639,8 +639,11 @@ public:
 
 	bool is_in_physics_frame() const;
 
-	bool has_singleton(const String &p_name) const;
-	Object *get_singleton_object(const String &p_name) const;
+	bool has_singleton(const StringName &p_name) const;
+	Object *get_singleton_object(const StringName &p_name) const;
+	void register_singleton(const StringName &p_name, Object *p_object);
+	void unregister_singleton(const StringName &p_name);
+	Vector<String> get_singleton_list() const;
 
 	void set_editor_hint(bool p_enabled);
 	bool is_editor_hint() const;
