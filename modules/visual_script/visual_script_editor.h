@@ -46,6 +46,8 @@ class VisualScriptEditorVariableEdit;
 // TODO: Maybe this class should be refactored.
 // See https://github.com/godotengine/godot/issues/51913
 class VisualScriptEditor : public ScriptEditorBase {
+	GDCLASS(VisualScriptEditor, ScriptEditorBase);
+
 	enum {
 		TYPE_SEQUENCE = 1000,
 		INDEX_BASE_SEQUENCE = 1024
@@ -330,32 +332,28 @@ public:
 	~VisualScriptEditor();
 };
 
-namespace vs_bind {
-
 // Singleton
-class VisualScriptEditor : public Object {
-	GDCLASS(VisualScriptEditor, Object);
+class VisualScriptCustomNodes : public Object {
+	GDCLASS(VisualScriptCustomNodes, Object);
 
 	friend class VisualScriptLanguage;
 
 protected:
 	static void _bind_methods();
-	static VisualScriptEditor *singleton;
+	static VisualScriptCustomNodes *singleton;
 
 	static Map<String, REF> custom_nodes;
 	static Ref<VisualScriptNode> create_node_custom(const String &p_name);
 
 public:
-	static VisualScriptEditor *get_singleton() { return singleton; }
+	static VisualScriptCustomNodes *get_singleton() { return singleton; }
 
 	void add_custom_node(const String &p_name, const String &p_category, const Ref<Script> &p_script);
 	void remove_custom_node(const String &p_name, const String &p_category);
 
-	VisualScriptEditor();
-	~VisualScriptEditor();
+	VisualScriptCustomNodes();
+	~VisualScriptCustomNodes();
 };
-
-} // namespace vs_bind
 
 #endif
 

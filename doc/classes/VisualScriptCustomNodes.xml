@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualScriptEditor" inherits="Object" version="4.0">
+<class name="VisualScriptCustomNodes" inherits="Object" version="4.0">
 	<brief_description>
+		Manages custom nodes for the Visual Script editor.
 	</brief_description>
 	<description>
+		This singleton can be used to manage (i.e., add or remove) custom nodes for the Visual Script editor.
 	</description>
 	<tutorials>
 	</tutorials>
