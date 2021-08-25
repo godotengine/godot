@@ -1746,8 +1746,9 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 		push_error(R"(No pattern found for "match" branch.)");
 	}
 
-	if (!consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" after "match" patterns.)"))
+	if (!consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" after "match" patterns.)")) {
 		return nullptr;
+	}
 
 	// Save continue state.
 	bool could_continue = can_continue;
