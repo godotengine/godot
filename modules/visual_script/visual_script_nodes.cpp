@@ -2976,7 +2976,7 @@ public:
 
 	virtual int get_working_memory_size() const { return work_mem_size; }
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
-		if (GDVIRTUAL_IS_OVERRIDEN_PTR(node, _step)) {
+		if (GDVIRTUAL_IS_OVERRIDDEN_PTR(node, _step)) {
 			Array in_values;
 			Array out_values;
 			Array work_mem;

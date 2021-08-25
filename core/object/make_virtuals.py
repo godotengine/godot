@@ -23,7 +23,7 @@ _FORCE_INLINE_ bool _gdvirtual_##m_name##_call($CALLARGS) $CONST { \\
 \\
     return false;\\
 }\\
-_FORCE_INLINE_ bool _gdvirtual_##m_name##_overriden() const { \\
+_FORCE_INLINE_ bool _gdvirtual_##m_name##_overridden() const { \\
 	ScriptInstance *script_instance = ((Object*)(this))->get_script_instance();\\
 	if (script_instance) {\\
 	    return script_instance->has_method(_gdvirtual_##m_name##_sn);\\
