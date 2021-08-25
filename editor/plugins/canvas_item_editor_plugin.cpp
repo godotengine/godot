@@ -4190,6 +4190,7 @@ void CanvasItemEditor::_zoom_on_position(real_t p_zoom, Point2 p_position) {
 	p_zoom = CLAMP(p_zoom, MIN_ZOOM, MAX_ZOOM);
 
 	if (p_zoom == zoom) {
+		zoom_widget->set_zoom(p_zoom);
 		return;
 	}
 
