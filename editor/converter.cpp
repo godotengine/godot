@@ -108,11 +108,19 @@ static const char *enum_renames[][2] = {
 	{ "JOINT_PIN", "JOINT_TYPE_PIN" }, //PhysicsServer2D
 	{ "JOINT_SLIDER", "JOINT_TYPE_SLIDER" }, //PhysicsServer3D
 	{ "KEY_CONTROL", "KEY_CTRL" }, // Globals
+	{ "MODE_OPEN_ANY", "FILE_MODE_OPEN_ANY" }, //FileDialog
+	{ "MODE_OPEN_DIR", "FILE_MODE_OPEN_DIR" }, //FileDialog
+	{ "MODE_OPEN_FILE", "FILE_MODE_OPEN_FILE" }, //FileDialog
+	{ "MODE_OPEN_FILES", "FILE_MODE_OPEN_FILES" }, //FileDialog
+	{ "MODE_SAVE_FILE", "FILE_MODE_SAVE_FILE" }, //FileDialog
 	{ "MATH_STEPIFY", "MATH_STEP_DECIMALS" }, //VisualScriptBuiltinFunc
 	{ "NOTIFICATION_APP_PAUSED", "NOTIFICATION_APPLICATION_PAUSED" }, //MainLoop
 	{ "NOTIFICATION_APP_RESUMED", "NOTIFICATION_APPLICATION_RESUMED" }, //MainLoop
 	{ "NOTIFICATION_WM_FOCUS_IN", "NOTIFICATION_APPLICATION_FOCUS_IN" }, //MainLoop
 	{ "NOTIFICATION_WM_FOCUS_OUT", "NOTIFICATION_APPLICATION_FOCUS_OUT" }, //MainLoop
+	{ "PAUSE_MODE_INHERIT", "PROCESS_MODE_INHERIT" }, //Node
+	{ "PAUSE_MODE_PROCESS", "PROCESS_MODE_ALWAYS" }, //Node
+	{ "PAUSE_MODE_STOP", "PROCESS_MODE_PAUSABLE" }, //Node
 	{ "RENDER_DRAW_CALLS_IN_FRAME", "RENDER_TOTAL_DRAW_CALLS_IN_FRAME" }, //Performance
 	{ "RENDER_OBJECTS_IN_FRAME", "RENDER_TOTAL_OBJECTS_IN_FRAME" }, //Performance
 	{ "SIDE_BOTTOM", "MARGIN_BOTTOM" }, //Globals
@@ -129,15 +137,19 @@ static const char *enum_renames[][2] = {
 // Simple renaming functions - "function1" -> "function2"
 // Do not add functions which are named same in multiple classes like "start", because this will broke other functions, also
 static const char *function_renames[][2] = {
+	{ "rand_range", "randf_range" }, //@GDScript
+	{ "stepify", "snapped" }, //@GDScript
 	{ "add_cancel", "add_cancel_button" }, // AcceptDialog
 	{ "get_ok", "get_ok_button" }, // AcceptDialog
 	{ "track_remove_key_at_position", "track_remove_key_at_time" }, // Animation
 	{ "get_audio_bus", "get_audio_bus_name" }, // Area3D
 	{ "set_audio_bus", "set_audio_bus_name" }, // Area3D
+	{ "empty", "is_empty" }, // Array and Packed*Array and Dictionary
 	{ "regen_normalmaps", "regen_normal_maps" }, // ArrayMesh
 	{ "surface_update_region", "surface_update_attribute_region" }, //ArrayMesh
 	{ "set_global_rate_scale", "set_playback_speed_scale" }, // AudioServer
 	// { "_unhandled_input", "_unhandled_key_input"}, // BaseButton - Used also in EditorFileDialog
+	{ "get_rotation_quat", "get_rotation_quaternion" }, // Basis
 	//{ "set_extents", "set_size"}, // BoxShape3D - Do not use, other classes also uses this function
 	//{ "get_extents", "get_size"}, // BoxShape3D - Do not use, other classes also uses this function
 	{ "get_collision_layer_bit", "get_collision_layer_value" }, // CSGShape3D and a lot of others like GridMap
@@ -151,6 +163,9 @@ static const char *function_renames[][2] = {
 	{ "set_as_toplevel", "set_as_top_level" }, // CanvasItem
 	{ "get_mid_height", "get_height" }, // CapsuleMesh
 	{ "set_mid_height", "set_height" }, // CapsuleMesh
+	{ "call_func", "call" }, // Callable
+	{ "Callable\\.new", "Callable" }, // Callable
+	{ "funcref", "Callable" }, // Callable
 	{ "make_convex_from_brothers", "make_convex_from_siblings" }, // CollisionShape3D
 	{ "get_frame_color", "get_color" }, // ColorRect
 	{ "set_frame_color", "set_color" }, // ColorRect
@@ -161,6 +176,7 @@ static const char *function_renames[][2] = {
 	{ "add_icon_override", "add_theme_icon_override" }, // Control
 	{ "add_stylebox_override", "add_theme_stylebox_override" }, // Control
 	{ "get_focus_neighbour", "get_focus_neighbor" }, //  Control
+	{ "get_icon", "get_theme_icon" }, // Control - Clashes with Tree and Theme
 	{ "has_font", "has_theme_font" }, //  Control
 	{ "has_font_override", "has_theme_font_override" }, //  Control
 	{ "has_icon", "has_theme_icon" }, //  Control
@@ -171,6 +187,7 @@ static const char *function_renames[][2] = {
 	{ "set_anchors_and_margins_preset", "set_anchors_and_offsets_preset" }, //  Control
 	{ "set_focus_neighbour", "set_focus_neighbor" }, //  Control
 	// { "get_mode", "get_file_mode"}, // EditorFileDialog - Used elsewhere
+	{ "get_editor_viewport", "get_viewport" }, // EditorPlugin
 	{ "set_adjustment_enable", "set_adjustment_enabled" }, // Environment
 	{ "deselect_items", "deselect_all" }, // FileDialog
 	{ "bumpmap_to_normalmap", "bump_map_to_normal_map" }, // Image
@@ -222,6 +239,8 @@ static const char *function_renames[][2] = {
 	{ "is_normalmap", "is_normal_map" }, // NoiseTexture
 	{ "set_as_normalmap", "set_as_normal_map" }, // NoiseTexture
 	{ "property_list_changed_notify", "notify_property_list_changed" }, // Object
+	{ "OS\\.get_ticks_msec", "Time.get_ticks_msec" }, // OS
+	{ "OS\\.get_ticks_usec", "Time.get_ticks_usec" }, // OS
 	{ "can_instance", "can_instantiate" }, // PackedScene, Script
 	{ "instance", "instantiate" }, // PackedScene - Broke FileSystemDock signal
 	// { "set_flag", "set_particle_flag"}, // ParticlesMaterial  - Do not use, other classes also uses this function
@@ -259,6 +278,13 @@ static const char *function_renames[][2] = {
 	{ "get_size_override", "get_size_2d_override" }, //SubViewport
 	{ "is_size_override_stretch_enabled", "is_size_2d_override_stretch_enabled" }, //SubViewport
 	{ "set_size_override", "set_size_2d_override" }, //SubViewport
+	{ "http_escape", "uri_encode" }, //String
+	{ "http_unescape", "uri_decode" }, //String
+	{ "is_valid_integer", "is_valid_int" }, //String
+	{ "percent_decode", "uri_decode" }, //String
+	{ "percent_encode", "uri_encode" }, //String
+	{ "to_ascii", "to_ascii_buffer" }, //String
+	{ "to_utf8", "to_utf8_buffer" }, //String
 	{ "set_size_override_stretch", "set_size_2d_override_stretch" }, //SubViewport
 	{ "center_viewport_to_cursor", "center_viewport_to_caret" }, // TextEdit
 	{ "_update_wrap_at", "_update_wrap_at_column" }, //TextEdit
@@ -279,6 +305,9 @@ static const char *function_renames[][2] = {
 	{ "get_timer_process_mode", "get_timer_process_callback" }, //Timer
 	{ "set_timer_process_mode", "set_timer_process_callback" }, //Timer
 	{ "is_commiting_action", "is_committing_action" }, // UndoRedo
+	{ "clamped", "limit_length" }, //Vector2
+	{ "linear_interpolate", "lerp" }, //Vector2, Vector3, Color
+	{ "popup_centered_minsize", "popup_centered_clamped" }, //Window
 	{ "get_d", "get_distance" }, //WorldMarginShape2D
 	{ "set_d", "set_distance" }, //WorldMarginShape2D
 	{ "get_tracks_orientation", "is_tracking_orientation" }, // XRPositionalTracker
@@ -296,8 +325,8 @@ static const char *function_renames[][2] = {
 	{ "get_global_rate_scale", "get_playback_speed_scale" }, // AudioServer
 	// { "get_event", "get_shortcut"}, // BaseButton - Used also in Shortcut
 	// { "set_event", "set_shortcut"}, // BaseButton - Used also in Shortcut
-	{ "get_enabled_focus_mode", "get_shortcut_context" }, //BaseButton
-	{ "set_enabled_focus_mode", "set_shortcut_context" }, //BaseButton
+	{ "get_enabled_focus_mode", "get_focus_mode" }, //BaseButton - Removed
+	{ "set_enabled_focus_mode", "set_focus_mode" }, //BaseButton - Removed
 	{ "is_v_drag_enabled", "is_drag_vertical_enabled" }, // Camera2D
 	{ "is_h_drag_enabled", "is_drag_horizontal_enabled" }, //Camera2D
 	// { "get_h_offset", "get_drag_horizontal_offset"}, // Used in PathFollow2D
@@ -351,19 +380,27 @@ static const char *properties_renames[][2] = {
 	// {"Skeleton3D","Skeleton"}, // Polygon2D - this would rename also classes
 	// {"rotate","rotates"}, // PathFollow2D - probably function exists with same name
 	{ "Debug Shape3D", "Debug Shape" }, // RayCast3D
+	{ "doubleclick", "double_click" }, // InputEventMouseButton
 	{ "Emission Shape3D", "Emission Shape" }, // ParticlesMaterial
+	{ "enabled_focus_mode", "focus_mode" }, // BaseButton - Removed
+	{ "as_normalmap", "as_normal_map" }, // NoiseTexture
 	{ "caret_moving_by_right_click", "caret_move_on_right_click" }, // TextEdit
-	{ "d", "disatance" }, //WorldMarginShape2D
+	{ "d", "distance" }, //WorldMarginShape2D
 	{ "global_rate_scale", "playback_speed_scale" }, // AudioServer
 	{ "group", "button_group" }, // BaseButton
+	{ "popup_exclusive", "exclusive" }, //Window
 	{ "region_filter_clip", "region_filter_clip_enabled" }, // Sprite2D
 	{ "syntax_highlighting", "syntax_highlighter" }, // TextEdit
+	{ "toplevel", "top_level" }, // Node
 	{ "translation", "position" }, // Node3D - broke GLTFNode
+	{ "zfar", "far" }, // Camera3D
+	{ "znear", "near" }, // Camera3D
 	{ nullptr, nullptr },
 };
 
 static const char *signals_renames[][2] = {
 	// { "hide", "hidden" }, // CanvasItem - function with same name exists
+	{ "about_to_show", "about_to_popup" }, // Window
 	{ "button_release", "button_released" }, // XRController3D
 	{ "node_unselected", "node_deselected" }, // GraphEdit
 	{ "offset_changed", "position_offset_changed" }, //GraphNode
@@ -480,8 +517,8 @@ static const char *class_renames[][2] = {
 	{ "EditorSpatialGizmoPlugin", "EditorNode3DGizmoPlugin" },
 	{ "ExternalTexture", "ImageTexture" },
 	{ "FuncRef", "Callable" },
-	{ "GDScriptFunctionState", "Node3D" },
-	{ "GDScriptNativeClass", "Node3D" },
+	//{ "GDScriptFunctionState", "Node3D" },
+	//{ "GDScriptNativeClass", "Node3D" },
 	{ "GIProbe", "VoxelGI" },
 	{ "GIProbeData", "VoxelGIData" },
 	{ "Generic6DOFJoint", "Generic6DOFJoint3D" },
@@ -490,9 +527,9 @@ static const char *class_renames[][2] = {
 	{ "HeightMapShape", "HeightMapShape3D" },
 	{ "HingeJoint", "HingeJoint3D" },
 	{ "IP_Unix", "IPUnix" },
-	{ "ImmediateGeometry", "ImmediateGeometry3D" },
+	{ "ImmediateGeometry", "ImmediateMesh" },
 	{ "ImmediateGeometry3D", "ImmediateMesh" },
-	{ "InterpolatedCamera", "InterpolatedCamera3D" },
+	{ "InterpolatedCamera", "Camera3D" },
 	{ "InterpolatedCamera3D", "Camera3D" },
 	{ "JSONParseResult", "JSON" },
 	{ "Joint", "Joint3D" },
@@ -555,6 +592,7 @@ static const char *class_renames[][2] = {
 	{ "ProximityGroup", "ProximityGroup3D" },
 	{ "Quat", "Quaternion" },
 	{ "RayCast", "RayCast3D" },
+	{ "RayShape", "RayShape3D" },
 	{ "Reference", "RefCounted" },
 	{ "RemoteTransform", "RemoteTransform3D" },
 	{ "ResourceInteractiveLoader", "ResourceLoader" },
@@ -619,8 +657,8 @@ static const char *class_renames[][2] = {
 	{ "XROrigin", "XROrigin3D" },
 	{ "YSort", "Node2D" },
 
-	{ "RayShape2D", "RayCast2D" }, // TODO looks that this class is not visible
-	{ "RayShape", "RayCast3D" }, // TODO looks that this class is not visible
+	//{ "RayShape2D", "RayCast2D" }, // TODO looks that this class is not visible
+	//{ "RayShape", "RayCast3D" }, // TODO looks that this class is not visible
 
 	{ "CullInstance", "Node3D" }, // Probably this type needs to be added to Godot 4.0, since it is for now only available only in Godot 3.x
 	{ "RoomGroup", "Node3D" }, // Probably this type needs to be added to Godot 4.0, since it is for now only available only in Godot 3.x
