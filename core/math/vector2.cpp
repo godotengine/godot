@@ -34,14 +34,6 @@ real_t Vector2::angle() const {
 	return Math::atan2(y, x);
 }
 
-real_t Vector2::length() const {
-	return Math::sqrt(length_squared());
-}
-
-real_t Vector2::length_squared() const {
-	return dot(*this);
-}
-
 void Vector2::normalize() {
 	real_t l = x * x + y * y;
 	if (l != 0) {
