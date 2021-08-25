@@ -4795,12 +4795,11 @@ Tree::Tree() {
 
 	popup_menu = memnew(PopupMenu);
 	popup_menu->hide();
-	add_child(popup_menu);
-	//	popup_menu->set_as_top_level(true);
+	add_child(popup_menu, false, INTERNAL_MODE_FRONT);
 
 	popup_editor = memnew(Popup);
 	popup_editor->set_wrap_controls(true);
-	add_child(popup_editor);
+	add_child(popup_editor, false, INTERNAL_MODE_FRONT);
 	popup_editor_vb = memnew(VBoxContainer);
 	popup_editor->add_child(popup_editor_vb);
 	popup_editor_vb->add_theme_constant_override("separation", 0);
@@ -4818,12 +4817,12 @@ Tree::Tree() {
 	h_scroll = memnew(HScrollBar);
 	v_scroll = memnew(VScrollBar);
 
-	add_child(h_scroll);
-	add_child(v_scroll);
+	add_child(h_scroll, false, INTERNAL_MODE_FRONT);
+	add_child(v_scroll, false, INTERNAL_MODE_FRONT);
 
 	range_click_timer = memnew(Timer);
 	range_click_timer->connect("timeout", callable_mp(this, &Tree::_range_click_timeout));
-	add_child(range_click_timer);
+	add_child(range_click_timer, false, INTERNAL_MODE_FRONT);
 
 	h_scroll->connect("value_changed", callable_mp(this, &Tree::_scroll_moved));
 	v_scroll->connect("value_changed", callable_mp(this, &Tree::_scroll_moved));

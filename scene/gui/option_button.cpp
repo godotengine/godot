@@ -351,7 +351,7 @@ OptionButton::OptionButton() {
 
 	popup = memnew(PopupMenu);
 	popup->hide();
-	add_child(popup);
+	add_child(popup, false, INTERNAL_MODE_FRONT);
 	popup->connect("index_pressed", callable_mp(this, &OptionButton::_selected));
 	popup->connect("id_focused", callable_mp(this, &OptionButton::_focused));
 	popup->connect("popup_hide", callable_mp((BaseButton *)this, &BaseButton::set_pressed), varray(false));

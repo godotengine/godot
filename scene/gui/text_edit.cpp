@@ -5004,7 +5004,7 @@ void TextEdit::_paste_internal() {
 void TextEdit::_generate_context_menu() {
 	if (!menu) {
 		menu = memnew(PopupMenu);
-		add_child(menu);
+		add_child(menu, false, INTERNAL_MODE_FRONT);
 
 		menu_dir = memnew(PopupMenu);
 		menu_dir->set_name("DirMenu");
@@ -5012,7 +5012,7 @@ void TextEdit::_generate_context_menu() {
 		menu_dir->add_radio_check_item(RTR("Auto-detect direction"), MENU_DIR_AUTO);
 		menu_dir->add_radio_check_item(RTR("Left-to-right"), MENU_DIR_LTR);
 		menu_dir->add_radio_check_item(RTR("Right-to-left"), MENU_DIR_RTL);
-		menu->add_child(menu_dir);
+		menu->add_child(menu_dir, false, INTERNAL_MODE_FRONT);
 
 		menu_ctl = memnew(PopupMenu);
 		menu_ctl->set_name("CTLMenu");
@@ -5034,7 +5034,7 @@ void TextEdit::_generate_context_menu() {
 		menu_ctl->add_item(RTR("Zero width non-joiner (ZWNJ)"), MENU_INSERT_ZWNJ);
 		menu_ctl->add_item(RTR("Word joiner (WJ)"), MENU_INSERT_WJ);
 		menu_ctl->add_item(RTR("Soft hyphen (SHY)"), MENU_INSERT_SHY);
-		menu->add_child(menu_ctl);
+		menu->add_child(menu_ctl, false, INTERNAL_MODE_FRONT);
 
 		menu->connect("id_pressed", callable_mp(this, &TextEdit::menu_option));
 		menu_dir->connect("id_pressed", callable_mp(this, &TextEdit::menu_option));
@@ -5948,8 +5948,8 @@ TextEdit::TextEdit() {
 	h_scroll = memnew(HScrollBar);
 	v_scroll = memnew(VScrollBar);
 
-	add_child(h_scroll);
-	add_child(v_scroll);
+	add_child(h_scroll, false, INTERNAL_MODE_FRONT);
+	add_child(v_scroll, false, INTERNAL_MODE_FRONT);
 
 	h_scroll->connect("value_changed", callable_mp(this, &TextEdit::_scroll_moved));
 	v_scroll->connect("value_changed", callable_mp(this, &TextEdit::_scroll_moved));
@@ -5958,19 +5958,19 @@ TextEdit::TextEdit() {
 
 	/* Caret. */
 	caret_blink_timer = memnew(Timer);
-	add_child(caret_blink_timer);
+	add_child(caret_blink_timer, false, INTERNAL_MODE_FRONT);
 	caret_blink_timer->set_wait_time(0.65);
 	caret_blink_timer->connect("timeout", callable_mp(this, &TextEdit::_toggle_draw_caret));
 	set_caret_blink_enabled(false);
 
 	/* Selection. */
 	click_select_held = memnew(Timer);
-	add_child(click_select_held);
+	add_child(click_select_held, false, INTERNAL_MODE_FRONT);
 	click_select_held->set_wait_time(0.05);
 	click_select_held->connect("timeout", callable_mp(this, &TextEdit::_click_selection_held));
 
 	idle_detect = memnew(Timer);
-	add_child(idle_detect);
+	add_child(idle_detect, false, INTERNAL_MODE_FRONT);
 	idle_detect->set_one_shot(true);
 	idle_detect->set_wait_time(GLOBAL_GET("gui/timers/text_edit_idle_detect_sec"));
 	idle_detect->connect("timeout", callable_mp(this, &TextEdit::_push_current_op));

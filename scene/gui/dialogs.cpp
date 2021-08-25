@@ -319,7 +319,7 @@ AcceptDialog::AcceptDialog() {
 	set_clamp_to_embedder(true);
 
 	bg = memnew(Panel);
-	add_child(bg);
+	add_child(bg, false, INTERNAL_MODE_FRONT);
 
 	hbc = memnew(HBoxContainer);
 
@@ -331,9 +331,9 @@ AcceptDialog::AcceptDialog() {
 	label->set_anchor(SIDE_BOTTOM, Control::ANCHOR_END);
 	label->set_begin(Point2(margin, margin));
 	label->set_end(Point2(-margin, -button_margin - 10));
-	add_child(label);
+	add_child(label, false, INTERNAL_MODE_FRONT);
 
-	add_child(hbc);
+	add_child(hbc, false, INTERNAL_MODE_FRONT);
 
 	hbc->add_spacer();
 	ok = memnew(Button);
