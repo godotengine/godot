@@ -82,8 +82,8 @@ struct Vector2 {
 	Vector2 normalized() const;
 	bool is_normalized() const;
 
-	real_t length() const;
-	real_t length_squared() const;
+	_FORCE_INLINE_ real_t length() const;
+	_FORCE_INLINE_ real_t length_squared() const;
 	Vector2 limit_length(const real_t p_len = 1.0) const;
 
 	Vector2 min(const Vector2 &p_vector2) const {
@@ -173,6 +173,14 @@ struct Vector2 {
 		y = p_y;
 	}
 };
+
+_FORCE_INLINE_ real_t Vector2::length() const {
+	return Math::sqrt(length_squared());
+}
+
+_FORCE_INLINE_ real_t Vector2::length_squared() const {
+	return dot(*this);
+}
 
 _FORCE_INLINE_ Vector2 Vector2::plane_project(const real_t p_d, const Vector2 &p_vec) const {
 	return p_vec - *this * (dot(p_vec) - p_d);
