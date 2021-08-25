@@ -2575,6 +2575,8 @@ RendererCanvasRenderRD::RendererCanvasRenderRD(RendererStorageRD *p_storage) {
 		storage->shader_initialize(default_canvas_group_shader);
 
 		storage->shader_set_code(default_canvas_group_shader, R"(
+// Default CanvasGroup shader.
+
 shader_type canvas_item;
 
 void fragment() {

@@ -855,6 +855,8 @@ void RendererSceneSkyRD::init(RendererStorageRD *p_storage) {
 		storage->shader_initialize(sky_shader.default_shader);
 
 		storage->shader_set_code(sky_shader.default_shader, R"(
+// Default sky shader.
+
 shader_type sky;
 
 void sky() {
@@ -942,6 +944,8 @@ void sky() {
 		storage->shader_initialize(sky_scene_state.fog_shader);
 
 		storage->shader_set_code(sky_scene_state.fog_shader, R"(
+// Default clear color sky shader.
+
 shader_type sky;
 
 uniform vec4 clear_color;

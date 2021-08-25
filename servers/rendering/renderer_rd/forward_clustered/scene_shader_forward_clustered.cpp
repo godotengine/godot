@@ -683,6 +683,8 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		default_shader = storage->shader_allocate();
 		storage->shader_initialize(default_shader);
 		storage->shader_set_code(default_shader, R"(
+// Default 3D material shader (clustered).
+
 shader_type spatial;
 
 void vertex() {
@@ -712,6 +714,8 @@ void fragment() {
 		storage->shader_initialize(overdraw_material_shader);
 		// Use relatively low opacity so that more "layers" of overlapping objects can be distinguished.
 		storage->shader_set_code(overdraw_material_shader, R"(
+// 3D editor Overdraw debug draw mode shader (clustered).
+
 shader_type spatial;
 
 render_mode blend_add, unshaded;

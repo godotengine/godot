@@ -97,6 +97,8 @@ Ref<Shader> ColorPicker::circle_shader;
 void ColorPicker::init_shaders() {
 	wheel_shader.instantiate();
 	wheel_shader->set_code(R"(
+// ColorPicker wheel shader.
+
 shader_type canvas_item;
 
 void fragment() {
@@ -119,6 +121,8 @@ void fragment() {
 
 	circle_shader.instantiate();
 	circle_shader->set_code(R"(
+// ColorPicker circle shader.
+
 shader_type canvas_item;
 
 uniform float v = 1.0;
