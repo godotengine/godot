@@ -341,8 +341,10 @@ void MultiplayerReplicator::process_sync(int p_from, const uint8_t *p_packet, in
 	if (cfg.on_sync_receive.is_valid()) {
 		Array objs;
 		if (tracked_objects.has(id)) {
+			objs.resize(tracked_objects[id].size());
+			int idx = 0;
 			for (const ObjectID &obj_id : tracked_objects[id]) {
-				objs.push_back(ObjectDB::get_instance(obj_id));
+				objs[idx++] = ObjectDB::get_instance(obj_id);
 			}
 		}
 		PackedByteArray pba;
@@ -717,8 +719,10 @@ Error MultiplayerReplicator::sync_all(const ResourceUID::ID &p_scene_id, int p_p
 	if (cfg.on_sync_send.is_valid()) {
 		Array objs;
 		if (tracked_objects.has(p_scene_id)) {
+			objs.resize(tracked_objects[p_scene_id].size());
+			int idx = 0;
 			for (const ObjectID &obj_id : tracked_objects[p_scene_id]) {
-				objs.push_back(ObjectDB::get_instance(obj_id));
+				objs[idx++] = ObjectDB::get_instance(obj_id);
 			}
 		}
 		Variant args[3] = { p_scene_id, objs, p_peer };
