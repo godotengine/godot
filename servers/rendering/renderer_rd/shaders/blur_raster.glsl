@@ -38,6 +38,8 @@ layout(set = 1, binding = 0) uniform sampler2D source_auto_exposure;
 layout(location = 0) out vec4 frag_color;
 
 void main() {
+	// We do not apply our color scale for our mobile renderer here, we'll leave our colors at half brightness and apply scale in the tonemap raster.
+
 #ifdef MODE_MIPMAP
 
 	vec2 pix_size = blur.pixel_size;

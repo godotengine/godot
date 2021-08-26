@@ -2237,6 +2237,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			}
 		}
 
+		tonemap.luminance_multiplier = _render_buffers_get_luminance_multiplier();
 		tonemap.view_count = p_render_data->view_count;
 
 		storage->get_effects()->tonemapper(rb->texture, storage->render_target_get_rd_framebuffer(rb->render_target), tonemap);
@@ -2301,6 +2302,7 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	tonemap.use_debanding = rb->use_debanding;
 	tonemap.texture_size = Vector2i(rb->width, rb->height);
 
+	tonemap.luminance_multiplier = _render_buffers_get_luminance_multiplier();
 	tonemap.view_count = p_render_data->view_count;
 
 	storage->get_effects()->tonemapper(draw_list, p_source_texture, RD::get_singleton()->framebuffer_get_format(p_framebuffer), tonemap);
@@ -2571,6 +2573,10 @@ float RendererSceneRenderRD::render_buffers_get_volumetric_fog_detail_spread(RID
 	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
 	ERR_FAIL_COND_V(!rb || !rb->volumetric_fog, 0);
 	return rb->volumetric_fog->spread;
+}
+
+float RendererSceneRenderRD::_render_buffers_get_luminance_multiplier() {
+	return 1.0;
 }
 
 RD::DataFormat RendererSceneRenderRD::_render_buffers_get_color_format() {

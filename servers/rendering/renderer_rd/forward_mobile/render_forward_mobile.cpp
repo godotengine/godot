@@ -271,6 +271,12 @@ bool RenderForwardMobile::free(RID p_rid) {
 
 /* Render functions */
 
+float RenderForwardMobile::_render_buffers_get_luminance_multiplier() {
+	// On mobile renderer we need to multiply source colors by 2 due to using a UNORM buffer
+	// and multiplying by the output color during 3D rendering by 0.5
+	return 2.0;
+}
+
 RD::DataFormat RenderForwardMobile::_render_buffers_get_color_format() {
 	// Using 32bit buffers enables AFBC on mobile devices which should have a definite performance improvement (MALI G710 and newer support this on 64bit RTs)
 	return RD::DATA_FORMAT_A2B10G10R10_UNORM_PACK32;
@@ -631,7 +637,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 			RID sky_rid = env->sky;
 			if (sky_rid.is_valid()) {
-				sky.update(env, projection, p_render_data->cam_transform, time);
+				sky.update(env, projection, p_render_data->cam_transform, time, _render_buffers_get_luminance_multiplier());
 				radiance_texture = sky.sky_get_radiance_texture_rd(sky_rid);
 			} else {
 				// do not try to draw sky if invalid
@@ -750,9 +756,9 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				CameraMatrix correction;
 				correction.set_depth_correction(true);
 				CameraMatrix projection = correction * p_render_data->cam_projection;
-				sky.draw(draw_list, env, framebuffer, 1, &projection, p_render_data->cam_transform, time);
+				sky.draw(draw_list, env, framebuffer, 1, &projection, p_render_data->cam_transform, time, _render_buffers_get_luminance_multiplier());
 			} else {
-				sky.draw(draw_list, env, framebuffer, p_render_data->view_count, p_render_data->view_projection, p_render_data->cam_transform, time);
+				sky.draw(draw_list, env, framebuffer, p_render_data->view_count, p_render_data->view_projection, p_render_data->cam_transform, time, _render_buffers_get_luminance_multiplier());
 			}
 
 			RD::get_singleton()->draw_command_end_label(); // Draw Sky Subpass

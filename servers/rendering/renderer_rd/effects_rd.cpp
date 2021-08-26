@@ -812,6 +812,7 @@ void EffectsRD::tonemapper(RID p_source_color, RID p_dst_framebuffer, const Tone
 	tonemap.push_constant.exposure = p_settings.exposure;
 	tonemap.push_constant.white = p_settings.white;
 	tonemap.push_constant.auto_exposure_grey = p_settings.auto_exposure_grey;
+	tonemap.push_constant.luminance_multiplier = p_settings.luminance_multiplier;
 
 	tonemap.push_constant.use_color_correction = p_settings.use_color_correction;
 
@@ -864,6 +865,7 @@ void EffectsRD::tonemapper(RD::DrawListID p_subpass_draw_list, RID p_source_colo
 	tonemap.push_constant.use_color_correction = p_settings.use_color_correction;
 
 	tonemap.push_constant.use_debanding = p_settings.use_debanding;
+	tonemap.push_constant.luminance_multiplier = p_settings.luminance_multiplier;
 
 	RD::get_singleton()->draw_list_bind_render_pipeline(p_subpass_draw_list, tonemap.pipelines[mode].get_render_pipeline(RD::INVALID_ID, p_dst_format_id, false, RD::get_singleton()->draw_list_get_current_pass()));
 	RD::get_singleton()->draw_list_bind_uniform_set(p_subpass_draw_list, _get_uniform_set_for_input(p_source_color), 0);

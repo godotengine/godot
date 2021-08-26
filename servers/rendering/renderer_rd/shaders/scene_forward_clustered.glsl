@@ -374,6 +374,9 @@ layout(constant_id = 9) const uint sc_directional_penumbra_shadow_samples = 4;
 layout(constant_id = 10) const bool sc_decal_use_mipmaps = true;
 layout(constant_id = 11) const bool sc_projector_use_mipmaps = true;
 
+// not used in clustered renderer but we share some code with the mobile renderer that requires this.
+const float sc_luminance_multiplier = 1.0;
+
 #include "scene_forward_clustered_inc.glsl"
 
 /* Varyings */

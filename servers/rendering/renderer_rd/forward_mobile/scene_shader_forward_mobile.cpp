@@ -665,6 +665,8 @@ void SceneShaderForwardMobile::init(RendererStorageRD *p_storage, const String p
 		actions.global_buffer_array_variable = "global_variables.data";
 		actions.instance_uniform_index_variable = "draw_call.instance_uniforms_ofs";
 
+		actions.apply_luminance_multiplier = true; // apply luminance multiplier to screen texture
+
 		compiler.initialize(actions);
 	}
 
