@@ -10,6 +10,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_angle" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="up_direction" type="Vector3" default="Vector3( 0, 1, 0 )" />
+			<description>
+				The collision angle according to [code]up_direction[/code], which is [code]Vector3.UP[/code] by default. This value is always positive.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="collider" type="Object" setter="" getter="get_collider">

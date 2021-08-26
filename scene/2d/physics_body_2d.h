@@ -280,6 +280,10 @@ public:
 		Vector2 remainder;
 		Vector2 travel;
 		int local_shape;
+
+		real_t get_angle(const Vector2 &p_up_direction) const {
+			return Math::acos(normal.dot(p_up_direction));
+		}
 	};
 
 private:
@@ -299,6 +303,7 @@ private:
 
 	Ref<KinematicCollision2D> _move(const Vector2 &p_motion, bool p_infinite_inertia = true, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
 	Ref<KinematicCollision2D> _get_slide_collision(int p_bounce);
+	Ref<KinematicCollision2D> _get_last_slide_collision();
 
 	Transform2D last_valid_transform;
 	void _direct_state_changed(Object *p_state);
@@ -325,6 +330,7 @@ public:
 	bool is_on_wall() const;
 	bool is_on_ceiling() const;
 	Vector2 get_floor_normal() const;
+	real_t get_floor_angle(const Vector2 &p_up_direction = Vector2(0.0, -1.0)) const;
 	Vector2 get_floor_velocity() const;
 
 	int get_slide_count() const;
@@ -352,6 +358,7 @@ public:
 	Vector2 get_normal() const;
 	Vector2 get_travel() const;
 	Vector2 get_remainder() const;
+	real_t get_angle(const Vector2 &p_up_direction = Vector2(0.0, -1.0)) const;
 	Object *get_local_shape() const;
 	Object *get_collider() const;
 	ObjectID get_collider_id() const;
