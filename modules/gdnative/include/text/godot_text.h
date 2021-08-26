@@ -99,6 +99,8 @@ typedef struct {
 	godot_int (*font_get_hinting)(void *, godot_rid *);
 	void (*font_set_force_autohinter)(void *, godot_rid *, bool);
 	bool (*font_get_force_autohinter)(void *, godot_rid *);
+	void (*font_set_gradient)(void *, godot_rid *, const godot_object *);
+	godot_object *(*font_get_gradient)(void *, godot_rid *);
 	bool (*font_has_char)(void *, godot_rid *, char32_t);
 	godot_string (*font_get_supported_chars)(void *, godot_rid *);
 	bool (*font_has_outline)(void *, godot_rid *);

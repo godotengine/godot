@@ -304,6 +304,20 @@ bool TextServerFallback::font_get_force_autohinter(RID p_font) const {
 	return fd->get_force_autohinter();
 }
 
+void TextServerFallback::font_set_gradient(RID p_font, const Ref<Gradient> &p_gradient) {
+	_THREAD_SAFE_METHOD_
+	FontDataFallback *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->set_gradient(p_gradient);
+}
+
+Ref<Gradient> TextServerFallback::font_get_gradient(RID p_font) const {
+	_THREAD_SAFE_METHOD_
+	const FontDataFallback *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND_V(!fd, nullptr);
+	return fd->get_gradient();
+}
+
 bool TextServerFallback::font_has_char(RID p_font, char32_t p_char) const {
 	_THREAD_SAFE_METHOD_
 	const FontDataFallback *fd = font_owner.getornull(p_font);

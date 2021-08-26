@@ -247,6 +247,16 @@ bool TextServerGDNative::font_get_force_autohinter(RID p_font) const {
 	return interface->font_get_force_autohinter(data, (godot_rid *)&p_font);
 }
 
+void TextServerGDNative::font_set_gradient(RID p_font, const Ref<Gradient> &p_gradient) {
+	ERR_FAIL_COND(interface == nullptr);
+	interface->font_set_gradient(data, (godot_rid *)&p_font, (const godot_object *)p_gradient.ptr());
+}
+
+Ref<Gradient> TextServerGDNative::font_get_gradient(RID p_font) const {
+	ERR_FAIL_COND_V(interface == nullptr, nullptr);
+	return (Gradient *)interface->font_get_gradient(data, (godot_rid *)&p_font);
+}
+
 bool TextServerGDNative::font_has_char(RID p_font, char32_t p_char) const {
 	ERR_FAIL_COND_V(interface == nullptr, false);
 	return interface->font_has_char(data, (godot_rid *)&p_font, p_char);
