@@ -97,6 +97,7 @@ public:
 	void push_front(const Variant &p_value);
 	Variant pop_back();
 	Variant pop_front();
+	Variant pop_at(int p_pos);
 
 	Array duplicate(bool p_deep = false) const;
 
