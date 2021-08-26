@@ -275,6 +275,10 @@ public:
 		Vector3 remainder;
 		Vector3 travel;
 		int local_shape;
+
+		real_t get_angle(const Vector3 &p_up_direction) const {
+			return Math::acos(normal.dot(p_up_direction));
+		}
 	};
 
 private:
@@ -295,6 +299,7 @@ private:
 
 	Ref<KinematicCollision> _move(const Vector3 &p_motion, bool p_infinite_inertia = true, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
 	Ref<KinematicCollision> _get_slide_collision(int p_bounce);
+	Ref<KinematicCollision> _get_last_slide_collision();
 
 	Transform last_valid_transform;
 	void _direct_state_changed(Object *p_state);
@@ -324,6 +329,7 @@ public:
 	bool is_on_wall() const;
 	bool is_on_ceiling() const;
 	Vector3 get_floor_normal() const;
+	real_t get_floor_angle(const Vector3 &p_up_direction = Vector3(0.0, 1.0, 0.0)) const;
 	Vector3 get_floor_velocity() const;
 
 	int get_slide_count() const;
@@ -351,6 +357,7 @@ public:
 	Vector3 get_normal() const;
 	Vector3 get_travel() const;
 	Vector3 get_remainder() const;
+	real_t get_angle(const Vector3 &p_up_direction = Vector3(0.0, 1.0, 0.0)) const;
 	Object *get_local_shape() const;
 	Object *get_collider() const;
 	ObjectID get_collider_id() const;

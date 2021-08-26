@@ -1242,6 +1242,11 @@ Vector3 KinematicBody::get_floor_normal() const {
 	return floor_normal;
 }
 
+real_t KinematicBody::get_floor_angle(const Vector3 &p_up_direction) const {
+	ERR_FAIL_COND_V(p_up_direction == Vector3(), 0);
+	return Math::acos(floor_normal.dot(p_up_direction));
+}
+
 Vector3 KinematicBody::get_floor_velocity() const {
 	return floor_velocity;
 }
@@ -1328,6 +1333,13 @@ Ref<KinematicCollision> KinematicBody::_get_slide_collision(int p_bounce) {
 	return slide_colliders[p_bounce];
 }
 
+Ref<KinematicCollision> KinematicBody::_get_last_slide_collision() {
+	if (colliders.size() == 0) {
+		return Ref<KinematicCollision>();
+	}
+	return _get_slide_collision(colliders.size() - 1);
+}
+
 void KinematicBody::set_sync_to_physics(bool p_enable) {
 	if (sync_to_physics == p_enable) {
 		return;
@@ -1404,6 +1416,7 @@ void KinematicBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_on_ceiling"), &KinematicBody::is_on_ceiling);
 	ClassDB::bind_method(D_METHOD("is_on_wall"), &KinematicBody::is_on_wall);
 	ClassDB::bind_method(D_METHOD("get_floor_normal"), &KinematicBody::get_floor_normal);
+	ClassDB::bind_method(D_METHOD("get_floor_angle", "up_direction"), &KinematicBody::get_floor_angle, DEFVAL(Vector3(0.0, 1.0, 0.0)));
 	ClassDB::bind_method(D_METHOD("get_floor_velocity"), &KinematicBody::get_floor_velocity);
 
 	ClassDB::bind_method(D_METHOD("set_axis_lock", "axis", "lock"), &KinematicBody::set_axis_lock);
@@ -1414,6 +1427,7 @@ void KinematicBody::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_slide_count"), &KinematicBody::get_slide_count);
 	ClassDB::bind_method(D_METHOD("get_slide_collision", "slide_idx"), &KinematicBody::_get_slide_collision);
+	ClassDB::bind_method(D_METHOD("get_last_slide_collision"), &KinematicBody::_get_last_slide_collision);
 
 	ClassDB::bind_method(D_METHOD("set_sync_to_physics", "enable"), &KinematicBody::set_sync_to_physics);
 	ClassDB::bind_method(D_METHOD("is_sync_to_physics_enabled"), &KinematicBody::is_sync_to_physics_enabled);
@@ -1463,6 +1477,12 @@ Vector3 KinematicCollision::get_travel() const {
 Vector3 KinematicCollision::get_remainder() const {
 	return collision.remainder;
 }
+
+real_t KinematicCollision::get_angle(const Vector3 &p_up_direction) const {
+	ERR_FAIL_COND_V(p_up_direction == Vector3(), 0);
+	return collision.get_angle(p_up_direction);
+}
+
 Object *KinematicCollision::get_local_shape() const {
 	if (!owner) {
 		return nullptr;
@@ -1511,6 +1531,7 @@ void KinematicCollision::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_normal"), &KinematicCollision::get_normal);
 	ClassDB::bind_method(D_METHOD("get_travel"), &KinematicCollision::get_travel);
 	ClassDB::bind_method(D_METHOD("get_remainder"), &KinematicCollision::get_remainder);
+	ClassDB::bind_method(D_METHOD("get_angle", "up_direction"), &KinematicCollision::get_angle, DEFVAL(Vector3(0.0, 1.0, 0.0)));
 	ClassDB::bind_method(D_METHOD("get_local_shape"), &KinematicCollision::get_local_shape);
 	ClassDB::bind_method(D_METHOD("get_collider"), &KinematicCollision::get_collider);
 	ClassDB::bind_method(D_METHOD("get_collider_id"), &KinematicCollision::get_collider_id);
