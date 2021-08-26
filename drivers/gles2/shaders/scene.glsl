@@ -2307,6 +2307,11 @@ FRAGMENT_SHADER_CODE
 
 #endif //unshaded
 
+#ifdef OUTPUT_LINEAR
+	// sRGB -> linear
+	gl_FragColor.rgb = mix(pow((gl_FragColor.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), gl_FragColor.rgb * (1.0 / 12.92), vec3(lessThan(gl_FragColor.rgb, vec3(0.04045))));
+#endif
+
 #else // not RENDER_DEPTH
 //depth render
 #ifdef USE_RGBA_SHADOWS

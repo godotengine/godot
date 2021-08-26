@@ -701,5 +701,11 @@ FRAGMENT_SHADER_CODE
 //use lighting
 #endif
 
+#ifdef LINEAR_TO_SRGB
+	// regular Linear -> SRGB conversion
+	vec3 a = vec3(0.055);
+	color.rgb = mix((vec3(1.0) + a) * pow(color.rgb, vec3(1.0 / 2.4)) - a, 12.92 * color.rgb, vec3(lessThan(color.rgb, vec3(0.0031308))));
+#endif
+
 	gl_FragColor = color;
 }

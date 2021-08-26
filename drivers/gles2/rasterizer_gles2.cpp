@@ -403,6 +403,7 @@ void RasterizerGLES2::blit_render_target_to_screen(RID p_render_target, const Re
 	canvas->_set_texture_rect_mode(true);
 
 	canvas->state.canvas_shader.set_custom_shader(0);
+	canvas->state.canvas_shader.set_conditional(CanvasShaderGLES2::LINEAR_TO_SRGB, rt->flags[RasterizerStorage::RENDER_TARGET_KEEP_3D_LINEAR]);
 	canvas->state.canvas_shader.bind();
 
 	canvas->canvas_begin();
@@ -421,6 +422,8 @@ void RasterizerGLES2::blit_render_target_to_screen(RID p_render_target, const Re
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 	canvas->canvas_end();
+
+	canvas->state.canvas_shader.set_conditional(CanvasShaderGLES2::LINEAR_TO_SRGB, false);
 }
 
 void RasterizerGLES2::output_lens_distorted_to_screen(RID p_render_target, const Rect2 &p_screen_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample) {
