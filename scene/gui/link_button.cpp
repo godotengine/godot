@@ -46,10 +46,14 @@ void LinkButton::_shape() {
 }
 
 void LinkButton::set_text(const String &p_text) {
-	text = p_text;
-	_shape();
-	minimum_size_changed();
-	update();
+	if (text != p_text) {
+		text = p_text;
+		xl_text = atr(text);
+		_shape();
+
+		update();
+		minimum_size_changed();
+	}
 }
 
 String LinkButton::get_text() const {
