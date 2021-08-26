@@ -31,6 +31,7 @@
 #include "editor_file_system.h"
 
 #include "core/config/project_settings.h"
+#include "core/extension/native_extension_manager.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_importer.h"
 #include "core/io/resource_loader.h"
@@ -605,6 +606,18 @@ bool EditorFileSystem::_update_scan_actions() {
 		}
 	}
 
+	if (_scan_extensions()) {
+		//needs editor restart
+		//extensions also may provide filetypes to be imported, so they must run before importing
+		if (EditorNode::immediate_confirmation_dialog(TTR("Some extensions need the editor to restart to take effect."), first_scan ? TTR("Restart") : TTR("Save&Restart"), TTR("Continue"))) {
+			if (!first_scan) {
+				EditorNode::get_singleton()->save_all_scenes();
+			}
+			EditorNode::get_singleton()->restart_editor();
+			//do not import
+			return true;
+		}
+	}
 	if (reimports.size()) {
 		reimport_files(reimports);
 	} else {
@@ -2220,6 +2233,76 @@ ResourceUID::ID EditorFileSystem::_resource_saver_get_resource_id_for_path(const
 	} else {
 		return ResourceUID::INVALID_ID;
 	}
+}
+
+static void _scan_extensions_dir(EditorFileSystemDirectory *d, Set<String> &extensions) {
+	int fc = d->get_file_count();
+	for (int i = 0; i < fc; i++) {
+		if (d->get_file_type(i) == SNAME("NativeExtension")) {
+			extensions.insert(d->get_file_path(i));
+		}
+	}
+	int dc = d->get_subdir_count();
+	for (int i = 0; i < dc; i++) {
+		_scan_extensions_dir(d->get_subdir(i), extensions);
+	}
+}
+bool EditorFileSystem::_scan_extensions() {
+	EditorFileSystemDirectory *d = get_filesystem();
+	Set<String> extensions;
+	_scan_extensions_dir(d, extensions);
+
+	//verify against loaded extensions
+
+	Vector<String> extensions_added;
+	Vector<String> extensions_removed;
+
+	for (const String &E : extensions) {
+		if (!NativeExtensionManager::get_singleton()->is_extension_loaded(E)) {
+			extensions_added.push_back(E);
+		}
+	}
+
+	Vector<String> loaded_extensions = NativeExtensionManager::get_singleton()->get_loaded_extensions();
+	for (int i = 0; i < loaded_extensions.size(); i++) {
+		if (!extensions.has(loaded_extensions[i])) {
+			extensions_removed.push_back(loaded_extensions[i]);
+		}
+	}
+
+	if (extensions.size()) {
+		if (extensions_added.size() || extensions_removed.size()) { //extensions were added or removed
+			FileAccessRef f = FileAccess::open(NativeExtension::EXTENSION_LIST_CONFIG_FILE, FileAccess::WRITE);
+			for (const String &E : extensions) {
+				f->store_line(E);
+			}
+		}
+	} else {
+		if (loaded_extensions.size() || FileAccess::exists(NativeExtension::EXTENSION_LIST_CONFIG_FILE)) { //extensions were removed
+			DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+			da->remove(NativeExtension::EXTENSION_LIST_CONFIG_FILE);
+		}
+	}
+
+	bool needs_restart = false;
+	for (int i = 0; i < extensions_added.size(); i++) {
+		NativeExtensionManager::LoadStatus st = NativeExtensionManager::get_singleton()->load_extension(extensions_added[i]);
+		if (st == NativeExtensionManager::LOAD_STATUS_FAILED) {
+			EditorNode::get_singleton()->add_io_error("Error loading extension: " + extensions_added[i]);
+		} else if (st == NativeExtensionManager::LOAD_STATUS_NEEDS_RESTART) {
+			needs_restart = true;
+		}
+	}
+	for (int i = 0; i < extensions_removed.size(); i++) {
+		NativeExtensionManager::LoadStatus st = NativeExtensionManager::get_singleton()->unload_extension(extensions_removed[i]);
+		if (st == NativeExtensionManager::LOAD_STATUS_FAILED) {
+			EditorNode::get_singleton()->add_io_error("Error removing extension: " + extensions_added[i]);
+		} else if (st == NativeExtensionManager::LOAD_STATUS_NEEDS_RESTART) {
+			needs_restart = true;
+		}
+	}
+
+	return needs_restart;
 }
 
 void EditorFileSystem::_bind_methods() {

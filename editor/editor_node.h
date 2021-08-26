@@ -92,6 +92,7 @@ class VSplitContainer;
 class Window;
 class SubViewport;
 class SceneImportSettings;
+class EditorExtensionManager;
 
 class EditorNode : public Node {
 	GDCLASS(EditorNode, Node);
@@ -675,6 +676,9 @@ private:
 
 	void _pick_main_scene_custom_action(const String &p_custom_action_name);
 
+	bool immediate_dialog_confirmed = false;
+	void _immediate_dialog_confirmed();
+
 protected:
 	void _notification(int p_what);
 
@@ -898,6 +902,8 @@ public:
 	void run_stop();
 	bool is_run_playing() const;
 	String get_run_playing_scene() const;
+
+	static bool immediate_confirmation_dialog(const String &p_text, const String &p_ok_text = TTR("Ok"), const String &p_cancel_text = TTR("Cancel"));
 };
 
 struct EditorProgress {

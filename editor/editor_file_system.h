@@ -255,6 +255,8 @@ class EditorFileSystem : public Node {
 
 	static ResourceUID::ID _resource_saver_get_resource_id_for_path(const String &p_path, bool p_generate);
 
+	bool _scan_extensions();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
