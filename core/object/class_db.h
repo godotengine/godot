@@ -132,6 +132,7 @@ public:
 		List<MethodInfo> virtual_methods;
 		Map<StringName, MethodInfo> virtual_methods_map;
 		StringName category;
+		Map<StringName, Vector<Error>> method_error_values;
 #endif
 		HashMap<StringName, PropertySetGet> property_setget;
 
@@ -385,6 +386,8 @@ public:
 	static void get_enum_constants(const StringName &p_class, const StringName &p_enum, List<StringName> *p_constants, bool p_no_inheritance = false);
 	static bool has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
 
+	static void set_method_error_return_values(const StringName &p_class, const StringName &p_method, const Vector<Error> &p_values);
+	static Vector<Error> get_method_error_return_values(const StringName &p_class, const StringName &p_method);
 	static Variant class_get_default_property_value(const StringName &p_class, const StringName &p_property, bool *r_valid = nullptr);
 
 	static StringName get_category(const StringName &p_node);
@@ -415,6 +418,29 @@ public:
 #define BIND_ENUM_CONSTANT(m_constant) \
 	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_enum_name(m_constant, #m_constant), #m_constant, m_constant);
 
+_FORCE_INLINE_ void errarray_add_str(Vector<Error> &arr) {
+}
+
+_FORCE_INLINE_ void errarray_add_str(Vector<Error> &arr, const Error &p_err) {
+	arr.push_back(p_err);
+}
+
+template <class... P>
+_FORCE_INLINE_ void errarray_add_str(Vector<Error> &arr, const Error &p_err, P... p_args) {
+	arr.push_back(p_err);
+	errarray_add_str(arr, p_args...);
+}
+
+template <class... P>
+_FORCE_INLINE_ Vector<Error> errarray(P... p_args) {
+	Vector<Error> arr;
+	errarray_add_str(arr, p_args...);
+	return arr;
+}
+
+#define BIND_METHOD_ERR_RETURN_DOC(m_method, ...) \
+	::ClassDB::set_method_error_return_values(get_class_static(), m_method, errarray(__VA_ARGS__));
+
 #else
 
 #define BIND_CONSTANT(m_constant) \
@@ -422,6 +448,8 @@ public:
 
 #define BIND_ENUM_CONSTANT(m_constant) \
 	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
+
+#define BIND_METHOD_ERR_RETURN_DOC(m_method, ...)
 
 #endif
 

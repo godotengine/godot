@@ -892,6 +892,32 @@ void ClassDB::get_enum_constants(const StringName &p_class, const StringName &p_
 	}
 }
 
+void ClassDB::set_method_error_return_values(const StringName &p_class, const StringName &p_method, const Vector<Error> &p_values) {
+	OBJTYPE_RLOCK;
+#ifdef DEBUG_METHODS_ENABLED
+	ClassInfo *type = classes.getptr(p_class);
+
+	ERR_FAIL_COND(!type);
+
+	type->method_error_values[p_method] = p_values;
+#endif
+}
+
+Vector<Error> ClassDB::get_method_error_return_values(const StringName &p_class, const StringName &p_method) {
+#ifdef DEBUG_METHODS_ENABLED
+	ClassInfo *type = classes.getptr(p_class);
+
+	ERR_FAIL_COND_V(!type, Vector<Error>());
+
+	if (!type->method_error_values.has(p_method)) {
+		return Vector<Error>();
+	}
+	return type->method_error_values[p_method];
+#else
+	return Vector<Error>();
+#endif
+}
+
 bool ClassDB::has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) {
 	OBJTYPE_RLOCK;
 

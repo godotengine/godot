@@ -315,6 +315,8 @@ void ConfigFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("parse", "data"), &ConfigFile::parse);
 	ClassDB::bind_method(D_METHOD("save", "path"), &ConfigFile::save);
 
+	BIND_METHOD_ERR_RETURN_DOC("load", ERR_FILE_CANT_OPEN);
+
 	ClassDB::bind_method(D_METHOD("load_encrypted", "path", "key"), &ConfigFile::load_encrypted);
 	ClassDB::bind_method(D_METHOD("load_encrypted_pass", "path", "password"), &ConfigFile::load_encrypted_pass);
 
