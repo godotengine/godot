@@ -108,7 +108,7 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 						Variant v = current->get(E->get().name);
 						REF ref = v;
 						RES res = ref;
-						if (v.is_ref() && ref.is_valid() && res.is_valid()) {
+						if (v.is_ref_counted() && ref.is_valid() && res.is_valid()) {
 							// Valid resource which would be duplicated if action is confirmed.
 							resource_propnames.append(E->get().name);
 						}
@@ -145,7 +145,7 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 						}
 
 						Variant v = current->get(prop_info.name);
-						if (v.is_ref()) {
+						if (v.is_ref_counted()) {
 							REF ref = v;
 							if (ref.is_valid()) {
 								RES res = ref;

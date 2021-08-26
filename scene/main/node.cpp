@@ -2186,7 +2186,7 @@ void Node::remap_node_resources(Node *p_node, const Map<RES, RES> &p_resource_re
 		}
 
 		Variant v = p_node->get(E.name);
-		if (v.is_ref()) {
+		if (v.is_ref_counted()) {
 			RES res = v;
 			if (res.is_valid()) {
 				if (p_resource_remap.has(res)) {
@@ -2212,7 +2212,7 @@ void Node::remap_nested_resources(RES p_resource, const Map<RES, RES> &p_resourc
 		}
 
 		Variant v = p_resource->get(E.name);
-		if (v.is_ref()) {
+		if (v.is_ref_counted()) {
 			RES res = v;
 			if (res.is_valid()) {
 				if (p_resource_remap.has(res)) {
