@@ -58,7 +58,7 @@ void Node::_notification(int p_notification) {
 
 		} break;
 		case NOTIFICATION_PHYSICS_PROCESS: {
-			GDVIRTUAL_CALL(_physics_process, get_process_delta_time());
+			GDVIRTUAL_CALL(_physics_process, get_physics_process_delta_time());
 
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
