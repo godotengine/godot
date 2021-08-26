@@ -2740,6 +2740,14 @@ bool RenderingDeviceVulkan::texture_is_valid(RID p_texture) {
 	return texture_owner.owns(p_texture);
 }
 
+Size2i RenderingDeviceVulkan::texture_size(RID p_texture) {
+	_THREAD_SAFE_METHOD_
+
+	Texture *tex = texture_owner.getornull(p_texture);
+	ERR_FAIL_COND_V(!tex, Size2i());
+	return Size2i(tex->width, tex->height);
+}
+
 Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, uint32_t p_post_barrier) {
 	_THREAD_SAFE_METHOD_
 

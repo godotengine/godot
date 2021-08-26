@@ -3082,6 +3082,14 @@
 				If [code]true[/code], render the contents of the viewport directly to screen. This allows a low-level optimization where you can skip drawing a viewport to the root viewport. While this optimization can result in a significant increase in speed (especially on older devices), it comes at a cost of usability. When this is enabled, you cannot read from the viewport or from the [code]SCREEN_TEXTURE[/code]. You also lose the benefit of certain window settings, such as the various stretch modes. Another consequence to be aware of is that in 2D the rendering happens in window coordinates, so if you have a viewport that is double the size of the window, and you set this, then only the portion that fits within the window will be drawn, no automatic scaling is possible, even if your game scene is significantly larger than the window size.
 			</description>
 		</method>
+		<method name="viewport_set_scale_3d">
+			<return type="void" />
+			<argument index="0" name="viewport" type="RID" />
+			<argument index="1" name="scale" type="int" enum="RenderingServer.ViewportScale3D" />
+			<description>
+				Sets the scale at which we render 3D contents.
+			</description>
+		</method>
 		<method name="viewport_set_scenario">
 			<return type="void" />
 			<argument index="0" name="viewport" type="RID" />
@@ -3895,6 +3903,16 @@
 		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES" value="22" enum="ViewportDebugDraw">
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_OCCLUDERS" value="23" enum="ViewportDebugDraw">
+		</constant>
+		<constant name="VIEWPORT_SCALE_3D_DISABLED" value="0" enum="ViewportScale3D">
+		</constant>
+		<constant name="VIEWPORT_SCALE_3D_75_PERCENT" value="1" enum="ViewportScale3D">
+		</constant>
+		<constant name="VIEWPORT_SCALE_3D_50_PERCENT" value="2" enum="ViewportScale3D">
+		</constant>
+		<constant name="VIEWPORT_SCALE_3D_33_PERCENT" value="3" enum="ViewportScale3D">
+		</constant>
+		<constant name="VIEWPORT_SCALE_3D_25_PERCENT" value="4" enum="ViewportScale3D">
 		</constant>
 		<constant name="SKY_MODE_AUTOMATIC" value="0" enum="SkyMode">
 		</constant>
