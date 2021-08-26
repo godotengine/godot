@@ -345,6 +345,8 @@ class AnimationNodeBlendTree : public AnimationRootNode {
 	void _tree_changed();
 	void _node_changed(const StringName &p_node);
 
+	void _initialize_node_tree();
+
 protected:
 	static void _bind_methods();
 	bool _set(const StringName &p_name, const Variant &p_value);
