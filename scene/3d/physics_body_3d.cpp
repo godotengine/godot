@@ -1229,8 +1229,11 @@ void CharacterBody3D::_set_collision_direction(const PhysicsServer3D::MotionResu
 			on_ceiling = true;
 		} else {
 			on_wall = true;
-			on_floor_body = p_result.collider;
-			floor_velocity = p_result.collider_velocity;
+			// Don't apply wall velocity when the collider is a CharacterBody3D.
+			if (Object::cast_to<CharacterBody3D>(ObjectDB::get_instance(p_result.collider_id)) == nullptr) {
+				on_floor_body = p_result.collider;
+				floor_velocity = p_result.collider_velocity;
+			}
 		}
 	}
 }
