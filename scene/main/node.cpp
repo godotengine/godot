@@ -123,22 +123,22 @@ void Node::_notification(int p_notification) {
 		} break;
 		case NOTIFICATION_READY: {
 			if (get_script_instance()) {
-				if (GDVIRTUAL_IS_OVERRIDEN(_input)) {
+				if (GDVIRTUAL_IS_OVERRIDDEN(_input)) {
 					set_process_input(true);
 				}
 
-				if (GDVIRTUAL_IS_OVERRIDEN(_unhandled_input)) {
+				if (GDVIRTUAL_IS_OVERRIDDEN(_unhandled_input)) {
 					set_process_unhandled_input(true);
 				}
 
-				if (GDVIRTUAL_IS_OVERRIDEN(_unhandled_key_input)) {
+				if (GDVIRTUAL_IS_OVERRIDDEN(_unhandled_key_input)) {
 					set_process_unhandled_key_input(true);
 				}
 
-				if (GDVIRTUAL_IS_OVERRIDEN(_process)) {
+				if (GDVIRTUAL_IS_OVERRIDDEN(_process)) {
 					set_process(true);
 				}
-				if (GDVIRTUAL_IS_OVERRIDEN(_physics_process)) {
+				if (GDVIRTUAL_IS_OVERRIDDEN(_physics_process)) {
 					set_physics_process(true);
 				}
 

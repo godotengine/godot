@@ -289,8 +289,8 @@ struct ObjectNativeExtension {
 #else
 #define GDVIRTUAL_BIND(m_name, ...)
 #endif
-#define GDVIRTUAL_IS_OVERRIDEN(m_name) _gdvirtual_##m_name##_overriden()
-#define GDVIRTUAL_IS_OVERRIDEN_PTR(m_obj, m_name) m_obj->_gdvirtual_##m_name##_overriden()
+#define GDVIRTUAL_IS_OVERRIDDEN(m_name) _gdvirtual_##m_name##_overridden()
+#define GDVIRTUAL_IS_OVERRIDDEN_PTR(m_obj, m_name) m_obj->_gdvirtual_##m_name##_overridden()
 
 /*
    the following is an incomprehensible blob of hacks and workarounds to compensate for many of the fallencies in C++. As a plus, this macro pretty much alone defines the object model.
