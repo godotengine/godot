@@ -47,6 +47,7 @@ public:
 
 private:
 	String text;
+	String xl_text;
 	UnderlineMode underline_mode;
 
 protected:
