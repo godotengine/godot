@@ -1124,6 +1124,7 @@ void AnimationNodeBlendTree::_get_property_list(List<PropertyInfo> *p_list) cons
 void AnimationNodeBlendTree::reset_state() {
 	graph_offset = Vector2();
 	nodes.clear();
+	_initialize_node_tree();
 	emit_changed();
 	emit_signal(SNAME("tree_changed"));
 }
@@ -1162,7 +1163,7 @@ void AnimationNodeBlendTree::_bind_methods() {
 	BIND_CONSTANT(CONNECTION_ERROR_CONNECTION_EXISTS);
 }
 
-AnimationNodeBlendTree::AnimationNodeBlendTree() {
+void AnimationNodeBlendTree::_initialize_node_tree() {
 	Ref<AnimationNodeOutput> output;
 	output.instantiate();
 	Node n;
@@ -1170,6 +1171,10 @@ AnimationNodeBlendTree::AnimationNodeBlendTree() {
 	n.position = Vector2(300, 150);
 	n.connections.resize(1);
 	nodes["output"] = n;
+}
+
+AnimationNodeBlendTree::AnimationNodeBlendTree() {
+	_initialize_node_tree();
 }
 
 AnimationNodeBlendTree::~AnimationNodeBlendTree() {
