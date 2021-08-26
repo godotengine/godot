@@ -217,6 +217,8 @@ void AnimationBezierTrackEdit::_draw_line_clipped(const Vector2 &p_from, const V
 
 void AnimationBezierTrackEdit::_notification(int p_what) {
 	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_ENTER_TREE) {
+		close_button->set_icon(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+
 		bezier_icon = get_theme_icon(SNAME("KeyBezierPoint"), SNAME("EditorIcons"));
 		bezier_handle_icon = get_theme_icon(SNAME("KeyBezierHandle"), SNAME("EditorIcons"));
 		selected_icon = get_theme_icon(SNAME("KeyBezierSelected"), SNAME("EditorIcons"));
@@ -231,8 +233,8 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 		int hsep = get_theme_constant(SNAME("hseparation"), SNAME("ItemList"));
 		int vsep = get_theme_constant(SNAME("vseparation"), SNAME("ItemList"));
 
-		handle_mode_option->set_position(Vector2(right_limit + hsep, get_size().height - handle_mode_option->get_combined_minimum_size().height - vsep));
-		handle_mode_option->set_size(Vector2(timeline->get_buttons_width() - hsep * 2, handle_mode_option->get_combined_minimum_size().height));
+		right_column->set_position(Vector2(right_limit + hsep, vsep));
+		right_column->set_size(Vector2(timeline->get_buttons_width() - hsep * 2, get_size().y - vsep * 2));
 	}
 	if (p_what == NOTIFICATION_DRAW) {
 		if (animation.is_null()) {
@@ -260,12 +262,6 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 		int right_limit = get_size().width - timeline->get_buttons_width();
 
 		draw_line(Point2(right_limit, 0), Point2(right_limit, get_size().height), linecolor, Math::round(EDSCALE));
-
-		Ref<Texture2D> close_icon = get_theme_icon(SNAME("Close"), SNAME("EditorIcons"));
-
-		close_icon_rect.position = Vector2(get_size().width - close_icon->get_width() - hsep, hsep);
-		close_icon_rect.size = close_icon->get_size();
-		draw_texture(close_icon, close_icon_rect.position);
 
 		String base_path = animation->track_get_path(track);
 		int end = base_path.find(":");
@@ -1126,10 +1122,6 @@ void AnimationBezierTrackEdit::delete_selection() {
 	}
 }
 
-void AnimationBezierTrackEdit::set_block_animation_update_ptr(bool *p_block_ptr) {
-	block_animation_update_ptr = p_block_ptr;
-}
-
 void AnimationBezierTrackEdit::_bind_methods() {
 	ClassDB::bind_method("_clear_selection", &AnimationBezierTrackEdit::_clear_selection);
 	ClassDB::bind_method("_clear_selection_for_anim", &AnimationBezierTrackEdit::_clear_selection_for_anim);
@@ -1150,21 +1142,6 @@ void AnimationBezierTrackEdit::_bind_methods() {
 }
 
 AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
-	undo_redo = nullptr;
-	timeline = nullptr;
-	root = nullptr;
-	menu = nullptr;
-	block_animation_update_ptr = nullptr;
-
-	moving_selection_attempt = false;
-	moving_selection = false;
-	select_single_attempt = -1;
-	box_selecting = false;
-	box_selecting_attempt = false;
-
-	moving_handle = 0;
-
-	play_position_pos = 0;
 	play_position = memnew(Control);
 	play_position->set_mouse_filter(MOUSE_FILTER_PASS);
 	add_child(play_position);
@@ -1172,18 +1149,21 @@ AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
 	play_position->connect("draw", callable_mp(this, &AnimationBezierTrackEdit::_play_position_draw));
 	set_focus_mode(FOCUS_CLICK);
 
-	v_scroll = 0;
-	v_zoom = 1;
-
-	panning_timeline = false;
 	set_clip_contents(true);
 	handle_mode = HANDLE_MODE_FREE;
 	handle_mode_option = memnew(OptionButton);
-	add_child(handle_mode_option);
+
+	close_button = memnew(Button);
+	close_button->connect("pressed", Callable(this, SNAME("emit_signal")), varray(SNAME("close_request")));
+	close_button->set_text(TTR("Close"));
+
+	right_column = memnew(VBoxContainer);
+	right_column->add_child(close_button);
+	right_column->add_spacer();
+	right_column->add_child(handle_mode_option);
+	add_child(right_column);
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
 	menu->connect("id_pressed", callable_mp(this, &AnimationBezierTrackEdit::_menu_selected));
-
-	//set_mouse_filter(MOUSE_FILTER_PASS); //scroll has to work too for selection
 }
