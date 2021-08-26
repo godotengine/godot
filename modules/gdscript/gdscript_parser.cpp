@@ -408,6 +408,7 @@ void GDScriptParser::synchronize() {
 			case GDScriptTokenizer::Token::FUNC:
 			case GDScriptTokenizer::Token::STATIC:
 			case GDScriptTokenizer::Token::VAR:
+			case GDScriptTokenizer::Token::LET:
 			case GDScriptTokenizer::Token::CONST:
 			case GDScriptTokenizer::Token::SIGNAL:
 			//case GDScriptTokenizer::Token::IF: // Can also be inside expressions.
@@ -804,6 +805,9 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 			case GDScriptTokenizer::Token::VAR:
 				parse_class_member(&GDScriptParser::parse_variable, AnnotationInfo::VARIABLE, "variable");
 				break;
+			case GDScriptTokenizer::Token::LET:
+				parse_class_member(&GDScriptParser::parse_immutable_variable, AnnotationInfo::VARIABLE, "variable"); // FIXME
+				break;
 			case GDScriptTokenizer::Token::CONST:
 				parse_class_member(&GDScriptParser::parse_constant, AnnotationInfo::CONSTANT, "constant");
 				break;
@@ -876,10 +880,14 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 }
 
 GDScriptParser::VariableNode *GDScriptParser::parse_variable() {
-	return parse_variable(true);
+	return parse_variable(true, false);
 }
 
-GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_allow_property) {
+GDScriptParser::VariableNode *GDScriptParser::parse_immutable_variable() {
+	return parse_variable(true, true);
+}
+
+GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_allow_property, bool p_immutable) {
 	VariableNode *variable = alloc_node<VariableNode>();
 
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected variable name after "var".)")) {
@@ -889,6 +897,7 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_allow_proper
 
 	variable->identifier = parse_identifier();
 	variable->export_info.name = variable->identifier->name;
+	variable->immutable = p_immutable;
 
 	if (match(GDScriptTokenizer::Token::COLON)) {
 		if (check(GDScriptTokenizer::Token::NEWLINE)) {
@@ -926,6 +935,9 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_allow_proper
 			push_error(R"(Expected expression for variable initial value after "=".)");
 		}
 		variable->assignments++;
+	} else if (p_immutable) {
+		// An immutable variable must be initialized as soon as it's declared.
+		push_error(R"(Expected initializer for immutable variable declaration ("let variable = value").)");
 	}
 
 	if (p_allow_property && match(GDScriptTokenizer::Token::COLON)) {
@@ -1604,6 +1616,10 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 		case GDScriptTokenizer::Token::VAR:
 			advance();
 			result = parse_variable();
+			break;
+		case GDScriptTokenizer::Token::LET:
+			advance();
+			result = parse_immutable_variable();
 			break;
 		case GDScriptTokenizer::Token::CONST:
 			advance();
@@ -2532,19 +2548,22 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 		return parse_expression(false); // Return the following expression.
 	}
 
-#ifdef DEBUG_ENABLED
 	VariableNode *source_variable = nullptr;
-#endif
 
 	switch (p_previous_operand->type) {
 		case Node::IDENTIFIER: {
-#ifdef DEBUG_ENABLED
 			// Get source to store assignment count.
 			// Also remove one usage since assignment isn't usage.
 			IdentifierNode *id = static_cast<IdentifierNode *>(p_previous_operand);
 			switch (id->source) {
+				// Also check for member variables (required for `let` errors).
+				// FIXME: Doesn't work as expected (this is never called).
+				// case IdentifierNode::MEMBER_VARIABLE:
+				// 	print_line("member variable");
+				// 	source_variable = id->variable_source;
+				// 	id->variable_source->usages--;
+				// 	break;
 				case IdentifierNode::LOCAL_VARIABLE:
-
 					source_variable = id->variable_source;
 					id->variable_source->usages--;
 					break;
@@ -2561,7 +2580,6 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 				default:
 					break;
 			}
-#endif
 		} break;
 		case Node::SUBSCRIPT:
 			// Okay.
@@ -2650,6 +2668,10 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 		source_variable->assignments += 1;
 	}
 #endif
+
+	if (source_variable != nullptr && source_variable->immutable && source_variable->assignments >= 1) {
+		push_error(vformat(R"(Cannot reassign immutable variable "%s". If reassigning is required, use "var" instead of "let".)", source_variable->identifier->name));
+	}
 
 	return assignment;
 }
@@ -3556,6 +3578,7 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 		{ &GDScriptParser::parse_lambda,                    nullptr,                                        PREC_NONE }, // FUNC,
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_CONTENT_TEST }, // IN,
 		{ nullptr,                                          &GDScriptParser::parse_type_test,            	PREC_TYPE_TEST }, // IS,
+		{ nullptr,                                          nullptr,                                        PREC_NONE }, // LET,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // NAMESPACE,
 		{ &GDScriptParser::parse_preload,					nullptr,                                        PREC_NONE }, // PRELOAD,
 		{ &GDScriptParser::parse_self,                   	nullptr,                                        PREC_NONE }, // SELF,

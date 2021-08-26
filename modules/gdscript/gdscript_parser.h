@@ -1187,6 +1187,12 @@ public:
 			PROP_SETGET,
 		};
 
+		// If `true`, the variable cannot be reassigned after it was assigned
+		// once (used with the `let` keyword). This does not provide data
+		// immutability for the variable's contents, but it can still be used to
+		// avoid mistakes.
+		bool immutable = false;
+
 		PropertyStyle property = PROP_NONE;
 		union {
 			FunctionNode *setter = nullptr;
@@ -1434,7 +1440,8 @@ private:
 	// Statements.
 	Node *parse_statement();
 	VariableNode *parse_variable();
-	VariableNode *parse_variable(bool p_allow_property);
+	VariableNode *parse_immutable_variable();
+	VariableNode *parse_variable(bool p_allow_property, bool p_immutable);
 	VariableNode *parse_property(VariableNode *p_variable, bool p_need_indent);
 	void parse_property_getter(VariableNode *p_variable);
 	void parse_property_setter(VariableNode *p_variable);
