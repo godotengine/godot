@@ -888,7 +888,7 @@ void TextEdit::_notification(int p_what) {
 
 					// Draw line.
 					RID rid = ldata->get_line_rid(line_wrap_index);
-					float text_height = TS->shaped_text_get_size(rid).y + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM);
+					float text_height = TS->shaped_text_get_size(rid).y + font->get_spacing(TextServer::SPACING_TOP) + font->get_spacing(TextServer::SPACING_BOTTOM);
 
 					if (rtl) {
 						char_margin = size.width - char_margin - TS->shaped_text_get_size(rid).x;

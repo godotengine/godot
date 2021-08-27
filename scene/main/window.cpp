@@ -659,8 +659,8 @@ void Window::_update_viewport_size() {
 		if (!use_font_oversampling) {
 			font_oversampling = 1.0;
 		}
-		if (TS->font_get_oversampling() != font_oversampling) {
-			TS->font_set_oversampling(font_oversampling);
+		if (TS->font_get_global_oversampling() != font_oversampling) {
+			TS->font_set_global_oversampling(font_oversampling);
 		}
 	}
 

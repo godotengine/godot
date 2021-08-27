@@ -49,7 +49,7 @@ public:
 	Color color;
 	double elapsed_time = 0.0f;
 	Dictionary environment;
-	uint32_t glpyh_index = 0;
+	uint32_t glyph_index = 0;
 	RID font;
 
 	CharFXTransform();
@@ -68,8 +68,8 @@ public:
 	Color get_color() { return color; }
 	void set_color(Color p_color) { color = p_color; }
 
-	uint32_t get_glyph_index() const { return glpyh_index; };
-	void set_glyph_index(uint32_t p_glpyh_index) { glpyh_index = p_glpyh_index; };
+	uint32_t get_glyph_index() const { return glyph_index; };
+	void set_glyph_index(uint32_t p_glyph_index) { glyph_index = p_glyph_index; };
 	RID get_font() const { return font; };
 	void set_font(RID p_font) { font = p_font; };
 

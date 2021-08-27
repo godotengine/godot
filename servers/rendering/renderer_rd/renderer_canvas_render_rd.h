@@ -84,8 +84,9 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		FLAGS_LIGHT_COUNT_SHIFT = 20,
 
 		FLAGS_DEFAULT_NORMAL_MAP_USED = (1 << 26),
-		FLAGS_DEFAULT_SPECULAR_MAP_USED = (1 << 27)
+		FLAGS_DEFAULT_SPECULAR_MAP_USED = (1 << 27),
 
+		FLAGS_USE_MSDF = (1 << 28),
 	};
 
 	enum {
@@ -388,7 +389,10 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 			//rect
 			struct {
 				float modulation[4];
-				float ninepatch_margins[4];
+				union {
+					float msdf[4];
+					float ninepatch_margins[4];
+				};
 				float dst_rect[4];
 				float src_rect[4];
 				float pad[2];

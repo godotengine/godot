@@ -114,6 +114,7 @@ private:
 		Vector<Button> buttons;
 
 		Ref<Font> custom_font;
+		int custom_font_size = -1;
 
 		Cell() {
 			text_buf.instantiate();
@@ -298,6 +299,9 @@ public:
 
 	void set_custom_font(int p_column, const Ref<Font> &p_font);
 	Ref<Font> get_custom_font(int p_column) const;
+
+	void set_custom_font_size(int p_column, int p_font_size);
+	int get_custom_font_size(int p_column) const;
 
 	void set_custom_bg_color(int p_column, const Color &p_color, bool p_bg_outline = false);
 	void clear_custom_bg_color(int p_column);

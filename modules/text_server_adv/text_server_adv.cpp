@@ -29,14 +29,212 @@
 /*************************************************************************/
 
 #include "text_server_adv.h"
-#include "bitmap_font_adv.h"
-#include "dynamic_font_adv.h"
 
+#include "core/string/print_string.h"
 #include "core/string/translation.h"
 
 #ifdef ICU_STATIC_DATA
 #include "thirdparty/icu4c/icudata.gen.h"
 #endif
+
+#ifdef MODULE_MSDFGEN_ENABLED
+#include "core/ShapeDistanceFinder.h"
+#include "core/contour-combiners.h"
+#include "core/edge-selectors.h"
+#include "msdfgen.h"
+#endif
+
+/*************************************************************************/
+/*  hb_bmp_font_t HarfBuzz Bitmap font interface                         */
+/*************************************************************************/
+
+hb_font_funcs_t *TextServerAdvanced::funcs = nullptr;
+
+TextServerAdvanced::hb_bmp_font_t *TextServerAdvanced::_hb_bmp_font_create(TextServerAdvanced::FontDataForSizeAdvanced *p_face, bool p_unref) {
+	hb_bmp_font_t *bm_font = memnew(hb_bmp_font_t);
+
+	if (!bm_font) {
+		return nullptr;
+	}
+
+	bm_font->face = p_face;
+	bm_font->unref = p_unref;
+
+	return bm_font;
+}
+
+void TextServerAdvanced::_hb_bmp_font_destroy(void *p_data) {
+	hb_bmp_font_t *bm_font = reinterpret_cast<hb_bmp_font_t *>(p_data);
+	memdelete(bm_font);
+}
+
+hb_bool_t TextServerAdvanced::hb_bmp_get_nominal_glyph(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_unicode, hb_codepoint_t *r_glyph, void *p_user_data) {
+	const hb_bmp_font_t *bm_font = reinterpret_cast<const hb_bmp_font_t *>(p_font_data);
+
+	if (!bm_font->face) {
+		return false;
+	}
+
+	if (!bm_font->face->glyph_map.has(p_unicode)) {
+		if (bm_font->face->glyph_map.has(0xF000u + p_unicode)) {
+			*r_glyph = 0xF000u + p_unicode;
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	*r_glyph = p_unicode;
+	return true;
+}
+
+hb_position_t TextServerAdvanced::hb_bmp_get_glyph_h_advance(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, void *p_user_data) {
+	const hb_bmp_font_t *bm_font = reinterpret_cast<const hb_bmp_font_t *>(p_font_data);
+
+	if (!bm_font->face) {
+		return 0;
+	}
+
+	if (!bm_font->face->glyph_map.has(p_glyph)) {
+		return 0;
+	}
+
+	return bm_font->face->glyph_map[p_glyph].advance.x * 64;
+}
+
+hb_position_t TextServerAdvanced::hb_bmp_get_glyph_v_advance(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, void *p_user_data) {
+	const hb_bmp_font_t *bm_font = reinterpret_cast<const hb_bmp_font_t *>(p_font_data);
+
+	if (!bm_font->face) {
+		return 0;
+	}
+
+	if (!bm_font->face->glyph_map.has(p_glyph)) {
+		return 0;
+	}
+
+	return -bm_font->face->glyph_map[p_glyph].advance.y * 64;
+}
+
+hb_position_t TextServerAdvanced::hb_bmp_get_glyph_h_kerning(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_left_glyph, hb_codepoint_t p_right_glyph, void *p_user_data) {
+	const hb_bmp_font_t *bm_font = reinterpret_cast<const hb_bmp_font_t *>(p_font_data);
+
+	if (!bm_font->face) {
+		return 0;
+	}
+
+	if (!bm_font->face->kerning_map.has(Vector2i(p_left_glyph, p_right_glyph))) {
+		return 0;
+	}
+
+	return bm_font->face->kerning_map[Vector2i(p_left_glyph, p_right_glyph)].x * 64;
+}
+
+hb_position_t TextServerAdvanced::hb_bmp_get_glyph_v_kerning(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_left_glyph, hb_codepoint_t p_right_glyph, void *p_user_data) {
+	const hb_bmp_font_t *bm_font = reinterpret_cast<const hb_bmp_font_t *>(p_font_data);
+
+	if (!bm_font->face) {
+		return 0;
+	}
+
+	if (!bm_font->face->kerning_map.has(Vector2i(p_left_glyph, p_right_glyph))) {
+		return 0;
+	}
+
+	return bm_font->face->kerning_map[Vector2i(p_left_glyph, p_right_glyph)].y * 64;
+}
+
+hb_bool_t TextServerAdvanced::hb_bmp_get_glyph_v_origin(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, hb_position_t *r_x, hb_position_t *r_y, void *p_user_data) {
+	const hb_bmp_font_t *bm_font = reinterpret_cast<const hb_bmp_font_t *>(p_font_data);
+
+	if (!bm_font->face) {
+		return false;
+	}
+
+	if (!bm_font->face->glyph_map.has(p_glyph)) {
+		return false;
+	}
+
+	*r_x = bm_font->face->glyph_map[p_glyph].advance.x * 32;
+	*r_y = -bm_font->face->ascent * 64;
+
+	return true;
+}
+
+hb_bool_t TextServerAdvanced::hb_bmp_get_glyph_extents(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, hb_glyph_extents_t *r_extents, void *p_user_data) {
+	const hb_bmp_font_t *bm_font = reinterpret_cast<const hb_bmp_font_t *>(p_font_data);
+
+	if (!bm_font->face) {
+		return false;
+	}
+
+	if (!bm_font->face->glyph_map.has(p_glyph)) {
+		return false;
+	}
+
+	r_extents->x_bearing = 0;
+	r_extents->y_bearing = 0;
+	r_extents->width = bm_font->face->glyph_map[p_glyph].rect.size.x * 64;
+	r_extents->height = bm_font->face->glyph_map[p_glyph].rect.size.y * 64;
+
+	return true;
+}
+
+hb_bool_t TextServerAdvanced::hb_bmp_get_font_h_extents(hb_font_t *p_font, void *p_font_data, hb_font_extents_t *r_metrics, void *p_user_data) {
+	const hb_bmp_font_t *bm_font = reinterpret_cast<const hb_bmp_font_t *>(p_font_data);
+
+	if (!bm_font->face) {
+		return false;
+	}
+
+	r_metrics->ascender = bm_font->face->ascent;
+	r_metrics->descender = bm_font->face->descent;
+	r_metrics->line_gap = 0;
+
+	return true;
+}
+
+void TextServerAdvanced::hb_bmp_create_font_funcs() {
+	if (funcs == nullptr) {
+		funcs = hb_font_funcs_create();
+
+		hb_font_funcs_set_font_h_extents_func(funcs, hb_bmp_get_font_h_extents, nullptr, nullptr);
+		hb_font_funcs_set_nominal_glyph_func(funcs, hb_bmp_get_nominal_glyph, nullptr, nullptr);
+		hb_font_funcs_set_glyph_h_advance_func(funcs, hb_bmp_get_glyph_h_advance, nullptr, nullptr);
+		hb_font_funcs_set_glyph_v_advance_func(funcs, hb_bmp_get_glyph_v_advance, nullptr, nullptr);
+		hb_font_funcs_set_glyph_v_origin_func(funcs, hb_bmp_get_glyph_v_origin, nullptr, nullptr);
+		hb_font_funcs_set_glyph_h_kerning_func(funcs, hb_bmp_get_glyph_h_kerning, nullptr, nullptr);
+		hb_font_funcs_set_glyph_v_kerning_func(funcs, hb_bmp_get_glyph_v_kerning, nullptr, nullptr);
+		hb_font_funcs_set_glyph_extents_func(funcs, hb_bmp_get_glyph_extents, nullptr, nullptr);
+
+		hb_font_funcs_make_immutable(funcs);
+	}
+}
+
+void TextServerAdvanced::hb_bmp_free_font_funcs() {
+	if (funcs != nullptr) {
+		hb_font_funcs_destroy(funcs);
+		funcs = nullptr;
+	}
+}
+
+void TextServerAdvanced::_hb_bmp_font_set_funcs(hb_font_t *p_font, TextServerAdvanced::FontDataForSizeAdvanced *p_face, bool p_unref) {
+	hb_font_set_funcs(p_font, funcs, _hb_bmp_font_create(p_face, p_unref), _hb_bmp_font_destroy);
+}
+
+hb_font_t *TextServerAdvanced::hb_bmp_font_create(TextServerAdvanced::FontDataForSizeAdvanced *p_face, hb_destroy_func_t p_destroy) {
+	hb_font_t *font;
+	hb_face_t *face = hb_face_create(nullptr, 0);
+
+	font = hb_font_create(face);
+	hb_face_destroy(face);
+	_hb_bmp_font_set_funcs(font, p_face, false);
+	return font;
+}
+
+/*************************************************************************/
+/*  Character properties.                                                */
+/*************************************************************************/
 
 _FORCE_INLINE_ bool is_ain(char32_t p_chr) {
 	return u_getIntPropertyValue(p_chr, UCHAR_JOINING_GROUP) == U_JG_AIN;
@@ -497,7 +695,7 @@ static FeatureInfo feature_set[] = {
 	{ 0, String() },
 };
 
-int32_t TextServerAdvanced::name_to_tag(const String &p_name) {
+int32_t TextServerAdvanced::name_to_tag(const String &p_name) const {
 	for (int i = 0; feature_set[i].tag != 0; i++) {
 		if (feature_set[i].name == p_name) {
 			return feature_set[i].tag;
@@ -508,7 +706,7 @@ int32_t TextServerAdvanced::name_to_tag(const String &p_name) {
 	return hb_tag_from_string(p_name.replace("custom_", "").ascii().get_data(), -1);
 }
 
-String TextServerAdvanced::tag_to_name(int32_t p_tag) {
+String TextServerAdvanced::tag_to_name(int32_t p_tag) const {
 	for (int i = 0; feature_set[i].tag != 0; i++) {
 		if (feature_set[i].tag == p_tag) {
 			return feature_set[i].name;
@@ -523,424 +721,2092 @@ String TextServerAdvanced::tag_to_name(int32_t p_tag) {
 }
 
 /*************************************************************************/
-/* Font interface */
+/* Font Glyph Rendering                                                  */
 /*************************************************************************/
 
-RID TextServerAdvanced::create_font_system(const String &p_name, int p_base_size) {
-	ERR_FAIL_V_MSG(RID(), "System fonts are not supported by this text server.");
-}
+_FORCE_INLINE_ TextServerAdvanced::FontTexturePosition TextServerAdvanced::find_texture_pos_for_glyph(FontDataForSizeAdvanced *p_data, int p_color_size, Image::Format p_image_format, int p_width, int p_height) const {
+	FontTexturePosition ret;
+	ret.index = -1;
 
-RID TextServerAdvanced::create_font_resource(const String &p_filename, int p_base_size) {
-	_THREAD_SAFE_METHOD_
-	FontDataAdvanced *fd = nullptr;
-	if (p_filename.get_extension() == "fnt" || p_filename.get_extension() == "font") {
-		fd = memnew(BitmapFontDataAdvanced);
-#ifdef MODULE_FREETYPE_ENABLED
-	} else if (p_filename.get_extension() == "ttf" || p_filename.get_extension() == "otf" || p_filename.get_extension() == "woff") {
-		fd = memnew(DynamicFontDataAdvanced);
-#endif
-	} else {
-		return RID();
-	}
+	int mw = p_width;
+	int mh = p_height;
 
-	Error err = fd->load_from_file(p_filename, p_base_size);
-	if (err != OK) {
-		memdelete(fd);
-		return RID();
-	}
+	for (int i = 0; i < p_data->textures.size(); i++) {
+		const FontTexture &ct = p_data->textures[i];
 
-	return font_owner.make_rid(fd);
-}
-
-RID TextServerAdvanced::create_font_memory(const uint8_t *p_data, size_t p_size, const String &p_type, int p_base_size) {
-	_THREAD_SAFE_METHOD_
-	FontDataAdvanced *fd = nullptr;
-	if (p_type == "fnt" || p_type == "font") {
-		fd = memnew(BitmapFontDataAdvanced);
-#ifdef MODULE_FREETYPE_ENABLED
-	} else if (p_type == "ttf" || p_type == "otf" || p_type == "woff") {
-		fd = memnew(DynamicFontDataAdvanced);
-#endif
-	} else {
-		return RID();
-	}
-
-	Error err = fd->load_from_memory(p_data, p_size, p_base_size);
-	if (err != OK) {
-		memdelete(fd);
-		return RID();
-	}
-
-	return font_owner.make_rid(fd);
-}
-
-RID TextServerAdvanced::create_font_bitmap(float p_height, float p_ascent, int p_base_size) {
-	_THREAD_SAFE_METHOD_
-	FontDataAdvanced *fd = memnew(BitmapFontDataAdvanced);
-	Error err = fd->bitmap_new(p_height, p_ascent, p_base_size);
-	if (err != OK) {
-		memdelete(fd);
-		return RID();
-	}
-
-	return font_owner.make_rid(fd);
-}
-
-void TextServerAdvanced::font_bitmap_add_texture(RID p_font, const Ref<Texture> &p_texture) {
-	_THREAD_SAFE_METHOD_
-	FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND(!fd);
-	fd->bitmap_add_texture(p_texture);
-}
-
-void TextServerAdvanced::font_bitmap_add_char(RID p_font, char32_t p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance) {
-	_THREAD_SAFE_METHOD_
-	FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND(!fd);
-	fd->bitmap_add_char(p_char, p_texture_idx, p_rect, p_align, p_advance);
-}
-
-void TextServerAdvanced::font_bitmap_add_kerning_pair(RID p_font, char32_t p_A, char32_t p_B, int p_kerning) {
-	_THREAD_SAFE_METHOD_
-	FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND(!fd);
-	fd->bitmap_add_kerning_pair(p_A, p_B, p_kerning);
-}
-
-float TextServerAdvanced::font_get_height(RID p_font, int p_size) const {
-	_THREAD_SAFE_METHOD_
-	const FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, 0.f);
-	return fd->get_height(p_size);
-}
-
-float TextServerAdvanced::font_get_ascent(RID p_font, int p_size) const {
-	_THREAD_SAFE_METHOD_
-	const FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, 0.f);
-	return fd->get_ascent(p_size);
-}
-
-float TextServerAdvanced::font_get_descent(RID p_font, int p_size) const {
-	_THREAD_SAFE_METHOD_
-	const FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, 0.f);
-	return fd->get_descent(p_size);
-}
-
-float TextServerAdvanced::font_get_underline_position(RID p_font, int p_size) const {
-	_THREAD_SAFE_METHOD_
-	const FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, 0.f);
-	return fd->get_underline_position(p_size);
-}
-
-float TextServerAdvanced::font_get_underline_thickness(RID p_font, int p_size) const {
-	_THREAD_SAFE_METHOD_
-	const FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, 0.f);
-	return fd->get_underline_thickness(p_size);
-}
-
-int TextServerAdvanced::font_get_spacing_space(RID p_font) const {
-	_THREAD_SAFE_METHOD_
-	const FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, 0);
-	return fd->get_spacing_space();
-}
-
-void TextServerAdvanced::font_set_spacing_space(RID p_font, int p_value) {
-	_THREAD_SAFE_METHOD_
-	FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND(!fd);
-	fd->set_spacing_space(p_value);
-}
-
-int TextServerAdvanced::font_get_spacing_glyph(RID p_font) const {
-	_THREAD_SAFE_METHOD_
-	const FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, 0);
-	return fd->get_spacing_glyph();
-}
-
-void TextServerAdvanced::font_set_spacing_glyph(RID p_font, int p_value) {
-	_THREAD_SAFE_METHOD_
-	FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND(!fd);
-	fd->set_spacing_glyph(p_value);
-}
-
-void TextServerAdvanced::font_set_antialiased(RID p_font, bool p_antialiased) {
-	_THREAD_SAFE_METHOD_
-	FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND(!fd);
-	fd->set_antialiased(p_antialiased);
-}
-
-Dictionary TextServerAdvanced::font_get_feature_list(RID p_font) const {
-	_THREAD_SAFE_METHOD_
-	const FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, Dictionary());
-	return fd->get_feature_list();
-}
-
-bool TextServerAdvanced::font_get_antialiased(RID p_font) const {
-	_THREAD_SAFE_METHOD_
-	const FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, false);
-	return fd->get_antialiased();
-}
-
-Dictionary TextServerAdvanced::font_get_variation_list(RID p_font) const {
-	_THREAD_SAFE_METHOD_
-	const FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, Dictionary());
-	return fd->get_variation_list();
-}
-
-void TextServerAdvanced::font_set_variation(RID p_font, const String &p_name, double p_value) {
-	_THREAD_SAFE_METHOD_
-	FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND(!fd);
-	fd->set_variation(p_name, p_value);
-}
-
-double TextServerAdvanced::font_get_variation(RID p_font, const String &p_name) const {
-	_THREAD_SAFE_METHOD_
-	const FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, 0);
-	return fd->get_variation(p_name);
-}
-
-void TextServerAdvanced::font_set_distance_field_hint(RID p_font, bool p_distance_field) {
-	_THREAD_SAFE_METHOD_
-	FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND(!fd);
-	fd->set_distance_field_hint(p_distance_field);
-}
-
-bool TextServerAdvanced::font_get_distance_field_hint(RID p_font) const {
-	_THREAD_SAFE_METHOD_
-	const FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, false);
-	return fd->get_distance_field_hint();
-}
-
-void TextServerAdvanced::font_set_hinting(RID p_font, TextServer::Hinting p_hinting) {
-	_THREAD_SAFE_METHOD_
-	FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND(!fd);
-	fd->set_hinting(p_hinting);
-}
-
-TextServer::Hinting TextServerAdvanced::font_get_hinting(RID p_font) const {
-	_THREAD_SAFE_METHOD_
-	const FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, TextServer::HINTING_NONE);
-	return fd->get_hinting();
-}
-
-void TextServerAdvanced::font_set_force_autohinter(RID p_font, bool p_enabeld) {
-	_THREAD_SAFE_METHOD_
-	FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND(!fd);
-	fd->set_force_autohinter(p_enabeld);
-}
-
-bool TextServerAdvanced::font_get_force_autohinter(RID p_font) const {
-	_THREAD_SAFE_METHOD_
-	const FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, false);
-	return fd->get_force_autohinter();
-}
-
-bool TextServerAdvanced::font_has_char(RID p_font, char32_t p_char) const {
-	_THREAD_SAFE_METHOD_
-	const FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, false);
-	return fd->has_char(p_char);
-}
-
-String TextServerAdvanced::font_get_supported_chars(RID p_font) const {
-	_THREAD_SAFE_METHOD_
-	const FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, String());
-	return fd->get_supported_chars();
-}
-
-bool TextServerAdvanced::font_has_outline(RID p_font) const {
-	_THREAD_SAFE_METHOD_
-	const FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, false);
-	return fd->has_outline();
-}
-
-float TextServerAdvanced::font_get_base_size(RID p_font) const {
-	_THREAD_SAFE_METHOD_
-	const FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, 0.f);
-	return fd->get_base_size();
-}
-
-bool TextServerAdvanced::font_is_language_supported(RID p_font, const String &p_language) const {
-	_THREAD_SAFE_METHOD_
-	const FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, false);
-	if (fd->lang_support_overrides.has(p_language)) {
-		return fd->lang_support_overrides[p_language];
-	} else {
-		Vector<String> tags = p_language.replace("-", "_").split("_");
-		if (tags.size() > 0) {
-			if (fd->lang_support_overrides.has(tags[0])) {
-				return fd->lang_support_overrides[tags[0]];
+		if (RenderingServer::get_singleton() != nullptr) {
+			if (ct.texture->get_format() != p_image_format) {
+				continue;
 			}
 		}
-		return fd->is_lang_supported(p_language);
+
+		if (mw > ct.texture_w || mh > ct.texture_h) { // Too big for this texture.
+			continue;
+		}
+
+		ret.y = 0x7FFFFFFF;
+		ret.x = 0;
+
+		for (int j = 0; j < ct.texture_w - mw; j++) {
+			int max_y = 0;
+
+			for (int k = j; k < j + mw; k++) {
+				int y = ct.offsets[k];
+				if (y > max_y) {
+					max_y = y;
+				}
+			}
+
+			if (max_y < ret.y) {
+				ret.y = max_y;
+				ret.x = j;
+			}
+		}
+
+		if (ret.y == 0x7FFFFFFF || ret.y + mh > ct.texture_h) {
+			continue; // Fail, could not fit it here.
+		}
+
+		ret.index = i;
+		break;
+	}
+
+	if (ret.index == -1) {
+		// Could not find texture to fit, create one.
+		ret.x = 0;
+		ret.y = 0;
+
+		int texsize = MAX(p_data->size.x * p_data->oversampling * 8, 256);
+		if (mw > texsize) {
+			texsize = mw; // Special case, adapt to it?
+		}
+		if (mh > texsize) {
+			texsize = mh; // Special case, adapt to it?
+		}
+
+		texsize = next_power_of_2(texsize);
+
+		texsize = MIN(texsize, 4096);
+
+		FontTexture tex;
+		tex.texture_w = texsize;
+		tex.texture_h = texsize;
+		tex.format = p_image_format;
+		tex.imgdata.resize(texsize * texsize * p_color_size);
+
+		{
+			// Zero texture.
+			uint8_t *w = tex.imgdata.ptrw();
+			ERR_FAIL_COND_V(texsize * texsize * p_color_size > tex.imgdata.size(), ret);
+			// Initialize the texture to all-white pixels to prevent artifacts when the
+			// font is displayed at a non-default scale with filtering enabled.
+			if (p_color_size == 2) {
+				for (int i = 0; i < texsize * texsize * p_color_size; i += 2) { // FORMAT_LA8, BW font.
+					w[i + 0] = 255;
+					w[i + 1] = 0;
+				}
+			} else if (p_color_size == 4) {
+				for (int i = 0; i < texsize * texsize * p_color_size; i += 4) { // FORMAT_RGBA8, Color font, Multichannel(+True) SDF.
+					w[i + 0] = 255;
+					w[i + 1] = 255;
+					w[i + 2] = 255;
+					w[i + 3] = 0;
+				}
+			} else {
+				ERR_FAIL_V(ret);
+			}
+		}
+		tex.offsets.resize(texsize);
+		for (int i = 0; i < texsize; i++) { // Zero offsets.
+			tex.offsets.write[i] = 0;
+		}
+
+		p_data->textures.push_back(tex);
+		ret.index = p_data->textures.size() - 1;
+	}
+
+	return ret;
+}
+
+#ifdef MODULE_MSDFGEN_ENABLED
+
+struct MSContext {
+	msdfgen::Point2 position;
+	msdfgen::Shape *shape;
+	msdfgen::Contour *contour;
+};
+
+class DistancePixelConversion {
+	double invRange;
+
+public:
+	_FORCE_INLINE_ explicit DistancePixelConversion(double range) :
+			invRange(1 / range) {}
+	_FORCE_INLINE_ void operator()(float *pixels, const msdfgen::MultiAndTrueDistance &distance) const {
+		pixels[0] = float(invRange * distance.r + .5);
+		pixels[1] = float(invRange * distance.g + .5);
+		pixels[2] = float(invRange * distance.b + .5);
+		pixels[3] = float(invRange * distance.a + .5);
+	}
+};
+
+struct MSDFThreadData {
+	msdfgen::Bitmap<float, 4> *output;
+	msdfgen::Shape *shape;
+	msdfgen::Projection *projection;
+	DistancePixelConversion *distancePixelConversion;
+};
+
+static msdfgen::Point2 ft_point2(const FT_Vector &vector) {
+	return msdfgen::Point2(vector.x / 60.0f, vector.y / 60.0f);
+}
+
+static int ft_move_to(const FT_Vector *to, void *user) {
+	MSContext *context = reinterpret_cast<MSContext *>(user);
+	if (!(context->contour && context->contour->edges.empty())) {
+		context->contour = &context->shape->addContour();
+	}
+	context->position = ft_point2(*to);
+	return 0;
+}
+
+static int ft_line_to(const FT_Vector *to, void *user) {
+	MSContext *context = reinterpret_cast<MSContext *>(user);
+	msdfgen::Point2 endpoint = ft_point2(*to);
+	if (endpoint != context->position) {
+		context->contour->addEdge(new msdfgen::LinearSegment(context->position, endpoint));
+		context->position = endpoint;
+	}
+	return 0;
+}
+
+static int ft_conic_to(const FT_Vector *control, const FT_Vector *to, void *user) {
+	MSContext *context = reinterpret_cast<MSContext *>(user);
+	context->contour->addEdge(new msdfgen::QuadraticSegment(context->position, ft_point2(*control), ft_point2(*to)));
+	context->position = ft_point2(*to);
+	return 0;
+}
+
+static int ft_cubic_to(const FT_Vector *control1, const FT_Vector *control2, const FT_Vector *to, void *user) {
+	MSContext *context = reinterpret_cast<MSContext *>(user);
+	context->contour->addEdge(new msdfgen::CubicSegment(context->position, ft_point2(*control1), ft_point2(*control2), ft_point2(*to)));
+	context->position = ft_point2(*to);
+	return 0;
+}
+
+void TextServerAdvanced::_generateMTSDF_threaded(uint32_t y, void *p_td) const {
+	MSDFThreadData *td = (MSDFThreadData *)p_td;
+
+	msdfgen::ShapeDistanceFinder<msdfgen::OverlappingContourCombiner<msdfgen::MultiAndTrueDistanceSelector>> distanceFinder(*td->shape);
+	int row = td->shape->inverseYAxis ? td->output->height() - y - 1 : y;
+	for (int col = 0; col < td->output->width(); ++col) {
+		int x = (y % 2) ? td->output->width() - col - 1 : col;
+		msdfgen::Point2 p = td->projection->unproject(msdfgen::Point2(x + .5, y + .5));
+		msdfgen::MultiAndTrueDistance distance = distanceFinder.distance(p);
+		td->distancePixelConversion->operator()(td->output->operator()(x, row), distance);
 	}
 }
 
-void TextServerAdvanced::font_set_language_support_override(RID p_font, const String &p_language, bool p_supported) {
-	_THREAD_SAFE_METHOD_
-	FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND(!fd);
-	fd->lang_support_overrides[p_language] = p_supported;
+_FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_msdf(FontDataAdvanced *p_font_data, FontDataForSizeAdvanced *p_data, int p_pixel_range, int p_rect_margin, FT_Outline *outline, const Vector2 &advance) const {
+	msdfgen::Shape shape;
+
+	shape.contours.clear();
+	shape.inverseYAxis = false;
+
+	MSContext context = {};
+	context.shape = &shape;
+	FT_Outline_Funcs ft_functions;
+	ft_functions.move_to = &ft_move_to;
+	ft_functions.line_to = &ft_line_to;
+	ft_functions.conic_to = &ft_conic_to;
+	ft_functions.cubic_to = &ft_cubic_to;
+	ft_functions.shift = 0;
+	ft_functions.delta = 0;
+
+	int error = FT_Outline_Decompose(outline, &ft_functions, &context);
+	ERR_FAIL_COND_V_MSG(error, FontGlyph(), "FreeType: Outline decomposition error: '" + String(FT_Error_String(error)) + "'.");
+	if (!shape.contours.empty() && shape.contours.back().edges.empty()) {
+		shape.contours.pop_back();
+	}
+
+	if (FT_Outline_Get_Orientation(outline) == 1) {
+		for (int i = 0; i < (int)shape.contours.size(); ++i) {
+			shape.contours[i].reverse();
+		}
+	}
+
+	shape.inverseYAxis = true;
+	shape.normalize();
+
+	msdfgen::Shape::Bounds bounds = shape.getBounds(p_pixel_range);
+
+	FontGlyph chr;
+	chr.found = true;
+	chr.advance = advance.round();
+
+	if (shape.validate() && shape.contours.size() > 0) {
+		int w = (bounds.r - bounds.l);
+		int h = (bounds.t - bounds.b);
+
+		int mw = w + p_rect_margin * 2;
+		int mh = h + p_rect_margin * 2;
+
+		ERR_FAIL_COND_V(mw > 4096, FontGlyph());
+		ERR_FAIL_COND_V(mh > 4096, FontGlyph());
+
+		FontTexturePosition tex_pos = find_texture_pos_for_glyph(p_data, 4, Image::FORMAT_RGBA8, mw, mh);
+		ERR_FAIL_COND_V(tex_pos.index < 0, FontGlyph());
+		FontTexture &tex = p_data->textures.write[tex_pos.index];
+
+		edgeColoringSimple(shape, 3.0); // Max. angle.
+		msdfgen::Bitmap<float, 4> image(w, h); // Texture size.
+		//msdfgen::generateMTSDF(image, shape, p_pixel_range, 1.0, msdfgen::Vector2(-bounds.l, -bounds.b)); // Range, scale, translation.
+
+		DistancePixelConversion distancePixelConversion(p_pixel_range);
+		msdfgen::Projection projection(msdfgen::Vector2(1.0, 1.0), msdfgen::Vector2(-bounds.l, -bounds.b));
+		msdfgen::MSDFGeneratorConfig config(true, msdfgen::ErrorCorrectionConfig());
+
+		MSDFThreadData td;
+		td.output = &image;
+		td.shape = &shape;
+		td.projection = &projection;
+		td.distancePixelConversion = &distancePixelConversion;
+
+		if (p_font_data->work_pool.get_thread_count() == 0) {
+			p_font_data->work_pool.init();
+		}
+		p_font_data->work_pool.do_work(h, this, &TextServerAdvanced::_generateMTSDF_threaded, &td);
+
+		msdfgen::msdfErrorCorrection(image, shape, projection, p_pixel_range, config);
+
+		{
+			uint8_t *wr = tex.imgdata.ptrw();
+
+			for (int i = 0; i < h; i++) {
+				for (int j = 0; j < w; j++) {
+					int ofs = ((i + tex_pos.y + p_rect_margin) * tex.texture_w + j + tex_pos.x + p_rect_margin) * 4;
+					ERR_FAIL_COND_V(ofs >= tex.imgdata.size(), FontGlyph());
+					wr[ofs + 0] = (uint8_t)(CLAMP(image(j, i)[0] * 256.f, 0.f, 255.f));
+					wr[ofs + 1] = (uint8_t)(CLAMP(image(j, i)[1] * 256.f, 0.f, 255.f));
+					wr[ofs + 2] = (uint8_t)(CLAMP(image(j, i)[2] * 256.f, 0.f, 255.f));
+					wr[ofs + 3] = (uint8_t)(CLAMP(image(j, i)[3] * 256.f, 0.f, 255.f));
+					//wr[ofs + 0] = 100;
+					//wr[ofs + 1] = 100;
+					//wr[ofs + 2] = 100;
+					//wr[ofs + 3] = 100;
+				}
+			}
+		}
+
+		// Blit to image and texture.
+		{
+			if (RenderingServer::get_singleton() != nullptr) {
+				Ref<Image> img = memnew(Image(tex.texture_w, tex.texture_h, 0, Image::FORMAT_RGBA8, tex.imgdata));
+				if (tex.texture.is_null()) {
+					tex.texture.instantiate();
+					tex.texture->create_from_image(img);
+				} else {
+					tex.texture->update(img);
+				}
+			}
+		}
+
+		// Update height array.
+		for (int k = tex_pos.x; k < tex_pos.x + mw; k++) {
+			tex.offsets.write[k] = tex_pos.y + mh;
+		}
+
+		chr.texture_idx = tex_pos.index;
+
+		chr.uv_rect = Rect2(tex_pos.x + p_rect_margin, tex_pos.y + p_rect_margin, w, h);
+		chr.rect.position = Vector2(bounds.l, -bounds.t);
+		chr.rect.size = chr.uv_rect.size;
+	}
+	return chr;
+}
+#endif
+
+#ifdef MODULE_FREETYPE_ENABLED
+_FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_bitmap(FontDataForSizeAdvanced *p_data, int p_rect_margin, FT_Bitmap bitmap, int yofs, int xofs, const Vector2 &advance) const {
+	int w = bitmap.width;
+	int h = bitmap.rows;
+
+	int mw = w + p_rect_margin * 2;
+	int mh = h + p_rect_margin * 2;
+
+	ERR_FAIL_COND_V(mw > 4096, FontGlyph());
+	ERR_FAIL_COND_V(mh > 4096, FontGlyph());
+
+	int color_size = bitmap.pixel_mode == FT_PIXEL_MODE_BGRA ? 4 : 2;
+	Image::Format require_format = color_size == 4 ? Image::FORMAT_RGBA8 : Image::FORMAT_LA8;
+
+	FontTexturePosition tex_pos = find_texture_pos_for_glyph(p_data, color_size, require_format, mw, mh);
+	ERR_FAIL_COND_V(tex_pos.index < 0, FontGlyph());
+
+	// Fit character in char texture.
+
+	FontTexture &tex = p_data->textures.write[tex_pos.index];
+
+	{
+		uint8_t *wr = tex.imgdata.ptrw();
+
+		for (int i = 0; i < h; i++) {
+			for (int j = 0; j < w; j++) {
+				int ofs = ((i + tex_pos.y + p_rect_margin) * tex.texture_w + j + tex_pos.x + p_rect_margin) * color_size;
+				ERR_FAIL_COND_V(ofs >= tex.imgdata.size(), FontGlyph());
+				switch (bitmap.pixel_mode) {
+					case FT_PIXEL_MODE_MONO: {
+						int byte = i * bitmap.pitch + (j >> 3);
+						int bit = 1 << (7 - (j % 8));
+						wr[ofs + 0] = 255; //grayscale as 1
+						wr[ofs + 1] = (bitmap.buffer[byte] & bit) ? 255 : 0;
+					} break;
+					case FT_PIXEL_MODE_GRAY:
+						wr[ofs + 0] = 255; //grayscale as 1
+						wr[ofs + 1] = bitmap.buffer[i * bitmap.pitch + j];
+						//wr[ofs + 1] = 100;
+						break;
+					case FT_PIXEL_MODE_BGRA: {
+						int ofs_color = i * bitmap.pitch + (j << 2);
+						wr[ofs + 2] = bitmap.buffer[ofs_color + 0];
+						wr[ofs + 1] = bitmap.buffer[ofs_color + 1];
+						wr[ofs + 0] = bitmap.buffer[ofs_color + 2];
+						wr[ofs + 3] = bitmap.buffer[ofs_color + 3];
+					} break;
+					default:
+						ERR_FAIL_V_MSG(FontGlyph(), "Font uses unsupported pixel format: " + itos(bitmap.pixel_mode) + ".");
+						break;
+				}
+			}
+		}
+	}
+
+	// Blit to image and texture.
+	{
+		if (RenderingServer::get_singleton() != nullptr) {
+			Ref<Image> img = memnew(Image(tex.texture_w, tex.texture_h, 0, require_format, tex.imgdata));
+
+			if (tex.texture.is_null()) {
+				tex.texture.instantiate();
+				tex.texture->create_from_image(img);
+			} else {
+				tex.texture->update(img);
+			}
+		}
+	}
+
+	// Update height array.
+	for (int k = tex_pos.x; k < tex_pos.x + mw; k++) {
+		tex.offsets.write[k] = tex_pos.y + mh;
+	}
+
+	FontGlyph chr;
+	chr.advance = (advance * p_data->scale / p_data->oversampling).round();
+	chr.texture_idx = tex_pos.index;
+	chr.found = true;
+
+	chr.uv_rect = Rect2(tex_pos.x + p_rect_margin, tex_pos.y + p_rect_margin, w, h);
+	chr.rect.position = (Vector2(xofs, -yofs) * p_data->scale / p_data->oversampling).round();
+	chr.rect.size = chr.uv_rect.size * p_data->scale / p_data->oversampling;
+	return chr;
+}
+#endif
+
+/*************************************************************************/
+/* Font Cache                                                            */
+/*************************************************************************/
+
+_FORCE_INLINE_ bool TextServerAdvanced::_ensure_glyph(FontDataAdvanced *p_font_data, const Vector2i &p_size, int32_t p_glyph) const {
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(p_font_data, p_size), false);
+
+	FontDataForSizeAdvanced *fd = p_font_data->cache[p_size];
+	if (fd->glyph_map.has(p_glyph)) {
+		return fd->glyph_map[p_glyph].found;
+	}
+
+	if (p_glyph == 0) { // Non graphical or invalid glyph, do not render.
+		fd->glyph_map[p_glyph] = FontGlyph();
+		return true;
+	}
+
+#ifdef MODULE_FREETYPE_ENABLED
+	FontGlyph gl;
+	if (fd->face) {
+		FT_Int32 flags = FT_LOAD_DEFAULT;
+
+		bool outline = p_size.y > 0;
+		switch (p_font_data->hinting) {
+			case TextServer::HINTING_NONE:
+				flags |= FT_LOAD_NO_HINTING;
+				break;
+			case TextServer::HINTING_LIGHT:
+				flags |= FT_LOAD_TARGET_LIGHT;
+				break;
+			default:
+				flags |= FT_LOAD_TARGET_NORMAL;
+				break;
+		}
+		if (p_font_data->force_autohinter) {
+			flags |= FT_LOAD_FORCE_AUTOHINT;
+		}
+		if (outline) {
+			flags |= FT_LOAD_NO_BITMAP;
+		} else if (FT_HAS_COLOR(fd->face)) {
+			flags |= FT_LOAD_COLOR;
+		}
+
+		FT_Fixed v, h;
+		FT_Get_Advance(fd->face, p_glyph, flags, &h);
+		FT_Get_Advance(fd->face, p_glyph, flags | FT_LOAD_VERTICAL_LAYOUT, &v);
+
+		int error = FT_Load_Glyph(fd->face, p_glyph, flags);
+		if (error) {
+			fd->glyph_map[p_glyph] = FontGlyph();
+			ERR_FAIL_V_MSG(false, "FreeType: Failed to load glyph.");
+		}
+
+		if (!outline) {
+			if (!p_font_data->msdf) {
+				error = FT_Render_Glyph(fd->face->glyph, p_font_data->antialiased ? FT_RENDER_MODE_NORMAL : FT_RENDER_MODE_MONO);
+			}
+			FT_GlyphSlot slot = fd->face->glyph;
+			if (!error) {
+				if (p_font_data->msdf) {
+#ifdef MODULE_MSDFGEN_ENABLED
+					gl = rasterize_msdf(p_font_data, fd, p_font_data->msdf_range, rect_range, &slot->outline, Vector2((h + (1 << 9)) >> 10, (v + (1 << 9)) >> 10) / 64.0);
+#else
+					fd->glyph_map[p_glyph] = FontGlyph();
+					ERR_FAIL_V_MSG(false, "Compiled without MSDFGEN support!");
+#endif
+				} else {
+					gl = rasterize_bitmap(fd, rect_range, slot->bitmap, slot->bitmap_top, slot->bitmap_left, Vector2((h + (1 << 9)) >> 10, (v + (1 << 9)) >> 10) / 64.0);
+				}
+			}
+		} else {
+			FT_Stroker stroker;
+			if (FT_Stroker_New(library, &stroker) != 0) {
+				fd->glyph_map[p_glyph] = FontGlyph();
+				ERR_FAIL_V_MSG(false, "FreeType: Failed to load glyph stroker.");
+			}
+
+			FT_Stroker_Set(stroker, (int)(fd->size.y * fd->oversampling * 16.0), FT_STROKER_LINECAP_BUTT, FT_STROKER_LINEJOIN_ROUND, 0);
+			FT_Glyph glyph;
+			FT_BitmapGlyph glyph_bitmap;
+
+			if (FT_Get_Glyph(fd->face->glyph, &glyph) != 0) {
+				goto cleanup_stroker;
+			}
+			if (FT_Glyph_Stroke(&glyph, stroker, 1) != 0) {
+				goto cleanup_glyph;
+			}
+			if (FT_Glyph_To_Bitmap(&glyph, p_font_data->antialiased ? FT_RENDER_MODE_NORMAL : FT_RENDER_MODE_MONO, nullptr, 1) != 0) {
+				goto cleanup_glyph;
+			}
+			glyph_bitmap = (FT_BitmapGlyph)glyph;
+			gl = rasterize_bitmap(fd, rect_range, glyph_bitmap->bitmap, glyph_bitmap->top, glyph_bitmap->left, Vector2());
+
+		cleanup_glyph:
+			FT_Done_Glyph(glyph);
+		cleanup_stroker:
+			FT_Stroker_Done(stroker);
+		}
+		fd->glyph_map[p_glyph] = gl;
+		return gl.found;
+	}
+#endif
+	fd->glyph_map[p_glyph] = FontGlyph();
+	return false;
 }
 
-bool TextServerAdvanced::font_get_language_support_override(RID p_font, const String &p_language) {
-	_THREAD_SAFE_METHOD_
-	FontDataAdvanced *fd = font_owner.getornull(p_font);
+_FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontDataAdvanced *p_font_data, const Vector2i &p_size) const {
+	if (p_font_data->cache.has(p_size)) {
+		return true;
+	}
+
+	FontDataForSizeAdvanced *fd = memnew(FontDataForSizeAdvanced);
+	fd->size = p_size;
+	if (p_font_data->data_ptr) {
+		// Init dynamic font.
+#ifdef MODULE_FREETYPE_ENABLED
+		int error = 0;
+		if (!library) {
+			error = FT_Init_FreeType(&library);
+			ERR_FAIL_COND_V_MSG(error != 0, false, TTR("FreeType: Error initializing library:") + " '" + String(FT_Error_String(error)) + "'.");
+		}
+
+		memset(&fd->stream, 0, sizeof(FT_StreamRec));
+		fd->stream.base = (unsigned char *)p_font_data->data_ptr;
+		fd->stream.size = p_font_data->data_size;
+		fd->stream.pos = 0;
+
+		FT_Open_Args fargs;
+		memset(&fargs, 0, sizeof(FT_Open_Args));
+		fargs.memory_base = (unsigned char *)p_font_data->data_ptr;
+		fargs.memory_size = p_font_data->data_size;
+		fargs.flags = FT_OPEN_MEMORY;
+		fargs.stream = &fd->stream;
+		error = FT_Open_Face(library, &fargs, 0, &fd->face);
+		if (error) {
+			FT_Done_Face(fd->face);
+			fd->face = nullptr;
+			ERR_FAIL_V_MSG(false, TTR("FreeType: Error loading font:") + " '" + String(FT_Error_String(error)) + "'.");
+		}
+		fd->hb_handle = hb_ft_font_create(fd->face, nullptr);
+		if (fd->hb_handle == nullptr) {
+			FT_Done_Face(fd->face);
+			fd->face = nullptr;
+			ERR_FAIL_V_MSG(false, TTR("HarfBuzz: Error creating FreeType font object."));
+		}
+
+		if (p_font_data->msdf) {
+			fd->oversampling = 1.0f;
+			fd->size.x = p_font_data->msdf_source_size;
+		} else if (p_font_data->oversampling <= 0.0f) {
+			fd->oversampling = TS->font_get_global_oversampling();
+		} else {
+			fd->oversampling = p_font_data->oversampling;
+		}
+
+		if (FT_HAS_COLOR(fd->face) && fd->face->num_fixed_sizes > 0) {
+			int best_match = 0;
+			int diff = ABS(fd->size.x - ((int64_t)fd->face->available_sizes[0].width));
+			fd->scale = real_t(fd->size.x * fd->oversampling) / fd->face->available_sizes[0].width;
+			for (int i = 1; i < fd->face->num_fixed_sizes; i++) {
+				int ndiff = ABS(fd->size.x - ((int64_t)fd->face->available_sizes[i].width));
+				if (ndiff < diff) {
+					best_match = i;
+					diff = ndiff;
+					fd->scale = real_t(fd->size.x * fd->oversampling) / fd->face->available_sizes[i].width;
+				}
+			}
+			FT_Select_Size(fd->face, best_match);
+		} else {
+			FT_Set_Pixel_Sizes(fd->face, 0, fd->size.x * fd->oversampling);
+		}
+
+		fd->ascent = (fd->face->size->metrics.ascender / 64.0) / fd->oversampling * fd->scale;
+		fd->descent = (-fd->face->size->metrics.descender / 64.0) / fd->oversampling * fd->scale;
+		fd->underline_position = (-FT_MulFix(fd->face->underline_position, fd->face->size->metrics.y_scale) / 64.0) / fd->oversampling * fd->scale;
+		fd->underline_thickness = (FT_MulFix(fd->face->underline_thickness, fd->face->size->metrics.y_scale) / 64.0) / fd->oversampling * fd->scale;
+
+		if (!p_font_data->face_init) {
+			// Get supported scripts from OpenType font data.
+			p_font_data->supported_scripts.clear();
+			unsigned int count = hb_ot_layout_table_get_script_tags(hb_font_get_face(fd->hb_handle), HB_OT_TAG_GSUB, 0, nullptr, nullptr);
+			if (count != 0) {
+				hb_tag_t *script_tags = (hb_tag_t *)memalloc(count * sizeof(hb_tag_t));
+				hb_ot_layout_table_get_script_tags(hb_font_get_face(fd->hb_handle), HB_OT_TAG_GSUB, 0, &count, script_tags);
+				for (unsigned int i = 0; i < count; i++) {
+					p_font_data->supported_scripts.insert(script_tags[i]);
+				}
+				memfree(script_tags);
+			}
+			count = hb_ot_layout_table_get_script_tags(hb_font_get_face(fd->hb_handle), HB_OT_TAG_GPOS, 0, nullptr, nullptr);
+			if (count != 0) {
+				hb_tag_t *script_tags = (hb_tag_t *)memalloc(count * sizeof(hb_tag_t));
+				hb_ot_layout_table_get_script_tags(hb_font_get_face(fd->hb_handle), HB_OT_TAG_GPOS, 0, &count, script_tags);
+				for (unsigned int i = 0; i < count; i++) {
+					p_font_data->supported_scripts.insert(script_tags[i]);
+				}
+				memfree(script_tags);
+			}
+
+			// Get supported scripts from OS2 table.
+			TT_OS2 *os2 = (TT_OS2 *)FT_Get_Sfnt_Table(fd->face, FT_SFNT_OS2);
+			if (os2) {
+				if ((os2->ulUnicodeRange1 & 1L << 4) || (os2->ulUnicodeRange1 & 1L << 5) || (os2->ulUnicodeRange1 & 1L << 6) || (os2->ulUnicodeRange1 & 1L << 31) || (os2->ulUnicodeRange2 & 1L << 0) || (os2->ulUnicodeRange2 & 1L << 1) || (os2->ulUnicodeRange2 & 1L << 2) || (os2->ulUnicodeRange2 & 1L << 3) || (os2->ulUnicodeRange2 & 1L << 4) || (os2->ulUnicodeRange2 & 1L << 5) || (os2->ulUnicodeRange2 & 1L << 6) || (os2->ulUnicodeRange2 & 1L << 7) || (os2->ulUnicodeRange2 & 1L << 8) || (os2->ulUnicodeRange2 & 1L << 9) || (os2->ulUnicodeRange2 & 1L << 10) || (os2->ulUnicodeRange2 & 1L << 11) || (os2->ulUnicodeRange2 & 1L << 12) || (os2->ulUnicodeRange2 & 1L << 13) || (os2->ulUnicodeRange2 & 1L << 14) || (os2->ulUnicodeRange2 & 1L << 15) || (os2->ulUnicodeRange2 & 1L << 30) || (os2->ulUnicodeRange3 & 1L << 0) || (os2->ulUnicodeRange3 & 1L << 1) || (os2->ulUnicodeRange3 & 1L << 2) || (os2->ulUnicodeRange3 & 1L << 4) || (os2->ulUnicodeRange3 & 1L << 5) || (os2->ulUnicodeRange3 & 1L << 18) || (os2->ulUnicodeRange3 & 1L << 24) || (os2->ulUnicodeRange3 & 1L << 25) || (os2->ulUnicodeRange3 & 1L << 26) || (os2->ulUnicodeRange3 & 1L << 27) || (os2->ulUnicodeRange3 & 1L << 28) || (os2->ulUnicodeRange4 & 1L << 3) || (os2->ulUnicodeRange4 & 1L << 6) || (os2->ulUnicodeRange4 & 1L << 15) || (os2->ulUnicodeRange4 & 1L << 23) || (os2->ulUnicodeRange4 & 1L << 24) || (os2->ulUnicodeRange4 & 1L << 26)) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_COMMON);
+				}
+				if ((os2->ulUnicodeRange1 & 1L << 0) || (os2->ulUnicodeRange1 & 1L << 1) || (os2->ulUnicodeRange1 & 1L << 2) || (os2->ulUnicodeRange1 & 1L << 3) || (os2->ulUnicodeRange1 & 1L << 29)) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_LATIN);
+				}
+				if ((os2->ulUnicodeRange1 & 1L << 7) || (os2->ulUnicodeRange1 & 1L << 30)) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_GREEK);
+				}
+				if (os2->ulUnicodeRange1 & 1L << 8) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_COPTIC);
+				}
+				if (os2->ulUnicodeRange1 & 1L << 9) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_CYRILLIC);
+				}
+				if (os2->ulUnicodeRange1 & 1L << 10) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_ARMENIAN);
+				}
+				if (os2->ulUnicodeRange1 & 1L << 11) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_HEBREW);
+				}
+				if (os2->ulUnicodeRange1 & 1L << 12) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_VAI);
+				}
+				if ((os2->ulUnicodeRange1 & 1L << 13) || (os2->ulUnicodeRange2 & 1L << 31) || (os2->ulUnicodeRange3 & 1L << 3)) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_ARABIC);
+				}
+				if (os2->ulUnicodeRange1 & 1L << 14) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_NKO);
+				}
+				if (os2->ulUnicodeRange1 & 1L << 15) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_DEVANAGARI);
+				}
+				if (os2->ulUnicodeRange1 & 1L << 16) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_BENGALI);
+				}
+				if (os2->ulUnicodeRange1 & 1L << 17) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_GURMUKHI);
+				}
+				if (os2->ulUnicodeRange1 & 1L << 18) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_GUJARATI);
+				}
+				if (os2->ulUnicodeRange1 & 1L << 19) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_ORIYA);
+				}
+				if (os2->ulUnicodeRange1 & 1L << 20) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_TAMIL);
+				}
+				if (os2->ulUnicodeRange1 & 1L << 21) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_TELUGU);
+				}
+				if (os2->ulUnicodeRange1 & 1L << 22) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_KANNADA);
+				}
+				if (os2->ulUnicodeRange1 & 1L << 23) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_MALAYALAM);
+				}
+				if (os2->ulUnicodeRange1 & 1L << 24) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_THAI);
+				}
+				if (os2->ulUnicodeRange1 & 1L << 25) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_LAO);
+				}
+				if (os2->ulUnicodeRange1 & 1L << 26) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_GEORGIAN);
+				}
+				if (os2->ulUnicodeRange1 & 1L << 27) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_BALINESE);
+				}
+				if ((os2->ulUnicodeRange1 & 1L << 28) || (os2->ulUnicodeRange2 & 1L << 20) || (os2->ulUnicodeRange2 & 1L << 24)) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_HANGUL);
+				}
+				if ((os2->ulUnicodeRange2 & 1L << 21) || (os2->ulUnicodeRange2 & 1L << 22) || (os2->ulUnicodeRange2 & 1L << 23) || (os2->ulUnicodeRange2 & 1L << 26) || (os2->ulUnicodeRange2 & 1L << 27) || (os2->ulUnicodeRange2 & 1L << 29)) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_HAN);
+				}
+				if (os2->ulUnicodeRange2 & 1L << 17) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_HIRAGANA);
+				}
+				if (os2->ulUnicodeRange2 & 1L << 18) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_KATAKANA);
+				}
+				if (os2->ulUnicodeRange2 & 1L << 19) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_BOPOMOFO);
+				}
+				if (os2->ulUnicodeRange3 & 1L << 6) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_TIBETAN);
+				}
+				if (os2->ulUnicodeRange3 & 1L << 7) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_SYRIAC);
+				}
+				if (os2->ulUnicodeRange3 & 1L << 8) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_THAANA);
+				}
+				if (os2->ulUnicodeRange3 & 1L << 9) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_SINHALA);
+				}
+				if (os2->ulUnicodeRange3 & 1L << 10) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_MYANMAR);
+				}
+				if (os2->ulUnicodeRange3 & 1L << 11) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_ETHIOPIC);
+				}
+				if (os2->ulUnicodeRange3 & 1L << 12) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_CHEROKEE);
+				}
+				if (os2->ulUnicodeRange3 & 1L << 13) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_CANADIAN_SYLLABICS);
+				}
+				if (os2->ulUnicodeRange3 & 1L << 14) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_OGHAM);
+				}
+				if (os2->ulUnicodeRange3 & 1L << 15) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_RUNIC);
+				}
+				if (os2->ulUnicodeRange3 & 1L << 16) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_KHMER);
+				}
+				if (os2->ulUnicodeRange3 & 1L << 17) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_MONGOLIAN);
+				}
+				if (os2->ulUnicodeRange3 & 1L << 19) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_YI);
+				}
+				if (os2->ulUnicodeRange3 & 1L << 20) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_HANUNOO);
+					p_font_data->supported_scripts.insert(HB_SCRIPT_TAGBANWA);
+					p_font_data->supported_scripts.insert(HB_SCRIPT_BUHID);
+					p_font_data->supported_scripts.insert(HB_SCRIPT_TAGALOG);
+				}
+				if (os2->ulUnicodeRange3 & 1L << 21) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_OLD_ITALIC);
+				}
+				if (os2->ulUnicodeRange3 & 1L << 22) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_GOTHIC);
+				}
+				if (os2->ulUnicodeRange3 & 1L << 23) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_DESERET);
+				}
+				if (os2->ulUnicodeRange3 & 1L << 29) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_LIMBU);
+				}
+				if (os2->ulUnicodeRange3 & 1L << 30) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_TAI_LE);
+				}
+				if (os2->ulUnicodeRange3 & 1L << 31) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_NEW_TAI_LUE);
+				}
+				if (os2->ulUnicodeRange4 & 1L << 0) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_BUGINESE);
+				}
+				if (os2->ulUnicodeRange4 & 1L << 1) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_GLAGOLITIC);
+				}
+				if (os2->ulUnicodeRange4 & 1L << 2) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_TIFINAGH);
+				}
+				if (os2->ulUnicodeRange4 & 1L << 4) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_SYLOTI_NAGRI);
+				}
+				if (os2->ulUnicodeRange4 & 1L << 5) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_LINEAR_B);
+				}
+				if (os2->ulUnicodeRange4 & 1L << 7) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_UGARITIC);
+				}
+				if (os2->ulUnicodeRange4 & 1L << 8) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_OLD_PERSIAN);
+				}
+				if (os2->ulUnicodeRange4 & 1L << 9) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_SHAVIAN);
+				}
+				if (os2->ulUnicodeRange4 & 1L << 10) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_OSMANYA);
+				}
+				if (os2->ulUnicodeRange4 & 1L << 11) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_CYPRIOT);
+				}
+				if (os2->ulUnicodeRange4 & 1L << 12) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_KHAROSHTHI);
+				}
+				if (os2->ulUnicodeRange4 & 1L << 13) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_TAI_VIET);
+				}
+				if (os2->ulUnicodeRange4 & 1L << 14) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_CUNEIFORM);
+				}
+				if (os2->ulUnicodeRange4 & 1L << 16) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_SUNDANESE);
+				}
+				if (os2->ulUnicodeRange4 & 1L << 17) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_LEPCHA);
+				}
+				if (os2->ulUnicodeRange4 & 1L << 18) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_OL_CHIKI);
+				}
+				if (os2->ulUnicodeRange4 & 1L << 19) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_SAURASHTRA);
+				}
+				if (os2->ulUnicodeRange4 & 1L << 20) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_KAYAH_LI);
+				}
+				if (os2->ulUnicodeRange4 & 1L << 21) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_REJANG);
+				}
+				if (os2->ulUnicodeRange4 & 1L << 22) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_CHAM);
+				}
+				if (os2->ulUnicodeRange4 & 1L << 25) {
+					p_font_data->supported_scripts.insert(HB_SCRIPT_ANATOLIAN_HIEROGLYPHS);
+				}
+			}
+
+			// Read OpenType feature tags.
+			p_font_data->supported_features.clear();
+			count = hb_ot_layout_table_get_feature_tags(hb_font_get_face(fd->hb_handle), HB_OT_TAG_GSUB, 0, nullptr, nullptr);
+			if (count != 0) {
+				hb_tag_t *feature_tags = (hb_tag_t *)memalloc(count * sizeof(hb_tag_t));
+				hb_ot_layout_table_get_feature_tags(hb_font_get_face(fd->hb_handle), HB_OT_TAG_GSUB, 0, &count, feature_tags);
+				for (unsigned int i = 0; i < count; i++) {
+					p_font_data->supported_features[feature_tags[i]] = 1;
+				}
+				memfree(feature_tags);
+			}
+			count = hb_ot_layout_table_get_feature_tags(hb_font_get_face(fd->hb_handle), HB_OT_TAG_GPOS, 0, nullptr, nullptr);
+			if (count != 0) {
+				hb_tag_t *feature_tags = (hb_tag_t *)memalloc(count * sizeof(hb_tag_t));
+				hb_ot_layout_table_get_feature_tags(hb_font_get_face(fd->hb_handle), HB_OT_TAG_GPOS, 0, &count, feature_tags);
+				for (unsigned int i = 0; i < count; i++) {
+					p_font_data->supported_features[feature_tags[i]] = 1;
+				}
+				memfree(feature_tags);
+			}
+
+			// Read OpenType variations.
+			p_font_data->supported_varaitions.clear();
+			if (fd->face->face_flags & FT_FACE_FLAG_MULTIPLE_MASTERS) {
+				FT_MM_Var *amaster;
+				FT_Get_MM_Var(fd->face, &amaster);
+				for (FT_UInt i = 0; i < amaster->num_axis; i++) {
+					p_font_data->supported_varaitions[(int32_t)amaster->axis[i].tag] = Vector3i(amaster->axis[i].minimum / 65536, amaster->axis[i].maximum / 65536, amaster->axis[i].def / 65536);
+				}
+				FT_Done_MM_Var(library, amaster);
+			}
+			p_font_data->face_init = true;
+		}
+
+		// Write variations.
+		if (fd->face->face_flags & FT_FACE_FLAG_MULTIPLE_MASTERS) {
+			FT_MM_Var *amaster;
+
+			FT_Get_MM_Var(fd->face, &amaster);
+
+			Vector<hb_variation_t> hb_vars;
+			Vector<FT_Fixed> coords;
+			coords.resize(amaster->num_axis);
+
+			FT_Get_Var_Design_Coordinates(fd->face, coords.size(), coords.ptrw());
+
+			for (FT_UInt i = 0; i < amaster->num_axis; i++) {
+				hb_variation_t var;
+
+				// Reset to default.
+				var.tag = amaster->axis[i].tag;
+				var.value = (double)amaster->axis[i].def / 65536.f;
+				coords.write[i] = amaster->axis[i].def;
+
+				if (p_font_data->variation_coordinates.has(var.tag)) {
+					var.value = p_font_data->variation_coordinates[var.tag];
+					coords.write[i] = CLAMP(var.value * 65536.f, amaster->axis[i].minimum, amaster->axis[i].maximum);
+				}
+
+				if (p_font_data->variation_coordinates.has(tag_to_name(var.tag))) {
+					var.value = p_font_data->variation_coordinates[tag_to_name(var.tag)];
+					coords.write[i] = CLAMP(var.value * 65536.f, amaster->axis[i].minimum, amaster->axis[i].maximum);
+				}
+
+				hb_vars.push_back(var);
+			}
+
+			FT_Set_Var_Design_Coordinates(fd->face, coords.size(), coords.ptrw());
+			hb_font_set_variations(fd->hb_handle, hb_vars.is_empty() ? nullptr : &hb_vars[0], hb_vars.size());
+			FT_Done_MM_Var(library, amaster);
+		}
+#else
+		ERR_FAIL_V_MSG(false, TTR("FreeType: Can't load dynamic font, engine is compiled without FreeType support!");
+#endif
+	} else {
+		// Init bitmap font.
+		fd->hb_handle = hb_bmp_font_create(fd, nullptr);
+		if (!fd->hb_handle) {
+			ERR_FAIL_V_MSG(false, TTR("HarfBuzz: Error creating bitmap font object."));
+		}
+	}
+	p_font_data->cache[p_size] = fd;
+	return true;
+}
+
+_FORCE_INLINE_ void TextServerAdvanced::_font_clear_cache(FontDataAdvanced *p_font_data) {
+	for (const Map<Vector2i, FontDataForSizeAdvanced *>::Element *E = p_font_data->cache.front(); E; E = E->next()) {
+		memdelete(E->get());
+	}
+	p_font_data->cache.clear();
+	p_font_data->face_init = false;
+	p_font_data->supported_features.clear();
+	p_font_data->supported_varaitions.clear();
+	p_font_data->supported_scripts.clear();
+}
+
+hb_font_t *TextServerAdvanced::_font_get_hb_handle(RID p_font_rid, int p_size) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, nullptr);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_size);
+
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), nullptr);
+
+	return fd->cache[size]->hb_handle;
+}
+
+RID TextServerAdvanced::create_font() {
+	FontDataAdvanced *fd = memnew(FontDataAdvanced);
+
+	return font_owner.make_rid(fd);
+}
+
+void TextServerAdvanced::font_set_data(RID p_font_rid, const PackedByteArray &p_data) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	_font_clear_cache(fd);
+	fd->data = p_data;
+	fd->data_ptr = fd->data.ptr();
+	fd->data_size = fd->data.size();
+}
+
+void TextServerAdvanced::font_set_data_ptr(RID p_font_rid, const uint8_t *p_data_ptr, size_t p_data_size) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	_font_clear_cache(fd);
+	fd->data.clear();
+	fd->data_ptr = p_data_ptr;
+	fd->data_size = p_data_size;
+}
+
+void TextServerAdvanced::font_set_antialiased(RID p_font_rid, bool p_antialiased) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	if (fd->antialiased != p_antialiased) {
+		_font_clear_cache(fd);
+		fd->antialiased = p_antialiased;
+	}
+}
+
+bool TextServerAdvanced::font_is_antialiased(RID p_font_rid) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
 	ERR_FAIL_COND_V(!fd, false);
-	return fd->lang_support_overrides[p_language];
+
+	MutexLock lock(fd->mutex);
+	return fd->antialiased;
 }
 
-void TextServerAdvanced::font_remove_language_support_override(RID p_font, const String &p_language) {
-	_THREAD_SAFE_METHOD_
-	FontDataAdvanced *fd = font_owner.getornull(p_font);
+void TextServerAdvanced::font_set_multichannel_signed_distance_field(RID p_font_rid, bool p_msdf) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
 	ERR_FAIL_COND(!fd);
-	fd->lang_support_overrides.erase(p_language);
+
+	MutexLock lock(fd->mutex);
+	if (fd->msdf != p_msdf) {
+		_font_clear_cache(fd);
+		fd->msdf = p_msdf;
+	}
 }
 
-Vector<String> TextServerAdvanced::font_get_language_support_overrides(RID p_font) {
-	_THREAD_SAFE_METHOD_
-	FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, Vector<String>());
-	Vector<String> ret;
-	for (Map<String, bool>::Element *E = fd->lang_support_overrides.front(); E; E = E->next()) {
+bool TextServerAdvanced::font_is_multichannel_signed_distance_field(RID p_font_rid) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, false);
+
+	MutexLock lock(fd->mutex);
+	return fd->msdf;
+}
+
+void TextServerAdvanced::font_set_msdf_pixel_range(RID p_font_rid, int p_msdf_pixel_range) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	if (fd->msdf_range != p_msdf_pixel_range) {
+		_font_clear_cache(fd);
+		fd->msdf_range = p_msdf_pixel_range;
+	}
+}
+
+int TextServerAdvanced::font_get_msdf_pixel_range(RID p_font_rid) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, false);
+
+	MutexLock lock(fd->mutex);
+	return fd->msdf_range;
+}
+
+void TextServerAdvanced::font_set_msdf_size(RID p_font_rid, int p_msdf_size) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	if (fd->msdf_source_size != p_msdf_size) {
+		_font_clear_cache(fd);
+		fd->msdf_source_size = p_msdf_size;
+	}
+}
+
+int TextServerAdvanced::font_get_msdf_size(RID p_font_rid) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, false);
+
+	MutexLock lock(fd->mutex);
+	return fd->msdf_source_size;
+}
+
+void TextServerAdvanced::font_set_fixed_size(RID p_font_rid, int p_fixed_size) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	if (fd->fixed_size != p_fixed_size) {
+		fd->fixed_size = p_fixed_size;
+	}
+}
+
+int TextServerAdvanced::font_get_fixed_size(RID p_font_rid) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, false);
+
+	MutexLock lock(fd->mutex);
+	return fd->fixed_size;
+}
+
+void TextServerAdvanced::font_set_force_autohinter(RID p_font_rid, bool p_force_autohinter) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	if (fd->force_autohinter != p_force_autohinter) {
+		_font_clear_cache(fd);
+		fd->force_autohinter = p_force_autohinter;
+	}
+}
+
+bool TextServerAdvanced::font_is_force_autohinter(RID p_font_rid) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, false);
+
+	MutexLock lock(fd->mutex);
+	return fd->force_autohinter;
+}
+
+void TextServerAdvanced::font_set_hinting(RID p_font_rid, TextServer::Hinting p_hinting) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	if (fd->hinting != p_hinting) {
+		_font_clear_cache(fd);
+		fd->hinting = p_hinting;
+	}
+}
+
+TextServer::Hinting TextServerAdvanced::font_get_hinting(RID p_font_rid) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, HINTING_NONE);
+
+	MutexLock lock(fd->mutex);
+	return fd->hinting;
+}
+
+void TextServerAdvanced::font_set_variation_coordinates(RID p_font_rid, const Dictionary &p_variation_coordinates) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	if (fd->variation_coordinates != p_variation_coordinates) {
+		_font_clear_cache(fd);
+		fd->variation_coordinates = p_variation_coordinates;
+	}
+}
+
+Dictionary TextServerAdvanced::font_get_variation_coordinates(RID p_font_rid) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, Dictionary());
+
+	MutexLock lock(fd->mutex);
+	return fd->variation_coordinates;
+}
+
+void TextServerAdvanced::font_set_oversampling(RID p_font_rid, real_t p_oversampling) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	if (fd->oversampling != p_oversampling) {
+		_font_clear_cache(fd);
+		fd->oversampling = p_oversampling;
+	}
+}
+
+real_t TextServerAdvanced::font_get_oversampling(RID p_font_rid) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, 0.f);
+
+	MutexLock lock(fd->mutex);
+	return fd->oversampling;
+}
+
+Array TextServerAdvanced::font_get_size_cache_list(RID p_font_rid) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, Array());
+
+	MutexLock lock(fd->mutex);
+	Array ret;
+	for (const Map<Vector2i, FontDataForSizeAdvanced *>::Element *E = fd->cache.front(); E; E = E->next()) {
 		ret.push_back(E->key());
 	}
 	return ret;
 }
 
-bool TextServerAdvanced::font_is_script_supported(RID p_font, const String &p_script) const {
-	_THREAD_SAFE_METHOD_
-	const FontDataAdvanced *fd = font_owner.getornull(p_font);
+void TextServerAdvanced::font_clear_size_cache(RID p_font_rid) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	for (const Map<Vector2i, FontDataForSizeAdvanced *>::Element *E = fd->cache.front(); E; E = E->next()) {
+		memdelete(E->get());
+	}
+	fd->cache.clear();
+}
+
+void TextServerAdvanced::font_remove_size_cache(RID p_font_rid, const Vector2i &p_size) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	if (fd->cache.has(p_size)) {
+		memdelete(fd->cache[p_size]);
+		fd->cache.erase(p_size);
+	}
+}
+
+void TextServerAdvanced::font_set_ascent(RID p_font_rid, int p_size, real_t p_ascent) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_size);
+
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	fd->cache[size]->ascent = p_ascent;
+}
+
+real_t TextServerAdvanced::font_get_ascent(RID p_font_rid, int p_size) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, 0.f);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_size);
+
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), 0.f);
+
+	if (fd->msdf) {
+		return fd->cache[size]->ascent * (real_t)p_size / (real_t)fd->msdf_source_size;
+	} else {
+		return fd->cache[size]->ascent;
+	}
+}
+
+void TextServerAdvanced::font_set_descent(RID p_font_rid, int p_size, real_t p_descent) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	Vector2i size = _get_size(fd, p_size);
+
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	fd->cache[size]->descent = p_descent;
+}
+
+real_t TextServerAdvanced::font_get_descent(RID p_font_rid, int p_size) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, 0.f);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_size);
+
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), 0.f);
+
+	if (fd->msdf) {
+		return fd->cache[size]->descent * (real_t)p_size / (real_t)fd->msdf_source_size;
+	} else {
+		return fd->cache[size]->descent;
+	}
+}
+
+void TextServerAdvanced::font_set_underline_position(RID p_font_rid, int p_size, real_t p_underline_position) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_size);
+
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	fd->cache[size]->underline_position = p_underline_position;
+}
+
+real_t TextServerAdvanced::font_get_underline_position(RID p_font_rid, int p_size) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, 0.f);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_size);
+
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), 0.f);
+
+	if (fd->msdf) {
+		return fd->cache[size]->underline_position * (real_t)p_size / (real_t)fd->msdf_source_size;
+	} else {
+		return fd->cache[size]->underline_position;
+	}
+}
+
+void TextServerAdvanced::font_set_underline_thickness(RID p_font_rid, int p_size, real_t p_underline_thickness) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_size);
+
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	fd->cache[size]->underline_thickness = p_underline_thickness;
+}
+
+real_t TextServerAdvanced::font_get_underline_thickness(RID p_font_rid, int p_size) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, 0.f);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_size);
+
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), 0.f);
+
+	if (fd->msdf) {
+		return fd->cache[size]->underline_thickness * (real_t)p_size / (real_t)fd->msdf_source_size;
+	} else {
+		return fd->cache[size]->underline_thickness;
+	}
+}
+
+void TextServerAdvanced::font_set_scale(RID p_font_rid, int p_size, real_t p_scale) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_size);
+
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	fd->cache[size]->scale = p_scale;
+}
+
+real_t TextServerAdvanced::font_get_scale(RID p_font_rid, int p_size) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, 0.f);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_size);
+
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), 0.f);
+
+	if (fd->msdf) {
+		return fd->cache[size]->scale * (real_t)p_size / (real_t)fd->msdf_source_size;
+	} else {
+		return fd->cache[size]->scale / fd->cache[size]->oversampling;
+	}
+}
+
+void TextServerAdvanced::font_set_spacing(RID p_font_rid, int p_size, TextServer::SpacingType p_spacing, int p_value) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_size);
+
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	switch (p_spacing) {
+		case TextServer::SPACING_GLYPH: {
+			fd->cache[size]->spacing_glyph = p_value;
+		} break;
+		case TextServer::SPACING_SPACE: {
+			fd->cache[size]->spacing_space = p_value;
+		} break;
+		default: {
+			ERR_FAIL_MSG("Invalid spacing type: " + itos(p_spacing));
+		} break;
+	}
+}
+
+int TextServerAdvanced::font_get_spacing(RID p_font_rid, int p_size, TextServer::SpacingType p_spacing) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, 0);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_size);
+
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), 0);
+
+	switch (p_spacing) {
+		case TextServer::SPACING_GLYPH: {
+			if (fd->msdf) {
+				return fd->cache[size]->spacing_glyph * (real_t)p_size / (real_t)fd->msdf_source_size;
+			} else {
+				return fd->cache[size]->spacing_glyph;
+			}
+		} break;
+		case TextServer::SPACING_SPACE: {
+			if (fd->msdf) {
+				return fd->cache[size]->spacing_space * (real_t)p_size / (real_t)fd->msdf_source_size;
+			} else {
+				return fd->cache[size]->spacing_space;
+			}
+		} break;
+		default: {
+			ERR_FAIL_V_MSG(0, "Invalid spacing type: " + itos(p_spacing));
+		} break;
+	}
+	return 0;
+}
+
+int TextServerAdvanced::font_get_texture_count(RID p_font_rid, const Vector2i &p_size) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, 0);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size_outline(fd, p_size);
+
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), 0);
+
+	return fd->cache[size]->textures.size();
+}
+
+void TextServerAdvanced::font_clear_textures(RID p_font_rid, const Vector2i &p_size) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size_outline(fd, p_size);
+
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	fd->cache[size]->textures.clear();
+}
+
+void TextServerAdvanced::font_remove_texture(RID p_font_rid, const Vector2i &p_size, int p_texture_index) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size_outline(fd, p_size);
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	ERR_FAIL_INDEX(p_texture_index, fd->cache[size]->textures.size());
+
+	fd->cache[size]->textures.remove(p_texture_index);
+}
+
+void TextServerAdvanced::font_set_texture_image(RID p_font_rid, const Vector2i &p_size, int p_texture_index, const Ref<Image> &p_image) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+	ERR_FAIL_COND(p_image.is_null());
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size_outline(fd, p_size);
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	ERR_FAIL_COND(p_texture_index < 0);
+	if (p_texture_index >= fd->cache[size]->textures.size()) {
+		fd->cache[size]->textures.resize(p_texture_index + 1);
+	}
+
+	FontTexture &tex = fd->cache[size]->textures.write[p_texture_index];
+
+	tex.imgdata = p_image->get_data();
+	tex.texture_w = p_image->get_width();
+	tex.texture_h = p_image->get_height();
+	tex.format = p_image->get_format();
+
+	Ref<Image> img = memnew(Image(tex.texture_w, tex.texture_h, 0, tex.format, tex.imgdata));
+	tex.texture = Ref<ImageTexture>();
+	tex.texture.instantiate();
+	tex.texture->create_from_image(img);
+}
+
+Ref<Image> TextServerAdvanced::font_get_texture_image(RID p_font_rid, const Vector2i &p_size, int p_texture_index) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, Ref<Image>());
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size_outline(fd, p_size);
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Ref<Image>());
+	ERR_FAIL_INDEX_V(p_texture_index, fd->cache[size]->textures.size(), Ref<Image>());
+
+	const FontTexture &tex = fd->cache[size]->textures.write[p_texture_index];
+	Ref<Image> img = memnew(Image(tex.texture_w, tex.texture_h, 0, tex.format, tex.imgdata));
+
+	return img;
+}
+
+void TextServerAdvanced::font_set_texture_offsets(RID p_font_rid, const Vector2i &p_size, int p_texture_index, const PackedInt32Array &p_offset) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size_outline(fd, p_size);
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	if (p_texture_index >= fd->cache[size]->textures.size()) {
+		fd->cache[size]->textures.resize(p_texture_index + 1);
+	}
+
+	FontTexture &tex = fd->cache[size]->textures.write[p_texture_index];
+	tex.offsets = p_offset;
+}
+
+PackedInt32Array TextServerAdvanced::font_get_texture_offsets(RID p_font_rid, const Vector2i &p_size, int p_texture_index) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, PackedInt32Array());
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size_outline(fd, p_size);
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), PackedInt32Array());
+	ERR_FAIL_INDEX_V(p_texture_index, fd->cache[size]->textures.size(), PackedInt32Array());
+
+	const FontTexture &tex = fd->cache[size]->textures.write[p_texture_index];
+	return tex.offsets;
+}
+
+Array TextServerAdvanced::font_get_glyph_list(RID p_font_rid, const Vector2i &p_size) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, Array());
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size_outline(fd, p_size);
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Array());
+
+	Array ret;
+	const HashMap<int32_t, FontGlyph> &gl = fd->cache[size]->glyph_map;
+	const int32_t *E = nullptr;
+	while ((E = gl.next(E))) {
+		ret.push_back(*E);
+	}
+	return ret;
+}
+
+void TextServerAdvanced::font_clear_glyphs(RID p_font_rid, const Vector2i &p_size) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size_outline(fd, p_size);
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+
+	fd->cache[size]->glyph_map.clear();
+}
+
+void TextServerAdvanced::font_remove_glyph(RID p_font_rid, const Vector2i &p_size, int32_t p_glyph) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size_outline(fd, p_size);
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+
+	fd->cache[size]->glyph_map.erase(p_glyph);
+}
+
+Vector2 TextServerAdvanced::font_get_glyph_advance(RID p_font_rid, int p_size, int32_t p_glyph) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, Vector2());
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_size);
+
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Vector2());
+	if (!_ensure_glyph(fd, size, p_glyph)) {
+		return Vector2(); // Invalid or non graphicl glyph, do not display errors.
+	}
+
+	const HashMap<int32_t, FontGlyph> &gl = fd->cache[size]->glyph_map;
+
+	if (fd->msdf) {
+		return gl[p_glyph].advance * (real_t)p_size / (real_t)fd->msdf_source_size;
+	} else {
+		return gl[p_glyph].advance;
+	}
+}
+
+void TextServerAdvanced::font_set_glyph_advance(RID p_font_rid, int p_size, int32_t p_glyph, const Vector2 &p_advance) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_size);
+
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+
+	HashMap<int32_t, FontGlyph> &gl = fd->cache[size]->glyph_map;
+
+	gl[p_glyph].advance = p_advance;
+	gl[p_glyph].found = true;
+}
+
+Vector2 TextServerAdvanced::font_get_glyph_offset(RID p_font_rid, const Vector2i &p_size, int32_t p_glyph) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, Vector2());
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size_outline(fd, p_size);
+
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Vector2());
+	if (!_ensure_glyph(fd, size, p_glyph)) {
+		return Vector2(); // Invalid or non graphicl glyph, do not display errors.
+	}
+
+	const HashMap<int32_t, FontGlyph> &gl = fd->cache[size]->glyph_map;
+
+	if (fd->msdf) {
+		return gl[p_glyph].rect.position * (real_t)p_size.x / (real_t)fd->msdf_source_size;
+	} else {
+		return gl[p_glyph].rect.position;
+	}
+}
+
+void TextServerAdvanced::font_set_glyph_offset(RID p_font_rid, const Vector2i &p_size, int32_t p_glyph, const Vector2 &p_offset) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size_outline(fd, p_size);
+
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+
+	HashMap<int32_t, FontGlyph> &gl = fd->cache[size]->glyph_map;
+
+	gl[p_glyph].rect.position = p_offset;
+	gl[p_glyph].found = true;
+}
+
+Vector2 TextServerAdvanced::font_get_glyph_size(RID p_font_rid, const Vector2i &p_size, int32_t p_glyph) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, Vector2());
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size_outline(fd, p_size);
+
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Vector2());
+	if (!_ensure_glyph(fd, size, p_glyph)) {
+		return Vector2(); // Invalid or non graphicl glyph, do not display errors.
+	}
+
+	const HashMap<int32_t, FontGlyph> &gl = fd->cache[size]->glyph_map;
+
+	if (fd->msdf) {
+		return gl[p_glyph].rect.size * (real_t)p_size.x / (real_t)fd->msdf_source_size;
+	} else {
+		return gl[p_glyph].rect.size;
+	}
+}
+
+void TextServerAdvanced::font_set_glyph_size(RID p_font_rid, const Vector2i &p_size, int32_t p_glyph, const Vector2 &p_gl_size) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size_outline(fd, p_size);
+
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+
+	HashMap<int32_t, FontGlyph> &gl = fd->cache[size]->glyph_map;
+
+	gl[p_glyph].rect.size = p_gl_size;
+	gl[p_glyph].found = true;
+}
+
+Rect2 TextServerAdvanced::font_get_glyph_uv_rect(RID p_font_rid, const Vector2i &p_size, int32_t p_glyph) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, Rect2());
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size_outline(fd, p_size);
+
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Rect2());
+	if (!_ensure_glyph(fd, size, p_glyph)) {
+		return Rect2(); // Invalid or non graphicl glyph, do not display errors.
+	}
+
+	const HashMap<int32_t, FontGlyph> &gl = fd->cache[size]->glyph_map;
+	return gl[p_glyph].uv_rect;
+}
+
+void TextServerAdvanced::font_set_glyph_uv_rect(RID p_font_rid, const Vector2i &p_size, int32_t p_glyph, const Rect2 &p_uv_rect) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size_outline(fd, p_size);
+
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+
+	HashMap<int32_t, FontGlyph> &gl = fd->cache[size]->glyph_map;
+
+	gl[p_glyph].uv_rect = p_uv_rect;
+	gl[p_glyph].found = true;
+}
+
+int TextServerAdvanced::font_get_glyph_texture_idx(RID p_font_rid, const Vector2i &p_size, int32_t p_glyph) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, -1);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size_outline(fd, p_size);
+
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), -1);
+	if (!_ensure_glyph(fd, size, p_glyph)) {
+		return -1; // Invalid or non graphicl glyph, do not display errors.
+	}
+
+	const HashMap<int32_t, FontGlyph> &gl = fd->cache[size]->glyph_map;
+	return gl[p_glyph].texture_idx;
+}
+
+void TextServerAdvanced::font_set_glyph_texture_idx(RID p_font_rid, const Vector2i &p_size, int32_t p_glyph, int p_texture_idx) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size_outline(fd, p_size);
+
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+
+	HashMap<int32_t, FontGlyph> &gl = fd->cache[size]->glyph_map;
+
+	gl[p_glyph].texture_idx = p_texture_idx;
+	gl[p_glyph].found = true;
+}
+
+bool TextServerAdvanced::font_get_glyph_contours(RID p_font_rid, int p_size, int32_t p_index, Vector<Vector3> &r_points, Vector<int32_t> &r_contours, bool &r_orientation) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
 	ERR_FAIL_COND_V(!fd, false);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_size);
+
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), false);
+
+#ifdef MODULE_FREETYPE_ENABLED
+	int error = FT_Load_Glyph(fd->cache[size]->face, p_index, FT_LOAD_NO_BITMAP | (fd->force_autohinter ? FT_LOAD_FORCE_AUTOHINT : 0));
+	ERR_FAIL_COND_V(error, false);
+
+	r_points.clear();
+	r_contours.clear();
+
+	real_t h = fd->cache[size]->ascent;
+	real_t scale = (1.0 / 64.0) / fd->cache[size]->oversampling * fd->cache[size]->scale;
+	if (fd->msdf) {
+		scale = scale * (real_t)p_size / (real_t)fd->msdf_source_size;
+	}
+	for (short i = 0; i < fd->cache[size]->face->glyph->outline.n_points; i++) {
+		r_points.push_back(Vector3(fd->cache[size]->face->glyph->outline.points[i].x * scale, h - fd->cache[size]->face->glyph->outline.points[i].y * scale, FT_CURVE_TAG(fd->cache[size]->face->glyph->outline.tags[i])));
+	}
+	for (short i = 0; i < fd->cache[size]->face->glyph->outline.n_contours; i++) {
+		r_contours.push_back(fd->cache[size]->face->glyph->outline.contours[i]);
+	}
+	r_orientation = (FT_Outline_Get_Orientation(&fd->cache[size]->face->glyph->outline) == FT_ORIENTATION_FILL_RIGHT);
+#else
+	return false;
+#endif
+	return true;
+}
+
+Array TextServerAdvanced::font_get_kerning_list(RID p_font_rid, int p_size) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, Array());
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_size);
+
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Array());
+
+	Array ret;
+	for (const Map<Vector2i, Vector2>::Element *E = fd->cache[size]->kerning_map.front(); E; E = E->next()) {
+		ret.push_back(E->key());
+	}
+	return ret;
+}
+
+void TextServerAdvanced::font_clear_kerning_map(RID p_font_rid, int p_size) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_size);
+
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	fd->cache[size]->kerning_map.clear();
+}
+
+void TextServerAdvanced::font_remove_kerning(RID p_font_rid, int p_size, const Vector2i &p_glyph_pair) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_size);
+
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	fd->cache[size]->kerning_map.erase(p_glyph_pair);
+}
+
+void TextServerAdvanced::font_set_kerning(RID p_font_rid, int p_size, const Vector2i &p_glyph_pair, const Vector2 &p_kerning) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_size);
+
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	fd->cache[size]->kerning_map[p_glyph_pair] = p_kerning;
+}
+
+Vector2 TextServerAdvanced::font_get_kerning(RID p_font_rid, int p_size, const Vector2i &p_glyph_pair) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, Vector2());
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_size);
+
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Vector2());
+
+	const Map<Vector2i, Vector2> &kern = fd->cache[size]->kerning_map;
+
+	if (kern.has(p_glyph_pair)) {
+		if (fd->msdf) {
+			return kern[p_glyph_pair] * (real_t)p_size / (real_t)fd->msdf_source_size;
+		} else {
+			return kern[p_glyph_pair];
+		}
+	} else {
+#ifdef MODULE_FREETYPE_ENABLED
+		if (fd->cache[size]->face) {
+			FT_Vector delta;
+			FT_Get_Kerning(fd->cache[size]->face, p_glyph_pair.x, p_glyph_pair.y, FT_KERNING_DEFAULT, &delta);
+			if (fd->msdf) {
+				return Vector2(delta.x, delta.y) * (real_t)p_size / (real_t)fd->msdf_source_size;
+			} else {
+				return Vector2(delta.x, delta.y);
+			}
+		}
+#endif
+	}
+	return Vector2();
+}
+
+int32_t TextServerAdvanced::font_get_glyph_index(RID p_font_rid, int p_size, char32_t p_char, char32_t p_variation_selector) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, 0);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_size);
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), 0);
+
+#ifdef MODULE_FREETYPE_ENABLED
+	if (fd->cache[size]->face) {
+		if (p_variation_selector) {
+			return FT_Face_GetCharVariantIndex(fd->cache[size]->face, p_char, p_variation_selector);
+		} else {
+			return FT_Get_Char_Index(fd->cache[size]->face, p_char);
+		}
+	} else {
+		return 0;
+	}
+#else
+	return (int32_t)p_char;
+#endif
+}
+
+bool TextServerAdvanced::font_has_char(RID p_font_rid, char32_t p_char) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, false);
+
+	MutexLock lock(fd->mutex);
+	if (fd->cache.is_empty()) {
+		ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, fd->msdf ? Vector2i(fd->msdf_source_size, 0) : Vector2i(16, 0)), false);
+	}
+	FontDataForSizeAdvanced *at_size = fd->cache.front()->get();
+
+#ifdef MODULE_FREETYPE_ENABLED
+	if (at_size && at_size->face) {
+		return FT_Get_Char_Index(at_size->face, p_char) != 0;
+	}
+#endif
+	return (at_size) ? at_size->glyph_map.has((int32_t)p_char) : false;
+}
+
+String TextServerAdvanced::font_get_supported_chars(RID p_font_rid) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, String());
+
+	MutexLock lock(fd->mutex);
+	if (fd->cache.is_empty()) {
+		ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, fd->msdf ? Vector2i(fd->msdf_source_size, 0) : Vector2i(16, 0)), String());
+	}
+	FontDataForSizeAdvanced *at_size = fd->cache.front()->get();
+
+	String chars;
+#ifdef MODULE_FREETYPE_ENABLED
+	if (at_size && at_size->face) {
+		FT_UInt gindex;
+		FT_ULong charcode = FT_Get_First_Char(at_size->face, &gindex);
+		while (gindex != 0) {
+			if (charcode != 0) {
+				chars += char32_t(charcode);
+			}
+			charcode = FT_Get_Next_Char(at_size->face, charcode, &gindex);
+		}
+		return chars;
+	}
+#endif
+	if (at_size) {
+		const HashMap<int32_t, FontGlyph> &gl = at_size->glyph_map;
+		const int32_t *E = nullptr;
+		while ((E = gl.next(E))) {
+			chars += char32_t(*E);
+		}
+	}
+	return chars;
+}
+
+void TextServerAdvanced::font_render_range(RID p_font_rid, const Vector2i &p_size, char32_t p_start, char32_t p_end) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size_outline(fd, p_size);
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	for (char32_t i = p_start; i <= p_end; i++) {
+#ifdef MODULE_FREETYPE_ENABLED
+		if (fd->cache[size]->face) {
+			_ensure_glyph(fd, size, FT_Get_Char_Index(fd->cache[size]->face, i));
+			continue;
+		}
+#endif
+		_ensure_glyph(fd, size, (int32_t)i);
+	}
+}
+
+void TextServerAdvanced::font_render_glyph(RID p_font_rid, const Vector2i &p_size, int32_t p_index) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size_outline(fd, p_size);
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	ERR_FAIL_COND(!_ensure_glyph(fd, size, p_index));
+}
+
+void TextServerAdvanced::font_draw_glyph(RID p_font_rid, RID p_canvas, int p_size, const Vector2 &p_pos, int32_t p_index, const Color &p_color) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_size);
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	if (!_ensure_glyph(fd, size, p_index)) {
+		return; // // Invalid or non graphicl glyph, do not display errors, nothing to draw.
+	}
+
+	const FontGlyph &gl = fd->cache[size]->glyph_map[p_index];
+	if (gl.found) {
+		ERR_FAIL_COND(gl.texture_idx < -1 || gl.texture_idx >= fd->cache[size]->textures.size());
+
+		if (gl.texture_idx != -1) {
+			Color modulate = p_color;
+#ifdef MODULE_FREETYPE_ENABLED
+			if (fd->cache[size]->face && FT_HAS_COLOR(fd->cache[size]->face)) {
+				modulate.r = modulate.g = modulate.b = 1.0;
+			}
+#endif
+			if (RenderingServer::get_singleton() != nullptr) {
+				RID texture = fd->cache[size]->textures[gl.texture_idx].texture->get_rid();
+				if (fd->msdf) {
+					Point2 cpos = p_pos;
+					cpos += gl.rect.position * (real_t)p_size / (real_t)fd->msdf_source_size;
+					Size2 csize = gl.rect.size * (real_t)p_size / (real_t)fd->msdf_source_size;
+					RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, gl.uv_rect, modulate, 0, fd->msdf_range);
+				} else {
+					Point2i cpos = p_pos;
+					cpos += gl.rect.position;
+					Size2i csize = gl.rect.size;
+					RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, gl.uv_rect, modulate, false, false);
+				}
+			}
+		}
+	}
+}
+
+void TextServerAdvanced::font_draw_glyph_outline(RID p_font_rid, RID p_canvas, int p_size, int p_outline_size, const Vector2 &p_pos, int32_t p_index, const Color &p_color) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size_outline(fd, Vector2i(p_size, p_outline_size));
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	if (!_ensure_glyph(fd, size, p_index)) {
+		return; // // Invalid or non graphicl glyph, do not display errors, nothing to draw.
+	}
+
+	const FontGlyph &gl = fd->cache[size]->glyph_map[p_index];
+	if (gl.found) {
+		ERR_FAIL_COND(gl.texture_idx < -1 || gl.texture_idx >= fd->cache[size]->textures.size());
+
+		if (gl.texture_idx != -1) {
+			Color modulate = p_color;
+#ifdef MODULE_FREETYPE_ENABLED
+			if (fd->cache[size]->face && FT_HAS_COLOR(fd->cache[size]->face)) {
+				modulate.r = modulate.g = modulate.b = 1.0;
+			}
+#endif
+			if (RenderingServer::get_singleton() != nullptr) {
+				RID texture = fd->cache[size]->textures[gl.texture_idx].texture->get_rid();
+				if (fd->msdf) {
+					Point2 cpos = p_pos;
+					cpos += gl.rect.position * (real_t)p_size / (real_t)fd->msdf_source_size;
+					Size2 csize = gl.rect.size * (real_t)p_size / (real_t)fd->msdf_source_size;
+					RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, gl.uv_rect, modulate, p_outline_size * 2, fd->msdf_range);
+				} else {
+					Point2i cpos = p_pos;
+					cpos += gl.rect.position;
+					Size2i csize = gl.rect.size;
+					RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, gl.uv_rect, modulate, false, false);
+				}
+			}
+		}
+	}
+}
+
+bool TextServerAdvanced::font_is_language_supported(RID p_font_rid, const String &p_language) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, false);
+
+	MutexLock lock(fd->mutex);
+	if (fd->language_support_overrides.has(p_language)) {
+		return fd->language_support_overrides[p_language];
+	} else {
+		return true;
+	}
+}
+
+void TextServerAdvanced::font_set_language_support_override(RID p_font_rid, const String &p_language, bool p_supported) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	fd->language_support_overrides[p_language] = p_supported;
+}
+
+bool TextServerAdvanced::font_get_language_support_override(RID p_font_rid, const String &p_language) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, false);
+
+	MutexLock lock(fd->mutex);
+	return fd->language_support_overrides[p_language];
+}
+
+void TextServerAdvanced::font_remove_language_support_override(RID p_font_rid, const String &p_language) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	fd->language_support_overrides.erase(p_language);
+}
+
+Vector<String> TextServerAdvanced::font_get_language_support_overrides(RID p_font_rid) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, Vector<String>());
+
+	MutexLock lock(fd->mutex);
+	Vector<String> out;
+	for (const Map<String, bool>::Element *E = fd->language_support_overrides.front(); E; E = E->next()) {
+		out.push_back(E->key());
+	}
+	return out;
+}
+
+bool TextServerAdvanced::font_is_script_supported(RID p_font_rid, const String &p_script) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, false);
+
+	MutexLock lock(fd->mutex);
 	if (fd->script_support_overrides.has(p_script)) {
 		return fd->script_support_overrides[p_script];
 	} else {
-		hb_script_t scr = hb_script_from_string(p_script.ascii().get_data(), -1);
-		return fd->is_script_supported(scr);
+		Vector2i size = _get_size(fd, 16);
+		ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), false);
+		return fd->supported_scripts.has(TS->name_to_tag(p_script));
 	}
 }
 
-void TextServerAdvanced::font_set_script_support_override(RID p_font, const String &p_script, bool p_supported) {
-	_THREAD_SAFE_METHOD_
-	FontDataAdvanced *fd = font_owner.getornull(p_font);
+void TextServerAdvanced::font_set_script_support_override(RID p_font_rid, const String &p_script, bool p_supported) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
 	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
 	fd->script_support_overrides[p_script] = p_supported;
 }
 
-bool TextServerAdvanced::font_get_script_support_override(RID p_font, const String &p_script) {
-	_THREAD_SAFE_METHOD_
-	FontDataAdvanced *fd = font_owner.getornull(p_font);
+bool TextServerAdvanced::font_get_script_support_override(RID p_font_rid, const String &p_script) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
 	ERR_FAIL_COND_V(!fd, false);
+
+	MutexLock lock(fd->mutex);
 	return fd->script_support_overrides[p_script];
 }
 
-void TextServerAdvanced::font_remove_script_support_override(RID p_font, const String &p_script) {
-	_THREAD_SAFE_METHOD_
-	FontDataAdvanced *fd = font_owner.getornull(p_font);
+void TextServerAdvanced::font_remove_script_support_override(RID p_font_rid, const String &p_script) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
 	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
 	fd->script_support_overrides.erase(p_script);
 }
 
-Vector<String> TextServerAdvanced::font_get_script_support_overrides(RID p_font) {
-	_THREAD_SAFE_METHOD_
-	FontDataAdvanced *fd = font_owner.getornull(p_font);
+Vector<String> TextServerAdvanced::font_get_script_support_overrides(RID p_font_rid) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
 	ERR_FAIL_COND_V(!fd, Vector<String>());
-	Vector<String> ret;
-	for (Map<String, bool>::Element *E = fd->script_support_overrides.front(); E; E = E->next()) {
-		ret.push_back(E->key());
+
+	MutexLock lock(fd->mutex);
+	Vector<String> out;
+	for (const Map<String, bool>::Element *E = fd->script_support_overrides.front(); E; E = E->next()) {
+		out.push_back(E->key());
 	}
-	return ret;
+	return out;
 }
 
-uint32_t TextServerAdvanced::font_get_glyph_index(RID p_font, char32_t p_char, char32_t p_variation_selector) const {
-	_THREAD_SAFE_METHOD_
-	const FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, 0);
-	return fd->get_glyph_index(p_char, p_variation_selector);
+Dictionary TextServerAdvanced::font_supported_feature_list(RID p_font_rid) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, Dictionary());
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Dictionary());
+	return fd->supported_features;
 }
 
-Vector2 TextServerAdvanced::font_get_glyph_advance(RID p_font, uint32_t p_index, int p_size) const {
-	_THREAD_SAFE_METHOD_
-	const FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, Vector2());
-	return fd->get_advance(p_index, p_size);
+Dictionary TextServerAdvanced::font_supported_variation_list(RID p_font_rid) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, Dictionary());
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Dictionary());
+	return fd->supported_varaitions;
 }
 
-Vector2 TextServerAdvanced::font_get_glyph_kerning(RID p_font, uint32_t p_index_a, uint32_t p_index_b, int p_size) const {
-	_THREAD_SAFE_METHOD_
-	const FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, Vector2());
-	return fd->get_kerning(p_index_a, p_index_b, p_size);
-}
-
-Vector2 TextServerAdvanced::font_draw_glyph(RID p_font, RID p_canvas, int p_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color) const {
-	_THREAD_SAFE_METHOD_
-	const FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, Vector2());
-	return fd->draw_glyph(p_canvas, p_size, p_pos, p_index, p_color);
-}
-
-Vector2 TextServerAdvanced::font_draw_glyph_outline(RID p_font, RID p_canvas, int p_size, int p_outline_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color) const {
-	_THREAD_SAFE_METHOD_
-	const FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, Vector2());
-	return fd->draw_glyph_outline(p_canvas, p_size, p_outline_size, p_pos, p_index, p_color);
-}
-
-bool TextServerAdvanced::font_get_glyph_contours(RID p_font, int p_size, uint32_t p_index, Vector<Vector3> &r_points, Vector<int32_t> &r_contours, bool &r_orientation) const {
-	_THREAD_SAFE_METHOD_
-	const FontDataAdvanced *fd = font_owner.getornull(p_font);
-	ERR_FAIL_COND_V(!fd, false);
-	return fd->get_glyph_contours(p_size, p_index, r_points, r_contours, r_orientation);
-}
-
-float TextServerAdvanced::font_get_oversampling() const {
+real_t TextServerAdvanced::font_get_global_oversampling() const {
 	return oversampling;
 }
 
-void TextServerAdvanced::font_set_oversampling(float p_oversampling) {
+void TextServerAdvanced::font_set_global_oversampling(real_t p_oversampling) {
 	_THREAD_SAFE_METHOD_
 	if (oversampling != p_oversampling) {
 		oversampling = p_oversampling;
 		List<RID> fonts;
 		font_owner.get_owned_list(&fonts);
+		bool font_cleared = false;
 		for (const RID &E : fonts) {
-			font_owner.getornull(E)->clear_cache();
+			if (!font_is_multichannel_signed_distance_field(E) && font_get_oversampling(E) <= 0) {
+				font_clear_size_cache(E);
+				font_cleared = true;
+			}
 		}
 
-		List<RID> text_bufs;
-		shaped_owner.get_owned_list(&text_bufs);
-		for (const RID &E : text_bufs) {
-			invalidate(shaped_owner.getornull(E));
+		if (font_cleared) {
+			List<RID> text_bufs;
+			shaped_owner.get_owned_list(&text_bufs);
+			for (const RID &E : text_bufs) {
+				invalidate(shaped_owner.getornull(E));
+			}
 		}
 	}
-}
-
-Vector<String> TextServerAdvanced::get_system_fonts() const {
-	return Vector<String>();
 }
 
 /*************************************************************************/
@@ -1029,10 +2895,10 @@ RID TextServerAdvanced::create_shaped_text(TextServer::Direction p_direction, Te
 }
 
 void TextServerAdvanced::shaped_text_clear(RID p_shaped) {
-	_THREAD_SAFE_METHOD_
 	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND(!sd);
 
+	MutexLock lock(sd->mutex);
 	sd->parent = RID();
 	sd->start = 0;
 	sd->end = 0;
@@ -1044,10 +2910,10 @@ void TextServerAdvanced::shaped_text_clear(RID p_shaped) {
 }
 
 void TextServerAdvanced::shaped_text_set_direction(RID p_shaped, TextServer::Direction p_direction) {
-	_THREAD_SAFE_METHOD_
 	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND(!sd);
 
+	MutexLock lock(sd->mutex);
 	if (sd->direction != p_direction) {
 		if (sd->parent != RID()) {
 			full_copy(sd);
@@ -1058,16 +2924,18 @@ void TextServerAdvanced::shaped_text_set_direction(RID p_shaped, TextServer::Dir
 }
 
 TextServer::Direction TextServerAdvanced::shaped_text_get_direction(RID p_shaped) const {
-	_THREAD_SAFE_METHOD_
 	const ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, TextServer::DIRECTION_LTR);
+
+	MutexLock lock(sd->mutex);
 	return sd->direction;
 }
 
 void TextServerAdvanced::shaped_text_set_bidi_override(RID p_shaped, const Vector<Vector2i> &p_override) {
-	_THREAD_SAFE_METHOD_
 	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND(!sd);
+
+	MutexLock lock(sd->mutex);
 	if (sd->parent != RID()) {
 		full_copy(sd);
 	}
@@ -1076,9 +2944,10 @@ void TextServerAdvanced::shaped_text_set_bidi_override(RID p_shaped, const Vecto
 }
 
 void TextServerAdvanced::shaped_text_set_orientation(RID p_shaped, TextServer::Orientation p_orientation) {
-	_THREAD_SAFE_METHOD_
 	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND(!sd);
+
+	MutexLock lock(sd->mutex);
 	if (sd->orientation != p_orientation) {
 		if (sd->parent != RID()) {
 			full_copy(sd);
@@ -1089,9 +2958,10 @@ void TextServerAdvanced::shaped_text_set_orientation(RID p_shaped, TextServer::O
 }
 
 void TextServerAdvanced::shaped_text_set_preserve_invalid(RID p_shaped, bool p_enabled) {
-	_THREAD_SAFE_METHOD_
 	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND(!sd);
+
+	MutexLock lock(sd->mutex);
 	ERR_FAIL_COND(sd->parent != RID());
 	if (sd->preserve_invalid != p_enabled) {
 		sd->preserve_invalid = p_enabled;
@@ -1100,16 +2970,18 @@ void TextServerAdvanced::shaped_text_set_preserve_invalid(RID p_shaped, bool p_e
 }
 
 bool TextServerAdvanced::shaped_text_get_preserve_invalid(RID p_shaped) const {
-	_THREAD_SAFE_METHOD_
 	const ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
+
+	MutexLock lock(sd->mutex);
 	return sd->preserve_invalid;
 }
 
 void TextServerAdvanced::shaped_text_set_preserve_control(RID p_shaped, bool p_enabled) {
-	_THREAD_SAFE_METHOD_
 	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND(!sd);
+
+	MutexLock lock(sd->mutex);
 	if (sd->preserve_control != p_enabled) {
 		if (sd->parent != RID()) {
 			full_copy(sd);
@@ -1120,24 +2992,30 @@ void TextServerAdvanced::shaped_text_set_preserve_control(RID p_shaped, bool p_e
 }
 
 bool TextServerAdvanced::shaped_text_get_preserve_control(RID p_shaped) const {
-	_THREAD_SAFE_METHOD_
 	const ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
+
+	MutexLock lock(sd->mutex);
 	return sd->preserve_control;
 }
 
 TextServer::Orientation TextServerAdvanced::shaped_text_get_orientation(RID p_shaped) const {
-	_THREAD_SAFE_METHOD_
 	const ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, TextServer::ORIENTATION_HORIZONTAL);
+
+	MutexLock lock(sd->mutex);
 	return sd->orientation;
 }
 
 bool TextServerAdvanced::shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const Dictionary &p_opentype_features, const String &p_language) {
-	_THREAD_SAFE_METHOD_
 	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
 	ERR_FAIL_COND_V(p_size <= 0, false);
+
+	MutexLock lock(sd->mutex);
+	for (int i = 0; i < p_fonts.size(); i++) {
+		ERR_FAIL_COND_V(!font_owner.getornull(p_fonts[i]), false);
+	}
 
 	if (p_text.is_empty()) {
 		return true;
@@ -1194,9 +3072,10 @@ bool TextServerAdvanced::shaped_text_add_object(RID p_shaped, Variant p_key, con
 }
 
 bool TextServerAdvanced::shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align) {
-	_THREAD_SAFE_METHOD_
 	ShapedTextData *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
+
+	MutexLock lock(sd->mutex);
 	ERR_FAIL_COND_V(!sd->objects.has(p_key), false);
 	sd->objects[p_key].rect.size = p_size;
 	sd->objects[p_key].inline_align = p_inline_align;
@@ -1231,14 +3110,13 @@ bool TextServerAdvanced::shaped_text_resize_object(RID p_shaped, Variant p_key, 
 					sd->glyphs.write[i].advance = sd->objects[key].rect.size.y;
 				}
 			} else {
-				const FontDataAdvanced *fd = font_owner.getornull(gl.font_rid);
-				if (fd != nullptr) {
+				if (gl.font_rid.is_valid()) {
 					if (sd->orientation == ORIENTATION_HORIZONTAL) {
-						sd->ascent = MAX(sd->ascent, MAX(fd->get_ascent(gl.font_size), -gl.y_off));
-						sd->descent = MAX(sd->descent, MAX(fd->get_descent(gl.font_size), gl.y_off));
+						sd->ascent = MAX(sd->ascent, MAX(font_get_ascent(gl.font_rid, gl.font_size), -gl.y_off));
+						sd->descent = MAX(sd->descent, MAX(font_get_descent(gl.font_rid, gl.font_size), gl.y_off));
 					} else {
-						sd->ascent = MAX(sd->ascent, Math::round(fd->get_advance(gl.index, gl.font_size).x * 0.5));
-						sd->descent = MAX(sd->descent, Math::round(fd->get_advance(gl.index, gl.font_size).x * 0.5));
+						sd->ascent = MAX(sd->ascent, Math::round(font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
+						sd->descent = MAX(sd->descent, Math::round(font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
 					}
 					sd->upos = MAX(sd->upos, font_get_underline_position(gl.font_rid, gl.font_size));
 					sd->uthk = MAX(sd->uthk, font_get_underline_thickness(gl.font_rid, gl.font_size));
@@ -1257,8 +3135,8 @@ bool TextServerAdvanced::shaped_text_resize_object(RID p_shaped, Variant p_key, 
 		}
 
 		// Align embedded objects to baseline.
-		float full_ascent = sd->ascent;
-		float full_descent = sd->descent;
+		real_t full_ascent = sd->ascent;
+		real_t full_descent = sd->descent;
 		for (Map<Variant, ShapedTextData::EmbeddedObject>::Element *E = sd->objects.front(); E; E = E->next()) {
 			if ((E->get().pos >= sd->start) && (E->get().pos < sd->end)) {
 				if (sd->orientation == ORIENTATION_HORIZONTAL) {
@@ -1327,9 +3205,10 @@ bool TextServerAdvanced::shaped_text_resize_object(RID p_shaped, Variant p_key, 
 }
 
 RID TextServerAdvanced::shaped_text_substr(RID p_shaped, int p_start, int p_length) const {
-	_THREAD_SAFE_METHOD_
 	const ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, RID());
+
+	MutexLock lock(sd->mutex);
 	if (sd->parent != RID()) {
 		return shaped_text_substr(sd->parent, p_start, p_length);
 	}
@@ -1363,9 +3242,6 @@ RID TextServerAdvanced::shaped_text_substr(RID p_shaped, int p_start, int p_leng
 
 		int sd_size = sd->glyphs.size();
 		const Glyph *sd_glyphs = sd->glyphs.ptr();
-		const FontDataAdvanced *fd = nullptr;
-		RID prev_rid = RID();
-
 		for (int ov = 0; ov < sd->bidi_override.size(); ov++) {
 			UErrorCode err = U_ZERO_ERROR;
 
@@ -1423,17 +3299,13 @@ RID TextServerAdvanced::shaped_text_substr(RID p_shaped, int p_start, int p_leng
 								new_sd->width += new_sd->objects[key].rect.size.y;
 							}
 						} else {
-							if (prev_rid != gl.font_rid) {
-								fd = font_owner.getornull(gl.font_rid);
-								prev_rid = gl.font_rid;
-							}
-							if (fd != nullptr) {
+							if (gl.font_rid.is_valid()) {
 								if (new_sd->orientation == ORIENTATION_HORIZONTAL) {
-									new_sd->ascent = MAX(new_sd->ascent, MAX(fd->get_ascent(gl.font_size), -gl.y_off));
-									new_sd->descent = MAX(new_sd->descent, MAX(fd->get_descent(gl.font_size), gl.y_off));
+									new_sd->ascent = MAX(new_sd->ascent, MAX(font_get_ascent(gl.font_rid, gl.font_size), -gl.y_off));
+									new_sd->descent = MAX(new_sd->descent, MAX(font_get_descent(gl.font_rid, gl.font_size), gl.y_off));
 								} else {
-									new_sd->ascent = MAX(new_sd->ascent, Math::round(fd->get_advance(gl.index, gl.font_size).x * 0.5));
-									new_sd->descent = MAX(new_sd->descent, Math::round(fd->get_advance(gl.index, gl.font_size).x * 0.5));
+									new_sd->ascent = MAX(new_sd->ascent, Math::round(font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
+									new_sd->descent = MAX(new_sd->descent, Math::round(font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
 								}
 							} else if (new_sd->preserve_invalid || (new_sd->preserve_control && is_control(gl.index))) {
 								// Glyph not found, replace with hex code box.
@@ -1454,8 +3326,8 @@ RID TextServerAdvanced::shaped_text_substr(RID p_shaped, int p_start, int p_leng
 		}
 
 		// Align embedded objects to baseline.
-		float full_ascent = new_sd->ascent;
-		float full_descent = new_sd->descent;
+		real_t full_ascent = new_sd->ascent;
+		real_t full_descent = new_sd->descent;
 		for (Map<Variant, ShapedTextData::EmbeddedObject>::Element *E = new_sd->objects.front(); E; E = E->next()) {
 			if ((E->get().pos >= new_sd->start) && (E->get().pos < new_sd->end)) {
 				if (sd->orientation == ORIENTATION_HORIZONTAL) {
@@ -1526,16 +3398,18 @@ RID TextServerAdvanced::shaped_text_substr(RID p_shaped, int p_start, int p_leng
 }
 
 RID TextServerAdvanced::shaped_text_get_parent(RID p_shaped) const {
-	_THREAD_SAFE_METHOD_
 	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, RID());
+
+	MutexLock lock(sd->mutex);
 	return sd->parent;
 }
 
-float TextServerAdvanced::shaped_text_fit_to_width(RID p_shaped, float p_width, uint8_t /*JustificationFlag*/ p_jst_flags) {
-	_THREAD_SAFE_METHOD_
+real_t TextServerAdvanced::shaped_text_fit_to_width(RID p_shaped, real_t p_width, uint8_t /*JustificationFlag*/ p_jst_flags) {
 	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, 0.f);
+
+	MutexLock lock(sd->mutex);
 	if (!sd->valid) {
 		const_cast<TextServerAdvanced *>(this)->shaped_text_shape(p_shaped);
 	}
@@ -1572,7 +3446,7 @@ float TextServerAdvanced::shaped_text_fit_to_width(RID p_shaped, float p_width, 
 		}
 	}
 
-	float justification_width;
+	real_t justification_width;
 	if ((p_jst_flags & JUSTIFICATION_CONSTRAIN_ELLIPSIS) == JUSTIFICATION_CONSTRAIN_ELLIPSIS) {
 		if (sd->overrun_trim_data.trim_pos >= 0) {
 			start_pos = sd->overrun_trim_data.trim_pos;
@@ -1612,7 +3486,7 @@ float TextServerAdvanced::shaped_text_fit_to_width(RID p_shaped, float p_width, 
 	}
 
 	if ((elongation_count > 0) && ((p_jst_flags & JUSTIFICATION_KASHIDA) == JUSTIFICATION_KASHIDA)) {
-		float delta_width_per_kashida = (p_width - justification_width) / elongation_count;
+		real_t delta_width_per_kashida = (p_width - justification_width) / elongation_count;
 		for (int i = start_pos; i <= end_pos; i++) {
 			Glyph &gl = sd->glyphs.write[i];
 			if (gl.count > 0) {
@@ -1627,19 +3501,19 @@ float TextServerAdvanced::shaped_text_fit_to_width(RID p_shaped, float p_width, 
 			}
 		}
 	}
-	float adv_remain = 0;
+	real_t adv_remain = 0;
 	if ((space_count > 0) && ((p_jst_flags & JUSTIFICATION_WORD_BOUND) == JUSTIFICATION_WORD_BOUND)) {
-		float delta_width_per_space = (p_width - justification_width) / space_count;
+		real_t delta_width_per_space = (p_width - justification_width) / space_count;
 		for (int i = start_pos; i <= end_pos; i++) {
 			Glyph &gl = sd->glyphs.write[i];
 			if (gl.count > 0) {
 				if ((gl.flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE) {
-					float old_adv = gl.advance;
-					float new_advance;
+					real_t old_adv = gl.advance;
+					real_t new_advance;
 					if ((gl.flags & GRAPHEME_IS_VIRTUAL) == GRAPHEME_IS_VIRTUAL) {
 						new_advance = MAX(gl.advance + delta_width_per_space, 0.f);
 					} else {
-						new_advance = MAX(gl.advance + delta_width_per_space, 0.05 * gl.font_size);
+						new_advance = MAX(gl.advance + delta_width_per_space, 0.1 * gl.font_size);
 					}
 					gl.advance = new_advance;
 					adv_remain += (new_advance - gl.advance);
@@ -1667,10 +3541,11 @@ float TextServerAdvanced::shaped_text_fit_to_width(RID p_shaped, float p_width, 
 	return sd->width;
 }
 
-float TextServerAdvanced::shaped_text_tab_align(RID p_shaped, const Vector<float> &p_tab_stops) {
-	_THREAD_SAFE_METHOD_
+real_t TextServerAdvanced::shaped_text_tab_align(RID p_shaped, const Vector<real_t> &p_tab_stops) {
 	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, 0.f);
+
+	MutexLock lock(sd->mutex);
 	if (!sd->valid) {
 		const_cast<TextServerAdvanced *>(this)->shaped_text_shape(p_shaped);
 	}
@@ -1679,7 +3554,7 @@ float TextServerAdvanced::shaped_text_tab_align(RID p_shaped, const Vector<float
 	}
 
 	int tab_index = 0;
-	float off = 0.f;
+	real_t off = 0.f;
 
 	int start, end, delta;
 	if (sd->para_direction == DIRECTION_LTR) {
@@ -1696,7 +3571,7 @@ float TextServerAdvanced::shaped_text_tab_align(RID p_shaped, const Vector<float
 
 	for (int i = start; i != end; i += delta) {
 		if ((gl[i].flags & GRAPHEME_IS_TAB) == GRAPHEME_IS_TAB) {
-			float tab_off = 0.f;
+			real_t tab_off = 0.f;
 			while (tab_off <= off) {
 				tab_off += p_tab_stops[tab_index];
 				tab_index++;
@@ -1704,7 +3579,7 @@ float TextServerAdvanced::shaped_text_tab_align(RID p_shaped, const Vector<float
 					tab_index = 0;
 				}
 			}
-			float old_adv = gl[i].advance;
+			real_t old_adv = gl[i].advance;
 			gl[i].advance = tab_off - off;
 			sd->width += gl[i].advance - old_adv;
 			off = 0;
@@ -1716,10 +3591,11 @@ float TextServerAdvanced::shaped_text_tab_align(RID p_shaped, const Vector<float
 	return 0.f;
 }
 
-void TextServerAdvanced::shaped_text_overrun_trim_to_width(RID p_shaped_line, float p_width, uint8_t p_trim_flags) {
-	_THREAD_SAFE_METHOD_
+void TextServerAdvanced::shaped_text_overrun_trim_to_width(RID p_shaped_line, real_t p_width, uint8_t p_trim_flags) {
 	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped_line);
 	ERR_FAIL_COND_MSG(!sd, "ShapedTextDataAdvanced invalid.");
+
+	MutexLock lock(sd->mutex);
 	if (!sd->valid) {
 		shaped_text_shape(p_shaped_line);
 	}
@@ -1746,18 +3622,18 @@ void TextServerAdvanced::shaped_text_overrun_trim_to_width(RID p_shaped_line, fl
 	int sd_size = sd->glyphs.size();
 	RID last_gl_font_rid = sd_glyphs[sd_size - 1].font_rid;
 	int last_gl_font_size = sd_glyphs[sd_size - 1].font_size;
-	uint32_t dot_gl_idx = font_get_glyph_index(last_gl_font_rid, '.');
-	Vector2 dot_adv = font_get_glyph_advance(last_gl_font_rid, dot_gl_idx, last_gl_font_size);
-	uint32_t whitespace_gl_idx = font_get_glyph_index(last_gl_font_rid, ' ');
-	Vector2 whitespace_adv = font_get_glyph_advance(last_gl_font_rid, whitespace_gl_idx, last_gl_font_size);
+	int32_t dot_gl_idx = font_get_glyph_index(last_gl_font_rid, last_gl_font_size, '.');
+	Vector2 dot_adv = font_get_glyph_advance(last_gl_font_rid, last_gl_font_size, dot_gl_idx);
+	int32_t whitespace_gl_idx = font_get_glyph_index(last_gl_font_rid, last_gl_font_size, ' ');
+	Vector2 whitespace_adv = font_get_glyph_advance(last_gl_font_rid, last_gl_font_size, whitespace_gl_idx);
 
 	int ellipsis_width = 0;
 	if (add_ellipsis) {
-		ellipsis_width = 3 * dot_adv.x + font_get_spacing_glyph(last_gl_font_rid) + (cut_per_word ? whitespace_adv.x : 0);
+		ellipsis_width = 3 * dot_adv.x + font_get_spacing(last_gl_font_rid, last_gl_font_size, SPACING_GLYPH) + (cut_per_word ? whitespace_adv.x : 0);
 	}
 
 	int ell_min_characters = 6;
-	float width = sd->width;
+	real_t width = sd->width;
 
 	bool is_rtl = sd->direction == DIRECTION_RTL || (sd->direction == DIRECTION_AUTO && sd->para_direction == DIRECTION_RTL);
 
@@ -1842,16 +3718,18 @@ void TextServerAdvanced::shaped_text_overrun_trim_to_width(RID p_shaped_line, fl
 }
 
 TextServer::TrimData TextServerAdvanced::shaped_text_get_trim_data(RID p_shaped) const {
-	_THREAD_SAFE_METHOD_
 	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V_MSG(!sd, TrimData(), "ShapedTextDataAdvanced invalid.");
+
+	MutexLock lock(sd->mutex);
 	return sd->overrun_trim_data;
 }
 
 bool TextServerAdvanced::shaped_text_update_breaks(RID p_shaped) {
-	_THREAD_SAFE_METHOD_
 	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
+
+	MutexLock lock(sd->mutex);
 	if (!sd->valid) {
 		shaped_text_shape(p_shaped);
 	}
@@ -2035,9 +3913,10 @@ _FORCE_INLINE_ int _generate_kashida_justification_opportunies(const String &p_d
 }
 
 bool TextServerAdvanced::shaped_text_update_justification_ops(RID p_shaped) {
-	_THREAD_SAFE_METHOD_
 	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
+
+	MutexLock lock(sd->mutex);
 	if (!sd->valid) {
 		shaped_text_shape(p_shaped);
 	}
@@ -2145,8 +4024,8 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(RID p_shaped) {
 }
 
 TextServer::Glyph TextServerAdvanced::_shape_single_glyph(ShapedTextDataAdvanced *p_sd, char32_t p_char, hb_script_t p_script, hb_direction_t p_direction, RID p_font, int p_font_size) {
-	FontDataAdvanced *fd = font_owner.getornull(p_font);
-	hb_font_t *hb_font = fd->get_hb_handle(p_font_size);
+	hb_font_t *hb_font = _font_get_hb_handle(p_font, p_font_size);
+	ERR_FAIL_COND_V(hb_font == nullptr, TextServer::Glyph());
 
 	hb_buffer_clear_contents(p_sd->hb_buffer);
 	hb_buffer_set_direction(p_sd->hb_buffer, p_direction);
@@ -2171,16 +4050,17 @@ TextServer::Glyph TextServerAdvanced::_shape_single_glyph(ShapedTextDataAdvanced
 	gl.font_size = p_font_size;
 
 	if (glyph_count > 0) {
+		real_t scale = font_get_scale(p_font, p_font_size);
 		if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
-			gl.advance = Math::round(glyph_pos[0].x_advance / (64.0 / fd->get_font_scale(p_font_size)));
+			gl.advance = Math::round(glyph_pos[0].x_advance / (64.0 / scale));
 		} else {
-			gl.advance = -Math::round(glyph_pos[0].y_advance / (64.0 / fd->get_font_scale(p_font_size)));
+			gl.advance = -Math::round(glyph_pos[0].y_advance / (64.0 / scale));
 		}
 		gl.count = 1;
 
 		gl.index = glyph_info[0].codepoint;
-		gl.x_off = Math::round(glyph_pos[0].x_offset / (64.0 / fd->get_font_scale(p_font_size)));
-		gl.y_off = -Math::round(glyph_pos[0].y_offset / (64.0 / fd->get_font_scale(p_font_size)));
+		gl.x_off = Math::round(glyph_pos[0].x_offset / (64.0 / scale));
+		gl.y_off = -Math::round(glyph_pos[0].y_offset / (64.0 / scale));
 
 		if ((glyph_info[0].codepoint != 0) || !u_isgraph(p_char)) {
 			gl.flags |= GRAPHEME_IS_VALID;
@@ -2190,13 +4070,8 @@ TextServer::Glyph TextServerAdvanced::_shape_single_glyph(ShapedTextDataAdvanced
 }
 
 void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_start, int32_t p_end, hb_script_t p_script, hb_direction_t p_direction, Vector<RID> p_fonts, int p_span, int p_fb_index) {
-	FontDataAdvanced *fd = nullptr;
-	if (p_fb_index < p_fonts.size()) {
-		fd = font_owner.getornull(p_fonts[p_fb_index]);
-	}
-
 	int fs = p_sd->spans[p_span].font_size;
-	if (fd == nullptr) {
+	if (p_fb_index >= p_fonts.size()) {
 		// Add fallback glyphs.
 		for (int i = p_start; i < p_end; i++) {
 			if (p_sd->preserve_invalid || (p_sd->preserve_control && is_control(p_sd->text[i]))) {
@@ -2227,7 +4102,8 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 		return;
 	}
 
-	hb_font_t *hb_font = fd->get_hb_handle(fs);
+	RID f = p_fonts[p_fb_index];
+	hb_font_t *hb_font = _font_get_hb_handle(f, fs);
 	ERR_FAIL_COND(hb_font == nullptr);
 
 	hb_buffer_clear_contents(p_sd->hb_buffer);
@@ -2307,18 +4183,19 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 
 			gl.index = glyph_info[i].codepoint;
 			if (gl.index != 0) {
+				real_t scale = font_get_scale(f, fs);
 				if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
-					gl.advance = Math::round(glyph_pos[i].x_advance / (64.0 / fd->get_font_scale(fs)));
+					gl.advance = Math::round(glyph_pos[i].x_advance / (64.0 / scale));
 				} else {
-					gl.advance = -Math::round(glyph_pos[i].y_advance / (64.0 / fd->get_font_scale(fs)));
+					gl.advance = -Math::round(glyph_pos[i].y_advance / (64.0 / scale));
 				}
-				gl.x_off = Math::round(glyph_pos[i].x_offset / (64.0 / fd->get_font_scale(fs)));
-				gl.y_off = -Math::round(glyph_pos[i].y_offset / (64.0 / fd->get_font_scale(fs)));
+				gl.x_off = Math::round(glyph_pos[i].x_offset / (64.0 / scale));
+				gl.y_off = -Math::round(glyph_pos[i].y_offset / (64.0 / scale));
 			}
-			if (fd->get_spacing_space() && is_whitespace(p_sd->text[glyph_info[i].cluster])) {
-				gl.advance += fd->get_spacing_space();
+			if (font_get_spacing(f, fs, SPACING_SPACE) && is_whitespace(p_sd->text[glyph_info[i].cluster])) {
+				gl.advance += font_get_spacing(f, fs, SPACING_SPACE);
 			} else {
-				gl.advance += fd->get_spacing_glyph();
+				gl.advance += font_get_spacing(f, fs, SPACING_GLYPH);
 			}
 
 			if (p_sd->preserve_control) {
@@ -2356,8 +4233,8 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 						p_sd->ascent = MAX(p_sd->ascent, -w[i + j].y_off);
 						p_sd->descent = MAX(p_sd->descent, w[i + j].y_off);
 					} else {
-						p_sd->ascent = MAX(p_sd->ascent, Math::round(fd->get_advance(w[i + j].index, fs).x * 0.5));
-						p_sd->descent = MAX(p_sd->descent, Math::round(fd->get_advance(w[i + j].index, fs).x * 0.5));
+						p_sd->ascent = MAX(p_sd->ascent, Math::round(font_get_glyph_advance(f, fs, w[i + j].index).x * 0.5));
+						p_sd->descent = MAX(p_sd->descent, Math::round(font_get_glyph_advance(f, fs, w[i + j].index).x * 0.5));
 					}
 					p_sd->width += w[i + j].advance;
 					p_sd->glyphs.push_back(w[i + j]);
@@ -2376,18 +4253,18 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 		if (failed_subrun_start != p_end + 1) {
 			_shape_run(p_sd, failed_subrun_start, failed_subrun_end, p_script, p_direction, p_fonts, p_span, p_fb_index + 1);
 		}
-		p_sd->ascent = MAX(p_sd->ascent, fd->get_ascent(fs));
-		p_sd->descent = MAX(p_sd->descent, fd->get_descent(fs));
-		p_sd->upos = MAX(p_sd->upos, fd->get_underline_position(fs));
-		p_sd->uthk = MAX(p_sd->uthk, fd->get_underline_thickness(fs));
+		p_sd->ascent = MAX(p_sd->ascent, font_get_ascent(f, fs));
+		p_sd->descent = MAX(p_sd->descent, font_get_descent(f, fs));
+		p_sd->upos = MAX(p_sd->upos, font_get_underline_position(f, fs));
+		p_sd->uthk = MAX(p_sd->uthk, font_get_underline_thickness(f, fs));
 	}
 }
 
 bool TextServerAdvanced::shaped_text_shape(RID p_shaped) {
-	_THREAD_SAFE_METHOD_
 	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
 
+	MutexLock lock(sd->mutex);
 	if (sd->valid) {
 		return true;
 	}
@@ -2546,8 +4423,8 @@ bool TextServerAdvanced::shaped_text_shape(RID p_shaped) {
 	}
 
 	// Align embedded objects to baseline.
-	float full_ascent = sd->ascent;
-	float full_descent = sd->descent;
+	real_t full_ascent = sd->ascent;
+	real_t full_descent = sd->descent;
 	for (Map<Variant, ShapedTextData::EmbeddedObject>::Element *E = sd->objects.front(); E; E = E->next()) {
 		if (sd->orientation == ORIENTATION_HORIZONTAL) {
 			switch (E->get().inline_align & INLINE_ALIGN_TEXT_MASK) {
@@ -2614,16 +4491,18 @@ bool TextServerAdvanced::shaped_text_shape(RID p_shaped) {
 }
 
 bool TextServerAdvanced::shaped_text_is_ready(RID p_shaped) const {
-	_THREAD_SAFE_METHOD_
 	const ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
+
+	MutexLock lock(sd->mutex);
 	return sd->valid;
 }
 
 Vector<TextServer::Glyph> TextServerAdvanced::shaped_text_get_glyphs(RID p_shaped) const {
-	_THREAD_SAFE_METHOD_
 	const ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, Vector<TextServer::Glyph>());
+
+	MutexLock lock(sd->mutex);
 	if (!sd->valid) {
 		const_cast<TextServerAdvanced *>(this)->shaped_text_shape(p_shaped);
 	}
@@ -2631,16 +4510,18 @@ Vector<TextServer::Glyph> TextServerAdvanced::shaped_text_get_glyphs(RID p_shape
 }
 
 Vector2i TextServerAdvanced::shaped_text_get_range(RID p_shaped) const {
-	_THREAD_SAFE_METHOD_
 	const ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, Vector2i());
+
+	MutexLock lock(sd->mutex);
 	return Vector2(sd->start, sd->end);
 }
 
 Vector<TextServer::Glyph> TextServerAdvanced::shaped_text_sort_logical(RID p_shaped) {
-	_THREAD_SAFE_METHOD_
 	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, Vector<TextServer::Glyph>());
+
+	MutexLock lock(sd->mutex);
 	if (!sd->valid) {
 		const_cast<TextServerAdvanced *>(this)->shaped_text_shape(p_shaped);
 	}
@@ -2655,10 +4536,11 @@ Vector<TextServer::Glyph> TextServerAdvanced::shaped_text_sort_logical(RID p_sha
 }
 
 Array TextServerAdvanced::shaped_text_get_objects(RID p_shaped) const {
-	_THREAD_SAFE_METHOD_
 	Array ret;
 	const ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, ret);
+
+	MutexLock lock(sd->mutex);
 	for (const Map<Variant, ShapedTextData::EmbeddedObject>::Element *E = sd->objects.front(); E; E = E->next()) {
 		ret.push_back(E->key());
 	}
@@ -2667,9 +4549,10 @@ Array TextServerAdvanced::shaped_text_get_objects(RID p_shaped) const {
 }
 
 Rect2 TextServerAdvanced::shaped_text_get_object_rect(RID p_shaped, Variant p_key) const {
-	_THREAD_SAFE_METHOD_
 	const ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, Rect2());
+
+	MutexLock lock(sd->mutex);
 	ERR_FAIL_COND_V(!sd->objects.has(p_key), Rect2());
 	if (!sd->valid) {
 		const_cast<TextServerAdvanced *>(this)->shaped_text_shape(p_shaped);
@@ -2678,9 +4561,10 @@ Rect2 TextServerAdvanced::shaped_text_get_object_rect(RID p_shaped, Variant p_ke
 }
 
 Size2 TextServerAdvanced::shaped_text_get_size(RID p_shaped) const {
-	_THREAD_SAFE_METHOD_
 	const ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, Size2());
+
+	MutexLock lock(sd->mutex);
 	if (!sd->valid) {
 		const_cast<TextServerAdvanced *>(this)->shaped_text_shape(p_shaped);
 	}
@@ -2691,40 +4575,44 @@ Size2 TextServerAdvanced::shaped_text_get_size(RID p_shaped) const {
 	}
 }
 
-float TextServerAdvanced::shaped_text_get_ascent(RID p_shaped) const {
-	_THREAD_SAFE_METHOD_
+real_t TextServerAdvanced::shaped_text_get_ascent(RID p_shaped) const {
 	const ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, 0.f);
+
+	MutexLock lock(sd->mutex);
 	if (!sd->valid) {
 		const_cast<TextServerAdvanced *>(this)->shaped_text_shape(p_shaped);
 	}
 	return sd->ascent;
 }
 
-float TextServerAdvanced::shaped_text_get_descent(RID p_shaped) const {
-	_THREAD_SAFE_METHOD_
+real_t TextServerAdvanced::shaped_text_get_descent(RID p_shaped) const {
 	const ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, 0.f);
+
+	MutexLock lock(sd->mutex);
 	if (!sd->valid) {
 		const_cast<TextServerAdvanced *>(this)->shaped_text_shape(p_shaped);
 	}
 	return sd->descent;
 }
 
-float TextServerAdvanced::shaped_text_get_width(RID p_shaped) const {
-	_THREAD_SAFE_METHOD_
+real_t TextServerAdvanced::shaped_text_get_width(RID p_shaped) const {
 	const ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, 0.f);
+
+	MutexLock lock(sd->mutex);
 	if (!sd->valid) {
 		const_cast<TextServerAdvanced *>(this)->shaped_text_shape(p_shaped);
 	}
 	return (sd->text_trimmed ? sd->width_trimmed : sd->width);
 }
 
-float TextServerAdvanced::shaped_text_get_underline_position(RID p_shaped) const {
-	_THREAD_SAFE_METHOD_
+real_t TextServerAdvanced::shaped_text_get_underline_position(RID p_shaped) const {
 	const ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, 0.f);
+
+	MutexLock lock(sd->mutex);
 	if (!sd->valid) {
 		const_cast<TextServerAdvanced *>(this)->shaped_text_shape(p_shaped);
 	}
@@ -2732,10 +4620,11 @@ float TextServerAdvanced::shaped_text_get_underline_position(RID p_shaped) const
 	return sd->upos;
 }
 
-float TextServerAdvanced::shaped_text_get_underline_thickness(RID p_shaped) const {
-	_THREAD_SAFE_METHOD_
+real_t TextServerAdvanced::shaped_text_get_underline_thickness(RID p_shaped) const {
 	const ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, 0.f);
+
+	MutexLock lock(sd->mutex);
 	if (!sd->valid) {
 		const_cast<TextServerAdvanced *>(this)->shaped_text_shape(p_shaped);
 	}
@@ -2762,7 +4651,6 @@ static num_system_data num_systems[]{
 };
 
 String TextServerAdvanced::format_number(const String &p_string, const String &p_language) const {
-	_THREAD_SAFE_METHOD_
 	String lang = (p_language == "") ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 
 	String res = p_string;
@@ -2789,7 +4677,6 @@ String TextServerAdvanced::format_number(const String &p_string, const String &p
 }
 
 String TextServerAdvanced::parse_number(const String &p_string, const String &p_language) const {
-	_THREAD_SAFE_METHOD_
 	String lang = (p_language == "") ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 
 	String res = p_string;
@@ -2819,7 +4706,6 @@ String TextServerAdvanced::parse_number(const String &p_string, const String &p_
 }
 
 String TextServerAdvanced::percent_sign(const String &p_language) const {
-	_THREAD_SAFE_METHOD_
 	String lang = (p_language == "") ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 
 	for (int i = 0; num_systems[i].lang != String(); i++) {
@@ -2849,6 +4735,9 @@ TextServerAdvanced::TextServerAdvanced() {
 
 TextServerAdvanced::~TextServerAdvanced() {
 	hb_bmp_free_font_funcs();
+	if (library != nullptr) {
+		FT_Done_FreeType(library);
+	}
 	u_cleanup();
 #ifndef ICU_STATIC_DATA
 	if (icu_data != nullptr) {

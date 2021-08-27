@@ -211,8 +211,8 @@ void TextLine::set_bidi_override(const Vector<Vector2i> &p_override) {
 bool TextLine::add_string(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Dictionary &p_opentype_features, const String &p_language) {
 	ERR_FAIL_COND_V(p_fonts.is_null(), false);
 	bool res = TS->shaped_text_add_string(rid, p_text, p_fonts->get_rids(), p_size, p_opentype_features, p_language);
-	spacing_top = p_fonts->get_spacing(Font::SPACING_TOP);
-	spacing_bottom = p_fonts->get_spacing(Font::SPACING_BOTTOM);
+	spacing_top = p_fonts->get_spacing(TextServer::SPACING_TOP);
+	spacing_bottom = p_fonts->get_spacing(TextServer::SPACING_BOTTOM);
 	dirty = true;
 	return res;
 }
@@ -409,8 +409,8 @@ int TextLine::hit_test(float p_coords) const {
 
 TextLine::TextLine(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Dictionary &p_opentype_features, const String &p_language, TextServer::Direction p_direction, TextServer::Orientation p_orientation) {
 	rid = TS->create_shaped_text(p_direction, p_orientation);
-	spacing_top = p_fonts->get_spacing(Font::SPACING_TOP);
-	spacing_bottom = p_fonts->get_spacing(Font::SPACING_BOTTOM);
+	spacing_top = p_fonts->get_spacing(TextServer::SPACING_TOP);
+	spacing_bottom = p_fonts->get_spacing(TextServer::SPACING_BOTTOM);
 	TS->shaped_text_add_string(rid, p_text, p_fonts->get_rids(), p_size, p_opentype_features, p_language);
 }
 

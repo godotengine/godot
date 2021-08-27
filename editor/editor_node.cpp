@@ -97,10 +97,14 @@
 #include "editor/editor_translation_parser.h"
 #include "editor/export_template_manager.h"
 #include "editor/filesystem_dock.h"
+#include "editor/import/dynamicfont_import_settings.h"
 #include "editor/import/editor_import_collada.h"
 #include "editor/import/resource_importer_bitmask.h"
+#include "editor/import/resource_importer_bmfont.h"
 #include "editor/import/resource_importer_csv_translation.h"
+#include "editor/import/resource_importer_dynamicfont.h"
 #include "editor/import/resource_importer_image.h"
+#include "editor/import/resource_importer_imagefont.h"
 #include "editor/import/resource_importer_layered_texture.h"
 #include "editor/import/resource_importer_obj.h"
 #include "editor/import/resource_importer_scene.h"
@@ -5853,6 +5857,18 @@ EditorNode::EditorNode() {
 		import_texture_atlas.instantiate();
 		ResourceFormatImporter::get_singleton()->add_importer(import_texture_atlas);
 
+		Ref<ResourceImporterDynamicFont> import_font_data_dynamic;
+		import_font_data_dynamic.instantiate();
+		ResourceFormatImporter::get_singleton()->add_importer(import_font_data_dynamic);
+
+		Ref<ResourceImporterBMFont> import_font_data_bmfont;
+		import_font_data_bmfont.instantiate();
+		ResourceFormatImporter::get_singleton()->add_importer(import_font_data_bmfont);
+
+		Ref<ResourceImporterImageFont> import_font_data_image;
+		import_font_data_image.instantiate();
+		ResourceFormatImporter::get_singleton()->add_importer(import_font_data_image);
+
 		Ref<ResourceImporterCSVTranslation> import_csv_translation;
 		import_csv_translation.instantiate();
 		ResourceFormatImporter::get_singleton()->add_importer(import_csv_translation);
@@ -6257,6 +6273,9 @@ EditorNode::EditorNode() {
 
 	scene_import_settings = memnew(SceneImportSettings);
 	gui_base->add_child(scene_import_settings);
+
+	fontdata_import_settings = memnew(DynamicFontImportSettings);
+	gui_base->add_child(fontdata_import_settings);
 
 	export_template_manager = memnew(ExportTemplateManager);
 	gui_base->add_child(export_template_manager);

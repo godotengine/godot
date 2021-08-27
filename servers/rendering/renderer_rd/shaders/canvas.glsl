@@ -458,6 +458,14 @@ void light_blend_compute(uint light_base, vec4 light_color, inout vec3 color) {
 
 #endif
 
+float msdf_median(float r, float g, float b, float a) {
+	return min(max(min(r, g), min(max(r, g), b)), a);
+}
+
+vec2 msdf_map(vec2 value, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max) {
+	return out_min + (out_max - out_min) * (value - in_min) / (in_max - in_min);
+}
+
 void main() {
 	vec4 color = color_interp;
 	vec2 uv = uv_interp;
@@ -485,7 +493,34 @@ void main() {
 
 #endif
 
-	color *= texture(sampler2D(color_texture, texture_sampler), uv);
+#ifndef USE_PRIMITIVE
+	if (bool(draw_data.flags & FLAGS_USE_MSDF)) {
+		float px_range = draw_data.ninepatch_margins.x;
+		float outline_thickness = draw_data.ninepatch_margins.y;
+		//float reserved1 = draw_data.ninepatch_margins.z;
+		//float reserved2 = draw_data.ninepatch_margins.w;
+
+		vec4 msdf_sample = texture(sampler2D(color_texture, texture_sampler), uv);
+		vec2 msdf_size = vec2(textureSize(sampler2D(color_texture, texture_sampler), 0));
+		vec2 dest_size = vec2(1.0) / fwidth(uv);
+		float px_size = max(0.5 * dot((vec2(px_range) / msdf_size), dest_size), 1.0);
+		float d = msdf_median(msdf_sample.r, msdf_sample.g, msdf_sample.b, msdf_sample.a) - 0.5;
+
+		if (outline_thickness > 0) {
+			float cr = clamp(outline_thickness, 0.0, px_range / 2) / px_range;
+			float a = clamp((d + cr) * px_size, 0.0, 1.0);
+			color.a = a * color.a;
+		} else {
+			float a = clamp(d * px_size + 0.5, 0.0, 1.0);
+			color.a = a * color.a;
+		}
+
+	} else {
+#else
+	{
+#endif
+		color *= texture(sampler2D(color_texture, texture_sampler), uv);
+	}
 
 	uint light_count = (draw_data.flags >> FLAGS_LIGHT_COUNT_SHIFT) & 0xF; //max 16 lights
 	bool using_light = light_count > 0 || canvas_data.directional_light_count > 0;
