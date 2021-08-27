@@ -1290,7 +1290,6 @@ void CharacterBody2D::_snap_on_floor(bool was_on_floor, bool vel_dir_facing_up) 
 		if (result.get_angle(up_direction) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) {
 			on_floor = true;
 			floor_normal = result.collision_normal;
-			platform_velocity = result.collider_velocity;
 			_set_platform_data(result);
 
 			if (floor_stop_on_slope) {
@@ -1332,19 +1331,21 @@ void CharacterBody2D::_set_collision_direction(const PhysicsServer2D::MotionResu
 	if (motion_mode == MOTION_MODE_GROUNDED && p_result.get_angle(up_direction) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //floor
 		on_floor = true;
 		floor_normal = p_result.collision_normal;
-		platform_velocity = p_result.collider_velocity;
 		_set_platform_data(p_result);
 	} else if (motion_mode == MOTION_MODE_GROUNDED && p_result.get_angle(-up_direction) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //ceiling
 		on_ceiling = true;
 	} else {
 		on_wall = true;
-		platform_velocity = p_result.collider_velocity;
-		_set_platform_data(p_result);
+		// Don't apply wall velocity when the collider is a CharacterBody2D.
+		if (Object::cast_to<CharacterBody2D>(ObjectDB::get_instance(p_result.collider_id)) == nullptr) {
+			_set_platform_data(p_result);
+		}
 	}
 }
 
 void CharacterBody2D::_set_platform_data(const PhysicsServer2D::MotionResult &p_result) {
 	platform_rid = p_result.collider;
+	platform_velocity = p_result.collider_velocity;
 	platform_layer = 0;
 	CollisionObject2D *collision_object = Object::cast_to<CollisionObject2D>(ObjectDB::get_instance(p_result.collider_id));
 	if (collision_object) {
