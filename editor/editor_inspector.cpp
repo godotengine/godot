@@ -2656,13 +2656,15 @@ void EditorInspector::_update_script_class_properties(const Object &p_object, Li
 	}
 
 	// NodeC -> C props... -> NodeB..C..
-	r_list.erase(script_variables);
-	List<PropertyInfo>::Element *to_delete = bottom->next();
-	while (to_delete && !(to_delete->get().usage & PROPERTY_USAGE_CATEGORY)) {
-		r_list.erase(to_delete);
-		to_delete = bottom->next();
+	if (script_variables) {
+		r_list.erase(script_variables);
+		List<PropertyInfo>::Element *to_delete = bottom->next();
+		while (to_delete && !(to_delete->get().usage & PROPERTY_USAGE_CATEGORY)) {
+			r_list.erase(to_delete);
+			to_delete = bottom->next();
+		}
+		r_list.erase(bottom);
 	}
-	r_list.erase(bottom);
 }
 
 void EditorInspector::set_restrict_to_basic_settings(bool p_restrict) {
