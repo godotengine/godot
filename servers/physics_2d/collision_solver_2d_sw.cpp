@@ -73,6 +73,65 @@ bool CollisionSolver2DSW::solve_static_world_margin(const Shape2DSW *p_shape_A, 
 	return found;
 }
 
+bool CollisionSolver2DSW::solve_separation_ray(const Shape2DSW *p_shape_A, const Vector2 &p_motion_A, const Transform2D &p_transform_A, const Shape2DSW *p_shape_B, const Transform2D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result, Vector2 *r_sep_axis, real_t p_margin) {
+	const SeparationRayShape2DSW *ray = static_cast<const SeparationRayShape2DSW *>(p_shape_A);
+	if (p_shape_B->get_type() == PhysicsServer2D::SHAPE_SEPARATION_RAY) {
+		return false;
+	}
+
+	Vector2 from = p_transform_A.get_origin();
+	Vector2 to = from + p_transform_A[1] * (ray->get_length() + p_margin);
+	if (p_motion_A != Vector2()) {
+		//not the best but should be enough
+		Vector2 normal = (to - from).normalized();
+		to += normal * MAX(0.0, normal.dot(p_motion_A));
+	}
+	Vector2 support_A = to;
+
+	Transform2D invb = p_transform_B.affine_inverse();
+	from = invb.xform(from);
+	to = invb.xform(to);
+
+	Vector2 p, n;
+	if (!p_shape_B->intersect_segment(from, to, p, n)) {
+		if (r_sep_axis) {
+			*r_sep_axis = p_transform_A[1].normalized();
+		}
+		return false;
+	}
+
+	// Discard contacts when the ray is fully contained inside the shape.
+	if (n == Vector2()) {
+		if (r_sep_axis) {
+			*r_sep_axis = p_transform_A[1].normalized();
+		}
+		return false;
+	}
+
+	// Discard contacts in the wrong direction.
+	if (n.dot(from - to) < CMP_EPSILON) {
+		if (r_sep_axis) {
+			*r_sep_axis = p_transform_A[1].normalized();
+		}
+		return false;
+	}
+
+	Vector2 support_B = p_transform_B.xform(p);
+	if (ray->get_slide_on_slope()) {
+		Vector2 global_n = invb.basis_xform_inv(n).normalized();
+		support_B = support_A + (support_B - support_A).length() * global_n;
+	}
+
+	if (p_result_callback) {
+		if (p_swap_result) {
+			p_result_callback(support_B, support_A, p_userdata);
+		} else {
+			p_result_callback(support_A, support_B, p_userdata);
+		}
+	}
+	return true;
+}
+
 struct _ConcaveCollisionInfo2D {
 	const Transform2D *transform_A;
 	const Shape2DSW *shape_A;
@@ -106,7 +165,7 @@ void CollisionSolver2DSW::concave_callback(void *p_userdata, Shape2DSW *p_convex
 	cinfo.collisions++;
 }
 
-bool CollisionSolver2DSW::solve_concave(const Shape2DSW *p_shape_A, const Transform2D &p_transform_A, const Vector2 &p_motion_A, const Shape2DSW *p_shape_B, const Transform2D &p_transform_B, const Vector2 &p_motion_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result, Vector2 *sep_axis, real_t p_margin_A, real_t p_margin_B) {
+bool CollisionSolver2DSW::solve_concave(const Shape2DSW *p_shape_A, const Transform2D &p_transform_A, const Vector2 &p_motion_A, const Shape2DSW *p_shape_B, const Transform2D &p_transform_B, const Vector2 &p_motion_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result, Vector2 *r_sep_axis, real_t p_margin_A, real_t p_margin_B) {
 	const ConcaveShape2DSW *concave_B = static_cast<const ConcaveShape2DSW *>(p_shape_B);
 
 	_ConcaveCollisionInfo2D cinfo;
@@ -119,7 +178,7 @@ bool CollisionSolver2DSW::solve_concave(const Shape2DSW *p_shape_A, const Transf
 	cinfo.swap_result = p_swap_result;
 	cinfo.collided = false;
 	cinfo.collisions = 0;
-	cinfo.sep_axis = sep_axis;
+	cinfo.sep_axis = r_sep_axis;
 	cinfo.margin_A = p_margin_A;
 	cinfo.margin_B = p_margin_B;
 
@@ -150,7 +209,7 @@ bool CollisionSolver2DSW::solve_concave(const Shape2DSW *p_shape_A, const Transf
 	return cinfo.collided;
 }
 
-bool CollisionSolver2DSW::solve(const Shape2DSW *p_shape_A, const Transform2D &p_transform_A, const Vector2 &p_motion_A, const Shape2DSW *p_shape_B, const Transform2D &p_transform_B, const Vector2 &p_motion_B, CallbackResult p_result_callback, void *p_userdata, Vector2 *sep_axis, real_t p_margin_A, real_t p_margin_B) {
+bool CollisionSolver2DSW::solve(const Shape2DSW *p_shape_A, const Transform2D &p_transform_A, const Vector2 &p_motion_A, const Shape2DSW *p_shape_B, const Transform2D &p_transform_B, const Vector2 &p_motion_B, CallbackResult p_result_callback, void *p_userdata, Vector2 *r_sep_axis, real_t p_margin_A, real_t p_margin_B) {
 	PhysicsServer2D::ShapeType type_A = p_shape_A->get_type();
 	PhysicsServer2D::ShapeType type_B = p_shape_B->get_type();
 	bool concave_A = p_shape_A->is_concave();
@@ -177,18 +236,29 @@ bool CollisionSolver2DSW::solve(const Shape2DSW *p_shape_A, const Transform2D &p
 			return solve_static_world_margin(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false);
 		}
 
+	} else if (type_A == PhysicsServer2D::SHAPE_SEPARATION_RAY) {
+		if (type_B == PhysicsServer2D::SHAPE_SEPARATION_RAY) {
+			return false; //no ray-ray
+		}
+
+		if (swap) {
+			return solve_separation_ray(p_shape_B, p_motion_B, p_transform_B, p_shape_A, p_transform_A, p_result_callback, p_userdata, true, r_sep_axis, p_margin_B);
+		} else {
+			return solve_separation_ray(p_shape_A, p_motion_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false, r_sep_axis, p_margin_A);
+		}
+
 	} else if (concave_B) {
 		if (concave_A) {
 			return false;
 		}
 
 		if (!swap) {
-			return solve_concave(p_shape_A, p_transform_A, p_motion_A, p_shape_B, p_transform_B, p_motion_B, p_result_callback, p_userdata, false, sep_axis, margin_A, margin_B);
+			return solve_concave(p_shape_A, p_transform_A, p_motion_A, p_shape_B, p_transform_B, p_motion_B, p_result_callback, p_userdata, false, r_sep_axis, margin_A, margin_B);
 		} else {
-			return solve_concave(p_shape_B, p_transform_B, p_motion_B, p_shape_A, p_transform_A, p_motion_A, p_result_callback, p_userdata, true, sep_axis, margin_A, margin_B);
+			return solve_concave(p_shape_B, p_transform_B, p_motion_B, p_shape_A, p_transform_A, p_motion_A, p_result_callback, p_userdata, true, r_sep_axis, margin_A, margin_B);
 		}
 
 	} else {
-		return collision_solver(p_shape_A, p_transform_A, p_motion_A, p_shape_B, p_transform_B, p_motion_B, p_result_callback, p_userdata, false, sep_axis, margin_A, margin_B);
+		return collision_solver(p_shape_A, p_transform_A, p_motion_A, p_shape_B, p_transform_B, p_motion_B, p_result_callback, p_userdata, false, r_sep_axis, margin_A, margin_B);
 	}
 }

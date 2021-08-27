@@ -595,7 +595,8 @@
 			<argument index="2" name="motion" type="Vector2" />
 			<argument index="3" name="margin" type="float" default="0.08" />
 			<argument index="4" name="result" type="PhysicsTestMotionResult2D" default="null" />
-			<argument index="5" name="exclude" type="Array" default="[]" />
+			<argument index="5" name="collide_separation_ray" type="bool" default="false" />
+			<argument index="6" name="exclude" type="Array" default="[]" />
 			<description>
 				Returns [code]true[/code] if a collision would result from moving in the given direction from a given point in space. Margin increases the size of the shapes involved in the collision detection. [PhysicsTestMotionResult2D] can be passed to return additional information in.
 			</description>
@@ -726,6 +727,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="separation_ray_shape_create">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="set_active">
 			<return type="void" />
 			<argument index="0" name="active" type="bool" />
@@ -840,25 +846,28 @@
 		<constant name="SHAPE_WORLD_MARGIN" value="0" enum="ShapeType">
 			This is the constant for creating world margin shapes. A world margin shape is an [i]infinite[/i] line with an origin point, and a normal. Thus, it can be used for front/behind checks.
 		</constant>
-		<constant name="SHAPE_SEGMENT" value="1" enum="ShapeType">
+		<constant name="SHAPE_SEPARATION_RAY" value="1" enum="ShapeType">
+			This is the constant for creating separation ray shapes. A separation ray is defined by a length and separates itself from what is touching its far endpoint. Useful for character controllers.
+		</constant>
+		<constant name="SHAPE_SEGMENT" value="2" enum="ShapeType">
 			This is the constant for creating segment shapes. A segment shape is a [i]finite[/i] line from a point A to a point B. It can be checked for intersections.
 		</constant>
-		<constant name="SHAPE_CIRCLE" value="2" enum="ShapeType">
+		<constant name="SHAPE_CIRCLE" value="3" enum="ShapeType">
 			This is the constant for creating circle shapes. A circle shape only has a radius. It can be used for intersections and inside/outside checks.
 		</constant>
-		<constant name="SHAPE_RECTANGLE" value="3" enum="ShapeType">
+		<constant name="SHAPE_RECTANGLE" value="4" enum="ShapeType">
 			This is the constant for creating rectangle shapes. A rectangle shape is defined by a width and a height. It can be used for intersections and inside/outside checks.
 		</constant>
-		<constant name="SHAPE_CAPSULE" value="4" enum="ShapeType">
+		<constant name="SHAPE_CAPSULE" value="5" enum="ShapeType">
 			This is the constant for creating capsule shapes. A capsule shape is defined by a radius and a length. It can be used for intersections and inside/outside checks.
 		</constant>
-		<constant name="SHAPE_CONVEX_POLYGON" value="5" enum="ShapeType">
+		<constant name="SHAPE_CONVEX_POLYGON" value="6" enum="ShapeType">
 			This is the constant for creating convex polygon shapes. A polygon is defined by a list of points. It can be used for intersections and inside/outside checks. Unlike the [member CollisionPolygon2D.polygon] property, polygons modified with [method shape_set_data] do not verify that the points supplied form is a convex polygon.
 		</constant>
-		<constant name="SHAPE_CONCAVE_POLYGON" value="6" enum="ShapeType">
+		<constant name="SHAPE_CONCAVE_POLYGON" value="7" enum="ShapeType">
 			This is the constant for creating concave polygon shapes. A polygon is defined by a list of points. It can be used for intersections checks, but not for inside/outside checks.
 		</constant>
-		<constant name="SHAPE_CUSTOM" value="7" enum="ShapeType">
+		<constant name="SHAPE_CUSTOM" value="8" enum="ShapeType">
 			This constant is used internally by the engine. Any attempt to create this kind of shape results in an error.
 		</constant>
 		<constant name="AREA_PARAM_GRAVITY" value="0" enum="AreaParameter">

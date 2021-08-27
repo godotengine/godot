@@ -45,6 +45,9 @@ RID PhysicsServer2DSW::_shape_create(ShapeType p_shape) {
 		case SHAPE_WORLD_MARGIN: {
 			shape = memnew(WorldMarginShape2DSW);
 		} break;
+		case SHAPE_SEPARATION_RAY: {
+			shape = memnew(SeparationRayShape2DSW);
+		} break;
 		case SHAPE_SEGMENT: {
 			shape = memnew(SegmentShape2DSW);
 		} break;
@@ -77,6 +80,10 @@ RID PhysicsServer2DSW::_shape_create(ShapeType p_shape) {
 
 RID PhysicsServer2DSW::world_margin_shape_create() {
 	return _shape_create(SHAPE_WORLD_MARGIN);
+}
+
+RID PhysicsServer2DSW::separation_ray_shape_create() {
+	return _shape_create(SHAPE_SEPARATION_RAY);
 }
 
 RID PhysicsServer2DSW::segment_shape_create() {
@@ -939,7 +946,7 @@ void PhysicsServer2DSW::body_set_pickable(RID p_body, bool p_pickable) {
 	body->set_pickable(p_pickable);
 }
 
-bool PhysicsServer2DSW::body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, real_t p_margin, MotionResult *r_result, const Set<RID> &p_exclude) {
+bool PhysicsServer2DSW::body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, real_t p_margin, MotionResult *r_result, bool p_collide_separation_ray, const Set<RID> &p_exclude) {
 	Body2DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, false);
 	ERR_FAIL_COND_V(!body->get_space(), false);
@@ -947,7 +954,7 @@ bool PhysicsServer2DSW::body_test_motion(RID p_body, const Transform2D &p_from, 
 
 	_update_shapes();
 
-	return body->get_space()->test_body_motion(body, p_from, p_motion, p_margin, r_result, p_exclude);
+	return body->get_space()->test_body_motion(body, p_from, p_motion, p_margin, r_result, p_collide_separation_ray, p_exclude);
 }
 
 PhysicsDirectBodyState2D *PhysicsServer2DSW::body_get_direct_state(RID p_body) {

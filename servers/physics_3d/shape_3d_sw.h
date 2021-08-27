@@ -117,21 +117,49 @@ class PlaneShape3DSW : public Shape3DSW {
 public:
 	Plane get_plane() const;
 
-	virtual real_t get_area() const { return INFINITY; }
-	virtual PhysicsServer3D::ShapeType get_type() const { return PhysicsServer3D::SHAPE_PLANE; }
-	virtual void project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const;
-	virtual Vector3 get_support(const Vector3 &p_normal) const;
-	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const { r_amount = 0; }
+	virtual real_t get_area() const override { return INFINITY; }
+	virtual PhysicsServer3D::ShapeType get_type() const override { return PhysicsServer3D::SHAPE_PLANE; }
+	virtual void project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const override;
+	virtual Vector3 get_support(const Vector3 &p_normal) const override;
+	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const override { r_amount = 0; }
 
-	virtual bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const;
-	virtual bool intersect_point(const Vector3 &p_point) const;
-	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const;
-	virtual Vector3 get_moment_of_inertia(real_t p_mass) const;
+	virtual bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const override;
+	virtual bool intersect_point(const Vector3 &p_point) const override;
+	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const override;
+	virtual Vector3 get_moment_of_inertia(real_t p_mass) const override;
 
-	virtual void set_data(const Variant &p_data);
-	virtual Variant get_data() const;
+	virtual void set_data(const Variant &p_data) override;
+	virtual Variant get_data() const override;
 
 	PlaneShape3DSW();
+};
+
+class SeparationRayShape3DSW : public Shape3DSW {
+	real_t length;
+	bool slide_on_slope;
+
+	void _setup(real_t p_length, bool p_slide_on_slope);
+
+public:
+	real_t get_length() const;
+	bool get_slide_on_slope() const;
+
+	virtual real_t get_area() const override { return 0.0; }
+	virtual PhysicsServer3D::ShapeType get_type() const override { return PhysicsServer3D::SHAPE_SEPARATION_RAY; }
+	virtual void project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const override;
+	virtual Vector3 get_support(const Vector3 &p_normal) const override;
+	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const override;
+
+	virtual bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const override;
+	virtual bool intersect_point(const Vector3 &p_point) const override;
+	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const override;
+
+	virtual Vector3 get_moment_of_inertia(real_t p_mass) const override;
+
+	virtual void set_data(const Variant &p_data) override;
+	virtual Variant get_data() const override;
+
+	SeparationRayShape3DSW();
 };
 
 class SphereShape3DSW : public Shape3DSW {

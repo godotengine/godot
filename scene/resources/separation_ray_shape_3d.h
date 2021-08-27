@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  collision_solver_2d_sw.h                                             */
+/*  separation_ray_shape_3d.h                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,23 +28,29 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef COLLISION_SOLVER_2D_SW_H
-#define COLLISION_SOLVER_2D_SW_H
+#ifndef SEPARATION_RAY_SHAPE_H
+#define SEPARATION_RAY_SHAPE_H
+#include "scene/resources/shape_3d.h"
 
-#include "shape_2d_sw.h"
+class SeparationRayShape3D : public Shape3D {
+	GDCLASS(SeparationRayShape3D, Shape3D);
+	float length = 1.0;
+	bool slide_on_slope = false;
 
-class CollisionSolver2DSW {
-public:
-	typedef void (*CallbackResult)(const Vector2 &p_point_A, const Vector2 &p_point_B, void *p_userdata);
-
-private:
-	static bool solve_static_world_margin(const Shape2DSW *p_shape_A, const Transform2D &p_transform_A, const Shape2DSW *p_shape_B, const Transform2D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result);
-	static void concave_callback(void *p_userdata, Shape2DSW *p_convex);
-	static bool solve_concave(const Shape2DSW *p_shape_A, const Transform2D &p_transform_A, const Vector2 &p_motion_A, const Shape2DSW *p_shape_B, const Transform2D &p_transform_B, const Vector2 &p_motion_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result, Vector2 *r_sep_axis = nullptr, real_t p_margin_A = 0, real_t p_margin_B = 0);
-	static bool solve_separation_ray(const Shape2DSW *p_shape_A, const Vector2 &p_motion_A, const Transform2D &p_transform_A, const Shape2DSW *p_shape_B, const Transform2D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result, Vector2 *r_sep_axis = nullptr, real_t p_margin = 0);
+protected:
+	static void _bind_methods();
+	virtual void _update_shape() override;
 
 public:
-	static bool solve(const Shape2DSW *p_shape_A, const Transform2D &p_transform_A, const Vector2 &p_motion_A, const Shape2DSW *p_shape_B, const Transform2D &p_transform_B, const Vector2 &p_motion_B, CallbackResult p_result_callback, void *p_userdata, Vector2 *r_sep_axis = nullptr, real_t p_margin_A = 0, real_t p_margin_B = 0);
+	void set_length(float p_length);
+	float get_length() const;
+
+	void set_slide_on_slope(bool p_active);
+	bool get_slide_on_slope() const;
+
+	virtual Vector<Vector3> get_debug_mesh_lines() const override;
+	virtual real_t get_enclosing_radius() const override;
+
+	SeparationRayShape3D();
 };
-
-#endif // COLLISION_SOLVER_2D_SW_H
+#endif // SEPARATION_RAY_SHAPE_H
