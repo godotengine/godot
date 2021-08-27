@@ -2365,6 +2365,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 	}
 	assignment->assignee = p_previous_operand;
 	assignment->assigned_value = parse_expression(false);
+	if (assignment->assigned_value == nullptr) {
+		push_error(R"(Expected an expression after "=".)");
+	}
 
 #ifdef DEBUG_ENABLED
 	if (has_operator && source_variable != nullptr && source_variable->assignments == 0) {
