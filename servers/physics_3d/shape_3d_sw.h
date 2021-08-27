@@ -101,10 +101,12 @@ public:
 class ConcaveShape3DSW : public Shape3DSW {
 public:
 	virtual bool is_concave() const override { return true; }
-	typedef void (*Callback)(void *p_userdata, Shape3DSW *p_convex);
 	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const override { r_amount = 0; }
 
-	virtual void cull(const AABB &p_local_aabb, Callback p_callback, void *p_userdata) const = 0;
+	// Returns true to stop the query.
+	typedef bool (*QueryCallback)(void *p_userdata, Shape3DSW *p_convex);
+
+	virtual void cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata) const = 0;
 
 	ConcaveShape3DSW() {}
 };
@@ -323,7 +325,7 @@ struct ConcavePolygonShape3DSW : public ConcaveShape3DSW {
 
 	struct _CullParams {
 		AABB aabb;
-		Callback callback = nullptr;
+		QueryCallback callback = nullptr;
 		void *userdata = nullptr;
 		const Face *faces = nullptr;
 		const Vector3 *vertices = nullptr;
@@ -349,7 +351,7 @@ struct ConcavePolygonShape3DSW : public ConcaveShape3DSW {
 	bool backface_collision = false;
 
 	void _cull_segment(int p_idx, _SegmentCullParams *p_params) const;
-	void _cull(int p_idx, _CullParams *p_params) const;
+	bool _cull(int p_idx, _CullParams *p_params) const;
 
 	void _fill_bvh(_VolumeSW_BVH *p_bvh_tree, BVH *p_bvh_array, int &p_idx);
 
@@ -367,7 +369,7 @@ public:
 	virtual bool intersect_point(const Vector3 &p_point) const override;
 	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const override;
 
-	virtual void cull(const AABB &p_local_aabb, Callback p_callback, void *p_userdata) const override;
+	virtual void cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata) const override;
 
 	virtual Vector3 get_moment_of_inertia(real_t p_mass) const override;
 
@@ -410,7 +412,7 @@ public:
 	virtual bool intersect_point(const Vector3 &p_point) const override;
 
 	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const override;
-	virtual void cull(const AABB &p_local_aabb, Callback p_callback, void *p_userdata) const override;
+	virtual void cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata) const override;
 
 	virtual Vector3 get_moment_of_inertia(real_t p_mass) const override;
 
