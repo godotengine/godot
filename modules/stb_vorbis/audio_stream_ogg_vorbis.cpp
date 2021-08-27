@@ -32,12 +32,14 @@
 
 #include "core/io/file_access.h"
 
-void AudioStreamPlaybackOGGVorbis::_mix_internal(AudioFrame *p_buffer, int p_frames) {
-	ERR_FAIL_COND(!active);
+int AudioStreamPlaybackOGGVorbis::_mix_internal(AudioFrame *p_buffer, int p_frames) {
+	ERR_FAIL_COND_V(!active, 0);
 
 	int todo = p_frames;
 
 	int start_buffer = 0;
+
+	int frames_mixed_this_step = p_frames;
 
 	while (todo && active) {
 		float *buffer = (float *)p_buffer;
@@ -64,6 +66,7 @@ void AudioStreamPlaybackOGGVorbis::_mix_internal(AudioFrame *p_buffer, int p_fra
 				// we still have buffer to fill, start from this element in the next iteration.
 				start_buffer = p_frames - todo;
 			} else {
+				frames_mixed_this_step = p_frames - todo;
 				for (int i = p_frames - todo; i < p_frames; i++) {
 					p_buffer[i] = AudioFrame(0, 0);
 				}
@@ -72,6 +75,7 @@ void AudioStreamPlaybackOGGVorbis::_mix_internal(AudioFrame *p_buffer, int p_fra
 			}
 		}
 	}
+	return frames_mixed_this_step;
 }
 
 float AudioStreamPlaybackOGGVorbis::get_stream_sampling_rate() {

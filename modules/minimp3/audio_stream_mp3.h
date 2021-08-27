@@ -51,7 +51,7 @@ class AudioStreamPlaybackMP3 : public AudioStreamPlaybackResampled {
 	Ref<AudioStreamMP3> mp3_stream;
 
 protected:
-	virtual void _mix_internal(AudioFrame *p_buffer, int p_frames) override;
+	virtual int _mix_internal(AudioFrame *p_buffer, int p_frames) override;
 	virtual float get_stream_sampling_rate() override;
 
 public:

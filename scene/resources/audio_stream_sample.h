@@ -73,7 +73,7 @@ public:
 	virtual float get_playback_position() const override;
 	virtual void seek(float p_time) override;
 
-	virtual void mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
+	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
 
 	AudioStreamPlaybackSample();
 };
