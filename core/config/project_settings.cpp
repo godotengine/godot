@@ -1006,7 +1006,7 @@ bool ProjectSettings::has_custom_feature(const String &p_feature) const {
 	return custom_features.has(p_feature);
 }
 
-Map<StringName, ProjectSettings::AutoloadInfo> ProjectSettings::get_autoload_list() const {
+OrderedHashMap<StringName, ProjectSettings::AutoloadInfo> ProjectSettings::get_autoload_list() const {
 	return autoloads;
 }
 

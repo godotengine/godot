@@ -471,9 +471,9 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	}
 
 	/* Autoloads. */
-	Map<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
-	for (Map<StringName, ProjectSettings::AutoloadInfo>::Element *E = autoloads.front(); E; E = E->next()) {
-		const ProjectSettings::AutoloadInfo &info = E->value();
+	OrderedHashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
+	for (OrderedHashMap<StringName, ProjectSettings::AutoloadInfo>::Element E = autoloads.front(); E; E = E.next()) {
+		const ProjectSettings::AutoloadInfo &info = E.value();
 		if (info.is_singleton) {
 			keywords[info.name] = usertype_color;
 		}
