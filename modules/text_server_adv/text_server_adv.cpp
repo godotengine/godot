@@ -440,266 +440,260 @@ bool TextServerAdvanced::is_locale_right_to_left(const String &p_locale) {
 	}
 }
 
-struct FeatureInfo {
-	int32_t tag;
-	String name;
-};
+static Map<StringName, int32_t> feature_sets;
 
-static FeatureInfo feature_set[] = {
+static void _insert_feature_sets() {
 	// Registered OpenType feature tags.
-	{ HB_TAG('a', 'a', 'l', 't'), "access_all_alternates" },
-	{ HB_TAG('a', 'b', 'v', 'f'), "above_base_forms" },
-	{ HB_TAG('a', 'b', 'v', 'm'), "above_base_mark_positioning" },
-	{ HB_TAG('a', 'b', 'v', 's'), "above_base_substitutions" },
-	{ HB_TAG('a', 'f', 'r', 'c'), "alternative_fractions" },
-	{ HB_TAG('a', 'k', 'h', 'n'), "akhands" },
-	{ HB_TAG('b', 'l', 'w', 'f'), "below_base_forms" },
-	{ HB_TAG('b', 'l', 'w', 'm'), "below_base_mark_positioning" },
-	{ HB_TAG('b', 'l', 'w', 's'), "below_base_substitutions" },
-	{ HB_TAG('c', 'a', 'l', 't'), "contextual_alternates" },
-	{ HB_TAG('c', 'a', 's', 'e'), "case_sensitive_forms" },
-	{ HB_TAG('c', 'c', 'm', 'p'), "glyph_composition" },
-	{ HB_TAG('c', 'f', 'a', 'r'), "conjunct_form_after_ro" },
-	{ HB_TAG('c', 'j', 'c', 't'), "conjunct_forms" },
-	{ HB_TAG('c', 'l', 'i', 'g'), "contextual_ligatures" },
-	{ HB_TAG('c', 'p', 'c', 't'), "centered_cjk_punctuation" },
-	{ HB_TAG('c', 'p', 's', 'p'), "capital_spacing" },
-	{ HB_TAG('c', 's', 'w', 'h'), "contextual_swash" },
-	{ HB_TAG('c', 'u', 'r', 's'), "cursive_positioning" },
-	{ HB_TAG('c', 'v', '0', '1'), "character_variant_01" },
-	{ HB_TAG('c', 'v', '0', '2'), "character_variant_02" },
-	{ HB_TAG('c', 'v', '0', '3'), "character_variant_03" },
-	{ HB_TAG('c', 'v', '0', '4'), "character_variant_04" },
-	{ HB_TAG('c', 'v', '0', '5'), "character_variant_05" },
-	{ HB_TAG('c', 'v', '0', '6'), "character_variant_06" },
-	{ HB_TAG('c', 'v', '0', '7'), "character_variant_07" },
-	{ HB_TAG('c', 'v', '0', '8'), "character_variant_08" },
-	{ HB_TAG('c', 'v', '0', '9'), "character_variant_09" },
-	{ HB_TAG('c', 'v', '1', '0'), "character_variant_10" },
-	{ HB_TAG('c', 'v', '1', '1'), "character_variant_11" },
-	{ HB_TAG('c', 'v', '1', '2'), "character_variant_12" },
-	{ HB_TAG('c', 'v', '1', '3'), "character_variant_13" },
-	{ HB_TAG('c', 'v', '1', '4'), "character_variant_14" },
-	{ HB_TAG('c', 'v', '1', '5'), "character_variant_15" },
-	{ HB_TAG('c', 'v', '1', '6'), "character_variant_16" },
-	{ HB_TAG('c', 'v', '1', '7'), "character_variant_17" },
-	{ HB_TAG('c', 'v', '1', '8'), "character_variant_18" },
-	{ HB_TAG('c', 'v', '1', '9'), "character_variant_19" },
-	{ HB_TAG('c', 'v', '2', '0'), "character_variant_20" },
-	{ HB_TAG('c', 'v', '2', '1'), "character_variant_21" },
-	{ HB_TAG('c', 'v', '2', '2'), "character_variant_22" },
-	{ HB_TAG('c', 'v', '2', '3'), "character_variant_23" },
-	{ HB_TAG('c', 'v', '2', '4'), "character_variant_24" },
-	{ HB_TAG('c', 'v', '2', '5'), "character_variant_25" },
-	{ HB_TAG('c', 'v', '2', '6'), "character_variant_26" },
-	{ HB_TAG('c', 'v', '2', '7'), "character_variant_27" },
-	{ HB_TAG('c', 'v', '2', '8'), "character_variant_28" },
-	{ HB_TAG('c', 'v', '2', '9'), "character_variant_29" },
-	{ HB_TAG('c', 'v', '3', '0'), "character_variant_30" },
-	{ HB_TAG('c', 'v', '3', '1'), "character_variant_31" },
-	{ HB_TAG('c', 'v', '3', '2'), "character_variant_32" },
-	{ HB_TAG('c', 'v', '3', '3'), "character_variant_33" },
-	{ HB_TAG('c', 'v', '3', '4'), "character_variant_34" },
-	{ HB_TAG('c', 'v', '3', '5'), "character_variant_35" },
-	{ HB_TAG('c', 'v', '3', '6'), "character_variant_36" },
-	{ HB_TAG('c', 'v', '3', '7'), "character_variant_37" },
-	{ HB_TAG('c', 'v', '3', '8'), "character_variant_38" },
-	{ HB_TAG('c', 'v', '3', '9'), "character_variant_39" },
-	{ HB_TAG('c', 'v', '4', '0'), "character_variant_40" },
-	{ HB_TAG('c', 'v', '4', '1'), "character_variant_41" },
-	{ HB_TAG('c', 'v', '4', '2'), "character_variant_42" },
-	{ HB_TAG('c', 'v', '4', '3'), "character_variant_43" },
-	{ HB_TAG('c', 'v', '4', '4'), "character_variant_44" },
-	{ HB_TAG('c', 'v', '4', '5'), "character_variant_45" },
-	{ HB_TAG('c', 'v', '4', '6'), "character_variant_46" },
-	{ HB_TAG('c', 'v', '4', '7'), "character_variant_47" },
-	{ HB_TAG('c', 'v', '4', '8'), "character_variant_48" },
-	{ HB_TAG('c', 'v', '4', '9'), "character_variant_49" },
-	{ HB_TAG('c', 'v', '5', '0'), "character_variant_50" },
-	{ HB_TAG('c', 'v', '5', '1'), "character_variant_51" },
-	{ HB_TAG('c', 'v', '5', '2'), "character_variant_52" },
-	{ HB_TAG('c', 'v', '5', '3'), "character_variant_53" },
-	{ HB_TAG('c', 'v', '5', '4'), "character_variant_54" },
-	{ HB_TAG('c', 'v', '5', '5'), "character_variant_55" },
-	{ HB_TAG('c', 'v', '5', '6'), "character_variant_56" },
-	{ HB_TAG('c', 'v', '5', '7'), "character_variant_57" },
-	{ HB_TAG('c', 'v', '5', '8'), "character_variant_58" },
-	{ HB_TAG('c', 'v', '5', '9'), "character_variant_59" },
-	{ HB_TAG('c', 'v', '6', '0'), "character_variant_60" },
-	{ HB_TAG('c', 'v', '6', '1'), "character_variant_61" },
-	{ HB_TAG('c', 'v', '6', '2'), "character_variant_62" },
-	{ HB_TAG('c', 'v', '6', '3'), "character_variant_63" },
-	{ HB_TAG('c', 'v', '6', '4'), "character_variant_64" },
-	{ HB_TAG('c', 'v', '6', '5'), "character_variant_65" },
-	{ HB_TAG('c', 'v', '6', '6'), "character_variant_66" },
-	{ HB_TAG('c', 'v', '6', '7'), "character_variant_67" },
-	{ HB_TAG('c', 'v', '6', '8'), "character_variant_68" },
-	{ HB_TAG('c', 'v', '6', '9'), "character_variant_69" },
-	{ HB_TAG('c', 'v', '7', '0'), "character_variant_70" },
-	{ HB_TAG('c', 'v', '7', '1'), "character_variant_71" },
-	{ HB_TAG('c', 'v', '7', '2'), "character_variant_72" },
-	{ HB_TAG('c', 'v', '7', '3'), "character_variant_73" },
-	{ HB_TAG('c', 'v', '7', '4'), "character_variant_74" },
-	{ HB_TAG('c', 'v', '7', '5'), "character_variant_75" },
-	{ HB_TAG('c', 'v', '7', '6'), "character_variant_76" },
-	{ HB_TAG('c', 'v', '7', '7'), "character_variant_77" },
-	{ HB_TAG('c', 'v', '7', '8'), "character_variant_78" },
-	{ HB_TAG('c', 'v', '7', '9'), "character_variant_79" },
-	{ HB_TAG('c', 'v', '8', '0'), "character_variant_80" },
-	{ HB_TAG('c', 'v', '8', '1'), "character_variant_81" },
-	{ HB_TAG('c', 'v', '8', '2'), "character_variant_82" },
-	{ HB_TAG('c', 'v', '8', '3'), "character_variant_83" },
-	{ HB_TAG('c', 'v', '8', '4'), "character_variant_84" },
-	{ HB_TAG('c', 'v', '8', '5'), "character_variant_85" },
-	{ HB_TAG('c', 'v', '8', '6'), "character_variant_86" },
-	{ HB_TAG('c', 'v', '8', '7'), "character_variant_87" },
-	{ HB_TAG('c', 'v', '8', '8'), "character_variant_88" },
-	{ HB_TAG('c', 'v', '8', '9'), "character_variant_89" },
-	{ HB_TAG('c', 'v', '9', '0'), "character_variant_90" },
-	{ HB_TAG('c', 'v', '9', '1'), "character_variant_91" },
-	{ HB_TAG('c', 'v', '9', '2'), "character_variant_92" },
-	{ HB_TAG('c', 'v', '9', '3'), "character_variant_93" },
-	{ HB_TAG('c', 'v', '9', '4'), "character_variant_94" },
-	{ HB_TAG('c', 'v', '9', '5'), "character_variant_95" },
-	{ HB_TAG('c', 'v', '9', '6'), "character_variant_96" },
-	{ HB_TAG('c', 'v', '9', '7'), "character_variant_97" },
-	{ HB_TAG('c', 'v', '9', '8'), "character_variant_98" },
-	{ HB_TAG('c', 'v', '9', '9'), "character_variant_99" },
-	{ HB_TAG('c', '2', 'p', 'c'), "petite_capitals_from_capitals" },
-	{ HB_TAG('c', '2', 's', 'c'), "small_capitals_from_capitals" },
-	{ HB_TAG('d', 'i', 's', 't'), "distances" },
-	{ HB_TAG('d', 'l', 'i', 'g'), "discretionary_ligatures" },
-	{ HB_TAG('d', 'n', 'o', 'm'), "denominators" },
-	{ HB_TAG('d', 't', 'l', 's'), "dotless_forms" },
-	{ HB_TAG('e', 'x', 'p', 't'), "expert_forms" },
-	{ HB_TAG('f', 'a', 'l', 't'), "final_glyph_on_line_alternates" },
-	{ HB_TAG('f', 'i', 'n', '2'), "terminal_forms_2" },
-	{ HB_TAG('f', 'i', 'n', '3'), "terminal_forms_3" },
-	{ HB_TAG('f', 'i', 'n', 'a'), "terminal_forms" },
-	{ HB_TAG('f', 'l', 'a', 'c'), "flattened_accent_forms" },
-	{ HB_TAG('f', 'r', 'a', 'c'), "fractions" },
-	{ HB_TAG('f', 'w', 'i', 'd'), "full_widths" },
-	{ HB_TAG('h', 'a', 'l', 'f'), "half_forms" },
-	{ HB_TAG('h', 'a', 'l', 'n'), "halant_forms" },
-	{ HB_TAG('h', 'a', 'l', 't'), "alternate_half_widths" },
-	{ HB_TAG('h', 'i', 's', 't'), "historical_forms" },
-	{ HB_TAG('h', 'k', 'n', 'a'), "horizontal_kana_alternates" },
-	{ HB_TAG('h', 'l', 'i', 'g'), "historical_ligatures" },
-	{ HB_TAG('h', 'n', 'g', 'l'), "hangul" },
-	{ HB_TAG('h', 'o', 'j', 'o'), "hojo_kanji_forms" },
-	{ HB_TAG('h', 'w', 'i', 'd'), "half_widths" },
-	{ HB_TAG('i', 'n', 'i', 't'), "initial_forms" },
-	{ HB_TAG('i', 's', 'o', 'l'), "isolated_forms" },
-	{ HB_TAG('i', 't', 'a', 'l'), "italics" },
-	{ HB_TAG('j', 'a', 'l', 't'), "justification_alternates" },
-	{ HB_TAG('j', 'p', '7', '8'), "jis78_forms" },
-	{ HB_TAG('j', 'p', '8', '3'), "jis83_forms" },
-	{ HB_TAG('j', 'p', '9', '0'), "jis90_forms" },
-	{ HB_TAG('j', 'p', '0', '4'), "jis2004_forms" },
-	{ HB_TAG('k', 'e', 'r', 'n'), "kerning" },
-	{ HB_TAG('l', 'f', 'b', 'd'), "left_bounds" },
-	{ HB_TAG('l', 'i', 'g', 'a'), "standard_ligatures" },
-	{ HB_TAG('l', 'j', 'm', 'o'), "leading_jamo_forms" },
-	{ HB_TAG('l', 'n', 'u', 'm'), "lining_figures" },
-	{ HB_TAG('l', 'o', 'c', 'l'), "localized_forms" },
-	{ HB_TAG('l', 't', 'r', 'a'), "left_to_right_alternates" },
-	{ HB_TAG('l', 't', 'r', 'm'), "left_to_right_mirrored_forms" },
-	{ HB_TAG('m', 'a', 'r', 'k'), "mark_positioning" },
-	{ HB_TAG('m', 'e', 'd', '2'), "medial_forms_2" },
-	{ HB_TAG('m', 'e', 'd', 'i'), "medial_forms" },
-	{ HB_TAG('m', 'g', 'r', 'k'), "mathematical_greek" },
-	{ HB_TAG('m', 'k', 'm', 'k'), "mark_to_mark_positioning" },
-	{ HB_TAG('m', 's', 'e', 't'), "mark_positioning_via_substitution" },
-	{ HB_TAG('n', 'a', 'l', 't'), "alternate_annotation_forms" },
-	{ HB_TAG('n', 'l', 'c', 'k'), "nlc_kanji_forms" },
-	{ HB_TAG('n', 'u', 'k', 't'), "nukta_forms" },
-	{ HB_TAG('n', 'u', 'm', 'r'), "numerators" },
-	{ HB_TAG('o', 'n', 'u', 'm'), "oldstyle_figures" },
-	{ HB_TAG('o', 'p', 'b', 'd'), "optical_bounds" },
-	{ HB_TAG('o', 'r', 'd', 'n'), "ordinals" },
-	{ HB_TAG('o', 'r', 'n', 'm'), "ornaments" },
-	{ HB_TAG('p', 'a', 'l', 't'), "proportional_alternate_widths" },
-	{ HB_TAG('p', 'c', 'a', 'p'), "petite_capitals" },
-	{ HB_TAG('p', 'k', 'n', 'a'), "proportional_kana" },
-	{ HB_TAG('p', 'n', 'u', 'm'), "proportional_figures" },
-	{ HB_TAG('p', 'r', 'e', 'f'), "pre_base_forms" },
-	{ HB_TAG('p', 'r', 'e', 's'), "pre_base_substitutions" },
-	{ HB_TAG('p', 's', 't', 'f'), "post_base_forms" },
-	{ HB_TAG('p', 's', 't', 's'), "post_base_substitutions" },
-	{ HB_TAG('p', 'w', 'i', 'd'), "proportional_widths" },
-	{ HB_TAG('q', 'w', 'i', 'd'), "quarter_widths" },
-	{ HB_TAG('r', 'a', 'n', 'd'), "randomize" },
-	{ HB_TAG('r', 'c', 'l', 't'), "required_contextual_alternates" },
-	{ HB_TAG('r', 'k', 'r', 'f'), "rakar_forms" },
-	{ HB_TAG('r', 'l', 'i', 'g'), "required_ligatures" },
-	{ HB_TAG('r', 'p', 'h', 'f'), "reph_forms" },
-	{ HB_TAG('r', 't', 'b', 'd'), "right_bounds" },
-	{ HB_TAG('r', 't', 'l', 'a'), "right_to_left_alternates" },
-	{ HB_TAG('r', 't', 'l', 'm'), "right_to_left_mirrored_forms" },
-	{ HB_TAG('r', 'u', 'b', 'y'), "ruby_notation_forms" },
-	{ HB_TAG('r', 'v', 'r', 'n'), "required_variation_alternates" },
-	{ HB_TAG('s', 'a', 'l', 't'), "stylistic_alternates" },
-	{ HB_TAG('s', 'i', 'n', 'f'), "scientific_inferiors" },
-	{ HB_TAG('s', 'i', 'z', 'e'), "optical_size" },
-	{ HB_TAG('s', 'm', 'c', 'p'), "small_capitals" },
-	{ HB_TAG('s', 'm', 'p', 'l'), "simplified_forms" },
-	{ HB_TAG('s', 's', '0', '1'), "stylistic_set_01" },
-	{ HB_TAG('s', 's', '0', '2'), "stylistic_set_02" },
-	{ HB_TAG('s', 's', '0', '3'), "stylistic_set_03" },
-	{ HB_TAG('s', 's', '0', '4'), "stylistic_set_04" },
-	{ HB_TAG('s', 's', '0', '5'), "stylistic_set_05" },
-	{ HB_TAG('s', 's', '0', '6'), "stylistic_set_06" },
-	{ HB_TAG('s', 's', '0', '7'), "stylistic_set_07" },
-	{ HB_TAG('s', 's', '0', '8'), "stylistic_set_08" },
-	{ HB_TAG('s', 's', '0', '9'), "stylistic_set_09" },
-	{ HB_TAG('s', 's', '1', '0'), "stylistic_set_10" },
-	{ HB_TAG('s', 's', '1', '1'), "stylistic_set_11" },
-	{ HB_TAG('s', 's', '1', '2'), "stylistic_set_12" },
-	{ HB_TAG('s', 's', '1', '3'), "stylistic_set_13" },
-	{ HB_TAG('s', 's', '1', '4'), "stylistic_set_14" },
-	{ HB_TAG('s', 's', '1', '5'), "stylistic_set_15" },
-	{ HB_TAG('s', 's', '1', '6'), "stylistic_set_16" },
-	{ HB_TAG('s', 's', '1', '7'), "stylistic_set_17" },
-	{ HB_TAG('s', 's', '1', '8'), "stylistic_set_18" },
-	{ HB_TAG('s', 's', '1', '9'), "stylistic_set_19" },
-	{ HB_TAG('s', 's', '2', '0'), "stylistic_set_20" },
-	{ HB_TAG('s', 's', 't', 'y'), "math_script_style_alternates" },
-	{ HB_TAG('s', 't', 'c', 'h'), "stretching_glyph_decomposition" },
-	{ HB_TAG('s', 'u', 'b', 's'), "subscript" },
-	{ HB_TAG('s', 'u', 'p', 's'), "superscript" },
-	{ HB_TAG('s', 'w', 's', 'h'), "swash" },
-	{ HB_TAG('t', 'i', 't', 'l'), "titling" },
-	{ HB_TAG('t', 'j', 'm', 'o'), "trailing_jamo_forms" },
-	{ HB_TAG('t', 'n', 'a', 'm'), "traditional_name_forms" },
-	{ HB_TAG('t', 'n', 'u', 'm'), "tabular_figures" },
-	{ HB_TAG('t', 'r', 'a', 'd'), "traditional_forms" },
-	{ HB_TAG('t', 'w', 'i', 'd'), "third_widths" },
-	{ HB_TAG('u', 'n', 'i', 'c'), "unicase" },
-	{ HB_TAG('v', 'a', 'l', 't'), "alternate_vertical_metrics" },
-	{ HB_TAG('v', 'a', 't', 'u'), "vattu_variants" },
-	{ HB_TAG('v', 'e', 'r', 't'), "vertical_writing" },
-	{ HB_TAG('v', 'h', 'a', 'l'), "alternate_vertical_half_metrics" },
-	{ HB_TAG('v', 'j', 'm', 'o'), "vowel_jamo_forms" },
-	{ HB_TAG('v', 'k', 'n', 'a'), "vertical_kana_alternates" },
-	{ HB_TAG('v', 'k', 'r', 'n'), "vertical_kerning" },
-	{ HB_TAG('v', 'p', 'a', 'l'), "proportional_alternate_vertical_metrics" },
-	{ HB_TAG('v', 'r', 't', '2'), "vertical_alternates_and_rotation" },
-	{ HB_TAG('v', 'r', 't', 'r'), "vertical_alternates_for_rotation" },
-	{ HB_TAG('z', 'e', 'r', 'o'), "slashed_zero" },
-	// Registered OpenType variation tags.
-	{ HB_TAG('i', 't', 'a', 'l'), "italic" },
-	{ HB_TAG('o', 'p', 's', 'z'), "optical_size" },
-	{ HB_TAG('s', 'l', 'n', 't'), "slant" },
-	{ HB_TAG('w', 'd', 't', 'h'), "width" },
-	{ HB_TAG('w', 'g', 'h', 't'), "weight" },
-	{ 0, String() },
-};
+	feature_sets.insert("access_all_alternates", HB_TAG('a', 'a', 'l', 't'));
+	feature_sets.insert("above_base_forms", HB_TAG('a', 'b', 'v', 'f'));
+	feature_sets.insert("above_base_mark_positioning", HB_TAG('a', 'b', 'v', 'm'));
+	feature_sets.insert("above_base_substitutions", HB_TAG('a', 'b', 'v', 's'));
+	feature_sets.insert("alternative_fractions", HB_TAG('a', 'f', 'r', 'c'));
+	feature_sets.insert("akhands", HB_TAG('a', 'k', 'h', 'n'));
+	feature_sets.insert("below_base_forms", HB_TAG('b', 'l', 'w', 'f'));
+	feature_sets.insert("below_base_mark_positioning", HB_TAG('b', 'l', 'w', 'm'));
+	feature_sets.insert("below_base_substitutions", HB_TAG('b', 'l', 'w', 's'));
+	feature_sets.insert("contextual_alternates", HB_TAG('c', 'a', 'l', 't'));
+	feature_sets.insert("case_sensitive_forms", HB_TAG('c', 'a', 's', 'e'));
+	feature_sets.insert("glyph_composition", HB_TAG('c', 'c', 'm', 'p'));
+	feature_sets.insert("conjunct_form_after_ro", HB_TAG('c', 'f', 'a', 'r'));
+	feature_sets.insert("conjunct_forms", HB_TAG('c', 'j', 'c', 't'));
+	feature_sets.insert("contextual_ligatures", HB_TAG('c', 'l', 'i', 'g'));
+	feature_sets.insert("centered_cjk_punctuation", HB_TAG('c', 'p', 'c', 't'));
+	feature_sets.insert("capital_spacing", HB_TAG('c', 'p', 's', 'p'));
+	feature_sets.insert("contextual_swash", HB_TAG('c', 's', 'w', 'h'));
+	feature_sets.insert("cursive_positioning", HB_TAG('c', 'u', 'r', 's'));
+	feature_sets.insert("character_variant_01", HB_TAG('c', 'v', '0', '1'));
+	feature_sets.insert("character_variant_02", HB_TAG('c', 'v', '0', '2'));
+	feature_sets.insert("character_variant_03", HB_TAG('c', 'v', '0', '3'));
+	feature_sets.insert("character_variant_04", HB_TAG('c', 'v', '0', '4'));
+	feature_sets.insert("character_variant_05", HB_TAG('c', 'v', '0', '5'));
+	feature_sets.insert("character_variant_06", HB_TAG('c', 'v', '0', '6'));
+	feature_sets.insert("character_variant_07", HB_TAG('c', 'v', '0', '7'));
+	feature_sets.insert("character_variant_08", HB_TAG('c', 'v', '0', '8'));
+	feature_sets.insert("character_variant_09", HB_TAG('c', 'v', '0', '9'));
+	feature_sets.insert("character_variant_10", HB_TAG('c', 'v', '1', '0'));
+	feature_sets.insert("character_variant_11", HB_TAG('c', 'v', '1', '1'));
+	feature_sets.insert("character_variant_12", HB_TAG('c', 'v', '1', '2'));
+	feature_sets.insert("character_variant_13", HB_TAG('c', 'v', '1', '3'));
+	feature_sets.insert("character_variant_14", HB_TAG('c', 'v', '1', '4'));
+	feature_sets.insert("character_variant_15", HB_TAG('c', 'v', '1', '5'));
+	feature_sets.insert("character_variant_16", HB_TAG('c', 'v', '1', '6'));
+	feature_sets.insert("character_variant_17", HB_TAG('c', 'v', '1', '7'));
+	feature_sets.insert("character_variant_18", HB_TAG('c', 'v', '1', '8'));
+	feature_sets.insert("character_variant_19", HB_TAG('c', 'v', '1', '9'));
+	feature_sets.insert("character_variant_20", HB_TAG('c', 'v', '2', '0'));
+	feature_sets.insert("character_variant_21", HB_TAG('c', 'v', '2', '1'));
+	feature_sets.insert("character_variant_22", HB_TAG('c', 'v', '2', '2'));
+	feature_sets.insert("character_variant_23", HB_TAG('c', 'v', '2', '3'));
+	feature_sets.insert("character_variant_24", HB_TAG('c', 'v', '2', '4'));
+	feature_sets.insert("character_variant_25", HB_TAG('c', 'v', '2', '5'));
+	feature_sets.insert("character_variant_26", HB_TAG('c', 'v', '2', '6'));
+	feature_sets.insert("character_variant_27", HB_TAG('c', 'v', '2', '7'));
+	feature_sets.insert("character_variant_28", HB_TAG('c', 'v', '2', '8'));
+	feature_sets.insert("character_variant_29", HB_TAG('c', 'v', '2', '9'));
+	feature_sets.insert("character_variant_30", HB_TAG('c', 'v', '3', '0'));
+	feature_sets.insert("character_variant_31", HB_TAG('c', 'v', '3', '1'));
+	feature_sets.insert("character_variant_32", HB_TAG('c', 'v', '3', '2'));
+	feature_sets.insert("character_variant_33", HB_TAG('c', 'v', '3', '3'));
+	feature_sets.insert("character_variant_34", HB_TAG('c', 'v', '3', '4'));
+	feature_sets.insert("character_variant_35", HB_TAG('c', 'v', '3', '5'));
+	feature_sets.insert("character_variant_36", HB_TAG('c', 'v', '3', '6'));
+	feature_sets.insert("character_variant_37", HB_TAG('c', 'v', '3', '7'));
+	feature_sets.insert("character_variant_38", HB_TAG('c', 'v', '3', '8'));
+	feature_sets.insert("character_variant_39", HB_TAG('c', 'v', '3', '9'));
+	feature_sets.insert("character_variant_40", HB_TAG('c', 'v', '4', '0'));
+	feature_sets.insert("character_variant_41", HB_TAG('c', 'v', '4', '1'));
+	feature_sets.insert("character_variant_42", HB_TAG('c', 'v', '4', '2'));
+	feature_sets.insert("character_variant_43", HB_TAG('c', 'v', '4', '3'));
+	feature_sets.insert("character_variant_44", HB_TAG('c', 'v', '4', '4'));
+	feature_sets.insert("character_variant_45", HB_TAG('c', 'v', '4', '5'));
+	feature_sets.insert("character_variant_46", HB_TAG('c', 'v', '4', '6'));
+	feature_sets.insert("character_variant_47", HB_TAG('c', 'v', '4', '7'));
+	feature_sets.insert("character_variant_48", HB_TAG('c', 'v', '4', '8'));
+	feature_sets.insert("character_variant_49", HB_TAG('c', 'v', '4', '9'));
+	feature_sets.insert("character_variant_50", HB_TAG('c', 'v', '5', '0'));
+	feature_sets.insert("character_variant_51", HB_TAG('c', 'v', '5', '1'));
+	feature_sets.insert("character_variant_52", HB_TAG('c', 'v', '5', '2'));
+	feature_sets.insert("character_variant_53", HB_TAG('c', 'v', '5', '3'));
+	feature_sets.insert("character_variant_54", HB_TAG('c', 'v', '5', '4'));
+	feature_sets.insert("character_variant_55", HB_TAG('c', 'v', '5', '5'));
+	feature_sets.insert("character_variant_56", HB_TAG('c', 'v', '5', '6'));
+	feature_sets.insert("character_variant_57", HB_TAG('c', 'v', '5', '7'));
+	feature_sets.insert("character_variant_58", HB_TAG('c', 'v', '5', '8'));
+	feature_sets.insert("character_variant_59", HB_TAG('c', 'v', '5', '9'));
+	feature_sets.insert("character_variant_60", HB_TAG('c', 'v', '6', '0'));
+	feature_sets.insert("character_variant_61", HB_TAG('c', 'v', '6', '1'));
+	feature_sets.insert("character_variant_62", HB_TAG('c', 'v', '6', '2'));
+	feature_sets.insert("character_variant_63", HB_TAG('c', 'v', '6', '3'));
+	feature_sets.insert("character_variant_64", HB_TAG('c', 'v', '6', '4'));
+	feature_sets.insert("character_variant_65", HB_TAG('c', 'v', '6', '5'));
+	feature_sets.insert("character_variant_66", HB_TAG('c', 'v', '6', '6'));
+	feature_sets.insert("character_variant_67", HB_TAG('c', 'v', '6', '7'));
+	feature_sets.insert("character_variant_68", HB_TAG('c', 'v', '6', '8'));
+	feature_sets.insert("character_variant_69", HB_TAG('c', 'v', '6', '9'));
+	feature_sets.insert("character_variant_70", HB_TAG('c', 'v', '7', '0'));
+	feature_sets.insert("character_variant_71", HB_TAG('c', 'v', '7', '1'));
+	feature_sets.insert("character_variant_72", HB_TAG('c', 'v', '7', '2'));
+	feature_sets.insert("character_variant_73", HB_TAG('c', 'v', '7', '3'));
+	feature_sets.insert("character_variant_74", HB_TAG('c', 'v', '7', '4'));
+	feature_sets.insert("character_variant_75", HB_TAG('c', 'v', '7', '5'));
+	feature_sets.insert("character_variant_76", HB_TAG('c', 'v', '7', '6'));
+	feature_sets.insert("character_variant_77", HB_TAG('c', 'v', '7', '7'));
+	feature_sets.insert("character_variant_78", HB_TAG('c', 'v', '7', '8'));
+	feature_sets.insert("character_variant_79", HB_TAG('c', 'v', '7', '9'));
+	feature_sets.insert("character_variant_80", HB_TAG('c', 'v', '8', '0'));
+	feature_sets.insert("character_variant_81", HB_TAG('c', 'v', '8', '1'));
+	feature_sets.insert("character_variant_82", HB_TAG('c', 'v', '8', '2'));
+	feature_sets.insert("character_variant_83", HB_TAG('c', 'v', '8', '3'));
+	feature_sets.insert("character_variant_84", HB_TAG('c', 'v', '8', '4'));
+	feature_sets.insert("character_variant_85", HB_TAG('c', 'v', '8', '5'));
+	feature_sets.insert("character_variant_86", HB_TAG('c', 'v', '8', '6'));
+	feature_sets.insert("character_variant_87", HB_TAG('c', 'v', '8', '7'));
+	feature_sets.insert("character_variant_88", HB_TAG('c', 'v', '8', '8'));
+	feature_sets.insert("character_variant_89", HB_TAG('c', 'v', '8', '9'));
+	feature_sets.insert("character_variant_90", HB_TAG('c', 'v', '9', '0'));
+	feature_sets.insert("character_variant_91", HB_TAG('c', 'v', '9', '1'));
+	feature_sets.insert("character_variant_92", HB_TAG('c', 'v', '9', '2'));
+	feature_sets.insert("character_variant_93", HB_TAG('c', 'v', '9', '3'));
+	feature_sets.insert("character_variant_94", HB_TAG('c', 'v', '9', '4'));
+	feature_sets.insert("character_variant_95", HB_TAG('c', 'v', '9', '5'));
+	feature_sets.insert("character_variant_96", HB_TAG('c', 'v', '9', '6'));
+	feature_sets.insert("character_variant_97", HB_TAG('c', 'v', '9', '7'));
+	feature_sets.insert("character_variant_98", HB_TAG('c', 'v', '9', '8'));
+	feature_sets.insert("character_variant_99", HB_TAG('c', 'v', '9', '9'));
+	feature_sets.insert("petite_capitals_from_capitals", HB_TAG('c', '2', 'p', 'c'));
+	feature_sets.insert("small_capitals_from_capitals", HB_TAG('c', '2', 's', 'c'));
+	feature_sets.insert("distances", HB_TAG('d', 'i', 's', 't'));
+	feature_sets.insert("discretionary_ligatures", HB_TAG('d', 'l', 'i', 'g'));
+	feature_sets.insert("denominators", HB_TAG('d', 'n', 'o', 'm'));
+	feature_sets.insert("dotless_forms", HB_TAG('d', 't', 'l', 's'));
+	feature_sets.insert("expert_forms", HB_TAG('e', 'x', 'p', 't'));
+	feature_sets.insert("final_glyph_on_line_alternates", HB_TAG('f', 'a', 'l', 't'));
+	feature_sets.insert("terminal_forms_2", HB_TAG('f', 'i', 'n', '2'));
+	feature_sets.insert("terminal_forms_3", HB_TAG('f', 'i', 'n', '3'));
+	feature_sets.insert("terminal_forms", HB_TAG('f', 'i', 'n', 'a'));
+	feature_sets.insert("flattened_accent_forms", HB_TAG('f', 'l', 'a', 'c'));
+	feature_sets.insert("fractions", HB_TAG('f', 'r', 'a', 'c'));
+	feature_sets.insert("full_widths", HB_TAG('f', 'w', 'i', 'd'));
+	feature_sets.insert("half_forms", HB_TAG('h', 'a', 'l', 'f'));
+	feature_sets.insert("halant_forms", HB_TAG('h', 'a', 'l', 'n'));
+	feature_sets.insert("alternate_half_widths", HB_TAG('h', 'a', 'l', 't'));
+	feature_sets.insert("historical_forms", HB_TAG('h', 'i', 's', 't'));
+	feature_sets.insert("horizontal_kana_alternates", HB_TAG('h', 'k', 'n', 'a'));
+	feature_sets.insert("historical_ligatures", HB_TAG('h', 'l', 'i', 'g'));
+	feature_sets.insert("hangul", HB_TAG('h', 'n', 'g', 'l'));
+	feature_sets.insert("hojo_kanji_forms", HB_TAG('h', 'o', 'j', 'o'));
+	feature_sets.insert("half_widths", HB_TAG('h', 'w', 'i', 'd'));
+	feature_sets.insert("initial_forms", HB_TAG('i', 'n', 'i', 't'));
+	feature_sets.insert("isolated_forms", HB_TAG('i', 's', 'o', 'l'));
+	feature_sets.insert("italics", HB_TAG('i', 't', 'a', 'l'));
+	feature_sets.insert("justification_alternates", HB_TAG('j', 'a', 'l', 't'));
+	feature_sets.insert("jis78_forms", HB_TAG('j', 'p', '7', '8'));
+	feature_sets.insert("jis83_forms", HB_TAG('j', 'p', '8', '3'));
+	feature_sets.insert("jis90_forms", HB_TAG('j', 'p', '9', '0'));
+	feature_sets.insert("jis2004_forms", HB_TAG('j', 'p', '0', '4'));
+	feature_sets.insert("kerning", HB_TAG('k', 'e', 'r', 'n'));
+	feature_sets.insert("left_bounds", HB_TAG('l', 'f', 'b', 'd'));
+	feature_sets.insert("standard_ligatures", HB_TAG('l', 'i', 'g', 'a'));
+	feature_sets.insert("leading_jamo_forms", HB_TAG('l', 'j', 'm', 'o'));
+	feature_sets.insert("lining_figures", HB_TAG('l', 'n', 'u', 'm'));
+	feature_sets.insert("localized_forms", HB_TAG('l', 'o', 'c', 'l'));
+	feature_sets.insert("left_to_right_alternates", HB_TAG('l', 't', 'r', 'a'));
+	feature_sets.insert("left_to_right_mirrored_forms", HB_TAG('l', 't', 'r', 'm'));
+	feature_sets.insert("mark_positioning", HB_TAG('m', 'a', 'r', 'k'));
+	feature_sets.insert("medial_forms_2", HB_TAG('m', 'e', 'd', '2'));
+	feature_sets.insert("medial_forms", HB_TAG('m', 'e', 'd', 'i'));
+	feature_sets.insert("mathematical_greek", HB_TAG('m', 'g', 'r', 'k'));
+	feature_sets.insert("mark_to_mark_positioning", HB_TAG('m', 'k', 'm', 'k'));
+	feature_sets.insert("mark_positioning_via_substitution", HB_TAG('m', 's', 'e', 't'));
+	feature_sets.insert("alternate_annotation_forms", HB_TAG('n', 'a', 'l', 't'));
+	feature_sets.insert("nlc_kanji_forms", HB_TAG('n', 'l', 'c', 'k'));
+	feature_sets.insert("nukta_forms", HB_TAG('n', 'u', 'k', 't'));
+	feature_sets.insert("numerators", HB_TAG('n', 'u', 'm', 'r'));
+	feature_sets.insert("oldstyle_figures", HB_TAG('o', 'n', 'u', 'm'));
+	feature_sets.insert("optical_bounds", HB_TAG('o', 'p', 'b', 'd'));
+	feature_sets.insert("ordinals", HB_TAG('o', 'r', 'd', 'n'));
+	feature_sets.insert("ornaments", HB_TAG('o', 'r', 'n', 'm'));
+	feature_sets.insert("proportional_alternate_widths", HB_TAG('p', 'a', 'l', 't'));
+	feature_sets.insert("petite_capitals", HB_TAG('p', 'c', 'a', 'p'));
+	feature_sets.insert("proportional_kana", HB_TAG('p', 'k', 'n', 'a'));
+	feature_sets.insert("proportional_figures", HB_TAG('p', 'n', 'u', 'm'));
+	feature_sets.insert("pre_base_forms", HB_TAG('p', 'r', 'e', 'f'));
+	feature_sets.insert("pre_base_substitutions", HB_TAG('p', 'r', 'e', 's'));
+	feature_sets.insert("post_base_forms", HB_TAG('p', 's', 't', 'f'));
+	feature_sets.insert("post_base_substitutions", HB_TAG('p', 's', 't', 's'));
+	feature_sets.insert("proportional_widths", HB_TAG('p', 'w', 'i', 'd'));
+	feature_sets.insert("quarter_widths", HB_TAG('q', 'w', 'i', 'd'));
+	feature_sets.insert("randomize", HB_TAG('r', 'a', 'n', 'd'));
+	feature_sets.insert("required_contextual_alternates", HB_TAG('r', 'c', 'l', 't'));
+	feature_sets.insert("rakar_forms", HB_TAG('r', 'k', 'r', 'f'));
+	feature_sets.insert("required_ligatures", HB_TAG('r', 'l', 'i', 'g'));
+	feature_sets.insert("reph_forms", HB_TAG('r', 'p', 'h', 'f'));
+	feature_sets.insert("right_bounds", HB_TAG('r', 't', 'b', 'd'));
+	feature_sets.insert("right_to_left_alternates", HB_TAG('r', 't', 'l', 'a'));
+	feature_sets.insert("right_to_left_mirrored_forms", HB_TAG('r', 't', 'l', 'm'));
+	feature_sets.insert("ruby_notation_forms", HB_TAG('r', 'u', 'b', 'y'));
+	feature_sets.insert("required_variation_alternates", HB_TAG('r', 'v', 'r', 'n'));
+	feature_sets.insert("stylistic_alternates", HB_TAG('s', 'a', 'l', 't'));
+	feature_sets.insert("scientific_inferiors", HB_TAG('s', 'i', 'n', 'f'));
+	feature_sets.insert("optical_size", HB_TAG('s', 'i', 'z', 'e'));
+	feature_sets.insert("small_capitals", HB_TAG('s', 'm', 'c', 'p'));
+	feature_sets.insert("simplified_forms", HB_TAG('s', 'm', 'p', 'l'));
+	feature_sets.insert("stylistic_set_01", HB_TAG('s', 's', '0', '1'));
+	feature_sets.insert("stylistic_set_02", HB_TAG('s', 's', '0', '2'));
+	feature_sets.insert("stylistic_set_03", HB_TAG('s', 's', '0', '3'));
+	feature_sets.insert("stylistic_set_04", HB_TAG('s', 's', '0', '4'));
+	feature_sets.insert("stylistic_set_05", HB_TAG('s', 's', '0', '5'));
+	feature_sets.insert("stylistic_set_06", HB_TAG('s', 's', '0', '6'));
+	feature_sets.insert("stylistic_set_07", HB_TAG('s', 's', '0', '7'));
+	feature_sets.insert("stylistic_set_08", HB_TAG('s', 's', '0', '8'));
+	feature_sets.insert("stylistic_set_09", HB_TAG('s', 's', '0', '9'));
+	feature_sets.insert("stylistic_set_10", HB_TAG('s', 's', '1', '0'));
+	feature_sets.insert("stylistic_set_11", HB_TAG('s', 's', '1', '1'));
+	feature_sets.insert("stylistic_set_12", HB_TAG('s', 's', '1', '2'));
+	feature_sets.insert("stylistic_set_13", HB_TAG('s', 's', '1', '3'));
+	feature_sets.insert("stylistic_set_14", HB_TAG('s', 's', '1', '4'));
+	feature_sets.insert("stylistic_set_15", HB_TAG('s', 's', '1', '5'));
+	feature_sets.insert("stylistic_set_16", HB_TAG('s', 's', '1', '6'));
+	feature_sets.insert("stylistic_set_17", HB_TAG('s', 's', '1', '7'));
+	feature_sets.insert("stylistic_set_18", HB_TAG('s', 's', '1', '8'));
+	feature_sets.insert("stylistic_set_19", HB_TAG('s', 's', '1', '9'));
+	feature_sets.insert("stylistic_set_20", HB_TAG('s', 's', '2', '0'));
+	feature_sets.insert("math_script_style_alternates", HB_TAG('s', 's', 't', 'y'));
+	feature_sets.insert("stretching_glyph_decomposition", HB_TAG('s', 't', 'c', 'h'));
+	feature_sets.insert("subscript", HB_TAG('s', 'u', 'b', 's'));
+	feature_sets.insert("superscript", HB_TAG('s', 'u', 'p', 's'));
+	feature_sets.insert("swash", HB_TAG('s', 'w', 's', 'h'));
+	feature_sets.insert("titling", HB_TAG('t', 'i', 't', 'l'));
+	feature_sets.insert("trailing_jamo_forms", HB_TAG('t', 'j', 'm', 'o'));
+	feature_sets.insert("traditional_name_forms", HB_TAG('t', 'n', 'a', 'm'));
+	feature_sets.insert("tabular_figures", HB_TAG('t', 'n', 'u', 'm'));
+	feature_sets.insert("traditional_forms", HB_TAG('t', 'r', 'a', 'd'));
+	feature_sets.insert("third_widths", HB_TAG('t', 'w', 'i', 'd'));
+	feature_sets.insert("unicase", HB_TAG('u', 'n', 'i', 'c'));
+	feature_sets.insert("alternate_vertical_metrics", HB_TAG('v', 'a', 'l', 't'));
+	feature_sets.insert("vattu_variants", HB_TAG('v', 'a', 't', 'u'));
+	feature_sets.insert("vertical_writing", HB_TAG('v', 'e', 'r', 't'));
+	feature_sets.insert("alternate_vertical_half_metrics", HB_TAG('v', 'h', 'a', 'l'));
+	feature_sets.insert("vowel_jamo_forms", HB_TAG('v', 'j', 'm', 'o'));
+	feature_sets.insert("vertical_kana_alternates", HB_TAG('v', 'k', 'n', 'a'));
+	feature_sets.insert("vertical_kerning", HB_TAG('v', 'k', 'r', 'n'));
+	feature_sets.insert("proportional_alternate_vertical_metrics", HB_TAG('v', 'p', 'a', 'l'));
+	feature_sets.insert("vertical_alternates_and_rotation", HB_TAG('v', 'r', 't', '2'));
+	feature_sets.insert("vertical_alternates_for_rotation", HB_TAG('v', 'r', 't', 'r'));
+	feature_sets.insert("slashed_zero", HB_TAG('z', 'e', 'r', 'o'));
+	// Registered OpenType variation tag.
+	feature_sets.insert("italic", HB_TAG('i', 't', 'a', 'l'));
+	feature_sets.insert("optical_size", HB_TAG('o', 'p', 's', 'z'));
+	feature_sets.insert("slant", HB_TAG('s', 'l', 'n', 't'));
+	feature_sets.insert("width", HB_TAG('w', 'd', 't', 'h'));
+	feature_sets.insert("weight", HB_TAG('w', 'g', 'h', 't'));
+}
 
 int32_t TextServerAdvanced::name_to_tag(const String &p_name) const {
-	for (int i = 0; feature_set[i].tag != 0; i++) {
-		if (feature_set[i].name == p_name) {
-			return feature_set[i].tag;
-		}
+	if (feature_sets.has(p_name)) {
+		return feature_sets[p_name];
 	}
 
 	// No readable name, use tag string.
@@ -707,9 +701,9 @@ int32_t TextServerAdvanced::name_to_tag(const String &p_name) const {
 }
 
 String TextServerAdvanced::tag_to_name(int32_t p_tag) const {
-	for (int i = 0; feature_set[i].tag != 0; i++) {
-		if (feature_set[i].tag == p_tag) {
-			return feature_set[i].name;
+	for (const KeyValue<StringName, int32_t> &E : feature_sets) {
+		if (E.value == p_tag) {
+			return E.key;
 		}
 	}
 
@@ -4633,30 +4627,76 @@ real_t TextServerAdvanced::shaped_text_get_underline_thickness(RID p_shaped) con
 }
 
 struct num_system_data {
-	String lang;
+	Set<String> lang;
 	String digits;
 	String percent_sign;
 	String exp;
 };
 
 static num_system_data num_systems[]{
-	{ "ar,ar_AR,ar_BH,ar_DJ,ar_EG,ar_ER,ar_IL,ar_IQ,ar_JO,ar_KM,ar_KW,ar_LB,ar_MR,ar_OM,ar_PS,ar_QA,ar_SA,ar_SD,ar_SO,ar_SS,ar_SY,ar_TD,ar_YE", U"٠١٢٣٤٥٦٧٨٩٫", U"٪", U"اس" },
-	{ "fa,ks,pa_Arab,ps,ug,ur_IN,ur,uz_Arab", U"۰۱۲۳۴۵۶۷۸۹٫", U"٪", U"اس" },
-	{ "as,bn,mni", U"০১২৩৪৫৬৭৮৯.", U"%", U"e" },
-	{ "mr,ne", U"०१२३४५६७८९.", U"%", U"e" },
-	{ "dz", U"༠༡༢༣༤༥༦༧༨༩.", U"%", U"e" },
-	{ "sat", U"᱐᱑᱒᱓᱔᱕᱖᱗᱘᱙.", U"%", U"e" },
-	{ "my", U"၀၁၂၃၄၅၆၇၈၉.", U"%", U"e" },
-	{ String(), String(), String(), String() },
+	{ Set<String>(), U"٠١٢٣٤٥٦٧٨٩٫", U"٪", U"اس" },
+	{ Set<String>(), U"۰۱۲۳۴۵۶۷۸۹٫", U"٪", U"اس" },
+	{ Set<String>(), U"০১২৩৪৫৬৭৮৯.", U"%", U"e" },
+	{ Set<String>(), U"०१२३४५६७८९.", U"%", U"e" },
+	{ Set<String>(), U"༠༡༢༣༤༥༦༧༨༩.", U"%", U"e" },
+	{ Set<String>(), U"᱐᱑᱒᱓᱔᱕᱖᱗᱘᱙.", U"%", U"e" },
+	{ Set<String>(), U"၀၁၂၃၄၅၆၇၈၉.", U"%", U"e" },
+	{ Set<String>(), String(), String(), String() },
 };
 
+static void _insert_num_systems_lang() {
+	num_systems[0].lang.insert(StringName("ar"));
+	num_systems[0].lang.insert(StringName("ar_AR"));
+	num_systems[0].lang.insert(StringName("ar_BH"));
+	num_systems[0].lang.insert(StringName("ar_DJ"));
+	num_systems[0].lang.insert(StringName("ar_EG"));
+	num_systems[0].lang.insert(StringName("ar_ER"));
+	num_systems[0].lang.insert(StringName("ar_IL"));
+	num_systems[0].lang.insert(StringName("ar_IQ"));
+	num_systems[0].lang.insert(StringName("ar_JO"));
+	num_systems[0].lang.insert(StringName("ar_KM"));
+	num_systems[0].lang.insert(StringName("ar_KW"));
+	num_systems[0].lang.insert(StringName("ar_LB"));
+	num_systems[0].lang.insert(StringName("ar_MR"));
+	num_systems[0].lang.insert(StringName("ar_OM"));
+	num_systems[0].lang.insert(StringName("ar_PS"));
+	num_systems[0].lang.insert(StringName("ar_QA"));
+	num_systems[0].lang.insert(StringName("ar_SA"));
+	num_systems[0].lang.insert(StringName("ar_SD"));
+	num_systems[0].lang.insert(StringName("ar_SO"));
+	num_systems[0].lang.insert(StringName("ar_SS"));
+	num_systems[0].lang.insert(StringName("ar_SY"));
+	num_systems[0].lang.insert(StringName("ar_TD"));
+	num_systems[0].lang.insert(StringName("ar_YE"));
+
+	num_systems[1].lang.insert(StringName("fa"));
+	num_systems[1].lang.insert(StringName("ks"));
+	num_systems[1].lang.insert(StringName("pa_Arab"));
+	num_systems[1].lang.insert(StringName("ug"));
+	num_systems[1].lang.insert(StringName("ur_IN"));
+	num_systems[1].lang.insert(StringName("ur"));
+	num_systems[1].lang.insert(StringName("uz_Arab"));
+
+	num_systems[2].lang.insert(StringName("as"));
+	num_systems[2].lang.insert(StringName("bn"));
+	num_systems[2].lang.insert(StringName("mni"));
+
+	num_systems[3].lang.insert(StringName("mr"));
+	num_systems[3].lang.insert(StringName("ne"));
+
+	num_systems[4].lang.insert(StringName("dz"));
+
+	num_systems[5].lang.insert(StringName("sat"));
+
+	num_systems[6].lang.insert(StringName("my"));
+}
+
 String TextServerAdvanced::format_number(const String &p_string, const String &p_language) const {
-	String lang = (p_language == "") ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
+	const StringName lang = (p_language == "") ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 
 	String res = p_string;
-	for (int i = 0; num_systems[i].lang != String(); i++) {
-		Vector<String> langs = num_systems[i].lang.split(",");
-		if (langs.has(lang)) {
+	for (int i = 0; num_systems[i].lang.size() != 0; i++) {
+		if (num_systems[i].lang.has(lang)) {
 			if (num_systems[i].digits == String()) {
 				return p_string;
 			}
@@ -4677,12 +4717,11 @@ String TextServerAdvanced::format_number(const String &p_string, const String &p
 }
 
 String TextServerAdvanced::parse_number(const String &p_string, const String &p_language) const {
-	String lang = (p_language == "") ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
+	const StringName lang = (p_language == "") ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 
 	String res = p_string;
-	for (int i = 0; num_systems[i].lang != String(); i++) {
-		Vector<String> langs = num_systems[i].lang.split(",");
-		if (langs.has(lang)) {
+	for (int i = 0; num_systems[i].lang.size() != 0; i++) {
+		if (num_systems[i].lang.has(lang)) {
 			if (num_systems[i].digits == String()) {
 				return p_string;
 			}
@@ -4706,11 +4745,10 @@ String TextServerAdvanced::parse_number(const String &p_string, const String &p_
 }
 
 String TextServerAdvanced::percent_sign(const String &p_language) const {
-	String lang = (p_language == "") ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
+	const StringName lang = (p_language == "") ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 
-	for (int i = 0; num_systems[i].lang != String(); i++) {
-		Vector<String> langs = num_systems[i].lang.split(",");
-		if (langs.has(lang)) {
+	for (int i = 0; num_systems[i].lang.size() != 0; i++) {
+		if (num_systems[i].lang.has(lang)) {
 			if (num_systems[i].percent_sign == String()) {
 				return "%";
 			}
@@ -4730,6 +4768,8 @@ void TextServerAdvanced::register_server() {
 }
 
 TextServerAdvanced::TextServerAdvanced() {
+	_insert_num_systems_lang();
+	_insert_feature_sets();
 	hb_bmp_create_font_funcs();
 }
 
