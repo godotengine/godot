@@ -4,6 +4,259 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.3.3] - 2021-08-19
+
+See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-3-3) for details.
+
+### Added
+
+#### Input
+
+- [Add `action_get_deadzone()` method to InputMap](https://github.com/godotengine/godot/pull/50065).
+
+#### Porting
+
+- [Android: Add partial support for Android scoped storage](https://github.com/godotengine/godot/pull/50359).
+
+### Changed
+
+#### Nodes
+
+- [GraphEdit: Allow higher and lower maximum zoom values](https://github.com/godotengine/godot/pull/49437).
+
+#### Porting
+
+- [Android: Target API level 30, raise min API level to 19](https://github.com/godotengine/godot/pull/50359).
+- [HTML5: Raise default initial memory to 32 MiB](https://github.com/godotengine/godot/pull/50422).
+
+### Fixed
+
+#### Audio
+
+- [Fix cubic resampling algorithm](https://github.com/godotengine/godot/pull/51082).
+
+#### Core
+
+- [Save binary `ProjectSettings` key length properly](https://github.com/godotengine/godot/pull/49649).
+
+#### C#
+
+- [Fix C# bindings generator for default value types](https://github.com/godotengine/godot/pull/49702).
+- [Ignore paths with invalid chars in `PathWhich`](https://github.com/godotengine/godot/pull/50918).
+
+#### Editor
+
+- [Fix slow load/save of scenes with many instances of the same script](https://github.com/godotengine/godot/pull/49570).
+- [Fix logic for showing tilemap debug collision](https://github.com/godotengine/godot/pull/49075).
+- [Fix handling of HiDPI scaling for the curve editor's handles](https://github.com/godotengine/godot/pull/50627).
+
+#### GDScript
+
+- [LSP: Translate file path to URI on LSP symbol requests](https://github.com/godotengine/godot/pull/49687).
+- [LSP: Implement `didClose` notification](https://github.com/godotengine/godot/pull/50277).
+- LSP: Fix [`SymbolKind` reporting wrong types](https://github.com/godotengine/godot/pull/50914) and [`get_node()` parsing](https://github.com/godotengine/godot/pull/51283).
+
+#### Import
+
+- [glTF: Fix mesh nodes which are also bones](https://github.com/godotengine/godot/pull/49119).
+- [Fix loading RLE compressed TGA files](https://github.com/godotengine/godot/pull/49603).
+
+#### Input
+
+- [Fix game controllers ignoring the last listed button](https://github.com/godotengine/godot/pull/48934).
+
+#### Networking
+
+- [Fix parsing some IPv6 URLs for WebSocket](https://github.com/godotengine/godot/pull/48205).
+- [WebsocketPeer outbound buffer fixes and buffer size query](https://github.com/godotengine/godot/pull/51037).
+- [Fix IP address resolution incorrectly locking the main thread](https://github.com/godotengine/godot/pull/51212).
+
+#### Nodes
+
+- [GridMap: Fix erasing octants in the wrong order](https://github.com/godotengine/godot/pull/50052).
+- [PathFollow: Fix forward calculation for the position at the end of the curve](https://github.com/godotengine/godot/pull/50986).
+- [RichTextLabel: Fix auto-wrapping on CJK texts](https://github.com/godotengine/godot/pull/49280).
+- [SkeletonIK: Fixed issue where bones become detached if multiple SkeletonIK nodes are used](https://github.com/godotengine/godot/pull/49031).
+
+#### Physics
+
+- [Avoid NaNs when calculating inertias for bodies without mass/area](https://github.com/godotengine/godot/pull/49185).
+- [Ignore disabled shapes for mass property calculations](https://github.com/godotengine/godot/pull/49699).
+
+#### Porting
+
+- [Android: Add GDNative libraries to Android custom Gradle builds](https://github.com/godotengine/godot/pull/49912).
+- [Android: Disable resource optimizations for legacy release builds](https://github.com/godotengine/godot/pull/50664).
+- [Android: Resolve issue where the Godot app remains stuck when resuming](https://github.com/godotengine/godot/pull/51584).
+- [iOS: Fix plugin configuration loading](https://github.com/godotengine/godot/pull/50433).
+- [iOS: Remove duplicate orientation settings in the iOS export preset](https://github.com/godotengine/godot/pull/48943).
+- [Linux: Fix crash when using ALSA MIDI with PulseAudio](https://github.com/godotengine/godot/pull/48350).
+- [macOS: Fix custom mouse cursor not set after mouse mode change](https://github.com/godotengine/godot/pull/49848).
+- [Windows: Fix platform file access to allow file sharing with external programs](https://github.com/godotengine/godot/pull/51430).
+- [Windows: Fix code signing with `osslsigncode` from Linux/macOS](https://github.com/godotengine/godot/pull/49985).
+- [Fix `Directory::get_space_left()` result on macOS and Linux](https://github.com/godotengine/godot/pull/49222).
+
+#### Rendering
+
+- [Fix potential BakedLightmap crash](https://github.com/godotengine/godot/pull/50150).
+- [VisualServer now sorts based on AABB position](https://github.com/godotengine/godot/pull/43506).
+- [Fixes depth sorting of meshes with transparent textures](https://github.com/godotengine/godot/pull/50721).
+- [Fix CanvasItem bounding rect calculation in some cases](https://github.com/godotengine/godot/pull/49160).
+- [Fix flipped binormal in SpatialMaterial triplanar mapping](https://github.com/godotengine/godot/pull/49950).
+
+#### Thirdparty
+
+- mbedtls updated to version 2.16.11 (security fix).
+- CA root certificates updated to 2021-07-05 bundle from Mozilla.
+
+
+## [3.3.2] - 2021-05-24
+
+See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-3-2) for details.
+
+### Added
+
+#### GDScript
+
+- [Allow `warning-ignore` in the same line as the respective warning](https://github.com/godotengine/godot/pull/47863).
+
+#### Import
+
+- [Print a warning when importing a repeating NPOT texture in a GLES2 project](https://github.com/godotengine/godot/pull/48817).
+
+### Changed
+
+#### Editor
+
+- [Remove high radiance sizes from the editor due to issues on specific GPUs](https://github.com/godotengine/godot/pull/48906).
+
+### Fixed
+
+#### Build system
+
+- [Android: Remove `-fno-integrated-as`, it can break arm64v8 build](https://github.com/godotengine/godot/pull/48851).
+- [HTML5: Fix GDNative build with Emscripten 2.0.19+](https://github.com/godotengine/godot/pull/48831).
+- [Windows: Fix Embree crash when building with MinGW](https://github.com/godotengine/godot/pull/48888).
+  * Official builds are made with MinGW, and Godot 3.3.1 was thus subject to this [crash when baking lightmaps](https://github.com/godotengine/godot/issues/48822).
+
+#### Core
+
+- [Fix STL to Godot type conversion of polypartition](https://github.com/godotengine/godot/pull/48921).
+- [Fix duplicate close file when deconstructing ZipArchive](https://github.com/godotengine/godot/pull/49013).
+  * This would trigger a crash in Godot 3.3.1 when [exiting a project running from a ZIP data pack](https://github.com/godotengine/godot/issues/49012).
+
+#### Editor
+
+- [Fix swapped front/rear directions in viewport rotation control](https://github.com/godotengine/godot/pull/48895).
+- [Fix editor crash when exporting profiler data](https://github.com/godotengine/godot/pull/48917).
+
+#### Import
+
+- glTF: Improved error handling around [invalid images](https://github.com/godotengine/godot/pull/48904) and [invalid meshes](https://github.com/godotengine/godot/pull/48912).
+- [glTF: Fix incorrect skin deduplication when using named binds](https://github.com/godotengine/godot/pull/48913).
+
+#### Physics
+
+- [Fix ragdoll simulation when parent was readded to scene](https://github.com/godotengine/godot/pull/48823).
+- [Fix crash on debug shapes update if CollisionObject is not in tree](https://github.com/godotengine/godot/pull/48974).
+
+#### Porting
+
+- [macOS: Allow "on top" windows to enter full-screen mode](https://github.com/godotengine/godot/pull/49017).
+
+#### Rendering
+
+- [Batching: Fix `item_batch_flags` stale state causing glitches](https://github.com/godotengine/godot/pull/48992).
+
+
+## [3.3.1] - 2021-05-18
+
+See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-3-1) for details.
+
+### Added
+
+#### Build system
+
+- [Android: Allow building template with debug symbols using `gradlew generateDevTemplate`](https://github.com/godotengine/godot/pull/48276).
+
+#### Core
+
+- [Expose `Shape.get_debug_mesh()` to the scripting API](https://github.com/godotengine/godot/pull/48316).
+
+#### Editor
+
+- [Add Ctrl+Shift+A shortcut to instance a scene in the Scene Tree dock](https://github.com/godotengine/godot/pull/47530).
+- [Allow negative contrast values in the editor theme settings](https://github.com/godotengine/godot/pull/48540).
+- [TileMap: Apply modulate on autotile previews](https://github.com/godotengine/godot/pull/48403).
+
+#### Porting
+
+- [Add support for ARM64 architecture for the Embree raycaster (Apple M1, Linux aarch64)](https://github.com/godotengine/godot/pull/48455).
+  * Note that the OIDN denoiser is still not available on this architecture.
+
+### Changed
+
+#### Physics
+
+- [Create `CollisionObject` debug shapes using `VisualServer`](https://github.com/godotengine/godot/pull/48588).
+
+#### Porting
+
+- [HTML5: Use 64KiB chunk size in JS HTTPClient, for consistency with native platforms](https://github.com/godotengine/godot/pull/48501).
+
+### Fixed
+
+#### Animation
+
+- [Fix SkeletonIK root bones being twisted incorrectly when rotated](https://github.com/godotengine/godot/pull/48251).
+- [Fix skinning initialization in `MeshInstance` when loaded from thread](https://github.com/godotengine/godot/pull/48217).
+
+#### Build system
+
+- [HTML5: Fix build with Emscripten 2.0.17+](https://github.com/godotengine/godot/pull/48320).
+  * We recommend using Emscripten 2.0.15 for this release, which is the one used in official builds.
+- Linux: Fix 32-bit builds' compatibility with older libstdc++. The official builds should be compatibile with Ubuntu 16.04 LTS and any other distribution published since 2016.
+- Various compilation fixes for some platforms/compilers, and Linux packaging fixes.
+
+#### Core
+
+- [Fix ZIP files being opened with two file descriptors](https://github.com/godotengine/godot/pull/42337).
+- [Fix calculation of PrismMesh normals](https://github.com/godotengine/godot/pull/48775).
+- [Fix CSG Path Polygon cache being removed after connect](https://github.com/godotengine/godot/pull/48232).
+- [LineEdit: Fix double click to select words and triple click to select whole line](https://github.com/godotengine/godot/pull/46527).
+
+#### Editor
+
+- [Fix race condition in font preview generation which could lock the editor on first edit](https://github.com/godotengine/godot/pull/48308).
+- [Fix 3D scene preview generation](https://github.com/godotengine/godot/pull/47172).
+- [Fix display of programmatically created value in remote inspector](https://github.com/godotengine/godot/pull/44657).
+- [Make LSP update the filesystem for changed scripts](https://github.com/godotengine/godot/pull/47891).
+
+#### Porting
+
+- [HTML5: Fix `target_fps` when window loses focus](https://github.com/godotengine/godot/pull/48543).
+- [Linux: Handle having no sinks in the PulseAudio driver](https://github.com/godotengine/godot/pull/48706).
+- macOS: Update `Info.plist` to clarify that the minimum required version is now macOS 10.12 (due to use of C++14 features).
+- [WebXR: Fix incompatibility with Emscripten 2.0.13+ which made WebXR error out](https://github.com/godotengine/godot/pull/48268).
+- [Windows: Fix socket poll timeout](https://github.com/godotengine/godot/pull/48203).
+
+#### Rendering
+
+- [Batching: Fix GLES3 light pass modulates](https://github.com/godotengine/godot/pull/48151).
+- [Batching: Fix crash with wrong number of verts in translation](https://github.com/godotengine/godot/pull/48125).
+- [Batching: Fix invalid polygon rotation](https://github.com/godotengine/godot/pull/48457).
+- [Batching: Fallback for 2D skinning with unrigged polygons](https://github.com/godotengine/godot/pull/48647).
+- [Lightmapper: Fixes to environment energy](https://github.com/godotengine/godot/pull/48089).
+- [Fix 2D software skinning relative transforms](https://github.com/godotengine/godot/pull/48402).
+- [Fix usage of proxy textures on GLES2 `PanoramaSky`](https://github.com/godotengine/godot/pull/48541).
+- [Fix refraction offset by manually unpacking normal mappings](https://github.com/godotengine/godot/pull/48478).
+- [Disable GIProbe emission when disabled on a material](https://github.com/godotengine/godot/pull/48798).
+
+#### VisualScript
+
+- [Fix wrongly setting default value on property hint change](https://github.com/godotengine/godot/pull/48702).
+
+
 ## [3.3] - 2021-04-21
 
 See the [release announcement](https://godotengine.org/article/godot-3-3-has-arrived) for details.
