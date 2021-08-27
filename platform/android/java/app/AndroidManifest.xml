@@ -53,12 +53,16 @@
             android:resizeableActivity="false"
             tools:ignore="UnusedAttribute" >
 
-            <!-- Focus awareness metadata is updated at export time if the user enables it in the 'Xr Features' section. -->
-            <meta-data android:name="com.oculus.vr.focusaware" android:value="false" />
+            <!-- Focus awareness metadata is removed at export time if the xr mode is not VR. -->
+            <meta-data android:name="com.oculus.vr.focusaware" android:value="true" />
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+
+                <!-- Enable access to OpenXR on Oculus mobile devices, no-op on other Android
+                platforms. -->
+                <category android:name="com.oculus.intent.category.VR" />
             </intent-filter>
         </activity>
 

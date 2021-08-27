@@ -905,7 +905,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		bool screen_support_xlarge = p_preset->get("screen/support_xlarge");
 
 		int xr_mode_index = p_preset->get("xr_features/xr_mode");
-		bool focus_awareness = p_preset->get("xr_features/focus_awareness");
 
 		bool backup_allowed = p_preset->get("user_data_backup/allow");
 		bool classify_as_game = p_preset->get("package/classify_as_game");
@@ -976,7 +975,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 					String tname = string_table[name];
 					uint32_t attrcount = decode_uint32(&p_manifest[iofs + 20]);
 					iofs += 28;
-					bool is_focus_aware_metadata = false;
 
 					for (uint32_t i = 0; i < attrcount; i++) {
 						uint32_t attr_nspace = decode_uint32(&p_manifest[iofs]);
@@ -1062,12 +1060,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 							}
 						}
 
-						if (tname == "meta-data" && attrname == "value" && is_focus_aware_metadata) {
-							// Update the focus awareness meta-data value
-							encode_uint32(xr_mode_index == /* XRMode.OVR */ 1 && focus_awareness ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
-						}
-
-						is_focus_aware_metadata = tname == "meta-data" && attrname == "name" && value == "com.oculus.vr.focusaware";
 						iofs += 20;
 					}
 
@@ -1083,14 +1075,10 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 						Vector<int> feature_versions;
 
 						if (xr_mode_index == 1 /* XRMode.OVR */) {
-							// Check for degrees of freedom
-							int dof_index = p_preset->get("xr_features/degrees_of_freedom"); // 0: none, 1: 3dof and 6dof, 2: 6dof
-
-							if (dof_index > 0) {
-								feature_names.push_back("android.hardware.vr.headtracking");
-								feature_required_list.push_back(dof_index == 2);
-								feature_versions.push_back(1);
-							}
+							// Set degrees of freedom
+							feature_names.push_back("android.hardware.vr.headtracking");
+							feature_required_list.push_back(true);
+							feature_versions.push_back(1);
 
 							// Check for hand tracking
 							int hand_tracking_index = p_preset->get("xr_features/hand_tracking"); // 0: none, 1: optional, 2: required
@@ -1784,9 +1772,7 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "graphics/opengl_debug"), false));
 
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/xr_mode", PROPERTY_HINT_ENUM, "Regular,Oculus Mobile VR"), 0));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/degrees_of_freedom", PROPERTY_HINT_ENUM, "None,3DOF and 6DOF,6DOF"), 0));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/hand_tracking", PROPERTY_HINT_ENUM, "None,Optional,Required"), 0));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "xr_features/focus_awareness"), false));
 
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/immersive_mode"), true));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_small"), true));
@@ -2274,25 +2260,11 @@ public:
 
 		// Validate the Xr features are properly populated
 		int xr_mode_index = p_preset->get("xr_features/xr_mode");
-		int degrees_of_freedom = p_preset->get("xr_features/degrees_of_freedom");
 		int hand_tracking = p_preset->get("xr_features/hand_tracking");
-		bool focus_awareness = p_preset->get("xr_features/focus_awareness");
 		if (xr_mode_index != /* XRMode.OVR*/ 1) {
-			if (degrees_of_freedom > 0) {
-				valid = false;
-				err += TTR("\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\".");
-				err += "\n";
-			}
-
 			if (hand_tracking > 0) {
 				valid = false;
 				err += TTR("\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\".");
-				err += "\n";
-			}
-
-			if (focus_awareness) {
-				valid = false;
-				err += TTR("\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\".");
 				err += "\n";
 			}
 		}
