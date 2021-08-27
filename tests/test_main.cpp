@@ -174,10 +174,8 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			memnew(MessageQueue);
 
 			GLOBAL_DEF("internationalization/rendering/force_right_to_left_layout_direction", false);
-			memnew(TextServerManager);
-			Error err = OK;
-			TextServerManager::initialize(0, err);
 
+			Error err = OK;
 			OS::get_singleton()->set_has_server_feature_callback(nullptr);
 			for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
 				if (String("headless") == DisplayServer::get_create_function_name(i)) {
@@ -223,10 +221,6 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		}
 
 		clear_default_theme();
-
-		if (TextServerManager::get_singleton()) {
-			memdelete(TextServerManager::get_singleton());
-		}
 
 		if (navigation_3d_server) {
 			memdelete(navigation_3d_server);

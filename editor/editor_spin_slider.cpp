@@ -330,9 +330,8 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 	float text_start = rtl ? Math::round(sb->get_offset().x) : Math::round(sb->get_offset().x + label_width + sep);
 	Vector2 text_ofs = rtl ? Vector2(text_start + (number_width - TS->shaped_text_get_width(num_rid)), vofs) : Vector2(text_start, vofs);
-	const Vector<TextServer::Glyph> visual = TS->shaped_text_get_glyphs(num_rid);
-	int v_size = visual.size();
-	const TextServer::Glyph *glyphs = visual.ptr();
+	int v_size = TS->shaped_text_get_glyph_count(num_rid);
+	const Glyph *glyphs = TS->shaped_text_get_glyphs(num_rid);
 	for (int i = 0; i < v_size; i++) {
 		for (int j = 0; j < glyphs[i].repeat; j++) {
 			if (text_ofs.x >= text_start && (text_ofs.x + glyphs[i].advance) <= (text_start + number_width)) {

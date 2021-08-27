@@ -53,7 +53,7 @@ void TextParagraph::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "preserve_control"), "set_preserve_control", "get_preserve_control");
 
-	ClassDB::bind_method(D_METHOD("set_bidi_override", "override"), &TextParagraph::_set_bidi_override);
+	ClassDB::bind_method(D_METHOD("set_bidi_override", "override"), &TextParagraph::set_bidi_override);
 
 	ClassDB::bind_method(D_METHOD("set_dropcap", "text", "fonts", "size", "dropcap_margins", "opentype_features", "language"), &TextParagraph::set_dropcap, DEFVAL(Rect2()), DEFVAL(Dictionary()), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("clear_dropcap"), &TextParagraph::clear_dropcap);
@@ -158,9 +158,9 @@ void TextParagraph::_shape_lines() {
 
 		if (h_offset > 0) {
 			// Dropcap, flow around.
-			Vector<Vector2i> line_breaks = TS->shaped_text_get_line_breaks(rid, width - h_offset, 0, flags);
-			for (int i = 0; i < line_breaks.size(); i++) {
-				RID line = TS->shaped_text_substr(rid, line_breaks[i].x, line_breaks[i].y - line_breaks[i].x);
+			PackedInt32Array line_breaks = TS->shaped_text_get_line_breaks(rid, width - h_offset, 0, flags);
+			for (int i = 0; i < line_breaks.size(); i = i + 2) {
+				RID line = TS->shaped_text_substr(rid, line_breaks[i], line_breaks[i + 1] - line_breaks[i]);
 				float h = (TS->shaped_text_get_orientation(line) == TextServer::ORIENTATION_HORIZONTAL) ? TS->shaped_text_get_size(line).y : TS->shaped_text_get_size(line).x;
 				if (v_offset < h) {
 					TS->free(line);
@@ -171,21 +171,21 @@ void TextParagraph::_shape_lines() {
 				}
 				dropcap_lines++;
 				v_offset -= h;
-				start = line_breaks[i].y;
+				start = line_breaks[i + 1];
 				lines_rid.push_back(line);
 			}
 		}
 		// Use fixed for the rest of lines.
-		Vector<Vector2i> line_breaks = TS->shaped_text_get_line_breaks(rid, width, start, flags);
-		for (int i = 0; i < line_breaks.size(); i++) {
-			RID line = TS->shaped_text_substr(rid, line_breaks[i].x, line_breaks[i].y - line_breaks[i].x);
+		PackedInt32Array line_breaks = TS->shaped_text_get_line_breaks(rid, width, start, flags);
+		for (int i = 0; i < line_breaks.size(); i = i + 2) {
+			RID line = TS->shaped_text_substr(rid, line_breaks[i], line_breaks[i + 1] - line_breaks[i]);
 			if (!tab_stops.is_empty()) {
 				TS->shaped_text_tab_align(line, tab_stops);
 			}
 			lines_rid.push_back(line);
 		}
 
-		uint8_t overrun_flags = TextServer::OVERRUN_NO_TRIMMING;
+		uint16_t overrun_flags = TextServer::OVERRUN_NO_TRIMMING;
 		if (overrun_behavior != OVERRUN_NO_TRIMMING) {
 			switch (overrun_behavior) {
 				case OVERRUN_TRIM_WORD_ELLIPSIS:
@@ -347,15 +347,7 @@ int TextParagraph::get_spacing_bottom() const {
 	return spacing_bottom;
 }
 
-void TextParagraph::_set_bidi_override(const Array &p_override) {
-	Vector<Vector2i> overrides;
-	for (int i = 0; i < p_override.size(); i++) {
-		overrides.push_back(p_override[i]);
-	}
-	set_bidi_override(overrides);
-}
-
-void TextParagraph::set_bidi_override(const Vector<Vector2i> &p_override) {
+void TextParagraph::set_bidi_override(const Array &p_override) {
 	TS->shaped_text_set_bidi_override(rid, p_override);
 	lines_dirty = true;
 }
@@ -392,14 +384,14 @@ void TextParagraph::tab_align(const Vector<float> &p_tab_stops) {
 	lines_dirty = true;
 }
 
-void TextParagraph::set_flags(uint8_t p_flags) {
+void TextParagraph::set_flags(uint16_t p_flags) {
 	if (flags != p_flags) {
 		flags = p_flags;
 		lines_dirty = true;
 	}
 }
 
-uint8_t TextParagraph::get_flags() const {
+uint16_t TextParagraph::get_flags() const {
 	return flags;
 }
 

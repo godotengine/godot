@@ -185,6 +185,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="canvas_item_add_msdf_texture_rect_region">
+			<return type="void" />
+			<argument index="0" name="item" type="RID" />
+			<argument index="1" name="rect" type="Rect2" />
+			<argument index="2" name="texture" type="RID" />
+			<argument index="3" name="src_rect" type="Rect2" />
+			<argument index="4" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<argument index="5" name="outline_size" type="int" default="0" />
+			<argument index="6" name="px_range" type="float" default="1.0" />
+			<description>
+			</description>
+		</method>
 		<method name="canvas_item_add_multimesh">
 			<return type="void" />
 			<argument index="0" name="item" type="RID" />

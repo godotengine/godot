@@ -2449,8 +2449,8 @@ bool Control::is_text_field() const {
 	return false;
 }
 
-Vector<Vector2i> Control::structured_text_parser(StructuredTextParser p_theme_type, const Array &p_args, const String p_text) const {
-	Vector<Vector2i> ret;
+Array Control::structured_text_parser(StructuredTextParser p_theme_type, const Array &p_args, const String p_text) const {
+	Array ret;
 	switch (p_theme_type) {
 		case STRUCTURED_TEXT_URI: {
 			int prev = 0;

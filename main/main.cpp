@@ -407,6 +407,7 @@ Error Main::test_setup() {
 	GLOBAL_DEF_RST("rendering/occlusion_culling/bvh_build_quality", 2);
 
 	translation_server = memnew(TranslationServer);
+	tsman = memnew(TextServerManager);
 
 	register_core_extensions();
 
@@ -440,6 +441,9 @@ Error Main::test_setup() {
 	register_module_types();
 	register_driver_types();
 
+	ERR_FAIL_COND_V(TextServerManager::get_singleton()->get_interface_count() == 0, ERR_CANT_CREATE);
+	TextServerManager::get_singleton()->set_primary_interface(TextServerManager::get_singleton()->get_interface(0));
+
 	ClassDB::set_current_api(ClassDB::API_NONE);
 
 	_start_success = true;
@@ -459,6 +463,7 @@ void Main::test_cleanup() {
 #ifdef TOOLS_ENABLED
 	EditorNode::unregister_editor_types();
 #endif
+
 	unregister_module_types();
 	unregister_platform_apis();
 	unregister_scene_types();
@@ -468,6 +473,9 @@ void Main::test_cleanup() {
 
 	if (translation_server) {
 		memdelete(translation_server);
+	}
+	if (tsman) {
+		memdelete(tsman);
 	}
 	if (globals) {
 		memdelete(globals);
@@ -1461,6 +1469,8 @@ error:
 }
 
 Error Main::setup2(Thread::ID p_main_tid_override) {
+	tsman = memnew(TextServerManager);
+
 	preregister_module_types();
 	preregister_server_types();
 
@@ -1478,64 +1488,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		EditorPaths::create();
 	}
 #endif
-
-	/* Determine text driver */
-
-	if (text_driver == "") {
-		text_driver = GLOBAL_GET("internationalization/rendering/text_driver");
-	}
-
-	if (text_driver != "") {
-		/* Load user selected text server. */
-		for (int i = 0; i < TextServerManager::get_interface_count(); i++) {
-			if (text_driver == TextServerManager::get_interface_name(i)) {
-				text_driver_idx = i;
-				break;
-			}
-		}
-	}
-
-	if (text_driver_idx < 0) {
-		/* If not selected, use one with the most features available. */
-		int max_features = 0;
-		for (int i = 0; i < TextServerManager::get_interface_count(); i++) {
-			uint32_t ftrs = TextServerManager::get_interface_features(i);
-			int features = 0;
-			while (ftrs) {
-				features += ftrs & 1;
-				ftrs >>= 1;
-			}
-			if (features >= max_features) {
-				max_features = features;
-				text_driver_idx = i;
-			}
-		}
-	}
-	print_verbose("Using \"" + TextServerManager::get_interface_name(text_driver_idx) + "\" text server...");
-
-	/* Initialize Text Server */
-
-	{
-		tsman = memnew(TextServerManager);
-		Error err;
-		TextServer *text_server = TextServerManager::initialize(text_driver_idx, err);
-		if (err != OK || text_server == nullptr) {
-			for (int i = 0; i < TextServerManager::get_interface_count(); i++) {
-				if (i == text_driver_idx) {
-					continue; //don't try the same twice
-				}
-				text_server = TextServerManager::initialize(i, err);
-				if (err == OK && text_server != nullptr) {
-					break;
-				}
-			}
-		}
-
-		if (err != OK || text_server == nullptr) {
-			ERR_PRINT("Unable to create TextServer, all text drivers failed.");
-			return err;
-		}
-	}
 
 	/* Initialize Input */
 
@@ -1781,6 +1733,57 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	ResourceLoader::load_path_remaps();
 
+	MAIN_PRINT("Main: Load TextServer");
+
+	/* Enum text drivers */
+	GLOBAL_DEF("internationalization/rendering/text_driver", "");
+	String text_driver_options;
+	for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
+		if (i > 0) {
+			text_driver_options += ",";
+		}
+		text_driver_options += TextServerManager::get_singleton()->get_interface(i)->get_name();
+	}
+	ProjectSettings::get_singleton()->set_custom_property_info("internationalization/rendering/text_driver", PropertyInfo(Variant::STRING, "internationalization/rendering/text_driver", PROPERTY_HINT_ENUM, text_driver_options));
+
+	/* Determine text driver */
+	if (text_driver == "") {
+		text_driver = GLOBAL_GET("internationalization/rendering/text_driver");
+	}
+
+	if (text_driver != "") {
+		/* Load user selected text server. */
+		for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
+			if (TextServerManager::get_singleton()->get_interface(i)->get_name() == text_driver) {
+				text_driver_idx = i;
+				break;
+			}
+		}
+	}
+
+	if (text_driver_idx < 0) {
+		/* If not selected, use one with the most features available. */
+		int max_features = 0;
+		for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
+			uint32_t features = TextServerManager::get_singleton()->get_interface(i)->get_features();
+			int feature_number = 0;
+			while (features) {
+				feature_number += features & 1;
+				features >>= 1;
+			}
+			if (feature_number >= max_features) {
+				max_features = feature_number;
+				text_driver_idx = i;
+			}
+		}
+	}
+	if (text_driver_idx >= 0) {
+		TextServerManager::get_singleton()->set_primary_interface(TextServerManager::get_singleton()->get_interface(text_driver_idx));
+	} else {
+		ERR_PRINT("TextServer: Unable to create TextServer interface.");
+		return ERR_CANT_CREATE;
+	}
+
 	MAIN_PRINT("Main: Load Scene Types");
 
 	register_scene_types();
@@ -1793,7 +1796,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 #endif
 
-	MAIN_PRINT("Main: Load Modules, Physics, Drivers, Scripts");
+	MAIN_PRINT("Main: Load Modules");
 
 	register_platform_apis();
 	register_module_types();
@@ -1816,6 +1819,8 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	}
 
 	camera_server = CameraServer::create();
+
+	MAIN_PRINT("Main: Load Physics, Drivers, Scripts");
 
 	initialize_physics();
 	initialize_navigation_server();
@@ -2728,10 +2733,6 @@ void Main::cleanup(bool p_force) {
 	finalize_navigation_server();
 	finalize_display();
 
-	if (tsman) {
-		memdelete(tsman);
-	}
-
 	if (input) {
 		memdelete(input);
 	}
@@ -2753,6 +2754,9 @@ void Main::cleanup(bool p_force) {
 	}
 	if (translation_server) {
 		memdelete(translation_server);
+	}
+	if (tsman) {
+		memdelete(tsman);
 	}
 	if (globals) {
 		memdelete(globals);

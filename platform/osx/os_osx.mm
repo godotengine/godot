@@ -314,17 +314,27 @@ String OS_OSX::get_name() const {
 	return "macOS";
 }
 
+_FORCE_INLINE_ String _get_framework_executable(const String p_path) {
+	// Append framework executable name, or return as is if p_path is not a framework.
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	if (da->dir_exists(p_path) && da->file_exists(p_path.plus_file(p_path.get_file().get_basename()))) {
+		return p_path.plus_file(p_path.get_file().get_basename());
+	} else {
+		return p_path;
+	}
+}
+
 Error OS_OSX::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
-	String path = p_path;
+	String path = _get_framework_executable(p_path);
 
 	if (!FileAccess::exists(path)) {
-		//this code exists so gdnative can load .dylib files from within the executable path
-		path = get_executable_path().get_base_dir().plus_file(p_path.get_file());
+		// This code exists so gdnative can load .dylib files from within the executable path.
+		path = _get_framework_executable(get_executable_path().get_base_dir().plus_file(p_path.get_file()));
 	}
 
 	if (!FileAccess::exists(path)) {
-		//this code exists so gdnative can load .dylib files from a standard macOS location
-		path = get_executable_path().get_base_dir().plus_file("../Frameworks").plus_file(p_path.get_file());
+		// This code exists so gdnative can load .dylib files from a standard macOS location.
+		path = _get_framework_executable(get_executable_path().get_base_dir().plus_file("../Frameworks").plus_file(p_path.get_file()));
 	}
 
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);

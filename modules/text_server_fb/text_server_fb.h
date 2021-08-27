@@ -93,12 +93,12 @@ class TextServerFallback : public TextServer {
 	};
 
 	struct FontDataForSizeFallback {
-		real_t ascent = 0.f;
-		real_t descent = 0.f;
-		real_t underline_position = 0.f;
-		real_t underline_thickness = 0.f;
-		real_t scale = 1.f;
-		real_t oversampling = 1.f;
+		float ascent = 0.f;
+		float descent = 0.f;
+		float underline_position = 0.f;
+		float underline_thickness = 0.f;
+		float scale = 1.f;
+		float oversampling = 1.f;
 
 		int spacing_glyph = 0;
 		int spacing_space = 0;
@@ -134,7 +134,7 @@ class TextServerFallback : public TextServer {
 		bool force_autohinter = false;
 		TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 		Dictionary variation_coordinates;
-		real_t oversampling = 0.f;
+		float oversampling = 0.f;
 
 		Map<Vector2i, FontDataForSizeFallback *> cache;
 
@@ -194,7 +194,7 @@ class TextServerFallback : public TextServer {
 
 	// Common data.
 
-	real_t oversampling = 1.f;
+	float oversampling = 1.f;
 	mutable RID_PtrOwner<FontDataFallback> font_owner;
 	mutable RID_PtrOwner<ShapedTextData> shaped_owner;
 
@@ -205,20 +205,19 @@ protected:
 	void invalidate(ShapedTextData *p_shaped);
 
 public:
-	virtual bool has_feature(Feature p_feature) override;
+	virtual bool has_feature(Feature p_feature) const override;
 	virtual String get_name() const override;
+	virtual uint32_t get_features() const override;
 
 	virtual void free(RID p_rid) override;
 	virtual bool has(RID p_rid) override;
 	virtual bool load_support_data(const String &p_filename) override;
 
-#ifdef TOOLS_ENABLED
-	virtual String get_support_data_filename() override { return ""; };
-	virtual String get_support_data_info() override { return "Not supported"; };
-	virtual bool save_support_data(const String &p_filename) override;
-#endif
+	virtual String get_support_data_filename() const override { return ""; };
+	virtual String get_support_data_info() const override { return "Not supported"; };
+	virtual bool save_support_data(const String &p_filename) const override;
 
-	virtual bool is_locale_right_to_left(const String &p_locale) override;
+	virtual bool is_locale_right_to_left(const String &p_locale) const override;
 
 	virtual int32_t name_to_tag(const String &p_name) const override;
 	virtual String tag_to_name(int32_t p_tag) const override;
@@ -253,27 +252,27 @@ public:
 	virtual void font_set_variation_coordinates(RID p_font_rid, const Dictionary &p_variation_coordinates) override;
 	virtual Dictionary font_get_variation_coordinates(RID p_font_rid) const override;
 
-	virtual void font_set_oversampling(RID p_font_rid, real_t p_oversampling) override;
-	virtual real_t font_get_oversampling(RID p_font_rid) const override;
+	virtual void font_set_oversampling(RID p_font_rid, float p_oversampling) override;
+	virtual float font_get_oversampling(RID p_font_rid) const override;
 
 	virtual Array font_get_size_cache_list(RID p_font_rid) const override;
 	virtual void font_clear_size_cache(RID p_font_rid) override;
 	virtual void font_remove_size_cache(RID p_font_rid, const Vector2i &p_size) override;
 
-	virtual void font_set_ascent(RID p_font_rid, int p_size, real_t p_ascent) override;
-	virtual real_t font_get_ascent(RID p_font_rid, int p_size) const override;
+	virtual void font_set_ascent(RID p_font_rid, int p_size, float p_ascent) override;
+	virtual float font_get_ascent(RID p_font_rid, int p_size) const override;
 
-	virtual void font_set_descent(RID p_font_rid, int p_size, real_t p_descent) override;
-	virtual real_t font_get_descent(RID p_font_rid, int p_size) const override;
+	virtual void font_set_descent(RID p_font_rid, int p_size, float p_descent) override;
+	virtual float font_get_descent(RID p_font_rid, int p_size) const override;
 
-	virtual void font_set_underline_position(RID p_font_rid, int p_size, real_t p_underline_position) override;
-	virtual real_t font_get_underline_position(RID p_font_rid, int p_size) const override;
+	virtual void font_set_underline_position(RID p_font_rid, int p_size, float p_underline_position) override;
+	virtual float font_get_underline_position(RID p_font_rid, int p_size) const override;
 
-	virtual void font_set_underline_thickness(RID p_font_rid, int p_size, real_t p_underline_thickness) override;
-	virtual real_t font_get_underline_thickness(RID p_font_rid, int p_size) const override;
+	virtual void font_set_underline_thickness(RID p_font_rid, int p_size, float p_underline_thickness) override;
+	virtual float font_get_underline_thickness(RID p_font_rid, int p_size) const override;
 
-	virtual void font_set_scale(RID p_font_rid, int p_size, real_t p_scale) override;
-	virtual real_t font_get_scale(RID p_font_rid, int p_size) const override;
+	virtual void font_set_scale(RID p_font_rid, int p_size, float p_scale) override;
+	virtual float font_get_scale(RID p_font_rid, int p_size) const override;
 
 	virtual void font_set_spacing(RID p_font_rid, int p_size, SpacingType p_spacing, int p_value) override;
 	virtual int font_get_spacing(RID p_font_rid, int p_size, SpacingType p_spacing) const override;
@@ -307,7 +306,7 @@ public:
 	virtual int font_get_glyph_texture_idx(RID p_font_rid, const Vector2i &p_size, int32_t p_glyph) const override;
 	virtual void font_set_glyph_texture_idx(RID p_font_rid, const Vector2i &p_size, int32_t p_glyph, int p_texture_idx) override;
 
-	virtual bool font_get_glyph_contours(RID p_font, int p_size, int32_t p_index, Vector<Vector3> &r_points, Vector<int32_t> &r_contours, bool &r_orientation) const override;
+	virtual Dictionary font_get_glyph_contours(RID p_font, int p_size, int32_t p_index) const override;
 
 	virtual Array font_get_kerning_list(RID p_font_rid, int p_size) const override;
 	virtual void font_clear_kerning_map(RID p_font_rid, int p_size) override;
@@ -342,8 +341,8 @@ public:
 	virtual Dictionary font_supported_feature_list(RID p_font_rid) const override;
 	virtual Dictionary font_supported_variation_list(RID p_font_rid) const override;
 
-	virtual real_t font_get_global_oversampling() const override;
-	virtual void font_set_global_oversampling(real_t p_oversampling) override;
+	virtual float font_get_global_oversampling() const override;
+	virtual void font_set_global_oversampling(float p_oversampling) override;
 
 	/* Shaped text buffer interface */
 
@@ -354,7 +353,7 @@ public:
 	virtual void shaped_text_set_direction(RID p_shaped, Direction p_direction = DIRECTION_AUTO) override;
 	virtual Direction shaped_text_get_direction(RID p_shaped) const override;
 
-	virtual void shaped_text_set_bidi_override(RID p_shaped, const Vector<Vector2i> &p_override) override;
+	virtual void shaped_text_set_bidi_override(RID p_shaped, const Array &p_override) override;
 
 	virtual void shaped_text_set_orientation(RID p_shaped, Orientation p_orientation = ORIENTATION_HORIZONTAL) override;
 	virtual Orientation shaped_text_get_orientation(RID p_shaped) const override;
@@ -372,36 +371,37 @@ public:
 	virtual RID shaped_text_substr(RID p_shaped, int p_start, int p_length) const override;
 	virtual RID shaped_text_get_parent(RID p_shaped) const override;
 
-	virtual real_t shaped_text_fit_to_width(RID p_shaped, real_t p_width, uint8_t /*JustificationFlag*/ p_jst_flags = JUSTIFICATION_WORD_BOUND | JUSTIFICATION_KASHIDA) override;
-	virtual real_t shaped_text_tab_align(RID p_shaped, const Vector<real_t> &p_tab_stops) override;
+	virtual float shaped_text_fit_to_width(RID p_shaped, float p_width, uint16_t /*JustificationFlag*/ p_jst_flags = JUSTIFICATION_WORD_BOUND | JUSTIFICATION_KASHIDA) override;
+	virtual float shaped_text_tab_align(RID p_shaped, const PackedFloat32Array &p_tab_stops) override;
 
 	virtual bool shaped_text_shape(RID p_shaped) override;
 	virtual bool shaped_text_update_breaks(RID p_shaped) override;
 	virtual bool shaped_text_update_justification_ops(RID p_shaped) override;
 
-	virtual void shaped_text_overrun_trim_to_width(RID p_shaped, real_t p_width, uint8_t p_trim_flags) override;
-	virtual TrimData shaped_text_get_trim_data(RID p_shaped) const override;
+	virtual int shaped_text_get_trim_pos(RID p_shaped) const override;
+	virtual int shaped_text_get_ellipsis_pos(RID p_shaped) const override;
+	virtual const Glyph *shaped_text_get_ellipsis_glyphs(RID p_shaped) const override;
+	virtual int shaped_text_get_ellipsis_glyph_count(RID p_shaped) const override;
+
+	virtual void shaped_text_overrun_trim_to_width(RID p_shaped, float p_width, uint16_t p_trim_flags) override;
 
 	virtual bool shaped_text_is_ready(RID p_shaped) const override;
 
-	virtual Vector<Glyph> shaped_text_get_glyphs(RID p_shaped) const override;
+	virtual const Glyph *shaped_text_get_glyphs(RID p_shaped) const override;
+	virtual const Glyph *shaped_text_sort_logical(RID p_shaped) override;
+	virtual int shaped_text_get_glyph_count(RID p_shaped) const override;
 
 	virtual Vector2i shaped_text_get_range(RID p_shaped) const override;
-
-	virtual Vector<Glyph> shaped_text_sort_logical(RID p_shaped) override;
 
 	virtual Array shaped_text_get_objects(RID p_shaped) const override;
 	virtual Rect2 shaped_text_get_object_rect(RID p_shaped, Variant p_key) const override;
 
 	virtual Size2 shaped_text_get_size(RID p_shaped) const override;
-	virtual real_t shaped_text_get_ascent(RID p_shaped) const override;
-	virtual real_t shaped_text_get_descent(RID p_shaped) const override;
-	virtual real_t shaped_text_get_width(RID p_shaped) const override;
-	virtual real_t shaped_text_get_underline_position(RID p_shaped) const override;
-	virtual real_t shaped_text_get_underline_thickness(RID p_shaped) const override;
-
-	static TextServer *create_func(Error &r_error, void *p_user_data);
-	static void register_server();
+	virtual float shaped_text_get_ascent(RID p_shaped) const override;
+	virtual float shaped_text_get_descent(RID p_shaped) const override;
+	virtual float shaped_text_get_width(RID p_shaped) const override;
+	virtual float shaped_text_get_underline_position(RID p_shaped) const override;
+	virtual float shaped_text_get_underline_thickness(RID p_shaped) const override;
 
 	TextServerFallback();
 	~TextServerFallback();

@@ -108,7 +108,7 @@ void Label::_shape() {
 		}
 		lines_rid.clear();
 
-		uint8_t autowrap_flags = TextServer::BREAK_MANDATORY;
+		uint16_t autowrap_flags = TextServer::BREAK_MANDATORY;
 		switch (autowrap_mode) {
 			case AUTOWRAP_WORD_SMART:
 				autowrap_flags = TextServer::BREAK_WORD_BOUND_ADAPTIVE | TextServer::BREAK_MANDATORY;
@@ -122,10 +122,10 @@ void Label::_shape() {
 			case AUTOWRAP_OFF:
 				break;
 		}
-		Vector<Vector2i> line_breaks = TS->shaped_text_get_line_breaks(text_rid, width, 0, autowrap_flags);
+		PackedInt32Array line_breaks = TS->shaped_text_get_line_breaks(text_rid, width, 0, autowrap_flags);
 
-		for (int i = 0; i < line_breaks.size(); i++) {
-			RID line = TS->shaped_text_substr(text_rid, line_breaks[i].x, line_breaks[i].y - line_breaks[i].x);
+		for (int i = 0; i < line_breaks.size(); i = i + 2) {
+			RID line = TS->shaped_text_substr(text_rid, line_breaks[i], line_breaks[i + 1] - line_breaks[i]);
 			lines_rid.push_back(line);
 		}
 	}
@@ -145,7 +145,7 @@ void Label::_shape() {
 	}
 
 	if (lines_dirty) {
-		uint8_t overrun_flags = TextServer::OVERRUN_NO_TRIMMING;
+		uint16_t overrun_flags = TextServer::OVERRUN_NO_TRIMMING;
 		switch (overrun_behavior) {
 			case OVERRUN_TRIM_WORD_ELLIPSIS:
 				overrun_flags |= TextServer::OVERRUN_TRIM;
@@ -231,7 +231,7 @@ void Label::_update_visible() {
 	}
 }
 
-inline void draw_glyph(const TextServer::Glyph &p_gl, const RID &p_canvas, const Color &p_font_color, const Vector2 &p_ofs) {
+inline void draw_glyph(const Glyph &p_gl, const RID &p_canvas, const Color &p_font_color, const Vector2 &p_ofs) {
 	if (p_gl.font_rid != RID()) {
 		TS->font_draw_glyph(p_gl.font_rid, p_canvas, p_gl.font_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off), p_gl.index, p_font_color);
 	} else {
@@ -239,7 +239,7 @@ inline void draw_glyph(const TextServer::Glyph &p_gl, const RID &p_canvas, const
 	}
 }
 
-inline void draw_glyph_outline(const TextServer::Glyph &p_gl, const RID &p_canvas, const Color &p_font_color, const Color &p_font_shadow_color, const Color &p_font_outline_color, const int &p_shadow_outline_size, const int &p_outline_size, const Vector2 &p_ofs, const Vector2 &shadow_ofs) {
+inline void draw_glyph_outline(const Glyph &p_gl, const RID &p_canvas, const Color &p_font_color, const Color &p_font_shadow_color, const Color &p_font_outline_color, const int &p_shadow_outline_size, const int &p_outline_size, const Vector2 &p_ofs, const Vector2 &shadow_ofs) {
 	if (p_gl.font_rid != RID()) {
 		if (p_font_shadow_color.a > 0) {
 			TS->font_draw_glyph(p_gl.font_rid, p_canvas, p_gl.font_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off) + shadow_ofs, p_gl.index, p_font_shadow_color);
@@ -387,21 +387,25 @@ void Label::_notification(int p_what) {
 				} break;
 			}
 
-			const Vector<TextServer::Glyph> visual = TS->shaped_text_get_glyphs(lines_rid[i]);
-			const TextServer::Glyph *glyphs = visual.ptr();
-			int gl_size = visual.size();
-			TextServer::TrimData trim_data = TS->shaped_text_get_trim_data(lines_rid[i]);
+			const Glyph *glyphs = TS->shaped_text_get_glyphs(lines_rid[i]);
+			int gl_size = TS->shaped_text_get_glyph_count(lines_rid[i]);
+
+			int ellipsis_pos = TS->shaped_text_get_ellipsis_pos(lines_rid[i]);
+			int trim_pos = TS->shaped_text_get_trim_pos(lines_rid[i]);
+
+			const Glyph *ellipsis_glyphs = TS->shaped_text_get_ellipsis_glyphs(lines_rid[i]);
+			int ellipsis_gl_size = TS->shaped_text_get_ellipsis_glyph_count(lines_rid[i]);
 
 			// Draw outline. Note: Do not merge this into the single loop with the main text, to prevent overlaps.
 			if (font_shadow_color.a > 0 || (font_outline_color.a != 0.0 && outline_size > 0)) {
 				Vector2 offset = ofs;
 				// Draw RTL ellipsis string when necessary.
-				if (rtl && trim_data.ellipsis_pos >= 0) {
-					for (int gl_idx = trim_data.ellipsis_glyph_buf.size() - 1; gl_idx >= 0; gl_idx--) {
-						for (int j = 0; j < trim_data.ellipsis_glyph_buf[gl_idx].repeat; j++) {
+				if (rtl && ellipsis_pos >= 0) {
+					for (int gl_idx = ellipsis_gl_size - 1; gl_idx >= 0; gl_idx--) {
+						for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {
 							//Draw glyph outlines and shadow.
-							draw_glyph_outline(trim_data.ellipsis_glyph_buf[gl_idx], ci, font_color, font_shadow_color, font_outline_color, shadow_outline_size, outline_size, offset, shadow_ofs);
-							offset.x += trim_data.ellipsis_glyph_buf[gl_idx].advance;
+							draw_glyph_outline(ellipsis_glyphs[gl_idx], ci, font_color, font_shadow_color, font_outline_color, shadow_outline_size, outline_size, offset, shadow_ofs);
+							offset.x += ellipsis_glyphs[gl_idx].advance;
 						}
 					}
 				}
@@ -410,13 +414,13 @@ void Label::_notification(int p_what) {
 				for (int j = 0; j < gl_size; j++) {
 					for (int k = 0; k < glyphs[j].repeat; k++) {
 						// Trim when necessary.
-						if (trim_data.trim_pos >= 0) {
+						if (trim_pos >= 0) {
 							if (rtl) {
-								if (j < trim_data.trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
+								if (j < trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
 									continue;
 								}
 							} else {
-								if (j >= trim_data.trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
+								if (j >= trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
 									break;
 								}
 							}
@@ -428,12 +432,12 @@ void Label::_notification(int p_what) {
 					}
 				}
 				// Draw LTR ellipsis string when necessary.
-				if (!rtl && trim_data.ellipsis_pos >= 0) {
-					for (int gl_idx = 0; gl_idx < trim_data.ellipsis_glyph_buf.size(); gl_idx++) {
-						for (int j = 0; j < trim_data.ellipsis_glyph_buf[gl_idx].repeat; j++) {
+				if (!rtl && ellipsis_pos >= 0) {
+					for (int gl_idx = 0; gl_idx < ellipsis_gl_size; gl_idx++) {
+						for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {
 							//Draw glyph outlines and shadow.
-							draw_glyph_outline(trim_data.ellipsis_glyph_buf[gl_idx], ci, font_color, font_shadow_color, font_outline_color, shadow_outline_size, outline_size, offset, shadow_ofs);
-							offset.x += trim_data.ellipsis_glyph_buf[gl_idx].advance;
+							draw_glyph_outline(ellipsis_glyphs[gl_idx], ci, font_color, font_shadow_color, font_outline_color, shadow_outline_size, outline_size, offset, shadow_ofs);
+							offset.x += ellipsis_glyphs[gl_idx].advance;
 						}
 					}
 				}
@@ -442,12 +446,12 @@ void Label::_notification(int p_what) {
 			// Draw main text. Note: Do not merge this into the single loop with the outline, to prevent overlaps.
 
 			// Draw RTL ellipsis string when necessary.
-			if (rtl && trim_data.ellipsis_pos >= 0) {
-				for (int gl_idx = trim_data.ellipsis_glyph_buf.size() - 1; gl_idx >= 0; gl_idx--) {
-					for (int j = 0; j < trim_data.ellipsis_glyph_buf[gl_idx].repeat; j++) {
+			if (rtl && ellipsis_pos >= 0) {
+				for (int gl_idx = ellipsis_gl_size - 1; gl_idx >= 0; gl_idx--) {
+					for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {
 						//Draw glyph outlines and shadow.
-						draw_glyph(trim_data.ellipsis_glyph_buf[gl_idx], ci, font_color, ofs);
-						ofs.x += trim_data.ellipsis_glyph_buf[gl_idx].advance;
+						draw_glyph(ellipsis_glyphs[gl_idx], ci, font_color, ofs);
+						ofs.x += ellipsis_glyphs[gl_idx].advance;
 					}
 				}
 			}
@@ -456,13 +460,13 @@ void Label::_notification(int p_what) {
 			for (int j = 0; j < gl_size; j++) {
 				for (int k = 0; k < glyphs[j].repeat; k++) {
 					// Trim when necessary.
-					if (trim_data.trim_pos >= 0) {
+					if (trim_pos >= 0) {
 						if (rtl) {
-							if (j < trim_data.trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
+							if (j < trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
 								continue;
 							}
 						} else {
-							if (j >= trim_data.trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
+							if (j >= trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
 								break;
 							}
 						}
@@ -474,12 +478,12 @@ void Label::_notification(int p_what) {
 				}
 			}
 			// Draw LTR ellipsis string when necessary.
-			if (!rtl && trim_data.ellipsis_pos >= 0) {
-				for (int gl_idx = 0; gl_idx < trim_data.ellipsis_glyph_buf.size(); gl_idx++) {
-					for (int j = 0; j < trim_data.ellipsis_glyph_buf[gl_idx].repeat; j++) {
+			if (!rtl && ellipsis_pos >= 0) {
+				for (int gl_idx = 0; gl_idx < ellipsis_gl_size; gl_idx++) {
+					for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {
 						//Draw glyph outlines and shadow.
-						draw_glyph(trim_data.ellipsis_glyph_buf[gl_idx], ci, font_color, ofs);
-						ofs.x += trim_data.ellipsis_glyph_buf[gl_idx].advance;
+						draw_glyph(ellipsis_glyphs[gl_idx], ci, font_color, ofs);
+						ofs.x += ellipsis_glyphs[gl_idx].advance;
 					}
 				}
 			}

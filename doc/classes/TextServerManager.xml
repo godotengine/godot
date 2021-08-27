@@ -10,6 +10,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="add_interface">
+			<return type="void" />
+			<argument index="0" name="interface" type="TextServer" />
+			<description>
+				Registers an [TextServer] interface.
+			</description>
+		</method>
 		<method name="find_interface" qualifiers="const">
 			<return type="TextServer" />
 			<argument index="0" name="name" type="String" />
@@ -19,7 +26,7 @@
 		</method>
 		<method name="get_interface" qualifiers="const">
 			<return type="TextServer" />
-			<argument index="0" name="index" type="int" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the interface registered at a given index.
 			</description>
@@ -28,20 +35,6 @@
 			<return type="int" />
 			<description>
 				Returns the number of interfaces currently registered.
-			</description>
-		</method>
-		<method name="get_interface_features" qualifiers="const">
-			<return type="int" />
-			<argument index="0" name="index" type="int" />
-			<description>
-				Returns text server supported features (binary OR).
-			</description>
-		</method>
-		<method name="get_interface_name" qualifiers="const">
-			<return type="String" />
-			<argument index="0" name="index" type="int" />
-			<description>
-				Returns the interface name registered at a given index.
 			</description>
 		</method>
 		<method name="get_interfaces" qualifiers="const">
@@ -53,15 +46,36 @@
 		<method name="get_primary_interface" qualifiers="const">
 			<return type="TextServer" />
 			<description>
-				Returns the primary [TextServer] interface.
+				Returns the primary [TextServer] interface currently in use.
+			</description>
+		</method>
+		<method name="remove_interface">
+			<return type="void" />
+			<argument index="0" name="interface" type="TextServer" />
+			<description>
+				Removes interface. All fonts and shaped text caches should be freed before removing interface.
 			</description>
 		</method>
 		<method name="set_primary_interface">
-			<return type="bool" />
-			<argument index="0" name="index" type="int" />
+			<return type="void" />
+			<argument index="0" name="index" type="TextServer" />
 			<description>
-				Sets (and initializes it if required) interface registered at a given index as the primary. Invalidates all references to the fonts and text buffers.
+				Sets the primary [TextServer] interface.
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="interface_added">
+			<argument index="0" name="interface_name" type="StringName" />
+			<description>
+				Emitted when a new interface has been added.
+			</description>
+		</signal>
+		<signal name="interface_removed">
+			<argument index="0" name="interface_name" type="StringName" />
+			<description>
+				Emitted when an interface is removed.
+			</description>
+		</signal>
+	</signals>
 </class>

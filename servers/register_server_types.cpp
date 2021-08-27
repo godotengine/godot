@@ -70,6 +70,7 @@
 #include "rendering/rendering_device_binds.h"
 #include "rendering_server.h"
 #include "servers/rendering/shader_types.h"
+#include "text/text_server_extension.h"
 #include "text_server.h"
 #include "xr/xr_interface.h"
 #include "xr/xr_interface_extension.h"
@@ -107,15 +108,11 @@ static bool has_server_feature_callback(const String &p_feature) {
 void preregister_server_types() {
 	shader_types = memnew(ShaderTypes);
 
-	GLOBAL_DEF("internationalization/rendering/text_driver", "");
-	String text_driver_options;
-	for (int i = 0; i < TextServerManager::get_interface_count(); i++) {
-		if (i > 0) {
-			text_driver_options += ",";
-		}
-		text_driver_options += TextServerManager::get_interface_name(i);
-	}
-	ProjectSettings::get_singleton()->set_custom_property_info("internationalization/rendering/text_driver", PropertyInfo(Variant::STRING, "internationalization/rendering/text_driver", PROPERTY_HINT_ENUM, text_driver_options));
+	GDREGISTER_CLASS(TextServerManager);
+	GDREGISTER_VIRTUAL_CLASS(TextServer);
+	GDREGISTER_CLASS(TextServerExtension);
+
+	Engine::get_singleton()->add_singleton(Engine::Singleton("TextServerManager", TextServerManager::get_singleton(), "TextServerManager"));
 }
 
 void register_server_types() {
@@ -125,8 +122,6 @@ void register_server_types() {
 	GDREGISTER_VIRTUAL_CLASS(RenderingServer);
 	GDREGISTER_CLASS(AudioServer);
 
-	GDREGISTER_CLASS(TextServerManager);
-	GDREGISTER_VIRTUAL_CLASS(TextServer);
 	TextServer::initialize_hex_code_box_fonts();
 
 	GDREGISTER_VIRTUAL_CLASS(PhysicsServer2D);
@@ -255,7 +250,6 @@ void register_server_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("PhysicsServer3D", PhysicsServer3D::get_singleton(), "PhysicsServer3D"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer2D", NavigationServer2D::get_singleton_mut(), "NavigationServer2D"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer3D", NavigationServer3D::get_singleton_mut(), "NavigationServer3D"));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("TextServerManager", TextServerManager::get_singleton(), "TextServerManager"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("XRServer", XRServer::get_singleton(), "XRServer"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("CameraServer", CameraServer::get_singleton(), "CameraServer"));
 }

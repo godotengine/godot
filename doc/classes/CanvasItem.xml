@@ -150,7 +150,7 @@
 			<argument index="7" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<argument index="8" name="outline_size" type="int" default="0" />
 			<argument index="9" name="outline_modulate" type="Color" default="Color(1, 1, 1, 0)" />
-			<argument index="10" name="flags" type="int" default="51" />
+			<argument index="10" name="flags" type="int" default="99" />
 			<description>
 				Breaks [code]text[/code] to the lines and draws it using the specified [code]font[/code] at the [code]position[/code] (top-left corner). The text will have its color multiplied by [code]modulate[/code]. If [code]clip_w[/code] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
 			</description>
