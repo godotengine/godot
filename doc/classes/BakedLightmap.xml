@@ -49,6 +49,10 @@
 		<member name="capture_quality" type="int" setter="set_capture_quality" getter="get_capture_quality" enum="BakedLightmap.BakeQuality" default="1">
 			Bake quality of the capture data.
 		</member>
+		<member name="debug_draw_density" type="bool" setter="set_debug_draw_density" getter="is_debug_draw_density_enabled" default="false">
+			If [code]true[/code], draws a checkerboard pattern with 4×4 tiles over the lightmap to help diagnose issues related to lightmap texel density and lightmap seams. To check whether lightmap texel density is consistent, compare the sizes of the checkerboard tiles on different objects. To get good visual results, checkerboard tile sizes should be as similar as possible across objects. Background scenery objects can generally afford to have lower lightmap texel density since they won't be viewed up close by the camera.
+			[b]Note:[/b] Changes to [member debug_draw_density] only have an effect after baking lightmaps.
+		</member>
 		<member name="default_texels_per_unit" type="float" setter="set_default_texels_per_unit" getter="get_default_texels_per_unit" default="16.0">
 			If a baked mesh doesn't have a UV2 size hint, this value will be used to roughly compute a suitable lightmap size.
 		</member>

@@ -158,6 +158,7 @@ private:
 	Vector3 extents;
 	float default_texels_per_unit;
 	float bias;
+	bool debug_draw_density;
 	BakeQuality bake_quality;
 	bool generate_atlas;
 	int max_atlas_size;
@@ -272,6 +273,9 @@ public:
 
 	void set_bias(float p_bias);
 	float get_bias() const;
+
+	void set_debug_draw_density(bool p_enabled);
+	bool is_debug_draw_density_enabled() const;
 
 	AABB get_aabb() const;
 	PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;

@@ -541,6 +541,17 @@ void BakedLightmap::_save_image(String &r_base_path, Ref<Image> r_img, bool p_us
 				c = c.to_srgb();
 			}
 
+			if (debug_draw_density) {
+				// Draw a 4×4 checkerboard pattern over the baked lightmap to help
+				// diagnose lightmap density and seam issues.
+				const bool even_square = (int(i * 0.25) + int(j * 0.25)) % 2 == 0;
+				if (even_square) {
+					c *= 1.25;
+				} else {
+					c *= 0.75;
+				}
+			}
+
 			r_img->set_pixel(j, i, c);
 		}
 	}
@@ -1430,6 +1441,14 @@ float BakedLightmap::get_bias() const {
 	return bias;
 }
 
+void BakedLightmap::set_debug_draw_density(bool p_enabled) {
+	debug_draw_density = p_enabled;
+}
+
+bool BakedLightmap::is_debug_draw_density_enabled() const {
+	return debug_draw_density;
+}
+
 AABB BakedLightmap::get_aabb() const {
 	return AABB(-extents, extents * 2);
 }
@@ -1474,6 +1493,9 @@ void BakedLightmap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_bias", "bias"), &BakedLightmap::set_bias);
 	ClassDB::bind_method(D_METHOD("get_bias"), &BakedLightmap::get_bias);
+
+	ClassDB::bind_method(D_METHOD("set_debug_draw_density", "enabled"), &BakedLightmap::set_debug_draw_density);
+	ClassDB::bind_method(D_METHOD("is_debug_draw_density_enabled"), &BakedLightmap::is_debug_draw_density_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_environment_mode", "mode"), &BakedLightmap::set_environment_mode);
 	ClassDB::bind_method(D_METHOD("get_environment_mode"), &BakedLightmap::get_environment_mode);
@@ -1561,6 +1583,9 @@ void BakedLightmap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "capture_quality", PROPERTY_HINT_ENUM, "Low,Medium,High"), "set_capture_quality", "get_capture_quality");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "capture_propagation", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_capture_propagation", "get_capture_propagation");
 
+	ADD_GROUP("Debug", "debug_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_draw_density"), "set_debug_draw_density", "is_debug_draw_density_enabled");
+
 	ADD_GROUP("Data", "");
 #ifndef DISABLE_DEPRECATED
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "image_path", PROPERTY_HINT_DIR, "", 0), "set_image_path", "get_image_path");
@@ -1610,6 +1635,7 @@ BakedLightmap::BakedLightmap() {
 	use_hdr = true;
 	use_color = true;
 	bias = 0.005;
+	debug_draw_density = false;
 
 	generate_atlas = true;
 	max_atlas_size = 4096;
