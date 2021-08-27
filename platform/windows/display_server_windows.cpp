@@ -2611,6 +2611,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			else if (wParam == SIZE_MINIMIZED) {
 				windows[window_id].maximized = false;
 				windows[window_id].minimized = true;
+				windows[window_id].preserve_window_size = false;
 			}
 			// The window has been resized, but neither the SIZE_MINIMIZED nor SIZE_MAXIMIZED value applies.
 			else if (wParam == SIZE_RESTORED) {
