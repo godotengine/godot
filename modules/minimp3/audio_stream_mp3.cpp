@@ -37,10 +37,12 @@
 
 #include "core/io/file_access.h"
 
-void AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
-	ERR_FAIL_COND(!active);
+int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
+	ERR_FAIL_COND_V(!active, 0);
 
 	int todo = p_frames;
+
+	int frames_mixed_this_step = p_frames;
 
 	while (todo && active) {
 		mp3dec_frame_info_t frame_info;
@@ -60,6 +62,7 @@ void AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 				seek(mp3_stream->loop_offset);
 				loops++;
 			} else {
+				frames_mixed_this_step = p_frames - todo;
 				//fill remainder with silence
 				for (int i = p_frames - todo; i < p_frames; i++) {
 					p_buffer[i] = AudioFrame(0, 0);
@@ -69,6 +72,7 @@ void AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 			}
 		}
 	}
+	return frames_mixed_this_step;
 }
 
 float AudioStreamPlaybackMP3::get_stream_sampling_rate() {

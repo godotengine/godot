@@ -31,119 +31,18 @@
 #include "audio_stream_player.h"
 
 #include "core/config/engine.h"
-
-void AudioStreamPlayer::_mix_to_bus(const AudioFrame *p_frames, int p_amount) {
-	int bus_index = AudioServer::get_singleton()->thread_find_bus_index(bus);
-
-	AudioFrame *targets[4] = { nullptr, nullptr, nullptr, nullptr };
-
-	if (AudioServer::get_singleton()->get_speaker_mode() == AudioServer::SPEAKER_MODE_STEREO) {
-		targets[0] = AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, 0);
-	} else {
-		switch (mix_target) {
-			case MIX_TARGET_STEREO: {
-				targets[0] = AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, 0);
-			} break;
-			case MIX_TARGET_SURROUND: {
-				for (int i = 0; i < AudioServer::get_singleton()->get_channel_count(); i++) {
-					targets[i] = AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, i);
-				}
-			} break;
-			case MIX_TARGET_CENTER: {
-				targets[0] = AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, 1);
-			} break;
-		}
-	}
-
-	for (int c = 0; c < 4; c++) {
-		if (!targets[c]) {
-			break;
-		}
-		for (int i = 0; i < p_amount; i++) {
-			targets[c][i] += p_frames[i];
-		}
-	}
-}
-
-void AudioStreamPlayer::_mix_internal(bool p_fadeout) {
-	//get data
-	AudioFrame *buffer = mix_buffer.ptrw();
-	int buffer_size = mix_buffer.size();
-
-	if (p_fadeout) {
-		// Short fadeout ramp
-		buffer_size = MIN(buffer_size, 128);
-	}
-
-	stream_playback->mix(buffer, pitch_scale, buffer_size);
-
-	//multiply volume interpolating to avoid clicks if this changes
-	float target_volume = p_fadeout ? -80.0 : volume_db;
-	float vol = Math::db2linear(mix_volume_db);
-	float vol_inc = (Math::db2linear(target_volume) - vol) / float(buffer_size);
-
-	for (int i = 0; i < buffer_size; i++) {
-		buffer[i] *= vol;
-		vol += vol_inc;
-	}
-
-	//set volume for next mix
-	mix_volume_db = target_volume;
-
-	_mix_to_bus(buffer, buffer_size);
-}
-
-void AudioStreamPlayer::_mix_audio() {
-	if (use_fadeout) {
-		_mix_to_bus(fadeout_buffer.ptr(), fadeout_buffer.size());
-		use_fadeout = false;
-	}
-
-	if (!stream_playback.is_valid() || !active.is_set() ||
-			(stream_paused && !stream_paused_fade)) {
-		return;
-	}
-
-	if (stream_paused) {
-		if (stream_paused_fade && stream_playback->is_playing()) {
-			_mix_internal(true);
-			stream_paused_fade = false;
-		}
-		return;
-	}
-
-	if (setstop.is_set()) {
-		_mix_internal(true);
-		stream_playback->stop();
-		setstop.clear();
-	}
-
-	if (setseek.get() >= 0.0 && !stop_has_priority.is_set()) {
-		if (stream_playback->is_playing()) {
-			//fade out to avoid pops
-			_mix_internal(true);
-		}
-
-		stream_playback->start(setseek.get());
-		setseek.set(-1.0); //reset seek
-		mix_volume_db = volume_db; //reset ramp
-	}
-
-	stop_has_priority.clear();
-
-	_mix_internal(false);
-}
+#include "core/math/audio_frame.h"
+#include "servers/audio_server.h"
 
 void AudioStreamPlayer::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		AudioServer::get_singleton()->add_callback(_mix_audios, this);
 		if (autoplay && !Engine::get_singleton()->is_editor_hint()) {
 			play();
 		}
 	}
 
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
-		if (!active.is_set() || (setseek.get() < 0 && !stream_playback->is_playing())) {
+		if (stream_playback.is_valid() && active.is_set() && !AudioServer::get_singleton()->is_playback_active(stream_playback)) {
 			active.clear();
 			set_process_internal(false);
 			emit_signal(SNAME("finished"));
@@ -151,7 +50,9 @@ void AudioStreamPlayer::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
-		AudioServer::get_singleton()->remove_callback(_mix_audios, this);
+		if (stream_playback.is_valid()) {
+			AudioServer::get_singleton()->stop_playback_stream(stream_playback);
+		}
 	}
 
 	if (p_what == NOTIFICATION_PAUSED) {
@@ -167,38 +68,10 @@ void AudioStreamPlayer::_notification(int p_what) {
 }
 
 void AudioStreamPlayer::set_stream(Ref<AudioStream> p_stream) {
-	AudioServer::get_singleton()->lock();
-
-	if (active.is_set() && stream_playback.is_valid() && !stream_paused) {
-		//changing streams out of the blue is not a great idea, but at least
-		//let's try to somehow avoid a click
-
-		AudioFrame *buffer = fadeout_buffer.ptrw();
-		int buffer_size = fadeout_buffer.size();
-
-		stream_playback->mix(buffer, pitch_scale, buffer_size);
-
-		//multiply volume interpolating to avoid clicks if this changes
-		float target_volume = -80.0;
-		float vol = Math::db2linear(mix_volume_db);
-		float vol_inc = (Math::db2linear(target_volume) - vol) / float(buffer_size);
-
-		for (int i = 0; i < buffer_size; i++) {
-			buffer[i] *= vol;
-			vol += vol_inc;
-		}
-
-		use_fadeout = true;
-	}
-
-	mix_buffer.resize(AudioServer::get_singleton()->thread_get_mix_buffer_size());
-
 	if (stream_playback.is_valid()) {
+		stop();
 		stream_playback.unref();
 		stream.unref();
-		active.clear();
-		setseek.set(-1);
-		setstop.clear();
 	}
 
 	if (p_stream.is_valid()) {
@@ -209,8 +82,6 @@ void AudioStreamPlayer::set_stream(Ref<AudioStream> p_stream) {
 			stream.unref();
 		}
 	}
-
-	AudioServer::get_singleton()->unlock();
 
 	if (p_stream.is_valid() && stream_playback.is_null()) {
 		stream.unref();
@@ -223,6 +94,8 @@ Ref<AudioStream> AudioStreamPlayer::get_stream() const {
 
 void AudioStreamPlayer::set_volume_db(float p_volume) {
 	volume_db = p_volume;
+
+	AudioServer::get_singleton()->set_playback_all_bus_volumes_linear(stream_playback, _get_volume_vector());
 }
 
 float AudioStreamPlayer::get_volume_db() const {
@@ -232,6 +105,8 @@ float AudioStreamPlayer::get_volume_db() const {
 void AudioStreamPlayer::set_pitch_scale(float p_pitch_scale) {
 	ERR_FAIL_COND(p_pitch_scale <= 0.0);
 	pitch_scale = p_pitch_scale;
+
+	AudioServer::get_singleton()->set_playback_pitch_scale(stream_playback, pitch_scale);
 }
 
 float AudioStreamPlayer::get_pitch_scale() const {
@@ -239,31 +114,32 @@ float AudioStreamPlayer::get_pitch_scale() const {
 }
 
 void AudioStreamPlayer::play(float p_from_pos) {
+	stop();
+	if (stream.is_valid()) {
+		stream_playback = stream->instance_playback();
+	}
 	if (stream_playback.is_valid()) {
-		//mix_volume_db = volume_db; do not reset volume ramp here, can cause clicks
-		setseek.set(p_from_pos);
-		stop_has_priority.clear();
+		AudioServer::get_singleton()->start_playback_stream(stream_playback, bus, _get_volume_vector(), p_from_pos);
 		active.set();
-		set_process_internal(true);
 	}
 }
 
 void AudioStreamPlayer::seek(float p_seconds) {
-	if (stream_playback.is_valid()) {
-		setseek.set(p_seconds);
+	if (stream_playback.is_valid() && active.is_set()) {
+		play(p_seconds);
 	}
 }
 
 void AudioStreamPlayer::stop() {
-	if (stream_playback.is_valid() && active.is_set()) {
-		setstop.set();
-		stop_has_priority.set();
+	if (stream_playback.is_valid()) {
+		active.clear();
+		AudioServer::get_singleton()->stop_playback_stream(stream_playback);
 	}
 }
 
 bool AudioStreamPlayer::is_playing() const {
 	if (stream_playback.is_valid()) {
-		return active.is_set() && !setstop.is_set(); //&& stream_playback->is_playing();
+		return AudioServer::get_singleton()->is_playback_active(stream_playback);
 	}
 
 	return false;
@@ -271,26 +147,22 @@ bool AudioStreamPlayer::is_playing() const {
 
 float AudioStreamPlayer::get_playback_position() {
 	if (stream_playback.is_valid()) {
-		float ss = setseek.get();
-		if (ss >= 0.0) {
-			return ss;
-		}
-		return stream_playback->get_playback_position();
+		return AudioServer::get_singleton()->get_playback_position(stream_playback);
 	}
 
 	return 0;
 }
 
 void AudioStreamPlayer::set_bus(const StringName &p_bus) {
-	//if audio is active, must lock this
-	AudioServer::get_singleton()->lock();
 	bus = p_bus;
-	AudioServer::get_singleton()->unlock();
+	if (stream_playback.is_valid()) {
+		AudioServer::get_singleton()->set_playback_bus_exclusive(stream_playback, p_bus, _get_volume_vector());
+	}
 }
 
 StringName AudioStreamPlayer::get_bus() const {
 	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
-		if (AudioServer::get_singleton()->get_bus_name(i) == bus) {
+		if (AudioServer::get_singleton()->get_bus_name(i) == String(bus)) {
 			return bus;
 		}
 	}
@@ -322,18 +194,61 @@ void AudioStreamPlayer::_set_playing(bool p_enable) {
 }
 
 bool AudioStreamPlayer::_is_active() const {
-	return active.is_set();
+	if (stream_playback.is_valid()) {
+		return AudioServer::get_singleton()->is_playback_active(stream_playback);
+	}
+	return false;
 }
 
 void AudioStreamPlayer::set_stream_paused(bool p_pause) {
-	if (p_pause != stream_paused) {
-		stream_paused = p_pause;
-		stream_paused_fade = p_pause;
+	// TODO this does not have perfect recall, fix that maybe? If the stream isn't set, we can't persist this bool.
+	if (stream_playback.is_valid()) {
+		AudioServer::get_singleton()->set_playback_paused(stream_playback, p_pause);
 	}
 }
 
 bool AudioStreamPlayer::get_stream_paused() const {
-	return stream_paused;
+	if (stream_playback.is_valid()) {
+		return AudioServer::get_singleton()->is_playback_paused(stream_playback);
+	}
+	return false;
+}
+
+Vector<AudioFrame> AudioStreamPlayer::_get_volume_vector() {
+	Vector<AudioFrame> volume_vector;
+	// We need at most four stereo pairs (for 7.1 systems).
+	volume_vector.resize(4);
+
+	// Initialize the volume vector to zero.
+	for (AudioFrame &channel_volume_db : volume_vector) {
+		channel_volume_db = AudioFrame(0, 0);
+	}
+
+	float volume_linear = Math::db2linear(volume_db);
+
+	// Set the volume vector up according to the speaker mode and mix target.
+	// TODO do we need to scale the volume down when we output to more channels?
+	if (AudioServer::get_singleton()->get_speaker_mode() == AudioServer::SPEAKER_MODE_STEREO) {
+		volume_vector.write[0] = AudioFrame(volume_linear, volume_linear);
+	} else {
+		switch (mix_target) {
+			case MIX_TARGET_STEREO: {
+				volume_vector.write[0] = AudioFrame(volume_linear, volume_linear);
+			} break;
+			case MIX_TARGET_SURROUND: {
+				// TODO Make sure this is right.
+				volume_vector.write[0] = AudioFrame(volume_linear, volume_linear);
+				volume_vector.write[1] = AudioFrame(volume_linear, /* LFE= */ 1.0f);
+				volume_vector.write[2] = AudioFrame(volume_linear, volume_linear);
+				volume_vector.write[3] = AudioFrame(volume_linear, volume_linear);
+			} break;
+			case MIX_TARGET_CENTER: {
+				// TODO Make sure this is right.
+				volume_vector.write[1] = AudioFrame(volume_linear, /* LFE= */ 1.0f);
+			} break;
+		}
+	}
+	return volume_vector;
 }
 
 void AudioStreamPlayer::_validate_property(PropertyInfo &property) const {
@@ -410,8 +325,6 @@ void AudioStreamPlayer::_bind_methods() {
 }
 
 AudioStreamPlayer::AudioStreamPlayer() {
-	fadeout_buffer.resize(512);
-
 	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &AudioStreamPlayer::_bus_layout_changed));
 }
 

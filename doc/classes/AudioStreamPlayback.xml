@@ -26,7 +26,7 @@
 			</description>
 		</method>
 		<method name="_mix" qualifiers="virtual">
-			<return type="void" />
+			<return type="int" />
 			<argument index="0" name="buffer" type="AudioFrame*" />
 			<argument index="1" name="rate_scale" type="float" />
 			<argument index="2" name="frames" type="int" />

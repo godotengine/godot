@@ -52,6 +52,7 @@
 #include "scene/resources/text_line.h"
 #include "scene/resources/world_2d.h"
 #include "scene/scene_string_names.h"
+#include "servers/audio_server.h"
 
 void ViewportTexture::setup_local_to_scene() {
 	if (vp) {
@@ -820,12 +821,7 @@ Rect2 Viewport::get_visible_rect() const {
 }
 
 void Viewport::_update_listener_2d() {
-	/*
-	if (is_inside_tree() && audio_listener_3d && (!get_parent() || (Object::cast_to<Control>(get_parent()) && Object::cast_to<Control>(get_parent())->is_visible_in_tree())))
-		SpatialSound2DServer::get_singleton()->listener_set_space(internal_listener_2d, find_world_2d()->get_sound_space());
-	else
-		SpatialSound2DServer::get_singleton()->listener_set_space(internal_listener_2d, RID());
-*/
+	AudioServer::get_singleton()->notify_listener_changed();
 }
 
 void Viewport::set_as_audio_listener_2d(bool p_enable) {
@@ -3072,6 +3068,7 @@ bool Viewport::is_audio_listener_3d() const {
 }
 
 void Viewport::_update_listener_3d() {
+	AudioServer::get_singleton()->notify_listener_changed();
 }
 
 void Viewport::_listener_transform_3d_changed_notify() {
