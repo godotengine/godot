@@ -39,7 +39,7 @@ StringName MobileVRInterface::get_name() const {
 	return "Native mobile";
 };
 
-int MobileVRInterface::get_capabilities() const {
+uint32_t MobileVRInterface::get_capabilities() const {
 	return XRInterface::XR_STEREO;
 };
 
@@ -305,6 +305,10 @@ uint32_t MobileVRInterface::get_view_count() {
 	return 2;
 };
 
+XRInterface::TrackingStatus MobileVRInterface::get_tracking_status() const {
+	return tracking_state;
+}
+
 bool MobileVRInterface::is_initialized() const {
 	return (initialized);
 };
@@ -340,16 +344,16 @@ bool MobileVRInterface::initialize() {
 void MobileVRInterface::uninitialize() {
 	if (initialized) {
 		XRServer *xr_server = XRServer::get_singleton();
-		if (xr_server != nullptr) {
+		if (xr_server != nullptr && xr_server->get_primary_interface() == this) {
 			// no longer our primary interface
-			xr_server->clear_primary_interface_if(this);
+			xr_server->set_primary_interface(nullptr);
 		}
 
 		initialized = false;
 	};
 };
 
-Size2 MobileVRInterface::get_render_targetsize() {
+Size2 MobileVRInterface::get_render_target_size() {
 	_THREAD_SAFE_METHOD_
 
 	// we use half our window size
@@ -428,31 +432,6 @@ CameraMatrix MobileVRInterface::get_projection_for_view(uint32_t p_view, real_t 
 
 	return eye;
 };
-
-void MobileVRInterface::commit_for_eye(XRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) {
-	_THREAD_SAFE_METHOD_
-
-	// We must have a valid render target
-	ERR_FAIL_COND(!p_render_target.is_valid());
-
-	// Because we are rendering to our device we must use our main viewport!
-	ERR_FAIL_COND(p_screen_rect == Rect2());
-
-	Rect2 dest = p_screen_rect;
-	Vector2 eye_center;
-
-	// we output half a screen
-	dest.size.x *= 0.5;
-
-	if (p_eye == XRInterface::EYE_LEFT) {
-		eye_center.x = ((-intraocular_dist / 2.0) + (display_width / 4.0)) / (display_width / 2.0);
-	} else if (p_eye == XRInterface::EYE_RIGHT) {
-		dest.position.x = dest.size.x;
-		eye_center.x = ((intraocular_dist / 2.0) - (display_width / 4.0)) / (display_width / 2.0);
-	}
-	// we don't offset the eye center vertically (yet)
-	eye_center.y = 0.0;
-}
 
 Vector<BlitToScreen> MobileVRInterface::commit_views(RID p_render_target, const Rect2 &p_screen_rect) {
 	_THREAD_SAFE_METHOD_

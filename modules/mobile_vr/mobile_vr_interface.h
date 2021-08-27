@@ -52,6 +52,7 @@ class MobileVRInterface : public XRInterface {
 
 private:
 	bool initialized = false;
+	XRInterface::TrackingStatus tracking_state;
 	Basis orientation;
 
 	// Just set some defaults for these. At some point we need to look at adding a lookup table for common device + headset combos and/or support reading cardboard QR codes
@@ -131,13 +132,15 @@ public:
 	real_t get_k2() const;
 
 	virtual StringName get_name() const override;
-	virtual int get_capabilities() const override;
+	virtual uint32_t get_capabilities() const override;
+
+	virtual TrackingStatus get_tracking_status() const override;
 
 	virtual bool is_initialized() const override;
 	virtual bool initialize() override;
 	virtual void uninitialize() override;
 
-	virtual Size2 get_render_targetsize() override;
+	virtual Size2 get_render_target_size() override;
 	virtual uint32_t get_view_count() override;
 	virtual Transform3D get_camera_transform() override;
 	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) override;
@@ -145,13 +148,9 @@ public:
 	virtual Vector<BlitToScreen> commit_views(RID p_render_target, const Rect2 &p_screen_rect) override;
 
 	virtual void process() override;
-	virtual void notification(int p_what) override {}
 
 	MobileVRInterface();
 	~MobileVRInterface();
-
-	// deprecated
-	virtual void commit_for_eye(XRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) override;
 };
 
 #endif // !MOBILE_VR_INTERFACE_H

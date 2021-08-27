@@ -68,7 +68,7 @@ public:
 		EYE_RIGHT
 	};
 
-	enum Tracking_status { /* tracking status currently based on AR but we can start doing more with this for VR as well */
+	enum TrackingStatus { /* tracking status currently based on AR but we can start doing more with this for VR as well */
 		XR_NORMAL_TRACKING,
 		XR_EXCESSIVE_MOTION,
 		XR_INSUFFICIENT_FEATURES,
@@ -76,26 +76,25 @@ public:
 		XR_NOT_TRACKING
 	};
 
+private:
 protected:
 	_THREAD_SAFE_CLASS_
 
-	Tracking_status tracking_state;
 	static void _bind_methods();
 
 public:
 	/** general interface information **/
-	virtual StringName get_name() const;
-	virtual int get_capabilities() const = 0;
+	virtual StringName get_name() const = 0;
+	virtual uint32_t get_capabilities() const = 0;
 
 	bool is_primary();
-	void set_is_primary(bool p_is_primary);
+	void set_primary(bool p_is_primary);
 
 	virtual bool is_initialized() const = 0; /* returns true if we've initialized this interface */
-	void set_is_initialized(bool p_initialized); /* helper function, will call initialize or uninitialize */
 	virtual bool initialize() = 0; /* initialize this interface, if this has an HMD it becomes the primary interface */
 	virtual void uninitialize() = 0; /* deinitialize this interface */
 
-	Tracking_status get_tracking_status() const; /* get the status of our current tracking */
+	virtual TrackingStatus get_tracking_status() const; /* get the status of our current tracking */
 
 	/** specific to VR **/
 	// nothing yet
@@ -107,27 +106,25 @@ public:
 
 	/** rendering and internal **/
 
-	virtual Size2 get_render_targetsize() = 0; /* returns the recommended render target size per eye for this device */
+	virtual Size2 get_render_target_size() = 0; /* returns the recommended render target size per eye for this device */
 	virtual uint32_t get_view_count() = 0; /* returns the view count we need (1 is monoscopic, 2 is stereoscopic but can be more) */
 	virtual Transform3D get_camera_transform() = 0; /* returns the position of our camera for updating our camera node. For monoscopic this is equal to the views transform, for stereoscopic this should be an average */
 	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) = 0; /* get each views transform */
 	virtual CameraMatrix get_projection_for_view(uint32_t p_view, real_t p_aspect, real_t p_z_near, real_t p_z_far) = 0; /* get each view projection matrix */
 
+	// note, external color/depth/vrs texture support will be added here soon.
+
 	virtual Vector<BlitToScreen> commit_views(RID p_render_target, const Rect2 &p_screen_rect) = 0; /* commit rendered views to the XR interface */
 
 	virtual void process() = 0;
-	virtual void notification(int p_what) = 0;
+	virtual void notification(int p_what);
 
 	XRInterface();
 	~XRInterface();
-
-	// deprecated
-	virtual unsigned int get_external_texture_for_eye(XRInterface::Eyes p_eye); /* if applicable return external texture to render to */
-	virtual void commit_for_eye(XRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) = 0; /* output the left or right eye */
 };
 
 VARIANT_ENUM_CAST(XRInterface::Capabilities);
 VARIANT_ENUM_CAST(XRInterface::Eyes);
-VARIANT_ENUM_CAST(XRInterface::Tracking_status);
+VARIANT_ENUM_CAST(XRInterface::TrackingStatus);
 
-#endif
+#endif // !XR_INTERFACE_H

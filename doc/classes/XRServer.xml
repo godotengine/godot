@@ -37,13 +37,6 @@
 				You should call this method after a few seconds have passed. For instance, when the user requests a realignment of the display holding a designated button on a controller for a short period of time, or when implementing a teleport mechanism.
 			</description>
 		</method>
-		<method name="clear_primary_interface_if">
-			<return type="void" />
-			<argument index="0" name="interface" type="XRInterface" />
-			<description>
-				Clears our current primary interface if it is set to the provided interface.
-			</description>
-		</method>
 		<method name="find_interface" qualifiers="const">
 			<return type="XRInterface" />
 			<argument index="0" name="name" type="String" />
