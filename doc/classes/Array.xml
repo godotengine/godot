@@ -302,7 +302,7 @@
 			</description>
 		</method>
 		<method name="insert">
-			<return type="void" />
+			<return type="int" />
 			<argument index="0" name="position" type="int" />
 			<argument index="1" name="value" type="Variant" />
 			<description>
