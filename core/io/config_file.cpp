@@ -196,7 +196,7 @@ Error ConfigFile::_internal_save(FileAccess *file) {
 
 			String vstr;
 			VariantWriter::write_to_string(F.get(), vstr);
-			file->store_string(F.key() + "=" + vstr + "\n");
+			file->store_string(F.key().property_name_encode() + "=" + vstr + "\n");
 		}
 	}
 
