@@ -532,19 +532,6 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				text_edit->show();
 				text_edit->set_text(v);
 				text_edit->deselect();
-
-				int button_margin = text_edit->get_theme_constant(SNAME("button_margin"), SNAME("Dialogs"));
-				int margin = text_edit->get_theme_constant(SNAME("margin"), SNAME("Dialogs"));
-
-				action_buttons[0]->set_anchor(SIDE_LEFT, Control::ANCHOR_END);
-				action_buttons[0]->set_anchor(SIDE_TOP, Control::ANCHOR_END);
-				action_buttons[0]->set_anchor(SIDE_RIGHT, Control::ANCHOR_END);
-				action_buttons[0]->set_anchor(SIDE_BOTTOM, Control::ANCHOR_END);
-				action_buttons[0]->set_begin(Point2(-70 * EDSCALE, -button_margin + 5 * EDSCALE));
-				action_buttons[0]->set_end(Point2(-margin, -margin));
-				action_buttons[0]->set_text(TTR("Close"));
-				action_buttons[0]->show();
-
 			} else if (hint == PROPERTY_HINT_TYPE_STRING) {
 				if (!create_dialog) {
 					create_dialog = memnew(CreateDialog);
@@ -832,7 +819,6 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			color_picker->set_focus_on_line_edit();
 
 		} break;
-
 		case Variant::NODE_PATH: {
 			List<String> names;
 			names.push_back(TTR("Assign"));
