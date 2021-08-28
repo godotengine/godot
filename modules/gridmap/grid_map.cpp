@@ -343,7 +343,7 @@ void GridMap::set_cell_item(const Vector3i &p_position, int p_item, int p_rot) {
 	c.item = p_item;
 	c.rot = p_rot;
 
-	int prev = get_cell_item(key.x, key.y, key.z);
+	int prev = get_cell_item(Vector3(key.x, key.y, key.z));
 
 	cell_map[key] = c;
 
