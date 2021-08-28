@@ -2,7 +2,7 @@ supported_platforms = ["windows", "osx", "linuxbsd", "server", "android", "haiku
 
 
 def can_build(env, platform):
-    return True
+    return not env["arch"].startswith("rv")
 
 
 def configure(env):
