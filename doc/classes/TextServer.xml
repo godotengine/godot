@@ -551,7 +551,7 @@
 			<argument index="0" name="font_rid" type="RID" />
 			<argument index="1" name="size" type="Vector2i" />
 			<argument index="2" name="glyph" type="int" />
-			<argument index="3" name="size" type="Vector2" />
+			<argument index="3" name="gl_size" type="Vector2" />
 			<description>
 				Sets size of the glyph.
 			</description>

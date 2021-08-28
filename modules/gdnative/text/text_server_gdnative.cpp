@@ -383,7 +383,7 @@ Vector2 TextServerGDNative::font_get_glyph_size(RID p_font_rid, const Vector2i &
 
 void TextServerGDNative::font_set_glyph_size(RID p_font_rid, const Vector2i &p_size, int32_t p_glyph, const Vector2 &p_gl_size) {
 	ERR_FAIL_COND(interface == nullptr);
-	interface->font_set_glyph_size(data, (godot_rid *)&p_font_rid, (const godot_vector2i *)&p_size, p_glyph, (const godot_vector2 *)&p_size);
+	interface->font_set_glyph_size(data, (godot_rid *)&p_font_rid, (const godot_vector2i *)&p_size, p_glyph, (const godot_vector2 *)&p_gl_size);
 }
 
 Rect2 TextServerGDNative::font_get_glyph_uv_rect(RID p_font_rid, const Vector2i &p_size, int32_t p_glyph) const {
