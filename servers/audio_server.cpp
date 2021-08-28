@@ -381,29 +381,25 @@ void AudioServer::_mix_step() {
 			}
 		}
 
-		ERR_FAIL_COND(playback->bus_details.load() == nullptr);
-		// By putting null into the bus details pointers, we're taking ownership of their memory for the duration of this mix.
-		AudioStreamPlaybackBusDetails *bus_details = nullptr;
-		{
-			std::atomic<AudioStreamPlaybackBusDetails *> bus_details_atomic = nullptr;
-			bus_details = playback->bus_details.exchange(bus_details_atomic);
-		}
-		ERR_FAIL_COND(bus_details == nullptr);
+		AudioStreamPlaybackBusDetails bus_details;
+		AudioStreamPlaybackBusDetails *bus_details_ptr = playback->bus_details.load();
+		ERR_FAIL_COND(bus_details_ptr == nullptr);
+		bus_details = *bus_details_ptr;
 		AudioStreamPlaybackBusDetails *prev_bus_details = playback->prev_bus_details;
 
 		// Mix to any active buses.
 		for (int idx = 0; idx < MAX_BUSES_PER_PLAYBACK; idx++) {
-			if (!bus_details->bus_active[idx]) {
+			if (!bus_details.bus_active[idx]) {
 				continue;
 			}
-			int bus_idx = thread_find_bus_index(bus_details->bus[idx]);
+			int bus_idx = thread_find_bus_index(bus_details.bus[idx]);
 
 			int prev_bus_idx = -1;
 			for (int search_idx = 0; search_idx < MAX_BUSES_PER_PLAYBACK; search_idx++) {
 				if (!prev_bus_details->bus_active[search_idx]) {
 					continue;
 				}
-				if (prev_bus_details->bus[search_idx].hash() == bus_details->bus[idx].hash()) {
+				if (prev_bus_details->bus[search_idx].hash() == bus_details.bus[idx].hash()) {
 					prev_bus_idx = search_idx;
 				}
 			}
@@ -411,9 +407,9 @@ void AudioServer::_mix_step() {
 			for (int channel_idx = 0; channel_idx < channel_count; channel_idx++) {
 				AudioFrame *channel_buf = thread_get_channel_mix_buffer(bus_idx, channel_idx);
 				if (fading_out) {
-					bus_details->volume[idx][channel_idx] = AudioFrame(0, 0);
+					bus_details.volume[idx][channel_idx] = AudioFrame(0, 0);
 				}
-				AudioFrame channel_vol = bus_details->volume[idx][channel_idx];
+				AudioFrame channel_vol = bus_details.volume[idx][channel_idx];
 
 				AudioFrame prev_channel_vol = AudioFrame(0, 0);
 				if (prev_bus_idx != -1) {
@@ -432,7 +428,7 @@ void AudioServer::_mix_step() {
 
 			int current_bus_idx = -1;
 			for (int search_idx = 0; search_idx < MAX_BUSES_PER_PLAYBACK; search_idx++) {
-				if (bus_details->bus[search_idx] == prev_bus_details->bus[idx]) {
+				if (bus_details.bus[search_idx] == prev_bus_details->bus[idx]) {
 					current_bus_idx = search_idx;
 				}
 			}
@@ -450,17 +446,10 @@ void AudioServer::_mix_step() {
 		}
 
 		// Copy the bus details we mixed with to the previous bus details to maintain volume ramps.
-		std::copy(std::begin(bus_details->bus_active), std::end(bus_details->bus_active), std::begin(prev_bus_details->bus_active));
-		std::copy(std::begin(bus_details->bus), std::end(bus_details->bus), std::begin(prev_bus_details->bus));
+		std::copy(std::begin(bus_details.bus_active), std::end(bus_details.bus_active), std::begin(prev_bus_details->bus_active));
+		std::copy(std::begin(bus_details.bus), std::end(bus_details.bus), std::begin(prev_bus_details->bus));
 		for (int bus_idx = 0; bus_idx < MAX_BUSES_PER_PLAYBACK; bus_idx++) {
-			std::copy(std::begin(bus_details->volume[bus_idx]), std::end(bus_details->volume[bus_idx]), std::begin(prev_bus_details->volume[bus_idx]));
-		}
-
-		AudioStreamPlaybackBusDetails *bus_details_expected = nullptr;
-		// Only put the bus details pointer back if it hasn't been updated already.
-		if (!playback->bus_details.compare_exchange_strong(/* expected= */ bus_details_expected, /* new= */ bus_details)) {
-			// If it *has* been updated already, queue the old one for deletion.
-			bus_details_graveyard.insert(bus_details);
+			std::copy(std::begin(bus_details.volume[bus_idx]), std::end(bus_details.volume[bus_idx]), std::begin(prev_bus_details->volume[bus_idx]));
 		}
 
 		switch (playback->state.load()) {
@@ -1216,11 +1205,11 @@ void AudioServer::set_playback_bus_volumes_linear(Ref<AudioStreamPlayback> p_pla
 		}
 	}
 
-	do {
-		old_bus_details = playback_node->bus_details.load();
-	} while (!playback_node->bus_details.compare_exchange_strong(old_bus_details, new_bus_details));
+	old_bus_details = playback_node->bus_details.exchange(new_bus_details);
 
-	bus_details_graveyard.insert(old_bus_details);
+	if (old_bus_details) {
+		bus_details_graveyard.insert(old_bus_details);
+	}
 }
 
 void AudioServer::set_playback_all_bus_volumes_linear(Ref<AudioStreamPlayback> p_playback, Vector<AudioFrame> p_volumes) {
@@ -1233,9 +1222,11 @@ void AudioServer::set_playback_all_bus_volumes_linear(Ref<AudioStreamPlayback> p
 	if (!playback_node) {
 		return;
 	}
+	AudioStreamPlaybackBusDetails *current_bus_details = playback_node->bus_details.load();
+	ERR_FAIL_COND(current_bus_details == nullptr);
 	for (int bus_idx = 0; bus_idx < MAX_BUSES_PER_PLAYBACK; bus_idx++) {
-		if (playback_node->bus_details.load()->bus_active[bus_idx]) {
-			map[playback_node->bus_details.load()->bus[bus_idx]] = p_volumes;
+		if (current_bus_details->bus_active[bus_idx]) {
+			map[current_bus_details->bus[bus_idx]] = p_volumes;
 		}
 	}
 
