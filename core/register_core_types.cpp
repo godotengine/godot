@@ -174,6 +174,7 @@ void register_core_types() {
 	GDREGISTER_CLASS(TCPServer);
 
 	GDREGISTER_VIRTUAL_CLASS(PacketPeer);
+	GDREGISTER_CLASS(PacketPeerExtension);
 	GDREGISTER_CLASS(PacketPeerStream);
 	GDREGISTER_CLASS(PacketPeerUDP);
 	GDREGISTER_CLASS(UDPServer);
