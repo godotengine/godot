@@ -188,7 +188,7 @@ Error ConfigFile::_internal_save(FileAccess *file) {
 		for (OrderedHashMap<String, Variant>::Element F = E.get().front(); F; F = F.next()) {
 			String vstr;
 			VariantWriter::write_to_string(F.get(), vstr);
-			file->store_string(F.key() + "=" + vstr + "\n");
+			file->store_string(F.key().property_name_encode() + "=" + vstr + "\n");
 		}
 	}
 
