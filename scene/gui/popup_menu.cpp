@@ -228,6 +228,7 @@ void PopupMenu::_activate_submenu(int p_over) {
 	// Set autohide areas
 	PopupMenu *submenu_pum = Object::cast_to<PopupMenu>(submenu_popup);
 	if (submenu_pum) {
+		submenu_pum->take_mouse_focus();
 		// Make the position of the parent popup relative to submenu popup
 		this_rect.position = this_rect.position - submenu_pum->get_position();
 
