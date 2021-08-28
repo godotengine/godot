@@ -59,8 +59,11 @@ class MessageQueue {
 		};
 	};
 
-	uint8_t *buffer;
-	uint32_t buffer_end = 0;
+	struct Buffer {
+		uint8_t *buffer;
+		uint32_t buffer_end = 0;
+	};
+	Vector<Buffer> buffers;
 	uint32_t buffer_max_used = 0;
 	uint32_t buffer_size;
 
