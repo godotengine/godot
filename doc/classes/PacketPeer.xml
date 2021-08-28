@@ -9,6 +9,30 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_get_available_packet_count" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_max_packet_size" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_packet_native" qualifiers="virtual">
+			<return type="int" />
+			<argument index="0" name="r_buffer" type="const void*" />
+			<argument index="1" name="r_buffer_size" type="int32_t*" />
+			<description>
+			</description>
+		</method>
+		<method name="_put_packet_native" qualifiers="virtual">
+			<return type="int" />
+			<argument index="0" name="p_buffer" type="const void*" />
+			<argument index="1" name="p_buffer_size" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="get_available_packet_count" qualifiers="const">
 			<return type="int" />
 			<description>

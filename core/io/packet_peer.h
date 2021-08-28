@@ -35,6 +35,10 @@
 #include "core/object/class_db.h"
 #include "core/templates/ring_buffer.h"
 
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/script_language.h"
+#include "core/variant/native_ptr.h"
+
 class PacketPeer : public RefCounted {
 	GDCLASS(PacketPeer, RefCounted);
 
@@ -52,11 +56,17 @@ class PacketPeer : public RefCounted {
 	Vector<uint8_t> encode_buffer;
 
 public:
-	virtual int get_available_packet_count() const = 0;
-	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) = 0; ///< buffer is GONE after next get_packet
-	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) = 0;
+	virtual int get_available_packet_count() const;
+	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size); ///< buffer is GONE after next get_packet
+	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
 
-	virtual int get_max_packet_size() const = 0;
+	virtual int get_max_packet_size() const;
+
+	/* GDExtension */
+	GDVIRTUAL0RC(int, _get_available_packet_count);
+	GDVIRTUAL2R(int, _get_packet_native, GDNativeConstPtr<const uint8_t *>, GDNativePtr<int>);
+	GDVIRTUAL2R(int, _put_packet_native, GDNativeConstPtr<const uint8_t>, int);
+	GDVIRTUAL0RC(int, _get_max_packet_size);
 
 	/* helpers / binders */
 

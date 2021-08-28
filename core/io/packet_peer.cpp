@@ -135,13 +135,55 @@ Error PacketPeer::_get_packet_error() const {
 	return last_get_error;
 }
 
+int PacketPeer::get_available_packet_count() const {
+	int count;
+	if (GDVIRTUAL_CALL(_get_available_packet_count, count)) {
+		return count;
+	}
+	WARN_PRINT_ONCE("PacketPeer::_get_available_packet_count is unimplemented!");
+	return -1;
+}
+
+Error PacketPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
+	int err;
+	if (GDVIRTUAL_CALL(_get_packet_native, r_buffer, &r_buffer_size, err)) {
+		return (Error)err;
+	}
+	WARN_PRINT_ONCE("PacketPeer::_get_packet is unimplemented!");
+	return FAILED;
+}
+
+Error PacketPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
+	int err;
+	if (GDVIRTUAL_CALL(_put_packet_native, p_buffer, p_buffer_size, err)) {
+		return (Error)err;
+	}
+	WARN_PRINT_ONCE("PacketPeer::_put_packet is unimplemented!");
+	return FAILED;
+}
+
+int PacketPeer::get_max_packet_size() const {
+	int size;
+	if (GDVIRTUAL_CALL(_get_max_packet_size, size)) {
+		return size;
+	}
+	WARN_PRINT_ONCE("PacketPeer::_get_max_packet_size is unimplemented!");
+	return 0;
+}
+
 void PacketPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_var", "allow_objects"), &PacketPeer::_bnd_get_var, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("put_var", "var", "full_objects"), &PacketPeer::put_var, DEFVAL(false));
+
 	ClassDB::bind_method(D_METHOD("get_packet"), &PacketPeer::_get_packet);
 	ClassDB::bind_method(D_METHOD("put_packet", "buffer"), &PacketPeer::_put_packet);
 	ClassDB::bind_method(D_METHOD("get_packet_error"), &PacketPeer::_get_packet_error);
 	ClassDB::bind_method(D_METHOD("get_available_packet_count"), &PacketPeer::get_available_packet_count);
+
+	GDVIRTUAL_BIND(_get_packet_native, "r_buffer", "r_buffer_size");
+	GDVIRTUAL_BIND(_put_packet_native, "p_buffer", "p_buffer_size");
+	GDVIRTUAL_BIND(_get_available_packet_count);
+	GDVIRTUAL_BIND(_get_max_packet_size);
 
 	ClassDB::bind_method(D_METHOD("get_encode_buffer_max_size"), &PacketPeer::get_encode_buffer_max_size);
 	ClassDB::bind_method(D_METHOD("set_encode_buffer_max_size", "max_size"), &PacketPeer::set_encode_buffer_max_size);
