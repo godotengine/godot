@@ -122,7 +122,7 @@ class Body3DSW : public CollisionObject3DSW {
 
 	uint64_t island_step;
 
-	_FORCE_INLINE_ void _compute_area_gravity_and_dampenings(const Area3DSW *p_area);
+	_FORCE_INLINE_ void _compute_area_gravity_and_damping(const Area3DSW *p_area);
 
 	_FORCE_INLINE_ void _update_transform_dependant();
 
