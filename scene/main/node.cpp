@@ -505,10 +505,10 @@ bool Node::is_network_master() const {
 
 /***** RPC CONFIG ********/
 
-uint16_t Node::rpc_config(const StringName &p_method, MultiplayerAPI::RPCMode p_rpc_mode, MultiplayerPeer::TransferMode p_transfer_mode, int p_channel) {
+uint16_t Node::rpc_config(const StringName &p_method, Script::RPCMode p_rpc_mode, Script::RPCTransferMode p_transfer_mode, int p_channel) {
 	for (int i = 0; i < data.rpc_methods.size(); i++) {
 		if (data.rpc_methods[i].name == p_method) {
-			MultiplayerAPI::RPCConfig &nd = data.rpc_methods.write[i];
+			Script::RPCConfig &nd = data.rpc_methods.write[i];
 			nd.rpc_mode = p_rpc_mode;
 			nd.transfer_mode = p_transfer_mode;
 			nd.channel = p_channel;
@@ -516,7 +516,7 @@ uint16_t Node::rpc_config(const StringName &p_method, MultiplayerAPI::RPCMode p_
 		}
 	}
 	// New method
-	MultiplayerAPI::RPCConfig nd;
+	Script::RPCConfig nd;
 	nd.name = p_method;
 	nd.rpc_mode = p_rpc_mode;
 	nd.transfer_mode = p_transfer_mode;
@@ -630,7 +630,7 @@ void Node::set_custom_multiplayer(Ref<MultiplayerAPI> p_multiplayer) {
 	multiplayer = p_multiplayer;
 }
 
-Vector<MultiplayerAPI::RPCConfig> Node::get_node_rpc_methods() const {
+Vector<Script::RPCConfig> Node::get_node_rpc_methods() const {
 	return data.rpc_methods;
 }
 

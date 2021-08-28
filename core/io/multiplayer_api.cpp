@@ -43,12 +43,12 @@
 
 String _get_rpc_md5(const Node *p_node) {
 	String rpc_list;
-	const Vector<MultiplayerAPI::RPCConfig> node_config = p_node->get_node_rpc_methods();
+	const Vector<Script::RPCConfig> node_config = p_node->get_node_rpc_methods();
 	for (int i = 0; i < node_config.size(); i++) {
 		rpc_list += String(node_config[i].name);
 	}
 	if (p_node->get_script_instance()) {
-		const Vector<MultiplayerAPI::RPCConfig> script_config = p_node->get_script_instance()->get_rpc_methods();
+		const Vector<Script::RPCConfig> script_config = p_node->get_script_instance()->get_rpc_methods();
 		for (int i = 0; i < script_config.size(); i++) {
 			rpc_list += String(script_config[i].name);
 		}
@@ -56,8 +56,8 @@ String _get_rpc_md5(const Node *p_node) {
 	return rpc_list.md5_text();
 }
 
-const MultiplayerAPI::RPCConfig _get_rpc_config(const Node *p_node, const StringName &p_method, uint16_t &r_id) {
-	const Vector<MultiplayerAPI::RPCConfig> node_config = p_node->get_node_rpc_methods();
+const Script::RPCConfig _get_rpc_config(const Node *p_node, const StringName &p_method, uint16_t &r_id) {
+	const Vector<Script::RPCConfig> node_config = p_node->get_node_rpc_methods();
 	for (int i = 0; i < node_config.size(); i++) {
 		if (node_config[i].name == p_method) {
 			r_id = ((uint16_t)i) | (1 << 15);
@@ -65,7 +65,7 @@ const MultiplayerAPI::RPCConfig _get_rpc_config(const Node *p_node, const String
 		}
 	}
 	if (p_node->get_script_instance()) {
-		const Vector<MultiplayerAPI::RPCConfig> script_config = p_node->get_script_instance()->get_rpc_methods();
+		const Vector<Script::RPCConfig> script_config = p_node->get_script_instance()->get_rpc_methods();
 		for (int i = 0; i < script_config.size(); i++) {
 			if (script_config[i].name == p_method) {
 				r_id = (uint16_t)i;
@@ -73,11 +73,11 @@ const MultiplayerAPI::RPCConfig _get_rpc_config(const Node *p_node, const String
 			}
 		}
 	}
-	return MultiplayerAPI::RPCConfig();
+	return Script::RPCConfig();
 }
 
-const MultiplayerAPI::RPCConfig _get_rpc_config_by_id(Node *p_node, uint16_t p_id) {
-	Vector<MultiplayerAPI::RPCConfig> config;
+const Script::RPCConfig _get_rpc_config_by_id(Node *p_node, uint16_t p_id) {
+	Vector<Script::RPCConfig> config;
 	uint16_t id = p_id;
 	if (id & (1 << 15)) {
 		id = id & ~(1 << 15);
@@ -88,21 +88,21 @@ const MultiplayerAPI::RPCConfig _get_rpc_config_by_id(Node *p_node, uint16_t p_i
 	if (id < config.size()) {
 		return config[id];
 	}
-	return MultiplayerAPI::RPCConfig();
+	return Script::RPCConfig();
 }
 
-_FORCE_INLINE_ bool _can_call_mode(Node *p_node, MultiplayerAPI::RPCMode mode, int p_remote_id) {
+_FORCE_INLINE_ bool _can_call_mode(Node *p_node, Script::RPCMode mode, int p_remote_id) {
 	switch (mode) {
-		case MultiplayerAPI::RPC_MODE_DISABLED: {
+		case Script::RPC_DISABLED: {
 			return false;
 		} break;
-		case MultiplayerAPI::RPC_MODE_REMOTE: {
+		case Script::RPC_REMOTE: {
 			return true;
 		} break;
-		case MultiplayerAPI::RPC_MODE_MASTER: {
+		case Script::RPC_MASTER: {
 			return p_node->is_network_master();
 		} break;
-		case MultiplayerAPI::RPC_MODE_PUPPET: {
+		case Script::RPC_PUPPET: {
 			return !p_node->is_network_master() && p_remote_id == p_node->get_network_master();
 		} break;
 	}
@@ -359,7 +359,7 @@ void MultiplayerAPI::_process_rpc(Node *p_node, const uint16_t p_rpc_method_id, 
 	ERR_FAIL_COND_MSG(p_offset > p_packet_len, "Invalid packet received. Size too small.");
 
 	// Check that remote can call the RPC on this node.
-	const RPCConfig config = _get_rpc_config_by_id(p_node, p_rpc_method_id);
+	const Script::RPCConfig config = _get_rpc_config_by_id(p_node, p_rpc_method_id);
 	ERR_FAIL_COND(config.name == StringName());
 
 	bool can_call = _can_call_mode(p_node, config.rpc_mode, p_from);
@@ -713,7 +713,7 @@ Error MultiplayerAPI::decode_and_decompress_variant(Variant &r_variant, const ui
 	return OK;
 }
 
-void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, const RPCConfig &p_config, const StringName &p_name, const Variant **p_arg, int p_argcount) {
+void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, const Script::RPCConfig &p_config, const StringName &p_name, const Variant **p_arg, int p_argcount) {
 	ERR_FAIL_COND_MSG(network_peer.is_null(), "Attempt to remote call/set when networking is not active in SceneTree.");
 
 	ERR_FAIL_COND_MSG(network_peer->get_connection_status() == MultiplayerPeer::CONNECTION_CONNECTING, "Attempt to remote call/set when networking is not connected yet in SceneTree.");
@@ -850,7 +850,7 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, const 
 
 	// Take chance and set transfer mode, since all send methods will use it.
 	network_peer->set_transfer_channel(p_config.channel);
-	network_peer->set_transfer_mode(p_config.transfer_mode);
+	network_peer->set_transfer_mode(MultiplayerPeer::TransferMode(p_config.transfer_mode));
 
 	if (has_all_peers) {
 		// They all have verified paths, so send fast.
@@ -940,7 +940,7 @@ void MultiplayerAPI::rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const 
 	bool call_local_native = false;
 	bool call_local_script = false;
 	uint16_t rpc_id = UINT16_MAX;
-	const RPCConfig config = _get_rpc_config(p_node, p_method, rpc_id);
+	const Script::RPCConfig config = _get_rpc_config(p_node, p_method, rpc_id);
 	ERR_FAIL_COND_MSG(config.name == StringName(),
 			vformat("Unable to get the RPC configuration for the function \"%s\" at path: \"%s\". This happens when the method is not marked for RPCs.", p_method, p_node->get_path()));
 	if (p_peer_id == 0 || p_peer_id == node_id || (p_peer_id < 0 && p_peer_id != -node_id)) {
@@ -1130,11 +1130,6 @@ void MultiplayerAPI::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("connected_to_server"));
 	ADD_SIGNAL(MethodInfo("connection_failed"));
 	ADD_SIGNAL(MethodInfo("server_disconnected"));
-
-	BIND_ENUM_CONSTANT(RPC_MODE_DISABLED);
-	BIND_ENUM_CONSTANT(RPC_MODE_REMOTE);
-	BIND_ENUM_CONSTANT(RPC_MODE_MASTER);
-	BIND_ENUM_CONSTANT(RPC_MODE_PUPPET);
 }
 
 MultiplayerAPI::MultiplayerAPI() {

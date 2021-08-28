@@ -136,7 +136,7 @@ private:
 	Map<StringName, EventSignal> event_signals;
 	bool signals_invalidated = true;
 
-	Vector<MultiplayerAPI::RPCConfig> rpc_functions;
+	Vector<Script::RPCConfig> rpc_functions;
 
 #ifdef TOOLS_ENABLED
 	List<PropertyInfo> exported_members_cache; // members_cache
@@ -234,7 +234,7 @@ public:
 
 	int get_member_line(const StringName &p_member) const override;
 
-	const Vector<MultiplayerAPI::RPCConfig> get_rpc_methods() const override;
+	const Vector<Script::RPCConfig> get_rpc_methods() const override;
 
 #ifdef TOOLS_ENABLED
 	bool is_placeholder_fallback_enabled() const override { return placeholder_fallback_enabled; }
@@ -311,7 +311,7 @@ public:
 	void refcount_incremented() override;
 	bool refcount_decremented() override;
 
-	const Vector<MultiplayerAPI::RPCConfig> get_rpc_methods() const override;
+	const Vector<Script::RPCConfig> get_rpc_methods() const override;
 
 	void notification(int p_notification) override;
 	void _call_notification(int p_notification);
