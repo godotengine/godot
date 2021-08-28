@@ -252,6 +252,10 @@ float AudioStreamOGGVorbis::get_length() const {
 	return length;
 }
 
+bool AudioStreamOGGVorbis::is_monophonic() const {
+	return false;
+}
+
 void AudioStreamOGGVorbis::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_data", "data"), &AudioStreamOGGVorbis::set_data);
 	ClassDB::bind_method(D_METHOD("get_data"), &AudioStreamOGGVorbis::get_data);

@@ -271,28 +271,45 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
 		//update anything related to position first, if possible of course
-
-		if (!stream_playback.is_valid()) {
-			return;
+		Vector<AudioFrame> volume_vector;
+		if (setplay.get() > 0 || (active.is_set() && last_mix_count != AudioServer::get_singleton()->get_mix_count())) {
+			volume_vector = _update_panning();
 		}
-		//start playing if requested
 
-		if (setplay.get() >= 0) {
-			Vector<AudioFrame> volume_vector = _update_panning();
-			AudioServer::get_singleton()->start_playback_stream(stream_playback, _get_actual_bus(), volume_vector, setplay.get());
+		if (setplay.get() >= 0 && stream.is_valid()) {
 			active.set();
+			Ref<AudioStreamPlayback> new_playback = stream->instance_playback();
+			ERR_FAIL_COND_MSG(new_playback.is_null(), "Failed to instantiate playback.");
+			Map<StringName, Vector<AudioFrame>> bus_map;
+			bus_map[_get_actual_bus()] = volume_vector;
+			AudioServer::get_singleton()->start_playback_stream(new_playback, bus_map, setplay.get(), linear_attenuation, attenuation_filter_cutoff_hz, actual_pitch_scale);
+			stream_playbacks.push_back(new_playback);
 			setplay.set(-1);
 		}
 
-		if (active.is_set() && last_mix_count != AudioServer::get_singleton()->get_mix_count()) {
-			_update_panning();
-			last_mix_count = AudioServer::get_singleton()->get_mix_count();
+		if (!stream_playbacks.is_empty() && active.is_set()) {
+			// Stop playing if no longer active.
+			Vector<Ref<AudioStreamPlayback>> playbacks_to_remove;
+			for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+				if (playback.is_valid() && !AudioServer::get_singleton()->is_playback_active(playback) && !AudioServer::get_singleton()->is_playback_paused(playback)) {
+					emit_signal(SNAME("finished"));
+					playbacks_to_remove.push_back(playback);
+				}
+			}
+			// Now go through and remove playbacks that have finished. Removing elements from a Vector in a range based for is asking for trouble.
+			for (Ref<AudioStreamPlayback> &playback : playbacks_to_remove) {
+				stream_playbacks.erase(playback);
+			}
+			if (!playbacks_to_remove.is_empty() && stream_playbacks.is_empty()) {
+				// This node is no longer actively playing audio.
+				active.clear();
+				set_physics_process_internal(false);
+			}
 		}
 
-		// Stop playing if no longer active.
-		if (!active.is_set()) {
-			set_physics_process_internal(false);
-			emit_signal(SNAME("finished"));
+		while (stream_playbacks.size() > max_polyphony) {
+			AudioServer::get_singleton()->stop_playback_stream(stream_playbacks[0]);
+			stream_playbacks.remove(0);
 		}
 	}
 }
@@ -330,9 +347,6 @@ Area3D *AudioStreamPlayer3D::_get_overriding_area() {
 }
 
 StringName AudioStreamPlayer3D::_get_actual_bus() {
-	if (!stream_playback.is_valid()) {
-		return SNAME("Master");
-	}
 	Area3D *overriding_area = _get_overriding_area();
 	if (overriding_area && overriding_area->is_overriding_audio_bus() && !overriding_area->is_using_reverb_bus()) {
 		return overriding_area->get_audio_bus_name();
@@ -347,7 +361,9 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 		frame = AudioFrame(0, 0);
 	}
 
-	ERR_FAIL_COND_V(stream_playback.is_null(), output_volume_vector);
+	if (!active.is_set() || stream.is_null()) {
+		return output_volume_vector;
+	}
 
 	Vector3 linear_velocity;
 
@@ -422,7 +438,10 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 			}
 		}
 
-		AudioServer::get_singleton()->set_playback_highshelf_params(stream_playback, Math::db2linear(db_att), attenuation_filter_cutoff_hz);
+		linear_attenuation = Math::db2linear(db_att);
+		for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+			AudioServer::get_singleton()->set_playback_highshelf_params(playback, linear_attenuation, attenuation_filter_cutoff_hz);
+		}
 		//TODO: The lower the second parameter (tightness) the more the sound will "enclose" the listener (more undirected / playing from
 		//      speakers not facing the source) - this could be made distance dependent.
 		_calc_output_vol(local_pos.normalized(), 4.0, output_volume_vector);
@@ -447,7 +466,10 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 		} else {
 			bus_volumes[bus] = output_volume_vector;
 		}
-		AudioServer::get_singleton()->set_playback_bus_volumes_linear(stream_playback, bus_volumes);
+
+		for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+			AudioServer::get_singleton()->set_playback_bus_volumes_linear(playback, bus_volumes);
+		}
 
 		if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
 			Vector3 listener_velocity;
@@ -458,9 +480,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 
 			Vector3 local_velocity = listener_node->get_global_transform().orthonormalized().basis.xform_inv(linear_velocity - listener_velocity);
 
-			if (local_velocity == Vector3()) {
-				AudioServer::get_singleton()->set_playback_pitch_scale(stream_playback, pitch_scale);
-			} else {
+			if (local_velocity != Vector3()) {
 				float approaching = local_pos.normalized().dot(local_velocity.normalized());
 				float velocity = local_velocity.length();
 				float speed_of_sound = 343.0;
@@ -468,34 +488,23 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 				float doppler_pitch_scale = pitch_scale * speed_of_sound / (speed_of_sound + velocity * approaching);
 				doppler_pitch_scale = CLAMP(doppler_pitch_scale, (1 / 8.0), 8.0); //avoid crazy stuff
 
-				AudioServer::get_singleton()->set_playback_pitch_scale(stream_playback, doppler_pitch_scale);
+				actual_pitch_scale = doppler_pitch_scale;
+			} else {
+				actual_pitch_scale = pitch_scale;
 			}
 		} else {
-			AudioServer::get_singleton()->set_playback_pitch_scale(stream_playback, pitch_scale);
+			actual_pitch_scale = pitch_scale;
+		}
+		for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+			AudioServer::get_singleton()->set_playback_pitch_scale(playback, actual_pitch_scale);
 		}
 	}
 	return output_volume_vector;
 }
 
 void AudioStreamPlayer3D::set_stream(Ref<AudioStream> p_stream) {
-	if (stream_playback.is_valid()) {
-		stop();
-		stream_playback.unref();
-		stream.unref();
-	}
-
-	if (p_stream.is_valid()) {
-		stream_playback = p_stream->instance_playback();
-		if (stream_playback.is_valid()) {
-			stream = p_stream;
-		} else {
-			stream.unref();
-		}
-	}
-
-	if (p_stream.is_valid() && stream_playback.is_null()) {
-		stream.unref();
-	}
+	stop();
+	stream = p_stream;
 }
 
 Ref<AudioStream> AudioStreamPlayer3D::get_stream() const {
@@ -536,40 +545,47 @@ float AudioStreamPlayer3D::get_pitch_scale() const {
 }
 
 void AudioStreamPlayer3D::play(float p_from_pos) {
-	if (stream_playback.is_valid()) {
-		setplay.set(p_from_pos);
-		set_physics_process_internal(true);
+	if (stream.is_null()) {
+		return;
 	}
+	ERR_FAIL_COND_MSG(!is_inside_tree(), "Playback can only happen when a node is inside the scene tree");
+	if (stream->is_monophonic() && is_playing()) {
+		stop();
+	}
+	setplay.set(p_from_pos);
+	active.set();
+	set_physics_process_internal(true);
 }
 
 void AudioStreamPlayer3D::seek(float p_seconds) {
-	if (stream_playback.is_valid() && active.is_set()) {
-		play(p_seconds);
-	}
+	stop();
+	play(p_seconds);
 }
 
 void AudioStreamPlayer3D::stop() {
-	if (stream_playback.is_valid()) {
-		active.clear();
-		AudioServer::get_singleton()->stop_playback_stream(stream_playback);
-		set_physics_process_internal(false);
-		setplay.set(-1);
+	setplay.set(-1);
+	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+		AudioServer::get_singleton()->stop_playback_stream(playback);
 	}
+	stream_playbacks.clear();
+	active.clear();
+	set_physics_process_internal(false);
 }
 
 bool AudioStreamPlayer3D::is_playing() const {
-	if (stream_playback.is_valid()) {
-		return active.is_set() || setplay.get() >= 0;
+	for (const Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+		if (AudioServer::get_singleton()->is_playback_active(playback)) {
+			return true;
+		}
 	}
-
 	return false;
 }
 
 float AudioStreamPlayer3D::get_playback_position() {
-	if (stream_playback.is_valid()) {
-		return AudioServer::get_singleton()->get_playback_position(stream_playback);
+	// Return the playback position of the most recently started playback stream.
+	if (!stream_playbacks.is_empty()) {
+		return AudioServer::get_singleton()->get_playback_position(stream_playbacks[stream_playbacks.size() - 1]);
 	}
-
 	return 0;
 }
 
@@ -729,20 +745,35 @@ AudioStreamPlayer3D::DopplerTracking AudioStreamPlayer3D::get_doppler_tracking()
 }
 
 void AudioStreamPlayer3D::set_stream_paused(bool p_pause) {
-	if (stream_playback.is_valid()) {
-		AudioServer::get_singleton()->set_playback_paused(stream_playback, p_pause);
+	// TODO this does not have perfect recall, fix that maybe? If there are zero playbacks registered with the AudioServer, this bool isn't persisted.
+	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+		AudioServer::get_singleton()->set_playback_paused(playback, p_pause);
 	}
 }
 
 bool AudioStreamPlayer3D::get_stream_paused() const {
-	if (stream_playback.is_valid()) {
-		return AudioServer::get_singleton()->is_playback_paused(stream_playback);
+	// There's currently no way to pause some playback streams but not others. Check the first and don't bother looking at the rest.
+	if (!stream_playbacks.is_empty()) {
+		return AudioServer::get_singleton()->is_playback_paused(stream_playbacks[0]);
 	}
 	return false;
 }
 
 Ref<AudioStreamPlayback> AudioStreamPlayer3D::get_stream_playback() {
-	return stream_playback;
+	if (!stream_playbacks.is_empty()) {
+		return stream_playbacks[stream_playbacks.size() - 1];
+	}
+	return nullptr;
+}
+
+void AudioStreamPlayer3D::set_max_polyphony(int p_max_polyphony) {
+	if (p_max_polyphony > 0) {
+		max_polyphony = p_max_polyphony;
+	}
+}
+
+int AudioStreamPlayer3D::get_max_polyphony() const {
+	return max_polyphony;
 }
 
 void AudioStreamPlayer3D::_bind_methods() {
@@ -810,6 +841,9 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_stream_paused", "pause"), &AudioStreamPlayer3D::set_stream_paused);
 	ClassDB::bind_method(D_METHOD("get_stream_paused"), &AudioStreamPlayer3D::get_stream_paused);
 
+	ClassDB::bind_method(D_METHOD("set_max_polyphony", "max_polyphony"), &AudioStreamPlayer3D::set_max_polyphony);
+	ClassDB::bind_method(D_METHOD("get_max_polyphony"), &AudioStreamPlayer3D::get_max_polyphony);
+
 	ClassDB::bind_method(D_METHOD("get_stream_playback"), &AudioStreamPlayer3D::get_stream_playback);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
@@ -823,6 +857,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stream_paused", PROPERTY_HINT_NONE, ""), "set_stream_paused", "get_stream_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance", PROPERTY_HINT_RANGE, "0,4096,1,or_greater,exp"), "set_max_distance", "get_max_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "out_of_range_mode", PROPERTY_HINT_ENUM, "Mix,Pause"), "set_out_of_range_mode", "get_out_of_range_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "area_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_area_mask", "get_area_mask");
 	ADD_GROUP("Emission Angle", "emission_angle");

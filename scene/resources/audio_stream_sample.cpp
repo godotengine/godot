@@ -480,6 +480,10 @@ float AudioStreamSample::get_length() const {
 	return float(len) / mix_rate;
 }
 
+bool AudioStreamSample::is_monophonic() const {
+	return false;
+}
+
 void AudioStreamSample::set_data(const Vector<uint8_t> &p_data) {
 	AudioServer::get_singleton()->lock();
 	if (data) {

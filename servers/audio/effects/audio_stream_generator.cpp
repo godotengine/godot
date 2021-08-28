@@ -64,6 +64,10 @@ float AudioStreamGenerator::get_length() const {
 	return 0;
 }
 
+bool AudioStreamGenerator::is_monophonic() const {
+	return true;
+}
+
 void AudioStreamGenerator::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mix_rate", "hz"), &AudioStreamGenerator::set_mix_rate);
 	ClassDB::bind_method(D_METHOD("get_mix_rate"), &AudioStreamGenerator::get_mix_rate);

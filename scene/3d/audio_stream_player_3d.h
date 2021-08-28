@@ -31,6 +31,7 @@
 #ifndef AUDIO_STREAM_PLAYER_3D_H
 #define AUDIO_STREAM_PLAYER_3D_H
 
+#include "core/os/mutex.h"
 #include "scene/3d/area_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/velocity_tracker_3d.h"
@@ -68,10 +69,10 @@ private:
 
 	};
 
-	Ref<AudioStreamPlayback> stream_playback;
+	Vector<Ref<AudioStreamPlayback>> stream_playbacks;
 	Ref<AudioStream> stream;
 
-	SafeFlag active;
+	SafeFlag active{ false };
 	SafeNumeric<float> setplay{ -1.0 };
 
 	AttenuationModel attenuation_model = ATTENUATION_INVERSE_DISTANCE;
@@ -79,8 +80,11 @@ private:
 	float unit_size = 10.0;
 	float max_db = 3.0;
 	float pitch_scale = 1.0;
+	// Internally used to take doppler tracking into account.
+	float actual_pitch_scale = 1.0;
 	bool autoplay = false;
-	StringName bus = "Master";
+	StringName bus = SNAME("Master");
+	int max_polyphony = 1;
 
 	uint64_t last_mix_count = -1;
 
@@ -105,6 +109,8 @@ private:
 	float emission_angle_filter_attenuation_db = -12.0;
 	float attenuation_filter_cutoff_hz = 5000.0;
 	float attenuation_filter_db = -24.0;
+
+	float linear_attenuation = 0;
 
 	float max_distance = 0.0;
 
@@ -145,6 +151,9 @@ public:
 
 	void set_bus(const StringName &p_bus);
 	StringName get_bus() const;
+
+	void set_max_polyphony(int p_max_polyphony);
+	int get_max_polyphony() const;
 
 	void set_autoplay(bool p_enable);
 	bool is_autoplay_enabled();

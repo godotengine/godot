@@ -42,17 +42,29 @@ void AudioStreamPlayer::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
-		if (stream_playback.is_valid() && active.is_set() && !AudioServer::get_singleton()->is_playback_active(stream_playback)) {
+		Vector<Ref<AudioStreamPlayback>> playbacks_to_remove;
+		for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+			if (playback.is_valid() && !AudioServer::get_singleton()->is_playback_active(playback) && !AudioServer::get_singleton()->is_playback_paused(playback)) {
+				emit_signal(SNAME("finished"));
+				playbacks_to_remove.push_back(playback);
+			}
+		}
+		// Now go through and remove playbacks that have finished. Removing elements from a Vector in a range based for is asking for trouble.
+		for (Ref<AudioStreamPlayback> &playback : playbacks_to_remove) {
+			stream_playbacks.erase(playback);
+		}
+		if (!playbacks_to_remove.is_empty() && stream_playbacks.is_empty()) {
+			// This node is no longer actively playing audio.
 			active.clear();
 			set_process_internal(false);
-			emit_signal(SNAME("finished"));
 		}
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
-		if (stream_playback.is_valid()) {
-			AudioServer::get_singleton()->stop_playback_stream(stream_playback);
+		for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+			AudioServer::get_singleton()->stop_playback_stream(playback);
 		}
+		stream_playbacks.clear();
 	}
 
 	if (p_what == NOTIFICATION_PAUSED) {
@@ -68,24 +80,8 @@ void AudioStreamPlayer::_notification(int p_what) {
 }
 
 void AudioStreamPlayer::set_stream(Ref<AudioStream> p_stream) {
-	if (stream_playback.is_valid()) {
-		stop();
-		stream_playback.unref();
-		stream.unref();
-	}
-
-	if (p_stream.is_valid()) {
-		stream_playback = p_stream->instance_playback();
-		if (stream_playback.is_valid()) {
-			stream = p_stream;
-		} else {
-			stream.unref();
-		}
-	}
-
-	if (p_stream.is_valid() && stream_playback.is_null()) {
-		stream.unref();
-	}
+	stop();
+	stream = p_stream;
 }
 
 Ref<AudioStream> AudioStreamPlayer::get_stream() const {
@@ -95,7 +91,10 @@ Ref<AudioStream> AudioStreamPlayer::get_stream() const {
 void AudioStreamPlayer::set_volume_db(float p_volume) {
 	volume_db = p_volume;
 
-	AudioServer::get_singleton()->set_playback_all_bus_volumes_linear(stream_playback, _get_volume_vector());
+	Vector<AudioFrame> volume_vector = _get_volume_vector();
+	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+		AudioServer::get_singleton()->set_playback_all_bus_volumes_linear(playback, volume_vector);
+	}
 }
 
 float AudioStreamPlayer::get_volume_db() const {
@@ -106,57 +105,83 @@ void AudioStreamPlayer::set_pitch_scale(float p_pitch_scale) {
 	ERR_FAIL_COND(p_pitch_scale <= 0.0);
 	pitch_scale = p_pitch_scale;
 
-	AudioServer::get_singleton()->set_playback_pitch_scale(stream_playback, pitch_scale);
+	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+		AudioServer::get_singleton()->set_playback_pitch_scale(playback, pitch_scale);
+	}
 }
 
 float AudioStreamPlayer::get_pitch_scale() const {
 	return pitch_scale;
 }
 
-void AudioStreamPlayer::play(float p_from_pos) {
-	stop();
-	if (stream.is_valid()) {
-		stream_playback = stream->instance_playback();
+void AudioStreamPlayer::set_max_polyphony(int p_max_polyphony) {
+	if (p_max_polyphony > 0) {
+		max_polyphony = p_max_polyphony;
 	}
-	if (stream_playback.is_valid()) {
-		AudioServer::get_singleton()->start_playback_stream(stream_playback, bus, _get_volume_vector(), p_from_pos);
-		active.set();
+}
+
+int AudioStreamPlayer::get_max_polyphony() const {
+	return max_polyphony;
+}
+
+void AudioStreamPlayer::play(float p_from_pos) {
+	if (stream.is_null()) {
+		return;
+	}
+	ERR_FAIL_COND_MSG(!is_inside_tree(), "Playback can only happen when a node is inside the scene tree");
+	if (stream->is_monophonic() && is_playing()) {
+		stop();
+	}
+	Ref<AudioStreamPlayback> stream_playback = stream->instance_playback();
+	ERR_FAIL_COND_MSG(stream_playback.is_null(), "Failed to instantiate playback.");
+
+	AudioServer::get_singleton()->start_playback_stream(stream_playback, bus, _get_volume_vector(), p_from_pos);
+	stream_playbacks.push_back(stream_playback);
+	active.set();
+	set_process_internal(true);
+	while (stream_playbacks.size() > max_polyphony) {
+		AudioServer::get_singleton()->stop_playback_stream(stream_playbacks[0]);
+		stream_playbacks.remove(0);
 	}
 }
 
 void AudioStreamPlayer::seek(float p_seconds) {
-	if (stream_playback.is_valid() && active.is_set()) {
+	if (is_playing()) {
+		stop();
 		play(p_seconds);
 	}
 }
 
 void AudioStreamPlayer::stop() {
-	if (stream_playback.is_valid()) {
-		active.clear();
-		AudioServer::get_singleton()->stop_playback_stream(stream_playback);
+	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+		AudioServer::get_singleton()->stop_playback_stream(playback);
 	}
+	stream_playbacks.clear();
+	active.clear();
+	set_process_internal(false);
 }
 
 bool AudioStreamPlayer::is_playing() const {
-	if (stream_playback.is_valid()) {
-		return AudioServer::get_singleton()->is_playback_active(stream_playback);
+	for (const Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+		if (AudioServer::get_singleton()->is_playback_active(playback)) {
+			return true;
+		}
 	}
-
 	return false;
 }
 
 float AudioStreamPlayer::get_playback_position() {
-	if (stream_playback.is_valid()) {
-		return AudioServer::get_singleton()->get_playback_position(stream_playback);
+	// Return the playback position of the most recently started playback stream.
+	if (!stream_playbacks.is_empty()) {
+		return AudioServer::get_singleton()->get_playback_position(stream_playbacks[stream_playbacks.size() - 1]);
 	}
-
 	return 0;
 }
 
 void AudioStreamPlayer::set_bus(const StringName &p_bus) {
 	bus = p_bus;
-	if (stream_playback.is_valid()) {
-		AudioServer::get_singleton()->set_playback_bus_exclusive(stream_playback, p_bus, _get_volume_vector());
+	for (const Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+		AudioServer::get_singleton()->set_playback_bus_exclusive(playback, p_bus, _get_volume_vector());
 	}
 }
 
@@ -166,7 +191,7 @@ StringName AudioStreamPlayer::get_bus() const {
 			return bus;
 		}
 	}
-	return "Master";
+	return SNAME("Master");
 }
 
 void AudioStreamPlayer::set_autoplay(bool p_enable) {
@@ -194,22 +219,25 @@ void AudioStreamPlayer::_set_playing(bool p_enable) {
 }
 
 bool AudioStreamPlayer::_is_active() const {
-	if (stream_playback.is_valid()) {
-		return AudioServer::get_singleton()->is_playback_active(stream_playback);
+	for (const Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+		if (AudioServer::get_singleton()->is_playback_active(playback)) {
+			return true;
+		}
 	}
 	return false;
 }
 
 void AudioStreamPlayer::set_stream_paused(bool p_pause) {
-	// TODO this does not have perfect recall, fix that maybe? If the stream isn't set, we can't persist this bool.
-	if (stream_playback.is_valid()) {
-		AudioServer::get_singleton()->set_playback_paused(stream_playback, p_pause);
+	// TODO this does not have perfect recall, fix that maybe? If there are zero playbacks registered with the AudioServer, this bool isn't persisted.
+	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+		AudioServer::get_singleton()->set_playback_paused(playback, p_pause);
 	}
 }
 
 bool AudioStreamPlayer::get_stream_paused() const {
-	if (stream_playback.is_valid()) {
-		return AudioServer::get_singleton()->is_playback_paused(stream_playback);
+	// There's currently no way to pause some playback streams but not others. Check the first and don't bother looking at the rest.
+	if (!stream_playbacks.is_empty()) {
+		return AudioServer::get_singleton()->is_playback_paused(stream_playbacks[0]);
 	}
 	return false;
 }
@@ -271,7 +299,10 @@ void AudioStreamPlayer::_bus_layout_changed() {
 }
 
 Ref<AudioStreamPlayback> AudioStreamPlayer::get_stream_playback() {
-	return stream_playback;
+	if (!stream_playbacks.is_empty()) {
+		return stream_playbacks[stream_playbacks.size() - 1];
+	}
+	return nullptr;
 }
 
 void AudioStreamPlayer::_bind_methods() {
@@ -306,6 +337,9 @@ void AudioStreamPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_stream_paused", "pause"), &AudioStreamPlayer::set_stream_paused);
 	ClassDB::bind_method(D_METHOD("get_stream_paused"), &AudioStreamPlayer::get_stream_paused);
 
+	ClassDB::bind_method(D_METHOD("set_max_polyphony", "max_polyphony"), &AudioStreamPlayer::set_max_polyphony);
+	ClassDB::bind_method(D_METHOD("get_max_polyphony"), &AudioStreamPlayer::get_max_polyphony);
+
 	ClassDB::bind_method(D_METHOD("get_stream_playback"), &AudioStreamPlayer::get_stream_playback);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
@@ -315,6 +349,7 @@ void AudioStreamPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "is_autoplay_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stream_paused", PROPERTY_HINT_NONE, ""), "set_stream_paused", "get_stream_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mix_target", PROPERTY_HINT_ENUM, "Stereo,Surround,Center"), "set_mix_target", "get_mix_target");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 
 	ADD_SIGNAL(MethodInfo("finished"));

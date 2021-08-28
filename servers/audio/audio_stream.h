@@ -102,12 +102,14 @@ protected:
 	GDVIRTUAL0RC(Ref<AudioStreamPlayback>, _instance_playback)
 	GDVIRTUAL0RC(String, _get_stream_name)
 	GDVIRTUAL0RC(float, _get_length)
+	GDVIRTUAL0RC(bool, _is_monophonic)
 
 public:
 	virtual Ref<AudioStreamPlayback> instance_playback();
 	virtual String get_stream_name() const;
 
 	virtual float get_length() const;
+	virtual bool is_monophonic() const;
 };
 
 // Microphone
@@ -128,6 +130,8 @@ public:
 	virtual String get_stream_name() const override;
 
 	virtual float get_length() const override; //if supported, otherwise return 0
+
+	virtual bool is_monophonic() const override;
 
 	AudioStreamMicrophone();
 };
@@ -187,6 +191,7 @@ public:
 	virtual String get_stream_name() const override;
 
 	virtual float get_length() const override; //if supported, otherwise return 0
+	virtual bool is_monophonic() const override;
 
 	AudioStreamRandomPitch();
 };
