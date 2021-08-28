@@ -34,6 +34,7 @@
 #include "core/extension/native_extension_manager.h"
 #include "core/input/input.h"
 #include "core/io/config_file.h"
+#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
@@ -1130,6 +1131,10 @@ void EditorNode::save_resource_in_path(const Ref<Resource> &p_resource, const St
 	}
 
 	String path = ProjectSettings::get_singleton()->localize_path(p_path);
+	DirAccess *da = DirAccess::open("res://");
+	bool is_new = !da->file_exists(path);
+	memdelete(da);
+
 	Error err = ResourceSaver::save(path, p_resource, flg | ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS);
 
 	if (err != OK) {
@@ -1142,6 +1147,10 @@ void EditorNode::save_resource_in_path(const Ref<Resource> &p_resource, const St
 	}
 
 	((Resource *)p_resource.ptr())->set_path(path);
+
+	if (is_new) {
+		emit_signal(SNAME("resource_created"), p_resource);
+	}
 	emit_signal(SNAME("resource_saved"), p_resource);
 	editor_data.notify_resource_saved(p_resource);
 }
@@ -1673,6 +1682,10 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	}
 	flg |= ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
 
+	DirAccess *da = DirAccess::open("res://");
+	bool is_new = !da->file_exists(p_file);
+	memdelete(da);
+
 	err = ResourceSaver::save(p_file, sdata, flg);
 
 	_save_external_resources();
@@ -1696,6 +1709,11 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 		_update_title();
 		_update_scene_tabs();
+
+		if (is_new) {
+			emit_signal(SNAME("resource_created"), sdata);
+		}
+		emit_signal(SNAME("resource_saved"), sdata);
 	} else {
 		_dialog_display_save_error(p_file, err);
 	}
@@ -5655,6 +5673,7 @@ void EditorNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("stop_pressed"));
 	ADD_SIGNAL(MethodInfo("request_help_search"));
 	ADD_SIGNAL(MethodInfo("script_add_function_request", PropertyInfo(Variant::OBJECT, "obj"), PropertyInfo(Variant::STRING, "function"), PropertyInfo(Variant::PACKED_STRING_ARRAY, "args")));
+	ADD_SIGNAL(MethodInfo("resource_created", PropertyInfo(Variant::OBJECT, "obj")));
 	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "obj")));
 	ADD_SIGNAL(MethodInfo("project_settings_changed"));
 }

@@ -378,6 +378,12 @@ void FileSystemDock::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_READY: {
+			// Scenes and other resources are saved outside of this class, and they may look out of order
+			// or mislabeled in the dock; so we need to update the list here.
+			editor->connect("resource_created", callable_mp(this, &FileSystemDock::_resource_created));
+		} break;
+
 		case NOTIFICATION_PROCESS: {
 			if (EditorFileSystem::get_singleton()->is_scanning()) {
 				scanning_progress->set_value(EditorFileSystem::get_singleton()->get_scanning_progress() * 100);
@@ -1387,7 +1393,6 @@ void FileSystemDock::_make_dir_confirm() {
 	memdelete(da);
 
 	if (err == OK) {
-		print_verbose("FileSystem: calling rescan.");
 		_rescan();
 	} else {
 		EditorNode::get_singleton()->show_warning(TTR("Could not create folder."));
@@ -1514,7 +1519,6 @@ void FileSystemDock::_rename_operation_confirm() {
 
 	editor->set_current_tab(current_tab);
 
-	print_verbose("FileSystem: calling rescan.");
 	_rescan();
 
 	print_verbose("FileSystem: saving moved scenes.");
@@ -1554,7 +1558,6 @@ void FileSystemDock::_duplicate_operation_confirm() {
 	_try_duplicate_item(to_duplicate, new_path);
 
 	// Rescan everything.
-	print_verbose("FileSystem: calling rescan.");
 	_rescan();
 }
 
@@ -1625,7 +1628,6 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_ove
 
 		editor->set_current_tab(current_tab);
 
-		print_verbose("FileSystem: calling rescan.");
 		_rescan();
 
 		print_verbose("FileSystem: saving moved scenes.");
@@ -1957,7 +1959,11 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 	}
 }
 
-void FileSystemDock::_resource_created() {
+void FileSystemDock::_resource_created(const Ref<Resource> &p_resource) {
+	_rescan();
+}
+
+void FileSystemDock::_resource_confirm() {
 	Variant c = new_resource_dialog->instance_selected();
 
 	ERR_FAIL_COND(!c);
@@ -2009,6 +2015,7 @@ void FileSystemDock::_search_changed(const String &p_text, const Control *p_from
 }
 
 void FileSystemDock::_rescan() {
+	print_verbose("FileSystem: calling rescan.");
 	_set_scanning_mode();
 	EditorFileSystem::get_singleton()->scan();
 }
@@ -2968,11 +2975,12 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	make_script_dialog = memnew(ScriptCreateDialog);
 	make_script_dialog->set_title(TTR("Create Script"));
 	add_child(make_script_dialog);
+	make_script_dialog->connect("script_created", callable_mp(this, &FileSystemDock::_rescan).unbind(1));
 
 	new_resource_dialog = memnew(CreateDialog);
 	add_child(new_resource_dialog);
 	new_resource_dialog->set_base_type("Resource");
-	new_resource_dialog->connect("create", callable_mp(this, &FileSystemDock::_resource_created));
+	new_resource_dialog->connect("create", callable_mp(this, &FileSystemDock::_resource_confirm));
 
 	searched_string = String();
 	uncollapsed_paths_before_search = Vector<String>();
