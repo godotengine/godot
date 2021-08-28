@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "core/rid.h"
+#include "core/templates/rid.h"
 #include "scene/resources/material.h"
 
 #ifndef SKY_MATERIAL_H
@@ -51,11 +51,14 @@ private:
 	float sun_angle_max;
 	float sun_curve;
 
-	RID shader;
+	static Mutex shader_mutex;
+	static RID shader;
+	static void _update_shader();
+	mutable bool shader_set = false;
 
 protected:
 	static void _bind_methods();
-	virtual bool _can_do_next_pass() const;
+	virtual bool _can_do_next_pass() const override;
 
 public:
 	void set_sky_top_color(const Color &p_sky_top);
@@ -88,8 +91,11 @@ public:
 	void set_sun_curve(float p_curve);
 	float get_sun_curve() const;
 
-	virtual Shader::Mode get_shader_mode() const;
-	RID get_shader_rid() const;
+	virtual Shader::Mode get_shader_mode() const override;
+	virtual RID get_shader_rid() const override;
+	virtual RID get_rid() const override;
+
+	static void cleanup_shader();
 
 	ProceduralSkyMaterial();
 	~ProceduralSkyMaterial();
@@ -103,18 +109,25 @@ class PanoramaSkyMaterial : public Material {
 
 private:
 	Ref<Texture2D> panorama;
-	RID shader;
+
+	static Mutex shader_mutex;
+	static RID shader;
+	static void _update_shader();
+	mutable bool shader_set = false;
 
 protected:
 	static void _bind_methods();
-	virtual bool _can_do_next_pass() const;
+	virtual bool _can_do_next_pass() const override;
 
 public:
 	void set_panorama(const Ref<Texture2D> &p_panorama);
 	Ref<Texture2D> get_panorama() const;
 
-	virtual Shader::Mode get_shader_mode() const;
-	RID get_shader_rid() const;
+	virtual Shader::Mode get_shader_mode() const override;
+	virtual RID get_shader_rid() const override;
+	virtual RID get_rid() const override;
+
+	static void cleanup_shader();
 
 	PanoramaSkyMaterial();
 	~PanoramaSkyMaterial();
@@ -127,7 +140,8 @@ class PhysicalSkyMaterial : public Material {
 	GDCLASS(PhysicalSkyMaterial, Material);
 
 private:
-	RID shader;
+	static Mutex shader_mutex;
+	static RID shader;
 
 	float rayleigh;
 	Color rayleigh_color;
@@ -140,10 +154,12 @@ private:
 	float exposure;
 	float dither_strength;
 	Ref<Texture2D> night_sky;
+	static void _update_shader();
+	mutable bool shader_set = false;
 
 protected:
 	static void _bind_methods();
-	virtual bool _can_do_next_pass() const;
+	virtual bool _can_do_next_pass() const override;
 
 public:
 	void set_rayleigh_coefficient(float p_rayleigh);
@@ -179,8 +195,11 @@ public:
 	void set_night_sky(const Ref<Texture2D> &p_night_sky);
 	Ref<Texture2D> get_night_sky() const;
 
-	virtual Shader::Mode get_shader_mode() const;
-	RID get_shader_rid() const;
+	virtual Shader::Mode get_shader_mode() const override;
+	virtual RID get_shader_rid() const override;
+
+	static void cleanup_shader();
+	virtual RID get_rid() const override;
 
 	PhysicalSkyMaterial();
 	~PhysicalSkyMaterial();

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -67,10 +67,10 @@ class PhysicalBone3DEditorPlugin : public EditorPlugin {
 	PhysicalBone3DEditor physical_bone_editor;
 
 public:
-	virtual String get_name() const { return "PhysicalBone3D"; }
-	virtual bool handles(Object *p_object) const { return p_object->is_class("PhysicalBone3D"); }
-	virtual void make_visible(bool p_visible);
-	virtual void edit(Object *p_node);
+	virtual String get_name() const override { return "PhysicalBone3D"; }
+	virtual bool handles(Object *p_object) const override { return p_object->is_class("PhysicalBone3D"); }
+	virtual void make_visible(bool p_visible) override;
+	virtual void edit(Object *p_node) override;
 
 	PhysicalBone3DEditorPlugin(EditorNode *p_editor);
 };

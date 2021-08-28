@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,8 @@
 
 #include "core/math/vector3.h"
 
+class Variant;
+
 class Plane {
 public:
 	Vector3 normal;
@@ -47,7 +49,6 @@ public:
 	/* Plane-Point operations */
 
 	_FORCE_INLINE_ Vector3 center() const { return normal * d; }
-	Vector3 get_any_point() const;
 	Vector3 get_any_perpendicular_normal() const;
 
 	_FORCE_INLINE_ bool is_point_over(const Vector3 &p_point) const; ///< Point is over plane
@@ -59,6 +60,11 @@ public:
 	bool intersect_3(const Plane &p_plane1, const Plane &p_plane2, Vector3 *r_result = nullptr) const;
 	bool intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *p_intersection) const;
 	bool intersects_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 *p_intersection) const;
+
+	// For Variant bindings.
+	Variant intersect_3_bind(const Plane &p_plane1, const Plane &p_plane2) const;
+	Variant intersects_ray_bind(const Vector3 &p_from, const Vector3 &p_dir) const;
+	Variant intersects_segment_bind(const Vector3 &p_begin, const Vector3 &p_end) const;
 
 	_FORCE_INLINE_ Vector3 project(const Vector3 &p_point) const {
 		return p_point - normal * distance_to(p_point);

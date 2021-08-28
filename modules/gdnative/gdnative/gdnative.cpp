@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,12 +30,12 @@
 
 #include "gdnative/gdnative.h"
 
-#include "core/class_db.h"
-#include "core/engine.h"
-#include "core/error_macros.h"
-#include "core/global_constants.h"
+#include "core/config/engine.h"
+#include "core/core_constants.h"
+#include "core/error/error_macros.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
-#include "core/variant.h"
+#include "core/variant/variant.h"
 
 #include "modules/gdnative/gdnative.h"
 
@@ -99,12 +99,12 @@ godot_class_constructor GDAPI godot_get_class_constructor(const char *p_classnam
 
 godot_dictionary GDAPI godot_get_global_constants() {
 	godot_dictionary constants;
-	godot_dictionary_new(&constants);
+	memnew_placement(&constants, Dictionary);
 	Dictionary *p_constants = (Dictionary *)&constants;
-	const int constants_count = GlobalConstants::get_global_constant_count();
+	const int constants_count = CoreConstants::get_global_constant_count();
 	for (int i = 0; i < constants_count; ++i) {
-		const char *name = GlobalConstants::get_global_constant_name(i);
-		int value = GlobalConstants::get_global_constant_value(i);
+		const char *name = CoreConstants::get_global_constant_name(i);
+		int value = CoreConstants::get_global_constant_value(i);
 		(*p_constants)[name] = value;
 	}
 	return constants;
@@ -127,16 +127,15 @@ void GDAPI godot_free(void *p_ptr) {
 	memfree(p_ptr);
 }
 
+// Helper print functions.
 void GDAPI godot_print_error(const char *p_description, const char *p_function, const char *p_file, int p_line) {
 	_err_print_error(p_function, p_file, p_line, p_description, ERR_HANDLER_ERROR);
 }
-
 void GDAPI godot_print_warning(const char *p_description, const char *p_function, const char *p_file, int p_line) {
 	_err_print_error(p_function, p_file, p_line, p_description, ERR_HANDLER_WARNING);
 }
-
-void GDAPI godot_print(const godot_string *p_message) {
-	print_line(*(String *)p_message);
+void GDAPI godot_print_script_error(const char *p_description, const char *p_function, const char *p_file, int p_line) {
+	_err_print_error(p_function, p_file, p_line, p_description, ERR_HANDLER_SCRIPT);
 }
 
 void _gdnative_report_version_mismatch(const godot_object *p_library, const char *p_ext, godot_gdnative_api_version p_want, godot_gdnative_api_version p_have) {

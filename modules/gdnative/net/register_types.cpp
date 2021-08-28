@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,9 +34,9 @@
 #include "stream_peer_gdnative.h"
 
 void register_net_types() {
-	ClassDB::register_class<MultiplayerPeerGDNative>();
-	ClassDB::register_class<PacketPeerGDNative>();
-	ClassDB::register_class<StreamPeerGDNative>();
+	GDREGISTER_CLASS(MultiplayerPeerGDNative);
+	GDREGISTER_CLASS(PacketPeerGDNative);
+	GDREGISTER_CLASS(StreamPeerGDNative);
 }
 
 void unregister_net_types() {

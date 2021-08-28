@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,19 +43,27 @@ class Joint2D : public Node2D {
 
 	NodePath a;
 	NodePath b;
-	real_t bias;
+	real_t bias = 0.0;
 
-	bool exclude_from_collision;
+	bool exclude_from_collision = true;
+	bool configured = false;
+	String warning;
 
 protected:
+	void _disconnect_signals();
+	void _body_exit_tree();
 	void _update_joint(bool p_only_free = false);
 
 	void _notification(int p_what);
-	virtual RID _configure_joint(PhysicsBody2D *body_a, PhysicsBody2D *body_b) = 0;
+	virtual void _configure_joint(RID p_joint, PhysicsBody2D *body_a, PhysicsBody2D *body_b) = 0;
 
 	static void _bind_methods();
 
+	_FORCE_INLINE_ bool is_configured() const { return configured; }
+
 public:
+	virtual TypedArray<String> get_configuration_warnings() const override;
+
 	void set_node_a(const NodePath &p_node_a);
 	NodePath get_node_a() const;
 
@@ -70,16 +78,17 @@ public:
 
 	RID get_joint() const { return joint; }
 	Joint2D();
+	~Joint2D();
 };
 
 class PinJoint2D : public Joint2D {
 	GDCLASS(PinJoint2D, Joint2D);
 
-	real_t softness;
+	real_t softness = 0.0;
 
 protected:
 	void _notification(int p_what);
-	virtual RID _configure_joint(PhysicsBody2D *body_a, PhysicsBody2D *body_b);
+	virtual void _configure_joint(RID p_joint, PhysicsBody2D *body_a, PhysicsBody2D *body_b) override;
 	static void _bind_methods();
 
 public:
@@ -92,12 +101,12 @@ public:
 class GrooveJoint2D : public Joint2D {
 	GDCLASS(GrooveJoint2D, Joint2D);
 
-	real_t length;
-	real_t initial_offset;
+	real_t length = 50.0;
+	real_t initial_offset = 25.0;
 
 protected:
 	void _notification(int p_what);
-	virtual RID _configure_joint(PhysicsBody2D *body_a, PhysicsBody2D *body_b);
+	virtual void _configure_joint(RID p_joint, PhysicsBody2D *body_a, PhysicsBody2D *body_b) override;
 	static void _bind_methods();
 
 public:
@@ -113,14 +122,14 @@ public:
 class DampedSpringJoint2D : public Joint2D {
 	GDCLASS(DampedSpringJoint2D, Joint2D);
 
-	real_t stiffness;
-	real_t damping;
-	real_t rest_length;
-	real_t length;
+	real_t stiffness = 20.0;
+	real_t damping = 1.0;
+	real_t rest_length = 0.0;
+	real_t length = 50.0;
 
 protected:
 	void _notification(int p_what);
-	virtual RID _configure_joint(PhysicsBody2D *body_a, PhysicsBody2D *body_b);
+	virtual void _configure_joint(RID p_joint, PhysicsBody2D *body_a, PhysicsBody2D *body_b) override;
 	static void _bind_methods();
 
 public:

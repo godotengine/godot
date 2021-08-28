@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 #define AREABULLET_H
 
 #include "collision_object_bullet.h"
-#include "core/vector.h"
+#include "core/templates/vector.h"
 #include "servers/physics_server_3d.h"
 #include "space_bullet.h"
 
@@ -80,18 +80,18 @@ public:
 private:
 	// These are used by function callEvent. Instead to create this each call I create if one time.
 	Variant call_event_res[5];
-	Variant *call_event_res_ptr[5];
+	Variant *call_event_res_ptr[5] = {};
 
-	btGhostObject *btGhost;
+	btGhostObject *btGhost = nullptr;
 	Vector<OverlappingObjectData> overlappingObjects;
 	bool monitorable = true;
 
 	PhysicsServer3D::AreaSpaceOverrideMode spOv_mode = PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;
 	bool spOv_gravityPoint = false;
-	real_t spOv_gravityPointDistanceScale = 0;
-	real_t spOv_gravityPointAttenuation = 1;
+	real_t spOv_gravityPointDistanceScale = 0.0;
+	real_t spOv_gravityPointAttenuation = 1.0;
 	Vector3 spOv_gravityVec = Vector3(0, -1, 0);
-	real_t spOv_gravityMag = 10;
+	real_t spOv_gravityMag = 10.0;
 	real_t spOv_linearDump = 0.1;
 	real_t spOv_angularDump = 0.1;
 	int spOv_priority = 0;

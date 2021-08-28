@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,13 +31,13 @@
 #include "capsule_shape_3d.h"
 #include "servers/physics_server_3d.h"
 
-Vector<Vector3> CapsuleShape3D::get_debug_mesh_lines() {
+Vector<Vector3> CapsuleShape3D::get_debug_mesh_lines() const {
 	float radius = get_radius();
 	float height = get_height();
 
 	Vector<Vector3> points;
 
-	Vector3 d(0, height * 0.5, 0);
+	Vector3 d(0, height * 0.5 - radius, 0);
 	for (int i = 0; i < 360; i++) {
 		float ra = Math::deg2rad((float)i);
 		float rb = Math::deg2rad((float)i + 1);
@@ -67,7 +67,7 @@ Vector<Vector3> CapsuleShape3D::get_debug_mesh_lines() {
 }
 
 real_t CapsuleShape3D::get_enclosing_radius() const {
-	return radius + height * 0.5;
+	return height * 0.5;
 }
 
 void CapsuleShape3D::_update_shape() {
@@ -80,9 +80,11 @@ void CapsuleShape3D::_update_shape() {
 
 void CapsuleShape3D::set_radius(float p_radius) {
 	radius = p_radius;
+	if (radius > height * 0.5) {
+		height = radius * 2.0;
+	}
 	_update_shape();
 	notify_change_to_owners();
-	_change_notify("radius");
 }
 
 float CapsuleShape3D::get_radius() const {
@@ -91,9 +93,11 @@ float CapsuleShape3D::get_radius() const {
 
 void CapsuleShape3D::set_height(float p_height) {
 	height = p_height;
+	if (radius > height * 0.5) {
+		radius = height * 0.5;
+	}
 	_update_shape();
 	notify_change_to_owners();
-	_change_notify("height");
 }
 
 float CapsuleShape3D::get_height() const {
@@ -106,13 +110,13 @@ void CapsuleShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_height", "height"), &CapsuleShape3D::set_height);
 	ClassDB::bind_method(D_METHOD("get_height"), &CapsuleShape3D::get_height);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.01,4096,0.01"), "set_radius", "get_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.01,4096,0.01"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.001,4096,0.001"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,4096,0.001"), "set_height", "get_height");
+	ADD_LINKED_PROPERTY("radius", "height");
+	ADD_LINKED_PROPERTY("height", "radius");
 }
 
 CapsuleShape3D::CapsuleShape3D() :
 		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_CAPSULE)) {
-	radius = 1.0;
-	height = 1.0;
 	_update_shape();
 }

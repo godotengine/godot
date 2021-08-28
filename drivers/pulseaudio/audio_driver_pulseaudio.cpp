@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,21 +32,31 @@
 
 #ifdef PULSEAUDIO_ENABLED
 
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
+
+#ifdef ALSAMIDI_ENABLED
+#include "drivers/alsa/asound-so_wrap.h"
+#endif
 
 void AudioDriverPulseAudio::pa_state_cb(pa_context *c, void *userdata) {
 	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)userdata;
 
 	switch (pa_context_get_state(c)) {
 		case PA_CONTEXT_TERMINATED:
+			print_verbose("PulseAudio: context terminated");
+			ad->pa_ready = -1;
+			break;
 		case PA_CONTEXT_FAILED:
+			print_verbose("PulseAudio: context failed");
 			ad->pa_ready = -1;
 			break;
 		case PA_CONTEXT_READY:
+			print_verbose("PulseAudio: context ready");
 			ad->pa_ready = 1;
 			break;
 		default:
+			print_verbose("PulseAudio: context other");
 			// TODO: Check if we want to handle some of the other
 			// PA context states like PA_CONTEXT_UNCONNECTED.
 			break;
@@ -61,6 +71,13 @@ void AudioDriverPulseAudio::pa_sink_info_cb(pa_context *c, const pa_sink_info *l
 		return;
 	}
 
+	// If eol is set to a negative number there's an error.
+	if (eol < 0) {
+		ERR_PRINT("PulseAudio: sink info error: " + String(pa_strerror(pa_context_errno(c))));
+		ad->pa_status--;
+		return;
+	}
+
 	ad->pa_map = l->channel_map;
 	ad->pa_status++;
 }
@@ -70,6 +87,13 @@ void AudioDriverPulseAudio::pa_source_info_cb(pa_context *c, const pa_source_inf
 
 	// If eol is set to a positive number, you're at the end of the list
 	if (eol > 0) {
+		return;
+	}
+
+	// If eol is set to a negative number there's an error.
+	if (eol < 0) {
+		ERR_PRINT("PulseAudio: sink info error: " + String(pa_strerror(pa_context_errno(c))));
+		ad->pa_status--;
 		return;
 	}
 
@@ -86,7 +110,7 @@ void AudioDriverPulseAudio::pa_server_info_cb(pa_context *c, const pa_server_inf
 	ad->pa_status++;
 }
 
-void AudioDriverPulseAudio::detect_channels(bool capture) {
+Error AudioDriverPulseAudio::detect_channels(bool capture) {
 	pa_channel_map_init_stereo(capture ? &pa_rec_map : &pa_map);
 
 	String device = capture ? capture_device_name : device_name;
@@ -104,7 +128,8 @@ void AudioDriverPulseAudio::detect_channels(bool capture) {
 
 			pa_operation_unref(pa_op);
 		} else {
-			ERR_PRINT("pa_context_get_server_info error");
+			ERR_PRINT("pa_context_get_server_info error: " + String(pa_strerror(pa_context_errno(pa_ctx))));
+			return FAILED;
 		}
 	}
 
@@ -114,6 +139,7 @@ void AudioDriverPulseAudio::detect_channels(bool capture) {
 	} else {
 		strcpy(dev, device.utf8().get_data());
 	}
+	print_verbose("PulseAudio: Detecting channels for device: " + String(dev));
 
 	// Now using the device name get the amount of channels
 	pa_status = 0;
@@ -133,6 +159,10 @@ void AudioDriverPulseAudio::detect_channels(bool capture) {
 		}
 
 		pa_operation_unref(pa_op);
+
+		if (pa_status == -1) {
+			return FAILED;
+		}
 	} else {
 		if (capture) {
 			ERR_PRINT("pa_context_get_source_info_by_name error");
@@ -140,6 +170,8 @@ void AudioDriverPulseAudio::detect_channels(bool capture) {
 			ERR_PRINT("pa_context_get_sink_info_by_name error");
 		}
 	}
+
+	return OK;
 }
 
 Error AudioDriverPulseAudio::init_device() {
@@ -156,7 +188,13 @@ Error AudioDriverPulseAudio::init_device() {
 	// Note: If using an even amount of channels (2, 4, etc) channels and pa_map.channels will be equal,
 	// if not then pa_map.channels will have the real amount of channels PulseAudio is using and channels
 	// will have the amount of channels Godot is using (in this case it's pa_map.channels + 1)
-	detect_channels();
+	Error err = detect_channels();
+	if (err != OK) {
+		// This most likely means there are no sinks.
+		ERR_PRINT("PulseAudio: init device failed to detect number of channels");
+		return err;
+	}
+
 	switch (pa_map.channels) {
 		case 1: // Mono
 		case 3: // Surround 2.1
@@ -179,7 +217,7 @@ Error AudioDriverPulseAudio::init_device() {
 			break;
 	}
 
-	int latency = GLOBAL_GET("audio/output_latency");
+	int latency = GLOBAL_GET("audio/driver/output_latency");
 	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
 	pa_buffer_size = buffer_frames * pa_map.channels;
 
@@ -233,11 +271,24 @@ Error AudioDriverPulseAudio::init_device() {
 }
 
 Error AudioDriverPulseAudio::init() {
+#ifdef DEBUG_ENABLED
+	int dylibloader_verbose = 1;
+#else
+	int dylibloader_verbose = 0;
+#endif
+#ifdef ALSAMIDI_ENABLED
+	// If using PulseAudio with ALSA MIDI, we need to initialize ALSA as well
+	initialize_asound(dylibloader_verbose);
+#endif
+	if (initialize_pulse(dylibloader_verbose)) {
+		return ERR_CANT_OPEN;
+	}
+
 	active = false;
 	thread_exited = false;
 	exit_thread = false;
 
-	mix_rate = GLOBAL_GET("audio/mix_rate");
+	mix_rate = GLOBAL_GET("audio/driver/mix_rate");
 
 	pa_ml = pa_mainloop_new();
 	ERR_FAIL_COND_V(pa_ml == nullptr, ERR_CANT_OPEN);
@@ -285,10 +336,8 @@ Error AudioDriverPulseAudio::init() {
 		return ERR_CANT_OPEN;
 	}
 
-	Error err = init_device();
-	if (err == OK) {
-		thread = Thread::create(AudioDriverPulseAudio::thread_func, this);
-	}
+	init_device();
+	thread.start(AudioDriverPulseAudio::thread_func, this);
 
 	return OK;
 }
@@ -432,7 +481,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
 					pa_operation_unref(pa_op);
 				} else {
-					ERR_PRINT("pa_context_get_server_info error");
+					ERR_PRINT("pa_context_get_server_info error: " + String(pa_strerror(pa_context_errno(ad->pa_ctx))));
 				}
 
 				if (old_default_device != ad->default_device) {
@@ -581,16 +630,10 @@ void AudioDriverPulseAudio::set_device(String device) {
 }
 
 void AudioDriverPulseAudio::lock() {
-	if (!thread) {
-		return;
-	}
 	mutex.lock();
 }
 
 void AudioDriverPulseAudio::unlock() {
-	if (!thread) {
-		return;
-	}
 	mutex.unlock();
 }
 
@@ -603,12 +646,12 @@ void AudioDriverPulseAudio::finish_device() {
 }
 
 void AudioDriverPulseAudio::finish() {
-	if (!thread) {
+	if (!thread.is_started()) {
 		return;
 	}
 
 	exit_thread = true;
-	Thread::wait_to_finish(thread);
+	thread.wait_to_finish();
 
 	finish_device();
 
@@ -622,10 +665,6 @@ void AudioDriverPulseAudio::finish() {
 		pa_mainloop_free(pa_ml);
 		pa_ml = nullptr;
 	}
-
-	memdelete(thread);
-
-	thread = nullptr;
 }
 
 Error AudioDriverPulseAudio::capture_init_device() {

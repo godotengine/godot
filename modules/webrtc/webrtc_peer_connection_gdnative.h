@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef WEBRTC_GDNATIVE_ENABLED
-
 #ifndef WEBRTC_PEER_CONNECTION_GDNATIVE_H
 #define WEBRTC_PEER_CONNECTION_GDNATIVE_H
+
+#ifdef WEBRTC_GDNATIVE_ENABLED
 
 #include "modules/gdnative/include/net/godot_net.h"
 #include "webrtc_peer_connection.h"
@@ -53,21 +53,21 @@ public:
 
 	void set_native_webrtc_peer_connection(const godot_net_webrtc_peer_connection *p_impl);
 
-	virtual ConnectionState get_connection_state() const;
+	virtual ConnectionState get_connection_state() const override;
 
-	virtual Error initialize(Dictionary p_config = Dictionary());
-	virtual Ref<WebRTCDataChannel> create_data_channel(String p_label, Dictionary p_options = Dictionary());
-	virtual Error create_offer();
-	virtual Error set_remote_description(String type, String sdp);
-	virtual Error set_local_description(String type, String sdp);
-	virtual Error add_ice_candidate(String sdpMidName, int sdpMlineIndexName, String sdpName);
-	virtual Error poll();
-	virtual void close();
+	virtual Error initialize(Dictionary p_config = Dictionary()) override;
+	virtual Ref<WebRTCDataChannel> create_data_channel(String p_label, Dictionary p_options = Dictionary()) override;
+	virtual Error create_offer() override;
+	virtual Error set_remote_description(String type, String sdp) override;
+	virtual Error set_local_description(String type, String sdp) override;
+	virtual Error add_ice_candidate(String sdpMidName, int sdpMlineIndexName, String sdpName) override;
+	virtual Error poll() override;
+	virtual void close() override;
 
 	WebRTCPeerConnectionGDNative();
 	~WebRTCPeerConnectionGDNative();
 };
 
-#endif // WEBRTC_PEER_CONNECTION_GDNATIVE_H
-
 #endif // WEBRTC_GDNATIVE_ENABLED
+
+#endif // WEBRTC_PEER_CONNECTION_GDNATIVE_H

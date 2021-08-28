@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,8 +48,9 @@ bool ManagedCallable::compare_equal(const CallableCustom *p_a, const CallableCus
 	MonoDelegate *delegate_b = (MonoDelegate *)b->delegate_handle.get_target();
 
 	if (!delegate_a || !delegate_b) {
-		if (!delegate_a && !delegate_b)
+		if (!delegate_a && !delegate_b) {
 			return true;
+		}
 		return false;
 	}
 
@@ -58,8 +59,9 @@ bool ManagedCallable::compare_equal(const CallableCustom *p_a, const CallableCus
 }
 
 bool ManagedCallable::compare_less(const CallableCustom *p_a, const CallableCustom *p_b) {
-	if (compare_equal(p_a, p_b))
+	if (compare_equal(p_a, p_b)) {
 		return false;
+	}
 	return p_a < p_b;
 }
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -205,7 +205,9 @@ void WSLPeer::make_context(PeerData *p_data, unsigned int p_in_buf_size, unsigne
 	ERR_FAIL_COND(p_data == nullptr);
 
 	_in_buffer.resize(p_in_pkt_size, p_in_buf_size);
-	_packet_buffer.resize((1 << MAX(p_in_buf_size, p_out_buf_size)));
+	_packet_buffer.resize(1 << p_in_buf_size);
+	_out_buf_size = p_out_buf_size;
+	_out_pkt_size = p_out_pkt_size;
 
 	_data = p_data;
 	_data->peer = this;
@@ -239,6 +241,8 @@ void WSLPeer::poll() {
 
 Error WSLPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 	ERR_FAIL_COND_V(!is_connected_to_host(), FAILED);
+	ERR_FAIL_COND_V(_out_pkt_size && (wslay_event_get_queued_msg_count(_data->ctx) >= (1ULL << _out_pkt_size)), ERR_OUT_OF_MEMORY);
+	ERR_FAIL_COND_V(_out_buf_size && (wslay_event_get_queued_msg_length(_data->ctx) >= (1ULL << _out_buf_size)), ERR_OUT_OF_MEMORY);
 
 	struct wslay_event_msg msg; // Should I use fragmented?
 	msg.opcode = write_mode == WRITE_MODE_TEXT ? WSLAY_TEXT_FRAME : WSLAY_BINARY_FRAME;
@@ -280,6 +284,12 @@ int WSLPeer::get_available_packet_count() const {
 	return _in_buffer.packets_left();
 }
 
+int WSLPeer::get_current_outbound_buffered_amount() const {
+	ERR_FAIL_COND_V(!_data, 0);
+
+	return wslay_event_get_queued_msg_length(_data->ctx);
+}
+
 bool WSLPeer::was_string_packet() const {
 	return _is_string;
 }
@@ -305,8 +315,8 @@ void WSLPeer::close(int p_code, String p_reason) {
 	_packet_buffer.resize(0);
 }
 
-IP_Address WSLPeer::get_connected_host() const {
-	ERR_FAIL_COND_V(!is_connected_to_host() || _data->tcp.is_null(), IP_Address());
+IPAddress WSLPeer::get_connected_host() const {
+	ERR_FAIL_COND_V(!is_connected_to_host() || _data->tcp.is_null(), IPAddress());
 
 	return _data->tcp->get_connected_host();
 }
@@ -329,10 +339,6 @@ void WSLPeer::invalidate() {
 }
 
 WSLPeer::WSLPeer() {
-	_data = nullptr;
-	_is_string = 0;
-	close_code = -1;
-	write_mode = WRITE_MODE_BINARY;
 }
 
 WSLPeer::~WSLPeer() {

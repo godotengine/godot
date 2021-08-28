@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -90,7 +90,9 @@ typedef struct {
 	godot_int (*get_available_packet_count)(const void *);
 	godot_int (*get_max_packet_size)(const void *);
 
-	/* This is NetworkedMultiplayerPeer */
+	/* This is MultiplayerPeer */
+	void (*set_transfer_channel)(void *, godot_int);
+	godot_int (*get_transfer_channel)(void *);
 	void (*set_transfer_mode)(void *, godot_int);
 	godot_int (*get_transfer_mode)(const void *);
 	// 0 = broadcast, 1 = server, <0 = all but abs(value)

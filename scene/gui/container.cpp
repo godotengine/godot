@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "container.h"
-#include "core/message_queue.h"
+#include "core/object/message_queue.h"
 #include "scene/scene_string_names.h"
 
 void Container::_child_minsize_changed() {
@@ -47,9 +47,9 @@ void Container::add_child_notify(Node *p_child) {
 		return;
 	}
 
-	control->connect("size_flags_changed", callable_mp(this, &Container::queue_sort));
-	control->connect("minimum_size_changed", callable_mp(this, &Container::_child_minsize_changed));
-	control->connect("visibility_changed", callable_mp(this, &Container::_child_minsize_changed));
+	control->connect(SNAME("size_flags_changed"), callable_mp(this, &Container::queue_sort));
+	control->connect(SNAME("minimum_size_changed"), callable_mp(this, &Container::_child_minsize_changed));
+	control->connect(SNAME("visibility_changed"), callable_mp(this, &Container::_child_minsize_changed));
 
 	minimum_size_changed();
 	queue_sort();
@@ -121,12 +121,7 @@ void Container::fit_child_in_rect(Control *p_child, const Rect2 &p_rect) {
 		}
 	}
 
-	for (int i = 0; i < 4; i++) {
-		p_child->set_anchor(Margin(i), ANCHOR_BEGIN);
-	}
-
-	p_child->set_position(r.position);
-	p_child->set_size(r.size);
+	p_child->set_rect(r);
 	p_child->set_rotation(0);
 	p_child->set_scale(Vector2(1, 1));
 }
@@ -164,16 +159,14 @@ void Container::_notification(int p_what) {
 	}
 }
 
-String Container::get_configuration_warning() const {
-	String warning = Control::get_configuration_warning();
+TypedArray<String> Container::get_configuration_warnings() const {
+	TypedArray<String> warnings = Control::get_configuration_warnings();
 
 	if (get_class() == "Container" && get_script().is_null()) {
-		if (warning != String()) {
-			warning += "\n\n";
-		}
-		warning += TTR("Container by itself serves no purpose unless a script configures its children placement behavior.\nIf you don't intend to add a script, use a plain Control node instead.");
+		warnings.push_back(TTR("Container by itself serves no purpose unless a script configures its children placement behavior.\nIf you don't intend to add a script, use a plain Control node instead."));
 	}
-	return warning;
+
+	return warnings;
 }
 
 void Container::_bind_methods() {
@@ -185,7 +178,6 @@ void Container::_bind_methods() {
 }
 
 Container::Container() {
-	pending_sort = false;
 	// All containers should let mouse events pass by default.
 	set_mouse_filter(MOUSE_FILTER_PASS);
 }

@@ -11,17 +11,20 @@ doc/_build/
 # CLion
 cmake-build-debug
 
+# clangd
+.clangd/
+
 # Android specific
 .gradle
 local.properties
 *.iml
-.idea
 .gradletasknamecache
 project.properties
 platform/android/java/lib/.cxx/
 platform/android/java/libs/*
 platform/android/java/app/libs/*
 platform/android/java/lib/.cxx/*
+platform/android/java/nativeSrcsConfigs/.cxx/
 
 # General c++ generated files
 *.lib
@@ -34,6 +37,8 @@ platform/android/java/lib/.cxx/*
 *.os
 *.Plo
 *.lo
+# Binutils tmp linker output of the form "stXXXXXX" where "X" is alphanumeric
+st[A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9]
 
 # Libs generated files
 .deps/*
@@ -78,7 +83,7 @@ gmon.out
 __MACOSX
 logs/
 
-# for projects that use SCons for building: http://http://www.scons.org/
+# for projects that use SCons for building: https://www.scons.org/
 .sconf_temp
 .sconsign*.dblite
 *.pyc
@@ -263,8 +268,11 @@ __pycache__/
 # KDE
 .directory
 
-#Kdevelop project files
+# Kdevelop project files
 *.kdev4
+
+# Kate swap files
+*.kate-swp
 
 # Xcode
 xcuserdata/
@@ -370,7 +378,6 @@ cppcheck-cppcheck-build-dir/
 *index-sort-f.html
 *index-sort-l.html
 *index.html
-MachineIndependent/
 godot.info
 amber.png
 emerald.png
@@ -379,3 +386,7 @@ ruby.png
 snow.png
 updown.png
 gcov.css
+
+# https://clangd.llvm.org/ cache folder
+.clangd/
+.cache/

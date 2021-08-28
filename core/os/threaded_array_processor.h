@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,12 +35,12 @@
 #include "core/os/os.h"
 #include "core/os/thread.h"
 #include "core/os/thread_safe.h"
-#include "core/safe_refcount.h"
+#include "core/templates/safe_refcount.h"
 
 template <class C, class U>
 struct ThreadArrayProcessData {
 	uint32_t elements;
-	uint32_t index;
+	SafeNumeric<uint32_t> index;
 	C *instance;
 	U userdata;
 	void (C::*method)(uint32_t, U);
@@ -56,7 +56,7 @@ template <class T>
 void process_array_thread(void *ud) {
 	T &data = *(T *)ud;
 	while (true) {
-		uint32_t index = atomic_increment(&data.index);
+		uint32_t index = data.index.increment();
 		if (index >= data.elements) {
 			break;
 		}
@@ -70,22 +70,21 @@ void thread_process_array(uint32_t p_elements, C *p_instance, M p_method, U p_us
 	data.method = p_method;
 	data.instance = p_instance;
 	data.userdata = p_userdata;
-	data.index = 0;
+	data.index.set(0);
 	data.elements = p_elements;
-	data.process(data.index); //process first, let threads increment for next
+	data.process(0); //process first, let threads increment for next
 
-	Vector<Thread *> threads;
+	int thread_count = OS::get_singleton()->get_processor_count();
+	Thread *threads = memnew_arr(Thread, thread_count);
 
-	threads.resize(OS::get_singleton()->get_processor_count());
-
-	for (int i = 0; i < threads.size(); i++) {
-		threads.write[i] = Thread::create(process_array_thread<ThreadArrayProcessData<C, U>>, &data);
+	for (int i = 0; i < thread_count; i++) {
+		threads[i].start(process_array_thread<ThreadArrayProcessData<C, U>>, &data);
 	}
 
-	for (int i = 0; i < threads.size(); i++) {
-		Thread::wait_to_finish(threads[i]);
-		memdelete(threads[i]);
+	for (int i = 0; i < thread_count; i++) {
+		threads[i].wait_to_finish();
 	}
+	memdelete_arr(threads);
 }
 
 #else
@@ -96,7 +95,7 @@ void thread_process_array(uint32_t p_elements, C *p_instance, M p_method, U p_us
 	data.method = p_method;
 	data.instance = p_instance;
 	data.userdata = p_userdata;
-	data.index = 0;
+	data.index.set(0);
 	data.elements = p_elements;
 	for (uint32_t i = 0; i < p_elements; i++) {
 		data.process(i);

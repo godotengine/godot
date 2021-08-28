@@ -21,7 +21,7 @@ subject to the following restrictions:
 #include "BulletCollision/CollisionDispatch/btCollisionObject.h"
 
 btMultiBodyJointMotor::btMultiBodyJointMotor(btMultiBody* body, int link, btScalar desiredVelocity, btScalar maxMotorImpulse)
-	: btMultiBodyConstraint(body, body, link, body->getLink(link).m_parent, 1, true),
+	: btMultiBodyConstraint(body, body, link, body->getLink(link).m_parent, 1, true, MULTIBODY_CONSTRAINT_1DOF_JOINT_MOTOR),
 	  m_desiredVelocity(desiredVelocity),
 	  m_desiredPosition(0),
 	  m_kd(1.),
@@ -43,7 +43,6 @@ void btMultiBodyJointMotor::finalizeMultiDof()
 	unsigned int offset = 6 + (m_bodyA->getLink(m_linkA).m_dofOffset + linkDoF);
 
 	// row 0: the lower bound
-	// row 0: the lower bound
 	jacobianA(0)[offset] = 1;
 
 	m_numDofsFinalized = m_jacSizeBoth;
@@ -51,7 +50,7 @@ void btMultiBodyJointMotor::finalizeMultiDof()
 
 btMultiBodyJointMotor::btMultiBodyJointMotor(btMultiBody* body, int link, int linkDoF, btScalar desiredVelocity, btScalar maxMotorImpulse)
 	//:btMultiBodyConstraint(body,0,link,-1,1,true),
-	: btMultiBodyConstraint(body, body, link, body->getLink(link).m_parent, 1, true),
+	: btMultiBodyConstraint(body, body, link, body->getLink(link).m_parent, 1, true, MULTIBODY_CONSTRAINT_1DOF_JOINT_MOTOR),
 	  m_desiredVelocity(desiredVelocity),
 	  m_desiredPosition(0),
 	  m_kd(1.),

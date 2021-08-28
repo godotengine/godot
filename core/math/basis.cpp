@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,7 @@
 #include "basis.h"
 
 #include "core/math/math_funcs.h"
-#include "core/os/copymem.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 #define cofac(row1, col1, row2, col2) \
 	(elements[row1][col1] * elements[row2][col2] - elements[row1][col2] * elements[row2][col1])
@@ -110,26 +109,29 @@ bool Basis::is_diagonal() const {
 }
 
 bool Basis::is_rotation() const {
-	return Math::is_equal_approx(determinant(), 1, UNIT_EPSILON) && is_orthogonal();
+	return Math::is_equal_approx(determinant(), 1, (real_t)UNIT_EPSILON) && is_orthogonal();
 }
 
+#ifdef MATH_CHECKS
+// This method is only used once, in diagonalize. If it's desired elsewhere, feel free to remove the #ifdef.
 bool Basis::is_symmetric() const {
-	if (!Math::is_equal_approx_ratio(elements[0][1], elements[1][0], UNIT_EPSILON)) {
+	if (!Math::is_equal_approx(elements[0][1], elements[1][0])) {
 		return false;
 	}
-	if (!Math::is_equal_approx_ratio(elements[0][2], elements[2][0], UNIT_EPSILON)) {
+	if (!Math::is_equal_approx(elements[0][2], elements[2][0])) {
 		return false;
 	}
-	if (!Math::is_equal_approx_ratio(elements[1][2], elements[2][1], UNIT_EPSILON)) {
+	if (!Math::is_equal_approx(elements[1][2], elements[2][1])) {
 		return false;
 	}
 
 	return true;
 }
+#endif
 
 Basis Basis::diagonalize() {
 //NOTE: only implemented for symmetric matrices
-//with the Jacobi iterative method method
+//with the Jacobi iterative method
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V(!is_symmetric(), Basis());
 #endif
@@ -314,7 +316,7 @@ Vector3 Basis::rotref_posscale_decomposition(Basis &rotref) const {
 // Multiplies the matrix from left by the rotation matrix: M -> R.M
 // Note that this does *not* rotate the matrix itself.
 //
-// The main use of Basis is as Transform.basis, which is used a the transformation matrix
+// The main use of Basis is as Transform.basis, which is used by the transformation matrix
 // of 3D object. Rotate here refers to rotation of the object (which is R * (*this)),
 // not the matrix itself (which is R * (*this) * R.transposed()).
 Basis Basis::rotated(const Vector3 &p_axis, real_t p_phi) const {
@@ -343,12 +345,12 @@ void Basis::rotate(const Vector3 &p_euler) {
 	*this = rotated(p_euler);
 }
 
-Basis Basis::rotated(const Quat &p_quat) const {
-	return Basis(p_quat) * (*this);
+Basis Basis::rotated(const Quaternion &p_quaternion) const {
+	return Basis(p_quaternion) * (*this);
 }
 
-void Basis::rotate(const Quat &p_quat) {
-	*this = rotated(p_quat);
+void Basis::rotate(const Quaternion &p_quaternion) {
+	*this = rotated(p_quaternion);
 }
 
 Vector3 Basis::get_rotation_euler() const {
@@ -365,7 +367,7 @@ Vector3 Basis::get_rotation_euler() const {
 	return m.get_euler();
 }
 
-Quat Basis::get_rotation_quat() const {
+Quaternion Basis::get_rotation_quaternion() const {
 	// Assumes that the matrix can be decomposed into a proper rotation and scaling matrix as M = R.S,
 	// and returns the Euler angles corresponding to the rotation part, complementing get_scale().
 	// See the comment in get_scale() for further information.
@@ -376,7 +378,19 @@ Quat Basis::get_rotation_quat() const {
 		m.scale(Vector3(-1, -1, -1));
 	}
 
-	return m.get_quat();
+	return m.get_quaternion();
+}
+
+void Basis::rotate_to_align(Vector3 p_start_direction, Vector3 p_end_direction) {
+	// Takes two vectors and rotates the basis from the first vector to the second vector.
+	// Adopted from: https://gist.github.com/kevinmoran/b45980723e53edeb8a5a43c49f134724
+	const Vector3 axis = p_start_direction.cross(p_end_direction).normalized();
+	if (axis.length_squared() != 0) {
+		real_t dot = p_start_direction.dot(p_end_direction);
+		dot = CLAMP(dot, -1.0, 1.0);
+		const real_t angle_rads = Math::acos(dot);
+		set_axis_angle(axis, angle_rads);
+	}
 }
 
 void Basis::get_rotation_axis_angle(Vector3 &p_axis, real_t &p_angle) const {
@@ -737,18 +751,6 @@ bool Basis::is_equal_approx(const Basis &p_basis) const {
 	return elements[0].is_equal_approx(p_basis.elements[0]) && elements[1].is_equal_approx(p_basis.elements[1]) && elements[2].is_equal_approx(p_basis.elements[2]);
 }
 
-bool Basis::is_equal_approx_ratio(const Basis &a, const Basis &b, real_t p_epsilon) const {
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			if (!Math::is_equal_approx_ratio(a.elements[i][j], b.elements[i][j], p_epsilon)) {
-				return false;
-			}
-		}
-	}
-
-	return true;
-}
-
 bool Basis::operator==(const Basis &p_matrix) const {
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
@@ -766,23 +768,14 @@ bool Basis::operator!=(const Basis &p_matrix) const {
 }
 
 Basis::operator String() const {
-	String mtx;
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			if (i != 0 || j != 0) {
-				mtx += ", ";
-			}
-
-			mtx += rtos(elements[j][i]); //matrix is stored transposed for performance, so print it transposed
-		}
-	}
-
-	return mtx;
+	return "[X: " + get_axis(0).operator String() +
+		   ", Y: " + get_axis(1).operator String() +
+		   ", Z: " + get_axis(2).operator String() + "]";
 }
 
-Quat Basis::get_quat() const {
+Quaternion Basis::get_quaternion() const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!is_rotation(), Quat(), "Basis must be normalized in order to be casted to a Quaternion. Use get_rotation_quat() or call orthonormalized() instead.");
+	ERR_FAIL_COND_V_MSG(!is_rotation(), Quaternion(), "Basis must be normalized in order to be casted to a Quaternion. Use get_rotation_quaternion() or call orthonormalized() instead.");
 #endif
 	/* Allow getting a quaternion from an unnormalized transform */
 	Basis m = *this;
@@ -799,8 +792,8 @@ Quat Basis::get_quat() const {
 		temp[2] = ((m.elements[1][0] - m.elements[0][1]) * s);
 	} else {
 		int i = m.elements[0][0] < m.elements[1][1] ?
-						(m.elements[1][1] < m.elements[2][2] ? 2 : 1) :
-						(m.elements[0][0] < m.elements[2][2] ? 2 : 0);
+						  (m.elements[1][1] < m.elements[2][2] ? 2 : 1) :
+						  (m.elements[0][0] < m.elements[2][2] ? 2 : 0);
 		int j = (i + 1) % 3;
 		int k = (i + 2) % 3;
 
@@ -813,7 +806,7 @@ Quat Basis::get_quat() const {
 		temp[k] = (m.elements[k][i] + m.elements[i][k]) * s;
 	}
 
-	return Quat(temp[0], temp[1], temp[2], temp[3]);
+	return Quaternion(temp[0], temp[1], temp[2], temp[3]);
 }
 
 static const Basis _ortho_bases[24] = {
@@ -890,7 +883,7 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 	if ((Math::abs(elements[1][0] - elements[0][1]) < epsilon) && (Math::abs(elements[2][0] - elements[0][2]) < epsilon) && (Math::abs(elements[2][1] - elements[1][2]) < epsilon)) {
 		// singularity found
 		// first check for identity matrix which must have +1 for all terms
-		//  in leading diagonaland zero in other terms
+		// in leading diagonal and zero in other terms
 		if ((Math::abs(elements[1][0] + elements[0][1]) < epsilon2) && (Math::abs(elements[2][0] + elements[0][2]) < epsilon2) && (Math::abs(elements[2][1] + elements[1][2]) < epsilon2) && (Math::abs(elements[0][0] + elements[1][1] + elements[2][2] - 3) < epsilon2)) {
 			// this singularity is identity matrix so angle = 0
 			r_axis = Vector3(0, 1, 0);
@@ -955,13 +948,13 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 	r_angle = angle;
 }
 
-void Basis::set_quat(const Quat &p_quat) {
-	real_t d = p_quat.length_squared();
+void Basis::set_quaternion(const Quaternion &p_quaternion) {
+	real_t d = p_quaternion.length_squared();
 	real_t s = 2.0 / d;
-	real_t xs = p_quat.x * s, ys = p_quat.y * s, zs = p_quat.z * s;
-	real_t wx = p_quat.w * xs, wy = p_quat.w * ys, wz = p_quat.w * zs;
-	real_t xx = p_quat.x * xs, xy = p_quat.x * ys, xz = p_quat.x * zs;
-	real_t yy = p_quat.y * ys, yz = p_quat.y * zs, zz = p_quat.z * zs;
+	real_t xs = p_quaternion.x * s, ys = p_quaternion.y * s, zs = p_quaternion.z * s;
+	real_t wx = p_quaternion.w * xs, wy = p_quaternion.w * ys, wz = p_quaternion.w * zs;
+	real_t xx = p_quaternion.x * xs, xy = p_quaternion.x * ys, xz = p_quaternion.x * zs;
+	real_t yy = p_quaternion.y * ys, yz = p_quaternion.y * zs, zz = p_quaternion.z * zs;
 	set(1.0 - (yy + zz), xy - wz, xz + wy,
 			xy + wz, 1.0 - (xx + zz), yz - wx,
 			xz - wy, yz + wx, 1.0 - (xx + yy));
@@ -1007,9 +1000,9 @@ void Basis::set_euler_scale(const Vector3 &p_euler, const Vector3 &p_scale) {
 	rotate(p_euler);
 }
 
-void Basis::set_quat_scale(const Quat &p_quat, const Vector3 &p_scale) {
+void Basis::set_quaternion_scale(const Quaternion &p_quaternion, const Vector3 &p_scale) {
 	set_diagonal(p_scale);
-	rotate(p_quat);
+	rotate(p_quaternion);
 }
 
 void Basis::set_diagonal(const Vector3 &p_diag) {
@@ -1026,15 +1019,15 @@ void Basis::set_diagonal(const Vector3 &p_diag) {
 	elements[2][2] = p_diag.z;
 }
 
-Basis Basis::slerp(const Basis &target, const real_t &t) const {
+Basis Basis::slerp(const Basis &p_to, const real_t &p_weight) const {
 	//consider scale
-	Quat from(*this);
-	Quat to(target);
+	Quaternion from(*this);
+	Quaternion to(p_to);
 
-	Basis b(from.slerp(to, t));
-	b.elements[0] *= Math::lerp(elements[0].length(), target.elements[0].length(), t);
-	b.elements[1] *= Math::lerp(elements[1].length(), target.elements[1].length(), t);
-	b.elements[2] *= Math::lerp(elements[2].length(), target.elements[2].length(), t);
+	Basis b(from.slerp(to, p_weight));
+	b.elements[0] *= Math::lerp(elements[0].length(), p_to.elements[0].length(), p_weight);
+	b.elements[1] *= Math::lerp(elements[1].length(), p_to.elements[1].length(), p_weight);
+	b.elements[2] *= Math::lerp(elements[2].length(), p_to.elements[2].length(), p_weight);
 
 	return b;
 }
@@ -1147,4 +1140,22 @@ void Basis::rotate_sh(real_t *p_values) {
 	p_values[6] = d2 * s_scale_dst2;
 	p_values[7] = -d3;
 	p_values[8] = d4 * s_scale_dst4;
+}
+
+Basis Basis::looking_at(const Vector3 &p_target, const Vector3 &p_up) {
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V_MSG(p_target.is_equal_approx(Vector3()), Basis(), "The target vector can't be zero.");
+	ERR_FAIL_COND_V_MSG(p_up.is_equal_approx(Vector3()), Basis(), "The up vector can't be zero.");
+#endif
+	Vector3 v_z = -p_target.normalized();
+	Vector3 v_x = p_up.cross(v_z);
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V_MSG(v_x.is_equal_approx(Vector3()), Basis(), "The target vector and up vector can't be parallel to each other.");
+#endif
+	v_x.normalize();
+	Vector3 v_y = v_z.cross(v_x);
+
+	Basis basis;
+	basis.set(v_x, v_y, v_z);
+	return basis;
 }

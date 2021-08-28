@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 
 #if defined(UNIX_ENABLED) || defined(LIBC_FILEIO_ENABLED)
 
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 
 #include <dirent.h>
 #include <sys/stat.h>
@@ -51,6 +51,7 @@ class DirAccessUnix : public DirAccess {
 
 protected:
 	virtual String fix_unicode_name(const char *p_name) const { return String::utf8(p_name); }
+	virtual bool is_hidden(const String &p_name);
 
 public:
 	virtual Error list_dir_begin(); ///< This starts dir listing
@@ -70,13 +71,19 @@ public:
 
 	virtual bool file_exists(String p_file);
 	virtual bool dir_exists(String p_dir);
+	virtual bool is_readable(String p_dir);
+	virtual bool is_writable(String p_dir);
 
 	virtual uint64_t get_modified_time(String p_file);
 
 	virtual Error rename(String p_path, String p_new_path);
 	virtual Error remove(String p_path);
 
-	virtual size_t get_space_left();
+	virtual bool is_link(String p_file);
+	virtual String read_link(String p_file);
+	virtual Error create_link(String p_source, String p_target);
+
+	virtual uint64_t get_space_left();
 
 	virtual String get_filesystem_type() const;
 

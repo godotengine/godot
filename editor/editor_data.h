@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,16 +31,15 @@
 #ifndef EDITOR_DATA_H
 #define EDITOR_DATA_H
 
-#include "core/list.h"
-#include "core/pair.h"
-#include "core/undo_redo.h"
+#include "core/object/undo_redo.h"
+#include "core/templates/list.h"
+#include "core/templates/pair.h"
 #include "editor/editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "scene/resources/texture.h"
 
 class EditorHistory {
 	enum {
-
 		HISTORY_MAX = 64
 	};
 
@@ -48,12 +47,12 @@ class EditorHistory {
 		REF ref;
 		ObjectID object;
 		String property;
-		bool inspector_only;
+		bool inspector_only = false;
 	};
 
 	struct History {
 		Vector<Obj> path;
-		int level;
+		int level = 0;
 	};
 	friend class EditorData;
 
@@ -110,14 +109,15 @@ public:
 	};
 
 	struct EditedScene {
-		Node *root;
+		Node *root = nullptr;
 		String path;
+		uint64_t file_modified_time = 0;
 		Dictionary editor_states;
 		List<Node *> selection;
 		Vector<EditorHistory::History> history_stored;
-		int history_current;
+		int history_current = 0;
 		Dictionary custom_state;
-		uint64_t version;
+		uint64_t version = 0;
 		NodePath live_edit_root;
 	};
 
@@ -132,6 +132,7 @@ private:
 
 	List<PropertyData> clipboard;
 	UndoRedo undo_redo;
+	Vector<Callable> undo_redo_callbacks;
 
 	void _cleanup_history();
 
@@ -145,7 +146,6 @@ private:
 
 public:
 	EditorPlugin *get_editor(Object *p_object);
-	EditorPlugin *get_subeditor(Object *p_object);
 	Vector<EditorPlugin *> get_subeditors(Object *p_object);
 	EditorPlugin *get_editor(String p_name);
 
@@ -167,12 +167,15 @@ public:
 	EditorPlugin *get_editor_plugin(int p_idx);
 
 	UndoRedo &get_undo_redo();
+	void add_undo_redo_inspector_hook_callback(Callable p_callable); // Callbacks should have 4 args: (Object* undo_redo, Object *modified_object, String property, Variant new_value)
+	void remove_undo_redo_inspector_hook_callback(Callable p_callable);
+	const Vector<Callable> get_undo_redo_inspector_hook_callback();
 
 	void save_editor_global_states();
 	void restore_editor_global_states();
 
 	void add_custom_type(const String &p_type, const String &p_inherits, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon);
-	Object *instance_custom_type(const String &p_type, const String &p_inherits);
+	Variant instance_custom_type(const String &p_type, const String &p_inherits);
 	void remove_custom_type(const String &p_type);
 	const Map<String, Vector<CustomType>> &get_custom_types() const { return custom_types; }
 
@@ -185,14 +188,15 @@ public:
 	Node *get_edited_scene_root(int p_idx = -1);
 	int get_edited_scene_count() const;
 	Vector<EditedScene> get_edited_scenes() const;
-	String get_scene_title(int p_idx) const;
+	String get_scene_title(int p_idx, bool p_always_strip_extension = false) const;
 	String get_scene_path(int p_idx) const;
 	String get_scene_type(int p_idx) const;
 	void set_scene_path(int p_idx, const String &p_path);
 	Ref<Script> get_scene_root_script(int p_idx) const;
 	void set_edited_scene_version(uint64_t version, int p_scene_idx = -1);
-	uint64_t get_edited_scene_version() const;
 	uint64_t get_scene_version(int p_idx) const;
+	void set_scene_modified_time(int p_idx, uint64_t p_time);
+	uint64_t get_scene_modified_time(int p_idx) const;
 	void clear_edited_scenes();
 	void set_edited_scene_live_edit_root(const NodePath &p_root);
 	NodePath get_edited_scene_live_edit_root();
@@ -210,7 +214,7 @@ public:
 
 	bool script_class_is_parent(const String &p_class, const String &p_inherits);
 	StringName script_class_get_base(const String &p_class) const;
-	Object *script_class_instance(const String &p_class);
+	Variant script_class_instance(const String &p_class);
 
 	Ref<Script> script_class_load_script(const String &p_class) const;
 

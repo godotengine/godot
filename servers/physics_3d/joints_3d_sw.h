@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,10 +35,33 @@
 #include "constraint_3d_sw.h"
 
 class Joint3DSW : public Constraint3DSW {
+protected:
+	bool dynamic_A = false;
+	bool dynamic_B = false;
+
 public:
-	virtual PhysicsServer3D::JointType get_type() const = 0;
+	virtual bool setup(real_t p_step) override { return false; }
+	virtual bool pre_solve(real_t p_step) override { return true; }
+	virtual void solve(real_t p_step) override {}
+
+	void copy_settings_from(Joint3DSW *p_joint) {
+		set_self(p_joint->get_self());
+		set_priority(p_joint->get_priority());
+		disable_collisions_between_bodies(p_joint->is_disabled_collisions_between_bodies());
+	}
+
+	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_TYPE_MAX; }
 	_FORCE_INLINE_ Joint3DSW(Body3DSW **p_body_ptr = nullptr, int p_body_count = 0) :
 			Constraint3DSW(p_body_ptr, p_body_count) {
+	}
+
+	virtual ~Joint3DSW() {
+		for (int i = 0; i < get_body_count(); i++) {
+			Body3DSW *body = get_body_ptr()[i];
+			if (body) {
+				body->remove_constraint(this);
+			}
+		}
 	}
 };
 

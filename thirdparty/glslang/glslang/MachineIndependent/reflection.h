@@ -33,7 +33,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef GLSLANG_WEB
+#if !defined(GLSLANG_WEB) && !defined(GLSLANG_ANGLE)
 
 #ifndef _REFLECTION_INCLUDED
 #define _REFLECTION_INCLUDED
@@ -220,4 +220,4 @@ protected:
 
 #endif // _REFLECTION_INCLUDED
 
-#endif // GLSLANG_WEB
+#endif // !GLSLANG_WEB && !GLSLANG_ANGLE

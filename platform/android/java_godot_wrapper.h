@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,6 +37,7 @@
 #include <android/log.h>
 #include <jni.h>
 
+#include "java_godot_view_wrapper.h"
 #include "string_android.h"
 
 // Class that makes functions in java/src/org/godotengine/godot/Godot.java callable from C++
@@ -46,6 +47,8 @@ private:
 	jobject activity;
 	jclass godot_class;
 	jclass activity_class;
+
+	GodotJavaViewWrapper *_godot_view = nullptr;
 
 	jmethodID _on_video_init = 0;
 	jmethodID _restart = 0;
@@ -63,6 +66,7 @@ private:
 	jmethodID _is_activity_resumed = 0;
 	jmethodID _vibrate = 0;
 	jmethodID _get_input_fallback_mapping = 0;
+	jmethodID _on_godot_setup_completed = 0;
 	jmethodID _on_godot_main_loop_started = 0;
 	jmethodID _get_class_loader = 0;
 
@@ -74,8 +78,10 @@ public:
 	jobject get_member_object(const char *p_name, const char *p_class, JNIEnv *p_env = nullptr);
 
 	jobject get_class_loader();
+	GodotJavaViewWrapper *get_godot_view();
 
 	void on_video_init(JNIEnv *p_env = nullptr);
+	void on_godot_setup_completed(JNIEnv *p_env = nullptr);
 	void on_godot_main_loop_started(JNIEnv *p_env = nullptr);
 	void restart(JNIEnv *p_env = nullptr);
 	void force_quit(JNIEnv *p_env = nullptr);

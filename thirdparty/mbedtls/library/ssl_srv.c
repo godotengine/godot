@@ -1,8 +1,14 @@
 /*
  *  SSLv3/TLSv1 server-side functions
  *
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  Copyright The Mbed TLS Contributors
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -16,7 +22,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  This file is part of mbed TLS (https://tls.mbed.org)
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  */
 
 #if !defined(MBEDTLS_CONFIG_FILE)
@@ -3562,11 +3587,12 @@ static int ssl_parse_encrypted_pms( mbedtls_ssl_context *ssl,
     /* In case of a failure in decryption, the decryption may write less than
      * 2 bytes of output, but we always read the first two bytes. It doesn't
      * matter in the end because diff will be nonzero in that case due to
-     * peer_pmslen being less than 48, and we only care whether diff is 0.
-     * But do initialize peer_pms for robustness anyway. This also makes
-     * memory analyzers happy (don't access uninitialized memory, even
-     * if it's an unsigned char). */
+     * ret being nonzero, and we only care whether diff is 0.
+     * But do initialize peer_pms and peer_pmslen for robustness anyway. This
+     * also makes memory analyzers happy (don't access uninitialized memory,
+     * even if it's an unsigned char). */
     peer_pms[0] = peer_pms[1] = ~0;
+    peer_pmslen = 0;
 
     ret = ssl_decrypt_encrypted_pms( ssl, p, end,
                                      peer_pms,

@@ -2,11 +2,12 @@
 #include "BulletDynamics/Dynamics/btRigidBody.h"
 #include "btMultiBodyPoint2Point.h"  //for testing (BTMBP2PCONSTRAINT_BLOCK_ANGULAR_MOTION_TEST macro)
 
-btMultiBodyConstraint::btMultiBodyConstraint(btMultiBody* bodyA, btMultiBody* bodyB, int linkA, int linkB, int numRows, bool isUnilateral)
+btMultiBodyConstraint::btMultiBodyConstraint(btMultiBody* bodyA, btMultiBody* bodyB, int linkA, int linkB, int numRows, bool isUnilateral, int type)
 	: m_bodyA(bodyA),
 	  m_bodyB(bodyB),
 	  m_linkA(linkA),
 	  m_linkB(linkB),
+	  m_type(type),
 	  m_numRows(numRows),
 	  m_jacSizeA(0),
 	  m_jacSizeBoth(0),

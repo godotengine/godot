@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,13 +31,13 @@
 #ifndef OCTREE_H
 #define OCTREE_H
 
-#include "core/list.h"
-#include "core/map.h"
 #include "core/math/aabb.h"
 #include "core/math/geometry_3d.h"
 #include "core/math/vector3.h"
-#include "core/print_string.h"
-#include "core/variant.h"
+#include "core/string/print_string.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/variant/variant.h"
 
 typedef uint32_t OctreeElementID;
 
@@ -379,7 +379,6 @@ void Octree<T, use_pairs, AL>::_insert_element(Element *p_element, Octant *p_oct
 
 	if (p_octant->aabb.size.x / OCTREE_DIVISOR < element_size) {
 		//if (p_octant->aabb.size.x*0.5 < element_size) {
-
 		/* at smallest possible size for the element  */
 		typename Element::OctantOwner owner;
 		owner.octant = p_octant;
@@ -573,7 +572,7 @@ bool Octree<T, use_pairs, AL>::_remove_element_from_octant(Element *p_element, O
 
 		Octant *parent = p_octant->parent;
 
-		if (p_octant->children_count == 0 && p_octant->elements.empty() && p_octant->pairable_elements.empty()) {
+		if (p_octant->children_count == 0 && p_octant->elements.is_empty() && p_octant->pairable_elements.is_empty()) {
 			// erase octant
 
 			if (p_octant == root) { // won't have a parent, just erase
@@ -943,7 +942,7 @@ void Octree<T, use_pairs, AL>::_cull_convex(Octant *p_octant, _CullConvexData *p
 		return; //pointless
 	}
 
-	if (!p_octant->elements.empty()) {
+	if (!p_octant->elements.is_empty()) {
 		typename List<Element *, AL>::Element *I;
 		I = p_octant->elements.front();
 
@@ -966,7 +965,7 @@ void Octree<T, use_pairs, AL>::_cull_convex(Octant *p_octant, _CullConvexData *p
 		}
 	}
 
-	if (use_pairs && !p_octant->pairable_elements.empty()) {
+	if (use_pairs && !p_octant->pairable_elements.is_empty()) {
 		typename List<Element *, AL>::Element *I;
 		I = p_octant->pairable_elements.front();
 
@@ -1002,7 +1001,7 @@ void Octree<T, use_pairs, AL>::_cull_aabb(Octant *p_octant, const AABB &p_aabb, 
 		return; //pointless
 	}
 
-	if (!p_octant->elements.empty()) {
+	if (!p_octant->elements.is_empty()) {
 		typename List<Element *, AL>::Element *I;
 		I = p_octant->elements.front();
 		for (; I; I = I->next()) {
@@ -1028,7 +1027,7 @@ void Octree<T, use_pairs, AL>::_cull_aabb(Octant *p_octant, const AABB &p_aabb, 
 		}
 	}
 
-	if (use_pairs && !p_octant->pairable_elements.empty()) {
+	if (use_pairs && !p_octant->pairable_elements.is_empty()) {
 		typename List<Element *, AL>::Element *I;
 		I = p_octant->pairable_elements.front();
 		for (; I; I = I->next()) {
@@ -1066,7 +1065,7 @@ void Octree<T, use_pairs, AL>::_cull_segment(Octant *p_octant, const Vector3 &p_
 		return; //pointless
 	}
 
-	if (!p_octant->elements.empty()) {
+	if (!p_octant->elements.is_empty()) {
 		typename List<Element *, AL>::Element *I;
 		I = p_octant->elements.front();
 		for (; I; I = I->next()) {
@@ -1092,7 +1091,7 @@ void Octree<T, use_pairs, AL>::_cull_segment(Octant *p_octant, const Vector3 &p_
 		}
 	}
 
-	if (use_pairs && !p_octant->pairable_elements.empty()) {
+	if (use_pairs && !p_octant->pairable_elements.is_empty()) {
 		typename List<Element *, AL>::Element *I;
 		I = p_octant->pairable_elements.front();
 		for (; I; I = I->next()) {
@@ -1133,7 +1132,7 @@ void Octree<T, use_pairs, AL>::_cull_point(Octant *p_octant, const Vector3 &p_po
 		return; //pointless
 	}
 
-	if (!p_octant->elements.empty()) {
+	if (!p_octant->elements.is_empty()) {
 		typename List<Element *, AL>::Element *I;
 		I = p_octant->elements.front();
 		for (; I; I = I->next()) {
@@ -1159,7 +1158,7 @@ void Octree<T, use_pairs, AL>::_cull_point(Octant *p_octant, const Vector3 &p_po
 		}
 	}
 
-	if (use_pairs && !p_octant->pairable_elements.empty()) {
+	if (use_pairs && !p_octant->pairable_elements.is_empty()) {
 		typename List<Element *, AL>::Element *I;
 		I = p_octant->pairable_elements.front();
 		for (; I; I = I->next()) {

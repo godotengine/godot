@@ -8,6 +8,7 @@
 		Simulates rooms of different sizes. Its parameters can be adjusted to simulate the sound of a specific room.
 	</description>
 	<tutorials>
+		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
 	</methods>

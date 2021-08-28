@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,7 @@
 #include "texture_basisu.h"
 
 #ifdef TOOLS_ENABLED
-#include <basisu_comp.h>
+#include <encoder/basisu_comp.h>
 #endif
 
 #include <transcoder/basisu_transcoder.h>
@@ -216,7 +216,7 @@ static Ref<Image> basis_universal_unpacker(const Vector<uint8_t> &p_buffer) {
 				format = basist::transcoder_texture_format::cTFETC2; // get this from renderer
 				imgfmt = Image::FORMAT_ETC2_RGBA8;
 			} else {
-				//gles2 most likely, bad for normalmaps, nothing to do about this.
+				//gles2 most likely, bad for normal maps, nothing to do about this.
 				format = basist::transcoder_texture_format::cTFRGBA32;
 				imgfmt = Image::FORMAT_RGBA8;
 			}
@@ -233,7 +233,7 @@ static Ref<Image> basis_universal_unpacker(const Vector<uint8_t> &p_buffer) {
 	basist::basisu_image_info info;
 	tr.get_image_info(ptr, size, info, 0);
 
-	int block_size = basist::basis_get_bytes_per_block(format);
+	int block_size = basist::basis_get_bytes_per_block_or_pixel(format);
 	Vector<uint8_t> gpudata;
 	gpudata.resize(info.m_total_blocks * block_size);
 
@@ -260,7 +260,7 @@ static Ref<Image> basis_universal_unpacker(const Vector<uint8_t> &p_buffer) {
 		};
 	};
 
-	image.instance();
+	image.instantiate();
 	image->create(info.m_width, info.m_height, info.m_total_levels > 1, imgfmt, gpudata);
 
 	return image;
@@ -272,7 +272,7 @@ void register_basis_universal_types() {
 	Image::basis_universal_packer = basis_universal_packer;
 #endif
 	Image::basis_universal_unpacker = basis_universal_unpacker;
-	//ClassDB::register_class<TextureBasisU>();
+	//GDREGISTER_CLASS(TextureBasisU);
 }
 
 void unregister_basis_universal_types() {

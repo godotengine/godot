@@ -1,12 +1,8 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace Godot
 {
-    using Array = Godot.Collections.Array;
-    using Dictionary = Godot.Collections.Dictionary;
-
     static class MarshalUtils
     {
         /// <summary>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@
 
 int main(int argc, char **argv) {
 #if defined(VULKAN_ENABLED)
-	//MoltenVK - enable full component swizzling support
+	// MoltenVK - enable full component swizzling support
 	setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1);
 #endif
 
@@ -59,6 +59,9 @@ int main(int argc, char **argv) {
 
 	OS_OSX os;
 	Error err;
+
+	// We must override main when testing is enabled
+	TEST_MAIN_OVERRIDE
 
 	if (os.open_with_filename != "") {
 		char *argv_c = (char *)malloc(os.open_with_filename.utf8().size());

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 
 #ifdef JAVASCRIPT_ENABLED
 
-#include "core/reference.h"
+#include "core/object/ref_counted.h"
 #include "emws_peer.h"
 #include "websocket_server.h"
 
@@ -47,7 +47,7 @@ public:
 	bool is_listening() const;
 	bool has_peer(int p_id) const;
 	Ref<WebSocketPeer> get_peer(int p_id) const;
-	IP_Address get_peer_address(int p_peer_id) const;
+	IPAddress get_peer_address(int p_peer_id) const;
 	int get_peer_port(int p_peer_id) const;
 	void disconnect_peer(int p_peer_id, int p_code = 1000, String p_reason = "");
 	int get_max_packet_size() const;

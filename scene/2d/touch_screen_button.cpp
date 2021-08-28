@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,8 @@
 
 #include "touch_screen_button.h"
 
-#include "core/input/input.h"
-#include "core/input/input_map.h"
-#include "core/os/os.h"
 #include "scene/main/window.h"
-#
+
 void TouchScreenButton::set_texture(const Ref<Texture2D> &p_texture) {
 	texture = p_texture;
 	update();
@@ -129,8 +126,11 @@ void TouchScreenButton::_notification(int p_what) {
 			if (shape.is_valid()) {
 				Color draw_col = get_tree()->get_debug_collisions_color();
 
-				Vector2 size = texture.is_null() ? shape->get_rect().size : texture->get_size();
-				Vector2 pos = shape_centered ? size * 0.5f : Vector2();
+				Vector2 pos;
+				if (shape_centered && texture.is_valid()) {
+					pos = texture->get_size() * 0.5;
+				}
+
 				draw_set_transform_matrix(get_canvas_transform().translated(pos));
 				shape->draw(get_canvas_item(), draw_col);
 			}
@@ -185,7 +185,9 @@ String TouchScreenButton::get_action() const {
 	return action;
 }
 
-void TouchScreenButton::_input(const Ref<InputEvent> &p_event) {
+void TouchScreenButton::input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	if (!get_tree()) {
 		return;
 	}
@@ -251,9 +253,12 @@ bool TouchScreenButton::_is_point_inside(const Point2 &p_point) {
 	if (shape.is_valid()) {
 		check_rect = false;
 
-		Vector2 size = texture.is_null() ? shape->get_rect().size : texture->get_size();
-		Transform2D xform = shape_centered ? Transform2D().translated(size * 0.5f) : Transform2D();
-		touched = shape->collide(xform, unit_rect, Transform2D(0, coord + Vector2(0.5, 0.5)));
+		Vector2 pos;
+		if (shape_centered && texture.is_valid()) {
+			pos = texture->get_size() * 0.5;
+		}
+
+		touched = shape->collide(Transform2D().translated(pos), unit_rect, Transform2D(0, coord + Vector2(0.5, 0.5)));
 	}
 
 	if (bitmask.is_valid()) {
@@ -280,13 +285,13 @@ void TouchScreenButton::_press(int p_finger_pressed) {
 	if (action != StringName()) {
 		Input::get_singleton()->action_press(action);
 		Ref<InputEventAction> iea;
-		iea.instance();
+		iea.instantiate();
 		iea->set_action(action);
 		iea->set_pressed(true);
-		get_viewport()->input(iea, true);
+		get_viewport()->push_input(iea, true);
 	}
 
-	emit_signal("pressed");
+	emit_signal(SNAME("pressed"));
 	update();
 }
 
@@ -297,15 +302,15 @@ void TouchScreenButton::_release(bool p_exiting_tree) {
 		Input::get_singleton()->action_release(action);
 		if (!p_exiting_tree) {
 			Ref<InputEventAction> iea;
-			iea.instance();
+			iea.instantiate();
 			iea->set_action(action);
 			iea->set_pressed(false);
-			get_viewport()->input(iea, true);
+			get_viewport()->push_input(iea, true);
 		}
 	}
 
 	if (!p_exiting_tree) {
-		emit_signal("released");
+		emit_signal(SNAME("released"));
 		update();
 	}
 }
@@ -379,8 +384,6 @@ void TouchScreenButton::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_pressed"), &TouchScreenButton::is_pressed);
 
-	ClassDB::bind_method(D_METHOD("_input"), &TouchScreenButton::_input);
-
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "pressed", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture_pressed", "get_texture_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "bitmask", PROPERTY_HINT_RESOURCE_TYPE, "BitMap"), "set_bitmask", "get_bitmask");
@@ -399,11 +402,6 @@ void TouchScreenButton::_bind_methods() {
 }
 
 TouchScreenButton::TouchScreenButton() {
-	finger_pressed = -1;
-	passby_press = false;
-	visibility = VISIBILITY_ALWAYS;
-	shape_centered = true;
-	shape_visible = true;
 	unit_rect = Ref<RectangleShape2D>(memnew(RectangleShape2D));
-	unit_rect->set_extents(Vector2(0.5, 0.5));
+	unit_rect->set_size(Vector2(1, 1));
 }

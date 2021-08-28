@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,180 +37,200 @@
 /// CONSTANTS
 ///////////////////////////////////////
 
-class VisualShaderNodeFloatConstant : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeFloatConstant, VisualShaderNode);
-	float constant;
+class VisualShaderNodeConstant : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeConstant, VisualShaderNode);
+
+public:
+	virtual String get_caption() const override = 0;
+
+	virtual int get_input_port_count() const override = 0;
+	virtual PortType get_input_port_type(int p_port) const override = 0;
+	virtual String get_input_port_name(int p_port) const override = 0;
+
+	virtual int get_output_port_count() const override = 0;
+	virtual PortType get_output_port_type(int p_port) const override = 0;
+	virtual String get_output_port_name(int p_port) const override = 0;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override = 0;
+
+	VisualShaderNodeConstant();
+};
+
+class VisualShaderNodeFloatConstant : public VisualShaderNodeConstant {
+	GDCLASS(VisualShaderNodeFloatConstant, VisualShaderNodeConstant);
+	float constant = 0.0f;
 
 protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	void set_constant(float p_value);
+	void set_constant(float p_constant);
 	float get_constant() const;
 
-	virtual Vector<StringName> get_editable_properties() const;
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeFloatConstant();
 };
 
 ///////////////////////////////////////
 
-class VisualShaderNodeIntConstant : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeIntConstant, VisualShaderNode);
-	int constant;
+class VisualShaderNodeIntConstant : public VisualShaderNodeConstant {
+	GDCLASS(VisualShaderNodeIntConstant, VisualShaderNodeConstant);
+	int constant = 0;
 
 protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	void set_constant(int p_value);
+	void set_constant(int p_constant);
 	int get_constant() const;
 
-	virtual Vector<StringName> get_editable_properties() const;
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeIntConstant();
 };
 
 ///////////////////////////////////////
 
-class VisualShaderNodeBooleanConstant : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeBooleanConstant, VisualShaderNode);
-	bool constant;
+class VisualShaderNodeBooleanConstant : public VisualShaderNodeConstant {
+	GDCLASS(VisualShaderNodeBooleanConstant, VisualShaderNodeConstant);
+	bool constant = false;
 
 protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	void set_constant(bool p_value);
+	void set_constant(bool p_constant);
 	bool get_constant() const;
 
-	virtual Vector<StringName> get_editable_properties() const;
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeBooleanConstant();
 };
 
 ///////////////////////////////////////
 
-class VisualShaderNodeColorConstant : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeColorConstant, VisualShaderNode);
-	Color constant;
+class VisualShaderNodeColorConstant : public VisualShaderNodeConstant {
+	GDCLASS(VisualShaderNodeColorConstant, VisualShaderNodeConstant);
+	Color constant = Color(1, 1, 1, 1);
 
 protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
+	virtual bool is_output_port_expandable(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	void set_constant(Color p_value);
+	void set_constant(const Color &p_constant);
 	Color get_constant() const;
 
-	virtual Vector<StringName> get_editable_properties() const;
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeColorConstant();
 };
 
 ///////////////////////////////////////
 
-class VisualShaderNodeVec3Constant : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeVec3Constant, VisualShaderNode);
+class VisualShaderNodeVec3Constant : public VisualShaderNodeConstant {
+	GDCLASS(VisualShaderNodeVec3Constant, VisualShaderNodeConstant);
 	Vector3 constant;
 
 protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	void set_constant(Vector3 p_value);
+	void set_constant(const Vector3 &p_constant);
 	Vector3 get_constant() const;
 
-	virtual Vector<StringName> get_editable_properties() const;
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeVec3Constant();
 };
 
 ///////////////////////////////////////
 
-class VisualShaderNodeTransformConstant : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeTransformConstant, VisualShaderNode);
-	Transform constant;
+class VisualShaderNodeTransformConstant : public VisualShaderNodeConstant {
+	GDCLASS(VisualShaderNodeTransformConstant, VisualShaderNodeConstant);
+	Transform3D constant;
 
 protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	void set_constant(Transform p_value);
-	Transform get_constant() const;
+	void set_constant(const Transform3D &p_constant);
+	Transform3D get_constant() const;
 
-	virtual Vector<StringName> get_editable_properties() const;
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeTransformConstant();
 };
@@ -231,56 +251,125 @@ public:
 		SOURCE_2D_NORMAL,
 		SOURCE_DEPTH,
 		SOURCE_PORT,
+		SOURCE_MAX,
 	};
 
 	enum TextureType {
 		TYPE_DATA,
 		TYPE_COLOR,
-		TYPE_NORMALMAP,
+		TYPE_NORMAL_MAP,
+		TYPE_MAX,
 	};
 
 private:
-	Source source;
-	TextureType texture_type;
+	Source source = SOURCE_TEXTURE;
+	TextureType texture_type = TYPE_DATA;
 
 protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
+	virtual bool is_output_port_expandable(int p_port) const override;
 
-	virtual String get_input_port_default_hint(int p_port) const;
+	virtual String get_input_port_default_hint(int p_port) const override;
 
-	virtual Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const;
-	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const override;
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	void set_source(Source p_source);
 	Source get_source() const;
 
-	void set_texture(Ref<Texture2D> p_value);
+	void set_texture(Ref<Texture2D> p_texture);
 	Ref<Texture2D> get_texture() const;
 
-	void set_texture_type(TextureType p_type);
+	void set_texture_type(TextureType p_texture_type);
 	TextureType get_texture_type() const;
 
-	virtual Vector<StringName> get_editable_properties() const;
+	virtual Vector<StringName> get_editable_properties() const override;
 
-	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const;
+	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const override;
 
 	VisualShaderNodeTexture();
 };
 
 VARIANT_ENUM_CAST(VisualShaderNodeTexture::TextureType)
 VARIANT_ENUM_CAST(VisualShaderNodeTexture::Source)
+
+///////////////////////////////////////
+
+class VisualShaderNodeCurveTexture : public VisualShaderNodeResizableBase {
+	GDCLASS(VisualShaderNodeCurveTexture, VisualShaderNodeResizableBase);
+	Ref<CurveTexture> texture;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const override;
+
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
+
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
+
+	virtual Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const override;
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	void set_texture(Ref<CurveTexture> p_texture);
+	Ref<CurveTexture> get_texture() const;
+
+	virtual Vector<StringName> get_editable_properties() const override;
+	virtual bool is_use_prop_slots() const override;
+
+	VisualShaderNodeCurveTexture();
+};
+
+///////////////////////////////////////
+
+class VisualShaderNodeCurveXYZTexture : public VisualShaderNodeResizableBase {
+	GDCLASS(VisualShaderNodeCurveXYZTexture, VisualShaderNodeResizableBase);
+	Ref<CurveXYZTexture> texture;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const override;
+
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
+
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
+
+	virtual Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const override;
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	void set_texture(Ref<CurveXYZTexture> p_texture);
+	Ref<CurveXYZTexture> get_texture() const;
+
+	virtual Vector<StringName> get_editable_properties() const override;
+	virtual bool is_use_prop_slots() const override;
+
+	VisualShaderNodeCurveXYZTexture();
+};
 
 ///////////////////////////////////////
 
@@ -291,32 +380,31 @@ public:
 	enum Source {
 		SOURCE_TEXTURE,
 		SOURCE_PORT,
+		SOURCE_MAX,
 	};
 
 protected:
-	Source source;
+	Source source = SOURCE_TEXTURE;
 
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const = 0;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
+	virtual String get_input_port_default_hint(int p_port) const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
-	virtual String get_input_port_default_hint(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
+	virtual bool is_output_port_expandable(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
-
-	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const = 0;
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	void set_source(Source p_source);
 	Source get_source() const;
 
-	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const;
+	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const override;
 
 	VisualShaderNodeSample3D();
 };
@@ -325,25 +413,48 @@ VARIANT_ENUM_CAST(VisualShaderNodeSample3D::Source)
 
 class VisualShaderNodeTexture2DArray : public VisualShaderNodeSample3D {
 	GDCLASS(VisualShaderNodeTexture2DArray, VisualShaderNodeSample3D);
-	Ref<Texture2DArray> texture;
+	Ref<Texture2DArray> texture_array;
 
 protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual String get_input_port_name(int p_port) const;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const;
-	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
+	virtual Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const override;
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
 
-	void set_texture_array(Ref<Texture2DArray> p_value);
+	void set_texture_array(Ref<Texture2DArray> p_texture_array);
 	Ref<Texture2DArray> get_texture_array() const;
 
-	virtual Vector<StringName> get_editable_properties() const;
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeTexture2DArray();
+};
+
+class VisualShaderNodeTexture3D : public VisualShaderNodeSample3D {
+	GDCLASS(VisualShaderNodeTexture3D, VisualShaderNodeSample3D);
+	Ref<Texture3D> texture;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const override;
+
+	virtual String get_input_port_name(int p_port) const override;
+
+	virtual Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const override;
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
+
+	void set_texture(Ref<Texture3D> p_texture);
+	Ref<Texture3D> get_texture() const;
+
+	virtual Vector<StringName> get_editable_properties() const override;
+
+	VisualShaderNodeTexture3D();
 };
 
 class VisualShaderNodeCubemap : public VisualShaderNode {
@@ -353,48 +464,52 @@ class VisualShaderNodeCubemap : public VisualShaderNode {
 public:
 	enum Source {
 		SOURCE_TEXTURE,
-		SOURCE_PORT
+		SOURCE_PORT,
+		SOURCE_MAX,
 	};
 
 	enum TextureType {
 		TYPE_DATA,
 		TYPE_COLOR,
-		TYPE_NORMALMAP
+		TYPE_NORMAL_MAP,
+		TYPE_MAX,
 	};
 
 private:
-	Source source;
-	TextureType texture_type;
+	Source source = SOURCE_TEXTURE;
+	TextureType texture_type = TYPE_DATA;
 
 protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
-	virtual String get_input_port_default_hint(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
+	virtual String get_input_port_default_hint(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
+	virtual bool is_output_port_expandable(int p_port) const override;
 
-	virtual Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const;
-	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const override;
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	void set_source(Source p_source);
 	Source get_source() const;
 
-	void set_cube_map(Ref<Cubemap> p_value);
+	void set_cube_map(Ref<Cubemap> p_cube_map);
 	Ref<Cubemap> get_cube_map() const;
 
-	void set_texture_type(TextureType p_type);
+	void set_texture_type(TextureType p_texture_type);
 	TextureType get_texture_type() const;
 
-	virtual Vector<StringName> get_editable_properties() const;
+	virtual Vector<StringName> get_editable_properties() const override;
+	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const override;
 
 	VisualShaderNodeCubemap();
 };
@@ -420,31 +535,32 @@ public:
 		OP_MAX,
 		OP_MIN,
 		OP_ATAN2,
-		OP_STEP
+		OP_STEP,
+		OP_ENUM_SIZE,
 	};
 
 protected:
-	Operator op;
+	Operator op = OP_ADD;
 
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	void set_operator(Operator p_op);
 	Operator get_operator() const;
 
-	virtual Vector<StringName> get_editable_properties() const;
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeFloatOp();
 };
@@ -463,30 +579,31 @@ public:
 		OP_MOD,
 		OP_MAX,
 		OP_MIN,
+		OP_ENUM_SIZE,
 	};
 
 protected:
-	Operator op;
+	Operator op = OP_ADD;
 
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	void set_operator(Operator p_op);
 	Operator get_operator() const;
 
-	virtual Vector<StringName> get_editable_properties() const;
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeIntOp();
 };
@@ -509,31 +626,32 @@ public:
 		OP_CROSS,
 		OP_ATAN2,
 		OP_REFLECT,
-		OP_STEP
+		OP_STEP,
+		OP_ENUM_SIZE,
 	};
 
 protected:
-	Operator op;
+	Operator op = OP_ADD;
 
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	void set_operator(Operator p_op);
 	Operator get_operator() const;
 
-	virtual Vector<StringName> get_editable_properties() const;
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeVectorOp();
 };
@@ -555,79 +673,86 @@ public:
 		OP_DODGE,
 		OP_BURN,
 		OP_SOFT_LIGHT,
-		OP_HARD_LIGHT
+		OP_HARD_LIGHT,
+		OP_MAX,
 	};
 
 protected:
-	Operator op;
+	Operator op = OP_SCREEN;
 
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	void set_operator(Operator p_op);
 	Operator get_operator() const;
 
-	virtual Vector<StringName> get_editable_properties() const;
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeColorOp();
 };
 
 VARIANT_ENUM_CAST(VisualShaderNodeColorOp::Operator)
 
-///////////////////////////////////////
-/// TRANSFORM-TRANSFORM MULTIPLICATION
-///////////////////////////////////////
+////////////////////////////////
+/// TRANSFORM-TRANSFORM OPERATOR
+////////////////////////////////
 
-class VisualShaderNodeTransformMult : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeTransformMult, VisualShaderNode);
+class VisualShaderNodeTransformOp : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeTransformOp, VisualShaderNode);
 
 public:
 	enum Operator {
 		OP_AxB,
 		OP_BxA,
 		OP_AxB_COMP,
-		OP_BxA_COMP
+		OP_BxA_COMP,
+		OP_ADD,
+		OP_A_MINUS_B,
+		OP_B_MINUS_A,
+		OP_A_DIV_B,
+		OP_B_DIV_A,
+		OP_MAX,
 	};
 
 protected:
-	Operator op;
+	Operator op = OP_AxB;
 
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	void set_operator(Operator p_op);
 	Operator get_operator() const;
 
-	virtual Vector<StringName> get_editable_properties() const;
+	virtual Vector<StringName> get_editable_properties() const override;
 
-	VisualShaderNodeTransformMult();
+	VisualShaderNodeTransformOp();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeTransformMult::Operator)
+VARIANT_ENUM_CAST(VisualShaderNodeTransformOp::Operator)
 
 ///////////////////////////////////////
 /// TRANSFORM-VECTOR MULTIPLICATION
@@ -642,30 +767,31 @@ public:
 		OP_BxA,
 		OP_3x3_AxB,
 		OP_3x3_BxA,
+		OP_MAX,
 	};
 
 protected:
-	Operator op;
+	Operator op = OP_AxB;
 
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	void set_operator(Operator p_op);
 	Operator get_operator() const;
 
-	virtual Vector<StringName> get_editable_properties() const;
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeTransformVecMult();
 };
@@ -712,31 +838,32 @@ public:
 		FUNC_RECIPROCAL,
 		FUNC_ROUNDEVEN,
 		FUNC_TRUNC,
-		FUNC_ONEMINUS
+		FUNC_ONEMINUS,
+		FUNC_MAX,
 	};
 
 protected:
-	Function func;
+	Function func = FUNC_SIGN;
 
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	void set_function(Function p_func);
 	Function get_function() const;
 
-	virtual Vector<StringName> get_editable_properties() const;
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeFloatFunc();
 };
@@ -753,33 +880,33 @@ class VisualShaderNodeIntFunc : public VisualShaderNode {
 public:
 	enum Function {
 		FUNC_ABS,
-		FUNC_CLAMP,
 		FUNC_NEGATE,
 		FUNC_SIGN,
+		FUNC_MAX,
 	};
 
 protected:
-	Function func;
+	Function func = FUNC_SIGN;
 
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	void set_function(Function p_func);
 	Function get_function() const;
 
-	virtual Vector<StringName> get_editable_properties() const;
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeIntFunc();
 };
@@ -829,31 +956,32 @@ public:
 		FUNC_TAN,
 		FUNC_TANH,
 		FUNC_TRUNC,
-		FUNC_ONEMINUS
+		FUNC_ONEMINUS,
+		FUNC_MAX,
 	};
 
 protected:
-	Function func;
+	Function func = FUNC_NORMALIZE;
 
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	void set_function(Function p_func);
 	Function get_function() const;
 
-	virtual Vector<StringName> get_editable_properties() const;
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeVectorFunc();
 };
@@ -870,31 +998,32 @@ class VisualShaderNodeColorFunc : public VisualShaderNode {
 public:
 	enum Function {
 		FUNC_GRAYSCALE,
-		FUNC_SEPIA
+		FUNC_SEPIA,
+		FUNC_MAX,
 	};
 
 protected:
-	Function func;
+	Function func = FUNC_GRAYSCALE;
 
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	void set_function(Function p_func);
 	Function get_function() const;
 
-	virtual Vector<StringName> get_editable_properties() const;
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeColorFunc();
 };
@@ -911,36 +1040,82 @@ class VisualShaderNodeTransformFunc : public VisualShaderNode {
 public:
 	enum Function {
 		FUNC_INVERSE,
-		FUNC_TRANSPOSE
+		FUNC_TRANSPOSE,
+		FUNC_MAX,
 	};
 
 protected:
-	Function func;
+	Function func = FUNC_INVERSE;
 
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	void set_function(Function p_func);
 	Function get_function() const;
 
-	virtual Vector<StringName> get_editable_properties() const;
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeTransformFunc();
 };
 
 VARIANT_ENUM_CAST(VisualShaderNodeTransformFunc::Function)
+
+///////////////////////////////////////
+/// UV FUNC
+///////////////////////////////////////
+
+class VisualShaderNodeUVFunc : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeUVFunc, VisualShaderNode);
+
+public:
+	enum Function {
+		FUNC_PANNING,
+		FUNC_SCALING,
+		FUNC_MAX,
+	};
+
+protected:
+	Function func = FUNC_PANNING;
+
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const override;
+
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
+	virtual String get_input_port_default_hint(int p_port) const override;
+
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
+
+	virtual bool is_show_prop_names() const override;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	void set_function(Function p_func);
+	Function get_function() const;
+
+	virtual Vector<StringName> get_editable_properties() const override;
+
+	VisualShaderNodeUVFunc();
+};
+
+VARIANT_ENUM_CAST(VisualShaderNodeUVFunc::Function)
 
 ///////////////////////////////////////
 /// DOT
@@ -950,17 +1125,17 @@ class VisualShaderNodeDotProduct : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeDotProduct, VisualShaderNode);
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	VisualShaderNodeDotProduct();
 };
@@ -973,17 +1148,17 @@ class VisualShaderNodeVectorLen : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeVectorLen, VisualShaderNode);
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	VisualShaderNodeVectorLen();
 };
@@ -996,17 +1171,17 @@ class VisualShaderNodeDeterminant : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeDeterminant, VisualShaderNode);
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	VisualShaderNodeDeterminant();
 };
@@ -1015,45 +1190,43 @@ public:
 /// CLAMP
 ///////////////////////////////////////
 
-class VisualShaderNodeScalarClamp : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeScalarClamp, VisualShaderNode);
+class VisualShaderNodeClamp : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeClamp, VisualShaderNode);
 
 public:
-	virtual String get_caption() const;
+	enum OpType {
+		OP_TYPE_FLOAT,
+		OP_TYPE_INT,
+		OP_TYPE_VECTOR,
+		OP_TYPE_MAX,
+	};
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
-
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
-
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
-
-	VisualShaderNodeScalarClamp();
-};
-
-///////////////////////////////////////
-
-class VisualShaderNodeVectorClamp : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeVectorClamp, VisualShaderNode);
+protected:
+	OpType op_type = OP_TYPE_FLOAT;
+	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	void set_op_type(OpType p_op_type);
+	OpType get_op_type() const;
 
-	VisualShaderNodeVectorClamp();
+	virtual Vector<StringName> get_editable_properties() const override;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	VisualShaderNodeClamp();
 };
+
+VARIANT_ENUM_CAST(VisualShaderNodeClamp::OpType)
 
 ///////////////////////////////////////
 /// DERIVATIVE FUNCTIONS
@@ -1066,31 +1239,32 @@ public:
 	enum Function {
 		FUNC_SUM,
 		FUNC_X,
-		FUNC_Y
+		FUNC_Y,
+		FUNC_MAX,
 	};
 
 protected:
-	Function func;
+	Function func = FUNC_SUM;
 
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	void set_function(Function p_func);
 	Function get_function() const;
 
-	virtual Vector<StringName> get_editable_properties() const;
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeScalarDerivativeFunc();
 };
@@ -1106,31 +1280,32 @@ public:
 	enum Function {
 		FUNC_SUM,
 		FUNC_X,
-		FUNC_Y
+		FUNC_Y,
+		FUNC_MAX,
 	};
 
 protected:
-	Function func;
+	Function func = FUNC_SUM;
 
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	void set_function(Function p_func);
 	Function get_function() const;
 
-	virtual Vector<StringName> get_editable_properties() const;
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeVectorDerivativeFunc();
 };
@@ -1145,17 +1320,17 @@ class VisualShaderNodeFaceForward : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeFaceForward, VisualShaderNode);
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	VisualShaderNodeFaceForward();
 };
@@ -1168,17 +1343,17 @@ class VisualShaderNodeOuterProduct : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeOuterProduct, VisualShaderNode);
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	VisualShaderNodeOuterProduct();
 };
@@ -1187,89 +1362,85 @@ public:
 /// STEP
 ///////////////////////////////////////
 
-class VisualShaderNodeVectorScalarStep : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeVectorScalarStep, VisualShaderNode);
+class VisualShaderNodeStep : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeStep, VisualShaderNode);
 
 public:
-	virtual String get_caption() const;
+	enum OpType {
+		OP_TYPE_SCALAR,
+		OP_TYPE_VECTOR,
+		OP_TYPE_VECTOR_SCALAR,
+		OP_TYPE_MAX,
+	};
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+protected:
+	OpType op_type = OP_TYPE_SCALAR;
+	static void _bind_methods();
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+public:
+	virtual String get_caption() const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	VisualShaderNodeVectorScalarStep();
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
+
+	void set_op_type(OpType p_op_type);
+	OpType get_op_type() const;
+
+	virtual Vector<StringName> get_editable_properties() const override;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	VisualShaderNodeStep();
 };
+
+VARIANT_ENUM_CAST(VisualShaderNodeStep::OpType)
 
 ///////////////////////////////////////
 /// SMOOTHSTEP
 ///////////////////////////////////////
 
-class VisualShaderNodeScalarSmoothStep : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeScalarSmoothStep, VisualShaderNode);
+class VisualShaderNodeSmoothStep : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeSmoothStep, VisualShaderNode);
 
 public:
-	virtual String get_caption() const;
+	enum OpType {
+		OP_TYPE_SCALAR,
+		OP_TYPE_VECTOR,
+		OP_TYPE_VECTOR_SCALAR,
+		OP_TYPE_MAX,
+	};
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
-
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
-
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
-
-	VisualShaderNodeScalarSmoothStep();
-};
-
-///////////////////////////////////////
-
-class VisualShaderNodeVectorSmoothStep : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeVectorSmoothStep, VisualShaderNode);
+protected:
+	OpType op_type = OP_TYPE_SCALAR;
+	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	void set_op_type(OpType p_op_type);
+	OpType get_op_type() const;
 
-	VisualShaderNodeVectorSmoothStep();
+	virtual Vector<StringName> get_editable_properties() const override;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	VisualShaderNodeSmoothStep();
 };
 
-///////////////////////////////////////
-
-class VisualShaderNodeVectorScalarSmoothStep : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeVectorScalarSmoothStep, VisualShaderNode);
-
-public:
-	virtual String get_caption() const;
-
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
-
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
-
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
-
-	VisualShaderNodeVectorScalarSmoothStep();
-};
+VARIANT_ENUM_CAST(VisualShaderNodeSmoothStep::OpType)
 
 ///////////////////////////////////////
 /// DISTANCE
@@ -1279,17 +1450,17 @@ class VisualShaderNodeVectorDistance : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeVectorDistance, VisualShaderNode);
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	VisualShaderNodeVectorDistance();
 };
@@ -1302,17 +1473,17 @@ class VisualShaderNodeVectorRefract : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeVectorRefract, VisualShaderNode);
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	VisualShaderNodeVectorRefract();
 };
@@ -1321,66 +1492,43 @@ public:
 /// MIX
 ///////////////////////////////////////
 
-class VisualShaderNodeScalarInterp : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeScalarInterp, VisualShaderNode);
+class VisualShaderNodeMix : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeMix, VisualShaderNode);
 
 public:
-	virtual String get_caption() const;
+	enum OpType {
+		OP_TYPE_SCALAR,
+		OP_TYPE_VECTOR,
+		OP_TYPE_VECTOR_SCALAR,
+		OP_TYPE_MAX,
+	};
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
-
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
-
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
-
-	VisualShaderNodeScalarInterp();
-};
-
-///////////////////////////////////////
-
-class VisualShaderNodeVectorInterp : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeVectorInterp, VisualShaderNode);
+protected:
+	OpType op_type = OP_TYPE_SCALAR;
+	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	void set_op_type(OpType p_op_type);
+	OpType get_op_type() const;
 
-	VisualShaderNodeVectorInterp();
+	virtual Vector<StringName> get_editable_properties() const override;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	VisualShaderNodeMix();
 };
 
-///////////////////////////////////////
-
-class VisualShaderNodeVectorScalarMix : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeVectorScalarMix, VisualShaderNode);
-
-public:
-	virtual String get_caption() const;
-
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
-
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
-
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
-
-	VisualShaderNodeVectorScalarMix();
-};
+VARIANT_ENUM_CAST(VisualShaderNodeMix::OpType)
 
 ///////////////////////////////////////
 /// COMPOSE
@@ -1390,17 +1538,17 @@ class VisualShaderNodeVectorCompose : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeVectorCompose, VisualShaderNode);
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	VisualShaderNodeVectorCompose();
 };
@@ -1411,17 +1559,17 @@ class VisualShaderNodeTransformCompose : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeTransformCompose, VisualShaderNode);
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	VisualShaderNodeTransformCompose();
 };
@@ -1434,17 +1582,17 @@ class VisualShaderNodeVectorDecompose : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeVectorDecompose, VisualShaderNode);
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	VisualShaderNodeVectorDecompose();
 };
@@ -1455,17 +1603,17 @@ class VisualShaderNodeTransformDecompose : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeTransformDecompose, VisualShaderNode);
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	VisualShaderNodeTransformDecompose();
 };
@@ -1482,30 +1630,36 @@ public:
 		HINT_NONE,
 		HINT_RANGE,
 		HINT_RANGE_STEP,
+		HINT_MAX,
 	};
 
 private:
-	Hint hint;
-	float hint_range_min;
-	float hint_range_max;
-	float hint_range_step;
+	Hint hint = HINT_NONE;
+	float hint_range_min = 0.0f;
+	float hint_range_max = 1.0f;
+	float hint_range_step = 0.1f;
+	bool default_value_enabled = false;
+	float default_value = 0.0f;
 
 protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	virtual bool is_show_prop_names() const override;
+	virtual bool is_use_prop_slots() const override;
 
 	void set_hint(Hint p_hint);
 	Hint get_hint() const;
@@ -1519,9 +1673,16 @@ public:
 	void set_step(float p_value);
 	float get_step() const;
 
-	bool is_qualifier_supported(Qualifier p_qual) const;
+	void set_default_value_enabled(bool p_enabled);
+	bool is_default_value_enabled() const;
 
-	virtual Vector<StringName> get_editable_properties() const;
+	void set_default_value(float p_value);
+	float get_default_value() const;
+
+	bool is_qualifier_supported(Qualifier p_qual) const override;
+	bool is_convertible_to_constant() const override;
+
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeFloatUniform();
 };
@@ -1536,30 +1697,36 @@ public:
 		HINT_NONE,
 		HINT_RANGE,
 		HINT_RANGE_STEP,
+		HINT_MAX,
 	};
 
 private:
-	Hint hint;
-	int hint_range_min;
-	int hint_range_max;
-	int hint_range_step;
+	Hint hint = HINT_NONE;
+	int hint_range_min = 0;
+	int hint_range_max = 100;
+	int hint_range_step = 1;
+	bool default_value_enabled = false;
+	int default_value = 0;
 
 protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	virtual bool is_show_prop_names() const override;
+	virtual bool is_use_prop_slots() const override;
 
 	void set_hint(Hint p_hint);
 	Hint get_hint() const;
@@ -1573,9 +1740,16 @@ public:
 	void set_step(int p_value);
 	int get_step() const;
 
-	bool is_qualifier_supported(Qualifier p_qual) const;
+	void set_default_value_enabled(bool p_enabled);
+	bool is_default_value_enabled() const;
 
-	virtual Vector<StringName> get_editable_properties() const;
+	void set_default_value(int p_value);
+	int get_default_value() const;
+
+	bool is_qualifier_supported(Qualifier p_qual) const override;
+	bool is_convertible_to_constant() const override;
+
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeIntUniform();
 };
@@ -1587,21 +1761,40 @@ VARIANT_ENUM_CAST(VisualShaderNodeIntUniform::Hint)
 class VisualShaderNodeBooleanUniform : public VisualShaderNodeUniform {
 	GDCLASS(VisualShaderNodeBooleanUniform, VisualShaderNodeUniform);
 
+private:
+	bool default_value_enabled = false;
+	bool default_value = false;
+
+protected:
+	static void _bind_methods();
+
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	bool is_qualifier_supported(Qualifier p_qual) const;
+	virtual bool is_show_prop_names() const override;
+	virtual bool is_use_prop_slots() const override;
+
+	void set_default_value_enabled(bool p_enabled);
+	bool is_default_value_enabled() const;
+
+	void set_default_value(bool p_value);
+	bool get_default_value() const;
+
+	bool is_qualifier_supported(Qualifier p_qual) const override;
+	bool is_convertible_to_constant() const override;
+
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeBooleanUniform();
 };
@@ -1611,21 +1804,39 @@ public:
 class VisualShaderNodeColorUniform : public VisualShaderNodeUniform {
 	GDCLASS(VisualShaderNodeColorUniform, VisualShaderNodeUniform);
 
+private:
+	bool default_value_enabled = false;
+	Color default_value = Color(1.0, 1.0, 1.0, 1.0);
+
+protected:
+	static void _bind_methods();
+
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	bool is_qualifier_supported(Qualifier p_qual) const;
+	virtual bool is_show_prop_names() const override;
+
+	void set_default_value_enabled(bool p_enabled);
+	bool is_default_value_enabled() const;
+
+	void set_default_value(const Color &p_value);
+	Color get_default_value() const;
+
+	bool is_qualifier_supported(Qualifier p_qual) const override;
+	bool is_convertible_to_constant() const override;
+
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeColorUniform();
 };
@@ -1635,21 +1846,40 @@ public:
 class VisualShaderNodeVec3Uniform : public VisualShaderNodeUniform {
 	GDCLASS(VisualShaderNodeVec3Uniform, VisualShaderNodeUniform);
 
+private:
+	bool default_value_enabled = false;
+	Vector3 default_value;
+
+protected:
+	static void _bind_methods();
+
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	bool is_qualifier_supported(Qualifier p_qual) const;
+	virtual bool is_show_prop_names() const override;
+	virtual bool is_use_prop_slots() const override;
+
+	void set_default_value_enabled(bool p_enabled);
+	bool is_default_value_enabled() const;
+
+	void set_default_value(const Vector3 &p_value);
+	Vector3 get_default_value() const;
+
+	bool is_qualifier_supported(Qualifier p_qual) const override;
+	bool is_convertible_to_constant() const override;
+
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeVec3Uniform();
 };
@@ -1659,21 +1889,40 @@ public:
 class VisualShaderNodeTransformUniform : public VisualShaderNodeUniform {
 	GDCLASS(VisualShaderNodeTransformUniform, VisualShaderNodeUniform);
 
+private:
+	bool default_value_enabled = false;
+	Transform3D default_value = Transform3D(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
+
+protected:
+	static void _bind_methods();
+
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	bool is_qualifier_supported(Qualifier p_qual) const;
+	virtual bool is_show_prop_names() const override;
+	virtual bool is_use_prop_slots() const override;
+
+	void set_default_value_enabled(bool p_enabled);
+	bool is_default_value_enabled() const;
+
+	void set_default_value(const Transform3D &p_value);
+	Transform3D get_default_value() const;
+
+	bool is_qualifier_supported(Qualifier p_qual) const override;
+	bool is_convertible_to_constant() const override;
+
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeTransformUniform();
 };
@@ -1687,38 +1936,42 @@ public:
 	enum TextureType {
 		TYPE_DATA,
 		TYPE_COLOR,
-		TYPE_NORMALMAP,
+		TYPE_NORMAL_MAP,
 		TYPE_ANISO,
+		TYPE_MAX,
 	};
 
 	enum ColorDefault {
 		COLOR_DEFAULT_WHITE,
-		COLOR_DEFAULT_BLACK
+		COLOR_DEFAULT_BLACK,
+		COLOR_DEFAULT_MAX,
 	};
 
 protected:
-	TextureType texture_type;
-	ColorDefault color_default;
+	TextureType texture_type = TYPE_DATA;
+	ColorDefault color_default = COLOR_DEFAULT_WHITE;
 
 protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
-	virtual String get_input_port_default_hint(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
+	virtual String get_input_port_default_hint(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	Vector<StringName> get_editable_properties() const;
+	virtual bool is_code_generated() const override;
+
+	Vector<StringName> get_editable_properties() const override;
 
 	void set_texture_type(TextureType p_type);
 	TextureType get_texture_type() const;
@@ -1726,7 +1979,8 @@ public:
 	void set_color_default(ColorDefault p_default);
 	ColorDefault get_color_default() const;
 
-	bool is_qualifier_supported(Qualifier p_qual) const;
+	bool is_qualifier_supported(Qualifier p_qual) const override;
+	bool is_convertible_to_constant() const override;
 
 	VisualShaderNodeTextureUniform();
 };
@@ -1740,17 +1994,17 @@ class VisualShaderNodeTextureUniformTriplanar : public VisualShaderNodeTextureUn
 	GDCLASS(VisualShaderNodeTextureUniformTriplanar, VisualShaderNodeTextureUniform);
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual String get_input_port_default_hint(int p_port) const;
+	virtual String get_input_port_default_hint(int p_port) const override;
 
-	virtual String generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
-	virtual String generate_global_per_func(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
+	virtual String generate_global_per_func(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	VisualShaderNodeTextureUniformTriplanar();
 };
@@ -1761,21 +2015,44 @@ class VisualShaderNodeTexture2DArrayUniform : public VisualShaderNodeTextureUnif
 	GDCLASS(VisualShaderNodeTexture2DArrayUniform, VisualShaderNodeTextureUniform);
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String get_input_port_default_hint(int p_port) const;
-	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String get_input_port_default_hint(int p_port) const override;
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	VisualShaderNodeTexture2DArrayUniform();
+};
+
+///////////////////////////////////////
+
+class VisualShaderNodeTexture3DUniform : public VisualShaderNodeTextureUniform {
+	GDCLASS(VisualShaderNodeTexture3DUniform, VisualShaderNodeTextureUniform);
+
+public:
+	virtual String get_caption() const override;
+
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
+
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
+
+	virtual String get_input_port_default_hint(int p_port) const override;
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	VisualShaderNodeTexture3DUniform();
 };
 
 ///////////////////////////////////////
@@ -1784,19 +2061,19 @@ class VisualShaderNodeCubemapUniform : public VisualShaderNodeTextureUniform {
 	GDCLASS(VisualShaderNodeCubemapUniform, VisualShaderNodeTextureUniform);
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String get_input_port_default_hint(int p_port) const;
-	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String get_input_port_default_hint(int p_port) const override;
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	VisualShaderNodeCubemapUniform();
 };
@@ -1809,17 +2086,17 @@ class VisualShaderNodeIf : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeIf, VisualShaderNode);
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const;
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	VisualShaderNodeIf();
 };
@@ -1832,32 +2109,42 @@ class VisualShaderNodeSwitch : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeSwitch, VisualShaderNode);
 
 public:
-	virtual String get_caption() const;
+	enum OpType {
+		OP_TYPE_FLOAT,
+		OP_TYPE_INT,
+		OP_TYPE_VECTOR,
+		OP_TYPE_BOOLEAN,
+		OP_TYPE_TRANSFORM,
+		OP_TYPE_MAX,
+	};
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+protected:
+	OpType op_type = OP_TYPE_FLOAT;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	static void _bind_methods();
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const;
+public:
+	virtual String get_caption() const override;
+
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
+
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
+
+	void set_op_type(OpType p_op_type);
+	OpType get_op_type() const;
+
+	virtual Vector<StringName> get_editable_properties() const override;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	VisualShaderNodeSwitch();
 };
 
-class VisualShaderNodeScalarSwitch : public VisualShaderNodeSwitch {
-	GDCLASS(VisualShaderNodeScalarSwitch, VisualShaderNodeSwitch);
-
-public:
-	virtual String get_caption() const;
-
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual PortType get_output_port_type(int p_port) const;
-
-	VisualShaderNodeScalarSwitch();
-};
+VARIANT_ENUM_CAST(VisualShaderNodeSwitch::OpType)
 
 ///////////////////////////////////////
 /// FRESNEL
@@ -1867,18 +2154,19 @@ class VisualShaderNodeFresnel : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeFresnel, VisualShaderNode);
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String get_input_port_default_hint(int p_port) const;
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const;
+	virtual String get_input_port_default_hint(int p_port) const override;
+	virtual bool is_generate_input_var(int p_port) const override;
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	VisualShaderNodeFresnel();
 };
@@ -1894,31 +2182,32 @@ public:
 	enum Function {
 		FUNC_IS_INF,
 		FUNC_IS_NAN,
+		FUNC_MAX,
 	};
 
 protected:
-	Function func;
+	Function func = FUNC_IS_INF;
 
 protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	void set_function(Function p_func);
 	Function get_function() const;
 
-	virtual Vector<StringName> get_editable_properties() const;
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeIs();
 };
@@ -1939,6 +2228,7 @@ public:
 		CTYPE_VECTOR,
 		CTYPE_BOOLEAN,
 		CTYPE_TRANSFORM,
+		CTYPE_MAX,
 	};
 
 	enum Function {
@@ -1948,33 +2238,35 @@ public:
 		FUNC_GREATER_THAN_EQUAL,
 		FUNC_LESS_THAN,
 		FUNC_LESS_THAN_EQUAL,
+		FUNC_MAX,
 	};
 
 	enum Condition {
 		COND_ALL,
 		COND_ANY,
+		COND_MAX,
 	};
 
 protected:
-	ComparisonType ctype;
-	Function func;
-	Condition condition;
+	ComparisonType comparison_type = CTYPE_SCALAR;
+	Function func = FUNC_EQUAL;
+	Condition condition = COND_ALL;
 
 protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	void set_comparison_type(ComparisonType p_type);
 	ComparisonType get_comparison_type() const;
@@ -1985,8 +2277,8 @@ public:
 	void set_condition(Condition p_cond);
 	Condition get_condition() const;
 
-	virtual Vector<StringName> get_editable_properties() const;
-	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const;
+	virtual Vector<StringName> get_editable_properties() const override;
+	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const override;
 
 	VisualShaderNodeCompare();
 };
@@ -1994,5 +2286,91 @@ public:
 VARIANT_ENUM_CAST(VisualShaderNodeCompare::ComparisonType)
 VARIANT_ENUM_CAST(VisualShaderNodeCompare::Function)
 VARIANT_ENUM_CAST(VisualShaderNodeCompare::Condition)
+
+class VisualShaderNodeMultiplyAdd : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeMultiplyAdd, VisualShaderNode);
+
+public:
+	enum OpType {
+		OP_TYPE_SCALAR,
+		OP_TYPE_VECTOR,
+		OP_TYPE_MAX,
+	};
+
+protected:
+	OpType op_type = OP_TYPE_SCALAR;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const override;
+
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
+
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	void set_op_type(OpType p_op_type);
+	OpType get_op_type() const;
+
+	virtual Vector<StringName> get_editable_properties() const override;
+
+	VisualShaderNodeMultiplyAdd();
+};
+
+VARIANT_ENUM_CAST(VisualShaderNodeMultiplyAdd::OpType)
+
+class VisualShaderNodeBillboard : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeBillboard, VisualShaderNode);
+
+public:
+	enum BillboardType {
+		BILLBOARD_TYPE_DISABLED,
+		BILLBOARD_TYPE_ENABLED,
+		BILLBOARD_TYPE_FIXED_Y,
+		BILLBOARD_TYPE_PARTICLES,
+		BILLBOARD_TYPE_MAX,
+	};
+
+protected:
+	BillboardType billboard_type = BILLBOARD_TYPE_ENABLED;
+	bool keep_scale = false;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const override;
+
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
+
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	virtual bool is_show_prop_names() const override;
+
+	void set_billboard_type(BillboardType p_billboard_type);
+	BillboardType get_billboard_type() const;
+
+	void set_keep_scale_enabled(bool p_enabled);
+	bool is_keep_scale_enabled() const;
+
+	virtual Vector<StringName> get_editable_properties() const override;
+
+	VisualShaderNodeBillboard();
+};
+
+VARIANT_ENUM_CAST(VisualShaderNodeBillboard::BillboardType)
 
 #endif // VISUAL_SHADER_NODES_H

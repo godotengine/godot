@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,13 +43,13 @@ void EditorRunNative::_notification(int p_what) {
 			}
 			Ref<ImageTexture> icon = eep->get_run_icon();
 			if (!icon.is_null()) {
-				Ref<Image> im = icon->get_data();
+				Ref<Image> im = icon->get_image();
 				im = im->duplicate();
 				im->clear_mipmaps();
-				if (!im->empty()) {
+				if (!im->is_empty()) {
 					im->resize(16 * EDSCALE, 16 * EDSCALE);
 					Ref<ImageTexture> small_icon;
-					small_icon.instance();
+					small_icon.instantiate();
 					small_icon->create_from_image(im);
 					MenuButton *mb = memnew(MenuButton);
 					mb->get_popup()->connect("id_pressed", callable_mp(this, &EditorRunNative::_run_native), varray(i));
@@ -76,8 +76,10 @@ void EditorRunNative::_notification(int p_what) {
 				} else {
 					mb->get_popup()->clear();
 					mb->show();
-					mb->set_tooltip(eep->get_options_tooltip());
-					if (dc > 1) {
+					if (dc == 1) {
+						mb->set_tooltip(eep->get_option_tooltip(0));
+					} else {
+						mb->set_tooltip(eep->get_options_tooltip());
 						for (int i = 0; i < dc; i++) {
 							mb->get_popup()->add_icon_item(eep->get_option_icon(i), eep->get_option_label(i));
 							mb->get_popup()->set_item_tooltip(mb->get_popup()->get_item_count() - 1, eep->get_option_tooltip(i));
@@ -121,11 +123,11 @@ void EditorRunNative::_run_native(int p_idx, int p_platform) {
 	}
 
 	if (preset.is_null()) {
-		EditorNode::get_singleton()->show_warning(TTR("No runnable export preset found for this platform.\nPlease add a runnable preset in the export menu."));
+		EditorNode::get_singleton()->show_warning(TTR("No runnable export preset found for this platform.\nPlease add a runnable preset in the Export menu or define an existing preset as runnable."));
 		return;
 	}
 
-	emit_signal("native_run", preset);
+	emit_signal(SNAME("native_run"), preset);
 
 	int flags = 0;
 

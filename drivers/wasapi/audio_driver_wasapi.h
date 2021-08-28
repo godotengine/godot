@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,13 +64,14 @@ class AudioDriverWASAPI : public AudioDriver {
 	AudioDeviceWASAPI audio_output;
 
 	Mutex mutex;
-	Thread *thread = nullptr;
+	Thread thread;
 
 	Vector<int32_t> samples_in;
 
 	unsigned int channels = 0;
 	int mix_rate = 0;
 	int buffer_frames = 0;
+	int target_latency_ms = 0;
 
 	bool thread_exited = false;
 	mutable bool exit_thread = false;
@@ -114,5 +115,5 @@ public:
 	AudioDriverWASAPI();
 };
 
+#endif // WASAPI_ENABLED
 #endif // AUDIO_DRIVER_WASAPI_H
-#endif

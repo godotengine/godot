@@ -6,43 +6,59 @@ Import("env_modules")
 env_basisu = env_modules.Clone()
 
 # Thirdparty source files
+
+thirdparty_obj = []
+
 # Not unbundled so far since not widespread as shared library
 thirdparty_dir = "#thirdparty/basis_universal/"
-tool_sources = [
+# Sync list with upstream CMakeLists.txt
+encoder_sources = [
+    "apg_bmp.c",
     "basisu_astc_decomp.cpp",
     "basisu_backend.cpp",
     "basisu_basis_file.cpp",
+    "basisu_bc7enc.cpp",
     "basisu_comp.cpp",
     "basisu_enc.cpp",
     "basisu_etc.cpp",
     "basisu_frontend.cpp",
     "basisu_global_selector_palette_helpers.cpp",
     "basisu_gpu_texture.cpp",
+    "basisu_kernels_sse.cpp",
     "basisu_pvrtc1_4.cpp",
-    "basisu_resample_filters.cpp",
     "basisu_resampler.cpp",
+    "basisu_resample_filters.cpp",
     "basisu_ssim.cpp",
+    "basisu_uastc_enc.cpp",
+    "jpgd.cpp",
     "lodepng.cpp",
 ]
-tool_sources = [thirdparty_dir + file for file in tool_sources]
+encoder_sources = [thirdparty_dir + "encoder/" + file for file in encoder_sources]
 transcoder_sources = [thirdparty_dir + "transcoder/basisu_transcoder.cpp"]
 
 # Treat Basis headers as system headers to avoid raising warnings. Not supported on MSVC.
 if not env.msvc:
-    env_basisu.Append(
-        CPPFLAGS=["-isystem", Dir(thirdparty_dir).path, "-isystem", Dir(thirdparty_dir + "transcoder").path]
-    )
+    env_basisu.Append(CPPFLAGS=["-isystem", Dir(thirdparty_dir).path])
 else:
-    env_basisu.Prepend(CPPPATH=[thirdparty_dir, thirdparty_dir + "transcoder"])
+    env_basisu.Prepend(CPPPATH=[thirdparty_dir])
 
 if env["target"] == "debug":
-    env_basisu.Append(CPPFLAGS=["-DBASISU_DEVEL_MESSAGES=1", "-DBASISD_ENABLE_DEBUG_FLAGS=1"])
+    env_basisu.Append(CPPDEFINES=[("BASISU_DEVEL_MESSAGES", 1), ("BASISD_ENABLE_DEBUG_FLAGS", 1)])
 
 env_thirdparty = env_basisu.Clone()
 env_thirdparty.disable_warnings()
 if env["tools"]:
-    env_thirdparty.add_source_files(env.modules_sources, tool_sources)
-env_thirdparty.add_source_files(env.modules_sources, transcoder_sources)
+    env_thirdparty.Append(CPPDEFINES=["BASISU_NO_IMG_LOADERS"])
+    env_thirdparty.add_source_files(thirdparty_obj, encoder_sources)
+env_thirdparty.add_source_files(thirdparty_obj, transcoder_sources)
+env.modules_sources += thirdparty_obj
 
 # Godot source files
-env_basisu.add_source_files(env.modules_sources, "*.cpp")
+
+module_obj = []
+
+env_basisu.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2019 University of Cambridge
+          New API code Copyright (c) 2016-2020 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -548,6 +548,7 @@ PCRE2_SPTR start_code = mb->start_code;
 
 #ifdef SUPPORT_UNICODE
 BOOL utf = (mb->poptions & PCRE2_UTF) != 0;
+BOOL utf_or_ucp = utf || (mb->poptions & PCRE2_UCP) != 0;
 #else
 BOOL utf = FALSE;
 #endif
@@ -2190,7 +2191,7 @@ for (;;)
       if (clen == 0) break;
 
 #ifdef SUPPORT_UNICODE
-      if (utf)
+      if (utf_or_ucp)
         {
         if (c == d) { ADD_NEW(state_offset + dlen + 1, 0); } else
           {
@@ -2204,7 +2205,7 @@ for (;;)
         }
       else
 #endif  /* SUPPORT_UNICODE */
-      /* Not UTF mode */
+      /* Not UTF or UCP mode */
         {
         if (TABLE_GET(c, lcc, c) == TABLE_GET(d, lcc, d))
           { ADD_NEW(state_offset + 2, 0); }
@@ -2339,7 +2340,7 @@ for (;;)
         {
         uint32_t otherd;
 #ifdef SUPPORT_UNICODE
-        if (utf && d >= 128)
+        if (utf_or_ucp && d >= 128)
           otherd = UCD_OTHERCASE(d);
         else
 #endif  /* SUPPORT_UNICODE */
@@ -2374,7 +2375,7 @@ for (;;)
         if (caseless)
           {
 #ifdef SUPPORT_UNICODE
-          if (utf && d >= 128)
+          if (utf_or_ucp && d >= 128)
             otherd = UCD_OTHERCASE(d);
           else
 #endif  /* SUPPORT_UNICODE */
@@ -2417,7 +2418,7 @@ for (;;)
         if (caseless)
           {
 #ifdef SUPPORT_UNICODE
-          if (utf && d >= 128)
+          if (utf_or_ucp && d >= 128)
             otherd = UCD_OTHERCASE(d);
           else
 #endif  /* SUPPORT_UNICODE */
@@ -2458,7 +2459,7 @@ for (;;)
         if (caseless)
           {
 #ifdef SUPPORT_UNICODE
-          if (utf && d >= 128)
+          if (utf_or_ucp && d >= 128)
             otherd = UCD_OTHERCASE(d);
           else
 #endif  /* SUPPORT_UNICODE */
@@ -2491,7 +2492,7 @@ for (;;)
         if (caseless)
           {
 #ifdef SUPPORT_UNICODE
-          if (utf && d >= 128)
+          if (utf_or_ucp && d >= 128)
             otherd = UCD_OTHERCASE(d);
           else
 #endif  /* SUPPORT_UNICODE */
@@ -2531,7 +2532,7 @@ for (;;)
         if (caseless)
           {
 #ifdef SUPPORT_UNICODE
-          if (utf && d >= 128)
+          if (utf_or_ucp && d >= 128)
             otherd = UCD_OTHERCASE(d);
           else
 #endif  /* SUPPORT_UNICODE */
@@ -3526,10 +3527,15 @@ if ((re->flags & PCRE2_FIRSTSET) != 0)
   if ((re->flags & PCRE2_FIRSTCASELESS) != 0)
     {
     first_cu2 = TABLE_GET(first_cu, mb->tables + fcc_offset, first_cu);
-#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 8
-    if (utf && first_cu > 127)
+#ifdef SUPPORT_UNICODE
+#if PCRE2_CODE_UNIT_WIDTH == 8
+    if (first_cu > 127 && !utf && (re->overall_options & PCRE2_UCP) != 0)
+      first_cu2 = (PCRE2_UCHAR)UCD_OTHERCASE(first_cu);
+#else
+    if (first_cu > 127 && (utf || (re->overall_options & PCRE2_UCP) != 0))
       first_cu2 = (PCRE2_UCHAR)UCD_OTHERCASE(first_cu);
 #endif
+#endif  /* SUPPORT_UNICODE */
     }
   }
 else
@@ -3545,9 +3551,15 @@ if ((re->flags & PCRE2_LASTSET) != 0)
   if ((re->flags & PCRE2_LASTCASELESS) != 0)
     {
     req_cu2 = TABLE_GET(req_cu, mb->tables + fcc_offset, req_cu);
-#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 8
-    if (utf && req_cu > 127) req_cu2 = (PCRE2_UCHAR)UCD_OTHERCASE(req_cu);
+#ifdef SUPPORT_UNICODE
+#if PCRE2_CODE_UNIT_WIDTH == 8
+    if (req_cu > 127 && !utf && (re->overall_options & PCRE2_UCP) != 0)
+      req_cu2 = (PCRE2_UCHAR)UCD_OTHERCASE(req_cu);
+#else
+    if (req_cu > 127 && (utf || (re->overall_options & PCRE2_UCP) != 0))
+      req_cu2 = (PCRE2_UCHAR)UCD_OTHERCASE(req_cu);
 #endif
+#endif  /* SUPPORT_UNICODE */
     }
   }
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,11 +32,11 @@
 #define PACKET_PEER_H
 
 #include "core/io/stream_peer.h"
-#include "core/object.h"
-#include "core/ring_buffer.h"
+#include "core/object/class_db.h"
+#include "core/templates/ring_buffer.h"
 
-class PacketPeer : public Reference {
-	GDCLASS(PacketPeer, Reference);
+class PacketPeer : public RefCounted {
+	GDCLASS(PacketPeer, RefCounted);
 
 	Variant _bnd_get_var(bool p_allow_objects = false);
 
@@ -86,15 +86,14 @@ class PacketPeerStream : public PacketPeer {
 	Error _poll_buffer() const;
 
 protected:
-	void _set_stream_peer(REF p_peer);
 	static void _bind_methods();
 
 public:
-	virtual int get_available_packet_count() const;
-	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size);
-	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
+	virtual int get_available_packet_count() const override;
+	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override;
+	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
 
-	virtual int get_max_packet_size() const;
+	virtual int get_max_packet_size() const override;
 
 	void set_stream_peer(const Ref<StreamPeer> &p_peer);
 	Ref<StreamPeer> get_stream_peer() const;

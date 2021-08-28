@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,268 +31,243 @@
 #ifndef GDSCRIPT_TOKENIZER_H
 #define GDSCRIPT_TOKENIZER_H
 
-#include "core/pair.h"
-#include "core/set.h"
-#include "core/string_name.h"
-#include "core/ustring.h"
-#include "core/variant.h"
-#include "core/vmap.h"
-#include "gdscript_functions.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 
 class GDScriptTokenizer {
 public:
-	enum Token {
-
-		TK_EMPTY,
-		TK_IDENTIFIER,
-		TK_CONSTANT,
-		TK_SELF,
-		TK_BUILT_IN_TYPE,
-		TK_BUILT_IN_FUNC,
-		TK_OP_IN,
-		TK_OP_EQUAL,
-		TK_OP_NOT_EQUAL,
-		TK_OP_LESS,
-		TK_OP_LESS_EQUAL,
-		TK_OP_GREATER,
-		TK_OP_GREATER_EQUAL,
-		TK_OP_AND,
-		TK_OP_OR,
-		TK_OP_NOT,
-		TK_OP_ADD,
-		TK_OP_SUB,
-		TK_OP_MUL,
-		TK_OP_DIV,
-		TK_OP_MOD,
-		TK_OP_SHIFT_LEFT,
-		TK_OP_SHIFT_RIGHT,
-		TK_OP_ASSIGN,
-		TK_OP_ASSIGN_ADD,
-		TK_OP_ASSIGN_SUB,
-		TK_OP_ASSIGN_MUL,
-		TK_OP_ASSIGN_DIV,
-		TK_OP_ASSIGN_MOD,
-		TK_OP_ASSIGN_SHIFT_LEFT,
-		TK_OP_ASSIGN_SHIFT_RIGHT,
-		TK_OP_ASSIGN_BIT_AND,
-		TK_OP_ASSIGN_BIT_OR,
-		TK_OP_ASSIGN_BIT_XOR,
-		TK_OP_BIT_AND,
-		TK_OP_BIT_OR,
-		TK_OP_BIT_XOR,
-		TK_OP_BIT_INVERT,
-		//TK_OP_PLUS_PLUS,
-		//TK_OP_MINUS_MINUS,
-		TK_CF_IF,
-		TK_CF_ELIF,
-		TK_CF_ELSE,
-		TK_CF_FOR,
-		TK_CF_WHILE,
-		TK_CF_BREAK,
-		TK_CF_CONTINUE,
-		TK_CF_PASS,
-		TK_CF_RETURN,
-		TK_CF_MATCH,
-		TK_PR_FUNCTION,
-		TK_PR_CLASS,
-		TK_PR_CLASS_NAME,
-		TK_PR_EXTENDS,
-		TK_PR_IS,
-		TK_PR_ONREADY,
-		TK_PR_TOOL,
-		TK_PR_STATIC,
-		TK_PR_EXPORT,
-		TK_PR_SETGET,
-		TK_PR_CONST,
-		TK_PR_VAR,
-		TK_PR_AS,
-		TK_PR_VOID,
-		TK_PR_ENUM,
-		TK_PR_PRELOAD,
-		TK_PR_ASSERT,
-		TK_PR_YIELD,
-		TK_PR_SIGNAL,
-		TK_PR_BREAKPOINT,
-		TK_PR_REMOTE,
-		TK_PR_MASTER,
-		TK_PR_PUPPET,
-		TK_PR_REMOTESYNC,
-		TK_PR_MASTERSYNC,
-		TK_PR_PUPPETSYNC,
-		TK_BRACKET_OPEN,
-		TK_BRACKET_CLOSE,
-		TK_CURLY_BRACKET_OPEN,
-		TK_CURLY_BRACKET_CLOSE,
-		TK_PARENTHESIS_OPEN,
-		TK_PARENTHESIS_CLOSE,
-		TK_COMMA,
-		TK_SEMICOLON,
-		TK_PERIOD,
-		TK_QUESTION_MARK,
-		TK_COLON,
-		TK_DOLLAR,
-		TK_FORWARD_ARROW,
-		TK_NEWLINE,
-		TK_CONST_PI,
-		TK_CONST_TAU,
-		TK_WILDCARD,
-		TK_CONST_INF,
-		TK_CONST_NAN,
-		TK_ERROR,
-		TK_EOF,
-		TK_CURSOR, //used for code completion
-		TK_MAX
+	enum CursorPlace {
+		CURSOR_NONE,
+		CURSOR_BEGINNING,
+		CURSOR_MIDDLE,
+		CURSOR_END,
 	};
 
-protected:
-	enum StringMode {
-		STRING_SINGLE_QUOTE,
-		STRING_DOUBLE_QUOTE,
-		STRING_MULTILINE
-	};
-
-	static const char *token_names[TK_MAX];
-
-public:
-	static const char *get_token_name(Token p_token);
-
-	bool is_token_literal(int p_offset = 0, bool variable_safe = false) const;
-	StringName get_token_literal(int p_offset = 0) const;
-
-	virtual const Variant &get_token_constant(int p_offset = 0) const = 0;
-	virtual Token get_token(int p_offset = 0) const = 0;
-	virtual StringName get_token_identifier(int p_offset = 0) const = 0;
-	virtual GDScriptFunctions::Function get_token_built_in_func(int p_offset = 0) const = 0;
-	virtual Variant::Type get_token_type(int p_offset = 0) const = 0;
-	virtual int get_token_line(int p_offset = 0) const = 0;
-	virtual int get_token_column(int p_offset = 0) const = 0;
-	virtual int get_token_line_indent(int p_offset = 0) const = 0;
-	virtual int get_token_line_tab_indent(int p_offset = 0) const = 0;
-	virtual String get_token_error(int p_offset = 0) const = 0;
-	virtual void advance(int p_amount = 1) = 0;
-#ifdef DEBUG_ENABLED
-	virtual const Vector<Pair<int, String>> &get_warning_skips() const = 0;
-	virtual const Set<String> &get_warning_global_skips() const = 0;
-	virtual bool is_ignoring_warnings() const = 0;
-#endif // DEBUG_ENABLED
-
-	virtual ~GDScriptTokenizer() {}
-};
-
-class GDScriptTokenizerText : public GDScriptTokenizer {
-	enum {
-		MAX_LOOKAHEAD = 4,
-		TK_RB_SIZE = MAX_LOOKAHEAD * 2 + 1
-
-	};
-
-	struct TokenData {
-		Token type;
-		StringName identifier; //for identifier types
-		Variant constant; //for constant types
-		union {
-			Variant::Type vtype; //for type types
-			GDScriptFunctions::Function func; //function for built in functions
-			int warning_code; //for warning skip
+	struct Token {
+		enum Type {
+			EMPTY,
+			// Basic
+			ANNOTATION,
+			IDENTIFIER,
+			LITERAL,
+			// Comparison
+			LESS,
+			LESS_EQUAL,
+			GREATER,
+			GREATER_EQUAL,
+			EQUAL_EQUAL,
+			BANG_EQUAL,
+			// Logical
+			AND,
+			OR,
+			NOT,
+			AMPERSAND_AMPERSAND,
+			PIPE_PIPE,
+			BANG,
+			// Bitwise
+			AMPERSAND,
+			PIPE,
+			TILDE,
+			CARET,
+			LESS_LESS,
+			GREATER_GREATER,
+			// Math
+			PLUS,
+			MINUS,
+			STAR,
+			SLASH,
+			PERCENT,
+			// Assignment
+			EQUAL,
+			PLUS_EQUAL,
+			MINUS_EQUAL,
+			STAR_EQUAL,
+			SLASH_EQUAL,
+			PERCENT_EQUAL,
+			LESS_LESS_EQUAL,
+			GREATER_GREATER_EQUAL,
+			AMPERSAND_EQUAL,
+			PIPE_EQUAL,
+			CARET_EQUAL,
+			// Control flow
+			IF,
+			ELIF,
+			ELSE,
+			FOR,
+			WHILE,
+			BREAK,
+			CONTINUE,
+			PASS,
+			RETURN,
+			MATCH,
+			// Keywords
+			AS,
+			ASSERT,
+			AWAIT,
+			BREAKPOINT,
+			CLASS,
+			CLASS_NAME,
+			CONST,
+			ENUM,
+			EXTENDS,
+			FUNC,
+			IN,
+			IS,
+			NAMESPACE,
+			PRELOAD,
+			SELF,
+			SIGNAL,
+			STATIC,
+			SUPER,
+			TRAIT,
+			VAR,
+			VOID,
+			YIELD,
+			// Punctuation
+			BRACKET_OPEN,
+			BRACKET_CLOSE,
+			BRACE_OPEN,
+			BRACE_CLOSE,
+			PARENTHESIS_OPEN,
+			PARENTHESIS_CLOSE,
+			COMMA,
+			SEMICOLON,
+			PERIOD,
+			PERIOD_PERIOD,
+			COLON,
+			DOLLAR,
+			FORWARD_ARROW,
+			UNDERSCORE,
+			// Whitespace
+			NEWLINE,
+			INDENT,
+			DEDENT,
+			// Constants
+			CONST_PI,
+			CONST_TAU,
+			CONST_INF,
+			CONST_NAN,
+			// Error message improvement
+			VCS_CONFLICT_MARKER,
+			BACKTICK,
+			QUESTION_MARK,
+			// Special
+			ERROR,
+			TK_EOF, // "EOF" is reserved
+			TK_MAX
 		};
-		int line, col;
-		TokenData() {
-			type = TK_EMPTY;
-			line = col = 0;
-			vtype = Variant::NIL;
+
+		Type type = EMPTY;
+		Variant literal;
+		int start_line = 0, end_line = 0, start_column = 0, end_column = 0;
+		int leftmost_column = 0, rightmost_column = 0; // Column span for multiline tokens.
+		int cursor_position = -1;
+		CursorPlace cursor_place = CURSOR_NONE;
+		String source;
+
+		const char *get_name() const;
+		bool is_identifier() const;
+		bool is_node_name() const;
+		StringName get_identifier() const { return source; }
+
+		Token(Type p_type) {
+			type = p_type;
+		}
+
+		Token() {
 		}
 	};
 
-	void _make_token(Token p_type);
-	void _make_newline(int p_indentation = 0, int p_tabs = 0);
-	void _make_identifier(const StringName &p_identifier);
-	void _make_built_in_func(GDScriptFunctions::Function p_func);
-	void _make_constant(const Variant &p_constant);
-	void _make_type(const Variant::Type &p_type);
-	void _make_error(const String &p_error);
-
-	String code;
-	int len;
-	int code_pos;
-	const CharType *_code;
-	int line;
-	int column;
-	TokenData tk_rb[TK_RB_SIZE * 2 + 1];
-	int tk_rb_pos;
-	String last_error;
-	bool error_flag;
-
-#ifdef DEBUG_ENABLED
-	Vector<Pair<int, String>> warning_skips;
-	Set<String> warning_global_skips;
-	bool ignore_warnings;
-#endif // DEBUG_ENABLED
-
-	void _advance();
-
-public:
-	void set_code(const String &p_code);
-	virtual Token get_token(int p_offset = 0) const;
-	virtual StringName get_token_identifier(int p_offset = 0) const;
-	virtual GDScriptFunctions::Function get_token_built_in_func(int p_offset = 0) const;
-	virtual Variant::Type get_token_type(int p_offset = 0) const;
-	virtual int get_token_line(int p_offset = 0) const;
-	virtual int get_token_column(int p_offset = 0) const;
-	virtual int get_token_line_indent(int p_offset = 0) const;
-	virtual int get_token_line_tab_indent(int p_offset = 0) const;
-	virtual const Variant &get_token_constant(int p_offset = 0) const;
-	virtual String get_token_error(int p_offset = 0) const;
-	virtual void advance(int p_amount = 1);
-#ifdef DEBUG_ENABLED
-	virtual const Vector<Pair<int, String>> &get_warning_skips() const { return warning_skips; }
-	virtual const Set<String> &get_warning_global_skips() const { return warning_global_skips; }
-	virtual bool is_ignoring_warnings() const { return ignore_warnings; }
-#endif // DEBUG_ENABLED
-};
-
-class GDScriptTokenizerBuffer : public GDScriptTokenizer {
-	enum {
-
-		TOKEN_BYTE_MASK = 0x80,
-		TOKEN_BITS = 8,
-		TOKEN_MASK = (1 << TOKEN_BITS) - 1,
-		TOKEN_LINE_BITS = 24,
-		TOKEN_LINE_MASK = (1 << TOKEN_LINE_BITS) - 1,
+#ifdef TOOLS_ENABLED
+	struct CommentData {
+		String comment;
+		bool new_line = false;
+		CommentData() {}
+		CommentData(const String &p_comment, bool p_new_line) {
+			comment = p_comment;
+			new_line = p_new_line;
+		}
 	};
+	const Map<int, CommentData> &get_comments() const {
+		return comments;
+	}
+#endif // TOOLS_ENABLED
 
-	Vector<StringName> identifiers;
-	Vector<Variant> constants;
-	VMap<uint32_t, uint32_t> lines;
-	Vector<uint32_t> tokens;
-	Variant nil;
-	int token;
+private:
+	String source;
+	const char32_t *_source = nullptr;
+	const char32_t *_current = nullptr;
+	int line = -1, column = -1;
+	int cursor_line = -1, cursor_column = -1;
+	int tab_size = 4;
+
+	// Keep track of multichar tokens.
+	const char32_t *_start = nullptr;
+	int start_line = 0, start_column = 0;
+	int leftmost_column = 0, rightmost_column = 0;
+
+	// Info cache.
+	bool line_continuation = false; // Whether this line is a continuation of the previous, like when using '\'.
+	bool multiline_mode = false;
+	List<Token> error_stack;
+	bool pending_newline = false;
+	Token last_newline;
+	int pending_indents = 0;
+	List<int> indent_stack;
+	List<List<int>> indent_stack_stack; // For lambdas, which require manipulating the indentation point.
+	List<char32_t> paren_stack;
+	char32_t indent_char = '\0';
+	int position = 0;
+	int length = 0;
+
+#ifdef TOOLS_ENABLED
+	Map<int, CommentData> comments;
+#endif // TOOLS_ENABLED
+
+	_FORCE_INLINE_ bool _is_at_end() { return position >= length; }
+	_FORCE_INLINE_ char32_t _peek(int p_offset = 0) { return position + p_offset >= 0 && position + p_offset < length ? _current[p_offset] : '\0'; }
+	int indent_level() const { return indent_stack.size(); }
+	bool has_error() const { return !error_stack.is_empty(); }
+	Token pop_error();
+	char32_t _advance();
+	void _skip_whitespace();
+	void check_indent();
+
+	Token make_error(const String &p_message);
+	void push_error(const String &p_message);
+	void push_error(const Token &p_error);
+	Token make_paren_error(char32_t p_paren);
+	Token make_token(Token::Type p_type);
+	Token make_literal(const Variant &p_literal);
+	Token make_identifier(const StringName &p_identifier);
+	Token check_vcs_marker(char32_t p_test, Token::Type p_double_type);
+	void push_paren(char32_t p_char);
+	bool pop_paren(char32_t p_expected);
+
+	void newline(bool p_make_token);
+	Token number();
+	Token potential_identifier();
+	Token string();
+	Token annotation();
 
 public:
-	Error set_code_buffer(const Vector<uint8_t> &p_buffer);
-	static Vector<uint8_t> parse_code_string(const String &p_code);
-	virtual Token get_token(int p_offset = 0) const;
-	virtual StringName get_token_identifier(int p_offset = 0) const;
-	virtual GDScriptFunctions::Function get_token_built_in_func(int p_offset = 0) const;
-	virtual Variant::Type get_token_type(int p_offset = 0) const;
-	virtual int get_token_line(int p_offset = 0) const;
-	virtual int get_token_column(int p_offset = 0) const;
-	virtual int get_token_line_indent(int p_offset = 0) const;
-	virtual int get_token_line_tab_indent(int p_offset = 0) const { return 0; }
-	virtual const Variant &get_token_constant(int p_offset = 0) const;
-	virtual String get_token_error(int p_offset = 0) const;
-	virtual void advance(int p_amount = 1);
-#ifdef DEBUG_ENABLED
-	virtual const Vector<Pair<int, String>> &get_warning_skips() const {
-		static Vector<Pair<int, String>> v;
-		return v;
-	}
-	virtual const Set<String> &get_warning_global_skips() const {
-		static Set<String> s;
-		return s;
-	}
-	virtual bool is_ignoring_warnings() const { return true; }
-#endif // DEBUG_ENABLED
-	GDScriptTokenizerBuffer();
+	Token scan();
+
+	void set_source_code(const String &p_source_code);
+
+	int get_cursor_line() const;
+	int get_cursor_column() const;
+	void set_cursor_position(int p_line, int p_column);
+	void set_multiline_mode(bool p_state);
+	bool is_past_cursor() const;
+	static String get_token_name(Token::Type p_token_type);
+	void push_expression_indented_block(); // For lambdas, or blocks inside expressions.
+	void pop_expression_indented_block(); // For lambdas, or blocks inside expressions.
+
+	GDScriptTokenizer();
 };
 
-#endif // GDSCRIPT_TOKENIZER_H
+#endif

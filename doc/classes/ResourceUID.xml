@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceUID" inherits="Object" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_id">
+			<return type="void" />
+			<argument index="0" name="id" type="int" />
+			<argument index="1" name="path" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="create_id" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_id_path" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="id" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="has_id" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="id" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="id_to_text" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="id" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="remove_id">
+			<return type="void" />
+			<argument index="0" name="id" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_id">
+			<return type="void" />
+			<argument index="0" name="id" type="int" />
+			<argument index="1" name="path" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="text_to_id" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="text_id" type="String" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="INVALID_ID" value="-1">
+		</constant>
+	</constants>
+</class>

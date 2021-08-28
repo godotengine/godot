@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef JNI_SINGLETON_H
 #define JNI_SINGLETON_H
 
-#include <core/engine.h>
-#include <core/variant.h>
+#include <core/config/engine.h>
+#include <core/variant/variant.h>
 #ifdef ANDROID_ENABLED
 #include <platform/android/jni_utils.h>
 #endif
@@ -52,7 +52,7 @@ class JNISingleton : public Object {
 #endif
 
 public:
-	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
 #ifdef ANDROID_ENABLED
 		Map<StringName, MethodData>::Element *E = method_map.find(p_method);
 
@@ -83,7 +83,7 @@ public:
 			v = (jvalue *)alloca(sizeof(jvalue) * p_argcount);
 		}
 
-		JNIEnv *env = ThreadAndroid::get_env();
+		JNIEnv *env = get_jni_env();
 
 		int res = env->PushLocalFrame(16);
 

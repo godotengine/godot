@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,6 +39,7 @@
  * AABB / AABB (Axis Aligned Bounding Box)
  * This is implemented by a point (position) and the box size
  */
+class Variant;
 
 class AABB {
 public:
@@ -98,6 +99,24 @@ public:
 	AABB expand(const Vector3 &p_vector) const;
 	_FORCE_INLINE_ void project_range_in_plane(const Plane &p_plane, real_t &r_min, real_t &r_max) const;
 	_FORCE_INLINE_ void expand_to(const Vector3 &p_vector); /** expand to contain a point if necessary */
+
+	_FORCE_INLINE_ AABB abs() const {
+		return AABB(Vector3(position.x + MIN(size.x, 0), position.y + MIN(size.y, 0), position.z + MIN(size.z, 0)), size.abs());
+	}
+
+	Variant intersects_segment_bind(const Vector3 &p_from, const Vector3 &p_to) const;
+	Variant intersects_ray_bind(const Vector3 &p_from, const Vector3 &p_dir) const;
+
+	_FORCE_INLINE_ void quantize(real_t p_unit);
+	_FORCE_INLINE_ AABB quantized(real_t p_unit) const;
+
+	_FORCE_INLINE_ void set_end(const Vector3 &p_end) {
+		size = p_end - position;
+	}
+
+	_FORCE_INLINE_ Vector3 get_end() const {
+		return position + size;
+	}
 
 	operator String() const;
 
@@ -174,9 +193,9 @@ Vector3 AABB::get_support(const Vector3 &p_normal) const {
 	Vector3 ofs = position + half_extents;
 
 	return Vector3(
-				   (p_normal.x > 0) ? -half_extents.x : half_extents.x,
-				   (p_normal.y > 0) ? -half_extents.y : half_extents.y,
-				   (p_normal.z > 0) ? -half_extents.z : half_extents.z) +
+				   (p_normal.x > 0) ? half_extents.x : -half_extents.x,
+				   (p_normal.y > 0) ? half_extents.y : -half_extents.y,
+				   (p_normal.z > 0) ? half_extents.z : -half_extents.z) +
 		   ofs;
 }
 
@@ -409,6 +428,30 @@ void AABB::grow_by(real_t p_amount) {
 	size.x += 2.0 * p_amount;
 	size.y += 2.0 * p_amount;
 	size.z += 2.0 * p_amount;
+}
+
+void AABB::quantize(real_t p_unit) {
+	size += position;
+
+	position.x -= Math::fposmodp(position.x, p_unit);
+	position.y -= Math::fposmodp(position.y, p_unit);
+	position.z -= Math::fposmodp(position.z, p_unit);
+
+	size.x -= Math::fposmodp(size.x, p_unit);
+	size.y -= Math::fposmodp(size.y, p_unit);
+	size.z -= Math::fposmodp(size.z, p_unit);
+
+	size.x += p_unit;
+	size.y += p_unit;
+	size.z += p_unit;
+
+	size -= position;
+}
+
+AABB AABB::quantized(real_t p_unit) const {
+	AABB ret = *this;
+	ret.quantize(p_unit);
+	return ret;
 }
 
 #endif // AABB_H

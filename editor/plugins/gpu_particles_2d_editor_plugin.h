@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,6 @@ class GPUParticles2DEditorPlugin : public EditorPlugin {
 	GDCLASS(GPUParticles2DEditorPlugin, EditorPlugin);
 
 	enum {
-
 		MENU_GENERATE_VISIBILITY_RECT,
 		MENU_LOAD_EMISSION_MASK,
 		MENU_CLEAR_EMISSION_MASK,
@@ -86,11 +85,11 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_name() const { return "GPUParticles2D"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
+	virtual String get_name() const override { return "GPUParticles2D"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
 
 	GPUParticles2DEditorPlugin(EditorNode *p_node);
 	~GPUParticles2DEditorPlugin();

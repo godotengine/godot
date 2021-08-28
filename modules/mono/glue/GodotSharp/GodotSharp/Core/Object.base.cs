@@ -15,14 +15,13 @@ namespace Godot
         public Object() : this(false)
         {
             if (ptr == IntPtr.Zero)
-            {
                 ptr = godot_icall_Object_Ctor(this);
-            }
-            else
-            {
-                // This is called inside godot_icall_Object_Ctor, so we must call it as well in this case.
-                godot_icall_Object_ConnectEventSignals(ptr);
-            }
+            _InitializeGodotScriptInstanceInternals();
+        }
+
+        internal void _InitializeGodotScriptInstanceInternals()
+        {
+            godot_icall_Object_ConnectEventSignals(ptr);
         }
 
         internal Object(bool memoryOwn)
@@ -67,7 +66,7 @@ namespace Godot
                 if (memoryOwn)
                 {
                     memoryOwn = false;
-                    godot_icall_Reference_Disposed(this, ptr, !disposing);
+                    godot_icall_RefCounted_Disposed(this, ptr, !disposing);
                 }
                 else
                 {
@@ -130,7 +129,7 @@ namespace Godot
         internal static extern void godot_icall_Object_Disposed(Object obj, IntPtr ptr);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_Reference_Disposed(Object obj, IntPtr ptr, bool isFinalizer);
+        internal static extern void godot_icall_RefCounted_Disposed(Object obj, IntPtr ptr, bool isFinalizer);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void godot_icall_Object_ConnectEventSignals(IntPtr obj);

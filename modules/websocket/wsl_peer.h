@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,10 +33,10 @@
 
 #ifndef JAVASCRIPT_ENABLED
 
-#include "core/error_list.h"
+#include "core/error/error_list.h"
 #include "core/io/packet_peer.h"
 #include "core/io/stream_peer_tcp.h"
-#include "core/ring_buffer.h"
+#include "core/templates/ring_buffer.h"
 #include "packet_buffer.h"
 #include "websocket_peer.h"
 #include "wslay/wslay.h"
@@ -48,29 +48,17 @@ class WSLPeer : public WebSocketPeer {
 
 public:
 	struct PeerData {
-		bool polling;
-		bool destroy;
-		bool valid;
-		bool is_server;
-		bool closing;
-		void *obj;
-		void *peer;
+		bool polling = false;
+		bool destroy = false;
+		bool valid = false;
+		bool is_server = false;
+		bool closing = false;
+		void *obj = nullptr;
+		void *peer = nullptr;
 		Ref<StreamPeer> conn;
 		Ref<StreamPeerTCP> tcp;
-		int id;
-		wslay_event_context_ptr ctx;
-
-		PeerData() {
-			polling = false;
-			destroy = false;
-			valid = false;
-			is_server = false;
-			id = 1;
-			ctx = nullptr;
-			obj = nullptr;
-			closing = false;
-			peer = nullptr;
-		}
+		int id = 1;
+		wslay_event_context_ptr ctx = nullptr;
 	};
 
 	static String compute_key_response(String p_key);
@@ -80,17 +68,20 @@ private:
 	static bool _wsl_poll(struct PeerData *p_data);
 	static void _wsl_destroy(struct PeerData **p_data);
 
-	struct PeerData *_data;
-	uint8_t _is_string;
+	struct PeerData *_data = nullptr;
+	uint8_t _is_string = 0;
 	// Our packet info is just a boolean (is_string), using uint8_t for it.
 	PacketBuffer<uint8_t> _in_buffer;
 
 	Vector<uint8_t> _packet_buffer;
 
-	WriteMode write_mode;
+	WriteMode write_mode = WRITE_MODE_BINARY;
+
+	int _out_buf_size = 0;
+	int _out_pkt_size = 0;
 
 public:
-	int close_code;
+	int close_code = -1;
 	String close_reason;
 	void poll(); // Used by client and server.
 
@@ -98,11 +89,12 @@ public:
 	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size);
 	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
 	virtual int get_max_packet_size() const { return _packet_buffer.size(); };
+	virtual int get_current_outbound_buffered_amount() const;
 
 	virtual void close_now();
 	virtual void close(int p_code = 1000, String p_reason = "");
 	virtual bool is_connected_to_host() const;
-	virtual IP_Address get_connected_host() const;
+	virtual IPAddress get_connected_host() const;
 	virtual uint16_t get_connected_port() const;
 
 	virtual WriteMode get_write_mode() const;

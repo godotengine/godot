@@ -37,7 +37,7 @@
 
 
 #include "psft.h"
-#include FT_INTERNAL_DEBUG_H
+#include <freetype/internal/ftdebug.h>
 
 #include "psfont.h"
 #include "pserror.h"
@@ -45,11 +45,11 @@
 #include "cffdecode.h"
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
-#include FT_MULTIPLE_MASTERS_H
-#include FT_SERVICE_MULTIPLE_MASTERS_H
+#include <freetype/ftmm.h>
+#include <freetype/internal/services/svmm.h>
 #endif
 
-#include FT_SERVICE_CFF_TABLE_LOAD_H
+#include <freetype/internal/services/svcfftl.h>
 
 
 #define CF2_MAX_SIZE  cf2_intToFixed( 2000 )    /* max ppem */

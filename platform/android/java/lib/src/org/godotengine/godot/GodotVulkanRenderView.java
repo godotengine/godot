@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,16 +37,21 @@ import org.godotengine.godot.vulkan.VkSurfaceView;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.Build;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.PointerIcon;
 import android.view.SurfaceView;
+
+import androidx.annotation.Keep;
 
 public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderView {
 	private final Godot godot;
 	private final GodotInputHandler mInputHandler;
 	private final GestureDetector mGestureDetector;
 	private final VkRenderer mRenderer;
+	private PointerIcon pointerIcon;
 
 	public GodotVulkanRenderView(Context context, Godot godot) {
 		super(context);
@@ -55,7 +60,9 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 		mInputHandler = new GodotInputHandler(this);
 		mGestureDetector = new GestureDetector(context, new GodotGestureHandler(this));
 		mRenderer = new VkRenderer();
-
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+			pointerIcon = PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_DEFAULT);
+		}
 		setFocusableInTouchMode(true);
 		startRenderer(mRenderer);
 	}
@@ -90,40 +97,62 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 		godot.onBackPressed();
 	}
 
+	@Override
+	public GodotInputHandler getInputHandler() {
+		return mInputHandler;
+	}
+
 	@SuppressLint("ClickableViewAccessibility")
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		super.onTouchEvent(event);
 		mGestureDetector.onTouchEvent(event);
-		return godot.gotTouchEvent(event);
+		return mInputHandler.onTouchEvent(event);
 	}
 
 	@Override
 	public boolean onKeyUp(final int keyCode, KeyEvent event) {
-		return mInputHandler.onKeyUp(keyCode, event) || super.onKeyUp(keyCode, event);
+		return mInputHandler.onKeyUp(keyCode, event);
 	}
 
 	@Override
 	public boolean onKeyDown(final int keyCode, KeyEvent event) {
-		return mInputHandler.onKeyDown(keyCode, event) || super.onKeyDown(keyCode, event);
+		return mInputHandler.onKeyDown(keyCode, event);
 	}
 
 	@Override
 	public boolean onGenericMotionEvent(MotionEvent event) {
-		return mInputHandler.onGenericMotionEvent(event) || super.onGenericMotionEvent(event);
+		return mInputHandler.onGenericMotionEvent(event);
+	}
+
+	@Override
+	public boolean onCapturedPointerEvent(MotionEvent event) {
+		return mInputHandler.onGenericMotionEvent(event);
+	}
+
+	/**
+	 * called from JNI to change pointer icon
+	 */
+	@Keep
+	public void setPointerIcon(int pointerType) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+			pointerIcon = PointerIcon.getSystemIcon(getContext(), pointerType);
+		}
+	}
+
+	@Override
+	public PointerIcon onResolvePointerIcon(MotionEvent me, int pointerIndex) {
+		return pointerIcon;
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
 
-		queueOnVkThread(new Runnable() {
-			@Override
-			public void run() {
-				// Resume the renderer
-				mRenderer.onVkResume();
-				GodotLib.focusin();
-			}
+		queueOnVkThread(() -> {
+			// Resume the renderer
+			mRenderer.onVkResume();
+			GodotLib.focusin();
 		});
 	}
 
@@ -131,13 +160,10 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 	public void onPause() {
 		super.onPause();
 
-		queueOnVkThread(new Runnable() {
-			@Override
-			public void run() {
-				GodotLib.focusout();
-				// Pause the renderer
-				mRenderer.onVkPause();
-			}
+		queueOnVkThread(() -> {
+			GodotLib.focusout();
+			// Pause the renderer
+			mRenderer.onVkPause();
 		});
 	}
 }

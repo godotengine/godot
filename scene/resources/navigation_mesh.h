@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,7 +54,7 @@ class NavigationMesh : public Resource {
 
 protected:
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 	void _set_polygons(const Array &p_array);
 	Array _get_polygons() const;
@@ -82,47 +82,47 @@ public:
 	};
 
 protected:
-	float cell_size;
-	float cell_height;
-	float agent_height;
-	float agent_radius;
-	float agent_max_climb;
-	float agent_max_slope;
-	float region_min_size;
-	float region_merge_size;
-	float edge_max_length;
-	float edge_max_error;
-	float verts_per_poly;
-	float detail_sample_distance;
-	float detail_sample_max_error;
+	float cell_size = 0.3f;
+	float cell_height = 0.2f;
+	float agent_height = 2.0f;
+	float agent_radius = 0.6f;
+	float agent_max_climb = 0.9f;
+	float agent_max_slope = 45.0f;
+	float region_min_size = 8.0f;
+	float region_merge_size = 20.0f;
+	float edge_max_length = 12.0f;
+	float edge_max_error = 1.3f;
+	float verts_per_poly = 6.0f;
+	float detail_sample_distance = 6.0f;
+	float detail_sample_max_error = 1.0f;
 
-	SamplePartitionType partition_type;
-	ParsedGeometryType parsed_geometry_type;
-	uint32_t collision_mask;
+	SamplePartitionType partition_type = SAMPLE_PARTITION_WATERSHED;
+	ParsedGeometryType parsed_geometry_type = PARSED_GEOMETRY_MESH_INSTANCES;
+	uint32_t collision_mask = 0xFFFFFFFF;
 
-	SourceGeometryMode source_geometry_mode;
-	StringName source_group_name;
+	SourceGeometryMode source_geometry_mode = SOURCE_GEOMETRY_NAVMESH_CHILDREN;
+	StringName source_group_name = "navmesh";
 
-	bool filter_low_hanging_obstacles;
-	bool filter_ledge_spans;
-	bool filter_walkable_low_height_spans;
+	bool filter_low_hanging_obstacles = false;
+	bool filter_ledge_spans = false;
+	bool filter_walkable_low_height_spans = false;
 
 public:
 	// Recast settings
-	void set_sample_partition_type(int p_value);
-	int get_sample_partition_type() const;
+	void set_sample_partition_type(SamplePartitionType p_value);
+	SamplePartitionType get_sample_partition_type() const;
 
-	void set_parsed_geometry_type(int p_value);
-	int get_parsed_geometry_type() const;
+	void set_parsed_geometry_type(ParsedGeometryType p_value);
+	ParsedGeometryType get_parsed_geometry_type() const;
 
 	void set_collision_mask(uint32_t p_mask);
 	uint32_t get_collision_mask() const;
 
-	void set_collision_mask_bit(int p_bit, bool p_value);
-	bool get_collision_mask_bit(int p_bit) const;
+	void set_collision_mask_value(int p_layer_number, bool p_value);
+	bool get_collision_mask_value(int p_layer_number) const;
 
-	void set_source_geometry_mode(int p_geometry_mode);
-	int get_source_geometry_mode() const;
+	void set_source_geometry_mode(SourceGeometryMode p_geometry_mode);
+	SourceGeometryMode get_source_geometry_mode() const;
 
 	void set_source_group_name(StringName p_group_name);
 	StringName get_source_group_name() const;
@@ -189,5 +189,9 @@ public:
 
 	NavigationMesh();
 };
+
+VARIANT_ENUM_CAST(NavigationMesh::SamplePartitionType);
+VARIANT_ENUM_CAST(NavigationMesh::ParsedGeometryType);
+VARIANT_ENUM_CAST(NavigationMesh::SourceGeometryMode);
 
 #endif // NAVIGATION_MESH_H

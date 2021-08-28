@@ -24,5 +24,8 @@
 		</constant>
 		<constant name="QUAL_INSTANCE" value="2" enum="Qualifier">
 		</constant>
+		<constant name="QUAL_MAX" value="3" enum="Qualifier">
+			Represents the size of the [enum Qualifier] enum.
+		</constant>
 	</constants>
 </class>

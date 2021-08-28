@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,14 +32,17 @@
 
 #include "core/input/input.h"
 #include "scene/resources/texture.h"
+#include "servers/display_server_headless.h"
 
 DisplayServer *DisplayServer::singleton = nullptr;
-DisplayServer::SwitchVSyncCallbackInThread DisplayServer::switch_vsync_function = nullptr;
 
 bool DisplayServer::hidpi_allowed = false;
 
-DisplayServer::DisplayServerCreate DisplayServer::server_create_functions[DisplayServer::MAX_SERVERS];
-int DisplayServer::server_create_count = 0;
+DisplayServer::DisplayServerCreate DisplayServer::server_create_functions[DisplayServer::MAX_SERVERS] = {
+	{ "headless", &DisplayServerHeadless::create_func, &DisplayServerHeadless::get_rendering_drivers_func }
+};
+
+int DisplayServer::server_create_count = 1;
 
 void DisplayServer::global_menu_add_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Variant &p_tag) {
 	WARN_PRINT("Global menus not supported by this display server.");
@@ -144,8 +147,8 @@ Point2i DisplayServer::mouse_get_position() const {
 	ERR_FAIL_V_MSG(Point2i(), "Mouse is not supported by this display server.");
 }
 
-int DisplayServer::mouse_get_button_state() const {
-	ERR_FAIL_V_MSG(0, "Mouse is not supported by this display server.");
+MouseButton DisplayServer::mouse_get_button_state() const {
+	ERR_FAIL_V_MSG(MOUSE_BUTTON_NONE, "Mouse is not supported by this display server.");
 }
 
 void DisplayServer::clipboard_set(const String &p_text) {
@@ -181,12 +184,20 @@ bool DisplayServer::screen_is_kept_on() const {
 	return false;
 }
 
-DisplayServer::WindowID DisplayServer::create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect) {
+DisplayServer::WindowID DisplayServer::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
 	ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Sub-windows not supported by this display server.");
+}
+
+void DisplayServer::show_window(WindowID p_id) {
+	ERR_FAIL_MSG("Sub-windows not supported by this display server.");
 }
 
 void DisplayServer::delete_sub_window(WindowID p_id) {
 	ERR_FAIL_MSG("Sub-windows not supported by this display server.");
+}
+
+void DisplayServer::window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window) {
+	ERR_FAIL_MSG("Mouse passthrough not supported by this display server.");
 }
 
 void DisplayServer::window_set_ime_active(const bool p_active, WindowID p_window) {
@@ -213,7 +224,7 @@ bool DisplayServer::is_console_visible() const {
 	return false;
 }
 
-void DisplayServer::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, int p_max_length, int p_cursor_start, int p_cursor_end) {
+void DisplayServer::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, bool p_multiline, int p_max_length, int p_cursor_start, int p_cursor_end) {
 	WARN_PRINT("Virtual keyboard not supported by this display server.");
 }
 
@@ -223,7 +234,7 @@ void DisplayServer::virtual_keyboard_hide() {
 
 // returns height of the currently shown keyboard (0 if keyboard is hidden)
 int DisplayServer::virtual_keyboard_get_height() const {
-	ERR_FAIL_V_MSG(0, "Virtual keyboad not supported by this display server.");
+	ERR_FAIL_V_MSG(0, "Virtual keyboard not supported by this display server.");
 }
 
 void DisplayServer::cursor_set_shape(CursorShape p_shape) {
@@ -238,32 +249,11 @@ void DisplayServer::cursor_set_custom_image(const RES &p_cursor, CursorShape p_s
 	WARN_PRINT("Custom cursor shape not supported by this display server.");
 }
 
-bool DisplayServer::get_swap_ok_cancel() {
+bool DisplayServer::get_swap_cancel_ok() {
 	return false;
 }
 
 void DisplayServer::enable_for_stealing_focus(OS::ProcessID pid) {
-}
-
-//plays video natively, in fullscreen, only implemented in mobile for now, likely not possible to implement on linux also.
-Error DisplayServer::native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track, int p_screen) {
-	ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Native video not supported by this display server.");
-}
-
-bool DisplayServer::native_video_is_playing() const {
-	return false;
-}
-
-void DisplayServer::native_video_pause() {
-	WARN_PRINT("Native video not supported by this display server.");
-}
-
-void DisplayServer::native_video_unpause() {
-	WARN_PRINT("Native video not supported by this display server.");
-}
-
-void DisplayServer::native_video_stop() {
-	WARN_PRINT("Native video not supported by this display server.");
 }
 
 Error DisplayServer::dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) {
@@ -318,29 +308,13 @@ void DisplayServer::set_icon(const Ref<Image> &p_icon) {
 	WARN_PRINT("Icon not supported by this display server.");
 }
 
-void DisplayServer::_set_use_vsync(bool p_enable) {
-	WARN_PRINT("VSync not supported by this display server.");
+void DisplayServer::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
+	WARN_PRINT("Changing the VSync mode is not supported by this display server.");
 }
 
-void DisplayServer::vsync_set_enabled(bool p_enable) {
-	vsync_enabled = p_enable;
-	if (switch_vsync_function) { //if a function was set, use function
-		switch_vsync_function(p_enable);
-	} else { //otherwise just call here
-		_set_use_vsync(p_enable);
-	}
-}
-
-bool DisplayServer::vsync_is_enabled() const {
-	return vsync_enabled;
-}
-
-void DisplayServer::vsync_set_use_via_compositor(bool p_enable) {
-	WARN_PRINT("VSync via compositor not supported by this display server.");
-}
-
-bool DisplayServer::vsync_is_using_via_compositor() const {
-	return false;
+DisplayServer::VSyncMode DisplayServer::window_get_vsync_mode(WindowID p_window) const {
+	WARN_PRINT("Changing the VSync mode is not supported by this display server.");
+	return VSyncMode::VSYNC_ENABLED;
 }
 
 void DisplayServer::set_context(Context p_context) {
@@ -372,8 +346,6 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("global_menu_remove_item", "menu_root", "idx"), &DisplayServer::global_menu_remove_item);
 	ClassDB::bind_method(D_METHOD("global_menu_clear", "menu_root"), &DisplayServer::global_menu_clear);
 
-	ClassDB::bind_method(D_METHOD("alert", "text", "title"), &DisplayServer::alert, DEFVAL("Alert!"));
-
 	ClassDB::bind_method(D_METHOD("mouse_set_mode", "mouse_mode"), &DisplayServer::mouse_set_mode);
 	ClassDB::bind_method(D_METHOD("mouse_get_mode"), &DisplayServer::mouse_get_mode);
 
@@ -392,6 +364,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("screen_get_dpi", "screen"), &DisplayServer::screen_get_dpi, DEFVAL(SCREEN_OF_MAIN_WINDOW));
 	ClassDB::bind_method(D_METHOD("screen_get_scale", "screen"), &DisplayServer::screen_get_scale, DEFVAL(SCREEN_OF_MAIN_WINDOW));
 	ClassDB::bind_method(D_METHOD("screen_is_touchscreen", "screen"), &DisplayServer::screen_is_touchscreen, DEFVAL(SCREEN_OF_MAIN_WINDOW));
+	ClassDB::bind_method(D_METHOD("screen_get_max_scale"), &DisplayServer::screen_get_max_scale);
 
 	ClassDB::bind_method(D_METHOD("screen_set_orientation", "orientation", "screen"), &DisplayServer::screen_set_orientation, DEFVAL(SCREEN_OF_MAIN_WINDOW));
 	ClassDB::bind_method(D_METHOD("screen_get_orientation", "screen"), &DisplayServer::screen_get_orientation, DEFVAL(SCREEN_OF_MAIN_WINDOW));
@@ -402,10 +375,11 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_window_list"), &DisplayServer::get_window_list);
 	ClassDB::bind_method(D_METHOD("get_window_at_screen_position", "position"), &DisplayServer::get_window_at_screen_position);
 
-	ClassDB::bind_method(D_METHOD("create_sub_window", "mode", "flags", "rect"), &DisplayServer::create_sub_window, DEFVAL(Rect2i()));
+	ClassDB::bind_method(D_METHOD("create_sub_window", "mode", "vsync_mode", "flags", "rect"), &DisplayServer::create_sub_window, DEFVAL(Rect2i()));
 	ClassDB::bind_method(D_METHOD("delete_sub_window", "window_id"), &DisplayServer::delete_sub_window);
 
 	ClassDB::bind_method(D_METHOD("window_set_title", "title", "window_id"), &DisplayServer::window_set_title, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_set_mouse_passthrough", "region", "window_id"), &DisplayServer::window_set_mouse_passthrough, DEFVAL(MAIN_WINDOW_ID));
 
 	ClassDB::bind_method(D_METHOD("window_get_current_screen", "window_id"), &DisplayServer::window_get_current_screen, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_set_current_screen", "screen", "window_id"), &DisplayServer::window_set_current_screen, DEFVAL(MAIN_WINDOW_ID));
@@ -448,13 +422,16 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("window_set_ime_active", "active", "window_id"), &DisplayServer::window_set_ime_active, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_set_ime_position", "position", "window_id"), &DisplayServer::window_set_ime_position, DEFVAL(MAIN_WINDOW_ID));
 
+	ClassDB::bind_method(D_METHOD("window_set_vsync_mode", "vsync_mode", "window_id"), &DisplayServer::window_set_vsync_mode, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_get_vsync_mode", "window_id"), &DisplayServer::window_get_vsync_mode, DEFVAL(MAIN_WINDOW_ID));
+
 	ClassDB::bind_method(D_METHOD("ime_get_selection"), &DisplayServer::ime_get_selection);
 	ClassDB::bind_method(D_METHOD("ime_get_text"), &DisplayServer::ime_get_text);
 
 	ClassDB::bind_method(D_METHOD("console_set_visible", "console_visible"), &DisplayServer::console_set_visible);
 	ClassDB::bind_method(D_METHOD("is_console_visible"), &DisplayServer::is_console_visible);
 
-	ClassDB::bind_method(D_METHOD("virtual_keyboard_show", "existing_text", "position", "max_length", "cursor_start", "cursor_end"), &DisplayServer::virtual_keyboard_show, DEFVAL(Rect2i()), DEFVAL(-1), DEFVAL(-1), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("virtual_keyboard_show", "existing_text", "position", "multiline", "max_length", "cursor_start", "cursor_end"), &DisplayServer::virtual_keyboard_show, DEFVAL(Rect2i()), DEFVAL(false), DEFVAL(-1), DEFVAL(-1), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("virtual_keyboard_hide"), &DisplayServer::virtual_keyboard_hide);
 
 	ClassDB::bind_method(D_METHOD("virtual_keyboard_get_height"), &DisplayServer::virtual_keyboard_get_height);
@@ -463,15 +440,9 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("cursor_get_shape"), &DisplayServer::cursor_get_shape);
 	ClassDB::bind_method(D_METHOD("cursor_set_custom_image", "cursor", "shape", "hotspot"), &DisplayServer::cursor_set_custom_image, DEFVAL(CURSOR_ARROW), DEFVAL(Vector2()));
 
-	ClassDB::bind_method(D_METHOD("get_swap_ok_cancel"), &DisplayServer::get_swap_ok_cancel);
+	ClassDB::bind_method(D_METHOD("get_swap_cancel_ok"), &DisplayServer::get_swap_cancel_ok);
 
 	ClassDB::bind_method(D_METHOD("enable_for_stealing_focus", "process_id"), &DisplayServer::enable_for_stealing_focus);
-
-	ClassDB::bind_method(D_METHOD("native_video_play", "path", "volume", "audio_track", "subtitle_track"), &DisplayServer::native_video_play);
-	ClassDB::bind_method(D_METHOD("native_video_is_playing"), &DisplayServer::native_video_is_playing);
-	ClassDB::bind_method(D_METHOD("native_video_stop"), &DisplayServer::native_video_stop);
-	ClassDB::bind_method(D_METHOD("native_video_pause"), &DisplayServer::native_video_pause);
-	ClassDB::bind_method(D_METHOD("native_video_unpause"), &DisplayServer::native_video_unpause);
 
 	ClassDB::bind_method(D_METHOD("dialog_show", "title", "description", "buttons", "callback"), &DisplayServer::dialog_show);
 	ClassDB::bind_method(D_METHOD("dialog_input_text", "title", "description", "existing_text", "callback"), &DisplayServer::dialog_input_text);
@@ -485,14 +456,13 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("process_events"), &DisplayServer::process_events);
 	ClassDB::bind_method(D_METHOD("force_process_and_drop_events"), &DisplayServer::force_process_and_drop_events);
 
-	ClassDB::bind_method(D_METHOD("vsync_set_enabled", "enabled"), &DisplayServer::vsync_set_enabled);
-	ClassDB::bind_method(D_METHOD("vsync_is_enabled"), &DisplayServer::vsync_is_enabled);
-
-	ClassDB::bind_method(D_METHOD("vsync_set_use_via_compositor", "enabled"), &DisplayServer::vsync_set_use_via_compositor);
-	ClassDB::bind_method(D_METHOD("vsync_is_using_via_compositor"), &DisplayServer::vsync_is_using_via_compositor);
-
 	ClassDB::bind_method(D_METHOD("set_native_icon", "filename"), &DisplayServer::set_native_icon);
 	ClassDB::bind_method(D_METHOD("set_icon", "image"), &DisplayServer::set_icon);
+
+	ClassDB::bind_method(D_METHOD("tablet_get_driver_count"), &DisplayServer::tablet_get_driver_count);
+	ClassDB::bind_method(D_METHOD("tablet_get_driver_name", "idx"), &DisplayServer::tablet_get_driver_name);
+	ClassDB::bind_method(D_METHOD("tablet_get_current_driver"), &DisplayServer::tablet_get_current_driver);
+	ClassDB::bind_method(D_METHOD("tablet_set_current_driver", "name"), &DisplayServer::tablet_set_current_driver);
 
 	BIND_ENUM_CONSTANT(FEATURE_GLOBAL_MENU);
 	BIND_ENUM_CONSTANT(FEATURE_SUBWINDOWS);
@@ -503,7 +473,6 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_VIRTUAL_KEYBOARD);
 	BIND_ENUM_CONSTANT(FEATURE_CURSOR_SHAPE);
 	BIND_ENUM_CONSTANT(FEATURE_CUSTOM_CURSOR_SHAPE);
-	BIND_ENUM_CONSTANT(FEATURE_NATIVE_VIDEO);
 	BIND_ENUM_CONSTANT(FEATURE_NATIVE_DIALOG);
 	BIND_ENUM_CONSTANT(FEATURE_CONSOLE_WINDOW);
 	BIND_ENUM_CONSTANT(FEATURE_IME);
@@ -518,6 +487,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(MOUSE_MODE_HIDDEN);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CAPTURED);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CONFINED);
+	BIND_ENUM_CONSTANT(MOUSE_MODE_CONFINED_HIDDEN);
 
 	BIND_CONSTANT(SCREEN_OF_MAIN_WINDOW);
 	BIND_CONSTANT(MAIN_WINDOW_ID);
@@ -569,13 +539,20 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(WINDOW_EVENT_CLOSE_REQUEST);
 	BIND_ENUM_CONSTANT(WINDOW_EVENT_GO_BACK_REQUEST);
 	BIND_ENUM_CONSTANT(WINDOW_EVENT_DPI_CHANGE);
+
+	BIND_ENUM_CONSTANT(VSYNC_DISABLED);
+	BIND_ENUM_CONSTANT(VSYNC_ENABLED);
+	BIND_ENUM_CONSTANT(VSYNC_ADAPTIVE);
+	BIND_ENUM_CONSTANT(VSYNC_MAILBOX);
 }
 
 void DisplayServer::register_create_function(const char *p_name, CreateFunction p_function, GetRenderingDriversFunction p_get_drivers) {
 	ERR_FAIL_COND(server_create_count == MAX_SERVERS);
-	server_create_functions[server_create_count].name = p_name;
-	server_create_functions[server_create_count].create_function = p_function;
-	server_create_functions[server_create_count].get_rendering_drivers_function = p_get_drivers;
+	// Headless display server is always last
+	server_create_functions[server_create_count] = server_create_functions[server_create_count - 1];
+	server_create_functions[server_create_count - 1].name = p_name;
+	server_create_functions[server_create_count - 1].create_function = p_function;
+	server_create_functions[server_create_count - 1].get_rendering_drivers_function = p_get_drivers;
 	server_create_count++;
 }
 
@@ -593,9 +570,9 @@ Vector<String> DisplayServer::get_create_function_rendering_drivers(int p_index)
 	return server_create_functions[p_index].get_rendering_drivers_function();
 }
 
-DisplayServer *DisplayServer::create(int p_index, const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
+DisplayServer *DisplayServer::create(int p_index, const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	ERR_FAIL_INDEX_V(p_index, server_create_count, nullptr);
-	return server_create_functions[p_index].create_function(p_rendering_driver, p_mode, p_flags, p_resolution, r_error);
+	return server_create_functions[p_index].create_function(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, r_error);
 }
 
 void DisplayServer::_input_set_mouse_mode(Input::MouseMode p_mode) {

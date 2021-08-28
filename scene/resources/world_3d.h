@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,14 +31,14 @@
 #ifndef WORLD_3D_H
 #define WORLD_3D_H
 
-#include "core/resource.h"
+#include "core/io/resource.h"
 #include "scene/resources/camera_effects.h"
 #include "scene/resources/environment.h"
 #include "servers/physics_server_3d.h"
 #include "servers/rendering_server.h"
 
 class Camera3D;
-class VisibilityNotifier3D;
+class VisibleOnScreenNotifier3D;
 struct SpatialIndexer;
 
 class World3D : public Resource {
@@ -46,30 +46,26 @@ class World3D : public Resource {
 
 private:
 	RID space;
+	RID navigation_map;
 	RID scenario;
-	SpatialIndexer *indexer;
+
 	Ref<Environment> environment;
 	Ref<Environment> fallback_environment;
 	Ref<CameraEffects> camera_effects;
+
+	Set<Camera3D *> cameras;
 
 protected:
 	static void _bind_methods();
 
 	friend class Camera3D;
-	friend class VisibilityNotifier3D;
 
 	void _register_camera(Camera3D *p_camera);
-	void _update_camera(Camera3D *p_camera);
 	void _remove_camera(Camera3D *p_camera);
-
-	void _register_notifier(VisibilityNotifier3D *p_notifier, const AABB &p_rect);
-	void _update_notifier(VisibilityNotifier3D *p_notifier, const AABB &p_rect);
-	void _remove_notifier(VisibilityNotifier3D *p_notifier);
-	friend class Viewport;
-	void _update(uint64_t p_frame);
 
 public:
 	RID get_space() const;
+	RID get_navigation_map() const;
 	RID get_scenario() const;
 
 	void set_environment(const Ref<Environment> &p_environment);
@@ -81,7 +77,7 @@ public:
 	void set_camera_effects(const Ref<CameraEffects> &p_camera_effects);
 	Ref<CameraEffects> get_camera_effects() const;
 
-	void get_camera_list(List<Camera3D *> *r_cameras);
+	_FORCE_INLINE_ const Set<Camera3D *> &get_cameras() const { return cameras; }
 
 	PhysicsDirectSpaceState3D *get_direct_space_state();
 

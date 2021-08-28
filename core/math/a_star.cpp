@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,22 +31,16 @@
 #include "a_star.h"
 
 #include "core/math/geometry_3d.h"
-#include "core/script_language.h"
+#include "core/object/script_language.h"
 #include "scene/scene_string_names.h"
 
 int AStar::get_available_point_id() const {
-	if (points.empty()) {
-		return 1;
-	}
-
-	// calculate our new next available point id if bigger than before or next id already contained in set of points.
 	if (points.has(last_free_id)) {
-		int cur_new_id = last_free_id;
+		int cur_new_id = last_free_id + 1;
 		while (points.has(cur_new_id)) {
 			cur_new_id++;
 		}
-		int &non_const = const_cast<int &>(last_free_id);
-		non_const = cur_new_id;
+		const_cast<int &>(last_free_id) = cur_new_id;
 	}
 
 	return last_free_id;
@@ -341,7 +335,7 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 	begin_point->f_score = _estimate_cost(begin_point->id, end_point->id);
 	open_list.push_back(begin_point);
 
-	while (!open_list.empty()) {
+	while (!open_list.is_empty()) {
 		Point *p = open_list[0]; // The currently processed point
 
 		if (p == end_point) {
@@ -388,8 +382,9 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 }
 
 real_t AStar::_estimate_cost(int p_from_id, int p_to_id) {
-	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_estimate_cost)) {
-		return get_script_instance()->call(SceneStringNames::get_singleton()->_estimate_cost, p_from_id, p_to_id);
+	real_t scost;
+	if (GDVIRTUAL_CALL(_estimate_cost, p_from_id, p_to_id, scost)) {
+		return scost;
 	}
 
 	Point *from_point;
@@ -404,8 +399,9 @@ real_t AStar::_estimate_cost(int p_from_id, int p_to_id) {
 }
 
 real_t AStar::_compute_cost(int p_from_id, int p_to_id) {
-	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_compute_cost)) {
-		return get_script_instance()->call(SceneStringNames::get_singleton()->_compute_cost, p_from_id, p_to_id);
+	real_t scost;
+	if (GDVIRTUAL_CALL(_compute_cost, p_from_id, p_to_id, scost)) {
+		return scost;
 	}
 
 	Point *from_point;
@@ -563,8 +559,8 @@ void AStar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id"), &AStar::get_point_path);
 	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id"), &AStar::get_id_path);
 
-	BIND_VMETHOD(MethodInfo(Variant::FLOAT, "_estimate_cost", PropertyInfo(Variant::INT, "from_id"), PropertyInfo(Variant::INT, "to_id")));
-	BIND_VMETHOD(MethodInfo(Variant::FLOAT, "_compute_cost", PropertyInfo(Variant::INT, "from_id"), PropertyInfo(Variant::INT, "to_id")));
+	GDVIRTUAL_BIND(_estimate_cost, "from_id", "to_id")
+	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
 }
 
 AStar::~AStar() {
@@ -660,8 +656,9 @@ Vector2 AStar2D::get_closest_position_in_segment(const Vector2 &p_point) const {
 }
 
 real_t AStar2D::_estimate_cost(int p_from_id, int p_to_id) {
-	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_estimate_cost)) {
-		return get_script_instance()->call(SceneStringNames::get_singleton()->_estimate_cost, p_from_id, p_to_id);
+	real_t scost;
+	if (GDVIRTUAL_CALL(_estimate_cost, p_from_id, p_to_id, scost)) {
+		return scost;
 	}
 
 	AStar::Point *from_point;
@@ -676,8 +673,9 @@ real_t AStar2D::_estimate_cost(int p_from_id, int p_to_id) {
 }
 
 real_t AStar2D::_compute_cost(int p_from_id, int p_to_id) {
-	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_compute_cost)) {
-		return get_script_instance()->call(SceneStringNames::get_singleton()->_compute_cost, p_from_id, p_to_id);
+	real_t scost;
+	if (GDVIRTUAL_CALL(_compute_cost, p_from_id, p_to_id, scost)) {
+		return scost;
 	}
 
 	AStar::Point *from_point;
@@ -805,7 +803,7 @@ bool AStar2D::_solve(AStar::Point *begin_point, AStar::Point *end_point) {
 	begin_point->f_score = _estimate_cost(begin_point->id, end_point->id);
 	open_list.push_back(begin_point);
 
-	while (!open_list.empty()) {
+	while (!open_list.is_empty()) {
 		AStar::Point *p = open_list[0]; // The currently processed point
 
 		if (p == end_point) {
@@ -881,6 +879,6 @@ void AStar2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id"), &AStar2D::get_point_path);
 	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id"), &AStar2D::get_id_path);
 
-	BIND_VMETHOD(MethodInfo(Variant::FLOAT, "_estimate_cost", PropertyInfo(Variant::INT, "from_id"), PropertyInfo(Variant::INT, "to_id")));
-	BIND_VMETHOD(MethodInfo(Variant::FLOAT, "_compute_cost", PropertyInfo(Variant::INT, "from_id"), PropertyInfo(Variant::INT, "to_id")));
+	GDVIRTUAL_BIND(_estimate_cost, "from_id", "to_id")
+	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
 }

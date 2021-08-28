@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "reparent_dialog.h"
 
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 
@@ -50,7 +50,7 @@ void ReparentDialog::_cancel() {
 
 void ReparentDialog::_reparent() {
 	if (tree->get_selected()) {
-		emit_signal("reparent", tree->get_selected()->get_path(), keep_transform->is_pressed());
+		emit_signal(SNAME("reparent"), tree->get_selected()->get_path(), keep_transform->is_pressed());
 		hide();
 	}
 }
@@ -75,14 +75,8 @@ ReparentDialog::ReparentDialog() {
 
 	tree = memnew(SceneTreeEditor(false));
 	tree->set_show_enabled_subscene(true);
-
-	vbc->add_margin_child(TTR("Reparent Location (Select new Parent):"), tree, true);
-
 	tree->get_scene_tree()->connect("item_activated", callable_mp(this, &ReparentDialog::_reparent));
-
-	//Label *label = memnew( Label );
-	//label->set_position( Point2( 15,8) );
-	//label->set_text("Reparent Location (Select new Parent):");
+	vbc->add_margin_child(TTR("Select new parent:"), tree, true);
 
 	keep_transform = memnew(CheckBox);
 	keep_transform->set_text(TTR("Keep Global Transform"));
@@ -93,7 +87,7 @@ ReparentDialog::ReparentDialog() {
 
 	//cancel->connect("pressed", this,"_cancel");
 
-	get_ok()->set_text(TTR("Reparent"));
+	get_ok_button()->set_text(TTR("Reparent"));
 }
 
 ReparentDialog::~ReparentDialog() {

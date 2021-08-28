@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,10 @@
 #ifndef DISPLAY_SERVER_H
 #define DISPLAY_SERVER_H
 
-#include "core/callable.h"
 #include "core/input/input.h"
+#include "core/io/resource.h"
 #include "core/os/os.h"
-#include "core/resource.h"
+#include "core/variant/callable.h"
 
 class Texture2D;
 
@@ -42,7 +42,6 @@ class DisplayServer : public Object {
 	GDCLASS(DisplayServer, Object)
 
 	static DisplayServer *singleton;
-	bool vsync_enabled = true;
 	static bool hidpi_allowed;
 
 public:
@@ -57,7 +56,16 @@ public:
 		WINDOW_MODE_FULLSCREEN
 	};
 
-	typedef DisplayServer *(*CreateFunction)(const String &, WindowMode, uint32_t, const Size2i &, Error &r_error);
+	// Keep the VSyncMode enum values in sync with the `display/window/vsync/vsync_mode`
+	// project setting hint.
+	enum VSyncMode {
+		VSYNC_DISABLED,
+		VSYNC_ENABLED,
+		VSYNC_ADAPTIVE,
+		VSYNC_MAILBOX
+	};
+
+	typedef DisplayServer *(*CreateFunction)(const String &, WindowMode, VSyncMode, uint32_t, const Size2i &, Error &r_error);
 	typedef Vector<String> (*GetRenderingDriversFunction)();
 
 private:
@@ -83,8 +91,7 @@ protected:
 	static DisplayServerCreate server_create_functions[MAX_SERVERS];
 	static int server_create_count;
 
-	friend class RenderingServerRaster;
-	virtual void _set_use_vsync(bool p_enable);
+	friend class RendererViewport;
 
 public:
 	enum Feature {
@@ -97,7 +104,6 @@ public:
 		FEATURE_VIRTUAL_KEYBOARD,
 		FEATURE_CURSOR_SHAPE,
 		FEATURE_CUSTOM_CURSOR_SHAPE,
-		FEATURE_NATIVE_VIDEO,
 		FEATURE_NATIVE_DIALOG,
 		FEATURE_CONSOLE_WINDOW,
 		FEATURE_IME,
@@ -137,13 +143,12 @@ public:
 	virtual void global_menu_remove_item(const String &p_menu_root, int p_idx);
 	virtual void global_menu_clear(const String &p_menu_root);
 
-	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") = 0;
-
 	enum MouseMode {
 		MOUSE_MODE_VISIBLE,
 		MOUSE_MODE_HIDDEN,
 		MOUSE_MODE_CAPTURED,
-		MOUSE_MODE_CONFINED
+		MOUSE_MODE_CONFINED,
+		MOUSE_MODE_CONFINED_HIDDEN,
 	};
 
 	virtual void mouse_set_mode(MouseMode p_mode);
@@ -152,7 +157,7 @@ public:
 	virtual void mouse_warp_to_position(const Point2i &p_to);
 	virtual Point2i mouse_get_position() const;
 	virtual Point2i mouse_get_absolute_position() const;
-	virtual int mouse_get_button_state() const;
+	virtual MouseButton mouse_get_button_state() const;
 
 	virtual void clipboard_set(const String &p_text);
 	virtual String clipboard_get() const;
@@ -167,9 +172,19 @@ public:
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
 	virtual float screen_get_scale(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
+	virtual float screen_get_max_scale() const {
+		float scale = 1.f;
+		int screen_count = get_screen_count();
+		for (int i = 0; i < screen_count; i++) {
+			scale = fmax(scale, screen_get_scale(i));
+		}
+		return scale;
+	}
 	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
-	enum ScreenOrientation {
 
+	// Keep the ScreenOrientation enum values in sync with the `display/window/handheld/orientation`
+	// project setting hint.
+	enum ScreenOrientation {
 		SCREEN_LANDSCAPE,
 		SCREEN_PORTRAIT,
 		SCREEN_REVERSE_LANDSCAPE,
@@ -211,7 +226,8 @@ public:
 		WINDOW_FLAG_NO_FOCUS_BIT = (1 << WINDOW_FLAG_NO_FOCUS)
 	};
 
-	virtual WindowID create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i());
+	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i());
+	virtual void show_window(WindowID p_id);
 	virtual void delete_sub_window(WindowID p_id);
 
 	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const = 0;
@@ -238,6 +254,8 @@ public:
 
 	virtual void window_set_title(const String &p_title, WindowID p_window = MAIN_WINDOW_ID) = 0;
 
+	virtual void window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window = MAIN_WINDOW_ID);
+
 	virtual int window_get_current_screen(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 	virtual void window_set_current_screen(int p_screen, WindowID p_window = MAIN_WINDOW_ID) = 0;
 
@@ -258,6 +276,9 @@ public:
 
 	virtual void window_set_mode(WindowMode p_mode, WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual WindowMode window_get_mode(WindowID p_window = MAIN_WINDOW_ID) const = 0;
+
+	virtual void window_set_vsync_mode(VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID);
+	virtual VSyncMode window_get_vsync_mode(WindowID p_window) const;
 
 	virtual bool window_is_maximize_allowed(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
@@ -280,7 +301,7 @@ public:
 	virtual void console_set_visible(bool p_enabled);
 	virtual bool is_console_visible() const;
 
-	virtual void virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), int p_max_length = -1, int p_cursor_start = -1, int p_cursor_end = -1);
+	virtual void virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), bool p_multiline = false, int p_max_length = -1, int p_cursor_start = -1, int p_cursor_end = -1);
 	virtual void virtual_keyboard_hide();
 
 	// returns height of the currently shown virtual keyboard (0 if keyboard is hidden)
@@ -310,16 +331,9 @@ public:
 	virtual CursorShape cursor_get_shape() const;
 	virtual void cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2());
 
-	virtual bool get_swap_ok_cancel();
+	virtual bool get_swap_cancel_ok();
 
 	virtual void enable_for_stealing_focus(OS::ProcessID pid);
-
-	//plays video natively, in fullscreen, only implemented in mobile for now, likely not possible to implement on linux also.
-	virtual Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track, int p_screen = SCREEN_OF_MAIN_WINDOW);
-	virtual bool native_video_is_playing() const;
-	virtual void native_video_pause();
-	virtual void native_video_unpause();
-	virtual void native_video_stop();
 
 	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback);
 	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback);
@@ -329,6 +343,11 @@ public:
 	virtual void keyboard_set_current_layout(int p_index);
 	virtual String keyboard_get_layout_language(int p_index) const;
 	virtual String keyboard_get_layout_name(int p_index) const;
+
+	virtual int tablet_get_driver_count() const { return 1; };
+	virtual String tablet_get_driver_name(int p_driver) const { return "default"; };
+	virtual String tablet_get_current_driver() const { return "default"; };
+	virtual void tablet_set_current_driver(const String &p_driver){};
 
 	virtual void process_events() = 0;
 
@@ -340,18 +359,6 @@ public:
 
 	virtual void set_native_icon(const String &p_filename);
 	virtual void set_icon(const Ref<Image> &p_icon);
-
-	typedef void (*SwitchVSyncCallbackInThread)(bool);
-
-	static SwitchVSyncCallbackInThread switch_vsync_function;
-
-	void vsync_set_enabled(bool p_enable);
-	bool vsync_is_enabled() const;
-
-	virtual void vsync_set_use_via_compositor(bool p_enable);
-	virtual bool vsync_is_using_via_compositor() const;
-
-	//real, actual overridable function to switch vsync, which needs to be called from graphics thread if needed
 
 	enum Context {
 		CONTEXT_EDITOR,
@@ -365,7 +372,7 @@ public:
 	static int get_create_function_count();
 	static const char *get_create_function_name(int p_index);
 	static Vector<String> get_create_function_rendering_drivers(int p_index);
-	static DisplayServer *create(int p_index, const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
+	static DisplayServer *create(int p_index, const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
 
 	DisplayServer();
 	~DisplayServer();
@@ -378,5 +385,6 @@ VARIANT_ENUM_CAST(DisplayServer::ScreenOrientation)
 VARIANT_ENUM_CAST(DisplayServer::WindowMode)
 VARIANT_ENUM_CAST(DisplayServer::WindowFlags)
 VARIANT_ENUM_CAST(DisplayServer::CursorShape)
+VARIANT_ENUM_CAST(DisplayServer::VSyncMode)
 
 #endif // DISPLAY_SERVER_H

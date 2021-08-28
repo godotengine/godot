@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,9 +57,9 @@ void ios_mono_log_callback(const char *log_domain, const char *log_level, const 
 }
 
 void initialize() {
-	mono_dllmap_insert(NULL, "System.Native", NULL, "__Internal", NULL);
-	mono_dllmap_insert(NULL, "System.IO.Compression.Native", NULL, "__Internal", NULL);
-	mono_dllmap_insert(NULL, "System.Security.Cryptography.Native.Apple", NULL, "__Internal", NULL);
+	mono_dllmap_insert(nullptr, "System.Native", nullptr, "__Internal", nullptr);
+	mono_dllmap_insert(nullptr, "System.IO.Compression.Native", nullptr, "__Internal", nullptr);
+	mono_dllmap_insert(nullptr, "System.Security.Cryptography.Native.Apple", nullptr, "__Internal", nullptr);
 
 #ifdef IOS_DEVICE
 	// This function is defined in an auto-generated source file
@@ -72,7 +72,6 @@ void initialize() {
 
 void cleanup() {
 }
-
 } // namespace support
 } // namespace ios
 } // namespace gdmono
@@ -86,7 +85,7 @@ void cleanup() {
 GD_PINVOKE_EXPORT const char *xamarin_get_locale_country_code() {
 	NSLocale *locale = [NSLocale currentLocale];
 	NSString *countryCode = [locale objectForKey:NSLocaleCountryCode];
-	if (countryCode == NULL) {
+	if (countryCode == nullptr) {
 		return strdup("US");
 	}
 	return strdup([countryCode UTF8String]);
@@ -131,8 +130,7 @@ GD_PINVOKE_EXPORT void *xamarin_timezone_get_data(const char *p_name, uint32_t *
 	NSTimeZone *tz = nil;
 	if (p_name) {
 		NSString *n = [[NSString alloc] initWithUTF8String:p_name];
-		tz = [[[NSTimeZone alloc] initWithName:n] autorelease];
-		[n release];
+		tz = [[NSTimeZone alloc] initWithName:n];
 	} else {
 		tz = [NSTimeZone localTimeZone];
 	}

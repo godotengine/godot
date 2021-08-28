@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,7 +49,7 @@
 
 CollisionObjectBullet::ShapeWrapper::~ShapeWrapper() {}
 
-void CollisionObjectBullet::ShapeWrapper::set_transform(const Transform &p_transform) {
+void CollisionObjectBullet::ShapeWrapper::set_transform(const Transform3D &p_transform) {
 	G_TO_B(p_transform.get_basis().get_scale_abs(), scale);
 	G_TO_B(p_transform, transform);
 	UNSCALE_BT_BASIS(transform);
@@ -148,6 +148,9 @@ void CollisionObjectBullet::add_collision_exception(const CollisionObjectBullet 
 
 void CollisionObjectBullet::remove_collision_exception(const CollisionObjectBullet *p_ignoreCollisionObject) {
 	exceptions.erase(p_ignoreCollisionObject->get_self());
+	if (!bt_collision_object) {
+		return;
+	}
 	bt_collision_object->setIgnoreCollisionCheck(p_ignoreCollisionObject->bt_collision_object, false);
 	if (space) {
 		space->get_broadphase()->getOverlappingPairCache()->cleanProxyFromPairs(bt_collision_object->getBroadphaseHandle(), space->get_dispatcher());
@@ -155,11 +158,14 @@ void CollisionObjectBullet::remove_collision_exception(const CollisionObjectBull
 }
 
 bool CollisionObjectBullet::has_collision_exception(const CollisionObjectBullet *p_otherCollisionObject) const {
-	return !bt_collision_object->checkCollideWith(p_otherCollisionObject->bt_collision_object);
+	return exceptions.has(p_otherCollisionObject->get_self());
 }
 
 void CollisionObjectBullet::set_collision_enabled(bool p_enabled) {
 	collisionsEnabled = p_enabled;
+	if (!bt_collision_object) {
+		return;
+	}
 	if (collisionsEnabled) {
 		bt_collision_object->setCollisionFlags(bt_collision_object->getCollisionFlags() & (~btCollisionObject::CF_NO_CONTACT_RESPONSE));
 	} else {
@@ -187,7 +193,7 @@ int CollisionObjectBullet::get_godot_object_flags() const {
 	return bt_collision_object->getUserIndex2();
 }
 
-void CollisionObjectBullet::set_transform(const Transform &p_global_transform) {
+void CollisionObjectBullet::set_transform(const Transform3D &p_global_transform) {
 	set_body_scale(p_global_transform.basis.get_scale_abs());
 
 	btTransform bt_transform;
@@ -197,8 +203,8 @@ void CollisionObjectBullet::set_transform(const Transform &p_global_transform) {
 	set_transform__bullet(bt_transform);
 }
 
-Transform CollisionObjectBullet::get_transform() const {
-	Transform t;
+Transform3D CollisionObjectBullet::get_transform() const {
+	Transform3D t;
 	B_TO_G(get_transform__bullet(), t);
 	t.basis.scale(body_scale);
 	return t;
@@ -224,7 +230,7 @@ RigidCollisionObjectBullet::~RigidCollisionObjectBullet() {
 	}
 }
 
-void RigidCollisionObjectBullet::add_shape(ShapeBullet *p_shape, const Transform &p_transform, bool p_disabled) {
+void RigidCollisionObjectBullet::add_shape(ShapeBullet *p_shape, const Transform3D &p_transform, bool p_disabled) {
 	shapes.push_back(ShapeWrapper(p_shape, p_transform, !p_disabled));
 	p_shape->add_owner(this);
 	reload_shapes();
@@ -290,7 +296,7 @@ void RigidCollisionObjectBullet::remove_all_shapes(bool p_permanentlyFromThisBod
 	}
 }
 
-void RigidCollisionObjectBullet::set_shape_transform(int p_index, const Transform &p_transform) {
+void RigidCollisionObjectBullet::set_shape_transform(int p_index, const Transform3D &p_transform) {
 	ERR_FAIL_INDEX(p_index, get_shape_count());
 
 	shapes.write[p_index].set_transform(p_transform);
@@ -301,8 +307,8 @@ const btTransform &RigidCollisionObjectBullet::get_bt_shape_transform(int p_inde
 	return shapes[p_index].transform;
 }
 
-Transform RigidCollisionObjectBullet::get_shape_transform(int p_index) const {
-	Transform trs;
+Transform3D RigidCollisionObjectBullet::get_shape_transform(int p_index) const {
+	Transform3D trs;
 	B_TO_G(shapes[p_index].transform, trs);
 	return trs;
 }

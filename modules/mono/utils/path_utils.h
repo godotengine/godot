@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,16 +31,14 @@
 #ifndef PATH_UTILS_H
 #define PATH_UTILS_H
 
-#include "core/string_builder.h"
-#include "core/ustring.h"
+#include "core/string/string_builder.h"
+#include "core/string/ustring.h"
 
 namespace path {
 
 String join(const String &p_a, const String &p_b);
 String join(const String &p_a, const String &p_b, const String &p_c);
 String join(const String &p_a, const String &p_b, const String &p_c, const String &p_d);
-
-String find_executable(const String &p_name);
 
 /// Returns a normalized absolute path to the current working directory
 String cwd();
@@ -58,7 +56,6 @@ String abspath(const String &p_path);
 String realpath(const String &p_path);
 
 String relative_to(const String &p_path, const String &p_relative_to);
-
 } // namespace path
 
 #endif // PATH_UTILS_H

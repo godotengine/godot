@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,24 +28,26 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef BASIS_UNIVERSAL_TEXTURE_BASISU_H
+#define BASIS_UNIVERSAL_TEXTURE_BASISU_H
+
 #include "scene/resources/texture.h"
 
 #ifdef TOOLS_ENABLED
-#include <basisu_comp.h>
+#include <encoder/basisu_comp.h>
 #endif
 
 #include <transcoder/basisu_transcoder.h>
 
 #if 0
 class TextureBasisU : public Texture {
-
 	GDCLASS(TextureBasisU, Texture);
 	RES_BASE_EXTENSION("butex");
 
 	RID texture;
 	Size2 tex_size;
 
-	uint32_t flags;
+	uint32_t flags = FLAGS_DEFAULT;
 
 	Vector<uint8_t> data;
 
@@ -71,7 +73,8 @@ public:
 
 	TextureBasisU();
 	~TextureBasisU();
-
 };
 
 #endif
+
+#endif // BASIS_UNIVERSAL_TEXTURE_BASISU_H

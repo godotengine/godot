@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,11 +31,11 @@
 #ifndef RANDOM_PCG_H
 #define RANDOM_PCG_H
 
-#include <math.h>
-
 #include "core/math/math_defs.h"
 
 #include "thirdparty/misc/pcg.h"
+
+#include <math.h>
 
 #if defined(__GNUC__)
 #define CLZ32(x) __builtin_clz(x)
@@ -61,13 +61,12 @@ static int __bsr_clz32(uint32_t x) {
 
 class RandomPCG {
 	pcg32_random_t pcg;
-	uint64_t current_seed; // seed with this to get the same state
+	uint64_t current_seed; // The seed the current generator state started from.
 	uint64_t current_inc;
 
 public:
 	static const uint64_t DEFAULT_SEED = 12047754176567800795U;
 	static const uint64_t DEFAULT_INC = PCG_DEFAULT_INC_64;
-	static const uint64_t RANDOM_MAX = 0xFFFFFFFF;
 
 	RandomPCG(uint64_t p_seed = DEFAULT_SEED, uint64_t p_inc = DEFAULT_INC);
 
@@ -77,10 +76,15 @@ public:
 	}
 	_FORCE_INLINE_ uint64_t get_seed() { return current_seed; }
 
+	_FORCE_INLINE_ void set_state(uint64_t p_state) { pcg.state = p_state; }
+	_FORCE_INLINE_ uint64_t get_state() const { return pcg.state; }
+
 	void randomize();
 	_FORCE_INLINE_ uint32_t rand() {
-		current_seed = pcg.state;
 		return pcg32_random_r(&pcg);
+	}
+	_FORCE_INLINE_ uint32_t rand(uint32_t bounds) {
+		return pcg32_boundedrand_r(&pcg, bounds);
 	}
 
 	// Obtaining floating point numbers in [0, 1] range with "good enough" uniformity.
@@ -130,7 +134,7 @@ public:
 
 	double random(double p_from, double p_to);
 	float random(float p_from, float p_to);
-	real_t random(int p_from, int p_to) { return (real_t)random((real_t)p_from, (real_t)p_to); }
+	int random(int p_from, int p_to);
 };
 
 #endif // RANDOM_PCG_H

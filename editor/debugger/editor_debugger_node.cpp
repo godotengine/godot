@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,7 @@
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
+#include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/tab_container.h"
@@ -54,8 +55,8 @@ EditorDebuggerNode::EditorDebuggerNode() {
 		singleton = this;
 	}
 
-	add_theme_constant_override("margin_left", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_LEFT));
-	add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_RIGHT));
+	add_theme_constant_override("margin_left", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), SNAME("EditorStyles"))->get_margin(SIDE_LEFT));
+	add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), SNAME("EditorStyles"))->get_margin(SIDE_RIGHT));
 
 	tabs = memnew(TabContainer);
 	tabs->set_tab_align(TabContainer::ALIGN_LEFT);
@@ -64,7 +65,7 @@ EditorDebuggerNode::EditorDebuggerNode() {
 	add_child(tabs);
 
 	Ref<StyleBoxEmpty> empty;
-	empty.instance();
+	empty.instantiate();
 	tabs->add_theme_style_override("panel", empty);
 
 	auto_switch_remote_scene_tree = EDITOR_DEF("debugger/auto_switch_to_remote_scene_tree", false);
@@ -111,7 +112,13 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 	if (tabs->get_tab_count() > 1) {
 		node->clear_style();
 		tabs->set_tabs_visible(true);
-		tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("DebuggerPanel", "EditorStyles"));
+		tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
+	}
+
+	if (!debugger_plugins.is_empty()) {
+		for (Set<Ref<Script>>::Element *i = debugger_plugins.front(); i; i = i->next()) {
+			node->add_debugger_plugin(i->get());
+		}
 	}
 
 	return node;
@@ -128,18 +135,18 @@ void EditorDebuggerNode::_stack_frame_selected(int p_debugger) {
 
 void EditorDebuggerNode::_error_selected(const String &p_file, int p_line, int p_debugger) {
 	Ref<Script> s = ResourceLoader::load(p_file);
-	emit_signal("goto_script_line", s, p_line - 1);
+	emit_signal(SNAME("goto_script_line"), s, p_line - 1);
 }
 
 void EditorDebuggerNode::_text_editor_stack_goto(const ScriptEditorDebugger *p_debugger) {
 	const String file = p_debugger->get_stack_script_file();
-	if (file.empty()) {
+	if (file.is_empty()) {
 		return;
 	}
 	stack_script = ResourceLoader::load(file);
 	const int line = p_debugger->get_stack_script_line() - 1;
-	emit_signal("goto_script_line", stack_script, line);
-	emit_signal("set_execution", stack_script, line);
+	emit_signal(SNAME("goto_script_line"), stack_script, line);
+	emit_signal(SNAME("set_execution"), stack_script, line);
 	stack_script.unref(); // Why?!?
 }
 
@@ -202,7 +209,7 @@ void EditorDebuggerNode::stop() {
 	// Also close all debugging sessions.
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
 		if (dbg->is_session_active()) {
-			dbg->stop();
+			dbg->_stop_and_notify();
 		}
 	});
 	_break_state_changed();
@@ -219,11 +226,14 @@ void EditorDebuggerNode::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (tabs->get_tab_count() > 1) {
-				add_theme_constant_override("margin_left", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_LEFT));
-				add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_RIGHT));
+				add_theme_constant_override("margin_left", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), SNAME("EditorStyles"))->get_margin(SIDE_LEFT));
+				add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), SNAME("EditorStyles"))->get_margin(SIDE_RIGHT));
 
-				tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("DebuggerPanel", "EditorStyles"));
+				tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
 			}
+		} break;
+		case NOTIFICATION_READY: {
+			_update_debug_options();
 		} break;
 		default:
 			break;
@@ -258,11 +268,11 @@ void EditorDebuggerNode::_notification(int p_what) {
 		} else {
 			debugger_button->set_text(TTR("Debugger") + " (" + itos(error_count + warning_count) + ")");
 			if (error_count >= 1 && warning_count >= 1) {
-				debugger_button->set_icon(get_theme_icon("ErrorWarning", "EditorIcons"));
+				debugger_button->set_icon(get_theme_icon(SNAME("ErrorWarning"), SNAME("EditorIcons")));
 			} else if (error_count >= 1) {
-				debugger_button->set_icon(get_theme_icon("Error", "EditorIcons"));
+				debugger_button->set_icon(get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
 			} else {
-				debugger_button->set_icon(get_theme_icon("Warning", "EditorIcons"));
+				debugger_button->set_icon(get_theme_icon(SNAME("Warning"), SNAME("EditorIcons")));
 			}
 		}
 		last_error_count = error_count;
@@ -349,7 +359,7 @@ void EditorDebuggerNode::_debugger_wants_stop(int p_id) {
 	// Ask editor to kill PID.
 	int pid = get_debugger(p_id)->get_remote_pid();
 	if (pid) {
-		EditorNode::get_singleton()->call_deferred("stop_child_process", pid);
+		EditorNode::get_singleton()->call_deferred(SNAME("stop_child_process"), pid);
 	}
 }
 
@@ -378,7 +388,7 @@ void EditorDebuggerNode::set_script_debug_button(MenuButton *p_button) {
 	p->add_shortcut(ED_GET_SHORTCUT("debugger/break"), DEBUG_BREAK);
 	p->add_shortcut(ED_GET_SHORTCUT("debugger/continue"), DEBUG_CONTINUE);
 	p->add_separator();
-	p->add_check_shortcut(ED_GET_SHORTCUT("debugger/keep_debugger_open"), DEBUG_SHOW_KEEP_OPEN);
+	p->add_check_shortcut(ED_GET_SHORTCUT("debugger/keep_debugger_open"), DEBUG_KEEP_DEBUGGER_OPEN);
 	p->add_check_shortcut(ED_GET_SHORTCUT("debugger/debug_with_external_editor"), DEBUG_WITH_EXTERNAL_EDITOR);
 	p->connect("id_pressed", callable_mp(this, &EditorDebuggerNode::_menu_option));
 
@@ -418,17 +428,30 @@ void EditorDebuggerNode::_menu_option(int p_id) {
 		case DEBUG_CONTINUE: {
 			debug_continue();
 		} break;
-
-		case DEBUG_SHOW_KEEP_OPEN: {
-			bool visible = script_menu->get_popup()->is_item_checked(script_menu->get_popup()->get_item_index(DEBUG_SHOW_KEEP_OPEN));
-			hide_on_stop = visible;
-			script_menu->get_popup()->set_item_checked(script_menu->get_popup()->get_item_index(DEBUG_SHOW_KEEP_OPEN), !visible);
+		case DEBUG_KEEP_DEBUGGER_OPEN: {
+			bool ischecked = script_menu->get_popup()->is_item_checked(script_menu->get_popup()->get_item_index(DEBUG_KEEP_DEBUGGER_OPEN));
+			hide_on_stop = ischecked;
+			script_menu->get_popup()->set_item_checked(script_menu->get_popup()->get_item_index(DEBUG_KEEP_DEBUGGER_OPEN), !ischecked);
+			EditorSettings::get_singleton()->set_project_metadata("debug_options", "keep_debugger_open", !ischecked);
 		} break;
 		case DEBUG_WITH_EXTERNAL_EDITOR: {
-			bool checked = !script_menu->get_popup()->is_item_checked(script_menu->get_popup()->get_item_index(DEBUG_WITH_EXTERNAL_EDITOR));
-			debug_with_external_editor = checked;
-			script_menu->get_popup()->set_item_checked(script_menu->get_popup()->get_item_index(DEBUG_WITH_EXTERNAL_EDITOR), checked);
+			bool ischecked = script_menu->get_popup()->is_item_checked(script_menu->get_popup()->get_item_index(DEBUG_WITH_EXTERNAL_EDITOR));
+			debug_with_external_editor = !ischecked;
+			script_menu->get_popup()->set_item_checked(script_menu->get_popup()->get_item_index(DEBUG_WITH_EXTERNAL_EDITOR), !ischecked);
+			EditorSettings::get_singleton()->set_project_metadata("debug_options", "debug_with_external_editor", !ischecked);
 		} break;
+	}
+}
+
+void EditorDebuggerNode::_update_debug_options() {
+	bool keep_debugger_open = EditorSettings::get_singleton()->get_project_metadata("debug_options", "keep_debugger_open", false);
+	bool debug_with_external_editor = EditorSettings::get_singleton()->get_project_metadata("debug_options", "debug_with_external_editor", false);
+
+	if (keep_debugger_open) {
+		_menu_option(DEBUG_KEEP_DEBUGGER_OPEN);
+	}
+	if (debug_with_external_editor) {
+		_menu_option(DEBUG_WITH_EXTERNAL_EDITOR);
 	}
 }
 
@@ -443,7 +466,7 @@ void EditorDebuggerNode::_paused() {
 	});
 }
 
-void EditorDebuggerNode::_breaked(bool p_breaked, bool p_can_debug, int p_debugger) {
+void EditorDebuggerNode::_breaked(bool p_breaked, bool p_can_debug, String p_message, bool p_has_stackdump, int p_debugger) {
 	if (get_current_debugger() != get_debugger(p_debugger)) {
 		if (!p_breaked) {
 			return;
@@ -452,7 +475,7 @@ void EditorDebuggerNode::_breaked(bool p_breaked, bool p_can_debug, int p_debugg
 	}
 	_break_state_changed();
 	EditorNode::get_singleton()->get_pause_button()->set_pressed(p_breaked);
-	emit_signal("breaked", p_breaked, p_can_debug);
+	emit_signal(SNAME("breaked"), p_breaked, p_can_debug);
 }
 
 bool EditorDebuggerNode::is_skip_breakpoints() const {
@@ -464,6 +487,19 @@ void EditorDebuggerNode::set_breakpoint(const String &p_path, int p_line, bool p
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
 		dbg->set_breakpoint(p_path, p_line, p_enabled);
 	});
+}
+
+void EditorDebuggerNode::set_breakpoints(const String &p_path, Array p_lines) {
+	for (int i = 0; i < p_lines.size(); i++) {
+		set_breakpoint(p_path, p_lines[i], true);
+	}
+
+	for (Map<Breakpoint, bool>::Element *E = breakpoints.front(); E; E = E->next()) {
+		Breakpoint b = E->key();
+		if (b.source == p_path && !p_lines.has(b.line)) {
+			set_breakpoint(p_path, b.line, false);
+		}
+	}
 }
 
 void EditorDebuggerNode::reload_scripts() {
@@ -617,4 +653,35 @@ void EditorDebuggerNode::live_debug_reparent_node(const NodePath &p_at, const No
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
 		dbg->live_debug_reparent_node(p_at, p_new_place, p_new_name, p_at_pos);
 	});
+}
+
+void EditorDebuggerNode::set_camera_override(CameraOverride p_override) {
+	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
+		dbg->set_camera_override(p_override);
+	});
+	camera_override = p_override;
+}
+
+EditorDebuggerNode::CameraOverride EditorDebuggerNode::get_camera_override() {
+	return camera_override;
+}
+
+void EditorDebuggerNode::add_debugger_plugin(const Ref<Script> &p_script) {
+	ERR_FAIL_COND_MSG(debugger_plugins.has(p_script), "Debugger plugin already exists.");
+	ERR_FAIL_COND_MSG(p_script.is_null(), "Debugger plugin script is null");
+	ERR_FAIL_COND_MSG(String(p_script->get_instance_base_type()) == "", "Debugger plugin script has error.");
+	ERR_FAIL_COND_MSG(String(p_script->get_instance_base_type()) != "EditorDebuggerPlugin", "Base type of debugger plugin is not 'EditorDebuggerPlugin'.");
+	ERR_FAIL_COND_MSG(!p_script->is_tool(), "Debugger plugin script is not in tool mode.");
+	debugger_plugins.insert(p_script);
+	for (int i = 0; get_debugger(i); i++) {
+		get_debugger(i)->add_debugger_plugin(p_script);
+	}
+}
+
+void EditorDebuggerNode::remove_debugger_plugin(const Ref<Script> &p_script) {
+	ERR_FAIL_COND_MSG(!debugger_plugins.has(p_script), "Debugger plugin doesn't exists.");
+	debugger_plugins.erase(p_script);
+	for (int i = 0; get_debugger(i); i++) {
+		get_debugger(i)->remove_debugger_plugin(p_script);
+	}
 }

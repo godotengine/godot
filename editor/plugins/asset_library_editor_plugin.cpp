@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -58,7 +58,7 @@ void EditorAssetLibraryItem::set_image(int p_type, int p_index, const Ref<Textur
 
 void EditorAssetLibraryItem::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		icon->set_normal_texture(get_theme_icon("ProjectIconLoading", "EditorIcons"));
+		icon->set_normal_texture(get_theme_icon(SNAME("ProjectIconLoading"), SNAME("EditorIcons")));
 		category->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
 		author->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
 		price->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
@@ -66,15 +66,15 @@ void EditorAssetLibraryItem::_notification(int p_what) {
 }
 
 void EditorAssetLibraryItem::_asset_clicked() {
-	emit_signal("asset_selected", asset_id);
+	emit_signal(SNAME("asset_selected"), asset_id);
 }
 
 void EditorAssetLibraryItem::_category_clicked() {
-	emit_signal("category_selected", category_id);
+	emit_signal(SNAME("category_selected"), category_id);
 }
 
 void EditorAssetLibraryItem::_author_clicked() {
-	emit_signal("author_selected", author_id);
+	emit_signal(SNAME("author_selected"), author_id);
 }
 
 void EditorAssetLibraryItem::_bind_methods() {
@@ -86,11 +86,11 @@ void EditorAssetLibraryItem::_bind_methods() {
 
 EditorAssetLibraryItem::EditorAssetLibraryItem() {
 	Ref<StyleBoxEmpty> border;
-	border.instance();
-	border->set_default_margin(MARGIN_LEFT, 5 * EDSCALE);
-	border->set_default_margin(MARGIN_RIGHT, 5 * EDSCALE);
-	border->set_default_margin(MARGIN_BOTTOM, 5 * EDSCALE);
-	border->set_default_margin(MARGIN_TOP, 5 * EDSCALE);
+	border.instantiate();
+	border->set_default_margin(SIDE_LEFT, 5 * EDSCALE);
+	border->set_default_margin(SIDE_RIGHT, 5 * EDSCALE);
+	border->set_default_margin(SIDE_BOTTOM, 5 * EDSCALE);
+	border->set_default_margin(SIDE_TOP, 5 * EDSCALE);
 	add_theme_style_override("panel", border);
 
 	HBoxContainer *hb = memnew(HBoxContainer);
@@ -144,8 +144,8 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 			for (int i = 0; i < preview_images.size(); i++) {
 				if (preview_images[i].id == p_index) {
 					if (preview_images[i].is_video) {
-						Ref<Image> overlay = previews->get_theme_icon("PlayOverlay", "EditorIcons")->get_data();
-						Ref<Image> thumbnail = p_image->get_data();
+						Ref<Image> overlay = previews->get_theme_icon(SNAME("PlayOverlay"), SNAME("EditorIcons"))->get_image();
+						Ref<Image> thumbnail = p_image->get_image();
 						thumbnail = thumbnail->duplicate();
 						Point2 overlay_pos = Point2((thumbnail->get_width() - overlay->get_width()) / 2, (thumbnail->get_height() - overlay->get_height()) / 2);
 
@@ -155,7 +155,7 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 						thumbnail->blend_rect(overlay, overlay->get_used_rect(), overlay_pos);
 
 						Ref<ImageTexture> tex;
-						tex.instance();
+						tex.instantiate();
 						tex->create_from_image(thumbnail);
 
 						preview_images[i].button->set_icon(tex);
@@ -185,7 +185,7 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 void EditorAssetLibraryItemDescription::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			previews_bg->add_theme_style_override("panel", previews->get_theme_stylebox("normal", "TextEdit"));
+			previews_bg->add_theme_style_override("panel", previews->get_theme_stylebox(SNAME("normal"), SNAME("TextEdit")));
 		} break;
 	}
 }
@@ -240,13 +240,12 @@ void EditorAssetLibraryItemDescription::add_preview(int p_id, bool p_video, cons
 	preview.video_link = p_url;
 	preview.is_video = p_video;
 	preview.button = memnew(Button);
-	preview.button->set_flat(true);
-	preview.button->set_icon(previews->get_theme_icon("ThumbnailWait", "EditorIcons"));
+	preview.button->set_icon(previews->get_theme_icon(SNAME("ThumbnailWait"), SNAME("EditorIcons")));
 	preview.button->set_toggle_mode(true);
 	preview.button->connect("pressed", callable_mp(this, &EditorAssetLibraryItemDescription::_preview_click), varray(p_id));
 	preview_hb->add_child(preview.button);
 	if (!p_video) {
-		preview.image = previews->get_theme_icon("ThumbnailWait", "EditorIcons");
+		preview.image = previews->get_theme_icon(SNAME("ThumbnailWait"), SNAME("EditorIcons"));
 	}
 	preview_images.push_back(preview);
 	if (preview_images.size() == 1 && !p_video) {
@@ -295,8 +294,8 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	preview_hb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	previews->add_child(preview_hb);
-	get_ok()->set_text(TTR("Download"));
-	get_cancel()->set_text(TTR("Close"));
+	get_ok_button()->set_text(TTR("Download"));
+	get_cancel_button()->set_text(TTR("Close"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -350,7 +349,7 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 				if (sha256 != download_sha256) {
 					error_text = TTR("Bad download hash, assuming file has been tampered with.") + "\n";
 					error_text += TTR("Expected:") + " " + sha256 + "\n" + TTR("Got:") + " " + download_sha256;
-					status->set_text(TTR("Failed sha256 hash check"));
+					status->set_text(TTR("Failed SHA-256 hash check"));
 				}
 			}
 		} break;
@@ -359,6 +358,8 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 	if (error_text != String()) {
 		download_error->set_text(TTR("Asset Download Error:") + "\n" + error_text);
 		download_error->popup_centered();
+		// Let the user retry the download.
+		retry->show();
 		return;
 	}
 
@@ -368,6 +369,9 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 	progress->set_modulate(Color(0, 0, 0, 0));
 
 	set_process(false);
+
+	// Automatically prompt for installation once the download is completed.
+	_install();
 }
 
 void EditorAssetLibraryItemDownload::configure(const String &p_title, int p_asset_id, const Ref<Texture2D> &p_preview, const String &p_download_url, const String &p_sha256_hash) {
@@ -375,7 +379,7 @@ void EditorAssetLibraryItemDownload::configure(const String &p_title, int p_asse
 	icon->set_texture(p_preview);
 	asset_id = p_asset_id;
 	if (!p_preview.is_valid()) {
-		icon->set_texture(get_theme_icon("FileBrokenBigThumb", "EditorIcons"));
+		icon->set_texture(get_theme_icon(SNAME("FileBrokenBigThumb"), SNAME("EditorIcons")));
 	}
 	host = p_download_url;
 	sha256 = p_sha256_hash;
@@ -386,8 +390,8 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 	switch (p_what) {
 		// FIXME: The editor crashes if 'NOTICATION_THEME_CHANGED' is used.
 		case NOTIFICATION_ENTER_TREE: {
-			add_theme_style_override("panel", get_theme_stylebox("panel", "TabContainer"));
-			dismiss->set_normal_texture(get_theme_icon("Close", "EditorIcons"));
+			add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TabContainer")));
+			dismiss->set_normal_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
 		} break;
 		case NOTIFICATION_PROCESS: {
 			// Make the progress bar visible again when retrying the download.
@@ -451,16 +455,20 @@ void EditorAssetLibraryItemDownload::_install() {
 	String file = download->get_download_file();
 
 	if (external_install) {
-		emit_signal("install_asset", file, title->get_text());
+		emit_signal(SNAME("install_asset"), file, title->get_text());
 		return;
 	}
 
+	asset_installer->set_asset_name(title->get_text());
 	asset_installer->open(file, 1);
 }
 
 void EditorAssetLibraryItemDownload::_make_request() {
+	// Hide the Retry button if we've just pressed it.
+	retry->hide();
+
 	download->cancel_request();
-	download->set_download_file(EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp_asset_" + itos(asset_id)) + ".zip");
+	download->set_download_file(EditorPaths::get_singleton()->get_cache_dir().plus_file("tmp_asset_" + itos(asset_id)) + ".zip");
 
 	Error err = download->request(host);
 	if (err != OK) {
@@ -516,6 +524,8 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	retry = memnew(Button);
 	retry->set_text(TTR("Retry"));
 	retry->connect("pressed", callable_mp(this, &EditorAssetLibraryItemDownload::_make_request));
+	// Only show the Retry button in case of a failure.
+	retry->hide();
 
 	hb2->add_child(retry);
 	hb2->add_child(install);
@@ -543,15 +553,22 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 void EditorAssetLibrary::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			error_tr->set_texture(get_theme_icon("Error", "EditorIcons"));
-			filter->set_right_icon(get_theme_icon("Search", "EditorIcons"));
+			error_tr->set_texture(get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
+			filter->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			filter->set_clear_button_enabled(true);
 
 			error_label->raise();
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (is_visible() && initial_loading) {
-				_repository_changed(0); // Update when shown for the first time.
+			if (is_visible()) {
+				// Focus the search box automatically when switching to the Templates tab (in the Project Manager)
+				// or switching to the AssetLib tab (in the editor).
+				// The Project Manager's project filter box is automatically focused in the project manager code.
+				filter->grab_focus();
+
+				if (initial_loading) {
+					_repository_changed(0); // Update when shown for the first time.
+				}
 			}
 		} break;
 		case NOTIFICATION_PROCESS: {
@@ -571,16 +588,35 @@ void EditorAssetLibrary::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			library_scroll_bg->add_theme_style_override("panel", get_theme_stylebox("bg", "Tree"));
-			downloads_scroll->add_theme_style_override("bg", get_theme_stylebox("bg", "Tree"));
-			error_tr->set_texture(get_theme_icon("Error", "EditorIcons"));
-			filter->set_right_icon(get_theme_icon("Search", "EditorIcons"));
+			library_scroll_bg->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+			downloads_scroll->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+			error_tr->set_texture(get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
+			filter->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			filter->set_clear_button_enabled(true);
+		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			_update_repository_options();
 		} break;
 	}
 }
 
-void EditorAssetLibrary::_unhandled_input(const Ref<InputEvent> &p_event) {
+void EditorAssetLibrary::_update_repository_options() {
+	Dictionary default_urls;
+	default_urls["godotengine.org (Official)"] = "https://godotengine.org/asset-library/api";
+	Dictionary available_urls = _EDITOR_DEF("asset_library/available_urls", default_urls, true);
+	repository->clear();
+	Array keys = available_urls.keys();
+	for (int i = 0; i < keys.size(); i++) {
+		String key = keys[i];
+		repository->add_item(key);
+		repository->set_item_metadata(i, available_urls[key]);
+	}
+}
+
+void EditorAssetLibrary::unhandled_key_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	const Ref<InputEventKey> key = p_event;
 
 	if (key.is_valid() && key->is_pressed()) {
@@ -669,7 +705,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PackedB
 		PackedByteArray image_data = p_data;
 
 		if (use_cache) {
-			String cache_filename_base = EditorSettings::get_singleton()->get_cache_dir().plus_file("assetimage_" + image_queue[p_queue_id].image_url.md5_text());
+			String cache_filename_base = EditorPaths::get_singleton()->get_cache_dir().plus_file("assetimage_" + image_queue[p_queue_id].image_url.md5_text());
 
 			FileAccess *file = FileAccess::open(cache_filename_base + ".data", FileAccess::READ);
 
@@ -702,7 +738,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PackedB
 			}
 		}
 
-		if (!image->empty()) {
+		if (!image->is_empty()) {
 			switch (image_queue[p_queue_id].image_type) {
 				case IMAGE_QUEUE_ICON:
 
@@ -728,7 +764,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PackedB
 			}
 
 			Ref<ImageTexture> tex;
-			tex.instance();
+			tex.instantiate();
 			tex->create_from_image(image);
 
 			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, tex);
@@ -736,7 +772,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PackedB
 		}
 
 		if (!image_set && final) {
-			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_theme_icon("FileBrokenBigThumb", "EditorIcons"));
+			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_theme_icon(SNAME("FileBrokenBigThumb"), SNAME("EditorIcons")));
 		}
 	}
 }
@@ -748,7 +784,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 		if (p_code != HTTPClient::RESPONSE_NOT_MODIFIED) {
 			for (int i = 0; i < headers.size(); i++) {
 				if (headers[i].findn("ETag:") == 0) { // Save etag
-					String cache_filename_base = EditorSettings::get_singleton()->get_cache_dir().plus_file("assetimage_" + image_queue[p_queue_id].image_url.md5_text());
+					String cache_filename_base = EditorPaths::get_singleton()->get_cache_dir().plus_file("assetimage_" + image_queue[p_queue_id].image_url.md5_text());
 					String new_etag = headers[i].substr(headers[i].find(":") + 1, headers[i].length()).strip_edges();
 					FileAccess *file;
 
@@ -779,7 +815,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 		WARN_PRINT("Error getting image file from URL: " + image_queue[p_queue_id].image_url);
 		Object *obj = ObjectDB::get_instance(image_queue[p_queue_id].target);
 		if (obj) {
-			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_theme_icon("FileBrokenBigThumb", "EditorIcons"));
+			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_theme_icon(SNAME("FileBrokenBigThumb"), SNAME("EditorIcons")));
 		}
 	}
 
@@ -796,7 +832,7 @@ void EditorAssetLibrary::_update_image_queue() {
 	List<int> to_delete;
 	for (Map<int, ImageQueue>::Element *E = image_queue.front(); E; E = E->next()) {
 		if (!E->get().active && current_images < max_images) {
-			String cache_filename_base = EditorSettings::get_singleton()->get_cache_dir().plus_file("assetimage_" + E->get().image_url.md5_text());
+			String cache_filename_base = EditorPaths::get_singleton()->get_cache_dir().plus_file("assetimage_" + E->get().image_url.md5_text());
 			Vector<String> headers;
 
 			if (FileAccess::exists(cache_filename_base + ".etag") && FileAccess::exists(cache_filename_base + ".data")) {
@@ -900,7 +936,7 @@ void EditorAssetLibrary::_search(int p_page) {
 	}
 
 	if (filter->get_text() != String()) {
-		args += "&filter=" + filter->get_text().http_escape();
+		args += "&filter=" + filter->get_text().uri_encode();
 	}
 
 	if (p_page > 0) {
@@ -910,7 +946,11 @@ void EditorAssetLibrary::_search(int p_page) {
 	_api_request("asset", REQUESTING_SEARCH, args);
 }
 
-void EditorAssetLibrary::_search_text_entered(const String &p_text) {
+void EditorAssetLibrary::_search_text_changed(const String &p_text) {
+	filter_debounce_timer->start();
+}
+
+void EditorAssetLibrary::_filter_debounce_timer_timeout() {
 	_search();
 }
 
@@ -958,14 +998,16 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	for (int i = from; i < to; i++) {
 		if (i == p_page) {
 			Button *current = memnew(Button);
-			current->set_text(itos(i + 1));
+			// Keep the extended padding for the currently active page (see below).
+			current->set_text(vformat(" %d ", i + 1));
 			current->set_disabled(true);
 			current->set_focus_mode(Control::FOCUS_NONE);
 
 			hbc->add_child(current);
 		} else {
 			Button *current = memnew(Button);
-			current->set_text(itos(i + 1));
+			// Add padding to make page number buttons easier to click.
+			current->set_text(vformat(" %d ", i + 1));
 			current->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search), varray(i));
 
 			hbc->add_child(current);
@@ -1059,11 +1101,9 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 	Dictionary d;
 	{
-		Variant js;
-		String errs;
-		int errl;
-		JSON::parse(str, js, errs, errl);
-		d = js;
+		JSON json;
+		json.parse(str);
+		d = json.get_data();
 	}
 
 	RequestType requested = requesting;
@@ -1147,7 +1187,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			asset_bottom_page = _make_pages(page, pages, page_len, total_items, result.size());
 			library_vb->add_child(asset_bottom_page);
 
-			if (result.empty()) {
+			if (result.is_empty()) {
 				if (filter->get_text() != String()) {
 					library_error->set_text(
 							vformat(TTR("No results for \"%s\"."), filter->get_text()));
@@ -1182,6 +1222,10 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 				if (r.has("icon_url") && r["icon_url"] != "") {
 					_request_image(item->get_instance_id(), r["icon_url"], IMAGE_QUEUE_ICON, 0);
 				}
+			}
+
+			if (!result.is_empty()) {
+				library_scroll->set_v_scroll(0);
 			}
 		} break;
 		case REQUESTING_ASSET: {
@@ -1255,12 +1299,13 @@ void EditorAssetLibrary::_asset_file_selected(const String &p_file) {
 	}
 
 	asset_installer = memnew(EditorAssetInstaller);
+	asset_installer->set_asset_name(p_file.get_basename());
 	add_child(asset_installer);
 	asset_installer->open(p_file);
 }
 
 void EditorAssetLibrary::_asset_open() {
-	asset_open->popup_centered_ratio();
+	asset_open->popup_file_dialog();
 }
 
 void EditorAssetLibrary::_manage_plugins() {
@@ -1269,7 +1314,7 @@ void EditorAssetLibrary::_manage_plugins() {
 }
 
 void EditorAssetLibrary::_install_external_asset(String p_zip_path, String p_title) {
-	emit_signal("install_asset", p_zip_path, p_title);
+	emit_signal(SNAME("install_asset"), p_zip_path, p_title);
 }
 
 void EditorAssetLibrary::disable_community_support() {
@@ -1277,8 +1322,6 @@ void EditorAssetLibrary::disable_community_support() {
 }
 
 void EditorAssetLibrary::_bind_methods() {
-	ClassDB::bind_method("_unhandled_input", &EditorAssetLibrary::_unhandled_input);
-
 	ADD_SIGNAL(MethodInfo("install_asset", PropertyInfo(Variant::STRING, "zip_path"), PropertyInfo(Variant::STRING, "name")));
 }
 
@@ -1297,12 +1340,22 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	library_main->add_theme_constant_override("separation", 10 * EDSCALE);
 
 	filter = memnew(LineEdit);
+	if (templates_only) {
+		filter->set_placeholder(TTR("Search templates, projects, and demos"));
+	} else {
+		filter->set_placeholder(TTR("Search assets (excluding templates, projects, and demos)"));
+	}
 	search_hb->add_child(filter);
 	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	filter->connect("text_entered", callable_mp(this, &EditorAssetLibrary::_search_text_entered));
-	search = memnew(Button(TTR("Search")));
-	search->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search), make_binds(0));
-	search_hb->add_child(search);
+	filter->connect("text_changed", callable_mp(this, &EditorAssetLibrary::_search_text_changed));
+
+	// Perform a search automatically if the user hasn't entered any text for a certain duration.
+	// This way, the user doesn't need to press Enter to initiate their search.
+	filter_debounce_timer = memnew(Timer);
+	filter_debounce_timer->set_one_shot(true);
+	filter_debounce_timer->set_wait_time(0.25);
+	filter_debounce_timer->connect("timeout", callable_mp(this, &EditorAssetLibrary::_filter_debounce_timer_timeout));
+	search_hb->add_child(filter_debounce_timer);
 
 	if (!p_templates_only) {
 		search_hb->add_child(memnew(VSeparator));
@@ -1351,10 +1404,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	search_hb2->add_child(memnew(Label(TTR("Site:") + " ")));
 	repository = memnew(OptionButton);
 
-	repository->add_item("godotengine.org");
-	repository->set_item_metadata(0, "https://godotengine.org/asset-library/api");
-	repository->add_item("localhost");
-	repository->set_item_metadata(1, "http://127.0.0.1/asset-library/api");
+	_update_repository_options();
 
 	repository->connect("item_selected", callable_mp(this, &EditorAssetLibrary::_repository_changed));
 
@@ -1366,6 +1416,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	support = memnew(MenuButton);
 	search_hb2->add_child(support);
 	support->set_text(TTR("Support"));
+	support->get_popup()->set_hide_on_checkable_item_selection(false);
 	support->get_popup()->add_check_item(TTR("Official"), SUPPORT_OFFICIAL);
 	support->get_popup()->add_check_item(TTR("Community"), SUPPORT_COMMUNITY);
 	support->get_popup()->add_check_item(TTR("Testing"), SUPPORT_TESTING);
@@ -1386,11 +1437,11 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	library_scroll_bg->add_child(library_scroll);
 
 	Ref<StyleBoxEmpty> border2;
-	border2.instance();
-	border2->set_default_margin(MARGIN_LEFT, 15 * EDSCALE);
-	border2->set_default_margin(MARGIN_RIGHT, 35 * EDSCALE);
-	border2->set_default_margin(MARGIN_BOTTOM, 15 * EDSCALE);
-	border2->set_default_margin(MARGIN_TOP, 15 * EDSCALE);
+	border2.instantiate();
+	border2->set_default_margin(SIDE_LEFT, 15 * EDSCALE);
+	border2->set_default_margin(SIDE_RIGHT, 35 * EDSCALE);
+	border2->set_default_margin(SIDE_BOTTOM, 15 * EDSCALE);
+	border2->set_default_margin(SIDE_TOP, 15 * EDSCALE);
 
 	PanelContainer *library_vb_border = memnew(PanelContainer);
 	library_scroll->add_child(library_vb_border);
@@ -1436,7 +1487,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	error_hb = memnew(HBoxContainer);
 	library_main->add_child(error_hb);
 	error_label = memnew(Label);
-	error_label->add_theme_color_override("color", get_theme_color("error_color", "Editor"));
+	error_label->add_theme_color_override("color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
 	error_hb->add_child(error_label);
 	error_tr = memnew(TextureRect);
 	error_tr->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
@@ -1445,7 +1496,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	description = nullptr;
 
 	set_process(true);
-	set_process_unhandled_input(true);
+	set_process_unhandled_key_input(true); // Global shortcuts since there is no main element to be focused.
 
 	downloads_scroll = memnew(ScrollContainer);
 	downloads_scroll->set_enable_h_scroll(true);
@@ -1479,8 +1530,8 @@ AssetLibraryEditorPlugin::AssetLibraryEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	addon_library = memnew(EditorAssetLibrary);
 	addon_library->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	editor->get_viewport()->add_child(addon_library);
-	addon_library->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	editor->get_main_control()->add_child(addon_library);
+	addon_library->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	addon_library->hide();
 }
 

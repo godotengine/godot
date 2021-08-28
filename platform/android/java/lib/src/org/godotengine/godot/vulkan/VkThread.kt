@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,6 @@ import kotlin.concurrent.withLock
  * The implementation is modeled after [android.opengl.GLSurfaceView]'s GLThread.
  */
 internal class VkThread(private val vkSurfaceView: VkSurfaceView, private val vkRenderer: VkRenderer) : Thread(TAG) {
-
 	companion object {
 		private val TAG = VkThread::class.java.simpleName
 	}
@@ -62,6 +61,7 @@ internal class VkThread(private val vkSurfaceView: VkSurfaceView, private val vk
 	private var rendererInitialized = false
 	private var rendererResumed = false
 	private var resumed = false
+	private var surfaceChanged = false
 	private var hasSurface = false
 	private var width = 0
 	private var height = 0
@@ -142,8 +142,10 @@ internal class VkThread(private val vkSurfaceView: VkSurfaceView, private val vk
 	fun onSurfaceChanged(width: Int, height: Int) {
 		lock.withLock {
 			hasSurface = true
+			surfaceChanged = true;
 			this.width = width
 			this.height = height
+
 			lockCondition.signalAll()
 		}
 	}
@@ -189,8 +191,11 @@ internal class VkThread(private val vkSurfaceView: VkSurfaceView, private val vk
 									rendererInitialized = true
 									vkRenderer.onVkSurfaceCreated(vkSurfaceView.holder.surface)
 								}
+							}
 
+							if (surfaceChanged) {
 								vkRenderer.onVkSurfaceChanged(vkSurfaceView.holder.surface, width, height)
+								surfaceChanged = false
 							}
 
 							// Break out of the loop so drawing can occur without holding onto the lock.
@@ -226,5 +231,4 @@ internal class VkThread(private val vkSurfaceView: VkSurfaceView, private val vk
 			threadExiting()
 		}
 	}
-
 }

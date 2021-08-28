@@ -19,8 +19,8 @@
 #ifndef SVOTVAL_H_
 #define SVOTVAL_H_
 
-#include FT_OPENTYPE_VALIDATE_H
-#include FT_INTERNAL_VALIDATE_H
+#include <freetype/ftotval.h>
+#include <freetype/internal/ftvalid.h>
 
 FT_BEGIN_HEADER
 

@@ -16,14 +16,13 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_SFNT_H
-#include FT_INTERNAL_CALC_H
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
-#include FT_OUTLINE_H
-#include FT_DRIVER_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/sfnt.h>
+#include <freetype/internal/ftcalc.h>
+#include <freetype/internal/psaux.h>
+#include <freetype/ftoutln.h>
+#include <freetype/ftdriver.h>
 
 #include "cffload.h"
 #include "cffgload.h"
@@ -207,8 +206,8 @@
     PSAux_Service            psaux         = (PSAux_Service)face->psaux;
     const CFF_Decoder_Funcs  decoder_funcs = psaux->cff_decoder_funcs;
 
-    FT_Matrix    font_matrix;
-    FT_Vector    font_offset;
+    FT_Matrix  font_matrix;
+    FT_Vector  font_offset;
 
 
     force_scaling = FALSE;
@@ -364,7 +363,6 @@
       top_upm = (FT_Long)cff->top_font.font_dict.units_per_em;
       sub_upm = (FT_Long)cff->subfonts[fd_index]->font_dict.units_per_em;
 
-
       font_matrix = cff->subfonts[fd_index]->font_dict.font_matrix;
       font_offset = cff->subfonts[fd_index]->font_dict.font_offset;
 
@@ -398,7 +396,6 @@
 #ifdef CFF_CONFIG_OPTION_OLD_ENGINE
       PS_Driver  driver = (PS_Driver)FT_FACE_DRIVER( face );
 #endif
-
 
       FT_Byte*  charstring;
       FT_ULong  charstring_len;
@@ -665,8 +662,12 @@
         metrics->horiBearingY = cbox.yMax;
 
         if ( has_vertical_info )
+        {
           metrics->vertBearingX = metrics->horiBearingX -
                                     metrics->horiAdvance / 2;
+          metrics->vertBearingY = FT_MulFix( metrics->vertBearingY,
+                                             glyph->y_scale );
+        }
         else
         {
           if ( load_flags & FT_LOAD_VERTICAL_LAYOUT )

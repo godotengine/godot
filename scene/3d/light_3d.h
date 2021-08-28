@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,8 +32,6 @@
 #define LIGHT_3D_H
 
 #include "scene/3d/visual_instance_3d.h"
-#include "scene/resources/texture.h"
-#include "servers/rendering_server.h"
 
 class Light3D : public VisualInstance3D {
 	GDCLASS(Light3D, VisualInstance3D);
@@ -58,6 +56,7 @@ public:
 		PARAM_SHADOW_BIAS = RS::LIGHT_PARAM_SHADOW_BIAS,
 		PARAM_SHADOW_PANCAKE_SIZE = RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE,
 		PARAM_SHADOW_BLUR = RS::LIGHT_PARAM_SHADOW_BLUR,
+		PARAM_SHADOW_VOLUMETRIC_FOG_FADE = RS::LIGHT_PARAM_SHADOW_VOLUMETRIC_FOG_FADE,
 		PARAM_TRANSMITTANCE_BIAS = RS::LIGHT_PARAM_TRANSMITTANCE_BIAS,
 		PARAM_MAX = RS::LIGHT_PARAM_MAX
 	};
@@ -70,16 +69,16 @@ public:
 
 private:
 	Color color;
-	float param[PARAM_MAX];
+	real_t param[PARAM_MAX] = {};
 	Color shadow_color;
-	bool shadow;
-	bool negative;
-	bool reverse_cull;
-	uint32_t cull_mask;
-	RS::LightType type;
-	bool editor_only;
+	bool shadow = false;
+	bool negative = false;
+	bool reverse_cull = false;
+	uint32_t cull_mask = 0;
+	RS::LightType type = RenderingServer::LIGHT_DIRECTIONAL;
+	bool editor_only = false;
 	void _update_visibility();
-	BakeMode bake_mode;
+	BakeMode bake_mode = BAKE_DYNAMIC;
 	Ref<Texture2D> projector;
 
 	// bind helpers
@@ -91,7 +90,7 @@ protected:
 
 	static void _bind_methods();
 	void _notification(int p_what);
-	virtual void _validate_property(PropertyInfo &property) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 	Light3D(RenderingServer::LightType p_type);
 
@@ -101,8 +100,8 @@ public:
 	void set_editor_only(bool p_editor_only);
 	bool is_editor_only() const;
 
-	void set_param(Param p_param, float p_value);
-	float get_param(Param p_param) const;
+	void set_param(Param p_param, real_t p_value);
+	real_t get_param(Param p_param) const;
 
 	void set_shadow(bool p_enable);
 	bool has_shadow() const;
@@ -128,8 +127,8 @@ public:
 	void set_projector(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_projector() const;
 
-	virtual AABB get_aabb() const;
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const;
+	virtual AABB get_aabb() const override;
+	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
 	Light3D();
 	~Light3D();
@@ -148,15 +147,10 @@ public:
 		SHADOW_PARALLEL_4_SPLITS,
 	};
 
-	enum ShadowDepthRange {
-		SHADOW_DEPTH_RANGE_STABLE = RS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE,
-		SHADOW_DEPTH_RANGE_OPTIMIZED = RS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_OPTIMIZED,
-	};
-
 private:
 	bool blend_splits;
 	ShadowMode shadow_mode;
-	ShadowDepthRange shadow_depth_range;
+	bool sky_only = false;
 
 protected:
 	static void _bind_methods();
@@ -165,17 +159,16 @@ public:
 	void set_shadow_mode(ShadowMode p_mode);
 	ShadowMode get_shadow_mode() const;
 
-	void set_shadow_depth_range(ShadowDepthRange p_range);
-	ShadowDepthRange get_shadow_depth_range() const;
-
 	void set_blend_splits(bool p_enable);
 	bool is_blend_splits_enabled() const;
+
+	void set_sky_only(bool p_sky_only);
+	bool is_sky_only() const;
 
 	DirectionalLight3D();
 };
 
 VARIANT_ENUM_CAST(DirectionalLight3D::ShadowMode)
-VARIANT_ENUM_CAST(DirectionalLight3D::ShadowDepthRange)
 
 class OmniLight3D : public Light3D {
 	GDCLASS(OmniLight3D, Light3D);
@@ -197,7 +190,7 @@ public:
 	void set_shadow_mode(ShadowMode p_mode);
 	ShadowMode get_shadow_mode() const;
 
-	virtual String get_configuration_warning() const;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	OmniLight3D();
 };
@@ -211,7 +204,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_configuration_warning() const;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	SpotLight3D() :
 			Light3D(RenderingServer::LIGHT_SPOT) {}

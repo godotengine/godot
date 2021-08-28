@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="NavigationRegion2D" inherits="Node2D" version="4.0">
 	<brief_description>
+		A region of the 2D navigation map.
 	</brief_description>
 	<description>
+		A region of the navigation map. It tells the [NavigationServer2D] what can be navigated and what cannot, based on its [NavigationPolygon] resource.
+		Two regions can be connected to each other if they share a similar edge. You can set the minimum distance between two vertices required to connect two edges by using [method NavigationServer2D.map_set_edge_connection_margin].
+		[b]Note:[/b] Overlapping two regions' polygons is not enough for connecting two regions. They must share a similar edge.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -10,8 +14,13 @@
 	</methods>
 	<members>
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
+			Determines if the [NavigationRegion2D] is enabled or disabled.
+		</member>
+		<member name="layers" type="int" setter="set_layers" getter="get_layers" default="1">
+			A bitfield determining all layers the region belongs to. These layers can be checked upon when requesting a path with [method NavigationServer2D.map_get_path].
 		</member>
 		<member name="navpoly" type="NavigationPolygon" setter="set_navigation_polygon" getter="get_navigation_polygon">
+			The [NavigationPolygon] resource to use.
 		</member>
 	</members>
 	<constants>

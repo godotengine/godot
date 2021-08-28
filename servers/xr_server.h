@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,11 +31,11 @@
 #ifndef XR_SERVER_H
 #define XR_SERVER_H
 
+#include "core/object/ref_counted.h"
 #include "core/os/os.h"
 #include "core/os/thread_safe.h"
-#include "core/reference.h"
-#include "core/rid.h"
-#include "core/variant.h"
+#include "core/templates/rid.h"
+#include "core/variant/variant.h"
 
 class XRInterface;
 class XRPositionalTracker;
@@ -77,13 +77,13 @@ public:
 
 private:
 	Vector<Ref<XRInterface>> interfaces;
-	Vector<XRPositionalTracker *> trackers;
+	Vector<Ref<XRPositionalTracker>> trackers;
 
 	Ref<XRInterface> primary_interface; /* we'll identify one interface as primary, this will be used by our viewports */
 
 	real_t world_scale; /* scale by which we multiply our tracker positions */
-	Transform world_origin; /* our world origin point, maps a location in our virtual world to the origin point in our real world tracking volume */
-	Transform reference_frame; /* our reference frame */
+	Transform3D world_origin; /* our world origin point, maps a location in our virtual world to the origin point in our real world tracking volume */
+	Transform3D reference_frame; /* our reference frame */
 
 	uint64_t last_process_usec; /* for frame timing, usec when we did our processing */
 	uint64_t last_commit_usec; /* for frame timing, usec when we finished committing both eyes */
@@ -122,8 +122,8 @@ public:
 		Note: this should not be used in AR and should be ignored by an AR based interface as it would throw what you're looking at in the real world
 		and in the virtual world out of sync
 	*/
-	Transform get_world_origin() const;
-	void set_world_origin(const Transform &p_world_origin);
+	Transform3D get_world_origin() const;
+	void set_world_origin(const Transform3D &p_world_origin);
 
 	/*
 		center_on_hmd calculates a new reference frame. This ensures the HMD is positioned to 0,0,0 facing 0,0,-1 (need to verify this direction)
@@ -135,13 +135,13 @@ public:
 		Note: this should not be used in AR and should be ignored by an AR based interface as it would throw what you're looking at in the real world
 		and in the virtual world out of sync
 	*/
-	Transform get_reference_frame() const;
+	Transform3D get_reference_frame() const;
 	void center_on_hmd(RotationMode p_rotation_mode, bool p_keep_height);
 
 	/*
 		get_hmd_transform gets our hmd transform (centered between eyes) with most up to date tracking, relative to the origin
 	*/
-	Transform get_hmd_transform();
+	Transform3D get_hmd_transform();
 
 	/*
 		Interfaces are objects that 'glue' Godot to an AR or VR SDK such as the Oculus SDK, OpenVR, OpenHMD, etc.
@@ -159,7 +159,6 @@ public:
 	*/
 	Ref<XRInterface> get_primary_interface() const;
 	void set_primary_interface(const Ref<XRInterface> &p_primary_interface);
-	void clear_primary_interface_if(const Ref<XRInterface> &p_primary_interface); /* this is automatically called if an interface destructs */
 
 	/*
 		Our trackers are objects that expose the orientation and position of physical devices such as controller, anchor points, etc.
@@ -167,11 +166,11 @@ public:
 	*/
 	bool is_tracker_id_in_use_for_type(TrackerType p_tracker_type, int p_tracker_id) const;
 	int get_free_tracker_id_for_type(TrackerType p_tracker_type);
-	void add_tracker(XRPositionalTracker *p_tracker);
-	void remove_tracker(XRPositionalTracker *p_tracker);
+	void add_tracker(Ref<XRPositionalTracker> p_tracker);
+	void remove_tracker(Ref<XRPositionalTracker> p_tracker);
 	int get_tracker_count() const;
-	XRPositionalTracker *get_tracker(int p_index) const;
-	XRPositionalTracker *find_by_type_and_id(TrackerType p_tracker_type, int p_tracker_id) const;
+	Ref<XRPositionalTracker> get_tracker(int p_index) const;
+	Ref<XRPositionalTracker> find_by_type_and_id(TrackerType p_tracker_type, int p_tracker_id) const;
 
 	uint64_t get_last_process_usec();
 	uint64_t get_last_commit_usec();

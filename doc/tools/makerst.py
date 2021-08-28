@@ -90,9 +90,13 @@ class EnumDef:
 
 
 class ThemeItemDef:
-    def __init__(self, name, type_name, default_value):  # type: (str, TypeName, Optional[str]) -> None
+    def __init__(
+        self, name, type_name, data_name, text, default_value
+    ):  # type: (str, TypeName, str, Optional[str], Optional[str]) -> None
         self.name = name
         self.type_name = type_name
+        self.data_name = data_name
+        self.text = text
         self.default_value = default_value
 
 
@@ -104,11 +108,14 @@ class ClassDef:
         self.properties = OrderedDict()  # type: OrderedDict[str, PropertyDef]
         self.methods = OrderedDict()  # type: OrderedDict[str, List[MethodDef]]
         self.signals = OrderedDict()  # type: OrderedDict[str, SignalDef]
+        self.theme_items = OrderedDict()  # type: OrderedDict[str, ThemeItemDef]
         self.inherits = None  # type: Optional[str]
         self.brief_description = None  # type: Optional[str]
         self.description = None  # type: Optional[str]
-        self.theme_items = None  # type: Optional[OrderedDict[str, List[ThemeItemDef]]]
-        self.tutorials = []  # type: List[str]
+        self.tutorials = []  # type: List[Tuple[str, str]]
+
+        # Used to match the class with XML source for output filtering purposes.
+        self.filepath = ""  # type: str
 
 
 class State:
@@ -118,11 +125,12 @@ class State:
         self.classes = OrderedDict()  # type: OrderedDict[str, ClassDef]
         self.current_class = ""  # type: str
 
-    def parse_class(self, class_root):  # type: (ET.Element) -> None
+    def parse_class(self, class_root, filepath):  # type: (ET.Element, str) -> None
         class_name = class_root.attrib["name"]
 
         class_def = ClassDef(class_name)
         self.classes[class_name] = class_def
+        class_def.filepath = filepath
 
         inherits = class_root.get("inherits")
         if inherits is not None:
@@ -236,16 +244,33 @@ class State:
 
         theme_items = class_root.find("theme_items")
         if theme_items is not None:
-            class_def.theme_items = OrderedDict()
             for theme_item in theme_items:
                 assert theme_item.tag == "theme_item"
 
                 theme_item_name = theme_item.attrib["name"]
+                theme_item_data_name = theme_item.attrib["data_type"]
+                theme_item_id = "{}_{}".format(theme_item_data_name, theme_item_name)
+                if theme_item_id in class_def.theme_items:
+                    print_error(
+                        "Duplicate theme property '{}' of type '{}', file: {}".format(
+                            theme_item_name, theme_item_data_name, class_name
+                        ),
+                        self,
+                    )
+                    continue
+
                 default_value = theme_item.get("default") or None
-                theme_item_def = ThemeItemDef(theme_item_name, TypeName.from_element(theme_item), default_value)
-                if theme_item_name not in class_def.theme_items:
-                    class_def.theme_items[theme_item_name] = []
-                class_def.theme_items[theme_item_name].append(theme_item_def)
+                if default_value is not None:
+                    default_value = "``{}``".format(default_value)
+
+                theme_item_def = ThemeItemDef(
+                    theme_item_name,
+                    TypeName.from_element(theme_item),
+                    theme_item_data_name,
+                    theme_item.text,
+                    default_value,
+                )
+                class_def.theme_items[theme_item_id] = theme_item_def
 
         tutorials = class_root.find("tutorials")
         if tutorials is not None:
@@ -253,7 +278,7 @@ class State:
                 assert link.tag == "link"
 
                 if link.text is not None:
-                    class_def.tutorials.append(link.text)
+                    class_def.tutorials.append((link.text.strip(), link.get("title", "")))
 
     def sort_classes(self):  # type: () -> None
         self.classes = OrderedDict(sorted(self.classes.items(), key=lambda t: t[0]))
@@ -278,6 +303,7 @@ def parse_arguments(root):  # type: (ET.Element) -> List[ParameterDef]
 def main():  # type: () -> None
     parser = argparse.ArgumentParser()
     parser.add_argument("path", nargs="+", help="A path to an XML file or a directory containing XML files to parse.")
+    parser.add_argument("--filter", default="", help="The filepath pattern for XML files to filter.")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--output", "-o", default=".", help="The directory to save output .rst files in.")
     group.add_argument(
@@ -333,22 +359,31 @@ def main():  # type: () -> None
             print_error("Duplicate class '{}'".format(name), state)
             continue
 
-        classes[name] = doc
+        classes[name] = (doc, cur_file)
 
     for name, data in classes.items():
         try:
-            state.parse_class(data)
+            state.parse_class(data[0], data[1])
         except Exception as e:
             print_error("Exception while parsing class '{}': {}".format(name, e), state)
 
     state.sort_classes()
 
+    pattern = re.compile(args.filter)
+
+    # Create the output folder recursively if it doesn't already exist.
+    os.makedirs(args.output, exist_ok=True)
+
     for class_name, class_def in state.classes.items():
+        if args.filter and not pattern.search(class_def.filepath):
+            continue
         state.current_class = class_name
         make_rst_class(class_def, state, args.dry_run, args.output)
 
     if not state.errored:
         print("No errors found.")
+        if not args.dry_run:
+            print("Wrote reStructuredText files for each class to: %s" % args.output)
     else:
         print("Errors were found in the class reference XML. Please check the messages above.")
         exit(1)
@@ -417,9 +452,8 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
     # Online tutorials
     if len(class_def.tutorials) > 0:
         f.write(make_heading("Tutorials", "-"))
-        for t in class_def.tutorials:
-            link = t.strip()
-            f.write("- " + make_url(link) + "\n\n")
+        for url, title in class_def.tutorials:
+            f.write("- " + make_link(url, title) + "\n\n")
 
     # Properties overview
     if len(class_def.properties) > 0:
@@ -428,7 +462,7 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
         for property_def in class_def.properties.values():
             type_rst = property_def.type_name.to_rst(state)
             default = property_def.default_value
-            if property_def.overridden:
+            if default is not None and property_def.overridden:
                 ml.append((type_rst, property_def.name, default + " *(parent override)*"))
             else:
                 ref = ":ref:`{0}<class_{1}_property_{0}>`".format(property_def.name, class_name)
@@ -445,12 +479,14 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
         format_table(f, ml)
 
     # Theme properties
-    if class_def.theme_items is not None and len(class_def.theme_items) > 0:
+    if len(class_def.theme_items) > 0:
         f.write(make_heading("Theme Properties", "-"))
         pl = []
-        for theme_item_list in class_def.theme_items.values():
-            for theme_item in theme_item_list:
-                pl.append((theme_item.type_name.to_rst(state), theme_item.name, theme_item.default_value))
+        for theme_item_def in class_def.theme_items.values():
+            ref = ":ref:`{0}<class_{2}_theme_{1}_{0}>`".format(
+                theme_item_def.name, theme_item_def.data_name, class_name
+            )
+            pl.append((theme_item_def.type_name.to_rst(state), ref, theme_item_def.default_value))
         format_table(f, pl, True)
 
     # Signals
@@ -565,6 +601,32 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
 
                 index += 1
 
+    # Theme property descriptions
+    if len(class_def.theme_items) > 0:
+        f.write(make_heading("Theme Property Descriptions", "-"))
+        index = 0
+
+        for theme_item_def in class_def.theme_items.values():
+            if index != 0:
+                f.write("----\n\n")
+
+            f.write(".. _class_{}_theme_{}_{}:\n\n".format(class_name, theme_item_def.data_name, theme_item_def.name))
+            f.write("- {} **{}**\n\n".format(theme_item_def.type_name.to_rst(state), theme_item_def.name))
+
+            info = []
+            if theme_item_def.default_value is not None:
+                info.append(("*Default*", theme_item_def.default_value))
+
+            if len(info) > 0:
+                format_table(f, info)
+
+            if theme_item_def.text is not None and theme_item_def.text.strip() != "":
+                f.write(rstize_text(theme_item_def.text.strip(), state) + "\n\n")
+
+            index += 1
+
+    f.write(make_footer())
+
 
 def escape_rst(text, until_pos=-1):  # type: (str) -> str
     # Escape \ character, otherwise it ends up as an escape character in rst
@@ -600,6 +662,43 @@ def escape_rst(text, until_pos=-1):  # type: (str) -> str
     return text
 
 
+def format_codeblock(code_type, post_text, indent_level, state):  # types: str, str, int, state
+    end_pos = post_text.find("[/" + code_type + "]")
+    if end_pos == -1:
+        print_error("[" + code_type + "] without a closing tag, file: {}".format(state.current_class), state)
+        return None
+
+    code_text = post_text[len("[" + code_type + "]") : end_pos]
+    post_text = post_text[end_pos:]
+
+    # Remove extraneous tabs
+    code_pos = 0
+    while True:
+        code_pos = code_text.find("\n", code_pos)
+        if code_pos == -1:
+            break
+
+        to_skip = 0
+        while code_pos + to_skip + 1 < len(code_text) and code_text[code_pos + to_skip + 1] == "\t":
+            to_skip += 1
+
+        if to_skip > indent_level:
+            print_error(
+                "Four spaces should be used for indentation within ["
+                + code_type
+                + "], file: {}".format(state.current_class),
+                state,
+            )
+
+        if len(code_text[code_pos + to_skip + 1 :]) == 0:
+            code_text = code_text[:code_pos] + "\n"
+            code_pos += 1
+        else:
+            code_text = code_text[:code_pos] + "\n    " + code_text[code_pos + to_skip + 1 :]
+            code_pos += 5 - to_skip
+    return ["\n[" + code_type + "]" + code_text + post_text, len("\n[" + code_type + "]" + code_text)]
+
+
 def rstize_text(text, state):  # type: (str, State) -> str
     # Linebreak + tabs in the XML should become two line breaks unless in a "codeblock"
     pos = 0
@@ -616,43 +715,17 @@ def rstize_text(text, state):  # type: (str, State) -> str
         post_text = text[pos + 1 :]
 
         # Handle codeblocks
-        if post_text.startswith("[codeblock]"):
-            end_pos = post_text.find("[/codeblock]")
-            if end_pos == -1:
-                print_error("[codeblock] without a closing tag, file: {}".format(state.current_class), state)
+        if (
+            post_text.startswith("[codeblock]")
+            or post_text.startswith("[gdscript]")
+            or post_text.startswith("[csharp]")
+        ):
+            block_type = post_text[1:].split("]")[0]
+            result = format_codeblock(block_type, post_text, indent_level, state)
+            if result is None:
                 return ""
-
-            code_text = post_text[len("[codeblock]") : end_pos]
-            post_text = post_text[end_pos:]
-
-            # Remove extraneous tabs
-            code_pos = 0
-            while True:
-                code_pos = code_text.find("\n", code_pos)
-                if code_pos == -1:
-                    break
-
-                to_skip = 0
-                while code_pos + to_skip + 1 < len(code_text) and code_text[code_pos + to_skip + 1] == "\t":
-                    to_skip += 1
-
-                if to_skip > indent_level:
-                    print_error(
-                        "Four spaces should be used for indentation within [codeblock], file: {}".format(
-                            state.current_class
-                        ),
-                        state,
-                    )
-
-                if len(code_text[code_pos + to_skip + 1 :]) == 0:
-                    code_text = code_text[:code_pos] + "\n"
-                    code_pos += 1
-                else:
-                    code_text = code_text[:code_pos] + "\n    " + code_text[code_pos + to_skip + 1 :]
-                    code_pos += 5 - to_skip
-
-            text = pre_text + "\n[codeblock]" + code_text + post_text
-            pos += len("\n[codeblock]" + code_text)
+            text = pre_text + result[0]
+            pos += result[1]
 
         # Handle normal text
         else:
@@ -697,7 +770,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
         else:  # command
             cmd = tag_text
             space_pos = tag_text.find(" ")
-            if cmd == "/codeblock":
+            if cmd == "/codeblock" or cmd == "/gdscript" or cmd == "/csharp":
                 tag_text = ""
                 tag_depth -= 1
                 inside_code = False
@@ -813,6 +886,20 @@ def rstize_text(text, state):  # type: (str, State) -> str
                 tag_depth += 1
                 tag_text = "\n::\n"
                 inside_code = True
+            elif cmd == "gdscript":
+                tag_depth += 1
+                tag_text = "\n .. code-tab:: gdscript\n"
+                inside_code = True
+            elif cmd == "csharp":
+                tag_depth += 1
+                tag_text = "\n .. code-tab:: csharp\n"
+                inside_code = True
+            elif cmd == "codeblocks":
+                tag_depth += 1
+                tag_text = "\n.. tabs::"
+            elif cmd == "/codeblocks":
+                tag_depth -= 1
+                tag_text = ""
             elif cmd == "br":
                 # Make a new paragraph instead of a linebreak, rst is not so linebreak friendly
                 tag_text = "\n\n"
@@ -920,6 +1007,8 @@ def format_table(f, data, remove_empty_columns=False):  # type: (TextIO, Iterabl
 
 
 def make_type(klass, state):  # type: (str, State) -> str
+    if klass.find("*") != -1:  # Pointer, ignore
+        return klass
     link_type = klass
     if link_type.endswith("[]"):  # Typed array, strip [] to link to contained type.
         link_type = link_type[:-2]
@@ -943,9 +1032,6 @@ def make_enum(t, state):  # type: (str, State) -> str
         e = t
         if c in state.classes and e not in state.classes[c].enums:
             c = "@GlobalScope"
-
-    if not c in state.classes and c.startswith("_"):
-        c = c[1:]  # Remove the underscore prefix
 
     if c in state.classes and e in state.classes[c].enums:
         return ":ref:`{0}<enum_{1}_{0}>`".format(e, c)
@@ -995,7 +1081,10 @@ def make_method_signature(
     out += " **)**"
 
     if isinstance(method_def, MethodDef) and method_def.qualifiers is not None:
-        out += " " + method_def.qualifiers
+        # Use substitutions for abbreviations. This is used to display tooltips on hover.
+        # See `make_footer()` for descriptions.
+        for qualifier in method_def.qualifiers.split():
+            out += " |" + qualifier + "|"
 
     return ret_type, out
 
@@ -1004,8 +1093,22 @@ def make_heading(title, underline):  # type: (str, str) -> str
     return title + "\n" + (underline * len(title)) + "\n\n"
 
 
-def make_url(link):  # type: (str) -> str
-    match = GODOT_DOCS_PATTERN.search(link)
+def make_footer():  # type: () -> str
+    # Generate reusable abbreviation substitutions.
+    # This way, we avoid bloating the generated rST with duplicate abbreviations.
+    # fmt: off
+    return (
+        ".. |virtual| replace:: :abbr:`virtual (This method should typically be overridden by the user to have any effect.)`\n"
+        ".. |const| replace:: :abbr:`const (This method has no side effects. It doesn't modify any of the instance's member variables.)`\n"
+        ".. |vararg| replace:: :abbr:`vararg (This method accepts any number of arguments after the ones described here.)`\n"
+        ".. |constructor| replace:: :abbr:`constructor (This method is used to construct a type.)`\n"
+        ".. |operator| replace:: :abbr:`operator (This method describes a valid operator to use with this type as left-hand operand.)`\n"
+    )
+    # fmt: on
+
+
+def make_link(url, title):  # type: (str, str) -> str
+    match = GODOT_DOCS_PATTERN.search(url)
     if match:
         groups = match.groups()
         if match.lastindex == 2:
@@ -1022,7 +1125,10 @@ def make_url(link):  # type: (str) -> str
     else:
         # External link, for example:
         # `http://enet.bespin.org/usergroup0.html`
-        return "`" + link + " <" + link + ">`_"
+        if title != "":
+            return "`" + title + " <" + url + ">`_"
+        else:
+            return "`" + url + " <" + url + ">`_"
 
 
 if __name__ == "__main__":

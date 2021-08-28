@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 
 #include "area_3d_sw.h"
 #include "collision_object_3d_sw.h"
-#include "core/vset.h"
+#include "core/templates/vset.h"
 
 class Constraint3DSW;
 
@@ -55,7 +55,6 @@ class Body3DSW : public CollisionObject3DSW {
 
 	uint16_t locked_axis = 0;
 
-	real_t kinematic_safe_margin;
 	real_t _inv_mass;
 	Vector3 _inv_inertia; // Relative to the principal axes of inertia
 
@@ -93,21 +92,9 @@ class Body3DSW : public CollisionObject3DSW {
 	bool first_time_kinematic;
 	void _update_inertia();
 	virtual void _shapes_changed();
-	Transform new_transform;
+	Transform3D new_transform;
 
 	Map<Constraint3DSW *, int> constraint_map;
-
-	struct AreaCMP {
-		Area3DSW *area;
-		int refCount;
-		_FORCE_INLINE_ bool operator==(const AreaCMP &p_cmp) const { return area->get_self() == p_cmp.area->get_self(); }
-		_FORCE_INLINE_ bool operator<(const AreaCMP &p_cmp) const { return area->get_priority() < p_cmp.area->get_priority(); }
-		_FORCE_INLINE_ AreaCMP() {}
-		_FORCE_INLINE_ AreaCMP(Area3DSW *p_area) {
-			area = p_area;
-			refCount = 1;
-		}
-	};
 
 	Vector<AreaCMP> areas;
 
@@ -127,28 +114,22 @@ class Body3DSW : public CollisionObject3DSW {
 	int contact_count;
 
 	struct ForceIntegrationCallback {
-		ObjectID id;
-		StringName method;
+		Callable callable;
 		Variant udata;
 	};
 
 	ForceIntegrationCallback *fi_callback;
 
 	uint64_t island_step;
-	Body3DSW *island_next;
-	Body3DSW *island_list_next;
 
-	_FORCE_INLINE_ void _compute_area_gravity_and_dampenings(const Area3DSW *p_area);
+	_FORCE_INLINE_ void _compute_area_gravity_and_damping(const Area3DSW *p_area);
 
 	_FORCE_INLINE_ void _update_transform_dependant();
 
 	friend class PhysicsDirectBodyState3DSW; // i give up, too many functions to expose
 
 public:
-	void set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata = Variant());
-
-	void set_kinematic_margin(real_t p_margin);
-	_FORCE_INLINE_ real_t get_kinematic_margin() { return kinematic_safe_margin; }
+	void set_force_integration_callback(const Callable &p_callable, const Variant &p_udata = Variant());
 
 	_FORCE_INLINE_ void add_area(Area3DSW *p_area) {
 		int index = areas.find(AreaCMP(p_area));
@@ -178,7 +159,7 @@ public:
 	}
 	_FORCE_INLINE_ int get_max_contacts_reported() const { return contacts.size(); }
 
-	_FORCE_INLINE_ bool can_report_contacts() const { return !contacts.empty(); }
+	_FORCE_INLINE_ bool can_report_contacts() const { return !contacts.is_empty(); }
 	_FORCE_INLINE_ void add_contact(const Vector3 &p_local_pos, const Vector3 &p_local_normal, real_t p_depth, int p_local_shape, const Vector3 &p_collider_pos, int p_collider_shape, ObjectID p_collider_instance_id, const RID &p_collider, const Vector3 &p_collider_velocity_at_pos);
 
 	_FORCE_INLINE_ void add_exception(const RID &p_exception) { exceptions.insert(p_exception); }
@@ -188,12 +169,6 @@ public:
 
 	_FORCE_INLINE_ uint64_t get_island_step() const { return island_step; }
 	_FORCE_INLINE_ void set_island_step(uint64_t p_step) { island_step = p_step; }
-
-	_FORCE_INLINE_ Body3DSW *get_island_next() const { return island_next; }
-	_FORCE_INLINE_ void set_island_next(Body3DSW *p_next) { island_next = p_next; }
-
-	_FORCE_INLINE_ Body3DSW *get_island_list_next() const { return island_list_next; }
-	_FORCE_INLINE_ void set_island_list_next(Body3DSW *p_next) { island_list_next = p_next; }
 
 	_FORCE_INLINE_ void add_constraint(Constraint3DSW *p_constraint, int p_pos) { constraint_map[p_constraint] = p_pos; }
 	_FORCE_INLINE_ void remove_constraint(Constraint3DSW *p_constraint) { constraint_map.erase(p_constraint); }
@@ -216,23 +191,23 @@ public:
 	_FORCE_INLINE_ const Vector3 &get_biased_linear_velocity() const { return biased_linear_velocity; }
 	_FORCE_INLINE_ const Vector3 &get_biased_angular_velocity() const { return biased_angular_velocity; }
 
-	_FORCE_INLINE_ void apply_central_impulse(const Vector3 &p_j) {
-		linear_velocity += p_j * _inv_mass;
+	_FORCE_INLINE_ void apply_central_impulse(const Vector3 &p_impulse) {
+		linear_velocity += p_impulse * _inv_mass;
 	}
 
-	_FORCE_INLINE_ void apply_impulse(const Vector3 &p_pos, const Vector3 &p_j) {
-		linear_velocity += p_j * _inv_mass;
-		angular_velocity += _inv_inertia_tensor.xform((p_pos - center_of_mass).cross(p_j));
+	_FORCE_INLINE_ void apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position = Vector3()) {
+		linear_velocity += p_impulse * _inv_mass;
+		angular_velocity += _inv_inertia_tensor.xform((p_position - center_of_mass).cross(p_impulse));
 	}
 
-	_FORCE_INLINE_ void apply_torque_impulse(const Vector3 &p_j) {
-		angular_velocity += _inv_inertia_tensor.xform(p_j);
+	_FORCE_INLINE_ void apply_torque_impulse(const Vector3 &p_impulse) {
+		angular_velocity += _inv_inertia_tensor.xform(p_impulse);
 	}
 
-	_FORCE_INLINE_ void apply_bias_impulse(const Vector3 &p_pos, const Vector3 &p_j, real_t p_max_delta_av = -1.0) {
-		biased_linear_velocity += p_j * _inv_mass;
+	_FORCE_INLINE_ void apply_bias_impulse(const Vector3 &p_impulse, const Vector3 &p_position = Vector3(), real_t p_max_delta_av = -1.0) {
+		biased_linear_velocity += p_impulse * _inv_mass;
 		if (p_max_delta_av != 0.0) {
-			Vector3 delta_av = _inv_inertia_tensor.xform((p_pos - center_of_mass).cross(p_j));
+			Vector3 delta_av = _inv_inertia_tensor.xform((p_position - center_of_mass).cross(p_impulse));
 			if (p_max_delta_av > 0 && delta_av.length() > p_max_delta_av) {
 				delta_av = delta_av.normalized() * p_max_delta_av;
 			}
@@ -240,17 +215,17 @@ public:
 		}
 	}
 
-	_FORCE_INLINE_ void apply_bias_torque_impulse(const Vector3 &p_j) {
-		biased_angular_velocity += _inv_inertia_tensor.xform(p_j);
+	_FORCE_INLINE_ void apply_bias_torque_impulse(const Vector3 &p_impulse) {
+		biased_angular_velocity += _inv_inertia_tensor.xform(p_impulse);
 	}
 
 	_FORCE_INLINE_ void add_central_force(const Vector3 &p_force) {
 		applied_force += p_force;
 	}
 
-	_FORCE_INLINE_ void add_force(const Vector3 &p_force, const Vector3 &p_pos) {
+	_FORCE_INLINE_ void add_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) {
 		applied_force += p_force;
-		applied_torque += (p_pos - center_of_mass).cross(p_force);
+		applied_torque += (p_position - center_of_mass).cross(p_force);
 	}
 
 	_FORCE_INLINE_ void add_torque(const Vector3 &p_torque) {
@@ -290,10 +265,10 @@ public:
 	void update_inertias();
 
 	_FORCE_INLINE_ real_t get_inv_mass() const { return _inv_mass; }
-	_FORCE_INLINE_ Vector3 get_inv_inertia() const { return _inv_inertia; }
-	_FORCE_INLINE_ Basis get_inv_inertia_tensor() const { return _inv_inertia_tensor; }
+	_FORCE_INLINE_ const Vector3 &get_inv_inertia() const { return _inv_inertia; }
+	_FORCE_INLINE_ const Basis &get_inv_inertia_tensor() const { return _inv_inertia_tensor; }
 	_FORCE_INLINE_ real_t get_friction() const { return friction; }
-	_FORCE_INLINE_ Vector3 get_gravity() const { return gravity; }
+	_FORCE_INLINE_ const Vector3 &get_gravity() const { return gravity; }
 	_FORCE_INLINE_ real_t get_bounce() const { return bounce; }
 
 	void set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool lock);
@@ -320,7 +295,7 @@ public:
 		return p_axis.dot(_inv_inertia_tensor.xform_inv(p_axis));
 	}
 
-	//void simulate_motion(const Transform& p_xform,real_t p_step);
+	//void simulate_motion(const Transform3D& p_xform,real_t p_step);
 	void call_queries();
 	void wakeup_neighbours();
 
@@ -382,78 +357,84 @@ public:
 	Body3DSW *body;
 	real_t step;
 
-	virtual Vector3 get_total_gravity() const { return body->gravity; } // get gravity vector working on this body space/area
-	virtual real_t get_total_angular_damp() const { return body->area_angular_damp; } // get density of this body space/area
-	virtual real_t get_total_linear_damp() const { return body->area_linear_damp; } // get density of this body space/area
+	virtual Vector3 get_total_gravity() const override { return body->gravity; } // get gravity vector working on this body space/area
+	virtual real_t get_total_angular_damp() const override { return body->area_angular_damp; } // get density of this body space/area
+	virtual real_t get_total_linear_damp() const override { return body->area_linear_damp; } // get density of this body space/area
 
-	virtual Vector3 get_center_of_mass() const { return body->get_center_of_mass(); }
-	virtual Basis get_principal_inertia_axes() const { return body->get_principal_inertia_axes(); }
+	virtual Vector3 get_center_of_mass() const override { return body->get_center_of_mass(); }
+	virtual Basis get_principal_inertia_axes() const override { return body->get_principal_inertia_axes(); }
 
-	virtual real_t get_inverse_mass() const { return body->get_inv_mass(); } // get the mass
-	virtual Vector3 get_inverse_inertia() const { return body->get_inv_inertia(); } // get density of this body space
-	virtual Basis get_inverse_inertia_tensor() const { return body->get_inv_inertia_tensor(); } // get density of this body space
+	virtual real_t get_inverse_mass() const override { return body->get_inv_mass(); } // get the mass
+	virtual Vector3 get_inverse_inertia() const override { return body->get_inv_inertia(); } // get density of this body space
+	virtual Basis get_inverse_inertia_tensor() const override { return body->get_inv_inertia_tensor(); } // get density of this body space
 
-	virtual void set_linear_velocity(const Vector3 &p_velocity) { body->set_linear_velocity(p_velocity); }
-	virtual Vector3 get_linear_velocity() const { return body->get_linear_velocity(); }
+	virtual void set_linear_velocity(const Vector3 &p_velocity) override { body->set_linear_velocity(p_velocity); }
+	virtual Vector3 get_linear_velocity() const override { return body->get_linear_velocity(); }
 
-	virtual void set_angular_velocity(const Vector3 &p_velocity) { body->set_angular_velocity(p_velocity); }
-	virtual Vector3 get_angular_velocity() const { return body->get_angular_velocity(); }
+	virtual void set_angular_velocity(const Vector3 &p_velocity) override { body->set_angular_velocity(p_velocity); }
+	virtual Vector3 get_angular_velocity() const override { return body->get_angular_velocity(); }
 
-	virtual void set_transform(const Transform &p_transform) { body->set_state(PhysicsServer3D::BODY_STATE_TRANSFORM, p_transform); }
-	virtual Transform get_transform() const { return body->get_transform(); }
+	virtual void set_transform(const Transform3D &p_transform) override { body->set_state(PhysicsServer3D::BODY_STATE_TRANSFORM, p_transform); }
+	virtual Transform3D get_transform() const override { return body->get_transform(); }
 
-	virtual void add_central_force(const Vector3 &p_force) { body->add_central_force(p_force); }
-	virtual void add_force(const Vector3 &p_force, const Vector3 &p_pos) { body->add_force(p_force, p_pos); }
-	virtual void add_torque(const Vector3 &p_torque) { body->add_torque(p_torque); }
-	virtual void apply_central_impulse(const Vector3 &p_j) { body->apply_central_impulse(p_j); }
-	virtual void apply_impulse(const Vector3 &p_pos, const Vector3 &p_j) { body->apply_impulse(p_pos, p_j); }
-	virtual void apply_torque_impulse(const Vector3 &p_j) { body->apply_torque_impulse(p_j); }
+	virtual Vector3 get_velocity_at_local_position(const Vector3 &p_position) const override { return body->get_velocity_in_local_point(p_position); }
 
-	virtual void set_sleep_state(bool p_sleep) { body->set_active(!p_sleep); }
-	virtual bool is_sleeping() const { return !body->is_active(); }
+	virtual void add_central_force(const Vector3 &p_force) override { body->add_central_force(p_force); }
+	virtual void add_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) override {
+		body->add_force(p_force, p_position);
+	}
+	virtual void add_torque(const Vector3 &p_torque) override { body->add_torque(p_torque); }
+	virtual void apply_central_impulse(const Vector3 &p_impulse) override { body->apply_central_impulse(p_impulse); }
+	virtual void apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position = Vector3()) override {
+		body->apply_impulse(p_impulse, p_position);
+	}
+	virtual void apply_torque_impulse(const Vector3 &p_impulse) override { body->apply_torque_impulse(p_impulse); }
 
-	virtual int get_contact_count() const { return body->contact_count; }
+	virtual void set_sleep_state(bool p_sleep) override { body->set_active(!p_sleep); }
+	virtual bool is_sleeping() const override { return !body->is_active(); }
 
-	virtual Vector3 get_contact_local_position(int p_contact_idx) const {
+	virtual int get_contact_count() const override { return body->contact_count; }
+
+	virtual Vector3 get_contact_local_position(int p_contact_idx) const override {
 		ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, Vector3());
 		return body->contacts[p_contact_idx].local_pos;
 	}
-	virtual Vector3 get_contact_local_normal(int p_contact_idx) const {
+	virtual Vector3 get_contact_local_normal(int p_contact_idx) const override {
 		ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, Vector3());
 		return body->contacts[p_contact_idx].local_normal;
 	}
-	virtual float get_contact_impulse(int p_contact_idx) const {
+	virtual real_t get_contact_impulse(int p_contact_idx) const override {
 		return 0.0f; // Only implemented for bullet
 	}
-	virtual int get_contact_local_shape(int p_contact_idx) const {
+	virtual int get_contact_local_shape(int p_contact_idx) const override {
 		ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, -1);
 		return body->contacts[p_contact_idx].local_shape;
 	}
 
-	virtual RID get_contact_collider(int p_contact_idx) const {
+	virtual RID get_contact_collider(int p_contact_idx) const override {
 		ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, RID());
 		return body->contacts[p_contact_idx].collider;
 	}
-	virtual Vector3 get_contact_collider_position(int p_contact_idx) const {
+	virtual Vector3 get_contact_collider_position(int p_contact_idx) const override {
 		ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, Vector3());
 		return body->contacts[p_contact_idx].collider_pos;
 	}
-	virtual ObjectID get_contact_collider_id(int p_contact_idx) const {
+	virtual ObjectID get_contact_collider_id(int p_contact_idx) const override {
 		ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, ObjectID());
 		return body->contacts[p_contact_idx].collider_instance_id;
 	}
-	virtual int get_contact_collider_shape(int p_contact_idx) const {
+	virtual int get_contact_collider_shape(int p_contact_idx) const override {
 		ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, 0);
 		return body->contacts[p_contact_idx].collider_shape;
 	}
-	virtual Vector3 get_contact_collider_velocity_at_position(int p_contact_idx) const {
+	virtual Vector3 get_contact_collider_velocity_at_position(int p_contact_idx) const override {
 		ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, Vector3());
 		return body->contacts[p_contact_idx].collider_velocity_at_pos;
 	}
 
-	virtual PhysicsDirectSpaceState3D *get_space_state();
+	virtual PhysicsDirectSpaceState3D *get_space_state() override;
 
-	virtual real_t get_step() const { return step; }
+	virtual real_t get_step() const override { return step; }
 	PhysicsDirectBodyState3DSW() {
 		singleton = this;
 		body = nullptr;

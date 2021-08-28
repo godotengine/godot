@@ -1,9 +1,9 @@
-/* $Id: miniupnpc.c,v 1.154 2019/04/23 12:12:13 nanard Exp $ */
+/* $Id: miniupnpc.c,v 1.159 2021/03/02 23:36:32 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * Project : miniupnp
- * Web : http://miniupnp.free.fr/
+ * Web : http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * Author : Thomas BERNARD
- * copyright (c) 2005-2019 Thomas Bernard
+ * copyright (c) 2005-2021 Thomas Bernard
  * This software is subjet to the conditions detailed in the
  * provided LICENSE file. */
 #include <stdlib.h>
@@ -15,7 +15,7 @@
 #include <ws2tcpip.h>
 #include <io.h>
 #include <iphlpapi.h>
-#define snprintf _snprintf
+#include "win32_snprintf.h"
 #define strdup _strdup
 #ifndef strncasecmp
 #if defined(_MSC_VER) && (_MSC_VER >= 1400)
@@ -61,6 +61,7 @@
 #include "minixml.h"
 #include "upnpcommands.h"
 #include "connecthostport.h"
+#include "addr_is_reserved.h"
 
 /* compare the beginning of a string with a constant string */
 #define COMPARE(str, cstr) (0==strncmp(str, cstr, sizeof(cstr) - 1))
@@ -72,24 +73,6 @@
 #define SOAPPREFIX "s"
 #define SERVICEPREFIX "u"
 #define SERVICEPREFIX2 'u'
-
-/* check if an ip address is a private (LAN) address
- * see https://tools.ietf.org/html/rfc1918 */
-static int is_rfc1918addr(const char * addr)
-{
-	/* 192.168.0.0     -   192.168.255.255 (192.168/16 prefix) */
-	if(COMPARE(addr, "192.168."))
-		return 1;
-	/* 10.0.0.0        -   10.255.255.255  (10/8 prefix) */
-	if(COMPARE(addr, "10."))
-		return 1;
-	/* 172.16.0.0      -   172.31.255.255  (172.16/12 prefix) */
-	if(COMPARE(addr, "172.")) {
-		if((atoi(addr + 4) | 0x0f) == 0x1f)
-			return 1;
-	}
-	return 0;
-}
 
 /* root description parsing */
 MINIUPNP_LIBSPEC void parserootdesc(const char * buffer, int bufsize, struct IGDdatas * data)
@@ -337,6 +320,8 @@ upnpDiscoverDevices(const char * const deviceTypes[],
 			return devlist;
 		}
 	}
+#else	/* !defined(_WIN32) && !defined(__amigaos__) && !defined(__amigaos4__) */
+	(void)minissdpdsock; /* unused */
 #endif	/* !defined(_WIN32) && !defined(__amigaos__) && !defined(__amigaos4__) */
 
 	/* direct discovery if minissdpd responses are not sufficient */
@@ -643,8 +628,7 @@ UPNP_GetValidIGD(struct UPNPDev * devlist,
 				  /* checks that status is connected AND there is a external IP address assigned */
 				  if(is_connected &&
 				     (UPNP_GetExternalIPAddress(urls->controlURL,  data->first.servicetype, extIpAddr) == 0)) {
-					if(!is_rfc1918addr(extIpAddr) && (extIpAddr[0] != '\0')
-					   && (0 != strcmp(extIpAddr, "0.0.0.0")))
+					if(!addr_is_reserved(extIpAddr))
 					  goto free_and_return;
 				  }
 				  FreeUPNPUrls(urls);
@@ -665,8 +649,7 @@ UPNP_GetValidIGD(struct UPNPDev * devlist,
 #endif
 				    if(is_connected &&
 				       (UPNP_GetExternalIPAddress(urls->controlURL,  data->first.servicetype, extIpAddr) == 0)) {
-					  if(!is_rfc1918addr(extIpAddr) && (extIpAddr[0] != '\0')
-					     && (0 != strcmp(extIpAddr, "0.0.0.0")))
+					  if(!addr_is_reserved(extIpAddr))
 					    goto free_and_return;
 				    }
 				    FreeUPNPUrls(urls);

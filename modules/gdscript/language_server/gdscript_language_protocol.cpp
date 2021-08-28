@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,8 @@
 
 #include "gdscript_language_protocol.h"
 
-#include "core/io/json.h"
-#include "core/os/copymem.h"
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
+#include "editor/doc_tools.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 
@@ -95,7 +94,7 @@ Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 
 		// Response
 		String output = GDScriptLanguageProtocol::get_singleton()->process_message(msg);
-		if (!output.empty()) {
+		if (!output.is_empty()) {
 			res_queue.push_back(output.utf8());
 		}
 	}
@@ -104,7 +103,7 @@ Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 
 Error GDScriptLanguageProtocol::LSPeer::send_data() {
 	int sent = 0;
-	if (!res_queue.empty()) {
+	if (!res_queue.is_empty()) {
 		CharString c_res = res_queue[0];
 		if (res_sent < c_res.size()) {
 			Error err = connection->put_partial_data((const uint8_t *)c_res.get_data() + res_sent, c_res.size() - res_sent - 1, sent);
@@ -129,18 +128,18 @@ Error GDScriptLanguageProtocol::on_client_connected() {
 	peer->connection = tcp_peer;
 	clients.set(next_client_id, peer);
 	next_client_id++;
-	EditorNode::get_log()->add_message("Connection Taken", EditorLog::MSG_TYPE_EDITOR);
+	EditorNode::get_log()->add_message("[LSP] Connection Taken", EditorLog::MSG_TYPE_EDITOR);
 	return OK;
 }
 
 void GDScriptLanguageProtocol::on_client_disconnected(const int &p_client_id) {
 	clients.erase(p_client_id);
-	EditorNode::get_log()->add_message("Disconnected", EditorLog::MSG_TYPE_EDITOR);
+	EditorNode::get_log()->add_message("[LSP] Disconnected", EditorLog::MSG_TYPE_EDITOR);
 }
 
 String GDScriptLanguageProtocol::process_message(const String &p_text) {
 	String ret = process_string(p_text);
-	if (ret.empty()) {
+	if (ret.is_empty()) {
 		return ret;
 	} else {
 		return format_output(ret);
@@ -162,7 +161,7 @@ void GDScriptLanguageProtocol::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("initialized", "params"), &GDScriptLanguageProtocol::initialized);
 	ClassDB::bind_method(D_METHOD("on_client_connected"), &GDScriptLanguageProtocol::on_client_connected);
 	ClassDB::bind_method(D_METHOD("on_client_disconnected"), &GDScriptLanguageProtocol::on_client_disconnected);
-	ClassDB::bind_method(D_METHOD("notify_client", "method", "params"), &GDScriptLanguageProtocol::notify_client, DEFVAL(Variant()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("notify_client", "method", "params", "client_id"), &GDScriptLanguageProtocol::notify_client, DEFVAL(Variant()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("is_smart_resolve_enabled"), &GDScriptLanguageProtocol::is_smart_resolve_enabled);
 	ClassDB::bind_method(D_METHOD("get_text_document"), &GDScriptLanguageProtocol::get_text_document);
 	ClassDB::bind_method(D_METHOD("get_workspace"), &GDScriptLanguageProtocol::get_workspace);
@@ -194,7 +193,7 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 				vformat("GDScriptLanguageProtocol: Can't initialize invalid peer '%d'.", latest_client_id));
 		Ref<LSPeer> peer = clients.get(latest_client_id);
 		if (peer != nullptr) {
-			String msg = JSON::print(request);
+			String msg = Variant(request).to_json_string();
 			msg = format_output(msg);
 			(*peer)->res_queue.push_back(msg.utf8());
 		}
@@ -212,7 +211,7 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 void GDScriptLanguageProtocol::initialized(const Variant &p_params) {
 	lsp::GodotCapabilities capabilities;
 
-	DocData *doc = EditorHelp::get_doc_data();
+	DocTools *doc = EditorHelp::get_doc_data();
 	for (Map<String, DocData::ClassDoc>::Element *E = doc->class_list.front(); E; E = E->next()) {
 		lsp::GodotNativeClassInfo gdclass;
 		gdclass.name = E->get().name;
@@ -255,7 +254,7 @@ void GDScriptLanguageProtocol::poll() {
 	}
 }
 
-Error GDScriptLanguageProtocol::start(int p_port, const IP_Address &p_bind_ip) {
+Error GDScriptLanguageProtocol::start(int p_port, const IPAddress &p_bind_ip) {
 	return server->listen(p_port, p_bind_ip);
 }
 
@@ -280,7 +279,7 @@ void GDScriptLanguageProtocol::notify_client(const String &p_method, const Varia
 	ERR_FAIL_COND(peer == nullptr);
 
 	Dictionary message = make_notification(p_method, p_params);
-	String msg = JSON::print(message);
+	String msg = Variant(message).to_json_string();
 	msg = format_output(msg);
 	peer->res_queue.push_back(msg.utf8());
 }
@@ -294,10 +293,10 @@ bool GDScriptLanguageProtocol::is_goto_native_symbols_enabled() const {
 }
 
 GDScriptLanguageProtocol::GDScriptLanguageProtocol() {
-	server.instance();
+	server.instantiate();
 	singleton = this;
-	workspace.instance();
-	text_document.instance();
+	workspace.instantiate();
+	text_document.instantiate();
 	set_scope("textDocument", text_document.ptr());
 	set_scope("completionItem", text_document.ptr());
 	set_scope("workspace", workspace.ptr());

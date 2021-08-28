@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,6 @@ struct _WinTranslatePair {
 };
 
 static _WinTranslatePair _vk_to_keycode[] = {
-
 	{ KEY_BACKSPACE, VK_BACK }, // (0x08) // backspace
 	{ KEY_TAB, VK_TAB }, //(0x09)
 
@@ -48,7 +47,7 @@ static _WinTranslatePair _vk_to_keycode[] = {
 
 	{ KEY_SHIFT, VK_SHIFT }, //(0x10)
 
-	{ KEY_CONTROL, VK_CONTROL }, //(0x11)
+	{ KEY_CTRL, VK_CONTROL }, //(0x11)
 
 	{ KEY_ALT, VK_MENU }, //(0x12)
 
@@ -167,8 +166,8 @@ static _WinTranslatePair _vk_to_keycode[] = {
 	{ KEY_SCROLLLOCK, VK_SCROLL }, // (0x91)
 	{ KEY_SHIFT, VK_LSHIFT }, // (0xA0)
 	{ KEY_SHIFT, VK_RSHIFT }, // (0xA1)
-	{ KEY_CONTROL, VK_LCONTROL }, // (0xA2)
-	{ KEY_CONTROL, VK_RCONTROL }, // (0xA3)
+	{ KEY_CTRL, VK_LCONTROL }, // (0xA2)
+	{ KEY_CTRL, VK_RCONTROL }, // (0xA3)
 	{ KEY_MENU, VK_LMENU }, // (0xA4)
 	{ KEY_MENU, VK_RMENU }, // (0xA5)
 
@@ -238,7 +237,6 @@ VK_OEM_CLEAR (0xFE)
 */
 
 static _WinTranslatePair _scancode_to_keycode[] = {
-
 	{ KEY_ESCAPE, 0x01 },
 	{ KEY_1, 0x02 },
 	{ KEY_2, 0x03 },
@@ -267,7 +265,7 @@ static _WinTranslatePair _scancode_to_keycode[] = {
 	{ KEY_BRACELEFT, 0x1A },
 	{ KEY_BRACERIGHT, 0x1B },
 	{ KEY_ENTER, 0x1C },
-	{ KEY_CONTROL, 0x1D },
+	{ KEY_CTRL, 0x1D },
 	{ KEY_A, 0x1E },
 	{ KEY_S, 0x1F },
 	{ KEY_D, 0x20 },
@@ -367,6 +365,8 @@ unsigned int KeyMappingWindows::get_scansym(unsigned int p_code, bool p_extended
 			case KEY_CAPSLOCK: {
 				keycode = KEY_KP_ADD;
 			} break;
+			default:
+				break;
 		}
 	} else {
 		switch (keycode) {
@@ -406,6 +406,8 @@ unsigned int KeyMappingWindows::get_scansym(unsigned int p_code, bool p_extended
 			case KEY_PRINT: {
 				keycode = KEY_KP_MULTIPLY;
 			} break;
+			default:
+				break;
 		}
 	}
 

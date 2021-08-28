@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,7 @@
 #ifndef CONNECTIONS_DIALOG_H
 #define CONNECTIONS_DIALOG_H
 
-#include "core/undo_redo.h"
+#include "core/object/undo_redo.h"
 #include "editor/editor_inspector.h"
 #include "editor/scene_tree_editor.h"
 #include "scene/gui/button.h"
@@ -102,10 +102,10 @@ private:
 
 	Label *error_label;
 
-	void ok_pressed();
+	void ok_pressed() override;
 	void _cancel_pressed();
 	void _item_activated();
-	void _text_entered(const String &_text);
+	void _text_submitted(const String &_text);
 	void _tree_node_selected();
 	void _add_bind();
 	void _remove_bind();
@@ -169,8 +169,11 @@ class ConnectionsDock : public VBoxContainer {
 	PopupMenu *signal_menu;
 	PopupMenu *slot_menu;
 	UndoRedo *undo_redo;
+	LineEdit *search_box;
 
 	Map<StringName, Map<StringName, String>> descr_cache;
+
+	void _filter_changed(const String &p_text);
 
 	void _make_or_edit_connection();
 	void _connect(ConnectDialog::ConnectionData cToMake);

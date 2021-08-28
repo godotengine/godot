@@ -25,7 +25,7 @@ subject to the following restrictions:
 #include <float.h>
 
 /* SVN $Revision$ on $Date$ from http://bullet.googlecode.com*/
-#define BT_BULLET_VERSION 289
+#define BT_BULLET_VERSION 308
 
 inline int btGetVersion()
 {

@@ -4,7 +4,7 @@
 		Compares two floating-point numbers in order to return a required vector within the visual shader graph.
 	</brief_description>
 	<description>
-		First two ports are scalar floatin-point numbers to compare, third is tolerance comparison amount and last three ports represents a vectors returned if [code]a == b[/code], [code]a &gt; b[/code] and [code]a &lt; b[/code] respectively.
+		First two ports are scalar floating-point numbers to compare, third is tolerance comparison amount and last three ports represents a vectors returned if [code]a == b[/code], [code]a &gt; b[/code] and [code]a &lt; b[/code] respectively.
 	</description>
 	<tutorials>
 	</tutorials>

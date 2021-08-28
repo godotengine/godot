@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,30 +32,27 @@
 
 #ifdef OSX_ENABLED
 
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreServices/CoreServices.h>
 
 bool osx_is_app_bundle_installed(const String &p_bundle_id) {
-	CFURLRef app_url = nullptr;
 	CFStringRef bundle_id = CFStringCreateWithCString(nullptr, p_bundle_id.utf8(), kCFStringEncodingUTF8);
-	OSStatus result = LSFindApplicationForInfo(kLSUnknownCreator, bundle_id, nullptr, nullptr, &app_url);
+	CFArrayRef result = LSCopyApplicationURLsForBundleIdentifier(bundle_id, nullptr);
 	CFRelease(bundle_id);
 
-	if (app_url)
-		CFRelease(app_url);
-
-	switch (result) {
-		case noErr:
+	if (result) {
+		if (CFArrayGetCount(result) > 0) {
+			CFRelease(result);
 			return true;
-		case kLSApplicationNotFoundErr:
-			break;
-		default:
-			break;
+		} else {
+			CFRelease(result);
+			return false;
+		}
+	} else {
+		return false;
 	}
-
-	return false;
 }
 
 #endif

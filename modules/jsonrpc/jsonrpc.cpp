@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "jsonrpc.h"
+
 #include "core/io/json.h"
 
 JSONRPC::JSONRPC() {
@@ -98,6 +99,10 @@ Variant JSONRPC::process_action(const Variant &p_action, bool p_process_arr_elem
 	if (p_action.get_type() == Variant::DICTIONARY) {
 		Dictionary dict = p_action;
 		String method = dict.get("method", "");
+		if (method.begins_with("$/")) {
+			return ret;
+		}
+
 		Array args;
 		if (dict.has("params")) {
 			Variant params = dict.get("params", Variant());
@@ -147,24 +152,22 @@ Variant JSONRPC::process_action(const Variant &p_action, bool p_process_arr_elem
 }
 
 String JSONRPC::process_string(const String &p_input) {
-	if (p_input.empty()) {
+	if (p_input.is_empty()) {
 		return String();
 	}
 
 	Variant ret;
-	Variant input;
-	String err_message;
-	int err_line;
-	if (OK != JSON::parse(p_input, input, err_message, err_line)) {
-		ret = make_response_error(JSONRPC::PARSE_ERROR, "Parse error");
+	JSON json;
+	if (json.parse(p_input) == OK) {
+		ret = process_action(json.get_data(), true);
 	} else {
-		ret = process_action(input, true);
+		ret = make_response_error(JSONRPC::PARSE_ERROR, "Parse error");
 	}
 
 	if (ret.get_type() == Variant::NIL) {
 		return "";
 	}
-	return JSON::print(ret);
+	return ret.to_json_string();
 }
 
 void JSONRPC::set_scope(const String &p_scope, Object *p_obj) {

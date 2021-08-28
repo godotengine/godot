@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,14 +33,21 @@
 
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
+#include "core/templates/safe_refcount.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 
-class EditorResourcePreviewGenerator : public Reference {
-	GDCLASS(EditorResourcePreviewGenerator, Reference);
+class EditorResourcePreviewGenerator : public RefCounted {
+	GDCLASS(EditorResourcePreviewGenerator, RefCounted);
 
 protected:
 	static void _bind_methods();
+
+	GDVIRTUAL1RC(bool, _handles, String)
+	GDVIRTUAL2RC(Ref<Texture2D>, _generate, RES, Vector2i)
+	GDVIRTUAL2RC(Ref<Texture2D>, _generate_from_path, String, Vector2i)
+	GDVIRTUAL0RC(bool, _generate_small_preview_automatically)
+	GDVIRTUAL0RC(bool, _can_generate_small_preview)
 
 public:
 	virtual bool handles(const String &p_type) const;
@@ -70,16 +77,16 @@ class EditorResourcePreview : public Node {
 
 	Mutex preview_mutex;
 	Semaphore preview_sem;
-	Thread *thread;
-	volatile bool exit;
-	volatile bool exited;
+	Thread thread;
+	SafeFlag exit;
+	SafeFlag exited;
 
 	struct Item {
 		Ref<Texture2D> preview;
 		Ref<Texture2D> small_preview;
-		int order;
-		uint32_t last_hash;
-		uint64_t modified_time;
+		int order = 0;
+		uint32_t last_hash = 0;
+		uint64_t modified_time = 0;
 	};
 
 	int order;
@@ -100,7 +107,8 @@ protected:
 public:
 	static EditorResourcePreview *get_singleton();
 
-	//callback function is callback(String p_path,Ref<Texture2D> preview,Variant udata) preview null if could not load
+	// p_receiver_func callback has signature (String p_path, Ref<Texture2D> p_preview, Ref<Texture2D> p_preview_small, Variant p_userdata)
+	// p_preview will be null if there was an error
 	void queue_resource_preview(const String &p_path, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata);
 	void queue_edited_resource_preview(const Ref<Resource> &p_res, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata);
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SCENE_MAIN_LOOP_H
-#define SCENE_MAIN_LOOP_H
+#ifndef SCENE_TREE_H
+#define SCENE_TREE_H
 
 #include "core/io/multiplayer_api.h"
 #include "core/os/main_loop.h"
 #include "core/os/thread_safe.h"
-#include "core/self_list.h"
+#include "core/templates/self_list.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/world_2d.h"
 #include "scene/resources/world_3d.h"
@@ -47,22 +47,27 @@ class Window;
 class Material;
 class Mesh;
 class SceneDebugger;
+class Tween;
 
-class SceneTreeTimer : public Reference {
-	GDCLASS(SceneTreeTimer, Reference);
+class SceneTreeTimer : public RefCounted {
+	GDCLASS(SceneTreeTimer, RefCounted);
 
-	float time_left;
-	bool process_pause;
+	double time_left = 0.0;
+	bool process_always = true;
+	bool ignore_time_scale = false;
 
 protected:
 	static void _bind_methods();
 
 public:
-	void set_time_left(float p_time);
-	float get_time_left() const;
+	void set_time_left(double p_time);
+	double get_time_left() const;
 
-	void set_pause_mode_process(bool p_pause_mode_process);
-	bool is_pause_mode_process();
+	void set_process_always(bool p_process_always);
+	bool is_process_always();
+
+	void set_ignore_time_scale(bool p_ignore);
+	bool is_ignore_time_scale();
 
 	void release_connections();
 
@@ -80,38 +85,35 @@ public:
 private:
 	struct Group {
 		Vector<Node *> nodes;
-		//uint64_t last_tree_version;
-		bool changed;
-		Group() { changed = false; };
+		bool changed = false;
 	};
 
-	Window *root;
+	Window *root = nullptr;
 
-	uint64_t tree_version;
-	float physics_process_time;
-	float idle_process_time;
-	bool accept_quit;
-	bool quit_on_go_back;
+	uint64_t tree_version = 1;
+	double physics_process_time = 1.0;
+	double process_time = 1.0;
+	bool accept_quit = true;
+	bool quit_on_go_back = true;
 
 #ifdef DEBUG_ENABLED
-	bool debug_collisions_hint;
-	bool debug_navigation_hint;
+	bool debug_collisions_hint = false;
+	bool debug_navigation_hint = false;
 #endif
-	bool pause;
-	int root_lock;
+	bool paused = false;
+	int root_lock = 0;
 
 	Map<StringName, Group> group_map;
-	bool _quit;
-	bool initialized;
+	bool _quit = false;
+	bool initialized = false;
 
-	StringName tree_changed_name;
-	StringName node_added_name;
-	StringName node_removed_name;
-	StringName node_renamed_name;
+	StringName tree_changed_name = "tree_changed";
+	StringName node_added_name = "node_added";
+	StringName node_removed_name = "node_removed";
+	StringName node_renamed_name = "node_renamed";
 
-	int64_t current_frame;
-	int64_t current_event;
-	int node_count;
+	int64_t current_frame = 0;
+	int node_count = 0;
 
 #ifdef TOOLS_ENABLED
 	Node *edited_scene_root;
@@ -123,14 +125,14 @@ private:
 		bool operator<(const UGCall &p_with) const { return group == p_with.group ? call < p_with.call : group < p_with.group; }
 	};
 
-	//safety for when a node is deleted while a group is being called
-	int call_lock;
-	Set<Node *> call_skip; //skip erased nodes
+	// Safety for when a node is deleted while a group is being called.
+	int call_lock = 0;
+	Set<Node *> call_skip; // Skip erased nodes.
 
 	List<ObjectID> delete_queue;
 
 	Map<UGCall, Vector<Variant>> unique_group_calls;
-	bool ugc_locked;
+	bool ugc_locked = false;
 	void _flush_ugc();
 
 	_FORCE_INLINE_ void _update_group_order(Group &g, bool p_use_priority = false);
@@ -154,18 +156,12 @@ private:
 	//void _call_group(uint32_t p_call_flags,const StringName& p_group,const StringName& p_function,const Variant& p_arg1,const Variant& p_arg2);
 
 	List<Ref<SceneTreeTimer>> timers;
+	List<Ref<Tween>> tweens;
 
 	///network///
 
 	Ref<MultiplayerAPI> multiplayer;
-	bool multiplayer_poll;
-
-	void _network_peer_connected(int p_id);
-	void _network_peer_disconnected(int p_id);
-
-	void _connected_to_server();
-	void _connection_failed();
-	void _server_disconnected();
+	bool multiplayer_poll = true;
 
 	static SceneTree *singleton;
 	friend class Node;
@@ -174,6 +170,7 @@ private:
 	void node_added(Node *p_node);
 	void node_removed(Node *p_node);
 	void node_renamed(Node *p_node);
+	void process_tweens(float p_delta, bool p_physics_frame);
 
 	Group *add_to_group(const StringName &p_group, Node *p_node);
 	void remove_from_group(const StringName &p_group, Node *p_node);
@@ -184,7 +181,7 @@ private:
 	Variant _call_group(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	void _flush_delete_queue();
-	//optimization
+	// Optimization.
 	friend class CanvasItem;
 	friend class Node3D;
 	friend class Viewport;
@@ -207,8 +204,14 @@ private:
 	void _main_window_close();
 	void _main_window_go_back();
 
+	enum CallInputType {
+		CALL_INPUT_TYPE_INPUT,
+		CALL_INPUT_TYPE_UNHANDLED_INPUT,
+		CALL_INPUT_TYPE_UNHANDLED_KEY_INPUT,
+	};
+
 	//used by viewport
-	void _call_input_pause(const StringName &p_group, const StringName &p_method, const Ref<InputEvent> &p_input, Viewport *p_viewport);
+	void _call_input_pause(const StringName &p_group, CallInputType p_call_type, const Ref<InputEvent> &p_input, Viewport *p_viewport);
 
 protected:
 	void _notification(int p_notification);
@@ -224,7 +227,6 @@ public:
 		GROUP_CALL_REVERSE = 1,
 		GROUP_CALL_REALTIME = 2,
 		GROUP_CALL_UNIQUE = 4,
-		GROUP_CALL_MULTILEVEL = 8,
 	};
 
 	_FORCE_INLINE_ Window *get_root() const { return root; }
@@ -239,20 +241,20 @@ public:
 
 	void flush_transform_notifications();
 
-	virtual void init();
+	virtual void initialize() override;
 
-	virtual bool iteration(float p_time);
-	virtual bool idle(float p_time);
+	virtual bool physics_process(double p_time) override;
+	virtual bool process(double p_time) override;
 
-	virtual void finish();
+	virtual void finalize() override;
 
 	void set_auto_accept_quit(bool p_enable);
 	void set_quit_on_go_back(bool p_enable);
 
-	void quit(int p_exit_code = -1);
+	void quit(int p_exit_code = EXIT_SUCCESS);
 
-	_FORCE_INLINE_ float get_physics_process_time() const { return physics_process_time; }
-	_FORCE_INLINE_ float get_idle_process_time() const { return idle_process_time; }
+	_FORCE_INLINE_ double get_physics_process_time() const { return physics_process_time; }
+	_FORCE_INLINE_ double get_process_time() const { return process_time; }
 
 #ifdef TOOLS_ENABLED
 	bool is_node_being_edited(const Node *p_node) const;
@@ -300,13 +302,13 @@ public:
 	int get_collision_debug_contact_count() { return collision_debug_contacts; }
 
 	int64_t get_frame() const;
-	int64_t get_event_count() const;
 
 	int get_node_count() const;
 
 	void queue_delete(Object *p_object);
 
 	void get_nodes_in_group(const StringName &p_group, List<Node *> *p_list);
+	Node *get_first_node_in_group(const StringName &p_group);
 	bool has_group(const StringName &p_identifier) const;
 
 	//void change_scene(const String& p_path);
@@ -321,14 +323,16 @@ public:
 	Error change_scene_to(const Ref<PackedScene> &p_scene);
 	Error reload_current_scene();
 
-	Ref<SceneTreeTimer> create_timer(float p_delay_sec, bool p_process_pause = true);
+	Ref<SceneTreeTimer> create_timer(double p_delay_sec, bool p_process_always = true);
+	Ref<Tween> create_tween();
+	Array get_processed_tweens();
 
 	//used by Main::start, don't use otherwise
 	void add_current_scene(Node *p_current);
 
 	static SceneTree *get_singleton() { return singleton; }
 
-	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
+	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 
 	//network API
 
@@ -336,16 +340,6 @@ public:
 	void set_multiplayer_poll_enabled(bool p_enabled);
 	bool is_multiplayer_poll_enabled() const;
 	void set_multiplayer(Ref<MultiplayerAPI> p_multiplayer);
-	void set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_network_peer);
-	Ref<NetworkedMultiplayerPeer> get_network_peer() const;
-	bool is_network_server() const;
-	bool has_network_peer() const;
-	int get_network_unique_id() const;
-	Vector<int> get_network_connected_peers() const;
-	int get_rpc_sender_id() const;
-
-	void set_refuse_new_network_connections(bool p_refuse);
-	bool is_refusing_new_network_connections() const;
 
 	static void add_idle_callback(IdleCallback p_callback);
 
@@ -357,4 +351,4 @@ public:
 
 VARIANT_ENUM_CAST(SceneTree::GroupCallFlags);
 
-#endif
+#endif // SCENE_TREE_H

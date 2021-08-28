@@ -46,5 +46,8 @@
 		<constant name="OP_STEP" value="9" enum="Operator">
 			Generates a step function by comparing [code]b[/code](x) to [code]a[/code](edge). Returns 0.0 if [code]x[/code] is smaller than [code]edge[/code] and otherwise 1.0. Translates to [code]step(a, b)[/code] in the Godot Shader Language.
 		</constant>
+		<constant name="OP_ENUM_SIZE" value="10" enum="Operator">
+			Represents the size of the [enum Operator] enum.
+		</constant>
 	</constants>
 </class>

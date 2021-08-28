@@ -29,9 +29,8 @@ THE SOFTWARE.
 #define PCF_H_
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DRIVER_H
-#include FT_INTERNAL_STREAM_H
+#include <freetype/internal/ftdrv.h>
+#include <freetype/internal/ftstream.h>
 
 
 FT_BEGIN_HEADER

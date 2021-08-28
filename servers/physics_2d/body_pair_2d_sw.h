@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,13 +44,16 @@ class BodyPair2DSW : public Constraint2DSW {
 			Body2DSW *B;
 		};
 
-		Body2DSW *_arr[2];
+		Body2DSW *_arr[2] = { nullptr, nullptr };
 	};
 
-	int shape_A;
-	int shape_B;
+	int shape_A = 0;
+	int shape_B = 0;
 
-	Space2DSW *space;
+	bool collide_A = false;
+	bool collide_B = false;
+
+	Space2DSW *space = nullptr;
 
 	struct Contact {
 		Vector2 position;
@@ -73,10 +76,10 @@ class BodyPair2DSW : public Constraint2DSW {
 
 	Vector2 sep_axis;
 	Contact contacts[MAX_CONTACTS];
-	int contact_count;
-	bool collided;
-	bool oneway_disabled;
-	int cc;
+	int contact_count = 0;
+	bool collided = false;
+	bool oneway_disabled = false;
+	bool report_contacts_only = false;
 
 	bool _test_ccd(real_t p_step, Body2DSW *p_A, int p_shape_A, const Transform2D &p_xform_A, Body2DSW *p_B, int p_shape_B, const Transform2D &p_xform_B, bool p_swap_result = false);
 	void _validate_contacts();
@@ -84,8 +87,9 @@ class BodyPair2DSW : public Constraint2DSW {
 	_FORCE_INLINE_ void _contact_added_callback(const Vector2 &p_point_A, const Vector2 &p_point_B);
 
 public:
-	bool setup(real_t p_step);
-	void solve(real_t p_step);
+	virtual bool setup(real_t p_step) override;
+	virtual bool pre_solve(real_t p_step) override;
+	virtual void solve(real_t p_step) override;
 
 	BodyPair2DSW(Body2DSW *p_A, int p_shape_A, Body2DSW *p_B, int p_shape_B);
 	~BodyPair2DSW();

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -69,12 +69,12 @@ Camera3DEditor::Camera3DEditor() {
 
 	preview->set_text(TTR("Preview"));
 	preview->set_toggle_mode(true);
-	preview->set_anchor(MARGIN_LEFT, Control::ANCHOR_END);
-	preview->set_anchor(MARGIN_RIGHT, Control::ANCHOR_END);
-	preview->set_margin(MARGIN_LEFT, -60);
-	preview->set_margin(MARGIN_RIGHT, 0);
-	preview->set_margin(MARGIN_TOP, 0);
-	preview->set_margin(MARGIN_BOTTOM, 10);
+	preview->set_anchor(SIDE_LEFT, Control::ANCHOR_END);
+	preview->set_anchor(SIDE_RIGHT, Control::ANCHOR_END);
+	preview->set_offset(SIDE_LEFT, -60);
+	preview->set_offset(SIDE_RIGHT, 0);
+	preview->set_offset(SIDE_TOP, 0);
+	preview->set_offset(SIDE_BOTTOM, 10);
 	preview->connect("pressed", callable_mp(this, &Camera3DEditor::_pressed));
 }
 
@@ -98,14 +98,14 @@ void Camera3DEditorPlugin::make_visible(bool p_visible) {
 Camera3DEditorPlugin::Camera3DEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	/*	camera_editor = memnew( CameraEditor );
-	editor->get_viewport()->add_child(camera_editor);
+	editor->get_main_control()->add_child(camera_editor);
 
-	camera_editor->set_anchor(MARGIN_LEFT,Control::ANCHOR_END);
-	camera_editor->set_anchor(MARGIN_RIGHT,Control::ANCHOR_END);
-	camera_editor->set_margin(MARGIN_LEFT,60);
-	camera_editor->set_margin(MARGIN_RIGHT,0);
-	camera_editor->set_margin(MARGIN_TOP,0);
-	camera_editor->set_margin(MARGIN_BOTTOM,10);
+	camera_editor->set_anchor(SIDE_LEFT,Control::ANCHOR_END);
+	camera_editor->set_anchor(SIDE_RIGHT,Control::ANCHOR_END);
+	camera_editor->set_offset(SIDE_LEFT,60);
+	camera_editor->set_offset(SIDE_RIGHT,0);
+	camera_editor->set_offset(SIDE_TOP,0);
+	camera_editor->set_offset(SIDE_BOTTOM,10);
 
 
 	camera_editor->hide();

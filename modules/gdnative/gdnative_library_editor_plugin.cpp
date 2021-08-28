@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -65,7 +65,7 @@ void GDNativeLibraryEditor::_update_tree() {
 			continue;
 		}
 		Map<String, NativePlatformConfig>::Element *E = platforms.find(filter_list->get_item_metadata(i));
-		if (!text.empty()) {
+		if (!text.is_empty()) {
 			text += ", ";
 		}
 		text += E->get().name;
@@ -74,9 +74,9 @@ void GDNativeLibraryEditor::_update_tree() {
 		platform->set_text(0, E->get().name);
 		platform->set_metadata(0, E->get().library_extension);
 
-		platform->set_custom_bg_color(0, get_theme_color("prop_category", "Editor"));
-		platform->set_custom_bg_color(1, get_theme_color("prop_category", "Editor"));
-		platform->set_custom_bg_color(2, get_theme_color("prop_category", "Editor"));
+		platform->set_custom_bg_color(0, get_theme_color(SNAME("prop_category"), SNAME("Editor")));
+		platform->set_custom_bg_color(1, get_theme_color(SNAME("prop_category"), SNAME("Editor")));
+		platform->set_custom_bg_color(2, get_theme_color(SNAME("prop_category"), SNAME("Editor")));
 		platform->set_selectable(0, false);
 		platform->set_expand_right(0, true);
 
@@ -87,31 +87,31 @@ void GDNativeLibraryEditor::_update_tree() {
 			bit->set_text(0, it->get());
 			bit->set_metadata(0, target);
 			bit->set_selectable(0, false);
-			bit->set_custom_bg_color(0, get_theme_color("prop_subsection", "Editor"));
+			bit->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
 
-			bit->add_button(1, get_theme_icon("Folder", "EditorIcons"), BUTTON_SELECT_LIBRARY, false, TTR("Select the dynamic library for this entry"));
+			bit->add_button(1, get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")), BUTTON_SELECT_LIBRARY, false, TTR("Select the dynamic library for this entry"));
 			String file = entry_configs[target].library;
-			if (!file.empty()) {
-				bit->add_button(1, get_theme_icon("Clear", "EditorIcons"), BUTTON_CLEAR_LIBRARY, false, TTR("Clear"));
+			if (!file.is_empty()) {
+				bit->add_button(1, get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")), BUTTON_CLEAR_LIBRARY, false, TTR("Clear"));
 			}
 			bit->set_text(1, file);
 
-			bit->add_button(2, get_theme_icon("Folder", "EditorIcons"), BUTTON_SELECT_DEPENDENCES, false, TTR("Select dependencies of the library for this entry"));
+			bit->add_button(2, get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")), BUTTON_SELECT_DEPENDENCES, false, TTR("Select dependencies of the library for this entry"));
 			Array files = entry_configs[target].dependencies;
 			if (files.size()) {
-				bit->add_button(2, get_theme_icon("Clear", "EditorIcons"), BUTTON_CLEAR_DEPENDENCES, false, TTR("Clear"));
+				bit->add_button(2, get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")), BUTTON_CLEAR_DEPENDENCES, false, TTR("Clear"));
 			}
 			bit->set_text(2, Variant(files));
 
-			bit->add_button(3, get_theme_icon("MoveUp", "EditorIcons"), BUTTON_MOVE_UP, false, TTR("Move Up"));
-			bit->add_button(3, get_theme_icon("MoveDown", "EditorIcons"), BUTTON_MOVE_DOWN, false, TTR("Move Down"));
-			bit->add_button(3, get_theme_icon("Remove", "EditorIcons"), BUTTON_ERASE_ENTRY, false, TTR("Remove current entry"));
+			bit->add_button(3, get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")), BUTTON_MOVE_UP, false, TTR("Move Up"));
+			bit->add_button(3, get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons")), BUTTON_MOVE_DOWN, false, TTR("Move Down"));
+			bit->add_button(3, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_ERASE_ENTRY, false, TTR("Remove current entry"));
 		}
 
 		TreeItem *new_arch = tree->create_item(platform);
 		new_arch->set_text(0, TTR("Double click to create a new entry"));
 		new_arch->set_text_align(0, TreeItem::ALIGN_CENTER);
-		new_arch->set_custom_color(0, get_theme_color("accent_color", "Editor"));
+		new_arch->set_custom_color(0, get_theme_color(SNAME("accent_color"), SNAME("Editor")));
 		new_arch->set_expand_right(0, true);
 		new_arch->set_metadata(1, E->key());
 
@@ -127,17 +127,26 @@ void GDNativeLibraryEditor::_on_item_button(Object *item, int column, int id) {
 	String section = (id == BUTTON_SELECT_DEPENDENCES || id == BUTTON_CLEAR_DEPENDENCES) ? "dependencies" : "entry";
 
 	if (id == BUTTON_SELECT_LIBRARY || id == BUTTON_SELECT_DEPENDENCES) {
+		TreeItem *treeItem = Object::cast_to<TreeItem>(item)->get_parent();
 		EditorFileDialog::FileMode mode = EditorFileDialog::FILE_MODE_OPEN_FILE;
 		if (id == BUTTON_SELECT_DEPENDENCES) {
 			mode = EditorFileDialog::FILE_MODE_OPEN_FILES;
+		} else if (treeItem->get_text(0) == "iOS" || treeItem->get_text(0) == "macOS") {
+			mode = EditorFileDialog::FILE_MODE_OPEN_ANY;
 		}
 
 		file_dialog->set_meta("target", target);
 		file_dialog->set_meta("section", section);
 		file_dialog->clear_filters();
-		file_dialog->add_filter(Object::cast_to<TreeItem>(item)->get_parent()->get_metadata(0));
+
+		String filter_string = treeItem->get_metadata(0);
+		Vector<String> filters = filter_string.split(",", false, 0);
+		for (int i = 0; i < filters.size(); i++) {
+			file_dialog->add_filter(filters[i]);
+		}
+
 		file_dialog->set_file_mode(mode);
-		file_dialog->popup_centered_ratio();
+		file_dialog->popup_file_dialog();
 
 	} else if (id == BUTTON_CLEAR_LIBRARY) {
 		_set_target_value(section, target, "");
@@ -186,7 +195,7 @@ void GDNativeLibraryEditor::_on_item_activated() {
 void GDNativeLibraryEditor::_on_create_new_entry() {
 	String platform = new_architecture_dialog->get_meta("platform");
 	String entry = new_architecture_input->get_text().strip_edges();
-	if (!entry.empty()) {
+	if (!entry.is_empty()) {
 		platforms[platform].entries.push_back(entry);
 		_update_tree();
 	}
@@ -239,7 +248,7 @@ void GDNativeLibraryEditor::_translate_to_config_file() {
 		for (Map<String, NativePlatformConfig>::Element *E = platforms.front(); E; E = E->next()) {
 			for (List<String>::Element *it = E->value().entries.front(); it; it = it->next()) {
 				String target = E->key() + "." + it->get();
-				if (entry_configs[target].library.empty() && entry_configs[target].dependencies.empty()) {
+				if (entry_configs[target].library.is_empty() && entry_configs[target].dependencies.is_empty()) {
 					continue;
 				}
 
@@ -248,7 +257,7 @@ void GDNativeLibraryEditor::_translate_to_config_file() {
 			}
 		}
 
-		library->_change_notify();
+		library->notify_property_list_changed();
 	}
 }
 
@@ -269,11 +278,10 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 		platforms["X11"] = platform_linux;
 
 		NativePlatformConfig platform_osx;
-		platform_osx.name = "Mac OSX";
+		platform_osx.name = "macOS";
 		platform_osx.entries.push_back("64");
-		platform_osx.entries.push_back("32");
-		platform_osx.library_extension = "*.dylib";
-		platforms["OSX"] = platform_osx;
+		platform_osx.library_extension = "*.framework; Framework, *.dylib; Dynamic Library";
+		platforms["macOS"] = platform_osx;
 
 		NativePlatformConfig platform_haiku;
 		platform_haiku.name = "Haiku";
@@ -299,23 +307,26 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 		platform_android.library_extension = "*.so";
 		platforms["Android"] = platform_android;
 
-		//		TODO: Javascript platform is not supported yet
-		//		NativePlatformConfig platform_html5;
-		//		platform_html5.name = "HTML5";
-		//		platform_html5.library_extension = "*.wasm";
-		//		platforms["Javascript"] = platform_html5;
+		NativePlatformConfig platform_html5;
+		platform_html5.name = "HTML5";
+		platform_html5.entries.push_back("wasm32");
+		platform_html5.library_extension = "*.wasm";
+		platforms["HTML5"] = platform_html5;
 
 		NativePlatformConfig platform_ios;
 		platform_ios.name = "iOS";
 		platform_ios.entries.push_back("armv7");
 		platform_ios.entries.push_back("arm64");
-		platform_ios.library_extension = "*.dylib";
+		platform_ios.entries.push_back("x86_64");
+		// iOS can use both Static and Dynamic libraries.
+		// Frameworks is actually a folder with files.
+		platform_ios.library_extension = "*.framework; Framework, *.xcframework; Binary Framework, *.a; Static Library, *.dylib; Dynamic Library";
 		platforms["iOS"] = platform_ios;
 	}
 
 	VBoxContainer *container = memnew(VBoxContainer);
 	add_child(container);
-	container->set_anchors_and_margins_preset(PRESET_WIDE);
+	container->set_anchors_and_offsets_preset(PRESET_WIDE);
 
 	HBoxContainer *hbox = memnew(HBoxContainer);
 	container->add_child(hbox);
@@ -345,12 +356,12 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 	tree->set_column_titles_visible(true);
 	tree->set_columns(4);
 	tree->set_column_expand(0, false);
-	tree->set_column_min_width(0, int(200 * EDSCALE));
+	tree->set_column_custom_minimum_width(0, int(200 * EDSCALE));
 	tree->set_column_title(0, TTR("Platform"));
 	tree->set_column_title(1, TTR("Dynamic Library"));
 	tree->set_column_title(2, TTR("Dependencies"));
 	tree->set_column_expand(3, false);
-	tree->set_column_min_width(3, int(110 * EDSCALE));
+	tree->set_column_custom_minimum_width(3, int(110 * EDSCALE));
 	tree->connect("button_pressed", callable_mp(this, &GDNativeLibraryEditor::_on_item_button));
 	tree->connect("item_collapsed", callable_mp(this, &GDNativeLibraryEditor::_on_item_collapsed));
 	tree->connect("item_activated", callable_mp(this, &GDNativeLibraryEditor::_on_item_activated));
@@ -360,6 +371,7 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 	//file_dialog->set_resizable(true);
 	add_child(file_dialog);
 	file_dialog->connect("file_selected", callable_mp(this, &GDNativeLibraryEditor::_on_library_selected));
+	file_dialog->connect("dir_selected", callable_mp(this, &GDNativeLibraryEditor::_on_library_selected));
 	file_dialog->connect("files_selected", callable_mp(this, &GDNativeLibraryEditor::_on_dependencies_selected));
 
 	new_architecture_dialog = memnew(ConfirmationDialog);
@@ -368,8 +380,8 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 	new_architecture_input = memnew(LineEdit);
 	new_architecture_dialog->add_child(new_architecture_input);
 	//	new_architecture_dialog->set_custom_minimum_size(Vector2(300, 80) * EDSCALE);
-	new_architecture_input->set_anchors_and_margins_preset(PRESET_HCENTER_WIDE, PRESET_MODE_MINSIZE, 5 * EDSCALE);
-	new_architecture_dialog->get_ok()->connect("pressed", callable_mp(this, &GDNativeLibraryEditor::_on_create_new_entry));
+	new_architecture_input->set_anchors_and_offsets_preset(PRESET_HCENTER_WIDE, PRESET_MODE_MINSIZE, 5 * EDSCALE);
+	new_architecture_dialog->get_ok_button()->connect("pressed", callable_mp(this, &GDNativeLibraryEditor::_on_create_new_entry));
 }
 
 void GDNativeLibraryEditorPlugin::edit(Object *p_node) {

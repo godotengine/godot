@@ -26,7 +26,7 @@
 #ifndef PSNAMERR_H_
 #define PSNAMERR_H_
 
-#include FT_MODULE_ERRORS_H
+#include <freetype/ftmoderr.h>
 
 #undef FTERRORS_H_
 
@@ -34,7 +34,7 @@
 #define FT_ERR_PREFIX  PSnames_Err_
 #define FT_ERR_BASE    FT_Mod_Err_PSnames
 
-#include FT_ERRORS_H
+#include <freetype/fterrors.h>
 
 #endif /* PSNAMERR_H_ */
 

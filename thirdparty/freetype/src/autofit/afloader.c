@@ -22,7 +22,7 @@
 #include "aferrors.h"
 #include "afmodule.h"
 
-#include FT_INTERNAL_CALC_H
+#include <freetype/internal/ftcalc.h>
 
 
   /* Initialize glyph loader. */

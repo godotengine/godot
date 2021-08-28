@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "crypto.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "core/io/certs_compressed.gen.h"
 #include "core/io/compression.h"
 
@@ -65,6 +65,22 @@ void X509Certificate::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load", "path"), &X509Certificate::load);
 }
 
+/// HMACContext
+
+void HMACContext::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("start", "hash_type", "key"), &HMACContext::start);
+	ClassDB::bind_method(D_METHOD("update", "data"), &HMACContext::update);
+	ClassDB::bind_method(D_METHOD("finish"), &HMACContext::finish);
+}
+
+HMACContext *(*HMACContext::_create)() = nullptr;
+HMACContext *HMACContext::create() {
+	if (_create) {
+		return _create();
+	}
+	ERR_FAIL_V_MSG(nullptr, "HMACContext is not available when the mbedtls module is disabled.");
+}
+
 /// Crypto
 
 void (*Crypto::_load_default_certificates)(String p_path) = nullptr;
@@ -82,6 +98,35 @@ void Crypto::load_default_certificates(String p_path) {
 	}
 }
 
+PackedByteArray Crypto::hmac_digest(HashingContext::HashType p_hash_type, PackedByteArray p_key, PackedByteArray p_msg) {
+	Ref<HMACContext> ctx = Ref<HMACContext>(HMACContext::create());
+	ERR_FAIL_COND_V_MSG(ctx.is_null(), PackedByteArray(), "HMAC is not available without mbedtls module.");
+	Error err = ctx->start(p_hash_type, p_key);
+	ERR_FAIL_COND_V(err != OK, PackedByteArray());
+	err = ctx->update(p_msg);
+	ERR_FAIL_COND_V(err != OK, PackedByteArray());
+	return ctx->finish();
+}
+
+// Compares two HMACS for equality without leaking timing information in order to prevent timing attacks.
+// @see: https://paragonie.com/blog/2015/11/preventing-timing-attacks-on-string-comparison-with-double-hmac-strategy
+bool Crypto::constant_time_compare(PackedByteArray p_trusted, PackedByteArray p_received) {
+	const uint8_t *t = p_trusted.ptr();
+	const uint8_t *r = p_received.ptr();
+	int tlen = p_trusted.size();
+	int rlen = p_received.size();
+	// If the lengths are different then nothing else matters.
+	if (tlen != rlen) {
+		return false;
+	}
+
+	uint8_t v = 0;
+	for (int i = 0; i < tlen; i++) {
+		v |= t[i] ^ r[i];
+	}
+	return v == 0;
+}
+
 void Crypto::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("generate_random_bytes", "size"), &Crypto::generate_random_bytes);
 	ClassDB::bind_method(D_METHOD("generate_rsa", "size"), &Crypto::generate_rsa);
@@ -90,11 +135,13 @@ void Crypto::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("verify", "hash_type", "hash", "signature", "key"), &Crypto::verify);
 	ClassDB::bind_method(D_METHOD("encrypt", "key", "plaintext"), &Crypto::encrypt);
 	ClassDB::bind_method(D_METHOD("decrypt", "key", "ciphertext"), &Crypto::decrypt);
+	ClassDB::bind_method(D_METHOD("hmac_digest", "hash_type", "key", "msg"), &Crypto::hmac_digest);
+	ClassDB::bind_method(D_METHOD("constant_time_compare", "trusted", "received"), &Crypto::constant_time_compare);
 }
 
 /// Resource loader/saver
 
-RES ResourceFormatLoaderCrypto::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+RES ResourceFormatLoaderCrypto::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	String el = p_path.get_extension().to_lower();
 	if (el == "crt") {
 		X509Certificate *cert = X509Certificate::create();
@@ -110,8 +157,9 @@ RES ResourceFormatLoaderCrypto::load(const String &p_path, const String &p_origi
 		return key;
 	} else if (el == "pub") {
 		CryptoKey *key = CryptoKey::create();
-		if (key)
+		if (key) {
 			key->load(p_path, true);
+		}
 		return key;
 	}
 	return nullptr;

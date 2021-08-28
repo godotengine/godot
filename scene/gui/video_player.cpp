@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -129,7 +129,7 @@ void VideoPlayer::_mix_audio() {
 void VideoPlayer::_notification(int p_notification) {
 	switch (p_notification) {
 		case NOTIFICATION_ENTER_TREE: {
-			AudioServer::get_singleton()->add_callback(_mix_audios, this);
+			AudioServer::get_singleton()->add_mix_callback(_mix_audios, this);
 
 			if (stream.is_valid() && autoplay && !Engine::get_singleton()->is_editor_hint()) {
 				play();
@@ -138,8 +138,7 @@ void VideoPlayer::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			AudioServer::get_singleton()->remove_callback(_mix_audios, this);
-
+			AudioServer::get_singleton()->remove_mix_callback(_mix_audios, this);
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
@@ -452,35 +451,17 @@ void VideoPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "VideoStream"), "set_stream", "get_stream");
 	//ADD_PROPERTY( PropertyInfo(Variant::BOOL, "stream/loop"), "set_loop", "has_loop") ;
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24,0.01"), "set_volume_db", "get_volume_db");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume", PROPERTY_HINT_EXP_RANGE, "0,15,0.01", 0), "set_volume", "get_volume");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume", PROPERTY_HINT_RANGE, "0,15,0.01,exp", PROPERTY_USAGE_NONE), "set_volume", "get_volume");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "has_autoplay");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paused"), "set_paused", "is_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand"), "set_expand", "has_expand");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "buffering_msec", PROPERTY_HINT_RANGE, "10,1000"), "set_buffering_msec", "get_buffering_msec");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "stream_position", PROPERTY_HINT_RANGE, "0,1280000,0.1", 0), "set_stream_position", "get_stream_position");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "stream_position", PROPERTY_HINT_RANGE, "0,1280000,0.1", PROPERTY_USAGE_NONE), "set_stream_position", "get_stream_position");
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 }
 
-VideoPlayer::VideoPlayer() {
-	volume = 1;
-	loops = false;
-	paused = false;
-	autoplay = false;
-	expand = true;
-
-	audio_track = 0;
-	bus_index = 0;
-
-	buffering_ms = 500;
-
-	//	internal_stream.player=this;
-	//	stream_rid=AudioServer::get_singleton()->audio_stream_create(&internal_stream);
-	last_audio_time = 0;
-
-	wait_resampler = 0;
-	wait_resampler_limit = 2;
-};
+VideoPlayer::VideoPlayer() {}
 
 VideoPlayer::~VideoPlayer() {
 	//	if (stream_rid.is_valid())

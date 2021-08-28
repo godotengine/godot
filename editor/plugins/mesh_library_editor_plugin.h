@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,7 +46,6 @@ class MeshLibraryEditor : public Control {
 	int to_erase;
 
 	enum {
-
 		MENU_OPTION_ADD_ITEM,
 		MENU_OPTION_REMOVE_ITEM,
 		MENU_OPTION_UPDATE_FROM_SCENE,
@@ -79,11 +78,11 @@ class MeshLibraryEditorPlugin : public EditorPlugin {
 	EditorNode *editor;
 
 public:
-	virtual String get_name() const { return "MeshLibrary"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_node);
-	virtual bool handles(Object *p_node) const;
-	virtual void make_visible(bool p_visible);
+	virtual String get_name() const override { return "MeshLibrary"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_node) override;
+	virtual bool handles(Object *p_node) const override;
+	virtual void make_visible(bool p_visible) override;
 
 	MeshLibraryEditorPlugin(EditorNode *p_node);
 };

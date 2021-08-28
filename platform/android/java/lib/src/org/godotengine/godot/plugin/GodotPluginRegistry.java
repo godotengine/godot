@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,8 +44,6 @@ import androidx.annotation.Nullable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -55,13 +53,6 @@ public final class GodotPluginRegistry {
 	private static final String TAG = GodotPluginRegistry.class.getSimpleName();
 
 	private static final String GODOT_PLUGIN_V1_NAME_PREFIX = "org.godotengine.plugin.v1.";
-
-	/**
-	 * Name for the metadata containing the list of Godot plugins to enable.
-	 */
-	private static final String GODOT_ENABLED_PLUGINS_LABEL = "plugins";
-
-	private static final String PLUGIN_VALUE_SEPARATOR_REGEX = "\\|";
 
 	private static GodotPluginRegistry instance;
 	private final ConcurrentHashMap<String, GodotPlugin> registry;
@@ -132,37 +123,11 @@ public final class GodotPluginRegistry {
 				return;
 			}
 
-			// When using the Godot editor for building and exporting the apk, this is used to check
-			// which plugins to enable.
-			// When using a custom process to generate the apk, the metadata is not needed since
-			// it's assumed that the developer is aware of the dependencies included in the apk.
-			final Set<String> enabledPluginsSet;
-			if (metaData.containsKey(GODOT_ENABLED_PLUGINS_LABEL)) {
-				String enabledPlugins = metaData.getString(GODOT_ENABLED_PLUGINS_LABEL, "");
-				String[] enabledPluginsList = enabledPlugins.split(PLUGIN_VALUE_SEPARATOR_REGEX);
-				if (enabledPluginsList.length == 0) {
-					// No plugins to enable. Aborting early.
-					return;
-				}
-
-				enabledPluginsSet = new HashSet<>();
-				for (String enabledPlugin : enabledPluginsList) {
-					enabledPluginsSet.add(enabledPlugin.trim());
-				}
-			} else {
-				enabledPluginsSet = null;
-			}
-
 			int godotPluginV1NamePrefixLength = GODOT_PLUGIN_V1_NAME_PREFIX.length();
 			for (String metaDataName : metaData.keySet()) {
 				// Parse the meta-data looking for entry with the Godot plugin name prefix.
 				if (metaDataName.startsWith(GODOT_PLUGIN_V1_NAME_PREFIX)) {
 					String pluginName = metaDataName.substring(godotPluginV1NamePrefixLength).trim();
-					if (enabledPluginsSet != null && !enabledPluginsSet.contains(pluginName)) {
-						Log.w(TAG, "Plugin " + pluginName + " is listed in the dependencies but is not enabled.");
-						continue;
-					}
-
 					Log.i(TAG, "Initializing Godot plugin " + pluginName);
 
 					// Retrieve the plugin class full name.
@@ -177,8 +142,7 @@ public final class GodotPluginRegistry {
 																				 .getConstructor(Godot.class);
 							GodotPlugin pluginHandle = pluginConstructor.newInstance(godot);
 
-							// Load the plugin initializer into the registry using the plugin name
-							// as key.
+							// Load the plugin initializer into the registry using the plugin name as key.
 							if (!pluginName.equals(pluginHandle.getPluginName())) {
 								Log.w(TAG,
 										"Meta-data plugin name does not match the value returned by the plugin handle: " + pluginName + " =/= " + pluginHandle.getPluginName());

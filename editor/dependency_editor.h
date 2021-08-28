@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -111,8 +111,8 @@ class DependencyRemoveDialog : public ConfirmationDialog {
 		String dependency_folder;
 
 		bool operator<(const RemovedDependency &p_other) const {
-			if (dependency_folder.empty() != p_other.dependency_folder.empty()) {
-				return p_other.dependency_folder.empty();
+			if (dependency_folder.is_empty() != p_other.dependency_folder.is_empty()) {
+				return p_other.dependency_folder.is_empty();
 			} else {
 				return dependency < p_other.dependency;
 			}
@@ -123,7 +123,7 @@ class DependencyRemoveDialog : public ConfirmationDialog {
 	void _find_all_removed_dependencies(EditorFileSystemDirectory *efsd, Vector<RemovedDependency> &p_removed);
 	void _build_removed_dependency_tree(const Vector<RemovedDependency> &p_removed);
 
-	void ok_pressed();
+	void ok_pressed() override;
 
 	static void _bind_methods();
 
@@ -147,8 +147,8 @@ private:
 	Button *fdep;
 	Label *text;
 	Tree *files;
-	void ok_pressed();
-	void custom_action(const String &);
+	void ok_pressed() override;
+	void custom_action(const String &) override;
 
 public:
 	void show(Mode p_mode, const String &p_for_file, const Vector<String> &report);
@@ -161,7 +161,7 @@ class OrphanResourcesDialog : public ConfirmationDialog {
 	DependencyEditor *dep_edit;
 	Tree *files;
 	ConfirmationDialog *delete_confirm;
-	void ok_pressed();
+	void ok_pressed() override;
 
 	bool _fill_owners(EditorFileSystemDirectory *efsd, HashMap<String, int> &refs, TreeItem *p_parent);
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,49 +47,41 @@ private:
 
 	struct Output {
 		AudioFrame vol;
-		int bus_index;
-		Viewport *viewport; //pointer only used for reference to previous mix
+		int bus_index = 0;
+		Viewport *viewport = nullptr; //pointer only used for reference to previous mix
 	};
-
-	Output outputs[MAX_OUTPUTS];
-	volatile int output_count;
-	volatile bool output_ready;
-
-	//these are used by audio thread to have a reference of previous volumes (for ramping volume and avoiding clicks)
-	Output prev_outputs[MAX_OUTPUTS];
-	int prev_output_count;
 
 	Ref<AudioStreamPlayback> stream_playback;
 	Ref<AudioStream> stream;
-	Vector<AudioFrame> mix_buffer;
 
-	volatile float setseek;
-	volatile bool active;
-	volatile float setplay;
+	SafeFlag active;
+	SafeNumeric<float> setplay{ -1.0 };
 
-	float volume_db;
-	float pitch_scale;
-	bool autoplay;
-	bool stream_paused;
-	bool stream_paused_fade_in;
-	bool stream_paused_fade_out;
-	StringName bus;
+	Vector<AudioFrame> volume_vector;
 
-	void _mix_audio();
-	static void _mix_audios(void *self) { reinterpret_cast<AudioStreamPlayer2D *>(self)->_mix_audio(); }
+	uint64_t last_mix_count = -1;
+
+	float volume_db = 0.0;
+	float pitch_scale = 1.0;
+	bool autoplay = false;
+	StringName default_bus = "Master";
 
 	void _set_playing(bool p_enable);
 	bool _is_active() const;
 
+	StringName _get_actual_bus();
+	void _update_panning();
 	void _bus_layout_changed();
 
-	uint32_t area_mask;
+	static void _listener_changed_cb(void *self) { reinterpret_cast<AudioStreamPlayer2D *>(self)->_update_panning(); }
 
-	float max_distance;
-	float attenuation;
+	uint32_t area_mask = 1;
+
+	float max_distance = 2000.0;
+	float attenuation = 1.0;
 
 protected:
-	void _validate_property(PropertyInfo &property) const;
+	void _validate_property(PropertyInfo &property) const override;
 	void _notification(int p_what);
 	static void _bind_methods();
 

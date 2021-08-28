@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,14 +30,20 @@
 
 #include "audio_server.h"
 
+#include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/error/error_macros.h"
+#include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
-#include "core/os/file_access.h"
+#include "core/math/audio_frame.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
+#include "core/string/string_name.h"
+#include "core/templates/pair.h"
 #include "scene/resources/audio_stream_sample.h"
 #include "servers/audio/audio_driver_dummy.h"
 #include "servers/audio/effects/audio_effect_compressor.h"
+
+#include <cstring>
 
 #ifdef TOOLS_ENABLED
 #define MARK_EDITED set_edited(true);
@@ -71,13 +77,20 @@ void AudioDriver::update_mix_time(int p_frames) {
 	}
 }
 
-double AudioDriver::get_time_since_last_mix() const {
-	return (OS::get_singleton()->get_ticks_usec() - _last_mix_time) / 1000000.0;
+double AudioDriver::get_time_since_last_mix() {
+	lock();
+	uint64_t last_mix_time = _last_mix_time;
+	unlock();
+	return (OS::get_singleton()->get_ticks_usec() - last_mix_time) / 1000000.0;
 }
 
-double AudioDriver::get_time_to_next_mix() const {
-	double total = (OS::get_singleton()->get_ticks_usec() - _last_mix_time) / 1000000.0;
-	double mix_buffer = _last_mix_frames / (double)get_mix_rate();
+double AudioDriver::get_time_to_next_mix() {
+	lock();
+	uint64_t last_mix_time = _last_mix_time;
+	uint64_t last_mix_frames = _last_mix_frames;
+	unlock();
+	double total = (OS::get_singleton()->get_ticks_usec() - last_mix_time) / 1000000.0;
+	double mix_buffer = last_mix_frames / (double)get_mix_rate();
 	return mix_buffer - total;
 }
 
@@ -181,9 +194,10 @@ int AudioDriverManager::get_driver_count() {
 }
 
 void AudioDriverManager::initialize(int p_driver) {
-	GLOBAL_DEF_RST("audio/enable_audio_input", false);
-	GLOBAL_DEF_RST("audio/mix_rate", DEFAULT_MIX_RATE);
-	GLOBAL_DEF_RST("audio/output_latency", DEFAULT_OUTPUT_LATENCY);
+	GLOBAL_DEF_RST("audio/driver/enable_input", false);
+	GLOBAL_DEF_RST("audio/driver/mix_rate", DEFAULT_MIX_RATE);
+	GLOBAL_DEF_RST("audio/driver/output_latency", DEFAULT_OUTPUT_LATENCY);
+	GLOBAL_DEF_RST("audio/driver/output_latency.web", 50); // Safer default output_latency for web.
 
 	int failed_driver = -1;
 
@@ -226,6 +240,7 @@ AudioDriver *AudioDriverManager::get_driver(int p_driver) {
 //////////////////////////////////////////////
 
 void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
+	mix_count++;
 	int todo = p_frames;
 
 #ifdef DEBUG_ENABLED
@@ -238,6 +253,7 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 		init_channels_and_buffers();
 	}
 
+	ERR_FAIL_COND_MSG(buses.is_empty() && todo, "AudioServer bus count is less than 1.");
 	while (todo) {
 		if (to_mix == 0) {
 			_mix_step();
@@ -322,10 +338,156 @@ void AudioServer::_mix_step() {
 			bus->soloed = false;
 		}
 	}
+	for (CallbackItem *ci : mix_callback_list) {
+		ci->callback(ci->userdata);
+	}
 
-	//make callbacks for mixing the audio
-	for (Set<CallbackItem>::Element *E = callbacks.front(); E; E = E->next()) {
-		E->get().callback(E->get().userdata);
+	for (AudioStreamPlaybackListNode *playback : playback_list) {
+		// Paused streams are no-ops. Don't even mix audio from the stream playback.
+		if (playback->state.load() == AudioStreamPlaybackListNode::PAUSED) {
+			continue;
+		}
+
+		bool fading_out = playback->state.load() == AudioStreamPlaybackListNode::FADE_OUT_TO_DELETION || playback->state.load() == AudioStreamPlaybackListNode::FADE_OUT_TO_PAUSE;
+
+		AudioFrame *buf = mix_buffer.ptrw();
+
+		// Copy the lookeahead buffer into the mix buffer.
+		for (int i = 0; i < LOOKAHEAD_BUFFER_SIZE; i++) {
+			buf[i] = playback->lookahead[i];
+		}
+
+		// Mix the audio stream
+		unsigned int mixed_frames = playback->stream_playback->mix(&buf[LOOKAHEAD_BUFFER_SIZE], playback->pitch_scale.get(), buffer_size);
+
+		if (mixed_frames != buffer_size) {
+			// We know we have at least the size of our lookahead buffer for fade-out purposes.
+
+			float fadeout_base = 0.87;
+			float fadeout_coefficient = 1;
+			static_assert(LOOKAHEAD_BUFFER_SIZE == 32, "Update fadeout_base and comment here if you change LOOKAHEAD_BUFFER_SIZE.");
+			// 0.87 ^ 32 = 0.0116. There might still be a pop but it'll be way better than if we didn't do this.
+			for (unsigned int idx = mixed_frames; idx < buffer_size; idx++) {
+				fadeout_coefficient *= fadeout_base;
+				buf[idx] *= fadeout_coefficient;
+			}
+			AudioStreamPlaybackListNode::PlaybackState new_state;
+			new_state = AudioStreamPlaybackListNode::AWAITING_DELETION;
+			playback->state.store(new_state);
+		} else {
+			// Move the last little bit of what we just mixed into our lookahead buffer.
+			for (int i = 0; i < LOOKAHEAD_BUFFER_SIZE; i++) {
+				playback->lookahead[i] = buf[buffer_size + i];
+			}
+		}
+
+		ERR_FAIL_COND(playback->bus_details.load() == nullptr);
+		// By putting null into the bus details pointers, we're taking ownership of their memory for the duration of this mix.
+		AudioStreamPlaybackBusDetails *bus_details = nullptr;
+		{
+			std::atomic<AudioStreamPlaybackBusDetails *> bus_details_atomic = nullptr;
+			bus_details = playback->bus_details.exchange(bus_details_atomic);
+		}
+		ERR_FAIL_COND(bus_details == nullptr);
+		AudioStreamPlaybackBusDetails *prev_bus_details = playback->prev_bus_details;
+
+		// Mix to any active buses.
+		for (int idx = 0; idx < MAX_BUSES_PER_PLAYBACK; idx++) {
+			if (!bus_details->bus_active[idx]) {
+				continue;
+			}
+			int bus_idx = thread_find_bus_index(bus_details->bus[idx]);
+
+			int prev_bus_idx = -1;
+			for (int search_idx = 0; search_idx < MAX_BUSES_PER_PLAYBACK; search_idx++) {
+				if (!prev_bus_details->bus_active[search_idx]) {
+					continue;
+				}
+				if (prev_bus_details->bus[search_idx].hash() == bus_details->bus[idx].hash()) {
+					prev_bus_idx = search_idx;
+				}
+			}
+
+			for (int channel_idx = 0; channel_idx < channel_count; channel_idx++) {
+				AudioFrame *channel_buf = thread_get_channel_mix_buffer(bus_idx, channel_idx);
+				if (fading_out) {
+					bus_details->volume[idx][channel_idx] = AudioFrame(0, 0);
+				}
+				AudioFrame channel_vol = bus_details->volume[idx][channel_idx];
+
+				AudioFrame prev_channel_vol = AudioFrame(0, 0);
+				if (prev_bus_idx != -1) {
+					prev_channel_vol = prev_bus_details->volume[prev_bus_idx][channel_idx];
+				}
+				_mix_step_for_channel(channel_buf, buf, prev_channel_vol, channel_vol, playback->attenuation_filter_cutoff_hz.get(), playback->highshelf_gain.get(), &playback->filter_process[channel_idx * 2], &playback->filter_process[channel_idx * 2 + 1]);
+			}
+		}
+
+		// Now go through and fade-out any buses that were being played to previously that we missed by going through current data.
+		for (int idx = 0; idx < MAX_BUSES_PER_PLAYBACK; idx++) {
+			if (!prev_bus_details->bus_active[idx]) {
+				continue;
+			}
+			int bus_idx = thread_find_bus_index(prev_bus_details->bus[idx]);
+
+			int current_bus_idx = -1;
+			for (int search_idx = 0; search_idx < MAX_BUSES_PER_PLAYBACK; search_idx++) {
+				if (bus_details->bus[search_idx] == prev_bus_details->bus[idx]) {
+					current_bus_idx = search_idx;
+				}
+			}
+			if (current_bus_idx != -1) {
+				// If we found a corresponding bus in the current bus assignments, we've already mixed to this bus.
+				continue;
+			}
+
+			for (int channel_idx = 0; channel_idx < channel_count; channel_idx++) {
+				AudioFrame *channel_buf = thread_get_channel_mix_buffer(bus_idx, channel_idx);
+				AudioFrame prev_channel_vol = prev_bus_details->volume[idx][channel_idx];
+				// Fade out to silence
+				_mix_step_for_channel(channel_buf, buf, prev_channel_vol, AudioFrame(0, 0), playback->attenuation_filter_cutoff_hz.get(), playback->highshelf_gain.get(), &playback->filter_process[channel_idx * 2], &playback->filter_process[channel_idx * 2 + 1]);
+			}
+		}
+
+		// Copy the bus details we mixed with to the previous bus details to maintain volume ramps.
+		std::copy(std::begin(bus_details->bus_active), std::end(bus_details->bus_active), std::begin(prev_bus_details->bus_active));
+		std::copy(std::begin(bus_details->bus), std::end(bus_details->bus), std::begin(prev_bus_details->bus));
+		for (int bus_idx = 0; bus_idx < MAX_BUSES_PER_PLAYBACK; bus_idx++) {
+			std::copy(std::begin(bus_details->volume[bus_idx]), std::end(bus_details->volume[bus_idx]), std::begin(prev_bus_details->volume[bus_idx]));
+		}
+
+		AudioStreamPlaybackBusDetails *bus_details_expected = nullptr;
+		// Only put the bus details pointer back if it hasn't been updated already.
+		if (!playback->bus_details.compare_exchange_strong(/* expected= */ bus_details_expected, /* new= */ bus_details)) {
+			// If it *has* been updated already, queue the old one for deletion.
+			bus_details_graveyard.insert(bus_details);
+		}
+
+		switch (playback->state.load()) {
+			case AudioStreamPlaybackListNode::AWAITING_DELETION:
+			case AudioStreamPlaybackListNode::FADE_OUT_TO_DELETION:
+				playback_list.erase(playback, [](AudioStreamPlaybackListNode *p) {
+					if (p->prev_bus_details)
+						delete p->prev_bus_details;
+					if (p->bus_details)
+						delete p->bus_details;
+					p->stream_playback.unref();
+					delete p;
+				});
+				break;
+			case AudioStreamPlaybackListNode::FADE_OUT_TO_PAUSE: {
+				// Pause the stream.
+				AudioStreamPlaybackListNode::PlaybackState old_state, new_state;
+				do {
+					old_state = playback->state.load();
+					new_state = AudioStreamPlaybackListNode::PAUSED;
+				} while (!playback->state.compare_exchange_strong(/* expected= */ old_state, new_state));
+			} break;
+			case AudioStreamPlaybackListNode::PLAYING:
+			case AudioStreamPlaybackListNode::PAUSED:
+				// No-op!
+				break;
+		}
 	}
 
 	for (int i = buses.size() - 1; i >= 0; i--) {
@@ -393,6 +555,7 @@ void AudioServer::_mix_step() {
 
 		for (int k = 0; k < bus->channels.size(); k++) {
 			if (!bus->channels[k].active) {
+				bus->channels.write[k].peak_volume = AudioFrame(AUDIO_MIN_PEAK_DB, AUDIO_MIN_PEAK_DB);
 				continue;
 			}
 
@@ -426,7 +589,7 @@ void AudioServer::_mix_step() {
 				}
 			}
 
-			bus->channels.write[k].peak_volume = AudioFrame(Math::linear2db(peak.l + 0.0000000001), Math::linear2db(peak.r + 0.0000000001));
+			bus->channels.write[k].peak_volume = AudioFrame(Math::linear2db(peak.l + AUDIO_PEAK_OFFSET), Math::linear2db(peak.r + AUDIO_PEAK_OFFSET));
 
 			if (!bus->channels[k].used) {
 				//see if any audio is contained, because channel was not used
@@ -452,6 +615,53 @@ void AudioServer::_mix_step() {
 
 	mix_frames += buffer_size;
 	to_mix = buffer_size;
+}
+
+void AudioServer::_mix_step_for_channel(AudioFrame *p_out_buf, AudioFrame *p_source_buf, AudioFrame p_vol_start, AudioFrame p_vol_final, float p_attenuation_filter_cutoff_hz, float p_highshelf_gain, AudioFilterSW::Processor *p_processor_l, AudioFilterSW::Processor *p_processor_r) {
+	if (p_highshelf_gain != 0) {
+		AudioFilterSW filter;
+		filter.set_mode(AudioFilterSW::HIGHSHELF);
+		filter.set_sampling_rate(AudioServer::get_singleton()->get_mix_rate());
+		filter.set_cutoff(p_attenuation_filter_cutoff_hz);
+		filter.set_resonance(1);
+		filter.set_stages(1);
+		filter.set_gain(p_highshelf_gain);
+
+		ERR_FAIL_COND(p_processor_l == nullptr);
+		ERR_FAIL_COND(p_processor_r == nullptr);
+
+		bool is_just_started = p_vol_start.l == 0 && p_vol_start.r == 0;
+		p_processor_l->set_filter(&filter, /* clear_history= */ is_just_started);
+		p_processor_l->update_coeffs(buffer_size);
+		p_processor_r->set_filter(&filter, /* clear_history= */ is_just_started);
+		p_processor_r->update_coeffs(buffer_size);
+
+		for (unsigned int frame_idx = 0; frame_idx < buffer_size; frame_idx++) {
+			// Make this buffer size invariant if buffer_size ever becomes a project setting.
+			float lerp_param = (float)frame_idx / buffer_size;
+			AudioFrame vol = p_vol_final * lerp_param + (1 - lerp_param) * p_vol_start;
+			AudioFrame mixed = vol * p_source_buf[frame_idx];
+			p_processor_l->process_one_interp(mixed.l);
+			p_processor_r->process_one_interp(mixed.r);
+			p_out_buf[frame_idx] += mixed;
+		}
+
+	} else {
+		for (unsigned int frame_idx = 0; frame_idx < buffer_size; frame_idx++) {
+			// Make this buffer size invariant if buffer_size ever becomes a project setting.
+			float lerp_param = (float)frame_idx / buffer_size;
+			p_out_buf[frame_idx] += (p_vol_final * lerp_param + (1 - lerp_param) * p_vol_start) * p_source_buf[frame_idx];
+		}
+	}
+}
+
+AudioServer::AudioStreamPlaybackListNode *AudioServer::_find_playback_list_node(Ref<AudioStreamPlayback> p_playback) {
+	for (AudioStreamPlaybackListNode *playback_list_node : playback_list) {
+		if (playback_list_node->stream_playback == p_playback) {
+			return playback_list_node;
+		}
+	}
+	return nullptr;
 }
 
 bool AudioServer::thread_has_channel_mix_buffer(int p_bus, int p_buffer) const {
@@ -551,7 +761,7 @@ void AudioServer::set_bus_count(int p_count) {
 
 	unlock();
 
-	emit_signal("bus_layout_changed");
+	emit_signal(SNAME("bus_layout_changed"));
 }
 
 void AudioServer::remove_bus(int p_index) {
@@ -566,7 +776,7 @@ void AudioServer::remove_bus(int p_index) {
 	buses.remove(p_index);
 	unlock();
 
-	emit_signal("bus_layout_changed");
+	emit_signal(SNAME("bus_layout_changed"));
 }
 
 void AudioServer::add_bus(int p_at_pos) {
@@ -620,7 +830,7 @@ void AudioServer::add_bus(int p_at_pos) {
 		buses.insert(p_at_pos, bus);
 	}
 
-	emit_signal("bus_layout_changed");
+	emit_signal(SNAME("bus_layout_changed"));
 }
 
 void AudioServer::move_bus(int p_bus, int p_to_pos) {
@@ -644,7 +854,7 @@ void AudioServer::move_bus(int p_bus, int p_to_pos) {
 		buses.insert(p_to_pos - 1, bus);
 	}
 
-	emit_signal("bus_layout_changed");
+	emit_signal(SNAME("bus_layout_changed"));
 }
 
 int AudioServer::get_bus_count() const {
@@ -690,7 +900,7 @@ void AudioServer::set_bus_name(int p_bus, const String &p_name) {
 	bus_map[attempt] = buses[p_bus];
 	unlock();
 
-	emit_signal("bus_layout_changed");
+	emit_signal(SNAME("bus_layout_changed"));
 }
 
 String AudioServer::get_bus_name(int p_bus) const {
@@ -784,7 +994,7 @@ void AudioServer::_update_bus_effects(int p_bus) {
 	for (int i = 0; i < buses[p_bus]->channels.size(); i++) {
 		buses.write[p_bus]->channels.write[i].effect_instances.resize(buses[p_bus]->effects.size());
 		for (int j = 0; j < buses[p_bus]->effects.size(); j++) {
-			Ref<AudioEffectInstance> fx = buses.write[p_bus]->effects.write[j].effect->instance();
+			Ref<AudioEffectInstance> fx = buses.write[p_bus]->effects.write[j].effect->instantiate();
 			if (Object::cast_to<AudioEffectCompressorInstance>(*fx)) {
 				Object::cast_to<AudioEffectCompressorInstance>(*fx)->set_current_channel(i);
 			}
@@ -803,7 +1013,7 @@ void AudioServer::add_bus_effect(int p_bus, const Ref<AudioEffect> &p_effect, in
 
 	Bus::Effect fx;
 	fx.effect = p_effect;
-	//fx.instance=p_effect->instance();
+	//fx.instance=p_effect->instantiate();
 	fx.enabled = true;
 #ifdef DEBUG_ENABLED
 	fx.prof_time = 0;
@@ -903,17 +1113,226 @@ bool AudioServer::is_bus_channel_active(int p_bus, int p_channel) const {
 	return buses[p_bus]->channels[p_channel].active;
 }
 
-void AudioServer::set_global_rate_scale(float p_scale) {
-	global_rate_scale = p_scale;
+void AudioServer::set_playback_speed_scale(float p_scale) {
+	ERR_FAIL_COND(p_scale <= 0);
+
+	playback_speed_scale = p_scale;
 }
 
-float AudioServer::get_global_rate_scale() const {
-	return global_rate_scale;
+float AudioServer::get_playback_speed_scale() const {
+	return playback_speed_scale;
+}
+
+void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, StringName p_bus, Vector<AudioFrame> p_volume_db_vector, float p_start_time) {
+	ERR_FAIL_COND(p_playback.is_null());
+
+	Map<StringName, Vector<AudioFrame>> map;
+	map[p_bus] = p_volume_db_vector;
+
+	start_playback_stream(p_playback, map, p_start_time);
+}
+
+void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, Map<StringName, Vector<AudioFrame>> p_bus_volumes, float p_start_time) {
+	ERR_FAIL_COND(p_playback.is_null());
+
+	AudioStreamPlaybackListNode *playback_node = new AudioStreamPlaybackListNode();
+	playback_node->stream_playback = p_playback;
+	playback_node->stream_playback->start(p_start_time);
+
+	AudioStreamPlaybackBusDetails *new_bus_details = new AudioStreamPlaybackBusDetails();
+	int idx = 0;
+	for (KeyValue<StringName, Vector<AudioFrame>> pair : p_bus_volumes) {
+		ERR_FAIL_COND(pair.value.size() < channel_count);
+		ERR_FAIL_COND(pair.value.size() != MAX_CHANNELS_PER_BUS);
+
+		new_bus_details->bus_active[idx] = true;
+		new_bus_details->bus[idx] = pair.key;
+		for (int channel_idx = 0; channel_idx < MAX_CHANNELS_PER_BUS; channel_idx++) {
+			new_bus_details->volume[idx][channel_idx] = pair.value[channel_idx];
+		}
+	}
+	playback_node->bus_details = new_bus_details;
+	playback_node->prev_bus_details = new AudioStreamPlaybackBusDetails();
+
+	playback_node->setseek.set(-1);
+	playback_node->pitch_scale.set(1);
+	playback_node->highshelf_gain.set(0);
+	playback_node->attenuation_filter_cutoff_hz.set(0);
+
+	memset(playback_node->prev_bus_details->volume, 0, sizeof(playback_node->prev_bus_details->volume));
+
+	for (AudioFrame &frame : playback_node->lookahead) {
+		frame = AudioFrame(0, 0);
+	}
+
+	playback_node->state.store(AudioStreamPlaybackListNode::PLAYING);
+
+	playback_list.insert(playback_node);
+}
+
+void AudioServer::stop_playback_stream(Ref<AudioStreamPlayback> p_playback) {
+	ERR_FAIL_COND(p_playback.is_null());
+
+	AudioStreamPlaybackListNode *playback_node = _find_playback_list_node(p_playback);
+	if (!playback_node) {
+		return;
+	}
+
+	AudioStreamPlaybackListNode::PlaybackState new_state, old_state;
+	do {
+		old_state = playback_node->state.load();
+		new_state = AudioStreamPlaybackListNode::FADE_OUT_TO_DELETION;
+
+	} while (!playback_node->state.compare_exchange_strong(old_state, new_state));
+}
+
+void AudioServer::set_playback_bus_exclusive(Ref<AudioStreamPlayback> p_playback, StringName p_bus, Vector<AudioFrame> p_volumes) {
+	ERR_FAIL_COND(p_volumes.size() != MAX_CHANNELS_PER_BUS);
+
+	Map<StringName, Vector<AudioFrame>> map;
+	map[p_bus] = p_volumes;
+
+	set_playback_bus_volumes_linear(p_playback, map);
+}
+
+void AudioServer::set_playback_bus_volumes_linear(Ref<AudioStreamPlayback> p_playback, Map<StringName, Vector<AudioFrame>> p_bus_volumes) {
+	ERR_FAIL_COND(p_bus_volumes.size() > MAX_BUSES_PER_PLAYBACK);
+
+	AudioStreamPlaybackListNode *playback_node = _find_playback_list_node(p_playback);
+	if (!playback_node) {
+		return;
+	}
+	AudioStreamPlaybackBusDetails *old_bus_details, *new_bus_details = new AudioStreamPlaybackBusDetails();
+
+	int idx = 0;
+	for (KeyValue<StringName, Vector<AudioFrame>> pair : p_bus_volumes) {
+		ERR_FAIL_COND(pair.value.size() < channel_count);
+		ERR_FAIL_COND(pair.value.size() != MAX_CHANNELS_PER_BUS);
+
+		new_bus_details->bus_active[idx] = true;
+		new_bus_details->bus[idx] = pair.key;
+		for (int channel_idx = 0; channel_idx < MAX_CHANNELS_PER_BUS; channel_idx++) {
+			new_bus_details->volume[idx][channel_idx] = pair.value[channel_idx];
+		}
+	}
+
+	do {
+		old_bus_details = playback_node->bus_details.load();
+	} while (!playback_node->bus_details.compare_exchange_strong(old_bus_details, new_bus_details));
+
+	bus_details_graveyard.insert(old_bus_details);
+}
+
+void AudioServer::set_playback_all_bus_volumes_linear(Ref<AudioStreamPlayback> p_playback, Vector<AudioFrame> p_volumes) {
+	ERR_FAIL_COND(p_playback.is_null());
+	ERR_FAIL_COND(p_volumes.size() != MAX_CHANNELS_PER_BUS);
+
+	Map<StringName, Vector<AudioFrame>> map;
+
+	AudioStreamPlaybackListNode *playback_node = _find_playback_list_node(p_playback);
+	if (!playback_node) {
+		return;
+	}
+	for (int bus_idx = 0; bus_idx < MAX_BUSES_PER_PLAYBACK; bus_idx++) {
+		if (playback_node->bus_details.load()->bus_active[bus_idx]) {
+			map[playback_node->bus_details.load()->bus[bus_idx]] = p_volumes;
+		}
+	}
+
+	set_playback_bus_volumes_linear(p_playback, map);
+}
+
+void AudioServer::set_playback_pitch_scale(Ref<AudioStreamPlayback> p_playback, float p_pitch_scale) {
+	ERR_FAIL_COND(p_playback.is_null());
+
+	AudioStreamPlaybackListNode *playback_node = _find_playback_list_node(p_playback);
+	if (!playback_node) {
+		return;
+	}
+
+	playback_node->pitch_scale.set(p_pitch_scale);
+}
+
+void AudioServer::set_playback_paused(Ref<AudioStreamPlayback> p_playback, bool p_paused) {
+	ERR_FAIL_COND(p_playback.is_null());
+
+	AudioStreamPlaybackListNode *playback_node = _find_playback_list_node(p_playback);
+	if (!playback_node) {
+		return;
+	}
+	if (!p_paused && playback_node->state == AudioStreamPlaybackListNode::PLAYING) {
+		return; // No-op.
+	}
+	if (p_paused && (playback_node->state == AudioStreamPlaybackListNode::PAUSED || playback_node->state == AudioStreamPlaybackListNode::FADE_OUT_TO_PAUSE)) {
+		return; // No-op.
+	}
+
+	AudioStreamPlaybackListNode::PlaybackState new_state, old_state;
+	do {
+		old_state = playback_node->state.load();
+		new_state = p_paused ? AudioStreamPlaybackListNode::FADE_OUT_TO_PAUSE : AudioStreamPlaybackListNode::PLAYING;
+	} while (!playback_node->state.compare_exchange_strong(old_state, new_state));
+}
+
+void AudioServer::set_playback_highshelf_params(Ref<AudioStreamPlayback> p_playback, float p_gain, float p_attenuation_cutoff_hz) {
+	ERR_FAIL_COND(p_playback.is_null());
+
+	AudioStreamPlaybackListNode *playback_node = _find_playback_list_node(p_playback);
+	if (!playback_node) {
+		return;
+	}
+
+	playback_node->attenuation_filter_cutoff_hz.set(p_attenuation_cutoff_hz);
+	playback_node->highshelf_gain.set(p_gain);
+}
+
+bool AudioServer::is_playback_active(Ref<AudioStreamPlayback> p_playback) {
+	ERR_FAIL_COND_V(p_playback.is_null(), false);
+
+	AudioStreamPlaybackListNode *playback_node = _find_playback_list_node(p_playback);
+	if (!playback_node) {
+		return false;
+	}
+
+	return playback_node->state.load() == AudioStreamPlaybackListNode::PLAYING;
+}
+
+float AudioServer::get_playback_position(Ref<AudioStreamPlayback> p_playback) {
+	ERR_FAIL_COND_V(p_playback.is_null(), 0);
+
+	AudioStreamPlaybackListNode *playback_node = _find_playback_list_node(p_playback);
+	if (!playback_node) {
+		return 0;
+	}
+
+	return playback_node->stream_playback->get_playback_position();
+}
+
+bool AudioServer::is_playback_paused(Ref<AudioStreamPlayback> p_playback) {
+	ERR_FAIL_COND_V(p_playback.is_null(), false);
+
+	AudioStreamPlaybackListNode *playback_node = _find_playback_list_node(p_playback);
+	if (!playback_node) {
+		return false;
+	}
+
+	return playback_node->state.load() == AudioStreamPlaybackListNode::PAUSED || playback_node->state.load() == AudioStreamPlaybackListNode::FADE_OUT_TO_PAUSE;
+}
+
+uint64_t AudioServer::get_mix_count() const {
+	return mix_count;
+}
+
+void AudioServer::notify_listener_changed() {
+	for (CallbackItem *ci : listener_changed_callback_list) {
+		ci->callback(ci->userdata);
+	}
 }
 
 void AudioServer::init_channels_and_buffers() {
 	channel_count = get_channel_count();
 	temp_buffer.resize(channel_count);
+	mix_buffer.resize(buffer_size + LOOKAHEAD_BUFFER_SIZE);
 
 	for (int i = 0; i < temp_buffer.size(); i++) {
 		temp_buffer.write[i].resize(buffer_size);
@@ -928,10 +1347,10 @@ void AudioServer::init_channels_and_buffers() {
 }
 
 void AudioServer::init() {
-	channel_disable_threshold_db = GLOBAL_DEF_RST("audio/channel_disable_threshold_db", -60.0);
-	channel_disable_frames = float(GLOBAL_DEF_RST("audio/channel_disable_time", 2.0)) * get_mix_rate();
-	ProjectSettings::get_singleton()->set_custom_property_info("audio/channel_disable_time", PropertyInfo(Variant::FLOAT, "audio/channel_disable_time", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"));
-	buffer_size = 1024; //hardcoded for now
+	channel_disable_threshold_db = GLOBAL_DEF_RST("audio/buses/channel_disable_threshold_db", -60.0);
+	channel_disable_frames = float(GLOBAL_DEF_RST("audio/buses/channel_disable_time", 2.0)) * get_mix_rate();
+	ProjectSettings::get_singleton()->set_custom_property_info("audio/buses/channel_disable_time", PropertyInfo(Variant::FLOAT, "audio/buses/channel_disable_time", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"));
+	buffer_size = 512; //hardcoded for now
 
 	init_channels_and_buffers();
 
@@ -947,7 +1366,7 @@ void AudioServer::init() {
 	set_edited(false); //avoid editors from thinking this was edited
 #endif
 
-	GLOBAL_DEF_RST("audio/video_delay_compensation_ms", 0);
+	GLOBAL_DEF_RST("audio/video/video_delay_compensation_ms", 0);
 }
 
 void AudioServer::update() {
@@ -1018,13 +1437,21 @@ void AudioServer::update() {
 	prof_time = 0;
 #endif
 
-	for (Set<CallbackItem>::Element *E = update_callbacks.front(); E; E = E->next()) {
-		E->get().callback(E->get().userdata);
+	for (CallbackItem *ci : update_callback_list) {
+		ci->callback(ci->userdata);
 	}
+	mix_callback_list.maybe_cleanup();
+	update_callback_list.maybe_cleanup();
+	listener_changed_callback_list.maybe_cleanup();
+	playback_list.maybe_cleanup();
+	for (AudioStreamPlaybackBusDetails *bus_details : bus_details_graveyard) {
+		bus_details_graveyard.erase(bus_details, [](AudioStreamPlaybackBusDetails *d) { delete d; });
+	}
+	bus_details_graveyard.maybe_cleanup();
 }
 
 void AudioServer::load_default_bus_layout() {
-	String layout_path = ProjectSettings::get_singleton()->get("audio/default_bus_layout");
+	String layout_path = ProjectSettings::get_singleton()->get("audio/buses/default_bus_layout");
 
 	if (ResourceLoader::exists(layout_path)) {
 		Ref<AudioBusLayout> default_layout = ResourceLoader::load(layout_path);
@@ -1086,40 +1513,49 @@ double AudioServer::get_time_since_last_mix() const {
 
 AudioServer *AudioServer::singleton = nullptr;
 
-void AudioServer::add_callback(AudioCallback p_callback, void *p_userdata) {
-	lock();
-	CallbackItem ci;
-	ci.callback = p_callback;
-	ci.userdata = p_userdata;
-	callbacks.insert(ci);
-	unlock();
-}
-
-void AudioServer::remove_callback(AudioCallback p_callback, void *p_userdata) {
-	lock();
-	CallbackItem ci;
-	ci.callback = p_callback;
-	ci.userdata = p_userdata;
-	callbacks.erase(ci);
-	unlock();
-}
-
 void AudioServer::add_update_callback(AudioCallback p_callback, void *p_userdata) {
-	lock();
-	CallbackItem ci;
-	ci.callback = p_callback;
-	ci.userdata = p_userdata;
-	update_callbacks.insert(ci);
-	unlock();
+	CallbackItem *ci = new CallbackItem();
+	ci->callback = p_callback;
+	ci->userdata = p_userdata;
+	update_callback_list.insert(ci);
 }
 
 void AudioServer::remove_update_callback(AudioCallback p_callback, void *p_userdata) {
-	lock();
-	CallbackItem ci;
-	ci.callback = p_callback;
-	ci.userdata = p_userdata;
-	update_callbacks.erase(ci);
-	unlock();
+	for (CallbackItem *ci : update_callback_list) {
+		if (ci->callback == p_callback && ci->userdata == p_userdata) {
+			update_callback_list.erase(ci, [](CallbackItem *c) { delete c; });
+		}
+	}
+}
+
+void AudioServer::add_mix_callback(AudioCallback p_callback, void *p_userdata) {
+	CallbackItem *ci = new CallbackItem();
+	ci->callback = p_callback;
+	ci->userdata = p_userdata;
+	mix_callback_list.insert(ci);
+}
+
+void AudioServer::remove_mix_callback(AudioCallback p_callback, void *p_userdata) {
+	for (CallbackItem *ci : mix_callback_list) {
+		if (ci->callback == p_callback && ci->userdata == p_userdata) {
+			mix_callback_list.erase(ci, [](CallbackItem *c) { delete c; });
+		}
+	}
+}
+
+void AudioServer::add_listener_changed_callback(AudioCallback p_callback, void *p_userdata) {
+	CallbackItem *ci = new CallbackItem();
+	ci->callback = p_callback;
+	ci->userdata = p_userdata;
+	listener_changed_callback_list.insert(ci);
+}
+
+void AudioServer::remove_listener_changed_callback(AudioCallback p_callback, void *p_userdata) {
+	for (CallbackItem *ci : listener_changed_callback_list) {
+		if (ci->callback == p_callback && ci->userdata == p_userdata) {
+			listener_changed_callback_list.erase(ci, [](CallbackItem *c) { delete c; });
+		}
+	}
 }
 
 void AudioServer::set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout) {
@@ -1152,6 +1588,9 @@ void AudioServer::set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout) {
 				Bus::Effect bfx;
 				bfx.effect = fx;
 				bfx.enabled = p_bus_layout->buses[i].effects[j].enabled;
+#if DEBUG_ENABLED
+				bfx.prof_time = 0;
+#endif
 				bus->effects.push_back(bfx);
 			}
 		}
@@ -1173,7 +1612,7 @@ void AudioServer::set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout) {
 
 Ref<AudioBusLayout> AudioServer::generate_bus_layout() const {
 	Ref<AudioBusLayout> state;
-	state.instance();
+	state.instantiate();
 
 	state->buses.resize(buses.size());
 
@@ -1262,8 +1701,8 @@ void AudioServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_bus_peak_volume_left_db", "bus_idx", "channel"), &AudioServer::get_bus_peak_volume_left_db);
 	ClassDB::bind_method(D_METHOD("get_bus_peak_volume_right_db", "bus_idx", "channel"), &AudioServer::get_bus_peak_volume_right_db);
 
-	ClassDB::bind_method(D_METHOD("set_global_rate_scale", "scale"), &AudioServer::set_global_rate_scale);
-	ClassDB::bind_method(D_METHOD("get_global_rate_scale"), &AudioServer::get_global_rate_scale);
+	ClassDB::bind_method(D_METHOD("set_playback_speed_scale", "scale"), &AudioServer::set_playback_speed_scale);
+	ClassDB::bind_method(D_METHOD("get_playback_speed_scale"), &AudioServer::get_playback_speed_scale);
 
 	ClassDB::bind_method(D_METHOD("lock"), &AudioServer::lock);
 	ClassDB::bind_method(D_METHOD("unlock"), &AudioServer::unlock);
@@ -1287,7 +1726,7 @@ void AudioServer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bus_count"), "set_bus_count", "get_bus_count");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "device"), "set_device", "get_device");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "global_rate_scale"), "set_global_rate_scale", "get_global_rate_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "playback_speed_scale"), "set_playback_speed_scale", "get_playback_speed_scale");
 
 	ADD_SIGNAL(MethodInfo("bus_layout_changed"));
 
@@ -1307,7 +1746,7 @@ AudioServer::AudioServer() {
 #endif
 	mix_time = 0;
 	mix_size = 0;
-	global_rate_scale = 1;
+	playback_speed_scale = 1;
 }
 
 AudioServer::~AudioServer() {

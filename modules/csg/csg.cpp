@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 
 #include "core/math/geometry_2d.h"
 #include "core/math/math_funcs.h"
-#include "core/sort_array.h"
+#include "core/templates/sort_array.h"
 
 // Static helper functions.
 
@@ -42,7 +42,7 @@ inline static bool is_snapable(const Vector3 &p_point1, const Vector3 &p_point2,
 
 inline static Vector2 interpolate_segment_uv(const Vector2 p_segement_points[2], const Vector2 p_uvs[2], const Vector2 &p_interpolation_point) {
 	float segment_length = (p_segement_points[1] - p_segement_points[0]).length();
-	if (segment_length < CMP_EPSILON) {
+	if (p_segement_points[0].is_equal_approx(p_segement_points[1])) {
 		return p_uvs[0];
 	}
 
@@ -53,13 +53,13 @@ inline static Vector2 interpolate_segment_uv(const Vector2 p_segement_points[2],
 }
 
 inline static Vector2 interpolate_triangle_uv(const Vector2 p_vertices[3], const Vector2 p_uvs[3], const Vector2 &p_interpolation_point) {
-	if (p_interpolation_point.distance_squared_to(p_vertices[0]) < CMP_EPSILON2) {
+	if (p_interpolation_point.is_equal_approx(p_vertices[0])) {
 		return p_uvs[0];
 	}
-	if (p_interpolation_point.distance_squared_to(p_vertices[1]) < CMP_EPSILON2) {
+	if (p_interpolation_point.is_equal_approx(p_vertices[1])) {
 		return p_uvs[1];
 	}
-	if (p_interpolation_point.distance_squared_to(p_vertices[2]) < CMP_EPSILON2) {
+	if (p_interpolation_point.is_equal_approx(p_vertices[2])) {
 		return p_uvs[2];
 	}
 
@@ -152,6 +152,14 @@ inline bool is_point_in_triangle(const Vector3 &p_point, const Vector3 p_vertice
 	}
 
 	return true;
+}
+
+inline static bool is_triangle_degenerate(const Vector2 p_vertices[3], real_t p_vertex_snap2) {
+	real_t det = p_vertices[0].x * p_vertices[1].y - p_vertices[0].x * p_vertices[2].y +
+				 p_vertices[0].y * p_vertices[2].x - p_vertices[0].y * p_vertices[1].x +
+				 p_vertices[1].x * p_vertices[2].y - p_vertices[1].y * p_vertices[2].x;
+
+	return det < p_vertex_snap2;
 }
 
 inline static bool are_segements_parallel(const Vector2 p_segment1_points[2], const Vector2 p_segment2_points[2], float p_vertex_snap2) {
@@ -257,7 +265,7 @@ void CSGBrush::build_from_faces(const Vector<Vector3> &p_vertices, const Vector<
 	_regen_face_aabbs();
 }
 
-void CSGBrush::copy_from(const CSGBrush &p_brush, const Transform &p_xform) {
+void CSGBrush::copy_from(const CSGBrush &p_brush, const Transform3D &p_xform) {
 	faces = p_brush.faces;
 	materials = p_brush.materials;
 
@@ -522,8 +530,8 @@ void CSGBrushOperation::MeshMerge::_add_distance(List<real_t> &r_intersectionsA,
 	List<real_t> &intersections = p_from_B ? r_intersectionsB : r_intersectionsA;
 
 	// Check if distance exists.
-	for (const List<real_t>::Element *E = intersections.front(); E; E = E->next()) {
-		if (Math::is_equal_approx(**E, p_distance)) {
+	for (const real_t E : intersections) {
+		if (Math::is_equal_approx(E, p_distance)) {
 			return;
 		}
 	}
@@ -581,10 +589,10 @@ bool CSGBrushOperation::MeshMerge::_bvh_inside(FaceBVH *facebvhptr, int p_max_de
 							Vector3 intersection_point;
 
 							// Check if faces are co-planar.
-							if ((current_normal - face_normal).length_squared() < CMP_EPSILON2 &&
+							if (current_normal.is_equal_approx(face_normal) &&
 									is_point_in_triangle(face_center, current_points)) {
-								// Only add an intersection if checking a B face.
-								if (face.from_b) {
+								// Only add an intersection if not a B face.
+								if (!face.from_b) {
 									_add_distance(intersectionsA, intersectionsB, current_face.from_b, 0);
 								}
 							} else if (ray_intersects_triangle(face_center, face_normal, current_points, CMP_EPSILON, intersection_point)) {
@@ -923,7 +931,7 @@ void CSGBrushOperation::Build2DFaces::_merge_faces(const Vector<int> &p_segment_
 
 		// Delete the old faces in reverse index order.
 		merge_faces_idx.sort();
-		merge_faces_idx.invert();
+		merge_faces_idx.reverse();
 		for (int i = 0; i < merge_faces_idx.size(); ++i) {
 			faces.remove(merge_faces_idx[i]);
 		}
@@ -962,7 +970,7 @@ void CSGBrushOperation::Build2DFaces::_merge_faces(const Vector<int> &p_segment_
 					continue;
 				}
 
-				// Check if point is on an each edge.
+				// Check if point is on each edge.
 				for (int face_edge_idx = 0; face_edge_idx < 3; ++face_edge_idx) {
 					Vector2 edge_points[2] = {
 						face_points[face_edge_idx],
@@ -1068,7 +1076,7 @@ void CSGBrushOperation::Build2DFaces::_find_edge_intersections(const Vector2 p_s
 					break;
 				}
 
-				// If opposite point is on the segemnt, add its index to segment indices too.
+				// If opposite point is on the segment, add its index to segment indices too.
 				Vector2 closest_point = Geometry2D::get_closest_point_to_segment(vertices[opposite_vertex_idx].point, p_segment_points);
 				if ((closest_point - vertices[opposite_vertex_idx].point).length_squared() < vertex_snap2) {
 					_add_vertex_idx_sorted(r_segment_indices, opposite_vertex_idx);
@@ -1117,6 +1125,11 @@ int CSGBrushOperation::Build2DFaces::_insert_point(const Vector2 &p_point) {
 			face_vertices[2].uv
 		};
 
+		// Skip degenerate triangles.
+		if (is_triangle_degenerate(points, vertex_snap2)) {
+			continue;
+		}
+
 		// Check if point is existing face vertex.
 		for (int i = 0; i < 3; ++i) {
 			if ((p_point - face_vertices[i].point).length_squared() < vertex_snap2) {
@@ -1124,7 +1137,7 @@ int CSGBrushOperation::Build2DFaces::_insert_point(const Vector2 &p_point) {
 			}
 		}
 
-		// Check if point is on an each edge.
+		// Check if point is on each edge.
 		bool on_edge = false;
 		for (int face_edge_idx = 0; face_edge_idx < 3; ++face_edge_idx) {
 			Vector2 edge_points[2] = {
@@ -1198,11 +1211,8 @@ int CSGBrushOperation::Build2DFaces::_insert_point(const Vector2 &p_point) {
 			// The new vertex is the last vertex.
 			for (int i = 0; i < 3; ++i) {
 				// Don't create degenerate triangles.
-				Vector2 edge[2] = { points[i], points[(i + 1) % 3] };
-				Vector2 new_edge1[2] = { vertices[new_vertex_idx].point, points[i] };
-				Vector2 new_edge2[2] = { vertices[new_vertex_idx].point, points[(i + 1) % 3] };
-				if (are_segements_parallel(edge, new_edge1, vertex_snap2) &&
-						are_segements_parallel(edge, new_edge2, vertex_snap2)) {
+				Vector2 new_points[3] = { points[i], points[(i + 1) % 3], vertices[new_vertex_idx].point };
+				if (is_triangle_degenerate(new_points, vertex_snap2)) {
 					continue;
 				}
 
@@ -1390,7 +1400,7 @@ void CSGBrushOperation::update_faces(const CSGBrush &p_brush_a, const int p_face
 			under_count++;
 		}
 	}
-	// If all points under or over the plane, there is no intesection.
+	// If all points under or over the plane, there is no intersection.
 	if (over_count == 3 || under_count == 3) {
 		return;
 	}
@@ -1411,7 +1421,7 @@ void CSGBrushOperation::update_faces(const CSGBrush &p_brush_a, const int p_face
 			under_count++;
 		}
 	}
-	// If all points under or over the plane, there is no intesection.
+	// If all points under or over the plane, there is no intersection.
 	if (over_count == 3 || under_count == 3) {
 		return;
 	}

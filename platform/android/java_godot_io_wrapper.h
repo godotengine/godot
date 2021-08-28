@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,10 +46,12 @@ private:
 	jclass cls;
 
 	jmethodID _open_URI = 0;
+	jmethodID _get_cache_dir = 0;
 	jmethodID _get_data_dir = 0;
 	jmethodID _get_locale = 0;
 	jmethodID _get_model = 0;
 	jmethodID _get_screen_DPI = 0;
+	jmethodID _screen_get_usable_rect = 0;
 	jmethodID _get_unique_id = 0;
 	jmethodID _show_keyboard = 0;
 	jmethodID _hide_keyboard = 0;
@@ -64,19 +66,21 @@ public:
 	jobject get_instance();
 
 	Error open_uri(const String &p_uri);
+	String get_cache_dir();
 	String get_user_data_dir();
 	String get_locale();
 	String get_model();
 	int get_screen_dpi();
+	void screen_get_usable_rect(int (&p_rect_xywh)[4]);
 	String get_unique_id();
 	bool has_vk();
-	void show_vk(const String &p_existing, int p_max_input_length, int p_cursor_start, int p_cursor_end);
+	void show_vk(const String &p_existing, bool p_multiline, int p_max_input_length, int p_cursor_start, int p_cursor_end);
 	void hide_vk();
 	int get_vk_height();
 	void set_vk_height(int p_height);
 	void set_screen_orientation(int p_orient);
 	int get_screen_orientation();
-	String get_system_dir(int p_dir);
+	String get_system_dir(int p_dir, bool p_shared_storage);
 };
 
 #endif /* !JAVA_GODOT_IO_WRAPPER_H */

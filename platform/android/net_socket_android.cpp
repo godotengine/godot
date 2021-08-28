@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,7 @@ jmethodID NetSocketAndroid::_multicast_lock_acquire = 0;
 jmethodID NetSocketAndroid::_multicast_lock_release = 0;
 
 void NetSocketAndroid::setup(jobject p_net_utils) {
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 
 	net_utils = env->NewGlobalRef(p_net_utils);
 
@@ -51,14 +51,14 @@ void NetSocketAndroid::setup(jobject p_net_utils) {
 
 void NetSocketAndroid::multicast_lock_acquire() {
 	if (_multicast_lock_acquire) {
-		JNIEnv *env = ThreadAndroid::get_env();
+		JNIEnv *env = get_jni_env();
 		env->CallVoidMethod(net_utils, _multicast_lock_acquire);
 	}
 }
 
 void NetSocketAndroid::multicast_lock_release() {
 	if (_multicast_lock_release) {
-		JNIEnv *env = ThreadAndroid::get_env();
+		JNIEnv *env = get_jni_env();
 		env->CallVoidMethod(net_utils, _multicast_lock_release);
 	}
 }
@@ -103,7 +103,7 @@ Error NetSocketAndroid::set_broadcasting_enabled(bool p_enabled) {
 	return OK;
 }
 
-Error NetSocketAndroid::join_multicast_group(const IP_Address &p_multi_address, String p_if_name) {
+Error NetSocketAndroid::join_multicast_group(const IPAddress &p_multi_address, String p_if_name) {
 	Error err = NetSocketPosix::join_multicast_group(p_multi_address, p_if_name);
 	if (err != OK)
 		return err;
@@ -115,7 +115,7 @@ Error NetSocketAndroid::join_multicast_group(const IP_Address &p_multi_address, 
 	return OK;
 }
 
-Error NetSocketAndroid::leave_multicast_group(const IP_Address &p_multi_address, String p_if_name) {
+Error NetSocketAndroid::leave_multicast_group(const IPAddress &p_multi_address, String p_if_name) {
 	Error err = NetSocketPosix::leave_multicast_group(p_multi_address, p_if_name);
 	if (err != OK)
 		return err;

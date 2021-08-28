@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -63,7 +63,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 			List<Node *> selection = editor_selection->get_selected_node_list();
 
-			if (selection.empty()) {
+			if (selection.is_empty()) {
 				Ref<Shape3D> shape = mesh->create_trimesh_shape();
 				if (shape.is_null()) {
 					err_dialog->set_text(TTR("Couldn't create a Trimesh collision shape."));
@@ -90,8 +90,8 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 			ur->create_action(TTR("Create Static Trimesh Body"));
 
-			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-				MeshInstance3D *instance = Object::cast_to<MeshInstance3D>(E->get());
+			for (Node *E : selection) {
+				MeshInstance3D *instance = Object::cast_to<MeshInstance3D>(E);
 				if (!instance) {
 					continue;
 				}
@@ -138,6 +138,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 			CollisionShape3D *cshape = memnew(CollisionShape3D);
 			cshape->set_shape(shape);
+			cshape->set_transform(node->get_transform());
 
 			Node *owner = node->get_owner();
 
@@ -152,14 +153,18 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			ur->add_undo_method(node->get_parent(), "remove_child", cshape);
 			ur->commit_action();
 		} break;
-		case MENU_OPTION_CREATE_SINGLE_CONVEX_COLLISION_SHAPE: {
+
+		case MENU_OPTION_CREATE_SINGLE_CONVEX_COLLISION_SHAPE:
+		case MENU_OPTION_CREATE_SIMPLIFIED_CONVEX_COLLISION_SHAPE: {
 			if (node == get_tree()->get_edited_scene_root()) {
 				err_dialog->set_text(TTR("Can't create a single convex collision shape for the scene root."));
 				err_dialog->popup_centered();
 				return;
 			}
 
-			Ref<Shape3D> shape = mesh->create_convex_shape();
+			bool simplify = (p_option == MENU_OPTION_CREATE_SIMPLIFIED_CONVEX_COLLISION_SHAPE);
+
+			Ref<Shape3D> shape = mesh->create_convex_shape(true, simplify);
 
 			if (shape.is_null()) {
 				err_dialog->set_text(TTR("Couldn't create a single convex collision shape."));
@@ -168,7 +173,11 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			}
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 
-			ur->create_action(TTR("Create Single Convex Shape"));
+			if (simplify) {
+				ur->create_action(TTR("Create Simplified Convex Shape"));
+			} else {
+				ur->create_action(TTR("Create Single Convex Shape"));
+			}
 
 			CollisionShape3D *cshape = memnew(CollisionShape3D);
 			cshape->set_shape(shape);
@@ -185,6 +194,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			ur->commit_action();
 
 		} break;
+
 		case MENU_OPTION_CREATE_MULTIPLE_CONVEX_COLLISION_SHAPES: {
 			if (node == get_tree()->get_edited_scene_root()) {
 				err_dialog->set_text(TTR("Can't create multiple convex collision shapes for the scene root."));
@@ -322,7 +332,7 @@ void MeshInstance3DEditor::_create_uv_lines(int p_layer) {
 
 		Vector<Vector2> uv = a[p_layer == 0 ? Mesh::ARRAY_TEX_UV : Mesh::ARRAY_TEX_UV2];
 		if (uv.size() == 0) {
-			err_dialog->set_text(TTR("Model has no UV in this layer"));
+			err_dialog->set_text(vformat(TTR("Mesh has no UV in layer %d."), p_layer + 1));
 			err_dialog->popup_centered();
 			return;
 		}
@@ -372,9 +382,10 @@ void MeshInstance3DEditor::_debug_uv_draw() {
 	}
 
 	debug_uv->set_clip_contents(true);
-	debug_uv->draw_rect(Rect2(Vector2(), debug_uv->get_size()), Color(0.2, 0.2, 0.0));
+	debug_uv->draw_rect(Rect2(Vector2(), debug_uv->get_size()), get_theme_color(SNAME("dark_color_3"), SNAME("Editor")));
 	debug_uv->draw_set_transform(Vector2(), 0, debug_uv->get_size());
-	debug_uv->draw_multiline(uv_lines, Color(1.0, 0.8, 0.7));
+	// Use a translucent color to allow overlapping triangles to be visible.
+	debug_uv->draw_multiline(uv_lines, get_theme_color(SNAME("mono_color"), SNAME("Editor")) * Color(1, 1, 1, 0.5), Math::round(EDSCALE));
 }
 
 void MeshInstance3DEditor::_create_outline_mesh() {
@@ -431,7 +442,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text(TTR("Mesh"));
-	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("MeshInstance3D", "EditorIcons"));
+	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("MeshInstance3D"), SNAME("EditorIcons")));
 
 	options->get_popup()->add_item(TTR("Create Trimesh Static Body"), MENU_OPTION_CREATE_STATIC_TRIMESH_BODY);
 	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a StaticBody3D and assigns a polygon-based collision shape to it automatically.\nThis is the most accurate (but slowest) option for collision detection."));
@@ -440,8 +451,10 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a polygon-based collision shape.\nThis is the most accurate (but slowest) option for collision detection."));
 	options->get_popup()->add_item(TTR("Create Single Convex Collision Sibling"), MENU_OPTION_CREATE_SINGLE_CONVEX_COLLISION_SHAPE);
 	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a single convex collision shape.\nThis is the fastest (but least accurate) option for collision detection."));
+	options->get_popup()->add_item(TTR("Create Simplified Convex Collision Sibling"), MENU_OPTION_CREATE_SIMPLIFIED_CONVEX_COLLISION_SHAPE);
+	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a simplified convex collision shape.\nThis is similar to single collision shape, but can result in a simpler geometry in some cases, at the cost of accuracy."));
 	options->get_popup()->add_item(TTR("Create Multiple Convex Collision Siblings"), MENU_OPTION_CREATE_MULTIPLE_CONVEX_COLLISION_SHAPES);
-	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a polygon-based collision shape.\nThis is a performance middle-ground between the two above options."));
+	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a polygon-based collision shape.\nThis is a performance middle-ground between a single convex collision and a polygon-based collision."));
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Create Navigation Mesh"), MENU_OPTION_CREATE_NAVMESH);
 	options->get_popup()->add_separator();
@@ -456,7 +469,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 
 	outline_dialog = memnew(ConfirmationDialog);
 	outline_dialog->set_title(TTR("Create Outline Mesh"));
-	outline_dialog->get_ok()->set_text(TTR("Create"));
+	outline_dialog->get_ok_button()->set_text(TTR("Create"));
 
 	VBoxContainer *outline_dialog_vbc = memnew(VBoxContainer);
 	outline_dialog->add_child(outline_dialog_vbc);
@@ -504,7 +517,7 @@ void MeshInstance3DEditorPlugin::make_visible(bool p_visible) {
 MeshInstance3DEditorPlugin::MeshInstance3DEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	mesh_editor = memnew(MeshInstance3DEditor);
-	editor->get_viewport()->add_child(mesh_editor);
+	editor->get_main_control()->add_child(mesh_editor);
 
 	mesh_editor->options->hide();
 }

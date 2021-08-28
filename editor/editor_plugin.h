@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,17 +32,20 @@
 #define EDITOR_PLUGIN_H
 
 #include "core/io/config_file.h"
-#include "core/undo_redo.h"
+#include "core/object/undo_redo.h"
+#include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_inspector.h"
+#include "editor/editor_translation_parser.h"
 #include "editor/import/editor_import_plugin.h"
 #include "editor/import/resource_importer_scene.h"
 #include "editor/script_create_dialog.h"
+#include "scene/3d/camera_3d.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
-
 class EditorNode;
 class Node3D;
 class Camera3D;
+class EditorCommandPalette;
 class EditorSelection;
 class EditorExport;
 class EditorSettings;
@@ -52,6 +55,7 @@ class EditorNode3DGizmoPlugin;
 class EditorResourcePreview;
 class EditorFileSystem;
 class EditorToolAddons;
+class EditorPaths;
 class FileSystemDock;
 class ScriptEditor;
 
@@ -67,30 +71,42 @@ protected:
 public:
 	static EditorInterface *get_singleton() { return singleton; }
 
-	Control *get_editor_viewport();
+	Control *get_editor_main_control();
 	void edit_resource(const Ref<Resource> &p_resource);
+	void edit_node(Node *p_node);
 	void open_scene_from_path(const String &scene_path);
 	void reload_scene_from_path(const String &scene_path);
+
+	void play_main_scene();
+	void play_current_scene();
+	void play_custom_scene(const String &scene_path);
+	void stop_playing_scene();
+	bool is_playing_scene() const;
+	String get_playing_scene() const;
 
 	Node *get_edited_scene_root();
 	Array get_open_scenes() const;
 	ScriptEditor *get_script_editor();
 
+	EditorCommandPalette *get_command_palette() const;
+
 	void select_file(const String &p_file);
 	String get_selected_path() const;
 	String get_current_path() const;
 
-	void inspect_object(Object *p_obj, const String &p_for_property = String());
+	void inspect_object(Object *p_obj, const String &p_for_property = String(), bool p_inspector_only = false);
 
 	EditorSelection *get_selection();
 	//EditorImportExport *get_import_export();
 	Ref<EditorSettings> get_editor_settings();
+	EditorPaths *get_editor_paths();
 	EditorResourcePreview *get_resource_previewer();
 	EditorFileSystem *get_resource_file_system();
 
 	FileSystemDock *get_file_system_dock();
 
 	Control *get_base_control();
+	float get_editor_scale() const;
 
 	void set_plugin_enabled(const String &p_plugin, bool p_enabled);
 	bool is_plugin_enabled(const String &p_plugin) const;
@@ -100,7 +116,7 @@ public:
 	Error save_scene();
 	void save_scene_as(const String &p_scene, bool p_with_preview = true);
 
-	Vector<Ref<Texture2D>> make_mesh_previews(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform> *p_transforms, int p_preview_size);
+	Vector<Ref<Texture2D>> make_mesh_previews(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform3D> *p_transforms, int p_preview_size);
 
 	void set_main_screen_editor(const String &p_name);
 	void set_distraction_free_mode(bool p_enter);
@@ -121,12 +137,40 @@ class EditorPlugin : public Node {
 
 	String last_main_screen_name;
 
+	void _editor_project_settings_changed();
+
 protected:
+	void _notification(int p_what);
+
 	static void _bind_methods();
 	UndoRedo &get_undo_redo() { return *undo_redo; }
 
 	void add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon);
 	void remove_custom_type(const String &p_type);
+
+	GDVIRTUAL1R(bool, _forward_canvas_gui_input, Ref<InputEvent>)
+	GDVIRTUAL1(_forward_canvas_draw_over_viewport, Control *)
+	GDVIRTUAL1(_forward_canvas_force_draw_over_viewport, Control *)
+	GDVIRTUAL2R(bool, _forward_3d_gui_input, Camera3D *, Ref<InputEvent>)
+	GDVIRTUAL1(_forward_3d_draw_over_viewport, Control *)
+	GDVIRTUAL1(_forward_3d_force_draw_over_viewport, Control *)
+	GDVIRTUAL0RC(String, _get_plugin_name)
+	GDVIRTUAL0RC(Ref<Texture2D>, _get_plugin_icon)
+	GDVIRTUAL0RC(bool, _has_main_screen)
+	GDVIRTUAL1(_make_visible, bool)
+	GDVIRTUAL1(_edit, Variant)
+	GDVIRTUAL1RC(bool, _handles, Variant)
+	GDVIRTUAL0RC(Dictionary, _get_state)
+	GDVIRTUAL1(_set_state, Dictionary)
+	GDVIRTUAL0(_clear)
+	GDVIRTUAL0(_save_external_data)
+	GDVIRTUAL0(_apply_changes)
+	GDVIRTUAL0RC(Vector<String>, _get_breakpoints)
+	GDVIRTUAL1(_set_window_layout, Ref<ConfigFile>)
+	GDVIRTUAL1(_get_window_layout, Ref<ConfigFile>)
+	GDVIRTUAL0R(bool, _build)
+	GDVIRTUAL0(_enable_plugin)
+	GDVIRTUAL0(_disable_plugin)
 
 public:
 	enum CustomControlContainer {
@@ -165,7 +209,7 @@ public:
 	void remove_control_from_docks(Control *p_control);
 	void remove_control_from_bottom_panel(Control *p_control);
 
-	void add_tool_menu_item(const String &p_name, Object *p_handler, const String &p_callback, const Variant &p_ud = Variant());
+	void add_tool_menu_item(const String &p_name, const Callable &p_callable);
 	void add_tool_submenu_item(const String &p_name, Object *p_submenu);
 	void remove_tool_menu_item(const String &p_name);
 
@@ -210,15 +254,21 @@ public:
 	EditorInterface *get_editor_interface();
 	ScriptCreateDialog *get_script_create_dialog();
 
+	void add_undo_redo_inspector_hook_callback(Callable p_callable);
+	void remove_undo_redo_inspector_hook_callback(Callable p_callable);
+
 	int update_overlays() const;
 
-	void queue_save_layout() const;
+	void queue_save_layout();
 
 	void make_bottom_panel_item_visible(Control *p_item);
 	void hide_bottom_panel();
 
 	virtual void restore_global_state();
 	virtual void save_global_state();
+
+	void add_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser);
+	void remove_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser);
 
 	void add_import_plugin(const Ref<EditorImportPlugin> &p_importer);
 	void remove_import_plugin(const Ref<EditorImportPlugin> &p_importer);
@@ -237,6 +287,9 @@ public:
 
 	void add_autoload_singleton(const String &p_name, const String &p_path);
 	void remove_autoload_singleton(const String &p_name);
+
+	void add_debugger_plugin(const Ref<Script> &p_script);
+	void remove_debugger_plugin(const Ref<Script> &p_script);
 
 	void enable_plugin();
 	void disable_plugin();

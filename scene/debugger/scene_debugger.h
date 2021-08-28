@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,10 @@
 #ifndef SCENE_DEBUGGER_H
 #define SCENE_DEBUGGER_H
 
-#include "core/array.h"
-#include "core/object.h"
-#include "core/pair.h"
-#include "core/ustring.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "core/templates/pair.h"
+#include "core/variant/array.h"
 
 class Script;
 
@@ -77,7 +77,7 @@ public:
 class SceneDebuggerTree {
 public:
 	struct RemoteNode {
-		int child_count;
+		int child_count = 0;
 		String name;
 		String type_name;
 		ObjectID id;

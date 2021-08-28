@@ -26,7 +26,7 @@
 #ifndef OTVERROR_H_
 #define OTVERROR_H_
 
-#include FT_MODULE_ERRORS_H
+#include <freetype/ftmoderr.h>
 
 #undef FTERRORS_H_
 
@@ -34,7 +34,7 @@
 #define FT_ERR_PREFIX  OTV_Err_
 #define FT_ERR_BASE    FT_Mod_Err_OTvalid
 
-#include FT_ERRORS_H
+#include <freetype/fterrors.h>
 
 #endif /* OTVERROR_H_ */
 

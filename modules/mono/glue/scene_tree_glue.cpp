@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,14 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "scene_tree_glue.h"
-
 #ifdef MONO_GLUE_ENABLED
 
-#include "core/class_db.h"
-#include "modules/mono/csharp_script.h"
-#include "modules/mono/mono_gd/gd_mono_utils.h"
+#include "core/object/class_db.h"
+#include "core/string/string_name.h"
+#include "core/variant/array.h"
 #include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
+
+#include "../csharp_script.h"
+#include "../mono_gd/gd_mono_marshal.h"
+#include "../mono_gd/gd_mono_utils.h"
 
 Array *godot_icall_SceneTree_get_nodes_in_group_Generic(SceneTree *ptr, StringName *group, MonoReflectionType *refltype) {
 	List<Node *> nodes;
@@ -45,7 +48,7 @@ Array *godot_icall_SceneTree_get_nodes_in_group_Generic(SceneTree *ptr, StringNa
 	ptr->get_nodes_in_group(*group, &nodes);
 
 	// No need to bother if the group is empty
-	if (!nodes.empty()) {
+	if (!nodes.is_empty()) {
 		MonoType *elem_type = mono_reflection_type_get_type(refltype);
 		MonoClass *mono_class = mono_class_from_mono_type(elem_type);
 		GDMonoClass *klass = GDMono::get_singleton()->get_class(mono_class);
@@ -54,8 +57,9 @@ Array *godot_icall_SceneTree_get_nodes_in_group_Generic(SceneTree *ptr, StringNa
 			// If we're trying to get native objects, just check the inheritance list
 			StringName native_class_name = GDMonoUtils::get_native_godot_class_name(klass);
 			for (int i = 0; i < nodes.size(); ++i) {
-				if (ClassDB::is_parent_class(nodes[i]->get_class(), native_class_name))
+				if (ClassDB::is_parent_class(nodes[i]->get_class(), native_class_name)) {
 					ret.push_back(nodes[i]);
+				}
 			}
 		} else {
 			// If we're trying to get csharpscript instances, get the mono object and compare the classes
@@ -76,7 +80,7 @@ Array *godot_icall_SceneTree_get_nodes_in_group_Generic(SceneTree *ptr, StringNa
 }
 
 void godot_register_scene_tree_icalls() {
-	mono_add_internal_call("Godot.SceneTree::godot_icall_SceneTree_get_nodes_in_group_Generic", (void *)godot_icall_SceneTree_get_nodes_in_group_Generic);
+	GDMonoUtils::add_internal_call("Godot.SceneTree::godot_icall_SceneTree_get_nodes_in_group_Generic", godot_icall_SceneTree_get_nodes_in_group_Generic);
 }
 
 #endif // MONO_GLUE_ENABLED

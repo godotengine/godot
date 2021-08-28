@@ -94,7 +94,7 @@
    *     const char*  mod_err_msg
    *   } ft_mod_errors[] =
    *
-   *   #include FT_MODULE_ERRORS_H
+   *   #include <freetype/ftmoderr.h>
    * ```
    *
    */

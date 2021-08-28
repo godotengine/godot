@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,11 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "string_name_glue.h"
-
 #ifdef MONO_GLUE_ENABLED
 
-#include "core/ustring.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+
+#include "../mono_gd/gd_mono_marshal.h"
 
 StringName *godot_icall_StringName_Ctor(MonoString *p_path) {
 	return memnew(StringName(GDMonoMarshal::mono_string_to_godot(p_path)));
@@ -48,14 +49,14 @@ MonoString *godot_icall_StringName_operator_String(StringName *p_np) {
 }
 
 MonoBoolean godot_icall_StringName_is_empty(StringName *p_ptr) {
-	return (MonoBoolean)(p_ptr == StringName());
+	return (MonoBoolean)(*p_ptr == StringName());
 }
 
 void godot_register_string_name_icalls() {
-	mono_add_internal_call("Godot.StringName::godot_icall_StringName_Ctor", (void *)godot_icall_StringName_Ctor);
-	mono_add_internal_call("Godot.StringName::godot_icall_StringName_Dtor", (void *)godot_icall_StringName_Dtor);
-	mono_add_internal_call("Godot.StringName::godot_icall_StringName_operator_String", (void *)godot_icall_StringName_operator_String);
-	mono_add_internal_call("Godot.StringName::godot_icall_StringName_is_empty", (void *)godot_icall_StringName_is_empty);
+	GDMonoUtils::add_internal_call("Godot.StringName::godot_icall_StringName_Ctor", godot_icall_StringName_Ctor);
+	GDMonoUtils::add_internal_call("Godot.StringName::godot_icall_StringName_Dtor", godot_icall_StringName_Dtor);
+	GDMonoUtils::add_internal_call("Godot.StringName::godot_icall_StringName_operator_String", godot_icall_StringName_operator_String);
+	GDMonoUtils::add_internal_call("Godot.StringName::godot_icall_StringName_is_empty", godot_icall_StringName_is_empty);
 }
 
 #endif // MONO_GLUE_ENABLED

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,19 +30,20 @@
 
 #include "scene_tree.h"
 
+#include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/input/input.h"
+#include "core/io/dir_access.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
-#include "core/message_queue.h"
-#include "core/os/dir_access.h"
+#include "core/object/message_queue.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "core/print_string.h"
-#include "core/project_settings.h"
+#include "core/string/print_string.h"
 #include "node.h"
+#include "scene/animation/tween.h"
 #include "scene/debugger/scene_debugger.h"
-#include "scene/resources/dynamic_font.h"
+#include "scene/resources/font.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"
@@ -54,6 +55,7 @@
 #include "window.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 
 void SceneTreeTimer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_time_left", "time"), &SceneTreeTimer::set_time_left);
@@ -64,36 +66,40 @@ void SceneTreeTimer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("timeout"));
 }
 
-void SceneTreeTimer::set_time_left(float p_time) {
+void SceneTreeTimer::set_time_left(double p_time) {
 	time_left = p_time;
 }
 
-float SceneTreeTimer::get_time_left() const {
+double SceneTreeTimer::get_time_left() const {
 	return time_left;
 }
 
-void SceneTreeTimer::set_pause_mode_process(bool p_pause_mode_process) {
-	process_pause = p_pause_mode_process;
+void SceneTreeTimer::set_process_always(bool p_process_always) {
+	process_always = p_process_always;
 }
 
-bool SceneTreeTimer::is_pause_mode_process() {
-	return process_pause;
+bool SceneTreeTimer::is_process_always() {
+	return process_always;
+}
+
+void SceneTreeTimer::set_ignore_time_scale(bool p_ignore) {
+	ignore_time_scale = p_ignore;
+}
+
+bool SceneTreeTimer::is_ignore_time_scale() {
+	return ignore_time_scale;
 }
 
 void SceneTreeTimer::release_connections() {
 	List<Connection> connections;
 	get_all_signal_connections(&connections);
 
-	for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
-		Connection const &connection = E->get();
+	for (const Connection &connection : connections) {
 		disconnect(connection.signal.get_name(), connection.callable);
 	}
 }
 
-SceneTreeTimer::SceneTreeTimer() {
-	time_left = 0;
-	process_pause = true;
-}
+SceneTreeTimer::SceneTreeTimer() {}
 
 void SceneTree::tree_changed() {
 	tree_version++;
@@ -136,7 +142,7 @@ void SceneTree::remove_from_group(const StringName &p_group, Node *p_node) {
 	ERR_FAIL_COND(!E);
 
 	E->get().nodes.erase(p_node);
-	if (E->get().nodes.empty()) {
+	if (E->get().nodes.is_empty()) {
 		group_map.erase(E);
 	}
 }
@@ -170,8 +176,8 @@ void SceneTree::_flush_ugc() {
 			v[i] = E->get()[i];
 		}
 
-		static_assert(VARIANT_ARG_MAX == 5, "This code needs to be updated if VARIANT_ARG_MAX != 5");
-		call_group_flags(GROUP_CALL_REALTIME, E->key().group, E->key().call, v[0], v[1], v[2], v[3], v[4]);
+		static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
+		call_group_flags(GROUP_CALL_REALTIME, E->key().group, E->key().call, v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
 
 		unique_group_calls.erase(E);
 	}
@@ -183,7 +189,7 @@ void SceneTree::_update_group_order(Group &g, bool p_use_priority) {
 	if (!g.changed) {
 		return;
 	}
-	if (g.nodes.empty()) {
+	if (g.nodes.is_empty()) {
 		return;
 	}
 
@@ -206,7 +212,7 @@ void SceneTree::call_group_flags(uint32_t p_call_flags, const StringName &p_grou
 		return;
 	}
 	Group &g = E->get();
-	if (g.nodes.empty()) {
+	if (g.nodes.is_empty()) {
 		return;
 	}
 
@@ -250,11 +256,7 @@ void SceneTree::call_group_flags(uint32_t p_call_flags, const StringName &p_grou
 			}
 
 			if (p_call_flags & GROUP_CALL_REALTIME) {
-				if (p_call_flags & GROUP_CALL_MULTILEVEL) {
-					nodes[i]->call_multilevel(p_function, VARIANT_ARG_PASS);
-				} else {
-					nodes[i]->call(p_function, VARIANT_ARG_PASS);
-				}
+				nodes[i]->call(p_function, VARIANT_ARG_PASS);
 			} else {
 				MessageQueue::get_singleton()->push_call(nodes[i], p_function, VARIANT_ARG_PASS);
 			}
@@ -267,11 +269,7 @@ void SceneTree::call_group_flags(uint32_t p_call_flags, const StringName &p_grou
 			}
 
 			if (p_call_flags & GROUP_CALL_REALTIME) {
-				if (p_call_flags & GROUP_CALL_MULTILEVEL) {
-					nodes[i]->call_multilevel(p_function, VARIANT_ARG_PASS);
-				} else {
-					nodes[i]->call(p_function, VARIANT_ARG_PASS);
-				}
+				nodes[i]->call(p_function, VARIANT_ARG_PASS);
 			} else {
 				MessageQueue::get_singleton()->push_call(nodes[i], p_function, VARIANT_ARG_PASS);
 			}
@@ -290,7 +288,7 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 		return;
 	}
 	Group &g = E->get();
-	if (g.nodes.empty()) {
+	if (g.nodes.is_empty()) {
 		return;
 	}
 
@@ -341,7 +339,7 @@ void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group
 		return;
 	}
 	Group &g = E->get();
-	if (g.nodes.empty()) {
+	if (g.nodes.is_empty()) {
 		return;
 	}
 
@@ -398,30 +396,34 @@ void SceneTree::set_group(const StringName &p_group, const String &p_name, const
 	set_group_flags(0, p_group, p_name, p_value);
 }
 
-void SceneTree::init() {
+void SceneTree::initialize() {
+	ERR_FAIL_COND(!root);
 	initialized = true;
 	root->_set_tree(this);
-	MainLoop::init();
+	MainLoop::initialize();
 }
 
-bool SceneTree::iteration(float p_time) {
+bool SceneTree::physics_process(double p_time) {
 	root_lock++;
 
 	current_frame++;
 
 	flush_transform_notifications();
 
-	MainLoop::iteration(p_time);
+	MainLoop::physics_process(p_time);
 	physics_process_time = p_time;
 
-	emit_signal("physics_frame");
+	emit_signal(SNAME("physics_frame"));
 
-	_notify_group_pause("physics_process_internal", Node::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
-	_notify_group_pause("physics_process", Node::NOTIFICATION_PHYSICS_PROCESS);
+	_notify_group_pause(SNAME("physics_process_internal"), Node::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
+	call_group_flags(GROUP_CALL_REALTIME, SNAME("_picking_viewports"), SNAME("_process_picking"));
+	_notify_group_pause(SNAME("physics_process"), Node::NOTIFICATION_PHYSICS_PROCESS);
 	_flush_ugc();
 	MessageQueue::get_singleton()->flush(); //small little hack
+
+	process_tweens(p_time, true);
+
 	flush_transform_notifications();
-	call_group_flags(GROUP_CALL_REALTIME, "_viewports", "update_worlds");
 	root_lock--;
 
 	_flush_delete_queue();
@@ -430,34 +432,29 @@ bool SceneTree::iteration(float p_time) {
 	return _quit;
 }
 
-bool SceneTree::idle(float p_time) {
-	//print_line("ram: "+itos(OS::get_singleton()->get_static_memory_usage())+" sram: "+itos(OS::get_singleton()->get_dynamic_memory_usage()));
-	//print_line("node count: "+itos(get_node_count()));
-	//print_line("TEXTURE RAM: "+itos(RS::get_singleton()->get_render_info(RS::INFO_TEXTURE_MEM_USED)));
-
+bool SceneTree::process(double p_time) {
 	root_lock++;
 
-	MainLoop::idle(p_time);
+	MainLoop::process(p_time);
 
-	idle_process_time = p_time;
+	process_time = p_time;
 
 	if (multiplayer_poll) {
 		multiplayer->poll();
 	}
 
-	emit_signal("idle_frame");
+	emit_signal(SNAME("process_frame"));
 
 	MessageQueue::get_singleton()->flush(); //small little hack
 
 	flush_transform_notifications();
 
-	_notify_group_pause("idle_process_internal", Node::NOTIFICATION_INTERNAL_PROCESS);
-	_notify_group_pause("idle_process", Node::NOTIFICATION_PROCESS);
+	_notify_group_pause(SNAME("process_internal"), Node::NOTIFICATION_INTERNAL_PROCESS);
+	_notify_group_pause(SNAME("process"), Node::NOTIFICATION_PROCESS);
 
 	_flush_ugc();
 	MessageQueue::get_singleton()->flush(); //small little hack
 	flush_transform_notifications(); //transforms after world update, to avoid unnecessary enter/exit notifications
-	call_group_flags(GROUP_CALL_REALTIME, "_viewports", "update_worlds");
 
 	root_lock--;
 
@@ -469,19 +466,24 @@ bool SceneTree::idle(float p_time) {
 
 	for (List<Ref<SceneTreeTimer>>::Element *E = timers.front(); E;) {
 		List<Ref<SceneTreeTimer>>::Element *N = E->next();
-		if (pause && !E->get()->is_pause_mode_process()) {
+		if (paused && !E->get()->is_process_always()) {
 			if (E == L) {
 				break; //break on last, so if new timers were added during list traversal, ignore them.
 			}
 			E = N;
 			continue;
 		}
-		float time_left = E->get()->get_time_left();
-		time_left -= p_time;
+
+		double time_left = E->get()->get_time_left();
+		if (E->get()->is_ignore_time_scale()) {
+			time_left -= Engine::get_singleton()->get_process_step();
+		} else {
+			time_left -= p_time;
+		}
 		E->get()->set_time_left(time_left);
 
 		if (time_left < 0) {
-			E->get()->emit_signal("timeout");
+			E->get()->emit_signal(SNAME("timeout"));
 			timers.erase(E);
 		}
 		if (E == L) {
@@ -490,15 +492,17 @@ bool SceneTree::idle(float p_time) {
 		E = N;
 	}
 
+	process_tweens(p_time, false);
+
 	flush_transform_notifications(); //additional transforms after timers update
 
 	_call_idle_callbacks();
 
 #ifdef TOOLS_ENABLED
-
+#ifndef _3D_DISABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
 		//simple hack to reload fallback environment if it changed from editor
-		String env_path = ProjectSettings::get_singleton()->get("rendering/environment/default_environment");
+		String env_path = ProjectSettings::get_singleton()->get(SNAME("rendering/environment/defaults/default_environment"));
 		env_path = env_path.strip_edges(); //user may have added a space or two
 		String cpath;
 		Ref<Environment> fallback = get_root()->get_world_3d()->get_fallback_environment();
@@ -510,7 +514,7 @@ bool SceneTree::idle(float p_time) {
 				fallback = ResourceLoader::load(env_path);
 				if (fallback.is_null()) {
 					//could not load fallback, set as empty
-					ProjectSettings::get_singleton()->set("rendering/environment/default_environment", "");
+					ProjectSettings::get_singleton()->set("rendering/environment/defaults/default_environment", "");
 				}
 			} else {
 				fallback.unref();
@@ -518,20 +522,46 @@ bool SceneTree::idle(float p_time) {
 			get_root()->get_world_3d()->set_fallback_environment(fallback);
 		}
 	}
-
-#endif
+#endif // _3D_DISABLED
+#endif // TOOLS_ENABLED
 
 	return _quit;
 }
 
-void SceneTree::finish() {
+void SceneTree::process_tweens(float p_delta, bool p_physics) {
+	// This methods works similarly to how SceneTreeTimers are handled.
+	List<Ref<Tween>>::Element *L = tweens.back();
+
+	for (List<Ref<Tween>>::Element *E = tweens.front(); E;) {
+		List<Ref<Tween>>::Element *N = E->next();
+		// Don't process if paused or process mode doesn't match.
+		if ((paused && E->get()->should_pause()) || (p_physics == (E->get()->get_process_mode() == Tween::TWEEN_PROCESS_IDLE))) {
+			if (E == L) {
+				break;
+			}
+			E = N;
+			continue;
+		}
+
+		if (!E->get()->step(p_delta)) {
+			E->get()->set_valid(false);
+			tweens.erase(E);
+		}
+		if (E == L) {
+			break;
+		}
+		E = N;
+	}
+}
+
+void SceneTree::finalize() {
 	_flush_delete_queue();
 
 	_flush_ugc();
 
 	initialized = false;
 
-	MainLoop::finish();
+	MainLoop::finalize();
 
 	if (root) {
 		root->_set_tree(nullptr);
@@ -541,19 +571,14 @@ void SceneTree::finish() {
 	}
 
 	// cleanup timers
-	for (List<Ref<SceneTreeTimer>>::Element *E = timers.front(); E; E = E->next()) {
-		E->get()->release_connections();
+	for (Ref<SceneTreeTimer> &timer : timers) {
+		timer->release_connections();
 	}
 	timers.clear();
 }
 
 void SceneTree::quit(int p_exit_code) {
-	if (p_exit_code >= 0) {
-		// Override the exit code if a positive argument is given (the default is `-1`).
-		// This is a shorthand for calling `set_exit_code()` on the OS singleton then quitting.
-		OS::get_singleton()->set_exit_code(p_exit_code);
-	}
-
+	OS::get_singleton()->set_exit_code(p_exit_code);
 	_quit = true;
 }
 
@@ -610,7 +635,7 @@ void SceneTree::set_quit_on_go_back(bool p_enable) {
 #ifdef TOOLS_ENABLED
 
 bool SceneTree::is_node_being_edited(const Node *p_node) const {
-	return Engine::get_singleton()->is_editor_hint() && edited_scene_root && (edited_scene_root->is_a_parent_of(p_node) || edited_scene_root == p_node);
+	return Engine::get_singleton()->is_editor_hint() && edited_scene_root && (edited_scene_root->is_ancestor_of(p_node) || edited_scene_root == p_node);
 }
 #endif
 
@@ -773,20 +798,20 @@ Ref<ArrayMesh> SceneTree::get_debug_contact_mesh() {
 }
 
 void SceneTree::set_pause(bool p_enabled) {
-	if (p_enabled == pause) {
+	if (p_enabled == paused) {
 		return;
 	}
-	pause = p_enabled;
+	paused = p_enabled;
 	NavigationServer3D::get_singleton()->set_active(!p_enabled);
 	PhysicsServer3D::get_singleton()->set_active(!p_enabled);
 	PhysicsServer2D::get_singleton()->set_active(!p_enabled);
 	if (get_root()) {
-		get_root()->propagate_notification(p_enabled ? Node::NOTIFICATION_PAUSED : Node::NOTIFICATION_UNPAUSED);
+		get_root()->_propagate_pause_notification(p_enabled);
 	}
 }
 
 bool SceneTree::is_paused() const {
-	return pause;
+	return paused;
 }
 
 void SceneTree::_notify_group_pause(const StringName &p_group, int p_notification) {
@@ -795,7 +820,7 @@ void SceneTree::_notify_group_pause(const StringName &p_group, int p_notificatio
 		return;
 	}
 	Group &g = E->get();
-	if (g.nodes.empty()) {
+	if (g.nodes.is_empty()) {
 		return;
 	}
 
@@ -835,23 +860,20 @@ void SceneTree::_notify_group_pause(const StringName &p_group, int p_notificatio
 
 /*
 void SceneMainLoop::_update_listener_2d() {
-
 	if (listener_2d.is_valid()) {
-
 		SpatialSound2DServer::get_singleton()->listener_set_space( listener_2d, world_2d->get_sound_space() );
 	}
-
 }
 
 */
 
-void SceneTree::_call_input_pause(const StringName &p_group, const StringName &p_method, const Ref<InputEvent> &p_input, Viewport *p_viewport) {
+void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_call_type, const Ref<InputEvent> &p_input, Viewport *p_viewport) {
 	Map<StringName, Group>::Element *E = group_map.find(p_group);
 	if (!E) {
 		return;
 	}
 	Group &g = E->get();
-	if (g.nodes.empty()) {
+	if (g.nodes.is_empty()) {
 		return;
 	}
 
@@ -863,9 +885,6 @@ void SceneTree::_call_input_pause(const StringName &p_group, const StringName &p
 
 	int node_count = nodes_copy.size();
 	Node **nodes = nodes_copy.ptrw();
-
-	Variant arg = p_input;
-	const Variant *v[1] = { &arg };
 
 	call_lock++;
 
@@ -883,8 +902,17 @@ void SceneTree::_call_input_pause(const StringName &p_group, const StringName &p
 			continue;
 		}
 
-		n->call_multilevel(p_method, (const Variant **)v, 1);
-		//ERR_FAIL_COND(node_count != g.nodes.size());
+		switch (p_call_type) {
+			case CALL_INPUT_TYPE_INPUT:
+				n->_call_input(p_input);
+				break;
+			case CALL_INPUT_TYPE_UNHANDLED_INPUT:
+				n->_call_unhandled_input(p_input);
+				break;
+			case CALL_INPUT_TYPE_UNHANDLED_KEY_INPUT:
+				n->_call_unhandled_key_input(p_input);
+				break;
+		}
 	}
 
 	call_lock--;
@@ -910,8 +938,8 @@ Variant SceneTree::_call_group_flags(const Variant **p_args, int p_argcount, Cal
 		v[i] = *p_args[i + 3];
 	}
 
-	static_assert(VARIANT_ARG_MAX == 5, "This code needs to be updated if VARIANT_ARG_MAX != 5");
-	call_group_flags(flags, group, method, v[0], v[1], v[2], v[3], v[4]);
+	static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
+	call_group_flags(flags, group, method, v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
 	return Variant();
 }
 
@@ -930,17 +958,13 @@ Variant SceneTree::_call_group(const Variant **p_args, int p_argcount, Callable:
 		v[i] = *p_args[i + 2];
 	}
 
-	static_assert(VARIANT_ARG_MAX == 5, "This code needs to be updated if VARIANT_ARG_MAX != 5");
-	call_group_flags(0, group, method, v[0], v[1], v[2], v[3], v[4]);
+	static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
+	call_group_flags(0, group, method, v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
 	return Variant();
 }
 
 int64_t SceneTree::get_frame() const {
 	return current_frame;
-}
-
-int64_t SceneTree::get_event_count() const {
-	return current_event;
 }
 
 Array SceneTree::_get_nodes_in_group(const StringName &p_group) {
@@ -968,6 +992,21 @@ Array SceneTree::_get_nodes_in_group(const StringName &p_group) {
 
 bool SceneTree::has_group(const StringName &p_identifier) const {
 	return group_map.has(p_identifier);
+}
+
+Node *SceneTree::get_first_node_in_group(const StringName &p_group) {
+	Map<StringName, Group>::Element *E = group_map.find(p_group);
+	if (!E) {
+		return nullptr; //no group
+	}
+
+	_update_group_order(E->get()); //update order just in case
+
+	if (E->get().nodes.size() == 0) {
+		return nullptr;
+	}
+
+	return E->get().nodes[0];
 }
 
 void SceneTree::get_nodes_in_group(const StringName &p_group, List<Node *> *p_list) {
@@ -1065,11 +1104,11 @@ Error SceneTree::change_scene(const String &p_path) {
 Error SceneTree::change_scene_to(const Ref<PackedScene> &p_scene) {
 	Node *new_scene = nullptr;
 	if (p_scene.is_valid()) {
-		new_scene = p_scene->instance();
+		new_scene = p_scene->instantiate();
 		ERR_FAIL_COND_V(!new_scene, ERR_CANT_CREATE);
 	}
 
-	call_deferred("_change_scene", new_scene);
+	call_deferred(SNAME("_change_scene"), new_scene);
 	return OK;
 }
 
@@ -1084,33 +1123,34 @@ void SceneTree::add_current_scene(Node *p_current) {
 	root->add_child(p_current);
 }
 
-Ref<SceneTreeTimer> SceneTree::create_timer(float p_delay_sec, bool p_process_pause) {
+Ref<SceneTreeTimer> SceneTree::create_timer(double p_delay_sec, bool p_process_always) {
 	Ref<SceneTreeTimer> stt;
-	stt.instance();
-	stt->set_pause_mode_process(p_process_pause);
+	stt.instantiate();
+	stt->set_process_always(p_process_always);
 	stt->set_time_left(p_delay_sec);
 	timers.push_back(stt);
 	return stt;
 }
 
-void SceneTree::_network_peer_connected(int p_id) {
-	emit_signal("network_peer_connected", p_id);
+Ref<Tween> SceneTree::create_tween() {
+	Ref<Tween> tween;
+	tween.instantiate();
+	tween->set_valid(true);
+	tweens.push_back(tween);
+	return tween;
 }
 
-void SceneTree::_network_peer_disconnected(int p_id) {
-	emit_signal("network_peer_disconnected", p_id);
-}
+Array SceneTree::get_processed_tweens() {
+	Array ret;
+	ret.resize(tweens.size());
 
-void SceneTree::_connected_to_server() {
-	emit_signal("connected_to_server");
-}
+	int i = 0;
+	for (const Ref<Tween> &tween : tweens) {
+		ret[i] = tween;
+		i++;
+	}
 
-void SceneTree::_connection_failed() {
-	emit_signal("connection_failed");
-}
-
-void SceneTree::_server_disconnected() {
-	emit_signal("server_disconnected");
+	return ret;
 }
 
 Ref<MultiplayerAPI> SceneTree::get_multiplayer() const {
@@ -1128,58 +1168,8 @@ bool SceneTree::is_multiplayer_poll_enabled() const {
 void SceneTree::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer) {
 	ERR_FAIL_COND(!p_multiplayer.is_valid());
 
-	if (multiplayer.is_valid()) {
-		multiplayer->disconnect("network_peer_connected", callable_mp(this, &SceneTree::_network_peer_connected));
-		multiplayer->disconnect("network_peer_disconnected", callable_mp(this, &SceneTree::_network_peer_disconnected));
-		multiplayer->disconnect("connected_to_server", callable_mp(this, &SceneTree::_connected_to_server));
-		multiplayer->disconnect("connection_failed", callable_mp(this, &SceneTree::_connection_failed));
-		multiplayer->disconnect("server_disconnected", callable_mp(this, &SceneTree::_server_disconnected));
-	}
-
 	multiplayer = p_multiplayer;
 	multiplayer->set_root_node(root);
-
-	multiplayer->connect("network_peer_connected", callable_mp(this, &SceneTree::_network_peer_connected));
-	multiplayer->connect("network_peer_disconnected", callable_mp(this, &SceneTree::_network_peer_disconnected));
-	multiplayer->connect("connected_to_server", callable_mp(this, &SceneTree::_connected_to_server));
-	multiplayer->connect("connection_failed", callable_mp(this, &SceneTree::_connection_failed));
-	multiplayer->connect("server_disconnected", callable_mp(this, &SceneTree::_server_disconnected));
-}
-
-void SceneTree::set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_network_peer) {
-	multiplayer->set_network_peer(p_network_peer);
-}
-
-Ref<NetworkedMultiplayerPeer> SceneTree::get_network_peer() const {
-	return multiplayer->get_network_peer();
-}
-
-bool SceneTree::is_network_server() const {
-	return multiplayer->is_network_server();
-}
-
-bool SceneTree::has_network_peer() const {
-	return multiplayer->has_network_peer();
-}
-
-int SceneTree::get_network_unique_id() const {
-	return multiplayer->get_network_unique_id();
-}
-
-Vector<int> SceneTree::get_network_connected_peers() const {
-	return multiplayer->get_network_connected_peers();
-}
-
-int SceneTree::get_rpc_sender_id() const {
-	return multiplayer->get_rpc_sender_id();
-}
-
-void SceneTree::set_refuse_new_network_connections(bool p_refuse) {
-	multiplayer->set_refuse_new_network_connections(p_refuse);
-}
-
-bool SceneTree::is_refusing_new_network_connections() const {
-	return multiplayer->is_refusing_new_network_connections();
 }
 
 void SceneTree::_bind_methods() {
@@ -1200,11 +1190,13 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pause", "enable"), &SceneTree::set_pause);
 	ClassDB::bind_method(D_METHOD("is_paused"), &SceneTree::is_paused);
 
-	ClassDB::bind_method(D_METHOD("create_timer", "time_sec", "pause_mode_process"), &SceneTree::create_timer, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("create_timer", "time_sec", "process_always"), &SceneTree::create_timer, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("create_tween"), &SceneTree::create_tween);
+	ClassDB::bind_method(D_METHOD("get_processed_tweens"), &SceneTree::get_processed_tweens);
 
 	ClassDB::bind_method(D_METHOD("get_node_count"), &SceneTree::get_node_count);
 	ClassDB::bind_method(D_METHOD("get_frame"), &SceneTree::get_frame);
-	ClassDB::bind_method(D_METHOD("quit", "exit_code"), &SceneTree::quit, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("quit", "exit_code"), &SceneTree::quit, DEFVAL(EXIT_SUCCESS));
 
 	ClassDB::bind_method(D_METHOD("queue_delete", "obj"), &SceneTree::queue_delete);
 
@@ -1230,6 +1222,7 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_group", "group", "property", "value"), &SceneTree::set_group);
 
 	ClassDB::bind_method(D_METHOD("get_nodes_in_group", "group"), &SceneTree::_get_nodes_in_group);
+	ClassDB::bind_method(D_METHOD("get_first_node_in_group", "group"), &SceneTree::get_first_node_in_group);
 
 	ClassDB::bind_method(D_METHOD("set_current_scene", "child_node"), &SceneTree::set_current_scene);
 	ClassDB::bind_method(D_METHOD("get_current_scene"), &SceneTree::get_current_scene);
@@ -1245,43 +1238,27 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_multiplayer"), &SceneTree::get_multiplayer);
 	ClassDB::bind_method(D_METHOD("set_multiplayer_poll_enabled", "enabled"), &SceneTree::set_multiplayer_poll_enabled);
 	ClassDB::bind_method(D_METHOD("is_multiplayer_poll_enabled"), &SceneTree::is_multiplayer_poll_enabled);
-	ClassDB::bind_method(D_METHOD("set_network_peer", "peer"), &SceneTree::set_network_peer);
-	ClassDB::bind_method(D_METHOD("get_network_peer"), &SceneTree::get_network_peer);
-	ClassDB::bind_method(D_METHOD("is_network_server"), &SceneTree::is_network_server);
-	ClassDB::bind_method(D_METHOD("has_network_peer"), &SceneTree::has_network_peer);
-	ClassDB::bind_method(D_METHOD("get_network_connected_peers"), &SceneTree::get_network_connected_peers);
-	ClassDB::bind_method(D_METHOD("get_network_unique_id"), &SceneTree::get_network_unique_id);
-	ClassDB::bind_method(D_METHOD("get_rpc_sender_id"), &SceneTree::get_rpc_sender_id);
-	ClassDB::bind_method(D_METHOD("set_refuse_new_network_connections", "refuse"), &SceneTree::set_refuse_new_network_connections);
-	ClassDB::bind_method(D_METHOD("is_refusing_new_network_connections"), &SceneTree::is_refusing_new_network_connections);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_collisions_hint"), "set_debug_collisions_hint", "is_debugging_collisions_hint");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_navigation_hint"), "set_debug_navigation_hint", "is_debugging_navigation_hint");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paused"), "set_pause", "is_paused");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "refuse_new_network_connections"), "set_refuse_new_network_connections", "is_refusing_new_network_connections");
-	ADD_PROPERTY_DEFAULT("refuse_new_network_connections", false);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "edited_scene_root", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "set_edited_scene_root", "get_edited_scene_root");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "current_scene", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "set_current_scene", "get_current_scene");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "network_peer", PROPERTY_HINT_RESOURCE_TYPE, "NetworkedMultiplayerPeer", 0), "set_network_peer", "get_network_peer");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "root", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "", "get_root");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", 0), "set_multiplayer", "get_multiplayer");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "edited_scene_root", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_edited_scene_root", "get_edited_scene_root");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "current_scene", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_current_scene", "get_current_scene");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "root", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "", "get_root");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", PROPERTY_USAGE_NONE), "set_multiplayer", "get_multiplayer");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multiplayer_poll"), "set_multiplayer_poll_enabled", "is_multiplayer_poll_enabled");
 
 	ADD_SIGNAL(MethodInfo("tree_changed"));
+	ADD_SIGNAL(MethodInfo("tree_process_mode_changed")); //editor only signal, but due to API hash it can't be removed in run-time
 	ADD_SIGNAL(MethodInfo("node_added", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("node_removed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("node_renamed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("node_configuration_warning_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 
-	ADD_SIGNAL(MethodInfo("idle_frame"));
+	ADD_SIGNAL(MethodInfo("process_frame"));
 	ADD_SIGNAL(MethodInfo("physics_frame"));
 
 	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files"), PropertyInfo(Variant::INT, "screen")));
-	ADD_SIGNAL(MethodInfo("network_peer_connected", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("network_peer_disconnected", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("connected_to_server"));
-	ADD_SIGNAL(MethodInfo("connection_failed"));
-	ADD_SIGNAL(MethodInfo("server_disconnected"));
 
 	BIND_ENUM_CONSTANT(GROUP_CALL_DEFAULT);
 	BIND_ENUM_CONSTANT(GROUP_CALL_REVERSE);
@@ -1311,7 +1288,7 @@ void SceneTree::get_argument_options(const StringName &p_function, int p_idx, Li
 		List<String> directories;
 		directories.push_back(dir_access->get_current_dir());
 
-		while (!directories.empty()) {
+		while (!directories.is_empty()) {
 			dir_access->change_dir(directories.back()->get());
 			directories.pop_back();
 
@@ -1340,78 +1317,102 @@ SceneTree::SceneTree() {
 	if (singleton == nullptr) {
 		singleton = this;
 	}
-	_quit = false;
-	accept_quit = true;
-	quit_on_go_back = true;
-	initialized = false;
-#ifdef DEBUG_ENABLED
-	debug_collisions_hint = false;
-	debug_navigation_hint = false;
-#endif
-	debug_collisions_color = GLOBAL_DEF("debug/shapes/collision/shape_color", Color(0.0, 0.6, 0.7, 0.5));
+	debug_collisions_color = GLOBAL_DEF("debug/shapes/collision/shape_color", Color(0.0, 0.6, 0.7, 0.42));
 	debug_collision_contact_color = GLOBAL_DEF("debug/shapes/collision/contact_color", Color(1.0, 0.2, 0.1, 0.8));
 	debug_navigation_color = GLOBAL_DEF("debug/shapes/navigation/geometry_color", Color(0.1, 1.0, 0.7, 0.4));
 	debug_navigation_disabled_color = GLOBAL_DEF("debug/shapes/navigation/disabled_geometry_color", Color(1.0, 0.7, 0.1, 0.4));
 	collision_debug_contacts = GLOBAL_DEF("debug/shapes/collision/max_contacts_displayed", 10000);
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/shapes/collision/max_contacts_displayed", PropertyInfo(Variant::INT, "debug/shapes/collision/max_contacts_displayed", PROPERTY_HINT_RANGE, "0,20000,1")); // No negative
 
-	tree_version = 1;
-	physics_process_time = 1;
-	idle_process_time = 1;
+	GLOBAL_DEF("debug/shapes/collision/draw_2d_outlines", true);
 
-	root = nullptr;
-	pause = false;
-	current_frame = 0;
-	current_event = 0;
-	tree_changed_name = "tree_changed";
-	node_added_name = "node_added";
-	node_removed_name = "node_removed";
-	node_renamed_name = "node_renamed";
-	ugc_locked = false;
-	call_lock = 0;
-	root_lock = 0;
-	node_count = 0;
+	Math::randomize();
 
-	//create with mainloop
+	// Create with mainloop.
 
 	root = memnew(Window);
 	root->set_name("root");
+#ifndef _3D_DISABLED
 	if (!root->get_world_3d().is_valid()) {
 		root->set_world_3d(Ref<World3D>(memnew(World3D)));
 	}
+	root->set_as_audio_listener_3d(true);
+#endif // _3D_DISABLED
 
-	// Initialize network state
-	multiplayer_poll = true;
+	// Initialize network state.
 	set_multiplayer(Ref<MultiplayerAPI>(memnew(MultiplayerAPI)));
 
-	//root->set_world_2d( Ref<World2D>( memnew( World2D )));
-	root->set_as_audio_listener(true);
 	root->set_as_audio_listener_2d(true);
 	current_scene = nullptr;
 
-	int msaa_mode = GLOBAL_DEF("rendering/quality/screen_filters/msaa", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/screen_filters/msaa", PropertyInfo(Variant::INT, "rendering/quality/screen_filters/msaa", PROPERTY_HINT_ENUM, "Disabled (Fastest),2x (Fast),4x (Average),8x (Slow),16x (Slower)"));
+	const int msaa_mode = GLOBAL_DEF("rendering/anti_aliasing/quality/msaa", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/quality/msaa", PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/msaa", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Fast),4× (Average),8× (Slow),16× (Slower)")));
 	root->set_msaa(Viewport::MSAA(msaa_mode));
 
-	int ssaa_mode = GLOBAL_DEF("rendering/quality/screen_filters/screen_space_aa", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/screen_filters/screen_space_aa", PropertyInfo(Variant::INT, "rendering/quality/screen_filters/screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast)"));
+	const int ssaa_mode = GLOBAL_DEF("rendering/anti_aliasing/quality/screen_space_aa", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/quality/screen_space_aa", PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast)"));
 	root->set_screen_space_aa(Viewport::ScreenSpaceAA(ssaa_mode));
 
-	{ //load default fallback environment
-		//get possible extensions
+	const bool use_debanding = GLOBAL_DEF("rendering/anti_aliasing/quality/use_debanding", false);
+	root->set_use_debanding(use_debanding);
+
+	const bool use_occlusion_culling = GLOBAL_DEF("rendering/occlusion_culling/use_occlusion_culling", false);
+	root->set_use_occlusion_culling(use_occlusion_culling);
+
+	float lod_threshold = GLOBAL_DEF("rendering/mesh_lod/lod_change/threshold_pixels", 1.0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/mesh_lod/lod_change/threshold_pixels", PropertyInfo(Variant::FLOAT, "rendering/mesh_lod/lod_change/threshold_pixels", PROPERTY_HINT_RANGE, "0,1024,0.1"));
+	root->set_lod_threshold(lod_threshold);
+
+	bool snap_2d_transforms = GLOBAL_DEF("rendering/2d/snap/snap_2d_transforms_to_pixel", false);
+	root->set_snap_2d_transforms_to_pixel(snap_2d_transforms);
+
+	bool snap_2d_vertices = GLOBAL_DEF("rendering/2d/snap/snap_2d_vertices_to_pixel", false);
+	root->set_snap_2d_vertices_to_pixel(snap_2d_vertices);
+
+	int shadowmap_size = GLOBAL_DEF("rendering/shadows/shadow_atlas/size", 4096);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadow_atlas/size", PropertyInfo(Variant::INT, "rendering/shadows/shadow_atlas/size", PROPERTY_HINT_RANGE, "256,16384"));
+	GLOBAL_DEF("rendering/shadows/shadow_atlas/size.mobile", 2048);
+	bool shadowmap_16_bits = GLOBAL_DEF("rendering/shadows/shadow_atlas/16_bits", true);
+	int atlas_q0 = GLOBAL_DEF("rendering/shadows/shadow_atlas/quadrant_0_subdiv", 2);
+	int atlas_q1 = GLOBAL_DEF("rendering/shadows/shadow_atlas/quadrant_1_subdiv", 2);
+	int atlas_q2 = GLOBAL_DEF("rendering/shadows/shadow_atlas/quadrant_2_subdiv", 3);
+	int atlas_q3 = GLOBAL_DEF("rendering/shadows/shadow_atlas/quadrant_3_subdiv", 4);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadow_atlas/quadrant_0_subdiv", PropertyInfo(Variant::INT, "rendering/shadows/shadow_atlas/quadrant_0_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadow_atlas/quadrant_1_subdiv", PropertyInfo(Variant::INT, "rendering/shadows/shadow_atlas/quadrant_1_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadow_atlas/quadrant_2_subdiv", PropertyInfo(Variant::INT, "rendering/shadows/shadow_atlas/quadrant_2_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadow_atlas/quadrant_3_subdiv", PropertyInfo(Variant::INT, "rendering/shadows/shadow_atlas/quadrant_3_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+
+	root->set_shadow_atlas_size(shadowmap_size);
+	root->set_shadow_atlas_16_bits(shadowmap_16_bits);
+	root->set_shadow_atlas_quadrant_subdiv(0, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q0));
+	root->set_shadow_atlas_quadrant_subdiv(1, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q1));
+	root->set_shadow_atlas_quadrant_subdiv(2, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q2));
+	root->set_shadow_atlas_quadrant_subdiv(3, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q3));
+
+	Viewport::SDFOversize sdf_oversize = Viewport::SDFOversize(int(GLOBAL_DEF("rendering/2d/sdf/oversize", 1)));
+	root->set_sdf_oversize(sdf_oversize);
+	Viewport::SDFScale sdf_scale = Viewport::SDFScale(int(GLOBAL_DEF("rendering/2d/sdf/scale", 1)));
+	root->set_sdf_scale(sdf_scale);
+
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/2d/sdf/oversize", PropertyInfo(Variant::INT, "rendering/2d/sdf/oversize", PROPERTY_HINT_ENUM, "100%,120%,150%,200%"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/2d/sdf/scale", PropertyInfo(Variant::INT, "rendering/2d/sdf/scale", PROPERTY_HINT_ENUM, "100%,50%,25%"));
+
+#ifndef _3D_DISABLED
+	{ // Load default fallback environment.
+		// Get possible extensions.
 		List<String> exts;
 		ResourceLoader::get_recognized_extensions_for_type("Environment", &exts);
 		String ext_hint;
-		for (List<String>::Element *E = exts.front(); E; E = E->next()) {
+		for (const String &E : exts) {
 			if (ext_hint != String()) {
 				ext_hint += ",";
 			}
-			ext_hint += "*." + E->get();
+			ext_hint += "*." + E;
 		}
-		//get path
-		String env_path = GLOBAL_DEF("rendering/environment/default_environment", "");
-		//setup property
-		ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/default_environment", PropertyInfo(Variant::STRING, "rendering/viewport/default_environment", PROPERTY_HINT_FILE, ext_hint));
+		// Get path.
+		String env_path = GLOBAL_DEF("rendering/environment/defaults/default_environment", "");
+		// Setup property.
+		ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/defaults/default_environment", PropertyInfo(Variant::STRING, "rendering/viewport/default_environment", PROPERTY_HINT_FILE, ext_hint));
 		env_path = env_path.strip_edges();
 		if (env_path != String()) {
 			Ref<Environment> env = ResourceLoader::load(env_path);
@@ -1419,15 +1420,16 @@ SceneTree::SceneTree() {
 				root->get_world_3d()->set_fallback_environment(env);
 			} else {
 				if (Engine::get_singleton()->is_editor_hint()) {
-					//file was erased, clear the field.
-					ProjectSettings::get_singleton()->set("rendering/environment/default_environment", "");
+					// File was erased, clear the field.
+					ProjectSettings::get_singleton()->set("rendering/environment/defaults/default_environment", "");
 				} else {
-					//file was erased, notify user.
+					// File was erased, notify user.
 					ERR_PRINT(RTR("Default Environment as specified in Project Settings (Rendering -> Environment -> Default Environment) could not be loaded."));
 				}
 			}
 		}
 	}
+#endif // _3D_DISABLED
 
 	root->set_physics_object_picking(GLOBAL_DEF("physics/common/enable_object_picking", true));
 

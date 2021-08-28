@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -146,6 +146,8 @@ int widechar_main(int argc, wchar_t **argv) {
 		argv_utf8[i] = wc_to_utf8(argv[i]);
 	}
 
+	TEST_MAIN_PARAM_OVERRIDE(argc, argv_utf8)
+
 	Error err = Main::setup(argv_utf8[0], argc - 1, &argv_utf8[1]);
 
 	if (err != OK) {
@@ -186,10 +188,12 @@ int _main() {
 	return result;
 }
 
-int main(int _argc, char **_argv) {
+int main(int argc, char **argv) {
+	// override the arguments for the test handler / if symbol is provided
+	// TEST_MAIN_OVERRIDE
+
 	// _argc and _argv are ignored
 	// we are going to use the WideChar version of them instead
-
 #ifdef CRASH_HANDLER_EXCEPTION
 	__try {
 		return _main();

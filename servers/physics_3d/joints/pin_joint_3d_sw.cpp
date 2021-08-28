@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@ Adapted to Godot from the Bullet library.
 
 /*
 Bullet Continuous Collision Detection and Physics Library
-Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+Copyright (c) 2003-2006 Erwin Coumans  https://bulletphysics.org
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
@@ -50,6 +50,13 @@ subject to the following restrictions:
 #include "pin_joint_3d_sw.h"
 
 bool PinJoint3DSW::setup(real_t p_step) {
+	dynamic_A = (A->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
+	dynamic_B = (B->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
+
+	if (!dynamic_A && !dynamic_B) {
+		return false;
+	}
+
 	m_appliedImpulse = real_t(0.);
 
 	Vector3 normal(0, 0, 0);
@@ -119,8 +126,12 @@ void PinJoint3DSW::solve(real_t p_step) {
 
 		m_appliedImpulse += impulse;
 		Vector3 impulse_vector = normal * impulse;
-		A->apply_impulse(pivotAInW - A->get_transform().origin, impulse_vector);
-		B->apply_impulse(pivotBInW - B->get_transform().origin, -impulse_vector);
+		if (dynamic_A) {
+			A->apply_impulse(impulse_vector, pivotAInW - A->get_transform().origin);
+		}
+		if (dynamic_B) {
+			B->apply_impulse(-impulse_vector, pivotBInW - B->get_transform().origin);
+		}
 
 		normal[i] = 0;
 	}

@@ -12,8 +12,14 @@
  *
  */
 /*
- *  Copyright (C) 2006-2018, Arm Limited (or its affiliates), All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  Copyright The Mbed TLS Contributors
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -27,7 +33,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  This file is part of Mbed TLS (https://tls.mbed.org)
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  */
 
 #ifndef MBEDTLS_GCM_H
@@ -157,7 +182,7 @@ int mbedtls_gcm_setkey( mbedtls_gcm_context *ctx,
  *                  than zero, this must be a writable buffer of at least that
  *                  size in Bytes.
  * \param tag_len   The length of the tag to generate.
- * \param tag       The buffer for holding the tag. This must be a readable
+ * \param tag       The buffer for holding the tag. This must be a writable
  *                  buffer of at least \p tag_len Bytes.
  *
  * \return          \c 0 if the encryption or decryption was performed
@@ -285,7 +310,7 @@ int mbedtls_gcm_update( mbedtls_gcm_context *ctx,
  *                  tag. The tag can have a maximum length of 16 Bytes.
  *
  * \param ctx       The GCM context. This must be initialized.
- * \param tag       The buffer for holding the tag. This must be a readable
+ * \param tag       The buffer for holding the tag. This must be a writable
  *                  buffer of at least \p tag_len Bytes.
  * \param tag_len   The length of the tag to generate. This must be at least
  *                  four.

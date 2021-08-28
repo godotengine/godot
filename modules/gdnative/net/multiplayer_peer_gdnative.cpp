@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -61,13 +61,23 @@ int MultiplayerPeerGDNative::get_available_packet_count() const {
 	return interface->get_available_packet_count(interface->data);
 }
 
-/* NetworkedMultiplayerPeer */
+/* MultiplayerPeer */
+void MultiplayerPeerGDNative::set_transfer_channel(int p_channel) {
+	ERR_FAIL_COND(interface == nullptr);
+	return interface->set_transfer_channel(interface->data, p_channel);
+}
+
+int MultiplayerPeerGDNative::get_transfer_channel() const {
+	ERR_FAIL_COND_V(interface == nullptr, 0);
+	return interface->get_transfer_channel(interface->data);
+}
+
 void MultiplayerPeerGDNative::set_transfer_mode(TransferMode p_mode) {
 	ERR_FAIL_COND(interface == nullptr);
 	interface->set_transfer_mode(interface->data, (godot_int)p_mode);
 }
 
-NetworkedMultiplayerPeer::TransferMode MultiplayerPeerGDNative::get_transfer_mode() const {
+MultiplayerPeer::TransferMode MultiplayerPeerGDNative::get_transfer_mode() const {
 	ERR_FAIL_COND_V(interface == nullptr, TRANSFER_MODE_UNRELIABLE);
 	return (TransferMode)interface->get_transfer_mode(interface->data);
 }
@@ -107,12 +117,13 @@ bool MultiplayerPeerGDNative::is_refusing_new_connections() const {
 	return interface->is_refusing_new_connections(interface->data);
 }
 
-NetworkedMultiplayerPeer::ConnectionStatus MultiplayerPeerGDNative::get_connection_status() const {
+MultiplayerPeer::ConnectionStatus MultiplayerPeerGDNative::get_connection_status() const {
 	ERR_FAIL_COND_V(interface == nullptr, CONNECTION_DISCONNECTED);
 	return (ConnectionStatus)interface->get_connection_status(interface->data);
 }
 
 void MultiplayerPeerGDNative::_bind_methods() {
+	ADD_PROPERTY_DEFAULT("transfer_channel", 0);
 	ADD_PROPERTY_DEFAULT("transfer_mode", TRANSFER_MODE_UNRELIABLE);
 	ADD_PROPERTY_DEFAULT("refuse_new_connections", true);
 }

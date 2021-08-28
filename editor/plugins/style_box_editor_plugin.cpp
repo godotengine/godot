@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,7 +44,7 @@ void EditorInspectorPluginStyleBox::parse_begin(Object *p_object) {
 	add_custom_control(preview);
 }
 
-bool EditorInspectorPluginStyleBox::parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage, bool p_wide) {
+bool EditorInspectorPluginStyleBox::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, bool p_wide) {
 	return false; //do not want
 }
 
@@ -93,6 +93,6 @@ StyleBoxPreview::StyleBoxPreview() {
 
 StyleBoxEditorPlugin::StyleBoxEditorPlugin(EditorNode *p_node) {
 	Ref<EditorInspectorPluginStyleBox> inspector_plugin;
-	inspector_plugin.instance();
+	inspector_plugin.instantiate();
 	add_inspector_plugin(inspector_plugin);
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -83,7 +83,7 @@ void SkeletonIK3DEditorPlugin::_bind_methods() {
 SkeletonIK3DEditorPlugin::SkeletonIK3DEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	play_btn = memnew(Button);
-	play_btn->set_icon(editor->get_gui_base()->get_theme_icon("Play", "EditorIcons"));
+	play_btn->set_icon(editor->get_gui_base()->get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
 	play_btn->set_text(TTR("Play IK"));
 	play_btn->set_toggle_mode(true);
 	play_btn->hide();

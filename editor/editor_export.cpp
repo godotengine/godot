@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,16 +30,18 @@
 
 #include "editor_export.h"
 
+#include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
+#include "core/extension/native_extension.h"
 #include "core/io/config_file.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
+#include "core/io/file_access_encrypted.h"
 #include "core/io/file_access_pack.h" // PACK_HEADER_MAGIC, PACK_FORMAT_VERSION
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/io/zip_io.h"
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
-#include "core/project_settings.h"
-#include "core/script_language.h"
+#include "core/object/script_language.h"
 #include "core/version.h"
 #include "editor/editor_file_system.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -79,9 +81,9 @@ bool EditorExportPreset::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void EditorExportPreset::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-		if (platform->get_option_visibility(E->get().name, values)) {
-			p_list->push_back(E->get());
+	for (const PropertyInfo &E : properties) {
+		if (platform->get_option_visibility(E.name, values)) {
+			p_list->push_back(E);
 		}
 	}
 }
@@ -150,7 +152,7 @@ void EditorExportPreset::set_export_path(const String &p_path) {
 	export_path = p_path;
 	/* NOTE(SonerSound): if there is a need to implement a PropertyHint that specifically indicates a relative path,
 	 * this should be removed. */
-	if (export_path.is_abs_path()) {
+	if (export_path.is_absolute_path()) {
 		String res_path = OS::get_singleton()->get_resource_dir();
 		export_path = res_path.path_to_file(export_path);
 	}
@@ -184,35 +186,6 @@ bool EditorExportPreset::has_export_file(const String &p_path) {
 	return selected_files.has(p_path);
 }
 
-void EditorExportPreset::add_patch(const String &p_path, int p_at_pos) {
-	if (p_at_pos < 0) {
-		patches.push_back(p_path);
-	} else {
-		patches.insert(p_at_pos, p_path);
-	}
-	EditorExport::singleton->save_presets();
-}
-
-void EditorExportPreset::remove_patch(int p_idx) {
-	patches.remove(p_idx);
-	EditorExport::singleton->save_presets();
-}
-
-void EditorExportPreset::set_patch(int p_index, const String &p_path) {
-	ERR_FAIL_INDEX(p_index, patches.size());
-	patches.write[p_index] = p_path;
-	EditorExport::singleton->save_presets();
-}
-
-String EditorExportPreset::get_patch(int p_index) {
-	ERR_FAIL_INDEX_V(p_index, patches.size(), String());
-	return patches[p_index];
-}
-
-Vector<String> EditorExportPreset::get_patches() const {
-	return patches;
-}
-
 void EditorExportPreset::set_custom_features(const String &p_custom_features) {
 	custom_features = p_custom_features;
 	EditorExport::singleton->save_presets();
@@ -220,6 +193,42 @@ void EditorExportPreset::set_custom_features(const String &p_custom_features) {
 
 String EditorExportPreset::get_custom_features() const {
 	return custom_features;
+}
+
+void EditorExportPreset::set_enc_in_filter(const String &p_filter) {
+	enc_in_filters = p_filter;
+	EditorExport::singleton->save_presets();
+}
+
+String EditorExportPreset::get_enc_in_filter() const {
+	return enc_in_filters;
+}
+
+void EditorExportPreset::set_enc_ex_filter(const String &p_filter) {
+	enc_ex_filters = p_filter;
+	EditorExport::singleton->save_presets();
+}
+
+String EditorExportPreset::get_enc_ex_filter() const {
+	return enc_ex_filters;
+}
+
+void EditorExportPreset::set_enc_pck(bool p_enabled) {
+	enc_pck = p_enabled;
+	EditorExport::singleton->save_presets();
+}
+
+bool EditorExportPreset::get_enc_pck() const {
+	return enc_pck;
+}
+
+void EditorExportPreset::set_enc_directory(bool p_enabled) {
+	enc_directory = p_enabled;
+	EditorExport::singleton->save_presets();
+}
+
+bool EditorExportPreset::get_enc_directory() const {
+	return enc_directory;
 }
 
 void EditorExportPreset::set_script_export_mode(int p_mode) {
@@ -292,20 +301,57 @@ void EditorExportPlatform::gen_debug_flags(Vector<String> &r_flags, int p_flags)
 	}
 }
 
-Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total) {
+Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key) {
+	ERR_FAIL_COND_V_MSG(p_total < 1, ERR_PARAMETER_RANGE_ERROR, "Must select at least one file to export.");
+
 	PackData *pd = (PackData *)p_userdata;
 
 	SavedData sd;
 	sd.path_utf8 = p_path.utf8();
 	sd.ofs = pd->f->get_position();
 	sd.size = p_data.size();
+	sd.encrypted = false;
 
-	pd->f->store_buffer(p_data.ptr(), p_data.size());
-	int pad = _get_pad(PCK_PADDING, sd.size);
-	for (int i = 0; i < pad; i++) {
-		pd->f->store_8(0);
+	for (int i = 0; i < p_enc_in_filters.size(); ++i) {
+		if (p_path.matchn(p_enc_in_filters[i]) || p_path.replace("res://", "").matchn(p_enc_in_filters[i])) {
+			sd.encrypted = true;
+			break;
+		}
 	}
 
+	for (int i = 0; i < p_enc_ex_filters.size(); ++i) {
+		if (p_path.matchn(p_enc_ex_filters[i]) || p_path.replace("res://", "").matchn(p_enc_ex_filters[i])) {
+			sd.encrypted = false;
+			break;
+		}
+	}
+
+	FileAccessEncrypted *fae = nullptr;
+	FileAccess *ftmp = pd->f;
+
+	if (sd.encrypted) {
+		fae = memnew(FileAccessEncrypted);
+		ERR_FAIL_COND_V(!fae, ERR_SKIP);
+
+		Error err = fae->open_and_parse(ftmp, p_key, FileAccessEncrypted::MODE_WRITE_AES256, false);
+		ERR_FAIL_COND_V(err != OK, ERR_SKIP);
+		ftmp = fae;
+	}
+
+	// Store file content.
+	ftmp->store_buffer(p_data.ptr(), p_data.size());
+
+	if (fae) {
+		fae->release();
+		memdelete(fae);
+	}
+
+	int pad = _get_pad(PCK_PADDING, pd->f->get_position());
+	for (int i = 0; i < pad; i++) {
+		pd->f->store_8(Math::rand() % 256);
+	}
+
+	// Store MD5 of original file.
 	{
 		unsigned char hash[16];
 		CryptoCore::md5(p_data.ptr(), p_data.size(), hash);
@@ -324,7 +370,9 @@ Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_pa
 	return OK;
 }
 
-Error EditorExportPlatform::_save_zip_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total) {
+Error EditorExportPlatform::_save_zip_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key) {
+	ERR_FAIL_COND_V_MSG(p_total < 1, ERR_PARAMETER_RANGE_ERROR, "Must select at least one file to export.");
+
 	String path = p_path.replace_first("res://", "");
 
 	ZipData *zd = (ZipData *)p_userdata;
@@ -355,7 +403,11 @@ Error EditorExportPlatform::_save_zip_file(void *p_userdata, const String &p_pat
 Ref<ImageTexture> EditorExportPlatform::get_option_icon(int p_index) const {
 	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 	ERR_FAIL_COND_V(theme.is_null(), Ref<ImageTexture>());
-	return theme->get_icon("Play", "EditorIcons");
+	if (EditorNode::get_singleton()->get_main_control()->is_layout_rtl()) {
+		return theme->get_icon("PlayBackwards", "EditorIcons");
+	} else {
+		return theme->get_icon("Play", "EditorIcons");
+	}
 }
 
 String EditorExportPlatform::find_export_template(String template_file_name, String *err) const {
@@ -379,15 +431,15 @@ bool EditorExportPlatform::exists_export_template(String template_file_name, Str
 
 Ref<EditorExportPreset> EditorExportPlatform::create_preset() {
 	Ref<EditorExportPreset> preset;
-	preset.instance();
+	preset.instantiate();
 	preset->platform = Ref<EditorExportPlatform>(this);
 
 	List<ExportOption> options;
 	get_export_options(&options);
 
-	for (List<ExportOption>::Element *E = options.front(); E; E = E->next()) {
-		preset->properties.push_back(E->get().option);
-		preset->values[E->get().option.name] = E->get().default_value;
+	for (const ExportOption &E : options) {
+		preset->properties.push_back(E.option);
+		preset->values[E.option.name] = E.default_value;
 	}
 
 	return preset;
@@ -460,6 +512,11 @@ void EditorExportPlatform::_edit_files_with_filter(DirAccess *da, const Vector<S
 		if (dir.begins_with(".")) {
 			continue;
 		}
+
+		if (EditorFileSystem::_should_skip_directory(cur_dir + dir)) {
+			continue;
+		}
+
 		da->change_dir(dir);
 		_edit_files_with_filter(da, p_filters, r_list, exclude);
 		da->change_dir("..");
@@ -474,7 +531,7 @@ void EditorExportPlatform::_edit_filter_list(Set<String> &r_list, const String &
 	Vector<String> filters;
 	for (int i = 0; i < split.size(); i++) {
 		String f = split[i].strip_edges();
-		if (f.empty()) {
+		if (f.is_empty()) {
 			continue;
 		}
 		filters.push_back(f);
@@ -512,8 +569,16 @@ void EditorExportPlugin::add_ios_framework(const String &p_path) {
 	ios_frameworks.push_back(p_path);
 }
 
+void EditorExportPlugin::add_ios_embedded_framework(const String &p_path) {
+	ios_embedded_frameworks.push_back(p_path);
+}
+
 Vector<String> EditorExportPlugin::get_ios_frameworks() const {
 	return ios_frameworks;
+}
+
+Vector<String> EditorExportPlugin::get_ios_embedded_frameworks() const {
+	return ios_embedded_frameworks;
 }
 
 void EditorExportPlugin::add_ios_plist_content(const String &p_plist_content) {
@@ -560,21 +625,15 @@ Vector<String> EditorExportPlugin::get_ios_project_static_libs() const {
 }
 
 void EditorExportPlugin::_export_file_script(const String &p_path, const String &p_type, const Vector<String> &p_features) {
-	if (get_script_instance()) {
-		get_script_instance()->call("_export_file", p_path, p_type, p_features);
-	}
+	GDVIRTUAL_CALL(_export_file, p_path, p_type, p_features);
 }
 
 void EditorExportPlugin::_export_begin_script(const Vector<String> &p_features, bool p_debug, const String &p_path, int p_flags) {
-	if (get_script_instance()) {
-		get_script_instance()->call("_export_begin", p_features, p_debug, p_path, p_flags);
-	}
+	GDVIRTUAL_CALL(_export_begin, p_features, p_debug, p_path, p_flags);
 }
 
 void EditorExportPlugin::_export_end_script() {
-	if (get_script_instance()) {
-		get_script_instance()->call("_export_end");
-	}
+	GDVIRTUAL_CALL(_export_end);
 }
 
 void EditorExportPlugin::_export_file(const String &p_path, const String &p_type, const Set<String> &p_features) {
@@ -592,15 +651,16 @@ void EditorExportPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_ios_project_static_lib", "path"), &EditorExportPlugin::add_ios_project_static_lib);
 	ClassDB::bind_method(D_METHOD("add_file", "path", "file", "remap"), &EditorExportPlugin::add_file);
 	ClassDB::bind_method(D_METHOD("add_ios_framework", "path"), &EditorExportPlugin::add_ios_framework);
+	ClassDB::bind_method(D_METHOD("add_ios_embedded_framework", "path"), &EditorExportPlugin::add_ios_embedded_framework);
 	ClassDB::bind_method(D_METHOD("add_ios_plist_content", "plist_content"), &EditorExportPlugin::add_ios_plist_content);
 	ClassDB::bind_method(D_METHOD("add_ios_linker_flags", "flags"), &EditorExportPlugin::add_ios_linker_flags);
 	ClassDB::bind_method(D_METHOD("add_ios_bundle_file", "path"), &EditorExportPlugin::add_ios_bundle_file);
 	ClassDB::bind_method(D_METHOD("add_ios_cpp_code", "code"), &EditorExportPlugin::add_ios_cpp_code);
 	ClassDB::bind_method(D_METHOD("skip"), &EditorExportPlugin::skip);
 
-	BIND_VMETHOD(MethodInfo("_export_file", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::STRING, "type"), PropertyInfo(Variant::PACKED_STRING_ARRAY, "features")));
-	BIND_VMETHOD(MethodInfo("_export_begin", PropertyInfo(Variant::PACKED_STRING_ARRAY, "features"), PropertyInfo(Variant::BOOL, "is_debug"), PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::INT, "flags")));
-	BIND_VMETHOD(MethodInfo("_export_end"));
+	GDVIRTUAL_BIND(_export_file, "path", "type", "features");
+	GDVIRTUAL_BIND(_export_begin, "features", "is_debug", "path", "flags");
+	GDVIRTUAL_BIND(_export_end);
 }
 
 EditorExportPlugin::EditorExportPlugin() {
@@ -614,9 +674,9 @@ EditorExportPlatform::FeatureContainers EditorExportPlatform::get_feature_contai
 	platform->get_preset_features(p_preset, &feature_list);
 
 	FeatureContainers result;
-	for (List<String>::Element *E = feature_list.front(); E; E = E->next()) {
-		result.features.insert(E->get());
-		result.features_pv.push_back(E->get());
+	for (const String &E : feature_list) {
+		result.features.insert(E);
+		result.features_pv.push_back(E);
 	}
 
 	if (p_preset->get_custom_features() != String()) {
@@ -665,6 +725,12 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	if (p_preset->get_export_filter() == EditorExportPreset::EXPORT_ALL_RESOURCES) {
 		//find stuff
 		_export_find_resources(EditorFileSystem::get_singleton()->get_filesystem(), paths);
+	} else if (p_preset->get_export_filter() == EditorExportPreset::EXCLUDE_SELECTED_RESOURCES) {
+		_export_find_resources(EditorFileSystem::get_singleton()->get_filesystem(), paths);
+		Vector<String> files = p_preset->get_files_to_export();
+		for (int i = 0; i < files.size(); i++) {
+			paths.erase(files[i]);
+		}
 	} else {
 		bool scenes_only = p_preset->get_export_filter() == EditorExportPreset::EXPORT_SELECTED_SCENES;
 
@@ -676,6 +742,24 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 			_export_find_dependencies(files[i], paths);
 		}
+
+		// Add autoload resources and their dependencies
+		List<PropertyInfo> props;
+		ProjectSettings::get_singleton()->get_property_list(&props);
+
+		for (const PropertyInfo &pi : props) {
+			if (!pi.name.begins_with("autoload/")) {
+				continue;
+			}
+
+			String autoload_path = ProjectSettings::get_singleton()->get(pi.name);
+
+			if (autoload_path.begins_with("*")) {
+				autoload_path = autoload_path.substr(1);
+			}
+
+			_export_find_dependencies(autoload_path, paths);
+		}
 	}
 
 	//add native icons to non-resource include list
@@ -685,17 +769,83 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	_edit_filter_list(paths, p_preset->get_include_filter(), false);
 	_edit_filter_list(paths, p_preset->get_exclude_filter(), true);
 
+	// Ignore import files, since these are automatically added to the jar later with the resources
+	_edit_filter_list(paths, String("*.import"), true);
+
+	// Get encryption filters.
+	bool enc_pck = p_preset->get_enc_pck();
+	Vector<String> enc_in_filters;
+	Vector<String> enc_ex_filters;
+	Vector<uint8_t> key;
+
+	if (enc_pck) {
+		Vector<String> enc_in_split = p_preset->get_enc_in_filter().split(",");
+		for (int i = 0; i < enc_in_split.size(); i++) {
+			String f = enc_in_split[i].strip_edges();
+			if (f.is_empty()) {
+				continue;
+			}
+			enc_in_filters.push_back(f);
+		}
+
+		Vector<String> enc_ex_split = p_preset->get_enc_ex_filter().split(",");
+		for (int i = 0; i < enc_ex_split.size(); i++) {
+			String f = enc_ex_split[i].strip_edges();
+			if (f.is_empty()) {
+				continue;
+			}
+			enc_ex_filters.push_back(f);
+		}
+
+		// Get encryption key.
+		String script_key = p_preset->get_script_encryption_key().to_lower();
+		key.resize(32);
+		if (script_key.length() == 64) {
+			for (int i = 0; i < 32; i++) {
+				int v = 0;
+				if (i * 2 < script_key.length()) {
+					char32_t ct = script_key[i * 2];
+					if (ct >= '0' && ct <= '9') {
+						ct = ct - '0';
+					} else if (ct >= 'a' && ct <= 'f') {
+						ct = 10 + ct - 'a';
+					}
+					v |= ct << 4;
+				}
+
+				if (i * 2 + 1 < script_key.length()) {
+					char32_t ct = script_key[i * 2 + 1];
+					if (ct >= '0' && ct <= '9') {
+						ct = ct - '0';
+					} else if (ct >= 'a' && ct <= 'f') {
+						ct = 10 + ct - 'a';
+					}
+					v |= ct;
+				}
+				key.write[i] = v;
+			}
+		}
+	}
+
+	Error err = OK;
 	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
+
 	for (int i = 0; i < export_plugins.size(); i++) {
 		export_plugins.write[i]->set_export_preset(p_preset);
 
 		if (p_so_func) {
 			for (int j = 0; j < export_plugins[i]->shared_objects.size(); j++) {
-				p_so_func(p_udata, export_plugins[i]->shared_objects[j]);
+				err = p_so_func(p_udata, export_plugins[i]->shared_objects[j]);
+				if (err != OK) {
+					return err;
+				}
 			}
 		}
 		for (int j = 0; j < export_plugins[i]->extra_files.size(); j++) {
-			p_func(p_udata, export_plugins[i]->extra_files[j].path, export_plugins[i]->extra_files[j].data, 0, paths.size());
+			err = p_func(p_udata, export_plugins[i]->extra_files[j].path, export_plugins[i]->extra_files[j].data, 0, paths.size(), enc_in_filters, enc_ex_filters, key);
+			if (err != OK) {
+				return err;
+			}
 		}
 
 		export_plugins.write[i]->_clear();
@@ -716,10 +866,24 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		if (FileAccess::exists(path + ".import")) {
 			//file is imported, replace by what it imports
 			Ref<ConfigFile> config;
-			config.instance();
-			Error err = config->load(path + ".import");
+			config.instantiate();
+			err = config->load(path + ".import");
 			if (err != OK) {
 				ERR_PRINT("Could not parse: '" + path + "', not exported.");
+				continue;
+			}
+
+			String importer_type = config->get_value("remap", "importer");
+
+			if (importer_type == "keep") {
+				//just keep file as-is
+				Vector<uint8_t> array = FileAccess::get_file_as_array(path);
+				err = p_func(p_udata, path, array, idx, total, enc_in_filters, enc_ex_filters, key);
+
+				if (err != OK) {
+					return err;
+				}
+
 				continue;
 			}
 
@@ -728,8 +892,8 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 			Set<String> remap_features;
 
-			for (List<String>::Element *F = remaps.front(); F; F = F->next()) {
-				String remap = F->get();
+			for (const String &F : remaps) {
+				String remap = F;
 				String feature = remap.get_slice(".", 1);
 				if (features.has(feature)) {
 					remap_features.insert(feature);
@@ -742,19 +906,19 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 			err = OK;
 
-			for (List<String>::Element *F = remaps.front(); F; F = F->next()) {
-				String remap = F->get();
+			for (const String &F : remaps) {
+				String remap = F;
 				if (remap == "path") {
 					String remapped_path = config->get_value("remap", remap);
 					Vector<uint8_t> array = FileAccess::get_file_as_array(remapped_path);
-					err = p_func(p_udata, remapped_path, array, idx, total);
+					err = p_func(p_udata, remapped_path, array, idx, total, enc_in_filters, enc_ex_filters, key);
 				} else if (remap.begins_with("path.")) {
 					String feature = remap.get_slice(".", 1);
 
 					if (remap_features.has(feature)) {
 						String remapped_path = config->get_value("remap", remap);
 						Vector<uint8_t> array = FileAccess::get_file_as_array(remapped_path);
-						err = p_func(p_udata, remapped_path, array, idx, total);
+						err = p_func(p_udata, remapped_path, array, idx, total, enc_in_filters, enc_ex_filters, key);
 					}
 				}
 			}
@@ -765,7 +929,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 			//also save the .import file
 			Vector<uint8_t> array = FileAccess::get_file_as_array(path + ".import");
-			err = p_func(p_udata, path + ".import", array, idx, total);
+			err = p_func(p_udata, path + ".import", array, idx, total, enc_in_filters, enc_ex_filters, key);
 
 			if (err != OK) {
 				return err;
@@ -781,12 +945,18 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				}
 				if (p_so_func) {
 					for (int j = 0; j < export_plugins[i]->shared_objects.size(); j++) {
-						p_so_func(p_udata, export_plugins[i]->shared_objects[j]);
+						err = p_so_func(p_udata, export_plugins[i]->shared_objects[j]);
+						if (err != OK) {
+							return err;
+						}
 					}
 				}
 
 				for (int j = 0; j < export_plugins[i]->extra_files.size(); j++) {
-					p_func(p_udata, export_plugins[i]->extra_files[j].path, export_plugins[i]->extra_files[j].data, idx, total);
+					err = p_func(p_udata, export_plugins[i]->extra_files[j].path, export_plugins[i]->extra_files[j].data, idx, total, enc_in_filters, enc_ex_filters, key);
+					if (err != OK) {
+						return err;
+					}
 					if (export_plugins[i]->extra_files[j].remap) {
 						do_export = false; //if remap, do not
 						path_remaps.push_back(path);
@@ -806,7 +976,10 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			//just store it as it comes
 			if (do_export) {
 				Vector<uint8_t> array = FileAccess::get_file_as_array(path);
-				p_func(p_udata, path, array, idx, total);
+				err = p_func(p_udata, path, array, idx, total, enc_in_filters, enc_ex_filters, key);
+				if (err != OK) {
+					return err;
+				}
 			}
 		}
 
@@ -842,7 +1015,10 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 					new_file.write[j] = utf8[j];
 				}
 
-				p_func(p_udata, from + ".remap", new_file, idx, total);
+				err = p_func(p_udata, from + ".remap", new_file, idx, total, enc_in_filters, enc_ex_filters, key);
+				if (err != OK) {
+					return err;
+				}
 			}
 		} else {
 			//old remap mode, will still work, but it's unused because it's not multiple pck export friendly
@@ -855,22 +1031,67 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	String splash = ProjectSettings::get_singleton()->get("application/boot_splash/image");
 	if (icon != String() && FileAccess::exists(icon)) {
 		Vector<uint8_t> array = FileAccess::get_file_as_array(icon);
-		p_func(p_udata, icon, array, idx, total);
+		err = p_func(p_udata, icon, array, idx, total, enc_in_filters, enc_ex_filters, key);
+		if (err != OK) {
+			return err;
+		}
 	}
 	if (splash != String() && FileAccess::exists(splash) && icon != splash) {
 		Vector<uint8_t> array = FileAccess::get_file_as_array(splash);
-		p_func(p_udata, splash, array, idx, total);
+		err = p_func(p_udata, splash, array, idx, total, enc_in_filters, enc_ex_filters, key);
+		if (err != OK) {
+			return err;
+		}
+	}
+	if (FileAccess::exists(ResourceUID::CACHE_FILE)) {
+		Vector<uint8_t> array = FileAccess::get_file_as_array(ResourceUID::CACHE_FILE);
+		err = p_func(p_udata, ResourceUID::CACHE_FILE, array, idx, total, enc_in_filters, enc_ex_filters, key);
+		if (err != OK) {
+			return err;
+		}
+	}
+
+	if (FileAccess::exists(NativeExtension::EXTENSION_LIST_CONFIG_FILE)) {
+		Vector<uint8_t> array = FileAccess::get_file_as_array(NativeExtension::EXTENSION_LIST_CONFIG_FILE);
+		err = p_func(p_udata, NativeExtension::EXTENSION_LIST_CONFIG_FILE, array, idx, total, enc_in_filters, enc_ex_filters, key);
+		if (err != OK) {
+			return err;
+		}
+	}
+
+	// Store text server data if it is supported.
+	if (TS->has_feature(TextServer::FEATURE_USE_SUPPORT_DATA)) {
+		bool use_data = ProjectSettings::get_singleton()->get("internationalization/locale/include_text_server_data");
+		if (use_data) {
+			// Try using user provided data file.
+			String ts_data = "res://" + TS->get_support_data_filename();
+			if (FileAccess::exists(ts_data)) {
+				Vector<uint8_t> array = FileAccess::get_file_as_array(ts_data);
+				err = p_func(p_udata, ts_data, array, idx, total, enc_in_filters, enc_ex_filters, key);
+				if (err != OK) {
+					return err;
+				}
+			} else {
+				// Use default text server data.
+				String icu_data_file = EditorPaths::get_singleton()->get_cache_dir().plus_file("tmp_icu_data");
+				TS->save_support_data(icu_data_file);
+				Vector<uint8_t> array = FileAccess::get_file_as_array(icu_data_file);
+				err = p_func(p_udata, ts_data, array, idx, total, enc_in_filters, enc_ex_filters, key);
+				DirAccess::remove_file_or_error(icu_data_file);
+				if (err != OK) {
+					return err;
+				}
+			}
+		}
 	}
 
 	String config_file = "project.binary";
-	String engine_cfb = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp" + config_file);
+	String engine_cfb = EditorPaths::get_singleton()->get_cache_dir().plus_file("tmp" + config_file);
 	ProjectSettings::get_singleton()->save_custom(engine_cfb, custom_map, custom_list);
 	Vector<uint8_t> data = FileAccess::get_file_as_array(engine_cfb);
 	DirAccess::remove_file_or_error(engine_cfb);
 
-	p_func(p_udata, "res://" + config_file, data, idx, total);
-
-	return OK;
+	return p_func(p_udata, "res://" + config_file, data, idx, total, enc_in_filters, enc_ex_filters, key);
 }
 
 Error EditorExportPlatform::_add_shared_object(void *p_userdata, const SharedObject &p_so) {
@@ -885,7 +1106,11 @@ Error EditorExportPlatform::_add_shared_object(void *p_userdata, const SharedObj
 Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, const String &p_path, Vector<SharedObject> *p_so_files, bool p_embed, int64_t *r_embedded_start, int64_t *r_embedded_size) {
 	EditorProgress ep("savepack", TTR("Packing"), 102, true);
 
-	String tmppath = EditorSettings::get_singleton()->get_cache_dir().plus_file("packtmp");
+	// Create the temporary export directory if it doesn't exist.
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	da->make_dir_recursive(EditorPaths::get_singleton()->get_cache_dir());
+
+	String tmppath = EditorPaths::get_singleton()->get_cache_dir().plus_file("packtmp");
 	FileAccess *ftmp = FileAccess::open(tmppath, FileAccess::WRITE);
 	ERR_FAIL_COND_V_MSG(!ftmp, ERR_CANT_CREATE, "Cannot create file '" + tmppath + "'.");
 
@@ -900,6 +1125,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 
 	if (err != OK) {
 		DirAccess::remove_file_or_error(tmppath);
+		ERR_PRINT("Failed to export project files");
 		return err;
 	}
 
@@ -944,6 +1170,17 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 	f->store_32(VERSION_MINOR);
 	f->store_32(VERSION_PATCH);
 
+	uint32_t pack_flags = 0;
+	bool enc_pck = p_preset->get_enc_pck();
+	bool enc_directory = p_preset->get_enc_directory();
+	if (enc_pck && enc_directory) {
+		pack_flags |= PACK_DIR_ENCRYPTED;
+	}
+	f->store_32(pack_flags); // flags
+
+	uint64_t file_base_ofs = f->get_position();
+	f->store_64(0); // files base
+
 	for (int i = 0; i < 16; i++) {
 		//reserved
 		f->store_32(0);
@@ -951,39 +1188,81 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 
 	f->store_32(pd.file_ofs.size()); //amount of files
 
-	int64_t header_size = f->get_position();
+	FileAccessEncrypted *fae = nullptr;
+	FileAccess *fhead = f;
 
-	//precalculate header size
+	if (enc_pck && enc_directory) {
+		String script_key = p_preset->get_script_encryption_key().to_lower();
+		Vector<uint8_t> key;
+		key.resize(32);
+		if (script_key.length() == 64) {
+			for (int i = 0; i < 32; i++) {
+				int v = 0;
+				if (i * 2 < script_key.length()) {
+					char32_t ct = script_key[i * 2];
+					if (ct >= '0' && ct <= '9') {
+						ct = ct - '0';
+					} else if (ct >= 'a' && ct <= 'f') {
+						ct = 10 + ct - 'a';
+					}
+					v |= ct << 4;
+				}
 
-	for (int i = 0; i < pd.file_ofs.size(); i++) {
-		header_size += 4; // size of path string (32 bits is enough)
-		int string_len = pd.file_ofs[i].path_utf8.length();
-		header_size += string_len + _get_pad(4, string_len); ///size of path string
-		header_size += 8; // offset to file _with_ header size included
-		header_size += 8; // size of file
-		header_size += 16; // md5
+				if (i * 2 + 1 < script_key.length()) {
+					char32_t ct = script_key[i * 2 + 1];
+					if (ct >= '0' && ct <= '9') {
+						ct = ct - '0';
+					} else if (ct >= 'a' && ct <= 'f') {
+						ct = 10 + ct - 'a';
+					}
+					v |= ct;
+				}
+				key.write[i] = v;
+			}
+		}
+		fae = memnew(FileAccessEncrypted);
+		ERR_FAIL_COND_V(!fae, ERR_SKIP);
+
+		err = fae->open_and_parse(f, key, FileAccessEncrypted::MODE_WRITE_AES256, false);
+		ERR_FAIL_COND_V(err != OK, ERR_SKIP);
+
+		fhead = fae;
 	}
 
-	int header_padding = _get_pad(PCK_PADDING, header_size);
-
 	for (int i = 0; i < pd.file_ofs.size(); i++) {
-		int string_len = pd.file_ofs[i].path_utf8.length();
-		int pad = _get_pad(4, string_len);
+		uint32_t string_len = pd.file_ofs[i].path_utf8.length();
+		uint32_t pad = _get_pad(4, string_len);
 
-		f->store_32(string_len + pad);
-		f->store_buffer((const uint8_t *)pd.file_ofs[i].path_utf8.get_data(), string_len);
-		for (int j = 0; j < pad; j++) {
-			f->store_8(0);
+		fhead->store_32(string_len + pad);
+		fhead->store_buffer((const uint8_t *)pd.file_ofs[i].path_utf8.get_data(), string_len);
+		for (uint32_t j = 0; j < pad; j++) {
+			fhead->store_8(0);
 		}
 
-		f->store_64(pd.file_ofs[i].ofs + header_padding + header_size);
-		f->store_64(pd.file_ofs[i].size); // pay attention here, this is where file is
-		f->store_buffer(pd.file_ofs[i].md5.ptr(), 16); //also save md5 for file
+		fhead->store_64(pd.file_ofs[i].ofs);
+		fhead->store_64(pd.file_ofs[i].size); // pay attention here, this is where file is
+		fhead->store_buffer(pd.file_ofs[i].md5.ptr(), 16); //also save md5 for file
+		uint32_t flags = 0;
+		if (pd.file_ofs[i].encrypted) {
+			flags |= PACK_FILE_ENCRYPTED;
+		}
+		fhead->store_32(flags);
 	}
 
-	for (int i = 0; i < header_padding; i++) {
-		f->store_8(0);
+	if (fae) {
+		fae->release();
+		memdelete(fae);
 	}
+
+	int header_padding = _get_pad(PCK_PADDING, f->get_position());
+	for (int i = 0; i < header_padding; i++) {
+		f->store_8(Math::rand() % 256);
+	}
+
+	uint64_t file_base = f->get_position();
+	f->seek(file_base_ofs);
+	f->store_64(file_base); // update files base
+	f->seek(file_base);
 
 	// Save the rest of the data.
 
@@ -998,8 +1277,8 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 	uint8_t buf[bufsize];
 
 	while (true) {
-		int got = ftmp->get_buffer(buf, bufsize);
-		if (got <= 0) {
+		uint64_t got = ftmp->get_buffer(buf, bufsize);
+		if (got == 0) {
 			break;
 		}
 		f->store_buffer(buf, got);
@@ -1009,13 +1288,13 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 
 	if (p_embed) {
 		// Ensure embedded data ends at a 64-bit multiple
-		int64_t embed_end = f->get_position() - embed_pos + 12;
-		int pad = embed_end % 8;
-		for (int i = 0; i < pad; i++) {
+		uint64_t embed_end = f->get_position() - embed_pos + 12;
+		uint64_t pad = embed_end % 8;
+		for (uint64_t i = 0; i < pad; i++) {
 			f->store_8(0);
 		}
 
-		int64_t pck_size = f->get_position() - pck_start_pos;
+		uint64_t pck_size = f->get_position() - pck_start_pos;
 		f->store_64(pck_size);
 		f->store_32(PACK_HEADER_MAGIC);
 
@@ -1091,7 +1370,7 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 		if (breakpoints.size()) {
 			r_flags.push_back("--breakpoints");
 			String bpoints;
-			for (const List<String>::Element *E = breakpoints.front(); E; E = E->next()) {
+			for (List<String>::Element *E = breakpoints.front(); E; E = E->next()) {
 				bpoints += E->get().replace(" ", "%20");
 				if (E->next()) {
 					bpoints += ",";
@@ -1120,7 +1399,7 @@ EditorExport *EditorExport::singleton = nullptr;
 
 void EditorExport::_save() {
 	Ref<ConfigFile> config;
-	config.instance();
+	config.instantiate();
 	for (int i = 0; i < export_presets.size(); i++) {
 		Ref<EditorExportPreset> preset = export_presets[i];
 		String section = "preset." + itos(i);
@@ -1143,6 +1422,10 @@ void EditorExport::_save() {
 				config->set_value(section, "export_filter", "resources");
 				save_files = true;
 			} break;
+			case EditorExportPreset::EXCLUDE_SELECTED_RESOURCES: {
+				config->set_value(section, "export_filter", "exclude");
+				save_files = true;
+			} break;
 		}
 
 		if (save_files) {
@@ -1152,14 +1435,17 @@ void EditorExport::_save() {
 		config->set_value(section, "include_filter", preset->get_include_filter());
 		config->set_value(section, "exclude_filter", preset->get_exclude_filter());
 		config->set_value(section, "export_path", preset->get_export_path());
-		config->set_value(section, "patch_list", preset->get_patches());
+		config->set_value(section, "encryption_include_filters", preset->get_enc_in_filter());
+		config->set_value(section, "encryption_exclude_filters", preset->get_enc_ex_filter());
+		config->set_value(section, "encrypt_pck", preset->get_enc_pck());
+		config->set_value(section, "encrypt_directory", preset->get_enc_directory());
 		config->set_value(section, "script_export_mode", preset->get_script_export_mode());
 		config->set_value(section, "script_encryption_key", preset->get_script_encryption_key());
 
 		String option_section = "preset." + itos(i) + ".options";
 
-		for (const List<PropertyInfo>::Element *E = preset->get_properties().front(); E; E = E->next()) {
-			config->set_value(option_section, E->get().name, preset->get(E->get().name));
+		for (const PropertyInfo &E : preset->get_properties()) {
+			config->set_value(option_section, E.name, preset->get(E.name));
 		}
 	}
 
@@ -1200,15 +1486,29 @@ void EditorExport::add_export_preset(const Ref<EditorExportPreset> &p_preset, in
 }
 
 String EditorExportPlatform::test_etc2() const {
-	String driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name");
-	bool etc_supported = ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc");
-	bool etc2_supported = ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc2");
+	String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
+	bool etc_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc");
+	bool etc2_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc2");
 
 	if (driver == "GLES2" && !etc_supported) {
 		return TTR("Target platform requires 'ETC' texture compression for GLES2. Enable 'Import Etc' in Project Settings.");
 	} else if (driver == "Vulkan" && !etc2_supported) {
 		// FIXME: Review if this is true for Vulkan.
 		return TTR("Target platform requires 'ETC2' texture compression for Vulkan. Enable 'Import Etc 2' in Project Settings.");
+	}
+	return String();
+}
+
+String EditorExportPlatform::test_etc2_or_pvrtc() const {
+	String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
+	bool etc2_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc2");
+	bool pvrtc_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_pvrtc");
+
+	if (driver == "GLES2" && !pvrtc_supported) {
+		return TTR("Target platform requires 'PVRTC' texture compression for GLES2. Enable 'Import Pvrtc' in Project Settings.");
+	} else if (driver == "Vulkan" && !etc2_supported && !pvrtc_supported) {
+		// FIXME: Review if this is true for Vulkan.
+		return TTR("Target platform requires 'ETC2' or 'PVRTC' texture compression for Vulkan. Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings.");
 	}
 	return String();
 }
@@ -1254,7 +1554,7 @@ void EditorExport::_notification(int p_what) {
 
 void EditorExport::load_config() {
 	Ref<ConfigFile> config;
-	config.instance();
+	config.instantiate();
 	Error err = config->load("res://export_presets.cfg");
 	if (err != OK) {
 		return;
@@ -1304,6 +1604,9 @@ void EditorExport::load_config() {
 		} else if (export_filter == "resources") {
 			preset->set_export_filter(EditorExportPreset::EXPORT_SELECTED_RESOURCES);
 			get_files = true;
+		} else if (export_filter == "exclude") {
+			preset->set_export_filter(EditorExportPreset::EXCLUDE_SELECTED_RESOURCES);
+			get_files = true;
 		}
 
 		if (get_files) {
@@ -1322,12 +1625,18 @@ void EditorExport::load_config() {
 		preset->set_exclude_filter(config->get_value(section, "exclude_filter"));
 		preset->set_export_path(config->get_value(section, "export_path", ""));
 
-		Vector<String> patch_list = config->get_value(section, "patch_list");
-
-		for (int i = 0; i < patch_list.size(); i++) {
-			preset->add_patch(patch_list[i]);
+		if (config->has_section_key(section, "encrypt_pck")) {
+			preset->set_enc_pck(config->get_value(section, "encrypt_pck"));
 		}
-
+		if (config->has_section_key(section, "encrypt_directory")) {
+			preset->set_enc_directory(config->get_value(section, "encrypt_directory"));
+		}
+		if (config->has_section_key(section, "encryption_include_filters")) {
+			preset->set_enc_in_filter(config->get_value(section, "encryption_include_filters"));
+		}
+		if (config->has_section_key(section, "encryption_exclude_filters")) {
+			preset->set_enc_ex_filter(config->get_value(section, "encryption_exclude_filters"));
+		}
 		if (config->has_section_key(section, "script_export_mode")) {
 			preset->set_script_export_mode(config->get_value(section, "script_export_mode"));
 		}
@@ -1341,10 +1650,10 @@ void EditorExport::load_config() {
 
 		config->get_section_keys(option_section, &options);
 
-		for (List<String>::Element *E = options.front(); E; E = E->next()) {
-			Variant value = config->get_value(option_section, E->get());
+		for (const String &E : options) {
+			Variant value = config->get_value(option_section, E);
 
-			preset->set(E->get(), value);
+			preset->set(E, value);
 		}
 
 		add_export_preset(preset);
@@ -1383,11 +1692,11 @@ void EditorExport::update_export_presets() {
 			preset->properties.clear();
 			preset->values.clear();
 
-			for (List<EditorExportPlatform::ExportOption>::Element *E = options.front(); E; E = E->next()) {
-				preset->properties.push_back(E->get().option);
+			for (const EditorExportPlatform::ExportOption &E : options) {
+				preset->properties.push_back(E.option);
 
-				StringName option_name = E->get().option.name;
-				preset->values[option_name] = previous_values.has(option_name) ? previous_values[option_name] : E->get().default_value;
+				StringName option_name = E.option.name;
+				preset->values[option_name] = previous_values.has(option_name) ? previous_values[option_name] : E.default_value;
 			}
 		}
 	}
@@ -1446,15 +1755,17 @@ void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &
 }
 
 void EditorExportPlatformPC::get_export_options(List<ExportOption> *r_options) {
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE), ""));
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "binary_format/64_bits"), true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "binary_format/embed_pck"), false));
+
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/bptc"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/no_bptc_fallbacks"), true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "binary_format/64_bits"), true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "binary_format/embed_pck"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE), ""));
 }
 
 String EditorExportPlatformPC::get_name() const {
@@ -1495,7 +1806,7 @@ bool EditorExportPlatformPC::can_export(const Ref<EditorExportPreset> &p_preset,
 	valid = dvalid || rvalid;
 	r_missing_templates = !valid;
 
-	if (!err.empty()) {
+	if (!err.is_empty()) {
 		r_error = err;
 	}
 	return valid;
@@ -1582,7 +1893,7 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 			}
 		}
 
-		if (err == OK && !so_files.empty()) {
+		if (err == OK && !so_files.is_empty()) {
 			//if shared object files, copy them
 			da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			for (int i = 0; i < so_files.size() && err == OK; i++) {
@@ -1634,17 +1945,10 @@ void EditorExportPlatformPC::set_debug_32(const String &p_file) {
 	debug_file_32 = p_file;
 }
 
-void EditorExportPlatformPC::add_platform_feature(const String &p_feature) {
-	extra_features.insert(p_feature);
-}
-
 void EditorExportPlatformPC::get_platform_features(List<String> *r_features) {
 	r_features->push_back("pc"); //all pcs support "pc"
 	r_features->push_back("s3tc"); //all pcs support "s3tc" compression
 	r_features->push_back(get_os_name()); //OS name is a feature
-	for (Set<String>::Element *E = extra_features.front(); E; E = E->next()) {
-		r_features->push_back(E->get());
-	}
 }
 
 void EditorExportPlatformPC::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) {
@@ -1684,11 +1988,11 @@ void EditorExportTextSceneToBinaryPlugin::_export_file(const String &p_path, con
 		return;
 	}
 
-	bool convert = GLOBAL_GET("editor/convert_text_resources_to_binary_on_export");
+	bool convert = GLOBAL_GET("editor/export/convert_text_resources_to_binary");
 	if (!convert) {
 		return;
 	}
-	String tmp_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpfile.res");
+	String tmp_path = EditorPaths::get_singleton()->get_cache_dir().plus_file("tmpfile.res");
 	Error err = ResourceFormatLoaderText::convert_file_to_binary(p_path, tmp_path);
 	if (err != OK) {
 		DirAccess::remove_file_or_error(tmp_path);
@@ -1704,5 +2008,5 @@ void EditorExportTextSceneToBinaryPlugin::_export_file(const String &p_path, con
 }
 
 EditorExportTextSceneToBinaryPlugin::EditorExportTextSceneToBinaryPlugin() {
-	GLOBAL_DEF("editor/convert_text_resources_to_binary_on_export", false);
+	GLOBAL_DEF("editor/export/convert_text_resources_to_binary", false);
 }

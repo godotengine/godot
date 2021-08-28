@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,7 @@
 #define CSGJS_HEADER_ONLY
 
 #include "csg.h"
+#include "scene/3d/path_3d.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
 #include "thirdparty/misc/mikktspace.h"
@@ -50,23 +51,23 @@ public:
 	};
 
 private:
-	Operation operation;
-	CSGShape3D *parent;
+	Operation operation = OPERATION_UNION;
+	CSGShape3D *parent = nullptr;
 
-	CSGBrush *brush;
+	CSGBrush *brush = nullptr;
 
 	AABB node_aabb;
 
-	bool dirty;
-	float snap;
+	bool dirty = false;
+	float snap = 0.001;
 
-	bool use_collision;
-	uint32_t collision_layer;
-	uint32_t collision_mask;
+	bool use_collision = false;
+	uint32_t collision_layer = 1;
+	uint32_t collision_mask = 1;
 	Ref<ConcavePolygonShape3D> root_collision_shape;
 	RID root_collision_instance;
 
-	bool calculate_tangents;
+	bool calculate_tangents = true;
 
 	Ref<ArrayMesh> root_mesh;
 
@@ -83,14 +84,14 @@ private:
 		Vector<Vector3> vertices;
 		Vector<Vector3> normals;
 		Vector<Vector2> uvs;
-		Vector<float> tans;
+		Vector<real_t> tans;
 		Ref<Material> material;
-		int last_added;
+		int last_added = 0;
 
-		Vector3 *verticesw;
-		Vector3 *normalsw;
-		Vector2 *uvsw;
-		float *tansw;
+		Vector3 *verticesw = nullptr;
+		Vector3 *normalsw = nullptr;
+		Vector2 *uvsw = nullptr;
+		real_t *tansw = nullptr;
 	};
 
 	//mikktspace callbacks
@@ -114,7 +115,7 @@ protected:
 	friend class CSGCombiner3D;
 	CSGBrush *_get_brush();
 
-	virtual void _validate_property(PropertyInfo &property) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 public:
 	Array get_meshes() const;
@@ -124,8 +125,8 @@ public:
 
 	virtual Vector<Vector3> get_brush_faces();
 
-	virtual AABB get_aabb() const;
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const;
+	virtual AABB get_aabb() const override;
+	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
 	void set_use_collision(bool p_enable);
 	bool is_using_collision() const;
@@ -136,11 +137,11 @@ public:
 	void set_collision_mask(uint32_t p_mask);
 	uint32_t get_collision_mask() const;
 
-	void set_collision_layer_bit(int p_bit, bool p_value);
-	bool get_collision_layer_bit(int p_bit) const;
+	void set_collision_layer_value(int p_layer_number, bool p_value);
+	bool get_collision_layer_value(int p_layer_number) const;
 
-	void set_collision_mask_bit(int p_bit, bool p_value);
-	bool get_collision_mask_bit(int p_bit) const;
+	void set_collision_mask_value(int p_layer_number, bool p_value);
+	bool get_collision_mask_value(int p_layer_number) const;
 
 	void set_snap(float p_snap);
 	float get_snap() const;
@@ -159,7 +160,7 @@ class CSGCombiner3D : public CSGShape3D {
 	GDCLASS(CSGCombiner3D, CSGShape3D);
 
 private:
-	virtual CSGBrush *_build_brush();
+	virtual CSGBrush *_build_brush() override;
 
 public:
 	CSGCombiner3D();
@@ -168,10 +169,8 @@ public:
 class CSGPrimitive3D : public CSGShape3D {
 	GDCLASS(CSGPrimitive3D, CSGShape3D);
 
-private:
-	bool invert_faces;
-
 protected:
+	bool invert_faces;
 	CSGBrush *_create_brush_from_arrays(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uv, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials);
 	static void _bind_methods();
 
@@ -185,7 +184,7 @@ public:
 class CSGMesh3D : public CSGPrimitive3D {
 	GDCLASS(CSGMesh3D, CSGPrimitive3D);
 
-	virtual CSGBrush *_build_brush();
+	virtual CSGBrush *_build_brush() override;
 
 	Ref<Mesh> mesh;
 	Ref<Material> material;
@@ -205,7 +204,7 @@ public:
 
 class CSGSphere3D : public CSGPrimitive3D {
 	GDCLASS(CSGSphere3D, CSGPrimitive3D);
-	virtual CSGBrush *_build_brush();
+	virtual CSGBrush *_build_brush() override;
 
 	Ref<Material> material;
 	bool smooth_faces;
@@ -237,35 +236,27 @@ public:
 
 class CSGBox3D : public CSGPrimitive3D {
 	GDCLASS(CSGBox3D, CSGPrimitive3D);
-	virtual CSGBrush *_build_brush();
+	virtual CSGBrush *_build_brush() override;
 
 	Ref<Material> material;
-	float width;
-	float height;
-	float depth;
+	Vector3 size = Vector3(2, 2, 2);
 
 protected:
 	static void _bind_methods();
 
 public:
-	void set_width(const float p_width);
-	float get_width() const;
-
-	void set_height(const float p_height);
-	float get_height() const;
-
-	void set_depth(const float p_depth);
-	float get_depth() const;
+	void set_size(const Vector3 &p_size);
+	Vector3 get_size() const;
 
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
 
-	CSGBox3D();
+	CSGBox3D() {}
 };
 
 class CSGCylinder3D : public CSGPrimitive3D {
 	GDCLASS(CSGCylinder3D, CSGPrimitive3D);
-	virtual CSGBrush *_build_brush();
+	virtual CSGBrush *_build_brush() override;
 
 	Ref<Material> material;
 	float radius;
@@ -301,7 +292,7 @@ public:
 
 class CSGTorus3D : public CSGPrimitive3D {
 	GDCLASS(CSGTorus3D, CSGPrimitive3D);
-	virtual CSGBrush *_build_brush();
+	virtual CSGBrush *_build_brush() override;
 
 	Ref<Material> material;
 	float inner_radius;
@@ -352,7 +343,7 @@ public:
 	};
 
 private:
-	virtual CSGBrush *_build_brush();
+	virtual CSGBrush *_build_brush() override;
 
 	Vector<Vector2> polygon;
 	Ref<Material> material;
@@ -369,7 +360,7 @@ private:
 	PathRotation path_rotation;
 	bool path_local;
 
-	Node *path_cache;
+	Path3D *path;
 
 	bool smooth_faces;
 	bool path_continuous_u;
@@ -383,7 +374,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 	void _notification(int p_what);
 
 public:

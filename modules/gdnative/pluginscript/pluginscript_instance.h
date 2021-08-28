@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 #define PLUGINSCRIPT_INSTANCE_H
 
 // Godot imports
-#include "core/script_language.h"
+#include "core/object/script_language.h"
 
 // PluginScript imports
 #include <pluginscript/godot_pluginscript.h>
@@ -44,10 +44,10 @@ class PluginScriptInstance : public ScriptInstance {
 
 private:
 	Ref<PluginScript> _script;
-	Object *_owner;
+	Object *_owner = nullptr;
 	Variant _owner_variant;
-	godot_pluginscript_instance_data *_data;
-	const godot_pluginscript_instance_desc *_desc;
+	godot_pluginscript_instance_data *_data = nullptr;
+	const godot_pluginscript_instance_desc *_desc = nullptr;
 
 public:
 	_FORCE_INLINE_ Object *get_owner() { return _owner; }
@@ -62,13 +62,8 @@ public:
 
 	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
-	// Rely on default implementations provided by ScriptInstance for the moment.
-	// Note that multilevel call could be removed in 3.0 release, so stay tuned
-	// (see https://godotengine.org/qa/9244/can-override-the-_ready-and-_process-functions-child-classes)
-	//virtual void call_multilevel(const StringName& p_method,const Variant** p_args,int p_argcount);
-	//virtual void call_multilevel_reversed(const StringName& p_method,const Variant** p_args,int p_argcount);
-
 	virtual void notification(int p_notification);
+	virtual String to_string(bool *r_valid);
 
 	virtual Ref<Script> get_script() const;
 
@@ -76,17 +71,7 @@ public:
 
 	void set_path(const String &p_path);
 
-	virtual Vector<ScriptNetData> get_rpc_methods() const;
-	virtual uint16_t get_rpc_method_id(const StringName &p_method) const;
-	virtual StringName get_rpc_method(uint16_t p_id) const;
-	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(uint16_t p_id) const;
-	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const;
-
-	virtual Vector<ScriptNetData> get_rset_properties() const;
-	virtual uint16_t get_rset_property_id(const StringName &p_variable) const;
-	virtual StringName get_rset_property(uint16_t p_id) const;
-	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(uint16_t p_id) const;
-	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const;
+	virtual const Vector<MultiplayerAPI::RPCConfig> get_rpc_methods() const;
 
 	virtual void refcount_incremented();
 	virtual bool refcount_decremented();

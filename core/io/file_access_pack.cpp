@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,13 +30,15 @@
 
 #include "file_access_pack.h"
 
+#include "core/io/file_access_encrypted.h"
+#include "core/object/script_language.h"
 #include "core/version.h"
 
 #include <stdio.h>
 
-Error PackedData::add_pack(const String &p_path, bool p_replace_files) {
+Error PackedData::add_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) {
 	for (int i = 0; i < sources.size(); i++) {
-		if (sources[i]->try_open_pack(p_path, p_replace_files)) {
+		if (sources[i]->try_open_pack(p_path, p_replace_files, p_offset)) {
 			return OK;
 		}
 	}
@@ -44,16 +46,16 @@ Error PackedData::add_pack(const String &p_path, bool p_replace_files) {
 	return ERR_FILE_UNRECOGNIZED;
 }
 
-void PackedData::add_path(const String &pkg_path, const String &path, uint64_t ofs, uint64_t size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files) {
-	PathMD5 pmd5(path.md5_buffer());
-	//printf("adding path %ls, %lli, %lli\n", path.c_str(), pmd5.a, pmd5.b);
+void PackedData::add_path(const String &p_pkg_path, const String &p_path, uint64_t p_ofs, uint64_t p_size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files, bool p_encrypted) {
+	PathMD5 pmd5(p_path.md5_buffer());
 
 	bool exists = files.has(pmd5);
 
 	PackedFile pf;
-	pf.pack = pkg_path;
-	pf.offset = ofs;
-	pf.size = size;
+	pf.encrypted = p_encrypted;
+	pf.pack = p_pkg_path;
+	pf.offset = p_ofs;
+	pf.size = p_size;
 	for (int i = 0; i < 16; i++) {
 		pf.md5[i] = p_md5[i];
 	}
@@ -65,7 +67,7 @@ void PackedData::add_path(const String &pkg_path, const String &path, uint64_t o
 
 	if (!exists) {
 		//search for dir
-		String p = path.replace_first("res://", "");
+		String p = p_path.replace_first("res://", "");
 		PackedDir *cd = root;
 
 		if (p.find("/") != -1) { //in a subdir
@@ -84,9 +86,9 @@ void PackedData::add_path(const String &pkg_path, const String &path, uint64_t o
 				}
 			}
 		}
-		String filename = path.get_file();
+		String filename = p_path.get_file();
 		// Don't add as a file if the path points to a directory
-		if (!filename.empty()) {
+		if (!filename.is_empty()) {
 			cd->files.insert(filename);
 		}
 	}
@@ -123,15 +125,24 @@ PackedData::~PackedData() {
 
 //////////////////////////////////////////////////////////////////
 
-bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files) {
+bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	if (!f) {
 		return false;
 	}
 
+	f->seek(p_offset);
+
 	uint32_t magic = f->get_32();
 
 	if (magic != PACK_HEADER_MAGIC) {
+		// loading with offset feature not supported for self contained exe files
+		if (p_offset != 0) {
+			f->close();
+			memdelete(f);
+			ERR_FAIL_V_MSG(false, "Loading self-contained executable with offset not supported.");
+		}
+
 		//maybe at the end.... self contained exe
 		f->seek_end();
 		f->seek(f->get_position() - 4);
@@ -170,12 +181,41 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files) 
 		ERR_FAIL_V_MSG(false, "Pack created with a newer version of the engine: " + itos(ver_major) + "." + itos(ver_minor) + ".");
 	}
 
+	uint32_t pack_flags = f->get_32();
+	uint64_t file_base = f->get_64();
+
+	bool enc_directory = (pack_flags & PACK_DIR_ENCRYPTED);
+
 	for (int i = 0; i < 16; i++) {
 		//reserved
 		f->get_32();
 	}
 
 	int file_count = f->get_32();
+
+	if (enc_directory) {
+		FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
+		if (!fae) {
+			f->close();
+			memdelete(f);
+			ERR_FAIL_V_MSG(false, "Can't open encrypted pack directory.");
+		}
+
+		Vector<uint8_t> key;
+		key.resize(32);
+		for (int i = 0; i < key.size(); i++) {
+			key.write[i] = script_encryption_key[i];
+		}
+
+		Error err = fae->open_and_parse(f, key, FileAccessEncrypted::MODE_READ, false);
+		if (err) {
+			f->close();
+			memdelete(f);
+			memdelete(fae);
+			ERR_FAIL_V_MSG(false, "Can't open encrypted pack directory.");
+		}
+		f = fae;
+	}
 
 	for (int i = 0; i < file_count; i++) {
 		uint32_t sl = f->get_32();
@@ -187,11 +227,13 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files) 
 		String path;
 		path.parse_utf8(cs.ptr());
 
-		uint64_t ofs = f->get_64();
+		uint64_t ofs = file_base + f->get_64();
 		uint64_t size = f->get_64();
 		uint8_t md5[16];
 		f->get_buffer(md5, 16);
-		PackedData::get_singleton()->add_path(p_path, path, ofs, size, md5, this, p_replace_files);
+		uint32_t flags = f->get_32();
+
+		PackedData::get_singleton()->add_path(p_path, path, ofs + p_offset, size, md5, this, p_replace_files, (flags & PACK_FILE_ENCRYPTED));
 	}
 
 	f->close();
@@ -218,14 +260,14 @@ bool FileAccessPack::is_open() const {
 	return f->is_open();
 }
 
-void FileAccessPack::seek(size_t p_position) {
+void FileAccessPack::seek(uint64_t p_position) {
 	if (p_position > pf.size) {
 		eof = true;
 	} else {
 		eof = false;
 	}
 
-	f->seek(pf.offset + p_position);
+	f->seek(off + p_position);
 	pos = p_position;
 }
 
@@ -233,11 +275,11 @@ void FileAccessPack::seek_end(int64_t p_position) {
 	seek(pf.size + p_position);
 }
 
-size_t FileAccessPack::get_position() const {
+uint64_t FileAccessPack::get_position() const {
 	return pos;
 }
 
-size_t FileAccessPack::get_len() const {
+uint64_t FileAccessPack::get_length() const {
 	return pf.size;
 }
 
@@ -255,15 +297,17 @@ uint8_t FileAccessPack::get_8() const {
 	return f->get_8();
 }
 
-int FileAccessPack::get_buffer(uint8_t *p_dst, int p_length) const {
+uint64_t FileAccessPack::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
+	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
+
 	if (eof) {
 		return 0;
 	}
 
-	uint64_t to_read = p_length;
+	int64_t to_read = p_length;
 	if (to_read + pos > pf.size) {
 		eof = true;
-		to_read = int64_t(pf.size) - int64_t(pos);
+		to_read = (int64_t)pf.size - (int64_t)pos;
 	}
 
 	pos += p_length;
@@ -276,9 +320,9 @@ int FileAccessPack::get_buffer(uint8_t *p_dst, int p_length) const {
 	return to_read;
 }
 
-void FileAccessPack::set_endian_swap(bool p_swap) {
-	FileAccess::set_endian_swap(p_swap);
-	f->set_endian_swap(p_swap);
+void FileAccessPack::set_big_endian(bool p_big_endian) {
+	FileAccess::set_big_endian(p_big_endian);
+	f->set_big_endian(p_big_endian);
 }
 
 Error FileAccessPack::get_error() const {
@@ -296,7 +340,7 @@ void FileAccessPack::store_8(uint8_t p_dest) {
 	ERR_FAIL();
 }
 
-void FileAccessPack::store_buffer(const uint8_t *p_src, int p_length) {
+void FileAccessPack::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 	ERR_FAIL();
 }
 
@@ -310,12 +354,35 @@ FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFil
 	ERR_FAIL_COND_MSG(!f, "Can't open pack-referenced file '" + String(pf.pack) + "'.");
 
 	f->seek(pf.offset);
+	off = pf.offset;
+
+	if (pf.encrypted) {
+		FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
+		if (!fae) {
+			ERR_FAIL_MSG("Can't open encrypted pack-referenced file '" + String(pf.pack) + "'.");
+		}
+
+		Vector<uint8_t> key;
+		key.resize(32);
+		for (int i = 0; i < key.size(); i++) {
+			key.write[i] = script_encryption_key[i];
+		}
+
+		Error err = fae->open_and_parse(f, key, FileAccessEncrypted::MODE_READ, false);
+		if (err) {
+			memdelete(fae);
+			ERR_FAIL_MSG("Can't open encrypted pack-referenced file '" + String(pf.pack) + "'.");
+		}
+		f = fae;
+		off = 0;
+	}
 	pos = 0;
 	eof = false;
 }
 
 FileAccessPack::~FileAccessPack() {
 	if (f) {
+		f->close();
 		memdelete(f);
 	}
 }
@@ -376,8 +443,14 @@ String DirAccessPack::get_drive(int p_drive) {
 	return "";
 }
 
-Error DirAccessPack::change_dir(String p_dir) {
+PackedData::PackedDir *DirAccessPack::_find_dir(String p_dir) {
 	String nd = p_dir.replace("\\", "/");
+
+	// Special handling since simplify_path() will forbid it
+	if (p_dir == "..") {
+		return current->parent;
+	}
+
 	bool absolute = false;
 	if (nd.begins_with("res://")) {
 		nd = nd.replace_first("res://", "");
@@ -417,13 +490,21 @@ Error DirAccessPack::change_dir(String p_dir) {
 			pd = pd->subdirs[p];
 
 		} else {
-			return ERR_INVALID_PARAMETER;
+			return nullptr;
 		}
 	}
 
-	current = pd;
+	return pd;
+}
 
-	return OK;
+Error DirAccessPack::change_dir(String p_dir) {
+	PackedData::PackedDir *pd = _find_dir(p_dir);
+	if (pd) {
+		current = pd;
+		return OK;
+	} else {
+		return ERR_INVALID_PARAMETER;
+	}
 }
 
 String DirAccessPack::get_current_dir(bool p_include_drive) {
@@ -441,13 +522,17 @@ String DirAccessPack::get_current_dir(bool p_include_drive) {
 bool DirAccessPack::file_exists(String p_file) {
 	p_file = fix_path(p_file);
 
-	return current->files.has(p_file);
+	PackedData::PackedDir *pd = _find_dir(p_file.get_base_dir());
+	if (!pd) {
+		return false;
+	}
+	return pd->files.has(p_file.get_file());
 }
 
 bool DirAccessPack::dir_exists(String p_dir) {
 	p_dir = fix_path(p_dir);
 
-	return current->subdirs.has(p_dir);
+	return _find_dir(p_dir) != nullptr;
 }
 
 Error DirAccessPack::make_dir(String p_dir) {
@@ -462,7 +547,7 @@ Error DirAccessPack::remove(String p_name) {
 	return ERR_UNAVAILABLE;
 }
 
-size_t DirAccessPack::get_space_left() {
+uint64_t DirAccessPack::get_space_left() {
 	return 0;
 }
 

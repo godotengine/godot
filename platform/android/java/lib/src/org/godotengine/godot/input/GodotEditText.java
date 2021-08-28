@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,6 +36,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 import android.text.InputFilter;
+import android.text.InputType;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.inputmethod.EditorInfo;
@@ -58,7 +59,8 @@ public class GodotEditText extends EditText {
 	private GodotTextInputWrapper mInputWrapper;
 	private EditHandler sHandler = new EditHandler(this);
 	private String mOriginText;
-	private int mMaxInputLength;
+	private int mMaxInputLength = Integer.MAX_VALUE;
+	private boolean mMultiline = false;
 
 	private static class EditHandler extends Handler {
 		private final WeakReference<GodotEditText> mEdit;
@@ -95,7 +97,11 @@ public class GodotEditText extends EditText {
 
 	protected void initView() {
 		setPadding(0, 0, 0, 0);
-		setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
+		setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI | EditorInfo.IME_ACTION_DONE);
+	}
+
+	public boolean isMultiline() {
+		return mMultiline;
 	}
 
 	private void handleMessage(final Message msg) {
@@ -114,6 +120,12 @@ public class GodotEditText extends EditText {
 					} else {
 						edit.mInputWrapper.setSelection(false);
 					}
+
+					int inputType = InputType.TYPE_CLASS_TEXT;
+					if (edit.isMultiline()) {
+						inputType |= InputType.TYPE_TEXT_FLAG_MULTI_LINE;
+					}
+					edit.setInputType(inputType);
 
 					edit.mInputWrapper.setOriginText(text);
 					edit.addTextChangedListener(edit.mInputWrapper);
@@ -155,20 +167,41 @@ public class GodotEditText extends EditText {
 	// ===========================================================
 	@Override
 	public boolean onKeyDown(final int keyCode, final KeyEvent keyEvent) {
-		super.onKeyDown(keyCode, keyEvent);
-
-		/* Let GlSurfaceView get focus if back key is input. */
+		/* Let SurfaceView get focus if back key is input. */
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
 			mRenderView.getView().requestFocus();
 		}
 
-		return true;
+		// pass event to godot in special cases
+		if (needHandlingInGodot(keyCode, keyEvent) && mRenderView.getInputHandler().onKeyDown(keyCode, keyEvent)) {
+			return true;
+		} else {
+			return super.onKeyDown(keyCode, keyEvent);
+		}
+	}
+
+	@Override
+	public boolean onKeyUp(int keyCode, KeyEvent keyEvent) {
+		if (needHandlingInGodot(keyCode, keyEvent) && mRenderView.getInputHandler().onKeyUp(keyCode, keyEvent)) {
+			return true;
+		} else {
+			return super.onKeyUp(keyCode, keyEvent);
+		}
+	}
+
+	private boolean needHandlingInGodot(int keyCode, KeyEvent keyEvent) {
+		boolean isArrowKey = keyCode == KeyEvent.KEYCODE_DPAD_UP || keyCode == KeyEvent.KEYCODE_DPAD_DOWN ||
+							 keyCode == KeyEvent.KEYCODE_DPAD_LEFT || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT;
+		boolean isModifiedKey = keyEvent.isAltPressed() || keyEvent.isCtrlPressed() || keyEvent.isSymPressed() ||
+								keyEvent.isFunctionPressed() || keyEvent.isMetaPressed();
+		return isArrowKey || keyCode == KeyEvent.KEYCODE_TAB || KeyEvent.isModifierKey(keyCode) ||
+				isModifiedKey;
 	}
 
 	// ===========================================================
 	// Methods
 	// ===========================================================
-	public void showKeyboard(String p_existing_text, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
+	public void showKeyboard(String p_existing_text, boolean p_multiline, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
 		int maxInputLength = (p_max_input_length <= 0) ? Integer.MAX_VALUE : p_max_input_length;
 		if (p_cursor_start == -1) { // cursor position not given
 			this.mOriginText = p_existing_text;
@@ -180,6 +213,8 @@ public class GodotEditText extends EditText {
 			this.mOriginText = p_existing_text.substring(0, p_cursor_end);
 			this.mMaxInputLength = maxInputLength - (p_existing_text.length() - p_cursor_end);
 		}
+
+		this.mMultiline = p_multiline;
 
 		final Message msg = new Message();
 		msg.what = HANDLER_OPEN_IME_KEYBOARD;

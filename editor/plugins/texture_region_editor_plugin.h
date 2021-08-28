@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -117,14 +117,14 @@ class TextureRegionEditor : public VBoxContainer {
 	void _update_rect();
 	void _update_autoslice();
 
+	void _texture_changed();
+
 protected:
 	void _notification(int p_what);
 	void _node_removed(Object *p_obj);
 	static void _bind_methods();
 
 	Vector2 snap_point(Vector2 p_target) const;
-
-	virtual void _changed_callback(Object *p_changed, const char *p_prop);
 
 public:
 	void _edit_region();
@@ -155,13 +155,13 @@ protected:
 	void _editor_visiblity_changed();
 
 public:
-	virtual String get_name() const { return "TextureRegion"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
-	void set_state(const Dictionary &p_state);
-	Dictionary get_state() const;
+	virtual String get_name() const override { return "TextureRegion"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
+	void set_state(const Dictionary &p_state) override;
+	Dictionary get_state() const override;
 
 	TextureRegionEditorPlugin(EditorNode *p_node);
 };

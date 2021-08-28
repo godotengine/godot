@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,116 +33,11 @@
 #include "servers/rendering/rendering_device.h"
 
 #include <SPIRV/GlslangToSpv.h>
+#include <StandAlone/ResourceLimits.h>
 #include <glslang/Include/Types.h>
 #include <glslang/Public/ShaderLang.h>
 
-static const TBuiltInResource default_builtin_resource = {
-	/*maxLights*/ 32,
-	/*maxClipPlanes*/ 6,
-	/*maxTextureUnits*/ 32,
-	/*maxTextureCoords*/ 32,
-	/*maxVertexAttribs*/ 64,
-	/*maxVertexUniformComponents*/ 4096,
-	/*maxVaryingFloats*/ 64,
-	/*maxVertexTextureImageUnits*/ 32,
-	/*maxCombinedTextureImageUnits*/ 80,
-	/*maxTextureImageUnits*/ 32,
-	/*maxFragmentUniformComponents*/ 4096,
-	/*maxDrawBuffers*/ 32,
-	/*maxVertexUniformVectors*/ 128,
-	/*maxVaryingVectors*/ 8,
-	/*maxFragmentUniformVectors*/ 16,
-	/*maxVertexOutputVectors*/ 16,
-	/*maxFragmentInputVectors*/ 15,
-	/*minProgramTexelOffset*/ -8,
-	/*maxProgramTexelOffset*/ 7,
-	/*maxClipDistances*/ 8,
-	/*maxComputeWorkGroupCountX*/ 65535,
-	/*maxComputeWorkGroupCountY*/ 65535,
-	/*maxComputeWorkGroupCountZ*/ 65535,
-	/*maxComputeWorkGroupSizeX*/ 1024,
-	/*maxComputeWorkGroupSizeY*/ 1024,
-	/*maxComputeWorkGroupSizeZ*/ 64,
-	/*maxComputeUniformComponents*/ 1024,
-	/*maxComputeTextureImageUnits*/ 16,
-	/*maxComputeImageUniforms*/ 8,
-	/*maxComputeAtomicCounters*/ 8,
-	/*maxComputeAtomicCounterBuffers*/ 1,
-	/*maxVaryingComponents*/ 60,
-	/*maxVertexOutputComponents*/ 64,
-	/*maxGeometryInputComponents*/ 64,
-	/*maxGeometryOutputComponents*/ 128,
-	/*maxFragmentInputComponents*/ 128,
-	/*maxImageUnits*/ 8,
-	/*maxCombinedImageUnitsAndFragmentOutputs*/ 8,
-	/*maxCombinedShaderOutputResources*/ 8,
-	/*maxImageSamples*/ 0,
-	/*maxVertexImageUniforms*/ 0,
-	/*maxTessControlImageUniforms*/ 0,
-	/*maxTessEvaluationImageUniforms*/ 0,
-	/*maxGeometryImageUniforms*/ 0,
-	/*maxFragmentImageUniforms*/ 8,
-	/*maxCombinedImageUniforms*/ 8,
-	/*maxGeometryTextureImageUnits*/ 16,
-	/*maxGeometryOutputVertices*/ 256,
-	/*maxGeometryTotalOutputComponents*/ 1024,
-	/*maxGeometryUniformComponents*/ 1024,
-	/*maxGeometryVaryingComponents*/ 64,
-	/*maxTessControlInputComponents*/ 128,
-	/*maxTessControlOutputComponents*/ 128,
-	/*maxTessControlTextureImageUnits*/ 16,
-	/*maxTessControlUniformComponents*/ 1024,
-	/*maxTessControlTotalOutputComponents*/ 4096,
-	/*maxTessEvaluationInputComponents*/ 128,
-	/*maxTessEvaluationOutputComponents*/ 128,
-	/*maxTessEvaluationTextureImageUnits*/ 16,
-	/*maxTessEvaluationUniformComponents*/ 1024,
-	/*maxTessPatchComponents*/ 120,
-	/*maxPatchVertices*/ 32,
-	/*maxTessGenLevel*/ 64,
-	/*maxViewports*/ 16,
-	/*maxVertexAtomicCounters*/ 0,
-	/*maxTessControlAtomicCounters*/ 0,
-	/*maxTessEvaluationAtomicCounters*/ 0,
-	/*maxGeometryAtomicCounters*/ 0,
-	/*maxFragmentAtomicCounters*/ 8,
-	/*maxCombinedAtomicCounters*/ 8,
-	/*maxAtomicCounterBindings*/ 1,
-	/*maxVertexAtomicCounterBuffers*/ 0,
-	/*maxTessControlAtomicCounterBuffers*/ 0,
-	/*maxTessEvaluationAtomicCounterBuffers*/ 0,
-	/*maxGeometryAtomicCounterBuffers*/ 0,
-	/*maxFragmentAtomicCounterBuffers*/ 1,
-	/*maxCombinedAtomicCounterBuffers*/ 1,
-	/*maxAtomicCounterBufferSize*/ 16384,
-	/*maxTransformFeedbackBuffers*/ 4,
-	/*maxTransformFeedbackInterleavedComponents*/ 64,
-	/*maxCullDistances*/ 8,
-	/*maxCombinedClipAndCullDistances*/ 8,
-	/*maxSamples*/ 4,
-	/*maxMeshOutputVerticesNV*/ 0,
-	/*maxMeshOutputPrimitivesNV*/ 0,
-	/*maxMeshWorkGroupSizeX_NV*/ 0,
-	/*maxMeshWorkGroupSizeY_NV*/ 0,
-	/*maxMeshWorkGroupSizeZ_NV*/ 0,
-	/*maxTaskWorkGroupSizeX_NV*/ 0,
-	/*maxTaskWorkGroupSizeY_NV*/ 0,
-	/*maxTaskWorkGroupSizeZ_NV*/ 0,
-	/*maxMeshViewCountNV*/ 0,
-	/*limits*/ {
-			/*nonInductiveForLoops*/ true,
-			/*whileLoops*/ true,
-			/*doWhileLoops*/ true,
-			/*generalUniformIndexing*/ true,
-			/*generalAttributeMatrixVectorIndexing*/ true,
-			/*generalVaryingIndexing*/ true,
-			/*generalSamplerIndexing*/ true,
-			/*generalVariableIndexing*/ true,
-			/*generalConstantMatrixVectorIndexing*/ true,
-	}
-};
-
-static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage, const String &p_source_code, RenderingDevice::ShaderLanguage p_language, String *r_error) {
+static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage, const String &p_source_code, RenderingDevice::ShaderLanguage p_language, String *r_error, const RenderingDevice::Capabilities *p_capabilities) {
 	Vector<uint8_t> ret;
 
 	ERR_FAIL_COND_V(p_language == RenderingDevice::SHADER_LANGUAGE_HLSL, ret);
@@ -156,26 +51,85 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 	};
 
 	int ClientInputSemanticsVersion = 100; // maps to, say, #define VULKAN 100
+	bool check_subgroup_support = true; // assume we support subgroups
 
-	glslang::EShTargetClientVersion VulkanClientVersion = glslang::EShTargetVulkan_1_0;
-	glslang::EShTargetLanguageVersion TargetVersion = glslang::EShTargetSpv_1_0;
+	glslang::EShTargetClientVersion ClientVersion = glslang::EShTargetVulkan_1_2;
+	glslang::EShTargetLanguageVersion TargetVersion = glslang::EShTargetSpv_1_5;
 	glslang::TShader::ForbidIncluder includer;
+
+	if (p_capabilities->device_family == RenderingDevice::DeviceFamily::DEVICE_VULKAN) {
+		if (p_capabilities->version_major == 1 && p_capabilities->version_minor == 0) {
+			ClientVersion = glslang::EShTargetVulkan_1_0;
+			TargetVersion = glslang::EShTargetSpv_1_0;
+			check_subgroup_support = false; // subgroups are not supported in Vulkan 1.0
+		} else if (p_capabilities->version_major == 1 && p_capabilities->version_minor == 1) {
+			ClientVersion = glslang::EShTargetVulkan_1_1;
+			TargetVersion = glslang::EShTargetSpv_1_3;
+		} else {
+			// use defaults
+		}
+	} else {
+		// once we support other backends we'll need to do something here
+		if (r_error) {
+			(*r_error) = "GLSLANG - Unsupported device family";
+		}
+		return ret;
+	}
 
 	glslang::TShader shader(stages[p_stage]);
 	CharString cs = p_source_code.ascii();
 	const char *cs_strings = cs.get_data();
+	std::string preamble = "";
 
 	shader.setStrings(&cs_strings, 1);
 	shader.setEnvInput(glslang::EShSourceGlsl, stages[p_stage], glslang::EShClientVulkan, ClientInputSemanticsVersion);
-	shader.setEnvClient(glslang::EShClientVulkan, VulkanClientVersion);
+	shader.setEnvClient(glslang::EShClientVulkan, ClientVersion);
 	shader.setEnvTarget(glslang::EShTargetSpv, TargetVersion);
+
+	if (check_subgroup_support) {
+		uint32_t stage_bit = 1 << p_stage;
+
+		if ((p_capabilities->subgroup_in_shaders & stage_bit) == stage_bit) {
+			// stage supports subgroups
+			preamble += "#define has_GL_KHR_shader_subgroup_basic 1\n";
+			if (p_capabilities->subgroup_operations & RenderingDevice::SUBGROUP_VOTE_BIT) {
+				preamble += "#define has_GL_KHR_shader_subgroup_vote 1\n";
+			}
+			if (p_capabilities->subgroup_operations & RenderingDevice::SUBGROUP_ARITHMETIC_BIT) {
+				preamble += "#define has_GL_KHR_shader_subgroup_arithmetic 1\n";
+			}
+			if (p_capabilities->subgroup_operations & RenderingDevice::SUBGROUP_BALLOT_BIT) {
+				preamble += "#define has_GL_KHR_shader_subgroup_ballot 1\n";
+			}
+			if (p_capabilities->subgroup_operations & RenderingDevice::SUBGROUP_SHUFFLE_BIT) {
+				preamble += "#define has_GL_KHR_shader_subgroup_shuffle 1\n";
+			}
+			if (p_capabilities->subgroup_operations & RenderingDevice::SUBGROUP_SHUFFLE_RELATIVE_BIT) {
+				preamble += "#define has_GL_KHR_shader_subgroup_shuffle_relative 1\n";
+			}
+			if (p_capabilities->subgroup_operations & RenderingDevice::SUBGROUP_CLUSTERED_BIT) {
+				preamble += "#define has_GL_KHR_shader_subgroup_clustered 1\n";
+			}
+			if (p_capabilities->subgroup_operations & RenderingDevice::SUBGROUP_QUAD_BIT) {
+				preamble += "#define has_GL_KHR_shader_subgroup_quad 1\n";
+			}
+		}
+	}
+
+	if (p_capabilities->supports_multiview) {
+		preamble += "#define has_VK_KHR_multiview 1\n";
+	}
+
+	if (preamble != "") {
+		shader.setPreamble(preamble.c_str());
+	}
 
 	EShMessages messages = (EShMessages)(EShMsgSpvRules | EShMsgVulkanRules);
 	const int DefaultVersion = 100;
 	std::string pre_processed_code;
 
 	//preprocess
-	if (!shader.preprocess(&default_builtin_resource, DefaultVersion, ENoProfile, false, false, messages, &pre_processed_code, includer)) {
+	if (!shader.preprocess(&glslang::DefaultTBuiltInResource, DefaultVersion, ENoProfile, false, false, messages, &pre_processed_code, includer)) {
 		if (r_error) {
 			(*r_error) = "Failed pre-process:\n";
 			(*r_error) += shader.getInfoLog();
@@ -190,7 +144,7 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 	shader.setStrings(&cs_strings, 1);
 
 	//parse
-	if (!shader.parse(&default_builtin_resource, DefaultVersion, false, messages)) {
+	if (!shader.parse(&glslang::DefaultTBuiltInResource, DefaultVersion, false, messages)) {
 		if (r_error) {
 			(*r_error) = "Failed parse:\n";
 			(*r_error) += shader.getInfoLog();
@@ -223,17 +177,24 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 	ret.resize(SpirV.size() * sizeof(uint32_t));
 	{
 		uint8_t *w = ret.ptrw();
-		copymem(w, &SpirV[0], SpirV.size() * sizeof(uint32_t));
+		memcpy(w, &SpirV[0], SpirV.size() * sizeof(uint32_t));
 	}
 
 	return ret;
+}
+
+static String _get_cache_key_function_glsl(const RenderingDevice::Capabilities *p_capabilities) {
+	String version;
+	version = "SpirVGen=" + itos(glslang::GetSpirvGeneratorVersion()) + ", major=" + itos(p_capabilities->version_major) + ", minor=" + itos(p_capabilities->version_minor) + " , subgroup_size=" + itos(p_capabilities->subgroup_operations) + " , subgroup_ops=" + itos(p_capabilities->subgroup_operations) + " , subgroup_in_shaders=" + itos(p_capabilities->subgroup_in_shaders);
+	return version;
 }
 
 void preregister_glslang_types() {
 	// initialize in case it's not initialized. This is done once per thread
 	// and it's safe to call multiple times
 	glslang::InitializeProcess();
-	RenderingDevice::shader_set_compile_function(_compile_shader_glsl);
+	RenderingDevice::shader_set_compile_to_spirv_function(_compile_shader_glsl);
+	RenderingDevice::shader_set_get_cache_key_function(_get_cache_key_function_glsl);
 }
 
 void register_glslang_types() {

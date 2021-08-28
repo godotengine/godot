@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,5 +68,13 @@ typedef struct
 #define ENET_API extern
 
 typedef void ENetSocketSet;
+
+typedef struct _ENetAddress
+{
+   uint8_t host[16];
+   uint16_t port;
+   uint8_t wildcard;
+} ENetAddress;
+#define enet_host_equal(host_a, host_b) (memcmp(&host_a, &host_b,16) == 0)
 
 #endif /* __ENET_GODOT_H__ */

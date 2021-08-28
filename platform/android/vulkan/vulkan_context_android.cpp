@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,13 +29,18 @@
 /*************************************************************************/
 
 #include "vulkan_context_android.h"
-#include <vulkan/vulkan_android.h>
+
+#ifdef USE_VOLK
+#include <volk.h>
+#else
+#include <vulkan/vulkan.h>
+#endif
 
 const char *VulkanContextAndroid::_get_platform_surface_extension() const {
 	return VK_KHR_ANDROID_SURFACE_EXTENSION_NAME;
 }
 
-int VulkanContextAndroid::window_create(ANativeWindow *p_window, int p_width, int p_height) {
+int VulkanContextAndroid::window_create(ANativeWindow *p_window, DisplayServer::VSyncMode p_vsync_mode, int p_width, int p_height) {
 	VkAndroidSurfaceCreateInfoKHR createInfo;
 	createInfo.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
 	createInfo.pNext = nullptr;
@@ -43,18 +48,18 @@ int VulkanContextAndroid::window_create(ANativeWindow *p_window, int p_width, in
 	createInfo.window = p_window;
 
 	VkSurfaceKHR surface;
-	VkResult err = vkCreateAndroidSurfaceKHR(_get_instance(), &createInfo, nullptr, &surface);
+	VkResult err = vkCreateAndroidSurfaceKHR(get_instance(), &createInfo, nullptr, &surface);
 	if (err != VK_SUCCESS) {
 		ERR_FAIL_V_MSG(-1, "vkCreateAndroidSurfaceKHR failed with error " + itos(err));
 	}
 
-	return _window_create(DisplayServer::MAIN_WINDOW_ID, surface, p_width, p_height);
+	return _window_create(DisplayServer::MAIN_WINDOW_ID, p_vsync_mode, surface, p_width, p_height);
 }
 
-VulkanContextAndroid::VulkanContextAndroid() {
-	// TODO: fix validation layers
-	use_validation_layers = false;
-}
+bool VulkanContextAndroid::_use_validation_layers() {
+	uint32_t count = 0;
+	_get_preferred_validation_layers(&count, nullptr);
 
-VulkanContextAndroid::~VulkanContextAndroid() {
+	// On Android, we use validation layers automatically if they were explicitly linked with the app.
+	return count > 0;
 }

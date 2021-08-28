@@ -1,8 +1,14 @@
 /*
  *  Debugging routines
  *
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  Copyright The Mbed TLS Contributors
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -16,7 +22,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  This file is part of mbed TLS (https://tls.mbed.org)
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  */
 
 #if !defined(MBEDTLS_CONFIG_FILE)
@@ -236,8 +261,8 @@ void mbedtls_debug_print_mpi( const mbedtls_ssl_context *ssl, int level,
                       const char *text, const mbedtls_mpi *X )
 {
     char str[DEBUG_BUF_SIZE];
-    int j, k, zeros = 1;
-    size_t i, n, idx = 0;
+    size_t bitlen;
+    size_t idx = 0;
 
     if( NULL == ssl              ||
         NULL == ssl->conf        ||
@@ -248,55 +273,43 @@ void mbedtls_debug_print_mpi( const mbedtls_ssl_context *ssl, int level,
         return;
     }
 
-    for( n = X->n - 1; n > 0; n-- )
-        if( X->p[n] != 0 )
-            break;
+    bitlen = mbedtls_mpi_bitlen( X );
 
-    for( j = ( sizeof(mbedtls_mpi_uint) << 3 ) - 1; j >= 0; j-- )
-        if( ( ( X->p[n] >> j ) & 1 ) != 0 )
-            break;
-
-    mbedtls_snprintf( str + idx, sizeof( str ) - idx, "value of '%s' (%d bits) is:\n",
-              text, (int) ( ( n * ( sizeof(mbedtls_mpi_uint) << 3 ) ) + j + 1 ) );
-
+    mbedtls_snprintf( str, sizeof( str ), "value of '%s' (%u bits) is:\n",
+                      text, (unsigned) bitlen );
     debug_send_line( ssl, level, file, line, str );
 
-    idx = 0;
-    for( i = n + 1, j = 0; i > 0; i-- )
+    if( bitlen == 0 )
     {
-        if( zeros && X->p[i - 1] == 0 )
-            continue;
-
-        for( k = sizeof( mbedtls_mpi_uint ) - 1; k >= 0; k-- )
+        str[0] = ' '; str[1] = '0'; str[2] = '0';
+        idx = 3;
+    }
+    else
+    {
+        int n;
+        for( n = (int) ( ( bitlen - 1 ) / 8 ); n >= 0; n-- )
         {
-            if( zeros && ( ( X->p[i - 1] >> ( k << 3 ) ) & 0xFF ) == 0 )
-                continue;
-            else
-                zeros = 0;
-
-            if( j % 16 == 0 )
+            size_t limb_offset = n / sizeof( mbedtls_mpi_uint );
+            size_t offset_in_limb = n % sizeof( mbedtls_mpi_uint );
+            unsigned char octet =
+                ( X->p[limb_offset] >> ( offset_in_limb * 8 ) ) & 0xff;
+            mbedtls_snprintf( str + idx, sizeof( str ) - idx, " %02x", octet );
+            idx += 3;
+            /* Wrap lines after 16 octets that each take 3 columns */
+            if( idx >= 3 * 16 )
             {
-                if( j > 0 )
-                {
-                    mbedtls_snprintf( str + idx, sizeof( str ) - idx, "\n" );
-                    debug_send_line( ssl, level, file, line, str );
-                    idx = 0;
-                }
+                mbedtls_snprintf( str + idx, sizeof( str ) - idx, "\n" );
+                debug_send_line( ssl, level, file, line, str );
+                idx = 0;
             }
-
-            idx += mbedtls_snprintf( str + idx, sizeof( str ) - idx, " %02x", (unsigned int)
-                             ( X->p[i - 1] >> ( k << 3 ) ) & 0xFF );
-
-            j++;
         }
-
     }
 
-    if( zeros == 1 )
-        idx += mbedtls_snprintf( str + idx, sizeof( str ) - idx, " 00" );
-
-    mbedtls_snprintf( str + idx, sizeof( str ) - idx, "\n" );
-    debug_send_line( ssl, level, file, line, str );
+    if( idx != 0 )
+    {
+        mbedtls_snprintf( str + idx, sizeof( str ) - idx, "\n" );
+        debug_send_line( ssl, level, file, line, str );
+    }
 }
 #endif /* MBEDTLS_BIGNUM_C */
 

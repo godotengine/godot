@@ -20,8 +20,7 @@
 #define FTREND1_H_
 
 
-#include <ft2build.h>
-#include FT_RENDER_H
+#include <freetype/ftrender.h>
 
 
 FT_BEGIN_HEADER

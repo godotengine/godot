@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,22 +42,22 @@ void MaterialEditor::_notification(int p_what) {
 		if (first_enter) {
 			//it's in propertyeditor so.. could be moved around
 
-			light_1_switch->set_normal_texture(get_theme_icon("MaterialPreviewLight1", "EditorIcons"));
-			light_1_switch->set_pressed_texture(get_theme_icon("MaterialPreviewLight1Off", "EditorIcons"));
-			light_2_switch->set_normal_texture(get_theme_icon("MaterialPreviewLight2", "EditorIcons"));
-			light_2_switch->set_pressed_texture(get_theme_icon("MaterialPreviewLight2Off", "EditorIcons"));
+			light_1_switch->set_normal_texture(get_theme_icon(SNAME("MaterialPreviewLight1"), SNAME("EditorIcons")));
+			light_1_switch->set_pressed_texture(get_theme_icon(SNAME("MaterialPreviewLight1Off"), SNAME("EditorIcons")));
+			light_2_switch->set_normal_texture(get_theme_icon(SNAME("MaterialPreviewLight2"), SNAME("EditorIcons")));
+			light_2_switch->set_pressed_texture(get_theme_icon(SNAME("MaterialPreviewLight2Off"), SNAME("EditorIcons")));
 
-			sphere_switch->set_normal_texture(get_theme_icon("MaterialPreviewSphereOff", "EditorIcons"));
-			sphere_switch->set_pressed_texture(get_theme_icon("MaterialPreviewSphere", "EditorIcons"));
-			box_switch->set_normal_texture(get_theme_icon("MaterialPreviewCubeOff", "EditorIcons"));
-			box_switch->set_pressed_texture(get_theme_icon("MaterialPreviewCube", "EditorIcons"));
+			sphere_switch->set_normal_texture(get_theme_icon(SNAME("MaterialPreviewSphereOff"), SNAME("EditorIcons")));
+			sphere_switch->set_pressed_texture(get_theme_icon(SNAME("MaterialPreviewSphere"), SNAME("EditorIcons")));
+			box_switch->set_normal_texture(get_theme_icon(SNAME("MaterialPreviewCubeOff"), SNAME("EditorIcons")));
+			box_switch->set_pressed_texture(get_theme_icon(SNAME("MaterialPreviewCube"), SNAME("EditorIcons")));
 
 			first_enter = false;
 		}
 	}
 
 	if (p_what == NOTIFICATION_DRAW) {
-		Ref<Texture2D> checkerboard = get_theme_icon("Checkerboard", "EditorIcons");
+		Ref<Texture2D> checkerboard = get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons"));
 		Size2 size = get_size();
 
 		draw_texture_rect(checkerboard, Rect2(Point2(), size), true);
@@ -108,10 +108,10 @@ MaterialEditor::MaterialEditor() {
 	vc = memnew(SubViewportContainer);
 	vc->set_stretch(true);
 	add_child(vc);
-	vc->set_anchors_and_margins_preset(PRESET_WIDE);
+	vc->set_anchors_and_offsets_preset(PRESET_WIDE);
 	viewport = memnew(SubViewport);
 	Ref<World3D> world_3d;
-	world_3d.instance();
+	world_3d.instantiate();
 	viewport->set_world_3d(world_3d); //use own world
 	vc->add_child(viewport);
 	viewport->set_disable_input(true);
@@ -119,17 +119,17 @@ MaterialEditor::MaterialEditor() {
 	viewport->set_msaa(Viewport::MSAA_4X);
 
 	camera = memnew(Camera3D);
-	camera->set_transform(Transform(Basis(), Vector3(0, 0, 3)));
+	camera->set_transform(Transform3D(Basis(), Vector3(0, 0, 3)));
 	camera->set_perspective(45, 0.1, 10);
 	camera->make_current();
 	viewport->add_child(camera);
 
 	light1 = memnew(DirectionalLight3D);
-	light1->set_transform(Transform().looking_at(Vector3(-1, -1, -1), Vector3(0, 1, 0)));
+	light1->set_transform(Transform3D().looking_at(Vector3(-1, -1, -1), Vector3(0, 1, 0)));
 	viewport->add_child(light1);
 
 	light2 = memnew(DirectionalLight3D);
-	light2->set_transform(Transform().looking_at(Vector3(0, 1, 0), Vector3(0, 0, 1)));
+	light2->set_transform(Transform3D().looking_at(Vector3(0, 1, 0), Vector3(0, 0, 1)));
 	light2->set_color(Color(0.7, 0.7, 0.7));
 	viewport->add_child(light2);
 
@@ -139,23 +139,23 @@ MaterialEditor::MaterialEditor() {
 	box_instance = memnew(MeshInstance3D);
 	viewport->add_child(box_instance);
 
-	Transform box_xform;
+	Transform3D box_xform;
 	box_xform.basis.rotate(Vector3(1, 0, 0), Math::deg2rad(25.0));
 	box_xform.basis = box_xform.basis * Basis().rotated(Vector3(0, 1, 0), Math::deg2rad(-25.0));
 	box_xform.basis.scale(Vector3(0.8, 0.8, 0.8));
 	box_xform.origin.y = 0.2;
 	box_instance->set_transform(box_xform);
 
-	sphere_mesh.instance();
+	sphere_mesh.instantiate();
 	sphere_instance->set_mesh(sphere_mesh);
-	box_mesh.instance();
+	box_mesh.instantiate();
 	box_instance->set_mesh(box_mesh);
 
 	set_custom_minimum_size(Size2(1, 150) * EDSCALE);
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_child(hb);
-	hb->set_anchors_and_margins_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 2);
+	hb->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 2);
 
 	VBoxContainer *vb_shape = memnew(VBoxContainer);
 	hb->add_child(vb_shape);
@@ -223,7 +223,7 @@ void EditorInspectorPluginMaterial::parse_begin(Object *p_object) {
 }
 
 EditorInspectorPluginMaterial::EditorInspectorPluginMaterial() {
-	env.instance();
+	env.instantiate();
 	Ref<Sky> sky = memnew(Sky());
 	env->set_sky(sky);
 	env->set_background(Environment::BG_COLOR);
@@ -233,7 +233,7 @@ EditorInspectorPluginMaterial::EditorInspectorPluginMaterial() {
 
 MaterialEditorPlugin::MaterialEditorPlugin(EditorNode *p_node) {
 	Ref<EditorInspectorPluginMaterial> plugin;
-	plugin.instance();
+	plugin.instantiate();
 	add_inspector_plugin(plugin);
 }
 
@@ -251,10 +251,10 @@ Ref<Resource> StandardMaterial3DConversionPlugin::convert(const Ref<Resource> &p
 	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
-	smat.instance();
+	smat.instantiate();
 
 	Ref<Shader> shader;
-	shader.instance();
+	shader.instantiate();
 
 	String code = RS::get_singleton()->shader_get_code(mat->get_shader_rid());
 
@@ -265,15 +265,15 @@ Ref<Resource> StandardMaterial3DConversionPlugin::convert(const Ref<Resource> &p
 	List<PropertyInfo> params;
 	RS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
 
-	for (List<PropertyInfo>::Element *E = params.front(); E; E = E->next()) {
+	for (const PropertyInfo &E : params) {
 		// Texture parameter has to be treated specially since StandardMaterial3D saved it
 		// as RID but ShaderMaterial needs Texture itself
-		Ref<Texture2D> texture = mat->get_texture_by_name(E->get().name);
+		Ref<Texture2D> texture = mat->get_texture_by_name(E.name);
 		if (texture.is_valid()) {
-			smat->set_shader_param(E->get().name, texture);
+			smat->set_shader_param(E.name, texture);
 		} else {
-			Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E->get().name);
-			smat->set_shader_param(E->get().name, value);
+			Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
+			smat->set_shader_param(E.name, value);
 		}
 	}
 
@@ -295,10 +295,10 @@ Ref<Resource> ParticlesMaterialConversionPlugin::convert(const Ref<Resource> &p_
 	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
-	smat.instance();
+	smat.instantiate();
 
 	Ref<Shader> shader;
-	shader.instance();
+	shader.instantiate();
 
 	String code = RS::get_singleton()->shader_get_code(mat->get_shader_rid());
 
@@ -309,9 +309,9 @@ Ref<Resource> ParticlesMaterialConversionPlugin::convert(const Ref<Resource> &p_
 	List<PropertyInfo> params;
 	RS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
 
-	for (List<PropertyInfo>::Element *E = params.front(); E; E = E->next()) {
-		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E->get().name);
-		smat->set_shader_param(E->get().name, value);
+	for (const PropertyInfo &E : params) {
+		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
+		smat->set_shader_param(E.name, value);
 	}
 
 	smat->set_render_priority(mat->get_render_priority());
@@ -332,10 +332,10 @@ Ref<Resource> CanvasItemMaterialConversionPlugin::convert(const Ref<Resource> &p
 	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
-	smat.instance();
+	smat.instantiate();
 
 	Ref<Shader> shader;
-	shader.instance();
+	shader.instantiate();
 
 	String code = RS::get_singleton()->shader_get_code(mat->get_shader_rid());
 
@@ -346,9 +346,9 @@ Ref<Resource> CanvasItemMaterialConversionPlugin::convert(const Ref<Resource> &p
 	List<PropertyInfo> params;
 	RS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
 
-	for (List<PropertyInfo>::Element *E = params.front(); E; E = E->next()) {
-		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E->get().name);
-		smat->set_shader_param(E->get().name, value);
+	for (const PropertyInfo &E : params) {
+		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
+		smat->set_shader_param(E.name, value);
 	}
 
 	smat->set_render_priority(mat->get_render_priority());
@@ -369,10 +369,10 @@ Ref<Resource> ProceduralSkyMaterialConversionPlugin::convert(const Ref<Resource>
 	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
-	smat.instance();
+	smat.instantiate();
 
 	Ref<Shader> shader;
-	shader.instance();
+	shader.instantiate();
 
 	String code = RS::get_singleton()->shader_get_code(mat->get_shader_rid());
 
@@ -383,9 +383,9 @@ Ref<Resource> ProceduralSkyMaterialConversionPlugin::convert(const Ref<Resource>
 	List<PropertyInfo> params;
 	RS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
 
-	for (List<PropertyInfo>::Element *E = params.front(); E; E = E->next()) {
-		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E->get().name);
-		smat->set_shader_param(E->get().name, value);
+	for (const PropertyInfo &E : params) {
+		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
+		smat->set_shader_param(E.name, value);
 	}
 
 	smat->set_render_priority(mat->get_render_priority());
@@ -406,10 +406,10 @@ Ref<Resource> PanoramaSkyMaterialConversionPlugin::convert(const Ref<Resource> &
 	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
-	smat.instance();
+	smat.instantiate();
 
 	Ref<Shader> shader;
-	shader.instance();
+	shader.instantiate();
 
 	String code = RS::get_singleton()->shader_get_code(mat->get_shader_rid());
 
@@ -420,9 +420,9 @@ Ref<Resource> PanoramaSkyMaterialConversionPlugin::convert(const Ref<Resource> &
 	List<PropertyInfo> params;
 	RS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
 
-	for (List<PropertyInfo>::Element *E = params.front(); E; E = E->next()) {
-		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E->get().name);
-		smat->set_shader_param(E->get().name, value);
+	for (const PropertyInfo &E : params) {
+		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
+		smat->set_shader_param(E.name, value);
 	}
 
 	smat->set_render_priority(mat->get_render_priority());
@@ -443,10 +443,10 @@ Ref<Resource> PhysicalSkyMaterialConversionPlugin::convert(const Ref<Resource> &
 	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
-	smat.instance();
+	smat.instantiate();
 
 	Ref<Shader> shader;
-	shader.instance();
+	shader.instantiate();
 
 	String code = RS::get_singleton()->shader_get_code(mat->get_shader_rid());
 
@@ -457,9 +457,9 @@ Ref<Resource> PhysicalSkyMaterialConversionPlugin::convert(const Ref<Resource> &
 	List<PropertyInfo> params;
 	RS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
 
-	for (List<PropertyInfo>::Element *E = params.front(); E; E = E->next()) {
-		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E->get().name);
-		smat->set_shader_param(E->get().name, value);
+	for (const PropertyInfo &E : params) {
+		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
+		smat->set_shader_param(E.name, value);
 	}
 
 	smat->set_render_priority(mat->get_render_priority());

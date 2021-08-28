@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,11 +35,10 @@
 
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
+#include "core/object/ref_counted.h"
 #include "core/os/mutex.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
-#include "core/reference.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/debugger/editor_debugger_node.h"
@@ -51,13 +50,13 @@
 #include "gd_mono_cache.h"
 #include "gd_mono_class.h"
 #include "gd_mono_marshal.h"
-#include "gd_mono_method_thunk.h"
 
 namespace GDMonoUtils {
 
 MonoObject *unmanaged_get_managed(Object *unmanaged) {
-	if (!unmanaged)
+	if (!unmanaged) {
 		return nullptr;
+	}
 
 	if (unmanaged->get_script_instance()) {
 		CSharpInstance *cs_instance = CAST_CSHARP_INSTANCE(unmanaged->get_script_instance());
@@ -69,29 +68,18 @@ MonoObject *unmanaged_get_managed(Object *unmanaged) {
 
 	// If the owner does not have a CSharpInstance...
 
-	void *data = unmanaged->get_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index());
-
+	void *data = CSharpLanguage::get_instance_binding(unmanaged);
 	ERR_FAIL_NULL_V(data, nullptr);
-
 	CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)data)->value();
-
-	if (!script_binding.inited) {
-		MutexLock lock(CSharpLanguage::get_singleton()->get_language_bind_mutex());
-
-		if (!script_binding.inited) { // Other thread may have set it up
-			// Already had a binding that needs to be setup
-			CSharpLanguage::get_singleton()->setup_csharp_script_binding(script_binding, unmanaged);
-
-			ERR_FAIL_COND_V(!script_binding.inited, nullptr);
-		}
-	}
+	ERR_FAIL_COND_V(!script_binding.inited, nullptr);
 
 	MonoGCHandleData &gchandle = script_binding.gchandle;
 
 	MonoObject *target = gchandle.get_target();
 
-	if (target)
+	if (target) {
 		return target;
+	}
 
 	CSharpLanguage::get_singleton()->release_script_gchandle(gchandle);
 
@@ -108,15 +96,15 @@ MonoObject *unmanaged_get_managed(Object *unmanaged) {
 	gchandle = MonoGCHandleData::new_strong_handle(mono_object);
 
 	// Tie managed to unmanaged
-	Reference *ref = Object::cast_to<Reference>(unmanaged);
+	RefCounted *rc = Object::cast_to<RefCounted>(unmanaged);
 
-	if (ref) {
+	if (rc) {
 		// Unsafe refcount increment. The managed instance also counts as a reference.
 		// This way if the unmanaged world has no references to our owner
 		// but the managed instance is alive, the refcount will be 1 instead of 0.
-		// See: godot_icall_Reference_Dtor(MonoObject *p_obj, Object *p_ptr)
-		ref->reference();
-		CSharpLanguage::get_singleton()->post_unsafe_reference(ref);
+		// See: godot_icall_RefCounted_Dtor(MonoObject *p_obj, Object *p_ptr)
+		rc->reference();
+		CSharpLanguage::get_singleton()->post_unsafe_reference(rc);
 	}
 
 	return mono_object;
@@ -196,8 +184,9 @@ GDMonoClass *get_object_class(MonoObject *p_object) {
 GDMonoClass *type_get_proxy_class(const StringName &p_type) {
 	String class_name = p_type;
 
-	if (class_name[0] == '_')
+	if (class_name[0] == '_') {
 		class_name = class_name.substr(1, class_name.length());
+	}
 
 	GDMonoClass *klass = GDMono::get_singleton()->get_core_api_assembly()->get_class(BINDINGS_NAMESPACE, class_name);
 
@@ -220,11 +209,14 @@ GDMonoClass *get_class_native_base(GDMonoClass *p_class) {
 
 	do {
 		const GDMonoAssembly *assembly = klass->get_assembly();
-		if (assembly == GDMono::get_singleton()->get_core_api_assembly())
+
+		if (assembly == GDMono::get_singleton()->get_core_api_assembly()) {
 			return klass;
+		}
 #ifdef TOOLS_ENABLED
-		if (assembly == GDMono::get_singleton()->get_editor_api_assembly())
+		if (assembly == GDMono::get_singleton()->get_editor_api_assembly()) {
 			return klass;
+		}
 #endif
 	} while ((klass = klass->get_parent_class()) != nullptr);
 
@@ -234,7 +226,7 @@ GDMonoClass *get_class_native_base(GDMonoClass *p_class) {
 MonoObject *create_managed_for_godot_object(GDMonoClass *p_class, const StringName &p_native, Object *p_object) {
 	bool parent_is_object_class = ClassDB::is_parent_class(p_object->get_class_name(), p_native);
 	ERR_FAIL_COND_V_MSG(!parent_is_object_class, nullptr,
-			"Type inherits from native type '" + p_native + "', so it can't be instanced in object of type: '" + p_object->get_class() + "'.");
+			"Type inherits from native type '" + p_native + "', so it can't be instantiated in object of type: '" + p_object->get_class() + "'.");
 
 	MonoObject *mono_object = mono_object_new(mono_domain_get(), p_class->get_mono_ptr());
 	ERR_FAIL_NULL_V(mono_object, nullptr);
@@ -385,14 +377,6 @@ String get_exception_name_and_message(MonoException *p_exc) {
 	return res;
 }
 
-void set_exception_message(MonoException *p_exc, String message) {
-	MonoClass *klass = mono_object_get_class((MonoObject *)p_exc);
-	MonoProperty *prop = mono_class_get_property_from_name(klass, "Message");
-	MonoString *msg = GDMonoMarshal::mono_string_from_godot(message);
-	void *params[1] = { msg };
-	property_set_value(prop, (MonoObject *)p_exc, params, nullptr);
-}
-
 void debug_print_unhandled_exception(MonoException *p_exc) {
 	print_unhandled_exception(p_exc);
 	debug_send_unhandled_exception_error(p_exc);
@@ -410,8 +394,9 @@ void debug_send_unhandled_exception_error(MonoException *p_exc) {
 	}
 
 	static thread_local bool _recursion_flag_ = false;
-	if (_recursion_flag_)
+	if (_recursion_flag_) {
 		return;
+	}
 	_recursion_flag_ = true;
 	SCOPE_EXIT { _recursion_flag_ = false; };
 
@@ -441,8 +426,9 @@ void debug_send_unhandled_exception_error(MonoException *p_exc) {
 		Vector<ScriptLanguage::StackInfo> _si;
 		if (stack_trace != nullptr) {
 			_si = CSharpLanguage::get_singleton()->stack_trace_get_info(stack_trace);
-			for (int i = _si.size() - 1; i >= 0; i--)
+			for (int i = _si.size() - 1; i >= 0; i--) {
 				si.insert(0, _si[i]);
+			}
 		}
 
 		exc_msg += (exc_msg.length() > 0 ? " ---> " : "") + GDMonoUtils::get_exception_name_and_message(p_exc);
@@ -452,8 +438,9 @@ void debug_send_unhandled_exception_error(MonoException *p_exc) {
 		CRASH_COND(inner_exc_prop == nullptr);
 
 		MonoObject *inner_exc = inner_exc_prop->get_value((MonoObject *)p_exc);
-		if (inner_exc != nullptr)
+		if (inner_exc != nullptr) {
 			si.insert(0, separator);
+		}
 
 		p_exc = (MonoException *)inner_exc;
 	}
@@ -481,6 +468,7 @@ void set_pending_exception(MonoException *p_exc) {
 #else
 	if (get_runtime_invoke_count() == 0) {
 		debug_unhandled_exception(p_exc);
+		return;
 	}
 
 	if (!mono_runtime_set_pending_exception(p_exc, false)) {
@@ -495,13 +483,6 @@ thread_local int current_invoke_count = 0;
 MonoObject *runtime_invoke(MonoMethod *p_method, void *p_obj, void **p_params, MonoException **r_exc) {
 	GD_MONO_BEGIN_RUNTIME_INVOKE;
 	MonoObject *ret = mono_runtime_invoke(p_method, p_obj, p_params, (MonoObject **)r_exc);
-	GD_MONO_END_RUNTIME_INVOKE;
-	return ret;
-}
-
-MonoObject *runtime_invoke_array(MonoMethod *p_method, void *p_obj, MonoArray *p_params, MonoException **r_exc) {
-	GD_MONO_BEGIN_RUNTIME_INVOKE;
-	MonoObject *ret = mono_runtime_invoke_array(p_method, p_obj, p_params, (MonoObject **)r_exc);
 	GD_MONO_END_RUNTIME_INVOKE;
 	return ret;
 }
@@ -660,7 +641,6 @@ GDMonoClass *make_generic_dictionary_type(MonoReflectionType *p_key_reftype, Mon
 	UNHANDLED_EXCEPTION(exc);
 	return GDMono::get_singleton()->get_class(mono_class_from_mono_type(mono_reflection_type_get_type(reftype)));
 }
-
 } // namespace Marshal
 
 ScopeThreadAttach::ScopeThreadAttach() {
@@ -680,5 +660,4 @@ StringName get_native_godot_class_name(GDMonoClass *p_class) {
 	StringName *ptr = GDMonoMarshal::unbox<StringName *>(CACHED_FIELD(StringName, ptr)->get_value(native_name_obj));
 	return ptr ? *ptr : StringName();
 }
-
 } // namespace GDMonoUtils

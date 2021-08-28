@@ -12,173 +12,154 @@
 		Finally, viewports can also behave as render targets, in which case they will not be visible unless the associated texture is used to draw.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html</link>
-		<link>https://docs.godotengine.org/en/latest/tutorials/viewports/index.html</link>
+		<link title="Viewport and canvas transforms">https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html</link>
+		<link title="Viewports tutorial index">https://docs.godotengine.org/en/latest/tutorials/viewports/index.html</link>
+		<link title="GUI in 3D Demo">https://godotengine.org/asset-library/asset/127</link>
+		<link title="3D in 2D Demo">https://godotengine.org/asset-library/asset/128</link>
+		<link title="2D in 3D Demo">https://godotengine.org/asset-library/asset/129</link>
+		<link title="Screen Capture Demo">https://godotengine.org/asset-library/asset/130</link>
+		<link title="Dynamic Split Screen Demo">https://godotengine.org/asset-library/asset/541</link>
+		<link title="3D Viewport Scaling Demo">https://godotengine.org/asset-library/asset/586</link>
 	</tutorials>
 	<methods>
 		<method name="find_world_2d" qualifiers="const">
-			<return type="World2D">
-			</return>
+			<return type="World2D" />
 			<description>
 				Returns the 2D world of the viewport.
 			</description>
 		</method>
 		<method name="find_world_3d" qualifiers="const">
-			<return type="World3D">
-			</return>
+			<return type="World3D" />
 			<description>
 				Returns the 3D world of the viewport, or if none the world of the parent viewport.
 			</description>
 		</method>
-		<method name="get_camera" qualifiers="const">
-			<return type="Camera3D">
-			</return>
+		<method name="get_camera_2d" qualifiers="const">
+			<return type="Camera2D" />
 			<description>
-				Returns the active 3D camera.
+				Returns the currently active 2D camera. Returns null if there are no active cameras.
+			</description>
+		</method>
+		<method name="get_camera_3d" qualifiers="const">
+			<return type="Camera3D" />
+			<description>
+				Returns the currently active 3D camera.
 			</description>
 		</method>
 		<method name="get_final_transform" qualifiers="const">
-			<return type="Transform2D">
-			</return>
+			<return type="Transform2D" />
 			<description>
 				Returns the total transform of the viewport.
 			</description>
 		</method>
 		<method name="get_mouse_position" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns the mouse position relative to the viewport.
 			</description>
 		</method>
 		<method name="get_render_info">
-			<return type="int">
-			</return>
-			<argument index="0" name="info" type="int" enum="Viewport.RenderInfo">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="type" type="int" enum="Viewport.RenderInfoType" />
+			<argument index="1" name="info" type="int" enum="Viewport.RenderInfo" />
 			<description>
-				Returns information about the viewport from the rendering pipeline.
 			</description>
 		</method>
 		<method name="get_shadow_atlas_quadrant_subdiv" qualifiers="const">
-			<return type="int" enum="Viewport.ShadowAtlasQuadrantSubdiv">
-			</return>
-			<argument index="0" name="quadrant" type="int">
-			</argument>
+			<return type="int" enum="Viewport.ShadowAtlasQuadrantSubdiv" />
+			<argument index="0" name="quadrant" type="int" />
 			<description>
 				Returns the [enum ShadowAtlasQuadrantSubdiv] of the specified quadrant.
 			</description>
 		</method>
 		<method name="get_texture" qualifiers="const">
-			<return type="ViewportTexture">
-			</return>
+			<return type="ViewportTexture" />
 			<description>
 				Returns the viewport's texture.
-				[b]Note:[/b] Due to the way OpenGL works, the resulting [ViewportTexture] is flipped vertically. You can use [method Image.flip_y] on the result of [method Texture2D.get_data] to flip it back, for example:
-				[codeblock]
-				var img = get_viewport().get_texture().get_data()
+				[b]Note:[/b] Due to the way OpenGL works, the resulting [ViewportTexture] is flipped vertically. You can use [method Image.flip_y] on the result of [method Texture2D.get_image] to flip it back, for example:
+				[codeblocks]
+				[gdscript]
+				var img = get_viewport().get_texture().get_image()
 				img.flip_y()
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				Image img = GetViewport().GetTexture().GetImage();
+				img.FlipY();
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_viewport_rid" qualifiers="const">
-			<return type="RID">
-			</return>
+			<return type="RID" />
 			<description>
 				Returns the viewport's RID from the [RenderingServer].
 			</description>
 		</method>
 		<method name="get_visible_rect" qualifiers="const">
-			<return type="Rect2">
-			</return>
+			<return type="Rect2" />
 			<description>
 				Returns the visible rectangle in global screen coordinates.
 			</description>
 		</method>
 		<method name="gui_get_drag_data" qualifiers="const">
-			<return type="Variant">
-			</return>
+			<return type="Variant" />
 			<description>
-				Returns the drag data from the GUI, that was previously returned by [method Control.get_drag_data].
+				Returns the drag data from the GUI, that was previously returned by [method Control._get_drag_data].
 			</description>
 		</method>
 		<method name="gui_is_dragging" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the viewport is currently performing a drag operation.
 			</description>
 		</method>
-		<method name="input">
-			<return type="void">
-			</return>
-			<argument index="0" name="event" type="InputEvent">
-			</argument>
-			<argument index="1" name="in_local_coords" type="bool" default="false">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="input_text">
-			<return type="void">
-			</return>
-			<argument index="0" name="text" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="is_embedding_subwindows" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="is_input_handled" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="push_input">
+			<return type="void" />
+			<argument index="0" name="event" type="InputEvent" />
+			<argument index="1" name="in_local_coords" type="bool" default="false" />
+			<description>
+			</description>
+		</method>
+		<method name="push_text_input">
+			<return type="void" />
+			<argument index="0" name="text" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="push_unhandled_input">
+			<return type="void" />
+			<argument index="0" name="event" type="InputEvent" />
+			<argument index="1" name="in_local_coords" type="bool" default="false" />
 			<description>
 			</description>
 		</method>
 		<method name="set_input_as_handled">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Stops the input from propagating further down the [SceneTree].
 			</description>
 		</method>
 		<method name="set_shadow_atlas_quadrant_subdiv">
-			<return type="void">
-			</return>
-			<argument index="0" name="quadrant" type="int">
-			</argument>
-			<argument index="1" name="subdiv" type="int" enum="Viewport.ShadowAtlasQuadrantSubdiv">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="quadrant" type="int" />
+			<argument index="1" name="subdiv" type="int" enum="Viewport.ShadowAtlasQuadrantSubdiv" />
 			<description>
 				Sets the number of subdivisions to use in the specified quadrant. A higher number of subdivisions allows you to have more shadows in the scene at once, but reduces the quality of the shadows. A good practice is to have quadrants with a varying number of subdivisions and to have as few subdivisions as possible.
 			</description>
 		</method>
-		<method name="unhandled_input">
-			<return type="void">
-			</return>
-			<argument index="0" name="event" type="InputEvent">
-			</argument>
-			<argument index="1" name="in_local_coords" type="bool" default="false">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="update_worlds">
-			<return type="void">
-			</return>
-			<description>
-				Forces update of the 2D and 3D worlds.
-			</description>
-		</method>
 		<method name="warp_mouse">
-			<return type="void">
-			</return>
-			<argument index="0" name="to_position" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="to_position" type="Vector2" />
 			<description>
 				Warps the mouse to a position relative to the viewport.
 			</description>
@@ -188,7 +169,7 @@
 		<member name="audio_listener_enable_2d" type="bool" setter="set_as_audio_listener_2d" getter="is_audio_listener_2d" default="false">
 			If [code]true[/code], the viewport will process 2D audio streams.
 		</member>
-		<member name="audio_listener_enable_3d" type="bool" setter="set_as_audio_listener" getter="is_audio_listener" default="false">
+		<member name="audio_listener_enable_3d" type="bool" setter="set_as_audio_listener_3d" getter="is_audio_listener_3d" default="false">
 			If [code]true[/code], the viewport will process 3D audio streams.
 		</member>
 		<member name="canvas_item_default_texture_filter" type="int" setter="set_default_canvas_item_texture_filter" getter="get_default_canvas_item_texture_filter" enum="Viewport.DefaultCanvasItemTextureFilter" default="1">
@@ -203,11 +184,14 @@
 		<member name="debug_draw" type="int" setter="set_debug_draw" getter="get_debug_draw" enum="Viewport.DebugDraw" default="0">
 			The overlay mode for test rendered geometry in debug purposes.
 		</member>
+		<member name="disable_3d" type="bool" setter="set_disable_3d" getter="is_3d_disabled" default="false">
+			Disable 3D rendering (but keep 2D rendering).
+		</member>
 		<member name="global_canvas_transform" type="Transform2D" setter="set_global_canvas_transform" getter="get_global_canvas_transform">
 			The global canvas transform of the viewport. The canvas transform is relative to this.
 		</member>
 		<member name="gui_disable_input" type="bool" setter="set_disable_input" getter="is_input_disabled" default="false">
-			If [code]true[/code], the viewport will not receive input event.
+			If [code]true[/code], the viewport will not receive input events.
 		</member>
 		<member name="gui_embed_subwindows" type="bool" setter="set_embed_subwindows_hint" getter="get_embed_subwindows_hint" default="false">
 		</member>
@@ -215,6 +199,8 @@
 			If [code]true[/code], the GUI controls on the viewport will lay pixel perfectly.
 		</member>
 		<member name="handle_input_locally" type="bool" setter="set_handle_input_locally" getter="is_handling_input_locally" default="true">
+		</member>
+		<member name="lod_threshold" type="float" setter="set_lod_threshold" getter="get_lod_threshold" default="1.0">
 		</member>
 		<member name="msaa" type="int" setter="set_msaa" getter="get_msaa" enum="Viewport.MSAA" default="0">
 			The multisample anti-aliasing mode. A higher number results in smoother edges at the cost of significantly worse performance. A value of 4 is best unless targeting very high-end systems.
@@ -225,8 +211,17 @@
 		<member name="physics_object_picking" type="bool" setter="set_physics_object_picking" getter="get_physics_object_picking" default="false">
 			If [code]true[/code], the objects rendered by viewport become subjects of mouse picking process.
 		</member>
+		<member name="scale_3d" type="int" setter="set_scale_3d" getter="get_scale_3d" enum="Viewport.Scale3D" default="0">
+			The scale at which 3D content is rendered.
+		</member>
 		<member name="screen_space_aa" type="int" setter="set_screen_space_aa" getter="get_screen_space_aa" enum="Viewport.ScreenSpaceAA" default="0">
 			Sets the screen-space antialiasing method used. Screen-space antialiasing works by selectively blurring edges in a post-process shader. It differs from MSAA which takes multiple coverage samples while rendering objects. Screen-space AA methods are typically faster than MSAA and will smooth out specular aliasing, but tend to make scenes appear blurry.
+		</member>
+		<member name="sdf_oversize" type="int" setter="set_sdf_oversize" getter="get_sdf_oversize" enum="Viewport.SDFOversize" default="1">
+		</member>
+		<member name="sdf_scale" type="int" setter="set_sdf_scale" getter="get_sdf_scale" enum="Viewport.SDFScale" default="1">
+		</member>
+		<member name="shadow_atlas_16_bits" type="bool" setter="set_shadow_atlas_16_bits" getter="get_shadow_atlas_16_bits" default="true">
 		</member>
 		<member name="shadow_atlas_quad_0" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="2">
 			The subdivision amount of the first quadrant on the shadow atlas.
@@ -240,12 +235,23 @@
 		<member name="shadow_atlas_quad_3" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="4">
 			The subdivision amount of the fourth quadrant on the shadow atlas.
 		</member>
-		<member name="shadow_atlas_size" type="int" setter="set_shadow_atlas_size" getter="get_shadow_atlas_size" default="0">
+		<member name="shadow_atlas_size" type="int" setter="set_shadow_atlas_size" getter="get_shadow_atlas_size" default="2048">
 			The shadow atlas' resolution (used for omni and spot lights). The value will be rounded up to the nearest power of 2.
-			[b]Note:[/b] If this is set to 0, shadows won't be visible. Since user-created viewports default to a value of 0, this value must be set above 0 manually.
+			[b]Note:[/b] If this is set to 0, shadows won't be visible.
+		</member>
+		<member name="snap_2d_transforms_to_pixel" type="bool" setter="set_snap_2d_transforms_to_pixel" getter="is_snap_2d_transforms_to_pixel_enabled" default="false">
+		</member>
+		<member name="snap_2d_vertices_to_pixel" type="bool" setter="set_snap_2d_vertices_to_pixel" getter="is_snap_2d_vertices_to_pixel_enabled" default="false">
 		</member>
 		<member name="transparent_bg" type="bool" setter="set_transparent_background" getter="has_transparent_background" default="false">
 			If [code]true[/code], the viewport should render its background as transparent.
+		</member>
+		<member name="use_debanding" type="bool" setter="set_use_debanding" getter="is_using_debanding" default="false">
+		</member>
+		<member name="use_occlusion_culling" type="bool" setter="set_use_occlusion_culling" getter="is_using_occlusion_culling" default="false">
+		</member>
+		<member name="use_xr" type="bool" setter="set_use_xr" getter="is_using_xr" default="false">
+			If [code]true[/code], the viewport will use the primary XR interface to render XR output. When applicable this can result in a stereoscopic image and the resulting render being output to a headset.
 		</member>
 		<member name="world_2d" type="World2D" setter="set_world_2d" getter="get_world_2d">
 			The custom [World2D] which can be used as 2D environment source.
@@ -256,8 +262,7 @@
 	</members>
 	<signals>
 		<signal name="gui_focus_changed">
-			<argument index="0" name="node" type="Control">
-			</argument>
+			<argument index="0" name="node" type="Control" />
 			<description>
 				Emitted when a Control node grabs keyboard focus.
 			</description>
@@ -269,6 +274,16 @@
 		</signal>
 	</signals>
 	<constants>
+		<constant name="SCALE_3D_DISABLED" value="0" enum="Scale3D">
+		</constant>
+		<constant name="SCALE_3D_75_PERCENT" value="1" enum="Scale3D">
+		</constant>
+		<constant name="SCALE_3D_50_PERCENT" value="2" enum="Scale3D">
+		</constant>
+		<constant name="SCALE_3D_33_PERCENT" value="3" enum="Scale3D">
+		</constant>
+		<constant name="SCALE_3D_25_PERCENT" value="4" enum="Scale3D">
+		</constant>
 		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED" value="0" enum="ShadowAtlasQuadrantSubdiv">
 			This quadrant will not be used.
 		</constant>
@@ -294,19 +309,19 @@
 			Represents the size of the [enum ShadowAtlasQuadrantSubdiv] enum.
 		</constant>
 		<constant name="MSAA_DISABLED" value="0" enum="MSAA">
-			Multisample antialiasing mode disabled. This is the default value, and also the fastest setting.
+			Multisample antialiasing mode disabled. This is the default value, and is also the fastest setting.
 		</constant>
 		<constant name="MSAA_2X" value="1" enum="MSAA">
-			Use 2x Multisample Antialiasing.
+			Use 2× Multisample Antialiasing. This has a moderate performance cost. It helps reduce aliasing noticeably, but 4× MSAA still looks substantially better.
 		</constant>
 		<constant name="MSAA_4X" value="2" enum="MSAA">
-			Use 4x Multisample Antialiasing.
+			Use 4× Multisample Antialiasing. This has a significant performance cost, and is generally a good compromise between performance and quality.
 		</constant>
 		<constant name="MSAA_8X" value="3" enum="MSAA">
-			Use 8x Multisample Antialiasing. Likely unsupported on low-end and older hardware.
+			Use 8× Multisample Antialiasing. This has a very high performance cost. The difference between 4× and 8× MSAA may not always be visible in real gameplay conditions. Likely unsupported on low-end and older hardware.
 		</constant>
 		<constant name="MSAA_16X" value="4" enum="MSAA">
-			Use 16x Multisample Antialiasing. Likely unsupported on medium and low-end hardware.
+			Use 16× Multisample Antialiasing. This has a very high performance cost. The difference between 8× and 16× MSAA may not always be visible in real gameplay conditions. Likely unsupported on medium and low-end hardware.
 		</constant>
 		<constant name="MSAA_MAX" value="5" enum="MSAA">
 			Represents the size of the [enum MSAA] enum.
@@ -315,7 +330,7 @@
 			Do not perform any antialiasing in the full screen post-process.
 		</constant>
 		<constant name="SCREEN_SPACE_AA_FXAA" value="1" enum="ScreenSpaceAA">
-			Use fast approximate antialiasing. FXAA is a popular screen-space antialising method, which is fast but will make the image look blurry, especially at lower resolutions. It can still work relatively well at large resolutions such as 1440p and 4K.
+			Use fast approximate antialiasing. FXAA is a popular screen-space antialiasing method, which is fast but will make the image look blurry, especially at lower resolutions. It can still work relatively well at large resolutions such as 1440p and 4K.
 		</constant>
 		<constant name="SCREEN_SPACE_AA_MAX" value="2" enum="ScreenSpaceAA">
 			Represents the size of the [enum ScreenSpaceAA] enum.
@@ -323,23 +338,20 @@
 		<constant name="RENDER_INFO_OBJECTS_IN_FRAME" value="0" enum="RenderInfo">
 			Amount of objects in frame.
 		</constant>
-		<constant name="RENDER_INFO_VERTICES_IN_FRAME" value="1" enum="RenderInfo">
+		<constant name="RENDER_INFO_PRIMITIVES_IN_FRAME" value="1" enum="RenderInfo">
 			Amount of vertices in frame.
 		</constant>
-		<constant name="RENDER_INFO_MATERIAL_CHANGES_IN_FRAME" value="2" enum="RenderInfo">
-			Amount of material changes in frame.
-		</constant>
-		<constant name="RENDER_INFO_SHADER_CHANGES_IN_FRAME" value="3" enum="RenderInfo">
-			Amount of shader changes in frame.
-		</constant>
-		<constant name="RENDER_INFO_SURFACE_CHANGES_IN_FRAME" value="4" enum="RenderInfo">
-			Amount of surface changes in frame.
-		</constant>
-		<constant name="RENDER_INFO_DRAW_CALLS_IN_FRAME" value="5" enum="RenderInfo">
+		<constant name="RENDER_INFO_DRAW_CALLS_IN_FRAME" value="2" enum="RenderInfo">
 			Amount of draw calls in frame.
 		</constant>
-		<constant name="RENDER_INFO_MAX" value="6" enum="RenderInfo">
+		<constant name="RENDER_INFO_MAX" value="3" enum="RenderInfo">
 			Represents the size of the [enum RenderInfo] enum.
+		</constant>
+		<constant name="RENDER_INFO_TYPE_VISIBLE" value="0" enum="RenderInfoType">
+		</constant>
+		<constant name="RENDER_INFO_TYPE_SHADOW" value="1" enum="RenderInfoType">
+		</constant>
+		<constant name="RENDER_INFO_TYPE_MAX" value="2" enum="RenderInfoType">
 		</constant>
 		<constant name="DEBUG_DRAW_DISABLED" value="0" enum="DebugDraw">
 			Objects are displayed normally.
@@ -357,14 +369,14 @@
 		</constant>
 		<constant name="DEBUG_DRAW_NORMAL_BUFFER" value="5" enum="DebugDraw">
 		</constant>
-		<constant name="DEBUG_DRAW_GI_PROBE_ALBEDO" value="6" enum="DebugDraw">
-			Objects are displayed with only the albedo value from [GIProbe]s.
+		<constant name="DEBUG_DRAW_VOXEL_GI_ALBEDO" value="6" enum="DebugDraw">
+			Objects are displayed with only the albedo value from [VoxelGI]s.
 		</constant>
-		<constant name="DEBUG_DRAW_GI_PROBE_LIGHTING" value="7" enum="DebugDraw">
-			Objects are displayed with only the lighting value from [GIProbe]s.
+		<constant name="DEBUG_DRAW_VOXEL_GI_LIGHTING" value="7" enum="DebugDraw">
+			Objects are displayed with only the lighting value from [VoxelGI]s.
 		</constant>
-		<constant name="DEBUG_DRAW_GI_PROBE_EMISSION" value="8" enum="DebugDraw">
-			Objects are displayed with only the emission color from [GIProbe]s.
+		<constant name="DEBUG_DRAW_VOXEL_GI_EMISSION" value="8" enum="DebugDraw">
+			Objects are displayed with only the emission color from [VoxelGI]s.
 		</constant>
 		<constant name="DEBUG_DRAW_SHADOW_ATLAS" value="9" enum="DebugDraw">
 			Draws the shadow atlas that stores shadows from [OmniLight3D]s and [SpotLight3D]s in the upper left quadrant of the [Viewport].
@@ -388,6 +400,18 @@
 		<constant name="DEBUG_DRAW_SDFGI_PROBES" value="16" enum="DebugDraw">
 		</constant>
 		<constant name="DEBUG_DRAW_GI_BUFFER" value="17" enum="DebugDraw">
+		</constant>
+		<constant name="DEBUG_DRAW_DISABLE_LOD" value="18" enum="DebugDraw">
+		</constant>
+		<constant name="DEBUG_DRAW_CLUSTER_OMNI_LIGHTS" value="19" enum="DebugDraw">
+		</constant>
+		<constant name="DEBUG_DRAW_CLUSTER_SPOT_LIGHTS" value="20" enum="DebugDraw">
+		</constant>
+		<constant name="DEBUG_DRAW_CLUSTER_DECALS" value="21" enum="DebugDraw">
+		</constant>
+		<constant name="DEBUG_DRAW_CLUSTER_REFLECTION_PROBES" value="22" enum="DebugDraw">
+		</constant>
+		<constant name="DEBUG_DRAW_OCCLUDERS" value="23" enum="DebugDraw">
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST" value="0" enum="DefaultCanvasItemTextureFilter">
 			The texture filter reads from the nearest pixel only. The simplest and fastest method of filtering, but the texture will look pixelized.
@@ -415,6 +439,24 @@
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MAX" value="3" enum="DefaultCanvasItemTextureRepeat">
 			Max value for [enum DefaultCanvasItemTextureRepeat] enum.
+		</constant>
+		<constant name="SDF_OVERSIZE_100_PERCENT" value="0" enum="SDFOversize">
+		</constant>
+		<constant name="SDF_OVERSIZE_120_PERCENT" value="1" enum="SDFOversize">
+		</constant>
+		<constant name="SDF_OVERSIZE_150_PERCENT" value="2" enum="SDFOversize">
+		</constant>
+		<constant name="SDF_OVERSIZE_200_PERCENT" value="3" enum="SDFOversize">
+		</constant>
+		<constant name="SDF_OVERSIZE_MAX" value="4" enum="SDFOversize">
+		</constant>
+		<constant name="SDF_SCALE_100_PERCENT" value="0" enum="SDFScale">
+		</constant>
+		<constant name="SDF_SCALE_50_PERCENT" value="1" enum="SDFScale">
+		</constant>
+		<constant name="SDF_SCALE_25_PERCENT" value="2" enum="SDFScale">
+		</constant>
+		<constant name="SDF_SCALE_MAX" value="3" enum="SDFScale">
 		</constant>
 	</constants>
 </class>

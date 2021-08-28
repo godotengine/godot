@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,130 +33,15 @@
 
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
-#include "scene/resources/material.h"
-#include "scene/resources/multimesh.h"
-#include "scene/resources/shader.h"
-#include "scene/resources/texture.h"
+#include "scene/resources/canvas_item_material.h"
+#include "servers/text_server.h"
 
 class CanvasLayer;
-class Viewport;
 class Font;
-
+class MultiMesh;
 class StyleBox;
-
-class CanvasItemMaterial : public Material {
-	GDCLASS(CanvasItemMaterial, Material);
-
-public:
-	enum BlendMode {
-		BLEND_MODE_MIX,
-		BLEND_MODE_ADD,
-		BLEND_MODE_SUB,
-		BLEND_MODE_MUL,
-		BLEND_MODE_PREMULT_ALPHA,
-		BLEND_MODE_DISABLED
-	};
-
-	enum LightMode {
-		LIGHT_MODE_NORMAL,
-		LIGHT_MODE_UNSHADED,
-		LIGHT_MODE_LIGHT_ONLY
-	};
-
-private:
-	union MaterialKey {
-		struct {
-			uint32_t blend_mode : 4;
-			uint32_t light_mode : 4;
-			uint32_t particles_animation : 1;
-			uint32_t invalid_key : 1;
-		};
-
-		uint32_t key;
-
-		bool operator<(const MaterialKey &p_key) const {
-			return key < p_key.key;
-		}
-	};
-
-	struct ShaderNames {
-		StringName particles_anim_h_frames;
-		StringName particles_anim_v_frames;
-		StringName particles_anim_loop;
-	};
-
-	static ShaderNames *shader_names;
-
-	struct ShaderData {
-		RID shader;
-		int users;
-	};
-
-	static Map<MaterialKey, ShaderData> shader_map;
-
-	MaterialKey current_key;
-
-	_FORCE_INLINE_ MaterialKey _compute_key() const {
-		MaterialKey mk;
-		mk.key = 0;
-		mk.blend_mode = blend_mode;
-		mk.light_mode = light_mode;
-		mk.particles_animation = particles_animation;
-		return mk;
-	}
-
-	static Mutex material_mutex;
-	static SelfList<CanvasItemMaterial>::List *dirty_materials;
-	SelfList<CanvasItemMaterial> element;
-
-	void _update_shader();
-	_FORCE_INLINE_ void _queue_shader_change();
-	_FORCE_INLINE_ bool _is_shader_dirty() const;
-
-	BlendMode blend_mode;
-	LightMode light_mode;
-	bool particles_animation;
-
-	int particles_anim_h_frames;
-	int particles_anim_v_frames;
-	bool particles_anim_loop;
-
-protected:
-	static void _bind_methods();
-	void _validate_property(PropertyInfo &property) const;
-
-public:
-	void set_blend_mode(BlendMode p_blend_mode);
-	BlendMode get_blend_mode() const;
-
-	void set_light_mode(LightMode p_light_mode);
-	LightMode get_light_mode() const;
-
-	void set_particles_animation(bool p_particles_anim);
-	bool get_particles_animation() const;
-
-	void set_particles_anim_h_frames(int p_frames);
-	int get_particles_anim_h_frames() const;
-	void set_particles_anim_v_frames(int p_frames);
-	int get_particles_anim_v_frames() const;
-
-	void set_particles_anim_loop(bool p_loop);
-	bool get_particles_anim_loop() const;
-
-	static void init_shaders();
-	static void finish_shaders();
-	static void flush_changes();
-
-	RID get_shader_rid() const;
-
-	virtual Shader::Mode get_shader_mode() const;
-
-	CanvasItemMaterial();
-	virtual ~CanvasItemMaterial();
-};
-
-VARIANT_ENUM_CAST(CanvasItemMaterial::BlendMode)
-VARIANT_ENUM_CAST(CanvasItemMaterial::LightMode)
+class Window;
+class World2D;
 
 class CanvasItem : public Node {
 	GDCLASS(CanvasItem, Node);
@@ -185,42 +70,42 @@ private:
 	mutable SelfList<Node> xform_change;
 
 	RID canvas_item;
-	String group;
+	StringName group;
 
-	CanvasLayer *canvas_layer;
+	CanvasLayer *canvas_layer = nullptr;
 
-	Color modulate;
-	Color self_modulate;
+	Color modulate = Color(1, 1, 1, 1);
+	Color self_modulate = Color(1, 1, 1, 1);
 
 	List<CanvasItem *> children_items;
-	List<CanvasItem *>::Element *C;
+	List<CanvasItem *>::Element *C = nullptr;
 
-	int light_mask;
+	int light_mask = 1;
 
-	Window *window;
-	bool first_draw;
-	bool visible;
-	bool pending_update;
-	bool toplevel;
-	bool drawing;
-	bool block_transform_notify;
-	bool behind;
-	bool use_parent_material;
-	bool notify_local_transform;
-	bool notify_transform;
+	Window *window = nullptr;
+	bool first_draw = false;
+	bool visible = true;
+	bool clip_children = false;
+	bool pending_update = false;
+	bool top_level = false;
+	bool drawing = false;
+	bool block_transform_notify = false;
+	bool behind = false;
+	bool use_parent_material = false;
+	bool notify_local_transform = false;
+	bool notify_transform = false;
 
-	RS::CanvasItemTextureFilter texture_filter_cache;
-	RS::CanvasItemTextureRepeat texture_repeat_cache;
-
-	TextureFilter texture_filter;
-	TextureRepeat texture_repeat;
+	RS::CanvasItemTextureFilter texture_filter_cache = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
+	RS::CanvasItemTextureRepeat texture_repeat_cache = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
+	TextureFilter texture_filter = TEXTURE_FILTER_PARENT_NODE;
+	TextureRepeat texture_repeat = TEXTURE_REPEAT_PARENT_NODE;
 
 	Ref<Material> material;
 
 	mutable Transform2D global_transform;
-	mutable bool global_invalid;
+	mutable bool global_invalid = true;
 
-	void _toplevel_raise_self();
+	void _top_level_raise_self();
 
 	void _propagate_visibility_changed(bool p_visible);
 
@@ -257,6 +142,7 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	GDVIRTUAL0(_draw)
 public:
 	enum {
 		NOTIFICATION_TRANSFORM_CHANGED = SceneTree::NOTIFICATION_TRANSFORM_CHANGED, //unique
@@ -288,8 +174,8 @@ public:
 
 	// Used to rotate the node
 	virtual bool _edit_use_rotation() const { return false; };
-	virtual void _edit_set_rotation(float p_rotation) {}
-	virtual float _edit_get_rotation() const { return 0.0; };
+	virtual void _edit_set_rotation(real_t p_rotation) {}
+	virtual real_t _edit_get_rotation() const { return 0.0; };
 
 	// Used to resize/move the node
 	virtual bool _edit_use_rect() const { return false; }; // MAYBE REPLACE BY A _edit_get_editmode()
@@ -315,6 +201,9 @@ public:
 
 	void update();
 
+	void set_clip_children(bool p_enabled);
+	bool is_clipping_children() const;
+
 	virtual void set_light_mask(int p_light_mask);
 	int get_light_mask() const;
 
@@ -326,37 +215,41 @@ public:
 
 	/* DRAWING API */
 
-	void draw_line(const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width = 1.0);
-	void draw_polyline(const Vector<Point2> &p_points, const Color &p_color, float p_width = 1.0);
-	void draw_polyline_colors(const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width = 1.0);
-	void draw_arc(const Vector2 &p_center, float p_radius, float p_start_angle, float p_end_angle, int p_point_count, const Color &p_color, float p_width = 1.0);
-	void draw_multiline(const Vector<Point2> &p_points, const Color &p_color, float p_width = 1.0);
-	void draw_multiline_colors(const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width = 1.0);
-	void draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_filled = true, float p_width = 1.0);
-	void draw_circle(const Point2 &p_pos, float p_radius, const Color &p_color);
-	void draw_texture(const Ref<Texture2D> &p_texture, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1, 1), const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT_NODE, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT_NODE);
-	void draw_texture_rect(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT_NODE, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT_NODE);
-	void draw_texture_rect_region(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), bool p_clip_uv = false, TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT_NODE, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT_NODE);
+	void draw_line(const Point2 &p_from, const Point2 &p_to, const Color &p_color, real_t p_width = 1.0);
+	void draw_polyline(const Vector<Point2> &p_points, const Color &p_color, real_t p_width = 1.0, bool p_antialiased = false);
+	void draw_polyline_colors(const Vector<Point2> &p_points, const Vector<Color> &p_colors, real_t p_width = 1.0, bool p_antialiased = false);
+	void draw_arc(const Vector2 &p_center, real_t p_radius, real_t p_start_angle, real_t p_end_angle, int p_point_count, const Color &p_color, real_t p_width = 1.0, bool p_antialiased = false);
+	void draw_multiline(const Vector<Point2> &p_points, const Color &p_color, real_t p_width = 1.0);
+	void draw_multiline_colors(const Vector<Point2> &p_points, const Vector<Color> &p_colors, real_t p_width = 1.0);
+	void draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_filled = true, real_t p_width = 1.0);
+	void draw_circle(const Point2 &p_pos, real_t p_radius, const Color &p_color);
+	void draw_texture(const Ref<Texture2D> &p_texture, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1, 1));
+	void draw_texture_rect(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false);
+	void draw_texture_rect_region(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, bool p_clip_uv = false);
+	void draw_msdf_texture_rect_region(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), double p_outline = 0.0, double p_pixel_range = 4.0);
 	void draw_style_box(const Ref<StyleBox> &p_style_box, const Rect2 &p_rect);
-	void draw_primitive(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture = Ref<Texture2D>(), float p_width = 1, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT_NODE, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT_NODE);
-	void draw_polygon(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), Ref<Texture2D> p_texture = Ref<Texture2D>(), const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT_NODE, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT_NODE);
-	void draw_colored_polygon(const Vector<Point2> &p_points, const Color &p_color, const Vector<Point2> &p_uvs = Vector<Point2>(), Ref<Texture2D> p_texture = Ref<Texture2D>(), const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT_NODE, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT_NODE);
+	void draw_primitive(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture = Ref<Texture2D>(), real_t p_width = 1);
+	void draw_polygon(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), Ref<Texture2D> p_texture = Ref<Texture2D>());
+	void draw_colored_polygon(const Vector<Point2> &p_points, const Color &p_color, const Vector<Point2> &p_uvs = Vector<Point2>(), Ref<Texture2D> p_texture = Ref<Texture2D>());
 
-	void draw_mesh(const Ref<Mesh> &p_mesh, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), const Transform2D &p_transform = Transform2D(), const Color &p_modulate = Color(1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT_NODE, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT_NODE);
-	void draw_multimesh(const Ref<MultiMesh> &p_multimesh, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT_NODE, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT_NODE);
+	void draw_mesh(const Ref<Mesh> &p_mesh, const Ref<Texture2D> &p_texture, const Transform2D &p_transform = Transform2D(), const Color &p_modulate = Color(1, 1, 1));
+	void draw_multimesh(const Ref<MultiMesh> &p_multimesh, const Ref<Texture2D> &p_texture);
 
-	void draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, const Color &p_modulate = Color(1, 1, 1), int p_clip_w = -1);
-	float draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_char, const String &p_next = "", const Color &p_modulate = Color(1, 1, 1));
+	void draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HAlign p_align = HALIGN_LEFT, real_t p_width = -1, int p_size = -1, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, const Color &p_outline_modulate = Color(1, 1, 1, 0), uint8_t p_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND) const;
+	void draw_multiline_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HAlign p_align = HALIGN_LEFT, real_t p_width = -1, int p_max_lines = -1, int p_size = -1, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, const Color &p_outline_modulate = Color(1, 1, 1, 0), uint8_t p_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND) const;
+	real_t draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_char, const String &p_next = "", int p_size = -1, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, const Color &p_outline_modulate = Color(1, 1, 1, 0)) const;
 
-	void draw_set_transform(const Point2 &p_offset, float p_rot, const Size2 &p_scale);
+	void draw_set_transform(const Point2 &p_offset, real_t p_rot = 0.0, const Size2 &p_scale = Size2(1.0, 1.0));
 	void draw_set_transform_matrix(const Transform2D &p_matrix);
+	void draw_animation_slice(double p_animation_length, double p_slice_begin, double p_slice_end, double p_offset = 0);
+	void draw_end_animation();
 
 	static CanvasItem *get_current_item_drawn();
 
 	/* RECT / TRANSFORM */
 
-	void set_as_toplevel(bool p_toplevel);
-	bool is_set_as_toplevel() const;
+	void set_as_top_level(bool p_top_level);
+	bool is_set_as_top_level() const;
 
 	void set_draw_behind_parent(bool p_enable);
 	bool is_draw_behind_parent_enabled() const;
@@ -369,7 +262,7 @@ public:
 	virtual Transform2D get_global_transform_with_canvas() const;
 	virtual Transform2D get_screen_transform() const;
 
-	CanvasItem *get_toplevel() const;
+	CanvasItem *get_top_level() const;
 	_FORCE_INLINE_ RID get_canvas_item() const {
 		return canvas_item;
 	}
@@ -405,10 +298,10 @@ public:
 
 	void force_update_transform();
 
-	void set_texture_filter(TextureFilter p_texture_filter);
+	virtual void set_texture_filter(TextureFilter p_texture_filter);
 	TextureFilter get_texture_filter() const;
 
-	void set_texture_repeat(TextureRepeat p_texture_repeat);
+	virtual void set_texture_repeat(TextureRepeat p_texture_repeat);
 	TextureRepeat get_texture_repeat() const;
 
 	// Used by control nodes to retrieve the parent's anchorable area
@@ -422,5 +315,59 @@ public:
 
 VARIANT_ENUM_CAST(CanvasItem::TextureFilter)
 VARIANT_ENUM_CAST(CanvasItem::TextureRepeat)
+
+class CanvasTexture : public Texture2D {
+	GDCLASS(CanvasTexture, Texture2D);
+	OBJ_SAVE_TYPE(Texture2D); // Saves derived classes with common type so they can be interchanged.
+
+	Ref<Texture2D> diffuse_texture;
+	Ref<Texture2D> normal_texture;
+	Ref<Texture2D> specular_texture;
+	Color specular = Color(1, 1, 1, 1);
+	real_t shininess = 1.0;
+
+	RID canvas_texture;
+
+	CanvasItem::TextureFilter texture_filter = CanvasItem::TEXTURE_FILTER_PARENT_NODE;
+	CanvasItem::TextureRepeat texture_repeat = CanvasItem::TEXTURE_REPEAT_PARENT_NODE;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_diffuse_texture(const Ref<Texture2D> &p_diffuse);
+	Ref<Texture2D> get_diffuse_texture() const;
+
+	void set_normal_texture(const Ref<Texture2D> &p_normal);
+	Ref<Texture2D> get_normal_texture() const;
+
+	void set_specular_texture(const Ref<Texture2D> &p_specular);
+	Ref<Texture2D> get_specular_texture() const;
+
+	void set_specular_color(const Color &p_color);
+	Color get_specular_color() const;
+
+	void set_specular_shininess(real_t p_shininess);
+	real_t get_specular_shininess() const;
+
+	void set_texture_filter(CanvasItem::TextureFilter p_filter);
+	CanvasItem::TextureFilter get_texture_filter() const;
+
+	void set_texture_repeat(CanvasItem::TextureRepeat p_repeat);
+	CanvasItem::TextureRepeat get_texture_repeat() const;
+
+	virtual int get_width() const override;
+	virtual int get_height() const override;
+
+	virtual bool is_pixel_opaque(int p_x, int p_y) const override;
+	virtual bool has_alpha() const override;
+
+	virtual Ref<Image> get_image() const override;
+
+	virtual RID get_rid() const override;
+
+	CanvasTexture();
+	~CanvasTexture();
+};
 
 #endif // CANVAS_ITEM_H

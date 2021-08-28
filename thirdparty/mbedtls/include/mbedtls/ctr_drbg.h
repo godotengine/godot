@@ -38,8 +38,14 @@
  * - \c 32 if \c MBEDTLS_ENTROPY_FORCE_SHA256 is enabled at compile time.
  */
 /*
- *  Copyright (C) 2006-2019, Arm Limited (or its affiliates), All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  Copyright The Mbed TLS Contributors
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -53,7 +59,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  This file is part of Mbed TLS (https://tls.mbed.org)
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  */
 
 #ifndef MBEDTLS_CTR_DRBG_H
@@ -189,6 +214,13 @@ typedef struct mbedtls_ctr_drbg_context
     void *p_entropy;            /*!< The context for the entropy function. */
 
 #if defined(MBEDTLS_THREADING_C)
+    /* Invariant: the mutex is initialized if and only if f_entropy != NULL.
+     * This means that the mutex is initialized during the initial seeding
+     * in mbedtls_ctr_drbg_seed() and freed in mbedtls_ctr_drbg_free().
+     *
+     * Note that this invariant may change without notice. Do not rely on it
+     * and do not access the mutex directly in application code.
+     */
     mbedtls_threading_mutex_t mutex;
 #endif
 }
@@ -198,6 +230,11 @@ mbedtls_ctr_drbg_context;
  * \brief               This function initializes the CTR_DRBG context,
  *                      and prepares it for mbedtls_ctr_drbg_seed()
  *                      or mbedtls_ctr_drbg_free().
+ *
+ * \note                The reseed interval is
+ *                      #MBEDTLS_CTR_DRBG_RESEED_INTERVAL by default.
+ *                      You can override it by calling
+ *                      mbedtls_ctr_drbg_set_reseed_interval().
  *
  * \param ctx           The CTR_DRBG context to initialize.
  */
@@ -247,6 +284,15 @@ void mbedtls_ctr_drbg_init( mbedtls_ctr_drbg_context *ctx );
  *                      device.
  */
 #endif
+#if defined(MBEDTLS_THREADING_C)
+/**
+ * \note                When Mbed TLS is built with threading support,
+ *                      after this function returns successfully,
+ *                      it is safe to call mbedtls_ctr_drbg_random()
+ *                      from multiple threads. Other operations, including
+ *                      reseeding, are not thread-safe.
+ */
+#endif /* MBEDTLS_THREADING_C */
 /**
  * \param ctx           The CTR_DRBG context to seed.
  *                      It must have been initialized with
@@ -256,6 +302,8 @@ void mbedtls_ctr_drbg_init( mbedtls_ctr_drbg_context *ctx );
  *                      the same context unless you call
  *                      mbedtls_ctr_drbg_free() and mbedtls_ctr_drbg_init()
  *                      again first.
+ *                      After a failed call to mbedtls_ctr_drbg_seed(),
+ *                      you must call mbedtls_ctr_drbg_free().
  * \param f_entropy     The entropy callback, taking as arguments the
  *                      \p p_entropy context, the buffer to fill, and the
  *                      length of the buffer.
@@ -280,7 +328,8 @@ int mbedtls_ctr_drbg_seed( mbedtls_ctr_drbg_context *ctx,
                    size_t len );
 
 /**
- * \brief               This function clears CTR_CRBG context data.
+ * \brief               This function resets CTR_DRBG context to the state immediately
+ *                      after initial call of mbedtls_ctr_drbg_init().
  *
  * \param ctx           The CTR_DRBG context to clear.
  */
@@ -346,6 +395,11 @@ void mbedtls_ctr_drbg_set_reseed_interval( mbedtls_ctr_drbg_context *ctx,
  * \brief               This function reseeds the CTR_DRBG context, that is
  *                      extracts data from the entropy source.
  *
+ * \note                This function is not thread-safe. It is not safe
+ *                      to call this function if another thread might be
+ *                      concurrently obtaining random numbers from the same
+ *                      context or updating or reseeding the same context.
+ *
  * \param ctx           The CTR_DRBG context.
  * \param additional    Additional data to add to the state. Can be \c NULL.
  * \param len           The length of the additional data.
@@ -362,6 +416,11 @@ int mbedtls_ctr_drbg_reseed( mbedtls_ctr_drbg_context *ctx,
 
 /**
  * \brief              This function updates the state of the CTR_DRBG context.
+ *
+ * \note               This function is not thread-safe. It is not safe
+ *                     to call this function if another thread might be
+ *                     concurrently obtaining random numbers from the same
+ *                     context or updating or reseeding the same context.
  *
  * \param ctx          The CTR_DRBG context.
  * \param additional   The data to update the state with. This must not be
@@ -385,6 +444,11 @@ int mbedtls_ctr_drbg_update_ret( mbedtls_ctr_drbg_context *ctx,
  *
  * This function automatically reseeds if the reseed counter is exceeded
  * or prediction resistance is enabled.
+ *
+ * \note                This function is not thread-safe. It is not safe
+ *                      to call this function if another thread might be
+ *                      concurrently obtaining random numbers from the same
+ *                      context or updating or reseeding the same context.
  *
  * \param p_rng         The CTR_DRBG context. This must be a pointer to a
  *                      #mbedtls_ctr_drbg_context structure.
@@ -414,8 +478,16 @@ int mbedtls_ctr_drbg_random_with_add( void *p_rng,
  *
  * This function automatically reseeds if the reseed counter is exceeded
  * or prediction resistance is enabled.
- *
- *
+ */
+#if defined(MBEDTLS_THREADING_C)
+/**
+ * \note                When Mbed TLS is built with threading support,
+ *                      it is safe to call mbedtls_ctr_drbg_random()
+ *                      from multiple threads. Other operations, including
+ *                      reseeding, are not thread-safe.
+ */
+#endif /* MBEDTLS_THREADING_C */
+/**
  * \param p_rng         The CTR_DRBG context. This must be a pointer to a
  *                      #mbedtls_ctr_drbg_context structure.
  * \param output        The buffer to fill.

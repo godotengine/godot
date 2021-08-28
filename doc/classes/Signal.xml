@@ -8,86 +8,94 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="Signal">
-			<return type="Signal">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="signal_name" type="StringName">
-			</argument>
+		<method name="Signal" qualifiers="constructor">
+			<return type="Signal" />
 			<description>
-				Creates a new signal named [code]signal_name[/code] in the given object.
+				Constructs a null [Signal] with no object nor signal name bound.
+			</description>
+		</method>
+		<method name="Signal" qualifiers="constructor">
+			<return type="Signal" />
+			<argument index="0" name="from" type="Signal" />
+			<description>
+				Constructs a [Signal] as a copy of the given [Signal].
+			</description>
+		</method>
+		<method name="Signal" qualifiers="constructor">
+			<return type="Signal" />
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="signal" type="StringName" />
+			<description>
+				Creates a new [Signal] with the name [code]signal[/code] in the specified [code]object[/code].
 			</description>
 		</method>
 		<method name="connect">
-			<return type="int">
-			</return>
-			<argument index="0" name="callable" type="Callable">
-			</argument>
-			<argument index="1" name="binds" type="Array" default="[  ]">
-			</argument>
-			<argument index="2" name="flags" type="int" default="0">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="callable" type="Callable" />
+			<argument index="1" name="binds" type="Array" default="[]" />
+			<argument index="2" name="flags" type="int" default="0" />
 			<description>
 				Connects this signal to the specified [Callable], optionally providing binds and connection flags.
 			</description>
 		</method>
 		<method name="disconnect">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="callable" type="Callable">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="callable" type="Callable" />
 			<description>
 				Disconnects this signal from the specified [Callable].
 			</description>
 		</method>
-		<method name="emit" qualifiers="vararg">
-			<return type="void">
-			</return>
+		<method name="emit" qualifiers="vararg const">
+			<return type="void" />
 			<description>
 				Emits this signal to all connected objects.
 			</description>
 		</method>
-		<method name="get_connections">
-			<return type="Array">
-			</return>
+		<method name="get_connections" qualifiers="const">
+			<return type="Array" />
 			<description>
 				Returns the list of [Callable]s connected to this signal.
 			</description>
 		</method>
-		<method name="get_name">
-			<return type="StringName">
-			</return>
+		<method name="get_name" qualifiers="const">
+			<return type="StringName" />
 			<description>
 				Returns the name of this signal.
 			</description>
 		</method>
-		<method name="get_object">
-			<return type="Object">
-			</return>
+		<method name="get_object" qualifiers="const">
+			<return type="Object" />
 			<description>
 				Returns the object emitting this signal.
 			</description>
 		</method>
-		<method name="get_object_id">
-			<return type="int">
-			</return>
+		<method name="get_object_id" qualifiers="const">
+			<return type="int" />
 			<description>
 				Returns the ID of the object emitting this signal (see [method Object.get_instance_id]).
 			</description>
 		</method>
-		<method name="is_connected">
-			<return type="bool">
-			</return>
-			<argument index="0" name="callable" type="Callable">
-			</argument>
+		<method name="is_connected" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="callable" type="Callable" />
 			<description>
 				Returns [code]true[/code] if the specified [Callable] is connected to this signal.
 			</description>
 		</method>
-		<method name="is_null">
-			<return type="bool">
-			</return>
+		<method name="is_null" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool" />
+			<argument index="0" name="right" type="Signal" />
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool" />
+			<argument index="0" name="right" type="Signal" />
 			<description>
 			</description>
 		</method>

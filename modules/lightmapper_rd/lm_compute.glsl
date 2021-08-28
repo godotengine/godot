@@ -10,7 +10,7 @@ light_probes = "#define MODE_LIGHT_PROBES";
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 // One 2D local group focusing in one layer at a time, though all
 // in parallel (no barriers) makes more sense than a 3D local group
@@ -96,15 +96,22 @@ params;
 bool ray_hits_triangle(vec3 from, vec3 dir, float max_dist, vec3 p0, vec3 p1, vec3 p2, out float r_distance, out vec3 r_barycentric) {
 	const vec3 e0 = p1 - p0;
 	const vec3 e1 = p0 - p2;
-	vec3 triangleNormal = cross(e1, e0);
+	vec3 triangle_normal = cross(e1, e0);
 
-	const vec3 e2 = (1.0 / dot(triangleNormal, dir)) * (p0 - from);
+	float n_dot_dir = dot(triangle_normal, dir);
+
+	if (abs(n_dot_dir) < 0.01) {
+		return false;
+	}
+
+	const vec3 e2 = (p0 - from) / n_dot_dir;
 	const vec3 i = cross(dir, e2);
 
 	r_barycentric.y = dot(i, e1);
 	r_barycentric.z = dot(i, e0);
 	r_barycentric.x = 1.0 - (r_barycentric.z + r_barycentric.y);
-	r_distance = dot(triangleNormal, e2);
+	r_distance = dot(triangle_normal, e2);
+
 	return (r_distance > params.bias) && (r_distance < max_dist) && all(greaterThanEqual(r_barycentric, vec3(0.0)));
 }
 
@@ -249,6 +256,15 @@ float quick_hash(vec2 pos) {
 	return fract(sin(dot(pos * 19.19, vec2(49.5791, 97.413))) * 49831.189237);
 }
 
+float get_omni_attenuation(float distance, float inv_range, float decay) {
+	float nd = distance * inv_range;
+	nd *= nd;
+	nd *= nd; // nd^4
+	nd = max(1.0 - nd, 0.0);
+	nd *= nd; // nd^2
+	return nd * pow(max(distance, 0.0001), -decay);
+}
+
 void main() {
 #ifdef MODE_LIGHT_PROBES
 	int probe_index = int(gl_GlobalInvocationID.x);
@@ -298,19 +314,20 @@ void main() {
 				continue;
 			}
 
-			d /= lights.data[i].range;
-
-			attenuation = pow(max(1.0 - d, 0.0), lights.data[i].attenuation);
+			attenuation = get_omni_attenuation(d, 1.0 / lights.data[i].range, lights.data[i].attenuation);
 
 			if (lights.data[i].type == LIGHT_TYPE_SPOT) {
 				vec3 rel = normalize(position - light_pos);
-				float angle = acos(dot(rel, lights.data[i].direction));
-				if (angle > lights.data[i].spot_angle) {
+				float cos_spot_angle = lights.data[i].cos_spot_angle;
+				float cos_angle = dot(rel, lights.data[i].direction);
+
+				if (cos_angle < cos_spot_angle) {
 					continue; //invisible, dont try
 				}
 
-				float d = clamp(angle / lights.data[i].spot_angle, 0, 1);
-				attenuation *= pow(1.0 - d, lights.data[i].spot_attenuation);
+				float scos = max(cos_angle, cos_spot_angle);
+				float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - cos_spot_angle));
+				attenuation *= 1.0 - pow(spot_rim, lights.data[i].inv_spot_attenuation);
 			}
 		}
 
@@ -398,7 +415,7 @@ void main() {
 		uint tidx;
 		vec3 barycentric;
 
-		vec3 light;
+		vec3 light = vec3(0.0);
 		if (trace_ray(position + ray_dir * params.bias, position + ray_dir * length(params.world_size), tidx, barycentric)) {
 			//hit a triangle
 			vec2 uv0 = vertices.data[triangles.data[tidx].indices.x].uv;
@@ -407,8 +424,8 @@ void main() {
 			vec3 uvw = vec3(barycentric.x * uv0 + barycentric.y * uv1 + barycentric.z * uv2, float(triangles.data[tidx].slice));
 
 			light = textureLod(sampler2DArray(source_light, linear_sampler), uvw, 0.0).rgb;
-		} else {
-			//did not hit a triangle, reach out for the sky
+		} else if (params.env_transform[0][3] == 0.0) { // Use env_transform[0][3] to indicate when we are computing the first bounce
+			// Did not hit a triangle, reach out for the sky
 			vec3 sky_dir = normalize(mat3(params.env_transform) * ray_dir);
 
 			vec2 st = vec2(

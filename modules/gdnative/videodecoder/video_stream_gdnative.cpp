@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "video_stream_gdnative.h"
 
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 #include "servers/audio_server.h"
 
 VideoDecoderServer *VideoDecoderServer::instance = nullptr;
@@ -47,11 +47,7 @@ godot_int GDAPI godot_videodecoder_file_read(void *ptr, uint8_t *buf, int buf_si
 
 	// if file exists
 	if (file) {
-		long bytes_read = file->get_buffer(buf, buf_size);
-		// No bytes to read => EOF
-		if (bytes_read == 0) {
-			return 0;
-		}
+		int64_t bytes_read = file->get_buffer(buf, buf_size);
 		return bytes_read;
 	}
 	return -1;
@@ -62,41 +58,35 @@ int64_t GDAPI godot_videodecoder_file_seek(void *ptr, int64_t pos, int whence) {
 	FileAccess *file = reinterpret_cast<FileAccess *>(ptr);
 
 	if (file) {
-		size_t len = file->get_len();
+		int64_t len = file->get_length();
 		switch (whence) {
 			case SEEK_SET: {
-				// Just for explicitness
-				size_t new_pos = static_cast<size_t>(pos);
-				if (new_pos > len) {
+				if (pos > len) {
 					return -1;
 				}
-				file->seek(new_pos);
-				pos = static_cast<int64_t>(file->get_position());
-				return pos;
+				file->seek(pos);
+				return file->get_position();
 			} break;
 			case SEEK_CUR: {
 				// Just in case it doesn't exist
-				if (pos < 0 && (size_t)-pos > file->get_position()) {
+				if (pos < 0 && -pos > (int64_t)file->get_position()) {
 					return -1;
 				}
-				pos = pos + static_cast<int>(file->get_position());
-				file->seek(pos);
-				pos = static_cast<int64_t>(file->get_position());
-				return pos;
+				file->seek(file->get_position() + pos);
+				return file->get_position();
 			} break;
 			case SEEK_END: {
 				// Just in case something goes wrong
-				if ((size_t)-pos > len) {
+				if (-pos > len) {
 					return -1;
 				}
 				file->seek_end(pos);
-				pos = static_cast<int64_t>(file->get_position());
-				return pos;
+				return file->get_position();
 			} break;
 			default: {
 				// Only 4 possible options, hence default = AVSEEK_SIZE
 				// Asks to return the length of file
-				return static_cast<int64_t>(len);
+				return len;
 			} break;
 		}
 	}
@@ -132,7 +122,7 @@ bool VideoStreamPlaybackGDNative::open_file(const String &p_file) {
 		samples_decoded = 0;
 
 		Ref<Image> img;
-		img.instance();
+		img.instantiate();
 		img->create((int)texture_size.width, false, (int)texture_size.height, Image::FORMAT_RGBA8);
 
 		texture->create_from_image(img);
@@ -195,7 +185,7 @@ void VideoStreamPlaybackGDNative::update_texture() {
 
 	Ref<Image> img = memnew(Image(texture_size.width, texture_size.height, 0, Image::FORMAT_RGBA8, *pba));
 
-	texture->update(img, true);
+	texture->update(img);
 }
 
 // ctor and dtor
@@ -250,7 +240,7 @@ void VideoStreamPlaybackGDNative::play() {
 
 	playing = true;
 
-	delay_compensation = ProjectSettings::get_singleton()->get("audio/video_delay_compensation_ms");
+	delay_compensation = ProjectSettings::get_singleton()->get("audio/video/video_delay_compensation_ms");
 	delay_compensation /= 1000.0;
 }
 
@@ -360,7 +350,7 @@ void VideoStreamGDNative::set_audio_track(int p_track) {
 
 /* --- NOTE ResourceFormatLoaderVideoStreamGDNative starts here. ----- */
 
-RES ResourceFormatLoaderVideoStreamGDNative::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+RES ResourceFormatLoaderVideoStreamGDNative::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	if (!f) {
 		if (r_error) {

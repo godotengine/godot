@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,14 +30,12 @@
 
 #include "timer.h"
 
-#include "core/engine.h"
-
 void Timer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			if (autostart) {
 #ifdef TOOLS_ENABLED
-				if (Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root() == this || get_tree()->get_edited_scene_root()->is_a_parent_of(this))) {
+				if (Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root() == this || get_tree()->get_edited_scene_root()->is_ancestor_of(this))) {
 					break;
 				}
 #endif
@@ -46,7 +44,7 @@ void Timer::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (timer_process_mode == TIMER_PROCESS_PHYSICS || !is_processing_internal()) {
+			if (!processing || timer_process_callback == TIMER_PROCESS_PHYSICS || !is_processing_internal()) {
 				return;
 			}
 			time_left -= get_process_delta_time();
@@ -58,12 +56,12 @@ void Timer::_notification(int p_what) {
 					stop();
 				}
 
-				emit_signal("timeout");
+				emit_signal(SNAME("timeout"));
 			}
 
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			if (timer_process_mode == TIMER_PROCESS_IDLE || !is_physics_processing_internal()) {
+			if (!processing || timer_process_callback == TIMER_PROCESS_IDLE || !is_physics_processing_internal()) {
 				return;
 			}
 			time_left -= get_physics_process_delta_time();
@@ -74,19 +72,19 @@ void Timer::_notification(int p_what) {
 				} else {
 					stop();
 				}
-				emit_signal("timeout");
+				emit_signal(SNAME("timeout"));
 			}
 
 		} break;
 	}
 }
 
-void Timer::set_wait_time(float p_time) {
+void Timer::set_wait_time(double p_time) {
 	ERR_FAIL_COND_MSG(p_time <= 0, "Time should be greater than zero.");
 	wait_time = p_time;
 }
 
-float Timer::get_wait_time() const {
+double Timer::get_wait_time() const {
 	return wait_time;
 }
 
@@ -106,7 +104,7 @@ bool Timer::has_autostart() const {
 	return autostart;
 }
 
-void Timer::start(float p_time) {
+void Timer::start(double p_time) {
 	ERR_FAIL_COND_MSG(!is_inside_tree(), "Timer was not added to the SceneTree. Either add it or set autostart to true.");
 
 	if (p_time > 0) {
@@ -139,16 +137,16 @@ bool Timer::is_stopped() const {
 	return get_time_left() <= 0;
 }
 
-float Timer::get_time_left() const {
+double Timer::get_time_left() const {
 	return time_left > 0 ? time_left : 0;
 }
 
-void Timer::set_timer_process_mode(TimerProcessMode p_mode) {
-	if (timer_process_mode == p_mode) {
+void Timer::set_timer_process_callback(TimerProcessCallback p_callback) {
+	if (timer_process_callback == p_callback) {
 		return;
 	}
 
-	switch (timer_process_mode) {
+	switch (timer_process_callback) {
 		case TIMER_PROCESS_PHYSICS:
 			if (is_physics_processing_internal()) {
 				set_physics_process_internal(false);
@@ -162,15 +160,15 @@ void Timer::set_timer_process_mode(TimerProcessMode p_mode) {
 			}
 			break;
 	}
-	timer_process_mode = p_mode;
+	timer_process_callback = p_callback;
 }
 
-Timer::TimerProcessMode Timer::get_timer_process_mode() const {
-	return timer_process_mode;
+Timer::TimerProcessCallback Timer::get_timer_process_callback() const {
+	return timer_process_callback;
 }
 
 void Timer::_set_process(bool p_process, bool p_force) {
-	switch (timer_process_mode) {
+	switch (timer_process_callback) {
 		case TIMER_PROCESS_PHYSICS:
 			set_physics_process_internal(p_process && !paused);
 			break;
@@ -201,28 +199,20 @@ void Timer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_time_left"), &Timer::get_time_left);
 
-	ClassDB::bind_method(D_METHOD("set_timer_process_mode", "mode"), &Timer::set_timer_process_mode);
-	ClassDB::bind_method(D_METHOD("get_timer_process_mode"), &Timer::get_timer_process_mode);
+	ClassDB::bind_method(D_METHOD("set_timer_process_callback", "callback"), &Timer::set_timer_process_callback);
+	ClassDB::bind_method(D_METHOD("get_timer_process_callback"), &Timer::get_timer_process_callback);
 
 	ADD_SIGNAL(MethodInfo("timeout"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_timer_process_mode", "get_timer_process_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wait_time", PROPERTY_HINT_EXP_RANGE, "0.001,4096,0.001,or_greater"), "set_wait_time", "get_wait_time");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_callback", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_timer_process_callback", "get_timer_process_callback");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wait_time", PROPERTY_HINT_RANGE, "0.001,4096,0.001,or_greater,exp"), "set_wait_time", "get_wait_time");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_shot"), "set_one_shot", "is_one_shot");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autostart"), "set_autostart", "has_autostart");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paused", PROPERTY_HINT_NONE, "", 0), "set_paused", "is_paused");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_left", PROPERTY_HINT_NONE, "", 0), "", "get_time_left");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paused", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_paused", "is_paused");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_left", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_time_left");
 
 	BIND_ENUM_CONSTANT(TIMER_PROCESS_PHYSICS);
 	BIND_ENUM_CONSTANT(TIMER_PROCESS_IDLE);
 }
 
-Timer::Timer() {
-	timer_process_mode = TIMER_PROCESS_IDLE;
-	autostart = false;
-	wait_time = 1;
-	one_shot = false;
-	time_left = -1;
-	processing = false;
-	paused = false;
-}
+Timer::Timer() {}

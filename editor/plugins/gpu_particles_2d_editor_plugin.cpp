@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -60,16 +60,19 @@ void GPUParticles2DEditorPlugin::_file_selected(const String &p_file) {
 void GPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 	switch (p_idx) {
 		case MENU_GENERATE_VISIBILITY_RECT: {
-			float gen_time = particles->get_lifetime();
-			if (gen_time < 1.0) {
-				generate_seconds->set_value(1.0);
+			// Add one second to the default generation lifetime, since the progress is updated every second.
+			generate_seconds->set_value(MAX(1.0, trunc(particles->get_lifetime()) + 1.0));
+
+			if (generate_seconds->get_value() >= 11.0 + CMP_EPSILON) {
+				// Only pop up the time dialog if the particle's lifetime is long enough to warrant shortening it.
+				generate_visibility_rect->popup_centered();
 			} else {
-				generate_seconds->set_value(trunc(gen_time) + 1.0);
+				// Generate the visibility rect immediately.
+				_generate_visibility_rect();
 			}
-			generate_visibility_rect->popup_centered();
 		} break;
 		case MENU_LOAD_EMISSION_MASK: {
-			file->popup_centered_ratio();
+			file->popup_file_dialog();
 
 		} break;
 		case MENU_CLEAR_EMISSION_MASK: {
@@ -81,7 +84,7 @@ void GPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 			cpu_particles->set_name(particles->get_name());
 			cpu_particles->set_transform(particles->get_transform());
 			cpu_particles->set_visible(particles->is_visible());
-			cpu_particles->set_pause_mode(particles->get_pause_mode());
+			cpu_particles->set_process_mode(particles->get_process_mode());
 			cpu_particles->set_z_index(particles->get_z_index());
 
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
@@ -100,11 +103,11 @@ void GPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 }
 
 void GPUParticles2DEditorPlugin::_generate_visibility_rect() {
-	float time = generate_seconds->get_value();
+	double time = generate_seconds->get_value();
 
 	float running = 0.0;
 
-	EditorProgress ep("gen_vrect", TTR("Generating Visibility Rect"), int(time));
+	EditorProgress ep("gen_vrect", TTR("Generating Visibility Rect (Waiting for Particle Simulation)"), int(time));
 
 	bool was_emitting = particles->is_emitting();
 	if (!was_emitting) {
@@ -146,7 +149,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 	}
 
 	Ref<Image> img;
-	img.instance();
+	img.instantiate();
 	Error err = ImageLoader::load_image(source_emission_file, img);
 	ERR_FAIL_COND_MSG(err != OK, "Error loading image '" + source_emission_file + "'.");
 
@@ -270,11 +273,11 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 		}
 	}
 
-	img.instance();
+	img.instantiate();
 	img->create(w, h, false, Image::FORMAT_RGF, texdata);
 
 	Ref<ImageTexture> imgt;
-	imgt.instance();
+	imgt.instantiate();
 	imgt->create_from_image(img);
 
 	pm->set_emission_point_texture(imgt);
@@ -291,10 +294,10 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 			}
 		}
 
-		img.instance();
+		img.instantiate();
 		img->create(w, h, false, Image::FORMAT_RGBA8, colordata);
 
-		imgt.instance();
+		imgt.instantiate();
 		imgt->create_from_image(img);
 		pm->set_emission_color_texture(imgt);
 	}
@@ -314,10 +317,10 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 			}
 		}
 
-		img.instance();
+		img.instantiate();
 		img->create(w, h, false, Image::FORMAT_RGF, normdata);
 
-		imgt.instance();
+		imgt.instantiate();
 		imgt->create_from_image(img);
 		pm->set_emission_normal_texture(imgt);
 
@@ -329,7 +332,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 void GPUParticles2DEditorPlugin::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		menu->get_popup()->connect("id_pressed", callable_mp(this, &GPUParticles2DEditorPlugin::_menu_callback));
-		menu->set_icon(menu->get_theme_icon("GPUParticles2D", "EditorIcons"));
+		menu->set_icon(menu->get_theme_icon(SNAME("GPUParticles2D"), SNAME("EditorIcons")));
 		file->connect("file_selected", callable_mp(this, &GPUParticles2DEditorPlugin::_file_selected));
 	}
 }
@@ -361,8 +364,8 @@ GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin(EditorNode *p_node) {
 	file = memnew(EditorFileDialog);
 	List<String> ext;
 	ImageLoader::get_recognized_extensions(&ext);
-	for (List<String>::Element *E = ext.front(); E; E = E->next()) {
-		file->add_filter("*." + E->get() + "; " + E->get().to_upper());
+	for (const String &E : ext) {
+		file->add_filter("*." + E + "; " + E.to_upper());
 	}
 	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	toolbar->add_child(file);

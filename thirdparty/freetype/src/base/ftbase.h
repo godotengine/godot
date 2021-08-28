@@ -20,11 +20,14 @@
 #define FTBASE_H_
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_OBJECTS_H
+#include <freetype/internal/ftobjs.h>
 
 
 FT_BEGIN_HEADER
+
+
+  FT_DECLARE_GLYPH( ft_bitmap_glyph_class )
+  FT_DECLARE_GLYPH( ft_outline_glyph_class )
 
 
 #ifdef FT_CONFIG_OPTION_MAC_FONTS

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@ Adapted to Godot from the Bullet library.
 
 /*
 Bullet Continuous Collision Detection and Physics Library
-Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+Copyright (c) 2003-2006 Erwin Coumans  https://bulletphysics.org
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
@@ -66,8 +66,8 @@ class HingeJoint3DSW : public Joint3DSW {
 	JacobianEntry3DSW m_jac[3]; //3 orthogonal linear constraints
 	JacobianEntry3DSW m_jacAng[3]; //2 orthogonal angular constraints+ 1 for limit/motor
 
-	Transform m_rbAFrame; // constraint axii. Assumes z is hinge axis.
-	Transform m_rbBFrame;
+	Transform3D m_rbAFrame; // constraint axii. Assumes z is hinge axis.
+	Transform3D m_rbBFrame;
 
 	real_t m_motorTargetVelocity;
 	real_t m_maxMotorImpulse;
@@ -96,10 +96,10 @@ class HingeJoint3DSW : public Joint3DSW {
 	real_t m_appliedImpulse;
 
 public:
-	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_HINGE; }
+	virtual PhysicsServer3D::JointType get_type() const override { return PhysicsServer3D::JOINT_TYPE_HINGE; }
 
-	virtual bool setup(real_t p_step);
-	virtual void solve(real_t p_step);
+	virtual bool setup(real_t p_step) override;
+	virtual void solve(real_t p_step) override;
 
 	real_t get_hinge_angle();
 
@@ -109,7 +109,7 @@ public:
 	void set_flag(PhysicsServer3D::HingeJointFlag p_flag, bool p_value);
 	bool get_flag(PhysicsServer3D::HingeJointFlag p_flag) const;
 
-	HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform &frameA, const Transform &frameB);
+	HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform3D &frameA, const Transform3D &frameB);
 	HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Vector3 &pivotInA, const Vector3 &pivotInB, const Vector3 &axisInA, const Vector3 &axisInB);
 };
 

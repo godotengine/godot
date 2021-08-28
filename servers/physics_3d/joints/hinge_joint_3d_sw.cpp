@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@ Adapted to Godot from the Bullet library.
 
 /*
 Bullet Continuous Collision Detection and Physics Library
-Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+Copyright (c) 2003-2006 Erwin Coumans  https://bulletphysics.org
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
@@ -67,7 +67,7 @@ static void plane_space(const Vector3 &n, Vector3 &p, Vector3 &q) {
 	}
 }
 
-HingeJoint3DSW::HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform &frameA, const Transform &frameB) :
+HingeJoint3DSW::HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform3D &frameA, const Transform3D &frameB) :
 		Joint3DSW(_arr, 2) {
 	A = rbA;
 	B = rbB;
@@ -126,7 +126,7 @@ HingeJoint3DSW::HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Vector3 &pivo
 			rbAxisA1.y, rbAxisA2.y, axisInA.y,
 			rbAxisA1.z, rbAxisA2.z, axisInA.z);
 
-	Quat rotationArc = Quat(axisInA, axisInB);
+	Quaternion rotationArc = Quaternion(axisInA, axisInB);
 	Vector3 rbAxisB1 = rotationArc.xform(rbAxisA1);
 	Vector3 rbAxisB2 = axisInB.cross(rbAxisB1);
 
@@ -155,6 +155,13 @@ HingeJoint3DSW::HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Vector3 &pivo
 }
 
 bool HingeJoint3DSW::setup(real_t p_step) {
+	dynamic_A = (A->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
+	dynamic_B = (B->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
+
+	if (!dynamic_A && !dynamic_B) {
+		return false;
+	}
+
 	m_appliedImpulse = real_t(0.);
 
 	if (!m_angularOnly) {
@@ -275,8 +282,12 @@ void HingeJoint3DSW::solve(real_t p_step) {
 			real_t impulse = depth * tau / p_step * jacDiagABInv - rel_vel * jacDiagABInv;
 			m_appliedImpulse += impulse;
 			Vector3 impulse_vector = normal * impulse;
-			A->apply_impulse(pivotAInW - A->get_transform().origin, impulse_vector);
-			B->apply_impulse(pivotBInW - B->get_transform().origin, -impulse_vector);
+			if (dynamic_A) {
+				A->apply_impulse(impulse_vector, pivotAInW - A->get_transform().origin);
+			}
+			if (dynamic_B) {
+				B->apply_impulse(-impulse_vector, pivotBInW - B->get_transform().origin);
+			}
 		}
 	}
 
@@ -318,8 +329,12 @@ void HingeJoint3DSW::solve(real_t p_step) {
 				angularError *= (real_t(1.) / denom2) * relaxation;
 			}
 
-			A->apply_torque_impulse(-velrelOrthog + angularError);
-			B->apply_torque_impulse(velrelOrthog - angularError);
+			if (dynamic_A) {
+				A->apply_torque_impulse(-velrelOrthog + angularError);
+			}
+			if (dynamic_B) {
+				B->apply_torque_impulse(velrelOrthog - angularError);
+			}
 
 			// solve limit
 			if (m_solveLimit) {
@@ -333,8 +348,12 @@ void HingeJoint3DSW::solve(real_t p_step) {
 				impulseMag = m_accLimitImpulse - temp;
 
 				Vector3 impulse = axisA * impulseMag * m_limitSign;
-				A->apply_torque_impulse(impulse);
-				B->apply_torque_impulse(-impulse);
+				if (dynamic_A) {
+					A->apply_torque_impulse(impulse);
+				}
+				if (dynamic_B) {
+					B->apply_torque_impulse(-impulse);
+				}
 			}
 		}
 
@@ -355,8 +374,12 @@ void HingeJoint3DSW::solve(real_t p_step) {
 			clippedMotorImpulse = clippedMotorImpulse < -m_maxMotorImpulse ? -m_maxMotorImpulse : clippedMotorImpulse;
 			Vector3 motorImp = clippedMotorImpulse * axisA;
 
-			A->apply_torque_impulse(motorImp + angularLimit);
-			B->apply_torque_impulse(-motorImp - angularLimit);
+			if (dynamic_A) {
+				A->apply_torque_impulse(motorImp + angularLimit);
+			}
+			if (dynamic_B) {
+				B->apply_torque_impulse(-motorImp - angularLimit);
+			}
 		}
 	}
 }
@@ -365,7 +388,6 @@ void HingeJoint3DSW::solve(real_t p_step) {
 void	HingeJointSW::updateRHS(real_t	timeStep)
 {
 	(void)timeStep;
-
 }
 
 */

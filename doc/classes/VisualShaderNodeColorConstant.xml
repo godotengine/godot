@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeColorConstant" inherits="VisualShaderNode" version="4.0">
+<class name="VisualShaderNodeColorConstant" inherits="VisualShaderNodeConstant" version="4.0">
 	<brief_description>
 		A [Color] constant to be used within the visual shader graph.
 	</brief_description>
@@ -12,7 +12,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="constant" type="Color" setter="set_constant" getter="get_constant" default="Color( 1, 1, 1, 1 )">
+		<member name="constant" type="Color" setter="set_constant" getter="get_constant" default="Color(1, 1, 1, 1)">
 			A [Color] constant which represents a state of this node.
 		</member>
 	</members>

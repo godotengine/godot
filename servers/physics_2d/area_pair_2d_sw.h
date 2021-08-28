@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,30 +36,36 @@
 #include "constraint_2d_sw.h"
 
 class AreaPair2DSW : public Constraint2DSW {
-	Body2DSW *body;
-	Area2DSW *area;
-	int body_shape;
-	int area_shape;
-	bool colliding;
+	Body2DSW *body = nullptr;
+	Area2DSW *area = nullptr;
+	int body_shape = 0;
+	int area_shape = 0;
+	bool colliding = false;
+	bool process_collision = false;
 
 public:
-	bool setup(real_t p_step);
-	void solve(real_t p_step);
+	virtual bool setup(real_t p_step) override;
+	virtual bool pre_solve(real_t p_step) override;
+	virtual void solve(real_t p_step) override;
 
 	AreaPair2DSW(Body2DSW *p_body, int p_body_shape, Area2DSW *p_area, int p_area_shape);
 	~AreaPair2DSW();
 };
 
 class Area2Pair2DSW : public Constraint2DSW {
-	Area2DSW *area_a;
-	Area2DSW *area_b;
-	int shape_a;
-	int shape_b;
-	bool colliding;
+	Area2DSW *area_a = nullptr;
+	Area2DSW *area_b = nullptr;
+	int shape_a = 0;
+	int shape_b = 0;
+	bool colliding_a = false;
+	bool colliding_b = false;
+	bool process_collision_a = false;
+	bool process_collision_b = false;
 
 public:
-	bool setup(real_t p_step);
-	void solve(real_t p_step);
+	virtual bool setup(real_t p_step) override;
+	virtual bool pre_solve(real_t p_step) override;
+	virtual void solve(real_t p_step) override;
 
 	Area2Pair2DSW(Area2DSW *p_area_a, int p_shape_a, Area2DSW *p_area_b, int p_shape_b);
 	~Area2Pair2DSW();

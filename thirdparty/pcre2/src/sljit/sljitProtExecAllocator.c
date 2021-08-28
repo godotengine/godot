@@ -70,92 +70,112 @@
 
 struct chunk_header {
 	void *executable;
-	int fd;
 };
 
 /*
    alloc_chunk / free_chunk :
      * allocate executable system memory chunks
      * the size is always divisible by CHUNK_SIZE
-   allocator_grab_lock / allocator_release_lock :
-     * make the allocator thread safe
-     * can be empty if the OS (or the application) does not support threading
+   SLJIT_ALLOCATOR_LOCK / SLJIT_ALLOCATOR_UNLOCK :
+     * provided as part of sljitUtils
      * only the allocator requires this lock, sljit is fully thread safe
        as it only uses local variables
 */
 
+#ifndef __NetBSD__
+#include <sys/stat.h>
 #include <fcntl.h>
+#include <stdio.h>
+#include <string.h>
 
 #ifndef O_NOATIME
 #define O_NOATIME 0
 #endif
 
-#ifdef __O_TMPFILE
+/* this is a linux extension available since kernel 3.11 */
 #ifndef O_TMPFILE
-#define O_TMPFILE	(__O_TMPFILE | O_DIRECTORY)
-#endif
+#define O_TMPFILE 020200000
 #endif
 
-int mkostemp(char *template, int flags);
+#ifndef _GNU_SOURCE
 char *secure_getenv(const char *name);
+int mkostemp(char *template, int flags);
+#endif
 
 static SLJIT_INLINE int create_tempfile(void)
 {
 	int fd;
-
 	char tmp_name[256];
-	size_t tmp_name_len;
+	size_t tmp_name_len = 0;
 	char *dir;
-	size_t len;
+	struct stat st;
+#if defined(SLJIT_SINGLE_THREADED) && SLJIT_SINGLE_THREADED
+	mode_t mode;
+#endif
 
-#ifdef P_tmpdir
-	len = (P_tmpdir != NULL) ? strlen(P_tmpdir) : 0;
-
-	if (len > 0 && len < sizeof(tmp_name)) {
-		strcpy(tmp_name, P_tmpdir);
-		tmp_name_len = len;
+#ifdef HAVE_MEMFD_CREATE
+	/* this is a GNU extension, make sure to use -D_GNU_SOURCE */
+	fd = memfd_create("sljit", MFD_CLOEXEC);
+	if (fd != -1) {
+		fchmod(fd, 0);
+		return fd;
 	}
-	else {
-		strcpy(tmp_name, "/tmp");
-		tmp_name_len = 4;
-	}
-#else
-	strcpy(tmp_name, "/tmp");
-	tmp_name_len = 4;
 #endif
 
 	dir = secure_getenv("TMPDIR");
+
 	if (dir) {
-		len = strlen(dir);
-		if (len > 0 && len < sizeof(tmp_name)) {
-			strcpy(tmp_name, dir);
-			tmp_name_len = len;
+		tmp_name_len = strlen(dir);
+		if (tmp_name_len > 0 && tmp_name_len < sizeof(tmp_name)) {
+			if ((stat(dir, &st) == 0) && S_ISDIR(st.st_mode))
+				strcpy(tmp_name, dir);
 		}
+	}
+
+#ifdef P_tmpdir
+	if (!tmp_name_len) {
+		tmp_name_len = strlen(P_tmpdir);
+		if (tmp_name_len > 0 && tmp_name_len < sizeof(tmp_name))
+			strcpy(tmp_name, P_tmpdir);
+	}
+#endif
+	if (!tmp_name_len) {
+		strcpy(tmp_name, "/tmp");
+		tmp_name_len = 4;
 	}
 
 	SLJIT_ASSERT(tmp_name_len > 0 && tmp_name_len < sizeof(tmp_name));
 
-	while (tmp_name_len > 0 && tmp_name[tmp_name_len - 1] == '/') {
-		tmp_name_len--;
-		tmp_name[tmp_name_len] = '\0';
-	}
+	if (tmp_name[tmp_name_len - 1] == '/')
+		tmp_name[--tmp_name_len] = '\0';
 
-#ifdef O_TMPFILE
-	fd = open(tmp_name, O_TMPFILE | O_EXCL | O_RDWR | O_NOATIME | O_CLOEXEC, S_IRUSR | S_IWUSR);
+#ifdef __linux__
+	/*
+	 * the previous trimming might had left an empty string if TMPDIR="/"
+	 * so work around the problem below
+	 */
+	fd = open(tmp_name_len ? tmp_name : "/",
+		O_TMPFILE | O_EXCL | O_RDWR | O_NOATIME | O_CLOEXEC, 0);
 	if (fd != -1)
 		return fd;
 #endif
 
 	if (tmp_name_len + 7 >= sizeof(tmp_name))
-	{
 		return -1;
-	}
 
 	strcpy(tmp_name + tmp_name_len, "/XXXXXX");
+#if defined(SLJIT_SINGLE_THREADED) && SLJIT_SINGLE_THREADED
+	mode = umask(0777);
+#endif
 	fd = mkostemp(tmp_name, O_CLOEXEC | O_NOATIME);
+#if defined(SLJIT_SINGLE_THREADED) && SLJIT_SINGLE_THREADED
+	umask(mode);
+#else
+	fchmod(fd, 0);
+#endif
 
 	if (fd == -1)
-		return fd;
+		return -1;
 
 	if (unlink(tmp_name)) {
 		close(fd);
@@ -189,23 +209,52 @@ static SLJIT_INLINE struct chunk_header* alloc_chunk(sljit_uw size)
 	retval->executable = mmap(NULL, size, PROT_READ | PROT_EXEC, MAP_SHARED, fd, 0);
 
 	if (retval->executable == MAP_FAILED) {
-		munmap(retval, size);
+		munmap((void *)retval, size);
 		close(fd);
 		return NULL;
 	}
 
-	retval->fd = fd;
+	close(fd);
 	return retval;
 }
+#else
+/*
+ * MAP_REMAPDUP is a NetBSD extension available sinde 8.0, make sure to
+ * adjust your feature macros (ex: -D_NETBSD_SOURCE) as needed
+ */
+static SLJIT_INLINE struct chunk_header* alloc_chunk(sljit_uw size)
+{
+	struct chunk_header *retval;
+
+	retval = (struct chunk_header *)mmap(NULL, size,
+			PROT_READ | PROT_WRITE | PROT_MPROTECT(PROT_EXEC),
+			MAP_ANON | MAP_SHARED, -1, 0);
+
+	if (retval == MAP_FAILED)
+		return NULL;
+
+	retval->executable = mremap(retval, size, NULL, size, MAP_REMAPDUP);
+	if (retval->executable == MAP_FAILED) {
+		munmap((void *)retval, size);
+		return NULL;
+	}
+
+	if (mprotect(retval->executable, size, PROT_READ | PROT_EXEC) == -1) {
+		munmap(retval->executable, size);
+		munmap((void *)retval, size);
+		return NULL;
+	}
+
+	return retval;
+}
+#endif /* NetBSD */
 
 static SLJIT_INLINE void free_chunk(void *chunk, sljit_uw size)
 {
 	struct chunk_header *header = ((struct chunk_header *)chunk) - 1;
 
-	int fd = header->fd;
 	munmap(header->executable, size);
-	munmap(header, size);
-	close(fd);
+	munmap((void *)header, size);
 }
 
 /* --------------------------------------------------------------------- */
@@ -272,7 +321,7 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_malloc_exec(sljit_uw size)
 	sljit_uw chunk_size;
 	sljit_sw executable_offset;
 
-	allocator_grab_lock();
+	SLJIT_ALLOCATOR_LOCK();
 	if (size < (64 - sizeof(struct block_header)))
 		size = (64 - sizeof(struct block_header));
 	size = ALIGN_SIZE(size);
@@ -297,7 +346,7 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_malloc_exec(sljit_uw size)
 			}
 			allocated_size += size;
 			header->size = size;
-			allocator_release_lock();
+			SLJIT_ALLOCATOR_UNLOCK();
 			return MEM_START(header);
 		}
 		free_block = free_block->next;
@@ -308,7 +357,7 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_malloc_exec(sljit_uw size)
 
 	chunk_header = alloc_chunk(chunk_size);
 	if (!chunk_header) {
-		allocator_release_lock();
+		SLJIT_ALLOCATOR_UNLOCK();
 		return NULL;
 	}
 
@@ -342,7 +391,7 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_malloc_exec(sljit_uw size)
 	next_header->size = 1;
 	next_header->prev_size = chunk_size;
 	next_header->executable_offset = executable_offset;
-	allocator_release_lock();
+	SLJIT_ALLOCATOR_UNLOCK();
 	return MEM_START(header);
 }
 
@@ -351,7 +400,7 @@ SLJIT_API_FUNC_ATTRIBUTE void sljit_free_exec(void* ptr)
 	struct block_header *header;
 	struct free_block* free_block;
 
-	allocator_grab_lock();
+	SLJIT_ALLOCATOR_LOCK();
 	header = AS_BLOCK_HEADER(ptr, -(sljit_sw)sizeof(struct block_header));
 	header = AS_BLOCK_HEADER(header, -header->executable_offset);
 	allocated_size -= header->size;
@@ -385,11 +434,13 @@ SLJIT_API_FUNC_ATTRIBUTE void sljit_free_exec(void* ptr)
 		if (total_size - free_block->size > (allocated_size * 3 / 2)) {
 			total_size -= free_block->size;
 			sljit_remove_free_block(free_block);
-			free_chunk(free_block, free_block->size + sizeof(struct block_header));
+			free_chunk(free_block, free_block->size +
+				sizeof(struct chunk_header) +
+				sizeof(struct block_header));
 		}
 	}
 
-	allocator_release_lock();
+	SLJIT_ALLOCATOR_UNLOCK();
 }
 
 SLJIT_API_FUNC_ATTRIBUTE void sljit_free_unused_memory_exec(void)
@@ -397,7 +448,7 @@ SLJIT_API_FUNC_ATTRIBUTE void sljit_free_unused_memory_exec(void)
 	struct free_block* free_block;
 	struct free_block* next_free_block;
 
-	allocator_grab_lock();
+	SLJIT_ALLOCATOR_LOCK();
 
 	free_block = free_blocks;
 	while (free_block) {
@@ -406,13 +457,15 @@ SLJIT_API_FUNC_ATTRIBUTE void sljit_free_unused_memory_exec(void)
 				AS_BLOCK_HEADER(free_block, free_block->size)->size == 1) {
 			total_size -= free_block->size;
 			sljit_remove_free_block(free_block);
-			free_chunk(free_block, free_block->size + sizeof(struct block_header));
+			free_chunk(free_block, free_block->size +
+				sizeof(struct chunk_header) +
+				sizeof(struct block_header));
 		}
 		free_block = next_free_block;
 	}
 
 	SLJIT_ASSERT((total_size && free_blocks) || (!total_size && !free_blocks));
-	allocator_release_lock();
+	SLJIT_ALLOCATOR_UNLOCK();
 }
 
 SLJIT_API_FUNC_ATTRIBUTE sljit_sw sljit_exec_offset(void* ptr)

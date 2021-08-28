@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 
 // Godot imports
 #include "core/os/os.h"
-#include "core/variant.h"
+#include "core/variant/variant.h"
 
 // PluginScript imports
 #include "pluginscript_language.h"
@@ -93,44 +93,15 @@ void PluginScriptInstance::notification(int p_notification) {
 	_desc->notification(_data, p_notification);
 }
 
-Vector<ScriptNetData> PluginScriptInstance::get_rpc_methods() const {
+String PluginScriptInstance::to_string(bool *r_valid) {
+	godot_string ret = _desc->to_string(_data, r_valid);
+	String str_ret = *(String *)&ret;
+	godot_string_destroy(&ret);
+	return str_ret;
+}
+
+const Vector<MultiplayerAPI::RPCConfig> PluginScriptInstance::get_rpc_methods() const {
 	return _script->get_rpc_methods();
-}
-
-uint16_t PluginScriptInstance::get_rpc_method_id(const StringName &p_variable) const {
-	return _script->get_rpc_method_id(p_variable);
-}
-
-StringName PluginScriptInstance::get_rpc_method(uint16_t p_id) const {
-	return _script->get_rpc_method(p_id);
-}
-
-MultiplayerAPI::RPCMode PluginScriptInstance::get_rpc_mode_by_id(uint16_t p_id) const {
-	return _script->get_rpc_mode_by_id(p_id);
-}
-
-MultiplayerAPI::RPCMode PluginScriptInstance::get_rpc_mode(const StringName &p_method) const {
-	return _script->get_rpc_mode(p_method);
-}
-
-Vector<ScriptNetData> PluginScriptInstance::get_rset_properties() const {
-	return _script->get_rset_properties();
-}
-
-uint16_t PluginScriptInstance::get_rset_property_id(const StringName &p_variable) const {
-	return _script->get_rset_property_id(p_variable);
-}
-
-StringName PluginScriptInstance::get_rset_property(uint16_t p_id) const {
-	return _script->get_rset_property(p_id);
-}
-
-MultiplayerAPI::RPCMode PluginScriptInstance::get_rset_mode_by_id(uint16_t p_id) const {
-	return _script->get_rset_mode_by_id(p_id);
-}
-
-MultiplayerAPI::RPCMode PluginScriptInstance::get_rset_mode(const StringName &p_variable) const {
-	return _script->get_rset_mode(p_variable);
 }
 
 void PluginScriptInstance::refcount_incremented() {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -58,9 +58,9 @@ static bool check_error(const png_image &image) {
 	return false;
 }
 
-Error png_to_image(const uint8_t *p_source, size_t p_size, Ref<Image> p_image) {
+Error png_to_image(const uint8_t *p_source, size_t p_size, bool p_force_linear, Ref<Image> p_image) {
 	png_image png_img;
-	zeromem(&png_img, sizeof(png_img));
+	memset(&png_img, 0, sizeof(png_img));
 	png_img.version = PNG_IMAGE_VERSION;
 
 	// fetch image properties
@@ -99,6 +99,11 @@ Error png_to_image(const uint8_t *p_source, size_t p_size, Ref<Image> p_image) {
 			return ERR_UNAVAILABLE;
 	}
 
+	if (!p_force_linear) {
+		// assume 16 bit pngs without sRGB or gAMA chunks are in sRGB format
+		png_img.flags |= PNG_IMAGE_FLAG_16BIT_sRGB;
+	}
+
 	const png_uint_32 stride = PNG_IMAGE_ROW_STRIDE(png_img);
 	Vector<uint8_t> buffer;
 	Error err = buffer.resize(PNG_IMAGE_BUFFER_SIZE(png_img, stride));
@@ -129,7 +134,7 @@ Error image_to_png(const Ref<Image> &p_image, Vector<uint8_t> &p_buffer) {
 	ERR_FAIL_COND_V(source_image->is_compressed(), FAILED);
 
 	png_image png_img;
-	zeromem(&png_img, sizeof(png_img));
+	memset(&png_img, 0, sizeof(png_img));
 	png_img.version = PNG_IMAGE_VERSION;
 	png_img.width = source_image->get_width();
 	png_img.height = source_image->get_height();
@@ -198,5 +203,4 @@ Error image_to_png(const Ref<Image> &p_image, Vector<uint8_t> &p_buffer) {
 
 	return OK;
 }
-
 } // namespace PNGDriverCommon

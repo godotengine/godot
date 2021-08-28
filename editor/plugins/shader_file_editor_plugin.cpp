@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,20 +55,20 @@ void ShaderFileEditor::_version_selected(int p_option) {
 	RD::ShaderStage stage = RD::SHADER_STAGE_MAX;
 	int first_found = -1;
 
-	Ref<RDShaderBytecode> bytecode = shader_file->get_bytecode(version_txt);
+	Ref<RDShaderSPIRV> bytecode = shader_file->get_spirv(version_txt);
 	ERR_FAIL_COND(bytecode.is_null());
 
 	for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
-		if (bytecode->get_stage_bytecode(RD::ShaderStage(i)).empty() && bytecode->get_stage_compile_error(RD::ShaderStage(i)) == String()) {
+		if (bytecode->get_stage_bytecode(RD::ShaderStage(i)).is_empty() && bytecode->get_stage_compile_error(RD::ShaderStage(i)) == String()) {
 			stages[i]->set_icon(Ref<Texture2D>());
 			continue;
 		}
 
 		Ref<Texture2D> icon;
 		if (bytecode->get_stage_compile_error(RD::ShaderStage(i)) != String()) {
-			icon = get_theme_icon("ImportFail", "EditorIcons");
+			icon = get_theme_icon(SNAME("ImportFail"), SNAME("EditorIcons"));
 		} else {
-			icon = get_theme_icon("ImportCheck", "EditorIcons");
+			icon = get_theme_icon(SNAME("ImportCheck"), SNAME("EditorIcons"));
 		}
 		stages[i]->set_icon(icon);
 
@@ -95,7 +95,7 @@ void ShaderFileEditor::_version_selected(int p_option) {
 
 	String error = bytecode->get_stage_compile_error(stage);
 
-	error_text->push_font(get_theme_font("source", "EditorFonts"));
+	error_text->push_font(get_theme_font(SNAME("source"), SNAME("EditorFonts")));
 
 	if (error == String()) {
 		error_text->add_text(TTR("Shader stage compiled without errors."));
@@ -111,7 +111,7 @@ void ShaderFileEditor::_update_options() {
 		stage_hb->hide();
 		versions->hide();
 		error_text->clear();
-		error_text->push_font(get_theme_font("source", "EditorFonts"));
+		error_text->push_font(get_theme_font(SNAME("source"), SNAME("EditorFonts")));
 		error_text->add_text(vformat(TTR("File structure for '%s' contains unrecoverable errors:\n\n"), shader_file->get_path().get_file()));
 		error_text->add_text(shader_file->get_base_error());
 		return;
@@ -142,7 +142,7 @@ void ShaderFileEditor::_update_options() {
 
 		Ref<Texture2D> icon;
 
-		Ref<RDShaderBytecode> bytecode = shader_file->get_bytecode(version_list[i]);
+		Ref<RDShaderSPIRV> bytecode = shader_file->get_spirv(version_list[i]);
 		ERR_FAIL_COND(bytecode.is_null());
 
 		bool failed = false;
@@ -154,9 +154,9 @@ void ShaderFileEditor::_update_options() {
 		}
 
 		if (failed) {
-			icon = get_theme_icon("ImportFail", "EditorIcons");
+			icon = get_theme_icon(SNAME("ImportFail"), SNAME("EditorIcons"));
 		} else {
-			icon = get_theme_icon("ImportCheck", "EditorIcons");
+			icon = get_theme_icon(SNAME("ImportCheck"), SNAME("EditorIcons"));
 		}
 
 		versions->add_item(title, icon);
@@ -175,14 +175,14 @@ void ShaderFileEditor::_update_options() {
 		return;
 	}
 
-	Ref<RDShaderBytecode> bytecode = shader_file->get_bytecode(current_version);
+	Ref<RDShaderSPIRV> bytecode = shader_file->get_spirv(current_version);
 	ERR_FAIL_COND(bytecode.is_null());
 	int first_valid = -1;
 	int current = -1;
 	for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
 		Vector<uint8_t> bc = bytecode->get_stage_bytecode(RD::ShaderStage(i));
 		String error = bytecode->get_stage_compile_error(RD::ShaderStage(i));
-		bool disable = error == String() && bc.empty();
+		bool disable = error == String() && bc.is_empty();
 		stages[i]->set_disabled(disable);
 		if (!disable) {
 			if (stages[i]->is_pressed()) {
@@ -272,7 +272,7 @@ ShaderFileEditor::ShaderFileEditor(EditorNode *p_node) {
 	main_vb->add_child(stage_hb);
 
 	Ref<ButtonGroup> bg;
-	bg.instance();
+	bg.instantiate();
 	for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
 		Button *button = memnew(Button(stage_str[i]));
 		button->set_toggle_mode(true);

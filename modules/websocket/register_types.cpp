@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,8 +29,8 @@
 /*************************************************************************/
 
 #include "register_types.h"
-#include "core/error_macros.h"
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
 #ifdef JAVASCRIPT_ENABLED
 #include "emscripten.h"
 #include "emws_client.h"
@@ -63,7 +63,7 @@ void register_websocket_types() {
 	WSLServer::make_default();
 #endif
 
-	ClassDB::register_virtual_class<WebSocketMultiplayerPeer>();
+	GDREGISTER_VIRTUAL_CLASS(WebSocketMultiplayerPeer);
 	ClassDB::register_custom_instance_class<WebSocketServer>();
 	ClassDB::register_custom_instance_class<WebSocketClient>();
 	ClassDB::register_custom_instance_class<WebSocketPeer>();

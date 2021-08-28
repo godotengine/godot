@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 // Author: reduzio@gmail.com (C) 2006
 
 #include "eq.h"
-#include "core/error_macros.h"
+#include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
 #include <math.h>
 
@@ -89,8 +89,8 @@ void EQ::recalculate_band_coefficients() {
 		double frq_l = round(frq / pow(2.0, octave_size / 2.0));
 
 		double side_gain2 = POW2(Math_SQRT12);
-		double th = 2.0 * Math_PI * frq / mix_rate;
-		double th_l = 2.0 * Math_PI * frq_l / mix_rate;
+		double th = Math_TAU * frq / mix_rate;
+		double th_l = Math_TAU * frq_l / mix_rate;
 
 		double c2a = side_gain2 * POW2(cos(th)) - 2.0 * side_gain2 * cos(th_l) * cos(th) + side_gain2 - POW2(sin(th_l));
 

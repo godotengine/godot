@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@
 
 struct _XTranslatePair {
 	KeySym keysym;
-	unsigned int keycode;
+	Key keycode;
 };
 
 static _XTranslatePair _xkeysym_to_keycode[] = {
@@ -61,8 +61,8 @@ static _XTranslatePair _xkeysym_to_keycode[] = {
 	{ XK_Shift_L, KEY_SHIFT },
 	{ XK_Shift_R, KEY_SHIFT },
 	{ XK_Shift_Lock, KEY_SHIFT },
-	{ XK_Control_L, KEY_CONTROL },
-	{ XK_Control_R, KEY_CONTROL },
+	{ XK_Control_L, KEY_CTRL },
+	{ XK_Control_R, KEY_CTRL },
 	{ XK_Meta_L, KEY_META },
 	{ XK_Meta_R, KEY_META },
 	{ XK_Alt_L, KEY_ALT },
@@ -176,7 +176,7 @@ static _XTranslatePair _xkeysym_to_keycode[] = {
 	{ XF86XK_LaunchC, KEY_LAUNCHE },
 	{ XF86XK_LaunchD, KEY_LAUNCHF },
 
-	{ 0, 0 }
+	{ 0, KEY_NONE }
 };
 
 struct _TranslatePair {
@@ -185,7 +185,6 @@ struct _TranslatePair {
 };
 
 static _TranslatePair _scancode_to_keycode[] = {
-
 	{ KEY_ESCAPE, 0x09 },
 	{ KEY_1, 0x0A },
 	{ KEY_2, 0x0B },
@@ -214,7 +213,7 @@ static _TranslatePair _scancode_to_keycode[] = {
 	{ KEY_BRACELEFT, 0x22 },
 	{ KEY_BRACERIGHT, 0x23 },
 	{ KEY_ENTER, 0x24 },
-	{ KEY_CONTROL, 0x25 },
+	{ KEY_CTRL, 0x25 },
 	{ KEY_A, 0x26 },
 	{ KEY_S, 0x27 },
 	{ KEY_D, 0x28 },
@@ -273,7 +272,7 @@ static _TranslatePair _scancode_to_keycode[] = {
 	{ KEY_F11, 0x5F },
 	{ KEY_F12, 0x60 },
 	{ KEY_KP_ENTER, 0x68 },
-	{ KEY_CONTROL, 0x69 },
+	{ KEY_CTRL, 0x69 },
 	{ KEY_KP_DIVIDE, 0x6A },
 	{ KEY_PRINT, 0x6B },
 	{ KEY_ALT, 0x6C },
@@ -310,11 +309,11 @@ unsigned int KeyMappingX11::get_scancode(unsigned int p_code) {
 	return keycode;
 }
 
-unsigned int KeyMappingX11::get_keycode(KeySym p_keysym) {
+Key KeyMappingX11::get_keycode(KeySym p_keysym) {
 	// kinda bruteforce.. could optimize.
 
 	if (p_keysym < 0x100) { // Latin 1, maps 1-1
-		return p_keysym;
+		return (Key)p_keysym;
 	}
 
 	// look for special key
@@ -324,14 +323,14 @@ unsigned int KeyMappingX11::get_keycode(KeySym p_keysym) {
 		}
 	}
 
-	return 0;
+	return KEY_NONE;
 }
 
-KeySym KeyMappingX11::get_keysym(unsigned int p_code) {
+KeySym KeyMappingX11::get_keysym(Key p_code) {
 	// kinda bruteforce.. could optimize.
 
 	if (p_code < 0x100) { // Latin 1, maps 1-1
-		return p_code;
+		return (KeySym)p_code;
 	}
 
 	// look for special key
@@ -341,7 +340,7 @@ KeySym KeyMappingX11::get_keysym(unsigned int p_code) {
 		}
 	}
 
-	return 0;
+	return (KeySym)KEY_NONE;
 }
 
 /***** UNICODE CONVERSION ******/
@@ -354,7 +353,6 @@ struct _XTranslateUnicodePair {
 };
 
 enum {
-
 	_KEYSYM_MAX = 759
 };
 
@@ -1160,7 +1158,6 @@ struct _XTranslateUnicodePairReverse {
 };
 
 enum {
-
 	_UNICODE_MAX = 750
 };
 

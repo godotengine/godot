@@ -1,8 +1,14 @@
 /*
  *  Public Key layer for writing key files and structures
  *
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  Copyright The Mbed TLS Contributors
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -16,7 +22,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  This file is part of mbed TLS (https://tls.mbed.org)
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  */
 
 #if !defined(MBEDTLS_CONFIG_FILE)
@@ -430,7 +455,7 @@ int mbedtls_pk_write_key_der( mbedtls_pk_context *key, unsigned char *buf, size_
  *      publicExponent    INTEGER   -- e            1 + 3 + MPI_MAX + 1
  *  }
  */
-#define RSA_PUB_DER_MAX_BYTES   38 + 2 * MBEDTLS_MPI_MAX_SIZE
+#define RSA_PUB_DER_MAX_BYTES   ( 38 + 2 * MBEDTLS_MPI_MAX_SIZE )
 
 /*
  * RSA private keys:
@@ -447,10 +472,10 @@ int mbedtls_pk_write_key_der( mbedtls_pk_context *key, unsigned char *buf, size_
  *      otherPrimeInfos   OtherPrimeInfos OPTIONAL  0 (not supported)
  *  }
  */
-#define MPI_MAX_SIZE_2          MBEDTLS_MPI_MAX_SIZE / 2 + \
-                                MBEDTLS_MPI_MAX_SIZE % 2
-#define RSA_PRV_DER_MAX_BYTES   47 + 3 * MBEDTLS_MPI_MAX_SIZE \
-                                   + 5 * MPI_MAX_SIZE_2
+#define MPI_MAX_SIZE_2          ( MBEDTLS_MPI_MAX_SIZE / 2 + \
+                                  MBEDTLS_MPI_MAX_SIZE % 2 )
+#define RSA_PRV_DER_MAX_BYTES   ( 47 + 3 * MBEDTLS_MPI_MAX_SIZE \
+                                   + 5 * MPI_MAX_SIZE_2 )
 
 #else /* MBEDTLS_RSA_C */
 
@@ -471,7 +496,7 @@ int mbedtls_pk_write_key_der( mbedtls_pk_context *key, unsigned char *buf, size_
  *                                            + 2 * ECP_MAX (coords)    [1]
  *  }
  */
-#define ECP_PUB_DER_MAX_BYTES   30 + 2 * MBEDTLS_ECP_MAX_BYTES
+#define ECP_PUB_DER_MAX_BYTES   ( 30 + 2 * MBEDTLS_ECP_MAX_BYTES )
 
 /*
  * EC private keys:
@@ -482,7 +507,7 @@ int mbedtls_pk_write_key_der( mbedtls_pk_context *key, unsigned char *buf, size_
  *      publicKey  [1] BIT STRING OPTIONAL      1 + 2 + [1] above
  *    }
  */
-#define ECP_PRV_DER_MAX_BYTES   29 + 3 * MBEDTLS_ECP_MAX_BYTES
+#define ECP_PRV_DER_MAX_BYTES   ( 29 + 3 * MBEDTLS_ECP_MAX_BYTES )
 
 #else /* MBEDTLS_ECP_C */
 
@@ -491,10 +516,10 @@ int mbedtls_pk_write_key_der( mbedtls_pk_context *key, unsigned char *buf, size_
 
 #endif /* MBEDTLS_ECP_C */
 
-#define PUB_DER_MAX_BYTES   RSA_PUB_DER_MAX_BYTES > ECP_PUB_DER_MAX_BYTES ? \
-                            RSA_PUB_DER_MAX_BYTES : ECP_PUB_DER_MAX_BYTES
-#define PRV_DER_MAX_BYTES   RSA_PRV_DER_MAX_BYTES > ECP_PRV_DER_MAX_BYTES ? \
-                            RSA_PRV_DER_MAX_BYTES : ECP_PRV_DER_MAX_BYTES
+#define PUB_DER_MAX_BYTES   ( RSA_PUB_DER_MAX_BYTES > ECP_PUB_DER_MAX_BYTES ? \
+                              RSA_PUB_DER_MAX_BYTES : ECP_PUB_DER_MAX_BYTES )
+#define PRV_DER_MAX_BYTES   ( RSA_PRV_DER_MAX_BYTES > ECP_PRV_DER_MAX_BYTES ? \
+                              RSA_PRV_DER_MAX_BYTES : ECP_PRV_DER_MAX_BYTES )
 
 int mbedtls_pk_write_pubkey_pem( mbedtls_pk_context *key, unsigned char *buf, size_t size )
 {

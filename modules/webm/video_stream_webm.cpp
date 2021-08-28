@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,9 @@
 
 #include "video_stream_webm.h"
 
-#include "core/os/file_access.h"
+#include "core/config/project_settings.h"
+#include "core/io/file_access.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 #include "servers/audio_server.h"
 
 #include "thirdparty/misc/yuv2rgb.h"
@@ -62,10 +62,10 @@ public:
 
 	virtual int Read(long long pos, long len, unsigned char *buf) {
 		if (file) {
-			if (file->get_position() != (size_t)pos) {
+			if (file->get_position() != (uint64_t)pos) {
 				file->seek(pos);
 			}
-			if (file->get_buffer(buf, len) == len) {
+			if (file->get_buffer(buf, len) == (uint64_t)len) {
 				return 0;
 			}
 		}
@@ -74,7 +74,7 @@ public:
 
 	virtual int Length(long long *total, long long *available) {
 		if (file) {
-			const size_t len = file->get_len();
+			const uint64_t len = file->get_length();
 			if (total) {
 				*total = len;
 			}
@@ -116,7 +116,7 @@ bool VideoStreamPlaybackWebm::open_file(const String &p_file) {
 
 			frame_data.resize((webm->getWidth() * webm->getHeight()) << 2);
 			Ref<Image> img;
-			img.instance();
+			img.instantiate();
 			img->create(webm->getWidth(), webm->getHeight(), false, Image::FORMAT_RGBA8);
 			texture->create_from_image(img);
 
@@ -156,7 +156,7 @@ void VideoStreamPlaybackWebm::stop() {
 void VideoStreamPlaybackWebm::play() {
 	stop();
 
-	delay_compensation = ProjectSettings::get_singleton()->get("audio/video_delay_compensation_ms");
+	delay_compensation = ProjectSettings::get_singleton()->get("audio/video/video_delay_compensation_ms");
 	delay_compensation /= 1000.0;
 
 	playing = true;
@@ -194,7 +194,7 @@ float VideoStreamPlaybackWebm::get_playback_position() const {
 }
 
 void VideoStreamPlaybackWebm::seek(float p_time) {
-	//Not implemented
+	WARN_PRINT_ONCE("Seeking in Theora and WebM videos is not implemented yet (it's only supported for GDNative-provided video streams).");
 }
 
 void VideoStreamPlaybackWebm::set_audio_track(int p_idx) {
@@ -429,7 +429,7 @@ void VideoStreamWebm::set_audio_track(int p_track) {
 
 ////////////
 
-RES ResourceFormatLoaderWebm::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+RES ResourceFormatLoaderWebm::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	if (!f) {
 		if (r_error) {

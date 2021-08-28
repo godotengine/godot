@@ -16,13 +16,12 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_TRUETYPE_TAGS_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/tttags.h>
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
-#include FT_SERVICE_METRICS_VARIATIONS_H
+#include <freetype/internal/services/svmetric.h>
 #endif
 
 #include "ttmtx.h"

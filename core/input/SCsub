@@ -2,7 +2,6 @@
 
 Import("env")
 
-from platform_methods import run_in_subprocess
 import input_builders
 
 
@@ -16,7 +15,7 @@ env.Depends("#core/input/default_controller_mappings.gen.cpp", controller_databa
 env.CommandNoCache(
     "#core/input/default_controller_mappings.gen.cpp",
     controller_databases,
-    run_in_subprocess(input_builders.make_default_controller_mappings),
+    env.Run(input_builders.make_default_controller_mappings, "Generating default controller mappings."),
 )
 
 env.add_source_files(env.core_sources, "*.cpp")

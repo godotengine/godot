@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SCRIPT_DEBUGGER_WEBSOCKET_H
-#define SCRIPT_DEBUGGER_WEBSOCKET_H
+#ifndef REMOTE_DEBUGGER_PEER_WEBSOCKET_H
+#define REMOTE_DEBUGGER_PEER_WEBSOCKET_H
 
 #ifdef JAVASCRIPT_ENABLED
 #include "modules/websocket/emws_client.h"
@@ -62,4 +62,4 @@ public:
 	RemoteDebuggerPeerWebSocket(Ref<WebSocketPeer> p_peer = Ref<WebSocketPeer>());
 };
 
-#endif // SCRIPT_DEBUGGER_WEBSOCKET_H
+#endif // REMOTE_DEBUGGER_PEER_WEBSOCKET_H

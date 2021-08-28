@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,14 +31,14 @@
 #ifndef MAIN_TIMER_SYNC_H
 #define MAIN_TIMER_SYNC_H
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 
 struct MainFrameTime {
-	float idle_step; // time to advance idles for (argument to process())
+	double process_step; // delta time to advance during process()
 	int physics_steps; // number of times to iterate the physics engine
-	float interpolation_fraction; // fraction through the current physics tick
+	double interpolation_fraction; // fraction through the current physics tick
 
-	void clamp_idle(float min_idle_step, float max_idle_step);
+	void clamp_process_step(double min_process_step, double max_process_step);
 };
 
 class MainTimerSync {
@@ -47,10 +47,10 @@ class MainTimerSync {
 	uint64_t current_cpu_ticks_usec = 0;
 
 	// logical game time since last physics timestep
-	float time_accum = 0;
+	double time_accum = 0;
 
-	// current difference between wall clock time and reported sum of idle_steps
-	float time_deficit = 0;
+	// current difference between wall clock time and reported sum of process_steps
+	double time_deficit = 0;
 
 	// number of frames back for keeping accumulated physics steps roughly constant.
 	// value of 12 chosen because that is what is required to make 144 Hz monitors
@@ -67,23 +67,23 @@ class MainTimerSync {
 	int fixed_fps = 0;
 
 protected:
-	// returns the fraction of p_frame_slice required for the timer to overshoot
+	// returns the fraction of p_physics_step required for the timer to overshoot
 	// before advance_core considers changing the physics_steps return from
 	// the typical values as defined by typical_physics_steps
-	float get_physics_jitter_fix();
+	double get_physics_jitter_fix();
 
 	// gets our best bet for the average number of physics steps per render frame
 	// return value: number of frames back this data is consistent
-	int get_average_physics_steps(float &p_min, float &p_max);
+	int get_average_physics_steps(double &p_min, double &p_max);
 
-	// advance physics clock by p_idle_step, return appropriate number of steps to simulate
-	MainFrameTime advance_core(float p_frame_slice, int p_iterations_per_second, float p_idle_step);
+	// advance physics clock by p_process_step, return appropriate number of steps to simulate
+	MainFrameTime advance_core(double p_physics_step, int p_physics_ticks_per_second, double p_process_step);
 
 	// calls advance_core, keeps track of deficit it adds to animaption_step, make sure the deficit sum stays close to zero
-	MainFrameTime advance_checked(float p_frame_slice, int p_iterations_per_second, float p_idle_step);
+	MainFrameTime advance_checked(double p_physics_step, int p_physics_ticks_per_second, double p_process_step);
 
 	// determine wall clock step since last iteration
-	float get_cpu_idle_step();
+	double get_cpu_process_step();
 
 public:
 	MainTimerSync();
@@ -96,7 +96,7 @@ public:
 	void set_fixed_fps(int p_fixed_fps);
 
 	// advance one frame, return timesteps to take
-	MainFrameTime advance(float p_frame_slice, int p_iterations_per_second);
+	MainFrameTime advance(double p_physics_step, int p_physics_ticks_per_second);
 };
 
 #endif // MAIN_TIMER_SYNC_H

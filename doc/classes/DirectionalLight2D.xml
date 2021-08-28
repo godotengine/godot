@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DirectionalLight2D" inherits="Light2D" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="height" type="float" setter="set_height" getter="get_height" default="0.0">
+			The height of the light. Used with 2D normal mapping.
+		</member>
+		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance" default="10000.0">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,19 +31,10 @@
 #ifndef JAVASCRIPT_ENABLED
 
 #include "wsl_server.h"
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 
-WSLServer::PendingPeer::PendingPeer() {
-	use_ssl = false;
-	time = 0;
-	has_request = false;
-	response_sent = 0;
-	req_pos = 0;
-	memset(req_buf, 0, sizeof(req_buf));
-}
-
-bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols) {
+bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols, String &r_resource_name) {
 	Vector<String> psa = String((char *)req_buf).split("\r\n");
 	int len = psa.size();
 	ERR_FAIL_COND_V_MSG(len < 4, false, "Not enough response headers, got: " + itos(len) + ", expected >= 4.");
@@ -54,6 +45,7 @@ bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols) {
 	// Wrong protocol
 	ERR_FAIL_COND_V_MSG(req[0] != "GET" || req[2] != "HTTP/1.1", false, "Invalid method or HTTP version.");
 
+	r_resource_name = req[1];
 	Map<String, String> headers;
 	for (int i = 1; i < len; i++) {
 		Vector<String> header = psa[i].split(":", false, 1);
@@ -104,28 +96,33 @@ bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols) {
 	return true;
 }
 
-Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols) {
-	if (OS::get_singleton()->get_ticks_msec() - time > WSL_SERVER_TIMEOUT) {
+Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols, uint64_t p_timeout, String &r_resource_name) {
+	if (OS::get_singleton()->get_ticks_msec() - time > p_timeout) {
+		print_verbose(vformat("WebSocket handshake timed out after %.3f seconds.", p_timeout * 0.001));
 		return ERR_TIMEOUT;
 	}
+
 	if (use_ssl) {
 		Ref<StreamPeerSSL> ssl = static_cast<Ref<StreamPeerSSL>>(connection);
 		if (ssl.is_null()) {
-			return FAILED;
+			ERR_FAIL_V_MSG(ERR_BUG, "Couldn't get StreamPeerSSL for WebSocket handshake.");
 		}
 		ssl->poll();
 		if (ssl->get_status() == StreamPeerSSL::STATUS_HANDSHAKING) {
 			return ERR_BUSY;
 		} else if (ssl->get_status() != StreamPeerSSL::STATUS_CONNECTED) {
+			print_verbose(vformat("WebSocket SSL connection error during handshake (StreamPeerSSL status code %d).", ssl->get_status()));
 			return FAILED;
 		}
 	}
+
 	if (!has_request) {
 		int read = 0;
 		while (true) {
-			ERR_FAIL_COND_V_MSG(req_pos >= WSL_MAX_HEADER_SIZE, ERR_OUT_OF_MEMORY, "Response headers too big.");
+			ERR_FAIL_COND_V_MSG(req_pos >= WSL_MAX_HEADER_SIZE, ERR_OUT_OF_MEMORY, "WebSocket response headers are too big.");
 			Error err = connection->get_partial_data(&req_buf[req_pos], 1, read);
 			if (err != OK) { // Got an error
+				print_verbose(vformat("WebSocket error while getting partial data (StreamPeer error code %d).", err));
 				return FAILED;
 			} else if (read != 1) { // Busy, wait next poll
 				return ERR_BUSY;
@@ -134,7 +131,7 @@ Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols) {
 			int l = req_pos;
 			if (l > 3 && r[l] == '\n' && r[l - 1] == '\r' && r[l - 2] == '\n' && r[l - 3] == '\r') {
 				r[l - 3] = '\0';
-				if (!_parse_request(p_protocols)) {
+				if (!_parse_request(p_protocols, r_resource_name)) {
 					return FAILED;
 				}
 				String s = "HTTP/1.1 101 Switching Protocols\r\n";
@@ -152,17 +149,21 @@ Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols) {
 			req_pos += 1;
 		}
 	}
+
 	if (has_request && response_sent < response.size() - 1) {
 		int sent = 0;
 		Error err = connection->put_partial_data((const uint8_t *)response.get_data() + response_sent, response.size() - response_sent - 1, sent);
 		if (err != OK) {
+			print_verbose(vformat("WebSocket error while putting partial data (StreamPeer error code %d).", err));
 			return err;
 		}
 		response_sent += sent;
 	}
+
 	if (response_sent < response.size() - 1) {
 		return ERR_BUSY;
 	}
+
 	return OK;
 }
 
@@ -189,15 +190,16 @@ void WSLServer::poll() {
 			remove_ids.push_back(E->key());
 		}
 	}
-	for (List<int>::Element *E = remove_ids.front(); E; E = E->next()) {
-		_peer_map.erase(E->get());
+	for (int &E : remove_ids) {
+		_peer_map.erase(E);
 	}
 	remove_ids.clear();
 
 	List<Ref<PendingPeer>> remove_peers;
-	for (List<Ref<PendingPeer>>::Element *E = _pending.front(); E; E = E->next()) {
-		Ref<PendingPeer> ppeer = E->get();
-		Error err = ppeer->do_handshake(_protocols);
+	for (const Ref<PendingPeer> &E : _pending) {
+		String resource_name;
+		Ref<PendingPeer> ppeer = E;
+		Error err = ppeer->do_handshake(_protocols, handshake_timeout, resource_name);
 		if (err == ERR_BUSY) {
 			continue;
 		} else if (err != OK) {
@@ -205,7 +207,7 @@ void WSLServer::poll() {
 			continue;
 		}
 		// Creating new peer
-		int32_t id = _gen_unique_id();
+		int32_t id = generate_unique_id();
 
 		WSLPeer::PeerData *data = memnew(struct WSLPeer::PeerData);
 		data->obj = this;
@@ -220,10 +222,10 @@ void WSLServer::poll() {
 
 		_peer_map[id] = ws_peer;
 		remove_peers.push_back(ppeer);
-		_on_connect(id, ppeer->protocol);
+		_on_connect(id, ppeer->protocol, resource_name);
 	}
-	for (List<Ref<PendingPeer>>::Element *E = remove_peers.front(); E; E = E->next()) {
-		_pending.erase(E->get());
+	for (const Ref<PendingPeer> &E : remove_peers) {
+		_pending.erase(E);
 	}
 	remove_peers.clear();
 
@@ -281,8 +283,8 @@ Ref<WebSocketPeer> WSLServer::get_peer(int p_id) const {
 	return _peer_map[p_id];
 }
 
-IP_Address WSLServer::get_peer_address(int p_peer_id) const {
-	ERR_FAIL_COND_V(!has_peer(p_peer_id), IP_Address());
+IPAddress WSLServer::get_peer_address(int p_peer_id) const {
+	ERR_FAIL_COND_V(!has_peer(p_peer_id), IPAddress());
 
 	return _peer_map[p_peer_id]->get_connected_host();
 }
@@ -310,11 +312,7 @@ Error WSLServer::set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer
 }
 
 WSLServer::WSLServer() {
-	_in_buf_size = DEF_BUF_SHIFT;
-	_in_pkt_size = DEF_PKT_SHIFT;
-	_out_buf_size = DEF_BUF_SHIFT;
-	_out_pkt_size = DEF_PKT_SHIFT;
-	_server.instance();
+	_server.instantiate();
 }
 
 WSLServer::~WSLServer() {

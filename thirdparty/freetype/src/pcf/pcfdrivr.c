@@ -25,17 +25,16 @@ THE SOFTWARE.
 */
 
 
-#include <ft2build.h>
 
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_OBJECTS_H
-#include FT_GZIP_H
-#include FT_LZW_H
-#include FT_BZIP2_H
-#include FT_ERRORS_H
-#include FT_BDF_H
-#include FT_TRUETYPE_IDS_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/ftobjs.h>
+#include <freetype/ftgzip.h>
+#include <freetype/ftlzw.h>
+#include <freetype/ftbzip2.h>
+#include <freetype/fterrors.h>
+#include <freetype/ftbdf.h>
+#include <freetype/ttnameid.h>
 
 #include "pcf.h"
 #include "pcfdrivr.h"
@@ -47,10 +46,10 @@ THE SOFTWARE.
 #undef  FT_COMPONENT
 #define FT_COMPONENT  pcfread
 
-#include FT_SERVICE_BDF_H
-#include FT_SERVICE_FONT_FORMAT_H
-#include FT_SERVICE_PROPERTIES_H
-#include FT_DRIVER_H
+#include <freetype/internal/services/svbdf.h>
+#include <freetype/internal/services/svfntfmt.h>
+#include <freetype/internal/services/svprop.h>
+#include <freetype/ftdriver.h>
 
 
   /**************************************************************************
@@ -137,7 +136,7 @@ THE SOFTWARE.
     FT_UInt32  charcode  = *acharcode;
     FT_UShort  charcodeRow;
     FT_UShort  charcodeCol;
-    FT_Int     result = 0;
+    FT_UInt    result = 0;
 
 
     while ( charcode < (FT_UInt32)( enc->lastRow * 256 + enc->lastCol ) )
@@ -607,8 +606,9 @@ THE SOFTWARE.
         if ( prop->value.l > 0x7FFFFFFFL          ||
              prop->value.l < ( -1 - 0x7FFFFFFFL ) )
         {
-          FT_TRACE1(( "pcf_get_bdf_property:" ));
-          FT_TRACE1(( " too large integer 0x%x is truncated\n" ));
+          FT_TRACE1(( "pcf_get_bdf_property:"
+                      " too large integer 0x%lx is truncated\n",
+                      prop->value.l ));
         }
 
         /*

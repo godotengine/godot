@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef DEBUGGER_MARSHARLLS_H
 #define DEBUGGER_MARSHARLLS_H
 
-#include "core/script_language.h"
+#include "core/object/script_language.h"
 #include "servers/rendering_server.h"
 
 struct DebuggerMarshalls {
@@ -83,14 +83,14 @@ struct DebuggerMarshalls {
 		StringName name;
 		int sig_id = -1;
 		int call_count = 0;
-		float self_time = 0;
-		float total_time = 0;
+		double self_time = 0;
+		double total_time = 0;
 	};
 
 	// Servers profiler
 	struct ServerFunctionInfo {
 		StringName name;
-		float time = 0;
+		double time = 0;
 	};
 
 	struct ServerInfo {
@@ -100,11 +100,11 @@ struct DebuggerMarshalls {
 
 	struct ServersProfilerFrame {
 		int frame_number = 0;
-		float frame_time = 0;
-		float idle_time = 0;
-		float physics_time = 0;
-		float physics_frame_time = 0;
-		float script_time = 0;
+		double frame_time = 0;
+		double idle_time = 0;
+		double physics_time = 0;
+		double physics_frame_time = 0;
+		double script_time = 0;
 		List<ServerInfo> servers;
 		Vector<ScriptFunctionInfo> script_functions;
 
@@ -148,7 +148,7 @@ struct DebuggerMarshalls {
 
 	// Visual Profiler
 	struct VisualProfilerFrame {
-		uint64_t frame_number;
+		uint64_t frame_number = 0;
 		Vector<RS::FrameProfileArea> areas;
 
 		Array serialize();

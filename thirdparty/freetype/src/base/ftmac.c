@@ -65,10 +65,9 @@
   */
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_TRUETYPE_TAGS_H
-#include FT_INTERNAL_STREAM_H
+#include <freetype/freetype.h>
+#include <freetype/tttags.h>
+#include <freetype/internal/ftstream.h>
 #include "ftbase.h"
 
 

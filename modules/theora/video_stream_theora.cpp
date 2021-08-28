@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "video_stream_theora.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 
 #include "thirdparty/misc/yuv2rgb.h"
 
@@ -58,7 +58,7 @@ int VideoStreamPlaybackTheora::buffer_data() {
 
 #else
 
-	int bytes = file->get_buffer((uint8_t *)buffer, 4096);
+	uint64_t bytes = file->get_buffer((uint8_t *)buffer, 4096);
 	ogg_sync_wrote(&oy, bytes);
 	return (bytes);
 
@@ -108,7 +108,7 @@ void VideoStreamPlaybackTheora::video_write() {
 
 	Ref<Image> img = memnew(Image(size.x, size.y, 0, Image::FORMAT_RGBA8, frame_data)); //zero copy image creation
 
-	texture->update(img, true); //zero copy send to visual server
+	texture->update(img); //zero copy send to visual server
 
 	frames_pending = 1;
 }
@@ -140,9 +140,7 @@ void VideoStreamPlaybackTheora::clear() {
 #ifdef THEORA_USE_THREAD_STREAMING
 	thread_exit = true;
 	thread_sem->post(); //just in case
-	Thread::wait_to_finish(thread);
-	memdelete(thread);
-	thread = nullptr;
+	thread.wait_to_finish();
 	ring_buffer.clear();
 #endif
 
@@ -178,10 +176,10 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 	thread_eof = false;
 	//pre-fill buffer
 	int to_read = ring_buffer.space_left();
-	int read = file->get_buffer(read_buffer.ptr(), to_read);
+	uint64_t read = file->get_buffer(read_buffer.ptr(), to_read);
 	ring_buffer.write(read_buffer.ptr(), read);
 
-	thread = Thread::create(_streaming_thread, this);
+	thread.start(_streaming_thread, this);
 
 #endif
 
@@ -227,7 +225,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 			/* identify the codec: try theora */
 			if (!theora_p && th_decode_headerin(&ti, &tc, &ts, &op) >= 0) {
 				/* it is theora */
-				copymem(&to, &test, sizeof(test));
+				memcpy(&to, &test, sizeof(test));
 				theora_p = 1;
 			} else if (!vorbis_p && vorbis_synthesis_headerin(&vi, &vc, &op) >= 0) {
 				/* it is vorbis */
@@ -240,7 +238,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 
 					audio_track_skip--;
 				} else {
-					copymem(&vo, &test, sizeof(test));
+					memcpy(&vo, &test, sizeof(test));
 					vorbis_p = 1;
 				}
 			} else {
@@ -304,7 +302,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 		}
 	}
 
-	/* and now we have it all.  initialize decoders */
+	/* And now we have it all. Initialize decoders. */
 	if (theora_p) {
 		td = th_decode_alloc(&ti, ts);
 		px_fmt = ti.pixel_fmt;
@@ -337,7 +335,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 		size.y = h;
 
 		Ref<Image> img;
-		img.instance();
+		img.instantiate();
 		img->create(w, h, false, Image::FORMAT_RGBA8);
 
 	} else {
@@ -486,10 +484,10 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 
 					//printf("frame time %f, play time %f, ready %i\n", (float)videobuf_time, get_time(), videobuf_ready);
 
-					/* is it already too old to be useful?  This is only actually
-					 useful cosmetically after a SIGSTOP.  Note that we have to
+					/* is it already too old to be useful? This is only actually
+					 useful cosmetically after a SIGSTOP. Note that we have to
 					 decode the frame even if we don't show it (for now) due to
-					 keyframing.  Soon enough libtheora will be able to deal
+					 keyframing. Soon enough libtheora will be able to deal
 					 with non-keyframe seeks.  */
 
 					if (videobuf_time >= get_time()) {
@@ -556,7 +554,7 @@ void VideoStreamPlaybackTheora::play() {
 	}
 
 	playing = true;
-	delay_compensation = ProjectSettings::get_singleton()->get("audio/video_delay_compensation_ms");
+	delay_compensation = ProjectSettings::get_singleton()->get("audio/video/video_delay_compensation_ms");
 	delay_compensation /= 1000.0;
 };
 
@@ -605,6 +603,7 @@ float VideoStreamPlaybackTheora::get_playback_position() const {
 };
 
 void VideoStreamPlaybackTheora::seek(float p_time) {
+	WARN_PRINT_ONCE("Seeking in Theora and WebM videos is not implemented yet (it's only supported for GDNative-provided video streams).");
 }
 
 void VideoStreamPlaybackTheora::set_mix_callback(AudioMixCallback p_callback, void *p_userdata) {
@@ -633,8 +632,8 @@ void VideoStreamPlaybackTheora::_streaming_thread(void *ud) {
 		//just fill back the buffer
 		if (!vs->thread_eof) {
 			int to_read = vs->ring_buffer.space_left();
-			if (to_read) {
-				int read = vs->file->get_buffer(vs->read_buffer.ptr(), to_read);
+			if (to_read > 0) {
+				uint64_t read = vs->file->get_buffer(vs->read_buffer.ptr(), to_read);
 				vs->ring_buffer.write(vs->read_buffer.ptr(), read);
 				vs->thread_eof = vs->file->eof_reached();
 			}
@@ -647,31 +646,13 @@ void VideoStreamPlaybackTheora::_streaming_thread(void *ud) {
 #endif
 
 VideoStreamPlaybackTheora::VideoStreamPlaybackTheora() {
-	file = nullptr;
-	theora_p = 0;
-	vorbis_p = 0;
-	videobuf_ready = 0;
-	playing = false;
-	frames_pending = 0;
-	videobuf_time = 0;
-	paused = false;
-
-	buffering = false;
 	texture = Ref<ImageTexture>(memnew(ImageTexture));
-	mix_callback = nullptr;
-	mix_udata = nullptr;
-	audio_track = 0;
-	delay_compensation = 0;
-	audio_frames_wrote = 0;
 
 #ifdef THEORA_USE_THREAD_STREAMING
 	int rb_power = nearest_shift(RB_SIZE_KB * 1024);
 	ring_buffer.resize(rb_power);
 	read_buffer.resize(RB_SIZE_KB * 1024);
 	thread_sem = Semaphore::create();
-	thread = nullptr;
-	thread_exit = false;
-	thread_eof = false;
 
 #endif
 };
@@ -697,7 +678,7 @@ void VideoStreamTheora::_bind_methods() {
 
 ////////////
 
-RES ResourceFormatLoaderTheora::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+RES ResourceFormatLoaderTheora::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	if (!f) {
 		if (r_error) {

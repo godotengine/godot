@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,6 +75,10 @@ void GDMonoMethod::_update_signature(MonoMethodSignature *p_method_sig) {
 	// clear the cache
 	method_info_fetched = false;
 	method_info = MethodInfo();
+
+	for (int i = 0; i < params_count; i++) {
+		params_buffer_size += GDMonoMarshal::variant_get_managed_unboxed_size(param_types[i]);
+	}
 }
 
 GDMonoClass *GDMonoMethod::get_enclosing_class() const {
@@ -107,14 +111,15 @@ MonoObject *GDMonoMethod::invoke(MonoObject *p_object, const Variant **p_params,
 	MonoObject *ret;
 
 	if (params_count > 0) {
-		MonoArray *params = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), params_count);
+		void **params = (void **)alloca(params_count * sizeof(void *));
+		uint8_t *buffer = (uint8_t *)alloca(params_buffer_size);
+		unsigned int offset = 0;
 
 		for (int i = 0; i < params_count; i++) {
-			MonoObject *boxed_param = GDMonoMarshal::variant_to_mono_object(p_params[i], param_types[i]);
-			mono_array_setref(params, i, boxed_param);
+			params[i] = GDMonoMarshal::variant_to_managed_unboxed(p_params[i], param_types[i], buffer + offset, offset);
 		}
 
-		ret = GDMonoUtils::runtime_invoke_array(mono_method, p_object, params, &exc);
+		ret = GDMonoUtils::runtime_invoke(mono_method, p_object, params, &exc);
 	} else {
 		ret = GDMonoUtils::runtime_invoke(mono_method, p_object, nullptr, &exc);
 	}
@@ -155,11 +160,13 @@ MonoObject *GDMonoMethod::invoke_raw(MonoObject *p_object, void **p_params, Mono
 bool GDMonoMethod::has_attribute(GDMonoClass *p_attr_class) {
 	ERR_FAIL_NULL_V(p_attr_class, false);
 
-	if (!attrs_fetched)
+	if (!attrs_fetched) {
 		fetch_attributes();
+	}
 
-	if (!attributes)
+	if (!attributes) {
 		return false;
+	}
 
 	return mono_custom_attrs_has_attr(attributes, p_attr_class->get_mono_ptr());
 }
@@ -167,11 +174,13 @@ bool GDMonoMethod::has_attribute(GDMonoClass *p_attr_class) {
 MonoObject *GDMonoMethod::get_attribute(GDMonoClass *p_attr_class) {
 	ERR_FAIL_NULL_V(p_attr_class, nullptr);
 
-	if (!attrs_fetched)
+	if (!attrs_fetched) {
 		fetch_attributes();
+	}
 
-	if (!attributes)
+	if (!attributes) {
 		return nullptr;
+	}
 
 	return mono_custom_attrs_get_attr(attributes, p_attr_class->get_mono_ptr());
 }
@@ -250,8 +259,9 @@ const MethodInfo &GDMonoMethod::get_method_info() {
 
 		bool nil_is_variant = false;
 		method_info.return_val = PropertyInfo(GDMonoMarshal::managed_to_variant_type(return_type, &nil_is_variant), "");
-		if (method_info.return_val.type == Variant::NIL && nil_is_variant)
+		if (method_info.return_val.type == Variant::NIL && nil_is_variant) {
 			method_info.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+		}
 
 		Vector<StringName> names;
 		get_parameter_names(names);
@@ -259,8 +269,9 @@ const MethodInfo &GDMonoMethod::get_method_info() {
 		for (int i = 0; i < params_count; ++i) {
 			nil_is_variant = false;
 			PropertyInfo arg_info = PropertyInfo(GDMonoMarshal::managed_to_variant_type(param_types[i], &nil_is_variant), names[i]);
-			if (arg_info.type == Variant::NIL && nil_is_variant)
+			if (arg_info.type == Variant::NIL && nil_is_variant) {
 				arg_info.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+			}
 
 			method_info.arguments.push_back(arg_info);
 		}
@@ -273,16 +284,8 @@ const MethodInfo &GDMonoMethod::get_method_info() {
 	return method_info;
 }
 
-GDMonoMethod::GDMonoMethod(StringName p_name, MonoMethod *p_method) {
-	name = p_name;
-
-	mono_method = p_method;
-
-	method_info_fetched = false;
-
-	attrs_fetched = false;
-	attributes = nullptr;
-
+GDMonoMethod::GDMonoMethod(StringName p_name, MonoMethod *p_method) :
+		name(p_name), mono_method(p_method) {
 	_update_signature();
 }
 

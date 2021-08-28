@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,12 +38,12 @@ void BitMap::create(const Size2 &p_size) {
 
 	width = p_size.width;
 	height = p_size.height;
-	bitmask.resize(((width * height) / 8) + 1);
-	zeromem(bitmask.ptrw(), bitmask.size());
+	bitmask.resize((((width * height) - 1) / 8) + 1);
+	memset(bitmask.ptrw(), 0, bitmask.size());
 }
 
 void BitMap::create_from_image_alpha(const Ref<Image> &p_image, float p_threshold) {
-	ERR_FAIL_COND(p_image.is_null() || p_image->empty());
+	ERR_FAIL_COND(p_image.is_null() || p_image->is_empty());
 	Ref<Image> img = p_image->duplicate();
 	img->convert(Image::FORMAT_LA8);
 	ERR_FAIL_COND(img->get_format() != Image::FORMAT_LA8);
@@ -63,7 +63,7 @@ void BitMap::create_from_image_alpha(const Ref<Image> &p_image, float p_threshol
 }
 
 void BitMap::set_bit_rect(const Rect2 &p_rect, bool p_value) {
-	Rect2i current = Rect2i(0, 0, width, height).clip(p_rect);
+	Rect2i current = Rect2i(0, 0, width, height).intersection(p_rect);
 	uint8_t *data = bitmask.ptrw();
 
 	for (int i = current.position.x; i < current.position.x + current.size.x; i++) {
@@ -285,7 +285,7 @@ Vector<Vector2> BitMap::_march_square(const Rect2i &rect, const Point2i &start) 
 				+---+---+
 				| 4 |   |
 				+---+---+
-				this normally go RIGHT, but if its coming from RIGHT, it should go LEFT
+				this normally go RIGHT, but if it's coming from RIGHT, it should go LEFT
 				*/
 				if (case6s.has(Point2i(curx, cury))) {
 					//found, so we go left, and delete from case6s;
@@ -346,7 +346,7 @@ static Vector<Vector2> rdp(const Vector<Vector2> &v, float optimization) {
 	}
 
 	int index = -1;
-	float dist = 0;
+	float dist = 0.0;
 	//not looping first and last point
 	for (size_t i = 1, size = v.size(); i < size - 1; ++i) {
 		float cdist = perpendicular_distance(v[i], v[0], v[v.size() - 1]);
@@ -406,8 +406,8 @@ static Vector<Vector2> reduce(const Vector<Vector2> &points, const Rect2i &rect,
 
 struct FillBitsStackEntry {
 	Point2i pos;
-	int i;
-	int j;
+	int i = 0;
+	int j = 0;
 };
 
 static void fill_bits(const BitMap *p_src, Ref<BitMap> &p_map, const Point2i &p_pos, const Rect2i &rect) {
@@ -482,12 +482,12 @@ static void fill_bits(const BitMap *p_src, Ref<BitMap> &p_map, const Point2i &p_
 }
 
 Vector<Vector<Vector2>> BitMap::clip_opaque_to_polygons(const Rect2 &p_rect, float p_epsilon) const {
-	Rect2i r = Rect2i(0, 0, width, height).clip(p_rect);
+	Rect2i r = Rect2i(0, 0, width, height).intersection(p_rect);
 	print_verbose("BitMap: Rect: " + r);
 
 	Point2i from;
 	Ref<BitMap> fill;
-	fill.instance();
+	fill.instantiate();
 	fill->create(get_size());
 
 	Vector<Vector<Vector2>> polygons;
@@ -522,10 +522,10 @@ void BitMap::grow_mask(int p_pixels, const Rect2 &p_rect) {
 	bool bit_value = p_pixels > 0;
 	p_pixels = Math::abs(p_pixels);
 
-	Rect2i r = Rect2i(0, 0, width, height).clip(p_rect);
+	Rect2i r = Rect2i(0, 0, width, height).intersection(p_rect);
 
 	Ref<BitMap> copy;
-	copy.instance();
+	copy.instantiate();
 	copy->create(get_size());
 	copy->bitmask = bitmask;
 
@@ -604,7 +604,7 @@ Array BitMap::_opaque_to_polygons_bind(const Rect2 &p_rect, float p_epsilon) con
 
 void BitMap::resize(const Size2 &p_new_size) {
 	Ref<BitMap> new_bitmap;
-	new_bitmap.instance();
+	new_bitmap.instantiate();
 	new_bitmap->create(p_new_size);
 	int lw = MIN(width, p_new_size.width);
 	int lh = MIN(height, p_new_size.height);
@@ -621,7 +621,7 @@ void BitMap::resize(const Size2 &p_new_size) {
 
 Ref<Image> BitMap::convert_to_image() const {
 	Ref<Image> image;
-	image.instance();
+	image.instantiate();
 	image->create(width, height, false, Image::FORMAT_L8);
 
 	for (int i = 0; i < width; i++) {
@@ -677,9 +677,6 @@ void BitMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 }
 
-BitMap::BitMap() {
-	width = 0;
-	height = 0;
-}
+BitMap::BitMap() {}
 
 //////////////////////////////////////

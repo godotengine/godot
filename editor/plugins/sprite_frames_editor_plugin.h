@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,6 +36,7 @@
 #include "scene/2d/animated_sprite_2d.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/file_dialog.h"
+#include "scene/gui/scroll_container.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
@@ -52,11 +53,13 @@ class SpriteFramesEditor : public HSplitContainer {
 	Button *empty2;
 	Button *move_up;
 	Button *move_down;
+	Button *zoom_out;
+	Button *zoom_reset;
+	Button *zoom_in;
 	ItemList *tree;
 	bool loading_scene;
 	int sel;
 
-	HSplitContainer *split;
 	Button *new_anim;
 	Button *remove_anim;
 
@@ -75,13 +78,26 @@ class SpriteFramesEditor : public HSplitContainer {
 	ConfirmationDialog *delete_dialog;
 
 	ConfirmationDialog *split_sheet_dialog;
-	ScrollContainer *splite_sheet_scroll;
+	ScrollContainer *split_sheet_scroll;
 	TextureRect *split_sheet_preview;
 	SpinBox *split_sheet_h;
 	SpinBox *split_sheet_v;
+	Button *split_sheet_zoom_out;
+	Button *split_sheet_zoom_reset;
+	Button *split_sheet_zoom_in;
 	EditorFileDialog *file_split_sheet;
 	Set<int> frames_selected;
+	Set<int> frames_toggled_by_mouse_hover;
 	int last_frame_selected;
+
+	float scale_ratio;
+	int thumbnail_default_size;
+	float thumbnail_zoom;
+	float max_thumbnail_zoom;
+	float min_thumbnail_zoom;
+	float sheet_zoom;
+	float max_sheet_zoom;
+	float min_sheet_zoom;
 
 	void _load_pressed();
 	void _load_scene_pressed();
@@ -103,6 +119,11 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _animation_loop_changed();
 	void _animation_fps_changed(double p_value);
 
+	void _tree_input(const Ref<InputEvent> &p_event);
+	void _zoom_in();
+	void _zoom_out();
+	void _zoom_reset();
+
 	bool updating;
 
 	UndoRedo *undo_redo;
@@ -117,12 +138,16 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _sheet_preview_draw();
 	void _sheet_spin_changed(double);
 	void _sheet_preview_input(const Ref<InputEvent> &p_event);
+	void _sheet_scroll_input(const Ref<InputEvent> &p_event);
 	void _sheet_add_frames();
+	void _sheet_zoom_in();
+	void _sheet_zoom_out();
+	void _sheet_zoom_reset();
 	void _sheet_select_clear_all_frames();
 
 protected:
 	void _notification(int p_what);
-	void _gui_input(Ref<InputEvent> p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	static void _bind_methods();
 
 public:
@@ -140,11 +165,11 @@ class SpriteFramesEditorPlugin : public EditorPlugin {
 	Button *button;
 
 public:
-	virtual String get_name() const { return "SpriteFrames"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
+	virtual String get_name() const override { return "SpriteFrames"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
 
 	SpriteFramesEditorPlugin(EditorNode *p_node);
 	~SpriteFramesEditorPlugin();

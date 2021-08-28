@@ -16,12 +16,11 @@
  */
 
 
-#include <ft2build.h>
-#include FT_TRUETYPE_TABLES_H
-#include FT_TRUETYPE_TAGS_H
-#include FT_OPENTYPE_VALIDATE_H
-#include FT_INTERNAL_OBJECTS_H
-#include FT_SERVICE_OPENTYPE_VALIDATE_H
+#include <freetype/tttables.h>
+#include <freetype/tttags.h>
+#include <freetype/ftotval.h>
+#include <freetype/internal/ftobjs.h>
+#include <freetype/internal/services/svotval.h>
 
 #include "otvmod.h"
 #include "otvalid.h"

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,11 +34,11 @@
 #include "animation_blend_space_2d_editor.h"
 #include "animation_blend_tree_editor_plugin.h"
 #include "animation_state_machine_editor.h"
+#include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/io/resource_loader.h"
 #include "core/math/delaunay_2d.h"
 #include "core/os/keyboard.h"
-#include "core/project_settings.h"
 #include "editor/editor_scale.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/animation/animation_player.h"
@@ -76,10 +76,10 @@ void AnimationTreeEditor::_update_path() {
 	}
 
 	Ref<ButtonGroup> group;
-	group.instance();
+	group.instantiate();
 
 	Button *b = memnew(Button);
-	b->set_text("root");
+	b->set_text(TTR("Root"));
 	b->set_toggle_mode(true);
 	b->set_button_group(group);
 	b->set_pressed(true);
@@ -140,9 +140,6 @@ void AnimationTreeEditor::enter_editor(const String &p_path) {
 	Vector<String> path = edited_path;
 	path.push_back(p_path);
 	edit_path(path);
-}
-
-void AnimationTreeEditor::_about_to_show_root() {
 }
 
 void AnimationTreeEditor::_notification(int p_what) {
@@ -218,8 +215,8 @@ Vector<String> AnimationTreeEditor::get_animation_list() {
 	List<StringName> anims;
 	ap->get_animation_list(&anims);
 	Vector<String> ret;
-	for (List<StringName>::Element *E = anims.front(); E; E = E->next()) {
-		ret.push_back(E->get());
+	for (const StringName &E : anims) {
+		ret.push_back(E);
 	}
 
 	return ret;
@@ -238,7 +235,7 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	add_child(memnew(HSeparator));
 
 	singleton = this;
-	editor_base = memnew(PanelContainer);
+	editor_base = memnew(MarginContainer);
 	editor_base->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(editor_base);
 

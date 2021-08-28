@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,10 @@
 #include "margin_container.h"
 
 Size2 MarginContainer::get_minimum_size() const {
-	int margin_left = get_theme_constant("margin_left");
-	int margin_top = get_theme_constant("margin_top");
-	int margin_right = get_theme_constant("margin_right");
-	int margin_bottom = get_theme_constant("margin_bottom");
+	int margin_left = get_theme_constant(SNAME("margin_left"));
+	int margin_top = get_theme_constant(SNAME("margin_top"));
+	int margin_right = get_theme_constant(SNAME("margin_right"));
+	int margin_bottom = get_theme_constant(SNAME("margin_bottom"));
 
 	Size2 max;
 
@@ -43,7 +43,7 @@ Size2 MarginContainer::get_minimum_size() const {
 		if (!c) {
 			continue;
 		}
-		if (c->is_set_as_toplevel()) {
+		if (c->is_set_as_top_level()) {
 			continue;
 		}
 		if (!c->is_visible()) {
@@ -68,10 +68,10 @@ Size2 MarginContainer::get_minimum_size() const {
 void MarginContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_SORT_CHILDREN: {
-			int margin_left = get_theme_constant("margin_left");
-			int margin_top = get_theme_constant("margin_top");
-			int margin_right = get_theme_constant("margin_right");
-			int margin_bottom = get_theme_constant("margin_bottom");
+			int margin_left = get_theme_constant(SNAME("margin_left"));
+			int margin_top = get_theme_constant(SNAME("margin_top"));
+			int margin_right = get_theme_constant(SNAME("margin_right"));
+			int margin_bottom = get_theme_constant(SNAME("margin_bottom"));
 
 			Size2 s = get_size();
 
@@ -80,7 +80,7 @@ void MarginContainer::_notification(int p_what) {
 				if (!c) {
 					continue;
 				}
-				if (c->is_set_as_toplevel()) {
+				if (c->is_set_as_top_level()) {
 					continue;
 				}
 

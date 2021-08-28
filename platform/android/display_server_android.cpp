@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,19 +30,15 @@
 
 #include "display_server_android.h"
 
-#include "android_keys_utils.h"
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 #include "java_godot_io_wrapper.h"
 #include "java_godot_wrapper.h"
 #include "os_android.h"
 
-#if defined(OPENGL_ENABLED)
-#include "drivers/gles2/rasterizer_gles2.h"
-#endif
 #if defined(VULKAN_ENABLED)
 #include "drivers/vulkan/rendering_device_vulkan.h"
 #include "platform/android/vulkan/vulkan_context_android.h"
-#include "servers/rendering/rasterizer_rd/rasterizer_rd.h"
+#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #endif
 
 DisplayServerAndroid *DisplayServerAndroid::get_singleton() {
@@ -52,17 +48,16 @@ DisplayServerAndroid *DisplayServerAndroid::get_singleton() {
 bool DisplayServerAndroid::has_feature(Feature p_feature) const {
 	switch (p_feature) {
 		//case FEATURE_CONSOLE_WINDOW:
-		//case FEATURE_CURSOR_SHAPE:
+		case FEATURE_CURSOR_SHAPE:
 		//case FEATURE_CUSTOM_CURSOR_SHAPE:
 		//case FEATURE_GLOBAL_MENU:
 		//case FEATURE_HIDPI:
 		//case FEATURE_ICON:
 		//case FEATURE_IME:
-		//case FEATURE_MOUSE:
+		case FEATURE_MOUSE:
 		//case FEATURE_MOUSE_WARP:
 		//case FEATURE_NATIVE_DIALOG:
 		//case FEATURE_NATIVE_ICON:
-		//case FEATURE_NATIVE_VIDEO:
 		//case FEATURE_WINDOW_TRANSPARENCY:
 		case FEATURE_CLIPBOARD:
 		case FEATURE_KEEP_SCREEN_ON:
@@ -140,8 +135,11 @@ Size2i DisplayServerAndroid::screen_get_size(int p_screen) const {
 }
 
 Rect2i DisplayServerAndroid::screen_get_usable_rect(int p_screen) const {
-	Size2i display_size = OS_Android::get_singleton()->get_display_size();
-	return Rect2i(0, 0, display_size.width, display_size.height);
+	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
+	ERR_FAIL_COND_V(!godot_io_java, Rect2i());
+	int xywh[4];
+	godot_io_java->screen_get_usable_rect(xywh);
+	return Rect2i(xywh[0], xywh[1], xywh[2], xywh[3]);
 }
 
 int DisplayServerAndroid::screen_get_dpi(int p_screen) const {
@@ -155,12 +153,12 @@ bool DisplayServerAndroid::screen_is_touchscreen(int p_screen) const {
 	return true;
 }
 
-void DisplayServerAndroid::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, int p_max_length, int p_cursor_start, int p_cursor_end) {
+void DisplayServerAndroid::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, bool p_multiline, int p_max_length, int p_cursor_start, int p_cursor_end) {
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_COND(!godot_io_java);
 
 	if (godot_io_java->has_vk()) {
-		godot_io_java->show_vk(p_existing_text, p_max_length, p_cursor_start, p_cursor_end);
+		godot_io_java->show_vk(p_existing_text, p_multiline, p_max_length, p_cursor_start, p_cursor_end);
 	} else {
 		ERR_PRINT("Virtual keyboard not available");
 	}
@@ -197,24 +195,28 @@ void DisplayServerAndroid::window_set_input_text_callback(const Callable &p_call
 }
 
 void DisplayServerAndroid::window_set_rect_changed_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
-	// Not supported on Android.
+	rect_changed_callback = p_callable;
 }
 
 void DisplayServerAndroid::window_set_drop_files_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
 	// Not supported on Android.
 }
 
-void DisplayServerAndroid::_window_callback(const Callable &p_callable, const Variant &p_arg) const {
+void DisplayServerAndroid::_window_callback(const Callable &p_callable, const Variant &p_arg, bool p_deferred) const {
 	if (!p_callable.is_null()) {
 		const Variant *argp = &p_arg;
 		Variant ret;
 		Callable::CallError ce;
-		p_callable.call((const Variant **)&argp, 1, ret, ce);
+		if (p_deferred) {
+			p_callable.call((const Variant **)&argp, 1, ret, ce);
+		} else {
+			p_callable.call_deferred((const Variant **)&argp, 1);
+		}
 	}
 }
 
-void DisplayServerAndroid::send_window_event(DisplayServer::WindowEvent p_event) const {
-	_window_callback(window_event_callback, int(p_event));
+void DisplayServerAndroid::send_window_event(DisplayServer::WindowEvent p_event, bool p_deferred) const {
+	_window_callback(window_event_callback, int(p_event), p_deferred);
 }
 
 void DisplayServerAndroid::send_input_event(const Ref<InputEvent> &p_event) const {
@@ -335,15 +337,8 @@ bool DisplayServerAndroid::can_any_window_draw() const {
 	return true;
 }
 
-void DisplayServerAndroid::alert(const String &p_alert, const String &p_title) {
-	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
-	ERR_FAIL_COND(!godot_java);
-
-	godot_java->alert(p_alert, p_title);
-}
-
 void DisplayServerAndroid::process_events() {
-	// Nothing to do
+	Input::get_singleton()->flush_buffered_events();
 }
 
 Vector<String> DisplayServerAndroid::get_rendering_drivers_func() {
@@ -359,8 +354,12 @@ Vector<String> DisplayServerAndroid::get_rendering_drivers_func() {
 	return drivers;
 }
 
-DisplayServer *DisplayServerAndroid::create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
-	return memnew(DisplayServerAndroid(p_rendering_driver, p_mode, p_flags, p_resolution, r_error));
+DisplayServer *DisplayServerAndroid::create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
+	DisplayServer *ds = memnew(DisplayServerAndroid(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, r_error));
+	if (r_error != OK) {
+		OS::get_singleton()->alert("Your video card driver does not support any of the supported Vulkan versions.", "Unable to initialize Video driver");
+	}
+	return ds;
 }
 
 void DisplayServerAndroid::register_android_driver() {
@@ -374,10 +373,11 @@ void DisplayServerAndroid::reset_window() {
 		ERR_FAIL_COND(!native_window);
 
 		ERR_FAIL_COND(!context_vulkan);
+		VSyncMode last_vsync_mode = context_vulkan->get_vsync_mode(MAIN_WINDOW_ID);
 		context_vulkan->window_destroy(MAIN_WINDOW_ID);
 
 		Size2i display_size = OS_Android::get_singleton()->get_display_size();
-		if (context_vulkan->window_create(native_window, display_size.width, display_size.height) == -1) {
+		if (context_vulkan->window_create(native_window, last_vsync_mode, display_size.width, display_size.height) == -1) {
 			memdelete(context_vulkan);
 			context_vulkan = nullptr;
 			ERR_FAIL_MSG("Failed to reset Vulkan window.");
@@ -386,7 +386,20 @@ void DisplayServerAndroid::reset_window() {
 #endif
 }
 
-DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
+void DisplayServerAndroid::notify_surface_changed(int p_width, int p_height) {
+	if (rect_changed_callback.is_null()) {
+		return;
+	}
+
+	const Variant size = Rect2i(0, 0, p_width, p_height);
+	const Variant *sizep = &size;
+	Variant ret;
+	Callable::CallError ce;
+
+	rect_changed_callback.call(reinterpret_cast<const Variant **>(&sizep), 1, ret, ce);
+}
+
+DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	rendering_driver = p_rendering_driver;
 
 	// TODO: rendering_driver is broken, change when different drivers are supported again
@@ -430,7 +443,7 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 		}
 
 		Size2i display_size = OS_Android::get_singleton()->get_display_size();
-		if (context_vulkan->window_create(native_window, display_size.width, display_size.height) == -1) {
+		if (context_vulkan->window_create(native_window, p_vsync_mode, display_size.width, display_size.height) == -1) {
 			memdelete(context_vulkan);
 			context_vulkan = nullptr;
 			ERR_FAIL_MSG("Failed to create Vulkan window.");
@@ -439,11 +452,14 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 		rendering_device_vulkan = memnew(RenderingDeviceVulkan);
 		rendering_device_vulkan->initialize(context_vulkan);
 
-		RasterizerRD::make_current();
+		RendererCompositorRD::make_current();
 	}
 #endif
 
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
+	Input::get_singleton()->set_use_input_buffering(true); // Needed because events will come directly from the UI thread
+
+	r_error = OK;
 }
 
 DisplayServerAndroid::~DisplayServerAndroid() {
@@ -461,196 +477,6 @@ DisplayServerAndroid::~DisplayServerAndroid() {
 #endif
 }
 
-void DisplayServerAndroid::process_joy_event(DisplayServerAndroid::JoypadEvent p_event) {
-	switch (p_event.type) {
-		case JOY_EVENT_BUTTON:
-			Input::get_singleton()->joy_button(p_event.device, p_event.index, p_event.pressed);
-			break;
-		case JOY_EVENT_AXIS:
-			Input::JoyAxis value;
-			value.min = -1;
-			value.value = p_event.value;
-			Input::get_singleton()->joy_axis(p_event.device, p_event.index, value);
-			break;
-		case JOY_EVENT_HAT:
-			Input::get_singleton()->joy_hat(p_event.device, p_event.hat);
-			break;
-		default:
-			return;
-	}
-}
-
-void DisplayServerAndroid::process_key_event(int p_keycode, int p_scancode, int p_unicode_char, bool p_pressed) {
-	Ref<InputEventKey> ev;
-	ev.instance();
-	int val = p_unicode_char;
-	int keycode = android_get_keysym(p_keycode);
-	int phy_keycode = android_get_keysym(p_scancode);
-	ev->set_keycode(keycode);
-	ev->set_physical_keycode(phy_keycode);
-	ev->set_unicode(val);
-	ev->set_pressed(p_pressed);
-
-	if (val == '\n') {
-		ev->set_keycode(KEY_ENTER);
-	} else if (val == 61448) {
-		ev->set_keycode(KEY_BACKSPACE);
-		ev->set_unicode(KEY_BACKSPACE);
-	} else if (val == 61453) {
-		ev->set_keycode(KEY_ENTER);
-		ev->set_unicode(KEY_ENTER);
-	} else if (p_keycode == 4) {
-		OS_Android::get_singleton()->main_loop_request_go_back();
-	}
-
-	Input::get_singleton()->parse_input_event(ev);
-}
-
-void DisplayServerAndroid::process_touch(int p_what, int p_pointer, const Vector<DisplayServerAndroid::TouchPos> &p_points) {
-	switch (p_what) {
-		case 0: { //gesture begin
-			if (touch.size()) {
-				//end all if exist
-				for (int i = 0; i < touch.size(); i++) {
-					Ref<InputEventScreenTouch> ev;
-					ev.instance();
-					ev->set_index(touch[i].id);
-					ev->set_pressed(false);
-					ev->set_position(touch[i].pos);
-					Input::get_singleton()->parse_input_event(ev);
-				}
-			}
-
-			touch.resize(p_points.size());
-			for (int i = 0; i < p_points.size(); i++) {
-				touch.write[i].id = p_points[i].id;
-				touch.write[i].pos = p_points[i].pos;
-			}
-
-			//send touch
-			for (int i = 0; i < touch.size(); i++) {
-				Ref<InputEventScreenTouch> ev;
-				ev.instance();
-				ev->set_index(touch[i].id);
-				ev->set_pressed(true);
-				ev->set_position(touch[i].pos);
-				Input::get_singleton()->parse_input_event(ev);
-			}
-
-		} break;
-		case 1: { //motion
-			ERR_FAIL_COND(touch.size() != p_points.size());
-
-			for (int i = 0; i < touch.size(); i++) {
-				int idx = -1;
-				for (int j = 0; j < p_points.size(); j++) {
-					if (touch[i].id == p_points[j].id) {
-						idx = j;
-						break;
-					}
-				}
-
-				ERR_CONTINUE(idx == -1);
-
-				if (touch[i].pos == p_points[idx].pos)
-					continue; //no move unncesearily
-
-				Ref<InputEventScreenDrag> ev;
-				ev.instance();
-				ev->set_index(touch[i].id);
-				ev->set_position(p_points[idx].pos);
-				ev->set_relative(p_points[idx].pos - touch[i].pos);
-				Input::get_singleton()->parse_input_event(ev);
-				touch.write[i].pos = p_points[idx].pos;
-			}
-
-		} break;
-		case 2: { //release
-			if (touch.size()) {
-				//end all if exist
-				for (int i = 0; i < touch.size(); i++) {
-					Ref<InputEventScreenTouch> ev;
-					ev.instance();
-					ev->set_index(touch[i].id);
-					ev->set_pressed(false);
-					ev->set_position(touch[i].pos);
-					Input::get_singleton()->parse_input_event(ev);
-				}
-				touch.clear();
-			}
-		} break;
-		case 3: { // add touch
-			for (int i = 0; i < p_points.size(); i++) {
-				if (p_points[i].id == p_pointer) {
-					TouchPos tp = p_points[i];
-					touch.push_back(tp);
-
-					Ref<InputEventScreenTouch> ev;
-					ev.instance();
-
-					ev->set_index(tp.id);
-					ev->set_pressed(true);
-					ev->set_position(tp.pos);
-					Input::get_singleton()->parse_input_event(ev);
-
-					break;
-				}
-			}
-		} break;
-		case 4: { // remove touch
-			for (int i = 0; i < touch.size(); i++) {
-				if (touch[i].id == p_pointer) {
-					Ref<InputEventScreenTouch> ev;
-					ev.instance();
-					ev->set_index(touch[i].id);
-					ev->set_pressed(false);
-					ev->set_position(touch[i].pos);
-					Input::get_singleton()->parse_input_event(ev);
-					touch.remove(i);
-
-					break;
-				}
-			}
-		} break;
-	}
-}
-
-void DisplayServerAndroid::process_hover(int p_type, Point2 p_pos) {
-	// https://developer.android.com/reference/android/view/MotionEvent.html#ACTION_HOVER_ENTER
-	switch (p_type) {
-		case 7: // hover move
-		case 9: // hover enter
-		case 10: { // hover exit
-			Ref<InputEventMouseMotion> ev;
-			ev.instance();
-			ev->set_position(p_pos);
-			ev->set_global_position(p_pos);
-			ev->set_relative(p_pos - hover_prev_pos);
-			Input::get_singleton()->parse_input_event(ev);
-			hover_prev_pos = p_pos;
-		} break;
-	}
-}
-
-void DisplayServerAndroid::process_double_tap(Point2 p_pos) {
-	Ref<InputEventMouseButton> ev;
-	ev.instance();
-	ev->set_position(p_pos);
-	ev->set_global_position(p_pos);
-	ev->set_pressed(false);
-	ev->set_doubleclick(true);
-	Input::get_singleton()->parse_input_event(ev);
-}
-
-void DisplayServerAndroid::process_scroll(Point2 p_pos) {
-	Ref<InputEventPanGesture> ev;
-	ev.instance();
-	ev->set_position(p_pos);
-	ev->set_delta(p_pos - scroll_prev_pos);
-	Input::get_singleton()->parse_input_event(ev);
-	scroll_prev_pos = p_pos;
-}
-
 void DisplayServerAndroid::process_accelerometer(const Vector3 &p_accelerometer) {
 	Input::get_singleton()->set_accelerometer(p_accelerometer);
 }
@@ -665,4 +491,66 @@ void DisplayServerAndroid::process_magnetometer(const Vector3 &p_magnetometer) {
 
 void DisplayServerAndroid::process_gyroscope(const Vector3 &p_gyroscope) {
 	Input::get_singleton()->set_gyroscope(p_gyroscope);
+}
+
+void DisplayServerAndroid::mouse_set_mode(MouseMode p_mode) {
+	if (mouse_mode == p_mode) {
+		return;
+	}
+
+	if (p_mode == MouseMode::MOUSE_MODE_HIDDEN) {
+		OS_Android::get_singleton()->get_godot_java()->get_godot_view()->set_pointer_icon(CURSOR_TYPE_NULL);
+	} else {
+		cursor_set_shape(cursor_shape);
+	}
+
+	if (p_mode == MouseMode::MOUSE_MODE_CAPTURED) {
+		OS_Android::get_singleton()->get_godot_java()->get_godot_view()->request_pointer_capture();
+	} else {
+		OS_Android::get_singleton()->get_godot_java()->get_godot_view()->release_pointer_capture();
+	}
+
+	mouse_mode = p_mode;
+}
+
+DisplayServer::MouseMode DisplayServerAndroid::mouse_get_mode() const {
+	return mouse_mode;
+}
+
+Point2i DisplayServerAndroid::mouse_get_position() const {
+	return Input::get_singleton()->get_mouse_position();
+}
+
+MouseButton DisplayServerAndroid::mouse_get_button_state() const {
+	return (MouseButton)Input::get_singleton()->get_mouse_button_mask();
+}
+
+void DisplayServerAndroid::cursor_set_shape(DisplayServer::CursorShape p_shape) {
+	if (cursor_shape == p_shape) {
+		return;
+	}
+
+	cursor_shape = p_shape;
+
+	if (mouse_mode == MouseMode::MOUSE_MODE_VISIBLE || mouse_mode == MouseMode::MOUSE_MODE_CONFINED) {
+		OS_Android::get_singleton()->get_godot_java()->get_godot_view()->set_pointer_icon(android_cursors[cursor_shape]);
+	}
+}
+
+DisplayServer::CursorShape DisplayServerAndroid::cursor_get_shape() const {
+	return cursor_shape;
+}
+
+void DisplayServerAndroid::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
+#if defined(VULKAN_ENABLED)
+	context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
+#endif
+}
+
+DisplayServer::VSyncMode DisplayServerAndroid::window_get_vsync_mode(WindowID p_window) const {
+#if defined(VULKAN_ENABLED)
+	return context_vulkan->get_vsync_mode(p_window);
+#else
+	return DisplayServer::VSYNC_ENABLED;
+#endif
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #include "geometry_2d.h"
 
 #include "thirdparty/misc/clipper.hpp"
-#include "thirdparty/misc/triangulator.h"
+#include "thirdparty/misc/polypartition.h"
 #define STB_RECT_PACK_IMPLEMENTATION
 #include "thirdparty/misc/stb_rect_pack.h"
 
@@ -39,16 +39,16 @@
 
 Vector<Vector<Vector2>> Geometry2D::decompose_polygon_in_convex(Vector<Point2> polygon) {
 	Vector<Vector<Vector2>> decomp;
-	List<TriangulatorPoly> in_poly, out_poly;
+	List<TPPLPoly> in_poly, out_poly;
 
-	TriangulatorPoly inp;
+	TPPLPoly inp;
 	inp.Init(polygon.size());
 	for (int i = 0; i < polygon.size(); i++) {
 		inp.GetPoint(i) = polygon[i];
 	}
-	inp.SetOrientation(TRIANGULATOR_CCW);
+	inp.SetOrientation(TPPL_ORIENTATION_CCW);
 	in_poly.push_back(inp);
-	TriangulatorPartition tpart;
+	TPPLPartition tpart;
 	if (tpart.ConvexPartition_HM(&in_poly, &out_poly) == 0) { // Failed.
 		ERR_PRINT("Convex decomposing failed!");
 		return decomp;
@@ -56,8 +56,8 @@ Vector<Vector<Vector2>> Geometry2D::decompose_polygon_in_convex(Vector<Point2> p
 
 	decomp.resize(out_poly.size());
 	int idx = 0;
-	for (List<TriangulatorPoly>::Element *I = out_poly.front(); I; I = I->next()) {
-		TriangulatorPoly &tp = I->get();
+	for (List<TPPLPoly>::Element *I = out_poly.front(); I; I = I->next()) {
+		TPPLPoly &tp = I->get();
 
 		decomp.write[idx].resize(tp.GetNumPoints());
 
@@ -87,13 +87,17 @@ struct _AtlasWorkRectResult {
 void Geometry2D::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size) {
 	// Super simple, almost brute force scanline stacking fitter.
 	// It's pretty basic for now, but it tries to make sure that the aspect ratio of the
-	// resulting atlas is somehow square. This is necessary because video cards have limits.
-	// On texture size (usually 2048 or 4096), so the more square a texture, the more chances.
-	// It will work in every hardware.
+	// resulting atlas is somehow square. This is necessary because video cards have limits
+	// on texture size (usually 2048 or 4096), so the squarer a texture, the more the chances
+	// that it will work in every hardware.
 	// For example, it will prioritize a 1024x1024 atlas (works everywhere) instead of a
 	// 256x8192 atlas (won't work anywhere).
 
 	ERR_FAIL_COND(p_rects.size() == 0);
+	for (int i = 0; i < p_rects.size(); i++) {
+		ERR_FAIL_COND(p_rects[i].width <= 0);
+		ERR_FAIL_COND(p_rects[i].height <= 0);
+	}
 
 	Vector<_AtlasWorkRect> wrects;
 	wrects.resize(p_rects.size());
@@ -354,7 +358,7 @@ Vector<Point2i> Geometry2D::pack_rects(const Vector<Size2i> &p_sizes, const Size
 Vector<Vector3i> Geometry2D::partial_pack_rects(const Vector<Vector2i> &p_sizes, const Size2i &p_atlas_size) {
 	Vector<stbrp_node> nodes;
 	nodes.resize(p_atlas_size.width);
-	zeromem(nodes.ptrw(), sizeof(stbrp_node) * nodes.size());
+	memset(nodes.ptrw(), 0, sizeof(stbrp_node) * nodes.size());
 
 	stbrp_context context;
 	stbrp_init_target(&context, p_atlas_size.width, p_atlas_size.height, nodes.ptrw(), p_atlas_size.width);

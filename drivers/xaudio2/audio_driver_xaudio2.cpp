@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "audio_driver_xaudio2.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 
 const char *AudioDriverXAudio2::get_name() const {
 	return "XAudio2";
@@ -44,12 +44,12 @@ Error AudioDriverXAudio2::init() {
 	pcm_open = false;
 	samples_in = nullptr;
 
-	mix_rate = GLOBAL_GET("audio/mix_rate");
+	mix_rate = GLOBAL_GET("audio/driver/mix_rate");
 	// FIXME: speaker_mode seems unused in the Xaudio2 driver so far
 	speaker_mode = SPEAKER_MODE_STEREO;
 	channels = 2;
 
-	int latency = GLOBAL_GET("audio/output_latency");
+	int latency = GLOBAL_GET("audio/driver/output_latency");
 	buffer_size = closest_power_of_2(latency * mix_rate / 1000);
 
 	samples_in = memnew_arr(int32_t, buffer_size * channels);
@@ -78,7 +78,7 @@ Error AudioDriverXAudio2::init() {
 	hr = xaudio->CreateSourceVoice(&source_voice, &wave_format, 0, XAUDIO2_MAX_FREQ_RATIO, &voice_callback);
 	ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_UNAVAILABLE, "Error creating XAudio2 source voice. Error code: " + itos(hr) + ".");
 
-	thread = Thread::create(AudioDriverXAudio2::thread_func, this);
+	thread.start(AudioDriverXAudio2::thread_func, this);
 
 	return OK;
 }
@@ -146,23 +146,16 @@ float AudioDriverXAudio2::get_latency() {
 }
 
 void AudioDriverXAudio2::lock() {
-	if (!thread)
-		return;
 	mutex.lock();
 }
 
 void AudioDriverXAudio2::unlock() {
-	if (!thread)
-		return;
 	mutex.unlock();
 }
 
 void AudioDriverXAudio2::finish() {
-	if (!thread)
-		return;
-
 	exit_thread = true;
-	Thread::wait_to_finish(thread);
+	thread.wait_to_finish();
 
 	if (source_voice) {
 		source_voice->Stop(0);
@@ -179,9 +172,6 @@ void AudioDriverXAudio2::finish() {
 	}
 
 	mastering_voice->DestroyVoice();
-
-	memdelete(thread);
-	thread = nullptr;
 }
 
 AudioDriverXAudio2::AudioDriverXAudio2() {

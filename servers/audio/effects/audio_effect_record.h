@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef AUDIOEFFECTRECORD_H
 #define AUDIOEFFECTRECORD_H
 
+#include "core/io/file_access.h"
 #include "core/io/marshalls.h"
-#include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "core/os/thread.h"
 #include "editor/import/resource_importer_wav.h"
@@ -48,7 +48,7 @@ class AudioEffectRecordInstance : public AudioEffectInstance {
 	Ref<AudioEffectRecord> base;
 
 	bool is_recording;
-	Thread *io_thread;
+	Thread io_thread;
 	bool thread_active = false;
 
 	Vector<AudioFrame> ring_buffer;
@@ -68,8 +68,8 @@ class AudioEffectRecordInstance : public AudioEffectInstance {
 public:
 	void init();
 	void finish();
-	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
-	virtual bool process_silence() const;
+	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
+	virtual bool process_silence() const override;
 
 	AudioEffectRecordInstance() {}
 	~AudioEffectRecordInstance();
@@ -96,7 +96,7 @@ protected:
 	static void debug(uint64_t time_diff, int p_frame_count);
 
 public:
-	Ref<AudioEffectInstance> instance();
+	Ref<AudioEffectInstance> instantiate() override;
 	void set_recording_active(bool p_record);
 	bool is_recording_active() const;
 	void set_format(AudioStreamSample::Format p_format);

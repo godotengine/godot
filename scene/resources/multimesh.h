@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,11 +47,11 @@ public:
 private:
 	Ref<Mesh> mesh;
 	RID multimesh;
-	TransformFormat transform_format;
-	bool use_colors;
-	bool use_custom_data;
-	int instance_count;
-	int visible_instance_count;
+	TransformFormat transform_format = TRANSFORM_2D;
+	bool use_colors = false;
+	bool use_custom_data = false;
+	int instance_count = 0;
+	int visible_instance_count = -1;
 
 protected:
 	static void _bind_methods();
@@ -92,9 +92,9 @@ public:
 	void set_visible_instance_count(int p_count);
 	int get_visible_instance_count() const;
 
-	void set_instance_transform(int p_instance, const Transform &p_transform);
+	void set_instance_transform(int p_instance, const Transform3D &p_transform);
 	void set_instance_transform_2d(int p_instance, const Transform2D &p_transform);
-	Transform get_instance_transform(int p_instance) const;
+	Transform3D get_instance_transform(int p_instance) const;
 	Transform2D get_instance_transform_2d(int p_instance) const;
 
 	void set_instance_color(int p_instance, const Color &p_color);
@@ -105,7 +105,7 @@ public:
 
 	virtual AABB get_aabb() const;
 
-	virtual RID get_rid() const;
+	virtual RID get_rid() const override;
 
 	MultiMesh();
 	~MultiMesh();

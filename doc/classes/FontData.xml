@@ -1,0 +1,647 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FontData" inherits="Resource" version="4.0">
+	<brief_description>
+		Font source data and prerendered glyph cache, imported from dynamic or bitmap font.
+		Supported font formats:
+		- Dynamic font importer: TrueType (.ttf), OpenType (.otf), WOFF (.woff), Type 1 (.pfb, .pfm).
+		- Bitmap font importer: AngelCode BMFont (.fnt, .font), text and binary (version 3) format variants.
+		- Monospace image font importer: All supported image formats.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="clear_cache">
+			<return type="void" />
+			<description>
+				Removes all font cache entries.
+			</description>
+		</method>
+		<method name="clear_glyphs">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="Vector2i" />
+			<description>
+				Removes all rendered glyphs information from the cache entry. Note: This function will not remove textures associated with the glyphs, use [method remove_texture] to remove them manually.
+			</description>
+		</method>
+		<method name="clear_kerning_map">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="int" />
+			<description>
+				Removes all kerning overrides.
+			</description>
+		</method>
+		<method name="clear_size_cache">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<description>
+				Removes all font sizes from the cache entry
+			</description>
+		</method>
+		<method name="clear_textures">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="Vector2i" />
+			<description>
+				Removes all textures from font cache entry. Note: This function will not remove glyphs associated with the texture, use [method remove_glyph] to remove them manually.
+			</description>
+		</method>
+		<method name="find_cache" qualifiers="const">
+			<return type="RID" />
+			<argument index="0" name="variation_coordinates" type="Dictionary" />
+			<description>
+				Returns existing or creates a new font cache entry for the specified variation coordinates.
+			</description>
+		</method>
+		<method name="get_ascent" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="int" />
+			<description>
+				Returns the font ascent (number of pixels above the baseline).
+			</description>
+		</method>
+		<method name="get_cache_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns number of the font cache entries.
+			</description>
+		</method>
+		<method name="get_cache_rid" qualifiers="const">
+			<return type="RID" />
+			<argument index="0" name="cache_index" type="int" />
+			<description>
+				Returns text server font cache entry resource id.
+			</description>
+		</method>
+		<method name="get_data" qualifiers="const">
+			<return type="PackedByteArray" />
+			<description>
+				Returns contents of the dynamic font source file.
+			</description>
+		</method>
+		<method name="get_descent" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="int" />
+			<description>
+				Returns font descent (number of pixels below the baseline).
+			</description>
+		</method>
+		<method name="get_glyph_advance" qualifiers="const">
+			<return type="Vector2" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="int" />
+			<argument index="2" name="glyph" type="int" />
+			<description>
+				Returns glyph advance (offset of the next glyph). Note: advance for glyphs outlines is the same as the base glyph advance and is not saved.
+			</description>
+		</method>
+		<method name="get_glyph_index" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="char" type="int" />
+			<argument index="1" name="variation_selector" type="int" />
+			<argument index="2" name="arg2" type="int" />
+			<description>
+				Returns the glyph index of a [code]char[/code], optionally modified by the [code]variation_selector[/code].
+			</description>
+		</method>
+		<method name="get_glyph_list" qualifiers="const">
+			<return type="Array" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="Vector2i" />
+			<description>
+				Returns list of rendered glyphs in the cache entry.
+			</description>
+		</method>
+		<method name="get_glyph_offset" qualifiers="const">
+			<return type="Vector2" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="Vector2i" />
+			<argument index="2" name="glyph" type="int" />
+			<description>
+				Returns glyph offset from the baseline.
+			</description>
+		</method>
+		<method name="get_glyph_size" qualifiers="const">
+			<return type="Vector2" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="Vector2i" />
+			<argument index="2" name="glyph" type="int" />
+			<description>
+				Returns glyph size.
+			</description>
+		</method>
+		<method name="get_glyph_texture_idx" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="Vector2i" />
+			<argument index="2" name="glyph" type="int" />
+			<description>
+				Returns index of the cache texture containing the glyph.
+			</description>
+		</method>
+		<method name="get_glyph_uv_rect" qualifiers="const">
+			<return type="Rect2" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="Vector2i" />
+			<argument index="2" name="glyph" type="int" />
+			<description>
+				Returns rectangle in the cache texture containing the glyph.
+			</description>
+		</method>
+		<method name="get_hinting" qualifiers="const">
+			<return type="int" enum="TextServer.Hinting" />
+			<description>
+				Returns the font hinting mode. Used by dynamic fonts only.
+			</description>
+		</method>
+		<method name="get_kerning" qualifiers="const">
+			<return type="Vector2" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="int" />
+			<argument index="2" name="glyph_pair" type="Vector2i" />
+			<description>
+				Returns kerning for the pair of glyphs.
+			</description>
+		</method>
+		<method name="get_kerning_list" qualifiers="const">
+			<return type="Array" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="int" />
+			<description>
+				Returns list of the kerning overrides.
+			</description>
+		</method>
+		<method name="get_language_support_override" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="language" type="String" />
+			<description>
+				Returns [code]true[/code] if support override is enabled for the [code]language[/code].
+			</description>
+		</method>
+		<method name="get_language_support_overrides" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns list of language support overrides.
+			</description>
+		</method>
+		<method name="get_msdf_pixel_range" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the width of the range around the shape between the minimum and maximum representable signed distance.
+			</description>
+		</method>
+		<method name="get_msdf_size" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns source font size used to generate MSDF textures.
+			</description>
+		</method>
+		<method name="get_oversampling" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns font oversampling factor, if set to [code]0.0[/code] global oversampling factor is used instead. Used by dynamic fonts only.
+			</description>
+		</method>
+		<method name="get_scale" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="int" />
+			<description>
+				Returns scaling factor of the color bitmap font.
+			</description>
+		</method>
+		<method name="get_script_support_override" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="script" type="String" />
+			<description>
+				Returns [code]true[/code] if support override is enabled for the [code]script[/code].
+			</description>
+		</method>
+		<method name="get_script_support_overrides" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns list of script support overrides.
+			</description>
+		</method>
+		<method name="get_size_cache_list" qualifiers="const">
+			<return type="Array" />
+			<argument index="0" name="cache_index" type="int" />
+			<description>
+				Return list of the font sizes in the cache. Each size is [code]Vector2i[/code] with font size and outline size.
+			</description>
+		</method>
+		<method name="get_spacing" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="int" />
+			<argument index="2" name="arg2" type="int" enum="TextServer.SpacingType" />
+			<description>
+				Returns extra spacing added between glyphs in pixels.
+			</description>
+		</method>
+		<method name="get_supported_chars" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns a string containing all the characters available in the font.
+			</description>
+		</method>
+		<method name="get_supported_feature_list" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns list of OpenType features supported by font.
+			</description>
+		</method>
+		<method name="get_supported_variation_list" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns list of supported [url=https://docs.microsoft.com/en-us/typography/opentype/spec/dvaraxisreg]variation coordinates[/url], each coordinate is returned as [code]tag: Vector3i(min_value,max_value,default_value)[/code].
+				Font variations allow for continuous change of glyph characteristics along some given design axis, such as weight, width or slant.
+			</description>
+		</method>
+		<method name="get_texture_count" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="Vector2i" />
+			<description>
+				Returns number of textures used by font cache entry.
+			</description>
+		</method>
+		<method name="get_texture_image" qualifiers="const">
+			<return type="Image" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="Vector2i" />
+			<argument index="2" name="texture_index" type="int" />
+			<description>
+				Returns a copy of the font cache texture image.
+			</description>
+		</method>
+		<method name="get_texture_offsets" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="Vector2i" />
+			<argument index="2" name="texture_index" type="int" />
+			<description>
+				Returns a copy of the array containing the first free pixel in the each column of texture. Should be the same size as texture width or empty.
+			</description>
+		</method>
+		<method name="get_underline_position" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="int" />
+			<description>
+				Returns pixel offset of the underline below the baseline.
+			</description>
+		</method>
+		<method name="get_underline_thickness" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="int" />
+			<description>
+				Returns thickness of the underline in pixels.
+			</description>
+		</method>
+		<method name="get_variation_coordinates" qualifiers="const">
+			<return type="Dictionary" />
+			<argument index="0" name="cache_index" type="int" />
+			<description>
+				Returns variation coordinates for the specified font cache entry. See [method get_supported_variation_list] for more info.
+			</description>
+		</method>
+		<method name="has_char" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="char" type="int" />
+			<description>
+				Return [code]true[/code] if a Unicode [code]char[/code] is available in the font.
+			</description>
+		</method>
+		<method name="is_antialiased" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if font 8-bit anitialiased glyph rendering is supported and enabled.
+			</description>
+		</method>
+		<method name="is_force_autohinter" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if auto-hinting is supported and preffered over font built-in hinting. Used by dynamic fonts only.
+			</description>
+		</method>
+		<method name="is_language_supported" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="language" type="String" />
+			<description>
+				Returns [code]true[/code], if font supports given language ([url=https://en.wikipedia.org/wiki/ISO_639-1]ISO 639[/url] code).
+			</description>
+		</method>
+		<method name="is_multichannel_signed_distance_field" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if glyphs of all sizes are rendered using single multichannel signed distance field generated from the dynamic font vector data.
+			</description>
+		</method>
+		<method name="is_script_supported" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="script" type="String" />
+			<description>
+				Returns [code]true[/code], if font supports given script ([url=https://en.wikipedia.org/wiki/ISO_15924]ISO 15924[/url] code).
+			</description>
+		</method>
+		<method name="remove_cache">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<description>
+				Removes specified font cache entry.
+			</description>
+		</method>
+		<method name="remove_glyph">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="Vector2i" />
+			<argument index="2" name="glyph" type="int" />
+			<description>
+				Removes specified rendered glyph information from the cache entry. Note: This function will not remove textures associated with the glyphs, use [method remove_texture] to remove them manually.
+			</description>
+		</method>
+		<method name="remove_kerning">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="int" />
+			<argument index="2" name="glyph_pair" type="Vector2i" />
+			<description>
+				Removes kerning override for the pair of glyphs.
+			</description>
+		</method>
+		<method name="remove_language_support_override">
+			<return type="void" />
+			<argument index="0" name="language" type="String" />
+			<description>
+				Remove language support override.
+			</description>
+		</method>
+		<method name="remove_script_support_override">
+			<return type="void" />
+			<argument index="0" name="script" type="String" />
+			<description>
+				Removes script support override.
+			</description>
+		</method>
+		<method name="remove_size_cache">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="Vector2i" />
+			<description>
+				Removes specified font size from the cache entry.
+			</description>
+		</method>
+		<method name="remove_texture">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="Vector2i" />
+			<argument index="2" name="texture_index" type="int" />
+			<description>
+				Removes specified texture from font cache entry. Note: This function will not remove glyphs associated with the texture, remove them manually, using [method remove_glyph].
+			</description>
+		</method>
+		<method name="render_glyph">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="Vector2i" />
+			<argument index="2" name="index" type="int" />
+			<description>
+				Renders specified glyph the the font cache texture.
+			</description>
+		</method>
+		<method name="render_range">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="Vector2i" />
+			<argument index="2" name="start" type="int" />
+			<argument index="3" name="end" type="int" />
+			<description>
+				Renders the range of characters to the font cache texture.
+			</description>
+		</method>
+		<method name="set_antialiased">
+			<return type="void" />
+			<argument index="0" name="antialiased" type="bool" />
+			<description>
+				If set to [code]true[/code], 8-bit antialiased glyph rendering is used, otherwise 1-bit rendering is used. Used by dynamic fonts only.
+			</description>
+		</method>
+		<method name="set_ascent">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="int" />
+			<argument index="2" name="ascent" type="float" />
+			<description>
+				Sets the font ascent (number of pixels above the baseline).
+			</description>
+		</method>
+		<method name="set_data">
+			<return type="void" />
+			<argument index="0" name="data" type="PackedByteArray" />
+			<description>
+				Sets font source data, e.g contents of the dynamic font source file.
+			</description>
+		</method>
+		<method name="set_descent">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="int" />
+			<argument index="2" name="descent" type="float" />
+			<description>
+				Sets the font descent (number of pixels below the baseline).
+			</description>
+		</method>
+		<method name="set_force_autohinter">
+			<return type="void" />
+			<argument index="0" name="force_autohinter" type="bool" />
+			<description>
+				If set to [code]true[/code] auto-hinting is preffered over font built-in hinting.
+			</description>
+		</method>
+		<method name="set_glyph_advance">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="int" />
+			<argument index="2" name="glyph" type="int" />
+			<argument index="3" name="advance" type="Vector2" />
+			<description>
+				Sets glyph advance (offset of the next glyph). Note: advance for glyphs outlines is the same as the base glyph advance and is not saved.
+			</description>
+		</method>
+		<method name="set_glyph_offset">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="Vector2i" />
+			<argument index="2" name="glyph" type="int" />
+			<argument index="3" name="offset" type="Vector2" />
+			<description>
+				Sets glyph offset from the baseline.
+			</description>
+		</method>
+		<method name="set_glyph_size">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="Vector2i" />
+			<argument index="2" name="glyph" type="int" />
+			<argument index="3" name="gl_size" type="Vector2" />
+			<description>
+				Sets glyph size.
+			</description>
+		</method>
+		<method name="set_glyph_texture_idx">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="Vector2i" />
+			<argument index="2" name="glyph" type="int" />
+			<argument index="3" name="texture_idx" type="int" />
+			<description>
+				Sets index of the cache texture containing the glyph.
+			</description>
+		</method>
+		<method name="set_glyph_uv_rect">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="Vector2i" />
+			<argument index="2" name="glyph" type="int" />
+			<argument index="3" name="uv_rect" type="Rect2" />
+			<description>
+				Sets rectangle in the cache texture containing the glyph.
+			</description>
+		</method>
+		<method name="set_hinting">
+			<return type="void" />
+			<argument index="0" name="hinting" type="int" enum="TextServer.Hinting" />
+			<description>
+				Sets font hinting mode. Used by dynamic fonts only.
+			</description>
+		</method>
+		<method name="set_kerning">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="int" />
+			<argument index="2" name="glyph_pair" type="Vector2i" />
+			<argument index="3" name="kerning" type="Vector2" />
+			<description>
+				Sets kerning for the pair of glyphs.
+			</description>
+		</method>
+		<method name="set_language_support_override">
+			<return type="void" />
+			<argument index="0" name="language" type="String" />
+			<argument index="1" name="supported" type="bool" />
+			<description>
+				Adds override for [method is_language_supported].
+			</description>
+		</method>
+		<method name="set_msdf_pixel_range">
+			<return type="void" />
+			<argument index="0" name="msdf_pixel_range" type="int" />
+			<description>
+				Sets the width of the range around the shape between the minimum and maximum representable signed distance.
+			</description>
+		</method>
+		<method name="set_msdf_size">
+			<return type="void" />
+			<argument index="0" name="msdf_size" type="int" />
+			<description>
+				Sets source font size used to generate MSDF textures.
+			</description>
+		</method>
+		<method name="set_multichannel_signed_distance_field">
+			<return type="void" />
+			<argument index="0" name="msdf" type="bool" />
+			<description>
+				If set to [code]true[/code], glyphs of all sizes are rendered using single multichannel signed distance field generated from the dynamic font vector data.
+			</description>
+		</method>
+		<method name="set_oversampling">
+			<return type="void" />
+			<argument index="0" name="oversampling" type="float" />
+			<description>
+				Sets font oversampling factor, if set to [code]0.0[/code] global oversampling factor is used instead. Used by dynamic fonts only.
+			</description>
+		</method>
+		<method name="set_scale">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="int" />
+			<argument index="2" name="scale" type="float" />
+			<description>
+				Sets scaling factor of the color bitmap font.
+			</description>
+		</method>
+		<method name="set_script_support_override">
+			<return type="void" />
+			<argument index="0" name="script" type="String" />
+			<argument index="1" name="supported" type="bool" />
+			<description>
+				Adds override for [method is_script_supported].
+			</description>
+		</method>
+		<method name="set_spacing">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="int" />
+			<argument index="2" name="spacing" type="int" enum="TextServer.SpacingType" />
+			<argument index="3" name="arg3" type="int" />
+			<description>
+				Sets extra spacing added between glyphs in pixels.
+			</description>
+		</method>
+		<method name="set_texture_image">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="Vector2i" />
+			<argument index="2" name="texture_index" type="int" />
+			<argument index="3" name="image" type="Image" />
+			<description>
+				Sets font cache texture image.
+			</description>
+		</method>
+		<method name="set_texture_offsets">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="Vector2i" />
+			<argument index="2" name="texture_index" type="int" />
+			<argument index="3" name="offset" type="PackedInt32Array" />
+			<description>
+				Sets array containing the first free pixel in the each column of texture. Should be the same size as texture width or empty (for the fonts without dynamic glyph generation support).
+			</description>
+		</method>
+		<method name="set_underline_position">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="int" />
+			<argument index="2" name="underline_position" type="float" />
+			<description>
+				Sets pixel offset of the underline below the baseline.
+			</description>
+		</method>
+		<method name="set_underline_thickness">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="int" />
+			<argument index="2" name="underline_thickness" type="float" />
+			<description>
+				Sets thickness of the underline in pixels.
+			</description>
+		</method>
+		<method name="set_variation_coordinates">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="variation_coordinates" type="Dictionary" />
+			<description>
+				Sets variation coordinates for the specified font cache entry. See [method get_supported_variation_list] for more info.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

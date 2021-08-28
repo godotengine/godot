@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,6 @@ struct _KeyCodeText {
 };
 
 static const _KeyCodeText _keycodes[] = {
-
 	/* clang-format off */
 		{KEY_ESCAPE                        ,"Escape"},
 		{KEY_TAB                           ,"Tab"},
@@ -61,7 +60,7 @@ static const _KeyCodeText _keycodes[] = {
 		{KEY_PAGEUP                        ,"PageUp"},
 		{KEY_PAGEDOWN                      ,"PageDown"},
 		{KEY_SHIFT                         ,"Shift"},
-		{KEY_CONTROL                       ,"Control"},
+		{KEY_CTRL                          ,"Ctrl"},
 #ifdef OSX_ENABLED
 		{KEY_META                          ,"Command"},
 #else
@@ -315,7 +314,7 @@ bool keycode_has_unicode(uint32_t p_keycode) {
 		case KEY_PAGEUP:
 		case KEY_PAGEDOWN:
 		case KEY_SHIFT:
-		case KEY_CONTROL:
+		case KEY_CTRL:
 		case KEY_META:
 		case KEY_ALT:
 		case KEY_CAPSLOCK:
@@ -402,7 +401,7 @@ String keycode_get_string(uint32_t p_code) {
 		codestr += "+";
 	}
 	if (p_code & KEY_MASK_CTRL) {
-		codestr += find_keycode_name(KEY_CONTROL);
+		codestr += find_keycode_name(KEY_CTRL);
 		codestr += "+";
 	}
 	if (p_code & KEY_MASK_META) {

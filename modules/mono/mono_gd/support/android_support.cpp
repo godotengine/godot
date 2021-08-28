@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,7 +44,7 @@
 #endif
 
 #include "core/os/os.h"
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 #include "platform/android/java_godot_wrapper.h"
 #include "platform/android/os_android.h"
 #include "platform/android/thread_jandroid.h"
@@ -109,7 +109,7 @@ bool jni_exception_check(JNIEnv *p_env) {
 String app_native_lib_dir_cache;
 
 String determine_app_native_lib_dir() {
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 
 	ScopedLocalRef<jclass> activityThreadClass(env, env->FindClass("android/app/ActivityThread"));
 	jmethodID currentActivityThread = env->GetStaticMethodID(activityThreadClass, "currentActivityThread", "()Landroid/app/ActivityThread;");
@@ -134,7 +134,7 @@ String determine_app_native_lib_dir() {
 }
 
 String get_app_native_lib_dir() {
-	if (app_native_lib_dir_cache.empty())
+	if (app_native_lib_dir_cache.is_empty())
 		app_native_lib_dir_cache = determine_app_native_lib_dir();
 	return app_native_lib_dir_cache;
 }
@@ -253,7 +253,7 @@ int32_t get_build_version_sdk_int() {
 	// android.os.Build.VERSION.SDK_INT
 
 	if (build_version_sdk_int == 0) {
-		JNIEnv *env = ThreadAndroid::get_env();
+		JNIEnv *env = get_jni_env();
 
 		jclass versionClass = env->FindClass("android/os/Build$VERSION");
 		ERR_FAIL_NULL_V(versionClass, 0);
@@ -281,7 +281,7 @@ MonoBoolean _gd_mono_init_cert_store() {
 	//	return false;
 	// }
 
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 
 	ScopedLocalRef<jclass> keyStoreClass(env, env->FindClass("java/security/KeyStore"));
 
@@ -322,7 +322,7 @@ MonoArray *_gd_mono_android_cert_store_lookup(MonoString *p_alias) {
 		return nullptr;
 	}
 
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 
 	ScopedLocalRef<jstring> js_alias(env, env->NewStringUTF(alias_utf8));
 	mono_free(alias_utf8);
@@ -355,8 +355,8 @@ MonoArray *_gd_mono_android_cert_store_lookup(MonoString *p_alias) {
 }
 
 void register_internal_calls() {
-	mono_add_internal_call("Android.Runtime.AndroidEnvironment::_gd_mono_init_cert_store", (void *)_gd_mono_init_cert_store);
-	mono_add_internal_call("Android.Runtime.AndroidEnvironment::_gd_mono_android_cert_store_lookup", (void *)_gd_mono_android_cert_store_lookup);
+	GDMonoUtils::add_internal_call("Android.Runtime.AndroidEnvironment::_gd_mono_init_cert_store", _gd_mono_init_cert_store);
+	GDMonoUtils::add_internal_call("Android.Runtime.AndroidEnvironment::_gd_mono_android_cert_store_lookup", _gd_mono_android_cert_store_lookup);
 }
 
 void initialize() {
@@ -380,14 +380,13 @@ void cleanup() {
 	if (godot_dl_handle)
 		gd_mono_android_dlclose(godot_dl_handle, nullptr);
 
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 
 	if (certStore) {
 		env->DeleteGlobalRef(certStore);
 		certStore = nullptr;
 	}
 }
-
 } // namespace support
 } // namespace android
 } // namespace gdmono
@@ -416,8 +415,7 @@ GD_PINVOKE_EXPORT int32_t monodroid_get_system_property(const char *p_name, char
 	if (r_value) {
 		if (len >= 0) {
 			*r_value = (char *)malloc(len + 1);
-			if (!*r_value)
-				return -1;
+			ERR_FAIL_NULL_V_MSG(*r_value, -1, "Out of memory.");
 			memcpy(*r_value, prop_value_str, len);
 			(*r_value)[len] = '\0';
 		} else {
@@ -438,7 +436,7 @@ GD_PINVOKE_EXPORT mono_bool _monodroid_get_network_interface_up_state(const char
 
 	*r_is_up = 0;
 
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 
 	jclass networkInterfaceClass = env->FindClass("java/net/NetworkInterface");
 	ERR_FAIL_NULL_V(networkInterfaceClass, 0);
@@ -470,7 +468,7 @@ GD_PINVOKE_EXPORT mono_bool _monodroid_get_network_interface_supports_multicast(
 
 	*r_supports_multicast = 0;
 
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 
 	jclass networkInterfaceClass = env->FindClass("java/net/NetworkInterface");
 	ERR_FAIL_NULL_V(networkInterfaceClass, 0);
@@ -508,7 +506,7 @@ static void interop_get_active_network_dns_servers(char **r_dns_servers, int *dn
 	CRASH_COND(get_build_version_sdk_int() < 23);
 #endif
 
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 
 	GodotJavaWrapper *godot_java = ((OS_Android *)OS::get_singleton())->get_godot_java();
 	jobject activity = godot_java->get_activity();
@@ -638,6 +636,7 @@ GD_PINVOKE_EXPORT int32_t _monodroid_get_dns_servers(void **r_dns_servers_array)
 	if (dns_servers_count > 0) {
 		size_t ret_size = sizeof(char *) * (size_t)dns_servers_count;
 		*r_dns_servers_array = malloc(ret_size); // freed by the BCL
+		ERR_FAIL_NULL_V_MSG(*r_dns_servers_array, -1, "Out of memory.");
 		memcpy(*r_dns_servers_array, dns_servers, ret_size);
 	}
 
@@ -649,7 +648,7 @@ GD_PINVOKE_EXPORT const char *_monodroid_timezone_get_default_id() {
 	//
 	// TimeZone.getDefault().getID()
 
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 
 	ScopedLocalRef<jclass> timeZoneClass(env, env->FindClass("java/util/TimeZone"));
 	ERR_FAIL_NULL_V(timeZoneClass, nullptr);

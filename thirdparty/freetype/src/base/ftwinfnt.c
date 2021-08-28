@@ -16,11 +16,10 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_WINFONTS_H
-#include FT_INTERNAL_OBJECTS_H
-#include FT_SERVICE_WINFNT_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/ftwinfnt.h>
+#include <freetype/internal/ftobjs.h>
+#include <freetype/internal/services/svwinfnt.h>
 
 
   /* documentation is in ftwinfnt.h */

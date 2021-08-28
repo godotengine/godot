@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -131,7 +131,7 @@ bool AudioRBResampler::mix(AudioFrame *p_dest, int p_frames) {
 			src_read = read_space;
 		}
 
-		rb_read_pos = (rb_read_pos + src_read) & rb_mask;
+		rb_read_pos.set((rb_read_pos.get() + src_read) & rb_mask);
 
 		// Create fadeout effect for the end of stream (note that it can be because of slow writer)
 		if (p_frames - target_todo > 0) {
@@ -183,8 +183,8 @@ Error AudioRBResampler::setup(int p_channels, int p_src_mix_rate, int p_target_m
 	src_mix_rate = p_src_mix_rate;
 	target_mix_rate = p_target_mix_rate;
 	offset = 0;
-	rb_read_pos = 0;
-	rb_write_pos = 0;
+	rb_read_pos.set(0);
+	rb_write_pos.set(0);
 
 	//avoid maybe strange noises upon load
 	for (unsigned int i = 0; i < (rb_len * channels); i++) {
@@ -205,8 +205,8 @@ void AudioRBResampler::clear() {
 	memdelete_arr(read_buf);
 	rb = nullptr;
 	offset = 0;
-	rb_read_pos = 0;
-	rb_write_pos = 0;
+	rb_read_pos.set(0);
+	rb_write_pos.set(0);
 	read_buf = nullptr;
 }
 
@@ -214,8 +214,8 @@ AudioRBResampler::AudioRBResampler() {
 	rb = nullptr;
 	offset = 0;
 	read_buf = nullptr;
-	rb_read_pos = 0;
-	rb_write_pos = 0;
+	rb_read_pos.set(0);
+	rb_write_pos.set(0);
 
 	rb_bits = 0;
 	rb_len = 0;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 
 #include "core/math/vector2.h"
 
-#include "core/vector.h"
+#include "core/templates/vector.h"
 #include "scene/resources/bit_map.h"
 
 class EditorAtlasPacker {
@@ -41,23 +41,23 @@ public:
 	struct Chart {
 		Vector<Vector2> vertices;
 		struct Face {
-			int vertex[3];
+			int vertex[3] = { 0 };
 		};
 		Vector<Face> faces;
-		bool can_transpose;
+		bool can_transpose = false;
 
 		Vector2 final_offset;
-		bool transposed;
+		bool transposed = false;
 	};
 
 private:
 	struct PlottedBitmap {
-		int chart_index;
+		int chart_index = 0;
 		Vector2i offset;
-		int area;
+		int area = 0;
 		Vector<int> top_heights;
 		Vector<int> bottom_heights;
-		bool transposed;
+		bool transposed = false;
 
 		Vector2 final_pos;
 

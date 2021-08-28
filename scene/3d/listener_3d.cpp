@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "listener_3d.h"
 
-#include "scene/resources/mesh.h"
+#include "scene/main/viewport.h"
 
 void Listener3D::_update_audio_listener_state() {
 }
@@ -73,14 +73,14 @@ void Listener3D::_get_property_list(List<PropertyInfo> *p_list) const {
 
 void Listener3D::_update_listener() {
 	if (is_inside_tree() && is_current()) {
-		get_viewport()->_listener_transform_changed_notify();
+		get_viewport()->_listener_transform_3d_changed_notify();
 	}
 }
 
 void Listener3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_WORLD: {
-			bool first_listener = get_viewport()->_listener_add(this);
+			bool first_listener = get_viewport()->_listener_3d_add(this);
 			if (!get_tree()->is_node_being_edited(this) && (current || first_listener)) {
 				make_current();
 			}
@@ -99,13 +99,13 @@ void Listener3D::_notification(int p_what) {
 				}
 			}
 
-			get_viewport()->_listener_remove(this);
+			get_viewport()->_listener_3d_remove(this);
 
 		} break;
 	}
 }
 
-Transform Listener3D::get_listener_transform() const {
+Transform3D Listener3D::get_listener_transform() const {
 	return get_global_transform().orthonormalized();
 }
 
@@ -116,7 +116,7 @@ void Listener3D::make_current() {
 		return;
 	}
 
-	get_viewport()->_listener_set(this);
+	get_viewport()->_listener_3d_set(this);
 }
 
 void Listener3D::clear_current() {
@@ -125,15 +125,15 @@ void Listener3D::clear_current() {
 		return;
 	}
 
-	if (get_viewport()->get_listener() == this) {
-		get_viewport()->_listener_set(nullptr);
-		get_viewport()->_listener_make_next_current(this);
+	if (get_viewport()->get_listener_3d() == this) {
+		get_viewport()->_listener_3d_set(nullptr);
+		get_viewport()->_listener_3d_make_next_current(this);
 	}
 }
 
 bool Listener3D::is_current() const {
 	if (is_inside_tree() && !get_tree()->is_node_being_edited(this)) {
-		return get_viewport()->get_listener() == this;
+		return get_viewport()->get_listener_3d() == this;
 	} else {
 		return current;
 	}
@@ -159,8 +159,6 @@ void Listener3D::_bind_methods() {
 }
 
 Listener3D::Listener3D() {
-	current = false;
-	force_change = false;
 	set_notify_transform(true);
 	//active=false;
 }

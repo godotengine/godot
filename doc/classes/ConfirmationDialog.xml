@@ -6,24 +6,28 @@
 	<description>
 		Dialog for confirmation of actions. This dialog inherits from [AcceptDialog], but has by default an OK and Cancel button (in host OS order).
 		To get cancel action, you can use:
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		get_cancel().connect("pressed", self, "cancelled")
-		[/codeblock].
+		[/gdscript]
+		[csharp]
+		GetCancel().Connect("pressed", this, nameof(Cancelled));
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="get_cancel">
-			<return type="Button">
-			</return>
+		<method name="get_cancel_button">
+			<return type="Button" />
 			<description>
 				Returns the cancel button.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="min_size" type="Vector2i" setter="set_min_size" getter="get_min_size" override="true" default="Vector2i( 200, 70 )" />
-		<member name="size" type="Vector2i" setter="set_size" getter="get_size" override="true" default="Vector2i( 200, 100 )" />
+		<member name="min_size" type="Vector2i" setter="set_min_size" getter="get_min_size" override="true" default="Vector2i(200, 70)" />
+		<member name="size" type="Vector2i" setter="set_size" getter="get_size" override="true" default="Vector2i(200, 100)" />
 		<member name="title" type="String" setter="set_title" getter="get_title" override="true" default="&quot;Please Confirm...&quot;" />
 	</members>
 	<constants>

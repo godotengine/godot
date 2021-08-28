@@ -52,6 +52,14 @@
 #define GL_UNSIGNED_INT64_VEC2_ARB        0x8FE5
 #define GL_UNSIGNED_INT64_VEC3_ARB        0x8FE6
 #define GL_UNSIGNED_INT64_VEC4_ARB        0x8FE7
+#define GL_UNSIGNED_INT16_VEC2_NV         0x8FF1
+#define GL_UNSIGNED_INT16_VEC3_NV         0x8FF2
+#define GL_UNSIGNED_INT16_VEC4_NV         0x8FF3
+
+#define GL_INT16_NV                       0x8FE4
+#define GL_INT16_VEC2_NV                  0x8FE5
+#define GL_INT16_VEC3_NV                  0x8FE6
+#define GL_INT16_VEC4_NV                  0x8FE7
 
 #define GL_BOOL                           0x8B56
 #define GL_BOOL_VEC2                      0x8B57

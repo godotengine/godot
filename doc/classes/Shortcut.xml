@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Shortcut" inherits="Resource" version="4.0">
+	<brief_description>
+		A shortcut for binding input.
+	</brief_description>
+	<description>
+		A shortcut for binding input.
+		Shortcuts are commonly used for interacting with a [Control] element from an [InputEvent] (also known as hotkeys).
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_as_text" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the shortcut's [InputEvent] as a [String].
+			</description>
+		</method>
+		<method name="has_valid_event" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns whether the shortcut has a valid [member event] assigned to it.
+			</description>
+		</method>
+		<method name="matches_event" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="event" type="InputEvent" />
+			<description>
+				Returns whether the shortcut's [member event] matches [code]event[/code].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="event" type="InputEvent" setter="set_event" getter="get_event">
+			The shortcut's [InputEvent].
+			Generally the [InputEvent] is a keyboard key, though it can be any [InputEvent], including an [InputEventAction].
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

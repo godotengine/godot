@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 #define FILE_DIALOG_H
 
 #include "box_container.h"
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
@@ -69,7 +69,7 @@ private:
 	LineEdit *makedirname;
 
 	Button *makedir;
-	Access access;
+	Access access = ACCESS_RESOURCES;
 	//Button *action;
 	VBoxContainer *vbox;
 	FileMode mode;
@@ -86,6 +86,10 @@ private:
 	DirAccess *dir_access;
 	ConfirmationDialog *confirm_save;
 
+	Label *message;
+
+	Button *dir_prev;
+	Button *dir_next;
 	Button *dir_up;
 
 	Button *refresh;
@@ -93,12 +97,16 @@ private:
 
 	Vector<String> filters;
 
-	bool mode_overrides_title;
+	Vector<String> local_history;
+	int local_history_pos = 0;
+	void _push_history();
+
+	bool mode_overrides_title = true;
 
 	static bool default_show_hidden_files;
-	bool show_hidden_files;
+	bool show_hidden_files = false;
 
-	bool invalidated;
+	bool invalidated = true;
 
 	void update_dir();
 	void update_file_name();
@@ -110,8 +118,8 @@ private:
 
 	void _select_drive(int p_idx);
 	void _tree_item_activated();
-	void _dir_entered(String p_dir);
-	void _file_entered(const String &p_file);
+	void _dir_submitted(String p_dir);
+	void _file_submitted(const String &p_file);
 	void _action_pressed();
 	void _save_confirm_pressed();
 	void _cancel_pressed();
@@ -119,14 +127,16 @@ private:
 	void _make_dir();
 	void _make_dir_confirm();
 	void _go_up();
+	void _go_back();
+	void _go_forward();
 
 	void _update_drives();
 
-	void _unhandled_input(const Ref<InputEvent> &p_event);
+	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
 
 	bool _is_open_should_be_disabled();
 
-	virtual void _post_popup();
+	virtual void _post_popup() override;
 
 protected:
 	void _theme_changed();
@@ -135,6 +145,7 @@ protected:
 	static void _bind_methods();
 	//bind helpers
 public:
+	void popup_file_dialog();
 	void clear_filters();
 	void add_filter(const String &p_filter);
 	void set_filters(const Vector<String> &p_filters);
@@ -169,7 +180,7 @@ public:
 
 	void invalidate();
 
-	void deselect_items();
+	void deselect_all();
 
 	FileDialog();
 	~FileDialog();

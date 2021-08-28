@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,10 @@
 #ifndef COLLISION_OBJECT_BULLET_H
 #define COLLISION_OBJECT_BULLET_H
 
-#include "core/math/transform.h"
+#include "core/math/transform_3d.h"
 #include "core/math/vector3.h"
-#include "core/object.h"
-#include "core/vset.h"
+#include "core/object/class_db.h"
+#include "core/templates/vset.h"
 #include "shape_owner_bullet.h"
 
 #include <LinearMath/btTransform.h>
@@ -83,7 +83,7 @@ public:
 			set_transform(p_transform);
 		}
 
-		ShapeWrapper(ShapeBullet *p_shape, const Transform &p_transform, bool p_active) :
+		ShapeWrapper(ShapeBullet *p_shape, const Transform3D &p_transform, bool p_active) :
 				shape(p_shape),
 				active(p_active) {
 			set_transform(p_transform);
@@ -102,7 +102,7 @@ public:
 			active = otherShape.active;
 		}
 
-		void set_transform(const Transform &p_transform);
+		void set_transform(const Transform3D &p_transform);
 		void set_transform(const btTransform &p_transform);
 		btTransform get_adjusted_transform() const;
 
@@ -110,7 +110,7 @@ public:
 	};
 
 protected:
-	Type type;
+	Type type = TYPE_AREA;
 	ObjectID instance_id;
 	uint32_t collisionLayer = 0;
 	uint32_t collisionMask = 0;
@@ -202,8 +202,8 @@ public:
 	void set_godot_object_flags(int flags);
 	int get_godot_object_flags() const;
 
-	void set_transform(const Transform &p_global_transform);
-	Transform get_transform() const;
+	void set_transform(const Transform3D &p_global_transform);
+	Transform3D get_transform() const;
 	virtual void set_transform__bullet(const btTransform &p_global_transform);
 	virtual const btTransform &get_transform__bullet() const;
 
@@ -225,7 +225,7 @@ public:
 
 	_FORCE_INLINE_ btCollisionShape *get_main_shape() const { return mainShape; }
 
-	void add_shape(ShapeBullet *p_shape, const Transform &p_transform = Transform(), bool p_disabled = false);
+	void add_shape(ShapeBullet *p_shape, const Transform3D &p_transform = Transform3D(), bool p_disabled = false);
 	void set_shape(int p_index, ShapeBullet *p_shape);
 
 	int get_shape_count() const;
@@ -238,10 +238,10 @@ public:
 	void remove_shape_full(int p_index);
 	void remove_all_shapes(bool p_permanentlyFromThisBody = false, bool p_force_not_reload = false);
 
-	void set_shape_transform(int p_index, const Transform &p_transform);
+	void set_shape_transform(int p_index, const Transform3D &p_transform);
 
 	const btTransform &get_bt_shape_transform(int p_index) const;
-	Transform get_shape_transform(int p_index) const;
+	Transform3D get_shape_transform(int p_index) const;
 
 	void set_shape_disabled(int p_index, bool p_disabled);
 	bool is_shape_disabled(int p_index);

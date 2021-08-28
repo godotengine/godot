@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@ Adapted to Godot from the Bullet library.
 
 /*
 Bullet Continuous Collision Detection and Physics Library
-Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+Copyright (c) 2003-2006 Erwin Coumans  https://bulletphysics.org
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
@@ -76,8 +76,8 @@ protected:
 		Body3DSW *_arr[2];
 	};
 
-	Transform m_frameInA;
-	Transform m_frameInB;
+	Transform3D m_frameInA;
+	Transform3D m_frameInB;
 
 	// linear limits
 	real_t m_lowerLinLimit;
@@ -120,8 +120,8 @@ protected:
 	JacobianEntry3DSW m_jacAng[3];
 
 	real_t m_timeStep;
-	Transform m_calculatedTransformA;
-	Transform m_calculatedTransformB;
+	Transform3D m_calculatedTransformA;
+	Transform3D m_calculatedTransformB;
 
 	Vector3 m_sliderAxis;
 	Vector3 m_realPivotAInW;
@@ -152,19 +152,19 @@ protected:
 
 public:
 	// constructors
-	SliderJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform &frameInA, const Transform &frameInB);
+	SliderJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform3D &frameInA, const Transform3D &frameInB);
 	//SliderJointSW();
 	// overrides
 
 	// access
 	const Body3DSW *getRigidBodyA() const { return A; }
 	const Body3DSW *getRigidBodyB() const { return B; }
-	const Transform &getCalculatedTransformA() const { return m_calculatedTransformA; }
-	const Transform &getCalculatedTransformB() const { return m_calculatedTransformB; }
-	const Transform &getFrameOffsetA() const { return m_frameInA; }
-	const Transform &getFrameOffsetB() const { return m_frameInB; }
-	Transform &getFrameOffsetA() { return m_frameInA; }
-	Transform &getFrameOffsetB() { return m_frameInB; }
+	const Transform3D &getCalculatedTransformA() const { return m_calculatedTransformA; }
+	const Transform3D &getCalculatedTransformB() const { return m_calculatedTransformB; }
+	const Transform3D &getFrameOffsetA() const { return m_frameInA; }
+	const Transform3D &getFrameOffsetB() const { return m_frameInB; }
+	Transform3D &getFrameOffsetA() { return m_frameInA; }
+	Transform3D &getFrameOffsetB() { return m_frameInB; }
 	real_t getLowerLinLimit() { return m_lowerLinLimit; }
 	void setLowerLinLimit(real_t lowerLimit) { m_lowerLinLimit = lowerLimit; }
 	real_t getUpperLinLimit() { return m_upperLinLimit; }
@@ -240,10 +240,10 @@ public:
 	void set_param(PhysicsServer3D::SliderJointParam p_param, real_t p_value);
 	real_t get_param(PhysicsServer3D::SliderJointParam p_param) const;
 
-	bool setup(real_t p_step);
-	void solve(real_t p_step);
+	virtual bool setup(real_t p_step) override;
+	virtual void solve(real_t p_step) override;
 
-	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_SLIDER; }
+	virtual PhysicsServer3D::JointType get_type() const override { return PhysicsServer3D::JOINT_TYPE_SLIDER; }
 };
 
 #endif // SLIDER_JOINT_SW_H

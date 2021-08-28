@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeUniformRef" inherits="VisualShaderNode" version="4.0">
+	<brief_description>
+		A reference to an existing [VisualShaderNodeUniform].
+	</brief_description>
+	<description>
+		Creating a reference to a [VisualShaderNodeUniform] allows you to reuse this uniform in different shaders or shader stages easily.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="uniform_name" type="String" setter="set_uniform_name" getter="get_uniform_name" default="&quot;[None]&quot;">
+			The name of the uniform which this reference points to.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

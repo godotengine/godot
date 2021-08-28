@@ -16,11 +16,10 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_GLYPH_LOADER_H
-#include FT_INTERNAL_MEMORY_H
-#include FT_INTERNAL_OBJECTS_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftgloadr.h>
+#include <freetype/internal/ftmemory.h>
+#include <freetype/internal/ftobjs.h>
 
 #undef  FT_COMPONENT
 #define FT_COMPONENT  gloader
@@ -93,6 +92,7 @@
 
     base->outline.n_points   = 0;
     base->outline.n_contours = 0;
+    base->outline.flags      = 0;
     base->num_subglyphs      = 0;
 
     *current = *base;

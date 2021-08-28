@@ -356,12 +356,12 @@ public:
         }
     }
     
-    btVector3 getPushVelocity()
+    btVector3 getPushVelocity() const
     {
         return m_pushVelocity;
     }
     
-    btVector3 getTurnVelocity()
+    btVector3 getTurnVelocity() const
     {
         return m_turnVelocity;
     }
@@ -465,6 +465,12 @@ public:
 		//for kinematic objects, we could also use use:
 		//		return 	(m_worldTransform(rel_pos) - m_interpolationWorldTransform(rel_pos)) / m_kinematicTimeStep;
 	}
+    
+    btVector3 getPushVelocityInLocalPoint(const btVector3& rel_pos) const
+    {
+        //we also calculate lin/ang velocity for kinematic objects
+        return m_pushVelocity + m_turnVelocity.cross(rel_pos);
+    }
 
 	void translate(const btVector3& v)
 	{

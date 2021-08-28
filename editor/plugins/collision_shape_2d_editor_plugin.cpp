@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,14 +31,15 @@
 #include "collision_shape_2d_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
+#include "core/os/keyboard.h"
 #include "scene/resources/capsule_shape_2d.h"
 #include "scene/resources/circle_shape_2d.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
-#include "scene/resources/line_shape_2d.h"
-#include "scene/resources/ray_shape_2d.h"
 #include "scene/resources/rectangle_shape_2d.h"
 #include "scene/resources/segment_shape_2d.h"
+#include "scene/resources/separation_ray_shape_2d.h"
+#include "scene/resources/world_margin_shape_2d.h"
 
 void CollisionShape2DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
@@ -50,12 +51,7 @@ Variant CollisionShape2DEditor::get_handle_value(int idx) const {
 	switch (shape_type) {
 		case CAPSULE_SHAPE: {
 			Ref<CapsuleShape2D> capsule = node->get_shape();
-
-			if (idx == 0) {
-				return capsule->get_radius();
-			} else if (idx == 1) {
-				return capsule->get_height();
-			}
+			return Vector2(capsule->get_radius(), capsule->get_height());
 
 		} break;
 
@@ -74,8 +70,8 @@ Variant CollisionShape2DEditor::get_handle_value(int idx) const {
 		case CONVEX_POLYGON_SHAPE: {
 		} break;
 
-		case LINE_SHAPE: {
-			Ref<LineShape2D> line = node->get_shape();
+		case WORLD_MARGIN_SHAPE: {
+			Ref<WorldMarginShape2D> line = node->get_shape();
 
 			if (idx == 0) {
 				return line->get_distance();
@@ -85,8 +81,8 @@ Variant CollisionShape2DEditor::get_handle_value(int idx) const {
 
 		} break;
 
-		case RAY_SHAPE: {
-			Ref<RayShape2D> ray = node->get_shape();
+		case SEPARATION_RAY_SHAPE: {
+			Ref<SeparationRayShape2D> ray = node->get_shape();
 
 			if (idx == 0) {
 				return ray->get_length();
@@ -97,8 +93,8 @@ Variant CollisionShape2DEditor::get_handle_value(int idx) const {
 		case RECTANGLE_SHAPE: {
 			Ref<RectangleShape2D> rect = node->get_shape();
 
-			if (idx < 3) {
-				return rect->get_extents().abs();
+			if (idx < 8) {
+				return rect->get_size().abs();
 			}
 
 		} break;
@@ -129,7 +125,7 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 				if (idx == 0) {
 					capsule->set_radius(parameter);
 				} else if (idx == 1) {
-					capsule->set_height(parameter * 2 - capsule->get_radius() * 2);
+					capsule->set_height(parameter * 2);
 				}
 
 				canvas_item_editor->update_viewport();
@@ -151,9 +147,9 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 		case CONVEX_POLYGON_SHAPE: {
 		} break;
 
-		case LINE_SHAPE: {
+		case WORLD_MARGIN_SHAPE: {
 			if (idx < 2) {
-				Ref<LineShape2D> line = node->get_shape();
+				Ref<WorldMarginShape2D> line = node->get_shape();
 
 				if (idx == 0) {
 					line->set_distance(p_point.length());
@@ -166,8 +162,8 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 
 		} break;
 
-		case RAY_SHAPE: {
-			Ref<RayShape2D> ray = node->get_shape();
+		case SEPARATION_RAY_SHAPE: {
+			Ref<SeparationRayShape2D> ray = node->get_shape();
 
 			ray->set_length(Math::abs(p_point.y));
 
@@ -176,16 +172,26 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 		} break;
 
 		case RECTANGLE_SHAPE: {
-			if (idx < 3) {
+			if (idx < 8) {
 				Ref<RectangleShape2D> rect = node->get_shape();
+				Vector2 size = (Point2)original;
 
-				Vector2 extents = rect->get_extents();
-				if (idx == 2) {
-					extents = p_point;
-				} else {
-					extents[idx] = p_point[idx];
+				if (RECT_HANDLES[idx].x != 0) {
+					size.x = p_point.x * RECT_HANDLES[idx].x * 2;
 				}
-				rect->set_extents(extents.abs());
+				if (RECT_HANDLES[idx].y != 0) {
+					size.y = p_point.y * RECT_HANDLES[idx].y * 2;
+				}
+
+				if (Input::get_singleton()->is_key_pressed(KEY_ALT)) {
+					rect->set_size(size.abs());
+					node->set_global_position(original_transform.get_origin());
+				} else {
+					rect->set_size(((Point2)original + (size - (Point2)original) * 0.5).abs());
+					Point2 pos = original_transform.affine_inverse().xform(original_transform.get_origin());
+					pos += (size - (Point2)original) * 0.5 * RECT_HANDLES[idx] * 0.5;
+					node->set_global_position(original_transform.xform(pos));
+				}
 
 				canvas_item_editor->update_viewport();
 			}
@@ -207,7 +213,7 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 
 		} break;
 	}
-	node->get_shape()->_change_notify();
+	node->get_shape()->notify_property_list_changed();
 }
 
 void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
@@ -217,17 +223,17 @@ void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
 		case CAPSULE_SHAPE: {
 			Ref<CapsuleShape2D> capsule = node->get_shape();
 
+			Vector2 values = p_org;
+
 			if (idx == 0) {
 				undo_redo->add_do_method(capsule.ptr(), "set_radius", capsule->get_radius());
-				undo_redo->add_do_method(canvas_item_editor, "update_viewport");
-				undo_redo->add_undo_method(capsule.ptr(), "set_radius", p_org);
-				undo_redo->add_do_method(canvas_item_editor, "update_viewport");
 			} else if (idx == 1) {
 				undo_redo->add_do_method(capsule.ptr(), "set_height", capsule->get_height());
-				undo_redo->add_do_method(canvas_item_editor, "update_viewport");
-				undo_redo->add_undo_method(capsule.ptr(), "set_height", p_org);
-				undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 			}
+			undo_redo->add_do_method(canvas_item_editor, "update_viewport");
+			undo_redo->add_undo_method(capsule.ptr(), "set_radius", values[0]);
+			undo_redo->add_undo_method(capsule.ptr(), "set_height", values[1]);
+			undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 
 		} break;
 
@@ -242,13 +248,15 @@ void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
 		} break;
 
 		case CONCAVE_POLYGON_SHAPE: {
+			// Cannot be edited directly, use CollisionPolygon2D instead.
 		} break;
 
 		case CONVEX_POLYGON_SHAPE: {
+			// Cannot be edited directly, use CollisionPolygon2D instead.
 		} break;
 
-		case LINE_SHAPE: {
-			Ref<LineShape2D> line = node->get_shape();
+		case WORLD_MARGIN_SHAPE: {
+			Ref<WorldMarginShape2D> line = node->get_shape();
 
 			if (idx == 0) {
 				undo_redo->add_do_method(line.ptr(), "set_distance", line->get_distance());
@@ -264,8 +272,8 @@ void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
 
 		} break;
 
-		case RAY_SHAPE: {
-			Ref<RayShape2D> ray = node->get_shape();
+		case SEPARATION_RAY_SHAPE: {
+			Ref<SeparationRayShape2D> ray = node->get_shape();
 
 			undo_redo->add_do_method(ray.ptr(), "set_length", ray->get_length());
 			undo_redo->add_do_method(canvas_item_editor, "update_viewport");
@@ -277,9 +285,11 @@ void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
 		case RECTANGLE_SHAPE: {
 			Ref<RectangleShape2D> rect = node->get_shape();
 
-			undo_redo->add_do_method(rect.ptr(), "set_extents", rect->get_extents());
+			undo_redo->add_do_method(rect.ptr(), "set_size", rect->get_size());
+			undo_redo->add_do_method(node, "set_global_transform", node->get_global_transform());
 			undo_redo->add_do_method(canvas_item_editor, "update_viewport");
-			undo_redo->add_undo_method(rect.ptr(), "set_extents", p_org);
+			undo_redo->add_undo_method(rect.ptr(), "set_size", p_org);
+			undo_redo->add_undo_method(node, "set_global_transform", original_transform);
 			undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 
 		} break;
@@ -323,7 +333,7 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 	if (mb.is_valid()) {
 		Vector2 gpoint = mb->get_position();
 
-		if (mb->get_button_index() == BUTTON_LEFT) {
+		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 			if (mb->is_pressed()) {
 				for (int i = 0; i < handles.size(); i++) {
 					if (xform.xform(handles[i]).distance_to(gpoint) < 8) {
@@ -340,6 +350,8 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 				}
 
 				original = get_handle_value(edit_handle);
+				original_transform = node->get_global_transform();
+				last_point = original;
 				pressed = true;
 
 				return true;
@@ -367,11 +379,24 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 		}
 
 		Vector2 cpoint = canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mm->get_position()));
-		cpoint = node->get_global_transform().affine_inverse().xform(cpoint);
+		cpoint = original_transform.affine_inverse().xform(cpoint);
+		last_point = cpoint;
 
 		set_handle(edit_handle, cpoint);
 
 		return true;
+	}
+
+	Ref<InputEventKey> k = p_event;
+
+	if (k.is_valid()) {
+		if (edit_handle == -1 || !pressed || k->is_echo()) {
+			return false;
+		}
+
+		if (shape_type == RECTANGLE_SHAPE && k->get_keycode() == KEY_ALT) {
+			set_handle(edit_handle, last_point); // Update handle when Alt key is toggled.
+		}
 	}
 
 	return false;
@@ -396,10 +421,10 @@ void CollisionShape2DEditor::_get_current_shape_type() {
 		shape_type = CONCAVE_POLYGON_SHAPE;
 	} else if (Object::cast_to<ConvexPolygonShape2D>(*s)) {
 		shape_type = CONVEX_POLYGON_SHAPE;
-	} else if (Object::cast_to<LineShape2D>(*s)) {
-		shape_type = LINE_SHAPE;
-	} else if (Object::cast_to<RayShape2D>(*s)) {
-		shape_type = RAY_SHAPE;
+	} else if (Object::cast_to<WorldMarginShape2D>(*s)) {
+		shape_type = WORLD_MARGIN_SHAPE;
+	} else if (Object::cast_to<SeparationRayShape2D>(*s)) {
+		shape_type = SEPARATION_RAY_SHAPE;
 	} else if (Object::cast_to<RectangleShape2D>(*s)) {
 		shape_type = RECTANGLE_SHAPE;
 	} else if (Object::cast_to<SegmentShape2D>(*s)) {
@@ -428,7 +453,7 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 
 	Transform2D gt = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
-	Ref<Texture2D> h = get_theme_icon("EditorHandle", "EditorIcons");
+	Ref<Texture2D> h = get_theme_icon(SNAME("EditorHandle"), SNAME("EditorIcons"));
 	Vector2 size = h->get_size() * 0.5;
 
 	handles.clear();
@@ -441,8 +466,8 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 			float radius = shape->get_radius();
 			float height = shape->get_height() / 2;
 
-			handles.write[0] = Point2(radius, height);
-			handles.write[1] = Point2(0, height + radius);
+			handles.write[0] = Point2(radius, 0);
+			handles.write[1] = Point2(0, height);
 
 			p_overlay->draw_texture(h, gt.xform(handles[0]) - size);
 			p_overlay->draw_texture(h, gt.xform(handles[1]) - size);
@@ -465,8 +490,8 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 		case CONVEX_POLYGON_SHAPE: {
 		} break;
 
-		case LINE_SHAPE: {
-			Ref<LineShape2D> shape = node->get_shape();
+		case WORLD_MARGIN_SHAPE: {
+			Ref<WorldMarginShape2D> shape = node->get_shape();
 
 			handles.resize(2);
 			handles.write[0] = shape->get_normal() * shape->get_distance();
@@ -477,8 +502,8 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 
 		} break;
 
-		case RAY_SHAPE: {
-			Ref<RayShape2D> shape = node->get_shape();
+		case SEPARATION_RAY_SHAPE: {
+			Ref<SeparationRayShape2D> shape = node->get_shape();
 
 			handles.resize(1);
 			handles.write[0] = Point2(0, shape->get_length());
@@ -490,15 +515,12 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 		case RECTANGLE_SHAPE: {
 			Ref<RectangleShape2D> shape = node->get_shape();
 
-			handles.resize(3);
-			Vector2 ext = shape->get_extents();
-			handles.write[0] = Point2(ext.x, 0);
-			handles.write[1] = Point2(0, ext.y);
-			handles.write[2] = Point2(ext.x, ext.y);
-
-			p_overlay->draw_texture(h, gt.xform(handles[0]) - size);
-			p_overlay->draw_texture(h, gt.xform(handles[1]) - size);
-			p_overlay->draw_texture(h, gt.xform(handles[2]) - size);
+			handles.resize(8);
+			Vector2 ext = shape->get_size() / 2;
+			for (int i = 0; i < handles.size(); i++) {
+				handles.write[i] = RECT_HANDLES[i] * ext;
+				p_overlay->draw_texture(h, gt.xform(handles[i]) - size);
+			}
 
 		} break;
 
@@ -561,6 +583,8 @@ CollisionShape2DEditor::CollisionShape2DEditor(EditorNode *p_editor) {
 
 	edit_handle = -1;
 	pressed = false;
+
+	shape_type = 0;
 }
 
 void CollisionShape2DEditorPlugin::edit(Object *p_obj) {

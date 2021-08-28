@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -96,7 +96,7 @@ Skeleton2DEditor::Skeleton2DEditor() {
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text(TTR("Skeleton2D"));
-	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Skeleton2D", "EditorIcons"));
+	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Skeleton2D"), SNAME("EditorIcons")));
 
 	options->get_popup()->add_item(TTR("Make Rest Pose (From Bones)"), MENU_OPTION_MAKE_REST);
 	options->get_popup()->add_separator();
@@ -129,7 +129,7 @@ void Skeleton2DEditorPlugin::make_visible(bool p_visible) {
 Skeleton2DEditorPlugin::Skeleton2DEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	sprite_editor = memnew(Skeleton2DEditor);
-	editor->get_viewport()->add_child(sprite_editor);
+	editor->get_main_control()->add_child(sprite_editor);
 	make_visible(false);
 
 	//sprite_editor->options->hide();

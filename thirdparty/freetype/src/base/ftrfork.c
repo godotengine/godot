@@ -24,10 +24,9 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_RFORK_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/ftrfork.h>
 
 #include "ftbase.h"
 
@@ -240,7 +239,7 @@
                   (char)( 0xFF & ( tag_internal >> 16 ) ),
                   (char)( 0xFF & ( tag_internal >>  8 ) ),
                   (char)( 0xFF & ( tag_internal >>  0 ) ) ));
-      FT_TRACE3(( "             : subcount=%d, suboffset=0x%04x\n",
+      FT_TRACE3(( "             : subcount=%d, suboffset=0x%04lx\n",
                   subcnt, rpos ));
 
       if ( tag_internal == tag )
@@ -286,7 +285,7 @@
           ref[j].offset = temp & 0xFFFFFFL;
 
           FT_TRACE3(( "             [%d]:"
-                      " resource_id=0x%04x, offset=0x%08x\n",
+                      " resource_id=0x%04x, offset=0x%08lx\n",
                       j, (FT_UShort)ref[j].res_id, ref[j].offset ));
         }
 
@@ -302,7 +301,7 @@
 
           for ( j = 0; j < *count; j++ )
             FT_TRACE3(( "             [%d]:"
-                        " resource_id=0x%04x, offset=0x%08x\n",
+                        " resource_id=0x%04x, offset=0x%08lx\n",
                         j, ref[j].res_id, ref[j].offset ));
         }
 

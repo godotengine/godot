@@ -1,8 +1,14 @@
 /*
  *  Entropy accumulator implementation
  *
- *  Copyright (C) 2006-2016, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  Copyright The Mbed TLS Contributors
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -16,7 +22,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  This file is part of mbed TLS (https://tls.mbed.org)
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  */
 
 #if !defined(MBEDTLS_CONFIG_FILE)
@@ -121,6 +146,11 @@ void mbedtls_entropy_init( mbedtls_entropy_context *ctx )
 
 void mbedtls_entropy_free( mbedtls_entropy_context *ctx )
 {
+    /* If the context was already free, don't call free() again.
+     * This is important for mutexes which don't allow double-free. */
+    if( ctx->accumulator_started == -1 )
+        return;
+
 #if defined(MBEDTLS_HAVEGE_C)
     mbedtls_havege_free( &ctx->havege_data );
 #endif
@@ -137,7 +167,7 @@ void mbedtls_entropy_free( mbedtls_entropy_context *ctx )
 #endif
     ctx->source_count = 0;
     mbedtls_platform_zeroize( ctx->source, sizeof( ctx->source ) );
-    ctx->accumulator_started = 0;
+    ctx->accumulator_started = -1;
 }
 
 int mbedtls_entropy_add_source( mbedtls_entropy_context *ctx,
@@ -464,14 +494,20 @@ int mbedtls_entropy_update_nv_seed( mbedtls_entropy_context *ctx )
 int mbedtls_entropy_write_seed_file( mbedtls_entropy_context *ctx, const char *path )
 {
     int ret = MBEDTLS_ERR_ENTROPY_FILE_IO_ERROR;
-    FILE *f;
+    FILE *f = NULL;
     unsigned char buf[MBEDTLS_ENTROPY_BLOCK_SIZE];
 
-    if( ( f = fopen( path, "wb" ) ) == NULL )
-        return( MBEDTLS_ERR_ENTROPY_FILE_IO_ERROR );
-
     if( ( ret = mbedtls_entropy_func( ctx, buf, MBEDTLS_ENTROPY_BLOCK_SIZE ) ) != 0 )
+    {
+        ret = MBEDTLS_ERR_ENTROPY_SOURCE_FAILED;
         goto exit;
+    }
+
+    if( ( f = fopen( path, "wb" ) ) == NULL )
+    {
+        ret = MBEDTLS_ERR_ENTROPY_FILE_IO_ERROR;
+        goto exit;
+    }
 
     if( fwrite( buf, 1, MBEDTLS_ENTROPY_BLOCK_SIZE, f ) != MBEDTLS_ENTROPY_BLOCK_SIZE )
     {
@@ -484,7 +520,9 @@ int mbedtls_entropy_write_seed_file( mbedtls_entropy_context *ctx, const char *p
 exit:
     mbedtls_platform_zeroize( buf, sizeof( buf ) );
 
-    fclose( f );
+    if( f != NULL )
+        fclose( f );
+
     return( ret );
 }
 

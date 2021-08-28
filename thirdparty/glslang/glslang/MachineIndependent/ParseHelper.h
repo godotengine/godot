@@ -68,6 +68,7 @@ class TScanContext;
 class TPpContext;
 
 typedef std::set<int> TIdSetType;
+typedef std::map<const TTypeList*, std::map<size_t, const TTypeList*>> TStructRecord;
 
 //
 // Sharable code (as well as what's in TParseVersions) across
@@ -82,7 +83,8 @@ public:
           : TParseVersions(interm, version, profile, spvVersion, language, infoSink, forwardCompatible, messages),
             scopeMangler("::"),
             symbolTable(symbolTable),
-            statementNestingLevel(0), loopNestingLevel(0), structNestingLevel(0), controlFlowNestingLevel(0),
+            statementNestingLevel(0), loopNestingLevel(0), structNestingLevel(0), blockNestingLevel(0), controlFlowNestingLevel(0),
+            currentFunctionType(nullptr),
             postEntryPointReturn(false),
             contextPragma(true, false),
             beginInvocationInterlockCount(0), endInvocationInterlockCount(0),
@@ -176,7 +178,8 @@ public:
     TSymbolTable& symbolTable;        // symbol table that goes with the current language, version, and profile
     int statementNestingLevel;        // 0 if outside all flow control or compound statements
     int loopNestingLevel;             // 0 if outside all loops
-    int structNestingLevel;           // 0 if outside blocks and structures
+    int structNestingLevel;           // 0 if outside structures
+    int blockNestingLevel;            // 0 if outside blocks
     int controlFlowNestingLevel;      // 0 if outside all flow control
     const TType* currentFunctionType; // the return type of the function that's currently being parsed
     bool functionReturnsValue;        // true if a non-void function has a return
@@ -315,6 +318,7 @@ public:
     TIntermTyped* handleBinaryMath(const TSourceLoc&, const char* str, TOperator op, TIntermTyped* left, TIntermTyped* right);
     TIntermTyped* handleUnaryMath(const TSourceLoc&, const char* str, TOperator op, TIntermTyped* childNode);
     TIntermTyped* handleDotDereference(const TSourceLoc&, TIntermTyped* base, const TString& field);
+    TIntermTyped* handleDotSwizzle(const TSourceLoc&, TIntermTyped* base, const TString& field);
     void blockMemberExtensionCheck(const TSourceLoc&, const TIntermTyped* base, int member, const TString& memberName);
     TFunction* handleFunctionDeclarator(const TSourceLoc&, TFunction& function, bool prototype);
     TIntermAggregate* handleFunctionDefinition(const TSourceLoc&, TFunction&);
@@ -326,6 +330,7 @@ public:
     TIntermTyped* handleLengthMethod(const TSourceLoc&, TFunction*, TIntermNode*);
     void addInputArgumentConversions(const TFunction&, TIntermNode*&) const;
     TIntermTyped* addOutputArgumentConversions(const TFunction&, TIntermAggregate&) const;
+    TIntermTyped* addAssign(const TSourceLoc&, TOperator op, TIntermTyped* left, TIntermTyped* right);
     void builtInOpCheck(const TSourceLoc&, const TFunction&, TIntermOperator&);
     void nonOpBuiltInCheck(const TSourceLoc&, const TFunction&, TIntermAggregate&);
     void userFunctionCallCheck(const TSourceLoc&, TIntermAggregate&);
@@ -358,10 +363,10 @@ public:
     void boolCheck(const TSourceLoc&, const TPublicType&);
     void samplerCheck(const TSourceLoc&, const TType&, const TString& identifier, TIntermTyped* initializer);
     void atomicUintCheck(const TSourceLoc&, const TType&, const TString& identifier);
-    void accStructNVCheck(const TSourceLoc & loc, const TType & type, const TString & identifier);
+    void accStructCheck(const TSourceLoc & loc, const TType & type, const TString & identifier);
     void transparentOpaqueCheck(const TSourceLoc&, const TType&, const TString& identifier);
     void memberQualifierCheck(glslang::TPublicType&);
-    void globalQualifierFixCheck(const TSourceLoc&, TQualifier&);
+    void globalQualifierFixCheck(const TSourceLoc&, TQualifier&, bool isMemberCheck = false);
     void globalQualifierTypeCheck(const TSourceLoc&, const TQualifier&, const TPublicType&);
     bool structQualifierErrorCheck(const TSourceLoc&, const TPublicType& pType);
     void mergeQualifiers(const TSourceLoc&, TQualifier& dst, const TQualifier& src, bool force);
@@ -417,12 +422,15 @@ public:
     void fixBlockLocations(const TSourceLoc&, TQualifier&, TTypeList&, bool memberWithLocation, bool memberWithoutLocation);
     void fixXfbOffsets(TQualifier&, TTypeList&);
     void fixBlockUniformOffsets(TQualifier&, TTypeList&);
+    void fixBlockUniformLayoutMatrix(TQualifier&, TTypeList*, TTypeList*);
+    void fixBlockUniformLayoutPacking(TQualifier&, TTypeList*, TTypeList*);
     void addQualifierToExisting(const TSourceLoc&, TQualifier, const TString& identifier);
     void addQualifierToExisting(const TSourceLoc&, TQualifier, TIdentifierList&);
     void invariantCheck(const TSourceLoc&, const TQualifier&);
     void updateStandaloneQualifierDefaults(const TSourceLoc&, const TPublicType&);
     void wrapupSwitchSubsequence(TIntermAggregate* statements, TIntermNode* branchNode);
     TIntermNode* addSwitch(const TSourceLoc&, TIntermTyped* expression, TIntermAggregate* body);
+    const TTypeList* recordStructCopy(TStructRecord&, const TType*, const TType*);
 
 #ifndef GLSLANG_WEB
     TAttributeType attributeFromName(const TString& name) const;
@@ -483,6 +491,8 @@ protected:
     bool anyIndexLimits;
     TIdSetType inductiveLoopIds;
     TVector<TIntermTyped*> needsIndexLimitationChecking;
+    TStructRecord matrixFixRecord;
+    TStructRecord packingFixRecord;
 
     //
     // Geometry shader input arrays:

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "editor_layouts_dialog.h"
 
-#include "core/class_db.h"
 #include "core/io/config_file.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_settings.h"
 #include "scene/gui/item_list.h"
@@ -58,6 +58,8 @@ void EditorLayoutsDialog::_line_gui_input(const Ref<InputEvent> &p_event) {
 				hide();
 				set_input_as_handled();
 			} break;
+			default:
+				break;
 		}
 	}
 }
@@ -70,10 +72,10 @@ void EditorLayoutsDialog::ok_pressed() {
 	if (layout_names->is_anything_selected()) {
 		Vector<int> const selected_items = layout_names->get_selected_items();
 		for (int i = 0; i < selected_items.size(); ++i) {
-			emit_signal("name_confirmed", layout_names->get_item_text(selected_items[i]));
+			emit_signal(SNAME("name_confirmed"), layout_names->get_item_text(selected_items[i]));
 		}
 	} else if (name->is_visible() && name->get_text() != "") {
-		emit_signal("name_confirmed", name->get_text());
+		emit_signal(SNAME("name_confirmed"), name->get_text());
 	}
 }
 
@@ -83,7 +85,7 @@ void EditorLayoutsDialog::_post_popup() {
 	layout_names->clear();
 
 	Ref<ConfigFile> config;
-	config.instance();
+	config.instantiate();
 	Error err = config->load(EditorSettings::get_singleton()->get_editor_layouts_config());
 	if (err != OK) {
 		return;
@@ -92,34 +94,34 @@ void EditorLayoutsDialog::_post_popup() {
 	List<String> layouts;
 	config.ptr()->get_sections(&layouts);
 
-	for (List<String>::Element *E = layouts.front(); E; E = E->next()) {
-		layout_names->add_item(**E);
+	for (const String &E : layouts) {
+		layout_names->add_item(E);
 	}
 }
 
 EditorLayoutsDialog::EditorLayoutsDialog() {
 	makevb = memnew(VBoxContainer);
 	add_child(makevb);
-	makevb->set_anchor_and_margin(MARGIN_LEFT, Control::ANCHOR_BEGIN, 5);
-	makevb->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, -5);
+	makevb->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 5);
+	makevb->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, -5);
 
 	layout_names = memnew(ItemList);
 	makevb->add_child(layout_names);
 	layout_names->set_visible(true);
-	layout_names->set_margin(MARGIN_TOP, 5);
-	layout_names->set_anchor_and_margin(MARGIN_LEFT, Control::ANCHOR_BEGIN, 5);
-	layout_names->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, -5);
+	layout_names->set_offset(SIDE_TOP, 5);
+	layout_names->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 5);
+	layout_names->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, -5);
 	layout_names->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	layout_names->set_select_mode(ItemList::SELECT_MULTI);
 	layout_names->set_allow_rmb_select(true);
 
 	name = memnew(LineEdit);
 	makevb->add_child(name);
-	name->set_margin(MARGIN_TOP, 5);
-	name->set_anchor_and_margin(MARGIN_LEFT, Control::ANCHOR_BEGIN, 5);
-	name->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, -5);
+	name->set_offset(SIDE_TOP, 5);
+	name->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 5);
+	name->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, -5);
 	name->connect("gui_input", callable_mp(this, &EditorLayoutsDialog::_line_gui_input));
-	name->connect("focus_entered", callable_mp(layout_names, &ItemList::unselect_all));
+	name->connect("focus_entered", callable_mp(layout_names, &ItemList::deselect_all));
 }
 
 void EditorLayoutsDialog::set_name_line_enabled(bool p_enabled) {

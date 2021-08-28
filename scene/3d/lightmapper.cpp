@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,6 +37,15 @@ Ref<LightmapDenoiser> LightmapDenoiser::create() {
 		return Ref<LightmapDenoiser>(create_function());
 	}
 	return Ref<LightmapDenoiser>();
+}
+
+LightmapRaycaster *(*LightmapRaycaster::create_function)() = nullptr;
+
+Ref<LightmapRaycaster> LightmapRaycaster::create() {
+	if (create_function) {
+		return Ref<LightmapRaycaster>(create_function());
+	}
+	return Ref<LightmapRaycaster>();
 }
 
 Lightmapper::CreateFunc Lightmapper::create_custom = nullptr;

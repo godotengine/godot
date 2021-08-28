@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- $(GodotProjectDir) would normally be defined by the Godot.NET.Sdk -->
+    <GodotProjectDir>$(MSBuildProjectDirectory)</GodotProjectDir>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- The emitted files are not part of the compilation nor design.
+    They're only for peeking at the generated sources. Sometimes the
+    emitted files get corrupted, but that won't break anything. -->
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GeneratedFiles</CompilerGeneratedFilesOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\glue\GodotSharp\GodotSharp\GodotSharp.csproj">
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Godot.SourceGenerators\Godot.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <!-- This file is imported automatically when using PackageReference to
+  reference Godot.SourceGenerators, but not when using ProjectReference -->
+  <Import Project="..\Godot.SourceGenerators\Godot.SourceGenerators.props" />
+
+</Project>

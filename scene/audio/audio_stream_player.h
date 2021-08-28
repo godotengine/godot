@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #ifndef AUDIO_STREAM_PLAYER_H
 #define AUDIO_STREAM_PLAYER_H
 
+#include "core/templates/safe_refcount.h"
 #include "scene/main/node.h"
 #include "servers/audio/audio_stream.h"
 
@@ -47,24 +48,15 @@ public:
 private:
 	Ref<AudioStreamPlayback> stream_playback;
 	Ref<AudioStream> stream;
-	Vector<AudioFrame> mix_buffer;
-	Vector<AudioFrame> fadeout_buffer;
-	bool use_fadeout;
 
-	volatile float setseek;
-	volatile bool active;
-	volatile bool setstop;
-	volatile bool stop_has_priority;
+	SafeFlag active;
 
-	float mix_volume_db;
-	float pitch_scale;
-	float volume_db;
-	bool autoplay;
-	bool stream_paused;
-	bool stream_paused_fade;
-	StringName bus;
+	float pitch_scale = 1.0;
+	float volume_db = 0.0;
+	bool autoplay = false;
+	StringName bus = "Master";
 
-	MixTarget mix_target;
+	MixTarget mix_target = MIX_TARGET_STEREO;
 
 	void _mix_internal(bool p_fadeout);
 	void _mix_audio();
@@ -76,8 +68,10 @@ private:
 	void _bus_layout_changed();
 	void _mix_to_bus(const AudioFrame *p_frames, int p_amount);
 
+	Vector<AudioFrame> _get_volume_vector();
+
 protected:
-	void _validate_property(PropertyInfo &property) const;
+	void _validate_property(PropertyInfo &property) const override;
 	void _notification(int p_what);
 	static void _bind_methods();
 

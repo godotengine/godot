@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,9 @@
 
 #include "visual_script_flow_control.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
 #include "core/os/keyboard.h"
-#include "core/project_settings.h"
 
 //////////////////////////////////////////
 ////////////////RETURN////////////////////
@@ -138,7 +138,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptReturn::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptReturn::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceReturn *instance = memnew(VisualScriptNodeInstanceReturn);
 	instance->node = this;
 	instance->instance = p_instance;
@@ -154,7 +154,7 @@ VisualScriptReturn::VisualScriptReturn() {
 template <bool with_value>
 static Ref<VisualScriptNode> create_return_node(const String &p_name) {
 	Ref<VisualScriptReturn> node;
-	node.instance();
+	node.instantiate();
 	node->set_enable_return_value(with_value);
 	return node;
 }
@@ -231,7 +231,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptCondition::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptCondition::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceCondition *instance = memnew(VisualScriptNodeInstanceCondition);
 	instance->node = this;
 	instance->instance = p_instance;
@@ -311,7 +311,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptWhile::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptWhile::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceWhile *instance = memnew(VisualScriptNodeInstanceWhile);
 	instance->node = this;
 	instance->instance = p_instance;
@@ -435,7 +435,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptIterator::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptIterator::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceIterator *instance = memnew(VisualScriptNodeInstanceIterator);
 	instance->node = this;
 	instance->instance = p_instance;
@@ -534,7 +534,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptSequence::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptSequence::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceSequence *instance = memnew(VisualScriptNodeInstanceSequence);
 	instance->node = this;
 	instance->instance = p_instance;
@@ -618,7 +618,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptSwitch::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptSwitch::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceSwitch *instance = memnew(VisualScriptNodeInstanceSwitch);
 	instance->instance = p_instance;
 	instance->case_count = case_values.size();
@@ -628,7 +628,7 @@ VisualScriptNodeInstance *VisualScriptSwitch::instance(VisualScriptInstance *p_i
 bool VisualScriptSwitch::_set(const StringName &p_name, const Variant &p_value) {
 	if (String(p_name) == "case_count") {
 		case_values.resize(p_value);
-		_change_notify();
+		notify_property_list_changed();
 		ports_changed_notify();
 		return true;
 	}
@@ -638,7 +638,7 @@ bool VisualScriptSwitch::_set(const StringName &p_name, const Variant &p_value) 
 		ERR_FAIL_INDEX_V(idx, case_values.size(), false);
 
 		case_values.write[idx].type = Variant::Type(int(p_value));
-		_change_notify();
+		notify_property_list_changed();
 		ports_changed_notify();
 
 		return true;
@@ -675,6 +675,10 @@ void VisualScriptSwitch::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < case_values.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::INT, "case/" + itos(i), PROPERTY_HINT_ENUM, argt));
 	}
+}
+
+void VisualScriptSwitch::reset_state() {
+	case_values.clear();
 }
 
 void VisualScriptSwitch::_bind_methods() {
@@ -733,7 +737,7 @@ void VisualScriptTypeCast::set_base_type(const StringName &p_type) {
 	}
 
 	base_type = p_type;
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -747,7 +751,7 @@ void VisualScriptTypeCast::set_base_script(const String &p_path) {
 	}
 
 	script = p_path;
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -796,7 +800,7 @@ public:
 			}
 
 			if (!ResourceCache::has(script)) {
-				//if the script is not in use by anyone, we can safely assume whathever we got is not casting to it.
+				//if the script is not in use by anyone, we can safely assume whatever we got is not casting to it.
 				return 1;
 			}
 			Ref<Script> cast_script = Ref<Resource>(ResourceCache::get(script));
@@ -827,7 +831,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptTypeCast::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptTypeCast::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceTypeCast *instance = memnew(VisualScriptNodeInstanceTypeCast);
 	instance->instance = p_instance;
 	instance->base_type = base_type;
@@ -848,11 +852,11 @@ void VisualScriptTypeCast::_bind_methods() {
 	}
 
 	String script_ext_hint;
-	for (List<String>::Element *E = script_extensions.front(); E; E = E->next()) {
+	for (const String &E : script_extensions) {
 		if (script_ext_hint != String()) {
 			script_ext_hint += ",";
 		}
-		script_ext_hint += "*." + E->get();
+		script_ext_hint += "*." + E;
 	}
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_type", PROPERTY_HINT_TYPE_STRING, "Object"), "set_base_type", "get_base_type");

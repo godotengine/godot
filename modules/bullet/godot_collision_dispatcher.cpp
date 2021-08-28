@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +43,7 @@ GodotCollisionDispatcher::GodotCollisionDispatcher(btCollisionConfiguration *col
 
 bool GodotCollisionDispatcher::needsCollision(const btCollisionObject *body0, const btCollisionObject *body1) {
 	if (body0->getUserIndex() == CASTED_TYPE_AREA || body1->getUserIndex() == CASTED_TYPE_AREA) {
-		// Avoide area narrow phase
+		// Avoid area narrow phase
 		return false;
 	}
 	return btCollisionDispatcher::needsCollision(body0, body1);
@@ -51,7 +51,7 @@ bool GodotCollisionDispatcher::needsCollision(const btCollisionObject *body0, co
 
 bool GodotCollisionDispatcher::needsResponse(const btCollisionObject *body0, const btCollisionObject *body1) {
 	if (body0->getUserIndex() == CASTED_TYPE_AREA || body1->getUserIndex() == CASTED_TYPE_AREA) {
-		// Avoide area narrow phase
+		// Avoid area narrow phase
 		return false;
 	}
 	return btCollisionDispatcher::needsResponse(body0, body1);

@@ -2,19 +2,9 @@
 #define VULKAN_FUCHSIA_H_ 1
 
 /*
-** Copyright (c) 2015-2019 The Khronos Group Inc.
+** Copyright 2015-2021 The Khronos Group Inc.
 **
-** Licensed under the Apache License, Version 2.0 (the "License");
-** you may not use this file except in compliance with the License.
-** You may obtain a copy of the License at
-**
-**     http://www.apache.org/licenses/LICENSE-2.0
-**
-** Unless required by applicable law or agreed to in writing, software
-** distributed under the License is distributed on an "AS IS" BASIS,
-** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-** See the License for the specific language governing permissions and
-** limitations under the License.
+** SPDX-License-Identifier: Apache-2.0
 */
 
 /*
@@ -48,6 +38,80 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateImagePipeSurfaceFUCHSIA(
     const VkImagePipeSurfaceCreateInfoFUCHSIA*  pCreateInfo,
     const VkAllocationCallbacks*                pAllocator,
     VkSurfaceKHR*                               pSurface);
+#endif
+
+
+#define VK_FUCHSIA_external_memory 1
+#define VK_FUCHSIA_EXTERNAL_MEMORY_SPEC_VERSION 1
+#define VK_FUCHSIA_EXTERNAL_MEMORY_EXTENSION_NAME "VK_FUCHSIA_external_memory"
+typedef struct VkImportMemoryZirconHandleInfoFUCHSIA {
+    VkStructureType                       sType;
+    const void*                           pNext;
+    VkExternalMemoryHandleTypeFlagBits    handleType;
+    zx_handle_t                           handle;
+} VkImportMemoryZirconHandleInfoFUCHSIA;
+
+typedef struct VkMemoryZirconHandlePropertiesFUCHSIA {
+    VkStructureType    sType;
+    void*              pNext;
+    uint32_t           memoryTypeBits;
+} VkMemoryZirconHandlePropertiesFUCHSIA;
+
+typedef struct VkMemoryGetZirconHandleInfoFUCHSIA {
+    VkStructureType                       sType;
+    const void*                           pNext;
+    VkDeviceMemory                        memory;
+    VkExternalMemoryHandleTypeFlagBits    handleType;
+} VkMemoryGetZirconHandleInfoFUCHSIA;
+
+typedef VkResult (VKAPI_PTR *PFN_vkGetMemoryZirconHandleFUCHSIA)(VkDevice device, const VkMemoryGetZirconHandleInfoFUCHSIA* pGetZirconHandleInfo, zx_handle_t* pZirconHandle);
+typedef VkResult (VKAPI_PTR *PFN_vkGetMemoryZirconHandlePropertiesFUCHSIA)(VkDevice device, VkExternalMemoryHandleTypeFlagBits handleType, zx_handle_t zirconHandle, VkMemoryZirconHandlePropertiesFUCHSIA* pMemoryZirconHandleProperties);
+
+#ifndef VK_NO_PROTOTYPES
+VKAPI_ATTR VkResult VKAPI_CALL vkGetMemoryZirconHandleFUCHSIA(
+    VkDevice                                    device,
+    const VkMemoryGetZirconHandleInfoFUCHSIA*   pGetZirconHandleInfo,
+    zx_handle_t*                                pZirconHandle);
+
+VKAPI_ATTR VkResult VKAPI_CALL vkGetMemoryZirconHandlePropertiesFUCHSIA(
+    VkDevice                                    device,
+    VkExternalMemoryHandleTypeFlagBits          handleType,
+    zx_handle_t                                 zirconHandle,
+    VkMemoryZirconHandlePropertiesFUCHSIA*      pMemoryZirconHandleProperties);
+#endif
+
+
+#define VK_FUCHSIA_external_semaphore 1
+#define VK_FUCHSIA_EXTERNAL_SEMAPHORE_SPEC_VERSION 1
+#define VK_FUCHSIA_EXTERNAL_SEMAPHORE_EXTENSION_NAME "VK_FUCHSIA_external_semaphore"
+typedef struct VkImportSemaphoreZirconHandleInfoFUCHSIA {
+    VkStructureType                          sType;
+    const void*                              pNext;
+    VkSemaphore                              semaphore;
+    VkSemaphoreImportFlags                   flags;
+    VkExternalSemaphoreHandleTypeFlagBits    handleType;
+    zx_handle_t                              zirconHandle;
+} VkImportSemaphoreZirconHandleInfoFUCHSIA;
+
+typedef struct VkSemaphoreGetZirconHandleInfoFUCHSIA {
+    VkStructureType                          sType;
+    const void*                              pNext;
+    VkSemaphore                              semaphore;
+    VkExternalSemaphoreHandleTypeFlagBits    handleType;
+} VkSemaphoreGetZirconHandleInfoFUCHSIA;
+
+typedef VkResult (VKAPI_PTR *PFN_vkImportSemaphoreZirconHandleFUCHSIA)(VkDevice device, const VkImportSemaphoreZirconHandleInfoFUCHSIA* pImportSemaphoreZirconHandleInfo);
+typedef VkResult (VKAPI_PTR *PFN_vkGetSemaphoreZirconHandleFUCHSIA)(VkDevice device, const VkSemaphoreGetZirconHandleInfoFUCHSIA* pGetZirconHandleInfo, zx_handle_t* pZirconHandle);
+
+#ifndef VK_NO_PROTOTYPES
+VKAPI_ATTR VkResult VKAPI_CALL vkImportSemaphoreZirconHandleFUCHSIA(
+    VkDevice                                    device,
+    const VkImportSemaphoreZirconHandleInfoFUCHSIA* pImportSemaphoreZirconHandleInfo);
+
+VKAPI_ATTR VkResult VKAPI_CALL vkGetSemaphoreZirconHandleFUCHSIA(
+    VkDevice                                    device,
+    const VkSemaphoreGetZirconHandleInfoFUCHSIA* pGetZirconHandleInfo,
+    zx_handle_t*                                pZirconHandle);
 #endif
 
 #ifdef __cplusplus

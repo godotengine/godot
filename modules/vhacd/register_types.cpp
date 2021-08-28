@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,8 +32,8 @@
 #include "scene/resources/mesh.h"
 #include "thirdparty/vhacd/public/VHACD.h"
 
-static Vector<Vector<Face3>> convex_decompose(const Vector<Face3> &p_faces) {
-	Vector<float> vertices;
+static Vector<Vector<Face3>> convex_decompose(const Vector<Face3> &p_faces, int p_max_convex_hulls = -1) {
+	Vector<real_t> vertices;
 	vertices.resize(p_faces.size() * 9);
 	Vector<uint32_t> indices;
 	indices.resize(p_faces.size() * 3);
@@ -47,8 +47,12 @@ static Vector<Vector<Face3>> convex_decompose(const Vector<Face3> &p_faces) {
 		}
 	}
 
-	VHACD::IVHACD *decomposer = VHACD::CreateVHACD();
 	VHACD::IVHACD::Parameters params;
+	if (p_max_convex_hulls > 0) {
+		params.m_maxConvexHulls = p_max_convex_hulls;
+	}
+
+	VHACD::IVHACD *decomposer = VHACD::CreateVHACD();
 	decomposer->Compute(vertices.ptr(), vertices.size() / 3, indices.ptr(), indices.size() / 3, params);
 
 	int hull_count = decomposer->GetNConvexHulls();

@@ -25,11 +25,10 @@ THE SOFTWARE.
 */
 
 
-#include <ft2build.h>
 
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_OBJECTS_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/ftobjs.h>
 
 #include "pcf.h"
 #include "pcfread.h"
@@ -122,7 +121,7 @@ THE SOFTWARE.
          toc->count > 9                     )
     {
       FT_TRACE0(( "pcf_read_TOC: adjusting number of tables"
-                  " (from %d to %d)\n",
+                  " (from %ld to %ld)\n",
                   toc->count,
                   FT_MIN( stream->size >> 4, 9 ) ));
       toc->count = FT_MIN( stream->size >> 4, 9 );
@@ -242,7 +241,7 @@ THE SOFTWARE.
           if ( tables[i].type == (FT_UInt)( 1 << j ) )
             name = tableNames[j];
 
-        FT_TRACE4(( "  %d: type=%s, format=0x%X,"
+        FT_TRACE4(( "  %d: type=%s, format=0x%lX,"
                     " size=%ld (0x%lX), offset=%ld (0x%lX)\n",
                     i, name,
                     tables[i].format,
@@ -661,7 +660,7 @@ THE SOFTWARE.
       {
         properties[i].value.l = props[i].value;
 
-        FT_TRACE4(( " %d\n", properties[i].value.l ));
+        FT_TRACE4(( " %ld\n", properties[i].value.l ));
       }
     }
 
@@ -798,7 +797,7 @@ THE SOFTWARE.
         metrics->descent          = 0;
 
         FT_TRACE0(( "pcf_get_metrics:"
-                    " invalid metrics for glyph %d\n", i ));
+                    " invalid metrics for glyph %ld\n", i ));
       }
     }
 
@@ -918,11 +917,11 @@ THE SOFTWARE.
 
       sizebitmaps = bitmapSizes[PCF_GLYPH_PAD_INDEX( format )];
 
-      FT_TRACE4(( "  %ld-bit padding implies a size of %lu\n",
+      FT_TRACE4(( "  %d-bit padding implies a size of %lu\n",
                   8 << i, bitmapSizes[i] ));
     }
 
-    FT_TRACE4(( "  %lu bitmaps, using %ld-bit padding\n",
+    FT_TRACE4(( "  %lu bitmaps, using %d-bit padding\n",
                 nbitmaps,
                 8 << PCF_GLYPH_PAD_INDEX( format ) ));
     FT_TRACE4(( "  bitmap size: %lu\n", sizebitmaps ));
@@ -1252,13 +1251,13 @@ THE SOFTWARE.
     if ( FT_ABS( accel->fontAscent ) > 0x7FFF )
     {
       accel->fontAscent = accel->fontAscent < 0 ? -0x7FFF : 0x7FFF;
-      FT_TRACE0(( "pfc_get_accel: clamping font ascent to value %d\n",
+      FT_TRACE0(( "pfc_get_accel: clamping font ascent to value %ld\n",
                   accel->fontAscent ));
     }
     if ( FT_ABS( accel->fontDescent ) > 0x7FFF )
     {
       accel->fontDescent = accel->fontDescent < 0 ? -0x7FFF : 0x7FFF;
-      FT_TRACE0(( "pfc_get_accel: clamping font descent to value %d\n",
+      FT_TRACE0(( "pfc_get_accel: clamping font descent to value %ld\n",
                   accel->fontDescent ));
     }
 
@@ -1631,7 +1630,7 @@ THE SOFTWARE.
           if ( FT_ABS( prop->value.l ) > 0x504C2L ) /* 0x7FFF * 72270/7200 */
           {
             bsize->size = 0x7FFF;
-            FT_TRACE0(( "pcf_load_font: clamping point size to value %d\n",
+            FT_TRACE0(( "pcf_load_font: clamping point size to value %ld\n",
                         bsize->size ));
           }
           else
@@ -1650,7 +1649,7 @@ THE SOFTWARE.
           if ( FT_ABS( prop->value.l ) > 0x7FFF )
           {
             bsize->y_ppem = 0x7FFF << 6;
-            FT_TRACE0(( "pcf_load_font: clamping pixel size to value %d\n",
+            FT_TRACE0(( "pcf_load_font: clamping pixel size to value %ld\n",
                         bsize->y_ppem ));
           }
           else

@@ -1,0 +1,9 @@
+{
+    strategy: "additive"
+    featureFilters: {
+        brkitr_rules: include
+        brkitr_dictionaries: include
+        brkitr_tree: include
+        misc: include
+    }
+}

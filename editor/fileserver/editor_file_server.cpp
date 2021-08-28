@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -200,7 +200,7 @@ void EditorFileServer::_subthread_start(void *s) {
 				cd->connection->put_data(buf4, 4);
 				encode_uint32(OK, buf4);
 				cd->connection->put_data(buf4, 4);
-				encode_uint64(fa->get_len(), buf4);
+				encode_uint64(fa->get_length(), buf4);
 				cd->connection->put_data(buf4, 8);
 
 				cd->files[id] = fa;
@@ -230,8 +230,7 @@ void EditorFileServer::_subthread_start(void *s) {
 				cd->files[id]->seek(offset);
 				Vector<uint8_t> buf;
 				buf.resize(blocklen);
-				int read = cd->files[id]->get_buffer(buf.ptrw(), blocklen);
-				ERR_CONTINUE(read < 0);
+				uint32_t read = cd->files[id]->get_buffer(buf.ptrw(), blocklen);
 
 				print_verbose("GET BLOCK - offset: " + itos(offset) + ", blocklen: " + itos(blocklen));
 
@@ -278,7 +277,8 @@ void EditorFileServer::_thread_start(void *s) {
 				cd->connection = self->server->take_connection();
 				cd->efs = self;
 				cd->quit = false;
-				cd->thread = Thread::create(_subthread_start, cd);
+				cd->thread = memnew(Thread);
+				cd->thread->start(_subthread_start, cd);
 			}
 		}
 
@@ -287,8 +287,7 @@ void EditorFileServer::_thread_start(void *s) {
 			Thread *w = self->to_wait.front()->get();
 			self->to_wait.erase(w);
 			self->wait_mutex.unlock();
-			Thread::wait_to_finish(w);
-			memdelete(w);
+			w->wait_to_finish();
 			self->wait_mutex.lock();
 		}
 		self->wait_mutex.unlock();
@@ -313,11 +312,11 @@ void EditorFileServer::stop() {
 }
 
 EditorFileServer::EditorFileServer() {
-	server.instance();
+	server.instantiate();
 	quit = false;
 	active = false;
 	cmd = CMD_NONE;
-	thread = Thread::create(_thread_start, this);
+	thread.start(_thread_start, this);
 
 	EDITOR_DEF("filesystem/file_server/port", 6010);
 	EDITOR_DEF("filesystem/file_server/password", "");
@@ -325,6 +324,5 @@ EditorFileServer::EditorFileServer() {
 
 EditorFileServer::~EditorFileServer() {
 	quit = true;
-	Thread::wait_to_finish(thread);
-	memdelete(thread);
+	thread.wait_to_finish();
 }

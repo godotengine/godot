@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,9 +31,9 @@
 #ifndef COLLADA_H
 #define COLLADA_H
 
+#include "core/config/project_settings.h"
 #include "core/io/xml_parser.h"
-#include "core/map.h"
-#include "core/project_settings.h"
+#include "core/templates/map.h"
 #include "scene/resources/material.h"
 
 class Collada {
@@ -96,8 +96,8 @@ public:
 		};
 
 		float aspect = 1;
-		float z_near = 0.1;
-		float z_far = 100;
+		float z_near = 0.05;
+		float z_far = 4000;
 
 		CameraData() {}
 	};
@@ -128,7 +128,7 @@ public:
 		String name;
 		struct Source {
 			Vector<float> array;
-			int stride;
+			int stride = 0;
 		};
 
 		Map<String, Source> sources;
@@ -142,15 +142,15 @@ public:
 		struct Primitives {
 			struct SourceRef {
 				String source;
-				int offset;
+				int offset = 0;
 			};
 
 			String material;
 			Map<String, SourceRef> sources;
 			Vector<float> polygons;
 			Vector<float> indices;
-			int count;
-			int vertex_size;
+			int count = 0;
+			int vertex_size = 0;
 		};
 
 		Vector<Primitives> primitives;
@@ -168,7 +168,7 @@ public:
 		struct Source {
 			Vector<String> sarray;
 			Vector<float> array;
-			int stride;
+			int stride = 0;
 		};
 
 		Map<String, Source> sources;
@@ -182,7 +182,7 @@ public:
 		String base;
 		bool use_idrefs = false;
 
-		Transform bind_shape;
+		Transform3D bind_shape;
 
 		struct Source {
 			Vector<String> sarray; //maybe for names
@@ -200,17 +200,17 @@ public:
 		struct Weights {
 			struct SourceRef {
 				String source;
-				int offset;
+				int offset = 0;
 			};
 
 			String material;
 			Map<String, SourceRef> sources;
 			Vector<float> sets;
 			Vector<float> indices;
-			int count;
+			int count = 0;
 		} weights;
 
-		Map<String, Transform> bone_rest_map;
+		Map<String, Transform3D> bone_rest_map;
 
 		SkinControllerData() {}
 	};
@@ -242,8 +242,8 @@ public:
 		Color color;
 		int uid = 0;
 		struct Weight {
-			int bone_idx;
-			float weight;
+			int bone_idx = 0;
+			float weight = 0;
 			bool operator<(const Weight w) const { return weight > w.weight; } //heaviest first
 		};
 
@@ -274,7 +274,7 @@ public:
 					if (normal == p_vert.normal) {
 						if (uv == p_vert.uv) {
 							if (uv2 == p_vert.uv2) {
-								if (!weights.empty() || !p_vert.weights.empty()) {
+								if (!weights.is_empty() || !p_vert.weights.is_empty()) {
 									if (weights.size() == p_vert.weights.size()) {
 										for (int i = 0; i < weights.size(); i++) {
 											if (weights[i].bone_idx != p_vert.weights[i].bone_idx) {
@@ -313,7 +313,6 @@ public:
 
 	struct Node {
 		enum Type {
-
 			TYPE_NODE,
 			TYPE_JOINT,
 			TYPE_SKELETON, //this bone is not collada, it's added afterwards as optimization
@@ -332,7 +331,7 @@ public:
 			};
 
 			String id;
-			Op op;
+			Op op = OP_ROTATE;
 			Vector<float> data;
 		};
 
@@ -343,15 +342,15 @@ public:
 		String empty_draw_type;
 		bool noname = false;
 		Vector<XForm> xform_list;
-		Transform default_transform;
-		Transform post_transform;
+		Transform3D default_transform;
+		Transform3D post_transform;
 		Vector<Node *> children;
 
 		Node *parent = nullptr;
 
-		Transform compute_transform(Collada &state) const;
-		Transform get_global_transform() const;
-		Transform get_transform() const;
+		Transform3D compute_transform(Collada &state) const;
+		Transform3D get_global_transform() const;
+		Transform3D get_transform() const;
 
 		bool ignore_anim = false;
 
@@ -376,7 +375,7 @@ public:
 	};
 
 	struct NodeGeometry : public Node {
-		bool controller;
+		bool controller = false;
 		String source;
 
 		struct Material {
@@ -439,7 +438,7 @@ public:
 				TYPE_MATRIX
 			};
 
-			float time;
+			float time = 0;
 			Vector<float> data;
 			Point2 in_tangent;
 			Point2 out_tangent;
@@ -464,10 +463,10 @@ public:
 
 		float unit_scale = 1.0;
 		Vector3::Axis up_axis = Vector3::AXIS_Y;
-		bool z_up;
+		bool z_up = false;
 
 		struct Version {
-			int major, minor, rev;
+			int major = 0, minor = 0, rev = 0;
 
 			bool operator<(const Version &p_ver) const { return (major == p_ver.major) ? ((minor == p_ver.minor) ? (rev < p_ver.rev) : minor < p_ver.minor) : major < p_ver.major; }
 			Version(int p_major = 0, int p_minor = 0, int p_rev = 0) {
@@ -498,7 +497,7 @@ public:
 		Map<String, String> sid_to_node_map;
 		//Map<String,NodeJoint*> bone_map;
 
-		Map<String, Transform> bone_rest_map;
+		Map<String, Transform3D> bone_rest_map;
 
 		String local_path;
 		String root_visual_scene;
@@ -518,9 +517,9 @@ public:
 
 	Collada();
 
-	Transform fix_transform(const Transform &p_transform);
+	Transform3D fix_transform(const Transform3D &p_transform);
 
-	Transform get_root_transform() const;
+	Transform3D get_root_transform() const;
 
 	int get_uv_channel(String p_name);
 
@@ -558,7 +557,7 @@ private: // private stuff
 	Variant _parse_param(XMLParser &parser);
 	Vector<float> _read_float_array(XMLParser &parser);
 	Vector<String> _read_string_array(XMLParser &parser);
-	Transform _read_transform(XMLParser &parser);
+	Transform3D _read_transform(XMLParser &parser);
 	String _read_empty_draw_type(XMLParser &parser);
 
 	void _joint_set_owner(Collada::Node *p_node, NodeSkeleton *p_owner);

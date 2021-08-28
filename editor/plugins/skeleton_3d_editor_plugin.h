@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,19 +41,19 @@ class PhysicalBone3D;
 class Skeleton3DEditorPlugin;
 class Button;
 class CheckBox;
-class EditorPropertyTransform;
+class EditorPropertyTransform3D;
 class EditorPropertyVector3;
 
 class BoneTransformEditor : public VBoxContainer {
 	GDCLASS(BoneTransformEditor, VBoxContainer);
 
-	EditorInspectorSection *section;
+	EditorInspectorSection *section = nullptr;
 
-	EditorPropertyVector3 *translation_property;
-	EditorPropertyVector3 *rotation_property;
-	EditorPropertyVector3 *scale_property;
-	EditorInspectorSection *transform_section;
-	EditorPropertyTransform *transform_property;
+	EditorPropertyVector3 *translation_property = nullptr;
+	EditorPropertyVector3 *rotation_property = nullptr;
+	EditorPropertyVector3 *scale_property = nullptr;
+	EditorInspectorSection *transform_section = nullptr;
+	EditorPropertyTransform3D *transform_property = nullptr;
 
 	Rect2 background_rects[5];
 
@@ -62,12 +62,12 @@ class BoneTransformEditor : public VBoxContainer {
 
 	UndoRedo *undo_redo;
 
-	Button *key_button;
-	CheckBox *enabled_checkbox;
+	Button *key_button = nullptr;
+	CheckBox *enabled_checkbox = nullptr;
 
-	bool keyable;
-	bool toggle_enabled;
-	bool updating;
+	bool keyable = false;
+	bool toggle_enabled = false;
+	bool updating = false;
 
 	String label;
 
@@ -78,11 +78,11 @@ class BoneTransformEditor : public VBoxContainer {
 	// Called when the one of the EditorPropertyVector3 are updated.
 	void _value_changed_vector3(const String p_property_name, const Vector3 p_vector, const StringName p_edited_property_name, const bool p_boolean);
 	// Called when the transform_property is updated.
-	void _value_changed_transform(const String p_property_name, const Transform p_transform, const StringName p_edited_property_name, const bool p_boolean);
+	void _value_changed_transform(const String p_property_name, const Transform3D p_transform, const StringName p_edited_property_name, const bool p_boolean);
 	// Changes the transform to the given transform and updates the UI accordingly.
-	void _change_transform(Transform p_new_transform);
+	void _change_transform(Transform3D p_new_transform);
 	// Creates a Transform using the EditorPropertyVector3 properties.
-	Transform compute_transform_from_vector3s() const;
+	Transform3D compute_transform_from_vector3s() const;
 
 	void update_enabled_checkbox();
 
@@ -98,7 +98,7 @@ public:
 
 	void _update_properties();
 	void _update_custom_pose_properties();
-	void _update_transform_properties(Transform p_transform);
+	void _update_transform_properties(Transform3D p_transform);
 
 	// Can/cannot modify the spinner values for the Transform
 	void set_read_only(const bool p_read_only);
@@ -127,8 +127,7 @@ class Skeleton3DEditor : public VBoxContainer {
 
 	struct BoneInfo {
 		PhysicalBone3D *physical_bone = nullptr;
-		Transform relative_rest; // Relative to skeleton node
-		BoneInfo() {}
+		Transform3D relative_rest; // Relative to skeleton node
 	};
 
 	EditorNode *editor;
@@ -136,20 +135,20 @@ class Skeleton3DEditor : public VBoxContainer {
 
 	Skeleton3D *skeleton;
 
-	Tree *joint_tree;
-	BoneTransformEditor *rest_editor;
-	BoneTransformEditor *pose_editor;
-	BoneTransformEditor *custom_pose_editor;
+	Tree *joint_tree = nullptr;
+	BoneTransformEditor *rest_editor = nullptr;
+	BoneTransformEditor *pose_editor = nullptr;
+	BoneTransformEditor *custom_pose_editor = nullptr;
 
-	MenuButton *options;
-	EditorFileDialog *file_dialog;
+	MenuButton *options = nullptr;
+	EditorFileDialog *file_dialog = nullptr;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	void _on_click_option(int p_option);
 	void _file_selected(const String &p_file);
 
-	EditorFileDialog *file_export_lib;
+	EditorFileDialog *file_export_lib = nullptr;
 
 	void update_joint_tree();
 	void update_editors();
@@ -190,8 +189,8 @@ class EditorInspectorPluginSkeleton : public EditorInspectorPlugin {
 	EditorNode *editor;
 
 public:
-	virtual bool can_handle(Object *p_object);
-	virtual void parse_begin(Object *p_object);
+	virtual bool can_handle(Object *p_object) override;
+	virtual void parse_begin(Object *p_object) override;
 };
 
 class Skeleton3DEditorPlugin : public EditorPlugin {
@@ -202,7 +201,7 @@ class Skeleton3DEditorPlugin : public EditorPlugin {
 public:
 	Skeleton3DEditorPlugin(EditorNode *p_node);
 
-	virtual String get_name() const { return "Skeleton3D"; }
+	virtual String get_name() const override { return "Skeleton3D"; }
 };
 
 #endif // SKELETON_3D_EDITOR_PLUGIN_H

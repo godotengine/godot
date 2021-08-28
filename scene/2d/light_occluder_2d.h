@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,11 +46,11 @@ public:
 private:
 	RID occ_polygon;
 	Vector<Vector2> polygon;
-	bool closed;
-	CullMode cull;
+	bool closed = true;
+	CullMode cull = CULL_DISABLED;
 
 	mutable Rect2 item_rect;
-	mutable bool rect_cache_dirty;
+	mutable bool rect_cache_dirty = true;
 
 protected:
 	static void _bind_methods();
@@ -70,7 +70,7 @@ public:
 	void set_cull_mode(CullMode p_mode);
 	CullMode get_cull_mode() const;
 
-	virtual RID get_rid() const;
+	virtual RID get_rid() const override;
 	OccluderPolygon2D();
 	~OccluderPolygon2D();
 };
@@ -84,7 +84,7 @@ class LightOccluder2D : public Node2D {
 	bool enabled;
 	int mask;
 	Ref<OccluderPolygon2D> occluder_polygon;
-
+	bool sdf_collision;
 	void _poly_changed();
 
 protected:
@@ -93,8 +93,8 @@ protected:
 
 public:
 #ifdef TOOLS_ENABLED
-	virtual Rect2 _edit_get_rect() const;
-	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+	virtual Rect2 _edit_get_rect() const override;
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
 #endif
 
 	void set_occluder_polygon(const Ref<OccluderPolygon2D> &p_polygon);
@@ -103,7 +103,10 @@ public:
 	void set_occluder_light_mask(int p_mask);
 	int get_occluder_light_mask() const;
 
-	String get_configuration_warning() const;
+	void set_as_sdf_collision(bool p_enable);
+	bool is_set_as_sdf_collision() const;
+
+	TypedArray<String> get_configuration_warnings() const override;
 
 	LightOccluder2D();
 	~LightOccluder2D();

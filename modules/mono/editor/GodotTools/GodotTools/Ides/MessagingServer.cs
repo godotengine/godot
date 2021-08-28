@@ -330,9 +330,10 @@ namespace GodotTools.Ides
             {
                 DispatchToMainThread(() =>
                 {
-                    GodotSharpEditor.Instance.CurrentPlaySettings = new PlaySettings();
+                    // TODO: Add BuildBeforePlaying flag to PlayRequest
+
+                    // Run the game
                     Internal.EditorRunPlay();
-                    GodotSharpEditor.Instance.CurrentPlaySettings = null;
                 });
                 return Task.FromResult<Response>(new PlayResponse());
             }
@@ -341,10 +342,22 @@ namespace GodotTools.Ides
             {
                 DispatchToMainThread(() =>
                 {
-                    GodotSharpEditor.Instance.CurrentPlaySettings =
-                        new PlaySettings(request.DebuggerHost, request.DebuggerPort, request.BuildBeforePlaying ?? true);
+                    // Tell the build callback whether the editor already built the solution or not
+                    GodotSharpEditor.Instance.SkipBuildBeforePlaying = !(request.BuildBeforePlaying ?? true);
+
+                    // Pass the debugger agent settings to the player via an environment variables
+                    // TODO: It would be better if this was an argument in EditorRunPlay instead
+                    Environment.SetEnvironmentVariable("GODOT_MONO_DEBUGGER_AGENT",
+                        "--debugger-agent=transport=dt_socket" +
+                        $",address={request.DebuggerHost}:{request.DebuggerPort}" +
+                        ",server=n");
+
+                    // Run the game
                     Internal.EditorRunPlay();
-                    GodotSharpEditor.Instance.CurrentPlaySettings = null;
+
+                    // Restore normal settings
+                    Environment.SetEnvironmentVariable("GODOT_MONO_DEBUGGER_AGENT", "");
+                    GodotSharpEditor.Instance.SkipBuildBeforePlaying = false;
                 });
                 return Task.FromResult<Response>(new DebugPlayResponse());
             }

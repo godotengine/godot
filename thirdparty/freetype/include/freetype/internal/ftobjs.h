@@ -26,21 +26,21 @@
 #ifndef FTOBJS_H_
 #define FTOBJS_H_
 
-#include <ft2build.h>
-#include FT_RENDER_H
-#include FT_SIZES_H
-#include FT_LCD_FILTER_H
-#include FT_INTERNAL_MEMORY_H
-#include FT_INTERNAL_GLYPH_LOADER_H
-#include FT_INTERNAL_DRIVER_H
-#include FT_INTERNAL_AUTOHINT_H
-#include FT_INTERNAL_SERVICE_H
-#include FT_INTERNAL_CALC_H
+#include <freetype/ftrender.h>
+#include <freetype/ftsizes.h>
+#include <freetype/ftlcdfil.h>
+#include <freetype/internal/ftmemory.h>
+#include <freetype/internal/ftgloadr.h>
+#include <freetype/internal/ftdrv.h>
+#include <freetype/internal/autohint.h>
+#include <freetype/internal/ftserv.h>
+#include <freetype/internal/ftcalc.h>
 
 #ifdef FT_CONFIG_OPTION_INCREMENTAL
-#include FT_INCREMENTAL_H
+#include <freetype/ftincrem.h>
 #endif
 
+#include "compiler-macros.h"
 
 FT_BEGIN_HEADER
 
@@ -226,8 +226,8 @@ FT_BEGIN_HEADER
   } FT_CMap_ClassRec;
 
 
-#define FT_DECLARE_CMAP_CLASS( class_ )              \
-  FT_CALLBACK_TABLE const  FT_CMap_ClassRec class_;
+#define FT_DECLARE_CMAP_CLASS( class_ )            \
+  FT_CALLBACK_TABLE const FT_CMap_ClassRec  class_;
 
 #define FT_DEFINE_CMAP_CLASS(       \
           class_,                   \
@@ -653,7 +653,7 @@ FT_BEGIN_HEADER
   FT_BASE( void )
   FT_Done_GlyphSlot( FT_GlyphSlot  slot );
 
- /* */
+  /* */
 
 #define FT_REQUEST_WIDTH( req )                                            \
           ( (req)->horiResolution                                          \
@@ -1057,6 +1057,9 @@ FT_BEGIN_HEADER
    *   The struct will be allocated in the global scope (or the scope where
    *   the macro is used).
    */
+#define FT_DECLARE_GLYPH( class_ )                \
+  FT_CALLBACK_TABLE const FT_Glyph_Class  class_;
+
 #define FT_DEFINE_GLYPH(          \
           class_,                 \
           size_,                  \

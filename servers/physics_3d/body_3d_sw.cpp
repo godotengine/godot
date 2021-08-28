@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,48 +51,56 @@ void Body3DSW::_update_transform_dependant() {
 }
 
 void Body3DSW::update_inertias() {
-	//update shapes and motions
+	// Update shapes and motions.
 
 	switch (mode) {
-		case PhysicsServer3D::BODY_MODE_RIGID: {
-			//update tensor for all shapes, not the best way but should be somehow OK. (inspired from bullet)
+		case PhysicsServer3D::BODY_MODE_DYNAMIC: {
+			// Update tensor for all shapes, not the best way but should be somehow OK. (inspired from bullet)
 			real_t total_area = 0;
 
 			for (int i = 0; i < get_shape_count(); i++) {
 				total_area += get_shape_area(i);
 			}
 
-			// We have to recompute the center of mass
+			// We have to recompute the center of mass.
 			center_of_mass_local.zero();
 
-			for (int i = 0; i < get_shape_count(); i++) {
-				real_t area = get_shape_area(i);
+			if (total_area != 0.0) {
+				for (int i = 0; i < get_shape_count(); i++) {
+					real_t area = get_shape_area(i);
 
-				real_t mass = area * this->mass / total_area;
+					real_t mass = area * this->mass / total_area;
 
-				// NOTE: we assume that the shape origin is also its center of mass
-				center_of_mass_local += mass * get_shape_transform(i).origin;
+					// NOTE: we assume that the shape origin is also its center of mass.
+					center_of_mass_local += mass * get_shape_transform(i).origin;
+				}
+
+				center_of_mass_local /= mass;
 			}
 
-			center_of_mass_local /= mass;
-
-			// Recompute the inertia tensor
+			// Recompute the inertia tensor.
 			Basis inertia_tensor;
 			inertia_tensor.set_zero();
+			bool inertia_set = false;
 
 			for (int i = 0; i < get_shape_count(); i++) {
 				if (is_shape_disabled(i)) {
 					continue;
 				}
 
-				const Shape3DSW *shape = get_shape(i);
-
 				real_t area = get_shape_area(i);
+				if (area == 0.0) {
+					continue;
+				}
+
+				inertia_set = true;
+
+				const Shape3DSW *shape = get_shape(i);
 
 				real_t mass = area * this->mass / total_area;
 
 				Basis shape_inertia_tensor = shape->get_moment_of_inertia(mass).to_diagonal_matrix();
-				Transform shape_transform = get_shape_transform(i);
+				Transform3D shape_transform = get_shape_transform(i);
 				Basis shape_basis = shape_transform.basis.orthonormalized();
 
 				// NOTE: we don't take the scale of collision shapes into account when computing the inertia tensor!
@@ -102,7 +110,12 @@ void Body3DSW::update_inertias() {
 				inertia_tensor += shape_inertia_tensor + (Basis() * shape_origin.dot(shape_origin) - shape_origin.outer(shape_origin)) * mass;
 			}
 
-			// Compute the principal axes of inertia
+			// Set the inertia to a valid value when there are no valid shapes.
+			if (!inertia_set) {
+				inertia_tensor.set_diagonal(Vector3(1.0, 1.0, 1.0));
+			}
+
+			// Compute the principal axes of inertia.
 			principal_inertia_axes_local = inertia_tensor.diagonalize().transposed();
 			_inv_inertia = inertia_tensor.get_main_diagonal().inverse();
 
@@ -119,7 +132,7 @@ void Body3DSW::update_inertias() {
 			_inv_inertia_tensor.set_zero();
 			_inv_mass = 0;
 		} break;
-		case PhysicsServer3D::BODY_MODE_CHARACTER: {
+		case PhysicsServer3D::BODY_MODE_DYNAMIC_LOCKED: {
 			_inv_inertia_tensor.set_zero();
 			_inv_mass = 1.0 / mass;
 
@@ -137,31 +150,17 @@ void Body3DSW::set_active(bool p_active) {
 	}
 
 	active = p_active;
-	if (!p_active) {
-		if (get_space()) {
-			get_space()->body_remove_from_active_list(&active_list);
-		}
-	} else {
+
+	if (active) {
 		if (mode == PhysicsServer3D::BODY_MODE_STATIC) {
-			return; //static bodies can't become active
-		}
-		if (get_space()) {
+			// Static bodies can't be active.
+			active = false;
+		} else if (get_space()) {
 			get_space()->body_add_to_active_list(&active_list);
 		}
-
-		//still_time=0;
+	} else if (get_space()) {
+		get_space()->body_remove_from_active_list(&active_list);
 	}
-	/*
-	if (!space)
-		return;
-
-	for(int i=0;i<get_shape_count();i++) {
-		Shape &s=shapes[i];
-		if (s.bpid>0) {
-			get_space()->get_broadphase()->set_active(s.bpid,active);
-		}
-	}
-*/
 }
 
 void Body3DSW::set_param(PhysicsServer3D::BodyParameter p_param, real_t p_value) {
@@ -240,13 +239,13 @@ void Body3DSW::set_mode(PhysicsServer3D::BodyMode p_mode) {
 			}
 
 		} break;
-		case PhysicsServer3D::BODY_MODE_RIGID: {
+		case PhysicsServer3D::BODY_MODE_DYNAMIC: {
 			_inv_mass = mass > 0 ? (1.0 / mass) : 0;
 			_set_static(false);
 			set_active(true);
 
 		} break;
-		case PhysicsServer3D::BODY_MODE_CHARACTER: {
+		case PhysicsServer3D::BODY_MODE_DYNAMIC_LOCKED: {
 			_inv_mass = mass > 0 ? (1.0 / mass) : 0;
 			_set_static(false);
 			set_active(true);
@@ -287,7 +286,7 @@ void Body3DSW::set_state(PhysicsServer3D::BodyState p_state, const Variant &p_va
 				_set_inv_transform(get_transform().affine_inverse());
 				wakeup_neighbours();
 			} else {
-				Transform t = p_variant;
+				Transform3D t = p_variant;
 				t.orthonormalize();
 				new_transform = get_transform(); //used as old to compute motion
 				if (new_transform == t) {
@@ -300,24 +299,15 @@ void Body3DSW::set_state(PhysicsServer3D::BodyState p_state, const Variant &p_va
 
 		} break;
 		case PhysicsServer3D::BODY_STATE_LINEAR_VELOCITY: {
-			/*
-			if (mode==PhysicsServer3D::BODY_MODE_STATIC)
-				break;
-			*/
 			linear_velocity = p_variant;
 			wakeup();
 		} break;
 		case PhysicsServer3D::BODY_STATE_ANGULAR_VELOCITY: {
-			/*
-			if (mode!=PhysicsServer3D::BODY_MODE_RIGID)
-				break;
-			*/
 			angular_velocity = p_variant;
 			wakeup();
 
 		} break;
 		case PhysicsServer3D::BODY_STATE_SLEEPING: {
-			//?
 			if (mode == PhysicsServer3D::BODY_MODE_STATIC || mode == PhysicsServer3D::BODY_MODE_KINEMATIC) {
 				break;
 			}
@@ -334,7 +324,7 @@ void Body3DSW::set_state(PhysicsServer3D::BodyState p_state, const Variant &p_va
 		} break;
 		case PhysicsServer3D::BODY_STATE_CAN_SLEEP: {
 			can_sleep = p_variant;
-			if (mode == PhysicsServer3D::BODY_MODE_RIGID && !active && !can_sleep) {
+			if (mode == PhysicsServer3D::BODY_MODE_DYNAMIC && !active && !can_sleep) {
 				set_active(true);
 			}
 
@@ -384,29 +374,15 @@ void Body3DSW::set_space(Space3DSW *p_space) {
 		if (active) {
 			get_space()->body_add_to_active_list(&active_list);
 		}
-		/*
-		_update_queries();
-		if (is_active()) {
-			active=false;
-			set_active(true);
-		}
-		*/
 	}
 
 	first_integration = true;
 }
 
-void Body3DSW::_compute_area_gravity_and_dampenings(const Area3DSW *p_area) {
-	if (p_area->is_gravity_point()) {
-		if (p_area->get_gravity_distance_scale() > 0) {
-			Vector3 v = p_area->get_transform().xform(p_area->get_gravity_vector()) - get_transform().get_origin();
-			gravity += v.normalized() * (p_area->get_gravity() / Math::pow(v.length() * p_area->get_gravity_distance_scale() + 1, 2));
-		} else {
-			gravity += (p_area->get_transform().xform(p_area->get_gravity_vector()) - get_transform().get_origin()).normalized() * p_area->get_gravity();
-		}
-	} else {
-		gravity += p_area->get_gravity_vector() * p_area->get_gravity();
-	}
+void Body3DSW::_compute_area_gravity_and_damping(const Area3DSW *p_area) {
+	Vector3 area_gravity;
+	p_area->compute_gravity(get_transform().get_origin(), area_gravity);
+	gravity += area_gravity;
 
 	area_linear_damp += p_area->get_linear_damp();
 	area_angular_damp += p_area->get_angular_damp();
@@ -448,7 +424,7 @@ void Body3DSW::integrate_forces(real_t p_step) {
 			switch (mode) {
 				case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE:
 				case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
-					_compute_area_gravity_and_dampenings(aa[i].area);
+					_compute_area_gravity_and_damping(aa[i].area);
 					stopped = mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE;
 				} break;
 				case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE:
@@ -456,7 +432,7 @@ void Body3DSW::integrate_forces(real_t p_step) {
 					gravity = Vector3(0, 0, 0);
 					area_angular_damp = 0;
 					area_linear_damp = 0;
-					_compute_area_gravity_and_dampenings(aa[i].area);
+					_compute_area_gravity_and_damping(aa[i].area);
 					stopped = mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE;
 				} break;
 				default: {
@@ -466,7 +442,7 @@ void Body3DSW::integrate_forces(real_t p_step) {
 	}
 
 	if (!stopped) {
-		_compute_area_gravity_and_dampenings(def_area);
+		_compute_area_gravity_and_damping(def_area);
 	}
 
 	gravity *= gravity_scale;
@@ -493,20 +469,18 @@ void Body3DSW::integrate_forces(real_t p_step) {
 
 	if (mode == PhysicsServer3D::BODY_MODE_KINEMATIC) {
 		//compute motion, angular and etc. velocities from prev transform
-		linear_velocity = (new_transform.origin - get_transform().origin) / p_step;
+		motion = new_transform.origin - get_transform().origin;
+		do_motion = true;
+		linear_velocity = motion / p_step;
 
 		//compute a FAKE angular velocity, not so easy
-		Basis rot = new_transform.basis.orthonormalized().transposed() * get_transform().basis.orthonormalized();
+		Basis rot = new_transform.basis.orthonormalized() * get_transform().basis.orthonormalized().transposed();
 		Vector3 axis;
 		real_t angle;
 
 		rot.get_axis_angle(axis, angle);
 		axis.normalize();
-		angular_velocity = axis.normalized() * (angle / p_step);
-
-		motion = new_transform.origin - get_transform().origin;
-		do_motion = true;
-
+		angular_velocity = axis * (angle / p_step);
 	} else {
 		if (!omit_force_integration && !first_integration) {
 			//overridden by direct state query
@@ -595,9 +569,9 @@ void Body3DSW::integrate_velocities(real_t p_step) {
 	Vector3 total_angular_velocity = angular_velocity + biased_angular_velocity;
 
 	real_t ang_vel = total_angular_velocity.length();
-	Transform transform = get_transform();
+	Transform3D transform = get_transform();
 
-	if (ang_vel != 0.0) {
+	if (!Math::is_zero_approx(ang_vel)) {
 		Vector3 ang_vel_axis = total_angular_velocity / ang_vel;
 		Basis rot(ang_vel_axis, ang_vel * p_step);
 		Basis identity3(1, 0, 0, 0, 1, 0, 0, 0, 1);
@@ -627,9 +601,8 @@ void Body3DSW::integrate_velocities(real_t p_step) {
 }
 
 /*
-void BodySW::simulate_motion(const Transform& p_xform,real_t p_step) {
-
-	Transform inv_xform = p_xform.affine_inverse();
+void BodySW::simulate_motion(const Transform3D& p_xform,real_t p_step) {
+	Transform3D inv_xform = p_xform.affine_inverse();
 	if (!get_space()) {
 		_set_transform(p_xform);
 		_set_inv_transform(inv_xform);
@@ -655,8 +628,6 @@ void BodySW::simulate_motion(const Transform& p_xform,real_t p_step) {
 		get_space()->body_add_to_state_query_list(&direct_state_query_list);
 	simulated_motion=true;
 	_set_transform(p_xform);
-
-
 }
 
 */
@@ -672,7 +643,7 @@ void Body3DSW::wakeup_neighbours() {
 				continue;
 			}
 			Body3DSW *b = n[i];
-			if (b->mode != PhysicsServer3D::BODY_MODE_RIGID) {
+			if (b->mode != PhysicsServer3D::BODY_MODE_DYNAMIC) {
 				continue;
 			}
 
@@ -690,24 +661,23 @@ void Body3DSW::call_queries() {
 
 		Variant v = dbs;
 
-		Object *obj = ObjectDB::get_instance(fi_callback->id);
+		Object *obj = fi_callback->callable.get_object();
 		if (!obj) {
-			set_force_integration_callback(ObjectID(), StringName());
+			set_force_integration_callback(Callable());
 		} else {
 			const Variant *vp[2] = { &v, &fi_callback->udata };
 
 			Callable::CallError ce;
 			int argc = (fi_callback->udata.get_type() == Variant::NIL) ? 1 : 2;
-			obj->call(fi_callback->method, vp, argc, ce);
+			Variant rv;
+			fi_callback->callable.call(vp, argc, rv, ce);
 		}
 	}
 }
 
 bool Body3DSW::sleep_test(real_t p_step) {
 	if (mode == PhysicsServer3D::BODY_MODE_STATIC || mode == PhysicsServer3D::BODY_MODE_KINEMATIC) {
-		return true; //
-	} else if (mode == PhysicsServer3D::BODY_MODE_CHARACTER) {
-		return !active; // characters don't sleep unless asked to sleep
+		return true;
 	} else if (!can_sleep) {
 		return false;
 	}
@@ -722,22 +692,17 @@ bool Body3DSW::sleep_test(real_t p_step) {
 	}
 }
 
-void Body3DSW::set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata) {
+void Body3DSW::set_force_integration_callback(const Callable &p_callable, const Variant &p_udata) {
 	if (fi_callback) {
 		memdelete(fi_callback);
 		fi_callback = nullptr;
 	}
 
-	if (p_id.is_valid()) {
+	if (p_callable.get_object()) {
 		fi_callback = memnew(ForceIntegrationCallback);
-		fi_callback->id = p_id;
-		fi_callback->method = p_method;
+		fi_callback->callable = p_callable;
 		fi_callback->udata = p_udata;
 	}
-}
-
-void Body3DSW::set_kinematic_margin(real_t p_margin) {
-	kinematic_safe_margin = p_margin;
 }
 
 Body3DSW::Body3DSW() :
@@ -746,20 +711,16 @@ Body3DSW::Body3DSW() :
 		active_list(this),
 		inertia_update_list(this),
 		direct_state_query_list(this) {
-	mode = PhysicsServer3D::BODY_MODE_RIGID;
+	mode = PhysicsServer3D::BODY_MODE_DYNAMIC;
 	active = true;
 
 	mass = 1;
-	kinematic_safe_margin = 0.01;
-	//_inv_inertia=Transform();
 	_inv_mass = 1;
 	bounce = 0;
 	friction = 1;
 	omit_force_integration = false;
 	//applied_torque=0;
 	island_step = 0;
-	island_next = nullptr;
-	island_list_next = nullptr;
 	first_time_kinematic = false;
 	first_integration = false;
 	_set_static(false);

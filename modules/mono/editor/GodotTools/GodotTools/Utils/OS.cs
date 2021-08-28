@@ -21,7 +21,7 @@ namespace GodotTools.Utils
         public static class Names
         {
             public const string Windows = "Windows";
-            public const string OSX = "OSX";
+            public const string MacOS = "macOS";
             public const string Linux = "Linux";
             public const string FreeBSD = "FreeBSD";
             public const string NetBSD = "NetBSD";
@@ -37,7 +37,7 @@ namespace GodotTools.Utils
         public static class Platforms
         {
             public const string Windows = "windows";
-            public const string OSX = "osx";
+            public const string MacOS = "osx";
             public const string LinuxBSD = "linuxbsd";
             public const string Server = "server";
             public const string UWP = "uwp";
@@ -50,7 +50,7 @@ namespace GodotTools.Utils
         public static readonly Dictionary<string, string> PlatformNameMap = new Dictionary<string, string>
         {
             [Names.Windows] = Platforms.Windows,
-            [Names.OSX] = Platforms.OSX,
+            [Names.MacOS] = Platforms.MacOS,
             [Names.Linux] = Platforms.LinuxBSD,
             [Names.FreeBSD] = Platforms.LinuxBSD,
             [Names.NetBSD] = Platforms.LinuxBSD,
@@ -74,14 +74,14 @@ namespace GodotTools.Utils
         }
 
         private static readonly IEnumerable<string> LinuxBSDPlatforms =
-            new[] {Names.Linux, Names.FreeBSD, Names.NetBSD, Names.BSD};
+            new[] { Names.Linux, Names.FreeBSD, Names.NetBSD, Names.BSD };
 
         private static readonly IEnumerable<string> UnixLikePlatforms =
-            new[] {Names.OSX, Names.Server, Names.Haiku, Names.Android, Names.iOS}
+            new[] { Names.MacOS, Names.Server, Names.Haiku, Names.Android, Names.iOS }
                 .Concat(LinuxBSDPlatforms).ToArray();
 
         private static readonly Lazy<bool> _isWindows = new Lazy<bool>(() => IsOS(Names.Windows));
-        private static readonly Lazy<bool> _isOSX = new Lazy<bool>(() => IsOS(Names.OSX));
+        private static readonly Lazy<bool> _isMacOS = new Lazy<bool>(() => IsOS(Names.MacOS));
         private static readonly Lazy<bool> _isLinuxBSD = new Lazy<bool>(() => IsAnyOS(LinuxBSDPlatforms));
         private static readonly Lazy<bool> _isServer = new Lazy<bool>(() => IsOS(Names.Server));
         private static readonly Lazy<bool> _isUWP = new Lazy<bool>(() => IsOS(Names.UWP));
@@ -92,7 +92,7 @@ namespace GodotTools.Utils
         private static readonly Lazy<bool> _isUnixLike = new Lazy<bool>(() => IsAnyOS(UnixLikePlatforms));
 
         public static bool IsWindows => _isWindows.Value || IsUWP;
-        public static bool IsOSX => _isOSX.Value;
+        public static bool IsMacOS => _isMacOS.Value;
         public static bool IsLinuxBSD => _isLinuxBSD.Value;
         public static bool IsServer => _isServer.Value;
         public static bool IsUWP => _isUWP.Value;
@@ -111,13 +111,22 @@ namespace GodotTools.Utils
 
         private static string PathWhichWindows([NotNull] string name)
         {
-            string[] windowsExts = Environment.GetEnvironmentVariable("PATHEXT")?.Split(PathSep) ?? new string[] { };
+            string[] windowsExts = Environment.GetEnvironmentVariable("PATHEXT")?.Split(PathSep) ?? Array.Empty<string>();
             string[] pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(PathSep);
+            char[] invalidPathChars = Path.GetInvalidPathChars();
 
             var searchDirs = new List<string>();
 
             if (pathDirs != null)
-                searchDirs.AddRange(pathDirs);
+            {
+                foreach (var pathDir in pathDirs)
+                {
+                    if (pathDir.IndexOfAny(invalidPathChars) != -1)
+                        continue;
+
+                    searchDirs.Add(pathDir);
+                }
+            }
 
             string nameExt = Path.GetExtension(name);
             bool hasPathExt = !string.IsNullOrEmpty(nameExt) && windowsExts.Contains(nameExt, StringComparer.OrdinalIgnoreCase);
@@ -128,20 +137,29 @@ namespace GodotTools.Utils
                 return searchDirs.Select(dir => Path.Combine(dir, name)).FirstOrDefault(File.Exists);
 
             return (from dir in searchDirs
-                select Path.Combine(dir, name)
+                    select Path.Combine(dir, name)
                 into path
-                from ext in windowsExts
-                select path + ext).FirstOrDefault(File.Exists);
+                    from ext in windowsExts
+                    select path + ext).FirstOrDefault(File.Exists);
         }
 
         private static string PathWhichUnix([NotNull] string name)
         {
             string[] pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(PathSep);
+            char[] invalidPathChars = Path.GetInvalidPathChars();
 
             var searchDirs = new List<string>();
 
             if (pathDirs != null)
-                searchDirs.AddRange(pathDirs);
+            {
+                foreach (var pathDir in pathDirs)
+                {
+                    if (pathDir.IndexOfAny(invalidPathChars) != -1)
+                        continue;
+
+                    searchDirs.Add(pathDir);
+                }
+            }
 
             searchDirs.Add(System.IO.Directory.GetCurrentDirectory()); // last in the list
 
@@ -196,7 +214,7 @@ namespace GodotTools.Utils
 
             startInfo.UseShellExecute = false;
 
-            using (var process = new Process {StartInfo = startInfo})
+            using (var process = new Process { StartInfo = startInfo })
             {
                 process.Start();
                 process.WaitForExit();

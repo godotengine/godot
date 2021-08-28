@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,10 +50,10 @@ public:
 	void set_native_packet_peer(const godot_net_packet_peer *p_impl);
 
 	/* Specific to PacketPeer */
-	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size);
-	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
-	virtual int get_max_packet_size() const;
-	virtual int get_available_packet_count() const;
+	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override;
+	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
+	virtual int get_max_packet_size() const override;
+	virtual int get_available_packet_count() const override;
 };
 
 #endif // PACKET_PEER_GDNATIVE_H

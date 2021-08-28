@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,18 +30,15 @@
 
 #include "path_3d.h"
 
-#include "core/engine.h"
-#include "scene/scene_string_names.h"
-
 void Path3D::_notification(int p_what) {
 }
 
 void Path3D::_curve_changed() {
 	if (is_inside_tree() && Engine::get_singleton()->is_editor_hint()) {
-		update_gizmo();
+		update_gizmos();
 	}
 	if (is_inside_tree()) {
-		emit_signal("curve_changed");
+		emit_signal(SNAME("curve_changed"));
 	}
 
 	// update the configuration warnings of all children of type PathFollow
@@ -50,7 +47,7 @@ void Path3D::_curve_changed() {
 		for (int i = 0; i < get_child_count(); i++) {
 			PathFollow3D *child = Object::cast_to<PathFollow3D>(get_child(i));
 			if (child) {
-				child->update_configuration_warning();
+				child->update_configuration_warnings();
 			}
 		}
 	}
@@ -84,7 +81,7 @@ void Path3D::_bind_methods() {
 
 //////////////
 
-void PathFollow3D::_update_transform() {
+void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 	if (!path) {
 		return;
 	}
@@ -94,30 +91,38 @@ void PathFollow3D::_update_transform() {
 		return;
 	}
 
-	if (delta_offset == 0) {
-		return;
-	}
-
-	float bl = c->get_baked_length();
+	real_t bl = c->get_baked_length();
 	if (bl == 0.0) {
 		return;
 	}
-	float bi = c->get_bake_interval();
-	float o_next = offset + bi;
+	real_t bi = c->get_bake_interval();
+	real_t o_next = offset + bi;
+	real_t o_prev = offset - bi;
 
 	if (loop) {
 		o_next = Math::fposmod(o_next, bl);
-	} else if (rotation_mode == ROTATION_ORIENTED && o_next >= bl) {
-		o_next = bl;
+		o_prev = Math::fposmod(o_prev, bl);
+	} else if (rotation_mode == ROTATION_ORIENTED) {
+		if (o_next >= bl) {
+			o_next = bl;
+		}
+		if (o_prev <= 0) {
+			o_prev = 0;
+		}
 	}
 
 	Vector3 pos = c->interpolate_baked(offset, cubic);
-	Transform t = get_transform();
+	Transform3D t = get_transform();
 	// Vector3 pos_offset = Vector3(h_offset, v_offset, 0); not used in all cases
 	// will be replaced by "Vector3(h_offset, v_offset, 0)" where it was formerly used
 
 	if (rotation_mode == ROTATION_ORIENTED) {
 		Vector3 forward = c->interpolate_baked(o_next, cubic) - pos;
+
+		// Try with the previous position
+		if (forward.length_squared() < CMP_EPSILON2) {
+			forward = pos - c->interpolate_baked(o_prev, cubic);
+		}
 
 		if (forward.length_squared() < CMP_EPSILON2) {
 			forward = Vector3(0, 0, 1);
@@ -156,45 +161,47 @@ void PathFollow3D::_update_transform() {
 
 		t.origin = pos;
 
-		Vector3 t_prev = (pos - c->interpolate_baked(offset - delta_offset, cubic)).normalized();
-		Vector3 t_cur = (c->interpolate_baked(offset + delta_offset, cubic) - pos).normalized();
+		if (p_update_xyz_rot && delta_offset != 0) { // Only update rotation if some parameter has changed - i.e. not on addition to scene tree.
+			Vector3 t_prev = (pos - c->interpolate_baked(offset - delta_offset, cubic)).normalized();
+			Vector3 t_cur = (c->interpolate_baked(offset + delta_offset, cubic) - pos).normalized();
 
-		Vector3 axis = t_prev.cross(t_cur);
-		float dot = t_prev.dot(t_cur);
-		float angle = Math::acos(CLAMP(dot, -1, 1));
+			Vector3 axis = t_prev.cross(t_cur);
+			real_t dot = t_prev.dot(t_cur);
+			real_t angle = Math::acos(CLAMP(dot, -1, 1));
 
-		if (likely(!Math::is_zero_approx(angle))) {
-			if (rotation_mode == ROTATION_Y) {
-				// assuming we're referring to global Y-axis. is this correct?
-				axis.x = 0;
-				axis.z = 0;
-			} else if (rotation_mode == ROTATION_XY) {
-				axis.z = 0;
-			} else if (rotation_mode == ROTATION_XYZ) {
-				// all components are allowed
+			if (likely(!Math::is_zero_approx(angle))) {
+				if (rotation_mode == ROTATION_Y) {
+					// assuming we're referring to global Y-axis. is this correct?
+					axis.x = 0;
+					axis.z = 0;
+				} else if (rotation_mode == ROTATION_XY) {
+					axis.z = 0;
+				} else if (rotation_mode == ROTATION_XYZ) {
+					// all components are allowed
+				}
+
+				if (likely(!Math::is_zero_approx(axis.length()))) {
+					t.rotate_basis(axis.normalized(), angle);
+				}
 			}
 
-			if (likely(!Math::is_zero_approx(axis.length()))) {
-				t.rotate_basis(axis.normalized(), angle);
-			}
-		}
+			// do the additional tilting
+			real_t tilt_angle = c->interpolate_baked_tilt(offset);
+			Vector3 tilt_axis = t_cur; // not sure what tilt is supposed to do, is this correct??
 
-		// do the additional tilting
-		float tilt_angle = c->interpolate_baked_tilt(offset);
-		Vector3 tilt_axis = t_cur; // not sure what tilt is supposed to do, is this correct??
+			if (likely(!Math::is_zero_approx(Math::abs(tilt_angle)))) {
+				if (rotation_mode == ROTATION_Y) {
+					tilt_axis.x = 0;
+					tilt_axis.z = 0;
+				} else if (rotation_mode == ROTATION_XY) {
+					tilt_axis.z = 0;
+				} else if (rotation_mode == ROTATION_XYZ) {
+					// all components are allowed
+				}
 
-		if (likely(!Math::is_zero_approx(Math::abs(tilt_angle)))) {
-			if (rotation_mode == ROTATION_Y) {
-				tilt_axis.x = 0;
-				tilt_axis.z = 0;
-			} else if (rotation_mode == ROTATION_XY) {
-				tilt_axis.z = 0;
-			} else if (rotation_mode == ROTATION_XYZ) {
-				// all components are allowed
-			}
-
-			if (likely(!Math::is_zero_approx(tilt_axis.length()))) {
-				t.rotate_basis(tilt_axis.normalized(), tilt_angle);
+				if (likely(!Math::is_zero_approx(tilt_axis.length()))) {
+					t.rotate_basis(tilt_axis.normalized(), tilt_angle);
+				}
 			}
 		}
 
@@ -213,7 +220,7 @@ void PathFollow3D::_notification(int p_what) {
 			if (parent) {
 				path = Object::cast_to<Path3D>(parent);
 				if (path) {
-					_update_transform();
+					_update_transform(false);
 				}
 			}
 
@@ -234,7 +241,7 @@ bool PathFollow3D::get_cubic_interpolation() const {
 
 void PathFollow3D::_validate_property(PropertyInfo &property) const {
 	if (property.name == "offset") {
-		float max = 10000;
+		real_t max = 10000;
 		if (path && path->get_curve().is_valid()) {
 			max = path->get_curve()->get_baked_length();
 		}
@@ -243,21 +250,21 @@ void PathFollow3D::_validate_property(PropertyInfo &property) const {
 	}
 }
 
-String PathFollow3D::get_configuration_warning() const {
-	if (!is_visible_in_tree() || !is_inside_tree()) {
-		return String();
-	}
+TypedArray<String> PathFollow3D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
-	if (!Object::cast_to<Path3D>(get_parent())) {
-		return TTR("PathFollow3D only works when set as a child of a Path3D node.");
-	} else {
-		Path3D *path = Object::cast_to<Path3D>(get_parent());
-		if (path->get_curve().is_valid() && !path->get_curve()->is_up_vector_enabled() && rotation_mode == ROTATION_ORIENTED) {
-			return TTR("PathFollow3D's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its parent Path3D's Curve resource.");
+	if (is_visible_in_tree() && is_inside_tree()) {
+		if (!Object::cast_to<Path3D>(get_parent())) {
+			warnings.push_back(TTR("PathFollow3D only works when set as a child of a Path3D node."));
+		} else {
+			Path3D *path = Object::cast_to<Path3D>(get_parent());
+			if (path->get_curve().is_valid() && !path->get_curve()->is_up_vector_enabled() && rotation_mode == ROTATION_ORIENTED) {
+				warnings.push_back(TTR("PathFollow3D's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its parent Path3D's Curve resource."));
+			}
 		}
 	}
 
-	return String();
+	return warnings;
 }
 
 void PathFollow3D::_bind_methods() {
@@ -297,13 +304,13 @@ void PathFollow3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(ROTATION_ORIENTED);
 }
 
-void PathFollow3D::set_offset(float p_offset) {
+void PathFollow3D::set_offset(real_t p_offset) {
 	delta_offset = p_offset - offset;
 	offset = p_offset;
 
 	if (path) {
 		if (path->get_curve().is_valid()) {
-			float path_length = path->get_curve()->get_baked_length();
+			real_t path_length = path->get_curve()->get_baked_length();
 
 			if (loop) {
 				offset = Math::fposmod(offset, path_length);
@@ -317,43 +324,41 @@ void PathFollow3D::set_offset(float p_offset) {
 
 		_update_transform();
 	}
-	_change_notify("offset");
-	_change_notify("unit_offset");
 }
 
-void PathFollow3D::set_h_offset(float p_h_offset) {
+void PathFollow3D::set_h_offset(real_t p_h_offset) {
 	h_offset = p_h_offset;
 	if (path) {
 		_update_transform();
 	}
 }
 
-float PathFollow3D::get_h_offset() const {
+real_t PathFollow3D::get_h_offset() const {
 	return h_offset;
 }
 
-void PathFollow3D::set_v_offset(float p_v_offset) {
+void PathFollow3D::set_v_offset(real_t p_v_offset) {
 	v_offset = p_v_offset;
 	if (path) {
 		_update_transform();
 	}
 }
 
-float PathFollow3D::get_v_offset() const {
+real_t PathFollow3D::get_v_offset() const {
 	return v_offset;
 }
 
-float PathFollow3D::get_offset() const {
+real_t PathFollow3D::get_offset() const {
 	return offset;
 }
 
-void PathFollow3D::set_unit_offset(float p_unit_offset) {
+void PathFollow3D::set_unit_offset(real_t p_unit_offset) {
 	if (path && path->get_curve().is_valid() && path->get_curve()->get_baked_length()) {
 		set_offset(p_unit_offset * path->get_curve()->get_baked_length());
 	}
 }
 
-float PathFollow3D::get_unit_offset() const {
+real_t PathFollow3D::get_unit_offset() const {
 	if (path && path->get_curve().is_valid() && path->get_curve()->get_baked_length()) {
 		return get_offset() / path->get_curve()->get_baked_length();
 	} else {
@@ -364,7 +369,7 @@ float PathFollow3D::get_unit_offset() const {
 void PathFollow3D::set_rotation_mode(RotationMode p_rotation_mode) {
 	rotation_mode = p_rotation_mode;
 
-	update_configuration_warning();
+	update_configuration_warnings();
 	_update_transform();
 }
 
@@ -378,15 +383,4 @@ void PathFollow3D::set_loop(bool p_loop) {
 
 bool PathFollow3D::has_loop() const {
 	return loop;
-}
-
-PathFollow3D::PathFollow3D() {
-	offset = 0;
-	delta_offset = 0;
-	h_offset = 0;
-	v_offset = 0;
-	path = nullptr;
-	rotation_mode = ROTATION_XYZ;
-	cubic = true;
-	loop = true;
 }

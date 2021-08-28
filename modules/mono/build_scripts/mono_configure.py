@@ -1,6 +1,5 @@
 import os
 import os.path
-import sys
 import subprocess
 
 from SCons.Script import Dir, Environment
@@ -98,14 +97,9 @@ def configure(env, env_mono):
     copy_mono_root = env["copy_mono_root"]
 
     mono_prefix = env["mono_prefix"]
+    mono_bcl = env["mono_bcl"]
 
     mono_lib_names = ["mono-2.0-sgen", "monosgen-2.0"]
-
-    is_travis = os.environ.get("TRAVIS") == "true"
-
-    if is_travis:
-        # Travis CI may have a Mono version lower than 5.12
-        env_mono.Append(CPPDEFINES=["NO_PENDING_EXCEPTIONS"])
 
     if is_android and not env["android_arch"] in android_arch_dirs:
         raise RuntimeError("This module does not support the specified 'android_arch': " + env["android_arch"])
@@ -125,7 +119,8 @@ def configure(env, env_mono):
 
     if not mono_prefix and (os.getenv("MONO32_PREFIX") or os.getenv("MONO64_PREFIX")):
         print(
-            "WARNING: The environment variables 'MONO32_PREFIX' and 'MONO64_PREFIX' are deprecated; use the 'mono_prefix' SCons parameter instead"
+            "WARNING: The environment variables 'MONO32_PREFIX' and 'MONO64_PREFIX' are deprecated; use the"
+            " 'mono_prefix' SCons parameter instead"
         )
 
     # Although we don't support building with tools for any platform where we currently use static AOT,
@@ -262,7 +257,8 @@ def configure(env, env_mono):
             env_mono.Append(CPPDEFINES=["_REENTRANT"])
 
             if mono_static:
-                env.Append(LINKFLAGS=["-rdynamic"])
+                if not is_javascript:
+                    env.Append(LINKFLAGS=["-rdynamic"])
 
                 mono_lib_file = os.path.join(mono_lib_path, "lib" + mono_lib + ".a")
 
@@ -396,9 +392,8 @@ def configure(env, env_mono):
             mono_root = subprocess.check_output(["pkg-config", "mono-2", "--variable=prefix"]).decode("utf8").strip()
 
         if tools_enabled:
-            copy_mono_root_files(env, mono_root)
-        else:
-            print("Ignoring option: 'copy_mono_root'; only available for builds with 'tools' enabled.")
+            # Only supported for editor builds.
+            copy_mono_root_files(env, mono_root, mono_bcl)
 
 
 def make_template_dir(env, mono_root):
@@ -431,7 +426,7 @@ def make_template_dir(env, mono_root):
     copy_mono_shared_libs(env, mono_root, template_mono_root_dir)
 
 
-def copy_mono_root_files(env, mono_root):
+def copy_mono_root_files(env, mono_root, mono_bcl):
     from glob import glob
     from shutil import copy
     from shutil import rmtree
@@ -456,7 +451,7 @@ def copy_mono_root_files(env, mono_root):
 
     # Copy framework assemblies
 
-    mono_framework_dir = os.path.join(mono_root, "lib", "mono", "4.5")
+    mono_framework_dir = mono_bcl or os.path.join(mono_root, "lib", "mono", "4.5")
     mono_framework_facades_dir = os.path.join(mono_framework_dir, "Facades")
 
     editor_mono_framework_dir = os.path.join(editor_mono_root_dir, "lib", "mono", "4.5")

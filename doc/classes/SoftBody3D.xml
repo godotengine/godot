@@ -7,87 +7,78 @@
 		A deformable physics body. Used to create elastic or deformable objects such as cloth, rubber, or other flexible materials.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/physics/soft_body.html</link>
+		<link title="SoftBody">https://docs.godotengine.org/en/latest/tutorials/physics/soft_body.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_collision_exception_with">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="Node">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="Node" />
 			<description>
 				Adds a body to the list of bodies that this body can't collide with.
 			</description>
 		</method>
 		<method name="get_collision_exceptions">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Returns an array of nodes that were added as collision exceptions for this body.
 			</description>
 		</method>
-		<method name="get_collision_layer_bit" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
+		<method name="get_collision_layer_value" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="layer_number" type="int" />
 			<description>
-				Returns an individual bit on the collision mask.
+				Returns whether or not the specified layer of the [member collision_layer] is enabled, given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
-		<method name="get_collision_mask_bit" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
+		<method name="get_collision_mask_value" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="layer_number" type="int" />
 			<description>
-				Returns an individual bit on the collision mask.
+				Returns whether or not the specified layer of the [member collision_mask] is enabled, given a [code]layer_number[/code] between 1 and 32.
+			</description>
+		</method>
+		<method name="get_physics_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
 			</description>
 		</method>
 		<method name="remove_collision_exception_with">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="Node">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="Node" />
 			<description>
 				Removes a body from the list of bodies that this body can't collide with.
 			</description>
 		</method>
-		<method name="set_collision_layer_bit">
-			<return type="void">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
-			<argument index="1" name="value" type="bool">
-			</argument>
+		<method name="set_collision_layer_value">
+			<return type="void" />
+			<argument index="0" name="layer_number" type="int" />
+			<argument index="1" name="value" type="bool" />
 			<description>
-				Sets individual bits on the layer mask. Use this if you only need to change one layer's value.
+				Based on [code]value[/code], enables or disables the specified layer in the [member collision_layer], given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
-		<method name="set_collision_mask_bit">
-			<return type="void">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
-			<argument index="1" name="value" type="bool">
-			</argument>
+		<method name="set_collision_mask_value">
+			<return type="void" />
+			<argument index="0" name="layer_number" type="int" />
+			<argument index="1" name="value" type="bool" />
 			<description>
-				Sets individual bits on the collision mask. Use this if you only need to change one layer's value.
+				Based on [code]value[/code], enables or disables the specified layer in the [member collision_mask], given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="areaAngular_stiffness" type="float" setter="set_areaAngular_stiffness" getter="get_areaAngular_stiffness" default="0.5">
-		</member>
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
-			The physics layers this SoftBody3D is in.
-			Collidable objects can exist in any of 32 different layers. These layers work like a tagging system, and are not visual. A collidable can use these layers to select with which objects it can collide, using the collision_mask property.
-			A contact is detected if object A is in any of the layers that object B scans, or object B is in any layer scanned by object A.
+			The physics layers this SoftBody3D [b]is in[/b]. Collision objects can exist in one or more of 32 different layers. See also [member collision_mask].
+			[b]Note:[/b] Object A can detect a contact with object B only if object B is in any of the layers that object A scans. See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
-			The physics layers this SoftBody3D scans for collisions.
+			The physics layers this SoftBody3D [b]scans[/b]. Collision objects can scan one or more of 32 different layers. See also [member collision_layer].
+			[b]Note:[/b] Object A can detect a contact with object B only if object B is in any of the layers that object A scans. See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
 		<member name="damping_coefficient" type="float" setter="set_damping_coefficient" getter="get_damping_coefficient" default="0.01">
+		</member>
+		<member name="disable_mode" type="int" setter="set_disable_mode" getter="get_disable_mode" enum="SoftBody3D.DisableMode" default="0">
+			Defines the behavior in physics when [member Node.process_mode] is set to [constant Node.PROCESS_MODE_DISABLED]. See [enum DisableMode] for more details about the different modes.
 		</member>
 		<member name="drag_coefficient" type="float" setter="set_drag_coefficient" getter="get_drag_coefficient" default="0.0">
 		</member>
@@ -95,8 +86,6 @@
 		</member>
 		<member name="parent_collision_ignore" type="NodePath" setter="set_parent_collision_ignore" getter="get_parent_collision_ignore" default="NodePath(&quot;&quot;)">
 			[NodePath] to a [CollisionObject3D] this SoftBody3D should avoid clipping.
-		</member>
-		<member name="pose_matching_coefficient" type="float" setter="set_pose_matching_coefficient" getter="get_pose_matching_coefficient" default="0.0">
 		</member>
 		<member name="pressure_coefficient" type="float" setter="set_pressure_coefficient" getter="get_pressure_coefficient" default="0.0">
 		</member>
@@ -109,9 +98,14 @@
 		<member name="total_mass" type="float" setter="set_total_mass" getter="get_total_mass" default="1.0">
 			The SoftBody3D's mass.
 		</member>
-		<member name="volume_stiffness" type="float" setter="set_volume_stiffness" getter="get_volume_stiffness" default="0.5">
-		</member>
 	</members>
 	<constants>
+		<constant name="DISABLE_MODE_REMOVE" value="0" enum="DisableMode">
+			When [member Node.process_mode] is set to [constant Node.PROCESS_MODE_DISABLED], remove from the physics simulation to stop all physics interactions with this [SoftBody3D].
+			Automatically re-added to the physics simulation when the [Node] is processed again.
+		</constant>
+		<constant name="DISABLE_MODE_KEEP_ACTIVE" value="1" enum="DisableMode">
+			When [member Node.process_mode] is set to [constant Node.PROCESS_MODE_DISABLED], do not affect the physics simulation.
+		</constant>
 	</constants>
 </class>

@@ -20,8 +20,7 @@
 #define FTGLOADR_H_
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+#include <freetype/freetype.h>
 
 
 FT_BEGIN_HEADER
@@ -137,8 +136,6 @@ FT_BEGIN_HEADER
   /* add the current glyph to the base glyph */
   FT_BASE( void )
   FT_GlyphLoader_Add( FT_GlyphLoader  loader );
-
- /* */
 
 
 FT_END_HEADER

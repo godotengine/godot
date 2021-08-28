@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OccluderInstance3D" inherits="Node3D" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_bake_mask_value" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="layer_number" type="int" />
+			<description>
+				Returns whether or not the specified layer of the [member bake_mask] is enabled, given a [code]layer_number[/code] between 1 and 20.
+			</description>
+		</method>
+		<method name="set_bake_mask_value">
+			<return type="void" />
+			<argument index="0" name="layer_number" type="int" />
+			<argument index="1" name="value" type="bool" />
+			<description>
+				Based on [code]value[/code], enables or disables the specified layer in the [member bake_mask], given a [code]layer_number[/code] between 1 and 20.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="bake_mask" type="int" setter="set_bake_mask" getter="get_bake_mask" default="4294967295">
+		</member>
+		<member name="occluder" type="Occluder3D" setter="set_occluder" getter="get_occluder">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

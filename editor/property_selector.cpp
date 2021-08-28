@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #include "property_selector.h"
 
 #include "core/os/keyboard.h"
+#include "editor/doc_tools.h"
 #include "editor/editor_node.h"
 #include "editor_scale.h"
 
@@ -47,11 +48,11 @@ void PropertySelector::_sbox_input(const Ref<InputEvent> &p_ie) {
 			case KEY_DOWN:
 			case KEY_PAGEUP:
 			case KEY_PAGEDOWN: {
-				search_options->call("_gui_input", k);
+				search_options->gui_input(k);
 				search_box->accept_event();
 
 				TreeItem *root = search_options->get_root();
-				if (!root->get_children()) {
+				if (!root->get_first_child()) {
 					break;
 				}
 
@@ -66,6 +67,8 @@ void PropertySelector::_sbox_input(const Ref<InputEvent> &p_ie) {
 				current->select(0);
 
 			} break;
+			default:
+				break;
 		}
 	}
 }
@@ -84,6 +87,9 @@ void PropertySelector::_update_search() {
 
 	TreeItem *root = search_options->create_item();
 
+	// Allow using spaces in place of underscores in the search string (makes the search more fault-tolerant).
+	const String search_text = search_box->get_text().replace(" ", "_");
+
 	if (properties) {
 		List<PropertyInfo> props;
 
@@ -92,7 +98,7 @@ void PropertySelector::_update_search() {
 		} else if (type != Variant::NIL) {
 			Variant v;
 			Callable::CallError ce;
-			v = Variant::construct(type, nullptr, 0, ce);
+			Variant::construct(type, v, nullptr, 0, ce);
 
 			v.get_property_list(&props);
 		} else {
@@ -115,72 +121,80 @@ void PropertySelector::_update_search() {
 		bool found = false;
 
 		Ref<Texture2D> type_icons[Variant::VARIANT_MAX] = {
-			search_options->get_theme_icon("Variant", "EditorIcons"),
-			search_options->get_theme_icon("bool", "EditorIcons"),
-			search_options->get_theme_icon("int", "EditorIcons"),
-			search_options->get_theme_icon("float", "EditorIcons"),
-			search_options->get_theme_icon("String", "EditorIcons"),
-			search_options->get_theme_icon("Vector2", "EditorIcons"),
-			search_options->get_theme_icon("Rect2", "EditorIcons"),
-			search_options->get_theme_icon("Vector3", "EditorIcons"),
-			search_options->get_theme_icon("Transform2D", "EditorIcons"),
-			search_options->get_theme_icon("Plane", "EditorIcons"),
-			search_options->get_theme_icon("Quat", "EditorIcons"),
-			search_options->get_theme_icon("AABB", "EditorIcons"),
-			search_options->get_theme_icon("Basis", "EditorIcons"),
-			search_options->get_theme_icon("Transform", "EditorIcons"),
-			search_options->get_theme_icon("Color", "EditorIcons"),
-			search_options->get_theme_icon("Path", "EditorIcons"),
-			search_options->get_theme_icon("RID", "EditorIcons"),
-			search_options->get_theme_icon("Object", "EditorIcons"),
-			search_options->get_theme_icon("Dictionary", "EditorIcons"),
-			search_options->get_theme_icon("Array", "EditorIcons"),
-			search_options->get_theme_icon("PackedByteArray", "EditorIcons"),
-			search_options->get_theme_icon("PackedInt32Array", "EditorIcons"),
-			search_options->get_theme_icon("PackedFloat32Array", "EditorIcons"),
-			search_options->get_theme_icon("PackedStringArray", "EditorIcons"),
-			search_options->get_theme_icon("PackedVector2Array", "EditorIcons"),
-			search_options->get_theme_icon("PackedVector3Array", "EditorIcons"),
-			search_options->get_theme_icon("PackedColorArray", "EditorIcons")
+			search_options->get_theme_icon(SNAME("Variant"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("bool"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("int"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("float"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("String"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("Vector2"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("Vector2i"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("Rect2"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("Rect2i"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("Vector3"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("Vector3i"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("Transform2D"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("Plane"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("Quaternion"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("AABB"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("Basis"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("Transform3D"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("Color"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("StringName"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("NodePath"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("RID"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("MiniObject"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("Callable"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("Signal"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("Dictionary"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("Array"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("PackedByteArray"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("PackedInt32Array"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("PackedInt64Array"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("PackedFloat32Array"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("PackedFloat64Array"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("PackedStringArray"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("PackedVector2Array"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("PackedVector3Array"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("PackedColorArray"), SNAME("EditorIcons"))
 		};
 
-		for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-			if (E->get().usage == PROPERTY_USAGE_CATEGORY) {
-				if (category && category->get_children() == nullptr) {
+		for (const PropertyInfo &E : props) {
+			if (E.usage == PROPERTY_USAGE_CATEGORY) {
+				if (category && category->get_first_child() == nullptr) {
 					memdelete(category); //old category was unused
 				}
 				category = search_options->create_item(root);
-				category->set_text(0, E->get().name);
+				category->set_text(0, E.name);
 				category->set_selectable(0, false);
 
 				Ref<Texture2D> icon;
-				if (E->get().name == "Script Variables") {
-					icon = search_options->get_theme_icon("Script", "EditorIcons");
+				if (E.name == "Script Variables") {
+					icon = search_options->get_theme_icon(SNAME("Script"), SNAME("EditorIcons"));
 				} else {
-					icon = EditorNode::get_singleton()->get_class_icon(E->get().name);
+					icon = EditorNode::get_singleton()->get_class_icon(E.name);
 				}
 				category->set_icon(0, icon);
 				continue;
 			}
 
-			if (!(E->get().usage & PROPERTY_USAGE_EDITOR) && !(E->get().usage & PROPERTY_USAGE_SCRIPT_VARIABLE)) {
+			if (!(E.usage & PROPERTY_USAGE_EDITOR) && !(E.usage & PROPERTY_USAGE_SCRIPT_VARIABLE)) {
 				continue;
 			}
 
-			if (search_box->get_text() != String() && E->get().name.find(search_box->get_text()) == -1) {
+			if (search_box->get_text() != String() && E.name.findn(search_text) == -1) {
 				continue;
 			}
 
-			if (type_filter.size() && type_filter.find(E->get().type) == -1) {
+			if (type_filter.size() && type_filter.find(E.type) == -1) {
 				continue;
 			}
 
 			TreeItem *item = search_options->create_item(category ? category : root);
-			item->set_text(0, E->get().name);
-			item->set_metadata(0, E->get().name);
-			item->set_icon(0, type_icons[E->get().type]);
+			item->set_text(0, E.name);
+			item->set_metadata(0, E.name);
+			item->set_icon(0, type_icons[E.type]);
 
-			if (!found && search_box->get_text() != String() && E->get().name.find(search_box->get_text()) != -1) {
+			if (!found && search_box->get_text() != String() && E.name.findn(search_text) != -1) {
 				item->select(0);
 				found = true;
 			}
@@ -188,7 +202,7 @@ void PropertySelector::_update_search() {
 			item->set_selectable(0, true);
 		}
 
-		if (category && category->get_children() == nullptr) {
+		if (category && category->get_first_child() == nullptr) {
 			memdelete(category); //old category was unused
 		}
 	} else {
@@ -197,7 +211,7 @@ void PropertySelector::_update_search() {
 		if (type != Variant::NIL) {
 			Variant v;
 			Callable::CallError ce;
-			v = Variant::construct(type, nullptr, 0, ce);
+			Variant::construct(type, v, nullptr, 0, ce);
 			v.get_method_list(&methods);
 		} else {
 			Object *obj = ObjectDB::get_instance(script);
@@ -219,20 +233,20 @@ void PropertySelector::_update_search() {
 		bool found = false;
 		bool script_methods = false;
 
-		for (List<MethodInfo>::Element *E = methods.front(); E; E = E->next()) {
-			if (E->get().name.begins_with("*")) {
-				if (category && category->get_children() == nullptr) {
+		for (MethodInfo &mi : methods) {
+			if (mi.name.begins_with("*")) {
+				if (category && category->get_first_child() == nullptr) {
 					memdelete(category); //old category was unused
 				}
 				category = search_options->create_item(root);
-				category->set_text(0, E->get().name.replace_first("*", ""));
+				category->set_text(0, mi.name.replace_first("*", ""));
 				category->set_selectable(0, false);
 
 				Ref<Texture2D> icon;
 				script_methods = false;
-				String rep = E->get().name.replace("*", "");
-				if (E->get().name == "*Script Methods") {
-					icon = search_options->get_theme_icon("Script", "EditorIcons");
+				String rep = mi.name.replace("*", "");
+				if (mi.name == "*Script Methods") {
+					icon = search_options->get_theme_icon(SNAME("Script"), SNAME("EditorIcons"));
 					script_methods = true;
 				} else {
 					icon = EditorNode::get_singleton()->get_class_icon(rep);
@@ -242,26 +256,24 @@ void PropertySelector::_update_search() {
 				continue;
 			}
 
-			String name = E->get().name.get_slice(":", 0);
-			if (!script_methods && name.begins_with("_") && !(E->get().flags & METHOD_FLAG_VIRTUAL)) {
+			String name = mi.name.get_slice(":", 0);
+			if (!script_methods && name.begins_with("_") && !(mi.flags & METHOD_FLAG_VIRTUAL)) {
 				continue;
 			}
 
-			if (virtuals_only && !(E->get().flags & METHOD_FLAG_VIRTUAL)) {
+			if (virtuals_only && !(mi.flags & METHOD_FLAG_VIRTUAL)) {
 				continue;
 			}
 
-			if (!virtuals_only && (E->get().flags & METHOD_FLAG_VIRTUAL)) {
+			if (!virtuals_only && (mi.flags & METHOD_FLAG_VIRTUAL)) {
 				continue;
 			}
 
-			if (search_box->get_text() != String() && name.find(search_box->get_text()) == -1) {
+			if (search_box->get_text() != String() && name.findn(search_text) == -1) {
 				continue;
 			}
 
 			TreeItem *item = search_options->create_item(category ? category : root);
-
-			MethodInfo mi = E->get();
 
 			String desc;
 			if (mi.name.find(":") != -1) {
@@ -270,35 +282,35 @@ void PropertySelector::_update_search() {
 			} else if (mi.return_val.type != Variant::NIL) {
 				desc = Variant::get_type_name(mi.return_val.type);
 			} else {
-				desc = "void ";
+				desc = "void";
 			}
 
-			desc += " " + mi.name + " ( ";
+			desc += vformat(" %s(", mi.name);
 
 			for (int i = 0; i < mi.arguments.size(); i++) {
 				if (i > 0) {
 					desc += ", ";
 				}
 
+				desc += mi.arguments[i].name;
+
 				if (mi.arguments[i].type == Variant::NIL) {
-					desc += "var ";
+					desc += ": Variant";
 				} else if (mi.arguments[i].name.find(":") != -1) {
-					desc += mi.arguments[i].name.get_slice(":", 1) + " ";
+					desc += vformat(": %s", mi.arguments[i].name.get_slice(":", 1));
 					mi.arguments[i].name = mi.arguments[i].name.get_slice(":", 0);
 				} else {
-					desc += Variant::get_type_name(mi.arguments[i].type) + " ";
+					desc += vformat(": %s", Variant::get_type_name(mi.arguments[i].type));
 				}
-
-				desc += mi.arguments[i].name;
 			}
 
-			desc += " )";
+			desc += ")";
 
-			if (E->get().flags & METHOD_FLAG_CONST) {
+			if (mi.flags & METHOD_FLAG_CONST) {
 				desc += " const";
 			}
 
-			if (E->get().flags & METHOD_FLAG_VIRTUAL) {
+			if (mi.flags & METHOD_FLAG_VIRTUAL) {
 				desc += " virtual";
 			}
 
@@ -306,18 +318,18 @@ void PropertySelector::_update_search() {
 			item->set_metadata(0, name);
 			item->set_selectable(0, true);
 
-			if (!found && search_box->get_text() != String() && name.find(search_box->get_text()) != -1) {
+			if (!found && search_box->get_text() != String() && name.findn(search_text) != -1) {
 				item->select(0);
 				found = true;
 			}
 		}
 
-		if (category && category->get_children() == nullptr) {
+		if (category && category->get_first_child() == nullptr) {
 			memdelete(category); //old category was unused
 		}
 	}
 
-	get_ok()->set_disabled(root->get_children() == nullptr);
+	get_ok_button()->set_disabled(root->get_first_child() == nullptr);
 }
 
 void PropertySelector::_confirmed() {
@@ -325,7 +337,7 @@ void PropertySelector::_confirmed() {
 	if (!ti) {
 		return;
 	}
-	emit_signal("selected", ti->get_metadata(0));
+	emit_signal(SNAME("selected"), ti->get_metadata(0));
 	hide();
 }
 
@@ -341,51 +353,64 @@ void PropertySelector::_item_selected() {
 	String class_type;
 	if (type != Variant::NIL) {
 		class_type = Variant::get_type_name(type);
-
-	} else {
+	} else if (base_type != String()) {
 		class_type = base_type;
+	} else if (instance) {
+		class_type = instance->get_class();
 	}
 
-	DocData *dd = EditorHelp::get_doc_data();
+	DocTools *dd = EditorHelp::get_doc_data();
 	String text;
-
 	if (properties) {
-		String at_class = class_type;
-
-		while (at_class != String()) {
-			Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(at_class);
+		while (class_type != String()) {
+			Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(class_type);
 			if (E) {
 				for (int i = 0; i < E->get().properties.size(); i++) {
 					if (E->get().properties[i].name == name) {
 						text = DTR(E->get().properties[i].description);
+						break;
 					}
 				}
 			}
 
-			at_class = ClassDB::get_parent_class(at_class);
+			if (text != String()) {
+				break;
+			}
+
+			// The property may be from a parent class, keep looking.
+			class_type = ClassDB::get_parent_class(class_type);
 		}
 	} else {
-		String at_class = class_type;
-
-		while (at_class != String()) {
-			Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(at_class);
+		while (class_type != String()) {
+			Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(class_type);
 			if (E) {
 				for (int i = 0; i < E->get().methods.size(); i++) {
 					if (E->get().methods[i].name == name) {
 						text = DTR(E->get().methods[i].description);
+						break;
 					}
 				}
 			}
 
-			at_class = ClassDB::get_parent_class(at_class);
+			if (text != String()) {
+				break;
+			}
+
+			// The method may be from a parent class, keep looking.
+			class_type = ClassDB::get_parent_class(class_type);
 		}
 	}
 
-	if (text == String()) {
-		return;
+	if (text != String()) {
+		// Display both property name and description, since the help bit may be displayed
+		// far away from the location (especially if the dialog was resized to be taller).
+		help_bit->set_text(vformat("[b]%s[/b]: %s", name, text));
+		help_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 1));
+	} else {
+		// Use nested `vformat()` as translators shouldn't interfere with BBCode tags.
+		help_bit->set_text(vformat(TTR("No description available for %s."), vformat("[b]%s[/b]", name)));
+		help_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 0.5));
 	}
-
-	help_bit->set_text(text);
 }
 
 void PropertySelector::_hide_requested() {
@@ -549,8 +574,8 @@ PropertySelector::PropertySelector() {
 	search_box->connect("gui_input", callable_mp(this, &PropertySelector::_sbox_input));
 	search_options = memnew(Tree);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
-	get_ok()->set_text(TTR("Open"));
-	get_ok()->set_disabled(true);
+	get_ok_button()->set_text(TTR("Open"));
+	get_ok_button()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
 	search_options->connect("item_activated", callable_mp(this, &PropertySelector::_confirmed));

@@ -10,50 +10,42 @@
 	</tutorials>
 	<methods>
 		<method name="get_format" qualifiers="const">
-			<return type="int" enum="Image.Format">
-			</return>
+			<return type="int" enum="Image.Format" />
 			<description>
 				Returns the current format being used by this texture. See [enum Image.Format] for details.
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the height of the texture. Height is typically represented by the Y-axis.
 			</description>
 		</method>
 		<method name="get_layer_data" qualifiers="const">
-			<return type="Image">
-			</return>
-			<argument index="0" name="layer" type="int">
-			</argument>
+			<return type="Image" />
+			<argument index="0" name="layer" type="int" />
 			<description>
 				Returns an [Image] resource with the data from specified [code]layer[/code].
 			</description>
 		</method>
 		<method name="get_layered_type" qualifiers="const">
-			<return type="int" enum="TextureLayered.LayeredType">
-			</return>
+			<return type="int" enum="TextureLayered.LayeredType" />
 			<description>
 			</description>
 		</method>
 		<method name="get_layers" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_width" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the width of the texture. Width is typically represented by the X-axis.
 			</description>
 		</method>
 		<method name="has_mipmaps" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 			</description>
 		</method>

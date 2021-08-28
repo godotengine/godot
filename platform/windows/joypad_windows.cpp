@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -110,12 +110,11 @@ bool JoypadWindows::is_xinput_device(const GUID *p_guid) {
 	if (GetRawInputDeviceList(nullptr, &dev_list_count, sizeof(RAWINPUTDEVICELIST)) == (UINT)-1) {
 		return false;
 	}
-	dev_list = (PRAWINPUTDEVICELIST)malloc(sizeof(RAWINPUTDEVICELIST) * dev_list_count);
-	if (!dev_list)
-		return false;
+	dev_list = (PRAWINPUTDEVICELIST)memalloc(sizeof(RAWINPUTDEVICELIST) * dev_list_count);
+	ERR_FAIL_NULL_V_MSG(dev_list, false, "Out of memory.");
 
 	if (GetRawInputDeviceList(dev_list, &dev_list_count, sizeof(RAWINPUTDEVICELIST)) == (UINT)-1) {
-		free(dev_list);
+		memfree(dev_list);
 		return false;
 	}
 	for (unsigned int i = 0; i < dev_list_count; i++) {
@@ -130,11 +129,11 @@ bool JoypadWindows::is_xinput_device(const GUID *p_guid) {
 				(MAKELONG(rdi.hid.dwVendorId, rdi.hid.dwProductId) == (LONG)p_guid->Data1) &&
 				(GetRawInputDeviceInfoA(dev_list[i].hDevice, RIDI_DEVICENAME, &dev_name, &nameSize) != (UINT)-1) &&
 				(strstr(dev_name, "IG_") != nullptr)) {
-			free(dev_list);
+			memfree(dev_list);
 			return true;
 		}
 	}
-	free(dev_list);
+	memfree(dev_list);
 	return false;
 }
 
@@ -146,12 +145,12 @@ bool JoypadWindows::setup_dinput_joypad(const DIDEVICEINSTANCE *instance) {
 	if (have_device(instance->guidInstance) || num == -1)
 		return false;
 
-	d_joypads[joypad_count] = dinput_gamepad();
-	dinput_gamepad *joy = &d_joypads[joypad_count];
+	d_joypads[num] = dinput_gamepad();
+	dinput_gamepad *joy = &d_joypads[num];
 
 	const DWORD devtype = (instance->dwDevType & 0xFF);
 
-	if ((devtype != DI8DEVTYPE_JOYSTICK) && (devtype != DI8DEVTYPE_GAMEPAD) && (devtype != DI8DEVTYPE_1STPERSON)) {
+	if ((devtype != DI8DEVTYPE_JOYSTICK) && (devtype != DI8DEVTYPE_GAMEPAD) && (devtype != DI8DEVTYPE_1STPERSON) && (devtype != DI8DEVTYPE_DRIVING)) {
 		return false;
 	}
 
@@ -171,7 +170,7 @@ bool JoypadWindows::setup_dinput_joypad(const DIDEVICEINSTANCE *instance) {
 	WORD version = 0;
 	sprintf_s(uid, "%04x%04x%04x%04x%04x%04x%04x%04x", type, 0, vendor, 0, product, 0, version, 0);
 
-	id_to_change = joypad_count;
+	id_to_change = num;
 	slider_count = 0;
 
 	joy->di_joy->SetDataFormat(&c_dfDIJoystick2);
@@ -194,7 +193,7 @@ void JoypadWindows::setup_joypad_object(const DIDEVICEOBJECTINSTANCE *ob, int p_
 		HRESULT res;
 		DIPROPRANGE prop_range;
 		DIPROPDWORD dilong;
-		DWORD ofs;
+		LONG ofs;
 		if (ob->guidType == GUID_XAxis)
 			ofs = DIJOFS_X;
 		else if (ob->guidType == GUID_YAxis)
@@ -331,7 +330,7 @@ void JoypadWindows::process_joypads() {
 		if (joy.state.dwPacketNumber != joy.last_packet) {
 			int button_mask = XINPUT_GAMEPAD_DPAD_UP;
 			for (int j = 0; j <= 16; j++) {
-				input->joy_button(joy.id, j, joy.state.Gamepad.wButtons & button_mask);
+				input->joy_button(joy.id, (JoyButton)j, joy.state.Gamepad.wButtons & button_mask);
 				button_mask = button_mask * 2;
 			}
 
@@ -382,12 +381,12 @@ void JoypadWindows::process_joypads() {
 		for (int j = 0; j < 128; j++) {
 			if (js.rgbButtons[j] & 0x80) {
 				if (!joy->last_buttons[j]) {
-					input->joy_button(joy->id, j, true);
+					input->joy_button(joy->id, (JoyButton)j, true);
 					joy->last_buttons[j] = true;
 				}
 			} else {
 				if (joy->last_buttons[j]) {
-					input->joy_button(joy->id, j, false);
+					input->joy_button(joy->id, (JoyButton)j, false);
 					joy->last_buttons[j] = false;
 				}
 			}
@@ -395,13 +394,13 @@ void JoypadWindows::process_joypads() {
 
 		// on mingw, these constants are not constants
 		int count = 8;
-		unsigned int axes[] = { DIJOFS_X, DIJOFS_Y, DIJOFS_Z, DIJOFS_RX, DIJOFS_RY, DIJOFS_RZ, DIJOFS_SLIDER(0), DIJOFS_SLIDER(1) };
+		LONG axes[] = { DIJOFS_X, DIJOFS_Y, DIJOFS_Z, DIJOFS_RX, DIJOFS_RY, DIJOFS_RZ, (LONG)DIJOFS_SLIDER(0), (LONG)DIJOFS_SLIDER(1) };
 		int values[] = { js.lX, js.lY, js.lZ, js.lRx, js.lRy, js.lRz, js.rglSlider[0], js.rglSlider[1] };
 
 		for (int j = 0; j < joy->joy_axis.size(); j++) {
 			for (int k = 0; k < count; k++) {
 				if (joy->joy_axis[j] == axes[k]) {
-					input->joy_axis(joy->id, j, axis_correct(values[k]));
+					input->joy_axis(joy->id, (JoyAxis)j, axis_correct(values[k]));
 					break;
 				};
 			};
@@ -411,44 +410,44 @@ void JoypadWindows::process_joypads() {
 }
 
 void JoypadWindows::post_hat(int p_device, DWORD p_dpad) {
-	int dpad_val = 0;
+	HatMask dpad_val = (HatMask)0;
 
 	// Should be -1 when centered, but according to docs:
 	// "Some drivers report the centered position of the POV indicator as 65,535. Determine whether the indicator is centered as follows:
 	//  BOOL POVCentered = (LOWORD(dwPOV) == 0xFFFF);"
 	// https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ee416628(v%3Dvs.85)#remarks
 	if (LOWORD(p_dpad) == 0xFFFF) {
-		dpad_val = Input::HAT_MASK_CENTER;
+		dpad_val = (HatMask)HatMask::HAT_MASK_CENTER;
 	}
 	if (p_dpad == 0) {
-		dpad_val = Input::HAT_MASK_UP;
+		dpad_val = (HatMask)HatMask::HAT_MASK_UP;
 
 	} else if (p_dpad == 4500) {
-		dpad_val = (Input::HAT_MASK_UP | Input::HAT_MASK_RIGHT);
+		dpad_val = (HatMask)(HatMask::HAT_MASK_UP | HatMask::HAT_MASK_RIGHT);
 
 	} else if (p_dpad == 9000) {
-		dpad_val = Input::HAT_MASK_RIGHT;
+		dpad_val = (HatMask)HatMask::HAT_MASK_RIGHT;
 
 	} else if (p_dpad == 13500) {
-		dpad_val = (Input::HAT_MASK_RIGHT | Input::HAT_MASK_DOWN);
+		dpad_val = (HatMask)(HatMask::HAT_MASK_RIGHT | HatMask::HAT_MASK_DOWN);
 
 	} else if (p_dpad == 18000) {
-		dpad_val = Input::HAT_MASK_DOWN;
+		dpad_val = (HatMask)HatMask::HAT_MASK_DOWN;
 
 	} else if (p_dpad == 22500) {
-		dpad_val = (Input::HAT_MASK_DOWN | Input::HAT_MASK_LEFT);
+		dpad_val = (HatMask)(HatMask::HAT_MASK_DOWN | HatMask::HAT_MASK_LEFT);
 
 	} else if (p_dpad == 27000) {
-		dpad_val = Input::HAT_MASK_LEFT;
+		dpad_val = (HatMask)HatMask::HAT_MASK_LEFT;
 
 	} else if (p_dpad == 31500) {
-		dpad_val = (Input::HAT_MASK_LEFT | Input::HAT_MASK_UP);
+		dpad_val = (HatMask)(HatMask::HAT_MASK_LEFT | HatMask::HAT_MASK_UP);
 	}
 	input->joy_hat(p_device, dpad_val);
 };
 
-Input::JoyAxis JoypadWindows::axis_correct(int p_val, bool p_xinput, bool p_trigger, bool p_negate) const {
-	Input::JoyAxis jx;
+Input::JoyAxisValue JoypadWindows::axis_correct(int p_val, bool p_xinput, bool p_trigger, bool p_negate) const {
+	Input::JoyAxisValue jx;
 	if (Math::abs(p_val) < MIN_JOY_AXIS) {
 		jx.min = p_trigger ? 0 : -1;
 		jx.value = 0.0f;

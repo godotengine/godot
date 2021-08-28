@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -177,7 +177,7 @@ void GPUParticles3DEditorBase::_node_selected(const NodePath &p_path) {
 		return;
 	}
 
-	Transform geom_xform = base_node->get_global_transform().affine_inverse() * vi->get_global_transform();
+	Transform3D geom_xform = base_node->get_global_transform().affine_inverse() * vi->get_global_transform();
 
 	int gc = geometry.size();
 	Face3 *w = geometry.ptrw();
@@ -213,7 +213,7 @@ GPUParticles3DEditorBase::GPUParticles3DEditorBase() {
 	emission_fill->add_item(TTR("Volume"));
 	emd_vb->add_margin_child(TTR("Emission Source: "), emission_fill);
 
-	emission_dialog->get_ok()->set_text(TTR("Create"));
+	emission_dialog->get_ok_button()->set_text(TTR("Create"));
 	emission_dialog->connect("confirmed", callable_mp(this, &GPUParticles3DEditorBase::_generate_emission_points));
 
 	emission_tree_dialog = memnew(SceneTreeDialog);
@@ -230,7 +230,7 @@ void GPUParticles3DEditor::_node_removed(Node *p_node) {
 
 void GPUParticles3DEditor::_notification(int p_notification) {
 	if (p_notification == NOTIFICATION_ENTER_TREE) {
-		options->set_icon(options->get_popup()->get_theme_icon("GPUParticles3D", "EditorIcons"));
+		options->set_icon(options->get_popup()->get_theme_icon(SNAME("GPUParticles3D"), SNAME("EditorIcons")));
 		get_tree()->connect("node_removed", callable_mp(this, &GPUParticles3DEditor::_node_removed));
 	}
 }
@@ -238,14 +238,16 @@ void GPUParticles3DEditor::_notification(int p_notification) {
 void GPUParticles3DEditor::_menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_OPTION_GENERATE_AABB: {
-			float gen_time = node->get_lifetime();
+			// Add one second to the default generation lifetime, since the progress is updated every second.
+			generate_seconds->set_value(MAX(1.0, trunc(node->get_lifetime()) + 1.0));
 
-			if (gen_time < 1.0) {
-				generate_seconds->set_value(1.0);
+			if (generate_seconds->get_value() >= 11.0 + CMP_EPSILON) {
+				// Only pop up the time dialog if the particle's lifetime is long enough to warrant shortening it.
+				generate_aabb->popup_centered();
 			} else {
-				generate_seconds->set_value(trunc(gen_time) + 1.0);
+				// Generate the visibility AABB immediately.
+				_generate_aabb();
 			}
-			generate_aabb->popup_centered();
 		} break;
 		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE: {
 			Ref<ParticlesMaterial> material = node->get_process_material();
@@ -254,7 +256,7 @@ void GPUParticles3DEditor::_menu_option(int p_option) {
 				return;
 			}
 
-			emission_tree_dialog->popup_centered_ratio();
+			emission_tree_dialog->popup_scenetree_dialog();
 
 		} break;
 		case MENU_OPTION_CONVERT_TO_CPU_PARTICLES: {
@@ -263,7 +265,7 @@ void GPUParticles3DEditor::_menu_option(int p_option) {
 			cpu_particles->set_name(node->get_name());
 			cpu_particles->set_transform(node->get_transform());
 			cpu_particles->set_visible(node->is_visible());
-			cpu_particles->set_pause_mode(node->get_pause_mode());
+			cpu_particles->set_process_mode(node->get_process_mode());
 
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 			ur->create_action(TTR("Convert to CPUParticles3D"));
@@ -282,11 +284,11 @@ void GPUParticles3DEditor::_menu_option(int p_option) {
 }
 
 void GPUParticles3DEditor::_generate_aabb() {
-	float time = generate_seconds->get_value();
+	double time = generate_seconds->get_value();
 
-	float running = 0.0;
+	double running = 0.0;
 
-	EditorProgress ep("gen_aabb", TTR("Generating AABB"), int(time));
+	EditorProgress ep("gen_aabb", TTR("Generating Visibility AABB (Waiting for Particle Simulation)"), int(time));
 
 	bool was_emitting = node->is_emitting();
 	if (!was_emitting) {
@@ -346,7 +348,7 @@ void GPUParticles3DEditor::_generate_emission_points() {
 
 	{
 		uint8_t *iw = point_img.ptrw();
-		zeromem(iw, w * h * 3 * sizeof(float));
+		memset(iw, 0, w * h * 3 * sizeof(float));
 		const Vector3 *r = points.ptr();
 		float *wf = (float *)iw;
 		for (int i = 0; i < point_count; i++) {
@@ -359,7 +361,7 @@ void GPUParticles3DEditor::_generate_emission_points() {
 	Ref<Image> image = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img));
 
 	Ref<ImageTexture> tex;
-	tex.instance();
+	tex.instantiate();
 
 	Ref<ParticlesMaterial> material = node->get_process_material();
 	ERR_FAIL_COND(material.is_null());
@@ -374,7 +376,7 @@ void GPUParticles3DEditor::_generate_emission_points() {
 
 		{
 			uint8_t *iw = point_img2.ptrw();
-			zeromem(iw, w * h * 3 * sizeof(float));
+			memset(iw, 0, w * h * 3 * sizeof(float));
 			const Vector3 *r = normals.ptr();
 			float *wf = (float *)iw;
 			for (int i = 0; i < point_count; i++) {
@@ -387,7 +389,7 @@ void GPUParticles3DEditor::_generate_emission_points() {
 		Ref<Image> image2 = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img2));
 
 		Ref<ImageTexture> tex2;
-		tex2.instance();
+		tex2.instantiate();
 
 		material->set_emission_normal_texture(tex2);
 	} else {
@@ -454,7 +456,7 @@ void GPUParticles3DEditorPlugin::make_visible(bool p_visible) {
 GPUParticles3DEditorPlugin::GPUParticles3DEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	particles_editor = memnew(GPUParticles3DEditor);
-	editor->get_viewport()->add_child(particles_editor);
+	editor->get_main_control()->add_child(particles_editor);
 
 	particles_editor->hide();
 }

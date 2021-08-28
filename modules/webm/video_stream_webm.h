@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -71,30 +71,30 @@ public:
 
 	bool open_file(const String &p_file);
 
-	virtual void stop();
-	virtual void play();
+	virtual void stop() override;
+	virtual void play() override;
 
-	virtual bool is_playing() const;
+	virtual bool is_playing() const override;
 
-	virtual void set_paused(bool p_paused);
-	virtual bool is_paused() const;
+	virtual void set_paused(bool p_paused) override;
+	virtual bool is_paused() const override;
 
-	virtual void set_loop(bool p_enable);
-	virtual bool has_loop() const;
+	virtual void set_loop(bool p_enable) override;
+	virtual bool has_loop() const override;
 
-	virtual float get_length() const;
+	virtual float get_length() const override;
 
-	virtual float get_playback_position() const;
-	virtual void seek(float p_time);
+	virtual float get_playback_position() const override;
+	virtual void seek(float p_time) override;
 
-	virtual void set_audio_track(int p_idx);
+	virtual void set_audio_track(int p_idx) override;
 
-	virtual Ref<Texture2D> get_texture() const;
-	virtual void update(float p_delta);
+	virtual Ref<Texture2D> get_texture() const override;
+	virtual void update(float p_delta) override;
 
-	virtual void set_mix_callback(AudioMixCallback p_callback, void *p_userdata);
-	virtual int get_channels() const;
-	virtual int get_mix_rate() const;
+	virtual void set_mix_callback(AudioMixCallback p_callback, void *p_userdata) override;
+	virtual int get_channels() const override;
+	virtual int get_mix_rate() const override;
 
 private:
 	inline bool has_enough_video_frames() const;
@@ -117,16 +117,16 @@ protected:
 public:
 	VideoStreamWebm();
 
-	virtual Ref<VideoStreamPlayback> instance_playback();
+	virtual Ref<VideoStreamPlayback> instance_playback() override;
 
 	virtual void set_file(const String &p_file);
 	String get_file();
-	virtual void set_audio_track(int p_track);
+	virtual void set_audio_track(int p_track) override;
 };
 
 class ResourceFormatLoaderWebm : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -76,7 +76,6 @@ class Path2DEditor : public HBoxContainer {
 	};
 
 	enum Action {
-
 		ACTION_NONE,
 		ACTION_MOVING_POINT,
 		ACTION_MOVING_IN,
@@ -116,14 +115,14 @@ class Path2DEditorPlugin : public EditorPlugin {
 	EditorNode *editor;
 
 public:
-	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return path2d_editor->forward_gui_input(p_event); }
-	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) { path2d_editor->forward_canvas_draw_over_viewport(p_overlay); }
+	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override { return path2d_editor->forward_gui_input(p_event); }
+	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override { path2d_editor->forward_canvas_draw_over_viewport(p_overlay); }
 
-	virtual String get_name() const { return "Path2D"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
+	virtual String get_name() const override { return "Path2D"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
 
 	Path2DEditorPlugin(EditorNode *p_node);
 	~Path2DEditorPlugin();

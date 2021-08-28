@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,10 @@
 #ifndef A_STAR_H
 #define A_STAR_H
 
-#include "core/oa_hash_map.h"
-#include "core/reference.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/ref_counted.h"
+#include "core/object/script_language.h"
+#include "core/templates/oa_hash_map.h"
 
 /**
 	A* pathfinding algorithm
@@ -40,27 +42,27 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-class AStar : public Reference {
-	GDCLASS(AStar, Reference);
+class AStar : public RefCounted {
+	GDCLASS(AStar, RefCounted);
 	friend class AStar2D;
 
 	struct Point {
 		Point() {}
 
-		int id;
+		int id = 0;
 		Vector3 pos;
-		real_t weight_scale;
-		bool enabled;
+		real_t weight_scale = 0;
+		bool enabled = false;
 
 		OAHashMap<int, Point *> neighbours = 4u;
 		OAHashMap<int, Point *> unlinked_neighbours = 4u;
 
 		// Used for pathfinding.
-		Point *prev_point;
-		real_t g_score;
-		real_t f_score;
-		uint64_t open_pass;
-		uint64_t closed_pass;
+		Point *prev_point = nullptr;
+		real_t g_score = 0;
+		real_t f_score = 0;
+		uint64_t open_pass = 0;
+		uint64_t closed_pass = 0;
 	};
 
 	struct SortPoints {
@@ -122,6 +124,9 @@ protected:
 	virtual real_t _estimate_cost(int p_from_id, int p_to_id);
 	virtual real_t _compute_cost(int p_from_id, int p_to_id);
 
+	GDVIRTUAL2RC(real_t, _estimate_cost, int64_t, int64_t)
+	GDVIRTUAL2RC(real_t, _compute_cost, int64_t, int64_t)
+
 public:
 	int get_available_point_id() const;
 
@@ -157,8 +162,8 @@ public:
 	~AStar();
 };
 
-class AStar2D : public Reference {
-	GDCLASS(AStar2D, Reference);
+class AStar2D : public RefCounted {
+	GDCLASS(AStar2D, RefCounted);
 	AStar astar;
 
 	bool _solve(AStar::Point *begin_point, AStar::Point *end_point);
@@ -168,6 +173,9 @@ protected:
 
 	virtual real_t _estimate_cost(int p_from_id, int p_to_id);
 	virtual real_t _compute_cost(int p_from_id, int p_to_id);
+
+	GDVIRTUAL2RC(real_t, _estimate_cost, int64_t, int64_t)
+	GDVIRTUAL2RC(real_t, _compute_cost, int64_t, int64_t)
 
 public:
 	int get_available_point_id() const;

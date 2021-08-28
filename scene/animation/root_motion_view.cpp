@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -77,24 +77,24 @@ bool RootMotionView::get_zero_y() const {
 
 void RootMotionView::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		RS::get_singleton()->immediate_set_material(immediate, StandardMaterial3D::get_material_rid_for_2d(false, true, false, false, false));
+		immediate_material = StandardMaterial3D::get_material_for_2d(false, true, false, false, false);
 		first = true;
 	}
 
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS || p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
-		Transform transform;
+		Transform3D transform;
 
 		if (has_node(path)) {
 			Node *node = get_node(path);
 
 			AnimationTree *tree = Object::cast_to<AnimationTree>(node);
 			if (tree && tree->is_active() && tree->get_root_motion_track() != NodePath()) {
-				if (is_processing_internal() && tree->get_process_mode() == AnimationTree::ANIMATION_PROCESS_PHYSICS) {
+				if (is_processing_internal() && tree->get_process_callback() == AnimationTree::ANIMATION_PROCESS_PHYSICS) {
 					set_process_internal(false);
 					set_physics_process_internal(true);
 				}
 
-				if (is_physics_processing_internal() && tree->get_process_mode() == AnimationTree::ANIMATION_PROCESS_IDLE) {
+				if (is_physics_processing_internal() && tree->get_process_callback() == AnimationTree::ANIMATION_PROCESS_IDLE) {
 					set_process_internal(true);
 					set_physics_process_internal(false);
 				}
@@ -103,7 +103,7 @@ void RootMotionView::_notification(int p_what) {
 			}
 		}
 
-		if (!first && transform == Transform()) {
+		if (!first && transform == Transform3D()) {
 			return;
 		}
 
@@ -119,11 +119,12 @@ void RootMotionView::_notification(int p_what) {
 		}
 		accumulated.origin.z = Math::fposmod(accumulated.origin.z, cell_size);
 
-		RS::get_singleton()->immediate_clear(immediate);
+		immediate->clear_surfaces();
 
 		int cells_in_radius = int((radius / cell_size) + 1.0);
 
-		RS::get_singleton()->immediate_begin(immediate, RS::PRIMITIVE_LINES);
+		immediate->surface_begin(Mesh::PRIMITIVE_LINES, immediate_material);
+
 		for (int i = -cells_in_radius; i < cells_in_radius; i++) {
 			for (int j = -cells_in_radius; j < cells_in_radius; j++) {
 				Vector3 from(i * cell_size, 0, j * cell_size);
@@ -138,21 +139,21 @@ void RootMotionView::_notification(int p_what) {
 				c_i.a *= MAX(0, 1.0 - from_i.length() / radius);
 				c_j.a *= MAX(0, 1.0 - from_j.length() / radius);
 
-				RS::get_singleton()->immediate_color(immediate, c);
-				RS::get_singleton()->immediate_vertex(immediate, from);
+				immediate->surface_set_color(c);
+				immediate->surface_add_vertex(from);
 
-				RS::get_singleton()->immediate_color(immediate, c_i);
-				RS::get_singleton()->immediate_vertex(immediate, from_i);
+				immediate->surface_set_color(c_i);
+				immediate->surface_add_vertex(from_i);
 
-				RS::get_singleton()->immediate_color(immediate, c);
-				RS::get_singleton()->immediate_vertex(immediate, from);
+				immediate->surface_set_color(c);
+				immediate->surface_add_vertex(from);
 
-				RS::get_singleton()->immediate_color(immediate, c_j);
-				RS::get_singleton()->immediate_vertex(immediate, from_j);
+				immediate->surface_set_color(c_j);
+				immediate->surface_add_vertex(from_j);
 			}
 		}
 
-		RS::get_singleton()->immediate_end(immediate);
+		immediate->surface_end();
 	}
 }
 
@@ -188,16 +189,13 @@ void RootMotionView::_bind_methods() {
 }
 
 RootMotionView::RootMotionView() {
-	zero_y = true;
-	radius = 10;
-	cell_size = 1;
-	set_process_internal(true);
-	immediate = RenderingServer::get_singleton()->immediate_create();
-	set_base(immediate);
-	color = Color(0.5, 0.5, 1.0);
+	if (Engine::get_singleton()->is_editor_hint()) {
+		set_process_internal(true);
+	}
+	immediate.instantiate();
+	set_base(immediate->get_rid());
 }
 
 RootMotionView::~RootMotionView() {
 	set_base(RID());
-	RenderingServer::get_singleton()->free(immediate);
 }

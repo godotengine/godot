@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,26 +29,19 @@
 /*************************************************************************/
 
 #include "register_types.h"
-
-#include "core/error_macros.h"
-
 #include "core/crypto/crypto_core.h"
-
 #include "thirdparty/xatlas/xatlas.h"
 
-#include <stdio.h>
-#include <stdlib.h>
+extern bool (*array_mesh_lightmap_unwrap_callback)(float p_texel_size, const float *p_vertices, const float *p_normals, int p_vertex_count, const int *p_indices, int p_index_count, const uint8_t *p_cache_data, bool *r_use_cache, uint8_t **r_mesh_cache, int *r_mesh_cache_size, float **r_uv, int **r_vertex, int *r_vertex_count, int **r_index, int *r_index_count, int *r_size_hint_x, int *r_size_hint_y);
 
-extern bool (*array_mesh_lightmap_unwrap_callback)(float p_texel_size, const float *p_vertices, const float *p_normals, int p_vertex_count, const int *p_indices, int p_index_count, float **r_uv, int **r_vertex, int *r_vertex_count, int **r_index, int *r_index_count, int *r_size_hint_x, int *r_size_hint_y, int *&r_cache_data, unsigned int &r_cache_size, bool &r_used_cache);
-
-bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_vertices, const float *p_normals, int p_vertex_count, const int *p_indices, int p_index_count, float **r_uvs, int **r_vertices, int *r_vertex_count, int **r_indices, int *r_index_count, int *r_size_hint_x, int *r_size_hint_y, int *&r_cache_data, unsigned int &r_cache_size, bool &r_used_cache) {
+bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_vertices, const float *p_normals, int p_vertex_count, const int *p_indices, int p_index_count, const uint8_t *p_cache_data, bool *r_use_cache, uint8_t **r_mesh_cache, int *r_mesh_cache_size, float **r_uv, int **r_vertex, int *r_vertex_count, int **r_index, int *r_index_count, int *r_size_hint_x, int *r_size_hint_y) {
 	CryptoCore::MD5Context ctx;
 	ctx.start();
 
 	ctx.update((unsigned char *)&p_texel_size, sizeof(float));
 	ctx.update((unsigned char *)p_indices, sizeof(int) * p_index_count);
-	ctx.update((unsigned char *)p_vertices, sizeof(float) * p_vertex_count);
-	ctx.update((unsigned char *)p_normals, sizeof(float) * p_vertex_count);
+	ctx.update((unsigned char *)p_vertices, sizeof(float) * p_vertex_count * 3);
+	ctx.update((unsigned char *)p_normals, sizeof(float) * p_vertex_count * 3);
 
 	unsigned char hash[16];
 	ctx.finish(hash);
@@ -56,38 +49,37 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 	bool cached = false;
 	unsigned int cache_idx = 0;
 
-	if (r_used_cache && r_cache_size) {
-		//Check if hash is in cache data
+	*r_mesh_cache = nullptr;
+	*r_mesh_cache_size = 0;
 
-		int *cache_data = r_cache_data;
+	if (p_cache_data) {
+		//Check if hash is in cache data
+		int *cache_data = (int *)p_cache_data;
 		int n_entries = cache_data[0];
-		unsigned int r_idx = 1;
+		unsigned int read_idx = 1;
 		for (int i = 0; i < n_entries; ++i) {
-			if (memcmp(&cache_data[r_idx], hash, 16) == 0) {
+			if (memcmp(&cache_data[read_idx], hash, 16) == 0) {
 				cached = true;
-				cache_idx = r_idx;
+				cache_idx = read_idx;
 				break;
 			}
 
-			r_idx += 4; // hash
-			r_idx += 2; // size hint
+			read_idx += 4; // hash
+			read_idx += 2; // size hint
 
-			int vertex_count = cache_data[r_idx];
-			r_idx += 1; // vertex count
-			r_idx += vertex_count; // vertex
-			r_idx += vertex_count * 2; // uvs
+			int vertex_count = cache_data[read_idx];
+			read_idx += 1; // vertex count
+			read_idx += vertex_count; // vertex
+			read_idx += vertex_count * 2; // uvs
 
-			int index_count = cache_data[r_idx];
-			r_idx += 1; // index count
-			r_idx += index_count; // indices
+			int index_count = cache_data[read_idx];
+			read_idx += 1; // index count
+			read_idx += index_count; // indices
 		}
 	}
 
-	if (r_used_cache && cached) {
-		int *cache_data = r_cache_data;
-
-		// Return cache data pointer to the caller
-		r_cache_data = &cache_data[cache_idx];
+	if (cached) {
+		int *cache_data = (int *)p_cache_data;
 
 		cache_idx += 4;
 
@@ -99,92 +91,92 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 		// Load vertices
 		*r_vertex_count = cache_data[cache_idx];
 		cache_idx++;
-		*r_vertices = &cache_data[cache_idx];
+		*r_vertex = &cache_data[cache_idx];
 		cache_idx += *r_vertex_count;
 
 		// Load UVs
-		*r_uvs = (float *)&cache_data[cache_idx];
+		*r_uv = (float *)&cache_data[cache_idx];
 		cache_idx += *r_vertex_count * 2;
 
 		// Load indices
 		*r_index_count = cache_data[cache_idx];
 		cache_idx++;
-		*r_indices = &cache_data[cache_idx];
+		*r_index = &cache_data[cache_idx];
+	} else {
+		// set up input mesh
+		xatlas::MeshDecl input_mesh;
+		input_mesh.indexData = p_indices;
+		input_mesh.indexCount = p_index_count;
+		input_mesh.indexFormat = xatlas::IndexFormat::UInt32;
 
-		// Return cache data size to the caller
-		r_cache_size = sizeof(int) * (4 + 2 + 1 + *r_vertex_count + (*r_vertex_count * 2) + 1 + *r_index_count); // hash + size hint + vertex_count + vertices + uvs + index_count + indices
-		r_used_cache = true;
-		return true;
+		input_mesh.vertexCount = p_vertex_count;
+		input_mesh.vertexPositionData = p_vertices;
+		input_mesh.vertexPositionStride = sizeof(float) * 3;
+		input_mesh.vertexNormalData = p_normals;
+		input_mesh.vertexNormalStride = sizeof(uint32_t) * 3;
+		input_mesh.vertexUvData = NULL;
+		input_mesh.vertexUvStride = 0;
+
+		xatlas::ChartOptions chart_options;
+		chart_options.fixWinding = true;
+
+		xatlas::PackOptions pack_options;
+		pack_options.padding = 1;
+		pack_options.maxChartSize = 4094; // Lightmap atlassing needs 2 for padding between meshes, so 4096-2
+		pack_options.blockAlign = true;
+		pack_options.texelsPerUnit = 1.0 / p_texel_size;
+
+		xatlas::Atlas *atlas = xatlas::Create();
+
+		xatlas::AddMeshError err = xatlas::AddMesh(atlas, input_mesh, 1);
+		ERR_FAIL_COND_V_MSG(err != xatlas::AddMeshError::Success, false, xatlas::StringForEnum(err));
+
+		xatlas::Generate(atlas, chart_options, pack_options);
+
+		*r_size_hint_x = atlas->width;
+		*r_size_hint_y = atlas->height;
+
+		float w = *r_size_hint_x;
+		float h = *r_size_hint_y;
+
+		if (w == 0 || h == 0) {
+			xatlas::Destroy(atlas);
+			return false; //could not bake because there is no area
+		}
+
+		const xatlas::Mesh &output = atlas->meshes[0];
+
+		*r_vertex = (int *)memalloc(sizeof(int) * output.vertexCount);
+		ERR_FAIL_NULL_V_MSG(*r_vertex, false, "Out of memory.");
+		*r_uv = (float *)memalloc(sizeof(float) * output.vertexCount * 2);
+		ERR_FAIL_NULL_V_MSG(*r_uv, false, "Out of memory.");
+		*r_index = (int *)memalloc(sizeof(int) * output.indexCount);
+		ERR_FAIL_NULL_V_MSG(*r_index, false, "Out of memory.");
+
+		float max_x = 0;
+		float max_y = 0;
+		for (uint32_t i = 0; i < output.vertexCount; i++) {
+			(*r_vertex)[i] = output.vertexArray[i].xref;
+			(*r_uv)[i * 2 + 0] = output.vertexArray[i].uv[0] / w;
+			(*r_uv)[i * 2 + 1] = output.vertexArray[i].uv[1] / h;
+			max_x = MAX(max_x, output.vertexArray[i].uv[0]);
+			max_y = MAX(max_y, output.vertexArray[i].uv[1]);
+		}
+
+		*r_vertex_count = output.vertexCount;
+
+		for (uint32_t i = 0; i < output.indexCount; i++) {
+			(*r_index)[i] = output.indexArray[i];
+		}
+
+		*r_index_count = output.indexCount;
+
+		xatlas::Destroy(atlas);
 	}
 
-	//set up input mesh
-	xatlas::MeshDecl input_mesh;
-	input_mesh.indexData = p_indices;
-	input_mesh.indexCount = p_index_count;
-	input_mesh.indexFormat = xatlas::IndexFormat::UInt32;
+	if (*r_use_cache) {
+		// Build cache data for current mesh
 
-	input_mesh.vertexCount = p_vertex_count;
-	input_mesh.vertexPositionData = p_vertices;
-	input_mesh.vertexPositionStride = sizeof(float) * 3;
-	input_mesh.vertexNormalData = p_normals;
-	input_mesh.vertexNormalStride = sizeof(uint32_t) * 3;
-	input_mesh.vertexUvData = nullptr;
-	input_mesh.vertexUvStride = 0;
-
-	xatlas::ChartOptions chart_options;
-	xatlas::PackOptions pack_options;
-
-	pack_options.maxChartSize = 4096;
-	pack_options.blockAlign = true;
-	pack_options.padding = 1;
-	pack_options.texelsPerUnit = 1.0 / p_texel_size;
-
-	xatlas::Atlas *atlas = xatlas::Create();
-	printf("Adding mesh..\n");
-	xatlas::AddMeshError::Enum err = xatlas::AddMesh(atlas, input_mesh, 1);
-	ERR_FAIL_COND_V_MSG(err != xatlas::AddMeshError::Enum::Success, false, xatlas::StringForEnum(err));
-
-	printf("Generate..\n");
-	xatlas::Generate(atlas, chart_options, xatlas::ParameterizeOptions(), pack_options);
-
-	*r_size_hint_x = atlas->width;
-	*r_size_hint_y = atlas->height;
-
-	float w = *r_size_hint_x;
-	float h = *r_size_hint_y;
-
-	if (w == 0 || h == 0) {
-		return false; //could not bake because there is no area
-	}
-
-	const xatlas::Mesh &output = atlas->meshes[0];
-
-	*r_vertices = (int *)malloc(sizeof(int) * output.vertexCount);
-	*r_uvs = (float *)malloc(sizeof(float) * output.vertexCount * 2);
-	*r_indices = (int *)malloc(sizeof(int) * output.indexCount);
-
-	float max_x = 0;
-	float max_y = 0;
-	for (uint32_t i = 0; i < output.vertexCount; i++) {
-		(*r_vertices)[i] = output.vertexArray[i].xref;
-		(*r_uvs)[i * 2 + 0] = output.vertexArray[i].uv[0] / w;
-		(*r_uvs)[i * 2 + 1] = output.vertexArray[i].uv[1] / h;
-		max_x = MAX(max_x, output.vertexArray[i].uv[0]);
-		max_y = MAX(max_y, output.vertexArray[i].uv[1]);
-	}
-
-	printf("Final texture size: %f,%f - max %f,%f\n", w, h, max_x, max_y);
-	*r_vertex_count = output.vertexCount;
-
-	for (uint32_t i = 0; i < output.indexCount; i++) {
-		(*r_indices)[i] = output.indexArray[i];
-	}
-
-	*r_index_count = output.indexCount;
-
-	xatlas::Destroy(atlas);
-
-	if (r_used_cache) {
 		unsigned int new_cache_size = 4 + 2 + 1 + *r_vertex_count + (*r_vertex_count * 2) + 1 + *r_index_count; // hash + size hint + vertex_count + vertices + uvs + index_count + indices
 		new_cache_size *= sizeof(int);
 		int *new_cache_data = (int *)memalloc(new_cache_size);
@@ -204,11 +196,11 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 		new_cache_idx++;
 
 		// vertices
-		memcpy(&new_cache_data[new_cache_idx], *r_vertices, sizeof(int) * *r_vertex_count);
+		memcpy(&new_cache_data[new_cache_idx], *r_vertex, sizeof(int) * (*r_vertex_count));
 		new_cache_idx += *r_vertex_count;
 
 		// uvs
-		memcpy(&new_cache_data[new_cache_idx], *r_uvs, sizeof(float) * *r_vertex_count * 2);
+		memcpy(&new_cache_data[new_cache_idx], *r_uv, sizeof(float) * (*r_vertex_count) * 2);
 		new_cache_idx += *r_vertex_count * 2;
 
 		// index count
@@ -216,14 +208,14 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 		new_cache_idx++;
 
 		// indices
-		memcpy(&new_cache_data[new_cache_idx], *r_indices, sizeof(int) * *r_index_count);
-		new_cache_idx += *r_index_count;
+		memcpy(&new_cache_data[new_cache_idx], *r_index, sizeof(int) * (*r_index_count));
 
 		// Return cache data to the caller
-		r_cache_data = new_cache_data;
-		r_cache_size = new_cache_size;
-		r_used_cache = false;
+		*r_mesh_cache = (uint8_t *)new_cache_data;
+		*r_mesh_cache_size = new_cache_size;
 	}
+
+	*r_use_cache = cached; // Return whether cache was used.
 
 	return true;
 }

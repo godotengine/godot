@@ -1,12 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
 using real_t = System.Single;
-
 #endif
+using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 // TODO: Add comments describing what this class does. It is not obvious.
 
@@ -26,25 +25,17 @@ namespace Godot
 
         public static real_t Db2Linear(real_t db)
         {
-            return (real_t) Math.Exp(db * 0.11512925464970228420089957273422);
+            return (real_t)Math.Exp(db * 0.11512925464970228420089957273422);
         }
 
-        public static real_t DecTime(real_t value, real_t amount, real_t step)
+        private static object[] GetPrintParams(object[] parameters)
         {
-            real_t sgn = Mathf.Sign(value);
-            real_t val = Mathf.Abs(value);
-            val -= amount * step;
-            if (val < 0)
-                val = 0;
-            return val * sgn;
-        }
+            if (parameters == null)
+            {
+                return new[] { "null" };
+            }
 
-        public static FuncRef FuncRef(Object instance, StringName funcName)
-        {
-            var ret = new FuncRef();
-            ret.SetInstance(instance);
-            ret.SetFunction(funcName);
-            return ret;
+            return Array.ConvertAll(parameters, x => x?.ToString() ?? "null");
         }
 
         public static int Hash(object var)
@@ -59,7 +50,7 @@ namespace Godot
 
         public static real_t Linear2Db(real_t linear)
         {
-            return (real_t) (Math.Log(linear) * 8.6858896380650365530225783783321);
+            return (real_t)(Math.Log(linear) * 8.6858896380650365530225783783321);
         }
 
         public static Resource Load(string path)
@@ -84,7 +75,7 @@ namespace Godot
 
         public static void Print(params object[] what)
         {
-            godot_icall_GD_print(Array.ConvertAll(what, x => x?.ToString()));
+            godot_icall_GD_print(GetPrintParams(what));
         }
 
         public static void PrintStack()
@@ -94,22 +85,22 @@ namespace Godot
 
         public static void PrintErr(params object[] what)
         {
-            godot_icall_GD_printerr(Array.ConvertAll(what, x => x?.ToString()));
+            godot_icall_GD_printerr(GetPrintParams(what));
         }
 
         public static void PrintRaw(params object[] what)
         {
-            godot_icall_GD_printraw(Array.ConvertAll(what, x => x?.ToString()));
+            godot_icall_GD_printraw(GetPrintParams(what));
         }
 
         public static void PrintS(params object[] what)
         {
-            godot_icall_GD_prints(Array.ConvertAll(what, x => x?.ToString()));
+            godot_icall_GD_prints(GetPrintParams(what));
         }
 
         public static void PrintT(params object[] what)
         {
-            godot_icall_GD_printt(Array.ConvertAll(what, x => x?.ToString()));
+            godot_icall_GD_printt(GetPrintParams(what));
         }
 
         public static float Randf()
@@ -129,12 +120,17 @@ namespace Godot
 
         public static double RandRange(double from, double to)
         {
-            return godot_icall_GD_rand_range(from, to);
+            return godot_icall_GD_randf_range(from, to);
         }
 
-        public static uint RandSeed(ulong seed, out ulong newSeed)
+        public static int RandRange(int from, int to)
         {
-            return godot_icall_GD_rand_seed(seed, out newSeed);
+            return godot_icall_GD_randi_range(from, to);
+        }
+
+        public static uint RandFromSeed(ref ulong seed)
+        {
+            return godot_icall_GD_rand_seed(seed, out seed);
         }
 
         public static IEnumerable<int> Range(int end)
@@ -238,9 +234,11 @@ namespace Godot
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static void godot_icall_GD_randomize();
 
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static double godot_icall_GD_randf_range(double from, double to);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static double godot_icall_GD_rand_range(double from, double to);
+        internal extern static int godot_icall_GD_randi_range(int from, int to);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static uint godot_icall_GD_rand_seed(ulong seed, out ulong newSeed);

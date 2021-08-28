@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,14 +41,14 @@ void CPUParticles3DEditor::_node_removed(Node *p_node) {
 
 void CPUParticles3DEditor::_notification(int p_notification) {
 	if (p_notification == NOTIFICATION_ENTER_TREE) {
-		options->set_icon(get_theme_icon("CPUParticles3D", "EditorIcons"));
+		options->set_icon(get_theme_icon(SNAME("CPUParticles3D"), SNAME("EditorIcons")));
 	}
 }
 
 void CPUParticles3DEditor::_menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE: {
-			emission_tree_dialog->popup_centered_ratio();
+			emission_tree_dialog->popup_scenetree_dialog();
 
 		} break;
 
@@ -122,7 +122,7 @@ void CPUParticles3DEditorPlugin::make_visible(bool p_visible) {
 CPUParticles3DEditorPlugin::CPUParticles3DEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	particles_editor = memnew(CPUParticles3DEditor);
-	editor->get_viewport()->add_child(particles_editor);
+	editor->get_main_control()->add_child(particles_editor);
 
 	particles_editor->hide();
 }

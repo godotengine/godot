@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -111,7 +111,7 @@ void MultiMeshEditor::_populate() {
 		return;
 	}
 
-	Transform geom_xform = node->get_global_transform().affine_inverse() * ss_instance->get_global_transform();
+	Transform3D geom_xform = node->get_global_transform().affine_inverse() * ss_instance->get_global_transform();
 
 	Vector<Face3> geometry = ss_instance->get_faces(VisualInstance3D::FACES_SOLID);
 
@@ -167,7 +167,7 @@ void MultiMeshEditor::_populate() {
 	float _scale = populate_scale->get_value();
 	int axis = populate_axis->get_selected();
 
-	Transform axis_xform;
+	Transform3D axis_xform;
 	if (axis == Vector3::AXIS_Z) {
 		axis_xform.rotate(Vector3(1, 0, 0), -Math_PI * 0.5);
 	}
@@ -191,7 +191,7 @@ void MultiMeshEditor::_populate() {
 		Vector3 normal = face.get_plane().normal;
 		Vector3 op_axis = (face.vertex[0] - face.vertex[1]).normalized();
 
-		Transform xform;
+		Transform3D xform;
 
 		xform.set_look_at(pos, pos + op_axis, normal);
 		xform = xform * axis_xform;
@@ -251,7 +251,7 @@ void MultiMeshEditor::edit(MultiMeshInstance3D *p_multimesh) {
 void MultiMeshEditor::_browse(bool p_source) {
 	browsing_source = p_source;
 	std->get_scene_tree()->set_marked(node, false);
-	std->popup_centered_ratio();
+	std->popup_scenetree_dialog();
 	if (p_source) {
 		std->set_title(TTR("Select a Source Mesh:"));
 	} else {
@@ -268,7 +268,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text("MultiMesh");
-	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("MultiMeshInstance3D", "EditorIcons"));
+	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("MultiMeshInstance3D"), SNAME("EditorIcons")));
 
 	options->get_popup()->add_item(TTR("Populate Surface"));
 	options->get_popup()->connect("id_pressed", callable_mp(this, &MultiMeshEditor::_menu_option));
@@ -337,7 +337,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	vbc->add_margin_child(TTR("Scale:"), populate_scale);
 
 	populate_amount = memnew(SpinBox);
-	populate_amount->set_anchor(MARGIN_RIGHT, ANCHOR_END);
+	populate_amount->set_anchor(SIDE_RIGHT, ANCHOR_END);
 	populate_amount->set_begin(Point2(20, 232));
 	populate_amount->set_end(Point2(-5, 237));
 	populate_amount->set_min(1);
@@ -345,9 +345,9 @@ MultiMeshEditor::MultiMeshEditor() {
 	populate_amount->set_value(128);
 	vbc->add_margin_child(TTR("Amount:"), populate_amount);
 
-	populate_dialog->get_ok()->set_text(TTR("Populate"));
+	populate_dialog->get_ok_button()->set_text(TTR("Populate"));
 
-	populate_dialog->get_ok()->connect("pressed", callable_mp(this, &MultiMeshEditor::_populate));
+	populate_dialog->get_ok_button()->connect("pressed", callable_mp(this, &MultiMeshEditor::_populate));
 	std = memnew(SceneTreeDialog);
 	populate_dialog->add_child(std);
 	std->connect("selected", callable_mp(this, &MultiMeshEditor::_browsed));
@@ -378,7 +378,7 @@ void MultiMeshEditorPlugin::make_visible(bool p_visible) {
 MultiMeshEditorPlugin::MultiMeshEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	multimesh_editor = memnew(MultiMeshEditor);
-	editor->get_viewport()->add_child(multimesh_editor);
+	editor->get_main_control()->add_child(multimesh_editor);
 
 	multimesh_editor->options->hide();
 }

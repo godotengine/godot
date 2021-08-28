@@ -9,20 +9,59 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="RID">
-			<return type="RID">
-			</return>
-			<argument index="0" name="from" type="Object">
-			</argument>
+		<method name="RID" qualifiers="constructor">
+			<return type="RID" />
 			<description>
-				Creates a new RID instance with the ID of a given resource. When not handed a valid resource, silently stores the unused ID 0.
+				Constructs an empty [RID] with the invalid ID [code]0[/code].
 			</description>
 		</method>
-		<method name="get_id">
-			<return type="int">
-			</return>
+		<method name="RID" qualifiers="constructor">
+			<return type="RID" />
+			<argument index="0" name="from" type="RID" />
+			<description>
+				Constructs a [RID] as a copy of the given [RID].
+			</description>
+		</method>
+		<method name="get_id" qualifiers="const">
+			<return type="int" />
 			<description>
 				Returns the ID of the referenced resource.
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool" />
+			<argument index="0" name="right" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="operator &lt;" qualifiers="operator">
+			<return type="bool" />
+			<argument index="0" name="right" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="operator &lt;=" qualifiers="operator">
+			<return type="bool" />
+			<argument index="0" name="right" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool" />
+			<argument index="0" name="right" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="operator &gt;" qualifiers="operator">
+			<return type="bool" />
+			<argument index="0" name="right" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="operator &gt;=" qualifiers="operator">
+			<return type="bool" />
+			<argument index="0" name="right" type="RID" />
+			<description>
 			</description>
 		</method>
 	</methods>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorSceneImporterMeshNode3D" inherits="Node3D" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="mesh" type="EditorSceneImporterMesh" setter="set_mesh" getter="get_mesh">
+		</member>
+		<member name="skeleton_path" type="NodePath" setter="set_skeleton_path" getter="get_skeleton_path" default="NodePath(&quot;&quot;)">
+		</member>
+		<member name="skin" type="Skin" setter="set_skin" getter="get_skin">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

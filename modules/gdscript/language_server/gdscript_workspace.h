@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,13 +32,13 @@
 #define GDSCRIPT_WORKSPACE_H
 
 #include "../gdscript_parser.h"
-#include "core/variant.h"
+#include "core/variant/variant.h"
 #include "editor/editor_file_system.h"
 #include "gdscript_extend_parser.h"
 #include "lsp.hpp"
 
-class GDScriptWorkspace : public Reference {
-	GDCLASS(GDScriptWorkspace, Reference);
+class GDScriptWorkspace : public RefCounted {
+	GDCLASS(GDScriptWorkspace, RefCounted);
 
 private:
 	void _get_owners(EditorFileSystemDirectory *efsd, String p_path, List<String> &owners);
@@ -52,6 +52,8 @@ protected:
 
 	const lsp::DocumentSymbol *get_native_symbol(const String &p_class, const String &p_member = "") const;
 	const lsp::DocumentSymbol *get_script_symbol(const String &p_path) const;
+	const lsp::DocumentSymbol *get_parameter_symbol(const lsp::DocumentSymbol *p_parent, const String &symbol_identifier);
+	const lsp::DocumentSymbol *get_local_symbol(const ExtendGDScriptParser *p_parser, const String &p_symbol_identifier);
 
 	void reload_all_workspace_scripts();
 
@@ -89,6 +91,8 @@ public:
 	void resolve_document_links(const String &p_uri, List<lsp::DocumentLink> &r_list);
 	Dictionary generate_script_api(const String &p_path);
 	Error resolve_signature(const lsp::TextDocumentPositionParams &p_doc_pos, lsp::SignatureHelp &r_signature);
+	void did_delete_files(const Dictionary &p_params);
+	Dictionary rename(const lsp::TextDocumentPositionParams &p_doc_pos, const String &new_name);
 
 	GDScriptWorkspace();
 	~GDScriptWorkspace();

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AspectRatioContainer" inherits="Container" version="4.0">
+	<brief_description>
+		Container that preserves its child controls' aspect ratio.
+	</brief_description>
+	<description>
+		Arranges child controls in a way to preserve their aspect ratio automatically whenever the container is resized. Solves the problem where the container size is dynamic and the contents' size needs to adjust accordingly without losing proportions.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="alignment_horizontal" type="int" setter="set_alignment_horizontal" getter="get_alignment_horizontal" enum="AspectRatioContainer.AlignMode" default="1">
+			Specifies the horizontal relative position of child controls.
+		</member>
+		<member name="alignment_vertical" type="int" setter="set_alignment_vertical" getter="get_alignment_vertical" enum="AspectRatioContainer.AlignMode" default="1">
+			Specifies the vertical relative position of child controls.
+		</member>
+		<member name="ratio" type="float" setter="set_ratio" getter="get_ratio" default="1.0">
+			The aspect ratio to enforce on child controls. This is the width divided by the height. The ratio depends on the [member stretch_mode].
+		</member>
+		<member name="stretch_mode" type="int" setter="set_stretch_mode" getter="get_stretch_mode" enum="AspectRatioContainer.StretchMode" default="2">
+			The stretch mode used to align child controls.
+		</member>
+	</members>
+	<constants>
+		<constant name="STRETCH_WIDTH_CONTROLS_HEIGHT" value="0" enum="StretchMode">
+			The height of child controls is automatically adjusted based on the width of the container.
+		</constant>
+		<constant name="STRETCH_HEIGHT_CONTROLS_WIDTH" value="1" enum="StretchMode">
+			The width of child controls is automatically adjusted based on the height of the container.
+		</constant>
+		<constant name="STRETCH_FIT" value="2" enum="StretchMode">
+			The bounding rectangle of child controls is automatically adjusted to fit inside the container while keeping the aspect ratio.
+		</constant>
+		<constant name="STRETCH_COVER" value="3" enum="StretchMode">
+			The width and height of child controls is automatically adjusted to make their bounding rectangle cover the entire area of the container while keeping the aspect ratio.
+			When the bounding rectangle of child controls exceed the container's size and [member Control.rect_clip_content] is enabled, this allows to show only the container's area restricted by its own bounding rectangle.
+		</constant>
+		<constant name="ALIGN_BEGIN" value="0" enum="AlignMode">
+			Aligns child controls with the beginning (left or top) of the container.
+		</constant>
+		<constant name="ALIGN_CENTER" value="1" enum="AlignMode">
+			Aligns child controls with the center of the container.
+		</constant>
+		<constant name="ALIGN_END" value="2" enum="AlignMode">
+			Aligns child controls with the end (right or bottom) of the container.
+		</constant>
+	</constants>
+</class>

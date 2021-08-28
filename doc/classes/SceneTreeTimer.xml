@@ -1,17 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SceneTreeTimer" inherits="Reference" version="4.0">
+<class name="SceneTreeTimer" inherits="RefCounted" version="4.0">
 	<brief_description>
 		One-shot timer.
 	</brief_description>
 	<description>
 		A one-shot timer managed by the scene tree, which emits [signal timeout] on completion. See also [method SceneTree.create_timer].
 		As opposed to [Timer], it does not require the instantiation of a node. Commonly used to create a one-shot delay timer as in the following example:
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		func some_function():
 		    print("Timer started.")
 		    yield(get_tree().create_timer(1.0), "timeout")
 		    print("Timer ended.")
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		public async void SomeFunction()
+		{
+		    GD.Print("Timer started.");
+		    await ToSignal(GetTree().CreateTimer(1.0f), "timeout");
+		    GD.Print("Timer ended.");
+		}
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 	</tutorials>

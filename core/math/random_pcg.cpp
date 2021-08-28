@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,7 @@ RandomPCG::RandomPCG(uint64_t p_seed, uint64_t p_inc) :
 }
 
 void RandomPCG::randomize() {
-	seed(OS::get_singleton()->get_ticks_usec() * pcg.state + PCG_DEFAULT_INC_64);
+	seed(((uint64_t)OS::get_singleton()->get_unix_time() + OS::get_singleton()->get_ticks_usec()) * pcg.state + PCG_DEFAULT_INC_64);
 }
 
 double RandomPCG::random(double p_from, double p_to) {
@@ -48,4 +48,11 @@ double RandomPCG::random(double p_from, double p_to) {
 
 float RandomPCG::random(float p_from, float p_to) {
 	return randf() * (p_to - p_from) + p_from;
+}
+
+int RandomPCG::random(int p_from, int p_to) {
+	if (p_from == p_to) {
+		return p_from;
+	}
+	return rand(abs(p_from - p_to) + 1) + MIN(p_from, p_to);
 }

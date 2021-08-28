@@ -1,29 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="SliderJoint3D" inherits="Joint3D" version="4.0">
 	<brief_description>
-		Piston kind of slider between two bodies in 3D.
+		Slider between two PhysicsBodies in 3D.
 	</brief_description>
 	<description>
-		Slides across the X axis of the pivot object.
+		Slides across the X axis of the pivot object. See also [Generic6DOFJoint3D].
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="get_param" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="param" type="int" enum="SliderJoint3D.Param">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="param" type="int" enum="SliderJoint3D.Param" />
 			<description>
 			</description>
 		</method>
 		<method name="set_param">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="SliderJoint3D.Param">
-			</argument>
-			<argument index="1" name="value" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="param" type="int" enum="SliderJoint3D.Param" />
+			<argument index="1" name="value" type="float" />
 			<description>
 			</description>
 		</method>

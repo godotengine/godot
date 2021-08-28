@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef SKIN_H
 #define SKIN_H
 
-#include "core/resource.h"
+#include "core/io/resource.h"
 
 class Skin : public Resource {
 	GDCLASS(Skin, Resource)
@@ -39,30 +39,31 @@ class Skin : public Resource {
 	struct Bind {
 		int bone = -1;
 		StringName name;
-		Transform pose;
+		Transform3D pose;
 	};
 
 	Vector<Bind> binds;
 
-	Bind *binds_ptr;
-	int bind_count;
+	Bind *binds_ptr = nullptr;
+	int bind_count = 0;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
+	virtual void reset_state() override;
 	static void _bind_methods();
 
 public:
 	void set_bind_count(int p_size);
 	inline int get_bind_count() const { return bind_count; }
 
-	void add_bind(int p_bone, const Transform &p_pose);
-	void add_named_bind(const String &p_name, const Transform &p_pose);
+	void add_bind(int p_bone, const Transform3D &p_pose);
+	void add_named_bind(const String &p_name, const Transform3D &p_pose);
 
 	void set_bind_bone(int p_index, int p_bone);
-	void set_bind_pose(int p_index, const Transform &p_pose);
+	void set_bind_pose(int p_index, const Transform3D &p_pose);
 	void set_bind_name(int p_index, const StringName &p_name);
 
 	inline int get_bind_bone(int p_index) const {
@@ -79,9 +80,9 @@ public:
 		return binds_ptr[p_index].name;
 	}
 
-	inline Transform get_bind_pose(int p_index) const {
+	inline Transform3D get_bind_pose(int p_index) const {
 #ifdef DEBUG_ENABLED
-		ERR_FAIL_INDEX_V(p_index, bind_count, Transform());
+		ERR_FAIL_INDEX_V(p_index, bind_count, Transform3D());
 #endif
 		return binds_ptr[p_index].pose;
 	}

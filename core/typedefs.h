@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,8 +41,8 @@
 #include "platform_config.h"
 
 // Should be available everywhere.
-#include "core/error_list.h"
-#include "core/int_types.h"
+#include "core/error/error_list.h"
+#include <cstdint>
 
 // Turn argument to string constant:
 // https://gcc.gnu.org/onlinedocs/cpp/Stringizing.html#Stringizing
@@ -92,7 +92,7 @@
 #endif
 
 #ifndef SGN
-#define SGN(m_v) (((m_v) < 0) ? (-1.0) : (+1.0))
+#define SGN(m_v) (((m_v) == 0) ? (0.0) : (((m_v) < 0) ? (-1.0) : (+1.0)))
 #endif
 
 #ifndef MIN
@@ -193,6 +193,20 @@ static inline unsigned int nearest_shift(unsigned int p_number) {
 	return 0;
 }
 
+// constexpr function to find the floored log2 of a number
+template <typename T>
+constexpr T floor_log2(T x) {
+	return x < 2 ? x : 1 + floor_log2(x >> 1);
+}
+
+// Get the number of bits needed to represent the number.
+// IE, if you pass in 8, you will get 4.
+// If you want to know how many bits are needed to store 8 values however, pass in (8 - 1).
+template <typename T>
+constexpr T get_num_bits(T x) {
+	return floor_log2(x);
+}
+
 // Swap 16, 32 and 64 bits value for endianness.
 #if defined(__GNUC__)
 #define BSWAP16(x) __builtin_bswap16(x)
@@ -262,5 +276,16 @@ struct BuildIndexSequence : BuildIndexSequence<N - 1, N - 1, Is...> {};
 
 template <size_t... Is>
 struct BuildIndexSequence<0, Is...> : IndexSequence<Is...> {};
+
+#ifdef DEBUG_ENABLED
+#define DEBUG_METHODS_ENABLED
+#endif
+
+// Macro GD_IS_DEFINED() allows to check if a macro is defined. It needs to be defined to anything (say 1) to work.
+#define __GDARG_PLACEHOLDER_1 0,
+#define __gd_take_second_arg(__ignored, val, ...) val
+#define ____gd_is_defined(arg1_or_junk) __gd_take_second_arg(arg1_or_junk 1, 0)
+#define ___gd_is_defined(val) ____gd_is_defined(__GDARG_PLACEHOLDER_##val)
+#define GD_IS_DEFINED(x) ___gd_is_defined(x)
 
 #endif // TYPEDEFS_H

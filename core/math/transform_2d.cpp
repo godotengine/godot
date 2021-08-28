@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -158,6 +158,13 @@ bool Transform2D::is_equal_approx(const Transform2D &p_transform) const {
 	return elements[0].is_equal_approx(p_transform.elements[0]) && elements[1].is_equal_approx(p_transform.elements[1]) && elements[2].is_equal_approx(p_transform.elements[2]);
 }
 
+Transform2D Transform2D::looking_at(const Vector2 &p_target) const {
+	Transform2D return_trans = Transform2D(get_rotation(), get_origin());
+	Vector2 target_position = affine_inverse().xform(p_target);
+	return_trans.set_rotation(return_trans.get_rotation() + (target_position * get_scale()).angle());
+	return return_trans;
+}
+
 bool Transform2D::operator==(const Transform2D &p_transform) const {
 	for (int i = 0; i < 3; i++) {
 		if (elements[i] != p_transform.elements[i]) {
@@ -251,7 +258,7 @@ Transform2D Transform2D::interpolate_with(const Transform2D &p_transform, real_t
 
 	real_t dot = v1.dot(v2);
 
-	dot = (dot < -1.0) ? -1.0 : ((dot > 1.0) ? 1.0 : dot); //clamp dot to [-1,1]
+	dot = CLAMP(dot, -1.0, 1.0);
 
 	Vector2 v;
 
@@ -269,6 +276,20 @@ Transform2D Transform2D::interpolate_with(const Transform2D &p_transform, real_t
 	return res;
 }
 
+void Transform2D::operator*=(const real_t p_val) {
+	elements[0] *= p_val;
+	elements[1] *= p_val;
+	elements[2] *= p_val;
+}
+
+Transform2D Transform2D::operator*(const real_t p_val) const {
+	Transform2D ret(*this);
+	ret *= p_val;
+	return ret;
+}
+
 Transform2D::operator String() const {
-	return String(String() + elements[0] + ", " + elements[1] + ", " + elements[2]);
+	return "[X: " + elements[0].operator String() +
+		   ", Y: " + elements[1].operator String() +
+		   ", O: " + elements[2].operator String() + "]";
 }

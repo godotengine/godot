@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GPUParticlesCollisionSphere" inherits="GPUParticlesCollision3D" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="1.0">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

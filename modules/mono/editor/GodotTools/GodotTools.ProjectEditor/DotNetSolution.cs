@@ -2,6 +2,7 @@ using GodotTools.Core;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace GodotTools.ProjectEditor
@@ -88,7 +89,7 @@ namespace GodotTools.ProjectEditor
             string solutionPath = Path.Combine(DirectoryPath, Name + ".sln");
             string content = string.Format(SolutionTemplate, projectsDecl, slnPlatformsCfg, projPlatformsCfg);
 
-            File.WriteAllText(solutionPath, content);
+            File.WriteAllText(solutionPath, content, Encoding.UTF8); // UTF-8 with BOM
         }
 
         public DotNetSolution(string name)
@@ -149,8 +150,8 @@ EndProject";
                 {"Tools|Any CPU", "ExportRelease|Any CPU"}
             };
 
-            var regex = new Regex(string.Join("|",dict.Keys.Select(Regex.Escape)));
-            var result = regex.Replace(input,m => dict[m.Value]);
+            var regex = new Regex(string.Join("|", dict.Keys.Select(Regex.Escape)));
+            var result = regex.Replace(input, m => dict[m.Value]);
 
             if (result != input)
             {

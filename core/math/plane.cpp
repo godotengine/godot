@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #include "plane.h"
 
 #include "core/math/math_funcs.h"
+#include "core/variant/variant.h"
 
 void Plane::set_normal(const Vector3 &p_normal) {
 	normal = p_normal;
@@ -50,10 +51,6 @@ Plane Plane::normalized() const {
 	Plane p = *this;
 	p.normalize();
 	return p;
-}
-
-Vector3 Plane::get_any_point() const {
-	return get_normal() * d;
 }
 
 Vector3 Plane::get_any_perpendicular_normal() const {
@@ -142,6 +139,31 @@ bool Plane::intersects_segment(const Vector3 &p_begin, const Vector3 &p_end, Vec
 	return true;
 }
 
+Variant Plane::intersect_3_bind(const Plane &p_plane1, const Plane &p_plane2) const {
+	Vector3 inters;
+	if (intersect_3(p_plane1, p_plane2, &inters)) {
+		return inters;
+	} else {
+		return Variant();
+	}
+}
+Variant Plane::intersects_ray_bind(const Vector3 &p_from, const Vector3 &p_dir) const {
+	Vector3 inters;
+	if (intersects_ray(p_from, p_dir, &inters)) {
+		return inters;
+	} else {
+		return Variant();
+	}
+}
+Variant Plane::intersects_segment_bind(const Vector3 &p_begin, const Vector3 &p_end) const {
+	Vector3 inters;
+	if (intersects_segment(p_begin, p_end, &inters)) {
+		return inters;
+	} else {
+		return Variant();
+	}
+}
+
 /* misc */
 
 bool Plane::is_equal_approx_any_side(const Plane &p_plane) const {
@@ -153,5 +175,5 @@ bool Plane::is_equal_approx(const Plane &p_plane) const {
 }
 
 Plane::operator String() const {
-	return normal.operator String() + ", " + rtos(d);
+	return "[N: " + normal.operator String() + ", D: " + String::num_real(d, false) + "]";
 }

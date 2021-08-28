@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,9 +35,10 @@
 extern "C" {
 #endif
 
-#include <stdint.h>
+#include <gdnative/math_defs.h>
 
-#define GODOT_COLOR_SIZE 16
+// Colors should always use 32-bit floats, so don't use real_t here.
+#define GODOT_COLOR_SIZE (sizeof(float) * 4)
 
 #ifndef GODOT_CORE_API_GODOT_COLOR_TYPE_DEFINED
 #define GODOT_CORE_API_GODOT_COLOR_TYPE_DEFINED
@@ -46,70 +47,12 @@ typedef struct {
 } godot_color;
 #endif
 
-// reduce extern "C" nesting for VS2013
-#ifdef __cplusplus
-}
-#endif
-
 #include <gdnative/gdnative.h>
-#include <gdnative/string.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void GDAPI godot_color_new_rgba(godot_color *r_dest, const godot_real p_r, const godot_real p_g, const godot_real p_b, const godot_real p_a);
-void GDAPI godot_color_new_rgb(godot_color *r_dest, const godot_real p_r, const godot_real p_g, const godot_real p_b);
-
-godot_real godot_color_get_r(const godot_color *p_self);
-void godot_color_set_r(godot_color *p_self, const godot_real r);
-
-godot_real godot_color_get_g(const godot_color *p_self);
-void godot_color_set_g(godot_color *p_self, const godot_real g);
-
-godot_real godot_color_get_b(const godot_color *p_self);
-void godot_color_set_b(godot_color *p_self, const godot_real b);
-
-godot_real godot_color_get_a(const godot_color *p_self);
-void godot_color_set_a(godot_color *p_self, const godot_real a);
-
-godot_real godot_color_get_h(const godot_color *p_self);
-godot_real godot_color_get_s(const godot_color *p_self);
-godot_real godot_color_get_v(const godot_color *p_self);
-
-godot_string GDAPI godot_color_as_string(const godot_color *p_self);
-
-godot_int GDAPI godot_color_to_rgba32(const godot_color *p_self);
-
-godot_int GDAPI godot_color_to_abgr32(const godot_color *p_self);
-
-godot_int GDAPI godot_color_to_abgr64(const godot_color *p_self);
-
-godot_int GDAPI godot_color_to_argb64(const godot_color *p_self);
-
-godot_int GDAPI godot_color_to_rgba64(const godot_color *p_self);
-
-godot_int GDAPI godot_color_to_argb32(const godot_color *p_self);
-
-godot_color GDAPI godot_color_inverted(const godot_color *p_self);
-
-godot_color GDAPI godot_color_contrasted(const godot_color *p_self);
-
-godot_color GDAPI godot_color_lerp(const godot_color *p_self, const godot_color *p_b, const godot_real p_t);
-
-godot_color GDAPI godot_color_blend(const godot_color *p_self, const godot_color *p_over);
-
-godot_color GDAPI godot_color_darkened(const godot_color *p_self, const godot_real p_amount);
-
-godot_color GDAPI godot_color_from_hsv(const godot_color *p_self, const godot_real p_h, const godot_real p_s, const godot_real p_v, const godot_real p_a);
-
-godot_color GDAPI godot_color_lightened(const godot_color *p_self, const godot_real p_amount);
-
-godot_string GDAPI godot_color_to_html(const godot_color *p_self, const godot_bool p_with_alpha);
-
-godot_bool GDAPI godot_color_operator_equal(const godot_color *p_self, const godot_color *p_b);
-
-godot_bool GDAPI godot_color_operator_less(const godot_color *p_self, const godot_color *p_b);
+void GDAPI godot_color_new(godot_color *p_self);
+void GDAPI godot_color_new_copy(godot_color *r_dest, const godot_color *p_src);
+float GDAPI *godot_color_operator_index(godot_color *p_self, godot_int p_index);
+const float GDAPI *godot_color_operator_index_const(const godot_color *p_self, godot_int p_index);
 
 #ifdef __cplusplus
 }

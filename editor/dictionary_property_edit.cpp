@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,11 +32,7 @@
 #include "editor_node.h"
 
 void DictionaryPropertyEdit::_notif_change() {
-	_change_notify();
-}
-
-void DictionaryPropertyEdit::_notif_changev(const String &p_v) {
-	_change_notify(p_v.utf8().get_data());
+	notify_property_list_changed();
 }
 
 void DictionaryPropertyEdit::_set_key(const Variant &p_old_key, const Variant &p_new_key) {
@@ -107,7 +103,6 @@ void DictionaryPropertyEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_key"), &DictionaryPropertyEdit::_set_key);
 	ClassDB::bind_method(D_METHOD("_set_value"), &DictionaryPropertyEdit::_set_value);
 	ClassDB::bind_method(D_METHOD("_notif_change"), &DictionaryPropertyEdit::_notif_change);
-	ClassDB::bind_method(D_METHOD("_notif_changev"), &DictionaryPropertyEdit::_notif_changev);
 	ClassDB::bind_method(D_METHOD("_dont_undo_redo"), &DictionaryPropertyEdit::_dont_undo_redo);
 }
 
@@ -128,8 +123,6 @@ bool DictionaryPropertyEdit::_set(const StringName &p_name, const Variant &p_val
 			ur->create_action(TTR("Change Dictionary Key"));
 			ur->add_do_method(this, "_set_key", key, p_value);
 			ur->add_undo_method(this, "_set_key", p_value, key);
-			ur->add_do_method(this, "_notif_changev", p_name);
-			ur->add_undo_method(this, "_notif_changev", p_name);
 			ur->commit_action();
 
 			return true;
@@ -142,8 +135,6 @@ bool DictionaryPropertyEdit::_set(const StringName &p_name, const Variant &p_val
 				ur->create_action(TTR("Change Dictionary Value"));
 				ur->add_do_method(this, "_set_value", key, p_value);
 				ur->add_undo_method(this, "_set_value", key, value);
-				ur->add_do_method(this, "_notif_changev", p_name);
-				ur->add_undo_method(this, "_notif_changev", p_name);
 				ur->commit_action();
 
 				return true;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,8 @@
 #include "navigation_mesh.h"
 
 void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
+	ERR_FAIL_COND(p_mesh.is_null());
+
 	vertices = Vector<Vector3>();
 	clear_polygons();
 
@@ -62,22 +64,22 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 	}
 }
 
-void NavigationMesh::set_sample_partition_type(int p_value) {
-	ERR_FAIL_COND(p_value >= SAMPLE_PARTITION_MAX);
-	partition_type = static_cast<SamplePartitionType>(p_value);
+void NavigationMesh::set_sample_partition_type(SamplePartitionType p_value) {
+	ERR_FAIL_INDEX(p_value, SAMPLE_PARTITION_MAX);
+	partition_type = p_value;
 }
 
-int NavigationMesh::get_sample_partition_type() const {
-	return static_cast<int>(partition_type);
+NavigationMesh::SamplePartitionType NavigationMesh::get_sample_partition_type() const {
+	return partition_type;
 }
 
-void NavigationMesh::set_parsed_geometry_type(int p_value) {
-	ERR_FAIL_COND(p_value >= PARSED_GEOMETRY_MAX);
-	parsed_geometry_type = static_cast<ParsedGeometryType>(p_value);
-	_change_notify();
+void NavigationMesh::set_parsed_geometry_type(ParsedGeometryType p_value) {
+	ERR_FAIL_INDEX(p_value, PARSED_GEOMETRY_MAX);
+	parsed_geometry_type = p_value;
+	notify_property_list_changed();
 }
 
-int NavigationMesh::get_parsed_geometry_type() const {
+NavigationMesh::ParsedGeometryType NavigationMesh::get_parsed_geometry_type() const {
 	return parsed_geometry_type;
 }
 
@@ -89,27 +91,31 @@ uint32_t NavigationMesh::get_collision_mask() const {
 	return collision_mask;
 }
 
-void NavigationMesh::set_collision_mask_bit(int p_bit, bool p_value) {
+void NavigationMesh::set_collision_mask_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 32, "Collision layer number must be between 1 and 32 inclusive.");
 	uint32_t mask = get_collision_mask();
 	if (p_value) {
-		mask |= 1 << p_bit;
+		mask |= 1 << (p_layer_number - 1);
 	} else {
-		mask &= ~(1 << p_bit);
+		mask &= ~(1 << (p_layer_number - 1));
 	}
 	set_collision_mask(mask);
 }
 
-bool NavigationMesh::get_collision_mask_bit(int p_bit) const {
-	return get_collision_mask() & (1 << p_bit);
+bool NavigationMesh::get_collision_mask_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Collision layer number must be between 1 and 32 inclusive.");
+	return get_collision_mask() & (1 << (p_layer_number - 1));
 }
 
-void NavigationMesh::set_source_geometry_mode(int p_geometry_mode) {
+void NavigationMesh::set_source_geometry_mode(SourceGeometryMode p_geometry_mode) {
 	ERR_FAIL_INDEX(p_geometry_mode, SOURCE_GEOMETRY_MAX);
-	source_geometry_mode = static_cast<SourceGeometryMode>(p_geometry_mode);
-	_change_notify();
+	source_geometry_mode = p_geometry_mode;
+	notify_property_list_changed();
 }
 
-int NavigationMesh::get_source_geometry_mode() const {
+NavigationMesh::SourceGeometryMode NavigationMesh::get_source_geometry_mode() const {
 	return source_geometry_mode;
 }
 
@@ -122,6 +128,7 @@ StringName NavigationMesh::get_source_group_name() const {
 }
 
 void NavigationMesh::set_cell_size(float p_value) {
+	ERR_FAIL_COND(p_value <= 0);
 	cell_size = p_value;
 }
 
@@ -130,6 +137,7 @@ float NavigationMesh::get_cell_size() const {
 }
 
 void NavigationMesh::set_cell_height(float p_value) {
+	ERR_FAIL_COND(p_value <= 0);
 	cell_height = p_value;
 }
 
@@ -138,6 +146,7 @@ float NavigationMesh::get_cell_height() const {
 }
 
 void NavigationMesh::set_agent_height(float p_value) {
+	ERR_FAIL_COND(p_value < 0);
 	agent_height = p_value;
 }
 
@@ -146,6 +155,7 @@ float NavigationMesh::get_agent_height() const {
 }
 
 void NavigationMesh::set_agent_radius(float p_value) {
+	ERR_FAIL_COND(p_value < 0);
 	agent_radius = p_value;
 }
 
@@ -154,6 +164,7 @@ float NavigationMesh::get_agent_radius() {
 }
 
 void NavigationMesh::set_agent_max_climb(float p_value) {
+	ERR_FAIL_COND(p_value < 0);
 	agent_max_climb = p_value;
 }
 
@@ -162,6 +173,7 @@ float NavigationMesh::get_agent_max_climb() const {
 }
 
 void NavigationMesh::set_agent_max_slope(float p_value) {
+	ERR_FAIL_COND(p_value < 0 || p_value > 90);
 	agent_max_slope = p_value;
 }
 
@@ -170,6 +182,7 @@ float NavigationMesh::get_agent_max_slope() const {
 }
 
 void NavigationMesh::set_region_min_size(float p_value) {
+	ERR_FAIL_COND(p_value < 0);
 	region_min_size = p_value;
 }
 
@@ -178,6 +191,7 @@ float NavigationMesh::get_region_min_size() const {
 }
 
 void NavigationMesh::set_region_merge_size(float p_value) {
+	ERR_FAIL_COND(p_value < 0);
 	region_merge_size = p_value;
 }
 
@@ -186,6 +200,7 @@ float NavigationMesh::get_region_merge_size() const {
 }
 
 void NavigationMesh::set_edge_max_length(float p_value) {
+	ERR_FAIL_COND(p_value < 0);
 	edge_max_length = p_value;
 }
 
@@ -194,6 +209,7 @@ float NavigationMesh::get_edge_max_length() const {
 }
 
 void NavigationMesh::set_edge_max_error(float p_value) {
+	ERR_FAIL_COND(p_value < 0);
 	edge_max_error = p_value;
 }
 
@@ -202,6 +218,7 @@ float NavigationMesh::get_edge_max_error() const {
 }
 
 void NavigationMesh::set_verts_per_poly(float p_value) {
+	ERR_FAIL_COND(p_value < 3);
 	verts_per_poly = p_value;
 }
 
@@ -210,6 +227,7 @@ float NavigationMesh::get_verts_per_poly() const {
 }
 
 void NavigationMesh::set_detail_sample_distance(float p_value) {
+	ERR_FAIL_COND(p_value < 0);
 	detail_sample_distance = p_value;
 }
 
@@ -218,6 +236,7 @@ float NavigationMesh::get_detail_sample_distance() const {
 }
 
 void NavigationMesh::set_detail_sample_max_error(float p_value) {
+	ERR_FAIL_COND(p_value < 0);
 	detail_sample_max_error = p_value;
 }
 
@@ -251,7 +270,7 @@ bool NavigationMesh::get_filter_walkable_low_height_spans() const {
 
 void NavigationMesh::set_vertices(const Vector<Vector3> &p_vertices) {
 	vertices = p_vertices;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 Vector<Vector3> NavigationMesh::get_vertices() const {
@@ -263,7 +282,7 @@ void NavigationMesh::_set_polygons(const Array &p_array) {
 	for (int i = 0; i < p_array.size(); i++) {
 		polygons.write[i].indices = p_array[i];
 	}
-	_change_notify();
+	notify_property_list_changed();
 }
 
 Array NavigationMesh::_get_polygons() const {
@@ -280,7 +299,7 @@ void NavigationMesh::add_polygon(const Vector<int> &p_polygon) {
 	Polygon polygon;
 	polygon.indices = p_polygon;
 	polygons.push_back(polygon);
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int NavigationMesh::get_polygon_count() const {
@@ -325,9 +344,7 @@ Ref<Mesh> NavigationMesh::get_debug_mesh() {
 		Vector3 *tw = tmeshfaces.ptrw();
 		int tidx = 0;
 
-		for (List<Face3>::Element *E = faces.front(); E; E = E->next()) {
-			const Face3 &f = E->get();
-
+		for (const Face3 &f : faces) {
 			for (int j = 0; j < 3; j++) {
 				tw[tidx++] = f.vertex[j];
 				_EdgeKey ek;
@@ -362,8 +379,8 @@ Ref<Mesh> NavigationMesh::get_debug_mesh() {
 	{
 		Vector3 *w = varr.ptrw();
 		int idx = 0;
-		for (List<Vector3>::Element *E = lines.front(); E; E = E->next()) {
-			w[idx++] = E->get();
+		for (const Vector3 &E : lines) {
+			w[idx++] = E;
 		}
 	}
 
@@ -388,8 +405,8 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_mask", "mask"), &NavigationMesh::set_collision_mask);
 	ClassDB::bind_method(D_METHOD("get_collision_mask"), &NavigationMesh::get_collision_mask);
 
-	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &NavigationMesh::set_collision_mask_bit);
-	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &NavigationMesh::get_collision_mask_bit);
+	ClassDB::bind_method(D_METHOD("set_collision_mask_value", "layer_number", "value"), &NavigationMesh::set_collision_mask_value);
+	ClassDB::bind_method(D_METHOD("get_collision_mask_value", "layer_number"), &NavigationMesh::get_collision_mask_value);
 
 	ClassDB::bind_method(D_METHOD("set_source_geometry_mode", "mask"), &NavigationMesh::set_source_geometry_mode);
 	ClassDB::bind_method(D_METHOD("get_source_geometry_mode"), &NavigationMesh::get_source_geometry_mode);
@@ -458,14 +475,6 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_polygons", "polygons"), &NavigationMesh::_set_polygons);
 	ClassDB::bind_method(D_METHOD("_get_polygons"), &NavigationMesh::_get_polygons);
 
-	BIND_CONSTANT(SAMPLE_PARTITION_WATERSHED);
-	BIND_CONSTANT(SAMPLE_PARTITION_MONOTONE);
-	BIND_CONSTANT(SAMPLE_PARTITION_LAYERS);
-
-	BIND_CONSTANT(PARSED_GEOMETRY_MESH_INSTANCES);
-	BIND_CONSTANT(PARSED_GEOMETRY_STATIC_COLLIDERS);
-	BIND_CONSTANT(PARSED_GEOMETRY_BOTH);
-
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons", "_get_polygons");
 
@@ -492,45 +501,37 @@ void NavigationMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter/low_hanging_obstacles"), "set_filter_low_hanging_obstacles", "get_filter_low_hanging_obstacles");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter/ledge_spans"), "set_filter_ledge_spans", "get_filter_ledge_spans");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter/filter_walkable_low_height_spans"), "set_filter_walkable_low_height_spans", "get_filter_walkable_low_height_spans");
+
+	BIND_ENUM_CONSTANT(SAMPLE_PARTITION_WATERSHED);
+	BIND_ENUM_CONSTANT(SAMPLE_PARTITION_MONOTONE);
+	BIND_ENUM_CONSTANT(SAMPLE_PARTITION_LAYERS);
+	BIND_ENUM_CONSTANT(SAMPLE_PARTITION_MAX);
+
+	BIND_ENUM_CONSTANT(PARSED_GEOMETRY_MESH_INSTANCES);
+	BIND_ENUM_CONSTANT(PARSED_GEOMETRY_STATIC_COLLIDERS);
+	BIND_ENUM_CONSTANT(PARSED_GEOMETRY_BOTH);
+	BIND_ENUM_CONSTANT(PARSED_GEOMETRY_MAX);
+
+	BIND_ENUM_CONSTANT(SOURCE_GEOMETRY_NAVMESH_CHILDREN);
+	BIND_ENUM_CONSTANT(SOURCE_GEOMETRY_GROUPS_WITH_CHILDREN);
+	BIND_ENUM_CONSTANT(SOURCE_GEOMETRY_GROUPS_EXPLICIT);
+	BIND_ENUM_CONSTANT(SOURCE_GEOMETRY_MAX);
 }
 
 void NavigationMesh::_validate_property(PropertyInfo &property) const {
 	if (property.name == "geometry/collision_mask") {
 		if (parsed_geometry_type == PARSED_GEOMETRY_MESH_INSTANCES) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 			return;
 		}
 	}
 
 	if (property.name == "geometry/source_group_name") {
 		if (source_geometry_mode == SOURCE_GEOMETRY_NAVMESH_CHILDREN) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 			return;
 		}
 	}
 }
 
-NavigationMesh::NavigationMesh() {
-	cell_size = 0.3f;
-	cell_height = 0.2f;
-	agent_height = 2.0f;
-	agent_radius = 0.6f;
-	agent_max_climb = 0.9f;
-	agent_max_slope = 45.0f;
-	region_min_size = 8.0f;
-	region_merge_size = 20.0f;
-	edge_max_length = 12.0f;
-	edge_max_error = 1.3f;
-	verts_per_poly = 6.0f;
-	detail_sample_distance = 6.0f;
-	detail_sample_max_error = 1.0f;
-
-	partition_type = SAMPLE_PARTITION_WATERSHED;
-	parsed_geometry_type = PARSED_GEOMETRY_MESH_INSTANCES;
-	collision_mask = 0xFFFFFFFF;
-	source_geometry_mode = SOURCE_GEOMETRY_NAVMESH_CHILDREN;
-	source_group_name = "navmesh";
-	filter_low_hanging_obstacles = false;
-	filter_ledge_spans = false;
-	filter_walkable_low_height_spans = false;
-}
+NavigationMesh::NavigationMesh() {}

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,9 +35,9 @@
 class SectionedInspectorFilter : public Object {
 	GDCLASS(SectionedInspectorFilter, Object);
 
-	Object *edited;
+	Object *edited = nullptr;
 	String section;
-	bool allow_sub;
+	bool allow_sub = false;
 
 	bool _set(const StringName &p_name, const Variant &p_value) {
 		if (!edited) {
@@ -76,8 +76,7 @@ class SectionedInspectorFilter : public Object {
 
 		List<PropertyInfo> pinfo;
 		edited->get_property_list(&pinfo);
-		for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-			PropertyInfo pi = E->get();
+		for (PropertyInfo &pi : pinfo) {
 			int sp = pi.name.find("/");
 
 			if (pi.name == "resource_path" || pi.name == "resource_name" || pi.name == "resource_local_to_scene" || pi.name.begins_with("script/") || pi.name.begins_with("_global_script")) { //skip resource stuff
@@ -116,16 +115,12 @@ public:
 	void set_section(const String &p_section, bool p_allow_sub) {
 		section = p_section;
 		allow_sub = p_allow_sub;
-		_change_notify();
+		notify_property_list_changed();
 	}
 
 	void set_edited(Object *p_edited) {
 		edited = p_edited;
-		_change_notify();
-	}
-
-	SectionedInspectorFilter() {
-		edited = nullptr;
+		notify_property_list_changed();
 	}
 };
 
@@ -139,7 +134,7 @@ void SectionedInspector::_section_selected() {
 	}
 
 	selected_category = sections->get_selected()->get_metadata(0);
-	filter->set_section(selected_category, sections->get_selected()->get_children() == nullptr);
+	filter->set_section(selected_category, sections->get_selected()->get_first_child() == nullptr);
 	inspector->set_property_prefix(selected_category + "/");
 }
 
@@ -191,8 +186,8 @@ void SectionedInspector::edit(Object *p_object) {
 
 		TreeItem *first_item = sections->get_root();
 		if (first_item) {
-			while (first_item->get_children()) {
-				first_item = first_item->get_children();
+			while (first_item->get_first_child()) {
+				first_item = first_item->get_first_child();
 			}
 
 			first_item->select(0);
@@ -225,12 +220,10 @@ void SectionedInspector::update_category_list() {
 		filter = search_box->get_text();
 	}
 
-	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-		PropertyInfo pi = E->get();
-
+	for (PropertyInfo &pi : pinfo) {
 		if (pi.usage & PROPERTY_USAGE_CATEGORY) {
 			continue;
-		} else if (!(pi.usage & PROPERTY_USAGE_EDITOR)) {
+		} else if (!(pi.usage & PROPERTY_USAGE_EDITOR) || (restrict_to_basic && !(pi.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
 			continue;
 		}
 
@@ -238,7 +231,7 @@ void SectionedInspector::update_category_list() {
 			continue;
 		}
 
-		if (!filter.empty() && !filter.is_subsequence_ofi(pi.name) && !filter.is_subsequence_ofi(pi.name.replace("/", " ").capitalize())) {
+		if (!filter.is_empty() && pi.name.findn(filter) == -1 && pi.name.replace("/", " ").capitalize().findn(filter) == -1) {
 			continue;
 		}
 
@@ -254,7 +247,8 @@ void SectionedInspector::update_category_list() {
 
 		for (int i = 0; i < sc; i++) {
 			TreeItem *parent = section_map[metasection];
-			parent->set_custom_bg_color(0, get_theme_color("prop_subsection", "Editor"));
+			//parent->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
+			parent->set_custom_font(0, get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
 
 			if (i > 0) {
 				metasection += "/" + sectionarr[i];
@@ -296,6 +290,12 @@ void SectionedInspector::_search_changed(const String &p_what) {
 
 EditorInspector *SectionedInspector::get_inspector() {
 	return inspector;
+}
+
+void SectionedInspector::set_restrict_to_basic_settings(bool p_restrict) {
+	restrict_to_basic = p_restrict;
+	update_category_list();
+	inspector->set_restrict_to_basic_settings(p_restrict);
 }
 
 SectionedInspector::SectionedInspector() :

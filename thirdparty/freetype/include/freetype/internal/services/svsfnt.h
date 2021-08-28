@@ -19,8 +19,8 @@
 #ifndef SVSFNT_H_
 #define SVSFNT_H_
 
-#include FT_INTERNAL_SERVICE_H
-#include FT_TRUETYPE_TABLES_H
+#include <freetype/internal/ftserv.h>
+#include <freetype/tttables.h>
 
 
 FT_BEGIN_HEADER

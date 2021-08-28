@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,13 +31,13 @@
 #ifndef CONFIG_FILE_H
 #define CONFIG_FILE_H
 
-#include "core/ordered_hash_map.h"
-#include "core/os/file_access.h"
-#include "core/reference.h"
-#include "core/variant_parser.h"
+#include "core/io/file_access.h"
+#include "core/object/ref_counted.h"
+#include "core/templates/ordered_hash_map.h"
+#include "core/variant/variant_parser.h"
 
-class ConfigFile : public Reference {
-	GDCLASS(ConfigFile, Reference);
+class ConfigFile : public RefCounted {
+	GDCLASS(ConfigFile, RefCounted);
 
 	OrderedHashMap<String, OrderedHashMap<String, Variant>> values;
 
@@ -67,6 +67,8 @@ public:
 	Error save(const String &p_path);
 	Error load(const String &p_path);
 	Error parse(const String &p_data);
+
+	void clear();
 
 	Error load_encrypted(const String &p_path, const Vector<uint8_t> &p_key);
 	Error load_encrypted_pass(const String &p_path, const String &p_pass);

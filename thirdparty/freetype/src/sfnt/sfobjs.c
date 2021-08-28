@@ -16,23 +16,22 @@
  */
 
 
-#include <ft2build.h>
 #include "sfobjs.h"
 #include "ttload.h"
 #include "ttcmap.h"
 #include "ttkern.h"
 #include "sfwoff.h"
 #include "sfwoff2.h"
-#include FT_INTERNAL_SFNT_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_TRUETYPE_IDS_H
-#include FT_TRUETYPE_TAGS_H
-#include FT_SERVICE_POSTSCRIPT_CMAPS_H
-#include FT_SFNT_NAMES_H
+#include <freetype/internal/sfnt.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/ttnameid.h>
+#include <freetype/tttags.h>
+#include <freetype/internal/services/svpscmap.h>
+#include <freetype/ftsnames.h>
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
-#include FT_SERVICE_MULTIPLE_MASTERS_H
-#include FT_SERVICE_METRICS_VARIATIONS_H
+#include <freetype/internal/services/svmm.h>
+#include <freetype/internal/services/svmetric.h>
 #endif
 
 #include "sferrors.h"
@@ -547,8 +546,8 @@
     /* Stream may have changed in sfnt_open_font. */
     stream = face->root.stream;
 
-    FT_TRACE2(( "sfnt_init_face: %08p (index %d)\n",
-                face,
+    FT_TRACE2(( "sfnt_init_face: %p (index %d)\n",
+                (void *)face,
                 face_instance_index ));
 
     face_index = FT_ABS( face_instance_index ) & 0xFFFF;
@@ -821,7 +820,7 @@
     /* it doesn't contain outlines.                                */
     /*                                                             */
 
-    FT_TRACE2(( "sfnt_load_face: %08p\n\n", face ));
+    FT_TRACE2(( "sfnt_load_face: %p\n\n", (void *)face ));
 
     /* do we have outlines in there? */
 #ifdef FT_CONFIG_OPTION_INCREMENTAL

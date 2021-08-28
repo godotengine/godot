@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,10 +32,9 @@
 #define GEOMETRY_2D_H
 
 #include "core/math/delaunay_2d.h"
-#include "core/math/rect2.h"
 #include "core/math/triangulate.h"
-#include "core/object.h"
-#include "core/vector.h"
+#include "core/math/vector3i.h"
+#include "core/templates/vector.h"
 
 class Geometry2D {
 	Geometry2D();
@@ -145,6 +144,12 @@ public:
 		return p_segment[0] + n * d; // Inside.
 	}
 
+// Disable False Positives in MSVC compiler; we correctly check for 0 here to prevent a division by 0.
+// See: https://github.com/godotengine/godot/pull/44274
+#ifdef _MSC_VER
+#pragma warning(disable : 4723)
+#endif
+
 	static bool line_intersects_line(const Vector2 &p_from_a, const Vector2 &p_dir_a, const Vector2 &p_from_b, const Vector2 &p_dir_b, Vector2 &r_result) {
 		// See http://paulbourke.net/geometry/pointlineplane/
 
@@ -159,6 +164,11 @@ public:
 		return true;
 	}
 
+// Re-enable division by 0 warning
+#ifdef _MSC_VER
+#pragma warning(default : 4723)
+#endif
+
 	static bool segment_intersects_segment(const Vector2 &p_from_a, const Vector2 &p_to_a, const Vector2 &p_from_b, const Vector2 &p_to_b, Vector2 *r_result) {
 		Vector2 B = p_to_a - p_from_a;
 		Vector2 C = p_from_b - p_from_a;
@@ -172,7 +182,15 @@ public:
 		C = Vector2(C.x * Bn.x + C.y * Bn.y, C.y * Bn.x - C.x * Bn.y);
 		D = Vector2(D.x * Bn.x + D.y * Bn.y, D.y * Bn.x - D.x * Bn.y);
 
-		if ((C.y < 0 && D.y < 0) || (C.y >= 0 && D.y >= 0)) {
+		// Fail if C x B and D x B have the same sign (segments don't intersect).
+		// (equivalent to condition (C.y < 0 && D.y < CMP_EPSILON) || (C.y > 0 && D.y > CMP_EPSILON))
+		if (C.y * D.y > CMP_EPSILON) {
+			return false;
+		}
+
+		// Fail if segments are parallel or colinear.
+		// (when A x B == zero, i.e (C - D) x B == zero, i.e C x B == D x B)
+		if (Math::is_equal_approx(C.y, D.y)) {
 			return false;
 		}
 
@@ -183,7 +201,7 @@ public:
 			return false;
 		}
 
-		// (4) Apply the discovered position to line A-B in the original coordinate system.
+		// Apply the discovered position to line A-B in the original coordinate system.
 		if (r_result) {
 			*r_result = p_from_a + B * ABpos;
 		}
@@ -343,12 +361,31 @@ public:
 		for (int i = 0; i < c; i++) {
 			const Vector2 &v1 = p[i];
 			const Vector2 &v2 = p[(i + 1) % c];
-			if (segment_intersects_segment(v1, v2, p_point, further_away, nullptr)) {
+
+			Vector2 res;
+			if (segment_intersects_segment(v1, v2, p_point, further_away, &res)) {
 				intersections++;
+				if (res.is_equal_approx(p_point)) {
+					// Point is in one of the polygon edges.
+					return true;
+				}
 			}
 		}
 
 		return (intersections & 1);
+	}
+
+	static bool is_segment_intersecting_polygon(const Vector2 &p_from, const Vector2 &p_to, const Vector<Vector2> &p_polygon) {
+		int c = p_polygon.size();
+		const Vector2 *p = p_polygon.ptr();
+		for (int i = 0; i < c; i++) {
+			const Vector2 &v1 = p[i];
+			const Vector2 &v2 = p[(i + 1) % c];
+			if (segment_intersects_segment(p_from, p_to, v1, v2, nullptr)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	static real_t vec2_cross(const Point2 &O, const Point2 &A, const Point2 &B) {
@@ -384,6 +421,45 @@ public:
 		H.resize(k);
 		return H;
 	}
+
+	static Vector<Point2i> bresenham_line(const Point2i &p_start, const Point2i &p_end) {
+		Vector<Point2i> points;
+
+		Vector2i delta = (p_end - p_start).abs() * 2;
+		Vector2i step = (p_end - p_start).sign();
+		Vector2i current = p_start;
+
+		if (delta.x > delta.y) {
+			int err = delta.x / 2;
+
+			for (; current.x != p_end.x; current.x += step.x) {
+				points.push_back(current);
+
+				err -= delta.y;
+				if (err < 0) {
+					current.y += step.y;
+					err += delta.x;
+				}
+			}
+		} else {
+			int err = delta.y / 2;
+
+			for (; current.y != p_end.y; current.y += step.y) {
+				points.push_back(current);
+
+				err -= delta.x;
+				if (err < 0) {
+					current.x += step.x;
+					err += delta.y;
+				}
+			}
+		}
+
+		points.push_back(current);
+
+		return points;
+	}
+
 	static Vector<Vector<Vector2>> decompose_polygon_in_convex(Vector<Point2> polygon);
 
 	static void make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size);

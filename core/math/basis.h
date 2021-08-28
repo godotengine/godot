@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,12 +31,16 @@
 #ifndef BASIS_H
 #define BASIS_H
 
-#include "core/math/quat.h"
+#include "core/math/quaternion.h"
 #include "core/math/vector3.h"
 
 class Basis {
 public:
-	Vector3 elements[3];
+	Vector3 elements[3] = {
+		Vector3(1, 0, 0),
+		Vector3(0, 1, 0),
+		Vector3(0, 0, 1)
+	};
 
 	_FORCE_INLINE_ const Vector3 &operator[](int axis) const {
 		return elements[axis];
@@ -75,14 +79,16 @@ public:
 	void rotate(const Vector3 &p_euler);
 	Basis rotated(const Vector3 &p_euler) const;
 
-	void rotate(const Quat &p_quat);
-	Basis rotated(const Quat &p_quat) const;
+	void rotate(const Quaternion &p_quaternion);
+	Basis rotated(const Quaternion &p_quaternion) const;
 
 	Vector3 get_rotation_euler() const;
 	void get_rotation_axis_angle(Vector3 &p_axis, real_t &p_angle) const;
 	void get_rotation_axis_angle_local(Vector3 &p_axis, real_t &p_angle) const;
-	Quat get_rotation_quat() const;
+	Quaternion get_rotation_quaternion() const;
 	Vector3 get_rotation() const { return get_rotation_euler(); };
+
+	void rotate_to_align(Vector3 p_start_direction, Vector3 p_end_direction);
 
 	Vector3 rotref_posscale_decomposition(Basis &rotref) const;
 
@@ -104,8 +110,8 @@ public:
 	Vector3 get_euler_zyx() const;
 	void set_euler_zyx(const Vector3 &p_euler);
 
-	Quat get_quat() const;
-	void set_quat(const Quat &p_quat);
+	Quaternion get_quaternion() const;
+	void set_quaternion(const Quaternion &p_quaternion);
 
 	Vector3 get_euler() const { return get_euler_yxz(); }
 	void set_euler(const Vector3 &p_euler) { set_euler_yxz(p_euler); }
@@ -128,7 +134,7 @@ public:
 
 	void set_axis_angle_scale(const Vector3 &p_axis, real_t p_phi, const Vector3 &p_scale);
 	void set_euler_scale(const Vector3 &p_euler, const Vector3 &p_scale);
-	void set_quat_scale(const Quat &p_quat, const Vector3 &p_scale);
+	void set_quaternion_scale(const Quaternion &p_quaternion, const Vector3 &p_scale);
 
 	// transposed dot products
 	_FORCE_INLINE_ real_t tdotx(const Vector3 &v) const {
@@ -142,9 +148,6 @@ public:
 	}
 
 	bool is_equal_approx(const Basis &p_basis) const;
-	// TODO: Break compatibility in 4.0 by getting rid of this so that it's only an instance method. See also TODO in variant_call.cpp
-	bool is_equal_approx(const Basis &a, const Basis &b) const { return a.is_equal_approx(b); }
-	bool is_equal_approx_ratio(const Basis &a, const Basis &b, real_t p_epsilon = UNIT_EPSILON) const;
 
 	bool operator==(const Basis &p_matrix) const;
 	bool operator!=(const Basis &p_matrix) const;
@@ -157,8 +160,8 @@ public:
 	_FORCE_INLINE_ Basis operator+(const Basis &p_matrix) const;
 	_FORCE_INLINE_ void operator-=(const Basis &p_matrix);
 	_FORCE_INLINE_ Basis operator-(const Basis &p_matrix) const;
-	_FORCE_INLINE_ void operator*=(real_t p_val);
-	_FORCE_INLINE_ Basis operator*(real_t p_val) const;
+	_FORCE_INLINE_ void operator*=(const real_t p_val);
+	_FORCE_INLINE_ Basis operator*(const real_t p_val) const;
 
 	int get_orthogonal_index() const;
 	void set_orthogonal_index(int p_index);
@@ -169,7 +172,7 @@ public:
 	bool is_diagonal() const;
 	bool is_rotation() const;
 
-	Basis slerp(const Basis &target, const real_t &t) const;
+	Basis slerp(const Basis &p_to, const real_t &p_weight) const;
 	void rotate_sh(real_t *p_values);
 
 	operator String() const;
@@ -234,13 +237,17 @@ public:
 	void orthonormalize();
 	Basis orthonormalized() const;
 
+#ifdef MATH_CHECKS
 	bool is_symmetric() const;
+#endif
 	Basis diagonalize();
 
-	operator Quat() const { return get_quat(); }
+	operator Quaternion() const { return get_quaternion(); }
 
-	Basis(const Quat &p_quat) { set_quat(p_quat); };
-	Basis(const Quat &p_quat, const Vector3 &p_scale) { set_quat_scale(p_quat, p_scale); }
+	static Basis looking_at(const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0));
+
+	Basis(const Quaternion &p_quaternion) { set_quaternion(p_quaternion); };
+	Basis(const Quaternion &p_quaternion, const Vector3 &p_scale) { set_quaternion_scale(p_quaternion, p_scale); }
 
 	Basis(const Vector3 &p_euler) { set_euler(p_euler); }
 	Basis(const Vector3 &p_euler, const Vector3 &p_scale) { set_euler_scale(p_euler, p_scale); }
@@ -254,17 +261,7 @@ public:
 		elements[2] = row2;
 	}
 
-	_FORCE_INLINE_ Basis() {
-		elements[0][0] = 1;
-		elements[0][1] = 0;
-		elements[0][2] = 0;
-		elements[1][0] = 0;
-		elements[1][1] = 1;
-		elements[1][2] = 0;
-		elements[2][0] = 0;
-		elements[2][1] = 0;
-		elements[2][2] = 1;
-	}
+	_FORCE_INLINE_ Basis() {}
 };
 
 _FORCE_INLINE_ void Basis::operator*=(const Basis &p_matrix) {
@@ -305,13 +302,13 @@ _FORCE_INLINE_ Basis Basis::operator-(const Basis &p_matrix) const {
 	return ret;
 }
 
-_FORCE_INLINE_ void Basis::operator*=(real_t p_val) {
+_FORCE_INLINE_ void Basis::operator*=(const real_t p_val) {
 	elements[0] *= p_val;
 	elements[1] *= p_val;
 	elements[2] *= p_val;
 }
 
-_FORCE_INLINE_ Basis Basis::operator*(real_t p_val) const {
+_FORCE_INLINE_ Basis Basis::operator*(const real_t p_val) const {
 	Basis ret(*this);
 	ret *= p_val;
 	return ret;

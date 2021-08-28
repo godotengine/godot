@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,11 +50,11 @@ public:
 	void set_native_stream_peer(const godot_net_stream_peer *p_interface);
 
 	/* Specific to StreamPeer */
-	Error put_data(const uint8_t *p_data, int p_bytes);
-	Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent);
-	Error get_data(uint8_t *p_buffer, int p_bytes);
-	Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received);
-	int get_available_bytes() const;
+	Error put_data(const uint8_t *p_data, int p_bytes) override;
+	Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) override;
+	Error get_data(uint8_t *p_buffer, int p_bytes) override;
+	Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) override;
+	int get_available_bytes() const override;
 };
 
 #endif // STREAM_PEER_GDNATIVE_H

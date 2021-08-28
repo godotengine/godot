@@ -27,7 +27,9 @@
 
 #include <ft2build.h>
 #include FT_CONFIG_CONFIG_H
-#include FT_FREETYPE_H
+#include <freetype/freetype.h>
+
+#include "compiler-macros.h"
 
 
 FT_BEGIN_HEADER
@@ -56,7 +58,7 @@ FT_BEGIN_HEADER
   /* defining the enumeration */
   typedef enum  FT_Trace_
   {
-#include FT_INTERNAL_TRACE_H
+#include <freetype/internal/fttrace.h>
     trace_count
 
   } FT_Trace;

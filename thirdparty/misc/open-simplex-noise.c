@@ -100,27 +100,27 @@ static const signed char gradients4D[] = {
 	-3, -1, -1, -1,     -1, -3, -1, -1,     -1, -1, -3, -1,     -1, -1, -1, -3,
 };
 
-static double extrapolate2(struct osn_context *ctx, int xsb, int ysb, double dx, double dy)
+static double extrapolate2(const struct osn_context *ctx, int xsb, int ysb, double dx, double dy)
 {
-	int16_t *perm = ctx->perm;	
+	const int16_t *perm = ctx->perm;
 	int index = perm[(perm[xsb & 0xFF] + ysb) & 0xFF] & 0x0E;
 	return gradients2D[index] * dx
 		+ gradients2D[index + 1] * dy;
 }
 	
-static double extrapolate3(struct osn_context *ctx, int xsb, int ysb, int zsb, double dx, double dy, double dz)
+static double extrapolate3(const struct osn_context *ctx, int xsb, int ysb, int zsb, double dx, double dy, double dz)
 {
-	int16_t *perm = ctx->perm;	
-	int16_t *permGradIndex3D = ctx->permGradIndex3D;
+	const int16_t *perm = ctx->perm;
+	const int16_t *permGradIndex3D = ctx->permGradIndex3D;
 	int index = permGradIndex3D[(perm[(perm[xsb & 0xFF] + ysb) & 0xFF] + zsb) & 0xFF];
 	return gradients3D[index] * dx
 		+ gradients3D[index + 1] * dy
 		+ gradients3D[index + 2] * dz;
 }
 	
-static double extrapolate4(struct osn_context *ctx, int xsb, int ysb, int zsb, int wsb, double dx, double dy, double dz, double dw)
+static double extrapolate4(const struct osn_context *ctx, int xsb, int ysb, int zsb, int wsb, double dx, double dy, double dz, double dw)
 {
-	int16_t *perm = ctx->perm;
+	const int16_t *perm = ctx->perm;
 	int index = perm[(perm[(perm[(perm[xsb & 0xFF] + ysb) & 0xFF] + zsb) & 0xFF] + wsb) & 0xFF] & 0xFC;
 	return gradients4D[index] * dx
 		+ gradients4D[index + 1] * dy
@@ -189,14 +189,15 @@ int open_simplex_noise(int64_t seed, struct osn_context *ctx)
 	permGradIndex3D = ctx->permGradIndex3D;
 // -- GODOT end --
 
+	uint64_t seedU = seed;
 	for (i = 0; i < 256; i++)
 		source[i] = (int16_t) i;
-	seed = seed * 6364136223846793005LL + 1442695040888963407LL;
-	seed = seed * 6364136223846793005LL + 1442695040888963407LL;
-	seed = seed * 6364136223846793005LL + 1442695040888963407LL;
+	seedU = seedU * 6364136223846793005ULL + 1442695040888963407ULL;
+	seedU = seedU * 6364136223846793005ULL + 1442695040888963407ULL;
+	seedU = seedU * 6364136223846793005ULL + 1442695040888963407ULL;
 	for (i = 255; i >= 0; i--) {
-		seed = seed * 6364136223846793005LL + 1442695040888963407LL;
-		r = (int)((seed + 31) % (i + 1));
+		seedU = seedU * 6364136223846793005ULL + 1442695040888963407ULL;
+		r = (int)((seedU + 31) % (i + 1));
 		if (r < 0)
 			r += (i + 1);
 		perm[i] = source[r];
@@ -226,7 +227,7 @@ void open_simplex_noise_free(struct osn_context *ctx)
 // -- GODOT end --
 	
 /* 2D OpenSimplex (Simplectic) Noise. */
-double open_simplex_noise2(struct osn_context *ctx, double x, double y) 
+double open_simplex_noise2(const struct osn_context *ctx, double x, double y)
 {
 	
 	/* Place input coordinates onto grid. */
@@ -354,7 +355,7 @@ double open_simplex_noise2(struct osn_context *ctx, double x, double y)
 /*
  * 3D OpenSimplex (Simplectic) Noise
  */
-double open_simplex_noise3(struct osn_context *ctx, double x, double y, double z)
+double open_simplex_noise3(const struct osn_context *ctx, double x, double y, double z)
 {
 
 	/* Place input coordinates on simplectic honeycomb. */
@@ -927,7 +928,7 @@ double open_simplex_noise3(struct osn_context *ctx, double x, double y, double z
 /* 
  * 4D OpenSimplex (Simplectic) Noise.
  */
-double open_simplex_noise4(struct osn_context *ctx, double x, double y, double z, double w)
+double open_simplex_noise4(const struct osn_context *ctx, double x, double y, double z, double w)
 {
 	double uins;
 	double dx1, dy1, dz1, dw1;

@@ -32,12 +32,11 @@
    */
 
 
-#include <ft2build.h>
-#include FT_GLYPH_H
-#include FT_TRIGONOMETRY_H
-#include FT_INTERNAL_CALC_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_OBJECTS_H
+#include <freetype/ftglyph.h>
+#include <freetype/fttrigon.h>
+#include <freetype/internal/ftcalc.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftobjs.h>
 
 
 #ifdef FT_MULFIX_ASSEMBLER

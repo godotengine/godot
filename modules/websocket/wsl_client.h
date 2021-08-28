@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 
 #ifndef JAVASCRIPT_ENABLED
 
-#include "core/error_list.h"
+#include "core/error/error_list.h"
 #include "core/io/stream_peer_ssl.h"
 #include "core/io/stream_peer_tcp.h"
 #include "websocket_client.h"
@@ -44,27 +44,27 @@ class WSLClient : public WebSocketClient {
 	GDCIIMPL(WSLClient, WebSocketClient);
 
 private:
-	int _in_buf_size;
-	int _in_pkt_size;
-	int _out_buf_size;
-	int _out_pkt_size;
+	int _in_buf_size = DEF_BUF_SHIFT;
+	int _in_pkt_size = DEF_PKT_SHIFT;
+	int _out_buf_size = DEF_BUF_SHIFT;
+	int _out_pkt_size = DEF_PKT_SHIFT;
 
 	Ref<WSLPeer> _peer;
 	Ref<StreamPeerTCP> _tcp;
 	Ref<StreamPeer> _connection;
 
 	CharString _request;
-	int _requested;
+	int _requested = 0;
 
 	uint8_t _resp_buf[WSL_MAX_HEADER_SIZE];
-	int _resp_pos;
+	int _resp_pos = 0;
 
 	String _response;
 
 	String _key;
 	String _host;
 	Vector<String> _protocols;
-	bool _use_ssl;
+	bool _use_ssl = false;
 
 	void _do_handshake();
 	bool _verify_headers(String &r_protocol);
@@ -75,7 +75,7 @@ public:
 	int get_max_packet_size() const;
 	Ref<WebSocketPeer> get_peer(int p_peer_id) const;
 	void disconnect_from_host(int p_code = 1000, String p_reason = "");
-	IP_Address get_connected_host() const;
+	IPAddress get_connected_host() const;
 	uint16_t get_connected_port() const;
 	virtual ConnectionStatus get_connection_status() const;
 	virtual void poll();

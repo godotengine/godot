@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,10 @@
 #ifndef STREAM_PEER_H
 #define STREAM_PEER_H
 
-#include "core/reference.h"
+#include "core/object/ref_counted.h"
 
-class StreamPeer : public Reference {
-	GDCLASS(StreamPeer, Reference);
+class StreamPeer : public RefCounted {
+	GDCLASS(StreamPeer, RefCounted);
 	OBJ_CATEGORY("Networking");
 
 protected:
@@ -58,7 +58,7 @@ public:
 
 	virtual int get_available_bytes() const = 0;
 
-	void set_big_endian(bool p_enable);
+	void set_big_endian(bool p_big_endian);
 	bool is_big_endian_enabled() const;
 
 	void put_8(int8_t p_val);
@@ -102,13 +102,13 @@ protected:
 	static void _bind_methods();
 
 public:
-	Error put_data(const uint8_t *p_data, int p_bytes);
-	Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent);
+	Error put_data(const uint8_t *p_data, int p_bytes) override;
+	Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) override;
 
-	Error get_data(uint8_t *p_buffer, int p_bytes);
-	Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received);
+	Error get_data(uint8_t *p_buffer, int p_bytes) override;
+	Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) override;
 
-	virtual int get_available_bytes() const;
+	virtual int get_available_bytes() const override;
 
 	void seek(int p_pos);
 	int get_size() const;

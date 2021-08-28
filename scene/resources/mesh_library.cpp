@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -97,10 +97,10 @@ void MeshLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
 		String name = "item/" + itos(E->key()) + "/";
 		p_list->push_back(PropertyInfo(Variant::STRING, name + "name"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, name + "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"));
-		p_list->push_back(PropertyInfo(Variant::TRANSFORM, name + "mesh_transform"));
+		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, name + "mesh_transform"));
 		p_list->push_back(PropertyInfo(Variant::ARRAY, name + "shapes"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, name + "navmesh", PROPERTY_HINT_RESOURCE_TYPE, "NavigationMesh"));
-		p_list->push_back(PropertyInfo(Variant::TRANSFORM, name + "navmesh_transform"));
+		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, name + "navmesh_transform"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, name + "preview", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_HELPER));
 	}
 }
@@ -109,14 +109,14 @@ void MeshLibrary::create_item(int p_item) {
 	ERR_FAIL_COND(p_item < 0);
 	ERR_FAIL_COND(item_map.has(p_item));
 	item_map[p_item] = Item();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 void MeshLibrary::set_item_name(int p_item, const String &p_name) {
 	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	item_map[p_item].name = p_name;
 	emit_changed();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 void MeshLibrary::set_item_mesh(int p_item, const Ref<Mesh> &p_mesh) {
@@ -124,40 +124,40 @@ void MeshLibrary::set_item_mesh(int p_item, const Ref<Mesh> &p_mesh) {
 	item_map[p_item].mesh = p_mesh;
 	notify_change_to_owners();
 	emit_changed();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 void MeshLibrary::set_item_shapes(int p_item, const Vector<ShapeData> &p_shapes) {
 	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	item_map[p_item].shapes = p_shapes;
-	_change_notify();
+	notify_property_list_changed();
 	notify_change_to_owners();
 	emit_changed();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 void MeshLibrary::set_item_navmesh(int p_item, const Ref<NavigationMesh> &p_navmesh) {
 	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	item_map[p_item].navmesh = p_navmesh;
-	_change_notify();
+	notify_property_list_changed();
 	notify_change_to_owners();
 	emit_changed();
-	_change_notify();
+	notify_property_list_changed();
 }
 
-void MeshLibrary::set_item_navmesh_transform(int p_item, const Transform &p_transform) {
+void MeshLibrary::set_item_navmesh_transform(int p_item, const Transform3D &p_transform) {
 	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	item_map[p_item].navmesh_transform = p_transform;
 	notify_change_to_owners();
 	emit_changed();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 void MeshLibrary::set_item_preview(int p_item, const Ref<Texture2D> &p_preview) {
 	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	item_map[p_item].preview = p_preview;
 	emit_changed();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 String MeshLibrary::get_item_name(int p_item) const {
@@ -180,8 +180,8 @@ Ref<NavigationMesh> MeshLibrary::get_item_navmesh(int p_item) const {
 	return item_map[p_item].navmesh;
 }
 
-Transform MeshLibrary::get_item_navmesh_transform(int p_item) const {
-	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), Transform(), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
+Transform3D MeshLibrary::get_item_navmesh_transform(int p_item) const {
+	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), Transform3D(), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	return item_map[p_item].navmesh_transform;
 }
 
@@ -198,14 +198,14 @@ void MeshLibrary::remove_item(int p_item) {
 	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	item_map.erase(p_item);
 	notify_change_to_owners();
-	_change_notify();
+	notify_property_list_changed();
 	emit_changed();
 }
 
 void MeshLibrary::clear() {
 	item_map.clear();
 	notify_change_to_owners();
-	_change_notify();
+	notify_property_list_changed();
 	emit_changed();
 }
 
@@ -264,6 +264,9 @@ Array MeshLibrary::_get_item_shapes(int p_item) const {
 	return ret;
 }
 
+void MeshLibrary::reset_state() {
+	clear();
+}
 void MeshLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_item", "id"), &MeshLibrary::create_item);
 	ClassDB::bind_method(D_METHOD("set_item_name", "id", "name"), &MeshLibrary::set_item_name);

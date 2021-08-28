@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -83,8 +83,8 @@ void Sky::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_material"), &Sky::get_material);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "sky_material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,PanoramaSkyMaterial,ProceduralSkyMaterial,PhysicalSkyMaterial"), "set_material", "get_material");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Automatic,HighQuality,HighQualityIncremental,RealTime"), "set_process_mode", "get_process_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "radiance_size", PROPERTY_HINT_ENUM, "32,64,128,256,512,1024,2048"), "set_radiance_size", "get_radiance_size");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "HighQuality,RealTime"), "set_process_mode", "get_process_mode");
 
 	BIND_ENUM_CONSTANT(RADIANCE_SIZE_32);
 	BIND_ENUM_CONSTANT(RADIANCE_SIZE_64);
@@ -95,13 +95,13 @@ void Sky::_bind_methods() {
 	BIND_ENUM_CONSTANT(RADIANCE_SIZE_2048);
 	BIND_ENUM_CONSTANT(RADIANCE_SIZE_MAX);
 
+	BIND_ENUM_CONSTANT(PROCESS_MODE_AUTOMATIC);
 	BIND_ENUM_CONSTANT(PROCESS_MODE_QUALITY);
+	BIND_ENUM_CONSTANT(PROCESS_MODE_INCREMENTAL);
 	BIND_ENUM_CONSTANT(PROCESS_MODE_REALTIME);
 }
 
 Sky::Sky() {
-	mode = PROCESS_MODE_QUALITY;
-	radiance_size = RADIANCE_SIZE_256;
 	sky = RS::get_singleton()->sky_create();
 }
 

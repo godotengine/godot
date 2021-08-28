@@ -40,6 +40,11 @@ if env_mono["tools"] and env_mono["mono_glue"] and env_mono["build_cil"]:
 
     godot_tools_build.build(env_mono, api_sln_cmd)
 
+    # Build Godot.NET.Sdk
+    import build_scripts.godot_net_sdk_build as godot_net_sdk_build
+
+    godot_net_sdk_build.build(env_mono)
+
 # Add sources
 
 env_mono.add_source_files(env.modules_sources, "*.cpp")

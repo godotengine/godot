@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,8 +32,8 @@
 
 #include "audio_driver_coreaudio.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 
 #define kOutputBus 0
 #define kInputBus 1
@@ -70,7 +70,7 @@ OSStatus AudioDriverCoreAudio::output_device_address_cb(AudioObjectID inObjectID
 
 Error AudioDriverCoreAudio::init() {
 	AudioComponentDescription desc;
-	zeromem(&desc, sizeof(desc));
+	memset(&desc, 0, sizeof(desc));
 	desc.componentType = kAudioUnitType_Output;
 #ifdef OSX_ENABLED
 	desc.componentSubType = kAudioUnitSubType_HALOutput;
@@ -97,7 +97,7 @@ Error AudioDriverCoreAudio::init() {
 
 	AudioStreamBasicDescription strdesc;
 
-	zeromem(&strdesc, sizeof(strdesc));
+	memset(&strdesc, 0, sizeof(strdesc));
 	UInt32 size = sizeof(strdesc);
 	result = AudioUnitGetProperty(audio_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, kOutputBus, &strdesc, &size);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
@@ -116,9 +116,9 @@ Error AudioDriverCoreAudio::init() {
 			break;
 	}
 
-	mix_rate = GLOBAL_GET("audio/mix_rate");
+	mix_rate = GLOBAL_GET("audio/driver/mix_rate");
 
-	zeromem(&strdesc, sizeof(strdesc));
+	memset(&strdesc, 0, sizeof(strdesc));
 	strdesc.mFormatID = kAudioFormatLinearPCM;
 	strdesc.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked;
 	strdesc.mChannelsPerFrame = channels;
@@ -131,7 +131,7 @@ Error AudioDriverCoreAudio::init() {
 	result = AudioUnitSetProperty(audio_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, kOutputBus, &strdesc, sizeof(strdesc));
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
-	int latency = GLOBAL_GET("audio/output_latency");
+	int latency = GLOBAL_GET("audio/driver/output_latency");
 	// Sample rate is independent of channels (ref: https://stackoverflow.com/questions/11048825/audio-sample-frequency-rely-on-channels)
 	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
 
@@ -148,7 +148,7 @@ Error AudioDriverCoreAudio::init() {
 	print_verbose("CoreAudio: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
 
 	AURenderCallbackStruct callback;
-	zeromem(&callback, sizeof(AURenderCallbackStruct));
+	memset(&callback, 0, sizeof(AURenderCallbackStruct));
 	callback.inputProc = &AudioDriverCoreAudio::output_callback;
 	callback.inputProcRefCon = this;
 	result = AudioUnitSetProperty(audio_unit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, kOutputBus, &callback, sizeof(callback));
@@ -157,7 +157,7 @@ Error AudioDriverCoreAudio::init() {
 	result = AudioUnitInitialize(audio_unit);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
-	if (GLOBAL_GET("audio/enable_audio_input")) {
+	if (GLOBAL_GET("audio/driver/enable_input")) {
 		return capture_init();
 	}
 	return OK;
@@ -173,7 +173,7 @@ OSStatus AudioDriverCoreAudio::output_callback(void *inRefCon,
 	if (!ad->active || !ad->try_lock()) {
 		for (unsigned int i = 0; i < ioData->mNumberBuffers; i++) {
 			AudioBuffer *abuf = &ioData->mBuffers[i];
-			zeromem(abuf->mData, abuf->mDataByteSize);
+			memset(abuf->mData, 0, abuf->mDataByteSize);
 		};
 		return 0;
 	};
@@ -293,7 +293,7 @@ void AudioDriverCoreAudio::finish() {
 		lock();
 
 		AURenderCallbackStruct callback;
-		zeromem(&callback, sizeof(AURenderCallbackStruct));
+		memset(&callback, 0, sizeof(AURenderCallbackStruct));
 		result = AudioUnitSetProperty(audio_unit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, kOutputBus, &callback, sizeof(callback));
 		if (result != noErr) {
 			ERR_PRINT("AudioUnitSetProperty failed");
@@ -337,7 +337,7 @@ void AudioDriverCoreAudio::finish() {
 
 Error AudioDriverCoreAudio::capture_init() {
 	AudioComponentDescription desc;
-	zeromem(&desc, sizeof(desc));
+	memset(&desc, 0, sizeof(desc));
 	desc.componentType = kAudioUnitType_Output;
 #ifdef OSX_ENABLED
 	desc.componentSubType = kAudioUnitSubType_HALOutput;
@@ -383,7 +383,7 @@ Error AudioDriverCoreAudio::capture_init() {
 #endif
 
 	AudioStreamBasicDescription strdesc;
-	zeromem(&strdesc, sizeof(strdesc));
+	memset(&strdesc, 0, sizeof(strdesc));
 	size = sizeof(strdesc);
 	result = AudioUnitGetProperty(input_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, kInputBus, &strdesc, &size);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
@@ -403,9 +403,9 @@ Error AudioDriverCoreAudio::capture_init() {
 			break;
 	}
 
-	mix_rate = GLOBAL_GET("audio/mix_rate");
+	mix_rate = GLOBAL_GET("audio/driver/mix_rate");
 
-	zeromem(&strdesc, sizeof(strdesc));
+	memset(&strdesc, 0, sizeof(strdesc));
 	strdesc.mFormatID = kAudioFormatLinearPCM;
 	strdesc.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked;
 	strdesc.mChannelsPerFrame = capture_channels;
@@ -419,7 +419,7 @@ Error AudioDriverCoreAudio::capture_init() {
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
 	AURenderCallbackStruct callback;
-	zeromem(&callback, sizeof(AURenderCallbackStruct));
+	memset(&callback, 0, sizeof(AURenderCallbackStruct));
 	callback.inputProc = &AudioDriverCoreAudio::input_callback;
 	callback.inputProcRefCon = this;
 	result = AudioUnitSetProperty(input_unit, kAudioOutputUnitProperty_SetInputCallback, kAudioUnitScope_Global, kInputBus, &callback, sizeof(callback));
@@ -436,7 +436,7 @@ void AudioDriverCoreAudio::capture_finish() {
 		lock();
 
 		AURenderCallbackStruct callback;
-		zeromem(&callback, sizeof(AURenderCallbackStruct));
+		memset(&callback, 0, sizeof(AURenderCallbackStruct));
 		OSStatus result = AudioUnitSetProperty(input_unit, kAudioOutputUnitProperty_SetInputCallback, kAudioUnitScope_Global, 0, &callback, sizeof(callback));
 		if (result != noErr) {
 			ERR_PRINT("AudioUnitSetProperty failed");
@@ -506,7 +506,8 @@ Array AudioDriverCoreAudio::_get_device_list(bool capture) {
 
 	UInt32 size = 0;
 	AudioObjectGetPropertyDataSize(kAudioObjectSystemObject, &prop, 0, nullptr, &size);
-	AudioDeviceID *audioDevices = (AudioDeviceID *)malloc(size);
+	AudioDeviceID *audioDevices = (AudioDeviceID *)memalloc(size);
+	ERR_FAIL_NULL_V_MSG(audioDevices, list, "Out of memory.");
 	AudioObjectGetPropertyData(kAudioObjectSystemObject, &prop, 0, nullptr, &size, audioDevices);
 
 	UInt32 deviceCount = size / sizeof(AudioDeviceID);
@@ -515,14 +516,15 @@ Array AudioDriverCoreAudio::_get_device_list(bool capture) {
 		prop.mSelector = kAudioDevicePropertyStreamConfiguration;
 
 		AudioObjectGetPropertyDataSize(audioDevices[i], &prop, 0, nullptr, &size);
-		AudioBufferList *bufferList = (AudioBufferList *)malloc(size);
+		AudioBufferList *bufferList = (AudioBufferList *)memalloc(size);
+		ERR_FAIL_NULL_V_MSG(bufferList, list, "Out of memory.");
 		AudioObjectGetPropertyData(audioDevices[i], &prop, 0, nullptr, &size, bufferList);
 
 		UInt32 channelCount = 0;
 		for (UInt32 j = 0; j < bufferList->mNumberBuffers; j++)
 			channelCount += bufferList->mBuffers[j].mNumberChannels;
 
-		free(bufferList);
+		memfree(bufferList);
 
 		if (channelCount >= 1) {
 			CFStringRef cfname;
@@ -534,17 +536,18 @@ Array AudioDriverCoreAudio::_get_device_list(bool capture) {
 
 			CFIndex length = CFStringGetLength(cfname);
 			CFIndex maxSize = CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8) + 1;
-			char *buffer = (char *)malloc(maxSize);
+			char *buffer = (char *)memalloc(maxSize);
+			ERR_FAIL_NULL_V_MSG(buffer, list, "Out of memory.");
 			if (CFStringGetCString(cfname, buffer, maxSize, kCFStringEncodingUTF8)) {
 				// Append the ID to the name in case we have devices with duplicate name
 				list.push_back(String(buffer) + " (" + itos(audioDevices[i]) + ")");
 			}
 
-			free(buffer);
+			memfree(buffer);
 		}
 	}
 
-	free(audioDevices);
+	memfree(audioDevices);
 
 	return list;
 }
@@ -561,7 +564,8 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 
 		UInt32 size = 0;
 		AudioObjectGetPropertyDataSize(kAudioObjectSystemObject, &prop, 0, nullptr, &size);
-		AudioDeviceID *audioDevices = (AudioDeviceID *)malloc(size);
+		AudioDeviceID *audioDevices = (AudioDeviceID *)memalloc(size);
+		ERR_FAIL_NULL_MSG(audioDevices, "Out of memory.");
 		AudioObjectGetPropertyData(kAudioObjectSystemObject, &prop, 0, nullptr, &size, audioDevices);
 
 		UInt32 deviceCount = size / sizeof(AudioDeviceID);
@@ -570,14 +574,15 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 			prop.mSelector = kAudioDevicePropertyStreamConfiguration;
 
 			AudioObjectGetPropertyDataSize(audioDevices[i], &prop, 0, nullptr, &size);
-			AudioBufferList *bufferList = (AudioBufferList *)malloc(size);
+			AudioBufferList *bufferList = (AudioBufferList *)memalloc(size);
+			ERR_FAIL_NULL_MSG(bufferList, "Out of memory.");
 			AudioObjectGetPropertyData(audioDevices[i], &prop, 0, nullptr, &size, bufferList);
 
 			UInt32 channelCount = 0;
 			for (UInt32 j = 0; j < bufferList->mNumberBuffers; j++)
 				channelCount += bufferList->mBuffers[j].mNumberChannels;
 
-			free(bufferList);
+			memfree(bufferList);
 
 			if (channelCount >= 1) {
 				CFStringRef cfname;
@@ -589,7 +594,8 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 
 				CFIndex length = CFStringGetLength(cfname);
 				CFIndex maxSize = CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8) + 1;
-				char *buffer = (char *)malloc(maxSize);
+				char *buffer = (char *)memalloc(maxSize);
+				ERR_FAIL_NULL_MSG(buffer, "Out of memory.");
 				if (CFStringGetCString(cfname, buffer, maxSize, kCFStringEncodingUTF8)) {
 					String name = String(buffer) + " (" + itos(audioDevices[i]) + ")";
 					if (name == device) {
@@ -598,11 +604,11 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 					}
 				}
 
-				free(buffer);
+				memfree(buffer);
 			}
 		}
 
-		free(audioDevices);
+		memfree(audioDevices);
 	}
 
 	if (!found) {

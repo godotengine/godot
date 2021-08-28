@@ -41,9 +41,10 @@
 #ifndef GLSLANG_SPV_TOOLS_H
 #define GLSLANG_SPV_TOOLS_H
 
-#ifdef ENABLE_OPT
+#if ENABLE_OPT
 #include <vector>
 #include <ostream>
+#include "spirv-tools/libspirv.h"
 #endif
 
 #include "glslang/MachineIndependent/localintermediate.h"
@@ -52,28 +53,38 @@
 namespace glslang {
 
 struct SpvOptions {
-    SpvOptions() : generateDebugInfo(false), disableOptimizer(true),
+    SpvOptions() : generateDebugInfo(false), stripDebugInfo(false), disableOptimizer(true),
         optimizeSize(false), disassemble(false), validate(false) { }
     bool generateDebugInfo;
+    bool stripDebugInfo;
     bool disableOptimizer;
     bool optimizeSize;
     bool disassemble;
     bool validate;
 };
 
-#ifdef ENABLE_OPT
+#if ENABLE_OPT
 
-// Use the SPIRV-Tools disassembler to print SPIR-V.
+// Use the SPIRV-Tools disassembler to print SPIR-V using a SPV_ENV_UNIVERSAL_1_3 environment.
 void SpirvToolsDisassemble(std::ostream& out, const std::vector<unsigned int>& spirv);
+
+// Use the SPIRV-Tools disassembler to print SPIR-V with a provided SPIR-V environment.
+void SpirvToolsDisassemble(std::ostream& out, const std::vector<unsigned int>& spirv,
+                           spv_target_env requested_context);
 
 // Apply the SPIRV-Tools validator to generated SPIR-V.
 void SpirvToolsValidate(const glslang::TIntermediate& intermediate, std::vector<unsigned int>& spirv,
                         spv::SpvBuildLogger*, bool prelegalization);
 
-// Apply the SPIRV-Tools optimizer to generated SPIR-V, for the purpose of
-// legalizing HLSL SPIR-V.
-void SpirvToolsLegalize(const glslang::TIntermediate& intermediate, std::vector<unsigned int>& spirv,
-                        spv::SpvBuildLogger*, const SpvOptions*);
+// Apply the SPIRV-Tools optimizer to generated SPIR-V.  HLSL SPIR-V is legalized in the process.
+void SpirvToolsTransform(const glslang::TIntermediate& intermediate, std::vector<unsigned int>& spirv,
+                         spv::SpvBuildLogger*, const SpvOptions*);
+
+// Apply the SPIRV-Tools optimizer to strip debug info from SPIR-V.  This is implicitly done by
+// SpirvToolsTransform if spvOptions->stripDebugInfo is set, but can be called separately if
+// optimization is disabled.
+void SpirvToolsStripDebugInfo(const glslang::TIntermediate& intermediate,
+        std::vector<unsigned int>& spirv, spv::SpvBuildLogger*);
 
 #endif
 

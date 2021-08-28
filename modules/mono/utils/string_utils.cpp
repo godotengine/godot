@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "string_utils.h"
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,16 +38,18 @@
 namespace {
 
 int sfind(const String &p_text, int p_from) {
-	if (p_from < 0)
+	if (p_from < 0) {
 		return -1;
+	}
 
 	int src_len = 2;
 	int len = p_text.length();
 
-	if (len == 0)
+	if (len == 0) {
 		return -1;
+	}
 
-	const CharType *src = p_text.c_str();
+	const char32_t *src = p_text.get_data();
 
 	for (int i = p_from; i <= (len - src_len); i++) {
 		bool found = true;
@@ -62,7 +64,7 @@ int sfind(const String &p_text, int p_from) {
 					found = src[read_pos] == '%';
 					break;
 				case 1: {
-					CharType c = src[read_pos];
+					char32_t c = src[read_pos];
 					found = src[read_pos] == 's' || (c >= '0' && c <= '4');
 					break;
 				}
@@ -75,18 +77,19 @@ int sfind(const String &p_text, int p_from) {
 			}
 		}
 
-		if (found)
+		if (found) {
 			return i;
+		}
 	}
 
 	return -1;
 }
-
 } // namespace
 
 String sformat(const String &p_text, const Variant &p1, const Variant &p2, const Variant &p3, const Variant &p4, const Variant &p5) {
-	if (p_text.length() < 2)
+	if (p_text.length() < 2) {
 		return p_text;
+	}
 
 	Array args;
 
@@ -117,7 +120,7 @@ String sformat(const String &p_text, const Variant &p1, const Variant &p2, const
 	int result = 0;
 
 	while ((result = sfind(p_text, search_from)) >= 0) {
-		CharType c = p_text[result + 1];
+		char32_t c = p_text[result + 1];
 
 		int req_index = (c == 's' ? findex++ : c - '0');
 
@@ -167,10 +170,10 @@ Error read_all_file_utf8(const String &p_path, String &r_content) {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot open file '" + p_path + "'.");
 
-	int len = f->get_len();
+	uint64_t len = f->get_length();
 	sourcef.resize(len + 1);
 	uint8_t *w = sourcef.ptrw();
-	int r = f->get_buffer(w, len);
+	uint64_t r = f->get_buffer(w, len);
 	f->close();
 	memdelete(f);
 	ERR_FAIL_COND_V(r != len, ERR_CANT_OPEN);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -199,7 +199,7 @@ void Area2DSW::set_monitorable(bool p_monitorable) {
 }
 
 void Area2DSW::call_queries() {
-	if (monitor_callback_id.is_valid() && !monitored_bodies.empty()) {
+	if (monitor_callback_id.is_valid() && !monitored_bodies.is_empty()) {
 		Variant res[5];
 		Variant *resptr[5];
 		for (int i = 0; i < 5; i++) {
@@ -213,9 +213,12 @@ void Area2DSW::call_queries() {
 			return;
 		}
 
-		for (Map<BodyKey, BodyState>::Element *E = monitored_bodies.front(); E; E = E->next()) {
-			if (E->get().state == 0) {
-				continue; //nothing happened
+		for (Map<BodyKey, BodyState>::Element *E = monitored_bodies.front(); E;) {
+			if (E->get().state == 0) { // Nothing happened
+				Map<BodyKey, BodyState>::Element *next = E->next();
+				monitored_bodies.erase(E);
+				E = next;
+				continue;
 			}
 
 			res[0] = E->get().state > 0 ? PhysicsServer2D::AREA_BODY_ADDED : PhysicsServer2D::AREA_BODY_REMOVED;
@@ -224,14 +227,16 @@ void Area2DSW::call_queries() {
 			res[3] = E->key().body_shape;
 			res[4] = E->key().area_shape;
 
+			Map<BodyKey, BodyState>::Element *next = E->next();
+			monitored_bodies.erase(E);
+			E = next;
+
 			Callable::CallError ce;
 			obj->call(monitor_callback_method, (const Variant **)resptr, 5, ce);
 		}
 	}
 
-	monitored_bodies.clear();
-
-	if (area_monitor_callback_id.is_valid() && !monitored_areas.empty()) {
+	if (area_monitor_callback_id.is_valid() && !monitored_areas.is_empty()) {
 		Variant res[5];
 		Variant *resptr[5];
 		for (int i = 0; i < 5; i++) {
@@ -245,9 +250,12 @@ void Area2DSW::call_queries() {
 			return;
 		}
 
-		for (Map<BodyKey, BodyState>::Element *E = monitored_areas.front(); E; E = E->next()) {
-			if (E->get().state == 0) {
-				continue; //nothing happened
+		for (Map<BodyKey, BodyState>::Element *E = monitored_areas.front(); E;) {
+			if (E->get().state == 0) { // Nothing happened
+				Map<BodyKey, BodyState>::Element *next = E->next();
+				monitored_areas.erase(E);
+				E = next;
+				continue;
 			}
 
 			res[0] = E->get().state > 0 ? PhysicsServer2D::AREA_BODY_ADDED : PhysicsServer2D::AREA_BODY_REMOVED;
@@ -256,14 +264,34 @@ void Area2DSW::call_queries() {
 			res[3] = E->key().body_shape;
 			res[4] = E->key().area_shape;
 
+			Map<BodyKey, BodyState>::Element *next = E->next();
+			monitored_areas.erase(E);
+			E = next;
+
 			Callable::CallError ce;
 			obj->call(area_monitor_callback_method, (const Variant **)resptr, 5, ce);
 		}
 	}
+}
 
-	monitored_areas.clear();
-
-	//get_space()->area_remove_from_monitor_query_list(&monitor_query_list);
+void Area2DSW::compute_gravity(const Vector2 &p_position, Vector2 &r_gravity) const {
+	if (is_gravity_point()) {
+		const real_t gravity_distance_scale = get_gravity_distance_scale();
+		Vector2 v = get_transform().xform(get_gravity_vector()) - p_position;
+		if (gravity_distance_scale > 0) {
+			const real_t v_length = v.length();
+			if (v_length > 0) {
+				const real_t v_scaled = v_length * gravity_distance_scale;
+				r_gravity = (v.normalized() * (get_gravity() / (v_scaled * v_scaled)));
+			} else {
+				r_gravity = Vector2();
+			}
+		} else {
+			r_gravity = v.normalized() * get_gravity();
+		}
+	} else {
+		r_gravity = get_gravity_vector() * get_gravity();
+	}
 }
 
 Area2DSW::Area2DSW() :

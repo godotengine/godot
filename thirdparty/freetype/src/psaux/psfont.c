@@ -36,8 +36,7 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_CALC_H
+#include <freetype/internal/ftcalc.h>
 
 #include "psft.h"
 

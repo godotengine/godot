@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,7 +49,7 @@ class AudioEffectFilterInstance : public AudioEffectInstance {
 	void _process_filter(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
 
 public:
-	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
+	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
 
 	AudioEffectFilterInstance();
 };
@@ -88,7 +88,7 @@ public:
 	void set_db(FilterDB p_db);
 	FilterDB get_db() const;
 
-	Ref<AudioEffectInstance> instance();
+	Ref<AudioEffectInstance> instantiate() override;
 
 	AudioEffectFilter(AudioFilterSW::Mode p_mode = AudioFilterSW::LOWPASS);
 };
@@ -98,9 +98,9 @@ VARIANT_ENUM_CAST(AudioEffectFilter::FilterDB)
 class AudioEffectLowPassFilter : public AudioEffectFilter {
 	GDCLASS(AudioEffectLowPassFilter, AudioEffectFilter);
 
-	void _validate_property(PropertyInfo &property) const {
+	void _validate_property(PropertyInfo &property) const override {
 		if (property.name == "gain") {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 
@@ -111,9 +111,9 @@ public:
 
 class AudioEffectHighPassFilter : public AudioEffectFilter {
 	GDCLASS(AudioEffectHighPassFilter, AudioEffectFilter);
-	void _validate_property(PropertyInfo &property) const {
+	void _validate_property(PropertyInfo &property) const override {
 		if (property.name == "gain") {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 
@@ -124,9 +124,9 @@ public:
 
 class AudioEffectBandPassFilter : public AudioEffectFilter {
 	GDCLASS(AudioEffectBandPassFilter, AudioEffectFilter);
-	void _validate_property(PropertyInfo &property) const {
+	void _validate_property(PropertyInfo &property) const override {
 		if (property.name == "gain") {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 

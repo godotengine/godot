@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,6 @@ class IP : public Object {
 
 public:
 	enum ResolverStatus {
-
 		RESOLVER_STATUS_NONE,
 		RESOLVER_STATUS_WAITING,
 		RESOLVER_STATUS_DONE,
@@ -50,7 +49,6 @@ public:
 	};
 
 	enum Type {
-
 		TYPE_NONE = 0,
 		TYPE_IPV4 = 1,
 		TYPE_IPV6 = 2,
@@ -71,7 +69,6 @@ protected:
 	static IP *singleton;
 	static void _bind_methods();
 
-	virtual IP_Address _resolve_hostname(const String &p_hostname, Type p_type = TYPE_ANY) = 0;
 	Array _get_local_addresses() const;
 	Array _get_local_interfaces() const;
 
@@ -82,15 +79,20 @@ public:
 		String name;
 		String name_friendly;
 		String index;
-		List<IP_Address> ip_addresses;
+		List<IPAddress> ip_addresses;
 	};
 
-	IP_Address resolve_hostname(const String &p_hostname, Type p_type = TYPE_ANY);
+	IPAddress resolve_hostname(const String &p_hostname, Type p_type = TYPE_ANY);
+	Array resolve_hostname_addresses(const String &p_hostname, Type p_type = TYPE_ANY);
 	// async resolver hostname
 	ResolverID resolve_hostname_queue_item(const String &p_hostname, Type p_type = TYPE_ANY);
 	ResolverStatus get_resolve_item_status(ResolverID p_id) const;
-	IP_Address get_resolve_item_address(ResolverID p_id) const;
-	virtual void get_local_addresses(List<IP_Address> *r_addresses) const;
+	IPAddress get_resolve_item_address(ResolverID p_id) const;
+	virtual void get_local_addresses(List<IPAddress> *r_addresses) const;
+
+	virtual void _resolve_hostname(List<IPAddress> &r_addresses, const String &p_hostname, Type p_type = TYPE_ANY) const = 0;
+	Array get_resolve_item_addresses(ResolverID p_id) const;
+
 	virtual void get_local_interfaces(Map<String, Interface_Info> *r_interfaces) const = 0;
 	void erase_resolve_item(ResolverID p_id);
 

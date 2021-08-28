@@ -311,7 +311,7 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_generate_code(struct sljit_compiler *compil
 	CHECK_PTR(check_sljit_generate_code(compiler));
 	reverse_buf(compiler);
 
-	code = (sljit_ins*)SLJIT_MALLOC_EXEC(compiler->size * sizeof(sljit_ins));
+	code = (sljit_ins*)SLJIT_MALLOC_EXEC(compiler->size * sizeof(sljit_ins), compiler->exec_allocator_data);
 	PTR_FAIL_WITH_EXEC_IF(code);
 	buf = compiler->buf;
 
@@ -437,6 +437,7 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_generate_code(struct sljit_compiler *compil
 	code_ptr = (sljit_ins *)SLJIT_ADD_EXEC_OFFSET(code_ptr, executable_offset);
 
 	SLJIT_CACHE_FLUSH(code, code_ptr);
+	SLJIT_UPDATE_WX_FLAGS(code, code_ptr, 1);
 	return code;
 }
 
@@ -450,6 +451,9 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_has_cpu_feature(sljit_s32 feature_type)
 		/* Available by default. */
 		return 1;
 #endif
+
+	case SLJIT_HAS_ZERO_REGISTER:
+		return 1;
 
 #if (defined SLJIT_CONFIG_SPARC_64 && SLJIT_CONFIG_SPARC_64)
 	case SLJIT_HAS_CMOV:
@@ -872,6 +876,9 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op0(struct sljit_compiler *compile
 #else
 #error "Implementation required"
 #endif
+	case SLJIT_ENDBR:
+	case SLJIT_SKIP_FRAMES_BEFORE_RETURN:
+		return SLJIT_SUCCESS;
 	}
 
 	return SLJIT_SUCCESS;
@@ -887,9 +894,6 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op1(struct sljit_compiler *compile
 	CHECK(check_sljit_emit_op1(compiler, op, dst, dstw, src, srcw));
 	ADJUST_LOCAL_OFFSET(dst, dstw);
 	ADJUST_LOCAL_OFFSET(src, srcw);
-
-	if (dst == SLJIT_UNUSED && !HAS_FLAGS(op))
-		return SLJIT_SUCCESS;
 
 	op = GET_OPCODE(op);
 	switch (op) {
@@ -966,6 +970,33 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op2(struct sljit_compiler *compile
 		SLJIT_UNREACHABLE();
 #endif
 		return emit_op(compiler, op, flags | IMM_OP, dst, dstw, src1, src1w, src2, src2w);
+	}
+
+	return SLJIT_SUCCESS;
+}
+
+SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op_src(struct sljit_compiler *compiler, sljit_s32 op,
+	sljit_s32 src, sljit_sw srcw)
+{
+	CHECK_ERROR();
+	CHECK(check_sljit_emit_op_src(compiler, op, src, srcw));
+	ADJUST_LOCAL_OFFSET(src, srcw);
+
+	switch (op) {
+	case SLJIT_FAST_RETURN:
+		if (FAST_IS_REG(src))
+			FAIL_IF(push_inst(compiler, OR | D(TMP_LINK) | S1(0) | S2(src), DR(TMP_LINK)));
+		else
+			FAIL_IF(emit_op_mem(compiler, WORD_DATA | LOAD_DATA, TMP_LINK, src, srcw));
+
+		FAIL_IF(push_inst(compiler, JMPL | D(0) | S1(TMP_LINK) | IMM(8), UNMOVABLE_INS));
+		return push_inst(compiler, NOP, UNMOVABLE_INS);
+	case SLJIT_SKIP_FRAMES_BEFORE_FAST_RETURN:
+	case SLJIT_PREFETCH_L1:
+	case SLJIT_PREFETCH_L2:
+	case SLJIT_PREFETCH_L3:
+	case SLJIT_PREFETCH_ONCE:
+		return SLJIT_SUCCESS;
 	}
 
 	return SLJIT_SUCCESS;
@@ -1215,25 +1246,12 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fast_enter(struct sljit_compiler *
 	ADJUST_LOCAL_OFFSET(dst, dstw);
 
 	if (FAST_IS_REG(dst))
-		return push_inst(compiler, OR | D(dst) | S1(0) | S2(TMP_LINK), DR(dst));
+		return push_inst(compiler, OR | D(dst) | S1(0) | S2(TMP_LINK), UNMOVABLE_INS);
 
 	/* Memory. */
-	return emit_op_mem(compiler, WORD_DATA, TMP_LINK, dst, dstw);
-}
-
-SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fast_return(struct sljit_compiler *compiler, sljit_s32 src, sljit_sw srcw)
-{
-	CHECK_ERROR();
-	CHECK(check_sljit_emit_fast_return(compiler, src, srcw));
-	ADJUST_LOCAL_OFFSET(src, srcw);
-
-	if (FAST_IS_REG(src))
-		FAIL_IF(push_inst(compiler, OR | D(TMP_LINK) | S1(0) | S2(src), DR(TMP_LINK)));
-	else
-		FAIL_IF(emit_op_mem(compiler, WORD_DATA | LOAD_DATA, TMP_LINK, src, srcw));
-
-	FAIL_IF(push_inst(compiler, JMPL | D(0) | S1(TMP_LINK) | IMM(8), UNMOVABLE_INS));
-	return push_inst(compiler, NOP, UNMOVABLE_INS);
+	FAIL_IF(emit_op_mem(compiler, WORD_DATA, TMP_LINK, dst, dstw));
+	compiler->delay_slot = UNMOVABLE_INS;
+	return SLJIT_SUCCESS;
 }
 
 /* --------------------------------------------------------------------- */

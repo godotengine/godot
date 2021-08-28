@@ -18,17 +18,16 @@
  */
 
 
-#include <ft2build.h>
-#include FT_WINFONTS_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_OBJECTS_H
-#include FT_TRUETYPE_IDS_H
+#include <freetype/ftwinfnt.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/ftobjs.h>
+#include <freetype/ttnameid.h>
 
 #include "winfnt.h"
 #include "fnterrs.h"
-#include FT_SERVICE_WINFNT_H
-#include FT_SERVICE_FONT_FORMAT_H
+#include <freetype/internal/services/svwinfnt.h>
+#include <freetype/internal/services/svfntfmt.h>
 
   /**************************************************************************
    *

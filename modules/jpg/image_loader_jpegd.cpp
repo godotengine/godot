@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #include "image_loader_jpegd.h"
 
 #include "core/os/os.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 #include <jpgd.h>
 #include <string.h>
@@ -105,7 +105,7 @@ Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p
 
 Error ImageLoaderJPG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
 	Vector<uint8_t> src_image;
-	int src_image_len = f->get_len();
+	uint64_t src_image_len = f->get_length();
 	ERR_FAIL_COND_V(src_image_len == 0, ERR_FILE_CORRUPT);
 	src_image.resize(src_image_len);
 
@@ -127,7 +127,7 @@ void ImageLoaderJPG::get_recognized_extensions(List<String> *p_extensions) const
 
 static Ref<Image> _jpegd_mem_loader_func(const uint8_t *p_png, int p_size) {
 	Ref<Image> img;
-	img.instance();
+	img.instantiate();
 	Error err = jpeg_load_image_from_buffer(img.ptr(), p_png, p_size);
 	ERR_FAIL_COND_V(err, Ref<Image>());
 	return img;

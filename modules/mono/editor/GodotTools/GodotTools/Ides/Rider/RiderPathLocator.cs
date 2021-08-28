@@ -32,7 +32,7 @@ namespace GodotTools.Ides.Rider
                 {
                     return CollectRiderInfosWindows();
                 }
-                if (OS.IsOSX)
+                if (OS.IsMacOS)
                 {
                     return CollectRiderInfosMac();
                 }
@@ -47,7 +47,7 @@ namespace GodotTools.Ides.Rider
                 GD.PushWarning(e.Message);
             }
 
-            return new RiderInfo[0];
+            return Array.Empty<RiderInfo>();
         }
 
         private static RiderInfo[] CollectAllRiderPathsLinux()
@@ -138,7 +138,7 @@ namespace GodotTools.Ides.Rider
                 return GetToolboxRiderRootPath(localAppData);
             }
 
-            if (OS.IsOSX)
+            if (OS.IsMacOS)
             {
                 var home = Environment.GetEnvironmentVariable("HOME");
                 if (string.IsNullOrEmpty(home))
@@ -211,7 +211,7 @@ namespace GodotTools.Ides.Rider
         {
             if (OS.IsWindows || OS.IsUnixLike)
                 return "../../build.txt";
-            if (OS.IsOSX)
+            if (OS.IsMacOS)
                 return "Contents/Resources/build.txt";
             throw new Exception("Unknown OS.");
         }
@@ -249,7 +249,7 @@ namespace GodotTools.Ides.Rider
           bool isMac)
         {
             if (!Directory.Exists(toolboxRiderRootPath))
-                return new string[0];
+                return Array.Empty<string>();
 
             var channelDirs = Directory.GetDirectories(toolboxRiderRootPath);
             var paths = channelDirs.SelectMany(channelDir =>
@@ -295,7 +295,7 @@ namespace GodotTools.Ides.Rider
                       Logger.Warn($"Failed to get RiderPath from {channelDir}", e);
                   }
 
-                  return new string[0];
+                  return Array.Empty<string>();
               })
               .Where(c => !string.IsNullOrEmpty(c))
               .ToArray();
@@ -306,7 +306,7 @@ namespace GodotTools.Ides.Rider
         {
             var folder = new DirectoryInfo(Path.Combine(buildDir, dirName));
             if (!folder.Exists)
-                return new string[0];
+                return Array.Empty<string>();
 
             if (!isMac)
                 return new[] { Path.Combine(folder.FullName, searchPattern) }.Where(File.Exists).ToArray();

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef GD_MONO_CLASS_H
 #define GD_MONO_CLASS_H
 
-#include "core/map.h"
-#include "core/ustring.h"
+#include "core/string/ustring.h"
+#include "core/templates/map.h"
 
 #include "gd_mono_field.h"
 #include "gd_mono_header.h"
@@ -59,13 +59,12 @@ class GDMonoClass {
 
 		MethodKey() {}
 
-		MethodKey(const StringName &p_name, int p_params_count) {
-			name = p_name;
-			params_count = p_params_count;
+		MethodKey(const StringName &p_name, uint16_t p_params_count) :
+				name(p_name), params_count(p_params_count) {
 		}
 
 		StringName name;
-		int params_count;
+		uint16_t params_count = 0;
 	};
 
 	StringName namespace_name;
@@ -139,10 +138,10 @@ public:
 	bool implements_interface(GDMonoClass *p_interface);
 	bool has_public_parameterless_ctor();
 
-	GDMonoMethod *get_method(const StringName &p_name, int p_params_count = 0);
+	GDMonoMethod *get_method(const StringName &p_name, uint16_t p_params_count = 0);
 	GDMonoMethod *get_method(MonoMethod *p_raw_method);
 	GDMonoMethod *get_method(MonoMethod *p_raw_method, const StringName &p_name);
-	GDMonoMethod *get_method(MonoMethod *p_raw_method, const StringName &p_name, int p_params_count);
+	GDMonoMethod *get_method(MonoMethod *p_raw_method, const StringName &p_name, uint16_t p_params_count);
 	GDMonoMethod *get_method_with_desc(const String &p_description, bool p_include_namespace);
 
 	GDMonoField *get_field(const StringName &p_name);

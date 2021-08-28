@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,16 +40,16 @@
 	@author AndreaCatania
 */
 
-HingeJointBullet::HingeJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameA, const Transform &frameB) :
+HingeJointBullet::HingeJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform3D &frameA, const Transform3D &frameB) :
 		JointBullet() {
-	Transform scaled_AFrame(frameA.scaled(rbA->get_body_scale()));
+	Transform3D scaled_AFrame(frameA.scaled(rbA->get_body_scale()));
 	scaled_AFrame.basis.rotref_posscale_decomposition(scaled_AFrame.basis);
 
 	btTransform btFrameA;
 	G_TO_B(scaled_AFrame, btFrameA);
 
 	if (rbB) {
-		Transform scaled_BFrame(frameB.scaled(rbB->get_body_scale()));
+		Transform3D scaled_BFrame(frameB.scaled(rbB->get_body_scale()));
 		scaled_BFrame.basis.rotref_posscale_decomposition(scaled_BFrame.basis);
 
 		btTransform btFrameB;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,19 +51,22 @@ class MobileVRInterface : public XRInterface {
 	GDCLASS(MobileVRInterface, XRInterface);
 
 private:
-	bool initialized;
+	bool initialized = false;
+	XRInterface::TrackingStatus tracking_state;
 	Basis orientation;
-	float eye_height;
-	uint64_t last_ticks;
 
-	real_t intraocular_dist;
-	real_t display_width;
-	real_t display_to_lens;
-	real_t oversample;
+	// Just set some defaults for these. At some point we need to look at adding a lookup table for common device + headset combos and/or support reading cardboard QR codes
+	float eye_height = 1.85;
+	uint64_t last_ticks = 0;
 
-	//@TODO not yet used, these are needed in our distortion shader...
-	real_t k1;
-	real_t k2;
+	real_t intraocular_dist = 6.0;
+	real_t display_width = 14.5;
+	real_t display_to_lens = 4.0;
+	real_t oversample = 1.5;
+
+	real_t k1 = 0.215;
+	real_t k2 = 0.215;
+	real_t aspect = 1.0;
 
 	/*
 		logic for processing our sensor data, this was originally in our positional tracker logic but I think
@@ -73,9 +76,9 @@ private:
 	Vector3 scale_magneto(const Vector3 &p_magnetometer);
 	Basis combine_acc_mag(const Vector3 &p_grav, const Vector3 &p_magneto);
 
-	int mag_count;
-	bool has_gyro;
-	bool sensor_first;
+	int mag_count = 0;
+	bool has_gyro = false;
+	bool sensor_first = false;
 	Vector3 last_accerometer_data;
 	Vector3 last_magnetometer_data;
 	Vector3 mag_current_min;
@@ -84,20 +87,20 @@ private:
 	Vector3 mag_next_max;
 
 	///@TODO a few support functions for trackers, most are math related and should likely be moved elsewhere
-	float floor_decimals(float p_value, float p_decimals) {
+	float floor_decimals(const float p_value, const float p_decimals) {
 		float power_of_10 = pow(10.0f, p_decimals);
 		return floor(p_value * power_of_10) / power_of_10;
 	};
 
-	Vector3 floor_decimals(const Vector3 &p_vector, float p_decimals) {
+	Vector3 floor_decimals(const Vector3 &p_vector, const float p_decimals) {
 		return Vector3(floor_decimals(p_vector.x, p_decimals), floor_decimals(p_vector.y, p_decimals), floor_decimals(p_vector.z, p_decimals));
 	};
 
-	Vector3 low_pass(const Vector3 &p_vector, const Vector3 &p_last_vector, float p_factor) {
+	Vector3 low_pass(const Vector3 &p_vector, const Vector3 &p_last_vector, const float p_factor) {
 		return p_vector + (p_factor * (p_last_vector - p_vector));
 	};
 
-	Vector3 scrub(const Vector3 &p_vector, const Vector3 &p_last_vector, float p_decimals, float p_factor) {
+	Vector3 scrub(const Vector3 &p_vector, const Vector3 &p_last_vector, const float p_decimals, const float p_factor) {
 		return low_pass(floor_decimals(p_vector, p_decimals), p_last_vector, p_factor);
 	};
 
@@ -128,21 +131,23 @@ public:
 	void set_k2(const real_t p_k2);
 	real_t get_k2() const;
 
-	virtual StringName get_name() const;
-	virtual int get_capabilities() const;
+	virtual StringName get_name() const override;
+	virtual uint32_t get_capabilities() const override;
 
-	virtual bool is_initialized() const;
-	virtual bool initialize();
-	virtual void uninitialize();
+	virtual TrackingStatus get_tracking_status() const override;
 
-	virtual Size2 get_render_targetsize();
-	virtual bool is_stereo();
-	virtual Transform get_transform_for_eye(XRInterface::Eyes p_eye, const Transform &p_cam_transform);
-	virtual CameraMatrix get_projection_for_eye(XRInterface::Eyes p_eye, real_t p_aspect, real_t p_z_near, real_t p_z_far);
-	virtual void commit_for_eye(XRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect);
+	virtual bool is_initialized() const override;
+	virtual bool initialize() override;
+	virtual void uninitialize() override;
 
-	virtual void process();
-	virtual void notification(int p_what) {}
+	virtual Size2 get_render_target_size() override;
+	virtual uint32_t get_view_count() override;
+	virtual Transform3D get_camera_transform() override;
+	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) override;
+	virtual CameraMatrix get_projection_for_view(uint32_t p_view, real_t p_aspect, real_t p_z_near, real_t p_z_far) override;
+	virtual Vector<BlitToScreen> commit_views(RID p_render_target, const Rect2 &p_screen_rect) override;
+
+	virtual void process() override;
 
 	MobileVRInterface();
 	~MobileVRInterface();

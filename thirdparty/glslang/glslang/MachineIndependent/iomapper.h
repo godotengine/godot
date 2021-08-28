@@ -33,7 +33,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef GLSLANG_WEB
+#if !defined(GLSLANG_WEB) && !defined(GLSLANG_ANGLE)
 
 #ifndef _IOMAPPER_INCLUDED
 #define _IOMAPPER_INCLUDED
@@ -129,6 +129,7 @@ public:
     uint32_t computeTypeLocationSize(const TType& type, EShLanguage stage);
 
     TSlotSetMap slots;
+    bool hasError = false;
 
 protected:
     TDefaultIoResolverBase(TDefaultIoResolverBase&);
@@ -185,7 +186,7 @@ protected:
     }
 };
 
-// Defaulf I/O resolver for OpenGL
+// Default I/O resolver for OpenGL
 struct TDefaultGlslIoResolver : public TDefaultIoResolverBase {
 public:
     typedef std::map<TString, int> TVarSlotMap;  // <resourceName, location/binding>
@@ -237,12 +238,13 @@ typedef std::map<TString, TVarEntryInfo> TVarLiveMap;
 // In the future, if the vc++ compiler can handle such a situation,
 // this part of the code will be removed.
 struct TVarLivePair : std::pair<const TString, TVarEntryInfo> {
-    TVarLivePair(std::pair<const TString, TVarEntryInfo>& _Right) : pair(_Right.first, _Right.second) {}
+    TVarLivePair(const std::pair<const TString, TVarEntryInfo>& _Right) : pair(_Right.first, _Right.second) {}
     TVarLivePair& operator=(const TVarLivePair& _Right) {
         const_cast<TString&>(first) = _Right.first;
         second = _Right.second;
         return (*this);
     }
+    TVarLivePair(const TVarLivePair& src) : pair(src) { }
 };
 typedef std::vector<TVarLivePair> TVarLiveVector;
 
@@ -264,6 +266,8 @@ public:
         memset(outVarMaps,    0, sizeof(TVarLiveMap*)   * (EShLangCount + 1));
         memset(uniformVarMap, 0, sizeof(TVarLiveMap*)   * (EShLangCount + 1));
         memset(intermediates, 0, sizeof(TIntermediate*) * (EShLangCount + 1));
+        profile = ENoProfile;
+        version = 0;
     }
     virtual ~TGlslIoMapper() {
         for (size_t stage = 0; stage < EShLangCount; stage++) {
@@ -290,10 +294,12 @@ public:
                 *uniformVarMap[EShLangCount];
     TIntermediate* intermediates[EShLangCount];
     bool hadError = false;
+    EProfile profile;
+    int version;
 };
 
 } // end namespace glslang
 
 #endif // _IOMAPPER_INCLUDED
 
-#endif //  GLSLANG_WEB
+#endif // !GLSLANG_WEB && !GLSLANG_ANGLE

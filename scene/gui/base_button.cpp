@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,7 +52,9 @@ void BaseButton::_unpress_group() {
 	}
 }
 
-void BaseButton::_gui_input(Ref<InputEvent> p_event) {
+void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	if (status.disabled) { // no interaction with disabled button
 		return;
 	}
@@ -60,7 +62,7 @@ void BaseButton::_gui_input(Ref<InputEvent> p_event) {
 	Ref<InputEventMouseButton> mouse_button = p_event;
 	bool ui_accept = p_event->is_action("ui_accept") && !p_event->is_echo();
 
-	bool button_masked = mouse_button.is_valid() && ((1 << (mouse_button->get_button_index() - 1)) & button_mask) > 0;
+	bool button_masked = mouse_button.is_valid() && ((1 << (mouse_button->get_button_index() - 1)) & button_mask) != 0;
 	if (button_masked || ui_accept) {
 		on_action_event(p_event);
 		return;
@@ -96,17 +98,14 @@ void BaseButton::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_FOCUS_ENTER) {
-		status.hovering = true;
 		update();
 	}
 
 	if (p_what == NOTIFICATION_FOCUS_EXIT) {
 		if (status.press_attempt) {
 			status.press_attempt = false;
-			status.hovering = false;
 			update();
 		} else if (status.hovering) {
-			status.hovering = false;
 			update();
 		}
 	}
@@ -122,37 +121,40 @@ void BaseButton::_notification(int p_what) {
 }
 
 void BaseButton::_pressed() {
-	if (get_script_instance()) {
-		get_script_instance()->call(SceneStringNames::get_singleton()->_pressed);
-	}
+	GDVIRTUAL_CALL(_pressed);
 	pressed();
-	emit_signal("pressed");
+	emit_signal(SNAME("pressed"));
 }
 
 void BaseButton::_toggled(bool p_pressed) {
-	if (get_script_instance()) {
-		get_script_instance()->call(SceneStringNames::get_singleton()->_toggled, p_pressed);
-	}
+	GDVIRTUAL_CALL(_toggled, p_pressed);
 	toggled(p_pressed);
-	emit_signal("toggled", p_pressed);
+	emit_signal(SNAME("toggled"), p_pressed);
 }
 
 void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 	if (p_event->is_pressed()) {
 		status.press_attempt = true;
 		status.pressing_inside = true;
-		emit_signal("button_down");
+		emit_signal(SNAME("button_down"));
 	}
 
 	if (status.press_attempt && status.pressing_inside) {
 		if (toggle_mode) {
-			if ((p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_PRESS) || (!p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
+			bool is_pressed = p_event->is_pressed();
+			if (Object::cast_to<InputEventShortcut>(*p_event)) {
+				is_pressed = false;
+			}
+			if ((is_pressed && action_mode == ACTION_MODE_BUTTON_PRESS) || (!is_pressed && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
 				if (action_mode == ACTION_MODE_BUTTON_PRESS) {
 					status.press_attempt = false;
 					status.pressing_inside = false;
 				}
 				status.pressed = !status.pressed;
 				_unpress_group();
+				if (button_group.is_valid()) {
+					button_group->emit_signal(SNAME("pressed"), this);
+				}
 				_toggled(status.pressed);
 				_pressed();
 			}
@@ -170,10 +172,9 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 				status.hovering = false;
 			}
 		}
-		// pressed state should be correct with button_up signal
-		emit_signal("button_up");
 		status.press_attempt = false;
 		status.pressing_inside = false;
+		emit_signal(SNAME("button_up"));
 	}
 
 	update();
@@ -199,7 +200,6 @@ void BaseButton::set_disabled(bool p_disabled) {
 		status.pressing_inside = false;
 	}
 	update();
-	_change_notify("disabled");
 }
 
 bool BaseButton::is_disabled() const {
@@ -213,13 +213,27 @@ void BaseButton::set_pressed(bool p_pressed) {
 	if (status.pressed == p_pressed) {
 		return;
 	}
-	_change_notify("pressed");
 	status.pressed = p_pressed;
 
 	if (p_pressed) {
 		_unpress_group();
+		if (button_group.is_valid()) {
+			button_group->emit_signal(SNAME("pressed"), this);
+		}
 	}
 	_toggled(status.pressed);
+
+	update();
+}
+
+void BaseButton::set_pressed_no_signal(bool p_pressed) {
+	if (!toggle_mode) {
+		return;
+	}
+	if (status.pressed == p_pressed) {
+		return;
+	}
+	status.pressed = p_pressed;
 
 	update();
 }
@@ -271,6 +285,11 @@ BaseButton::DrawMode BaseButton::get_draw_mode() const {
 }
 
 void BaseButton::set_toggle_mode(bool p_on) {
+	// Make sure to set 'pressed' to false if we are not in toggle mode
+	if (!p_on) {
+		set_pressed(false);
+	}
+
 	toggle_mode = p_on;
 }
 
@@ -302,17 +321,6 @@ int BaseButton::get_button_mask() const {
 	return button_mask;
 }
 
-void BaseButton::set_enabled_focus_mode(FocusMode p_mode) {
-	enabled_focus_mode = p_mode;
-	if (!status.disabled) {
-		set_focus_mode(p_mode);
-	}
-}
-
-Control::FocusMode BaseButton::get_enabled_focus_mode() const {
-	return enabled_focus_mode;
-}
-
 void BaseButton::set_keep_pressed_outside(bool p_on) {
 	keep_pressed_outside = p_on;
 }
@@ -321,26 +329,33 @@ bool BaseButton::is_keep_pressed_outside() const {
 	return keep_pressed_outside;
 }
 
-void BaseButton::set_shortcut(const Ref<ShortCut> &p_shortcut) {
+void BaseButton::set_shortcut(const Ref<Shortcut> &p_shortcut) {
 	shortcut = p_shortcut;
-	set_process_unhandled_input(shortcut.is_valid());
+	set_process_unhandled_key_input(shortcut.is_valid());
 }
 
-Ref<ShortCut> BaseButton::get_shortcut() const {
+Ref<Shortcut> BaseButton::get_shortcut() const {
 	return shortcut;
 }
 
-void BaseButton::_unhandled_input(Ref<InputEvent> p_event) {
-	if (!is_disabled() && is_visible_in_tree() && !p_event->is_echo() && shortcut.is_valid() && shortcut->is_shortcut(p_event)) {
+void BaseButton::unhandled_key_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
+	if (!_is_focus_owner_in_shorcut_context()) {
+		return;
+	}
+
+	if (!is_disabled() && is_visible_in_tree() && !p_event->is_echo() && shortcut.is_valid() && shortcut->matches_event(p_event)) {
 		on_action_event(p_event);
+		accept_event();
 	}
 }
 
 String BaseButton::get_tooltip(const Point2 &p_pos) const {
 	String tooltip = Control::get_tooltip(p_pos);
-	if (shortcut_in_tooltip && shortcut.is_valid() && shortcut->is_valid()) {
+	if (shortcut_in_tooltip && shortcut.is_valid() && shortcut->has_valid_event()) {
 		String text = shortcut->get_name() + " (" + shortcut->get_as_text() + ")";
-		if (shortcut->get_name().nocasecmp_to(tooltip) != 0) {
+		if (tooltip != String() && shortcut->get_name().nocasecmp_to(tooltip) != 0) {
 			text += "\n" + tooltip;
 		}
 		tooltip = text;
@@ -366,11 +381,35 @@ Ref<ButtonGroup> BaseButton::get_button_group() const {
 	return button_group;
 }
 
+void BaseButton::set_shortcut_context(Node *p_node) {
+	ERR_FAIL_NULL_MSG(p_node, "Shortcut context node can't be null.");
+	shortcut_context = p_node->get_instance_id();
+}
+
+Node *BaseButton::get_shortcut_context() const {
+	Object *ctx_obj = ObjectDB::get_instance(shortcut_context);
+	Node *ctx_node = Object::cast_to<Node>(ctx_obj);
+
+	return ctx_node;
+}
+
+bool BaseButton::_is_focus_owner_in_shorcut_context() const {
+	if (shortcut_context == ObjectID()) {
+		// No context, therefore global - always "in" context.
+		return true;
+	}
+
+	Node *ctx_node = get_shortcut_context();
+	Control *vp_focus = get_focus_owner();
+
+	// If the context is valid and the viewport focus is valid, check if the context is the focus or is a parent of it.
+	return ctx_node && vp_focus && (ctx_node == vp_focus || ctx_node->is_ancestor_of(vp_focus));
+}
+
 void BaseButton::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &BaseButton::_gui_input);
-	ClassDB::bind_method(D_METHOD("_unhandled_input"), &BaseButton::_unhandled_input);
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &BaseButton::set_pressed);
 	ClassDB::bind_method(D_METHOD("is_pressed"), &BaseButton::is_pressed);
+	ClassDB::bind_method(D_METHOD("set_pressed_no_signal", "pressed"), &BaseButton::set_pressed_no_signal);
 	ClassDB::bind_method(D_METHOD("is_hovered"), &BaseButton::is_hovered);
 	ClassDB::bind_method(D_METHOD("set_toggle_mode", "enabled"), &BaseButton::set_toggle_mode);
 	ClassDB::bind_method(D_METHOD("is_toggle_mode"), &BaseButton::is_toggle_mode);
@@ -383,8 +422,6 @@ void BaseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_button_mask", "mask"), &BaseButton::set_button_mask);
 	ClassDB::bind_method(D_METHOD("get_button_mask"), &BaseButton::get_button_mask);
 	ClassDB::bind_method(D_METHOD("get_draw_mode"), &BaseButton::get_draw_mode);
-	ClassDB::bind_method(D_METHOD("set_enabled_focus_mode", "mode"), &BaseButton::set_enabled_focus_mode);
-	ClassDB::bind_method(D_METHOD("get_enabled_focus_mode"), &BaseButton::get_enabled_focus_mode);
 	ClassDB::bind_method(D_METHOD("set_keep_pressed_outside", "enabled"), &BaseButton::set_keep_pressed_outside);
 	ClassDB::bind_method(D_METHOD("is_keep_pressed_outside"), &BaseButton::is_keep_pressed_outside);
 
@@ -394,8 +431,11 @@ void BaseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_button_group", "button_group"), &BaseButton::set_button_group);
 	ClassDB::bind_method(D_METHOD("get_button_group"), &BaseButton::get_button_group);
 
-	BIND_VMETHOD(MethodInfo("_pressed"));
-	BIND_VMETHOD(MethodInfo("_toggled", PropertyInfo(Variant::BOOL, "button_pressed")));
+	ClassDB::bind_method(D_METHOD("set_shortcut_context", "node"), &BaseButton::set_shortcut_context);
+	ClassDB::bind_method(D_METHOD("get_shortcut_context"), &BaseButton::get_shortcut_context);
+
+	GDVIRTUAL_BIND(_pressed);
+	GDVIRTUAL_BIND(_toggled, "button_pressed");
 
 	ADD_SIGNAL(MethodInfo("pressed"));
 	ADD_SIGNAL(MethodInfo("button_up"));
@@ -407,10 +447,10 @@ void BaseButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "action_mode", PROPERTY_HINT_ENUM, "Button Press,Button Release"), "set_action_mode", "get_action_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_mask", PROPERTY_HINT_FLAGS, "Mouse Left, Mouse Right, Mouse Middle"), "set_button_mask", "get_button_mask");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "enabled_focus_mode", PROPERTY_HINT_ENUM, "None,Click,All"), "set_enabled_focus_mode", "get_enabled_focus_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_pressed_outside"), "set_keep_pressed_outside", "is_keep_pressed_outside");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, "ShortCut"), "set_shortcut", "get_shortcut");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "group", PROPERTY_HINT_RESOURCE_TYPE, "ButtonGroup"), "set_button_group", "get_button_group");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, "Shortcut"), "set_shortcut", "get_shortcut");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "button_group", PROPERTY_HINT_RESOURCE_TYPE, "ButtonGroup"), "set_button_group", "get_button_group");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut_context", PROPERTY_HINT_RESOURCE_TYPE, "Node"), "set_shortcut_context", "get_shortcut_context");
 
 	BIND_ENUM_CONSTANT(DRAW_NORMAL);
 	BIND_ENUM_CONSTANT(DRAW_PRESSED);
@@ -423,18 +463,7 @@ void BaseButton::_bind_methods() {
 }
 
 BaseButton::BaseButton() {
-	toggle_mode = false;
-	shortcut_in_tooltip = true;
-	keep_pressed_outside = false;
-	status.pressed = false;
-	status.press_attempt = false;
-	status.hovering = false;
-	status.pressing_inside = false;
-	status.disabled = false;
 	set_focus_mode(FOCUS_ALL);
-	enabled_focus_mode = FOCUS_ALL;
-	action_mode = ACTION_MODE_BUTTON_RELEASE;
-	button_mask = BUTTON_MASK_LEFT;
 }
 
 BaseButton::~BaseButton() {
@@ -471,6 +500,7 @@ BaseButton *ButtonGroup::get_pressed_button() {
 void ButtonGroup::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pressed_button"), &ButtonGroup::get_pressed_button);
 	ClassDB::bind_method(D_METHOD("get_buttons"), &ButtonGroup::_get_buttons);
+	ADD_SIGNAL(MethodInfo("pressed", PropertyInfo(Variant::OBJECT, "button")));
 }
 
 ButtonGroup::ButtonGroup() {

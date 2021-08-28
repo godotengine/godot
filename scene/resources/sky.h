@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,14 +51,16 @@ public:
 	};
 
 	enum ProcessMode {
+		PROCESS_MODE_AUTOMATIC,
 		PROCESS_MODE_QUALITY,
+		PROCESS_MODE_INCREMENTAL,
 		PROCESS_MODE_REALTIME
 	};
 
 private:
 	RID sky;
-	ProcessMode mode;
-	RadianceSize radiance_size;
+	ProcessMode mode = PROCESS_MODE_AUTOMATIC;
+	RadianceSize radiance_size = RADIANCE_SIZE_256;
 	Ref<Material> sky_material;
 
 protected:
@@ -74,7 +76,7 @@ public:
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
 
-	virtual RID get_rid() const;
+	virtual RID get_rid() const override;
 
 	Sky();
 	~Sky();

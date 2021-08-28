@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,14 +31,13 @@
 #ifndef CONSTRAINT_SW_H
 #define CONSTRAINT_SW_H
 
-#include "body_3d_sw.h"
+class Body3DSW;
+class SoftBody3DSW;
 
 class Constraint3DSW {
 	Body3DSW **_body_ptr;
 	int _body_count;
 	uint64_t island_step;
-	Constraint3DSW *island_next;
-	Constraint3DSW *island_list_next;
 	int priority;
 	bool disabled_collisions_between_bodies;
 
@@ -60,14 +59,11 @@ public:
 	_FORCE_INLINE_ uint64_t get_island_step() const { return island_step; }
 	_FORCE_INLINE_ void set_island_step(uint64_t p_step) { island_step = p_step; }
 
-	_FORCE_INLINE_ Constraint3DSW *get_island_next() const { return island_next; }
-	_FORCE_INLINE_ void set_island_next(Constraint3DSW *p_next) { island_next = p_next; }
-
-	_FORCE_INLINE_ Constraint3DSW *get_island_list_next() const { return island_list_next; }
-	_FORCE_INLINE_ void set_island_list_next(Constraint3DSW *p_next) { island_list_next = p_next; }
-
 	_FORCE_INLINE_ Body3DSW **get_body_ptr() const { return _body_ptr; }
 	_FORCE_INLINE_ int get_body_count() const { return _body_count; }
+
+	virtual SoftBody3DSW *get_soft_body_ptr(int p_index) const { return nullptr; }
+	virtual int get_soft_body_count() const { return 0; }
 
 	_FORCE_INLINE_ void set_priority(int p_priority) { priority = p_priority; }
 	_FORCE_INLINE_ int get_priority() const { return priority; }
@@ -76,6 +72,7 @@ public:
 	_FORCE_INLINE_ bool is_disabled_collisions_between_bodies() const { return disabled_collisions_between_bodies; }
 
 	virtual bool setup(real_t p_step) = 0;
+	virtual bool pre_solve(real_t p_step) = 0;
 	virtual void solve(real_t p_step) = 0;
 
 	virtual ~Constraint3DSW() {}

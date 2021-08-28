@@ -19,8 +19,7 @@
 #ifndef PFRTYPES_H_
 #define PFRTYPES_H_
 
-#include <ft2build.h>
-#include FT_INTERNAL_OBJECTS_H
+#include <freetype/internal/ftobjs.h>
 
 FT_BEGIN_HEADER
 

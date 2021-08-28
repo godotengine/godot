@@ -267,7 +267,7 @@ public:
         std::sort(tuples.begin(), tuples.end());
         btAlignedObjectArray<int> new_indices;
         btAlignedObjectArray<btVector3> new_vecs;
-        for (int i = 0; i < tuples.size(); ++i)
+        for (size_t i = 0; i < tuples.size(); ++i)
         {
             new_indices.push_back(tuples[i].b);
             new_vecs.push_back(m_vecs[tuples[i].a]);

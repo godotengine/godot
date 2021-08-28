@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,11 +40,11 @@ Array DebuggerMarshalls::ResourceUsage::serialize() {
 
 	Array arr;
 	arr.push_back(infos.size() * 4);
-	for (List<ResourceInfo>::Element *E = infos.front(); E; E = E->next()) {
-		arr.push_back(E->get().path);
-		arr.push_back(E->get().format);
-		arr.push_back(E->get().type);
-		arr.push_back(E->get().vram);
+	for (const ResourceInfo &E : infos) {
+		arr.push_back(E.path);
+		arr.push_back(E.format);
+		arr.push_back(E.type);
+		arr.push_back(E.vram);
 	}
 	return arr;
 }
@@ -171,7 +171,7 @@ bool DebuggerMarshalls::ServersProfilerFrame::deserialize(const Array &p_arr) {
 		}
 		servers.push_back(si);
 	}
-	CHECK_SIZE(p_arr, idx + 3, "ServersProfilerFrame");
+	CHECK_SIZE(p_arr, idx + 1, "ServersProfilerFrame");
 	int func_size = p_arr[idx];
 	idx += 1;
 	CHECK_SIZE(p_arr, idx + func_size, "ServersProfilerFrame");

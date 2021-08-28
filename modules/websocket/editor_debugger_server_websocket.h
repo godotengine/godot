@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,12 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SCRIPT_EDITOR_DEBUGGER_WEBSOCKET_H
-#define SCRIPT_EDITOR_DEBUGGER_WEBSOCKET_H
-
-#include "modules/websocket/websocket_server.h"
+#ifndef EDITOR_DEBUGGER_SERVER_WEBSOCKET_H
+#define EDITOR_DEBUGGER_SERVER_WEBSOCKET_H
 
 #include "editor/debugger/editor_debugger_server.h"
+#include "modules/websocket/websocket_server.h"
 
 class EditorDebuggerServerWebSocket : public EditorDebuggerServer {
 	GDCLASS(EditorDebuggerServerWebSocket, EditorDebuggerServer);
@@ -48,15 +47,15 @@ public:
 	void _peer_connected(int p_peer, String p_protocol);
 	void _peer_disconnected(int p_peer, bool p_was_clean);
 
-	void poll();
-	Error start();
-	void stop();
-	bool is_active() const;
-	bool is_connection_available() const;
-	Ref<RemoteDebuggerPeer> take_connection();
+	void poll() override;
+	Error start() override;
+	void stop() override;
+	bool is_active() const override;
+	bool is_connection_available() const override;
+	Ref<RemoteDebuggerPeer> take_connection() override;
 
 	EditorDebuggerServerWebSocket();
 	~EditorDebuggerServerWebSocket();
 };
 
-#endif // SCRIPT_EDITOR_DEBUGGER_WEBSOCKET_H
+#endif // EDITOR_DEBUGGER_SERVER_WEBSOCKET_H

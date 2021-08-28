@@ -1,8 +1,14 @@
 /*
  *  Elliptic curve DSA
  *
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  Copyright The Mbed TLS Contributors
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -16,7 +22,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  This file is part of mbed TLS (https://tls.mbed.org)
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  */
 
 /*
@@ -222,6 +247,9 @@ static void ecdsa_restart_det_free( mbedtls_ecdsa_restart_det_ctx *ctx )
 
 #endif /* MBEDTLS_ECP_RESTARTABLE */
 
+#if defined(MBEDTLS_ECDSA_DETERMINISTIC) || \
+    !defined(MBEDTLS_ECDSA_SIGN_ALT)     || \
+    !defined(MBEDTLS_ECDSA_VERIFY_ALT)
 /*
  * Derive a suitable integer for group grp from a buffer of length len
  * SEC1 4.1.3 step 5 aka SEC1 4.1.4 step 3
@@ -244,6 +272,7 @@ static int derive_mpi( const mbedtls_ecp_group *grp, mbedtls_mpi *x,
 cleanup:
     return( ret );
 }
+#endif /* ECDSA_DETERMINISTIC || !ECDSA_SIGN_ALT || !ECDSA_VERIFY_ALT */
 
 #if !defined(MBEDTLS_ECDSA_SIGN_ALT)
 /*
@@ -755,6 +784,8 @@ int mbedtls_ecdsa_write_signature_restartable( mbedtls_ecdsa_context *ctx,
     (void) md_alg;
 
 #if defined(MBEDTLS_ECDSA_SIGN_ALT)
+    (void) rs_ctx;
+
     MBEDTLS_MPI_CHK( mbedtls_ecdsa_sign( &ctx->grp, &r, &s, &ctx->d,
                          hash, hlen, f_rng, p_rng ) );
 #else
@@ -863,6 +894,8 @@ int mbedtls_ecdsa_read_signature_restartable( mbedtls_ecdsa_context *ctx,
         goto cleanup;
     }
 #if defined(MBEDTLS_ECDSA_VERIFY_ALT)
+    (void) rs_ctx;
+
     if( ( ret = mbedtls_ecdsa_verify( &ctx->grp, hash, hlen,
                                       &ctx->Q, &r, &s ) ) != 0 )
         goto cleanup;

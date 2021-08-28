@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -135,7 +135,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 						//process include
 						String include = line.replace("#include", "").strip_edges();
 						if (!include.begins_with("\"") || !include.ends_with("\"")) {
-							base_error = "Malformed #include syntax, expected #include \"<path>\", found instad: " + include;
+							base_error = "Malformed #include syntax, expected #include \"<path>\", found instead: " + include;
 							break;
 						}
 						include = include.substr(1, include.length() - 2).strip_edges();
@@ -156,14 +156,14 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 	}
 
 	Ref<RDShaderFile> shader_file;
-	shader_file.instance();
+	shader_file.instantiate();
 
 	if (base_error == "") {
 		if (stage_found[RD::SHADER_STAGE_COMPUTE] && stages_found > 1) {
 			ERR_FAIL_V_MSG(ERR_PARSE_ERROR, "When writing compute shaders, [compute] mustbe the only stage present.");
 		}
 
-		if (version_texts.empty()) {
+		if (version_texts.is_empty()) {
 			version_texts[""] = ""; //make sure a default version exists
 		}
 
@@ -172,8 +172,8 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 		/* STEP 2, Compile the versions, add to shader file */
 
 		for (Map<StringName, String>::Element *E = version_texts.front(); E; E = E->next()) {
-			Ref<RDShaderBytecode> bytecode;
-			bytecode.instance();
+			Ref<RDShaderSPIRV> bytecode;
+			bytecode.instantiate();
 
 			for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
 				String code = stage_code[i];
@@ -182,7 +182,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 				}
 				code = code.replace("VERSION_DEFINES", E->get());
 				String error;
-				Vector<uint8_t> spirv = RenderingDevice::get_singleton()->shader_compile_from_source(RD::ShaderStage(i), code, RD::SHADER_LANGUAGE_GLSL, &error, false);
+				Vector<uint8_t> spirv = RenderingDevice::get_singleton()->shader_compile_spirv_from_source(RD::ShaderStage(i), code, RD::SHADER_LANGUAGE_GLSL, &error, false);
 				bytecode->set_stage_bytecode(RD::ShaderStage(i), spirv);
 				if (error != "") {
 					error += String() + "\n\nStage '" + stage_str[i] + "' source code: \n\n";

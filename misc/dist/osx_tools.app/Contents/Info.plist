@@ -9,7 +9,7 @@
 	<key>CFBundleName</key>
 	<string>Godot</string>
 	<key>CFBundleGetInfoString</key>
-	<string>(c) 2007-2020 Juan Linietsky, Ariel Manzur &amp; Godot Engine contributors</string>
+	<string>(c) 2007-2021 Juan Linietsky, Ariel Manzur &amp; Godot Engine contributors</string>
 	<key>CFBundleIconFile</key>
 	<string>Godot.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -31,13 +31,15 @@
 	<key>NSRequiresAquaSystemAppearance</key>
 	<false/>
 	<key>NSHumanReadableCopyright</key>
-	<string>© 2007-2020 Juan Linietsky, Ariel Manzur &amp; Godot Engine contributors</string>
+	<string>© 2007-2021 Juan Linietsky, Ariel Manzur &amp; Godot Engine contributors</string>
 	<key>CFBundleSupportedPlatforms</key>
 	<array>
 		<string>MacOSX</string>
 	</array>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.developer-tools</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.12</string>
 	<key>LSMinimumSystemVersionByArchitecture</key>
@@ -111,7 +113,7 @@
 			<string>GDScript.icns</string>
 			<key>UTTypeConformsTo</key>
 			<array>
-				<string>public.data</string>
+				<string>public.script</string>
 			</array>
 			<key>UTTypeTagSpecification</key>
 			<dict>

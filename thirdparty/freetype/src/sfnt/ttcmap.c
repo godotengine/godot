@@ -16,14 +16,13 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
+#include <freetype/internal/ftdebug.h>
 
-#include "sferrors.h"           /* must come before FT_INTERNAL_VALIDATE_H */
+#include "sferrors.h"                      /* must come before `ftvalid.h' */
 
-#include FT_INTERNAL_VALIDATE_H
-#include FT_INTERNAL_STREAM_H
-#include FT_SERVICE_POSTSCRIPT_CMAPS_H
+#include <freetype/internal/ftvalid.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/services/svpscmap.h>
 #include "ttload.h"
 #include "ttcmap.h"
 #include "ttpost.h"
@@ -3752,6 +3751,7 @@
 
   static const TT_CMap_Class  tt_cmap_classes[] =
   {
+#undef  TTCMAPCITEM
 #define TTCMAPCITEM( a )  &a,
 #include "ttcmapc.h"
     NULL,
@@ -3788,8 +3788,9 @@
     p += 2;
 
     num_cmaps = TT_NEXT_USHORT( p );
-    limit     = table + face->cmap_size;
+    FT_TRACE4(( "tt_face_build_cmaps: %d cmaps\n", num_cmaps ));
 
+    limit = table + face->cmap_size;
     for ( ; num_cmaps > 0 && p + 8 <= limit; num_cmaps-- )
     {
       FT_CharMapRec  charmap;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@ Adapted to Godot from the Bullet library.
 
 /*
 Bullet Continuous Collision Detection and Physics Library
-Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+Copyright (c) 2003-2006 Erwin Coumans  https://bulletphysics.org
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
@@ -81,7 +81,7 @@ public:
 
 	//! temp_variables
 	//!@{
-	real_t m_currentLimitError; //!  How much is violated this limit
+	real_t m_currentLimitError; //!< How much is violated this limit
 	int m_currentLimit; //!< 0=free, 1=at lo limit, 2=at hi limit
 	real_t m_accumulatedImpulse;
 	//!@}
@@ -103,19 +103,6 @@ public:
 		m_enableLimit = false;
 	}
 
-	G6DOFRotationalLimitMotor3DSW(const G6DOFRotationalLimitMotor3DSW &limot) {
-		m_targetVelocity = limot.m_targetVelocity;
-		m_maxMotorForce = limot.m_maxMotorForce;
-		m_limitSoftness = limot.m_limitSoftness;
-		m_loLimit = limot.m_loLimit;
-		m_hiLimit = limot.m_hiLimit;
-		m_ERP = limot.m_ERP;
-		m_bounce = limot.m_bounce;
-		m_currentLimit = limot.m_currentLimit;
-		m_currentLimitError = limot.m_currentLimitError;
-		m_enableMotor = limot.m_enableMotor;
-	}
-
 	//! Is limited
 	bool isLimited() {
 		return (m_loLimit < m_hiLimit);
@@ -126,14 +113,14 @@ public:
 		return (m_enableMotor || m_currentLimit != 0);
 	}
 
-	//! calculates  error
+	//! calculates error
 	/*!
 	calculates m_currentLimit and m_currentLimitError.
 	*/
 	int testLimitValue(real_t test_value);
 
 	//! apply the correction impulses for two bodies
-	real_t solveAngularLimits(real_t timeStep, Vector3 &axis, real_t jacDiagABInv, Body3DSW *body0, Body3DSW *body1);
+	real_t solveAngularLimits(real_t timeStep, Vector3 &axis, real_t jacDiagABInv, Body3DSW *body0, Body3DSW *body1, bool p_body0_dynamic, bool p_body1_dynamic);
 };
 
 class G6DOFTranslationalLimitMotor3DSW {
@@ -163,16 +150,6 @@ public:
 		enable_limit[2] = true;
 	}
 
-	G6DOFTranslationalLimitMotor3DSW(const G6DOFTranslationalLimitMotor3DSW &other) {
-		m_lowerLimit = other.m_lowerLimit;
-		m_upperLimit = other.m_upperLimit;
-		m_accumulatedImpulse = other.m_accumulatedImpulse;
-
-		m_limitSoftness = other.m_limitSoftness;
-		m_damping = other.m_damping;
-		m_restitution = other.m_restitution;
-	}
-
 	//! Test limit
 	/*!
     - free means upper < lower,
@@ -189,6 +166,7 @@ public:
 			real_t jacDiagABInv,
 			Body3DSW *body1, const Vector3 &pointInA,
 			Body3DSW *body2, const Vector3 &pointInB,
+			bool p_body1_dynamic, bool p_body2_dynamic,
 			int limit_index,
 			const Vector3 &axis_normal_on_a,
 			const Vector3 &anchorPos);
@@ -207,8 +185,8 @@ protected:
 
 	//! relative_frames
 	//!@{
-	Transform m_frameInA; //!< the constraint space w.r.t body A
-	Transform m_frameInB; //!< the constraint space w.r.t body B
+	Transform3D m_frameInA; //!< the constraint space w.r.t body A
+	Transform3D m_frameInB; //!< the constraint space w.r.t body B
 	//!@}
 
 	//! Jacobians
@@ -231,8 +209,8 @@ protected:
 	//! temporal variables
 	//!@{
 	real_t m_timeStep;
-	Transform m_calculatedTransformA;
-	Transform m_calculatedTransformB;
+	Transform3D m_calculatedTransformA;
+	Transform3D m_calculatedTransformB;
 	Vector3 m_calculatedAxisAngleDiff;
 	Vector3 m_calculatedAxis[3];
 
@@ -242,11 +220,8 @@ protected:
 
 	//!@}
 
-	Generic6DOFJoint3DSW &operator=(Generic6DOFJoint3DSW &other) {
-		ERR_PRINT("pito");
-		(void)other;
-		return *this;
-	}
+	Generic6DOFJoint3DSW(Generic6DOFJoint3DSW const &) = delete;
+	void operator=(Generic6DOFJoint3DSW const &) = delete;
 
 	void buildLinearJacobian(
 			JacobianEntry3DSW &jacLinear, const Vector3 &normalWorld,
@@ -258,12 +233,12 @@ protected:
 	void calculateAngleInfo();
 
 public:
-	Generic6DOFJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform &frameInA, const Transform &frameInB, bool useLinearReferenceFrameA);
+	Generic6DOFJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform3D &frameInA, const Transform3D &frameInB, bool useLinearReferenceFrameA);
 
-	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_6DOF; }
+	virtual PhysicsServer3D::JointType get_type() const override { return PhysicsServer3D::JOINT_TYPE_6DOF; }
 
-	virtual bool setup(real_t p_timestep);
-	virtual void solve(real_t p_timestep);
+	virtual bool setup(real_t p_step) override;
+	virtual void solve(real_t p_step) override;
 
 	//! Calcs global transform of the offsets
 	/*!
@@ -276,7 +251,7 @@ public:
 	/*!
     \sa Generic6DOFJointSW.getFrameOffsetA, Generic6DOFJointSW.getFrameOffsetB, Generic6DOFJointSW.calculateAngleInfo.
     */
-	const Transform &getCalculatedTransformA() const {
+	const Transform3D &getCalculatedTransformA() const {
 		return m_calculatedTransformA;
 	}
 
@@ -284,23 +259,23 @@ public:
 	/*!
     \sa Generic6DOFJointSW.getFrameOffsetA, Generic6DOFJointSW.getFrameOffsetB, Generic6DOFJointSW.calculateAngleInfo.
     */
-	const Transform &getCalculatedTransformB() const {
+	const Transform3D &getCalculatedTransformB() const {
 		return m_calculatedTransformB;
 	}
 
-	const Transform &getFrameOffsetA() const {
+	const Transform3D &getFrameOffsetA() const {
 		return m_frameInA;
 	}
 
-	const Transform &getFrameOffsetB() const {
+	const Transform3D &getFrameOffsetB() const {
 		return m_frameInB;
 	}
 
-	Transform &getFrameOffsetA() {
+	Transform3D &getFrameOffsetA() {
 		return m_frameInA;
 	}
 
-	Transform &getFrameOffsetB() {
+	Transform3D &getFrameOffsetB() {
 		return m_frameInB;
 	}
 
@@ -347,12 +322,12 @@ public:
 		m_angularLimits[2].m_hiLimit = angularUpper.z;
 	}
 
-	//! Retrieves the angular limit informacion
+	//! Retrieves the angular limit information.
 	G6DOFRotationalLimitMotor3DSW *getRotationalLimitMotor(int index) {
 		return &m_angularLimits[index];
 	}
 
-	//! Retrieves the  limit informacion
+	//! Retrieves the limit information.
 	G6DOFTranslationalLimitMotor3DSW *getTranslationalLimitMotor() {
 		return &m_linearLimits;
 	}

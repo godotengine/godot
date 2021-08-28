@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -91,17 +91,15 @@ public:
 	~NavigationPolygon() {}
 };
 
-class Navigation2D;
-
 class NavigationRegion2D : public Node2D {
 	GDCLASS(NavigationRegion2D, Node2D);
 
 	bool enabled = true;
 	RID region;
-	Navigation2D *navigation = nullptr;
 	Ref<NavigationPolygon> navpoly;
 
 	void _navpoly_changed();
+	void _map_changed(RID p_RID);
 
 protected:
 	void _notification(int p_what);
@@ -109,17 +107,20 @@ protected:
 
 public:
 #ifdef TOOLS_ENABLED
-	virtual Rect2 _edit_get_rect() const;
-	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+	virtual Rect2 _edit_get_rect() const override;
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
 #endif
 
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
 
+	void set_layers(uint32_t p_layers);
+	uint32_t get_layers() const;
+
 	void set_navigation_polygon(const Ref<NavigationPolygon> &p_navpoly);
 	Ref<NavigationPolygon> get_navigation_polygon() const;
 
-	String get_configuration_warning() const;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	NavigationRegion2D();
 	~NavigationRegion2D();

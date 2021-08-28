@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,11 @@
 
 #include "logger.h"
 
-#include "core/os/dir_access.h"
+#include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
 #include "core/os/os.h"
-#include "core/print_string.h"
+#include "core/os/time.h"
+#include "core/string/print_string.h"
 
 #if defined(MINGW_ENABLED) || defined(_MSC_VER)
 #define sprintf sprintf_s
@@ -40,6 +42,12 @@
 
 bool Logger::should_log(bool p_err) {
 	return (!p_err || _print_error_enabled) && (p_err || _print_line_enabled);
+}
+
+bool Logger::_flush_stdout_on_print = true;
+
+void Logger::set_flush_stdout_on_print(bool value) {
+	_flush_stdout_on_print = value;
 }
 
 void Logger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type) {
@@ -149,11 +157,7 @@ void RotatedFileLogger::rotate_file() {
 
 	if (FileAccess::exists(base_path)) {
 		if (max_files > 1) {
-			char timestamp[21];
-			OS::Date date = OS::get_singleton()->get_date();
-			OS::Time time = OS::get_singleton()->get_time();
-			sprintf(timestamp, "-%04d-%02d-%02d-%02d-%02d-%02d", date.year, date.month, date.day, time.hour, time.min, time.sec);
-
+			String timestamp = Time::get_singleton()->get_datetime_string_from_system().replace(":", ".");
 			String backup_name = base_path.get_basename() + timestamp;
 			if (base_path.get_extension() != String()) {
 				backup_name += "." + base_path.get_extension();
@@ -201,15 +205,14 @@ void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 		}
 		va_end(list_copy);
 		file->store_buffer((uint8_t *)buf, len);
+
 		if (len >= static_buf_size) {
 			Memory::free_static(buf);
 		}
-#ifdef DEBUG_ENABLED
-		const bool need_flush = true;
-#else
-		bool need_flush = p_err;
-#endif
-		if (need_flush) {
+
+		if (p_err || _flush_stdout_on_print) {
+			// Don't always flush when printing stdout to avoid performance
+			// issues when `print()` is spammed in release builds.
 			file->flush();
 		}
 	}
@@ -228,9 +231,11 @@ void StdLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 		vfprintf(stderr, p_format, p_list);
 	} else {
 		vprintf(p_format, p_list);
-#ifdef DEBUG_ENABLED
-		fflush(stdout);
-#endif
+		if (_flush_stdout_on_print) {
+			// Don't always flush when printing stdout to avoid performance
+			// issues when `print()` is spammed in release builds.
+			fflush(stdout);
+		}
 	}
 }
 

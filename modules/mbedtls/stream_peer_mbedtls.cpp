@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "stream_peer_mbedtls.h"
 
+#include "core/io/file_access.h"
 #include "core/io/stream_peer_tcp.h"
-#include "core/os/file_access.h"
 
 int StreamPeerMbedTLS::bio_send(void *ctx, const unsigned char *buf, size_t len) {
 	if (buf == nullptr || len <= 0) {
@@ -242,7 +242,7 @@ void StreamPeerMbedTLS::poll() {
 		return;
 	}
 
-	// We could pass NULL as second parameter, but some behaviour sanitizers doesn't seem to like that.
+	// We could pass nullptr as second parameter, but some behaviour sanitizers don't seem to like that.
 	// Passing a 1 byte buffer to workaround it.
 	uint8_t byte;
 	int ret = mbedtls_ssl_read(ssl_ctx->get_context(), &byte, 0);
@@ -273,8 +273,7 @@ int StreamPeerMbedTLS::get_available_bytes() const {
 }
 
 StreamPeerMbedTLS::StreamPeerMbedTLS() {
-	ssl_ctx.instance();
-	status = STATUS_DISCONNECTED;
+	ssl_ctx.instantiate();
 }
 
 StreamPeerMbedTLS::~StreamPeerMbedTLS() {

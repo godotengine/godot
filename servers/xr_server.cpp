@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "xr_server.h"
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 #include "xr/xr_interface.h"
 #include "xr/xr_positional_tracker.h"
 
@@ -48,12 +48,16 @@ void XRServer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "world_scale"), "set_world_scale", "get_world_scale");
 
+	ClassDB::bind_method(D_METHOD("add_interface", "interface"), &XRServer::add_interface);
 	ClassDB::bind_method(D_METHOD("get_interface_count"), &XRServer::get_interface_count);
+	ClassDB::bind_method(D_METHOD("remove_interface", "interface"), &XRServer::remove_interface);
 	ClassDB::bind_method(D_METHOD("get_interface", "idx"), &XRServer::get_interface);
 	ClassDB::bind_method(D_METHOD("get_interfaces"), &XRServer::get_interfaces);
 	ClassDB::bind_method(D_METHOD("find_interface", "name"), &XRServer::find_interface);
 	ClassDB::bind_method(D_METHOD("get_tracker_count"), &XRServer::get_tracker_count);
 	ClassDB::bind_method(D_METHOD("get_tracker", "idx"), &XRServer::get_tracker);
+	ClassDB::bind_method(D_METHOD("add_tracker", "tracker"), &XRServer::add_tracker);
+	ClassDB::bind_method(D_METHOD("remove_tracker", "tracker"), &XRServer::remove_tracker);
 
 	ClassDB::bind_method(D_METHOD("get_primary_interface"), &XRServer::get_primary_interface);
 	ClassDB::bind_method(D_METHOD("set_primary_interface", "interface"), &XRServer::set_primary_interface);
@@ -96,25 +100,25 @@ void XRServer::set_world_scale(real_t p_world_scale) {
 	world_scale = p_world_scale;
 };
 
-Transform XRServer::get_world_origin() const {
+Transform3D XRServer::get_world_origin() const {
 	return world_origin;
 };
 
-void XRServer::set_world_origin(const Transform &p_world_origin) {
+void XRServer::set_world_origin(const Transform3D &p_world_origin) {
 	world_origin = p_world_origin;
 };
 
-Transform XRServer::get_reference_frame() const {
+Transform3D XRServer::get_reference_frame() const {
 	return reference_frame;
 };
 
 void XRServer::center_on_hmd(RotationMode p_rotation_mode, bool p_keep_height) {
 	if (primary_interface != nullptr) {
 		// clear our current reference frame or we'll end up double adjusting it
-		reference_frame = Transform();
+		reference_frame = Transform3D();
 
 		// requesting our EYE_MONO transform should return our current HMD position
-		Transform new_reference_frame = primary_interface->get_transform_for_eye(XRInterface::EYE_MONO, Transform());
+		Transform3D new_reference_frame = primary_interface->get_camera_transform();
 
 		// remove our tilt
 		if (p_rotation_mode == 1) {
@@ -140,10 +144,10 @@ void XRServer::center_on_hmd(RotationMode p_rotation_mode, bool p_keep_height) {
 	};
 };
 
-Transform XRServer::get_hmd_transform() {
-	Transform hmd_transform;
+Transform3D XRServer::get_hmd_transform() {
+	Transform3D hmd_transform;
 	if (primary_interface != nullptr) {
-		hmd_transform = primary_interface->get_transform_for_eye(XRInterface::EYE_MONO, hmd_transform);
+		hmd_transform = primary_interface->get_camera_transform();
 	};
 	return hmd_transform;
 };
@@ -159,7 +163,7 @@ void XRServer::add_interface(const Ref<XRInterface> &p_interface) {
 	};
 
 	interfaces.push_back(p_interface);
-	emit_signal("interface_added", p_interface->get_name());
+	emit_signal(SNAME("interface_added"), p_interface->get_name());
 };
 
 void XRServer::remove_interface(const Ref<XRInterface> &p_interface) {
@@ -177,7 +181,7 @@ void XRServer::remove_interface(const Ref<XRInterface> &p_interface) {
 
 	print_verbose("XR: Removed interface" + p_interface->get_name());
 
-	emit_signal("interface_removed", p_interface->get_name());
+	emit_signal(SNAME("interface_removed"), p_interface->get_name());
 	interfaces.remove(idx);
 };
 
@@ -235,7 +239,7 @@ Array XRServer::get_interfaces() const {
 
 bool XRServer::is_tracker_id_in_use_for_type(TrackerType p_tracker_type, int p_tracker_id) const {
 	for (int i = 0; i < trackers.size(); i++) {
-		if (trackers[i]->get_type() == p_tracker_type && trackers[i]->get_tracker_id() == p_tracker_id) {
+		if (trackers[i]->get_tracker_type() == p_tracker_type && trackers[i]->get_tracker_id() == p_tracker_id) {
 			return true;
 		};
 	};
@@ -260,15 +264,15 @@ int XRServer::get_free_tracker_id_for_type(TrackerType p_tracker_type) {
 	return tracker_id;
 };
 
-void XRServer::add_tracker(XRPositionalTracker *p_tracker) {
-	ERR_FAIL_NULL(p_tracker);
+void XRServer::add_tracker(Ref<XRPositionalTracker> p_tracker) {
+	ERR_FAIL_COND(p_tracker.is_null());
 
 	trackers.push_back(p_tracker);
-	emit_signal("tracker_added", p_tracker->get_name(), p_tracker->get_type(), p_tracker->get_tracker_id());
+	emit_signal(SNAME("tracker_added"), p_tracker->get_tracker_name(), p_tracker->get_tracker_type(), p_tracker->get_tracker_id());
 };
 
-void XRServer::remove_tracker(XRPositionalTracker *p_tracker) {
-	ERR_FAIL_NULL(p_tracker);
+void XRServer::remove_tracker(Ref<XRPositionalTracker> p_tracker) {
+	ERR_FAIL_COND(p_tracker.is_null());
 
 	int idx = -1;
 	for (int i = 0; i < trackers.size(); i++) {
@@ -280,7 +284,7 @@ void XRServer::remove_tracker(XRPositionalTracker *p_tracker) {
 
 	ERR_FAIL_COND(idx == -1);
 
-	emit_signal("tracker_removed", p_tracker->get_name(), p_tracker->get_type(), p_tracker->get_tracker_id());
+	emit_signal(SNAME("tracker_removed"), p_tracker->get_tracker_name(), p_tracker->get_tracker_type(), p_tracker->get_tracker_id());
 	trackers.remove(idx);
 };
 
@@ -288,22 +292,22 @@ int XRServer::get_tracker_count() const {
 	return trackers.size();
 };
 
-XRPositionalTracker *XRServer::get_tracker(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, trackers.size(), nullptr);
+Ref<XRPositionalTracker> XRServer::get_tracker(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, trackers.size(), Ref<XRPositionalTracker>());
 
 	return trackers[p_index];
 };
 
-XRPositionalTracker *XRServer::find_by_type_and_id(TrackerType p_tracker_type, int p_tracker_id) const {
-	ERR_FAIL_COND_V(p_tracker_id == 0, nullptr);
+Ref<XRPositionalTracker> XRServer::find_by_type_and_id(TrackerType p_tracker_type, int p_tracker_id) const {
+	ERR_FAIL_COND_V(p_tracker_id == 0, Ref<XRPositionalTracker>());
 
 	for (int i = 0; i < trackers.size(); i++) {
-		if (trackers[i]->get_type() == p_tracker_type && trackers[i]->get_tracker_id() == p_tracker_id) {
+		if (trackers[i]->get_tracker_type() == p_tracker_type && trackers[i]->get_tracker_id() == p_tracker_id) {
 			return trackers[i];
 		};
 	};
 
-	return nullptr;
+	return Ref<XRPositionalTracker>();
 };
 
 Ref<XRInterface> XRServer::get_primary_interface() const {
@@ -311,16 +315,14 @@ Ref<XRInterface> XRServer::get_primary_interface() const {
 };
 
 void XRServer::set_primary_interface(const Ref<XRInterface> &p_primary_interface) {
-	primary_interface = p_primary_interface;
-
-	print_verbose("XR: Primary interface set to: " + primary_interface->get_name());
-};
-
-void XRServer::clear_primary_interface_if(const Ref<XRInterface> &p_primary_interface) {
-	if (primary_interface == p_primary_interface) {
+	if (p_primary_interface.is_null()) {
 		print_verbose("XR: Clearing primary interface");
 		primary_interface.unref();
-	};
+	} else {
+		primary_interface = p_primary_interface;
+
+		print_verbose("XR: Primary interface set to: " + primary_interface->get_name());
+	}
 };
 
 uint64_t XRServer::get_last_process_usec() {
@@ -336,7 +338,7 @@ uint64_t XRServer::get_last_frame_usec() {
 };
 
 void XRServer::_process() {
-	/* called from rendering_server_viewport.draw_viewports right before we start drawing our viewports */
+	/* called from renderer_viewport.draw_viewports right before we start drawing our viewports */
 
 	/* mark for our frame timing */
 	last_process_usec = OS::get_singleton()->get_ticks_usec();

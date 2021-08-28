@@ -2,6 +2,6 @@
     "file_format_version" : "1.0.0",
     "ICD": {
         "library_path": "../../../Frameworks/libMoltenVK.dylib",
-        "api_version" : "1.0.0"
+        "api_version" : "1.1.0"
     }
 }

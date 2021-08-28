@@ -72,6 +72,11 @@ by drag and dropping the file in the GitHub edition field.
 We recommend always attaching a minimal reproduction project, even if the issue
 may seem simple to reproduce manually.
 
+**Note for C# users:** If your issue is not Mono-specific, please upload a
+minimal reproduction project written in GDScript or VisualScript.
+This will make it easier for contributors to reproduce the issue
+locally as not everyone has a Mono setup available.
+
 **If you've been asked by a maintainer to upload a minimal reproduction project,
 you *must* do so within 7 days.** Otherwise, your bug report will be closed as
 it'll be considered too difficult to diagnose.
@@ -134,6 +139,29 @@ Follow the style guide described in the
 If your pull request modifies parts of the code in a non-obvious way, make sure
 to add comments in the code as well. This helps other people understand the
 change without having to look at `git blame`.
+
+### Write unit tests
+
+When fixing a bug or contributing a new feature, we recommend including unit
+tests in the same commit as the rest of the pull request. Unit tests are pieces
+of code that compare the output to a predetermined *expected result* to detect
+regressions. Tests are compiled and run on GitHub Actions for every commit and
+pull request.
+
+Pull requests that include tests are more likely to be merged, since we can have
+greater confidence in them not being the target of regressions in the future.
+
+For bugs, the unit tests should cover the functionality that was previously
+broken. If done well, this ensures regressions won't appear in the future
+again. For new features, the unit tests should cover the newly added
+functionality, testing both the "success" and "expected failure" cases if
+applicable.
+
+Feel free to contribute standalone pull requests to add new tests or improve
+existing tests as well.
+
+See [Unit testing](https://docs.godotengine.org/en/latest/development/cpp/unit_testing.html)
+for information on writing tests in Godot's C++ codebase.
 
 ### Be nice to the Git history
 
@@ -213,25 +241,21 @@ discussions and support, others more for development discussions.
 To communicate with developers (e.g. to discuss a feature you want to implement
 or a bug you want to fix), the following channels can be used:
 
-- [GitHub issues](https://github.com/godotengine/godot/issues): If there is an
-  existing issue about a topic you want to discuss, just add a comment to it -
-  all developers watch the repository and will get an email notification. You
-  can also create a new issue - please keep in mind to create issues only to
-  discuss quite specific points about the development, and not general user
-  feedback or support requests.
-- [#godotengine-devel IRC channel on
-  Freenode](https://webchat.freenode.net/?channels=godotengine-devel): You will
-  find most core developers there, so it's the go-to channel for direct chat
+- [Godot Contributors Chat](https://chat.godotengine.org): You will
+  find most core developers there, so it's the go-to platform for direct chat
   about Godot Engine development. Feel free to start discussing something there
   to get some early feedback before writing up a detailed proposal in a GitHub
   issue.
-- [devel@godotengine.org mailing
-  list](https://listengine.tuxfamily.org/godotengine.org/devel/): Mailing list
-  for Godot developers, used primarily to announce developer meetings on IRC
-  and other important discussions that need to reach people directly in their
-  mailbox. See the [index
-  page](https://listengine.tuxfamily.org/godotengine.org/devel/) for
-  subscription instructions.
+- [Bug tracker](https://github.com/godotengine/godot/issues): If there is an
+  existing issue about a topic you want to discuss, just add a comment to it -
+  many developers watch the repository and will get a notification. You can
+  also create a new issue - please keep in mind to create issues only to
+  discuss quite specific points about the development, and not general user
+  feedback or support requests.
+- [Feature proposals](https://github.com/godotengine/godot-proposals/issues):
+  To propose a new feature, we have a dedicated issue tracker for that. Don't
+  hesitate to start by talking about your idea on the Godot Contributors Chat
+  to make sure that it makes sense in Godot's context.
 
 Thanks for your interest in contributing!
 

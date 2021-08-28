@@ -7,21 +7,24 @@ env_upnp = env_modules.Clone()
 
 # Thirdparty source files
 
+thirdparty_obj = []
+
 if env["builtin_miniupnpc"]:
     thirdparty_dir = "#thirdparty/miniupnpc/"
     thirdparty_sources = [
-        "miniupnpc.c",
-        "upnpcommands.c",
-        "miniwget.c",
-        "upnpdev.c",
         "igd_desc_parse.c",
-        "minissdpc.c",
-        "minisoap.c",
+        "miniupnpc.c",
         "minixml.c",
-        "connecthostport.c",
-        "receivedata.c",
-        "portlistingparse.c",
+        "minisoap.c",
+        "minissdpc.c",
+        "miniwget.c",
+        "upnpcommands.c",
+        "upnpdev.c",
         "upnpreplyparse.c",
+        "connecthostport.c",
+        "portlistingparse.c",
+        "receivedata.c",
+        "addr_is_reserved.c",
     ]
     thirdparty_sources = [thirdparty_dir + "miniupnpc/" + file for file in thirdparty_sources]
 
@@ -31,7 +34,16 @@ if env["builtin_miniupnpc"]:
 
     env_thirdparty = env_upnp.Clone()
     env_thirdparty.disable_warnings()
-    env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+    env.modules_sources += thirdparty_obj
+
 
 # Godot source files
-env_upnp.add_source_files(env.modules_sources, "*.cpp")
+
+module_obj = []
+
+env_upnp.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

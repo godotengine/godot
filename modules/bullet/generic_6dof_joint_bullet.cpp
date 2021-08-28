@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@
 	@author AndreaCatania
 */
 
-Generic6DOFJointBullet::Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB) :
+Generic6DOFJointBullet::Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform3D &frameInA, const Transform3D &frameInB) :
 		JointBullet() {
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < PhysicsServer3D::G6DOF_JOINT_FLAG_MAX; j++) {
@@ -48,7 +48,7 @@ Generic6DOFJointBullet::Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBu
 		}
 	}
 
-	Transform scaled_AFrame(frameInA.scaled(rbA->get_body_scale()));
+	Transform3D scaled_AFrame(frameInA.scaled(rbA->get_body_scale()));
 
 	scaled_AFrame.basis.rotref_posscale_decomposition(scaled_AFrame.basis);
 
@@ -56,7 +56,7 @@ Generic6DOFJointBullet::Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBu
 	G_TO_B(scaled_AFrame, btFrameA);
 
 	if (rbB) {
-		Transform scaled_BFrame(frameInB.scaled(rbB->get_body_scale()));
+		Transform3D scaled_BFrame(frameInB.scaled(rbB->get_body_scale()));
 
 		scaled_BFrame.basis.rotref_posscale_decomposition(scaled_BFrame.basis);
 
@@ -71,30 +71,30 @@ Generic6DOFJointBullet::Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBu
 	setup(sixDOFConstraint);
 }
 
-Transform Generic6DOFJointBullet::getFrameOffsetA() const {
+Transform3D Generic6DOFJointBullet::getFrameOffsetA() const {
 	btTransform btTrs = sixDOFConstraint->getFrameOffsetA();
-	Transform gTrs;
+	Transform3D gTrs;
 	B_TO_G(btTrs, gTrs);
 	return gTrs;
 }
 
-Transform Generic6DOFJointBullet::getFrameOffsetB() const {
+Transform3D Generic6DOFJointBullet::getFrameOffsetB() const {
 	btTransform btTrs = sixDOFConstraint->getFrameOffsetB();
-	Transform gTrs;
+	Transform3D gTrs;
 	B_TO_G(btTrs, gTrs);
 	return gTrs;
 }
 
-Transform Generic6DOFJointBullet::getFrameOffsetA() {
+Transform3D Generic6DOFJointBullet::getFrameOffsetA() {
 	btTransform btTrs = sixDOFConstraint->getFrameOffsetA();
-	Transform gTrs;
+	Transform3D gTrs;
 	B_TO_G(btTrs, gTrs);
 	return gTrs;
 }
 
-Transform Generic6DOFJointBullet::getFrameOffsetB() {
+Transform3D Generic6DOFJointBullet::getFrameOffsetB() {
 	btTransform btTrs = sixDOFConstraint->getFrameOffsetB();
-	Transform gTrs;
+	Transform3D gTrs;
 	B_TO_G(btTrs, gTrs);
 	return gTrs;
 }
@@ -272,12 +272,4 @@ void Generic6DOFJointBullet::set_flag(Vector3::Axis p_axis, PhysicsServer3D::G6D
 bool Generic6DOFJointBullet::get_flag(Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisFlag p_flag) const {
 	ERR_FAIL_INDEX_V(p_axis, 3, false);
 	return flags[p_axis][p_flag];
-}
-
-void Generic6DOFJointBullet::set_precision(int p_precision) {
-	sixDOFConstraint->setOverrideNumSolverIterations(MAX(1, p_precision));
-}
-
-int Generic6DOFJointBullet::get_precision() const {
-	return sixDOFConstraint->getOverrideNumSolverIterations();
 }

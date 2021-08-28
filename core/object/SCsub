@@ -1,0 +1,12 @@
+#!/usr/bin/env python
+
+Import("env")
+
+import make_virtuals
+from platform_methods import run_in_subprocess
+
+env.CommandNoCache(["gdvirtual.gen.inc"], "make_virtuals.py", run_in_subprocess(make_virtuals.run))
+
+env_object = env.Clone()
+
+env_object.add_source_files(env.core_sources, "*.cpp")

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,9 @@
 
 #include "remote_debugger_peer.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 
 bool RemoteDebuggerPeerTCP::is_peer_connected() {
 	return connected;
@@ -65,12 +65,8 @@ int RemoteDebuggerPeerTCP::get_max_message_size() const {
 }
 
 void RemoteDebuggerPeerTCP::close() {
-	if (thread) {
-		running = false;
-		Thread::wait_to_finish(thread);
-		memdelete(thread);
-		thread = nullptr;
-	}
+	running = false;
+	thread.wait_to_finish();
 	tcp_client->disconnect_from_host();
 	out_buf.resize(0);
 	in_buf.resize(0);
@@ -85,10 +81,10 @@ RemoteDebuggerPeerTCP::RemoteDebuggerPeerTCP(Ref<StreamPeerTCP> p_tcp) {
 		connected = true;
 #ifndef NO_THREADS
 		running = true;
-		thread = Thread::create(_thread_func, this);
+		thread.start(_thread_func, this);
 #endif
 	} else {
-		tcp_client.instance();
+		tcp_client.instantiate();
 	}
 }
 
@@ -156,7 +152,7 @@ void RemoteDebuggerPeerTCP::_read_in() {
 }
 
 Error RemoteDebuggerPeerTCP::connect_to_host(const String &p_host, uint16_t p_port) {
-	IP_Address ip;
+	IPAddress ip;
 	if (p_host.is_valid_ip_address()) {
 		ip = p_host;
 	} else {
@@ -188,19 +184,24 @@ Error RemoteDebuggerPeerTCP::connect_to_host(const String &p_host, uint16_t p_po
 	connected = true;
 #ifndef NO_THREADS
 	running = true;
-	thread = Thread::create(_thread_func, this);
+	thread.start(_thread_func, this);
 #endif
 	return OK;
 }
 
 void RemoteDebuggerPeerTCP::_thread_func(void *p_ud) {
+	const uint64_t min_tick = 100;
 	RemoteDebuggerPeerTCP *peer = (RemoteDebuggerPeerTCP *)p_ud;
 	while (peer->running && peer->is_peer_connected()) {
+		uint64_t ticks_usec = OS::get_singleton()->get_ticks_usec();
 		peer->_poll();
 		if (!peer->is_peer_connected()) {
 			break;
 		}
-		peer->tcp_client->poll(NetSocket::POLL_TYPE_IN_OUT, 1);
+		ticks_usec = OS::get_singleton()->get_ticks_usec() - ticks_usec;
+		if (ticks_usec < min_tick) {
+			OS::get_singleton()->delay_usec(min_tick - ticks_usec);
+		}
 	}
 }
 
@@ -225,7 +226,7 @@ RemoteDebuggerPeer *RemoteDebuggerPeerTCP::create(const String &p_uri) {
 	uint16_t debug_port = 6007;
 
 	if (debug_host.find(":") != -1) {
-		int sep_pos = debug_host.find_last(":");
+		int sep_pos = debug_host.rfind(":");
 		debug_port = debug_host.substr(sep_pos + 1).to_int();
 		debug_host = debug_host.substr(0, sep_pos);
 	}

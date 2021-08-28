@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,14 +32,13 @@
 #define LISTENER_3D_H
 
 #include "scene/3d/node_3d.h"
-#include "scene/main/window.h"
 
 class Listener3D : public Node3D {
 	GDCLASS(Listener3D, Node3D);
 
 private:
-	bool force_change;
-	bool current;
+	bool force_change = false;
+	bool current = false;
 
 	RID scenario_id;
 
@@ -65,7 +64,7 @@ public:
 	void clear_current();
 	bool is_current() const;
 
-	virtual Transform get_listener_transform() const;
+	virtual Transform3D get_listener_transform() const;
 
 	void set_visible_layers(uint32_t p_layers);
 	uint32_t get_visible_layers() const;

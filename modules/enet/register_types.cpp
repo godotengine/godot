@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,8 +29,10 @@
 /*************************************************************************/
 
 #include "register_types.h"
-#include "core/error_macros.h"
-#include "networked_multiplayer_enet.h"
+#include "core/error/error_macros.h"
+#include "enet_connection.h"
+#include "enet_multiplayer_peer.h"
+#include "enet_packet_peer.h"
 
 static bool enet_ok = false;
 
@@ -41,7 +43,9 @@ void register_enet_types() {
 		enet_ok = true;
 	}
 
-	ClassDB::register_class<NetworkedMultiplayerENet>();
+	GDREGISTER_CLASS(ENetMultiplayerPeer);
+	GDREGISTER_VIRTUAL_CLASS(ENetPacketPeer);
+	GDREGISTER_CLASS(ENetConnection);
 }
 
 void unregister_enet_types() {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "audio_stream_sample.h"
 
+#include "core/io/file_access.h"
 #include "core/io/marshalls.h"
-#include "core/os/file_access.h"
 
 void AudioStreamPlaybackSample::start(float p_from_pos) {
 	if (base->format == AudioStreamSample::FORMAT_IMA_ADPCM) {
@@ -221,12 +221,12 @@ void AudioStreamPlaybackSample::do_resample(const Depth *p_src, AudioFrame *p_ds
 	}
 }
 
-void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
+int AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
 	if (!base->data || !active) {
 		for (int i = 0; i < p_frames; i++) {
 			p_buffer[i] = AudioFrame(0, 0);
 		}
-		return;
+		return 0;
 	}
 
 	int len = base->data_bytes;
@@ -264,7 +264,8 @@ void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, in
 	float base_rate = AudioServer::get_singleton()->get_mix_rate();
 	float srate = base->mix_rate;
 	srate *= p_rate_scale;
-	float fincrement = srate / base_rate;
+	float playback_speed_scale = AudioServer::get_singleton()->get_playback_speed_scale();
+	float fincrement = (srate * playback_speed_scale) / base_rate;
 	int32_t increment = int32_t(MAX(fincrement * MIX_FRAC_LEN, 1));
 	increment *= sign;
 
@@ -394,19 +395,18 @@ void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, in
 	}
 
 	if (todo) {
+		int mixed_frames = p_frames - todo;
 		//bit was missing from mix
 		int todo_ofs = p_frames - todo;
 		for (int i = todo_ofs; i < p_frames; i++) {
 			p_buffer[i] = AudioFrame(0, 0);
 		}
+		return mixed_frames;
 	}
+	return p_frames;
 }
 
-AudioStreamPlaybackSample::AudioStreamPlaybackSample() {
-	active = false;
-	offset = 0;
-	sign = 1;
-}
+AudioStreamPlaybackSample::AudioStreamPlaybackSample() {}
 
 /////////////////////
 
@@ -493,9 +493,9 @@ void AudioStreamSample::set_data(const Vector<uint8_t> &p_data) {
 		const uint8_t *r = p_data.ptr();
 		int alloc_len = datalen + DATA_PAD * 2;
 		data = memalloc(alloc_len); //alloc with some padding for interpolation
-		zeromem(data, alloc_len);
+		memset(data, 0, alloc_len);
 		uint8_t *dataptr = (uint8_t *)data;
-		copymem(dataptr + DATA_PAD, r, datalen);
+		memcpy(dataptr + DATA_PAD, r, datalen);
 		data_bytes = datalen;
 	}
 
@@ -510,7 +510,7 @@ Vector<uint8_t> AudioStreamSample::get_data() const {
 		{
 			uint8_t *w = pv.ptrw();
 			uint8_t *dataptr = (uint8_t *)data;
-			copymem(w, dataptr + DATA_PAD, data_bytes);
+			memcpy(w, dataptr + DATA_PAD, data_bytes);
 		}
 	}
 
@@ -599,7 +599,7 @@ Error AudioStreamSample::save_to_wav(const String &p_path) {
 
 Ref<AudioStreamPlayback> AudioStreamSample::instance_playback() {
 	Ref<AudioStreamPlaybackSample> sample;
-	sample.instance();
+	sample.instantiate();
 	sample->base = Ref<AudioStreamSample>(this);
 	return sample;
 }
@@ -650,16 +650,7 @@ void AudioStreamSample::_bind_methods() {
 	BIND_ENUM_CONSTANT(LOOP_BACKWARD);
 }
 
-AudioStreamSample::AudioStreamSample() {
-	format = FORMAT_8_BITS;
-	loop_mode = LOOP_DISABLED;
-	stereo = false;
-	loop_begin = 0;
-	loop_end = 0;
-	mix_rate = 44100;
-	data = nullptr;
-	data_bytes = 0;
-}
+AudioStreamSample::AudioStreamSample() {}
 
 AudioStreamSample::~AudioStreamSample() {
 	if (data) {

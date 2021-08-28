@@ -20,18 +20,13 @@
 #define FTSMOOTH_H_
 
 
-#include <ft2build.h>
-#include FT_RENDER_H
+#include <freetype/ftrender.h>
 
 
 FT_BEGIN_HEADER
 
 
   FT_DECLARE_RENDERER( ft_smooth_renderer_class )
-
-  FT_DECLARE_RENDERER( ft_smooth_lcd_renderer_class )
-
-  FT_DECLARE_RENDERER( ft_smooth_lcdv_renderer_class )
 
 
 FT_END_HEADER

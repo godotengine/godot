@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,20 +31,21 @@
 #ifndef BINDINGS_GENERATOR_H
 #define BINDINGS_GENERATOR_H
 
-#include "core/class_db.h"
-#include "core/string_builder.h"
-#include "editor/doc_data.h"
+#include "core/doc_data.h"
+#include "core/object/class_db.h"
+#include "core/string/string_builder.h"
+#include "editor/doc_tools.h"
 #include "editor/editor_help.h"
 
 #if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)
 
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 
 class BindingsGenerator {
 	struct ConstantInterface {
 		String name;
 		String proxy_name;
-		int value;
+		int value = 0;
 		const DocData::ConstantDoc *const_doc;
 
 		ConstantInterface() {}
@@ -74,7 +75,7 @@ class BindingsGenerator {
 	struct PropertyInterface {
 		StringName cname;
 		String proxy_name;
-		int index;
+		int index = 0;
 
 		StringName setter;
 		StringName getter;
@@ -215,7 +216,7 @@ class BindingsGenerator {
 		bool is_enum = false;
 		bool is_object_type = false;
 		bool is_singleton = false;
-		bool is_reference = false;
+		bool is_ref_counted = false;
 
 		/**
 		 * Used only by Object-derived types.
@@ -227,7 +228,7 @@ class BindingsGenerator {
 		/**
 		 * Used only by Object-derived types.
 		 * Determines if the C# class owns the native handle and must free it somehow when disposed.
-		 * e.g.: Reference types must notify when the C# instance is disposed, for proper refcounting.
+		 * e.g.: RefCounted types must notify when the C# instance is disposed, for proper refcounting.
 		 */
 		bool memory_own = false;
 
@@ -294,7 +295,7 @@ class BindingsGenerator {
 		 * VarArg (fictitious type to represent variable arguments): Array
 		 * float: double (because ptrcall only supports double)
 		 * int: int64_t (because ptrcall only supports int64_t and uint64_t)
-		 * Reference types override this for the type of the return variable: Ref<Reference>
+		 * RefCounted types override this for the type of the return variable: Ref<RefCounted>
 		 */
 		String c_type;
 
@@ -356,9 +357,9 @@ class BindingsGenerator {
 		List<SignalInterface> signals_;
 
 		const MethodInterface *find_method_by_name(const StringName &p_cname) const {
-			for (const List<MethodInterface>::Element *E = methods.front(); E; E = E->next()) {
-				if (E->get().cname == p_cname) {
-					return &E->get();
+			for (const MethodInterface &E : methods) {
+				if (E.cname == p_cname) {
+					return &E;
 				}
 			}
 
@@ -366,9 +367,9 @@ class BindingsGenerator {
 		}
 
 		const PropertyInterface *find_property_by_name(const StringName &p_cname) const {
-			for (const List<PropertyInterface>::Element *E = properties.front(); E; E = E->next()) {
-				if (E->get().cname == p_cname) {
-					return &E->get();
+			for (const PropertyInterface &E : properties) {
+				if (E.cname == p_cname) {
+					return &E;
 				}
 			}
 
@@ -376,9 +377,9 @@ class BindingsGenerator {
 		}
 
 		const PropertyInterface *find_property_by_proxy_name(const String &p_proxy_name) const {
-			for (const List<PropertyInterface>::Element *E = properties.front(); E; E = E->next()) {
-				if (E->get().proxy_name == p_proxy_name) {
-					return &E->get();
+			for (const PropertyInterface &E : properties) {
+				if (E.proxy_name == p_proxy_name) {
+					return &E;
 				}
 			}
 
@@ -386,9 +387,9 @@ class BindingsGenerator {
 		}
 
 		const MethodInterface *find_method_by_proxy_name(const String &p_proxy_name) const {
-			for (const List<MethodInterface>::Element *E = methods.front(); E; E = E->next()) {
-				if (E->get().proxy_name == p_proxy_name) {
-					return &E->get();
+			for (const MethodInterface &E : methods) {
+				if (E.proxy_name == p_proxy_name) {
+					return &E;
 				}
 			}
 
@@ -479,7 +480,7 @@ class BindingsGenerator {
 		String im_type_out; // Return type for the C# method declaration. Also used as companion of [unique_siq]
 		String im_sig; // Signature for the C# method declaration
 		String unique_sig; // Unique signature to avoid duplicates in containers
-		bool editor_only;
+		bool editor_only = false;
 
 		InternalCall() {}
 
@@ -533,8 +534,10 @@ class BindingsGenerator {
 		StringName type_Variant = StaticCString::create("Variant");
 		StringName type_VarArg = StaticCString::create("VarArg");
 		StringName type_Object = StaticCString::create("Object");
-		StringName type_Reference = StaticCString::create("Reference");
+		StringName type_RefCounted = StaticCString::create("RefCounted");
 		StringName type_RID = StaticCString::create("RID");
+		StringName type_Callable = StaticCString::create("Callable");
+		StringName type_Signal = StaticCString::create("Signal");
 		StringName type_String = StaticCString::create("String");
 		StringName type_StringName = StaticCString::create("StringName");
 		StringName type_NodePath = StaticCString::create("NodePath");
@@ -612,9 +615,9 @@ class BindingsGenerator {
 	}
 
 	const ConstantInterface *find_constant_by_name(const String &p_name, const List<ConstantInterface> &p_constants) const {
-		for (const List<ConstantInterface>::Element *E = p_constants.front(); E; E = E->next()) {
-			if (E->get().name == p_name) {
-				return &E->get();
+		for (const ConstantInterface &E : p_constants) {
+			if (E.name == p_name) {
+				return &E;
 			}
 		}
 
@@ -622,7 +625,7 @@ class BindingsGenerator {
 	}
 
 	inline String get_unique_sig(const TypeInterface &p_type) {
-		if (p_type.is_reference) {
+		if (p_type.is_ref_counted) {
 			return "Ref";
 		} else if (p_type.is_object_type) {
 			return "Obj";
@@ -660,6 +663,7 @@ class BindingsGenerator {
 	Error _generate_cs_method(const TypeInterface &p_itype, const MethodInterface &p_imethod, int &p_method_bind_count, StringBuilder &p_output);
 	Error _generate_cs_signal(const BindingsGenerator::TypeInterface &p_itype, const BindingsGenerator::SignalInterface &p_isignal, StringBuilder &p_output);
 
+	void _generate_array_extensions(StringBuilder &p_output);
 	void _generate_global_constants(StringBuilder &p_output);
 
 	Error _generate_glue_method(const TypeInterface &p_itype, const MethodInterface &p_imethod, StringBuilder &p_output);
