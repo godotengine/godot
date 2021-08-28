@@ -86,11 +86,11 @@ void XRServer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tracker_removed", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::INT, "type"), PropertyInfo(Variant::INT, "id")));
 };
 
-real_t XRServer::get_world_scale() const {
+double XRServer::get_world_scale() const {
 	return world_scale;
 };
 
-void XRServer::set_world_scale(real_t p_world_scale) {
+void XRServer::set_world_scale(double p_world_scale) {
 	if (p_world_scale < 0.01) {
 		p_world_scale = 0.01;
 	} else if (p_world_scale > 1000.0) {
