@@ -94,13 +94,13 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="RoomManager::PVS_MODE_DISABLED" value="0" enum="PVSMode">
+		<constant name="PVS_MODE_DISABLED" value="0" enum="PVSMode">
 			Use only [Portal]s at runtime to determine visibility. PVS will not be generated at [Room]s conversion, and gameplay notifications cannot be used.
 		</constant>
-		<constant name="RoomManager::PVS_MODE_PARTIAL" value="1" enum="PVSMode">
+		<constant name="PVS_MODE_PARTIAL" value="1" enum="PVSMode">
 			Use a combination of PVS and [Portal]s to determine visibility (this is usually fastest and most accurate).
 		</constant>
-		<constant name="RoomManager::PVS_MODE_FULL" value="2" enum="PVSMode">
+		<constant name="PVS_MODE_FULL" value="2" enum="PVSMode">
 			Use only the PVS (potentially visible set) of [Room]s to determine visibility.
 		</constant>
 	</constants>
