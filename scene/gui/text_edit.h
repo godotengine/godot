@@ -289,6 +289,7 @@ private:
 	bool undo_enabled = true;
 	int undo_stack_max_size = 50;
 
+	int complex_operation_count = 0;
 	bool next_operation_is_complex = false;
 
 	TextOperation current_op;
