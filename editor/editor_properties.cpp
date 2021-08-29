@@ -2268,7 +2268,7 @@ void EditorPropertyTransform2D::setup(double p_min, double p_max, double p_step,
 	}
 }
 
-EditorPropertyTransform2D::EditorPropertyTransform2D(bool p_include_origin) {
+EditorPropertyTransform2D::EditorPropertyTransform2D() {
 	GridContainer *g = memnew(GridContainer);
 	g->set_columns(2);
 	add_child(g);
@@ -2278,9 +2278,7 @@ EditorPropertyTransform2D::EditorPropertyTransform2D(bool p_include_origin) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
 		spin[i]->set_flat(true);
-		if (p_include_origin || i < 4) {
-			g->add_child(spin[i]);
-		}
+		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyTransform2D::_value_changed), varray(desc[i]));
@@ -3287,7 +3285,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 
 		} break;
 		case Variant::TRANSFORM2D: {
-			EditorPropertyTransform2D *editor = memnew(EditorPropertyTransform2D(p_usage != PROPERTY_USAGE_EDITOR));
+			EditorPropertyTransform2D *editor = memnew(EditorPropertyTransform2D);
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
 			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix);
 			return editor;
