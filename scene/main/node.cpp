@@ -1087,6 +1087,7 @@ void Node::add_child(Node *p_child, bool p_legible_unique_name) {
 
 void Node::add_sibling(Node *p_sibling, bool p_legible_unique_name) {
 	ERR_FAIL_NULL(p_sibling);
+	ERR_FAIL_NULL_MSG(get_parent(), "The target node has no parent, and therefore cannot have a sibling node added.");
 	ERR_FAIL_COND_MSG(p_sibling == this, vformat("Can't add sibling '%s' to itself.", p_sibling->get_name())); // adding to itself!
 	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, add_sibling() failed. Consider using call_deferred(\"add_sibling\", sibling) instead.");
 
