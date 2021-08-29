@@ -140,6 +140,9 @@ void MultiplayerAPI::poll() {
 			break; // It's also possible that a packet or RPC caused a disconnection, so also check here.
 		}
 	}
+	if (network_peer.is_valid() && network_peer->get_connection_status() == MultiplayerPeer::CONNECTION_CONNECTED) {
+		replicator->poll();
+	}
 }
 
 void MultiplayerAPI::clear() {
@@ -325,6 +328,9 @@ void MultiplayerAPI::_process_packet(int p_from, const uint8_t *p_packet, int p_
 		} break;
 		case NETWORK_COMMAND_DESPAWN: {
 			replicator->process_spawn_despawn(p_from, p_packet, p_packet_len, false);
+		} break;
+		case NETWORK_COMMAND_SYNC: {
+			replicator->process_sync(p_from, p_packet, p_packet_len);
 		} break;
 	}
 }

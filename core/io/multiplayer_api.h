@@ -74,6 +74,7 @@ public:
 		NETWORK_COMMAND_RAW,
 		NETWORK_COMMAND_SPAWN,
 		NETWORK_COMMAND_DESPAWN,
+		NETWORK_COMMAND_SYNC, // This is the max we can have. We should optmize simplify/confirm, possibly spawn/despawn.
 	};
 
 	enum NetworkNodeIdCompression {

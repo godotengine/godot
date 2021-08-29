@@ -32,6 +32,8 @@
 #define MULTIPLAYER_REPLICATOR_H
 
 #include "core/io/multiplayer_api.h"
+
+#include "core/templates/hash_map.h"
 #include "core/variant/typed_array.h"
 
 class MultiplayerReplicator : public Object {
@@ -40,6 +42,7 @@ class MultiplayerReplicator : public Object {
 public:
 	enum {
 		SPAWN_CMD_OFFSET = 9,
+		SYNC_CMD_OFFSET = 9,
 	};
 
 	enum ReplicationMode {
@@ -50,9 +53,15 @@ public:
 
 	struct SceneConfig {
 		ReplicationMode mode;
+		uint64_t sync_interval = 0;
+		uint64_t sync_last = 0;
+		uint8_t sync_recv = 0;
 		List<StringName> properties;
+		List<StringName> sync_properties;
 		Callable on_spawn_despawn_send;
 		Callable on_spawn_despawn_receive;
+		Callable on_sync_send;
+		Callable on_sync_receive;
 	};
 
 protected:
@@ -63,31 +72,52 @@ private:
 	Vector<uint8_t> packet_cache;
 	Map<ResourceUID::ID, SceneConfig> replications;
 	Map<ObjectID, ResourceUID::ID> replicated_nodes;
+	HashMap<ResourceUID::ID, List<ObjectID>> tracked_objects;
 
+	// Encoding
+	Error _get_state(const List<StringName> &p_properties, const Object *p_obj, List<Variant> &r_variant);
 	Error _encode_state(const List<Variant> &p_variants, uint8_t *p_buffer, int &r_len, bool *r_raw = nullptr);
 	Error _decode_state(const List<StringName> &p_cfg, Object *p_obj, const uint8_t *p_buffer, int p_len, int &r_len, bool p_raw = false);
-	Error _get_state(const List<StringName> &p_properties, const Object *p_obj, List<Variant> &r_variant);
+
+	// Spawn
 	Error _spawn_despawn(ResourceUID::ID p_scene_id, Object *p_obj, int p_peer, bool p_spawn);
 	Error _send_spawn_despawn(int p_peer_id, const ResourceUID::ID &p_scene_id, const Variant &p_data, bool p_spawn);
 	void _process_default_spawn_despawn(int p_from, const ResourceUID::ID &p_scene_id, const uint8_t *p_packet, int p_packet_len, bool p_spawn);
 	Error _send_default_spawn_despawn(int p_peer_id, const ResourceUID::ID &p_scene_id, Object *p_obj, const NodePath &p_path, bool p_spawn);
 
+	// Sync
+	void _process_default_sync(const ResourceUID::ID &p_id, const uint8_t *p_packet, int p_packet_len);
+	Error _sync_all_default(const ResourceUID::ID &p_scene_id, int p_peer);
+	void _track(const ResourceUID::ID &p_scene_id, Object *p_object);
+	void _untrack(const ResourceUID::ID &p_scene_id, Object *p_object);
+
 public:
 	void clear();
 
+	// Encoding
+	PackedByteArray encode_state(const ResourceUID::ID &p_scene_id, const Object *p_node, bool p_initial);
+	Error decode_state(const ResourceUID::ID &p_scene_id, Object *p_node, PackedByteArray p_data, bool p_initial);
+
+	// Spawn
 	Error spawn_config(const ResourceUID::ID &p_id, ReplicationMode p_mode, const TypedArray<StringName> &p_props = TypedArray<StringName>(), const Callable &p_on_send = Callable(), const Callable &p_on_recv = Callable());
 	Error spawn(ResourceUID::ID p_scene_id, Object *p_obj, int p_peer = 0);
 	Error despawn(ResourceUID::ID p_scene_id, Object *p_obj, int p_peer = 0);
-
 	Error send_despawn(int p_peer_id, const ResourceUID::ID &p_scene_id, const Variant &p_data = Variant(), const NodePath &p_path = NodePath());
 	Error send_spawn(int p_peer_id, const ResourceUID::ID &p_scene_id, const Variant &p_data = Variant(), const NodePath &p_path = NodePath());
-	PackedByteArray encode_state(const ResourceUID::ID &p_scene_id, const Object *p_node);
-	Error decode_state(const ResourceUID::ID &p_scene_id, Object *p_node, PackedByteArray p_data);
+
+	// Sync
+	Error sync_config(const ResourceUID::ID &p_id, uint64_t p_interval, const TypedArray<StringName> &p_props = TypedArray<StringName>(), const Callable &p_on_send = Callable(), const Callable &p_on_recv = Callable());
+	Error sync_all(const ResourceUID::ID &p_scene_id, int p_peer);
+	Error send_sync(int p_peer_id, const ResourceUID::ID &p_scene_id, PackedByteArray p_data, MultiplayerPeer::TransferMode p_mode, int p_channel);
+	void track(const ResourceUID::ID &p_scene_id, Object *p_object);
+	void untrack(const ResourceUID::ID &p_scene_id, Object *p_object);
 
 	// Used by MultiplayerAPI
 	void spawn_all(int p_peer);
 	void process_spawn_despawn(int p_from, const uint8_t *p_packet, int p_packet_len, bool p_spawn);
+	void process_sync(int p_from, const uint8_t *p_packet, int p_packet_len);
 	void scene_enter_exit_notify(const String &p_scene, Node *p_node, bool p_enter);
+	void poll();
 
 	MultiplayerReplicator(MultiplayerAPI *p_multiplayer) {
 		multiplayer = p_multiplayer;
