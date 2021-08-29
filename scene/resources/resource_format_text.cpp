@@ -424,7 +424,7 @@ Error ResourceLoaderText::load() {
 			}
 		}
 
-		if (path.find("://") == -1 && path.is_rel_path()) {
+		if (path.find("://") == -1 && path.is_relative_path()) {
 			// path is relative to file being loaded, so convert to a resource path
 			path = ProjectSettings::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
 		}
@@ -768,7 +768,7 @@ void ResourceLoaderText::get_dependencies(FileAccess *p_f, List<String> *p_depen
 			}
 		}
 
-		if (!using_uid && path.find("://") == -1 && path.is_rel_path()) {
+		if (!using_uid && path.find("://") == -1 && path.is_relative_path()) {
 			// path is relative to file being loaded, so convert to a resource path
 			path = ProjectSettings::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
 		}

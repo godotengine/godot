@@ -625,9 +625,9 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 				String path = "";
 				if (String(c->extends_path) != "" && String(c->extends_path) != get_path()) {
 					path = c->extends_path;
-					if (path.is_rel_path()) {
+					if (path.is_relative_path()) {
 						String base = get_path();
-						if (base == "" || base.is_rel_path()) {
+						if (base == "" || base.is_relative_path()) {
 							ERR_PRINT(("Could not resolve relative path for parent class: " + path).utf8().get_data());
 						} else {
 							path = base.get_base_dir().plus_file(path);
@@ -2059,7 +2059,7 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 		if (r_icon_path) {
 			if (c->icon_path.is_empty() || c->icon_path.is_absolute_path()) {
 				*r_icon_path = c->icon_path;
-			} else if (c->icon_path.is_rel_path()) {
+			} else if (c->icon_path.is_relative_path()) {
 				*r_icon_path = p_path.get_base_dir().plus_file(c->icon_path).simplify_path();
 			}
 		}
@@ -2087,7 +2087,7 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 								break;
 							}
 							String subpath = subclass->extends_path;
-							if (subpath.is_rel_path()) {
+							if (subpath.is_relative_path()) {
 								subpath = path.get_base_dir().plus_file(subpath).simplify_path();
 							}
 

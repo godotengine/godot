@@ -398,7 +398,7 @@ public:
 
 	// path functions
 	bool is_absolute_path() const;
-	bool is_rel_path() const;
+	bool is_relative_path() const;
 	bool is_resource_file() const;
 	String path_to(const String &p_path) const;
 	String path_to_file(const String &p_path) const;

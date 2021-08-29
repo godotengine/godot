@@ -588,7 +588,7 @@ namespace Godot
         /// <summary>
         /// If the string is a path to a file or directory, return <see langword="true"/> if the path is relative.
         /// </summary>
-        public static bool IsRelPath(this string instance)
+        public static bool IsRelativePath(this string instance)
         {
             return !IsAbsolutePath(instance);
         }

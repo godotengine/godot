@@ -4324,7 +4324,7 @@ bool String::is_resource_file() const {
 	return begins_with("res://") && find("::") == -1;
 }
 
-bool String::is_rel_path() const {
+bool String::is_relative_path() const {
 	return !is_absolute_path();
 }
 
