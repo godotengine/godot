@@ -1010,7 +1010,7 @@ PropertyInfo VisualScriptPropertySet::get_input_value_port_info(int p_idx) const
 			if (index != StringName()) {
 				detail_prop_name += "." + String(index);
 			}
-			PropertyInfo pinfo = PropertyInfo(E.type, detail_prop_name, PROPERTY_HINT_TYPE_STRING, E.hint_string);
+			PropertyInfo pinfo = PropertyInfo(E.type, detail_prop_name, E.hint, E.hint_string);
 			_adjust_input_index(pinfo);
 			return pinfo;
 		}
