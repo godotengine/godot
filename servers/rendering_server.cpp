@@ -2256,12 +2256,6 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_OCCLUDERS);
 
-	BIND_ENUM_CONSTANT(VIEWPORT_SCALE_3D_DISABLED);
-	BIND_ENUM_CONSTANT(VIEWPORT_SCALE_3D_75_PERCENT);
-	BIND_ENUM_CONSTANT(VIEWPORT_SCALE_3D_50_PERCENT);
-	BIND_ENUM_CONSTANT(VIEWPORT_SCALE_3D_33_PERCENT);
-	BIND_ENUM_CONSTANT(VIEWPORT_SCALE_3D_25_PERCENT);
-
 	/* SKY API */
 
 	ClassDB::bind_method(D_METHOD("sky_create"), &RenderingServer::sky_create);
@@ -2802,11 +2796,7 @@ RenderingServer::RenderingServer() {
 					"rendering/vulkan/rendering/back_end",
 					PROPERTY_HINT_ENUM, "Forward Clustered (Supports Desktop Only),Forward Mobile (Supports Desktop and Mobile)"));
 
-	GLOBAL_DEF("rendering/3d/viewport/scale", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/3d/viewport/scale",
-			PropertyInfo(Variant::INT,
-					"rendering/3d/viewport/scale",
-					PROPERTY_HINT_ENUM, "Disabled,75%,50%,33%,25%"));
+	GLOBAL_DEF("rendering/3d/viewport/scale", Vector2(1.0, 1.0));
 
 	GLOBAL_DEF("rendering/shader_compiler/shader_cache/enabled", true);
 	GLOBAL_DEF("rendering/shader_compiler/shader_cache/compress", true);
