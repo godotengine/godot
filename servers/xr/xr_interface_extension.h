@@ -91,7 +91,7 @@ public:
 	GDVIRTUAL2R(Transform3D, _get_transform_for_view, uint32_t, const Transform3D &);
 	GDVIRTUAL4R(PackedFloat64Array, _get_projection_for_view, uint32_t, real_t, real_t, real_t);
 
-	void add_blit(RID p_render_target, Rect2i p_rect, bool p_use_layer = false, uint32_t p_layer = 0, bool p_apply_lens_distortion = false, Vector2 p_eye_center = Vector2(), float p_k1 = 0.0, float p_k2 = 0.0, float p_upscale = 1.0, float p_aspect_ratio = 1.0);
+	void add_blit(RID p_render_target, Rect2 p_src_rect, Rect2i p_dst_rect, bool p_use_layer = false, uint32_t p_layer = 0, bool p_apply_lens_distortion = false, Vector2 p_eye_center = Vector2(), float p_k1 = 0.0, float p_k2 = 0.0, float p_upscale = 1.0, float p_aspect_ratio = 1.0);
 	virtual Vector<BlitToScreen> commit_views(RID p_render_target, const Rect2 &p_screen_rect) override;
 	GDVIRTUAL2(_commit_views, RID, const Rect2 &);
 

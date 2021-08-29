@@ -107,15 +107,16 @@
 		<method name="add_blit">
 			<return type="void" />
 			<argument index="0" name="render_target" type="RID" />
-			<argument index="1" name="rect" type="Rect2i" />
-			<argument index="2" name="use_layer" type="bool" />
-			<argument index="3" name="layer" type="int" />
-			<argument index="4" name="apply_lens_distortion" type="bool" />
-			<argument index="5" name="eye_center" type="Vector2" />
-			<argument index="6" name="k1" type="float" />
-			<argument index="7" name="k2" type="float" />
-			<argument index="8" name="upscale" type="float" />
-			<argument index="9" name="aspect_ratio" type="float" />
+			<argument index="1" name="src_rect" type="Rect2" />
+			<argument index="2" name="dst_rect" type="Rect2i" />
+			<argument index="3" name="use_layer" type="bool" />
+			<argument index="4" name="layer" type="int" />
+			<argument index="5" name="apply_lens_distortion" type="bool" />
+			<argument index="6" name="eye_center" type="Vector2" />
+			<argument index="7" name="k1" type="float" />
+			<argument index="8" name="k2" type="float" />
+			<argument index="9" name="upscale" type="float" />
+			<argument index="10" name="aspect_ratio" type="float" />
 			<description>
 				Blits our render results to screen optionally applying lens distortion. This can only be called while processing [code]_commit_views[/code].
 			</description>

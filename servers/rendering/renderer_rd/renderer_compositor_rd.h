@@ -55,7 +55,8 @@ protected:
 	};
 
 	struct BlitPushConstant {
-		float rect[4];
+		float src_rect[4];
+		float dst_rect[4];
 
 		float eye_center[2];
 		float k1;
