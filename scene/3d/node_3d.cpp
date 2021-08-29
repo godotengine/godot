@@ -218,6 +218,7 @@ void Node3D::_notification(int p_what) {
 void Node3D::set_basis(const Basis &p_basis) {
 	set_transform(Transform3D(p_basis, data.local_transform.origin));
 }
+
 void Node3D::set_quaternion(const Quaternion &p_quaternion) {
 	set_transform(Transform3D(Basis(p_quaternion), data.local_transform.origin));
 }
@@ -234,6 +235,7 @@ void Node3D::set_transform(const Transform3D &p_transform) {
 Basis Node3D::get_basis() const {
 	return get_transform().basis;
 }
+
 Quaternion Node3D::get_quaternion() const {
 	return Quaternion(get_transform().basis);
 }
