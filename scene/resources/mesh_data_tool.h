@@ -37,6 +37,7 @@ class MeshDataTool : public RefCounted {
 	GDCLASS(MeshDataTool, RefCounted);
 
 	int format = 0;
+
 	struct Vertex {
 		Vector3 vertex;
 		Color color;
@@ -49,6 +50,7 @@ class MeshDataTool : public RefCounted {
 		Vector<int> edges;
 		Vector<int> faces;
 		Variant meta;
+		Color custom[Mesh::ARRAY_CUSTOM_COUNT];
 	};
 
 	Vector<Vertex> vertices;
@@ -70,6 +72,9 @@ class MeshDataTool : public RefCounted {
 	Vector<Face> faces;
 
 	Ref<Material> material;
+
+	static Error _convert_custom_data_n(MeshDataTool::Vertex *p_data, uint32_t p_custom_idx, uint32_t n, uint32_t p_from_type, uint32_t p_to_type);
+	static Color _convert_custom_data(const Color &srcc, uint32_t p_from_type, uint32_t p_to_type);
 
 protected:
 	static void _bind_methods();
@@ -111,6 +116,20 @@ public:
 
 	Variant get_vertex_meta(int p_idx) const;
 	void set_vertex_meta(int p_idx, const Variant &p_meta);
+
+	Color get_vertex_custom_float(int p_idx, int p_custom_idx) const;
+	PackedByteArray get_vertex_custom_hfloat(int p_idx, int p_custom_idx) const;
+	PackedByteArray get_vertex_custom_unorm8(int p_idx, int p_custom_idx) const;
+	PackedInt32Array get_vertex_custom_snorm8_32i(int p_idx, int p_custom_idx) const;
+
+	Error set_vertex_custom_float(int p_idx, int p_custom_idx, const Color &p_customf);
+	Error set_vertex_custom_hfloat(int p_idx, int p_custom_idx, const PackedByteArray &p_customu);
+	Error set_vertex_custom_unorm8(int p_idx, int p_custom_idx, const PackedByteArray &p_customu);
+	Error set_vertex_custom_snorm8_32i(int p_idx, int p_custom_idx, const PackedInt32Array &p_customu);
+
+	int has_custom(int p_custom_idx) const;
+	int get_custom_type(int p_custom_idx) const;
+	Error set_custom_type(int p_custom_idx, Mesh::ArrayCustomFormat p_type, bool p_convert = false, bool has_custom = true);
 
 	Vector<int> get_vertex_edges(int p_idx) const;
 	Vector<int> get_vertex_faces(int p_idx) const;

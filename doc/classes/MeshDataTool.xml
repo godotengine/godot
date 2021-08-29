@@ -73,6 +73,13 @@
 				Requires [Mesh] with primitive type [constant Mesh.PRIMITIVE_TRIANGLES].
 			</description>
 		</method>
+		<method name="get_custom_type" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="custom_idx" type="int" />
+			<description>
+				Returns the type of the custom attribute(selected by [code]custom_idx[/code]). returns [code]-1[/code] if type for the custom attribute is not set or [code]custom_idx[/code] is invalid. [code]custom_idx[/code] can range from 0 to 3.
+			</description>
+		</method>
 		<method name="get_edge_count" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -180,6 +187,42 @@
 				Returns the total number of vertices in [Mesh].
 			</description>
 		</method>
+		<method name="get_vertex_custom_float" qualifiers="const">
+			<return type="Color" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="custom_idx" type="int" />
+			<description>
+				Returns the floating point representation of the custom attribute(specified by [code]custom_idx[/code]) of the given vertex (specified by [code]idx[/code]). [code]custom_idx[/code] can range from 0 to 3.
+			</description>
+		</method>
+		<method name="get_vertex_custom_hfloat" qualifiers="const">
+			<return type="PackedByteArray" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="custom_idx" type="int" />
+			<description>
+				Returns the half-floating point representation of the custom attribute(specified by [code]custom_idx[/code]) of the given vertex (specified by [code]idx[/code]). [code]custom_idx[/code] can range from 0 to 3.
+				The returned data will be an array of 4 16-bit floating points that are represented by the bit layout below :
+				S : 1-bit sign | E : 5-bit exponent | M : 10-bit mantissa.
+			</description>
+		</method>
+		<method name="get_vertex_custom_snorm8_32i" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="custom_idx" type="int" />
+			<description>
+				Returns the SNORM representation of the custom attribute(specified by [code]custom_idx[/code]) of the given vertex (specified by [code]idx[/code]). [code]custom_idx[/code] can range from 0 to 3.
+				The returned data will be an array of 4 32-bit signed integeres. a clamped shader input of -1.0 to 1.0 will be mapped to -127 to 127.
+			</description>
+		</method>
+		<method name="get_vertex_custom_unorm8" qualifiers="const">
+			<return type="PackedByteArray" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="custom_idx" type="int" />
+			<description>
+				Returns the SNORM representation of the custom attribute specified by [code]custom_idx[/code] of the given vertex by [code]idx[/code]. [code]custom_idx[/code] can range from 0 to 3.
+				The returned data will be an array of 4 8-bit unsigned integeres. a clamped shader input of 0.0 to 1.0 will be mapped to 0 to 255.
+			</description>
+		</method>
 		<method name="get_vertex_edges" qualifiers="const">
 			<return type="PackedInt32Array" />
 			<argument index="0" name="idx" type="int" />
@@ -236,6 +279,36 @@
 				Returns bone weights of the given vertex.
 			</description>
 		</method>
+		<method name="has_custom" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="custom_idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the corresponding custom attribute(selected by [code]custom_idx[/code]) already has a specified format. returns false otherwise.
+			</description>
+		</method>
+		<method name="set_custom_type">
+			<return type="int" enum="Error" />
+			<argument index="0" name="custom_idx" type="int" />
+			<argument index="1" name="type" type="int" enum="Mesh.ArrayCustomFormat" />
+			<argument index="2" name="convert" type="bool" default="false" />
+			<argument index="3" name="has_custom" type="bool" default="true" />
+			<description>
+				Removes the corresponding custom attribute(selected by [code]custom_index) or set's it's format. [code]custom_idx[/code] can range from 0 to 3.
+				If [code]convert[/code] is set to [code]true[/code] and the corresponding custom attribute already has a specified format, the old data will be converted to the new type.
+				If [code]has_format[/code] is set to [code]false[/code] then the corresponding custom attribute will be removed.
+				When the custom attribute's type is set. it can be accessed via the vertex shader's [code]CUSTOM0[/code]-[code]CUSTOM3[/code] built in variables :
+				[codeblocks]
+				[gdscript]
+				mdt.create_from_surface(mesh, 0)
+				mdt.set_custom_type(0,Mesh.ARRAY_CUSTOM_RGBA_HALF) # set type of CUSTOM0 to 4x 16-bit floating points.
+				for i in range(mdt.get_vertex_count()):
+				    Color value = mdt.get_vertex_custom_float(i, 0) # get the 32-bit floating point representation.
+				    Color.r = Color.r*0.5 # modify the value that was equal to CUSTOM0.x
+				    mdt.set_vertex_custom_float(j, 0, value) # set the value of CUSTOM0. the actual data remains as 4x 16-bit floating points.
+				[/gdscript]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="set_edge_meta">
 			<return type="void" />
 			<argument index="0" name="idx" type="int" />
@@ -281,6 +354,53 @@
 			<argument index="1" name="color" type="Color" />
 			<description>
 				Sets the color of the given vertex.
+			</description>
+		</method>
+		<method name="set_vertex_custom_float">
+			<return type="int" enum="Error" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="custom_idx" type="int" />
+			<argument index="2" name="customf" type="Color" />
+			<description>
+				Sets the 32-bit floating point representation of the custom attribute(specified by [code]custom_idx[/code]) of the given vertex (specified by [code]idx[/code]). [code]custom_idx[/code] can range from 0 to 3.
+				If the corresponding custom format is not already set, it will be set to [code]ARRAY_CUSTOM_RGBA_FLOAT[/code].
+			</description>
+		</method>
+		<method name="set_vertex_custom_hfloat">
+			<return type="int" enum="Error" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="custom_idx" type="int" />
+			<argument index="2" name="customu" type="PackedByteArray" />
+			<description>
+				Sets the 16-bit floating point representation of the custom attribute(specified by [code]custom_idx[/code]) of the given vertex (specified by [code]idx[/code]). [code]custom_idx[/code] can range from 0 to 3.
+				The input array should be a array of up to 4 16-bit floating point values. if the count exceeds the capacity of the corresponding custom format, extra values will be ignored.
+				If the corresponding custom format is not already set, it will be set to [code]ARRAY_CUSTOM_RGBA_HFLOAT[/code].
+				The 16-bit floating point bit layout is as below :
+				S : 1-bit sign | E : 5-bit exponent | M : 10-bit mantissa.
+			</description>
+		</method>
+		<method name="set_vertex_custom_snorm8_32i">
+			<return type="int" enum="Error" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="custom_idx" type="int" />
+			<argument index="2" name="customf" type="PackedInt32Array" />
+			<description>
+				Sets the SNORM floating point representation of the custom attribute(specified by [code]custom_idx[/code]) of the given vertex (specified by [code]idx[/code]). [code]custom_idx[/code] can range from 0 to 3.
+				The input array should be a array of up to 4 32-bit Integer values. if the count exceeds the capacity of the corresponding custom format, extra values will be ignored.
+				If the corresponding custom format is not already set, it will be set to [code]ARRAY_CUSTOM_RGBA8_SNORM[/code].
+				Clamped input values of -127 to 127 will be mapped to -1.0 to 1.0  in the shader input.
+			</description>
+		</method>
+		<method name="set_vertex_custom_unorm8">
+			<return type="int" enum="Error" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="custom_idx" type="int" />
+			<argument index="2" name="customu" type="PackedByteArray" />
+			<description>
+				Sets the UNORM floating point representation of the custom attribute(specified by [code]custom_idx[/code]) of the given vertex (specified by [code]idx[/code]). [code]custom_idx[/code] can range from 0 to 3.
+				The input array should be a array of up to 4 8-bit Integer values. if the count exceeds the capacity of the corresponding custom format, extra values will be ignored.
+				If the corresponding custom format is not already set, it will be set to [code]ARRAY_CUSTOM_RGBA8_UNORM[/code].
+				Clamped input values of 0 to 255 will be mapped to -1.0 to 1.0 in the shader input.
 			</description>
 		</method>
 		<method name="set_vertex_meta">
