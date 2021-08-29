@@ -7588,7 +7588,7 @@ Error RenderingDeviceVulkan::_draw_list_allocate(const Rect2i &p_viewport, uint3
 				VkCommandPoolCreateInfo cmd_pool_info;
 				cmd_pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 				cmd_pool_info.pNext = nullptr;
-				cmd_pool_info.queueFamilyIndex = context->get_graphics_queue();
+				cmd_pool_info.queueFamilyIndex = context->get_graphics_queue_family_index();
 				cmd_pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
 				VkResult res = vkCreateCommandPool(device, &cmd_pool_info, nullptr, &split_draw_list_allocators.write[i].command_pool);
@@ -8846,7 +8846,7 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 			VkCommandPoolCreateInfo cmd_pool_info;
 			cmd_pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 			cmd_pool_info.pNext = nullptr;
-			cmd_pool_info.queueFamilyIndex = p_context->get_graphics_queue();
+			cmd_pool_info.queueFamilyIndex = p_context->get_graphics_queue_family_index();
 			cmd_pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
 			VkResult res = vkCreateCommandPool(device, &cmd_pool_info, nullptr, &frames[i].command_pool);
@@ -9014,6 +9014,92 @@ void RenderingDeviceVulkan::capture_timestamp(const String &p_name) {
 	frames[frame].timestamp_names[frames[frame].timestamp_count] = p_name;
 	frames[frame].timestamp_cpu_values[frames[frame].timestamp_count] = OS::get_singleton()->get_ticks_usec();
 	frames[frame].timestamp_count++;
+}
+
+uint64_t RenderingDeviceVulkan::get_driver_resource(DriverResource p_resource, RID p_rid, uint64_t p_index) {
+	_THREAD_SAFE_METHOD_
+
+	switch (p_resource) {
+		case DRIVER_RESOURCE_VULKAN_DEVICE: {
+			return (uint64_t)context->get_device();
+		}; break;
+		case DRIVER_RESOURCE_VULKAN_PHYSICAL_DEVICE: {
+			return (uint64_t)context->get_physical_device();
+		}; break;
+		case DRIVER_RESOURCE_VULKAN_INSTANCE: {
+			return (uint64_t)context->get_instance();
+		}; break;
+		case DRIVER_RESOURCE_VULKAN_QUEUE: {
+			return (uint64_t)context->get_graphics_queue();
+		}; break;
+		case DRIVER_RESOURCE_VULKAN_QUEUE_FAMILY_INDEX: {
+			return context->get_graphics_queue_family_index();
+		}; break;
+		case DRIVER_RESOURCE_VULKAN_IMAGE: {
+			Texture *tex = texture_owner.getornull(p_rid);
+			ERR_FAIL_NULL_V(tex, 0);
+
+			return (uint64_t)tex->image;
+		}; break;
+		case DRIVER_RESOURCE_VULKAN_IMAGE_VIEW: {
+			Texture *tex = texture_owner.getornull(p_rid);
+			ERR_FAIL_NULL_V(tex, 0);
+
+			return (uint64_t)tex->view;
+		}; break;
+		case DRIVER_RESOURCE_VULKAN_IMAGE_NATIVE_TEXTURE_FORMAT: {
+			Texture *tex = texture_owner.getornull(p_rid);
+			ERR_FAIL_NULL_V(tex, 0);
+
+			return vulkan_formats[tex->format];
+		}; break;
+		case DRIVER_RESOURCE_VULKAN_SAMPLER: {
+			VkSampler *sampler = sampler_owner.getornull(p_rid);
+			ERR_FAIL_NULL_V(sampler, 0);
+
+			return uint64_t(*sampler);
+		}; break;
+		case DRIVER_RESOURCE_VULKAN_DESCRIPTOR_SET: {
+			UniformSet *uniform_set = uniform_set_owner.getornull(p_rid);
+			ERR_FAIL_NULL_V(uniform_set, 0);
+
+			return uint64_t(uniform_set->descriptor_set);
+		}; break;
+		case DRIVER_RESOURCE_VULKAN_BUFFER: {
+			Buffer *buffer = nullptr;
+			if (vertex_buffer_owner.owns(p_rid)) {
+				buffer = vertex_buffer_owner.getornull(p_rid);
+			} else if (index_buffer_owner.owns(p_rid)) {
+				buffer = index_buffer_owner.getornull(p_rid);
+			} else if (uniform_buffer_owner.owns(p_rid)) {
+				buffer = uniform_buffer_owner.getornull(p_rid);
+			} else if (texture_buffer_owner.owns(p_rid)) {
+				buffer = &texture_buffer_owner.getornull(p_rid)->buffer;
+			} else if (storage_buffer_owner.owns(p_rid)) {
+				buffer = storage_buffer_owner.getornull(p_rid);
+			}
+
+			ERR_FAIL_NULL_V(buffer, 0);
+
+			return uint64_t(buffer->buffer);
+		}; break;
+		case DRIVER_RESOURCE_VULKAN_COMPUTE_PIPELINE: {
+			ComputePipeline *compute_pipeline = compute_pipeline_owner.getornull(p_rid);
+			ERR_FAIL_NULL_V(compute_pipeline, 0);
+
+			return uint64_t(compute_pipeline->pipeline);
+		}; break;
+		case DRIVER_RESOURCE_VULKAN_RENDER_PIPELINE: {
+			RenderPipeline *render_pipeline = render_pipeline_owner.getornull(p_rid);
+			ERR_FAIL_NULL_V(render_pipeline, 0);
+
+			return uint64_t(render_pipeline->pipeline);
+		}; break;
+		default: {
+			// not supported for this driver
+			return 0;
+		}; break;
+	}
 }
 
 uint32_t RenderingDeviceVulkan::get_captured_timestamps_count() const {

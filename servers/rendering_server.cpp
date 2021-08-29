@@ -1467,6 +1467,11 @@ ShaderLanguage::DataType RenderingServer::global_variable_type_get_shader_dataty
 	}
 }
 
+RenderingDevice *RenderingServer::get_rendering_device() const {
+	// return the rendering device we're using globally
+	return RenderingDevice::get_singleton();
+}
+
 RenderingDevice *RenderingServer::create_local_rendering_device() const {
 	return RenderingDevice::get_singleton()->create_local_device();
 }
@@ -2714,6 +2719,7 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("force_sync"), &RenderingServer::sync);
 	ClassDB::bind_method(D_METHOD("force_draw", "swap_buffers", "frame_step"), &RenderingServer::draw, DEFVAL(true), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("get_rendering_device"), &RenderingServer::get_rendering_device);
 	ClassDB::bind_method(D_METHOD("create_local_rendering_device"), &RenderingServer::create_local_rendering_device);
 }
 

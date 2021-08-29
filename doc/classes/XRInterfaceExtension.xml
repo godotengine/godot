@@ -121,6 +121,12 @@
 				Blits our render results to screen optionally applying lens distortion. This can only be called while processing [code]_commit_views[/code].
 			</description>
 		</method>
+		<method name="get_render_target_texture">
+			<return type="RID" />
+			<argument index="0" name="render_target" type="RID" />
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
