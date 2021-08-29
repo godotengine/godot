@@ -138,7 +138,7 @@ void ResourceImporterLayeredTexture::get_import_options(List<ImportOption> *r_op
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "compress/lossy_quality", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.7));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/hdr_compression", PROPERTY_HINT_ENUM, "Disabled,Opaque Only,Always"), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/bptc_ldr", PROPERTY_HINT_ENUM, "Disabled,Enabled,RGBA Only"), 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/channel_pack", PROPERTY_HINT_ENUM, "sRGB Friendly,Optimized"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/channel_pack", PROPERTY_HINT_ENUM, "sRGB Friendly,Optimized,Normal Map (RG channels"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "mipmaps/generate"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "mipmaps/limit", PROPERTY_HINT_RANGE, "-1,256"), -1));
 
@@ -249,7 +249,7 @@ void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, cons
 			}
 
 			if (p_mipmaps) {
-				p_images.write[i]->generate_mipmaps();
+				p_images.write[i]->generate_mipmaps(p_csource == Image::COMPRESS_SOURCE_NORMAL);
 			} else {
 				p_images.write[i]->clear_mipmaps();
 			}
@@ -356,6 +356,9 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 	Image::CompressSource csource = Image::COMPRESS_SOURCE_GENERIC;
 	if (channel_pack == 0) {
 		csource = Image::COMPRESS_SOURCE_SRGB;
+	} else if (channel_pack == 2) {
+		// force normal
+		csource = Image::COMPRESS_SOURCE_NORMAL;
 	}
 
 	Image::UsedChannels used_channels = image->detect_used_channels(csource);
