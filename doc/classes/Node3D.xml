@@ -255,6 +255,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="basis" type="Basis" setter="set_basis" getter="get_basis" default="Basis(1, 0, 0, 0, 1, 0, 0, 0, 1)">
+			Local space [Basis] of this node, with respect to the parent node. This is the same as [code]transform.basis[/code].
+		</member>
 		<member name="global_transform" type="Transform3D" setter="set_global_transform" getter="get_global_transform">
 			World3D space (global) [Transform3D] of this node.
 		</member>

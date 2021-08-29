@@ -115,7 +115,7 @@
 		</member>
 		<member name="skew" type="float" setter="set_skew" getter="get_skew" default="0.0">
 		</member>
-		<member name="transform" type="Transform2D" setter="set_transform" getter="get_transform">
+		<member name="transform" type="Transform2D" setter="set_transform" getter="get_transform" default="Transform2D(1, 0, 0, 1, 0, 0)">
 			Local [Transform2D].
 		</member>
 		<member name="y_sort_enabled" type="bool" setter="set_y_sort_enabled" getter="is_y_sort_enabled" default="false">
