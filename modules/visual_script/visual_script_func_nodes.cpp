@@ -1042,7 +1042,7 @@ PropertyInfo VisualScriptPropertySet::get_input_value_port_info(int p_idx) const
 	ClassDB::get_property_list(_get_base_type(), &props, false);
 	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 		if (E->get().name == property) {
-			PropertyInfo pinfo = PropertyInfo(E->get().type, "value", PROPERTY_HINT_TYPE_STRING, E->get().hint_string);
+			PropertyInfo pinfo = PropertyInfo(E->get().type, "value", E->get().hint, E->get().hint_string);
 			_adjust_input_index(pinfo);
 			return pinfo;
 		}
