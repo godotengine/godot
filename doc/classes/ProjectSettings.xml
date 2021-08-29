@@ -1479,11 +1479,12 @@
 		</member>
 		<member name="rendering/2d/snap/snap_2d_vertices_to_pixel" type="bool" setter="" getter="" default="false">
 		</member>
-		<member name="rendering/3d/viewport/scale" type="int" setter="" getter="" default="0">
-			Scale the 3D render buffer based on the viewport size. The smaller the faster 3D rendering is performed but at the cost of quality.
+		<member name="rendering/3d/viewport/scale" type="float" setter="" getter="" default="1.0">
+			Scales the 3D render buffer based on the viewport size and displays the result with linear filtering. Values lower than [code]1.0[/code] can be used to speed up 3D rendering at the cost of quality (undersampling). Values greater than [code]1.0[/code] can be used to improve 3D rendering quality at a high performance cost (supersampling). See also [member rendering/anti_aliasing/quality/msaa] for multi-sample antialiasing, which is significantly cheaper but only smoothens the edges of polygons.
+			[b]Note:[/b] This property is only read when the project starts. To change the 3D rendering resolution scale at runtime, set [member Viewport.scale_3d] instead.
 		</member>
 		<member name="rendering/anti_aliasing/quality/msaa" type="int" setter="" getter="" default="0">
-			Sets the number of MSAA samples to use (as a power of two). MSAA is used to reduce aliasing around the edges of polygons. A higher MSAA value results in smoother edges but can be significantly slower on some hardware.
+			Sets the number of MSAA samples to use (as a power of two). MSAA is used to reduce aliasing around the edges of polygons. A higher MSAA value results in smoother edges but can be significantly slower on some hardware. See also [member rendering/3d/viewport/scale] for supersampling, which provides higher quality but is much more expensive.
 		</member>
 		<member name="rendering/anti_aliasing/quality/screen_space_aa" type="int" setter="" getter="" default="0">
 			Sets the screen-space antialiasing mode for the default screen [Viewport]. Screen-space antialiasing works by selectively blurring edges in a post-process shader. It differs from MSAA which takes multiple coverage samples while rendering objects. Screen-space AA methods are typically faster than MSAA and will smooth out specular aliasing, but tend to make scenes appear blurry.
