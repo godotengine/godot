@@ -136,11 +136,9 @@ public:
 	Vector3 get_rotation() const;
 	Vector3 get_scale() const;
 
-	void set_basis(const Basis &p_basis);
 	void set_transform(const Transform3D &p_transform);
 	void set_global_transform(const Transform3D &p_transform);
 
-	Basis get_basis() const;
 	Transform3D get_transform() const;
 	Transform3D get_global_transform() const;
 

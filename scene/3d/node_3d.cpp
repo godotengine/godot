@@ -220,15 +220,6 @@ void Node3D::_notification(int p_what) {
 	}
 }
 
-void Node3D::set_basis(const Basis &p_basis) {
-	data.local_transform = Transform3D(p_basis, data.local_transform.origin);
-	data.dirty |= DIRTY_VECTORS;
-	_propagate_transform_changed(this);
-	if (data.notify_local_transform) {
-		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
-	}
-}
-
 void Node3D::set_transform(const Transform3D &p_transform) {
 	data.local_transform = p_transform;
 	data.dirty |= DIRTY_VECTORS;
@@ -245,14 +236,6 @@ void Node3D::set_global_transform(const Transform3D &p_transform) {
 					  p_transform;
 
 	set_transform(xform);
-}
-
-Basis Node3D::get_basis() const {
-	if (data.dirty & DIRTY_LOCAL) {
-		_update_local_transform();
-	}
-
-	return data.local_transform.basis;
 }
 
 Transform3D Node3D::get_transform() const {
@@ -782,9 +765,7 @@ NodePath Node3D::get_visibility_parent() const {
 }
 
 void Node3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_basis", "basis"), &Node3D::set_basis);
-	ClassDB::bind_method(D_METHOD("get_basis"), &Node3D::get_basis);
-	ClassDB::bind_method(D_METHOD("set_transform", "transform"), &Node3D::set_transform);
+	ClassDB::bind_method(D_METHOD("set_transform", "local"), &Node3D::set_transform);
 	ClassDB::bind_method(D_METHOD("get_transform"), &Node3D::get_transform);
 	ClassDB::bind_method(D_METHOD("set_position", "position"), &Node3D::set_position);
 	ClassDB::bind_method(D_METHOD("get_position"), &Node3D::get_position);
@@ -857,12 +838,8 @@ void Node3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_lesser,or_greater,radians", PROPERTY_USAGE_EDITOR), "set_rotation", "get_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "scale", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_scale", "get_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "top_level"), "set_as_top_level", "is_set_as_top_level");
-
-	ADD_GROUP("Raw Matrix", "");
-	// No need to display the full Transform, we already have the translation above.
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_transform", "get_transform");
-	ADD_PROPERTY(PropertyInfo(Variant::BASIS, "basis", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_basis", "get_basis");
-
+	ADD_GROUP("Matrix", "");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "transform", PROPERTY_HINT_NONE, ""), "set_transform", "get_transform");
 	ADD_GROUP("Visibility", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "visibility_parent", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "GeometryInstance3D"), "set_visibility_parent", "get_visibility_parent");
