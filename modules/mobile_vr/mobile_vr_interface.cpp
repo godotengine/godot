@@ -126,6 +126,8 @@ void MobileVRInterface::set_position_from_sensors() {
 	// 9dof is a misleading marketing term coming from 3 accelerometer axis + 3 gyro axis + 3 magnetometer axis = 9 axis
 	// but in reality this only offers 3 dof (yaw, pitch, roll) orientation
 
+	Basis orientation;
+
 	uint64_t ticks = OS::get_singleton()->get_ticks_usec();
 	uint64_t ticks_elapsed = ticks - last_ticks;
 	float delta_time = (double)ticks_elapsed / 1000000.0;
@@ -207,8 +209,8 @@ void MobileVRInterface::set_position_from_sensors() {
 		};
 	};
 
-	// JIC
-	orientation.orthonormalize();
+	// and copy to our head transform
+	head_transform.basis = orientation.orthonormalized();
 
 	last_ticks = ticks;
 };
@@ -318,7 +320,7 @@ bool MobileVRInterface::initialize() {
 	ERR_FAIL_NULL_V(xr_server, false);
 
 	if (!initialized) {
-		// reset our sensor data and orientation
+		// reset our sensor data
 		mag_count = 0;
 		has_gyro = false;
 		sensor_first = true;
@@ -326,9 +328,15 @@ bool MobileVRInterface::initialize() {
 		mag_next_max = Vector3(-10000, -10000, -10000);
 		mag_current_min = Vector3(0, 0, 0);
 		mag_current_max = Vector3(0, 0, 0);
+		head_transform.basis = Basis();
+		head_transform.origin = Vector3(0.0, eye_height, 0.0);
 
-		// reset our orientation
-		orientation = Basis();
+		// we must create a tracker for our head
+		head.instantiate();
+		head->set_tracker_type(XRServer::TRACKER_HEAD);
+		head->set_tracker_name("head");
+		head->set_tracker_desc("Players head");
+		xr_server->add_tracker(head);
 
 		// make this our primary interface
 		xr_server->set_primary_interface(this);
@@ -343,10 +351,19 @@ bool MobileVRInterface::initialize() {
 
 void MobileVRInterface::uninitialize() {
 	if (initialized) {
+		// do any cleanup here...
 		XRServer *xr_server = XRServer::get_singleton();
-		if (xr_server != nullptr && xr_server->get_primary_interface() == this) {
-			// no longer our primary interface
-			xr_server->set_primary_interface(nullptr);
+		if (xr_server != nullptr) {
+			if (head.is_valid()) {
+				xr_server->remove_tracker(head);
+
+				head.unref();
+			}
+
+			if (xr_server->get_primary_interface() == this) {
+				// no longer our primary interface
+				xr_server->set_primary_interface(nullptr);
+			}
 		}
 
 		initialized = false;
@@ -377,11 +394,10 @@ Transform3D MobileVRInterface::get_camera_transform() {
 		float world_scale = xr_server->get_world_scale();
 
 		// just scale our origin point of our transform
-		Transform3D hmd_transform;
-		hmd_transform.basis = orientation;
-		hmd_transform.origin = Vector3(0.0, eye_height * world_scale, 0.0);
+		Transform3D _head_transform = head_transform;
+		_head_transform.origin *= world_scale;
 
-		transform_for_eye = (xr_server->get_reference_frame()) * hmd_transform;
+		transform_for_eye = (xr_server->get_reference_frame()) * _head_transform;
 	}
 
 	return transform_for_eye;
@@ -409,11 +425,10 @@ Transform3D MobileVRInterface::get_transform_for_view(uint32_t p_view, const Tra
 		};
 
 		// just scale our origin point of our transform
-		Transform3D hmd_transform;
-		hmd_transform.basis = orientation;
-		hmd_transform.origin = Vector3(0.0, eye_height * world_scale, 0.0);
+		Transform3D _head_transform = head_transform;
+		_head_transform.origin *= world_scale;
 
-		transform_for_eye = p_cam_transform * (xr_server->get_reference_frame()) * hmd_transform * transform_for_eye;
+		transform_for_eye = p_cam_transform * (xr_server->get_reference_frame()) * _head_transform * transform_for_eye;
 	} else {
 		// huh? well just return what we got....
 		transform_for_eye = p_cam_transform;
@@ -476,7 +491,16 @@ void MobileVRInterface::process() {
 	_THREAD_SAFE_METHOD_
 
 	if (initialized) {
+		// update our head transform orientation
 		set_position_from_sensors();
+
+		// update our head transform position (should be constant)
+		head_transform.origin = Vector3(0.0, eye_height, 0.0);
+
+		if (head.is_valid()) {
+			// Set our head position, note in real space, reference frame and world scale is applied later
+			head->set_pose("default", head_transform, Vector3(), Vector3());
+		}
 	};
 };
 

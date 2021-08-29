@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XRController3D" inherits="Node3D" version="4.0">
+<class name="XRController3D" inherits="XRNode3D" version="4.0">
 	<brief_description>
 		A spatial node representing a spatially-tracked controller.
 	</brief_description>
@@ -7,40 +7,17 @@
 		This is a helper spatial node that is linked to the tracking of controllers. It also offers several handy passthroughs to the state of buttons and such on the controllers.
 		Controllers are linked by their ID. You can create controller nodes before the controllers are available. If your game always uses two controllers (one for each hand), you can predefine the controllers with ID 1 and 2; they will become active as soon as the controllers are identified. If you expect additional controllers to be used, you should react to the signals and add XRController3D nodes to your scene.
 		The position of the controller node is automatically updated by the [XRServer]. This makes this node ideal to add child nodes to visualize the controller.
+		As many XR runtimes now use a configurable action map all inputs are named.
 	</description>
 	<tutorials>
 		<link title="VR documentation index">https://docs.godotengine.org/en/latest/tutorials/vr/index.html</link>
 	</tutorials>
 	<methods>
-		<method name="get_controller_name" qualifiers="const">
-			<return type="String" />
+		<method name="get_axis" qualifiers="const">
+			<return type="Vector2" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
-				If active, returns the name of the associated controller if provided by the AR/VR SDK used.
-			</description>
-		</method>
-		<method name="get_is_active" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if the bound controller is active. XR systems attempt to track active controllers.
-			</description>
-		</method>
-		<method name="get_joystick_axis" qualifiers="const">
-			<return type="float" />
-			<argument index="0" name="axis" type="int" />
-			<description>
-				Returns the value of the given axis for things like triggers, touchpads, etc. that are embedded into the controller.
-			</description>
-		</method>
-		<method name="get_joystick_id" qualifiers="const">
-			<return type="int" />
-			<description>
-				Returns the ID of the joystick object bound to this. Every controller tracked by the [XRServer] that has buttons and axis will also be registered as a joystick within Godot. This means that all the normal joystick tracking and input mapping will work for buttons and axis found on the AR/VR controllers. This ID is purely offered as information so you can link up the controller with its joystick entry.
-			</description>
-		</method>
-		<method name="get_mesh" qualifiers="const">
-			<return type="Mesh" />
-			<description>
-				If provided by the [XRInterface], this returns a mesh associated with the controller. This can be used to visualize the controller.
+				Returns a [Vector2] for the input with the given [code]name[/code]. This is used for thumbsticks and thumbpads found on many controllers.
 			</description>
 		</method>
 		<method name="get_tracker_hand" qualifiers="const">
@@ -49,21 +26,22 @@
 				Returns the hand holding this controller, if known. See [enum XRPositionalTracker.TrackerHand].
 			</description>
 		</method>
+		<method name="get_value" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="name" type="StringName" />
+			<description>
+				Returns a numeric value for the input with the given [code]name[/code]. This is used for triggers and grip sensors.
+			</description>
+		</method>
 		<method name="is_button_pressed" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="button" type="int" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the button at index [code]button[/code] is pressed. See [enum JoyButton].
+				Returns [code]true[/code] if the button with the given [code]name[/code] is pressed.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="controller_id" type="int" setter="set_controller_id" getter="get_controller_id" default="1">
-			The controller's ID.
-			A controller ID of 0 is unbound and will always result in an inactive node. Controller ID 1 is reserved for the first controller that identifies itself as the left-hand controller and ID 2 is reserved for the first controller that identifies itself as the right-hand controller.
-			For any other controller that the [XRServer] detects, we continue with controller ID 3.
-			When a controller is turned off, its slot is freed. This ensures controllers will keep the same ID even when controllers with lower IDs are turned off.
-		</member>
 		<member name="rumble" type="float" setter="set_rumble" getter="get_rumble" default="0.0">
 			The degree to which the controller vibrates. Ranges from [code]0.0[/code] to [code]1.0[/code] with precision [code].01[/code]. If changed, updates [member XRPositionalTracker.rumble] accordingly.
 			This is a useful property to animate if you want the controller to vibrate for a limited duration.
@@ -71,21 +49,29 @@
 	</members>
 	<signals>
 		<signal name="button_pressed">
-			<argument index="0" name="button" type="int" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Emitted when a button on this controller is pressed.
 			</description>
 		</signal>
 		<signal name="button_released">
-			<argument index="0" name="button" type="int" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Emitted when a button on this controller is released.
 			</description>
 		</signal>
-		<signal name="mesh_updated">
-			<argument index="0" name="mesh" type="Mesh" />
+		<signal name="input_axis_changed">
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="value" type="Vector2" />
 			<description>
-				Emitted when the mesh associated with the controller changes or when one becomes available. Generally speaking this will be a static mesh after becoming available.
+				Emitted when a thumbstick or thumbpad on this controller is moved.
+			</description>
+		</signal>
+		<signal name="input_value_changed">
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="value" type="float" />
+			<description>
+				Emitted when a trigger or similar input on this controller changes value.
 			</description>
 		</signal>
 	</signals>

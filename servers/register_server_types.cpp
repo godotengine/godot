@@ -133,6 +133,7 @@ void register_server_types() {
 
 	GDREGISTER_VIRTUAL_CLASS(XRInterface);
 	GDREGISTER_CLASS(XRInterfaceExtension); // can't register this as virtual because we need a creation function for our extensions.
+	GDREGISTER_CLASS(XRPose);
 	GDREGISTER_CLASS(XRPositionalTracker);
 
 	GDREGISTER_CLASS(AudioStream);

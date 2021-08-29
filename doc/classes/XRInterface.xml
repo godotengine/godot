@@ -63,6 +63,20 @@
 				Is [code]true[/code] if this interface has been initialised.
 			</description>
 		</method>
+		<method name="trigger_haptic_pulse">
+			<return type="void" />
+			<argument index="0" name="action_name" type="String" />
+			<argument index="1" name="tracker_name" type="StringName" />
+			<argument index="2" name="frequency" type="float" />
+			<argument index="3" name="amplitude" type="float" />
+			<argument index="4" name="duration_sec" type="float" />
+			<argument index="5" name="delay_sec" type="float" />
+			<description>
+				Triggers a haptic pulse on a device associated with this interface.
+				[code]action_name[/code] is the name of the action for this pulse.
+				[code]tracker_name[/code] is optional and can be used to direct the pulse to a specific device provided that device is bound to this haptic.
+			</description>
+		</method>
 		<method name="uninitialize">
 			<return type="void" />
 			<description>
@@ -88,20 +102,17 @@
 		<constant name="XR_STEREO" value="2" enum="Capabilities">
 			This interface supports stereoscopic rendering.
 		</constant>
-		<constant name="XR_AR" value="4" enum="Capabilities">
+		<constant name="XR_QUAD" value="4" enum="Capabilities">
+			This interface supports quad rendering (not yet supported by Godot).
+		</constant>
+		<constant name="XR_VR" value="8" enum="Capabilities">
+			this interface supports VR.
+		</constant>
+		<constant name="XR_AR" value="16" enum="Capabilities">
 			This interface supports AR (video background and real world tracking).
 		</constant>
-		<constant name="XR_EXTERNAL" value="8" enum="Capabilities">
+		<constant name="XR_EXTERNAL" value="32" enum="Capabilities">
 			This interface outputs to an external device. If the main viewport is used, the on screen output is an unmodified buffer of either the left or right eye (stretched if the viewport size is not changed to the same aspect ratio of [method get_render_target_size]). Using a separate viewport node frees up the main viewport for other purposes.
-		</constant>
-		<constant name="EYE_MONO" value="0" enum="Eyes">
-			Mono output, this is mostly used internally when retrieving positioning information for our camera node or when stereo scopic rendering is not supported.
-		</constant>
-		<constant name="EYE_LEFT" value="1" enum="Eyes">
-			Left eye output, this is mostly used internally when rendering the image for the left eye and obtaining positioning and projection information.
-		</constant>
-		<constant name="EYE_RIGHT" value="2" enum="Eyes">
-			Right eye output, this is mostly used internally when rendering the image for the right eye and obtaining positioning and projection information.
 		</constant>
 		<constant name="XR_NORMAL_TRACKING" value="0" enum="TrackingStatus">
 			Tracking is behaving as expected.

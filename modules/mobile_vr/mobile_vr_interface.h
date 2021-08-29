@@ -53,7 +53,6 @@ class MobileVRInterface : public XRInterface {
 private:
 	bool initialized = false;
 	XRInterface::TrackingStatus tracking_state;
-	Basis orientation;
 
 	// Just set some defaults for these. At some point we need to look at adding a lookup table for common device + headset combos and/or support reading cardboard QR codes
 	double eye_height = 1.85;
@@ -67,6 +66,10 @@ private:
 	double k1 = 0.215;
 	double k2 = 0.215;
 	double aspect = 1.0;
+
+	// at a minimum we need a tracker for our head
+	Ref<XRPositionalTracker> head;
+	Transform3D head_transform;
 
 	/*
 		logic for processing our sensor data, this was originally in our positional tracker logic but I think

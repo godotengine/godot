@@ -495,9 +495,6 @@ void RendererViewport::draw_viewports() {
 
 	if (XRServer::get_singleton() != nullptr) {
 		xr_interface = XRServer::get_singleton()->get_primary_interface();
-
-		// process all our active interfaces
-		XRServer::get_singleton()->_process();
 	}
 
 	if (Engine::get_singleton()->is_editor_hint()) {
