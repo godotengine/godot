@@ -179,8 +179,11 @@ def configure(env):
             "AVFoundation",
             "-framework",
             "CoreMedia",
+            "-framework",
+            "SystemConfiguration",
         ]
     )
+
     env.Append(LIBS=["pthread", "z"])
 
     if env["opengl3"]:

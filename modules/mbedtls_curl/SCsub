@@ -1,0 +1,220 @@
+#!/usr/bin/env python
+
+Import("env")
+Import("env_modules")
+
+
+env_curl = env_modules.Clone()
+
+if env["builtin_curl"]:
+
+    # Thirdparty source files
+    thirdparty_sources = [
+        "lib/vauth/cleartext.c",
+        "lib/vauth/cram.c",
+        "lib/vauth/digest.c",
+        "lib/vauth/digest_sspi.c",
+        "lib/vauth/gsasl.c",
+        "lib/vauth/krb5_gssapi.c",
+        "lib/vauth/krb5_sspi.c",
+        "lib/vauth/ntlm.c",
+        "lib/vauth/ntlm_sspi.c",
+        "lib/vauth/oauth2.c",
+        "lib/vauth/spnego_gssapi.c",
+        "lib/vauth/spnego_sspi.c",
+        "lib/vauth/vauth.c",
+        "lib/vtls/bearssl.c",
+        "lib/vtls/gskit.c",
+        "lib/vtls/gtls.c",
+        "lib/vtls/keylog.c",
+        "lib/vtls/mbedtls.c",
+        "lib/vtls/mbedtls_threadlock.c",
+        "lib/vtls/mesalink.c",
+        "lib/vtls/nss.c",
+        "lib/vtls/openssl.c",
+        "lib/vtls/rustls.c",
+        "lib/vtls/schannel.c",
+        "lib/vtls/schannel_verify.c",
+        "lib/vtls/sectransp.c",
+        "lib/vtls/vtls.c",
+        "lib/vtls/wolfssl.c",
+        "lib/vquic/ngtcp2.c",
+        "lib/vquic/quiche.c",
+        "lib/vquic/vquic.c",
+        "lib/altsvc.c",
+        "lib/amigaos.c",
+        "lib/asyn-ares.c",
+        "lib/asyn-thread.c",
+        "lib/base64.c",
+        "lib/bufref.c",
+        "lib/c-hyper.c",
+        "lib/conncache.c",
+        "lib/connect.c",
+        "lib/content_encoding.c",
+        "lib/cookie.c",
+        "lib/curl_addrinfo.c",
+        "lib/curl_ctype.c",
+        "lib/curl_des.c",
+        "lib/curl_endian.c",
+        "lib/curl_fnmatch.c",
+        "lib/curl_get_line.c",
+        "lib/curl_gethostname.c",
+        "lib/curl_gssapi.c",
+        "lib/curl_memrchr.c",
+        "lib/curl_multibyte.c",
+        "lib/curl_ntlm_core.c",
+        "lib/curl_ntlm_wb.c",
+        "lib/curl_path.c",
+        "lib/curl_range.c",
+        "lib/curl_rtmp.c",
+        "lib/curl_sasl.c",
+        "lib/curl_sspi.c",
+        "lib/curl_threads.c",
+        "lib/dict.c",
+        "lib/doh.c",
+        "lib/dotdot.c",
+        "lib/dynbuf.c",
+        "lib/easy.c",
+        "lib/easygetopt.c",
+        "lib/easyoptions.c",
+        "lib/escape.c",
+        "lib/file.c",
+        "lib/fileinfo.c",
+        "lib/formdata.c",
+        "lib/ftp.c",
+        "lib/ftplistparser.c",
+        "lib/getenv.c",
+        "lib/getinfo.c",
+        "lib/gopher.c",
+        "lib/hash.c",
+        "lib/hmac.c",
+        "lib/hostasyn.c",
+        "lib/hostcheck.c",
+        "lib/hostip.c",
+        "lib/hostip4.c",
+        "lib/hostip6.c",
+        "lib/hostsyn.c",
+        "lib/hsts.c",
+        "lib/http.c",
+        "lib/http2.c",
+        "lib/http_chunks.c",
+        "lib/http_digest.c",
+        "lib/http_negotiate.c",
+        "lib/http_ntlm.c",
+        "lib/http_proxy.c",
+        "lib/http_aws_sigv4.c",
+        "lib/idn_win32.c",
+        "lib/if2ip.c",
+        "lib/imap.c",
+        "lib/inet_ntop.c",
+        "lib/inet_pton.c",
+        "lib/krb5.c",
+        "lib/ldap.c",
+        "lib/llist.c",
+        "lib/md4.c",
+        "lib/md5.c",
+        "lib/memdebug.c",
+        "lib/mime.c",
+        "lib/mprintf.c",
+        "lib/mqtt.c",
+        "lib/multi.c",
+        "lib/netrc.c",
+        "lib/non-ascii.c",
+        "lib/nonblock.c",
+        "lib/openldap.c",
+        "lib/parsedate.c",
+        "lib/pingpong.c",
+        "lib/pop3.c",
+        "lib/progress.c",
+        "lib/psl.c",
+        "lib/rand.c",
+        "lib/rename.c",
+        "lib/rtsp.c",
+        "lib/select.c",
+        "lib/sendf.c",
+        "lib/setopt.c",
+        "lib/sha256.c",
+        "lib/share.c",
+        "lib/slist.c",
+        "lib/smb.c",
+        "lib/smtp.c",
+        "lib/socketpair.c",
+        "lib/socks.c",
+        "lib/socks_gssapi.c",
+        "lib/socks_sspi.c",
+        "lib/speedcheck.c",
+        "lib/splay.c",
+        "lib/strcase.c",
+        "lib/strdup.c",
+        "lib/strerror.c",
+        "lib/strtok.c",
+        "lib/strtoofft.c",
+        "lib/system_win32.c",
+        "lib/telnet.c",
+        "lib/tftp.c",
+        "lib/timeval.c",
+        "lib/transfer.c",
+        "lib/url.c",
+        "lib/urlapi.c",
+        "lib/version.c",
+        "lib/version_win32.c",
+        "lib/warnless.c",
+        "lib/wildcard.c",
+        "lib/x509asn1.c",
+    ]
+
+    env_curl.Append(
+        CPPDEFINES=[
+            "USE_MBEDTLS",
+            "BUILDING_LIBCURL",
+            "CURL_DISABLE_CRYPTO_AUTH",
+            "CURL_DISABLE_DICT",
+            "CURL_DISABLE_FILE",
+            "CURL_DISABLE_FTP",
+            "CURL_DISABLE_GOPHER",
+            "CURL_DISABLE_IMAP",
+            "CURL_DISABLE_LDAP",
+            "CURL_DISABLE_LDAPS",
+            "CURL_DISABLE_MQTT",
+            "CURL_DISABLE_POP3",
+            "CURL_DISABLE_PROXY",
+            "CURL_DISABLE_RTSP",
+            "CURL_DISABLE_SMB",
+            "CURL_DISABLE_SMTP",
+            "CURL_DISABLE_TELNET",
+            "CURL_DISABLE_TFTP",
+            "CURL_DISABLE_VERBOSE_STRINGS",
+            "CURL_STATICLIB",
+            "ENABLE_IPV6",
+            "HAVE_VARIADIC_MACROS_C99",
+        ]
+    )
+
+    if env["platform"] != "windows":
+        env_curl.Append(CPPDEFINES=["HAVE_CONFIG_H"])
+        env_curl.Prepend(CPPPATH=["#thirdparty/curl/config/"])
+        env_curl.Append(
+            CPPDEFINES=[
+                "HAVE_CONFIG_H",
+            ]
+        )
+
+    env_curl.Prepend(CPPPATH=["#thirdparty/curl/include/", "#thirdparty/curl/lib/"])
+    if env["builtin_mbedtls"]:
+        env_curl.Prepend(CPPPATH=["#thirdparty/mbedtls/include/"])
+
+    thirdparty_obj = []
+
+    thirdparty_dir = "#thirdparty/curl/"
+    thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+    env_thirdparty = env_curl.Clone()
+    env_thirdparty.disable_warnings()
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+    env.modules_sources += thirdparty_obj
+
+    module_obj = []
+
+    env_curl.add_source_files(module_obj, "*.cpp")
+    env.modules_sources += module_obj
+
+    env.Depends(module_obj, thirdparty_obj)
