@@ -2220,7 +2220,7 @@ void LineEdit::_bind_methods() {
 void LineEdit::_ensure_menu() {
 	if (!menu) {
 		menu = memnew(PopupMenu);
-		add_child(menu);
+		add_child(menu, false, INTERNAL_MODE_FRONT);
 
 		menu_dir = memnew(PopupMenu);
 		menu_dir->set_name("DirMenu");
@@ -2305,7 +2305,7 @@ LineEdit::LineEdit() {
 	set_mouse_filter(MOUSE_FILTER_STOP);
 
 	caret_blink_timer = memnew(Timer);
-	add_child(caret_blink_timer);
+	add_child(caret_blink_timer, false, INTERNAL_MODE_FRONT);
 	caret_blink_timer->set_wait_time(0.65);
 	caret_blink_timer->connect("timeout", callable_mp(this, &LineEdit::_toggle_draw_caret));
 	set_caret_blink_enabled(false);

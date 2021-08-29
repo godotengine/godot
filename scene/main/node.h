@@ -73,6 +73,12 @@ public:
 		NAME_CASING_SNAKE_CASE
 	};
 
+	enum InternalMode {
+		INTERNAL_MODE_DISABLED,
+		INTERNAL_MODE_FRONT,
+		INTERNAL_MODE_BACK,
+	};
+
 	struct Comparator {
 		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->is_greater_than(p_a); }
 	};
@@ -97,6 +103,8 @@ private:
 		Node *parent = nullptr;
 		Node *owner = nullptr;
 		Vector<Node *> children;
+		int internal_children_front = 0;
+		int internal_children_back = 0;
 		int pos = -1;
 		int depth = -1;
 		int blocked = 0; // Safeguard that throws an error when attempting to modify the tree in a harmful way while being traversed.
@@ -172,11 +180,14 @@ private:
 	void _duplicate_signals(const Node *p_original, Node *p_copy) const;
 	Node *_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap = nullptr) const;
 
-	TypedArray<Node> _get_children() const;
+	TypedArray<Node> _get_children(bool p_include_internal = true) const;
 	Array _get_groups() const;
 
 	Variant _rpc_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Variant _rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+
+	_FORCE_INLINE_ bool _is_internal_front() const { return data.parent && data.pos < data.parent->data.internal_children_front; }
+	_FORCE_INLINE_ bool _is_internal_back() const { return data.parent && data.pos >= data.parent->data.children.size() - data.parent->data.internal_children_back; }
 
 	friend class SceneTree;
 
@@ -284,12 +295,12 @@ public:
 	StringName get_name() const;
 	void set_name(const String &p_name);
 
-	void add_child(Node *p_child, bool p_legible_unique_name = false);
+	void add_child(Node *p_child, bool p_legible_unique_name = false, InternalMode p_internal = INTERNAL_MODE_DISABLED);
 	void add_sibling(Node *p_sibling, bool p_legible_unique_name = false);
 	void remove_child(Node *p_child);
 
-	int get_child_count() const;
-	Node *get_child(int p_index) const;
+	int get_child_count(bool p_include_internal = true) const;
+	Node *get_child(int p_index, bool p_include_internal = true) const;
 	bool has_node(const NodePath &p_path) const;
 	Node *get_node(const NodePath &p_path) const;
 	Node *get_node_or_null(const NodePath &p_path) const;
@@ -327,6 +338,7 @@ public:
 	int get_persistent_group_count() const;
 
 	void move_child(Node *p_child, int p_pos);
+	void _move_child(Node *p_child, int p_pos, bool p_ignore_end = false);
 	void raise();
 
 	void set_owner(Node *p_owner);
@@ -334,7 +346,7 @@ public:
 	void get_owned_by(Node *p_by, List<Node *> *p_owned);
 
 	void remove_and_skip();
-	int get_index() const;
+	int get_index(bool p_include_internal = true) const;
 
 	Ref<Tween> create_tween();
 

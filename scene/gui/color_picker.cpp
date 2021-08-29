@@ -1139,7 +1139,7 @@ void ColorPicker::_bind_methods() {
 ColorPicker::ColorPicker() :
 		BoxContainer(true) {
 	HBoxContainer *hb_edit = memnew(HBoxContainer);
-	add_child(hb_edit);
+	add_child(hb_edit, false, INTERNAL_MODE_FRONT);
 	hb_edit->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	hb_edit->add_child(uv_edit);
@@ -1151,7 +1151,7 @@ ColorPicker::ColorPicker() :
 	uv_edit->connect("draw", callable_mp(this, &ColorPicker::_hsv_draw), make_binds(0, uv_edit));
 
 	HBoxContainer *hb_smpl = memnew(HBoxContainer);
-	add_child(hb_smpl);
+	add_child(hb_smpl, false, INTERNAL_MODE_FRONT);
 
 	hb_smpl->add_child(sample);
 	sample->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -1165,12 +1165,12 @@ ColorPicker::ColorPicker() :
 	btn_pick->connect("pressed", callable_mp(this, &ColorPicker::_screen_pick_pressed));
 
 	VBoxContainer *vbl = memnew(VBoxContainer);
-	add_child(vbl);
+	add_child(vbl, false, INTERNAL_MODE_FRONT);
 
-	add_child(memnew(HSeparator));
+	add_child(memnew(HSeparator), false, INTERNAL_MODE_FRONT);
 
 	VBoxContainer *vbr = memnew(VBoxContainer);
-	add_child(vbr);
+	add_child(vbr, false, INTERNAL_MODE_FRONT);
 	vbr->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	for (int i = 0; i < 4; i++) {
@@ -1273,11 +1273,11 @@ ColorPicker::ColorPicker() :
 
 	set_pick_color(Color(1, 1, 1));
 
-	add_child(preset_separator);
+	add_child(preset_separator, false, INTERNAL_MODE_FRONT);
 
 	preset_container->set_h_size_flags(SIZE_EXPAND_FILL);
 	preset_container->set_columns(preset_column_count);
-	add_child(preset_container);
+	add_child(preset_container, false, INTERNAL_MODE_FRONT);
 
 	btn_add_preset->set_icon_align(Button::ALIGN_CENTER);
 	btn_add_preset->set_tooltip(RTR("Add current color as a preset."));
@@ -1405,7 +1405,7 @@ void ColorPickerButton::_update_picker() {
 		picker = memnew(ColorPicker);
 		picker->set_anchors_and_offsets_preset(PRESET_WIDE);
 		popup->add_child(picker);
-		add_child(popup);
+		add_child(popup, false, INTERNAL_MODE_FRONT);
 		picker->connect("color_changed", callable_mp(this, &ColorPickerButton::_color_changed));
 		popup->connect("about_to_popup", callable_mp(this, &ColorPickerButton::_about_to_popup));
 		popup->connect("popup_hide", callable_mp(this, &ColorPickerButton::_modal_closed));

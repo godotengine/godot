@@ -1690,7 +1690,7 @@ PopupMenu::PopupMenu() {
 	// Margin Container
 	margin_container = memnew(MarginContainer);
 	margin_container->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
-	add_child(margin_container);
+	add_child(margin_container, false, INTERNAL_MODE_FRONT);
 	margin_container->connect("draw", callable_mp(this, &PopupMenu::_draw_background));
 
 	// Scroll Container
@@ -1704,7 +1704,7 @@ PopupMenu::PopupMenu() {
 	control->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	control->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	control->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	scroll_container->add_child(control);
+	scroll_container->add_child(control, false, INTERNAL_MODE_FRONT);
 	control->connect("draw", callable_mp(this, &PopupMenu::_draw_items));
 
 	connect("window_input", callable_mp(this, &PopupMenu::gui_input));
@@ -1713,13 +1713,13 @@ PopupMenu::PopupMenu() {
 	submenu_timer->set_wait_time(0.3);
 	submenu_timer->set_one_shot(true);
 	submenu_timer->connect("timeout", callable_mp(this, &PopupMenu::_submenu_timeout));
-	add_child(submenu_timer);
+	add_child(submenu_timer, false, INTERNAL_MODE_FRONT);
 
 	minimum_lifetime_timer = memnew(Timer);
 	minimum_lifetime_timer->set_wait_time(0.3);
 	minimum_lifetime_timer->set_one_shot(true);
 	minimum_lifetime_timer->connect("timeout", callable_mp(this, &PopupMenu::_minimum_lifetime_timeout));
-	add_child(minimum_lifetime_timer);
+	add_child(minimum_lifetime_timer, false, INTERNAL_MODE_FRONT);
 }
 
 PopupMenu::~PopupMenu() {

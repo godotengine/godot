@@ -172,7 +172,7 @@ MenuButton::MenuButton() {
 
 	popup = memnew(PopupMenu);
 	popup->hide();
-	add_child(popup);
+	add_child(popup, false, INTERNAL_MODE_FRONT);
 	popup->connect("about_to_popup", callable_mp(this, &MenuButton::_popup_visibility_changed), varray(true));
 	popup->connect("popup_hide", callable_mp(this, &MenuButton::_popup_visibility_changed), varray(false));
 }

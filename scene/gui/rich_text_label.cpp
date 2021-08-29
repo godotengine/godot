@@ -4361,7 +4361,7 @@ RichTextLabel::RichTextLabel() {
 	current_frame = main;
 
 	vscroll = memnew(VScrollBar);
-	add_child(vscroll);
+	add_child(vscroll, false, INTERNAL_MODE_FRONT);
 	vscroll->set_drag_node(String(".."));
 	vscroll->set_step(1);
 	vscroll->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 0);

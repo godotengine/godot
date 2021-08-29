@@ -905,7 +905,7 @@ void TabContainer::drop_data(const Point2 &p_point, const Variant &p_data) {
 			if (from_tabc && from_tabc->get_tabs_rearrange_group() == get_tabs_rearrange_group()) {
 				Control *moving_tabc = from_tabc->get_tab_control(tab_from_id);
 				from_tabc->remove_child(moving_tabc);
-				add_child(moving_tabc);
+				add_child(moving_tabc, false, INTERNAL_MODE_FRONT);
 				if (hover_now < 0) {
 					hover_now = get_tab_count() - 1;
 				}
