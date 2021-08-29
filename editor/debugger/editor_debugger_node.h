@@ -188,7 +188,7 @@ public:
 	void set_camera_override(CameraOverride p_override);
 	CameraOverride get_camera_override();
 
-	Error start(const String &p_protocol = "tcp://");
+	Error start(const String &p_uri = "tcp://");
 
 	void stop();
 

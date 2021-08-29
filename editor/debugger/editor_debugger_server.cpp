@@ -45,7 +45,7 @@ private:
 public:
 	static EditorDebuggerServer *create(const String &p_protocol);
 	virtual void poll() {}
-	virtual Error start();
+	virtual Error start(const String &p_uri);
 	virtual void stop();
 	virtual bool is_active() const;
 	virtual bool is_connection_available() const;
@@ -63,11 +63,18 @@ EditorDebuggerServerTCP::EditorDebuggerServerTCP() {
 	server.instantiate();
 }
 
-Error EditorDebuggerServerTCP::start() {
-	int remote_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
-	const Error err = server->listen(remote_port);
+Error EditorDebuggerServerTCP::start(const String &p_uri) {
+	int bind_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
+	String bind_host = (String)EditorSettings::get_singleton()->get("network/debug/remote_host");
+	if (!p_uri.is_empty() && p_uri != "tcp://") {
+		String scheme, path;
+		Error err = p_uri.parse_url(scheme, bind_host, bind_port, path);
+		ERR_FAIL_COND_V(err != OK, ERR_INVALID_PARAMETER);
+		ERR_FAIL_COND_V(!bind_host.is_valid_ip_address() && bind_host != "*", ERR_INVALID_PARAMETER);
+	}
+	const Error err = server->listen(bind_port, bind_host);
 	if (err != OK) {
-		EditorNode::get_log()->add_message(String("Error listening on port ") + itos(remote_port), EditorLog::MSG_TYPE_ERROR);
+		EditorNode::get_log()->add_message(String("Error listening on port ") + itos(bind_port), EditorLog::MSG_TYPE_ERROR);
 		return err;
 	}
 	return err;
