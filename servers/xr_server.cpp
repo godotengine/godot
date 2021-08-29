@@ -49,7 +49,6 @@ void XRServer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "world_scale"), "set_world_scale", "get_world_scale");
 
 	ClassDB::bind_method(D_METHOD("add_interface", "interface"), &XRServer::add_interface);
-	ClassDB::bind_method(D_METHOD("clear_primary_interface_if", "interface"), &XRServer::clear_primary_interface_if);
 	ClassDB::bind_method(D_METHOD("get_interface_count"), &XRServer::get_interface_count);
 	ClassDB::bind_method(D_METHOD("remove_interface", "interface"), &XRServer::remove_interface);
 	ClassDB::bind_method(D_METHOD("get_interface", "idx"), &XRServer::get_interface);
@@ -316,17 +315,14 @@ Ref<XRInterface> XRServer::get_primary_interface() const {
 };
 
 void XRServer::set_primary_interface(const Ref<XRInterface> &p_primary_interface) {
-	ERR_FAIL_COND(p_primary_interface.is_null());
-	primary_interface = p_primary_interface;
-
-	print_verbose("XR: Primary interface set to: " + primary_interface->get_name());
-};
-
-void XRServer::clear_primary_interface_if(const Ref<XRInterface> &p_primary_interface) {
-	if (primary_interface == p_primary_interface) {
+	if (p_primary_interface.is_null()) {
 		print_verbose("XR: Clearing primary interface");
 		primary_interface.unref();
-	};
+	} else {
+		primary_interface = p_primary_interface;
+
+		print_verbose("XR: Primary interface set to: " + primary_interface->get_name());
+	}
 };
 
 uint64_t XRServer::get_last_process_usec() {

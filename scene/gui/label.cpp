@@ -66,11 +66,11 @@ bool Label::is_uppercase() const {
 int Label::get_line_height(int p_line) const {
 	Ref<Font> font = get_theme_font(SNAME("font"));
 	if (p_line >= 0 && p_line < lines_rid.size()) {
-		return TS->shaped_text_get_size(lines_rid[p_line]).y + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM);
+		return TS->shaped_text_get_size(lines_rid[p_line]).y + font->get_spacing(TextServer::SPACING_TOP) + font->get_spacing(TextServer::SPACING_BOTTOM);
 	} else if (lines_rid.size() > 0) {
 		int h = 0;
 		for (int i = 0; i < lines_rid.size(); i++) {
-			h = MAX(h, TS->shaped_text_get_size(lines_rid[i]).y) + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM);
+			h = MAX(h, TS->shaped_text_get_size(lines_rid[i]).y) + font->get_spacing(TextServer::SPACING_TOP) + font->get_spacing(TextServer::SPACING_BOTTOM);
 		}
 		return h;
 	} else {
@@ -89,7 +89,10 @@ void Label::_shape() {
 		} else {
 			TS->shaped_text_set_direction(text_rid, (TextServer::Direction)text_direction);
 		}
-		TS->shaped_text_add_string(text_rid, (uppercase) ? xl_text.to_upper() : xl_text, get_theme_font(SNAME("font"))->get_rids(), get_theme_font_size(SNAME("font_size")), opentype_features, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
+		const Ref<Font> &font = get_theme_font(SNAME("font"));
+		int font_size = get_theme_font_size(SNAME("font_size"));
+		ERR_FAIL_COND(font.is_null());
+		TS->shaped_text_add_string(text_rid, (uppercase) ? xl_text.to_upper() : xl_text, font->get_rids(), font_size, opentype_features, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
 		TS->shaped_text_set_bidi_override(text_rid, structured_text_parser(st_parser, st_args, xl_text));
 		dirty = false;
 		lines_dirty = true;
@@ -217,7 +220,7 @@ void Label::_update_visible() {
 	minsize.height = 0;
 	int last_line = MIN(lines_rid.size(), lines_visible + lines_skipped);
 	for (int64_t i = lines_skipped; i < last_line; i++) {
-		minsize.height += TS->shaped_text_get_size(lines_rid[i]).y + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM) + line_spacing;
+		minsize.height += TS->shaped_text_get_size(lines_rid[i]).y + font->get_spacing(TextServer::SPACING_TOP) + font->get_spacing(TextServer::SPACING_BOTTOM) + line_spacing;
 		if (minsize.height > (get_size().height - style->get_minimum_size().height + line_spacing)) {
 			break;
 		}
@@ -286,7 +289,7 @@ void Label::_notification(int p_what) {
 
 		// Get number of lines to fit to the height.
 		for (int64_t i = lines_skipped; i < lines_rid.size(); i++) {
-			total_h += TS->shaped_text_get_size(lines_rid[i]).y + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM) + line_spacing;
+			total_h += TS->shaped_text_get_size(lines_rid[i]).y + font->get_spacing(TextServer::SPACING_TOP) + font->get_spacing(TextServer::SPACING_BOTTOM) + line_spacing;
 			if (total_h > (get_size().height - style->get_minimum_size().height + line_spacing)) {
 				break;
 			}
@@ -302,7 +305,7 @@ void Label::_notification(int p_what) {
 		// Get real total height.
 		total_h = 0;
 		for (int64_t i = lines_skipped; i < last_line; i++) {
-			total_h += TS->shaped_text_get_size(lines_rid[i]).y + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM) + line_spacing;
+			total_h += TS->shaped_text_get_size(lines_rid[i]).y + font->get_spacing(TextServer::SPACING_TOP) + font->get_spacing(TextServer::SPACING_BOTTOM) + line_spacing;
 		}
 		total_h += style->get_margin(SIDE_TOP) + style->get_margin(SIDE_BOTTOM);
 
@@ -357,7 +360,7 @@ void Label::_notification(int p_what) {
 		for (int i = lines_skipped; i < last_line; i++) {
 			Size2 line_size = TS->shaped_text_get_size(lines_rid[i]);
 			ofs.x = 0;
-			ofs.y += TS->shaped_text_get_ascent(lines_rid[i]) + font->get_spacing(Font::SPACING_TOP);
+			ofs.y += TS->shaped_text_get_ascent(lines_rid[i]) + font->get_spacing(TextServer::SPACING_TOP);
 			switch (align) {
 				case ALIGN_FILL:
 					if (rtl && autowrap_mode != AUTOWRAP_OFF) {
@@ -433,7 +436,7 @@ void Label::_notification(int p_what) {
 					}
 				}
 			}
-			ofs.y += TS->shaped_text_get_descent(lines_rid[i]) + vsep + line_spacing + font->get_spacing(Font::SPACING_BOTTOM);
+			ofs.y += TS->shaped_text_get_descent(lines_rid[i]) + vsep + line_spacing + font->get_spacing(TextServer::SPACING_BOTTOM);
 		}
 	}
 
@@ -455,7 +458,7 @@ Size2 Label::get_minimum_size() const {
 	Size2 min_size = minsize;
 
 	Ref<Font> font = get_theme_font(SNAME("font"));
-	min_size.height = MAX(min_size.height, font->get_height(get_theme_font_size(SNAME("font_size"))) + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM));
+	min_size.height = MAX(min_size.height, font->get_height(get_theme_font_size(SNAME("font_size"))) + font->get_spacing(TextServer::SPACING_TOP) + font->get_spacing(TextServer::SPACING_BOTTOM));
 
 	Size2 min_style = get_theme_stylebox(SNAME("normal"))->get_minimum_size();
 	if (autowrap_mode != AUTOWRAP_OFF) {
@@ -486,7 +489,7 @@ int Label::get_visible_line_count() const {
 	int lines_visible = 0;
 	float total_h = 0.0;
 	for (int64_t i = lines_skipped; i < lines_rid.size(); i++) {
-		total_h += TS->shaped_text_get_size(lines_rid[i]).y + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM) + line_spacing;
+		total_h += TS->shaped_text_get_size(lines_rid[i]).y + font->get_spacing(TextServer::SPACING_TOP) + font->get_spacing(TextServer::SPACING_BOTTOM) + line_spacing;
 		if (total_h > (get_size().height - style->get_minimum_size().height + line_spacing)) {
 			break;
 		}

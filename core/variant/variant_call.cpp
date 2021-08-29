@@ -1422,6 +1422,7 @@ static void _register_variant_builtin_methods() {
 
 	bind_method(String, is_absolute_path, sarray(), varray());
 	bind_method(String, is_rel_path, sarray(), varray());
+	bind_method(String, simplify_path, sarray(), varray());
 	bind_method(String, get_base_dir, sarray(), varray());
 	bind_method(String, get_file, sarray(), varray());
 	bind_method(String, xml_escape, sarray("escape_quotes"), varray(false));
@@ -1806,6 +1807,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Array, has, sarray("value"), varray());
 	bind_method(Array, pop_back, sarray(), varray());
 	bind_method(Array, pop_front, sarray(), varray());
+	bind_method(Array, pop_at, sarray("position"), varray());
 	bind_method(Array, sort, sarray(), varray());
 	bind_method(Array, sort_custom, sarray("func"), varray());
 	bind_method(Array, shuffle, sarray(), varray());

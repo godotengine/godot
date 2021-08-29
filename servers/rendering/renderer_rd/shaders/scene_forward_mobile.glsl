@@ -401,6 +401,8 @@ layout(constant_id = 14) const bool sc_disable_fog = false;
 
 #endif //!MODE_RENDER_DEPTH
 
+layout(constant_id = 15) const float sc_luminance_multiplier = 2.0;
+
 /* Include our forward mobile UBOs definitions etc. */
 #include "scene_forward_mobile_inc.glsl"
 
@@ -1551,11 +1553,14 @@ void main() {
 	frag_color = vec4(albedo, alpha);
 #else // MODE_UNSHADED
 	frag_color = vec4(emission + ambient_light + diffuse_light + specular_light, alpha);
-	//frag_color = vec4(1.0);
 #endif // MODE_UNSHADED
 
 	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
 	frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
+
+	// On mobile we use a UNORM buffer with 10bpp which results in a range from 0.0 - 1.0 resulting in HDR breaking
+	// We divide by sc_luminance_multiplier to support a range from 0.0 - 2.0 both increasing precision on bright and darker images
+	frag_color.rgb = frag_color.rgb / sc_luminance_multiplier;
 
 #endif //MODE_MULTIPLE_RENDER_TARGETS
 

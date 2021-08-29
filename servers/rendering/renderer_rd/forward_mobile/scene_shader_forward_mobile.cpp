@@ -665,6 +665,8 @@ void SceneShaderForwardMobile::init(RendererStorageRD *p_storage, const String p
 		actions.global_buffer_array_variable = "global_variables.data";
 		actions.instance_uniform_index_variable = "draw_call.instance_uniforms_ofs";
 
+		actions.apply_luminance_multiplier = true; // apply luminance multiplier to screen texture
+
 		compiler.initialize(actions);
 	}
 
@@ -673,6 +675,8 @@ void SceneShaderForwardMobile::init(RendererStorageRD *p_storage, const String p
 		default_shader = storage->shader_allocate();
 		storage->shader_initialize(default_shader);
 		storage->shader_set_code(default_shader, R"(
+// Default 3D material shader (mobile).
+
 shader_type spatial;
 
 void vertex() {
@@ -701,6 +705,8 @@ void fragment() {
 		storage->shader_initialize(overdraw_material_shader);
 		// Use relatively low opacity so that more "layers" of overlapping objects can be distinguished.
 		storage->shader_set_code(overdraw_material_shader, R"(
+// 3D editor Overdraw debug draw mode shader (mobile).
+
 shader_type spatial;
 
 render_mode blend_add, unshaded;

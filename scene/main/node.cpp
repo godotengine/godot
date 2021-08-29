@@ -58,7 +58,7 @@ void Node::_notification(int p_notification) {
 
 		} break;
 		case NOTIFICATION_PHYSICS_PROCESS: {
-			GDVIRTUAL_CALL(_physics_process, get_process_delta_time());
+			GDVIRTUAL_CALL(_physics_process, get_physics_process_delta_time());
 
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
@@ -123,22 +123,22 @@ void Node::_notification(int p_notification) {
 		} break;
 		case NOTIFICATION_READY: {
 			if (get_script_instance()) {
-				if (GDVIRTUAL_IS_OVERRIDEN(_input)) {
+				if (GDVIRTUAL_IS_OVERRIDDEN(_input)) {
 					set_process_input(true);
 				}
 
-				if (GDVIRTUAL_IS_OVERRIDEN(_unhandled_input)) {
+				if (GDVIRTUAL_IS_OVERRIDDEN(_unhandled_input)) {
 					set_process_unhandled_input(true);
 				}
 
-				if (GDVIRTUAL_IS_OVERRIDEN(_unhandled_key_input)) {
+				if (GDVIRTUAL_IS_OVERRIDDEN(_unhandled_key_input)) {
 					set_process_unhandled_key_input(true);
 				}
 
-				if (GDVIRTUAL_IS_OVERRIDEN(_process)) {
+				if (GDVIRTUAL_IS_OVERRIDDEN(_process)) {
 					set_process(true);
 				}
-				if (GDVIRTUAL_IS_OVERRIDEN(_physics_process)) {
+				if (GDVIRTUAL_IS_OVERRIDDEN(_physics_process)) {
 					set_physics_process(true);
 				}
 
@@ -2652,6 +2652,8 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_scene_instance_load_placeholder", "load_placeholder"), &Node::set_scene_instance_load_placeholder);
 	ClassDB::bind_method(D_METHOD("get_scene_instance_load_placeholder"), &Node::get_scene_instance_load_placeholder);
+	ClassDB::bind_method(D_METHOD("set_editable_instance", "node", "is_editable"), &Node::set_editable_instance);
+	ClassDB::bind_method(D_METHOD("is_editable_instance", "node"), &Node::is_editable_instance);
 
 	ClassDB::bind_method(D_METHOD("get_viewport"), &Node::get_viewport);
 

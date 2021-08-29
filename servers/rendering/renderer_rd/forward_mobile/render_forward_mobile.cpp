@@ -86,12 +86,13 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::clear() {
 void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, uint32_t p_view_count) {
 	clear();
 
-	bool is_half_resolution = false; // Set this once we support this feature.
-
 	msaa = p_msaa;
+
+	Size2i target_size = RD::get_singleton()->texture_size(p_target_buffer);
 
 	width = p_width;
 	height = p_height;
+	bool is_scaled = (target_size.width != p_width) || (target_size.height != p_height);
 	view_count = p_view_count;
 
 	color = p_color_buffer;
@@ -124,7 +125,7 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_b
 		passes.push_back(pass);
 		color_fbs[FB_CONFIG_THREE_SUBPASSES] = RD::get_singleton()->framebuffer_create_multipass(fb, passes, RenderingDevice::INVALID_ID, view_count);
 
-		if (!is_half_resolution) {
+		if (!is_scaled) {
 			// - add blit to 2D pass
 			fb.push_back(p_target_buffer); // 2 - target buffer
 
@@ -211,7 +212,7 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_b
 				color_fbs[FB_CONFIG_ONE_PASS] = RD::get_singleton()->framebuffer_create_multipass(fb, one_pass_with_resolve, RenderingDevice::INVALID_ID, view_count);
 			}
 
-			if (!is_half_resolution) {
+			if (!is_scaled) {
 				// - add blit to 2D pass
 				fb.push_back(p_target_buffer); // 3 - target buffer
 				RD::FramebufferPass blit_pass;
@@ -270,6 +271,12 @@ bool RenderForwardMobile::free(RID p_rid) {
 }
 
 /* Render functions */
+
+float RenderForwardMobile::_render_buffers_get_luminance_multiplier() {
+	// On mobile renderer we need to multiply source colors by 2 due to using a UNORM buffer
+	// and multiplying by the output color during 3D rendering by 0.5
+	return 2.0;
+}
 
 RD::DataFormat RenderForwardMobile::_render_buffers_get_color_format() {
 	// Using 32bit buffers enables AFBC on mobile devices which should have a definite performance improvement (MALI G710 and newer support this on 64bit RTs)
@@ -491,7 +498,6 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	bool using_subpass_transparent = true;
 	bool using_subpass_post_process = true;
 
-	bool is_half_resolution = false; // Set this once we support this feature.
 	bool using_ssr = false; // I don't think we support this in our mobile renderer so probably should phase it out
 	bool using_sss = false; // I don't think we support this in our mobile renderer so probably should phase it out
 
@@ -512,7 +518,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		screen_size.x = render_buffer->width;
 		screen_size.y = render_buffer->height;
 
-		if (is_half_resolution) {
+		if (render_buffer->color_fbs[FB_CONFIG_FOUR_SUBPASSES].is_null()) {
 			// can't do blit subpass
 			using_subpass_post_process = false;
 		} else if (env && (env->glow_enabled || env->auto_exposure || camera_effects_uses_dof(p_render_data->camera_effects))) {
@@ -631,7 +637,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 			RID sky_rid = env->sky;
 			if (sky_rid.is_valid()) {
-				sky.update(env, projection, p_render_data->cam_transform, time);
+				sky.update(env, projection, p_render_data->cam_transform, time, _render_buffers_get_luminance_multiplier());
 				radiance_texture = sky.sky_get_radiance_texture_rd(sky_rid);
 			} else {
 				// do not try to draw sky if invalid
@@ -750,9 +756,9 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				CameraMatrix correction;
 				correction.set_depth_correction(true);
 				CameraMatrix projection = correction * p_render_data->cam_projection;
-				sky.draw(draw_list, env, framebuffer, 1, &projection, p_render_data->cam_transform, time);
+				sky.draw(draw_list, env, framebuffer, 1, &projection, p_render_data->cam_transform, time, _render_buffers_get_luminance_multiplier());
 			} else {
-				sky.draw(draw_list, env, framebuffer, p_render_data->view_count, p_render_data->view_projection, p_render_data->cam_transform, time);
+				sky.draw(draw_list, env, framebuffer, p_render_data->view_count, p_render_data->view_projection, p_render_data->cam_transform, time, _render_buffers_get_luminance_multiplier());
 			}
 
 			RD::get_singleton()->draw_command_end_label(); // Draw Sky Subpass

@@ -55,6 +55,7 @@ public:
 	LoadStatus load_extension(const String &p_path);
 	LoadStatus reload_extension(const String &p_path);
 	LoadStatus unload_extension(const String &p_path);
+	bool is_extension_loaded(const String &p_path) const;
 	Vector<String> get_loaded_extensions() const;
 	Ref<NativeExtension> get_extension(const String &p_path);
 
@@ -62,6 +63,8 @@ public:
 	void deinitialize_extensions(NativeExtension::InitializationLevel p_level);
 
 	static NativeExtensionManager *get_singleton();
+
+	void load_extensions();
 
 	NativeExtensionManager();
 };

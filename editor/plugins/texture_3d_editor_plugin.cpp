@@ -76,6 +76,8 @@ void Texture3DEditor::_update_material() {
 void Texture3DEditor::_make_shaders() {
 	shader.instantiate();
 	shader->set_code(R"(
+// Texture3DEditor preview shader.
+
 shader_type canvas_item;
 
 uniform sampler3D tex;

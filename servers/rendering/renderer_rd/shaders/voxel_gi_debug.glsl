@@ -20,11 +20,6 @@ layout(set = 0, binding = 2) uniform texture3D color_tex;
 
 layout(set = 0, binding = 3) uniform sampler tex_sampler;
 
-#ifdef USE_ANISOTROPY
-layout(set = 0, binding = 4) uniform texture3D aniso_pos_tex;
-layout(set = 0, binding = 5) uniform texture3D aniso_neg_tex;
-#endif
-
 layout(push_constant, binding = 0, std430) uniform Params {
 	mat4 projection;
 	uint cell_offset;

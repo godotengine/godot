@@ -70,12 +70,12 @@ Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_motion, bool p_t
 	return Ref<KinematicCollision2D>();
 }
 
-bool PhysicsBody2D::move_and_collide(const Vector2 &p_motion, PhysicsServer2D::MotionResult &r_result, real_t p_margin, bool p_test_only, bool p_cancel_sliding, const Set<RID> &p_exclude) {
+bool PhysicsBody2D::move_and_collide(const Vector2 &p_motion, PhysicsServer2D::MotionResult &r_result, real_t p_margin, bool p_test_only, bool p_cancel_sliding, bool p_collide_separation_ray, const Set<RID> &p_exclude) {
 	if (is_only_update_transform_changes_enabled()) {
 		ERR_PRINT("Move functions do not work together with 'sync to physics' option. Please read the documentation.");
 	}
 	Transform2D gt = get_global_transform();
-	bool colliding = PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_margin, &r_result, p_exclude);
+	bool colliding = PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_margin, &r_result, p_collide_separation_ray, p_exclude);
 
 	// Restore direction of motion to be along original motion,
 	// in order to avoid sliding due to recovery,
@@ -1075,7 +1075,7 @@ bool CharacterBody2D::move_and_slide() {
 		PhysicsServer2D::MotionResult floor_result;
 		Set<RID> exclude;
 		exclude.insert(platform_rid);
-		if (move_and_collide(current_platform_velocity * delta, floor_result, margin, false, false, exclude)) {
+		if (move_and_collide(current_platform_velocity * delta, floor_result, margin, false, false, false, exclude)) {
 			motion_results.push_back(floor_result);
 			_set_collision_direction(floor_result);
 		}
@@ -1285,12 +1285,11 @@ void CharacterBody2D::_snap_on_floor(bool was_on_floor, bool vel_dir_facing_up) 
 
 	Transform2D gt = get_global_transform();
 	PhysicsServer2D::MotionResult result;
-	if (move_and_collide(up_direction * -floor_snap_length, result, margin, true, false)) {
+	if (move_and_collide(up_direction * -floor_snap_length, result, margin, true, false, true)) {
 		bool apply = true;
 		if (result.get_angle(up_direction) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) {
 			on_floor = true;
 			floor_normal = result.collision_normal;
-			platform_velocity = result.collider_velocity;
 			_set_platform_data(result);
 
 			if (floor_stop_on_slope) {
@@ -1319,7 +1318,7 @@ bool CharacterBody2D::_on_floor_if_snapped(bool was_on_floor, bool vel_dir_facin
 	}
 
 	PhysicsServer2D::MotionResult result;
-	if (move_and_collide(up_direction * -floor_snap_length, result, margin, true, false)) {
+	if (move_and_collide(up_direction * -floor_snap_length, result, margin, true, false, true)) {
 		if (result.get_angle(up_direction) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) {
 			return true;
 		}
@@ -1332,19 +1331,21 @@ void CharacterBody2D::_set_collision_direction(const PhysicsServer2D::MotionResu
 	if (motion_mode == MOTION_MODE_GROUNDED && p_result.get_angle(up_direction) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //floor
 		on_floor = true;
 		floor_normal = p_result.collision_normal;
-		platform_velocity = p_result.collider_velocity;
 		_set_platform_data(p_result);
 	} else if (motion_mode == MOTION_MODE_GROUNDED && p_result.get_angle(-up_direction) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //ceiling
 		on_ceiling = true;
 	} else {
 		on_wall = true;
-		platform_velocity = p_result.collider_velocity;
-		_set_platform_data(p_result);
+		// Don't apply wall velocity when the collider is a CharacterBody2D.
+		if (Object::cast_to<CharacterBody2D>(ObjectDB::get_instance(p_result.collider_id)) == nullptr) {
+			_set_platform_data(p_result);
+		}
 	}
 }
 
 void CharacterBody2D::_set_platform_data(const PhysicsServer2D::MotionResult &p_result) {
 	platform_rid = p_result.collider;
+	platform_velocity = p_result.collider_velocity;
 	platform_layer = 0;
 	CollisionObject2D *collision_object = Object::cast_to<CollisionObject2D>(ObjectDB::get_instance(p_result.collider_id));
 	if (collision_object) {

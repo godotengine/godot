@@ -2651,7 +2651,7 @@ TypedArray<String> CodeEdit::_get_delimiters(DelimiterType p_type) const {
 void CodeEdit::_filter_code_completion_candidates_impl() {
 	int line_height = get_line_height();
 
-	if (GDVIRTUAL_IS_OVERRIDEN(_filter_code_completion_candidates)) {
+	if (GDVIRTUAL_IS_OVERRIDDEN(_filter_code_completion_candidates)) {
 		code_completion_options.clear();
 		code_completion_base = "";
 

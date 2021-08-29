@@ -97,10 +97,14 @@
 #include "editor/editor_translation_parser.h"
 #include "editor/export_template_manager.h"
 #include "editor/filesystem_dock.h"
+#include "editor/import/dynamicfont_import_settings.h"
 #include "editor/import/editor_import_collada.h"
 #include "editor/import/resource_importer_bitmask.h"
+#include "editor/import/resource_importer_bmfont.h"
 #include "editor/import/resource_importer_csv_translation.h"
+#include "editor/import/resource_importer_dynamicfont.h"
 #include "editor/import/resource_importer_image.h"
+#include "editor/import/resource_importer_imagefont.h"
 #include "editor/import/resource_importer_layered_texture.h"
 #include "editor/import/resource_importer_obj.h"
 #include "editor/import/resource_importer_scene.h"
@@ -4800,6 +4804,32 @@ String EditorNode::get_run_playing_scene() const {
 	return run_filename;
 }
 
+void EditorNode::_immediate_dialog_confirmed() {
+	immediate_dialog_confirmed = true;
+}
+bool EditorNode::immediate_confirmation_dialog(const String &p_text, const String &p_ok_text, const String &p_cancel_text) {
+	ConfirmationDialog *cd = memnew(ConfirmationDialog);
+	cd->set_text(p_text);
+	cd->get_ok_button()->set_text(p_ok_text);
+	cd->get_cancel_button()->set_text(p_cancel_text);
+	cd->connect("confirmed", callable_mp(singleton, &EditorNode::_immediate_dialog_confirmed));
+	singleton->gui_base->add_child(cd);
+
+	cd->popup_centered();
+
+	while (true) {
+		OS::get_singleton()->delay_usec(1);
+		DisplayServer::get_singleton()->process_events();
+		Main::iteration();
+		if (singleton->immediate_dialog_confirmed || !cd->is_visible()) {
+			break;
+		}
+	}
+
+	memdelete(cd);
+	return singleton->immediate_dialog_confirmed;
+}
+
 int EditorNode::get_current_tab() {
 	return scene_tabs->get_current_tab();
 }
@@ -5827,6 +5857,18 @@ EditorNode::EditorNode() {
 		import_texture_atlas.instantiate();
 		ResourceFormatImporter::get_singleton()->add_importer(import_texture_atlas);
 
+		Ref<ResourceImporterDynamicFont> import_font_data_dynamic;
+		import_font_data_dynamic.instantiate();
+		ResourceFormatImporter::get_singleton()->add_importer(import_font_data_dynamic);
+
+		Ref<ResourceImporterBMFont> import_font_data_bmfont;
+		import_font_data_bmfont.instantiate();
+		ResourceFormatImporter::get_singleton()->add_importer(import_font_data_bmfont);
+
+		Ref<ResourceImporterImageFont> import_font_data_image;
+		import_font_data_image.instantiate();
+		ResourceFormatImporter::get_singleton()->add_importer(import_font_data_image);
+
 		Ref<ResourceImporterCSVTranslation> import_csv_translation;
 		import_csv_translation.instantiate();
 		ResourceFormatImporter::get_singleton()->add_importer(import_csv_translation);
@@ -6231,6 +6273,9 @@ EditorNode::EditorNode() {
 
 	scene_import_settings = memnew(SceneImportSettings);
 	gui_base->add_child(scene_import_settings);
+
+	fontdata_import_settings = memnew(DynamicFontImportSettings);
+	gui_base->add_child(fontdata_import_settings);
 
 	export_template_manager = memnew(ExportTemplateManager);
 	gui_base->add_child(export_template_manager);
@@ -6793,7 +6838,6 @@ EditorNode::EditorNode() {
 
 	preview_gen = memnew(AudioStreamPreviewGenerator);
 	add_child(preview_gen);
-	//plugin stuff
 
 	add_editor_plugin(memnew(DebuggerEditorPlugin(this, debug_menu)));
 	add_editor_plugin(memnew(DebugAdapterServer()));

@@ -874,7 +874,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						charfx->visibility = visible;
 						charfx->outline = true;
 						charfx->font = frid;
-						charfx->glpyh_index = gl;
+						charfx->glyph_index = gl;
 						charfx->offset = fx_offset;
 						charfx->color = font_color;
 
@@ -884,7 +884,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						fx_offset += charfx->offset;
 						font_color = charfx->color;
 						frid = charfx->font;
-						gl = charfx->glpyh_index;
+						gl = charfx->glyph_index;
 						visible &= charfx->visibility;
 					}
 				} else if (item_fx->type == ITEM_SHAKE) {
@@ -1026,7 +1026,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						charfx->visibility = visible;
 						charfx->outline = false;
 						charfx->font = frid;
-						charfx->glpyh_index = gl;
+						charfx->glyph_index = gl;
 						charfx->offset = fx_offset;
 						charfx->color = font_color;
 
@@ -1036,7 +1036,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						fx_offset += charfx->offset;
 						font_color = charfx->color;
 						frid = charfx->font;
-						gl = charfx->glpyh_index;
+						gl = charfx->glyph_index;
 						visible &= charfx->visibility;
 					}
 				} else if (item_fx->type == ITEM_SHAKE) {
@@ -1451,7 +1451,7 @@ void RichTextLabel::_notification(int p_what) {
 
 Control::CursorShape RichTextLabel::get_cursor_shape(const Point2 &p_pos) const {
 	if (!underline_meta) {
-		return CURSOR_ARROW;
+		return get_default_cursor_shape();
 	}
 
 	if (selection.click_item) {
@@ -1459,11 +1459,11 @@ Control::CursorShape RichTextLabel::get_cursor_shape(const Point2 &p_pos) const 
 	}
 
 	if (main->first_invalid_line < main->lines.size()) {
-		return CURSOR_ARROW; //invalid
+		return get_default_cursor_shape(); //invalid
 	}
 
 	if (main->first_resized_line < main->lines.size()) {
-		return CURSOR_ARROW; //invalid
+		return get_default_cursor_shape(); //invalid
 	}
 
 	Item *item = nullptr;
@@ -1474,7 +1474,7 @@ Control::CursorShape RichTextLabel::get_cursor_shape(const Point2 &p_pos) const 
 		return CURSOR_POINTING_HAND;
 	}
 
-	return CURSOR_ARROW;
+	return get_default_cursor_shape();
 }
 
 void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {

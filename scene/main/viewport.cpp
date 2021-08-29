@@ -46,12 +46,14 @@
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
 #include "scene/gui/popup.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/text_line.h"
 #include "scene/resources/world_2d.h"
 #include "scene/scene_string_names.h"
+#include "servers/audio_server.h"
 
 void ViewportTexture::setup_local_to_scene() {
 	if (vp) {
@@ -820,12 +822,7 @@ Rect2 Viewport::get_visible_rect() const {
 }
 
 void Viewport::_update_listener_2d() {
-	/*
-	if (is_inside_tree() && audio_listener_3d && (!get_parent() || (Object::cast_to<Control>(get_parent()) && Object::cast_to<Control>(get_parent())->is_visible_in_tree())))
-		SpatialSound2DServer::get_singleton()->listener_set_space(internal_listener_2d, find_world_2d()->get_sound_space());
-	else
-		SpatialSound2DServer::get_singleton()->listener_set_space(internal_listener_2d, RID());
-*/
+	AudioServer::get_singleton()->notify_listener_changed();
 }
 
 void Viewport::set_as_audio_listener_2d(bool p_enable) {
@@ -1104,6 +1101,12 @@ String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Cont
 
 	while (p_control) {
 		tooltip = p_control->get_tooltip(pos);
+
+		//Temporary solution for PopupMenus
+		PopupMenu *menu = Object::cast_to<PopupMenu>(this);
+		if (menu) {
+			tooltip = menu->get_tooltip(pos);
+		}
 
 		if (r_tooltip_owner) {
 			*r_tooltip_owner = p_control;
@@ -3072,6 +3075,7 @@ bool Viewport::is_audio_listener_3d() const {
 }
 
 void Viewport::_update_listener_3d() {
+	AudioServer::get_singleton()->notify_listener_changed();
 }
 
 void Viewport::_listener_transform_3d_changed_notify() {
@@ -3451,6 +3455,17 @@ void Viewport::set_use_xr(bool p_use_xr) {
 bool Viewport::is_using_xr() {
 	return use_xr;
 }
+
+void Viewport::set_scale_3d(const Scale3D p_scale_3d) {
+	scale_3d = p_scale_3d;
+
+	RS::get_singleton()->viewport_set_scale_3d(viewport, RS::ViewportScale3D(scale_3d));
+}
+
+Viewport::Scale3D Viewport::get_scale_3d() const {
+	return scale_3d;
+}
+
 #endif // _3D_DISABLED
 
 void Viewport::_bind_methods() {
@@ -3575,8 +3590,12 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_xr", "use"), &Viewport::set_use_xr);
 	ClassDB::bind_method(D_METHOD("is_using_xr"), &Viewport::is_using_xr);
 
+	ClassDB::bind_method(D_METHOD("set_scale_3d", "scale"), &Viewport::set_scale_3d);
+	ClassDB::bind_method(D_METHOD("get_scale_3d"), &Viewport::get_scale_3d);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_3d"), "set_disable_3d", "is_3d_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_xr"), "set_use_xr", "is_using_xr");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "scale_3d", PROPERTY_HINT_ENUM, String::utf8("Disabled,75%,50%,33%,25%")), "set_scale_3d", "get_scale_3d");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "audio_listener_enable_3d"), "set_as_audio_listener_3d", "is_audio_listener_3d");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "own_world_3d"), "set_use_own_world_3d", "is_using_own_world_3d");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "world_3d", PROPERTY_HINT_RESOURCE_TYPE, "World3D"), "set_world_3d", "get_world_3d");
@@ -3619,6 +3638,12 @@ void Viewport::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("size_changed"));
 	ADD_SIGNAL(MethodInfo("gui_focus_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
+
+	BIND_ENUM_CONSTANT(SCALE_3D_DISABLED);
+	BIND_ENUM_CONSTANT(SCALE_3D_75_PERCENT);
+	BIND_ENUM_CONSTANT(SCALE_3D_50_PERCENT);
+	BIND_ENUM_CONSTANT(SCALE_3D_33_PERCENT);
+	BIND_ENUM_CONSTANT(SCALE_3D_25_PERCENT);
 
 	BIND_ENUM_CONSTANT(SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED);
 	BIND_ENUM_CONSTANT(SHADOW_ATLAS_QUADRANT_SUBDIV_1);
@@ -3733,6 +3758,11 @@ Viewport::Viewport() {
 	// Window tooltip.
 	gui.tooltip_delay = GLOBAL_DEF("gui/timers/tooltip_delay_sec", 0.5);
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/tooltip_delay_sec", PropertyInfo(Variant::FLOAT, "gui/timers/tooltip_delay_sec", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater")); // No negative numbers
+
+#ifndef _3D_DISABLED
+	int scale = GLOBAL_GET("rendering/3d/viewport/scale");
+	set_scale_3d((Scale3D)scale);
+#endif // _3D_DISABLED
 
 	set_sdf_oversize(sdf_oversize); //set to server
 }

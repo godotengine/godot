@@ -111,9 +111,9 @@ Ref<KinematicCollision3D> PhysicsBody3D::_move(const Vector3 &p_motion, bool p_t
 	return Ref<KinematicCollision3D>();
 }
 
-bool PhysicsBody3D::move_and_collide(const Vector3 &p_motion, PhysicsServer3D::MotionResult &r_result, real_t p_margin, bool p_test_only, bool p_cancel_sliding, const Set<RID> &p_exclude) {
+bool PhysicsBody3D::move_and_collide(const Vector3 &p_motion, PhysicsServer3D::MotionResult &r_result, real_t p_margin, bool p_test_only, bool p_cancel_sliding, bool p_collide_separation_ray, const Set<RID> &p_exclude) {
 	Transform3D gt = get_global_transform();
-	bool colliding = PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_margin, &r_result, p_exclude);
+	bool colliding = PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_margin, &r_result, p_collide_separation_ray, p_exclude);
 
 	// Restore direction of motion to be along original motion,
 	// in order to avoid sliding due to recovery,
@@ -1080,8 +1080,6 @@ void RigidBody3D::_reload_physics_characteristics() {
 #define FLOOR_ANGLE_THRESHOLD 0.01
 
 bool CharacterBody3D::move_and_slide() {
-	Vector3 body_velocity_normal = linear_velocity.normalized();
-
 	bool was_on_floor = on_floor;
 
 	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky
@@ -1111,11 +1109,11 @@ bool CharacterBody3D::move_and_slide() {
 	floor_normal = Vector3();
 	floor_velocity = Vector3();
 
-	if (current_floor_velocity != Vector3() && on_floor_body.is_valid()) {
+	if (!current_floor_velocity.is_equal_approx(Vector3()) && on_floor_body.is_valid()) {
 		PhysicsServer3D::MotionResult floor_result;
 		Set<RID> exclude;
 		exclude.insert(on_floor_body);
-		if (move_and_collide(current_floor_velocity * delta, floor_result, margin, false, false, exclude)) {
+		if (move_and_collide(current_floor_velocity * delta, floor_result, margin, false, false, false, exclude)) {
 			motion_results.push_back(floor_result);
 			_set_collision_direction(floor_result);
 		}
@@ -1130,39 +1128,35 @@ bool CharacterBody3D::move_and_slide() {
 
 	for (int iteration = 0; iteration < max_slides; ++iteration) {
 		PhysicsServer3D::MotionResult result;
-		bool found_collision = false;
-
 		bool collided = move_and_collide(motion, result, margin, false, !sliding_enabled);
-		if (!collided) {
-			motion = Vector3(); //clear because no collision happened and motion completed
-		} else {
-			found_collision = true;
-
+		if (collided) {
 			motion_results.push_back(result);
 			_set_collision_direction(result);
 
-			if (on_floor && floor_stop_on_slope) {
-				if ((body_velocity_normal + up_direction).length() < 0.01) {
-					Transform3D gt = get_global_transform();
-					if (result.travel.length() > margin) {
-						gt.origin -= result.travel.slide(up_direction);
-					} else {
-						gt.origin -= result.travel;
-					}
-					set_global_transform(gt);
-					linear_velocity = Vector3();
-					return true;
+			if (on_floor && floor_stop_on_slope && (linear_velocity.normalized() + up_direction).length() < 0.01) {
+				Transform3D gt = get_global_transform();
+				if (result.travel.length() > margin) {
+					gt.origin -= result.travel.slide(up_direction);
+				} else {
+					gt.origin -= result.travel;
 				}
+				set_global_transform(gt);
+				linear_velocity = Vector3();
+				motion = Vector3();
+				break;
+			}
+
+			if (result.remainder.is_equal_approx(Vector3())) {
+				motion = Vector3();
+				break;
 			}
 
 			if (sliding_enabled || !on_floor) {
-				motion = result.remainder.slide(result.collision_normal);
-				linear_velocity = linear_velocity.slide(result.collision_normal);
-
-				for (int j = 0; j < 3; j++) {
-					if (locked_axis & (1 << j)) {
-						linear_velocity[j] = 0.0;
-					}
+				Vector3 slide_motion = result.remainder.slide(result.collision_normal);
+				if (slide_motion.dot(linear_velocity) > 0.0) {
+					motion = slide_motion;
+				} else {
+					motion = Vector3();
 				}
 			} else {
 				motion = result.remainder;
@@ -1171,16 +1165,16 @@ bool CharacterBody3D::move_and_slide() {
 
 		sliding_enabled = true;
 
-		if (!found_collision || motion == Vector3()) {
+		if (!collided || motion.is_equal_approx(Vector3())) {
 			break;
 		}
 	}
 
-	if (was_on_floor && snap != Vector3()) {
+	if (was_on_floor && !on_floor && !snap.is_equal_approx(Vector3())) {
 		// Apply snap.
 		Transform3D gt = get_global_transform();
 		PhysicsServer3D::MotionResult result;
-		if (move_and_collide(snap, result, margin, true, false)) {
+		if (move_and_collide(snap, result, margin, true, false, true)) {
 			bool apply = true;
 			if (up_direction != Vector3()) {
 				if (result.get_angle(up_direction) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) {
@@ -1213,6 +1207,11 @@ bool CharacterBody3D::move_and_slide() {
 		linear_velocity += current_floor_velocity;
 	}
 
+	// Reset the gravity accumulation when touching the ground.
+	if (on_floor && linear_velocity.dot(up_direction) <= 0) {
+		linear_velocity = linear_velocity.slide(up_direction);
+	}
+
 	return motion_results.size() > 0;
 }
 
@@ -1230,8 +1229,11 @@ void CharacterBody3D::_set_collision_direction(const PhysicsServer3D::MotionResu
 			on_ceiling = true;
 		} else {
 			on_wall = true;
-			on_floor_body = p_result.collider;
-			floor_velocity = p_result.collider_velocity;
+			// Don't apply wall velocity when the collider is a CharacterBody3D.
+			if (Object::cast_to<CharacterBody3D>(ObjectDB::get_instance(p_result.collider_id)) == nullptr) {
+				on_floor_body = p_result.collider;
+				floor_velocity = p_result.collider_velocity;
+			}
 		}
 	}
 }

@@ -48,22 +48,13 @@ public:
 private:
 	Ref<AudioStreamPlayback> stream_playback;
 	Ref<AudioStream> stream;
-	Vector<AudioFrame> mix_buffer;
-	Vector<AudioFrame> fadeout_buffer;
-	bool use_fadeout = false;
 
-	SafeNumeric<float> setseek{ -1.0 };
 	SafeFlag active;
-	SafeFlag setstop;
-	SafeFlag stop_has_priority;
 
-	float mix_volume_db = 0.0;
 	float pitch_scale = 1.0;
 	float volume_db = 0.0;
 	bool autoplay = false;
-	bool stream_paused = false;
-	bool stream_paused_fade = false;
-	StringName bus;
+	StringName bus = "Master";
 
 	MixTarget mix_target = MIX_TARGET_STEREO;
 
@@ -76,6 +67,8 @@ private:
 
 	void _bus_layout_changed();
 	void _mix_to_bus(const AudioFrame *p_frames, int p_amount);
+
+	Vector<AudioFrame> _get_volume_vector();
 
 protected:
 	void _validate_property(PropertyInfo &property) const override;

@@ -88,6 +88,7 @@ public:
 	};
 
 	virtual RID world_margin_shape_create() override;
+	virtual RID separation_ray_shape_create() override;
 	virtual RID segment_shape_create() override;
 	virtual RID circle_shape_create() override;
 	virtual RID rectangle_shape_create() override;
@@ -246,7 +247,7 @@ public:
 
 	virtual void body_set_pickable(RID p_body, bool p_pickable) override;
 
-	virtual bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, real_t p_margin = 0.08, MotionResult *r_result = nullptr, const Set<RID> &p_exclude = Set<RID>()) override;
+	virtual bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, real_t p_margin = 0.08, MotionResult *r_result = nullptr, bool p_collide_separation_ray = false, const Set<RID> &p_exclude = Set<RID>()) override;
 
 	// this function only works on physics process, errors and returns null otherwise
 	virtual PhysicsDirectBodyState2D *body_get_direct_state(RID p_body) override;

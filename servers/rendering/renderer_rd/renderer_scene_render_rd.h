@@ -1190,6 +1190,7 @@ public:
 
 	/* render buffers */
 
+	virtual float _render_buffers_get_luminance_multiplier();
 	virtual RD::DataFormat _render_buffers_get_color_format();
 	virtual bool _render_buffers_can_be_storage();
 	virtual RID render_buffers_create() override;

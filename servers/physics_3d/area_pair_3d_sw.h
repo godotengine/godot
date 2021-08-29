@@ -58,8 +58,10 @@ class Area2Pair3DSW : public Constraint3DSW {
 	Area3DSW *area_b;
 	int shape_a;
 	int shape_b;
-	bool colliding = false;
-	bool process_collision = false;
+	bool colliding_a = false;
+	bool colliding_b = false;
+	bool process_collision_a = false;
+	bool process_collision_b = false;
 
 public:
 	virtual bool setup(real_t p_step) override;

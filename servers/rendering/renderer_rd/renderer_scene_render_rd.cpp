@@ -2237,6 +2237,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			}
 		}
 
+		tonemap.luminance_multiplier = _render_buffers_get_luminance_multiplier();
 		tonemap.view_count = p_render_data->view_count;
 
 		storage->get_effects()->tonemapper(rb->texture, storage->render_target_get_rd_framebuffer(rb->render_target), tonemap);
@@ -2301,6 +2302,7 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	tonemap.use_debanding = rb->use_debanding;
 	tonemap.texture_size = Vector2i(rb->width, rb->height);
 
+	tonemap.luminance_multiplier = _render_buffers_get_luminance_multiplier();
 	tonemap.view_count = p_render_data->view_count;
 
 	storage->get_effects()->tonemapper(draw_list, p_source_texture, RD::get_singleton()->framebuffer_get_format(p_framebuffer), tonemap);
@@ -2573,6 +2575,10 @@ float RendererSceneRenderRD::render_buffers_get_volumetric_fog_detail_spread(RID
 	return rb->volumetric_fog->spread;
 }
 
+float RendererSceneRenderRD::_render_buffers_get_luminance_multiplier() {
+	return 1.0;
+}
+
 RD::DataFormat RendererSceneRenderRD::_render_buffers_get_color_format() {
 	return RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 }
@@ -2585,6 +2591,8 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 	ERR_FAIL_COND_MSG(p_view_count == 0, "Must have at least 1 view");
 
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+
+	// Should we add an overrule per viewport?
 	rb->width = p_width;
 	rb->height = p_height;
 	rb->render_target = p_render_target;
@@ -2631,8 +2639,8 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 			tf.format = RD::DATA_FORMAT_R32_SFLOAT;
 		}
 
-		tf.width = p_width;
-		tf.height = p_height;
+		tf.width = rb->width;
+		tf.height = rb->height;
 		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT;
 		tf.array_layers = rb->view_count; // create a layer for every view
 
@@ -2654,10 +2662,10 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 	}
 
 	RID target_texture = storage->render_target_get_rd_texture(rb->render_target);
-	rb->data->configure(rb->texture, rb->depth_texture, target_texture, p_width, p_height, p_msaa, p_view_count);
+	rb->data->configure(rb->texture, rb->depth_texture, target_texture, rb->width, rb->height, p_msaa, p_view_count);
 
 	if (is_clustered_enabled()) {
-		rb->cluster_builder->setup(Size2i(p_width, p_height), max_cluster_elements, rb->depth_texture, storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED), rb->texture);
+		rb->cluster_builder->setup(Size2i(rb->width, rb->height), max_cluster_elements, rb->depth_texture, storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED), rb->texture);
 	}
 }
 

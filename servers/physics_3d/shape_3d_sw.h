@@ -101,10 +101,12 @@ public:
 class ConcaveShape3DSW : public Shape3DSW {
 public:
 	virtual bool is_concave() const override { return true; }
-	typedef void (*Callback)(void *p_userdata, Shape3DSW *p_convex);
 	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const override { r_amount = 0; }
 
-	virtual void cull(const AABB &p_local_aabb, Callback p_callback, void *p_userdata) const = 0;
+	// Returns true to stop the query.
+	typedef bool (*QueryCallback)(void *p_userdata, Shape3DSW *p_convex);
+
+	virtual void cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata) const = 0;
 
 	ConcaveShape3DSW() {}
 };
@@ -117,21 +119,49 @@ class PlaneShape3DSW : public Shape3DSW {
 public:
 	Plane get_plane() const;
 
-	virtual real_t get_area() const { return INFINITY; }
-	virtual PhysicsServer3D::ShapeType get_type() const { return PhysicsServer3D::SHAPE_PLANE; }
-	virtual void project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const;
-	virtual Vector3 get_support(const Vector3 &p_normal) const;
-	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const { r_amount = 0; }
+	virtual real_t get_area() const override { return INFINITY; }
+	virtual PhysicsServer3D::ShapeType get_type() const override { return PhysicsServer3D::SHAPE_PLANE; }
+	virtual void project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const override;
+	virtual Vector3 get_support(const Vector3 &p_normal) const override;
+	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const override { r_amount = 0; }
 
-	virtual bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const;
-	virtual bool intersect_point(const Vector3 &p_point) const;
-	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const;
-	virtual Vector3 get_moment_of_inertia(real_t p_mass) const;
+	virtual bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const override;
+	virtual bool intersect_point(const Vector3 &p_point) const override;
+	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const override;
+	virtual Vector3 get_moment_of_inertia(real_t p_mass) const override;
 
-	virtual void set_data(const Variant &p_data);
-	virtual Variant get_data() const;
+	virtual void set_data(const Variant &p_data) override;
+	virtual Variant get_data() const override;
 
 	PlaneShape3DSW();
+};
+
+class SeparationRayShape3DSW : public Shape3DSW {
+	real_t length;
+	bool slide_on_slope;
+
+	void _setup(real_t p_length, bool p_slide_on_slope);
+
+public:
+	real_t get_length() const;
+	bool get_slide_on_slope() const;
+
+	virtual real_t get_area() const override { return 0.0; }
+	virtual PhysicsServer3D::ShapeType get_type() const override { return PhysicsServer3D::SHAPE_SEPARATION_RAY; }
+	virtual void project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const override;
+	virtual Vector3 get_support(const Vector3 &p_normal) const override;
+	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const override;
+
+	virtual bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const override;
+	virtual bool intersect_point(const Vector3 &p_point) const override;
+	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const override;
+
+	virtual Vector3 get_moment_of_inertia(real_t p_mass) const override;
+
+	virtual void set_data(const Variant &p_data) override;
+	virtual Variant get_data() const override;
+
+	SeparationRayShape3DSW();
 };
 
 class SphereShape3DSW : public Shape3DSW {
@@ -295,7 +325,7 @@ struct ConcavePolygonShape3DSW : public ConcaveShape3DSW {
 
 	struct _CullParams {
 		AABB aabb;
-		Callback callback = nullptr;
+		QueryCallback callback = nullptr;
 		void *userdata = nullptr;
 		const Face *faces = nullptr;
 		const Vector3 *vertices = nullptr;
@@ -321,7 +351,7 @@ struct ConcavePolygonShape3DSW : public ConcaveShape3DSW {
 	bool backface_collision = false;
 
 	void _cull_segment(int p_idx, _SegmentCullParams *p_params) const;
-	void _cull(int p_idx, _CullParams *p_params) const;
+	bool _cull(int p_idx, _CullParams *p_params) const;
 
 	void _fill_bvh(_VolumeSW_BVH *p_bvh_tree, BVH *p_bvh_array, int &p_idx);
 
@@ -339,7 +369,7 @@ public:
 	virtual bool intersect_point(const Vector3 &p_point) const override;
 	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const override;
 
-	virtual void cull(const AABB &p_local_aabb, Callback p_callback, void *p_userdata) const override;
+	virtual void cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata) const override;
 
 	virtual Vector3 get_moment_of_inertia(real_t p_mass) const override;
 
@@ -382,7 +412,7 @@ public:
 	virtual bool intersect_point(const Vector3 &p_point) const override;
 
 	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const override;
-	virtual void cull(const AABB &p_local_aabb, Callback p_callback, void *p_userdata) const override;
+	virtual void cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata) const override;
 
 	virtual Vector3 get_moment_of_inertia(real_t p_mass) const override;
 

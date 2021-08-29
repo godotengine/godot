@@ -164,6 +164,91 @@ Variant PlaneShape3DSW::get_data() const {
 PlaneShape3DSW::PlaneShape3DSW() {
 }
 
+//
+
+real_t SeparationRayShape3DSW::get_length() const {
+	return length;
+}
+
+bool SeparationRayShape3DSW::get_slide_on_slope() const {
+	return slide_on_slope;
+}
+
+void SeparationRayShape3DSW::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
+	// don't think this will be even used
+	r_min = 0;
+	r_max = 1;
+}
+
+Vector3 SeparationRayShape3DSW::get_support(const Vector3 &p_normal) const {
+	if (p_normal.z > 0) {
+		return Vector3(0, 0, length);
+	} else {
+		return Vector3(0, 0, 0);
+	}
+}
+
+void SeparationRayShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const {
+	if (Math::abs(p_normal.z) < _EDGE_IS_VALID_SUPPORT_THRESHOLD) {
+		r_amount = 2;
+		r_type = FEATURE_EDGE;
+		r_supports[0] = Vector3(0, 0, 0);
+		r_supports[1] = Vector3(0, 0, length);
+	} else if (p_normal.z > 0) {
+		r_amount = 1;
+		r_type = FEATURE_POINT;
+		*r_supports = Vector3(0, 0, length);
+	} else {
+		r_amount = 1;
+		r_type = FEATURE_POINT;
+		*r_supports = Vector3(0, 0, 0);
+	}
+}
+
+bool SeparationRayShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const {
+	return false; //simply not possible
+}
+
+bool SeparationRayShape3DSW::intersect_point(const Vector3 &p_point) const {
+	return false; //simply not possible
+}
+
+Vector3 SeparationRayShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
+	Vector3 s[2] = {
+		Vector3(0, 0, 0),
+		Vector3(0, 0, length)
+	};
+
+	return Geometry3D::get_closest_point_to_segment(p_point, s);
+}
+
+Vector3 SeparationRayShape3DSW::get_moment_of_inertia(real_t p_mass) const {
+	return Vector3();
+}
+
+void SeparationRayShape3DSW::_setup(real_t p_length, bool p_slide_on_slope) {
+	length = p_length;
+	slide_on_slope = p_slide_on_slope;
+	configure(AABB(Vector3(0, 0, 0), Vector3(0.1, 0.1, length)));
+}
+
+void SeparationRayShape3DSW::set_data(const Variant &p_data) {
+	Dictionary d = p_data;
+	_setup(d["length"], d["slide_on_slope"]);
+}
+
+Variant SeparationRayShape3DSW::get_data() const {
+	Dictionary d;
+	d["length"] = length;
+	d["slide_on_slope"] = slide_on_slope;
+	return d;
+}
+
+SeparationRayShape3DSW::SeparationRayShape3DSW() {
+	length = 1;
+	slide_on_slope = false;
+}
+
 /********** SPHERE *************/
 
 real_t SphereShape3DSW::get_radius() const {
@@ -1297,11 +1382,11 @@ Vector3 ConcavePolygonShape3DSW::get_closest_point_to(const Vector3 &p_point) co
 	return Vector3();
 }
 
-void ConcavePolygonShape3DSW::_cull(int p_idx, _CullParams *p_params) const {
+bool ConcavePolygonShape3DSW::_cull(int p_idx, _CullParams *p_params) const {
 	const BVH *bvh = &p_params->bvh[p_idx];
 
 	if (!p_params->aabb.intersects(bvh->aabb)) {
-		return;
+		return false;
 	}
 
 	if (bvh->face_index >= 0) {
@@ -1311,20 +1396,27 @@ void ConcavePolygonShape3DSW::_cull(int p_idx, _CullParams *p_params) const {
 		face->vertex[0] = p_params->vertices[f->indices[0]];
 		face->vertex[1] = p_params->vertices[f->indices[1]];
 		face->vertex[2] = p_params->vertices[f->indices[2]];
-		p_params->callback(p_params->userdata, face);
-
+		if (p_params->callback(p_params->userdata, face)) {
+			return true;
+		}
 	} else {
 		if (bvh->left >= 0) {
-			_cull(bvh->left, p_params);
+			if (_cull(bvh->left, p_params)) {
+				return true;
+			}
 		}
 
 		if (bvh->right >= 0) {
-			_cull(bvh->right, p_params);
+			if (_cull(bvh->right, p_params)) {
+				return true;
+			}
 		}
 	}
+
+	return false;
 }
 
-void ConcavePolygonShape3DSW::cull(const AABB &p_local_aabb, Callback p_callback, void *p_userdata) const {
+void ConcavePolygonShape3DSW::cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata) const {
 	// make matrix local to concave
 	if (faces.size() == 0) {
 		return;
@@ -1790,7 +1882,7 @@ void HeightMapShape3DSW::_get_cell(const Vector3 &p_point, int &r_x, int &r_y, i
 	r_z = (clamped_point.z < 0.0) ? (clamped_point.z - 0.5) : (clamped_point.z + 0.5);
 }
 
-void HeightMapShape3DSW::cull(const AABB &p_local_aabb, Callback p_callback, void *p_userdata) const {
+void HeightMapShape3DSW::cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata) const {
 	if (heights.is_empty()) {
 		return;
 	}
@@ -1826,13 +1918,17 @@ void HeightMapShape3DSW::cull(const AABB &p_local_aabb, Callback p_callback, voi
 			_get_point(x + 1, z, face.vertex[1]);
 			_get_point(x, z + 1, face.vertex[2]);
 			face.normal = Plane(face.vertex[0], face.vertex[2], face.vertex[1]).normal;
-			p_callback(p_userdata, &face);
+			if (p_callback(p_userdata, &face)) {
+				return;
+			}
 
 			// Second triangle.
 			face.vertex[0] = face.vertex[1];
 			_get_point(x + 1, z + 1, face.vertex[1]);
 			face.normal = Plane(face.vertex[0], face.vertex[2], face.vertex[1]).normal;
-			p_callback(p_userdata, &face);
+			if (p_callback(p_userdata, &face)) {
+				return;
+			}
 		}
 	}
 }

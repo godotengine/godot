@@ -2365,6 +2365,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 	}
 	assignment->assignee = p_previous_operand;
 	assignment->assigned_value = parse_expression(false);
+	if (assignment->assigned_value == nullptr) {
+		push_error(R"(Expected an expression after "=".)");
+	}
 
 #ifdef DEBUG_ENABLED
 	if (has_operator && source_variable != nullptr && source_variable->assignments == 0) {
@@ -2377,7 +2380,11 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_await(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	AwaitNode *await = alloc_node<AwaitNode>();
-	await->to_await = parse_precedence(PREC_AWAIT, false);
+	ExpressionNode *element = parse_precedence(PREC_AWAIT, false);
+	if (element == nullptr) {
+		push_error(R"(Expected signal or coroutine after "await".)");
+	}
+	await->to_await = element;
 
 	current_function->is_coroutine = true;
 

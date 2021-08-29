@@ -74,11 +74,13 @@ void AudioStreamPlayback::seek(float p_time) {
 	}
 }
 
-void AudioStreamPlayback::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
-	if (GDVIRTUAL_CALL(_mix, p_buffer, p_rate_scale, p_frames)) {
-		return;
+int AudioStreamPlayback::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
+	int ret;
+	if (GDVIRTUAL_CALL(_mix, p_buffer, p_rate_scale, p_frames, ret)) {
+		return ret;
 	}
 	WARN_PRINT_ONCE("AudioStreamPlayback::mix unimplemented!");
+	return 0;
 }
 
 void AudioStreamPlayback::_bind_methods() {
@@ -103,11 +105,13 @@ void AudioStreamPlaybackResampled::_begin_resample() {
 	mix_offset = 0;
 }
 
-void AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
+int AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
 	float target_rate = AudioServer::get_singleton()->get_mix_rate();
 	float playback_speed_scale = AudioServer::get_singleton()->get_playback_speed_scale();
 
 	uint64_t mix_increment = uint64_t(((get_stream_sampling_rate() * p_rate_scale * playback_speed_scale) / double(target_rate)) * double(FP_LEN));
+
+	int mixed_frames_total = p_frames;
 
 	for (int i = 0; i < p_frames; i++) {
 		uint32_t idx = CUBIC_INTERP_HISTORY + uint32_t(mix_offset >> FP_BITS);
@@ -118,6 +122,11 @@ void AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale,
 		AudioFrame y1 = internal_buffer[idx - 2];
 		AudioFrame y2 = internal_buffer[idx - 1];
 		AudioFrame y3 = internal_buffer[idx - 0];
+
+		if (idx <= internal_buffer_end && idx >= internal_buffer_end && mixed_frames_total == p_frames) {
+			// The internal buffer ends somewhere in this range, and we haven't yet recorded the number of good frames we have.
+			mixed_frames_total = i;
+		}
 
 		float mu2 = mu * mu;
 		AudioFrame a0 = 3 * y1 - 3 * y2 + y3 - y0;
@@ -135,7 +144,14 @@ void AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale,
 			internal_buffer[2] = internal_buffer[INTERNAL_BUFFER_LEN + 2];
 			internal_buffer[3] = internal_buffer[INTERNAL_BUFFER_LEN + 3];
 			if (is_playing()) {
-				_mix_internal(internal_buffer + 4, INTERNAL_BUFFER_LEN);
+				int mixed_frames = _mix_internal(internal_buffer + 4, INTERNAL_BUFFER_LEN);
+				if (mixed_frames != INTERNAL_BUFFER_LEN) {
+					// internal_buffer[mixed_frames] is the first frame of silence.
+					internal_buffer_end = mixed_frames;
+				} else {
+					// The internal buffer does not contain the first frame of silence.
+					internal_buffer_end = -1;
+				}
 			} else {
 				//fill with silence, not playing
 				for (int j = 0; j < INTERNAL_BUFFER_LEN; ++j) {
@@ -145,6 +161,7 @@ void AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale,
 			mix_offset -= (INTERNAL_BUFFER_LEN << FP_BITS);
 		}
 	}
+	return mixed_frames_total;
 }
 
 ////////////////////////////////
@@ -210,7 +227,7 @@ void AudioStreamMicrophone::_bind_methods() {
 AudioStreamMicrophone::AudioStreamMicrophone() {
 }
 
-void AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_frames) {
+int AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	AudioDriver::get_singleton()->lock();
 
 	Vector<int32_t> buf = AudioDriver::get_singleton()->get_input_buffer();
@@ -220,6 +237,8 @@ void AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_fr
 #ifdef DEBUG_ENABLED
 	unsigned int input_position = AudioDriver::get_singleton()->get_input_position();
 #endif
+
+	int mixed_frames = p_frames;
 
 	if (playback_delay > input_size) {
 		for (int i = 0; i < p_frames; i++) {
@@ -240,6 +259,9 @@ void AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_fr
 
 				p_buffer[i] = AudioFrame(l, r);
 			} else {
+				if (mixed_frames == p_frames) {
+					mixed_frames = i;
+				}
 				p_buffer[i] = AudioFrame(0.0f, 0.0f);
 			}
 		}
@@ -252,10 +274,12 @@ void AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_fr
 #endif
 
 	AudioDriver::get_singleton()->unlock();
+
+	return mixed_frames;
 }
 
-void AudioStreamPlaybackMicrophone::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
-	AudioStreamPlaybackResampled::mix(p_buffer, p_rate_scale, p_frames);
+int AudioStreamPlaybackMicrophone::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
+	return AudioStreamPlaybackResampled::mix(p_buffer, p_rate_scale, p_frames);
 }
 
 float AudioStreamPlaybackMicrophone::get_stream_sampling_rate() {
@@ -428,13 +452,14 @@ void AudioStreamPlaybackRandomPitch::seek(float p_time) {
 	}
 }
 
-void AudioStreamPlaybackRandomPitch::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
+int AudioStreamPlaybackRandomPitch::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
 	if (playing.is_valid()) {
-		playing->mix(p_buffer, p_rate_scale * pitch_scale, p_frames);
+		return playing->mix(p_buffer, p_rate_scale * pitch_scale, p_frames);
 	} else {
 		for (int i = 0; i < p_frames; i++) {
 			p_buffer[i] = AudioFrame(0, 0);
 		}
+		return p_frames;
 	}
 }
 

@@ -1115,11 +1115,13 @@ bool sat_2d_calculate_penetration(const Shape2DSW *p_shape_A, const Transform2D 
 	PhysicsServer2D::ShapeType type_A = p_shape_A->get_type();
 
 	ERR_FAIL_COND_V(type_A == PhysicsServer2D::SHAPE_WORLD_MARGIN, false);
+	ERR_FAIL_COND_V(type_A == PhysicsServer2D::SHAPE_SEPARATION_RAY, false);
 	ERR_FAIL_COND_V(p_shape_A->is_concave(), false);
 
 	PhysicsServer2D::ShapeType type_B = p_shape_B->get_type();
 
 	ERR_FAIL_COND_V(type_B == PhysicsServer2D::SHAPE_WORLD_MARGIN, false);
+	ERR_FAIL_COND_V(type_B == PhysicsServer2D::SHAPE_SEPARATION_RAY, false);
 	ERR_FAIL_COND_V(p_shape_B->is_concave(), false);
 
 	static const CollisionFunc collision_table[5][5] = {
@@ -1382,23 +1384,23 @@ bool sat_2d_calculate_penetration(const Shape2DSW *p_shape_A, const Transform2D 
 
 	if (p_margin_A || p_margin_B) {
 		if (*motion_A == Vector2() && *motion_B == Vector2()) {
-			collision_func = collision_table_margin[type_A - 1][type_B - 1];
+			collision_func = collision_table_margin[type_A - 2][type_B - 2];
 		} else if (*motion_A != Vector2() && *motion_B == Vector2()) {
-			collision_func = collision_table_castA_margin[type_A - 1][type_B - 1];
+			collision_func = collision_table_castA_margin[type_A - 2][type_B - 2];
 		} else if (*motion_A == Vector2() && *motion_B != Vector2()) {
-			collision_func = collision_table_castB_margin[type_A - 1][type_B - 1];
+			collision_func = collision_table_castB_margin[type_A - 2][type_B - 2];
 		} else {
-			collision_func = collision_table_castA_castB_margin[type_A - 1][type_B - 1];
+			collision_func = collision_table_castA_castB_margin[type_A - 2][type_B - 2];
 		}
 	} else {
 		if (*motion_A == Vector2() && *motion_B == Vector2()) {
-			collision_func = collision_table[type_A - 1][type_B - 1];
+			collision_func = collision_table[type_A - 2][type_B - 2];
 		} else if (*motion_A != Vector2() && *motion_B == Vector2()) {
-			collision_func = collision_table_castA[type_A - 1][type_B - 1];
+			collision_func = collision_table_castA[type_A - 2][type_B - 2];
 		} else if (*motion_A == Vector2() && *motion_B != Vector2()) {
-			collision_func = collision_table_castB[type_A - 1][type_B - 1];
+			collision_func = collision_table_castB[type_A - 2][type_B - 2];
 		} else {
-			collision_func = collision_table_castA_castB[type_A - 1][type_B - 1];
+			collision_func = collision_table_castA_castB[type_A - 2][type_B - 2];
 		}
 	}
 

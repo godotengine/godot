@@ -159,7 +159,6 @@ public:
 	*/
 	Ref<XRInterface> get_primary_interface() const;
 	void set_primary_interface(const Ref<XRInterface> &p_primary_interface);
-	void clear_primary_interface_if(const Ref<XRInterface> &p_primary_interface); /* this is automatically called if an interface destructs */
 
 	/*
 		Our trackers are objects that expose the orientation and position of physical devices such as controller, anchor points, etc.

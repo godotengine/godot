@@ -49,6 +49,8 @@ public:
 
 		bool use_xr; /* use xr interface to override camera positioning and projection matrices and control output */
 
+		RS::ViewportScale3D scale_3d = RenderingServer::VIEWPORT_SCALE_3D_DISABLED;
+
 		Size2i size;
 		RID camera;
 		RID scenario;
@@ -192,8 +194,9 @@ public:
 	int total_draw_calls_used = 0;
 
 private:
+	void _configure_3d_render_buffers(Viewport *p_viewport);
 	void _draw_3d(Viewport *p_viewport);
-	void _draw_viewport(Viewport *p_viewport, uint32_t p_view_count = 1);
+	void _draw_viewport(Viewport *p_viewport);
 
 	int occlusion_rays_per_thread = 512;
 
@@ -204,6 +207,7 @@ public:
 	void viewport_initialize(RID p_rid);
 
 	void viewport_set_use_xr(RID p_viewport, bool p_use_xr);
+	void viewport_set_scale_3d(RID p_viewport, RenderingServer::ViewportScale3D p_scale_3d);
 
 	void viewport_set_size(RID p_viewport, int p_width, int p_height);
 

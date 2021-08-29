@@ -571,7 +571,8 @@
 			<argument index="2" name="motion" type="Vector3" />
 			<argument index="3" name="margin" type="float" default="0.001" />
 			<argument index="4" name="result" type="PhysicsTestMotionResult3D" default="null" />
-			<argument index="5" name="exclude" type="Array" default="[]" />
+			<argument index="5" name="collide_separation_ray" type="bool" default="false" />
+			<argument index="6" name="exclude" type="Array" default="[]" />
 			<description>
 				Returns [code]true[/code] if a collision would result from moving in the given direction from a given point in space. Margin increases the size of the shapes involved in the collision detection. [PhysicsTestMotionResult3D] can be passed to return additional information in.
 			</description>
@@ -845,6 +846,11 @@
 			</description>
 		</method>
 		<method name="plane_shape_create">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="separation_ray_shape_create">
 			<return type="RID" />
 			<description>
 			</description>
@@ -1171,31 +1177,34 @@
 		<constant name="SHAPE_PLANE" value="0" enum="ShapeType">
 			The [Shape3D] is a [WorldMarginShape3D].
 		</constant>
-		<constant name="SHAPE_SPHERE" value="1" enum="ShapeType">
+		<constant name="SHAPE_SEPARATION_RAY" value="1" enum="ShapeType">
+			The [Shape3D] is a [SeparationRayShape3D].
+		</constant>
+		<constant name="SHAPE_SPHERE" value="2" enum="ShapeType">
 			The [Shape3D] is a [SphereShape3D].
 		</constant>
-		<constant name="SHAPE_BOX" value="2" enum="ShapeType">
+		<constant name="SHAPE_BOX" value="3" enum="ShapeType">
 			The [Shape3D] is a [BoxShape3D].
 		</constant>
-		<constant name="SHAPE_CAPSULE" value="3" enum="ShapeType">
+		<constant name="SHAPE_CAPSULE" value="4" enum="ShapeType">
 			The [Shape3D] is a [CapsuleShape3D].
 		</constant>
-		<constant name="SHAPE_CYLINDER" value="4" enum="ShapeType">
+		<constant name="SHAPE_CYLINDER" value="5" enum="ShapeType">
 			The [Shape3D] is a [CylinderShape3D].
 		</constant>
-		<constant name="SHAPE_CONVEX_POLYGON" value="5" enum="ShapeType">
+		<constant name="SHAPE_CONVEX_POLYGON" value="6" enum="ShapeType">
 			The [Shape3D] is a [ConvexPolygonShape3D].
 		</constant>
-		<constant name="SHAPE_CONCAVE_POLYGON" value="6" enum="ShapeType">
+		<constant name="SHAPE_CONCAVE_POLYGON" value="7" enum="ShapeType">
 			The [Shape3D] is a [ConcavePolygonShape3D].
 		</constant>
-		<constant name="SHAPE_HEIGHTMAP" value="7" enum="ShapeType">
+		<constant name="SHAPE_HEIGHTMAP" value="8" enum="ShapeType">
 			The [Shape3D] is a [HeightMapShape3D].
 		</constant>
-		<constant name="SHAPE_SOFT_BODY" value="8" enum="ShapeType">
+		<constant name="SHAPE_SOFT_BODY" value="9" enum="ShapeType">
 			The [Shape3D] is a [SoftBody3D].
 		</constant>
-		<constant name="SHAPE_CUSTOM" value="9" enum="ShapeType">
+		<constant name="SHAPE_CUSTOM" value="10" enum="ShapeType">
 			This constant is used internally by the engine. Any attempt to create this kind of shape results in an error.
 		</constant>
 		<constant name="AREA_PARAM_GRAVITY" value="0" enum="AreaParameter">

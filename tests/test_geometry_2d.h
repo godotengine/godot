@@ -51,8 +51,6 @@ TEST_CASE("[Geometry2D] Point in circle") {
 	CHECK_FALSE(Geometry2D::is_point_in_circle(Vector2(7, -42), Vector2(4, -40), 3.5));
 
 	// This tests points on the edge of the circle. They are treated as being inside the circle.
-	// In `is_point_in_triangle` and `is_point_in_polygon` they are treated as being outside, so in order the make
-	// the behaviour consistent this may change in the future (see issue #44717 and PR #44274).
 	CHECK(Geometry2D::is_point_in_circle(Vector2(1.0, 0.0), Vector2(0, 0), 1.0));
 	CHECK(Geometry2D::is_point_in_circle(Vector2(0.0, -1.0), Vector2(0, 0), 1.0));
 }
@@ -66,7 +64,7 @@ TEST_CASE("[Geometry2D] Point in triangle") {
 	CHECK_FALSE(Geometry2D::is_point_in_triangle(Vector2(0, 0), Vector2(1, 4), Vector2(3, 2), Vector2(5, 4)));
 
 	// This tests points on the edge of the triangle. They are treated as being outside the triangle.
-	// In `is_point_in_circle` they are treated as being inside, so in order the make
+	// In `is_point_in_circle` and `is_point_in_polygon` they are treated as being inside, so in order the make
 	// the behaviour consistent this may change in the future (see issue #44717 and PR #44274).
 	CHECK_FALSE(Geometry2D::is_point_in_triangle(Vector2(1, 1), Vector2(-1, 1), Vector2(0, -1), Vector2(1, 1)));
 	CHECK_FALSE(Geometry2D::is_point_in_triangle(Vector2(0, 1), Vector2(-1, 1), Vector2(0, -1), Vector2(1, 1)));
@@ -95,11 +93,16 @@ TEST_CASE("[Geometry2D] Point in polygon") {
 	CHECK(Geometry2D::is_point_in_polygon(Vector2(370, 55), p));
 	CHECK(Geometry2D::is_point_in_polygon(Vector2(-160, 190), p));
 
-	// This tests points on the edge of the polygon. They are treated as being outside the polygon.
-	// In `is_point_in_circle` they are treated as being inside, so in order the make
-	// the behaviour consistent this may change in the future (see issue #44717 and PR #44274).
-	CHECK_FALSE(Geometry2D::is_point_in_polygon(Vector2(68, 112), p));
-	CHECK_FALSE(Geometry2D::is_point_in_polygon(Vector2(-88, 120), p));
+	// This tests points on the edge of the polygon. They are treated as being inside the polygon.
+	int c = p.size();
+	for (int i = 0; i < c; i++) {
+		const Vector2 &p1 = p[i];
+		CHECK(Geometry2D::is_point_in_polygon(p1, p));
+
+		const Vector2 &p2 = p[(i + 1) % c];
+		Vector2 midpoint((p1 + p2) * 0.5);
+		CHECK(Geometry2D::is_point_in_polygon(midpoint, p));
+	}
 }
 
 TEST_CASE("[Geometry2D] Polygon clockwise") {
@@ -140,9 +143,21 @@ TEST_CASE("[Geometry2D] Segment intersection.") {
 	CHECK(r.is_equal_approx(Vector2(0, 0)));
 
 	CHECK_FALSE(Geometry2D::segment_intersects_segment(Vector2(-1, 1), Vector2(1, -1), Vector2(1, 1), Vector2(0.1, 0.1), &r));
+	CHECK_FALSE(Geometry2D::segment_intersects_segment(Vector2(-1, 1), Vector2(1, -1), Vector2(0.1, 0.1), Vector2(1, 1), &r));
+
 	CHECK_FALSE_MESSAGE(
-			Geometry2D::segment_intersects_segment(Vector2(-1, 1), Vector2(1, -1), Vector2(0, 1), Vector2(1, -1), &r),
+			Geometry2D::segment_intersects_segment(Vector2(-1, 1), Vector2(1, -1), Vector2(0, 1), Vector2(2, -1), &r),
 			"Parallel segments should not intersect.");
+
+	CHECK_MESSAGE(
+			Geometry2D::segment_intersects_segment(Vector2(0, 0), Vector2(0, 1), Vector2(0, 0), Vector2(1, 0), &r),
+			"Touching segments should intersect.");
+	CHECK(r.is_equal_approx(Vector2(0, 0)));
+
+	CHECK_MESSAGE(
+			Geometry2D::segment_intersects_segment(Vector2(0, 1), Vector2(0, 0), Vector2(0, 0), Vector2(1, 0), &r),
+			"Touching segments should intersect.");
+	CHECK(r.is_equal_approx(Vector2(0, 0)));
 }
 
 TEST_CASE("[Geometry2D] Closest point to segment") {

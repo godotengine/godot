@@ -160,6 +160,8 @@
 #include "scene/resources/rectangle_shape_2d.h"
 #include "scene/resources/resource_format_text.h"
 #include "scene/resources/segment_shape_2d.h"
+#include "scene/resources/separation_ray_shape_2d.h"
+#include "scene/resources/separation_ray_shape_3d.h"
 #include "scene/resources/skeleton_modification_2d.h"
 #include "scene/resources/skeleton_modification_2d_ccdik.h"
 #include "scene/resources/skeleton_modification_2d_fabrik.h"
@@ -247,12 +249,6 @@
 static Ref<ResourceFormatSaverText> resource_saver_text;
 static Ref<ResourceFormatLoaderText> resource_loader_text;
 
-static Ref<ResourceFormatLoaderFont> resource_loader_font;
-
-#ifndef DISABLE_DEPRECATED
-static Ref<ResourceFormatLoaderCompatFont> resource_loader_compat_font;
-#endif /* DISABLE_DEPRECATED */
-
 static Ref<ResourceFormatLoaderStreamTexture2D> resource_loader_stream_texture;
 static Ref<ResourceFormatLoaderStreamTextureLayered> resource_loader_texture_layered;
 static Ref<ResourceFormatLoaderStreamTexture3D> resource_loader_texture_3d;
@@ -266,14 +262,6 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 	Node::init_node_hrcr();
-
-	resource_loader_font.instantiate();
-	ResourceLoader::add_resource_format_loader(resource_loader_font);
-
-#ifndef DISABLE_DEPRECATED
-	resource_loader_compat_font.instantiate();
-	ResourceLoader::add_resource_format_loader(resource_loader_compat_font);
-#endif /* DISABLE_DEPRECATED */
 
 	resource_loader_stream_texture.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_stream_texture);
@@ -752,6 +740,7 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 	GDREGISTER_VIRTUAL_CLASS(Shape3D);
+	GDREGISTER_CLASS(SeparationRayShape3D);
 	GDREGISTER_CLASS(SphereShape3D);
 	GDREGISTER_CLASS(BoxShape3D);
 	GDREGISTER_CLASS(CapsuleShape3D);
@@ -840,6 +829,7 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(Shape2D);
 	GDREGISTER_CLASS(WorldMarginShape2D);
 	GDREGISTER_CLASS(SegmentShape2D);
+	GDREGISTER_CLASS(SeparationRayShape2D);
 	GDREGISTER_CLASS(CircleShape2D);
 	GDREGISTER_CLASS(RectangleShape2D);
 	GDREGISTER_CLASS(CapsuleShape2D);
@@ -960,6 +950,8 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("ProceduralSky", "Sky");
 	ClassDB::add_compatibility_class("ProximityGroup", "ProximityGroup3D");
 	ClassDB::add_compatibility_class("RayCast", "RayCast3D");
+	ClassDB::add_compatibility_class("RayShape", "SeparationRayShape3D");
+	ClassDB::add_compatibility_class("RayShape2D", "SeparationRayShape2D");
 	ClassDB::add_compatibility_class("RemoteTransform", "RemoteTransform3D");
 	ClassDB::add_compatibility_class("RigidBody", "RigidBody3D");
 	ClassDB::add_compatibility_class("Shape", "Shape3D");
@@ -1064,14 +1056,6 @@ void unregister_scene_types() {
 
 	SceneDebugger::deinitialize();
 	clear_default_theme();
-
-	ResourceLoader::remove_resource_format_loader(resource_loader_font);
-	resource_loader_font.unref();
-
-#ifndef DISABLE_DEPRECATED
-	ResourceLoader::remove_resource_format_loader(resource_loader_compat_font);
-	resource_loader_compat_font.unref();
-#endif /* DISABLE_DEPRECATED */
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_texture_layered);
 	resource_loader_texture_layered.unref();

@@ -29,9 +29,9 @@
 /*************************************************************************/
 
 #include "animation.h"
-#include "scene/scene_string_names.h"
 
 #include "core/math/geometry_3d.h"
+#include "scene/scene_string_names.h"
 
 bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
@@ -79,17 +79,16 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 				TransformTrack *tt = static_cast<TransformTrack *>(tracks[track]);
 				Vector<real_t> values = p_value;
 				int vcount = values.size();
-				ERR_FAIL_COND_V(vcount % 12, false); // should be multiple of 12
+				ERR_FAIL_COND_V(vcount % TRANSFORM_TRACK_SIZE, false);
 
 				const real_t *r = values.ptr();
 
-				int transform3d_size = (int)sizeof(Transform3D);
+				int64_t count = vcount / TRANSFORM_TRACK_SIZE;
+				tt->transforms.resize(count);
 
-				tt->transforms.resize(vcount / transform3d_size);
-
-				for (int i = 0; i < (vcount / transform3d_size); i++) {
+				for (int i = 0; i < count; i++) {
 					TKey<TransformKey> &tk = tt->transforms.write[i];
-					const real_t *ofs = &r[i * 12];
+					const real_t *ofs = &r[i * TRANSFORM_TRACK_SIZE];
 					tk.time = ofs[0];
 					tk.transition = ofs[1];
 
@@ -356,7 +355,7 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 			if (track_get_type(track) == TYPE_TRANSFORM3D) {
 				Vector<real_t> keys;
 				int kk = track_get_key_count(track);
-				keys.resize(kk * sizeof(Transform3D));
+				keys.resize(kk * TRANSFORM_TRACK_SIZE);
 
 				real_t *w = keys.ptrw();
 

@@ -569,7 +569,7 @@ int Space3DSW::_cull_aabb_for_body(Body3DSW *p_body, const AABB &p_aabb) {
 	return amount;
 }
 
-bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin, PhysicsServer3D::MotionResult *r_result, const Set<RID> &p_exclude) {
+bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin, PhysicsServer3D::MotionResult *r_result, bool p_collide_separation_ray, const Set<RID> &p_exclude) {
 	//give me back regular physics engine logic
 	//this is madness
 	//and most people using this function will think
@@ -714,8 +714,18 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, co
 				continue;
 			}
 
-			Transform3D body_shape_xform = body_transform * p_body->get_shape_transform(j);
 			Shape3DSW *body_shape = p_body->get_shape(j);
+
+			// Colliding separation rays allows to properly snap to the ground,
+			// otherwise it's not needed in regular motion.
+			if (!p_collide_separation_ray && (body_shape->get_type() == PhysicsServer3D::SHAPE_SEPARATION_RAY)) {
+				// When slide on slope is on, separation ray shape acts like a regular shape.
+				if (!static_cast<SeparationRayShape3DSW *>(body_shape)->get_slide_on_slope()) {
+					continue;
+				}
+			}
+
+			Transform3D body_shape_xform = body_transform * p_body->get_shape_transform(j);
 
 			Transform3D body_shape_xform_inv = body_shape_xform.affine_inverse();
 			MotionShape3DSW mshape;

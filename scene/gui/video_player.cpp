@@ -129,7 +129,7 @@ void VideoPlayer::_mix_audio() {
 void VideoPlayer::_notification(int p_notification) {
 	switch (p_notification) {
 		case NOTIFICATION_ENTER_TREE: {
-			AudioServer::get_singleton()->add_callback(_mix_audios, this);
+			AudioServer::get_singleton()->add_mix_callback(_mix_audios, this);
 
 			if (stream.is_valid() && autoplay && !Engine::get_singleton()->is_editor_hint()) {
 				play();
@@ -138,8 +138,7 @@ void VideoPlayer::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			AudioServer::get_singleton()->remove_callback(_mix_audios, this);
-
+			AudioServer::get_singleton()->remove_mix_callback(_mix_audios, this);
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {

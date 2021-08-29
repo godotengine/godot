@@ -575,7 +575,7 @@ namespace Godot
         /// <summary>
         /// If the string is a path to a file or directory, return <see langword="true"/> if the path is absolute.
         /// </summary>
-        public static bool IsAbsPath(this string instance)
+        public static bool IsAbsolutePath(this string instance)
         {
             if (string.IsNullOrEmpty(instance))
                 return false;
@@ -590,7 +590,7 @@ namespace Godot
         /// </summary>
         public static bool IsRelPath(this string instance)
         {
-            return !IsAbsPath(instance);
+            return !IsAbsolutePath(instance);
         }
 
         /// <summary>
@@ -1101,6 +1101,17 @@ namespace Godot
 
             return 2.0f * inter / sum;
         }
+
+        /// <summary>
+        /// Returns a simplified canonical path.
+        /// </summary>
+        public static string SimplifyPath(this string instance)
+        {
+            return godot_icall_String_simplify_path(instance);
+        }
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static string godot_icall_String_simplify_path(string str);
 
         /// <summary>
         /// Split the string by a divisor string, return an array of the substrings.

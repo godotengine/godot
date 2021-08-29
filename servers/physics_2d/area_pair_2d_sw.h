@@ -57,8 +57,10 @@ class Area2Pair2DSW : public Constraint2DSW {
 	Area2DSW *area_b = nullptr;
 	int shape_a = 0;
 	int shape_b = 0;
-	bool colliding = false;
-	bool process_collision = false;
+	bool colliding_a = false;
+	bool colliding_b = false;
+	bool process_collision_a = false;
+	bool process_collision_b = false;
 
 public:
 	virtual bool setup(real_t p_step) override;

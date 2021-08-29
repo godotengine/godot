@@ -88,6 +88,14 @@ class Viewport : public Node {
 	GDCLASS(Viewport, Node);
 
 public:
+	enum Scale3D {
+		SCALE_3D_DISABLED,
+		SCALE_3D_75_PERCENT,
+		SCALE_3D_50_PERCENT,
+		SCALE_3D_33_PERCENT,
+		SCALE_3D_25_PERCENT
+	};
+
 	enum ShadowAtlasQuadrantSubdiv {
 		SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED,
 		SHADOW_ATLAS_QUADRANT_SUBDIV_1,
@@ -577,6 +585,7 @@ public:
 
 #ifndef _3D_DISABLED
 	bool use_xr = false;
+	Scale3D scale_3d = SCALE_3D_DISABLED;
 	friend class Listener3D;
 	Listener3D *listener_3d = nullptr;
 	Set<Listener3D *> listener_3d_set;
@@ -647,6 +656,9 @@ public:
 
 	void set_use_xr(bool p_use_xr);
 	bool is_using_xr();
+
+	void set_scale_3d(const Scale3D p_scale_3d);
+	Scale3D get_scale_3d() const;
 #endif // _3D_DISABLED
 
 	Viewport();
@@ -705,6 +717,7 @@ VARIANT_ENUM_CAST(SubViewport::UpdateMode);
 VARIANT_ENUM_CAST(Viewport::ShadowAtlasQuadrantSubdiv);
 VARIANT_ENUM_CAST(Viewport::MSAA);
 VARIANT_ENUM_CAST(Viewport::ScreenSpaceAA);
+VARIANT_ENUM_CAST(Viewport::Scale3D);
 VARIANT_ENUM_CAST(Viewport::DebugDraw);
 VARIANT_ENUM_CAST(Viewport::SDFScale);
 VARIANT_ENUM_CAST(Viewport::SDFOversize);

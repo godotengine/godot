@@ -80,6 +80,7 @@ public:
 
 	//FUNC1RID(shape,ShapeType); todo fix
 	FUNCRID(world_margin_shape)
+	FUNCRID(separation_ray_shape)
 	FUNCRID(segment_shape)
 	FUNCRID(circle_shape)
 	FUNCRID(rectangle_shape)
@@ -252,9 +253,9 @@ public:
 
 	FUNC2(body_set_pickable, RID, bool);
 
-	bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, real_t p_margin = 0.08, MotionResult *r_result = nullptr, const Set<RID> &p_exclude = Set<RID>()) override {
+	bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, real_t p_margin = 0.08, MotionResult *r_result = nullptr, bool p_collide_separation_ray = false, const Set<RID> &p_exclude = Set<RID>()) override {
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), false);
-		return physics_2d_server->body_test_motion(p_body, p_from, p_motion, p_margin, r_result, p_exclude);
+		return physics_2d_server->body_test_motion(p_body, p_from, p_motion, p_margin, r_result, p_collide_separation_ray, p_exclude);
 	}
 
 	// this function only works on physics process, errors and returns null otherwise

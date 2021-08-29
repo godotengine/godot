@@ -71,11 +71,6 @@ lights;
 
 layout(set = 0, binding = 5) uniform texture3D color_texture;
 
-#ifdef MODE_ANISOTROPIC
-layout(set = 0, binding = 7) uniform texture3D aniso_pos_texture;
-layout(set = 0, binding = 8) uniform texture3D aniso_neg_texture;
-#endif // MODE ANISOTROPIC
-
 #endif // MODE_SECOND_BOUNCE
 
 #ifndef MODE_DYNAMIC
@@ -109,13 +104,6 @@ layout(set = 0, binding = 10) uniform sampler texture_sampler;
 #ifdef MODE_WRITE_TEXTURE
 
 layout(rgba8, set = 0, binding = 5) uniform restrict writeonly image3D color_tex;
-
-#ifdef MODE_ANISOTROPIC
-
-layout(r16ui, set = 0, binding = 6) uniform restrict writeonly uimage3D aniso_pos_tex;
-layout(r16ui, set = 0, binding = 7) uniform restrict writeonly uimage3D aniso_neg_tex;
-
-#endif
 
 #endif
 
@@ -169,13 +157,6 @@ layout(r32f, set = 0, binding = 8) uniform restrict writeonly image2D depth;
 #ifdef MODE_DYNAMIC_SHRINK_PLOT
 
 layout(rgba8, set = 0, binding = 11) uniform restrict image3D color_texture;
-
-#ifdef MODE_ANISOTROPIC
-
-layout(r16ui, set = 0, binding = 12) uniform restrict writeonly uimage3D aniso_pos_texture;
-layout(r16ui, set = 0, binding = 13) uniform restrict writeonly uimage3D aniso_neg_texture;
-
-#endif // MODE ANISOTROPIC
 
 #endif //MODE_DYNAMIC_SHRINK_PLOT
 
@@ -374,12 +355,7 @@ void main() {
 	vec3 emission = vec3(uvec3(cell_data.data[cell_index].emission & 0x1ff, (cell_data.data[cell_index].emission >> 9) & 0x1ff, (cell_data.data[cell_index].emission >> 18) & 0x1ff)) * pow(2.0, float(cell_data.data[cell_index].emission >> 27) - 15.0 - 9.0);
 	vec3 normal = unpackSnorm4x8(cell_data.data[cell_index].normal).xyz;
 
-#ifdef MODE_ANISOTROPIC
-	vec3 accum[6] = vec3[](vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0));
-	const vec3 accum_dirs[6] = vec3[](vec3(1.0, 0.0, 0.0), vec3(-1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, -1.0, 0.0), vec3(0.0, 0.0, 1.0), vec3(0.0, 0.0, -1.0));
-#else
 	vec3 accum = vec3(0.0);
-#endif
 
 	for (uint i = 0; i < params.light_count; i++) {
 		vec3 light;
@@ -390,37 +366,15 @@ void main() {
 
 		light *= albedo.rgb;
 
-#ifdef MODE_ANISOTROPIC
-		for (uint j = 0; j < 6; j++) {
-			accum[j] += max(0.0, dot(accum_dirs[j], -light_dir)) * light;
-		}
-#else
 		if (length(normal) > 0.2) {
 			accum += max(0.0, dot(normal, -light_dir)) * light;
 		} else {
 			//all directions
 			accum += light;
 		}
-#endif
 	}
 
-#ifdef MODE_ANISOTROPIC
-
-	for (uint i = 0; i < 6; i++) {
-		vec3 light = accum[i];
-		if (length(normal) > 0.2) {
-			light += max(0.0, dot(accum_dirs[i], -normal)) * emission;
-		} else {
-			light += emission;
-		}
-
-		outputs.data[cell_index * 6 + i] = vec4(light, 0.0);
-	}
-
-#else
 	outputs.data[cell_index] = vec4(accum + emission, 0.0);
-
-#endif
 
 #endif //MODE_COMPUTE_LIGHT
 
@@ -431,31 +385,7 @@ void main() {
 	ivec3 ipos = ivec3(posu);
 	vec4 normal = unpackSnorm4x8(cell_data.data[cell_index].normal);
 
-#ifdef MODE_ANISOTROPIC
-	vec3 accum[6];
-	const vec3 accum_dirs[6] = vec3[](vec3(1.0, 0.0, 0.0), vec3(-1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, -1.0, 0.0), vec3(0.0, 0.0, 1.0), vec3(0.0, 0.0, -1.0));
-
-	/*vec3 src_color = texelFetch(sampler3D(color_texture,texture_sampler),ipos,0).rgb * params.dynamic_range;
-	vec3 src_aniso_pos = texelFetch(sampler3D(aniso_pos_texture,texture_sampler),ipos,0).rgb;
-	vec3 src_anisp_neg = texelFetch(sampler3D(anisp_neg_texture,texture_sampler),ipos,0).rgb;
-	accum[0]=src_col * src_aniso_pos.x;
-	accum[1]=src_col * src_aniso_neg.x;
-	accum[2]=src_col * src_aniso_pos.y;
-	accum[3]=src_col * src_aniso_neg.y;
-	accum[4]=src_col * src_aniso_pos.z;
-	accum[5]=src_col * src_aniso_neg.z;*/
-
-	accum[0] = outputs.data[cell_index * 6 + 0].rgb;
-	accum[1] = outputs.data[cell_index * 6 + 1].rgb;
-	accum[2] = outputs.data[cell_index * 6 + 2].rgb;
-	accum[3] = outputs.data[cell_index * 6 + 3].rgb;
-	accum[4] = outputs.data[cell_index * 6 + 4].rgb;
-	accum[5] = outputs.data[cell_index * 6 + 5].rgb;
-
-#else
 	vec3 accum = outputs.data[cell_index].rgb;
-
-#endif
 
 	if (length(normal.xyz) > 0.2) {
 		vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
@@ -484,9 +414,6 @@ void main() {
 				float max_distance = length(vec3(params.limits));
 				vec3 cell_size = 1.0 / vec3(params.limits);
 
-#ifdef MODE_ANISOTROPIC
-				vec3 aniso_normal = mix(direction, normal.xyz, params.aniso_strength);
-#endif
 				while (dist < max_distance && color.a < 0.95) {
 					float diameter = max(1.0, 2.0 * tan_half_angle * dist);
 					vec3 uvw_pos = (pos + dist * direction) * cell_size;
@@ -498,41 +425,17 @@ void main() {
 
 					float log2_diameter = log2(diameter);
 					vec4 scolor = textureLod(sampler3D(color_texture, texture_sampler), uvw_pos, log2_diameter);
-#ifdef MODE_ANISOTROPIC
-
-					vec3 aniso_neg = textureLod(sampler3D(aniso_neg_texture, texture_sampler), uvw_pos, log2_diameter).rgb;
-					vec3 aniso_pos = textureLod(sampler3D(aniso_pos_texture, texture_sampler), uvw_pos, log2_diameter).rgb;
-
-					scolor.rgb *= dot(max(vec3(0.0), (aniso_normal * aniso_pos)), vec3(1.0)) + dot(max(vec3(0.0), (-aniso_normal * aniso_neg)), vec3(1.0));
-#endif
 					float a = (1.0 - color.a);
 					color += a * scolor;
 					dist += half_diameter;
 				}
 			}
 			color *= cone_weights[i] * vec4(albedo.rgb, 1.0) * params.dynamic_range; //restore range
-#ifdef MODE_ANISOTROPIC
-			for (uint j = 0; j < 6; j++) {
-				accum[j] += max(0.0, dot(accum_dirs[j], direction)) * color.rgb;
-			}
-#else
 			accum += color.rgb;
-#endif
 		}
 	}
 
-#ifdef MODE_ANISOTROPIC
-
-	outputs.data[cell_index * 6 + 0] = vec4(accum[0], 0.0);
-	outputs.data[cell_index * 6 + 1] = vec4(accum[1], 0.0);
-	outputs.data[cell_index * 6 + 2] = vec4(accum[2], 0.0);
-	outputs.data[cell_index * 6 + 3] = vec4(accum[3], 0.0);
-	outputs.data[cell_index * 6 + 4] = vec4(accum[4], 0.0);
-	outputs.data[cell_index * 6 + 5] = vec4(accum[5], 0.0);
-#else
 	outputs.data[cell_index] = vec4(accum, 0.0);
-
-#endif
 
 #endif // MODE_SECOND_BOUNCE
 
@@ -541,45 +444,20 @@ void main() {
 #ifdef MODE_UPDATE_MIPMAPS
 
 	{
-#ifdef MODE_ANISOTROPIC
-		vec3 light_accum[6] = vec3[](vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0));
-#else
 		vec3 light_accum = vec3(0.0);
-#endif
 		float count = 0.0;
 		for (uint i = 0; i < 8; i++) {
 			uint child_index = cell_children.data[cell_index].children[i];
 			if (child_index == NO_CHILDREN) {
 				continue;
 			}
-#ifdef MODE_ANISOTROPIC
-			light_accum[0] += outputs.data[child_index * 6 + 0].rgb;
-			light_accum[1] += outputs.data[child_index * 6 + 1].rgb;
-			light_accum[2] += outputs.data[child_index * 6 + 2].rgb;
-			light_accum[3] += outputs.data[child_index * 6 + 3].rgb;
-			light_accum[4] += outputs.data[child_index * 6 + 4].rgb;
-			light_accum[5] += outputs.data[child_index * 6 + 5].rgb;
-
-#else
 			light_accum += outputs.data[child_index].rgb;
-
-#endif
 
 			count += 1.0;
 		}
 
 		float divisor = mix(8.0, count, params.propagation);
-#ifdef MODE_ANISOTROPIC
-		outputs.data[cell_index * 6 + 0] = vec4(light_accum[0] / divisor, 0.0);
-		outputs.data[cell_index * 6 + 1] = vec4(light_accum[1] / divisor, 0.0);
-		outputs.data[cell_index * 6 + 2] = vec4(light_accum[2] / divisor, 0.0);
-		outputs.data[cell_index * 6 + 3] = vec4(light_accum[3] / divisor, 0.0);
-		outputs.data[cell_index * 6 + 4] = vec4(light_accum[4] / divisor, 0.0);
-		outputs.data[cell_index * 6 + 5] = vec4(light_accum[5] / divisor, 0.0);
-
-#else
 		outputs.data[cell_index] = vec4(light_accum / divisor, 0.0);
-#endif
 	}
 #endif
 
@@ -587,40 +465,7 @@ void main() {
 
 #ifdef MODE_WRITE_TEXTURE
 	{
-#ifdef MODE_ANISOTROPIC
-		vec3 accum_total = vec3(0.0);
-		accum_total += outputs.data[cell_index * 6 + 0].rgb;
-		accum_total += outputs.data[cell_index * 6 + 1].rgb;
-		accum_total += outputs.data[cell_index * 6 + 2].rgb;
-		accum_total += outputs.data[cell_index * 6 + 3].rgb;
-		accum_total += outputs.data[cell_index * 6 + 4].rgb;
-		accum_total += outputs.data[cell_index * 6 + 5].rgb;
-
-		float accum_total_energy = max(dot(accum_total, GREY_VEC), 0.00001);
-		vec3 iso_positive = vec3(dot(outputs.data[cell_index * 6 + 0].rgb, GREY_VEC), dot(outputs.data[cell_index * 6 + 2].rgb, GREY_VEC), dot(outputs.data[cell_index * 6 + 4].rgb, GREY_VEC)) / vec3(accum_total_energy);
-		vec3 iso_negative = vec3(dot(outputs.data[cell_index * 6 + 1].rgb, GREY_VEC), dot(outputs.data[cell_index * 6 + 3].rgb, GREY_VEC), dot(outputs.data[cell_index * 6 + 5].rgb, GREY_VEC)) / vec3(accum_total_energy);
-
-		{
-			uint aniso_pos = uint(clamp(iso_positive.b * 31.0, 0.0, 31.0));
-			aniso_pos |= uint(clamp(iso_positive.g * 63.0, 0.0, 63.0)) << 5;
-			aniso_pos |= uint(clamp(iso_positive.r * 31.0, 0.0, 31.0)) << 11;
-			imageStore(aniso_pos_tex, ivec3(posu), uvec4(aniso_pos));
-		}
-
-		{
-			uint aniso_neg = uint(clamp(iso_negative.b * 31.0, 0.0, 31.0));
-			aniso_neg |= uint(clamp(iso_negative.g * 63.0, 0.0, 63.0)) << 5;
-			aniso_neg |= uint(clamp(iso_negative.r * 31.0, 0.0, 31.0)) << 11;
-			imageStore(aniso_neg_tex, ivec3(posu), uvec4(aniso_neg));
-		}
-
-		imageStore(color_tex, ivec3(posu), vec4(accum_total / params.dynamic_range, albedo.a));
-
-#else
-
 		imageStore(color_tex, ivec3(posu), vec4(outputs.data[cell_index].rgb / params.dynamic_range, albedo.a));
-
-#endif
 	}
 #endif
 
@@ -763,13 +608,6 @@ void main() {
 			color.rgb /= params.dynamic_range;
 			imageStore(color_texture, pos3d, color);
 			//imageStore(color_texture,pos3d,vec4(1,1,1,1));
-
-#ifdef MODE_ANISOTROPIC
-			//do not care about anisotropy for dynamic objects, just store full lit in all directions
-			imageStore(aniso_pos_texture, pos3d, uvec4(0xFFFF));
-			imageStore(aniso_neg_texture, pos3d, uvec4(0xFFFF));
-
-#endif // ANISOTROPIC
 		}
 #endif // MODE_DYNAMIC_SHRINK_PLOT
 	}

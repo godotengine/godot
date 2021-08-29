@@ -255,7 +255,7 @@ private:
 		float exposure; //  4 - 84
 		float white; //  4 - 88
 		float auto_exposure_grey; //  4 - 92
-		uint32_t pad2; //  4 - 96
+		float luminance_multiplier; //  4 - 96
 
 		float pixel_size[2]; //  8 - 104
 		uint32_t use_fxaa; //  4 - 108
@@ -308,7 +308,7 @@ private:
 		float exposure_adjust;
 		float min_luminance;
 		float max_luminance;
-		float pad[1];
+		uint32_t pad1;
 	};
 
 	struct LuminanceReduceFragment {
@@ -818,6 +818,7 @@ public:
 		bool use_auto_exposure = false;
 		float auto_exposure_grey = 0.5;
 		RID exposure_texture;
+		float luminance_multiplier = 1.0;
 
 		bool use_bcs = false;
 		float brightness = 1.0;

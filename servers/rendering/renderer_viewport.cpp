@@ -71,6 +71,44 @@ static Transform2D _canvas_get_transform(RendererViewport::Viewport *p_viewport,
 	return xf;
 }
 
+void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
+	if (p_viewport->render_buffers.is_valid()) {
+		if (p_viewport->size.width == 0 || p_viewport->size.height == 0) {
+			RSG::scene->free(p_viewport->render_buffers);
+			p_viewport->render_buffers = RID();
+		} else {
+			RS::ViewportScale3D scale_3d = p_viewport->scale_3d;
+			if (Engine::get_singleton()->is_editor_hint()) { // ignore this inside of the editor
+				scale_3d = RS::VIEWPORT_SCALE_3D_DISABLED;
+			}
+
+			int width = p_viewport->size.width;
+			int height = p_viewport->size.height;
+			switch (scale_3d) {
+				case RS::VIEWPORT_SCALE_3D_75_PERCENT: {
+					width = (width * 3) / 4;
+					height = (height * 3) / 4;
+				}; break;
+				case RS::VIEWPORT_SCALE_3D_50_PERCENT: {
+					width = width >> 1;
+					height = height >> 1;
+				}; break;
+				case RS::VIEWPORT_SCALE_3D_33_PERCENT: {
+					width = width / 3;
+					height = height / 3;
+				}; break;
+				case RS::VIEWPORT_SCALE_3D_25_PERCENT: {
+					width = width >> 2;
+					height = height >> 2;
+				}; break;
+				default:
+					break;
+			}
+			RSG::scene->render_buffers_configure(p_viewport->render_buffers, p_viewport->render_target, width, height, p_viewport->msaa, p_viewport->screen_space_aa, p_viewport->use_debanding, p_viewport->get_view_count());
+		}
+	}
+}
+
 void RendererViewport::_draw_3d(Viewport *p_viewport) {
 	RENDER_TIMESTAMP(">Begin Rendering 3D Scene");
 
@@ -100,7 +138,7 @@ void RendererViewport::_draw_3d(Viewport *p_viewport) {
 	RENDER_TIMESTAMP("<End Rendering 3D Scene");
 }
 
-void RendererViewport::_draw_viewport(Viewport *p_viewport, uint32_t p_view_count) {
+void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 	if (p_viewport->measure_render_time) {
 		String rt_id = "vp_begin_" + itos(p_viewport->self.get_id());
 		RSG::storage->capture_timestamp(rt_id);
@@ -142,7 +180,8 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport, uint32_t p_view_coun
 	if ((scenario_draw_canvas_bg || can_draw_3d) && !p_viewport->render_buffers.is_valid()) {
 		//wants to draw 3D but there is no render buffer, create
 		p_viewport->render_buffers = RSG::scene->render_buffers_create();
-		RSG::scene->render_buffers_configure(p_viewport->render_buffers, p_viewport->render_target, p_viewport->size.width, p_viewport->size.height, p_viewport->msaa, p_viewport->screen_space_aa, p_viewport->use_debanding, p_view_count);
+
+		_configure_3d_render_buffers(p_viewport);
 	}
 
 	RSG::storage->render_target_request_clear(p_viewport->render_target, bgcolor);
@@ -544,7 +583,7 @@ void RendererViewport::draw_viewports() {
 		RSG::storage->render_target_set_as_unused(vp->render_target);
 		if (vp->use_xr && xr_interface.is_valid()) {
 			// override our size, make sure it matches our required size and is created as a stereo target
-			vp->size = xr_interface->get_render_targetsize();
+			vp->size = xr_interface->get_render_target_size();
 			uint32_t view_count = xr_interface->get_view_count();
 			RSG::storage->render_target_set_size(vp->render_target, vp->size.x, vp->size.y, view_count);
 
@@ -556,7 +595,7 @@ void RendererViewport::draw_viewports() {
 			RSG::scene->set_debug_draw_mode(vp->debug_draw);
 
 			// and draw viewport
-			_draw_viewport(vp, view_count);
+			_draw_viewport(vp);
 
 			// measure
 
@@ -580,7 +619,7 @@ void RendererViewport::draw_viewports() {
 			RSG::scene->set_debug_draw_mode(vp->debug_draw);
 
 			// render standard mono camera
-			_draw_viewport(vp, 1);
+			_draw_viewport(vp);
 
 			if (vp->viewport_to_screen != DisplayServer::INVALID_WINDOW_ID && (!vp->viewport_render_direct_to_screen || !RSG::rasterizer->is_low_end())) {
 				//copy to screen if set as such
@@ -648,9 +687,19 @@ void RendererViewport::viewport_set_use_xr(RID p_viewport, bool p_use_xr) {
 	}
 
 	viewport->use_xr = p_use_xr;
-	if (viewport->render_buffers.is_valid()) {
-		RSG::scene->render_buffers_configure(viewport->render_buffers, viewport->render_target, viewport->size.width, viewport->size.height, viewport->msaa, viewport->screen_space_aa, viewport->use_debanding, viewport->get_view_count());
+	_configure_3d_render_buffers(viewport);
+}
+
+void RendererViewport::viewport_set_scale_3d(RID p_viewport, RenderingServer::ViewportScale3D p_scale_3d) {
+	Viewport *viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	if (viewport->scale_3d == p_scale_3d) {
+		return;
 	}
+
+	viewport->scale_3d = p_scale_3d;
+	_configure_3d_render_buffers(viewport);
 }
 
 uint32_t RendererViewport::Viewport::get_view_count() {
@@ -677,14 +726,7 @@ void RendererViewport::viewport_set_size(RID p_viewport, int p_width, int p_heig
 	viewport->size = Size2(p_width, p_height);
 	uint32_t view_count = viewport->get_view_count();
 	RSG::storage->render_target_set_size(viewport->render_target, p_width, p_height, view_count);
-	if (viewport->render_buffers.is_valid()) {
-		if (p_width == 0 || p_height == 0) {
-			RSG::scene->free(viewport->render_buffers);
-			viewport->render_buffers = RID();
-		} else {
-			RSG::scene->render_buffers_configure(viewport->render_buffers, viewport->render_target, viewport->size.width, viewport->size.height, viewport->msaa, viewport->screen_space_aa, viewport->use_debanding, view_count);
-		}
-	}
+	_configure_3d_render_buffers(viewport);
 
 	viewport->occlusion_buffer_dirty = true;
 }
@@ -915,9 +957,7 @@ void RendererViewport::viewport_set_msaa(RID p_viewport, RS::ViewportMSAA p_msaa
 		return;
 	}
 	viewport->msaa = p_msaa;
-	if (viewport->render_buffers.is_valid()) {
-		RSG::scene->render_buffers_configure(viewport->render_buffers, viewport->render_target, viewport->size.width, viewport->size.height, p_msaa, viewport->screen_space_aa, viewport->use_debanding, viewport->get_view_count());
-	}
+	_configure_3d_render_buffers(viewport);
 }
 
 void RendererViewport::viewport_set_screen_space_aa(RID p_viewport, RS::ViewportScreenSpaceAA p_mode) {
@@ -928,9 +968,7 @@ void RendererViewport::viewport_set_screen_space_aa(RID p_viewport, RS::Viewport
 		return;
 	}
 	viewport->screen_space_aa = p_mode;
-	if (viewport->render_buffers.is_valid()) {
-		RSG::scene->render_buffers_configure(viewport->render_buffers, viewport->render_target, viewport->size.width, viewport->size.height, viewport->msaa, p_mode, viewport->use_debanding, viewport->get_view_count());
-	}
+	_configure_3d_render_buffers(viewport);
 }
 
 void RendererViewport::viewport_set_use_debanding(RID p_viewport, bool p_use_debanding) {
@@ -941,9 +979,7 @@ void RendererViewport::viewport_set_use_debanding(RID p_viewport, bool p_use_deb
 		return;
 	}
 	viewport->use_debanding = p_use_debanding;
-	if (viewport->render_buffers.is_valid()) {
-		RSG::scene->render_buffers_configure(viewport->render_buffers, viewport->render_target, viewport->size.width, viewport->size.height, viewport->msaa, viewport->screen_space_aa, p_use_debanding, viewport->get_view_count());
-	}
+	_configure_3d_render_buffers(viewport);
 }
 
 void RendererViewport::viewport_set_use_occlusion_culling(RID p_viewport, bool p_use_occlusion_culling) {

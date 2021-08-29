@@ -13,15 +13,15 @@
 		[codeblocks]
 		[gdscript]
 		var n = Node2D.new()
-		print("position" in n) # Prints "True".
-		print("other_property" in n) # Prints "False".
+		print("position" in n) # Prints "true".
+		print("other_property" in n) # Prints "false".
 		[/gdscript]
 		[csharp]
 		var node = new Node2D();
 		// C# has no direct equivalent to GDScript's `in` operator here, but we
 		// can achieve the same behavior by performing `Get` with a null check.
-		GD.Print(node.Get("position") != null); // Prints "True".
-		GD.Print(node.Get("other_property") != null); // Prints "False".
+		GD.Print(node.Get("position") != null); // Prints "true".
+		GD.Print(node.Get("other_property") != null); // Prints "false".
 		[/csharp]
 		[/codeblocks]
 		The [code]in[/code] operator will evaluate to [code]true[/code] as long as the key exists, even if the value is [code]null[/code].

@@ -170,7 +170,7 @@ public:
 			push_back(p_val);
 		} else {
 			resize(count + 1);
-			for (U i = count; i > p_pos; i--) {
+			for (U i = count - 1; i > p_pos; i--) {
 				data[i] = data[i - 1];
 			}
 			data[p_pos] = p_val;

@@ -5598,6 +5598,8 @@ void Node3DEditor::_init_indicators() {
 
 		Ref<Shader> grid_shader = memnew(Shader);
 		grid_shader->set_code(R"(
+// 3D editor grid shader.
+
 shader_type spatial;
 
 render_mode unshaded;
@@ -5839,6 +5841,8 @@ void fragment() {
 				Ref<Shader> rotate_shader = memnew(Shader);
 
 				rotate_shader->set_code(R"(
+// 3D editor rotation manipulator gizmo shader.
+
 shader_type spatial;
 
 render_mode unshaded, depth_test_disabled;
@@ -5887,6 +5891,8 @@ void fragment() {
 
 					Ref<Shader> border_shader = memnew(Shader);
 					border_shader->set_code(R"(
+// 3D editor rotation manipulator gizmo shader (white outline).
+
 shader_type spatial;
 
 render_mode unshaded, depth_test_disabled;
@@ -7506,6 +7512,8 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 
 		sun_direction_shader.instantiate();
 		sun_direction_shader->set_code(R"(
+// 3D editor Preview Sun direction shader.
+
 shader_type canvas_item;
 
 uniform vec3 sun_direction;

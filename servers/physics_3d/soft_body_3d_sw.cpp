@@ -964,16 +964,9 @@ void SoftBody3DSW::apply_forces(bool p_has_wind_forces) {
 }
 
 void SoftBody3DSW::_compute_area_gravity(const Area3DSW *p_area) {
-	if (p_area->is_gravity_point()) {
-		if (p_area->get_gravity_distance_scale() > 0) {
-			Vector3 v = p_area->get_transform().xform(p_area->get_gravity_vector()) - get_transform().get_origin();
-			gravity += v.normalized() * (p_area->get_gravity() / Math::pow(v.length() * p_area->get_gravity_distance_scale() + 1, 2));
-		} else {
-			gravity += (p_area->get_transform().xform(p_area->get_gravity_vector()) - get_transform().get_origin()).normalized() * p_area->get_gravity();
-		}
-	} else {
-		gravity += p_area->get_gravity_vector() * p_area->get_gravity();
-	}
+	Vector3 area_gravity;
+	p_area->compute_gravity(get_transform().get_origin(), area_gravity);
+	gravity += area_gravity;
 }
 
 Vector3 SoftBody3DSW::_compute_area_windforce(const Area3DSW *p_area, const Face *p_face) {

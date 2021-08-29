@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
+#include "core/extension/native_extension.h"
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
@@ -1045,6 +1046,14 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	if (FileAccess::exists(ResourceUID::CACHE_FILE)) {
 		Vector<uint8_t> array = FileAccess::get_file_as_array(ResourceUID::CACHE_FILE);
 		err = p_func(p_udata, ResourceUID::CACHE_FILE, array, idx, total, enc_in_filters, enc_ex_filters, key);
+		if (err != OK) {
+			return err;
+		}
+	}
+
+	if (FileAccess::exists(NativeExtension::EXTENSION_LIST_CONFIG_FILE)) {
+		Vector<uint8_t> array = FileAccess::get_file_as_array(NativeExtension::EXTENSION_LIST_CONFIG_FILE);
+		err = p_func(p_udata, NativeExtension::EXTENSION_LIST_CONFIG_FILE, array, idx, total, enc_in_filters, enc_ex_filters, key);
 		if (err != OK) {
 			return err;
 		}

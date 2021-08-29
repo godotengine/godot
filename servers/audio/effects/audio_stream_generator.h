@@ -67,7 +67,7 @@ class AudioStreamGeneratorPlayback : public AudioStreamPlaybackResampled {
 	AudioStreamGenerator *generator;
 
 protected:
-	virtual void _mix_internal(AudioFrame *p_buffer, int p_frames) override;
+	virtual int _mix_internal(AudioFrame *p_buffer, int p_frames) override;
 	virtual float get_stream_sampling_rate() override;
 
 	static void _bind_methods();
