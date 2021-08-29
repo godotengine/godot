@@ -195,7 +195,7 @@ void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 	// get grouped together and sent to the editor log as one message. This can mess with the
 	// search functionality (see the comments on the PR above for more details). This behaviour
 	// also matches that of other IDE's.
-	Vector<String> lines = p_msg.split("\n", false);
+	Vector<String> lines = p_msg.split("\n", true);
 
 	for (int i = 0; i < lines.size(); i++) {
 		_process_message(lines[i], p_type);
