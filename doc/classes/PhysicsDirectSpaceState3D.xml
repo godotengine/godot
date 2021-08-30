@@ -47,7 +47,7 @@
 			<argument index="0" name="from" type="Vector3" />
 			<argument index="1" name="to" type="Vector3" />
 			<argument index="2" name="exclude" type="Array" default="[]" />
-			<argument index="3" name="collision_mask" type="int" default="2147483647" />
+			<argument index="3" name="collision_mask" type="int" default="4294967295" />
 			<argument index="4" name="collide_with_bodies" type="bool" default="true" />
 			<argument index="5" name="collide_with_areas" type="bool" default="false" />
 			<description>
@@ -59,7 +59,7 @@
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
 				If the ray did not intersect anything, then an empty dictionary is returned instead.
-				Additionally, the method can take an [code]exclude[/code] array of objects or [RID]s that are to be excluded from collisions, a [code]collision_mask[/code] bitmask representing the physics layers to detect, or booleans to determine if the ray should collide with [PhysicsBody3D]s or [Area3D]s, respectively.
+				Additionally, the method can take an [code]exclude[/code] array of objects or [RID]s that are to be excluded from collisions, a [code]collision_mask[/code] bitmask representing the physics layers to detect (all layers by default), or booleans to determine if the ray should collide with [PhysicsBody3D]s or [Area3D]s, respectively.
 			</description>
 		</method>
 		<method name="intersect_shape">
