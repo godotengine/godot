@@ -302,10 +302,12 @@ void Body3DSW::set_state(PhysicsServer3D::BodyState p_state, const Variant &p_va
 		} break;
 		case PhysicsServer3D::BODY_STATE_LINEAR_VELOCITY: {
 			linear_velocity = p_variant;
+			constant_linear_velocity = linear_velocity;
 			wakeup();
 		} break;
 		case PhysicsServer3D::BODY_STATE_ANGULAR_VELOCITY: {
 			angular_velocity = p_variant;
+			constant_angular_velocity = angular_velocity;
 			wakeup();
 
 		} break;
@@ -473,7 +475,7 @@ void Body3DSW::integrate_forces(real_t p_step) {
 		//compute motion, angular and etc. velocities from prev transform
 		motion = new_transform.origin - get_transform().origin;
 		do_motion = true;
-		linear_velocity = motion / p_step;
+		linear_velocity = constant_linear_velocity + motion / p_step;
 
 		//compute a FAKE angular velocity, not so easy
 		Basis rot = new_transform.basis.orthonormalized() * get_transform().basis.orthonormalized().transposed();
@@ -482,7 +484,7 @@ void Body3DSW::integrate_forces(real_t p_step) {
 
 		rot.get_axis_angle(axis, angle);
 		axis.normalize();
-		angular_velocity = axis * (angle / p_step);
+		angular_velocity = constant_angular_velocity + axis * (angle / p_step);
 	} else {
 		if (!omit_force_integration && !first_integration) {
 			//overridden by direct state query

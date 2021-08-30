@@ -44,10 +44,13 @@ class Body2DSW : public CollisionObject2DSW {
 	PhysicsServer2D::BodyMode mode;
 
 	Vector2 biased_linear_velocity;
-	real_t biased_angular_velocity;
+	real_t biased_angular_velocity = 0.0;
 
 	Vector2 linear_velocity;
-	real_t angular_velocity;
+	real_t angular_velocity = 0.0;
+
+	Vector2 constant_linear_velocity;
+	real_t constant_angular_velocity = 0.0;
 
 	real_t linear_damp;
 	real_t angular_damp;

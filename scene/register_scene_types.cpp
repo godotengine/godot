@@ -488,6 +488,7 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(CollisionObject3D);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsBody3D);
 	GDREGISTER_CLASS(StaticBody3D);
+	GDREGISTER_CLASS(AnimatableBody3D);
 	GDREGISTER_CLASS(RigidBody3D);
 	GDREGISTER_CLASS(KinematicCollision3D);
 	GDREGISTER_CLASS(CharacterBody3D);
@@ -647,6 +648,7 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(CollisionObject2D);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsBody2D);
 	GDREGISTER_CLASS(StaticBody2D);
+	GDREGISTER_CLASS(AnimatableBody2D);
 	GDREGISTER_CLASS(RigidBody2D);
 	GDREGISTER_CLASS(CharacterBody2D);
 	GDREGISTER_CLASS(KinematicCollision2D);
