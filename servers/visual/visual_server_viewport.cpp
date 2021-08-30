@@ -128,7 +128,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 
 			for (Set<RasterizerCanvas::Light *>::Element *F = canvas->lights.front(); F; F = F->next()) {
 				RasterizerCanvas::Light *cl = F->get();
-				if (cl->enabled && cl->texture.is_valid()) {
+				if (cl->enabled && cl->texture.is_valid() && cl->energy > CMP_EPSILON) {
 					//not super efficient..
 					Size2 tsize = VSG::storage->texture_size_with_proxy(cl->texture);
 					// Skip using lights with texture of 0 size
