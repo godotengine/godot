@@ -110,7 +110,7 @@ btEmptyShape *ShapeBullet::create_shape_empty() {
 	return bulletnew(btEmptyShape);
 }
 
-btStaticPlaneShape *ShapeBullet::create_shape_plane(const btVector3 &planeNormal, btScalar planeConstant) {
+btStaticPlaneShape *ShapeBullet::create_shape_world_margin(const btVector3 &planeNormal, btScalar planeConstant) {
 	return bulletnew(btStaticPlaneShape(planeNormal, planeConstant));
 }
 
@@ -164,32 +164,32 @@ btRayShape *ShapeBullet::create_shape_ray(real_t p_length, bool p_slips_on_slope
 	return r;
 }
 
-/* PLANE */
+/* World margin */
 
-PlaneShapeBullet::PlaneShapeBullet() :
+WorldMarginShapeBullet::WorldMarginShapeBullet() :
 		ShapeBullet() {}
 
-void PlaneShapeBullet::set_data(const Variant &p_data) {
+void WorldMarginShapeBullet::set_data(const Variant &p_data) {
 	setup(p_data);
 }
 
-Variant PlaneShapeBullet::get_data() const {
+Variant WorldMarginShapeBullet::get_data() const {
 	return plane;
 }
 
-PhysicsServer3D::ShapeType PlaneShapeBullet::get_type() const {
-	return PhysicsServer3D::SHAPE_PLANE;
+PhysicsServer3D::ShapeType WorldMarginShapeBullet::get_type() const {
+	return PhysicsServer3D::SHAPE_WORLD_MARGIN;
 }
 
-void PlaneShapeBullet::setup(const Plane &p_plane) {
+void WorldMarginShapeBullet::setup(const Plane &p_plane) {
 	plane = p_plane;
 	notifyShapeChanged();
 }
 
-btCollisionShape *PlaneShapeBullet::create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge) {
+btCollisionShape *WorldMarginShapeBullet::create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge) {
 	btVector3 btPlaneNormal;
 	G_TO_B(plane.normal, btPlaneNormal);
-	return prepare(PlaneShapeBullet::create_shape_plane(btPlaneNormal, plane.d));
+	return prepare(WorldMarginShapeBullet::create_shape_world_margin(btPlaneNormal, plane.d));
 }
 
 /* Sphere */

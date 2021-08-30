@@ -103,7 +103,7 @@ protected:
 	RID create_static_plane(const Plane &p_plane) {
 		PhysicsServer3D *ps = PhysicsServer3D::get_singleton();
 
-		RID world_margin_shape = ps->shape_create(PhysicsServer3D::SHAPE_PLANE);
+		RID world_margin_shape = ps->shape_create(PhysicsServer3D::SHAPE_WORLD_MARGIN);
 		ps->shape_set_data(world_margin_shape, p_plane);
 
 		RID b = ps->body_create();

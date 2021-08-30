@@ -221,7 +221,7 @@ public:
 	static PhysicsServer3D *get_singleton();
 
 	enum ShapeType {
-		SHAPE_PLANE, ///< plane:"plane"
+		SHAPE_WORLD_MARGIN, ///< plane:"plane"
 		SHAPE_SEPARATION_RAY, ///< float:"length"
 		SHAPE_SPHERE, ///< float:"radius"
 		SHAPE_BOX, ///< vec3:"extents"
@@ -236,7 +236,7 @@ public:
 
 	RID shape_create(ShapeType p_shape);
 
-	virtual RID plane_shape_create() = 0;
+	virtual RID world_margin_shape_create() = 0;
 	virtual RID separation_ray_shape_create() = 0;
 	virtual RID sphere_shape_create() = 0;
 	virtual RID box_shape_create() = 0;
