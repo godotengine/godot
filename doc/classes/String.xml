@@ -667,7 +667,7 @@
 			</description>
 		</method>
 		<method name="simplify_path">
-			<return type="bool" />
+			<return type="String" />
 			<description>
 				Returns a simplified canonical path.
 			</description>
