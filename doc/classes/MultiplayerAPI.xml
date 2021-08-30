@@ -73,7 +73,7 @@
 			[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
 		</member>
 		<member name="network_peer" type="MultiplayerPeer" setter="set_network_peer" getter="get_network_peer">
-			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the MultiplayerAPI will become a network server (check with [method is_network_server]) and will set root node's network mode to master, or it will become a regular peer with root node set to puppet. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to MultiplayerAPI's signals.
+			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the MultiplayerAPI will become a network server (check with [method is_network_server]) and will set root node's network mode to authority, or it will become a regular client peer. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to MultiplayerAPI's signals.
 		</member>
 		<member name="refuse_new_network_connections" type="bool" setter="set_refuse_new_network_connections" getter="is_refusing_new_network_connections" default="false">
 			If [code]true[/code], the MultiplayerAPI's [member network_peer] refuses new incoming connections.
@@ -125,14 +125,11 @@
 		<constant name="RPC_MODE_DISABLED" value="0" enum="RPCMode">
 			Used with [method Node.rpc_config] to disable a method or property for all RPC calls, making it unavailable. Default for all methods.
 		</constant>
-		<constant name="RPC_MODE_REMOTE" value="1" enum="RPCMode">
-			Used with [method Node.rpc_config] to set a method to be called or a property to be changed only on the remote end, not locally. Analogous to the [code]remote[/code] keyword. Calls and property changes are accepted from all remote peers, no matter if they are node's master or puppets.
+		<constant name="RPC_MODE_ANY" value="1" enum="RPCMode">
+			Used with [method Node.rpc_config] to set a method to be callable remotely by any peer. Analogous to the [code]@rpc(any)[/code] annotation. Calls are accepted from all remote peers, no matter if they are node's authority or not.
 		</constant>
-		<constant name="RPC_MODE_MASTER" value="2" enum="RPCMode">
-			Used with [method Node.rpc_config] to set a method to be called or a property to be changed only on the network master for this node. Analogous to the [code]master[/code] keyword. Only accepts calls or property changes from the node's network puppets, see [method Node.set_network_master].
-		</constant>
-		<constant name="RPC_MODE_PUPPET" value="3" enum="RPCMode">
-			Used with [method Node.rpc_config] to set a method to be called or a property to be changed only on puppets for this node. Analogous to the [code]puppet[/code] keyword. Only accepts calls or property changes from the node's network master, see [method Node.set_network_master].
+		<constant name="RPC_MODE_AUTHORITY" value="2" enum="RPCMode">
+			Used with [method Node.rpc_config] to set a method to be callable remotely only by the current network authority (which is the server by default). Analogous to the [code]@rpc(auth)[/code] annotation. See [method Node.set_network_authority].
 		</constant>
 	</constants>
 </class>

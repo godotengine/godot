@@ -109,9 +109,11 @@
 			<return type="void" />
 			<argument index="0" name="node" type="Node" />
 			<argument index="1" name="legible_unique_name" type="bool" default="false" />
+			<argument index="2" name="internal" type="int" enum="Node.InternalMode" default="0" />
 			<description>
 				Adds a child node. Nodes can have any number of children, but every child must have a unique name. Child nodes are automatically deleted when the parent node is deleted, so an entire scene can be removed by deleting its topmost node.
 				If [code]legible_unique_name[/code] is [code]true[/code], the child node will have a human-readable name based on the name of the node being instantiated instead of its type.
+				If [code]internal[/code] is different than [constant INTERNAL_MODE_DISABLED], the child will be added as internal node. Such nodes are ignored by methods like [method get_children], unless their parameter [code]include_internal[/code] is [code]true[/code].The intended usage is to hide the internal nodes from the user, so the user won't accidentally delete or modify them. Used by some GUI nodes, e.g. [ColorPicker]. See [enum InternalMode] for available modes.
 				[b]Note:[/b] If the child node already has a parent, the function will fail. Use [method remove_child] first to remove the node from its current parent. For example:
 				[codeblocks]
 				[gdscript]
@@ -141,6 +143,7 @@
 				Adds a [code]sibling[/code] node to current's node parent, at the same level as that node, right below it.
 				If [code]legible_unique_name[/code] is [code]true[/code], the child node will have a human-readable name based on the name of the node being instantiated instead of its type.
 				Use [method add_child] instead of this method if you don't need the child node to be added below a specific node in the list of children.
+				[b]Note:[/b] If this node is internal, the new sibling will be internal too (see [code]internal[/code] parameter in [method add_child]).
 			</description>
 		</method>
 		<method name="add_to_group">
@@ -200,22 +203,28 @@
 		<method name="get_child" qualifiers="const">
 			<return type="Node" />
 			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="include_internal" type="bool" default="false" />
 			<description>
 				Returns a child node by its index (see [method get_child_count]). This method is often used for iterating all children of a node.
 				Negative indices access the children from the last one.
+				If [code]include_internal[/code] is [code]true[/code], internal children are skipped (see [code]internal[/code] parameter in [method add_child]).
 				To access a child node via its name, use [method get_node].
 			</description>
 		</method>
 		<method name="get_child_count" qualifiers="const">
 			<return type="int" />
+			<argument index="0" name="include_internal" type="bool" default="false" />
 			<description>
 				Returns the number of child nodes.
+				If [code]include_internal[/code] is [code]false[/code], internal children aren't counted (see [code]internal[/code] parameter in [method add_child]).
 			</description>
 		</method>
 		<method name="get_children" qualifiers="const">
 			<return type="Node[]" />
+			<argument index="0" name="include_internal" type="bool" default="false" />
 			<description>
 				Returns an array of references to node's children.
+				If [code]include_internal[/code] is [code]false[/code], the returned array won't include internal children (see [code]internal[/code] parameter in [method add_child]).
 			</description>
 		</method>
 		<method name="get_editor_description" qualifiers="const">
@@ -231,14 +240,16 @@
 		</method>
 		<method name="get_index" qualifiers="const">
 			<return type="int" />
+			<argument index="0" name="include_internal" type="bool" default="false" />
 			<description>
 				Returns the node's order in the scene tree branch. For example, if called on the first child node the position is [code]0[/code].
+				If [code]include_internal[/code] is [code]false[/code], the index won't take internal children into account, i.e. first non-internal child will have index of 0 (see [code]internal[/code] parameter in [method add_child]).
 			</description>
 		</method>
-		<method name="get_network_master" qualifiers="const">
+		<method name="get_network_authority" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the peer ID of the network master for this node. See [method set_network_master].
+				Returns the peer ID of the network authority for this node. See [method set_network_authority].
 			</description>
 		</method>
 		<method name="get_node" qualifiers="const">
@@ -406,10 +417,10 @@
 				Returns [code]true[/code] if this node is currently inside a [SceneTree].
 			</description>
 		</method>
-		<method name="is_network_master" qualifiers="const">
+		<method name="is_network_authority" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the local system is the master of this node.
+				Returns [code]true[/code] if the local system is the authority of this node.
 			</description>
 		</method>
 		<method name="is_physics_processing" qualifiers="const">
@@ -460,6 +471,7 @@
 			<argument index="1" name="to_position" type="int" />
 			<description>
 				Moves a child node to a different position (order) among the other children. Since calls, signals, etc are performed by tree order, changing the order of children nodes may be useful.
+				[b]Note:[/b] Internal children can only be moved within their expected "internal range" (see [code]internal[/code] parameter in [method add_child]).
 			</description>
 		</method>
 		<method name="print_stray_nodes">
@@ -576,7 +588,7 @@
 			<argument index="2" name="transfer_mode" type="int" enum="MultiplayerPeer.TransferMode" default="2" />
 			<argument index="3" name="channel" type="int" default="0" />
 			<description>
-				Changes the RPC mode for the given [code]method[/code] to the given [code]rpc_mode[/code], optionally specifying the [code]transfer_mode[/code] and [code]channel[/code] (on supported peers). See [enum MultiplayerAPI.RPCMode] and [enum MultiplayerPeer.TransferMode]. An alternative is annotating methods and properties with the corresponding keywords ([code]remote[/code], [code]master[/code], [code]puppet[/code], [code]remotesync[/code], [code]mastersync[/code], [code]puppetsync[/code]). By default, methods are not exposed to networking (and RPCs).
+				Changes the RPC mode for the given [code]method[/code] to the given [code]rpc_mode[/code], optionally specifying the [code]transfer_mode[/code] and [code]channel[/code] (on supported peers). See [enum MultiplayerAPI.RPCMode] and [enum MultiplayerPeer.TransferMode]. An alternative is annotating methods and properties with the corresponding annotation ([code]@rpc(any)[/code], [code]@rpc(auth)[/code]). By default, methods are not exposed to networking (and RPCs).
 			</description>
 		</method>
 		<method name="rpc_id" qualifiers="vararg">
@@ -608,12 +620,12 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_network_master">
+		<method name="set_network_authority">
 			<return type="void" />
 			<argument index="0" name="id" type="int" />
 			<argument index="1" name="recursive" type="bool" default="true" />
 			<description>
-				Sets the node's network master to the peer with the given peer ID. The network master is the peer that has authority over the node on the network. Useful in conjunction with the [code]master[/code] and [code]puppet[/code] keywords. Inherited from the parent node by default, which ultimately defaults to peer ID 1 (the server). If [code]recursive[/code], the given peer is recursively set as the master for all children of this node.
+				Sets the node's network authority to the peer with the given peer ID. The network authority is the peer that has authority over the node on the network. Useful in conjunction with [method rpc_config] and the [MultiplayerAPI]. Inherited from the parent node by default, which ultimately defaults to peer ID 1 (the server). If [code]recursive[/code], the given peer is recursively set as the authority for all children of this node.
 			</description>
 		</method>
 		<method name="set_physics_process">
@@ -887,6 +899,15 @@
 		<constant name="DUPLICATE_USE_INSTANCING" value="8" enum="DuplicateFlags">
 			Duplicate using instancing.
 			An instance stays linked to the original so when the original changes, the instance changes too.
+		</constant>
+		<constant name="INTERNAL_MODE_DISABLED" value="0" enum="InternalMode">
+			Node will not be internal.
+		</constant>
+		<constant name="INTERNAL_MODE_FRONT" value="1" enum="InternalMode">
+			Node will be placed at the front of parent's node list, before any non-internal sibling.
+		</constant>
+		<constant name="INTERNAL_MODE_BACK" value="2" enum="InternalMode">
+			Node will be placed at the back of parent's node list, after any non-internal sibling.
 		</constant>
 	</constants>
 </class>

@@ -48,7 +48,7 @@ GradientEdit::GradientEdit() {
 	picker = memnew(ColorPicker);
 	popup->add_child(picker);
 
-	add_child(popup);
+	add_child(popup, false, INTERNAL_MODE_FRONT);
 }
 
 int GradientEdit::_get_point_from_pos(int x) {

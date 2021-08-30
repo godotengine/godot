@@ -112,7 +112,6 @@ struct CachedData {
 	GDMonoClass *class_SignalAttribute;
 	GDMonoClass *class_ToolAttribute;
 	GDMonoClass *class_RemoteAttribute;
-	GDMonoClass *class_MasterAttribute;
 	GDMonoClass *class_PuppetAttribute;
 	GDMonoClass *class_GodotMethodAttribute;
 	GDMonoField *field_GodotMethodAttribute_methodName;

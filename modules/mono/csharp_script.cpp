@@ -3466,13 +3466,10 @@ int CSharpScript::get_member_line(const StringName &p_member) const {
 
 MultiplayerAPI::RPCMode CSharpScript::_member_get_rpc_mode(IMonoClassMember *p_member) const {
 	if (p_member->has_attribute(CACHED_CLASS(RemoteAttribute))) {
-		return MultiplayerAPI::RPC_MODE_REMOTE;
-	}
-	if (p_member->has_attribute(CACHED_CLASS(MasterAttribute))) {
-		return MultiplayerAPI::RPC_MODE_MASTER;
+		return MultiplayerAPI::RPC_MODE_ANY;
 	}
 	if (p_member->has_attribute(CACHED_CLASS(PuppetAttribute))) {
-		return MultiplayerAPI::RPC_MODE_PUPPET;
+		return MultiplayerAPI::RPC_MODE_AUTHORITY;
 	}
 
 	return MultiplayerAPI::RPC_MODE_DISABLED;

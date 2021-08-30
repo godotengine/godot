@@ -278,7 +278,7 @@ void SpinBox::_bind_methods() {
 
 SpinBox::SpinBox() {
 	line_edit = memnew(LineEdit);
-	add_child(line_edit);
+	add_child(line_edit, false, INTERNAL_MODE_FRONT);
 
 	line_edit->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	line_edit->set_mouse_filter(MOUSE_FILTER_PASS);
@@ -291,5 +291,5 @@ SpinBox::SpinBox() {
 
 	range_click_timer = memnew(Timer);
 	range_click_timer->connect("timeout", callable_mp(this, &SpinBox::_range_click_timeout));
-	add_child(range_click_timer);
+	add_child(range_click_timer, false, INTERNAL_MODE_FRONT);
 }

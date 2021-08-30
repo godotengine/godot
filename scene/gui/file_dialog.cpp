@@ -924,7 +924,7 @@ FileDialog::FileDialog() {
 	show_hidden_files = default_show_hidden_files;
 
 	vbox = memnew(VBoxContainer);
-	add_child(vbox);
+	add_child(vbox, false, INTERNAL_MODE_FRONT);
 	vbox->connect("theme_changed", callable_mp(this, &FileDialog::_theme_changed));
 
 	mode = FILE_MODE_SAVE_FILE;
@@ -1023,8 +1023,7 @@ FileDialog::FileDialog() {
 	filter->connect("item_selected", callable_mp(this, &FileDialog::_filter_selected));
 
 	confirm_save = memnew(ConfirmationDialog);
-	//	confirm_save->set_as_top_level(true);
-	add_child(confirm_save);
+	add_child(confirm_save, false, INTERNAL_MODE_FRONT);
 
 	confirm_save->connect("confirmed", callable_mp(this, &FileDialog::_save_confirm_pressed));
 
@@ -1036,16 +1035,16 @@ FileDialog::FileDialog() {
 	makedirname = memnew(LineEdit);
 	makedirname->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
 	makevb->add_margin_child(TTRC("Name:"), makedirname);
-	add_child(makedialog);
+	add_child(makedialog, false, INTERNAL_MODE_FRONT);
 	makedialog->register_text_enter(makedirname);
 	makedialog->connect("confirmed", callable_mp(this, &FileDialog::_make_dir_confirm));
 	mkdirerr = memnew(AcceptDialog);
 	mkdirerr->set_text(TTRC("Could not create folder."));
-	add_child(mkdirerr);
+	add_child(mkdirerr, false, INTERNAL_MODE_FRONT);
 
 	exterr = memnew(AcceptDialog);
 	exterr->set_text(TTRC("Must use a valid extension."));
-	add_child(exterr);
+	add_child(exterr, false, INTERNAL_MODE_FRONT);
 
 	update_filters();
 	update_dir();
