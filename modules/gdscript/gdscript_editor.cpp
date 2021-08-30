@@ -3078,6 +3078,15 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 						r_result.class_member = p_symbol;
 						return OK;
 					}
+				} else {
+					List<StringName> utility_functions;
+					Variant::get_utility_function_list(&utility_functions);
+					if (utility_functions.find(p_symbol) != nullptr) {
+						r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_TBD_GLOBALSCOPE;
+						r_result.class_name = "@GlobalScope";
+						r_result.class_member = p_symbol;
+						return OK;
+					}
 				}
 			}
 		} break;
