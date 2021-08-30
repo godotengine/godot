@@ -401,17 +401,27 @@ bool PhysicsDirectSpaceState3DSW::collide_shape(RID p_shape, const Transform3D &
 	return collided;
 }
 
+struct _RestResultData {
+	const CollisionObject3DSW *object = nullptr;
+	int local_shape = 0;
+	int shape = 0;
+	Vector3 contact;
+	Vector3 normal;
+	real_t len = 0.0;
+};
+
 struct _RestCallbackData {
-	const CollisionObject3DSW *object;
-	const CollisionObject3DSW *best_object;
-	int local_shape;
-	int best_local_shape;
-	int shape;
-	int best_shape;
-	Vector3 best_contact;
-	Vector3 best_normal;
-	real_t best_len;
-	real_t min_allowed_depth;
+	const CollisionObject3DSW *object = nullptr;
+	int local_shape = 0;
+	int shape = 0;
+
+	real_t min_allowed_depth = 0.0;
+
+	_RestResultData best_result;
+
+	int max_results = 0;
+	int result_count = 0;
+	_RestResultData *other_results = nullptr;
 };
 
 static void _rest_cbk_result(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata) {
@@ -422,16 +432,56 @@ static void _rest_cbk_result(const Vector3 &p_point_A, int p_index_A, const Vect
 	if (len < rd->min_allowed_depth) {
 		return;
 	}
-	if (len <= rd->best_len) {
+
+	bool is_best_result = (len > rd->best_result.len);
+
+	if (rd->other_results && rd->result_count > 0) {
+		// Consider as new result by default.
+		int prev_result_count = rd->result_count++;
+
+		int result_index = 0;
+		real_t tested_len = is_best_result ? rd->best_result.len : len;
+		for (; result_index < prev_result_count - 1; ++result_index) {
+			if (tested_len > rd->other_results[result_index].len) {
+				// Re-using a previous result.
+				rd->result_count--;
+				break;
+			}
+		}
+
+		if (result_index < rd->max_results - 1) {
+			_RestResultData &result = rd->other_results[result_index];
+
+			if (is_best_result) {
+				// Keep the previous best result as separate result.
+				result = rd->best_result;
+			} else {
+				// Keep this result as separate result.
+				result.len = len;
+				result.contact = p_point_B;
+				result.normal = contact_rel / len;
+				result.object = rd->object;
+				result.shape = rd->shape;
+				result.local_shape = rd->local_shape;
+			}
+		} else {
+			// Discarding this result.
+			rd->result_count--;
+		}
+	} else if (is_best_result) {
+		rd->result_count = 1;
+	}
+
+	if (!is_best_result) {
 		return;
 	}
 
-	rd->best_len = len;
-	rd->best_contact = p_point_B;
-	rd->best_normal = contact_rel / len;
-	rd->best_object = rd->object;
-	rd->best_shape = rd->shape;
-	rd->best_local_shape = rd->local_shape;
+	rd->best_result.len = len;
+	rd->best_result.contact = p_point_B;
+	rd->best_result.normal = contact_rel / len;
+	rd->best_result.object = rd->object;
+	rd->best_result.shape = rd->shape;
+	rd->best_result.local_shape = rd->local_shape;
 }
 
 bool PhysicsDirectSpaceState3DSW::rest_info(RID p_shape, const Transform3D &p_shape_xform, real_t p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
@@ -444,9 +494,6 @@ bool PhysicsDirectSpaceState3DSW::rest_info(RID p_shape, const Transform3D &p_sh
 	int amount = space->broadphase->cull_aabb(aabb, space->intersection_query_results, Space3DSW::INTERSECTION_QUERY_MAX, space->intersection_query_subindex_results);
 
 	_RestCallbackData rcd;
-	rcd.best_len = 0;
-	rcd.best_object = nullptr;
-	rcd.best_shape = 0;
 	rcd.min_allowed_depth = space->test_motion_min_contact_depth;
 
 	for (int i = 0; i < amount; i++) {
@@ -470,18 +517,18 @@ bool PhysicsDirectSpaceState3DSW::rest_info(RID p_shape, const Transform3D &p_sh
 		}
 	}
 
-	if (rcd.best_len == 0 || !rcd.best_object) {
+	if (rcd.best_result.len == 0 || !rcd.best_result.object) {
 		return false;
 	}
 
-	r_info->collider_id = rcd.best_object->get_instance_id();
-	r_info->shape = rcd.best_shape;
-	r_info->normal = rcd.best_normal;
-	r_info->point = rcd.best_contact;
-	r_info->rid = rcd.best_object->get_self();
-	if (rcd.best_object->get_type() == CollisionObject3DSW::TYPE_BODY) {
-		const Body3DSW *body = static_cast<const Body3DSW *>(rcd.best_object);
-		Vector3 rel_vec = rcd.best_contact - (body->get_transform().origin + body->get_center_of_mass());
+	r_info->collider_id = rcd.best_result.object->get_instance_id();
+	r_info->shape = rcd.best_result.shape;
+	r_info->normal = rcd.best_result.normal;
+	r_info->point = rcd.best_result.contact;
+	r_info->rid = rcd.best_result.object->get_self();
+	if (rcd.best_result.object->get_type() == CollisionObject3DSW::TYPE_BODY) {
+		const Body3DSW *body = static_cast<const Body3DSW *>(rcd.best_result.object);
+		Vector3 rel_vec = rcd.best_result.contact - (body->get_transform().origin + body->get_center_of_mass());
 		r_info->linear_velocity = body->get_linear_velocity() + (body->get_angular_velocity()).cross(rel_vec);
 
 	} else {
@@ -569,7 +616,7 @@ int Space3DSW::_cull_aabb_for_body(Body3DSW *p_body, const AABB &p_aabb) {
 	return amount;
 }
 
-bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin, PhysicsServer3D::MotionResult *r_result, bool p_collide_separation_ray, const Set<RID> &p_exclude) {
+bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin, PhysicsServer3D::MotionResult *r_result, int p_max_collisions, bool p_collide_separation_ray, const Set<RID> &p_exclude) {
 	//give me back regular physics engine logic
 	//this is madness
 	//and most people using this function will think
@@ -577,10 +624,12 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, co
 	//this took about a week to get right..
 	//but is it right? who knows at this point..
 
+	ERR_FAIL_INDEX_V(p_max_collisions, PhysicsServer3D::MotionResult::MAX_COLLISIONS, false);
+
 	if (r_result) {
-		r_result->collider_id = ObjectID();
-		r_result->collider_shape = 0;
+		*r_result = PhysicsServer3D::MotionResult();
 	}
+
 	AABB body_aabb;
 	bool shapes_found = false;
 
@@ -599,7 +648,6 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, co
 
 	if (!shapes_found) {
 		if (r_result) {
-			*r_result = PhysicsServer3D::MotionResult();
 			r_result->travel = p_motion;
 		}
 
@@ -832,10 +880,13 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, co
 		Transform3D ugt = body_transform;
 		ugt.origin += p_motion * unsafe;
 
+		_RestResultData results[PhysicsServer3D::MotionResult::MAX_COLLISIONS];
+
 		_RestCallbackData rcd;
-		rcd.best_len = 0;
-		rcd.best_object = nullptr;
-		rcd.best_shape = 0;
+		if (p_max_collisions > 1) {
+			rcd.max_results = p_max_collisions;
+			rcd.other_results = results;
+		}
 
 		// Allowed depth can't be lower than motion length, in order to handle contacts at low speed.
 		rcd.min_allowed_depth = MIN(motion_length, test_motion_min_contact_depth);
@@ -871,27 +922,36 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, co
 			}
 		}
 
-		if (rcd.best_len != 0) {
+		if (rcd.result_count > 0) {
 			if (r_result) {
-				r_result->collider = rcd.best_object->get_self();
-				r_result->collider_id = rcd.best_object->get_instance_id();
-				r_result->collider_shape = rcd.best_shape;
-				r_result->collision_local_shape = rcd.best_local_shape;
-				r_result->collision_normal = rcd.best_normal;
-				r_result->collision_point = rcd.best_contact;
-				r_result->collision_depth = rcd.best_len;
-				r_result->collision_safe_fraction = safe;
-				r_result->collision_unsafe_fraction = unsafe;
-				//r_result->collider_metadata = rcd.best_object->get_shape_metadata(rcd.best_shape);
+				for (int collision_index = 0; collision_index < rcd.result_count; ++collision_index) {
+					const _RestResultData &result = (collision_index > 0) ? rcd.other_results[collision_index - 1] : rcd.best_result;
 
-				const Body3DSW *body = static_cast<const Body3DSW *>(rcd.best_object);
+					PhysicsServer3D::MotionCollision &collision = r_result->collisions[collision_index];
 
-				Vector3 rel_vec = rcd.best_contact - (body->get_transform().origin + body->get_center_of_mass());
-				r_result->collider_velocity = body->get_linear_velocity() + (body->get_angular_velocity()).cross(rel_vec);
+					collision.collider = result.object->get_self();
+					collision.collider_id = result.object->get_instance_id();
+					collision.collider_shape = result.shape;
+					collision.local_shape = result.local_shape;
+					collision.normal = result.normal;
+					collision.position = result.contact;
+					collision.depth = result.len;
+					//r_result->collider_metadata = result.object->get_shape_metadata(result.shape);
+
+					const Body3DSW *body = static_cast<const Body3DSW *>(result.object);
+
+					Vector3 rel_vec = result.contact - (body->get_transform().origin + body->get_center_of_mass());
+					collision.collider_velocity = body->get_linear_velocity() + (body->get_angular_velocity()).cross(rel_vec);
+				}
 
 				r_result->travel = safe * p_motion;
 				r_result->remainder = p_motion - safe * p_motion;
 				r_result->travel += (body_transform.get_origin() - p_from.get_origin());
+
+				r_result->safe_fraction = safe;
+				r_result->unsafe_fraction = unsafe;
+
+				r_result->collision_count = rcd.result_count;
 			}
 
 			collided = true;
@@ -902,6 +962,9 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, co
 		r_result->travel = p_motion;
 		r_result->remainder = Vector3();
 		r_result->travel += (body_transform.get_origin() - p_from.get_origin());
+
+		r_result->safe_fraction = 1.0;
+		r_result->unsafe_fraction = 1.0;
 	}
 
 	return collided;

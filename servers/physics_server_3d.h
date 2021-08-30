@@ -210,7 +210,7 @@ class PhysicsServer3D : public Object {
 
 	static PhysicsServer3D *singleton;
 
-	virtual bool _body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin = 0.001, const Ref<PhysicsTestMotionResult3D> &p_result = Ref<PhysicsTestMotionResult3D>(), bool p_collide_separation_ray = false, const Vector<RID> &p_exclude = Vector<RID>());
+	virtual bool _body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin = 0.001, const Ref<PhysicsTestMotionResult3D> &p_result = Ref<PhysicsTestMotionResult3D>(), bool p_collide_separation_ray = false, const Vector<RID> &p_exclude = Vector<RID>(), int p_max_collisions = 1);
 
 protected:
 	static void _bind_methods();
@@ -484,28 +484,34 @@ public:
 	// this function only works on physics process, errors and returns null otherwise
 	virtual PhysicsDirectBodyState3D *body_get_direct_state(RID p_body) = 0;
 
-	struct MotionResult {
-		Vector3 travel;
-		Vector3 remainder;
-
-		Vector3 collision_point;
-		Vector3 collision_normal;
+	struct MotionCollision {
+		Vector3 position;
+		Vector3 normal;
 		Vector3 collider_velocity;
-		real_t collision_depth = 0.0;
-		real_t collision_safe_fraction = 0.0;
-		real_t collision_unsafe_fraction = 0.0;
-		int collision_local_shape = 0;
+		real_t depth = 0.0;
+		int local_shape = 0;
 		ObjectID collider_id;
 		RID collider;
 		int collider_shape = 0;
 		Variant collider_metadata;
 
 		real_t get_angle(Vector3 p_up_direction) const {
-			return Math::acos(collision_normal.dot(p_up_direction));
+			return Math::acos(normal.dot(p_up_direction));
 		}
 	};
 
-	virtual bool body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin = 0.001, MotionResult *r_result = nullptr, bool p_collide_separation_ray = false, const Set<RID> &p_exclude = Set<RID>()) = 0;
+	struct MotionResult {
+		Vector3 travel;
+		Vector3 remainder;
+		real_t safe_fraction = 0.0;
+		real_t unsafe_fraction = 0.0;
+
+		static const int MAX_COLLISIONS = 32;
+		MotionCollision collisions[MAX_COLLISIONS];
+		int collision_count = 0;
+	};
+
+	virtual bool body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin = 0.001, MotionResult *r_result = nullptr, int p_max_collisions = 1, bool p_collide_separation_ray = false, const Set<RID> &p_exclude = Set<RID>()) = 0;
 
 	/* SOFT BODY */
 
@@ -770,17 +776,28 @@ public:
 
 	Vector3 get_travel() const;
 	Vector3 get_remainder() const;
+	real_t get_safe_fraction() const;
+	real_t get_unsafe_fraction() const;
 
-	Vector3 get_collision_point() const;
-	Vector3 get_collision_normal() const;
-	Vector3 get_collider_velocity() const;
-	ObjectID get_collider_id() const;
-	RID get_collider_rid() const;
-	Object *get_collider() const;
-	int get_collider_shape() const;
-	real_t get_collision_depth() const;
-	real_t get_collision_safe_fraction() const;
-	real_t get_collision_unsafe_fraction() const;
+	int get_collision_count() const;
+
+	Vector3 get_collision_point(int p_collision_index = 0) const;
+	Vector3 get_collision_normal(int p_collision_index = 0) const;
+	Vector3 get_collider_velocity(int p_collision_index = 0) const;
+	ObjectID get_collider_id(int p_collision_index = 0) const;
+	RID get_collider_rid(int p_collision_index = 0) const;
+	Object *get_collider(int p_collision_index = 0) const;
+	int get_collider_shape(int p_collision_index = 0) const;
+	real_t get_collision_depth(int p_collision_index = 0) const;
+
+	Vector3 get_best_collision_point() const;
+	Vector3 get_best_collision_normal() const;
+	Vector3 get_best_collider_velocity() const;
+	ObjectID get_best_collider_id() const;
+	RID get_best_collider_rid() const;
+	Object *get_best_collider() const;
+	int get_best_collider_shape() const;
+	real_t get_best_collision_depth() const;
 };
 
 typedef PhysicsServer3D *(*CreatePhysicsServer3DCallback)();
