@@ -267,14 +267,6 @@ struct VariantUtilityFunctions {
 		return Math::db2linear(db);
 	}
 
-	static inline Vector2 polar2cartesian(double r, double th) {
-		return Vector2(r * Math::cos(th), r * Math::sin(th));
-	}
-
-	static inline Vector2 cartesian2polar(double x, double y) {
-		return Vector2(Math::sqrt(x * x + y * y), Math::atan2(y, x));
-	}
-
 	static inline int64_t wrapi(int64_t value, int64_t min, int64_t max) {
 		return Math::wrapi(value, min, max);
 	}
@@ -1213,9 +1205,6 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(rad2deg, sarray("rad"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(linear2db, sarray("lin"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(db2linear, sarray("db"), Variant::UTILITY_FUNC_TYPE_MATH);
-
-	FUNCBINDR(polar2cartesian, sarray("r", "th"), Variant::UTILITY_FUNC_TYPE_MATH);
-	FUNCBINDR(cartesian2polar, sarray("x", "y"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDR(wrapi, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(wrapf, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH);
