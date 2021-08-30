@@ -371,7 +371,7 @@ void main() {
 #endif
 
 			} else {
-				dynamic_light += light;
+				dynamic_light += light * lights.data[i].indirect_multiplier;
 			}
 		}
 	}

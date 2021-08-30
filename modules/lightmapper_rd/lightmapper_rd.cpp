@@ -50,7 +50,7 @@ void LightmapperRD::add_mesh(const MeshData &p_mesh) {
 	mesh_instances.push_back(mi);
 }
 
-void LightmapperRD::add_directional_light(bool p_static, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_angular_distance) {
+void LightmapperRD::add_directional_light(bool p_static, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_multiplier, float p_angular_distance) {
 	Light l;
 	l.type = LIGHT_TYPE_DIRECTIONAL;
 	l.direction[0] = p_direction.x;
@@ -60,12 +60,13 @@ void LightmapperRD::add_directional_light(bool p_static, const Vector3 &p_direct
 	l.color[1] = p_color.g;
 	l.color[2] = p_color.b;
 	l.energy = p_energy;
+	l.indirect_multiplier = p_indirect_multiplier;
 	l.static_bake = p_static;
 	l.size = p_angular_distance;
 	lights.push_back(l);
 }
 
-void LightmapperRD::add_omni_light(bool p_static, const Vector3 &p_position, const Color &p_color, float p_energy, float p_range, float p_attenuation, float p_size) {
+void LightmapperRD::add_omni_light(bool p_static, const Vector3 &p_position, const Color &p_color, float p_energy, float p_indirect_multiplier, float p_range, float p_attenuation, float p_size) {
 	Light l;
 	l.type = LIGHT_TYPE_OMNI;
 	l.position[0] = p_position.x;
@@ -77,12 +78,13 @@ void LightmapperRD::add_omni_light(bool p_static, const Vector3 &p_position, con
 	l.color[1] = p_color.g;
 	l.color[2] = p_color.b;
 	l.energy = p_energy;
+	l.indirect_multiplier = p_indirect_multiplier;
 	l.static_bake = p_static;
 	l.size = p_size;
 	lights.push_back(l);
 }
 
-void LightmapperRD::add_spot_light(bool p_static, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size) {
+void LightmapperRD::add_spot_light(bool p_static, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_indirect_multiplier, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size) {
 	Light l;
 	l.type = LIGHT_TYPE_SPOT;
 	l.position[0] = p_position.x;
@@ -99,6 +101,7 @@ void LightmapperRD::add_spot_light(bool p_static, const Vector3 &p_position, con
 	l.color[1] = p_color.g;
 	l.color[2] = p_color.b;
 	l.energy = p_energy;
+	l.indirect_multiplier = p_indirect_multiplier;
 	l.static_bake = p_static;
 	l.size = p_size;
 	lights.push_back(l);

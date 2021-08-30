@@ -52,7 +52,8 @@ struct Light {
 	float inv_spot_attenuation;
 
 	bool static_bake;
-	uint pad[3];
+	float indirect_multiplier;
+	uint pad[2];
 };
 
 layout(set = 0, binding = 4, std430) restrict readonly buffer Lights {
