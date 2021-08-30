@@ -958,7 +958,7 @@ String EditorFileDialog::get_current_path() const {
 }
 
 void EditorFileDialog::set_current_dir(const String &p_dir) {
-	if (p_dir.is_rel_path()) {
+	if (p_dir.is_relative_path()) {
 		dir_access->change_dir(OS::get_singleton()->get_resource_dir());
 	}
 	dir_access->change_dir(p_dir);

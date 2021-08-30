@@ -392,7 +392,7 @@ String OS_Unix::get_locale() const {
 Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
 	String path = p_path;
 
-	if (FileAccess::exists(path) && path.is_rel_path()) {
+	if (FileAccess::exists(path) && path.is_relative_path()) {
 		// dlopen expects a slash, in this case a leading ./ for it to be interpreted as a relative path,
 		//  otherwise it will end up searching various system directories for the lib instead and finally failing.
 		path = "./" + path;

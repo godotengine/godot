@@ -831,7 +831,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 		if (info.is_singleton) {
 			EditorNode::get_singleton()->load_scene(info.path);
 		}
-	} else if (p_symbol.is_rel_path()) {
+	} else if (p_symbol.is_relative_path()) {
 		// Every symbol other than absolute path is relative path so keep this condition at last.
 		String path = _get_absolute_path(p_symbol);
 		if (FileAccess::exists(path)) {
@@ -858,7 +858,7 @@ void ScriptTextEditor::_validate_symbol(const String &p_symbol) {
 	ScriptLanguage::LookupResult result;
 	if (ScriptServer::is_global_class(p_symbol) || p_symbol.is_resource_file() || script->get_language()->lookup_code(code_editor->get_text_editor()->get_text_for_symbol_lookup(), p_symbol, script->get_path(), base, result) == OK || (ProjectSettings::get_singleton()->has_autoload(p_symbol) && ProjectSettings::get_singleton()->get_autoload(p_symbol).is_singleton)) {
 		text_edit->set_symbol_lookup_word_as_valid(true);
-	} else if (p_symbol.is_rel_path()) {
+	} else if (p_symbol.is_relative_path()) {
 		String path = _get_absolute_path(p_symbol);
 		if (FileAccess::exists(path)) {
 			text_edit->set_symbol_lookup_word_as_valid(true);

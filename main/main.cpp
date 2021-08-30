@@ -1967,7 +1967,7 @@ bool Main::start() {
 		for (int i = 0; i < _doc_data_class_path_count; i++) {
 			// Custom modules are always located by absolute path.
 			String path = _doc_data_class_paths[i].path;
-			if (path.is_rel_path()) {
+			if (path.is_relative_path()) {
 				path = doc_tool_path.plus_file(path);
 			}
 			String name = _doc_data_class_paths[i].name;

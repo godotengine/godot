@@ -135,7 +135,7 @@ Error DirAccess::make_dir_recursive(String p_dir) {
 
 	String full_dir;
 
-	if (p_dir.is_rel_path()) {
+	if (p_dir.is_relative_path()) {
 		//append current
 		full_dir = get_current_dir().plus_file(p_dir);
 
@@ -345,7 +345,7 @@ Error DirAccess::_copy_dir(DirAccess *p_target_da, String p_to, int p_chmod_flag
 				dirs.push_back(n);
 			} else {
 				const String &rel_path = n;
-				if (!n.is_rel_path()) {
+				if (!n.is_relative_path()) {
 					list_dir_end();
 					return ERR_BUG;
 				}

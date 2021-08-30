@@ -248,7 +248,7 @@
 				Returns [code]true[/code] if the length of the string equals [code]0[/code].
 			</description>
 		</method>
-		<method name="is_rel_path" qualifiers="const">
+		<method name="is_relative_path" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the string is a path to a file or directory and its starting point is implicitly defined within the context it is being used. The starting point may refer to the current directory ([code]./[/code]), or the current [Node].

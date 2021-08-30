@@ -2727,7 +2727,7 @@ void GDScriptAnalyzer::reduce_preload(GDScriptParser::PreloadNode *p_preload) {
 	} else {
 		p_preload->resolved_path = p_preload->path->reduced_value;
 		// TODO: Save this as script dependency.
-		if (p_preload->resolved_path.is_rel_path()) {
+		if (p_preload->resolved_path.is_relative_path()) {
 			p_preload->resolved_path = parser->script_path.get_base_dir().plus_file(p_preload->resolved_path);
 		}
 		p_preload->resolved_path = p_preload->resolved_path.simplify_path();

@@ -2609,7 +2609,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 		String export_filename = p_path.get_file();
 		String export_path = p_path.get_base_dir();
-		if (export_path.is_rel_path()) {
+		if (export_path.is_relative_path()) {
 			export_path = OS::get_singleton()->get_resource_dir().plus_file(export_path);
 		}
 		export_path = ProjectSettings::get_singleton()->globalize_path(export_path).simplify_path();

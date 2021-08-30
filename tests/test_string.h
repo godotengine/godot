@@ -1155,7 +1155,7 @@ TEST_CASE("[String] Path functions") {
 		CHECK(String(path[i]).get_extension() == ext[i]);
 		CHECK(String(path[i]).get_file() == file[i]);
 		CHECK(String(path[i]).is_absolute_path() == abs[i]);
-		CHECK(String(path[i]).is_rel_path() != abs[i]);
+		CHECK(String(path[i]).is_relative_path() != abs[i]);
 		CHECK(String(path[i]).simplify_path().get_base_dir().plus_file(file[i]) == String(path[i]).simplify_path());
 	}
 
