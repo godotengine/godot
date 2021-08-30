@@ -484,6 +484,16 @@ String OSIPhone::get_name() const {
 	return "iOS";
 }
 
+void OSIPhone::set_clipboard(const String &p_text) {
+	[UIPasteboard generalPasteboard].string = [NSString stringWithUTF8String:p_text.utf8()];
+}
+
+String OSIPhone::get_clipboard() const {
+	NSString *text = [UIPasteboard generalPasteboard].string;
+
+	return String::utf8([text UTF8String]);
+}
+
 String OSIPhone::get_model_name() const {
 	String model = ios->get_model();
 	if (model != "") {
