@@ -133,7 +133,7 @@ GDScriptParser::GDScriptParser() {
 	register_annotation(MethodInfo("@export_flags_3d_physics"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_PHYSICS, Variant::INT>);
 	register_annotation(MethodInfo("@export_flags_3d_navigation"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_NAVIGATION, Variant::INT>);
 	// Networking.
-	register_annotation(MethodInfo("@rpc", { Variant::STRING, "mode" }, { Variant::STRING, "sync" }, { Variant::STRING, "transfer_mode" }, { Variant::INT, "transfer_channel" }), AnnotationInfo::FUNCTION, &GDScriptParser::network_annotations<MultiplayerAPI::RPC_MODE_PUPPET>, 4, true);
+	register_annotation(MethodInfo("@rpc", { Variant::STRING, "mode" }, { Variant::STRING, "sync" }, { Variant::STRING, "transfer_mode" }, { Variant::INT, "transfer_channel" }), AnnotationInfo::FUNCTION, &GDScriptParser::network_annotations<MultiplayerAPI::RPC_MODE_AUTHORITY>, 4, true);
 	// TODO: Warning annotations.
 }
 
@@ -3399,43 +3399,35 @@ bool GDScriptParser::network_annotations(const AnnotationNode *p_annotation, Nod
 
 	MultiplayerAPI::RPCConfig rpc_config;
 	rpc_config.rpc_mode = t_mode;
-	for (int i = 0; i < p_annotation->resolved_arguments.size(); i++) {
-		if (i == 0) {
+	if (p_annotation->resolved_arguments.size()) {
+		int last = p_annotation->resolved_arguments.size() - 1;
+		if (p_annotation->resolved_arguments[last].get_type() == Variant::INT) {
+			rpc_config.channel = p_annotation->resolved_arguments[last].operator int();
+			last -= 1;
+		}
+		if (last > 3) {
+			push_error(R"(Invalid RPC arguments. At most 4 arguments are allowed, where only the last argument can be an integer to specify the channel.')", p_annotation);
+			return false;
+		}
+		for (int i = last; i >= 0; i--) {
 			String mode = p_annotation->resolved_arguments[i].operator String();
 			if (mode == "any") {
-				rpc_config.rpc_mode = MultiplayerAPI::RPC_MODE_REMOTE;
-			} else if (mode == "master") {
-				rpc_config.rpc_mode = MultiplayerAPI::RPC_MODE_MASTER;
-			} else if (mode == "puppet") {
-				rpc_config.rpc_mode = MultiplayerAPI::RPC_MODE_PUPPET;
-			} else {
-				push_error(R"(Invalid RPC mode. Must be one of: 'any', 'master', or 'puppet')", p_annotation);
-				return false;
-			}
-		} else if (i == 1) {
-			String sync = p_annotation->resolved_arguments[i].operator String();
-			if (sync == "sync") {
+				rpc_config.rpc_mode = MultiplayerAPI::RPC_MODE_ANY;
+			} else if (mode == "auth") {
+				rpc_config.rpc_mode = MultiplayerAPI::RPC_MODE_AUTHORITY;
+			} else if (mode == "sync") {
 				rpc_config.sync = true;
-			} else if (sync == "nosync") {
+			} else if (mode == "nosync") {
 				rpc_config.sync = false;
-			} else {
-				push_error(R"(Invalid RPC sync mode. Must be one of: 'sync' or 'nosync')", p_annotation);
-				return false;
-			}
-		} else if (i == 2) {
-			String mode = p_annotation->resolved_arguments[i].operator String();
-			if (mode == "reliable") {
+			} else if (mode == "reliable") {
 				rpc_config.transfer_mode = MultiplayerPeer::TRANSFER_MODE_RELIABLE;
 			} else if (mode == "unreliable") {
 				rpc_config.transfer_mode = MultiplayerPeer::TRANSFER_MODE_UNRELIABLE;
 			} else if (mode == "ordered") {
 				rpc_config.transfer_mode = MultiplayerPeer::TRANSFER_MODE_UNRELIABLE_ORDERED;
 			} else {
-				push_error(R"(Invalid RPC transfer mode. Must be one of: 'reliable', 'unreliable', 'ordered')", p_annotation);
-				return false;
+				push_error(R"(Invalid RPC argument. Must be one of: 'sync'/'nosync' (local calls), 'any'/'auth' (permission), 'reliable'/'unreliable'/'ordered' (transfer mode).)", p_annotation);
 			}
-		} else if (i == 3) {
-			rpc_config.channel = p_annotation->resolved_arguments[i].operator int();
 		}
 	}
 	switch (p_node->type) {

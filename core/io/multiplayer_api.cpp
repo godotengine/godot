@@ -96,14 +96,11 @@ _FORCE_INLINE_ bool _can_call_mode(Node *p_node, MultiplayerAPI::RPCMode mode, i
 		case MultiplayerAPI::RPC_MODE_DISABLED: {
 			return false;
 		} break;
-		case MultiplayerAPI::RPC_MODE_REMOTE: {
+		case MultiplayerAPI::RPC_MODE_ANY: {
 			return true;
 		} break;
-		case MultiplayerAPI::RPC_MODE_MASTER: {
-			return p_node->is_network_master();
-		} break;
-		case MultiplayerAPI::RPC_MODE_PUPPET: {
-			return !p_node->is_network_master() && p_remote_id == p_node->get_network_master();
+		case MultiplayerAPI::RPC_MODE_AUTHORITY: {
+			return !p_node->is_network_authority() && p_remote_id == p_node->get_network_authority();
 		} break;
 	}
 
@@ -369,7 +366,7 @@ void MultiplayerAPI::_process_rpc(Node *p_node, const uint16_t p_rpc_method_id, 
 	ERR_FAIL_COND(config.name == StringName());
 
 	bool can_call = _can_call_mode(p_node, config.rpc_mode, p_from);
-	ERR_FAIL_COND_MSG(!can_call, "RPC '" + String(config.name) + "' is not allowed on node " + p_node->get_path() + " from: " + itos(p_from) + ". Mode is " + itos((int)config.rpc_mode) + ", master is " + itos(p_node->get_network_master()) + ".");
+	ERR_FAIL_COND_MSG(!can_call, "RPC '" + String(config.name) + "' is not allowed on node " + p_node->get_path() + " from: " + itos(p_from) + ". Mode is " + itos((int)config.rpc_mode) + ", authority is " + itos(p_node->get_network_authority()) + ".");
 
 	int argc = 0;
 	bool byte_only = false;
@@ -1138,9 +1135,8 @@ void MultiplayerAPI::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("server_disconnected"));
 
 	BIND_ENUM_CONSTANT(RPC_MODE_DISABLED);
-	BIND_ENUM_CONSTANT(RPC_MODE_REMOTE);
-	BIND_ENUM_CONSTANT(RPC_MODE_MASTER);
-	BIND_ENUM_CONSTANT(RPC_MODE_PUPPET);
+	BIND_ENUM_CONSTANT(RPC_MODE_ANY);
+	BIND_ENUM_CONSTANT(RPC_MODE_AUTHORITY);
 }
 
 MultiplayerAPI::MultiplayerAPI() {

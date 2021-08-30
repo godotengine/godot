@@ -43,9 +43,8 @@ class MultiplayerAPI : public RefCounted {
 public:
 	enum RPCMode {
 		RPC_MODE_DISABLED, // No rpc for this method, calls to this will be blocked (default)
-		RPC_MODE_REMOTE, // Using rpc() on it will call method in all remote peers
-		RPC_MODE_MASTER, // Using rpc() on it will call method on wherever the master is, be it local or remote
-		RPC_MODE_PUPPET, // Using rpc() on it will call method for all puppets
+		RPC_MODE_ANY, // Any peer can call this rpc()
+		RPC_MODE_AUTHORITY, // Only the node's network authority (server by default) can call this rpc()
 	};
 
 	struct RPCConfig {

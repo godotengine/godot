@@ -246,10 +246,10 @@
 				If [code]include_internal[/code] is [code]false[/code], the index won't take internal children into account, i.e. first non-internal child will have index of 0 (see [code]internal[/code] parameter in [method add_child]).
 			</description>
 		</method>
-		<method name="get_network_master" qualifiers="const">
+		<method name="get_network_authority" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the peer ID of the network master for this node. See [method set_network_master].
+				Returns the peer ID of the network authority for this node. See [method set_network_authority].
 			</description>
 		</method>
 		<method name="get_node" qualifiers="const">
@@ -417,10 +417,10 @@
 				Returns [code]true[/code] if this node is currently inside a [SceneTree].
 			</description>
 		</method>
-		<method name="is_network_master" qualifiers="const">
+		<method name="is_network_authority" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the local system is the master of this node.
+				Returns [code]true[/code] if the local system is the authority of this node.
 			</description>
 		</method>
 		<method name="is_physics_processing" qualifiers="const">
@@ -588,7 +588,7 @@
 			<argument index="2" name="transfer_mode" type="int" enum="MultiplayerPeer.TransferMode" default="2" />
 			<argument index="3" name="channel" type="int" default="0" />
 			<description>
-				Changes the RPC mode for the given [code]method[/code] to the given [code]rpc_mode[/code], optionally specifying the [code]transfer_mode[/code] and [code]channel[/code] (on supported peers). See [enum MultiplayerAPI.RPCMode] and [enum MultiplayerPeer.TransferMode]. An alternative is annotating methods and properties with the corresponding keywords ([code]remote[/code], [code]master[/code], [code]puppet[/code], [code]remotesync[/code], [code]mastersync[/code], [code]puppetsync[/code]). By default, methods are not exposed to networking (and RPCs).
+				Changes the RPC mode for the given [code]method[/code] to the given [code]rpc_mode[/code], optionally specifying the [code]transfer_mode[/code] and [code]channel[/code] (on supported peers). See [enum MultiplayerAPI.RPCMode] and [enum MultiplayerPeer.TransferMode]. An alternative is annotating methods and properties with the corresponding annotation ([code]@rpc(any)[/code], [code]@rpc(auth)[/code]). By default, methods are not exposed to networking (and RPCs).
 			</description>
 		</method>
 		<method name="rpc_id" qualifiers="vararg">
@@ -620,12 +620,12 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_network_master">
+		<method name="set_network_authority">
 			<return type="void" />
 			<argument index="0" name="id" type="int" />
 			<argument index="1" name="recursive" type="bool" default="true" />
 			<description>
-				Sets the node's network master to the peer with the given peer ID. The network master is the peer that has authority over the node on the network. Useful in conjunction with the [code]master[/code] and [code]puppet[/code] keywords. Inherited from the parent node by default, which ultimately defaults to peer ID 1 (the server). If [code]recursive[/code], the given peer is recursively set as the master for all children of this node.
+				Sets the node's network authority to the peer with the given peer ID. The network authority is the peer that has authority over the node on the network. Useful in conjunction with [method rpc_config] and the [MultiplayerAPI]. Inherited from the parent node by default, which ultimately defaults to peer ID 1 (the server). If [code]recursive[/code], the given peer is recursively set as the authority for all children of this node.
 			</description>
 		</method>
 		<method name="set_physics_process">

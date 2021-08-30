@@ -517,24 +517,24 @@ void Node::_propagate_process_owner(Node *p_owner, int p_pause_notification, int
 	}
 }
 
-void Node::set_network_master(int p_peer_id, bool p_recursive) {
-	data.network_master = p_peer_id;
+void Node::set_network_authority(int p_peer_id, bool p_recursive) {
+	data.network_authority = p_peer_id;
 
 	if (p_recursive) {
 		for (int i = 0; i < data.children.size(); i++) {
-			data.children[i]->set_network_master(p_peer_id, true);
+			data.children[i]->set_network_authority(p_peer_id, true);
 		}
 	}
 }
 
-int Node::get_network_master() const {
-	return data.network_master;
+int Node::get_network_authority() const {
+	return data.network_authority;
 }
 
-bool Node::is_network_master() const {
+bool Node::is_network_authority() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
 
-	return get_multiplayer()->get_network_unique_id() == data.network_master;
+	return get_multiplayer()->get_network_unique_id() == data.network_authority;
 }
 
 /***** RPC CONFIG ********/
@@ -2738,10 +2738,10 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("request_ready"), &Node::request_ready);
 
-	ClassDB::bind_method(D_METHOD("set_network_master", "id", "recursive"), &Node::set_network_master, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("get_network_master"), &Node::get_network_master);
+	ClassDB::bind_method(D_METHOD("set_network_authority", "id", "recursive"), &Node::set_network_authority, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_network_authority"), &Node::get_network_authority);
 
-	ClassDB::bind_method(D_METHOD("is_network_master"), &Node::is_network_master);
+	ClassDB::bind_method(D_METHOD("is_network_authority"), &Node::is_network_authority);
 
 	ClassDB::bind_method(D_METHOD("get_multiplayer"), &Node::get_multiplayer);
 	ClassDB::bind_method(D_METHOD("get_custom_multiplayer"), &Node::get_custom_multiplayer);
