@@ -715,7 +715,27 @@ void CodeTextEditor::input(const Ref<InputEvent> &event) {
 	ERR_FAIL_COND(event.is_null());
 
 	const Ref<InputEventKey> key_event = event;
-	if (!key_event.is_valid() || !key_event->is_pressed() || !text_editor->has_focus()) {
+
+	if (!key_event.is_valid()) {
+		return;
+	}
+	if (!key_event->is_pressed()) {
+		return;
+	}
+
+	if (!text_editor->has_focus()) {
+		if ((find_replace_bar != nullptr && find_replace_bar->is_visible()) && (find_replace_bar->has_focus() || find_replace_bar->is_ancestor_of(get_focus_owner()))) {
+			if (ED_IS_SHORTCUT("script_text_editor/find_next", key_event)) {
+				find_replace_bar->search_next();
+				accept_event();
+				return;
+			}
+			if (ED_IS_SHORTCUT("script_text_editor/find_previous", key_event)) {
+				find_replace_bar->search_prev();
+				accept_event();
+				return;
+			}
+		}
 		return;
 	}
 
