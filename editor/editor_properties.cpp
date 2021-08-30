@@ -7,7 +7,9 @@
 /*************************************************************************/
 /* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
+/*                                      
+
+*/
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
 /* "Software"), to deal in the Software without restriction, including   */
@@ -68,9 +70,9 @@ void EditorPropertyText::_text_changed(const String &p_string) {
 	}
 
 	if (string_name) {
-		emit_changed(get_edited_property(), StringName(p_string), "", true);
+		emit_changed(get_edited_property(), StringName(p_string));
 	} else {
-		emit_changed(get_edited_property(), p_string, "", true);
+		emit_changed(get_edited_property(), p_string);
 	}
 }
 
