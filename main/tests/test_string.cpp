@@ -44,6 +44,14 @@
 
 namespace TestString {
 
+#define CHECK(X)                                          \
+	if (!(X)) {                                           \
+		OS::get_singleton()->print("\tFAIL at %s\n", #X); \
+		return false;                                     \
+	} else {                                              \
+		OS::get_singleton()->print("\tPASS\n");           \
+	}
+
 bool test_1() {
 	OS::get_singleton()->print("\n\nTest 1: Assign from cstr\n");
 
@@ -334,12 +342,57 @@ bool test_19() {
 	OS::get_singleton()->print("\n\nTest 19: Search & replace\n");
 
 	String s = "Happy Birthday, Anna!";
-	OS::get_singleton()->print("\tString: %ls\n", s.c_str());
-
 	s = s.replace("Birthday", "Halloween");
-	OS::get_singleton()->print("\tReplaced Birthday/Halloween: %ls.\n", s.c_str());
+	CHECK(s == "Happy Halloween, Anna!");
 
-	return (s == "Happy Halloween, Anna!");
+	s = "1 1 1";
+	int n_times = -1;
+	CHECK(s.replace("1", "2", n_times) == s.rreplace("1", "2", n_times));
+
+	n_times = 1;
+	CHECK(s.replace("1", "2", n_times) == "2 1 1");
+	CHECK(s.rreplace("1", "2", n_times) == "1 1 2");
+
+	n_times = 2;
+	CHECK(s.replace("1", "2", n_times) == "2 2 1");
+	CHECK(s.rreplace("1", "2", n_times) == "1 2 2");
+
+	n_times = 3;
+	CHECK(s.replace("1", "2", n_times) == "2 2 2");
+	CHECK(s.rreplace("1", "2", n_times) == "2 2 2");
+
+	s = "A b C";
+	CHECK(s.replace_first("a", "G") == "A b C");
+	CHECK(s.replace_firstn("a", "G") == "G b C");
+	CHECK(s.replace_first("b", "G") == "A G C");
+	CHECK(s.replace_firstn("b", "G") == "A G C");
+	CHECK(s.replace_first("c", "G") == "A b C");
+	CHECK(s.replace_firstn("c", "G") == "A b G");
+
+	CHECK(s.replace_last("a", "G") == "A b C");
+	CHECK(s.replace_lastn("a", "G") == "G b C");
+	CHECK(s.replace_last("b", "G") == "A G C");
+	CHECK(s.replace_lastn("b", "G") == "A G C");
+	CHECK(s.replace_last("c", "G") == "A b C");
+	CHECK(s.replace_lastn("c", "G") == "A b G");
+
+	s = "a A a";
+	n_times = -1;
+	CHECK(s.replacen("a", "b", n_times) == s.rreplacen("a", "b", n_times));
+
+	n_times = 1;
+	CHECK(s.replacen("a", "b", n_times) == "b A a");
+	CHECK(s.rreplacen("a", "b", n_times) == "a A b");
+
+	n_times = 2;
+	CHECK(s.replacen("a", "b", n_times) == "b b a");
+	CHECK(s.rreplacen("a", "b", n_times) == "a b b");
+
+	n_times = 3;
+	CHECK(s.replacen("a", "b", n_times) == "b b b");
+	CHECK(s.rreplacen("a", "b", n_times) == "b b b");
+
+	return true;
 }
 
 bool test_20() {
@@ -1128,13 +1181,6 @@ bool test_35() {
 }
 
 bool test_36() {
-#define CHECK(X)                                          \
-	if (!(X)) {                                           \
-		OS::get_singleton()->print("\tFAIL at %s\n", #X); \
-		return false;                                     \
-	} else {                                              \
-		OS::get_singleton()->print("\tPASS\n");           \
-	}
 	OS::get_singleton()->print("\n\nTest 36: xml unescape\n");
 	// Named entities
 	String input = "&quot;&amp;&apos;&lt;&gt;";
@@ -1163,6 +1209,104 @@ bool test_36() {
 	CHECK(input.xml_unescape() == input);
 	input = "&#66SomeIrrelevantText;";
 	CHECK(input.xml_unescape() == input);
+
+	return true;
+}
+
+bool test_37() {
+	OS::get_singleton()->print("\n\nTest 37: Path functions\n");
+
+	static const char *path[7] = { "C:\\Godot\\project\\test.tscn", "/Godot/project/test.xscn", "../Godot/project/test.scn", "Godot\\test.doc", "C:\\test.", "res://test", "/.test" };
+	static const char *base_dir[7] = { "C:\\Godot\\project", "/Godot/project", "../Godot/project", "Godot", "C:\\", "res://", "/" };
+	static const char *base_name[7] = { "C:\\Godot\\project\\test", "/Godot/project/test", "../Godot/project/test", "Godot\\test", "C:\\test", "res://test", "/" };
+	static const char *ext[7] = { "tscn", "xscn", "scn", "doc", "", "", "test" };
+	static const char *file[7] = { "test.tscn", "test.xscn", "test.scn", "test.doc", "test.", "test", ".test" };
+	static const bool abs[7] = { true, true, false, false, true, true, true };
+
+	for (int i = 0; i < 7; i++) {
+		CHECK(String(path[i]).get_base_dir() == base_dir[i]);
+		CHECK(String(path[i]).get_basename() == base_name[i]);
+		CHECK(String(path[i]).get_extension() == ext[i]);
+		CHECK(String(path[i]).get_file() == file[i]);
+		CHECK(String(path[i]).is_abs_path() == abs[i]);
+		CHECK(String(path[i]).is_rel_path() != abs[i]);
+		CHECK(String(path[i]).simplify_path().get_base_dir().plus_file(file[i]) == String(path[i]).simplify_path());
+	}
+
+	static const char *file_name[3] = { "test.tscn", "test://.xscn", "?tes*t.scn" };
+	static const bool valid[3] = { true, false, false };
+	for (int i = 0; i < 3; i++) {
+		CHECK(String(file_name[i]).is_valid_filename() == valid[i]);
+	}
+
+	String from = "res://";
+	String to = "res://addons";
+	CHECK(from.path_to(to) == "../addons/");
+	CHECK(to.path_to(from) == "..//");
+	CHECK(from.path_to_file(to) == "./addons");
+	CHECK(to.path_to_file(from) == "..//");
+
+	to = "res://addons/";
+	CHECK(from.path_to(to) == "../addons/");
+	CHECK(to.path_to(from) == "..//");
+	CHECK(from.path_to_file(to) == "../addons/");
+	CHECK(to.path_to_file(from) == "..//");
+
+	return true;
+}
+
+bool test_38() {
+	String input;
+	input = "\"\"";
+	CHECK(input.is_quoted());
+	CHECK(input.is_quoted("\""));
+	CHECK(input.unquote() == "");
+	CHECK(input.unquote("\"") == "");
+	CHECK(input.unquote("'") == input);
+
+	input = "\"";
+	CHECK(input.is_quoted());
+	CHECK(input.is_quoted("\""));
+	CHECK(input.unquote() == "");
+	CHECK(input.unquote("\"") == "");
+	CHECK(input.unquote("'") == input);
+
+	input = "'";
+	CHECK(input.is_quoted());
+	CHECK(input.is_quoted("'"));
+	CHECK(input.unquote() == "");
+	CHECK(input.unquote("'") == "");
+	CHECK(input.unquote("\"") == input);
+
+	input = "";
+	input = input.quote("'");
+	CHECK(input.is_quoted());
+	CHECK(input.is_quoted("'"));
+	CHECK(input.unquote() == "");
+	CHECK(input.unquote("'") == "");
+	CHECK(input.unquote("\"") == input);
+
+	input = "";
+	input = input.quote("T");
+	CHECK(input.is_quoted() == false);
+	CHECK(input.is_quoted("T"));
+	CHECK(input.unquote() == input);
+	CHECK(input.unquote("T") == "");
+
+	input = "";
+	input = input.quote("TEST");
+	CHECK(input == "TESTTEST");
+	CHECK(input.is_quoted() == false);
+	CHECK(input.is_quoted("TEST"));
+	CHECK(input.unquote() == input);
+	CHECK(input.unquote("TEST") == "");
+
+	input = "TEST";
+	CHECK(input.is_quoted() == false);
+	CHECK(input.is_quoted("TEST"));
+	CHECK(input.unquote() == input);
+	CHECK(input.unquote("TEST") == "");
+
 	return true;
 }
 
@@ -1206,6 +1350,8 @@ TestFunc test_funcs[] = {
 	test_34,
 	test_35,
 	test_36,
+	test_37,
+	test_38,
 	nullptr
 
 };

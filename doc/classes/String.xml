@@ -191,10 +191,27 @@
 				Returns the bigrams (pairs of consecutive letters) of this string.
 			</description>
 		</method>
+		<method name="bin_to_int64">
+			<return type="int" />
+			<argument index="0" name="with_prefix" type="bool" default="true" />
+			<description>
+				Converts a string containing a binary number into an integer. Binary strings can either be prefixed with [code]0b[/code] or not, and they can also start with a [code]-[/code] before the optional prefix.
+				[codeblock]
+				print("0b101".bin_to_int64()) # Prints "5".
+				print("101".bin_to_int64(false)) # Prints "5".
+				[/codeblock]
+			</description>
+		</method>
 		<method name="c_escape">
 			<return type="String" />
 			<description>
 				Returns a copy of the string with special characters escaped using the C language standard.
+			</description>
+		</method>
+		<method name="c_escape_multiline">
+			<return type="String" />
+			<description>
+				Returns a copy of the string with escaped backslashes using the C language standard.
 			</description>
 		</method>
 		<method name="c_unescape">
@@ -202,6 +219,13 @@
 			<description>
 				Returns a copy of the string with escaped characters replaced by their meanings. Supported escape sequences are [code]\'[/code], [code]\"[/code], [code]\?[/code], [code]\\[/code], [code]\a[/code], [code]\b[/code], [code]\f[/code], [code]\n[/code], [code]\r[/code], [code]\t[/code], [code]\v[/code].
 				[b]Note:[/b] Unlike the GDScript parser, this method doesn't support the [code]\uXXXX[/code] escape sequence.
+			</description>
+		</method>
+		<method name="camelcase_to_underscore">
+			<return type="String" />
+			<argument index="0" name="lowercase" type="bool" default="true" />
+			<description>
+				Returns a copy of the string in which the occurences of [code]CamelCase[/code] text have been spaced out with underscores. If [code]lowercase[/code] is [code]true[/code], the returned formatting style convention is equivalent to [code]snake_case[/code].
 			</description>
 		</method>
 		<method name="capitalize">
@@ -222,7 +246,7 @@
 		</method>
 		<method name="count">
 			<return type="int" />
-			<argument index="0" name="what" type="String" />
+			<argument index="0" name="substring" type="String" />
 			<argument index="1" name="from" type="int" default="0" />
 			<argument index="2" name="to" type="int" default="0" />
 			<description>
@@ -231,7 +255,7 @@
 		</method>
 		<method name="countn">
 			<return type="int" />
-			<argument index="0" name="what" type="String" />
+			<argument index="0" name="substring" type="String" />
 			<argument index="1" name="from" type="int" default="0" />
 			<argument index="2" name="to" type="int" default="0" />
 			<description>
@@ -266,31 +290,29 @@
 		</method>
 		<method name="find">
 			<return type="int" />
-			<argument index="0" name="what" type="String" />
+			<argument index="0" name="substring" type="String" />
 			<argument index="1" name="from" type="int" default="0" />
 			<description>
-				Finds the first occurrence of a substring. Returns the starting position of the substring or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
+				Returns the index of the [b]first[/b] case-sensitive occurrence of the specified string in this instance, or [code]-1[/code]. Optionally, the starting search index can be specified, continuing to the end of the string.
 				[b]Note:[/b] If you just want to know whether a string contains a substring, use the [code]in[/code] operator as follows:
 				[codeblock]
-				# Will evaluate to `false`.
-				if "i" in "team":
-				    pass
+				print("i" in "team") # Will print `false`.
 				[/codeblock]
 			</description>
 		</method>
 		<method name="find_last">
 			<return type="int" />
-			<argument index="0" name="what" type="String" />
+			<argument index="0" name="substring" type="String" />
 			<description>
 				Finds the last occurrence of a substring. Returns the starting position of the substring or [code]-1[/code] if not found.
 			</description>
 		</method>
 		<method name="findn">
 			<return type="int" />
-			<argument index="0" name="what" type="String" />
+			<argument index="0" name="substring" type="String" />
 			<argument index="1" name="from" type="int" default="0" />
 			<description>
-				Finds the first occurrence of a substring, ignoring case. Returns the starting position of the substring or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
+				Returns the index of the [b]first[/b] case-insensitive occurrence of the specified string in this instance, or [code]-1[/code]. Optionally, the starting search index can be specified, continuing to the end of the string.
 			</description>
 		</method>
 		<method name="format">
@@ -335,18 +357,46 @@
 				If the string is a valid file path, returns the filename.
 			</description>
 		</method>
+		<method name="get_slice">
+			<return type="String" />
+			<argument index="0" name="delimeter" type="String" />
+			<argument index="1" name="slice_index" type="int" />
+			<description>
+				Returns a slice of the string given a [code]delimeter[/code] and a [code]slice_index[/code].
+				For example, [code]print("0|1|2".get_slice("|", 0))[/code] will print [code]0[/code].
+			</description>
+		</method>
 		<method name="hash">
 			<return type="int" />
 			<description>
-				Hashes the string and returns a 32-bit integer.
+				Returns the DJB2 hash of the string as a 32-bit integer.
+			</description>
+		</method>
+		<method name="hash64">
+			<return type="int" />
+			<description>
+				Returns the DJB2 hash of the string as a 64-bit integer.
 			</description>
 		</method>
 		<method name="hex_to_int">
 			<return type="int" />
+			<argument index="0" name="with_prefix" type="bool" default="true" />
 			<description>
-				Converts a string containing a hexadecimal number into an integer. Hexadecimal strings are expected to be prefixed with "[code]0x[/code]" otherwise [code]0[/code] is returned.
+				Converts a string containing a hexadecimal number into a 32-bit integer. Hexadecimal strings can either be prefixed with [code]0x[/code] or not, and they can also start with a [code]-[/code] before the optional prefix.
 				[codeblock]
-				print("0xff".hex_to_int()) # Print "255"
+				print("0xff".hex_to_int()) # Prints "255".
+				print("ab".hex_to_int(false)) # Prints "171".
+				[/codeblock]
+			</description>
+		</method>
+		<method name="hex_to_int64">
+			<return type="int" />
+			<argument index="0" name="with_prefix" type="bool" default="true" />
+			<description>
+				Converts a string containing a hexadecimal number into a 64-bit integer. Hexadecimal strings can either be prefixed with [code]0x[/code] or not, and they can also start with a [code]-[/code] before the optional prefix.
+				[codeblock]
+				print("0x80000000".hex_to_int64()) # Prints "2147483648".
+				print("abababab".hex_to_int64(false)) # Prints "2880154539".
 				[/codeblock]
 			</description>
 		</method>
@@ -383,7 +433,7 @@
 		<method name="insert">
 			<return type="String" />
 			<argument index="0" name="position" type="int" />
-			<argument index="1" name="what" type="String" />
+			<argument index="1" name="text" type="String" />
 			<description>
 				Returns a copy of the string with the substring [code]what[/code] inserted at the given position.
 			</description>
@@ -391,13 +441,26 @@
 		<method name="is_abs_path">
 			<return type="bool" />
 			<description>
-				If the string is a path to a file or directory, returns [code]true[/code] if the path is absolute.
+				Returns [code]true[/code] if the string is a path to a file or directory and its starting point is explicitly defined. This includes [code]res://[/code], [code]user://[/code], [code]C:\[/code], [code]/[/code], etc.
+			</description>
+		</method>
+		<method name="is_quoted">
+			<return type="bool" />
+			<argument index="0" name="affix" type="String" default="&quot;&quot;" />
+			<description>
+				Returns [code]true[/code] if the string begins with and ends with a single quote ([code]'[/code]) or a double quote ([code]"[/code]), or the [code]affix[/code] if it's provided.
 			</description>
 		</method>
 		<method name="is_rel_path">
 			<return type="bool" />
 			<description>
-				If the string is a path to a file or directory, returns [code]true[/code] if the path is relative.
+				Returns [code]true[/code] if the string is a path to a file or directory and its starting point is implicitly defined within the context it is being used. The starting point may refer to the current directory ([code]./[/code]), or the current [Node].
+			</description>
+		</method>
+		<method name="is_resource_file">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the string is path to a [Resource]. This method does not check if the file exists.
 			</description>
 		</method>
 		<method name="is_subsequence_of">
@@ -458,6 +521,17 @@
 				Returns [code]true[/code] if this string contains only a well-formatted IPv4 or IPv6 address. This method considers [url=https://en.wikipedia.org/wiki/Reserved_IP_addresses]reserved IP addresses[/url] such as [code]0.0.0.0[/code] as valid.
 			</description>
 		</method>
+		<method name="join">
+			<return type="String" />
+			<argument index="0" name="parts" type="PoolStringArray" />
+			<description>
+				Return a [String] which is the concatenation of the [code]parts[/code]. The separator between elements is the string providing this method.
+				Example:
+				[codeblock]
+				print(", ".join(["One", "Two", "Three", "Four"]))
+				[/codeblock]
+			</description>
+		</method>
 		<method name="json_escape">
 			<return type="String" />
 			<description>
@@ -468,13 +542,26 @@
 			<return type="String" />
 			<argument index="0" name="position" type="int" />
 			<description>
-				Returns a number of characters from the left of the string.
+				Returns a number of characters from the left of the string. If negative [code]position[/code] is used, the characters are counted downwards from [String]'s length.
+				Examples:
+				[codeblock]
+				print("sample text".left(3)) #prints "sam"
+				print("sample text".left(-3)) #prints "sample t"
+				[/codeblock]
 			</description>
 		</method>
 		<method name="length">
 			<return type="int" />
 			<description>
 				Returns the string's amount of characters.
+			</description>
+		</method>
+		<method name="lpad">
+			<return type="String" />
+			<argument index="0" name="min_length" type="int" />
+			<argument index="1" name="character" type="String" default="&quot; &quot;" />
+			<description>
+				Formats a string to be at least [code]min_length[/code] long by adding [code]character[/code]s to the left of the string.
 			</description>
 		</method>
 		<method name="lstrip">
@@ -487,14 +574,14 @@
 		</method>
 		<method name="match">
 			<return type="bool" />
-			<argument index="0" name="expr" type="String" />
+			<argument index="0" name="wildcard" type="String" />
 			<description>
 				Does a simple case-sensitive expression match, where [code]"*"[/code] matches zero or more arbitrary characters and [code]"?"[/code] matches any single character except a period ([code]"."[/code]).
 			</description>
 		</method>
 		<method name="matchn">
 			<return type="bool" />
-			<argument index="0" name="expr" type="String" />
+			<argument index="0" name="wildcard" type="String" />
 			<description>
 				Does a simple case-insensitive expression match, where [code]"*"[/code] matches zero or more arbitrary characters and [code]"?"[/code] matches any single character except a period ([code]"."[/code]).
 			</description>
@@ -553,6 +640,20 @@
 				Formats a number to have an exact number of [code]digits[/code] before the decimal point.
 			</description>
 		</method>
+		<method name="path_to">
+			<return type="String" />
+			<argument index="0" name="path" type="String" />
+			<description>
+				Returns a relative non-canonical path to a directory starting from the caller string and up to [code]path[/code] if both paths share a common parent directory. Non-canonical are paths that may contain references to a parent directory using the double dot notation ([code]..[/code]).
+			</description>
+		</method>
+		<method name="path_to_file">
+			<return type="String" />
+			<argument index="0" name="path" type="String" />
+			<description>
+				Returns a relative non-canonical path to a file starting from the caller string and up to [code]path[/code] if both paths share a common parent directory. Non-canonical are paths that may contain references to a parent directory using the double dot notation ([code]..[/code]).
+			</description>
+		</method>
 		<method name="percent_decode">
 			<return type="String" />
 			<description>
@@ -572,6 +673,13 @@
 				If the string is a path, this concatenates [code]file[/code] at the end of the string as a subpath. E.g. [code]"this/is".plus_file("path") == "this/is/path"[/code].
 			</description>
 		</method>
+		<method name="quote">
+			<return type="String" />
+			<argument index="0" name="affix" type="String" default="&quot;\&quot;&quot;" />
+			<description>
+				Returns a copy of the string with the [code]affix[/code] added to the beginning and end of it.
+			</description>
+		</method>
 		<method name="repeat">
 			<return type="String" />
 			<argument index="0" name="count" type="int" />
@@ -581,23 +689,57 @@
 		</method>
 		<method name="replace">
 			<return type="String" />
-			<argument index="0" name="what" type="String" />
-			<argument index="1" name="forwhat" type="String" />
+			<argument index="0" name="old" type="String" />
+			<argument index="1" name="new" type="String" />
+			<argument index="2" name="count" type="int" default="-1" />
 			<description>
-				Replaces occurrences of a case-sensitive substring with the given one inside the string.
+				Returns a copy of the string where occurrences of a case-sensitive [code]old[/code] substring have been replaced with a [code]new[/code] string. If a [code]count[/code] is given, only that number of occurrences will be replaced.
+			</description>
+		</method>
+		<method name="replace_first">
+			<return type="String" />
+			<argument index="0" name="old" type="String" />
+			<argument index="1" name="new" type="String" />
+			<description>
+				Returns a copy of the string that has replaced the first occurrence of a case-sensitive substring with the given one inside the string.
+			</description>
+		</method>
+		<method name="replace_firstn">
+			<return type="String" />
+			<argument index="0" name="old" type="String" />
+			<argument index="1" name="new" type="String" />
+			<description>
+				Returns a copy of the string that has replaced the first occurrence of a case-insensitive substring with the given one inside the string.
+			</description>
+		</method>
+		<method name="replace_last">
+			<return type="String" />
+			<argument index="0" name="old" type="String" />
+			<argument index="1" name="new" type="String" />
+			<description>
+				Returns a copy of the string that has replaced the last occurrence of a case-sensitive substring with the given one inside the string.
+			</description>
+		</method>
+		<method name="replace_lastn">
+			<return type="String" />
+			<argument index="0" name="old" type="String" />
+			<argument index="1" name="new" type="String" />
+			<description>
+				Returns a copy of the string that has replaced the last occurrence of a case-insensitive substring with the given one inside the string.
 			</description>
 		</method>
 		<method name="replacen">
 			<return type="String" />
-			<argument index="0" name="what" type="String" />
-			<argument index="1" name="forwhat" type="String" />
+			<argument index="0" name="old" type="String" />
+			<argument index="1" name="new" type="String" />
+			<argument index="2" name="count" type="int" default="-1" />
 			<description>
-				Replaces occurrences of a case-insensitive substring with the given one inside the string.
+				Returns a copy of the string where occurrences of a case-insensitive [code]old[/code] substring have been replaced with a [code]new[/code] string. If a [code]count[/code] is given, only that number of occurrences will be replaced.
 			</description>
 		</method>
 		<method name="rfind">
 			<return type="int" />
-			<argument index="0" name="what" type="String" />
+			<argument index="0" name="substring" type="String" />
 			<argument index="1" name="from" type="int" default="-1" />
 			<description>
 				Performs a case-sensitive search for a substring, but starts from the end of the string instead of the beginning.
@@ -605,7 +747,7 @@
 		</method>
 		<method name="rfindn">
 			<return type="int" />
-			<argument index="0" name="what" type="String" />
+			<argument index="0" name="substring" type="String" />
 			<argument index="1" name="from" type="int" default="-1" />
 			<description>
 				Performs a case-insensitive search for a substring, but starts from the end of the string instead of the beginning.
@@ -615,7 +757,38 @@
 			<return type="String" />
 			<argument index="0" name="position" type="int" />
 			<description>
-				Returns the right side of the string from a given position.
+				Returns a number of characters from the right of the string. If negative [code]position[/code] is used, the characters are counted downwards from [String]'s length.
+				Examples:
+				[codeblock]
+				print("sample text".right(3)) #prints "ext"
+				print("sample text".right(-3)) #prints "ple text"
+				[/codeblock]
+			</description>
+		</method>
+		<method name="rpad">
+			<return type="String" />
+			<argument index="0" name="min_length" type="int" />
+			<argument index="1" name="character" type="String" default="&quot; &quot;" />
+			<description>
+				Formats a string to be at least [code]min_length[/code] long by adding [code]character[/code]s to the right of the string.
+			</description>
+		</method>
+		<method name="rreplace">
+			<return type="String" />
+			<argument index="0" name="old" type="String" />
+			<argument index="1" name="new" type="String" />
+			<argument index="2" name="count" type="int" default="-1" />
+			<description>
+				Returns a copy of the string where occurrences of a case-sensitive [code]old[/code] substring have been replaced with a [code]new[/code] string. If a [code]count[/code] is given, only that number of occurrences will be replaced.
+			</description>
+		</method>
+		<method name="rreplacen">
+			<return type="String" />
+			<argument index="0" name="old" type="String" />
+			<argument index="1" name="new" type="String" />
+			<argument index="2" name="count" type="int" default="-1" />
+			<description>
+				Returns a copy of the string where occurrences of a case-insensitive [code]old[/code] substring have been replaced with a [code]new[/code] string. If a [code]count[/code] is given, only that number of occurrences will be replaced.
 			</description>
 		</method>
 		<method name="rsplit">
@@ -679,7 +852,7 @@
 		<method name="simplify_path">
 			<return type="String" />
 			<description>
-				Returns a simplified canonical path.
+				Returns a simplified canonical path; meaning it may be an absolute or relative path and it won't contain references to a parent directory using the double dot notation ([code]..[/code]).
 			</description>
 		</method>
 		<method name="split">
@@ -708,6 +881,22 @@
 			<description>
 				Splits the string in floats by using a delimiter string and returns an array of the substrings.
 				For example, [code]"1,2.5,3"[/code] will return [code][1,2.5,3][/code] if split by [code]","[/code].
+			</description>
+		</method>
+		<method name="split_ints">
+			<return type="PoolIntArray" />
+			<argument index="0" name="delimiter" type="String" />
+			<argument index="1" name="allow_empty" type="bool" default="true" />
+			<description>
+				Splits the string in integers by using a delimiter string and returns an array of the substrings.
+				For example, [code]"1,2.5,3"[/code] will return [code][1,0,3][/code] if split by [code]","[/code].
+			</description>
+		</method>
+		<method name="split_spaces">
+			<return type="PoolStringArray" />
+			<description>
+				Splits the string using whitespace as a delimeter.
+				For example, splitting [code]"0\t1 2"[/code] will return [code][0,1,2][/code].
 			</description>
 		</method>
 		<method name="strip_edges">
@@ -786,6 +975,13 @@
 			<argument index="0" name="suffix" type="String" />
 			<description>
 				Removes a given string from the end if it ends with it or leaves the string unchanged.
+			</description>
+		</method>
+		<method name="unquote">
+			<return type="String" />
+			<argument index="0" name="affix" type="String" default="&quot;&quot;" />
+			<description>
+				Returns a copy of the string with the single quote ([code]'[/code]) or double quote ([code]"[/code]) removed from the beginning and end of the string, or with the [code]affix[/code] removed from the beginning and end of it if provided and if the string is quoted with the [code]affix[/code].
 			</description>
 		</method>
 		<method name="validate_node_name">
