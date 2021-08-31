@@ -64,7 +64,9 @@
 #ifdef MODULE_GRIDMAP_ENABLED
 #include "modules/gridmap/grid_map.h"
 #endif // MODULE_GRIDMAP_ENABLED
+#ifdef MODULE_REGEX_ENABLED
 #include "modules/regex/regex.h"
+#endif // MODULE_REGEX_ENABLED
 #include "scene/2d/node_2d.h"
 #include "scene/3d/bone_attachment.h"
 #include "scene/3d/camera.h"
@@ -453,12 +455,15 @@ Error GLTFDocument::_serialize_nodes(Ref<GLTFState> state) {
 
 String GLTFDocument::_sanitize_scene_name(Ref<GLTFState> state, const String &p_name) {
 	if (state->use_legacy_names) {
+#ifdef MODULE_REGEX_ENABLED
 		RegEx regex("([^a-zA-Z0-9_ -]+)");
 		String s_name = regex.sub(p_name, "", true);
 		return s_name;
-	} else {
-		return p_name.validate_node_name();
+#else
+		WARN_PRINT("GLTF: Legacy scene names are not supported without the RegEx module. Falling back to new names.");
+#endif // MODULE_REGEX_ENABLED
 	}
+	return p_name.validate_node_name();
 }
 
 String GLTFDocument::_legacy_validate_node_name(const String &p_name) {
@@ -531,6 +536,7 @@ String GLTFDocument::_gen_unique_animation_name(Ref<GLTFState> state, const Stri
 
 String GLTFDocument::_sanitize_bone_name(Ref<GLTFState> state, const String &p_name) {
 	if (state->use_legacy_names) {
+#ifdef MODULE_REGEX_ENABLED
 		String name = p_name.camelcase_to_underscore(true);
 		RegEx pattern_del("([^a-zA-Z0-9_ ])+");
 
@@ -546,15 +552,17 @@ String GLTFDocument::_sanitize_bone_name(Ref<GLTFState> state, const String &p_n
 		name = pattern_padded.sub(name, "$1", true);
 
 		return name;
-	} else {
-		String name = p_name;
-		name = name.replace(":", "_");
-		name = name.replace("/", "_");
-		if (name.empty()) {
-			name = "bone";
-		}
-		return name;
+#else
+		WARN_PRINT("GLTF: Legacy bone names are not supported without the RegEx module. Falling back to new names.");
+#endif // MODULE_REGEX_ENABLED
 	}
+	String name = p_name;
+	name = name.replace(":", "_");
+	name = name.replace("/", "_");
+	if (name.empty()) {
+		name = "bone";
+	}
+	return name;
 }
 
 String GLTFDocument::_gen_unique_bone_name(Ref<GLTFState> state, const GLTFSkeletonIndex skel_i, const String &p_name) {
