@@ -356,8 +356,8 @@ private:
 	void set_motion_mode(MotionMode p_mode);
 	MotionMode get_motion_mode() const;
 
-	void _move_and_slide_free(real_t p_delta);
-	void _move_and_slide_grounded(real_t p_delta, bool p_was_on_floor, const Vector2 &p_prev_platform_velocity);
+	void _move_and_slide_free(double p_delta);
+	void _move_and_slide_grounded(double p_delta, bool p_was_on_floor, const Vector2 &p_prev_platform_velocity);
 
 	Ref<KinematicCollision2D> _get_slide_collision(int p_bounce);
 	Ref<KinematicCollision2D> _get_last_slide_collision();
