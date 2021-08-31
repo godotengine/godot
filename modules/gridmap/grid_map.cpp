@@ -475,7 +475,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 				}
 
 				Pair<Transform3D, IndexKey> p;
-				p.first = xform;
+				p.first = xform * mesh_library->get_item_mesh_transform(c.item);
 				p.second = E->get();
 				multimesh_items[c.item].push_back(p);
 			}

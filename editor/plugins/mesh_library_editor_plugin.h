@@ -41,23 +41,27 @@ class MeshLibraryEditor : public Control {
 
 	EditorNode *editor;
 	MenuButton *menu;
-	ConfirmationDialog *cd;
+	ConfirmationDialog *cd_remove;
+	ConfirmationDialog *cd_update;
 	EditorFileDialog *file;
+	bool apply_xforms;
 	int to_erase;
 
 	enum {
 		MENU_OPTION_ADD_ITEM,
 		MENU_OPTION_REMOVE_ITEM,
 		MENU_OPTION_UPDATE_FROM_SCENE,
-		MENU_OPTION_IMPORT_FROM_SCENE
+		MENU_OPTION_IMPORT_FROM_SCENE,
+		MENU_OPTION_IMPORT_FROM_SCENE_APPLY_XFORMS
 	};
 
 	int option;
 	void _import_scene_cbk(const String &p_str);
 	void _menu_cbk(int p_option);
-	void _menu_confirm();
+	void _menu_remove_confirm();
+	void _menu_update_confirm(bool p_apply_xforms);
 
-	static void _import_scene(Node *p_scene, Ref<MeshLibrary> p_library, bool p_merge);
+	static void _import_scene(Node *p_scene, Ref<MeshLibrary> p_library, bool p_merge, bool p_apply_xforms);
 
 protected:
 	static void _bind_methods();
@@ -66,7 +70,7 @@ public:
 	MenuButton *get_menu_button() const { return menu; }
 
 	void edit(const Ref<MeshLibrary> &p_mesh_library);
-	static Error update_library_file(Node *p_base_scene, Ref<MeshLibrary> ml, bool p_merge = true);
+	static Error update_library_file(Node *p_base_scene, Ref<MeshLibrary> ml, bool p_merge = true, bool p_apply_xforms = false);
 
 	MeshLibraryEditor(EditorNode *p_editor);
 };

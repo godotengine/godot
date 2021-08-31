@@ -255,6 +255,12 @@ void GridMapEditor::_update_cursor_transform() {
 	cursor_transform.basis *= node->get_cell_scale();
 	cursor_transform = node->get_global_transform() * cursor_transform;
 
+	if (selected_palette >= 0) {
+		if (node && !node->get_mesh_library().is_null()) {
+			cursor_transform *= node->get_mesh_library()->get_item_mesh_transform(selected_palette);
+		}
+	}
+
 	if (cursor_instance.is_valid()) {
 		RenderingServer::get_singleton()->instance_set_transform(cursor_instance, cursor_transform);
 		RenderingServer::get_singleton()->instance_set_visible(cursor_instance, cursor_visible);
