@@ -109,7 +109,7 @@ public:
 	virtual String get_name() const;
 	virtual String get_model_name() const;
 
-	virtual void set_clipboard(const String &p_text) ;
+	virtual void set_clipboard(const String &p_text);
 	virtual String get_clipboard() const;
 
 	Error shell_open(String p_uri);
