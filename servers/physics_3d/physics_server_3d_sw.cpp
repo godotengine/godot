@@ -30,6 +30,7 @@
 
 #include "physics_server_3d_sw.h"
 
+#include "body_direct_state_3d_sw.h"
 #include "broad_phase_3d_bvh.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/os/os.h"
@@ -842,6 +843,12 @@ int PhysicsServer3DSW::body_get_max_contacts_reported(RID p_body) const {
 	return body->get_max_contacts_reported();
 }
 
+void PhysicsServer3DSW::body_set_state_sync_callback(RID p_body, void *p_instance, BodyStateCallback p_callback) {
+	Body3DSW *body = body_owner.getornull(p_body);
+	ERR_FAIL_COND(!body);
+	body->set_state_sync_callback(p_instance, p_callback);
+}
+
 void PhysicsServer3DSW::body_set_force_integration_callback(RID p_body, const Callable &p_callable, const Variant &p_udata) {
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
@@ -869,11 +876,12 @@ PhysicsDirectBodyState3D *PhysicsServer3DSW::body_get_direct_state(RID p_body) {
 	ERR_FAIL_COND_V_MSG((using_threads && !doing_sync), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
 
 	Body3DSW *body = body_owner.getornull(p_body);
-	ERR_FAIL_COND_V(!body, nullptr);
+	ERR_FAIL_NULL_V(body, nullptr);
+
+	ERR_FAIL_NULL_V(body->get_space(), nullptr);
 	ERR_FAIL_COND_V_MSG(body->get_space()->is_locked(), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
 
-	direct_state->body = body;
-	return direct_state;
+	return body->get_direct_state();
 }
 
 /* SOFT BODY */
@@ -1578,10 +1586,8 @@ void PhysicsServer3DSW::set_collision_iterations(int p_iterations) {
 };
 
 void PhysicsServer3DSW::init() {
-	last_step = 0.001;
 	iterations = 8; // 8?
 	stepper = memnew(Step3DSW);
-	direct_state = memnew(PhysicsDirectBodyState3DSW);
 };
 
 void PhysicsServer3DSW::step(real_t p_step) {
@@ -1592,9 +1598,6 @@ void PhysicsServer3DSW::step(real_t p_step) {
 	}
 
 	_update_shapes();
-
-	last_step = p_step;
-	PhysicsDirectBodyState3DSW::singleton->step = p_step;
 
 	island_count = 0;
 	active_objects = 0;
@@ -1671,7 +1674,6 @@ void PhysicsServer3DSW::end_sync() {
 
 void PhysicsServer3DSW::finish() {
 	memdelete(stepper);
-	memdelete(direct_state);
 };
 
 int PhysicsServer3DSW::get_process_info(ProcessInfo p_info) {

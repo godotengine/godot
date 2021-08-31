@@ -471,6 +471,10 @@ public:
 	virtual void body_set_omit_force_integration(RID p_body, bool p_omit) = 0;
 	virtual bool body_is_omitting_force_integration(RID p_body) const = 0;
 
+	// Callback for C++ use only.
+	typedef void (*BodyStateCallback)(void *p_instance, PhysicsDirectBodyState3D *p_state);
+	virtual void body_set_state_sync_callback(RID p_body, void *p_instance, BodyStateCallback p_callback) = 0;
+
 	virtual void body_set_force_integration_callback(RID p_body, const Callable &p_callable, const Variant &p_udata = Variant()) = 0;
 
 	virtual void body_set_ray_pickable(RID p_body, bool p_enable) = 0;

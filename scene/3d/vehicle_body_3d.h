@@ -192,7 +192,8 @@ class VehicleBody3D : public RigidBody3D {
 
 	static void _bind_methods();
 
-	void _direct_state_changed(Object *p_state) override;
+	static void _body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state);
+	virtual void _body_state_changed(PhysicsDirectBodyState3D *p_state) override;
 
 public:
 	void set_engine_force(real_t p_engine_force);

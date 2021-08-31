@@ -29,7 +29,9 @@
 /*************************************************************************/
 
 #include "body_3d_sw.h"
+
 #include "area_3d_sw.h"
+#include "body_direct_state_3d_sw.h"
 #include "space_3d_sw.h"
 
 void Body3DSW::_update_inertia() {
@@ -536,7 +538,7 @@ void Body3DSW::integrate_velocities(real_t p_step) {
 		return;
 	}
 
-	if (fi_callback) {
+	if (fi_callback_data || body_state_callback) {
 		get_space()->body_add_to_state_query_list(&direct_state_query_list);
 	}
 
@@ -593,11 +595,6 @@ void Body3DSW::integrate_velocities(real_t p_step) {
 	_set_inv_transform(get_transform().inverse());
 
 	_update_transform_dependant();
-
-	/*
-	if (fi_callback) {
-		get_space()->body_add_to_state_query_list(&direct_state_query_list);
-	*/
 }
 
 /*
@@ -655,23 +652,22 @@ void Body3DSW::wakeup_neighbours() {
 }
 
 void Body3DSW::call_queries() {
-	if (fi_callback) {
-		PhysicsDirectBodyState3DSW *dbs = PhysicsDirectBodyState3DSW::singleton;
-		dbs->body = this;
-
-		Variant v = dbs;
-
-		Object *obj = fi_callback->callable.get_object();
-		if (!obj) {
+	if (fi_callback_data) {
+		if (!fi_callback_data->callable.get_object()) {
 			set_force_integration_callback(Callable());
 		} else {
-			const Variant *vp[2] = { &v, &fi_callback->udata };
+			Variant direct_state_variant = get_direct_state();
+			const Variant *vp[2] = { &direct_state_variant, &fi_callback_data->udata };
 
 			Callable::CallError ce;
-			int argc = (fi_callback->udata.get_type() == Variant::NIL) ? 1 : 2;
+			int argc = (fi_callback_data->udata.get_type() == Variant::NIL) ? 1 : 2;
 			Variant rv;
-			fi_callback->callable.call(vp, argc, rv, ce);
+			fi_callback_data->callable.call(vp, argc, rv, ce);
 		}
+	}
+
+	if (body_state_callback_instance) {
+		(body_state_callback)(body_state_callback_instance, get_direct_state());
 	}
 }
 
@@ -692,22 +688,34 @@ bool Body3DSW::sleep_test(real_t p_step) {
 	}
 }
 
-void Body3DSW::set_force_integration_callback(const Callable &p_callable, const Variant &p_udata) {
-	if (fi_callback) {
-		memdelete(fi_callback);
-		fi_callback = nullptr;
-	}
+void Body3DSW::set_state_sync_callback(void *p_instance, PhysicsServer3D::BodyStateCallback p_callback) {
+	body_state_callback_instance = p_instance;
+	body_state_callback = p_callback;
+}
 
+void Body3DSW::set_force_integration_callback(const Callable &p_callable, const Variant &p_udata) {
 	if (p_callable.get_object()) {
-		fi_callback = memnew(ForceIntegrationCallback);
-		fi_callback->callable = p_callable;
-		fi_callback->udata = p_udata;
+		if (!fi_callback_data) {
+			fi_callback_data = memnew(ForceIntegrationCallbackData);
+		}
+		fi_callback_data->callable = p_callable;
+		fi_callback_data->udata = p_udata;
+	} else if (fi_callback_data) {
+		memdelete(fi_callback_data);
+		fi_callback_data = nullptr;
 	}
+}
+
+PhysicsDirectBodyState3DSW *Body3DSW::get_direct_state() {
+	if (!direct_state) {
+		direct_state = memnew(PhysicsDirectBodyState3DSW);
+		direct_state->body = this;
+	}
+	return direct_state;
 }
 
 Body3DSW::Body3DSW() :
 		CollisionObject3DSW(TYPE_BODY),
-
 		active_list(this),
 		inertia_update_list(this),
 		direct_state_query_list(this) {
@@ -735,17 +743,13 @@ Body3DSW::Body3DSW() :
 	still_time = 0;
 	continuous_cd = false;
 	can_sleep = true;
-	fi_callback = nullptr;
 }
 
 Body3DSW::~Body3DSW() {
-	if (fi_callback) {
-		memdelete(fi_callback);
+	if (fi_callback_data) {
+		memdelete(fi_callback_data);
 	}
-}
-
-PhysicsDirectBodyState3DSW *PhysicsDirectBodyState3DSW::singleton = nullptr;
-
-PhysicsDirectSpaceState3D *PhysicsDirectBodyState3DSW::get_space_state() {
-	return body->get_space()->get_direct_state();
+	if (direct_state) {
+		memdelete(direct_state);
+	}
 }

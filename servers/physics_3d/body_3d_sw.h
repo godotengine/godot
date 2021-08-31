@@ -28,14 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BODY_SW_H
-#define BODY_SW_H
+#ifndef BODY_3D_SW_H
+#define BODY_3D_SW_H
 
 #include "area_3d_sw.h"
 #include "collision_object_3d_sw.h"
 #include "core/templates/vset.h"
 
 class Constraint3DSW;
+class PhysicsDirectBodyState3DSW;
 
 class Body3DSW : public CollisionObject3DSW {
 	PhysicsServer3D::BodyMode mode;
@@ -113,12 +114,17 @@ class Body3DSW : public CollisionObject3DSW {
 	Vector<Contact> contacts; //no contacts by default
 	int contact_count;
 
-	struct ForceIntegrationCallback {
+	void *body_state_callback_instance = nullptr;
+	PhysicsServer3D::BodyStateCallback body_state_callback = nullptr;
+
+	struct ForceIntegrationCallbackData {
 		Callable callable;
 		Variant udata;
 	};
 
-	ForceIntegrationCallback *fi_callback;
+	ForceIntegrationCallbackData *fi_callback_data = nullptr;
+
+	PhysicsDirectBodyState3DSW *direct_state = nullptr;
 
 	uint64_t island_step;
 
@@ -129,7 +135,10 @@ class Body3DSW : public CollisionObject3DSW {
 	friend class PhysicsDirectBodyState3DSW; // i give up, too many functions to expose
 
 public:
+	void set_state_sync_callback(void *p_instance, PhysicsServer3D::BodyStateCallback p_callback);
 	void set_force_integration_callback(const Callable &p_callable, const Variant &p_udata = Variant());
+
+	PhysicsDirectBodyState3DSW *get_direct_state();
 
 	_FORCE_INLINE_ void add_area(Area3DSW *p_area) {
 		int index = areas.find(AreaCMP(p_area));
@@ -349,96 +358,4 @@ void Body3DSW::add_contact(const Vector3 &p_local_pos, const Vector3 &p_local_no
 	c[idx].collider_velocity_at_pos = p_collider_velocity_at_pos;
 }
 
-class PhysicsDirectBodyState3DSW : public PhysicsDirectBodyState3D {
-	GDCLASS(PhysicsDirectBodyState3DSW, PhysicsDirectBodyState3D);
-
-public:
-	static PhysicsDirectBodyState3DSW *singleton;
-	Body3DSW *body;
-	real_t step;
-
-	virtual Vector3 get_total_gravity() const override { return body->gravity; } // get gravity vector working on this body space/area
-	virtual real_t get_total_angular_damp() const override { return body->area_angular_damp; } // get density of this body space/area
-	virtual real_t get_total_linear_damp() const override { return body->area_linear_damp; } // get density of this body space/area
-
-	virtual Vector3 get_center_of_mass() const override { return body->get_center_of_mass(); }
-	virtual Basis get_principal_inertia_axes() const override { return body->get_principal_inertia_axes(); }
-
-	virtual real_t get_inverse_mass() const override { return body->get_inv_mass(); } // get the mass
-	virtual Vector3 get_inverse_inertia() const override { return body->get_inv_inertia(); } // get density of this body space
-	virtual Basis get_inverse_inertia_tensor() const override { return body->get_inv_inertia_tensor(); } // get density of this body space
-
-	virtual void set_linear_velocity(const Vector3 &p_velocity) override { body->set_linear_velocity(p_velocity); }
-	virtual Vector3 get_linear_velocity() const override { return body->get_linear_velocity(); }
-
-	virtual void set_angular_velocity(const Vector3 &p_velocity) override { body->set_angular_velocity(p_velocity); }
-	virtual Vector3 get_angular_velocity() const override { return body->get_angular_velocity(); }
-
-	virtual void set_transform(const Transform3D &p_transform) override { body->set_state(PhysicsServer3D::BODY_STATE_TRANSFORM, p_transform); }
-	virtual Transform3D get_transform() const override { return body->get_transform(); }
-
-	virtual Vector3 get_velocity_at_local_position(const Vector3 &p_position) const override { return body->get_velocity_in_local_point(p_position); }
-
-	virtual void add_central_force(const Vector3 &p_force) override { body->add_central_force(p_force); }
-	virtual void add_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) override {
-		body->add_force(p_force, p_position);
-	}
-	virtual void add_torque(const Vector3 &p_torque) override { body->add_torque(p_torque); }
-	virtual void apply_central_impulse(const Vector3 &p_impulse) override { body->apply_central_impulse(p_impulse); }
-	virtual void apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position = Vector3()) override {
-		body->apply_impulse(p_impulse, p_position);
-	}
-	virtual void apply_torque_impulse(const Vector3 &p_impulse) override { body->apply_torque_impulse(p_impulse); }
-
-	virtual void set_sleep_state(bool p_sleep) override { body->set_active(!p_sleep); }
-	virtual bool is_sleeping() const override { return !body->is_active(); }
-
-	virtual int get_contact_count() const override { return body->contact_count; }
-
-	virtual Vector3 get_contact_local_position(int p_contact_idx) const override {
-		ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, Vector3());
-		return body->contacts[p_contact_idx].local_pos;
-	}
-	virtual Vector3 get_contact_local_normal(int p_contact_idx) const override {
-		ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, Vector3());
-		return body->contacts[p_contact_idx].local_normal;
-	}
-	virtual real_t get_contact_impulse(int p_contact_idx) const override {
-		return 0.0f; // Only implemented for bullet
-	}
-	virtual int get_contact_local_shape(int p_contact_idx) const override {
-		ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, -1);
-		return body->contacts[p_contact_idx].local_shape;
-	}
-
-	virtual RID get_contact_collider(int p_contact_idx) const override {
-		ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, RID());
-		return body->contacts[p_contact_idx].collider;
-	}
-	virtual Vector3 get_contact_collider_position(int p_contact_idx) const override {
-		ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, Vector3());
-		return body->contacts[p_contact_idx].collider_pos;
-	}
-	virtual ObjectID get_contact_collider_id(int p_contact_idx) const override {
-		ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, ObjectID());
-		return body->contacts[p_contact_idx].collider_instance_id;
-	}
-	virtual int get_contact_collider_shape(int p_contact_idx) const override {
-		ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, 0);
-		return body->contacts[p_contact_idx].collider_shape;
-	}
-	virtual Vector3 get_contact_collider_velocity_at_position(int p_contact_idx) const override {
-		ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, Vector3());
-		return body->contacts[p_contact_idx].collider_velocity_at_pos;
-	}
-
-	virtual PhysicsDirectSpaceState3D *get_space_state() override;
-
-	virtual real_t get_step() const override { return step; }
-	PhysicsDirectBodyState3DSW() {
-		singleton = this;
-		body = nullptr;
-	}
-};
-
-#endif // BODY__SW_H
+#endif // BODY_3D_SW_H

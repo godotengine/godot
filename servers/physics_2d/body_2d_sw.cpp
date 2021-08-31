@@ -29,8 +29,9 @@
 /*************************************************************************/
 
 #include "body_2d_sw.h"
+
 #include "area_2d_sw.h"
-#include "physics_server_2d_sw.h"
+#include "body_direct_state_2d_sw.h"
 #include "space_2d_sw.h"
 
 void Body2DSW::_update_inertia() {
@@ -495,7 +496,7 @@ void Body2DSW::integrate_velocities(real_t p_step) {
 		return;
 	}
 
-	if (fi_callback) {
+	if (fi_callback_data || body_state_callback) {
 		get_space()->body_add_to_state_query_list(&direct_state_query_list);
 	}
 
@@ -547,26 +548,26 @@ void Body2DSW::wakeup_neighbours() {
 }
 
 void Body2DSW::call_queries() {
-	if (fi_callback) {
-		PhysicsDirectBodyState2DSW *dbs = PhysicsDirectBodyState2DSW::singleton;
-		dbs->body = this;
-
-		Variant v = dbs;
-		const Variant *vp[2] = { &v, &fi_callback->callback_udata };
-
-		Object *obj = fi_callback->callable.get_object();
-		if (!obj) {
+	if (fi_callback_data) {
+		if (!fi_callback_data->callable.get_object()) {
 			set_force_integration_callback(Callable());
 		} else {
+			Variant direct_state_variant = get_direct_state();
+			const Variant *vp[2] = { &direct_state_variant, &fi_callback_data->udata };
+
 			Callable::CallError ce;
 			Variant rv;
-			if (fi_callback->callback_udata.get_type() != Variant::NIL) {
-				fi_callback->callable.call(vp, 2, rv, ce);
+			if (fi_callback_data->udata.get_type() != Variant::NIL) {
+				fi_callback_data->callable.call(vp, 2, rv, ce);
 
 			} else {
-				fi_callback->callable.call(vp, 1, rv, ce);
+				fi_callback_data->callable.call(vp, 1, rv, ce);
 			}
 		}
+	}
+
+	if (body_state_callback) {
+		(body_state_callback)(body_state_callback_instance, get_direct_state());
 	}
 }
 
@@ -587,17 +588,30 @@ bool Body2DSW::sleep_test(real_t p_step) {
 	}
 }
 
-void Body2DSW::set_force_integration_callback(const Callable &p_callable, const Variant &p_udata) {
-	if (fi_callback) {
-		memdelete(fi_callback);
-		fi_callback = nullptr;
-	}
+void Body2DSW::set_state_sync_callback(void *p_instance, PhysicsServer2D::BodyStateCallback p_callback) {
+	body_state_callback_instance = p_instance;
+	body_state_callback = p_callback;
+}
 
+void Body2DSW::set_force_integration_callback(const Callable &p_callable, const Variant &p_udata) {
 	if (p_callable.get_object()) {
-		fi_callback = memnew(ForceIntegrationCallback);
-		fi_callback->callable = p_callable;
-		fi_callback->callback_udata = p_udata;
+		if (!fi_callback_data) {
+			fi_callback_data = memnew(ForceIntegrationCallbackData);
+		}
+		fi_callback_data->callable = p_callable;
+		fi_callback_data->udata = p_udata;
+	} else if (fi_callback_data) {
+		memdelete(fi_callback_data);
+		fi_callback_data = nullptr;
 	}
+}
+
+PhysicsDirectBodyState2DSW *Body2DSW::get_direct_state() {
+	if (!direct_state) {
+		direct_state = memnew(PhysicsDirectBodyState2DSW);
+		direct_state->body = this;
+	}
+	return direct_state;
 }
 
 Body2DSW::Body2DSW() :
@@ -632,33 +646,13 @@ Body2DSW::Body2DSW() :
 	still_time = 0;
 	continuous_cd_mode = PhysicsServer2D::CCD_MODE_DISABLED;
 	can_sleep = true;
-	fi_callback = nullptr;
 }
 
 Body2DSW::~Body2DSW() {
-	if (fi_callback) {
-		memdelete(fi_callback);
+	if (fi_callback_data) {
+		memdelete(fi_callback_data);
 	}
-}
-
-PhysicsDirectBodyState2DSW *PhysicsDirectBodyState2DSW::singleton = nullptr;
-
-PhysicsDirectSpaceState2D *PhysicsDirectBodyState2DSW::get_space_state() {
-	return body->get_space()->get_direct_state();
-}
-
-Variant PhysicsDirectBodyState2DSW::get_contact_collider_shape_metadata(int p_contact_idx) const {
-	ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, Variant());
-
-	if (!PhysicsServer2DSW::singletonsw->body_owner.owns(body->contacts[p_contact_idx].collider)) {
-		return Variant();
+	if (direct_state) {
+		memdelete(direct_state);
 	}
-	Body2DSW *other = PhysicsServer2DSW::singletonsw->body_owner.getornull(body->contacts[p_contact_idx].collider);
-
-	int sidx = body->contacts[p_contact_idx].collider_shape;
-	if (sidx < 0 || sidx >= other->get_shape_count()) {
-		return Variant();
-	}
-
-	return other->get_shape_metadata(sidx);
 }

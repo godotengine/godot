@@ -283,18 +283,20 @@ bool StaticBody3D::is_sync_to_physics_enabled() const {
 	return sync_to_physics;
 }
 
-void StaticBody3D::_direct_state_changed(Object *p_state) {
-	PhysicsDirectBodyState3D *state = Object::cast_to<PhysicsDirectBodyState3D>(p_state);
-	ERR_FAIL_NULL_MSG(state, "Method '_direct_state_changed' must receive a valid PhysicsDirectBodyState3D object as argument");
+void StaticBody3D::_body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state) {
+	StaticBody3D *body = (StaticBody3D *)p_instance;
+	body->_body_state_changed(p_state);
+}
 
-	linear_velocity = state->get_linear_velocity();
-	angular_velocity = state->get_angular_velocity();
+void StaticBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
+	linear_velocity = p_state->get_linear_velocity();
+	angular_velocity = p_state->get_angular_velocity();
 
 	if (!sync_to_physics) {
 		return;
 	}
 
-	last_valid_transform = state->get_transform();
+	last_valid_transform = p_state->get_transform();
 	set_notify_local_transform(false);
 	set_global_transform(last_valid_transform);
 	set_notify_local_transform(true);
@@ -458,13 +460,13 @@ void StaticBody3D::_update_kinematic_motion() {
 
 	bool needs_physics_process = false;
 	if (kinematic_motion) {
-		PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), callable_mp(this, &StaticBody3D::_direct_state_changed));
+		PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), this, &StaticBody3D::_body_state_changed_callback);
 
 		if (!constant_angular_velocity.is_equal_approx(Vector3()) || !constant_linear_velocity.is_equal_approx(Vector3())) {
 			needs_physics_process = true;
 		}
 	} else {
-		PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), Callable());
+		PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), nullptr, nullptr);
 	}
 
 	set_physics_process_internal(needs_physics_process);
@@ -582,25 +584,26 @@ struct _RigidBodyInOut {
 	int local_shape = 0;
 };
 
-void RigidBody3D::_direct_state_changed(Object *p_state) {
-#ifdef DEBUG_ENABLED
-	state = Object::cast_to<PhysicsDirectBodyState3D>(p_state);
-	ERR_FAIL_NULL_MSG(state, "Method '_direct_state_changed' must receive a valid PhysicsDirectBodyState3D object as argument");
-#else
-	state = (PhysicsDirectBodyState3D *)p_state; //trust it
-#endif
+void RigidBody3D::_body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state) {
+	RigidBody3D *body = (RigidBody3D *)p_instance;
+	body->_body_state_changed(p_state);
+}
 
+void RigidBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 	set_ignore_transform_notification(true);
-	set_global_transform(state->get_transform());
-	linear_velocity = state->get_linear_velocity();
-	angular_velocity = state->get_angular_velocity();
-	inverse_inertia_tensor = state->get_inverse_inertia_tensor();
-	if (sleeping != state->is_sleeping()) {
-		sleeping = state->is_sleeping();
+	set_global_transform(p_state->get_transform());
+
+	linear_velocity = p_state->get_linear_velocity();
+	angular_velocity = p_state->get_angular_velocity();
+
+	inverse_inertia_tensor = p_state->get_inverse_inertia_tensor();
+
+	if (sleeping != p_state->is_sleeping()) {
+		sleeping = p_state->is_sleeping();
 		emit_signal(SceneStringNames::get_singleton()->sleeping_state_changed);
 	}
 
-	GDVIRTUAL_CALL(_integrate_forces, state);
+	GDVIRTUAL_CALL(_integrate_forces, p_state);
 
 	set_ignore_transform_notification(false);
 	_on_transform_changed();
@@ -617,18 +620,18 @@ void RigidBody3D::_direct_state_changed(Object *p_state) {
 			}
 		}
 
-		_RigidBodyInOut *toadd = (_RigidBodyInOut *)alloca(state->get_contact_count() * sizeof(_RigidBodyInOut));
+		_RigidBodyInOut *toadd = (_RigidBodyInOut *)alloca(p_state->get_contact_count() * sizeof(_RigidBodyInOut));
 		int toadd_count = 0; //state->get_contact_count();
 		RigidBody3D_RemoveAction *toremove = (RigidBody3D_RemoveAction *)alloca(rc * sizeof(RigidBody3D_RemoveAction));
 		int toremove_count = 0;
 
 		//put the ones to add
 
-		for (int i = 0; i < state->get_contact_count(); i++) {
-			RID rid = state->get_contact_collider(i);
-			ObjectID obj = state->get_contact_collider_id(i);
-			int local_shape = state->get_contact_local_shape(i);
-			int shape = state->get_contact_collider_shape(i);
+		for (int i = 0; i < p_state->get_contact_count(); i++) {
+			RID rid = p_state->get_contact_collider(i);
+			ObjectID obj = p_state->get_contact_collider_id(i);
+			int local_shape = p_state->get_contact_local_shape(i);
+			int shape = p_state->get_contact_collider_shape(i);
 
 			//bool found=false;
 
@@ -683,8 +686,6 @@ void RigidBody3D::_direct_state_changed(Object *p_state) {
 
 		contact_monitor->locked = false;
 	}
-
-	state = nullptr;
 }
 
 void RigidBody3D::_notification(int p_what) {
@@ -787,25 +788,15 @@ real_t RigidBody3D::get_angular_damp() const {
 }
 
 void RigidBody3D::set_axis_velocity(const Vector3 &p_axis) {
-	Vector3 v = state ? state->get_linear_velocity() : linear_velocity;
 	Vector3 axis = p_axis.normalized();
-	v -= axis * axis.dot(v);
-	v += p_axis;
-	if (state) {
-		set_linear_velocity(v);
-	} else {
-		PhysicsServer3D::get_singleton()->body_set_axis_velocity(get_rid(), p_axis);
-		linear_velocity = v;
-	}
+	linear_velocity -= axis * axis.dot(linear_velocity);
+	linear_velocity += p_axis;
+	PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PhysicsServer3D::BODY_STATE_LINEAR_VELOCITY, linear_velocity);
 }
 
 void RigidBody3D::set_linear_velocity(const Vector3 &p_velocity) {
 	linear_velocity = p_velocity;
-	if (state) {
-		state->set_linear_velocity(linear_velocity);
-	} else {
-		PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PhysicsServer3D::BODY_STATE_LINEAR_VELOCITY, linear_velocity);
-	}
+	PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PhysicsServer3D::BODY_STATE_LINEAR_VELOCITY, linear_velocity);
 }
 
 Vector3 RigidBody3D::get_linear_velocity() const {
@@ -814,11 +805,7 @@ Vector3 RigidBody3D::get_linear_velocity() const {
 
 void RigidBody3D::set_angular_velocity(const Vector3 &p_velocity) {
 	angular_velocity = p_velocity;
-	if (state) {
-		state->set_angular_velocity(angular_velocity);
-	} else {
-		PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PhysicsServer3D::BODY_STATE_ANGULAR_VELOCITY, angular_velocity);
-	}
+	PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PhysicsServer3D::BODY_STATE_ANGULAR_VELOCITY, angular_velocity);
 }
 
 Vector3 RigidBody3D::get_angular_velocity() const {
@@ -1055,7 +1042,7 @@ void RigidBody3D::_bind_methods() {
 
 RigidBody3D::RigidBody3D() :
 		PhysicsBody3D(PhysicsServer3D::BODY_MODE_DYNAMIC) {
-	PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), callable_mp(this, &RigidBody3D::_direct_state_changed));
+	PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), this, &RigidBody3D::_body_state_changed_callback);
 }
 
 RigidBody3D::~RigidBody3D() {
@@ -2252,23 +2239,19 @@ void PhysicalBone3D::_notification(int p_what) {
 	}
 }
 
-void PhysicalBone3D::_direct_state_changed(Object *p_state) {
+void PhysicalBone3D::_body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state) {
+	PhysicalBone3D *bone = (PhysicalBone3D *)p_instance;
+	bone->_body_state_changed(p_state);
+}
+
+void PhysicalBone3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 	if (!simulate_physics || !_internal_simulate_physics) {
 		return;
 	}
 
-	/// Update bone transform
+	/// Update bone transform.
 
-	PhysicsDirectBodyState3D *state;
-
-#ifdef DEBUG_ENABLED
-	state = Object::cast_to<PhysicsDirectBodyState3D>(p_state);
-	ERR_FAIL_NULL_MSG(state, "Method '_direct_state_changed' must receive a valid PhysicsDirectBodyState3D object as argument");
-#else
-	state = (PhysicsDirectBodyState3D *)p_state; //trust it
-#endif
-
-	Transform3D global_transform(state->get_transform());
+	Transform3D global_transform(p_state->get_transform());
 
 	set_ignore_transform_notification(true);
 	set_global_transform(global_transform);
@@ -2730,7 +2713,7 @@ void PhysicalBone3D::_start_physics_simulation() {
 	set_body_mode(PhysicsServer3D::BODY_MODE_DYNAMIC);
 	PhysicsServer3D::get_singleton()->body_set_collision_layer(get_rid(), get_collision_layer());
 	PhysicsServer3D::get_singleton()->body_set_collision_mask(get_rid(), get_collision_mask());
-	PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), callable_mp(this, &PhysicalBone3D::_direct_state_changed));
+	PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), this, &PhysicalBone3D::_body_state_changed_callback);
 	set_as_top_level(true);
 	_internal_simulate_physics = true;
 }
@@ -2749,7 +2732,7 @@ void PhysicalBone3D::_stop_physics_simulation() {
 		PhysicsServer3D::get_singleton()->body_set_collision_mask(get_rid(), 0);
 	}
 	if (_internal_simulate_physics) {
-		PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), Callable());
+		PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), nullptr, nullptr);
 		parent_skeleton->set_bone_global_pose_override(bone_id, Transform3D(), 0.0, false);
 		set_as_top_level(false);
 		_internal_simulate_physics = false;
