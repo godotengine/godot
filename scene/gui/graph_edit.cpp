@@ -1166,7 +1166,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 					top_layer->update();
 					minimap->update();
 				} else {
-					emit_signal(SNAME("popup_request"), b->get_global_position());
+					emit_signal(SNAME("popup_request"), get_screen_position() + b->get_position());
 				}
 			}
 		}

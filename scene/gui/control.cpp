@@ -2590,7 +2590,7 @@ Control *Control::get_focus_owner() const {
 
 void Control::warp_mouse(const Point2 &p_to_pos) {
 	ERR_FAIL_COND(!is_inside_tree());
-	get_viewport()->warp_mouse(get_global_transform().xform(p_to_pos));
+	get_viewport()->warp_mouse(get_screen_transform().xform(p_to_pos));
 }
 
 bool Control::is_text_field() const {

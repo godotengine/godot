@@ -98,7 +98,8 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 		menu->add_separator();
 		menu->add_item(TTR("Load..."), MENU_LOAD_FILE);
 
-		menu->set_position(blend_space_draw->get_screen_transform().xform(mb->get_position()));
+		menu->set_position(blend_space_draw->get_screen_position() + mb->get_position());
+		menu->reset_size();
 		menu->popup();
 
 		add_point_pos = (mb->get_position() / blend_space_draw->get_size()).x;

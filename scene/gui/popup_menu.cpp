@@ -216,7 +216,7 @@ void PopupMenu::_activate_submenu(int p_over) {
 		submenu_pos.x = this_pos.x + submenu_size.width;
 	}
 
-	if (submenu_pos.x + submenu_size.width > get_parent_rect().size.width) {
+	if (submenu_pos.x + submenu_size.width > get_parent_rect().position.x + get_parent_rect().size.width) {
 		submenu_pos.x = this_pos.x - submenu_size.width;
 	}
 

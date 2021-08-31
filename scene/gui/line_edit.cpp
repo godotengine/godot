@@ -227,7 +227,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		}
 		if (b->is_pressed() && b->get_button_index() == MouseButton::RIGHT && context_menu_enabled) {
 			_ensure_menu();
-			menu->set_position(get_screen_transform().xform(get_local_mouse_position()));
+			menu->set_position(get_screen_position() + get_local_mouse_position());
 			menu->reset_size();
 			menu->popup();
 			grab_focus();
@@ -392,7 +392,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			if (k->is_action("ui_menu", true)) {
 				_ensure_menu();
 				Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + get_theme_font(SNAME("font"))->get_height(get_theme_font_size(SNAME("font_size")))) / 2);
-				menu->set_position(get_global_transform().xform(pos));
+				menu->set_position(get_screen_position() + pos);
 				menu->reset_size();
 				menu->popup();
 				menu->grab_focus();

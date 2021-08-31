@@ -2258,7 +2258,8 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 				}
 
 				selection_menu_additive_selection = b->is_shift_pressed();
-				selection_menu->set_position(get_screen_transform().xform(b->get_position()));
+				selection_menu->set_position(get_screen_position() + b->get_position());
+				selection_menu->reset_size();
 				selection_menu->popup();
 				return true;
 			}
@@ -2266,7 +2267,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 
 		if (b.is_valid() && b->is_pressed() && b->get_button_index() == MouseButton::RIGHT) {
 			add_node_menu->reset_size();
-			add_node_menu->set_position(get_screen_position() + b->get_position());
+			add_node_menu->set_position(get_screen_transform().xform(get_local_mouse_position()));
 			add_node_menu->popup();
 			node_create_position = transform.affine_inverse().xform((get_local_mouse_position()));
 			return true;
