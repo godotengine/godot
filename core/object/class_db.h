@@ -189,6 +189,7 @@ public:
 		t->creation_func = &creator<T>;
 		t->exposed = true;
 		t->class_ptr = T::get_class_ptr_static();
+		t->api = current_api;
 		T::register_custom_data_to_otdb();
 	}
 
@@ -200,6 +201,7 @@ public:
 		ERR_FAIL_COND(!t);
 		t->exposed = true;
 		t->class_ptr = T::get_class_ptr_static();
+		t->api = current_api;
 		//nothing
 	}
 
@@ -220,6 +222,7 @@ public:
 		t->creation_func = &_create_ptr_func<T>;
 		t->exposed = true;
 		t->class_ptr = T::get_class_ptr_static();
+		t->api = current_api;
 		T::register_custom_data_to_otdb();
 	}
 
