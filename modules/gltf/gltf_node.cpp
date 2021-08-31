@@ -47,8 +47,8 @@ void GLTFNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_skeleton", "skeleton"), &GLTFNode::set_skeleton);
 	ClassDB::bind_method(D_METHOD("get_joint"), &GLTFNode::get_joint);
 	ClassDB::bind_method(D_METHOD("set_joint", "joint"), &GLTFNode::set_joint);
-	ClassDB::bind_method(D_METHOD("get_translation"), &GLTFNode::get_translation);
-	ClassDB::bind_method(D_METHOD("set_translation", "translation"), &GLTFNode::set_translation);
+	ClassDB::bind_method(D_METHOD("get_position"), &GLTFNode::get_position);
+	ClassDB::bind_method(D_METHOD("set_position", "position"), &GLTFNode::set_position);
 	ClassDB::bind_method(D_METHOD("get_rotation"), &GLTFNode::get_rotation);
 	ClassDB::bind_method(D_METHOD("set_rotation", "rotation"), &GLTFNode::set_rotation);
 	ClassDB::bind_method(D_METHOD("get_scale"), &GLTFNode::get_scale);
@@ -66,7 +66,7 @@ void GLTFNode::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "skin"), "set_skin", "get_skin"); // GLTFSkinIndex
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "skeleton"), "set_skeleton", "get_skeleton"); // GLTFSkeletonIndex
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "joint"), "set_joint", "get_joint"); // bool
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "translation"), "set_translation", "get_translation"); // Vector3
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position"), "set_position", "get_position"); // Vector3
 	ADD_PROPERTY(PropertyInfo(Variant::QUATERNION, "rotation"), "set_rotation", "get_rotation"); // Quaternion
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "scale"), "set_scale", "get_scale"); // Vector3
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "children"), "set_children", "get_children"); // Vector<int>
@@ -137,12 +137,12 @@ void GLTFNode::set_joint(bool p_joint) {
 	joint = p_joint;
 }
 
-Vector3 GLTFNode::get_translation() {
-	return translation;
+Vector3 GLTFNode::get_position() {
+	return position;
 }
 
-void GLTFNode::set_translation(Vector3 p_translation) {
-	translation = p_translation;
+void GLTFNode::set_position(Vector3 p_position) {
+	position = p_position;
 }
 
 Quaternion GLTFNode::get_rotation() {
