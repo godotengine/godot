@@ -45,6 +45,13 @@
 				Returns the item's mesh.
 			</description>
 		</method>
+		<method name="get_item_mesh_transform" qualifiers="const">
+			<return type="Transform" />
+			<argument index="0" name="id" type="int" />
+			<description>
+				Returns the transform applied to the item's mesh.
+			</description>
+		</method>
 		<method name="get_item_name" qualifiers="const">
 			<return type="String" />
 			<argument index="0" name="id" type="int" />
@@ -100,6 +107,14 @@
 			<argument index="1" name="mesh" type="Mesh" />
 			<description>
 				Sets the item's mesh.
+			</description>
+		</method>
+		<method name="set_item_mesh_transform">
+			<return type="void" />
+			<argument index="0" name="id" type="int" />
+			<argument index="1" name="mesh_transform" type="Transform" />
+			<description>
+				Sets the transform to apply to the item's mesh.
 			</description>
 		</method>
 		<method name="set_item_name">
