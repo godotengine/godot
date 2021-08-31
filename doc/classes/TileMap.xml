@@ -17,6 +17,12 @@
 		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/113</link>
 	</tutorials>
 	<methods>
+		<method name="add_layer">
+			<return type="void" />
+			<argument index="0" name="arg0" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="clear">
 			<return type="void" />
 			<description>
@@ -71,6 +77,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_layers_count" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="get_neighbor_cell" qualifiers="const">
 			<return type="Vector2i" />
 			<argument index="0" name="coords" type="Vector2i" />
@@ -114,6 +125,19 @@
 			<argument index="0" name="map_position" type="Vector2i" />
 			<description>
 				Returns the local position corresponding to the given tilemap (grid-based) coordinates.
+			</description>
+		</method>
+		<method name="move_layer">
+			<return type="void" />
+			<argument index="0" name="arg0" type="int" />
+			<argument index="1" name="arg1" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="remove_layer">
+			<return type="void" />
+			<argument index="0" name="arg0" type="int" />
+			<description>
 			</description>
 		</method>
 		<method name="set_cell">
@@ -175,8 +199,6 @@
 			The TileMap's quadrant size. Optimizes drawing by batching, using chunks of this size.
 		</member>
 		<member name="collision_visibility_mode" type="int" setter="set_collision_visibility_mode" getter="get_collision_visibility_mode" enum="TileMap.VisibilityMode" default="0">
-		</member>
-		<member name="layers_count" type="int" setter="set_layers_count" getter="get_layers_count" default="1">
 		</member>
 		<member name="navigation_visibility_mode" type="int" setter="set_navigation_visibility_mode" getter="get_navigation_visibility_mode" enum="TileMap.VisibilityMode" default="0">
 		</member>

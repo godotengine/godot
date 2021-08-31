@@ -438,6 +438,21 @@ const Vector<Callable> EditorData::get_undo_redo_inspector_hook_callback() {
 	return undo_redo_callbacks;
 }
 
+void EditorData::add_move_array_element_function(const StringName &p_class, Callable p_callable) {
+	move_element_functions.insert(p_class, p_callable);
+}
+
+void EditorData::remove_move_array_element_function(const StringName &p_class) {
+	move_element_functions.erase(p_class);
+}
+
+Callable EditorData::get_move_array_element_function(const StringName &p_class) const {
+	if (move_element_functions.has(p_class)) {
+		return move_element_functions[p_class];
+	}
+	return Callable();
+}
+
 void EditorData::remove_editor_plugin(EditorPlugin *p_plugin) {
 	p_plugin->undo_redo = nullptr;
 	editor_plugins.erase(p_plugin);
