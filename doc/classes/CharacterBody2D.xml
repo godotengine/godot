@@ -152,8 +152,11 @@
 		<member name="motion_mode" type="int" setter="set_motion_mode" getter="get_motion_mode" enum="CharacterBody2D.MotionMode" default="0">
 			Sets the motion mode which defines the behaviour of [method move_and_slide]. See [enum MotionMode] constants for available modes.
 		</member>
-		<member name="moving_platform_ignore_layers" type="int" setter="set_moving_platform_ignore_layers" getter="get_moving_platform_ignore_layers" default="0">
-			Collision layers that will be excluded for detecting bodies that will act as moving platforms to be followed by the [CharacterBody2D]. By default, all touching bodies are detected and propagate their velocity. You can add excluded layers to ignore bodies that are contained in these layers.
+		<member name="moving_platform_floor_layers" type="int" setter="set_moving_platform_floor_layers" getter="get_moving_platform_floor_layers" default="4294967295">
+			Collision layers that will be included for detecting floor bodies that will act as moving platforms to be followed by the [CharacterBody2D]. By default, all floor bodies are detected and propagate their velocity.
+		</member>
+		<member name="moving_platform_wall_layers" type="int" setter="set_moving_platform_wall_layers" getter="get_moving_platform_wall_layers" default="0">
+			Collision layers that will be included for detecting wall bodies that will act as moving platforms to be followed by the [CharacterBody2D]. By default, all wall bodies are ignored.
 		</member>
 		<member name="slide_on_ceiling" type="bool" setter="set_slide_on_ceiling_enabled" getter="is_slide_on_ceiling_enabled" default="true">
 			If [code]true[/code], during a jump against the ceiling, the body will slide, if [code]false[/code] it will be stopped and will fall vertically.

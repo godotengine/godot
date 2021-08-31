@@ -310,7 +310,8 @@ private:
 	float floor_snap_length = 0;
 	real_t free_mode_min_slide_angle = Math::deg2rad((real_t)15.0);
 	Vector2 up_direction = Vector2(0.0, -1.0);
-	uint32_t moving_platform_ignore_layers = 0;
+	uint32_t moving_platform_floor_layers = UINT32_MAX;
+	uint32_t moving_platform_wall_layers = 0;
 	Vector2 linear_velocity;
 
 	Vector2 floor_normal;
@@ -350,8 +351,11 @@ private:
 	real_t get_free_mode_min_slide_angle() const;
 	void set_free_mode_min_slide_angle(real_t p_radians);
 
-	uint32_t get_moving_platform_ignore_layers() const;
-	void set_moving_platform_ignore_layers(const uint32_t p_exclude_layer);
+	uint32_t get_moving_platform_floor_layers() const;
+	void set_moving_platform_floor_layers(const uint32_t p_exclude_layer);
+
+	uint32_t get_moving_platform_wall_layers() const;
+	void set_moving_platform_wall_layers(const uint32_t p_exclude_layer);
 
 	void set_motion_mode(MotionMode p_mode);
 	MotionMode get_motion_mode() const;
