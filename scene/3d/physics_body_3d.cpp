@@ -347,7 +347,7 @@ void StaticBody3D::_notification(int p_what) {
 			// Used by sync to physics, send the new transform to the physics...
 			Transform3D new_transform = get_global_transform();
 
-			real_t delta_time = get_physics_process_delta_time();
+			double delta_time = get_physics_process_delta_time();
 			new_transform.origin += constant_linear_velocity * delta_time;
 
 			real_t ang_vel = constant_angular_velocity.length();
@@ -378,7 +378,7 @@ void StaticBody3D::_notification(int p_what) {
 
 			Transform3D new_transform = get_global_transform();
 
-			real_t delta_time = get_physics_process_delta_time();
+			double delta_time = get_physics_process_delta_time();
 			new_transform.origin += constant_linear_velocity * delta_time;
 
 			real_t ang_vel = constant_angular_velocity.length();
@@ -1083,7 +1083,7 @@ bool CharacterBody3D::move_and_slide() {
 	bool was_on_floor = on_floor;
 
 	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky
-	float delta = Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time();
+	double delta = Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time();
 
 	for (int i = 0; i < 3; i++) {
 		if (locked_axis & (1 << i)) {

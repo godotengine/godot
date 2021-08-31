@@ -293,7 +293,7 @@ void StaticBody2D::_notification(int p_what) {
 			// Used by sync to physics, send the new transform to the physics...
 			Transform2D new_transform = get_global_transform();
 
-			real_t delta_time = get_physics_process_delta_time();
+			double delta_time = get_physics_process_delta_time();
 			new_transform.translate(constant_linear_velocity * delta_time);
 			new_transform.set_rotation(new_transform.get_rotation() + constant_angular_velocity * delta_time);
 
@@ -316,7 +316,7 @@ void StaticBody2D::_notification(int p_what) {
 
 			Transform2D new_transform = get_global_transform();
 
-			real_t delta_time = get_physics_process_delta_time();
+			double delta_time = get_physics_process_delta_time();
 			new_transform.translate(constant_linear_velocity * delta_time);
 			new_transform.set_rotation(new_transform.get_rotation() + constant_angular_velocity * delta_time);
 
@@ -1045,7 +1045,7 @@ void RigidBody2D::_reload_physics_characteristics() {
 
 bool CharacterBody2D::move_and_slide() {
 	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky.
-	float delta = Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time();
+	double delta = Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time();
 
 	Vector2 current_platform_velocity = platform_velocity;
 
@@ -1100,7 +1100,7 @@ bool CharacterBody2D::move_and_slide() {
 	return motion_results.size() > 0;
 }
 
-void CharacterBody2D::_move_and_slide_grounded(real_t p_delta, bool p_was_on_floor, const Vector2 &p_prev_platform_velocity) {
+void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_floor, const Vector2 &p_prev_platform_velocity) {
 	Vector2 motion = linear_velocity * p_delta;
 	Vector2 motion_slide_up = motion.slide(up_direction);
 
@@ -1244,7 +1244,7 @@ void CharacterBody2D::_move_and_slide_grounded(real_t p_delta, bool p_was_on_flo
 	}
 }
 
-void CharacterBody2D::_move_and_slide_free(real_t p_delta) {
+void CharacterBody2D::_move_and_slide_free(double p_delta) {
 	Vector2 motion = linear_velocity * p_delta;
 
 	platform_rid = RID();
