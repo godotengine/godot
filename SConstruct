@@ -596,7 +596,7 @@ if selected_platform in platform_list:
     if env["minizip"]:
         env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
 
-    editor_module_list = ["freetype", "regex"]
+    editor_module_list = ["freetype"]
     for x in editor_module_list:
         if not env["module_" + x + "_enabled"]:
             if env["tools"]:

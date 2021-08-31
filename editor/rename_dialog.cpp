@@ -30,6 +30,8 @@
 
 #include "rename_dialog.h"
 
+#ifdef MODULE_REGEX_ENABLED
+
 #include "core/print_string.h"
 #include "editor_node.h"
 #include "editor_scale.h"
@@ -656,3 +658,5 @@ void RenameDialog::_features_toggled(bool pressed) {
 	size.y = 0;
 	set_size(size);
 }
+
+#endif // MODULE_REGEX_ENABLED
