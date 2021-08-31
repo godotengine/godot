@@ -181,13 +181,34 @@ Ref<RDShaderSPIRV> RenderingDevice::_shader_compile_spirv_from_source(const Ref<
 
 	Ref<RDShaderSPIRV> bytecode;
 	bytecode.instantiate();
-	for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
-		String error;
+	String error;
+	ShaderStage stage;
+	Vector<uint8_t> spirv;
 
-		ShaderStage stage = ShaderStage(i);
-		Vector<uint8_t> spirv = shader_compile_spirv_from_source(stage, p_source->get_stage_source(stage), p_source->get_language(), &error, p_allow_cache);
+	if (p_source->get_stage_source(RD::SHADER_STAGE_COMPUTE) != String()) {
+		for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
+			ShaderStage current_stage = ShaderStage(i);
+			if (i != RD::SHADER_STAGE_COMPUTE && p_source->get_stage_source(current_stage) != String()) {
+				error = "Found other shader stages besides compute stage.";
+				bytecode->set_stage_compile_error(current_stage, error);
+				break;
+			}
+		}
+
+		stage = ShaderStage(RD::SHADER_STAGE_COMPUTE);
+		spirv = shader_compile_spirv_from_source(stage, p_source->get_stage_source(stage), p_source->get_language(), &error, p_allow_cache);
 		bytecode->set_stage_bytecode(stage, spirv);
 		bytecode->set_stage_compile_error(stage, error);
+	} else {
+		for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
+			ShaderStage current_stage = ShaderStage(i);
+			if (i != RD::SHADER_STAGE_COMPUTE && p_source->get_stage_source(current_stage) != String()) {
+				stage = ShaderStage(i);
+				spirv = shader_compile_spirv_from_source(stage, p_source->get_stage_source(stage), p_source->get_language(), &error, p_allow_cache);
+				bytecode->set_stage_bytecode(stage, spirv);
+				bytecode->set_stage_compile_error(stage, error);
+			}
+		}
 	}
 	return bytecode;
 }
