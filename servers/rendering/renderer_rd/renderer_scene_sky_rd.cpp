@@ -288,7 +288,7 @@ void RendererSceneSkyRD::_render_sky(RD::DrawListID p_list, float p_time, RID p_
 	// Update uniform sets.
 	{
 		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, sky_scene_state.uniform_set, 0);
-		if (RD::get_singleton()->uniform_set_is_valid(p_uniform_set)) { // Material may not have a uniform set.
+		if (p_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(p_uniform_set)) { // Material may not have a uniform set.
 			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_uniform_set, 1);
 		}
 		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_texture_set, 2);
