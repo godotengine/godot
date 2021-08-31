@@ -1849,10 +1849,16 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 			}
 
 			if (groups.size()) {
+				// Write all groups on the same line as they're part of a section header.
+				// This improves readability while not impacting VCS friendliness too much,
+				// since it's rare to have more than 5 groups assigned to a single node.
 				groups.sort_custom<StringName::AlphCompare>();
-				String sgroups = " groups=[\n";
+				String sgroups = " groups=[";
 				for (int j = 0; j < groups.size(); j++) {
-					sgroups += "\"" + String(groups[j]).c_escape() + "\",\n";
+					sgroups += "\"" + String(groups[j]).c_escape() + "\"";
+					if (j < groups.size() - 1) {
+						sgroups += ", ";
+					}
 				}
 				sgroups += "]";
 				header += sgroups;
