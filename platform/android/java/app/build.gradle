@@ -34,9 +34,8 @@ allprojects {
 }
 
 dependencies {
-    implementation libraries.supportCoreUtils
     implementation libraries.kotlinStdLib
-    implementation libraries.v4Support
+    implementation libraries.androidxFragment
 
     if (rootProject.findProject(":lib")) {
         implementation project(":lib")
