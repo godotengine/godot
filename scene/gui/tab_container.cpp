@@ -365,10 +365,10 @@ void TabContainer::_notification(int p_what) {
 				}
 
 				int tab_width = tab_widths[i];
-				if (get_tab_disabled(index)) {
-					_draw_tab(tab_disabled, font_color_disabled, index, tabs_ofs_cache + x);
-				} else if (index == current) {
+				if (index == current) {
 					x_current = x;
+				} else if (get_tab_disabled(index)) {
+					_draw_tab(tab_disabled, font_color_disabled, index, tabs_ofs_cache + x);
 				} else {
 					_draw_tab(tab_bg, font_color_bg, index, tabs_ofs_cache + x);
 				}
@@ -382,9 +382,10 @@ void TabContainer::_notification(int p_what) {
 				panel->draw(canvas, Rect2(0, header_height, size.width, size.height - header_height));
 			}
 
-			// Draw selected tab in front. only draw selected tab when it's in visible range.
+			// Draw selected tab in front. Only draw selected tab when it's in visible range.
 			if (tabs.size() > 0 && current - first_tab_cache < tab_widths.size() && current >= first_tab_cache) {
-				_draw_tab(tab_fg, font_color_fg, current, tabs_ofs_cache + x_current);
+				Ref<StyleBox> current_style_box = get_tab_disabled(current) ? tab_disabled : tab_fg;
+				_draw_tab(current_style_box, font_color_fg, current, tabs_ofs_cache + x_current);
 			}
 
 			// Draw the popup menu.
@@ -500,9 +501,10 @@ void TabContainer::_on_mouse_exited() {
 int TabContainer::_get_tab_width(int p_index) const {
 
 	ERR_FAIL_INDEX_V(p_index, get_tab_count(), 0);
-	Control *control = Object::cast_to<Control>(_get_tabs()[p_index]);
-	if (!control || control->is_set_as_toplevel() || get_tab_hidden(p_index))
+	Control *control = get_tab_control(p_index);
+	if (!control || get_tab_hidden(p_index)) {
 		return 0;
+	}
 
 	// Get the width of the text displayed on the tab.
 	Ref<Font> font = get_font("font");
