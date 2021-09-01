@@ -156,6 +156,7 @@ void TreeItem::set_cell_mode(int p_column, TreeCellMode p_mode) {
 	c.dirty = true;
 	c.icon_max_w = 0;
 	_changed_notify(p_column);
+	cached_minimum_size_dirty = true;
 }
 
 TreeItem::TreeCellMode TreeItem::get_cell_mode(int p_column) const {
@@ -169,6 +170,7 @@ void TreeItem::set_checked(int p_column, bool p_checked) {
 	cells.write[p_column].checked = p_checked;
 	cells.write[p_column].indeterminate = false;
 	_changed_notify(p_column);
+	cached_minimum_size_dirty = true;
 }
 
 void TreeItem::set_indeterminate(int p_column, bool p_indeterminate) {
@@ -180,6 +182,7 @@ void TreeItem::set_indeterminate(int p_column, bool p_indeterminate) {
 	cells.write[p_column].indeterminate = p_indeterminate;
 	cells.write[p_column].checked = false;
 	_changed_notify(p_column);
+	cached_minimum_size_dirty = true;
 }
 
 bool TreeItem::is_checked(int p_column) const {
@@ -212,6 +215,7 @@ void TreeItem::set_text(int p_column, String p_text) {
 		cells.write[p_column].step = 0;
 	}
 	_changed_notify(p_column);
+	cached_minimum_size_dirty = true;
 }
 
 String TreeItem::get_text(int p_column) const {
@@ -227,6 +231,7 @@ void TreeItem::set_text_direction(int p_column, Control::TextDirection p_text_di
 		cells.write[p_column].dirty = true;
 		_changed_notify(p_column);
 	}
+	cached_minimum_size_dirty = true;
 }
 
 Control::TextDirection TreeItem::get_text_direction(int p_column) const {
@@ -239,6 +244,7 @@ void TreeItem::clear_opentype_features(int p_column) {
 	cells.write[p_column].opentype_features.clear();
 	cells.write[p_column].dirty = true;
 	_changed_notify(p_column);
+	cached_minimum_size_dirty = true;
 }
 
 void TreeItem::set_opentype_feature(int p_column, const String &p_name, int p_value) {
@@ -248,6 +254,7 @@ void TreeItem::set_opentype_feature(int p_column, const String &p_name, int p_va
 		cells.write[p_column].opentype_features[tag] = p_value;
 		cells.write[p_column].dirty = true;
 		_changed_notify(p_column);
+		cached_minimum_size_dirty = true;
 	}
 }
 
@@ -266,6 +273,7 @@ void TreeItem::set_structured_text_bidi_override(int p_column, Control::Structur
 		cells.write[p_column].st_parser = p_parser;
 		cells.write[p_column].dirty = true;
 		_changed_notify(p_column);
+		cached_minimum_size_dirty = true;
 	}
 }
 
@@ -279,6 +287,7 @@ void TreeItem::set_structured_text_bidi_override_options(int p_column, Array p_a
 	cells.write[p_column].st_args = p_args;
 	cells.write[p_column].dirty = true;
 	_changed_notify(p_column);
+	cached_minimum_size_dirty = true;
 }
 
 Array TreeItem::get_structured_text_bidi_override_options(int p_column) const {
@@ -292,6 +301,7 @@ void TreeItem::set_language(int p_column, const String &p_language) {
 		cells.write[p_column].language = p_language;
 		cells.write[p_column].dirty = true;
 		_changed_notify(p_column);
+		cached_minimum_size_dirty = true;
 	}
 }
 
@@ -305,6 +315,7 @@ void TreeItem::set_suffix(int p_column, String p_suffix) {
 	cells.write[p_column].suffix = p_suffix;
 
 	_changed_notify(p_column);
+	cached_minimum_size_dirty = true;
 }
 
 String TreeItem::get_suffix(int p_column) const {
@@ -316,6 +327,7 @@ void TreeItem::set_icon(int p_column, const Ref<Texture2D> &p_icon) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	cells.write[p_column].icon = p_icon;
 	_changed_notify(p_column);
+	cached_minimum_size_dirty = true;
 }
 
 Ref<Texture2D> TreeItem::get_icon(int p_column) const {
@@ -327,6 +339,7 @@ void TreeItem::set_icon_region(int p_column, const Rect2 &p_icon_region) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	cells.write[p_column].icon_region = p_icon_region;
 	_changed_notify(p_column);
+	cached_minimum_size_dirty = true;
 }
 
 Rect2 TreeItem::get_icon_region(int p_column) const {
@@ -349,6 +362,7 @@ void TreeItem::set_icon_max_width(int p_column, int p_max) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	cells.write[p_column].icon_max_w = p_max;
 	_changed_notify(p_column);
+	cached_minimum_size_dirty = true;
 }
 
 int TreeItem::get_icon_max_width(int p_column) const {
@@ -461,6 +475,7 @@ void TreeItem::uncollapse_tree() {
 void TreeItem::set_custom_minimum_height(int p_height) {
 	custom_min_height = p_height;
 	_changed_notify();
+	cached_minimum_size_dirty = true;
 }
 
 int TreeItem::get_custom_minimum_height() const {
@@ -785,6 +800,7 @@ void TreeItem::add_button(int p_column, const Ref<Texture2D> &p_button, int p_id
 	button.tooltip = p_tooltip;
 	cells.write[p_column].buttons.push_back(button);
 	_changed_notify(p_column);
+	cached_minimum_size_dirty = true;
 }
 
 int TreeItem::get_button_count(int p_column) const {
@@ -828,6 +844,7 @@ void TreeItem::set_button(int p_column, int p_idx, const Ref<Texture2D> &p_butto
 	ERR_FAIL_INDEX(p_idx, cells[p_column].buttons.size());
 	cells.write[p_column].buttons.write[p_idx].texture = p_button;
 	_changed_notify(p_column);
+	cached_minimum_size_dirty = true;
 }
 
 void TreeItem::set_button_color(int p_column, int p_idx, const Color &p_color) {
@@ -843,6 +860,7 @@ void TreeItem::set_button_disabled(int p_column, int p_idx, bool p_disabled) {
 
 	cells.write[p_column].buttons.write[p_idx].disabled = p_disabled;
 	_changed_notify(p_column);
+	cached_minimum_size_dirty = true;
 }
 
 bool TreeItem::is_button_disabled(int p_column, int p_idx) const {
@@ -856,6 +874,7 @@ void TreeItem::set_editable(int p_column, bool p_editable) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	cells.write[p_column].editable = p_editable;
 	_changed_notify(p_column);
+	cached_minimum_size_dirty = true;
 }
 
 bool TreeItem::is_editable(int p_column) {
@@ -888,6 +907,7 @@ void TreeItem::clear_custom_color(int p_column) {
 void TreeItem::set_custom_font(int p_column, const Ref<Font> &p_font) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	cells.write[p_column].custom_font = p_font;
+	cached_minimum_size_dirty = true;
 }
 
 Ref<Font> TreeItem::get_custom_font(int p_column) const {
@@ -898,6 +918,7 @@ Ref<Font> TreeItem::get_custom_font(int p_column) const {
 void TreeItem::set_custom_font_size(int p_column, int p_font_size) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	cells.write[p_column].custom_font_size = p_font_size;
+	cached_minimum_size_dirty = true;
 }
 
 int TreeItem::get_custom_font_size(int p_column) const {
@@ -941,6 +962,7 @@ Color TreeItem::get_custom_bg_color(int p_column) const {
 void TreeItem::set_custom_as_button(int p_column, bool p_button) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	cells.write[p_column].custom_button = p_button;
+	cached_minimum_size_dirty = true;
 }
 
 bool TreeItem::is_custom_set_as_button(int p_column) const {
@@ -952,6 +974,7 @@ void TreeItem::set_text_align(int p_column, TextAlign p_align) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	cells.write[p_column].text_align = p_align;
 	_changed_notify(p_column);
+	cached_minimum_size_dirty = true;
 }
 
 TreeItem::TextAlign TreeItem::get_text_align(int p_column) const {
@@ -963,6 +986,7 @@ void TreeItem::set_expand_right(int p_column, bool p_enable) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	cells.write[p_column].expand_right = p_enable;
 	_changed_notify(p_column);
+	cached_minimum_size_dirty = true;
 }
 
 bool TreeItem::get_expand_right(int p_column) const {
@@ -973,6 +997,7 @@ bool TreeItem::get_expand_right(int p_column) const {
 void TreeItem::set_disable_folding(bool p_disable) {
 	disable_folding = p_disable;
 	_changed_notify(0);
+	cached_minimum_size_dirty = true;
 }
 
 bool TreeItem::is_folding_disabled() const {
@@ -984,49 +1009,54 @@ Size2 TreeItem::get_minimum_size(int p_column) {
 	Tree *tree = get_tree();
 	ERR_FAIL_COND_V(!tree, Size2());
 
-	Size2 size;
+	if (cached_minimum_size_dirty) {
+		Size2 size;
 
-	// Default offset?
-	//size.width += (disable_folding || tree->hide_folding) ? tree->cache.hseparation : tree->cache.item_margin;
+		// Default offset?
+		//size.width += (disable_folding || tree->hide_folding) ? tree->cache.hseparation : tree->cache.item_margin;
 
-	// Text.
-	const TreeItem::Cell &cell = cells[p_column];
-	if (!cell.text.is_empty()) {
-		if (cell.dirty) {
-			tree->update_item_cell(this, p_column);
+		// Text.
+		const TreeItem::Cell &cell = cells[p_column];
+		if (!cell.text.is_empty()) {
+			if (cell.dirty) {
+				tree->update_item_cell(this, p_column);
+			}
+			Size2 text_size = cell.text_buf->get_size();
+			size.width += text_size.width;
+			size.height = MAX(size.height, text_size.height);
 		}
-		Size2 text_size = cell.text_buf->get_size();
-		size.width += text_size.width;
-		size.height = MAX(size.height, text_size.height);
-	}
 
-	// Icon.
-	if (cell.mode == CELL_MODE_CHECK) {
-		size.width += tree->cache.checked->get_width() + tree->cache.hseparation;
-	}
-	if (cell.icon.is_valid()) {
-		Size2i icon_size = cell.get_icon_size();
-		if (cell.icon_max_w > 0 && icon_size.width > cell.icon_max_w) {
-			icon_size.width = cell.icon_max_w;
+		// Icon.
+		if (cell.mode == CELL_MODE_CHECK) {
+			size.width += tree->cache.checked->get_width() + tree->cache.hseparation;
 		}
-		size.width += icon_size.width + tree->cache.hseparation;
-		size.height = MAX(size.height, icon_size.height);
-	}
-
-	// Buttons.
-	for (int i = 0; i < cell.buttons.size(); i++) {
-		Ref<Texture2D> texture = cell.buttons[i].texture;
-		if (texture.is_valid()) {
-			Size2 button_size = texture->get_size() + tree->cache.button_pressed->get_minimum_size();
-			size.width += button_size.width;
-			size.height = MAX(size.height, button_size.height);
+		if (cell.icon.is_valid()) {
+			Size2i icon_size = cell.get_icon_size();
+			if (cell.icon_max_w > 0 && icon_size.width > cell.icon_max_w) {
+				icon_size.width = cell.icon_max_w;
+			}
+			size.width += icon_size.width + tree->cache.hseparation;
+			size.height = MAX(size.height, icon_size.height);
 		}
-	}
-	if (cell.buttons.size() >= 2) {
-		size.width += (cell.buttons.size() - 1) * tree->cache.button_margin;
+
+		// Buttons.
+		for (int i = 0; i < cell.buttons.size(); i++) {
+			Ref<Texture2D> texture = cell.buttons[i].texture;
+			if (texture.is_valid()) {
+				Size2 button_size = texture->get_size() + tree->cache.button_pressed->get_minimum_size();
+				size.width += button_size.width;
+				size.height = MAX(size.height, button_size.height);
+			}
+		}
+		if (cell.buttons.size() >= 2) {
+			size.width += (cell.buttons.size() - 1) * tree->cache.button_margin;
+		}
+
+		cached_minimum_size = size;
+		cached_minimum_size_dirty = false;
 	}
 
-	return size;
+	return cached_minimum_size;
 }
 
 Variant TreeItem::_call_recursive_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -1307,6 +1337,10 @@ void Tree::update_cache() {
 	cache.title_button_color = get_theme_color(SNAME("title_button_color"));
 
 	v_scroll->set_custom_step(cache.font->get_height(cache.font_size));
+
+	for (TreeItem *item = get_root(); item; item = item->get_next()) {
+		item->cached_minimum_size_dirty = true;
+	}
 }
 
 int Tree::compute_item_height(TreeItem *p_item) const {

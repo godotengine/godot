@@ -130,6 +130,9 @@ private:
 	bool disable_folding = false;
 	int custom_min_height = 0;
 
+	Size2i cached_minimum_size;
+	bool cached_minimum_size_dirty = true;
+
 	TreeItem *parent = nullptr; // parent item
 	TreeItem *prev = nullptr; // previous in list
 	TreeItem *next = nullptr; // next in list
