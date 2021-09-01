@@ -2458,6 +2458,7 @@
 		<constant name="METHOD_FLAG_STATIC" value="256" enum="MethodFlags">
 		</constant>
 		<constant name="METHOD_FLAG_OBJECT_CORE" value="512" enum="MethodFlags">
+			Used internally. Allows to not dump core virtuals such as [code]_notification[/code] to the JSON API.
 		</constant>
 		<constant name="METHOD_FLAGS_DEFAULT" value="1" enum="MethodFlags">
 			Default method flags.

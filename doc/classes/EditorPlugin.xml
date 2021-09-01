@@ -56,11 +56,11 @@
 				Called by the engine when the 3D editor's viewport is updated. Use the [code]overlay[/code] [Control] for drawing. You can update the viewport manually by calling [method update_overlays].
 				[codeblocks]
 				[gdscript]
-				func _forward_spatial_3d_over_viewport(overlay):
+				func _forward_3d_draw_over_viewport(overlay):
 				    # Draw a circle at cursor position.
 				    overlay.draw_circle(overlay.get_local_mouse_position(), 64)
 
-				func _forward_spatial_gui_input(camera, event):
+				func _forward_3d_gui_input(camera, event):
 				    if event is InputEventMouseMotion:
 				        # Redraw viewport when cursor is moved.
 				        update_overlays()
@@ -68,13 +68,13 @@
 				    return false
 				[/gdscript]
 				[csharp]
-				public override void ForwardSpatialDrawOverViewport(Godot.Control overlay)
+				public override void _Forward3dDrawOverViewport(Godot.Control overlay)
 				{
 				    // Draw a circle at cursor position.
 				    overlay.DrawCircle(overlay.GetLocalMousePosition(), 64, Colors.White);
 				}
 
-				public override bool ForwardSpatialGuiInput(Godot.Camera3D camera, InputEvent @event)
+				public override bool _Forward3dGuiInput(Godot.Camera3D camera, InputEvent @event)
 				{
 				    if (@event is InputEventMouseMotion)
 				    {
@@ -104,12 +104,12 @@
 				[codeblocks]
 				[gdscript]
 				# Prevents the InputEvent to reach other Editor classes.
-				func _forward_spatial_gui_input(camera, event):
+				func _forward_3d_gui_input(camera, event):
 				    return true
 				[/gdscript]
 				[csharp]
 				// Prevents the InputEvent to reach other Editor classes.
-				public override bool ForwardSpatialGuiInput(Camera3D camera, InputEvent @event)
+				public override bool _Forward3dGuiInput(Camera3D camera, InputEvent @event)
 				{
 				    return true;
 				}
@@ -119,12 +119,12 @@
 				[codeblocks]
 				[gdscript]
 				# Consumes InputEventMouseMotion and forwards other InputEvent types.
-				func _forward_spatial_gui_input(camera, event):
+				func _forward_3d_gui_input(camera, event):
 				    return event is InputEventMouseMotion
 				[/gdscript]
 				[csharp]
 				// Consumes InputEventMouseMotion and forwards other InputEvent types.
-				public override bool ForwardSpatialGuiInput(Camera3D camera, InputEvent @event)
+				public override bool _Forward3dGuiInput(Camera3D camera, InputEvent @event)
 				{
 				    return @event is InputEventMouseMotion;
 				}
