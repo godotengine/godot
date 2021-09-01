@@ -191,6 +191,9 @@ public abstract class GodotPlugin {
 	 * The plugin can return a non-null {@link View} layout in order to add it to the Godot view
 	 * hierarchy.
 	 *
+	 * Use shouldBeOnTop() to set whether the plugin's {@link View} should be added on top or behind
+	 * the main Godot view.
+	 *
 	 * @see Activity#onCreate(Bundle)
 	 * @return the plugin's view to be included; null if no views should be included.
 	 */
@@ -308,6 +311,17 @@ public abstract class GodotPlugin {
 	@NonNull
 	protected Set<String> getPluginGDNativeLibrariesPaths() {
 		return Collections.emptySet();
+	}
+
+	/**
+	 * Returns whether the plugin's {@link View} returned in onMainCreate() should be placed on
+	 * top of the main Godot view.
+	 *
+	 * Returning false causes the plugin's {@link View} to be placed behind, which can be useful
+	 * when used with transparency in order to let the Godot view handle inputs.
+	 */
+	public boolean shouldBeOnTop() {
+		return true;
 	}
 
 	/**
