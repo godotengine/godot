@@ -188,40 +188,36 @@ String OS_LinuxBSD::get_name() const {
 }
 
 Error OS_LinuxBSD::shell_open(String p_uri) {
-	Error ok;
-	int err_code;
+	Error err;
 	List<String> args;
 	args.push_back(p_uri);
 
 	// Agnostic
-	ok = execute("xdg-open", args, nullptr, &err_code);
-	if (ok == OK && !err_code) {
+	err = create_process("xdg-open", args);
+	if (err == OK) {
 		return OK;
-	} else if (err_code == 2) {
-		return ERR_FILE_NOT_FOUND;
 	}
 	// GNOME
 	args.push_front("open"); // The command is `gio open`, so we need to add it to args
-	ok = execute("gio", args, nullptr, &err_code);
-	if (ok == OK && !err_code) {
+	err = create_process("gio", args);
+	if (err == OK) {
 		return OK;
-	} else if (err_code == 2) {
-		return ERR_FILE_NOT_FOUND;
 	}
 	args.pop_front();
-	ok = execute("gvfs-open", args, nullptr, &err_code);
-	if (ok == OK && !err_code) {
+	err = create_process("gvfs-open", args);
+	if (err == OK) {
 		return OK;
-	} else if (err_code == 2) {
-		return ERR_FILE_NOT_FOUND;
 	}
 	// KDE
-	ok = execute("kde-open5", args, nullptr, &err_code);
-	if (ok == OK && !err_code) {
+	err = create_process("kde-open5", args);
+	if (err == OK) {
 		return OK;
 	}
-	ok = execute("kde-open", args, nullptr, &err_code);
-	return !err_code ? ok : FAILED;
+	err = create_process("kde-open", args);
+	if (err == OK) {
+		return OK;
+	}
+	return FAILED;
 }
 
 bool OS_LinuxBSD::_check_internal_feature_support(const String &p_feature) {
