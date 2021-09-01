@@ -1502,6 +1502,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2, clamp, sarray("min", "max"), varray());
 	bind_method(Vector2, snapped, sarray("step"), varray());
 
+	bind_static_method(Vector2, from_angle, sarray("angle"), varray());
+
 	/* Vector2i */
 
 	bind_method(Vector2i, aspect, sarray(), varray());
