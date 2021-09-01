@@ -41,6 +41,13 @@
 				Returns the active 3D camera.
 			</description>
 		</method>
+		<method name="get_canvas_cull_mask_bit" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="layer" type="int" />
+			<description>
+				Returns whether or not the specified layer of the [member canvas_cull_mask] is enabled. If a layer is enabled (set to [code]true[/code]) then that layer will be rendered, if it is [code]false[/code] then it will not be rendered.
+			</description>
+		</method>
 		<method name="get_final_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
@@ -150,6 +157,14 @@
 				Attaches this [Viewport] to the root [Viewport] with the specified rectangle. This bypasses the need for another node to display this [Viewport] but makes you responsible for updating the position of this [Viewport] manually.
 			</description>
 		</method>
+		<method name="set_canvas_cull_mask_bit">
+			<return type="void" />
+			<argument index="0" name="layer" type="int" />
+			<argument index="1" name="enable" type="bool" />
+			<description>
+				Based on [code]value[/code], enables or disables the specified layer in the [member canvas_cull_mask]. If a layer is enabled (set to [code]true[/code]) then that layer will be rendered, if it is [code]false[/code] then it will not be rendered.
+			</description>
+		</method>
 		<method name="set_input_as_handled">
 			<return type="void" />
 			<description>
@@ -202,6 +217,9 @@
 		</member>
 		<member name="audio_listener_enable_3d" type="bool" setter="set_as_audio_listener" getter="is_audio_listener" default="false">
 			If [code]true[/code], the viewport will process 3D audio streams.
+		</member>
+		<member name="canvas_cull_mask" type="int" setter="set_canvas_cull_mask" getter="get_canvas_cull_mask" default="1048575">
+			The culling mask that describes which 2D render layers are rendered by this viewport. If a bit is not set, then that layer will not be rendered.
 		</member>
 		<member name="canvas_transform" type="Transform2D" setter="set_canvas_transform" getter="get_canvas_transform">
 			The canvas transform of the viewport, useful for changing the on-screen positions of all child [CanvasItem]s. This is relative to the global canvas transform of the viewport.

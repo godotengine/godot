@@ -76,6 +76,8 @@ public:
 
 		bool transparent_bg;
 
+		int canvas_visible_layers;
+
 		struct CanvasKey {
 			int64_t stacking;
 			RID canvas;
@@ -122,6 +124,8 @@ public:
 				render_info[i] = 0;
 			}
 			use_arvr = false;
+
+			canvas_visible_layers = 0;
 		}
 	};
 
@@ -192,6 +196,7 @@ public:
 	void viewport_set_hdr(RID p_viewport, bool p_enabled);
 	void viewport_set_use_32_bpc_depth(RID p_viewport, bool p_enabled);
 	void viewport_set_usage(RID p_viewport, VS::ViewportUsage p_usage);
+	void viewport_set_canvas_cull_mask(RID p_viewport, int p_mask);
 
 	virtual int viewport_get_render_info(RID p_viewport, VS::ViewportRenderInfo p_info);
 	virtual void viewport_set_debug_draw(RID p_viewport, VS::ViewportDebugDraw p_draw);

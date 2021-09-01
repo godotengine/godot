@@ -2095,6 +2095,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("viewport_set_sharpen_intensity", "viewport", "intensity"), &VisualServer::viewport_set_sharpen_intensity);
 	ClassDB::bind_method(D_METHOD("viewport_set_hdr", "viewport", "enabled"), &VisualServer::viewport_set_hdr);
 	ClassDB::bind_method(D_METHOD("viewport_set_usage", "viewport", "usage"), &VisualServer::viewport_set_usage);
+	ClassDB::bind_method(D_METHOD("viewport_set_canvas_cull_mask", "viewport", "mask"), &VisualServer::viewport_set_canvas_cull_mask);
 	ClassDB::bind_method(D_METHOD("viewport_get_render_info", "viewport", "info"), &VisualServer::viewport_get_render_info);
 	ClassDB::bind_method(D_METHOD("viewport_set_debug_draw", "viewport", "draw"), &VisualServer::viewport_set_debug_draw);
 
@@ -2162,6 +2163,9 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_item_set_parent", "item", "parent"), &VisualServer::canvas_item_set_parent);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_visible", "item", "visible"), &VisualServer::canvas_item_set_visible);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_light_mask", "item", "mask"), &VisualServer::canvas_item_set_light_mask);
+	ClassDB::bind_method(D_METHOD("canvas_item_set_layer_mask", "item", "mask"), &VisualServer::canvas_item_set_layer_mask);
+	ClassDB::bind_method(D_METHOD("canvas_item_set_cull_children", "item", "enable"), &VisualServer::canvas_item_set_cull_children);
+
 	ClassDB::bind_method(D_METHOD("canvas_item_set_transform", "item", "transform"), &VisualServer::canvas_item_set_transform);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_clip", "item", "clip"), &VisualServer::canvas_item_set_clip);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_distance_field_mode", "item", "enabled"), &VisualServer::canvas_item_set_distance_field_mode);

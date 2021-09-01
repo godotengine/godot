@@ -354,10 +354,57 @@ bool CanvasItem::is_visible_in_tree() const {
 		return false;
 	}
 
-	const CanvasItem *p = this;
+	// check this item's mask separately, since it doesn't depend on cull_children
+	if (!visible || (layers & get_viewport()->get_canvas_cull_mask()) == 0) {
+		return false;
+	}
 
+	const CanvasItem *p = get_parent_item();
 	while (p) {
 		if (!p->visible) {
+			return false;
+		}
+		if (p->cull_children && (p->layers & p->get_viewport()->get_canvas_cull_mask()) == 0) {
+			return false;
+		}
+		p = p->get_parent_item();
+	}
+
+	return true;
+}
+
+bool CanvasItem::is_visible_in_tree_ignoring_cull_masks() const {
+	if (!is_inside_tree()) {
+		return false;
+	}
+
+	const CanvasItem *p = this;
+	while (p) {
+		if (!p->visible) {
+			return false;
+		}
+		p = p->get_parent_item();
+	}
+
+	return true;
+}
+
+bool CanvasItem::is_visible_in_tree_with_cull_mask(int p_mask) const {
+	if (!is_inside_tree()) {
+		return false;
+	}
+
+	// check this item's mask separately, since it doesn't depend on cull_children
+	if (!visible || (layers & p_mask) == 0) {
+		return false;
+	}
+
+	const CanvasItem *p = get_parent_item();
+	while (p) {
+		if (!p->visible) {
+			return false;
+		}
+		if (p->cull_children && (p->layers & p_mask) == 0) {
 			return false;
 		}
 		p = p->get_parent_item();
@@ -445,7 +492,7 @@ void CanvasItem::_update_callback() {
 
 	VisualServer::get_singleton()->canvas_item_clear(get_canvas_item());
 	//todo updating = true - only allow drawing here
-	if (is_visible_in_tree()) { // Todo optimize this!!
+	if (is_visible_in_tree_ignoring_cull_masks()) { // Todo optimize this!!
 		if (first_draw) {
 			notification(NOTIFICATION_VISIBILITY_CHANGED);
 			first_draw = false;
@@ -529,6 +576,7 @@ void CanvasItem::_enter_canvas() {
 		}
 
 		VisualServer::get_singleton()->canvas_item_set_parent(canvas_item, canvas);
+		VisualServer::get_singleton()->canvas_item_set_layer_mask(canvas_item, layers);
 
 		group = "root_canvas" + itos(canvas.get_id());
 
@@ -546,6 +594,7 @@ void CanvasItem::_enter_canvas() {
 		canvas_layer = parent->canvas_layer;
 		VisualServer::get_singleton()->canvas_item_set_parent(canvas_item, parent->get_canvas_item());
 		VisualServer::get_singleton()->canvas_item_set_draw_index(canvas_item, get_index());
+		VisualServer::get_singleton()->canvas_item_set_layer_mask(canvas_item, layers);
 	}
 
 	pending_update = false;
@@ -690,6 +739,38 @@ void CanvasItem::set_light_mask(int p_light_mask) {
 
 int CanvasItem::get_light_mask() const {
 	return light_mask;
+}
+
+void CanvasItem::set_layer_mask(int p_layer_mask) {
+	layers = p_layer_mask;
+	VisualServer::get_singleton()->canvas_item_set_layer_mask(canvas_item, layers);
+}
+
+int CanvasItem::get_layer_mask() const {
+	return layers;
+}
+
+void CanvasItem::set_layer_mask_bit(int p_layer, bool p_enable) {
+	ERR_FAIL_INDEX(p_layer, 32);
+	if (p_enable) {
+		set_layer_mask(layers | (1 << p_layer));
+	} else {
+		set_layer_mask(layers & (~(1 << p_layer)));
+	}
+}
+
+bool CanvasItem::get_layer_mask_bit(int p_layer) const {
+	ERR_FAIL_INDEX_V(p_layer, 32, false);
+	return (layers & (1 << p_layer));
+}
+
+void CanvasItem::set_cull_children(bool p_enable) {
+	cull_children = p_enable;
+	VisualServer::get_singleton()->canvas_item_set_cull_children(canvas_item, cull_children);
+}
+
+bool CanvasItem::is_cull_children_enabled() const {
+	return cull_children;
 }
 
 void CanvasItem::item_rect_changed(bool p_size_changed) {
@@ -1095,6 +1176,8 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_visible", "visible"), &CanvasItem::set_visible);
 	ClassDB::bind_method(D_METHOD("is_visible"), &CanvasItem::is_visible);
 	ClassDB::bind_method(D_METHOD("is_visible_in_tree"), &CanvasItem::is_visible_in_tree);
+	ClassDB::bind_method(D_METHOD("is_visible_in_tree_ignoring_cull_masks"), &CanvasItem::is_visible_in_tree_ignoring_cull_masks);
+	ClassDB::bind_method(D_METHOD("is_visible_in_tree_with_cull_mask", "mask"), &CanvasItem::is_visible_in_tree_with_cull_mask);
 	ClassDB::bind_method(D_METHOD("show"), &CanvasItem::show);
 	ClassDB::bind_method(D_METHOD("hide"), &CanvasItem::hide);
 
@@ -1105,6 +1188,13 @@ void CanvasItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_light_mask", "light_mask"), &CanvasItem::set_light_mask);
 	ClassDB::bind_method(D_METHOD("get_light_mask"), &CanvasItem::get_light_mask);
+
+	ClassDB::bind_method(D_METHOD("set_layer_mask", "mask"), &CanvasItem::set_layer_mask);
+	ClassDB::bind_method(D_METHOD("get_layer_mask"), &CanvasItem::get_layer_mask);
+	ClassDB::bind_method(D_METHOD("set_layer_mask_bit", "layer", "enable"), &CanvasItem::set_layer_mask_bit);
+	ClassDB::bind_method(D_METHOD("get_layer_mask_bit", "layer"), &CanvasItem::get_layer_mask_bit);
+	ClassDB::bind_method(D_METHOD("set_cull_children", "enable"), &CanvasItem::set_cull_children);
+	ClassDB::bind_method(D_METHOD("is_cull_children_enabled"), &CanvasItem::is_cull_children_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_modulate", "modulate"), &CanvasItem::set_modulate);
 	ClassDB::bind_method(D_METHOD("get_modulate"), &CanvasItem::get_modulate);
@@ -1178,6 +1268,8 @@ void CanvasItem::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_behind_parent"), "set_draw_behind_parent", "is_draw_behind_parent_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_on_top", PROPERTY_HINT_NONE, "", 0), "_set_on_top", "_is_on_top"); //compatibility
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_light_mask", "get_light_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_LAYERS_2D_RENDER), "set_layer_mask", "get_layer_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cull_children"), "set_cull_children", "is_cull_children_enabled");
 
 	ADD_GROUP("Material", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,CanvasItemMaterial"), "set_material", "get_material");
@@ -1285,6 +1377,8 @@ CanvasItem::CanvasItem() :
 	notify_local_transform = false;
 	notify_transform = false;
 	light_mask = 1;
+	layers = 1;
+	cull_children = false;
 
 	C = nullptr;
 }

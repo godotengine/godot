@@ -190,6 +190,7 @@ private:
 	List<CanvasItem *>::Element *C;
 
 	int light_mask;
+	int layers;
 
 	bool first_draw;
 	bool visible;
@@ -201,6 +202,7 @@ private:
 	bool use_parent_material;
 	bool notify_local_transform;
 	bool notify_transform;
+	bool cull_children;
 
 	Ref<Material> material;
 
@@ -293,6 +295,8 @@ public:
 	void set_visible(bool p_visible);
 	bool is_visible() const;
 	bool is_visible_in_tree() const;
+	bool is_visible_in_tree_ignoring_cull_masks() const;
+	bool is_visible_in_tree_with_cull_mask(int p_mask) const;
 	void show();
 	void hide();
 
@@ -300,6 +304,13 @@ public:
 
 	virtual void set_light_mask(int p_light_mask);
 	int get_light_mask() const;
+
+	void set_layer_mask(int p_layer_mask);
+	int get_layer_mask() const;
+	void set_layer_mask_bit(int p_layer, bool p_enable);
+	bool get_layer_mask_bit(int p_layer) const;
+	void set_cull_children(bool p_enable);
+	bool is_cull_children_enabled() const;
 
 	void set_modulate(const Color &p_modulate);
 	Color get_modulate() const;

@@ -716,6 +716,7 @@ public:
 	virtual void viewport_set_hdr(RID p_viewport, bool p_enabled) = 0;
 	virtual void viewport_set_use_32_bpc_depth(RID p_viewport, bool p_enabled) = 0;
 	virtual void viewport_set_usage(RID p_viewport, ViewportUsage p_usage) = 0;
+	virtual void viewport_set_canvas_cull_mask(RID p_viewport, int p_mask) = 0;
 
 	enum ViewportRenderInfo {
 
@@ -1006,6 +1007,8 @@ public:
 
 	virtual void canvas_item_set_visible(RID p_item, bool p_visible) = 0;
 	virtual void canvas_item_set_light_mask(RID p_item, int p_mask) = 0;
+	virtual void canvas_item_set_layer_mask(RID p_item, int p_mask) = 0;
+	virtual void canvas_item_set_cull_children(RID p_item, bool p_enable) = 0;
 
 	virtual void canvas_item_set_update_when_visible(RID p_item, bool p_update) = 0;
 

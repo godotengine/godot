@@ -288,6 +288,8 @@ private:
 	bool hdr;
 	bool use_32_bpc_depth;
 
+	int canvas_cull_mask;
+
 	Ref<ViewportTexture> default_texture;
 	Set<ViewportTexture *> viewport_textures;
 
@@ -585,6 +587,11 @@ public:
 
 	bool gui_is_dragging() const;
 	bool gui_is_drag_successful() const;
+
+	void set_canvas_cull_mask(int p_layers);
+	int get_canvas_cull_mask() const;
+	void set_canvas_cull_mask_bit(int p_layers, bool p_enable);
+	bool get_canvas_cull_mask_bit(int p_layers) const;
 
 	Viewport();
 	~Viewport();
