@@ -187,6 +187,11 @@ void Light3D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		_update_visibility();
+		// Effectively causes _update_visibility() to be called deferred.
+		// This is necessary, because duplicating or reparenting a light will first
+		// issue NOTIFICATION_ENTER_TREE, and only afterwards call set_owner(). But
+		// _update_visibility() relies on a properly set owner.
+		call_deferred("set_editor_only", editor_only);
 	}
 }
 
