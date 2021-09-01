@@ -224,6 +224,14 @@ int OS::get_low_processor_usage_mode_sleep_usec() const {
 	return ::OS::get_singleton()->get_low_processor_usage_mode_sleep_usec();
 }
 
+void OS::set_delta_smoothing(bool p_enabled) {
+	::OS::get_singleton()->set_delta_smoothing(p_enabled);
+}
+
+bool OS::is_delta_smoothing_enabled() const {
+	return ::OS::get_singleton()->is_delta_smoothing_enabled();
+}
+
 void OS::alert(const String &p_alert, const String &p_title) {
 	::OS::get_singleton()->alert(p_alert, p_title);
 }
@@ -556,6 +564,9 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_low_processor_usage_mode_sleep_usec", "usec"), &OS::set_low_processor_usage_mode_sleep_usec);
 	ClassDB::bind_method(D_METHOD("get_low_processor_usage_mode_sleep_usec"), &OS::get_low_processor_usage_mode_sleep_usec);
 
+	ClassDB::bind_method(D_METHOD("set_delta_smoothing", "delta_smoothing_enabled"), &OS::set_delta_smoothing);
+	ClassDB::bind_method(D_METHOD("is_delta_smoothing_enabled"), &OS::is_delta_smoothing_enabled);
+
 	ClassDB::bind_method(D_METHOD("get_processor_count"), &OS::get_processor_count);
 	ClassDB::bind_method(D_METHOD("get_processor_name"), &OS::get_processor_name);
 
@@ -631,6 +642,7 @@ void OS::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "low_processor_usage_mode"), "set_low_processor_usage_mode", "is_in_low_processor_usage_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "low_processor_usage_mode_sleep_usec"), "set_low_processor_usage_mode_sleep_usec", "get_low_processor_usage_mode_sleep_usec");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "delta_smoothing"), "set_delta_smoothing", "is_delta_smoothing_enabled");
 
 	// Those default values need to be specified for the docs generator,
 	// to avoid using values from the documentation writer's own OS instance.
