@@ -2891,7 +2891,10 @@ void EditorNode::_save_screenshot(NodePath p_path) {
 	ERR_FAIL_COND_MSG(!editor_main_control, "Cannot get editor main control.");
 	Viewport *viewport = editor_main_control->get_viewport();
 	ERR_FAIL_COND_MSG(!viewport, "Cannot get editor main control viewport.");
-	Ref<ViewportTexture> texture = viewport->get_texture();
+	Ref<ViewportTexture> texture;
+	texture.instantiate();
+	texture->set_viewport_path_in_scene(viewport->get_path());
+	texture->setup_local_to_scene();
 	ERR_FAIL_COND_MSG(texture.is_null(), "Cannot get editor main control viewport texture.");
 	Ref<Image> img = texture->get_image();
 	ERR_FAIL_COND_MSG(img.is_null(), "Cannot get editor main control viewport texture image.");
