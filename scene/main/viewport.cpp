@@ -822,7 +822,9 @@ Rect2 Viewport::get_visible_rect() const {
 }
 
 void Viewport::_update_listener_2d() {
-	AudioServer::get_singleton()->notify_listener_changed();
+	if (AudioServer::get_singleton()) {
+		AudioServer::get_singleton()->notify_listener_changed();
+	}
 }
 
 void Viewport::set_as_audio_listener_2d(bool p_enable) {
@@ -3075,7 +3077,9 @@ bool Viewport::is_audio_listener_3d() const {
 }
 
 void Viewport::_update_listener_3d() {
-	AudioServer::get_singleton()->notify_listener_changed();
+	if (AudioServer::get_singleton()) {
+		AudioServer::get_singleton()->notify_listener_changed();
+	}
 }
 
 void Viewport::_listener_transform_3d_changed_notify() {
