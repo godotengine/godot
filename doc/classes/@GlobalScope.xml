@@ -99,14 +99,6 @@
 				[b]Warning:[/b] Deserialized object can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).
 			</description>
 		</method>
-		<method name="cartesian2polar">
-			<return type="Vector2" />
-			<argument index="0" name="x" type="float" />
-			<argument index="1" name="y" type="float" />
-			<description>
-				Converts a 2D point expressed in the cartesian coordinate system (X and Y axis) to the polar coordinate system (a distance from the origin and an angle).
-			</description>
-		</method>
 		<method name="ceil">
 			<return type="float" />
 			<argument index="0" name="x" type="float" />
@@ -519,14 +511,6 @@
 				nearest_po2(-1) # Returns 0 (this may not be what you expect)
 				[/codeblock]
 				[b]Warning:[/b] Due to the way it is implemented, this function returns [code]0[/code] rather than [code]1[/code] for non-positive values of [code]value[/code] (in reality, 1 is the smallest integer power of 2).
-			</description>
-		</method>
-		<method name="polar2cartesian">
-			<return type="Vector2" />
-			<argument index="0" name="r" type="float" />
-			<argument index="1" name="th" type="float" />
-			<description>
-				Converts a 2D point expressed in the polar coordinate system (a distance from the origin [code]r[/code] and an angle [code]th[/code]) to the cartesian coordinate system (X and Y axis).
 			</description>
 		</method>
 		<method name="posmod">

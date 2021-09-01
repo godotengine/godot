@@ -110,19 +110,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// Converts a 2D point expressed in the cartesian coordinate
-        /// system (X and Y axis) to the polar coordinate system
-        /// (a distance from the origin and an angle).
-        /// </summary>
-        /// <param name="x">The input X coordinate.</param>
-        /// <param name="y">The input Y coordinate.</param>
-        /// <returns>A <see cref="Vector2"/> with X representing the distance and Y representing the angle.</returns>
-        public static Vector2 Cartesian2Polar(real_t x, real_t y)
-        {
-            return new Vector2(Sqrt(x * x + y * y), Atan2(y, x));
-        }
-
-        /// <summary>
         /// Rounds `s` upward (towards positive infinity).
         /// </summary>
         /// <param name="s">The number to ceil.</param>
@@ -433,19 +420,6 @@ namespace Godot
             value |= value >> 16;
             value++;
             return value;
-        }
-
-        /// <summary>
-        /// Converts a 2D point expressed in the polar coordinate
-        /// system (a distance from the origin `r` and an angle `th`)
-        /// to the cartesian coordinate system (X and Y axis).
-        /// </summary>
-        /// <param name="r">The distance from the origin.</param>
-        /// <param name="th">The angle of the point.</param>
-        /// <returns>A <see cref="Vector2"/> representing the cartesian coordinate.</returns>
-        public static Vector2 Polar2Cartesian(real_t r, real_t th)
-        {
-            return new Vector2(r * Cos(th), r * Sin(th));
         }
 
         /// <summary>
