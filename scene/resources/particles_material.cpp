@@ -299,8 +299,7 @@ void ParticlesMaterial::_update_shader() {
 	code += "	float scale_rand = rand_from_seed(alt_seed);\n";
 	code += "	float hue_rot_rand = rand_from_seed(alt_seed);\n";
 	code += "	float anim_offset_rand = rand_from_seed(alt_seed);\n";
-	code += "	float pi = 3.14159;\n";
-	code += "	float degree_to_rad = pi / 180.0;\n";
+	code += "	float degree_to_rad = PI / 180.0;\n";
 	code += "\n";
 
 	if (emission_shape == EMISSION_SHAPE_POINTS || emission_shape == EMISSION_SHAPE_DIRECTED_POINTS) {

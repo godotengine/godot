@@ -1112,6 +1112,10 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_CANVAS_ITEM].renames["PROJECTION_MATRIX"] = "projection_matrix";
 	actions[VS::SHADER_CANVAS_ITEM].renames["EXTRA_MATRIX"] = "extra_matrix";
 	actions[VS::SHADER_CANVAS_ITEM].renames["TIME"] = "time";
+	actions[VS::SHADER_CANVAS_ITEM].renames["PI"] = _MKSTR(Math_PI);
+	actions[VS::SHADER_CANVAS_ITEM].renames["TAU"] = _MKSTR(Math_TAU);
+	actions[VS::SHADER_CANVAS_ITEM].renames["E"] = _MKSTR(Math_E);
+
 	actions[VS::SHADER_CANVAS_ITEM].renames["AT_LIGHT_PASS"] = "at_light_pass";
 	actions[VS::SHADER_CANVAS_ITEM].renames["INSTANCE_CUSTOM"] = "instance_custom";
 
@@ -1175,6 +1179,10 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	//builtins
 
 	actions[VS::SHADER_SPATIAL].renames["TIME"] = "time";
+	actions[VS::SHADER_SPATIAL].renames["PI"] = _MKSTR(Math_PI);
+	actions[VS::SHADER_SPATIAL].renames["TAU"] = _MKSTR(Math_TAU);
+	actions[VS::SHADER_SPATIAL].renames["E"] = _MKSTR(Math_E);
+
 	actions[VS::SHADER_SPATIAL].renames["VIEWPORT_SIZE"] = "viewport_size";
 
 	actions[VS::SHADER_SPATIAL].renames["FRAGCOORD"] = "gl_FragCoord";
@@ -1282,7 +1290,12 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_PARTICLES].renames["RESTART"] = "restart";
 	actions[VS::SHADER_PARTICLES].renames["CUSTOM"] = "out_custom";
 	actions[VS::SHADER_PARTICLES].renames["TRANSFORM"] = "xform";
+
 	actions[VS::SHADER_PARTICLES].renames["TIME"] = "time";
+	actions[VS::SHADER_PARTICLES].renames["PI"] = _MKSTR(Math_PI);
+	actions[VS::SHADER_PARTICLES].renames["TAU"] = _MKSTR(Math_TAU);
+	actions[VS::SHADER_PARTICLES].renames["E"] = _MKSTR(Math_E);
+
 	actions[VS::SHADER_PARTICLES].renames["LIFETIME"] = "lifetime";
 	actions[VS::SHADER_PARTICLES].renames["DELTA"] = "local_delta";
 	actions[VS::SHADER_PARTICLES].renames["NUMBER"] = "particle_number";
