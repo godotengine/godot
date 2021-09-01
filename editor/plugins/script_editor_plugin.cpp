@@ -37,6 +37,7 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_node.h"
 #include "editor/editor_run_script.h"
 #include "editor/editor_scale.h"
@@ -475,6 +476,29 @@ void ScriptEditor::_clear_execution(REF p_script) {
 			if ((script != nullptr && se->get_edited_resource() == p_script) || se->get_edited_resource()->get_path() == script->get_path()) {
 				se->clear_executing_line();
 			}
+		}
+	}
+}
+
+void ScriptEditor::_set_breakpoint(REF p_script, int p_line, bool p_enabled) {
+	Ref<Script> script = Object::cast_to<Script>(*p_script);
+	if (script.is_valid() && (script->has_source_code() || script->get_path().is_resource_file())) {
+		if (edit(p_script, p_line, 0, false)) {
+			editor->push_item(p_script.ptr());
+
+			ScriptEditorBase *se = _get_current_editor();
+			if (se) {
+				se->set_breakpoint(p_line, p_enabled);
+			}
+		}
+	}
+}
+
+void ScriptEditor::_clear_breakpoints() {
+	for (int i = 0; i < tab_container->get_child_count(); i++) {
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
+		if (se) {
+			se->clear_breakpoints();
 		}
 	}
 }
@@ -3484,6 +3508,8 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	debugger->connect("set_execution", callable_mp(this, &ScriptEditor::_set_execution));
 	debugger->connect("clear_execution", callable_mp(this, &ScriptEditor::_clear_execution));
 	debugger->connect("breaked", callable_mp(this, &ScriptEditor::_breaked));
+	debugger->get_default_debugger()->connect("set_breakpoint", callable_mp(this, &ScriptEditor::_set_breakpoint));
+	debugger->get_default_debugger()->connect("clear_breakpoints", callable_mp(this, &ScriptEditor::_clear_breakpoints));
 
 	menu_hb->add_spacer();
 

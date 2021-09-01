@@ -155,6 +155,8 @@ public:
 	virtual void tag_saved_version() = 0;
 	virtual void reload(bool p_soft) {}
 	virtual Array get_breakpoints() = 0;
+	virtual void set_breakpoint(int p_line, bool p_enabled) = 0;
+	virtual void clear_breakpoints() = 0;
 	virtual void add_callback(const String &p_function, PackedStringArray p_args) = 0;
 	virtual void update_settings() = 0;
 	virtual void set_debugger_active(bool p_active) = 0;
@@ -374,6 +376,8 @@ class ScriptEditor : public PanelContainer {
 	void _breaked(bool p_breaked, bool p_can_debug);
 	void _update_window_menu();
 	void _script_created(Ref<Script> p_script);
+	void _set_breakpoint(REF p_scrpt, int p_line, bool p_enabled);
+	void _clear_breakpoints();
 
 	ScriptEditorBase *_get_current_editor() const;
 	Array _get_open_script_editors() const;

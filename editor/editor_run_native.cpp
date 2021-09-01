@@ -52,8 +52,8 @@ void EditorRunNative::_notification(int p_what) {
 					small_icon.instantiate();
 					small_icon->create_from_image(im);
 					MenuButton *mb = memnew(MenuButton);
-					mb->get_popup()->connect("id_pressed", callable_mp(this, &EditorRunNative::_run_native), varray(i));
-					mb->connect("pressed", callable_mp(this, &EditorRunNative::_run_native), varray(-1, i));
+					mb->get_popup()->connect("id_pressed", callable_mp(this, &EditorRunNative::run_native), varray(i));
+					mb->connect("pressed", callable_mp(this, &EditorRunNative::run_native), varray(-1, i));
 					mb->set_icon(small_icon);
 					add_child(mb);
 					menus[i] = mb;
@@ -93,22 +93,22 @@ void EditorRunNative::_notification(int p_what) {
 	}
 }
 
-void EditorRunNative::_run_native(int p_idx, int p_platform) {
+Error EditorRunNative::run_native(int p_idx, int p_platform) {
 	if (!EditorNode::get_singleton()->ensure_main_scene(true)) {
 		resume_idx = p_idx;
 		resume_platform = p_platform;
-		return;
+		return OK;
 	}
 
 	Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(p_platform);
-	ERR_FAIL_COND(eep.is_null());
+	ERR_FAIL_COND_V(eep.is_null(), ERR_UNAVAILABLE);
 
 	if (p_idx == -1) {
 		if (eep->get_options_count() == 1) {
 			menus[p_platform]->get_popup()->hide();
 			p_idx = 0;
 		} else {
-			return;
+			return ERR_INVALID_PARAMETER;
 		}
 	}
 
@@ -124,7 +124,7 @@ void EditorRunNative::_run_native(int p_idx, int p_platform) {
 
 	if (preset.is_null()) {
 		EditorNode::get_singleton()->show_warning(TTR("No runnable export preset found for this platform.\nPlease add a runnable preset in the Export menu or define an existing preset as runnable."));
-		return;
+		return ERR_UNAVAILABLE;
 	}
 
 	emit_signal(SNAME("native_run"), preset);
@@ -149,11 +149,11 @@ void EditorRunNative::_run_native(int p_idx, int p_platform) {
 		flags |= EditorExportPlatform::DEBUG_FLAG_VIEW_NAVIGATION;
 	}
 
-	eep->run(preset, p_idx, flags);
+	return eep->run(preset, p_idx, flags);
 }
 
 void EditorRunNative::resume_run_native() {
-	_run_native(resume_idx, resume_platform);
+	run_native(resume_idx, resume_platform);
 }
 
 void EditorRunNative::_bind_methods() {

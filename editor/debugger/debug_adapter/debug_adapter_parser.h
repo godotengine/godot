@@ -44,7 +44,7 @@ class DebugAdapterParser : public Object {
 private:
 	friend DebugAdapterProtocol;
 
-	_FORCE_INLINE_ bool is_valid_path(const String &p_path) {
+	_FORCE_INLINE_ bool is_valid_path(const String &p_path) const {
 		return p_path.begins_with(ProjectSettings::get_singleton()->get_resource_path());
 	}
 
@@ -60,17 +60,23 @@ protected:
 public:
 	// Requests
 	Dictionary req_initialize(const Dictionary &p_params) const;
-	Dictionary req_launch(const Dictionary &p_params);
+	Dictionary req_launch(const Dictionary &p_params) const;
+	Dictionary req_disconnect(const Dictionary &p_params) const;
+	Dictionary req_attach(const Dictionary &p_params) const;
+	Dictionary req_restart(const Dictionary &p_params) const;
 	Dictionary req_terminate(const Dictionary &p_params) const;
 	Dictionary req_pause(const Dictionary &p_params) const;
 	Dictionary req_continue(const Dictionary &p_params) const;
 	Dictionary req_threads(const Dictionary &p_params) const;
 	Dictionary req_stackTrace(const Dictionary &p_params) const;
-	Dictionary req_setBreakpoints(const Dictionary &p_params);
-	Dictionary req_scopes(const Dictionary &p_params);
+	Dictionary req_setBreakpoints(const Dictionary &p_params) const;
+	Dictionary req_breakpointLocations(const Dictionary &p_params) const;
+	Dictionary req_scopes(const Dictionary &p_params) const;
 	Dictionary req_variables(const Dictionary &p_params) const;
 	Dictionary req_next(const Dictionary &p_params) const;
 	Dictionary req_stepIn(const Dictionary &p_params) const;
+	Dictionary req_evaluate(const Dictionary &p_params) const;
+	Dictionary req_godot_put_msg(const Dictionary &p_params) const;
 
 	// Events
 	Dictionary ev_initialized() const;
@@ -83,6 +89,8 @@ public:
 	Dictionary ev_stopped_step() const;
 	Dictionary ev_continued() const;
 	Dictionary ev_output(const String &p_message) const;
+	Dictionary ev_custom_data(const String &p_msg, const Array &p_data) const;
+	Dictionary ev_breakpoint(const DAP::Breakpoint &p_breakpoint, const bool &p_enabled) const;
 };
 
 #endif
