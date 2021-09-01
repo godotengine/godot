@@ -434,14 +434,14 @@ void TabContainer::_notification(int p_what) {
 				}
 
 				int tab_width = tab_widths[i];
-				if (get_tab_disabled(index)) {
+				if (index == current) {
+					x_current = x;
+				} else if (get_tab_disabled(index)) {
 					if (rtl) {
 						_draw_tab(tab_disabled, font_disabled_color, index, size.width - (tabs_ofs_cache + x) - tab_width);
 					} else {
 						_draw_tab(tab_disabled, font_disabled_color, index, tabs_ofs_cache + x);
 					}
-				} else if (index == current) {
-					x_current = x;
 				} else {
 					if (rtl) {
 						_draw_tab(tab_unselected, font_unselected_color, index, size.width - (tabs_ofs_cache + x) - tab_width);
@@ -459,12 +459,13 @@ void TabContainer::_notification(int p_what) {
 				panel->draw(canvas, Rect2(0, header_height, size.width, size.height - header_height));
 			}
 
-			// Draw selected tab in front. only draw selected tab when it's in visible range.
+			// Draw selected tab in front. Only draw selected tab when it's in visible range.
 			if (tabs.size() > 0 && current - first_tab_cache < tab_widths.size() && current >= first_tab_cache) {
+				Ref<StyleBox> current_style_box = get_tab_disabled(current) ? tab_disabled : tab_selected;
 				if (rtl) {
-					_draw_tab(tab_selected, font_selected_color, current, size.width - (tabs_ofs_cache + x_current) - tab_widths[current]);
+					_draw_tab(current_style_box, font_selected_color, current, size.width - (tabs_ofs_cache + x_current) - tab_widths[current]);
 				} else {
-					_draw_tab(tab_selected, font_selected_color, current, tabs_ofs_cache + x_current);
+					_draw_tab(current_style_box, font_selected_color, current, tabs_ofs_cache + x_current);
 				}
 			}
 
@@ -640,8 +641,8 @@ void TabContainer::_on_mouse_exited() {
 
 int TabContainer::_get_tab_width(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, get_tab_count(), 0);
-	Control *control = Object::cast_to<Control>(_get_tabs()[p_index]);
-	if (!control || control->is_set_as_top_level() || get_tab_hidden(p_index)) {
+	Control *control = get_tab_control(p_index);
+	if (!control || get_tab_hidden(p_index)) {
 		return 0;
 	}
 
