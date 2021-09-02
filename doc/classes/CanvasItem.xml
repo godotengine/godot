@@ -456,6 +456,13 @@
 				Returns this item's transform in relation to the viewport.
 			</description>
 		</method>
+		<method name="get_visibility_layer_bit" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer" type="int" />
+			<description>
+				Returns an individual bit on the rendering visibility layer.
+			</description>
+		</method>
 		<method name="get_world_2d" qualifiers="const">
 			<return type="World2D" />
 			<description>
@@ -527,6 +534,14 @@
 				If [param enable] is [code]true[/code], this node will receive [constant NOTIFICATION_TRANSFORM_CHANGED] when its global transform changes.
 			</description>
 		</method>
+		<method name="set_visibility_layer_bit">
+			<return type="void" />
+			<param index="0" name="layer" type="int" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				Set/clear individual bits on the rendering visibility layer. This simplifies editing this [CanvasItem]'s visibility layer.
+			</description>
+		</method>
 		<method name="show">
 			<return type="void" />
 			<description>
@@ -564,6 +579,9 @@
 		</member>
 		<member name="use_parent_material" type="bool" setter="set_use_parent_material" getter="get_use_parent_material" default="false">
 			If [code]true[/code], the parent [CanvasItem]'s [member material] property is used as this one's material.
+		</member>
+		<member name="visibility_layer" type="int" setter="set_visibility_layer" getter="get_visibility_layer" default="1">
+			The rendering layer in which this [CanvasItem] is rendered by [Viewport] nodes. A [Viewport] will render a [CanvasItem] if it and all its parents share a layer with the [Viewport]'s canvas cull mask.
 		</member>
 		<member name="visible" type="bool" setter="set_visible" getter="is_visible" default="true">
 			If [code]true[/code], this [CanvasItem] is drawn. The node is only visible if all of its antecedents are visible as well (in other words, [method is_visible_in_tree] must return [code]true[/code]).
