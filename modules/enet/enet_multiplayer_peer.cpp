@@ -393,7 +393,9 @@ bool ENetMultiplayerPeer::is_server() const {
 }
 
 void ENetMultiplayerPeer::close_connection(uint32_t wait_usec) {
-	ERR_FAIL_COND_MSG(!_is_active(), "The multiplayer instance isn't currently active.");
+	if (!_is_active()) {
+		return;
+	}
 
 	_pop_current_packet();
 
