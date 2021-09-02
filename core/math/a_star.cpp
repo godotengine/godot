@@ -54,9 +54,8 @@ int AStar::get_available_point_id() const {
 }
 
 void AStar::add_point(int p_id, const Vector3 &p_pos, real_t p_weight_scale) {
-
-	ERR_FAIL_COND(p_id < 0);
-	ERR_FAIL_COND(p_weight_scale < 1);
+	ERR_FAIL_COND_MSG(p_id < 0, vformat("Can't add a point with negative id: %d.", p_id));
+	ERR_FAIL_COND_MSG(p_weight_scale < 1, vformat("Can't add a point with weight scale less than one: %f.", p_weight_scale));
 
 	Point *found_pt;
 	bool p_exists = points.lookup(p_id, found_pt);
@@ -81,7 +80,7 @@ Vector3 AStar::get_point_position(int p_id) const {
 
 	Point *p;
 	bool p_exists = points.lookup(p_id, p);
-	ERR_FAIL_COND_V(!p_exists, Vector3());
+	ERR_FAIL_COND_V_MSG(!p_exists, Vector3(), vformat("Can't get point's position. Point with id: %d doesn't exist.", p_id));
 
 	return p->pos;
 }
@@ -90,7 +89,7 @@ void AStar::set_point_position(int p_id, const Vector3 &p_pos) {
 
 	Point *p;
 	bool p_exists = points.lookup(p_id, p);
-	ERR_FAIL_COND(!p_exists);
+	ERR_FAIL_COND_MSG(!p_exists, vformat("Can't set point's position. Point with id: %d doesn't exist.", p_id));
 
 	p->pos = p_pos;
 }
@@ -99,7 +98,7 @@ real_t AStar::get_point_weight_scale(int p_id) const {
 
 	Point *p;
 	bool p_exists = points.lookup(p_id, p);
-	ERR_FAIL_COND_V(!p_exists, 0);
+	ERR_FAIL_COND_V_MSG(!p_exists, 0, vformat("Can't get point's weight scale. Point with id: %d doesn't exist.", p_id));
 
 	return p->weight_scale;
 }
@@ -108,8 +107,8 @@ void AStar::set_point_weight_scale(int p_id, real_t p_weight_scale) {
 
 	Point *p;
 	bool p_exists = points.lookup(p_id, p);
-	ERR_FAIL_COND(!p_exists);
-	ERR_FAIL_COND(p_weight_scale < 1);
+	ERR_FAIL_COND_MSG(!p_exists, vformat("Can't set point's weight scale. Point with id: %d doesn't exist.", p_id));
+	ERR_FAIL_COND_MSG(p_weight_scale < 1, vformat("Can't set point's weight scale less than one: %f.", p_weight_scale));
 
 	p->weight_scale = p_weight_scale;
 }
@@ -118,7 +117,7 @@ void AStar::remove_point(int p_id) {
 
 	Point *p;
 	bool p_exists = points.lookup(p_id, p);
-	ERR_FAIL_COND(!p_exists);
+	ERR_FAIL_COND_MSG(!p_exists, vformat("Can't remove point. Point with id: %d doesn't exist.", p_id));
 
 	for (OAHashMap<int, Point *>::Iterator it = p->neighbours.iter(); it.valid; it = p->neighbours.next_iter(it)) {
 
@@ -144,16 +143,15 @@ void AStar::remove_point(int p_id) {
 }
 
 void AStar::connect_points(int p_id, int p_with_id, bool bidirectional) {
-
-	ERR_FAIL_COND(p_id == p_with_id);
+	ERR_FAIL_COND_MSG(p_id == p_with_id, vformat("Can't connect point with id: %d to itself.", p_id));
 
 	Point *a;
 	bool from_exists = points.lookup(p_id, a);
-	ERR_FAIL_COND(!from_exists);
+	ERR_FAIL_COND_MSG(!from_exists, vformat("Can't connect points. Point with id: %d doesn't exist.", p_id));
 
 	Point *b;
 	bool to_exists = points.lookup(p_with_id, b);
-	ERR_FAIL_COND(!to_exists);
+	ERR_FAIL_COND_MSG(!to_exists, vformat("Can't connect points. Point with id: %d doesn't exist.", p_with_id));
 
 	a->neighbours.set(b->id, b);
 
@@ -184,11 +182,11 @@ void AStar::disconnect_points(int p_id, int p_with_id, bool bidirectional) {
 
 	Point *a;
 	bool a_exists = points.lookup(p_id, a);
-	ERR_FAIL_COND(!a_exists);
+	ERR_FAIL_COND_MSG(!a_exists, vformat("Can't disconnect points. Point with id: %d doesn't exist.", p_id));
 
 	Point *b;
 	bool b_exists = points.lookup(p_with_id, b);
-	ERR_FAIL_COND(!b_exists);
+	ERR_FAIL_COND_MSG(!b_exists, vformat("Can't disconnect points. Point with id: %d doesn't exist.", p_with_id));
 
 	Segment s(p_id, p_with_id);
 	int remove_direction = bidirectional ? (int)Segment::BIDIRECTIONAL : s.direction;
@@ -239,7 +237,7 @@ PoolVector<int> AStar::get_point_connections(int p_id) {
 
 	Point *p;
 	bool p_exists = points.lookup(p_id, p);
-	ERR_FAIL_COND_V(!p_exists, PoolVector<int>());
+	ERR_FAIL_COND_V_MSG(!p_exists, PoolVector<int>(), vformat("Can't get point's connections. Point with id: %d doesn't exist.", p_id));
 
 	PoolVector<int> point_list;
 
@@ -278,8 +276,8 @@ int AStar::get_point_capacity() const {
 }
 
 void AStar::reserve_space(int p_num_nodes) {
-	ERR_FAIL_COND_MSG(p_num_nodes <= 0, "New capacity must be greater than 0, was: " + itos(p_num_nodes) + ".");
-	ERR_FAIL_COND_MSG((uint32_t)p_num_nodes < points.get_capacity(), "New capacity must be greater than current capacity: " + itos(points.get_capacity()) + ", new was: " + itos(p_num_nodes) + ".");
+	ERR_FAIL_COND_MSG(p_num_nodes <= 0, vformat("New capacity must be greater than 0, new was: %d.", p_num_nodes));
+	ERR_FAIL_COND_MSG((uint32_t)p_num_nodes < points.get_capacity(), vformat("New capacity must be greater than current capacity: %d, new was: %d.", points.get_capacity(), p_num_nodes));
 	points.reserve(p_num_nodes);
 }
 
@@ -410,11 +408,11 @@ real_t AStar::_estimate_cost(int p_from_id, int p_to_id) {
 
 	Point *from_point;
 	bool from_exists = points.lookup(p_from_id, from_point);
-	ERR_FAIL_COND_V(!from_exists, 0);
+	ERR_FAIL_COND_V_MSG(!from_exists, 0, vformat("Can't estimate cost. Point with id: %d doesn't exist.", p_from_id));
 
 	Point *to_point;
 	bool to_exists = points.lookup(p_to_id, to_point);
-	ERR_FAIL_COND_V(!to_exists, 0);
+	ERR_FAIL_COND_V_MSG(!to_exists, 0, vformat("Can't estimate cost. Point with id: %d doesn't exist.", p_to_id));
 
 	return from_point->pos.distance_to(to_point->pos);
 }
@@ -426,11 +424,11 @@ real_t AStar::_compute_cost(int p_from_id, int p_to_id) {
 
 	Point *from_point;
 	bool from_exists = points.lookup(p_from_id, from_point);
-	ERR_FAIL_COND_V(!from_exists, 0);
+	ERR_FAIL_COND_V_MSG(!from_exists, 0, vformat("Can't compute cost. Point with id: %d doesn't exist.", p_from_id));
 
 	Point *to_point;
 	bool to_exists = points.lookup(p_to_id, to_point);
-	ERR_FAIL_COND_V(!to_exists, 0);
+	ERR_FAIL_COND_V_MSG(!to_exists, 0, vformat("Can't compute cost. Point with id: %d doesn't exist.", p_to_id));
 
 	return from_point->pos.distance_to(to_point->pos);
 }
@@ -439,11 +437,11 @@ PoolVector<Vector3> AStar::get_point_path(int p_from_id, int p_to_id) {
 
 	Point *a;
 	bool from_exists = points.lookup(p_from_id, a);
-	ERR_FAIL_COND_V(!from_exists, PoolVector<Vector3>());
+	ERR_FAIL_COND_V_MSG(!from_exists, PoolVector<Vector3>(), vformat("Can't get point path. Point with id: %d doesn't exist.", p_from_id));
 
 	Point *b;
 	bool to_exists = points.lookup(p_to_id, b);
-	ERR_FAIL_COND_V(!to_exists, PoolVector<Vector3>());
+	ERR_FAIL_COND_V_MSG(!to_exists, PoolVector<Vector3>(), vformat("Can't get point path. Point with id: %d doesn't exist.", p_to_id));
 
 	if (a == b) {
 		PoolVector<Vector3> ret;
@@ -487,11 +485,11 @@ PoolVector<int> AStar::get_id_path(int p_from_id, int p_to_id) {
 
 	Point *a;
 	bool from_exists = points.lookup(p_from_id, a);
-	ERR_FAIL_COND_V(!from_exists, PoolVector<int>());
+	ERR_FAIL_COND_V_MSG(!from_exists, PoolVector<int>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_from_id));
 
 	Point *b;
 	bool to_exists = points.lookup(p_to_id, b);
-	ERR_FAIL_COND_V(!to_exists, PoolVector<int>());
+	ERR_FAIL_COND_V_MSG(!to_exists, PoolVector<int>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_to_id));
 
 	if (a == b) {
 		PoolVector<int> ret;
@@ -535,7 +533,7 @@ void AStar::set_point_disabled(int p_id, bool p_disabled) {
 
 	Point *p;
 	bool p_exists = points.lookup(p_id, p);
-	ERR_FAIL_COND(!p_exists);
+	ERR_FAIL_COND_MSG(!p_exists, vformat("Can't set if point is disabled. Point with id: %d doesn't exist.", p_id));
 
 	p->enabled = !p_disabled;
 }
@@ -544,7 +542,7 @@ bool AStar::is_point_disabled(int p_id) const {
 
 	Point *p;
 	bool p_exists = points.lookup(p_id, p);
-	ERR_FAIL_COND_V(!p_exists, false);
+	ERR_FAIL_COND_V_MSG(!p_exists, false, vformat("Can't get if point is disabled. Point with id: %d doesn't exist.", p_id));
 
 	return !p->enabled;
 }
@@ -688,11 +686,11 @@ real_t AStar2D::_estimate_cost(int p_from_id, int p_to_id) {
 
 	AStar::Point *from_point;
 	bool from_exists = astar.points.lookup(p_from_id, from_point);
-	ERR_FAIL_COND_V(!from_exists, 0);
+	ERR_FAIL_COND_V_MSG(!from_exists, 0, vformat("Can't estimate cost. Point with id: %d doesn't exist.", p_from_id));
 
 	AStar::Point *to_point;
 	bool to_exists = astar.points.lookup(p_to_id, to_point);
-	ERR_FAIL_COND_V(!to_exists, 0);
+	ERR_FAIL_COND_V_MSG(!to_exists, 0, vformat("Can't estimate cost. Point with id: %d doesn't exist.", p_to_id));
 
 	return from_point->pos.distance_to(to_point->pos);
 }
@@ -704,11 +702,11 @@ real_t AStar2D::_compute_cost(int p_from_id, int p_to_id) {
 
 	AStar::Point *from_point;
 	bool from_exists = astar.points.lookup(p_from_id, from_point);
-	ERR_FAIL_COND_V(!from_exists, 0);
+	ERR_FAIL_COND_V_MSG(!from_exists, 0, vformat("Can't compute cost. Point with id: %d doesn't exist.", p_from_id));
 
 	AStar::Point *to_point;
 	bool to_exists = astar.points.lookup(p_to_id, to_point);
-	ERR_FAIL_COND_V(!to_exists, 0);
+	ERR_FAIL_COND_V_MSG(!to_exists, 0, vformat("Can't compute cost. Point with id: %d doesn't exist.", p_to_id));
 
 	return from_point->pos.distance_to(to_point->pos);
 }
@@ -717,11 +715,11 @@ PoolVector<Vector2> AStar2D::get_point_path(int p_from_id, int p_to_id) {
 
 	AStar::Point *a;
 	bool from_exists = astar.points.lookup(p_from_id, a);
-	ERR_FAIL_COND_V(!from_exists, PoolVector<Vector2>());
+	ERR_FAIL_COND_V_MSG(!from_exists, PoolVector<Vector2>(), vformat("Can't get point path. Point with id: %d doesn't exist.", p_from_id));
 
 	AStar::Point *b;
 	bool to_exists = astar.points.lookup(p_to_id, b);
-	ERR_FAIL_COND_V(!to_exists, PoolVector<Vector2>());
+	ERR_FAIL_COND_V_MSG(!to_exists, PoolVector<Vector2>(), vformat("Can't get point path. Point with id: %d doesn't exist.", p_to_id));
 
 	if (a == b) {
 		PoolVector<Vector2> ret;
@@ -765,11 +763,11 @@ PoolVector<int> AStar2D::get_id_path(int p_from_id, int p_to_id) {
 
 	AStar::Point *a;
 	bool from_exists = astar.points.lookup(p_from_id, a);
-	ERR_FAIL_COND_V(!from_exists, PoolVector<int>());
+	ERR_FAIL_COND_V_MSG(!from_exists, PoolVector<int>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_from_id));
 
 	AStar::Point *b;
 	bool to_exists = astar.points.lookup(p_to_id, b);
-	ERR_FAIL_COND_V(!to_exists, PoolVector<int>());
+	ERR_FAIL_COND_V_MSG(!to_exists, PoolVector<int>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_to_id));
 
 	if (a == b) {
 		PoolVector<int> ret;
