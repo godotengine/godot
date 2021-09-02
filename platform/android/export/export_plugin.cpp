@@ -977,6 +977,11 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 					Vector<int> feature_versions;
 
 					if (xr_mode_index == 1 /* XRMode.OVR */) {
+						// Set degrees of freedom
+						feature_names.push_back("android.hardware.vr.headtracking");
+						feature_required_list.push_back(true);
+						feature_versions.push_back(1);
+
 						// Check for hand tracking
 						int hand_tracking_index = p_preset->get("xr_features/hand_tracking"); // 0: none, 1: optional, 2: required
 						if (hand_tracking_index > 0) {
