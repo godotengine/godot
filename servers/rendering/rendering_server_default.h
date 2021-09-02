@@ -610,6 +610,8 @@ public:
 	FUNC2(viewport_set_disable_environment, RID, bool)
 	FUNC2(viewport_set_disable_3d, RID, bool)
 
+	FUNC2(viewport_set_canvas_cull_mask, RID, uint32_t)
+
 	FUNC2(viewport_attach_camera, RID, RID)
 	FUNC2(viewport_set_scenario, RID, RID)
 	FUNC2(viewport_attach_canvas, RID, RID)
@@ -827,6 +829,8 @@ public:
 
 	FUNC2(canvas_item_set_visible, RID, bool)
 	FUNC2(canvas_item_set_light_mask, RID, int)
+
+	FUNC2(canvas_item_set_visibility_layer, RID, uint32_t)
 
 	FUNC2(canvas_item_set_update_when_visible, RID, bool)
 

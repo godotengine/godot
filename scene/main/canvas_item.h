@@ -89,6 +89,7 @@ private:
 	List<CanvasItem *>::Element *C = nullptr;
 
 	int light_mask = 1;
+	uint32_t visibility_layer = 1;
 
 	Window *window = nullptr;
 	bool visible = true;
@@ -222,6 +223,12 @@ public:
 
 	void set_self_modulate(const Color &p_self_modulate);
 	Color get_self_modulate() const;
+
+	void set_visibility_layer(uint32_t p_visibility_layer);
+	uint32_t get_visibility_layer() const;
+
+	void set_visibility_layer_bit(uint32_t p_visibility_layer, bool p_enable);
+	bool get_visibility_layer_bit(uint32_t p_visibility_layer) const;
 
 	/* DRAWING API */
 

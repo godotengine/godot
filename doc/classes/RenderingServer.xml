@@ -499,6 +499,14 @@
 				Sets if the [CanvasItem] uses its parent's material.
 			</description>
 		</method>
+		<method name="canvas_item_set_visibility_layer">
+			<return type="void" />
+			<param index="0" name="item" type="RID" />
+			<param index="1" name="visibility_layer" type="int" />
+			<description>
+				Sets the rendering visibility layer associated with this [CanvasItem]. Only [Viewport] nodes with a matching rendering mask will render this [CanvasItem].
+			</description>
+		</method>
 		<method name="canvas_item_set_visibility_notifier">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
@@ -3141,6 +3149,14 @@
 			<param index="1" name="active" type="bool" />
 			<description>
 				If [code]true[/code], sets the viewport active, else sets it inactive.
+			</description>
+		</method>
+		<method name="viewport_set_canvas_cull_mask">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="canvas_cull_mask" type="int" />
+			<description>
+				Sets the rendering mask associated with this [Viewport]. Only [CanvasItem] nodes with a matching rendering visibility layer will be rendered by this [Viewport].
 			</description>
 		</method>
 		<method name="viewport_set_canvas_stacking">
