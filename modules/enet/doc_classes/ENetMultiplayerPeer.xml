@@ -25,7 +25,7 @@
 			<return type="void" />
 			<argument index="0" name="wait_usec" type="int" default="100" />
 			<description>
-				Closes the connection. Throws an error if no connection is currently established. If this is a server it tries to notify all clients before forcibly disconnecting them. If this is a client it simply closes the connection to the server.
+				Closes the connection. Prints an error message if no connection is currently established. If this is a server it tries to notify all clients before forcibly disconnecting them. If this is a client it simply closes the connection to the server.
 			</description>
 		</method>
 		<method name="create_client">
