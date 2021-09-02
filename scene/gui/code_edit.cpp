@@ -1400,7 +1400,8 @@ void CodeEdit::fold_line(int p_line) {
 	}
 
 	/* Find the last line to be hidden. */
-	int end_line = get_line_count();
+	const int line_count = get_line_count() - 1;
+	int end_line = line_count;
 
 	int in_comment = is_in_comment(p_line);
 	int in_string = (in_comment == -1) ? is_in_string(p_line) : -1;
@@ -1408,7 +1409,7 @@ void CodeEdit::fold_line(int p_line) {
 		end_line = get_delimiter_end_position(p_line, get_line(p_line).size() - 1).y;
 		/* End line is the same therefore we have a block. */
 		if (end_line == p_line) {
-			for (int i = p_line + 1; i < get_line_count(); i++) {
+			for (int i = p_line + 1; i <= line_count; i++) {
 				if ((in_string != -1 && is_in_string(i) == -1) || (in_comment != -1 && is_in_comment(i) == -1)) {
 					end_line = i - 1;
 					break;
@@ -1417,14 +1418,27 @@ void CodeEdit::fold_line(int p_line) {
 		}
 	} else {
 		int start_indent = get_indent_level(p_line);
-		for (int i = p_line + 1; i < get_line_count(); i++) {
+		for (int i = p_line + 1; i <= line_count; i++) {
 			if (get_line(p_line).strip_edges().size() == 0 || is_in_string(i) != -1 || is_in_comment(i) != -1) {
 				end_line = i;
 				continue;
 			}
 
-			if (get_indent_level(i) <= start_indent && get_line(i).strip_edges().size() != 0) {
+			if (i == line_count) {
+				/* Do not fold empty last line of script if any */
+				end_line = i;
+				if (get_line(i).strip_edges().size() == 0) {
+					end_line--;
+				}
+				break;
+			}
+
+			if ((get_indent_level(i) <= start_indent && get_line(i).strip_edges().size() != 0)) {
+				/* Keep an empty line unfolded if any */
 				end_line = i - 1;
+				if (get_line(i - 1).strip_edges().size() == 0 && i - 2 > p_line) {
+					end_line = i - 2;
+				}
 				break;
 			}
 		}
