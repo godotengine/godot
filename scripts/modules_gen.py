@@ -43,24 +43,21 @@ def __make_register_module_types_cpp(module_db_file: dict, build_root: str, outp
     for module in mdb.get_modules():
         name = module.name
         path = module.path
-        try:
-            with open(os.path.join(build_root, path, "register_types.h")):
-                includes_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
-                includes_cpp += '#include "' + path + '/register_types.h"\n'
-                includes_cpp += "#endif\n"
-                preregister_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
-                preregister_cpp += "#ifdef MODULE_" + name.upper() + "_HAS_PREREGISTER\n"
-                preregister_cpp += "\tpreregister_" + name + "_types();\n"
-                preregister_cpp += "#endif\n"
-                preregister_cpp += "#endif\n"
-                register_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
-                register_cpp += "\tregister_" + name + "_types();\n"
-                register_cpp += "#endif\n"
-                unregister_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
-                unregister_cpp += "\tunregister_" + name + "_types();\n"
-                unregister_cpp += "#endif\n"
-        except OSError:
-            pass
+        with open(os.path.join(build_root, path, "register_types.h")):
+            includes_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
+            includes_cpp += '#include "' + path + '/register_types.h"\n'
+            includes_cpp += "#endif\n"
+            preregister_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
+            preregister_cpp += "#ifdef MODULE_" + name.upper() + "_HAS_PREREGISTER\n"
+            preregister_cpp += "\tpreregister_" + name + "_types();\n"
+            preregister_cpp += "#endif\n"
+            preregister_cpp += "#endif\n"
+            register_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
+            register_cpp += "\tregister_" + name + "_types();\n"
+            register_cpp += "#endif\n"
+            unregister_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
+            unregister_cpp += "\tunregister_" + name + "_types();\n"
+            unregister_cpp += "#endif\n"
 
     modules_cpp = """// register_module_types.gen.cpp
 /* THIS FILE IS GENERATED DO NOT EDIT */
