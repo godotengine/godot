@@ -528,6 +528,33 @@ void TextEdit::_update_selection_mode_line() {
 	click_select_held->start();
 }
 
+void TextEdit::_update_minimap_hover() {
+	const Point2 mp = get_local_mouse_position();
+	const int xmargin_end = get_size().width - cache.style_normal->get_margin(MARGIN_RIGHT);
+
+	const bool hovering_sidebar = mp.x > xmargin_end - minimap_width && mp.x < xmargin_end;
+	if (!hovering_sidebar) {
+		if (hovering_minimap) {
+			// Only redraw if the hovering status changed.
+			hovering_minimap = false;
+			update();
+		}
+
+		// Return early to avoid running the operations below when not needed.
+		return;
+	}
+
+	int row;
+	_get_minimap_mouse_row(Point2i(mp.x, mp.y), row);
+
+	const bool new_hovering_minimap = row >= get_first_visible_line() && row <= get_last_full_visible_line();
+	if (new_hovering_minimap != hovering_minimap) {
+		// Only redraw if the hovering status changed.
+		hovering_minimap = new_hovering_minimap;
+		update();
+	}
+}
+
 void TextEdit::_update_minimap_click() {
 	Point2 mp = get_local_mouse_position();
 
@@ -916,8 +943,19 @@ void TextEdit::_notification(int p_what) {
 				}
 				int minimap_draw_amount = minimap_visible_lines + times_line_wraps(minimap_line + 1);
 
-				// draw the minimap
-				Color viewport_color = (cache.background_color.get_v() < 0.5) ? Color(1, 1, 1, 0.1) : Color(0, 0, 0, 0.1);
+				// Draw the minimap.
+
+				// Add visual feedback when dragging or hovering the the visible area rectangle.
+				float viewport_alpha;
+				if (dragging_minimap) {
+					viewport_alpha = 0.25;
+				} else if (hovering_minimap) {
+					viewport_alpha = 0.175;
+				} else {
+					viewport_alpha = 0.1;
+				}
+
+				const Color viewport_color = (cache.background_color.get_v() < 0.5) ? Color(1, 1, 1, viewport_alpha) : Color(0, 0, 0, viewport_alpha);
 				VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), viewport_offset_y, cache.minimap_width, viewport_height), viewport_color);
 				for (int i = 0; i < minimap_draw_amount; i++) {
 					minimap_line++;
@@ -2584,6 +2622,10 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					update();
 				}
 			}
+		}
+
+		if (draw_minimap && !dragging_selection) {
+			_update_minimap_hover();
 		}
 
 		if (mm->get_button_mask() & BUTTON_MASK_LEFT && get_viewport()->gui_get_drag_data() == Variant()) { // Ignore if dragging.
@@ -7352,6 +7394,7 @@ TextEdit::TextEdit() {
 	smooth_scroll_enabled = false;
 	scrolling = false;
 	minimap_clicked = false;
+	hovering_minimap = false;
 	dragging_minimap = false;
 	can_drag_minimap = false;
 	minimap_scroll_ratio = 0;

@@ -392,6 +392,7 @@ private:
 	bool smooth_scroll_enabled;
 	bool scrolling;
 	bool dragging_selection;
+	bool hovering_minimap;
 	bool dragging_minimap;
 	bool can_drag_minimap;
 	bool minimap_clicked;
@@ -476,6 +477,7 @@ private:
 	void _update_selection_mode_word();
 	void _update_selection_mode_line();
 
+	void _update_minimap_hover();
 	void _update_minimap_click();
 	void _update_minimap_drag();
 	void _scroll_up(real_t p_delta);
