@@ -592,7 +592,7 @@ namespace Godot
         private static readonly Vector3 _down = new Vector3(0, -1, 0);
         private static readonly Vector3 _right = new Vector3(1, 0, 0);
         private static readonly Vector3 _left = new Vector3(-1, 0, 0);
-        private static readonly Vector3 _forward = new Vector3(0, 0, -1);
+        private static readonly Vector3 _front = new Vector3(0, 0, -1);
         private static readonly Vector3 _back = new Vector3(0, 0, 1);
 
         /// <summary>
@@ -634,11 +634,11 @@ namespace Godot
         /// <value>Equivalent to `new Vector3(-1, 0, 0)`</value>
         public static Vector3 Left { get { return _left; } }
         /// <summary>
-        /// Forward unit vector. Represents the local direction of forward,
+        /// Front unit vector. Represents the local direction of front,
         /// and the global direction of north.
         /// </summary>
         /// <value>Equivalent to `new Vector3(0, 0, -1)`</value>
-        public static Vector3 Forward { get { return _forward; } }
+        public static Vector3 Front { get { return _front; } }
         /// <summary>
         /// Back unit vector. Represents the local direction of back,
         /// and the global direction of south.
