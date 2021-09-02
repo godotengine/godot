@@ -1201,11 +1201,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// TooltipPanel
 	Ref<StyleBoxFlat> style_tooltip = style_popup->duplicate();
 	style_tooltip->set_shadow_size(0);
-	style_tooltip->set_default_margin(SIDE_LEFT, default_margin_size * EDSCALE);
+	style_tooltip->set_default_margin(SIDE_LEFT, default_margin_size * EDSCALE * 0.5);
 	style_tooltip->set_default_margin(SIDE_TOP, default_margin_size * EDSCALE * 0.5);
-	style_tooltip->set_default_margin(SIDE_RIGHT, default_margin_size * EDSCALE);
+	style_tooltip->set_default_margin(SIDE_RIGHT, default_margin_size * EDSCALE * 0.5);
 	style_tooltip->set_default_margin(SIDE_BOTTOM, default_margin_size * EDSCALE * 0.5);
-	style_tooltip->set_bg_color(mono_color.inverted() * Color(1, 1, 1, 0.9));
+	style_tooltip->set_bg_color(dark_color_3 * Color(0.8, 0.8, 0.8, 0.9));
 	style_tooltip->set_border_width_all(0);
 	theme->set_color("font_color", "TooltipLabel", font_hover_color);
 	theme->set_color("font_color_shadow", "TooltipLabel", Color(0, 0, 0, 0));
