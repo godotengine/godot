@@ -2186,6 +2186,13 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 	p_script->tool = parser->is_tool();
 	p_script->name = p_class->identifier ? p_class->identifier->name : "";
 
+	if (p_script->name != "") {
+		if (ClassDB::class_exists(p_script->name) && ClassDB::is_class_exposed(p_script->name)) {
+			_set_error("The class '" + p_script->name + "' shadows a native class", p_class);
+			return ERR_ALREADY_EXISTS;
+		}
+	}
+
 	Ref<GDScriptNativeClass> native;
 
 	GDScriptDataType base_type = _gdtype_from_datatype(p_class->base_type);
@@ -2336,28 +2343,6 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 			case GDScriptParser::ClassNode::Member::SIGNAL: {
 				const GDScriptParser::SignalNode *signal = member.signal;
 				StringName name = signal->identifier->name;
-
-				GDScript *c = p_script;
-
-				while (c) {
-					if (c->_signals.has(name)) {
-						_set_error("Signal '" + name + "' redefined (in current or parent class)", p_class);
-						return ERR_ALREADY_EXISTS;
-					}
-
-					if (c->base.is_valid()) {
-						c = c->base.ptr();
-					} else {
-						c = nullptr;
-					}
-				}
-
-				if (native.is_valid()) {
-					if (ClassDB::has_signal(native->get_name(), name)) {
-						_set_error("Signal '" + name + "' redefined (original in native class '" + String(native->get_name()) + "')", p_class);
-						return ERR_ALREADY_EXISTS;
-					}
-				}
 
 				Vector<StringName> parameters_names;
 				parameters_names.resize(signal->parameters.size());

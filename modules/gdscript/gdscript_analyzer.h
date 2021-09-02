@@ -44,6 +44,12 @@ class GDScriptAnalyzer {
 	const GDScriptParser::EnumNode *current_enum = nullptr;
 	List<const GDScriptParser::LambdaNode *> lambda_stack;
 
+	// Tests for detecting invalid overloading of script members
+	static _FORCE_INLINE_ bool has_member_name_conflict_in_script_class(const StringName &p_name, const GDScriptParser::ClassNode *p_current_class_node);
+	static _FORCE_INLINE_ bool has_member_name_conflict_in_native_type(const StringName &p_name, const StringName &p_native_type_string);
+	Error check_native_member_name_conflict(const StringName &p_member_name, const GDScriptParser::Node *p_member_node, const StringName &p_native_type_string);
+	Error check_class_member_name_conflict(const GDScriptParser::ClassNode *p_class_node, const StringName &p_member_name, const GDScriptParser::Node *p_member_node);
+
 	Error resolve_inheritance(GDScriptParser::ClassNode *p_class, bool p_recursive = true);
 	GDScriptParser::DataType resolve_datatype(GDScriptParser::TypeNode *p_type);
 

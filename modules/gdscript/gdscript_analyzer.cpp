@@ -132,6 +132,76 @@ static GDScriptParser::DataType make_builtin_meta_type(Variant::Type p_type) {
 	return type;
 }
 
+bool GDScriptAnalyzer::has_member_name_conflict_in_script_class(const StringName &p_member_name, const GDScriptParser::ClassNode *p_class) {
+	if (p_class->members_indices.has(p_member_name)) {
+		int index = p_class->members_indices[p_member_name];
+		const GDScriptParser::ClassNode::Member *member = &p_class->members[index];
+
+		if (member->type == GDScriptParser::ClassNode::Member::VARIABLE ||
+				member->type == GDScriptParser::ClassNode::Member::CONSTANT ||
+				member->type == GDScriptParser::ClassNode::Member::ENUM ||
+				member->type == GDScriptParser::ClassNode::Member::ENUM_VALUE ||
+				member->type == GDScriptParser::ClassNode::Member::CLASS ||
+				member->type == GDScriptParser::ClassNode::Member::SIGNAL) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool GDScriptAnalyzer::has_member_name_conflict_in_native_type(const StringName &p_member_name, const StringName &p_native_type_string) {
+	if (ClassDB::has_signal(p_native_type_string, p_member_name)) {
+		return true;
+	}
+	if (ClassDB::has_property(p_native_type_string, p_member_name)) {
+		return true;
+	}
+	if (ClassDB::has_integer_constant(p_native_type_string, p_member_name)) {
+		return true;
+	}
+
+	return false;
+}
+
+Error GDScriptAnalyzer::check_native_member_name_conflict(const StringName &p_member_name, const GDScriptParser::Node *p_member_node, const StringName &p_native_type_string) {
+	if (has_member_name_conflict_in_native_type(p_member_name, p_native_type_string)) {
+		push_error(vformat(R"(Member "%s" redefined (original in native class '%s'))", p_member_name, p_native_type_string), p_member_node);
+		return ERR_PARSE_ERROR;
+	}
+
+	if (class_exists(p_member_name)) {
+		push_error(vformat(R"(The class "%s" shadows a native class.)", p_member_name), p_member_node);
+		return ERR_PARSE_ERROR;
+	}
+
+	return OK;
+}
+
+Error GDScriptAnalyzer::check_class_member_name_conflict(const GDScriptParser::ClassNode *p_class_node, const StringName &p_member_name, const GDScriptParser::Node *p_member_node) {
+	const GDScriptParser::DataType *current_data_type = &p_class_node->base_type;
+	while (current_data_type && current_data_type->kind == GDScriptParser::DataType::Kind::CLASS) {
+		GDScriptParser::ClassNode *current_class_node = current_data_type->class_type;
+		if (has_member_name_conflict_in_script_class(p_member_name, current_class_node)) {
+			push_error(vformat(R"(The member "%s" already exists in a parent class.)", p_member_name),
+					p_member_node);
+			return ERR_PARSE_ERROR;
+		}
+		current_data_type = &current_class_node->base_type;
+	}
+
+	if (current_data_type && current_data_type->kind == GDScriptParser::DataType::Kind::NATIVE) {
+		if (current_data_type->native_type != StringName("")) {
+			return check_native_member_name_conflict(
+					p_member_name,
+					p_member_node,
+					current_data_type->native_type);
+		}
+	}
+
+	return OK;
+}
+
 Error GDScriptAnalyzer::resolve_inheritance(GDScriptParser::ClassNode *p_class, bool p_recursive) {
 	if (p_class->base_type.is_set()) {
 		// Already resolved
@@ -525,6 +595,8 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 
 		switch (member.type) {
 			case GDScriptParser::ClassNode::Member::VARIABLE: {
+				check_class_member_name_conflict(p_class, member.variable->identifier->name, member.variable);
+
 				GDScriptParser::DataType datatype;
 				datatype.kind = GDScriptParser::DataType::VARIANT;
 				datatype.type_source = GDScriptParser::DataType::UNDETECTED;
@@ -598,6 +670,8 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 				}
 			} break;
 			case GDScriptParser::ClassNode::Member::CONSTANT: {
+				check_class_member_name_conflict(p_class, member.constant->identifier->name, member.constant);
+
 				reduce_expression(member.constant->initializer);
 
 				GDScriptParser::DataType specified_type;
@@ -647,6 +721,8 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 				}
 			} break;
 			case GDScriptParser::ClassNode::Member::SIGNAL: {
+				check_class_member_name_conflict(p_class, member.signal->identifier->name, member.signal);
+
 				for (int j = 0; j < member.signal->parameters.size(); j++) {
 					GDScriptParser::DataType signal_type = resolve_datatype(member.signal->parameters[j]->datatype_specifier);
 					signal_type.is_meta_type = false;
@@ -666,6 +742,8 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 				}
 			} break;
 			case GDScriptParser::ClassNode::Member::ENUM: {
+				check_class_member_name_conflict(p_class, member.m_enum->identifier->name, member.m_enum);
+
 				GDScriptParser::DataType enum_type;
 				enum_type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 				enum_type.kind = GDScriptParser::DataType::ENUM;
@@ -717,6 +795,8 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 				break;
 			case GDScriptParser::ClassNode::Member::ENUM_VALUE: {
 				if (member.enum_value.custom_value) {
+					check_class_member_name_conflict(p_class, member.enum_value.identifier->name, member.enum_value.custom_value);
+
 					current_enum = member.enum_value.parent_enum;
 					reduce_expression(member.enum_value.custom_value);
 					current_enum = nullptr;
@@ -730,6 +810,8 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 						member.enum_value.resolved = true;
 					}
 				} else {
+					check_class_member_name_conflict(p_class, member.enum_value.identifier->name, member.enum_value.parent_enum);
+
 					if (member.enum_value.index > 0) {
 						member.enum_value.value = member.enum_value.parent_enum->values[member.enum_value.index - 1].value + 1;
 					} else {
@@ -742,7 +824,8 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 				p_class->members.write[i].enum_value = member.enum_value;
 			} break;
 			case GDScriptParser::ClassNode::Member::CLASS:
-				break; // Done later.
+				check_class_member_name_conflict(p_class, member.m_class->identifier->name, member.m_class);
+				break;
 			case GDScriptParser::ClassNode::Member::UNDEFINED:
 				ERR_PRINT("Trying to resolve undefined member.");
 				break;
