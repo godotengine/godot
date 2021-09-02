@@ -110,7 +110,7 @@ private:
 	void _sanitize_points();
 	void _update_aabb();
 	static Vector3 _vec2to3(const Vector2 &p_pt) { return Vector3(p_pt.x, p_pt.y, 0.0); }
-	void _sort_verts_clockwise(bool portal_plane_convention, Vector<Vector3> &r_verts);
+	void _sort_verts_clockwise(const Vector3 &p_portal_normal, Vector<Vector3> &r_verts);
 	Plane _plane_from_points_newell(const Vector<Vector3> &p_pts);
 	void resolve_links(const LocalVector<Room *, int32_t> &p_rooms, const RID &p_from_room_rid);
 	void _changed();

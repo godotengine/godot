@@ -360,6 +360,7 @@ bool Portal::create_from_mesh_instance(const MeshInstance *p_mi) {
 
 	Array arrays = rmesh->surface_get_arrays(0);
 	PoolVector<Vector3> vertices = arrays[VS::ARRAY_VERTEX];
+	PoolVector<int> indices = arrays[VS::ARRAY_INDEX];
 
 	// get the model space verts and find center
 	int num_source_points = vertices.size();
@@ -391,9 +392,28 @@ bool Portal::create_from_mesh_instance(const MeshInstance *p_mi) {
 		}
 	}
 
+	ERR_FAIL_COND_V(pts_world.size() < 3, false);
+
+	// create the normal from 3 vertices .. either indexed, or use the first 3
+	Vector3 three_pts[3];
+	if (indices.size() >= 3) {
+		for (int n = 0; n < 3; n++) {
+			ERR_FAIL_COND_V(indices[n] >= num_source_points, false);
+			three_pts[n] = tr_source.xform(vertices[indices[n]]);
+		}
+	} else {
+		for (int n = 0; n < 3; n++) {
+			three_pts[n] = pts_world[n];
+		}
+	}
+	Vector3 normal = Plane(three_pts[0], three_pts[1], three_pts[2]).normal;
+	if (_portal_plane_convention) {
+		normal = -normal;
+	}
+
 	// get the verts sorted with winding, assume that the triangle initial winding
 	// tells us the normal and hence which way the world space portal should be facing
-	_sort_verts_clockwise(_portal_plane_convention, pts_world);
+	_sort_verts_clockwise(normal, pts_world);
 
 	// back calculate the plane from *all* the portal points, this will give us a nice average plane
 	// (in case of wonky portals where artwork isn't bang on)
@@ -401,7 +421,14 @@ bool Portal::create_from_mesh_instance(const MeshInstance *p_mi) {
 
 	// change the portal transform to match our plane and the center of the portal
 	Transform tr_global;
-	tr_global.set_look_at(Vector3(0, 0, 0), _plane.normal, Vector3(0, 1, 0));
+
+	// prevent warnings when poly normal matches the up vector
+	Vector3 up(0, 1, 0);
+	if (Math::abs(_plane.normal.dot(up)) > 0.9) {
+		up = Vector3(1, 0, 0);
+	}
+
+	tr_global.set_look_at(Vector3(0, 0, 0), _plane.normal, up);
 	tr_global.origin = _pt_center_world;
 
 	// We can't directly set this global transform on the portal, because the parent node may already
@@ -558,22 +585,11 @@ void Portal::_sanitize_points() {
 	_update_aabb();
 }
 
-void Portal::_sort_verts_clockwise(bool portal_plane_convention, Vector<Vector3> &r_verts) {
+void Portal::_sort_verts_clockwise(const Vector3 &p_portal_normal, Vector<Vector3> &r_verts) {
 	// cannot sort less than 3 verts
 	if (r_verts.size() < 3) {
 		return;
 	}
-
-	// assume first 3 points determine the desired normal, if these first 3 points are garbage,
-	// the routine will not work.
-	Plane portal_plane;
-	if (portal_plane_convention) {
-		portal_plane = Plane(r_verts[0], r_verts[2], r_verts[1]);
-	} else {
-		portal_plane = Plane(r_verts[0], r_verts[1], r_verts[2]);
-	}
-
-	const Vector3 &portal_normal = portal_plane.normal;
 
 	// find centroid
 	int num_points = r_verts.size();
@@ -590,7 +606,7 @@ void Portal::_sort_verts_clockwise(bool portal_plane_convention, Vector<Vector3>
 		Vector3 a = r_verts[n] - _pt_center_world;
 		a.normalize();
 
-		Plane p = Plane(r_verts[n], _pt_center_world, _pt_center_world + portal_normal);
+		Plane p = Plane(r_verts[n], _pt_center_world, _pt_center_world + p_portal_normal);
 
 		double smallest_angle = -1;
 		int smallest = -1;
@@ -623,7 +639,7 @@ void Portal::_sort_verts_clockwise(bool portal_plane_convention, Vector<Vector3>
 	// the wrong way.
 	Plane plane = Plane(r_verts[0], r_verts[1], r_verts[2]);
 
-	if (portal_normal.dot(plane.normal) < 0.0f) {
+	if (p_portal_normal.dot(plane.normal) < 0.0) {
 		// reverse winding order of verts
 		r_verts.invert();
 	}
