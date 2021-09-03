@@ -1400,7 +1400,7 @@ void CodeEdit::fold_line(int p_line) {
 	}
 
 	/* Find the last line to be hidden. */
-	int end_line = get_line_count();
+	int end_line = get_line_count() - 1;
 
 	int in_comment = is_in_comment(p_line);
 	int in_string = (in_comment == -1) ? is_in_string(p_line) : -1;
