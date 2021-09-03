@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 proto = """
 #define GDVIRTUAL$VER($RET m_name $ARG) \\
 StringName _gdvirtual_##m_name##_sn = #m_name;\\
