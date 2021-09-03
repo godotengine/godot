@@ -3,26 +3,26 @@ using System;
 namespace Godot
 {
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Field | AttributeTargets.Property)]
-    public class RemoteAttribute : Attribute {}
+    public class RemoteAttribute : Attribute { }
 
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Field | AttributeTargets.Property)]
-    public class SyncAttribute : Attribute {}
+    public class SyncAttribute : Attribute { }
 
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Field | AttributeTargets.Property)]
-    public class MasterAttribute : Attribute {}
+    public class MasterAttribute : Attribute { }
 
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Field | AttributeTargets.Property)]
-    public class PuppetAttribute : Attribute {}
+    public class PuppetAttribute : Attribute { }
 
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Field | AttributeTargets.Property)]
-    public class SlaveAttribute : Attribute {}
+    public class SlaveAttribute : Attribute { }
 
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Field | AttributeTargets.Property)]
-    public class RemoteSyncAttribute : Attribute {}
+    public class RemoteSyncAttribute : Attribute { }
 
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Field | AttributeTargets.Property)]
-    public class MasterSyncAttribute : Attribute {}
+    public class MasterSyncAttribute : Attribute { }
 
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Field | AttributeTargets.Property)]
-    public class PuppetSyncAttribute : Attribute {}
+    public class PuppetSyncAttribute : Attribute { }
 }
