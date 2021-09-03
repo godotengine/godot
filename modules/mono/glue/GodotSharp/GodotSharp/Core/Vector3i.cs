@@ -30,10 +30,12 @@ namespace Godot
         /// The vector's X component. Also accessible by using the index position `[0]`.
         /// </summary>
         public int x;
+
         /// <summary>
         /// The vector's Y component. Also accessible by using the index position `[1]`.
         /// </summary>
         public int y;
+
         /// <summary>
         /// The vector's Z component. Also accessible by using the index position `[2]`.
         /// </summary>

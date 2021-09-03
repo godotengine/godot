@@ -132,7 +132,9 @@ namespace Godot
             Vector3 destinationLocation = transform.origin;
 
             var interpolated = new Transform3D();
-            interpolated.basis.SetQuaternionScale(sourceRotation.Slerp(destinationRotation, weight).Normalized(), sourceScale.Lerp(destinationScale, weight));
+            Quaternion quaternion = sourceRotation.Slerp(destinationRotation, weight).Normalized();
+            Vector3 scale = sourceScale.Lerp(destinationScale, weight);
+            interpolated.basis.SetQuaternionScale(quaternion, scale);
             interpolated.origin = sourceLocation.Lerp(destinationLocation, weight);
 
             return interpolated;
@@ -165,7 +167,7 @@ namespace Godot
         /// <returns>The resulting transform.</returns>
         public Transform3D LookingAt(Vector3 target, Vector3 up)
         {
-            var t = this;
+            Transform3D t = this;
             t.SetLookAt(origin, target, up);
             return t;
         }
@@ -273,9 +275,9 @@ namespace Godot
 
             return new Vector3
             (
-                basis.Row0[0] * vInv.x + basis.Row1[0] * vInv.y + basis.Row2[0] * vInv.z,
-                basis.Row0[1] * vInv.x + basis.Row1[1] * vInv.y + basis.Row2[1] * vInv.z,
-                basis.Row0[2] * vInv.x + basis.Row1[2] * vInv.y + basis.Row2[2] * vInv.z
+                (basis.Row0[0] * vInv.x) + (basis.Row1[0] * vInv.y) + (basis.Row2[0] * vInv.z),
+                (basis.Row0[1] * vInv.x) + (basis.Row1[1] * vInv.y) + (basis.Row2[1] * vInv.z),
+                (basis.Row0[2] * vInv.x) + (basis.Row1[2] * vInv.y) + (basis.Row2[2] * vInv.z)
             );
         }
 

@@ -72,7 +72,7 @@ namespace Godot
             if (godotObject == null)
                 throw new ArgumentNullException(nameof(godotObject));
 
-            this.Value = godotObject;
+            Value = godotObject;
         }
 
         public override IEnumerable<string> GetDynamicMemberNames()
@@ -181,16 +181,16 @@ namespace Godot
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static string[] godot_icall_DynamicGodotObject_SetMemberList(IntPtr godotObject);
+        internal static extern string[] godot_icall_DynamicGodotObject_SetMemberList(IntPtr godotObject);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static bool godot_icall_DynamicGodotObject_InvokeMember(IntPtr godotObject, string name, object[] args, out object result);
+        internal static extern bool godot_icall_DynamicGodotObject_InvokeMember(IntPtr godotObject, string name, object[] args, out object result);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static bool godot_icall_DynamicGodotObject_GetMember(IntPtr godotObject, string name, out object result);
+        internal static extern bool godot_icall_DynamicGodotObject_GetMember(IntPtr godotObject, string name, out object result);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static bool godot_icall_DynamicGodotObject_SetMember(IntPtr godotObject, string name, object value);
+        internal static extern bool godot_icall_DynamicGodotObject_SetMember(IntPtr godotObject, string name, object value);
 
         #region We don't override these methods
 

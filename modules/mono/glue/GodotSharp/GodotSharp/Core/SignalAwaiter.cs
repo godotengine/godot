@@ -5,9 +5,9 @@ namespace Godot
 {
     public class SignalAwaiter : IAwaiter<object[]>, IAwaitable<object[]>
     {
-        private bool completed;
-        private object[] result;
-        private Action action;
+        private bool _completed;
+        private object[] _result;
+        private Action _action;
 
         public SignalAwaiter(Object source, StringName signal, Object target)
         {
@@ -15,24 +15,24 @@ namespace Godot
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static Error godot_icall_SignalAwaiter_connect(IntPtr source, IntPtr signal, IntPtr target, SignalAwaiter awaiter);
+        internal static extern Error godot_icall_SignalAwaiter_connect(IntPtr source, IntPtr signal, IntPtr target, SignalAwaiter awaiter);
 
         public bool IsCompleted
         {
             get
             {
-                return completed;
+                return _completed;
             }
         }
 
         public void OnCompleted(Action action)
         {
-            this.action = action;
+            this._action = action;
         }
 
         public object[] GetResult()
         {
-            return result;
+            return _result;
         }
 
         public IAwaiter<object[]> GetAwaiter()
@@ -42,13 +42,9 @@ namespace Godot
 
         internal void SignalCallback(object[] args)
         {
-            completed = true;
-            result = args;
-
-            if (action != null)
-            {
-                action();
-            }
+            _completed = true;
+            _result = args;
+            _action?.Invoke();
         }
     }
 }

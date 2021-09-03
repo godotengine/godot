@@ -29,6 +29,7 @@ namespace Godot
         /// The vector's X component. Also accessible by using the index position `[0]`.
         /// </summary>
         public real_t x;
+
         /// <summary>
         /// The vector's Y component. Also accessible by using the index position `[1]`.
         /// </summary>
@@ -177,7 +178,7 @@ namespace Godot
         /// <returns>The cross product value.</returns>
         public real_t Cross(Vector2 b)
         {
-            return x * b.y - y * b.x;
+            return (x * b.y) - (y * b.x);
         }
 
         /// <summary>
@@ -199,10 +200,12 @@ namespace Godot
             real_t t2 = t * t;
             real_t t3 = t2 * t;
 
-            return 0.5f * (p1 * 2.0f +
-                                (-p0 + p2) * t +
-                                (2.0f * p0 - 5.0f * p1 + 4 * p2 - p3) * t2 +
-                                (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3);
+            return 0.5f * (
+                (p1 * 2.0f) +
+                ((-p0 + p2) * t) +
+                (((2.0f * p0) - (5.0f * p1) + (4 * p2) - p3) * t2) +
+                ((-p0 + (3.0f * p1) - (3.0f * p2) + p3) * t3)
+            );
         }
 
         /// <summary>
@@ -244,7 +247,7 @@ namespace Godot
         /// <returns>The dot product of the two vectors.</returns>
         public real_t Dot(Vector2 with)
         {
-            return x * with.x + y * with.y;
+            return (x * with.x) + (y * with.y);
         }
 
         /// <summary>
@@ -280,7 +283,7 @@ namespace Godot
         /// <returns>The length of this vector.</returns>
         public real_t Length()
         {
-            return Mathf.Sqrt(x * x + y * y);
+            return Mathf.Sqrt((x * x) + (y * y));
         }
 
         /// <summary>
@@ -291,7 +294,7 @@ namespace Godot
         /// <returns>The squared length of this vector.</returns>
         public real_t LengthSquared()
         {
-            return x * x + y * y;
+            return (x * x) + (y * y);
         }
 
         /// <summary>
@@ -373,10 +376,13 @@ namespace Godot
         /// <returns>The resulting vector.</returns>
         public Vector2 MoveToward(Vector2 to, real_t delta)
         {
-            var v = this;
-            var vd = to - v;
-            var len = vd.Length();
-            return len <= delta || len < Mathf.Epsilon ? to : v + vd / len * delta;
+            Vector2 v = this;
+            Vector2 vd = to - v;
+            real_t len = vd.Length();
+            if (len <= delta || len < Mathf.Epsilon)
+                return to;
+
+            return v + (vd / len * delta);
         }
 
         /// <summary>
@@ -385,7 +391,7 @@ namespace Godot
         /// <returns>A normalized version of the vector.</returns>
         public Vector2 Normalized()
         {
-            var v = this;
+            Vector2 v = this;
             v.Normalize();
             return v;
         }
@@ -439,7 +445,7 @@ namespace Godot
                 throw new ArgumentException("Argument is not normalized", nameof(normal));
             }
 #endif
-            return 2 * Dot(normal) * normal - this;
+            return (2 * Dot(normal) * normal) - this;
         }
 
         /// <summary>
@@ -511,7 +517,7 @@ namespace Godot
         /// <returns>The slid vector.</returns>
         public Vector2 Slide(Vector2 normal)
         {
-            return this - normal * Dot(normal);
+            return this - (normal * Dot(normal));
         }
 
         /// <summary>

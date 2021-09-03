@@ -88,9 +88,9 @@ namespace Godot
             get => new Vector3(Row0.x, Row1.x, Row2.x);
             set
             {
-                this.Row0.x = value.x;
-                this.Row1.x = value.y;
-                this.Row2.x = value.z;
+                Row0.x = value.x;
+                Row1.x = value.y;
+                Row2.x = value.z;
             }
         }
 
@@ -103,9 +103,9 @@ namespace Godot
             get => new Vector3(Row0.y, Row1.y, Row2.y);
             set
             {
-                this.Row0.y = value.x;
-                this.Row1.y = value.y;
-                this.Row2.y = value.z;
+                Row0.y = value.x;
+                Row1.y = value.y;
+                Row2.y = value.z;
             }
         }
 
@@ -118,9 +118,9 @@ namespace Godot
             get => new Vector3(Row0.z, Row1.z, Row2.z);
             set
             {
-                this.Row0.z = value.x;
-                this.Row1.z = value.y;
-                this.Row2.z = value.z;
+                Row0.z = value.x;
+                Row1.z = value.y;
+                Row2.z = value.z;
             }
         }
 
@@ -504,7 +504,7 @@ namespace Godot
         /// <returns>The resulting dot product.</returns>
         public real_t Tdotx(Vector3 with)
         {
-            return this.Row0[0] * with[0] + this.Row1[0] * with[1] + this.Row2[0] * with[2];
+            return Row0[0] * with[0] + Row1[0] * with[1] + Row2[0] * with[2];
         }
 
         /// <summary>
@@ -514,7 +514,7 @@ namespace Godot
         /// <returns>The resulting dot product.</returns>
         public real_t Tdoty(Vector3 with)
         {
-            return this.Row0[1] * with[0] + this.Row1[1] * with[1] + this.Row2[1] * with[2];
+            return Row0[1] * with[0] + Row1[1] * with[1] + Row2[1] * with[2];
         }
 
         /// <summary>
@@ -524,7 +524,7 @@ namespace Godot
         /// <returns>The resulting dot product.</returns>
         public real_t Tdotz(Vector3 with)
         {
-            return this.Row0[2] * with[0] + this.Row1[2] * with[1] + this.Row2[2] * with[2];
+            return Row0[2] * with[0] + Row1[2] * with[1] + Row2[2] * with[2];
         }
 
         /// <summary>
@@ -533,7 +533,7 @@ namespace Godot
         /// <returns>The transposed basis matrix.</returns>
         public Basis Transposed()
         {
-            var tr = this;
+            Basis tr = this;
 
             real_t temp = tr.Row0[1];
             tr.Row0[1] = tr.Row1[0];
@@ -559,9 +559,9 @@ namespace Godot
         {
             return new Vector3
             (
-                this.Row0.Dot(v),
-                this.Row1.Dot(v),
-                this.Row2.Dot(v)
+                Row0.Dot(v),
+                Row1.Dot(v),
+                Row2.Dot(v)
             );
         }
 
@@ -577,9 +577,9 @@ namespace Godot
         {
             return new Vector3
             (
-                this.Row0[0] * v.x + this.Row1[0] * v.y + this.Row2[0] * v.z,
-                this.Row0[1] * v.x + this.Row1[1] * v.y + this.Row2[1] * v.z,
-                this.Row0[2] * v.x + this.Row1[2] * v.y + this.Row2[2] * v.z
+                Row0[0] * v.x + Row1[0] * v.y + Row2[0] * v.z,
+                Row0[1] * v.x + Row1[1] * v.y + Row2[1] * v.z,
+                Row0[2] * v.x + Row1[2] * v.y + Row2[2] * v.z
             );
         }
 

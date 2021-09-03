@@ -70,17 +70,17 @@ namespace Godot
         /// <returns>A bool for whether or not this AABB encloses `b`.</returns>
         public bool Encloses(AABB with)
         {
-            Vector3 src_min = _position;
-            Vector3 src_max = _position + _size;
-            Vector3 dst_min = with._position;
-            Vector3 dst_max = with._position + with._size;
+            Vector3 srcMin = _position;
+            Vector3 srcMax = _position + _size;
+            Vector3 dstMin = with._position;
+            Vector3 dstMax = with._position + with._size;
 
-            return src_min.x <= dst_min.x &&
-                   src_max.x > dst_max.x &&
-                   src_min.y <= dst_min.y &&
-                   src_max.y > dst_max.y &&
-                   src_min.z <= dst_min.z &&
-                   src_max.z > dst_max.z;
+            return srcMin.x <= dstMin.x &&
+                   srcMax.x > dstMax.x &&
+                   srcMin.y <= dstMin.y &&
+                   srcMax.y > dstMax.y &&
+                   srcMin.z <= dstMin.z &&
+                   srcMax.z > dstMax.z;
         }
 
         /// <summary>
@@ -157,7 +157,10 @@ namespace Godot
                 case 7:
                     return new Vector3(_position.x + _size.x, _position.y + _size.y, _position.z + _size.z);
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(idx), String.Format("Index is {0}, but a value from 0 to 7 is expected.", idx));
+                {
+                    throw new ArgumentOutOfRangeException(nameof(idx),
+                        $"Index is {idx}, but a value from 0 to 7 is expected.");
+                }
             }
         }
 
@@ -168,15 +171,15 @@ namespace Godot
         public Vector3 GetLongestAxis()
         {
             var axis = new Vector3(1f, 0f, 0f);
-            real_t max_size = _size.x;
+            real_t maxSize = _size.x;
 
-            if (_size.y > max_size)
+            if (_size.y > maxSize)
             {
                 axis = new Vector3(0f, 1f, 0f);
-                max_size = _size.y;
+                maxSize = _size.y;
             }
 
-            if (_size.z > max_size)
+            if (_size.z > maxSize)
             {
                 axis = new Vector3(0f, 0f, 1f);
             }
@@ -191,15 +194,15 @@ namespace Godot
         public Vector3.Axis GetLongestAxisIndex()
         {
             var axis = Vector3.Axis.X;
-            real_t max_size = _size.x;
+            real_t maxSize = _size.x;
 
-            if (_size.y > max_size)
+            if (_size.y > maxSize)
             {
                 axis = Vector3.Axis.Y;
-                max_size = _size.y;
+                maxSize = _size.y;
             }
 
-            if (_size.z > max_size)
+            if (_size.z > maxSize)
             {
                 axis = Vector3.Axis.Z;
             }
@@ -213,15 +216,15 @@ namespace Godot
         /// <returns>The scalar length of the longest axis of the AABB.</returns>
         public real_t GetLongestAxisSize()
         {
-            real_t max_size = _size.x;
+            real_t maxSize = _size.x;
 
-            if (_size.y > max_size)
-                max_size = _size.y;
+            if (_size.y > maxSize)
+                maxSize = _size.y;
 
-            if (_size.z > max_size)
-                max_size = _size.z;
+            if (_size.z > maxSize)
+                maxSize = _size.z;
 
-            return max_size;
+            return maxSize;
         }
 
         /// <summary>
@@ -231,15 +234,15 @@ namespace Godot
         public Vector3 GetShortestAxis()
         {
             var axis = new Vector3(1f, 0f, 0f);
-            real_t max_size = _size.x;
+            real_t maxSize = _size.x;
 
-            if (_size.y < max_size)
+            if (_size.y < maxSize)
             {
                 axis = new Vector3(0f, 1f, 0f);
-                max_size = _size.y;
+                maxSize = _size.y;
             }
 
-            if (_size.z < max_size)
+            if (_size.z < maxSize)
             {
                 axis = new Vector3(0f, 0f, 1f);
             }
@@ -254,15 +257,15 @@ namespace Godot
         public Vector3.Axis GetShortestAxisIndex()
         {
             var axis = Vector3.Axis.X;
-            real_t max_size = _size.x;
+            real_t maxSize = _size.x;
 
-            if (_size.y < max_size)
+            if (_size.y < maxSize)
             {
                 axis = Vector3.Axis.Y;
-                max_size = _size.y;
+                maxSize = _size.y;
             }
 
-            if (_size.z < max_size)
+            if (_size.z < maxSize)
             {
                 axis = Vector3.Axis.Z;
             }
@@ -276,15 +279,15 @@ namespace Godot
         /// <returns>The scalar length of the shortest axis of the AABB.</returns>
         public real_t GetShortestAxisSize()
         {
-            real_t max_size = _size.x;
+            real_t maxSize = _size.x;
 
-            if (_size.y < max_size)
-                max_size = _size.y;
+            if (_size.y < maxSize)
+                maxSize = _size.y;
 
-            if (_size.z < max_size)
-                max_size = _size.z;
+            if (_size.z < maxSize)
+                maxSize = _size.z;
 
-            return max_size;
+            return maxSize;
         }
 
         /// <summary>
@@ -295,13 +298,13 @@ namespace Godot
         /// <returns>A vector representing the support.</returns>
         public Vector3 GetSupport(Vector3 dir)
         {
-            Vector3 half_extents = _size * 0.5f;
-            Vector3 ofs = _position + half_extents;
+            Vector3 halfExtents = _size * 0.5f;
+            Vector3 ofs = _position + halfExtents;
 
             return ofs + new Vector3(
-                dir.x > 0f ? -half_extents.x : half_extents.x,
-                dir.y > 0f ? -half_extents.y : half_extents.y,
-                dir.z > 0f ? -half_extents.z : half_extents.z);
+                dir.x > 0f ? -halfExtents.x : halfExtents.x,
+                dir.y > 0f ? -halfExtents.y : halfExtents.y,
+                dir.z > 0f ? -halfExtents.z : halfExtents.z);
         }
 
         /// <summary>
@@ -311,7 +314,7 @@ namespace Godot
         /// <returns>The grown AABB.</returns>
         public AABB Grow(real_t by)
         {
-            var res = this;
+            AABB res = this;
 
             res._position.x -= by;
             res._position.y -= by;
@@ -371,36 +374,36 @@ namespace Godot
         /// <returns>The clipped AABB.</returns>
         public AABB Intersection(AABB with)
         {
-            Vector3 src_min = _position;
-            Vector3 src_max = _position + _size;
-            Vector3 dst_min = with._position;
-            Vector3 dst_max = with._position + with._size;
+            Vector3 srcMin = _position;
+            Vector3 srcMax = _position + _size;
+            Vector3 dstMin = with._position;
+            Vector3 dstMax = with._position + with._size;
 
             Vector3 min, max;
 
-            if (src_min.x > dst_max.x || src_max.x < dst_min.x)
+            if (srcMin.x > dstMax.x || srcMax.x < dstMin.x)
             {
                 return new AABB();
             }
 
-            min.x = src_min.x > dst_min.x ? src_min.x : dst_min.x;
-            max.x = src_max.x < dst_max.x ? src_max.x : dst_max.x;
+            min.x = srcMin.x > dstMin.x ? srcMin.x : dstMin.x;
+            max.x = srcMax.x < dstMax.x ? srcMax.x : dstMax.x;
 
-            if (src_min.y > dst_max.y || src_max.y < dst_min.y)
+            if (srcMin.y > dstMax.y || srcMax.y < dstMin.y)
             {
                 return new AABB();
             }
 
-            min.y = src_min.y > dst_min.y ? src_min.y : dst_min.y;
-            max.y = src_max.y < dst_max.y ? src_max.y : dst_max.y;
+            min.y = srcMin.y > dstMin.y ? srcMin.y : dstMin.y;
+            max.y = srcMax.y < dstMax.y ? srcMax.y : dstMax.y;
 
-            if (src_min.z > dst_max.z || src_max.z < dst_min.z)
+            if (srcMin.z > dstMax.z || srcMax.z < dstMin.z)
             {
                 return new AABB();
             }
 
-            min.z = src_min.z > dst_min.z ? src_min.z : dst_min.z;
-            max.z = src_max.z < dst_max.z ? src_max.z : dst_max.z;
+            min.z = srcMin.z > dstMin.z ? srcMin.z : dstMin.z;
+            max.z = srcMax.z < dstMax.z ? srcMax.z : dstMax.z;
 
             return new AABB(min, max - min);
         }
@@ -561,16 +564,16 @@ namespace Godot
             var end2 = new Vector3(with._size.x, with._size.y, with._size.z) + beg2;
 
             var min = new Vector3(
-                              beg1.x < beg2.x ? beg1.x : beg2.x,
-                              beg1.y < beg2.y ? beg1.y : beg2.y,
-                              beg1.z < beg2.z ? beg1.z : beg2.z
-                          );
+                beg1.x < beg2.x ? beg1.x : beg2.x,
+                beg1.y < beg2.y ? beg1.y : beg2.y,
+                beg1.z < beg2.z ? beg1.z : beg2.z
+            );
 
             var max = new Vector3(
-                              end1.x > end2.x ? end1.x : end2.x,
-                              end1.y > end2.y ? end1.y : end2.y,
-                              end1.z > end2.z ? end1.z : end2.z
-                          );
+                end1.x > end2.x ? end1.x : end2.x,
+                end1.y > end2.y ? end1.y : end2.y,
+                end1.z > end2.z ? end1.z : end2.z
+            );
 
             return new AABB(min, max - min);
         }

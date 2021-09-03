@@ -5,7 +5,7 @@ namespace Godot
 {
     public sealed partial class RID : IDisposable
     {
-        private bool disposed = false;
+        private bool _disposed = false;
 
         internal IntPtr ptr;
 
@@ -14,7 +14,7 @@ namespace Godot
             if (instance == null)
                 throw new NullReferenceException($"The instance of type {nameof(RID)} is null.");
 
-            if (instance.disposed)
+            if (instance._disposed)
                 throw new ObjectDisposedException(instance.GetType().FullName);
 
             return instance.ptr;
@@ -33,7 +33,7 @@ namespace Godot
 
         private void Dispose(bool disposing)
         {
-            if (disposed)
+            if (_disposed)
                 return;
 
             if (ptr != IntPtr.Zero)
@@ -42,7 +42,7 @@ namespace Godot
                 ptr = IntPtr.Zero;
             }
 
-            disposed = true;
+            _disposed = true;
         }
 
         internal RID(IntPtr ptr)
@@ -73,12 +73,12 @@ namespace Godot
         public override string ToString() => "[RID]";
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static IntPtr godot_icall_RID_Ctor(IntPtr from);
+        internal static extern IntPtr godot_icall_RID_Ctor(IntPtr from);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_RID_Dtor(IntPtr ptr);
+        internal static extern void godot_icall_RID_Dtor(IntPtr ptr);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static int godot_icall_RID_get_id(IntPtr ptr);
+        internal static extern int godot_icall_RID_get_id(IntPtr ptr);
     }
 }

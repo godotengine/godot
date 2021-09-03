@@ -37,9 +37,9 @@ namespace Godot
         public const real_t NaN = real_t.NaN;
 
         // 0.0174532924f and 0.0174532925199433
-        private const real_t Deg2RadConst = (real_t)0.0174532925199432957692369077M;
+        private const real_t _deg2RadConst = (real_t)0.0174532925199432957692369077M;
         // 57.29578f and 57.2957795130823
-        private const real_t Rad2DegConst = (real_t)57.295779513082320876798154814M;
+        private const real_t _rad2DegConst = (real_t)57.295779513082320876798154814M;
 
         /// <summary>
         /// Returns the absolute value of `s` (i.e. positive value).
@@ -170,7 +170,7 @@ namespace Godot
         /// <returns>The same angle expressed in radians.</returns>
         public static real_t Deg2Rad(real_t deg)
         {
-            return deg * Deg2RadConst;
+            return deg * _deg2RadConst;
         }
 
         /// <summary>
@@ -209,7 +209,7 @@ namespace Godot
                     return Pow(s * 2.0f, -curve) * 0.5f;
                 }
 
-                return (1.0f - Pow(1.0f - (s - 0.5f) * 2.0f, -curve)) * 0.5f + 0.5f;
+                return ((1.0f - Pow(1.0f - ((s - 0.5f) * 2.0f), -curve)) * 0.5f) + 0.5f;
             }
 
             return 0f;
@@ -315,7 +315,7 @@ namespace Godot
         /// <returns>The resulting value of the interpolation.</returns>
         public static real_t Lerp(real_t from, real_t to, real_t weight)
         {
-            return from + (to - from) * weight;
+            return from + ((to - from) * weight);
         }
 
         /// <summary>
@@ -332,7 +332,7 @@ namespace Godot
         {
             real_t difference = (to - from) % Mathf.Tau;
             real_t distance = ((2 * difference) % Mathf.Tau) - difference;
-            return from + distance * weight;
+            return from + (distance * weight);
         }
 
         /// <summary>
@@ -402,7 +402,10 @@ namespace Godot
         /// <returns>The value after moving.</returns>
         public static real_t MoveToward(real_t from, real_t to, real_t delta)
         {
-            return Abs(to - from) <= delta ? to : from + Sign(to - from) * delta;
+            if (Abs(to - from) <= delta)
+                return to;
+
+            return from + (Sign(to - from) * delta);
         }
 
         /// <summary>
@@ -472,7 +475,7 @@ namespace Godot
         /// <returns>The same angle expressed in degrees.</returns>
         public static real_t Rad2Deg(real_t rad)
         {
-            return rad * Rad2DegConst;
+            return rad * _rad2DegConst;
         }
 
         /// <summary>
@@ -546,7 +549,7 @@ namespace Godot
                 return from;
             }
             real_t x = Clamp((weight - from) / (to - from), (real_t)0.0, (real_t)1.0);
-            return x * x * (3 - 2 * x);
+            return x * x * (3 - (2 * x));
         }
 
         /// <summary>
@@ -570,7 +573,8 @@ namespace Godot
         /// <returns>The position of the first non-zero digit.</returns>
         public static int StepDecimals(real_t step)
         {
-            double[] sd = new double[] {
+            double[] sd = new double[]
+            {
                 0.9999,
                 0.09999,
                 0.009999,
@@ -581,7 +585,7 @@ namespace Godot
                 0.00000009999,
                 0.000000009999,
             };
-            double abs = Mathf.Abs(step);
+            double abs = Abs(step);
             double decs = abs - (int)abs; // Strip away integer part
             for (int i = 0; i < sd.Length; i++)
             {
@@ -605,7 +609,7 @@ namespace Godot
         {
             if (step != 0f)
             {
-                return Floor(s / step + 0.5f) * step;
+                return Floor((s / step) + 0.5f) * step;
             }
 
             return s;
@@ -643,7 +647,10 @@ namespace Godot
         public static int Wrap(int value, int min, int max)
         {
             int range = max - min;
-            return range == 0 ? min : min + ((value - min) % range + range) % range;
+            if (range == 0)
+                return min;
+
+            return min + ((((value - min) % range) + range) % range);
         }
 
         /// <summary>
@@ -658,7 +665,11 @@ namespace Godot
         public static real_t Wrap(real_t value, real_t min, real_t max)
         {
             real_t range = max - min;
-            return IsZeroApprox(range) ? min : min + ((value - min) % range + range) % range;
+            if (IsZeroApprox(range))
+            {
+                return min;
+            }
+            return min + ((((value - min) % range) + range) % range);
         }
     }
 }

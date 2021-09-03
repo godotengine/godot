@@ -127,11 +127,11 @@ namespace Godot
                 }
                 else if (g == max)
                 {
-                    h = 2 + (b - r) / delta; // Between cyan & yellow
+                    h = 2 + ((b - r) / delta); // Between cyan & yellow
                 }
                 else
                 {
-                    h = 4 + (r - g) / delta; // Between magenta & cyan
+                    h = 4 + ((r - g) / delta); // Between magenta & cyan
                 }
 
                 h /= 6.0f;
@@ -242,16 +242,16 @@ namespace Godot
             Color res;
 
             float sa = 1.0f - over.a;
-            res.a = a * sa + over.a;
+            res.a = (a * sa) + over.a;
 
             if (res.a == 0)
             {
                 return new Color(0, 0, 0, 0);
             }
 
-            res.r = (r * a * sa + over.r * over.a) / res.a;
-            res.g = (g * a * sa + over.g * over.a) / res.a;
-            res.b = (b * a * sa + over.b * over.a) / res.a;
+            res.r = ((r * a * sa) + (over.r * over.a)) / res.a;
+            res.g = ((g * a * sa) + (over.g * over.a)) / res.a;
+            res.b = ((b * a * sa) + (over.b * over.a)) / res.a;
 
             return res;
         }
@@ -286,9 +286,9 @@ namespace Godot
         public Color Darkened(float amount)
         {
             Color res = this;
-            res.r = res.r * (1.0f - amount);
-            res.g = res.g * (1.0f - amount);
-            res.b = res.b * (1.0f - amount);
+            res.r *= 1.0f - amount;
+            res.g *= 1.0f - amount;
+            res.b *= 1.0f - amount;
             return res;
         }
 
@@ -315,9 +315,9 @@ namespace Godot
         public Color Lightened(float amount)
         {
             Color res = this;
-            res.r = res.r + (1.0f - res.r) * amount;
-            res.g = res.g + (1.0f - res.g) * amount;
-            res.b = res.b + (1.0f - res.b) * amount;
+            res.r += (1.0f - res.r) * amount;
+            res.g += (1.0f - res.g) * amount;
+            res.b += (1.0f - res.b) * amount;
             return res;
         }
 
@@ -478,7 +478,7 @@ namespace Godot
         /// <returns>A string for the HTML hexadecimal representation of this color.</returns>
         public string ToHTML(bool includeAlpha = true)
         {
-            var txt = string.Empty;
+            string txt = string.Empty;
 
             txt += ToHex32(r);
             txt += ToHex32(g);
@@ -627,7 +627,8 @@ namespace Godot
             }
             else
             {
-                throw new ArgumentOutOfRangeException("Invalid color code. Length is " + rgba.Length + " but a length of 6 or 8 is expected: " + rgba);
+                throw new ArgumentOutOfRangeException(
+                    $"Invalid color code. Length is {rgba.Length}, but a length of 6 or 8 is expected: {rgba}");
             }
 
             c.a = 1.0f;
@@ -697,11 +698,11 @@ namespace Godot
         /// <returns>The constructed color.</returns>
         private static Color Named(string name)
         {
-            name = name.Replace(" ", String.Empty);
-            name = name.Replace("-", String.Empty);
-            name = name.Replace("_", String.Empty);
-            name = name.Replace("'", String.Empty);
-            name = name.Replace(".", String.Empty);
+            name = name.Replace(" ", string.Empty);
+            name = name.Replace("-", string.Empty);
+            name = name.Replace("_", string.Empty);
+            name = name.Replace("'", string.Empty);
+            name = name.Replace(".", string.Empty);
             name = name.ToUpper();
 
             if (!Colors.namedColors.ContainsKey(name))
@@ -739,8 +740,8 @@ namespace Godot
 
             f = hue - i;
             p = value * (1 - saturation);
-            q = value * (1 - saturation * f);
-            t = value * (1 - saturation * (1 - f));
+            q = value * (1 - (saturation * f));
+            t = value * (1 - (saturation * (1 - f)));
 
             switch (i)
             {
@@ -785,22 +786,24 @@ namespace Godot
                 }
                 else if (g == max)
                 {
-                    hue = 2 + (b - r) / delta; // Between cyan & yellow
+                    hue = 2 + ((b - r) / delta); // Between cyan & yellow
                 }
                 else
                 {
-                    hue = 4 + (r - g) / delta; // Between magenta & cyan
+                    hue = 4 + ((r - g) / delta); // Between magenta & cyan
                 }
 
                 hue /= 6.0f;
 
                 if (hue < 0)
-                {
                     hue += 1.0f;
-                }
             }
 
-            saturation = max == 0 ? 0 : 1f - 1f * min / max;
+            if (max == 0)
+                saturation = 0;
+            else
+                saturation = 1 - (min / max);
+
             value = max;
         }
 

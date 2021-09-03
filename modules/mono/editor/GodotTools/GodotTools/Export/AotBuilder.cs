@@ -65,12 +65,12 @@ namespace GodotTools.Export
 
             if (platform == OS.Platforms.iOS)
             {
-                var architectures = GetEnablediOSArchs(features).ToArray();
+                string[] architectures = GetEnablediOSArchs(features).ToArray();
                 CompileAssembliesForiOS(exporter, isDebug, architectures, aotOpts, aotTempDir, assembliesPrepared, bclDir);
             }
             else if (platform == OS.Platforms.Android)
             {
-                var abis = GetEnabledAndroidAbis(features).ToArray();
+                string[] abis = GetEnabledAndroidAbis(features).ToArray();
                 CompileAssembliesForAndroid(exporter, isDebug, abis, aotOpts, aotTempDir, assembliesPrepared, bclDir);
             }
             else
@@ -138,7 +138,8 @@ namespace GodotTools.Export
                 }
                 else
                 {
-                    string outputDataLibDir = Path.Combine(outputDataDir, "Mono", platform == OS.Platforms.Windows ? "bin" : "lib");
+                    string libDir = platform == OS.Platforms.Windows ? "bin" : "lib";
+                    string outputDataLibDir = Path.Combine(outputDataDir, "Mono", libDir);
                     File.Copy(tempOutputFilePath, Path.Combine(outputDataLibDir, outputFileName));
                 }
             }
