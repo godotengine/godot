@@ -334,6 +334,22 @@ public:
 					setting = false;
 					return true;
 				}
+
+				if (name == "handle_mode") {
+					const Variant &value = p_value;
+
+					setting = true;
+					undo_redo->create_action(TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
+					int prev = animation->bezier_track_get_key_handle_mode(track, key);
+					undo_redo->add_do_method(animation.ptr(), "bezier_track_set_key_handle_mode", track, key, value);
+					undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_handle_mode", track, key, prev);
+					undo_redo->add_do_method(this, "_update_obj", animation);
+					undo_redo->add_undo_method(this, "_update_obj", animation);
+					undo_redo->commit_action();
+
+					setting = false;
+					return true;
+				}
 			} break;
 			case Animation::TYPE_AUDIO: {
 				if (name == "stream") {
@@ -498,6 +514,11 @@ public:
 					return true;
 				}
 
+				if (name == "handle_mode") {
+					r_ret = animation->bezier_track_get_key_handle_mode(track, key);
+					return true;
+				}
+
 			} break;
 			case Animation::TYPE_AUDIO: {
 				if (name == "stream") {
@@ -610,6 +631,7 @@ public:
 				p_list->push_back(PropertyInfo(Variant::FLOAT, "value"));
 				p_list->push_back(PropertyInfo(Variant::VECTOR2, "in_handle"));
 				p_list->push_back(PropertyInfo(Variant::VECTOR2, "out_handle"));
+				p_list->push_back(PropertyInfo(Variant::INT, "handle_mode", PROPERTY_HINT_ENUM, "Free,Balanced"));
 
 			} break;
 			case Animation::TYPE_AUDIO: {
@@ -949,6 +971,17 @@ public:
 							undo_redo->add_do_method(animation.ptr(), "bezier_track_set_key_out_handle", track, key, value);
 							undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_out_handle", track, key, prev);
 							update_obj = true;
+						} else if (name == "handle_mode") {
+							const Variant &value = p_value;
+
+							if (!setting) {
+								setting = true;
+								undo_redo->create_action(TTR("Anim Multi Change Keyframe Value"), UndoRedo::MERGE_ENDS);
+							}
+							int prev = animation->bezier_track_get_key_handle_mode(track, key);
+							undo_redo->add_do_method(animation.ptr(), "bezier_track_set_key_handle_mode", track, key, value);
+							undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_handle_mode", track, key, prev);
+							update_obj = true;
 						}
 					} break;
 					case Animation::TYPE_AUDIO: {
@@ -1120,6 +1153,11 @@ public:
 							return true;
 						}
 
+						if (name == "handle_mode") {
+							r_ret = animation->bezier_track_get_key_handle_mode(track, key);
+							return true;
+						}
+
 					} break;
 					case Animation::TYPE_AUDIO: {
 						if (name == "stream") {
@@ -1273,6 +1311,7 @@ public:
 					p_list->push_back(PropertyInfo(Variant::FLOAT, "value"));
 					p_list->push_back(PropertyInfo(Variant::VECTOR2, "in_handle"));
 					p_list->push_back(PropertyInfo(Variant::VECTOR2, "out_handle"));
+					p_list->push_back(PropertyInfo(Variant::INT, "handle_mode", PROPERTY_HINT_ENUM, "Free,Balanced"));
 				} break;
 				case Animation::TYPE_AUDIO: {
 					p_list->push_back(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"));
@@ -2607,6 +2646,17 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 					text += "In-Handle: " + ih + "\n";
 					Vector2 oh = animation->bezier_track_get_key_out_handle(track, key_idx);
 					text += "Out-Handle: " + oh + "\n";
+					int hm = animation->bezier_track_get_key_handle_mode(track, key_idx);
+					text += "Handle mode: ";
+					switch (hm) {
+						case Animation::HANDLE_MODE_FREE: {
+							text += "Free";
+						} break;
+						case Animation::HANDLE_MODE_BALANCED: {
+							text += "Balanced";
+						} break;
+					}
+					text += "\n";
 				} break;
 				case Animation::TYPE_AUDIO: {
 					String stream_name = "null";
@@ -4796,12 +4846,13 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 			Variant value;
 			_find_hint_for_track(p_track, bp, &value);
 			Array arr;
-			arr.resize(5);
+			arr.resize(6);
 			arr[0] = value;
 			arr[1] = -0.25;
 			arr[2] = 0;
 			arr[3] = 0.25;
 			arr[4] = 0;
+			arr[5] = 0;
 
 			undo_redo->create_action(TTR("Add Track Key"));
 			undo_redo->add_do_method(animation.ptr(), "track_insert_key", p_track, p_ofs, arr);
