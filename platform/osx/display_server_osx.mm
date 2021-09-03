@@ -190,6 +190,8 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 
 	[wd.window_object setContentMinSize:NSMakeSize(0, 0)];
 	[wd.window_object setContentMaxSize:NSMakeSize(FLT_MAX, FLT_MAX)];
+	// Force window resize event.
+	[self windowDidResize:notification];
 }
 
 - (void)windowDidExitFullScreen:(NSNotification *)notification {
@@ -217,6 +219,8 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 	if (wd.on_top) {
 		[wd.window_object setLevel:NSFloatingWindowLevel];
 	}
+	// Force window resize event.
+	[self windowDidResize:notification];
 }
 
 - (void)windowDidChangeBackingProperties:(NSNotification *)notification {
