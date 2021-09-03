@@ -12,6 +12,9 @@ namespace Godot
         internal IntPtr ptr;
         internal bool memoryOwn;
 
+        /// <summary>
+        /// Constructs a new <see cref="Object"/>.
+        /// </summary>
         public Object() : this(false)
         {
             if (ptr == IntPtr.Zero)
@@ -29,6 +32,9 @@ namespace Godot
             this.memoryOwn = memoryOwn;
         }
 
+        /// <summary>
+        /// The pointer to the native instance of this <see cref="Object"/>.
+        /// </summary>
         public IntPtr NativeInstance
         {
             get { return ptr; }
@@ -50,12 +56,18 @@ namespace Godot
             Dispose(false);
         }
 
+        /// <summary>
+        /// Disposes of this <see cref="Object"/>.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Disposes implementation of this <see cref="Object"/>.
+        /// </summary>
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)
@@ -79,13 +91,17 @@ namespace Godot
             _disposed = true;
         }
 
+        /// <summary>
+        /// Converts this <see cref="Object"/> to a string.
+        /// </summary>
+        /// <returns>A string representation of this object.</returns>
         public override string ToString()
         {
             return godot_icall_Object_ToString(GetPtr(this));
         }
 
         /// <summary>
-        /// Returns a new <see cref="Godot.SignalAwaiter"/> awaiter configured to complete when the instance
+        /// Returns a new <see cref="SignalAwaiter"/> awaiter configured to complete when the instance
         /// <paramref name="source"/> emits the signal specified by the <paramref name="signal"/> parameter.
         /// </summary>
         /// <param name="source">
@@ -107,13 +123,17 @@ namespace Godot
         /// }
         /// </code>
         /// </example>
+        /// <returns>
+        /// A <see cref="SignalAwaiter"/> that completes when
+        /// <paramref name="source"/> emits the <paramref name="signal"/>.
+        /// </returns>
         public SignalAwaiter ToSignal(Object source, StringName signal)
         {
             return new SignalAwaiter(source, signal, this);
         }
 
         /// <summary>
-        /// Gets a new <see cref="Godot.DynamicGodotObject"/> associated with this instance.
+        /// Gets a new <see cref="DynamicGodotObject"/> associated with this instance.
         /// </summary>
         public dynamic DynamicObject => new DynamicGodotObject(this);
 
