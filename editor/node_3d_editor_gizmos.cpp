@@ -3256,7 +3256,7 @@ CollisionShape3DGizmoPlugin::CollisionShape3DGizmoPlugin() {
 	create_material("shape_material_disabled", gizmo_color_disabled);
 	create_handle_material("handles");
 
-	const Color shape_face_color = EDITOR_DEF_RST("editors/3d_gizmos/collision_shape/face", Color(0, 0, 1.0));
+	const Color shape_face_color = EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/shape_face", Color(0, 0, 1.0));
 	Ref<StandardMaterial3D> shape_face_color_mat = memnew(StandardMaterial3D);
 	shape_face_color_mat->set_albedo(Color(shape_face_color, 0.66));
 	shape_face_color_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
