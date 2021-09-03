@@ -299,6 +299,8 @@ private:
 	float lod_threshold = 1.0;
 	bool use_occlusion_culling = false;
 
+	int canvas_cull_mask = 0xfffff;
+
 	Ref<ViewportTexture> default_texture;
 	Set<ViewportTexture *> viewport_textures;
 
@@ -581,6 +583,11 @@ public:
 
 	bool gui_is_dragging() const;
 	bool gui_is_drag_successful() const;
+
+	void set_canvas_cull_mask(int p_layers);
+	int get_canvas_cull_mask() const;
+	void set_canvas_cull_mask_value(int p_layer_number, bool p_value);
+	bool get_canvas_cull_mask_value(int p_layer_number) const;
 
 	Control *gui_find_control(const Point2 &p_global);
 

@@ -884,6 +884,8 @@ public:
 
 	virtual void viewport_set_occlusion_culling_build_quality(ViewportOcclusionCullingBuildQuality p_quality) = 0;
 
+	virtual void viewport_set_canvas_cull_mask(RID p_viewport, int p_mask) = 0;
+
 	enum ViewportRenderInfo {
 		VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME,
 		VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME,
@@ -1262,6 +1264,8 @@ public:
 
 	virtual void canvas_item_set_visible(RID p_item, bool p_visible) = 0;
 	virtual void canvas_item_set_light_mask(RID p_item, int p_mask) = 0;
+	virtual void canvas_item_set_layer_mask(RID p_item, int p_mask) = 0;
+	virtual void canvas_item_set_cull_children(RID p_item, bool p_enable) = 0;
 
 	virtual void canvas_item_set_update_when_visible(RID p_item, bool p_update) = 0;
 

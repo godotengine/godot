@@ -46,6 +46,13 @@
 				Returns the currently active 3D camera.
 			</description>
 		</method>
+		<method name="get_canvas_cull_mask_value" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="layer_number" type="int" />
+			<description>
+				Returns whether or not the specified layer of the [member canvas_cull_mask] is enabled, given a [code]layer_number[/code] between 1 and 20. If a layer is enabled (set to [code]true[/code]) then that layer will be rendered, if it is [code]false[/code] then it will not be rendered.
+			</description>
+		</method>
 		<method name="get_final_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
@@ -150,6 +157,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_canvas_cull_mask_value">
+			<return type="void" />
+			<argument index="0" name="layer_number" type="int" />
+			<argument index="1" name="value" type="bool" />
+			<description>
+				Based on [code]value[/code], enables or disables the specified layer in the [member canvas_cull_mask], given a [code]layer_number[/code] between 1 and 20. If a layer is enabled (set to [code]true[/code]) then that layer will be rendered, if it is [code]false[/code] then it will not be rendered.
+			</description>
+		</method>
 		<method name="set_input_as_handled">
 			<return type="void" />
 			<description>
@@ -178,6 +193,9 @@
 		</member>
 		<member name="audio_listener_enable_3d" type="bool" setter="set_as_audio_listener_3d" getter="is_audio_listener_3d" default="false">
 			If [code]true[/code], the viewport will process 3D audio streams.
+		</member>
+		<member name="canvas_cull_mask" type="int" setter="set_canvas_cull_mask" getter="get_canvas_cull_mask" default="1048575">
+			The culling mask that describes which 2D render layers are rendered by this viewport. If a bit is not set, then that layer will not be rendered.
 		</member>
 		<member name="canvas_item_default_texture_filter" type="int" setter="set_default_canvas_item_texture_filter" getter="get_default_canvas_item_texture_filter" enum="Viewport.DefaultCanvasItemTextureFilter" default="1">
 			Sets the default filter mode used by [CanvasItem]s in this Viewport. See [enum DefaultCanvasItemTextureFilter] for options.

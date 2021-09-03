@@ -350,6 +350,14 @@
 				Sets the [CanvasItem] to copy a rect to the backbuffer.
 			</description>
 		</method>
+		<method name="canvas_item_set_cull_children">
+			<return type="void" />
+			<argument index="0" name="item" type="RID" />
+			<argument index="1" name="enable" type="bool" />
+			<description>
+				If [code]true[/code], this canvas item will prevent rendering of its children if it itself is culled via its layer mask when rendered.
+			</description>
+		</method>
 		<method name="canvas_item_set_custom_rect">
 			<return type="void" />
 			<argument index="0" name="item" type="RID" />
@@ -392,6 +400,14 @@
 			<argument index="1" name="index" type="int" />
 			<description>
 				Sets the index for the [CanvasItem].
+			</description>
+		</method>
+		<method name="canvas_item_set_layer_mask">
+			<return type="void" />
+			<argument index="0" name="item" type="RID" />
+			<argument index="1" name="mask" type="int" />
+			<description>
+				Sets the 2D render layers that this canvas item will be drawn to. Equivalent to [member CanvasItem.layers].
 			</description>
 		</method>
 		<method name="canvas_item_set_light_mask">
@@ -3025,6 +3041,14 @@
 			<argument index="1" name="active" type="bool" />
 			<description>
 				If [code]true[/code], sets the viewport active, else sets it inactive.
+			</description>
+		</method>
+		<method name="viewport_set_canvas_cull_mask">
+			<return type="void" />
+			<argument index="0" name="viewport" type="RID" />
+			<argument index="1" name="mask" type="int" />
+			<description>
+				Sets the cull mask that describes which 2D render layers are rendered by this viewport. If a bit is not set, then that layer will not be rendered. Equivalent to [member Viewport.canvas_cull_mask].
 			</description>
 		</method>
 		<method name="viewport_set_canvas_stacking">
