@@ -2494,6 +2494,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 				case GDScriptParser::ClassNode::Member::VARIABLE:
 					p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_VARIABLE;
 					p_identifier->variable_source = member.variable;
+					member.variable->usages += 1;
 					break;
 				case GDScriptParser::ClassNode::Member::FUNCTION:
 					resolve_function_signature(member.function);
