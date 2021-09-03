@@ -57,16 +57,16 @@
 #include "servers/audio_server.h"
 
 void ViewportTexture::setup_local_to_scene() {
+	Node *local_scene = get_local_scene();
+	if (!local_scene) {
+		return;
+	}
+
 	if (vp) {
 		vp->viewport_textures.erase(this);
 	}
 
 	vp = nullptr;
-
-	Node *local_scene = get_local_scene();
-	if (!local_scene) {
-		return;
-	}
 
 	Node *vpn = local_scene->get_node(path);
 	ERR_FAIL_COND_MSG(!vpn, "ViewportTexture: Path to node is invalid.");
