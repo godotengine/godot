@@ -189,6 +189,8 @@ Error MultiplayerReplicator::_send_default_spawn_despawn(int p_peer_id, const Re
 	bool is_raw = false;
 	if (state_variants.size() == 1 && state_variants[0].get_type() == Variant::PACKED_BYTE_ARRAY) {
 		is_raw = true;
+		const PackedByteArray pba = state_variants[0];
+		state_len = pba.size();
 	} else if (state_variants.size()) {
 		err = _encode_state(state_variants, nullptr, state_len);
 		ERR_FAIL_COND_V(err, err);
