@@ -116,7 +116,7 @@ void Node::_notification(int p_notification) {
 				get_multiplayer()->scene_enter_exit_notify(data.filename, this, false);
 			}
 		} break;
-		case NOTIFICATION_PATH_CHANGED: {
+		case NOTIFICATION_PATH_RENAMED: {
 			if (data.path_cache) {
 				memdelete(data.path_cache);
 				data.path_cache = nullptr;
@@ -897,7 +897,7 @@ void Node::set_name(const String &p_name) {
 		data.parent->_validate_child_name(this);
 	}
 
-	propagate_notification(NOTIFICATION_PATH_CHANGED);
+	propagate_notification(NOTIFICATION_PATH_RENAMED);
 
 	if (is_inside_tree()) {
 		emit_signal(SNAME("renamed"));
@@ -2785,7 +2785,7 @@ void Node::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_INSTANCED);
 	BIND_CONSTANT(NOTIFICATION_DRAG_BEGIN);
 	BIND_CONSTANT(NOTIFICATION_DRAG_END);
-	BIND_CONSTANT(NOTIFICATION_PATH_CHANGED);
+	BIND_CONSTANT(NOTIFICATION_PATH_RENAMED);
 	BIND_CONSTANT(NOTIFICATION_INTERNAL_PROCESS);
 	BIND_CONSTANT(NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 	BIND_CONSTANT(NOTIFICATION_POST_ENTER_TREE);
