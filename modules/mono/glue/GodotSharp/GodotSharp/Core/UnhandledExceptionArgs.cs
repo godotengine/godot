@@ -8,7 +8,7 @@ namespace Godot
     public class UnhandledExceptionArgs
     {
         /// <summary>
-        /// Exception object
+        /// Exception object.
         /// </summary>
         public Exception Exception { get; private set; }
 

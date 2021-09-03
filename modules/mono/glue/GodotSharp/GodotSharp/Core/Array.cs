@@ -93,7 +93,7 @@ namespace Godot.Collections
         /// <summary>
         /// Duplicates this <see cref="Array"/>.
         /// </summary>
-        /// <param name="deep">If true, performs a deep copy.</param>
+        /// <param name="deep">If <see langword="true"/>, performs a deep copy.</param>
         /// <returns>A new Godot Array.</returns>
         public Array Duplicate(bool deep = false)
         {
@@ -155,9 +155,9 @@ namespace Godot.Collections
         bool IList.IsFixedSize => false;
 
         /// <summary>
-        /// Returns the object at the given index.
+        /// Returns the object at the given <paramref name="index"/>.
         /// </summary>
-        /// <value>The object at the given index.</value>
+        /// <value>The object at the given <paramref name="index"/>.</value>
         public object this[int index]
         {
             get => godot_icall_Array_At(GetPtr(), index);
@@ -166,7 +166,7 @@ namespace Godot.Collections
 
         /// <summary>
         /// Adds an object to the end of this <see cref="Array"/>.
-        /// This is the same as `append` or `push_back` in GDScript.
+        /// This is the same as <c>append</c> or <c>push_back</c> in GDScript.
         /// </summary>
         /// <param name="value">The object to add.</param>
         /// <returns>The new size after adding the object.</returns>
@@ -203,7 +203,7 @@ namespace Godot.Collections
         public void Insert(int index, object value) => godot_icall_Array_Insert(GetPtr(), index, value);
 
         /// <summary>
-        /// Removes the first occurrence of the specified value
+        /// Removes the first occurrence of the specified <paramref name="value"/>
         /// from this <see cref="Array"/>.
         /// </summary>
         /// <param name="value">The value to remove.</param>
@@ -425,7 +425,7 @@ namespace Godot.Collections
         /// <summary>
         /// Duplicates this <see cref="Array{T}"/>.
         /// </summary>
-        /// <param name="deep">If true, performs a deep copy.</param>
+        /// <param name="deep">If <see langword="true"/>, performs a deep copy.</param>
         /// <returns>A new Godot Array.</returns>
         public Array<T> Duplicate(bool deep = false)
         {
@@ -464,9 +464,9 @@ namespace Godot.Collections
         // IList<T>
 
         /// <summary>
-        /// Returns the value at the given index.
+        /// Returns the value at the given <paramref name="index"/>.
         /// </summary>
-        /// <value>The value at the given index.</value>
+        /// <value>The value at the given <paramref name="index"/>.</value>
         public T this[int index]
         {
             get { return (T)Array.godot_icall_Array_At_Generic(GetPtr(), index, elemTypeEncoding, elemTypeClass); }
@@ -522,7 +522,7 @@ namespace Godot.Collections
 
         /// <summary>
         /// Adds an item to the end of this <see cref="Array{T}"/>.
-        /// This is the same as `append` or `push_back` in GDScript.
+        /// This is the same as <c>append</c> or <c>push_back</c> in GDScript.
         /// </summary>
         /// <param name="item">The item to add.</param>
         /// <returns>The new size after adding the item.</returns>
@@ -583,7 +583,7 @@ namespace Godot.Collections
         /// from this <see cref="Array{T}"/>.
         /// </summary>
         /// <param name="item">The value to remove.</param>
-        /// <returns>A bool indicating success or failure.</returns>
+        /// <returns>A <see langword="bool"/> indicating success or failure.</returns>
         public bool Remove(T item)
         {
             return Array.godot_icall_Array_Remove(GetPtr(), item);

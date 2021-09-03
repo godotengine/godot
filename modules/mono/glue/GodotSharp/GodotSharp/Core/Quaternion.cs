@@ -12,10 +12,10 @@ namespace Godot
     /// A unit quaternion used for representing 3D rotations.
     /// Quaternions need to be normalized to be used for rotation.
     ///
-    /// It is similar to Basis, which implements matrix representation of
-    /// rotations, and can be parametrized using both an axis-angle pair
-    /// or Euler angles. Basis stores rotation, scale, and shearing,
-    /// while Quaternion only stores rotation.
+    /// It is similar to <see cref="Basis"/>, which implements matrix
+    /// representation of rotations, and can be parametrized using both
+    /// an axis-angle pair or Euler angles. Basis stores rotation, scale,
+    /// and shearing, while Quaternion only stores rotation.
     ///
     /// Due to its compactness and the way it is stored in memory, certain
     /// operations (obtaining axis-angle and performing SLERP, in particular)
@@ -26,19 +26,19 @@ namespace Godot
     public struct Quaternion : IEquatable<Quaternion>
     {
         /// <summary>
-        /// X component of the quaternion (imaginary `i` axis part).
+        /// X component of the quaternion (imaginary <c>i</c> axis part).
         /// Quaternion components should usually not be manipulated directly.
         /// </summary>
         public real_t x;
 
         /// <summary>
-        /// Y component of the quaternion (imaginary `j` axis part).
+        /// Y component of the quaternion (imaginary <c>j</c> axis part).
         /// Quaternion components should usually not be manipulated directly.
         /// </summary>
         public real_t y;
 
         /// <summary>
-        /// Z component of the quaternion (imaginary `k` axis part).
+        /// Z component of the quaternion (imaginary <c>k</c> axis part).
         /// Quaternion components should usually not be manipulated directly.
         /// </summary>
         public real_t z;
@@ -52,7 +52,12 @@ namespace Godot
         /// <summary>
         /// Access quaternion components using their index.
         /// </summary>
-        /// <value>`[0]` is equivalent to `.x`, `[1]` is equivalent to `.y`, `[2]` is equivalent to `.z`, `[3]` is equivalent to `.w`.</value>
+        /// <value>
+        /// <c>[0]</c> is equivalent to <see cref="x"/>,
+        /// <c>[1]</c> is equivalent to <see cref="y"/>,
+        /// <c>[2]</c> is equivalent to <see cref="z"/>,
+        /// <c>[3]</c> is equivalent to <see cref="w"/>.
+        /// </value>
         public real_t this[int index]
         {
             get
@@ -96,7 +101,8 @@ namespace Godot
         /// <summary>
         /// Returns the length (magnitude) of the quaternion.
         /// </summary>
-        /// <value>Equivalent to `Mathf.Sqrt(LengthSquared)`.</value>
+        /// <seealso cref="LengthSquared"/>
+        /// <value>Equivalent to <c>Mathf.Sqrt(LengthSquared)</c>.</value>
         public real_t Length
         {
             get { return Mathf.Sqrt(LengthSquared); }
@@ -107,14 +113,14 @@ namespace Godot
         /// This method runs faster than <see cref="Length"/>, so prefer it if
         /// you need to compare quaternions or need the squared length for some formula.
         /// </summary>
-        /// <value>Equivalent to `Dot(this)`.</value>
+        /// <value>Equivalent to <c>Dot(this)</c>.</value>
         public real_t LengthSquared
         {
             get { return Dot(this); }
         }
 
         /// <summary>
-        /// Returns the angle between this quaternion and `to`.
+        /// Returns the angle between this quaternion and <paramref name="to"/>.
         /// This is the magnitude of the angle you would need to rotate
         /// by to get from one to the other.
         ///
@@ -131,12 +137,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Performs a cubic spherical interpolation between quaternions `preA`,
-        /// this vector, `b`, and `postB`, by the given amount `t`.
+        /// Performs a cubic spherical interpolation between quaternions <paramref name="preA"/>, this quaternion,
+        /// <paramref name="b"/>, and <paramref name="postB"/>, by the given amount <paramref name="weight"/>.
         /// </summary>
         /// <param name="b">The destination quaternion.</param>
         /// <param name="preA">A quaternion before this quaternion.</param>
-        /// <param name="postB">A quaternion after `b`.</param>
+        /// <param name="postB">A quaternion after <paramref name="b"/>.</param>
         /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The interpolated quaternion.</returns>
         public Quaternion CubicSlerp(Quaternion b, Quaternion preA, Quaternion postB, real_t weight)
@@ -194,7 +200,7 @@ namespace Godot
         /// <summary>
         /// Returns whether the quaternion is normalized or not.
         /// </summary>
-        /// <returns>A bool for whether the quaternion is normalized or not.</returns>
+        /// <returns>A <see langword="bool"/> for whether the quaternion is normalized or not.</returns>
         public bool IsNormalized()
         {
             return Mathf.Abs(LengthSquared - 1) <= Mathf.Epsilon;
@@ -211,7 +217,7 @@ namespace Godot
 
         /// <summary>
         /// Returns the result of the spherical linear interpolation between
-        /// this quaternion and `to` by amount `weight`.
+        /// this quaternion and <paramref name="to"/> by amount <paramref name="weight"/>.
         ///
         /// Note: Both quaternions must be normalized.
         /// </summary>
@@ -283,7 +289,7 @@ namespace Godot
 
         /// <summary>
         /// Returns the result of the spherical linear interpolation between
-        /// this quaternion and `to` by amount `weight`, but without
+        /// this quaternion and <paramref name="to"/> by amount <paramref name="weight"/>, but without
         /// checking if the rotation path is not bigger than 90 degrees.
         /// </summary>
         /// <param name="to">The destination quaternion for interpolation. Must be normalized.</param>
@@ -338,15 +344,15 @@ namespace Godot
         /// Equivalent to an identity <see cref="Basis"/> matrix. If a vector is transformed by
         /// an identity quaternion, it will not change.
         /// </summary>
-        /// <value>Equivalent to `new Quaternion(0, 0, 0, 1)`.</value>
+        /// <value>Equivalent to <c>new Quaternion(0, 0, 0, 1)</c>.</value>
         public static Quaternion Identity { get { return _identity; } }
 
         /// <summary>
-        /// Constructs a quaternion defined by the given values.
+        /// Constructs a <see cref="Quaternion"/> defined by the given values.
         /// </summary>
-        /// <param name="x">X component of the quaternion (imaginary `i` axis part).</param>
-        /// <param name="y">Y component of the quaternion (imaginary `j` axis part).</param>
-        /// <param name="z">Z component of the quaternion (imaginary `k` axis part).</param>
+        /// <param name="x">X component of the quaternion (imaginary <c>i</c> axis part).</param>
+        /// <param name="y">Y component of the quaternion (imaginary <c>j</c> axis part).</param>
+        /// <param name="z">Z component of the quaternion (imaginary <c>k</c> axis part).</param>
         /// <param name="w">W component of the quaternion (real part).</param>
         public Quaternion(real_t x, real_t y, real_t z, real_t w)
         {
@@ -357,7 +363,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a quaternion from the given quaternion.
+        /// Constructs a <see cref="Quaternion"/> from the given <see cref="Quaternion"/>.
         /// </summary>
         /// <param name="q">The existing quaternion.</param>
         public Quaternion(Quaternion q)
@@ -366,21 +372,20 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a quaternion from the given <see cref="Basis"/>.
+        /// Constructs a <see cref="Quaternion"/> from the given <see cref="Basis"/>.
         /// </summary>
-        /// <param name="basis">The basis to construct from.</param>
+        /// <param name="basis">The <see cref="Basis"/> to construct from.</param>
         public Quaternion(Basis basis)
         {
             this = basis.Quaternion();
         }
 
         /// <summary>
-        /// Constructs a quaternion that will perform a rotation specified by
-        /// Euler angles (in the YXZ convention: when decomposing,
-        /// first Z, then X, and Y last),
+        /// Constructs a <see cref="Quaternion"/> that will perform a rotation specified by
+        /// Euler angles (in the YXZ convention: when decomposing, first Z, then X, and Y last),
         /// given in the vector format as (X angle, Y angle, Z angle).
         /// </summary>
-        /// <param name="eulerYXZ"></param>
+        /// <param name="eulerYXZ">Euler angles that the quaternion will be rotated by.</param>
         public Quaternion(Vector3 eulerYXZ)
         {
             real_t halfA1 = eulerYXZ.y * 0.5f;
@@ -405,7 +410,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a quaternion that will rotate around the given axis
+        /// Constructs a <see cref="Quaternion"/> that will rotate around the given axis
         /// by the specified angle. The axis must be a normalized vector.
         /// </summary>
         /// <param name="axis">The axis to rotate around. Must be normalized.</param>
@@ -514,6 +519,11 @@ namespace Godot
             return !left.Equals(right);
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if this quaternion and <paramref name="obj"/> are equal.
+        /// </summary>
+        /// <param name="obj">The other object to compare.</param>
+        /// <returns>Whether or not the quaternion and the other object are equal.</returns>
         public override bool Equals(object obj)
         {
             if (obj is Quaternion)
@@ -524,14 +534,19 @@ namespace Godot
             return false;
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if this quaternion and <paramref name="other"/> are equal.
+        /// </summary>
+        /// <param name="other">The other quaternion to compare.</param>
+        /// <returns>Whether or not the quaternions are equal.</returns>
         public bool Equals(Quaternion other)
         {
             return x == other.x && y == other.y && z == other.z && w == other.w;
         }
 
         /// <summary>
-        /// Returns true if this quaternion and `other` are approximately equal, by running
-        /// <see cref="Mathf.IsEqualApprox(real_t, real_t)"/> on each component.
+        /// Returns <see langword="true"/> if this quaternion and <paramref name="other"/> are approximately equal,
+        /// by running <see cref="Mathf.IsEqualApprox(real_t, real_t)"/> on each component.
         /// </summary>
         /// <param name="other">The other quaternion to compare.</param>
         /// <returns>Whether or not the quaternions are approximately equal.</returns>
@@ -540,16 +555,28 @@ namespace Godot
             return Mathf.IsEqualApprox(x, other.x) && Mathf.IsEqualApprox(y, other.y) && Mathf.IsEqualApprox(z, other.z) && Mathf.IsEqualApprox(w, other.w);
         }
 
+        /// <summary>
+        /// Serves as the hash function for <see cref="Quaternion"/>.
+        /// </summary>
+        /// <returns>A hash code for this quaternion.</returns>
         public override int GetHashCode()
         {
             return y.GetHashCode() ^ x.GetHashCode() ^ z.GetHashCode() ^ w.GetHashCode();
         }
 
+        /// <summary>
+        /// Converts this <see cref="Quaternion"/> to a string.
+        /// </summary>
+        /// <returns>A string representation of this quaternion.</returns>
         public override string ToString()
         {
             return $"({x}, {y}, {z}, {w})";
         }
 
+        /// <summary>
+        /// Converts this <see cref="Quaternion"/> to a string with the given <paramref name="format"/>.
+        /// </summary>
+        /// <returns>A string representation of this quaternion.</returns>
         public string ToString(string format)
         {
             return $"({x.ToString(format)}, {y.ToString(format)}, {z.ToString(format)}, {w.ToString(format)})";
