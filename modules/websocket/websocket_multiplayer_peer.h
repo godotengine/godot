@@ -32,7 +32,7 @@
 #define WEBSOCKET_MULTIPLAYER_PEER_H
 
 #include "core/error/error_list.h"
-#include "core/io/multiplayer_peer.h"
+#include "core/multiplayer/multiplayer_peer.h"
 #include "core/templates/list.h"
 #include "websocket_peer.h"
 
@@ -80,8 +80,8 @@ public:
 	/* MultiplayerPeer */
 	void set_transfer_channel(int p_channel) override;
 	int get_transfer_channel() const override;
-	void set_transfer_mode(TransferMode p_mode) override;
-	TransferMode get_transfer_mode() const override;
+	void set_transfer_mode(Multiplayer::TransferMode p_mode) override;
+	Multiplayer::TransferMode get_transfer_mode() const override;
 	void set_target_peer(int p_target_peer) override;
 	int get_packet_peer() const override;
 	int get_unique_id() const override;

@@ -51,11 +51,11 @@ int WebRTCMultiplayerPeer::get_transfer_channel() const {
 	return transfer_channel;
 }
 
-void WebRTCMultiplayerPeer::set_transfer_mode(TransferMode p_mode) {
+void WebRTCMultiplayerPeer::set_transfer_mode(Multiplayer::TransferMode p_mode) {
 	transfer_mode = p_mode;
 }
 
-MultiplayerPeer::TransferMode WebRTCMultiplayerPeer::get_transfer_mode() const {
+Multiplayer::TransferMode WebRTCMultiplayerPeer::get_transfer_mode() const {
 	return transfer_mode;
 }
 
@@ -204,7 +204,7 @@ Error WebRTCMultiplayerPeer::initialize(int p_self_id, bool p_server_compat, Arr
 	ERR_FAIL_COND_V(p_self_id < 1 || p_self_id > ~(1 << 31), ERR_INVALID_PARAMETER);
 	channels_config.clear();
 	for (int i = 0; i < p_channels_config.size(); i++) {
-		ERR_FAIL_COND_V_MSG(p_channels_config[i].get_type() != Variant::INT, ERR_INVALID_PARAMETER, "The 'channels_config' array must contain only enum values from 'MultiplayerPeer.TransferMode'");
+		ERR_FAIL_COND_V_MSG(p_channels_config[i].get_type() != Variant::INT, ERR_INVALID_PARAMETER, "The 'channels_config' array must contain only enum values from 'MultiplayerPeer.Multiplayer::TransferMode'");
 		int mode = p_channels_config[i].operator int();
 		// Initialize data channel configurations.
 		Dictionary cfg;
@@ -213,17 +213,17 @@ Error WebRTCMultiplayerPeer::initialize(int p_self_id, bool p_server_compat, Arr
 		cfg["ordered"] = true;
 
 		switch (mode) {
-			case TRANSFER_MODE_UNRELIABLE_ORDERED:
+			case Multiplayer::TRANSFER_MODE_ORDERED:
 				cfg["maxPacketLifetime"] = 1;
 				break;
-			case TRANSFER_MODE_UNRELIABLE:
+			case Multiplayer::TRANSFER_MODE_UNRELIABLE:
 				cfg["maxPacketLifetime"] = 1;
 				cfg["ordered"] = false;
 				break;
-			case TRANSFER_MODE_RELIABLE:
+			case Multiplayer::TRANSFER_MODE_RELIABLE:
 				break;
 			default:
-				ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, vformat("The 'channels_config' array must contain only enum values from 'MultiplayerPeer.TransferMode'. Got: %d", mode));
+				ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, vformat("The 'channels_config' array must contain only enum values from 'MultiplayerPeer.Multiplayer::TransferMode'. Got: %d", mode));
 		}
 		channels_config.push_back(cfg);
 	}
@@ -355,13 +355,13 @@ Error WebRTCMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_si
 	int ch = transfer_channel;
 	if (ch == 0) {
 		switch (transfer_mode) {
-			case TRANSFER_MODE_RELIABLE:
+			case Multiplayer::TRANSFER_MODE_RELIABLE:
 				ch = CH_RELIABLE;
 				break;
-			case TRANSFER_MODE_UNRELIABLE_ORDERED:
+			case Multiplayer::TRANSFER_MODE_ORDERED:
 				ch = CH_ORDERED;
 				break;
-			case TRANSFER_MODE_UNRELIABLE:
+			case Multiplayer::TRANSFER_MODE_UNRELIABLE:
 				ch = CH_UNRELIABLE;
 				break;
 		}

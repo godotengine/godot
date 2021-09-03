@@ -31,8 +31,9 @@
 #ifndef MULTIPLAYER_REPLICATOR_H
 #define MULTIPLAYER_REPLICATOR_H
 
-#include "core/io/multiplayer_api.h"
+#include "core/multiplayer/multiplayer_api.h"
 
+#include "core/io/resource_uid.h"
 #include "core/templates/hash_map.h"
 #include "core/variant/typed_array.h"
 
@@ -68,6 +69,14 @@ protected:
 	static void _bind_methods();
 
 private:
+	enum {
+		BYTE_OR_ZERO_SHIFT = MultiplayerAPI::CMD_FLAG_0_SHIFT,
+	};
+
+	enum {
+		BYTE_OR_ZERO_FLAG = 1 << BYTE_OR_ZERO_SHIFT,
+	};
+
 	MultiplayerAPI *multiplayer = nullptr;
 	Vector<uint8_t> packet_cache;
 	Map<ResourceUID::ID, SceneConfig> replications;
@@ -108,7 +117,7 @@ public:
 	// Sync
 	Error sync_config(const ResourceUID::ID &p_id, uint64_t p_interval, const TypedArray<StringName> &p_props = TypedArray<StringName>(), const Callable &p_on_send = Callable(), const Callable &p_on_recv = Callable());
 	Error sync_all(const ResourceUID::ID &p_scene_id, int p_peer);
-	Error send_sync(int p_peer_id, const ResourceUID::ID &p_scene_id, PackedByteArray p_data, MultiplayerPeer::TransferMode p_mode, int p_channel);
+	Error send_sync(int p_peer_id, const ResourceUID::ID &p_scene_id, PackedByteArray p_data, Multiplayer::TransferMode p_mode, int p_channel);
 	void track(const ResourceUID::ID &p_scene_id, Object *p_object);
 	void untrack(const ResourceUID::ID &p_scene_id, Object *p_object);
 

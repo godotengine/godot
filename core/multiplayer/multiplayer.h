@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  multiplayer_peer.h                                                   */
+/*  multiplayer.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,58 +28,53 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NETWORKED_MULTIPLAYER_PEER_H
-#define NETWORKED_MULTIPLAYER_PEER_H
+#ifndef MULTIPLAYER_H
+#define MULTIPLAYER_H
 
-#include "core/io/packet_peer.h"
+#include "core/variant/binder_common.h"
 
-class MultiplayerPeer : public PacketPeer {
-	GDCLASS(MultiplayerPeer, PacketPeer);
+#include "core/string/string_name.h"
 
-protected:
-	static void _bind_methods();
+namespace Multiplayer {
 
-public:
-	enum {
-		TARGET_PEER_BROADCAST = 0,
-		TARGET_PEER_SERVER = 1
-	};
-	enum TransferMode {
-		TRANSFER_MODE_UNRELIABLE,
-		TRANSFER_MODE_UNRELIABLE_ORDERED,
-		TRANSFER_MODE_RELIABLE,
-	};
-
-	enum ConnectionStatus {
-		CONNECTION_DISCONNECTED,
-		CONNECTION_CONNECTING,
-		CONNECTION_CONNECTED,
-	};
-
-	virtual void set_transfer_channel(int p_channel) = 0;
-	virtual int get_transfer_channel() const = 0;
-	virtual void set_transfer_mode(TransferMode p_mode) = 0;
-	virtual TransferMode get_transfer_mode() const = 0;
-	virtual void set_target_peer(int p_peer_id) = 0;
-
-	virtual int get_packet_peer() const = 0;
-
-	virtual bool is_server() const = 0;
-
-	virtual void poll() = 0;
-
-	virtual int get_unique_id() const = 0;
-
-	virtual void set_refuse_new_connections(bool p_enable) = 0;
-	virtual bool is_refusing_new_connections() const = 0;
-
-	virtual ConnectionStatus get_connection_status() const = 0;
-	uint32_t generate_unique_id() const;
-
-	MultiplayerPeer() {}
+enum TransferMode {
+	TRANSFER_MODE_UNRELIABLE,
+	TRANSFER_MODE_ORDERED,
+	TRANSFER_MODE_RELIABLE
 };
 
-VARIANT_ENUM_CAST(MultiplayerPeer::TransferMode)
-VARIANT_ENUM_CAST(MultiplayerPeer::ConnectionStatus)
+enum RPCMode {
+	RPC_MODE_DISABLED, // No rpc for this method, calls to this will be blocked (default)
+	RPC_MODE_ANY, // Any peer can call this rpc()
+	RPC_MODE_AUTHORITY, // / Only the node's network authority (server by default) can call this rpc()
+};
 
-#endif // NETWORKED_MULTIPLAYER_PEER_H
+struct RPCConfig {
+	StringName name;
+	RPCMode rpc_mode = RPC_MODE_DISABLED;
+	bool sync = false;
+	TransferMode transfer_mode = TRANSFER_MODE_RELIABLE;
+	int channel = 0;
+
+	bool operator==(RPCConfig const &p_other) const {
+		return name == p_other.name;
+	}
+};
+
+struct SortRPCConfig {
+	StringName::AlphCompare compare;
+	bool operator()(const RPCConfig &p_a, const RPCConfig &p_b) const {
+		return compare(p_a.name, p_b.name);
+	}
+};
+
+}; // namespace Multiplayer
+
+// This is needed for proper docs generation (i.e. not "Multiplayer."-prefixed).
+typedef Multiplayer::RPCMode RPCMode;
+typedef Multiplayer::TransferMode TransferMode;
+
+VARIANT_ENUM_CAST(RPCMode);
+VARIANT_ENUM_CAST(TransferMode);
+
+#endif // MULTIPLAYER_H

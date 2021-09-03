@@ -1857,7 +1857,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 
 	StringName func_name;
 	bool is_static = false;
-	MultiplayerAPI::RPCConfig rpc_config;
+	Multiplayer::RPCConfig rpc_config;
 	GDScriptDataType return_type;
 	return_type.has_type = true;
 	return_type.kind = GDScriptDataType::BUILTIN;
@@ -2086,7 +2086,7 @@ Error GDScriptCompiler::_parse_setter_getter(GDScript *p_script, const GDScriptP
 		return_type = _gdtype_from_datatype(p_variable->get_datatype(), p_script);
 	}
 
-	codegen.generator->write_start(p_script, func_name, false, MultiplayerAPI::RPCConfig(), return_type);
+	codegen.generator->write_start(p_script, func_name, false, Multiplayer::RPCConfig(), return_type);
 
 	if (p_is_setter) {
 		uint32_t par_addr = codegen.generator->add_parameter(p_variable->setter_parameter->name, false, _gdtype_from_datatype(p_variable->get_datatype()));

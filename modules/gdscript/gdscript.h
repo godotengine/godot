@@ -85,7 +85,7 @@ class GDScript : public Script {
 	Map<StringName, MemberInfo> member_indices; //members are just indices to the instantiated script.
 	Map<StringName, Ref<GDScript>> subclasses;
 	Map<StringName, Vector<StringName>> _signals;
-	Vector<MultiplayerAPI::RPCConfig> rpc_functions;
+	Vector<Multiplayer::RPCConfig> rpc_functions;
 
 #ifdef TOOLS_ENABLED
 
@@ -245,7 +245,7 @@ public:
 	virtual void get_constants(Map<StringName, Variant> *p_constants) override;
 	virtual void get_members(Set<StringName> *p_members) override;
 
-	virtual const Vector<MultiplayerAPI::RPCConfig> get_rpc_methods() const override;
+	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const override;
 
 #ifdef TOOLS_ENABLED
 	virtual bool is_placeholder_fallback_enabled() const override { return placeholder_fallback_enabled; }
@@ -298,7 +298,7 @@ public:
 
 	void reload_members();
 
-	virtual const Vector<MultiplayerAPI::RPCConfig> get_rpc_methods() const;
+	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const;
 
 	GDScriptInstance();
 	~GDScriptInstance();

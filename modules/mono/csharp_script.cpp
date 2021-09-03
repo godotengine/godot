@@ -2124,7 +2124,7 @@ bool CSharpInstance::refcount_decremented() {
 	return ref_dying;
 }
 
-const Vector<MultiplayerAPI::RPCConfig> CSharpInstance::get_rpc_methods() const {
+const Vector<Multiplayer::RPCConfig> CSharpInstance::get_rpc_methods() const {
 	return script->get_rpc_methods();
 }
 
@@ -3034,13 +3034,13 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 			Vector<GDMonoMethod *> methods = top->get_all_methods();
 			for (int i = 0; i < methods.size(); i++) {
 				if (!methods[i]->is_static()) {
-					MultiplayerAPI::RPCMode mode = p_script->_member_get_rpc_mode(methods[i]);
-					if (MultiplayerAPI::RPC_MODE_DISABLED != mode) {
-						MultiplayerAPI::RPCConfig nd;
+					Multiplayer::RPCMode mode = p_script->_member_get_rpc_mode(methods[i]);
+					if (Multiplayer::RPC_MODE_DISABLED != mode) {
+						Multiplayer::RPCConfig nd;
 						nd.name = methods[i]->get_name();
 						nd.rpc_mode = mode;
 						// TODO Transfer mode, channel
-						nd.transfer_mode = MultiplayerPeer::TRANSFER_MODE_RELIABLE;
+						nd.transfer_mode = Multiplayer::TRANSFER_MODE_RELIABLE;
 						nd.channel = 0;
 						if (-1 == p_script->rpc_functions.find(nd)) {
 							p_script->rpc_functions.push_back(nd);
@@ -3054,7 +3054,7 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 	}
 
 	// Sort so we are 100% that they are always the same.
-	p_script->rpc_functions.sort_custom<MultiplayerAPI::SortRPCConfig>();
+	p_script->rpc_functions.sort_custom<Multiplayer::SortRPCConfig>();
 
 	p_script->load_script_signals(p_script->script_class, p_script->native);
 }
@@ -3464,18 +3464,18 @@ int CSharpScript::get_member_line(const StringName &p_member) const {
 	return -1;
 }
 
-MultiplayerAPI::RPCMode CSharpScript::_member_get_rpc_mode(IMonoClassMember *p_member) const {
+Multiplayer::RPCMode CSharpScript::_member_get_rpc_mode(IMonoClassMember *p_member) const {
 	if (p_member->has_attribute(CACHED_CLASS(RemoteAttribute))) {
-		return MultiplayerAPI::RPC_MODE_ANY;
+		return Multiplayer::RPC_MODE_ANY;
 	}
 	if (p_member->has_attribute(CACHED_CLASS(PuppetAttribute))) {
-		return MultiplayerAPI::RPC_MODE_AUTHORITY;
+		return Multiplayer::RPC_MODE_AUTHORITY;
 	}
 
-	return MultiplayerAPI::RPC_MODE_DISABLED;
+	return Multiplayer::RPC_MODE_DISABLED;
 }
 
-const Vector<MultiplayerAPI::RPCConfig> CSharpScript::get_rpc_methods() const {
+const Vector<Multiplayer::RPCConfig> CSharpScript::get_rpc_methods() const {
 	return rpc_functions;
 }
 

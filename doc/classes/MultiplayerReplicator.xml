@@ -62,7 +62,7 @@
 			<argument index="0" name="peer_id" type="int" />
 			<argument index="1" name="scene_id" type="int" />
 			<argument index="2" name="data" type="PackedByteArray" />
-			<argument index="3" name="transfer_mode" type="int" enum="MultiplayerPeer.TransferMode" default="2" />
+			<argument index="3" name="transfer_mode" type="int" enum="TransferMode" default="2" />
 			<argument index="4" name="channel" type="int" default="0" />
 			<description>
 				Sends a sync request for the instances of the scene identified by [code]scene_id[/code] to the given [code]peer_id[/code] (see [method MultiplayerPeer.set_target_peer]). This function can only be called manually when overriding the send and receive sync functions (see [method sync_config]).

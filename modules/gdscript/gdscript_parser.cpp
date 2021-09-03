@@ -133,7 +133,7 @@ GDScriptParser::GDScriptParser() {
 	register_annotation(MethodInfo("@export_flags_3d_physics"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_PHYSICS, Variant::INT>);
 	register_annotation(MethodInfo("@export_flags_3d_navigation"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_NAVIGATION, Variant::INT>);
 	// Networking.
-	register_annotation(MethodInfo("@rpc", { Variant::STRING, "mode" }, { Variant::STRING, "sync" }, { Variant::STRING, "transfer_mode" }, { Variant::INT, "transfer_channel" }), AnnotationInfo::FUNCTION, &GDScriptParser::network_annotations<MultiplayerAPI::RPC_MODE_AUTHORITY>, 4, true);
+	register_annotation(MethodInfo("@rpc", { Variant::STRING, "mode" }, { Variant::STRING, "sync" }, { Variant::STRING, "transfer_mode" }, { Variant::INT, "transfer_channel" }), AnnotationInfo::FUNCTION, &GDScriptParser::network_annotations<Multiplayer::RPC_MODE_AUTHORITY>, 4, true);
 	// TODO: Warning annotations.
 }
 
@@ -3393,11 +3393,11 @@ bool GDScriptParser::warning_annotations(const AnnotationNode *p_annotation, Nod
 	ERR_FAIL_V_MSG(false, "Not implemented.");
 }
 
-template <MultiplayerAPI::RPCMode t_mode>
+template <Multiplayer::RPCMode t_mode>
 bool GDScriptParser::network_annotations(const AnnotationNode *p_annotation, Node *p_node) {
 	ERR_FAIL_COND_V_MSG(p_node->type != Node::VARIABLE && p_node->type != Node::FUNCTION, false, vformat(R"("%s" annotation can only be applied to variables and functions.)", p_annotation->name));
 
-	MultiplayerAPI::RPCConfig rpc_config;
+	Multiplayer::RPCConfig rpc_config;
 	rpc_config.rpc_mode = t_mode;
 	if (p_annotation->resolved_arguments.size()) {
 		int last = p_annotation->resolved_arguments.size() - 1;
@@ -3412,19 +3412,19 @@ bool GDScriptParser::network_annotations(const AnnotationNode *p_annotation, Nod
 		for (int i = last; i >= 0; i--) {
 			String mode = p_annotation->resolved_arguments[i].operator String();
 			if (mode == "any") {
-				rpc_config.rpc_mode = MultiplayerAPI::RPC_MODE_ANY;
+				rpc_config.rpc_mode = Multiplayer::RPC_MODE_ANY;
 			} else if (mode == "auth") {
-				rpc_config.rpc_mode = MultiplayerAPI::RPC_MODE_AUTHORITY;
+				rpc_config.rpc_mode = Multiplayer::RPC_MODE_AUTHORITY;
 			} else if (mode == "sync") {
 				rpc_config.sync = true;
 			} else if (mode == "nosync") {
 				rpc_config.sync = false;
 			} else if (mode == "reliable") {
-				rpc_config.transfer_mode = MultiplayerPeer::TRANSFER_MODE_RELIABLE;
+				rpc_config.transfer_mode = Multiplayer::TRANSFER_MODE_RELIABLE;
 			} else if (mode == "unreliable") {
-				rpc_config.transfer_mode = MultiplayerPeer::TRANSFER_MODE_UNRELIABLE;
+				rpc_config.transfer_mode = Multiplayer::TRANSFER_MODE_UNRELIABLE;
 			} else if (mode == "ordered") {
-				rpc_config.transfer_mode = MultiplayerPeer::TRANSFER_MODE_UNRELIABLE_ORDERED;
+				rpc_config.transfer_mode = Multiplayer::TRANSFER_MODE_ORDERED;
 			} else {
 				push_error(R"(Invalid RPC argument. Must be one of: 'sync'/'nosync' (local calls), 'any'/'auth' (permission), 'reliable'/'unreliable'/'ordered' (transfer mode).)", p_annotation);
 			}
@@ -3433,7 +3433,7 @@ bool GDScriptParser::network_annotations(const AnnotationNode *p_annotation, Nod
 	switch (p_node->type) {
 		case Node::FUNCTION: {
 			FunctionNode *function = static_cast<FunctionNode *>(p_node);
-			if (function->rpc_config.rpc_mode != MultiplayerAPI::RPC_MODE_DISABLED) {
+			if (function->rpc_config.rpc_mode != Multiplayer::RPC_MODE_DISABLED) {
 				push_error(R"(RPC annotations can only be used once per function.)", p_annotation);
 				return false;
 			}

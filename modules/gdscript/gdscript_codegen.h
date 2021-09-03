@@ -31,7 +31,7 @@
 #ifndef GDSCRIPT_CODEGEN
 #define GDSCRIPT_CODEGEN
 
-#include "core/io/multiplayer_api.h"
+#include "core/multiplayer/multiplayer.h"
 #include "core/string/string_name.h"
 #include "core/variant/variant.h"
 #include "gdscript_function.h"
@@ -80,7 +80,7 @@ public:
 	virtual void start_block() = 0;
 	virtual void end_block() = 0;
 
-	virtual void write_start(GDScript *p_script, const StringName &p_function_name, bool p_static, MultiplayerAPI::RPCConfig p_rpc_config, const GDScriptDataType &p_return_type) = 0;
+	virtual void write_start(GDScript *p_script, const StringName &p_function_name, bool p_static, Multiplayer::RPCConfig p_rpc_config, const GDScriptDataType &p_return_type) = 0;
 	virtual GDScriptFunction *write_end() = 0;
 
 #ifdef DEBUG_ENABLED
