@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 """Functions used to generate source files during build time
 
 All such functions are invoked in a subprocess on Windows to prevent build flakiness.
