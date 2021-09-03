@@ -192,7 +192,7 @@ Vector3 NavigationAgent3D::get_target_location() const {
 Vector3 NavigationAgent3D::get_next_location() {
 	update_navigation();
 	if (navigation_path.size() == 0) {
-		ERR_FAIL_COND_V(agent_parent == nullptr, Vector3());
+		ERR_FAIL_COND_V_MSG(agent_parent == nullptr, Vector3(), "The agent has no parent.");
 		return agent_parent->get_global_transform().origin;
 	} else {
 		return navigation_path[nav_path_index] - Vector3(0, navigation_height_offset, 0);
@@ -200,7 +200,7 @@ Vector3 NavigationAgent3D::get_next_location() {
 }
 
 real_t NavigationAgent3D::distance_to_target() const {
-	ERR_FAIL_COND_V(agent_parent == nullptr, 0.0);
+	ERR_FAIL_COND_V_MSG(agent_parent == nullptr, 0.0, "The agent has no parent.");
 	return agent_parent->get_global_transform().origin.distance_to(target_location);
 }
 

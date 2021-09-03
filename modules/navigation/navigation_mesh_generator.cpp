@@ -489,7 +489,7 @@ NavigationMeshGenerator::~NavigationMeshGenerator() {
 }
 
 void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node) {
-	ERR_FAIL_COND(!p_nav_mesh.is_valid());
+	ERR_FAIL_COND_MSG(!p_nav_mesh.is_valid(), "Invalid navigation mesh.");
 
 #ifdef TOOLS_ENABLED
 	EditorProgress *ep(nullptr);
