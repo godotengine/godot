@@ -45,8 +45,8 @@
  */
 template <class K, class V, class Hasher = HashMapHasherDefault, class Comparator = HashMapComparatorDefault<K>, uint8_t MIN_HASH_TABLE_POWER = 3, uint8_t RELATIONSHIP = 8>
 class OrderedHashMap {
-	typedef List<Pair<const K *, V>> InternalList;
-	typedef HashMap<K, typename InternalList::Element *, Hasher, Comparator, MIN_HASH_TABLE_POWER, RELATIONSHIP> InternalMap;
+	typedef HashMap<K, V, Hasher, Comparator, MIN_HASH_TABLE_POWER, RELATIONSHIP> InternalMap;
+	typedef List<typename InternalMap::Element *> InternalList;
 
 	InternalList list;
 	InternalMap map;
@@ -56,39 +56,26 @@ public:
 		friend class OrderedHashMap<K, V, Hasher, Comparator, MIN_HASH_TABLE_POWER, RELATIONSHIP>;
 
 		typename InternalList::Element *list_element = nullptr;
-		typename InternalList::Element *prev_element = nullptr;
-		typename InternalList::Element *next_element = nullptr;
 
-		Element(typename InternalList::Element *p_element) {
-			list_element = p_element;
-
-			if (list_element) {
-				next_element = list_element->next();
-				prev_element = list_element->prev();
-			}
-		}
+		Element(typename InternalList::Element *p_element) :
+				list_element(p_element) {}
 
 	public:
 		_FORCE_INLINE_ Element() {}
 
+		Element(const Element &other) :
+				list_element(other.list_element) {}
+
 		Element next() const {
-			return Element(next_element);
+			return Element(list_element ? list_element->next() : nullptr);
 		}
 
 		Element prev() const {
-			return Element(prev_element);
-		}
-
-		Element(const Element &other) :
-				list_element(other.list_element),
-				prev_element(other.prev_element),
-				next_element(other.next_element) {
+			return Element(list_element ? list_element->prev() : nullptr);
 		}
 
 		Element &operator=(const Element &other) {
 			list_element = other.list_element;
-			next_element = other.next_element;
-			prev_element = other.prev_element;
 			return *this;
 		}
 
@@ -103,29 +90,34 @@ public:
 			return (list_element != nullptr);
 		}
 
+		KeyValue<K, V> &key_value() const {
+			CRASH_COND(!list_element);
+			return list_element->get()->key_value();
+		}
+
 		const K &key() const {
 			CRASH_COND(!list_element);
-			return *(list_element->get().first);
+			return list_element->get()->key();
 		}
 
 		V &value() {
 			CRASH_COND(!list_element);
-			return list_element->get().second;
+			return list_element->get()->value();
 		}
 
 		const V &value() const {
 			CRASH_COND(!list_element);
-			return list_element->get().second;
+			return list_element->get()->value();
 		}
 
 		V &get() {
 			CRASH_COND(!list_element);
-			return list_element->get().second;
+			return list_element->get()->value();
 		}
 
 		const V &get() const {
 			CRASH_COND(!list_element);
-			return list_element->get().second;
+			return list_element->get()->value();
 		}
 	};
 
@@ -135,8 +127,7 @@ public:
 		const typename InternalList::Element *list_element = nullptr;
 
 		ConstElement(const typename InternalList::Element *p_element) :
-				list_element(p_element) {
-		}
+				list_element(p_element) {}
 
 	public:
 		_FORCE_INLINE_ ConstElement() {}
@@ -171,51 +162,138 @@ public:
 
 		const K &key() const {
 			CRASH_COND(!list_element);
-			return *(list_element->get().first);
+			return list_element->get()->key();
 		}
 
 		const V &value() const {
 			CRASH_COND(!list_element);
-			return list_element->get().second;
+			return list_element->get()->value();
 		}
 
 		const V &get() const {
 			CRASH_COND(!list_element);
-			return list_element->get().second;
+			return list_element->get()->value();
 		}
 	};
 
+	typedef KeyValue<K, V> ValueType;
+
+	struct Iterator {
+		_FORCE_INLINE_ KeyValue<K, V> &operator*() const {
+			return E.key_value();
+		}
+		_FORCE_INLINE_ KeyValue<K, V> *operator->() const { return &E.key_value(); }
+		_FORCE_INLINE_ Iterator &operator++() {
+			E = E.next();
+			return *this;
+		}
+		_FORCE_INLINE_ Iterator &operator--() {
+			E = E.prev();
+			return *this;
+		}
+
+		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return E == b.E; }
+		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return E != b.E; }
+
+		Iterator(Element p_E) { E = p_E; }
+		Iterator() {}
+		Iterator(const Iterator &p_it) { E = p_it.E; }
+
+	private:
+		Element E = Element(nullptr);
+	};
+
+	struct ConstIterator {
+		_FORCE_INLINE_ const KeyValue<K, V> &operator*() const {
+			return E.key_value();
+		}
+		_FORCE_INLINE_ const KeyValue<K, V> *operator->() const { return &E.key_value(); }
+		_FORCE_INLINE_ ConstIterator &operator++() {
+			E = E.next();
+			return *this;
+		}
+		_FORCE_INLINE_ ConstIterator &operator--() {
+			E = E.prev();
+			return *this;
+		}
+
+		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return E == b.E; }
+		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return E != b.E; }
+
+		ConstIterator(const Element p_E) { E = p_E; }
+		ConstIterator() {}
+		ConstIterator(const ConstIterator &p_it) { E = p_it.E; }
+
+	private:
+		const Element E = Element(nullptr);
+	};
+
+	_FORCE_INLINE_ Iterator begin() {
+		return Iterator(front());
+	}
+	_FORCE_INLINE_ Iterator end() {
+		return Iterator(nullptr);
+	}
+
+#if 0
+	//to use when replacing find()
+	_FORCE_INLINE_ Iterator find(const K &p_key) {
+		return Iterator(find(p_key));
+	}
+#endif
+	_FORCE_INLINE_ void remove(const Iterator &p_iter) {
+		return erase(p_iter.E);
+	}
+
+	_FORCE_INLINE_ ConstIterator begin() const {
+		return ConstIterator(front());
+	}
+	_FORCE_INLINE_ ConstIterator end() const {
+		return ConstIterator(nullptr);
+	}
+
+#if 0
+	//to use when replacing find()
+	_FORCE_INLINE_ ConstIterator find(const K &p_key) const {
+		return ConstIterator(find(p_key));
+	}
+#endif
+
 	ConstElement find(const K &p_key) const {
-		typename InternalList::Element *const *list_element = map.getptr(p_key);
-		if (list_element) {
-			return ConstElement(*list_element);
+		if (map.has(p_key)) {
+			const typename InternalList::Element *it = list.front();
+			while (it) {
+				if (it->get()->key() == p_key) {
+					return ConstElement(it);
+				}
+				it = it->next();
+			}
 		}
 		return ConstElement(nullptr);
 	}
 
 	Element find(const K &p_key) {
-		typename InternalList::Element **list_element = map.getptr(p_key);
-		if (list_element) {
-			return Element(*list_element);
+		if (map.has(p_key)) {
+			typename InternalList::Element *it = list.front();
+			while (it) {
+				if (it->get()->key() == p_key) {
+					return Element(it);
+				}
+				it = it->next();
+			}
 		}
 		return Element(nullptr);
 	}
 
 	Element insert(const K &p_key, const V &p_value) {
-		typename InternalList::Element **list_element = map.getptr(p_key);
-		if (list_element) {
-			(*list_element)->get().second = p_value;
-			return Element(*list_element);
+		if (!map.has(p_key)) {
+			typename InternalMap::Element *new_element = map.set(p_key, p_value);
+			typename InternalList::Element *list_element = list.push_back(new_element);
+			return Element(list_element);
 		}
-		// Incorrectly set the first value of the pair with a value that will
-		// be invalid as soon as we leave this function...
-		typename InternalList::Element *new_element = list.push_back(Pair<const K *, V>(&p_key, p_value));
-		// ...this is needed here in case the hashmap recursively reference itself...
-		typename InternalMap::Element *e = map.set(p_key, new_element);
-		// ...now we can set the right value !
-		new_element->get().first = &e->key();
 
-		return Element(new_element);
+		map.set(p_key, p_value);
+		return find(p_key);
 	}
 
 	void erase(Element &p_element) {
@@ -225,9 +303,9 @@ public:
 	}
 
 	bool erase(const K &p_key) {
-		typename InternalList::Element **list_element = map.getptr(p_key);
-		if (list_element) {
-			list.erase(*list_element);
+		const Element element = find(p_key);
+		if (element.list_element) {
+			list.erase(element.list_element);
 			map.erase(p_key);
 			return true;
 		}

@@ -132,7 +132,8 @@ public:
 			data->erase(this);
 		}
 
-		_FORCE_INLINE_ Element() {}
+		_FORCE_INLINE_ Element(T p_value) :
+				value(p_value) {}
 	};
 
 	typedef T ValueType;
@@ -279,7 +280,7 @@ public:
 	/**
 	 * store a new element at the end of the list
 	 */
-	Element *push_back(const T &value) {
+	Element *push_back(const T &p_value) {
 		if (!_data) {
 			_data = memnew_allocator(_Data, A);
 			_data->first = nullptr;
@@ -287,9 +288,7 @@ public:
 			_data->size_cache = 0;
 		}
 
-		Element *n = memnew_allocator(Element, A);
-		n->value = (T &)value;
-
+		Element *n = memnew_allocator(Element((T &)p_value), A);
 		n->prev_ptr = _data->last;
 		n->next_ptr = nullptr;
 		n->data = _data;
@@ -318,7 +317,7 @@ public:
 	/**
 	 * store a new element at the beginning of the list
 	 */
-	Element *push_front(const T &value) {
+	Element *push_front(const T &p_value) {
 		if (!_data) {
 			_data = memnew_allocator(_Data, A);
 			_data->first = nullptr;
@@ -326,8 +325,7 @@ public:
 			_data->size_cache = 0;
 		}
 
-		Element *n = memnew_allocator(Element, A);
-		n->value = (T &)value;
+		Element *n = memnew_allocator(Element((T &)p_value), A);
 		n->prev_ptr = nullptr;
 		n->next_ptr = _data->first;
 		n->data = _data;
@@ -360,8 +358,7 @@ public:
 			return push_back(p_value);
 		}
 
-		Element *n = memnew_allocator(Element, A);
-		n->value = (T &)p_value;
+		Element *n = memnew_allocator(Element((T &)p_value), A);
 		n->prev_ptr = p_element;
 		n->next_ptr = p_element->next_ptr;
 		n->data = _data;
@@ -386,8 +383,7 @@ public:
 			return push_back(p_value);
 		}
 
-		Element *n = memnew_allocator(Element, A);
-		n->value = (T &)p_value;
+		Element *n = memnew_allocator(Element((T &)p_value), A);
 		n->prev_ptr = p_element->prev_ptr;
 		n->next_ptr = p_element;
 		n->data = _data;
