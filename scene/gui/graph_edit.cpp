@@ -938,10 +938,10 @@ void GraphEdit::_minimap_draw() {
 	Vector2 graph_offset = minimap->_get_graph_offset();
 	Vector2 minimap_offset = minimap->minimap_offset;
 
-	// Draw comment graph nodes.
+	// Draw graph nodes.
 	for (int i = get_child_count() - 1; i >= 0; i--) {
 		GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
-		if (!gn || !gn->is_comment()) {
+		if (!gn) {
 			continue;
 		}
 
@@ -950,35 +950,23 @@ void GraphEdit::_minimap_draw() {
 		Rect2 node_rect = Rect2(node_position, node_size);
 
 		Ref<StyleBoxFlat> sb_minimap = minimap->get_theme_stylebox(SNAME("node"))->duplicate();
+		Ref<StyleBoxFlat> sbf;
 
-		// Override default values with colors provided by the GraphNode's stylebox, if possible.
-		Ref<StyleBoxFlat> sbf = gn->get_theme_stylebox(gn->is_selected() ? "commentfocus" : "comment");
-		if (sbf.is_valid()) {
-			Color node_color = sbf->get_bg_color();
-			sb_minimap->set_bg_color(node_color);
-		}
+		if (gn->is_comment()) {
+			// Override default values with colors provided by the GraphNode's stylebox, if possible.
+			sbf = gn->get_theme_stylebox(gn->is_selected() ? "commentfocus" : "comment");
+			if (sbf.is_valid()) {
+				Color node_color = sbf->get_bg_color();
+				sb_minimap->set_bg_color(node_color);
+			}
 
-		minimap->draw_style_box(sb_minimap, node_rect);
-	}
-
-	// Draw regular graph nodes.
-	for (int i = get_child_count() - 1; i >= 0; i--) {
-		GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
-		if (!gn || gn->is_comment()) {
-			continue;
-		}
-
-		Vector2 node_position = minimap->_convert_from_graph_position(gn->get_position_offset() * zoom - graph_offset) + minimap_offset;
-		Vector2 node_size = minimap->_convert_from_graph_position(gn->get_size() * zoom);
-		Rect2 node_rect = Rect2(node_position, node_size);
-
-		Ref<StyleBoxFlat> sb_minimap = minimap->get_theme_stylebox(SNAME("node"))->duplicate();
-
-		// Override default values with colors provided by the GraphNode's stylebox, if possible.
-		Ref<StyleBoxFlat> sbf = gn->get_theme_stylebox(gn->is_selected() ? "selectedframe" : "frame");
-		if (sbf.is_valid()) {
-			Color node_color = sbf->get_border_color();
-			sb_minimap->set_bg_color(node_color);
+		} else {
+			// Override default values with colors provided by the GraphNode's stylebox, if possible.
+			sbf = gn->get_theme_stylebox(gn->is_selected() ? "selectedframe" : "frame");
+			if (sbf.is_valid()) {
+				Color node_color = sbf->get_border_color();
+				sb_minimap->set_bg_color(node_color);
+			}
 		}
 
 		minimap->draw_style_box(sb_minimap, node_rect);
