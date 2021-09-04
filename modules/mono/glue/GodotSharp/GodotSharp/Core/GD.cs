@@ -127,7 +127,7 @@ namespace Godot
         /// </code>
         /// </example>
         /// <param name="linear">The linear energy to convert.</param>
-        /// <returns>Audio as decibels</returns>
+        /// <returns>Audio as decibels.</returns>
         public static real_t Linear2Db(real_t linear)
         {
             return (real_t)(Math.Log(linear) * 8.6858896380650365530225783783321);
