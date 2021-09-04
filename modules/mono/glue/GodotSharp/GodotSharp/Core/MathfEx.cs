@@ -44,7 +44,7 @@ namespace Godot
         /// <summary>
         /// Returns the amount of digits after the decimal place.
         /// </summary>
-        /// <param name="s">The input <see cref="decimal"/> value.</param>
+        /// <param name="s">The input <see langword="decimal"/> value.</param>
         /// <returns>The amount of digits.</returns>
         public static int DecimalCount(decimal s)
         {
@@ -54,7 +54,7 @@ namespace Godot
         /// <summary>
         /// Rounds <paramref name="s"/> upward (towards positive infinity).
         ///
-        /// This is the same as <see cref="Ceil(real_t)"/>, but returns an <c>int</c>.
+        /// This is the same as <see cref="Ceil(real_t)"/>, but returns an <see langword="int"/>.
         /// </summary>
         /// <param name="s">The number to ceil.</param>
         /// <returns>The smallest whole number that is not less than <paramref name="s"/>.</returns>
@@ -66,7 +66,7 @@ namespace Godot
         /// <summary>
         /// Rounds <paramref name="s"/> downward (towards negative infinity).
         ///
-        /// This is the same as <see cref="Floor(real_t)"/>, but returns an <c>int</c>.
+        /// This is the same as <see cref="Floor(real_t)"/>, but returns an <see langword="int"/>.
         /// </summary>
         /// <param name="s">The number to floor.</param>
         /// <returns>The largest whole number that is not more than <paramref name="s"/>.</returns>
@@ -78,7 +78,7 @@ namespace Godot
         /// <summary>
         /// Rounds <paramref name="s"/> to the nearest whole number.
         ///
-        /// This is the same as <see cref="Round(real_t)"/>, but returns an <c>int</c>.
+        /// This is the same as <see cref="Round(real_t)"/>, but returns an <see langword="int"/>.
         /// </summary>
         /// <param name="s">The number to round.</param>
         /// <returns>The rounded number.</returns>

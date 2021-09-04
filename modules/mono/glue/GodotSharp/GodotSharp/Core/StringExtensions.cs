@@ -423,6 +423,10 @@ namespace Godot
         /// <summary>
         /// Find the first occurrence of a substring. Optionally, the search starting position can be passed.
         /// </summary>
+        /// <seealso cref="Find(string, char, int, bool)"/>
+        /// <seealso cref="FindLast(string, string, bool)"/>
+        /// <seealso cref="FindLast(string, string, int, bool)"/>
+        /// <seealso cref="FindN(string, string, int)"/>
         /// <param name="instance">The string that will be searched.</param>
         /// <param name="what">The substring to find.</param>
         /// <param name="from">The search starting position.</param>

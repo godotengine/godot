@@ -651,7 +651,7 @@ namespace Godot
         /// </summary>
         /// <param name="s">The value to stepify.</param>
         /// <param name="step">The step size to snap to.</param>
-        /// <returns></returns>
+        /// <returns>The snapped value.</returns>
         public static real_t Stepify(real_t s, real_t step)
         {
             if (step != 0f)
