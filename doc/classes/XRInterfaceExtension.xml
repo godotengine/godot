@@ -11,8 +11,8 @@
 	<methods>
 		<method name="_commit_views" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="" type="RID" />
-			<argument index="1" name="" type="Rect2" />
+			<argument index="0" name="render_target" type="RID" />
+			<argument index="1" name="screen_rect" type="Rect2" />
 			<description>
 			</description>
 		</method>

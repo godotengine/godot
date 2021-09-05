@@ -49,7 +49,7 @@ void XRInterfaceExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_transform_for_view, "view", "cam_transform");
 	GDVIRTUAL_BIND(_get_projection_for_view, "view", "aspect", "z_near", "z_far");
 
-	GDVIRTUAL_BIND(_commit_views);
+	GDVIRTUAL_BIND(_commit_views, "render_target", "screen_rect");
 
 	GDVIRTUAL_BIND(_process);
 	GDVIRTUAL_BIND(_notification, "what");
