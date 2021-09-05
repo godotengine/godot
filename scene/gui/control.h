@@ -230,6 +230,9 @@ private:
 
 	} data;
 
+	static constexpr unsigned properties_managed_by_container_count = 11;
+	static String properties_managed_by_container[properties_managed_by_container_count];
+
 	// used internally
 	Control *_find_control_at_pos(CanvasItem *p_node, const Point2 &p_pos, const Transform2D &p_xform, Transform2D &r_inv_xform);
 
