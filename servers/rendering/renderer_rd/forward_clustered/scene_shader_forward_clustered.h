@@ -137,6 +137,7 @@ public:
 
 		bool unshaded;
 		bool uses_vertex;
+		bool uses_position;
 		bool uses_sss;
 		bool uses_transmittance;
 		bool uses_screen_texture;

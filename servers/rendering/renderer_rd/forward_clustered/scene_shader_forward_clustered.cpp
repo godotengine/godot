@@ -66,6 +66,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 
 	unshaded = false;
 	uses_vertex = false;
+	uses_position = false;
 	uses_sss = false;
 	uses_transmittance = false;
 	uses_screen_texture = false;
@@ -126,6 +127,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	actions.write_flag_pointers["MODELVIEW_MATRIX"] = &writes_modelview_or_projection;
 	actions.write_flag_pointers["PROJECTION_MATRIX"] = &writes_modelview_or_projection;
 	actions.write_flag_pointers["VERTEX"] = &uses_vertex;
+	actions.write_flag_pointers["POSITION"] = &uses_position;
 
 	actions.uniforms = &uniforms;
 
