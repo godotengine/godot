@@ -1259,6 +1259,7 @@ ScriptDebuggerRemote::ScriptDebuggerRemote() :
 		max_errors_per_second(GLOBAL_GET("network/limits/debugger_stdout/max_errors_per_second")),
 		max_warnings_per_second(GLOBAL_GET("network/limits/debugger_stdout/max_warnings_per_second")),
 		n_errors_dropped(0),
+		n_warnings_dropped(0),
 		max_cps(GLOBAL_GET("network/limits/debugger_stdout/max_chars_per_second")),
 		char_count(0),
 		err_count(0),
