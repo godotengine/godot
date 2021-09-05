@@ -288,6 +288,7 @@ Ref<Resource> SpatialMaterialConversionPlugin::convert(const Ref<Resource> &p_re
 	}
 
 	smat->set_render_priority(mat->get_render_priority());
+	smat->set_local_to_scene(mat->is_local_to_scene());
 	return smat;
 }
 
