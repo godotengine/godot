@@ -387,6 +387,32 @@ typedef struct {
 	char32_t *(*string_operator_index)(GDNativeStringPtr p_self, GDNativeInt p_index);
 	const char32_t *(*string_operator_index_const)(const GDNativeStringPtr p_self, GDNativeInt p_index);
 
+	/* Packed array functions */
+
+	uint8_t *(*packed_byte_array_operator_index)(GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be a PackedByteArray
+	const uint8_t *(*packed_byte_array_operator_index_const)(const GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be a PackedByteArray
+
+	GDNativeTypePtr (*packed_color_array_operator_index)(GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be a PackedColorArray, returns Color ptr
+	GDNativeTypePtr (*packed_color_array_operator_index_const)(const GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be a PackedColorArray, returns Color ptr
+
+	float *(*packed_float32_array_operator_index)(GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be a PackedFloat32Array
+	const float *(*packed_float32_array_operator_index_const)(const GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be a PackedFloat32Array
+	double *(*packed_float64_array_operator_index)(GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be a PackedFloat64Array
+	const double *(*packed_float64_array_operator_index_const)(const GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be a PackedFloat64Array
+
+	int32_t *(*packed_int32_array_operator_index)(GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be a PackedInt32Array
+	const int32_t *(*packed_int32_array_operator_index_const)(const GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be a PackedInt32Array
+	int64_t *(*packed_int64_array_operator_index)(GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be a PackedInt32Array
+	const int64_t *(*packed_int64_array_operator_index_const)(const GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be a PackedInt32Array
+
+	GDNativeStringPtr (*packed_string_array_operator_index)(GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be a PackedStringArray
+	GDNativeStringPtr (*packed_string_array_operator_index_const)(const GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be a PackedStringArray
+
+	GDNativeTypePtr (*packed_vector2_array_operator_index)(GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be a PackedVector2Array, returns Vector2 ptr
+	GDNativeTypePtr (*packed_vector2_array_operator_index_const)(const GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be a PackedVector2Array, returns Vector2 ptr
+	GDNativeTypePtr (*packed_vector3_array_operator_index)(GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be a PackedVector3Array, returns Vector3 ptr
+	GDNativeTypePtr (*packed_vector3_array_operator_index_const)(const GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be a PackedVector3Array, returns Vector3 ptr
+
 	/* OBJECT */
 
 	void (*object_method_bind_call)(const GDNativeMethodBindPtr p_method_bind, GDNativeObjectPtr p_instance, const GDNativeVariantPtr *p_args, GDNativeInt p_arg_count, GDNativeVariantPtr r_ret, GDNativeCallError *r_error);
