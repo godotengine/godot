@@ -246,9 +246,9 @@ void EditorProperty::_notification(int p_what) {
 
 		Color color;
 		if (draw_red) {
-			color = get_theme_color(SNAME("error_color"));
+			color = get_theme_color(is_read_only() ? SNAME("readonly_error_color") : SNAME("error_color"));
 		} else {
-			color = get_theme_color(SNAME("property_color"));
+			color = get_theme_color(is_read_only() ? SNAME("readonly_color") : SNAME("property_color"));
 		}
 		if (label.find(".") != -1) {
 			color.a = 0.5; //this should be un-hacked honestly, as it's used for editor overrides
@@ -283,7 +283,7 @@ void EditorProperty::_notification(int p_what) {
 			check_rect = Rect2();
 		}
 
-		if (can_revert) {
+		if (can_revert && !is_read_only()) {
 			Ref<Texture2D> reload_icon = get_theme_icon(SNAME("ReloadSmall"), SNAME("EditorIcons"));
 			text_limit -= reload_icon->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree")) * 2;
 			revert_rect = Rect2(text_limit + get_theme_constant(SNAME("hseparator"), SNAME("Tree")), (size.height - reload_icon->get_height()) / 2, reload_icon->get_width(), reload_icon->get_height());
@@ -384,8 +384,12 @@ void EditorProperty::update_property() {
 	GDVIRTUAL_CALL(_update_property);
 }
 
+void EditorProperty::_set_read_only(bool p_read_only) {
+}
+
 void EditorProperty::set_read_only(bool p_read_only) {
 	read_only = p_read_only;
+	_set_read_only(p_read_only);
 }
 
 bool EditorProperty::is_read_only() const {
@@ -1910,6 +1914,8 @@ void EditorInspector::update_tree() {
 			checked = p.usage & PROPERTY_USAGE_CHECKED;
 		}
 
+		bool property_read_only = (p.usage & PROPERTY_USAGE_READ_ONLY) || read_only;
+
 		if (p.usage & PROPERTY_USAGE_RESTART_IF_CHANGED) {
 			restart_request_props.insert(p.name);
 		}
@@ -2008,8 +2014,7 @@ void EditorInspector::update_tree() {
 					ep->set_checkable(checkable);
 					ep->set_checked(checked);
 					ep->set_keying(keying);
-
-					ep->set_read_only(read_only);
+					ep->set_read_only(property_read_only);
 					ep->set_deletable(deletable_properties);
 				}
 
