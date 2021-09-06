@@ -522,6 +522,7 @@ class BindingsGenerator {
 		StringName type_Reference;
 		StringName type_RID;
 		StringName type_String;
+		StringName type_NodePath;
 		StringName type_at_GlobalScope;
 		StringName enum_Error;
 
@@ -546,6 +547,7 @@ class BindingsGenerator {
 			type_Reference = StaticCString::create("Reference");
 			type_RID = StaticCString::create("RID");
 			type_String = StaticCString::create("String");
+			type_NodePath = StaticCString::create("NodePath");
 			type_at_GlobalScope = StaticCString::create("@GlobalScope");
 			enum_Error = StaticCString::create("Error");
 
