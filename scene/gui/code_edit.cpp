@@ -2744,7 +2744,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 		/* If we have a space, previous word might be a keyword. eg "func |". */
 	} else if (cofs > 0 && line[cofs - 1] == ' ') {
 		int ofs = cofs - 1;
-		while (ofs >= 0 && line[ofs] == ' ') {
+		while (ofs > 0 && line[ofs] == ' ') {
 			ofs--;
 		}
 		prev_is_word = _is_char(line[ofs]);
