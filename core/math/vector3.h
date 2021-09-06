@@ -106,7 +106,6 @@ struct Vector3 {
 	_FORCE_INLINE_ Vector3 cross(const Vector3 &p_b) const;
 	_FORCE_INLINE_ real_t dot(const Vector3 &p_b) const;
 	Basis outer(const Vector3 &p_b) const;
-	Basis to_diagonal_matrix() const;
 
 	_FORCE_INLINE_ Vector3 abs() const;
 	_FORCE_INLINE_ Vector3 floor() const;

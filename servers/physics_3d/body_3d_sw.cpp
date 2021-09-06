@@ -110,7 +110,7 @@ void Body3DSW::update_mass_properties() {
 
 					real_t mass = area * this->mass / total_area;
 
-					Basis shape_inertia_tensor = shape->get_moment_of_inertia(mass).to_diagonal_matrix();
+					Basis shape_inertia_tensor = Basis::from_scale(shape->get_moment_of_inertia(mass));
 					Transform3D shape_transform = get_shape_transform(i);
 					Basis shape_basis = shape_transform.basis.orthonormalized();
 
@@ -123,7 +123,7 @@ void Body3DSW::update_mass_properties() {
 
 				// Set the inertia to a valid value when there are no valid shapes.
 				if (!inertia_set) {
-					inertia_tensor.set_diagonal(Vector3(1.0, 1.0, 1.0));
+					inertia_tensor = Basis();
 				}
 
 				// Handle partial custom inertia.
@@ -215,7 +215,7 @@ void Body3DSW::set_param(PhysicsServer3D::BodyParameter p_param, const Variant &
 			} else {
 				calculate_inertia = false;
 				if (mode == PhysicsServer3D::BODY_MODE_DYNAMIC) {
-					principal_inertia_axes_local.set_diagonal(Vector3(1.0, 1.0, 1.0));
+					principal_inertia_axes_local = Basis();
 					_inv_inertia = inertia.inverse();
 					_update_transform_dependant();
 				}
@@ -301,7 +301,7 @@ void Body3DSW::set_mode(PhysicsServer3D::BodyMode p_mode) {
 		case PhysicsServer3D::BODY_MODE_DYNAMIC: {
 			_inv_mass = mass > 0 ? (1.0 / mass) : 0;
 			if (!calculate_inertia) {
-				principal_inertia_axes_local.set_diagonal(Vector3(1.0, 1.0, 1.0));
+				principal_inertia_axes_local = Basis();
 				_inv_inertia = inertia.inverse();
 				_update_transform_dependant();
 			}

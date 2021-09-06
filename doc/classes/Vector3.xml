@@ -412,13 +412,6 @@
 				Returns this vector with each component snapped to the nearest multiple of [code]step[/code]. This can also be used to round to an arbitrary number of decimals.
 			</description>
 		</method>
-		<method name="to_diagonal_matrix" qualifiers="const">
-			<return type="Basis" />
-			<description>
-				Returns a diagonal matrix with the vector as main diagonal.
-				This is equivalent to a Basis with no rotation or shearing and this vector's components set as the scale.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="x" type="float" setter="" getter="" default="0.0">
