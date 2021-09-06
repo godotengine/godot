@@ -169,6 +169,7 @@ void register_core_types() {
 	GDREGISTER_VIRTUAL_CLASS(IP);
 
 	GDREGISTER_VIRTUAL_CLASS(StreamPeer);
+	GDREGISTER_CLASS(StreamPeerExtension);
 	GDREGISTER_CLASS(StreamPeerBuffer);
 	GDREGISTER_CLASS(StreamPeerTCP);
 	GDREGISTER_CLASS(TCPServer);
