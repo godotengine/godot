@@ -455,16 +455,16 @@ Vector<BlitToScreen> MobileVRInterface::commit_views(RID p_render_target, const 
 	blit.lens_distortion.aspect_ratio = aspect;
 
 	// left eye
-	blit.rect = p_screen_rect;
-	blit.rect.size.width *= 0.5;
+	blit.dst_rect = p_screen_rect;
+	blit.dst_rect.size.width *= 0.5;
 	blit.multi_view.layer = 0;
 	blit.lens_distortion.eye_center.x = ((-intraocular_dist / 2.0) + (display_width / 4.0)) / (display_width / 2.0);
 	blit_to_screen.push_back(blit);
 
 	// right eye
-	blit.rect = p_screen_rect;
-	blit.rect.size.width *= 0.5;
-	blit.rect.position.x = blit.rect.size.width;
+	blit.dst_rect = p_screen_rect;
+	blit.dst_rect.size.width *= 0.5;
+	blit.dst_rect.position.x = blit.dst_rect.size.width;
 	blit.multi_view.layer = 1;
 	blit.lens_distortion.eye_center.x = ((intraocular_dist / 2.0) - (display_width / 4.0)) / (display_width / 2.0);
 	blit_to_screen.push_back(blit);

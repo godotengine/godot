@@ -41,7 +41,7 @@ void XRInterfaceExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_get_tracking_status);
 
-	ClassDB::bind_method(D_METHOD("add_blit", "render_target", "rect", "use_layer", "layer", "apply_lens_distortion", "eye_center", "k1", "k2", "upscale", "aspect_ratio"), &XRInterfaceExtension::add_blit);
+	ClassDB::bind_method(D_METHOD("add_blit", "render_target", "src_rect", "dst_rect", "use_layer", "layer", "apply_lens_distortion", "eye_center", "k1", "k2", "upscale", "aspect_ratio"), &XRInterfaceExtension::add_blit);
 
 	GDVIRTUAL_BIND(_get_render_target_size);
 	GDVIRTUAL_BIND(_get_view_count);
@@ -198,13 +198,14 @@ CameraMatrix XRInterfaceExtension::get_projection_for_view(uint32_t p_view, real
 	return CameraMatrix();
 }
 
-void XRInterfaceExtension::add_blit(RID p_render_target, Rect2i p_rect, bool p_use_layer, uint32_t p_layer, bool p_apply_lens_distortion, Vector2 p_eye_center, float p_k1, float p_k2, float p_upscale, float p_aspect_ratio) {
+void XRInterfaceExtension::add_blit(RID p_render_target, Rect2 p_src_rect, Rect2i p_dst_rect, bool p_use_layer, uint32_t p_layer, bool p_apply_lens_distortion, Vector2 p_eye_center, float p_k1, float p_k2, float p_upscale, float p_aspect_ratio) {
 	BlitToScreen blit;
 
 	ERR_FAIL_COND_MSG(!can_add_blits, "add_blit can only be called from an XR plugin from within _commit_views!");
 
 	blit.render_target = p_render_target;
-	blit.rect = p_rect;
+	blit.src_rect = p_src_rect;
+	blit.dst_rect = p_dst_rect;
 
 	blit.multi_view.use_layer = p_use_layer;
 	blit.multi_view.layer = p_layer;
