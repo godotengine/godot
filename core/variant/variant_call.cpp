@@ -1366,30 +1366,43 @@ static void _register_variant_builtin_methods() {
 	bind_method(String, naturalnocasecmp_to, sarray("to"), varray());
 	bind_method(String, length, sarray(), varray());
 	bind_method(String, substr, sarray("from", "len"), varray(-1));
-	bind_methodv(String, find, static_cast<int (String::*)(const String &, int) const>(&String::find), sarray("what", "from"), varray(0));
-	bind_method(String, count, sarray("what", "from", "to"), varray(0, 0));
-	bind_method(String, countn, sarray("what", "from", "to"), varray(0, 0));
-	bind_method(String, findn, sarray("what", "from"), varray(0));
-	bind_method(String, rfind, sarray("what", "from"), varray(-1));
-	bind_method(String, rfindn, sarray("what", "from"), varray(-1));
-	bind_method(String, match, sarray("expr"), varray());
-	bind_method(String, matchn, sarray("expr"), varray());
+	bind_methodv(String, find, static_cast<int (String::*)(const String &, int) const>(&String::find), sarray("substring", "from"), varray(0));
+	bind_methodv(String, findn, static_cast<int (String::*)(const String &, int) const>(&String::findn), sarray("substring", "from"), varray(0));
+	bind_methodv(String, rfind, static_cast<int (String::*)(const String &, int) const>(&String::rfind), sarray("substring", "from"), varray(-1));
+	bind_methodv(String, rfindn, static_cast<int (String::*)(const String &, int) const>(&String::rfindn), sarray("substring", "from"), varray(-1));
+	bind_methodv(String, count, static_cast<int (String::*)(const String &, int, int) const>(&String::count), sarray("substring", "from", "to"), varray(0, 0));
+	bind_methodv(String, countn, static_cast<int (String::*)(const String &, int, int) const>(&String::countn), sarray("substring", "from", "to"), varray(0, 0));
+	bind_methodv(String, match, static_cast<bool (String::*)(const String &) const>(&String::match), sarray("wildcard"), varray());
+	bind_methodv(String, matchn, static_cast<bool (String::*)(const String &) const>(&String::matchn), sarray("wildcard"), varray());
 	bind_methodv(String, begins_with, static_cast<bool (String::*)(const String &) const>(&String::begins_with), sarray("text"), varray());
-	bind_method(String, ends_with, sarray("text"), varray());
+	bind_methodv(String, ends_with, static_cast<bool (String::*)(const String &) const>(&String::ends_with), sarray("text"), varray());
 	bind_method(String, is_subsequence_of, sarray("text"), varray());
 	bind_method(String, is_subsequence_ofi, sarray("text"), varray());
+	bind_method(String, is_quoted, sarray("affix"), varray(""));
+	bind_method(String, quote, sarray("affix"), varray());
+	bind_method(String, unquote, sarray("affix"), varray(""));
 	bind_method(String, bigrams, sarray(), varray());
 	bind_method(String, similarity, sarray("text"), varray());
 
 	bind_method(String, format, sarray("values", "placeholder"), varray("{_}"));
-	bind_methodv(String, replace, static_cast<String (String::*)(const String &, const String &) const>(&String::replace), sarray("what", "forwhat"), varray());
-	bind_method(String, replacen, sarray("what", "forwhat"), varray());
+	bind_methodv(String, replace_first, static_cast<String (String::*)(const String &, const String &) const>(&String::replace_first), sarray("old", "new"), varray());
+	bind_methodv(String, replace_firstn, static_cast<String (String::*)(const String &, const String &) const>(&String::replace_firstn), sarray("old", "new"), varray());
+	bind_methodv(String, replace_last, static_cast<String (String::*)(const String &, const String &) const>(&String::replace_last), sarray("old", "new"), varray());
+	bind_methodv(String, replace_lastn, static_cast<String (String::*)(const String &, const String &) const>(&String::replace_lastn), sarray("old", "new"), varray());
+	bind_methodv(String, replace, static_cast<String (String::*)(const String &, const String &, int) const>(&String::replace), sarray("old", "new", "count"), varray(Vector<int32_t>()));
+	bind_methodv(String, replacen, static_cast<String (String::*)(const String &, const String &, int) const>(&String::replacen), sarray("old", "new", "count"), varray(Vector<int32_t>()));
+	bind_methodv(String, rreplace, static_cast<String (String::*)(const String &, const String &, int) const>(&String::rreplace), sarray("old", "new", "count"), varray(Vector<int32_t>()));
+	bind_methodv(String, rreplacen, static_cast<String (String::*)(const String &, const String &, int) const>(&String::rreplacen), sarray("old", "new", "count"), varray(Vector<int32_t>()));
 	bind_method(String, repeat, sarray("count"), varray());
 	bind_method(String, insert, sarray("position", "what"), varray());
 	bind_method(String, capitalize, sarray(), varray());
+	bind_method(String, camelcase_to_underscore, sarray("lowercase"), varray(true));
+	bind_method(String, get_slice, sarray("delimeter", "slice_index"), varray());
 	bind_method(String, split, sarray("delimiter", "allow_empty", "maxsplit"), varray(true, 0));
 	bind_method(String, rsplit, sarray("delimiter", "allow_empty", "maxsplit"), varray(true, 0));
+	bind_method(String, split_spaces, sarray(), varray());
 	bind_method(String, split_floats, sarray("delimiter", "allow_empty"), varray(true));
+	bind_method(String, split_ints, sarray("delimiter", "allow_empty"), varray(true));
 	bind_method(String, join, sarray("parts"), varray());
 
 	bind_method(String, to_upper, sarray(), varray());
@@ -1410,6 +1423,7 @@ static void _register_variant_builtin_methods() {
 	// FIXME: String needs to be immutable when binding
 	//bind_method(String, erase, sarray("position", "chars"), varray());
 	bind_method(String, hash, sarray(), varray());
+	bind_method(String, hash64, sarray(), varray());
 	bind_method(String, md5_text, sarray(), varray());
 	bind_method(String, sha1_text, sarray(), varray());
 	bind_method(String, sha256_text, sarray(), varray());
@@ -1417,11 +1431,10 @@ static void _register_variant_builtin_methods() {
 	bind_method(String, sha1_buffer, sarray(), varray());
 	bind_method(String, sha256_buffer, sarray(), varray());
 	bind_method(String, is_empty, sarray(), varray());
-	// FIXME: Static function, not sure how to bind
-	//bind_method(String, humanize_size, sarray("size"), varray());
 
 	bind_method(String, is_absolute_path, sarray(), varray());
 	bind_method(String, is_relative_path, sarray(), varray());
+	bind_method(String, is_resource_file, sarray(), varray());
 	bind_method(String, simplify_path, sarray(), varray());
 	bind_method(String, get_base_dir, sarray(), varray());
 	bind_method(String, get_file, sarray(), varray());
@@ -1430,6 +1443,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(String, uri_encode, sarray(), varray());
 	bind_method(String, uri_decode, sarray(), varray());
 	bind_method(String, c_escape, sarray(), varray());
+	bind_method(String, c_escape_multiline, sarray(), varray());
 	bind_method(String, c_unescape, sarray(), varray());
 	bind_method(String, json_escape, sarray(), varray());
 
@@ -1464,6 +1478,9 @@ static void _register_variant_builtin_methods() {
 	bind_static_method(String, num, sarray("number", "decimals"), varray(-1));
 	bind_static_method(String, chr, sarray("char"), varray());
 	bind_static_method(String, humanize_size, sarray("size"), varray());
+
+	bind_method(String, path_to, sarray("path"), varray());
+	bind_method(String, path_to_file, sarray("path"), varray());
 
 	/* Vector2 */
 

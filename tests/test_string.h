@@ -340,8 +340,52 @@ TEST_CASE("[String] Find and replace") {
 	s = s.replace("Birthday", "Halloween");
 	CHECK(s == "Happy Halloween, Anna!");
 
-	s = s.replace_first("H", "W");
-	CHECK(s == "Wappy Halloween, Anna!");
+	s = "1 1 1";
+	int n_times = -1;
+	CHECK(s.replace("1", "2", n_times) == s.rreplace("1", "2", n_times));
+
+	n_times = 1;
+	CHECK(s.replace("1", "2", n_times) == "2 1 1");
+	CHECK(s.rreplace("1", "2", n_times) == "1 1 2");
+
+	n_times = 2;
+	CHECK(s.replace("1", "2", n_times) == "2 2 1");
+	CHECK(s.rreplace("1", "2", n_times) == "1 2 2");
+
+	n_times = 3;
+	CHECK(s.replace("1", "2", n_times) == "2 2 2");
+	CHECK(s.rreplace("1", "2", n_times) == "2 2 2");
+
+	s = "A b C";
+	CHECK(s.replace_first("a", "G") == "A b C");
+	CHECK(s.replace_firstn("a", "G") == "G b C");
+	CHECK(s.replace_first("b", "G") == "A G C");
+	CHECK(s.replace_firstn("b", "G") == "A G C");
+	CHECK(s.replace_first("c", "G") == "A b C");
+	CHECK(s.replace_firstn("c", "G") == "A b G");
+
+	CHECK(s.replace_last("a", "G") == "A b C");
+	CHECK(s.replace_lastn("a", "G") == "G b C");
+	CHECK(s.replace_last("b", "G") == "A G C");
+	CHECK(s.replace_lastn("b", "G") == "A G C");
+	CHECK(s.replace_last("c", "G") == "A b C");
+	CHECK(s.replace_lastn("c", "G") == "A b G");
+
+	s = "a A a";
+	n_times = -1;
+	CHECK(s.replacen("a", "b", n_times) == s.rreplacen("a", "b", n_times));
+
+	n_times = 1;
+	CHECK(s.replacen("a", "b", n_times) == "b A a");
+	CHECK(s.rreplacen("a", "b", n_times) == "a A b");
+
+	n_times = 2;
+	CHECK(s.replacen("a", "b", n_times) == "b b a");
+	CHECK(s.rreplacen("a", "b", n_times) == "a b b");
+
+	n_times = 3;
+	CHECK(s.replacen("a", "b", n_times) == "b b b");
+	CHECK(s.rreplacen("a", "b", n_times) == "b b b");
 }
 
 TEST_CASE("[String] Insertion") {
@@ -554,6 +598,59 @@ TEST_CASE("[String] Ends with") {
 		}
 	};
 	CHECK(state);
+}
+
+TEST_CASE("[String] Quoting") {
+	String input;
+	input = "\"\"";
+	CHECK(input.is_quoted() == true);
+	CHECK(input.is_quoted("\"") == true);
+	CHECK(input.unquote() == "");
+	CHECK(input.unquote("\"") == "");
+	CHECK(input.unquote("'") == input);
+
+	input = "\"";
+	CHECK(input.is_quoted() == true);
+	CHECK(input.is_quoted("\"") == true);
+	CHECK(input.unquote() == "");
+	CHECK(input.unquote("\"") == "");
+	CHECK(input.unquote("'") == input);
+
+	input = "'";
+	CHECK(input.is_quoted() == true);
+	CHECK(input.is_quoted("'") == true);
+	CHECK(input.unquote() == "");
+	CHECK(input.unquote("'") == "");
+	CHECK(input.unquote("\"") == input);
+
+	input = "";
+	input = input.quote("'");
+	CHECK(input.is_quoted() == true);
+	CHECK(input.is_quoted("'") == true);
+	CHECK(input.unquote() == "");
+	CHECK(input.unquote("'") == "");
+	CHECK(input.unquote("\"") == input);
+
+	input = "";
+	input = input.quote("T");
+	CHECK(input.is_quoted() == false);
+	CHECK(input.is_quoted("T") == true);
+	CHECK(input.unquote() == input);
+	CHECK(input.unquote("T") == "");
+
+	input = "";
+	input = input.quote("TEST");
+	CHECK(input == "TESTTEST");
+	CHECK(input.is_quoted() == false);
+	CHECK(input.is_quoted("TEST") == true);
+	CHECK(input.unquote() == input);
+	CHECK(input.unquote("TEST") == "");
+
+	input = "TEST";
+	CHECK(input.is_quoted() == false);
+	CHECK(input.is_quoted("TEST") == true);
+	CHECK(input.unquote() == input);
+	CHECK(input.unquote("TEST") == "");
 }
 
 TEST_CASE("[String] format") {
@@ -1144,6 +1241,13 @@ TEST_CASE("[String] Bigrams") {
 TEST_CASE("[String] c-escape/unescape") {
 	String s = "\\1\a2\b\f3\n45\r6\t7\v8\'9\?0\"";
 	CHECK(s.c_escape().c_unescape() == s);
+
+	s = "\\";
+	CHECK(s.c_escape_multiline() == "\\\\");
+	CHECK(s.c_escape_multiline().c_unescape() == s);
+	s = "\"";
+	CHECK(s.c_escape_multiline() == "\\\"");
+	CHECK(s.c_escape_multiline().c_unescape() == s);
 }
 
 TEST_CASE("[String] dedent") {
@@ -1175,6 +1279,19 @@ TEST_CASE("[String] Path functions") {
 	for (int i = 0; i < 3; i++) {
 		CHECK(String(file_name[i]).is_valid_filename() == valid[i]);
 	}
+
+	String from = "res://";
+	String to = "res://addons";
+	CHECK(from.path_to(to) == "../addons/");
+	CHECK(to.path_to(from) == "..//");
+	CHECK(from.path_to_file(to) == "./addons");
+	CHECK(to.path_to_file(from) == "..//");
+
+	to = "res://addons/";
+	CHECK(from.path_to(to) == "../addons/");
+	CHECK(to.path_to(from) == "..//");
+	CHECK(from.path_to_file(to) == "../addons/");
+	CHECK(to.path_to_file(from) == "..//");
 }
 
 TEST_CASE("[String] hash") {
@@ -1342,14 +1459,16 @@ TEST_CASE("[String] Join") {
 }
 
 TEST_CASE("[String] Is_*") {
-	static const char *data[12] = { "-30", "100", "10.1", "10,1", "1e2", "1e-2", "1e2e3", "0xAB", "AB", "Test1", "1Test", "Test*1" };
-	static bool isnum[12] = { true, true, true, false, false, false, false, false, false, false, false, false };
-	static bool isint[12] = { true, true, false, false, false, false, false, false, false, false, false, false };
-	static bool ishex[12] = { true, true, false, false, true, false, true, false, true, false, false, false };
-	static bool ishex_p[12] = { false, false, false, false, false, false, false, true, false, false, false, false };
-	static bool isflt[12] = { true, true, true, false, true, true, false, false, false, false, false, false };
-	static bool isid[12] = { false, false, false, false, false, false, false, false, true, true, false, false };
-	for (int i = 0; i < 12; i++) {
+	static const size_t size = 15;
+	static const char *data[size] = { "-30", "100", "10.1", "10,1", "1e2", "1e-2", "1e2e3", "0xAB", "AB", "Test1", "1Test", "Test*1", "res://", "res://::", "user://" };
+	static bool isnum[size] = { true, true, true, false, false, false, false, false, false, false, false, false, false, false, false };
+	static bool isint[size] = { true, true, false, false, false, false, false, false, false, false, false, false, false, false, false };
+	static bool ishex[size] = { true, true, false, false, true, false, true, false, true, false, false, false, false, false, false };
+	static bool ishex_p[size] = { false, false, false, false, false, false, false, true, false, false, false, false, false, false, false };
+	static bool isflt[size] = { true, true, true, false, true, true, false, false, false, false, false, false, false, false, false };
+	static bool isid[size] = { false, false, false, false, false, false, false, false, true, true, false, false, false, false, false };
+	static bool isresource[size] = { false, false, false, false, false, false, false, false, false, false, false, false, true, false, false };
+	for (size_t i = 0; i < size; ++i) {
 		String s = String(data[i]);
 		CHECK(s.is_numeric() == isnum[i]);
 		CHECK(s.is_valid_int() == isint[i]);
@@ -1357,6 +1476,7 @@ TEST_CASE("[String] Is_*") {
 		CHECK(s.is_valid_hex_number(true) == ishex_p[i]);
 		CHECK(s.is_valid_float() == isflt[i]);
 		CHECK(s.is_valid_identifier() == isid[i]);
+		CHECK(s.is_resource_file() == isresource[i]);
 	}
 }
 

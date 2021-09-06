@@ -51,7 +51,7 @@ class CharProxy {
 	CowData<T> &_cowdata;
 	static const T _null = 0;
 
-	_FORCE_INLINE_ CharProxy(const int &p_index, CowData<T> &p_cowdata) :
+	_FORCE_INLINE_ CharProxy(int p_index, CowData<T> &p_cowdata) :
 			_index(p_index),
 			_cowdata(p_cowdata) {}
 
@@ -188,18 +188,31 @@ class String {
 	static const char32_t _null;
 
 	void copy_from(const char *p_cstr);
-	void copy_from(const char *p_cstr, const int p_clip_to);
+	void copy_from(const char *p_cstr, int p_clip_to);
 	void copy_from(const wchar_t *p_cstr);
-	void copy_from(const wchar_t *p_cstr, const int p_clip_to);
+	void copy_from(const wchar_t *p_cstr, int p_clip_to);
 	void copy_from(const char32_t *p_cstr);
-	void copy_from(const char32_t *p_cstr, const int p_clip_to);
+	void copy_from(const char32_t *p_cstr, int p_clip_to);
 
-	void copy_from(const char32_t &p_char);
+	void copy_from(char32_t p_char);
 
-	void copy_from_unchecked(const char32_t *p_char, const int p_length);
+	void copy_from_unchecked(const char32_t *p_char, int p_length);
 
-	bool _base_is_subsequence_of(const String &p_string, bool case_insensitive) const;
-	int _count(const String &p_string, int p_from, int p_to, bool p_case_insensitive) const;
+	bool _base_is_subsequence_of(const String &p_string, bool p_is_case_sensitive) const;
+	int _find(const String &p_str, int p_from = 0, bool p_is_case_sensitive = true) const; ///< return <0 if failed
+	int _find(const char *p_str, int p_from = 0, bool p_is_case_sensitive = true) const; ///< return <0 if failed
+	int _rfind(const String &p_str, int p_from = -1, bool p_is_case_sensitive = true) const; ///< return <0 if failed
+	int _rfind(const char *p_str, int p_from = -1, bool p_is_case_sensitive = true) const; ///< return <0 if failed
+	int _count(const String &p_string, int p_from, int p_to, bool p_is_case_sensitive) const;
+	int _count(const char *p_string, int p_from, int p_to, bool p_is_case_sensitive) const;
+	String _replace_first(const String &p_old, const String &p_new, bool p_is_case_sensitive = true) const;
+	String _replace_first(const char *p_old, const char *p_new, bool p_is_case_sensitive = true) const;
+	String _replace_last(const String &p_old, const String &p_new, bool p_is_case_sensitive = true) const;
+	String _replace_last(const char *p_old, const char *p_new, bool p_is_case_sensitive = true) const;
+	String _replace(const String &p_old, const String &p_new, int p_count = -1, bool p_is_case_sensitive = true) const;
+	String _replace(const char *p_old, const char *p_new, int p_count = -1, bool p_is_case_sensitive = true) const;
+	String _rreplace(const String &p_old, const String &p_new, int p_count = -1, bool p_is_case_sensitive = true) const;
+	String _rreplace(const char *p_old, const char *p_new, int p_count = -1, bool p_is_case_sensitive = true) const;
 
 public:
 	enum {
@@ -277,45 +290,63 @@ public:
 
 	/* complex helpers */
 	String substr(int p_from, int p_chars = -1) const;
-	int find(const String &p_str, int p_from = 0) const; ///< return <0 if failed
-	int find(const char *p_str, int p_from = 0) const; ///< return <0 if failed
-	int find_char(const char32_t &p_char, int p_from = 0) const; ///< return <0 if failed
-	int findn(const String &p_str, int p_from = 0) const; ///< return <0 if failed, case insensitive
-	int rfind(const String &p_str, int p_from = -1) const; ///< return <0 if failed
-	int rfindn(const String &p_str, int p_from = -1) const; ///< return <0 if failed, case insensitive
+	int find(const String &p_substring, int p_from = 0) const; ///< return <0 if failed
+	int find(const char *p_substring, int p_from = 0) const; ///< return <0 if failed
+	int findn(const String &p_substring, int p_from = 0) const; ///< return <0 if failed
+	int findn(const char *p_substring, int p_from = 0) const; ///< return <0 if failed
+	int rfind(const String &p_substring, int p_from = -1) const; ///< return <0 if failed
+	int rfind(const char *p_substring, int p_from = -1) const; ///< return <0 if failed
+	int rfindn(const String &p_substring, int p_from = -1) const; ///< return <0 if failed
+	int rfindn(const char *p_substring, int p_from = -1) const; ///< return <0 if failed
 	int findmk(const Vector<String> &p_keys, int p_from = 0, int *r_key = nullptr) const; ///< return <0 if failed
+	int find_char(const char32_t &p_char, int p_from = 0) const; ///< return <0 if failed
 	bool match(const String &p_wildcard) const;
+	bool match(const char *p_wildcard) const;
 	bool matchn(const String &p_wildcard) const;
+	bool matchn(const char *p_wildcard) const;
 	bool begins_with(const String &p_string) const;
 	bool begins_with(const char *p_string) const;
 	bool ends_with(const String &p_string) const;
+	bool ends_with(const char *p_string) const;
 	bool is_enclosed_in(const String &p_string) const;
 	bool is_subsequence_of(const String &p_string) const;
 	bool is_subsequence_ofi(const String &p_string) const;
-	bool is_quoted() const;
+	bool is_quoted(const String &p_affix = "") const;
 	Vector<String> bigrams() const;
 	float similarity(const String &p_string) const;
-	String format(const Variant &values, String placeholder = "{_}") const;
-	String replace_first(const String &p_key, const String &p_with) const;
-	String replace(const String &p_key, const String &p_with) const;
-	String replace(const char *p_key, const char *p_with) const;
-	String replacen(const String &p_key, const String &p_with) const;
+	String format(const Variant &p_values, const String &p_placeholder = "{_}") const;
+	String replace_first(const String &p_old, const String &p_new) const;
+	String replace_first(const char *p_old, const char *p_new) const;
+	String replace_firstn(const String &p_old, const String &p_new) const;
+	String replace_firstn(const char *p_old, const char *p_new) const;
+	String replace_last(const String &p_old, const String &p_new) const;
+	String replace_last(const char *p_old, const char *p_new) const;
+	String replace_lastn(const String &p_old, const String &p_new) const;
+	String replace_lastn(const char *p_old, const char *p_new) const;
+	String replace(const String &p_old, const String &p_new, int p_count = -1) const;
+	String replace(const char *p_old, const char *p_new, int p_count = -1) const;
+	String replacen(const String &p_old, const String &p_new, int p_count = -1) const;
+	String replacen(const char *p_old, const char *p_new, int p_count = -1) const;
+	String rreplace(const String &p_old, const String &p_new, int p_count = -1) const;
+	String rreplace(const char *p_old, const char *p_new, int p_count = -1) const;
+	String rreplacen(const String &p_old, const String &p_new, int p_count = -1) const;
+	String rreplacen(const char *p_old, const char *p_new, int p_count = -1) const;
 	String repeat(int p_count) const;
-	String insert(int p_at_pos, const String &p_string) const;
+	String insert(int p_position, const String &p_text) const;
 	String pad_decimals(int p_digits) const;
 	String pad_zeros(int p_digits) const;
 	String trim_prefix(const String &p_prefix) const;
 	String trim_suffix(const String &p_suffix) const;
-	String lpad(int min_length, const String &character = " ") const;
-	String rpad(int min_length, const String &character = " ") const;
-	String sprintf(const Array &values, bool *error) const;
-	String quote(String quotechar = "\"") const;
-	String unquote() const;
+	String lpad(int p_min_length, const String &p_character = " ") const;
+	String rpad(int p_min_length, const String &p_character = " ") const;
+	String sprintf(const Array &p_values, bool *p_error) const;
+	String quote(const String &p_affix = "\"") const;
+	String unquote(const String &p_unquote_string = "") const;
 	static String num(double p_num, int p_decimals = -1);
 	static String num_scientific(double p_num);
 	static String num_real(double p_num, bool p_trailing = true);
-	static String num_int64(int64_t p_num, int base = 10, bool capitalize_hex = false);
-	static String num_uint64(uint64_t p_num, int base = 10, bool capitalize_hex = false);
+	static String num_int64(int64_t p_num, int p_base = 10, bool p_capitalize_hex = false);
+	static String num_uint64(uint64_t p_num, int p_base = 10, bool p_capitalize_hex = false);
 	static String chr(char32_t p_char);
 	static String md5(const uint8_t *p_md5);
 	static String hex_encode_buffer(const uint8_t *p_buffer, int p_len);
@@ -335,11 +366,11 @@ public:
 	static double to_float(const char32_t *p_str, const char32_t **r_end = nullptr);
 
 	String capitalize() const;
-	String camelcase_to_underscore(bool lowercase = true) const;
+	String camelcase_to_underscore(bool p_lowercase = true) const;
 
 	String get_with_code_lines() const;
 	int get_slice_count(String p_splitter) const;
-	String get_slice(String p_splitter, int p_slice) const;
+	String get_slice(const String &p_splitter, int p_slice) const;
 	String get_slicec(char32_t p_splitter, int p_slice) const;
 
 	Vector<String> split(const String &p_splitter, bool p_allow_empty = true, int p_maxsplit = 0) const;
@@ -350,15 +381,17 @@ public:
 	Vector<int> split_ints(const String &p_splitter, bool p_allow_empty = true) const;
 	Vector<int> split_ints_mk(const Vector<String> &p_splitters, bool p_allow_empty = true) const;
 
-	String join(Vector<String> parts) const;
+	String join(Vector<String> p_parts) const;
 
 	static char32_t char_uppercase(char32_t p_char);
 	static char32_t char_lowercase(char32_t p_char);
 	String to_upper() const;
 	String to_lower() const;
 
-	int count(const String &p_string, int p_from = 0, int p_to = 0) const;
-	int countn(const String &p_string, int p_from = 0, int p_to = 0) const;
+	int count(const String &p_substring, int p_from = 0, int p_to = 0) const;
+	int count(const char *p_substring, int p_from = 0, int p_to = 0) const;
+	int countn(const String &p_substring, int p_from = 0, int p_to = 0) const;
+	int countn(const char *p_substring, int p_from = 0, int p_to = 0) const;
 
 	String left(int p_pos) const;
 	String right(int p_pos) const;

@@ -222,10 +222,492 @@ void CharString::copy_from(const char *p_cstr) {
 /*  String                                                               */
 /*************************************************************************/
 
-//kind of poor should be rewritten properly
+int String::_find(const String &p_substring, int p_from, bool p_is_case_sensitive) const {
+	if (p_from < 0) {
+		return -1;
+	}
+
+	const int source_length = length();
+	const int subtring_length = p_substring.length();
+
+	if (source_length == 0 || subtring_length == 0) {
+		return -1; // won't find anything!
+	}
+
+	const char32_t *source = get_data();
+	const char32_t *key = p_substring.get_data();
+
+	for (int i = p_from; i <= (source_length - subtring_length); i++) {
+		bool found = true;
+		for (int j = 0; j < subtring_length; j++) {
+			int read_pos = i + j;
+
+			if (read_pos >= source_length) {
+				ERR_PRINT("read_pos>=source_length");
+				return -1;
+			}
+
+			if (p_is_case_sensitive) {
+				if (source[read_pos] != key[j]) {
+					found = false;
+					break;
+				}
+			} else {
+				char32_t src = _find_lower(source[read_pos]);
+				char32_t dst = _find_lower(key[j]);
+				if (src != dst) {
+					found = false;
+					break;
+				}
+			}
+		}
+
+		if (found) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+int String::_find(const char *p_substring, int p_from, bool p_is_case_sensitive) const {
+	if (p_from < 0) {
+		return -1;
+	}
+
+	const int source_length = length();
+	int subtring_length = 0;
+	while (p_substring[subtring_length]) {
+		++subtring_length;
+	}
+
+	if (source_length == 0 || subtring_length == 0) {
+		return -1; // won't find anything!
+	}
+
+	const char32_t *source = get_data();
+	for (int i = p_from; i <= (source_length - subtring_length); i++) {
+		bool found = true;
+		for (int j = 0; j < subtring_length; j++) {
+			int read_pos = i + j;
+
+			if (read_pos >= source_length) {
+				ERR_PRINT("read_pos>=source_length");
+				return -1;
+			}
+
+			char32_t key_needle = static_cast<char32_t>(p_substring[j]);
+			if (p_is_case_sensitive) {
+				if (source[read_pos] != key_needle) {
+					found = false;
+					break;
+				}
+			} else {
+				char32_t src = _find_lower(source[read_pos]);
+				char32_t dst = _find_lower(key_needle);
+				if (src != dst) {
+					found = false;
+					break;
+				}
+			}
+		}
+
+		if (found) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+int String::_rfind(const String &p_old, int p_from, bool p_is_case_sensitive) const {
+	int subtring_length = p_old.length();
+	const int source_length = length();
+
+	if (source_length == 0 || subtring_length == 0) {
+		return -1; // won't find anything!
+	}
+
+	// establish a limit
+	int limit = length() - subtring_length;
+	if (limit < 0) {
+		return -1;
+	}
+
+	// establish a starting point
+	int starting_point;
+	if (p_from < 0) {
+		starting_point = limit;
+	} else if (p_from > limit) {
+		starting_point = limit;
+	} else {
+		starting_point = p_from;
+	}
+
+	const char32_t *source = get_data();
+
+	for (int i = starting_point; i >= 0; i--) {
+		bool found = true;
+		for (int j = 0; j < subtring_length; j++) {
+			int read_pos = i + j;
+
+			if (read_pos >= source_length) {
+				ERR_PRINT("read_pos>=source_length");
+				return -1;
+			}
+
+			if (p_is_case_sensitive) {
+				if (source[read_pos] != p_old[j]) {
+					found = false;
+					break;
+				}
+			} else {
+				char32_t srcc = _find_lower(source[read_pos]);
+				char32_t keyc = _find_lower(p_old[j]);
+
+				if (srcc != keyc) {
+					found = false;
+					break;
+				}
+			}
+		}
+
+		if (found) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+int String::_rfind(const char *p_old, int p_from, bool p_is_case_sensitive) const {
+	const int source_length = length();
+	int subtring_length = 0;
+	while (p_old[subtring_length]) {
+		++subtring_length;
+	}
+
+	if (source_length == 0 || subtring_length == 0) {
+		return -1; // won't find anything!
+	}
+
+	// establish a limit
+	int limit = length() - subtring_length;
+	if (limit < 0) {
+		return -1;
+	}
+
+	// establish a starting point
+	int starting_point;
+	if (p_from < 0) {
+		starting_point = limit;
+	} else if (p_from > limit) {
+		starting_point = limit;
+	} else {
+		starting_point = p_from;
+	}
+
+	const char32_t *source = get_data();
+
+	for (int i = starting_point; i >= 0; i--) {
+		bool found = true;
+		for (int j = 0; j < subtring_length; j++) {
+			int read_pos = i + j;
+
+			if (read_pos >= source_length) {
+				ERR_PRINT("read_pos>=source_length");
+				return -1;
+			}
+
+			const char32_t key_needle = static_cast<char32_t>(p_old[j]);
+			if (p_is_case_sensitive) {
+				if (source[read_pos] != key_needle) {
+					found = false;
+					break;
+				}
+			} else {
+				char32_t srcc = _find_lower(source[read_pos]);
+				char32_t keyc = _find_lower(key_needle);
+
+				if (srcc != keyc) {
+					found = false;
+					break;
+				}
+			}
+		}
+
+		if (found) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+int String::_count(const String &p_substring, int p_from, int p_to, bool p_is_case_sensitive) const {
+	if (p_substring.is_empty()) {
+		return 0;
+	}
+	const int source_length = length();
+	const int substring_length = p_substring.length();
+	if (source_length < substring_length) {
+		return 0;
+	}
+	String str;
+	int search_limit = p_to;
+	if (p_from >= 0 && p_to >= 0) {
+		if (p_to == 0) {
+			search_limit = source_length;
+		} else if (p_from >= p_to) {
+			return 0;
+		}
+		if (p_from == 0 && search_limit == source_length) {
+			str = String();
+			str.copy_from_unchecked(&get_data()[0], source_length);
+		} else {
+			str = substr(p_from, search_limit - p_from);
+		}
+	} else {
+		return 0;
+	}
+	int c = 0;
+	int idx = -1;
+	do {
+		idx = p_is_case_sensitive ? str.find(p_substring) : str.findn(p_substring);
+		if (idx != -1) {
+			str = str.substr(idx + substring_length, str.length() - substring_length);
+			++c;
+		}
+	} while (idx != -1);
+	return c;
+}
+
+int String::_count(const char *p_substring, int p_from, int p_to, bool p_is_case_sensitive) const {
+	int substring_length = 0;
+	while (p_substring[substring_length]) {
+		++substring_length;
+	}
+	if (substring_length == 0) {
+		return 0;
+	}
+	const int source_length = length();
+
+	if (source_length < substring_length) {
+		return 0;
+	}
+	String str;
+	int search_limit = p_to;
+	if (p_from >= 0 && p_to >= 0) {
+		if (p_to == 0) {
+			search_limit = source_length;
+		} else if (p_from >= p_to) {
+			return 0;
+		}
+		if (p_from == 0 && search_limit == source_length) {
+			str = String();
+			str.copy_from_unchecked(&get_data()[0], source_length);
+		} else {
+			str = substr(p_from, search_limit - p_from);
+		}
+	} else {
+		return 0;
+	}
+	int c = 0;
+	int idx = -1;
+	do {
+		idx = p_is_case_sensitive ? str.find(p_substring) : str.findn(p_substring);
+		if (idx != -1) {
+			str = str.substr(idx + substring_length, str.length() - substring_length);
+			++c;
+		}
+	} while (idx != -1);
+	return c;
+}
+
+String String::_replace(const String &p_old, const String &p_new, int p_count, bool p_is_case_sensitive) const {
+	String new_string;
+	int search_from = 0;
+	int find_result = 0;
+	int subtring_length = p_old.length();
+
+	if (subtring_length == 0 || p_count == 0) {
+		return *this; // there's nothing to match or substitute
+	}
+
+	find_result = p_is_case_sensitive ? find(p_old, search_from) : findn(p_old, search_from);
+	int occurrences = 1;
+	while (find_result >= 0) {
+		if (p_count < 0 || occurrences <= p_count) {
+			new_string += substr(search_from, find_result - search_from) + p_new;
+		} else {
+			new_string += substr(search_from, find_result - search_from + subtring_length);
+		}
+		search_from = find_result + subtring_length;
+		find_result = p_is_case_sensitive ? find(p_old, search_from) : findn(p_old, search_from);
+		++occurrences;
+	}
+
+	if (search_from == 0) {
+		return *this;
+	}
+
+	new_string += substr(search_from, length() - search_from);
+
+	return new_string;
+}
+
+String String::_replace(const char *p_old, const char *p_new, int p_count, bool p_is_case_sensitive) const {
+	String new_string;
+	int search_from = 0;
+	int find_result = 0;
+	int subtring_length = 0;
+	while (p_old[subtring_length]) {
+		++subtring_length;
+	}
+
+	if (subtring_length == 0 || p_count == 0) {
+		return *this; // there's nothing to match or substitute
+	}
+
+	find_result = p_is_case_sensitive ? find(p_old, search_from) : findn(p_old, search_from);
+	int occurrences = 1;
+	while (find_result >= 0) {
+		if (p_count < 0 || occurrences <= p_count) {
+			new_string += substr(search_from, find_result - search_from) + p_new;
+		} else {
+			new_string += substr(search_from, find_result - search_from + subtring_length);
+		}
+		search_from = find_result + subtring_length;
+		find_result = p_is_case_sensitive ? find(p_old, search_from) : findn(p_old, search_from);
+		++occurrences;
+	}
+
+	if (search_from == 0) {
+		return *this;
+	}
+
+	new_string += substr(search_from, length() - search_from);
+
+	return new_string;
+}
+
+String String::_replace_first(const String &p_old, const String &p_new, bool p_is_case_sensitive) const {
+	int pos = p_is_case_sensitive ? find(p_old) : findn(p_old);
+	if (pos >= 0) {
+		return substr(0, pos) + p_new + substr(pos + p_old.length(), length());
+	}
+
+	return *this;
+}
+
+String String::_replace_first(const char *p_old, const char *p_new, bool p_is_case_sensitive) const {
+	int pos = p_is_case_sensitive ? find(p_old) : findn(p_old);
+	if (pos >= 0) {
+		int subtring_length = 0;
+		while (p_old[subtring_length]) {
+			++subtring_length;
+		}
+		return substr(0, pos) + p_new + substr(pos + subtring_length, length());
+	}
+
+	return *this;
+}
+
+String String::_replace_last(const String &p_old, const String &p_new, bool p_is_case_sensitive) const {
+	int pos = p_is_case_sensitive ? rfind(p_old) : rfindn(p_old);
+	if (pos >= 0) {
+		return substr(0, pos) + p_new + substr(pos + p_old.length(), length());
+	}
+
+	return *this;
+}
+
+String String::_replace_last(const char *p_old, const char *p_new, bool p_is_case_sensitive) const {
+	int pos = p_is_case_sensitive ? rfind(p_old) : rfindn(p_old);
+	if (pos >= 0) {
+		int subtring_length = 0;
+		while (p_old[subtring_length]) {
+			++subtring_length;
+		}
+		return substr(0, pos) + p_new + substr(pos + subtring_length, length());
+	}
+
+	return *this;
+}
+
+String String::_rreplace(const String &p_old, const String &p_new, int p_count, bool p_is_case_sensitive) const {
+	String new_string;
+	int caller_length = this->length();
+	int search_from = caller_length;
+	int find_result = 0;
+	int occurrences = 1;
+	int subtring_length = p_old.length();
+
+	if (subtring_length == 0 || p_count == 0) {
+		return *this; // there's nothing to match or substitute
+	}
+
+	find_result = p_is_case_sensitive ? rfind(p_old, search_from) : rfindn(p_old, search_from);
+	while ((find_result >= 0) && (search_from > 0)) {
+		if (p_count < 0 || occurrences <= p_count) {
+			new_string = p_new + substr(find_result + subtring_length, search_from - (find_result + subtring_length) + 1) + new_string;
+		} else {
+			new_string = substr(find_result, search_from - find_result + 1) + new_string;
+		}
+		search_from = find_result - 1;
+		find_result = p_is_case_sensitive ? rfind(p_old, search_from) : rfindn(p_old, search_from);
+		++occurrences;
+	}
+
+	if (search_from == caller_length) {
+		return *this;
+	}
+
+	new_string = substr(find_result + 1, search_from + 1) + new_string;
+
+	return new_string;
+}
+
+String String::_rreplace(const char *p_old, const char *p_new, int p_count, bool p_is_case_sensitive) const {
+	String new_string;
+	int caller_length = this->length();
+	int search_from = caller_length;
+	int find_result = 0;
+	int occurrences = 1;
+	int subtring_length = 0;
+	while (p_old[subtring_length]) {
+		++subtring_length;
+	}
+
+	if (subtring_length == 0 || p_count == 0) {
+		return *this; // there's nothing to match or substitute
+	}
+
+	find_result = p_is_case_sensitive ? rfind(p_old, search_from) : rfindn(p_old, search_from);
+	while ((find_result >= 0) && (search_from > 0)) {
+		if (p_count < 0 || occurrences <= p_count) {
+			new_string = p_new + substr(find_result + subtring_length, search_from - (find_result + subtring_length) + 1) + new_string;
+		} else {
+			new_string = substr(find_result, search_from - find_result + 1) + new_string;
+		}
+		search_from = find_result - 1;
+		find_result = p_is_case_sensitive ? rfind(p_old, search_from) : rfindn(p_old, search_from);
+		++occurrences;
+	}
+
+	if (search_from == caller_length) {
+		return *this;
+	}
+
+	new_string = substr(find_result + 1, search_from + 1) + new_string;
+
+	return new_string;
+}
+
+//TODO: word_wrap implementation is kind of poor and should be rewritten
 String String::word_wrap(int p_chars_per_line) const {
 	int from = 0;
-	int last_space = 0;
+	int last_space = -1;
 	String ret;
 	for (int i = 0; i < length(); i++) {
 		if (i - from >= p_chars_per_line) {
@@ -345,7 +827,7 @@ void String::copy_from(const char *p_cstr) {
 	}
 }
 
-void String::copy_from(const char *p_cstr, const int p_clip_to) {
+void String::copy_from(const char *p_cstr, int p_clip_to) {
 	// copy Latin-1 encoded c-string directly
 	if (!p_cstr) {
 		resize(0);
@@ -383,7 +865,7 @@ void String::copy_from(const wchar_t *p_cstr) {
 #endif
 }
 
-void String::copy_from(const wchar_t *p_cstr, const int p_clip_to) {
+void String::copy_from(const wchar_t *p_cstr, int p_clip_to) {
 #ifdef WINDOWS_ENABLED
 	// wchar_t is 16-bit, parse as UTF-16
 	parse_utf16((const char16_t *)p_cstr, p_clip_to);
@@ -393,7 +875,7 @@ void String::copy_from(const wchar_t *p_cstr, const int p_clip_to) {
 #endif
 }
 
-void String::copy_from(const char32_t &p_char) {
+void String::copy_from(char32_t p_char) {
 	resize(2);
 	if ((p_char >= 0xd800 && p_char <= 0xdfff) || (p_char > 0x10ffff)) {
 		print_error("Unicode parsing error: Invalid unicode codepoint " + num_int64(p_char, 16) + ".");
@@ -424,7 +906,7 @@ void String::copy_from(const char32_t *p_cstr) {
 	copy_from_unchecked(p_cstr, len);
 }
 
-void String::copy_from(const char32_t *p_cstr, const int p_clip_to) {
+void String::copy_from(const char32_t *p_cstr, int p_clip_to) {
 	if (!p_cstr) {
 		resize(0);
 		return;
@@ -448,7 +930,7 @@ void String::copy_from(const char32_t *p_cstr, const int p_clip_to) {
 // p_char != nullptr
 // p_length > 0
 // p_length <= p_char strlen
-void String::copy_from_unchecked(const char32_t *p_char, const int p_length) {
+void String::copy_from_unchecked(const char32_t *p_char, int p_length) {
 	resize(p_length + 1);
 	set(p_length, 0);
 
@@ -536,9 +1018,8 @@ String &String::operator+=(const char *p_str) {
 	}
 
 	int src_len = 0;
-	const char *ptr = p_str;
-	while (*(ptr++) != 0) {
-		src_len++;
+	while (p_str[src_len]) {
+		++src_len;
 	}
 
 	int from = length();
@@ -973,7 +1454,7 @@ String String::capitalize() const {
 	return cap;
 }
 
-String String::camelcase_to_underscore(bool lowercase) const {
+String String::camelcase_to_underscore(bool p_use_lowercase) const {
 	const char32_t *cstr = get_data();
 	String new_string;
 	int start_index = 0;
@@ -1011,7 +1492,7 @@ String String::camelcase_to_underscore(bool lowercase) const {
 	}
 
 	new_string += this->substr(start_index, this->size() - start_index);
-	return lowercase ? new_string.to_lower() : new_string;
+	return p_use_lowercase ? new_string.to_lower() : new_string;
 }
 
 String String::get_with_code_lines() const {
@@ -1045,14 +1526,13 @@ int String::get_slice_count(String p_splitter) const {
 	return slices;
 }
 
-String String::get_slice(String p_splitter, int p_slice) const {
+String String::get_slice(const String &p_splitter, int p_slice) const {
 	if (is_empty() || p_splitter.is_empty()) {
 		return "";
 	}
 
 	int pos = 0;
 	int prev_pos = 0;
-	//int slices=1;
 	if (p_slice < 0) {
 		return "";
 	}
@@ -1068,7 +1548,6 @@ String String::get_slice(String p_splitter, int p_slice) const {
 		}
 
 		int from = prev_pos;
-		//int to=pos;
 
 		if (p_slice == i) {
 			return substr(from, pos - from);
@@ -1326,13 +1805,13 @@ Vector<int> String::split_ints_mk(const Vector<String> &p_splitters, bool p_allo
 	return ret;
 }
 
-String String::join(Vector<String> parts) const {
+String String::join(Vector<String> p_parts) const {
 	String ret;
-	for (int i = 0; i < parts.size(); ++i) {
+	for (int i = 0; i < p_parts.size(); ++i) {
 		if (i > 0) {
 			ret += *this;
 		}
-		ret += parts[i];
+		ret += p_parts[i];
 	}
 	return ret;
 }
@@ -1361,8 +1840,9 @@ String String::to_upper() const {
 
 String String::to_lower() const {
 	String lower = *this;
+	const int source_size = this->size();
 
-	for (int i = 0; i < lower.size(); i++) {
+	for (int i = 0; i < source_size; i++) {
 		const char32_t s = lower[i];
 		const char32_t t = _find_lower(s);
 		if (s != t) { // avoid copy on write
@@ -1464,14 +1944,14 @@ String String::num(double p_num, int p_decimals) {
 	return buf;
 }
 
-String String::num_int64(int64_t p_num, int base, bool capitalize_hex) {
+String String::num_int64(int64_t p_num, int p_base, bool p_capitalize_hex) {
 	bool sign = p_num < 0;
 
 	int64_t n = p_num;
 
 	int chars = 0;
 	do {
-		n /= base;
+		n /= p_base;
 		chars++;
 	} while (n);
 
@@ -1484,15 +1964,15 @@ String String::num_int64(int64_t p_num, int base, bool capitalize_hex) {
 	c[chars] = 0;
 	n = p_num;
 	do {
-		int mod = ABS(n % base);
+		int mod = ABS(n % p_base);
 		if (mod >= 10) {
-			char a = (capitalize_hex ? 'A' : 'a');
+			char a = (p_capitalize_hex ? 'A' : 'a');
 			c[--chars] = a + (mod - 10);
 		} else {
 			c[--chars] = '0' + mod;
 		}
 
-		n /= base;
+		n /= p_base;
 	} while (n);
 
 	if (sign) {
@@ -1502,12 +1982,12 @@ String String::num_int64(int64_t p_num, int base, bool capitalize_hex) {
 	return s;
 }
 
-String String::num_uint64(uint64_t p_num, int base, bool capitalize_hex) {
+String String::num_uint64(const uint64_t p_num, int p_base, bool p_capitalize_hex) {
 	uint64_t n = p_num;
 
 	int chars = 0;
 	do {
-		n /= base;
+		n /= p_base;
 		chars++;
 	} while (n);
 
@@ -1517,15 +1997,15 @@ String String::num_uint64(uint64_t p_num, int base, bool capitalize_hex) {
 	c[chars] = 0;
 	n = p_num;
 	do {
-		int mod = n % base;
+		int mod = n % p_base;
 		if (mod >= 10) {
-			char a = (capitalize_hex ? 'A' : 'a');
+			char a = (p_capitalize_hex ? 'A' : 'a');
 			c[--chars] = a + (mod - 10);
 		} else {
 			c[--chars] = '0' + mod;
 		}
 
-		n /= base;
+		n /= p_base;
 	} while (n);
 
 	return s;
@@ -2137,7 +2617,7 @@ int64_t String::hex_to_int() const {
 		s++;
 	}
 
-	if (len > 2 && s[0] == '0' && s[1] == 'x') {
+	if (len > 2 && s[0] == '0' && lower_case(s[1]) == 'x') {
 		s += 2;
 	}
 
@@ -2151,7 +2631,7 @@ int64_t String::hex_to_int() const {
 		} else if (c >= 'a' && c <= 'f') {
 			n = (c - 'a') + 10;
 		} else {
-			return 0;
+			ERR_FAIL_COND_V_MSG(true, 0, "Invalid hexadecimal notation character \"" + chr(*s) + "\" in string \"" + *this + "\".");
 		}
 		// Check for overflow/underflow, with special case to ensure INT64_MIN does not result in error
 		bool overflow = ((hex > INT64_MAX / 16) && (sign == 1 || (sign == -1 && hex != (INT64_MAX >> 4) + 1))) || (sign == -1 && hex == (INT64_MAX >> 4) + 1 && c > '0');
@@ -2178,7 +2658,7 @@ int64_t String::bin_to_int() const {
 		s++;
 	}
 
-	if (len > 2 && s[0] == '0' && s[1] == 'b') {
+	if (len > 2 && s[0] == '0' && lower_case(s[1]) == 'b') {
 		s += 2;
 	}
 
@@ -2763,141 +3243,50 @@ Vector<uint8_t> String::sha256_buffer() const {
 	return ret;
 }
 
-String String::insert(int p_at_pos, const String &p_string) const {
-	if (p_at_pos < 0) {
+String String::insert(int p_position, const String &p_text) const {
+	if (p_position < 0) {
 		return *this;
 	}
 
-	if (p_at_pos > length()) {
-		p_at_pos = length();
+	const int source_length = length();
+	if (p_position > source_length) {
+		p_position = source_length;
 	}
 
 	String pre;
-	if (p_at_pos > 0) {
-		pre = substr(0, p_at_pos);
+	if (p_position > 0) {
+		pre = substr(0, p_position);
 	}
 
 	String post;
-	if (p_at_pos < length()) {
-		post = substr(p_at_pos, length() - p_at_pos);
+	if (p_position < source_length) {
+		post = substr(p_position, source_length - p_position);
 	}
 
-	return pre + p_string + post;
+	return pre + p_text + post;
 }
 
 String String::substr(int p_from, int p_chars) const {
+	const int source_length = length();
 	if (p_chars == -1) {
-		p_chars = length() - p_from;
+		p_chars = source_length - p_from;
 	}
 
-	if (is_empty() || p_from < 0 || p_from >= length() || p_chars <= 0) {
+	if (is_empty() || p_from < 0 || p_from >= source_length || p_chars <= 0) {
 		return "";
 	}
 
-	if ((p_from + p_chars) > length()) {
-		p_chars = length() - p_from;
+	if ((p_from + p_chars) > source_length) {
+		p_chars = source_length - p_from;
 	}
 
-	if (p_from == 0 && p_chars >= length()) {
+	if (p_from == 0 && p_chars >= source_length) {
 		return String(*this);
 	}
 
 	String s = String();
 	s.copy_from_unchecked(&get_data()[p_from], p_chars);
 	return s;
-}
-
-int String::find(const String &p_str, int p_from) const {
-	if (p_from < 0) {
-		return -1;
-	}
-
-	const int src_len = p_str.length();
-
-	const int len = length();
-
-	if (src_len == 0 || len == 0) {
-		return -1; // won't find anything!
-	}
-
-	const char32_t *src = get_data();
-	const char32_t *str = p_str.get_data();
-
-	for (int i = p_from; i <= (len - src_len); i++) {
-		bool found = true;
-		for (int j = 0; j < src_len; j++) {
-			int read_pos = i + j;
-
-			if (read_pos >= len) {
-				ERR_PRINT("read_pos>=len");
-				return -1;
-			}
-
-			if (src[read_pos] != str[j]) {
-				found = false;
-				break;
-			}
-		}
-
-		if (found) {
-			return i;
-		}
-	}
-
-	return -1;
-}
-
-int String::find(const char *p_str, int p_from) const {
-	if (p_from < 0) {
-		return -1;
-	}
-
-	const int len = length();
-
-	if (len == 0) {
-		return -1; // won't find anything!
-	}
-
-	const char32_t *src = get_data();
-
-	int src_len = 0;
-	while (p_str[src_len] != '\0') {
-		src_len++;
-	}
-
-	if (src_len == 1) {
-		const char32_t needle = p_str[0];
-
-		for (int i = p_from; i < len; i++) {
-			if (src[i] == needle) {
-				return i;
-			}
-		}
-
-	} else {
-		for (int i = p_from; i <= (len - src_len); i++) {
-			bool found = true;
-			for (int j = 0; j < src_len; j++) {
-				int read_pos = i + j;
-
-				if (read_pos >= len) {
-					ERR_PRINT("read_pos>=len");
-					return -1;
-				}
-
-				if (src[read_pos] != (char32_t)p_str[j]) {
-					found = false;
-					break;
-				}
-			}
-
-			if (found) {
-				return i;
-			}
-		}
-	}
-
-	return -1;
 }
 
 int String::find_char(const char32_t &p_char, int p_from) const {
@@ -2959,146 +3348,10 @@ int String::findmk(const Vector<String> &p_keys, int p_from, int *r_key) const {
 	return -1;
 }
 
-int String::findn(const String &p_str, int p_from) const {
-	if (p_from < 0) {
-		return -1;
-	}
-
-	int src_len = p_str.length();
-
-	if (src_len == 0 || length() == 0) {
-		return -1; // won't find anything!
-	}
-
-	const char32_t *srcd = get_data();
-
-	for (int i = p_from; i <= (length() - src_len); i++) {
-		bool found = true;
-		for (int j = 0; j < src_len; j++) {
-			int read_pos = i + j;
-
-			if (read_pos >= length()) {
-				ERR_PRINT("read_pos>=length()");
-				return -1;
-			}
-
-			char32_t src = _find_lower(srcd[read_pos]);
-			char32_t dst = _find_lower(p_str[j]);
-
-			if (src != dst) {
-				found = false;
-				break;
-			}
-		}
-
-		if (found) {
-			return i;
-		}
-	}
-
-	return -1;
-}
-
-int String::rfind(const String &p_str, int p_from) const {
-	// establish a limit
-	int limit = length() - p_str.length();
-	if (limit < 0) {
-		return -1;
-	}
-
-	// establish a starting point
-	if (p_from < 0) {
-		p_from = limit;
-	} else if (p_from > limit) {
-		p_from = limit;
-	}
-
-	int src_len = p_str.length();
-	int len = length();
-
-	if (src_len == 0 || len == 0) {
-		return -1; // won't find anything!
-	}
-
-	const char32_t *src = get_data();
-
-	for (int i = p_from; i >= 0; i--) {
-		bool found = true;
-		for (int j = 0; j < src_len; j++) {
-			int read_pos = i + j;
-
-			if (read_pos >= len) {
-				ERR_PRINT("read_pos>=len");
-				return -1;
-			}
-
-			if (src[read_pos] != p_str[j]) {
-				found = false;
-				break;
-			}
-		}
-
-		if (found) {
-			return i;
-		}
-	}
-
-	return -1;
-}
-
-int String::rfindn(const String &p_str, int p_from) const {
-	// establish a limit
-	int limit = length() - p_str.length();
-	if (limit < 0) {
-		return -1;
-	}
-
-	// establish a starting point
-	if (p_from < 0) {
-		p_from = limit;
-	} else if (p_from > limit) {
-		p_from = limit;
-	}
-
-	int src_len = p_str.length();
-	int len = length();
-
-	if (src_len == 0 || len == 0) {
-		return -1; // won't find anything!
-	}
-
-	const char32_t *src = get_data();
-
-	for (int i = p_from; i >= 0; i--) {
-		bool found = true;
-		for (int j = 0; j < src_len; j++) {
-			int read_pos = i + j;
-
-			if (read_pos >= len) {
-				ERR_PRINT("read_pos>=len");
-				return -1;
-			}
-
-			char32_t srcc = _find_lower(src[read_pos]);
-			char32_t dstc = _find_lower(p_str[j]);
-
-			if (srcc != dstc) {
-				found = false;
-				break;
-			}
-		}
-
-		if (found) {
-			return i;
-		}
-	}
-
-	return -1;
-}
-
 bool String::ends_with(const String &p_string) const {
 	int l = p_string.length();
-	if (l > length()) {
+	const int source_length = length();
+	if (l > source_length) {
 		return false;
 	}
 
@@ -3107,10 +3360,35 @@ bool String::ends_with(const String &p_string) const {
 	}
 
 	const char32_t *p = &p_string[0];
-	const char32_t *s = &operator[](length() - l);
+	const char32_t *s = &operator[](source_length - l);
 
 	for (int i = 0; i < l; i++) {
 		if (p[i] != s[i]) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool String::ends_with(const char *p_string) const {
+	int l = 0;
+	while (p_string[l]) {
+		++l;
+	}
+	const int source_length = length();
+	if (l > source_length) {
+		return false;
+	}
+
+	if (l == 0) {
+		return true;
+	}
+
+	const char32_t *s = &operator[](source_length - l);
+
+	for (int i = 0; i < l; i++) {
+		if ((char32_t)p_string[i] != s[i]) {
 			return false;
 		}
 	}
@@ -3165,63 +3443,22 @@ bool String::is_enclosed_in(const String &p_string) const {
 }
 
 bool String::is_subsequence_of(const String &p_string) const {
-	return _base_is_subsequence_of(p_string, false);
-}
-
-bool String::is_subsequence_ofi(const String &p_string) const {
 	return _base_is_subsequence_of(p_string, true);
 }
 
-bool String::is_quoted() const {
-	return is_enclosed_in("\"") || is_enclosed_in("'");
+bool String::is_subsequence_ofi(const String &p_string) const {
+	return _base_is_subsequence_of(p_string, false);
 }
 
-int String::_count(const String &p_string, int p_from, int p_to, bool p_case_insensitive) const {
-	if (p_string.is_empty()) {
-		return 0;
-	}
-	int len = length();
-	int slen = p_string.length();
-	if (len < slen) {
-		return 0;
-	}
-	String str;
-	if (p_from >= 0 && p_to >= 0) {
-		if (p_to == 0) {
-			p_to = len;
-		} else if (p_from >= p_to) {
-			return 0;
-		}
-		if (p_from == 0 && p_to == len) {
-			str = String();
-			str.copy_from_unchecked(&get_data()[0], len);
-		} else {
-			str = substr(p_from, p_to - p_from);
-		}
+bool String::is_quoted(const String &p_affix) const {
+	if (p_affix.is_empty()) {
+		return is_enclosed_in("\"") || is_enclosed_in("'");
 	} else {
-		return 0;
+		return is_enclosed_in(p_affix);
 	}
-	int c = 0;
-	int idx = -1;
-	do {
-		idx = p_case_insensitive ? str.findn(p_string) : str.find(p_string);
-		if (idx != -1) {
-			str = str.substr(idx + slen, str.length() - slen);
-			++c;
-		}
-	} while (idx != -1);
-	return c;
 }
 
-int String::count(const String &p_string, int p_from, int p_to) const {
-	return _count(p_string, p_from, p_to, false);
-}
-
-int String::countn(const String &p_string, int p_from, int p_to) const {
-	return _count(p_string, p_from, p_to, true);
-}
-
-bool String::_base_is_subsequence_of(const String &p_string, bool case_insensitive) const {
+bool String::_base_is_subsequence_of(const String &p_string, bool p_is_case_sensitive) const {
 	int len = length();
 	if (len == 0) {
 		// Technically an empty string is subsequence of any string
@@ -3237,12 +3474,12 @@ bool String::_base_is_subsequence_of(const String &p_string, bool case_insensiti
 
 	for (; *src && *tgt; tgt++) {
 		bool match = false;
-		if (case_insensitive) {
+		if (p_is_case_sensitive) {
+			match = *src == *tgt;
+		} else {
 			char32_t srcc = _find_lower(*src);
 			char32_t tgtc = _find_lower(*tgt);
 			match = srcc == tgtc;
-		} else {
-			match = *src == *tgt;
 		}
 		if (match) {
 			src++;
@@ -3299,17 +3536,31 @@ float String::similarity(const String &p_string) const {
 	return (2.0f * inter) / sum;
 }
 
-static bool _wildcard_match(const char32_t *p_pattern, const char32_t *p_string, bool p_case_sensitive) {
+static bool _wildcard_match(const char32_t *p_pattern, const char32_t *p_string, bool p_is_case_sensitive) {
 	switch (*p_pattern) {
 		case '\0':
 			return !*p_string;
 		case '*':
-			return _wildcard_match(p_pattern + 1, p_string, p_case_sensitive) || (*p_string && _wildcard_match(p_pattern, p_string + 1, p_case_sensitive));
+			return _wildcard_match(p_pattern + 1, p_string, p_is_case_sensitive) || (*p_string && _wildcard_match(p_pattern, p_string + 1, p_is_case_sensitive));
 		case '?':
-			return *p_string && (*p_string != '.') && _wildcard_match(p_pattern + 1, p_string + 1, p_case_sensitive);
+			return *p_string && (*p_string != '.') && _wildcard_match(p_pattern + 1, p_string + 1, p_is_case_sensitive);
 		default:
 
-			return (p_case_sensitive ? (*p_string == *p_pattern) : (_find_upper(*p_string) == _find_upper(*p_pattern))) && _wildcard_match(p_pattern + 1, p_string + 1, p_case_sensitive);
+			return (p_is_case_sensitive ? (*p_string == *p_pattern) : (_find_upper(*p_string) == _find_upper(*p_pattern))) && _wildcard_match(p_pattern + 1, p_string + 1, p_is_case_sensitive);
+	}
+}
+
+static bool _wildcard_match(const char *p_pattern, const char32_t *p_string, bool p_is_case_sensitive) {
+	switch (*p_pattern) {
+		case '\0':
+			return !*p_string;
+		case '*':
+			return _wildcard_match(p_pattern + 1, p_string, p_is_case_sensitive) || (*p_string && _wildcard_match(p_pattern, p_string + 1, p_is_case_sensitive));
+		case '?':
+			return *p_string && (*p_string != '.') && _wildcard_match(p_pattern + 1, p_string + 1, p_is_case_sensitive);
+		default:
+
+			return (p_is_case_sensitive ? (*p_string == static_cast<char32_t>(*p_pattern)) : (_find_upper(*p_string) == _find_upper(static_cast<char32_t>(*p_pattern)))) && _wildcard_match(p_pattern + 1, p_string + 1, p_is_case_sensitive);
 	}
 }
 
@@ -3321,6 +3572,18 @@ bool String::match(const String &p_wildcard) const {
 	return _wildcard_match(p_wildcard.get_data(), get_data(), true);
 }
 
+bool String::match(const char *p_wildcard) const {
+	int wildcard_length = 0;
+	while (p_wildcard[wildcard_length]) {
+		++wildcard_length;
+	}
+	if (!wildcard_length || !length()) {
+		return false;
+	}
+
+	return _wildcard_match(p_wildcard, get_data(), true);
+}
+
 bool String::matchn(const String &p_wildcard) const {
 	if (!p_wildcard.length() || !length()) {
 		return false;
@@ -3328,11 +3591,23 @@ bool String::matchn(const String &p_wildcard) const {
 	return _wildcard_match(p_wildcard.get_data(), get_data(), false);
 }
 
-String String::format(const Variant &values, String placeholder) const {
+bool String::matchn(const char *p_wildcard) const {
+	int wildcard_length = 0;
+	while (p_wildcard[wildcard_length]) {
+		++wildcard_length;
+	}
+	if (!wildcard_length || !length()) {
+		return false;
+	}
+
+	return _wildcard_match(p_wildcard, get_data(), false);
+}
+
+String String::format(const Variant &p_values, const String &p_placeholder) const {
 	String new_string = String(this->ptr());
 
-	if (values.get_type() == Variant::ARRAY) {
-		Array values_arr = values;
+	if (p_values.get_type() == Variant::ARRAY) {
+		Array values_arr = p_values;
 
 		for (int i = 0; i < values_arr.size(); i++) {
 			String i_as_str = String::num_int64(i);
@@ -3347,7 +3622,7 @@ String String::format(const Variant &values, String placeholder) const {
 					Variant v_val = value_arr[1];
 					String val = v_val;
 
-					new_string = new_string.replace(placeholder.replace("_", key), val);
+					new_string = new_string.replace(p_placeholder.replace("_", key), val);
 				} else {
 					ERR_PRINT(String("STRING.format Inner Array size != 2 ").ascii().get_data());
 				}
@@ -3355,20 +3630,20 @@ String String::format(const Variant &values, String placeholder) const {
 				Variant v_val = values_arr[i];
 				String val = v_val;
 
-				if (placeholder.find("_") > -1) {
-					new_string = new_string.replace(placeholder.replace("_", i_as_str), val);
+				if (p_placeholder.find("_") > -1) {
+					new_string = new_string.replace(p_placeholder.replace("_", i_as_str), val);
 				} else {
-					new_string = new_string.replace_first(placeholder, val);
+					new_string = new_string.replace_first(p_placeholder, val);
 				}
 			}
 		}
-	} else if (values.get_type() == Variant::DICTIONARY) {
-		Dictionary d = values;
+	} else if (p_values.get_type() == Variant::DICTIONARY) {
+		Dictionary d = p_values;
 		List<Variant> keys;
 		d.get_key_list(&keys);
 
 		for (const Variant &key : keys) {
-			new_string = new_string.replace(placeholder.replace("_", key), d[key]);
+			new_string = new_string.replace(p_placeholder.replace("_", key), d[key]);
 		}
 	} else {
 		ERR_PRINT(String("Invalid type: use Array or Dictionary.").ascii().get_data());
@@ -3377,76 +3652,116 @@ String String::format(const Variant &values, String placeholder) const {
 	return new_string;
 }
 
-String String::replace(const String &p_key, const String &p_with) const {
-	String new_string;
-	int search_from = 0;
-	int result = 0;
-
-	while ((result = find(p_key, search_from)) >= 0) {
-		new_string += substr(search_from, result - search_from);
-		new_string += p_with;
-		search_from = result + p_key.length();
-	}
-
-	if (search_from == 0) {
-		return *this;
-	}
-
-	new_string += substr(search_from, length() - search_from);
-
-	return new_string;
+int String::find(const String &p_substring, int p_from) const {
+	return _find(p_substring, p_from, true);
 }
 
-String String::replace(const char *p_key, const char *p_with) const {
-	String new_string;
-	int search_from = 0;
-	int result = 0;
-
-	while ((result = find(p_key, search_from)) >= 0) {
-		new_string += substr(search_from, result - search_from);
-		new_string += p_with;
-		int k = 0;
-		while (p_key[k] != '\0') {
-			k++;
-		}
-		search_from = result + k;
-	}
-
-	if (search_from == 0) {
-		return *this;
-	}
-
-	new_string += substr(search_from, length() - search_from);
-
-	return new_string;
+int String::find(const char *p_substring, int p_from) const {
+	return _find(p_substring, p_from, true);
 }
 
-String String::replace_first(const String &p_key, const String &p_with) const {
-	int pos = find(p_key);
-	if (pos >= 0) {
-		return substr(0, pos) + p_with + substr(pos + p_key.length(), length());
-	}
-
-	return *this;
+int String::findn(const String &p_substring, int p_from) const {
+	return _find(p_substring, p_from, false);
 }
 
-String String::replacen(const String &p_key, const String &p_with) const {
-	String new_string;
-	int search_from = 0;
-	int result = 0;
+int String::findn(const char *p_substring, int p_from) const {
+	return _find(p_substring, p_from, false);
+}
 
-	while ((result = findn(p_key, search_from)) >= 0) {
-		new_string += substr(search_from, result - search_from);
-		new_string += p_with;
-		search_from = result + p_key.length();
-	}
+int String::rfind(const String &p_substring, int p_from) const {
+	return _rfind(p_substring, p_from, true);
+}
 
-	if (search_from == 0) {
-		return *this;
-	}
+int String::rfind(const char *p_substring, int p_from) const {
+	return _rfind(p_substring, p_from, true);
+}
 
-	new_string += substr(search_from, length() - search_from);
-	return new_string;
+int String::rfindn(const String &p_substring, int p_from) const {
+	return _rfind(p_substring, p_from, false);
+}
+
+int String::rfindn(const char *p_substring, int p_from) const {
+	return _rfind(p_substring, p_from, false);
+}
+
+int String::count(const String &p_substring, int p_from, int p_to) const {
+	return _count(p_substring, p_from, p_to, true);
+}
+
+int String::count(const char *p_substring, int p_from, int p_to) const {
+	return _count(p_substring, p_from, p_to, true);
+}
+
+int String::countn(const String &p_substring, int p_from, int p_to) const {
+	return _count(p_substring, p_from, p_to, false);
+}
+
+int String::countn(const char *p_substring, int p_from, int p_to) const {
+	return _count(p_substring, p_from, p_to, false);
+}
+
+String String::replace_first(const String &p_old, const String &p_new) const {
+	return _replace_first(p_old, p_new, true);
+}
+
+String String::replace_first(const char *p_old, const char *p_new) const {
+	return _replace_first(p_old, p_new, true);
+}
+
+String String::replace_firstn(const String &p_old, const String &p_new) const {
+	return _replace_first(p_old, p_new, false);
+}
+
+String String::replace_firstn(const char *p_old, const char *p_new) const {
+	return _replace_first(p_old, p_new, false);
+}
+
+String String::replace_last(const String &p_old, const String &p_new) const {
+	return _replace_last(p_old, p_new, true);
+}
+
+String String::replace_last(const char *p_old, const char *p_new) const {
+	return _replace_last(p_old, p_new, true);
+}
+
+String String::replace_lastn(const String &p_old, const String &p_new) const {
+	return _replace_last(p_old, p_new, false);
+}
+
+String String::replace_lastn(const char *p_old, const char *p_new) const {
+	return _replace_last(p_old, p_new, false);
+}
+
+String String::replace(const String &p_old, const String &p_new, int p_count) const {
+	return _replace(p_old, p_new, p_count, true);
+}
+
+String String::replace(const char *p_old, const char *p_new, int p_count) const {
+	return _replace(p_old, p_new, p_count, true);
+}
+
+String String::replacen(const String &p_old, const String &p_new, int p_count) const {
+	return _replace(p_old, p_new, p_count, false);
+}
+
+String String::replacen(const char *p_old, const char *p_new, int p_count) const {
+	return _replace(p_old, p_new, p_count, false);
+}
+
+String String::rreplace(const String &p_old, const String &p_new, int p_count) const {
+	return _rreplace(p_old, p_new, p_count, true);
+}
+
+String String::rreplace(const char *p_old, const char *p_new, int p_count) const {
+	return _rreplace(p_old, p_new, p_count, true);
+}
+
+String String::rreplacen(const String &p_old, const String &p_new, int p_count) const {
+	return _rreplace(p_old, p_new, p_count, false);
+}
+
+String String::rreplacen(const char *p_old, const char *p_new, int p_count) const {
+	return _rreplace(p_old, p_new, p_count, false);
 }
 
 String String::repeat(int p_count) const {
@@ -3691,7 +4006,7 @@ String String::simplify_path() const {
 	return drive + s;
 }
 
-static int _humanize_digits(int p_num) {
+static _FORCE_INLINE_ int _humanize_digits(int p_num) {
 	if (p_num < 100) {
 		return 2;
 	} else if (p_num < 1024) {
@@ -4458,12 +4773,12 @@ String rtoss(double p_val) {
 }
 
 // Right-pad with a character.
-String String::rpad(int min_length, const String &character) const {
+String String::rpad(int p_min_length, const String &p_character) const {
 	String s = *this;
-	int padding = min_length - s.length();
+	int padding = p_min_length - s.length();
 	if (padding > 0) {
 		for (int i = 0; i < padding; i++) {
-			s = s + character;
+			s = s + p_character;
 		}
 	}
 
@@ -4471,12 +4786,12 @@ String String::rpad(int min_length, const String &character) const {
 }
 
 // Left-pad with a character.
-String String::lpad(int min_length, const String &character) const {
+String String::lpad(int p_min_length, const String &p_character) const {
 	String s = *this;
-	int padding = min_length - s.length();
+	int padding = p_min_length - s.length();
 	if (padding > 0) {
 		for (int i = 0; i < padding; i++) {
-			s = character + s;
+			s = p_character + s;
 		}
 	}
 
@@ -4487,7 +4802,7 @@ String String::lpad(int min_length, const String &character) const {
 //   "fish %s pie" % "frog"
 //   "fish %s %d pie" % ["frog", 12]
 // In case of an error, the string returned is the error description and "error" is true.
-String String::sprintf(const Array &values, bool *error) const {
+String String::sprintf(const Array &p_values, bool *p_error) const {
 	String formatted;
 	char32_t *self = (char32_t *)get_data();
 	bool in_format = false;
@@ -4499,8 +4814,8 @@ String String::sprintf(const Array &values, bool *error) const {
 	bool left_justified = false;
 	bool show_sign = false;
 
-	if (error) {
-		*error = true;
+	if (p_error) {
+		*p_error = true;
 	}
 
 	for (; *self; self++) {
@@ -4517,15 +4832,15 @@ String String::sprintf(const Array &values, bool *error) const {
 				case 'o': // Octal
 				case 'x': // Hexadecimal (lowercase)
 				case 'X': { // Hexadecimal (uppercase)
-					if (value_index >= values.size()) {
+					if (value_index >= p_values.size()) {
 						return "not enough arguments for format string";
 					}
 
-					if (!values[value_index].is_num()) {
+					if (!p_values[value_index].is_num()) {
 						return "a number is required";
 					}
 
-					int64_t value = values[value_index];
+					int64_t value = p_values[value_index];
 					int base = 16;
 					bool capitalize = false;
 					switch (c) {
@@ -4569,15 +4884,15 @@ String String::sprintf(const Array &values, bool *error) const {
 					break;
 				}
 				case 'f': { // Float
-					if (value_index >= values.size()) {
+					if (value_index >= p_values.size()) {
 						return "not enough arguments for format string";
 					}
 
-					if (!values[value_index].is_num()) {
+					if (!p_values[value_index].is_num()) {
 						return "a number is required";
 					}
 
-					double value = values[value_index];
+					double value = p_values[value_index];
 					bool is_negative = (value < 0);
 					String str = String::num(ABS(value), min_decimals);
 
@@ -4615,11 +4930,11 @@ String String::sprintf(const Array &values, bool *error) const {
 					break;
 				}
 				case 's': { // String
-					if (value_index >= values.size()) {
+					if (value_index >= p_values.size()) {
 						return "not enough arguments for format string";
 					}
 
-					String str = values[value_index];
+					String str = p_values[value_index];
 					// Padding.
 					if (left_justified) {
 						str = str.rpad(min_chars);
@@ -4633,14 +4948,14 @@ String String::sprintf(const Array &values, bool *error) const {
 					break;
 				}
 				case 'c': {
-					if (value_index >= values.size()) {
+					if (value_index >= p_values.size()) {
 						return "not enough arguments for format string";
 					}
 
 					// Convert to character.
 					String str;
-					if (values[value_index].is_num()) {
-						int value = values[value_index];
+					if (p_values[value_index].is_num()) {
+						int value = p_values[value_index];
 						if (value < 0) {
 							return "unsigned integer is lower than minimum";
 						} else if (value >= 0xd800 && value <= 0xdfff) {
@@ -4648,9 +4963,9 @@ String String::sprintf(const Array &values, bool *error) const {
 						} else if (value > 0x10ffff) {
 							return "unsigned integer is greater than maximum";
 						}
-						str = chr(values[value_index]);
-					} else if (values[value_index].get_type() == Variant::STRING) {
-						str = values[value_index];
+						str = chr(p_values[value_index]);
+					} else if (p_values[value_index].get_type() == Variant::STRING) {
+						str = p_values[value_index];
 						if (str.length() != 1) {
 							return "%c requires number or single-character string";
 						}
@@ -4712,15 +5027,15 @@ String String::sprintf(const Array &values, bool *error) const {
 				}
 
 				case '*': { // Dynamic width, based on value.
-					if (value_index >= values.size()) {
+					if (value_index >= p_values.size()) {
 						return "not enough arguments for format string";
 					}
 
-					if (!values[value_index].is_num()) {
+					if (!p_values[value_index].is_num()) {
 						return "* wants number";
 					}
 
-					int size = values[value_index];
+					int size = p_values[value_index];
 
 					if (in_decimals) {
 						min_decimals = size;
@@ -4758,26 +5073,33 @@ String String::sprintf(const Array &values, bool *error) const {
 		return "incomplete format";
 	}
 
-	if (value_index != values.size()) {
+	if (value_index != p_values.size()) {
 		return "not all arguments converted during string formatting";
 	}
 
-	if (error) {
-		*error = false;
+	if (p_error) {
+		*p_error = false;
 	}
 	return formatted;
 }
 
-String String::quote(String quotechar) const {
-	return quotechar + *this + quotechar;
+String String::quote(const String &p_affix) const {
+	return p_affix + *this + p_affix;
 }
 
-String String::unquote() const {
-	if (!is_quoted()) {
-		return *this;
+String String::unquote(const String &p_unquote_string) const {
+	if (p_unquote_string.is_empty()) {
+		if (!is_quoted()) {
+			return *this;
+		}
+		return substr(1, length() - 2);
+	} else {
+		if (!is_enclosed_in(p_unquote_string)) {
+			return *this;
+		}
+		int unquote_length = p_unquote_string.length();
+		return substr(unquote_length, length() - (unquote_length * 2));
 	}
-
-	return substr(1, length() - 2);
 }
 
 Vector<uint8_t> String::to_ascii_buffer() const {
