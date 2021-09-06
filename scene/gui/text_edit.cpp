@@ -1583,10 +1583,6 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 		_reset_caret_blink_timer();
 
-		// Allow unicode handling if:
-		// * No Modifiers are pressed (except shift)
-		bool allow_unicode_handling = !(k->is_command_pressed() || k->is_ctrl_pressed() || k->is_alt_pressed() || k->is_meta_pressed());
-
 		selection.selecting_text = false;
 
 		// Check and handle all built in shortcuts.
@@ -1794,9 +1790,8 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 
 		// Handle Unicode (if no modifiers active). Tab	has a value of 0x09.
-		if (allow_unicode_handling && editable && (k->get_unicode() >= 32 || k->get_keycode() == KEY_TAB)) {
+		if (editable && (k->get_unicode() >= 32 || k->get_keycode() == KEY_TAB)) {
 			handle_unicode_input(k->get_unicode());
-			accept_event();
 			return;
 		}
 	}
