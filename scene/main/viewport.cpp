@@ -1420,13 +1420,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				//do not steal mouse focus and stuff while a focus mask exists
 				gui.mouse_focus_mask |= 1 << (mb->get_button_index() - 1); //add the button to the mask
 			} else {
-				bool is_handled = false;
-
-				if (is_handled) {
-					set_input_as_handled();
-					return;
-				}
-
 				//Matrix32 parent_xform;
 
 				/*
