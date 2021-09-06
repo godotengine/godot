@@ -446,12 +446,14 @@ private:
 
 	// minimap scroll
 	bool minimap_clicked = false;
+	bool hovering_minimap = false;
 	bool dragging_minimap = false;
 	bool can_drag_minimap = false;
 
 	double minimap_scroll_ratio = 0.0;
 	double minimap_scroll_click_pos = 0.0;
 
+	void _update_minimap_hover();
 	void _update_minimap_click();
 	void _update_minimap_drag();
 
