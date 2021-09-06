@@ -40,7 +40,7 @@
 
 #include <stdlib.h>
 
-Mesh::ConvexDecompositionFunc Mesh::convex_composition_function = nullptr;
+Mesh::ConvexDecompositionFunc Mesh::convex_decomposition_function = nullptr;
 
 Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 	if (triangle_mesh.is_valid()) {
@@ -170,64 +170,6 @@ PoolVector<Face3> Mesh::get_faces() const {
 		return tm->get_faces();
 	}
 	return PoolVector<Face3>();
-	/*
-	for (int i=0;i<surfaces.size();i++) {
-
-		if (VisualServer::get_singleton()->mesh_surface_get_primitive_type( mesh, i ) != VisualServer::PRIMITIVE_TRIANGLES )
-			continue;
-
-		PoolVector<int> indices;
-		PoolVector<Vector3> vertices;
-
-		vertices=VisualServer::get_singleton()->mesh_surface_get_array(mesh, i,VisualServer::ARRAY_VERTEX);
-
-		int len=VisualServer::get_singleton()->mesh_surface_get_array_index_len(mesh, i);
-		bool has_indices;
-
-		if (len>0) {
-
-			indices=VisualServer::get_singleton()->mesh_surface_get_array(mesh, i,VisualServer::ARRAY_INDEX);
-			has_indices=true;
-
-		} else {
-
-			len=vertices.size();
-			has_indices=false;
-		}
-
-		if (len<=0)
-			continue;
-
-		PoolVector<int>::Read indicesr = indices.read();
-		const int *indicesptr = indicesr.ptr();
-
-		PoolVector<Vector3>::Read verticesr = vertices.read();
-		const Vector3 *verticesptr = verticesr.ptr();
-
-		int old_faces=faces.size();
-		int new_faces=old_faces+(len/3);
-
-		faces.resize(new_faces);
-
-		PoolVector<Face3>::Write facesw = faces.write();
-		Face3 *facesptr=facesw.ptr();
-
-
-		for (int i=0;i<len/3;i++) {
-
-			Face3 face;
-
-			for (int j=0;j<3;j++) {
-
-				int idx=i*3+j;
-				face.vertex[j] = has_indices ? verticesptr[ indicesptr[ idx ] ] : verticesptr[idx];
-			}
-
-			facesptr[i+old_faces]=face;
-		}
-
-	}
-*/
 }
 
 Ref<Shape> Mesh::create_convex_shape(bool p_clean, bool p_simplify) const {
@@ -568,41 +510,37 @@ void Mesh::clear_cache() const {
 }
 
 Vector<Ref<Shape>> Mesh::convex_decompose(int p_max_convex_hulls) const {
-	ERR_FAIL_COND_V(!convex_composition_function, Vector<Ref<Shape>>());
+	ERR_FAIL_COND_V(!convex_decomposition_function, Vector<Ref<Shape>>());
 
-	PoolVector<Face3> faces = get_faces();
-	Vector<Face3> f3;
-	f3.resize(faces.size());
-	PoolVector<Face3>::Read f = faces.read();
-	for (int i = 0; i < f3.size(); i++) {
-		f3.write[i] = f[i];
+	Ref<TriangleMesh> tm = generate_triangle_mesh();
+	ERR_FAIL_COND_V(!tm.is_valid(), Vector<Ref<Shape>>());
+
+	const PoolVector<TriangleMesh::Triangle> &triangles = tm->get_triangles();
+	int triangle_count = triangles.size();
+
+	PoolVector<uint32_t> indices;
+	{
+		indices.resize(triangle_count * 3);
+		PoolVector<uint32_t>::Write w = indices.write();
+		PoolVector<TriangleMesh::Triangle>::Read triangles_read = triangles.read();
+		for (int i = 0; i < triangle_count; i++) {
+			for (int j = 0; j < 3; j++) {
+				w[i * 3 + j] = triangles_read[i].indices[j];
+			}
+		}
 	}
 
-	Vector<Vector<Face3>> decomposed = convex_composition_function(f3, p_max_convex_hulls);
+	const PoolVector<Vector3> &vertices = tm->get_vertices();
+	int vertex_count = vertices.size();
+
+	Vector<PoolVector<Vector3>> decomposed = convex_decomposition_function((real_t *)vertices.read().ptr(), vertex_count, indices.read().ptr(), triangle_count, p_max_convex_hulls, nullptr);
 
 	Vector<Ref<Shape>> ret;
 
 	for (int i = 0; i < decomposed.size(); i++) {
-		Set<Vector3> points;
-		for (int j = 0; j < decomposed[i].size(); j++) {
-			points.insert(decomposed[i][j].vertex[0]);
-			points.insert(decomposed[i][j].vertex[1]);
-			points.insert(decomposed[i][j].vertex[2]);
-		}
-
-		PoolVector<Vector3> convex_points;
-		convex_points.resize(points.size());
-		{
-			PoolVector<Vector3>::Write w = convex_points.write();
-			int idx = 0;
-			for (Set<Vector3>::Element *E = points.front(); E; E = E->next()) {
-				w[idx++] = E->get();
-			}
-		}
-
 		Ref<ConvexPolygonShape> shape;
 		shape.instance();
-		shape->set_points(convex_points);
+		shape->set_points(decomposed[i]);
 		ret.push_back(shape);
 	}
 

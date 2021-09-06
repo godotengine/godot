@@ -148,9 +148,9 @@ public:
 	Size2 get_lightmap_size_hint() const;
 	void clear_cache() const;
 
-	typedef Vector<Vector<Face3>> (*ConvexDecompositionFunc)(const Vector<Face3> &p_faces, int p_max_convex_hulls);
+	typedef Vector<PoolVector<Vector3>> (*ConvexDecompositionFunc)(const real_t *p_vertices, int p_vertex_count, const uint32_t *p_triangles, int p_triangle_count, int p_max_convex_hulls, Vector<PoolVector<uint32_t>> *r_convex_indices);
 
-	static ConvexDecompositionFunc convex_composition_function;
+	static ConvexDecompositionFunc convex_decomposition_function;
 
 	Vector<Ref<Shape>> convex_decompose(int p_max_convex_hulls = -1) const;
 
