@@ -393,7 +393,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	float lossy = p_options["compress/lossy_quality"];
 	int pack_channels = p_options["compress/channel_pack"];
 	bool mipmaps = p_options["mipmaps/generate"];
-	uint32_t mipmap_limit = int(mipmaps ? int(p_options["mipmaps/limit"]) : int(-1));
+	uint32_t mipmap_limit = mipmaps ? uint32_t(p_options["mipmaps/limit"]) : uint32_t(-1);
 	bool fix_alpha_border = p_options["process/fix_alpha_border"];
 	bool premult_alpha = p_options["process/premult_alpha"];
 	bool normal_map_invert_y = p_options["process/normal_map_invert_y"];
