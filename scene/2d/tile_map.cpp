@@ -1147,7 +1147,7 @@ void TileMap::_physics_create_quadrant(TileMapQuadrant *p_quadrant) {
 			PhysicsServer2D::get_singleton()->body_set_space(body, space);
 
 			Transform2D xform;
-			xform.set_origin(map_to_world(p_quadrant->coords * get_effective_quadrant_size(layer)));
+			xform.set_origin(map_to_world(p_quadrant->coords * get_effective_quadrant_size(p_quadrant->layer)));
 			xform = global_transform * xform;
 			PhysicsServer2D::get_singleton()->body_set_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM, xform);
 		}
