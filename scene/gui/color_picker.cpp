@@ -827,7 +827,7 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event, Control *c) {
 				real_t dist = center.distance_to(bev->get_position());
 
 				if (dist <= center.x) {
-					real_t rad = Math::atan2(bev->get_position().y - center.y, bev->get_position().x - center.x);
+					real_t rad = bev->get_position().angle_to_point(center);
 					h = ((rad >= 0) ? rad : (Math_TAU + rad)) / Math_TAU;
 					s = CLAMP(dist / center.x, 0, 1);
 				} else {
@@ -844,7 +844,7 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event, Control *c) {
 						real_t dist = center.distance_to(bev->get_position());
 
 						if (dist >= center.x * 0.84 && dist <= center.x) {
-							real_t rad = Math::atan2(bev->get_position().y - center.y, bev->get_position().x - center.x);
+							real_t rad = bev->get_position().angle_to_point(center);
 							h = ((rad >= 0) ? rad : (Math_TAU + rad)) / Math_TAU;
 							spinning = true;
 						} else {
@@ -889,12 +889,12 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event, Control *c) {
 		Vector2 center = c->get_size() / 2.0;
 		if (picker_type == SHAPE_VHS_CIRCLE) {
 			real_t dist = center.distance_to(mev->get_position());
-			real_t rad = Math::atan2(mev->get_position().y - center.y, mev->get_position().x - center.x);
+			real_t rad = mev->get_position().angle_to_point(center);
 			h = ((rad >= 0) ? rad : (Math_TAU + rad)) / Math_TAU;
 			s = CLAMP(dist / center.x, 0, 1);
 		} else {
 			if (spinning) {
-				real_t rad = Math::atan2(mev->get_position().y - center.y, mev->get_position().x - center.x);
+				real_t rad = mev->get_position().angle_to_point(center);
 				h = ((rad >= 0) ? rad : (Math_TAU + rad)) / Math_TAU;
 			} else {
 				real_t corner_x = (c == wheel_uv) ? center.x - Math_SQRT12 * c->get_size().width * 0.42 : 0;

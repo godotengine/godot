@@ -144,7 +144,7 @@ void SkeletonModification2DTwoBoneIK::_execute(float p_delta) {
 	// With modifications by TwistedTwigleg
 	Vector2 target_difference = target->get_global_position() - joint_one_bone->get_global_position();
 	float joint_one_to_target = target_difference.length();
-	float angle_atan = Math::atan2(target_difference.y, target_difference.x);
+	float angle_atan = target_difference.angle();
 
 	float bone_one_length = joint_one_bone->get_length() * MIN(joint_one_bone->get_global_scale().x, joint_one_bone->get_global_scale().y);
 	float bone_two_length = joint_two_bone->get_length() * MIN(joint_two_bone->get_global_scale().x, joint_two_bone->get_global_scale().y);
