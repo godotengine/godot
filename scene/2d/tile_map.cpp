@@ -236,6 +236,8 @@ Vector2i TileMap::transform_coords_layout(Vector2i p_coords, TileSet::TileOffset
 }
 
 int TileMap::get_effective_quadrant_size(int p_layer) const {
+	ERR_FAIL_INDEX_V(p_layer, (int)layers.size(), 1);
+
 	// When using YSort, the quadrant size is reduced to 1 to have one CanvasItem per quadrant
 	if (is_y_sort_enabled() && layers[p_layer].y_sort_enabled) {
 		return 1;
@@ -815,7 +817,7 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 				if (atlas_source) {
 					// Get the tile data.
 					TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
-					Ref<ShaderMaterial> mat = tile_data->tile_get_material();
+					Ref<ShaderMaterial> mat = tile_data->get_material();
 					int z_index = tile_data->get_z_index();
 
 					// Quandrant pos.
@@ -2931,9 +2933,9 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_quadrant_size"), &TileMap::get_quadrant_size);
 
 	ClassDB::bind_method(D_METHOD("get_layers_count"), &TileMap::get_layers_count);
-	ClassDB::bind_method(D_METHOD("add_layer"), &TileMap::add_layer);
-	ClassDB::bind_method(D_METHOD("move_layer"), &TileMap::move_layer);
-	ClassDB::bind_method(D_METHOD("remove_layer"), &TileMap::remove_layer);
+	ClassDB::bind_method(D_METHOD("add_layer", "to_position"), &TileMap::add_layer);
+	ClassDB::bind_method(D_METHOD("move_layer", "layer", "to_position"), &TileMap::move_layer);
+	ClassDB::bind_method(D_METHOD("remove_layer", "layer"), &TileMap::remove_layer);
 	ClassDB::bind_method(D_METHOD("set_layer_name", "layer", "name"), &TileMap::set_layer_name);
 	ClassDB::bind_method(D_METHOD("get_layer_name", "layer"), &TileMap::get_layer_name);
 	ClassDB::bind_method(D_METHOD("set_layer_enabled", "layer", "enabled"), &TileMap::set_layer_enabled);
@@ -2943,7 +2945,7 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_layer_y_sort_origin", "layer", "y_sort_origin"), &TileMap::set_layer_y_sort_origin);
 	ClassDB::bind_method(D_METHOD("get_layer_y_sort_origin", "layer"), &TileMap::get_layer_y_sort_origin);
 	ClassDB::bind_method(D_METHOD("set_layer_z_index", "layer", "z_index"), &TileMap::set_layer_z_index);
-	ClassDB::bind_method(D_METHOD("get_layer_z_indexd", "layer"), &TileMap::get_layer_z_index);
+	ClassDB::bind_method(D_METHOD("get_layer_z_index", "layer"), &TileMap::get_layer_z_index);
 
 	ClassDB::bind_method(D_METHOD("set_collision_visibility_mode", "collision_visibility_mode"), &TileMap::set_collision_visibility_mode);
 	ClassDB::bind_method(D_METHOD("get_collision_visibility_mode"), &TileMap::get_collision_visibility_mode);

@@ -257,7 +257,7 @@ int TileSet::get_occlusion_layer_light_mask(int p_layer_index) const {
 	return occlusion_layers[p_layer_index].light_mask;
 }
 
-void TileSet::set_occlusion_layer_sdf_collision(int p_layer_index, int p_sdf_collision) {
+void TileSet::set_occlusion_layer_sdf_collision(int p_layer_index, bool p_sdf_collision) {
 	ERR_FAIL_INDEX(p_layer_index, occlusion_layers.size());
 	occlusion_layers.write[p_layer_index].sdf_collision = p_sdf_collision;
 	emit_changed();
@@ -1966,7 +1966,7 @@ void TileSet::_compatibility_conversion() {
 					tile_data->set_flip_h(flip_h);
 					tile_data->set_flip_v(flip_v);
 					tile_data->set_transpose(transpose);
-					tile_data->tile_set_material(ctd->material);
+					tile_data->set_material(ctd->material);
 					tile_data->set_modulate(ctd->modulate);
 					tile_data->set_z_index(ctd->z_index);
 
@@ -2058,7 +2058,7 @@ void TileSet::_compatibility_conversion() {
 							tile_data->set_flip_h(flip_h);
 							tile_data->set_flip_v(flip_v);
 							tile_data->set_transpose(transpose);
-							tile_data->tile_set_material(ctd->material);
+							tile_data->set_material(ctd->material);
 							tile_data->set_modulate(ctd->modulate);
 							tile_data->set_z_index(ctd->z_index);
 							if (ctd->autotile_occluder_map.has(coords)) {
@@ -2693,13 +2693,13 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 void TileSet::_bind_methods() {
 	// Sources management.
 	ClassDB::bind_method(D_METHOD("get_next_source_id"), &TileSet::get_next_source_id);
-	ClassDB::bind_method(D_METHOD("add_source", "atlas_source_id_override"), &TileSet::add_source, DEFVAL(TileSet::INVALID_SOURCE));
+	ClassDB::bind_method(D_METHOD("add_source", "source", "atlas_source_id_override"), &TileSet::add_source, DEFVAL(TileSet::INVALID_SOURCE));
 	ClassDB::bind_method(D_METHOD("remove_source", "source_id"), &TileSet::remove_source);
-	ClassDB::bind_method(D_METHOD("set_source_id", "source_id"), &TileSet::set_source_id);
+	ClassDB::bind_method(D_METHOD("set_source_id", "source_id", "new_source_id"), &TileSet::set_source_id);
 	ClassDB::bind_method(D_METHOD("get_source_count"), &TileSet::get_source_count);
 	ClassDB::bind_method(D_METHOD("get_source_id", "index"), &TileSet::get_source_id);
-	ClassDB::bind_method(D_METHOD("has_source", "index"), &TileSet::has_source);
-	ClassDB::bind_method(D_METHOD("get_source", "index"), &TileSet::get_source);
+	ClassDB::bind_method(D_METHOD("has_source", "source_id"), &TileSet::has_source);
+	ClassDB::bind_method(D_METHOD("get_source", "source_id"), &TileSet::get_source);
 
 	// Shape and layout.
 	ClassDB::bind_method(D_METHOD("set_tile_shape", "shape"), &TileSet::set_tile_shape);
@@ -2725,9 +2725,9 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_occlusion_layer", "layer_index", "to_position"), &TileSet::move_occlusion_layer);
 	ClassDB::bind_method(D_METHOD("remove_occlusion_layer", "layer_index"), &TileSet::remove_occlusion_layer);
 	ClassDB::bind_method(D_METHOD("set_occlusion_layer_light_mask", "layer_index", "light_mask"), &TileSet::set_occlusion_layer_light_mask);
-	ClassDB::bind_method(D_METHOD("get_occlusion_layer_light_mask"), &TileSet::get_occlusion_layer_light_mask);
+	ClassDB::bind_method(D_METHOD("get_occlusion_layer_light_mask", "layer_index"), &TileSet::get_occlusion_layer_light_mask);
 	ClassDB::bind_method(D_METHOD("set_occlusion_layer_sdf_collision", "layer_index", "sdf_collision"), &TileSet::set_occlusion_layer_sdf_collision);
-	ClassDB::bind_method(D_METHOD("get_occlusion_layer_sdf_collision"), &TileSet::get_occlusion_layer_sdf_collision);
+	ClassDB::bind_method(D_METHOD("get_occlusion_layer_sdf_collision", "layer_index"), &TileSet::get_occlusion_layer_sdf_collision);
 
 	// Physics
 	ClassDB::bind_method(D_METHOD("get_physics_layers_count"), &TileSet::get_physics_layers_count);
@@ -2744,8 +2744,8 @@ void TileSet::_bind_methods() {
 	// Terrains
 	ClassDB::bind_method(D_METHOD("get_terrain_sets_count"), &TileSet::get_terrain_sets_count);
 	ClassDB::bind_method(D_METHOD("add_terrain_set", "to_position"), &TileSet::add_terrain_set, DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("move_terrain_set", "layer_index", "to_position"), &TileSet::move_terrain_set);
-	ClassDB::bind_method(D_METHOD("remove_terrain_set", "layer_index"), &TileSet::remove_terrain_set);
+	ClassDB::bind_method(D_METHOD("move_terrain_set", "terrain_set", "to_position"), &TileSet::move_terrain_set);
+	ClassDB::bind_method(D_METHOD("remove_terrain_set", "terrain_set"), &TileSet::remove_terrain_set);
 	ClassDB::bind_method(D_METHOD("set_terrain_set_mode", "terrain_set", "mode"), &TileSet::set_terrain_set_mode);
 	ClassDB::bind_method(D_METHOD("get_terrain_set_mode", "terrain_set"), &TileSet::get_terrain_set_mode);
 
@@ -2868,6 +2868,18 @@ TileSet::~TileSet() {
 
 void TileSetSource::set_tile_set(const TileSet *p_tile_set) {
 	tile_set = p_tile_set;
+}
+
+void TileSetSource::_bind_methods() {
+	// Base tiles
+	ClassDB::bind_method(D_METHOD("get_tiles_count"), &TileSetSource::get_tiles_count);
+	ClassDB::bind_method(D_METHOD("get_tile_id", "index"), &TileSetSource::get_tile_id);
+	ClassDB::bind_method(D_METHOD("has_tile", "atlas_coords"), &TileSetSource::has_tile);
+
+	// Alternative tiles
+	ClassDB::bind_method(D_METHOD("get_alternative_tiles_count", "atlas_coords"), &TileSetSource::get_alternative_tiles_count);
+	ClassDB::bind_method(D_METHOD("get_alternative_tile_id", "atlas_coords", "index"), &TileSetSource::get_alternative_tile_id);
+	ClassDB::bind_method(D_METHOD("has_alternative_tile", "atlas_coords", "alternative_tile"), &TileSetSource::has_alternative_tile);
 }
 
 /////////////////////////////// TileSetAtlasSource //////////////////////////////////////
@@ -3559,18 +3571,14 @@ void TileSetAtlasSource::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_NOEDITOR), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "margins", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_margins", "get_margins");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "separation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_separation", "get_separation");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "tile_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_texture_region_size", "get_texture_region_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "texture_region_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_texture_region_size", "get_texture_region_size");
 
 	// Base tiles
 	ClassDB::bind_method(D_METHOD("create_tile", "atlas_coords", "size"), &TileSetAtlasSource::create_tile, DEFVAL(Vector2i(1, 1)));
 	ClassDB::bind_method(D_METHOD("remove_tile", "atlas_coords"), &TileSetAtlasSource::remove_tile); // Remove a tile. If p_tile_key.alternative_tile if different from 0, remove the alternative
-	ClassDB::bind_method(D_METHOD("has_tile", "atlas_coords"), &TileSetAtlasSource::has_tile);
 	ClassDB::bind_method(D_METHOD("can_move_tile_in_atlas", "atlas_coords", "new_atlas_coords", "new_size"), &TileSetAtlasSource::can_move_tile_in_atlas, DEFVAL(INVALID_ATLAS_COORDS), DEFVAL(Vector2i(-1, -1)));
 	ClassDB::bind_method(D_METHOD("move_tile_in_atlas", "atlas_coords", "new_atlas_coords", "new_size"), &TileSetAtlasSource::move_tile_in_atlas, DEFVAL(INVALID_ATLAS_COORDS), DEFVAL(Vector2i(-1, -1)));
 	ClassDB::bind_method(D_METHOD("get_tile_size_in_atlas", "atlas_coords"), &TileSetAtlasSource::get_tile_size_in_atlas);
-
-	ClassDB::bind_method(D_METHOD("get_tiles_count"), &TileSetAtlasSource::get_tiles_count);
-	ClassDB::bind_method(D_METHOD("get_tile_id", "index"), &TileSetAtlasSource::get_tile_id);
 
 	ClassDB::bind_method(D_METHOD("get_tile_at_coords", "atlas_coords"), &TileSetAtlasSource::get_tile_at_coords);
 
@@ -3578,13 +3586,9 @@ void TileSetAtlasSource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_alternative_tile", "atlas_coords", "alternative_id_override"), &TileSetAtlasSource::create_alternative_tile, DEFVAL(INVALID_TILE_ALTERNATIVE));
 	ClassDB::bind_method(D_METHOD("remove_alternative_tile", "atlas_coords", "alternative_tile"), &TileSetAtlasSource::remove_alternative_tile);
 	ClassDB::bind_method(D_METHOD("set_alternative_tile_id", "atlas_coords", "alternative_tile", "new_id"), &TileSetAtlasSource::set_alternative_tile_id);
-	ClassDB::bind_method(D_METHOD("has_alternative_tile", "atlas_coords", "alternative_tile"), &TileSetAtlasSource::has_alternative_tile);
 	ClassDB::bind_method(D_METHOD("get_next_alternative_tile_id", "atlas_coords"), &TileSetAtlasSource::get_next_alternative_tile_id);
 
-	ClassDB::bind_method(D_METHOD("get_alternative_tiles_count", "atlas_coords"), &TileSetAtlasSource::get_alternative_tiles_count);
-	ClassDB::bind_method(D_METHOD("get_alternative_tile_id", "atlas_coords", "index"), &TileSetAtlasSource::get_alternative_tile_id);
-
-	ClassDB::bind_method(D_METHOD("get_tile_data", "atlas_coords", "index"), &TileSetAtlasSource::get_tile_data);
+	ClassDB::bind_method(D_METHOD("get_tile_data", "atlas_coords", "alternative_tile"), &TileSetAtlasSource::get_tile_data);
 
 	// Helpers.
 	ClassDB::bind_method(D_METHOD("get_atlas_grid_size"), &TileSetAtlasSource::get_atlas_grid_size);
@@ -3797,16 +3801,6 @@ void TileSetScenesCollectionSource::_get_property_list(List<PropertyInfo> *p_lis
 }
 
 void TileSetScenesCollectionSource::_bind_methods() {
-	// Base tiles
-	ClassDB::bind_method(D_METHOD("get_tiles_count"), &TileSetScenesCollectionSource::get_tiles_count);
-	ClassDB::bind_method(D_METHOD("get_tile_id", "index"), &TileSetScenesCollectionSource::get_tile_id);
-	ClassDB::bind_method(D_METHOD("has_tile", "atlas_coords"), &TileSetScenesCollectionSource::has_tile);
-
-	// Alternative tiles
-	ClassDB::bind_method(D_METHOD("get_alternative_tiles_count", "atlas_coords"), &TileSetScenesCollectionSource::get_alternative_tiles_count);
-	ClassDB::bind_method(D_METHOD("get_alternative_tile_id", "atlas_coords", "index"), &TileSetScenesCollectionSource::get_alternative_tile_id);
-	ClassDB::bind_method(D_METHOD("has_alternative_tile", "atlas_coords", "alternative_tile"), &TileSetScenesCollectionSource::has_alternative_tile);
-
 	ClassDB::bind_method(D_METHOD("get_scene_tiles_count"), &TileSetScenesCollectionSource::get_scene_tiles_count);
 	ClassDB::bind_method(D_METHOD("get_scene_tile_id", "index"), &TileSetScenesCollectionSource::get_scene_tile_id);
 	ClassDB::bind_method(D_METHOD("has_scene_tile_id", "id"), &TileSetScenesCollectionSource::has_scene_tile_id);
@@ -4063,11 +4057,11 @@ Vector2i TileData::get_texture_offset() const {
 	return tex_offset;
 }
 
-void TileData::tile_set_material(Ref<ShaderMaterial> p_material) {
+void TileData::set_material(Ref<ShaderMaterial> p_material) {
 	material = p_material;
 	emit_signal(SNAME("changed"));
 }
-Ref<ShaderMaterial> TileData::tile_get_material() const {
+Ref<ShaderMaterial> TileData::get_material() const {
 	return material;
 }
 
@@ -4583,8 +4577,8 @@ void TileData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_flip_v"), &TileData::get_flip_v);
 	ClassDB::bind_method(D_METHOD("set_transpose", "transpose"), &TileData::set_transpose);
 	ClassDB::bind_method(D_METHOD("get_transpose"), &TileData::get_transpose);
-	ClassDB::bind_method(D_METHOD("tile_set_material", "material"), &TileData::tile_set_material);
-	ClassDB::bind_method(D_METHOD("tile_get_material"), &TileData::tile_get_material);
+	ClassDB::bind_method(D_METHOD("set_material", "material"), &TileData::set_material);
+	ClassDB::bind_method(D_METHOD("get_material"), &TileData::get_material);
 	ClassDB::bind_method(D_METHOD("set_texture_offset", "texture_offset"), &TileData::set_texture_offset);
 	ClassDB::bind_method(D_METHOD("get_texture_offset"), &TileData::get_texture_offset);
 	ClassDB::bind_method(D_METHOD("set_modulate", "modulate"), &TileData::set_modulate);
@@ -4635,6 +4629,7 @@ void TileData::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transpose"), "set_transpose", "get_transpose");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "texture_offset"), "set_texture_offset", "get_texture_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial"), "set_material", "get_material");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "z_index"), "set_z_index", "get_z_index");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "y_sort_origin"), "set_y_sort_origin", "get_y_sort_origin");
 

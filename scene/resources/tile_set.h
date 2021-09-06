@@ -304,7 +304,7 @@ public:
 	void remove_occlusion_layer(int p_index);
 	void set_occlusion_layer_light_mask(int p_layer_index, int p_light_mask);
 	int get_occlusion_layer_light_mask(int p_layer_index) const;
-	void set_occlusion_layer_sdf_collision(int p_layer_index, int p_sdf_collision);
+	void set_occlusion_layer_sdf_collision(int p_layer_index, bool p_sdf_collision);
 	bool get_occlusion_layer_sdf_collision(int p_layer_index) const;
 
 	// Physics
@@ -403,6 +403,8 @@ class TileSetSource : public Resource {
 
 protected:
 	const TileSet *tile_set = nullptr;
+
+	static void _bind_methods();
 
 public:
 	static const Vector2i INVALID_ATLAS_COORDS; // Vector2i(-1, -1);
@@ -679,8 +681,8 @@ public:
 
 	void set_texture_offset(Vector2i p_texture_offset);
 	Vector2i get_texture_offset() const;
-	void tile_set_material(Ref<ShaderMaterial> p_material);
-	Ref<ShaderMaterial> tile_get_material() const;
+	void set_material(Ref<ShaderMaterial> p_material);
+	Ref<ShaderMaterial> get_material() const;
 	void set_modulate(Color p_modulate);
 	Color get_modulate() const;
 	void set_z_index(int p_z_index);
