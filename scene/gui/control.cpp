@@ -30,6 +30,7 @@
 
 #include "control.h"
 
+#include "container.h"
 #include "core/config/project_settings.h"
 #include "core/math/geometry_2d.h"
 #include "core/object/message_queue.h"
@@ -167,6 +168,20 @@ Size2 Control::_edit_get_minimum_size() const {
 	return get_combined_minimum_size();
 }
 #endif
+
+String Control::properties_managed_by_container[] = {
+	"offset_left",
+	"offset_top",
+	"offset_right",
+	"offset_bottom",
+	"anchor_left",
+	"anchor_top",
+	"anchor_right",
+	"anchor_bottom",
+	"rect_position",
+	"rect_scale",
+	"rect_size"
+};
 
 void Control::accept_event() {
 	if (is_inside_tree()) {
@@ -441,6 +456,20 @@ void Control::_validate_property(PropertyInfo &property) const {
 		}
 
 		property.hint_string = hint_string;
+	}
+	if (!Object::cast_to<Container>(get_parent())) {
+		return;
+	}
+	// Disable the property if it's managed by the parent container.
+	bool property_is_managed_by_container = false;
+	for (unsigned i = 0; i < properties_managed_by_container_count; i++) {
+		property_is_managed_by_container = properties_managed_by_container[i] == property.name;
+		if (property_is_managed_by_container) {
+			break;
+		}
+	}
+	if (property_is_managed_by_container) {
+		property.usage |= PROPERTY_USAGE_READ_ONLY;
 	}
 }
 
