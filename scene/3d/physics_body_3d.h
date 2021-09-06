@@ -73,24 +73,13 @@ public:
 class StaticBody3D : public PhysicsBody3D {
 	GDCLASS(StaticBody3D, PhysicsBody3D);
 
+private:
 	Vector3 constant_linear_velocity;
 	Vector3 constant_angular_velocity;
 
-	Vector3 linear_velocity;
-	Vector3 angular_velocity;
-
 	Ref<PhysicsMaterial> physics_material_override;
 
-	bool kinematic_motion = false;
-	bool sync_to_physics = false;
-
-	Transform3D last_valid_transform;
-
-	static void _body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state);
-	void _body_state_changed(PhysicsDirectBodyState3D *p_state);
-
 protected:
-	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -103,20 +92,38 @@ public:
 	Vector3 get_constant_linear_velocity() const;
 	Vector3 get_constant_angular_velocity() const;
 
-	virtual Vector3 get_linear_velocity() const override;
-	virtual Vector3 get_angular_velocity() const override;
-
-	virtual TypedArray<String> get_configuration_warnings() const override;
-
-	StaticBody3D();
+	StaticBody3D(PhysicsServer3D::BodyMode p_mode = PhysicsServer3D::BODY_MODE_STATIC);
 
 private:
 	void _reload_physics_characteristics();
+};
 
+class AnimatableBody3D : public StaticBody3D {
+	GDCLASS(AnimatableBody3D, StaticBody3D);
+
+private:
+	Vector3 linear_velocity;
+	Vector3 angular_velocity;
+
+	bool sync_to_physics = false;
+
+	Transform3D last_valid_transform;
+
+	static void _body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state);
+	void _body_state_changed(PhysicsDirectBodyState3D *p_state);
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	virtual Vector3 get_linear_velocity() const override;
+	virtual Vector3 get_angular_velocity() const override;
+
+	AnimatableBody3D();
+
+private:
 	void _update_kinematic_motion();
-
-	void set_kinematic_motion_enabled(bool p_enabled);
-	bool is_kinematic_motion_enabled() const;
 
 	void set_sync_to_physics(bool p_enable);
 	bool is_sync_to_physics_enabled() const;

@@ -63,21 +63,13 @@ public:
 class StaticBody2D : public PhysicsBody2D {
 	GDCLASS(StaticBody2D, PhysicsBody2D);
 
+private:
 	Vector2 constant_linear_velocity;
 	real_t constant_angular_velocity = 0.0;
 
 	Ref<PhysicsMaterial> physics_material_override;
 
-	bool kinematic_motion = false;
-	bool sync_to_physics = false;
-
-	Transform2D last_valid_transform;
-
-	static void _body_state_changed_callback(void *p_instance, PhysicsDirectBodyState2D *p_state);
-	void _body_state_changed(PhysicsDirectBodyState2D *p_state);
-
 protected:
-	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -90,17 +82,32 @@ public:
 	Vector2 get_constant_linear_velocity() const;
 	real_t get_constant_angular_velocity() const;
 
-	virtual TypedArray<String> get_configuration_warnings() const override;
-
-	StaticBody2D();
+	StaticBody2D(PhysicsServer2D::BodyMode p_mode = PhysicsServer2D::BODY_MODE_STATIC);
 
 private:
 	void _reload_physics_characteristics();
+};
 
+class AnimatableBody2D : public StaticBody2D {
+	GDCLASS(AnimatableBody2D, StaticBody2D);
+
+private:
+	bool sync_to_physics = false;
+
+	Transform2D last_valid_transform;
+
+	static void _body_state_changed_callback(void *p_instance, PhysicsDirectBodyState2D *p_state);
+	void _body_state_changed(PhysicsDirectBodyState2D *p_state);
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	AnimatableBody2D();
+
+private:
 	void _update_kinematic_motion();
-
-	void set_kinematic_motion_enabled(bool p_enabled);
-	bool is_kinematic_motion_enabled() const;
 
 	void set_sync_to_physics(bool p_enable);
 	bool is_sync_to_physics_enabled() const;

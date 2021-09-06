@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="RigidBody2D" inherits="PhysicsBody2D" version="4.0">
 	<brief_description>
-		A body that is controlled by the 2D physics engine.
+		Physics Body which is moved by 2D physics simulation. Useful for objects that have gravity and can be pushed by other objects.
 	</brief_description>
 	<description>
 		This node implements simulated 2D physics. You do not control a RigidBody2D directly. Instead, you apply forces to it (gravity, impulses, etc.) and the physics simulation calculates the resulting movement based on its mass, friction, and other physical properties.
@@ -131,6 +131,7 @@
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="RigidBody2D.Mode" default="0">
 			The body's mode. See [enum Mode] for possible values.
+			For a body that uses only Static or Kinematic mode, use [StaticBody2D] or [AnimatableBody2D] instead.
 		</member>
 		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
 			The physics material override for the body.
@@ -199,7 +200,7 @@
 			Locked dynamic body mode. Similar to [constant MODE_DYNAMIC], but the body can not rotate.
 		</constant>
 		<constant name="MODE_KINEMATIC" value="3" enum="Mode">
-			Kinematic body mode. The body behaves like a [StaticBody2D] with [member StaticBody2D.kinematic_motion] enabled, and must be moved by user code.
+			Kinematic body mode. The body behaves like a [AnimatableBody2D], and must be moved by code.
 		</constant>
 		<constant name="CCD_MODE_DISABLED" value="0" enum="CCDMode">
 			Continuous collision detection disabled. This is the fastest way to detect body collisions, but can miss small, fast-moving objects.

@@ -269,11 +269,13 @@ void Body2DSW::set_state(PhysicsServer2D::BodyState p_state, const Variant &p_va
 		} break;
 		case PhysicsServer2D::BODY_STATE_LINEAR_VELOCITY: {
 			linear_velocity = p_variant;
+			constant_linear_velocity = linear_velocity;
 			wakeup();
 
 		} break;
 		case PhysicsServer2D::BODY_STATE_ANGULAR_VELOCITY: {
 			angular_velocity = p_variant;
+			constant_angular_velocity = angular_velocity;
 			wakeup();
 
 		} break;
@@ -429,10 +431,10 @@ void Body2DSW::integrate_forces(real_t p_step) {
 	if (mode == PhysicsServer2D::BODY_MODE_KINEMATIC) {
 		//compute motion, angular and etc. velocities from prev transform
 		motion = new_transform.get_origin() - get_transform().get_origin();
-		linear_velocity = motion / p_step;
+		linear_velocity = constant_linear_velocity + motion / p_step;
 
 		real_t rot = new_transform.get_rotation() - get_transform().get_rotation();
-		angular_velocity = remainder(rot, 2.0 * Math_PI) / p_step;
+		angular_velocity = constant_angular_velocity + remainder(rot, 2.0 * Math_PI) / p_step;
 
 		do_motion = true;
 
@@ -621,8 +623,6 @@ Body2DSW::Body2DSW() :
 		direct_state_query_list(this) {
 	mode = PhysicsServer2D::BODY_MODE_DYNAMIC;
 	active = true;
-	angular_velocity = 0;
-	biased_angular_velocity = 0;
 	mass = 1;
 	inertia = 0;
 	user_inertia = false;

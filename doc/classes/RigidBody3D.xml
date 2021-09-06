@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="RigidBody3D" inherits="PhysicsBody3D" version="4.0">
 	<brief_description>
-		Physics Body whose position is determined through physics simulation in 3D space.
+		Physics Body which is moved by 3D physics simulation. Useful for objects that have gravity and can be pushed by other objects.
 	</brief_description>
 	<description>
 		This is the node that implements full 3D physics. This means that you do not control a RigidBody3D directly. Instead, you can apply forces to it (gravity, impulses, etc.), and the physics simulation will calculate the resulting movement, collision, bouncing, rotating, etc.
@@ -130,7 +130,8 @@
 			The body's mass.
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="RigidBody3D.Mode" default="0">
-			The body mode. See [enum Mode] for possible values.
+			The body's mode. See [enum Mode] for possible values.
+			For a body that uses only Static or Kinematic mode, use [StaticBody3D] or [AnimatableBody3D] instead.
 		</member>
 		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
 			The physics material override for the body.
@@ -201,7 +202,7 @@
 			Locked dynamic body mode. Similar to [constant MODE_DYNAMIC], but the body can not rotate.
 		</constant>
 		<constant name="MODE_KINEMATIC" value="3" enum="Mode">
-			Kinematic body mode. The body behaves like a [StaticBody3D] with [member StaticBody3D.kinematic_motion] enabled, and can only move by user code.
+			Kinematic body mode. The body behaves like a [AnimatableBody3D], and can only move by user code.
 		</constant>
 	</constants>
 </class>

@@ -44,6 +44,9 @@ class Body3DSW : public CollisionObject3DSW {
 	Vector3 linear_velocity;
 	Vector3 angular_velocity;
 
+	Vector3 constant_linear_velocity;
+	Vector3 constant_angular_velocity;
+
 	Vector3 biased_linear_velocity;
 	Vector3 biased_angular_velocity;
 	real_t mass;
