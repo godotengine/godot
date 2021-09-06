@@ -34,47 +34,72 @@
 #include "body_direct_state_2d_sw.h"
 #include "space_2d_sw.h"
 
-void Body2DSW::_update_inertia() {
-	if (!user_inertia && get_space() && !inertia_update_list.in_list()) {
-		get_space()->body_add_to_inertia_update_list(&inertia_update_list);
+void Body2DSW::_mass_properties_changed() {
+	if (get_space() && !mass_properties_update_list.in_list() && (calculate_inertia || calculate_center_of_mass)) {
+		get_space()->body_add_to_mass_properties_update_list(&mass_properties_update_list);
 	}
 }
 
-void Body2DSW::update_inertias() {
+void Body2DSW::update_mass_properties() {
 	//update shapes and motions
 
 	switch (mode) {
 		case PhysicsServer2D::BODY_MODE_DYNAMIC: {
-			if (user_inertia) {
-				_inv_inertia = inertia > 0 ? (1.0 / inertia) : 0;
-				break;
-			}
-			//update tensor for allshapes, not the best way but should be somehow OK. (inspired from bullet)
 			real_t total_area = 0;
-
-			for (int i = 0; i < get_shape_count(); i++) {
-				total_area += get_shape_aabb(i).get_area();
-			}
-
-			inertia = 0;
-
 			for (int i = 0; i < get_shape_count(); i++) {
 				if (is_shape_disabled(i)) {
 					continue;
 				}
-
-				const Shape2DSW *shape = get_shape(i);
-
-				real_t area = get_shape_aabb(i).get_area();
-
-				real_t mass = area * this->mass / total_area;
-
-				Transform2D mtx = get_shape_transform(i);
-				Vector2 scale = mtx.get_scale();
-				inertia += shape->get_moment_of_inertia(mass, scale) + mass * mtx.get_origin().length_squared();
+				total_area += get_shape_aabb(i).get_area();
 			}
 
-			_inv_inertia = inertia > 0 ? (1.0 / inertia) : 0;
+			if (calculate_center_of_mass) {
+				// We have to recompute the center of mass.
+				center_of_mass = Vector2();
+
+				if (total_area != 0.0) {
+					for (int i = 0; i < get_shape_count(); i++) {
+						if (is_shape_disabled(i)) {
+							continue;
+						}
+
+						real_t area = get_shape_aabb(i).get_area();
+
+						real_t mass = area * this->mass / total_area;
+
+						// NOTE: we assume that the shape origin is also its center of mass.
+						center_of_mass += mass * get_shape_transform(i).get_origin();
+					}
+
+					center_of_mass /= mass;
+				}
+			}
+
+			if (calculate_inertia) {
+				inertia = 0;
+
+				for (int i = 0; i < get_shape_count(); i++) {
+					if (is_shape_disabled(i)) {
+						continue;
+					}
+
+					const Shape2DSW *shape = get_shape(i);
+
+					real_t area = get_shape_aabb(i).get_area();
+					if (area == 0.0) {
+						continue;
+					}
+
+					real_t mass = area * this->mass / total_area;
+
+					Transform2D mtx = get_shape_transform(i);
+					Vector2 scale = mtx.get_scale();
+					Vector2 shape_origin = mtx.get_origin() - center_of_mass;
+					inertia += shape->get_moment_of_inertia(mass, scale) + mass * shape_origin.length_squared();
+				}
+			}
+
+			_inv_inertia = inertia > 0.0 ? (1.0 / inertia) : 0.0;
 
 			if (mass) {
 				_inv_mass = 1.0 / mass;
@@ -94,9 +119,12 @@ void Body2DSW::update_inertias() {
 
 		} break;
 	}
-	//_update_inertia_tensor();
+}
 
-	//_update_shapes();
+void Body2DSW::reset_mass_properties() {
+	calculate_inertia = true;
+	calculate_center_of_mass = true;
+	_mass_properties_changed();
 }
 
 void Body2DSW::set_active(bool p_active) {
@@ -118,7 +146,7 @@ void Body2DSW::set_active(bool p_active) {
 	}
 }
 
-void Body2DSW::set_param(PhysicsServer2D::BodyParameter p_param, real_t p_value) {
+void Body2DSW::set_param(PhysicsServer2D::BodyParameter p_param, const Variant &p_value) {
 	switch (p_param) {
 		case PhysicsServer2D::BODY_PARAM_BOUNCE: {
 			bounce = p_value;
@@ -127,20 +155,31 @@ void Body2DSW::set_param(PhysicsServer2D::BodyParameter p_param, real_t p_value)
 			friction = p_value;
 		} break;
 		case PhysicsServer2D::BODY_PARAM_MASS: {
-			ERR_FAIL_COND(p_value <= 0);
-			mass = p_value;
-			_update_inertia();
-
+			real_t mass_value = p_value;
+			ERR_FAIL_COND(mass_value <= 0);
+			mass = mass_value;
+			if (mode >= PhysicsServer2D::BODY_MODE_DYNAMIC) {
+				_mass_properties_changed();
+			}
 		} break;
 		case PhysicsServer2D::BODY_PARAM_INERTIA: {
-			if (p_value <= 0) {
-				user_inertia = false;
-				_update_inertia();
+			real_t inertia_value = p_value;
+			if (inertia_value <= 0.0) {
+				calculate_inertia = true;
+				if (mode == PhysicsServer2D::BODY_MODE_DYNAMIC) {
+					_mass_properties_changed();
+				}
 			} else {
-				user_inertia = true;
-				inertia = p_value;
-				_inv_inertia = 1.0 / p_value;
+				calculate_inertia = false;
+				inertia = inertia_value;
+				if (mode == PhysicsServer2D::BODY_MODE_DYNAMIC) {
+					_inv_inertia = 1.0 / inertia;
+				}
 			}
+		} break;
+		case PhysicsServer2D::BODY_PARAM_CENTER_OF_MASS: {
+			calculate_center_of_mass = false;
+			center_of_mass = p_value;
 		} break;
 		case PhysicsServer2D::BODY_PARAM_GRAVITY_SCALE: {
 			gravity_scale = p_value;
@@ -156,7 +195,7 @@ void Body2DSW::set_param(PhysicsServer2D::BodyParameter p_param, real_t p_value)
 	}
 }
 
-real_t Body2DSW::get_param(PhysicsServer2D::BodyParameter p_param) const {
+Variant Body2DSW::get_param(PhysicsServer2D::BodyParameter p_param) const {
 	switch (p_param) {
 		case PhysicsServer2D::BODY_PARAM_BOUNCE: {
 			return bounce;
@@ -169,6 +208,9 @@ real_t Body2DSW::get_param(PhysicsServer2D::BodyParameter p_param) const {
 		}
 		case PhysicsServer2D::BODY_PARAM_INERTIA: {
 			return inertia;
+		}
+		case PhysicsServer2D::BODY_PARAM_CENTER_OF_MASS: {
+			return center_of_mass;
 		}
 		case PhysicsServer2D::BODY_PARAM_GRAVITY_SCALE: {
 			return gravity_scale;
@@ -207,7 +249,10 @@ void Body2DSW::set_mode(PhysicsServer2D::BodyMode p_mode) {
 		} break;
 		case PhysicsServer2D::BODY_MODE_DYNAMIC: {
 			_inv_mass = mass > 0 ? (1.0 / mass) : 0;
-			_inv_inertia = inertia > 0 ? (1.0 / inertia) : 0;
+			if (!calculate_inertia) {
+				_inv_inertia = 1.0 / inertia;
+			}
+			_mass_properties_changed();
 			_set_static(false);
 			set_active(true);
 
@@ -215,18 +260,11 @@ void Body2DSW::set_mode(PhysicsServer2D::BodyMode p_mode) {
 		case PhysicsServer2D::BODY_MODE_DYNAMIC_LOCKED: {
 			_inv_mass = mass > 0 ? (1.0 / mass) : 0;
 			_inv_inertia = 0;
+			angular_velocity = 0;
 			_set_static(false);
 			set_active(true);
-			angular_velocity = 0;
-		} break;
+		}
 	}
-	if (p_mode == PhysicsServer2D::BODY_MODE_DYNAMIC && _inv_inertia == 0) {
-		_update_inertia();
-	}
-	/*
-	if (get_space())
-		_update_queries();
-	*/
 }
 
 PhysicsServer2D::BodyMode Body2DSW::get_mode() const {
@@ -234,7 +272,7 @@ PhysicsServer2D::BodyMode Body2DSW::get_mode() const {
 }
 
 void Body2DSW::_shapes_changed() {
-	_update_inertia();
+	_mass_properties_changed();
 	wakeup_neighbours();
 }
 
@@ -298,7 +336,7 @@ void Body2DSW::set_state(PhysicsServer2D::BodyState p_state, const Variant &p_va
 		} break;
 		case PhysicsServer2D::BODY_STATE_CAN_SLEEP: {
 			can_sleep = p_variant;
-			if (mode == PhysicsServer2D::BODY_MODE_DYNAMIC && !active && !can_sleep) {
+			if (mode >= PhysicsServer2D::BODY_MODE_DYNAMIC && !active && !can_sleep) {
 				set_active(true);
 			}
 
@@ -332,8 +370,8 @@ void Body2DSW::set_space(Space2DSW *p_space) {
 	if (get_space()) {
 		wakeup_neighbours();
 
-		if (inertia_update_list.in_list()) {
-			get_space()->body_remove_from_inertia_update_list(&inertia_update_list);
+		if (mass_properties_update_list.in_list()) {
+			get_space()->body_remove_from_mass_properties_update_list(&mass_properties_update_list);
 		}
 		if (active_list.in_list()) {
 			get_space()->body_remove_from_active_list(&active_list);
@@ -346,13 +384,11 @@ void Body2DSW::set_space(Space2DSW *p_space) {
 	_set_space(p_space);
 
 	if (get_space()) {
-		_update_inertia();
+		_mass_properties_changed();
 		if (active) {
 			get_space()->body_add_to_active_list(&active_list);
 		}
 	}
-
-	first_integration = false;
 }
 
 void Body2DSW::_compute_area_gravity_and_damping(const Area2DSW *p_area) {
@@ -446,7 +482,7 @@ void Body2DSW::integrate_forces(real_t p_step) {
 		*/
 
 	} else {
-		if (!omit_force_integration && !first_integration) {
+		if (!omit_force_integration) {
 			//overridden by direct state query
 
 			Vector2 force = gravity * mass;
@@ -480,7 +516,6 @@ void Body2DSW::integrate_forces(real_t p_step) {
 
 	//motion=linear_velocity*p_step;
 
-	first_integration = false;
 	biased_angular_velocity = 0;
 	biased_linear_velocity = Vector2();
 
@@ -517,14 +552,22 @@ void Body2DSW::integrate_velocities(real_t p_step) {
 	real_t angle = get_transform().get_rotation() + total_angular_velocity * p_step;
 	Vector2 pos = get_transform().get_origin() + total_linear_velocity * p_step;
 
+	real_t center_of_mass_distance = center_of_mass.length();
+	if (center_of_mass_distance > CMP_EPSILON) {
+		// Calculate displacement due to center of mass offset.
+		real_t prev_angle = get_transform().get_rotation();
+		real_t angle_base = Math::atan2(center_of_mass.y, center_of_mass.x);
+		Vector2 point1(Math::cos(angle_base + prev_angle), Math::sin(angle_base + prev_angle));
+		Vector2 point2(Math::cos(angle_base + angle), Math::sin(angle_base + angle));
+		pos += center_of_mass_distance * (point1 - point2);
+	}
+
 	_set_transform(Transform2D(angle, pos), continuous_cd_mode == PhysicsServer2D::CCD_MODE_DISABLED);
 	_set_inv_transform(get_transform().inverse());
 
 	if (continuous_cd_mode != PhysicsServer2D::CCD_MODE_DISABLED) {
 		new_transform = get_transform();
 	}
-
-	//_update_inertia_tensor();
 }
 
 void Body2DSW::wakeup_neighbours() {
@@ -538,7 +581,7 @@ void Body2DSW::wakeup_neighbours() {
 				continue;
 			}
 			Body2DSW *b = n[i];
-			if (b->mode != PhysicsServer2D::BODY_MODE_DYNAMIC) {
+			if (b->mode < PhysicsServer2D::BODY_MODE_DYNAMIC) {
 				continue;
 			}
 
@@ -619,33 +662,9 @@ PhysicsDirectBodyState2DSW *Body2DSW::get_direct_state() {
 Body2DSW::Body2DSW() :
 		CollisionObject2DSW(TYPE_BODY),
 		active_list(this),
-		inertia_update_list(this),
+		mass_properties_update_list(this),
 		direct_state_query_list(this) {
-	mode = PhysicsServer2D::BODY_MODE_DYNAMIC;
-	active = true;
-	mass = 1;
-	inertia = 0;
-	user_inertia = false;
-	_inv_inertia = 0;
-	_inv_mass = 1;
-	bounce = 0;
-	friction = 1;
-	omit_force_integration = false;
-	applied_torque = 0;
-	island_step = 0;
 	_set_static(false);
-	first_time_kinematic = false;
-	linear_damp = -1;
-	angular_damp = -1;
-	area_angular_damp = 0;
-	area_linear_damp = 0;
-	contact_count = 0;
-	gravity_scale = 1.0;
-	first_integration = false;
-
-	still_time = 0;
-	continuous_cd_mode = PhysicsServer2D::CCD_MODE_DISABLED;
-	can_sleep = true;
 }
 
 Body2DSW::~Body2DSW() {

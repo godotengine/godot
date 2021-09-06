@@ -140,6 +140,11 @@ public:
 		MODE_KINEMATIC,
 	};
 
+	enum CenterOfMassMode {
+		CENTER_OF_MASS_MODE_AUTO,
+		CENTER_OF_MASS_MODE_CUSTOM,
+	};
+
 	GDVIRTUAL1(_integrate_forces, PhysicsDirectBodyState3D *)
 
 protected:
@@ -147,6 +152,10 @@ protected:
 	Mode mode = MODE_DYNAMIC;
 
 	real_t mass = 1.0;
+	Vector3 inertia;
+	CenterOfMassMode center_of_mass_mode = CENTER_OF_MASS_MODE_AUTO;
+	Vector3 center_of_mass;
+
 	Ref<PhysicsMaterial> physics_material_override;
 
 	Vector3 linear_velocity;
@@ -210,6 +219,8 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	virtual void _validate_property(PropertyInfo &property) const override;
+
 public:
 	void set_mode(Mode p_mode);
 	Mode get_mode() const;
@@ -218,6 +229,15 @@ public:
 	real_t get_mass() const;
 
 	virtual real_t get_inverse_mass() const override { return 1.0 / mass; }
+
+	void set_inertia(const Vector3 &p_inertia);
+	const Vector3 &get_inertia() const;
+
+	void set_center_of_mass_mode(CenterOfMassMode p_mode);
+	CenterOfMassMode get_center_of_mass_mode() const;
+
+	void set_center_of_mass(const Vector3 &p_center_of_mass);
+	const Vector3 &get_center_of_mass() const;
 
 	void set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override);
 	Ref<PhysicsMaterial> get_physics_material_override() const;
@@ -279,6 +299,7 @@ private:
 };
 
 VARIANT_ENUM_CAST(RigidBody3D::Mode);
+VARIANT_ENUM_CAST(RigidBody3D::CenterOfMassMode);
 
 class KinematicCollision3D;
 

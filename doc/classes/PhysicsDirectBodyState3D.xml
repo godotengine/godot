@@ -157,6 +157,7 @@
 			The body's rotational velocity.
 		</member>
 		<member name="center_of_mass" type="Vector3" setter="" getter="get_center_of_mass">
+			The body's center of mass.
 		</member>
 		<member name="inverse_inertia" type="Vector3" setter="" getter="get_inverse_inertia">
 			The inverse of the inertia of the body.

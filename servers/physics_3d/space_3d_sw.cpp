@@ -977,12 +977,12 @@ void Space3DSW::body_remove_from_active_list(SelfList<Body3DSW> *p_body) {
 	active_list.remove(p_body);
 }
 
-void Space3DSW::body_add_to_inertia_update_list(SelfList<Body3DSW> *p_body) {
-	inertia_update_list.add(p_body);
+void Space3DSW::body_add_to_mass_properties_update_list(SelfList<Body3DSW> *p_body) {
+	mass_properties_update_list.add(p_body);
 }
 
-void Space3DSW::body_remove_from_inertia_update_list(SelfList<Body3DSW> *p_body) {
-	inertia_update_list.remove(p_body);
+void Space3DSW::body_remove_from_mass_properties_update_list(SelfList<Body3DSW> *p_body) {
+	mass_properties_update_list.remove(p_body);
 }
 
 BroadPhase3DSW *Space3DSW::get_broadphase() {
@@ -1059,9 +1059,9 @@ void Space3DSW::call_queries() {
 
 void Space3DSW::setup() {
 	contact_debug_count = 0;
-	while (inertia_update_list.first()) {
-		inertia_update_list.first()->self()->update_inertias();
-		inertia_update_list.remove(inertia_update_list.first());
+	while (mass_properties_update_list.first()) {
+		mass_properties_update_list.first()->self()->update_mass_properties();
+		mass_properties_update_list.remove(mass_properties_update_list.first());
 	}
 }
 

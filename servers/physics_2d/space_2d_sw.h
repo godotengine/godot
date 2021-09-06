@@ -86,7 +86,7 @@ private:
 
 	BroadPhase2DSW *broadphase;
 	SelfList<Body2DSW>::List active_list;
-	SelfList<Body2DSW>::List inertia_update_list;
+	SelfList<Body2DSW>::List mass_properties_update_list;
 	SelfList<Body2DSW>::List state_query_list;
 	SelfList<Area2DSW>::List monitor_query_list;
 	SelfList<Area2DSW>::List area_moved_list;
@@ -140,8 +140,8 @@ public:
 	const SelfList<Body2DSW>::List &get_active_body_list() const;
 	void body_add_to_active_list(SelfList<Body2DSW> *p_body);
 	void body_remove_from_active_list(SelfList<Body2DSW> *p_body);
-	void body_add_to_inertia_update_list(SelfList<Body2DSW> *p_body);
-	void body_remove_from_inertia_update_list(SelfList<Body2DSW> *p_body);
+	void body_add_to_mass_properties_update_list(SelfList<Body2DSW> *p_body);
+	void body_remove_from_mass_properties_update_list(SelfList<Body2DSW> *p_body);
 	void area_add_to_moved_list(SelfList<Area2DSW> *p_area);
 	void area_remove_from_moved_list(SelfList<Area2DSW> *p_area);
 	const SelfList<Area2DSW>::List &get_moved_area_list() const;

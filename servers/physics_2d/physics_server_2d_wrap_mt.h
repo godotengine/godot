@@ -212,8 +212,10 @@ public:
 	FUNC2(body_set_collision_mask, RID, uint32_t);
 	FUNC1RC(uint32_t, body_get_collision_mask, RID);
 
-	FUNC3(body_set_param, RID, BodyParameter, real_t);
-	FUNC2RC(real_t, body_get_param, RID, BodyParameter);
+	FUNC3(body_set_param, RID, BodyParameter, const Variant &);
+	FUNC2RC(Variant, body_get_param, RID, BodyParameter);
+
+	FUNC1(body_reset_mass_properties, RID);
 
 	FUNC3(body_set_state, RID, BodyState, const Variant &);
 	FUNC2RC(Variant, body_get_state, RID, BodyState);
