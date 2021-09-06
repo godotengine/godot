@@ -2089,77 +2089,18 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 
 Error GDScriptCompiler::_parse_setter_getter(GDScript *p_script, const GDScriptParser::ClassNode *p_class, const GDScriptParser::VariableNode *p_variable, bool p_is_setter) {
 	Error error = OK;
-	CodeGen codegen;
-	codegen.generator = memnew(GDScriptByteCodeGenerator);
 
-	codegen.class_node = p_class;
-	codegen.script = p_script;
-
-	StringName func_name;
+	GDScriptParser::FunctionNode *function;
 
 	if (p_is_setter) {
-		func_name = "@" + p_variable->identifier->name + "_setter";
+		function = p_variable->setter;
 	} else {
-		func_name = "@" + p_variable->identifier->name + "_getter";
+		function = p_variable->getter;
 	}
 
-	codegen.function_name = func_name;
+	_parse_function(error, p_script, p_class, function);
 
-	GDScriptDataType return_type;
-	if (p_is_setter) {
-		return_type.has_type = true;
-		return_type.kind = GDScriptDataType::BUILTIN;
-		return_type.builtin_type = Variant::NIL;
-	} else {
-		return_type = _gdtype_from_datatype(p_variable->get_datatype(), p_script);
-	}
-
-	codegen.generator->write_start(p_script, func_name, false, Multiplayer::RPCConfig(), return_type);
-
-	if (p_is_setter) {
-		uint32_t par_addr = codegen.generator->add_parameter(p_variable->setter_parameter->name, false, _gdtype_from_datatype(p_variable->get_datatype()));
-		codegen.parameters[p_variable->setter_parameter->name] = GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::FUNCTION_PARAMETER, par_addr, _gdtype_from_datatype(p_variable->get_datatype()));
-	}
-
-	error = _parse_block(codegen, p_is_setter ? p_variable->setter : p_variable->getter);
-	if (error) {
-		memdelete(codegen.generator);
-		return error;
-	}
-
-	GDScriptFunction *gd_function = codegen.generator->write_end();
-
-	p_script->member_functions[func_name] = gd_function;
-
-#ifdef DEBUG_ENABLED
-	if (EngineDebugger::is_active()) {
-		String signature;
-		//path
-		if (p_script->get_path() != String()) {
-			signature += p_script->get_path();
-		}
-		//loc
-		signature += "::" + itos(p_is_setter ? p_variable->setter->start_line : p_variable->getter->start_line);
-
-		//function and class
-
-		if (p_class->identifier) {
-			signature += "::" + String(p_class->identifier->name) + "." + String(func_name);
-		} else {
-			signature += "::" + String(func_name);
-		}
-
-		codegen.generator->set_signature(signature);
-	}
-#endif
-	codegen.generator->set_initial_line(p_is_setter ? p_variable->setter->start_line : p_variable->getter->start_line);
-
-#ifdef TOOLS_ENABLED
-	p_script->member_lines[func_name] = p_is_setter ? p_variable->setter->start_line : p_variable->getter->start_line;
-#endif
-	memdelete(codegen.generator);
-
-	return OK;
+	return error;
 }
 
 Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state) {
