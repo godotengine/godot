@@ -654,7 +654,7 @@ void CodeEdit::_backspace_internal() {
 	// For space indentation we need to do a simple unindent if there are no chars to the left, acting in the
 	// same way as tabs.
 	if (indent_using_spaces && cc != 0) {
-		if (get_first_non_whitespace_column(cl) > cc) {
+		if (get_first_non_whitespace_column(cl) >= cc) {
 			prev_column = cc - _calculate_spaces_till_next_left_indent(cc);
 			prev_line = cl;
 		}
@@ -987,10 +987,10 @@ void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
 				/* No need to move the brace below if we are not taking the text with us. */
 				if (p_split_current_line) {
 					brace_indent = true;
-					ins += "\n" + ins.substr(1, ins.length() - 2);
+					ins += "\n" + ins.substr(indent_text.size(), ins.length() - 2);
 				} else {
 					brace_indent = false;
-					ins = "\n" + ins.substr(1, ins.length() - 2);
+					ins = "\n" + ins.substr(indent_text.size(), ins.length() - 2);
 				}
 			}
 		}
