@@ -105,6 +105,8 @@ public:
 
 	virtual float get_length() const override; //if supported, otherwise return 0
 
+	virtual bool is_monophonic() const override;
+
 	AudioStreamOGGVorbis();
 	virtual ~AudioStreamOGGVorbis();
 };

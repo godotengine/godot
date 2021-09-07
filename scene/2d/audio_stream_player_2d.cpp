@@ -59,33 +59,47 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
 		//update anything related to position first, if possible of course
-
-		if (!stream_playback.is_valid()) {
-			return;
-		}
-		if (setplay.get() >= 0 || (active.is_set() && last_mix_count != AudioServer::get_singleton()->get_mix_count())) {
+		if (setplay.get() > 0 || (active.is_set() && last_mix_count != AudioServer::get_singleton()->get_mix_count())) {
 			_update_panning();
-			if (setplay.get() >= 0) {
-				active.set();
-				AudioServer::get_singleton()->start_playback_stream(stream_playback, _get_actual_bus(), volume_vector, setplay.get());
-				setplay.set(-1);
+		}
+
+		if (setplay.get() >= 0 && stream.is_valid()) {
+			active.set();
+			Ref<AudioStreamPlayback> new_playback = stream->instance_playback();
+			ERR_FAIL_COND_MSG(new_playback.is_null(), "Failed to instantiate playback.");
+			AudioServer::get_singleton()->start_playback_stream(new_playback, _get_actual_bus(), volume_vector, setplay.get());
+			stream_playbacks.push_back(new_playback);
+			setplay.set(-1);
+		}
+
+		if (!stream_playbacks.is_empty() && active.is_set()) {
+			// Stop playing if no longer active.
+			Vector<Ref<AudioStreamPlayback>> playbacks_to_remove;
+			for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+				if (playback.is_valid() && !AudioServer::get_singleton()->is_playback_active(playback) && !AudioServer::get_singleton()->is_playback_paused(playback)) {
+					emit_signal(SNAME("finished"));
+					playbacks_to_remove.push_back(playback);
+				}
+			}
+			// Now go through and remove playbacks that have finished. Removing elements from a Vector in a range based for is asking for trouble.
+			for (Ref<AudioStreamPlayback> &playback : playbacks_to_remove) {
+				stream_playbacks.erase(playback);
+			}
+			if (!playbacks_to_remove.is_empty() && stream_playbacks.is_empty()) {
+				// This node is no longer actively playing audio.
+				active.clear();
+				set_physics_process_internal(false);
 			}
 		}
 
-		// Stop playing if no longer active.
-		if (active.is_set() && !AudioServer::get_singleton()->is_playback_active(stream_playback)) {
-			active.clear();
-			set_physics_process_internal(false);
-			emit_signal(SNAME("finished"));
+		while (stream_playbacks.size() > max_polyphony) {
+			AudioServer::get_singleton()->stop_playback_stream(stream_playbacks[0]);
+			stream_playbacks.remove(0);
 		}
 	}
 }
 
 StringName AudioStreamPlayer2D::_get_actual_bus() {
-	if (!stream_playback.is_valid()) {
-		return SNAME("Master");
-	}
-
 	Vector2 global_pos = get_global_position();
 
 	//check if any area is diverting sound into a bus
@@ -113,11 +127,9 @@ StringName AudioStreamPlayer2D::_get_actual_bus() {
 }
 
 void AudioStreamPlayer2D::_update_panning() {
-	if (!stream_playback.is_valid()) {
+	if (!active.is_set() || stream.is_null()) {
 		return;
 	}
-
-	last_mix_count = AudioServer::get_singleton()->get_mix_count();
 
 	Ref<World2D> world_2d = get_world_2d();
 	ERR_FAIL_COND(world_2d.is_null());
@@ -164,28 +176,20 @@ void AudioStreamPlayer2D::_update_panning() {
 		volume_vector.write[0] = AudioFrame(l, r) * multiplier;
 	}
 
-	AudioServer::get_singleton()->set_playback_bus_exclusive(stream_playback, _get_actual_bus(), volume_vector);
+	for (const Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+		AudioServer::get_singleton()->set_playback_bus_exclusive(playback, _get_actual_bus(), volume_vector);
+	}
+
+	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+		AudioServer::get_singleton()->set_playback_pitch_scale(playback, pitch_scale);
+	}
+
+	last_mix_count = AudioServer::get_singleton()->get_mix_count();
 }
 
 void AudioStreamPlayer2D::set_stream(Ref<AudioStream> p_stream) {
-	if (stream_playback.is_valid()) {
-		stop();
-	}
-
-	stream_playback.unref();
-	stream.unref();
-	if (p_stream.is_valid()) {
-		stream_playback = p_stream->instance_playback();
-		if (stream_playback.is_valid()) {
-			stream = p_stream;
-		} else {
-			stream.unref();
-		}
-	}
-
-	if (p_stream.is_valid() && stream_playback.is_null()) {
-		stream.unref();
-	}
+	stop();
+	stream = p_stream;
 }
 
 Ref<AudioStream> AudioStreamPlayer2D::get_stream() const {
@@ -203,8 +207,8 @@ float AudioStreamPlayer2D::get_volume_db() const {
 void AudioStreamPlayer2D::set_pitch_scale(float p_pitch_scale) {
 	ERR_FAIL_COND(p_pitch_scale <= 0.0);
 	pitch_scale = p_pitch_scale;
-	if (stream_playback.is_valid()) {
-		AudioServer::get_singleton()->set_playback_pitch_scale(stream_playback, p_pitch_scale);
+	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+		AudioServer::get_singleton()->set_playback_pitch_scale(playback, p_pitch_scale);
 	}
 }
 
@@ -213,44 +217,50 @@ float AudioStreamPlayer2D::get_pitch_scale() const {
 }
 
 void AudioStreamPlayer2D::play(float p_from_pos) {
-	stop();
-	if (stream.is_valid()) {
-		stream_playback = stream->instance_playback();
+	if (stream.is_null()) {
+		return;
 	}
-	if (stream_playback.is_valid()) {
-		setplay.set(p_from_pos);
-		set_physics_process_internal(true);
+	ERR_FAIL_COND_MSG(!is_inside_tree(), "Playback can only happen when a node is inside the scene tree");
+	if (stream->is_monophonic() && is_playing()) {
+		stop();
 	}
+
+	setplay.set(p_from_pos);
+	active.set();
+	set_physics_process_internal(true);
 }
 
 void AudioStreamPlayer2D::seek(float p_seconds) {
-	if (stream_playback.is_valid() && active.is_set()) {
+	if (is_playing()) {
+		stop();
 		play(p_seconds);
 	}
 }
 
 void AudioStreamPlayer2D::stop() {
-	if (stream_playback.is_valid()) {
-		active.clear();
-		AudioServer::get_singleton()->stop_playback_stream(stream_playback);
-		set_physics_process_internal(false);
-		setplay.set(-1);
+	setplay.set(-1);
+	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+		AudioServer::get_singleton()->stop_playback_stream(playback);
 	}
+	stream_playbacks.clear();
+	active.clear();
+	set_physics_process_internal(false);
 }
 
 bool AudioStreamPlayer2D::is_playing() const {
-	if (stream_playback.is_valid()) {
-		return AudioServer::get_singleton()->is_playback_active(stream_playback);
+	for (const Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+		if (AudioServer::get_singleton()->is_playback_active(playback)) {
+			return true;
+		}
 	}
-
 	return false;
 }
 
 float AudioStreamPlayer2D::get_playback_position() {
-	if (stream_playback.is_valid()) {
-		return AudioServer::get_singleton()->get_playback_position(stream_playback);
+	// Return the playback position of the most recently started playback stream.
+	if (!stream_playbacks.is_empty()) {
+		return AudioServer::get_singleton()->get_playback_position(stream_playbacks[stream_playbacks.size() - 1]);
 	}
-
 	return 0;
 }
 
@@ -284,11 +294,7 @@ void AudioStreamPlayer2D::_set_playing(bool p_enable) {
 }
 
 bool AudioStreamPlayer2D::_is_active() const {
-	if (stream_playback.is_valid()) {
-		// TODO make sure this doesn't change any behavior w.r.t. pauses. Is a paused stream active?
-		return AudioServer::get_singleton()->is_playback_active(stream_playback);
-	}
-	return false;
+	return active.is_set();
 }
 
 void AudioStreamPlayer2D::_validate_property(PropertyInfo &property) const {
@@ -336,21 +342,35 @@ uint32_t AudioStreamPlayer2D::get_area_mask() const {
 }
 
 void AudioStreamPlayer2D::set_stream_paused(bool p_pause) {
-	// TODO this does not have perfect recall, fix that maybe? If the stream isn't set, we can't persist this bool.
-	if (stream_playback.is_valid()) {
-		AudioServer::get_singleton()->set_playback_paused(stream_playback, p_pause);
+	// TODO this does not have perfect recall, fix that maybe? If there are zero playbacks registered with the AudioServer, this bool isn't persisted.
+	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+		AudioServer::get_singleton()->set_playback_paused(playback, p_pause);
 	}
 }
 
 bool AudioStreamPlayer2D::get_stream_paused() const {
-	if (stream_playback.is_valid()) {
-		return AudioServer::get_singleton()->is_playback_paused(stream_playback);
+	// There's currently no way to pause some playback streams but not others. Check the first and don't bother looking at the rest.
+	if (!stream_playbacks.is_empty()) {
+		return AudioServer::get_singleton()->is_playback_paused(stream_playbacks[0]);
 	}
 	return false;
 }
 
 Ref<AudioStreamPlayback> AudioStreamPlayer2D::get_stream_playback() {
-	return stream_playback;
+	if (!stream_playbacks.is_empty()) {
+		return stream_playbacks[stream_playbacks.size() - 1];
+	}
+	return nullptr;
+}
+
+void AudioStreamPlayer2D::set_max_polyphony(int p_max_polyphony) {
+	if (p_max_polyphony > 0) {
+		max_polyphony = p_max_polyphony;
+	}
+}
+
+int AudioStreamPlayer2D::get_max_polyphony() const {
+	return max_polyphony;
 }
 
 void AudioStreamPlayer2D::_bind_methods() {
@@ -391,6 +411,9 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_stream_paused", "pause"), &AudioStreamPlayer2D::set_stream_paused);
 	ClassDB::bind_method(D_METHOD("get_stream_paused"), &AudioStreamPlayer2D::get_stream_paused);
 
+	ClassDB::bind_method(D_METHOD("set_max_polyphony", "max_polyphony"), &AudioStreamPlayer2D::set_max_polyphony);
+	ClassDB::bind_method(D_METHOD("get_max_polyphony"), &AudioStreamPlayer2D::get_max_polyphony);
+
 	ClassDB::bind_method(D_METHOD("get_stream_playback"), &AudioStreamPlayer2D::get_stream_playback);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
@@ -401,6 +424,7 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stream_paused", PROPERTY_HINT_NONE, ""), "set_stream_paused", "get_stream_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance", PROPERTY_HINT_RANGE, "1,4096,1,or_greater,exp"), "set_max_distance", "get_max_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "attenuation", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_attenuation", "get_attenuation");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "area_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_area_mask", "get_area_mask");
 

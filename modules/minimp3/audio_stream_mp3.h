@@ -103,6 +103,8 @@ public:
 
 	virtual float get_length() const override;
 
+	virtual bool is_monophonic() const override;
+
 	AudioStreamMP3();
 	virtual ~AudioStreamMP3();
 };

@@ -214,6 +214,10 @@ float AudioStreamMP3::get_length() const {
 	return length;
 }
 
+bool AudioStreamMP3::is_monophonic() const {
+	return false;
+}
+
 void AudioStreamMP3::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_data", "data"), &AudioStreamMP3::set_data);
 	ClassDB::bind_method(D_METHOD("get_data"), &AudioStreamMP3::get_data);

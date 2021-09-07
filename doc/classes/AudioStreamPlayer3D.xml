@@ -83,6 +83,9 @@
 		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance" default="0.0">
 			Sets the distance from which the [member out_of_range_mode] takes effect. Has no effect if set to 0.
 		</member>
+		<member name="max_polyphony" type="int" setter="set_max_polyphony" getter="get_max_polyphony" default="1">
+			The maximum number of sounds this node can play at the same time. Playing additional sounds after this value is reached will cut off the oldest sounds.
+		</member>
 		<member name="out_of_range_mode" type="int" setter="set_out_of_range_mode" getter="get_out_of_range_mode" enum="AudioStreamPlayer3D.OutOfRangeMode" default="0">
 			Decides if audio should pause when source is outside of [member max_distance] range.
 		</member>

@@ -189,11 +189,21 @@ float AudioStream::get_length() const {
 	return 0;
 }
 
+bool AudioStream::is_monophonic() const {
+	bool ret;
+	if (GDVIRTUAL_CALL(_is_monophonic, ret)) {
+		return ret;
+	}
+	return true;
+}
+
 void AudioStream::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_length"), &AudioStream::get_length);
+	ClassDB::bind_method(D_METHOD("is_monophonic"), &AudioStream::is_monophonic);
 	GDVIRTUAL_BIND(_instance_playback);
 	GDVIRTUAL_BIND(_get_stream_name);
 	GDVIRTUAL_BIND(_get_length);
+	GDVIRTUAL_BIND(_is_monophonic);
 }
 
 ////////////////////////////////
@@ -219,6 +229,10 @@ String AudioStreamMicrophone::get_stream_name() const {
 
 float AudioStreamMicrophone::get_length() const {
 	return 0;
+}
+
+bool AudioStreamMicrophone::is_monophonic() const {
+	return true;
 }
 
 void AudioStreamMicrophone::_bind_methods() {
@@ -386,6 +400,14 @@ float AudioStreamRandomPitch::get_length() const {
 	}
 
 	return 0;
+}
+
+bool AudioStreamRandomPitch::is_monophonic() const {
+	if (audio_stream.is_valid()) {
+		return audio_stream->is_monophonic();
+	}
+
+	return true; // It doesn't really matter what we return here, but no sense instancing a many playbacks of a null stream.
 }
 
 void AudioStreamRandomPitch::_bind_methods() {

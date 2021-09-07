@@ -46,7 +46,7 @@ public:
 	};
 
 private:
-	Ref<AudioStreamPlayback> stream_playback;
+	Vector<Ref<AudioStreamPlayback>> stream_playbacks;
 	Ref<AudioStream> stream;
 
 	SafeFlag active;
@@ -54,7 +54,8 @@ private:
 	float pitch_scale = 1.0;
 	float volume_db = 0.0;
 	bool autoplay = false;
-	StringName bus = "Master";
+	StringName bus = SNAME("Master");
+	int max_polyphony = 1;
 
 	MixTarget mix_target = MIX_TARGET_STEREO;
 
@@ -84,6 +85,9 @@ public:
 
 	void set_pitch_scale(float p_pitch_scale);
 	float get_pitch_scale() const;
+
+	void set_max_polyphony(int p_max_polyphony);
+	int get_max_polyphony() const;
 
 	void play(float p_from_pos = 0.0);
 	void seek(float p_seconds);

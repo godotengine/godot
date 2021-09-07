@@ -61,6 +61,9 @@
 		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance" default="2000.0">
 			Maximum distance from which audio is still hearable.
 		</member>
+		<member name="max_polyphony" type="int" setter="set_max_polyphony" getter="get_max_polyphony" default="1">
+			The maximum number of sounds this node can play at the same time. Playing additional sounds after this value is reached will cut off the oldest sounds.
+		</member>
 		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale" default="1.0">
 			The pitch and the tempo of the audio, as a multiplier of the audio sample's sample rate.
 		</member>
