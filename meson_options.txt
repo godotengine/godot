@@ -53,6 +53,9 @@ option('builtin_harfbuzz', type: 'boolean', value: true, description: 'Use the b
 option('builtin_graphite', type: 'boolean', value: true, description: 'Use the built-in graphite library')
 option('builtin_icu', type: 'boolean', value: true, description: 'Use the built-in icu library')
 
+# Vulkan options
+option('use_volk', type: 'boolean', value: true, description: 'Use the volk library to load the Vulkan loader dynamically')
+
 # Mono options
 option('mono_glue', type: 'boolean', value: true, description: 'Enable mono glue')
 
