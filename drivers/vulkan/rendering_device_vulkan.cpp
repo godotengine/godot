@@ -8394,6 +8394,7 @@ void RenderingDeviceVulkan::_free_internal(RID p_id) {
 		b.allocation = index_buffer->allocation;
 		b.buffer = index_buffer->buffer;
 		b.size = index_buffer->size;
+		b.buffer_info = {};
 		frames[frame].buffers_to_dispose_of.push_back(b);
 		index_buffer_owner.free(p_id);
 	} else if (index_array_owner.owns(p_id)) {
