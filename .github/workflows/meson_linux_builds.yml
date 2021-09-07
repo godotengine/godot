@@ -46,7 +46,7 @@ jobs:
       # Execute unit tests for the editor
       - name: Unit Tests
         run: |
-          ./builddir/godot --headless --test
+          ./builddir/godot --test
 
       # Download, unzip and setup SwiftShader library [4466040]
       - name: Download SwiftShader
@@ -63,7 +63,7 @@ jobs:
           echo "Running --doctool to see if this changes the public API without updating the documentation."
           echo -e "If a diff is shown, it means that your code/doc changes are incomplete and you should update the class reference with --doctool.\n\n"
           #VK_ICD_FILENAMES=$(pwd)/vk_swiftshader_icd.json DRI_PRIME=0 xvfb-run builddir/godot --doctool . 2>&1 > /dev/null || true
-          builddir/godot --headless --doctool . 2>&1 > /dev/null || true
+          builddir/godot --doctool . 2>&1 > /dev/null || true
           echo "Skipping test on meson builds"
           #git diff --color --exit-code && ! git ls-files --others --exclude-standard | sed -e 's/^/New doc file missing in PR: /' | grep 'xml$'
 
@@ -104,7 +104,7 @@ jobs:
       # Execute unit tests for the editor
       - name: Unit Tests
         run: |
-          ./builddir/godot --headless --test
+          ./builddir/godot --test
 
       # Download, unzip and setup SwiftShader library [4466040]
       - name: Download SwiftShader
@@ -125,16 +125,15 @@ jobs:
       # Editor is quite complicated piece of software, so it is easy to introduce bug here
       - name: Open and close editor
         run: |
-          echo "Disabled"
-          #VK_ICD_FILENAMES=$(pwd)/vk_swiftshader_icd.json DRI_PRIME=0 xvfb-run builddir/godot --audio-driver Dummy -e -q --path test_project 2>&1 | tee sanitizers_log.txt || true
-          #misc/scripts/check_ci_log.py sanitizers_log.txt
+          VK_ICD_FILENAMES=$(pwd)/vk_swiftshader_icd.json DRI_PRIME=0 xvfb-run builddir/godot --audio-driver Dummy -e -q --path test_project 2>&1 | tee sanitizers_log.txt || true
+          misc/scripts/check_ci_log.py sanitizers_log.txt
 
       # Run test project
       - name: Run project
         run: |
           echo "Disabled"
-          #VK_ICD_FILENAMES=$(pwd)/vk_swiftshader_icd.json DRI_PRIME=0 xvfb-run builddir/godot 40 --audio-driver Dummy --path test_project 2>&1 | tee sanitizers_log.txt || true
-          #misc/scripts/check_ci_log.py sanitizers_log.txt
+          VK_ICD_FILENAMES=$(pwd)/vk_swiftshader_icd.json DRI_PRIME=0 xvfb-run builddir/godot 40 --audio-driver Dummy --path test_project 2>&1 | tee sanitizers_log.txt || true
+          misc/scripts/check_ci_log.py sanitizers_log.txt
 
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact
