@@ -1937,7 +1937,7 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 
 	if (pre_brace_pair == -1 && post_brace_pair == -1 && get_caret_column() > 0 && get_caret_column() < get_line(caret_line).length()) {
 		pre_brace_pair = _get_auto_brace_pair_open_at_pos(caret_line, get_caret_column() + 1);
-		if (pre_brace_pair == _get_auto_brace_pair_close_at_pos(caret_line, get_caret_column() - 1)) {
+		if (pre_brace_pair != -1 && pre_brace_pair == _get_auto_brace_pair_close_at_pos(caret_line, get_caret_column() - 1)) {
 			remove_text(caret_line, get_caret_column() - 2, caret_line, get_caret_column());
 			if (_get_auto_brace_pair_close_at_pos(caret_line, get_caret_column() - 1) != pre_brace_pair) {
 				set_caret_column(get_caret_column() - 1);
