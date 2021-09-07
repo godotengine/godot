@@ -566,6 +566,10 @@ void EditorData::remove_scene(int p_idx) {
 		current_edited_scene--;
 	}
 
+	if (edited_scene[p_idx].path != String()) {
+		ScriptEditor::get_singleton()->close_builtin_scripts_from_scene(edited_scene[p_idx].path);
+	}
+
 	edited_scene.remove(p_idx);
 }
 
