@@ -57,6 +57,13 @@
 				Returns the [Texture2D] for the tab at index [code]tab_idx[/code] or [code]null[/code] if the tab has no [Texture2D].
 			</description>
 		</method>
+		<method name="get_tab_idx_at_point" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="point" type="Vector2" />
+			<description>
+				Returns the index of the tab at local coordinates [code]point[/code]. Returns [code]-1[/code] if the point is outside the control boundaries or if there's no tab at the queried position.
+			</description>
+		</method>
 		<method name="get_tab_title" qualifiers="const">
 			<return type="String" />
 			<argument index="0" name="tab_idx" type="int" />
