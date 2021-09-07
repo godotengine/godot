@@ -896,18 +896,24 @@ Ref<SkinReference> Skeleton3D::register_skin(const Ref<Skin> &p_skin) {
 		int len = bones.size();
 
 		// calculate global rests and invert them
-		Vector<int> bones_to_process = get_parentless_bones();
+		LocalVector<int> bones_to_process;
+		bones_to_process = get_parentless_bones();
 		while (bones_to_process.size() > 0) {
 			int current_bone_idx = bones_to_process[0];
-			bones_to_process.erase(current_bone_idx);
 			const Bone &b = bonesptr[current_bone_idx];
-
-			// Note: the code below may not work by default. May need to track an integer for the bone pose index order
-			// in the while loop, instead of using current_bone_idx.
-			if (b.parent >= 0) {
-				skin->set_bind_pose(current_bone_idx, skin->get_bind_pose(b.parent) * b.rest);
-			} else {
+			bones_to_process.erase(current_bone_idx);
+			LocalVector<int> child_bones_vector;
+			child_bones_vector = get_bone_children(current_bone_idx);
+			int child_bones_size = child_bones_vector.size();
+			if (b.parent < 0) {
 				skin->set_bind_pose(current_bone_idx, b.rest);
+			}
+			for (int i = 0; i < child_bones_size; i++) {
+				int child_bone_idx = child_bones_vector[i];
+				const Bone &cb = bonesptr[child_bone_idx];
+				skin->set_bind_pose(child_bone_idx, skin->get_bind_pose(current_bone_idx) * cb.rest);
+				// Add the bone's children to the list of bones to be processed.
+				bones_to_process.push_back(child_bones_vector[i]);
 			}
 		}
 
