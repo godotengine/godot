@@ -127,7 +127,7 @@ private:
 		ProcessMode process_mode = PROCESS_MODE_INHERIT;
 		Node *process_owner = nullptr;
 
-		int network_authority = 1; // Server by default.
+		int multiplayer_authority = 1; // Server by default.
 		Vector<Multiplayer::RPCConfig> rpc_methods;
 
 		// Variables used to properly sort the node when processing, ignored otherwise.
@@ -462,9 +462,9 @@ public:
 	bool is_displayed_folded() const;
 	/* NETWORK */
 
-	void set_network_authority(int p_peer_id, bool p_recursive = true);
-	int get_network_authority() const;
-	bool is_network_authority() const;
+	void set_multiplayer_authority(int p_peer_id, bool p_recursive = true);
+	int get_multiplayer_authority() const;
+	bool is_multiplayer_authority() const;
 
 	uint16_t rpc_config(const StringName &p_method, Multiplayer::RPCMode p_rpc_mode, Multiplayer::TransferMode p_transfer_mode, int p_channel = 0); // config a local method for RPC
 	Vector<Multiplayer::RPCConfig> get_node_rpc_methods() const;

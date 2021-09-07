@@ -246,10 +246,10 @@
 				If [code]include_internal[/code] is [code]false[/code], the index won't take internal children into account, i.e. first non-internal child will have index of 0 (see [code]internal[/code] parameter in [method add_child]).
 			</description>
 		</method>
-		<method name="get_network_authority" qualifiers="const">
+		<method name="get_multiplayer_authority" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the peer ID of the network authority for this node. See [method set_network_authority].
+				Returns the peer ID of the multiplayer authority for this node. See [method set_multiplayer_authority].
 			</description>
 		</method>
 		<method name="get_node" qualifiers="const">
@@ -417,10 +417,10 @@
 				Returns [code]true[/code] if this node is currently inside a [SceneTree].
 			</description>
 		</method>
-		<method name="is_network_authority" qualifiers="const">
+		<method name="is_multiplayer_authority" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the local system is the authority of this node.
+				Returns [code]true[/code] if the local system is the multiplayer authority of this node.
 			</description>
 		</method>
 		<method name="is_physics_processing" qualifiers="const">
@@ -578,7 +578,7 @@
 			<argument index="0" name="method" type="StringName" />
 			<description>
 				Sends a remote procedure call request for the given [code]method[/code] to peers on the network (and locally), optionally sending all additional arguments as arguments to the method called by the RPC. The call request will only be received by nodes with the same [NodePath], including the exact same node name. Behaviour depends on the RPC configuration for the given method, see [method rpc_config]. Methods are not exposed to RPCs by default. Returns an empty [Variant].
-				[b]Note:[/b] You can only safely use RPCs on clients after you received the [code]connected_to_server[/code] signal from the [MultiplayerAPI]. You also need to keep track of the connection state, either by the [MultiplayerAPI] signals like [code]server_disconnected[/code] or by checking [code]get_multiplayer().network_peer.get_connection_status() == CONNECTION_CONNECTED[/code].
+				[b]Note:[/b] You can only safely use RPCs on clients after you received the [code]connected_to_server[/code] signal from the [MultiplayerAPI]. You also need to keep track of the connection state, either by the [MultiplayerAPI] signals like [code]server_disconnected[/code] or by checking [code]get_multiplayer().peer.get_connection_status() == CONNECTION_CONNECTED[/code].
 			</description>
 		</method>
 		<method name="rpc_config">
@@ -620,12 +620,12 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_network_authority">
+		<method name="set_multiplayer_authority">
 			<return type="void" />
 			<argument index="0" name="id" type="int" />
 			<argument index="1" name="recursive" type="bool" default="true" />
 			<description>
-				Sets the node's network authority to the peer with the given peer ID. The network authority is the peer that has authority over the node on the network. Useful in conjunction with [method rpc_config] and the [MultiplayerAPI]. Inherited from the parent node by default, which ultimately defaults to peer ID 1 (the server). If [code]recursive[/code], the given peer is recursively set as the authority for all children of this node.
+				Sets the node's multiplayer authority to the peer with the given peer ID. The multiplayer authority is the peer that has authority over the node on the network. Useful in conjunction with [method rpc_config] and the [MultiplayerAPI]. Inherited from the parent node by default, which ultimately defaults to peer ID 1 (the server). If [code]recursive[/code], the given peer is recursively set as the authority for all children of this node.
 			</description>
 		</method>
 		<method name="set_physics_process">

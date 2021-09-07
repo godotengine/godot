@@ -113,18 +113,18 @@ Error MultiplayerReplicator::_sync_all_default(const ResourceUID::ID &p_scene_id
 		ERR_CONTINUE(err);
 		ofs += size;
 	}
-	Ref<MultiplayerPeer> network_peer = multiplayer->get_network_peer();
-	network_peer->set_target_peer(p_peer);
-	network_peer->set_transfer_channel(0);
-	network_peer->set_transfer_mode(Multiplayer::TRANSFER_MODE_UNRELIABLE);
-	return network_peer->put_packet(ptr, ofs);
+	Ref<MultiplayerPeer> peer = multiplayer->get_multiplayer_peer();
+	peer->set_target_peer(p_peer);
+	peer->set_transfer_channel(0);
+	peer->set_transfer_mode(Multiplayer::TRANSFER_MODE_UNRELIABLE);
+	return peer->put_packet(ptr, ofs);
 }
 
 void MultiplayerReplicator::_process_default_sync(const ResourceUID::ID &p_id, const uint8_t *p_packet, int p_packet_len) {
 	ERR_FAIL_COND_MSG(p_packet_len < SYNC_CMD_OFFSET + 5, "Invalid spawn packet received");
 	ERR_FAIL_COND_MSG(!replications.has(p_id), "Invalid spawn ID received " + itos(p_id));
 	SceneConfig &cfg = replications[p_id];
-	ERR_FAIL_COND_MSG(cfg.mode != REPLICATION_MODE_SERVER || multiplayer->is_network_server(), "The defualt implementation only allows sync packets from the server");
+	ERR_FAIL_COND_MSG(cfg.mode != REPLICATION_MODE_SERVER || multiplayer->is_server(), "The defualt implementation only allows sync packets from the server");
 	const bool same_size = p_packet[0] & BYTE_OR_ZERO_FLAG;
 	int ofs = SYNC_CMD_OFFSET;
 	int time = p_packet[ofs];
@@ -233,11 +233,11 @@ Error MultiplayerReplicator::_send_default_spawn_despawn(int p_peer_id, const Re
 		memcpy(&ptr[ofs], pba.ptr(), state_len);
 	}
 
-	Ref<MultiplayerPeer> network_peer = multiplayer->get_network_peer();
-	network_peer->set_target_peer(p_peer_id);
-	network_peer->set_transfer_channel(0);
-	network_peer->set_transfer_mode(Multiplayer::TRANSFER_MODE_RELIABLE);
-	return network_peer->put_packet(ptr, ofs + state_len);
+	Ref<MultiplayerPeer> peer = multiplayer->get_multiplayer_peer();
+	peer->set_target_peer(p_peer_id);
+	peer->set_transfer_channel(0);
+	peer->set_transfer_mode(Multiplayer::TRANSFER_MODE_RELIABLE);
+	return peer->put_packet(ptr, ofs + state_len);
 }
 
 void MultiplayerReplicator::_process_default_spawn_despawn(int p_from, const ResourceUID::ID &p_scene_id, const uint8_t *p_packet, int p_packet_len, bool p_spawn) {
@@ -513,21 +513,21 @@ Error MultiplayerReplicator::_send_spawn_despawn(int p_peer_id, const ResourceUI
 	} else if (data_size) {
 		encode_variant(p_data, &ptr[SPAWN_CMD_OFFSET], data_size);
 	}
-	Ref<MultiplayerPeer> network_peer = multiplayer->get_network_peer();
-	network_peer->set_target_peer(p_peer_id);
-	network_peer->set_transfer_channel(0);
-	network_peer->set_transfer_mode(Multiplayer::TRANSFER_MODE_RELIABLE);
-	return network_peer->put_packet(ptr, SPAWN_CMD_OFFSET + data_size);
+	Ref<MultiplayerPeer> peer = multiplayer->get_multiplayer_peer();
+	peer->set_target_peer(p_peer_id);
+	peer->set_transfer_channel(0);
+	peer->set_transfer_mode(Multiplayer::TRANSFER_MODE_RELIABLE);
+	return peer->put_packet(ptr, SPAWN_CMD_OFFSET + data_size);
 }
 
 Error MultiplayerReplicator::send_despawn(int p_peer_id, const ResourceUID::ID &p_scene_id, const Variant &p_data, const NodePath &p_path) {
-	ERR_FAIL_COND_V(!multiplayer->has_network_peer(), ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(!multiplayer->has_multiplayer_peer(), ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V_MSG(!replications.has(p_scene_id), ERR_INVALID_PARAMETER, vformat("Spawnable not found: %d", p_scene_id));
 	const SceneConfig &cfg = replications[p_scene_id];
 	if (cfg.on_spawn_despawn_send.is_valid()) {
 		return _send_spawn_despawn(p_peer_id, p_scene_id, p_data, true);
 	} else {
-		ERR_FAIL_COND_V_MSG(cfg.mode == REPLICATION_MODE_SERVER && multiplayer->is_network_server(), ERR_UNAVAILABLE, "Manual despawn is restricted in default server mode implementation. Use custom mode if you desire control over server spawn requests.");
+		ERR_FAIL_COND_V_MSG(cfg.mode == REPLICATION_MODE_SERVER && multiplayer->is_server(), ERR_UNAVAILABLE, "Manual despawn is restricted in default server mode implementation. Use custom mode if you desire control over server spawn requests.");
 		NodePath path = p_path;
 		Object *obj = p_data.get_type() == Variant::OBJECT ? p_data.get_validated_object() : nullptr;
 		if (path.is_empty() && obj) {
@@ -542,13 +542,13 @@ Error MultiplayerReplicator::send_despawn(int p_peer_id, const ResourceUID::ID &
 }
 
 Error MultiplayerReplicator::send_spawn(int p_peer_id, const ResourceUID::ID &p_scene_id, const Variant &p_data, const NodePath &p_path) {
-	ERR_FAIL_COND_V(!multiplayer->has_network_peer(), ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(!multiplayer->has_multiplayer_peer(), ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V_MSG(!replications.has(p_scene_id), ERR_INVALID_PARAMETER, vformat("Spawnable not found: %d", p_scene_id));
 	const SceneConfig &cfg = replications[p_scene_id];
 	if (cfg.on_spawn_despawn_send.is_valid()) {
 		return _send_spawn_despawn(p_peer_id, p_scene_id, p_data, false);
 	} else {
-		ERR_FAIL_COND_V_MSG(cfg.mode == REPLICATION_MODE_SERVER && multiplayer->is_network_server(), ERR_UNAVAILABLE, "Manual spawn is restricted in default server mode implementation. Use custom mode if you desire control over server spawn requests.");
+		ERR_FAIL_COND_V_MSG(cfg.mode == REPLICATION_MODE_SERVER && multiplayer->is_server(), ERR_UNAVAILABLE, "Manual spawn is restricted in default server mode implementation. Use custom mode if you desire control over server spawn requests.");
 		NodePath path = p_path;
 		Object *obj = p_data.get_type() == Variant::OBJECT ? p_data.get_validated_object() : nullptr;
 		ERR_FAIL_COND_V_MSG(!obj, ERR_INVALID_PARAMETER, "Spawn default implementation requires the data to be an object.");
@@ -619,7 +619,7 @@ Error MultiplayerReplicator::decode_state(const ResourceUID::ID &p_scene_id, Obj
 }
 
 void MultiplayerReplicator::scene_enter_exit_notify(const String &p_scene, Node *p_node, bool p_enter) {
-	if (!multiplayer->has_network_peer()) {
+	if (!multiplayer->has_multiplayer_peer()) {
 		return;
 	}
 	Node *root_node = multiplayer->get_root_node();
@@ -634,14 +634,14 @@ void MultiplayerReplicator::scene_enter_exit_notify(const String &p_scene, Node 
 	}
 	const SceneConfig &cfg = replications[id];
 	if (p_enter) {
-		if (cfg.mode == REPLICATION_MODE_SERVER && multiplayer->is_network_server()) {
+		if (cfg.mode == REPLICATION_MODE_SERVER && multiplayer->is_server()) {
 			replicated_nodes[p_node->get_instance_id()] = id;
 			_track(id, p_node);
 			spawn(id, p_node, 0);
 		}
 		emit_signal(SNAME("replicated_instance_added"), id, p_node);
 	} else {
-		if (cfg.mode == REPLICATION_MODE_SERVER && multiplayer->is_network_server() && replicated_nodes.has(p_node->get_instance_id())) {
+		if (cfg.mode == REPLICATION_MODE_SERVER && multiplayer->is_server() && replicated_nodes.has(p_node->get_instance_id())) {
 			replicated_nodes.erase(p_node->get_instance_id());
 			_untrack(id, p_node);
 			despawn(id, p_node, 0);
@@ -666,7 +666,7 @@ void MultiplayerReplicator::poll() {
 		if (!E.value.sync_interval) {
 			continue;
 		}
-		if (E.value.mode == REPLICATION_MODE_SERVER && !multiplayer->is_network_server()) {
+		if (E.value.mode == REPLICATION_MODE_SERVER && !multiplayer->is_server()) {
 			continue;
 		}
 		uint64_t time = OS::get_singleton()->get_ticks_usec();
@@ -741,7 +741,7 @@ Error MultiplayerReplicator::sync_all(const ResourceUID::ID &p_scene_id, int p_p
 }
 
 Error MultiplayerReplicator::send_sync(int p_peer_id, const ResourceUID::ID &p_scene_id, PackedByteArray p_data, Multiplayer::TransferMode p_transfer_mode, int p_channel) {
-	ERR_FAIL_COND_V(!multiplayer->has_network_peer(), ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(!multiplayer->has_multiplayer_peer(), ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V(!replications.has(p_scene_id), ERR_INVALID_PARAMETER);
 	const SceneConfig &cfg = replications[p_scene_id];
 	ERR_FAIL_COND_V_MSG(!cfg.on_sync_send.is_valid(), ERR_UNCONFIGURED, "Sending raw sync messages is only available with custom functions");
@@ -749,11 +749,11 @@ Error MultiplayerReplicator::send_sync(int p_peer_id, const ResourceUID::ID &p_s
 	uint8_t *ptr = packet_cache.ptrw();
 	ptr[0] = MultiplayerAPI::NETWORK_COMMAND_SYNC;
 	encode_uint64(p_scene_id, &ptr[1]);
-	Ref<MultiplayerPeer> network_peer = multiplayer->get_network_peer();
-	network_peer->set_target_peer(p_peer_id);
-	network_peer->set_transfer_channel(p_channel);
-	network_peer->set_transfer_mode(p_transfer_mode);
-	return network_peer->put_packet(ptr, SYNC_CMD_OFFSET + p_data.size());
+	Ref<MultiplayerPeer> peer = multiplayer->get_multiplayer_peer();
+	peer->set_target_peer(p_peer_id);
+	peer->set_transfer_channel(p_channel);
+	peer->set_transfer_mode(p_transfer_mode);
+	return peer->put_packet(ptr, SYNC_CMD_OFFSET + p_data.size());
 }
 
 void MultiplayerReplicator::clear() {

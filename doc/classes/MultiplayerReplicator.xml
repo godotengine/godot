@@ -44,7 +44,7 @@
 			<argument index="2" name="data" type="Variant" default="null" />
 			<argument index="3" name="path" type="NodePath" default="NodePath(&quot;&quot;)" />
 			<description>
-				Sends a despawn request for the scene identified by [code]scene_id[/code] to the given [code]peer_id[/code] (see [method MultiplayerPeer.set_target_peer]). If the scene is configured as [constant REPLICATION_MODE_SERVER] (see [method spawn_config]) and the request is sent by the server (see [method MultiplayerAPI.is_network_server]), the receiving peer(s) will automatically queue for deletion the node at [code]path[/code] and emit the signal [signal despawned]. In all other cases no deletion happens, and the signal [signal despawn_requested] is emitted instead.
+				Sends a despawn request for the scene identified by [code]scene_id[/code] to the given [code]peer_id[/code] (see [method MultiplayerPeer.set_target_peer]). If the scene is configured as [constant REPLICATION_MODE_SERVER] (see [method spawn_config]) and the request is sent by the server (see [method MultiplayerAPI.is_server]), the receiving peer(s) will automatically queue for deletion the node at [code]path[/code] and emit the signal [signal despawned]. In all other cases no deletion happens, and the signal [signal despawn_requested] is emitted instead.
 			</description>
 		</method>
 		<method name="send_spawn">
@@ -54,7 +54,7 @@
 			<argument index="2" name="data" type="Variant" default="null" />
 			<argument index="3" name="path" type="NodePath" default="NodePath(&quot;&quot;)" />
 			<description>
-				Sends a spawn request for the scene identified by [code]scene_id[/code] to the given [code]peer_id[/code] (see [method MultiplayerPeer.set_target_peer]). If the scene is configured as [constant REPLICATION_MODE_SERVER] (see [method spawn_config]) and the request is sent by the server (see [method MultiplayerAPI.is_network_server]), the receiving peer(s) will automatically instantiate that scene, add it to the [SceneTree] at the given [code]path[/code] and emit the signal [signal spawned]. In all other cases no instantiation happens, and the signal [signal spawn_requested] is emitted instead.
+				Sends a spawn request for the scene identified by [code]scene_id[/code] to the given [code]peer_id[/code] (see [method MultiplayerPeer.set_target_peer]). If the scene is configured as [constant REPLICATION_MODE_SERVER] (see [method spawn_config]) and the request is sent by the server (see [method MultiplayerAPI.is_server]), the receiving peer(s) will automatically instantiate that scene, add it to the [SceneTree] at the given [code]path[/code] and emit the signal [signal spawned]. In all other cases no instantiation happens, and the signal [signal spawn_requested] is emitted instead.
 			</description>
 		</method>
 		<method name="send_sync">

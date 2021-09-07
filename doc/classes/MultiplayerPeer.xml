@@ -4,7 +4,7 @@
 		A high-level network interface to simplify multiplayer interactions.
 	</brief_description>
 	<description>
-		Manages the connection to network peers. Assigns unique IDs to each client connected to the server. See also [MultiplayerAPI].
+		Manages the connection to multiplayer peers. Assigns unique IDs to each client connected to the server. See also [MultiplayerAPI].
 		[b]Note:[/b] The high-level multiplayer API protocol is an implementation detail and isn't meant to be used by non-Godot servers. It may change without notice.
 	</description>
 	<tutorials>

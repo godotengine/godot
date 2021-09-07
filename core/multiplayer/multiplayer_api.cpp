@@ -56,22 +56,22 @@ void MultiplayerAPI::profile_bandwidth(const String &p_inout, int p_size) {
 #endif
 
 void MultiplayerAPI::poll() {
-	if (!network_peer.is_valid() || network_peer->get_connection_status() == MultiplayerPeer::CONNECTION_DISCONNECTED) {
+	if (!multiplayer_peer.is_valid() || multiplayer_peer->get_connection_status() == MultiplayerPeer::CONNECTION_DISCONNECTED) {
 		return;
 	}
 
-	network_peer->poll();
+	multiplayer_peer->poll();
 
-	if (!network_peer.is_valid()) { // It's possible that polling might have resulted in a disconnection, so check here.
+	if (!multiplayer_peer.is_valid()) { // It's possible that polling might have resulted in a disconnection, so check here.
 		return;
 	}
 
-	while (network_peer->get_available_packet_count()) {
-		int sender = network_peer->get_packet_peer();
+	while (multiplayer_peer->get_available_packet_count()) {
+		int sender = multiplayer_peer->get_packet_peer();
 		const uint8_t *packet;
 		int len;
 
-		Error err = network_peer->get_packet(&packet, len);
+		Error err = multiplayer_peer->get_packet(&packet, len);
 		if (err != OK) {
 			ERR_PRINT("Error getting packet!");
 			break; // Something is wrong!
@@ -81,11 +81,11 @@ void MultiplayerAPI::poll() {
 		_process_packet(sender, packet, len);
 		remote_sender_id = 0;
 
-		if (!network_peer.is_valid()) {
+		if (!multiplayer_peer.is_valid()) {
 			break; // It's also possible that a packet or RPC caused a disconnection, so also check here.
 		}
 	}
-	if (network_peer.is_valid() && network_peer->get_connection_status() == MultiplayerPeer::CONNECTION_CONNECTED) {
+	if (multiplayer_peer.is_valid() && multiplayer_peer->get_connection_status() == MultiplayerPeer::CONNECTION_CONNECTED) {
 		replicator->poll();
 	}
 }
@@ -107,36 +107,36 @@ Node *MultiplayerAPI::get_root_node() {
 	return root_node;
 }
 
-void MultiplayerAPI::set_network_peer(const Ref<MultiplayerPeer> &p_peer) {
-	if (p_peer == network_peer) {
+void MultiplayerAPI::set_multiplayer_peer(const Ref<MultiplayerPeer> &p_peer) {
+	if (p_peer == multiplayer_peer) {
 		return; // Nothing to do
 	}
 
 	ERR_FAIL_COND_MSG(p_peer.is_valid() && p_peer->get_connection_status() == MultiplayerPeer::CONNECTION_DISCONNECTED,
 			"Supplied MultiplayerPeer must be connecting or connected.");
 
-	if (network_peer.is_valid()) {
-		network_peer->disconnect("peer_connected", callable_mp(this, &MultiplayerAPI::_add_peer));
-		network_peer->disconnect("peer_disconnected", callable_mp(this, &MultiplayerAPI::_del_peer));
-		network_peer->disconnect("connection_succeeded", callable_mp(this, &MultiplayerAPI::_connected_to_server));
-		network_peer->disconnect("connection_failed", callable_mp(this, &MultiplayerAPI::_connection_failed));
-		network_peer->disconnect("server_disconnected", callable_mp(this, &MultiplayerAPI::_server_disconnected));
+	if (multiplayer_peer.is_valid()) {
+		multiplayer_peer->disconnect("peer_connected", callable_mp(this, &MultiplayerAPI::_add_peer));
+		multiplayer_peer->disconnect("peer_disconnected", callable_mp(this, &MultiplayerAPI::_del_peer));
+		multiplayer_peer->disconnect("connection_succeeded", callable_mp(this, &MultiplayerAPI::_connected_to_server));
+		multiplayer_peer->disconnect("connection_failed", callable_mp(this, &MultiplayerAPI::_connection_failed));
+		multiplayer_peer->disconnect("server_disconnected", callable_mp(this, &MultiplayerAPI::_server_disconnected));
 		clear();
 	}
 
-	network_peer = p_peer;
+	multiplayer_peer = p_peer;
 
-	if (network_peer.is_valid()) {
-		network_peer->connect("peer_connected", callable_mp(this, &MultiplayerAPI::_add_peer));
-		network_peer->connect("peer_disconnected", callable_mp(this, &MultiplayerAPI::_del_peer));
-		network_peer->connect("connection_succeeded", callable_mp(this, &MultiplayerAPI::_connected_to_server));
-		network_peer->connect("connection_failed", callable_mp(this, &MultiplayerAPI::_connection_failed));
-		network_peer->connect("server_disconnected", callable_mp(this, &MultiplayerAPI::_server_disconnected));
+	if (multiplayer_peer.is_valid()) {
+		multiplayer_peer->connect("peer_connected", callable_mp(this, &MultiplayerAPI::_add_peer));
+		multiplayer_peer->connect("peer_disconnected", callable_mp(this, &MultiplayerAPI::_del_peer));
+		multiplayer_peer->connect("connection_succeeded", callable_mp(this, &MultiplayerAPI::_connected_to_server));
+		multiplayer_peer->connect("connection_failed", callable_mp(this, &MultiplayerAPI::_connection_failed));
+		multiplayer_peer->connect("server_disconnected", callable_mp(this, &MultiplayerAPI::_server_disconnected));
 	}
 }
 
-Ref<MultiplayerPeer> MultiplayerAPI::get_network_peer() const {
-	return network_peer;
+Ref<MultiplayerPeer> MultiplayerAPI::get_multiplayer_peer() const {
+	return multiplayer_peer;
 }
 
 void MultiplayerAPI::_process_packet(int p_from, const uint8_t *p_packet, int p_packet_len) {
@@ -221,10 +221,10 @@ void MultiplayerAPI::_process_simplify_path(int p_from, const uint8_t *p_packet,
 	packet.write[1] = valid_rpc_checksum;
 	encode_cstring(pname.get_data(), &packet.write[2]);
 
-	network_peer->set_transfer_channel(0);
-	network_peer->set_transfer_mode(Multiplayer::TRANSFER_MODE_RELIABLE);
-	network_peer->set_target_peer(p_from);
-	network_peer->put_packet(packet.ptr(), packet.size());
+	multiplayer_peer->set_transfer_channel(0);
+	multiplayer_peer->set_transfer_mode(Multiplayer::TRANSFER_MODE_RELIABLE);
+	multiplayer_peer->set_target_peer(p_from);
+	multiplayer_peer->put_packet(packet.ptr(), packet.size());
 }
 
 void MultiplayerAPI::_process_confirm_path(int p_from, const uint8_t *p_packet, int p_packet_len) {
@@ -300,10 +300,10 @@ bool MultiplayerAPI::_send_confirm_path(Node *p_node, NodePath p_path, PathSentC
 		ofs += encode_cstring(path.get_data(), &packet.write[ofs]);
 
 		for (int &E : peers_to_add) {
-			network_peer->set_target_peer(E); // To all of you.
-			network_peer->set_transfer_channel(0);
-			network_peer->set_transfer_mode(Multiplayer::TRANSFER_MODE_RELIABLE);
-			network_peer->put_packet(packet.ptr(), packet.size());
+			multiplayer_peer->set_target_peer(E); // To all of you.
+			multiplayer_peer->set_transfer_channel(0);
+			multiplayer_peer->set_transfer_mode(Multiplayer::TRANSFER_MODE_RELIABLE);
+			multiplayer_peer->put_packet(packet.ptr(), packet.size());
 
 			psc->confirmed_peers.insert(E, false); // Insert into confirmed, but as false since it was not confirmed.
 		}
@@ -470,10 +470,10 @@ Error MultiplayerAPI::decode_and_decompress_variant(Variant &r_variant, const ui
 void MultiplayerAPI::_add_peer(int p_id) {
 	connected_peers.insert(p_id);
 	path_get_cache.insert(p_id, PathGetCache());
-	if (is_network_server()) {
+	if (is_server()) {
 		replicator->spawn_all(p_id);
 	}
-	emit_signal(SNAME("network_peer_connected"), p_id);
+	emit_signal(SNAME("peer_connected"), p_id);
 }
 
 void MultiplayerAPI::_del_peer(int p_id) {
@@ -488,7 +488,7 @@ void MultiplayerAPI::_del_peer(int p_id) {
 		PathSentCache *psc = path_send_cache.getptr(E);
 		psc->confirmed_peers.erase(p_id);
 	}
-	emit_signal(SNAME("network_peer_disconnected"), p_id);
+	emit_signal(SNAME("peer_disconnected"), p_id);
 }
 
 void MultiplayerAPI::_connected_to_server() {
@@ -505,8 +505,8 @@ void MultiplayerAPI::_server_disconnected() {
 
 Error MultiplayerAPI::send_bytes(Vector<uint8_t> p_data, int p_to, Multiplayer::TransferMode p_mode, int p_channel) {
 	ERR_FAIL_COND_V_MSG(p_data.size() < 1, ERR_INVALID_DATA, "Trying to send an empty raw packet.");
-	ERR_FAIL_COND_V_MSG(!network_peer.is_valid(), ERR_UNCONFIGURED, "Trying to send a raw packet while no network peer is active.");
-	ERR_FAIL_COND_V_MSG(network_peer->get_connection_status() != MultiplayerPeer::CONNECTION_CONNECTED, ERR_UNCONFIGURED, "Trying to send a raw packet via a network peer which is not connected.");
+	ERR_FAIL_COND_V_MSG(!multiplayer_peer.is_valid(), ERR_UNCONFIGURED, "Trying to send a raw packet while no multiplayer peer is active.");
+	ERR_FAIL_COND_V_MSG(multiplayer_peer->get_connection_status() != MultiplayerPeer::CONNECTION_CONNECTED, ERR_UNCONFIGURED, "Trying to send a raw packet via a multiplayer peer which is not connected.");
 
 	if (packet_cache.size() < p_data.size() + 1) {
 		packet_cache.resize(p_data.size() + 1);
@@ -516,11 +516,11 @@ Error MultiplayerAPI::send_bytes(Vector<uint8_t> p_data, int p_to, Multiplayer::
 	packet_cache.write[0] = NETWORK_COMMAND_RAW;
 	memcpy(&packet_cache.write[1], &r[0], p_data.size());
 
-	network_peer->set_target_peer(p_to);
-	network_peer->set_transfer_channel(p_channel);
-	network_peer->set_transfer_mode(p_mode);
+	multiplayer_peer->set_target_peer(p_to);
+	multiplayer_peer->set_transfer_channel(p_channel);
+	multiplayer_peer->set_transfer_mode(p_mode);
 
-	return network_peer->put_packet(packet_cache.ptr(), p_data.size() + 1);
+	return multiplayer_peer->put_packet(packet_cache.ptr(), p_data.size() + 1);
 }
 
 void MultiplayerAPI::_process_raw(int p_from, const uint8_t *p_packet, int p_packet_len) {
@@ -533,7 +533,7 @@ void MultiplayerAPI::_process_raw(int p_from, const uint8_t *p_packet, int p_pac
 		uint8_t *w = out.ptrw();
 		memcpy(&w[0], &p_packet[1], len);
 	}
-	emit_signal(SNAME("network_peer_packet"), p_from, out);
+	emit_signal(SNAME("peer_packet"), p_from, out);
 }
 
 bool MultiplayerAPI::is_cache_confirmed(NodePath p_path, int p_peer) {
@@ -574,27 +574,27 @@ Node *MultiplayerAPI::get_cached_node(int p_from, uint32_t p_node_id) {
 	return node;
 }
 
-int MultiplayerAPI::get_network_unique_id() const {
-	ERR_FAIL_COND_V_MSG(!network_peer.is_valid(), 0, "No network peer is assigned. Unable to get unique network ID.");
-	return network_peer->get_unique_id();
+int MultiplayerAPI::get_unique_id() const {
+	ERR_FAIL_COND_V_MSG(!multiplayer_peer.is_valid(), 0, "No multiplayer peer is assigned. Unable to get unique ID.");
+	return multiplayer_peer->get_unique_id();
 }
 
-bool MultiplayerAPI::is_network_server() const {
-	return network_peer.is_valid() && network_peer->is_server();
+bool MultiplayerAPI::is_server() const {
+	return multiplayer_peer.is_valid() && multiplayer_peer->is_server();
 }
 
-void MultiplayerAPI::set_refuse_new_network_connections(bool p_refuse) {
-	ERR_FAIL_COND_MSG(!network_peer.is_valid(), "No network peer is assigned. Unable to set 'refuse_new_connections'.");
-	network_peer->set_refuse_new_connections(p_refuse);
+void MultiplayerAPI::set_refuse_new_connections(bool p_refuse) {
+	ERR_FAIL_COND_MSG(!multiplayer_peer.is_valid(), "No multiplayer peer is assigned. Unable to set 'refuse_new_connections'.");
+	multiplayer_peer->set_refuse_new_connections(p_refuse);
 }
 
-bool MultiplayerAPI::is_refusing_new_network_connections() const {
-	ERR_FAIL_COND_V_MSG(!network_peer.is_valid(), false, "No network peer is assigned. Unable to get 'refuse_new_connections'.");
-	return network_peer->is_refusing_new_connections();
+bool MultiplayerAPI::is_refusing_new_connections() const {
+	ERR_FAIL_COND_V_MSG(!multiplayer_peer.is_valid(), false, "No multiplayer peer is assigned. Unable to get 'refuse_new_connections'.");
+	return multiplayer_peer->is_refusing_new_connections();
 }
 
-Vector<int> MultiplayerAPI::get_network_connected_peers() const {
-	ERR_FAIL_COND_V_MSG(!network_peer.is_valid(), Vector<int>(), "No network peer is assigned. Assume no peers are connected.");
+Vector<int> MultiplayerAPI::get_peer_ids() const {
+	ERR_FAIL_COND_V_MSG(!multiplayer_peer.is_valid(), Vector<int>(), "No multiplayer peer is assigned. Assume no peers are connected.");
 
 	Vector<int> ret;
 	for (Set<int>::Element *E = connected_peers.front(); E; E = E->next()) {
@@ -624,32 +624,32 @@ void MultiplayerAPI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_root_node", "node"), &MultiplayerAPI::set_root_node);
 	ClassDB::bind_method(D_METHOD("get_root_node"), &MultiplayerAPI::get_root_node);
 	ClassDB::bind_method(D_METHOD("send_bytes", "bytes", "id", "mode", "channel"), &MultiplayerAPI::send_bytes, DEFVAL(MultiplayerPeer::TARGET_PEER_BROADCAST), DEFVAL(Multiplayer::TRANSFER_MODE_RELIABLE), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("has_network_peer"), &MultiplayerAPI::has_network_peer);
-	ClassDB::bind_method(D_METHOD("get_network_peer"), &MultiplayerAPI::get_network_peer);
-	ClassDB::bind_method(D_METHOD("get_network_unique_id"), &MultiplayerAPI::get_network_unique_id);
-	ClassDB::bind_method(D_METHOD("is_network_server"), &MultiplayerAPI::is_network_server);
+	ClassDB::bind_method(D_METHOD("has_multiplayer_peer"), &MultiplayerAPI::has_multiplayer_peer);
+	ClassDB::bind_method(D_METHOD("get_multiplayer_peer"), &MultiplayerAPI::get_multiplayer_peer);
+	ClassDB::bind_method(D_METHOD("set_multiplayer_peer", "peer"), &MultiplayerAPI::set_multiplayer_peer);
+	ClassDB::bind_method(D_METHOD("get_unique_id"), &MultiplayerAPI::get_unique_id);
+	ClassDB::bind_method(D_METHOD("is_server"), &MultiplayerAPI::is_server);
 	ClassDB::bind_method(D_METHOD("get_remote_sender_id"), &MultiplayerAPI::get_remote_sender_id);
-	ClassDB::bind_method(D_METHOD("set_network_peer", "peer"), &MultiplayerAPI::set_network_peer);
 	ClassDB::bind_method(D_METHOD("poll"), &MultiplayerAPI::poll);
 	ClassDB::bind_method(D_METHOD("clear"), &MultiplayerAPI::clear);
 
-	ClassDB::bind_method(D_METHOD("get_network_connected_peers"), &MultiplayerAPI::get_network_connected_peers);
-	ClassDB::bind_method(D_METHOD("set_refuse_new_network_connections", "refuse"), &MultiplayerAPI::set_refuse_new_network_connections);
-	ClassDB::bind_method(D_METHOD("is_refusing_new_network_connections"), &MultiplayerAPI::is_refusing_new_network_connections);
+	ClassDB::bind_method(D_METHOD("get_peers"), &MultiplayerAPI::get_peer_ids);
+	ClassDB::bind_method(D_METHOD("set_refuse_new_connections", "refuse"), &MultiplayerAPI::set_refuse_new_connections);
+	ClassDB::bind_method(D_METHOD("is_refusing_new_connections"), &MultiplayerAPI::is_refusing_new_connections);
 	ClassDB::bind_method(D_METHOD("set_allow_object_decoding", "enable"), &MultiplayerAPI::set_allow_object_decoding);
 	ClassDB::bind_method(D_METHOD("is_object_decoding_allowed"), &MultiplayerAPI::is_object_decoding_allowed);
 	ClassDB::bind_method(D_METHOD("get_replicator"), &MultiplayerAPI::get_replicator);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_object_decoding"), "set_allow_object_decoding", "is_object_decoding_allowed");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "refuse_new_network_connections"), "set_refuse_new_network_connections", "is_refusing_new_network_connections");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "network_peer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerPeer", PROPERTY_USAGE_NONE), "set_network_peer", "get_network_peer");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "refuse_new_connections"), "set_refuse_new_connections", "is_refusing_new_connections");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer_peer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerPeer", PROPERTY_USAGE_NONE), "set_multiplayer_peer", "get_multiplayer_peer");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "root_node", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_root_node", "get_root_node");
-	ADD_PROPERTY_DEFAULT("refuse_new_network_connections", false);
+	ADD_PROPERTY_DEFAULT("refuse_new_connections", false);
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "replicator", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerReplicator", PROPERTY_USAGE_NONE), "", "get_replicator");
 
-	ADD_SIGNAL(MethodInfo("network_peer_connected", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("network_peer_disconnected", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("network_peer_packet", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::PACKED_BYTE_ARRAY, "packet")));
+	ADD_SIGNAL(MethodInfo("peer_connected", PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(MethodInfo("peer_disconnected", PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(MethodInfo("peer_packet", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::PACKED_BYTE_ARRAY, "packet")));
 	ADD_SIGNAL(MethodInfo("connected_to_server"));
 	ADD_SIGNAL(MethodInfo("connection_failed"));
 	ADD_SIGNAL(MethodInfo("server_disconnected"));

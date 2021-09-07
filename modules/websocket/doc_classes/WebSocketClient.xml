@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		This class implements a WebSocket client compatible with any RFC 6455-compliant WebSocket server.
-		This client can be optionally used as a network peer for the [MultiplayerAPI].
+		This client can be optionally used as a multiplayer peer for the [MultiplayerAPI].
 		After starting the client ([method connect_to_url]), you will need to [method MultiplayerPeer.poll] it at regular intervals (e.g. inside [method Node._process]).
 		You will receive appropriate signals when connecting, disconnecting, or when new data is available.
 	</description>
@@ -20,7 +20,7 @@
 			<argument index="3" name="custom_headers" type="PackedStringArray" default="PackedStringArray()" />
 			<description>
 				Connects to the given URL requesting one of the given [code]protocols[/code] as sub-protocol. If the list empty (default), no sub-protocol will be requested.
-				If [code]true[/code] is passed as [code]gd_mp_api[/code], the client will behave like a network peer for the [MultiplayerAPI], connections to non-Godot servers will not work, and [signal data_received] will not be emitted.
+				If [code]true[/code] is passed as [code]gd_mp_api[/code], the client will behave like a multiplayer peer for the [MultiplayerAPI], connections to non-Godot servers will not work, and [signal data_received] will not be emitted.
 				If [code]false[/code] is passed instead (default), you must call [PacketPeer] functions ([code]put_packet[/code], [code]get_packet[/code], etc.) on the [WebSocketPeer] returned via [code]get_peer(1)[/code] and not on this object directly (e.g. [code]get_peer(1).put_packet(data)[/code]).
 				You can optionally pass a list of [code]custom_headers[/code] to be added to the handshake HTTP request.
 				[b]Note:[/b] To avoid mixed content warnings or errors in HTML5, you may have to use a [code]url[/code] that starts with [code]wss://[/code] (secure) instead of [code]ws://[/code]. When doing so, make sure to use the fully qualified domain name that matches the one defined in the server's SSL certificate. Do not connect directly via the IP address for [code]wss://[/code] connections, as it won't match with the SSL certificate.
