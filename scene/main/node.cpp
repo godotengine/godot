@@ -123,28 +123,27 @@ void Node::_notification(int p_notification) {
 			}
 		} break;
 		case NOTIFICATION_READY: {
-			if (get_script_instance()) {
-				if (GDVIRTUAL_IS_OVERRIDDEN(_input)) {
-					set_process_input(true);
-				}
-
-				if (GDVIRTUAL_IS_OVERRIDDEN(_unhandled_input)) {
-					set_process_unhandled_input(true);
-				}
-
-				if (GDVIRTUAL_IS_OVERRIDDEN(_unhandled_key_input)) {
-					set_process_unhandled_key_input(true);
-				}
-
-				if (GDVIRTUAL_IS_OVERRIDDEN(_process)) {
-					set_process(true);
-				}
-				if (GDVIRTUAL_IS_OVERRIDDEN(_physics_process)) {
-					set_physics_process(true);
-				}
-
-				GDVIRTUAL_CALL(_ready);
+			if (GDVIRTUAL_IS_OVERRIDDEN(_input)) {
+				set_process_input(true);
 			}
+
+			if (GDVIRTUAL_IS_OVERRIDDEN(_unhandled_input)) {
+				set_process_unhandled_input(true);
+			}
+
+			if (GDVIRTUAL_IS_OVERRIDDEN(_unhandled_key_input)) {
+				set_process_unhandled_key_input(true);
+			}
+
+			if (GDVIRTUAL_IS_OVERRIDDEN(_process)) {
+				set_process(true);
+			}
+			if (GDVIRTUAL_IS_OVERRIDDEN(_physics_process)) {
+				set_physics_process(true);
+			}
+
+			GDVIRTUAL_CALL(_ready);
+
 			if (data.filename.length()) {
 				ERR_FAIL_COND(!is_inside_tree());
 				get_multiplayer()->scene_enter_exit_notify(data.filename, this, true);
