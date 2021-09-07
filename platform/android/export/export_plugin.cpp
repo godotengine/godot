@@ -2942,7 +2942,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 void EditorExportPlatformAndroid::get_platform_features(List<String> *r_features) {
 	r_features->push_back("mobile");
-	r_features->push_back("Android");
+	r_features->push_back("android");
 }
 
 void EditorExportPlatformAndroid::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) {
