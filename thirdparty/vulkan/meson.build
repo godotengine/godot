@@ -1,5 +1,5 @@
 if get_option('builtin_vulkan')
-    _vulkan_lib_incdirs = include_directories('.', 'include')
+    _vulkan_lib_incdirs = [include_directories('.', 'include')]
 
     _vulkan_deps = []
     _vulkan_link_args = []
@@ -44,19 +44,24 @@ if get_option('builtin_vulkan')
             '-D_DEFAULT_SOURCE',
         ]
     elif PLATFORM == 'android'
-        _vulkan_srcs = []
+        _vulkan_cpp_dep_args += ['-DVK_USE_PLATFORM_ANDROID_KHR']
     endif
 
     if _cpp_compiler_id == 'gcc'
         _vulkan_cpp_args += '-Wno-stringop-overflow'
     endif
 
+    _vulkan_incdirs = [include_directories('include', '.')]
 
-    #if PLATFORM == 'windows'
-    #    _vulkan_srcs += files('loader/dirent_on_windows.c')
-    #endif
-
-    _vulkan_incdirs = include_directories('include', '.')
+    if get_option('use_volk')
+        _vulkan_cpp_dep_args += ['-DUSE_VOLK']
+        _vulkan_lib_incdirs += include_directories('../volk')
+        _vulkan_incdirs += include_directories('../volk')
+    elif PLATFORM == 'android'
+        # Our current NDK version only provides old Vulkan headers,
+        # so we have to limit VMA.
+        _vulkan_cpp_dep_args += ['VMA_VULKAN_VERSION=1000000']
+    endif
 
     # force cpp language, even though its c files (for pragma once)
     _vulkan_lib = static_library('vulkan', _vulkan_srcs,

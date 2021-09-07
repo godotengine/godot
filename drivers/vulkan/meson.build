@@ -13,6 +13,3 @@ elif PLATFORM == 'osx'
 elif PLATFORM == 'windows'
     CPP_ARGS += '-DVK_USE_PLATFORM_WIN32_KHR'
 endif
-
-CPP_ARGS += ['-DUSE_VOLK', '-DVMA_STATIC_VULKAN_FUNCTIONS=1']
-DEPENDENCIES += declare_dependency(include_directories: '../../thirdparty/volk')
