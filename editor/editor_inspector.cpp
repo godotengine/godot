@@ -2843,10 +2843,8 @@ void EditorInspector::update_tree() {
 
 				if (ep) {
 					// Eventually, set other properties/signals after the property editor got added to the tree.
-					ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed));
-					if (p.usage & PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED) {
-						ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed_update_all), varray(), CONNECT_DEFERRED);
-					}
+					bool update_all = (p.usage & PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED);
+					ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed), varray(update_all));
 					ep->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
 					ep->connect("property_deleted", callable_mp(this, &EditorInspector::_property_deleted), varray(), CONNECT_DEFERRED);
 					ep->connect("property_keyed_with_value", callable_mp(this, &EditorInspector::_property_keyed_with_value));
@@ -3175,14 +3173,14 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 	}
 }
 
-void EditorInspector::_property_changed(const String &p_path, const Variant &p_value, const String &p_name, bool p_changing) {
+void EditorInspector::_property_changed(const String &p_path, const Variant &p_value, const String &p_name, bool p_changing, bool p_update_all) {
 	// The "changing" variable must be true for properties that trigger events as typing occurs,
 	// like "text_changed" signal. E.g. text property of Label, Button, RichTextLabel, etc.
 	if (p_changing) {
 		this->changing++;
 	}
 
-	_edit_set(p_path, p_value, false, p_name);
+	_edit_set(p_path, p_value, p_update_all, p_name);
 
 	if (p_changing) {
 		this->changing--;
@@ -3191,10 +3189,6 @@ void EditorInspector::_property_changed(const String &p_path, const Variant &p_v
 	if (restart_request_props.has(p_path)) {
 		emit_signal(SNAME("restart_requested"));
 	}
-}
-
-void EditorInspector::_property_changed_update_all(const String &p_path, const Variant &p_value, const String &p_name, bool p_changing) {
-	update_tree();
 }
 
 void EditorInspector::_multiple_properties_changed(Vector<String> p_paths, Array p_values, bool p_changing) {
