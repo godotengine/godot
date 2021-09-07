@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  webrtc_data_channel_gdnative.h                                       */
+/*  webrtc_data_channel_extension.h                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,26 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WEBRTC_DATA_CHANNEL_GDNATIVE_H
-#define WEBRTC_DATA_CHANNEL_GDNATIVE_H
+#ifndef WEBRTC_DATA_CHANNEL_EXTENSION_H
+#define WEBRTC_DATA_CHANNEL_EXTENSION_H
 
-#ifdef WEBRTC_GDNATIVE_ENABLED
-
-#include "modules/gdnative/include/net/godot_net.h"
 #include "webrtc_data_channel.h"
 
-class WebRTCDataChannelGDNative : public WebRTCDataChannel {
-	GDCLASS(WebRTCDataChannelGDNative, WebRTCDataChannel);
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/script_language.h"
+#include "core/variant/native_ptr.h"
+
+class WebRTCDataChannelExtension : public WebRTCDataChannel {
+	GDCLASS(WebRTCDataChannelExtension, WebRTCDataChannel);
 
 protected:
 	static void _bind_methods();
 
-private:
-	const godot_net_webrtc_data_channel *interface;
-
 public:
-	void set_native_webrtc_data_channel(const godot_net_webrtc_data_channel *p_impl);
-
 	virtual void set_write_mode(WriteMode mode) override;
 	virtual WriteMode get_write_mode() const override;
 	virtual bool was_string_packet() const override;
@@ -72,10 +68,31 @@ public:
 
 	virtual int get_max_packet_size() const override;
 
-	WebRTCDataChannelGDNative();
-	~WebRTCDataChannelGDNative();
+	/** GDExtension **/
+	GDVIRTUAL0RC(int, _get_available_packet_count);
+	GDVIRTUAL2R(int, _get_packet, GDNativeConstPtr<const uint8_t *>, GDNativePtr<int>);
+	GDVIRTUAL2R(int, _put_packet, GDNativeConstPtr<const uint8_t>, int);
+	GDVIRTUAL0RC(int, _get_max_packet_size);
+
+	GDVIRTUAL0R(int, _poll);
+	GDVIRTUAL0(_close);
+
+	GDVIRTUAL1(_set_write_mode, int);
+	GDVIRTUAL0RC(int, _get_write_mode);
+
+	GDVIRTUAL0RC(bool, _was_string_packet);
+
+	GDVIRTUAL0RC(int, _get_ready_state);
+	GDVIRTUAL0RC(String, _get_label);
+	GDVIRTUAL0RC(bool, _is_ordered);
+	GDVIRTUAL0RC(int, _get_id);
+	GDVIRTUAL0RC(int, _get_max_packet_life_time);
+	GDVIRTUAL0RC(int, _get_max_retransmits);
+	GDVIRTUAL0RC(String, _get_protocol);
+	GDVIRTUAL0RC(bool, _is_negotiated);
+	GDVIRTUAL0RC(int, _get_buffered_amount);
+
+	WebRTCDataChannelExtension() {}
 };
 
-#endif // WEBRTC_GDNATIVE_ENABLED
-
-#endif // WEBRTC_DATA_CHANNEL_GDNATIVE_H
+#endif // WEBRTC_DATA_CHANNEL_EXTENSION_H

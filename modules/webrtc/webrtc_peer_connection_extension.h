@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  webrtc_peer_connection_gdnative.h                                    */
+/*  webrtc_peer_connection_extension.h                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,30 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WEBRTC_PEER_CONNECTION_GDNATIVE_H
-#define WEBRTC_PEER_CONNECTION_GDNATIVE_H
+#ifndef WEBRTC_PEER_CONNECTION_EXTENSION_H
+#define WEBRTC_PEER_CONNECTION_EXTENSION_H
 
-#ifdef WEBRTC_GDNATIVE_ENABLED
-
-#include "modules/gdnative/include/net/godot_net.h"
 #include "webrtc_peer_connection.h"
 
-class WebRTCPeerConnectionGDNative : public WebRTCPeerConnection {
-	GDCLASS(WebRTCPeerConnectionGDNative, WebRTCPeerConnection);
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/script_language.h"
+#include "core/variant/native_ptr.h"
+
+class WebRTCPeerConnectionExtension : public WebRTCPeerConnection {
+	GDCLASS(WebRTCPeerConnectionExtension, WebRTCPeerConnection);
 
 protected:
 	static void _bind_methods();
-	static WebRTCPeerConnection *_create();
-
-private:
-	static const godot_net_webrtc_library *default_library;
-	const godot_net_webrtc_peer_connection *interface;
 
 public:
-	static Error set_default_library(const godot_net_webrtc_library *p_library);
-	static void make_default() { WebRTCPeerConnection::_create = WebRTCPeerConnectionGDNative::_create; }
-
-	void set_native_webrtc_peer_connection(const godot_net_webrtc_peer_connection *p_impl);
+	void make_default();
 
 	virtual ConnectionState get_connection_state() const override;
 
@@ -60,14 +53,22 @@ public:
 	virtual Error create_offer() override;
 	virtual Error set_remote_description(String type, String sdp) override;
 	virtual Error set_local_description(String type, String sdp) override;
-	virtual Error add_ice_candidate(String sdpMidName, int sdpMlineIndexName, String sdpName) override;
+	virtual Error add_ice_candidate(String p_sdp_mid_name, int p_sdp_mline_index, String p_sdp_name) override;
 	virtual Error poll() override;
 	virtual void close() override;
 
-	WebRTCPeerConnectionGDNative();
-	~WebRTCPeerConnectionGDNative();
+	/** GDExtension **/
+	GDVIRTUAL0RC(int, _get_connection_state);
+	GDVIRTUAL1R(int, _initialize, Dictionary);
+	GDVIRTUAL2R(Object *, _create_data_channel, String, Dictionary);
+	GDVIRTUAL0R(int, _create_offer);
+	GDVIRTUAL2R(int, _set_remote_description, String, String);
+	GDVIRTUAL2R(int, _set_local_description, String, String);
+	GDVIRTUAL3R(int, _add_ice_candidate, String, int, String);
+	GDVIRTUAL0R(int, _poll);
+	GDVIRTUAL0(_close);
+
+	WebRTCPeerConnectionExtension() {}
 };
 
-#endif // WEBRTC_GDNATIVE_ENABLED
-
-#endif // WEBRTC_PEER_CONNECTION_GDNATIVE_H
+#endif // WEBRTC_PEER_CONNECTION_EXTENSION_H
