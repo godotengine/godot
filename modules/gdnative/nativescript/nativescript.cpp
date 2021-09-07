@@ -431,9 +431,9 @@ void NativeScript::get_script_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-const Vector<MultiplayerAPI::RPCConfig> NativeScript::get_rpc_methods() const {
+const Vector<Multiplayer::RPCConfig> NativeScript::get_rpc_methods() const {
 	NativeScriptDesc *script_data = get_script_desc();
-	ERR_FAIL_COND_V(!script_data, Vector<MultiplayerAPI::RPCConfig>());
+	ERR_FAIL_COND_V(!script_data, Vector<Multiplayer::RPCConfig>());
 
 	return script_data->rpc_methods;
 }
@@ -828,7 +828,7 @@ Ref<Script> NativeScriptInstance::get_script() const {
 	return script;
 }
 
-const Vector<MultiplayerAPI::RPCConfig> NativeScriptInstance::get_rpc_methods() const {
+const Vector<Multiplayer::RPCConfig> NativeScriptInstance::get_rpc_methods() const {
 	return script->get_rpc_methods();
 }
 

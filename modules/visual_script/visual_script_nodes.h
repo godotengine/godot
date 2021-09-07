@@ -49,7 +49,7 @@ class VisualScriptFunction : public VisualScriptNode {
 
 	bool stack_less;
 	int stack_size;
-	MultiplayerAPI::RPCMode rpc_mode;
+	Multiplayer::RPCMode rpc_mode;
 	bool sequenced;
 
 protected:
@@ -96,8 +96,8 @@ public:
 	void set_return_type(Variant::Type p_type);
 	Variant::Type get_return_type() const;
 
-	void set_rpc_mode(MultiplayerAPI::RPCMode p_mode);
-	MultiplayerAPI::RPCMode get_rpc_mode() const;
+	void set_rpc_mode(Multiplayer::RPCMode p_mode);
+	Multiplayer::RPCMode get_rpc_mode() const;
 
 	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 

@@ -127,9 +127,9 @@ void GDAPI godot_nativescript_register_method(void *p_gdnative_handle, const cha
 	E->get().methods.insert(p_function_name, method);
 
 	if (p_attr.rpc_type != GODOT_METHOD_RPC_MODE_DISABLED) {
-		MultiplayerAPI::RPCConfig nd;
+		Multiplayer::RPCConfig nd;
 		nd.name = String(p_name);
-		nd.rpc_mode = MultiplayerAPI::RPCMode(p_attr.rpc_type);
+		nd.rpc_mode = Multiplayer::RPCMode(p_attr.rpc_type);
 		E->get().rpc_methods.push_back(nd);
 	}
 }

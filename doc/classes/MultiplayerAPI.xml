@@ -30,7 +30,7 @@
 				Returns the unique peer ID of this MultiplayerAPI's [member network_peer].
 			</description>
 		</method>
-		<method name="get_rpc_sender_id" qualifiers="const">
+		<method name="get_remote_sender_id" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the sender's peer ID for the RPC currently being executed.
@@ -60,7 +60,7 @@
 			<return type="int" enum="Error" />
 			<argument index="0" name="bytes" type="PackedByteArray" />
 			<argument index="1" name="id" type="int" default="0" />
-			<argument index="2" name="mode" type="int" enum="MultiplayerPeer.TransferMode" default="2" />
+			<argument index="2" name="mode" type="int" enum="TransferMode" default="2" />
 			<argument index="3" name="channel" type="int" default="0" />
 			<description>
 				Sends the given raw [code]bytes[/code] to a specific peer identified by [code]id[/code] (see [method MultiplayerPeer.set_target_peer]). Default ID is [code]0[/code], i.e. broadcast to all peers.
@@ -122,14 +122,5 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="RPC_MODE_DISABLED" value="0" enum="RPCMode">
-			Used with [method Node.rpc_config] to disable a method or property for all RPC calls, making it unavailable. Default for all methods.
-		</constant>
-		<constant name="RPC_MODE_ANY" value="1" enum="RPCMode">
-			Used with [method Node.rpc_config] to set a method to be callable remotely by any peer. Analogous to the [code]@rpc(any)[/code] annotation. Calls are accepted from all remote peers, no matter if they are node's authority or not.
-		</constant>
-		<constant name="RPC_MODE_AUTHORITY" value="2" enum="RPCMode">
-			Used with [method Node.rpc_config] to set a method to be callable remotely only by the current network authority (which is the server by default). Analogous to the [code]@rpc(auth)[/code] annotation. See [method Node.set_network_authority].
-		</constant>
 	</constants>
 </class>

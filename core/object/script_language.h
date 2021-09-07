@@ -32,8 +32,8 @@
 #define SCRIPT_LANGUAGE_H
 
 #include "core/doc_data.h"
-#include "core/io/multiplayer_api.h"
 #include "core/io/resource.h"
+#include "core/multiplayer/multiplayer.h"
 #include "core/templates/map.h"
 #include "core/templates/pair.h"
 
@@ -159,7 +159,7 @@ public:
 
 	virtual bool is_placeholder_fallback_enabled() const { return false; }
 
-	virtual const Vector<MultiplayerAPI::RPCConfig> get_rpc_methods() const = 0;
+	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const = 0;
 
 	Script() {}
 };
@@ -200,7 +200,7 @@ public:
 	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid);
 	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid);
 
-	virtual const Vector<MultiplayerAPI::RPCConfig> get_rpc_methods() const = 0;
+	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const = 0;
 
 	virtual ScriptLanguage *get_language() = 0;
 	virtual ~ScriptInstance();
@@ -419,7 +419,7 @@ public:
 	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid = nullptr);
 	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid = nullptr);
 
-	virtual const Vector<MultiplayerAPI::RPCConfig> get_rpc_methods() const { return Vector<MultiplayerAPI::RPCConfig>(); }
+	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const { return Vector<Multiplayer::RPCConfig>(); }
 
 	PlaceHolderScriptInstance(ScriptLanguage *p_language, Ref<Script> p_script, Object *p_owner);
 	~PlaceHolderScriptInstance();

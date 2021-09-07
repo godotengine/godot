@@ -419,7 +419,7 @@ public:
 	virtual void start_block() override;
 	virtual void end_block() override;
 
-	virtual void write_start(GDScript *p_script, const StringName &p_function_name, bool p_static, MultiplayerAPI::RPCConfig p_rpc_config, const GDScriptDataType &p_return_type) override;
+	virtual void write_start(GDScript *p_script, const StringName &p_function_name, bool p_static, Multiplayer::RPCConfig p_rpc_config, const GDScriptDataType &p_return_type) override;
 	virtual GDScriptFunction *write_end() override;
 
 #ifdef DEBUG_ENABLED

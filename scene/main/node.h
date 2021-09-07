@@ -128,7 +128,7 @@ private:
 		Node *process_owner = nullptr;
 
 		int network_authority = 1; // Server by default.
-		Vector<MultiplayerAPI::RPCConfig> rpc_methods;
+		Vector<Multiplayer::RPCConfig> rpc_methods;
 
 		// Variables used to properly sort the node when processing, ignored otherwise.
 		// TODO: Should move all the stuff below to bits.
@@ -466,8 +466,8 @@ public:
 	int get_network_authority() const;
 	bool is_network_authority() const;
 
-	uint16_t rpc_config(const StringName &p_method, MultiplayerAPI::RPCMode p_rpc_mode, MultiplayerPeer::TransferMode p_transfer_mode, int p_channel = 0); // config a local method for RPC
-	Vector<MultiplayerAPI::RPCConfig> get_node_rpc_methods() const;
+	uint16_t rpc_config(const StringName &p_method, Multiplayer::RPCMode p_rpc_mode, Multiplayer::TransferMode p_transfer_mode, int p_channel = 0); // config a local method for RPC
+	Vector<Multiplayer::RPCConfig> get_node_rpc_methods() const;
 
 	void rpc(const StringName &p_method, VARIANT_ARG_LIST); // RPC, honors RPCMode, TransferMode, channel
 	void rpc_id(int p_peer_id, const StringName &p_method, VARIANT_ARG_LIST); // RPC to specific peer(s), honors RPCMode, TransferMode, channel

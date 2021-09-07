@@ -31,41 +31,17 @@
 #ifndef MULTIPLAYER_API_H
 #define MULTIPLAYER_API_H
 
-#include "core/io/multiplayer_peer.h"
-#include "core/io/resource_uid.h"
+#include "core/multiplayer/multiplayer.h"
+#include "core/multiplayer/multiplayer_peer.h"
 #include "core/object/ref_counted.h"
 
 class MultiplayerReplicator;
+class RPCManager;
 
 class MultiplayerAPI : public RefCounted {
 	GDCLASS(MultiplayerAPI, RefCounted);
 
 public:
-	enum RPCMode {
-		RPC_MODE_DISABLED, // No rpc for this method, calls to this will be blocked (default)
-		RPC_MODE_ANY, // Any peer can call this rpc()
-		RPC_MODE_AUTHORITY, // Only the node's network authority (server by default) can call this rpc()
-	};
-
-	struct RPCConfig {
-		StringName name;
-		RPCMode rpc_mode = RPC_MODE_DISABLED;
-		bool sync = false;
-		MultiplayerPeer::TransferMode transfer_mode = MultiplayerPeer::TRANSFER_MODE_RELIABLE;
-		int channel = 0;
-
-		bool operator==(RPCConfig const &p_other) const {
-			return name == p_other.name;
-		}
-	};
-
-	struct SortRPCConfig {
-		StringName::AlphCompare compare;
-		bool operator()(const RPCConfig &p_a, const RPCConfig &p_b) const {
-			return compare(p_a.name, p_b.name);
-		}
-	};
-
 	enum NetworkCommands {
 		NETWORK_COMMAND_REMOTE_CALL = 0,
 		NETWORK_COMMAND_SIMPLIFY_PATH,
@@ -73,24 +49,20 @@ public:
 		NETWORK_COMMAND_RAW,
 		NETWORK_COMMAND_SPAWN,
 		NETWORK_COMMAND_DESPAWN,
-		NETWORK_COMMAND_SYNC, // This is the max we can have. We should optmize simplify/confirm, possibly spawn/despawn.
+		NETWORK_COMMAND_SYNC,
 	};
 
-	enum NetworkNodeIdCompression {
-		NETWORK_NODE_ID_COMPRESSION_8 = 0,
-		NETWORK_NODE_ID_COMPRESSION_16,
-		NETWORK_NODE_ID_COMPRESSION_32,
-	};
-
-	enum NetworkNameIdCompression {
-		NETWORK_NAME_ID_COMPRESSION_8 = 0,
-		NETWORK_NAME_ID_COMPRESSION_16,
-	};
-
+	// For each command, the 4 MSB can contain custom flags, as defined by subsystems.
 	enum {
-		NODE_ID_COMPRESSION_SHIFT = 3,
-		NAME_ID_COMPRESSION_SHIFT = 5,
-		BYTE_ONLY_OR_NO_ARGS_SHIFT = 6,
+		CMD_FLAG_0_SHIFT = 4,
+		CMD_FLAG_1_SHIFT = 5,
+		CMD_FLAG_2_SHIFT = 6,
+		CMD_FLAG_3_SHIFT = 7,
+	};
+
+	// This is the mask that will be used to extract the command.
+	enum {
+		CMD_MASK = 7, // 0x7 -> 0b00001111
 	};
 
 private:
@@ -111,28 +83,29 @@ private:
 	};
 
 	Ref<MultiplayerPeer> network_peer;
-	int rpc_sender_id = 0;
 	Set<int> connected_peers;
+	int remote_sender_id = 0;
+	int remote_sender_override = 0;
+
 	HashMap<NodePath, PathSentCache> path_send_cache;
 	Map<int, PathGetCache> path_get_cache;
 	int last_send_cache_id;
 	Vector<uint8_t> packet_cache;
+
 	Node *root_node = nullptr;
 	bool allow_object_decoding = false;
+
 	MultiplayerReplicator *replicator = nullptr;
+	RPCManager *rpc_manager = nullptr;
 
 protected:
 	static void _bind_methods();
 
+	bool _send_confirm_path(Node *p_node, NodePath p_path, PathSentCache *psc, int p_target);
 	void _process_packet(int p_from, const uint8_t *p_packet, int p_packet_len);
 	void _process_simplify_path(int p_from, const uint8_t *p_packet, int p_packet_len);
 	void _process_confirm_path(int p_from, const uint8_t *p_packet, int p_packet_len);
-	Node *_process_get_node(int p_from, const uint8_t *p_packet, uint32_t p_node_target, int p_packet_len);
-	void _process_rpc(Node *p_node, const uint16_t p_rpc_method_id, int p_from, const uint8_t *p_packet, int p_packet_len, int p_offset);
 	void _process_raw(int p_from, const uint8_t *p_packet, int p_packet_len);
-
-	void _send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, const RPCConfig &p_config, const StringName &p_name, const Variant **p_arg, int p_argcount);
-	bool _send_confirm_path(Node *p_node, NodePath p_path, PathSentCache *psc, int p_target);
 
 public:
 	void poll();
@@ -141,18 +114,20 @@ public:
 	Node *get_root_node();
 	void set_network_peer(const Ref<MultiplayerPeer> &p_peer);
 	Ref<MultiplayerPeer> get_network_peer() const;
-	Error send_bytes(Vector<uint8_t> p_data, int p_to = MultiplayerPeer::TARGET_PEER_BROADCAST, MultiplayerPeer::TransferMode p_mode = MultiplayerPeer::TRANSFER_MODE_RELIABLE, int p_channel = 0);
+
+	Error send_bytes(Vector<uint8_t> p_data, int p_to = MultiplayerPeer::TARGET_PEER_BROADCAST, Multiplayer::TransferMode p_mode = Multiplayer::TRANSFER_MODE_RELIABLE, int p_channel = 0);
 
 	Error encode_and_compress_variant(const Variant &p_variant, uint8_t *p_buffer, int &r_len);
 	Error decode_and_decompress_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int *r_len);
 
 	// Called by Node.rpc
-	void rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const StringName &p_method, const Variant **p_arg, int p_argcount);
+	void rpcp(Node *p_node, int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount);
 	// Called by Node._notification
 	void scene_enter_exit_notify(const String &p_scene, Node *p_node, bool p_enter);
 	// Called by replicator
 	bool send_confirm_path(Node *p_node, NodePath p_path, int p_target, int &p_id);
 	Node *get_cached_node(int p_from, uint32_t p_node_id);
+	bool is_cache_confirmed(NodePath p_path, int p_peer);
 
 	void _add_peer(int p_id);
 	void _del_peer(int p_id);
@@ -162,7 +137,9 @@ public:
 
 	bool has_network_peer() const { return network_peer.is_valid(); }
 	Vector<int> get_network_connected_peers() const;
-	int get_rpc_sender_id() const { return rpc_sender_id; }
+	const Set<int> get_connected_peers() const { return connected_peers; }
+	int get_remote_sender_id() const { return remote_sender_override ? remote_sender_override : remote_sender_id; }
+	void set_remote_sender_override(int p_id) { remote_sender_override = p_id; }
 	int get_network_unique_id() const;
 	bool is_network_server() const;
 	void set_refuse_new_network_connections(bool p_refuse);
@@ -171,12 +148,15 @@ public:
 	void set_allow_object_decoding(bool p_enable);
 	bool is_object_decoding_allowed() const;
 
-	MultiplayerReplicator *get_replicator() const;
+	MultiplayerReplicator *get_replicator() const { return replicator; }
+	RPCManager *get_rpc_manager() const { return rpc_manager; }
+
+#ifdef DEBUG_ENABLED
+	void profile_bandwidth(const String &p_inout, int p_size);
+#endif
 
 	MultiplayerAPI();
 	~MultiplayerAPI();
 };
-
-VARIANT_ENUM_CAST(MultiplayerAPI::RPCMode);
 
 #endif // MULTIPLAYER_API_H

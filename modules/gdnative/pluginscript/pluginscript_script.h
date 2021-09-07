@@ -61,7 +61,7 @@ private:
 	Map<StringName, PropertyInfo> _properties_info;
 	Map<StringName, MethodInfo> _signals_info;
 	Map<StringName, MethodInfo> _methods_info;
-	Vector<MultiplayerAPI::RPCConfig> _rpc_methods;
+	Vector<Multiplayer::RPCConfig> _rpc_methods;
 
 	Set<Object *> _instances;
 	//exported members
@@ -136,7 +136,7 @@ public:
 
 	virtual int get_member_line(const StringName &p_member) const override;
 
-	virtual const Vector<MultiplayerAPI::RPCConfig> get_rpc_methods() const override;
+	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const override;
 
 	PluginScript();
 	void init(PluginScriptLanguage *language);

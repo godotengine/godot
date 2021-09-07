@@ -41,11 +41,11 @@ int ENetMultiplayerPeer::get_transfer_channel() const {
 	return transfer_channel;
 }
 
-void ENetMultiplayerPeer::set_transfer_mode(TransferMode p_mode) {
+void ENetMultiplayerPeer::set_transfer_mode(Multiplayer::TransferMode p_mode) {
 	transfer_mode = p_mode;
 }
 
-MultiplayerPeer::TransferMode ENetMultiplayerPeer::get_transfer_mode() const {
+Multiplayer::TransferMode ENetMultiplayerPeer::get_transfer_mode() const {
 	return transfer_mode;
 }
 
@@ -455,15 +455,15 @@ Error ENetMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size
 		channel = SYSCH_MAX + transfer_channel - 1;
 	} else {
 		switch (transfer_mode) {
-			case TRANSFER_MODE_UNRELIABLE: {
+			case Multiplayer::TRANSFER_MODE_UNRELIABLE: {
 				packet_flags = ENET_PACKET_FLAG_UNSEQUENCED;
 				channel = SYSCH_UNRELIABLE;
 			} break;
-			case TRANSFER_MODE_UNRELIABLE_ORDERED: {
+			case Multiplayer::TRANSFER_MODE_ORDERED: {
 				packet_flags = 0;
 				channel = SYSCH_UNRELIABLE;
 			} break;
-			case TRANSFER_MODE_RELIABLE: {
+			case Multiplayer::TRANSFER_MODE_RELIABLE: {
 				packet_flags = ENET_PACKET_FLAG_RELIABLE;
 				channel = SYSCH_RELIABLE;
 			} break;

@@ -81,7 +81,7 @@
 		<member name="server_relay" type="bool" setter="set_server_relay_enabled" getter="is_server_relay_enabled" default="true">
 			Enable or disable the server feature that notifies clients of other peers' connection/disconnection, and relays messages between them. When this option is [code]false[/code], clients won't be automatically notified of other peers and won't be able to send them packets through the server.
 		</member>
-		<member name="transfer_mode" type="int" setter="set_transfer_mode" getter="get_transfer_mode" override="true" enum="MultiplayerPeer.TransferMode" default="2" />
+		<member name="transfer_mode" type="int" setter="set_transfer_mode" getter="get_transfer_mode" override="true" enum="TransferMode" default="2" />
 	</members>
 	<constants>
 	</constants>

@@ -100,7 +100,7 @@ String PluginScriptInstance::to_string(bool *r_valid) {
 	return str_ret;
 }
 
-const Vector<MultiplayerAPI::RPCConfig> PluginScriptInstance::get_rpc_methods() const {
+const Vector<Multiplayer::RPCConfig> PluginScriptInstance::get_rpc_methods() const {
 	return _script->get_rpc_methods();
 }
 

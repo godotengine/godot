@@ -31,7 +31,7 @@
 #ifndef SCENE_TREE_H
 #define SCENE_TREE_H
 
-#include "core/io/multiplayer_api.h"
+#include "core/multiplayer/multiplayer_api.h"
 #include "core/os/main_loop.h"
 #include "core/os/thread_safe.h"
 #include "core/templates/self_list.h"
