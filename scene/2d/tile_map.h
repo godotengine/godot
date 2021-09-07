@@ -308,8 +308,10 @@ public:
 	static void draw_tile(RID p_canvas_item, Vector2i p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile, Color p_modulation = Color(1.0, 1.0, 1.0, 1.0));
 
 	// Layers management.
-	void set_layers_count(int p_layers_count);
 	int get_layers_count() const;
+	void add_layer(int p_to_pos);
+	void move_layer(int p_layer, int p_to_pos);
+	void remove_layer(int p_layer);
 	void set_layer_name(int p_layer, String p_name);
 	String get_layer_name(int p_layer) const;
 	void set_layer_enabled(int p_layer, bool p_visible);

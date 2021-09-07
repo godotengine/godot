@@ -3549,29 +3549,75 @@ void TileMapEditor::_update_layers_selection() {
 	tile_map_editor_plugins[tabs->get_current_tab()]->edit(tile_map_id, tile_map_layer);
 }
 
-void TileMapEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, String p_property, Variant p_new_value) {
+void TileMapEditor::_move_tile_map_array_element(Object *p_undo_redo, Object *p_edited, String p_array_prefix, int p_from_index, int p_to_pos) {
 	UndoRedo *undo_redo = Object::cast_to<UndoRedo>(p_undo_redo);
 	ERR_FAIL_COND(!undo_redo);
 
 	TileMap *tile_map = Object::cast_to<TileMap>(p_edited);
-	if (tile_map) {
-		if (p_property == "layers_count") {
-			int new_layers_count = (int)p_new_value;
-			if (new_layers_count < tile_map->get_layers_count()) {
-				List<PropertyInfo> property_list;
-				tile_map->get_property_list(&property_list);
+	if (!tile_map) {
+		return;
+	}
 
-				for (PropertyInfo property_info : property_list) {
-					Vector<String> components = String(property_info.name).split("/", true, 2);
-					if (components.size() == 2 && components[0].begins_with("layer_") && components[0].trim_prefix("layer_").is_valid_int()) {
-						int index = components[0].trim_prefix("layer_").to_int();
-						if (index >= new_layers_count) {
-							undo_redo->add_undo_property(tile_map, property_info.name, tile_map->get(property_info.name));
-						}
-					}
+	// Compute the array indices to save.
+	int begin = 0;
+	int end;
+	if (p_array_prefix == "layer_") {
+		end = tile_map->get_layers_count();
+	} else {
+		ERR_FAIL_MSG("Invalid array prefix for TileSet.");
+	}
+	if (p_from_index < 0) {
+		// Adding new.
+		if (p_to_pos >= 0) {
+			begin = p_to_pos;
+		} else {
+			end = 0; // Nothing to save when adding at the end.
+		}
+	} else if (p_to_pos < 0) {
+		// Removing.
+		begin = p_from_index;
+	} else {
+		// Moving.
+		begin = MIN(p_from_index, p_to_pos);
+		end = MIN(MAX(p_from_index, p_to_pos) + 1, end);
+	}
+
+#define ADD_UNDO(obj, property) undo_redo->add_undo_property(obj, property, obj->get(property));
+	// Save layers' properties.
+	if (p_from_index < 0) {
+		undo_redo->add_undo_method(tile_map, "remove_layer", p_to_pos < 0 ? tile_map->get_layers_count() : p_to_pos);
+	} else if (p_to_pos < 0) {
+		undo_redo->add_undo_method(tile_map, "add_layer", p_from_index);
+	}
+
+	List<PropertyInfo> properties;
+	tile_map->get_property_list(&properties);
+	for (PropertyInfo pi : properties) {
+		if (pi.name.begins_with(p_array_prefix)) {
+			String str = pi.name.trim_prefix(p_array_prefix);
+			int to_char_index = 0;
+			while (to_char_index < str.length()) {
+				if (str[to_char_index] < '0' || str[to_char_index] > '9') {
+					break;
+				}
+				to_char_index++;
+			}
+			if (to_char_index > 0) {
+				int array_index = str.left(to_char_index).to_int();
+				if (array_index >= begin && array_index < end) {
+					ADD_UNDO(tile_map, pi.name);
 				}
 			}
 		}
+	}
+#undef ADD_UNDO
+
+	if (p_from_index < 0) {
+		undo_redo->add_do_method(tile_map, "add_layer", p_to_pos);
+	} else if (p_to_pos < 0) {
+		undo_redo->add_do_method(tile_map, "remove_layer", p_from_index);
+	} else {
+		undo_redo->add_do_method(tile_map, "move_layer", p_from_index, p_to_pos);
 	}
 }
 
@@ -3851,7 +3897,7 @@ TileMapEditor::TileMapEditor() {
 	_tab_changed(0);
 
 	// Registers UndoRedo inspector callback.
-	EditorNode::get_singleton()->get_editor_data().add_undo_redo_inspector_hook_callback(callable_mp(this, &TileMapEditor::_undo_redo_inspector_callback));
+	EditorNode::get_singleton()->get_editor_data().add_move_array_element_function(SNAME("TileMap"), callable_mp(this, &TileMapEditor::_move_tile_map_array_element));
 }
 
 TileMapEditor::~TileMapEditor() {

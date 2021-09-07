@@ -17,10 +17,47 @@
 		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/113</link>
 	</tutorials>
 	<methods>
+		<method name="add_custom_data_layer">
+			<return type="void" />
+			<argument index="0" name="to_position" type="int" default="-1" />
+			<description>
+			</description>
+		</method>
+		<method name="add_navigation_layer">
+			<return type="void" />
+			<argument index="0" name="to_position" type="int" default="-1" />
+			<description>
+			</description>
+		</method>
+		<method name="add_occlusion_layer">
+			<return type="void" />
+			<argument index="0" name="to_position" type="int" default="-1" />
+			<description>
+			</description>
+		</method>
+		<method name="add_physics_layer">
+			<return type="void" />
+			<argument index="0" name="to_position" type="int" default="-1" />
+			<description>
+			</description>
+		</method>
 		<method name="add_source">
 			<return type="int" />
 			<argument index="0" name="atlas_source_id_override" type="TileSetSource" />
 			<argument index="1" name="arg1" type="int" default="-1" />
+			<description>
+			</description>
+		</method>
+		<method name="add_terrain">
+			<return type="void" />
+			<argument index="0" name="terrain_set" type="int" />
+			<argument index="1" name="to_position" type="int" default="-1" />
+			<description>
+			</description>
+		</method>
+		<method name="add_terrain_set">
+			<return type="void" />
+			<argument index="0" name="to_position" type="int" default="-1" />
 			<description>
 			</description>
 		</method>
@@ -49,9 +86,19 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_custom_data_layers_count" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="get_navigation_layer_layers" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="layer_index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_navigation_layers_count" qualifiers="const">
+			<return type="int" />
 			<description>
 			</description>
 		</method>
@@ -72,6 +119,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_occlusion_layers_count" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="get_physics_layer_collision_layer" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="layer_index" type="int" />
@@ -87,6 +139,11 @@
 		<method name="get_physics_layer_physics_material" qualifiers="const">
 			<return type="PhysicsMaterial" />
 			<argument index="0" name="layer_index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_physics_layers_count" qualifiers="const">
+			<return type="int" />
 			<description>
 			</description>
 		</method>
@@ -133,6 +190,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_terrain_sets_count" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="get_terrains_count" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="terrain_set" type="int" />
@@ -174,6 +236,49 @@
 			<description>
 			</description>
 		</method>
+		<method name="move_custom_data_layer">
+			<return type="void" />
+			<argument index="0" name="layer_index" type="int" />
+			<argument index="1" name="to_position" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="move_navigation_layer">
+			<return type="void" />
+			<argument index="0" name="layer_index" type="int" />
+			<argument index="1" name="to_position" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="move_occlusion_layer">
+			<return type="void" />
+			<argument index="0" name="layer_index" type="int" />
+			<argument index="1" name="to_position" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="move_physics_layer">
+			<return type="void" />
+			<argument index="0" name="layer_index" type="int" />
+			<argument index="1" name="to_position" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="move_terrain">
+			<return type="void" />
+			<argument index="0" name="terrain_set" type="int" />
+			<argument index="1" name="terrain_index" type="int" />
+			<argument index="2" name="to_position" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="move_terrain_set">
+			<return type="void" />
+			<argument index="0" name="layer_index" type="int" />
+			<argument index="1" name="to_position" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="remove_alternative_level_tile_proxy">
 			<return type="void" />
 			<argument index="0" name="source_from" type="int" />
@@ -189,6 +294,30 @@
 			<description>
 			</description>
 		</method>
+		<method name="remove_custom_data_layer">
+			<return type="void" />
+			<argument index="0" name="layer_index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="remove_navigation_layer">
+			<return type="void" />
+			<argument index="0" name="layer_index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="remove_occlusion_layer">
+			<return type="void" />
+			<argument index="0" name="layer_index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="remove_physics_layer">
+			<return type="void" />
+			<argument index="0" name="layer_index" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="remove_source">
 			<return type="void" />
 			<argument index="0" name="source_id" type="int" />
@@ -198,6 +327,19 @@
 		<method name="remove_source_level_tile_proxy">
 			<return type="void" />
 			<argument index="0" name="source_from" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="remove_terrain">
+			<return type="void" />
+			<argument index="0" name="terrain_set" type="int" />
+			<argument index="1" name="terrain_index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="remove_terrain_set">
+			<return type="void" />
+			<argument index="0" name="layer_index" type="int" />
 			<description>
 			</description>
 		</method>
@@ -300,25 +442,8 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_terrains_count">
-			<return type="void" />
-			<argument index="0" name="terrain_set" type="int" />
-			<argument index="1" name="terrains_count" type="int" />
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
-		<member name="custom_data_layers_count" type="int" setter="set_custom_data_layers_count" getter="get_custom_data_layers_count" default="0">
-		</member>
-		<member name="navigation_layers_count" type="int" setter="set_navigation_layers_count" getter="get_navigation_layers_count" default="0">
-		</member>
-		<member name="occlusion_layers_count" type="int" setter="set_occlusion_layers_count" getter="get_occlusion_layers_count" default="0">
-		</member>
-		<member name="physics_layers_count" type="int" setter="set_physics_layers_count" getter="get_physics_layers_count" default="0">
-		</member>
-		<member name="terrains_sets_count" type="int" setter="set_terrain_sets_count" getter="get_terrain_sets_count" default="0">
-		</member>
 		<member name="tile_layout" type="int" setter="set_tile_layout" getter="get_tile_layout" enum="TileSet.TileLayout" default="0">
 		</member>
 		<member name="tile_offset_axis" type="int" setter="set_tile_offset_axis" getter="get_tile_offset_axis" enum="TileSet.TileOffsetAxis" default="0">

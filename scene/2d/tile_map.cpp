@@ -314,16 +314,38 @@ int TileMap::get_quadrant_size() const {
 	return quadrant_size;
 }
 
-void TileMap::set_layers_count(int p_layers_count) {
-	ERR_FAIL_COND(p_layers_count < 0);
-	_clear_internals();
+int TileMap::get_layers_count() const {
+	return layers.size();
+}
 
-	layers.resize(p_layers_count);
+void TileMap::add_layer(int p_to_pos) {
+	if (p_to_pos < 0) {
+		p_to_pos = layers.size();
+	}
+
+	ERR_FAIL_INDEX(p_to_pos, (int)layers.size() + 1);
+
+	layers.insert(p_to_pos, TileMapLayer());
 	_recreate_internals();
 	notify_property_list_changed();
 
-	if (selected_layer >= p_layers_count) {
-		selected_layer = -1;
+	emit_signal(SNAME("changed"));
+
+	update_configuration_warnings();
+}
+
+void TileMap::move_layer(int p_layer, int p_to_pos) {
+	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+	ERR_FAIL_INDEX(p_to_pos, (int)layers.size() + 1);
+
+	TileMapLayer tl = layers[p_layer];
+	layers.insert(p_to_pos, tl);
+	layers.remove(p_to_pos < p_layer ? p_layer + 1 : p_layer);
+	_recreate_internals();
+	notify_property_list_changed();
+
+	if (selected_layer == p_layer) {
+		selected_layer = p_to_pos < p_layer ? p_to_pos - 1 : p_to_pos;
 	}
 
 	emit_signal(SNAME("changed"));
@@ -331,8 +353,20 @@ void TileMap::set_layers_count(int p_layers_count) {
 	update_configuration_warnings();
 }
 
-int TileMap::get_layers_count() const {
-	return layers.size();
+void TileMap::remove_layer(int p_layer) {
+	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+
+	layers.remove(p_layer);
+	_recreate_internals();
+	notify_property_list_changed();
+
+	if (selected_layer >= p_layer) {
+		selected_layer -= 1;
+	}
+
+	emit_signal(SNAME("changed"));
+
+	update_configuration_warnings();
 }
 
 void TileMap::set_layer_name(int p_layer, String p_name) {
@@ -2896,8 +2930,10 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_quadrant_size", "size"), &TileMap::set_quadrant_size);
 	ClassDB::bind_method(D_METHOD("get_quadrant_size"), &TileMap::get_quadrant_size);
 
-	ClassDB::bind_method(D_METHOD("set_layers_count", "layers_count"), &TileMap::set_layers_count);
 	ClassDB::bind_method(D_METHOD("get_layers_count"), &TileMap::get_layers_count);
+	ClassDB::bind_method(D_METHOD("add_layer"), &TileMap::add_layer);
+	ClassDB::bind_method(D_METHOD("move_layer"), &TileMap::move_layer);
+	ClassDB::bind_method(D_METHOD("remove_layer"), &TileMap::remove_layer);
 	ClassDB::bind_method(D_METHOD("set_layer_name", "layer", "name"), &TileMap::set_layer_name);
 	ClassDB::bind_method(D_METHOD("get_layer_name", "layer"), &TileMap::get_layer_name);
 	ClassDB::bind_method(D_METHOD("set_layer_enabled", "layer", "enabled"), &TileMap::set_layer_enabled);
@@ -2942,9 +2978,7 @@ void TileMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_collision_visibility_mode", "get_collision_visibility_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_navigation_visibility_mode", "get_navigation_visibility_mode");
 
-	ADD_GROUP("Layers", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers_count"), "set_layers_count", "get_layers_count");
-	ADD_PROPERTY_DEFAULT("layers_count", 1);
+	ADD_ARRAY("layers", "layer_");
 
 	ADD_PROPERTY_DEFAULT("format", FORMAT_1);
 

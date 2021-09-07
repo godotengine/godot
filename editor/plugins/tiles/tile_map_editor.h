@@ -341,7 +341,7 @@ private:
 	void _update_layers_selection();
 
 	// Inspector undo/redo callback.
-	void _undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, String p_property, Variant p_new_value);
+	void _move_tile_map_array_element(Object *p_undo_redo, Object *p_edited, String p_array_prefix, int p_from_index, int p_to_pos);
 
 protected:
 	void _notification(int p_what);

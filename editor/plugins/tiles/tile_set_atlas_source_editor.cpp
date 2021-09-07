@@ -1866,7 +1866,7 @@ void TileSetAtlasSourceEditor::_undo_redo_inspector_callback(Object *p_undo_redo
 	UndoRedo *undo_redo = Object::cast_to<UndoRedo>(p_undo_redo);
 	ERR_FAIL_COND(!undo_redo);
 
-#define ADD_UNDO(obj, property) undo_redo->add_undo_property(obj, property, tile_data->get(property));
+#define ADD_UNDO(obj, property) undo_redo->add_undo_property(obj, property, obj->get(property));
 
 	AtlasTileProxyObject *tile_data = Object::cast_to<AtlasTileProxyObject>(p_edited);
 	if (tile_data) {

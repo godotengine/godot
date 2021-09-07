@@ -2425,6 +2425,8 @@
 		</constant>
 		<constant name="PROPERTY_USAGE_EDITOR_BASIC_SETTING" value="268435456" enum="PropertyUsageFlags">
 		</constant>
+		<constant name="PROPERTY_USAGE_ARRAY" value="1073741824" enum="PropertyUsageFlags">
+		</constant>
 		<constant name="PROPERTY_USAGE_DEFAULT" value="7" enum="PropertyUsageFlags">
 			Default usage (storage, editor and network).
 		</constant>
