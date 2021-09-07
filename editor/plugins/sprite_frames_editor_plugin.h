@@ -135,6 +135,7 @@ class SpriteFramesEditor : public HSplitContainer {
 
 	void _open_sprite_sheet();
 	void _prepare_sprite_sheet(const String &p_file);
+	int _sheet_preview_position_to_frame_index(const Vector2 &p_position);
 	void _sheet_preview_draw();
 	void _sheet_spin_changed(double);
 	void _sheet_preview_input(const Ref<InputEvent> &p_event);
