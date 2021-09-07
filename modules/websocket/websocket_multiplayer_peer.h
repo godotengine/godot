@@ -68,7 +68,6 @@ protected:
 	bool _is_multiplayer = false;
 	int _target_peer = 0;
 	int _peer_id = 0;
-	int _refusing = false;
 
 	static void _bind_methods();
 
@@ -78,15 +77,9 @@ protected:
 
 public:
 	/* MultiplayerPeer */
-	void set_transfer_channel(int p_channel) override;
-	int get_transfer_channel() const override;
-	void set_transfer_mode(Multiplayer::TransferMode p_mode) override;
-	Multiplayer::TransferMode get_transfer_mode() const override;
 	void set_target_peer(int p_target_peer) override;
 	int get_packet_peer() const override;
 	int get_unique_id() const override;
-	void set_refuse_new_connections(bool p_enable) override;
-	bool is_refusing_new_connections() const override;
 
 	/* PacketPeer */
 	virtual int get_available_packet_count() const override;

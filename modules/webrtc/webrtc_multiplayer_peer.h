@@ -65,10 +65,7 @@ private:
 	uint32_t unique_id = 0;
 	int target_peer = 0;
 	int client_count = 0;
-	bool refuse_connections = false;
 	ConnectionStatus connection_status = CONNECTION_DISCONNECTED;
-	int transfer_channel = 0;
-	Multiplayer::TransferMode transfer_mode = Multiplayer::TRANSFER_MODE_RELIABLE;
 	int next_packet_peer = 0;
 	bool server_compat = false;
 
@@ -97,10 +94,6 @@ public:
 	int get_max_packet_size() const override;
 
 	// MultiplayerPeer
-	void set_transfer_channel(int p_channel) override;
-	int get_transfer_channel() const override;
-	void set_transfer_mode(Multiplayer::TransferMode p_mode) override;
-	Multiplayer::TransferMode get_transfer_mode() const override;
 	void set_target_peer(int p_peer_id) override;
 
 	int get_unique_id() const override;
@@ -109,9 +102,6 @@ public:
 	bool is_server() const override;
 
 	void poll() override;
-
-	void set_refuse_new_connections(bool p_enable) override;
-	bool is_refusing_new_connections() const override;
 
 	ConnectionStatus get_connection_status() const override;
 };

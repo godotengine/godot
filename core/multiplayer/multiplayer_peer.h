@@ -44,6 +44,11 @@ class MultiplayerPeer : public PacketPeer {
 protected:
 	static void _bind_methods();
 
+private:
+	int transfer_channel = 0;
+	Multiplayer::TransferMode transfer_mode = Multiplayer::TRANSFER_MODE_RELIABLE;
+	bool refuse_connections = false;
+
 public:
 	enum {
 		TARGET_PEER_BROADCAST = 0,
@@ -56,10 +61,13 @@ public:
 		CONNECTION_CONNECTED,
 	};
 
-	virtual void set_transfer_channel(int p_channel) = 0;
-	virtual int get_transfer_channel() const = 0;
-	virtual void set_transfer_mode(Multiplayer::TransferMode p_mode) = 0;
-	virtual Multiplayer::TransferMode get_transfer_mode() const = 0;
+	virtual void set_transfer_channel(int p_channel);
+	virtual int get_transfer_channel() const;
+	virtual void set_transfer_mode(Multiplayer::TransferMode p_mode);
+	virtual Multiplayer::TransferMode get_transfer_mode() const;
+	virtual void set_refuse_new_connections(bool p_enable);
+	virtual bool is_refusing_new_connections() const;
+
 	virtual void set_target_peer(int p_peer_id) = 0;
 
 	virtual int get_packet_peer() const = 0;
@@ -69,9 +77,6 @@ public:
 	virtual void poll() = 0;
 
 	virtual int get_unique_id() const = 0;
-
-	virtual void set_refuse_new_connections(bool p_enable) = 0;
-	virtual bool is_refusing_new_connections() const = 0;
 
 	virtual ConnectionStatus get_connection_status() const = 0;
 
