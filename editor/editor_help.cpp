@@ -1328,6 +1328,8 @@ void EditorHelp::_help_callback(const String &p_topic) {
 	} else if (what == "class_global") {
 		if (constant_line.has(name)) {
 			line = constant_line[name];
+		} else if (method_line.has(name)) {
+			line = method_line[name];
 		} else {
 			Map<String, Map<String, int>>::Element *iter = enum_values_line.front();
 			while (true) {
