@@ -52,6 +52,13 @@ TEST_CASE("[Image] Instantiation") {
 			"A newly created image should not be compressed.");
 	CHECK(!image->has_mipmaps());
 
+	PackedByteArray image_data = image->get_data();
+	for (int i = 0; i < image_data.size(); i++) {
+		CHECK_MESSAGE(
+				image_data[i] == 0,
+				"An image created without data specified should have its data zeroed out.");
+	}
+
 	Ref<Image> image_copy = memnew(Image());
 	CHECK_MESSAGE(
 			image_copy->is_empty(),
@@ -62,7 +69,7 @@ TEST_CASE("[Image] Instantiation") {
 			image->get_data() == image_copy->get_data(),
 			"Duplicated images should have the same data.");
 
-	PackedByteArray image_data = image->get_data();
+	image_data = image->get_data();
 	Ref<Image> image_from_data = memnew(Image(8, 4, false, Image::FORMAT_RGBA8, image_data));
 	CHECK_MESSAGE(
 			image->get_data() == image_from_data->get_data(),
@@ -214,11 +221,48 @@ TEST_CASE("[Image] Modifying pixels of an image") {
 
 	// Fill image with color
 	image2->fill(Color(0.5, 0.5, 0.5, 0.5));
-	for (int x = 0; x < image2->get_width(); x++) {
-		for (int y = 0; y < image2->get_height(); y++) {
+	for (int y = 0; y < image2->get_height(); y++) {
+		for (int x = 0; x < image2->get_width(); x++) {
 			CHECK_MESSAGE(
 					image2->get_pixel(x, y).r > 0.49,
 					"fill() should colorize all pixels of the image.");
+		}
+	}
+
+	// Fill rect with color
+	{
+		const int img_width = 3;
+		const int img_height = 3;
+		Vector<Rect2> rects;
+		rects.push_back(Rect2());
+		rects.push_back(Rect2(-5, -5, 3, 3));
+		rects.push_back(Rect2(img_width, 0, 12, 12));
+		rects.push_back(Rect2(0, img_height, 12, 12));
+		rects.push_back(Rect2(img_width + 1, img_height + 2, 12, 12));
+		rects.push_back(Rect2(1, 1, 1, 1));
+		rects.push_back(Rect2(0, 1, 2, 3));
+		rects.push_back(Rect2(-5, 0, img_width + 10, 2));
+		rects.push_back(Rect2(0, -5, 2, img_height + 10));
+		rects.push_back(Rect2(-1, -1, img_width + 1, img_height + 1));
+
+		for (const Rect2 &rect : rects) {
+			Ref<Image> img = memnew(Image(img_width, img_height, false, Image::FORMAT_RGBA8));
+			CHECK_NOTHROW_MESSAGE(
+					img->fill_rect(rect, Color(1, 1, 1, 1)),
+					"fill_rect() shouldn't throw for any rect.");
+			for (int y = 0; y < img->get_height(); y++) {
+				for (int x = 0; x < img->get_width(); x++) {
+					if (rect.abs().has_point(Point2(x, y))) {
+						CHECK_MESSAGE(
+								img->get_pixel(x, y).is_equal_approx(Color(1, 1, 1, 1)),
+								"fill_rect() should colorize all image pixels within rect bounds.");
+					} else {
+						CHECK_MESSAGE(
+								!img->get_pixel(x, y).is_equal_approx(Color(1, 1, 1, 1)),
+								"fill_rect() shouldn't colorize any image pixel out of rect bounds.");
+					}
+				}
+			}
 		}
 	}
 

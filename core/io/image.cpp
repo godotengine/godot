@@ -2697,16 +2697,15 @@ void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, c
 	}
 }
 
-void Image::fill(const Color &c) {
+void Image::fill(const Color &p_color) {
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot fill in compressed or custom image formats.");
 
-	uint8_t *wp = data.ptrw();
-	uint8_t *dst_data_ptr = wp;
+	uint8_t *dst_data_ptr = data.ptrw();
 
 	int pixel_size = get_format_pixel_size(format);
 
-	// put first pixel with the format-aware API
-	set_pixel(0, 0, c);
+	// Put first pixel with the format-aware API.
+	_set_color_at_ofs(dst_data_ptr, 0, p_color);
 
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
@@ -2714,6 +2713,33 @@ void Image::fill(const Color &c) {
 
 			for (int k = 0; k < pixel_size; k++) {
 				dst[k] = dst_data_ptr[k];
+			}
+		}
+	}
+}
+
+void Image::fill_rect(const Rect2 &p_rect, const Color &p_color) {
+	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot fill rect in compressed or custom image formats.");
+
+	Rect2i r = Rect2i(0, 0, width, height).intersection(p_rect.abs());
+	if (r.has_no_area()) {
+		return;
+	}
+
+	uint8_t *dst_data_ptr = data.ptrw();
+
+	int pixel_size = get_format_pixel_size(format);
+
+	// Put first pixel with the format-aware API.
+	uint8_t *rect_first_pixel_ptr = &dst_data_ptr[(r.position.y * width + r.position.x) * pixel_size];
+	_set_color_at_ofs(rect_first_pixel_ptr, 0, p_color);
+
+	for (int y = r.position.y; y < r.position.y + r.size.y; y++) {
+		for (int x = r.position.x; x < r.position.x + r.size.x; x++) {
+			uint8_t *dst = &dst_data_ptr[(y * width + x) * pixel_size];
+
+			for (int k = 0; k < pixel_size; k++) {
+				dst[k] = rect_first_pixel_ptr[k];
 			}
 		}
 	}
@@ -3160,6 +3186,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("blend_rect", "src", "src_rect", "dst"), &Image::blend_rect);
 	ClassDB::bind_method(D_METHOD("blend_rect_mask", "src", "mask", "src_rect", "dst"), &Image::blend_rect_mask);
 	ClassDB::bind_method(D_METHOD("fill", "color"), &Image::fill);
+	ClassDB::bind_method(D_METHOD("fill_rect", "rect", "color"), &Image::fill_rect);
 
 	ClassDB::bind_method(D_METHOD("get_used_rect"), &Image::get_used_rect);
 	ClassDB::bind_method(D_METHOD("get_rect", "rect"), &Image::get_rect);
