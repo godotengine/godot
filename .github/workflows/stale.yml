@@ -1,0 +1,44 @@
+on:
+  schedule:
+    - cron: "0 * * * *"
+name: Stale Bot workflow
+jobs:
+  build:
+    name: stale
+    runs-on: ubuntu-latest
+    steps:
+      # 9 months + 3 months = 1 year
+      - name: Stale Issues policy
+        id: stale-issue
+        uses: actions/stale@v4
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          exempt-pr-labels: "no stale"
+          days-before-stale: 1
+          days-before-close: 1
+          days-before-pr-stale: -1
+          days-before-pr-close: -1
+          stale-issue-label: "stale"
+          operations-per-run: 100
+          remove-stale-when-updated: true
+          stale-issue-message: |
+            This issue has been automatically marked as stale because it hasn't had any activity in past 9 months. It will be closed in 3 months if no further activity occurs.
+            To keep this issue alive, please leave comment.
+
+      # 1 year + 1 year = 2 year
+      - name: Stale PR policy
+        id: stale-pr
+        uses: actions/stale@v4
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          exempt-pr-labels: "no stale"
+          days-before-stale: -1
+          days-before-close: -1
+          days-before-pr-stale: 365
+          days-before-pr-close: 365
+          stale-issue-label: "stale"
+          operations-per-run: 100
+          remove-stale-when-updated: true
+          stale-issue-message: |
+            This issue has been automatically marked as stale because it hasn't had any activity in past 12 months. It will be closed in 12 months if no further activity occurs.
+            To keep this PR alive, please leave comment.
