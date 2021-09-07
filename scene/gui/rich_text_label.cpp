@@ -3946,24 +3946,15 @@ float RichTextLabel::get_percent_visible() const {
 	return percent_visible;
 }
 
-void RichTextLabel::set_effects(const Vector<Variant> &effects) {
-	custom_effects.clear();
-	for (int i = 0; i < effects.size(); i++) {
-		Ref<RichTextEffect> effect = Ref<RichTextEffect>(effects[i]);
-		custom_effects.push_back(effect);
-	}
-
+void RichTextLabel::set_effects(Array p_effects) {
+	custom_effects = p_effects;
 	if ((bbcode != "") && use_bbcode) {
 		parse_bbcode(bbcode);
 	}
 }
 
-Vector<Variant> RichTextLabel::get_effects() {
-	Vector<Variant> r;
-	for (int i = 0; i < custom_effects.size(); i++) {
-		r.push_back(custom_effects[i]);
-	}
-	return r;
+Array RichTextLabel::get_effects() {
+	return custom_effects;
 }
 
 void RichTextLabel::install_effect(const Variant effect) {
@@ -4279,12 +4270,13 @@ void RichTextLabel::_draw_fbg_boxes(RID p_ci, RID p_rid, Vector2 line_off, Item 
 
 Ref<RichTextEffect> RichTextLabel::_get_custom_effect_by_code(String p_bbcode_identifier) {
 	for (int i = 0; i < custom_effects.size(); i++) {
-		if (!custom_effects[i].is_valid()) {
+		Ref<RichTextEffect> effect = custom_effects[i];
+		if (!effect.is_valid()) {
 			continue;
 		}
 
-		if (custom_effects[i]->get_bbcode() == p_bbcode_identifier) {
-			return custom_effects[i];
+		if (effect->get_bbcode() == p_bbcode_identifier) {
+			return effect;
 		}
 	}
 
