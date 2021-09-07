@@ -295,7 +295,7 @@ public:
 
 		AABB aabb;
 		struct LOD {
-			float edge_length;
+			float edge_length = 0.0f;
 			Vector<uint8_t> index_data;
 		};
 		Vector<LOD> lods;

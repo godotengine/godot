@@ -371,7 +371,9 @@ Files extracted from upstream repository:
 - `LICENSE.md`.
 
 An [experimental upstream feature](https://github.com/zeux/meshoptimizer/tree/simplify-attr),
-has been backported, see patch in `patches` directory.
+has been backported. On top of that, it was modified to report only distance error metrics 
+instead of a combination of distance and attribute errors. Patches for both changes can be
+found in the `patches` directory.
 
 
 ## miniupnpc
