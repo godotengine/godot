@@ -1465,12 +1465,13 @@ void TileDataTerrainsEditor::_tile_set_changed() {
 	ERR_FAIL_COND(!tile_set.is_valid());
 
 	// Fix if wrong values are selected.
-	if (int(dummy_object->get("terrain_set")) > tile_set->get_terrain_sets_count()) {
+	int terrain_set = int(dummy_object->get("terrain_set"));
+	if (terrain_set >= tile_set->get_terrain_sets_count()) {
+		terrain_set = -1;
 		dummy_object->set("terrain_set", -1);
 	}
-	int terrain_set = int(dummy_object->get("terrain"));
 	if (terrain_set >= 0) {
-		if (int(dummy_object->get("terrain")) > tile_set->get_terrains_count(terrain_set)) {
+		if (int(dummy_object->get("terrain")) >= tile_set->get_terrains_count(terrain_set)) {
 			dummy_object->set("terrain", -1);
 		}
 	}
