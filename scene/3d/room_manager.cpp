@@ -256,9 +256,9 @@ void RoomManager::_notification(int p_what) {
 }
 
 void RoomManager::_bind_methods() {
-	BIND_ENUM_CONSTANT(RoomManager::PVS_MODE_DISABLED);
-	BIND_ENUM_CONSTANT(RoomManager::PVS_MODE_PARTIAL);
-	BIND_ENUM_CONSTANT(RoomManager::PVS_MODE_FULL);
+	BIND_ENUM_CONSTANT(PVS_MODE_DISABLED);
+	BIND_ENUM_CONSTANT(PVS_MODE_PARTIAL);
+	BIND_ENUM_CONSTANT(PVS_MODE_FULL);
 
 	// main functions
 	ClassDB::bind_method(D_METHOD("rooms_convert"), &RoomManager::rooms_convert);
