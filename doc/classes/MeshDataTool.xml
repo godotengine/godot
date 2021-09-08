@@ -180,6 +180,14 @@
 				Returns the total number of vertices in [Mesh].
 			</description>
 		</method>
+		<method name="get_vertex_custom" qualifiers="const">
+			<return type="Color" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="custom_idx" type="int" />
+			<description>
+				Returns the floating point representation of the custom attribute (specified by [code]custom_idx[/code]) of the given vertex (specified by [code]idx[/code]). [code]custom_idx[/code] can range from 0 to 3.
+			</description>
+		</method>
 		<method name="get_vertex_edges" qualifiers="const">
 			<return type="PackedInt32Array" />
 			<param index="0" name="idx" type="int" />
@@ -236,6 +244,13 @@
 				Returns bone weights of the given vertex.
 			</description>
 		</method>
+		<method name="has_custom" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="custom_idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the corresponding custom attribute (selected by [code]custom_idx[/code]) exists, returns false otherwise.
+			</description>
+		</method>
 		<method name="set_edge_meta">
 			<return type="void" />
 			<param index="0" name="idx" type="int" />
@@ -281,6 +296,15 @@
 			<param index="1" name="color" type="Color" />
 			<description>
 				Sets the color of the given vertex.
+			</description>
+		</method>
+		<method name="set_vertex_custom">
+			<return type="int" enum="Error" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="custom_idx" type="int" />
+			<argument index="2" name="custom_float" type="Color" />
+			<description>
+				Sets the 32-bit floating point representation of the custom attribute(specified by [code]custom_idx[/code]) of the given vertex (specified by [code]idx[/code]). [code]custom_idx[/code] can range from 0 to 3.
 			</description>
 		</method>
 		<method name="set_vertex_meta">

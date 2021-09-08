@@ -101,6 +101,10 @@ public:
 
 	};
 
+	enum {
+		ARRAY_CUSTOM_COUNT = RenderingServer::ARRAY_CUSTOM_COUNT
+	};
+
 	enum ArrayCustomFormat {
 		ARRAY_CUSTOM_RGBA8_UNORM,
 		ARRAY_CUSTOM_RGBA8_SNORM,
