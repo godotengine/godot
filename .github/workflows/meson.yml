@@ -1,0 +1,182 @@
+name: 💠 Meson Builds
+on: [push, pull_request]
+
+# Global Settings
+env:
+  GODOT_BASE_BRANCH: master
+  MESONFLAGS: ''
+  EM_VERSION: 2.0.27
+  EM_CACHE_FOLDER: 'emsdk-cache'
+
+concurrency:
+  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-meson
+  cancel-in-progress: true
+
+jobs:
+  meson:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: 🤖 Android (release, armv7a)
+            os: ubuntu-20.04
+            platform: android
+            target: release
+            tools: false
+            mesonflags: '--cross-file cross/android.gen.txt'
+            arch: armv7a
+
+          - name: 🤖 Android (release, armv64v8)
+            os: ubuntu-20.04
+            platform: android
+            target: release
+            tools: false
+            mesonflags: '--cross-file cross/android.gen.txt'
+            arch: arm64v8
+
+          - name: 🍏 iOS (release)
+            os: macos-latest
+            platform: iphone
+            target: release
+            tools: false
+            mesonflags: '--cross-file cross/iphone.txt'
+
+          - name: 🌐 JavaScript (minsize)
+            os: ubuntu-20.04
+            platform: javascript
+            target: minsize
+            tools: false
+            meson: './meson-upstream/'
+            mesonflags: '--cross-file cross/emscripten -Dbuiltin_pcre2_with_jit=false -Ddisabled_modules=mono,text_server_adv,text_server_fb'
+
+          - name: 🐧 Linux (debug, asan+ubsan, tests)
+            os: ubuntu-20.04
+            platform: linuxbsd
+            target: debug
+            tools: true
+            tests: true
+            mesonflags: -Dtests=true -Duse_asan=true -Duse_ubsan=true
+
+          - name: 🐧 Linux (release_debug, tests)
+            os: ubuntu-20.04
+            platform: linuxbsd
+            target: debugoptimized
+            tools: true
+            tests: true
+            mesonflags: -Dtests=true
+
+          - name: 🐧 Linux (release)
+            os: ubuntu-20.04
+            platform: linuxbsd
+            target: release
+            tools: false
+
+          - name: 🍎 macOS (release_debug, tests)
+            os: macos-latest
+            platform: osx
+            target: debugoptimized
+            tools: true
+            tests: true
+            mesonflags: -Dtests=true
+
+          - name: 🍎 macOS (release)
+            os: macos-latest
+            platform: osx
+            target: debugoptimized
+            tools: false
+
+          - name: 🏁 Windows (release_debug, tests)
+            os: windows-latest
+            platform: windows
+            target: debugoptimized
+            tools: true
+            tests: true
+            mesonflags: -Dtests=true
+
+          - name: 🏁 Windows (release)
+            os: windows-latest
+            platform: windows
+            target: release
+            tools: false
+
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Java 8
+        uses: actions/setup-java@v1
+        if: ${{ matrix.platform == 'android' }}
+        with:
+          java-version: 8
+
+      - name: Setup python and meson
+        uses: ./.github/actions/meson_install
+
+      - name: Generate meson cross compilation file (${{ matrix.arch }}).
+        if: ${{ matrix.platform == 'android' }}
+        run: |
+          python3 misc/scripts/make_android_cross.py "$ANDROID_NDK_ROOT" -m ${{ matrix.arch }} -o cross/android.gen.txt
+
+      # Additional cache for Emscripten generated system libraries
+      - name: Load Emscripten cache
+        id: javascript-template-emscripten-cache
+        if: ${{ matrix.platform == 'javascript' }}
+        uses: actions/cache@v2
+        with:
+          path: ${{env.EM_CACHE_FOLDER}}
+          key: ${{env.EM_VERSION}}-${{github.job}}
+
+      - name: Set up Emscripten ${{env.EM_VERSION}}
+        if: ${{ matrix.platform == 'javascript' }}
+        uses: mymindstorm/setup-emsdk@v10
+        with:
+          version: ${{env.EM_VERSION}}
+          actions-cache-folder: ${{env.EM_CACHE_FOLDER}}
+
+      - name: Verify Emscripten setup
+        if: ${{ matrix.platform == 'javascript' }}
+        run: |
+          emcc -v
+
+      # TODO remove once meson in pip is updated to master
+      - name: Download meson upstream branch (pip version does not support godot)
+        if: ${{ matrix.platform == 'javascript' }}
+        run: |
+          git clone https://github.com/mesonbuild/meson.git meson-upstream
+          cd meson-upstream
+          cp meson.py meson
+
+      # Azure repositories are not reliable, we need to prevent azure giving us packages.
+      - name: Make apt sources.list use the default Ubuntu repositories
+        if: ${{ matrix.platform == 'linuxbsd' }}
+        run: |
+          sudo rm -f /etc/apt/sources.list.d/*
+          sudo cp -f misc/ci/sources.list /etc/apt/sources.list
+          sudo apt-get update
+
+      # Install all packages (except scons)
+      - name: Configure dependencies
+        if: ${{ matrix.platform == 'linuxbsd' }}
+        run: |
+          sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
+            libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm \
+            xvfb wget unzip
+
+      - name: Compilation (${{ matrix.platform }} ${{ matrix.arch }})
+        uses: ./.github/actions/meson_build
+        with:
+          mesonflags: ${{ env.MESONFLAGS }} ${{ matrix.mesonflags }}
+          buildtype: ${{ matrix.target }}
+          meson: ${{ matrix.meson }}meson
+          tools: ${{ matrix.tools }}
+
+      # Execute unit tests for the editor
+      - name: Unit Tests
+        if: ${{ matrix.tests && matrix.platform == 'linuxbsd' }}
+        run: |
+          ./builddir/godot --headless --test
+
+      - name: Upload Artifact
+        uses: ./.github/actions/upload-artifact
