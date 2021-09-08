@@ -32,7 +32,7 @@ jobs:
             target: release
             tools: false
             mesonflags: '--cross-file cross/android.gen.txt'
-            arch: arm64v8
+            arch: aarch64
 
           - name: 🍏 iOS (release)
             os: macos-latest
