@@ -269,6 +269,7 @@ protected:
 public:
 	String get_filter();
 	void set_filter(const String &p_filter);
+	void save_branch_to_file(String p_directory);
 
 	void _focus_node();
 

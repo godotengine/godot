@@ -2158,6 +2158,14 @@ bool FileSystemDock::can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 		return true;
 	}
 
+	if (drag_data.has("type") && String(drag_data["type"]) == "nodes") {
+		// Save branch as scene.
+		String to_dir;
+		bool favorite;
+		_get_drag_target_folder(to_dir, favorite, p_point, p_from);
+		return !favorite && Array(drag_data["nodes"]).size() == 1;
+	}
+
 	return false;
 }
 
@@ -2295,6 +2303,13 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 			EditorSettings::get_singleton()->set_favorites(favorites);
 			_update_tree(_compute_uncollapsed_paths());
 		}
+	}
+
+	if (drag_data.has("type") && String(drag_data["type"]) == "nodes") {
+		String to_dir;
+		bool favorite;
+		_get_drag_target_folder(to_dir, favorite, p_point, p_from);
+		EditorNode::get_singleton()->get_scene_tree_dock()->save_branch_to_file(to_dir);
 	}
 }
 
