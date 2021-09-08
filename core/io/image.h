@@ -190,8 +190,10 @@ private:
 	static int _get_dst_image_size(int p_width, int p_height, Format p_format, int &r_mipmaps, int p_mipmaps = -1, int *r_mm_width = nullptr, int *r_mm_height = nullptr);
 	bool _can_modify(Format p_format) const;
 
-	_FORCE_INLINE_ void _put_pixelb(int p_x, int p_y, uint32_t p_pixelsize, uint8_t *p_data, const uint8_t *p_pixel);
-	_FORCE_INLINE_ void _get_pixelb(int p_x, int p_y, uint32_t p_pixelsize, const uint8_t *p_data, uint8_t *p_pixel);
+	_FORCE_INLINE_ void _put_pixelb(int p_x, int p_y, uint32_t p_pixel_size, uint8_t *p_data, const uint8_t *p_pixel);
+	_FORCE_INLINE_ void _get_pixelb(int p_x, int p_y, uint32_t p_pixel_size, const uint8_t *p_data, uint8_t *p_pixel);
+
+	_FORCE_INLINE_ void _repeat_pixel_over_subsequent_memory(uint8_t *p_pixel, int p_pixel_size, int p_count);
 
 	void _set_data(const Dictionary &p_data);
 	Dictionary _get_data() const;
