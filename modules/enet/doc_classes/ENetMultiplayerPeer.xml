@@ -4,7 +4,7 @@
 		A MultiplayerPeer implementation using the [url=http://enet.bespin.org/index.html]ENet[/url] library.
 	</brief_description>
 	<description>
-		A MultiplayerPeer implementation that should be passed to [member MultiplayerAPI.network_peer] after being initialized as either a client, server, or mesh. Events can then be handled by connecting to [MultiplayerAPI] signals. See [ENetConnection] for more information on the ENet library wrapper.
+		A MultiplayerPeer implementation that should be passed to [member MultiplayerAPI.multiplayer_peer] after being initialized as either a client, server, or mesh. Events can then be handled by connecting to [MultiplayerAPI] signals. See [ENetConnection] for more information on the ENet library wrapper.
 		[b]Note:[/b] ENet only uses UDP, not TCP. When forwarding the server port to make your server accessible on the public Internet, you only need to forward the server port in UDP. You can use the [UPNP] class to try to forward the server port automatically when starting the server.
 	</description>
 	<tutorials>
@@ -44,7 +44,7 @@
 			<return type="int" enum="Error" />
 			<argument index="0" name="unique_id" type="int" />
 			<description>
-				Initialize this [MultiplayerPeer] in mesh mode. The provided [code]unique_id[/code] will be used as the local peer network unique ID once assigned as the [member MultiplayerAPI.network_peer]. In the mesh configuration you will need to set up each new peer manually using [ENetConnection] before calling [method add_mesh_peer]. While this technique is more advanced, it allows for better control over the connection process (e.g. when dealing with NAT punch-through) and for better distribution of the network load (which would otherwise be more taxing on the server).
+				Initialize this [MultiplayerPeer] in mesh mode. The provided [code]unique_id[/code] will be used as the local peer network unique ID once assigned as the [member MultiplayerAPI.multiplayer_peer]. In the mesh configuration you will need to set up each new peer manually using [ENetConnection] before calling [method add_mesh_peer]. While this technique is more advanced, it allows for better control over the connection process (e.g. when dealing with NAT punch-through) and for better distribution of the network load (which would otherwise be more taxing on the server).
 			</description>
 		</method>
 		<method name="create_server">

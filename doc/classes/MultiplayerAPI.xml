@@ -4,7 +4,7 @@
 		High-level multiplayer API.
 	</brief_description>
 	<description>
-		This class implements most of the logic behind the high-level multiplayer API. See also [MultiplayerPeer].
+		This class implements the high-level multiplayer API. See also [MultiplayerPeer].
 		By default, [SceneTree] has a reference to this class that is used to provide multiplayer capabilities (i.e. RPC/RSET) across the whole scene.
 		It is possible to override the MultiplayerAPI instance used by specific Nodes by setting the [member Node.custom_multiplayer] property, effectively allowing to run both client and server in the same scene.
 		[b]Note:[/b] The high-level multiplayer API protocol is an implementation detail and isn't meant to be used by non-Godot servers. It may change without notice.
@@ -18,16 +18,10 @@
 				Clears the current MultiplayerAPI network state (you shouldn't call this unless you know what you are doing).
 			</description>
 		</method>
-		<method name="get_network_connected_peers" qualifiers="const">
+		<method name="get_peers" qualifiers="const">
 			<return type="PackedInt32Array" />
 			<description>
-				Returns the peer IDs of all connected peers of this MultiplayerAPI's [member network_peer].
-			</description>
-		</method>
-		<method name="get_network_unique_id" qualifiers="const">
-			<return type="int" />
-			<description>
-				Returns the unique peer ID of this MultiplayerAPI's [member network_peer].
+				Returns the peer IDs of all connected peers of this MultiplayerAPI's [member multiplayer_peer].
 			</description>
 		</method>
 		<method name="get_remote_sender_id" qualifiers="const">
@@ -37,16 +31,22 @@
 				[b]Note:[/b] If not inside an RPC this method will return 0.
 			</description>
 		</method>
-		<method name="has_network_peer" qualifiers="const">
-			<return type="bool" />
+		<method name="get_unique_id" qualifiers="const">
+			<return type="int" />
 			<description>
-				Returns [code]true[/code] if there is a [member network_peer] set.
+				Returns the unique peer ID of this MultiplayerAPI's [member multiplayer_peer].
 			</description>
 		</method>
-		<method name="is_network_server" qualifiers="const">
+		<method name="has_multiplayer_peer" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this MultiplayerAPI's [member network_peer] is in server mode (listening for connections).
+				Returns [code]true[/code] if there is a [member multiplayer_peer] set.
+			</description>
+		</method>
+		<method name="is_server" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this MultiplayerAPI's [member multiplayer_peer] is valid and in server mode (listening for connections).
 			</description>
 		</method>
 		<method name="poll">
@@ -72,11 +72,11 @@
 			If [code]true[/code], the MultiplayerAPI will allow encoding and decoding of object during RPCs/RSETs.
 			[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
 		</member>
-		<member name="network_peer" type="MultiplayerPeer" setter="set_network_peer" getter="get_network_peer">
-			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the MultiplayerAPI will become a network server (check with [method is_network_server]) and will set root node's network mode to authority, or it will become a regular client peer. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to MultiplayerAPI's signals.
+		<member name="multiplayer_peer" type="MultiplayerPeer" setter="set_multiplayer_peer" getter="get_multiplayer_peer">
+			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the MultiplayerAPI will become a network server (check with [method is_server]) and will set root node's network mode to authority, or it will become a regular client peer. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to MultiplayerAPI's signals.
 		</member>
-		<member name="refuse_new_network_connections" type="bool" setter="set_refuse_new_network_connections" getter="is_refusing_new_network_connections" default="false">
-			If [code]true[/code], the MultiplayerAPI's [member network_peer] refuses new incoming connections.
+		<member name="refuse_new_connections" type="bool" setter="set_refuse_new_connections" getter="is_refusing_new_connections" default="false">
+			If [code]true[/code], the MultiplayerAPI's [member multiplayer_peer] refuses new incoming connections.
 		</member>
 		<member name="replicator" type="MultiplayerReplicator" setter="" getter="get_replicator">
 		</member>
@@ -88,36 +88,36 @@
 	<signals>
 		<signal name="connected_to_server">
 			<description>
-				Emitted when this MultiplayerAPI's [member network_peer] successfully connected to a server. Only emitted on clients.
+				Emitted when this MultiplayerAPI's [member multiplayer_peer] successfully connected to a server. Only emitted on clients.
 			</description>
 		</signal>
 		<signal name="connection_failed">
 			<description>
-				Emitted when this MultiplayerAPI's [member network_peer] fails to establish a connection to a server. Only emitted on clients.
+				Emitted when this MultiplayerAPI's [member multiplayer_peer] fails to establish a connection to a server. Only emitted on clients.
 			</description>
 		</signal>
-		<signal name="network_peer_connected">
+		<signal name="peer_connected">
 			<argument index="0" name="id" type="int" />
 			<description>
-				Emitted when this MultiplayerAPI's [member network_peer] connects with a new peer. ID is the peer ID of the new peer. Clients get notified when other clients connect to the same server. Upon connecting to a server, a client also receives this signal for the server (with ID being 1).
+				Emitted when this MultiplayerAPI's [member multiplayer_peer] connects with a new peer. ID is the peer ID of the new peer. Clients get notified when other clients connect to the same server. Upon connecting to a server, a client also receives this signal for the server (with ID being 1).
 			</description>
 		</signal>
-		<signal name="network_peer_disconnected">
+		<signal name="peer_disconnected">
 			<argument index="0" name="id" type="int" />
 			<description>
-				Emitted when this MultiplayerAPI's [member network_peer] disconnects from a peer. Clients get notified when other clients disconnect from the same server.
+				Emitted when this MultiplayerAPI's [member multiplayer_peer] disconnects from a peer. Clients get notified when other clients disconnect from the same server.
 			</description>
 		</signal>
-		<signal name="network_peer_packet">
+		<signal name="peer_packet">
 			<argument index="0" name="id" type="int" />
 			<argument index="1" name="packet" type="PackedByteArray" />
 			<description>
-				Emitted when this MultiplayerAPI's [member network_peer] receive a [code]packet[/code] with custom data (see [method send_bytes]). ID is the peer ID of the peer that sent the packet.
+				Emitted when this MultiplayerAPI's [member multiplayer_peer] receives a [code]packet[/code] with custom data (see [method send_bytes]). ID is the peer ID of the peer that sent the packet.
 			</description>
 		</signal>
 		<signal name="server_disconnected">
 			<description>
-				Emitted when this MultiplayerAPI's [member network_peer] disconnects from server. Only emitted on clients.
+				Emitted when this MultiplayerAPI's [member multiplayer_peer] disconnects from server. Only emitted on clients.
 			</description>
 		</signal>
 	</signals>

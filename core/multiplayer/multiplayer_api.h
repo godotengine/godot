@@ -82,7 +82,7 @@ private:
 		Map<int, NodeInfo> nodes;
 	};
 
-	Ref<MultiplayerPeer> network_peer;
+	Ref<MultiplayerPeer> multiplayer_peer;
 	Set<int> connected_peers;
 	int remote_sender_id = 0;
 	int remote_sender_override = 0;
@@ -112,8 +112,8 @@ public:
 	void clear();
 	void set_root_node(Node *p_node);
 	Node *get_root_node();
-	void set_network_peer(const Ref<MultiplayerPeer> &p_peer);
-	Ref<MultiplayerPeer> get_network_peer() const;
+	void set_multiplayer_peer(const Ref<MultiplayerPeer> &p_peer);
+	Ref<MultiplayerPeer> get_multiplayer_peer() const;
 
 	Error send_bytes(Vector<uint8_t> p_data, int p_to = MultiplayerPeer::TARGET_PEER_BROADCAST, Multiplayer::TransferMode p_mode = Multiplayer::TRANSFER_MODE_RELIABLE, int p_channel = 0);
 
@@ -135,15 +135,15 @@ public:
 	void _connection_failed();
 	void _server_disconnected();
 
-	bool has_network_peer() const { return network_peer.is_valid(); }
-	Vector<int> get_network_connected_peers() const;
+	bool has_multiplayer_peer() const { return multiplayer_peer.is_valid(); }
+	Vector<int> get_peer_ids() const;
 	const Set<int> get_connected_peers() const { return connected_peers; }
 	int get_remote_sender_id() const { return remote_sender_override ? remote_sender_override : remote_sender_id; }
 	void set_remote_sender_override(int p_id) { remote_sender_override = p_id; }
-	int get_network_unique_id() const;
-	bool is_network_server() const;
-	void set_refuse_new_network_connections(bool p_refuse);
-	bool is_refusing_new_network_connections() const;
+	int get_unique_id() const;
+	bool is_server() const;
+	void set_refuse_new_connections(bool p_refuse);
+	bool is_refusing_new_connections() const;
 
 	void set_allow_object_decoding(bool p_enable);
 	bool is_object_decoding_allowed() const;

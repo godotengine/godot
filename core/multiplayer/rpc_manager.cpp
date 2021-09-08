@@ -103,7 +103,7 @@ _FORCE_INLINE_ bool _can_call_mode(Node *p_node, Multiplayer::RPCMode mode, int 
 			return true;
 		} break;
 		case Multiplayer::RPC_MODE_AUTHORITY: {
-			return !p_node->is_network_authority() && p_remote_id == p_node->get_network_authority();
+			return !p_node->is_multiplayer_authority() && p_remote_id == p_node->get_multiplayer_authority();
 		} break;
 	}
 
@@ -232,7 +232,7 @@ void RPCManager::_process_rpc(Node *p_node, const uint16_t p_rpc_method_id, int 
 	ERR_FAIL_COND(config.name == StringName());
 
 	bool can_call = _can_call_mode(p_node, config.rpc_mode, p_from);
-	ERR_FAIL_COND_MSG(!can_call, "RPC '" + String(config.name) + "' is not allowed on node " + p_node->get_path() + " from: " + itos(p_from) + ". Mode is " + itos((int)config.rpc_mode) + ", authority is " + itos(p_node->get_network_authority()) + ".");
+	ERR_FAIL_COND_MSG(!can_call, "RPC '" + String(config.name) + "' is not allowed on node " + p_node->get_path() + " from: " + itos(p_from) + ". Mode is " + itos((int)config.rpc_mode) + ", authority is " + itos(p_node->get_multiplayer_authority()) + ".");
 
 	int argc = 0;
 	bool byte_only = false;
@@ -294,19 +294,19 @@ void RPCManager::_process_rpc(Node *p_node, const uint16_t p_rpc_method_id, int 
 }
 
 void RPCManager::_send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, const Multiplayer::RPCConfig &p_config, const StringName &p_name, const Variant **p_arg, int p_argcount) {
-	Ref<MultiplayerPeer> network_peer = multiplayer->get_network_peer();
-	ERR_FAIL_COND_MSG(network_peer.is_null(), "Attempt to remote call/set when networking is not active in SceneTree.");
+	Ref<MultiplayerPeer> peer = multiplayer->get_multiplayer_peer();
+	ERR_FAIL_COND_MSG(peer.is_null(), "Attempt to call RPC without active multiplayer peer.");
 
-	ERR_FAIL_COND_MSG(network_peer->get_connection_status() == MultiplayerPeer::CONNECTION_CONNECTING, "Attempt to remote call/set when networking is not connected yet in SceneTree.");
+	ERR_FAIL_COND_MSG(peer->get_connection_status() == MultiplayerPeer::CONNECTION_CONNECTING, "Attempt to call RPC while multiplayer peer is not connected yet.");
 
-	ERR_FAIL_COND_MSG(network_peer->get_connection_status() == MultiplayerPeer::CONNECTION_DISCONNECTED, "Attempt to remote call/set when networking is disconnected.");
+	ERR_FAIL_COND_MSG(peer->get_connection_status() == MultiplayerPeer::CONNECTION_DISCONNECTED, "Attempt to call RPC while multiplayer peer is disconnected.");
 
-	ERR_FAIL_COND_MSG(p_argcount > 255, "Too many arguments >255.");
+	ERR_FAIL_COND_MSG(p_argcount > 255, "Too many arguments (>255).");
 
-	if (p_to != 0 && !multiplayer->get_network_connected_peers().has(ABS(p_to))) {
-		ERR_FAIL_COND_MSG(p_to == network_peer->get_unique_id(), "Attempt to remote call/set yourself! unique ID: " + itos(network_peer->get_unique_id()) + ".");
+	if (p_to != 0 && !multiplayer->get_connected_peers().has(ABS(p_to))) {
+		ERR_FAIL_COND_MSG(p_to == peer->get_unique_id(), "Attempt to call RPC on yourself! Peer unique ID: " + itos(peer->get_unique_id()) + ".");
 
-		ERR_FAIL_MSG("Attempt to remote call unexisting ID: " + itos(p_to) + ".");
+		ERR_FAIL_MSG("Attempt to call RPC with unknown peer ID: " + itos(p_to) + ".");
 	}
 
 	NodePath from_path = (multiplayer->get_root_node()->get_path()).rel_path_to(p_from->get_path());
@@ -416,13 +416,13 @@ void RPCManager::_send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, const Mult
 #endif
 
 	// Take chance and set transfer mode, since all send methods will use it.
-	network_peer->set_transfer_channel(p_config.channel);
-	network_peer->set_transfer_mode(p_config.transfer_mode);
+	peer->set_transfer_channel(p_config.channel);
+	peer->set_transfer_mode(p_config.transfer_mode);
 
 	if (has_all_peers) {
 		// They all have verified paths, so send fast.
-		network_peer->set_target_peer(p_to); // To all of you.
-		network_peer->put_packet(packet_cache.ptr(), ofs); // A message with love.
+		peer->set_target_peer(p_to); // To all of you.
+		peer->put_packet(packet_cache.ptr(), ofs); // A message with love.
 	} else {
 		// Unreachable because the node ID is never compressed if the peers doesn't know it.
 		CRASH_COND(node_id_compression != NETWORK_NODE_ID_COMPRESSION_32);
@@ -446,28 +446,28 @@ void RPCManager::_send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, const Mult
 
 			bool confirmed = multiplayer->is_cache_confirmed(from_path, P);
 
-			network_peer->set_target_peer(P); // To this one specifically.
+			peer->set_target_peer(P); // To this one specifically.
 
 			if (confirmed) {
 				// This one confirmed path, so use id.
 				encode_uint32(psc_id, &(packet_cache.write[1]));
-				network_peer->put_packet(packet_cache.ptr(), ofs);
+				peer->put_packet(packet_cache.ptr(), ofs);
 			} else {
 				// This one did not confirm path yet, so use entire path (sorry!).
 				encode_uint32(0x80000000 | ofs, &(packet_cache.write[1])); // Offset to path and flag.
-				network_peer->put_packet(packet_cache.ptr(), ofs + path_len);
+				peer->put_packet(packet_cache.ptr(), ofs + path_len);
 			}
 		}
 	}
 }
 
 void RPCManager::rpcp(Node *p_node, int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount) {
-	Ref<MultiplayerPeer> network_peer = multiplayer->get_network_peer();
-	ERR_FAIL_COND_MSG(!network_peer.is_valid(), "Trying to call an RPC while no network peer is active.");
+	Ref<MultiplayerPeer> peer = multiplayer->get_multiplayer_peer();
+	ERR_FAIL_COND_MSG(!peer.is_valid(), "Trying to call an RPC while no multiplayer peer is active.");
 	ERR_FAIL_COND_MSG(!p_node->is_inside_tree(), "Trying to call an RPC on a node which is not inside SceneTree.");
-	ERR_FAIL_COND_MSG(network_peer->get_connection_status() != MultiplayerPeer::CONNECTION_CONNECTED, "Trying to call an RPC via a network peer which is not connected.");
+	ERR_FAIL_COND_MSG(peer->get_connection_status() != MultiplayerPeer::CONNECTION_CONNECTED, "Trying to call an RPC via a multiplayer peer which is not connected.");
 
-	int node_id = network_peer->get_unique_id();
+	int node_id = peer->get_unique_id();
 	bool call_local_native = false;
 	bool call_local_script = false;
 	uint16_t rpc_id = UINT16_MAX;
@@ -493,7 +493,7 @@ void RPCManager::rpcp(Node *p_node, int p_peer_id, const StringName &p_method, c
 	if (call_local_native) {
 		Callable::CallError ce;
 
-		multiplayer->set_remote_sender_override(network_peer->get_unique_id());
+		multiplayer->set_remote_sender_override(peer->get_unique_id());
 		p_node->call(p_method, p_arg, p_argcount, ce);
 		multiplayer->set_remote_sender_override(0);
 
@@ -509,7 +509,7 @@ void RPCManager::rpcp(Node *p_node, int p_peer_id, const StringName &p_method, c
 		Callable::CallError ce;
 		ce.error = Callable::CallError::CALL_OK;
 
-		multiplayer->set_remote_sender_override(network_peer->get_unique_id());
+		multiplayer->set_remote_sender_override(peer->get_unique_id());
 		p_node->get_script_instance()->call(p_method, p_arg, p_argcount, ce);
 		multiplayer->set_remote_sender_override(0);
 
