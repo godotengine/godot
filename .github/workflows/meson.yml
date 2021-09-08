@@ -47,7 +47,7 @@ jobs:
             target: minsize
             tools: false
             meson: './meson-upstream/'
-            mesonflags: '--cross-file cross/emscripten -Dbuiltin_pcre2_with_jit=false -Ddisabled_modules=mono,text_server_adv,text_server_fb'
+            mesonflags: '--cross-file cross/emscripten -Dbuiltin_pcre2_with_jit=false'
 
           - name: 🐧 Linux (debug, asan+ubsan, tests)
             os: ubuntu-20.04
