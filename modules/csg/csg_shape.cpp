@@ -1134,7 +1134,7 @@ CSGBrush *CSGBox3D::_build_brush() {
 		{
 			for (int i = 0; i < 6; i++) {
 				Vector3 face_points[4];
-				float uv_points[8] = { 0, 0, 0, 1, 1, 1, 1, 0 };
+				float uv_points[8] = { 1, 0, 1, 1, 0, 1, 0, 0 };
 
 				for (int j = 0; j < 4; j++) {
 					float v[3];
