@@ -37,6 +37,7 @@
 #include "core/object/script_language.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "core/string/string_builder.h"
 #include "core/string/translation.h"
 
 #include "scene/main/window.h"
@@ -78,7 +79,11 @@ void TextEdit::Text::set_font_size(int p_font_size) {
 }
 
 void TextEdit::Text::set_tab_size(int p_tab_size) {
+	if (tab_size == p_tab_size) {
+		return;
+	}
 	tab_size = p_tab_size;
+	tab_size_dirty = true;
 }
 
 int TextEdit::Text::get_tab_size() const {
@@ -118,10 +123,8 @@ int TextEdit::Text::get_line_width(int p_line, int p_wrap_index) const {
 	return text[p_line].data_buf->get_size().x;
 }
 
-int TextEdit::Text::get_line_height(int p_line, int p_wrap_index) const {
-	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
-
-	return text[p_line].data_buf->get_line_size(p_wrap_index).y;
+int TextEdit::Text::get_line_height() const {
+	return line_height;
 }
 
 void TextEdit::Text::set_width(float p_width) {
@@ -153,6 +156,36 @@ _FORCE_INLINE_ const String &TextEdit::Text::operator[](int p_line) const {
 	return text[p_line].data;
 }
 
+void TextEdit::Text::_calculate_line_height() {
+	int height = 0;
+	for (int i = 0; i < text.size(); i++) {
+		// Found another line with the same height...nothing to update.
+		if (text[i].height == line_height) {
+			height = line_height;
+			break;
+		}
+		height = MAX(height, text[i].height);
+	}
+	line_height = height;
+}
+
+void TextEdit::Text::_calculate_max_line_width() {
+	int width = 0;
+	for (int i = 0; i < text.size(); i++) {
+		if (is_hidden(i)) {
+			continue;
+		}
+
+		// Found another line with the same width...nothing to update.
+		if (text[i].width == max_width) {
+			width = max_width;
+			break;
+		}
+		width = MAX(width, text[i].width);
+	}
+	max_width = width;
+}
+
 void TextEdit::Text::invalidate_cache(int p_line, int p_column, const String &p_ime_text, const Vector<Vector2i> &p_bidi_override) {
 	ERR_FAIL_INDEX(p_line, text.size());
 
@@ -182,16 +215,53 @@ void TextEdit::Text::invalidate_cache(int p_line, int p_column, const String &p_
 		tabs.push_back(font->get_char_size(' ', 0, font_size).width * tab_size);
 		text.write[p_line].data_buf->tab_align(tabs);
 	}
+
+	// Update height.
+	const int old_height = text.write[p_line].height;
+	const int wrap_amount = get_line_wrap_amount(p_line);
+	int height = font->get_height(font_size);
+	for (int i = 0; i <= wrap_amount; i++) {
+		height = MAX(height, text[p_line].data_buf->get_line_size(i).y);
+	}
+	text.write[p_line].height = height;
+
+	// If this line has shrunk, this may no longer the the tallest line.
+	if (old_height == line_height && height < line_height) {
+		_calculate_line_height();
+	} else {
+		line_height = MAX(height, line_height);
+	}
+
+	// Update width.
+	const int old_width = text.write[p_line].width;
+	int width = get_line_width(p_line);
+	text.write[p_line].width = width;
+
+	// If this line has shrunk, this may no longer the the longest line.
+	if (old_width == max_width && width < max_width) {
+		_calculate_max_line_width();
+	} else if (!is_hidden(p_line)) {
+		max_width = MAX(width, max_width);
+	}
 }
 
 void TextEdit::Text::invalidate_all_lines() {
 	for (int i = 0; i < text.size(); i++) {
 		text.write[i].data_buf->set_width(width);
-		if (tab_size > 0) {
-			Vector<float> tabs;
-			tabs.push_back(font->get_char_size(' ', 0, font_size).width * tab_size);
-			text.write[i].data_buf->tab_align(tabs);
+		if (tab_size_dirty) {
+			if (tab_size > 0) {
+				Vector<float> tabs;
+				tabs.push_back(font->get_char_size(' ', 0, font_size).width * tab_size);
+				text.write[i].data_buf->tab_align(tabs);
+			}
+			// Tabs have changes, force width update.
+			text.write[i].width = get_line_width(i);
 		}
+	}
+
+	if (tab_size_dirty) {
+		_calculate_max_line_width();
+		tab_size_dirty = false;
 	}
 }
 
@@ -211,16 +281,8 @@ void TextEdit::Text::clear() {
 	insert(0, "", Vector<Vector2i>());
 }
 
-int TextEdit::Text::get_max_width(bool p_exclude_hidden) const {
-	// Quite some work, but should be fast enough.
-
-	int max = 0;
-	for (int i = 0; i < text.size(); i++) {
-		if (!p_exclude_hidden || !is_hidden(i)) {
-			max = MAX(max, get_line_width(i));
-		}
-	}
-	return max;
+int TextEdit::Text::get_max_width() const {
+	return max_width;
 }
 
 void TextEdit::Text::set(int p_line, const String &p_text, const Vector<Vector2i> &p_bidi_override) {
@@ -243,7 +305,20 @@ void TextEdit::Text::insert(int p_at, const String &p_text, const Vector<Vector2
 }
 
 void TextEdit::Text::remove(int p_at) {
+	int height = text[p_at].height;
+	int width = text[p_at].width;
+
 	text.remove(p_at);
+
+	// If this is the tallest line, we need to get the next tallest.
+	if (height == line_height) {
+		_calculate_line_height();
+	}
+
+	// If this is the longest line, we need to get the next longest.
+	if (width == max_width) {
+		_calculate_max_line_width();
+	}
 }
 
 void TextEdit::Text::add_gutter(int p_at) {
@@ -293,7 +368,7 @@ void TextEdit::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
 				call_deferred(SNAME("_update_scrollbars"));
-				call_deferred(SNAME("_update_wrap_at"));
+				call_deferred(SNAME("_update_wrap_at_column"));
 			}
 		} break;
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
@@ -644,8 +719,9 @@ void TextEdit::_notification(int p_what) {
 						int characters = 0;
 						int tabs = 0;
 						for (int j = 0; j < str.length(); j++) {
-							if (color_map.has(last_wrap_column + j)) {
-								current_color = color_map[last_wrap_column + j].get("color");
+							const Variant *color_data = color_map.getptr(last_wrap_column + j);
+							if (color_data != nullptr) {
+								current_color = (color_data->operator Dictionary()).get("color", font_color);
 								if (!editable) {
 									current_color.a = font_readonly_color.a;
 								}
@@ -1023,8 +1099,9 @@ void TextEdit::_notification(int p_what) {
 						char_ofs = 0;
 					}
 					for (int j = 0; j < gl_size; j++) {
-						if (color_map.has(glyphs[j].start)) {
-							current_color = color_map[glyphs[j].start].get("color");
+						const Variant *color_data = color_map.getptr(glyphs[j].start);
+						if (color_data != nullptr) {
+							current_color = (color_data->operator Dictionary()).get("color", font_color);
 							if (!editable && current_color.a > font_readonly_color.a) {
 								current_color.a = font_readonly_color.a;
 							}
@@ -2548,15 +2625,15 @@ void TextEdit::set_text(const String &p_text) {
 }
 
 String TextEdit::get_text() const {
-	String longthing;
-	int len = text.size();
-	for (int i = 0; i < len; i++) {
-		longthing += text[i];
-		if (i != len - 1) {
-			longthing += "\n";
+	StringBuilder ret_text;
+	const int text_size = text.size();
+	for (int i = 0; i < text_size; i++) {
+		ret_text += text[i];
+		if (i != text_size - 1) {
+			ret_text += "\n";
 		}
 	}
-	return longthing;
+	return ret_text.as_string();
 }
 
 int TextEdit::get_line_count() const {
@@ -2592,13 +2669,7 @@ int TextEdit::get_line_width(int p_line, int p_wrap_index) const {
 }
 
 int TextEdit::get_line_height() const {
-	int height = font->get_height(font_size);
-	for (int i = 0; i < text.size(); i++) {
-		for (int j = 0; j <= text.get_line_wrap_amount(i); j++) {
-			height = MAX(height, text.get_line_height(i, j));
-		}
-	}
-	return height + line_spacing;
+	return text.get_line_height() + line_spacing;
 }
 
 int TextEdit::get_indent_level(int p_line) const {
@@ -4151,6 +4222,9 @@ TextEdit::GutterType TextEdit::get_gutter_type(int p_gutter) const {
 
 void TextEdit::set_gutter_width(int p_gutter, int p_width) {
 	ERR_FAIL_INDEX(p_gutter, gutters.size());
+	if (gutters[p_gutter].width == p_width) {
+		return;
+	}
 	gutters.write[p_gutter].width = p_width;
 	_update_gutter_width();
 }
@@ -4166,6 +4240,9 @@ int TextEdit::get_total_gutter_width() const {
 
 void TextEdit::set_gutter_draw(int p_gutter, bool p_draw) {
 	ERR_FAIL_INDEX(p_gutter, gutters.size());
+	if (gutters[p_gutter].draw == p_draw) {
+		return;
+	}
 	gutters.write[p_gutter].draw = p_draw;
 	_update_gutter_width();
 }
@@ -5458,7 +5535,7 @@ void TextEdit::_update_scrollbars() {
 	}
 
 	int visible_width = size.width - style_normal->get_minimum_size().width;
-	int total_width = text.get_max_width(true) + vmin.x + gutters_width + gutter_padding;
+	int total_width = text.get_max_width() + vmin.x + gutters_width + gutter_padding;
 
 	if (draw_minimap) {
 		total_width += minimap_width;
@@ -5910,8 +5987,6 @@ void TextEdit::_base_insert_text(int p_line, int p_char, const String &p_text, i
 		text.set_hidden(p_line, false);
 	}
 
-	text.invalidate_cache(p_line);
-
 	r_end_line = p_line + substrings.size() - 1;
 	r_end_column = text[r_end_line].length() - postinsert_text.length();
 
@@ -5968,8 +6043,6 @@ void TextEdit::_base_remove_text(int p_from_line, int p_from_column, int p_to_li
 	}
 	text.set(p_from_line, pre_text + post_text, structured_text_parser(st_parser, st_args, pre_text + post_text));
 
-	text.invalidate_cache(p_from_line);
-
 	if (!text_changed_dirty && !setting_text) {
 		if (is_inside_tree()) {
 			MessageQueue::get_singleton()->push_call(this, "_text_changed_emit");
@@ -5986,7 +6059,6 @@ TextEdit::TextEdit() {
 	set_default_cursor_shape(CURSOR_IBEAM);
 
 	text.set_tab_size(text.get_tab_size());
-	text.clear();
 
 	h_scroll = memnew(HScrollBar);
 	v_scroll = memnew(VScrollBar);

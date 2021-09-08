@@ -144,6 +144,8 @@ private:
 
 			Color background_color = Color(0, 0, 0, 0);
 			bool hidden = false;
+			int height = 0;
+			int width = 0;
 
 			Line() {
 				data_buf.instantiate();
@@ -152,6 +154,7 @@ private:
 
 	private:
 		bool is_dirty = false;
+		bool tab_size_dirty = false;
 
 		mutable Vector<Line> text;
 		Ref<Font> font;
@@ -162,10 +165,15 @@ private:
 		TextServer::Direction direction = TextServer::DIRECTION_AUTO;
 		bool draw_control_chars = false;
 
+		int line_height = -1;
+		int max_width = -1;
 		int width = -1;
 
 		int tab_size = 4;
 		int gutter_count = 0;
+
+		void _calculate_line_height();
+		void _calculate_max_line_width();
 
 	public:
 		void set_tab_size(int p_tab_size);
@@ -176,9 +184,9 @@ private:
 		void set_direction_and_language(TextServer::Direction p_direction, const String &p_language);
 		void set_draw_control_chars(bool p_draw_control_chars);
 
-		int get_line_height(int p_line, int p_wrap_index) const;
+		int get_line_height() const;
 		int get_line_width(int p_line, int p_wrap_index = -1) const;
-		int get_max_width(bool p_exclude_hidden = false) const;
+		int get_max_width() const;
 
 		void set_width(float p_width);
 		int get_line_wrap_amount(int p_line) const;
@@ -187,7 +195,14 @@ private:
 		const Ref<TextParagraph> get_line_data(int p_line) const;
 
 		void set(int p_line, const String &p_text, const Vector<Vector2i> &p_bidi_override);
-		void set_hidden(int p_line, bool p_hidden) { text.write[p_line].hidden = p_hidden; }
+		void set_hidden(int p_line, bool p_hidden) {
+			text.write[p_line].hidden = p_hidden;
+			if (!p_hidden && text[p_line].width > max_width) {
+				max_width = text[p_line].width;
+			} else if (p_hidden && text[p_line].width == max_width) {
+				_calculate_max_line_width();
+			}
+		}
 		bool is_hidden(int p_line) const { return text[p_line].hidden; }
 		void insert(int p_at, const String &p_text, const Vector<Vector2i> &p_bidi_override);
 		void remove(int p_at);

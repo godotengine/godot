@@ -158,7 +158,6 @@ void ScriptTextEditor::enable_editor() {
 	editor_enabled = true;
 
 	_enable_code_editor();
-	_set_theme_for_script();
 
 	_validate_script();
 }
