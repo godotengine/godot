@@ -32,7 +32,7 @@
 
 #include "audio_driver_jack.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 #include "core/version.h"
 
 #include <stdio.h>

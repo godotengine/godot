@@ -408,7 +408,7 @@ Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle
 		path = get_executable_path().get_base_dir().plus_file("../lib").plus_file(p_path.get_file());
 	}
 
-	if (!FileAccess::exists(path) && p_path.is_rel_path()) {
+	if (!FileAccess::exists(path) && p_path.is_relative_path()) {
 		//this code exists so gdnative can load .so files using the search mechanism of the dynamic linker
 		path = p_path;
 	}
