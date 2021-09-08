@@ -65,7 +65,7 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 
 	Vector<uint8_t> imgdata;
 
-	imgdata.resize(height * width * sizeof(uint32_t));
+	imgdata.resize(height * width * (int)sizeof(uint32_t));
 
 	{
 		uint8_t *w = imgdata.ptrw();
@@ -75,7 +75,7 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 		if (width < 8 || width >= 32768) {
 			// Read flat data
 
-			f->get_buffer(ptr, width * height * 4);
+			f->get_buffer(ptr, (uint64_t)width * height * 4);
 		} else {
 			// Read RLE-encoded data
 

@@ -99,7 +99,7 @@ static int godot_testerror(voidpf opaque, voidpf stream) {
 }
 
 static voidpf godot_alloc(voidpf opaque, uInt items, uInt size) {
-	return memalloc(items * size);
+	return memalloc((size_t)items * size);
 }
 
 static void godot_free(voidpf opaque, voidpf address) {
