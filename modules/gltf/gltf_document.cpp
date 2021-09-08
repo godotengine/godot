@@ -5100,7 +5100,7 @@ void GLTFDocument::_convert_spatial(Ref<GLTFState> state, Node3D *p_spatial, Ref
 	p_node->translation = xform.origin;
 }
 
-Node3D *GLTFDocument::_generate_spatial(Ref<GLTFState> state, Node *scene_parent, const GLTFNodeIndex node_index, bool p_importer_mesh) {
+Node3D *GLTFDocument::_generate_node_3d(Ref<GLTFState> state, Node *scene_parent, const GLTFNodeIndex node_index, bool p_importer_mesh) {
 	Ref<GLTFNode> gltf_node = state->nodes[node_index];
 
 	Node3D *spatial = memnew(Node3D);

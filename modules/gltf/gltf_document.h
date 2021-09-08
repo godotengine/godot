@@ -280,7 +280,7 @@ private:
 	Camera3D *_generate_camera(Ref<GLTFState> state, Node *scene_parent,
 			const GLTFNodeIndex node_index);
 	Node3D *_generate_light(Ref<GLTFState> state, Node *scene_parent, const GLTFNodeIndex node_index);
-	Node3D *_generate_spatial(Ref<GLTFState> state, Node *scene_parent,
+	Node3D *_generate_node_3d(Ref<GLTFState> state, Node *scene_parent,
 			const GLTFNodeIndex node_index, bool p_importer_mesh);
 	void _assign_scene_names(Ref<GLTFState> state);
 	template <class T>
