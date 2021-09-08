@@ -36,13 +36,10 @@
 #include "core/os/mutex.h"
 #include "servers/audio_server.h"
 
-#include <jack/jack.h>
+#include "jack-so_wrap.h"
 
 class AudioDriverJACK : public AudioDriver {
 	Mutex mutex;
-
-	struct LibJACK;
-	LibJACK *library = nullptr;
 
 	jack_client_t *client = nullptr;
 	Vector<jack_port_t *> ports;
@@ -97,9 +94,6 @@ public:
 	void capture_set_device(const String &device);
 	String capture_get_device();
 	Array capture_get_device_list();
-
-	static Error load_jack_library(LibJACK *&library);
-	static void unload_jack_library(LibJACK *&library);
 
 	AudioDriverJACK();
 	~AudioDriverJACK();
