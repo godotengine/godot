@@ -42,9 +42,9 @@ class AudioDriverJACK : public AudioDriver {
 	Mutex mutex;
 
 	struct LibJACK;
-	LibJACK *library;
+	LibJACK *library = nullptr;
 
-	jack_client_t *client;
+	jack_client_t *client = nullptr;
 	Vector<jack_port_t *> ports;
 	Vector<jack_port_t *> capture_ports;
 
@@ -67,11 +67,11 @@ class AudioDriverJACK : public AudioDriver {
 	static const DeviceJACK capture_devices[];
 	static const unsigned num_capture_devices;
 
-	int device_index;
-	int capture_device_index;
+	int device_index = 0;
+	int capture_device_index = 0;
 
-	bool active;
-	bool capture_active;
+	bool active = false;
+	bool capture_active = false;
 
 	void connect_physical_ports();
 	void connect_physical_capture_ports();

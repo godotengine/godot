@@ -101,10 +101,11 @@ int AudioDriverJACK::DeviceJACK::channels() const {
 Error AudioDriverJACK::init_device() {
 	String client_name = GLOBAL_GET("application/config/name");
 
-	if (client_name.length() == 0)
+	if (client_name.length() == 0) {
 		client_name = VERSION_NAME;
+	}
 
-	client = library->client_open(client_name.utf8(), JackNoStartServer, NULL);
+	client = library->client_open(client_name.utf8(), JackNoStartServer, nullptr);
 
 	if (!client) {
 		ERR_FAIL_COND_V(!client, ERR_CANT_OPEN);
@@ -161,8 +162,9 @@ Error AudioDriverJACK::init_device() {
 	// use the JACK buffer size or 30ms, whichever is larger
 	unsigned input_latency = 30;
 	unsigned input_buffer_frames = closest_power_of_2(input_latency * mix_rate / 1000);
-	if (buffer_size > input_buffer_frames)
+	if (buffer_size > input_buffer_frames) {
 		input_buffer_frames = buffer_size;
+	}
 
 	input_buffer_init(input_buffer_frames);
 
@@ -173,8 +175,9 @@ Error AudioDriverJACK::init() {
 	Error err = load_jack_library(library);
 	if (err == OK) {
 		err = init_device();
-		if (err != OK)
+		if (err != OK) {
 			unload_jack_library(library);
+		}
 	}
 
 	return err;
@@ -183,23 +186,27 @@ Error AudioDriverJACK::init() {
 void AudioDriverJACK::start() {
 	active = true;
 
-	if (!client)
+	if (!client) {
 		return;
+	}
 
 	library->activate(client);
 
 	// if the sound card output was picked,
 	// identify the physical client and connect
 	// note: must always go after activate
-	if (device_index == 0)
+	if (device_index == 0) {
 		connect_physical_ports();
-	if (capture_device_index == 0)
+	}
+	if (capture_device_index == 0) {
 		connect_physical_capture_ports();
+	}
 }
 
 int AudioDriverJACK::get_mix_rate() const {
-	if (!client)
+	if (!client) {
 		return 0;
+	}
 
 	return library->get_sample_rate(client);
 }
@@ -230,13 +237,15 @@ void AudioDriverJACK::set_device(String device) {
 
 	for (unsigned i = 0; i < num_devices && new_index == -1; ++i) {
 		const DeviceJACK &jdev = devices[i];
-		if (device == jdev.name)
+		if (device == jdev.name) {
 			new_index = i;
+		}
 	}
 
 	// fallback to default
-	if (new_index == -1)
+	if (new_index == -1) {
 		new_index = 0;
+	}
 
 	// close current client, and reopen
 	if (device_index != new_index) {
@@ -245,8 +254,9 @@ void AudioDriverJACK::set_device(String device) {
 		init_device();
 
 		// if it was started before recreating, restart it
-		if (active)
+		if (active) {
 			start();
+		}
 	}
 }
 
@@ -261,7 +271,7 @@ void AudioDriverJACK::unlock() {
 void AudioDriverJACK::finish_device() {
 	if (client) {
 		library->client_close(client);
-		client = NULL;
+		client = nullptr;
 	}
 
 	ports.clear();
@@ -271,8 +281,9 @@ void AudioDriverJACK::finish_device() {
 void AudioDriverJACK::finish() {
 	finish_device();
 
-	if (library)
+	if (library) {
 		unload_jack_library(library);
+	}
 }
 
 static inline int32_t saturate16bit(int32_t sample) {
@@ -316,8 +327,9 @@ int AudioDriverJACK::process_func(jack_nframes_t total_frames, void *p_udata) {
 
 		jack_nframes_t current_frames = total_frames - frame_index;
 
-		if (current_frames > max_frames_in)
+		if (current_frames > max_frames_in) {
 			current_frames = max_frames_in;
+		}
 
 		jd->audio_server_process(current_frames, frames_in);
 
@@ -335,10 +347,12 @@ int AudioDriverJACK::process_func(jack_nframes_t total_frames, void *p_udata) {
 			const float *ch_in1 = (float *)library->port_get_buffer(capture_ports[0], total_frames) + frame_index;
 			const float *ch_in2;
 
-			if (capture_channels >= 2)
+			if (capture_channels >= 2) {
 				ch_in2 = (float *)library->port_get_buffer(capture_ports[1], total_frames) + frame_index;
-			else
+			}
+			else {
 				ch_in2 = ch_in1; // mono device
+			}
 
 			for (jack_nframes_t i = 0; i < current_frames; ++i) {
 				int32_t sample1 = saturate16bit((int32_t)(ch_in1[i] * 32767)) << 16;
@@ -362,16 +376,18 @@ void AudioDriverJACK::connect_physical_ports() {
 
 	// we need the effective name of our client
 	const char *src_client = library->get_client_name(client);
-	if (!src_client)
+	if (!src_client) {
 		return;
+	}
 
 	// list physical output ports
 	const char **ports = library->get_ports(
-			client, NULL, JACK_DEFAULT_AUDIO_TYPE,
+			client, nullptr, JACK_DEFAULT_AUDIO_TYPE,
 			JackPortIsInput | JackPortIsPhysical);
 
-	if (!ports)
+	if (!ports) {
 		return;
+	}
 
 	// first port belongs to our wanted client
 	const char *first_port = ports[0];
@@ -396,11 +412,13 @@ void AudioDriverJACK::connect_physical_ports() {
 	// connect up to `channels` ports, as long as it belongs to the client
 	for (unsigned ch = 0; ch < channels; ++ch) {
 		const char *dst_port = ports[ch];
-		if (!dst_port)
+		if (!dst_port) {
 			break;
+		}
 
-		if (strncmp(dst_port, dst_client_start, dst_client_length + 1))
+		if (strncmp(dst_port, dst_client_start, dst_client_length + 1)) {
 			break;
+		}
 
 		char *src_port = src_port_buffer.ptrw();
 		sprintf(src_port, "%s:" PORT_NAME_FORMAT, src_client, ch + 1);
@@ -417,16 +435,18 @@ void AudioDriverJACK::connect_physical_capture_ports() {
 
 	// we need the effective name of our client
 	const char *dst_client = library->get_client_name(client);
-	if (!dst_client)
+	if (!dst_client) {
 		return;
+	}
 
 	// list physical output ports
 	const char **ports = library->get_ports(
-			client, NULL, JACK_DEFAULT_AUDIO_TYPE,
+			client, nullptr, JACK_DEFAULT_AUDIO_TYPE,
 			JackPortIsOutput | JackPortIsPhysical);
 
-	if (!ports)
+	if (!ports) {
 		return;
+	}
 
 	// first port belongs to our wanted client
 	const char *first_port = ports[0];
@@ -451,11 +471,13 @@ void AudioDriverJACK::connect_physical_capture_ports() {
 	// connect up to `capture_channels` ports, as long as it belongs to the client
 	for (unsigned ch = 0; ch < capture_channels; ++ch) {
 		const char *src_port = ports[ch];
-		if (!src_port)
+		if (!src_port) {
 			break;
+		}
 
-		if (strncmp(src_port, src_client_start, src_client_length + 1))
+		if (strncmp(src_port, src_client_start, src_client_length + 1)) {
 			break;
+		}
 
 		char *dst_port = dst_port_buffer.ptrw();
 		sprintf(dst_port, "%s:" CAPTURE_PORT_NAME_FORMAT, dst_client, ch + 1);
@@ -481,13 +503,15 @@ void AudioDriverJACK::capture_set_device(const String &device) {
 
 	for (unsigned i = 0; i < num_capture_devices && new_index == -1; ++i) {
 		const DeviceJACK &cdev = capture_devices[i];
-		if (device == cdev.name)
+		if (device == cdev.name) {
 			new_index = i;
+		}
 	}
 
 	// fallback to default
-	if (new_index == -1)
+	if (new_index == -1) {
 		new_index = 0;
+	}
 
 	// close current client, and reopen
 	if (capture_device_index != new_index) {
@@ -496,8 +520,9 @@ void AudioDriverJACK::capture_set_device(const String &device) {
 		init_device();
 
 		// if it was started before recreating, restart it
-		if (active)
+		if (active) {
 			start();
+		}
 	}
 }
 
@@ -531,8 +556,9 @@ Error AudioDriverJACK::load_jack_library(LibJACK *&library) {
 #endif
 
 	err = os->open_dynamic_library(library_name, handle);
-	if (err != OK)
+	if (err != OK) {
 		return err;
+	}
 
 	library = new LibJACK;
 	library->handle = handle;
@@ -576,16 +602,10 @@ void AudioDriverJACK::unload_jack_library(LibJACK *&library) {
 
 	os->close_dynamic_library(library->handle);
 	delete library;
-	library = NULL;
+	library = nullptr;
 }
 
-AudioDriverJACK::AudioDriverJACK() :
-		library(NULL),
-		client(NULL),
-		device_index(0),
-		capture_device_index(0),
-		active(false),
-		capture_active(false) {
+AudioDriverJACK::AudioDriverJACK() {
 }
 
 AudioDriverJACK::~AudioDriverJACK() {
