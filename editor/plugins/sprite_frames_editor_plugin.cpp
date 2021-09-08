@@ -216,14 +216,14 @@ void SpriteFramesEditor::_sheet_add_frames() {
 	Size2i texture_size = split_sheet_preview->get_texture()->get_size();
 	int frame_count_x = split_sheet_h->get_value();
 	int frame_count_y = split_sheet_v->get_value();
-	Size2 frame_size(texture_size.width / frame_count_x, texture_size.height / frame_count_y);
+	Size2i frame_size(texture_size.width / frame_count_x, texture_size.height / frame_count_y);
 
 	undo_redo->create_action(TTR("Add Frame"));
 
 	int fc = frames->get_frame_count(edited_anim);
 
-	Point2 src_origin;
-	Rect2 src_region(Point2(), texture_size);
+	Point2i src_origin;
+	Rect2i src_region(Point2i(), texture_size);
 
 	AtlasTexture *src_atlas = Object::cast_to<AtlasTexture>(*split_sheet_preview->get_texture());
 	if (src_atlas && src_atlas->get_atlas().is_valid()) {
@@ -233,11 +233,11 @@ void SpriteFramesEditor::_sheet_add_frames() {
 
 	for (Set<int>::Element *E = frames_selected.front(); E; E = E->next()) {
 		int idx = E->get();
-		Point2 frame_coords(idx % frame_count_x, idx / frame_count_x);
+		Point2i frame_coords(idx % frame_count_x, idx / frame_count_x);
 
-		Rect2 frame(frame_coords * frame_size + src_origin, frame_size);
-		Rect2 region = frame.intersection(src_region);
-		Rect2 margin(region == Rect2() ? Point2() : region.position - frame.position, frame.size - region.size);
+		Rect2i frame(frame_coords * frame_size + src_origin, frame_size);
+		Rect2i region = frame.intersection(src_region);
+		Rect2i margin(region == Rect2i() ? Point2i() : region.position - frame.position, frame.size - region.size);
 
 		Ref<AtlasTexture> at;
 		at.instantiate();

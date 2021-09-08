@@ -368,7 +368,7 @@ void GraphNode::_notification(int p_what) {
 			int title_offset = get_theme_constant(SNAME("title_offset"));
 			int title_h_offset = get_theme_constant(SNAME("title_h_offset"));
 			Color title_color = get_theme_color(SNAME("title_color"));
-			Point2i icofs = -port->get_size() * 0.5;
+			Point2i icofs = -port->get_size() / 2;
 			int edgeofs = get_theme_constant(SNAME("port_offset"));
 			icofs.y += sb->get_margin(SIDE_TOP);
 

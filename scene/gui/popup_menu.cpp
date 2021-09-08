@@ -61,7 +61,7 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 	for (int i = 0; i < items.size(); i++) {
 		Size2 size;
 
-		Size2 icon_size = items[i].get_icon_size();
+		Size2i icon_size = items[i].get_icon_size();
 		size.height = _get_item_height(i);
 		icon_w = MAX(icon_size.width, icon_w);
 
@@ -540,7 +540,7 @@ void PopupMenu::_draw_items() {
 		_shape_item(i);
 
 		Point2 item_ofs = ofs;
-		Size2 icon_size = items[i].get_icon_size();
+		Size2i icon_size = items[i].get_icon_size();
 		float h = _get_item_height(i);
 
 		if (i == mouse_over) {

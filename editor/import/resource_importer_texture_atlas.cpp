@@ -215,7 +215,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 			EditorAtlasPacker::Chart chart;
 
 			//clip a region from the image
-			Rect2 used_rect = image->get_used_rect();
+			Rect2i used_rect = image->get_used_rect();
 			pack_data.region = used_rect;
 
 			chart.vertices.push_back(used_rect.position);

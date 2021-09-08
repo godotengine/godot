@@ -65,11 +65,11 @@ void EditorAtlasPacker::_plot_triangle(Ref<BitMap> p_bitmap, Vector2i *vertices)
 			for (int xi = (xf > 0 ? int(xf) : 0); xi <= (xt < width ? xt : width - 1); xi++) {
 				//pixels[int(x + y * width)] = color;
 
-				p_bitmap->set_bit(Point2(xi, yi), true);
+				p_bitmap->set_bit(Point2i(xi, yi), true);
 			}
 
 			for (int xi = (xf < width ? int(xf) : width - 1); xi >= (xt > 0 ? xt : 0); xi--) {
-				p_bitmap->set_bit(Point2(xi, yi), true);
+				p_bitmap->set_bit(Point2i(xi, yi), true);
 			}
 		}
 		xf += dx_far;
@@ -167,7 +167,7 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 							continue;
 						}
 
-						if (src_bitmap->get_bit(Vector2(px, py))) {
+						if (src_bitmap->get_bit(Vector2i(px, py))) {
 							found_pixel = true;
 						}
 					}

@@ -60,7 +60,7 @@ protected:
 public:
 	virtual int get_width() const = 0;
 	virtual int get_height() const = 0;
-	virtual Size2 get_size() const;
+	virtual Size2i get_size() const;
 
 	virtual bool is_pixel_opaque(int p_x, int p_y) const;
 
@@ -218,8 +218,8 @@ class AtlasTexture : public Texture2D {
 
 protected:
 	Ref<Texture2D> atlas;
-	Rect2 region;
-	Rect2 margin;
+	Rect2i region;
+	Rect2i margin;
 	bool filter_clip = false;
 
 	static void _bind_methods();
@@ -234,11 +234,11 @@ public:
 	void set_atlas(const Ref<Texture2D> &p_atlas);
 	Ref<Texture2D> get_atlas() const;
 
-	void set_region(const Rect2 &p_region);
-	Rect2 get_region() const;
+	void set_region(const Rect2i &p_region);
+	Rect2i get_region() const;
 
-	void set_margin(const Rect2 &p_margin);
-	Rect2 get_margin() const;
+	void set_margin(const Rect2i &p_margin);
+	Rect2i get_margin() const;
 
 	void set_filter_clip(const bool p_enable);
 	bool has_filter_clip() const;

@@ -78,7 +78,7 @@ bool EditorTexturePreviewPlugin::generate_small_preview_automatically() const {
 	return true;
 }
 
-Ref<Texture2D> EditorTexturePreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
+Ref<Texture2D> EditorTexturePreviewPlugin::generate(const RES &p_from, const Size2i &p_size) const {
 	Ref<Image> img;
 	Ref<AtlasTexture> atex = p_from;
 	if (atex.is_valid()) {
@@ -117,15 +117,15 @@ Ref<Texture2D> EditorTexturePreviewPlugin::generate(const RES &p_from, const Siz
 		img->convert(Image::FORMAT_RGBA8);
 	}
 
-	Vector2 new_size = img->get_size();
+	Vector2i new_size = img->get_size();
 	if (new_size.x > p_size.x) {
-		new_size = Vector2(p_size.x, new_size.y * p_size.x / new_size.x);
+		new_size = Vector2i(p_size.x, new_size.y * p_size.x / new_size.x);
 	}
 	if (new_size.y > p_size.y) {
-		new_size = Vector2(new_size.x * p_size.y / new_size.y, p_size.y);
+		new_size = Vector2i(new_size.x * p_size.y / new_size.y, p_size.y);
 	}
-	Vector2i new_size_i(MAX(1, (int)new_size.x), MAX(1, (int)new_size.y));
-	img->resize(new_size_i.x, new_size_i.y, Image::INTERPOLATE_CUBIC);
+	new_size = Vector2i(MAX(1, new_size.x), MAX(1, new_size.y));
+	img->resize(new_size.x, new_size.y, Image::INTERPOLATE_CUBIC);
 
 	post_process_preview(img);
 
@@ -144,7 +144,7 @@ bool EditorImagePreviewPlugin::handles(const String &p_type) const {
 	return p_type == "Image";
 }
 
-Ref<Texture2D> EditorImagePreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
+Ref<Texture2D> EditorImagePreviewPlugin::generate(const RES &p_from, const Size2i &p_size) const {
 	Ref<Image> img = p_from;
 
 	if (img.is_null() || img->is_empty()) {
@@ -162,12 +162,12 @@ Ref<Texture2D> EditorImagePreviewPlugin::generate(const RES &p_from, const Size2
 		img->convert(Image::FORMAT_RGBA8);
 	}
 
-	Vector2 new_size = img->get_size();
+	Vector2i new_size = img->get_size();
 	if (new_size.x > p_size.x) {
-		new_size = Vector2(p_size.x, new_size.y * p_size.x / new_size.x);
+		new_size = Vector2i(p_size.x, new_size.y * p_size.x / new_size.x);
 	}
 	if (new_size.y > p_size.y) {
-		new_size = Vector2(new_size.x * p_size.y / new_size.y, p_size.y);
+		new_size = Vector2i(new_size.x * p_size.y / new_size.y, p_size.y);
 	}
 	img->resize(new_size.x, new_size.y, Image::INTERPOLATE_CUBIC);
 
@@ -230,12 +230,12 @@ Ref<Texture2D> EditorBitmapPreviewPlugin::generate(const RES &p_from, const Size
 		img->convert(Image::FORMAT_RGBA8);
 	}
 
-	Vector2 new_size = img->get_size();
+	Vector2i new_size = img->get_size();
 	if (new_size.x > p_size.x) {
-		new_size = Vector2(p_size.x, new_size.y * p_size.x / new_size.x);
+		new_size = Vector2i(p_size.x, new_size.y * p_size.x / new_size.x);
 	}
 	if (new_size.y > p_size.y) {
-		new_size = Vector2(new_size.x * p_size.y / new_size.y, p_size.y);
+		new_size = Vector2i(new_size.x * p_size.y / new_size.y, p_size.y);
 	}
 	img->resize(new_size.x, new_size.y, Image::INTERPOLATE_CUBIC);
 
@@ -751,12 +751,12 @@ Ref<Texture2D> EditorMeshPreviewPlugin::generate(const RES &p_from, const Size2 
 
 	img->convert(Image::FORMAT_RGBA8);
 
-	Vector2 new_size = img->get_size();
+	Vector2i new_size = img->get_size();
 	if (new_size.x > p_size.x) {
-		new_size = Vector2(p_size.x, new_size.y * p_size.x / new_size.x);
+		new_size = Vector2i(p_size.x, new_size.y * p_size.x / new_size.x);
 	}
 	if (new_size.y > p_size.y) {
-		new_size = Vector2(new_size.x * p_size.y / new_size.y, p_size.y);
+		new_size = Vector2i(new_size.x * p_size.y / new_size.y, p_size.y);
 	}
 	img->resize(new_size.x, new_size.y, Image::INTERPOLATE_CUBIC);
 
@@ -872,12 +872,12 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path,
 
 	img->convert(Image::FORMAT_RGBA8);
 
-	Vector2 new_size = img->get_size();
+	Vector2i new_size = img->get_size();
 	if (new_size.x > p_size.x) {
-		new_size = Vector2(p_size.x, new_size.y * p_size.x / new_size.x);
+		new_size = Vector2i(p_size.x, new_size.y * p_size.x / new_size.x);
 	}
 	if (new_size.y > p_size.y) {
-		new_size = Vector2(new_size.x * p_size.y / new_size.y, p_size.y);
+		new_size = Vector2i(new_size.x * p_size.y / new_size.y, p_size.y);
 	}
 	img->resize(new_size.x, new_size.y, Image::INTERPOLATE_CUBIC);
 

@@ -972,7 +972,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		large_image->create(images[0]->get_width(), images[0]->get_height() * images.size(), false, images[0]->get_format());
 
 		for (int i = 0; i < lightmapper->get_bake_texture_count(); i++) {
-			large_image->blit_rect(images[i], Rect2(0, 0, images[i]->get_width(), images[i]->get_height()), Point2(0, images[i]->get_height() * i));
+			large_image->blit_rect(images[i], Rect2i(0, 0, images[i]->get_width(), images[i]->get_height()), Point2i(0, images[i]->get_height() * i));
 		}
 
 		String base_path = p_image_data_path.get_basename() + ".exr";

@@ -47,9 +47,9 @@
 
 #include <limits.h>
 
-Size2 TreeItem::Cell::get_icon_size() const {
+Size2i TreeItem::Cell::get_icon_size() const {
 	if (icon.is_null()) {
-		return Size2();
+		return Size2i();
 	}
 	if (icon_region == Rect2i()) {
 		return icon->get_size();
@@ -58,12 +58,12 @@ Size2 TreeItem::Cell::get_icon_size() const {
 	}
 }
 
-void TreeItem::Cell::draw_icon(const RID &p_where, const Point2 &p_pos, const Size2 &p_size, const Color &p_color) const {
+void TreeItem::Cell::draw_icon(const RID &p_where, const Point2 &p_pos, const Size2i &p_size, const Color &p_color) const {
 	if (icon.is_null()) {
 		return;
 	}
 
-	Size2i dsize = (p_size == Size2()) ? icon->get_size() : p_size;
+	Size2i dsize = (p_size == Size2i()) ? icon->get_size() : p_size;
 
 	if (icon_region == Rect2i()) {
 		icon->draw_rect_region(p_where, Rect2(p_pos, dsize), Rect2(Point2(), icon->get_size()), p_color);

@@ -209,7 +209,7 @@ void Sprite2DEditor::_update_mesh_data() {
 	computed_uv.clear();
 	computed_indices.clear();
 
-	Size2 img_size = image->get_size();
+	Size2i img_size = image->get_size();
 	for (int i = 0; i < lines.size(); i++) {
 		lines.write[i] = expand(lines[i], rect, epsilon);
 	}

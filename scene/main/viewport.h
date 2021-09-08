@@ -74,7 +74,7 @@ public:
 
 	virtual int get_width() const override;
 	virtual int get_height() const override;
-	virtual Size2 get_size() const override;
+	virtual Size2i get_size() const override;
 	virtual RID get_rid() const override;
 
 	virtual bool has_alpha() const override;

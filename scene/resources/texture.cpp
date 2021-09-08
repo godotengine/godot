@@ -37,8 +37,8 @@
 #include "scene/resources/bit_map.h"
 #include "servers/camera/camera_feed.h"
 
-Size2 Texture2D::get_size() const {
-	return Size2(get_width(), get_height());
+Size2i Texture2D::get_size() const {
+	return Size2i(get_width(), get_height());
 }
 
 bool Texture2D::is_pixel_opaque(int p_x, int p_y) const {
@@ -249,7 +249,7 @@ bool ImageTexture::is_pixel_opaque(int p_x, int p_y) const {
 		x = CLAMP(x, 0, aw);
 		y = CLAMP(y, 0, ah);
 
-		return alpha_cache->get_bit(Point2(x, y));
+		return alpha_cache->get_bit(Point2i(x, y));
 	}
 
 	return true;
@@ -669,7 +669,7 @@ bool StreamTexture2D::is_pixel_opaque(int p_x, int p_y) const {
 		x = CLAMP(x, 0, aw);
 		y = CLAMP(y, 0, ah);
 
-		return alpha_cache->get_bit(Point2(x, y));
+		return alpha_cache->get_bit(Point2i(x, y));
 	}
 
 	return true;
@@ -1088,7 +1088,7 @@ Ref<Texture2D> AtlasTexture::get_atlas() const {
 	return atlas;
 }
 
-void AtlasTexture::set_region(const Rect2 &p_region) {
+void AtlasTexture::set_region(const Rect2i &p_region) {
 	if (region == p_region) {
 		return;
 	}
@@ -1096,11 +1096,11 @@ void AtlasTexture::set_region(const Rect2 &p_region) {
 	emit_changed();
 }
 
-Rect2 AtlasTexture::get_region() const {
+Rect2i AtlasTexture::get_region() const {
 	return region;
 }
 
-void AtlasTexture::set_margin(const Rect2 &p_margin) {
+void AtlasTexture::set_margin(const Rect2i &p_margin) {
 	if (margin == p_margin) {
 		return;
 	}
@@ -1108,7 +1108,7 @@ void AtlasTexture::set_margin(const Rect2 &p_margin) {
 	emit_changed();
 }
 
-Rect2 AtlasTexture::get_margin() const {
+Rect2i AtlasTexture::get_margin() const {
 	return margin;
 }
 
@@ -1145,7 +1145,7 @@ void AtlasTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_m
 		return;
 	}
 
-	Rect2 rc = region;
+	Rect2i rc = region;
 
 	if (rc.size.width == 0) {
 		rc.size.width = atlas->get_width();
@@ -1163,7 +1163,7 @@ void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile
 		return;
 	}
 
-	Rect2 rc = region;
+	Rect2i rc = region;
 
 	if (rc.size.width == 0) {
 		rc.size.width = atlas->get_width();
@@ -1197,7 +1197,7 @@ bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect,
 		return false;
 	}
 
-	Rect2 rc = region;
+	Rect2i rc = region;
 
 	Rect2 src = p_src_rect;
 	if (src.size == Size2()) {
@@ -1284,7 +1284,7 @@ Ref<Mesh> MeshTexture::get_mesh() const {
 	return mesh;
 }
 
-void MeshTexture::set_image_size(const Size2 &p_size) {
+void MeshTexture::set_image_size(const Size2i &p_size) {
 	size = p_size;
 }
 

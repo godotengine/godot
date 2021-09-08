@@ -45,7 +45,7 @@ void TextureRect::_notification(int p_what) {
 
 		switch (stretch_mode) {
 			case STRETCH_SCALE_ON_EXPAND: {
-				size = expand ? get_size() : texture->get_size();
+				size = expand ? get_size() : (Vector2)texture->get_size();
 			} break;
 			case STRETCH_SCALE: {
 				size = get_size();

@@ -123,8 +123,8 @@ private:
 			text_buf.instantiate();
 		}
 
-		Size2 get_icon_size() const;
-		void draw_icon(const RID &p_where, const Point2 &p_pos, const Size2 &p_size = Size2(), const Color &p_color = Color()) const;
+		Size2i get_icon_size() const;
+		void draw_icon(const RID &p_where, const Point2 &p_pos, const Size2i &p_size = Size2i(), const Color &p_color = Color()) const;
 	};
 
 	Vector<Cell> cells;

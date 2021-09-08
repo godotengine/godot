@@ -54,16 +54,16 @@ protected:
 	static void _bind_methods();
 
 public:
-	void create(const Size2 &p_size);
+	void create(const Size2i &p_size);
 	void create_from_image_alpha(const Ref<Image> &p_image, float p_threshold = 0.1);
 
-	void set_bit(const Point2 &p_pos, bool p_value);
-	bool get_bit(const Point2 &p_pos) const;
-	void set_bit_rect(const Rect2 &p_rect, bool p_value);
+	void set_bit(const Point2i &p_pos, bool p_value);
+	bool get_bit(const Point2i &p_pos) const;
+	void set_bit_rect(const Rect2i &p_rect, bool p_value);
 	int get_true_bit_count() const;
 
-	Size2 get_size() const;
-	void resize(const Size2 &p_new_size);
+	Size2i get_size() const;
+	void resize(const Size2i &p_new_size);
 
 	void grow_mask(int p_pixels, const Rect2 &p_rect);
 	void shrink_mask(int p_pixels, const Rect2 &p_rect);

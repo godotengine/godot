@@ -445,8 +445,8 @@ int Image::get_height() const {
 	return height;
 }
 
-Vector2 Image::get_size() const {
-	return Vector2(width, height);
+Vector2i Image::get_size() const {
+	return Vector2i(width, height);
 }
 
 bool Image::has_mipmaps() const {
@@ -2442,15 +2442,15 @@ Image::Image(int p_width, int p_height, bool p_mipmaps, Format p_format, const V
 	create(p_width, p_height, p_mipmaps, p_format, p_data);
 }
 
-Rect2 Image::get_used_rect() const {
+Rect2i Image::get_used_rect() const {
 	if (format != FORMAT_LA8 && format != FORMAT_RGBA8 && format != FORMAT_RGBAF && format != FORMAT_RGBAH && format != FORMAT_RGBA4444 && format != FORMAT_RGB565) {
-		return Rect2(Point2(), Size2(width, height));
+		return Rect2i(Point2i(), Size2i(width, height));
 	}
 
 	int len = data.size();
 
 	if (len == 0) {
-		return Rect2();
+		return Rect2i();
 	}
 
 	int minx = 0xFFFFFF, miny = 0xFFFFFFF;
@@ -2476,19 +2476,19 @@ Rect2 Image::get_used_rect() const {
 	}
 
 	if (maxx == -1) {
-		return Rect2();
+		return Rect2i();
 	} else {
-		return Rect2(minx, miny, maxx - minx + 1, maxy - miny + 1);
+		return Rect2i(minx, miny, maxx - minx + 1, maxy - miny + 1);
 	}
 }
 
-Ref<Image> Image::get_rect(const Rect2 &p_area) const {
+Ref<Image> Image::get_rect(const Rect2i &p_area) const {
 	Ref<Image> img = memnew(Image(p_area.size.x, p_area.size.y, mipmaps, format));
-	img->blit_rect(Ref<Image>((Image *)this), p_area, Point2(0, 0));
+	img->blit_rect(Ref<Image>((Image *)this), p_area, Point2i(0, 0));
 	return img;
 }
 
-void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Point2 &p_dest) {
+void Image::blit_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const Point2i &p_dest) {
 	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
 	int dsize = data.size();
 	int srcdsize = p_src->data.size();
@@ -2510,7 +2510,7 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Po
 		return;
 	}
 
-	Point2 src_underscan = Point2(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
+	Point2i src_underscan = Point2i(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
 	Rect2i dest_rect = Rect2i(0, 0, width, height).intersection(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
 
 	uint8_t *wp = data.ptrw();
@@ -2539,7 +2539,7 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Po
 	}
 }
 
-void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2 &p_src_rect, const Point2 &p_dest) {
+void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2i &p_src_rect, const Point2i &p_dest) {
 	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
 	ERR_FAIL_COND_MSG(p_mask.is_null(), "It's not a reference to a valid Image object.");
 	int dsize = data.size();
@@ -2565,7 +2565,7 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 		return;
 	}
 
-	Point2 src_underscan = Point2(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
+	Point2i src_underscan = Point2i(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
 	Rect2i dest_rect = Rect2i(0, 0, width, height).intersection(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
 
 	uint8_t *wp = data.ptrw();
@@ -2598,7 +2598,7 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 	}
 }
 
-void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Point2 &p_dest) {
+void Image::blend_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const Point2i &p_dest) {
 	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
 	int dsize = data.size();
 	int srcdsize = p_src->data.size();
@@ -2619,7 +2619,7 @@ void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const P
 		return;
 	}
 
-	Point2 src_underscan = Point2(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
+	Point2i src_underscan = Point2i(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
 	Rect2i dest_rect = Rect2i(0, 0, width, height).intersection(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
 
 	Ref<Image> img = p_src;
@@ -2642,7 +2642,7 @@ void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const P
 	}
 }
 
-void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2 &p_src_rect, const Point2 &p_dest) {
+void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2i &p_src_rect, const Point2i &p_dest) {
 	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
 	ERR_FAIL_COND_MSG(p_mask.is_null(), "It's not a reference to a valid Image object.");
 	int dsize = data.size();
@@ -2668,7 +2668,7 @@ void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, c
 		return;
 	}
 
-	Point2 src_underscan = Point2(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
+	Point2i src_underscan = Point2i(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
 	Rect2i dest_rect = Rect2i(0, 0, width, height).intersection(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
 
 	Ref<Image> img = p_src;

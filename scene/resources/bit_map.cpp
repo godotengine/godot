@@ -32,7 +32,7 @@
 
 #include "core/io/image_loader.h"
 
-void BitMap::create(const Size2 &p_size) {
+void BitMap::create(const Size2i &p_size) {
 	ERR_FAIL_COND(p_size.width < 1);
 	ERR_FAIL_COND(p_size.height < 1);
 
@@ -62,7 +62,7 @@ void BitMap::create_from_image_alpha(const Ref<Image> &p_image, float p_threshol
 	}
 }
 
-void BitMap::set_bit_rect(const Rect2 &p_rect, bool p_value) {
+void BitMap::set_bit_rect(const Rect2i &p_rect, bool p_value) {
 	Rect2i current = Rect2i(0, 0, width, height).intersection(p_rect);
 	uint8_t *data = bitmask.ptrw();
 
@@ -106,14 +106,11 @@ int BitMap::get_true_bit_count() const {
 	return c;
 }
 
-void BitMap::set_bit(const Point2 &p_pos, bool p_value) {
-	int x = p_pos.x;
-	int y = p_pos.y;
+void BitMap::set_bit(const Point2i &p_pos, bool p_value) {
+	ERR_FAIL_INDEX(p_pos.x, width);
+	ERR_FAIL_INDEX(p_pos.y, height);
 
-	ERR_FAIL_INDEX(x, width);
-	ERR_FAIL_INDEX(y, height);
-
-	int ofs = width * y + x;
+	int ofs = width * p_pos.y + p_pos.x;
 	int bbyte = ofs / 8;
 	int bbit = ofs % 8;
 
@@ -128,21 +125,19 @@ void BitMap::set_bit(const Point2 &p_pos, bool p_value) {
 	bitmask.write[bbyte] = b;
 }
 
-bool BitMap::get_bit(const Point2 &p_pos) const {
-	int x = Math::fast_ftoi(p_pos.x);
-	int y = Math::fast_ftoi(p_pos.y);
-	ERR_FAIL_INDEX_V(x, width, false);
-	ERR_FAIL_INDEX_V(y, height, false);
+bool BitMap::get_bit(const Point2i &p_pos) const {
+	ERR_FAIL_INDEX_V(p_pos.x, width, false);
+	ERR_FAIL_INDEX_V(p_pos.y, height, false);
 
-	int ofs = width * y + x;
+	int ofs = width * p_pos.y + p_pos.x;
 	int bbyte = ofs / 8;
 	int bbit = ofs % 8;
 
 	return (bitmask[bbyte] & (1 << bbit)) != 0;
 }
 
-Size2 BitMap::get_size() const {
-	return Size2(width, height);
+Size2i BitMap::get_size() const {
+	return Size2i(width, height);
 }
 
 void BitMap::_set_data(const Dictionary &p_d) {
@@ -446,11 +441,10 @@ static void fill_bits(const BitMap *p_src, Ref<BitMap> &p_map, const Point2i &p_
 					continue;
 				}
 
-				if (p_map->get_bit(Vector2(i, j))) {
+				if (p_map->get_bit(Vector2i(i, j))) {
 					continue;
-
-				} else if (p_src->get_bit(Vector2(i, j))) {
-					p_map->set_bit(Vector2(i, j), true);
+				} else if (p_src->get_bit(Vector2i(i, j))) {
+					p_map->set_bit(Vector2i(i, j), true);
 
 					FillBitsStackEntry se = { pos, i, j };
 					stack.resize(MAX(stack_size + 1, stack.size()));
@@ -493,7 +487,7 @@ Vector<Vector<Vector2>> BitMap::clip_opaque_to_polygons(const Rect2 &p_rect, flo
 	Vector<Vector<Vector2>> polygons;
 	for (int i = r.position.y; i < r.position.y + r.size.height; i++) {
 		for (int j = r.position.x; j < r.position.x + r.size.width; j++) {
-			if (!fill->get_bit(Point2(j, i)) && get_bit(Point2(j, i))) {
+			if (!fill->get_bit(Point2i(j, i)) && get_bit(Point2i(j, i))) {
 				fill_bits(this, fill, Point2i(j, i), r);
 
 				Vector<Vector2> polygon = _march_square(r, Point2i(j, i));
@@ -531,7 +525,7 @@ void BitMap::grow_mask(int p_pixels, const Rect2 &p_rect) {
 
 	for (int i = r.position.y; i < r.position.y + r.size.height; i++) {
 		for (int j = r.position.x; j < r.position.x + r.size.width; j++) {
-			if (bit_value == get_bit(Point2(j, i))) {
+			if (bit_value == get_bit(Point2i(j, i))) {
 				continue;
 			}
 
@@ -555,7 +549,7 @@ void BitMap::grow_mask(int p_pixels, const Rect2 &p_rect) {
 						continue;
 					}
 
-					if (outside || (bit_value == copy->get_bit(Point2(x, y)))) {
+					if (outside || (bit_value == copy->get_bit(Point2i(x, y)))) {
 						found = true;
 						break;
 					}
@@ -566,7 +560,7 @@ void BitMap::grow_mask(int p_pixels, const Rect2 &p_rect) {
 			}
 
 			if (found) {
-				set_bit(Point2(j, i), bit_value);
+				set_bit(Point2i(j, i), bit_value);
 			}
 		}
 	}
@@ -602,7 +596,7 @@ Array BitMap::_opaque_to_polygons_bind(const Rect2 &p_rect, float p_epsilon) con
 	return result_array;
 }
 
-void BitMap::resize(const Size2 &p_new_size) {
+void BitMap::resize(const Size2i &p_new_size) {
 	Ref<BitMap> new_bitmap;
 	new_bitmap.instantiate();
 	new_bitmap->create(p_new_size);
@@ -610,7 +604,7 @@ void BitMap::resize(const Size2 &p_new_size) {
 	int lh = MIN(height, p_new_size.height);
 	for (int x = 0; x < lw; x++) {
 		for (int y = 0; y < lh; y++) {
-			new_bitmap->set_bit(Vector2(x, y), get_bit(Vector2(x, y)));
+			new_bitmap->set_bit(Vector2i(x, y), get_bit(Vector2i(x, y)));
 		}
 	}
 
@@ -626,7 +620,7 @@ Ref<Image> BitMap::convert_to_image() const {
 
 	for (int i = 0; i < width; i++) {
 		for (int j = 0; j < height; j++) {
-			image->set_pixel(i, j, get_bit(Point2(i, j)) ? Color(1, 1, 1) : Color(0, 0, 0));
+			image->set_pixel(i, j, get_bit(Point2i(i, j)) ? Color(1, 1, 1) : Color(0, 0, 0));
 		}
 	}
 
@@ -649,8 +643,8 @@ void BitMap::blit(const Vector2 &p_pos, const Ref<BitMap> &p_bitmap) {
 			if (py < 0 || py >= height) {
 				continue;
 			}
-			if (p_bitmap->get_bit(Vector2(i, j))) {
-				set_bit(Vector2(x, y), true);
+			if (p_bitmap->get_bit(Vector2i(i, j))) {
+				set_bit(Vector2i(x, y), true);
 			}
 		}
 	}
