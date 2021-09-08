@@ -351,7 +351,7 @@ bool Object::Connection::operator<(const Connection &p_conn) const {
 			if (target == p_conn.target) {
 				return method < p_conn.method;
 			} else {
-				return target < p_conn.target;
+				return target->get_instance_id() < p_conn.target->get_instance_id();
 			}
 		} else {
 			return signal < p_conn.signal;
