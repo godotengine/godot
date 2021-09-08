@@ -153,6 +153,7 @@
 			<description>
 				Adds the node to a group. Groups are helpers to name and organize a subset of nodes, for example "enemies" or "collectables". A node can be in any number of groups. Nodes can be assigned a group at any time, but will not be added until they are inside the scene tree (see [method is_inside_tree]). See notes in the description, and the group methods in [SceneTree].
 				The [code]persistent[/code] option is used when packing node to [PackedScene] and saving to file. Non-persistent groups aren't stored.
+				[b]Note:[/b] For performance reasons, the order of node groups is [i]not[/i] guaranteed. The order of node groups should not be relied upon as it can vary across project runs.
 			</description>
 		</method>
 		<method name="can_process" qualifiers="const">
@@ -236,6 +237,7 @@
 			<return type="Array" />
 			<description>
 				Returns an array listing the groups that the node is a member of.
+				[b]Note:[/b] For performance reasons, the order of node groups is [i]not[/i] guaranteed. The order of node groups should not be relied upon as it can vary across project runs.
 			</description>
 		</method>
 		<method name="get_index" qualifiers="const">
