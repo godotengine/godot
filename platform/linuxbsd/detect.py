@@ -72,7 +72,7 @@ def get_opts():
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
         BoolVariable("use_msan", "Use LLVM compiler memory sanitizer (MSAN)", False),
         BoolVariable("pulseaudio", "Detect and use PulseAudio", True),
-        BoolVariable('jack', 'Detect and use JACK', True),
+        BoolVariable("jack", "Detect and use JACK", True),
         BoolVariable("dbus", "Detect and use D-Bus to handle screensaver", True),
         BoolVariable("udev", "Use udev for gamepad connection callbacks", True),
         BoolVariable("x11", "Enable X11 display", True),
