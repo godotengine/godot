@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		This class implements the high-level multiplayer API. See also [MultiplayerPeer].
-		By default, [SceneTree] has a reference to this class that is used to provide multiplayer capabilities (i.e. RPC/RSET) across the whole scene.
+		By default, [SceneTree] has a reference to this class that is used to provide multiplayer capabilities (i.e. RPCs) across the whole scene.
 		It is possible to override the MultiplayerAPI instance used by specific Nodes by setting the [member Node.custom_multiplayer] property, effectively allowing to run both client and server in the same scene.
 		[b]Note:[/b] The high-level multiplayer API protocol is an implementation detail and isn't meant to be used by non-Godot servers. It may change without notice.
 	</description>
@@ -53,7 +53,7 @@
 			<return type="void" />
 			<description>
 				Method used for polling the MultiplayerAPI. You only need to worry about this if you are using [member Node.custom_multiplayer] override or you set [member SceneTree.multiplayer_poll] to [code]false[/code]. By default, [SceneTree] will poll its MultiplayerAPI for you.
-				[b]Note:[/b] This method results in RPCs and RSETs being called, so they will be executed in the same context of this function (e.g. [code]_process[/code], [code]physics[/code], [Thread]).
+				[b]Note:[/b] This method results in RPCs being called, so they will be executed in the same context of this function (e.g. [code]_process[/code], [code]physics[/code], [Thread]).
 			</description>
 		</method>
 		<method name="send_bytes">
@@ -69,7 +69,7 @@
 	</methods>
 	<members>
 		<member name="allow_object_decoding" type="bool" setter="set_allow_object_decoding" getter="is_object_decoding_allowed" default="false">
-			If [code]true[/code], the MultiplayerAPI will allow encoding and decoding of object during RPCs/RSETs.
+			If [code]true[/code], the MultiplayerAPI will allow encoding and decoding of object during RPCs.
 			[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
 		</member>
 		<member name="multiplayer_peer" type="MultiplayerPeer" setter="set_multiplayer_peer" getter="get_multiplayer_peer">
