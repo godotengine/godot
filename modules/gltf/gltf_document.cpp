@@ -4845,7 +4845,7 @@ void GLTFDocument::_assign_scene_names(Ref<GLTFState> state) {
 	}
 }
 
-BoneAttachment3D *GLTFDocument::_generate_bone_attachment(Ref<GLTFState> state, Skeleton3D *skeleton, const GLTFNodeIndex node_index, const GLTFNodeIndex bone_index) {
+BoneAttachment3D *GLTFDocument::_generate_bone_attachment_3d(Ref<GLTFState> state, Skeleton3D *skeleton, const GLTFNodeIndex node_index, const GLTFNodeIndex bone_index) {
 	Ref<GLTFNode> gltf_node = state->nodes[node_index];
 	Ref<GLTFNode> bone_node = state->nodes[bone_index];
 	BoneAttachment3D *bone_attachment = memnew(BoneAttachment3D);
@@ -4955,7 +4955,7 @@ EditorSceneImporterMeshNode3D *GLTFDocument::_generate_importer_mesh_3d(Ref<GLTF
 	return mi;
 }
 
-Node3D *GLTFDocument::_generate_light(Ref<GLTFState> state, Node *scene_parent, const GLTFNodeIndex node_index) {
+Node3D *GLTFDocument::_generate_light_3d(Ref<GLTFState> state, Node *scene_parent, const GLTFNodeIndex node_index) {
 	Ref<GLTFNode> gltf_node = state->nodes[node_index];
 
 	ERR_FAIL_INDEX_V(gltf_node->light, state->lights.size(), nullptr);
@@ -5007,7 +5007,7 @@ Node3D *GLTFDocument::_generate_light(Ref<GLTFState> state, Node *scene_parent, 
 	return memnew(Node3D);
 }
 
-Camera3D *GLTFDocument::_generate_camera(Ref<GLTFState> state, Node *scene_parent, const GLTFNodeIndex node_index) {
+Camera3D *GLTFDocument::_generate_camera_3d(Ref<GLTFState> state, Node *scene_parent, const GLTFNodeIndex node_index) {
 	Ref<GLTFNode> gltf_node = state->nodes[node_index];
 
 	ERR_FAIL_INDEX_V(gltf_node->camera, state->cameras.size(), nullptr);
@@ -5391,7 +5391,7 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> state, Node *scene_parent
 	// skinned meshes must not be placed in a bone attachment.
 	if (non_bone_parented_to_skeleton && gltf_node->skin < 0) {
 		// Bone Attachment - Parent Case
-		BoneAttachment3D *bone_attachment = _generate_bone_attachment(state, active_skeleton, node_index, gltf_node->parent);
+		BoneAttachment3D *bone_attachment = _generate_bone_attachment_3d(state, active_skeleton, node_index, gltf_node->parent);
 
 		scene_parent->add_child(bone_attachment);
 		bone_attachment->set_owner(scene_root);
@@ -5406,7 +5406,7 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> state, Node *scene_parent
 	if (gltf_node->mesh >= 0) {
 		current_node = _generate_mesh_instance_3d(state, scene_parent, node_index, p_importer_mesh);
 	} else if (gltf_node->camera >= 0) {
-		current_node = _generate_camera(state, scene_parent, node_index);
+		current_node = _generate_camera_3d(state, scene_parent, node_index);
 	} else if (gltf_node->light >= 0) {
 		current_node = _generate_light(state, scene_parent, node_index);
 	}
@@ -5444,7 +5444,7 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> state, Node *scen
 	if (active_skeleton != skeleton) {
 		if (active_skeleton) {
 			// Bone Attachment - Direct Parented Skeleton Case
-			BoneAttachment3D *bone_attachment = _generate_bone_attachment(state, active_skeleton, node_index, gltf_node->parent);
+			BoneAttachment3D *bone_attachment = _generate_bone_attachment_3d(state, active_skeleton, node_index, gltf_node->parent);
 
 			scene_parent->add_child(bone_attachment);
 			bone_attachment->set_owner(scene_root);
@@ -5472,7 +5472,7 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> state, Node *scen
 		// skinned meshes must not be placed in a bone attachment.
 		if (!is_skinned_mesh) {
 			// Bone Attachment - Same Node Case
-			BoneAttachment3D *bone_attachment = _generate_bone_attachment(state, active_skeleton, node_index, node_index);
+			BoneAttachment3D *bone_attachment = _generate_bone_attachment_3d(state, active_skeleton, node_index, node_index);
 
 			scene_parent->add_child(bone_attachment);
 			bone_attachment->set_owner(scene_root);
@@ -5493,7 +5493,7 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> state, Node *scen
 				current_node = _generate_mesh_instance_3d(state, scene_parent, node_index, p_importer_mesh);
 			}
 		} else if (gltf_node->camera >= 0) {
-			current_node = _generate_camera(state, scene_parent, node_index);
+			current_node = _generate_camera_3d(state, scene_parent, node_index);
 		} else if (gltf_node->light >= 0) {
 			current_node = _generate_light(state, scene_parent, node_index);
 		}

@@ -272,14 +272,14 @@ private:
 	Error _parse_animations(Ref<GLTFState> state);
 	Error _serialize_animations(Ref<GLTFState> state);
 	EditorSceneImporterMeshNode3D *_generate_importer_mesh_3d(Ref<GLTFState>, Node *, GLTFNodeIndex, bool p_importer_mesh);
-	BoneAttachment3D *_generate_bone_attachment(Ref<GLTFState> state,
+	BoneAttachment3D *_generate_bone_attachment_3d(Ref<GLTFState> state,
 			Skeleton3D *skeleton,
 			const GLTFNodeIndex node_index,
 			const GLTFNodeIndex bone_index);
 	EditorSceneImporterMeshNode3D *_generate_mesh_instance(Ref<GLTFState> state, Node *scene_parent, const GLTFNodeIndex node_index, bool p_importer_mesh);
-	Camera3D *_generate_camera(Ref<GLTFState> state, Node *scene_parent,
+	Camera3D *_generate_camera_3d(Ref<GLTFState> state, Node *scene_parent,
 			const GLTFNodeIndex node_index);
-	Node3D *_generate_light(Ref<GLTFState> state, Node *scene_parent, const GLTFNodeIndex node_index);
+	Node3D *_generate_light_3d(Ref<GLTFState> state, Node *scene_parent, const GLTFNodeIndex node_index);
 	Node3D *_generate_node_3d(Ref<GLTFState> state, Node *scene_parent,
 			const GLTFNodeIndex node_index, bool p_importer_mesh);
 	void _assign_scene_names(Ref<GLTFState> state);
