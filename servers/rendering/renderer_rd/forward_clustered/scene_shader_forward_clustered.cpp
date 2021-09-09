@@ -601,10 +601,10 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		actions.usage_defines["UV2"] = "#define UV2_USED\n";
 		actions.usage_defines["BONE_INDICES"] = "#define BONES_USED\n";
 		actions.usage_defines["BONE_WEIGHTS"] = "#define WEIGHTS_USED\n";
-		actions.usage_defines["CUSTOM0"] = "#define CUSTOM0\n";
-		actions.usage_defines["CUSTOM1"] = "#define CUSTOM1\n";
-		actions.usage_defines["CUSTOM2"] = "#define CUSTOM2\n";
-		actions.usage_defines["CUSTOM3"] = "#define CUSTOM3\n";
+		actions.usage_defines["CUSTOM0"] = "#define CUSTOM0_USED\n";
+		actions.usage_defines["CUSTOM1"] = "#define CUSTOM1_USED\n";
+		actions.usage_defines["CUSTOM2"] = "#define CUSTOM2_USED\n";
+		actions.usage_defines["CUSTOM3"] = "#define CUSTOM3_USED\n";
 		actions.usage_defines["NORMAL_MAP"] = "#define NORMAL_MAP_USED\n";
 		actions.usage_defines["NORMAL_MAP_DEPTH"] = "@NORMAL_MAP";
 		actions.usage_defines["COLOR"] = "#define COLOR_USED\n";

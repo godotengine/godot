@@ -48,6 +48,7 @@
 #include "core/io/file_access.h"
 #include "core/io/json.h"
 #include "core/math/disjoint_set.h"
+#include "core/math/vector2.h"
 #include "core/variant/typed_array.h"
 #include "core/variant/variant.h"
 #include "core/version.h"
@@ -61,7 +62,7 @@
 #include "scene/resources/surface_tool.h"
 
 #include "modules/modules_enabled.gen.h"
-#include <cstdint>
+
 #ifdef MODULE_CSG_ENABLED
 #include "modules/csg/csg_shape.h"
 #endif // MODULE_CSG_ENABLED
@@ -71,6 +72,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <cstdint>
 #include <limits>
 
 Error GLTFDocument::serialize(Ref<GLTFState> state, Node *p_root, const String &p_path) {
@@ -2171,11 +2173,14 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 			}
 
 			Array array = import_mesh->get_surface_arrays(surface_i);
+			uint32_t format = import_mesh->get_surface_format(surface_i);
+			int32_t vertex_num = 0;
 			Dictionary attributes;
 			{
 				Vector<Vector3> a = array[Mesh::ARRAY_VERTEX];
 				ERR_FAIL_COND_V(!a.size(), ERR_INVALID_DATA);
 				attributes["POSITION"] = _encode_accessor_as_vec3(state, a, true);
+				vertex_num = a.size();
 			}
 			{
 				Vector<real_t> a = array[Mesh::ARRAY_TANGENT];
@@ -2218,6 +2223,58 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 					attributes["TEXCOORD_1"] = _encode_accessor_as_vec2(state, a, true);
 				}
 			}
+			for (int custom_i = 0; custom_i < 3; custom_i++) {
+				Vector<float> a = array[Mesh::ARRAY_CUSTOM0 + custom_i];
+				if (a.size()) {
+					int num_channels = 4;
+					int custom_shift = Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT + custom_i * Mesh::ARRAY_FORMAT_CUSTOM_BITS;
+					switch ((format >> custom_shift) & Mesh::ARRAY_FORMAT_CUSTOM_MASK) {
+						case Mesh::ARRAY_CUSTOM_R_FLOAT:
+							num_channels = 1;
+							break;
+						case Mesh::ARRAY_CUSTOM_RG_FLOAT:
+							num_channels = 2;
+							break;
+						case Mesh::ARRAY_CUSTOM_RGB_FLOAT:
+							num_channels = 3;
+							break;
+						case Mesh::ARRAY_CUSTOM_RGBA_FLOAT:
+							num_channels = 4;
+							break;
+					}
+					int texcoord_i = 2 + 2 * custom_i;
+					String gltf_texcoord_key;
+					for (int prev_texcoord_i = 0; prev_texcoord_i < texcoord_i; prev_texcoord_i++) {
+						gltf_texcoord_key = vformat("TEXCOORD_%d", prev_texcoord_i);
+						if (!attributes.has(gltf_texcoord_key)) {
+							Vector<Vector2> empty;
+							empty.resize(vertex_num);
+							attributes[gltf_texcoord_key] = _encode_accessor_as_vec2(state, empty, true);
+						}
+					}
+
+					LocalVector<Vector2> first_channel;
+					first_channel.resize(vertex_num);
+					LocalVector<Vector2> second_channel;
+					second_channel.resize(vertex_num);
+					for (int32_t vert_i = 0; vert_i < vertex_num; vert_i++) {
+						float u = a[vert_i * num_channels + 0];
+						float v = (num_channels == 1 ? 0.0f : a[vert_i * num_channels + 1]);
+						first_channel[vert_i] = Vector2(u, v);
+						u = 0;
+						v = 0;
+						if (num_channels >= 3) {
+							u = a[vert_i * num_channels + 2];
+							v = (num_channels == 3 ? 0.0f : a[vert_i * num_channels + 3]);
+							second_channel[vert_i] = Vector2(u, v);
+						}
+					}
+					gltf_texcoord_key = vformat("TEXCOORD_%d", texcoord_i);
+					attributes[gltf_texcoord_key] = _encode_accessor_as_vec2(state, first_channel, true);
+					gltf_texcoord_key = vformat("TEXCOORD_%d", texcoord_i + 1);
+					attributes[gltf_texcoord_key] = _encode_accessor_as_vec2(state, second_channel, true);
+				}
+			}
 			{
 				Vector<Color> a = array[Mesh::ARRAY_COLOR];
 				if (a.size()) {
@@ -2253,13 +2310,12 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 					}
 					attributes["JOINTS_0"] = _encode_accessor_as_joints(state, attribs, true);
 				} else if ((a.size() / (JOINT_GROUP_SIZE * 2)) >= vertex_array.size()) {
-					int32_t vertex_count = vertex_array.size();
 					Vector<Color> joints_0;
-					joints_0.resize(vertex_count);
+					joints_0.resize(vertex_num);
 					Vector<Color> joints_1;
-					joints_1.resize(vertex_count);
+					joints_1.resize(vertex_num);
 					int32_t weights_8_count = JOINT_GROUP_SIZE * 2;
-					for (int32_t vertex_i = 0; vertex_i < vertex_count; vertex_i++) {
+					for (int32_t vertex_i = 0; vertex_i < vertex_num; vertex_i++) {
 						Color joint_0;
 						joint_0.r = a[vertex_i * weights_8_count + 0];
 						joint_0.g = a[vertex_i * weights_8_count + 1];
@@ -2289,13 +2345,12 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 					}
 					attributes["WEIGHTS_0"] = _encode_accessor_as_weights(state, attribs, true);
 				} else if ((a.size() / (JOINT_GROUP_SIZE * 2)) >= vertex_array.size()) {
-					int32_t vertex_count = vertex_array.size();
 					Vector<Color> weights_0;
-					weights_0.resize(vertex_count);
+					weights_0.resize(vertex_num);
 					Vector<Color> weights_1;
-					weights_1.resize(vertex_count);
+					weights_1.resize(vertex_num);
 					int32_t weights_8_count = JOINT_GROUP_SIZE * 2;
-					for (int32_t vertex_i = 0; vertex_i < vertex_count; vertex_i++) {
+					for (int32_t vertex_i = 0; vertex_i < vertex_num; vertex_i++) {
 						Color weight_0;
 						weight_0.r = a[vertex_i * weights_8_count + 0];
 						weight_0.g = a[vertex_i * weights_8_count + 1];
@@ -2459,7 +2514,8 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 		ERR_FAIL_COND_V(!d.has("primitives"), ERR_PARSE_ERROR);
 
 		Array primitives = d["primitives"];
-		const Dictionary &extras = d.has("extras") ? (Dictionary)d["extras"] : Dictionary();
+		const Dictionary &extras = d.has("extras") ? (Dictionary)d["extras"] :
+													   Dictionary();
 		Ref<EditorSceneImporterMesh> import_mesh;
 		import_mesh.instantiate();
 		String mesh_name = "mesh";
@@ -2469,6 +2525,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 		import_mesh->set_name(_gen_unique_name(state, vformat("%s_%s", state->scene_name, mesh_name)));
 
 		for (int j = 0; j < primitives.size(); j++) {
+			uint32_t flags = 0;
 			Dictionary p = primitives[j];
 
 			Array array;
@@ -2500,8 +2557,11 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 			}
 
 			ERR_FAIL_COND_V(!a.has("POSITION"), ERR_PARSE_ERROR);
+			int32_t vertex_num = 0;
 			if (a.has("POSITION")) {
-				array[Mesh::ARRAY_VERTEX] = _decode_accessor_as_vec3(state, a["POSITION"], true);
+				PackedVector3Array vertices = _decode_accessor_as_vec3(state, a["POSITION"], true);
+				array[Mesh::ARRAY_VERTEX] = vertices;
+				vertex_num = vertices.size();
 			}
 			if (a.has("NORMAL")) {
 				array[Mesh::ARRAY_NORMAL] = _decode_accessor_as_vec3(state, a["NORMAL"], true);
@@ -2515,6 +2575,60 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 			if (a.has("TEXCOORD_1")) {
 				array[Mesh::ARRAY_TEX_UV2] = _decode_accessor_as_vec2(state, a["TEXCOORD_1"], true);
 			}
+			for (int custom_i = 0; custom_i < 3; custom_i++) {
+				Vector<float> cur_custom;
+				Vector<Vector2> texcoord_first;
+				Vector<Vector2> texcoord_second;
+
+				int texcoord_i = 2 + 2 * custom_i;
+				String gltf_texcoord_key = vformat("TEXCOORD_%d", texcoord_i);
+				int num_channels = 0;
+				if (a.has(gltf_texcoord_key)) {
+					texcoord_first = _decode_accessor_as_vec2(state, a[gltf_texcoord_key], true);
+					num_channels = 2;
+				}
+				gltf_texcoord_key = vformat("TEXCOORD_%d", texcoord_i + 1);
+				if (a.has(gltf_texcoord_key)) {
+					texcoord_second = _decode_accessor_as_vec2(state, a[gltf_texcoord_key], true);
+					num_channels = 4;
+				}
+				if (!num_channels) {
+					break;
+				}
+				if (num_channels == 2 || num_channels == 4) {
+					cur_custom.resize(vertex_num * num_channels);
+					for (int32_t uv_i = 0; uv_i < texcoord_first.size() && uv_i < vertex_num; uv_i++) {
+						cur_custom.write[uv_i * num_channels + 0] = texcoord_first[uv_i].x;
+						cur_custom.write[uv_i * num_channels + 1] = texcoord_first[uv_i].y;
+					}
+					// Vector.resize seems to not zero-initialize. Ensure all unused elements are 0:
+					for (int32_t uv_i = texcoord_first.size(); uv_i < vertex_num; uv_i++) {
+						cur_custom.write[uv_i * num_channels + 0] = 0;
+						cur_custom.write[uv_i * num_channels + 1] = 0;
+					}
+				}
+				if (num_channels == 4) {
+					for (int32_t uv_i = 0; uv_i < texcoord_second.size() && uv_i < vertex_num; uv_i++) {
+						// num_channels must be 4
+						cur_custom.write[uv_i * num_channels + 2] = texcoord_second[uv_i].x;
+						cur_custom.write[uv_i * num_channels + 3] = texcoord_second[uv_i].y;
+					}
+					// Vector.resize seems to not zero-initialize. Ensure all unused elements are 0:
+					for (int32_t uv_i = texcoord_second.size(); uv_i < vertex_num; uv_i++) {
+						cur_custom.write[uv_i * num_channels + 2] = 0;
+						cur_custom.write[uv_i * num_channels + 3] = 0;
+					}
+				}
+				if (cur_custom.size() > 0) {
+					array[Mesh::ARRAY_CUSTOM0 + custom_i] = cur_custom;
+					int custom_shift = Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT + custom_i * Mesh::ARRAY_FORMAT_CUSTOM_BITS;
+					if (num_channels == 2) {
+						flags |= Mesh::ARRAY_CUSTOM_RG_FLOAT << custom_shift;
+					} else {
+						flags |= Mesh::ARRAY_CUSTOM_RGBA_FLOAT << custom_shift;
+					}
+				}
+			}
 			if (a.has("COLOR_0")) {
 				array[Mesh::ARRAY_COLOR] = _decode_accessor_as_color(state, a["COLOR_0"], true);
 				has_vertex_color = true;
@@ -2526,10 +2640,9 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 				PackedInt32Array joints_1 = _decode_accessor_as_ints(state, a["JOINTS_1"], true);
 				ERR_FAIL_COND_V(joints_0.size() != joints_0.size(), ERR_INVALID_DATA);
 				int32_t weight_8_count = JOINT_GROUP_SIZE * 2;
-				int32_t vertex_count = joints_0.size() / JOINT_GROUP_SIZE;
 				Vector<int> joints;
-				joints.resize(vertex_count * weight_8_count);
-				for (int32_t vertex_i = 0; vertex_i < vertex_count; vertex_i++) {
+				joints.resize(vertex_num * weight_8_count);
+				for (int32_t vertex_i = 0; vertex_i < vertex_num; vertex_i++) {
 					joints.write[vertex_i * weight_8_count + 0] = joints_0[vertex_i * JOINT_GROUP_SIZE + 0];
 					joints.write[vertex_i * weight_8_count + 1] = joints_0[vertex_i * JOINT_GROUP_SIZE + 1];
 					joints.write[vertex_i * weight_8_count + 2] = joints_0[vertex_i * JOINT_GROUP_SIZE + 2];
@@ -2568,9 +2681,8 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 				Vector<float> weights;
 				ERR_FAIL_COND_V(weights_0.size() != weights_1.size(), ERR_INVALID_DATA);
 				int32_t weight_8_count = JOINT_GROUP_SIZE * 2;
-				int32_t vertex_count = weights_0.size() / JOINT_GROUP_SIZE;
-				weights.resize(vertex_count * weight_8_count);
-				for (int32_t vertex_i = 0; vertex_i < vertex_count; vertex_i++) {
+				weights.resize(vertex_num * weight_8_count);
+				for (int32_t vertex_i = 0; vertex_i < vertex_num; vertex_i++) {
 					weights.write[vertex_i * weight_8_count + 0] = weights_0[vertex_i * JOINT_GROUP_SIZE + 0];
 					weights.write[vertex_i * weight_8_count + 1] = weights_0[vertex_i * JOINT_GROUP_SIZE + 1];
 					weights.write[vertex_i * weight_8_count + 2] = weights_0[vertex_i * JOINT_GROUP_SIZE + 2];
@@ -2798,7 +2910,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 				mat = mat3d;
 			}
 
-			import_mesh->add_surface(primitive, array, morphs, Dictionary(), mat, mat.is_valid() ? mat->get_name() : String());
+			import_mesh->add_surface(primitive, array, morphs, Dictionary(), mat, mat.is_valid() ? mat->get_name() : String(), flags);
 		}
 
 		Vector<float> blend_weights;
@@ -2954,6 +3066,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> state, const String &p_base_pat
 					}
 				}
 			} else { // Relative path to an external image file.
+				uri = uri.uri_decode();
 				uri = p_base_path.plus_file(uri).replace("\\", "/"); // Fix for Windows.
 				// ResourceLoader will rely on the file extension to use the relevant loader.
 				// The spec says that if mimeType is defined, it should take precedence (e.g.
@@ -4897,7 +5010,7 @@ GLTFMeshIndex GLTFDocument::_convert_mesh_instance(Ref<GLTFState> state, MeshIns
 		if (p_mesh_instance->get_material_override().is_valid()) {
 			mat = p_mesh_instance->get_material_override();
 		}
-		import_mesh->add_surface(primitive_type, arrays, blend_shape_arrays, Dictionary(), mat, surface_name);
+		import_mesh->add_surface(primitive_type, arrays, blend_shape_arrays, Dictionary(), mat, surface_name, godot_mesh->surface_get_format(surface_i));
 	}
 	for (int32_t blend_i = 0; blend_i < blend_count; blend_i++) {
 		blend_weights.write[blend_i] = 0.0f;
