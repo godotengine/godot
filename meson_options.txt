@@ -11,7 +11,7 @@ option('xaudio2', type: 'boolean', value: false, description: 'Enable the XAudio
 option('android_neon', type: 'boolean', value: true, description: 'Enable NEON support (armv7 only)')
 option('custom_modules', type: 'array', value: [], description: 'A list of comma-separated directory paths containing custom modules to build')
 # add text_server_fb to disabled modules
-option('disabled_modules', type: 'array', value: ['mono', 'text_server_adv'], description: 'A list of modules that are to be disabled')
+option('disabled_modules', type: 'array', value: ['mono'], description: 'A list of modules that are to be disabled')
 option('disable_all_modules', type: 'boolean', value: false, description: 'A boolean that disables ALL modules.')
 
 # Advanced options
