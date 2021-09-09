@@ -127,7 +127,7 @@ Error AudioDriverJACK::init_device() {
 	samples_in.resize(buffer_size * channels);
 
 	// set up capture
-	const DeviceJACK &cdev = capture_devices[device_index];
+	const DeviceJACK &cdev = capture_devices[capture_device_index];
 	unsigned capture_channels = cdev.channels();
 
 	for (unsigned ch = 0; ch < capture_channels; ++ch) {
