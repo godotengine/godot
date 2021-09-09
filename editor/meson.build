@@ -90,7 +90,7 @@ if get_option('tools')
     # ...and so will fonts
 
     _fonts_target_srcs = files(run_command(GLOB, meson.project_source_root() / 'thirdparty/fonts/*.ttf').stdout().split('\n'))
-    _fonts_target = custom_target(
+    builtin_fonts_gen = custom_target(
         'fonts',
         input: _fonts_target_srcs,
         output: ['builtin_fonts.gen.h'],
@@ -98,7 +98,8 @@ if get_option('tools')
         command: [SCRIPT_COMPAT, 'make_fonts_header', SCRIPT_EDITOR_BUILDERS, '-i', '@INPUT@', '-o', '@OUTPUT@'],
         build_by_default: true
     )
-    SOURCES += [_fonts_target]
+    SOURCES += [builtin_fonts_gen]
+    MAIN_SOURCES += [builtin_fonts_gen]
 
     # ...aaaaaaaaaaaaaaand editor icons
     _editor_icons_srcs = files(run_command(GLOB, 'icons/*.svg').stdout().split('\n'))

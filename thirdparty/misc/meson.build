@@ -2,7 +2,6 @@ _misc_incdirs = include_directories('.')
 
 _misc_srcs = files(
 'clipper.cpp',
-'easing_equations.cpp',
 'pcg.cpp',
 'polypartition.cpp',
 'smolv.cpp',
@@ -11,7 +10,6 @@ _misc_srcs = files(
 'open-simplex-noise.c',
 'r128.c',
 'smaz.c',
-'stb_vorbis.c',
 )
 
 if PLATFORM == 'android'
