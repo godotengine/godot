@@ -31,6 +31,7 @@
 #include "audio_stream_player_2d.h"
 
 #include "scene/2d/area_2d.h"
+#include "scene/2d/listener_2d.h"
 #include "scene/main/window.h"
 
 void AudioStreamPlayer2D::_notification(int p_what) {
@@ -150,13 +151,22 @@ void AudioStreamPlayer2D::_update_panning() {
 			continue;
 		}
 		//compute matrix to convert to screen
-		Transform2D to_screen = vp->get_global_canvas_transform() * vp->get_canvas_transform();
 		Vector2 screen_size = vp->get_visible_rect().size;
+		Vector2 listener_in_global;
+		Vector2 relative_to_listener;
 
 		//screen in global is used for attenuation
-		Vector2 screen_in_global = to_screen.affine_inverse().xform(screen_size * 0.5);
+		Listener2D *listener = vp->get_listener_2d();
+		if (listener) {
+			listener_in_global = listener->get_global_position();
+			relative_to_listener = global_pos - listener_in_global;
+		} else {
+			Transform2D to_listener = vp->get_global_canvas_transform() * vp->get_canvas_transform();
+			listener_in_global = to_listener.affine_inverse().xform(screen_size * 0.5);
+			relative_to_listener = to_listener.xform(global_pos) - screen_size * 0.5;
+		}
 
-		float dist = global_pos.distance_to(screen_in_global); //distance to screen center
+		float dist = global_pos.distance_to(listener_in_global); // Distance to listener, or screen if none.
 
 		if (dist > max_distance) {
 			continue; //can't hear this sound in this viewport
@@ -165,10 +175,7 @@ void AudioStreamPlayer2D::_update_panning() {
 		float multiplier = Math::pow(1.0f - dist / max_distance, attenuation);
 		multiplier *= Math::db2linear(volume_db); //also apply player volume!
 
-		//point in screen is used for panning
-		Vector2 point_in_screen = to_screen.xform(global_pos);
-
-		float pan = CLAMP(point_in_screen.x / screen_size.width, 0.0, 1.0);
+		float pan = CLAMP((relative_to_listener.x + screen_size.x * 0.5) / screen_size.x, 0.0, 1.0);
 
 		float l = 1.0 - pan;
 		float r = pan;

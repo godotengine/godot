@@ -41,6 +41,7 @@ class Listener3D;
 class World3D;
 #endif // _3D_DISABLED
 
+class Listener2D;
 class Camera2D;
 class CanvasItem;
 class CanvasLayer;
@@ -201,6 +202,7 @@ private:
 
 	Viewport *parent = nullptr;
 
+	Listener2D *listener_2d = nullptr;
 	Camera2D *camera_2d = nullptr;
 	Set<CanvasLayer *> canvas_layers;
 
@@ -416,6 +418,10 @@ private:
 
 	bool _gui_drop(Control *p_at_control, Point2 p_at_pos, bool p_just_check);
 
+	friend class Listener2D;
+	void _listener_2d_set(Listener2D *p_listener);
+	void _listener_2d_remove(Listener2D *p_listener);
+
 	friend class Camera2D;
 	void _camera_2d_set(Camera2D *p_camera_2d);
 
@@ -457,6 +463,7 @@ protected:
 public:
 	uint64_t get_processed_events_count() const { return event_count; }
 
+	Listener2D *get_listener_2d() const;
 	Camera2D *get_camera_2d() const;
 	void set_as_audio_listener_2d(bool p_enable);
 	bool is_audio_listener_2d() const;

@@ -49,6 +49,7 @@
 #include "scene/2d/light_2d.h"
 #include "scene/2d/light_occluder_2d.h"
 #include "scene/2d/line_2d.h"
+#include "scene/2d/listener_2d.h"
 #include "scene/2d/mesh_instance_2d.h"
 #include "scene/2d/multimesh_instance_2d.h"
 #include "scene/2d/navigation_agent_2d.h"
@@ -671,6 +672,7 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 	GDREGISTER_CLASS(Camera2D);
+	GDREGISTER_CLASS(Listener2D);
 	GDREGISTER_VIRTUAL_CLASS(Joint2D);
 	GDREGISTER_CLASS(PinJoint2D);
 	GDREGISTER_CLASS(GrooveJoint2D);
