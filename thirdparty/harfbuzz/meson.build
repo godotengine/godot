@@ -73,7 +73,6 @@ if get_option('builtin_harfbuzz')
         '-DHAVE_ICU',
         '-DHAVE_FREETYPE',
         '-DHAVE_GRAPHITE2',
-        '-DHB_DISABLE_DEPRECATED',
         '-DGRAPHITE2_STATIC',
     ]
 

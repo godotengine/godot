@@ -5,7 +5,7 @@ from glob import glob
 
 
 def glob_pattern(what):
-    return glob(what)
+    return sorted(glob(what))
 
 
 def glob_and_print(what):
