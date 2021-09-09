@@ -417,6 +417,10 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			}
 			tokenizer->advance();
 
+			while (tokenizer->get_token() == GDScriptTokenizer::TK_NEWLINE) {
+				tokenizer->advance();
+			}
+
 			if (tokenizer->get_token() == GDScriptTokenizer::TK_CURSOR) {
 				completion_cursor = StringName();
 				completion_node = p_parent;
@@ -496,6 +500,10 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 					_set_error("Can't preload resource at path: " + path);
 					return nullptr;
 				}
+			}
+
+			while (tokenizer->get_token() == GDScriptTokenizer::TK_NEWLINE) {
+				tokenizer->advance();
 			}
 
 			if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
