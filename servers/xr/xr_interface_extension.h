@@ -100,6 +100,10 @@ public:
 
 	GDVIRTUAL0(_process);
 	GDVIRTUAL1(_notification, int);
+
+	/* access to some internals we need */
+	RID get_render_target_texture(RID p_render_target);
+	// RID get_render_target_depth(RID p_render_target);
 };
 
 #endif // !XR_INTERFACE_EXTENSION_H

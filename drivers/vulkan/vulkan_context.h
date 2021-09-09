@@ -243,7 +243,8 @@ public:
 	VkPhysicalDevice get_physical_device();
 	VkInstance get_instance() { return inst; }
 	int get_swapchain_image_count() const;
-	uint32_t get_graphics_queue() const;
+	VkQueue get_graphics_queue() const;
+	uint32_t get_graphics_queue_family_index() const;
 
 	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
 	int window_get_width(DisplayServer::WindowID p_window = 0);

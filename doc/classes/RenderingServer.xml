@@ -1156,6 +1156,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_rendering_device" qualifiers="const">
+			<return type="RenderingDevice" />
+			<description>
+			</description>
+		</method>
 		<method name="get_rendering_info">
 			<return type="int" />
 			<argument index="0" name="info" type="int" enum="RenderingServer.RenderingInfo" />

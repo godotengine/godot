@@ -29,7 +29,8 @@
 /*************************************************************************/
 
 #include "xr_interface_extension.h"
-#include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering/renderer_storage.h"
+#include "servers/rendering/rendering_server_globals.h"
 
 void XRInterfaceExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_name);
@@ -40,8 +41,6 @@ void XRInterfaceExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_uninitialize);
 
 	GDVIRTUAL_BIND(_get_tracking_status);
-
-	ClassDB::bind_method(D_METHOD("add_blit", "render_target", "src_rect", "dst_rect", "use_layer", "layer", "apply_lens_distortion", "eye_center", "k1", "k2", "upscale", "aspect_ratio"), &XRInterfaceExtension::add_blit);
 
 	GDVIRTUAL_BIND(_get_render_target_size);
 	GDVIRTUAL_BIND(_get_view_count);
@@ -60,6 +59,11 @@ void XRInterfaceExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_anchor_detection_is_enabled);
 	GDVIRTUAL_BIND(_set_anchor_detection_is_enabled, "enabled");
 	GDVIRTUAL_BIND(_get_camera_feed_id);
+
+	// helper methods
+	ClassDB::bind_method(D_METHOD("add_blit", "render_target", "src_rect", "dst_rect", "use_layer", "layer", "apply_lens_distortion", "eye_center", "k1", "k2", "upscale", "aspect_ratio"), &XRInterfaceExtension::add_blit);
+	ClassDB::bind_method(D_METHOD("get_render_target_texture", "render_target"), &XRInterfaceExtension::get_render_target_texture);
+	// ClassDB::bind_method(D_METHOD("get_render_target_depth", "render_target"), &XRInterfaceExtension::get_render_target_depth);
 }
 
 StringName XRInterfaceExtension::get_name() const {
@@ -240,3 +244,19 @@ void XRInterfaceExtension::process() {
 void XRInterfaceExtension::notification(int p_what) {
 	GDVIRTUAL_CALL(_notification, p_what);
 }
+
+RID XRInterfaceExtension::get_render_target_texture(RID p_render_target) {
+	RendererStorage *storage = RSG::storage;
+	ERR_FAIL_NULL_V_MSG(storage, RID(), "Renderer storage not setup");
+
+	return storage->render_target_get_texture(p_render_target);
+}
+
+/*
+RID XRInterfaceExtension::get_render_target_depth(RID p_render_target) {
+	RendererStorage *storage = RSG::storage;
+	ERR_FAIL_NULL_V_MSG(storage, RID(), "Renderer storage not setup");
+
+	return storage->render_target_get_depth(p_render_target);
+}
+*/

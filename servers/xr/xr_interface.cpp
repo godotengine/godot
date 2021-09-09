@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "xr_interface.h"
-#include "servers/rendering/renderer_compositor.h"
+// #include "servers/rendering/renderer_compositor.h"
 
 void XRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_name"), &XRInterface::get_name);
