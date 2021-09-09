@@ -1469,7 +1469,7 @@ void RendererSceneGIRD::SDFGI::pre_process_gi(const Transform3D &p_transform, Re
 			lights[idx].color[1] = color.g;
 			lights[idx].color[2] = color.b;
 			lights[idx].type = RS::LIGHT_DIRECTIONAL;
-			lights[idx].energy = storage->light_get_param(li->light, RS::LIGHT_PARAM_ENERGY);
+			lights[idx].energy = storage->light_get_param(li->light, RS::LIGHT_PARAM_ENERGY) * storage->light_get_param(li->light, RS::LIGHT_PARAM_INDIRECT_ENERGY);
 			lights[idx].has_shadow = storage->light_has_shadow(li->light);
 
 			idx++;
@@ -1514,7 +1514,7 @@ void RendererSceneGIRD::SDFGI::pre_process_gi(const Transform3D &p_transform, Re
 			lights[idx].color[1] = color.g;
 			lights[idx].color[2] = color.b;
 			lights[idx].type = storage->light_get_type(li->light);
-			lights[idx].energy = storage->light_get_param(li->light, RS::LIGHT_PARAM_ENERGY);
+			lights[idx].energy = storage->light_get_param(li->light, RS::LIGHT_PARAM_ENERGY) * storage->light_get_param(li->light, RS::LIGHT_PARAM_INDIRECT_ENERGY);
 			lights[idx].has_shadow = storage->light_has_shadow(li->light);
 			lights[idx].attenuation = storage->light_get_param(li->light, RS::LIGHT_PARAM_ATTENUATION);
 			lights[idx].radius = storage->light_get_param(li->light, RS::LIGHT_PARAM_RANGE);
@@ -1953,7 +1953,7 @@ void RendererSceneGIRD::SDFGI::render_static_lights(RID p_render_buffers, uint32
 				lights[idx].color[0] = color.r;
 				lights[idx].color[1] = color.g;
 				lights[idx].color[2] = color.b;
-				lights[idx].energy = storage->light_get_param(li->light, RS::LIGHT_PARAM_ENERGY);
+				lights[idx].energy = storage->light_get_param(li->light, RS::LIGHT_PARAM_ENERGY) * storage->light_get_param(li->light, RS::LIGHT_PARAM_INDIRECT_ENERGY);
 				lights[idx].has_shadow = storage->light_has_shadow(li->light);
 				lights[idx].attenuation = storage->light_get_param(li->light, RS::LIGHT_PARAM_ATTENUATION);
 				lights[idx].radius = storage->light_get_param(li->light, RS::LIGHT_PARAM_RANGE);
