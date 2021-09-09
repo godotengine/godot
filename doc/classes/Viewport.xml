@@ -134,6 +134,7 @@
 			<return type="void" />
 			<argument index="0" name="text" type="String" />
 			<description>
+				Returns [code]true[/code] if the viewport is currently embedding windows.
 			</description>
 		</method>
 		<method name="push_unhandled_input">
