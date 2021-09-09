@@ -144,6 +144,10 @@ protected:
 	static void _bind_methods();
 
 public:
+	// ATTENTION: This is used by the POT generator's scene parser. If the number of properties returned by `_get_items()` ever changes,
+	// this value should be updated to reflect the new size.
+	static const int ITEM_PROPERTY_SIZE = 10;
+
 	void add_item(const String &p_label, int p_id = -1, uint32_t p_accel = 0);
 	void add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id = -1, uint32_t p_accel = 0);
 	void add_check_item(const String &p_label, int p_id = -1, uint32_t p_accel = 0);
