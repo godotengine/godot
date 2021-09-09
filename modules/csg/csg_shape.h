@@ -336,6 +336,11 @@ public:
 		MODE_PATH
 	};
 
+	enum PathIntervalType {
+		PATH_INTERVAL_DISTANCE,
+		PATH_INTERVAL_SUBDIVIDE
+	};
+
 	enum PathRotation {
 		PATH_ROTATION_POLYGON,
 		PATH_ROTATION_PATH,
@@ -356,7 +361,9 @@ private:
 	int spin_sides;
 
 	NodePath path_node;
+	PathIntervalType path_interval_type;
 	float path_interval;
+	float path_simplify_angle;
 	PathRotation path_rotation;
 	bool path_local;
 
@@ -364,6 +371,7 @@ private:
 
 	bool smooth_faces;
 	bool path_continuous_u;
+	real_t path_u_distance;
 	bool path_joined;
 
 	bool _is_editable_3d_polygon() const;
@@ -396,8 +404,14 @@ public:
 	void set_path_node(const NodePath &p_path);
 	NodePath get_path_node() const;
 
+	void set_path_interval_type(PathIntervalType p_interval_type);
+	PathIntervalType get_path_interval_type() const;
+
 	void set_path_interval(float p_interval);
 	float get_path_interval() const;
+
+	void set_path_simplify_angle(float p_angle);
+	float get_path_simplify_angle() const;
 
 	void set_path_rotation(PathRotation p_rotation);
 	PathRotation get_path_rotation() const;
@@ -407,6 +421,9 @@ public:
 
 	void set_path_continuous_u(bool p_enable);
 	bool is_path_continuous_u() const;
+
+	void set_path_u_distance(real_t p_path_u_distance);
+	real_t get_path_u_distance() const;
 
 	void set_path_joined(bool p_enable);
 	bool is_path_joined() const;
@@ -422,5 +439,6 @@ public:
 
 VARIANT_ENUM_CAST(CSGPolygon3D::Mode)
 VARIANT_ENUM_CAST(CSGPolygon3D::PathRotation)
+VARIANT_ENUM_CAST(CSGPolygon3D::PathIntervalType)
 
 #endif // CSG_SHAPE_H
