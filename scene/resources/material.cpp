@@ -963,7 +963,9 @@ void BaseMaterial3D::_update_shader() {
 			} else {
 				code += "		float depth = 1.0 - texture(texture_heightmap, base_uv).r;\n";
 			}
-			code += "		vec2 ofs = base_uv - view_dir.xy / view_dir.z * (depth * heightmap_scale);\n";
+			// Use offset limiting to improve the appearance of non-deep parallax.
+			// This reduces the impression of depth, but avoids visible warping in the distance.
+			code += "		vec2 ofs = base_uv - view_dir.xy * depth * heightmap_scale;\n";
 		}
 
 		code += "		base_uv=ofs;\n";
