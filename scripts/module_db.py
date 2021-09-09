@@ -225,12 +225,14 @@ def __parse_module_config(config_path: str, env: Environment) -> Module:
             def module_check_dependencies(self, name, dep):
                 if name == "msdfgen" and dep == ["freetype"]:
                     return True  # TODO
+                if name == "vorbis" and dep == ["ogg"]:
+                    return True  # TODO
                 raise ValueError("Unsupported module compat dependency check: name=%s, dep=%s" % [name, dep])
 
         compat_env = CompatDict(env)
         can_build = False
         # TODO hardcoded disables
-        if module_name not in ["opus", "vorbis", "webm", "theora", "gdnative"]:
+        if module_name not in ["opus", "webm", "theora", "gdnative"]:
             can_build = config["can_build"](compat_env, env.platform)
         else:
             print("xxx", "%s has been manually disabled in meson" % config_path)
