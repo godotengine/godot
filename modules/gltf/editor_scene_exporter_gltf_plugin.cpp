@@ -30,9 +30,11 @@
 
 #include "editor_scene_exporter_gltf_plugin.h"
 #include "core/config/project_settings.h"
+#include "core/error/error_list.h"
 #include "core/object/object.h"
 #include "core/templates/vector.h"
 #include "editor/editor_file_system.h"
+#include "gltf_document.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/check_box.h"
 #include "scene/main/node.h"
@@ -49,7 +51,6 @@ bool SceneExporterGLTFPlugin::has_main_screen() const {
 
 SceneExporterGLTFPlugin::SceneExporterGLTFPlugin(EditorNode *p_node) {
 	editor = p_node;
-	convert_gltf2.instantiate();
 	file_export_lib = memnew(EditorFileDialog);
 	editor->get_gui_base()->add_child(file_export_lib);
 	file_export_lib->connect("file_selected", callable_mp(this, &SceneExporterGLTFPlugin::_gltf2_dialog_action));
@@ -71,8 +72,12 @@ void SceneExporterGLTFPlugin::_gltf2_dialog_action(String p_file) {
 		return;
 	}
 	List<String> deps;
-	convert_gltf2->save_scene(root, p_file, p_file, 0, 1000.0f, &deps);
-	EditorFileSystem::get_singleton()->scan_changes();
+	Ref<GLTFDocument> doc;
+	doc.instantiate();
+	Error err = doc->save_scene(root, p_file, p_file, 0, 30.0f, Ref<GLTFState>());
+	if (err != OK) {
+		ERR_PRINT(vformat("glTF2 save scene error %s.", itos(err)));
+	}
 }
 
 void SceneExporterGLTFPlugin::convert_scene_to_gltf2() {

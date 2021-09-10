@@ -37,7 +37,6 @@
 class GLTFNode : public Resource {
 	GDCLASS(GLTFNode, Resource);
 	friend class GLTFDocument;
-	friend class PackedSceneGLTF;
 
 private:
 	// matrices need to be transformed to this
