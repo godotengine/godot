@@ -958,7 +958,7 @@ void AnimationTree::_process_graph(real_t p_delta) {
 
 							Variant::interpolate(t->value, value, blend, t->value);
 
-						} else if (delta != 0) {
+						} else {
 							List<int> indices;
 							a->value_track_get_key_indices(i, time, delta, &indices);
 
