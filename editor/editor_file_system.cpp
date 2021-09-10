@@ -1887,19 +1887,35 @@ void EditorFileSystem::_find_group_files(EditorFileSystemDirectory *efd, Map<Str
 	}
 }
 
-void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
-	{ //check that the project data folder exists
-		String project_data_dir_name = ProjectSettings::get_singleton()->get_project_data_dir_name();
-		DirAccess *da = DirAccess::open("res://");
-		if (da->change_dir(project_data_dir_name) != OK) {
-			Error err = da->make_dir(project_data_dir_name);
-			if (err) {
-				memdelete(da);
-				ERR_FAIL_MSG("Failed to create folder res://" + project_data_dir_name);
-			}
+void EditorFileSystem::_create_project_data_dir_if_necessary() {
+	// Check that the project data directory exists
+	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	String project_data_path = ProjectSettings::get_singleton()->get_project_data_path();
+	if (da->change_dir(project_data_path) != OK) {
+		Error err = da->make_dir(project_data_path);
+		if (err) {
+			memdelete(da);
+			ERR_FAIL_MSG("Failed to create folder " + project_data_path);
 		}
-		memdelete(da);
 	}
+	memdelete(da);
+
+	// Check that the project data directory '.gdignore' file exists
+	String project_data_gdignore_file_path = project_data_path.plus_file(".gdignore");
+	if (!FileAccess::exists(project_data_gdignore_file_path)) {
+		// Add an empty .gdignore file to avoid scan.
+		FileAccessRef f = FileAccess::open(project_data_gdignore_file_path, FileAccess::WRITE);
+		if (f) {
+			f->store_line("");
+			f->close();
+		} else {
+			ERR_FAIL_MSG("Failed to create file " + project_data_gdignore_file_path);
+		}
+	}
+}
+
+void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
+	_create_project_data_dir_if_necessary();
 
 	importing = true;
 	EditorProgress pr("reimport", TTR("(Re)Importing Assets"), p_files.size());
@@ -1974,7 +1990,7 @@ Error EditorFileSystem::_resource_import(const String &p_path) {
 }
 
 bool EditorFileSystem::_should_skip_directory(const String &p_path) {
-	if (p_path == ProjectSettings::get_singleton()->get_project_data_path()) {
+	if (p_path.begins_with(ProjectSettings::get_singleton()->get_project_data_path())) {
 		return true;
 	}
 
@@ -2092,12 +2108,10 @@ EditorFileSystem::EditorFileSystem() {
 	scanning_changes = false;
 	scanning_changes_done = false;
 
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	String project_data_path = ProjectSettings::get_singleton()->get_project_data_path();
-	if (da->change_dir(project_data_path) != OK) {
-		da->make_dir(project_data_path);
-	}
+	_create_project_data_dir_if_necessary();
+
 	// This should probably also work on Unix and use the string it returns for FAT32 or exFAT
+	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	using_fat32_or_exfat = (da->get_filesystem_type() == "FAT32" || da->get_filesystem_type() == "exFAT");
 	memdelete(da);
 
