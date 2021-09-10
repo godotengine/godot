@@ -127,6 +127,8 @@ public:
 	bool property_can_revert(const String &p_name);
 	Variant property_get_revert(const String &p_name);
 
+	String get_project_data_dir_name() const;
+	String get_project_data_path() const;
 	String get_resource_path() const;
 
 	static ProjectSettings *get_singleton();
