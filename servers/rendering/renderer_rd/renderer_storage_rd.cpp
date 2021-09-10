@@ -948,12 +948,15 @@ void RendererStorageRD::texture_proxy_update(RID p_texture, RID p_proxy_to) {
 		prev_tex->proxies.erase(p_texture);
 	}
 
+	Set<Material *> materials = tex->materials;
+
 	*tex = *proxy_to;
 
 	tex->proxy_to = p_proxy_to;
 	tex->is_render_target = false;
 	tex->is_proxy = true;
 	tex->proxies.clear();
+	tex->materials = materials;
 	proxy_to->proxies.push_back(p_texture);
 
 	tex->rd_view.format_override = tex->rd_format;
@@ -961,6 +964,9 @@ void RendererStorageRD::texture_proxy_update(RID p_texture, RID p_proxy_to) {
 	if (tex->rd_texture_srgb.is_valid()) {
 		tex->rd_view.format_override = tex->rd_format_srgb;
 		tex->rd_texture_srgb = RD::get_singleton()->texture_create_shared(tex->rd_view, proxy_to->rd_texture);
+	}
+	for (Set<Material *>::Element *E = tex->materials.front(); E; E = E->next()) {
+		_material_queue_update(E->get(), false, true);
 	}
 }
 
@@ -1151,6 +1157,10 @@ void RendererStorageRD::texture_replace(RID p_texture, RID p_by_texture) {
 		//belongs to decal atlas..
 
 		decal_atlas.dirty = true; //mark it dirty since it was most likely modified
+	}
+
+	for (Set<Material *>::Element *E = tex->materials.front(); E; E = E->next()) {
+		_material_queue_update(E->get(), false, true);
 	}
 }
 
@@ -1589,11 +1599,21 @@ void RendererStorageRD::material_set_param(RID p_material, const StringName &p_p
 	Material *material = material_owner.getornull(p_material);
 	ERR_FAIL_COND(!material);
 
+	if (material->params[p_param].get_type() == Variant::RID && texture_owner.getornull(material->params[p_param])) {
+		Texture *texture = texture_owner.getornull(material->params[p_param]);
+		texture->materials.erase(material);
+	}
+
 	if (p_value.get_type() == Variant::NIL) {
 		material->params.erase(p_param);
 	} else {
 		ERR_FAIL_COND(p_value.get_type() == Variant::OBJECT); //object not allowed
 		material->params[p_param] = p_value;
+	}
+
+	if (material->params[p_param].get_type() == Variant::RID && texture_owner.getornull(material->params[p_param])) {
+		Texture *texture = texture_owner.getornull(material->params[p_param]);
+		texture->materials.insert(material);
 	}
 
 	if (material->shader && material->shader->data) { //shader is valid
@@ -7049,6 +7069,10 @@ void RendererStorageRD::_update_render_target(RenderTarget *rt) {
 		for (int i = 0; i < proxies.size(); i++) {
 			texture_proxy_update(proxies[i], rt->texture);
 		}
+
+		for (Set<Material *>::Element *E = tex->materials.front(); E; E = E->next()) {
+			_material_queue_update(E->get(), false, true);
+		}
 	}
 }
 
@@ -8696,6 +8720,13 @@ bool RendererStorageRD::free(RID p_rid) {
 		Material *material = material_owner.getornull(p_rid);
 		material_set_shader(p_rid, RID()); //clean up shader
 		material->dependency.deleted_notify(p_rid);
+
+		for (Map<StringName, Variant>::Element *E = material->params.front(); E; E = E->next()) {
+			if (E->get().get_type() == Variant::RID && texture_owner.getornull(E->get())) {
+				Texture *texture = texture_owner.getornull(E->get());
+				texture->materials.erase(material);
+			}
+		}
 
 		material_owner.free(p_rid);
 	} else if (mesh_owner.owns(p_rid)) {

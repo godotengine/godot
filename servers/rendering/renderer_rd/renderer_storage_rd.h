@@ -234,6 +234,9 @@ private:
 	RID_Owner<CanvasTexture, true> canvas_texture_owner;
 
 	/* TEXTURE API */
+
+	struct Material;
+
 	struct Texture {
 		enum Type {
 			TYPE_2D,
@@ -292,6 +295,8 @@ private:
 		void *detect_roughness_callback_ud = nullptr;
 
 		CanvasTexture *canvas_texture = nullptr;
+
+		Set<Material *> materials;
 	};
 
 	struct TextureToRDFormat {
@@ -365,8 +370,6 @@ private:
 	void _update_decal_atlas();
 
 	/* SHADER */
-
-	struct Material;
 
 	struct Shader {
 		ShaderData *data;
