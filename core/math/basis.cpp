@@ -775,7 +775,7 @@ Basis::operator String() const {
 
 Quaternion Basis::get_quaternion() const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!is_rotation(), Quaternion(), "Basis must be normalized in order to be casted to a Quaternion. Use get_rotation_quaternion() or call orthonormalized() instead.");
+	ERR_FAIL_COND_V_MSG(!is_rotation(), Quaternion(), "Basis must be normalized in order to be casted to a Quaternion. Use get_rotation_quaternion() or call orthonormalized() if the Basis contains linearly independent vectors.");
 #endif
 	/* Allow getting a quaternion from an unnormalized transform */
 	Basis m = *this;
