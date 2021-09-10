@@ -710,15 +710,6 @@ const GodotDisplay = {
 		GodotRuntime.setHeapValue(p_height, GodotConfig.canvas.height, 'i32');
 	},
 
-	godot_js_display_compute_position: function (x, y, r_x, r_y) {
-		const canvas = GodotConfig.canvas;
-		const rect = canvas.getBoundingClientRect();
-		const rw = canvas.width / rect.width;
-		const rh = canvas.height / rect.height;
-		GodotRuntime.setHeapValue(r_x, (x - rect.x) * rw, 'i32');
-		GodotRuntime.setHeapValue(r_y, (y - rect.y) * rh, 'i32');
-	},
-
 	godot_js_display_has_webgl__sig: 'ii',
 	godot_js_display_has_webgl: function (p_version) {
 		if (p_version !== 1 && p_version !== 2) {
