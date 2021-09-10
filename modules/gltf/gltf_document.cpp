@@ -61,6 +61,7 @@
 #include "scene/resources/surface_tool.h"
 
 #include "modules/modules_enabled.gen.h"
+#include <cstdint>
 #ifdef MODULE_CSG_ENABLED
 #include "modules/csg/csg_shape.h"
 #endif // MODULE_CSG_ENABLED
@@ -6629,4 +6630,79 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> state, const String p_path) {
 		f->close();
 	}
 	return err;
+}
+
+Error GLTFDocument::save_scene(Node *p_node, const String &p_path,
+		const String &p_src_path, uint32_t p_flags,
+		float p_bake_fps, Ref<GLTFState> r_state) {
+	Ref<GLTFDocument> gltf_document;
+	gltf_document.instantiate();
+	if (r_state == Ref<GLTFState>()) {
+		r_state.instantiate();
+	}
+	return gltf_document->serialize(r_state, p_node, p_path);
+}
+
+Node *GLTFDocument::import_scene_gltf(const String &p_path, uint32_t p_flags, int32_t p_bake_fps, Ref<GLTFState> r_state, List<String> *r_missing_deps, Error *r_err) {
+	// TODO Add missing texture and missing .bin file paths to r_missing_deps 2021-09-10 fire
+	if (r_state == Ref<GLTFState>()) {
+		r_state.instantiate();
+	}
+	r_state->use_named_skin_binds =
+			p_flags & EditorSceneImporter::IMPORT_USE_NAMED_SKIN_BINDS;
+
+	Ref<GLTFDocument> gltf_document;
+	gltf_document.instantiate();
+	Error err = gltf_document->parse(r_state, p_path);
+	if (r_err) {
+		*r_err = err;
+	}
+	ERR_FAIL_COND_V(err != Error::OK, nullptr);
+
+	Node3D *root = memnew(Node3D);
+	for (int32_t root_i = 0; root_i < r_state->root_nodes.size(); root_i++) {
+		gltf_document->_generate_scene_node(r_state, root, root, r_state->root_nodes[root_i]);
+	}
+	gltf_document->_process_mesh_instances(r_state, root);
+	if (r_state->animations.size()) {
+		AnimationPlayer *ap = memnew(AnimationPlayer);
+		root->add_child(ap);
+		ap->set_owner(root);
+		for (int i = 0; i < r_state->animations.size(); i++) {
+			gltf_document->_import_animation(r_state, ap, i, p_bake_fps);
+		}
+	}
+
+	return root;
+}
+
+void GLTFDocument::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("save_scene", "node", "path", "src_path", "flags", "bake_fps", "state"),
+			&GLTFDocument::save_scene, DEFVAL(0), DEFVAL(30), DEFVAL(Ref<GLTFState>()));
+	ClassDB::bind_method(D_METHOD("import_scene", "path", "flags", "bake_fps", "state"),
+			&GLTFDocument::import_scene, DEFVAL(0), DEFVAL(30), DEFVAL(Ref<GLTFState>()));
+}
+
+void GLTFDocument::_build_parent_hierachy(Ref<GLTFState> state) {
+	// build the hierarchy
+	for (GLTFNodeIndex node_i = 0; node_i < state->nodes.size(); node_i++) {
+		for (int j = 0; j < state->nodes[node_i]->children.size(); j++) {
+			GLTFNodeIndex child_i = state->nodes[node_i]->children[j];
+			ERR_FAIL_INDEX(child_i, state->nodes.size());
+			if (state->nodes.write[child_i]->parent != -1) {
+				continue;
+			}
+			state->nodes.write[child_i]->parent = node_i;
+		}
+	}
+}
+
+Node *GLTFDocument::import_scene(const String &p_path, uint32_t p_flags, int32_t p_bake_fps, Ref<GLTFState> r_state) {
+	Error err = FAILED;
+	List<String> deps;
+	Node *node = import_scene_gltf(p_path, p_flags, p_bake_fps, r_state, &deps, &err);
+	if (err != OK) {
+		return nullptr;
+	}
+	return node;
 }

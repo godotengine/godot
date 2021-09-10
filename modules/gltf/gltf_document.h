@@ -44,6 +44,7 @@
 #include "scene/resources/texture.h"
 
 #include "modules/modules_enabled.gen.h"
+#include <cstdint>
 
 class GLTFState;
 class GLTFSkin;
@@ -102,6 +103,16 @@ public:
 		COMPONENT_TYPE_FLOAT = 5126,
 	};
 
+protected:
+	static void _bind_methods();
+
+public:
+	Node *import_scene(const String &p_path, uint32_t p_flags, int32_t p_bake_fps, Ref<GLTFState> r_state);
+	Node *import_scene_gltf(const String &p_path, uint32_t p_flags, int32_t p_bake_fps, Ref<GLTFState> r_state, List<String> *r_missing_deps, Error *r_err = nullptr);
+	Error save_scene(Node *p_node, const String &p_path,
+			const String &p_src_path, uint32_t p_flags,
+			float p_bake_fps, Ref<GLTFState> r_state);
+
 private:
 	template <class T>
 	static Array to_array(const Vector<T> &p_inp) {
@@ -155,6 +166,7 @@ private:
 			r_out[keys[i]] = p_inp[keys[i]];
 		}
 	}
+	void _build_parent_hierachy(Ref<GLTFState> state);
 	double _filter_number(double p_float);
 	String _get_component_type_name(const uint32_t p_component);
 	int _get_component_type_size(const int component_type);

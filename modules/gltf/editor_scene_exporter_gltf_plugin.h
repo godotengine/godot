@@ -37,7 +37,6 @@
 class SceneExporterGLTFPlugin : public EditorPlugin {
 	GDCLASS(SceneExporterGLTFPlugin, EditorPlugin);
 
-	Ref<PackedSceneGLTF> convert_gltf2;
 	EditorNode *editor = nullptr;
 	EditorFileDialog *file_export_lib = nullptr;
 	void _gltf2_dialog_action(String p_file);
