@@ -56,7 +56,7 @@
 				Assigns the given value to all elements in the array. This can typically be used together with [method resize] to create an array with a given size and initialized elements.
 			</description>
 		</method>
-		<method name="has">
+		<method name="has" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="value" type="Color" />
 			<description>

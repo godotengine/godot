@@ -28,28 +28,48 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIO_STREAM_STB_VORBIS_H
-#define AUDIO_STREAM_STB_VORBIS_H
+#ifndef AUDIO_STREAM_LIBVORBIS_H
+#define AUDIO_STREAM_LIBVORBIS_H
 
-#include "core/io/resource_loader.h"
+#include "core/variant/variant.h"
+#include "modules/ogg/ogg_packet_sequence.h"
 #include "servers/audio/audio_stream.h"
-
-#include "thirdparty/misc/stb_vorbis.h"
+#include "thirdparty/libvorbis/vorbis/codec.h"
 
 class AudioStreamOGGVorbis;
 
 class AudioStreamPlaybackOGGVorbis : public AudioStreamPlaybackResampled {
 	GDCLASS(AudioStreamPlaybackOGGVorbis, AudioStreamPlaybackResampled);
 
-	stb_vorbis *ogg_stream = nullptr;
-	stb_vorbis_alloc ogg_alloc;
 	uint32_t frames_mixed = 0;
 	bool active = false;
 	int loops = 0;
 
+	vorbis_info info;
+	vorbis_comment comment;
+	vorbis_dsp_state dsp_state;
+	vorbis_block block;
+
+	bool info_is_allocated = false;
+	bool comment_is_allocated = false;
+	bool dsp_state_is_allocated = false;
+	bool block_is_allocated = false;
+
+	bool ready = false;
+
+	bool have_samples_left = false;
+	bool have_packets_left = false;
+
 	friend class AudioStreamOGGVorbis;
 
+	Ref<OGGPacketSequence> vorbis_data;
+	Ref<OGGPacketSequencePlayback> vorbis_data_playback;
 	Ref<AudioStreamOGGVorbis> vorbis_stream;
+
+	int _mix_frames_vorbis(AudioFrame *p_buffer, int p_frames);
+
+	// Allocates vorbis data structures. Returns true upon success, false on failure.
+	bool _alloc_vorbis();
 
 protected:
 	virtual int _mix_internal(AudioFrame *p_buffer, int p_frames) override;
@@ -72,20 +92,20 @@ public:
 class AudioStreamOGGVorbis : public AudioStream {
 	GDCLASS(AudioStreamOGGVorbis, AudioStream);
 	OBJ_SAVE_TYPE(AudioStream); // Saves derived classes with common type so they can be interchanged.
-	RES_BASE_EXTENSION("oggstr");
+	RES_BASE_EXTENSION("oggvorbisstr");
 
 	friend class AudioStreamPlaybackOGGVorbis;
 
-	void *data = nullptr;
-	uint32_t data_len = 0;
-
-	int decode_mem_size = 0;
-	float sample_rate = 1.0;
 	int channels = 1;
 	float length = 0.0;
 	bool loop = false;
 	float loop_offset = 0.0;
-	void clear_data();
+
+	// Performs a seek to the beginning of the stream, should not be called during playback!
+	// Also causes allocation and deallocation.
+	void maybe_update_info();
+
+	Ref<OGGPacketSequence> packet_sequence;
 
 protected:
 	static void _bind_methods();
@@ -100,8 +120,8 @@ public:
 	virtual Ref<AudioStreamPlayback> instance_playback() override;
 	virtual String get_stream_name() const override;
 
-	void set_data(const Vector<uint8_t> &p_data);
-	Vector<uint8_t> get_data() const;
+	void set_packet_sequence(Ref<OGGPacketSequence> p_packet_sequence);
+	Ref<OGGPacketSequence> get_packet_sequence() const;
 
 	virtual float get_length() const override; //if supported, otherwise return 0
 
@@ -111,4 +131,4 @@ public:
 	virtual ~AudioStreamOGGVorbis();
 };
 
-#endif
+#endif // AUDIO_STREAM_LIBVORBIS_H

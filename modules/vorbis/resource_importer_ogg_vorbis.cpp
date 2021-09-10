@@ -30,16 +30,19 @@
 
 #include "resource_importer_ogg_vorbis.h"
 
+#include "audio_stream_ogg_vorbis.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
 #include "scene/resources/texture.h"
+#include "thirdparty/libogg/ogg/ogg.h"
+#include "thirdparty/libvorbis/vorbis/codec.h"
 
 String ResourceImporterOGGVorbis::get_importer_name() const {
-	return "ogg_vorbis";
+	return "oggvorbisstr";
 }
 
 String ResourceImporterOGGVorbis::get_visible_name() const {
-	return "OGGVorbis";
+	return "oggvorbisstr";
 }
 
 void ResourceImporterOGGVorbis::get_recognized_extensions(List<String> *p_extensions) const {
@@ -47,7 +50,7 @@ void ResourceImporterOGGVorbis::get_recognized_extensions(List<String> *p_extens
 }
 
 String ResourceImporterOGGVorbis::get_save_extension() const {
-	return "oggstr";
+	return "oggvorbisstr";
 }
 
 String ResourceImporterOGGVorbis::get_resource_type() const {
@@ -81,23 +84,106 @@ Error ResourceImporterOGGVorbis::import(const String &p_source_file, const Strin
 
 	uint64_t len = f->get_length();
 
-	Vector<uint8_t> data;
-	data.resize(len);
-	uint8_t *w = data.ptrw();
+	Vector<uint8_t> file_data;
+	file_data.resize(len);
+	uint8_t *w = file_data.ptrw();
 
 	f->get_buffer(w, len);
 
 	memdelete(f);
 
-	Ref<AudioStreamOGGVorbis> ogg_stream;
-	ogg_stream.instantiate();
+	Ref<AudioStreamOGGVorbis> ogg_vorbis_stream;
+	ogg_vorbis_stream.instantiate();
 
-	ogg_stream->set_data(data);
-	ERR_FAIL_COND_V(!ogg_stream->get_data().size(), ERR_FILE_CORRUPT);
-	ogg_stream->set_loop(loop);
-	ogg_stream->set_loop_offset(loop_offset);
+	Ref<OGGPacketSequence> ogg_packet_sequence;
+	ogg_packet_sequence.instantiate();
 
-	return ResourceSaver::save(p_save_path + ".oggstr", ogg_stream);
+	ogg_stream_state stream_state;
+	ogg_sync_state sync_state;
+	ogg_page page;
+	ogg_packet packet;
+	bool initialized_stream = false;
+
+	ogg_sync_init(&sync_state);
+	int err;
+	size_t cursor = 0;
+	size_t packet_count = 0;
+	bool done = false;
+	while (!done) {
+		ERR_FAIL_COND_V_MSG((err = ogg_sync_check(&sync_state)), Error::ERR_INVALID_DATA, "Ogg sync error " + itos(err));
+		while (ogg_sync_pageout(&sync_state, &page) != 1) {
+			if (cursor >= len) {
+				done = true;
+				break;
+			}
+			ERR_FAIL_COND_V_MSG((err = ogg_sync_check(&sync_state)), Error::ERR_INVALID_DATA, "Ogg sync error " + itos(err));
+			char *sync_buf = ogg_sync_buffer(&sync_state, OGG_SYNC_BUFFER_SIZE);
+			ERR_FAIL_COND_V_MSG((err = ogg_sync_check(&sync_state)), Error::ERR_INVALID_DATA, "Ogg sync error " + itos(err));
+			ERR_FAIL_COND_V(cursor > len, Error::ERR_INVALID_DATA);
+			size_t copy_size = len - cursor;
+			if (copy_size > OGG_SYNC_BUFFER_SIZE) {
+				copy_size = OGG_SYNC_BUFFER_SIZE;
+			}
+			memcpy(sync_buf, &file_data[cursor], copy_size);
+			ogg_sync_wrote(&sync_state, copy_size);
+			cursor += copy_size;
+			ERR_FAIL_COND_V_MSG((err = ogg_sync_check(&sync_state)), Error::ERR_INVALID_DATA, "Ogg sync error " + itos(err));
+		}
+		if (done) {
+			break;
+		}
+		ERR_FAIL_COND_V_MSG((err = ogg_sync_check(&sync_state)), Error::ERR_INVALID_DATA, "Ogg sync error " + itos(err));
+
+		// Have a page now.
+		if (!initialized_stream) {
+			ogg_stream_init(&stream_state, ogg_page_serialno(&page));
+			ERR_FAIL_COND_V_MSG((err = ogg_stream_check(&stream_state)), Error::ERR_INVALID_DATA, "Ogg stream error " + itos(err));
+			initialized_stream = true;
+		}
+		ERR_FAIL_COND_V_MSG((err = ogg_stream_check(&stream_state)), Error::ERR_INVALID_DATA, "Ogg stream error " + itos(err));
+		ogg_stream_pagein(&stream_state, &page);
+		ERR_FAIL_COND_V_MSG((err = ogg_stream_check(&stream_state)), Error::ERR_INVALID_DATA, "Ogg stream error " + itos(err));
+		int desync_iters = 0;
+
+		Vector<Vector<uint8_t>> packet_data;
+		int64_t granule_pos = 0;
+
+		while (true) {
+			err = ogg_stream_packetout(&stream_state, &packet);
+			if (err == -1) {
+				// According to the docs this is usually recoverable, but don't sit here spinning forever.
+				desync_iters++;
+				ERR_FAIL_COND_V_MSG(desync_iters > 100, Error::ERR_INVALID_DATA, "Packet sync issue during ogg import");
+				continue;
+			} else if (err == 0) {
+				// Not enough data to fully reconstruct a packet. Go on to the next page.
+				break;
+			}
+			if (packet_count == 0 && vorbis_synthesis_idheader(&packet) == 0) {
+				WARN_PRINT("Found a non-vorbis-header packet in a header position");
+				// Clearly this logical stream is not a vorbis stream, so destroy it and try again with the next page.
+				ogg_stream_destroy(&stream_state);
+				initialized_stream = false;
+				break;
+			}
+			granule_pos = packet.granulepos;
+
+			PackedByteArray data;
+			data.resize(packet.bytes);
+			memcpy(data.ptrw(), packet.packet, packet.bytes);
+			packet_data.push_back(data);
+			packet_count++;
+		}
+		if (initialized_stream) {
+			ogg_packet_sequence->push_page(granule_pos, packet_data);
+		}
+	}
+
+	ogg_vorbis_stream->set_packet_sequence(ogg_packet_sequence);
+	ogg_vorbis_stream->set_loop(loop);
+	ogg_vorbis_stream->set_loop_offset(loop_offset);
+
+	return ResourceSaver::save(p_save_path + ".oggvorbisstr", ogg_vorbis_stream);
 }
 
 ResourceImporterOGGVorbis::ResourceImporterOGGVorbis() {
