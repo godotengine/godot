@@ -87,11 +87,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		EditorProgress *ep = nullptr;
 	};
 
-	struct CustomExportData {
-		bool debug;
-		Vector<String> libs;
-	};
-
 	Vector<PluginConfigAndroid> plugins;
 	String last_plugin_names;
 	uint64_t last_custom_build_time = 0;
@@ -108,6 +103,8 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	String get_project_name(const String &p_name) const;
 
 	String get_package_name(const String &p_package) const;
+
+	String get_assets_directory(const Ref<EditorExportPreset> &p_preset) const;
 
 	bool is_package_name_valid(const String &p_package, String *r_error = nullptr) const;
 

@@ -44,6 +44,12 @@ const String godot_project_name_xml_string = R"(<?xml version="1.0" encoding="ut
 </resources>
 )";
 
+struct CustomExportData {
+	String assets_directory;
+	bool debug;
+	Vector<String> libs;
+};
+
 int _get_android_orientation_value(DisplayServer::ScreenOrientation screen_orientation);
 
 String _get_android_orientation_label(DisplayServer::ScreenOrientation screen_orientation);
