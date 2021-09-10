@@ -2837,6 +2837,11 @@ void SceneTreeDock::set_filter(const String &p_filter) {
 	scene_tree->set_filter(p_filter);
 }
 
+void SceneTreeDock::save_branch_to_file(String p_directory) {
+	new_scene_from_dialog->set_current_dir(p_directory);
+	_tool_selected(TOOL_NEW_SCENE_FROM);
+}
+
 void SceneTreeDock::_focus_node() {
 	Node *node = scene_tree->get_selected();
 	ERR_FAIL_COND(!node);
