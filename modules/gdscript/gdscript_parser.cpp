@@ -2385,7 +2385,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_await(ExpressionNode *p_pr
 	}
 	await->to_await = element;
 
-	current_function->is_coroutine = true;
+	if (current_function) { // Might be null in a getter or setter.
+		current_function->is_coroutine = true;
+	}
 
 	return await;
 }
