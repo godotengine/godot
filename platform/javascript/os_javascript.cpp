@@ -92,12 +92,6 @@ void OS_JavaScript::send_notification_callback(int p_notification) {
 
 // Window (canvas)
 
-Point2 OS_JavaScript::compute_position_in_canvas(int p_x, int p_y) {
-	int point[2];
-	godot_js_display_compute_position(p_x, p_y, point, point + 1);
-	return Point2(point[0], point[1]);
-}
-
 bool OS_JavaScript::check_size_force_redraw() {
 	return godot_js_display_size_update() != 0;
 }
@@ -232,76 +226,35 @@ void OS_JavaScript::set_window_per_pixel_transparency_enabled(bool p_enabled) {
 
 // Keys
 
-template <typename T>
-static void dom2godot_mod(T *emscripten_event_ptr, Ref<InputEventWithModifiers> godot_event) {
-	godot_event->set_shift(emscripten_event_ptr->shiftKey);
-	godot_event->set_alt(emscripten_event_ptr->altKey);
-	godot_event->set_control(emscripten_event_ptr->ctrlKey);
-	godot_event->set_metakey(emscripten_event_ptr->metaKey);
+static void dom2godot_mod(Ref<InputEventWithModifiers> ev, int p_mod) {
+	ev->set_shift(p_mod & 1);
+	ev->set_alt(p_mod & 2);
+	ev->set_control(p_mod & 4);
+	ev->set_metakey(p_mod & 8);
 }
 
-static Ref<InputEventKey> setup_key_event(const EmscriptenKeyboardEvent *emscripten_event) {
+void OS_JavaScript::key_callback(int p_pressed, int p_repeat, int p_modifiers) {
+	OS_JavaScript *os = get_singleton();
+	JSKeyEvent &key_event = os->key_event;
+	// Resume audio context after input in case autoplay was denied.
+	os->resume_audio();
+
 	Ref<InputEventKey> ev;
 	ev.instance();
-	ev->set_echo(emscripten_event->repeat);
-	dom2godot_mod(emscripten_event, ev);
-	ev->set_scancode(dom_code2godot_scancode(emscripten_event->code, emscripten_event->key, false));
-	ev->set_physical_scancode(dom_code2godot_scancode(emscripten_event->code, emscripten_event->key, true));
+	ev->set_echo(p_repeat);
+	ev->set_scancode(dom_code2godot_scancode(key_event.code, key_event.key, false));
+	ev->set_physical_scancode(dom_code2godot_scancode(key_event.code, key_event.key, true));
+	ev->set_pressed(p_pressed);
+	dom2godot_mod(ev, p_modifiers);
 
-	String unicode = String::utf8(emscripten_event->key);
-	// Check if empty or multi-character (e.g. `CapsLock`).
-	if (unicode.length() != 1) {
-		// Might be empty as well, but better than nonsense.
-		unicode = String::utf8(emscripten_event->charValue);
-	}
+	String unicode = String::utf8(key_event.key);
 	if (unicode.length() == 1) {
 		ev->set_unicode(unicode[0]);
 	}
-
-	return ev;
-}
-
-EM_BOOL OS_JavaScript::keydown_callback(int p_event_type, const EmscriptenKeyboardEvent *p_event, void *p_user_data) {
-	OS_JavaScript *os = get_singleton();
-	Ref<InputEventKey> ev = setup_key_event(p_event);
-	ev->set_pressed(true);
-	if (ev->get_unicode() == 0 && keycode_has_unicode(ev->get_scancode())) {
-		// Defer to keypress event for legacy unicode retrieval.
-		os->deferred_key_event = ev;
-		// Do not suppress keypress event.
-		return false;
-	}
 	os->input->parse_input_event(ev);
 
 	// Make sure to flush all events so we can call restricted APIs inside the event.
 	os->input->flush_buffered_events();
-
-	// Resume audio context after input in case autoplay was denied.
-	os->resume_audio();
-	return true;
-}
-
-EM_BOOL OS_JavaScript::keypress_callback(int p_event_type, const EmscriptenKeyboardEvent *p_event, void *p_user_data) {
-	OS_JavaScript *os = get_singleton();
-	os->deferred_key_event->set_unicode(p_event->charCode);
-	os->input->parse_input_event(os->deferred_key_event);
-
-	// Make sure to flush all events so we can call restricted APIs inside the event.
-	os->input->flush_buffered_events();
-
-	return true;
-}
-
-EM_BOOL OS_JavaScript::keyup_callback(int p_event_type, const EmscriptenKeyboardEvent *p_event, void *p_user_data) {
-	OS_JavaScript *os = get_singleton();
-	Ref<InputEventKey> ev = setup_key_event(p_event);
-	ev->set_pressed(false);
-	os->input->parse_input_event(ev);
-
-	// Make sure to flush all events so we can call restricted APIs inside the event.
-	os->input->flush_buffered_events();
-
-	return ev->get_scancode() != KEY_UNKNOWN && ev->get_scancode() != 0;
 }
 
 // Mouse
@@ -314,17 +267,18 @@ int OS_JavaScript::get_mouse_button_state() const {
 	return input->get_mouse_button_mask();
 }
 
-EM_BOOL OS_JavaScript::mouse_button_callback(int p_event_type, const EmscriptenMouseEvent *p_event, void *p_user_data) {
+int OS_JavaScript::mouse_button_callback(int p_pressed, int p_button, double p_x, double p_y, int p_modifiers) {
 	OS_JavaScript *os = get_singleton();
 
 	Ref<InputEventMouseButton> ev;
 	ev.instance();
-	ev->set_pressed(p_event_type == EMSCRIPTEN_EVENT_MOUSEDOWN);
-	ev->set_position(compute_position_in_canvas(p_event->clientX, p_event->clientY));
+	ev->set_pressed(p_pressed);
+	ev->set_position(Point2(p_x, p_y));
 	ev->set_global_position(ev->get_position());
-	dom2godot_mod(p_event, ev);
+	ev->set_pressed(p_pressed);
+	dom2godot_mod(ev, p_modifiers);
 
-	switch (p_event->button) {
+	switch (p_button) {
 		case DOM_BUTTON_LEFT:
 			ev->set_button_index(BUTTON_LEFT);
 			break;
@@ -344,8 +298,8 @@ EM_BOOL OS_JavaScript::mouse_button_callback(int p_event_type, const EmscriptenM
 			return false;
 	}
 
-	if (ev->is_pressed()) {
-		double diff = emscripten_get_now() - os->last_click_ms;
+	if (p_pressed) {
+		uint64_t diff = (OS::get_singleton()->get_ticks_usec() / 1000) - os->last_click_ms;
 
 		if (ev->get_button_index() == os->last_click_button_index) {
 			if (diff < 400 && Point2(os->last_click_pos).distance_to(ev->get_position()) < 5) {
@@ -368,9 +322,6 @@ EM_BOOL OS_JavaScript::mouse_button_callback(int p_event_type, const EmscriptenM
 	int mask = os->input->get_mouse_button_mask();
 	int button_flag = 1 << (ev->get_button_index() - 1);
 	if (ev->is_pressed()) {
-		// Since the event is consumed, focus manually. The containing iframe,
-		// if exists, may not have focus yet, so focus even if already focused.
-		godot_js_display_canvas_focus();
 		mask |= button_flag;
 	} else if (mask & button_flag) {
 		mask &= ~button_flag;
@@ -381,43 +332,39 @@ EM_BOOL OS_JavaScript::mouse_button_callback(int p_event_type, const EmscriptenM
 	ev->set_button_mask(mask);
 
 	os->input->parse_input_event(ev);
+	// Resume audio context after input in case autoplay was denied.
+	os->resume_audio();
 
 	// Make sure to flush all events so we can call restricted APIs inside the event.
 	os->input->flush_buffered_events();
-
-	// Resume audio context after input in case autoplay was denied.
-	os->resume_audio();
 
 	// Prevent multi-click text selection and wheel-click scrolling anchor.
 	// Context menu is prevented through contextmenu event.
 	return true;
 }
 
-EM_BOOL OS_JavaScript::mousemove_callback(int p_event_type, const EmscriptenMouseEvent *p_event, void *p_user_data) {
+void OS_JavaScript::mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers) {
 	OS_JavaScript *os = get_singleton();
 
 	int input_mask = os->input->get_mouse_button_mask();
-	Point2 pos = compute_position_in_canvas(p_event->clientX, p_event->clientY);
 	// For motion outside the canvas, only read mouse movement if dragging
 	// started inside the canvas; imitating desktop app behaviour.
 	if (!os->cursor_inside_canvas && !input_mask)
-		return false;
+		return;
 
 	Ref<InputEventMouseMotion> ev;
 	ev.instance();
-	dom2godot_mod(p_event, ev);
+	dom2godot_mod(ev, p_modifiers);
 	ev->set_button_mask(input_mask);
 
-	ev->set_position(pos);
+	ev->set_position(Point2(p_x, p_y));
 	ev->set_global_position(ev->get_position());
 
-	ev->set_relative(Vector2(p_event->movementX, p_event->movementY));
+	ev->set_relative(Vector2(p_rel_x, p_rel_y));
 	os->input->set_mouse_position(ev->get_position());
 	ev->set_speed(os->input->get_last_mouse_speed());
 
 	os->input->parse_input_event(ev);
-	// Don't suppress mouseover/-leave events.
-	return false;
 }
 
 static const char *godot2dom_cursor(OS::CursorShape p_shape) {
@@ -579,9 +526,9 @@ OS::MouseMode OS_JavaScript::get_mouse_mode() const {
 
 // Wheel
 
-EM_BOOL OS_JavaScript::wheel_callback(int p_event_type, const EmscriptenWheelEvent *p_event, void *p_user_data) {
-	ERR_FAIL_COND_V(p_event_type != EMSCRIPTEN_EVENT_WHEEL, false);
+int OS_JavaScript::mouse_wheel_callback(double p_delta_x, double p_delta_y) {
 	OS_JavaScript *os = get_singleton();
+
 	if (!godot_js_display_canvas_is_focused()) {
 		if (os->cursor_inside_canvas) {
 			godot_js_display_canvas_focus();
@@ -601,16 +548,17 @@ EM_BOOL OS_JavaScript::wheel_callback(int p_event_type, const EmscriptenWheelEve
 	ev->set_control(input->is_key_pressed(KEY_CONTROL));
 	ev->set_metakey(input->is_key_pressed(KEY_META));
 
-	if (p_event->deltaY < 0)
+	if (p_delta_y < 0) {
 		ev->set_button_index(BUTTON_WHEEL_UP);
-	else if (p_event->deltaY > 0)
+	} else if (p_delta_y > 0) {
 		ev->set_button_index(BUTTON_WHEEL_DOWN);
-	else if (p_event->deltaX > 0)
+	} else if (p_delta_x > 0) {
 		ev->set_button_index(BUTTON_WHEEL_LEFT);
-	else if (p_event->deltaX < 0)
+	} else if (p_delta_x < 0) {
 		ev->set_button_index(BUTTON_WHEEL_RIGHT);
-	else
+	} else {
 		return false;
+	}
 
 	// Different browsers give wildly different delta values, and we can't
 	// interpret deltaMode, so use default value for wheel events' factor.
@@ -635,53 +583,41 @@ bool OS_JavaScript::has_touchscreen_ui_hint() const {
 	return godot_js_display_touchscreen_is_available();
 }
 
-EM_BOOL OS_JavaScript::touch_press_callback(int p_event_type, const EmscriptenTouchEvent *p_event, void *p_user_data) {
+void OS_JavaScript::touch_callback(int p_type, int p_count) {
 	OS_JavaScript *os = get_singleton();
-	Ref<InputEventScreenTouch> ev;
-	int lowest_id_index = -1;
-	for (int i = 0; i < p_event->numTouches; ++i) {
-		const EmscriptenTouchPoint &touch = p_event->touches[i];
-		if (lowest_id_index == -1 || touch.identifier < p_event->touches[lowest_id_index].identifier)
-			lowest_id_index = i;
-		if (!touch.isChanged)
-			continue;
-		ev.instance();
-		ev->set_index(touch.identifier);
-		ev->set_position(compute_position_in_canvas(touch.clientX, touch.clientY));
-		os->touches[i] = ev->get_position();
-		ev->set_pressed(p_event_type == EMSCRIPTEN_EVENT_TOUCHSTART);
-
-		os->input->parse_input_event(ev);
-	}
-
-	// Make sure to flush all events so we can call restricted APIs inside the event.
-	os->input->flush_buffered_events();
-
 	// Resume audio context after input in case autoplay was denied.
 	os->resume_audio();
-	return true;
-}
 
-EM_BOOL OS_JavaScript::touchmove_callback(int p_event_type, const EmscriptenTouchEvent *p_event, void *p_user_data) {
-	OS_JavaScript *os = get_singleton();
-	Ref<InputEventScreenDrag> ev;
-	int lowest_id_index = -1;
-	for (int i = 0; i < p_event->numTouches; ++i) {
-		const EmscriptenTouchPoint &touch = p_event->touches[i];
-		if (lowest_id_index == -1 || touch.identifier < p_event->touches[lowest_id_index].identifier)
-			lowest_id_index = i;
-		if (!touch.isChanged)
-			continue;
-		ev.instance();
-		ev->set_index(touch.identifier);
-		ev->set_position(compute_position_in_canvas(touch.clientX, touch.clientY));
-		Point2 &prev = os->touches[i];
-		ev->set_relative(ev->get_position() - prev);
-		prev = ev->get_position();
+	const JSTouchEvent &touch_event = os->touch_event;
+	for (int i = 0; i < p_count; i++) {
+		Point2 point(touch_event.coords[i * 2], touch_event.coords[i * 2 + 1]);
+		if (p_type == 2) {
+			// touchmove
+			Ref<InputEventScreenDrag> ev;
+			ev.instance();
+			ev->set_index(touch_event.identifier[i]);
+			ev->set_position(point);
 
-		os->input->parse_input_event(ev);
+			Point2 &prev = os->touches[i];
+			ev->set_relative(ev->get_position() - prev);
+			prev = ev->get_position();
+
+			os->input->parse_input_event(ev);
+		} else {
+			// touchstart/touchend
+			Ref<InputEventScreenTouch> ev;
+			ev.instance();
+			ev->set_index(touch_event.identifier[i]);
+			ev->set_position(point);
+			ev->set_pressed(p_type == 0);
+			os->touches[i] = point;
+
+			os->input->parse_input_event(ev);
+
+			// Make sure to flush all events so we can call restricted APIs inside the event.
+			os->input->flush_buffered_events();
+		}
 	}
-	return true;
 }
 
 // Gamepad
@@ -886,22 +822,16 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	EM_CHECK(ev)
 	// These callbacks from Emscripten's html5.h suffice to access most
 	// JavaScript APIs.
-	SET_EM_CALLBACK(canvas_id, mousedown, mouse_button_callback)
-	SET_EM_WINDOW_CALLBACK(mousemove, mousemove_callback)
-	SET_EM_WINDOW_CALLBACK(mouseup, mouse_button_callback)
 	SET_EM_WINDOW_CALLBACK(blur, blur_callback)
-	SET_EM_CALLBACK(canvas_id, wheel, wheel_callback)
-	SET_EM_CALLBACK(canvas_id, touchstart, touch_press_callback)
-	SET_EM_CALLBACK(canvas_id, touchmove, touchmove_callback)
-	SET_EM_CALLBACK(canvas_id, touchend, touch_press_callback)
-	SET_EM_CALLBACK(canvas_id, touchcancel, touch_press_callback)
-	SET_EM_CALLBACK(canvas_id, keydown, keydown_callback)
-	SET_EM_CALLBACK(canvas_id, keypress, keypress_callback)
-	SET_EM_CALLBACK(canvas_id, keyup, keyup_callback)
 	SET_EM_CALLBACK(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, fullscreenchange, fullscreen_change_callback)
 #undef SET_EM_CALLBACK
 #undef EM_CHECK
 
+	godot_js_display_mouse_button_cb(&OS_JavaScript::mouse_button_callback);
+	godot_js_display_mouse_move_cb(&OS_JavaScript::mouse_move_callback);
+	godot_js_display_mouse_wheel_cb(&OS_JavaScript::mouse_wheel_callback);
+	godot_js_display_touch_cb(&OS_JavaScript::touch_callback, touch_event.identifier, touch_event.coords);
+	godot_js_display_key_cb(&OS_JavaScript::key_callback, key_event.code, key_event.key);
 	// For APIs that are not (sufficiently) exposed, a
 	// library is used below (implemented in library_godot_display.js).
 	godot_js_display_notification_cb(&OS_JavaScript::send_notification_callback,
