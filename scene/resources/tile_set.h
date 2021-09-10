@@ -447,16 +447,23 @@ public:
 class TileSetAtlasSource : public TileSetSource {
 	GDCLASS(TileSetAtlasSource, TileSetSource);
 
-public:
+private:
 	struct TileAlternativesData {
 		Vector2i size_in_atlas = Vector2i(1, 1);
 		Vector2i texture_offset;
+
+		// Animation
+		int animation_columns = 0;
+		Vector2i animation_separation;
+		real_t animation_speed = 1.0;
+		LocalVector<real_t> animation_frames_durations;
+
+		// Alternatives
 		Map<int, TileData *> alternatives;
 		Vector<int> alternatives_ids;
 		int next_alternative_id = 1;
 	};
 
-private:
 	Ref<Texture2D> texture;
 	Vector2i margins;
 	Vector2i separation;
@@ -470,6 +477,9 @@ private:
 	const TileData *_get_atlas_tile_data(Vector2i p_atlas_coords, int p_alternative_tile) const;
 
 	void _compute_next_alternative_id(const Vector2i p_atlas_coords);
+
+	void _create_coords_mapping_cache(Vector2i p_atlas_coords);
+	void _clear_coords_mapping_cache(Vector2i p_atlas_coords);
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -513,17 +523,31 @@ public:
 	Vector2i get_texture_region_size() const;
 
 	// Base tiles.
-	void create_tile(const Vector2i p_atlas_coords, const Vector2i p_size = Vector2i(1, 1)); // Create a tile if it does not exists, or add alternative tile if it does.
-	void remove_tile(Vector2i p_atlas_coords); // Remove a tile. If p_tile_key.alternative_tile if different from 0, remove the alternative
+	void create_tile(const Vector2i p_atlas_coords, const Vector2i p_size = Vector2i(1, 1));
+	void remove_tile(Vector2i p_atlas_coords);
 	virtual bool has_tile(Vector2i p_atlas_coords) const override;
-	bool can_move_tile_in_atlas(Vector2i p_atlas_coords, Vector2i p_new_atlas_coords = INVALID_ATLAS_COORDS, Vector2i p_new_size = Vector2i(-1, -1)) const;
 	void move_tile_in_atlas(Vector2i p_atlas_coords, Vector2i p_new_atlas_coords = INVALID_ATLAS_COORDS, Vector2i p_new_size = Vector2i(-1, -1));
 	Vector2i get_tile_size_in_atlas(Vector2i p_atlas_coords) const;
 
 	virtual int get_tiles_count() const override;
 	virtual Vector2i get_tile_id(int p_index) const override;
 
+	bool has_room_for_tile(Vector2i p_atlas_coords, Vector2i p_size, int p_animation_columns, Vector2i p_animation_separation, int p_frames_count, Vector2i p_ignored_tile = INVALID_ATLAS_COORDS) const;
+
 	Vector2i get_tile_at_coords(Vector2i p_atlas_coords) const;
+
+	// Animation.
+	void set_tile_animation_columns(const Vector2i p_atlas_coords, int p_frame_columns);
+	int get_tile_animation_columns(const Vector2i p_atlas_coords) const;
+	void set_tile_animation_separation(const Vector2i p_atlas_coords, const Vector2i p_separation);
+	Vector2i get_tile_animation_separation(const Vector2i p_atlas_coords) const;
+	void set_tile_animation_speed(const Vector2i p_atlas_coords, real_t p_speed);
+	real_t get_tile_animation_speed(const Vector2i p_atlas_coords) const;
+	void set_tile_animation_frames_count(const Vector2i p_atlas_coords, int p_frames_count);
+	int get_tile_animation_frames_count(const Vector2i p_atlas_coords) const;
+	void set_tile_animation_frame_duration(const Vector2i p_atlas_coords, int p_frame_index, real_t p_duration);
+	real_t get_tile_animation_frame_duration(const Vector2i p_atlas_coords, int p_frame_index) const;
+	real_t get_tile_animation_total_duration(const Vector2i p_atlas_coords) const;
 
 	// Alternative tiles.
 	int create_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_id_override = -1);
@@ -542,7 +566,7 @@ public:
 	Vector2i get_atlas_grid_size() const;
 	bool has_tiles_outside_texture();
 	void clear_tiles_outside_texture();
-	Rect2i get_tile_texture_region(Vector2i p_atlas_coords) const;
+	Rect2i get_tile_texture_region(Vector2i p_atlas_coords, int p_frame = 0) const;
 	Vector2i get_tile_effective_texture_offset(Vector2i p_atlas_coords, int p_alternative_tile) const;
 
 	~TileSetAtlasSource();
