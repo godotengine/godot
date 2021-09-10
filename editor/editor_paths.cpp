@@ -200,6 +200,20 @@ EditorPaths::EditorPaths() {
 				paths_valid = false;
 			}
 		}
+
+		// Check that the project data directory '.gdignore' file exists
+		String project_data_gdignore_file_path = project_data_dir.plus_file(".gdignore");
+		if (!FileAccess::exists(project_data_gdignore_file_path)) {
+			// Add an empty .gdignore file to avoid scan.
+			FileAccessRef f = FileAccess::open(project_data_gdignore_file_path, FileAccess::WRITE);
+			if (f) {
+				f->store_line("");
+				f->close();
+			} else {
+				ERR_PRINT("Failed to create file " + project_data_gdignore_file_path);
+			}
+		}
+
 		Engine::get_singleton()->set_shader_cache_path(project_data_dir);
 
 		// Editor metadata dir.
