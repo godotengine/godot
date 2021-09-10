@@ -1682,6 +1682,7 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 	while (!check(GDScriptTokenizer::Token::DEDENT) && !is_at_end()) {
 		MatchBranchNode *branch = parse_match_branch();
 		if (branch == nullptr) {
+			advance();
 			continue;
 		}
 
@@ -1745,7 +1746,9 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 		push_error(R"(No pattern found for "match" branch.)");
 	}
 
-	consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" after "match" patterns.)");
+	if (!consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" after "match" patterns.)")) {
+		return nullptr;
+	}
 
 	// Save continue state.
 	bool could_continue = can_continue;
@@ -1778,15 +1781,6 @@ GDScriptParser::PatternNode *GDScriptParser::parse_match_pattern(PatternNode *p_
 	PatternNode *pattern = alloc_node<PatternNode>();
 
 	switch (current.type) {
-		case GDScriptTokenizer::Token::LITERAL:
-			advance();
-			pattern->pattern_type = PatternNode::PT_LITERAL;
-			pattern->literal = parse_literal();
-			if (pattern->literal == nullptr) {
-				// Error happened.
-				return nullptr;
-			}
-			break;
 		case GDScriptTokenizer::Token::VAR: {
 			// Bind.
 			advance();
@@ -1849,44 +1843,44 @@ GDScriptParser::PatternNode *GDScriptParser::parse_match_pattern(PatternNode *p_
 			// Dictionary.
 			advance();
 			pattern->pattern_type = PatternNode::PT_DICTIONARY;
-
-			if (!check(GDScriptTokenizer::Token::BRACE_CLOSE) && !is_at_end()) {
-				do {
-					if (match(GDScriptTokenizer::Token::PERIOD_PERIOD)) {
-						// Rest.
+			do {
+				if (check(GDScriptTokenizer::Token::BRACE_CLOSE) || is_at_end()) {
+					break;
+				}
+				if (match(GDScriptTokenizer::Token::PERIOD_PERIOD)) {
+					// Rest.
+					if (pattern->rest_used) {
+						push_error(R"(The ".." pattern must be the last element in the pattern dictionary.)");
+					} else {
+						PatternNode *sub_pattern = alloc_node<PatternNode>();
+						sub_pattern->pattern_type = PatternNode::PT_REST;
+						pattern->dictionary.push_back({ nullptr, sub_pattern });
+						pattern->rest_used = true;
+					}
+				} else {
+					ExpressionNode *key = parse_expression(false);
+					if (key == nullptr) {
+						push_error(R"(Expected expression as key for dictionary pattern.)");
+					}
+					if (match(GDScriptTokenizer::Token::COLON)) {
+						// Value pattern.
+						PatternNode *sub_pattern = parse_match_pattern(p_root_pattern != nullptr ? p_root_pattern : pattern);
+						if (sub_pattern == nullptr) {
+							continue;
+						}
 						if (pattern->rest_used) {
 							push_error(R"(The ".." pattern must be the last element in the pattern dictionary.)");
+						} else if (sub_pattern->pattern_type == PatternNode::PT_REST) {
+							push_error(R"(The ".." pattern cannot be used as a value.)");
 						} else {
-							PatternNode *sub_pattern = alloc_node<PatternNode>();
-							sub_pattern->pattern_type = PatternNode::PT_REST;
-							pattern->dictionary.push_back({ nullptr, sub_pattern });
-							pattern->rest_used = true;
+							pattern->dictionary.push_back({ key, sub_pattern });
 						}
 					} else {
-						ExpressionNode *key = parse_expression(false);
-						if (key == nullptr) {
-							push_error(R"(Expected expression as key for dictionary pattern.)");
-						}
-						if (match(GDScriptTokenizer::Token::COLON)) {
-							// Value pattern.
-							PatternNode *sub_pattern = parse_match_pattern(p_root_pattern != nullptr ? p_root_pattern : pattern);
-							if (sub_pattern == nullptr) {
-								continue;
-							}
-							if (pattern->rest_used) {
-								push_error(R"(The ".." pattern must be the last element in the pattern dictionary.)");
-							} else if (sub_pattern->pattern_type == PatternNode::PT_REST) {
-								push_error(R"(The ".." pattern cannot be used as a value.)");
-							} else {
-								pattern->dictionary.push_back({ key, sub_pattern });
-							}
-						} else {
-							// Key match only.
-							pattern->dictionary.push_back({ key, nullptr });
-						}
+						// Key match only.
+						pattern->dictionary.push_back({ key, nullptr });
 					}
-				} while (match(GDScriptTokenizer::Token::COMMA));
-			}
+				}
+			} while (match(GDScriptTokenizer::Token::COMMA));
 			consume(GDScriptTokenizer::Token::BRACE_CLOSE, R"(Expected "}" to close the dictionary pattern.)");
 			break;
 		}
@@ -1895,8 +1889,13 @@ GDScriptParser::PatternNode *GDScriptParser::parse_match_pattern(PatternNode *p_
 			ExpressionNode *expression = parse_expression(false);
 			if (expression == nullptr) {
 				push_error(R"(Expected expression for match pattern.)");
+				return nullptr;
 			} else {
-				pattern->pattern_type = PatternNode::PT_EXPRESSION;
+				if (expression->type == GDScriptParser::Node::LITERAL) {
+					pattern->pattern_type = PatternNode::PT_LITERAL;
+				} else {
+					pattern->pattern_type = PatternNode::PT_EXPRESSION;
+				}
 				pattern->expression = expression;
 			}
 			break;
