@@ -238,18 +238,31 @@ void NativeExtension::_unregister_extension_class(const GDNativeExtensionClassLi
 	self->extension_classes.erase(class_name);
 }
 
-Error NativeExtension::open_library(const String &p_path, const String &p_entry_symbol) {
-	Error err = OS::get_singleton()->open_dynamic_library(p_path, library, true);
+Error NativeExtension::open_library(const String &p_path, const String &p_entry_symbol, const PackedStringArray &p_dependency_paths) {
+	// First open dependencies
+	// Should we add some form of reference counting here in case libraries share dependencies?
+	OS *os = OS::get_singleton();
+	for (int i = 0; i < p_dependency_paths.size(); i++) {
+		void *dependency = nullptr;
+		Error err = os->open_dynamic_library(p_dependency_paths[i], dependency, true);
+		if (err != OK) {
+			return err;
+		}
+
+		dependencies.push_back(dependency);
+	}
+
+	Error err = os->open_dynamic_library(p_path, library, true);
 	if (err != OK) {
 		return err;
 	}
 
 	void *entry_funcptr = nullptr;
 
-	err = OS::get_singleton()->get_dynamic_library_symbol_handle(library, p_entry_symbol, entry_funcptr, false);
+	err = os->get_dynamic_library_symbol_handle(library, p_entry_symbol, entry_funcptr, false);
 
 	if (err != OK) {
-		OS::get_singleton()->close_dynamic_library(library);
+		os->close_dynamic_library(library);
 		return err;
 	}
 
@@ -261,8 +274,17 @@ Error NativeExtension::open_library(const String &p_path, const String &p_entry_
 }
 
 void NativeExtension::close_library() {
+	OS *os = OS::get_singleton();
+
+	// close any open dependencies
+	for (int i = 0; i < dependencies.size(); i++) {
+		os->close_dynamic_library(dependencies[i]);
+	}
+	dependencies.clear();
+
+	// now close our library
 	ERR_FAIL_COND(library == nullptr);
-	OS::get_singleton()->close_dynamic_library(library);
+	os->close_dynamic_library(library);
 
 	library = nullptr;
 }
@@ -294,7 +316,7 @@ void NativeExtension::deinitialize_library(InitializationLevel p_level) {
 }
 
 void NativeExtension::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("open_library", "path", "entry_symbol"), &NativeExtension::open_library);
+	ClassDB::bind_method(D_METHOD("open_library", "path", "entry_symbol", "dependency_paths"), &NativeExtension::open_library);
 	ClassDB::bind_method(D_METHOD("close_library"), &NativeExtension::close_library);
 	ClassDB::bind_method(D_METHOD("is_library_open"), &NativeExtension::is_library_open);
 
@@ -350,8 +372,49 @@ RES NativeExtensionResourceLoader::load(const String &p_path, const String &p_or
 		return RES();
 	}
 
+	ProjectSettings *project_settings = ProjectSettings::get_singleton();
+
+	// Get our entry symbol
 	String entry_symbol = config->get_value("configuration", "entry_symbol");
 
+	// Get our dependencies
+	List<String> dependencies;
+	if (config->has_section("dependencies")) {
+		config->get_section_keys("dependencies", &dependencies);
+	}
+
+	PackedStringArray dependency_paths;
+
+	for (const String &E : dependencies) {
+		Vector<String> tags = E.split(".");
+		bool all_tags_met = true;
+		for (int i = 0; i < tags.size(); i++) {
+			String tag = tags[i].strip_edges();
+			if (!OS::get_singleton()->has_feature(tag)) {
+				all_tags_met = false;
+				break;
+			}
+		}
+
+		if (all_tags_met) {
+			dependency_paths = config->get_value("dependencies", E);
+			break;
+		}
+	}
+
+	PackedStringArray abs_dependency_paths;
+
+	for (int i = 0; i < dependency_paths.size(); i++) {
+		String path = dependency_paths[i];
+
+		if (!path.is_resource_file()) {
+			path = p_path.get_base_dir().plus_file(path);
+		}
+
+		abs_dependency_paths.push_back(project_settings->globalize_path(path));
+	}
+
+	// Get our library
 	List<String> libraries;
 
 	config->get_section_keys("libraries", &libraries);
@@ -386,10 +449,12 @@ RES NativeExtensionResourceLoader::load(const String &p_path, const String &p_or
 		library_path = p_path.get_base_dir().plus_file(library_path);
 	}
 
+	String abs_path = project_settings->globalize_path(library_path);
+
+	// Now instantiate our library
 	Ref<NativeExtension> lib;
 	lib.instantiate();
-	String abs_path = ProjectSettings::get_singleton()->globalize_path(library_path);
-	err = lib->open_library(abs_path, entry_symbol);
+	err = lib->open_library(abs_path, entry_symbol, abs_dependency_paths);
 
 	if (r_error) {
 		*r_error = err;

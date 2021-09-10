@@ -39,6 +39,7 @@ class NativeExtension : public Resource {
 	GDCLASS(NativeExtension, Resource)
 
 	void *library = nullptr; // pointer if valid,
+	Vector<void *> dependencies; // pointers to loaded dependencies
 
 	struct Extension {
 		ObjectNativeExtension native_extension;
@@ -62,7 +63,7 @@ protected:
 public:
 	static const char *EXTENSION_LIST_CONFIG_FILE;
 
-	Error open_library(const String &p_path, const String &p_entry_symbol);
+	Error open_library(const String &p_path, const String &p_entry_symbol, const PackedStringArray &p_dependency_paths);
 	void close_library();
 
 	enum InitializationLevel {

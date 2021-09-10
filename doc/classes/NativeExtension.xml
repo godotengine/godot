@@ -32,6 +32,7 @@
 			<return type="int" enum="Error" />
 			<argument index="0" name="path" type="String" />
 			<argument index="1" name="entry_symbol" type="String" />
+			<argument index="2" name="dependency_paths" type="PackedStringArray" />
 			<description>
 			</description>
 		</method>
