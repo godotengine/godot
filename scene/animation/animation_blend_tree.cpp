@@ -724,7 +724,7 @@ float AnimationNodeTransition::process(float p_time, bool p_seek) {
 
 	} else { // cross-fading from prev to current
 
-		float blend = xfade ? (prev_xfading / xfade) : 1;
+		float blend = xfade == 0 ? 0 : (prev_xfading / xfade);
 
 		if (!p_seek && switched) { //just switched, seek to start of current
 
