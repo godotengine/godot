@@ -92,7 +92,7 @@ public:
 
 	void append_array(Vector<T> p_other);
 
-	bool has(const T &p_val) {
+	bool has(const T &p_val) const {
 		return find(p_val, 0) != -1;
 	}
 

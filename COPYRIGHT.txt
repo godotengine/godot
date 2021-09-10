@@ -367,7 +367,6 @@ Copyright: 2016-2020, Aras Pranckevicius
 License: public-domain or Unlicense or Expat
 
 Files: ./thirdparty/misc/stb_rect_pack.h
- ./thirdparty/misc/stb_vorbis.c
 Comment: stb libraries
 Copyright: Sean Barrett
 License: public-domain or Unlicense or Expat
