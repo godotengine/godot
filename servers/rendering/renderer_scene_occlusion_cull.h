@@ -76,26 +76,28 @@ public:
 				return false;
 			}
 
-			float min_depth;
-			if (p_cam_projection.is_orthogonal()) {
-				min_depth = (-closest_point_view.z) - p_near;
-			} else {
-				float r = -p_near / closest_point_view.z;
-				Vector3 closest_point_proj = Vector3(closest_point_view.x * r, closest_point_view.y * r, -p_near);
-				min_depth = closest_point_proj.distance_to(closest_point_view);
-			}
+			float min_depth = -closest_point_view.z * 0.95f;
 
 			Vector2 rect_min = Vector2(FLT_MAX, FLT_MAX);
 			Vector2 rect_max = Vector2(FLT_MIN, FLT_MIN);
 
 			for (int j = 0; j < 8; j++) {
-				Vector3 c = RendererSceneOcclusionCull::HZBuffer::corners[j];
+				const Vector3 &c = RendererSceneOcclusionCull::HZBuffer::corners[j];
 				Vector3 nc = Vector3(1, 1, 1) - c;
 				Vector3 corner = Vector3(p_bounds[0] * c.x + p_bounds[3] * nc.x, p_bounds[1] * c.y + p_bounds[4] * nc.y, p_bounds[2] * c.z + p_bounds[5] * nc.z);
 				Vector3 view = p_cam_inv_transform.xform(corner);
 
-				Vector3 projected = p_cam_projection.xform(view);
-				Vector2 normalized = Vector2(projected.x * 0.5f + 0.5f, projected.y * 0.5f + 0.5f);
+				Plane vp = Plane(view, 1.0);
+				Plane projected = p_cam_projection.xform4(vp);
+
+				float w = projected.d;
+				if (w < 1.0) {
+					rect_min = Vector2(0.0f, 0.0f);
+					rect_max = Vector2(1.0f, 1.0f);
+					break;
+				}
+
+				Vector2 normalized = Vector2(projected.normal.x / w * 0.5f + 0.5f, projected.normal.y / w * 0.5f + 0.5f);
 				rect_min = rect_min.min(normalized);
 				rect_max = rect_max.max(normalized);
 			}
