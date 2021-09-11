@@ -1086,7 +1086,7 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 			}
 		}
 
-		RID material = ci->material;
+		RID material = ci->material_owner == nullptr ? ci->material : ci->material_owner->material;
 
 		if (material.is_null() && ci->canvas_group != nullptr) {
 			material = default_canvas_group_material;
@@ -1354,8 +1354,10 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 			}
 		}
 
-		if (ci->material.is_valid()) {
-			MaterialData *md = (MaterialData *)storage->material_get_data(ci->material, RendererStorageRD::SHADER_TYPE_2D);
+		RID material = ci->material_owner == nullptr ? ci->material : ci->material_owner->material;
+
+		if (material.is_valid()) {
+			MaterialData *md = (MaterialData *)storage->material_get_data(material, RendererStorageRD::SHADER_TYPE_2D);
 			if (md && md->shader_data->valid) {
 				if (md->shader_data->uses_screen_texture && canvas_group_owner == nullptr) {
 					if (!material_screen_texture_found) {
@@ -1375,7 +1377,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 					if (!RD::get_singleton()->uniform_set_is_valid(md->uniform_set)) {
 						// uniform set may be gone because a dependency was erased. In this case, it will happen
 						// if a texture is deleted, so just re-create it.
-						storage->material_force_update_textures(ci->material, RendererStorageRD::SHADER_TYPE_2D);
+						storage->material_force_update_textures(material, RendererStorageRD::SHADER_TYPE_2D);
 					}
 				}
 			}
