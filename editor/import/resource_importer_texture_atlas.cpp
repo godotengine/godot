@@ -328,11 +328,8 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 			atlas_texture->set_atlas(cache);
 			atlas_texture->set_region(Rect2(offset, pack_data.region.size));
 
-			if (pack_data.is_cropped) {
-				atlas_texture->set_margin(Rect2(Vector2(0, 0), Vector2(0, 0)));
-			}
-			else {
-				atlas_texture->set_margin(Rect2(pack_data.region.position, Size2(pack_data.image->get_width(), pack_data.image->get_height()) - pack_data.region.size));
+			if (!pack_data.is_cropped) {
+				atlas_texture->set_margin(Rect2(pack_data.region.position, pack_data.image->getsize() - pack_data.region.size));
 			}
 
 			texture = atlas_texture;
