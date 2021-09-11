@@ -6,6 +6,11 @@
   </a>
 </p>
 
+:warning: *You are browsing the `master` branch, which is the main focus of development.
+**The `master` branch is not production-ready.**
+See [Godot release policy](https://docs.godotengine.org/en/stable/about/release_policy.html)
+in the documentation for more information.*
+
 ## 2D and 3D cross-platform game engine
 
 **[Godot Engine](https://godotengine.org) is a feature-packed, cross-platform
