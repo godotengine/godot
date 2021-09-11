@@ -2886,6 +2886,42 @@ StringName _ClassDB::get_category(const StringName &p_node) const {
 	return ClassDB::get_category(p_node);
 }
 
+bool _ClassDB::has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) const {
+	return ClassDB::has_enum(p_class, p_name, p_no_inheritance);
+}
+
+PoolStringArray _ClassDB::get_enum_list(const StringName &p_class, bool p_no_inheritance) const {
+	List<StringName> enums;
+	ClassDB::get_enum_list(p_class, &enums, p_no_inheritance);
+
+	PoolStringArray ret;
+	ret.resize(enums.size());
+	int idx = 0;
+	for (List<StringName>::Element *E = enums.front(); E; E = E->next()) {
+		ret.set(idx++, E->get());
+	}
+
+	return ret;
+}
+
+PoolStringArray _ClassDB::get_enum_constants(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance) const {
+	List<StringName> constants;
+	ClassDB::get_enum_constants(p_class, p_enum, &constants, p_no_inheritance);
+
+	PoolStringArray ret;
+	ret.resize(constants.size());
+	int idx = 0;
+	for (List<StringName>::Element *E = constants.front(); E; E = E->next()) {
+		ret.set(idx++, E->get());
+	}
+
+	return ret;
+}
+
+StringName _ClassDB::get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) const {
+	return ClassDB::get_integer_constant_enum(p_class, p_name, p_no_inheritance);
+}
+
 bool _ClassDB::is_class_enabled(StringName p_class) const {
 	return ClassDB::is_class_enabled(p_class);
 }
@@ -2915,6 +2951,11 @@ void _ClassDB::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("class_has_integer_constant", "class", "name"), &_ClassDB::has_integer_constant);
 	ClassDB::bind_method(D_METHOD("class_get_integer_constant", "class", "name"), &_ClassDB::get_integer_constant);
+
+	ClassDB::bind_method(D_METHOD("class_has_enum", "class", "name", "no_inheritance"), &_ClassDB::has_enum, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("class_get_enum_list", "class", "no_inheritance"), &_ClassDB::get_enum_list, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("class_get_enum_constants", "class", "enum", "no_inheritance"), &_ClassDB::get_enum_constants, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("class_get_integer_constant_enum", "class", "name", "no_inheritance"), &_ClassDB::get_integer_constant_enum, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("class_get_category", "class"), &_ClassDB::get_category);
 	ClassDB::bind_method(D_METHOD("is_class_enabled", "class"), &_ClassDB::is_class_enabled);
