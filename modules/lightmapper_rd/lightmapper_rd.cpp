@@ -274,13 +274,12 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 	return BAKE_OK;
 }
 
-void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i atlas_size, int atlas_slices, AABB &bounds, int grid_size, Vector<Probe> &probe_positions, GenerateProbes p_generate_probes, Vector<int> &slice_triangle_count, Vector<int> &slice_seam_count, RID &vertex_buffer, RID &triangle_buffer, RID &box_buffer, RID &lights_buffer, RID &triangle_cell_indices_buffer, RID &probe_positions_buffer, RID &grid_texture, RID &seams_buffer, BakeStepFunc p_step_function, void *p_bake_userdata) {
+void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i atlas_size, int atlas_slices, AABB &bounds, int grid_size, Vector<Probe> &probe_positions, GenerateProbes p_generate_probes, Vector<int> &slice_triangle_count, Vector<int> &slice_seam_count, RID &vertex_buffer, RID &triangle_buffer, RID &lights_buffer, RID &triangle_cell_indices_buffer, RID &probe_positions_buffer, RID &grid_texture, RID &seams_buffer, BakeStepFunc p_step_function, void *p_bake_userdata) {
 	HashMap<Vertex, uint32_t, VertexHash> vertex_map;
 
 	//fill triangles array and vertex array
 	LocalVector<Triangle> triangles;
 	LocalVector<Vertex> vertex_array;
-	LocalVector<Box> box_array;
 	LocalVector<Seam> seams;
 
 	slice_triangle_count.resize(atlas_slices);
@@ -387,16 +386,13 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 				}
 			}
 
-			Box box;
-			box.min_bounds[0] = taabb.position.x;
-			box.min_bounds[1] = taabb.position.y;
-			box.min_bounds[2] = taabb.position.z;
-			box.max_bounds[0] = taabb.position.x + MAX(taabb.size.x, 0.0001);
-			box.max_bounds[1] = taabb.position.y + MAX(taabb.size.y, 0.0001);
-			box.max_bounds[2] = taabb.position.z + MAX(taabb.size.z, 0.0001);
-			box.pad0 = box.pad1 = 0; //make valgrind not complain
-			box_array.push_back(box);
-
+			t.min_bounds[0] = taabb.position.x;
+			t.min_bounds[1] = taabb.position.y;
+			t.min_bounds[2] = taabb.position.z;
+			t.max_bounds[0] = taabb.position.x + MAX(taabb.size.x, 0.0001);
+			t.max_bounds[1] = taabb.position.y + MAX(taabb.size.y, 0.0001);
+			t.max_bounds[2] = taabb.position.z + MAX(taabb.size.z, 0.0001);
+			t.pad0 = t.pad1 = 0; //make valgrind not complain
 			triangles.push_back(t);
 			slice_triangle_count.write[t.slice]++;
 		}
@@ -504,9 +500,6 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 
 		Vector<uint8_t> tb = triangles.to_byte_array();
 		triangle_buffer = rd->storage_buffer_create(tb.size(), tb);
-
-		Vector<uint8_t> bb = box_array.to_byte_array();
-		box_buffer = rd->storage_buffer_create(bb.size(), bb);
 
 		Vector<uint8_t> tib = triangle_indices.to_byte_array();
 		triangle_cell_indices_buffer = rd->storage_buffer_create(tib.size(), tib);
@@ -755,7 +748,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	Vector<int> slice_triangle_count;
 	RID vertex_buffer;
 	RID triangle_buffer;
-	RID box_buffer;
 	RID lights_buffer;
 	RID triangle_cell_indices_buffer;
 	RID grid_texture;
@@ -767,14 +759,13 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 #define FREE_BUFFERS                        \
 	rd->free(vertex_buffer);                \
 	rd->free(triangle_buffer);              \
-	rd->free(box_buffer);                   \
 	rd->free(lights_buffer);                \
 	rd->free(triangle_cell_indices_buffer); \
 	rd->free(grid_texture);                 \
 	rd->free(seams_buffer);                 \
 	rd->free(probe_positions_buffer);
 
-	_create_acceleration_structures(rd, atlas_size, atlas_slices, bounds, grid_size, probe_positions, p_generate_probes, slice_triangle_count, slice_seam_count, vertex_buffer, triangle_buffer, box_buffer, lights_buffer, triangle_cell_indices_buffer, probe_positions_buffer, grid_texture, seams_buffer, p_step_function, p_bake_userdata);
+	_create_acceleration_structures(rd, atlas_size, atlas_slices, bounds, grid_size, probe_positions, p_generate_probes, slice_triangle_count, slice_seam_count, vertex_buffer, triangle_buffer, lights_buffer, triangle_cell_indices_buffer, probe_positions_buffer, grid_texture, seams_buffer, p_step_function, p_bake_userdata);
 
 	if (p_step_function) {
 		p_step_function(0.47, TTR("Preparing shaders"), p_bake_userdata, true);
@@ -828,62 +819,55 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 3;
-			u.ids.push_back(box_buffer);
-			base_uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.binding = 4;
 			u.ids.push_back(triangle_cell_indices_buffer);
 			base_uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.binding = 5;
+			u.binding = 4;
 			u.ids.push_back(lights_buffer);
 			base_uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.binding = 6;
+			u.binding = 5;
 			u.ids.push_back(seams_buffer);
 			base_uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.binding = 7;
+			u.binding = 6;
 			u.ids.push_back(probe_positions_buffer);
 			base_uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			u.binding = 8;
+			u.binding = 7;
 			u.ids.push_back(grid_texture);
 			base_uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			u.binding = 9;
+			u.binding = 8;
 			u.ids.push_back(albedo_array_tex);
 			base_uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			u.binding = 10;
+			u.binding = 9;
 			u.ids.push_back(emission_array_tex);
 			base_uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
-			u.binding = 11;
+			u.binding = 10;
 			u.ids.push_back(sampler);
 			base_uniforms.push_back(u);
 		}

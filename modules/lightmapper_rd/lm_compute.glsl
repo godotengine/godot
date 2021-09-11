@@ -160,18 +160,19 @@ bool trace_ray(vec3 p_from, vec3 p_to
 				uint tidx = grid_indices.data[cell_data.y + i];
 
 				//Ray-Box test
-				vec3 t0 = (boxes.data[tidx].min_bounds - p_from) * inv_dir;
-				vec3 t1 = (boxes.data[tidx].max_bounds - p_from) * inv_dir;
+				Triangle triangle = triangles.data[tidx];
+				vec3 t0 = (triangle.min_bounds - p_from) * inv_dir;
+				vec3 t1 = (triangle.max_bounds - p_from) * inv_dir;
 				vec3 tmin = min(t0, t1), tmax = max(t0, t1);
 
-				if (max(tmin.x, max(tmin.y, tmin.z)) <= min(tmax.x, min(tmax.y, tmax.z))) {
+				if (max(tmin.x, max(tmin.y, tmin.z)) > min(tmax.x, min(tmax.y, tmax.z))) {
 					continue; //ray box failed
 				}
 
 				//prepare triangle vertices
-				vec3 vtx0 = vertices.data[triangles.data[tidx].indices.x].position;
-				vec3 vtx1 = vertices.data[triangles.data[tidx].indices.y].position;
-				vec3 vtx2 = vertices.data[triangles.data[tidx].indices.z].position;
+				vec3 vtx0 = vertices.data[triangle.indices.x].position;
+				vec3 vtx1 = vertices.data[triangle.indices.y].position;
+				vec3 vtx2 = vertices.data[triangle.indices.z].position;
 #if defined(MODE_UNOCCLUDE)
 				vec3 normal = -normalize(cross((vtx0 - vtx1), (vtx0 - vtx2)));
 
