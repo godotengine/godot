@@ -6,6 +6,16 @@
   </a>
 </p>
 
+:information_source: *You are browsing the `3.x` branch, which is a development
+branch leading to Godot 3.4. **The `3.x` branch is usually safe to use in production,
+although `3.3` is ultimately more stable.**
+Switch to the [`master` branch](https://github.com/godotengine/godot/tree/master)
+to explore Godot 4.0's current state, or switch to the
+[`3.3` branch](https://github.com/godotengine/godot/tree/3.3) to compile a
+production-ready build.
+See [Godot release policy](https://docs.godotengine.org/en/stable/about/release_policy.html)
+in the documentation for more information.*
+
 ## 2D and 3D cross-platform game engine
 
 **[Godot Engine](https://godotengine.org) is a feature-packed, cross-platform
