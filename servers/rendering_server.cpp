@@ -500,7 +500,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 			case RS::ARRAY_CUSTOM1:
 			case RS::ARRAY_CUSTOM2:
 			case RS::ARRAY_CUSTOM3: {
-				uint32_t type = (p_format >> (ARRAY_FORMAT_CUSTOM_BASE + ARRAY_FORMAT_CUSTOM_BITS * (RS::ARRAY_CUSTOM0 - ai))) & ARRAY_FORMAT_CUSTOM_MASK;
+				uint32_t type = (p_format >> (ARRAY_FORMAT_CUSTOM_BASE + ARRAY_FORMAT_CUSTOM_BITS * (ai - RS::ARRAY_CUSTOM0))) & ARRAY_FORMAT_CUSTOM_MASK;
 				switch (type) {
 					case ARRAY_CUSTOM_RGBA8_UNORM:
 					case ARRAY_CUSTOM_RGBA8_SNORM:
@@ -541,14 +541,14 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 						ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_FLOAT32_ARRAY, ERR_INVALID_PARAMETER);
 
 						Vector<float> array = p_arrays[ai];
-						int32_t s = ARRAY_CUSTOM_R_FLOAT - ai + 1;
+						int32_t s = type - ARRAY_CUSTOM_R_FLOAT + 1;
 
 						ERR_FAIL_COND_V(array.size() != p_vertex_array_len * s, ERR_INVALID_PARAMETER);
 
 						const float *src = array.ptr();
 
 						for (int i = 0; i < p_vertex_array_len; i++) {
-							memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], &src[i * s], 4 * s);
+							memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], &src[i * s], sizeof(float) * s);
 						}
 					} break;
 					default: {
@@ -938,6 +938,13 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 		}
 	}
 
+	for (uint32_t i = 0; i < RS::ARRAY_CUSTOM_COUNT; ++i) {
+		// include custom array format type.
+		if (format & (1 << (ARRAY_CUSTOM0 + i))) {
+			format |= (RS::ARRAY_FORMAT_CUSTOM_MASK << (RS::ARRAY_FORMAT_CUSTOM_BASE + i * RS::ARRAY_FORMAT_CUSTOM_BITS)) & p_compress_format;
+		}
+	}
+
 	uint32_t offsets[RS::ARRAY_MAX];
 
 	uint32_t vertex_element_size;
@@ -1191,7 +1198,7 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 			case RS::ARRAY_CUSTOM1:
 			case RS::ARRAY_CUSTOM2:
 			case RS::ARRAY_CUSTOM3: {
-				uint32_t type = (p_format >> (ARRAY_FORMAT_CUSTOM_BASE + ARRAY_FORMAT_CUSTOM_BITS * (RS::ARRAY_CUSTOM0 - i))) & ARRAY_FORMAT_CUSTOM_MASK;
+				uint32_t type = (p_format >> (ARRAY_FORMAT_CUSTOM_BASE + ARRAY_FORMAT_CUSTOM_BITS * (i - RS::ARRAY_CUSTOM0))) & ARRAY_FORMAT_CUSTOM_MASK;
 				switch (type) {
 					case ARRAY_CUSTOM_RGBA8_UNORM:
 					case ARRAY_CUSTOM_RGBA8_SNORM:
@@ -1219,6 +1226,8 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 						uint32_t s = type - ARRAY_CUSTOM_R_FLOAT + 1;
 
 						Vector<float> arr;
+						arr.resize(s * p_vertex_len);
+
 						float *w = arr.ptrw();
 
 						for (int j = 0; j < p_vertex_len; j++) {

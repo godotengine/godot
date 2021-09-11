@@ -27,6 +27,7 @@
 }" />
 			<argument index="4" name="material" type="Material" default="null" />
 			<argument index="5" name="name" type="String" default="&quot;&quot;" />
+			<argument index="6" name="flags" type="int" default="0" />
 			<description>
 				Creates a new surface, analogous to [method ArrayMesh.add_surface_from_arrays].
 				Surfaces are created to be rendered using a [code]primitive[/code], which may be any of the types defined in [enum Mesh.PrimitiveType]. (As a note, when using indices, it is recommended to only use points, lines, or triangles.) [method Mesh.get_surface_count] will become the [code]surf_idx[/code] for this new surface.
@@ -92,6 +93,13 @@
 			<return type="int" />
 			<description>
 				Returns the amount of surfaces that the mesh holds.
+			</description>
+		</method>
+		<method name="get_surface_format" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="surface_idx" type="int" />
+			<description>
+				Returns the format of the surface that the mesh holds.
 			</description>
 		</method>
 		<method name="get_surface_lod_count" qualifiers="const">

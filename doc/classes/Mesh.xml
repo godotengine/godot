@@ -210,6 +210,8 @@
 		</constant>
 		<constant name="ARRAY_FORMAT_CUSTOM_BASE" value="13" enum="ArrayFormat">
 		</constant>
+		<constant name="ARRAY_FORMAT_CUSTOM_BITS" value="3" enum="ArrayFormat">
+		</constant>
 		<constant name="ARRAY_FORMAT_CUSTOM0_SHIFT" value="13" enum="ArrayFormat">
 		</constant>
 		<constant name="ARRAY_FORMAT_CUSTOM1_SHIFT" value="16" enum="ArrayFormat">
