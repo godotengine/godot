@@ -38,6 +38,7 @@ class ResourceImporterTextureAtlas : public ResourceImporter {
 
 	struct PackData {
 		Rect2 region;
+		bool is_cropped;
 		bool is_mesh;
 		Vector<int> chart_pieces; //one for region, many for mesh
 		Vector<Vector<Vector2>> chart_vertices; //for mesh
