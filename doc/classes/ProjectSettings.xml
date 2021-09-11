@@ -328,6 +328,9 @@
 		<member name="debug/gdscript/warnings/deprecated_keyword" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when deprecated keywords are used.
 		</member>
+		<member name="debug/gdscript/warnings/empty_file" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], enables warnings when an empty file is parsed.
+		</member>
 		<member name="debug/gdscript/warnings/enable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables specific GDScript warnings (see [code]debug/gdscript/warnings/*[/code] settings). If [code]false[/code], disables all GDScript warnings.
 		</member>
