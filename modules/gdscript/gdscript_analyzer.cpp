@@ -1478,6 +1478,10 @@ void GDScriptAnalyzer::resolve_parameter(GDScriptParser::ParameterNode *p_parame
 		}
 	}
 
+	if (result.builtin_type == Variant::Type::NIL && result.type_source == GDScriptParser::DataType::ANNOTATED_INFERRED && p_parameter->datatype_specifier == nullptr) {
+		push_error(vformat(R"(Could not infer the type of the variable "%s" because the initial value is "null".)", p_parameter->identifier->name), p_parameter->default_value);
+	}
+
 	p_parameter->set_datatype(result);
 }
 
