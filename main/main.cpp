@@ -2669,18 +2669,19 @@ void Main::cleanup(bool p_force) {
 	//clear global shader variables before scene and other graphics stuff are deinitialized.
 	rendering_server->global_variables_clear();
 
-#ifdef TOOLS_ENABLED
-	EditorNode::unregister_editor_types();
-#endif
-
 	if (xr_server) {
 		// cleanup now before we pull the rug from underneath...
 		memdelete(xr_server);
 	}
 
+	unregister_driver_types();
+
+#ifdef TOOLS_ENABLED
+	EditorNode::unregister_editor_types();
+#endif
+
 	ImageLoader::cleanup();
 
-	unregister_driver_types();
 	unregister_module_types();
 	unregister_platform_apis();
 	unregister_scene_types();
