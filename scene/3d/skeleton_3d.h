@@ -139,8 +139,6 @@ private:
 
 	uint64_t version = 1;
 
-	void _update_process_order();
-
 protected:
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 	bool _set(const StringName &p_path, const Variant &p_value);
@@ -167,6 +165,7 @@ public:
 	};
 
 	// skeleton creation api
+	void _update_process_order();
 	void add_bone(const String &p_name);
 	int find_bone(const String &p_name) const;
 	String get_bone_name(int p_bone) const;
