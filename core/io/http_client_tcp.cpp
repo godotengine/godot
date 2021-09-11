@@ -45,6 +45,8 @@ Error HTTPClientTCP::connect_to_host(const String &p_host, int p_port, bool p_ss
 	conn_port = p_port;
 	conn_host = p_host;
 
+	ip_candidates.clear();
+
 	ssl = p_ssl;
 	ssl_verify_host = p_verify_host;
 
@@ -234,6 +236,7 @@ void HTTPClientTCP::close() {
 		resolving = IP::RESOLVER_INVALID_ID;
 	}
 
+	ip_candidates.clear();
 	response_headers.clear();
 	response_str.clear();
 	body_size = -1;
@@ -256,10 +259,17 @@ Error HTTPClientTCP::poll() {
 					return OK; // Still resolving
 
 				case IP::RESOLVER_STATUS_DONE: {
-					IPAddress host = IP::get_singleton()->get_resolve_item_address(resolving);
-					Error err = tcp_connection->connect_to_host(host, conn_port);
+					ip_candidates = IP::get_singleton()->get_resolve_item_addresses(resolving);
 					IP::get_singleton()->erase_resolve_item(resolving);
 					resolving = IP::RESOLVER_INVALID_ID;
+
+					Error err = ERR_BUG; // Should be at least one entry.
+					while (ip_candidates.size() > 0) {
+						err = tcp_connection->connect_to_host(ip_candidates.front(), conn_port);
+						if (err == OK) {
+							break;
+						}
+					}
 					if (err) {
 						status = STATUS_CANT_CONNECT;
 						return err;
@@ -313,6 +323,7 @@ Error HTTPClientTCP::poll() {
 						if (ssl->get_status() == StreamPeerSSL::STATUS_CONNECTED) {
 							// Handshake has been successful
 							handshaking = false;
+							ip_candidates.clear();
 							status = STATUS_CONNECTED;
 							return OK;
 						} else if (ssl->get_status() != StreamPeerSSL::STATUS_HANDSHAKING) {
@@ -323,15 +334,24 @@ Error HTTPClientTCP::poll() {
 						}
 						// ... we will need to poll more for handshake to finish
 					} else {
+						ip_candidates.clear();
 						status = STATUS_CONNECTED;
 					}
 					return OK;
 				} break;
 				case StreamPeerTCP::STATUS_ERROR:
 				case StreamPeerTCP::STATUS_NONE: {
+					Error err = ERR_CANT_CONNECT;
+					while (ip_candidates.size() > 0) {
+						tcp_connection->disconnect_from_host();
+						err = tcp_connection->connect_to_host(ip_candidates.pop_front(), conn_port);
+						if (err == OK) {
+							return OK;
+						}
+					}
 					close();
 					status = STATUS_CANT_CONNECT;
-					return ERR_CANT_CONNECT;
+					return err;
 				} break;
 			}
 		} break;

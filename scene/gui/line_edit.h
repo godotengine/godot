@@ -202,7 +202,7 @@ private:
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-	void _gui_input(Ref<InputEvent> p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -285,6 +285,8 @@ public:
 	void copy_text();
 	void cut_text();
 	void paste_text();
+	bool has_undo() const;
+	bool has_redo() const;
 	void undo();
 	void redo();
 

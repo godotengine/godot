@@ -48,12 +48,12 @@ class PhysicsDirectSpaceState3DSW : public PhysicsDirectSpaceState3D {
 public:
 	Space3DSW *space;
 
-	virtual int intersect_point(const Vector3 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) override;
-	virtual bool intersect_ray(const Vector3 &p_from, const Vector3 &p_to, RayResult &r_result, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false, bool p_pick_ray = false) override;
-	virtual int intersect_shape(const RID &p_shape, const Transform3D &p_xform, real_t p_margin, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) override;
-	virtual bool cast_motion(const RID &p_shape, const Transform3D &p_xform, const Vector3 &p_motion, real_t p_margin, real_t &p_closest_safe, real_t &p_closest_unsafe, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false, ShapeRestInfo *r_info = nullptr) override;
-	virtual bool collide_shape(RID p_shape, const Transform3D &p_shape_xform, real_t p_margin, Vector3 *r_results, int p_result_max, int &r_result_count, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) override;
-	virtual bool rest_info(RID p_shape, const Transform3D &p_shape_xform, real_t p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) override;
+	virtual int intersect_point(const Vector3 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = UINT32_MAX, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) override;
+	virtual bool intersect_ray(const Vector3 &p_from, const Vector3 &p_to, RayResult &r_result, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = UINT32_MAX, bool p_collide_with_bodies = true, bool p_collide_with_areas = false, bool p_pick_ray = false) override;
+	virtual int intersect_shape(const RID &p_shape, const Transform3D &p_xform, real_t p_margin, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = UINT32_MAX, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) override;
+	virtual bool cast_motion(const RID &p_shape, const Transform3D &p_xform, const Vector3 &p_motion, real_t p_margin, real_t &p_closest_safe, real_t &p_closest_unsafe, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = UINT32_MAX, bool p_collide_with_bodies = true, bool p_collide_with_areas = false, ShapeRestInfo *r_info = nullptr) override;
+	virtual bool collide_shape(RID p_shape, const Transform3D &p_shape_xform, real_t p_margin, Vector3 *r_results, int p_result_max, int &r_result_count, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = UINT32_MAX, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) override;
+	virtual bool rest_info(RID p_shape, const Transform3D &p_shape_xform, real_t p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = UINT32_MAX, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) override;
 	virtual Vector3 get_closest_point_to_object_volume(RID p_object, const Vector3 p_point) const override;
 
 	PhysicsDirectSpaceState3DSW();
@@ -79,7 +79,7 @@ private:
 
 	BroadPhase3DSW *broadphase;
 	SelfList<Body3DSW>::List active_list;
-	SelfList<Body3DSW>::List inertia_update_list;
+	SelfList<Body3DSW>::List mass_properties_update_list;
 	SelfList<Body3DSW>::List state_query_list;
 	SelfList<Area3DSW>::List monitor_query_list;
 	SelfList<Area3DSW>::List area_moved_list;
@@ -112,6 +112,8 @@ private:
 
 	bool locked;
 
+	real_t last_step = 0.001;
+
 	int island_count;
 	int active_objects;
 	int collision_pairs;
@@ -135,8 +137,8 @@ public:
 	const SelfList<Body3DSW>::List &get_active_body_list() const;
 	void body_add_to_active_list(SelfList<Body3DSW> *p_body);
 	void body_remove_from_active_list(SelfList<Body3DSW> *p_body);
-	void body_add_to_inertia_update_list(SelfList<Body3DSW> *p_body);
-	void body_remove_from_inertia_update_list(SelfList<Body3DSW> *p_body);
+	void body_add_to_mass_properties_update_list(SelfList<Body3DSW> *p_body);
+	void body_remove_from_mass_properties_update_list(SelfList<Body3DSW> *p_body);
 
 	void body_add_to_state_query_list(SelfList<Body3DSW> *p_body);
 	void body_remove_from_state_query_list(SelfList<Body3DSW> *p_body);
@@ -174,6 +176,9 @@ public:
 	void lock();
 	void unlock();
 
+	real_t get_last_step() const { return last_step; }
+	void set_last_step(real_t p_step) { last_step = p_step; }
+
 	void set_param(PhysicsServer3D::SpaceParameter p_param, real_t p_value);
 	real_t get_param(PhysicsServer3D::SpaceParameter p_param) const;
 
@@ -203,8 +208,7 @@ public:
 	void set_elapsed_time(ElapsedTime p_time, uint64_t p_msec) { elapsed_time[p_time] = p_msec; }
 	uint64_t get_elapsed_time(ElapsedTime p_time) const { return elapsed_time[p_time]; }
 
-	int test_body_ray_separation(Body3DSW *p_body, const Transform3D &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, PhysicsServer3D::SeparationResult *r_results, int p_result_max, real_t p_margin);
-	bool test_body_motion(Body3DSW *p_body, const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia, real_t p_margin, PhysicsServer3D::MotionResult *r_result, bool p_exclude_raycast_shapes);
+	bool test_body_motion(Body3DSW *p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin, PhysicsServer3D::MotionResult *r_result, bool p_collide_separation_ray = false, const Set<RID> &p_exclude = Set<RID>());
 
 	Space3DSW();
 	~Space3DSW();

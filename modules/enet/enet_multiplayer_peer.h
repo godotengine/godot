@@ -32,7 +32,7 @@
 #define NETWORKED_MULTIPLAYER_ENET_H
 
 #include "core/crypto/crypto.h"
-#include "core/io/multiplayer_peer.h"
+#include "core/multiplayer/multiplayer_peer.h"
 
 #include "enet_connection.h"
 #include <enet/enet.h>
@@ -66,7 +66,7 @@ private:
 
 	int target_peer = 0;
 	int transfer_channel = 0;
-	TransferMode transfer_mode = TRANSFER_MODE_RELIABLE;
+	Multiplayer::TransferMode transfer_mode = Multiplayer::TRANSFER_MODE_RELIABLE;
 
 	bool refuse_connections = false;
 	bool server_relay = true;
@@ -104,8 +104,8 @@ public:
 	virtual void set_transfer_channel(int p_channel) override;
 	virtual int get_transfer_channel() const override;
 
-	virtual void set_transfer_mode(TransferMode p_mode) override;
-	virtual TransferMode get_transfer_mode() const override;
+	virtual void set_transfer_mode(Multiplayer::TransferMode p_mode) override;
+	virtual Multiplayer::TransferMode get_transfer_mode() const override;
 	virtual void set_target_peer(int p_peer) override;
 
 	virtual int get_packet_peer() const override;

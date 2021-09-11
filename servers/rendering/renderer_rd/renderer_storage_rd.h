@@ -663,7 +663,7 @@ private:
 			uint32_t type;
 
 			uint32_t texture_index; //texture index for vector field
-			float scale;
+			real_t scale;
 			uint32_t pad[2];
 		};
 
@@ -672,8 +672,8 @@ private:
 		float prev_system_phase;
 		uint32_t cycle;
 
-		float explosiveness;
-		float randomness;
+		real_t explosiveness;
+		real_t randomness;
 		float time;
 		float delta;
 
@@ -715,14 +715,14 @@ private:
 	struct Particles {
 		RS::ParticlesMode mode = RS::PARTICLES_MODE_3D;
 		bool inactive = true;
-		float inactive_time = 0.0;
+		double inactive_time = 0.0;
 		bool emitting = false;
 		bool one_shot = false;
 		int amount = 0;
-		float lifetime = 1.0;
-		float pre_process_time = 0.0;
-		float explosiveness = 0.0;
-		float randomness = 0.0;
+		double lifetime = 1.0;
+		double pre_process_time = 0.0;
+		real_t explosiveness = 0.0;
+		real_t randomness = 0.0;
 		bool restart_request = false;
 		AABB custom_aabb = AABB(Vector3(-4, -4, -4), Vector3(8, 8, 8));
 		bool use_local_coords = true;
@@ -766,20 +766,20 @@ private:
 
 		RID sub_emitter;
 
-		float phase = 0.0;
-		float prev_phase = 0.0;
+		double phase = 0.0;
+		double prev_phase = 0.0;
 		uint64_t prev_ticks = 0;
 		uint32_t random_seed = 0;
 
 		uint32_t cycle_number = 0;
 
-		float speed_scale = 1.0;
+		double speed_scale = 1.0;
 
 		int fixed_fps = 30;
 		bool interpolate = true;
 		bool fractional_delta = false;
-		float frame_remainder = 0;
-		float collision_base_size = 0.01;
+		double frame_remainder = 0;
+		real_t collision_base_size = 0.01;
 
 		bool clear = true;
 
@@ -796,7 +796,7 @@ private:
 
 		Dependency dependency;
 
-		float trail_length = 1.0;
+		double trail_length = 1.0;
 		bool trails_enabled = false;
 		LocalVector<ParticlesFrameParams> frame_history;
 		LocalVector<ParticlesFrameParams> trail_params;
@@ -805,7 +805,7 @@ private:
 		}
 	};
 
-	void _particles_process(Particles *p_particles, float p_delta);
+	void _particles_process(Particles *p_particles, double p_delta);
 	void _particles_allocate_emission_buffer(Particles *particles);
 	void _particles_free_data(Particles *particles);
 	void _particles_update_buffers(Particles *particles);
@@ -1099,11 +1099,6 @@ private:
 
 		Dependency dependency;
 	};
-
-	VoxelGiSdfShaderRD voxel_gi_sdf_shader;
-	RID voxel_gi_sdf_shader_version;
-	RID voxel_gi_sdf_shader_version_shader;
-	RID voxel_gi_sdf_shader_pipeline;
 
 	mutable RID_Owner<VoxelGI, true> voxel_gi_owner;
 
@@ -2144,22 +2139,22 @@ public:
 	void particles_set_mode(RID p_particles, RS::ParticlesMode p_mode);
 	void particles_set_emitting(RID p_particles, bool p_emitting);
 	void particles_set_amount(RID p_particles, int p_amount);
-	void particles_set_lifetime(RID p_particles, float p_lifetime);
+	void particles_set_lifetime(RID p_particles, double p_lifetime);
 	void particles_set_one_shot(RID p_particles, bool p_one_shot);
-	void particles_set_pre_process_time(RID p_particles, float p_time);
-	void particles_set_explosiveness_ratio(RID p_particles, float p_ratio);
-	void particles_set_randomness_ratio(RID p_particles, float p_ratio);
+	void particles_set_pre_process_time(RID p_particles, double p_time);
+	void particles_set_explosiveness_ratio(RID p_particles, real_t p_ratio);
+	void particles_set_randomness_ratio(RID p_particles, real_t p_ratio);
 	void particles_set_custom_aabb(RID p_particles, const AABB &p_aabb);
-	void particles_set_speed_scale(RID p_particles, float p_scale);
+	void particles_set_speed_scale(RID p_particles, double p_scale);
 	void particles_set_use_local_coordinates(RID p_particles, bool p_enable);
 	void particles_set_process_material(RID p_particles, RID p_material);
 	void particles_set_fixed_fps(RID p_particles, int p_fps);
 	void particles_set_interpolate(RID p_particles, bool p_enable);
 	void particles_set_fractional_delta(RID p_particles, bool p_enable);
-	void particles_set_collision_base_size(RID p_particles, float p_size);
+	void particles_set_collision_base_size(RID p_particles, real_t p_size);
 	void particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align);
 
-	void particles_set_trails(RID p_particles, bool p_enable, float p_length);
+	void particles_set_trails(RID p_particles, bool p_enable, double p_length);
 	void particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses);
 
 	void particles_restart(RID p_particles);
@@ -2252,11 +2247,11 @@ public:
 
 	virtual void particles_collision_set_collision_type(RID p_particles_collision, RS::ParticlesCollisionType p_type);
 	virtual void particles_collision_set_cull_mask(RID p_particles_collision, uint32_t p_cull_mask);
-	virtual void particles_collision_set_sphere_radius(RID p_particles_collision, float p_radius); //for spheres
+	virtual void particles_collision_set_sphere_radius(RID p_particles_collision, real_t p_radius); //for spheres
 	virtual void particles_collision_set_box_extents(RID p_particles_collision, const Vector3 &p_extents); //for non-spheres
-	virtual void particles_collision_set_attractor_strength(RID p_particles_collision, float p_strength);
-	virtual void particles_collision_set_attractor_directionality(RID p_particles_collision, float p_directionality);
-	virtual void particles_collision_set_attractor_attenuation(RID p_particles_collision, float p_curve);
+	virtual void particles_collision_set_attractor_strength(RID p_particles_collision, real_t p_strength);
+	virtual void particles_collision_set_attractor_directionality(RID p_particles_collision, real_t p_directionality);
+	virtual void particles_collision_set_attractor_attenuation(RID p_particles_collision, real_t p_curve);
 	virtual void particles_collision_set_field_texture(RID p_particles_collision, RID p_texture); //for SDF and vector field, heightfield is dynamic
 	virtual void particles_collision_height_field_update(RID p_particles_collision); //for SDF and vector field
 	virtual void particles_collision_set_height_field_resolution(RID p_particles_collision, RS::ParticlesCollisionHeightfieldResolution p_resolution); //for SDF and vector field

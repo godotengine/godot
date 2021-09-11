@@ -33,12 +33,15 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_node.h"
+#include "editor/editor_run_native.h"
 
 void DebugAdapterParser::_bind_methods() {
 	// Requests
 	ClassDB::bind_method(D_METHOD("req_initialize", "params"), &DebugAdapterParser::req_initialize);
-	ClassDB::bind_method(D_METHOD("req_disconnect", "params"), &DebugAdapterParser::prepare_success_response);
+	ClassDB::bind_method(D_METHOD("req_disconnect", "params"), &DebugAdapterParser::req_disconnect);
 	ClassDB::bind_method(D_METHOD("req_launch", "params"), &DebugAdapterParser::req_launch);
+	ClassDB::bind_method(D_METHOD("req_attach", "params"), &DebugAdapterParser::req_attach);
+	ClassDB::bind_method(D_METHOD("req_restart", "params"), &DebugAdapterParser::req_restart);
 	ClassDB::bind_method(D_METHOD("req_terminate", "params"), &DebugAdapterParser::req_terminate);
 	ClassDB::bind_method(D_METHOD("req_configurationDone", "params"), &DebugAdapterParser::prepare_success_response);
 	ClassDB::bind_method(D_METHOD("req_pause", "params"), &DebugAdapterParser::req_pause);
@@ -46,10 +49,13 @@ void DebugAdapterParser::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("req_threads", "params"), &DebugAdapterParser::req_threads);
 	ClassDB::bind_method(D_METHOD("req_stackTrace", "params"), &DebugAdapterParser::req_stackTrace);
 	ClassDB::bind_method(D_METHOD("req_setBreakpoints", "params"), &DebugAdapterParser::req_setBreakpoints);
+	ClassDB::bind_method(D_METHOD("req_breakpointLocations", "params"), &DebugAdapterParser::req_breakpointLocations);
 	ClassDB::bind_method(D_METHOD("req_scopes", "params"), &DebugAdapterParser::req_scopes);
 	ClassDB::bind_method(D_METHOD("req_variables", "params"), &DebugAdapterParser::req_variables);
 	ClassDB::bind_method(D_METHOD("req_next", "params"), &DebugAdapterParser::req_next);
 	ClassDB::bind_method(D_METHOD("req_stepIn", "params"), &DebugAdapterParser::req_stepIn);
+	ClassDB::bind_method(D_METHOD("req_evaluate", "params"), &DebugAdapterParser::req_evaluate);
+	ClassDB::bind_method(D_METHOD("req_godot/put_msg", "params"), &DebugAdapterParser::req_godot_put_msg);
 }
 
 Dictionary DebugAdapterParser::prepare_base_event() const {
@@ -80,13 +86,31 @@ Dictionary DebugAdapterParser::prepare_error_response(const Dictionary &p_params
 	DAP::Message message;
 	String error, error_desc;
 	switch (err_type) {
-		case DAP::ErrorType::UNKNOWN:
-			error = "unknown";
-			error_desc = "An unknown error has ocurred when processing the request.";
-			break;
 		case DAP::ErrorType::WRONG_PATH:
 			error = "wrong_path";
 			error_desc = "The editor and client are working on different paths; the client is on \"{clientPath}\", but the editor is on \"{editorPath}\"";
+			break;
+		case DAP::ErrorType::NOT_RUNNING:
+			error = "not_running";
+			error_desc = "Can't attach to a running session since there isn't one.";
+			break;
+		case DAP::ErrorType::TIMEOUT:
+			error = "timeout";
+			error_desc = "Timeout reached while processing a request.";
+			break;
+		case DAP::ErrorType::UNKNOWN_PLATFORM:
+			error = "unknown_platform";
+			error_desc = "The specified platform is unknown.";
+			break;
+		case DAP::ErrorType::MISSING_DEVICE:
+			error = "missing_device";
+			error_desc = "There's no connected device with specified id.";
+			break;
+		case DAP::ErrorType::UNKNOWN:
+		default:
+			error = "unknown";
+			error_desc = "An unknown error has ocurred when processing the request.";
+			break;
 	}
 
 	message.id = err_type;
@@ -114,10 +138,35 @@ Dictionary DebugAdapterParser::req_initialize(const Dictionary &p_params) const 
 
 	DebugAdapterProtocol::get_singleton()->notify_initialized();
 
+	if (DebugAdapterProtocol::get_singleton()->_sync_breakpoints) {
+		// Send all current breakpoints
+		List<String> breakpoints;
+		ScriptEditor::get_singleton()->get_breakpoints(&breakpoints);
+		for (List<String>::Element *E = breakpoints.front(); E; E = E->next()) {
+			String breakpoint = E->get();
+
+			String path = breakpoint.left(breakpoint.find(":", 6)); // Skip initial part of path, aka "res://"
+			int line = breakpoint.substr(path.size()).to_int();
+
+			DebugAdapterProtocol::get_singleton()->on_debug_breakpoint_toggled(path, line, true);
+		}
+	} else {
+		// Remove all current breakpoints
+		EditorDebuggerNode::get_singleton()->get_default_debugger()->_clear_breakpoints();
+	}
+
 	return response;
 }
 
-Dictionary DebugAdapterParser::req_launch(const Dictionary &p_params) {
+Dictionary DebugAdapterParser::req_disconnect(const Dictionary &p_params) const {
+	if (!DebugAdapterProtocol::get_singleton()->get_current_peer()->attached) {
+		EditorNode::get_singleton()->run_stop();
+	}
+
+	return prepare_success_response(p_params);
+}
+
+Dictionary DebugAdapterParser::req_launch(const Dictionary &p_params) const {
 	Dictionary args = p_params["arguments"];
 	if (args.has("project") && !is_valid_path(args["project"])) {
 		Dictionary variables;
@@ -126,13 +175,81 @@ Dictionary DebugAdapterParser::req_launch(const Dictionary &p_params) {
 		return prepare_error_response(p_params, DAP::ErrorType::WRONG_PATH, variables);
 	}
 
+	if (args.has("godot/custom_data")) {
+		DebugAdapterProtocol::get_singleton()->get_current_peer()->supportsCustomData = args["godot/custom_data"];
+	}
+
 	ScriptEditorDebugger *dbg = EditorDebuggerNode::get_singleton()->get_default_debugger();
 	if ((bool)args["noDebug"] != dbg->is_skip_breakpoints()) {
 		dbg->debug_skip_breakpoints();
 	}
 
-	EditorNode::get_singleton()->run_play();
+	String platform_string = args.get("platform", "host");
+	if (platform_string == "host") {
+		EditorNode::get_singleton()->run_play();
+	} else {
+		int device = args.get("device", -1);
+		int idx = -1;
+		if (platform_string == "android") {
+			for (int i = 0; i < EditorExport::get_singleton()->get_export_platform_count(); i++) {
+				if (EditorExport::get_singleton()->get_export_platform(i)->get_name() == "Android") {
+					idx = i;
+					break;
+				}
+			}
+		} else if (platform_string == "web") {
+			for (int i = 0; i < EditorExport::get_singleton()->get_export_platform_count(); i++) {
+				if (EditorExport::get_singleton()->get_export_platform(i)->get_name() == "HTML5") {
+					idx = i;
+					break;
+				}
+			}
+		}
+
+		if (idx == -1) {
+			return prepare_error_response(p_params, DAP::ErrorType::UNKNOWN_PLATFORM);
+		}
+
+		EditorNode *editor = EditorNode::get_singleton();
+		Error err = platform_string == "android" ? editor->run_play_native(device, idx) : editor->run_play_native(-1, idx);
+		if (err) {
+			if (err == ERR_INVALID_PARAMETER && platform_string == "android") {
+				return prepare_error_response(p_params, DAP::ErrorType::MISSING_DEVICE);
+			} else {
+				return prepare_error_response(p_params, DAP::ErrorType::UNKNOWN);
+			}
+		}
+	}
+
+	DebugAdapterProtocol::get_singleton()->get_current_peer()->attached = false;
 	DebugAdapterProtocol::get_singleton()->notify_process();
+
+	return prepare_success_response(p_params);
+}
+
+Dictionary DebugAdapterParser::req_attach(const Dictionary &p_params) const {
+	ScriptEditorDebugger *dbg = EditorDebuggerNode::get_singleton()->get_default_debugger();
+	if (!dbg->is_session_active()) {
+		return prepare_error_response(p_params, DAP::ErrorType::NOT_RUNNING);
+	}
+
+	DebugAdapterProtocol::get_singleton()->get_current_peer()->attached = true;
+	DebugAdapterProtocol::get_singleton()->notify_process();
+	return prepare_success_response(p_params);
+}
+
+Dictionary DebugAdapterParser::req_restart(const Dictionary &p_params) const {
+	// Extract embedded "arguments" so it can be given to req_launch/req_attach
+	Dictionary params = p_params, args;
+	args = params["arguments"];
+	args = args["arguments"];
+	params["arguments"] = args;
+
+	Dictionary response = DebugAdapterProtocol::get_singleton()->get_current_peer()->attached ? req_attach(params) : req_launch(params);
+	if (!response["success"]) {
+		response["command"] = p_params["command"];
+		return response;
+	}
 
 	return prepare_success_response(p_params);
 }
@@ -205,7 +322,7 @@ Dictionary DebugAdapterParser::req_stackTrace(const Dictionary &p_params) const 
 	return response;
 }
 
-Dictionary DebugAdapterParser::req_setBreakpoints(const Dictionary &p_params) {
+Dictionary DebugAdapterParser::req_setBreakpoints(const Dictionary &p_params) const {
 	Dictionary response = prepare_success_response(p_params), body;
 	response["body"] = body;
 
@@ -230,14 +347,30 @@ Dictionary DebugAdapterParser::req_setBreakpoints(const Dictionary &p_params) {
 		lines.push_back(breakpoint.line + !lines_at_one);
 	}
 
-	EditorDebuggerNode::get_singleton()->set_breakpoints(ProjectSettings::get_singleton()->localize_path(source.path), lines);
 	Array updated_breakpoints = DebugAdapterProtocol::get_singleton()->update_breakpoints(source.path, lines);
 	body["breakpoints"] = updated_breakpoints;
 
 	return response;
 }
 
-Dictionary DebugAdapterParser::req_scopes(const Dictionary &p_params) {
+Dictionary DebugAdapterParser::req_breakpointLocations(const Dictionary &p_params) const {
+	Dictionary response = prepare_success_response(p_params), body;
+	response["body"] = body;
+	Dictionary args = p_params["arguments"];
+
+	Array locations;
+	DAP::BreakpointLocation location;
+	location.line = args["line"];
+	if (args.has("endLine")) {
+		location.endLine = args["endLine"];
+	}
+	locations.push_back(location.to_json());
+
+	body["breakpoints"] = locations;
+	return response;
+}
+
+Dictionary DebugAdapterParser::req_scopes(const Dictionary &p_params) const {
 	Dictionary response = prepare_success_response(p_params), body;
 	response["body"] = body;
 
@@ -291,7 +424,14 @@ Dictionary DebugAdapterParser::req_variables(const Dictionary &p_params) const {
 	int variable_id = args["variablesReference"];
 
 	Map<int, Array>::Element *E = DebugAdapterProtocol::get_singleton()->variable_list.find(variable_id);
+
 	if (E) {
+		if (!DebugAdapterProtocol::get_singleton()->get_current_peer()->supportsVariableType) {
+			for (int i = 0; i < E->value().size(); i++) {
+				Dictionary variable = E->value()[i];
+				variable.erase("type");
+			}
+		}
 		body["variables"] = E ? E->value() : Array();
 		return response;
 	} else {
@@ -309,6 +449,29 @@ Dictionary DebugAdapterParser::req_next(const Dictionary &p_params) const {
 Dictionary DebugAdapterParser::req_stepIn(const Dictionary &p_params) const {
 	EditorDebuggerNode::get_singleton()->get_default_debugger()->debug_step();
 	DebugAdapterProtocol::get_singleton()->_stepping = true;
+
+	return prepare_success_response(p_params);
+}
+
+Dictionary DebugAdapterParser::req_evaluate(const Dictionary &p_params) const {
+	Dictionary response = prepare_success_response(p_params), body;
+	response["body"] = body;
+
+	Dictionary args = p_params["arguments"];
+
+	String value = EditorDebuggerNode::get_singleton()->get_var_value(args["expression"]);
+	body["result"] = value;
+
+	return response;
+}
+
+Dictionary DebugAdapterParser::req_godot_put_msg(const Dictionary &p_params) const {
+	Dictionary args = p_params["arguments"];
+
+	String msg = args["message"];
+	Array data = args["data"];
+
+	EditorDebuggerNode::get_singleton()->get_default_debugger()->_put_msg(msg, data);
 
 	return prepare_success_response(p_params);
 }
@@ -420,6 +583,28 @@ Dictionary DebugAdapterParser::ev_output(const String &p_message) const {
 
 	body["category"] = "stdout";
 	body["output"] = p_message + "\r\n";
+
+	return event;
+}
+
+Dictionary DebugAdapterParser::ev_breakpoint(const DAP::Breakpoint &p_breakpoint, const bool &p_enabled) const {
+	Dictionary event = prepare_base_event(), body;
+	event["event"] = "breakpoint";
+	event["body"] = body;
+
+	body["reason"] = p_enabled ? "new" : "removed";
+	body["breakpoint"] = p_breakpoint.to_json();
+
+	return event;
+}
+
+Dictionary DebugAdapterParser::ev_custom_data(const String &p_msg, const Array &p_data) const {
+	Dictionary event = prepare_base_event(), body;
+	event["event"] = "godot/custom_data";
+	event["body"] = body;
+
+	body["message"] = p_msg;
+	body["data"] = p_data;
 
 	return event;
 }

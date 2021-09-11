@@ -51,6 +51,11 @@ protected:
 	Node *import_scene_from_other_importer(const String &p_path, uint32_t p_flags, int p_bake_fps);
 	Ref<Animation> import_animation_from_other_importer(const String &p_path, uint32_t p_flags, int p_bake_fps);
 
+	GDVIRTUAL0RC(int, _get_import_flags)
+	GDVIRTUAL0RC(Vector<String>, _get_extensions)
+	GDVIRTUAL3R(Object *, _import_scene, String, uint32_t, uint32_t)
+	GDVIRTUAL3R(Ref<Animation>, _import_animation, String, uint32_t, uint32_t)
+
 public:
 	enum ImportFlags {
 		IMPORT_SCENE = 1,
@@ -76,6 +81,8 @@ class EditorScenePostImport : public RefCounted {
 
 protected:
 	static void _bind_methods();
+
+	GDVIRTUAL1R(Object *, _post_import, Node *)
 
 public:
 	String get_source_file() const;

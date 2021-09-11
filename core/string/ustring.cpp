@@ -39,12 +39,9 @@
 #include "core/string/ucaps.h"
 #include "core/variant/variant.h"
 
-#include <cstdint>
-
-#ifndef NO_USE_STDLIB
 #include <stdio.h>
 #include <stdlib.h>
-#endif
+#include <cstdint>
 
 #ifdef _MSC_VER
 #define _CRT_SECURE_NO_WARNINGS // to disable build-time warning which suggested to use strcpy_s instead strcpy
@@ -54,11 +51,27 @@
 #define snprintf _snprintf_s
 #endif
 
-#define MAX_DECIMALS 32
-#define UPPERCASE(m_c) (((m_c) >= 'a' && (m_c) <= 'z') ? ((m_c) - ('a' - 'A')) : (m_c))
-#define LOWERCASE(m_c) (((m_c) >= 'A' && (m_c) <= 'Z') ? ((m_c) + ('a' - 'A')) : (m_c))
-#define IS_DIGIT(m_d) ((m_d) >= '0' && (m_d) <= '9')
-#define IS_HEX_DIGIT(m_d) (((m_d) >= '0' && (m_d) <= '9') || ((m_d) >= 'a' && (m_d) <= 'f') || ((m_d) >= 'A' && (m_d) <= 'F'))
+static const int MAX_DECIMALS = 32;
+
+static _FORCE_INLINE_ bool is_digit(char32_t c) {
+	return (c >= '0' && c <= '9');
+}
+
+static _FORCE_INLINE_ bool is_hex_digit(char32_t c) {
+	return (is_digit(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
+}
+
+static _FORCE_INLINE_ bool is_upper_case(char32_t c) {
+	return (c >= 'A' && c <= 'Z');
+}
+
+static _FORCE_INLINE_ bool is_lower_case(char32_t c) {
+	return (c >= 'a' && c <= 'z');
+}
+
+static _FORCE_INLINE_ char32_t lower_case(char32_t c) {
+	return (is_upper_case(c) ? (c + ('a' - 'A')) : c);
+}
 
 const char CharString::_null = 0;
 const char16_t Char16String::_null = 0;
@@ -738,6 +751,7 @@ bool String::operator<=(const String &p_str) const {
 bool String::operator>(const String &p_str) const {
 	return p_str < *this;
 }
+
 bool String::operator>=(const String &p_str) const {
 	return !(*this < p_str);
 }
@@ -871,8 +885,8 @@ signed char String::naturalnocasecmp_to(const String &p_str) const {
 		while (*this_str) {
 			if (!*that_str) {
 				return 1;
-			} else if (IS_DIGIT(*this_str)) {
-				if (!IS_DIGIT(*that_str)) {
+			} else if (is_digit(*this_str)) {
+				if (!is_digit(*that_str)) {
 					return -1;
 				}
 
@@ -881,10 +895,10 @@ signed char String::naturalnocasecmp_to(const String &p_str) const {
 				const char32_t *that_substr = that_str;
 
 				// Compare lengths of both numerical sequences, ignoring leading zeros
-				while (IS_DIGIT(*this_str)) {
+				while (is_digit(*this_str)) {
 					this_str++;
 				}
-				while (IS_DIGIT(*that_str)) {
+				while (is_digit(*that_str)) {
 					that_str++;
 				}
 				while (*this_substr == '0') {
@@ -912,7 +926,7 @@ signed char String::naturalnocasecmp_to(const String &p_str) const {
 					this_substr++;
 					that_substr++;
 				}
-			} else if (IS_DIGIT(*that_str)) {
+			} else if (is_digit(*that_str)) {
 				return 1;
 			} else {
 				if (_find_upper(*this_str) < _find_upper(*that_str)) { //more than
@@ -962,26 +976,25 @@ String String::capitalize() const {
 String String::camelcase_to_underscore(bool lowercase) const {
 	const char32_t *cstr = get_data();
 	String new_string;
-	const char A = 'A', Z = 'Z';
-	const char a = 'a', z = 'z';
 	int start_index = 0;
 
 	for (int i = 1; i < this->size(); i++) {
-		bool is_upper = cstr[i] >= A && cstr[i] <= Z;
-		bool is_number = cstr[i] >= '0' && cstr[i] <= '9';
+		bool is_upper = is_upper_case(cstr[i]);
+		bool is_number = is_digit(cstr[i]);
+
 		bool are_next_2_lower = false;
 		bool is_next_lower = false;
 		bool is_next_number = false;
-		bool was_precedent_upper = cstr[i - 1] >= A && cstr[i - 1] <= Z;
-		bool was_precedent_number = cstr[i - 1] >= '0' && cstr[i - 1] <= '9';
+		bool was_precedent_upper = is_upper_case(cstr[i - 1]);
+		bool was_precedent_number = is_digit(cstr[i - 1]);
 
 		if (i + 2 < this->size()) {
-			are_next_2_lower = cstr[i + 1] >= a && cstr[i + 1] <= z && cstr[i + 2] >= a && cstr[i + 2] <= z;
+			are_next_2_lower = is_lower_case(cstr[i + 1]) && is_lower_case(cstr[i + 2]);
 		}
 
 		if (i + 1 < this->size()) {
-			is_next_lower = cstr[i + 1] >= a && cstr[i + 1] <= z;
-			is_next_number = cstr[i + 1] >= '0' && cstr[i + 1] <= '9';
+			is_next_lower = is_lower_case(cstr[i + 1]);
+			is_next_number = is_digit(cstr[i + 1]);
 		}
 
 		const bool cond_a = is_upper && !was_precedent_upper && !was_precedent_number;
@@ -1377,10 +1390,15 @@ String String::num(double p_num, int p_decimals) {
 			return "inf";
 		}
 	}
-#ifndef NO_USE_STDLIB
 
 	if (p_decimals < 0) {
-		p_decimals = 14 - (int)floor(log10(p_num));
+		p_decimals = 14;
+		const double abs_num = ABS(p_num);
+		if (abs_num > 10) {
+			// We want to align the digits to the above sane default, so we only
+			// need to subtract log10 for numbers with a positive power of ten.
+			p_decimals -= (int)floor(log10(abs_num));
+		}
 	}
 	if (p_decimals > MAX_DECIMALS) {
 		p_decimals = MAX_DECIMALS;
@@ -1444,87 +1462,6 @@ String String::num(double p_num, int p_decimals) {
 	}
 
 	return buf;
-#else
-
-	String s;
-	String sd;
-	/* integer part */
-
-	bool neg = p_num < 0;
-	p_num = ABS(p_num);
-	int intn = (int)p_num;
-
-	/* decimal part */
-
-	if (p_decimals > 0 || (p_decimals == -1 && (int)p_num != p_num)) {
-		double dec = p_num - (double)((int)p_num);
-
-		int digit = 0;
-		if (p_decimals > MAX_DECIMALS) {
-			p_decimals = MAX_DECIMALS;
-		}
-
-		int dec_int = 0;
-		int dec_max = 0;
-
-		while (true) {
-			dec *= 10.0;
-			dec_int = dec_int * 10 + (int)dec % 10;
-			dec_max = dec_max * 10 + 9;
-			digit++;
-
-			if (p_decimals == -1) {
-				if (digit == MAX_DECIMALS) { //no point in going to infinite
-					break;
-				}
-
-				if (dec - (double)((int)dec) < 1e-6) {
-					break;
-				}
-			}
-
-			if (digit == p_decimals) {
-				break;
-			}
-		}
-		dec *= 10;
-		int last = (int)dec % 10;
-
-		if (last > 5) {
-			if (dec_int == dec_max) {
-				dec_int = 0;
-				intn++;
-			} else {
-				dec_int++;
-			}
-		}
-
-		String decimal;
-		for (int i = 0; i < digit; i++) {
-			char num[2] = { 0, 0 };
-			num[0] = '0' + dec_int % 10;
-			decimal = num + decimal;
-			dec_int /= 10;
-		}
-		sd = '.' + decimal;
-	}
-
-	if (intn == 0)
-
-		s = "0";
-	else {
-		while (intn) {
-			char32_t num = '0' + (intn % 10);
-			intn /= 10;
-			s = num + s;
-		}
-	}
-
-	s = s + sd;
-	if (neg)
-		s = "-" + s;
-	return s;
-#endif
 }
 
 String String::num_int64(int64_t p_num, int base, bool capitalize_hex) {
@@ -1609,24 +1546,31 @@ String String::num_real(double p_num, bool p_trailing) {
 
 	String s;
 	String sd;
-	/* integer part */
+
+	// Integer part.
 
 	bool neg = p_num < 0;
 	p_num = ABS(p_num);
 	int intn = (int)p_num;
 
-	/* decimal part */
+	// Decimal part.
 
-	if ((int)p_num != p_num) {
-		double dec = p_num - (double)((int)p_num);
+	if (intn != p_num) {
+		double dec = p_num - (double)(intn);
 
 		int digit = 0;
 
 #if REAL_T_IS_DOUBLE
-		int decimals = 14 - (int)floor(log10(p_num));
+		int decimals = 14;
 #else
-		int decimals = 6 - (int)floor(log10(p_num));
+		int decimals = 6;
 #endif
+		// We want to align the digits to the above sane default, so we only
+		// need to subtract log10 for numbers with a positive power of ten.
+		if (p_num > 10) {
+			decimals -= (int)floor(log10(p_num));
+		}
+
 		if (decimals > MAX_DECIMALS) {
 			decimals = MAX_DECIMALS;
 		}
@@ -1704,19 +1648,18 @@ String String::num_scientific(double p_num) {
 			return "inf";
 		}
 	}
-#ifndef NO_USE_STDLIB
 
 	char buf[256];
 
 #if defined(__GNUC__) || defined(_MSC_VER)
 
-#if (defined(__MINGW32__) || (defined(_MSC_VER) && _MSC_VER < 1900)) && defined(_TWO_DIGIT_EXPONENT) && !defined(_UCRT)
-	// MinGW and old MSC require _set_output_format() to conform to C99 output for printf
+#if defined(__MINGW32__) && defined(_TWO_DIGIT_EXPONENT) && !defined(_UCRT)
+	// MinGW requires _set_output_format() to conform to C99 output for printf
 	unsigned int old_exponent_format = _set_output_format(_TWO_DIGIT_EXPONENT);
 #endif
 	snprintf(buf, 256, "%lg", p_num);
 
-#if (defined(__MINGW32__) || (defined(_MSC_VER) && _MSC_VER < 1900)) && defined(_TWO_DIGIT_EXPONENT) && !defined(_UCRT)
+#if defined(__MINGW32__) && defined(_TWO_DIGIT_EXPONENT) && !defined(_UCRT)
 	_set_output_format(old_exponent_format);
 #endif
 
@@ -1727,10 +1670,6 @@ String String::num_scientific(double p_num) {
 	buf[255] = 0;
 
 	return buf;
-#else
-
-	return String::num(p_num);
-#endif
 }
 
 String String::md5(const uint8_t *p_md5) {
@@ -2198,9 +2137,9 @@ int64_t String::hex_to_int() const {
 	int64_t hex = 0;
 
 	while (*s) {
-		char32_t c = LOWERCASE(*s);
+		char32_t c = lower_case(*s);
 		int64_t n;
-		if (c >= '0' && c <= '9') {
+		if (is_digit(c)) {
 			n = c - '0';
 		} else if (c >= 'a' && c <= 'f') {
 			n = (c - 'a') + 10;
@@ -2239,7 +2178,7 @@ int64_t String::bin_to_int() const {
 	int64_t binary = 0;
 
 	while (*s) {
-		char32_t c = LOWERCASE(*s);
+		char32_t c = lower_case(*s);
 		int64_t n;
 		if (c == '0' || c == '1') {
 			n = c - '0';
@@ -2269,7 +2208,7 @@ int64_t String::to_int() const {
 
 	for (int i = 0; i < to; i++) {
 		char32_t c = operator[](i);
-		if (c >= '0' && c <= '9') {
+		if (is_digit(c)) {
 			bool overflow = (integer > INT64_MAX / 10) || (integer == INT64_MAX / 10 && ((sign == 1 && c > '7') || (sign == -1 && c > '8')));
 			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as 64-bit integer, provided value is " + (sign == 1 ? "too big." : "too small."));
 			integer *= 10;
@@ -2298,7 +2237,7 @@ int64_t String::to_int(const char *p_str, int p_len) {
 
 	for (int i = 0; i < to; i++) {
 		char c = p_str[i];
-		if (c >= '0' && c <= '9') {
+		if (is_digit(c)) {
 			bool overflow = (integer > INT64_MAX / 10) || (integer == INT64_MAX / 10 && ((sign == 1 && c > '7') || (sign == -1 && c > '8')));
 			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + String(p_str).substr(0, to) + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
 			integer *= 10;
@@ -2329,7 +2268,7 @@ int64_t String::to_int(const wchar_t *p_str, int p_len) {
 
 	for (int i = 0; i < to; i++) {
 		wchar_t c = p_str[i];
-		if (c >= '0' && c <= '9') {
+		if (is_digit(c)) {
 			bool overflow = (integer > INT64_MAX / 10) || (integer == INT64_MAX / 10 && ((sign == 1 && c > '7') || (sign == -1 && c > '8')));
 			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + String(p_str).substr(0, to) + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
 			integer *= 10;
@@ -2449,7 +2388,7 @@ static double built_in_strtod(const C *string, /* A decimal ASCII floating-point
 	decPt = -1;
 	for (mantSize = 0;; mantSize += 1) {
 		c = *p;
-		if (!IS_DIGIT(c)) {
+		if (!is_digit(c)) {
 			if ((c != '.') || (decPt >= 0)) {
 				break;
 			}
@@ -2524,11 +2463,11 @@ static double built_in_strtod(const C *string, /* A decimal ASCII floating-point
 			}
 			expSign = false;
 		}
-		if (!IS_DIGIT(char32_t(*p))) {
+		if (!is_digit(char32_t(*p))) {
 			p = pExp;
 			goto done;
 		}
-		while (IS_DIGIT(char32_t(*p))) {
+		while (is_digit(char32_t(*p))) {
 			exp = exp * 10 + (*p - '0');
 			p += 1;
 		}
@@ -2614,7 +2553,7 @@ int64_t String::to_int(const char32_t *p_str, int p_len, bool p_clamp) {
 		char32_t c = *(str++);
 		switch (reading) {
 			case READING_SIGN: {
-				if (c >= '0' && c <= '9') {
+				if (is_digit(c)) {
 					reading = READING_INT;
 					// let it fallthrough
 				} else if (c == '-') {
@@ -2631,7 +2570,7 @@ int64_t String::to_int(const char32_t *p_str, int p_len, bool p_clamp) {
 				[[fallthrough]];
 			}
 			case READING_INT: {
-				if (c >= '0' && c <= '9') {
+				if (is_digit(c)) {
 					if (integer > INT64_MAX / 10) {
 						String number("");
 						str = p_str;
@@ -3800,12 +3739,12 @@ bool String::is_valid_identifier() const {
 
 	for (int i = 0; i < len; i++) {
 		if (i == 0) {
-			if (str[0] >= '0' && str[0] <= '9') {
+			if (is_digit(str[0])) {
 				return false; // no start with number plz
 			}
 		}
 
-		bool valid_char = (str[i] >= '0' && str[i] <= '9') || (str[i] >= 'a' && str[i] <= 'z') || (str[i] >= 'A' && str[i] <= 'Z') || str[i] == '_';
+		bool valid_char = is_digit(str[i]) || is_lower_case(str[i]) || is_upper_case(str[i]) || str[i] == '_';
 
 		if (!valid_char) {
 			return false;
@@ -3830,10 +3769,7 @@ String String::uri_encode() const {
 	String res;
 	for (int i = 0; i < temp.length(); ++i) {
 		char ord = temp[i];
-		if (ord == '.' || ord == '-' || ord == '_' || ord == '~' ||
-				(ord >= 'a' && ord <= 'z') ||
-				(ord >= 'A' && ord <= 'Z') ||
-				(ord >= '0' && ord <= '9')) {
+		if (ord == '.' || ord == '-' || ord == '_' || ord == '~' || is_lower_case(ord) || is_upper_case(ord) || is_digit(ord)) {
 			res += ord;
 		} else {
 			char h_Val[3];
@@ -3855,9 +3791,9 @@ String String::uri_decode() const {
 	for (int i = 0; i < src.length(); ++i) {
 		if (src[i] == '%' && i + 2 < src.length()) {
 			char ord1 = src[i + 1];
-			if ((ord1 >= '0' && ord1 <= '9') || (ord1 >= 'A' && ord1 <= 'Z')) {
+			if (is_digit(ord1) || is_upper_case(ord1)) {
 				char ord2 = src[i + 2];
-				if ((ord2 >= '0' && ord2 <= '9') || (ord2 >= 'A' && ord2 <= 'Z')) {
+				if (is_digit(ord2) || is_upper_case(ord2)) {
 					char bytes[3] = { (char)ord1, (char)ord2, 0 };
 					res += (char)strtol(bytes, nullptr, 16);
 					i += 2;
@@ -3963,7 +3899,7 @@ static _FORCE_INLINE_ int _xml_unescape(const char32_t *p_src, int p_src_len, ch
 						char32_t ct = p_src[i];
 						if (ct == ';') {
 							break;
-						} else if (ct >= '0' && ct <= '9') {
+						} else if (is_digit(ct)) {
 							ct = ct - '0';
 						} else if (ct >= 'a' && ct <= 'f') {
 							ct = (ct - 'a') + 10;
@@ -4191,7 +4127,7 @@ bool String::is_valid_hex_number(bool p_with_prefix) const {
 
 	for (int i = from; i < len; i++) {
 		char32_t c = operator[](i);
-		if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')) {
+		if (is_hex_digit(c)) {
 			continue;
 		}
 		return false;
@@ -4219,7 +4155,7 @@ bool String::is_valid_float() const {
 	bool numbers_found = false;
 
 	for (int i = from; i < len; i++) {
-		if (operator[](i) >= '0' && operator[](i) <= '9') {
+		if (is_digit(operator[](i))) {
 			if (exponent_found) {
 				exponent_values_found = true;
 			} else {
@@ -4388,7 +4324,7 @@ bool String::is_resource_file() const {
 	return begins_with("res://") && find("::") == -1;
 }
 
-bool String::is_rel_path() const {
+bool String::is_relative_path() const {
 	return !is_absolute_path();
 }
 

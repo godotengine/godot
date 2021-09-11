@@ -74,14 +74,14 @@ void ShaderTextEditor::reload_text() {
 	ERR_FAIL_COND(shader.is_null());
 
 	CodeEdit *te = get_text_editor();
-	int column = te->cursor_get_column();
-	int row = te->cursor_get_line();
+	int column = te->get_caret_column();
+	int row = te->get_caret_line();
 	int h = te->get_h_scroll();
 	int v = te->get_v_scroll();
 
 	te->set_text(shader->get_code());
-	te->cursor_set_line(row);
-	te->cursor_set_column(column);
+	te->set_caret_line(row);
+	te->set_caret_column(column);
 	te->set_h_scroll(h);
 	te->set_v_scroll(v);
 
@@ -96,7 +96,7 @@ void ShaderTextEditor::set_warnings_panel(RichTextLabel *p_warnings_panel) {
 
 void ShaderTextEditor::_load_theme_settings() {
 	CodeEdit *text_editor = get_text_editor();
-	Color updated_marked_line_color = EDITOR_GET("text_editor/highlighting/mark_color");
+	Color updated_marked_line_color = EDITOR_GET("text_editor/theme/highlighting/mark_color");
 	if (updated_marked_line_color != marked_line_color) {
 		for (int i = 0; i < text_editor->get_line_count(); i++) {
 			if (text_editor->get_line_background_color(i) == marked_line_color) {
@@ -106,17 +106,17 @@ void ShaderTextEditor::_load_theme_settings() {
 		marked_line_color = updated_marked_line_color;
 	}
 
-	syntax_highlighter->set_number_color(EDITOR_GET("text_editor/highlighting/number_color"));
-	syntax_highlighter->set_symbol_color(EDITOR_GET("text_editor/highlighting/symbol_color"));
-	syntax_highlighter->set_function_color(EDITOR_GET("text_editor/highlighting/function_color"));
-	syntax_highlighter->set_member_variable_color(EDITOR_GET("text_editor/highlighting/member_variable_color"));
+	syntax_highlighter->set_number_color(EDITOR_GET("text_editor/theme/highlighting/number_color"));
+	syntax_highlighter->set_symbol_color(EDITOR_GET("text_editor/theme/highlighting/symbol_color"));
+	syntax_highlighter->set_function_color(EDITOR_GET("text_editor/theme/highlighting/function_color"));
+	syntax_highlighter->set_member_variable_color(EDITOR_GET("text_editor/theme/highlighting/member_variable_color"));
 
 	syntax_highlighter->clear_keyword_colors();
 
 	List<String> keywords;
 	ShaderLanguage::get_keyword_list(&keywords);
-	const Color keyword_color = EDITOR_GET("text_editor/highlighting/keyword_color");
-	const Color control_flow_keyword_color = EDITOR_GET("text_editor/highlighting/control_flow_keyword_color");
+	const Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
+	const Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
 
 	for (const String &E : keywords) {
 		if (ShaderLanguage::is_control_flow_keyword(E)) {
@@ -142,14 +142,14 @@ void ShaderTextEditor::_load_theme_settings() {
 		}
 	}
 
-	const Color member_variable_color = EDITOR_GET("text_editor/highlighting/member_variable_color");
+	const Color member_variable_color = EDITOR_GET("text_editor/theme/highlighting/member_variable_color");
 
 	for (const String &E : built_ins) {
 		syntax_highlighter->add_keyword_color(E, member_variable_color);
 	}
 
 	// Colorize comments.
-	const Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
+	const Color comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
 	syntax_highlighter->clear_color_regions();
 	syntax_highlighter->add_color_region("/*", "*/", comment_color, false);
 	syntax_highlighter->add_color_region("//", "", comment_color, true);
@@ -397,7 +397,7 @@ void ShaderEditor::_notification(int p_what) {
 void ShaderEditor::_editor_settings_changed() {
 	shader_editor->update_editor_settings();
 
-	shader_editor->get_text_editor()->add_theme_constant_override("line_spacing", EditorSettings::get_singleton()->get("text_editor/theme/line_spacing"));
+	shader_editor->get_text_editor()->add_theme_constant_override("line_spacing", EditorSettings::get_singleton()->get("text_editor/appearance/whitespace/line_spacing"));
 	shader_editor->get_text_editor()->set_draw_breakpoints_gutter(false);
 	shader_editor->get_text_editor()->set_draw_executing_lines_gutter(false);
 }
@@ -408,7 +408,7 @@ void ShaderEditor::_show_warnings_panel(bool p_show) {
 
 void ShaderEditor::_warning_clicked(Variant p_line) {
 	if (p_line.get_type() == Variant::INT) {
-		shader_editor->get_text_editor()->cursor_set_line(p_line.operator int64_t());
+		shader_editor->get_text_editor()->set_caret_line(p_line.operator int64_t());
 	}
 }
 
@@ -483,7 +483,7 @@ void ShaderEditor::_check_for_external_edit() {
 		return;
 	}
 
-	bool use_autoreload = bool(EDITOR_DEF("text_editor/files/auto_reload_scripts_on_external_change", false));
+	bool use_autoreload = bool(EDITOR_DEF("text_editor/behavior/files/auto_reload_scripts_on_external_change", false));
 	if (shader->get_last_modified_time() != FileAccess::get_modified_time(shader->get_path())) {
 		if (use_autoreload) {
 			_reload_shader_from_disk();
@@ -550,13 +550,15 @@ void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 
 	if (mb.is_valid()) {
 		if (mb->get_button_index() == MOUSE_BUTTON_RIGHT && mb->is_pressed()) {
-			int col, row;
 			CodeEdit *tx = shader_editor->get_text_editor();
-			tx->_get_mouse_pos(mb->get_global_position() - tx->get_global_position(), row, col);
-			tx->set_right_click_moves_caret(EditorSettings::get_singleton()->get("text_editor/cursor/right_click_moves_caret"));
 
-			if (tx->is_right_click_moving_caret()) {
-				if (tx->is_selection_active()) {
+			Point2i pos = tx->get_line_column_at_pos(mb->get_global_position() - tx->get_global_position());
+			int row = pos.y;
+			int col = pos.x;
+			tx->set_move_caret_on_right_click_enabled(EditorSettings::get_singleton()->get("text_editor/behavior/navigation/move_caret_on_right_click"));
+
+			if (tx->is_move_caret_on_right_click_enabled()) {
+				if (tx->has_selection()) {
 					int from_line = tx->get_selection_from_line();
 					int to_line = tx->get_selection_to_line();
 					int from_column = tx->get_selection_from_column();
@@ -567,19 +569,20 @@ void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 						tx->deselect();
 					}
 				}
-				if (!tx->is_selection_active()) {
-					tx->cursor_set_line(row, true, false);
-					tx->cursor_set_column(col);
+				if (!tx->has_selection()) {
+					tx->set_caret_line(row, true, false);
+					tx->set_caret_column(col);
 				}
 			}
-			_make_context_menu(tx->is_selection_active(), get_local_mouse_position());
+			_make_context_menu(tx->has_selection(), get_local_mouse_position());
 		}
 	}
 
 	Ref<InputEventKey> k = ev;
-	if (k.is_valid() && k->is_pressed() && k->get_keycode() == KEY_MENU) {
+	if (k.is_valid() && k->is_pressed() && k->is_action("ui_menu", true)) {
 		CodeEdit *tx = shader_editor->get_text_editor();
-		_make_context_menu(tx->is_selection_active(), (get_global_transform().inverse() * tx->get_global_transform()).xform(tx->_get_cursor_pixel_pos()));
+		tx->adjust_viewport_to_caret();
+		_make_context_menu(tx->has_selection(), (get_global_transform().inverse() * tx->get_global_transform()).xform(tx->get_caret_draw_pos()));
 		context_menu->grab_focus();
 	}
 }

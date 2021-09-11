@@ -48,22 +48,18 @@
 #include <stdint.h>
 
 VARIANT_ENUM_CAST(Node::ProcessMode);
+VARIANT_ENUM_CAST(Node::InternalMode);
 
 int Node::orphan_node_count = 0;
 
 void Node::_notification(int p_notification) {
 	switch (p_notification) {
 		case NOTIFICATION_PROCESS: {
-			if (get_script_instance()) {
-				Variant time = get_process_delta_time();
-				get_script_instance()->call(SceneStringNames::get_singleton()->_process, time);
-			}
+			GDVIRTUAL_CALL(_process, get_process_delta_time());
+
 		} break;
 		case NOTIFICATION_PHYSICS_PROCESS: {
-			if (get_script_instance()) {
-				Variant time = get_physics_process_delta_time();
-				get_script_instance()->call(SceneStringNames::get_singleton()->_physics_process, time);
-			}
+			GDVIRTUAL_CALL(_physics_process, get_physics_process_delta_time());
 
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
@@ -116,6 +112,9 @@ void Node::_notification(int p_notification) {
 				memdelete(data.path_cache);
 				data.path_cache = nullptr;
 			}
+			if (data.filename.length()) {
+				get_multiplayer()->scene_enter_exit_notify(data.filename, this, false);
+			}
 		} break;
 		case NOTIFICATION_PATH_CHANGED: {
 			if (data.path_cache) {
@@ -124,28 +123,30 @@ void Node::_notification(int p_notification) {
 			}
 		} break;
 		case NOTIFICATION_READY: {
-			if (get_script_instance()) {
-				if (get_script_instance()->has_method(SceneStringNames::get_singleton()->_input)) {
-					set_process_input(true);
-				}
+			if (GDVIRTUAL_IS_OVERRIDDEN(_input)) {
+				set_process_input(true);
+			}
 
-				if (get_script_instance()->has_method(SceneStringNames::get_singleton()->_unhandled_input)) {
-					set_process_unhandled_input(true);
-				}
+			if (GDVIRTUAL_IS_OVERRIDDEN(_unhandled_input)) {
+				set_process_unhandled_input(true);
+			}
 
-				if (get_script_instance()->has_method(SceneStringNames::get_singleton()->_unhandled_key_input)) {
-					set_process_unhandled_key_input(true);
-				}
+			if (GDVIRTUAL_IS_OVERRIDDEN(_unhandled_key_input)) {
+				set_process_unhandled_key_input(true);
+			}
 
-				if (get_script_instance()->has_method(SceneStringNames::get_singleton()->_process)) {
-					set_process(true);
-				}
+			if (GDVIRTUAL_IS_OVERRIDDEN(_process)) {
+				set_process(true);
+			}
+			if (GDVIRTUAL_IS_OVERRIDDEN(_physics_process)) {
+				set_physics_process(true);
+			}
 
-				if (get_script_instance()->has_method(SceneStringNames::get_singleton()->_physics_process)) {
-					set_physics_process(true);
-				}
+			GDVIRTUAL_CALL(_ready);
 
-				get_script_instance()->call(SceneStringNames::get_singleton()->_ready);
+			if (data.filename.length()) {
+				ERR_FAIL_COND(!is_inside_tree());
+				get_multiplayer()->scene_enter_exit_notify(data.filename, this, true);
 			}
 
 		} break;
@@ -214,9 +215,7 @@ void Node::_propagate_enter_tree() {
 
 	notification(NOTIFICATION_ENTER_TREE);
 
-	if (get_script_instance()) {
-		get_script_instance()->call(SceneStringNames::get_singleton()->_enter_tree);
-	}
+	GDVIRTUAL_CALL(_enter_tree);
 
 	emit_signal(SceneStringNames::get_singleton()->tree_entered);
 
@@ -262,9 +261,8 @@ void Node::_propagate_exit_tree() {
 
 	data.blocked--;
 
-	if (get_script_instance()) {
-		get_script_instance()->call(SceneStringNames::get_singleton()->_exit_tree);
-	}
+	GDVIRTUAL_CALL(_exit_tree);
+
 	emit_signal(SceneStringNames::get_singleton()->tree_exiting);
 
 	notification(NOTIFICATION_EXIT_TREE, true);
@@ -293,14 +291,40 @@ void Node::_propagate_exit_tree() {
 
 void Node::move_child(Node *p_child, int p_pos) {
 	ERR_FAIL_NULL(p_child);
-	ERR_FAIL_INDEX_MSG(p_pos, data.children.size() + 1, vformat("Invalid new child position: %d.", p_pos));
 	ERR_FAIL_COND_MSG(p_child->data.parent != this, "Child is not a child of this node.");
+
+	// We need to check whether node is internal and move it only in the relevant node range.
+	if (p_child->_is_internal_front()) {
+		ERR_FAIL_INDEX_MSG(p_pos, data.internal_children_front, vformat("Invalid new child position: %d. Child is internal.", p_pos));
+		_move_child(p_child, p_pos);
+	} else if (p_child->_is_internal_back()) {
+		ERR_FAIL_INDEX_MSG(p_pos, data.internal_children_back, vformat("Invalid new child position: %d. Child is internal.", p_pos));
+		_move_child(p_child, data.children.size() - data.internal_children_back + p_pos);
+	} else {
+		ERR_FAIL_INDEX_MSG(p_pos, data.children.size() + 1 - data.internal_children_front - data.internal_children_back, vformat("Invalid new child position: %d.", p_pos));
+		_move_child(p_child, p_pos + data.internal_children_front);
+	}
+}
+
+void Node::_move_child(Node *p_child, int p_pos, bool p_ignore_end) {
 	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, move_child() failed. Consider using call_deferred(\"move_child\") instead (or \"popup\" if this is from a popup).");
 
 	// Specifying one place beyond the end
 	// means the same as moving to the last position
-	if (p_pos == data.children.size()) {
-		p_pos--;
+	if (!p_ignore_end) { // p_ignore_end is a little hack to make back internal children work properly.
+		if (p_child->_is_internal_front()) {
+			if (p_pos == data.internal_children_front) {
+				p_pos--;
+			}
+		} else if (p_child->_is_internal_back()) {
+			if (p_pos == data.children.size()) {
+				p_pos--;
+			}
+		} else {
+			if (p_pos == data.children.size() - data.internal_children_back) {
+				p_pos--;
+			}
+		}
 	}
 
 	if (p_child->data.pos == p_pos) {
@@ -341,7 +365,14 @@ void Node::raise() {
 		return;
 	}
 
-	data.parent->move_child(this, data.parent->data.children.size() - 1);
+	// Internal children move within a different index range.
+	if (_is_internal_front()) {
+		data.parent->move_child(this, data.parent->data.internal_children_front - 1);
+	} else if (_is_internal_back()) {
+		data.parent->move_child(this, data.parent->data.internal_children_back - 1);
+	} else {
+		data.parent->move_child(this, data.parent->get_child_count(false) - 1);
+	}
 }
 
 void Node::add_child_notify(Node *p_child) {
@@ -485,32 +516,32 @@ void Node::_propagate_process_owner(Node *p_owner, int p_pause_notification, int
 	}
 }
 
-void Node::set_network_master(int p_peer_id, bool p_recursive) {
-	data.network_master = p_peer_id;
+void Node::set_multiplayer_authority(int p_peer_id, bool p_recursive) {
+	data.multiplayer_authority = p_peer_id;
 
 	if (p_recursive) {
 		for (int i = 0; i < data.children.size(); i++) {
-			data.children[i]->set_network_master(p_peer_id, true);
+			data.children[i]->set_multiplayer_authority(p_peer_id, true);
 		}
 	}
 }
 
-int Node::get_network_master() const {
-	return data.network_master;
+int Node::get_multiplayer_authority() const {
+	return data.multiplayer_authority;
 }
 
-bool Node::is_network_master() const {
+bool Node::is_multiplayer_authority() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
 
-	return get_multiplayer()->get_network_unique_id() == data.network_master;
+	return get_multiplayer()->get_unique_id() == data.multiplayer_authority;
 }
 
 /***** RPC CONFIG ********/
 
-uint16_t Node::rpc_config(const StringName &p_method, MultiplayerAPI::RPCMode p_rpc_mode, MultiplayerPeer::TransferMode p_transfer_mode, int p_channel) {
+uint16_t Node::rpc_config(const StringName &p_method, Multiplayer::RPCMode p_rpc_mode, Multiplayer::TransferMode p_transfer_mode, int p_channel) {
 	for (int i = 0; i < data.rpc_methods.size(); i++) {
 		if (data.rpc_methods[i].name == p_method) {
-			MultiplayerAPI::RPCConfig &nd = data.rpc_methods.write[i];
+			Multiplayer::RPCConfig &nd = data.rpc_methods.write[i];
 			nd.rpc_mode = p_rpc_mode;
 			nd.transfer_mode = p_transfer_mode;
 			nd.channel = p_channel;
@@ -518,7 +549,7 @@ uint16_t Node::rpc_config(const StringName &p_method, MultiplayerAPI::RPCMode p_
 		}
 	}
 	// New method
-	MultiplayerAPI::RPCConfig nd;
+	Multiplayer::RPCConfig nd;
 	nd.name = p_method;
 	nd.rpc_mode = p_rpc_mode;
 	nd.transfer_mode = p_transfer_mode;
@@ -611,7 +642,7 @@ Variant Node::_rpc_id_bind(const Variant **p_args, int p_argcount, Callable::Cal
 
 void Node::rpcp(int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount) {
 	ERR_FAIL_COND(!is_inside_tree());
-	get_multiplayer()->rpcp(this, p_peer_id, true, p_method, p_arg, p_argcount);
+	get_multiplayer()->rpcp(this, p_peer_id, p_method, p_arg, p_argcount);
 }
 
 Ref<MultiplayerAPI> Node::get_multiplayer() const {
@@ -632,7 +663,7 @@ void Node::set_custom_multiplayer(Ref<MultiplayerAPI> p_multiplayer) {
 	multiplayer = p_multiplayer;
 }
 
-Vector<MultiplayerAPI::RPCConfig> Node::get_node_rpc_methods() const {
+Vector<Multiplayer::RPCConfig> Node::get_node_rpc_methods() const {
 	return data.rpc_methods;
 }
 
@@ -705,7 +736,7 @@ bool Node::is_enabled() const {
 	return _is_enabled();
 }
 
-float Node::get_physics_process_delta_time() const {
+double Node::get_physics_process_delta_time() const {
 	if (data.tree) {
 		return data.tree->get_physics_process_time();
 	} else {
@@ -713,7 +744,7 @@ float Node::get_physics_process_delta_time() const {
 	}
 }
 
-float Node::get_process_delta_time() const {
+double Node::get_process_delta_time() const {
 	if (data.tree) {
 		return data.tree->get_process_time();
 	} else {
@@ -1060,6 +1091,10 @@ void Node::_add_child_nocheck(Node *p_child, const StringName &p_name) {
 	p_child->data.pos = data.children.size();
 	data.children.push_back(p_child);
 	p_child->data.parent = this;
+
+	if (data.internal_children_back > 0) {
+		_move_child(p_child, data.children.size() - data.internal_children_back - 1);
+	}
 	p_child->notification(NOTIFICATION_PARENTED);
 
 	if (data.tree) {
@@ -1072,7 +1107,7 @@ void Node::_add_child_nocheck(Node *p_child, const StringName &p_name) {
 	add_child_notify(p_child);
 }
 
-void Node::add_child(Node *p_child, bool p_legible_unique_name) {
+void Node::add_child(Node *p_child, bool p_legible_unique_name, InternalMode p_internal) {
 	ERR_FAIL_NULL(p_child);
 	ERR_FAIL_COND_MSG(p_child == this, vformat("Can't add child '%s' to itself.", p_child->get_name())); // adding to itself!
 	ERR_FAIL_COND_MSG(p_child->data.parent, vformat("Can't add child '%s' to '%s', already has a parent '%s'.", p_child->get_name(), get_name(), p_child->data.parent->get_name())); //Fail if node has a parent
@@ -1081,19 +1116,35 @@ void Node::add_child(Node *p_child, bool p_legible_unique_name) {
 #endif
 	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, add_node() failed. Consider using call_deferred(\"add_child\", child) instead.");
 
-	/* Validate name */
 	_validate_child_name(p_child, p_legible_unique_name);
-
 	_add_child_nocheck(p_child, p_child->data.name);
+
+	if (p_internal == INTERNAL_MODE_FRONT) {
+		_move_child(p_child, data.internal_children_front);
+		data.internal_children_front++;
+	} else if (p_internal == INTERNAL_MODE_BACK) {
+		if (data.internal_children_back > 0) {
+			_move_child(p_child, data.children.size() - 1, true);
+		}
+		data.internal_children_back++;
+	}
 }
 
 void Node::add_sibling(Node *p_sibling, bool p_legible_unique_name) {
 	ERR_FAIL_NULL(p_sibling);
+	ERR_FAIL_NULL(data.parent);
 	ERR_FAIL_COND_MSG(p_sibling == this, vformat("Can't add sibling '%s' to itself.", p_sibling->get_name())); // adding to itself!
 	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, add_sibling() failed. Consider using call_deferred(\"add_sibling\", sibling) instead.");
 
-	get_parent()->add_child(p_sibling, p_legible_unique_name);
-	get_parent()->move_child(p_sibling, this->get_index() + 1);
+	InternalMode internal = INTERNAL_MODE_DISABLED;
+	if (_is_internal_front()) { // The sibling will have the same internal status.
+		internal = INTERNAL_MODE_FRONT;
+	} else if (_is_internal_back()) {
+		internal = INTERNAL_MODE_BACK;
+	}
+
+	data.parent->add_child(p_sibling, p_legible_unique_name, internal);
+	data.parent->_move_child(p_sibling, get_index() + 1);
 }
 
 void Node::_propagate_validate_owner() {
@@ -1147,7 +1198,12 @@ void Node::remove_child(Node *p_child) {
 	ERR_FAIL_COND_MSG(idx == -1, vformat("Cannot remove child node '%s' as it is not a child of this node.", p_child->get_name()));
 	//ERR_FAIL_COND( p_child->data.blocked > 0 );
 
-	//if (data.scene) { does not matter
+	// If internal child, update the counter.
+	if (p_child->_is_internal_front()) {
+		data.internal_children_front--;
+	} else if (p_child->_is_internal_back()) {
+		data.internal_children_back--;
+	}
 
 	p_child->_set_tree(nullptr);
 	//}
@@ -1177,17 +1233,29 @@ void Node::remove_child(Node *p_child) {
 	}
 }
 
-int Node::get_child_count() const {
-	return data.children.size();
+int Node::get_child_count(bool p_include_internal) const {
+	if (p_include_internal) {
+		return data.children.size();
+	} else {
+		return data.children.size() - data.internal_children_front - data.internal_children_back;
+	}
 }
 
-Node *Node::get_child(int p_index) const {
-	if (p_index < 0) {
-		p_index += data.children.size();
+Node *Node::get_child(int p_index, bool p_include_internal) const {
+	if (p_include_internal) {
+		if (p_index < 0) {
+			p_index += data.children.size();
+		}
+		ERR_FAIL_INDEX_V(p_index, data.children.size(), nullptr);
+		return data.children[p_index];
+	} else {
+		if (p_index < 0) {
+			p_index += data.children.size() - data.internal_children_front - data.internal_children_back;
+		}
+		ERR_FAIL_INDEX_V(p_index, data.children.size() - data.internal_children_front - data.internal_children_back, nullptr);
+		p_index += data.internal_children_front;
+		return data.children[p_index];
 	}
-	ERR_FAIL_INDEX_V(p_index, data.children.size(), nullptr);
-
-	return data.children[p_index];
 }
 
 Node *Node::_get_child_by_name(const StringName &p_name) const {
@@ -1719,7 +1787,13 @@ void Node::_propagate_replace_owner(Node *p_owner, Node *p_by_owner) {
 	data.blocked--;
 }
 
-int Node::get_index() const {
+int Node::get_index(bool p_include_internal) const {
+	// p_include_internal = false doesn't make sense if the node is internal.
+	ERR_FAIL_COND_V_MSG(!p_include_internal && (_is_internal_front() || _is_internal_back()), -1, "Node is internal. Can't get index with 'include_internal' being false.");
+
+	if (data.parent && !p_include_internal) {
+		return data.pos - data.parent->data.internal_children_front;
+	}
 	return data.pos;
 }
 
@@ -2431,12 +2505,12 @@ void Node::queue_delete() {
 	}
 }
 
-TypedArray<Node> Node::_get_children() const {
+TypedArray<Node> Node::_get_children(bool p_include_internal) const {
 	TypedArray<Node> arr;
-	int cc = get_child_count();
+	int cc = get_child_count(p_include_internal);
 	arr.resize(cc);
 	for (int i = 0; i < cc; i++) {
-		arr[i] = get_child(i);
+		arr[i] = get_child(i, p_include_internal);
 	}
 
 	return arr;
@@ -2458,7 +2532,7 @@ NodePath Node::get_import_path() const {
 
 static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<String> *r_options) {
 #ifdef TOOLS_ENABLED
-	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", 0) ? "'" : "\"";
+	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 #else
 	const String quote_style = "\"";
 #endif
@@ -2467,7 +2541,7 @@ static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<S
 		return;
 	}
 	String n = p_base->get_path_to(p_node);
-	r_options->push_back(quote_style + n + quote_style);
+	r_options->push_back(n.quote(quote_style));
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_add_nodes_to_options(p_base, p_node->get_child(i), r_options);
 	}
@@ -2489,9 +2563,14 @@ void Node::clear_internal_tree_resource_paths() {
 }
 
 TypedArray<String> Node::get_configuration_warnings() const {
-	if (get_script_instance() && get_script_instance()->get_script().is_valid() &&
-			get_script_instance()->get_script()->is_tool() && get_script_instance()->has_method("_get_configuration_warnings")) {
-		return get_script_instance()->call("_get_configuration_warnings");
+	Vector<String> warnings;
+	if (GDVIRTUAL_CALL(_get_configuration_warnings, warnings)) {
+		TypedArray<String> ret;
+		ret.resize(warnings.size());
+		for (int i = 0; i < warnings.size(); i++) {
+			ret[i] = warnings[i];
+		}
+		return ret;
 	}
 	return Array();
 }
@@ -2537,6 +2616,37 @@ void Node::request_ready() {
 	data.ready_first = true;
 }
 
+void Node::_call_input(const Ref<InputEvent> &p_event) {
+	GDVIRTUAL_CALL(_input, p_event);
+	if (!is_inside_tree() || !get_viewport() || get_viewport()->is_input_handled()) {
+		return;
+	}
+	input(p_event);
+}
+void Node::_call_unhandled_input(const Ref<InputEvent> &p_event) {
+	GDVIRTUAL_CALL(_unhandled_input, p_event);
+	if (!is_inside_tree() || !get_viewport() || get_viewport()->is_input_handled()) {
+		return;
+	}
+	unhandled_input(p_event);
+}
+void Node::_call_unhandled_key_input(const Ref<InputEvent> &p_event) {
+	GDVIRTUAL_CALL(_unhandled_key_input, p_event);
+	if (!is_inside_tree() || !get_viewport() || get_viewport()->is_input_handled()) {
+		return;
+	}
+	unhandled_key_input(p_event);
+}
+
+void Node::input(const Ref<InputEvent> &p_event) {
+}
+
+void Node::unhandled_input(const Ref<InputEvent> &p_event) {
+}
+
+void Node::unhandled_key_input(const Ref<InputEvent> &p_key_event) {
+}
+
 void Node::_bind_methods() {
 	GLOBAL_DEF("editor/node_naming/name_num_separator", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("editor/node_naming/name_num_separator", PropertyInfo(Variant::INT, "editor/node_naming/name_num_separator", PROPERTY_HINT_ENUM, "None,Space,Underscore,Dash"));
@@ -2547,11 +2657,11 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &Node::set_name);
 	ClassDB::bind_method(D_METHOD("get_name"), &Node::get_name);
-	ClassDB::bind_method(D_METHOD("add_child", "node", "legible_unique_name"), &Node::add_child, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_child", "node", "legible_unique_name", "internal"), &Node::add_child, DEFVAL(false), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("remove_child", "node"), &Node::remove_child);
-	ClassDB::bind_method(D_METHOD("get_child_count"), &Node::get_child_count);
-	ClassDB::bind_method(D_METHOD("get_children"), &Node::_get_children);
-	ClassDB::bind_method(D_METHOD("get_child", "idx"), &Node::get_child);
+	ClassDB::bind_method(D_METHOD("get_child_count", "include_internal"), &Node::get_child_count, DEFVAL(false)); // Note that the default value bound for include_internal is false, while the method is declared with true. This is because internal nodes are irrelevant for GDSCript.
+	ClassDB::bind_method(D_METHOD("get_children", "include_internal"), &Node::_get_children, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_child", "idx", "include_internal"), &Node::get_child, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("has_node", "path"), &Node::has_node);
 	ClassDB::bind_method(D_METHOD("get_node", "path"), &Node::get_node);
 	ClassDB::bind_method(D_METHOD("get_node_or_null", "path"), &Node::get_node_or_null);
@@ -2575,7 +2685,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_owner", "owner"), &Node::set_owner);
 	ClassDB::bind_method(D_METHOD("get_owner"), &Node::get_owner);
 	ClassDB::bind_method(D_METHOD("remove_and_skip"), &Node::remove_and_skip);
-	ClassDB::bind_method(D_METHOD("get_index"), &Node::get_index);
+	ClassDB::bind_method(D_METHOD("get_index", "include_internal"), &Node::get_index, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("print_tree"), &Node::print_tree);
 	ClassDB::bind_method(D_METHOD("print_tree_pretty"), &Node::print_tree_pretty);
 	ClassDB::bind_method(D_METHOD("set_filename", "filename"), &Node::set_filename);
@@ -2618,6 +2728,8 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_scene_instance_load_placeholder", "load_placeholder"), &Node::set_scene_instance_load_placeholder);
 	ClassDB::bind_method(D_METHOD("get_scene_instance_load_placeholder"), &Node::get_scene_instance_load_placeholder);
+	ClassDB::bind_method(D_METHOD("set_editable_instance", "node", "is_editable"), &Node::set_editable_instance);
+	ClassDB::bind_method(D_METHOD("is_editable_instance", "node"), &Node::is_editable_instance);
 
 	ClassDB::bind_method(D_METHOD("get_viewport"), &Node::get_viewport);
 
@@ -2625,15 +2737,15 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("request_ready"), &Node::request_ready);
 
-	ClassDB::bind_method(D_METHOD("set_network_master", "id", "recursive"), &Node::set_network_master, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("get_network_master"), &Node::get_network_master);
+	ClassDB::bind_method(D_METHOD("set_multiplayer_authority", "id", "recursive"), &Node::set_multiplayer_authority, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_multiplayer_authority"), &Node::get_multiplayer_authority);
 
-	ClassDB::bind_method(D_METHOD("is_network_master"), &Node::is_network_master);
+	ClassDB::bind_method(D_METHOD("is_multiplayer_authority"), &Node::is_multiplayer_authority);
 
 	ClassDB::bind_method(D_METHOD("get_multiplayer"), &Node::get_multiplayer);
 	ClassDB::bind_method(D_METHOD("get_custom_multiplayer"), &Node::get_custom_multiplayer);
 	ClassDB::bind_method(D_METHOD("set_custom_multiplayer", "api"), &Node::set_custom_multiplayer);
-	ClassDB::bind_method(D_METHOD("rpc_config", "method", "rpc_mode", "transfer_mode", "channel"), &Node::rpc_config, DEFVAL(MultiplayerPeer::TRANSFER_MODE_RELIABLE), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("rpc_config", "method", "rpc_mode", "transfer_mode", "channel"), &Node::rpc_config, DEFVAL(Multiplayer::TRANSFER_MODE_RELIABLE), DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("set_editor_description", "editor_description"), &Node::set_editor_description);
 	ClassDB::bind_method(D_METHOD("get_editor_description"), &Node::get_editor_description);
@@ -2711,6 +2823,10 @@ void Node::_bind_methods() {
 	BIND_ENUM_CONSTANT(DUPLICATE_SCRIPTS);
 	BIND_ENUM_CONSTANT(DUPLICATE_USE_INSTANCING);
 
+	BIND_ENUM_CONSTANT(INTERNAL_MODE_DISABLED);
+	BIND_ENUM_CONSTANT(INTERNAL_MODE_FRONT);
+	BIND_ENUM_CONSTANT(INTERNAL_MODE_BACK);
+
 	ADD_SIGNAL(MethodInfo("ready"));
 	ADD_SIGNAL(MethodInfo("renamed"));
 	ADD_SIGNAL(MethodInfo("tree_entered"));
@@ -2730,15 +2846,15 @@ void Node::_bind_methods() {
 	ADD_GROUP("Editor Description", "editor_");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_description", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_INTERNAL), "set_editor_description", "get_editor_description");
 
-	BIND_VMETHOD(MethodInfo("_process", PropertyInfo(Variant::FLOAT, "delta")));
-	BIND_VMETHOD(MethodInfo("_physics_process", PropertyInfo(Variant::FLOAT, "delta")));
-	BIND_VMETHOD(MethodInfo("_enter_tree"));
-	BIND_VMETHOD(MethodInfo("_exit_tree"));
-	BIND_VMETHOD(MethodInfo("_ready"));
-	BIND_VMETHOD(MethodInfo("_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
-	BIND_VMETHOD(MethodInfo("_unhandled_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
-	BIND_VMETHOD(MethodInfo("_unhandled_key_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEventKey")));
-	BIND_VMETHOD(MethodInfo(PropertyInfo(Variant::ARRAY, "", PROPERTY_HINT_ARRAY_TYPE, "String"), "_get_configuration_warnings"));
+	GDVIRTUAL_BIND(_process, "delta");
+	GDVIRTUAL_BIND(_physics_process, "delta");
+	GDVIRTUAL_BIND(_enter_tree);
+	GDVIRTUAL_BIND(_exit_tree);
+	GDVIRTUAL_BIND(_ready);
+	GDVIRTUAL_BIND(_get_configuration_warnings);
+	GDVIRTUAL_BIND(_input, "event");
+	GDVIRTUAL_BIND(_unhandled_input, "event");
+	GDVIRTUAL_BIND(_unhandled_key_input, "event");
 }
 
 String Node::_get_name_num_separator() {

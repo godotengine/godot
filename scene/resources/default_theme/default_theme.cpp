@@ -212,26 +212,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("outline_size", "LinkButton", 0);
 	theme->set_constant("underline_spacing", "LinkButton", 2 * scale);
 
-	// ColorPickerButton
-
-	theme->set_stylebox("normal", "ColorPickerButton", sb_button_normal);
-	theme->set_stylebox("pressed", "ColorPickerButton", sb_button_pressed);
-	theme->set_stylebox("hover", "ColorPickerButton", sb_button_hover);
-	theme->set_stylebox("disabled", "ColorPickerButton", sb_button_disabled);
-	theme->set_stylebox("focus", "ColorPickerButton", sb_button_focus);
-
-	theme->set_font("font", "ColorPickerButton", Ref<Font>());
-	theme->set_font_size("font_size", "ColorPickerButton", -1);
-
-	theme->set_color("font_color", "ColorPickerButton", Color(1, 1, 1, 1));
-	theme->set_color("font_pressed_color", "ColorPickerButton", Color(0.8, 0.8, 0.8, 1));
-	theme->set_color("font_hover_color", "ColorPickerButton", Color(1, 1, 1, 1));
-	theme->set_color("font_disabled_color", "ColorPickerButton", Color(0.9, 0.9, 0.9, 0.3));
-	theme->set_color("font_outline_color", "ColorPickerButton", Color(1, 1, 1));
-
-	theme->set_constant("hseparation", "ColorPickerButton", 2 * scale);
-	theme->set_constant("outline_size", "ColorPickerButton", 0);
-
 	// OptionButton
 
 	Ref<StyleBox> sb_optbutton_focus = sb_expand(make_stylebox(button_focus_png, 4, 4, 4, 4, 6, 2, 6, 2), 2, 2, 2, 2);
@@ -704,6 +684,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_icon("checked", "Tree", make_icon(checked_png));
 	theme->set_icon("unchecked", "Tree", make_icon(unchecked_png));
+	theme->set_icon("indeterminate", "Tree", make_icon(indeterminate_png));
 	theme->set_icon("updown", "Tree", make_icon(updown_png));
 	theme->set_icon("select_arrow", "Tree", make_icon(dropdown_png));
 	theme->set_icon("arrow", "Tree", make_icon(arrow_down_png));
@@ -858,12 +839,42 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("add_preset", "ColorPicker", make_icon(icon_add_png));
 	theme->set_icon("color_hue", "ColorPicker", make_icon(color_picker_hue_png));
 	theme->set_icon("color_sample", "ColorPicker", make_icon(color_picker_sample_png));
-	theme->set_icon("preset_bg", "ColorPicker", make_icon(mini_checkerboard_png));
+	theme->set_icon("sample_bg", "ColorPicker", make_icon(mini_checkerboard_png));
 	theme->set_icon("overbright_indicator", "ColorPicker", make_icon(overbright_indicator_png));
 	theme->set_icon("bar_arrow", "ColorPicker", make_icon(bar_arrow_png));
 	theme->set_icon("picker_cursor", "ColorPicker", make_icon(picker_cursor_png));
 
+	// ColorPickerButton
+
 	theme->set_icon("bg", "ColorPickerButton", make_icon(mini_checkerboard_png));
+	theme->set_stylebox("normal", "ColorPickerButton", sb_button_normal);
+	theme->set_stylebox("pressed", "ColorPickerButton", sb_button_pressed);
+	theme->set_stylebox("hover", "ColorPickerButton", sb_button_hover);
+	theme->set_stylebox("disabled", "ColorPickerButton", sb_button_disabled);
+	theme->set_stylebox("focus", "ColorPickerButton", sb_button_focus);
+
+	theme->set_font("font", "ColorPickerButton", Ref<Font>());
+	theme->set_font_size("font_size", "ColorPickerButton", -1);
+
+	theme->set_color("font_color", "ColorPickerButton", Color(1, 1, 1, 1));
+	theme->set_color("font_pressed_color", "ColorPickerButton", Color(0.8, 0.8, 0.8, 1));
+	theme->set_color("font_hover_color", "ColorPickerButton", Color(1, 1, 1, 1));
+	theme->set_color("font_disabled_color", "ColorPickerButton", Color(0.9, 0.9, 0.9, 0.3));
+	theme->set_color("font_outline_color", "ColorPickerButton", Color(1, 1, 1));
+
+	theme->set_constant("hseparation", "ColorPickerButton", 2 * scale);
+	theme->set_constant("outline_size", "ColorPickerButton", 0);
+
+	// ColorPresetButton
+
+	Ref<StyleBoxFlat> preset_sb = make_flat_stylebox(Color(1, 1, 1), 2, 2, 2, 2);
+	preset_sb->set_corner_radius_all(2);
+	preset_sb->set_corner_detail(2);
+	preset_sb->set_anti_aliased(false);
+
+	theme->set_stylebox("preset_fg", "ColorPresetButton", preset_sb);
+	theme->set_icon("preset_bg", "ColorPresetButton", make_icon(mini_checkerboard_png));
+	theme->set_icon("overbright_indicator", "ColorPresetButton", make_icon(overbright_indicator_png));
 
 	// TooltipPanel
 
@@ -914,7 +925,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("shadow_offset_y", "RichTextLabel", 1 * scale);
 	theme->set_constant("shadow_as_outline", "RichTextLabel", 0 * scale);
 
-	theme->set_constant("line_separation", "RichTextLabel", 1 * scale);
+	theme->set_constant("line_separation", "RichTextLabel", 0 * scale);
 	theme->set_constant("table_hseparation", "RichTextLabel", 3 * scale);
 	theme->set_constant("table_vseparation", "RichTextLabel", 3 * scale);
 
@@ -953,6 +964,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("more", "GraphEdit", make_icon(icon_zoom_more_png));
 	theme->set_icon("snap", "GraphEdit", make_icon(icon_snap_grid_png));
 	theme->set_icon("minimap", "GraphEdit", make_icon(icon_grid_minimap_png));
+	theme->set_icon("layout", "GraphEdit", make_icon(icon_grid_layout_png));
 	theme->set_stylebox("bg", "GraphEdit", make_stylebox(tree_bg_png, 4, 4, 4, 5));
 	theme->set_color("grid_minor", "GraphEdit", Color(1, 1, 1, 0.05));
 	theme->set_color("grid_major", "GraphEdit", Color(1, 1, 1, 0.2));
@@ -964,7 +976,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// Visual Node Ports
 
-	theme->set_constant("port_grab_distance_horizontal", "GraphEdit", 48 * scale);
+	theme->set_constant("port_grab_distance_horizontal", "GraphEdit", 24 * scale);
 	theme->set_constant("port_grab_distance_vertical", "GraphEdit", 6 * scale);
 
 	theme->set_stylebox("bg", "GraphEditMinimap", make_flat_stylebox(Color(0.24, 0.24, 0.24), 0, 0, 0, 0));
@@ -1008,8 +1020,9 @@ void make_default_theme(bool p_hidpi, Ref<Font> p_font) {
 
 		Ref<FontData> dynamic_font_data;
 		dynamic_font_data.instantiate();
-		dynamic_font_data->load_memory(_font_OpenSans_SemiBold, _font_OpenSans_SemiBold_size, "ttf", default_font_size);
+		dynamic_font_data->set_data_ptr(_font_OpenSans_SemiBold, _font_OpenSans_SemiBold_size);
 		dynamic_font->add_data(dynamic_font_data);
+		dynamic_font->set_base_size(default_font_size);
 
 		default_font = dynamic_font;
 	}

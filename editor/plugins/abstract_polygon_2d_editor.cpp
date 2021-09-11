@@ -261,7 +261,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 		Transform2D xform = canvas_item_editor->get_canvas_transform() * _get_node()->get_global_transform();
 
 		Vector2 gpoint = mb->get_position();
-		Vector2 cpoint = _get_node()->get_global_transform().affine_inverse().xform(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mb->get_position())));
+		Vector2 cpoint = _get_node()->to_local(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mb->get_position())));
 
 		if (mode == MODE_EDIT || (_is_line() && mode == MODE_CREATE)) {
 			if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
@@ -367,7 +367,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 					edge_point = PosVertex();
 					return true;
 				} else {
-					const real_t grab_threshold = EDITOR_GET("editors/poly_editor/point_grab_radius");
+					const real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 
 					if (!_is_line() && wip.size() > 1 && xform.xform(wip[0]).distance_to(xform.xform(cpoint)) < grab_threshold) {
 						//wip closed
@@ -396,7 +396,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 		Vector2 gpoint = mm->get_position();
 
 		if (edited_point.valid() && (wip_active || (mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT))) {
-			Vector2 cpoint = _get_node()->get_global_transform().affine_inverse().xform(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)));
+			Vector2 cpoint = _get_node()->to_local(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)));
 
 			//Move the point in a single axis. Should only work when editing a polygon and while holding shift.
 			if (mode == MODE_EDIT && mm->is_shift_pressed()) {
@@ -502,7 +502,7 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 			offset = _get_offset(j);
 		}
 
-		if (!wip_active && j == edited_point.polygon && EDITOR_GET("editors/poly_editor/show_previous_outline")) {
+		if (!wip_active && j == edited_point.polygon && EDITOR_GET("editors/polygon_editor/show_previous_outline")) {
 			const Color col = Color(0.5, 0.5, 0.5); // FIXME polygon->get_outline_color();
 			const int n = pre_move_edit.size();
 			for (int i = 0; i < n - (is_closed ? 0 : 1); i++) {
@@ -625,7 +625,7 @@ AbstractPolygon2DEditor::Vertex AbstractPolygon2DEditor::get_active_point() cons
 }
 
 AbstractPolygon2DEditor::PosVertex AbstractPolygon2DEditor::closest_point(const Vector2 &p_pos) const {
-	const real_t grab_threshold = EDITOR_GET("editors/poly_editor/point_grab_radius");
+	const real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 
 	const int n_polygons = _get_polygon_count();
 	const Transform2D xform = canvas_item_editor->get_canvas_transform() * _get_node()->get_global_transform();
@@ -653,7 +653,7 @@ AbstractPolygon2DEditor::PosVertex AbstractPolygon2DEditor::closest_point(const 
 }
 
 AbstractPolygon2DEditor::PosVertex AbstractPolygon2DEditor::closest_edge_point(const Vector2 &p_pos) const {
-	const real_t grab_threshold = EDITOR_GET("editors/poly_editor/point_grab_radius");
+	const real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 	const real_t eps = grab_threshold * 2;
 	const real_t eps2 = eps * eps;
 

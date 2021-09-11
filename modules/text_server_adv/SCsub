@@ -15,7 +15,7 @@ def make_icu_data(target, source, env):
 
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     g.write("/* (C) 2016 and later: Unicode, Inc. and others. */\n")
-    g.write("/* License & terms of use: http://www.unicode.org/copyright.html */\n")
+    g.write("/* License & terms of use: https://www.unicode.org/copyright.html */\n")
     g.write("#ifndef _ICU_DATA_H\n")
     g.write("#define _ICU_DATA_H\n")
     g.write('#include "unicode/utypes.h"\n')
@@ -38,7 +38,8 @@ def make_icu_data(target, source, env):
 # Thirdparty source files
 
 thirdparty_obj = []
-freetype_enabled = env.module_check_dependencies("text_server_adv", ["freetype"])
+freetype_enabled = env.module_check_dependencies("text_server_adv", ["freetype"], True)
+msdngen_enabled = env.module_check_dependencies("text_server_adv", ["msdfgen"], True)
 
 if env["builtin_harfbuzz"]:
     env_harfbuzz = env_modules.Clone()
@@ -508,6 +509,13 @@ env_text_server_adv.Append(
         "#thirdparty/icu4c/common/",
     ]
 )
+
+if msdngen_enabled:
+    env_text_server_adv.Append(
+        CPPPATH=[
+            "#thirdparty/msdfgen",
+        ]
+    )
 
 if freetype_enabled:
     env_text_server_adv.Append(

@@ -122,6 +122,8 @@ TEST_CASE("[ConfigFile] Saving file") {
 	config_file.set_value("player", "position", Vector2(3, 4));
 	config_file.set_value("graphics", "antialiasing", true);
 	config_file.set_value("graphics", "antiAliasing", false);
+	config_file.set_value("quoted", String::utf8("静音"), 42);
+	config_file.set_value("quoted", "a=b", 7);
 
 #ifdef WINDOWS_ENABLED
 	const String config_path = OS::get_singleton()->get_environment("TEMP").plus_file("config.ini");
@@ -132,7 +134,7 @@ TEST_CASE("[ConfigFile] Saving file") {
 	config_file.save(config_path);
 
 	// Expected contents of the saved ConfigFile.
-	const String contents = R"([player]
+	const String contents = String::utf8(R"([player]
 
 name="Unnamed Player"
 tagline="Waiting
@@ -145,7 +147,12 @@ position=Vector2(3, 4)
 
 antialiasing=true
 antiAliasing=false
-)";
+
+[quoted]
+
+"静音"=42
+"a=b"=7
+)");
 
 	FileAccessRef file = FileAccess::open(config_path, FileAccess::READ);
 	CHECK_MESSAGE(file->get_as_utf8_string() == contents,

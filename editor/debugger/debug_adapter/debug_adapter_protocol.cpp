@@ -94,11 +94,17 @@ Error DAPeer::handle_data() {
 		String msg;
 		msg.parse_utf8((const char *)req_buf, req_pos);
 
+		// Apply a timestamp if it there's none yet
+		if (!timestamp) {
+			timestamp = OS::get_singleton()->get_ticks_msec();
+		}
+
 		// Response
 		if (DebugAdapterProtocol::get_singleton()->process_message(msg)) {
 			// Reset to read again
 			req_pos = 0;
 			has_header = false;
+			timestamp = 0;
 		}
 	}
 	return OK;
@@ -180,11 +186,459 @@ void DebugAdapterProtocol::reset_stack_info() {
 	variable_list.clear();
 }
 
+int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
+	switch (p_var.get_type()) {
+		case Variant::VECTOR2:
+		case Variant::VECTOR2I: {
+			int id = variable_id++;
+			Vector2 vec = p_var;
+			DAP::Variable x, y;
+			x.name = "x";
+			y.name = "y";
+			x.type = y.type = Variant::get_type_name(p_var.get_type() == Variant::VECTOR2 ? Variant::FLOAT : Variant::INT);
+			x.value = rtos(vec.x);
+			y.value = rtos(vec.y);
+
+			Array arr;
+			arr.push_back(x.to_json());
+			arr.push_back(y.to_json());
+			variable_list.insert(id, arr);
+			return id;
+		}
+		case Variant::RECT2:
+		case Variant::RECT2I: {
+			int id = variable_id++;
+			Rect2 rect = p_var;
+			DAP::Variable x, y, w, h;
+			x.name = "x";
+			y.name = "y";
+			w.name = "w";
+			h.name = "h";
+			x.type = y.type = w.type = h.type = Variant::get_type_name(p_var.get_type() == Variant::RECT2 ? Variant::FLOAT : Variant::INT);
+			x.value = rtos(rect.position.x);
+			y.value = rtos(rect.position.y);
+			w.value = rtos(rect.size.x);
+			h.value = rtos(rect.size.y);
+
+			Array arr;
+			arr.push_back(x.to_json());
+			arr.push_back(y.to_json());
+			arr.push_back(w.to_json());
+			arr.push_back(h.to_json());
+			variable_list.insert(id, arr);
+			return id;
+		}
+		case Variant::VECTOR3:
+		case Variant::VECTOR3I: {
+			int id = variable_id++;
+			Vector3 vec = p_var;
+			DAP::Variable x, y, z;
+			x.name = "x";
+			y.name = "y";
+			z.name = "z";
+			x.type = y.type = z.type = Variant::get_type_name(p_var.get_type() == Variant::VECTOR3 ? Variant::FLOAT : Variant::INT);
+			x.value = rtos(vec.x);
+			y.value = rtos(vec.y);
+			z.value = rtos(vec.z);
+
+			Array arr;
+			arr.push_back(x.to_json());
+			arr.push_back(y.to_json());
+			arr.push_back(z.to_json());
+			variable_list.insert(id, arr);
+			return id;
+		}
+		case Variant::TRANSFORM2D: {
+			int id = variable_id++;
+			Transform2D transform = p_var;
+			DAP::Variable x, y, origin;
+			x.name = "x";
+			y.name = "y";
+			origin.name = "origin";
+			x.type = y.type = origin.type = Variant::get_type_name(Variant::VECTOR2);
+			x.value = transform.elements[0];
+			y.value = transform.elements[1];
+			origin.value = transform.elements[2];
+			x.variablesReference = parse_variant(transform.elements[0]);
+			y.variablesReference = parse_variant(transform.elements[1]);
+			origin.variablesReference = parse_variant(transform.elements[2]);
+
+			Array arr;
+			arr.push_back(x.to_json());
+			arr.push_back(y.to_json());
+			arr.push_back(origin.to_json());
+			variable_list.insert(id, arr);
+			return id;
+		}
+		case Variant::PLANE: {
+			int id = variable_id++;
+			Plane plane = p_var;
+			DAP::Variable d, normal;
+			d.name = "d";
+			normal.name = "normal";
+			d.type = Variant::get_type_name(Variant::FLOAT);
+			normal.type = Variant::get_type_name(Variant::VECTOR3);
+			d.value = rtos(plane.d);
+			normal.value = plane.normal;
+			normal.variablesReference = parse_variant(plane.normal);
+
+			Array arr;
+			arr.push_back(d.to_json());
+			arr.push_back(normal.to_json());
+			variable_list.insert(id, arr);
+			return id;
+		}
+		case Variant::QUATERNION: {
+			int id = variable_id++;
+			Quaternion quat = p_var;
+			DAP::Variable x, y, z, w;
+			x.name = "x";
+			y.name = "y";
+			z.name = "z";
+			w.name = "w";
+			x.type = y.type = z.type = w.type = Variant::get_type_name(Variant::FLOAT);
+			x.value = rtos(quat.x);
+			y.value = rtos(quat.y);
+			z.value = rtos(quat.z);
+			w.value = rtos(quat.w);
+
+			Array arr;
+			arr.push_back(x.to_json());
+			arr.push_back(y.to_json());
+			arr.push_back(z.to_json());
+			arr.push_back(w.to_json());
+			variable_list.insert(id, arr);
+			return id;
+		}
+		case Variant::AABB: {
+			int id = variable_id++;
+			AABB aabb = p_var;
+			DAP::Variable position, size;
+			position.name = "position";
+			size.name = "size";
+			position.type = size.type = Variant::get_type_name(Variant::VECTOR3);
+			position.value = aabb.position;
+			size.value = aabb.size;
+			position.variablesReference = parse_variant(aabb.position);
+			size.variablesReference = parse_variant(aabb.size);
+
+			Array arr;
+			arr.push_back(position.to_json());
+			arr.push_back(size.to_json());
+			variable_list.insert(id, arr);
+			return id;
+		}
+		case Variant::BASIS: {
+			int id = variable_id++;
+			Basis basis = p_var;
+			DAP::Variable x, y, z;
+			x.name = "x";
+			y.name = "y";
+			z.name = "z";
+			x.type = y.type = z.type = Variant::get_type_name(Variant::VECTOR2);
+			x.value = basis.elements[0];
+			y.value = basis.elements[1];
+			z.value = basis.elements[2];
+			x.variablesReference = parse_variant(basis.elements[0]);
+			y.variablesReference = parse_variant(basis.elements[1]);
+			z.variablesReference = parse_variant(basis.elements[2]);
+
+			Array arr;
+			arr.push_back(x.to_json());
+			arr.push_back(y.to_json());
+			arr.push_back(z.to_json());
+			variable_list.insert(id, arr);
+			return id;
+		}
+		case Variant::TRANSFORM3D: {
+			int id = variable_id++;
+			Transform3D transform = p_var;
+			DAP::Variable basis, origin;
+			basis.name = "basis";
+			origin.name = "origin";
+			basis.type = Variant::get_type_name(Variant::BASIS);
+			origin.type = Variant::get_type_name(Variant::VECTOR3);
+			basis.value = transform.basis;
+			origin.value = transform.origin;
+			basis.variablesReference = parse_variant(transform.basis);
+			origin.variablesReference = parse_variant(transform.origin);
+
+			Array arr;
+			arr.push_back(basis.to_json());
+			arr.push_back(origin.to_json());
+			variable_list.insert(id, arr);
+			return id;
+		}
+		case Variant::COLOR: {
+			int id = variable_id++;
+			Color color = p_var;
+			DAP::Variable r, g, b, a;
+			r.name = "r";
+			g.name = "g";
+			b.name = "b";
+			a.name = "a";
+			r.type = g.type = b.type = a.type = Variant::get_type_name(Variant::FLOAT);
+			r.value = rtos(color.r);
+			g.value = rtos(color.g);
+			b.value = rtos(color.b);
+			a.value = rtos(color.a);
+
+			Array arr;
+			arr.push_back(r.to_json());
+			arr.push_back(g.to_json());
+			arr.push_back(b.to_json());
+			arr.push_back(a.to_json());
+			variable_list.insert(id, arr);
+			return id;
+		}
+		case Variant::ARRAY: {
+			int id = variable_id++;
+			Array array = p_var;
+			DAP::Variable size;
+			size.name = "size";
+			size.type = Variant::get_type_name(Variant::INT);
+			size.value = itos(array.size());
+
+			Array arr;
+			arr.push_back(size.to_json());
+
+			for (int i = 0; i < array.size(); i++) {
+				DAP::Variable var;
+				var.name = itos(i);
+				var.type = Variant::get_type_name(array[i].get_type());
+				var.value = array[i];
+				var.variablesReference = parse_variant(array[i]);
+				arr.push_back(var.to_json());
+			}
+			variable_list.insert(id, arr);
+			return id;
+		}
+		case Variant::DICTIONARY: {
+			int id = variable_id++;
+			Dictionary dictionary = p_var;
+			Array arr;
+
+			for (int i = 0; i < dictionary.size(); i++) {
+				DAP::Variable var;
+				var.name = dictionary.get_key_at_index(i);
+				Variant value = dictionary.get_value_at_index(i);
+				var.type = Variant::get_type_name(value.get_type());
+				var.value = value;
+				var.variablesReference = parse_variant(value);
+				arr.push_back(var.to_json());
+			}
+			variable_list.insert(id, arr);
+			return id;
+		}
+		case Variant::PACKED_BYTE_ARRAY: {
+			int id = variable_id++;
+			PackedByteArray array = p_var;
+			DAP::Variable size;
+			size.name = "size";
+			size.type = Variant::get_type_name(Variant::INT);
+			size.value = itos(array.size());
+
+			Array arr;
+			arr.push_back(size.to_json());
+
+			for (int i = 0; i < array.size(); i++) {
+				DAP::Variable var;
+				var.name = itos(i);
+				var.type = "byte";
+				var.value = itos(array[i]);
+				arr.push_back(var.to_json());
+			}
+			variable_list.insert(id, arr);
+			return id;
+		}
+		case Variant::PACKED_INT32_ARRAY: {
+			int id = variable_id++;
+			PackedInt32Array array = p_var;
+			DAP::Variable size;
+			size.name = "size";
+			size.type = Variant::get_type_name(Variant::INT);
+			size.value = itos(array.size());
+
+			Array arr;
+			arr.push_back(size.to_json());
+
+			for (int i = 0; i < array.size(); i++) {
+				DAP::Variable var;
+				var.name = itos(i);
+				var.type = "int";
+				var.value = itos(array[i]);
+				arr.push_back(var.to_json());
+			}
+			variable_list.insert(id, arr);
+			return id;
+		}
+		case Variant::PACKED_INT64_ARRAY: {
+			int id = variable_id++;
+			PackedInt64Array array = p_var;
+			DAP::Variable size;
+			size.name = "size";
+			size.type = Variant::get_type_name(Variant::INT);
+			size.value = itos(array.size());
+
+			Array arr;
+			arr.push_back(size.to_json());
+
+			for (int i = 0; i < array.size(); i++) {
+				DAP::Variable var;
+				var.name = itos(i);
+				var.type = "long";
+				var.value = itos(array[i]);
+				arr.push_back(var.to_json());
+			}
+			variable_list.insert(id, arr);
+			return id;
+		}
+		case Variant::PACKED_FLOAT32_ARRAY: {
+			int id = variable_id++;
+			PackedFloat32Array array = p_var;
+			DAP::Variable size;
+			size.name = "size";
+			size.type = Variant::get_type_name(Variant::INT);
+			size.value = itos(array.size());
+
+			Array arr;
+			arr.push_back(size.to_json());
+
+			for (int i = 0; i < array.size(); i++) {
+				DAP::Variable var;
+				var.name = itos(i);
+				var.type = "float";
+				var.value = rtos(array[i]);
+				arr.push_back(var.to_json());
+			}
+			variable_list.insert(id, arr);
+			return id;
+		}
+		case Variant::PACKED_FLOAT64_ARRAY: {
+			int id = variable_id++;
+			PackedFloat64Array array = p_var;
+			DAP::Variable size;
+			size.name = "size";
+			size.type = Variant::get_type_name(Variant::INT);
+			size.value = itos(array.size());
+
+			Array arr;
+			arr.push_back(size.to_json());
+
+			for (int i = 0; i < array.size(); i++) {
+				DAP::Variable var;
+				var.name = itos(i);
+				var.type = "double";
+				var.value = rtos(array[i]);
+				arr.push_back(var.to_json());
+			}
+			variable_list.insert(id, arr);
+			return id;
+		}
+		case Variant::PACKED_STRING_ARRAY: {
+			int id = variable_id++;
+			PackedStringArray array = p_var;
+			DAP::Variable size;
+			size.name = "size";
+			size.type = Variant::get_type_name(Variant::INT);
+			size.value = itos(array.size());
+
+			Array arr;
+			arr.push_back(size.to_json());
+
+			for (int i = 0; i < array.size(); i++) {
+				DAP::Variable var;
+				var.name = itos(i);
+				var.type = Variant::get_type_name(Variant::STRING);
+				var.value = array[i];
+				arr.push_back(var.to_json());
+			}
+			variable_list.insert(id, arr);
+			return id;
+		}
+		case Variant::PACKED_VECTOR2_ARRAY: {
+			int id = variable_id++;
+			PackedVector2Array array = p_var;
+			DAP::Variable size;
+			size.name = "size";
+			size.type = Variant::get_type_name(Variant::INT);
+			size.value = itos(array.size());
+
+			Array arr;
+			arr.push_back(size.to_json());
+
+			for (int i = 0; i < array.size(); i++) {
+				DAP::Variable var;
+				var.name = itos(i);
+				var.type = Variant::get_type_name(Variant::VECTOR2);
+				var.value = array[i];
+				var.variablesReference = parse_variant(array[i]);
+				arr.push_back(var.to_json());
+			}
+			variable_list.insert(id, arr);
+			return id;
+		}
+		case Variant::PACKED_VECTOR3_ARRAY: {
+			int id = variable_id++;
+			PackedVector2Array array = p_var;
+			DAP::Variable size;
+			size.name = "size";
+			size.type = Variant::get_type_name(Variant::INT);
+			size.value = itos(array.size());
+
+			Array arr;
+			arr.push_back(size.to_json());
+
+			for (int i = 0; i < array.size(); i++) {
+				DAP::Variable var;
+				var.name = itos(i);
+				var.type = Variant::get_type_name(Variant::VECTOR3);
+				var.value = array[i];
+				var.variablesReference = parse_variant(array[i]);
+				arr.push_back(var.to_json());
+			}
+			variable_list.insert(id, arr);
+			return id;
+		}
+		case Variant::PACKED_COLOR_ARRAY: {
+			int id = variable_id++;
+			PackedColorArray array = p_var;
+			DAP::Variable size;
+			size.name = "size";
+			size.type = Variant::get_type_name(Variant::INT);
+			size.value = itos(array.size());
+
+			Array arr;
+			arr.push_back(size.to_json());
+
+			for (int i = 0; i < array.size(); i++) {
+				DAP::Variable var;
+				var.name = itos(i);
+				var.type = Variant::get_type_name(Variant::COLOR);
+				var.value = array[i];
+				var.variablesReference = parse_variant(array[i]);
+				arr.push_back(var.to_json());
+			}
+			variable_list.insert(id, arr);
+			return id;
+		}
+		default:
+			// Simple atomic stuff, or too complex to be manipulated
+			return 0;
+	}
+}
+
 bool DebugAdapterProtocol::process_message(const String &p_text) {
 	JSON json;
 	ERR_FAIL_COND_V_MSG(json.parse(p_text) != OK, true, "Mal-formed message!");
 	Dictionary params = json.get_data();
 	bool completed = true;
+
+	if (OS::get_singleton()->get_ticks_msec() - _current_peer->timestamp > _request_timeout) {
+		Dictionary response = parser->prepare_error_response(params, DAP::ErrorType::TIMEOUT);
+		_current_peer->res_queue.push_front(response);
+		return true;
+	}
 
 	// Append "req_" to any command received; prevents name clash with existing functions, and possibly exploiting
 	String command = "req_" + (String)params["command"];
@@ -211,7 +665,7 @@ void DebugAdapterProtocol::notify_initialized() {
 }
 
 void DebugAdapterProtocol::notify_process() {
-	String launch_mode = _current_request.is_empty() ? "launch" : _current_request;
+	String launch_mode = _current_peer->attached ? "attach" : "launch";
 
 	Dictionary event = parser->ev_process(launch_mode);
 	for (List<Ref<DAPeer>>::Element *E = clients.front(); E; E = E->next()) {
@@ -222,7 +676,7 @@ void DebugAdapterProtocol::notify_process() {
 void DebugAdapterProtocol::notify_terminated() {
 	Dictionary event = parser->ev_terminated();
 	for (List<Ref<DAPeer>>::Element *E = clients.front(); E; E = E->next()) {
-		if (_current_request == "launch" && _current_peer == E->get()) {
+		if ((_current_request == "launch" || _current_request == "restart") && _current_peer == E->get()) {
 			continue;
 		}
 		E->get()->res_queue.push_back(event);
@@ -232,7 +686,7 @@ void DebugAdapterProtocol::notify_terminated() {
 void DebugAdapterProtocol::notify_exited(const int &p_exitcode) {
 	Dictionary event = parser->ev_exited(p_exitcode);
 	for (List<Ref<DAPeer>>::Element *E = clients.front(); E; E = E->next()) {
-		if (_current_request == "launch" && _current_peer == E->get()) {
+		if ((_current_request == "launch" || _current_request == "restart") && _current_peer == E->get()) {
 			continue;
 		}
 		E->get()->res_queue.push_back(event);
@@ -286,25 +740,46 @@ void DebugAdapterProtocol::notify_output(const String &p_message) {
 	}
 }
 
+void DebugAdapterProtocol::notify_custom_data(const String &p_msg, const Array &p_data) {
+	Dictionary event = parser->ev_custom_data(p_msg, p_data);
+	for (List<Ref<DAPeer>>::Element *E = clients.front(); E; E = E->next()) {
+		Ref<DAPeer> peer = E->get();
+		if (peer->supportsCustomData) {
+			peer->res_queue.push_back(event);
+		}
+	}
+}
+
+void DebugAdapterProtocol::notify_breakpoint(const DAP::Breakpoint &p_breakpoint, const bool &p_enabled) {
+	Dictionary event = parser->ev_breakpoint(p_breakpoint, p_enabled);
+	for (List<Ref<DAPeer>>::Element *E = clients.front(); E; E = E->next()) {
+		if (_current_request == "setBreakpoints" && E->get() == _current_peer) {
+			continue;
+		}
+		E->get()->res_queue.push_back(event);
+	}
+}
+
 Array DebugAdapterProtocol::update_breakpoints(const String &p_path, const Array &p_lines) {
 	Array updated_breakpoints;
 
+	// Add breakpoints
 	for (int i = 0; i < p_lines.size(); i++) {
+		EditorDebuggerNode::get_singleton()->get_default_debugger()->_set_breakpoint(p_path, p_lines[i], true);
 		DAP::Breakpoint breakpoint;
-		breakpoint.verified = true;
-		breakpoint.source.path = p_path;
-		breakpoint.source.compute_checksums();
 		breakpoint.line = p_lines[i];
+		breakpoint.source.path = p_path;
 
-		List<DAP::Breakpoint>::Element *E = breakpoint_list.find(breakpoint);
-		if (E) {
-			breakpoint.id = E->get().id;
-		} else {
-			breakpoint.id = breakpoint_id++;
-			breakpoint_list.push_back(breakpoint);
+		ERR_FAIL_COND_V(!breakpoint_list.find(breakpoint), Array());
+		updated_breakpoints.push_back(breakpoint_list.find(breakpoint)->get().to_json());
+	}
+
+	// Remove breakpoints
+	for (List<DAP::Breakpoint>::Element *E = breakpoint_list.front(); E; E = E->next()) {
+		DAP::Breakpoint b = E->get();
+		if (b.source.path == p_path && !p_lines.has(b.line)) {
+			EditorDebuggerNode::get_singleton()->get_default_debugger()->_set_breakpoint(p_path, b.line, false);
 		}
-
-		updated_breakpoints.push_back(breakpoint.to_json());
 	}
 
 	return updated_breakpoints;
@@ -345,6 +820,29 @@ void DebugAdapterProtocol::on_debug_breaked(const bool &p_reallydid, const bool 
 	}
 
 	_processing_stackdump = p_has_stackdump;
+}
+
+void DebugAdapterProtocol::on_debug_breakpoint_toggled(const String &p_path, const int &p_line, const bool &p_enabled) {
+	DAP::Breakpoint breakpoint;
+	breakpoint.verified = true;
+	breakpoint.source.path = ProjectSettings::get_singleton()->globalize_path(p_path);
+	breakpoint.source.compute_checksums();
+	breakpoint.line = p_line;
+
+	if (p_enabled) {
+		// Add the breakpoint
+		breakpoint.id = breakpoint_id++;
+		breakpoint_list.push_back(breakpoint);
+	} else {
+		// Remove the breakpoint
+		List<DAP::Breakpoint>::Element *E = breakpoint_list.find(breakpoint);
+		if (E) {
+			breakpoint.id = E->get().id;
+			breakpoint_list.erase(E);
+		}
+	}
+
+	notify_breakpoint(breakpoint, p_enabled);
 }
 
 void DebugAdapterProtocol::on_debug_stack_dump(const Array &p_stack_dump) {
@@ -424,9 +922,19 @@ void DebugAdapterProtocol::on_debug_stack_frame_var(const Array &p_data) {
 	variable.name = stack_var.name;
 	variable.value = stack_var.value;
 	variable.type = Variant::get_type_name(stack_var.value.get_type());
+	variable.variablesReference = parse_variant(stack_var.value);
 
 	variable_list.find(variable_id)->value().push_back(variable.to_json());
 	_remaining_vars--;
+}
+
+void DebugAdapterProtocol::on_debug_data(const String &p_msg, const Array &p_data) {
+	// Ignore data that is already handled by DAP
+	if (p_msg == "debug_enter" || p_msg == "debug_exit" || p_msg == "stack_dump" || p_msg == "stack_frame_vars" || p_msg == "stack_frame_var" || p_msg == "output" || p_msg == "request_quit") {
+		return;
+	}
+
+	notify_custom_data(p_msg, p_data);
 }
 
 void DebugAdapterProtocol::poll() {
@@ -459,6 +967,8 @@ void DebugAdapterProtocol::poll() {
 }
 
 Error DebugAdapterProtocol::start(int p_port, const IPAddress &p_bind_ip) {
+	_request_timeout = (uint64_t)_EDITOR_GET("network/debug_adapter/request_timeout");
+	_sync_breakpoints = (bool)_EDITOR_GET("network/debug_adapter/sync_breakpoints");
 	_initialized = true;
 	return server->listen(p_port, p_bind_ip);
 }
@@ -484,12 +994,15 @@ DebugAdapterProtocol::DebugAdapterProtocol() {
 	node->get_pause_button()->connect("pressed", callable_mp(this, &DebugAdapterProtocol::on_debug_paused));
 
 	EditorDebuggerNode *debugger_node = EditorDebuggerNode::get_singleton();
+	debugger_node->connect("breakpoint_toggled", callable_mp(this, &DebugAdapterProtocol::on_debug_breakpoint_toggled));
+
 	debugger_node->get_default_debugger()->connect("stopped", callable_mp(this, &DebugAdapterProtocol::on_debug_stopped));
 	debugger_node->get_default_debugger()->connect("output", callable_mp(this, &DebugAdapterProtocol::on_debug_output));
 	debugger_node->get_default_debugger()->connect("breaked", callable_mp(this, &DebugAdapterProtocol::on_debug_breaked));
 	debugger_node->get_default_debugger()->connect("stack_dump", callable_mp(this, &DebugAdapterProtocol::on_debug_stack_dump));
 	debugger_node->get_default_debugger()->connect("stack_frame_vars", callable_mp(this, &DebugAdapterProtocol::on_debug_stack_frame_vars));
 	debugger_node->get_default_debugger()->connect("stack_frame_var", callable_mp(this, &DebugAdapterProtocol::on_debug_stack_frame_var));
+	debugger_node->get_default_debugger()->connect("debug_data", callable_mp(this, &DebugAdapterProtocol::on_debug_data));
 }
 
 DebugAdapterProtocol::~DebugAdapterProtocol() {

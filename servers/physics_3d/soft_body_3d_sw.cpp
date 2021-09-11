@@ -38,7 +38,7 @@
 
 /*
 Bullet Continuous Collision Detection and Physics Library
-Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+Copyright (c) 2003-2006 Erwin Coumans  https://bulletphysics.org
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
@@ -165,7 +165,7 @@ void SoftBody3DSW::update_rendering_server(RenderingServerHandler *p_rendering_s
 	p_rendering_server_handler->set_aabb(bounds);
 }
 
-void SoftBody3DSW::update_normals() {
+void SoftBody3DSW::update_normals_and_centroids() {
 	uint32_t i, ni;
 
 	for (i = 0, ni = nodes.size(); i < ni; ++i) {
@@ -180,6 +180,7 @@ void SoftBody3DSW::update_normals() {
 		face.n[2]->n += n;
 		face.normal = n;
 		face.normal.normalize();
+		face.centroid = 0.33333333333 * (face.n[0]->x + face.n[1]->x + face.n[2]->x);
 	}
 
 	for (i = 0, ni = nodes.size(); i < ni; ++i) {
@@ -310,7 +311,7 @@ void SoftBody3DSW::apply_nodes_transform(const Transform3D &p_transform) {
 
 	face_tree.clear();
 
-	update_normals();
+	update_normals_and_centroids();
 	update_bounds();
 	update_constants();
 }
@@ -574,7 +575,7 @@ bool SoftBody3DSW::create_from_trimesh(const Vector<int> &p_indices, const Vecto
 	reoptimize_link_order();
 
 	update_constants();
-	update_normals();
+	update_normals_and_centroids();
 	update_bounds();
 
 	return true;
@@ -898,34 +899,86 @@ void SoftBody3DSW::add_velocity(const Vector3 &p_velocity) {
 	}
 }
 
-void SoftBody3DSW::apply_forces() {
-	if (pressure_coefficient < CMP_EPSILON) {
-		return;
-	}
+void SoftBody3DSW::apply_forces(bool p_has_wind_forces) {
+	int ac = areas.size();
 
 	if (nodes.is_empty()) {
 		return;
 	}
 
 	uint32_t i, ni;
+	int32_t j;
 
-	// Calculate volume.
 	real_t volume = 0.0;
 	const Vector3 &org = nodes[0].x;
+
+	// Iterate over faces (try not to iterate elsewhere if possible).
 	for (i = 0, ni = faces.size(); i < ni; ++i) {
+		bool stopped = false;
 		const Face &face = faces[i];
+
+		Vector3 wind_force(0, 0, 0);
+
+		// Compute volume.
 		volume += vec3_dot(face.n[0]->x - org, vec3_cross(face.n[1]->x - org, face.n[2]->x - org));
+
+		// Compute nodal forces from area winds.
+		if (ac && p_has_wind_forces) {
+			const AreaCMP *aa = &areas[0];
+			for (j = ac - 1; j >= 0 && !stopped; j--) {
+				PhysicsServer3D::AreaSpaceOverrideMode mode = aa[j].area->get_space_override_mode();
+				switch (mode) {
+					case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE:
+					case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
+						wind_force += _compute_area_windforce(aa[j].area, &face);
+						stopped = mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE;
+					} break;
+					case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE:
+					case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
+						wind_force = _compute_area_windforce(aa[j].area, &face);
+						stopped = mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE;
+					} break;
+					default: {
+					}
+				}
+			}
+
+			for (j = 0; j < 3; j++) {
+				Node *current_node = face.n[j];
+				current_node->f += wind_force;
+			}
+		}
 	}
 	volume /= 6.0;
 
-	// Apply per node forces.
-	real_t ivolumetp = 1.0 / Math::abs(volume) * pressure_coefficient;
-	for (i = 0, ni = nodes.size(); i < ni; ++i) {
-		Node &node = nodes[i];
-		if (node.im > 0) {
-			node.f += node.n * (node.area * ivolumetp);
+	// Apply nodal pressure forces.
+	if (pressure_coefficient > CMP_EPSILON) {
+		real_t ivolumetp = 1.0 / Math::abs(volume) * pressure_coefficient;
+		for (i = 0, ni = nodes.size(); i < ni; ++i) {
+			Node &node = nodes[i];
+			if (node.im > 0) {
+				node.f += node.n * (node.area * ivolumetp);
+			}
 		}
 	}
+}
+
+void SoftBody3DSW::_compute_area_gravity(const Area3DSW *p_area) {
+	Vector3 area_gravity;
+	p_area->compute_gravity(get_transform().get_origin(), area_gravity);
+	gravity += area_gravity;
+}
+
+Vector3 SoftBody3DSW::_compute_area_windforce(const Area3DSW *p_area, const Face *p_face) {
+	real_t wfm = p_area->get_wind_force_magnitude();
+	real_t waf = p_area->get_wind_attenuation_factor();
+	const Vector3 &wd = p_area->get_wind_direction();
+	const Vector3 &ws = p_area->get_wind_source();
+	real_t projection_on_tri_normal = vec3_dot(p_face->normal, wd);
+	real_t projection_toward_centroid = vec3_dot(p_face->centroid - ws, wd);
+	real_t attenuation_over_distance = pow(projection_toward_centroid, -waf);
+	real_t nodal_force_magnitude = wfm * 0.33333333333 * p_face->ra * projection_on_tri_normal * attenuation_over_distance;
+	return nodal_force_magnitude * p_face->normal;
 }
 
 void SoftBody3DSW::predict_motion(real_t p_delta) {
@@ -935,11 +988,43 @@ void SoftBody3DSW::predict_motion(real_t p_delta) {
 
 	Area3DSW *def_area = get_space()->get_default_area();
 	ERR_FAIL_COND(!def_area);
+	gravity = def_area->get_gravity_vector() * def_area->get_gravity();
+
+	int ac = areas.size();
+	bool stopped = false;
+	bool has_wind_forces = false;
+
+	if (ac) {
+		areas.sort();
+		const AreaCMP *aa = &areas[0];
+		for (int i = ac - 1; i >= 0 && !stopped; i--) {
+			// Avoids unnecessary loop in apply_forces().
+			has_wind_forces = has_wind_forces || aa[i].area->get_wind_force_magnitude() > CMP_EPSILON;
+
+			PhysicsServer3D::AreaSpaceOverrideMode mode = aa[i].area->get_space_override_mode();
+			switch (mode) {
+				case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE:
+				case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
+					_compute_area_gravity(aa[i].area);
+					stopped = mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE;
+				} break;
+				case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE:
+				case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
+					gravity = Vector3(0, 0, 0);
+					_compute_area_gravity(aa[i].area);
+					stopped = mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE;
+				} break;
+				default: {
+				}
+			}
+		}
+	}
 
 	// Apply forces.
-	Vector3 gravity = def_area->get_gravity_vector() * def_area->get_gravity();
 	add_velocity(gravity * p_delta);
-	apply_forces();
+	if (pressure_coefficient > CMP_EPSILON || has_wind_forces) {
+		apply_forces(has_wind_forces);
+	}
 
 	// Avoid soft body from 'exploding' so use some upper threshold of maximum motion
 	// that a node can travel per frame.
@@ -1018,7 +1103,7 @@ void SoftBody3DSW::solve_constraints(real_t p_delta) {
 		node.q = node.x;
 	}
 
-	update_normals();
+	update_normals_and_centroids();
 }
 
 void SoftBody3DSW::solve_links(real_t kst, real_t ti) {

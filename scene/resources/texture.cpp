@@ -1758,11 +1758,16 @@ void GradientTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_gradient"), &GradientTexture::get_gradient);
 
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &GradientTexture::set_width);
+	// The `get_width()` method is already exposed by the parent class Texture2D.
+
+	ClassDB::bind_method(D_METHOD("set_use_hdr", "enabled"), &GradientTexture::set_use_hdr);
+	ClassDB::bind_method(D_METHOD("is_using_hdr"), &GradientTexture::is_using_hdr);
 
 	ClassDB::bind_method(D_METHOD("_update"), &GradientTexture::_update);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gradient", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_gradient", "get_gradient");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,4096"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hdr"), "set_use_hdr", "is_using_hdr");
 }
 
 void GradientTexture::set_gradient(Ref<Gradient> p_gradient) {
@@ -1800,30 +1805,49 @@ void GradientTexture::_update() {
 		return;
 	}
 
-	Vector<uint8_t> data;
-	data.resize(width * 4);
-	{
-		uint8_t *wd8 = data.ptrw();
+	if (use_hdr) {
+		// High dynamic range.
+		Ref<Image> image = memnew(Image(width, 1, false, Image::FORMAT_RGBAF));
 		Gradient &g = **gradient;
-
+		// `create()` isn't available for non-uint8_t data, so fill in the data manually.
 		for (int i = 0; i < width; i++) {
 			float ofs = float(i) / (width - 1);
-			Color color = g.get_color_at_offset(ofs);
-
-			wd8[i * 4 + 0] = uint8_t(CLAMP(color.r * 255.0, 0, 255));
-			wd8[i * 4 + 1] = uint8_t(CLAMP(color.g * 255.0, 0, 255));
-			wd8[i * 4 + 2] = uint8_t(CLAMP(color.b * 255.0, 0, 255));
-			wd8[i * 4 + 3] = uint8_t(CLAMP(color.a * 255.0, 0, 255));
+			image->set_pixel(i, 0, g.get_color_at_offset(ofs));
 		}
-	}
 
-	Ref<Image> image = memnew(Image(width, 1, false, Image::FORMAT_RGBA8, data));
-
-	if (texture.is_valid()) {
-		RID new_texture = RS::get_singleton()->texture_2d_create(image);
-		RS::get_singleton()->texture_replace(texture, new_texture);
+		if (texture.is_valid()) {
+			RID new_texture = RS::get_singleton()->texture_2d_create(image);
+			RS::get_singleton()->texture_replace(texture, new_texture);
+		} else {
+			texture = RS::get_singleton()->texture_2d_create(image);
+		}
 	} else {
-		texture = RS::get_singleton()->texture_2d_create(image);
+		// Low dynamic range. "Overbright" colors will be clamped.
+		Vector<uint8_t> data;
+		data.resize(width * 4);
+		{
+			uint8_t *wd8 = data.ptrw();
+			Gradient &g = **gradient;
+
+			for (int i = 0; i < width; i++) {
+				float ofs = float(i) / (width - 1);
+				Color color = g.get_color_at_offset(ofs);
+
+				wd8[i * 4 + 0] = uint8_t(CLAMP(color.r * 255.0, 0, 255));
+				wd8[i * 4 + 1] = uint8_t(CLAMP(color.g * 255.0, 0, 255));
+				wd8[i * 4 + 2] = uint8_t(CLAMP(color.b * 255.0, 0, 255));
+				wd8[i * 4 + 3] = uint8_t(CLAMP(color.a * 255.0, 0, 255));
+			}
+		}
+
+		Ref<Image> image = memnew(Image(width, 1, false, Image::FORMAT_RGBA8, data));
+
+		if (texture.is_valid()) {
+			RID new_texture = RS::get_singleton()->texture_2d_create(image);
+			RS::get_singleton()->texture_replace(texture, new_texture);
+		} else {
+			texture = RS::get_singleton()->texture_2d_create(image);
+		}
 	}
 
 	emit_changed();
@@ -1837,6 +1861,19 @@ void GradientTexture::set_width(int p_width) {
 
 int GradientTexture::get_width() const {
 	return width;
+}
+
+void GradientTexture::set_use_hdr(bool p_enabled) {
+	if (p_enabled == use_hdr) {
+		return;
+	}
+
+	use_hdr = p_enabled;
+	_queue_update();
+}
+
+bool GradientTexture::is_using_hdr() const {
+	return use_hdr;
 }
 
 Ref<Image> GradientTexture::get_image() const {
@@ -2587,7 +2624,10 @@ RID CameraTexture::get_rid() const {
 	if (feed.is_valid()) {
 		return feed->get_texture(which_feed);
 	} else {
-		return RID();
+		if (_texture.is_null()) {
+			_texture = RenderingServer::get_singleton()->texture_2d_placeholder_create();
+		}
+		return _texture;
 	}
 }
 
@@ -2643,5 +2683,7 @@ bool CameraTexture::get_camera_active() const {
 CameraTexture::CameraTexture() {}
 
 CameraTexture::~CameraTexture() {
-	// nothing to do here yet
+	if (_texture.is_valid()) {
+		RenderingServer::get_singleton()->free(_texture);
+	}
 }

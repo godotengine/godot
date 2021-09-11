@@ -381,6 +381,18 @@ Quaternion Basis::get_rotation_quaternion() const {
 	return m.get_quaternion();
 }
 
+void Basis::rotate_to_align(Vector3 p_start_direction, Vector3 p_end_direction) {
+	// Takes two vectors and rotates the basis from the first vector to the second vector.
+	// Adopted from: https://gist.github.com/kevinmoran/b45980723e53edeb8a5a43c49f134724
+	const Vector3 axis = p_start_direction.cross(p_end_direction).normalized();
+	if (axis.length_squared() != 0) {
+		real_t dot = p_start_direction.dot(p_end_direction);
+		dot = CLAMP(dot, -1.0, 1.0);
+		const real_t angle_rads = Math::acos(dot);
+		set_axis_angle(axis, angle_rads);
+	}
+}
+
 void Basis::get_rotation_axis_angle(Vector3 &p_axis, real_t &p_angle) const {
 	// Assumes that the matrix can be decomposed into a proper rotation and scaling matrix as M = R.S,
 	// and returns the Euler angles corresponding to the rotation part, complementing get_scale().
@@ -763,7 +775,7 @@ Basis::operator String() const {
 
 Quaternion Basis::get_quaternion() const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!is_rotation(), Quaternion(), "Basis must be normalized in order to be casted to a Quaternion. Use get_rotation_quaternion() or call orthonormalized() instead.");
+	ERR_FAIL_COND_V_MSG(!is_rotation(), Quaternion(), "Basis must be normalized in order to be casted to a Quaternion. Use get_rotation_quaternion() or call orthonormalized() if the Basis contains linearly independent vectors.");
 #endif
 	/* Allow getting a quaternion from an unnormalized transform */
 	Basis m = *this;
@@ -1128,4 +1140,22 @@ void Basis::rotate_sh(real_t *p_values) {
 	p_values[6] = d2 * s_scale_dst2;
 	p_values[7] = -d3;
 	p_values[8] = d4 * s_scale_dst4;
+}
+
+Basis Basis::looking_at(const Vector3 &p_target, const Vector3 &p_up) {
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V_MSG(p_target.is_equal_approx(Vector3()), Basis(), "The target vector can't be zero.");
+	ERR_FAIL_COND_V_MSG(p_up.is_equal_approx(Vector3()), Basis(), "The up vector can't be zero.");
+#endif
+	Vector3 v_z = -p_target.normalized();
+	Vector3 v_x = p_up.cross(v_z);
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V_MSG(v_x.is_equal_approx(Vector3()), Basis(), "The target vector and up vector can't be parallel to each other.");
+#endif
+	v_x.normalize();
+	Vector3 v_y = v_z.cross(v_x);
+
+	Basis basis;
+	basis.set(v_x, v_y, v_z);
+	return basis;
 }

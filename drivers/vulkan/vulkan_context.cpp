@@ -681,6 +681,10 @@ Error VulkanContext::_create_physical_device() {
 
 	inst_initialized = true;
 
+#ifdef USE_VOLK
+	volkLoadInstance(inst);
+#endif
+
 	/* Make initial call to query gpu_count, then second call for gpu info*/
 	err = vkEnumeratePhysicalDevices(inst, &gpu_count, nullptr);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
@@ -972,37 +976,35 @@ Error VulkanContext::_create_device() {
 		sdevice.queueCreateInfoCount = 2;
 	}
 
-#ifdef VK_VERSION_1_2
 	VkPhysicalDeviceVulkan11Features vulkan11features;
-
-	vulkan11features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
-	vulkan11features.pNext = nullptr;
-	// !BAS! Need to figure out which ones of these we want enabled...
-	vulkan11features.storageBuffer16BitAccess = 0;
-	vulkan11features.uniformAndStorageBuffer16BitAccess = 0;
-	vulkan11features.storagePushConstant16 = 0;
-	vulkan11features.storageInputOutput16 = 0;
-	vulkan11features.multiview = multiview_capabilities.is_supported;
-	vulkan11features.multiviewGeometryShader = multiview_capabilities.geometry_shader_is_supported;
-	vulkan11features.multiviewTessellationShader = multiview_capabilities.tessellation_shader_is_supported;
-	vulkan11features.variablePointersStorageBuffer = 0;
-	vulkan11features.variablePointers = 0;
-	vulkan11features.protectedMemory = 0;
-	vulkan11features.samplerYcbcrConversion = 0;
-	vulkan11features.shaderDrawParameters = 0;
-
-	sdevice.pNext = &vulkan11features;
-#elif VK_VERSION_1_1
 	VkPhysicalDeviceMultiviewFeatures multiview_features;
+	if (vulkan_major > 1 || vulkan_minor >= 2) {
+		vulkan11features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+		vulkan11features.pNext = nullptr;
+		// !BAS! Need to figure out which ones of these we want enabled...
+		vulkan11features.storageBuffer16BitAccess = 0;
+		vulkan11features.uniformAndStorageBuffer16BitAccess = 0;
+		vulkan11features.storagePushConstant16 = 0;
+		vulkan11features.storageInputOutput16 = 0;
+		vulkan11features.multiview = multiview_capabilities.is_supported;
+		vulkan11features.multiviewGeometryShader = multiview_capabilities.geometry_shader_is_supported;
+		vulkan11features.multiviewTessellationShader = multiview_capabilities.tessellation_shader_is_supported;
+		vulkan11features.variablePointersStorageBuffer = 0;
+		vulkan11features.variablePointers = 0;
+		vulkan11features.protectedMemory = 0;
+		vulkan11features.samplerYcbcrConversion = 0;
+		vulkan11features.shaderDrawParameters = 0;
 
-	multiview_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
-	multiview_features.pNext = nullptr;
-	multiview_features.multiview = multiview_capabilities.is_supported;
-	multiview_features.multiviewGeometryShader = multiview_capabilities.geometry_shader_is_supported;
-	multiview_features.multiviewTessellationShader = multiview_capabilities.tessellation_shader_is_supported;
+		sdevice.pNext = &vulkan11features;
+	} else if (vulkan_major == 1 && vulkan_minor == 1) {
+		multiview_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
+		multiview_features.pNext = nullptr;
+		multiview_features.multiview = multiview_capabilities.is_supported;
+		multiview_features.multiviewGeometryShader = multiview_capabilities.geometry_shader_is_supported;
+		multiview_features.multiviewTessellationShader = multiview_capabilities.tessellation_shader_is_supported;
 
-	sdevice.pNext = &multiview_features;
-#endif
+		sdevice.pNext = &multiview_features;
+	}
 
 	err = vkCreateDevice(gpu, &sdevice, nullptr, &device);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
@@ -1669,6 +1671,11 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 }
 
 Error VulkanContext::initialize() {
+#ifdef USE_VOLK
+	if (volkInitialize() != VK_SUCCESS) {
+		return FAILED;
+	}
+#endif
 	Error err = _create_physical_device();
 	if (err) {
 		return err;
@@ -2021,7 +2028,11 @@ int VulkanContext::get_swapchain_image_count() const {
 	return swapchainImageCount;
 }
 
-uint32_t VulkanContext::get_graphics_queue() const {
+VkQueue VulkanContext::get_graphics_queue() const {
+	return graphics_queue;
+}
+
+uint32_t VulkanContext::get_graphics_queue_family_index() const {
 	return graphics_queue_family_index;
 }
 

@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Camera node for 2D scenes. It forces the screen (current layer) to scroll following this node. This makes it easier (and faster) to program scrollable scenes than manually changing the position of [CanvasItem]-based nodes.
+		Cameras register themselves in the nearest [Viewport] node (when ascending the tree). Only one camera can be active per viewport. If no viewport is available ascending the tree, the camera will register in the global viewport.
 		This node is intended to be a simple helper to get things going quickly, but more functionality may be desired to change how the camera works. To make your own custom camera node, inherit it from [Node2D] and change the transform of the canvas by setting [member Viewport.canvas_transform] in [Viewport] (you can obtain the current [Viewport] by using [method Node.get_viewport]).
 		Note that the [Camera2D] node's [code]position[/code] doesn't represent the actual position of the screen, which may differ due to applied smoothing or limits. You can use [method get_camera_screen_center] to get the real position.
 	</description>
@@ -81,7 +82,7 @@
 			The Camera2D's anchor point. See [enum AnchorMode] constants.
 		</member>
 		<member name="current" type="bool" setter="set_current" getter="is_current" default="false">
-			If [code]true[/code], the camera is the active camera for the current scene. Only one camera can be current, so setting a different camera [code]current[/code] will disable this one.
+			If [code]true[/code], the camera acts as the active camera for its [Viewport] ancestor. Only one camera can be current in a given viewport, so setting a different camera in the same viewport [code]current[/code] will disable whatever camera was already active in that viewport.
 		</member>
 		<member name="custom_viewport" type="Node" setter="set_custom_viewport" getter="get_custom_viewport">
 			The custom [Viewport] node attached to the [Camera2D]. If [code]null[/code] or not a [Viewport], uses the default viewport instead.

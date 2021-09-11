@@ -30,6 +30,7 @@
 
 #include "control.h"
 
+#include "container.h"
 #include "core/config/project_settings.h"
 #include "core/math/geometry_2d.h"
 #include "core/object/message_queue.h"
@@ -167,6 +168,20 @@ Size2 Control::_edit_get_minimum_size() const {
 	return get_combined_minimum_size();
 }
 #endif
+
+String Control::properties_managed_by_container[] = {
+	"offset_left",
+	"offset_top",
+	"offset_right",
+	"offset_bottom",
+	"anchor_left",
+	"anchor_top",
+	"anchor_right",
+	"anchor_bottom",
+	"rect_position",
+	"rect_scale",
+	"rect_size"
+};
 
 void Control::accept_event() {
 	if (is_inside_tree()) {
@@ -441,6 +456,20 @@ void Control::_validate_property(PropertyInfo &property) const {
 		}
 
 		property.hint_string = hint_string;
+	}
+	if (!Object::cast_to<Container>(get_parent())) {
+		return;
+	}
+	// Disable the property if it's managed by the parent container.
+	bool property_is_managed_by_container = false;
+	for (unsigned i = 0; i < properties_managed_by_container_count; i++) {
+		property_is_managed_by_container = properties_managed_by_container[i] == property.name;
+		if (property_is_managed_by_container) {
+			break;
+		}
+	}
+	if (property_is_managed_by_container) {
+		property.usage |= PROPERTY_USAGE_READ_ONLY;
 	}
 }
 
@@ -730,14 +759,9 @@ Variant Control::get_drag_data(const Point2 &p_point) {
 		}
 	}
 
-	if (get_script_instance()) {
-		Variant v = p_point;
-		const Variant *p = &v;
-		Callable::CallError ce;
-		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->_get_drag_data, &p, 1, ce);
-		if (ce.error == Callable::CallError::CALL_OK) {
-			return ret;
-		}
+	Variant dd;
+	if (GDVIRTUAL_CALL(_get_drag_data, p_point, dd)) {
+		return dd;
 	}
 
 	return Variant();
@@ -752,16 +776,10 @@ bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const 
 		}
 	}
 
-	if (get_script_instance()) {
-		Variant v = p_point;
-		const Variant *p[2] = { &v, &p_data };
-		Callable::CallError ce;
-		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->_can_drop_data, p, 2, ce);
-		if (ce.error == Callable::CallError::CALL_OK) {
-			return ret;
-		}
+	bool ret;
+	if (GDVIRTUAL_CALL(_can_drop_data, p_point, p_data, ret)) {
+		return ret;
 	}
-
 	return false;
 }
 
@@ -775,15 +793,7 @@ void Control::drop_data(const Point2 &p_point, const Variant &p_data) {
 		}
 	}
 
-	if (get_script_instance()) {
-		Variant v = p_point;
-		const Variant *p[2] = { &v, &p_data };
-		Callable::CallError ce;
-		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->_drop_data, p, 2, ce);
-		if (ce.error == Callable::CallError::CALL_OK) {
-			return;
-		}
-	}
+	GDVIRTUAL_CALL(_drop_data, p_point, p_data);
 }
 
 void Control::force_drag(const Variant &p_data, Control *p_control) {
@@ -799,16 +809,26 @@ void Control::set_drag_preview(Control *p_control) {
 	get_viewport()->_gui_set_drag_preview(this, p_control);
 }
 
-Size2 Control::get_minimum_size() const {
-	ScriptInstance *si = const_cast<Control *>(this)->get_script_instance();
-	if (si) {
-		Callable::CallError ce;
-		Variant s = si->call(SceneStringNames::get_singleton()->_get_minimum_size, nullptr, 0, ce);
-		if (ce.error == Callable::CallError::CALL_OK) {
-			return s;
-		}
+void Control::_call_gui_input(const Ref<InputEvent> &p_event) {
+	emit_signal(SceneStringNames::get_singleton()->gui_input, p_event); //signal should be first, so it's possible to override an event (and then accept it)
+	if (!is_inside_tree() || get_viewport()->is_input_handled()) {
+		return; //input was handled, abort
 	}
-	return Size2();
+	GDVIRTUAL_CALL(_gui_input, p_event);
+	if (!is_inside_tree() || get_viewport()->is_input_handled()) {
+		return; //input was handled, abort
+	}
+	gui_input(p_event);
+}
+void Control::gui_input(const Ref<InputEvent> &p_event) {
+}
+
+Size2 Control::get_minimum_size() const {
+	Vector2 ms;
+	if (GDVIRTUAL_CALL(_get_minimum_size, ms)) {
+		return ms;
+	}
+	return Vector2();
 }
 
 template <class T>
@@ -1686,6 +1706,17 @@ Rect2 Control::get_anchorable_rect() const {
 	return Rect2(Point2(), get_size());
 }
 
+void Control::begin_bulk_theme_override() {
+	data.bulk_theme_override = true;
+}
+
+void Control::end_bulk_theme_override() {
+	ERR_FAIL_COND(!data.bulk_theme_override);
+
+	data.bulk_theme_override = false;
+	_notify_theme_changed();
+}
+
 void Control::add_theme_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon) {
 	ERR_FAIL_COND(!p_icon.is_valid());
 
@@ -1695,7 +1726,7 @@ void Control::add_theme_icon_override(const StringName &p_name, const Ref<Textur
 
 	data.icon_override[p_name] = p_icon;
 	data.icon_override[p_name]->connect("changed", callable_mp(this, &Control::_override_changed), Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
-	notification(NOTIFICATION_THEME_CHANGED);
+	_notify_theme_changed();
 }
 
 void Control::add_theme_style_override(const StringName &p_name, const Ref<StyleBox> &p_style) {
@@ -1707,7 +1738,7 @@ void Control::add_theme_style_override(const StringName &p_name, const Ref<Style
 
 	data.style_override[p_name] = p_style;
 	data.style_override[p_name]->connect("changed", callable_mp(this, &Control::_override_changed), Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
-	notification(NOTIFICATION_THEME_CHANGED);
+	_notify_theme_changed();
 }
 
 void Control::add_theme_font_override(const StringName &p_name, const Ref<Font> &p_font) {
@@ -1719,22 +1750,22 @@ void Control::add_theme_font_override(const StringName &p_name, const Ref<Font> 
 
 	data.font_override[p_name] = p_font;
 	data.font_override[p_name]->connect("changed", callable_mp(this, &Control::_override_changed), Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
-	notification(NOTIFICATION_THEME_CHANGED);
+	_notify_theme_changed();
 }
 
 void Control::add_theme_font_size_override(const StringName &p_name, int p_font_size) {
 	data.font_size_override[p_name] = p_font_size;
-	notification(NOTIFICATION_THEME_CHANGED);
+	_notify_theme_changed();
 }
 
 void Control::add_theme_color_override(const StringName &p_name, const Color &p_color) {
 	data.color_override[p_name] = p_color;
-	notification(NOTIFICATION_THEME_CHANGED);
+	_notify_theme_changed();
 }
 
 void Control::add_theme_constant_override(const StringName &p_name, int p_constant) {
 	data.constant_override[p_name] = p_constant;
-	notification(NOTIFICATION_THEME_CHANGED);
+	_notify_theme_changed();
 }
 
 void Control::remove_theme_icon_override(const StringName &p_name) {
@@ -1743,7 +1774,7 @@ void Control::remove_theme_icon_override(const StringName &p_name) {
 	}
 
 	data.icon_override.erase(p_name);
-	notification(NOTIFICATION_THEME_CHANGED);
+	_notify_theme_changed();
 }
 
 void Control::remove_theme_style_override(const StringName &p_name) {
@@ -1752,7 +1783,7 @@ void Control::remove_theme_style_override(const StringName &p_name) {
 	}
 
 	data.style_override.erase(p_name);
-	notification(NOTIFICATION_THEME_CHANGED);
+	_notify_theme_changed();
 }
 
 void Control::remove_theme_font_override(const StringName &p_name) {
@@ -1761,22 +1792,22 @@ void Control::remove_theme_font_override(const StringName &p_name) {
 	}
 
 	data.font_override.erase(p_name);
-	notification(NOTIFICATION_THEME_CHANGED);
+	_notify_theme_changed();
 }
 
 void Control::remove_theme_font_size_override(const StringName &p_name) {
 	data.font_size_override.erase(p_name);
-	notification(NOTIFICATION_THEME_CHANGED);
+	_notify_theme_changed();
 }
 
 void Control::remove_theme_color_override(const StringName &p_name) {
 	data.color_override.erase(p_name);
-	notification(NOTIFICATION_THEME_CHANGED);
+	_notify_theme_changed();
 }
 
 void Control::remove_theme_constant_override(const StringName &p_name) {
 	data.constant_override.erase(p_name);
-	notification(NOTIFICATION_THEME_CHANGED);
+	_notify_theme_changed();
 }
 
 void Control::set_focus_mode(FocusMode p_focus_mode) {
@@ -2049,6 +2080,12 @@ void Control::_theme_changed() {
 	_propagate_theme_changed(this, this, nullptr, false);
 }
 
+void Control::_notify_theme_changed() {
+	if (!data.bulk_theme_override) {
+		notification(NOTIFICATION_THEME_CHANGED);
+	}
+}
+
 void Control::set_theme(const Ref<Theme> &p_theme) {
 	if (data.theme == p_theme) {
 		return;
@@ -2106,8 +2143,9 @@ String Control::get_tooltip(const Point2 &p_pos) const {
 }
 
 Control *Control::make_custom_tooltip(const String &p_text) const {
-	if (get_script_instance()) {
-		return const_cast<Control *>(this)->call("_make_custom_tooltip", p_text);
+	Object *ret = nullptr;
+	if (GDVIRTUAL_CALL(_make_custom_tooltip, p_text, ret)) {
+		return Object::cast_to<Control>(ret);
 	}
 	return nullptr;
 }
@@ -2482,14 +2520,11 @@ Vector<Vector2i> Control::structured_text_parser(StructuredTextParser p_theme_ty
 			}
 		} break;
 		case STRUCTURED_TEXT_CUSTOM: {
-			if (get_script_instance()) {
-				Variant data = get_script_instance()->call(SceneStringNames::get_singleton()->_structured_text_parser, p_args, p_text);
-				if (data.get_type() == Variant::ARRAY) {
-					Array _data = data;
-					for (int i = 0; i < _data.size(); i++) {
-						if (_data[i].get_type() == Variant::VECTOR2I) {
-							ret.push_back(Vector2i(_data[i]));
-						}
+			Array r;
+			if (GDVIRTUAL_CALL(_structured_text_parser, p_args, p_text, r)) {
+				for (int i = 0; i < r.size(); i++) {
+					if (r[i].get_type() == Variant::VECTOR2I) {
+						ret.push_back(Vector2i(r[i]));
 					}
 				}
 			}
@@ -2585,7 +2620,7 @@ bool Control::is_visibility_clip_disabled() const {
 
 void Control::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 #ifdef TOOLS_ENABLED
-	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", 0) ? "'" : "\"";
+	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 #else
 	const String quote_style = "\"";
 #endif
@@ -2608,8 +2643,8 @@ void Control::get_argument_options(const StringName &p_function, int p_idx, List
 		}
 
 		sn.sort_custom<StringName::AlphCompare>();
-		for (const StringName &E : sn) {
-			r_options->push_back(quote_style + E + quote_style);
+		for (const StringName &name : sn) {
+			r_options->push_back(String(name).quote(quote_style));
 		}
 	}
 }
@@ -2719,6 +2754,9 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_theme_type_variation", "theme_type"), &Control::set_theme_type_variation);
 	ClassDB::bind_method(D_METHOD("get_theme_type_variation"), &Control::get_theme_type_variation);
 
+	ClassDB::bind_method(D_METHOD("begin_bulk_theme_override"), &Control::begin_bulk_theme_override);
+	ClassDB::bind_method(D_METHOD("end_bulk_theme_override"), &Control::end_bulk_theme_override);
+
 	ClassDB::bind_method(D_METHOD("add_theme_icon_override", "name", "texture"), &Control::add_theme_icon_override);
 	ClassDB::bind_method(D_METHOD("add_theme_stylebox_override", "name", "stylebox"), &Control::add_theme_style_override);
 	ClassDB::bind_method(D_METHOD("add_theme_font_override", "name", "font"), &Control::add_theme_font_override);
@@ -2802,21 +2840,6 @@ void Control::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_auto_translate", "enable"), &Control::set_auto_translate);
 	ClassDB::bind_method(D_METHOD("is_auto_translating"), &Control::is_auto_translating);
-
-	BIND_VMETHOD(MethodInfo("_structured_text_parser", PropertyInfo(Variant::ARRAY, "args"), PropertyInfo(Variant::STRING, "text")));
-
-	BIND_VMETHOD(MethodInfo("_gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
-	BIND_VMETHOD(MethodInfo(Variant::VECTOR2, "_get_minimum_size"));
-
-	MethodInfo get_drag_data = MethodInfo("_get_drag_data", PropertyInfo(Variant::VECTOR2, "position"));
-	get_drag_data.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
-	BIND_VMETHOD(get_drag_data);
-
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_can_drop_data", PropertyInfo(Variant::VECTOR2, "position"), PropertyInfo(Variant::NIL, "data")));
-	BIND_VMETHOD(MethodInfo("_drop_data", PropertyInfo(Variant::VECTOR2, "position"), PropertyInfo(Variant::NIL, "data")));
-	BIND_VMETHOD(MethodInfo(
-			PropertyInfo(Variant::OBJECT, "control", PROPERTY_HINT_RESOURCE_TYPE, "Control"),
-			"_make_custom_tooltip", PropertyInfo(Variant::STRING, "for_text")));
 
 	ADD_GROUP("Anchor", "anchor_");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anchor_left", PROPERTY_HINT_RANGE, "0,1,0.001,or_lesser,or_greater"), "_set_anchor", "get_anchor", SIDE_LEFT);
@@ -2974,5 +2997,14 @@ void Control::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("minimum_size_changed"));
 	ADD_SIGNAL(MethodInfo("theme_changed"));
 
-	GDVIRTUAL_BIND(_has_point);
+	GDVIRTUAL_BIND(_has_point, "position");
+	GDVIRTUAL_BIND(_structured_text_parser, "args", "text");
+	GDVIRTUAL_BIND(_get_minimum_size);
+
+	GDVIRTUAL_BIND(_get_drag_data, "at_position");
+	GDVIRTUAL_BIND(_can_drop_data, "at_position", "data");
+	GDVIRTUAL_BIND(_drop_data, "at_position", "data");
+	GDVIRTUAL_BIND(_make_custom_tooltip, "for_text");
+
+	GDVIRTUAL_BIND(_gui_input, "event");
 }

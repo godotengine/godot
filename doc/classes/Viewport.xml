@@ -113,19 +113,6 @@
 				Returns [code]true[/code] if the viewport is currently performing a drag operation.
 			</description>
 		</method>
-		<method name="input">
-			<return type="void" />
-			<argument index="0" name="event" type="InputEvent" />
-			<argument index="1" name="in_local_coords" type="bool" default="false" />
-			<description>
-			</description>
-		</method>
-		<method name="input_text">
-			<return type="void" />
-			<argument index="0" name="text" type="String" />
-			<description>
-			</description>
-		</method>
 		<method name="is_embedding_subwindows" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -133,6 +120,27 @@
 		</method>
 		<method name="is_input_handled" qualifiers="const">
 			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="push_input">
+			<return type="void" />
+			<argument index="0" name="event" type="InputEvent" />
+			<argument index="1" name="in_local_coords" type="bool" default="false" />
+			<description>
+			</description>
+		</method>
+		<method name="push_text_input">
+			<return type="void" />
+			<argument index="0" name="text" type="String" />
+			<description>
+				Returns [code]true[/code] if the viewport is currently embedding windows.
+			</description>
+		</method>
+		<method name="push_unhandled_input">
+			<return type="void" />
+			<argument index="0" name="event" type="InputEvent" />
+			<argument index="1" name="in_local_coords" type="bool" default="false" />
 			<description>
 			</description>
 		</method>
@@ -150,13 +158,6 @@
 				Sets the number of subdivisions to use in the specified quadrant. A higher number of subdivisions allows you to have more shadows in the scene at once, but reduces the quality of the shadows. A good practice is to have quadrants with a varying number of subdivisions and to have as few subdivisions as possible.
 			</description>
 		</method>
-		<method name="unhandled_input">
-			<return type="void" />
-			<argument index="0" name="event" type="InputEvent" />
-			<argument index="1" name="in_local_coords" type="bool" default="false" />
-			<description>
-			</description>
-		</method>
 		<method name="warp_mouse">
 			<return type="void" />
 			<argument index="0" name="to_position" type="Vector2" />
@@ -169,7 +170,7 @@
 		<member name="audio_listener_enable_2d" type="bool" setter="set_as_audio_listener_2d" getter="is_audio_listener_2d" default="false">
 			If [code]true[/code], the viewport will process 2D audio streams.
 		</member>
-		<member name="audio_listener_enable_3d" type="bool" setter="set_as_audio_listener" getter="is_audio_listener" default="false">
+		<member name="audio_listener_enable_3d" type="bool" setter="set_as_audio_listener_3d" getter="is_audio_listener_3d" default="false">
 			If [code]true[/code], the viewport will process 3D audio streams.
 		</member>
 		<member name="canvas_item_default_texture_filter" type="int" setter="set_default_canvas_item_texture_filter" getter="get_default_canvas_item_texture_filter" enum="Viewport.DefaultCanvasItemTextureFilter" default="1">
@@ -210,6 +211,9 @@
 		</member>
 		<member name="physics_object_picking" type="bool" setter="set_physics_object_picking" getter="get_physics_object_picking" default="false">
 			If [code]true[/code], the objects rendered by viewport become subjects of mouse picking process.
+		</member>
+		<member name="scale_3d" type="int" setter="set_scale_3d" getter="get_scale_3d" enum="Viewport.Scale3D" default="0">
+			The scale at which 3D content is rendered.
 		</member>
 		<member name="screen_space_aa" type="int" setter="set_screen_space_aa" getter="get_screen_space_aa" enum="Viewport.ScreenSpaceAA" default="0">
 			Sets the screen-space antialiasing method used. Screen-space antialiasing works by selectively blurring edges in a post-process shader. It differs from MSAA which takes multiple coverage samples while rendering objects. Screen-space AA methods are typically faster than MSAA and will smooth out specular aliasing, but tend to make scenes appear blurry.
@@ -271,6 +275,16 @@
 		</signal>
 	</signals>
 	<constants>
+		<constant name="SCALE_3D_DISABLED" value="0" enum="Scale3D">
+		</constant>
+		<constant name="SCALE_3D_75_PERCENT" value="1" enum="Scale3D">
+		</constant>
+		<constant name="SCALE_3D_50_PERCENT" value="2" enum="Scale3D">
+		</constant>
+		<constant name="SCALE_3D_33_PERCENT" value="3" enum="Scale3D">
+		</constant>
+		<constant name="SCALE_3D_25_PERCENT" value="4" enum="Scale3D">
+		</constant>
 		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED" value="0" enum="ShadowAtlasQuadrantSubdiv">
 			This quadrant will not be used.
 		</constant>
@@ -296,19 +310,19 @@
 			Represents the size of the [enum ShadowAtlasQuadrantSubdiv] enum.
 		</constant>
 		<constant name="MSAA_DISABLED" value="0" enum="MSAA">
-			Multisample antialiasing mode disabled. This is the default value, and also the fastest setting.
+			Multisample antialiasing mode disabled. This is the default value, and is also the fastest setting.
 		</constant>
 		<constant name="MSAA_2X" value="1" enum="MSAA">
-			Use 2x Multisample Antialiasing.
+			Use 2× Multisample Antialiasing. This has a moderate performance cost. It helps reduce aliasing noticeably, but 4× MSAA still looks substantially better.
 		</constant>
 		<constant name="MSAA_4X" value="2" enum="MSAA">
-			Use 4x Multisample Antialiasing.
+			Use 4× Multisample Antialiasing. This has a significant performance cost, and is generally a good compromise between performance and quality.
 		</constant>
 		<constant name="MSAA_8X" value="3" enum="MSAA">
-			Use 8x Multisample Antialiasing. Likely unsupported on low-end and older hardware.
+			Use 8× Multisample Antialiasing. This has a very high performance cost. The difference between 4× and 8× MSAA may not always be visible in real gameplay conditions. Likely unsupported on low-end and older hardware.
 		</constant>
 		<constant name="MSAA_16X" value="4" enum="MSAA">
-			Use 16x Multisample Antialiasing. Likely unsupported on medium and low-end hardware.
+			Use 16× Multisample Antialiasing. This has a very high performance cost. The difference between 8× and 16× MSAA may not always be visible in real gameplay conditions. Likely unsupported on medium and low-end hardware.
 		</constant>
 		<constant name="MSAA_MAX" value="5" enum="MSAA">
 			Represents the size of the [enum MSAA] enum.

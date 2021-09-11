@@ -79,7 +79,7 @@ public:
 
 	//FUNC1RID(shape,ShapeType); todo fix
 	FUNCRID(plane_shape)
-	FUNCRID(ray_shape)
+	FUNCRID(separation_ray_shape)
 	FUNCRID(sphere_shape)
 	FUNCRID(box_shape)
 	FUNCRID(capsule_shape)
@@ -210,8 +210,10 @@ public:
 	FUNC2(body_set_user_flags, RID, uint32_t);
 	FUNC1RC(uint32_t, body_get_user_flags, RID);
 
-	FUNC3(body_set_param, RID, BodyParameter, real_t);
-	FUNC2RC(real_t, body_get_param, RID, BodyParameter);
+	FUNC3(body_set_param, RID, BodyParameter, const Variant &);
+	FUNC2RC(Variant, body_get_param, RID, BodyParameter);
+
+	FUNC1(body_reset_mass_properties, RID);
 
 	FUNC3(body_set_state, RID, BodyState, const Variant &);
 	FUNC2RC(Variant, body_get_state, RID, BodyState);
@@ -246,18 +248,14 @@ public:
 	FUNC2(body_set_omit_force_integration, RID, bool);
 	FUNC1RC(bool, body_is_omitting_force_integration, RID);
 
+	FUNC3(body_set_state_sync_callback, RID, void *, BodyStateCallback);
 	FUNC3(body_set_force_integration_callback, RID, const Callable &, const Variant &);
 
 	FUNC2(body_set_ray_pickable, RID, bool);
 
-	bool body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia, real_t p_margin = 0.001, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true) override {
+	bool body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin = 0.001, MotionResult *r_result = nullptr, bool p_collide_separation_ray = false, const Set<RID> &p_exclude = Set<RID>()) override {
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), false);
-		return physics_3d_server->body_test_motion(p_body, p_from, p_motion, p_infinite_inertia, p_margin, r_result, p_exclude_raycast_shapes);
-	}
-
-	int body_test_ray_separation(RID p_body, const Transform3D &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, SeparationResult *r_results, int p_result_max, real_t p_margin = 0.001) override {
-		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), false);
-		return physics_3d_server->body_test_ray_separation(p_body, p_transform, p_infinite_inertia, r_recover_motion, r_results, p_result_max, p_margin);
+		return physics_3d_server->body_test_motion(p_body, p_from, p_motion, p_margin, r_result, p_collide_separation_ray, p_exclude);
 	}
 
 	// this function only works on physics process, errors and returns null otherwise

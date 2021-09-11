@@ -30,11 +30,6 @@
 
 #include "node_2d.h"
 
-#include "core/object/message_queue.h"
-#include "scene/gui/control.h"
-#include "scene/main/window.h"
-#include "servers/rendering_server.h"
-
 #ifdef TOOLS_ENABLED
 Dictionary Node2D::_edit_get_state() const {
 	Dictionary state;
@@ -170,10 +165,10 @@ void Node2D::set_scale(const Size2 &p_scale) {
 	}
 	_scale = p_scale;
 	// Avoid having 0 scale values, can lead to errors in physics and rendering.
-	if (_scale.x == 0) {
+	if (Math::is_zero_approx(_scale.x)) {
 		_scale.x = CMP_EPSILON;
 	}
-	if (_scale.y == 0) {
+	if (Math::is_zero_approx(_scale.y)) {
 		_scale.y = CMP_EPSILON;
 	}
 	_update_transform();

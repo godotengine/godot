@@ -480,6 +480,10 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 			case Item::Command::TYPE_RECT: {
 				const Item::CommandRect *rect = static_cast<const Item::CommandRect *>(c);
 
+				if (rect->flags & CANVAS_RECT_TILE) {
+					current_repeat = RenderingServer::CanvasItemTextureRepeat::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED;
+				}
+
 				//bind pipeline
 				{
 					RID pipeline = pipeline_variants->variants[light_mode][PIPELINE_VARIANT_QUAD].get_render_pipeline(RD::INVALID_ID, p_framebuffer_format);
@@ -535,6 +539,14 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 					}
 
 					src_rect = Rect2(0, 0, 1, 1);
+				}
+
+				if (rect->flags & CANVAS_RECT_MSDF) {
+					push_constant.flags |= FLAGS_USE_MSDF;
+					push_constant.msdf[0] = rect->px_range; // Pixel range.
+					push_constant.msdf[1] = rect->outline; // Outline size.
+					push_constant.msdf[2] = 0.f; // Reserved.
+					push_constant.msdf[3] = 0.f; // Reserved.
 				}
 
 				push_constant.modulation[0] = rect->modulate.r * base_color.r;
@@ -1090,7 +1102,7 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 				if (material_data->shader_data->version.is_valid() && material_data->shader_data->valid) {
 					pipeline_variants = &material_data->shader_data->pipeline_variants;
 					// Update uniform set.
-					if (RD::get_singleton()->uniform_set_is_valid(material_data->uniform_set)) { // Material may not have a uniform set.
+					if (material_data->uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(material_data->uniform_set)) { // Material may not have a uniform set.
 						RD::get_singleton()->draw_list_bind_uniform_set(draw_list, material_data->uniform_set, MATERIAL_UNIFORM_SET);
 					}
 				} else {
@@ -1966,8 +1978,7 @@ void RendererCanvasRenderRD::ShaderData::set_code(const String &p_code) {
 	RendererCanvasRenderRD *canvas_singleton = (RendererCanvasRenderRD *)RendererCanvasRender::singleton;
 
 	Error err = canvas_singleton->shader.compiler.compile(RS::SHADER_CANVAS_ITEM, code, &actions, path, gen_code);
-
-	ERR_FAIL_COND(err != OK);
+	ERR_FAIL_COND_MSG(err != OK, "Shader compilation failed.");
 
 	if (version.is_null()) {
 		version = canvas_singleton->shader.canvas_shader.version_create();
@@ -2572,6 +2583,8 @@ RendererCanvasRenderRD::RendererCanvasRenderRD(RendererStorageRD *p_storage) {
 		storage->shader_initialize(default_canvas_group_shader);
 
 		storage->shader_set_code(default_canvas_group_shader, R"(
+// Default CanvasGroup shader.
+
 shader_type canvas_item;
 
 void fragment() {

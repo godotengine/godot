@@ -88,6 +88,8 @@ public:
 	Quaternion get_rotation_quaternion() const;
 	Vector3 get_rotation() const { return get_rotation_euler(); };
 
+	void rotate_to_align(Vector3 p_start_direction, Vector3 p_end_direction);
+
 	Vector3 rotref_posscale_decomposition(Basis &rotref) const;
 
 	Vector3 get_euler_xyz() const;
@@ -241,6 +243,8 @@ public:
 	Basis diagonalize();
 
 	operator Quaternion() const { return get_quaternion(); }
+
+	static Basis looking_at(const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0));
 
 	Basis(const Quaternion &p_quaternion) { set_quaternion(p_quaternion); };
 	Basis(const Quaternion &p_quaternion, const Vector3 &p_scale) { set_quaternion_scale(p_quaternion, p_scale); }

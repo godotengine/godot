@@ -94,43 +94,8 @@ Variant::Type GDScriptParser::get_builtin_type(const StringName &p_type) {
 	return Variant::VARIANT_MAX;
 }
 
-// TODO: Move this to a central location (maybe core?).
-static HashMap<StringName, StringName> underscore_map;
-static const char *underscore_classes[] = {
-	"ClassDB",
-	"Directory",
-	"Engine",
-	"File",
-	"Geometry",
-	"GodotSharp",
-	"JSON",
-	"Marshalls",
-	"Mutex",
-	"OS",
-	"ResourceLoader",
-	"ResourceSaver",
-	"Semaphore",
-	"Thread",
-	"VisualScriptEditor",
-	nullptr,
-};
-StringName GDScriptParser::get_real_class_name(const StringName &p_source) {
-	if (underscore_map.is_empty()) {
-		const char **class_name = underscore_classes;
-		while (*class_name != nullptr) {
-			underscore_map[*class_name] = String("_") + *class_name;
-			class_name++;
-		}
-	}
-	if (underscore_map.has(p_source)) {
-		return underscore_map[p_source];
-	}
-	return p_source;
-}
-
 void GDScriptParser::cleanup() {
 	builtin_types.clear();
-	underscore_map.clear();
 }
 
 void GDScriptParser::get_annotation_list(List<MethodInfo> *r_annotations) const {
@@ -168,7 +133,7 @@ GDScriptParser::GDScriptParser() {
 	register_annotation(MethodInfo("@export_flags_3d_physics"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_PHYSICS, Variant::INT>);
 	register_annotation(MethodInfo("@export_flags_3d_navigation"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_NAVIGATION, Variant::INT>);
 	// Networking.
-	register_annotation(MethodInfo("@rpc", { Variant::STRING, "mode" }, { Variant::STRING, "sync" }, { Variant::STRING, "transfer_mode" }, { Variant::INT, "transfer_channel" }), AnnotationInfo::FUNCTION, &GDScriptParser::network_annotations<MultiplayerAPI::RPC_MODE_PUPPET>, 4, true);
+	register_annotation(MethodInfo("@rpc", { Variant::STRING, "mode" }, { Variant::STRING, "sync" }, { Variant::STRING, "transfer_mode" }, { Variant::INT, "transfer_channel" }), AnnotationInfo::FUNCTION, &GDScriptParser::network_annotations<Multiplayer::RPC_MODE_AUTHORITY>, 4, true);
 	// TODO: Warning annotations.
 }
 
@@ -337,7 +302,7 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 	int tab_size = 4;
 #ifdef TOOLS_ENABLED
 	if (EditorSettings::get_singleton()) {
-		tab_size = EditorSettings::get_singleton()->get_setting("text_editor/indent/size");
+		tab_size = EditorSettings::get_singleton()->get_setting("text_editor/behavior/indent/size");
 	}
 #endif // TOOLS_ENABLED
 
@@ -1152,7 +1117,6 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum() {
 				}
 				item.custom_value = value;
 			}
-			item.rightmost_column = previous.rightmost_column;
 
 			item.index = enum_node->values.size();
 			enum_node->values.push_back(item);
@@ -1718,6 +1682,7 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 	while (!check(GDScriptTokenizer::Token::DEDENT) && !is_at_end()) {
 		MatchBranchNode *branch = parse_match_branch();
 		if (branch == nullptr) {
+			advance();
 			continue;
 		}
 
@@ -1781,7 +1746,9 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 		push_error(R"(No pattern found for "match" branch.)");
 	}
 
-	consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" after "match" patterns.)");
+	if (!consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" after "match" patterns.)")) {
+		return nullptr;
+	}
 
 	// Save continue state.
 	bool could_continue = can_continue;
@@ -1814,15 +1781,6 @@ GDScriptParser::PatternNode *GDScriptParser::parse_match_pattern(PatternNode *p_
 	PatternNode *pattern = alloc_node<PatternNode>();
 
 	switch (current.type) {
-		case GDScriptTokenizer::Token::LITERAL:
-			advance();
-			pattern->pattern_type = PatternNode::PT_LITERAL;
-			pattern->literal = parse_literal();
-			if (pattern->literal == nullptr) {
-				// Error happened.
-				return nullptr;
-			}
-			break;
 		case GDScriptTokenizer::Token::VAR: {
 			// Bind.
 			advance();
@@ -1885,44 +1843,44 @@ GDScriptParser::PatternNode *GDScriptParser::parse_match_pattern(PatternNode *p_
 			// Dictionary.
 			advance();
 			pattern->pattern_type = PatternNode::PT_DICTIONARY;
-
-			if (!check(GDScriptTokenizer::Token::BRACE_CLOSE) && !is_at_end()) {
-				do {
-					if (match(GDScriptTokenizer::Token::PERIOD_PERIOD)) {
-						// Rest.
+			do {
+				if (check(GDScriptTokenizer::Token::BRACE_CLOSE) || is_at_end()) {
+					break;
+				}
+				if (match(GDScriptTokenizer::Token::PERIOD_PERIOD)) {
+					// Rest.
+					if (pattern->rest_used) {
+						push_error(R"(The ".." pattern must be the last element in the pattern dictionary.)");
+					} else {
+						PatternNode *sub_pattern = alloc_node<PatternNode>();
+						sub_pattern->pattern_type = PatternNode::PT_REST;
+						pattern->dictionary.push_back({ nullptr, sub_pattern });
+						pattern->rest_used = true;
+					}
+				} else {
+					ExpressionNode *key = parse_expression(false);
+					if (key == nullptr) {
+						push_error(R"(Expected expression as key for dictionary pattern.)");
+					}
+					if (match(GDScriptTokenizer::Token::COLON)) {
+						// Value pattern.
+						PatternNode *sub_pattern = parse_match_pattern(p_root_pattern != nullptr ? p_root_pattern : pattern);
+						if (sub_pattern == nullptr) {
+							continue;
+						}
 						if (pattern->rest_used) {
 							push_error(R"(The ".." pattern must be the last element in the pattern dictionary.)");
+						} else if (sub_pattern->pattern_type == PatternNode::PT_REST) {
+							push_error(R"(The ".." pattern cannot be used as a value.)");
 						} else {
-							PatternNode *sub_pattern = alloc_node<PatternNode>();
-							sub_pattern->pattern_type = PatternNode::PT_REST;
-							pattern->dictionary.push_back({ nullptr, sub_pattern });
-							pattern->rest_used = true;
+							pattern->dictionary.push_back({ key, sub_pattern });
 						}
 					} else {
-						ExpressionNode *key = parse_expression(false);
-						if (key == nullptr) {
-							push_error(R"(Expected expression as key for dictionary pattern.)");
-						}
-						if (match(GDScriptTokenizer::Token::COLON)) {
-							// Value pattern.
-							PatternNode *sub_pattern = parse_match_pattern(p_root_pattern != nullptr ? p_root_pattern : pattern);
-							if (sub_pattern == nullptr) {
-								continue;
-							}
-							if (pattern->rest_used) {
-								push_error(R"(The ".." pattern must be the last element in the pattern dictionary.)");
-							} else if (sub_pattern->pattern_type == PatternNode::PT_REST) {
-								push_error(R"(The ".." pattern cannot be used as a value.)");
-							} else {
-								pattern->dictionary.push_back({ key, sub_pattern });
-							}
-						} else {
-							// Key match only.
-							pattern->dictionary.push_back({ key, nullptr });
-						}
+						// Key match only.
+						pattern->dictionary.push_back({ key, nullptr });
 					}
-				} while (match(GDScriptTokenizer::Token::COMMA));
-			}
+				}
+			} while (match(GDScriptTokenizer::Token::COMMA));
 			consume(GDScriptTokenizer::Token::BRACE_CLOSE, R"(Expected "}" to close the dictionary pattern.)");
 			break;
 		}
@@ -1931,8 +1889,13 @@ GDScriptParser::PatternNode *GDScriptParser::parse_match_pattern(PatternNode *p_
 			ExpressionNode *expression = parse_expression(false);
 			if (expression == nullptr) {
 				push_error(R"(Expected expression for match pattern.)");
+				return nullptr;
 			} else {
-				pattern->pattern_type = PatternNode::PT_EXPRESSION;
+				if (expression->type == GDScriptParser::Node::LITERAL) {
+					pattern->pattern_type = PatternNode::PT_LITERAL;
+				} else {
+					pattern->pattern_type = PatternNode::PT_EXPRESSION;
+				}
 				pattern->expression = expression;
 			}
 			break;
@@ -2401,6 +2364,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 	}
 	assignment->assignee = p_previous_operand;
 	assignment->assigned_value = parse_expression(false);
+	if (assignment->assigned_value == nullptr) {
+		push_error(R"(Expected an expression after "=".)");
+	}
 
 #ifdef DEBUG_ENABLED
 	if (has_operator && source_variable != nullptr && source_variable->assignments == 0) {
@@ -2413,9 +2379,15 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_await(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	AwaitNode *await = alloc_node<AwaitNode>();
-	await->to_await = parse_precedence(PREC_AWAIT, false);
+	ExpressionNode *element = parse_precedence(PREC_AWAIT, false);
+	if (element == nullptr) {
+		push_error(R"(Expected signal or coroutine after "await".)");
+	}
+	await->to_await = element;
 
-	current_function->is_coroutine = true;
+	if (current_function) { // Might be null in a getter or setter.
+		current_function->is_coroutine = true;
+	}
 
 	return await;
 }
@@ -2480,7 +2452,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 			switch (dictionary->style) {
 				case DictionaryNode::LUA_TABLE:
 					if (key != nullptr && key->type != Node::IDENTIFIER) {
-						push_error("Expected identifier as dictionary key.");
+						push_error("Expected identifier as LUA-style dictionary key.");
+						advance();
+						break;
 					}
 					if (!match(GDScriptTokenizer::Token::EQUAL)) {
 						if (match(GDScriptTokenizer::Token::COLON)) {
@@ -2490,8 +2464,10 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 							push_error(R"(Expected "=" after dictionary key.)");
 						}
 					}
-					key->is_constant = true;
-					key->reduced_value = static_cast<IdentifierNode *>(key)->name;
+					if (key != nullptr) {
+						key->is_constant = true;
+						key->reduced_value = static_cast<IdentifierNode *>(key)->name;
+					}
 					break;
 				case DictionaryNode::PYTHON_DICT:
 					if (!match(GDScriptTokenizer::Token::COLON)) {
@@ -2984,7 +2960,7 @@ void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &
 
 			} else {
 				/* Syntax:
-				   @tutorial ( The Title Here )         :         http://the.url/
+				   @tutorial ( The Title Here )         :         https://the.url/
 				             ^ open           ^ close   ^ colon   ^ url
 				*/
 				int open_bracket_pos = begin_scan, close_bracket_pos = 0;
@@ -3361,10 +3337,10 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 				variable->export_info.hint_string = Variant::get_type_name(export_type.builtin_type);
 				break;
 			case GDScriptParser::DataType::NATIVE:
-				if (ClassDB::is_parent_class(get_real_class_name(export_type.native_type), "Resource")) {
+				if (ClassDB::is_parent_class(export_type.native_type, "Resource")) {
 					variable->export_info.type = Variant::OBJECT;
 					variable->export_info.hint = PROPERTY_HINT_RESOURCE_TYPE;
-					variable->export_info.hint_string = get_real_class_name(export_type.native_type);
+					variable->export_info.hint_string = export_type.native_type;
 				} else {
 					push_error(R"(Export type can only be built-in, a resource, or an enum.)", variable);
 					return false;
@@ -3420,55 +3396,47 @@ bool GDScriptParser::warning_annotations(const AnnotationNode *p_annotation, Nod
 	ERR_FAIL_V_MSG(false, "Not implemented.");
 }
 
-template <MultiplayerAPI::RPCMode t_mode>
+template <Multiplayer::RPCMode t_mode>
 bool GDScriptParser::network_annotations(const AnnotationNode *p_annotation, Node *p_node) {
 	ERR_FAIL_COND_V_MSG(p_node->type != Node::VARIABLE && p_node->type != Node::FUNCTION, false, vformat(R"("%s" annotation can only be applied to variables and functions.)", p_annotation->name));
 
-	MultiplayerAPI::RPCConfig rpc_config;
+	Multiplayer::RPCConfig rpc_config;
 	rpc_config.rpc_mode = t_mode;
-	for (int i = 0; i < p_annotation->resolved_arguments.size(); i++) {
-		if (i == 0) {
+	if (p_annotation->resolved_arguments.size()) {
+		int last = p_annotation->resolved_arguments.size() - 1;
+		if (p_annotation->resolved_arguments[last].get_type() == Variant::INT) {
+			rpc_config.channel = p_annotation->resolved_arguments[last].operator int();
+			last -= 1;
+		}
+		if (last > 3) {
+			push_error(R"(Invalid RPC arguments. At most 4 arguments are allowed, where only the last argument can be an integer to specify the channel.')", p_annotation);
+			return false;
+		}
+		for (int i = last; i >= 0; i--) {
 			String mode = p_annotation->resolved_arguments[i].operator String();
 			if (mode == "any") {
-				rpc_config.rpc_mode = MultiplayerAPI::RPC_MODE_REMOTE;
-			} else if (mode == "master") {
-				rpc_config.rpc_mode = MultiplayerAPI::RPC_MODE_MASTER;
-			} else if (mode == "puppet") {
-				rpc_config.rpc_mode = MultiplayerAPI::RPC_MODE_PUPPET;
-			} else {
-				push_error(R"(Invalid RPC mode. Must be one of: 'any', 'master', or 'puppet')", p_annotation);
-				return false;
-			}
-		} else if (i == 1) {
-			String sync = p_annotation->resolved_arguments[i].operator String();
-			if (sync == "sync") {
+				rpc_config.rpc_mode = Multiplayer::RPC_MODE_ANY;
+			} else if (mode == "auth") {
+				rpc_config.rpc_mode = Multiplayer::RPC_MODE_AUTHORITY;
+			} else if (mode == "sync") {
 				rpc_config.sync = true;
-			} else if (sync == "nosync") {
+			} else if (mode == "nosync") {
 				rpc_config.sync = false;
-			} else {
-				push_error(R"(Invalid RPC sync mode. Must be one of: 'sync' or 'nosync')", p_annotation);
-				return false;
-			}
-		} else if (i == 2) {
-			String mode = p_annotation->resolved_arguments[i].operator String();
-			if (mode == "reliable") {
-				rpc_config.transfer_mode = MultiplayerPeer::TRANSFER_MODE_RELIABLE;
+			} else if (mode == "reliable") {
+				rpc_config.transfer_mode = Multiplayer::TRANSFER_MODE_RELIABLE;
 			} else if (mode == "unreliable") {
-				rpc_config.transfer_mode = MultiplayerPeer::TRANSFER_MODE_UNRELIABLE;
+				rpc_config.transfer_mode = Multiplayer::TRANSFER_MODE_UNRELIABLE;
 			} else if (mode == "ordered") {
-				rpc_config.transfer_mode = MultiplayerPeer::TRANSFER_MODE_UNRELIABLE_ORDERED;
+				rpc_config.transfer_mode = Multiplayer::TRANSFER_MODE_ORDERED;
 			} else {
-				push_error(R"(Invalid RPC transfer mode. Must be one of: 'reliable', 'unreliable', 'ordered')", p_annotation);
-				return false;
+				push_error(R"(Invalid RPC argument. Must be one of: 'sync'/'nosync' (local calls), 'any'/'auth' (permission), 'reliable'/'unreliable'/'ordered' (transfer mode).)", p_annotation);
 			}
-		} else if (i == 3) {
-			rpc_config.channel = p_annotation->resolved_arguments[i].operator int();
 		}
 	}
 	switch (p_node->type) {
 		case Node::FUNCTION: {
 			FunctionNode *function = static_cast<FunctionNode *>(p_node);
-			if (function->rpc_config.rpc_mode != MultiplayerAPI::RPC_MODE_DISABLED) {
+			if (function->rpc_config.rpc_mode != Multiplayer::RPC_MODE_DISABLED) {
 				push_error(R"(RPC annotations can only be used once per function.)", p_annotation);
 				return false;
 			}

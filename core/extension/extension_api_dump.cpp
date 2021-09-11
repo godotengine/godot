@@ -38,6 +38,32 @@
 
 #ifdef TOOLS_ENABLED
 
+static String get_type_name(const PropertyInfo &p_info) {
+	if (p_info.type == Variant::INT && (p_info.hint == PROPERTY_HINT_INT_IS_POINTER)) {
+		if (p_info.hint_string == "") {
+			return "void*";
+		} else {
+			return p_info.hint_string + "*";
+		}
+	}
+	if (p_info.type == Variant::INT && (p_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM)) {
+		return String("enum::") + String(p_info.class_name);
+	}
+	if (p_info.class_name != StringName()) {
+		return p_info.class_name;
+	}
+	if (p_info.hint == PROPERTY_HINT_RESOURCE_TYPE) {
+		return p_info.hint_string;
+	}
+	if (p_info.type == Variant::NIL && (p_info.usage & PROPERTY_USAGE_NIL_IS_VARIANT)) {
+		return "Variant";
+	}
+	if (p_info.type == Variant::NIL) {
+		return "void";
+	}
+	return Variant::get_type_name(p_info.type);
+}
+
 Dictionary NativeExtensionAPIDump::generate_extension_api() {
 	Dictionary api_dump;
 
@@ -60,20 +86,38 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 
 	const uint32_t vec3_elems = 3;
 	const uint32_t ptrsize_32 = 4;
-	const uint32_t ptrsize_64 = 4;
+	const uint32_t ptrsize_64 = 8;
 	static const char *build_config_name[4] = { "float_32", "float_64", "double_32", "double_64" };
 
 	{
 		//type sizes
-		struct {
+		constexpr struct {
 			Variant::Type type;
 			uint32_t size_32_bits_real_float;
 			uint32_t size_64_bits_real_float;
 			uint32_t size_32_bits_real_double;
 			uint32_t size_64_bits_real_double;
+
+			// For compile-time size check.
+			constexpr uint32_t operator[](int index) const {
+				switch (index) {
+#ifndef REAL_T_IS_DOUBLE
+					case sizeof(uint32_t):
+						return size_32_bits_real_float;
+					case sizeof(uint64_t):
+						return size_64_bits_real_float;
+#else // REAL_T_IS_DOUBLE
+					case sizeof(uint32_t):
+						return size_32_bits_real_double;
+					case sizeof(uint64_t):
+						return size_64_bits_real_double;
+#endif
+				}
+				return -1;
+			}
 		} type_size_array[Variant::VARIANT_MAX + 1] = {
 			{ Variant::NIL, 0, 0, 0, 0 },
-			{ Variant::BOOL, sizeof(uint32_t), sizeof(uint32_t), sizeof(uint32_t), sizeof(uint32_t) },
+			{ Variant::BOOL, sizeof(uint8_t), sizeof(uint8_t), sizeof(uint8_t), sizeof(uint8_t) },
 			{ Variant::INT, sizeof(int64_t), sizeof(int64_t), sizeof(int64_t), sizeof(int64_t) },
 			{ Variant::FLOAT, sizeof(double), sizeof(double), sizeof(double), sizeof(double) },
 			{ Variant::STRING, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
@@ -98,17 +142,54 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 			{ Variant::SIGNAL, sizeof(Signal), sizeof(Signal), sizeof(Signal), sizeof(Signal) }, // Hardcoded align.
 			{ Variant::DICTIONARY, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
 			{ Variant::ARRAY, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
-			{ Variant::PACKED_BYTE_ARRAY, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
-			{ Variant::PACKED_INT32_ARRAY, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
-			{ Variant::PACKED_INT64_ARRAY, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
-			{ Variant::PACKED_FLOAT32_ARRAY, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
-			{ Variant::PACKED_FLOAT64_ARRAY, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
-			{ Variant::PACKED_STRING_ARRAY, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
-			{ Variant::PACKED_VECTOR2_ARRAY, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
-			{ Variant::PACKED_VECTOR3_ARRAY, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
-			{ Variant::PACKED_COLOR_ARRAY, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
+			{ Variant::PACKED_BYTE_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
+			{ Variant::PACKED_INT32_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
+			{ Variant::PACKED_INT64_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
+			{ Variant::PACKED_FLOAT32_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
+			{ Variant::PACKED_FLOAT64_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
+			{ Variant::PACKED_STRING_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
+			{ Variant::PACKED_VECTOR2_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
+			{ Variant::PACKED_VECTOR3_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
+			{ Variant::PACKED_COLOR_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
 			{ Variant::VARIANT_MAX, sizeof(uint64_t) + sizeof(float) * 4, sizeof(uint64_t) + sizeof(float) * 4, sizeof(uint64_t) + sizeof(double) * 4, sizeof(uint64_t) + sizeof(double) * 4 },
 		};
+
+		// Validate sizes at compile time for the current build configuration.
+		static_assert(type_size_array[Variant::BOOL][sizeof(void *)] == sizeof(GDNativeBool), "Size of bool mismatch");
+		static_assert(type_size_array[Variant::INT][sizeof(void *)] == sizeof(GDNativeInt), "Size of int mismatch");
+		static_assert(type_size_array[Variant::FLOAT][sizeof(void *)] == sizeof(double), "Size of float mismatch");
+		static_assert(type_size_array[Variant::STRING][sizeof(void *)] == sizeof(String), "Size of String mismatch");
+		static_assert(type_size_array[Variant::VECTOR2][sizeof(void *)] == sizeof(Vector2), "Size of Vector2 mismatch");
+		static_assert(type_size_array[Variant::VECTOR2I][sizeof(void *)] == sizeof(Vector2i), "Size of Vector2i mismatch");
+		static_assert(type_size_array[Variant::RECT2][sizeof(void *)] == sizeof(Rect2), "Size of Rect2 mismatch");
+		static_assert(type_size_array[Variant::RECT2I][sizeof(void *)] == sizeof(Rect2i), "Size of Rect2i mismatch");
+		static_assert(type_size_array[Variant::VECTOR3][sizeof(void *)] == sizeof(Vector3), "Size of Vector3 mismatch");
+		static_assert(type_size_array[Variant::VECTOR3I][sizeof(void *)] == sizeof(Vector3i), "Size of Vector3i mismatch");
+		static_assert(type_size_array[Variant::TRANSFORM2D][sizeof(void *)] == sizeof(Transform2D), "Size of Transform2D mismatch");
+		static_assert(type_size_array[Variant::PLANE][sizeof(void *)] == sizeof(Plane), "Size of Plane mismatch");
+		static_assert(type_size_array[Variant::QUATERNION][sizeof(void *)] == sizeof(Quaternion), "Size of Quaternion mismatch");
+		static_assert(type_size_array[Variant::AABB][sizeof(void *)] == sizeof(AABB), "Size of AABB mismatch");
+		static_assert(type_size_array[Variant::BASIS][sizeof(void *)] == sizeof(Basis), "Size of Basis mismatch");
+		static_assert(type_size_array[Variant::TRANSFORM3D][sizeof(void *)] == sizeof(Transform3D), "Size of Transform3D mismatch");
+		static_assert(type_size_array[Variant::COLOR][sizeof(void *)] == sizeof(Color), "Size of Color mismatch");
+		static_assert(type_size_array[Variant::STRING_NAME][sizeof(void *)] == sizeof(StringName), "Size of StringName mismatch");
+		static_assert(type_size_array[Variant::NODE_PATH][sizeof(void *)] == sizeof(NodePath), "Size of NodePath mismatch");
+		static_assert(type_size_array[Variant::RID][sizeof(void *)] == sizeof(RID), "Size of RID mismatch");
+		static_assert(type_size_array[Variant::OBJECT][sizeof(void *)] == sizeof(Object *), "Size of Object mismatch");
+		static_assert(type_size_array[Variant::CALLABLE][sizeof(void *)] == sizeof(Callable), "Size of Callable mismatch");
+		static_assert(type_size_array[Variant::SIGNAL][sizeof(void *)] == sizeof(Signal), "Size of Signal mismatch");
+		static_assert(type_size_array[Variant::DICTIONARY][sizeof(void *)] == sizeof(Dictionary), "Size of Dictionary mismatch");
+		static_assert(type_size_array[Variant::ARRAY][sizeof(void *)] == sizeof(Array), "Size of Array mismatch");
+		static_assert(type_size_array[Variant::PACKED_BYTE_ARRAY][sizeof(void *)] == sizeof(PackedByteArray), "Size of PackedByteArray mismatch");
+		static_assert(type_size_array[Variant::PACKED_INT32_ARRAY][sizeof(void *)] == sizeof(PackedInt32Array), "Size of PackedInt32Array mismatch");
+		static_assert(type_size_array[Variant::PACKED_INT64_ARRAY][sizeof(void *)] == sizeof(PackedInt64Array), "Size of PackedInt64Array mismatch");
+		static_assert(type_size_array[Variant::PACKED_FLOAT32_ARRAY][sizeof(void *)] == sizeof(PackedFloat32Array), "Size of PackedFloat32Array mismatch");
+		static_assert(type_size_array[Variant::PACKED_FLOAT64_ARRAY][sizeof(void *)] == sizeof(PackedFloat64Array), "Size of PackedFloat64Array mismatch");
+		static_assert(type_size_array[Variant::PACKED_STRING_ARRAY][sizeof(void *)] == sizeof(PackedStringArray), "Size of PackedStringArray mismatch");
+		static_assert(type_size_array[Variant::PACKED_VECTOR2_ARRAY][sizeof(void *)] == sizeof(PackedVector2Array), "Size of PackedVector2Array mismatch");
+		static_assert(type_size_array[Variant::PACKED_VECTOR3_ARRAY][sizeof(void *)] == sizeof(PackedVector3Array), "Size of PackedVector3Array mismatch");
+		static_assert(type_size_array[Variant::PACKED_COLOR_ARRAY][sizeof(void *)] == sizeof(PackedColorArray), "Size of PackedColorArray mismatch");
+		static_assert(type_size_array[Variant::VARIANT_MAX][sizeof(void *)] == sizeof(Variant), "Size of Variant mismatch");
 
 		Array core_type_sizes;
 
@@ -116,7 +197,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 			Dictionary d;
 			d["build_configuration"] = build_config_name[i];
 			Array sizes;
-			for (int j = 0; j < Variant::VARIANT_MAX; j++) {
+			for (int j = 0; j <= Variant::VARIANT_MAX; j++) {
 				Variant::Type t = type_size_array[j].type;
 				String name = t == Variant::VARIANT_MAX ? String("Variant") : Variant::get_type_name(t);
 				Dictionary d2;
@@ -356,6 +437,8 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				d["indexing_return_type"] = index_type == Variant::NIL ? String("Variant") : Variant::get_type_name(index_type);
 			}
 
+			d["is_keyed"] = Variant::ValidatedKeyedSetter(type);
+
 			{
 				//members
 				Array members;
@@ -403,6 +486,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 							if (k != Variant::OP_NEGATE && k != Variant::OP_POSITIVE && k != Variant::OP_NOT && k != Variant::OP_BIT_NEGATE) {
 								d2["right_type"] = Variant::get_type_name(Variant::Type(j));
 							}
+							d2["return_type"] = Variant::get_type_name(Variant::get_operator_return_type(Variant::Operator(k), type, Variant::Type(j)));
 							operators.push_back(d2);
 						}
 					}
@@ -481,6 +565,10 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				if (constructors.size()) {
 					d["constructors"] = constructors;
 				}
+			}
+			{
+				//destructor
+				d["has_destructor"] = Variant::has_destructor(type);
 			}
 
 			builtins.push_back(d);
@@ -572,7 +660,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				ClassDB::get_method_list(class_name, &method_list, true);
 				for (const MethodInfo &F : method_list) {
 					StringName method_name = F.name;
-					if (F.flags & METHOD_FLAG_VIRTUAL) {
+					if ((F.flags & METHOD_FLAG_VIRTUAL) && !(F.flags & METHOD_FLAG_OBJECT_CORE)) {
 						//virtual method
 						const MethodInfo &mi = F;
 						Dictionary d2;
@@ -590,16 +678,8 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 							if (i >= 0) {
 								d3["name"] = pinfo.name;
 							}
-							if (pinfo.class_name != StringName()) {
-								d3["type"] = String(pinfo.class_name);
-							} else {
-								Variant::Type type = pinfo.type;
-								if (type == Variant::NIL) {
-									d3["type"] = "Variant";
-								} else {
-									d3["type"] = Variant::get_type_name(type);
-								}
-							}
+
+							d3["type"] = get_type_name(pinfo);
 
 							if (i == -1) {
 								d2["return_value"] = d3;
@@ -641,16 +721,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 							if (i >= 0) {
 								d3["name"] = pinfo.name;
 							}
-							if (pinfo.class_name != StringName()) {
-								d3["type"] = String(pinfo.class_name);
-							} else {
-								Variant::Type type = pinfo.type;
-								if (type == Variant::NIL) {
-									d3["type"] = "Variant";
-								} else {
-									d3["type"] = Variant::get_type_name(type);
-								}
-							}
+							d3["type"] = get_type_name(pinfo);
 
 							if (method->get_argument_meta(i) > 0) {
 								static const char *argmeta[11] = { "none", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float", "double" };
@@ -697,14 +768,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 					for (int i = 0; i < F.arguments.size(); i++) {
 						Dictionary d3;
 						d3["name"] = F.arguments[i].name;
-						Variant::Type type = F.arguments[i].type;
-						if (F.arguments[i].class_name != StringName()) {
-							d3["type"] = String(F.arguments[i].class_name);
-						} else if (type == Variant::NIL) {
-							d3["type"] = "Variant";
-						} else {
-							d3["type"] = Variant::get_type_name(type);
-						}
+						d3["type"] = get_type_name(F.arguments[i]);
 						arguments.push_back(d3);
 					}
 					if (arguments.size()) {
@@ -732,16 +796,8 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 					}
 					StringName property_name = F.name;
 					Dictionary d2;
+					d2["type"] = get_type_name(F);
 					d2["name"] = String(property_name);
-
-					if (F.class_name != StringName()) {
-						d2["type"] = String(F.class_name);
-					} else if (F.type == Variant::NIL && F.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
-						d2["type"] = "Variant";
-					} else {
-						d2["type"] = Variant::get_type_name(F.type);
-					}
-
 					d2["setter"] = ClassDB::get_property_setter(class_name, F.name);
 					d2["getter"] = ClassDB::get_property_getter(class_name, F.name);
 					d2["index"] = ClassDB::get_property_index(class_name, F.name);
@@ -780,6 +836,20 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 		if (singletons.size()) {
 			api_dump["singletons"] = singletons;
 		}
+	}
+
+	{
+		Array native_structures;
+
+		{
+			Dictionary d;
+			d["name"] = "AudioFrame";
+			d["format"] = "float left,float right";
+
+			native_structures.push_back(d);
+		}
+
+		api_dump["native_structures"] = native_structures;
 	}
 
 	return api_dump;

@@ -53,11 +53,11 @@
 				Returns the shape ID of the first object that the ray intersects, or [code]0[/code] if no object is intersecting the ray (i.e. [method is_colliding] returns [code]false[/code]).
 			</description>
 		</method>
-		<method name="get_collision_mask_bit" qualifiers="const">
+		<method name="get_collision_mask_value" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="bit" type="int" />
+			<argument index="0" name="layer_number" type="int" />
 			<description>
-				Returns an individual bit on the collision mask.
+				Returns whether or not the specified layer of the [member collision_mask] is enabled, given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
 		<method name="get_collision_normal" qualifiers="const">
@@ -93,12 +93,12 @@
 				Removes a collision exception so the ray does report collisions with the specified [RID].
 			</description>
 		</method>
-		<method name="set_collision_mask_bit">
+		<method name="set_collision_mask_value">
 			<return type="void" />
-			<argument index="0" name="bit" type="int" />
+			<argument index="0" name="layer_number" type="int" />
 			<argument index="1" name="value" type="bool" />
 			<description>
-				Sets or clears individual bits on the collision mask. This makes selecting the areas scanned easier.
+				Based on [code]value[/code], enables or disables the specified layer in the [member collision_mask], given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
 	</methods>

@@ -30,6 +30,11 @@
 				Returns the main container of Godot editor's window. For example, you can use it to retrieve the size of the container and place your controls accordingly.
 			</description>
 		</method>
+		<method name="get_command_palette" qualifiers="const">
+			<return type="EditorCommandPalette" />
+			<description>
+			</description>
+		</method>
 		<method name="get_current_path" qualifiers="const">
 			<return type="String" />
 			<description>

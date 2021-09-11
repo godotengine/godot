@@ -39,12 +39,13 @@
 #include "editor/import/editor_import_plugin.h"
 #include "editor/import/resource_importer_scene.h"
 #include "editor/script_create_dialog.h"
+#include "scene/3d/camera_3d.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
-
 class EditorNode;
 class Node3D;
 class Camera3D;
+class EditorCommandPalette;
 class EditorSelection;
 class EditorExport;
 class EditorSettings;
@@ -86,6 +87,8 @@ public:
 	Node *get_edited_scene_root();
 	Array get_open_scenes() const;
 	ScriptEditor *get_script_editor();
+
+	EditorCommandPalette *get_command_palette() const;
 
 	void select_file(const String &p_file);
 	String get_selected_path() const;
@@ -144,6 +147,30 @@ protected:
 
 	void add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon);
 	void remove_custom_type(const String &p_type);
+
+	GDVIRTUAL1R(bool, _forward_canvas_gui_input, Ref<InputEvent>)
+	GDVIRTUAL1(_forward_canvas_draw_over_viewport, Control *)
+	GDVIRTUAL1(_forward_canvas_force_draw_over_viewport, Control *)
+	GDVIRTUAL2R(bool, _forward_3d_gui_input, Camera3D *, Ref<InputEvent>)
+	GDVIRTUAL1(_forward_3d_draw_over_viewport, Control *)
+	GDVIRTUAL1(_forward_3d_force_draw_over_viewport, Control *)
+	GDVIRTUAL0RC(String, _get_plugin_name)
+	GDVIRTUAL0RC(Ref<Texture2D>, _get_plugin_icon)
+	GDVIRTUAL0RC(bool, _has_main_screen)
+	GDVIRTUAL1(_make_visible, bool)
+	GDVIRTUAL1(_edit, Variant)
+	GDVIRTUAL1RC(bool, _handles, Variant)
+	GDVIRTUAL0RC(Dictionary, _get_state)
+	GDVIRTUAL1(_set_state, Dictionary)
+	GDVIRTUAL0(_clear)
+	GDVIRTUAL0(_save_external_data)
+	GDVIRTUAL0(_apply_changes)
+	GDVIRTUAL0RC(Vector<String>, _get_breakpoints)
+	GDVIRTUAL1(_set_window_layout, Ref<ConfigFile>)
+	GDVIRTUAL1(_get_window_layout, Ref<ConfigFile>)
+	GDVIRTUAL0R(bool, _build)
+	GDVIRTUAL0(_enable_plugin)
+	GDVIRTUAL0(_disable_plugin)
 
 public:
 	enum CustomControlContainer {

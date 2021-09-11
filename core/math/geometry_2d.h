@@ -32,9 +32,8 @@
 #define GEOMETRY_2D_H
 
 #include "core/math/delaunay_2d.h"
-#include "core/math/rect2.h"
 #include "core/math/triangulate.h"
-#include "core/object/object.h"
+#include "core/math/vector3i.h"
 #include "core/templates/vector.h"
 
 class Geometry2D {
@@ -183,7 +182,15 @@ public:
 		C = Vector2(C.x * Bn.x + C.y * Bn.y, C.y * Bn.x - C.x * Bn.y);
 		D = Vector2(D.x * Bn.x + D.y * Bn.y, D.y * Bn.x - D.x * Bn.y);
 
-		if ((C.y < 0 && D.y < 0) || (C.y >= 0 && D.y >= 0)) {
+		// Fail if C x B and D x B have the same sign (segments don't intersect).
+		// (equivalent to condition (C.y < 0 && D.y < CMP_EPSILON) || (C.y > 0 && D.y > CMP_EPSILON))
+		if (C.y * D.y > CMP_EPSILON) {
+			return false;
+		}
+
+		// Fail if segments are parallel or colinear.
+		// (when A x B == zero, i.e (C - D) x B == zero, i.e C x B == D x B)
+		if (Math::is_equal_approx(C.y, D.y)) {
 			return false;
 		}
 
@@ -194,7 +201,7 @@ public:
 			return false;
 		}
 
-		// (4) Apply the discovered position to line A-B in the original coordinate system.
+		// Apply the discovered position to line A-B in the original coordinate system.
 		if (r_result) {
 			*r_result = p_from_a + B * ABpos;
 		}
@@ -354,8 +361,14 @@ public:
 		for (int i = 0; i < c; i++) {
 			const Vector2 &v1 = p[i];
 			const Vector2 &v2 = p[(i + 1) % c];
-			if (segment_intersects_segment(v1, v2, p_point, further_away, nullptr)) {
+
+			Vector2 res;
+			if (segment_intersects_segment(v1, v2, p_point, further_away, &res)) {
 				intersections++;
+				if (res.is_equal_approx(p_point)) {
+					// Point is in one of the polygon edges.
+					return true;
+				}
 			}
 		}
 

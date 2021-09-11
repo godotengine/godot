@@ -31,9 +31,6 @@
 #include "ray_cast_2d.h"
 
 #include "collision_object_2d.h"
-#include "core/config/engine.h"
-#include "physics_body_2d.h"
-#include "servers/physics_server_2d.h"
 
 void RayCast2D::set_target_position(const Vector2 &p_point) {
 	target_position = p_point;
@@ -54,20 +51,22 @@ uint32_t RayCast2D::get_collision_mask() const {
 	return collision_mask;
 }
 
-void RayCast2D::set_collision_mask_bit(int p_bit, bool p_value) {
-	ERR_FAIL_INDEX_MSG(p_bit, 32, "Collision mask bit must be between 0 and 31 inclusive.");
+void RayCast2D::set_collision_mask_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 32, "Collision layer number must be between 1 and 32 inclusive.");
 	uint32_t mask = get_collision_mask();
 	if (p_value) {
-		mask |= 1 << p_bit;
+		mask |= 1 << (p_layer_number - 1);
 	} else {
-		mask &= ~(1 << p_bit);
+		mask &= ~(1 << (p_layer_number - 1));
 	}
 	set_collision_mask(mask);
 }
 
-bool RayCast2D::get_collision_mask_bit(int p_bit) const {
-	ERR_FAIL_INDEX_V_MSG(p_bit, 32, false, "Collision mask bit must be between 0 and 31 inclusive.");
-	return get_collision_mask() & (1 << p_bit);
+bool RayCast2D::get_collision_mask_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Collision layer number must be between 1 and 32 inclusive.");
+	return get_collision_mask() & (1 << (p_layer_number - 1));
 }
 
 bool RayCast2D::is_colliding() const {
@@ -212,17 +211,17 @@ void RayCast2D::_update_raycast_state() {
 void RayCast2D::_draw_debug_shape() {
 	Color draw_col = collided ? Color(1.0, 0.01, 0) : get_tree()->get_debug_collisions_color();
 	if (!enabled) {
-		float g = draw_col.get_v();
+		const float g = draw_col.get_v();
 		draw_col.r = g;
 		draw_col.g = g;
 		draw_col.b = g;
 	}
 
 	// Draw an arrow indicating where the RayCast is pointing to
-	const float max_arrow_size = 6;
-	const float line_width = 1.4;
+	const real_t max_arrow_size = 6;
+	const real_t line_width = 1.4;
 	bool no_line = target_position.length() < line_width;
-	float arrow_size = CLAMP(target_position.length() * 2 / 3, line_width, max_arrow_size);
+	real_t arrow_size = CLAMP(target_position.length() * 2 / 3, line_width, max_arrow_size);
 
 	if (no_line) {
 		arrow_size = target_position.length();
@@ -323,8 +322,8 @@ void RayCast2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_mask", "mask"), &RayCast2D::set_collision_mask);
 	ClassDB::bind_method(D_METHOD("get_collision_mask"), &RayCast2D::get_collision_mask);
 
-	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &RayCast2D::set_collision_mask_bit);
-	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &RayCast2D::get_collision_mask_bit);
+	ClassDB::bind_method(D_METHOD("set_collision_mask_value", "layer_number", "value"), &RayCast2D::set_collision_mask_value);
+	ClassDB::bind_method(D_METHOD("get_collision_mask_value", "layer_number"), &RayCast2D::get_collision_mask_value);
 
 	ClassDB::bind_method(D_METHOD("set_exclude_parent_body", "mask"), &RayCast2D::set_exclude_parent_body);
 	ClassDB::bind_method(D_METHOD("get_exclude_parent_body"), &RayCast2D::get_exclude_parent_body);

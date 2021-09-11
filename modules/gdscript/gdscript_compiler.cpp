@@ -107,7 +107,7 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 			// Locate class by constructing the path to it and following that path
 			GDScriptParser::ClassNode *class_type = p_datatype.class_type;
 			if (class_type) {
-				if (class_type->fqcn.begins_with(main_script->path) || (!main_script->name.is_empty() && class_type->fqcn.begins_with(main_script->name))) {
+				if ((!main_script->path.is_empty() && class_type->fqcn.begins_with(main_script->path)) || (!main_script->name.is_empty() && class_type->fqcn.begins_with(main_script->name))) {
 					// Local class.
 					List<StringName> names;
 					while (class_type->outer) {
@@ -126,8 +126,7 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 						names.pop_back();
 					}
 					result.kind = GDScriptDataType::GDSCRIPT;
-					result.script_type_ref = script;
-					result.script_type = result.script_type_ref.ptr();
+					result.script_type = script.ptr();
 					result.native_type = script->get_instance_base_type();
 				} else {
 					result.kind = GDScriptDataType::GDSCRIPT;
@@ -1858,7 +1857,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 
 	StringName func_name;
 	bool is_static = false;
-	MultiplayerAPI::RPCConfig rpc_config;
+	Multiplayer::RPCConfig rpc_config;
 	GDScriptDataType return_type;
 	return_type.has_type = true;
 	return_type.kind = GDScriptDataType::BUILTIN;
@@ -2087,7 +2086,7 @@ Error GDScriptCompiler::_parse_setter_getter(GDScript *p_script, const GDScriptP
 		return_type = _gdtype_from_datatype(p_variable->get_datatype(), p_script);
 	}
 
-	codegen.generator->write_start(p_script, func_name, false, MultiplayerAPI::RPCConfig(), return_type);
+	codegen.generator->write_start(p_script, func_name, false, Multiplayer::RPCConfig(), return_type);
 
 	if (p_is_setter) {
 		uint32_t par_addr = codegen.generator->add_parameter(p_variable->setter_parameter->name, false, _gdtype_from_datatype(p_variable->get_datatype()));
@@ -2186,6 +2185,13 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 
 	p_script->tool = parser->is_tool();
 	p_script->name = p_class->identifier ? p_class->identifier->name : "";
+
+	if (p_script->name != "") {
+		if (ClassDB::class_exists(p_script->name) && ClassDB::is_class_exposed(p_script->name)) {
+			_set_error("The class '" + p_script->name + "' shadows a native class", p_class);
+			return ERR_ALREADY_EXISTS;
+		}
+	}
 
 	Ref<GDScriptNativeClass> native;
 
@@ -2337,28 +2343,6 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 			case GDScriptParser::ClassNode::Member::SIGNAL: {
 				const GDScriptParser::SignalNode *signal = member.signal;
 				StringName name = signal->identifier->name;
-
-				GDScript *c = p_script;
-
-				while (c) {
-					if (c->_signals.has(name)) {
-						_set_error("Signal '" + name + "' redefined (in current or parent class)", p_class);
-						return ERR_ALREADY_EXISTS;
-					}
-
-					if (c->base.is_valid()) {
-						c = c->base.ptr();
-					} else {
-						c = nullptr;
-					}
-				}
-
-				if (native.is_valid()) {
-					if (ClassDB::has_signal(native->get_name(), name)) {
-						_set_error("Signal '" + name + "' redefined (original in native class '" + String(native->get_name()) + "')", p_class);
-						return ERR_ALREADY_EXISTS;
-					}
-				}
 
 				Vector<StringName> parameters_names;
 				parameters_names.resize(signal->parameters.size());

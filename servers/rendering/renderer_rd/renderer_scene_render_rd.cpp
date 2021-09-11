@@ -860,7 +860,7 @@ void RendererSceneRenderRD::shadow_atlas_set_size(RID p_atlas, int p_size, bool 
 	shadow_atlas->shadow_owners.clear();
 
 	shadow_atlas->size = p_size;
-	shadow_atlas->use_16_bits = p_size;
+	shadow_atlas->use_16_bits = p_16_bits;
 }
 
 void RendererSceneRenderRD::shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) {
@@ -935,7 +935,7 @@ bool RendererSceneRenderRD::_shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas,
 
 		//look for an empty space
 		int sc = shadow_atlas->quadrants[qidx].shadows.size();
-		ShadowAtlas::Quadrant::Shadow *sarr = shadow_atlas->quadrants[qidx].shadows.ptrw();
+		const ShadowAtlas::Quadrant::Shadow *sarr = shadow_atlas->quadrants[qidx].shadows.ptr();
 
 		int found_free_idx = -1; //found a free one
 		int found_used_idx = -1; //found existing one, must steal it
@@ -973,6 +973,78 @@ bool RendererSceneRenderRD::_shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas,
 
 		r_quadrant = qidx;
 		r_shadow = found_free_idx;
+
+		return true;
+	}
+
+	return false;
+}
+
+bool RendererSceneRenderRD::_shadow_atlas_find_omni_shadows(ShadowAtlas *shadow_atlas, int *p_in_quadrants, int p_quadrant_count, int p_current_subdiv, uint64_t p_tick, int &r_quadrant, int &r_shadow) {
+	for (int i = p_quadrant_count - 1; i >= 0; i--) {
+		int qidx = p_in_quadrants[i];
+
+		if (shadow_atlas->quadrants[qidx].subdivision == (uint32_t)p_current_subdiv) {
+			return false;
+		}
+
+		//look for an empty space
+		int sc = shadow_atlas->quadrants[qidx].shadows.size();
+		const ShadowAtlas::Quadrant::Shadow *sarr = shadow_atlas->quadrants[qidx].shadows.ptr();
+
+		int found_idx = -1;
+		uint64_t min_pass = 0; // sum of currently selected spots, try to get the least recently used pair
+
+		for (int j = 0; j < sc - 1; j++) {
+			uint64_t pass = 0;
+
+			if (sarr[j].owner.is_valid()) {
+				LightInstance *sli = light_instance_owner.getornull(sarr[j].owner);
+				ERR_CONTINUE(!sli);
+
+				if (sli->last_scene_pass == scene_pass) {
+					continue;
+				}
+
+				//was just allocated, don't kill it so soon, wait a bit..
+				if (p_tick - sarr[j].alloc_tick < shadow_atlas_realloc_tolerance_msec) {
+					continue;
+				}
+				pass += sli->last_scene_pass;
+			}
+
+			if (sarr[j + 1].owner.is_valid()) {
+				LightInstance *sli = light_instance_owner.getornull(sarr[j + 1].owner);
+				ERR_CONTINUE(!sli);
+
+				if (sli->last_scene_pass == scene_pass) {
+					continue;
+				}
+
+				//was just allocated, don't kill it so soon, wait a bit..
+				if (p_tick - sarr[j + 1].alloc_tick < shadow_atlas_realloc_tolerance_msec) {
+					continue;
+				}
+				pass += sli->last_scene_pass;
+			}
+
+			if (found_idx == -1 || pass < min_pass) {
+				found_idx = j;
+				min_pass = pass;
+
+				// we found two empty spots, no need to check the rest
+				if (pass == 0) {
+					break;
+				}
+			}
+		}
+
+		if (found_idx == -1) {
+			continue; //nothing found
+		}
+
+		r_quadrant = qidx;
+		r_shadow = found_idx;
 
 		return true;
 	}
@@ -1025,94 +1097,104 @@ bool RendererSceneRenderRD::shadow_atlas_update_light(RID p_atlas, RID p_light_i
 
 	uint64_t tick = OS::get_singleton()->get_ticks_msec();
 
-	//see if it already exists
+	uint32_t old_key = ShadowAtlas::SHADOW_INVALID;
+	uint32_t old_quadrant = ShadowAtlas::SHADOW_INVALID;
+	uint32_t old_shadow = ShadowAtlas::SHADOW_INVALID;
+	int old_subdivision = -1;
+
+	bool should_realloc = false;
+	bool should_redraw = false;
 
 	if (shadow_atlas->shadow_owners.has(p_light_intance)) {
-		//it does!
-		uint32_t key = shadow_atlas->shadow_owners[p_light_intance];
-		uint32_t q = (key >> ShadowAtlas::QUADRANT_SHIFT) & 0x3;
-		uint32_t s = key & ShadowAtlas::SHADOW_INDEX_MASK;
+		old_key = shadow_atlas->shadow_owners[p_light_intance];
+		old_quadrant = (old_key >> ShadowAtlas::QUADRANT_SHIFT) & 0x3;
+		old_shadow = old_key & ShadowAtlas::SHADOW_INDEX_MASK;
 
-		bool should_realloc = shadow_atlas->quadrants[q].subdivision != (uint32_t)best_subdiv && (shadow_atlas->quadrants[q].shadows[s].alloc_tick - tick > shadow_atlas_realloc_tolerance_msec);
-		bool should_redraw = shadow_atlas->quadrants[q].shadows[s].version != p_light_version;
+		should_realloc = shadow_atlas->quadrants[old_quadrant].subdivision != (uint32_t)best_subdiv && (shadow_atlas->quadrants[old_quadrant].shadows[old_shadow].alloc_tick - tick > shadow_atlas_realloc_tolerance_msec);
+		should_redraw = shadow_atlas->quadrants[old_quadrant].shadows[old_shadow].version != p_light_version;
 
 		if (!should_realloc) {
-			shadow_atlas->quadrants[q].shadows.write[s].version = p_light_version;
+			shadow_atlas->quadrants[old_quadrant].shadows.write[old_shadow].version = p_light_version;
 			//already existing, see if it should redraw or it's just OK
 			return should_redraw;
 		}
 
-		int new_quadrant, new_shadow;
-
-		//find a better place
-		if (_shadow_atlas_find_shadow(shadow_atlas, valid_quadrants, valid_quadrant_count, shadow_atlas->quadrants[q].subdivision, tick, new_quadrant, new_shadow)) {
-			//found a better place!
-			ShadowAtlas::Quadrant::Shadow *sh = &shadow_atlas->quadrants[new_quadrant].shadows.write[new_shadow];
-			if (sh->owner.is_valid()) {
-				//is taken, but is invalid, erasing it
-				shadow_atlas->shadow_owners.erase(sh->owner);
-				LightInstance *sli = light_instance_owner.getornull(sh->owner);
-				sli->shadow_atlases.erase(p_atlas);
-			}
-
-			//erase previous
-			shadow_atlas->quadrants[q].shadows.write[s].version = 0;
-			shadow_atlas->quadrants[q].shadows.write[s].owner = RID();
-
-			sh->owner = p_light_intance;
-			sh->alloc_tick = tick;
-			sh->version = p_light_version;
-			li->shadow_atlases.insert(p_atlas);
-
-			//make new key
-			key = new_quadrant << ShadowAtlas::QUADRANT_SHIFT;
-			key |= new_shadow;
-			//update it in map
-			shadow_atlas->shadow_owners[p_light_intance] = key;
-			//make it dirty, as it should redraw anyway
-			return true;
-		}
-
-		//no better place for this shadow found, keep current
-
-		//already existing, see if it should redraw or it's just OK
-
-		shadow_atlas->quadrants[q].shadows.write[s].version = p_light_version;
-
-		return should_redraw;
+		old_subdivision = shadow_atlas->quadrants[old_quadrant].subdivision;
 	}
 
-	int new_quadrant, new_shadow;
+	bool is_omni = li->light_type == RS::LIGHT_OMNI;
+	bool found_shadow = false;
+	int new_quadrant = -1;
+	int new_shadow = -1;
 
-	//find a better place
-	if (_shadow_atlas_find_shadow(shadow_atlas, valid_quadrants, valid_quadrant_count, -1, tick, new_quadrant, new_shadow)) {
-		//found a better place!
-		ShadowAtlas::Quadrant::Shadow *sh = &shadow_atlas->quadrants[new_quadrant].shadows.write[new_shadow];
-		if (sh->owner.is_valid()) {
-			//is taken, but is invalid, erasing it
-			shadow_atlas->shadow_owners.erase(sh->owner);
-			LightInstance *sli = light_instance_owner.getornull(sh->owner);
-			sli->shadow_atlases.erase(p_atlas);
+	if (is_omni) {
+		found_shadow = _shadow_atlas_find_omni_shadows(shadow_atlas, valid_quadrants, valid_quadrant_count, old_subdivision, tick, new_quadrant, new_shadow);
+	} else {
+		found_shadow = _shadow_atlas_find_shadow(shadow_atlas, valid_quadrants, valid_quadrant_count, old_subdivision, tick, new_quadrant, new_shadow);
+	}
+
+	if (found_shadow) {
+		if (old_quadrant != ShadowAtlas::SHADOW_INVALID) {
+			shadow_atlas->quadrants[old_quadrant].shadows.write[old_shadow].version = 0;
+			shadow_atlas->quadrants[old_quadrant].shadows.write[old_shadow].owner = RID();
+
+			if (old_key & ShadowAtlas::OMNI_LIGHT_FLAG) {
+				shadow_atlas->quadrants[old_quadrant].shadows.write[old_shadow + 1].version = 0;
+				shadow_atlas->quadrants[old_quadrant].shadows.write[old_shadow + 1].owner = RID();
+			}
 		}
+
+		uint32_t new_key = new_quadrant << ShadowAtlas::QUADRANT_SHIFT;
+		new_key |= new_shadow;
+
+		ShadowAtlas::Quadrant::Shadow *sh = &shadow_atlas->quadrants[new_quadrant].shadows.write[new_shadow];
+		_shadow_atlas_invalidate_shadow(sh, p_atlas, shadow_atlas, new_quadrant, new_shadow);
 
 		sh->owner = p_light_intance;
 		sh->alloc_tick = tick;
 		sh->version = p_light_version;
+
+		if (is_omni) {
+			new_key |= ShadowAtlas::OMNI_LIGHT_FLAG;
+
+			int new_omni_shadow = new_shadow + 1;
+			ShadowAtlas::Quadrant::Shadow *extra_sh = &shadow_atlas->quadrants[new_quadrant].shadows.write[new_omni_shadow];
+			_shadow_atlas_invalidate_shadow(extra_sh, p_atlas, shadow_atlas, new_quadrant, new_omni_shadow);
+
+			extra_sh->owner = p_light_intance;
+			extra_sh->alloc_tick = tick;
+			extra_sh->version = p_light_version;
+		}
+
 		li->shadow_atlases.insert(p_atlas);
 
-		//make new key
-		uint32_t key = new_quadrant << ShadowAtlas::QUADRANT_SHIFT;
-		key |= new_shadow;
 		//update it in map
-		shadow_atlas->shadow_owners[p_light_intance] = key;
+		shadow_atlas->shadow_owners[p_light_intance] = new_key;
 		//make it dirty, as it should redraw anyway
-
 		return true;
 	}
 
-	//no place to allocate this light, apologies
+	return should_redraw;
+}
 
-	return false;
+void RendererSceneRenderRD::_shadow_atlas_invalidate_shadow(RendererSceneRenderRD::ShadowAtlas::Quadrant::Shadow *p_shadow, RID p_atlas, RendererSceneRenderRD::ShadowAtlas *p_shadow_atlas, uint32_t p_quadrant, uint32_t p_shadow_idx) {
+	if (p_shadow->owner.is_valid()) {
+		LightInstance *sli = light_instance_owner.getornull(p_shadow->owner);
+		uint32_t old_key = p_shadow_atlas->shadow_owners[p_shadow->owner];
+
+		if (old_key & ShadowAtlas::OMNI_LIGHT_FLAG) {
+			uint32_t s = old_key & ShadowAtlas::SHADOW_INDEX_MASK;
+			uint32_t omni_shadow_idx = p_shadow_idx + (s == (uint32_t)p_shadow_idx ? 1 : -1);
+			RendererSceneRenderRD::ShadowAtlas::Quadrant::Shadow *omni_shadow = &p_shadow_atlas->quadrants[p_quadrant].shadows.write[omni_shadow_idx];
+			omni_shadow->version = 0;
+			omni_shadow->owner = RID();
+		}
+
+		p_shadow->version = 0;
+		p_shadow->owner = RID();
+		sli->shadow_atlases.erase(p_atlas);
+		p_shadow_atlas->shadow_owners.erase(p_shadow->owner);
+	}
 }
 
 void RendererSceneRenderRD::_update_directional_shadow_atlas() {
@@ -1137,6 +1219,7 @@ void RendererSceneRenderRD::directional_shadow_atlas_set_size(int p_size, bool p
 	}
 
 	directional_shadow.size = p_size;
+	directional_shadow.use_16_bits = p_16_bits;
 
 	if (directional_shadow.depth.is_valid()) {
 		RD::get_singleton()->free(directional_shadow.depth);
@@ -1464,6 +1547,85 @@ void RendererSceneRenderRD::_allocate_blur_textures(RenderBuffers *rb) {
 		base_width = MAX(1, base_width >> 1);
 		base_height = MAX(1, base_height >> 1);
 	}
+
+	if (!_render_buffers_can_be_storage()) {
+		// create 4 weight textures, 2 full size, 2 half size
+
+		tf.format = RD::DATA_FORMAT_R16_SFLOAT; // We could probably use DATA_FORMAT_R8_SNORM if we don't pre-multiply by blur_size but that depends on whether we can remove DEPTH_GAP
+		tf.width = rb->width;
+		tf.height = rb->height;
+		tf.texture_type = rb->view_count > 1 ? RD::TEXTURE_TYPE_2D_ARRAY : RD::TEXTURE_TYPE_2D;
+		tf.array_layers = rb->view_count;
+		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+		tf.mipmaps = 1;
+		for (uint32_t i = 0; i < 4; i++) {
+			// associated blur texture
+			RID texture;
+			if (i == 0) {
+				texture = rb->texture;
+			} else if (i == 1) {
+				texture = rb->blur[0].mipmaps[0].texture;
+			} else if (i == 2) {
+				texture = rb->blur[1].mipmaps[0].texture;
+			} else if (i == 3) {
+				texture = rb->blur[0].mipmaps[1].texture;
+			}
+
+			// create weight texture
+			rb->weight_buffers[i].weight = RD::get_singleton()->texture_create(tf, RD::TextureView());
+
+			// create frame buffer
+			Vector<RID> fb;
+			fb.push_back(texture);
+			fb.push_back(rb->weight_buffers[i].weight);
+			rb->weight_buffers[i].fb = RD::get_singleton()->framebuffer_create(fb);
+
+			if (i == 1) {
+				// next 2 are half size
+				tf.width = MAX(1, tf.width >> 1);
+				tf.height = MAX(1, tf.height >> 1);
+			}
+		}
+
+		{
+			// and finally an FB for just our base weights
+			Vector<RID> fb;
+			fb.push_back(rb->weight_buffers[0].weight);
+			rb->base_weight_fb = RD::get_singleton()->framebuffer_create(fb);
+		}
+	}
+}
+
+void RendererSceneRenderRD::_allocate_depth_backbuffer_textures(RenderBuffers *rb) {
+	ERR_FAIL_COND(!rb->depth_back_texture.is_null());
+
+	{
+		RD::TextureFormat tf;
+		if (rb->view_count > 1) {
+			tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+		}
+		// We're not using this as a depth stencil, just copying our data into this. May need to look into using a different format on mobile, maybe R16?
+		tf.format = RD::DATA_FORMAT_R32_SFLOAT;
+
+		tf.width = rb->width;
+		tf.height = rb->height;
+		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT;
+		tf.array_layers = rb->view_count; // create a layer for every view
+
+		tf.usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+		tf.usage_bits |= RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT; // set this as color attachment because we're copying data into it, it's not actually used as a depth buffer
+
+		rb->depth_back_texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
+	}
+
+	if (!_render_buffers_can_be_storage()) {
+		// create framebuffer so we can write into this...
+
+		Vector<RID> fb;
+		fb.push_back(rb->depth_back_texture);
+
+		rb->depth_back_fb = RD::get_singleton()->framebuffer_create(fb, RD::INVALID_ID, rb->view_count);
+	}
 }
 
 void RendererSceneRenderRD::_allocate_luminance_textures(RenderBuffers *rb) {
@@ -1530,6 +1692,16 @@ void RendererSceneRenderRD::_free_render_buffer_data(RenderBuffers *rb) {
 	if (rb->depth_texture.is_valid()) {
 		RD::get_singleton()->free(rb->depth_texture);
 		rb->depth_texture = RID();
+	}
+
+	if (rb->depth_back_fb.is_valid()) {
+		RD::get_singleton()->free(rb->depth_back_fb);
+		rb->depth_back_fb = RID();
+	}
+
+	if (rb->depth_back_texture.is_valid()) {
+		RD::get_singleton()->free(rb->depth_back_texture);
+		rb->depth_back_texture = RID();
 	}
 
 	for (int i = 0; i < 2; i++) {
@@ -1832,6 +2004,58 @@ void RendererSceneRenderRD::_process_ssao(RID p_render_buffers, RID p_environmen
 	storage->get_effects()->generate_ssao(rb->depth_texture, p_normal_buffer, rb->ssao.depth, rb->ssao.depth_slices, rb->ssao.ao_deinterleaved, rb->ssao.ao_deinterleaved_slices, rb->ssao.ao_pong, rb->ssao.ao_pong_slices, rb->ssao.ao_final, rb->ssao.importance_map[0], rb->ssao.importance_map[1], p_projection, settings, uniform_sets_are_invalid, rb->ssao.downsample_uniform_set, rb->ssao.gather_uniform_set, rb->ssao.importance_map_uniform_set);
 }
 
+void RendererSceneRenderRD::_render_buffers_copy_screen_texture(const RenderDataRD *p_render_data) {
+	RenderBuffers *rb = render_buffers_owner.getornull(p_render_data->render_buffers);
+	ERR_FAIL_COND(!rb);
+
+	RD::get_singleton()->draw_command_begin_label("Copy screen texture");
+
+	if (rb->blur[0].texture.is_null()) {
+		_allocate_blur_textures(rb);
+	}
+
+	// @TODO IMPLEMENT MULTIVIEW, all effects need to support stereo buffers or effects are only applied to the left eye
+
+	bool can_use_storage = _render_buffers_can_be_storage();
+
+	if (can_use_storage) {
+		storage->get_effects()->copy_to_rect(rb->texture, rb->blur[0].mipmaps[0].texture, Rect2i(0, 0, rb->width, rb->height));
+		for (int i = 1; i < rb->blur[0].mipmaps.size(); i++) {
+			storage->get_effects()->make_mipmap(rb->blur[0].mipmaps[i - 1].texture, rb->blur[0].mipmaps[i].texture, Size2i(rb->blur[0].mipmaps[i].width, rb->blur[0].mipmaps[i].height));
+		}
+	} else {
+		storage->get_effects()->copy_to_fb_rect(rb->texture, rb->blur[0].mipmaps[0].fb, Rect2i(0, 0, rb->width, rb->height));
+		for (int i = 1; i < rb->blur[0].mipmaps.size(); i++) {
+			storage->get_effects()->make_mipmap_raster(rb->blur[0].mipmaps[i - 1].texture, rb->blur[0].mipmaps[i].fb, Size2i(rb->blur[0].mipmaps[i].width, rb->blur[0].mipmaps[i].height));
+		}
+	}
+
+	RD::get_singleton()->draw_command_end_label();
+}
+
+void RendererSceneRenderRD::_render_buffers_copy_depth_texture(const RenderDataRD *p_render_data) {
+	RenderBuffers *rb = render_buffers_owner.getornull(p_render_data->render_buffers);
+	ERR_FAIL_COND(!rb);
+
+	RD::get_singleton()->draw_command_begin_label("Copy depth texture");
+
+	if (rb->depth_back_texture.is_null()) {
+		_allocate_depth_backbuffer_textures(rb);
+	}
+
+	// @TODO IMPLEMENT MULTIVIEW, all effects need to support stereo buffers or effects are only applied to the left eye
+
+	bool can_use_storage = _render_buffers_can_be_storage();
+
+	if (can_use_storage) {
+		storage->get_effects()->copy_to_rect(rb->depth_texture, rb->depth_back_texture, Rect2i(0, 0, rb->width, rb->height));
+	} else {
+		storage->get_effects()->copy_to_fb_rect(rb->depth_texture, rb->depth_back_fb, Rect2i(0, 0, rb->width, rb->height));
+	}
+
+	RD::get_singleton()->draw_command_end_label();
+}
+
 void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const RenderDataRD *p_render_data) {
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_data->render_buffers);
 	ERR_FAIL_COND(!rb);
@@ -1851,11 +2075,34 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			_allocate_blur_textures(rb);
 		}
 
+		EffectsRD::BokehBuffers buffers;
+
+		// textures we use
+		buffers.base_texture_size = Size2i(rb->width, rb->height);
+		buffers.base_texture = rb->texture;
+		buffers.depth_texture = rb->depth_texture;
+		buffers.secondary_texture = rb->blur[0].mipmaps[0].texture;
+		buffers.half_texture[0] = rb->blur[1].mipmaps[0].texture;
+		buffers.half_texture[1] = rb->blur[0].mipmaps[1].texture;
+
+		float bokeh_size = camfx->dof_blur_amount * 64.0;
 		if (can_use_storage) {
-			float bokeh_size = camfx->dof_blur_amount * 64.0;
-			storage->get_effects()->bokeh_dof(rb->texture, rb->depth_texture, Size2i(rb->width, rb->height), rb->blur[0].mipmaps[0].texture, rb->blur[1].mipmaps[0].texture, rb->blur[0].mipmaps[1].texture, camfx->dof_blur_far_enabled, camfx->dof_blur_far_distance, camfx->dof_blur_far_transition, camfx->dof_blur_near_enabled, camfx->dof_blur_near_distance, camfx->dof_blur_near_transition, bokeh_size, dof_blur_bokeh_shape, dof_blur_quality, dof_blur_use_jitter, p_render_data->z_near, p_render_data->z_far, p_render_data->cam_ortogonal);
+			storage->get_effects()->bokeh_dof(buffers, camfx->dof_blur_far_enabled, camfx->dof_blur_far_distance, camfx->dof_blur_far_transition, camfx->dof_blur_near_enabled, camfx->dof_blur_near_distance, camfx->dof_blur_near_transition, bokeh_size, dof_blur_bokeh_shape, dof_blur_quality, dof_blur_use_jitter, p_render_data->z_near, p_render_data->z_far, p_render_data->cam_ortogonal);
 		} else {
-			storage->get_effects()->blur_dof_raster(rb->texture, rb->depth_texture, Size2i(rb->width, rb->height), rb->texture_fb, rb->blur[0].mipmaps[0].texture, rb->blur[0].mipmaps[0].fb, camfx->dof_blur_far_enabled, camfx->dof_blur_far_distance, camfx->dof_blur_far_transition, camfx->dof_blur_near_enabled, camfx->dof_blur_near_distance, camfx->dof_blur_near_transition, camfx->dof_blur_amount, dof_blur_quality, p_render_data->z_near, p_render_data->z_far, p_render_data->cam_ortogonal);
+			// set framebuffers
+			buffers.base_fb = rb->texture_fb;
+			buffers.secondary_fb = rb->weight_buffers[1].fb;
+			buffers.half_fb[0] = rb->weight_buffers[2].fb;
+			buffers.half_fb[1] = rb->weight_buffers[3].fb;
+			buffers.weight_texture[0] = rb->weight_buffers[0].weight;
+			buffers.weight_texture[1] = rb->weight_buffers[1].weight;
+			buffers.weight_texture[2] = rb->weight_buffers[2].weight;
+			buffers.weight_texture[3] = rb->weight_buffers[3].weight;
+
+			// set weight buffers
+			buffers.base_weight_fb = rb->base_weight_fb;
+
+			storage->get_effects()->bokeh_dof_raster(buffers, camfx->dof_blur_far_enabled, camfx->dof_blur_far_distance, camfx->dof_blur_far_transition, camfx->dof_blur_near_enabled, camfx->dof_blur_near_distance, camfx->dof_blur_near_transition, bokeh_size, dof_blur_bokeh_shape, dof_blur_quality, p_render_data->z_near, p_render_data->z_far, p_render_data->cam_ortogonal);
 		}
 		RD::get_singleton()->draw_command_end_label();
 	}
@@ -1990,6 +2237,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			}
 		}
 
+		tonemap.luminance_multiplier = _render_buffers_get_luminance_multiplier();
 		tonemap.view_count = p_render_data->view_count;
 
 		storage->get_effects()->tonemapper(rb->texture, storage->render_target_get_rd_framebuffer(rb->render_target), tonemap);
@@ -2010,7 +2258,6 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 
 	bool can_use_effects = rb->width >= 8 && rb->height >= 8;
 
-	RENDER_TIMESTAMP("Tonemap");
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_switch_to_next_pass();
 
 	EffectsRD::TonemapSettings tonemap;
@@ -2055,6 +2302,7 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	tonemap.use_debanding = rb->use_debanding;
 	tonemap.texture_size = Vector2i(rb->width, rb->height);
 
+	tonemap.luminance_multiplier = _render_buffers_get_luminance_multiplier();
 	tonemap.view_count = p_render_data->view_count;
 
 	storage->get_effects()->tonemapper(draw_list, p_source_texture, RD::get_singleton()->framebuffer_get_format(p_framebuffer), tonemap);
@@ -2156,6 +2404,15 @@ RID RendererSceneRenderRD::render_buffers_get_back_buffer_texture(RID p_render_b
 		return RID(); //not valid at the moment
 	}
 	return rb->blur[0].texture;
+}
+
+RID RendererSceneRenderRD::render_buffers_get_back_depth_texture(RID p_render_buffers) {
+	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND_V(!rb, RID());
+	if (!rb->depth_back_texture.is_valid()) {
+		return RID(); //not valid at the moment
+	}
+	return rb->depth_back_texture;
 }
 
 RID RendererSceneRenderRD::render_buffers_get_ao_texture(RID p_render_buffers) {
@@ -2318,6 +2575,10 @@ float RendererSceneRenderRD::render_buffers_get_volumetric_fog_detail_spread(RID
 	return rb->volumetric_fog->spread;
 }
 
+float RendererSceneRenderRD::_render_buffers_get_luminance_multiplier() {
+	return 1.0;
+}
+
 RD::DataFormat RendererSceneRenderRD::_render_buffers_get_color_format() {
 	return RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 }
@@ -2330,6 +2591,8 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 	ERR_FAIL_COND_MSG(p_view_count == 0, "Must have at least 1 view");
 
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+
+	// Should we add an overrule per viewport?
 	rb->width = p_width;
 	rb->height = p_height;
 	rb->render_target = p_render_target;
@@ -2376,8 +2639,8 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 			tf.format = RD::DATA_FORMAT_R32_SFLOAT;
 		}
 
-		tf.width = p_width;
-		tf.height = p_height;
+		tf.width = rb->width;
+		tf.height = rb->height;
 		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT;
 		tf.array_layers = rb->view_count; // create a layer for every view
 
@@ -2399,10 +2662,10 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 	}
 
 	RID target_texture = storage->render_target_get_rd_texture(rb->render_target);
-	rb->data->configure(rb->texture, rb->depth_texture, target_texture, p_width, p_height, p_msaa, p_view_count);
+	rb->data->configure(rb->texture, rb->depth_texture, target_texture, rb->width, rb->height, p_msaa, p_view_count);
 
 	if (is_clustered_enabled()) {
-		rb->cluster_builder->setup(Size2i(p_width, p_height), max_cluster_elements, rb->depth_texture, storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED), rb->texture);
+		rb->cluster_builder->setup(Size2i(rb->width, rb->height), max_cluster_elements, rb->depth_texture, storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED), rb->texture);
 	}
 }
 
@@ -2778,7 +3041,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 						CameraMatrix shadow_mtx = rectm * bias * matrix * modelview;
 						light_data.shadow_split_offsets[j] = split;
 						float bias_scale = li->shadow_transform[j].bias_scale;
-						light_data.shadow_bias[j] = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BIAS) * bias_scale;
+						light_data.shadow_bias[j] = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BIAS) / 100.0 * bias_scale;
 						light_data.shadow_normal_bias[j] = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS) * li->shadow_transform[j].shadow_texel_size;
 						light_data.shadow_transmittance_bias[j] = storage->light_get_transmittance_bias(base) * bias_scale;
 						light_data.shadow_z_range[j] = li->shadow_transform[j].farplane;
@@ -2948,22 +3211,19 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 			light_data.shadow_enabled = true;
 
+			float shadow_texel_size = light_instance_get_shadow_texel_size(li->self, p_shadow_atlas);
+			light_data.shadow_normal_bias = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS) * shadow_texel_size * 10.0;
+
 			if (type == RS::LIGHT_SPOT) {
-				light_data.shadow_bias = (storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BIAS) * radius / 10.0);
-				float shadow_texel_size = Math::tan(Math::deg2rad(spot_angle)) * radius * 2.0;
-				shadow_texel_size *= light_instance_get_shadow_texel_size(li->self, p_shadow_atlas);
-
-				light_data.shadow_normal_bias = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS) * shadow_texel_size;
-
+				light_data.shadow_bias = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BIAS) / 100.0;
 			} else { //omni
-				light_data.shadow_bias = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BIAS) * radius / 10.0;
-				float shadow_texel_size = light_instance_get_shadow_texel_size(li->self, p_shadow_atlas);
-				light_data.shadow_normal_bias = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS) * shadow_texel_size * 2.0; // applied in -1 .. 1 space
+				light_data.shadow_bias = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BIAS);
 			}
 
 			light_data.transmittance_bias = storage->light_get_transmittance_bias(base);
 
-			Rect2 rect = light_instance_get_shadow_atlas_rect(li->self, p_shadow_atlas);
+			Vector2i omni_offset;
+			Rect2 rect = light_instance_get_shadow_atlas_rect(li->self, p_shadow_atlas, omni_offset);
 
 			light_data.atlas_rect[0] = rect.position.x;
 			light_data.atlas_rect[1] = rect.position.y;
@@ -2974,7 +3234,6 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 			light_data.shadow_volumetric_fog_fade = 1.0 / storage->light_get_shadow_volumetric_fog_fade(base);
 
 			if (type == RS::LIGHT_OMNI) {
-				light_data.atlas_rect[3] *= 0.5; //one paraboloid on top of another
 				Transform3D proj = (inverse_transform * light_transform).inverse();
 
 				RendererStorageRD::store_transform(proj, light_data.shadow_matrix);
@@ -2986,6 +3245,8 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 					light_data.soft_shadow_scale *= shadows_quality_radius_get(); // Only use quality radius for PCF
 				}
 
+				light_data.direction[0] = omni_offset.x * float(rect.size.width);
+				light_data.direction[1] = omni_offset.y * float(rect.size.height);
 			} else if (type == RS::LIGHT_SPOT) {
 				Transform3D modelview = (inverse_transform * light_transform).inverse();
 				CameraMatrix bias;
@@ -3898,7 +4159,7 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData 
 
 	render_state.voxel_gi_count = 0;
 
-	if (rb != nullptr) {
+	if (rb != nullptr && is_dynamic_gi_supported()) {
 		if (rb->sdfgi) {
 			rb->sdfgi->update_cascades();
 			rb->sdfgi->pre_process_gi(render_data.cam_transform, &render_data, this);
@@ -3971,6 +4232,7 @@ void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas,
 
 	bool using_dual_paraboloid = false;
 	bool using_dual_paraboloid_flip = false;
+	Vector2i dual_paraboloid_offset;
 	RID render_fb;
 	RID render_texture;
 	float zfar;
@@ -4064,6 +4326,9 @@ void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas,
 		zfar = storage->light_get_param(light_instance->light, RS::LIGHT_PARAM_RANGE);
 
 		if (storage->light_get_type(light_instance->light) == RS::LIGHT_OMNI) {
+			bool wrap = (shadow + 1) % shadow_atlas->quadrants[quadrant].subdivision == 0;
+			dual_paraboloid_offset = wrap ? Vector2i(1 - shadow_atlas->quadrants[quadrant].subdivision, 1) : Vector2i(1, 0);
+
 			if (storage->light_omni_get_shadow_mode(light_instance->light) == RS::LIGHT_OMNI_SHADOW_CUBE) {
 				ShadowCubemap *cubemap = _get_shadow_cubemap(shadow_size / 2);
 
@@ -4083,11 +4348,15 @@ void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas,
 				}
 
 			} else {
+				atlas_rect.position.x += 1;
+				atlas_rect.position.y += 1;
+				atlas_rect.size.x -= 2;
+				atlas_rect.size.y -= 2;
+
+				atlas_rect.position += p_pass * atlas_rect.size * dual_paraboloid_offset;
+
 				light_projection = light_instance->shadow_transform[0].camera;
 				light_transform = light_instance->shadow_transform[0].transform;
-
-				atlas_rect.size.height /= 2;
-				atlas_rect.position.y += p_pass * atlas_rect.size.height;
 
 				using_dual_paraboloid = true;
 				using_dual_paraboloid_flip = p_pass == 1;
@@ -4117,10 +4386,9 @@ void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas,
 			atlas_rect_norm.position.y /= float(atlas_size);
 			atlas_rect_norm.size.x /= float(atlas_size);
 			atlas_rect_norm.size.y /= float(atlas_size);
-			atlas_rect_norm.size.height /= 2;
-			storage->get_effects()->copy_cubemap_to_dp(render_texture, atlas_fb, atlas_rect_norm, light_projection.get_z_near(), light_projection.get_z_far(), false);
-			atlas_rect_norm.position.y += atlas_rect_norm.size.height;
-			storage->get_effects()->copy_cubemap_to_dp(render_texture, atlas_fb, atlas_rect_norm, light_projection.get_z_near(), light_projection.get_z_far(), true);
+			storage->get_effects()->copy_cubemap_to_dp(render_texture, atlas_fb, atlas_rect_norm, atlas_rect.size, light_projection.get_z_near(), light_projection.get_z_far(), false);
+			atlas_rect_norm.position += Vector2(dual_paraboloid_offset) * atlas_rect_norm.size;
+			storage->get_effects()->copy_cubemap_to_dp(render_texture, atlas_fb, atlas_rect_norm, atlas_rect.size, light_projection.get_z_near(), light_projection.get_z_far(), true);
 
 			//restore transform so it can be properly used
 			light_instance_set_shadow_transform(p_light, CameraMatrix(), light_instance->transform, zfar, 0, 0, 0);
@@ -4222,6 +4490,12 @@ bool RendererSceneRenderRD::free(RID p_rid) {
 			uint32_t s = key & ShadowAtlas::SHADOW_INDEX_MASK;
 
 			shadow_atlas->quadrants[q].shadows.write[s].owner = RID();
+
+			if (key & ShadowAtlas::OMNI_LIGHT_FLAG) {
+				// Omni lights use two atlas spots, make sure to clear the other as well
+				shadow_atlas->quadrants[q].shadows.write[s + 1].owner = RID();
+			}
+
 			shadow_atlas->shadow_owners.erase(p_rid);
 		}
 
@@ -4419,10 +4693,12 @@ uint32_t RendererSceneRenderRD::get_max_elements() const {
 }
 
 RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
-	max_cluster_elements = get_max_elements();
-
 	storage = p_storage;
 	singleton = this;
+}
+
+void RendererSceneRenderRD::init() {
+	max_cluster_elements = get_max_elements();
 
 	directional_shadow.size = GLOBAL_GET("rendering/shadows/directional_shadow/size");
 	directional_shadow.use_16_bits = GLOBAL_GET("rendering/shadows/directional_shadow/16_bits");

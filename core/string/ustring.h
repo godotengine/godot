@@ -398,7 +398,7 @@ public:
 
 	// path functions
 	bool is_absolute_path() const;
-	bool is_rel_path() const;
+	bool is_relative_path() const;
 	bool is_resource_file() const;
 	String path_to(const String &p_path) const;
 	String path_to_file(const String &p_path) const;
@@ -523,10 +523,10 @@ String DTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 #define TTRGET(m_value) TTR(m_value)
 
 #else
-#define TTR(m_value) (String())
-#define TTRN(m_value) (String())
-#define DTR(m_value) (String())
-#define DTRN(m_value) (String())
+#define TTR(m_value) String()
+#define TTRN(m_value) String()
+#define DTR(m_value) String()
+#define DTRN(m_value) String()
 #define TTRC(m_value) (m_value)
 #define TTRGET(m_value) (m_value)
 #endif

@@ -270,7 +270,7 @@
 				Converts UTF-8 encoded array to [String]. Slower than [method get_string_from_ascii] but supports UTF-8 encoded data. Use this function if you are unsure about the source of the data. For user input this function should always be preferred. Returns empty string if source array is not valid UTF-8 string.
 			</description>
 		</method>
-		<method name="has">
+		<method name="has" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="value" type="int" />
 			<description>

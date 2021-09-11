@@ -49,7 +49,7 @@ subject to the following restrictions:
 #include "core/templates/vector.h"
 
 /// Convex hull implementation based on Preparata and Hong
-/// See http://code.google.com/p/bullet/issues/detail?id=275
+/// See https://code.google.com/p/bullet/issues/detail?id=275
 /// Ole Kniemeyer, MAXON Computer GmbH
 class ConvexHullComputer {
 public:

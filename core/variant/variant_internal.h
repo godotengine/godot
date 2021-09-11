@@ -104,7 +104,7 @@ public:
 				init_color_array(v);
 				break;
 			case Variant::OBJECT:
-				object_assign_null(v);
+				init_object(v);
 				break;
 			default:
 				break;
@@ -279,6 +279,10 @@ public:
 	_FORCE_INLINE_ static void init_color_array(Variant *v) {
 		v->_data.packed_array = Variant::PackedArrayRef<Color>::create(Vector<Color>());
 		v->type = Variant::PACKED_COLOR_ARRAY;
+	}
+	_FORCE_INLINE_ static void init_object(Variant *v) {
+		object_assign_null(v);
+		v->type = Variant::OBJECT;
 	}
 
 	_FORCE_INLINE_ static void clear(Variant *v) {
@@ -1171,6 +1175,11 @@ struct VariantInitializer<PackedColorArray> {
 	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_color_array(v); }
 };
 
+template <>
+struct VariantInitializer<Object *> {
+	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_object(v); }
+};
+
 template <class T>
 struct VariantZeroAssigner {
 };
@@ -1382,6 +1391,39 @@ struct VariantTypeAdjust<Object *> {
 	_FORCE_INLINE_ static void adjust(Variant *r_ret) {
 		VariantInternal::clear(r_ret);
 		*r_ret = (Object *)nullptr;
+	}
+};
+
+// GDNative extension helpers.
+
+template <class T>
+struct VariantTypeConstructor {
+	_FORCE_INLINE_ static void variant_from_type(void *p_variant, void *p_value) {
+		Variant *variant = reinterpret_cast<Variant *>(p_variant);
+		VariantInitializer<T>::init(variant);
+		VariantInternalAccessor<T>::set(variant, *((T *)p_value));
+	}
+
+	_FORCE_INLINE_ static void type_from_variant(void *p_value, void *p_variant) {
+		*((T *)p_value) = VariantInternalAccessor<T>::get(reinterpret_cast<Variant *>(p_variant));
+	}
+};
+
+template <>
+struct VariantTypeConstructor<Object *> {
+	_FORCE_INLINE_ static void variant_from_type(void *p_variant, void *p_value) {
+		Variant *variant = reinterpret_cast<Variant *>(p_variant);
+		VariantInitializer<Object *>::init(variant);
+		Object *value = *(reinterpret_cast<Object **>(p_value));
+		if (value) {
+			VariantInternalAccessor<Object *>::set(variant, value);
+			VariantInternalAccessor<ObjectID>::set(variant, value->get_instance_id());
+		}
+	}
+
+	_FORCE_INLINE_ static void type_from_variant(void *p_value, void *p_variant) {
+		Object **value = reinterpret_cast<Object **>(p_value);
+		*value = VariantInternalAccessor<Object *>::get(reinterpret_cast<Variant *>(p_variant));
 	}
 };
 

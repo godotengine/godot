@@ -291,10 +291,12 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll
 		}
 	}
 
+	// Display the node name in all tooltips so that long node names can be previewed
+	// without having to rename them.
 	if (p_node == get_scene_node() && p_node->get_scene_inherited_state().is_valid()) {
 		item->add_button(0, get_theme_icon(SNAME("InstanceOptions"), SNAME("EditorIcons")), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
 
-		String tooltip = TTR("Inherits:") + " " + p_node->get_scene_inherited_state()->get_path() + "\n" + TTR("Type:") + " " + p_node->get_class();
+		String tooltip = String(p_node->get_name()) + "\n" + TTR("Inherits:") + " " + p_node->get_scene_inherited_state()->get_path() + "\n" + TTR("Type:") + " " + p_node->get_class();
 		if (p_node->get_editor_description() != String()) {
 			tooltip += "\n\n" + p_node->get_editor_description();
 		}
@@ -303,7 +305,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll
 	} else if (p_node != get_scene_node() && p_node->get_filename() != "" && can_open_instance) {
 		item->add_button(0, get_theme_icon(SNAME("InstanceOptions"), SNAME("EditorIcons")), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
 
-		String tooltip = TTR("Instance:") + " " + p_node->get_filename() + "\n" + TTR("Type:") + " " + p_node->get_class();
+		String tooltip = String(p_node->get_name()) + "\n" + TTR("Instance:") + " " + p_node->get_filename() + "\n" + TTR("Type:") + " " + p_node->get_class();
 		if (p_node->get_editor_description() != String()) {
 			tooltip += "\n\n" + p_node->get_editor_description();
 		}
@@ -315,7 +317,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll
 			type = p_node->get_class();
 		}
 
-		String tooltip = TTR("Type:") + " " + type;
+		String tooltip = String(p_node->get_name()) + "\n" + TTR("Type:") + " " + type;
 		if (p_node->get_editor_description() != String()) {
 			tooltip += "\n\n" + p_node->get_editor_description();
 		}
@@ -1206,11 +1208,10 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	}
 
 	tree->connect("cell_selected", callable_mp(this, &SceneTreeEditor::_selected_changed));
-	tree->connect("item_edited", callable_mp(this, &SceneTreeEditor::_renamed), varray(), CONNECT_DEFERRED);
+	tree->connect("item_edited", callable_mp(this, &SceneTreeEditor::_renamed));
 	tree->connect("multi_selected", callable_mp(this, &SceneTreeEditor::_cell_multi_selected));
 	tree->connect("button_pressed", callable_mp(this, &SceneTreeEditor::_cell_button_pressed));
 	tree->connect("nothing_selected", callable_mp(this, &SceneTreeEditor::_deselect_items));
-	//tree->connect("item_edited", this,"_renamed",Vector<Variant>(),true);
 
 	error = memnew(AcceptDialog);
 	add_child(error);

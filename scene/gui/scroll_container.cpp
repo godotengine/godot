@@ -83,7 +83,7 @@ void ScrollContainer::_cancel_drag() {
 	}
 }
 
-void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
+void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 	ERR_FAIL_COND(p_gui_input.is_null());
 
 	double prev_v_scroll = v_scroll->get_value();
@@ -227,9 +227,6 @@ void ScrollContainer::_update_scrollbar_position() {
 	v_scroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, 0);
 	v_scroll->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 0);
 	v_scroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
-
-	h_scroll->raise();
-	v_scroll->raise();
 
 	_updating_scrollbars = false;
 }
@@ -568,7 +565,6 @@ VScrollBar *ScrollContainer::get_v_scrollbar() {
 }
 
 void ScrollContainer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &ScrollContainer::_gui_input);
 	ClassDB::bind_method(D_METHOD("_update_scrollbar_position"), &ScrollContainer::_update_scrollbar_position);
 
 	ClassDB::bind_method(D_METHOD("set_h_scroll", "value"), &ScrollContainer::set_h_scroll);
@@ -619,12 +615,12 @@ void ScrollContainer::_bind_methods() {
 ScrollContainer::ScrollContainer() {
 	h_scroll = memnew(HScrollBar);
 	h_scroll->set_name("_h_scroll");
-	add_child(h_scroll);
+	add_child(h_scroll, false, INTERNAL_MODE_BACK);
 	h_scroll->connect("value_changed", callable_mp(this, &ScrollContainer::_scroll_moved));
 
 	v_scroll = memnew(VScrollBar);
 	v_scroll->set_name("_v_scroll");
-	add_child(v_scroll);
+	add_child(v_scroll, false, INTERNAL_MODE_BACK);
 	v_scroll->connect("value_changed", callable_mp(this, &ScrollContainer::_scroll_moved));
 
 	deadzone = GLOBAL_GET("gui/common/default_scroll_deadzone");

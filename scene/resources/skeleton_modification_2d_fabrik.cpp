@@ -149,37 +149,28 @@ void SkeletonModification2DFABRIK::_execute(float p_delta) {
 			return;
 		}
 		fabrik_transform_chain.write[i] = joint_bone2d_node->get_global_transform();
-
-		// Apply magnet positions
-		if (i == 0) {
-			continue; // The origin cannot use a magnet position!
-		} else {
-			Transform2D joint_trans = fabrik_transform_chain[i];
-			joint_trans.set_origin(joint_trans.get_origin() + fabrik_data_chain[i].magnet_position);
-			fabrik_transform_chain.write[i] = joint_trans;
-		}
 	}
 
 	Bone2D *final_bone2d_node = Object::cast_to<Bone2D>(ObjectDB::get_instance(fabrik_data_chain[fabrik_data_chain.size() - 1].bone2d_node_cache));
-	float final_bone2d_angle = final_bone2d_node->get_global_transform().get_rotation();
+	float final_bone2d_angle = final_bone2d_node->get_global_rotation();
 	if (fabrik_data_chain[fabrik_data_chain.size() - 1].use_target_rotation) {
 		final_bone2d_angle = target_global_pose.get_rotation();
 	}
 	Vector2 final_bone2d_direction = Vector2(Math::cos(final_bone2d_angle), Math::sin(final_bone2d_angle));
 	float final_bone2d_length = final_bone2d_node->get_length() * MIN(final_bone2d_node->get_global_scale().x, final_bone2d_node->get_global_scale().y);
-	float target_distance = (final_bone2d_node->get_global_transform().get_origin() + (final_bone2d_direction * final_bone2d_length)).distance_to(target->get_global_transform().get_origin());
+	float target_distance = (final_bone2d_node->get_global_position() + (final_bone2d_direction * final_bone2d_length)).distance_to(target->get_global_position());
 	chain_iterations = 0;
 
 	while (target_distance > chain_tolarance) {
 		chain_backwards();
 		chain_forwards();
 
-		final_bone2d_angle = final_bone2d_node->get_global_transform().get_rotation();
+		final_bone2d_angle = final_bone2d_node->get_global_rotation();
 		if (fabrik_data_chain[fabrik_data_chain.size() - 1].use_target_rotation) {
 			final_bone2d_angle = target_global_pose.get_rotation();
 		}
 		final_bone2d_direction = Vector2(Math::cos(final_bone2d_angle), Math::sin(final_bone2d_angle));
-		target_distance = (final_bone2d_node->get_global_transform().get_origin() + (final_bone2d_direction * final_bone2d_length)).distance_to(target->get_global_transform().get_origin());
+		target_distance = (final_bone2d_node->get_global_position() + (final_bone2d_direction * final_bone2d_length)).distance_to(target->get_global_position());
 
 		chain_iterations += 1;
 		if (chain_iterations >= chain_max_iterations) {
@@ -210,7 +201,7 @@ void SkeletonModification2DFABRIK::_execute(float p_delta) {
 		chain_trans.set_rotation(chain_trans.get_rotation() - joint_bone2d_node->get_bone_angle());
 
 		// Reset scale
-		chain_trans.set_scale(joint_bone2d_node->get_global_transform().get_scale());
+		chain_trans.set_scale(joint_bone2d_node->get_global_scale());
 
 		// Apply to the bone, and to the override
 		joint_bone2d_node->set_global_transform(chain_trans);
@@ -222,6 +213,11 @@ void SkeletonModification2DFABRIK::chain_backwards() {
 	int final_joint_index = fabrik_data_chain.size() - 1;
 	Bone2D *final_bone2d_node = Object::cast_to<Bone2D>(ObjectDB::get_instance(fabrik_data_chain[final_joint_index].bone2d_node_cache));
 	Transform2D final_bone2d_trans = fabrik_transform_chain[final_joint_index];
+
+	// Apply magnet position
+	if (final_joint_index != 0) {
+		final_bone2d_trans.set_origin(final_bone2d_trans.get_origin() + fabrik_data_chain[final_joint_index].magnet_position);
+	}
 
 	// Set the rotation of the tip bone
 	final_bone2d_trans = final_bone2d_trans.looking_at(target_global_pose.get_origin());
@@ -244,6 +240,11 @@ void SkeletonModification2DFABRIK::chain_backwards() {
 		i -= 1;
 		Bone2D *current_bone2d_node = Object::cast_to<Bone2D>(ObjectDB::get_instance(fabrik_data_chain[i].bone2d_node_cache));
 		Transform2D current_pose = fabrik_transform_chain[i];
+
+		// Apply magnet position
+		if (i != 0) {
+			current_pose.set_origin(current_pose.get_origin() + fabrik_data_chain[i].magnet_position);
+		}
 
 		float current_bone2d_node_length = current_bone2d_node->get_length() * MIN(current_bone2d_node->get_global_scale().x, current_bone2d_node->get_global_scale().y);
 		float length = current_bone2d_node_length / (previous_pose.get_origin() - current_pose.get_origin()).length();

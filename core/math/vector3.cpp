@@ -32,22 +32,22 @@
 
 #include "core/math/basis.h"
 
-void Vector3::rotate(const Vector3 &p_axis, real_t p_phi) {
+void Vector3::rotate(const Vector3 &p_axis, const real_t p_phi) {
 	*this = Basis(p_axis, p_phi).xform(*this);
 }
 
-Vector3 Vector3::rotated(const Vector3 &p_axis, real_t p_phi) const {
+Vector3 Vector3::rotated(const Vector3 &p_axis, const real_t p_phi) const {
 	Vector3 r = *this;
 	r.rotate(p_axis, p_phi);
 	return r;
 }
 
-void Vector3::set_axis(int p_axis, real_t p_value) {
+void Vector3::set_axis(const int p_axis, const real_t p_value) {
 	ERR_FAIL_INDEX(p_axis, 3);
 	coord[p_axis] = p_value;
 }
 
-real_t Vector3::get_axis(int p_axis) const {
+real_t Vector3::get_axis(const int p_axis) const {
 	ERR_FAIL_INDEX_V(p_axis, 3, 0);
 	return operator[](p_axis);
 }
@@ -59,13 +59,13 @@ Vector3 Vector3::clamp(const Vector3 &p_min, const Vector3 &p_max) const {
 			CLAMP(z, p_min.z, p_max.z));
 }
 
-void Vector3::snap(Vector3 p_step) {
+void Vector3::snap(const Vector3 p_step) {
 	x = Math::snapped(x, p_step.x);
 	y = Math::snapped(y, p_step.y);
 	z = Math::snapped(z, p_step.z);
 }
 
-Vector3 Vector3::snapped(Vector3 p_step) const {
+Vector3 Vector3::snapped(const Vector3 p_step) const {
 	Vector3 v = *this;
 	v.snap(p_step);
 	return v;
@@ -82,7 +82,7 @@ Vector3 Vector3::limit_length(const real_t p_len) const {
 	return v;
 }
 
-Vector3 Vector3::cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_weight) const {
+Vector3 Vector3::cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight) const {
 	Vector3 p0 = p_pre_a;
 	Vector3 p1 = *this;
 	Vector3 p2 = p_b;

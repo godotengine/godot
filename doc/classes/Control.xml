@@ -22,9 +22,9 @@
 		<link title="All GUI Demos">https://github.com/godotengine/godot-demo-projects/tree/master/gui</link>
 	</tutorials>
 	<methods>
-		<method name="_can_drop_data" qualifiers="virtual">
+		<method name="_can_drop_data" qualifiers="virtual const">
 			<return type="bool" />
-			<argument index="0" name="position" type="Vector2" />
+			<argument index="0" name="at_position" type="Vector2" />
 			<argument index="1" name="data" type="Variant" />
 			<description>
 				Godot calls this method to test if [code]data[/code] from a control's [method _get_drag_data] can be dropped at [code]position[/code]. [code]position[/code] is local to this control.
@@ -49,7 +49,7 @@
 		</method>
 		<method name="_drop_data" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="position" type="Vector2" />
+			<argument index="0" name="at_position" type="Vector2" />
 			<argument index="1" name="data" type="Variant" />
 			<description>
 				Godot calls this method to pass you the [code]data[/code] from a control's [method _get_drag_data] result. Godot first calls [method _can_drop_data] to test if [code]data[/code] is allowed to drop at [code]position[/code] where [code]position[/code] is local to this control.
@@ -73,9 +73,9 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="_get_drag_data" qualifiers="virtual">
+		<method name="_get_drag_data" qualifiers="virtual const">
 			<return type="Variant" />
-			<argument index="0" name="position" type="Vector2" />
+			<argument index="0" name="at_position" type="Vector2" />
 			<description>
 				Godot calls this method to get data that can be dragged and dropped onto controls that expect drop data. Returns [code]null[/code] if there is no data to drag. Controls that want to receive drop data should implement [method _can_drop_data] and [method _drop_data]. [code]position[/code] is local to this control. Drag may be forced with [method force_drag].
 				A preview that will follow the mouse that should represent the data can be set with [method set_drag_preview]. A good time to set the preview is in this method.
@@ -97,7 +97,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="_get_minimum_size" qualifiers="virtual">
+		<method name="_get_minimum_size" qualifiers="virtual const">
 			<return type="Vector2" />
 			<description>
 				Virtual method to be implemented by the user. Returns the minimum size for this control. Alternative to [member rect_min_size] for controlling minimum size via code. The actual minimum size will be the max value of these two (in each axis separately).
@@ -141,15 +141,15 @@
 		</method>
 		<method name="_has_point" qualifiers="virtual const">
 			<return type="bool" />
-			<argument index="0" name="" type="Vector2" />
+			<argument index="0" name="position" type="Vector2" />
 			<description>
 				Virtual method to be implemented by the user. Returns whether the given [code]point[/code] is inside this control.
 				If not overridden, default behavior is checking if the point is within control's Rect.
 				[b]Note:[/b] If you want to check if a point is inside the control, you can use [code]get_rect().has_point(point)[/code].
 			</description>
 		</method>
-		<method name="_make_custom_tooltip" qualifiers="virtual">
-			<return type="Control" />
+		<method name="_make_custom_tooltip" qualifiers="virtual const">
+			<return type="Object" />
 			<argument index="0" name="for_text" type="String" />
 			<description>
 				Virtual method to be implemented by the user. Returns a [Control] node that should be used as a tooltip instead of the default one. The [code]for_text[/code] includes the contents of the [member hint_tooltip] property.
@@ -193,8 +193,8 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="_structured_text_parser" qualifiers="virtual">
-			<return type="void" />
+		<method name="_structured_text_parser" qualifiers="virtual const">
+			<return type="Array" />
 			<argument index="0" name="args" type="Array" />
 			<argument index="1" name="text" type="String" />
 			<description>
@@ -304,6 +304,18 @@
 				GetNode&lt;Button&gt;("MyButton").RemoveThemeStyleboxOverride("normal");
 				[/csharp]
 				[/codeblocks]
+			</description>
+		</method>
+		<method name="begin_bulk_theme_override">
+			<return type="void" />
+			<description>
+				Prevents [code]*_theme_*_override[/code] methods from emitting [constant NOTIFICATION_THEME_CHANGED] until [method end_bulk_theme_override] is called.
+			</description>
+		</method>
+		<method name="end_bulk_theme_override">
+			<return type="void" />
+			<description>
+				Ends a bulk theme override update. See [method begin_bulk_theme_override].
 			</description>
 		</method>
 		<method name="find_next_valid_focus" qualifiers="const">
@@ -909,7 +921,8 @@
 			Anchors the top edge of the node to the origin, the center or the end of its parent control. It changes how the top offset updates when the node moves or changes size. You can use one of the [enum Anchor] constants for convenience.
 		</member>
 		<member name="auto_translate" type="bool" setter="set_auto_translate" getter="is_auto_translating" default="true">
-			Toggles if any text should automatically change to its translated version depending on the current locale.
+			Toggles if any text should automatically change to its translated version depending on the current locale. Note that this will not affect any internal nodes (e.g. the popup of a [MenuButton]).
+			Also decides if the node's strings should be parsed for POT generation.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" enum="Control.FocusMode" default="0">
 			The focus access mode for the control (None, Click or All). Only one Control can be focused at the same time, and it will receive keyboard signals.

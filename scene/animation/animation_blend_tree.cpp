@@ -63,11 +63,11 @@ void AnimationNodeAnimation::_validate_property(PropertyInfo &property) const {
 	}
 }
 
-float AnimationNodeAnimation::process(float p_time, bool p_seek) {
+double AnimationNodeAnimation::process(double p_time, bool p_seek) {
 	AnimationPlayer *ap = state->player;
 	ERR_FAIL_COND_V(!ap, 0);
 
-	float time = get_parameter(this->time);
+	double time = get_parameter(this->time);
 
 	if (!ap->has_animation(animation)) {
 		AnimationNodeBlendTree *tree = Object::cast_to<AnimationNodeBlendTree>(parent);
@@ -84,7 +84,7 @@ float AnimationNodeAnimation::process(float p_time, bool p_seek) {
 
 	Ref<Animation> anim = ap->get_animation(animation);
 
-	float step;
+	double step;
 
 	if (p_seek) {
 		time = p_time;
@@ -94,7 +94,7 @@ float AnimationNodeAnimation::process(float p_time, bool p_seek) {
 		step = p_time;
 	}
 
-	float anim_size = anim->get_length();
+	double anim_size = anim->get_length();
 
 	if (anim->has_loop()) {
 		if (anim_size) {
@@ -202,12 +202,12 @@ bool AnimationNodeOneShot::has_filter() const {
 	return true;
 }
 
-float AnimationNodeOneShot::process(float p_time, bool p_seek) {
+double AnimationNodeOneShot::process(double p_time, bool p_seek) {
 	bool active = get_parameter(this->active);
 	bool prev_active = get_parameter(this->prev_active);
-	float time = get_parameter(this->time);
-	float remaining = get_parameter(this->remaining);
-	float time_to_restart = get_parameter(this->time_to_restart);
+	double time = get_parameter(this->time);
+	double remaining = get_parameter(this->remaining);
+	double time_to_restart = get_parameter(this->time_to_restart);
 
 	if (!active) {
 		//make it as if this node doesn't exist, pass input 0 by.
@@ -370,9 +370,9 @@ bool AnimationNodeAdd2::has_filter() const {
 	return true;
 }
 
-float AnimationNodeAdd2::process(float p_time, bool p_seek) {
-	float amount = get_parameter(add_amount);
-	float rem0 = blend_input(0, p_time, p_seek, 1.0, FILTER_IGNORE, !sync);
+double AnimationNodeAdd2::process(double p_time, bool p_seek) {
+	double amount = get_parameter(add_amount);
+	double rem0 = blend_input(0, p_time, p_seek, 1.0, FILTER_IGNORE, !sync);
 	blend_input(1, p_time, p_seek, amount, FILTER_PASS, !sync);
 
 	return rem0;
@@ -416,10 +416,10 @@ bool AnimationNodeAdd3::has_filter() const {
 	return true;
 }
 
-float AnimationNodeAdd3::process(float p_time, bool p_seek) {
-	float amount = get_parameter(add_amount);
+double AnimationNodeAdd3::process(double p_time, bool p_seek) {
+	double amount = get_parameter(add_amount);
 	blend_input(0, p_time, p_seek, MAX(0, -amount), FILTER_PASS, !sync);
-	float rem0 = blend_input(1, p_time, p_seek, 1.0, FILTER_IGNORE, !sync);
+	double rem0 = blend_input(1, p_time, p_seek, 1.0, FILTER_IGNORE, !sync);
 	blend_input(2, p_time, p_seek, MAX(0, amount), FILTER_PASS, !sync);
 
 	return rem0;
@@ -452,11 +452,11 @@ String AnimationNodeBlend2::get_caption() const {
 	return "Blend2";
 }
 
-float AnimationNodeBlend2::process(float p_time, bool p_seek) {
-	float amount = get_parameter(blend_amount);
+double AnimationNodeBlend2::process(double p_time, bool p_seek) {
+	double amount = get_parameter(blend_amount);
 
-	float rem0 = blend_input(0, p_time, p_seek, 1.0 - amount, FILTER_BLEND, !sync);
-	float rem1 = blend_input(1, p_time, p_seek, amount, FILTER_PASS, !sync);
+	double rem0 = blend_input(0, p_time, p_seek, 1.0 - amount, FILTER_BLEND, !sync);
+	double rem1 = blend_input(1, p_time, p_seek, amount, FILTER_PASS, !sync);
 
 	return amount > 0.5 ? rem1 : rem0; //hacky but good enough
 }
@@ -507,11 +507,11 @@ bool AnimationNodeBlend3::is_using_sync() const {
 	return sync;
 }
 
-float AnimationNodeBlend3::process(float p_time, bool p_seek) {
-	float amount = get_parameter(blend_amount);
-	float rem0 = blend_input(0, p_time, p_seek, MAX(0, -amount), FILTER_IGNORE, !sync);
-	float rem1 = blend_input(1, p_time, p_seek, 1.0 - ABS(amount), FILTER_IGNORE, !sync);
-	float rem2 = blend_input(2, p_time, p_seek, MAX(0, amount), FILTER_IGNORE, !sync);
+double AnimationNodeBlend3::process(double p_time, bool p_seek) {
+	double amount = get_parameter(blend_amount);
+	double rem0 = blend_input(0, p_time, p_seek, MAX(0, -amount), FILTER_IGNORE, !sync);
+	double rem1 = blend_input(1, p_time, p_seek, 1.0 - ABS(amount), FILTER_IGNORE, !sync);
+	double rem2 = blend_input(2, p_time, p_seek, MAX(0, amount), FILTER_IGNORE, !sync);
 
 	return amount > 0.5 ? rem2 : (amount < -0.5 ? rem0 : rem1); //hacky but good enough
 }
@@ -545,8 +545,8 @@ String AnimationNodeTimeScale::get_caption() const {
 	return "TimeScale";
 }
 
-float AnimationNodeTimeScale::process(float p_time, bool p_seek) {
-	float scale = get_parameter(this->scale);
+double AnimationNodeTimeScale::process(double p_time, bool p_seek) {
+	double scale = get_parameter(this->scale);
 	if (p_seek) {
 		return blend_input(0, p_time, true, 1.0, FILTER_IGNORE, false);
 	} else {
@@ -575,12 +575,12 @@ String AnimationNodeTimeSeek::get_caption() const {
 	return "Seek";
 }
 
-float AnimationNodeTimeSeek::process(float p_time, bool p_seek) {
-	float seek_pos = get_parameter(this->seek_pos);
+double AnimationNodeTimeSeek::process(double p_time, bool p_seek) {
+	double seek_pos = get_parameter(this->seek_pos);
 	if (p_seek) {
 		return blend_input(0, p_time, true, 1.0, FILTER_IGNORE, false);
 	} else if (seek_pos >= 0) {
-		float ret = blend_input(0, seek_pos, true, 1.0, FILTER_IGNORE, false);
+		double ret = blend_input(0, seek_pos, true, 1.0, FILTER_IGNORE, false);
 		set_parameter(this->seek_pos, -1.0); //reset
 		return ret;
 	} else {
@@ -676,13 +676,13 @@ float AnimationNodeTransition::get_cross_fade_time() const {
 	return xfade;
 }
 
-float AnimationNodeTransition::process(float p_time, bool p_seek) {
+double AnimationNodeTransition::process(double p_time, bool p_seek) {
 	int current = get_parameter(this->current);
 	int prev = get_parameter(this->prev);
 	int prev_current = get_parameter(this->prev_current);
 
-	float time = get_parameter(this->time);
-	float prev_xfading = get_parameter(this->prev_xfading);
+	double time = get_parameter(this->time);
+	double prev_xfading = get_parameter(this->prev_xfading);
 
 	bool switched = current != prev_current;
 
@@ -794,7 +794,7 @@ String AnimationNodeOutput::get_caption() const {
 	return "Output";
 }
 
-float AnimationNodeOutput::process(float p_time, bool p_seek) {
+double AnimationNodeOutput::process(double p_time, bool p_seek) {
 	return blend_input(0, p_time, p_seek, 1.0);
 }
 
@@ -1007,7 +1007,7 @@ String AnimationNodeBlendTree::get_caption() const {
 	return "BlendTree";
 }
 
-float AnimationNodeBlendTree::process(float p_time, bool p_seek) {
+double AnimationNodeBlendTree::process(double p_time, bool p_seek) {
 	Ref<AnimationNodeOutput> output = nodes[SceneStringNames::get_singleton()->output].node;
 	return _blend_node("output", nodes[SceneStringNames::get_singleton()->output].connections, this, output, p_time, p_seek, 1.0);
 }
@@ -1124,6 +1124,7 @@ void AnimationNodeBlendTree::_get_property_list(List<PropertyInfo> *p_list) cons
 void AnimationNodeBlendTree::reset_state() {
 	graph_offset = Vector2();
 	nodes.clear();
+	_initialize_node_tree();
 	emit_changed();
 	emit_signal(SNAME("tree_changed"));
 }
@@ -1162,7 +1163,7 @@ void AnimationNodeBlendTree::_bind_methods() {
 	BIND_CONSTANT(CONNECTION_ERROR_CONNECTION_EXISTS);
 }
 
-AnimationNodeBlendTree::AnimationNodeBlendTree() {
+void AnimationNodeBlendTree::_initialize_node_tree() {
 	Ref<AnimationNodeOutput> output;
 	output.instantiate();
 	Node n;
@@ -1170,6 +1171,10 @@ AnimationNodeBlendTree::AnimationNodeBlendTree() {
 	n.position = Vector2(300, 150);
 	n.connections.resize(1);
 	nodes["output"] = n;
+}
+
+AnimationNodeBlendTree::AnimationNodeBlendTree() {
+	_initialize_node_tree();
 }
 
 AnimationNodeBlendTree::~AnimationNodeBlendTree() {

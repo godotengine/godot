@@ -30,289 +30,17 @@
 
 #include "canvas_item.h"
 
-#include "core/input/input.h"
 #include "core/object/message_queue.h"
 #include "scene/2d/canvas_group.h"
 #include "scene/main/canvas_layer.h"
-#include "scene/main/viewport.h"
 #include "scene/main/window.h"
+#include "scene/resources/canvas_item_material.h"
 #include "scene/resources/font.h"
+#include "scene/resources/multimesh.h"
 #include "scene/resources/style_box.h"
-#include "scene/resources/texture.h"
+#include "scene/resources/world_2d.h"
 #include "scene/scene_string_names.h"
-#include "servers/rendering_server.h"
 
-Mutex CanvasItemMaterial::material_mutex;
-SelfList<CanvasItemMaterial>::List *CanvasItemMaterial::dirty_materials = nullptr;
-Map<CanvasItemMaterial::MaterialKey, CanvasItemMaterial::ShaderData> CanvasItemMaterial::shader_map;
-CanvasItemMaterial::ShaderNames *CanvasItemMaterial::shader_names = nullptr;
-
-void CanvasItemMaterial::init_shaders() {
-	dirty_materials = memnew(SelfList<CanvasItemMaterial>::List);
-
-	shader_names = memnew(ShaderNames);
-
-	shader_names->particles_anim_h_frames = "particles_anim_h_frames";
-	shader_names->particles_anim_v_frames = "particles_anim_v_frames";
-	shader_names->particles_anim_loop = "particles_anim_loop";
-}
-
-void CanvasItemMaterial::finish_shaders() {
-	memdelete(dirty_materials);
-	memdelete(shader_names);
-	dirty_materials = nullptr;
-}
-
-void CanvasItemMaterial::_update_shader() {
-	dirty_materials->remove(&element);
-
-	MaterialKey mk = _compute_key();
-	if (mk.key == current_key.key) {
-		return; //no update required in the end
-	}
-
-	if (shader_map.has(current_key)) {
-		shader_map[current_key].users--;
-		if (shader_map[current_key].users == 0) {
-			//deallocate shader, as it's no longer in use
-			RS::get_singleton()->free(shader_map[current_key].shader);
-			shader_map.erase(current_key);
-		}
-	}
-
-	current_key = mk;
-
-	if (shader_map.has(mk)) {
-		RS::get_singleton()->material_set_shader(_get_material(), shader_map[mk].shader);
-		shader_map[mk].users++;
-		return;
-	}
-
-	//must create a shader!
-
-	String code = "shader_type canvas_item;\nrender_mode ";
-	switch (blend_mode) {
-		case BLEND_MODE_MIX:
-			code += "blend_mix";
-			break;
-		case BLEND_MODE_ADD:
-			code += "blend_add";
-			break;
-		case BLEND_MODE_SUB:
-			code += "blend_sub";
-			break;
-		case BLEND_MODE_MUL:
-			code += "blend_mul";
-			break;
-		case BLEND_MODE_PREMULT_ALPHA:
-			code += "blend_premul_alpha";
-			break;
-		case BLEND_MODE_DISABLED:
-			code += "blend_disabled";
-			break;
-	}
-
-	switch (light_mode) {
-		case LIGHT_MODE_NORMAL:
-			break;
-		case LIGHT_MODE_UNSHADED:
-			code += ",unshaded";
-			break;
-		case LIGHT_MODE_LIGHT_ONLY:
-			code += ",light_only";
-			break;
-	}
-
-	code += ";\n";
-
-	if (particles_animation) {
-		code += "uniform int particles_anim_h_frames;\n";
-		code += "uniform int particles_anim_v_frames;\n";
-		code += "uniform bool particles_anim_loop;\n\n";
-
-		code += "void vertex() {\n";
-		code += "	float h_frames = float(particles_anim_h_frames);\n";
-		code += "	float v_frames = float(particles_anim_v_frames);\n";
-		code += "	VERTEX.xy /= vec2(h_frames, v_frames);\n";
-		code += "	float particle_total_frames = float(particles_anim_h_frames * particles_anim_v_frames);\n";
-		code += "	float particle_frame = floor(INSTANCE_CUSTOM.z * float(particle_total_frames));\n";
-		code += "	if (!particles_anim_loop) {\n";
-		code += "		particle_frame = clamp(particle_frame, 0.0, particle_total_frames - 1.0);\n";
-		code += "	} else {\n";
-		code += "		particle_frame = mod(particle_frame, particle_total_frames);\n";
-		code += "	}";
-		code += "	UV /= vec2(h_frames, v_frames);\n";
-		code += "	UV += vec2(mod(particle_frame, h_frames) / h_frames, floor(particle_frame / h_frames) / v_frames);\n";
-		code += "}\n";
-	}
-
-	ShaderData shader_data;
-	shader_data.shader = RS::get_singleton()->shader_create();
-	shader_data.users = 1;
-
-	RS::get_singleton()->shader_set_code(shader_data.shader, code);
-
-	shader_map[mk] = shader_data;
-
-	RS::get_singleton()->material_set_shader(_get_material(), shader_data.shader);
-}
-
-void CanvasItemMaterial::flush_changes() {
-	MutexLock lock(material_mutex);
-
-	while (dirty_materials->first()) {
-		dirty_materials->first()->self()->_update_shader();
-	}
-}
-
-void CanvasItemMaterial::_queue_shader_change() {
-	MutexLock lock(material_mutex);
-
-	if (!element.in_list()) {
-		dirty_materials->add(&element);
-	}
-}
-
-bool CanvasItemMaterial::_is_shader_dirty() const {
-	MutexLock lock(material_mutex);
-
-	return element.in_list();
-}
-
-void CanvasItemMaterial::set_blend_mode(BlendMode p_blend_mode) {
-	blend_mode = p_blend_mode;
-	_queue_shader_change();
-}
-
-CanvasItemMaterial::BlendMode CanvasItemMaterial::get_blend_mode() const {
-	return blend_mode;
-}
-
-void CanvasItemMaterial::set_light_mode(LightMode p_light_mode) {
-	light_mode = p_light_mode;
-	_queue_shader_change();
-}
-
-CanvasItemMaterial::LightMode CanvasItemMaterial::get_light_mode() const {
-	return light_mode;
-}
-
-void CanvasItemMaterial::set_particles_animation(bool p_particles_anim) {
-	particles_animation = p_particles_anim;
-	_queue_shader_change();
-	notify_property_list_changed();
-}
-
-bool CanvasItemMaterial::get_particles_animation() const {
-	return particles_animation;
-}
-
-void CanvasItemMaterial::set_particles_anim_h_frames(int p_frames) {
-	particles_anim_h_frames = p_frames;
-	RS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_h_frames, p_frames);
-}
-
-int CanvasItemMaterial::get_particles_anim_h_frames() const {
-	return particles_anim_h_frames;
-}
-
-void CanvasItemMaterial::set_particles_anim_v_frames(int p_frames) {
-	particles_anim_v_frames = p_frames;
-	RS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_v_frames, p_frames);
-}
-
-int CanvasItemMaterial::get_particles_anim_v_frames() const {
-	return particles_anim_v_frames;
-}
-
-void CanvasItemMaterial::set_particles_anim_loop(bool p_loop) {
-	particles_anim_loop = p_loop;
-	RS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_loop, particles_anim_loop);
-}
-
-bool CanvasItemMaterial::get_particles_anim_loop() const {
-	return particles_anim_loop;
-}
-
-void CanvasItemMaterial::_validate_property(PropertyInfo &property) const {
-	if (property.name.begins_with("particles_anim_") && !particles_animation) {
-		property.usage = PROPERTY_USAGE_NONE;
-	}
-}
-
-RID CanvasItemMaterial::get_shader_rid() const {
-	ERR_FAIL_COND_V(!shader_map.has(current_key), RID());
-	return shader_map[current_key].shader;
-}
-
-Shader::Mode CanvasItemMaterial::get_shader_mode() const {
-	return Shader::MODE_CANVAS_ITEM;
-}
-
-void CanvasItemMaterial::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_blend_mode", "blend_mode"), &CanvasItemMaterial::set_blend_mode);
-	ClassDB::bind_method(D_METHOD("get_blend_mode"), &CanvasItemMaterial::get_blend_mode);
-
-	ClassDB::bind_method(D_METHOD("set_light_mode", "light_mode"), &CanvasItemMaterial::set_light_mode);
-	ClassDB::bind_method(D_METHOD("get_light_mode"), &CanvasItemMaterial::get_light_mode);
-
-	ClassDB::bind_method(D_METHOD("set_particles_animation", "particles_anim"), &CanvasItemMaterial::set_particles_animation);
-	ClassDB::bind_method(D_METHOD("get_particles_animation"), &CanvasItemMaterial::get_particles_animation);
-
-	ClassDB::bind_method(D_METHOD("set_particles_anim_h_frames", "frames"), &CanvasItemMaterial::set_particles_anim_h_frames);
-	ClassDB::bind_method(D_METHOD("get_particles_anim_h_frames"), &CanvasItemMaterial::get_particles_anim_h_frames);
-
-	ClassDB::bind_method(D_METHOD("set_particles_anim_v_frames", "frames"), &CanvasItemMaterial::set_particles_anim_v_frames);
-	ClassDB::bind_method(D_METHOD("get_particles_anim_v_frames"), &CanvasItemMaterial::get_particles_anim_v_frames);
-
-	ClassDB::bind_method(D_METHOD("set_particles_anim_loop", "loop"), &CanvasItemMaterial::set_particles_anim_loop);
-	ClassDB::bind_method(D_METHOD("get_particles_anim_loop"), &CanvasItemMaterial::get_particles_anim_loop);
-
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_mode", PROPERTY_HINT_ENUM, "Mix,Add,Subtract,Multiply,Premultiplied Alpha"), "set_blend_mode", "get_blend_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_mode", PROPERTY_HINT_ENUM, "Normal,Unshaded,Light Only"), "set_light_mode", "get_light_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "particles_animation"), "set_particles_animation", "get_particles_animation");
-
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "particles_anim_h_frames", PROPERTY_HINT_RANGE, "1,128,1"), "set_particles_anim_h_frames", "get_particles_anim_h_frames");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "particles_anim_v_frames", PROPERTY_HINT_RANGE, "1,128,1"), "set_particles_anim_v_frames", "get_particles_anim_v_frames");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "particles_anim_loop"), "set_particles_anim_loop", "get_particles_anim_loop");
-
-	BIND_ENUM_CONSTANT(BLEND_MODE_MIX);
-	BIND_ENUM_CONSTANT(BLEND_MODE_ADD);
-	BIND_ENUM_CONSTANT(BLEND_MODE_SUB);
-	BIND_ENUM_CONSTANT(BLEND_MODE_MUL);
-	BIND_ENUM_CONSTANT(BLEND_MODE_PREMULT_ALPHA);
-
-	BIND_ENUM_CONSTANT(LIGHT_MODE_NORMAL);
-	BIND_ENUM_CONSTANT(LIGHT_MODE_UNSHADED);
-	BIND_ENUM_CONSTANT(LIGHT_MODE_LIGHT_ONLY);
-}
-
-CanvasItemMaterial::CanvasItemMaterial() :
-		element(this) {
-	set_particles_anim_h_frames(1);
-	set_particles_anim_v_frames(1);
-	set_particles_anim_loop(false);
-
-	current_key.invalid_key = 1;
-	_queue_shader_change();
-}
-
-CanvasItemMaterial::~CanvasItemMaterial() {
-	MutexLock lock(material_mutex);
-
-	if (shader_map.has(current_key)) {
-		shader_map[current_key].users--;
-		if (shader_map[current_key].users == 0) {
-			//deallocate shader, as it's no longer in use
-			RS::get_singleton()->free(shader_map[current_key].shader);
-			shader_map.erase(current_key);
-		}
-
-		RS::get_singleton()->material_set_shader(_get_material(), RID());
-	}
-}
-
-///////////////////////////////////////////////////////////////////
 #ifdef TOOLS_ENABLED
 bool CanvasItem::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 	if (_edit_use_rect()) {
@@ -423,9 +151,7 @@ void CanvasItem::_update_callback() {
 		current_item_drawn = this;
 		notification(NOTIFICATION_DRAW);
 		emit_signal(SceneStringNames::get_singleton()->draw);
-		if (get_script_instance()) {
-			get_script_instance()->call(SceneStringNames::get_singleton()->_draw);
-		}
+		GDVIRTUAL_CALL(_draw);
 		current_item_drawn = nullptr;
 		drawing = false;
 	}
@@ -845,6 +571,12 @@ void CanvasItem::draw_texture_rect_region(const Ref<Texture2D> &p_texture, const
 	p_texture->draw_rect_region(canvas_item, p_rect, p_src_rect, p_modulate, p_transpose, p_clip_uv);
 }
 
+void CanvasItem::draw_msdf_texture_rect_region(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, double p_outline, double p_pixel_range) {
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
+	ERR_FAIL_COND(p_texture.is_null());
+	RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(canvas_item, p_rect, p_texture->get_rid(), p_src_rect, p_modulate, p_outline, p_pixel_range);
+}
+
 void CanvasItem::draw_style_box(const Ref<StyleBox> &p_style_box, const Rect2 &p_rect) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
@@ -1155,6 +887,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_texture", "texture", "position", "modulate"), &CanvasItem::draw_texture, DEFVAL(Color(1, 1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("draw_texture_rect", "texture", "rect", "tile", "modulate", "transpose"), &CanvasItem::draw_texture_rect, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_texture_rect_region", "texture", "rect", "src_rect", "modulate", "transpose", "clip_uv"), &CanvasItem::draw_texture_rect_region, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(false), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("draw_msdf_texture_rect_region", "texture", "rect", "src_rect", "modulate", "outline", "pixel_range"), &CanvasItem::draw_msdf_texture_rect_region, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(0.0), DEFVAL(4.0));
 	ClassDB::bind_method(D_METHOD("draw_style_box", "style_box", "rect"), &CanvasItem::draw_style_box);
 	ClassDB::bind_method(D_METHOD("draw_primitive", "points", "colors", "uvs", "texture", "width"), &CanvasItem::draw_primitive, DEFVAL(Ref<Texture2D>()), DEFVAL(1.0));
 	ClassDB::bind_method(D_METHOD("draw_polygon", "points", "colors", "uvs", "texture"), &CanvasItem::draw_polygon, DEFVAL(PackedVector2Array()), DEFVAL(Ref<Texture2D>()));
@@ -1206,7 +939,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_clip_children", "enable"), &CanvasItem::set_clip_children);
 	ClassDB::bind_method(D_METHOD("is_clipping_children"), &CanvasItem::is_clipping_children);
 
-	BIND_VMETHOD(MethodInfo("_draw"));
+	GDVIRTUAL_BIND(_draw);
 
 	ADD_GROUP("Visibility", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");

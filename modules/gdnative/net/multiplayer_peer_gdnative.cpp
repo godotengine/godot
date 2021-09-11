@@ -72,14 +72,14 @@ int MultiplayerPeerGDNative::get_transfer_channel() const {
 	return interface->get_transfer_channel(interface->data);
 }
 
-void MultiplayerPeerGDNative::set_transfer_mode(TransferMode p_mode) {
+void MultiplayerPeerGDNative::set_transfer_mode(Multiplayer::TransferMode p_mode) {
 	ERR_FAIL_COND(interface == nullptr);
 	interface->set_transfer_mode(interface->data, (godot_int)p_mode);
 }
 
-MultiplayerPeer::TransferMode MultiplayerPeerGDNative::get_transfer_mode() const {
-	ERR_FAIL_COND_V(interface == nullptr, TRANSFER_MODE_UNRELIABLE);
-	return (TransferMode)interface->get_transfer_mode(interface->data);
+Multiplayer::TransferMode MultiplayerPeerGDNative::get_transfer_mode() const {
+	ERR_FAIL_COND_V(interface == nullptr, Multiplayer::TRANSFER_MODE_UNRELIABLE);
+	return (Multiplayer::TransferMode)interface->get_transfer_mode(interface->data);
 }
 
 void MultiplayerPeerGDNative::set_target_peer(int p_peer_id) {
@@ -124,7 +124,7 @@ MultiplayerPeer::ConnectionStatus MultiplayerPeerGDNative::get_connection_status
 
 void MultiplayerPeerGDNative::_bind_methods() {
 	ADD_PROPERTY_DEFAULT("transfer_channel", 0);
-	ADD_PROPERTY_DEFAULT("transfer_mode", TRANSFER_MODE_UNRELIABLE);
+	ADD_PROPERTY_DEFAULT("transfer_mode", Multiplayer::TRANSFER_MODE_UNRELIABLE);
 	ADD_PROPERTY_DEFAULT("refuse_new_connections", true);
 }
 

@@ -32,7 +32,6 @@
 #define NAVIGATION_OBSTACLE_H
 
 #include "scene/3d/node_3d.h"
-#include "scene/main/node.h"
 
 class NavigationObstacle3D : public Node {
 	GDCLASS(NavigationObstacle3D, Node);

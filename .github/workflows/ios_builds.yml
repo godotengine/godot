@@ -7,6 +7,10 @@ env:
   SCONSFLAGS: platform=iphone verbose=yes warnings=extra werror=yes debug_symbols=no --jobs=2 module_text_server_fb_enabled=yes
   SCONS_CACHE_LIMIT: 4096
 
+concurrency:
+  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-ios
+  cancel-in-progress: true
+
 jobs:
   ios-template:
     runs-on: "macos-latest"
@@ -26,6 +30,7 @@ jobs:
             ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
             ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
             ${{github.job}}-${{env.GODOT_BASE_BRANCH}}
+        continue-on-error: true
 
       # Use python 3.x release (works cross platform)
       - name: Set up Python 3.x

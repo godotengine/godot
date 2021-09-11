@@ -350,6 +350,7 @@ msgstr "Canviar Mode de bucle d'Animació"
 msgid "Remove Anim Track"
 msgstr "Treu la Pista"
 
+#. TRANSLATORS: %s will be replaced by a phrase describing the target of track.
 #: editor/animation_track_editor.cpp
 msgid "Create NEW track for %s and insert key?"
 msgstr "Voleu crear una NOVA pista per a %s i inserir-hi una clau?"
@@ -374,10 +375,28 @@ msgstr "Crea"
 msgid "Anim Insert"
 msgstr "Insereix una Animació"
 
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "node '%s'"
+msgstr "No es pot obrir '%s' ."
+
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "animation"
+msgstr "Animació"
+
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
 msgstr ""
 "Un AnimationPlayer no pot animar-se a si mateix, només altres reproductors."
+
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "property '%s'"
+msgstr "No existeix cap propietat '%s'."
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -958,7 +977,7 @@ msgstr "Crea Nou %s"
 msgid "No results for \"%s\"."
 msgstr "No hi ha cap resultat per a «%s»."
 
-#: editor/create_dialog.cpp
+#: editor/create_dialog.cpp editor/property_selector.cpp
 msgid "No description available for %s."
 msgstr ""
 
@@ -2315,6 +2334,17 @@ msgid "New Window"
 msgstr "Finestra nova"
 
 #: editor/editor_node.cpp
+msgid ""
+"Spins when the editor window redraws.\n"
+"Update Continuously is enabled, which can increase power usage. Click to "
+"disable it."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Spins when the editor window redraws."
+msgstr "Gira quan la finestra de l'editor es redibuixa."
+
+#: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
 msgstr "Els recursos importats no es poden desar."
 
@@ -3190,10 +3220,6 @@ msgid "Save & Restart"
 msgstr "Desa i Reinicia"
 
 #: editor/editor_node.cpp
-msgid "Spins when the editor window redraws."
-msgstr "Gira quan la finestra de l'editor es redibuixa."
-
-#: editor/editor_node.cpp
 msgid "Update Continuously"
 msgstr "Actualitzar contínuament"
 
@@ -3866,6 +3892,16 @@ msgstr "Valor inicial per al comptador"
 #, fuzzy
 msgid "Download from:"
 msgstr "Error en la Baixada"
+
+#: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Open in Web Browser"
+msgstr "Executa-ho en el Navegador"
+
+#: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Copy Mirror URL"
+msgstr "Copia l'error"
 
 #: editor/export_template_manager.cpp
 msgid "Download and Install"
@@ -8863,6 +8899,12 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"Select a theme type from the list to edit its items.\n"
+"You can add a custom type or import a type with its items from another theme."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
 msgid "Remove All Color Items"
 msgstr "Treu tots els Elements"
@@ -8891,6 +8933,12 @@ msgstr "Treu tots els Elements"
 #, fuzzy
 msgid "Remove All StyleBox Items"
 msgstr "Treu tots els Elements"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"This theme type is empty.\n"
+"Add more items to it manually or by importing from another theme."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -12713,6 +12761,16 @@ msgstr "Modifica l'alçada de la Forma Caixa"
 msgid "Change Ray Shape Length"
 msgstr "Modifica la longitud de la Forma Raig"
 
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Room Point Position"
+msgstr "Estableix la Posició del Punt de la Corba"
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Portal Point Position"
+msgstr "Estableix la Posició del Punt de la Corba"
+
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Radius"
 msgstr "Canviar Radi del Cilindre"
@@ -14528,6 +14586,42 @@ msgstr ""
 msgid "There should only be one RoomManager in the SceneTree."
 msgstr ""
 
+#: scene/3d/room_manager.cpp
+msgid ""
+"RoomList path is invalid.\n"
+"Please check the RoomList branch has been assigned in the RoomManager."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "RoomList contains no Rooms, aborting."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "Misnamed nodes detected, check output log for details. Aborting."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "Portal link room not found, check output log for details."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Portal autolink failed, check output log for details.\n"
+"Check the portal is facing outwards from the source room."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Room overlap detected, cameras may work incorrectly in overlapping area.\n"
+"Check output log for details."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Error calculating room bounds.\n"
+"Ensure all rooms contain geometry or manual bounds."
+msgstr ""
+
 #: scene/3d/soft_body.cpp
 #, fuzzy
 msgid "This body will be ignored until you set a mesh."
@@ -15819,9 +15913,6 @@ msgstr "Les constants no es poden modificar."
 
 #~ msgid "I see..."
 #~ msgstr "Vaja..."
-
-#~ msgid "Can't open '%s'."
-#~ msgstr "No es pot obrir '%s' ."
 
 #~ msgid "Ugh"
 #~ msgstr "Uf..."

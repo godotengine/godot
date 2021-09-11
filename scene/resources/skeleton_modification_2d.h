@@ -57,6 +57,10 @@ protected:
 
 	bool _print_execution_error(bool p_condition, String p_message);
 
+	GDVIRTUAL1(_execute, double)
+	GDVIRTUAL1(_setup_modification, Ref<SkeletonModificationStack2D>)
+	GDVIRTUAL0(_draw_editor_gizmo)
+
 public:
 	virtual void _execute(float _delta);
 	virtual void _setup_modification(SkeletonModificationStack2D *p_stack);

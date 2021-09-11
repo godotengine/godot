@@ -92,7 +92,7 @@ public:
 
 	void append_array(Vector<T> p_other);
 
-	bool has(const T &p_val) {
+	bool has(const T &p_val) const {
 		return find(p_val, 0) != -1;
 	}
 
@@ -229,7 +229,7 @@ public:
 		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return elem_ptr == b.elem_ptr; }
 		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return elem_ptr != b.elem_ptr; }
 
-		ConstIterator(T *p_ptr) { elem_ptr = p_ptr; }
+		ConstIterator(const T *p_ptr) { elem_ptr = p_ptr; }
 		ConstIterator() {}
 		ConstIterator(const ConstIterator &p_it) { elem_ptr = p_it.elem_ptr; }
 

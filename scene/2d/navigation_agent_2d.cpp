@@ -30,7 +30,6 @@
 
 #include "navigation_agent_2d.h"
 
-#include "core/config/engine.h"
 #include "core/math/geometry_2d.h"
 #include "servers/navigation_server_2d.h"
 
@@ -103,7 +102,7 @@ void NavigationAgent2D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (agent_parent) {
-				NavigationServer2D::get_singleton()->agent_set_position(agent, agent_parent->get_global_transform().get_origin());
+				NavigationServer2D::get_singleton()->agent_set_position(agent, agent_parent->get_global_position());
 				_check_distance_to_target();
 			}
 		} break;
@@ -186,7 +185,7 @@ Vector2 NavigationAgent2D::get_next_location() {
 	update_navigation();
 	if (navigation_path.size() == 0) {
 		ERR_FAIL_COND_V(agent_parent == nullptr, Vector2());
-		return agent_parent->get_global_transform().get_origin();
+		return agent_parent->get_global_position();
 	} else {
 		return navigation_path[nav_path_index];
 	}
@@ -194,7 +193,7 @@ Vector2 NavigationAgent2D::get_next_location() {
 
 real_t NavigationAgent2D::distance_to_target() const {
 	ERR_FAIL_COND_V(agent_parent == nullptr, 0.0);
-	return agent_parent->get_global_transform().get_origin().distance_to(target_location);
+	return agent_parent->get_global_position().distance_to(target_location);
 }
 
 bool NavigationAgent2D::is_target_reached() const {
@@ -261,7 +260,7 @@ void NavigationAgent2D::update_navigation() {
 
 	update_frame_id = Engine::get_singleton()->get_physics_frames();
 
-	Vector2 o = agent_parent->get_global_transform().get_origin();
+	Vector2 o = agent_parent->get_global_position();
 
 	bool reload_path = false;
 

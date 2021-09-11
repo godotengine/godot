@@ -847,6 +847,8 @@ EditorResourcePicker::EditorResourcePicker() {
 	edit_button->connect("gui_input", callable_mp(this, &EditorResourcePicker::_button_input));
 }
 
+// EditorScriptPicker
+
 void EditorScriptPicker::set_create_options(Object *p_menu_node) {
 	PopupMenu *menu_node = Object::cast_to<PopupMenu>(p_menu_node);
 	if (!menu_node) {
@@ -894,4 +896,43 @@ void EditorScriptPicker::_bind_methods() {
 }
 
 EditorScriptPicker::EditorScriptPicker() {
+}
+
+// EditorShaderPicker
+
+void EditorShaderPicker::set_create_options(Object *p_menu_node) {
+	PopupMenu *menu_node = Object::cast_to<PopupMenu>(p_menu_node);
+	if (!menu_node) {
+		return;
+	}
+
+	menu_node->add_icon_item(get_theme_icon("Shader", "EditorIcons"), TTR("New Shader"), OBJ_MENU_NEW_SHADER);
+	menu_node->add_separator();
+}
+
+bool EditorShaderPicker::handle_menu_selected(int p_which) {
+	Ref<ShaderMaterial> material = Ref<ShaderMaterial>(get_edited_material());
+
+	switch (p_which) {
+		case OBJ_MENU_NEW_SHADER: {
+			if (material.is_valid()) {
+				EditorNode::get_singleton()->get_scene_tree_dock()->open_shader_dialog(material);
+				return true;
+			}
+		} break;
+		default:
+			break;
+	}
+	return false;
+}
+
+void EditorShaderPicker::set_edited_material(ShaderMaterial *p_material) {
+	edited_material = p_material;
+}
+
+ShaderMaterial *EditorShaderPicker::get_edited_material() const {
+	return edited_material;
+}
+
+EditorShaderPicker::EditorShaderPicker() {
 }

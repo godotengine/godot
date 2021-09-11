@@ -7,6 +7,7 @@
 		Provides direct access to a physics body in the [PhysicsServer2D], allowing safe changes to physics properties. This object is passed via the direct state callback of dynamic bodies, and is intended for changing the direct state of that body. See [method RigidBody2D._integrate_forces].
 	</description>
 	<tutorials>
+		<link title="Physics introduction">https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html</link>
 		<link title="Ray-casting">https://docs.godotengine.org/en/latest/tutorials/physics/ray-casting.html</link>
 	</tutorials>
 	<methods>
@@ -137,6 +138,13 @@
 				Returns the current state of the space, useful for queries.
 			</description>
 		</method>
+		<method name="get_velocity_at_local_position" qualifiers="const">
+			<return type="Vector2" />
+			<argument index="0" name="local_position" type="Vector2" />
+			<description>
+				Returns the body's velocity at the given relative position, including both translation and rotation.
+			</description>
+		</method>
 		<method name="integrate_forces">
 			<return type="void" />
 			<description>
@@ -147,6 +155,9 @@
 	<members>
 		<member name="angular_velocity" type="float" setter="set_angular_velocity" getter="get_angular_velocity">
 			The body's rotational velocity.
+		</member>
+		<member name="center_of_mass" type="Vector2" setter="" getter="get_center_of_mass">
+			The body's center of mass.
 		</member>
 		<member name="inverse_inertia" type="float" setter="" getter="get_inverse_inertia">
 			The inverse of the inertia of the body.

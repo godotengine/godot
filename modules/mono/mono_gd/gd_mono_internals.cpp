@@ -45,7 +45,7 @@
 namespace GDMonoInternals {
 void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 	// This method should not fail
-#if 0
+
 	CRASH_COND(!unmanaged);
 
 	// All mono objects created from the managed world (e.g.: 'new Player()')
@@ -89,12 +89,16 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 		}
 
 		// The object was just created, no script instance binding should have been attached
-		CRASH_COND(unmanaged->has_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index()));
+		CRASH_COND(CSharpLanguage::has_instance_binding(unmanaged));
 
-		void *data = (void *)CSharpLanguage::get_singleton()->insert_script_binding(unmanaged, script_binding);
+		void *data;
+		{
+			MutexLock lock(CSharpLanguage::get_singleton()->get_language_bind_mutex());
+			data = (void *)CSharpLanguage::get_singleton()->insert_script_binding(unmanaged, script_binding);
+		}
 
 		// Should be thread safe because the object was just created and nothing else should be referencing it
-		unmanaged->set_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index(), data);
+		CSharpLanguage::set_instance_binding(unmanaged, data);
 
 		return;
 	}
@@ -108,7 +112,6 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 	CSharpInstance *csharp_instance = CSharpInstance::create_for_managed_type(unmanaged, script.ptr(), gchandle);
 
 	unmanaged->set_script_and_instance(script, csharp_instance);
-#endif
 }
 
 void unhandled_exception(MonoException *p_exc) {

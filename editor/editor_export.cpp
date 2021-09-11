@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
+#include "core/extension/native_extension.h"
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
@@ -624,21 +625,15 @@ Vector<String> EditorExportPlugin::get_ios_project_static_libs() const {
 }
 
 void EditorExportPlugin::_export_file_script(const String &p_path, const String &p_type, const Vector<String> &p_features) {
-	if (get_script_instance()) {
-		get_script_instance()->call("_export_file", p_path, p_type, p_features);
-	}
+	GDVIRTUAL_CALL(_export_file, p_path, p_type, p_features);
 }
 
 void EditorExportPlugin::_export_begin_script(const Vector<String> &p_features, bool p_debug, const String &p_path, int p_flags) {
-	if (get_script_instance()) {
-		get_script_instance()->call("_export_begin", p_features, p_debug, p_path, p_flags);
-	}
+	GDVIRTUAL_CALL(_export_begin, p_features, p_debug, p_path, p_flags);
 }
 
 void EditorExportPlugin::_export_end_script() {
-	if (get_script_instance()) {
-		get_script_instance()->call("_export_end");
-	}
+	GDVIRTUAL_CALL(_export_end);
 }
 
 void EditorExportPlugin::_export_file(const String &p_path, const String &p_type, const Set<String> &p_features) {
@@ -663,9 +658,9 @@ void EditorExportPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_ios_cpp_code", "code"), &EditorExportPlugin::add_ios_cpp_code);
 	ClassDB::bind_method(D_METHOD("skip"), &EditorExportPlugin::skip);
 
-	BIND_VMETHOD(MethodInfo("_export_file", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::STRING, "type"), PropertyInfo(Variant::PACKED_STRING_ARRAY, "features")));
-	BIND_VMETHOD(MethodInfo("_export_begin", PropertyInfo(Variant::PACKED_STRING_ARRAY, "features"), PropertyInfo(Variant::BOOL, "is_debug"), PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::INT, "flags")));
-	BIND_VMETHOD(MethodInfo("_export_end"));
+	GDVIRTUAL_BIND(_export_file, "path", "type", "features");
+	GDVIRTUAL_BIND(_export_begin, "features", "is_debug", "path", "flags");
+	GDVIRTUAL_BIND(_export_end);
 }
 
 EditorExportPlugin::EditorExportPlugin() {
@@ -1051,6 +1046,14 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	if (FileAccess::exists(ResourceUID::CACHE_FILE)) {
 		Vector<uint8_t> array = FileAccess::get_file_as_array(ResourceUID::CACHE_FILE);
 		err = p_func(p_udata, ResourceUID::CACHE_FILE, array, idx, total, enc_in_filters, enc_ex_filters, key);
+		if (err != OK) {
+			return err;
+		}
+	}
+
+	if (FileAccess::exists(NativeExtension::EXTENSION_LIST_CONFIG_FILE)) {
+		Vector<uint8_t> array = FileAccess::get_file_as_array(NativeExtension::EXTENSION_LIST_CONFIG_FILE);
+		err = p_func(p_udata, NativeExtension::EXTENSION_LIST_CONFIG_FILE, array, idx, total, enc_in_filters, enc_ex_filters, key);
 		if (err != OK) {
 			return err;
 		}
@@ -1945,7 +1948,7 @@ void EditorExportPlatformPC::set_debug_32(const String &p_file) {
 void EditorExportPlatformPC::get_platform_features(List<String> *r_features) {
 	r_features->push_back("pc"); //all pcs support "pc"
 	r_features->push_back("s3tc"); //all pcs support "s3tc" compression
-	r_features->push_back(get_os_name()); //OS name is a feature
+	r_features->push_back(get_os_name().to_lower()); //OS name is a feature
 }
 
 void EditorExportPlatformPC::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) {

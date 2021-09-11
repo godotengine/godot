@@ -111,11 +111,7 @@ public:
 				}
 
 				if (!ClassDB::is_parent_class(obj->get_class_name(), native_type)) {
-					// Try with underscore prefix
-					StringName underscore_native_type = "_" + native_type;
-					if (!ClassDB::is_parent_class(obj->get_class_name(), underscore_native_type)) {
-						return false;
-					}
+					return false;
 				}
 				return true;
 			} break;
@@ -472,7 +468,7 @@ private:
 
 	int _initial_line = 0;
 	bool _static = false;
-	MultiplayerAPI::RPCConfig rpc_config;
+	Multiplayer::RPCConfig rpc_config;
 
 	GDScript *_script = nullptr;
 
@@ -592,7 +588,7 @@ public:
 	void disassemble(const Vector<String> &p_code_lines) const;
 #endif
 
-	_FORCE_INLINE_ MultiplayerAPI::RPCConfig get_rpc_config() const { return rpc_config; }
+	_FORCE_INLINE_ Multiplayer::RPCConfig get_rpc_config() const { return rpc_config; }
 	GDScriptFunction();
 	~GDScriptFunction();
 };

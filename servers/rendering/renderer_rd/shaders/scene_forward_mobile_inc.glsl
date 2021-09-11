@@ -16,12 +16,12 @@
 /* don't exceed 128 bytes!! */
 /* put instance data into our push content, not a array */
 layout(push_constant, binding = 0, std430) uniform DrawCall {
-	mat4 transform; // 64 - 64
+	highp mat4 transform; // 64 - 64
 	uint flags; // 04 - 68
 	uint instance_uniforms_ofs; //base offset in global buffer for instance variables	// 04 - 72
 	uint gi_offset; //GI information when using lightmapping (VCT or lightmap index)    // 04 - 76
 	uint layer_mask; // 04 - 80
-	vec4 lightmap_uv_scale; // 16 - 96 doubles as uv_offset when needed
+	highp vec4 lightmap_uv_scale; // 16 - 96 doubles as uv_offset when needed
 
 	uvec2 reflection_probes; // 08 - 104
 	uvec2 omni_lights; // 08 - 112
@@ -93,7 +93,7 @@ directional_lights;
 #define LIGHTMAP_FLAG_USE_SPECULAR_DIRECTION 2
 
 struct Lightmap {
-	mat3 normal_xform;
+	mediump mat3 normal_xform;
 };
 
 layout(set = 0, binding = 9, std140) restrict readonly buffer Lightmaps {
@@ -102,7 +102,7 @@ layout(set = 0, binding = 9, std140) restrict readonly buffer Lightmaps {
 lightmaps;
 
 struct LightmapCapture {
-	vec4 sh[9];
+	mediump vec4 sh[9];
 };
 
 layout(set = 0, binding = 10, std140) restrict readonly buffer LightmapCaptures {
@@ -110,8 +110,8 @@ layout(set = 0, binding = 10, std140) restrict readonly buffer LightmapCaptures 
 }
 lightmap_captures;
 
-layout(set = 0, binding = 11) uniform texture2D decal_atlas;
-layout(set = 0, binding = 12) uniform texture2D decal_atlas_srgb;
+layout(set = 0, binding = 11) uniform mediump texture2D decal_atlas;
+layout(set = 0, binding = 12) uniform mediump texture2D decal_atlas_srgb;
 
 layout(set = 0, binding = 13, std430) restrict readonly buffer Decals {
 	DecalData data[];
@@ -119,72 +119,72 @@ layout(set = 0, binding = 13, std430) restrict readonly buffer Decals {
 decals;
 
 layout(set = 0, binding = 14, std430) restrict readonly buffer GlobalVariableData {
-	vec4 data[];
+	highp vec4 data[];
 }
 global_variables;
 
 /* Set 1: Render Pass (changes per render pass) */
 
 layout(set = 1, binding = 0, std140) uniform SceneData {
-	mat4 projection_matrix;
-	mat4 inv_projection_matrix;
-	mat4 camera_matrix;
-	mat4 inv_camera_matrix;
+	highp mat4 projection_matrix;
+	highp mat4 inv_projection_matrix;
+	highp mat4 camera_matrix;
+	highp mat4 inv_camera_matrix;
 
 	// only used for multiview
-	mat4 projection_matrix_view[MAX_VIEWS];
-	mat4 inv_projection_matrix_view[MAX_VIEWS];
+	highp mat4 projection_matrix_view[MAX_VIEWS];
+	highp mat4 inv_projection_matrix_view[MAX_VIEWS];
 
-	vec2 viewport_size;
-	vec2 screen_pixel_size;
+	highp vec2 viewport_size;
+	highp vec2 screen_pixel_size;
 
 	// Use vec4s because std140 doesn't play nice with vec2s, z and w are wasted.
-	vec4 directional_penumbra_shadow_kernel[32];
-	vec4 directional_soft_shadow_kernel[32];
-	vec4 penumbra_shadow_kernel[32];
-	vec4 soft_shadow_kernel[32];
+	highp vec4 directional_penumbra_shadow_kernel[32];
+	highp vec4 directional_soft_shadow_kernel[32];
+	highp vec4 penumbra_shadow_kernel[32];
+	highp vec4 soft_shadow_kernel[32];
 
-	vec4 ambient_light_color_energy;
+	mediump vec4 ambient_light_color_energy;
 
-	float ambient_color_sky_mix;
+	mediump float ambient_color_sky_mix;
 	bool use_ambient_light;
 	bool use_ambient_cubemap;
 	bool use_reflection_cubemap;
 
-	mat3 radiance_inverse_xform;
+	mediump mat3 radiance_inverse_xform;
 
-	vec2 shadow_atlas_pixel_size;
-	vec2 directional_shadow_pixel_size;
+	highp vec2 shadow_atlas_pixel_size;
+	highp vec2 directional_shadow_pixel_size;
 
 	uint directional_light_count;
-	float dual_paraboloid_side;
-	float z_far;
-	float z_near;
+	mediump float dual_paraboloid_side;
+	highp float z_far;
+	highp float z_near;
 
 	bool ssao_enabled;
-	float ssao_light_affect;
-	float ssao_ao_affect;
+	mediump float ssao_light_affect;
+	mediump float ssao_ao_affect;
 	bool roughness_limiter_enabled;
 
-	float roughness_limiter_amount;
-	float roughness_limiter_limit;
+	mediump float roughness_limiter_amount;
+	mediump float roughness_limiter_limit;
 	uvec2 roughness_limiter_pad;
 
-	vec4 ao_color;
+	mediump vec4 ao_color;
 
 	bool fog_enabled;
-	float fog_density;
-	float fog_height;
-	float fog_height_density;
+	highp float fog_density;
+	highp float fog_height;
+	highp float fog_height_density;
 
-	vec3 fog_light_color;
-	float fog_sun_scatter;
+	mediump vec3 fog_light_color;
+	mediump float fog_sun_scatter;
 
-	float fog_aerial_perspective;
+	mediump float fog_aerial_perspective;
 	bool material_uv2_mode;
 
-	float time;
-	float reflection_multiplier; // one normally, zero when rendering reflections
+	highp float time;
+	mediump float reflection_multiplier; // one normally, zero when rendering reflections
 
 	bool pancake_shadows;
 	uint pad1;
@@ -195,30 +195,30 @@ scene_data;
 
 #ifdef USE_RADIANCE_CUBEMAP_ARRAY
 
-layout(set = 1, binding = 2) uniform textureCubeArray radiance_cubemap;
+layout(set = 1, binding = 2) uniform mediump textureCubeArray radiance_cubemap;
 
 #else
 
-layout(set = 1, binding = 2) uniform textureCube radiance_cubemap;
+layout(set = 1, binding = 2) uniform mediump textureCube radiance_cubemap;
 
 #endif
 
-layout(set = 1, binding = 3) uniform textureCubeArray reflection_atlas;
+layout(set = 1, binding = 3) uniform mediump textureCubeArray reflection_atlas;
 
-layout(set = 1, binding = 4) uniform texture2D shadow_atlas;
+layout(set = 1, binding = 4) uniform highp texture2D shadow_atlas;
 
-layout(set = 1, binding = 5) uniform texture2D directional_shadow_atlas;
+layout(set = 1, binding = 5) uniform highp texture2D directional_shadow_atlas;
 
 // this needs to change to providing just the lightmap we're using..
 layout(set = 1, binding = 6) uniform texture2DArray lightmap_textures[MAX_LIGHTMAP_TEXTURES];
 
-layout(set = 1, binding = 9) uniform texture2D depth_buffer;
-layout(set = 1, binding = 10) uniform texture2D color_buffer;
+layout(set = 1, binding = 9) uniform highp texture2D depth_buffer;
+layout(set = 1, binding = 10) uniform mediump texture2D color_buffer;
 
 /* Set 2 Skeleton & Instancing (can change per item) */
 
 layout(set = 2, binding = 0, std430) restrict readonly buffer Transforms {
-	vec4 data[];
+	highp vec4 data[];
 }
 transforms;
 

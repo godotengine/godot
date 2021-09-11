@@ -114,6 +114,16 @@ Transform3D BulletPhysicsDirectBodyState3D::get_transform() const {
 	return body->get_transform();
 }
 
+Vector3 BulletPhysicsDirectBodyState3D::get_velocity_at_local_position(const Vector3 &p_position) const {
+	btVector3 local_position;
+	G_TO_B(p_position, local_position);
+
+	Vector3 velocity;
+	B_TO_G(body->btBody->getVelocityInLocalPoint(local_position), velocity);
+
+	return velocity;
+}
+
 void BulletPhysicsDirectBodyState3D::add_central_force(const Vector3 &p_force) {
 	body->apply_central_force(p_force);
 }

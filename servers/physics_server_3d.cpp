@@ -91,6 +91,8 @@ void PhysicsDirectBodyState3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_transform", "transform"), &PhysicsDirectBodyState3D::set_transform);
 	ClassDB::bind_method(D_METHOD("get_transform"), &PhysicsDirectBodyState3D::get_transform);
 
+	ClassDB::bind_method(D_METHOD("get_velocity_at_local_position", "local_position"), &PhysicsDirectBodyState3D::get_velocity_at_local_position);
+
 	ClassDB::bind_method(D_METHOD("add_central_force", "force"), &PhysicsDirectBodyState3D::add_central_force, Vector3());
 	ClassDB::bind_method(D_METHOD("add_force", "force", "position"), &PhysicsDirectBodyState3D::add_force, Vector3());
 	ClassDB::bind_method(D_METHOD("add_torque", "torque"), &PhysicsDirectBodyState3D::add_torque);
@@ -247,13 +249,6 @@ void PhysicsShapeQueryParameters3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas"), "set_collide_with_areas", "is_collide_with_areas_enabled");
 }
 
-PhysicsShapeQueryParameters3D::PhysicsShapeQueryParameters3D() {
-	margin = 0;
-	collision_mask = 0x7FFFFFFF;
-	collide_with_bodies = true;
-	collide_with_areas = false;
-}
-
 /////////////////////////////////////
 
 Dictionary PhysicsDirectSpaceState3D::_intersect_ray(const Vector3 &p_from, const Vector3 &p_to, const Vector<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
@@ -358,7 +353,7 @@ PhysicsDirectSpaceState3D::PhysicsDirectSpaceState3D() {
 }
 
 void PhysicsDirectSpaceState3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("intersect_ray", "from", "to", "exclude", "collision_mask", "collide_with_bodies", "collide_with_areas"), &PhysicsDirectSpaceState3D::_intersect_ray, DEFVAL(Array()), DEFVAL(0x7FFFFFFF), DEFVAL(true), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("intersect_ray", "from", "to", "exclude", "collision_mask", "collide_with_bodies", "collide_with_areas"), &PhysicsDirectSpaceState3D::_intersect_ray, DEFVAL(Array()), DEFVAL(UINT32_MAX), DEFVAL(true), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("intersect_shape", "shape", "max_results"), &PhysicsDirectSpaceState3D::_intersect_shape, DEFVAL(32));
 	ClassDB::bind_method(D_METHOD("cast_motion", "shape", "motion"), &PhysicsDirectSpaceState3D::_cast_motion);
 	ClassDB::bind_method(D_METHOD("collide_shape", "shape", "max_results"), &PhysicsDirectSpaceState3D::_collide_shape, DEFVAL(32));
@@ -367,11 +362,11 @@ void PhysicsDirectSpaceState3D::_bind_methods() {
 
 ///////////////////////////////
 
-Vector3 PhysicsTestMotionResult3D::get_motion() const {
-	return result.motion;
+Vector3 PhysicsTestMotionResult3D::get_travel() const {
+	return result.travel;
 }
 
-Vector3 PhysicsTestMotionResult3D::get_motion_remainder() const {
+Vector3 PhysicsTestMotionResult3D::get_remainder() const {
 	return result.remainder;
 }
 
@@ -416,8 +411,8 @@ real_t PhysicsTestMotionResult3D::get_collision_unsafe_fraction() const {
 }
 
 void PhysicsTestMotionResult3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_motion"), &PhysicsTestMotionResult3D::get_motion);
-	ClassDB::bind_method(D_METHOD("get_motion_remainder"), &PhysicsTestMotionResult3D::get_motion_remainder);
+	ClassDB::bind_method(D_METHOD("get_travel"), &PhysicsTestMotionResult3D::get_travel);
+	ClassDB::bind_method(D_METHOD("get_remainder"), &PhysicsTestMotionResult3D::get_remainder);
 	ClassDB::bind_method(D_METHOD("get_collision_point"), &PhysicsTestMotionResult3D::get_collision_point);
 	ClassDB::bind_method(D_METHOD("get_collision_normal"), &PhysicsTestMotionResult3D::get_collision_normal);
 	ClassDB::bind_method(D_METHOD("get_collider_velocity"), &PhysicsTestMotionResult3D::get_collider_velocity);
@@ -429,8 +424,8 @@ void PhysicsTestMotionResult3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collision_safe_fraction"), &PhysicsTestMotionResult3D::get_collision_safe_fraction);
 	ClassDB::bind_method(D_METHOD("get_collision_unsafe_fraction"), &PhysicsTestMotionResult3D::get_collision_unsafe_fraction);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "motion"), "", "get_motion");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "motion_remainder"), "", "get_motion_remainder");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "travel"), "", "get_travel");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "remainder"), "", "get_remainder");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "collision_point"), "", "get_collision_point");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "collision_normal"), "", "get_collision_normal");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "collider_velocity"), "", "get_collider_velocity");
@@ -445,20 +440,24 @@ void PhysicsTestMotionResult3D::_bind_methods() {
 
 ///////////////////////////////////////
 
-bool PhysicsServer3D::_body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia, real_t p_margin, const Ref<PhysicsTestMotionResult3D> &p_result) {
+bool PhysicsServer3D::_body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin, const Ref<PhysicsTestMotionResult3D> &p_result, bool p_collide_separation_ray, const Vector<RID> &p_exclude) {
 	MotionResult *r = nullptr;
 	if (p_result.is_valid()) {
 		r = p_result->get_result_ptr();
 	}
-	return body_test_motion(p_body, p_from, p_motion, p_infinite_inertia, p_margin, r);
+	Set<RID> exclude;
+	for (int i = 0; i < p_exclude.size(); i++) {
+		exclude.insert(p_exclude[i]);
+	}
+	return body_test_motion(p_body, p_from, p_motion, p_margin, r, p_collide_separation_ray, exclude);
 }
 
 RID PhysicsServer3D::shape_create(ShapeType p_shape) {
 	switch (p_shape) {
 		case SHAPE_PLANE:
 			return plane_shape_create();
-		case SHAPE_RAY:
-			return ray_shape_create();
+		case SHAPE_SEPARATION_RAY:
+			return separation_ray_shape_create();
 		case SHAPE_SPHERE:
 			return sphere_shape_create();
 		case SHAPE_BOX:
@@ -484,7 +483,7 @@ void PhysicsServer3D::_bind_methods() {
 #ifndef _3D_DISABLED
 
 	ClassDB::bind_method(D_METHOD("plane_shape_create"), &PhysicsServer3D::plane_shape_create);
-	ClassDB::bind_method(D_METHOD("ray_shape_create"), &PhysicsServer3D::ray_shape_create);
+	ClassDB::bind_method(D_METHOD("separation_ray_shape_create"), &PhysicsServer3D::separation_ray_shape_create);
 	ClassDB::bind_method(D_METHOD("sphere_shape_create"), &PhysicsServer3D::sphere_shape_create);
 	ClassDB::bind_method(D_METHOD("box_shape_create"), &PhysicsServer3D::box_shape_create);
 	ClassDB::bind_method(D_METHOD("capsule_shape_create"), &PhysicsServer3D::capsule_shape_create);
@@ -578,6 +577,8 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_set_param", "body", "param", "value"), &PhysicsServer3D::body_set_param);
 	ClassDB::bind_method(D_METHOD("body_get_param", "body", "param"), &PhysicsServer3D::body_get_param);
 
+	ClassDB::bind_method(D_METHOD("body_reset_mass_properties", "body"), &PhysicsServer3D::body_reset_mass_properties);
+
 	ClassDB::bind_method(D_METHOD("body_set_state", "body", "state", "value"), &PhysicsServer3D::body_set_state);
 	ClassDB::bind_method(D_METHOD("body_get_state", "body", "state"), &PhysicsServer3D::body_get_state);
 
@@ -606,7 +607,7 @@ void PhysicsServer3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("body_set_ray_pickable", "body", "enable"), &PhysicsServer3D::body_set_ray_pickable);
 
-	ClassDB::bind_method(D_METHOD("body_test_motion", "body", "from", "motion", "infinite_inertia", "margin", "result"), &PhysicsServer3D::_body_test_motion, DEFVAL(0.001), DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("body_test_motion", "body", "from", "motion", "margin", "result", "collide_separation_ray", "exclude"), &PhysicsServer3D::_body_test_motion, DEFVAL(0.001), DEFVAL(Variant()), DEFVAL(false), DEFVAL(Array()));
 
 	ClassDB::bind_method(D_METHOD("body_get_direct_state", "body"), &PhysicsServer3D::body_get_direct_state);
 
@@ -745,7 +746,7 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_process_info", "process_info"), &PhysicsServer3D::get_process_info);
 
 	BIND_ENUM_CONSTANT(SHAPE_PLANE);
-	BIND_ENUM_CONSTANT(SHAPE_RAY);
+	BIND_ENUM_CONSTANT(SHAPE_SEPARATION_RAY);
 	BIND_ENUM_CONSTANT(SHAPE_SPHERE);
 	BIND_ENUM_CONSTANT(SHAPE_BOX);
 	BIND_ENUM_CONSTANT(SHAPE_CAPSULE);
@@ -764,6 +765,10 @@ void PhysicsServer3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(AREA_PARAM_LINEAR_DAMP);
 	BIND_ENUM_CONSTANT(AREA_PARAM_ANGULAR_DAMP);
 	BIND_ENUM_CONSTANT(AREA_PARAM_PRIORITY);
+	BIND_ENUM_CONSTANT(AREA_PARAM_WIND_FORCE_MAGNITUDE);
+	BIND_ENUM_CONSTANT(AREA_PARAM_WIND_SOURCE);
+	BIND_ENUM_CONSTANT(AREA_PARAM_WIND_DIRECTION);
+	BIND_ENUM_CONSTANT(AREA_PARAM_WIND_ATTENUATION_FACTOR);
 
 	BIND_ENUM_CONSTANT(AREA_SPACE_OVERRIDE_DISABLED);
 	BIND_ENUM_CONSTANT(AREA_SPACE_OVERRIDE_COMBINE);
@@ -779,6 +784,8 @@ void PhysicsServer3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(BODY_PARAM_BOUNCE);
 	BIND_ENUM_CONSTANT(BODY_PARAM_FRICTION);
 	BIND_ENUM_CONSTANT(BODY_PARAM_MASS);
+	BIND_ENUM_CONSTANT(BODY_PARAM_INERTIA);
+	BIND_ENUM_CONSTANT(BODY_PARAM_CENTER_OF_MASS);
 	BIND_ENUM_CONSTANT(BODY_PARAM_GRAVITY_SCALE);
 	BIND_ENUM_CONSTANT(BODY_PARAM_LINEAR_DAMP);
 	BIND_ENUM_CONSTANT(BODY_PARAM_ANGULAR_DAMP);

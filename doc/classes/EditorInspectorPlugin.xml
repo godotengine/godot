@@ -13,11 +13,12 @@
 		On each of these calls, the "add" functions can be called.
 	</description>
 	<tutorials>
+		<link title="Inspector plugins">https://docs.godotengine.org/en/latest/tutorials/plugins/editor/inspector_plugins.html</link>
 	</tutorials>
 	<methods>
-		<method name="_can_handle" qualifiers="virtual">
+		<method name="_can_handle" qualifiers="virtual const">
 			<return type="bool" />
-			<argument index="0" name="object" type="Object" />
+			<argument index="0" name="object" type="Variant" />
 			<description>
 				Returns [code]true[/code] if this object can be handled by this plugin.
 			</description>
@@ -30,9 +31,9 @@
 		</method>
 		<method name="_parse_category" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="category" type="String" />
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="category" type="String" />
 			<description>
-				Called to allow adding controls at the beginning of the category.
 			</description>
 		</method>
 		<method name="_parse_end" qualifiers="virtual">
@@ -43,11 +44,13 @@
 		</method>
 		<method name="_parse_property" qualifiers="virtual">
 			<return type="bool" />
-			<argument index="0" name="type" type="int" />
-			<argument index="1" name="path" type="String" />
-			<argument index="2" name="hint" type="int" />
-			<argument index="3" name="hint_text" type="String" />
-			<argument index="4" name="usage" type="int" />
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="type" type="int" />
+			<argument index="2" name="name" type="String" />
+			<argument index="3" name="hint_type" type="int" />
+			<argument index="4" name="hint_string" type="String" />
+			<argument index="5" name="usage_flags" type="int" />
+			<argument index="6" name="wide" type="bool" />
 			<description>
 				Called to allow adding property specific editors to the inspector. Usually these inherit [EditorProperty]. Returning [code]true[/code] removes the built-in editor for this property, otherwise allows to insert a custom editor before the built-in one.
 			</description>
@@ -56,7 +59,7 @@
 			<return type="void" />
 			<argument index="0" name="control" type="Control" />
 			<description>
-				Adds a custom control, not necessarily a property editor.
+				Adds a custom control, which is not necessarily a property editor.
 			</description>
 		</method>
 		<method name="add_property_editor">
@@ -64,7 +67,7 @@
 			<argument index="0" name="property" type="String" />
 			<argument index="1" name="editor" type="Control" />
 			<description>
-				Adds a property editor, this must inherit [EditorProperty].
+				Adds a property editor for an individual property. The [code]editor[/code] control must extend [EditorProperty].
 			</description>
 		</method>
 		<method name="add_property_editor_for_multiple_properties">
@@ -73,7 +76,7 @@
 			<argument index="1" name="properties" type="PackedStringArray" />
 			<argument index="2" name="editor" type="Control" />
 			<description>
-				Adds an editor that allows modifying multiple properties, this must inherit [EditorProperty].
+				Adds an editor that allows modifying multiple properties. The [code]editor[/code] control must extend [EditorProperty].
 			</description>
 		</method>
 	</methods>

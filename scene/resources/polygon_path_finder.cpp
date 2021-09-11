@@ -417,9 +417,9 @@ void PolygonPathFinder::_set_data(const Dictionary &p_data) {
 	}
 
 	if (p_data.has("penalties")) {
-		Vector<float> penalties = p_data["penalties"];
+		Vector<real_t> penalties = p_data["penalties"];
 		if (penalties.size() == pc) {
-			const float *pr2 = penalties.ptr();
+			const real_t *pr2 = penalties.ptr();
 			for (int i = 0; i < pc; i++) {
 				points.write[i].penalty = pr2[i];
 			}
@@ -445,11 +445,11 @@ Dictionary PolygonPathFinder::_get_data() const {
 	p.resize(MAX(0, points.size() - 2));
 	connections.resize(MAX(0, points.size() - 2));
 	ind.resize(edges.size() * 2);
-	Vector<float> penalties;
+	Vector<real_t> penalties;
 	penalties.resize(MAX(0, points.size() - 2));
 	{
 		Vector2 *wp = p.ptrw();
-		float *pw = penalties.ptrw();
+		real_t *pw = penalties.ptrw();
 
 		for (int i = 0; i < points.size() - 2; i++) {
 			wp[i] = points[i].pos;

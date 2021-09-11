@@ -113,13 +113,13 @@ int WebSocketMultiplayerPeer::get_transfer_channel() const {
 	return 0;
 }
 
-void WebSocketMultiplayerPeer::set_transfer_mode(TransferMode p_mode) {
+void WebSocketMultiplayerPeer::set_transfer_mode(Multiplayer::TransferMode p_mode) {
 	// Websocket uses TCP, reliable
 }
 
-MultiplayerPeer::TransferMode WebSocketMultiplayerPeer::get_transfer_mode() const {
+Multiplayer::TransferMode WebSocketMultiplayerPeer::get_transfer_mode() const {
 	// Websocket uses TCP, reliable
-	return TRANSFER_MODE_RELIABLE;
+	return Multiplayer::TRANSFER_MODE_RELIABLE;
 }
 
 void WebSocketMultiplayerPeer::set_target_peer(int p_target_peer) {

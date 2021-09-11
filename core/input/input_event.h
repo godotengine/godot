@@ -34,6 +34,7 @@
 #include "core/input/input_enums.h"
 #include "core/io/resource.h"
 #include "core/math/transform_2d.h"
+#include "core/os/keyboard.h"
 #include "core/string/ustring.h"
 #include "core/typedefs.h"
 
@@ -41,6 +42,8 @@
  * Input Event classes. These are used in the main loop.
  * The events are pretty obvious.
  */
+
+class Shortcut;
 
 /**
  * Input Modifier Status
@@ -161,8 +164,8 @@ class InputEventKey : public InputEventWithModifiers {
 
 	bool pressed = false; /// otherwise release
 
-	uint32_t keycode = 0; ///< check keyboard.h , KeyCode enum, without modifier masks
-	uint32_t physical_keycode = 0;
+	Key keycode = KEY_NONE; // Key enum, without modifier masks.
+	Key physical_keycode = KEY_NONE;
 	uint32_t unicode = 0; ///unicode
 
 	bool echo = false; /// true if this is an echo key
@@ -174,11 +177,11 @@ public:
 	void set_pressed(bool p_pressed);
 	virtual bool is_pressed() const override;
 
-	void set_keycode(uint32_t p_keycode);
-	uint32_t get_keycode() const;
+	void set_keycode(Key p_keycode);
+	Key get_keycode() const;
 
-	void set_physical_keycode(uint32_t p_keycode);
-	uint32_t get_physical_keycode() const;
+	void set_physical_keycode(Key p_keycode);
+	Key get_physical_keycode() const;
 
 	void set_unicode(uint32_t p_unicode);
 	uint32_t get_unicode() const;
@@ -197,7 +200,7 @@ public:
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
-	static Ref<InputEventKey> create_reference(uint32_t p_keycode_with_modifier_masks);
+	static Ref<InputEventKey> create_reference(Key p_keycode_with_modifier_masks);
 
 	InputEventKey() {}
 };
@@ -407,6 +410,8 @@ public:
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
+	virtual bool accumulate(const Ref<InputEvent> &p_event) override;
+
 	InputEventScreenDrag() {}
 };
 
@@ -536,6 +541,23 @@ public:
 	virtual String to_string() override;
 
 	InputEventMIDI() {}
+};
+
+class InputEventShortcut : public InputEvent {
+	GDCLASS(InputEventShortcut, InputEvent);
+
+	Ref<Shortcut> shortcut;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_shortcut(Ref<Shortcut> p_shortcut);
+	Ref<Shortcut> get_shortcut();
+	virtual bool is_pressed() const override;
+
+	virtual String as_text() const override;
+	virtual String to_string() override;
 };
 
 #endif // INPUT_EVENT_H

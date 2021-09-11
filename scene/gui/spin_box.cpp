@@ -99,7 +99,7 @@ void SpinBox::_release_mouse() {
 	}
 }
 
-void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
+void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (!is_editable()) {
@@ -258,7 +258,7 @@ void SpinBox::apply() {
 
 void SpinBox::_bind_methods() {
 	//ClassDB::bind_method(D_METHOD("_value_changed"),&SpinBox::_value_changed);
-	ClassDB::bind_method(D_METHOD("_gui_input"), &SpinBox::_gui_input);
+
 	ClassDB::bind_method(D_METHOD("set_align", "align"), &SpinBox::set_align);
 	ClassDB::bind_method(D_METHOD("get_align"), &SpinBox::get_align);
 	ClassDB::bind_method(D_METHOD("set_suffix", "suffix"), &SpinBox::set_suffix);
@@ -278,7 +278,7 @@ void SpinBox::_bind_methods() {
 
 SpinBox::SpinBox() {
 	line_edit = memnew(LineEdit);
-	add_child(line_edit);
+	add_child(line_edit, false, INTERNAL_MODE_FRONT);
 
 	line_edit->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	line_edit->set_mouse_filter(MOUSE_FILTER_PASS);
@@ -291,5 +291,5 @@ SpinBox::SpinBox() {
 
 	range_click_timer = memnew(Timer);
 	range_click_timer->connect("timeout", callable_mp(this, &SpinBox::_range_click_timeout));
-	add_child(range_click_timer);
+	add_child(range_click_timer, false, INTERNAL_MODE_FRONT);
 }

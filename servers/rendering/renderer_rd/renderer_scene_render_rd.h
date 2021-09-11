@@ -134,6 +134,8 @@ protected:
 
 	void _pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_gi, RID p_normal_roughness_buffer, RID p_voxel_gi_buffer);
 
+	void _render_buffers_copy_screen_texture(const RenderDataRD *p_render_data);
+	void _render_buffers_copy_depth_texture(const RenderDataRD *p_render_data);
 	void _render_buffers_post_process_and_tonemap(const RenderDataRD *p_render_data);
 	void _post_process_subpass(RID p_source_texture, RID p_framebuffer, const RenderDataRD *p_render_data);
 	void _disable_clear_request(const RenderDataRD *p_render_data);
@@ -253,7 +255,8 @@ private:
 	struct ShadowAtlas {
 		enum {
 			QUADRANT_SHIFT = 27,
-			SHADOW_INDEX_MASK = (1 << QUADRANT_SHIFT) - 1,
+			OMNI_LIGHT_FLAG = 1 << 26,
+			SHADOW_INDEX_MASK = OMNI_LIGHT_FLAG - 1,
 			SHADOW_INVALID = 0xFFFFFFFF
 		};
 
@@ -297,7 +300,9 @@ private:
 
 	void _update_shadow_atlas(ShadowAtlas *shadow_atlas);
 
+	void _shadow_atlas_invalidate_shadow(RendererSceneRenderRD::ShadowAtlas::Quadrant::Shadow *p_shadow, RID p_atlas, RendererSceneRenderRD::ShadowAtlas *p_shadow_atlas, uint32_t p_quadrant, uint32_t p_shadow_idx);
 	bool _shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, int *p_in_quadrants, int p_quadrant_count, int p_current_subdiv, uint64_t p_tick, int &r_quadrant, int &r_shadow);
+	bool _shadow_atlas_find_omni_shadows(ShadowAtlas *shadow_atlas, int *p_in_quadrants, int p_quadrant_count, int p_current_subdiv, uint64_t p_tick, int &r_quadrant, int &r_shadow);
 
 	RS::ShadowQuality shadows_quality = RS::SHADOW_QUALITY_MAX; //So it always updates when first set
 	RS::ShadowQuality directional_shadow_quality = RS::SHADOW_QUALITY_MAX;
@@ -376,10 +381,6 @@ private:
 		uint64_t last_pass = 0;
 		uint32_t cull_mask = 0;
 		uint32_t light_directional_index = 0;
-
-		uint32_t current_shadow_atlas_key = 0;
-
-		Vector2 dp;
 
 		Rect2 directional_rect;
 
@@ -483,6 +484,18 @@ private:
 
 		Blur blur[2]; //the second one starts from the first mipmap
 
+		struct WeightBuffers {
+			RID weight;
+			RID fb; // FB with both texture and weight
+		};
+
+		// 2 full size, 2 half size
+		WeightBuffers weight_buffers[4]; // Only used in raster
+		RID base_weight_fb; // base buffer for weight
+
+		RID depth_back_texture;
+		RID depth_back_fb; // only used on mobile
+
 		struct Luminance {
 			Vector<RID> reduce;
 			RID current;
@@ -526,6 +539,7 @@ private:
 
 	void _free_render_buffer_data(RenderBuffers *rb);
 	void _allocate_blur_textures(RenderBuffers *rb);
+	void _allocate_depth_backbuffer_textures(RenderBuffers *rb);
 	void _allocate_luminance_textures(RenderBuffers *rb);
 
 	void _render_buffers_debug_draw(RID p_render_buffers, RID p_shadow_atlas, RID p_occlusion_buffer);
@@ -560,7 +574,7 @@ private:
 		struct LightData {
 			float position[3];
 			float inv_radius;
-			float direction[3];
+			float direction[3]; // in omni, x and y are used for dual paraboloid offset
 			float size;
 
 			float color[3];
@@ -949,7 +963,7 @@ public:
 		return li->transform;
 	}
 
-	_FORCE_INLINE_ Rect2 light_instance_get_shadow_atlas_rect(RID p_light_instance, RID p_shadow_atlas) {
+	_FORCE_INLINE_ Rect2 light_instance_get_shadow_atlas_rect(RID p_light_instance, RID p_shadow_atlas, Vector2i &r_omni_offset) {
 		ShadowAtlas *shadow_atlas = shadow_atlas_owner.getornull(p_shadow_atlas);
 		LightInstance *li = light_instance_owner.getornull(p_light_instance);
 		uint32_t key = shadow_atlas->shadow_owners[li->self];
@@ -968,6 +982,16 @@ public:
 		uint32_t shadow_size = (quadrant_size / shadow_atlas->quadrants[quadrant].subdivision);
 		x += (shadow % shadow_atlas->quadrants[quadrant].subdivision) * shadow_size;
 		y += (shadow / shadow_atlas->quadrants[quadrant].subdivision) * shadow_size;
+
+		if (key & ShadowAtlas::OMNI_LIGHT_FLAG) {
+			if (((shadow + 1) % shadow_atlas->quadrants[quadrant].subdivision) == 0) {
+				r_omni_offset.x = 1 - int(shadow_atlas->quadrants[quadrant].subdivision);
+				r_omni_offset.y = 1;
+			} else {
+				r_omni_offset.x = 1;
+				r_omni_offset.y = 0;
+			}
+		}
 
 		uint32_t width = shadow_size;
 		uint32_t height = shadow_size;
@@ -1166,6 +1190,7 @@ public:
 
 	/* render buffers */
 
+	virtual float _render_buffers_get_luminance_multiplier();
 	virtual RD::DataFormat _render_buffers_get_color_format();
 	virtual bool _render_buffers_can_be_storage();
 	virtual RID render_buffers_create() override;
@@ -1174,6 +1199,7 @@ public:
 
 	RID render_buffers_get_ao_texture(RID p_render_buffers);
 	RID render_buffers_get_back_buffer_texture(RID p_render_buffers);
+	RID render_buffers_get_back_depth_texture(RID p_render_buffers);
 	RID render_buffers_get_voxel_gi_buffer(RID p_render_buffers);
 	RID render_buffers_get_default_voxel_gi_buffer();
 	RID render_buffers_get_gi_ambient_texture(RID p_render_buffers);
@@ -1273,6 +1299,8 @@ public:
 	virtual bool is_clustered_enabled() const;
 	virtual bool is_volumetric_supported() const;
 	virtual uint32_t get_max_elements() const;
+
+	void init();
 
 	RendererSceneRenderRD(RendererStorageRD *p_storage);
 	~RendererSceneRenderRD();

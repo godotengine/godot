@@ -167,12 +167,29 @@ TreeItem::TreeCellMode TreeItem::get_cell_mode(int p_column) const {
 void TreeItem::set_checked(int p_column, bool p_checked) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	cells.write[p_column].checked = p_checked;
+	cells.write[p_column].indeterminate = false;
+	_changed_notify(p_column);
+}
+
+void TreeItem::set_indeterminate(int p_column, bool p_indeterminate) {
+	ERR_FAIL_INDEX(p_column, cells.size());
+	// Prevent uncheck if indeterminate set to false twice
+	if (p_indeterminate == cells[p_column].indeterminate) {
+		return;
+	}
+	cells.write[p_column].indeterminate = p_indeterminate;
+	cells.write[p_column].checked = false;
 	_changed_notify(p_column);
 }
 
 bool TreeItem::is_checked(int p_column) const {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), false);
 	return cells[p_column].checked;
+}
+
+bool TreeItem::is_indeterminate(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), false);
+	return cells[p_column].indeterminate;
 }
 
 void TreeItem::set_text(int p_column, String p_text) {
@@ -872,9 +889,20 @@ void TreeItem::set_custom_font(int p_column, const Ref<Font> &p_font) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	cells.write[p_column].custom_font = p_font;
 }
+
 Ref<Font> TreeItem::get_custom_font(int p_column) const {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), Ref<Font>());
 	return cells[p_column].custom_font;
+}
+
+void TreeItem::set_custom_font_size(int p_column, int p_font_size) {
+	ERR_FAIL_INDEX(p_column, cells.size());
+	cells.write[p_column].custom_font_size = p_font_size;
+}
+
+int TreeItem::get_custom_font_size(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), -1);
+	return cells[p_column].custom_font_size;
 }
 
 void TreeItem::set_tooltip(int p_column, const String &p_tooltip) {
@@ -1042,7 +1070,9 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cell_mode", "column"), &TreeItem::get_cell_mode);
 
 	ClassDB::bind_method(D_METHOD("set_checked", "column", "checked"), &TreeItem::set_checked);
+	ClassDB::bind_method(D_METHOD("set_indeterminate", "column", "indeterminate"), &TreeItem::set_indeterminate);
 	ClassDB::bind_method(D_METHOD("is_checked", "column"), &TreeItem::is_checked);
+	ClassDB::bind_method(D_METHOD("is_indeterminate", "column"), &TreeItem::is_indeterminate);
 
 	ClassDB::bind_method(D_METHOD("set_text", "column", "text"), &TreeItem::set_text);
 	ClassDB::bind_method(D_METHOD("get_text", "column"), &TreeItem::get_text);
@@ -1112,6 +1142,9 @@ void TreeItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_custom_font", "column", "font"), &TreeItem::set_custom_font);
 	ClassDB::bind_method(D_METHOD("get_custom_font", "column"), &TreeItem::get_custom_font);
+
+	ClassDB::bind_method(D_METHOD("set_custom_font_size", "column", "font_size"), &TreeItem::set_custom_font_size);
+	ClassDB::bind_method(D_METHOD("get_custom_font_size", "column"), &TreeItem::get_custom_font_size);
 
 	ClassDB::bind_method(D_METHOD("set_custom_bg_color", "column", "color", "just_outline"), &TreeItem::set_custom_bg_color, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("clear_custom_bg_color", "column"), &TreeItem::clear_custom_bg_color);
@@ -1228,6 +1261,7 @@ void Tree::update_cache() {
 
 	cache.checked = get_theme_icon(SNAME("checked"));
 	cache.unchecked = get_theme_icon(SNAME("unchecked"));
+	cache.indeterminate = get_theme_icon(SNAME("indeterminate"));
 	if (is_layout_rtl()) {
 		cache.arrow_collapsed = get_theme_icon(SNAME("arrow_collapsed_mirrored"));
 	} else {
@@ -1487,7 +1521,14 @@ void Tree::update_item_cell(TreeItem *p_item, int p_col) {
 	} else {
 		font = cache.font;
 	}
-	p_item->cells.write[p_col].text_buf->add_string(valtext, font, cache.font_size, p_item->cells[p_col].opentype_features, (p_item->cells[p_col].language != "") ? p_item->cells[p_col].language : TranslationServer::get_singleton()->get_tool_locale());
+
+	int font_size;
+	if (p_item->cells[p_col].custom_font_size > 0) {
+		font_size = p_item->cells[p_col].custom_font_size;
+	} else {
+		font_size = cache.font_size;
+	}
+	p_item->cells.write[p_col].text_buf->add_string(valtext, font, font_size, p_item->cells[p_col].opentype_features, (p_item->cells[p_col].language != "") ? p_item->cells[p_col].language : TranslationServer::get_singleton()->get_tool_locale());
 	TS->shaped_text_set_bidi_override(p_item->cells[p_col].text_buf->get_rid(), structured_text_parser(p_item->cells[p_col].st_parser, p_item->cells[p_col].st_args, valtext));
 	p_item->cells.write[p_col].dirty = false;
 }
@@ -1676,24 +1717,30 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				}
 			}
 
-			if (drop_mode_flags && drop_mode_over == p_item) {
+			if (drop_mode_flags && drop_mode_over) {
 				Rect2 r = cell_rect;
-				bool has_parent = p_item->get_first_child() != nullptr;
 				if (rtl) {
 					r.position.x = get_size().width - r.position.x - r.size.x;
 				}
-
-				if (drop_mode_section == -1 || has_parent || drop_mode_section == 0) {
-					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, r.size.x, 1), cache.drop_position_color);
-				}
-
-				if (drop_mode_section == 0) {
-					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, 1, r.size.y), cache.drop_position_color);
-					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x + r.size.x - 1, r.position.y, 1, r.size.y), cache.drop_position_color);
-				}
-
-				if ((drop_mode_section == 1 && !has_parent) || drop_mode_section == 0) {
-					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y + r.size.y, r.size.x, 1), cache.drop_position_color);
+				if (drop_mode_over == p_item) {
+					if (drop_mode_section == 0 || drop_mode_section == -1) {
+						// Line above.
+						RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, r.size.x, 1), cache.drop_position_color);
+					}
+					if (drop_mode_section == 0) {
+						// Side lines.
+						RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, 1, r.size.y), cache.drop_position_color);
+						RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x + r.size.x - 1, r.position.y, 1, r.size.y), cache.drop_position_color);
+					}
+					if (drop_mode_section == 0 || (drop_mode_section == 1 && (!p_item->get_first_child() || p_item->is_collapsed()))) {
+						// Line below.
+						RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y + r.size.y, r.size.x, 1), cache.drop_position_color);
+					}
+				} else if (drop_mode_over == p_item->get_parent()) {
+					if (drop_mode_section == 1 && !p_item->get_prev() /* && !drop_mode_over->is_collapsed() */) { // The drop_mode_over shouldn't ever be collapsed in here, otherwise we would be drawing a child of a collapsed item.
+						// Line above.
+						RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, r.size.x, 1), cache.drop_position_color);
+					}
 				}
 			}
 
@@ -1721,10 +1768,13 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				case TreeItem::CELL_MODE_CHECK: {
 					Ref<Texture2D> checked = cache.checked;
 					Ref<Texture2D> unchecked = cache.unchecked;
+					Ref<Texture2D> indeterminate = cache.indeterminate;
 					Point2i check_ofs = item_rect.position;
 					check_ofs.y += Math::floor((real_t)(item_rect.size.y - checked->get_height()) / 2);
 
-					if (p_item->cells[i].checked) {
+					if (p_item->cells[i].indeterminate) {
+						indeterminate->draw(ci, check_ofs);
+					} else if (p_item->cells[i].checked) {
 						checked->draw(ci, check_ofs);
 					} else {
 						unchecked->draw(ci, check_ofs);
@@ -2745,7 +2795,7 @@ void Tree::_go_down() {
 	accept_event();
 }
 
-void Tree::_gui_input(Ref<InputEvent> p_event) {
+void Tree::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventKey> k = p_event;
@@ -4627,8 +4677,6 @@ bool Tree::get_allow_reselect() const {
 }
 
 void Tree::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &Tree::_gui_input);
-
 	ClassDB::bind_method(D_METHOD("clear"), &Tree::clear);
 	ClassDB::bind_method(D_METHOD("create_item", "parent", "idx"), &Tree::_create_item, DEFVAL(Variant()), DEFVAL(-1));
 
@@ -4747,12 +4795,11 @@ Tree::Tree() {
 
 	popup_menu = memnew(PopupMenu);
 	popup_menu->hide();
-	add_child(popup_menu);
-	//	popup_menu->set_as_top_level(true);
+	add_child(popup_menu, false, INTERNAL_MODE_FRONT);
 
 	popup_editor = memnew(Popup);
 	popup_editor->set_wrap_controls(true);
-	add_child(popup_editor);
+	add_child(popup_editor, false, INTERNAL_MODE_FRONT);
 	popup_editor_vb = memnew(VBoxContainer);
 	popup_editor->add_child(popup_editor_vb);
 	popup_editor_vb->add_theme_constant_override("separation", 0);
@@ -4770,12 +4817,12 @@ Tree::Tree() {
 	h_scroll = memnew(HScrollBar);
 	v_scroll = memnew(VScrollBar);
 
-	add_child(h_scroll);
-	add_child(v_scroll);
+	add_child(h_scroll, false, INTERNAL_MODE_FRONT);
+	add_child(v_scroll, false, INTERNAL_MODE_FRONT);
 
 	range_click_timer = memnew(Timer);
 	range_click_timer->connect("timeout", callable_mp(this, &Tree::_range_click_timeout));
-	add_child(range_click_timer);
+	add_child(range_click_timer, false, INTERNAL_MODE_FRONT);
 
 	h_scroll->connect("value_changed", callable_mp(this, &Tree::_scroll_moved));
 	v_scroll->connect("value_changed", callable_mp(this, &Tree::_scroll_moved));

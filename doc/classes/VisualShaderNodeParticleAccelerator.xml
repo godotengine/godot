@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeParticleAccelerator" inherits="VisualShaderNodeOutput" version="4.0">
+<class name="VisualShaderNodeParticleAccelerator" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -20,6 +20,7 @@
 		<constant name="MODE_TANGENTIAL" value="2" enum="Mode">
 		</constant>
 		<constant name="MODE_MAX" value="3" enum="Mode">
+			Represents the size of the [enum Mode] enum.
 		</constant>
 	</constants>
 </class>

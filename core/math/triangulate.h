@@ -34,7 +34,7 @@
 #include "core/math/vector2.h"
 
 /*
-http://www.flipcode.com/archives/Efficient_Polygon_Triangulation.shtml
+https://www.flipcode.com/archives/Efficient_Polygon_Triangulation.shtml
 */
 
 class Triangulate {

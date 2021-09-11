@@ -31,7 +31,7 @@
 #ifndef WEBRTC_MULTIPLAYER_H
 #define WEBRTC_MULTIPLAYER_H
 
-#include "core/io/multiplayer_peer.h"
+#include "core/multiplayer/multiplayer_peer.h"
 #include "webrtc_peer_connection.h"
 
 class WebRTCMultiplayerPeer : public MultiplayerPeer {
@@ -68,7 +68,7 @@ private:
 	bool refuse_connections = false;
 	ConnectionStatus connection_status = CONNECTION_DISCONNECTED;
 	int transfer_channel = 0;
-	TransferMode transfer_mode = TRANSFER_MODE_RELIABLE;
+	Multiplayer::TransferMode transfer_mode = Multiplayer::TRANSFER_MODE_RELIABLE;
 	int next_packet_peer = 0;
 	bool server_compat = false;
 
@@ -99,8 +99,8 @@ public:
 	// MultiplayerPeer
 	void set_transfer_channel(int p_channel) override;
 	int get_transfer_channel() const override;
-	void set_transfer_mode(TransferMode p_mode) override;
-	TransferMode get_transfer_mode() const override;
+	void set_transfer_mode(Multiplayer::TransferMode p_mode) override;
+	Multiplayer::TransferMode get_transfer_mode() const override;
 	void set_target_peer(int p_peer_id) override;
 
 	int get_unique_id() const override;

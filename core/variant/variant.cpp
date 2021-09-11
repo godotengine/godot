@@ -1627,9 +1627,9 @@ Variant::operator String() const {
 String Variant::stringify(List<const void *> &stack) const {
 	switch (type) {
 		case NIL:
-			return "Null";
+			return "null";
 		case BOOL:
-			return _data._bool ? "True" : "False";
+			return _data._bool ? "true" : "false";
 		case INT:
 			return itos(_data._int);
 		case FLOAT:
@@ -3533,12 +3533,13 @@ void Variant::register_types() {
 	_register_variant_methods();
 	_register_variant_setters_getters();
 	_register_variant_constructors();
+	_register_variant_destructors();
 	_register_variant_utility_functions();
 }
 void Variant::unregister_types() {
 	_unregister_variant_operators();
 	_unregister_variant_methods();
 	_unregister_variant_setters_getters();
-	_unregister_variant_constructors();
+	_unregister_variant_destructors();
 	_unregister_variant_utility_functions();
 }

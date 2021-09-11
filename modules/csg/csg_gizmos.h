@@ -47,8 +47,8 @@ public:
 
 	virtual String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id) const override;
 	virtual Variant get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id) const override;
-	virtual void set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, Camera3D *p_camera, const Point2 &p_point) const override;
-	virtual void commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, const Variant &p_restore, bool p_cancel) const override;
+	virtual void set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, Camera3D *p_camera, const Point2 &p_point) override;
+	virtual void commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, const Variant &p_restore, bool p_cancel) override;
 
 	CSGShape3DGizmoPlugin();
 };

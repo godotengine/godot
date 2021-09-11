@@ -31,7 +31,7 @@
 #ifndef SCENE_TREE_H
 #define SCENE_TREE_H
 
-#include "core/io/multiplayer_api.h"
+#include "core/multiplayer/multiplayer_api.h"
 #include "core/os/main_loop.h"
 #include "core/os/thread_safe.h"
 #include "core/templates/self_list.h"
@@ -204,8 +204,14 @@ private:
 	void _main_window_close();
 	void _main_window_go_back();
 
+	enum CallInputType {
+		CALL_INPUT_TYPE_INPUT,
+		CALL_INPUT_TYPE_UNHANDLED_INPUT,
+		CALL_INPUT_TYPE_UNHANDLED_KEY_INPUT,
+	};
+
 	//used by viewport
-	void _call_input_pause(const StringName &p_group, const StringName &p_method, const Ref<InputEvent> &p_input, Viewport *p_viewport);
+	void _call_input_pause(const StringName &p_group, CallInputType p_call_type, const Ref<InputEvent> &p_input, Viewport *p_viewport);
 
 protected:
 	void _notification(int p_notification);

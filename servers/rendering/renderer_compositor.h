@@ -41,7 +41,8 @@
 class RendererSceneRender;
 struct BlitToScreen {
 	RID render_target;
-	Rect2i rect;
+	Rect2 src_rect = Rect2(0.0, 0.0, 1.0, 1.0);
+	Rect2i dst_rect;
 
 	struct {
 		bool use_layer = false;
@@ -85,7 +86,7 @@ public:
 	virtual void end_frame(bool p_swap_buffers) = 0;
 	virtual void finalize() = 0;
 	virtual uint64_t get_frame_number() const = 0;
-	virtual float get_frame_delta_time() const = 0;
+	virtual double get_frame_delta_time() const = 0;
 
 	virtual bool is_low_end() const = 0;
 	virtual bool is_xr_enabled() const;

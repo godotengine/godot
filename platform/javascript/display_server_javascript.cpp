@@ -172,7 +172,7 @@ EM_BOOL DisplayServerJavaScript::keyup_callback(int p_event_type, const Emscript
 	Ref<InputEventKey> ev = setup_key_event(p_event);
 	ev->set_pressed(false);
 	Input::get_singleton()->parse_input_event(ev);
-	return ev->get_keycode() != KEY_UNKNOWN && ev->get_keycode() != 0;
+	return ev->get_keycode() != KEY_UNKNOWN && ev->get_keycode() != (Key)0;
 }
 
 // Mouse

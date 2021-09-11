@@ -238,14 +238,16 @@ void GPUParticles3DEditor::_notification(int p_notification) {
 void GPUParticles3DEditor::_menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_OPTION_GENERATE_AABB: {
-			float gen_time = node->get_lifetime();
+			// Add one second to the default generation lifetime, since the progress is updated every second.
+			generate_seconds->set_value(MAX(1.0, trunc(node->get_lifetime()) + 1.0));
 
-			if (gen_time < 1.0) {
-				generate_seconds->set_value(1.0);
+			if (generate_seconds->get_value() >= 11.0 + CMP_EPSILON) {
+				// Only pop up the time dialog if the particle's lifetime is long enough to warrant shortening it.
+				generate_aabb->popup_centered();
 			} else {
-				generate_seconds->set_value(trunc(gen_time) + 1.0);
+				// Generate the visibility AABB immediately.
+				_generate_aabb();
 			}
-			generate_aabb->popup_centered();
 		} break;
 		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE: {
 			Ref<ParticlesMaterial> material = node->get_process_material();
@@ -282,11 +284,11 @@ void GPUParticles3DEditor::_menu_option(int p_option) {
 }
 
 void GPUParticles3DEditor::_generate_aabb() {
-	float time = generate_seconds->get_value();
+	double time = generate_seconds->get_value();
 
-	float running = 0.0;
+	double running = 0.0;
 
-	EditorProgress ep("gen_aabb", TTR("Generating AABB"), int(time));
+	EditorProgress ep("gen_aabb", TTR("Generating Visibility AABB (Waiting for Particle Simulation)"), int(time));
 
 	bool was_emitting = node->is_emitting();
 	if (!was_emitting) {

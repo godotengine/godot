@@ -30,7 +30,6 @@
 
 #include "gpu_particles_collision_3d.h"
 
-#include "core/templates/thread_work_pool.h"
 #include "mesh_instance_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/main/viewport.h"
@@ -70,13 +69,13 @@ void GPUParticlesCollisionSphere::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater"), "set_radius", "get_radius");
 }
 
-void GPUParticlesCollisionSphere::set_radius(float p_radius) {
+void GPUParticlesCollisionSphere::set_radius(real_t p_radius) {
 	radius = p_radius;
 	RS::get_singleton()->particles_collision_set_sphere_radius(_get_collision(), radius);
 	update_gizmos();
 }
 
-float GPUParticlesCollisionSphere::get_radius() const {
+real_t GPUParticlesCollisionSphere::get_radius() const {
 	return radius;
 }
 
@@ -217,7 +216,7 @@ uint32_t GPUParticlesCollisionSDF::_create_bvh(LocalVector<BVH> &bvh_tree, FaceP
 	return index;
 }
 
-static _FORCE_INLINE_ float Vector3_dot2(const Vector3 &p_vec3) {
+static _FORCE_INLINE_ real_t Vector3_dot2(const Vector3 &p_vec3) {
 	return p_vec3.dot(p_vec3);
 }
 
@@ -738,31 +737,31 @@ uint32_t GPUParticlesAttractor3D::get_cull_mask() const {
 	return cull_mask;
 }
 
-void GPUParticlesAttractor3D::set_strength(float p_strength) {
+void GPUParticlesAttractor3D::set_strength(real_t p_strength) {
 	strength = p_strength;
 	RS::get_singleton()->particles_collision_set_attractor_strength(collision, p_strength);
 }
 
-float GPUParticlesAttractor3D::get_strength() const {
+real_t GPUParticlesAttractor3D::get_strength() const {
 	return strength;
 }
 
-void GPUParticlesAttractor3D::set_attenuation(float p_attenuation) {
+void GPUParticlesAttractor3D::set_attenuation(real_t p_attenuation) {
 	attenuation = p_attenuation;
 	RS::get_singleton()->particles_collision_set_attractor_attenuation(collision, p_attenuation);
 }
 
-float GPUParticlesAttractor3D::get_attenuation() const {
+real_t GPUParticlesAttractor3D::get_attenuation() const {
 	return attenuation;
 }
 
-void GPUParticlesAttractor3D::set_directionality(float p_directionality) {
+void GPUParticlesAttractor3D::set_directionality(real_t p_directionality) {
 	directionality = p_directionality;
 	RS::get_singleton()->particles_collision_set_attractor_directionality(collision, p_directionality);
 	update_gizmos();
 }
 
-float GPUParticlesAttractor3D::get_directionality() const {
+real_t GPUParticlesAttractor3D::get_directionality() const {
 	return directionality;
 }
 
@@ -803,13 +802,13 @@ void GPUParticlesAttractorSphere::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater"), "set_radius", "get_radius");
 }
 
-void GPUParticlesAttractorSphere::set_radius(float p_radius) {
+void GPUParticlesAttractorSphere::set_radius(real_t p_radius) {
 	radius = p_radius;
 	RS::get_singleton()->particles_collision_set_sphere_radius(_get_collision(), radius);
 	update_gizmos();
 }
 
-float GPUParticlesAttractorSphere::get_radius() const {
+real_t GPUParticlesAttractorSphere::get_radius() const {
 	return radius;
 }
 

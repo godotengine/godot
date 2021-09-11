@@ -28,5 +28,8 @@
 		<constant name="OP_3x3_BxA" value="3" enum="Operator">
 			Multiplies vector [code]b[/code] by the transform [code]a[/code], skipping the last row and column of the transform.
 		</constant>
+		<constant name="OP_MAX" value="4" enum="Operator">
+			Represents the size of the [enum Operator] enum.
+		</constant>
 	</constants>
 </class>

@@ -30,15 +30,19 @@
 
 package org.godotengine.godot;
 
-import org.godotengine.godot.input.*;
+import org.godotengine.godot.input.GodotEditText;
 
 import android.app.Activity;
-import android.content.*;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.AssetManager;
 import android.graphics.Point;
 import android.net.Uri;
-import android.os.*;
+import android.os.Build;
+import android.os.Environment;
+import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.SparseArray;
@@ -47,14 +51,16 @@ import android.view.DisplayCutout;
 import android.view.WindowInsets;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Locale;
 
 // Wrapper for native library
 
 public class GodotIO {
-	AssetManager am;
-	final Activity activity;
+	private static final String TAG = GodotIO.class.getSimpleName();
+
+	private final AssetManager am;
+	private final Activity activity;
+	private final String uniqueId;
 	GodotEditText edit;
 
 	final int SCREEN_LANDSCAPE = 0;
@@ -66,167 +72,6 @@ public class GodotIO {
 	final int SCREEN_SENSOR = 6;
 
 	/////////////////////////
-	/// FILES
-	/////////////////////////
-
-	public int last_file_id = 1;
-
-	static class AssetData {
-		public boolean eof = false;
-		public String path;
-		public InputStream is;
-		public int len;
-		public int pos;
-	}
-
-	SparseArray<AssetData> streams;
-
-	public int file_open(String path, boolean write) {
-		//System.out.printf("file_open: Attempt to Open %s\n",path);
-
-		//Log.v("MyApp", "TRYING TO OPEN FILE: " + path);
-		if (write)
-			return -1;
-
-		AssetData ad = new AssetData();
-
-		try {
-			ad.is = am.open(path);
-
-		} catch (Exception e) {
-			//System.out.printf("Exception on file_open: %s\n",path);
-			return -1;
-		}
-
-		try {
-			ad.len = ad.is.available();
-		} catch (Exception e) {
-			System.out.printf("Exception availabling on file_open: %s\n", path);
-			return -1;
-		}
-
-		ad.path = path;
-		ad.pos = 0;
-		++last_file_id;
-		streams.put(last_file_id, ad);
-
-		return last_file_id;
-	}
-	public int file_get_size(int id) {
-		if (streams.get(id) == null) {
-			System.out.printf("file_get_size: Invalid file id: %d\n", id);
-			return -1;
-		}
-
-		return streams.get(id).len;
-	}
-	public void file_seek(int id, int bytes) {
-		if (streams.get(id) == null) {
-			System.out.printf("file_get_size: Invalid file id: %d\n", id);
-			return;
-		}
-		//seek sucks
-		AssetData ad = streams.get(id);
-		if (bytes > ad.len)
-			bytes = ad.len;
-		if (bytes < 0)
-			bytes = 0;
-
-		try {
-			if (bytes > (int)ad.pos) {
-				int todo = bytes - (int)ad.pos;
-				while (todo > 0) {
-					todo -= ad.is.skip(todo);
-				}
-				ad.pos = bytes;
-			} else if (bytes < (int)ad.pos) {
-				ad.is = am.open(ad.path);
-
-				ad.pos = bytes;
-				int todo = bytes;
-				while (todo > 0) {
-					todo -= ad.is.skip(todo);
-				}
-			}
-
-			ad.eof = false;
-		} catch (IOException e) {
-			System.out.printf("Exception on file_seek: %s\n", e);
-			return;
-		}
-	}
-
-	public int file_tell(int id) {
-		if (streams.get(id) == null) {
-			System.out.printf("file_read: Can't tell eof for invalid file id: %d\n", id);
-			return 0;
-		}
-
-		AssetData ad = streams.get(id);
-		return ad.pos;
-	}
-	public boolean file_eof(int id) {
-		if (streams.get(id) == null) {
-			System.out.printf("file_read: Can't check eof for invalid file id: %d\n", id);
-			return false;
-		}
-
-		AssetData ad = streams.get(id);
-		return ad.eof;
-	}
-
-	public byte[] file_read(int id, int bytes) {
-		if (streams.get(id) == null) {
-			System.out.printf("file_read: Can't read invalid file id: %d\n", id);
-			return new byte[0];
-		}
-
-		AssetData ad = streams.get(id);
-
-		if (ad.pos + bytes > ad.len) {
-			bytes = ad.len - ad.pos;
-			ad.eof = true;
-		}
-
-		if (bytes == 0) {
-			return new byte[0];
-		}
-
-		byte[] buf1 = new byte[bytes];
-		int r = 0;
-		try {
-			r = ad.is.read(buf1);
-		} catch (IOException e) {
-			System.out.printf("Exception on file_read: %s\n", e);
-			return new byte[bytes];
-		}
-
-		if (r == 0) {
-			return new byte[0];
-		}
-
-		ad.pos += r;
-
-		if (r < bytes) {
-			byte[] buf2 = new byte[r];
-			for (int i = 0; i < r; i++)
-				buf2[i] = buf1[i];
-			return buf2;
-		} else {
-			return buf1;
-		}
-	}
-
-	public void file_close(int id) {
-		if (streams.get(id) == null) {
-			System.out.printf("file_close: Can't close invalid file id: %d\n", id);
-			return;
-		}
-
-		streams.remove(id);
-	}
-
-	/////////////////////////
 	/// DIRECTORIES
 	/////////////////////////
 
@@ -236,9 +81,9 @@ public class GodotIO {
 		public String path;
 	}
 
-	public int last_dir_id = 1;
+	private int last_dir_id = 1;
 
-	SparseArray<AssetDir> dirs;
+	private final SparseArray<AssetDir> dirs;
 
 	public int dir_open(String path) {
 		AssetDir ad = new AssetDir();
@@ -257,7 +102,6 @@ public class GodotIO {
 			return -1;
 		}
 
-		//System.out.printf("Opened dir: %s\n",path);
 		++last_dir_id;
 		dirs.put(last_dir_id, ad);
 
@@ -320,9 +164,14 @@ public class GodotIO {
 	GodotIO(Activity p_activity) {
 		am = p_activity.getAssets();
 		activity = p_activity;
-		//streams = new HashMap<Integer, AssetData>();
-		streams = new SparseArray<>();
 		dirs = new SparseArray<>();
+		String androidId = Settings.Secure.getString(activity.getContentResolver(),
+				Settings.Secure.ANDROID_ID);
+		if (androidId == null) {
+			androidId = "";
+		}
+
+		uniqueId = androidId;
 	}
 
 	/////////////////////////
@@ -331,7 +180,6 @@ public class GodotIO {
 
 	public int openURI(String p_uri) {
 		try {
-			Log.v("MyApp", "TRYING TO OPEN URI: " + p_uri);
 			String path = p_uri;
 			String type = "";
 			if (path.startsWith("/")) {
@@ -357,12 +205,12 @@ public class GodotIO {
 		}
 	}
 
-	public String getDataDir() {
-		return activity.getFilesDir().getAbsolutePath();
+	public String getCacheDir() {
+		return activity.getCacheDir().getAbsolutePath();
 	}
 
-	public String getExternalDataDir() {
-		return activity.getExternalFilesDir(null).getAbsolutePath();
+	public String getDataDir() {
+		return activity.getFilesDir().getAbsolutePath();
 	}
 
 	public String getLocale() {
@@ -456,51 +304,58 @@ public class GodotIO {
 	public static final int SYSTEM_DIR_PICTURES = 6;
 	public static final int SYSTEM_DIR_RINGTONES = 7;
 
-	public String getSystemDir(int idx) {
-		String what = "";
+	public String getSystemDir(int idx, boolean shared_storage) {
+		String what;
 		switch (idx) {
-			case SYSTEM_DIR_DESKTOP: {
-				//what=Environment.DIRECTORY_DOCUMENTS;
-				what = Environment.DIRECTORY_DOWNLOADS;
+			case SYSTEM_DIR_DESKTOP:
+			default: {
+				what = null; // This leads to the app specific external root directory.
 			} break;
+
 			case SYSTEM_DIR_DCIM: {
 				what = Environment.DIRECTORY_DCIM;
+			} break;
 
-			} break;
 			case SYSTEM_DIR_DOCUMENTS: {
-				what = Environment.DIRECTORY_DOWNLOADS;
-				//what=Environment.DIRECTORY_DOCUMENTS;
+				what = Environment.DIRECTORY_DOCUMENTS;
 			} break;
+
 			case SYSTEM_DIR_DOWNLOADS: {
 				what = Environment.DIRECTORY_DOWNLOADS;
-
 			} break;
+
 			case SYSTEM_DIR_MOVIES: {
 				what = Environment.DIRECTORY_MOVIES;
-
 			} break;
+
 			case SYSTEM_DIR_MUSIC: {
 				what = Environment.DIRECTORY_MUSIC;
 			} break;
+
 			case SYSTEM_DIR_PICTURES: {
 				what = Environment.DIRECTORY_PICTURES;
 			} break;
+
 			case SYSTEM_DIR_RINGTONES: {
 				what = Environment.DIRECTORY_RINGTONES;
-
 			} break;
 		}
 
-		if (what.equals(""))
-			return "";
-		return Environment.getExternalStoragePublicDirectory(what).getAbsolutePath();
+		if (shared_storage) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+				Log.w(TAG, "Shared storage access is limited on Android 10 and higher.");
+			}
+			if (TextUtils.isEmpty(what)) {
+				return Environment.getExternalStorageDirectory().getAbsolutePath();
+			} else {
+				return Environment.getExternalStoragePublicDirectory(what).getAbsolutePath();
+			}
+		} else {
+			return activity.getExternalFilesDir(what).getAbsolutePath();
+		}
 	}
 
-	protected static final String PREFS_FILE = "device_id.xml";
-	protected static final String PREFS_DEVICE_ID = "device_id";
-
-	public static String unique_id = "";
 	public String getUniqueID() {
-		return unique_id;
+		return uniqueId;
 	}
 }

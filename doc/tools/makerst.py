@@ -479,7 +479,7 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
         format_table(f, ml)
 
     # Theme properties
-    if class_def.theme_items is not None and len(class_def.theme_items) > 0:
+    if len(class_def.theme_items) > 0:
         f.write(make_heading("Theme Properties", "-"))
         pl = []
         for theme_item_def in class_def.theme_items.values():
@@ -601,6 +601,7 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
 
                 index += 1
 
+    # Theme property descriptions
     if len(class_def.theme_items) > 0:
         f.write(make_heading("Theme Property Descriptions", "-"))
         index = 0
@@ -1006,6 +1007,8 @@ def format_table(f, data, remove_empty_columns=False):  # type: (TextIO, Iterabl
 
 
 def make_type(klass, state):  # type: (str, State) -> str
+    if klass.find("*") != -1:  # Pointer, ignore
+        return klass
     link_type = klass
     if link_type.endswith("[]"):  # Typed array, strip [] to link to contained type.
         link_type = link_type[:-2]
@@ -1029,9 +1032,6 @@ def make_enum(t, state):  # type: (str, State) -> str
         e = t
         if c in state.classes and e not in state.classes[c].enums:
             c = "@GlobalScope"
-
-    if not c in state.classes and c.startswith("_"):
-        c = c[1:]  # Remove the underscore prefix
 
     if c in state.classes and e in state.classes[c].enums:
         return ":ref:`{0}<enum_{1}_{0}>`".format(e, c)

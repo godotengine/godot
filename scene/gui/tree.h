@@ -82,6 +82,7 @@ private:
 		int icon_max_w = 0;
 		bool expr = false;
 		bool checked = false;
+		bool indeterminate = false;
 		bool editable = false;
 		bool selected = false;
 		bool selectable = true;
@@ -113,6 +114,7 @@ private:
 		Vector<Button> buttons;
 
 		Ref<Font> custom_font;
+		int custom_font_size = -1;
 
 		Cell() {
 			text_buf.instantiate();
@@ -209,7 +211,9 @@ public:
 
 	/* check mode */
 	void set_checked(int p_column, bool p_checked);
+	void set_indeterminate(int p_column, bool p_indeterminate);
 	bool is_checked(int p_column) const;
+	bool is_indeterminate(int p_column) const;
 
 	void set_text(int p_column, String p_text);
 	String get_text(int p_column) const;
@@ -295,6 +299,9 @@ public:
 
 	void set_custom_font(int p_column, const Ref<Font> &p_font);
 	Ref<Font> get_custom_font(int p_column) const;
+
+	void set_custom_font_size(int p_column, int p_font_size);
+	int get_custom_font_size(int p_column) const;
 
 	void set_custom_bg_color(int p_column, const Color &p_color, bool p_bg_outline = false);
 	void clear_custom_bg_color(int p_column);
@@ -459,7 +466,6 @@ private:
 
 	void popup_select(int p_option);
 
-	void _gui_input(Ref<InputEvent> p_event);
 	void _notification(int p_what);
 
 	void item_edited(int p_column, TreeItem *p_item, bool p_lmb = true);
@@ -491,6 +497,7 @@ private:
 
 		Ref<Texture2D> checked;
 		Ref<Texture2D> unchecked;
+		Ref<Texture2D> indeterminate;
 		Ref<Texture2D> arrow_collapsed;
 		Ref<Texture2D> arrow;
 		Ref<Texture2D> select_arrow;
@@ -622,6 +629,8 @@ protected:
 	}
 
 public:
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
 	TreeItem *get_item_at_position(const Point2 &p_pos) const;

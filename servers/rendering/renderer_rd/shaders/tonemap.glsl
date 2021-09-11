@@ -37,15 +37,15 @@ layout(location = 0) in vec2 uv_interp;
 
 #ifdef SUBPASS
 layout(input_attachment_index = 0, set = 0, binding = 0) uniform subpassInput input_color;
-#else
-#if MULTIVIEW
+#elif defined(MULTIVIEW)
 layout(set = 0, binding = 0) uniform sampler2DArray source_color;
 #else
 layout(set = 0, binding = 0) uniform sampler2D source_color;
 #endif
-#endif
+
 layout(set = 1, binding = 0) uniform sampler2D source_auto_exposure;
 layout(set = 2, binding = 0) uniform sampler2D source_glow;
+
 #ifdef USE_1D_LUT
 layout(set = 3, binding = 0) uniform sampler2D source_color_correction;
 #else
@@ -71,7 +71,7 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	float exposure;
 	float white;
 	float auto_exposure_grey;
-	uint pad2;
+	float luminance_multiplier;
 
 	vec2 pixel_size;
 	bool use_fxaa;
@@ -169,25 +169,38 @@ vec3 tonemap_filmic(vec3 color, float white) {
 	return color_tonemapped / white_tonemapped;
 }
 
+// Adapted from https://github.com/TheRealMJP/BakingLab/blob/master/BakingLab/ACES.hlsl
+// (MIT License).
 vec3 tonemap_aces(vec3 color, float white) {
-	const float exposure_bias = 0.85f;
-	const float A = 2.51f * exposure_bias * exposure_bias;
-	const float B = 0.03f * exposure_bias;
-	const float C = 2.43f * exposure_bias * exposure_bias;
-	const float D = 0.59f * exposure_bias;
-	const float E = 0.14f;
+	const float exposure_bias = 1.8f;
+	const float A = 0.0245786f;
+	const float B = 0.000090537f;
+	const float C = 0.983729f;
+	const float D = 0.432951f;
+	const float E = 0.238081f;
 
-	vec3 color_tonemapped = (color * (A * color + B)) / (color * (C * color + D) + E);
-	float white_tonemapped = (white * (A * white + B)) / (white * (C * white + D) + E);
+	// Exposure bias baked into transform to save shader instructions. Equivalent to `color *= exposure_bias`
+	const mat3 rgb_to_rrt = mat3(
+			vec3(0.59719f * exposure_bias, 0.35458f * exposure_bias, 0.04823f * exposure_bias),
+			vec3(0.07600f * exposure_bias, 0.90834f * exposure_bias, 0.01566f * exposure_bias),
+			vec3(0.02840f * exposure_bias, 0.13383f * exposure_bias, 0.83777f * exposure_bias));
+
+	const mat3 odt_to_rgb = mat3(
+			vec3(1.60475f, -0.53108f, -0.07367f),
+			vec3(-0.10208f, 1.10813f, -0.00605f),
+			vec3(-0.00327f, -0.07276f, 1.07602f));
+
+	color *= rgb_to_rrt;
+	vec3 color_tonemapped = (color * (color + A) - B) / (color * (C * color + D) + E);
+	color_tonemapped *= odt_to_rgb;
+
+	white *= exposure_bias;
+	float white_tonemapped = (white * (white + A) - B) / (white * (C * white + D) + E);
 
 	return color_tonemapped / white_tonemapped;
 }
 
 vec3 tonemap_reinhard(vec3 color, float white) {
-	// Ensure color values are positive.
-	// They can be negative in the case of negative lights, which leads to undesired behavior.
-	color = max(vec3(0.0), color);
-
 	return (white * color + color) / (color * white + white);
 }
 
@@ -204,15 +217,16 @@ vec3 linear_to_srgb(vec3 color) {
 #define TONEMAPPER_ACES 3
 
 vec3 apply_tonemapping(vec3 color, float white) { // inputs are LINEAR, always outputs clamped [0;1] color
-
+	// Ensure color values passed to tonemappers are positive.
+	// They can be negative in the case of negative lights, which leads to undesired behavior.
 	if (params.tonemapper == TONEMAPPER_LINEAR) {
 		return color;
 	} else if (params.tonemapper == TONEMAPPER_REINHARD) {
-		return tonemap_reinhard(color, white);
+		return tonemap_reinhard(max(vec3(0.0f), color), white);
 	} else if (params.tonemapper == TONEMAPPER_FILMIC) {
-		return tonemap_filmic(color, white);
-	} else { //aces
-		return tonemap_aces(color, white);
+		return tonemap_filmic(max(vec3(0.0f), color), white);
+	} else { // TONEMAPPER_ACES
+		return tonemap_aces(max(vec3(0.0f), color), white);
 	}
 }
 
@@ -302,15 +316,15 @@ vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
 	const float FXAA_SPAN_MAX = 8.0;
 
 #ifdef MULTIVIEW
-	vec3 rgbNW = textureLod(source_color, vec3(uv_interp + vec2(-1.0, -1.0) * params.pixel_size, ViewIndex), 0.0).xyz * exposure;
-	vec3 rgbNE = textureLod(source_color, vec3(uv_interp + vec2(1.0, -1.0) * params.pixel_size, ViewIndex), 0.0).xyz * exposure;
-	vec3 rgbSW = textureLod(source_color, vec3(uv_interp + vec2(-1.0, 1.0) * params.pixel_size, ViewIndex), 0.0).xyz * exposure;
-	vec3 rgbSE = textureLod(source_color, vec3(uv_interp + vec2(1.0, 1.0) * params.pixel_size, ViewIndex), 0.0).xyz * exposure;
+	vec3 rgbNW = textureLod(source_color, vec3(uv_interp + vec2(-1.0, -1.0) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
+	vec3 rgbNE = textureLod(source_color, vec3(uv_interp + vec2(1.0, -1.0) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
+	vec3 rgbSW = textureLod(source_color, vec3(uv_interp + vec2(-1.0, 1.0) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
+	vec3 rgbSE = textureLod(source_color, vec3(uv_interp + vec2(1.0, 1.0) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
 #else
-	vec3 rgbNW = textureLod(source_color, uv_interp + vec2(-1.0, -1.0) * params.pixel_size, 0.0).xyz * exposure;
-	vec3 rgbNE = textureLod(source_color, uv_interp + vec2(1.0, -1.0) * params.pixel_size, 0.0).xyz * exposure;
-	vec3 rgbSW = textureLod(source_color, uv_interp + vec2(-1.0, 1.0) * params.pixel_size, 0.0).xyz * exposure;
-	vec3 rgbSE = textureLod(source_color, uv_interp + vec2(1.0, 1.0) * params.pixel_size, 0.0).xyz * exposure;
+	vec3 rgbNW = textureLod(source_color, uv_interp + vec2(-1.0, -1.0) * params.pixel_size, 0.0).xyz * exposure * params.luminance_multiplier;
+	vec3 rgbNE = textureLod(source_color, uv_interp + vec2(1.0, -1.0) * params.pixel_size, 0.0).xyz * exposure * params.luminance_multiplier;
+	vec3 rgbSW = textureLod(source_color, uv_interp + vec2(-1.0, 1.0) * params.pixel_size, 0.0).xyz * exposure * params.luminance_multiplier;
+	vec3 rgbSE = textureLod(source_color, uv_interp + vec2(1.0, 1.0) * params.pixel_size, 0.0).xyz * exposure * params.luminance_multiplier;
 #endif
 	vec3 rgbM = color;
 	vec3 luma = vec3(0.299, 0.587, 0.114);
@@ -337,11 +351,11 @@ vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
 		  params.pixel_size;
 
 #ifdef MULTIVIEW
-	vec3 rgbA = 0.5 * exposure * (textureLod(source_color, vec3(uv_interp + dir * (1.0 / 3.0 - 0.5), ViewIndex), 0.0).xyz + textureLod(source_color, vec3(uv_interp + dir * (2.0 / 3.0 - 0.5), ViewIndex), 0.0).xyz);
-	vec3 rgbB = rgbA * 0.5 + 0.25 * exposure * (textureLod(source_color, vec3(uv_interp + dir * -0.5, ViewIndex), 0.0).xyz + textureLod(source_color, vec3(uv_interp + dir * 0.5, ViewIndex), 0.0).xyz);
+	vec3 rgbA = 0.5 * exposure * (textureLod(source_color, vec3(uv_interp + dir * (1.0 / 3.0 - 0.5), ViewIndex), 0.0).xyz + textureLod(source_color, vec3(uv_interp + dir * (2.0 / 3.0 - 0.5), ViewIndex), 0.0).xyz) * params.luminance_multiplier;
+	vec3 rgbB = rgbA * 0.5 + 0.25 * exposure * (textureLod(source_color, vec3(uv_interp + dir * -0.5, ViewIndex), 0.0).xyz + textureLod(source_color, vec3(uv_interp + dir * 0.5, ViewIndex), 0.0).xyz) * params.luminance_multiplier;
 #else
-	vec3 rgbA = 0.5 * exposure * (textureLod(source_color, uv_interp + dir * (1.0 / 3.0 - 0.5), 0.0).xyz + textureLod(source_color, uv_interp + dir * (2.0 / 3.0 - 0.5), 0.0).xyz);
-	vec3 rgbB = rgbA * 0.5 + 0.25 * exposure * (textureLod(source_color, uv_interp + dir * -0.5, 0.0).xyz + textureLod(source_color, uv_interp + dir * 0.5, 0.0).xyz);
+	vec3 rgbA = 0.5 * exposure * (textureLod(source_color, uv_interp + dir * (1.0 / 3.0 - 0.5), 0.0).xyz + textureLod(source_color, uv_interp + dir * (2.0 / 3.0 - 0.5), 0.0).xyz) * params.luminance_multiplier;
+	vec3 rgbB = rgbA * 0.5 + 0.25 * exposure * (textureLod(source_color, uv_interp + dir * -0.5, 0.0).xyz + textureLod(source_color, uv_interp + dir * 0.5, 0.0).xyz) * params.luminance_multiplier;
 #endif
 
 	float lumaB = dot(rgbB, luma);
@@ -353,7 +367,7 @@ vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
 }
 #endif // !SUBPASS
 
-// From http://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
+// From https://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
 // and https://www.shadertoy.com/view/MslGR8 (5th one starting from the bottom)
 // NOTE: `frag_coord` is in pixels (i.e. not normalized UV).
 vec3 screen_space_dither(vec2 frag_coord) {
@@ -368,11 +382,11 @@ vec3 screen_space_dither(vec2 frag_coord) {
 void main() {
 #ifdef SUBPASS
 	// SUBPASS and MULTIVIEW can be combined but in that case we're already reading from the correct layer
-	vec3 color = subpassLoad(input_color).rgb;
-#elif MULTIVIEW
-	vec3 color = textureLod(source_color, vec3(uv_interp, ViewIndex), 0.0f).rgb;
+	vec3 color = subpassLoad(input_color).rgb * params.luminance_multiplier;
+#elif defined(MULTIVIEW)
+	vec3 color = textureLod(source_color, vec3(uv_interp, ViewIndex), 0.0f).rgb * params.luminance_multiplier;
 #else
-	vec3 color = textureLod(source_color, uv_interp, 0.0f).rgb;
+	vec3 color = textureLod(source_color, uv_interp, 0.0f).rgb * params.luminance_multiplier;
 #endif
 
 	// Exposure
@@ -381,7 +395,7 @@ void main() {
 
 #ifndef SUBPASS
 	if (params.use_auto_exposure) {
-		exposure *= 1.0 / (texelFetch(source_auto_exposure, ivec2(0, 0), 0).r / params.auto_exposure_grey);
+		exposure *= 1.0 / (texelFetch(source_auto_exposure, ivec2(0, 0), 0).r * params.luminance_multiplier / params.auto_exposure_grey);
 	}
 #endif
 
@@ -390,7 +404,7 @@ void main() {
 	// Early Tonemap & SRGB Conversion
 #ifndef SUBPASS
 	if (params.use_glow && params.glow_mode == GLOW_MODE_MIX) {
-		vec3 glow = gather_glow(source_glow, uv_interp);
+		vec3 glow = gather_glow(source_glow, uv_interp) * params.luminance_multiplier;
 		color.rgb = mix(color.rgb, glow, params.glow_intensity);
 	}
 
@@ -413,7 +427,7 @@ void main() {
 	// Glow
 
 	if (params.use_glow && params.glow_mode != GLOW_MODE_MIX) {
-		vec3 glow = gather_glow(source_glow, uv_interp) * params.glow_intensity;
+		vec3 glow = gather_glow(source_glow, uv_interp) * params.glow_intensity * params.luminance_multiplier;
 
 		// high dynamic range -> SRGB
 		glow = apply_tonemapping(glow, params.white);

@@ -74,8 +74,8 @@ String RenderingDevice::shader_get_spirv_cache_key() const {
 	return String();
 }
 
-RID RenderingDevice::shader_create_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv) {
-	Vector<uint8_t> bytecode = shader_compile_binary_from_spirv(p_spirv);
+RID RenderingDevice::shader_create_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name) {
+	Vector<uint8_t> bytecode = shader_compile_binary_from_spirv(p_spirv, p_shader_name);
 	ERR_FAIL_COND_V(bytecode.size() == 0, RID());
 	return shader_create_from_bytecode(bytecode);
 }
@@ -192,7 +192,7 @@ Ref<RDShaderSPIRV> RenderingDevice::_shader_compile_spirv_from_source(const Ref<
 	return bytecode;
 }
 
-Vector<uint8_t> RenderingDevice::_shader_compile_binary_from_spirv(const Ref<RDShaderSPIRV> &p_spirv) {
+Vector<uint8_t> RenderingDevice::_shader_compile_binary_from_spirv(const Ref<RDShaderSPIRV> &p_spirv, const String &p_shader_name) {
 	ERR_FAIL_COND_V(p_spirv.is_null(), Vector<uint8_t>());
 
 	Vector<ShaderStageSPIRVData> stage_data;
@@ -209,10 +209,10 @@ Vector<uint8_t> RenderingDevice::_shader_compile_binary_from_spirv(const Ref<RDS
 		stage_data.push_back(sd);
 	}
 
-	return shader_compile_binary_from_spirv(stage_data);
+	return shader_compile_binary_from_spirv(stage_data, p_shader_name);
 }
 
-RID RenderingDevice::_shader_create_from_spirv(const Ref<RDShaderSPIRV> &p_spirv) {
+RID RenderingDevice::_shader_create_from_spirv(const Ref<RDShaderSPIRV> &p_spirv, const String &p_shader_name) {
 	ERR_FAIL_COND_V(p_spirv.is_null(), RID());
 
 	Vector<ShaderStageSPIRVData> stage_data;
@@ -392,8 +392,8 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("index_array_create", "index_buffer", "index_offset", "index_count"), &RenderingDevice::index_array_create);
 
 	ClassDB::bind_method(D_METHOD("shader_compile_spirv_from_source", "shader_source", "allow_cache"), &RenderingDevice::_shader_compile_spirv_from_source, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("shader_compile_binary_from_spirv", "spirv_data"), &RenderingDevice::_shader_compile_binary_from_spirv);
-	ClassDB::bind_method(D_METHOD("shader_create_from_spirv", "spirv_data"), &RenderingDevice::_shader_compile_binary_from_spirv);
+	ClassDB::bind_method(D_METHOD("shader_compile_binary_from_spirv", "spirv_data", "name"), &RenderingDevice::_shader_compile_binary_from_spirv, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("shader_create_from_spirv", "spirv_data", "name"), &RenderingDevice::_shader_create_from_spirv, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("shader_create_from_bytecode", "binary_data"), &RenderingDevice::shader_create_from_bytecode);
 	ClassDB::bind_method(D_METHOD("shader_get_vertex_input_attribute_mask", "shader"), &RenderingDevice::shader_get_vertex_input_attribute_mask);
 
@@ -420,8 +420,8 @@ void RenderingDevice::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("draw_list_begin_for_screen", "screen", "clear_color"), &RenderingDevice::draw_list_begin_for_screen, DEFVAL(DisplayServer::MAIN_WINDOW_ID), DEFVAL(Color()));
 
-	ClassDB::bind_method(D_METHOD("draw_list_begin", "framebuffer", "initial_color_action", "final_color_action", "initial_depth_action", "final_depth_action", "clear_color_values", "clear_depth", "clear_stencil", "region", "storage_textures"), &RenderingDevice::draw_list_begin, DEFVAL(Vector<Color>()), DEFVAL(1.0), DEFVAL(0), DEFVAL(Rect2i()), DEFVAL(TypedArray<RID>()));
-	ClassDB::bind_method(D_METHOD("draw_list_begin_split", "framebuffer", "splits", "initial_color_action", "final_color_action", "initial_depth_action", "final_depth_action", "clear_color_values", "clear_depth", "clear_stencil", "region", "storage_textures"), &RenderingDevice::_draw_list_begin_split, DEFVAL(Vector<Color>()), DEFVAL(1.0), DEFVAL(0), DEFVAL(Rect2i()), DEFVAL(TypedArray<RID>()));
+	ClassDB::bind_method(D_METHOD("draw_list_begin", "framebuffer", "initial_color_action", "final_color_action", "initial_depth_action", "final_depth_action", "clear_color_values", "clear_depth", "clear_stencil", "region", "storage_textures"), &RenderingDevice::draw_list_begin, DEFVAL(Vector<Color>()), DEFVAL(1.0), DEFVAL(0), DEFVAL(Rect2()), DEFVAL(TypedArray<RID>()));
+	ClassDB::bind_method(D_METHOD("draw_list_begin_split", "framebuffer", "splits", "initial_color_action", "final_color_action", "initial_depth_action", "final_depth_action", "clear_color_values", "clear_depth", "clear_stencil", "region", "storage_textures"), &RenderingDevice::_draw_list_begin_split, DEFVAL(Vector<Color>()), DEFVAL(1.0), DEFVAL(0), DEFVAL(Rect2()), DEFVAL(TypedArray<RID>()));
 
 	ClassDB::bind_method(D_METHOD("draw_list_bind_render_pipeline", "draw_list", "render_pipeline"), &RenderingDevice::draw_list_bind_render_pipeline);
 	ClassDB::bind_method(D_METHOD("draw_list_bind_uniform_set", "draw_list", "uniform_set", "set_index"), &RenderingDevice::draw_list_bind_uniform_set);
@@ -431,7 +431,7 @@ void RenderingDevice::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("draw_list_draw", "draw_list", "use_indices", "instances", "procedural_vertex_count"), &RenderingDevice::draw_list_draw, DEFVAL(0));
 
-	ClassDB::bind_method(D_METHOD("draw_list_enable_scissor", "draw_list", "rect"), &RenderingDevice::draw_list_enable_scissor, DEFVAL(Rect2i()));
+	ClassDB::bind_method(D_METHOD("draw_list_enable_scissor", "draw_list", "rect"), &RenderingDevice::draw_list_enable_scissor, DEFVAL(Rect2()));
 	ClassDB::bind_method(D_METHOD("draw_list_disable_scissor", "draw_list"), &RenderingDevice::draw_list_disable_scissor);
 
 	ClassDB::bind_method(D_METHOD("draw_list_switch_to_next_pass"), &RenderingDevice::draw_list_switch_to_next_pass);
@@ -478,11 +478,27 @@ void RenderingDevice::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_memory_usage"), &RenderingDevice::get_memory_usage);
 
+	ClassDB::bind_method(D_METHOD("get_driver_resource", "resource", "rid", "index"), &RenderingDevice::get_driver_resource);
+
 	BIND_CONSTANT(BARRIER_MASK_RASTER);
 	BIND_CONSTANT(BARRIER_MASK_COMPUTE);
 	BIND_CONSTANT(BARRIER_MASK_TRANSFER);
 	BIND_CONSTANT(BARRIER_MASK_ALL);
 	BIND_CONSTANT(BARRIER_MASK_NO_BARRIER);
+
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_DEVICE);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_PHYSICAL_DEVICE);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_INSTANCE);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_QUEUE);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_QUEUE_FAMILY_INDEX);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_IMAGE);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_IMAGE_VIEW);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_IMAGE_NATIVE_TEXTURE_FORMAT);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_SAMPLER);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_DESCRIPTOR_SET);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_BUFFER);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_COMPUTE_PIPELINE);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_RENDER_PIPELINE);
 
 	BIND_ENUM_CONSTANT(DATA_FORMAT_R4G4_UNORM_PACK8);
 	BIND_ENUM_CONSTANT(DATA_FORMAT_R4G4B4A4_UNORM_PACK16);

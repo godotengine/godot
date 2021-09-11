@@ -35,6 +35,7 @@ name is available.
     Andrea Catania (AndreaCatania)
     Andrii Doroshenko (Xrayez)
     Andy Moss (MillionOstrich)
+    Angad Kambli (angad-k)
     Anish Bhobe (KidRigger)
     Anton Yabchinskiy (a12n)
     Anutrix
@@ -44,6 +45,7 @@ name is available.
     Ben Brookshire (sheepandshepherd)
     Benjamin Larsson (Nallebeorn)
     Bernard Liebl (poke1024)
+    Bhuvan Vemula (Bhu1-V)
     Błażej Szczygieł (zaps166)
     Bojidar Marinov (bojidar-bg)
     Bruno Lourenço (MadEqua)
@@ -65,6 +67,7 @@ name is available.
     Dmitry Koteroff (Krakean)
     Dominik Jasiński (dreamsComeTrue)
     DualMatrix
+    Ellen Poe (ellenhp)
     Emmanuel Barroga (codecustard)
     Emmanuel Leblond (touilleMan)
     Eoin O'Neill (Eoin-ONeill-Yokai)
@@ -75,7 +78,11 @@ name is available.
     est31
     Fabian Mathews (supagu)
     Fabio Alessandrelli (Faless)
+    fabriceci
     Ferenc Arn (tagcup)
+    follower
+    foxydevloper
+    François Belair (Razoric480)
     Franklin Sobrinho (TheHX)
     Fredia Huya-Kouadio (m4gr3d)
     Geequlim
@@ -87,8 +94,11 @@ name is available.
     Hanif Bin Ariffin (hbina)
     Haoyu Qiu (timothyqiu)
     Hein-Pieter van Braam-Stewart (hpvb)
+    Hendrik Brucker (Geometror)
+    hilfazer
     Hiroshi Ogawa (hi-ogawa)
     homer666
+    hoontee
     Hubert Jarosz (Marqin)
     Hugo Locurcio (Calinou)
     Ian Bishop (ianb96)
@@ -108,6 +118,7 @@ name is available.
     Joshua Grams (JoshuaGrams)
     Juan Linietsky (reduz)
     Julian Murgia (StraToN)
+    Julien Nguyen (Blackiris)
     Justo Delgado (mrcdk)
     Kelly Thomas (KellyThomas)
     kleonc
@@ -139,6 +150,7 @@ name is available.
     Matthias Hölzl (hoelzl)
     Max Hilbrunner (mhilbrunner)
     merumelu
+    Meru Patel (Janglee123)
     Michael Alexsander (YeldhamDev)
     MichiRecRoom (LikeLakers2)
     mrezai
@@ -146,6 +158,7 @@ name is available.
     Nathan Franke (nathanfranke)
     Nathan Lovato (NathanLovato)
     Nathan Warden (NathanWarden)
+    Nicholas Huelin (SirQuartz)
     Nils André-Chang (NilsIrl)
     Noah Beard (TwistedTwigleg)
     Nuno Donato (nunodonato)
@@ -190,6 +203,7 @@ name is available.
     Timo (toger5)
     Tomasz Chabora (KoBeWi)
     Twarit Waikar (IronicallySerious)
+    Umang Kalra (theoway)
     Vinzenz Feenstra (vinzenz)
     박한얼 (volzhs)
     V. Vamsi Krishna (vkbsb)

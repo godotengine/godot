@@ -78,7 +78,7 @@ static String _include_function(const String &p_path, void *userpointer) {
 	String *base_path = (String *)userpointer;
 
 	String include = p_path;
-	if (include.is_rel_path()) {
+	if (include.is_relative_path()) {
 		include = base_path->plus_file(include);
 	}
 

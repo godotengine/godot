@@ -64,6 +64,10 @@ float AudioStreamGenerator::get_length() const {
 	return 0;
 }
 
+bool AudioStreamGenerator::is_monophonic() const {
+	return true;
+}
+
 void AudioStreamGenerator::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mix_rate", "hz"), &AudioStreamGenerator::set_mix_rate);
 	ClassDB::bind_method(D_METHOD("get_mix_rate"), &AudioStreamGenerator::get_mix_rate);
@@ -138,7 +142,7 @@ void AudioStreamGeneratorPlayback::clear_buffer() {
 	mixed = 0;
 }
 
-void AudioStreamGeneratorPlayback::_mix_internal(AudioFrame *p_buffer, int p_frames) {
+int AudioStreamGeneratorPlayback::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	int read_amount = buffer.data_left();
 	if (p_frames < read_amount) {
 		read_amount = p_frames;
@@ -156,6 +160,7 @@ void AudioStreamGeneratorPlayback::_mix_internal(AudioFrame *p_buffer, int p_fra
 	}
 
 	mixed += p_frames / generator->get_mix_rate();
+	return read_amount < p_frames ? read_amount : p_frames;
 }
 
 float AudioStreamGeneratorPlayback::get_stream_sampling_rate() {

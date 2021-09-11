@@ -387,7 +387,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 					xml_output.append(link_target);
 					xml_output.append("</c>");
 				}
-			} else if (link_tag == "const") {
+			} else if (link_tag == "constant") {
 				if (!target_itype || !target_itype->is_object_type) {
 					if (OS::get_singleton()->is_stdout_verbose()) {
 						if (target_itype) {
@@ -2610,7 +2610,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		Map<StringName, StringName> accessor_methods;
 
 		for (const PropertyInfo &property : property_list) {
-			if (property.usage & PROPERTY_USAGE_GROUP || property.usage & PROPERTY_USAGE_SUBGROUP || property.usage & PROPERTY_USAGE_CATEGORY) {
+			if (property.usage & PROPERTY_USAGE_GROUP || property.usage & PROPERTY_USAGE_SUBGROUP || property.usage & PROPERTY_USAGE_CATEGORY || (property.type == Variant::NIL && property.usage & PROPERTY_USAGE_ARRAY)) {
 				continue;
 			}
 
@@ -3130,8 +3130,18 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
 		case Variant::CALLABLE:
+			ERR_FAIL_COND_V_MSG(r_iarg.type.cname != name_cache.type_Callable, false,
+					"Parameter of type '" + String(r_iarg.type.cname) + "' cannot have a default value of type '" + String(name_cache.type_Callable) + "'.");
+			ERR_FAIL_COND_V_MSG(!p_val.is_zero(), false,
+					"Parameter of type '" + String(r_iarg.type.cname) + "' can only have null/zero as the default value.");
+			r_iarg.default_argument = "default";
+			break;
 		case Variant::SIGNAL:
-			CRASH_NOW_MSG("Parameter of type '" + String(r_iarg.type.cname) + "' cannot have a default value.");
+			ERR_FAIL_COND_V_MSG(r_iarg.type.cname != name_cache.type_Signal, false,
+					"Parameter of type '" + String(r_iarg.type.cname) + "' cannot have a default value of type '" + String(name_cache.type_Signal) + "'.");
+			ERR_FAIL_COND_V_MSG(!p_val.is_zero(), false,
+					"Parameter of type '" + String(r_iarg.type.cname) + "' can only have null/zero as the default value.");
+			r_iarg.default_argument = "default";
 			break;
 		default:
 			CRASH_NOW_MSG("Unexpected Variant type: " + itos(p_val.get_type()));

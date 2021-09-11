@@ -178,6 +178,7 @@ protected:
 	void _make_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, bool p_goto_definition, Vector2 p_pos);
 	void _text_edit_gui_input(const Ref<InputEvent> &ev);
 	void _color_changed(const Color &p_color);
+	void _prepare_edit_menu();
 
 	void _goto_line(int p_line) { goto_line(p_line); }
 	void _lookup_symbol(const String &p_symbol, int p_row, int p_column);
@@ -224,6 +225,8 @@ public:
 
 	virtual void reload(bool p_soft) override;
 	virtual Array get_breakpoints() override;
+	virtual void set_breakpoint(int p_line, bool p_enabled) override;
+	virtual void clear_breakpoints() override;
 
 	virtual void add_callback(const String &p_function, PackedStringArray p_args) override;
 	virtual void update_settings() override;

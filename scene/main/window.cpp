@@ -31,10 +31,8 @@
 #include "window.h"
 
 #include "core/debugger/engine_debugger.h"
-#include "core/os/keyboard.h"
 #include "core/string/translation.h"
 #include "scene/gui/control.h"
-#include "scene/resources/font.h"
 #include "scene/scene_string_names.h"
 
 void Window::set_title(const String &p_title) {
@@ -302,7 +300,7 @@ void Window::_propagate_window_notification(Node *p_node, int p_notification) {
 		Node *child = p_node->get_child(i);
 		Window *window = Object::cast_to<Window>(child);
 		if (window) {
-			break;
+			continue;
 		}
 		_propagate_window_notification(child, p_notification);
 	}
@@ -661,8 +659,8 @@ void Window::_update_viewport_size() {
 		if (!use_font_oversampling) {
 			font_oversampling = 1.0;
 		}
-		if (TS->font_get_oversampling() != font_oversampling) {
-			TS->font_set_oversampling(font_oversampling);
+		if (TS->font_get_global_oversampling() != font_oversampling) {
+			TS->font_set_global_oversampling(font_oversampling);
 		}
 	}
 
@@ -918,14 +916,14 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 
 	emit_signal(SceneStringNames::get_singleton()->window_input, p_ev);
 
-	input(p_ev);
+	push_input(p_ev);
 	if (!is_input_handled()) {
-		unhandled_input(p_ev);
+		push_unhandled_input(p_ev);
 	}
 }
 
 void Window::_window_input_text(const String &p_text) {
-	input_text(p_text);
+	push_text_input(p_text);
 }
 
 void Window::_window_drop_files(const Vector<String> &p_files) {
@@ -1499,7 +1497,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "position"), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Windowed,Minimized,Maximized,Fullscreen"), "set_mode", "get_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_screen"), "set_current_screen", "get_current_screen");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_screen"), "set_current_screen", "get_current_screen");
 
 	ADD_GROUP("Flags", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");

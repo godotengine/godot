@@ -48,7 +48,7 @@ void PropertySelector::_sbox_input(const Ref<InputEvent> &p_ie) {
 			case KEY_DOWN:
 			case KEY_PAGEUP:
 			case KEY_PAGEDOWN: {
-				search_options->call("_gui_input", k);
+				search_options->gui_input(k);
 				search_box->accept_event();
 
 				TreeItem *root = search_options->get_root();
@@ -67,6 +67,8 @@ void PropertySelector::_sbox_input(const Ref<InputEvent> &p_ie) {
 				current->select(0);
 
 			} break;
+			default:
+				break;
 		}
 	}
 }
@@ -351,51 +353,64 @@ void PropertySelector::_item_selected() {
 	String class_type;
 	if (type != Variant::NIL) {
 		class_type = Variant::get_type_name(type);
-
-	} else {
+	} else if (base_type != String()) {
 		class_type = base_type;
+	} else if (instance) {
+		class_type = instance->get_class();
 	}
 
 	DocTools *dd = EditorHelp::get_doc_data();
 	String text;
-
 	if (properties) {
-		String at_class = class_type;
-
-		while (at_class != String()) {
-			Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(at_class);
+		while (class_type != String()) {
+			Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(class_type);
 			if (E) {
 				for (int i = 0; i < E->get().properties.size(); i++) {
 					if (E->get().properties[i].name == name) {
 						text = DTR(E->get().properties[i].description);
+						break;
 					}
 				}
 			}
 
-			at_class = ClassDB::get_parent_class(at_class);
+			if (text != String()) {
+				break;
+			}
+
+			// The property may be from a parent class, keep looking.
+			class_type = ClassDB::get_parent_class(class_type);
 		}
 	} else {
-		String at_class = class_type;
-
-		while (at_class != String()) {
-			Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(at_class);
+		while (class_type != String()) {
+			Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(class_type);
 			if (E) {
 				for (int i = 0; i < E->get().methods.size(); i++) {
 					if (E->get().methods[i].name == name) {
 						text = DTR(E->get().methods[i].description);
+						break;
 					}
 				}
 			}
 
-			at_class = ClassDB::get_parent_class(at_class);
+			if (text != String()) {
+				break;
+			}
+
+			// The method may be from a parent class, keep looking.
+			class_type = ClassDB::get_parent_class(class_type);
 		}
 	}
 
-	if (text == String()) {
-		return;
+	if (text != String()) {
+		// Display both property name and description, since the help bit may be displayed
+		// far away from the location (especially if the dialog was resized to be taller).
+		help_bit->set_text(vformat("[b]%s[/b]: %s", name, text));
+		help_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 1));
+	} else {
+		// Use nested `vformat()` as translators shouldn't interfere with BBCode tags.
+		help_bit->set_text(vformat(TTR("No description available for %s."), vformat("[b]%s[/b]", name)));
+		help_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 0.5));
 	}
-
-	help_bit->set_text(text);
 }
 
 void PropertySelector::_hide_requested() {

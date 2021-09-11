@@ -33,7 +33,7 @@
 #include "core/os/keyboard.h"
 #include "scene/main/window.h"
 
-void MenuButton::_unhandled_key_input(Ref<InputEvent> p_event) {
+void MenuButton::unhandled_key_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (!_is_focus_owner_in_shorcut_context()) {
@@ -44,7 +44,7 @@ void MenuButton::_unhandled_key_input(Ref<InputEvent> p_event) {
 		return;
 	}
 
-	if (p_event->is_pressed() && !p_event->is_echo() && (Object::cast_to<InputEventKey>(p_event.ptr()) || Object::cast_to<InputEventJoypadButton>(p_event.ptr()) || Object::cast_to<InputEventAction>(*p_event))) {
+	if (p_event->is_pressed() && !p_event->is_echo() && (Object::cast_to<InputEventKey>(p_event.ptr()) || Object::cast_to<InputEventJoypadButton>(p_event.ptr()) || Object::cast_to<InputEventAction>(*p_event) || Object::cast_to<InputEventShortcut>(*p_event))) {
 		if (!get_parent() || !is_visible_in_tree() || is_disabled()) {
 			return;
 		}
@@ -86,6 +86,7 @@ void MenuButton::_popup_visibility_changed(bool p_visible) {
 }
 
 void MenuButton::pressed() {
+	emit_signal(SNAME("about_to_popup"));
 	Size2 size = get_size();
 
 	Point2 gp = get_screen_position();
@@ -99,8 +100,8 @@ void MenuButton::pressed() {
 	popup->popup();
 }
 
-void MenuButton::_gui_input(Ref<InputEvent> p_event) {
-	BaseButton::_gui_input(p_event);
+void MenuButton::gui_input(const Ref<InputEvent> &p_event) {
+	BaseButton::gui_input(p_event);
 }
 
 PopupMenu *MenuButton::get_popup() const {
@@ -171,7 +172,7 @@ MenuButton::MenuButton() {
 
 	popup = memnew(PopupMenu);
 	popup->hide();
-	add_child(popup);
+	add_child(popup, false, INTERNAL_MODE_FRONT);
 	popup->connect("about_to_popup", callable_mp(this, &MenuButton::_popup_visibility_changed), varray(true));
 	popup->connect("popup_hide", callable_mp(this, &MenuButton::_popup_visibility_changed), varray(false));
 }

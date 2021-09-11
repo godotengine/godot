@@ -71,7 +71,7 @@ class RenderingServerDefault : public RenderingServer {
 	uint64_t frame_profile_frame;
 	Vector<FrameProfileArea> frame_profile;
 
-	float frame_setup_time = 0;
+	double frame_setup_time = 0;
 
 	//for printing
 	bool print_gpu_profile = false;
@@ -440,13 +440,13 @@ public:
 	FUNC2(particles_set_emitting, RID, bool)
 	FUNC1R(bool, particles_get_emitting, RID)
 	FUNC2(particles_set_amount, RID, int)
-	FUNC2(particles_set_lifetime, RID, float)
+	FUNC2(particles_set_lifetime, RID, double)
 	FUNC2(particles_set_one_shot, RID, bool)
-	FUNC2(particles_set_pre_process_time, RID, float)
+	FUNC2(particles_set_pre_process_time, RID, double)
 	FUNC2(particles_set_explosiveness_ratio, RID, float)
 	FUNC2(particles_set_randomness_ratio, RID, float)
 	FUNC2(particles_set_custom_aabb, RID, const AABB &)
-	FUNC2(particles_set_speed_scale, RID, float)
+	FUNC2(particles_set_speed_scale, RID, double)
 	FUNC2(particles_set_use_local_coordinates, RID, bool)
 	FUNC2(particles_set_process_material, RID, RID)
 	FUNC2(particles_set_fixed_fps, RID, int)
@@ -478,11 +478,11 @@ public:
 
 	FUNC2(particles_collision_set_collision_type, RID, ParticlesCollisionType)
 	FUNC2(particles_collision_set_cull_mask, RID, uint32_t)
-	FUNC2(particles_collision_set_sphere_radius, RID, float)
+	FUNC2(particles_collision_set_sphere_radius, RID, real_t)
 	FUNC2(particles_collision_set_box_extents, RID, const Vector3 &)
-	FUNC2(particles_collision_set_attractor_strength, RID, float)
-	FUNC2(particles_collision_set_attractor_directionality, RID, float)
-	FUNC2(particles_collision_set_attractor_attenuation, RID, float)
+	FUNC2(particles_collision_set_attractor_strength, RID, real_t)
+	FUNC2(particles_collision_set_attractor_directionality, RID, real_t)
+	FUNC2(particles_collision_set_attractor_attenuation, RID, real_t)
 	FUNC2(particles_collision_set_field_texture, RID, RID)
 	FUNC1(particles_collision_height_field_update, RID)
 	FUNC2(particles_collision_set_height_field_resolution, RID, ParticlesCollisionHeightfieldResolution)
@@ -526,6 +526,7 @@ public:
 	FUNCRIDSPLIT(viewport)
 
 	FUNC2(viewport_set_use_xr, RID, bool)
+	FUNC2(viewport_set_scale_3d, RID, ViewportScale3D)
 	FUNC3(viewport_set_size, RID, int, int)
 
 	FUNC2(viewport_set_active, RID, bool)
@@ -574,8 +575,8 @@ public:
 	FUNC2(viewport_set_debug_draw, RID, ViewportDebugDraw)
 
 	FUNC2(viewport_set_measure_render_time, RID, bool)
-	FUNC1RC(float, viewport_get_measured_render_time_cpu, RID)
-	FUNC1RC(float, viewport_get_measured_render_time_gpu, RID)
+	FUNC1RC(double, viewport_get_measured_render_time_cpu, RID)
+	FUNC1RC(double, viewport_get_measured_render_time_gpu, RID)
 
 	FUNC2(call_set_vsync_mode, DisplayServer::VSyncMode, DisplayServer::WindowID)
 
@@ -762,6 +763,7 @@ public:
 	FUNC4(canvas_item_add_circle, RID, const Point2 &, float, const Color &)
 	FUNC6(canvas_item_add_texture_rect, RID, const Rect2 &, RID, bool, const Color &, bool)
 	FUNC7(canvas_item_add_texture_rect_region, RID, const Rect2 &, RID, const Rect2 &, const Color &, bool, bool)
+	FUNC7(canvas_item_add_msdf_texture_rect_region, RID, const Rect2 &, RID, const Rect2 &, const Color &, int, float)
 	FUNC10(canvas_item_add_nine_patch, RID, const Rect2 &, const Rect2 &, RID, const Vector2 &, const Vector2 &, NinePatchAxisMode, NinePatchAxisMode, bool, const Color &)
 	FUNC6(canvas_item_add_primitive, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, float)
 	FUNC5(canvas_item_add_polygon, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID)
@@ -890,7 +892,7 @@ public:
 
 	/* TESTING */
 
-	virtual float get_frame_setup_time_cpu() const override;
+	virtual double get_frame_setup_time_cpu() const override;
 
 	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true) override;
 	virtual void set_default_clear_color(const Color &p_color) override;

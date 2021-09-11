@@ -32,20 +32,8 @@
 #define RICH_TEXT_EFFECT_H
 
 #include "core/io/resource.h"
-
-class RichTextEffect : public Resource {
-	GDCLASS(RichTextEffect, Resource);
-	OBJ_SAVE_TYPE(RichTextEffect);
-
-protected:
-	static void _bind_methods();
-
-public:
-	Variant get_bbcode() const;
-	bool _process_effect_impl(Ref<class CharFXTransform> p_cfx);
-
-	RichTextEffect();
-};
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/script_language.h"
 
 class CharFXTransform : public RefCounted {
 	GDCLASS(CharFXTransform, RefCounted);
@@ -59,9 +47,9 @@ public:
 	bool outline = false;
 	Point2 offset;
 	Color color;
-	float elapsed_time = 0.0f;
+	double elapsed_time = 0.0f;
 	Dictionary environment;
-	uint32_t glpyh_index = 0;
+	uint32_t glyph_index = 0;
 	RID font;
 
 	CharFXTransform();
@@ -69,8 +57,8 @@ public:
 
 	Vector2i get_range() { return range; }
 	void set_range(const Vector2i &p_range) { range = p_range; }
-	float get_elapsed_time() { return elapsed_time; }
-	void set_elapsed_time(float p_elapsed_time) { elapsed_time = p_elapsed_time; }
+	double get_elapsed_time() { return elapsed_time; }
+	void set_elapsed_time(double p_elapsed_time) { elapsed_time = p_elapsed_time; }
 	bool is_visible() { return visibility; }
 	void set_visibility(bool p_visibility) { visibility = p_visibility; }
 	bool is_outline() { return outline; }
@@ -80,13 +68,29 @@ public:
 	Color get_color() { return color; }
 	void set_color(Color p_color) { color = p_color; }
 
-	uint32_t get_glyph_index() const { return glpyh_index; };
-	void set_glyph_index(uint32_t p_glpyh_index) { glpyh_index = p_glpyh_index; };
+	uint32_t get_glyph_index() const { return glyph_index; };
+	void set_glyph_index(uint32_t p_glyph_index) { glyph_index = p_glyph_index; };
 	RID get_font() const { return font; };
 	void set_font(RID p_font) { font = p_font; };
 
 	Dictionary get_environment() { return environment; }
 	void set_environment(Dictionary p_environment) { environment = p_environment; }
+};
+
+class RichTextEffect : public Resource {
+	GDCLASS(RichTextEffect, Resource);
+	OBJ_SAVE_TYPE(RichTextEffect);
+
+protected:
+	static void _bind_methods();
+
+	GDVIRTUAL1RC(bool, _process_custom_fx, Ref<CharFXTransform>)
+
+public:
+	Variant get_bbcode() const;
+	bool _process_effect_impl(Ref<class CharFXTransform> p_cfx);
+
+	RichTextEffect();
 };
 
 #endif // RICH_TEXT_EFFECT_H

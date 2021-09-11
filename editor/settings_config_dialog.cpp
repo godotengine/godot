@@ -59,7 +59,7 @@ void EditorSettingsDialog::_settings_property_edited(const String &p_name) {
 
 	if (full_name == "interface/theme/accent_color" || full_name == "interface/theme/base_color" || full_name == "interface/theme/contrast") {
 		EditorSettings::get_singleton()->set_manually("interface/theme/preset", "Custom"); // set preset to Custom
-	} else if (full_name.begins_with("text_editor/highlighting")) {
+	} else if (full_name.begins_with("text_editor/theme/highlighting")) {
 		EditorSettings::get_singleton()->set_manually("text_editor/theme/color_theme", "Custom");
 	}
 }
@@ -138,7 +138,7 @@ void EditorSettingsDialog::_notification(int p_what) {
 	}
 }
 
-void EditorSettingsDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
+void EditorSettingsDialog::unhandled_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	const Ref<InputEventKey> k = p_event;
@@ -208,8 +208,8 @@ void EditorSettingsDialog::_event_config_confirmed() {
 		Ref<Shortcut> current_sc = EditorSettings::get_singleton()->get_shortcut(shortcut_being_edited);
 
 		undo_redo->create_action(TTR("Change Shortcut") + " '" + shortcut_being_edited + "'");
-		undo_redo->add_do_method(current_sc.ptr(), "set_shortcut", k);
-		undo_redo->add_undo_method(current_sc.ptr(), "set_shortcut", current_sc->get_event());
+		undo_redo->add_do_method(current_sc.ptr(), "set_event", k);
+		undo_redo->add_undo_method(current_sc.ptr(), "set_event", current_sc->get_event());
 		undo_redo->add_do_method(this, "_update_shortcuts");
 		undo_redo->add_undo_method(this, "_update_shortcuts");
 		undo_redo->add_do_method(this, "_settings_changed");
@@ -250,6 +250,8 @@ void EditorSettingsDialog::_update_shortcuts() {
 
 	sections["Common"] = common_section;
 	common_section->set_text(0, TTR("Common"));
+	common_section->set_selectable(0, false);
+	common_section->set_selectable(1, false);
 	if (collapsed.has("Common")) {
 		common_section->set_collapsed(collapsed["Common"]);
 	}
@@ -343,14 +345,16 @@ void EditorSettingsDialog::_update_shortcuts() {
 
 			String item_name = section_name.capitalize();
 			section->set_text(0, item_name);
+			section->set_selectable(0, false);
+			section->set_selectable(1, false);
+			section->set_custom_bg_color(0, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
+			section->set_custom_bg_color(1, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
 
 			if (collapsed.has(item_name)) {
 				section->set_collapsed(collapsed[item_name]);
 			}
 
 			sections[section_name] = section;
-			section->set_custom_bg_color(0, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
-			section->set_custom_bg_color(1, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
 		}
 
 		// Don't match unassigned shortcuts when searching for assigned keys in search results.
@@ -453,8 +457,8 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 				}
 
 				undo_redo->create_action(TTR("Erase Shortcut"));
-				undo_redo->add_do_method(sc.ptr(), "set_shortcut", Ref<InputEvent>());
-				undo_redo->add_undo_method(sc.ptr(), "set_shortcut", sc->get_event());
+				undo_redo->add_do_method(sc.ptr(), "set_event", Ref<InputEvent>());
+				undo_redo->add_undo_method(sc.ptr(), "set_event", sc->get_event());
 				undo_redo->add_do_method(this, "_update_shortcuts");
 				undo_redo->add_undo_method(this, "_update_shortcuts");
 				undo_redo->add_do_method(this, "_settings_changed");
@@ -469,8 +473,8 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 				Ref<InputEvent> original = sc->get_meta("original");
 
 				undo_redo->create_action(TTR("Restore Shortcut"));
-				undo_redo->add_do_method(sc.ptr(), "set_shortcut", original);
-				undo_redo->add_undo_method(sc.ptr(), "set_shortcut", sc->get_event());
+				undo_redo->add_do_method(sc.ptr(), "set_event", original);
+				undo_redo->add_undo_method(sc.ptr(), "set_event", sc->get_event());
 				undo_redo->add_do_method(this, "_update_shortcuts");
 				undo_redo->add_undo_method(this, "_update_shortcuts");
 				undo_redo->add_do_method(this, "_settings_changed");
@@ -538,7 +542,6 @@ void EditorSettingsDialog::_editor_restart_close() {
 }
 
 void EditorSettingsDialog::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_unhandled_input"), &EditorSettingsDialog::_unhandled_input);
 	ClassDB::bind_method(D_METHOD("_update_shortcuts"), &EditorSettingsDialog::_update_shortcuts);
 	ClassDB::bind_method(D_METHOD("_settings_changed"), &EditorSettingsDialog::_settings_changed);
 }

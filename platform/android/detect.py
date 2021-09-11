@@ -93,7 +93,7 @@ def configure(env):
     install_ndk_if_needed(env)
 
     # Workaround for MinGW. See:
-    # http://www.scons.org/wiki/LongCmdLinesOnWin32
+    # https://www.scons.org/wiki/LongCmdLinesOnWin32
     if os.name == "nt":
 
         import subprocess
@@ -367,8 +367,13 @@ def configure(env):
     )
 
     env.Prepend(CPPPATH=["#platform/android"])
-    env.Append(CPPDEFINES=["ANDROID_ENABLED", "UNIX_ENABLED", "VULKAN_ENABLED", "NO_FCNTL"])
-    env.Append(LIBS=["OpenSLES", "EGL", "GLESv2", "vulkan", "android", "log", "z", "dl"])
+    env.Append(CPPDEFINES=["ANDROID_ENABLED", "UNIX_ENABLED", "NO_FCNTL"])
+    env.Append(LIBS=["OpenSLES", "EGL", "GLESv2", "android", "log", "z", "dl"])
+
+    if env["vulkan"]:
+        env.Append(CPPDEFINES=["VULKAN_ENABLED"])
+        if not env["use_volk"]:
+            env.Append(LIBS=["vulkan"])
 
 
 # Return the project NDK version.

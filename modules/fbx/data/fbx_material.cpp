@@ -31,7 +31,7 @@
 #include "fbx_material.h"
 
 // FIXME: Shouldn't depend on core_bind.h! Use DirAccessRef like the rest of
-// the engine instead of _Directory.
+// the engine instead of core_bind::Directory.
 #include "core/core_bind.h"
 #include "scene/resources/material.h"
 #include "scene/resources/texture.h"
@@ -55,7 +55,7 @@ void FBXMaterial::add_search_string(String p_filename, String p_current_director
 }
 
 String find_file(const String &p_base, const String &p_file_to_find) {
-	_Directory dir;
+	core_bind::Directory dir;
 	dir.open(p_base);
 
 	dir.list_dir_begin();
@@ -84,7 +84,7 @@ String find_file(const String &p_base, const String &p_file_to_find) {
 // fbx will not give us good path information and let's not regex them to fix them
 // no relative paths are in fbx generally they have a rel field but it's populated incorrectly by the SDK.
 String FBXMaterial::find_texture_path_by_filename(const String p_filename, const String p_current_directory) {
-	_Directory dir;
+	core_bind::Directory dir;
 	Vector<String> paths;
 	add_search_string(p_filename, p_current_directory, "", paths);
 	add_search_string(p_filename, p_current_directory, "texture", paths);

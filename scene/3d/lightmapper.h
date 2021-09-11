@@ -31,8 +31,9 @@
 #ifndef LIGHTMAPPER_H
 #define LIGHTMAPPER_H
 
-#include "scene/resources/mesh.h"
-#include "servers/rendering/rendering_device.h"
+#include "core/object/ref_counted.h"
+
+class Image;
 
 #if !defined(__aligned)
 

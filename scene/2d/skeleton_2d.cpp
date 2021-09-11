@@ -30,8 +30,6 @@
 
 #include "skeleton_2d.h"
 
-#include "scene/resources/skeleton_modification_2d.h"
-
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
@@ -45,7 +43,7 @@ bool Bone2D::_set(const StringName &p_path, const Variant &p_value) {
 	} else if (path.begins_with("length")) {
 		set_length(p_value);
 	} else if (path.begins_with("bone_angle")) {
-		set_bone_angle(Math::deg2rad(float(p_value)));
+		set_bone_angle(Math::deg2rad(real_t(p_value)));
 	} else if (path.begins_with("default_length")) {
 		set_length(p_value);
 	}
@@ -327,10 +325,10 @@ bool Bone2D::_editor_get_bone_shape(Vector<Vector2> *p_shape, Vector<Vector2> *p
 
 	Vector2 rel;
 	if (p_other_bone) {
-		rel = (p_other_bone->get_global_transform().get_origin() - get_global_transform().get_origin());
+		rel = (p_other_bone->get_global_position() - get_global_position());
 		rel = rel.rotated(-get_global_rotation()); // Undo Bone2D node's rotation so its drawn correctly regardless of the node's rotation
 	} else {
-		float angle_to_use = get_rotation() + bone_angle;
+		real_t angle_to_use = get_rotation() + bone_angle;
 		rel = Vector2(cos(angle_to_use), sin(angle_to_use)) * (length * MIN(get_global_scale().x, get_global_scale().y));
 		rel = rel.rotated(-get_rotation()); // Undo Bone2D node's rotation so its drawn correctly regardless of the node's rotation
 	}
@@ -414,12 +412,12 @@ void Bone2D::apply_rest() {
 	set_transform(rest);
 }
 
-void Bone2D::set_default_length(float p_length) {
+void Bone2D::set_default_length(real_t p_length) {
 	WARN_DEPRECATED_MSG("set_default_length is deprecated. Please use set_length instead!");
 	set_length(p_length);
 }
 
-float Bone2D::get_default_length() const {
+real_t Bone2D::get_default_length() const {
 	WARN_DEPRECATED_MSG("get_default_length is deprecated. Please use get_length instead!");
 	return get_length();
 }
@@ -456,7 +454,7 @@ void Bone2D::calculate_length_and_rotation() {
 		for (int i = 0; i < child_count; i++) {
 			Bone2D *child = Object::cast_to<Bone2D>(get_child(i));
 			if (child) {
-				Vector2 child_local_pos = to_local(child->get_global_transform().get_origin());
+				Vector2 child_local_pos = to_local(child->get_global_position());
 				length = child_local_pos.length();
 				bone_angle = Math::atan2(child_local_pos.normalized().y, child_local_pos.normalized().x);
 				calculated = true;
@@ -485,7 +483,7 @@ bool Bone2D::get_autocalculate_length_and_angle() const {
 	return autocalculate_length_and_angle;
 }
 
-void Bone2D::set_length(float p_length) {
+void Bone2D::set_length(real_t p_length) {
 	length = p_length;
 
 #ifdef TOOLS_ENABLED
@@ -493,11 +491,11 @@ void Bone2D::set_length(float p_length) {
 #endif // TOOLS_ENABLED
 }
 
-float Bone2D::get_length() const {
+real_t Bone2D::get_length() const {
 	return length;
 }
 
-void Bone2D::set_bone_angle(float p_angle) {
+void Bone2D::set_bone_angle(real_t p_angle) {
 	bone_angle = p_angle;
 
 #ifdef TOOLS_ENABLED
@@ -505,7 +503,7 @@ void Bone2D::set_bone_angle(float p_angle) {
 #endif // TOOLS_ENABLED
 }
 
-float Bone2D::get_bone_angle() const {
+real_t Bone2D::get_bone_angle() const {
 	return bone_angle;
 }
 
@@ -690,7 +688,7 @@ RID Skeleton2D::get_skeleton() const {
 	return skeleton;
 }
 
-void Skeleton2D::set_bone_local_pose_override(int p_bone_idx, Transform2D p_override, float p_amount, bool p_persistent) {
+void Skeleton2D::set_bone_local_pose_override(int p_bone_idx, Transform2D p_override, real_t p_amount, bool p_persistent) {
 	ERR_FAIL_INDEX_MSG(p_bone_idx, bones.size(), "Bone index is out of range!");
 	bones.write[p_bone_idx].local_pose_override = p_override;
 	bones.write[p_bone_idx].local_pose_override_amount = p_amount;
@@ -728,7 +726,7 @@ Ref<SkeletonModificationStack2D> Skeleton2D::get_modification_stack() const {
 	return modification_stack;
 }
 
-void Skeleton2D::execute_modifications(float p_delta, int p_execution_mode) {
+void Skeleton2D::execute_modifications(real_t p_delta, int p_execution_mode) {
 	if (!modification_stack.is_valid()) {
 		return;
 	}

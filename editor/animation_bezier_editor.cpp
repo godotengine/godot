@@ -178,7 +178,7 @@ void AnimationBezierTrackEdit::_draw_track(int p_track, const Color &p_color) {
 		}
 
 		if (lines.size() >= 2) {
-			draw_multiline(lines, p_color);
+			draw_multiline(lines, p_color, Math::round(EDSCALE));
 		}
 	}
 }
@@ -212,11 +212,13 @@ void AnimationBezierTrackEdit::_draw_line_clipped(const Vector2 &p_from, const V
 		from = from.lerp(to, c);
 	}
 
-	draw_line(from, to, p_color);
+	draw_line(from, to, p_color, Math::round(EDSCALE));
 }
 
 void AnimationBezierTrackEdit::_notification(int p_what) {
 	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_ENTER_TREE) {
+		close_button->set_icon(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+
 		bezier_icon = get_theme_icon(SNAME("KeyBezierPoint"), SNAME("EditorIcons"));
 		bezier_handle_icon = get_theme_icon(SNAME("KeyBezierHandle"), SNAME("EditorIcons"));
 		selected_icon = get_theme_icon(SNAME("KeyBezierSelected"), SNAME("EditorIcons"));
@@ -231,8 +233,8 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 		int hsep = get_theme_constant(SNAME("hseparation"), SNAME("ItemList"));
 		int vsep = get_theme_constant(SNAME("vseparation"), SNAME("ItemList"));
 
-		handle_mode_option->set_position(Vector2(right_limit + hsep, get_size().height - handle_mode_option->get_combined_minimum_size().height - vsep));
-		handle_mode_option->set_size(Vector2(timeline->get_buttons_width() - hsep * 2, handle_mode_option->get_combined_minimum_size().height));
+		right_column->set_position(Vector2(right_limit + hsep, vsep));
+		right_column->set_size(Vector2(timeline->get_buttons_width() - hsep * 2, get_size().y - vsep * 2));
 	}
 	if (p_what == NOTIFICATION_DRAW) {
 		if (animation.is_null()) {
@@ -244,7 +246,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 		if (has_focus()) {
 			Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 			accent.a *= 0.7;
-			draw_rect(Rect2(Point2(), get_size()), accent, false);
+			draw_rect(Rect2(Point2(), get_size()), accent, false, Math::round(EDSCALE));
 		}
 
 		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
@@ -255,17 +257,11 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 		Color linecolor = color;
 		linecolor.a = 0.2;
 
-		draw_line(Point2(limit, 0), Point2(limit, get_size().height), linecolor);
+		draw_line(Point2(limit, 0), Point2(limit, get_size().height), linecolor, Math::round(EDSCALE));
 
 		int right_limit = get_size().width - timeline->get_buttons_width();
 
-		draw_line(Point2(right_limit, 0), Point2(right_limit, get_size().height), linecolor);
-
-		Ref<Texture2D> close_icon = get_theme_icon(SNAME("Close"), SNAME("EditorIcons"));
-
-		close_icon_rect.position = Vector2(get_size().width - close_icon->get_width() - hsep, hsep);
-		close_icon_rect.size = close_icon->get_size();
-		draw_texture(close_icon, close_icon_rect.position);
+		draw_line(Point2(right_limit, 0), Point2(right_limit, get_size().height), linecolor, Math::round(EDSCALE));
 
 		String base_path = animation->track_get_path(track);
 		int end = base_path.find(":");
@@ -387,7 +383,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 				if (!first && iv != prev_iv) {
 					Color lc = linecolor;
 					lc.a *= 0.5;
-					draw_line(Point2(limit, i), Point2(right_limit, i), lc);
+					draw_line(Point2(limit, i), Point2(right_limit, i), lc, Math::round(EDSCALE));
 					Color c = color;
 					c.a *= 0.5;
 					draw_string(font, Point2(limit + 8, i - 2), TS->format_number(rtos(Math::snapped((iv + 1) * scale, step))), HALIGN_LEFT, -1, font_size, c);
@@ -461,7 +457,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 					ep.point_rect.size = bezier_icon->get_size();
 					if (selection.has(i)) {
 						draw_texture(selected_icon, ep.point_rect.position);
-						draw_string(font, ep.point_rect.position + Vector2(8, -font->get_height(font_size) - 4), TTR("Time:") + " " + TS->format_number(rtos(Math::snapped(offset, 0.001))), HALIGN_LEFT, -1, font_size, accent);
+						draw_string(font, ep.point_rect.position + Vector2(8, -font->get_height(font_size) - 8), TTR("Time:") + " " + TS->format_number(rtos(Math::snapped(offset, 0.001))), HALIGN_LEFT, -1, font_size, accent);
 						draw_string(font, ep.point_rect.position + Vector2(8, -8), TTR("Value:") + " " + TS->format_number(rtos(Math::snapped(value, 0.001))), HALIGN_LEFT, -1, font_size, accent);
 					} else {
 						draw_texture(bezier_icon, ep.point_rect.position);
@@ -485,8 +481,6 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 		}
 
 		if (box_selecting) {
-			Color bs = accent;
-			bs.a *= 0.5;
 			Vector2 bs_from = box_selection_from;
 			Vector2 bs_to = box_selection_to;
 			if (bs_from.x > bs_to.x) {
@@ -495,7 +489,14 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 			if (bs_from.y > bs_to.y) {
 				SWAP(bs_from.y, bs_to.y);
 			}
-			draw_rect(Rect2(bs_from, bs_to - bs_from), bs);
+			draw_rect(
+					Rect2(bs_from, bs_to - bs_from),
+					get_theme_color("box_selection_fill_color", "Editor"));
+			draw_rect(
+					Rect2(bs_from, bs_to - bs_from),
+					get_theme_color("box_selection_stroke_color", "Editor"),
+					false,
+					Math::round(EDSCALE));
 		}
 	}
 }
@@ -601,7 +602,7 @@ void AnimationBezierTrackEdit::_select_at_anim(const Ref<Animation> &p_anim, int
 	update();
 }
 
-void AnimationBezierTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
+void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (p_event->is_pressed()) {
@@ -618,9 +619,9 @@ void AnimationBezierTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
-		float v_zoom_orig = v_zoom;
+		const float v_zoom_orig = v_zoom;
 		if (mb->is_command_pressed()) {
-			timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() * 1.05);
+			timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() / 1.05);
 		} else {
 			if (v_zoom < 100000) {
 				v_zoom *= 1.2;
@@ -631,9 +632,9 @@ void AnimationBezierTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
-		float v_zoom_orig = v_zoom;
+		const float v_zoom_orig = v_zoom;
 		if (mb->is_command_pressed()) {
-			timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() / 1.05);
+			timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() * 1.05);
 		} else {
 			if (v_zoom > 0.000001) {
 				v_zoom /= 1.2;
@@ -974,7 +975,7 @@ void AnimationBezierTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (moving_handle != 0 && mm.is_valid()) {
 		float y = (get_size().height / 2 - mm->get_position().y) * v_zoom + v_scroll;
-		float x = ((mm->get_position().x - timeline->get_name_limit()) / timeline->get_zoom_scale()) + timeline->get_value();
+		float x = editor->snap_time((mm->get_position().x - timeline->get_name_limit()) / timeline->get_zoom_scale()) + timeline->get_value();
 
 		Vector2 key_pos = Vector2(animation->track_get_key_time(track, moving_handle_key), animation->bezier_track_get_key_value(track, moving_handle_key));
 
@@ -1121,13 +1122,7 @@ void AnimationBezierTrackEdit::delete_selection() {
 	}
 }
 
-void AnimationBezierTrackEdit::set_block_animation_update_ptr(bool *p_block_ptr) {
-	block_animation_update_ptr = p_block_ptr;
-}
-
 void AnimationBezierTrackEdit::_bind_methods() {
-	ClassDB::bind_method("_gui_input", &AnimationBezierTrackEdit::_gui_input);
-
 	ClassDB::bind_method("_clear_selection", &AnimationBezierTrackEdit::_clear_selection);
 	ClassDB::bind_method("_clear_selection_for_anim", &AnimationBezierTrackEdit::_clear_selection_for_anim);
 	ClassDB::bind_method("_select_at_anim", &AnimationBezierTrackEdit::_select_at_anim);
@@ -1147,21 +1142,6 @@ void AnimationBezierTrackEdit::_bind_methods() {
 }
 
 AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
-	undo_redo = nullptr;
-	timeline = nullptr;
-	root = nullptr;
-	menu = nullptr;
-	block_animation_update_ptr = nullptr;
-
-	moving_selection_attempt = false;
-	moving_selection = false;
-	select_single_attempt = -1;
-	box_selecting = false;
-	box_selecting_attempt = false;
-
-	moving_handle = 0;
-
-	play_position_pos = 0;
 	play_position = memnew(Control);
 	play_position->set_mouse_filter(MOUSE_FILTER_PASS);
 	add_child(play_position);
@@ -1169,18 +1149,21 @@ AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
 	play_position->connect("draw", callable_mp(this, &AnimationBezierTrackEdit::_play_position_draw));
 	set_focus_mode(FOCUS_CLICK);
 
-	v_scroll = 0;
-	v_zoom = 1;
-
-	panning_timeline = false;
 	set_clip_contents(true);
 	handle_mode = HANDLE_MODE_FREE;
 	handle_mode_option = memnew(OptionButton);
-	add_child(handle_mode_option);
+
+	close_button = memnew(Button);
+	close_button->connect("pressed", Callable(this, SNAME("emit_signal")), varray(SNAME("close_request")));
+	close_button->set_text(TTR("Close"));
+
+	right_column = memnew(VBoxContainer);
+	right_column->add_child(close_button);
+	right_column->add_spacer();
+	right_column->add_child(handle_mode_option);
+	add_child(right_column);
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
 	menu->connect("id_pressed", callable_mp(this, &AnimationBezierTrackEdit::_menu_selected));
-
-	//set_mouse_filter(MOUSE_FILTER_PASS); //scroll has to work too for selection
 }

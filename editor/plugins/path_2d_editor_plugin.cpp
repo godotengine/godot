@@ -70,14 +70,14 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		return false;
 	}
 
-	real_t grab_threshold = EDITOR_GET("editors/poly_editor/point_grab_radius");
+	real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
 		Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
 		Vector2 gpoint = mb->get_position();
-		Vector2 cpoint = node->get_global_transform().affine_inverse().xform(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mb->get_position())));
+		Vector2 cpoint = node->to_local(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mb->get_position())));
 
 		if (mb->is_pressed() && action == ACTION_NONE) {
 			Ref<Curve2D> curve = node->get_curve();

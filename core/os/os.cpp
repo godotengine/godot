@@ -277,18 +277,13 @@ String OS::get_user_data_dir() const {
 	return ".";
 }
 
-// Android OS path to app's external data storage
-String OS::get_external_data_dir() const {
-	return get_user_data_dir();
-};
-
 // Absolute path to res://
 String OS::get_resource_dir() const {
 	return ProjectSettings::get_singleton()->get_resource_path();
 }
 
 // Access system-specific dirs like Documents, Downloads, etc.
-String OS::get_system_dir(SystemDir p_dir) const {
+String OS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	return ".";
 }
 
@@ -362,9 +357,17 @@ void OS::set_has_server_feature_callback(HasServerFeatureCallback p_callback) {
 }
 
 bool OS::has_feature(const String &p_feature) {
-	if (p_feature == get_name()) {
+	// Feature tags are always lowercase for consistency.
+	if (p_feature == get_name().to_lower()) {
 		return true;
 	}
+
+	// Catch-all `linuxbsd` feature tag that matches on both Linux and BSD.
+	// This is the one exposed in the project settings dialog.
+	if (p_feature == "linuxbsd" && (get_name() == "Linux" || get_name() == "FreeBSD" || get_name() == "NetBSD" || get_name() == "OpenBSD" || get_name() == "BSD")) {
+		return true;
+	}
+
 #ifdef DEBUG_ENABLED
 	if (p_feature == "debug") {
 		return true;

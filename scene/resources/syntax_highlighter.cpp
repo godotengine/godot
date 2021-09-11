@@ -43,12 +43,10 @@ Dictionary SyntaxHighlighter::get_line_syntax_highlighting(int p_line) {
 		return color_map;
 	}
 
-	ScriptInstance *si = get_script_instance();
-	if (si && si->has_method("_get_line_syntax_highlighting")) {
-		color_map = si->call("_get_line_syntax_highlighting", p_line);
-	} else {
-		color_map = _get_line_syntax_highlighting(p_line);
+	if (!GDVIRTUAL_CALL(_get_line_syntax_highlighting, p_line, color_map)) {
+		color_map = _get_line_syntax_highlighting_impl(p_line);
 	}
+
 	highlighting_cache[p_line] = color_map;
 	return color_map;
 }
@@ -69,9 +67,7 @@ void SyntaxHighlighter::_lines_edited_from(int p_from_line, int p_to_line) {
 void SyntaxHighlighter::clear_highlighting_cache() {
 	highlighting_cache.clear();
 
-	ScriptInstance *si = get_script_instance();
-	if (si && si->has_method("_clear_highlighting_cache")) {
-		si->call("_clear_highlighting_cache");
+	if (GDVIRTUAL_CALL(_clear_highlighting_cache)) {
 		return;
 	}
 	_clear_highlighting_cache();
@@ -83,9 +79,7 @@ void SyntaxHighlighter::update_cache() {
 	if (text_edit == nullptr) {
 		return;
 	}
-	ScriptInstance *si = get_script_instance();
-	if (si && si->has_method("_update_cache")) {
-		si->call("_update_cache");
+	if (GDVIRTUAL_CALL(_update_cache)) {
 		return;
 	}
 	_update_cache();
@@ -115,9 +109,9 @@ void SyntaxHighlighter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_highlighting_cache"), &SyntaxHighlighter::clear_highlighting_cache);
 	ClassDB::bind_method(D_METHOD("get_text_edit"), &SyntaxHighlighter::get_text_edit);
 
-	BIND_VMETHOD(MethodInfo(Variant::DICTIONARY, "_get_line_syntax_highlighting", PropertyInfo(Variant::INT, "line")));
-	BIND_VMETHOD(MethodInfo("_clear_highlighting_cache"));
-	BIND_VMETHOD(MethodInfo("_update_cache"));
+	GDVIRTUAL_BIND(_get_line_syntax_highlighting, "line")
+	GDVIRTUAL_BIND(_clear_highlighting_cache)
+	GDVIRTUAL_BIND(_update_cache)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -130,7 +124,7 @@ static bool _is_hex_symbol(char32_t c) {
 	return ((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
 }
 
-Dictionary CodeHighlighter::_get_line_syntax_highlighting(int p_line) {
+Dictionary CodeHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 	Dictionary color_map;
 
 	bool prev_is_char = false;

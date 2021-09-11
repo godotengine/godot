@@ -32,9 +32,7 @@
 
 #include "core/core_string_names.h"
 #include "scene/2d/gpu_particles_2d.h"
-#include "scene/main/canvas_item.h"
 #include "scene/resources/particles_material.h"
-#include "servers/rendering_server.h"
 
 void CPUParticles2D::set_emitting(bool p_emitting) {
 	if (emitting == p_emitting) {
@@ -65,7 +63,7 @@ void CPUParticles2D::set_amount(int p_amount) {
 	particle_order.resize(p_amount);
 }
 
-void CPUParticles2D::set_lifetime(float p_lifetime) {
+void CPUParticles2D::set_lifetime(double p_lifetime) {
 	ERR_FAIL_COND_MSG(p_lifetime <= 0, "Particles lifetime must be greater than 0.");
 	lifetime = p_lifetime;
 }
@@ -74,7 +72,7 @@ void CPUParticles2D::set_one_shot(bool p_one_shot) {
 	one_shot = p_one_shot;
 }
 
-void CPUParticles2D::set_pre_process_time(float p_time) {
+void CPUParticles2D::set_pre_process_time(double p_time) {
 	pre_process_time = p_time;
 }
 
@@ -86,7 +84,7 @@ void CPUParticles2D::set_randomness_ratio(real_t p_ratio) {
 	randomness_ratio = p_ratio;
 }
 
-void CPUParticles2D::set_lifetime_randomness(float p_random) {
+void CPUParticles2D::set_lifetime_randomness(double p_random) {
 	lifetime_randomness = p_random;
 }
 
@@ -95,7 +93,7 @@ void CPUParticles2D::set_use_local_coordinates(bool p_enable) {
 	set_notify_transform(!p_enable);
 }
 
-void CPUParticles2D::set_speed_scale(real_t p_scale) {
+void CPUParticles2D::set_speed_scale(double p_scale) {
 	speed_scale = p_scale;
 }
 
@@ -107,7 +105,7 @@ int CPUParticles2D::get_amount() const {
 	return particles.size();
 }
 
-float CPUParticles2D::get_lifetime() const {
+double CPUParticles2D::get_lifetime() const {
 	return lifetime;
 }
 
@@ -115,7 +113,7 @@ bool CPUParticles2D::get_one_shot() const {
 	return one_shot;
 }
 
-float CPUParticles2D::get_pre_process_time() const {
+double CPUParticles2D::get_pre_process_time() const {
 	return pre_process_time;
 }
 
@@ -127,7 +125,7 @@ real_t CPUParticles2D::get_randomness_ratio() const {
 	return randomness_ratio;
 }
 
-float CPUParticles2D::get_lifetime_randomness() const {
+double CPUParticles2D::get_lifetime_randomness() const {
 	return lifetime_randomness;
 }
 
@@ -135,7 +133,7 @@ bool CPUParticles2D::get_use_local_coordinates() const {
 	return local_coords;
 }
 
-real_t CPUParticles2D::get_speed_scale() const {
+double CPUParticles2D::get_speed_scale() const {
 	return speed_scale;
 }
 
@@ -250,7 +248,7 @@ TypedArray<String> CPUParticles2D::get_configuration_warnings() const {
 	CanvasItemMaterial *mat = Object::cast_to<CanvasItemMaterial>(get_material().ptr());
 
 	if (get_material().is_null() || (mat && !mat->get_particles_animation())) {
-		if (get_param(PARAM_ANIM_SPEED) != 0.0 || get_param(PARAM_ANIM_OFFSET) != 0.0 ||
+		if (get_param_max(PARAM_ANIM_SPEED) != 0.0 || get_param_max(PARAM_ANIM_OFFSET) != 0.0 ||
 				get_param_curve(PARAM_ANIM_SPEED).is_valid() || get_param_curve(PARAM_ANIM_OFFSET).is_valid()) {
 			warnings.push_back(TTR("CPUParticles2D animation requires the usage of a CanvasItemMaterial with \"Particles Animation\" enabled."));
 		}
@@ -294,28 +292,34 @@ real_t CPUParticles2D::get_spread() const {
 	return spread;
 }
 
-void CPUParticles2D::set_param(Parameter p_param, real_t p_value) {
+void CPUParticles2D::set_param_min(Parameter p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 
-	parameters[p_param] = p_value;
+	parameters_min[p_param] = p_value;
+	if (parameters_min[p_param] > parameters_max[p_param]) {
+		set_param_max(p_param, p_value);
+	}
 }
 
-real_t CPUParticles2D::get_param(Parameter p_param) const {
+real_t CPUParticles2D::get_param_min(Parameter p_param) const {
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 
-	return parameters[p_param];
+	return parameters_min[p_param];
 }
 
-void CPUParticles2D::set_param_randomness(Parameter p_param, real_t p_value) {
+void CPUParticles2D::set_param_max(Parameter p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 
-	randomness[p_param] = p_value;
+	parameters_max[p_param] = p_value;
+	if (parameters_min[p_param] > parameters_max[p_param]) {
+		set_param_min(p_param, p_value);
+	}
 }
 
-real_t CPUParticles2D::get_param_randomness(Parameter p_param) const {
+real_t CPUParticles2D::get_param_max(Parameter p_param) const {
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 
-	return randomness[p_param];
+	return parameters_max[p_param];
 }
 
 static void _adjust_curve_range(const Ref<Curve> &p_curve, real_t p_min, real_t p_max) {
@@ -462,6 +466,31 @@ Vector2 CPUParticles2D::get_gravity() const {
 	return gravity;
 }
 
+void CPUParticles2D::set_scale_curve_x(Ref<Curve> p_scale_curve) {
+	scale_curve_x = p_scale_curve;
+}
+
+void CPUParticles2D::set_scale_curve_y(Ref<Curve> p_scale_curve) {
+	scale_curve_y = p_scale_curve;
+}
+
+void CPUParticles2D::set_split_scale(bool p_split_scale) {
+	split_scale = p_split_scale;
+	notify_property_list_changed();
+}
+
+Ref<Curve> CPUParticles2D::get_scale_curve_x() const {
+	return scale_curve_x;
+}
+
+Ref<Curve> CPUParticles2D::get_scale_curve_y() const {
+	return scale_curve_y;
+}
+
+bool CPUParticles2D::get_split_scale() {
+	return split_scale;
+}
+
 void CPUParticles2D::_validate_property(PropertyInfo &property) const {
 	if (property.name == "emission_sphere_radius" && emission_shape != EMISSION_SHAPE_SPHERE) {
 		property.usage = PROPERTY_USAGE_NONE;
@@ -484,6 +513,9 @@ void CPUParticles2D::_validate_property(PropertyInfo &property) const {
 	}
 
 	if (property.name == "emission_colors" && emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
+		property.usage = PROPERTY_USAGE_NONE;
+	}
+	if (property.name.begins_with("scale_curve_") && !split_scale) {
 		property.usage = PROPERTY_USAGE_NONE;
 	}
 }
@@ -516,7 +548,7 @@ void CPUParticles2D::_update_internal() {
 		return;
 	}
 
-	float delta = get_process_delta_time();
+	double delta = get_process_delta_time();
 	if (emitting) {
 		inactive_time = 0;
 	} else {
@@ -536,14 +568,14 @@ void CPUParticles2D::_update_internal() {
 	_set_redraw(true);
 
 	if (time == 0 && pre_process_time > 0.0) {
-		float frame_time;
+		double frame_time;
 		if (fixed_fps > 0) {
 			frame_time = 1.0 / fixed_fps;
 		} else {
 			frame_time = 1.0 / 30.0;
 		}
 
-		float todo = pre_process_time;
+		double todo = pre_process_time;
 
 		while (todo >= 0) {
 			_particles_process(frame_time);
@@ -552,16 +584,16 @@ void CPUParticles2D::_update_internal() {
 	}
 
 	if (fixed_fps > 0) {
-		float frame_time = 1.0 / fixed_fps;
-		float decr = frame_time;
+		double frame_time = 1.0 / fixed_fps;
+		double decr = frame_time;
 
-		float ldelta = delta;
+		double ldelta = delta;
 		if (ldelta > 0.1) { //avoid recursive stalls if fps goes below 10
 			ldelta = 0.1;
 		} else if (ldelta <= 0.0) { //unlikely but..
 			ldelta = 0.001;
 		}
-		float todo = frame_remainder + ldelta;
+		double todo = frame_remainder + ldelta;
 
 		while (todo >= frame_time) {
 			_particles_process(frame_time);
@@ -577,7 +609,7 @@ void CPUParticles2D::_update_internal() {
 	_update_particle_data_buffer();
 }
 
-void CPUParticles2D::_particles_process(float p_delta) {
+void CPUParticles2D::_particles_process(double p_delta) {
 	p_delta *= speed_scale;
 
 	int pcount = particles.size();
@@ -585,7 +617,7 @@ void CPUParticles2D::_particles_process(float p_delta) {
 
 	Particle *parray = w;
 
-	float prev_time = time;
+	double prev_time = time;
 	time += p_delta;
 	if (time > lifetime) {
 		time = Math::fmod(time, lifetime);
@@ -604,7 +636,7 @@ void CPUParticles2D::_particles_process(float p_delta) {
 		velocity_xform[2] = Vector2();
 	}
 
-	float system_phase = time / lifetime;
+	double system_phase = time / lifetime;
 
 	for (int i = 0; i < pcount; i++) {
 		Particle &p = parray[i];
@@ -613,12 +645,12 @@ void CPUParticles2D::_particles_process(float p_delta) {
 			continue;
 		}
 
-		float local_delta = p_delta;
+		double local_delta = p_delta;
 
 		// The phase is a ratio between 0 (birth) and 1 (end of life) for each particle.
 		// While we use time in tests later on, for randomness we use the phase as done in the
 		// original shader code, and we later multiply by lifetime to get the time.
-		real_t restart_phase = real_t(i) / real_t(pcount);
+		double restart_phase = double(i) / double(pcount);
 
 		if (randomness_ratio > 0.0) {
 			uint32_t seed = cycle;
@@ -627,12 +659,12 @@ void CPUParticles2D::_particles_process(float p_delta) {
 			}
 			seed *= uint32_t(pcount);
 			seed += uint32_t(i);
-			real_t random = (idhash(seed) % uint32_t(65536)) / 65536.0;
-			restart_phase += randomness_ratio * random * 1.0 / pcount;
+			double random = double(idhash(seed) % uint32_t(65536)) / 65536.0;
+			restart_phase += randomness_ratio * random * 1.0 / double(pcount);
 		}
 
 		restart_phase *= (1.0 - explosiveness_ratio);
-		float restart_time = restart_phase * lifetime;
+		double restart_time = restart_phase * lifetime;
 		bool restart = false;
 
 		if (time > prev_time) {
@@ -697,14 +729,14 @@ void CPUParticles2D::_particles_process(float p_delta) {
 
 			real_t angle1_rad = Math::atan2(direction.y, direction.x) + Math::deg2rad((Math::randf() * 2.0 - 1.0) * spread);
 			Vector2 rot = Vector2(Math::cos(angle1_rad), Math::sin(angle1_rad));
-			p.velocity = rot * parameters[PARAM_INITIAL_LINEAR_VELOCITY] * Math::lerp((real_t)1.0, real_t(Math::randf()), randomness[PARAM_INITIAL_LINEAR_VELOCITY]);
+			p.velocity = rot * Math::lerp(parameters_min[PARAM_INITIAL_LINEAR_VELOCITY], parameters_min[PARAM_INITIAL_LINEAR_VELOCITY], Math::randf());
 
-			real_t base_angle = (parameters[PARAM_ANGLE] + tex_angle) * Math::lerp((real_t)1.0, p.angle_rand, randomness[PARAM_ANGLE]);
+			real_t base_angle = tex_angle * Math::lerp(parameters_min[PARAM_ANGLE], parameters_max[PARAM_ANGLE], p.angle_rand);
 			p.rotation = Math::deg2rad(base_angle);
 
 			p.custom[0] = 0.0; // unused
 			p.custom[1] = 0.0; // phase [0..1]
-			p.custom[2] = (parameters[PARAM_ANIM_OFFSET] + tex_anim_offset) * Math::lerp((real_t)1.0, p.anim_offset_rand, randomness[PARAM_ANIM_OFFSET]); //animation phase [0..1]
+			p.custom[2] = tex_anim_offset * Math::lerp(parameters_min[PARAM_ANIM_OFFSET], parameters_max[PARAM_ANIM_OFFSET], p.anim_offset_rand);
 			p.custom[3] = 0.0;
 			p.transform = Transform2D();
 			p.time = 0;
@@ -768,51 +800,51 @@ void CPUParticles2D::_particles_process(float p_delta) {
 			p.custom[1] = p.time / lifetime;
 			tv = p.time / p.lifetime;
 
-			real_t tex_linear_velocity = 0.0;
+			real_t tex_linear_velocity = 1.0;
 			if (curve_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid()) {
 				tex_linear_velocity = curve_parameters[PARAM_INITIAL_LINEAR_VELOCITY]->interpolate(tv);
 			}
 
-			real_t tex_orbit_velocity = 0.0;
+			real_t tex_orbit_velocity = 1.0;
 			if (curve_parameters[PARAM_ORBIT_VELOCITY].is_valid()) {
 				tex_orbit_velocity = curve_parameters[PARAM_ORBIT_VELOCITY]->interpolate(tv);
 			}
 
-			real_t tex_angular_velocity = 0.0;
+			real_t tex_angular_velocity = 1.0;
 			if (curve_parameters[PARAM_ANGULAR_VELOCITY].is_valid()) {
 				tex_angular_velocity = curve_parameters[PARAM_ANGULAR_VELOCITY]->interpolate(tv);
 			}
 
-			real_t tex_linear_accel = 0.0;
+			real_t tex_linear_accel = 1.0;
 			if (curve_parameters[PARAM_LINEAR_ACCEL].is_valid()) {
 				tex_linear_accel = curve_parameters[PARAM_LINEAR_ACCEL]->interpolate(tv);
 			}
 
-			real_t tex_tangential_accel = 0.0;
+			real_t tex_tangential_accel = 1.0;
 			if (curve_parameters[PARAM_TANGENTIAL_ACCEL].is_valid()) {
 				tex_tangential_accel = curve_parameters[PARAM_TANGENTIAL_ACCEL]->interpolate(tv);
 			}
 
-			real_t tex_radial_accel = 0.0;
+			real_t tex_radial_accel = 1.0;
 			if (curve_parameters[PARAM_RADIAL_ACCEL].is_valid()) {
 				tex_radial_accel = curve_parameters[PARAM_RADIAL_ACCEL]->interpolate(tv);
 			}
 
-			real_t tex_damping = 0.0;
+			real_t tex_damping = 1.0;
 			if (curve_parameters[PARAM_DAMPING].is_valid()) {
 				tex_damping = curve_parameters[PARAM_DAMPING]->interpolate(tv);
 			}
 
-			real_t tex_angle = 0.0;
+			real_t tex_angle = 1.0;
 			if (curve_parameters[PARAM_ANGLE].is_valid()) {
 				tex_angle = curve_parameters[PARAM_ANGLE]->interpolate(tv);
 			}
-			real_t tex_anim_speed = 0.0;
+			real_t tex_anim_speed = 1.0;
 			if (curve_parameters[PARAM_ANIM_SPEED].is_valid()) {
 				tex_anim_speed = curve_parameters[PARAM_ANIM_SPEED]->interpolate(tv);
 			}
 
-			real_t tex_anim_offset = 0.0;
+			real_t tex_anim_offset = 1.0;
 			if (curve_parameters[PARAM_ANIM_OFFSET].is_valid()) {
 				tex_anim_offset = curve_parameters[PARAM_ANIM_OFFSET]->interpolate(tv);
 			}
@@ -821,18 +853,18 @@ void CPUParticles2D::_particles_process(float p_delta) {
 			Vector2 pos = p.transform[2];
 
 			//apply linear acceleration
-			force += p.velocity.length() > 0.0 ? p.velocity.normalized() * (parameters[PARAM_LINEAR_ACCEL] + tex_linear_accel) * Math::lerp((real_t)1.0, rand_from_seed(alt_seed), randomness[PARAM_LINEAR_ACCEL]) : Vector2();
+			force += p.velocity.length() > 0.0 ? p.velocity.normalized() * tex_linear_accel * Math::lerp(parameters_min[PARAM_LINEAR_ACCEL], parameters_max[PARAM_LINEAR_ACCEL], rand_from_seed(alt_seed)) : Vector2();
 			//apply radial acceleration
 			Vector2 org = emission_xform[2];
 			Vector2 diff = pos - org;
-			force += diff.length() > 0.0 ? diff.normalized() * (parameters[PARAM_RADIAL_ACCEL] + tex_radial_accel) * Math::lerp((real_t)1.0, rand_from_seed(alt_seed), randomness[PARAM_RADIAL_ACCEL]) : Vector2();
+			force += diff.length() > 0.0 ? diff.normalized() * (tex_radial_accel)*Math::lerp(parameters_min[PARAM_RADIAL_ACCEL], parameters_max[PARAM_RADIAL_ACCEL], rand_from_seed(alt_seed)) : Vector2();
 			//apply tangential acceleration;
 			Vector2 yx = Vector2(diff.y, diff.x);
-			force += yx.length() > 0.0 ? (yx * Vector2(-1.0, 1.0)).normalized() * ((parameters[PARAM_TANGENTIAL_ACCEL] + tex_tangential_accel) * Math::lerp((real_t)1.0, rand_from_seed(alt_seed), randomness[PARAM_TANGENTIAL_ACCEL])) : Vector2();
+			force += yx.length() > 0.0 ? yx.normalized() * (tex_tangential_accel * Math::lerp(parameters_min[PARAM_TANGENTIAL_ACCEL], parameters_max[PARAM_TANGENTIAL_ACCEL], rand_from_seed(alt_seed))) : Vector2();
 			//apply attractor forces
 			p.velocity += force * local_delta;
 			//orbit velocity
-			real_t orbit_amount = (parameters[PARAM_ORBIT_VELOCITY] + tex_orbit_velocity) * Math::lerp((real_t)1.0, rand_from_seed(alt_seed), randomness[PARAM_ORBIT_VELOCITY]);
+			real_t orbit_amount = tex_orbit_velocity * Math::lerp(parameters_min[PARAM_ORBIT_VELOCITY], parameters_max[PARAM_ORBIT_VELOCITY], rand_from_seed(alt_seed));
 			if (orbit_amount != 0.0) {
 				real_t ang = orbit_amount * local_delta * Math_TAU;
 				// Not sure why the ParticlesMaterial code uses a clockwise rotation matrix,
@@ -845,9 +877,9 @@ void CPUParticles2D::_particles_process(float p_delta) {
 				p.velocity = p.velocity.normalized() * tex_linear_velocity;
 			}
 
-			if (parameters[PARAM_DAMPING] + tex_damping > 0.0) {
+			if (parameters_max[PARAM_DAMPING] + tex_damping > 0.0) {
 				real_t v = p.velocity.length();
-				real_t damp = (parameters[PARAM_DAMPING] + tex_damping) * Math::lerp((real_t)1.0, rand_from_seed(alt_seed), randomness[PARAM_DAMPING]);
+				real_t damp = tex_damping * Math::lerp(parameters_min[PARAM_DAMPING], parameters_max[PARAM_DAMPING], rand_from_seed(alt_seed));
 				v -= damp * local_delta;
 				if (v < 0.0) {
 					p.velocity = Vector2();
@@ -855,18 +887,32 @@ void CPUParticles2D::_particles_process(float p_delta) {
 					p.velocity = p.velocity.normalized() * v;
 				}
 			}
-			real_t base_angle = (parameters[PARAM_ANGLE] + tex_angle) * Math::lerp((real_t)1.0, p.angle_rand, randomness[PARAM_ANGLE]);
-			base_angle += p.custom[1] * lifetime * (parameters[PARAM_ANGULAR_VELOCITY] + tex_angular_velocity) * Math::lerp((real_t)1.0, rand_from_seed(alt_seed) * 2.0f - 1.0f, randomness[PARAM_ANGULAR_VELOCITY]);
+			real_t base_angle = (tex_angle)*Math::lerp(parameters_min[PARAM_ANGLE], parameters_max[PARAM_ANGLE], p.angle_rand);
+			base_angle += p.custom[1] * lifetime * tex_angular_velocity * Math::lerp(parameters_min[PARAM_ANGULAR_VELOCITY], parameters_max[PARAM_ANGULAR_VELOCITY], rand_from_seed(alt_seed));
 			p.rotation = Math::deg2rad(base_angle); //angle
-			real_t animation_phase = (parameters[PARAM_ANIM_OFFSET] + tex_anim_offset) * Math::lerp((real_t)1.0, p.anim_offset_rand, randomness[PARAM_ANIM_OFFSET]) + p.custom[1] * (parameters[PARAM_ANIM_SPEED] + tex_anim_speed) * Math::lerp((real_t)1.0, rand_from_seed(alt_seed), randomness[PARAM_ANIM_SPEED]);
-			p.custom[2] = animation_phase;
+			p.custom[2] = tex_anim_offset * Math::lerp(parameters_min[PARAM_ANIM_OFFSET], parameters_max[PARAM_ANIM_OFFSET], p.anim_offset_rand) + p.custom[1] * tex_anim_speed * Math::lerp(parameters_min[PARAM_ANIM_SPEED], parameters_max[PARAM_ANIM_SPEED], rand_from_seed(alt_seed));
 		}
 		//apply color
 		//apply hue rotation
 
-		real_t tex_scale = 1.0;
-		if (curve_parameters[PARAM_SCALE].is_valid()) {
-			tex_scale = curve_parameters[PARAM_SCALE]->interpolate(tv);
+		Vector2 tex_scale = Vector2(1.0, 1.0);
+		if (split_scale) {
+			if (scale_curve_x.is_valid()) {
+				tex_scale.x = scale_curve_x->interpolate(tv);
+			} else {
+				tex_scale.x = 1.0;
+			}
+			if (scale_curve_y.is_valid()) {
+				tex_scale.y = scale_curve_y->interpolate(tv);
+			} else {
+				tex_scale.y = 1.0;
+			}
+		} else {
+			if (curve_parameters[PARAM_SCALE].is_valid()) {
+				real_t tmp_scale = curve_parameters[PARAM_SCALE]->interpolate(tv);
+				tex_scale.x = tmp_scale;
+				tex_scale.y = tmp_scale;
+			}
 		}
 
 		real_t tex_hue_variation = 0.0;
@@ -874,7 +920,7 @@ void CPUParticles2D::_particles_process(float p_delta) {
 			tex_hue_variation = curve_parameters[PARAM_HUE_VARIATION]->interpolate(tv);
 		}
 
-		real_t hue_rot_angle = (parameters[PARAM_HUE_VARIATION] + tex_hue_variation) * Math_TAU * Math::lerp(1.0f, p.hue_rot_rand * 2.0f - 1.0f, randomness[PARAM_HUE_VARIATION]);
+		real_t hue_rot_angle = (tex_hue_variation)*Math_TAU * Math::lerp(parameters_min[PARAM_HUE_VARIATION], parameters_max[PARAM_HUE_VARIATION], p.hue_rot_rand);
 		real_t hue_rot_c = Math::cos(hue_rot_angle);
 		real_t hue_rot_s = Math::sin(hue_rot_angle);
 
@@ -914,13 +960,15 @@ void CPUParticles2D::_particles_process(float p_delta) {
 		}
 
 		//scale by scale
-		real_t base_scale = tex_scale * Math::lerp(parameters[PARAM_SCALE], (real_t)1.0, p.scale_rand * randomness[PARAM_SCALE]);
-		if (base_scale < 0.000001) {
-			base_scale = 0.000001;
+		Vector2 base_scale = tex_scale * Math::lerp(parameters_min[PARAM_SCALE], parameters_max[PARAM_SCALE], p.scale_rand);
+		if (base_scale.x < 0.00001) {
+			base_scale.x = 0.00001;
 		}
-
-		p.transform.elements[0] *= base_scale;
-		p.transform.elements[1] *= base_scale;
+		if (base_scale.y < 0.00001) {
+			base_scale.y = 0.00001;
+		}
+		p.transform.elements[0] *= base_scale.x;
+		p.transform.elements[1] *= base_scale.y;
 
 		p.transform[2] += p.velocity * local_delta;
 	}
@@ -1132,18 +1180,24 @@ void CPUParticles2D::convert_from_particles(Node *p_particles) {
 	Vector2 rect_extents = Vector2(material->get_emission_box_extents().x, material->get_emission_box_extents().y);
 	set_emission_rect_extents(rect_extents);
 
+	Ref<CurveXYZTexture> scale3D = material->get_param_texture(ParticlesMaterial::PARAM_SCALE);
+	if (scale3D.is_valid()) {
+		split_scale = true;
+		scale_curve_x = scale3D->get_curve_x();
+		scale_curve_y = scale3D->get_curve_y();
+	}
 	Vector2 gravity = Vector2(material->get_gravity().x, material->get_gravity().y);
 	set_gravity(gravity);
 	set_lifetime_randomness(material->get_lifetime_randomness());
 
 #define CONVERT_PARAM(m_param)                                                            \
-	set_param(m_param, material->get_param(ParticlesMaterial::m_param));                  \
+	set_param_min(m_param, material->get_param_min(ParticlesMaterial::m_param));          \
 	{                                                                                     \
 		Ref<CurveTexture> ctex = material->get_param_texture(ParticlesMaterial::m_param); \
 		if (ctex.is_valid())                                                              \
 			set_param_curve(m_param, ctex->get_curve());                                  \
 	}                                                                                     \
-	set_param_randomness(m_param, material->get_param_randomness(ParticlesMaterial::m_param));
+	set_param_max(m_param, material->get_param_max(ParticlesMaterial::m_param));
 
 	CONVERT_PARAM(PARAM_INITIAL_LINEAR_VELOCITY);
 	CONVERT_PARAM(PARAM_ANGULAR_VELOCITY);
@@ -1226,11 +1280,11 @@ void CPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_spread", "degrees"), &CPUParticles2D::set_spread);
 	ClassDB::bind_method(D_METHOD("get_spread"), &CPUParticles2D::get_spread);
 
-	ClassDB::bind_method(D_METHOD("set_param", "param", "value"), &CPUParticles2D::set_param);
-	ClassDB::bind_method(D_METHOD("get_param", "param"), &CPUParticles2D::get_param);
+	ClassDB::bind_method(D_METHOD("set_param_min", "param", "value"), &CPUParticles2D::set_param_min);
+	ClassDB::bind_method(D_METHOD("get_param_min", "param"), &CPUParticles2D::get_param_min);
 
-	ClassDB::bind_method(D_METHOD("set_param_randomness", "param", "randomness"), &CPUParticles2D::set_param_randomness);
-	ClassDB::bind_method(D_METHOD("get_param_randomness", "param"), &CPUParticles2D::get_param_randomness);
+	ClassDB::bind_method(D_METHOD("set_param_max", "param", "value"), &CPUParticles2D::set_param_max);
+	ClassDB::bind_method(D_METHOD("get_param_max", "param"), &CPUParticles2D::get_param_max);
 
 	ClassDB::bind_method(D_METHOD("set_param_curve", "param", "curve"), &CPUParticles2D::set_param_curve);
 	ClassDB::bind_method(D_METHOD("get_param_curve", "param"), &CPUParticles2D::get_param_curve);
@@ -1265,6 +1319,15 @@ void CPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_gravity"), &CPUParticles2D::get_gravity);
 	ClassDB::bind_method(D_METHOD("set_gravity", "accel_vec"), &CPUParticles2D::set_gravity);
 
+	ClassDB::bind_method(D_METHOD("get_split_scale"), &CPUParticles2D::get_split_scale);
+	ClassDB::bind_method(D_METHOD("set_split_scale", "split_scale"), &CPUParticles2D::set_split_scale);
+
+	ClassDB::bind_method(D_METHOD("get_scale_curve_x"), &CPUParticles2D::get_scale_curve_x);
+	ClassDB::bind_method(D_METHOD("set_scale_curve_x", "scale_curve"), &CPUParticles2D::set_scale_curve_x);
+
+	ClassDB::bind_method(D_METHOD("get_scale_curve_y"), &CPUParticles2D::get_scale_curve_y);
+	ClassDB::bind_method(D_METHOD("set_scale_curve_y", "scale_curve"), &CPUParticles2D::set_scale_curve_y);
+
 	ClassDB::bind_method(D_METHOD("convert_from_particles", "particles"), &CPUParticles2D::convert_from_particles);
 
 	ADD_GROUP("Emission Shape", "emission_");
@@ -1282,54 +1345,58 @@ void CPUParticles2D::_bind_methods() {
 	ADD_GROUP("Gravity", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "gravity"), "set_gravity", "get_gravity");
 	ADD_GROUP("Initial Velocity", "initial_");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "initial_velocity", PROPERTY_HINT_RANGE, "0,1000,0.01,or_greater"), "set_param", "get_param", PARAM_INITIAL_LINEAR_VELOCITY);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "initial_velocity_random", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_randomness", "get_param_randomness", PARAM_INITIAL_LINEAR_VELOCITY);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "initial_velocity_min", PROPERTY_HINT_RANGE, "0,1000,0.01,or_greater"), "set_param_min", "get_param_min", PARAM_INITIAL_LINEAR_VELOCITY);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "initial_velocity_max", PROPERTY_HINT_RANGE, "0,1000,0.01,or_greater"), "set_param_max", "get_param_max", PARAM_INITIAL_LINEAR_VELOCITY);
 	ADD_GROUP("Angular Velocity", "angular_");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_velocity", PROPERTY_HINT_RANGE, "-720,720,0.01,or_lesser,or_greater"), "set_param", "get_param", PARAM_ANGULAR_VELOCITY);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_velocity_random", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_randomness", "get_param_randomness", PARAM_ANGULAR_VELOCITY);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_velocity_min", PROPERTY_HINT_RANGE, "-720,720,0.01,or_lesser,or_greater"), "set_param_min", "get_param_min", PARAM_ANGULAR_VELOCITY);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_velocity_max", PROPERTY_HINT_RANGE, "-720,720,0.01,or_lesser,or_greater"), "set_param_max", "get_param_max", PARAM_ANGULAR_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "angular_velocity_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_param_curve", "get_param_curve", PARAM_ANGULAR_VELOCITY);
 	ADD_GROUP("Orbit Velocity", "orbit_");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "orbit_velocity", PROPERTY_HINT_RANGE, "-1000,1000,0.01,or_lesser,or_greater"), "set_param", "get_param", PARAM_ORBIT_VELOCITY);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "orbit_velocity_random", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_randomness", "get_param_randomness", PARAM_ORBIT_VELOCITY);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "orbit_velocity_min", PROPERTY_HINT_RANGE, "-1000,1000,0.01,or_lesser,or_greater"), "set_param_min", "get_param_min", PARAM_ORBIT_VELOCITY);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "orbit_velocity_max", PROPERTY_HINT_RANGE, "-1000,1000,0.01,or_lesser,or_greater"), "set_param_max", "get_param_max", PARAM_ORBIT_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "orbit_velocity_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_param_curve", "get_param_curve", PARAM_ORBIT_VELOCITY);
 	ADD_GROUP("Linear Accel", "linear_");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "linear_accel", PROPERTY_HINT_RANGE, "-100,100,0.01,or_lesser,or_greater"), "set_param", "get_param", PARAM_LINEAR_ACCEL);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "linear_accel_random", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_randomness", "get_param_randomness", PARAM_LINEAR_ACCEL);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "linear_accel_min", PROPERTY_HINT_RANGE, "-100,100,0.01,or_lesser,or_greater"), "set_param_min", "get_param_min", PARAM_LINEAR_ACCEL);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "linear_accel_max", PROPERTY_HINT_RANGE, "-100,100,0.01,or_lesser,or_greater"), "set_param_max", "get_param_max", PARAM_LINEAR_ACCEL);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "linear_accel_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_param_curve", "get_param_curve", PARAM_LINEAR_ACCEL);
 	ADD_GROUP("Radial Accel", "radial_");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "radial_accel", PROPERTY_HINT_RANGE, "-100,100,0.01,or_lesser,or_greater"), "set_param", "get_param", PARAM_RADIAL_ACCEL);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "radial_accel_random", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_randomness", "get_param_randomness", PARAM_RADIAL_ACCEL);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "radial_accel_min", PROPERTY_HINT_RANGE, "-100,100,0.01,or_lesser,or_greater"), "set_param_min", "get_param_min", PARAM_RADIAL_ACCEL);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "radial_accel_max", PROPERTY_HINT_RANGE, "-100,100,0.01,or_lesser,or_greater"), "set_param_max", "get_param_max", PARAM_RADIAL_ACCEL);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "radial_accel_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_param_curve", "get_param_curve", PARAM_RADIAL_ACCEL);
 	ADD_GROUP("Tangential Accel", "tangential_");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "tangential_accel", PROPERTY_HINT_RANGE, "-100,100,0.01,or_lesser,or_greater"), "set_param", "get_param", PARAM_TANGENTIAL_ACCEL);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "tangential_accel_random", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_randomness", "get_param_randomness", PARAM_TANGENTIAL_ACCEL);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "tangential_accel_min", PROPERTY_HINT_RANGE, "-100,100,0.01,or_lesser,or_greater"), "set_param_min", "get_param_min", PARAM_TANGENTIAL_ACCEL);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "tangential_accel_max", PROPERTY_HINT_RANGE, "-100,100,0.01,or_lesser,or_greater"), "set_param_max", "get_param_max", PARAM_TANGENTIAL_ACCEL);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "tangential_accel_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_param_curve", "get_param_curve", PARAM_TANGENTIAL_ACCEL);
 	ADD_GROUP("Damping", "");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "damping", PROPERTY_HINT_RANGE, "0,100,0.01"), "set_param", "get_param", PARAM_DAMPING);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "damping_random", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_randomness", "get_param_randomness", PARAM_DAMPING);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "damping_min", PROPERTY_HINT_RANGE, "0,100,0.01"), "set_param_min", "get_param_min", PARAM_DAMPING);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "damping_max", PROPERTY_HINT_RANGE, "0,100,0.01"), "set_param_max", "get_param_max", PARAM_DAMPING);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "damping_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_param_curve", "get_param_curve", PARAM_DAMPING);
 	ADD_GROUP("Angle", "");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angle", PROPERTY_HINT_RANGE, "-720,720,0.1,or_lesser,or_greater,degrees"), "set_param", "get_param", PARAM_ANGLE);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angle_random", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_randomness", "get_param_randomness", PARAM_ANGLE);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angle_min", PROPERTY_HINT_RANGE, "-720,720,0.1,or_lesser,or_greater,degrees"), "set_param_min", "get_param_min", PARAM_ANGLE);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angle_max", PROPERTY_HINT_RANGE, "-720,720,0.1,or_lesser,or_greater,degrees"), "set_param_max", "get_param_max", PARAM_ANGLE);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "angle_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_param_curve", "get_param_curve", PARAM_ANGLE);
 	ADD_GROUP("Scale", "");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "scale_amount", PROPERTY_HINT_RANGE, "0,1000,0.01,or_greater"), "set_param", "get_param", PARAM_SCALE);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "scale_amount_random", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_randomness", "get_param_randomness", PARAM_SCALE);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "scale_amount_min", PROPERTY_HINT_RANGE, "0,1000,0.01,or_greater"), "set_param_min", "get_param_min", PARAM_SCALE);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "scale_amount_max", PROPERTY_HINT_RANGE, "0,1000,0.01,or_greater"), "set_param_max", "get_param_max", PARAM_SCALE);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "scale_amount_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_param_curve", "get_param_curve", PARAM_SCALE);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "split_scale"), "set_split_scale", "get_split_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "scale_curve_x", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_scale_curve_x", "get_scale_curve_x");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "scale_curve_y", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_scale_curve_y", "get_scale_curve_y");
+
 	ADD_GROUP("Color", "");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color_ramp", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_color_ramp", "get_color_ramp");
 
 	ADD_GROUP("Hue Variation", "hue_");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "hue_variation", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_param", "get_param", PARAM_HUE_VARIATION);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "hue_variation_random", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_randomness", "get_param_randomness", PARAM_HUE_VARIATION);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "hue_variation_min", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_param_min", "get_param_min", PARAM_HUE_VARIATION);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "hue_variation_max", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_param_max", "get_param_max", PARAM_HUE_VARIATION);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "hue_variation_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_param_curve", "get_param_curve", PARAM_HUE_VARIATION);
 	ADD_GROUP("Animation", "anim_");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anim_speed", PROPERTY_HINT_RANGE, "0,128,0.01,or_greater"), "set_param", "get_param", PARAM_ANIM_SPEED);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anim_speed_random", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_randomness", "get_param_randomness", PARAM_ANIM_SPEED);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anim_speed_min", PROPERTY_HINT_RANGE, "0,128,0.01,or_greater,or_lesser"), "set_param_min", "get_param_min", PARAM_ANIM_SPEED);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anim_speed_max", PROPERTY_HINT_RANGE, "0,128,0.01,or_greater,or_lesser"), "set_param_max", "get_param_max", PARAM_ANIM_SPEED);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "anim_speed_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_param_curve", "get_param_curve", PARAM_ANIM_SPEED);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anim_offset", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param", "get_param", PARAM_ANIM_OFFSET);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anim_offset_random", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_randomness", "get_param_randomness", PARAM_ANIM_OFFSET);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anim_offset_min", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_min", "get_param_min", PARAM_ANIM_OFFSET);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anim_offset_max", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_max", "get_param_max", PARAM_ANIM_OFFSET);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "anim_offset_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_param_curve", "get_param_curve", PARAM_ANIM_OFFSET);
 
 	BIND_ENUM_CONSTANT(PARAM_INITIAL_LINEAR_VELOCITY);
@@ -1368,22 +1435,31 @@ CPUParticles2D::CPUParticles2D() {
 	set_amount(8);
 	set_use_local_coordinates(true);
 
-	set_param(PARAM_INITIAL_LINEAR_VELOCITY, 0);
-	set_param(PARAM_ANGULAR_VELOCITY, 0);
-	set_param(PARAM_ORBIT_VELOCITY, 0);
-	set_param(PARAM_LINEAR_ACCEL, 0);
-	set_param(PARAM_RADIAL_ACCEL, 0);
-	set_param(PARAM_TANGENTIAL_ACCEL, 0);
-	set_param(PARAM_DAMPING, 0);
-	set_param(PARAM_ANGLE, 0);
-	set_param(PARAM_SCALE, 1);
-	set_param(PARAM_HUE_VARIATION, 0);
-	set_param(PARAM_ANIM_SPEED, 0);
-	set_param(PARAM_ANIM_OFFSET, 0);
+	set_param_min(PARAM_INITIAL_LINEAR_VELOCITY, 0);
+	set_param_min(PARAM_ANGULAR_VELOCITY, 0);
+	set_param_min(PARAM_ORBIT_VELOCITY, 0);
+	set_param_min(PARAM_LINEAR_ACCEL, 0);
+	set_param_min(PARAM_RADIAL_ACCEL, 0);
+	set_param_min(PARAM_TANGENTIAL_ACCEL, 0);
+	set_param_min(PARAM_DAMPING, 0);
+	set_param_min(PARAM_ANGLE, 0);
+	set_param_min(PARAM_SCALE, 1);
+	set_param_min(PARAM_HUE_VARIATION, 0);
+	set_param_min(PARAM_ANIM_SPEED, 0);
+	set_param_min(PARAM_ANIM_OFFSET, 0);
 
-	for (int i = 0; i < PARAM_MAX; i++) {
-		set_param_randomness(Parameter(i), 0);
-	}
+	set_param_max(PARAM_INITIAL_LINEAR_VELOCITY, 0);
+	set_param_max(PARAM_ANGULAR_VELOCITY, 0);
+	set_param_max(PARAM_ORBIT_VELOCITY, 0);
+	set_param_max(PARAM_LINEAR_ACCEL, 0);
+	set_param_max(PARAM_RADIAL_ACCEL, 0);
+	set_param_max(PARAM_TANGENTIAL_ACCEL, 0);
+	set_param_max(PARAM_DAMPING, 0);
+	set_param_max(PARAM_ANGLE, 0);
+	set_param_max(PARAM_SCALE, 1);
+	set_param_max(PARAM_HUE_VARIATION, 0);
+	set_param_max(PARAM_ANIM_SPEED, 0);
+	set_param_max(PARAM_ANIM_OFFSET, 0);
 
 	for (int i = 0; i < PARTICLE_FLAG_MAX; i++) {
 		particle_flags[i] = false;

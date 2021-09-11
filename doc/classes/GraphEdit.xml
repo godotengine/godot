@@ -10,6 +10,14 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_get_connection_line" qualifiers="virtual const">
+			<return type="PackedVector2Array" />
+			<argument index="0" name="from" type="Vector2" />
+			<argument index="1" name="to" type="Vector2" />
+			<description>
+				Virtual method which can be overridden to customize how connections are drawn.
+			</description>
+		</method>
 		<method name="add_valid_connection_type">
 			<return type="void" />
 			<argument index="0" name="from_type" type="int" />
@@ -30,6 +38,12 @@
 			<argument index="0" name="type" type="int" />
 			<description>
 				Makes possible to disconnect nodes when dragging from the slot at the right if it has the specified type.
+			</description>
+		</method>
+		<method name="arrange_nodes">
+			<return type="void" />
+			<description>
+				Rearranges selected nodes in a layout with minimum crossings between connections and uniform horizontal and vertical gap between nodes.
 			</description>
 		</method>
 		<method name="clear_connections">
@@ -56,6 +70,14 @@
 			<argument index="3" name="to_port" type="int" />
 			<description>
 				Removes the connection between the [code]from_port[/code] slot of the [code]from[/code] GraphNode and the [code]to_port[/code] slot of the [code]to[/code] GraphNode. If the connection does not exist, no connection is removed.
+			</description>
+		</method>
+		<method name="get_connection_line">
+			<return type="PackedVector2Array" />
+			<argument index="0" name="from" type="Vector2" />
+			<argument index="1" name="to" type="Vector2" />
+			<description>
+				Returns the points which would make up a connection between [code]from[/code] and [code]to[/code].
 			</description>
 		</method>
 		<method name="get_connection_list" qualifiers="const">
@@ -283,6 +305,8 @@
 		<theme_item name="grid_minor" data_type="color" type="Color" default="Color(1, 1, 1, 0.05)">
 			Color of minor grid lines.
 		</theme_item>
+		<theme_item name="layout" data_type="icon" type="Texture2D">
+		</theme_item>
 		<theme_item name="minimap" data_type="icon" type="Texture2D">
 		</theme_item>
 		<theme_item name="minus" data_type="icon" type="Texture2D">
@@ -291,7 +315,7 @@
 		<theme_item name="more" data_type="icon" type="Texture2D">
 			The icon for the zoom in button.
 		</theme_item>
-		<theme_item name="port_grab_distance_horizontal" data_type="constant" type="int" default="48">
+		<theme_item name="port_grab_distance_horizontal" data_type="constant" type="int" default="24">
 			The horizontal range within which a port can be grabbed (on both sides).
 		</theme_item>
 		<theme_item name="port_grab_distance_vertical" data_type="constant" type="int" default="6">

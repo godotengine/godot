@@ -34,10 +34,10 @@
 #include "collision_object_3d_sw.h"
 #include "core/templates/self_list.h"
 #include "servers/physics_server_3d.h"
-//#include "servers/physics_3d/query_sw.h"
 
 class Space3DSW;
 class Body3DSW;
+class SoftBody3DSW;
 class Constraint3DSW;
 
 class Area3DSW : public CollisionObject3DSW {
@@ -49,6 +49,10 @@ class Area3DSW : public CollisionObject3DSW {
 	real_t point_attenuation;
 	real_t linear_damp;
 	real_t angular_damp;
+	real_t wind_force_magnitude = 0.0;
+	real_t wind_attenuation_factor = 0.0;
+	Vector3 wind_source;
+	Vector3 wind_direction;
 	int priority;
 	bool monitorable;
 
@@ -80,6 +84,7 @@ class Area3DSW : public CollisionObject3DSW {
 		}
 
 		_FORCE_INLINE_ BodyKey() {}
+		BodyKey(SoftBody3DSW *p_body, uint32_t p_body_shape, uint32_t p_area_shape);
 		BodyKey(Body3DSW *p_body, uint32_t p_body_shape, uint32_t p_area_shape);
 		BodyKey(Area3DSW *p_body, uint32_t p_body_shape, uint32_t p_area_shape);
 	};
@@ -91,11 +96,9 @@ class Area3DSW : public CollisionObject3DSW {
 		_FORCE_INLINE_ BodyState() { state = 0; }
 	};
 
+	Map<BodyKey, BodyState> monitored_soft_bodies;
 	Map<BodyKey, BodyState> monitored_bodies;
 	Map<BodyKey, BodyState> monitored_areas;
-
-	//virtual void shape_changed_notify(ShapeSW *p_shape);
-	//virtual void shape_deleted_notify(ShapeSW *p_shape);
 
 	Set<Constraint3DSW *> constraints;
 
@@ -103,9 +106,6 @@ class Area3DSW : public CollisionObject3DSW {
 	void _queue_monitor_update();
 
 public:
-	//_FORCE_INLINE_ const Transform& get_inverse_transform() const { return inverse_transform; }
-	//_FORCE_INLINE_ SpaceSW* get_owner() { return owner; }
-
 	void set_monitor_callback(ObjectID p_id, const StringName &p_method);
 	_FORCE_INLINE_ bool has_monitor_callback() const { return monitor_callback_id.is_valid(); }
 
@@ -114,6 +114,9 @@ public:
 
 	_FORCE_INLINE_ void add_body_to_query(Body3DSW *p_body, uint32_t p_body_shape, uint32_t p_area_shape);
 	_FORCE_INLINE_ void remove_body_from_query(Body3DSW *p_body, uint32_t p_body_shape, uint32_t p_area_shape);
+
+	_FORCE_INLINE_ void add_soft_body_to_query(SoftBody3DSW *p_soft_body, uint32_t p_soft_body_shape, uint32_t p_area_shape);
+	_FORCE_INLINE_ void remove_soft_body_from_query(SoftBody3DSW *p_soft_body, uint32_t p_soft_body_shape, uint32_t p_area_shape);
 
 	_FORCE_INLINE_ void add_area_to_query(Area3DSW *p_area, uint32_t p_area_shape, uint32_t p_self_shape);
 	_FORCE_INLINE_ void remove_area_from_query(Area3DSW *p_area, uint32_t p_area_shape, uint32_t p_self_shape);
@@ -148,6 +151,18 @@ public:
 	_FORCE_INLINE_ void set_priority(int p_priority) { priority = p_priority; }
 	_FORCE_INLINE_ int get_priority() const { return priority; }
 
+	_FORCE_INLINE_ void set_wind_force_magnitude(real_t p_wind_force_magnitude) { wind_force_magnitude = p_wind_force_magnitude; }
+	_FORCE_INLINE_ real_t get_wind_force_magnitude() const { return wind_force_magnitude; }
+
+	_FORCE_INLINE_ void set_wind_attenuation_factor(real_t p_wind_attenuation_factor) { wind_attenuation_factor = p_wind_attenuation_factor; }
+	_FORCE_INLINE_ real_t get_wind_attenuation_factor() const { return wind_attenuation_factor; }
+
+	_FORCE_INLINE_ void set_wind_source(const Vector3 &p_wind_source) { wind_source = p_wind_source; }
+	_FORCE_INLINE_ const Vector3 &get_wind_source() const { return wind_source; }
+
+	_FORCE_INLINE_ void set_wind_direction(const Vector3 &p_wind_direction) { wind_direction = p_wind_direction; }
+	_FORCE_INLINE_ const Vector3 &get_wind_direction() const { return wind_direction; }
+
 	_FORCE_INLINE_ void add_constraint(Constraint3DSW *p_constraint) { constraints.insert(p_constraint); }
 	_FORCE_INLINE_ void remove_constraint(Constraint3DSW *p_constraint) { constraints.erase(p_constraint); }
 	_FORCE_INLINE_ const Set<Constraint3DSW *> &get_constraints() const { return constraints; }
@@ -162,9 +177,27 @@ public:
 
 	void call_queries();
 
+	void compute_gravity(const Vector3 &p_position, Vector3 &r_gravity) const;
+
 	Area3DSW();
 	~Area3DSW();
 };
+
+void Area3DSW::add_soft_body_to_query(SoftBody3DSW *p_soft_body, uint32_t p_soft_body_shape, uint32_t p_area_shape) {
+	BodyKey bk(p_soft_body, p_soft_body_shape, p_area_shape);
+	monitored_soft_bodies[bk].inc();
+	if (!monitor_query_list.in_list()) {
+		_queue_monitor_update();
+	}
+}
+
+void Area3DSW::remove_soft_body_from_query(SoftBody3DSW *p_soft_body, uint32_t p_soft_body_shape, uint32_t p_area_shape) {
+	BodyKey bk(p_soft_body, p_soft_body_shape, p_area_shape);
+	monitored_soft_bodies[bk].dec();
+	if (!monitor_query_list.in_list()) {
+		_queue_monitor_update();
+	}
+}
 
 void Area3DSW::add_body_to_query(Body3DSW *p_body, uint32_t p_body_shape, uint32_t p_area_shape) {
 	BodyKey bk(p_body, p_body_shape, p_area_shape);
@@ -197,5 +230,17 @@ void Area3DSW::remove_area_from_query(Area3DSW *p_area, uint32_t p_area_shape, u
 		_queue_monitor_update();
 	}
 }
+
+struct AreaCMP {
+	Area3DSW *area;
+	int refCount;
+	_FORCE_INLINE_ bool operator==(const AreaCMP &p_cmp) const { return area->get_self() == p_cmp.area->get_self(); }
+	_FORCE_INLINE_ bool operator<(const AreaCMP &p_cmp) const { return area->get_priority() < p_cmp.area->get_priority(); }
+	_FORCE_INLINE_ AreaCMP() {}
+	_FORCE_INLINE_ AreaCMP(Area3DSW *p_area) {
+		area = p_area;
+		refCount = 1;
+	}
+};
 
 #endif // AREA__SW_H

@@ -44,7 +44,6 @@ class PhysicsServer3DSW : public PhysicsServer3D {
 	friend class PhysicsDirectSpaceState3DSW;
 	bool active;
 	int iterations;
-	real_t last_step;
 
 	int island_count;
 	int active_objects;
@@ -56,8 +55,6 @@ class PhysicsServer3DSW : public PhysicsServer3D {
 
 	Step3DSW *stepper;
 	Set<const Space3DSW *> active_spaces;
-
-	PhysicsDirectBodyState3DSW *direct_state;
 
 	mutable RID_PtrOwner<Shape3DSW, true> shape_owner;
 	mutable RID_PtrOwner<Space3DSW, true> space_owner;
@@ -83,7 +80,7 @@ public:
 	static void _shape_col_cbk(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata);
 
 	virtual RID plane_shape_create() override;
-	virtual RID ray_shape_create() override;
+	virtual RID separation_ray_shape_create() override;
 	virtual RID sphere_shape_create() override;
 	virtual RID box_shape_create() override;
 	virtual RID capsule_shape_create() override;
@@ -201,8 +198,10 @@ public:
 	virtual void body_set_user_flags(RID p_body, uint32_t p_flags) override;
 	virtual uint32_t body_get_user_flags(RID p_body) const override;
 
-	virtual void body_set_param(RID p_body, BodyParameter p_param, real_t p_value) override;
-	virtual real_t body_get_param(RID p_body, BodyParameter p_param) const override;
+	virtual void body_set_param(RID p_body, BodyParameter p_param, const Variant &p_value) override;
+	virtual Variant body_get_param(RID p_body, BodyParameter p_param) const override;
+
+	virtual void body_reset_mass_properties(RID p_body) override;
 
 	virtual void body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) override;
 	virtual Variant body_get_state(RID p_body, BodyState p_state) const override;
@@ -238,12 +237,12 @@ public:
 	virtual void body_set_max_contacts_reported(RID p_body, int p_contacts) override;
 	virtual int body_get_max_contacts_reported(RID p_body) const override;
 
+	virtual void body_set_state_sync_callback(RID p_body, void *p_instance, BodyStateCallback p_callback) override;
 	virtual void body_set_force_integration_callback(RID p_body, const Callable &p_callable, const Variant &p_udata = Variant()) override;
 
 	virtual void body_set_ray_pickable(RID p_body, bool p_enable) override;
 
-	virtual bool body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia, real_t p_margin = 0.001, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true) override;
-	virtual int body_test_ray_separation(RID p_body, const Transform3D &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, SeparationResult *r_results, int p_result_max, real_t p_margin = 0.001) override;
+	virtual bool body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin = 0.001, MotionResult *r_result = nullptr, bool p_collide_separation_ray = false, const Set<RID> &p_exclude = Set<RID>()) override;
 
 	// this function only works on physics process, errors and returns null otherwise
 	virtual PhysicsDirectBodyState3D *body_get_direct_state(RID p_body) override;

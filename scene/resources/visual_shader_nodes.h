@@ -76,7 +76,7 @@ public:
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	void set_constant(float p_value);
+	void set_constant(float p_constant);
 	float get_constant() const;
 
 	virtual Vector<StringName> get_editable_properties() const override;
@@ -106,7 +106,7 @@ public:
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	void set_constant(int p_value);
+	void set_constant(int p_constant);
 	int get_constant() const;
 
 	virtual Vector<StringName> get_editable_properties() const override;
@@ -136,7 +136,7 @@ public:
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	void set_constant(bool p_value);
+	void set_constant(bool p_constant);
 	bool get_constant() const;
 
 	virtual Vector<StringName> get_editable_properties() const override;
@@ -167,7 +167,7 @@ public:
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	void set_constant(Color p_value);
+	void set_constant(const Color &p_constant);
 	Color get_constant() const;
 
 	virtual Vector<StringName> get_editable_properties() const override;
@@ -197,7 +197,7 @@ public:
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	void set_constant(Vector3 p_value);
+	void set_constant(const Vector3 &p_constant);
 	Vector3 get_constant() const;
 
 	virtual Vector<StringName> get_editable_properties() const override;
@@ -227,7 +227,7 @@ public:
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	void set_constant(Transform3D p_value);
+	void set_constant(const Transform3D &p_constant);
 	Transform3D get_constant() const;
 
 	virtual Vector<StringName> get_editable_properties() const override;
@@ -251,12 +251,14 @@ public:
 		SOURCE_2D_NORMAL,
 		SOURCE_DEPTH,
 		SOURCE_PORT,
+		SOURCE_MAX,
 	};
 
 	enum TextureType {
 		TYPE_DATA,
 		TYPE_COLOR,
 		TYPE_NORMAL_MAP,
+		TYPE_MAX,
 	};
 
 private:
@@ -287,10 +289,10 @@ public:
 	void set_source(Source p_source);
 	Source get_source() const;
 
-	void set_texture(Ref<Texture2D> p_value);
+	void set_texture(Ref<Texture2D> p_texture);
 	Ref<Texture2D> get_texture() const;
 
-	void set_texture_type(TextureType p_type);
+	void set_texture_type(TextureType p_texture_type);
 	TextureType get_texture_type() const;
 
 	virtual Vector<StringName> get_editable_properties() const override;
@@ -327,7 +329,7 @@ public:
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	void set_texture(Ref<CurveTexture> p_value);
+	void set_texture(Ref<CurveTexture> p_texture);
 	Ref<CurveTexture> get_texture() const;
 
 	virtual Vector<StringName> get_editable_properties() const override;
@@ -360,7 +362,7 @@ public:
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	void set_texture(Ref<CurveXYZTexture> p_value);
+	void set_texture(Ref<CurveXYZTexture> p_texture);
 	Ref<CurveXYZTexture> get_texture() const;
 
 	virtual Vector<StringName> get_editable_properties() const override;
@@ -378,6 +380,7 @@ public:
 	enum Source {
 		SOURCE_TEXTURE,
 		SOURCE_PORT,
+		SOURCE_MAX,
 	};
 
 protected:
@@ -410,7 +413,7 @@ VARIANT_ENUM_CAST(VisualShaderNodeSample3D::Source)
 
 class VisualShaderNodeTexture2DArray : public VisualShaderNodeSample3D {
 	GDCLASS(VisualShaderNodeTexture2DArray, VisualShaderNodeSample3D);
-	Ref<Texture2DArray> texture;
+	Ref<Texture2DArray> texture_array;
 
 protected:
 	static void _bind_methods();
@@ -423,7 +426,7 @@ public:
 	virtual Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const override;
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
 
-	void set_texture_array(Ref<Texture2DArray> p_value);
+	void set_texture_array(Ref<Texture2DArray> p_texture_array);
 	Ref<Texture2DArray> get_texture_array() const;
 
 	virtual Vector<StringName> get_editable_properties() const override;
@@ -446,7 +449,7 @@ public:
 	virtual Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const override;
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
 
-	void set_texture(Ref<Texture3D> p_value);
+	void set_texture(Ref<Texture3D> p_texture);
 	Ref<Texture3D> get_texture() const;
 
 	virtual Vector<StringName> get_editable_properties() const override;
@@ -461,13 +464,15 @@ class VisualShaderNodeCubemap : public VisualShaderNode {
 public:
 	enum Source {
 		SOURCE_TEXTURE,
-		SOURCE_PORT
+		SOURCE_PORT,
+		SOURCE_MAX,
 	};
 
 	enum TextureType {
 		TYPE_DATA,
 		TYPE_COLOR,
-		TYPE_NORMAL_MAP
+		TYPE_NORMAL_MAP,
+		TYPE_MAX,
 	};
 
 private:
@@ -497,10 +502,10 @@ public:
 	void set_source(Source p_source);
 	Source get_source() const;
 
-	void set_cube_map(Ref<Cubemap> p_value);
+	void set_cube_map(Ref<Cubemap> p_cube_map);
 	Ref<Cubemap> get_cube_map() const;
 
-	void set_texture_type(TextureType p_type);
+	void set_texture_type(TextureType p_texture_type);
 	TextureType get_texture_type() const;
 
 	virtual Vector<StringName> get_editable_properties() const override;
@@ -530,7 +535,8 @@ public:
 		OP_MAX,
 		OP_MIN,
 		OP_ATAN2,
-		OP_STEP
+		OP_STEP,
+		OP_ENUM_SIZE,
 	};
 
 protected:
@@ -573,6 +579,7 @@ public:
 		OP_MOD,
 		OP_MAX,
 		OP_MIN,
+		OP_ENUM_SIZE,
 	};
 
 protected:
@@ -619,7 +626,8 @@ public:
 		OP_CROSS,
 		OP_ATAN2,
 		OP_REFLECT,
-		OP_STEP
+		OP_STEP,
+		OP_ENUM_SIZE,
 	};
 
 protected:
@@ -665,7 +673,8 @@ public:
 		OP_DODGE,
 		OP_BURN,
 		OP_SOFT_LIGHT,
-		OP_HARD_LIGHT
+		OP_HARD_LIGHT,
+		OP_MAX,
 	};
 
 protected:
@@ -696,19 +705,25 @@ public:
 
 VARIANT_ENUM_CAST(VisualShaderNodeColorOp::Operator)
 
-///////////////////////////////////////
-/// TRANSFORM-TRANSFORM MULTIPLICATION
-///////////////////////////////////////
+////////////////////////////////
+/// TRANSFORM-TRANSFORM OPERATOR
+////////////////////////////////
 
-class VisualShaderNodeTransformMult : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeTransformMult, VisualShaderNode);
+class VisualShaderNodeTransformOp : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeTransformOp, VisualShaderNode);
 
 public:
 	enum Operator {
 		OP_AxB,
 		OP_BxA,
 		OP_AxB_COMP,
-		OP_BxA_COMP
+		OP_BxA_COMP,
+		OP_ADD,
+		OP_A_MINUS_B,
+		OP_B_MINUS_A,
+		OP_A_DIV_B,
+		OP_B_DIV_A,
+		OP_MAX,
 	};
 
 protected:
@@ -734,10 +749,10 @@ public:
 
 	virtual Vector<StringName> get_editable_properties() const override;
 
-	VisualShaderNodeTransformMult();
+	VisualShaderNodeTransformOp();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeTransformMult::Operator)
+VARIANT_ENUM_CAST(VisualShaderNodeTransformOp::Operator)
 
 ///////////////////////////////////////
 /// TRANSFORM-VECTOR MULTIPLICATION
@@ -752,6 +767,7 @@ public:
 		OP_BxA,
 		OP_3x3_AxB,
 		OP_3x3_BxA,
+		OP_MAX,
 	};
 
 protected:
@@ -822,7 +838,8 @@ public:
 		FUNC_RECIPROCAL,
 		FUNC_ROUNDEVEN,
 		FUNC_TRUNC,
-		FUNC_ONEMINUS
+		FUNC_ONEMINUS,
+		FUNC_MAX,
 	};
 
 protected:
@@ -865,6 +882,7 @@ public:
 		FUNC_ABS,
 		FUNC_NEGATE,
 		FUNC_SIGN,
+		FUNC_MAX,
 	};
 
 protected:
@@ -938,7 +956,8 @@ public:
 		FUNC_TAN,
 		FUNC_TANH,
 		FUNC_TRUNC,
-		FUNC_ONEMINUS
+		FUNC_ONEMINUS,
+		FUNC_MAX,
 	};
 
 protected:
@@ -979,7 +998,8 @@ class VisualShaderNodeColorFunc : public VisualShaderNode {
 public:
 	enum Function {
 		FUNC_GRAYSCALE,
-		FUNC_SEPIA
+		FUNC_SEPIA,
+		FUNC_MAX,
 	};
 
 protected:
@@ -1020,7 +1040,8 @@ class VisualShaderNodeTransformFunc : public VisualShaderNode {
 public:
 	enum Function {
 		FUNC_INVERSE,
-		FUNC_TRANSPOSE
+		FUNC_TRANSPOSE,
+		FUNC_MAX,
 	};
 
 protected:
@@ -1086,7 +1107,7 @@ public:
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	void set_function(Function p_op);
+	void set_function(Function p_func);
 	Function get_function() const;
 
 	virtual Vector<StringName> get_editable_properties() const override;
@@ -1195,7 +1216,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const override;
 	virtual String get_output_port_name(int p_port) const override;
 
-	void set_op_type(OpType p_type);
+	void set_op_type(OpType p_op_type);
 	OpType get_op_type() const;
 
 	virtual Vector<StringName> get_editable_properties() const override;
@@ -1218,7 +1239,8 @@ public:
 	enum Function {
 		FUNC_SUM,
 		FUNC_X,
-		FUNC_Y
+		FUNC_Y,
+		FUNC_MAX,
 	};
 
 protected:
@@ -1258,7 +1280,8 @@ public:
 	enum Function {
 		FUNC_SUM,
 		FUNC_X,
-		FUNC_Y
+		FUNC_Y,
+		FUNC_MAX,
 	};
 
 protected:
@@ -1365,7 +1388,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const override;
 	virtual String get_output_port_name(int p_port) const override;
 
-	void set_op_type(OpType p_type);
+	void set_op_type(OpType p_op_type);
 	OpType get_op_type() const;
 
 	virtual Vector<StringName> get_editable_properties() const override;
@@ -1407,7 +1430,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const override;
 	virtual String get_output_port_name(int p_port) const override;
 
-	void set_op_type(OpType p_type);
+	void set_op_type(OpType p_op_type);
 	OpType get_op_type() const;
 
 	virtual Vector<StringName> get_editable_properties() const override;
@@ -1495,7 +1518,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const override;
 	virtual String get_output_port_name(int p_port) const override;
 
-	void set_op_type(OpType p_type);
+	void set_op_type(OpType p_op_type);
 	OpType get_op_type() const;
 
 	virtual Vector<StringName> get_editable_properties() const override;
@@ -1607,6 +1630,7 @@ public:
 		HINT_NONE,
 		HINT_RANGE,
 		HINT_RANGE_STEP,
+		HINT_MAX,
 	};
 
 private:
@@ -1673,6 +1697,7 @@ public:
 		HINT_NONE,
 		HINT_RANGE,
 		HINT_RANGE_STEP,
+		HINT_MAX,
 	};
 
 private:
@@ -1913,11 +1938,13 @@ public:
 		TYPE_COLOR,
 		TYPE_NORMAL_MAP,
 		TYPE_ANISO,
+		TYPE_MAX,
 	};
 
 	enum ColorDefault {
 		COLOR_DEFAULT_WHITE,
-		COLOR_DEFAULT_BLACK
+		COLOR_DEFAULT_BLACK,
+		COLOR_DEFAULT_MAX,
 	};
 
 protected:
@@ -2107,7 +2134,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const override;
 	virtual String get_output_port_name(int p_port) const override;
 
-	void set_op_type(OpType p_type);
+	void set_op_type(OpType p_op_type);
 	OpType get_op_type() const;
 
 	virtual Vector<StringName> get_editable_properties() const override;
@@ -2155,6 +2182,7 @@ public:
 	enum Function {
 		FUNC_IS_INF,
 		FUNC_IS_NAN,
+		FUNC_MAX,
 	};
 
 protected:
@@ -2200,6 +2228,7 @@ public:
 		CTYPE_VECTOR,
 		CTYPE_BOOLEAN,
 		CTYPE_TRANSFORM,
+		CTYPE_MAX,
 	};
 
 	enum Function {
@@ -2209,15 +2238,17 @@ public:
 		FUNC_GREATER_THAN_EQUAL,
 		FUNC_LESS_THAN,
 		FUNC_LESS_THAN_EQUAL,
+		FUNC_MAX,
 	};
 
 	enum Condition {
 		COND_ALL,
 		COND_ANY,
+		COND_MAX,
 	};
 
 protected:
-	ComparisonType ctype = CTYPE_SCALAR;
+	ComparisonType comparison_type = CTYPE_SCALAR;
 	Function func = FUNC_EQUAL;
 	Condition condition = COND_ALL;
 
@@ -2285,7 +2316,7 @@ public:
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	void set_op_type(OpType p_type);
+	void set_op_type(OpType p_op_type);
 	OpType get_op_type() const;
 
 	virtual Vector<StringName> get_editable_properties() const override;

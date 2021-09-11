@@ -68,7 +68,7 @@ class ScrollContainer : public Container {
 protected:
 	Size2 get_minimum_size() const override;
 
-	void _gui_input(const Ref<InputEvent> &p_gui_input);
+	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;
 	void _gui_focus_changed(Control *p_control);
 	void _update_dimensions();
 	void _notification(int p_what);

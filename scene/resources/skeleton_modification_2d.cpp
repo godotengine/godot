@@ -44,7 +44,7 @@
 ///////////////////////////////////////
 
 void SkeletonModification2D::_execute(float p_delta) {
-	call("_execute", p_delta);
+	GDVIRTUAL_CALL(_execute, p_delta);
 
 	if (!enabled) {
 		return;
@@ -59,11 +59,11 @@ void SkeletonModification2D::_setup_modification(SkeletonModificationStack2D *p_
 		WARN_PRINT("Could not setup modification with name " + get_name());
 	}
 
-	call("_setup_modification", p_stack);
+	GDVIRTUAL_CALL(_setup_modification, Ref<SkeletonModificationStack2D>(p_stack));
 }
 
 void SkeletonModification2D::_draw_editor_gizmo() {
-	call("_draw_editor_gizmo");
+	GDVIRTUAL_CALL(_draw_editor_gizmo);
 }
 
 void SkeletonModification2D::set_enabled(bool p_enabled) {
@@ -166,13 +166,13 @@ void SkeletonModification2D::editor_draw_angle_constraints(Bone2D *p_operation_b
 
 			if (operation_bone_parent_bone) {
 				stack->skeleton->draw_set_transform(
-						stack->skeleton->get_global_transform().affine_inverse().xform(p_operation_bone->get_global_position()),
+						stack->skeleton->to_local(p_operation_bone->get_global_position()),
 						operation_bone_parent_bone->get_global_rotation() - stack->skeleton->get_global_rotation());
 			} else {
-				stack->skeleton->draw_set_transform(stack->skeleton->get_global_transform().affine_inverse().xform(p_operation_bone->get_global_position()));
+				stack->skeleton->draw_set_transform(stack->skeleton->to_local(p_operation_bone->get_global_position()));
 			}
 		} else {
-			stack->skeleton->draw_set_transform(stack->skeleton->get_global_transform().affine_inverse().xform(p_operation_bone->get_global_position()));
+			stack->skeleton->draw_set_transform(stack->skeleton->to_local(p_operation_bone->get_global_position()));
 		}
 
 		if (p_constraint_inverted) {
@@ -186,7 +186,7 @@ void SkeletonModification2D::editor_draw_angle_constraints(Bone2D *p_operation_b
 		stack->skeleton->draw_line(Vector2(0, 0), Vector2(Math::cos(arc_angle_max), Math::sin(arc_angle_max)) * p_operation_bone->get_length(), bone_ik_color, 1.0);
 
 	} else {
-		stack->skeleton->draw_set_transform(stack->skeleton->get_global_transform().affine_inverse().xform(p_operation_bone->get_global_position()));
+		stack->skeleton->draw_set_transform(stack->skeleton->to_local(p_operation_bone->get_global_position()));
 		stack->skeleton->draw_arc(Vector2(0, 0), p_operation_bone->get_length(), 0, Math_PI * 2, 32, bone_ik_color, 1.0);
 		stack->skeleton->draw_line(Vector2(0, 0), Vector2(1, 0) * p_operation_bone->get_length(), bone_ik_color, 1.0);
 	}
@@ -228,9 +228,9 @@ bool SkeletonModification2D::get_editor_draw_gizmo() const {
 }
 
 void SkeletonModification2D::_bind_methods() {
-	BIND_VMETHOD(MethodInfo("_execute", PropertyInfo(Variant::FLOAT, "delta")));
-	BIND_VMETHOD(MethodInfo("_setup_modification", PropertyInfo(Variant::OBJECT, "modification_stack", PROPERTY_HINT_RESOURCE_TYPE, "SkeletonModificationStack2D")));
-	BIND_VMETHOD(MethodInfo("_draw_editor_gizmo"));
+	GDVIRTUAL_BIND(_execute, "delta");
+	GDVIRTUAL_BIND(_setup_modification, "modification_stack")
+	GDVIRTUAL_BIND(_draw_editor_gizmo)
 
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &SkeletonModification2D::set_enabled);
 	ClassDB::bind_method(D_METHOD("get_enabled"), &SkeletonModification2D::get_enabled);

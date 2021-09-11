@@ -848,7 +848,7 @@ static void _collision_sphere_capsule(const Shape3DSW *p_a, const Transform3D &p
 
 	//capsule sphere 1, sphere
 
-	Vector3 capsule_axis = p_transform_b.basis.get_axis(1) * (capsule_B->get_height() * 0.5);
+	Vector3 capsule_axis = p_transform_b.basis.get_axis(1) * (capsule_B->get_height() * 0.5 - capsule_B->get_radius());
 
 	Vector3 capsule_ball_1 = p_transform_b.origin + capsule_axis;
 
@@ -956,9 +956,12 @@ static void _collision_sphere_convex_polygon(const Shape3DSW *p_a, const Transfo
 	const Vector3 *vertices = mesh.vertices.ptr();
 	int vertex_count = mesh.vertices.size();
 
+	// Precalculating this makes the transforms faster.
+	Basis b_xform_normal = p_transform_b.basis.inverse().transposed();
+
 	// faces of B
 	for (int i = 0; i < face_count; i++) {
-		Vector3 axis = p_transform_b.xform(faces[i].plane).normal;
+		Vector3 axis = b_xform_normal.xform(faces[i].plane.normal).normalized();
 
 		if (!separator.test_axis(axis)) {
 			return;
@@ -1204,7 +1207,7 @@ static void _collision_box_capsule(const Shape3DSW *p_a, const Transform3D &p_tr
 	// capsule balls, edges of A
 
 	for (int i = 0; i < 2; i++) {
-		Vector3 capsule_axis = p_transform_b.basis.get_axis(1) * (capsule_B->get_height() * 0.5);
+		Vector3 capsule_axis = p_transform_b.basis.get_axis(1) * (capsule_B->get_height() * 0.5 - capsule_B->get_radius());
 
 		Vector3 sphere_pos = p_transform_b.origin + ((i == 0) ? capsule_axis : -capsule_axis);
 
@@ -1379,9 +1382,12 @@ static void _collision_box_convex_polygon(const Shape3DSW *p_a, const Transform3
 		}
 	}
 
+	// Precalculating this makes the transforms faster.
+	Basis b_xform_normal = p_transform_b.basis.inverse().transposed();
+
 	// faces of B
 	for (int i = 0; i < face_count; i++) {
-		Vector3 axis = p_transform_b.xform(faces[i].plane).normal;
+		Vector3 axis = b_xform_normal.xform(faces[i].plane.normal).normalized();
 
 		if (!separator.test_axis(axis)) {
 			return;
@@ -1601,8 +1607,8 @@ static void _collision_capsule_capsule(const Shape3DSW *p_a, const Transform3D &
 
 	// some values
 
-	Vector3 capsule_A_axis = p_transform_a.basis.get_axis(1) * (capsule_A->get_height() * 0.5);
-	Vector3 capsule_B_axis = p_transform_b.basis.get_axis(1) * (capsule_B->get_height() * 0.5);
+	Vector3 capsule_A_axis = p_transform_a.basis.get_axis(1) * (capsule_A->get_height() * 0.5 - capsule_A->get_radius());
+	Vector3 capsule_B_axis = p_transform_b.basis.get_axis(1) * (capsule_B->get_height() * 0.5 - capsule_B->get_radius());
 
 	Vector3 capsule_A_ball_1 = p_transform_a.origin + capsule_A_axis;
 	Vector3 capsule_A_ball_2 = p_transform_a.origin - capsule_A_axis;
@@ -1673,8 +1679,8 @@ static void _collision_capsule_cylinder(const Shape3DSW *p_a, const Transform3D 
 
 	Vector3 capsule_A_axis = p_transform_a.basis.get_axis(1);
 
-	Vector3 capsule_A_ball_1 = p_transform_a.origin + capsule_A_axis * (capsule_A->get_height() * 0.5);
-	Vector3 capsule_A_ball_2 = p_transform_a.origin - capsule_A_axis * (capsule_A->get_height() * 0.5);
+	Vector3 capsule_A_ball_1 = p_transform_a.origin + capsule_A_axis * (capsule_A->get_height() * 0.5 - capsule_A->get_radius());
+	Vector3 capsule_A_ball_2 = p_transform_a.origin - capsule_A_axis * (capsule_A->get_height() * 0.5 - capsule_A->get_radius());
 
 	if (!separator.test_axis((p_transform_b.origin - capsule_A_ball_1).cross(cylinder_B_axis).cross(cylinder_B_axis).normalized())) {
 		return;
@@ -1733,9 +1739,12 @@ static void _collision_capsule_convex_polygon(const Shape3DSW *p_a, const Transf
 	int edge_count = mesh.edges.size();
 	const Vector3 *vertices = mesh.vertices.ptr();
 
+	// Precalculating this makes the transforms faster.
+	Basis b_xform_normal = p_transform_b.basis.inverse().transposed();
+
 	// faces of B
 	for (int i = 0; i < face_count; i++) {
-		Vector3 axis = p_transform_b.xform(faces[i].plane).normal;
+		Vector3 axis = b_xform_normal.xform(faces[i].plane.normal).normalized();
 
 		if (!separator.test_axis(axis)) {
 			return;
@@ -1759,7 +1768,7 @@ static void _collision_capsule_convex_polygon(const Shape3DSW *p_a, const Transf
 	for (int i = 0; i < 2; i++) {
 		// edges of B, capsule cylinder
 
-		Vector3 capsule_axis = p_transform_a.basis.get_axis(1) * (capsule_A->get_height() * 0.5);
+		Vector3 capsule_axis = p_transform_a.basis.get_axis(1) * (capsule_A->get_height() * 0.5 - capsule_A->get_radius());
 
 		Vector3 sphere_pos = p_transform_a.origin + ((i == 0) ? capsule_axis : -capsule_axis);
 
@@ -1799,7 +1808,7 @@ static void _collision_capsule_face(const Shape3DSW *p_a, const Transform3D &p_t
 
 	// edges of B, capsule cylinder
 
-	Vector3 capsule_axis = p_transform_a.basis.get_axis(1) * (capsule_A->get_height() * 0.5);
+	Vector3 capsule_axis = p_transform_a.basis.get_axis(1) * (capsule_A->get_height() * 0.5 - capsule_A->get_radius());
 
 	for (int i = 0; i < 3; i++) {
 		// edge-cylinder
@@ -2057,20 +2066,24 @@ static void _collision_convex_polygon_convex_polygon(const Shape3DSW *p_a, const
 	const Vector3 *vertices_B = mesh_B.vertices.ptr();
 	int vertex_count_B = mesh_B.vertices.size();
 
+	// Precalculating this makes the transforms faster.
+	Basis a_xform_normal = p_transform_b.basis.inverse().transposed();
+
 	// faces of A
 	for (int i = 0; i < face_count_A; i++) {
-		Vector3 axis = p_transform_a.xform(faces_A[i].plane).normal;
-		//Vector3 axis = p_transform_a.basis.xform( faces_A[i].plane.normal ).normalized();
+		Vector3 axis = a_xform_normal.xform(faces_A[i].plane.normal).normalized();
 
 		if (!separator.test_axis(axis)) {
 			return;
 		}
 	}
 
+	// Precalculating this makes the transforms faster.
+	Basis b_xform_normal = p_transform_b.basis.inverse().transposed();
+
 	// faces of B
 	for (int i = 0; i < face_count_B; i++) {
-		Vector3 axis = p_transform_b.xform(faces_B[i].plane).normal;
-		//Vector3 axis = p_transform_b.basis.xform( faces_B[i].plane.normal ).normalized();
+		Vector3 axis = b_xform_normal.xform(faces_B[i].plane.normal).normalized();
 
 		if (!separator.test_axis(axis)) {
 			return;
@@ -2260,13 +2273,13 @@ bool sat_calculate_penetration(const Shape3DSW *p_shape_A, const Transform3D &p_
 	PhysicsServer3D::ShapeType type_A = p_shape_A->get_type();
 
 	ERR_FAIL_COND_V(type_A == PhysicsServer3D::SHAPE_PLANE, false);
-	ERR_FAIL_COND_V(type_A == PhysicsServer3D::SHAPE_RAY, false);
+	ERR_FAIL_COND_V(type_A == PhysicsServer3D::SHAPE_SEPARATION_RAY, false);
 	ERR_FAIL_COND_V(p_shape_A->is_concave(), false);
 
 	PhysicsServer3D::ShapeType type_B = p_shape_B->get_type();
 
 	ERR_FAIL_COND_V(type_B == PhysicsServer3D::SHAPE_PLANE, false);
-	ERR_FAIL_COND_V(type_B == PhysicsServer3D::SHAPE_RAY, false);
+	ERR_FAIL_COND_V(type_B == PhysicsServer3D::SHAPE_SEPARATION_RAY, false);
 	ERR_FAIL_COND_V(p_shape_B->is_concave(), false);
 
 	static const CollisionFunc collision_table[6][6] = {

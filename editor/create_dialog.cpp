@@ -356,9 +356,11 @@ void CreateDialog::_sbox_input(const Ref<InputEvent> &p_ie) {
 			case KEY_DOWN:
 			case KEY_PAGEUP:
 			case KEY_PAGEDOWN: {
-				search_options->call("_gui_input", k);
+				search_options->gui_input(k);
 				search_box->accept_event();
 			} break;
+			default:
+				break;
 		}
 	}
 }

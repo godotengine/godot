@@ -49,7 +49,6 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -68,15 +67,12 @@ import android.os.Environment;
 import android.os.Messenger;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
-import android.provider.Settings.Secure;
 import android.view.Display;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
-import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -299,7 +295,11 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
 			View pluginView = plugin.onMainCreate(activity);
 			if (pluginView != null) {
-				containerLayout.addView(pluginView);
+				if (plugin.shouldBeOnTop()) {
+					containerLayout.addView(pluginView);
+				} else {
+					containerLayout.addView(pluginView, 0);
+				}
 			}
 		}
 	}
@@ -321,7 +321,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	@SuppressLint("MissingPermission")
 	@Keep
 	private void vibrate(int durationMs) {
-		if (requestPermission("VIBRATE")) {
+		if (durationMs > 0 && requestPermission("VIBRATE")) {
 			Vibrator v = (Vibrator)getContext().getSystemService(Context.VIBRATOR_SERVICE);
 			if (v != null) {
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -335,22 +335,8 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	}
 
 	public void restart() {
-		// HACK:
-		//
-		// Currently it's very hard to properly deinitialize Godot on Android to restart the game
-		// from scratch. Therefore, we need to kill the whole app process and relaunch it.
-		//
-		// Restarting only the activity, wouldn't be enough unless it did proper cleanup (including
-		// releasing and reloading native libs or resetting their state somehow and clearing statics).
-		//
-		// Using instrumentation is a way of making the whole app process restart, because Android
-		// will kill any process of the same package which was already running.
-		//
-		final Activity activity = getActivity();
-		if (activity != null) {
-			Bundle args = new Bundle();
-			args.putParcelable("intent", mCurrentIntent);
-			activity.startInstrumentation(new ComponentName(activity, GodotInstrumentation.class), null, args);
+		if (godotHost != null) {
+			godotHost.onGodotRestartRequested(this);
 		}
 	}
 
@@ -471,7 +457,6 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 
 		final Activity activity = getActivity();
 		io = new GodotIO(activity);
-		io.unique_id = Secure.getString(activity.getContentResolver(), Secure.ANDROID_ID);
 		GodotLib.io = io;
 		netUtils = new GodotNetUtils(activity);
 		mSensorManager = (SensorManager)activity.getSystemService(Context.SENSOR_SERVICE);
@@ -657,8 +642,6 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 
 		super.onDestroy();
 
-		// TODO: This is a temp solution. The proper fix will involve tracking down and properly shutting down each
-		// native Godot components that is started in Godot#onVideoInit.
 		forceQuit();
 	}
 
@@ -842,7 +825,11 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	}
 
 	private void forceQuit() {
-		System.exit(0);
+		// TODO: This is a temp solution. The proper fix will involve tracking down and properly shutting down each
+		// native Godot components that is started in Godot#onVideoInit.
+		if (godotHost != null) {
+			godotHost.onGodotForceQuit(this);
+		}
 	}
 
 	private boolean obbIsCorrupted(String f, String main_pack_md5) {

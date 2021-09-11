@@ -115,6 +115,7 @@
 			<argument index="0" name="index" type="int" />
 			<argument index="1" name="name" type="StringName" />
 			<description>
+				Sets the name of the blend shape at this index.
 			</description>
 		</method>
 		<method name="surface_find_by_name" qualifiers="const">

@@ -30,19 +30,10 @@
 
 #include "collision_shape_3d.h"
 
-#include "core/math/quick_hull.h"
 #include "mesh_instance_3d.h"
 #include "physics_body_3d.h"
-#include "scene/resources/box_shape_3d.h"
-#include "scene/resources/capsule_shape_3d.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
-#include "scene/resources/ray_shape_3d.h"
-#include "scene/resources/sphere_shape_3d.h"
-#include "scene/resources/world_margin_shape_3d.h"
-#include "servers/rendering_server.h"
-
-//TODO: Implement CylinderShape and HeightMapShape?
 
 void CollisionShape3D::make_convex_from_siblings() {
 	Node *p = get_parent();

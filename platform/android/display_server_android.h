@@ -39,36 +39,7 @@ class RenderingDeviceVulkan;
 #endif
 
 class DisplayServerAndroid : public DisplayServer {
-public:
-	struct TouchPos {
-		int id = 0;
-		Point2 pos;
-	};
-
-	enum {
-		JOY_EVENT_BUTTON = 0,
-		JOY_EVENT_AXIS = 1,
-		JOY_EVENT_HAT = 2
-	};
-
-	struct JoypadEvent {
-		int device = 0;
-		int type = 0;
-		int index = 0;
-		bool pressed = false;
-		float value = 0;
-		int hat = 0;
-	};
-
-private:
 	String rendering_driver;
-
-	bool alt_mem = false;
-	bool shift_mem = false;
-	bool control_mem = false;
-	bool meta_mem = false;
-
-	MouseButton buttons_state = MOUSE_BUTTON_NONE;
 
 	// https://developer.android.com/reference/android/view/PointerIcon
 	// mapping between Godot's cursor shape to Android's'
@@ -96,10 +67,6 @@ private:
 
 	bool keep_screen_on;
 
-	Vector<TouchPos> touch;
-	Point2 hover_prev_pos; // needed to calculate the relative position on hover events
-	Point2 scroll_prev_pos; // needed to calculate the relative position on scroll events
-
 	CursorShape cursor_shape = CursorShape::CURSOR_ARROW;
 
 #if defined(VULKAN_ENABLED)
@@ -114,17 +81,9 @@ private:
 	Callable input_text_callback;
 	Callable rect_changed_callback;
 
-	void _window_callback(const Callable &p_callable, const Variant &p_arg) const;
+	void _window_callback(const Callable &p_callable, const Variant &p_arg, bool p_deferred = false) const;
 
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
-
-	void _set_key_modifier_state(Ref<InputEventWithModifiers> ev);
-
-	static MouseButton _button_index_from_mask(MouseButton button_mask);
-
-	static MouseButton _android_button_mask_to_godot_button_mask(int android_button_mask);
-
-	void _wheel_button_click(MouseButton event_buttons_mask, const Ref<InputEventMouseButton> &ev, MouseButton wheel_button, float factor);
 
 public:
 	static DisplayServerAndroid *get_singleton();
@@ -158,7 +117,7 @@ public:
 	virtual void window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_set_drop_files_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
 
-	void send_window_event(WindowEvent p_event) const;
+	void send_window_event(WindowEvent p_event, bool p_deferred = false) const;
 	void send_input_event(const Ref<InputEvent> &p_event) const;
 	void send_input_text(const String &p_text) const;
 
@@ -210,13 +169,6 @@ public:
 	void process_gravity(const Vector3 &p_gravity);
 	void process_magnetometer(const Vector3 &p_magnetometer);
 	void process_gyroscope(const Vector3 &p_gyroscope);
-	void process_touch(int p_event, int p_pointer, const Vector<TouchPos> &p_points);
-	void process_hover(int p_type, Point2 p_pos);
-	void process_mouse_event(int input_device, int event_action, int event_android_buttons_mask, Point2 event_pos, float event_vertical_factor = 0, float event_horizontal_factor = 0);
-	void process_double_tap(int event_android_button_mask, Point2 p_pos);
-	void process_scroll(Point2 p_pos);
-	void process_joy_event(JoypadEvent p_event);
-	void process_key_event(int p_keycode, int p_scancode, int p_unicode_char, bool p_pressed);
 
 	virtual void cursor_set_shape(CursorShape p_shape) override;
 	virtual CursorShape cursor_get_shape() const override;

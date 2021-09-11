@@ -228,6 +228,7 @@ void PopupMenu::_activate_submenu(int p_over) {
 	// Set autohide areas
 	PopupMenu *submenu_pum = Object::cast_to<PopupMenu>(submenu_popup);
 	if (submenu_pum) {
+		submenu_pum->take_mouse_focus();
 		// Make the position of the parent popup relative to submenu popup
 		this_rect.position = this_rect.position - submenu_pum->get_position();
 
@@ -251,7 +252,7 @@ void PopupMenu::_submenu_timeout() {
 	submenu_over = -1;
 }
 
-void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
+void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (p_event->is_action("ui_down") && p_event->is_pressed()) {
@@ -358,9 +359,10 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		int button_idx = b->get_button_index();
-		if (b->is_pressed() || (!b->is_pressed() && during_grabbed_click)) {
-			// Allow activating item by releasing the LMB or any that was down when the popup appeared.
-			// However, if button was not held when opening menu, do not allow release to activate item.
+		if (!b->is_pressed()) {
+			// Activate the item on release of either the left mouse button or
+			// any mouse button held down when the popup was opened.
+			// This allows for opening the popup and triggering an action in a single mouse click.
 			if (button_idx == MOUSE_BUTTON_LEFT || (initial_button_mask & (1 << (button_idx - 1)))) {
 				bool was_during_grabbed_click = during_grabbed_click;
 				during_grabbed_click = false;
@@ -1274,13 +1276,13 @@ int PopupMenu::get_item_count() const {
 }
 
 bool PopupMenu::activate_item_by_event(const Ref<InputEvent> &p_event, bool p_for_global_only) {
-	uint32_t code = 0;
+	Key code = KEY_NONE;
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid()) {
 		code = k->get_keycode();
-		if (code == 0) {
-			code = k->get_unicode();
+		if (code == KEY_NONE) {
+			code = (Key)k->get_unicode();
 		}
 		if (k->is_ctrl_pressed()) {
 			code |= KEY_MASK_CTRL;
@@ -1580,8 +1582,6 @@ void PopupMenu::take_mouse_focus() {
 }
 
 void PopupMenu::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &PopupMenu::_gui_input);
-
 	ClassDB::bind_method(D_METHOD("add_item", "label", "id", "accel"), &PopupMenu::add_item, DEFVAL(-1), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("add_icon_item", "texture", "label", "id", "accel"), &PopupMenu::add_icon_item, DEFVAL(-1), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("add_check_item", "label", "id", "accel"), &PopupMenu::add_check_item, DEFVAL(-1), DEFVAL(0));
@@ -1690,7 +1690,7 @@ PopupMenu::PopupMenu() {
 	// Margin Container
 	margin_container = memnew(MarginContainer);
 	margin_container->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
-	add_child(margin_container);
+	add_child(margin_container, false, INTERNAL_MODE_FRONT);
 	margin_container->connect("draw", callable_mp(this, &PopupMenu::_draw_background));
 
 	// Scroll Container
@@ -1704,22 +1704,22 @@ PopupMenu::PopupMenu() {
 	control->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	control->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	control->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	scroll_container->add_child(control);
+	scroll_container->add_child(control, false, INTERNAL_MODE_FRONT);
 	control->connect("draw", callable_mp(this, &PopupMenu::_draw_items));
 
-	connect("window_input", callable_mp(this, &PopupMenu::_gui_input));
+	connect("window_input", callable_mp(this, &PopupMenu::gui_input));
 
 	submenu_timer = memnew(Timer);
 	submenu_timer->set_wait_time(0.3);
 	submenu_timer->set_one_shot(true);
 	submenu_timer->connect("timeout", callable_mp(this, &PopupMenu::_submenu_timeout));
-	add_child(submenu_timer);
+	add_child(submenu_timer, false, INTERNAL_MODE_FRONT);
 
 	minimum_lifetime_timer = memnew(Timer);
 	minimum_lifetime_timer->set_wait_time(0.3);
 	minimum_lifetime_timer->set_one_shot(true);
 	minimum_lifetime_timer->connect("timeout", callable_mp(this, &PopupMenu::_minimum_lifetime_timeout));
-	add_child(minimum_lifetime_timer);
+	add_child(minimum_lifetime_timer, false, INTERNAL_MODE_FRONT);
 }
 
 PopupMenu::~PopupMenu() {

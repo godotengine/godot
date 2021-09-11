@@ -88,15 +88,15 @@ Shape2DSW::~Shape2DSW() {
 /*********************************************************/
 /*********************************************************/
 
-void LineShape2DSW::get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const {
+void WorldMarginShape2DSW::get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const {
 	r_amount = 0;
 }
 
-bool LineShape2DSW::contains_point(const Vector2 &p_point) const {
+bool WorldMarginShape2DSW::contains_point(const Vector2 &p_point) const {
 	return normal.dot(p_point) < d;
 }
 
-bool LineShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const {
+bool WorldMarginShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const {
 	Vector2 segment = p_begin - p_end;
 	real_t den = normal.dot(segment);
 
@@ -118,11 +118,11 @@ bool LineShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &p_e
 	return true;
 }
 
-real_t LineShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
+real_t WorldMarginShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
 	return 0;
 }
 
-void LineShape2DSW::set_data(const Variant &p_data) {
+void WorldMarginShape2DSW::set_data(const Variant &p_data) {
 	ERR_FAIL_COND(p_data.get_type() != Variant::ARRAY);
 	Array arr = p_data;
 	ERR_FAIL_COND(arr.size() != 2);
@@ -131,7 +131,7 @@ void LineShape2DSW::set_data(const Variant &p_data) {
 	configure(Rect2(Vector2(-1e4, -1e4), Vector2(1e4 * 2, 1e4 * 2)));
 }
 
-Variant LineShape2DSW::get_data() const {
+Variant WorldMarginShape2DSW::get_data() const {
 	Array arr;
 	arr.resize(2);
 	arr[0] = normal;
@@ -143,7 +143,7 @@ Variant LineShape2DSW::get_data() const {
 /*********************************************************/
 /*********************************************************/
 
-void RayShape2DSW::get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const {
+void SeparationRayShape2DSW::get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const {
 	r_amount = 1;
 
 	if (p_normal.y > 0) {
@@ -153,29 +153,29 @@ void RayShape2DSW::get_supports(const Vector2 &p_normal, Vector2 *r_supports, in
 	}
 }
 
-bool RayShape2DSW::contains_point(const Vector2 &p_point) const {
+bool SeparationRayShape2DSW::contains_point(const Vector2 &p_point) const {
 	return false;
 }
 
-bool RayShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const {
+bool SeparationRayShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const {
 	return false; //rays can't be intersected
 }
 
-real_t RayShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
+real_t SeparationRayShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
 	return 0; //rays are mass-less
 }
 
-void RayShape2DSW::set_data(const Variant &p_data) {
+void SeparationRayShape2DSW::set_data(const Variant &p_data) {
 	Dictionary d = p_data;
 	length = d["length"];
-	slips_on_slope = d["slips_on_slope"];
+	slide_on_slope = d["slide_on_slope"];
 	configure(Rect2(0, 0, 0.001, length));
 }
 
-Variant RayShape2DSW::get_data() const {
+Variant SeparationRayShape2DSW::get_data() const {
 	Dictionary d;
 	d["length"] = length;
-	d["slips_on_slope"] = slips_on_slope;
+	d["slide_on_slope"] = slide_on_slope;
 	return d;
 }
 
@@ -383,15 +383,15 @@ void CapsuleShape2DSW::get_supports(const Vector2 &p_normal, Vector2 *r_supports
 
 		r_amount = 2;
 		r_supports[0] = n;
-		r_supports[0].y += height * 0.5;
+		r_supports[0].y += height * 0.5 - radius;
 		r_supports[1] = n;
-		r_supports[1].y -= height * 0.5;
+		r_supports[1].y -= height * 0.5 - radius;
 
 	} else {
-		real_t h = (d > 0) ? height : -height;
+		real_t h = height * 0.5 - radius;
 
 		n *= radius;
-		n.y += h * 0.5;
+		n.y += (d > 0) ? h : -h;
 		r_amount = 1;
 		*r_supports = n;
 	}
@@ -400,7 +400,7 @@ void CapsuleShape2DSW::get_supports(const Vector2 &p_normal, Vector2 *r_supports
 bool CapsuleShape2DSW::contains_point(const Vector2 &p_point) const {
 	Vector2 p = p_point;
 	p.y = Math::abs(p.y);
-	p.y -= height * 0.5;
+	p.y -= height * 0.5 - radius;
 	if (p.y < 0) {
 		p.y = 0;
 	}
@@ -417,7 +417,7 @@ bool CapsuleShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &
 	for (int i = 0; i < 2; i++) {
 		Vector2 begin = p_begin;
 		Vector2 end = p_end;
-		real_t ofs = (i == 0) ? -height * 0.5 : height * 0.5;
+		real_t ofs = (i == 0) ? -height * 0.5 + radius : height * 0.5 - radius;
 		begin.y += ofs;
 		end.y += ofs;
 
@@ -454,7 +454,7 @@ bool CapsuleShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &
 	}
 
 	Vector2 rpos, rnorm;
-	if (Rect2(Point2(-radius, -height * 0.5), Size2(radius * 2.0, height)).intersects_segment(p_begin, p_end, &rpos, &rnorm)) {
+	if (Rect2(Point2(-radius, -height * 0.5 + radius), Size2(radius * 2.0, height - radius * 2)).intersects_segment(p_begin, p_end, &rpos, &rnorm)) {
 		real_t pd = n.dot(rpos);
 		if (pd < d) {
 			r_point = rpos;
@@ -469,7 +469,7 @@ bool CapsuleShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &
 }
 
 real_t CapsuleShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
-	Vector2 he2 = Vector2(radius * 2, height + radius * 2) * p_scale;
+	Vector2 he2 = Vector2(radius * 2, height) * p_scale;
 	return p_mass * he2.dot(he2) / 12.0;
 }
 
@@ -487,7 +487,7 @@ void CapsuleShape2DSW::set_data(const Variant &p_data) {
 		height = p.y;
 	}
 
-	Point2 he(radius, height * 0.5 + radius);
+	Point2 he(radius, height * 0.5);
 	configure(Rect2(-he, he * 2));
 }
 
@@ -570,14 +570,7 @@ bool ConvexPolygonShape2DSW::intersect_segment(const Vector2 &p_begin, const Vec
 		}
 	}
 
-	if (inters) {
-		if (n.dot(r_normal) > 0) {
-			r_normal = -r_normal;
-		}
-	}
-
-	//return get_aabb().intersects_segment(p_begin,p_end,&r_point,&r_normal);
-	return inters; //todo
+	return inters;
 }
 
 real_t ConvexPolygonShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
@@ -928,7 +921,7 @@ Variant ConcavePolygonShape2DSW::get_data() const {
 	return rsegments;
 }
 
-void ConcavePolygonShape2DSW::cull(const Rect2 &p_local_aabb, Callback p_callback, void *p_userdata) const {
+void ConcavePolygonShape2DSW::cull(const Rect2 &p_local_aabb, QueryCallback p_callback, void *p_userdata) const {
 	uint32_t *stack = (uint32_t *)alloca(sizeof(int) * bvh_depth);
 
 	enum {
@@ -976,7 +969,9 @@ void ConcavePolygonShape2DSW::cull(const Rect2 &p_local_aabb, Callback p_callbac
 
 						SegmentShape2DSW ss(a, b, (b - a).orthogonal().normalized());
 
-						p_callback(p_userdata, &ss);
+						if (p_callback(p_userdata, &ss)) {
+							return;
+						}
 						stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
 
 					} else {

@@ -35,6 +35,7 @@
 #include "editor/editor_plugin.h"
 #include "editor/editor_scale.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
+#include "scene/3d/camera_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/3d/world_environment.h"
@@ -42,7 +43,6 @@
 #include "scene/resources/environment.h"
 #include "scene/resources/sky_material.h"
 
-class Camera3D;
 class Node3DEditor;
 class Node3DEditorViewport;
 class SubViewportContainer;
@@ -74,9 +74,8 @@ class ViewportRotationControl : public Control {
 	const float AXIS_CIRCLE_RADIUS = 8.0f * EDSCALE;
 
 protected:
-	static void _bind_methods();
 	void _notification(int p_what);
-	void _gui_input(Ref<InputEvent> p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _draw();
 	void _draw_axis(const Axis2D &p_axis);
 	void _get_sorted_axis(Vector<Axis2D> &r_axis);
@@ -143,6 +142,16 @@ class Node3DEditorViewport : public Control {
 		VIEW_MAX
 	};
 
+	enum ViewType {
+		VIEW_TYPE_USER,
+		VIEW_TYPE_TOP,
+		VIEW_TYPE_BOTTOM,
+		VIEW_TYPE_LEFT,
+		VIEW_TYPE_RIGHT,
+		VIEW_TYPE_FRONT,
+		VIEW_TYPE_REAR,
+	};
+
 public:
 	enum {
 		GIZMO_BASE_LAYER = 27,
@@ -166,13 +175,13 @@ public:
 	};
 
 private:
-	float cpu_time_history[FRAME_TIME_HISTORY];
+	double cpu_time_history[FRAME_TIME_HISTORY];
 	int cpu_time_history_index;
-	float gpu_time_history[FRAME_TIME_HISTORY];
+	double gpu_time_history[FRAME_TIME_HISTORY];
 	int gpu_time_history_index;
 
 	int index;
-	String name;
+	ViewType view_type;
 	void _menu_option(int p_option);
 	void _set_auto_orthogonal();
 	Node3D *preview_node;
@@ -336,7 +345,7 @@ private:
 
 	String last_message;
 	String message;
-	float message_time;
+	double message_time;
 
 	void set_message(String p_message, float p_time = 5);
 
@@ -460,11 +469,10 @@ private:
 	Vector2 drag_begin_pos;
 	Vector2 drag_begin_ratio;
 
-	void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods();
 
 public:
 	void set_view(View p_view);
@@ -521,6 +529,9 @@ private:
 	bool grid_visible[3]; //currently visible
 	bool grid_enable[3]; //should be always visible if true
 	bool grid_enabled;
+	bool grid_init_draw = false;
+	Camera3D::Projection grid_camera_last_update_perspective = Camera3D::PROJECTION_PERSPECTIVE;
+	Vector3 grid_camera_last_update_position = Vector3();
 
 	Ref<ArrayMesh> move_gizmo[3], move_plane_gizmo[3], rotate_gizmo[4], scale_gizmo[3], scale_plane_gizmo[3];
 	Ref<StandardMaterial3D> gizmo_color[3];
@@ -622,7 +633,6 @@ private:
 	void _menu_gizmo_toggled(int p_option);
 	void _update_camera_override_button(bool p_game_running);
 	void _update_camera_override_viewport(Object *p_viewport);
-
 	HBoxContainer *hbc_menu;
 	// Used for secondary menu items which are displayed depending on the currently selected node
 	// (such as MeshInstance's "Mesh" menu).
@@ -732,7 +742,7 @@ private:
 protected:
 	void _notification(int p_what);
 	//void _gui_input(InputEvent p_event);
-	void _unhandled_key_input(Ref<InputEvent> p_event);
+	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 
 	static void _bind_methods();
 

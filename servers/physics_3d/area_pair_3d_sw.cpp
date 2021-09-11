@@ -33,7 +33,7 @@
 
 bool AreaPair3DSW::setup(real_t p_step) {
 	bool result = false;
-	if (area->interacts_with(body) && CollisionSolver3DSW::solve_static(body->get_shape(body_shape), body->get_transform() * body->get_shape_transform(body_shape), area->get_shape(area_shape), area->get_transform() * area->get_shape_transform(area_shape), nullptr, this)) {
+	if (area->collides_with(body) && CollisionSolver3DSW::solve_static(body->get_shape(body_shape), body->get_transform() * body->get_shape_transform(body_shape), area->get_shape(area_shape), area->get_transform() * area->get_shape_transform(area_shape), nullptr, this)) {
 		result = true;
 	}
 
@@ -109,45 +109,50 @@ AreaPair3DSW::~AreaPair3DSW() {
 ////////////////////////////////////////////////////
 
 bool Area2Pair3DSW::setup(real_t p_step) {
-	bool result = false;
-	if (area_a->interacts_with(area_b) && CollisionSolver3DSW::solve_static(area_a->get_shape(shape_a), area_a->get_transform() * area_a->get_shape_transform(shape_a), area_b->get_shape(shape_b), area_b->get_transform() * area_b->get_shape_transform(shape_b), nullptr, this)) {
-		result = true;
+	bool result_a = area_a->collides_with(area_b);
+	bool result_b = area_b->collides_with(area_a);
+	if ((result_a || result_b) && !CollisionSolver3DSW::solve_static(area_a->get_shape(shape_a), area_a->get_transform() * area_a->get_shape_transform(shape_a), area_b->get_shape(shape_b), area_b->get_transform() * area_b->get_shape_transform(shape_b), nullptr, this)) {
+		result_a = false;
+		result_b = false;
 	}
 
-	process_collision = false;
-	if (result != colliding) {
-		if (area_b->has_area_monitor_callback() && area_a->is_monitorable()) {
-			process_collision = true;
-		} else if (area_a->has_area_monitor_callback() && area_b->is_monitorable()) {
+	bool process_collision = false;
+
+	process_collision_a = false;
+	if (result_a != colliding_a) {
+		if (area_a->has_area_monitor_callback() && area_b->is_monitorable()) {
+			process_collision_a = true;
 			process_collision = true;
 		}
+		colliding_a = result_a;
+	}
 
-		colliding = result;
+	process_collision_b = false;
+	if (result_b != colliding_b) {
+		if (area_b->has_area_monitor_callback() && area_a->is_monitorable()) {
+			process_collision_b = true;
+			process_collision = true;
+		}
+		colliding_b = result_b;
 	}
 
 	return process_collision;
 }
 
 bool Area2Pair3DSW::pre_solve(real_t p_step) {
-	if (!process_collision) {
-		return false;
+	if (process_collision_a) {
+		if (colliding_a) {
+			area_a->add_area_to_query(area_b, shape_b, shape_a);
+		} else {
+			area_a->remove_area_from_query(area_b, shape_b, shape_a);
+		}
 	}
 
-	if (colliding) {
-		if (area_b->has_area_monitor_callback() && area_a->is_monitorable()) {
+	if (process_collision_b) {
+		if (colliding_b) {
 			area_b->add_area_to_query(area_a, shape_a, shape_b);
-		}
-
-		if (area_a->has_area_monitor_callback() && area_b->is_monitorable()) {
-			area_a->add_area_to_query(area_b, shape_b, shape_a);
-		}
-	} else {
-		if (area_b->has_area_monitor_callback() && area_a->is_monitorable()) {
+		} else {
 			area_b->remove_area_from_query(area_a, shape_a, shape_b);
-		}
-
-		if (area_a->has_area_monitor_callback() && area_b->is_monitorable()) {
-			area_a->remove_area_from_query(area_b, shape_b, shape_a);
 		}
 	}
 
@@ -168,16 +173,100 @@ Area2Pair3DSW::Area2Pair3DSW(Area3DSW *p_area_a, int p_shape_a, Area3DSW *p_area
 }
 
 Area2Pair3DSW::~Area2Pair3DSW() {
-	if (colliding) {
-		if (area_b->has_area_monitor_callback()) {
-			area_b->remove_area_from_query(area_a, shape_a, shape_b);
-		}
-
+	if (colliding_a) {
 		if (area_a->has_area_monitor_callback()) {
 			area_a->remove_area_from_query(area_b, shape_b, shape_a);
 		}
 	}
 
+	if (colliding_b) {
+		if (area_b->has_area_monitor_callback()) {
+			area_b->remove_area_from_query(area_a, shape_a, shape_b);
+		}
+	}
+
 	area_a->remove_constraint(this);
 	area_b->remove_constraint(this);
+}
+
+////////////////////////////////////////////////////
+
+bool AreaSoftBodyPair3DSW::setup(real_t p_step) {
+	bool result = false;
+	if (
+			area->collides_with(soft_body) &&
+			CollisionSolver3DSW::solve_static(
+					soft_body->get_shape(soft_body_shape),
+					soft_body->get_transform() * soft_body->get_shape_transform(soft_body_shape),
+					area->get_shape(area_shape),
+					area->get_transform() * area->get_shape_transform(area_shape),
+					nullptr,
+					this)) {
+		result = true;
+	}
+
+	process_collision = false;
+	if (result != colliding) {
+		if (area->get_space_override_mode() != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
+			process_collision = true;
+		} else if (area->has_monitor_callback()) {
+			process_collision = true;
+		}
+
+		colliding = result;
+	}
+
+	return process_collision;
+}
+
+bool AreaSoftBodyPair3DSW::pre_solve(real_t p_step) {
+	if (!process_collision) {
+		return false;
+	}
+
+	if (colliding) {
+		if (area->get_space_override_mode() != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
+			soft_body->add_area(area);
+		}
+
+		if (area->has_monitor_callback()) {
+			area->add_soft_body_to_query(soft_body, soft_body_shape, area_shape);
+		}
+	} else {
+		if (area->get_space_override_mode() != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
+			soft_body->remove_area(area);
+		}
+
+		if (area->has_monitor_callback()) {
+			area->remove_soft_body_from_query(soft_body, soft_body_shape, area_shape);
+		}
+	}
+
+	return false; // Never do any post solving.
+}
+
+void AreaSoftBodyPair3DSW::solve(real_t p_step) {
+	// Nothing to do.
+}
+
+AreaSoftBodyPair3DSW::AreaSoftBodyPair3DSW(SoftBody3DSW *p_soft_body, int p_soft_body_shape, Area3DSW *p_area, int p_area_shape) {
+	soft_body = p_soft_body;
+	area = p_area;
+	soft_body_shape = p_soft_body_shape;
+	area_shape = p_area_shape;
+	soft_body->add_constraint(this);
+	area->add_constraint(this);
+}
+
+AreaSoftBodyPair3DSW::~AreaSoftBodyPair3DSW() {
+	if (colliding) {
+		if (area->get_space_override_mode() != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
+			soft_body->remove_area(area);
+		}
+		if (area->has_monitor_callback()) {
+			area->remove_soft_body_from_query(soft_body, soft_body_shape, area_shape);
+		}
+	}
+	soft_body->remove_constraint(this);
+	area->remove_constraint(this);
 }

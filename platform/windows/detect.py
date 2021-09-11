@@ -278,10 +278,8 @@ def configure_msvc(env, manual_msvc_config):
     ]
 
     env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED"])
-    if not env["builtin_vulkan"]:
+    if not env["use_volk"]:
         LIBS += ["vulkan"]
-    else:
-        LIBS += ["cfgmgr32"]
 
     # env.AppendUnique(CPPDEFINES = ['OPENGL_ENABLED'])
     LIBS += ["opengl32"]
@@ -323,7 +321,7 @@ def configure_msvc(env, manual_msvc_config):
 
 def configure_mingw(env):
     # Workaround for MinGW. See:
-    # http://www.scons.org/wiki/LongCmdLinesOnWin32
+    # https://www.scons.org/wiki/LongCmdLinesOnWin32
     env.use_windows_spawn_fix()
 
     ## Build type
@@ -456,10 +454,8 @@ def configure_mingw(env):
     )
 
     env.Append(CPPDEFINES=["VULKAN_ENABLED"])
-    if not env["builtin_vulkan"]:
+    if not env["use_volk"]:
         env.Append(LIBS=["vulkan"])
-    else:
-        env.Append(LIBS=["cfgmgr32"])
 
     ## TODO !!! Re-enable when OpenGLES Rendering Device is implemented !!!
     # env.Append(CPPDEFINES=['OPENGL_ENABLED'])

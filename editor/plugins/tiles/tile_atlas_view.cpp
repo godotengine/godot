@@ -41,7 +41,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 
-void TileAtlasView::_gui_input(const Ref<InputEvent> &p_event) {
+void TileAtlasView::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
 		drag_type = DRAG_TYPE_NONE;
@@ -548,8 +548,6 @@ void TileAtlasView::_notification(int p_what) {
 }
 
 void TileAtlasView::_bind_methods() {
-	ClassDB::bind_method("_gui_input", &TileAtlasView::_gui_input);
-
 	ADD_SIGNAL(MethodInfo("transform_changed", PropertyInfo(Variant::FLOAT, "zoom"), PropertyInfo(Variant::VECTOR2, "scroll")));
 }
 
@@ -582,7 +580,7 @@ TileAtlasView::TileAtlasView() {
 	center_container = memnew(CenterContainer);
 	center_container->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	center_container->set_anchors_preset(Control::PRESET_CENTER);
-	center_container->connect("gui_input", callable_mp(this, &TileAtlasView::_gui_input));
+	center_container->connect("gui_input", callable_mp(this, &TileAtlasView::gui_input));
 	panel->add_child(center_container);
 
 	missing_source_label = memnew(Label);

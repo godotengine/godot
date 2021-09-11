@@ -255,5 +255,5 @@ void PopupPanel::_notification(int p_what) {
 
 PopupPanel::PopupPanel() {
 	panel = memnew(Panel);
-	add_child(panel);
+	add_child(panel, false, INTERNAL_MODE_FRONT);
 }

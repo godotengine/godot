@@ -60,13 +60,16 @@ void GPUParticles2DEditorPlugin::_file_selected(const String &p_file) {
 void GPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 	switch (p_idx) {
 		case MENU_GENERATE_VISIBILITY_RECT: {
-			float gen_time = particles->get_lifetime();
-			if (gen_time < 1.0) {
-				generate_seconds->set_value(1.0);
+			// Add one second to the default generation lifetime, since the progress is updated every second.
+			generate_seconds->set_value(MAX(1.0, trunc(particles->get_lifetime()) + 1.0));
+
+			if (generate_seconds->get_value() >= 11.0 + CMP_EPSILON) {
+				// Only pop up the time dialog if the particle's lifetime is long enough to warrant shortening it.
+				generate_visibility_rect->popup_centered();
 			} else {
-				generate_seconds->set_value(trunc(gen_time) + 1.0);
+				// Generate the visibility rect immediately.
+				_generate_visibility_rect();
 			}
-			generate_visibility_rect->popup_centered();
 		} break;
 		case MENU_LOAD_EMISSION_MASK: {
 			file->popup_file_dialog();
@@ -100,11 +103,11 @@ void GPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 }
 
 void GPUParticles2DEditorPlugin::_generate_visibility_rect() {
-	float time = generate_seconds->get_value();
+	double time = generate_seconds->get_value();
 
 	float running = 0.0;
 
-	EditorProgress ep("gen_vrect", TTR("Generating Visibility Rect"), int(time));
+	EditorProgress ep("gen_vrect", TTR("Generating Visibility Rect (Waiting for Particle Simulation)"), int(time));
 
 	bool was_emitting = particles->is_emitting();
 	if (!was_emitting) {

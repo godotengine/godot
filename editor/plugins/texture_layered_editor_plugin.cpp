@@ -34,7 +34,7 @@
 #include "core/io/resource_loader.h"
 #include "editor/editor_settings.h"
 
-void TextureLayeredEditor::_gui_input(Ref<InputEvent> p_event) {
+void TextureLayeredEditor::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventMouseMotion> mm = p_event;
@@ -106,6 +106,8 @@ void TextureLayeredEditor::_update_material() {
 void TextureLayeredEditor::_make_shaders() {
 	shaders[0].instantiate();
 	shaders[0]->set_code(R"(
+// TextureLayeredEditor preview shader (2D array).
+
 shader_type canvas_item;
 
 uniform sampler2DArray tex;
@@ -118,6 +120,8 @@ void fragment() {
 
 	shaders[1].instantiate();
 	shaders[1]->set_code(R"(
+// TextureLayeredEditor preview shader (cubemap).
+
 shader_type canvas_item;
 
 uniform samplerCube tex;
@@ -132,6 +136,8 @@ void fragment() {
 
 	shaders[2].instantiate();
 	shaders[2]->set_code(R"(
+// TextureLayeredEditor preview shader (cubemap array).
+
 shader_type canvas_item;
 
 uniform samplerCubeArray tex;
@@ -214,7 +220,6 @@ void TextureLayeredEditor::edit(Ref<TextureLayered> p_texture) {
 }
 
 void TextureLayeredEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &TextureLayeredEditor::_gui_input);
 	ClassDB::bind_method(D_METHOD("_layer_changed"), &TextureLayeredEditor::_layer_changed);
 }
 

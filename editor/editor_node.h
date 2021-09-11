@@ -32,6 +32,7 @@
 #define EDITOR_NODE_H
 
 #include "core/templates/safe_refcount.h"
+#include "editor/editor_command_palette.h"
 #include "editor/editor_data.h"
 #include "editor/editor_export.h"
 #include "editor/editor_folding.h"
@@ -55,6 +56,7 @@ class Control;
 class DependencyEditor;
 class DependencyErrorDialog;
 class EditorAbout;
+class EditorCommandPalette;
 class EditorExport;
 class EditorFeatureProfileManager;
 class EditorFileServer;
@@ -90,6 +92,8 @@ class VSplitContainer;
 class Window;
 class SubViewport;
 class SceneImportSettings;
+class EditorExtensionManager;
+class DynamicFontImportSettings;
 
 class EditorNode : public Node {
 	GDCLASS(EditorNode, Node);
@@ -192,6 +196,7 @@ private:
 		EDITOR_OPEN_SCREENSHOT,
 
 		HELP_SEARCH,
+		HELP_COMMAND_PALETTE,
 		HELP_DOCS,
 		HELP_QA,
 		HELP_REPORT_A_BUG,
@@ -342,6 +347,7 @@ private:
 	CenterContainer *tabs_center;
 	EditorQuickOpen *quick_open;
 	EditorQuickOpen *quick_run;
+	EditorCommandPalette *command_palette;
 
 	HBoxContainer *main_editor_button_vb;
 	Vector<Button *> main_editor_buttons;
@@ -417,6 +423,7 @@ private:
 	EditorResourcePreview *resource_preview;
 	EditorFolding editor_folding;
 
+	DynamicFontImportSettings *fontdata_import_settings;
 	SceneImportSettings *scene_import_settings;
 	struct BottomPanelItem {
 		String name;
@@ -505,6 +512,7 @@ private:
 
 	void _quick_opened();
 	void _quick_run();
+	void _open_command_palette();
 
 	void _run(bool p_current = false, const String &p_custom = "");
 	void _run_native(const Ref<EditorExportPreset> &p_preset);
@@ -525,7 +533,7 @@ private:
 
 	bool convert_old;
 
-	void _unhandled_input(const Ref<InputEvent> &p_event);
+	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
 
 	static void _load_error_notify(void *p_ud, const String &p_text);
 
@@ -669,6 +677,9 @@ private:
 	Ref<ImageTexture> _load_custom_class_icon(const String &p_path) const;
 
 	void _pick_main_scene_custom_action(const String &p_custom_action_name);
+
+	bool immediate_dialog_confirmed = false;
+	void _immediate_dialog_confirmed();
 
 protected:
 	void _notification(int p_what);
@@ -887,12 +898,15 @@ public:
 
 	bool ensure_main_scene(bool p_from_native);
 
+	Error run_play_native(int p_idx, int p_platform);
 	void run_play();
 	void run_play_current();
 	void run_play_custom(const String &p_custom);
 	void run_stop();
 	bool is_run_playing() const;
 	String get_run_playing_scene() const;
+
+	static bool immediate_confirmation_dialog(const String &p_text, const String &p_ok_text = TTR("Ok"), const String &p_cancel_text = TTR("Cancel"));
 };
 
 struct EditorProgress {

@@ -11,46 +11,46 @@
 		<link title="AnimationTree">https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
-		<method name="_get_caption" qualifiers="virtual">
+		<method name="_get_caption" qualifiers="virtual const">
 			<return type="String" />
 			<description>
 				Gets the text caption for this node (used by some editors).
 			</description>
 		</method>
-		<method name="_get_child_by_name" qualifiers="virtual">
-			<return type="Object" />
-			<argument index="0" name="name" type="String" />
+		<method name="_get_child_by_name" qualifiers="virtual const">
+			<return type="AnimationNode" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 				Gets a child node by index (used by editors inheriting from [AnimationRootNode]).
 			</description>
 		</method>
-		<method name="_get_child_nodes" qualifiers="virtual">
+		<method name="_get_child_nodes" qualifiers="virtual const">
 			<return type="Dictionary" />
 			<description>
 				Gets all children nodes in order as a [code]name: node[/code] dictionary. Only useful when inheriting [AnimationRootNode].
 			</description>
 		</method>
-		<method name="_get_parameter_default_value" qualifiers="virtual">
+		<method name="_get_parameter_default_value" qualifiers="virtual const">
 			<return type="Variant" />
-			<argument index="0" name="name" type="StringName" />
+			<argument index="0" name="parameter" type="StringName" />
 			<description>
 				Gets the default value of a parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees.
 			</description>
 		</method>
-		<method name="_get_parameter_list" qualifiers="virtual">
+		<method name="_get_parameter_list" qualifiers="virtual const">
 			<return type="Array" />
 			<description>
 				Gets the property information for parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees. Format is similar to [method Object.get_property_list].
 			</description>
 		</method>
-		<method name="_has_filter" qualifiers="virtual">
+		<method name="_has_filter" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] whether you want the blend tree editor to display filter editing on this node.
 			</description>
 		</method>
-		<method name="_process" qualifiers="virtual">
-			<return type="void" />
+		<method name="_process" qualifiers="virtual const">
+			<return type="float" />
 			<argument index="0" name="time" type="float" />
 			<argument index="1" name="seek" type="bool" />
 			<description>

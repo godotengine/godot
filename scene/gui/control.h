@@ -31,10 +31,10 @@
 #ifndef CONTROL_H
 #define CONTROL_H
 
+#include "core/input/shortcut.h"
 #include "core/math/transform_2d.h"
 #include "core/object/gdvirtual.gen.inc"
 #include "core/templates/rid.h"
-#include "scene/gui/shortcut.h"
 #include "scene/main/canvas_item.h"
 #include "scene/main/node.h"
 #include "scene/main/timer.h"
@@ -220,6 +220,7 @@ private:
 		NodePath focus_next;
 		NodePath focus_prev;
 
+		bool bulk_theme_override = false;
 		HashMap<StringName, Ref<Texture2D>> icon_override;
 		HashMap<StringName, Ref<StyleBox>> style_override;
 		HashMap<StringName, Ref<Font>> font_override;
@@ -228,6 +229,9 @@ private:
 		HashMap<StringName, int> constant_override;
 
 	} data;
+
+	static constexpr unsigned properties_managed_by_container_count = 11;
+	static String properties_managed_by_container[properties_managed_by_container_count];
 
 	// used internally
 	Control *_find_control_at_pos(CanvasItem *p_node, const Point2 &p_pos, const Transform2D &p_xform, Transform2D &r_inv_xform);
@@ -241,6 +245,7 @@ private:
 	void _set_size(const Size2 &p_size);
 
 	void _theme_changed();
+	void _notify_theme_changed();
 
 	void _update_minimum_size();
 
@@ -261,6 +266,8 @@ private:
 
 	friend class Viewport;
 
+	void _call_gui_input(const Ref<InputEvent> &p_event);
+
 	void _update_minimum_size_cache();
 	friend class Window;
 	static void _propagate_theme_changed(Node *p_at, Control *p_owner, Window *p_owner_window, bool p_assign = true);
@@ -270,7 +277,6 @@ private:
 	static bool has_theme_item_in_types(Control *p_theme_owner, Window *p_theme_owner_window, Theme::DataType p_data_type, const StringName &p_name, List<StringName> p_theme_types);
 	_FORCE_INLINE_ void _get_theme_type_dependencies(const StringName &p_theme_type, List<StringName> *p_list) const;
 
-	GDVIRTUAL1RC(bool, _has_point, Vector2)
 protected:
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
@@ -288,6 +294,17 @@ protected:
 	virtual void _validate_property(PropertyInfo &property) const override;
 
 	//bind helpers
+
+	GDVIRTUAL1RC(bool, _has_point, Vector2)
+	GDVIRTUAL2RC(Array, _structured_text_parser, Array, String)
+	GDVIRTUAL0RC(Vector2, _get_minimum_size)
+
+	GDVIRTUAL1RC(Variant, _get_drag_data, Vector2)
+	GDVIRTUAL2RC(bool, _can_drop_data, Vector2, Variant)
+	GDVIRTUAL2(_drop_data, Vector2, Variant)
+	GDVIRTUAL1RC(Object *, _make_custom_tooltip, String)
+
+	GDVIRTUAL1(_gui_input, Ref<InputEvent>)
 
 public:
 	enum {
@@ -330,6 +347,8 @@ public:
 
 	virtual Size2 _edit_get_minimum_size() const override;
 #endif
+
+	virtual void gui_input(const Ref<InputEvent> &p_event);
 
 	void accept_event();
 
@@ -451,6 +470,9 @@ public:
 	MouseFilter get_mouse_filter() const;
 
 	/* SKINNING */
+
+	void begin_bulk_theme_override();
+	void end_bulk_theme_override();
 
 	void add_theme_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon);
 	void add_theme_style_override(const StringName &p_name, const Ref<StyleBox> &p_style);

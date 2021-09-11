@@ -105,7 +105,7 @@ class FindReplaceBar : public HBoxContainer {
 
 protected:
 	void _notification(int p_what);
-	void _unhandled_input(const Ref<InputEvent> &p_event);
+	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
 
 	bool _search(uint32_t p_flags, int p_from_line, int p_from_col);
 
@@ -168,13 +168,12 @@ class CodeTextEditor : public VBoxContainer {
 	void _apply_settings_change();
 
 	void _update_text_editor_theme();
-	void _update_font();
 	void _complete_request();
 	Ref<Texture2D> _get_completion_icon(const ScriptCodeCompletionOption &p_option);
 	void _font_resize_timeout();
 	bool _add_font_size(int p_delta);
 
-	void _input(const Ref<InputEvent> &event);
+	virtual void input(const Ref<InputEvent> &event) override;
 	void _text_editor_gui_input(const Ref<InputEvent> &p_event);
 	void _zoom_in();
 	void _zoom_out();

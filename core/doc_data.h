@@ -67,6 +67,7 @@ public:
 		String qualifiers;
 		String description;
 		Vector<ArgumentDoc> arguments;
+		Vector<int> errors_returned;
 		bool operator<(const MethodDoc &p_method) const {
 			if (name == p_method.name) {
 				// Must be a constructor since there is no overloading.

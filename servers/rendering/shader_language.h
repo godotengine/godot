@@ -409,6 +409,7 @@ public:
 		StringName name;
 		StringName struct_name;
 		bool is_const = false;
+		bool is_local = false;
 
 		virtual DataType get_datatype() const override { return datatype_cache; }
 		virtual String get_datatype_name() const override { return String(struct_name); }
@@ -444,6 +445,7 @@ public:
 		Node *assign_expression = nullptr;
 		bool is_const = false;
 		int array_size = 0;
+		bool is_local = false;
 
 		virtual DataType get_datatype() const override { return datatype_cache; }
 		virtual String get_datatype_name() const override { return String(struct_name); }
@@ -772,6 +774,7 @@ public:
 	static DataType get_scalar_type(DataType p_type);
 	static int get_cardinality(DataType p_type);
 	static bool is_scalar_type(DataType p_type);
+	static bool is_float_type(DataType p_type);
 	static bool is_sampler_type(DataType p_type);
 	static Variant constant_value_to_variant(const Vector<ShaderLanguage::ConstantNode::Value> &p_value, DataType p_type, ShaderLanguage::ShaderNode::Uniform::Hint p_hint = ShaderLanguage::ShaderNode::Uniform::HINT_NONE);
 	static PropertyInfo uniform_to_property_info(const ShaderNode::Uniform &p_uniform);
@@ -939,6 +942,7 @@ private:
 		const char *name;
 		DataType rettype;
 		const DataType args[MAX_ARGS];
+		const char *args_names[MAX_ARGS];
 		SubClassTag tag;
 		bool high_end;
 	};

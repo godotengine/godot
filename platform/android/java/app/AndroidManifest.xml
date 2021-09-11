@@ -21,6 +21,8 @@
         android:allowBackup="false"
         android:icon="@mipmap/icon"
         android:isGame="true"
+        android:hasFragileUserData="false"
+        android:requestLegacyExternalStorage="false"
         tools:ignore="GoogleAppIndexingWarning" >
 
         <!-- Records the version of the Godot editor used for building -->
@@ -47,6 +49,10 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+
+                <!-- Enable access to OpenXR on Oculus mobile devices, no-op on other Android
+                platforms. -->
+                <category android:name="com.oculus.intent.category.VR" />
             </intent-filter>
         </activity>
 

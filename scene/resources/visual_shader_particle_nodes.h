@@ -181,8 +181,8 @@ VARIANT_ENUM_CAST(VisualShaderNodeParticleRandomness::OpType)
 
 // Process nodes
 
-class VisualShaderNodeParticleAccelerator : public VisualShaderNodeOutput {
-	GDCLASS(VisualShaderNodeParticleAccelerator, VisualShaderNodeOutput);
+class VisualShaderNodeParticleAccelerator : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeParticleAccelerator, VisualShaderNode);
 
 public:
 	enum Mode {

@@ -35,8 +35,8 @@
 #include "core/io/resource_loader.h"
 #include "core/object/ref_counted.h"
 
-class NativeExtension : public RefCounted {
-	GDCLASS(NativeExtension, RefCounted)
+class NativeExtension : public Resource {
+	GDCLASS(NativeExtension, Resource)
 
 	void *library = nullptr; // pointer if valid,
 
@@ -48,7 +48,7 @@ class NativeExtension : public RefCounted {
 
 	static void _register_extension_class(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_parent_class_name, const GDNativeExtensionClassCreationInfo *p_extension_funcs);
 	static void _register_extension_class_method(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const GDNativeExtensionClassMethodInfo *p_method_info);
-	static void _register_extension_class_integer_constant(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_enum_name, const char *p_constant_name, uint32_t p_constant_value);
+	static void _register_extension_class_integer_constant(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_enum_name, const char *p_constant_name, GDNativeInt p_constant_value);
 	static void _register_extension_class_property(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const GDNativePropertyInfo *p_info, const char *p_setter, const char *p_getter);
 	static void _register_extension_class_signal(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_signal_name, const GDNativePropertyInfo *p_argument_info, GDNativeInt p_argument_count);
 	static void _unregister_extension_class(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name);
@@ -60,6 +60,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	static const char *EXTENSION_LIST_CONFIG_FILE;
+
 	Error open_library(const String &p_path, const String &p_entry_symbol);
 	void close_library();
 

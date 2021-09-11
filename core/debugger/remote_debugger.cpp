@@ -50,7 +50,7 @@ void RemoteDebugger::_bind_profiler(const String &p_name, T *p_prof) {
 			[](void *p_user, const Array &p_data) {
 				((T *)p_user)->add(p_data);
 			},
-			[](void *p_user, float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) {
+			[](void *p_user, double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
 				((T *)p_user)->tick(p_frame_time, p_idle_time, p_physics_time, p_physics_frame_time);
 			});
 	EngineDebugger::register_profiler(p_name, prof);
@@ -164,7 +164,7 @@ public:
 		}
 	}
 
-	void tick(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) {
+	void tick(double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
 		uint64_t pt = OS::get_singleton()->get_ticks_msec();
 		if (pt - last_bandwidth_time > 200) {
 			last_bandwidth_time = pt;
@@ -278,10 +278,10 @@ struct RemoteDebugger::ServersProfiler {
 	Map<StringName, ServerInfo> server_data;
 	ScriptsProfiler scripts_profiler;
 
-	float frame_time = 0;
-	float idle_time = 0;
-	float physics_time = 0;
-	float physics_frame_time = 0;
+	double frame_time = 0;
+	double idle_time = 0;
+	double physics_time = 0;
+	double physics_frame_time = 0;
 
 	void toggle(bool p_enable, const Array &p_opts) {
 		skip_profile_frame = false;
@@ -308,7 +308,7 @@ struct RemoteDebugger::ServersProfiler {
 		srv.functions.push_back(fi);
 	}
 
-	void tick(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) {
+	void tick(double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
 		frame_time = p_frame_time;
 		idle_time = p_idle_time;
 		physics_time = p_physics_time;
@@ -358,7 +358,7 @@ struct RemoteDebugger::VisualProfiler {
 
 	void add(const Array &p_data) {}
 
-	void tick(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) {
+	void tick(double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
 		Vector<RS::FrameProfileArea> profile_areas = RS::get_singleton()->get_frame_profile();
 		DebuggerMarshalls::VisualProfilerFrame frame;
 		if (!profile_areas.size()) {
@@ -378,7 +378,7 @@ struct RemoteDebugger::PerformanceProfiler {
 
 	void toggle(bool p_enable, const Array &p_opts) {}
 	void add(const Array &p_data) {}
-	void tick(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) {
+	void tick(double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
 		if (!performance) {
 			return;
 		}

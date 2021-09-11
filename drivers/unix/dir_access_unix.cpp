@@ -71,7 +71,7 @@ Error DirAccessUnix::list_dir_begin() {
 bool DirAccessUnix::file_exists(String p_file) {
 	GLOBAL_LOCK_FUNCTION
 
-	if (p_file.is_rel_path()) {
+	if (p_file.is_relative_path()) {
 		p_file = current_dir.plus_file(p_file);
 	}
 
@@ -90,7 +90,7 @@ bool DirAccessUnix::file_exists(String p_file) {
 bool DirAccessUnix::dir_exists(String p_dir) {
 	GLOBAL_LOCK_FUNCTION
 
-	if (p_dir.is_rel_path()) {
+	if (p_dir.is_relative_path()) {
 		p_dir = get_current_dir().plus_file(p_dir);
 	}
 
@@ -105,7 +105,7 @@ bool DirAccessUnix::dir_exists(String p_dir) {
 bool DirAccessUnix::is_readable(String p_dir) {
 	GLOBAL_LOCK_FUNCTION
 
-	if (p_dir.is_rel_path()) {
+	if (p_dir.is_relative_path()) {
 		p_dir = get_current_dir().plus_file(p_dir);
 	}
 
@@ -116,7 +116,7 @@ bool DirAccessUnix::is_readable(String p_dir) {
 bool DirAccessUnix::is_writable(String p_dir) {
 	GLOBAL_LOCK_FUNCTION
 
-	if (p_dir.is_rel_path()) {
+	if (p_dir.is_relative_path()) {
 		p_dir = get_current_dir().plus_file(p_dir);
 	}
 
@@ -125,7 +125,7 @@ bool DirAccessUnix::is_writable(String p_dir) {
 }
 
 uint64_t DirAccessUnix::get_modified_time(String p_file) {
-	if (p_file.is_rel_path()) {
+	if (p_file.is_relative_path()) {
 		p_file = current_dir.plus_file(p_file);
 	}
 
@@ -293,7 +293,7 @@ bool DirAccessUnix::drives_are_shortcuts() {
 Error DirAccessUnix::make_dir(String p_dir) {
 	GLOBAL_LOCK_FUNCTION
 
-	if (p_dir.is_rel_path()) {
+	if (p_dir.is_relative_path()) {
 		p_dir = get_current_dir().plus_file(p_dir);
 	}
 
@@ -328,7 +328,7 @@ Error DirAccessUnix::change_dir(String p_dir) {
 
 	// try_dir is the directory we are trying to change into
 	String try_dir = "";
-	if (p_dir.is_rel_path()) {
+	if (p_dir.is_relative_path()) {
 		String next_dir = current_dir.plus_file(p_dir);
 		next_dir = next_dir.simplify_path();
 		try_dir = next_dir;
@@ -372,13 +372,13 @@ String DirAccessUnix::get_current_dir(bool p_include_drive) {
 }
 
 Error DirAccessUnix::rename(String p_path, String p_new_path) {
-	if (p_path.is_rel_path()) {
+	if (p_path.is_relative_path()) {
 		p_path = get_current_dir().plus_file(p_path);
 	}
 
 	p_path = fix_path(p_path);
 
-	if (p_new_path.is_rel_path()) {
+	if (p_new_path.is_relative_path()) {
 		p_new_path = get_current_dir().plus_file(p_new_path);
 	}
 
@@ -388,7 +388,7 @@ Error DirAccessUnix::rename(String p_path, String p_new_path) {
 }
 
 Error DirAccessUnix::remove(String p_path) {
-	if (p_path.is_rel_path()) {
+	if (p_path.is_relative_path()) {
 		p_path = get_current_dir().plus_file(p_path);
 	}
 
@@ -407,7 +407,7 @@ Error DirAccessUnix::remove(String p_path) {
 }
 
 bool DirAccessUnix::is_link(String p_file) {
-	if (p_file.is_rel_path()) {
+	if (p_file.is_relative_path()) {
 		p_file = get_current_dir().plus_file(p_file);
 	}
 
@@ -422,7 +422,7 @@ bool DirAccessUnix::is_link(String p_file) {
 }
 
 String DirAccessUnix::read_link(String p_file) {
-	if (p_file.is_rel_path()) {
+	if (p_file.is_relative_path()) {
 		p_file = get_current_dir().plus_file(p_file);
 	}
 
@@ -439,7 +439,7 @@ String DirAccessUnix::read_link(String p_file) {
 }
 
 Error DirAccessUnix::create_link(String p_source, String p_target) {
-	if (p_target.is_rel_path()) {
+	if (p_target.is_relative_path()) {
 		p_target = get_current_dir().plus_file(p_target);
 	}
 

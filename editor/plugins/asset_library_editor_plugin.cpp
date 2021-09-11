@@ -614,7 +614,7 @@ void EditorAssetLibrary::_update_repository_options() {
 	}
 }
 
-void EditorAssetLibrary::_unhandled_key_input(const Ref<InputEvent> &p_event) {
+void EditorAssetLibrary::unhandled_key_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	const Ref<InputEventKey> key = p_event;
@@ -1322,8 +1322,6 @@ void EditorAssetLibrary::disable_community_support() {
 }
 
 void EditorAssetLibrary::_bind_methods() {
-	ClassDB::bind_method("_unhandled_key_input", &EditorAssetLibrary::_unhandled_key_input);
-
 	ADD_SIGNAL(MethodInfo("install_asset", PropertyInfo(Variant::STRING, "zip_path"), PropertyInfo(Variant::STRING, "name")));
 }
 

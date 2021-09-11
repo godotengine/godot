@@ -31,7 +31,6 @@
 #include "navigation_obstacle_2d.h"
 
 #include "scene/2d/collision_shape_2d.h"
-#include "scene/2d/physics_body_2d.h"
 #include "servers/navigation_server_2d.h"
 
 void NavigationObstacle2D::_bind_methods() {
@@ -54,7 +53,7 @@ void NavigationObstacle2D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (parent_node2d) {
-				NavigationServer2D::get_singleton()->agent_set_position(agent, parent_node2d->get_global_transform().get_origin());
+				NavigationServer2D::get_singleton()->agent_set_position(agent, parent_node2d->get_global_position());
 			}
 		} break;
 	}
@@ -93,13 +92,13 @@ void NavigationObstacle2D::update_agent_shape() {
 					// and add the enclosing shape radius
 					r += cs->get_shape()->get_enclosing_radius();
 				}
-				Size2 s = cs->get_global_transform().get_scale();
+				Size2 s = cs->get_global_scale();
 				r *= MAX(s.x, s.y);
 				// Takes the biggest radius
 				radius = MAX(radius, r);
 			}
 		}
-		Vector2 s = parent_node2d->get_global_transform().get_scale();
+		Vector2 s = parent_node2d->get_global_scale();
 		radius *= MAX(s.x, s.y);
 
 		if (radius == 0.0) {

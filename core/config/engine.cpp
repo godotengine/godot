@@ -37,23 +37,23 @@
 #include "core/version.h"
 #include "core/version_hash.gen.h"
 
-void Engine::set_iterations_per_second(int p_ips) {
+void Engine::set_physics_ticks_per_second(int p_ips) {
 	ERR_FAIL_COND_MSG(p_ips <= 0, "Engine iterations per second must be greater than 0.");
 	ips = p_ips;
 }
 
-int Engine::get_iterations_per_second() const {
+int Engine::get_physics_ticks_per_second() const {
 	return ips;
 }
 
-void Engine::set_physics_jitter_fix(float p_threshold) {
+void Engine::set_physics_jitter_fix(double p_threshold) {
 	if (p_threshold < 0) {
 		p_threshold = 0;
 	}
 	physics_jitter_fix = p_threshold;
 }
 
-float Engine::get_physics_jitter_fix() const {
+double Engine::get_physics_jitter_fix() const {
 	return physics_jitter_fix;
 }
 
@@ -77,11 +77,11 @@ uint32_t Engine::get_frame_delay() const {
 	return _frame_delay;
 }
 
-void Engine::set_time_scale(float p_scale) {
+void Engine::set_time_scale(double p_scale) {
 	_time_scale = p_scale;
 }
 
-float Engine::get_time_scale() const {
+double Engine::get_time_scale() const {
 	return _time_scale;
 }
 
@@ -199,17 +199,41 @@ bool Engine::is_printing_error_messages() const {
 }
 
 void Engine::add_singleton(const Singleton &p_singleton) {
+	ERR_FAIL_COND_MSG(singleton_ptrs.has(p_singleton.name), "Can't register singleton that already exists: " + String(p_singleton.name));
 	singletons.push_back(p_singleton);
 	singleton_ptrs[p_singleton.name] = p_singleton.ptr;
 }
 
-Object *Engine::get_singleton_object(const String &p_name) const {
+Object *Engine::get_singleton_object(const StringName &p_name) const {
 	const Map<StringName, Object *>::Element *E = singleton_ptrs.find(p_name);
-	ERR_FAIL_COND_V_MSG(!E, nullptr, "Failed to retrieve non-existent singleton '" + p_name + "'.");
+	ERR_FAIL_COND_V_MSG(!E, nullptr, "Failed to retrieve non-existent singleton '" + String(p_name) + "'.");
 	return E->get();
 }
 
-bool Engine::has_singleton(const String &p_name) const {
+bool Engine::is_singleton_user_created(const StringName &p_name) const {
+	ERR_FAIL_COND_V(!singleton_ptrs.has(p_name), false);
+
+	for (const Singleton &E : singletons) {
+		if (E.name == p_name && E.user_created) {
+			return true;
+		}
+	}
+
+	return false;
+}
+void Engine::remove_singleton(const StringName &p_name) {
+	ERR_FAIL_COND(!singleton_ptrs.has(p_name));
+
+	for (List<Singleton>::Element *E = singletons.front(); E; E = E->next()) {
+		if (E->get().name == p_name) {
+			singletons.erase(E);
+			singleton_ptrs.erase(p_name);
+			return;
+		}
+	}
+}
+
+bool Engine::has_singleton(const StringName &p_name) const {
 	return singleton_ptrs.has(p_name);
 }
 

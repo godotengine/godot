@@ -30,11 +30,9 @@
 
 #include "node_3d.h"
 
-#include "core/config/engine.h"
 #include "core/object/message_queue.h"
 #include "scene/3d/visual_instance_3d.h"
-#include "scene/main/scene_tree.h"
-#include "scene/main/window.h"
+#include "scene/main/viewport.h"
 #include "scene/scene_string_names.h"
 
 /*
@@ -588,31 +586,31 @@ bool Node3D::is_visible() const {
 	return data.visible;
 }
 
-void Node3D::rotate_object_local(const Vector3 &p_axis, float p_angle) {
+void Node3D::rotate_object_local(const Vector3 &p_axis, real_t p_angle) {
 	Transform3D t = get_transform();
 	t.basis.rotate_local(p_axis, p_angle);
 	set_transform(t);
 }
 
-void Node3D::rotate(const Vector3 &p_axis, float p_angle) {
+void Node3D::rotate(const Vector3 &p_axis, real_t p_angle) {
 	Transform3D t = get_transform();
 	t.basis.rotate(p_axis, p_angle);
 	set_transform(t);
 }
 
-void Node3D::rotate_x(float p_angle) {
+void Node3D::rotate_x(real_t p_angle) {
 	Transform3D t = get_transform();
 	t.basis.rotate(Vector3(1, 0, 0), p_angle);
 	set_transform(t);
 }
 
-void Node3D::rotate_y(float p_angle) {
+void Node3D::rotate_y(real_t p_angle) {
 	Transform3D t = get_transform();
 	t.basis.rotate(Vector3(0, 1, 0), p_angle);
 	set_transform(t);
 }
 
-void Node3D::rotate_z(float p_angle) {
+void Node3D::rotate_z(real_t p_angle) {
 	Transform3D t = get_transform();
 	t.basis.rotate(Vector3(0, 0, 1), p_angle);
 	set_transform(t);
@@ -644,7 +642,7 @@ void Node3D::scale_object_local(const Vector3 &p_scale) {
 	set_transform(t);
 }
 
-void Node3D::global_rotate(const Vector3 &p_axis, float p_angle) {
+void Node3D::global_rotate(const Vector3 &p_axis, real_t p_angle) {
 	Transform3D t = get_global_transform();
 	t.basis.rotate(p_axis, p_angle);
 	set_global_transform(t);
@@ -673,19 +671,17 @@ void Node3D::set_identity() {
 }
 
 void Node3D::look_at(const Vector3 &p_target, const Vector3 &p_up) {
-	Vector3 origin(get_global_transform().origin);
+	Vector3 origin = get_global_transform().origin;
 	look_at_from_position(origin, p_target, p_up);
 }
 
 void Node3D::look_at_from_position(const Vector3 &p_pos, const Vector3 &p_target, const Vector3 &p_up) {
-	ERR_FAIL_COND_MSG(p_pos == p_target, "Node origin and target are in the same position, look_at() failed.");
-	ERR_FAIL_COND_MSG(p_up.cross(p_target - p_pos) == Vector3(), "Up vector and direction between node origin and target are aligned, look_at() failed.");
+	ERR_FAIL_COND_MSG(p_pos.is_equal_approx(p_target), "Node origin and target are in the same position, look_at() failed.");
+	ERR_FAIL_COND_MSG(p_up.is_equal_approx(Vector3()), "The up vector can't be zero, look_at() failed.");
+	ERR_FAIL_COND_MSG(p_up.cross(p_target - p_pos).is_equal_approx(Vector3()), "Up vector and direction between node origin and target are aligned, look_at() failed.");
 
-	Transform3D lookat;
-	lookat.origin = p_pos;
-
-	Vector3 original_scale(get_scale());
-	lookat = lookat.looking_at(p_target, p_up);
+	Transform3D lookat = Transform3D(Basis::looking_at(p_target - p_pos, p_up), p_pos);
+	Vector3 original_scale = get_scale();
 	set_global_transform(lookat);
 	set_scale(original_scale);
 }

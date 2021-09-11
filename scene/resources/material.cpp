@@ -31,6 +31,7 @@
 #include "material.h"
 
 #include "core/config/engine.h"
+#include "core/version.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
@@ -268,7 +269,7 @@ void ShaderMaterial::_bind_methods() {
 
 void ShaderMaterial::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 #ifdef TOOLS_ENABLED
-	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", 0) ? "'" : "\"";
+	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 #else
 	const String quote_style = "\"";
 #endif
@@ -279,7 +280,7 @@ void ShaderMaterial::get_argument_options(const StringName &p_function, int p_id
 			List<PropertyInfo> pl;
 			shader->get_param_list(&pl);
 			for (const PropertyInfo &E : pl) {
-				r_options->push_back(quote_style + E.name.replace_first("shader_param/", "") + quote_style);
+				r_options->push_back(E.name.replace_first("shader_param/", "").quote(quote_style));
 			}
 		}
 	}
@@ -469,7 +470,12 @@ void BaseMaterial3D::_update_shader() {
 
 	//must create a shader!
 
-	String code = "shader_type spatial;\nrender_mode ";
+	// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
+	String code = vformat(
+			"// NOTE: Shader automatically converted from " VERSION_NAME " " VERSION_FULL_CONFIG "'s %s.\n\n",
+			orm ? "ORMMaterial3D" : "StandardMaterial3D");
+
+	code += "shader_type spatial;\nrender_mode ";
 	switch (blend_mode) {
 		case BLEND_MODE_MIX:
 			code += "blend_mix";
@@ -957,7 +963,9 @@ void BaseMaterial3D::_update_shader() {
 			} else {
 				code += "		float depth = 1.0 - texture(texture_heightmap, base_uv).r;\n";
 			}
-			code += "		vec2 ofs = base_uv - view_dir.xy / view_dir.z * (depth * heightmap_scale);\n";
+			// Use offset limiting to improve the appearance of non-deep parallax.
+			// This reduces the impression of depth, but avoids visible warping in the distance.
+			code += "		vec2 ofs = base_uv - view_dir.xy * depth * heightmap_scale;\n";
 		}
 
 		code += "		base_uv=ofs;\n";

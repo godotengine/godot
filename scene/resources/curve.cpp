@@ -662,19 +662,27 @@ void Curve2D::_bake() const {
 
 	if (points.size() == 0) {
 		baked_point_cache.resize(0);
+		baked_dist_cache.resize(0);
 		return;
 	}
 
 	if (points.size() == 1) {
 		baked_point_cache.resize(1);
 		baked_point_cache.set(0, points[0].pos);
+
+		baked_dist_cache.resize(1);
+		baked_dist_cache.set(0, 0.0);
 		return;
 	}
 
 	Vector2 pos = points[0].pos;
+	float dist = 0.0;
+
 	List<Vector2> pointlist;
+	List<float> distlist;
 
 	pointlist.push_back(pos); //start always from origin
+	distlist.push_back(0.0);
 
 	for (int i = 0; i < points.size() - 1; i++) {
 		float step = 0.1; // at least 10 substeps ought to be enough?
@@ -712,7 +720,10 @@ void Curve2D::_bake() const {
 
 				pos = npp;
 				p = mid;
+				dist += d;
+
 				pointlist.push_back(pos);
+				distlist.push_back(dist);
 			} else {
 				p = np;
 			}
@@ -722,16 +733,20 @@ void Curve2D::_bake() const {
 	Vector2 lastpos = points[points.size() - 1].pos;
 
 	float rem = pos.distance_to(lastpos);
-	baked_max_ofs = (pointlist.size() - 1) * bake_interval + rem;
+	dist += rem;
+	baked_max_ofs = dist;
 	pointlist.push_back(lastpos);
+	distlist.push_back(dist);
 
 	baked_point_cache.resize(pointlist.size());
-	Vector2 *w = baked_point_cache.ptrw();
-	int idx = 0;
+	baked_dist_cache.resize(distlist.size());
 
-	for (const Vector2 &E : pointlist) {
-		w[idx] = E;
-		idx++;
+	Vector2 *w = baked_point_cache.ptrw();
+	float *wd = baked_dist_cache.ptrw();
+
+	for (int i = 0; i < pointlist.size(); i++) {
+		w[i] = pointlist[i];
+		wd[i] = distlist[i];
 	}
 }
 
@@ -766,18 +781,25 @@ Vector2 Curve2D::interpolate_baked(float p_offset, bool p_cubic) const {
 		return r[bpc - 1];
 	}
 
-	int idx = Math::floor((double)p_offset / (double)bake_interval);
-	float frac = Math::fmod(p_offset, (float)bake_interval);
-
-	if (idx >= bpc - 1) {
-		return r[bpc - 1];
-	} else if (idx == bpc - 2) {
-		if (frac > 0) {
-			frac /= Math::fmod(baked_max_ofs, bake_interval);
+	int start = 0, end = bpc, idx = (end + start) / 2;
+	// binary search to find baked points
+	while (start < idx) {
+		float offset = baked_dist_cache[idx];
+		if (p_offset <= offset) {
+			end = idx;
+		} else {
+			start = idx;
 		}
-	} else {
-		frac /= bake_interval;
+		idx = (end + start) / 2;
 	}
+
+	float offset_begin = baked_dist_cache[idx];
+	float offset_end = baked_dist_cache[idx + 1];
+
+	float idx_interval = offset_end - offset_begin;
+	ERR_FAIL_COND_V_MSG(p_offset < offset_begin || p_offset > offset_end, Vector2(), "failed to find baked segment");
+
+	float frac = (p_offset - offset_begin) / idx_interval;
 
 	if (p_cubic) {
 		Vector2 pre = idx > 0 ? r[idx - 1] : r[idx];
@@ -1145,6 +1167,7 @@ void Curve3D::_bake() const {
 		baked_point_cache.resize(0);
 		baked_tilt_cache.resize(0);
 		baked_up_vector_cache.resize(0);
+		baked_dist_cache.resize(0);
 		return;
 	}
 
@@ -1153,6 +1176,8 @@ void Curve3D::_bake() const {
 		baked_point_cache.set(0, points[0].pos);
 		baked_tilt_cache.resize(1);
 		baked_tilt_cache.set(0, points[0].tilt);
+		baked_dist_cache.resize(1);
+		baked_dist_cache.set(0, 0.0);
 
 		if (up_vector_enabled) {
 			baked_up_vector_cache.resize(1);
@@ -1165,8 +1190,12 @@ void Curve3D::_bake() const {
 	}
 
 	Vector3 pos = points[0].pos;
+	float dist = 0.0;
 	List<Plane> pointlist;
+	List<float> distlist;
+
 	pointlist.push_back(Plane(pos, points[0].tilt));
+	distlist.push_back(0.0);
 
 	for (int i = 0; i < points.size() - 1; i++) {
 		float step = 0.1; // at least 10 substeps ought to be enough?
@@ -1207,7 +1236,10 @@ void Curve3D::_bake() const {
 				Plane post;
 				post.normal = pos;
 				post.d = Math::lerp(points[i].tilt, points[i + 1].tilt, mid);
+				dist += d;
+
 				pointlist.push_back(post);
+				distlist.push_back(dist);
 			} else {
 				p = np;
 			}
@@ -1218,8 +1250,10 @@ void Curve3D::_bake() const {
 	float lastilt = points[points.size() - 1].tilt;
 
 	float rem = pos.distance_to(lastpos);
-	baked_max_ofs = (pointlist.size() - 1) * bake_interval + rem;
+	dist += rem;
+	baked_max_ofs = dist;
 	pointlist.push_back(Plane(lastpos, lastilt));
+	distlist.push_back(dist);
 
 	baked_point_cache.resize(pointlist.size());
 	Vector3 *w = baked_point_cache.ptrw();
@@ -1230,6 +1264,9 @@ void Curve3D::_bake() const {
 
 	baked_up_vector_cache.resize(up_vector_enabled ? pointlist.size() : 0);
 	Vector3 *up_write = baked_up_vector_cache.ptrw();
+
+	baked_dist_cache.resize(pointlist.size());
+	float *wd = baked_dist_cache.ptrw();
 
 	Vector3 sideways;
 	Vector3 up;
@@ -1242,6 +1279,7 @@ void Curve3D::_bake() const {
 	for (const Plane &E : pointlist) {
 		w[idx] = E.normal;
 		wt[idx] = E.d;
+		wd[idx] = distlist[idx];
 
 		if (!up_vector_enabled) {
 			idx++;
@@ -1308,18 +1346,25 @@ Vector3 Curve3D::interpolate_baked(float p_offset, bool p_cubic) const {
 		return r[bpc - 1];
 	}
 
-	int idx = Math::floor((double)p_offset / (double)bake_interval);
-	float frac = Math::fmod(p_offset, bake_interval);
-
-	if (idx >= bpc - 1) {
-		return r[bpc - 1];
-	} else if (idx == bpc - 2) {
-		if (frac > 0) {
-			frac /= Math::fmod(baked_max_ofs, bake_interval);
+	int start = 0, end = bpc, idx = (end + start) / 2;
+	// binary search to find baked points
+	while (start < idx) {
+		float offset = baked_dist_cache[idx];
+		if (p_offset <= offset) {
+			end = idx;
+		} else {
+			start = idx;
 		}
-	} else {
-		frac /= bake_interval;
+		idx = (end + start) / 2;
 	}
+
+	float offset_begin = baked_dist_cache[idx];
+	float offset_end = baked_dist_cache[idx + 1];
+
+	float idx_interval = offset_end - offset_begin;
+	ERR_FAIL_COND_V_MSG(p_offset < offset_begin || p_offset > offset_end, Vector3(), "failed to find baked segment");
+
+	float frac = (p_offset - offset_begin) / idx_interval;
 
 	if (p_cubic) {
 		Vector3 pre = idx > 0 ? r[idx - 1] : r[idx];
@@ -1366,7 +1411,7 @@ float Curve3D::interpolate_baked_tilt(float p_offset) const {
 		frac /= bake_interval;
 	}
 
-	return Math::lerp(r[idx], r[idx + 1], frac);
+	return Math::lerp(r[idx], r[idx + 1], (real_t)frac);
 }
 
 Vector3 Curve3D::interpolate_baked_up_vector(float p_offset, bool p_apply_tilt) const {
@@ -1424,7 +1469,7 @@ PackedVector3Array Curve3D::get_baked_points() const {
 	return baked_point_cache;
 }
 
-PackedFloat32Array Curve3D::get_baked_tilts() const {
+Vector<real_t> Curve3D::get_baked_tilts() const {
 	if (baked_cache_dirty) {
 		_bake();
 	}
@@ -1545,7 +1590,7 @@ Dictionary Curve3D::_get_data() const {
 	PackedVector3Array d;
 	d.resize(points.size() * 3);
 	Vector3 *w = d.ptrw();
-	PackedFloat32Array t;
+	Vector<real_t> t;
 	t.resize(points.size());
 	real_t *wt = t.ptrw();
 
@@ -1571,7 +1616,7 @@ void Curve3D::_set_data(const Dictionary &p_data) {
 	ERR_FAIL_COND(pc % 3 != 0);
 	points.resize(pc / 3);
 	const Vector3 *r = rp.ptr();
-	PackedFloat32Array rtl = p_data["tilts"];
+	Vector<real_t> rtl = p_data["tilts"];
 	const real_t *rt = rtl.ptr();
 
 	for (int i = 0; i < points.size(); i++) {

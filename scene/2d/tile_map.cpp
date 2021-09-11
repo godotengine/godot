@@ -31,8 +31,6 @@
 #include "tile_map.h"
 
 #include "core/io/marshalls.h"
-#include "core/math/geometry_2d.h"
-#include "core/os/os.h"
 
 #include "servers/navigation_server_2d.h"
 
@@ -238,6 +236,8 @@ Vector2i TileMap::transform_coords_layout(Vector2i p_coords, TileSet::TileOffset
 }
 
 int TileMap::get_effective_quadrant_size(int p_layer) const {
+	ERR_FAIL_INDEX_V(p_layer, (int)layers.size(), 1);
+
 	// When using YSort, the quadrant size is reduced to 1 to have one CanvasItem per quadrant
 	if (is_y_sort_enabled() && layers[p_layer].y_sort_enabled) {
 		return 1;
@@ -316,16 +316,38 @@ int TileMap::get_quadrant_size() const {
 	return quadrant_size;
 }
 
-void TileMap::set_layers_count(int p_layers_count) {
-	ERR_FAIL_COND(p_layers_count < 0);
-	_clear_internals();
+int TileMap::get_layers_count() const {
+	return layers.size();
+}
 
-	layers.resize(p_layers_count);
+void TileMap::add_layer(int p_to_pos) {
+	if (p_to_pos < 0) {
+		p_to_pos = layers.size();
+	}
+
+	ERR_FAIL_INDEX(p_to_pos, (int)layers.size() + 1);
+
+	layers.insert(p_to_pos, TileMapLayer());
 	_recreate_internals();
 	notify_property_list_changed();
 
-	if (selected_layer >= p_layers_count) {
-		selected_layer = -1;
+	emit_signal(SNAME("changed"));
+
+	update_configuration_warnings();
+}
+
+void TileMap::move_layer(int p_layer, int p_to_pos) {
+	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+	ERR_FAIL_INDEX(p_to_pos, (int)layers.size() + 1);
+
+	TileMapLayer tl = layers[p_layer];
+	layers.insert(p_to_pos, tl);
+	layers.remove(p_to_pos < p_layer ? p_layer + 1 : p_layer);
+	_recreate_internals();
+	notify_property_list_changed();
+
+	if (selected_layer == p_layer) {
+		selected_layer = p_to_pos < p_layer ? p_to_pos - 1 : p_to_pos;
 	}
 
 	emit_signal(SNAME("changed"));
@@ -333,8 +355,20 @@ void TileMap::set_layers_count(int p_layers_count) {
 	update_configuration_warnings();
 }
 
-int TileMap::get_layers_count() const {
-	return layers.size();
+void TileMap::remove_layer(int p_layer) {
+	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+
+	layers.remove(p_layer);
+	_recreate_internals();
+	notify_property_list_changed();
+
+	if (selected_layer >= p_layer) {
+		selected_layer -= 1;
+	}
+
+	emit_signal(SNAME("changed"));
+
+	update_configuration_warnings();
 }
 
 void TileMap::set_layer_name(int p_layer, String p_name) {
@@ -783,8 +817,8 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 				if (atlas_source) {
 					// Get the tile data.
 					TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
-					Ref<ShaderMaterial> mat = tile_data->tile_get_material();
-					int z_index = layers[q.layer].z_index + tile_data->get_z_index();
+					Ref<ShaderMaterial> mat = tile_data->get_material();
+					int z_index = tile_data->get_z_index();
 
 					// Quandrant pos.
 					Vector2 position = map_to_world(q.coords * get_effective_quadrant_size(q.layer));
@@ -1053,9 +1087,13 @@ void TileMap::_physics_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r
 
 		Vector2 quadrant_pos = map_to_world(q.coords * get_effective_quadrant_size(q.layer));
 
+		LocalVector<int> body_shape_count;
+		body_shape_count.resize(q.bodies.size());
+
 		// Clear shapes.
 		for (int body_index = 0; body_index < q.bodies.size(); body_index++) {
 			ps->body_clear_shapes(q.bodies[body_index]);
+			body_shape_count[body_index] = 0;
 
 			// Position the bodies.
 			Transform2D xform;
@@ -1080,6 +1118,8 @@ void TileMap::_physics_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r
 					TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
 
 					for (int body_index = 0; body_index < q.bodies.size(); body_index++) {
+						int &body_shape_index = body_shape_count[body_index];
+
 						// Add the shapes again.
 						for (int polygon_index = 0; polygon_index < tile_data->get_collision_polygons_count(body_index); polygon_index++) {
 							bool one_way_collision = tile_data->is_collision_polygon_one_way(body_index, polygon_index);
@@ -1093,8 +1133,10 @@ void TileMap::_physics_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r
 								// Add decomposed convex shapes.
 								Ref<ConvexPolygonShape2D> shape = tile_data->get_collision_polygon_shape(body_index, polygon_index, shape_index);
 								ps->body_add_shape(q.bodies[body_index], shape->get_rid(), xform);
-								ps->body_set_shape_metadata(q.bodies[body_index], shape_index, E_cell->get());
-								ps->body_set_shape_as_one_way_collision(q.bodies[body_index], shape_index, one_way_collision, one_way_collision_margin);
+								ps->body_set_shape_metadata(q.bodies[body_index], body_shape_index, E_cell->get());
+								ps->body_set_shape_as_one_way_collision(q.bodies[body_index], body_shape_index, one_way_collision, one_way_collision_margin);
+
+								++body_shape_index;
 							}
 						}
 					}
@@ -1141,7 +1183,7 @@ void TileMap::_physics_create_quadrant(TileMapQuadrant *p_quadrant) {
 			PhysicsServer2D::get_singleton()->body_set_space(body, space);
 
 			Transform2D xform;
-			xform.set_origin(map_to_world(p_quadrant->coords * get_effective_quadrant_size(layer)));
+			xform.set_origin(map_to_world(p_quadrant->coords * get_effective_quadrant_size(p_quadrant->layer)));
 			xform = global_transform * xform;
 			PhysicsServer2D::get_singleton()->body_set_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM, xform);
 		}
@@ -2890,8 +2932,10 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_quadrant_size", "size"), &TileMap::set_quadrant_size);
 	ClassDB::bind_method(D_METHOD("get_quadrant_size"), &TileMap::get_quadrant_size);
 
-	ClassDB::bind_method(D_METHOD("set_layers_count", "layers_count"), &TileMap::set_layers_count);
 	ClassDB::bind_method(D_METHOD("get_layers_count"), &TileMap::get_layers_count);
+	ClassDB::bind_method(D_METHOD("add_layer", "to_position"), &TileMap::add_layer);
+	ClassDB::bind_method(D_METHOD("move_layer", "layer", "to_position"), &TileMap::move_layer);
+	ClassDB::bind_method(D_METHOD("remove_layer", "layer"), &TileMap::remove_layer);
 	ClassDB::bind_method(D_METHOD("set_layer_name", "layer", "name"), &TileMap::set_layer_name);
 	ClassDB::bind_method(D_METHOD("get_layer_name", "layer"), &TileMap::get_layer_name);
 	ClassDB::bind_method(D_METHOD("set_layer_enabled", "layer", "enabled"), &TileMap::set_layer_enabled);
@@ -2901,7 +2945,7 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_layer_y_sort_origin", "layer", "y_sort_origin"), &TileMap::set_layer_y_sort_origin);
 	ClassDB::bind_method(D_METHOD("get_layer_y_sort_origin", "layer"), &TileMap::get_layer_y_sort_origin);
 	ClassDB::bind_method(D_METHOD("set_layer_z_index", "layer", "z_index"), &TileMap::set_layer_z_index);
-	ClassDB::bind_method(D_METHOD("get_layer_z_indexd", "layer"), &TileMap::get_layer_z_index);
+	ClassDB::bind_method(D_METHOD("get_layer_z_index", "layer"), &TileMap::get_layer_z_index);
 
 	ClassDB::bind_method(D_METHOD("set_collision_visibility_mode", "collision_visibility_mode"), &TileMap::set_collision_visibility_mode);
 	ClassDB::bind_method(D_METHOD("get_collision_visibility_mode"), &TileMap::get_collision_visibility_mode);
@@ -2936,9 +2980,7 @@ void TileMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_collision_visibility_mode", "get_collision_visibility_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_navigation_visibility_mode", "get_navigation_visibility_mode");
 
-	ADD_GROUP("Layers", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers_count"), "set_layers_count", "get_layers_count");
-	ADD_PROPERTY_DEFAULT("layers_count", 1);
+	ADD_ARRAY("layers", "layer_");
 
 	ADD_PROPERTY_DEFAULT("format", FORMAT_1);
 

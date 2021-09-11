@@ -31,6 +31,7 @@
 #ifndef SOFT_BODY_3D_SW_H
 #define SOFT_BODY_3D_SW_H
 
+#include "area_3d_sw.h"
 #include "collision_object_3d_sw.h"
 
 #include "core/math/aabb.h"
@@ -70,6 +71,7 @@ class SoftBody3DSW : public CollisionObject3DSW {
 	};
 
 	struct Face {
+		Vector3 centroid;
 		Node *n[3] = { nullptr, nullptr, nullptr }; // Node pointers
 		Vector3 normal; // Normal
 		real_t ra = 0.0; // Rest area
@@ -100,13 +102,20 @@ class SoftBody3DSW : public CollisionObject3DSW {
 	real_t drag_coefficient = 0.0; // [0,1]
 	LocalVector<int> pinned_vertices;
 
+	Vector3 gravity;
+
 	SelfList<SoftBody3DSW> active_list;
 
 	Set<Constraint3DSW *> constraints;
 
+	Vector<AreaCMP> areas;
+
 	VSet<RID> exceptions;
 
 	uint64_t island_step = 0;
+
+	_FORCE_INLINE_ void _compute_area_gravity(const Area3DSW *p_area);
+	_FORCE_INLINE_ Vector3 _compute_area_windforce(const Area3DSW *p_area, const Face *p_face);
 
 public:
 	SoftBody3DSW();
@@ -128,6 +137,25 @@ public:
 
 	_FORCE_INLINE_ uint64_t get_island_step() const { return island_step; }
 	_FORCE_INLINE_ void set_island_step(uint64_t p_step) { island_step = p_step; }
+
+	_FORCE_INLINE_ void add_area(Area3DSW *p_area) {
+		int index = areas.find(AreaCMP(p_area));
+		if (index > -1) {
+			areas.write[index].refCount += 1;
+		} else {
+			areas.ordered_insert(AreaCMP(p_area));
+		}
+	}
+
+	_FORCE_INLINE_ void remove_area(Area3DSW *p_area) {
+		int index = areas.find(AreaCMP(p_area));
+		if (index > -1) {
+			areas.write[index].refCount -= 1;
+			if (areas[index].refCount < 1) {
+				areas.remove(index);
+			}
+		}
+	}
 
 	virtual void set_space(Space3DSW *p_space);
 
@@ -194,7 +222,7 @@ protected:
 	virtual void _shapes_changed();
 
 private:
-	void update_normals();
+	void update_normals_and_centroids();
 	void update_bounds();
 	void update_constants();
 	void update_area();
@@ -205,7 +233,7 @@ private:
 
 	void add_velocity(const Vector3 &p_velocity);
 
-	void apply_forces();
+	void apply_forces(bool p_has_wind_forces);
 
 	bool create_from_trimesh(const Vector<int> &p_indices, const Vector<Vector3> &p_vertices);
 	void generate_bending_constraints(int p_distance);

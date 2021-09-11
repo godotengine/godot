@@ -80,7 +80,6 @@ void register_gltf_types() {
 	GDREGISTER_CLASS(GLTFLight);
 	GDREGISTER_CLASS(GLTFState);
 	GDREGISTER_CLASS(GLTFDocument);
-	GDREGISTER_CLASS(PackedSceneGLTF);
 #endif
 }
 

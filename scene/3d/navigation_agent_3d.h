@@ -31,7 +31,6 @@
 #ifndef NAVIGATION_AGENT_H
 #define NAVIGATION_AGENT_H
 
-#include "core/templates/vector.h"
 #include "scene/main/node.h"
 
 class Node3D;

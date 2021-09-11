@@ -90,7 +90,7 @@ class EditorAudioBus : public PanelContainer {
 	bool is_master;
 	mutable bool hovering_drop;
 
-	void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _effects_gui_input(Ref<InputEvent> p_event);
 	void _bus_popup_pressed(int p_option);
 

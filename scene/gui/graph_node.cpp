@@ -863,7 +863,7 @@ Color GraphNode::get_connection_output_color(int p_idx) {
 	return conn_output_cache[p_idx].color;
 }
 
-void GraphNode::_gui_input(const Ref<InputEvent> &p_ev) {
+void GraphNode::gui_input(const Ref<InputEvent> &p_ev) {
 	ERR_FAIL_COND(p_ev.is_null());
 
 	Ref<InputEventMouseButton> mb = p_ev;
@@ -945,8 +945,6 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_opentype_features"), &GraphNode::clear_opentype_features);
 	ClassDB::bind_method(D_METHOD("set_language", "language"), &GraphNode::set_language);
 	ClassDB::bind_method(D_METHOD("get_language"), &GraphNode::get_language);
-
-	ClassDB::bind_method(D_METHOD("_gui_input"), &GraphNode::_gui_input);
 
 	ClassDB::bind_method(D_METHOD("set_slot", "idx", "enable_left", "type_left", "color_left", "enable_right", "type_right", "color_right", "custom_left", "custom_right"), &GraphNode::set_slot, DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()));
 	ClassDB::bind_method(D_METHOD("clear_slot", "idx"), &GraphNode::clear_slot);

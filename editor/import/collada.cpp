@@ -287,7 +287,7 @@ void Collada::_parse_image(XMLParser &parser) {
 	if (state.version < State::Version(1, 4, 0)) {
 		/* <1.4 */
 		String path = parser.get_attribute_value("source").strip_edges();
-		if (path.find("://") == -1 && path.is_rel_path()) {
+		if (path.find("://") == -1 && path.is_relative_path()) {
 			// path is relative to file being loaded, so convert to a resource path
 			image.path = ProjectSettings::get_singleton()->localize_path(state.local_path.get_base_dir().plus_file(path.uri_decode()));
 		}
@@ -300,7 +300,7 @@ void Collada::_parse_image(XMLParser &parser) {
 					parser.read();
 					String path = parser.get_node_data().strip_edges().uri_decode();
 
-					if (path.find("://") == -1 && path.is_rel_path()) {
+					if (path.find("://") == -1 && path.is_relative_path()) {
 						// path is relative to file being loaded, so convert to a resource path
 						path = ProjectSettings::get_singleton()->localize_path(state.local_path.get_base_dir().plus_file(path));
 
@@ -960,12 +960,17 @@ void Collada::_parse_mesh_geometry(XMLParser &parser, String p_id, String p_name
 			} else if (section == "vertices") {
 				MeshData::Vertices vert;
 				String id = parser.get_attribute_value("id");
+				int last_ref = 0;
 
 				while (parser.read() == OK) {
 					if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
 						if (parser.get_node_name() == "input") {
 							String semantic = parser.get_attribute_value("semantic");
 							String source = _uri_to_id(parser.get_attribute_value("source"));
+
+							if (semantic == "TEXCOORD") {
+								semantic = "TEXCOORD" + itos(last_ref++);
+							}
 
 							vert.sources[semantic] = source;
 

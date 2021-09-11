@@ -30,6 +30,7 @@
 
 #include "physics_server_3d_sw.h"
 
+#include "body_direct_state_3d_sw.h"
 #include "broad_phase_3d_bvh.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/os/os.h"
@@ -48,8 +49,8 @@ RID PhysicsServer3DSW::plane_shape_create() {
 	shape->set_self(rid);
 	return rid;
 }
-RID PhysicsServer3DSW::ray_shape_create() {
-	Shape3DSW *shape = memnew(RayShape3DSW);
+RID PhysicsServer3DSW::separation_ray_shape_create() {
+	Shape3DSW *shape = memnew(SeparationRayShape3DSW);
 	RID rid = shape_owner.make_rid(shape);
 	shape->set_self(rid);
 	return rid;
@@ -642,19 +643,26 @@ uint32_t PhysicsServer3DSW::body_get_user_flags(RID p_body) const {
 	return 0;
 };
 
-void PhysicsServer3DSW::body_set_param(RID p_body, BodyParameter p_param, real_t p_value) {
+void PhysicsServer3DSW::body_set_param(RID p_body, BodyParameter p_param, const Variant &p_value) {
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
 	body->set_param(p_param, p_value);
 };
 
-real_t PhysicsServer3DSW::body_get_param(RID p_body, BodyParameter p_param) const {
+Variant PhysicsServer3DSW::body_get_param(RID p_body, BodyParameter p_param) const {
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, 0);
 
 	return body->get_param(p_param);
 };
+
+void PhysicsServer3DSW::body_reset_mass_properties(RID p_body) {
+	Body3DSW *body = body_owner.getornull(p_body);
+	ERR_FAIL_COND(!body);
+
+	return body->reset_mass_properties();
+}
 
 void PhysicsServer3DSW::body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) {
 	Body3DSW *body = body_owner.getornull(p_body);
@@ -842,6 +850,12 @@ int PhysicsServer3DSW::body_get_max_contacts_reported(RID p_body) const {
 	return body->get_max_contacts_reported();
 }
 
+void PhysicsServer3DSW::body_set_state_sync_callback(RID p_body, void *p_instance, BodyStateCallback p_callback) {
+	Body3DSW *body = body_owner.getornull(p_body);
+	ERR_FAIL_COND(!body);
+	body->set_state_sync_callback(p_instance, p_callback);
+}
+
 void PhysicsServer3DSW::body_set_force_integration_callback(RID p_body, const Callable &p_callable, const Variant &p_udata) {
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
@@ -854,7 +868,7 @@ void PhysicsServer3DSW::body_set_ray_pickable(RID p_body, bool p_enable) {
 	body->set_ray_pickable(p_enable);
 }
 
-bool PhysicsServer3DSW::body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia, real_t p_margin, MotionResult *r_result, bool p_exclude_raycast_shapes) {
+bool PhysicsServer3DSW::body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin, MotionResult *r_result, bool p_collide_separation_ray, const Set<RID> &p_exclude) {
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, false);
 	ERR_FAIL_COND_V(!body->get_space(), false);
@@ -862,29 +876,19 @@ bool PhysicsServer3DSW::body_test_motion(RID p_body, const Transform3D &p_from, 
 
 	_update_shapes();
 
-	return body->get_space()->test_body_motion(body, p_from, p_motion, p_infinite_inertia, p_margin, r_result, p_exclude_raycast_shapes);
-}
-
-int PhysicsServer3DSW::body_test_ray_separation(RID p_body, const Transform3D &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, SeparationResult *r_results, int p_result_max, real_t p_margin) {
-	Body3DSW *body = body_owner.getornull(p_body);
-	ERR_FAIL_COND_V(!body, false);
-	ERR_FAIL_COND_V(!body->get_space(), false);
-	ERR_FAIL_COND_V(body->get_space()->is_locked(), false);
-
-	_update_shapes();
-
-	return body->get_space()->test_body_ray_separation(body, p_transform, p_infinite_inertia, r_recover_motion, r_results, p_result_max, p_margin);
+	return body->get_space()->test_body_motion(body, p_from, p_motion, p_margin, r_result, p_collide_separation_ray, p_exclude);
 }
 
 PhysicsDirectBodyState3D *PhysicsServer3DSW::body_get_direct_state(RID p_body) {
 	ERR_FAIL_COND_V_MSG((using_threads && !doing_sync), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
 
 	Body3DSW *body = body_owner.getornull(p_body);
-	ERR_FAIL_COND_V(!body, nullptr);
+	ERR_FAIL_NULL_V(body, nullptr);
+
+	ERR_FAIL_NULL_V(body->get_space(), nullptr);
 	ERR_FAIL_COND_V_MSG(body->get_space()->is_locked(), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
 
-	direct_state->body = body;
-	return direct_state;
+	return body->get_direct_state();
 }
 
 /* SOFT BODY */
@@ -1589,10 +1593,8 @@ void PhysicsServer3DSW::set_collision_iterations(int p_iterations) {
 };
 
 void PhysicsServer3DSW::init() {
-	last_step = 0.001;
 	iterations = 8; // 8?
 	stepper = memnew(Step3DSW);
-	direct_state = memnew(PhysicsDirectBodyState3DSW);
 };
 
 void PhysicsServer3DSW::step(real_t p_step) {
@@ -1603,9 +1605,6 @@ void PhysicsServer3DSW::step(real_t p_step) {
 	}
 
 	_update_shapes();
-
-	last_step = p_step;
-	PhysicsDirectBodyState3DSW::singleton->step = p_step;
 
 	island_count = 0;
 	active_objects = 0;
@@ -1682,7 +1681,6 @@ void PhysicsServer3DSW::end_sync() {
 
 void PhysicsServer3DSW::finish() {
 	memdelete(stepper);
-	memdelete(direct_state);
 };
 
 int PhysicsServer3DSW::get_process_info(ProcessInfo p_info) {

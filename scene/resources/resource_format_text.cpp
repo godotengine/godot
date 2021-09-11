@@ -424,7 +424,7 @@ Error ResourceLoaderText::load() {
 			}
 		}
 
-		if (path.find("://") == -1 && path.is_rel_path()) {
+		if (path.find("://") == -1 && path.is_relative_path()) {
 			// path is relative to file being loaded, so convert to a resource path
 			path = ProjectSettings::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
 		}
@@ -558,6 +558,12 @@ Error ResourceLoaderText::load() {
 
 		resource_current++;
 
+		int_resources[id] = res; //always assign int resources
+		if (do_assign && cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
+			res->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE);
+			res->set_scene_unique_id(id);
+		}
+
 		while (true) {
 			String assign;
 			Variant value;
@@ -583,12 +589,6 @@ Error ResourceLoaderText::load() {
 				_printerr();
 				return error;
 			}
-		}
-
-		int_resources[id] = res; //always assign int resources
-		if (do_assign && cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
-			res->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE);
-			res->set_scene_unique_id(id);
 		}
 
 		if (progress && resources_total > 0) {
@@ -768,7 +768,7 @@ void ResourceLoaderText::get_dependencies(FileAccess *p_f, List<String> *p_depen
 			}
 		}
 
-		if (!using_uid && path.find("://") == -1 && path.is_rel_path()) {
+		if (!using_uid && path.find("://") == -1 && path.is_relative_path()) {
 			// path is relative to file being loaded, so convert to a resource path
 			path = ProjectSettings::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
 		}
@@ -1849,10 +1849,16 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 			}
 
 			if (groups.size()) {
+				// Write all groups on the same line as they're part of a section header.
+				// This improves readability while not impacting VCS friendliness too much,
+				// since it's rare to have more than 5 groups assigned to a single node.
 				groups.sort_custom<StringName::AlphCompare>();
-				String sgroups = " groups=[\n";
+				String sgroups = " groups=[";
 				for (int j = 0; j < groups.size(); j++) {
-					sgroups += "\"" + String(groups[j]).c_escape() + "\",\n";
+					sgroups += "\"" + String(groups[j]).c_escape() + "\"";
+					if (j < groups.size() - 1) {
+						sgroups += ", ";
+					}
 				}
 				sgroups += "]";
 				header += sgroups;

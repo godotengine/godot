@@ -1642,7 +1642,7 @@ void AnimationTimelineEdit::_play_position_draw() {
 	}
 }
 
-void AnimationTimelineEdit::_gui_input(const Ref<InputEvent> &p_event) {
+void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	const Ref<InputEventMouseButton> mb = p_event;
@@ -1754,8 +1754,6 @@ void AnimationTimelineEdit::_track_added(int p_track) {
 }
 
 void AnimationTimelineEdit::_bind_methods() {
-	ClassDB::bind_method("_gui_input", &AnimationTimelineEdit::_gui_input);
-
 	ADD_SIGNAL(MethodInfo("zoom_changed"));
 	ADD_SIGNAL(MethodInfo("name_limit_changed"));
 	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "drag")));
@@ -2551,7 +2549,7 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 	return Control::get_tooltip(p_pos);
 }
 
-void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
+void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (p_event->is_pressed()) {
@@ -2965,8 +2963,6 @@ void AnimationTrackEdit::append_to_selection(const Rect2 &p_box, bool p_deselect
 }
 
 void AnimationTrackEdit::_bind_methods() {
-	ClassDB::bind_method("_gui_input", &AnimationTrackEdit::_gui_input);
-
 	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "drag")));
 	ADD_SIGNAL(MethodInfo("remove_request", PropertyInfo(Variant::INT, "track")));
 	ADD_SIGNAL(MethodInfo("dropped", PropertyInfo(Variant::INT, "from_track"), PropertyInfo(Variant::INT, "to_track")));
@@ -3418,6 +3414,7 @@ void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
 		if (bool(EDITOR_DEF("editors/animation/confirm_insert_track", true))) {
 			//potential new key, does not exist
 			if (num_tracks == 1) {
+				// TRANSLATORS: %s will be replaced by a phrase describing the target of track.
 				insert_confirm_text->set_text(vformat(TTR("Create new track for %s and insert key?"), p_id.query));
 			} else {
 				insert_confirm_text->set_text(vformat(TTR("Create %d new tracks and insert keys?"), num_tracks));
@@ -3525,7 +3522,8 @@ void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_
 	id.track_idx = track_idx;
 	id.value = p_xform;
 	id.type = Animation::TYPE_TRANSFORM3D;
-	id.query = "node '" + p_node->get_name() + "'";
+	// TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+	id.query = vformat(TTR("node '%s'"), p_node->get_name());
 	id.advance = false;
 
 	//dialog insert
@@ -3547,7 +3545,8 @@ void AnimationTrackEditor::_insert_animation_key(NodePath p_path, const Variant 
 			id.track_idx = i;
 			id.value = p_value;
 			id.type = Animation::TYPE_ANIMATION;
-			id.query = "animation";
+			// TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+			id.query = TTR("animation");
 			id.advance = false;
 			//dialog insert
 			_query_insert(id);
@@ -3560,7 +3559,7 @@ void AnimationTrackEditor::_insert_animation_key(NodePath p_path, const Variant 
 	id.track_idx = -1;
 	id.value = p_value;
 	id.type = Animation::TYPE_ANIMATION;
-	id.query = "animation";
+	id.query = TTR("animation");
 	id.advance = false;
 	//dialog insert
 	_query_insert(id);
@@ -3609,7 +3608,8 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 			id.track_idx = i;
 			id.value = p_value;
 			id.type = Animation::TYPE_VALUE;
-			id.query = "property '" + p_property + "'";
+			// TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+			id.query = vformat(TTR("property '%s'"), p_property);
 			id.advance = false;
 			//dialog insert
 			_query_insert(id);
@@ -3639,7 +3639,7 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 			id.track_idx = i;
 			id.value = value;
 			id.type = Animation::TYPE_BEZIER;
-			id.query = "property '" + p_property + "'";
+			id.query = vformat(TTR("property '%s'"), p_property);
 			id.advance = false;
 			//dialog insert
 			_query_insert(id);
@@ -3655,7 +3655,7 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 	id.track_idx = -1;
 	id.value = p_value;
 	id.type = Animation::TYPE_VALUE;
-	id.query = "property '" + p_property + "'";
+	id.query = vformat(TTR("property '%s'"), p_property);
 	id.advance = false;
 	//dialog insert
 	_query_insert(id);
@@ -3708,7 +3708,7 @@ void AnimationTrackEditor::insert_value_key(const String &p_property, const Vari
 			id.track_idx = i;
 			id.value = p_value;
 			id.type = Animation::TYPE_VALUE;
-			id.query = "property '" + p_property + "'";
+			id.query = vformat(TTR("property '%s'"), p_property);
 			id.advance = p_advance;
 			//dialog insert
 			_query_insert(id);
@@ -3733,7 +3733,7 @@ void AnimationTrackEditor::insert_value_key(const String &p_property, const Vari
 			id.track_idx = i;
 			id.value = value;
 			id.type = Animation::TYPE_BEZIER;
-			id.query = "property '" + p_property + "'";
+			id.query = vformat(TTR("property '%s'"), p_property);
 			id.advance = p_advance;
 			//dialog insert
 			_query_insert(id);
@@ -3747,7 +3747,7 @@ void AnimationTrackEditor::insert_value_key(const String &p_property, const Vari
 		id.track_idx = -1;
 		id.value = p_value;
 		id.type = Animation::TYPE_VALUE;
-		id.query = "property '" + p_property + "'";
+		id.query = vformat(TTR("property '%s'"), p_property);
 		id.advance = p_advance;
 		//dialog insert
 		_query_insert(id);
@@ -5638,6 +5638,11 @@ float AnimationTrackEditor::snap_time(float p_value, bool p_relative) {
 			snap_increment = step->get_value();
 		}
 
+		if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+			// Use more precise snapping when holding Shift.
+			snap_increment *= 0.25;
+		}
+
 		if (p_relative) {
 			double rel = Math::fmod(timeline->get_value(), snap_increment);
 			p_value = Math::snapped(p_value + rel, snap_increment) - rel;
@@ -5752,9 +5757,11 @@ void AnimationTrackEditor::_pick_track_filter_input(const Ref<InputEvent> &p_ie)
 			case KEY_DOWN:
 			case KEY_PAGEUP:
 			case KEY_PAGEDOWN: {
-				pick_track->get_scene_tree()->get_scene_tree()->call("_gui_input", k);
+				pick_track->get_scene_tree()->get_scene_tree()->gui_input(k);
 				pick_track->get_filter_line_edit()->accept_event();
 			} break;
+			default:
+				break;
 		}
 	}
 }

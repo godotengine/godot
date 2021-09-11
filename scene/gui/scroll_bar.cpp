@@ -41,7 +41,7 @@ void ScrollBar::set_can_focus_by_default(bool p_can_focus) {
 	focus_by_default = p_can_focus;
 }
 
-void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
+void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventMouseMotion> m = p_event;
@@ -597,7 +597,6 @@ bool ScrollBar::is_smooth_scroll_enabled() const {
 }
 
 void ScrollBar::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &ScrollBar::_gui_input);
 	ClassDB::bind_method(D_METHOD("set_custom_step", "step"), &ScrollBar::set_custom_step);
 	ClassDB::bind_method(D_METHOD("get_custom_step"), &ScrollBar::get_custom_step);
 

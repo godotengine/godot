@@ -163,8 +163,7 @@ void Input::_bind_methods() {
 
 void Input::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 #ifdef TOOLS_ENABLED
-
-	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", 0) ? "'" : "\"";
+	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 
 	String pf = p_function;
 	if (p_idx == 0 && (pf == "is_action_pressed" || pf == "action_press" || pf == "action_release" ||
@@ -180,7 +179,7 @@ void Input::get_argument_options(const StringName &p_function, int p_idx, List<S
 			}
 
 			String name = pi.name.substr(pi.name.find("/") + 1, pi.name.length());
-			r_options->push_back(quote_style + name + quote_style);
+			r_options->push_back(name.quote(quote_style));
 		}
 	}
 #endif
@@ -221,7 +220,7 @@ Input::SpeedTrack::SpeedTrack() {
 	reset();
 }
 
-bool Input::is_key_pressed(int p_keycode) const {
+bool Input::is_key_pressed(Key p_keycode) const {
 	_THREAD_SAFE_METHOD_
 	return keys_pressed.has(p_keycode);
 }
@@ -241,18 +240,12 @@ bool Input::is_joy_button_pressed(int p_device, JoyButton p_button) const {
 }
 
 bool Input::is_action_pressed(const StringName &p_action, bool p_exact) const {
-#ifdef DEBUG_ENABLED
-	bool has_action = InputMap::get_singleton()->has_action(p_action);
-	ERR_FAIL_COND_V_MSG(!has_action, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
-#endif
+	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
 	return action_state.has(p_action) && action_state[p_action].pressed && (p_exact ? action_state[p_action].exact : true);
 }
 
 bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact) const {
-#ifdef DEBUG_ENABLED
-	bool has_action = InputMap::get_singleton()->has_action(p_action);
-	ERR_FAIL_COND_V_MSG(!has_action, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
-#endif
+	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
 	const Map<StringName, Action>::Element *E = action_state.find(p_action);
 	if (!E) {
 		return false;
@@ -270,10 +263,7 @@ bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact) con
 }
 
 bool Input::is_action_just_released(const StringName &p_action, bool p_exact) const {
-#ifdef DEBUG_ENABLED
-	bool has_action = InputMap::get_singleton()->has_action(p_action);
-	ERR_FAIL_COND_V_MSG(!has_action, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
-#endif
+	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
 	const Map<StringName, Action>::Element *E = action_state.find(p_action);
 	if (!E) {
 		return false;
@@ -291,10 +281,7 @@ bool Input::is_action_just_released(const StringName &p_action, bool p_exact) co
 }
 
 float Input::get_action_strength(const StringName &p_action, bool p_exact) const {
-#ifdef DEBUG_ENABLED
-	bool has_action = InputMap::get_singleton()->has_action(p_action);
-	ERR_FAIL_COND_V_MSG(!has_action, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
-#endif
+	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), 0.0, InputMap::get_singleton()->suggest_actions(p_action));
 	const Map<StringName, Action>::Element *E = action_state.find(p_action);
 	if (!E) {
 		return 0.0f;
@@ -460,10 +447,6 @@ Vector3 Input::get_gyroscope() const {
 	return gyroscope;
 }
 
-void Input::parse_input_event(const Ref<InputEvent> &p_event) {
-	_parse_input_event_impl(p_event, false);
-}
-
 void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated) {
 	// Notes on mouse-touch emulation:
 	// - Emulated mouse events are parsed, that is, re-routed to this method, so they make the same effects
@@ -471,8 +454,6 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 	//   emulated back to touch events in an endless loop.
 	// - Emulated touch events are handed right to the main loop (i.e., the SceneTree) because they don't
 	//   require additional handling by this class.
-
-	_THREAD_SAFE_METHOD_
 
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && !k->is_echo() && k->get_keycode() != 0) {
@@ -838,25 +819,37 @@ void Input::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, co
 	set_custom_mouse_cursor_func(p_cursor, p_shape, p_hotspot);
 }
 
-void Input::accumulate_input_event(const Ref<InputEvent> &p_event) {
+void Input::parse_input_event(const Ref<InputEvent> &p_event) {
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (!use_accumulated_input) {
-		parse_input_event(p_event);
-		return;
+	if (use_accumulated_input) {
+		if (buffered_events.is_empty() || !buffered_events.back()->get()->accumulate(p_event)) {
+			buffered_events.push_back(p_event);
+		}
+	} else if (use_input_buffering) {
+		buffered_events.push_back(p_event);
+	} else {
+		_parse_input_event_impl(p_event, false);
 	}
-	if (!accumulated_events.is_empty() && accumulated_events.back()->get()->accumulate(p_event)) {
-		return; //event was accumulated, exit
-	}
-
-	accumulated_events.push_back(p_event);
 }
 
-void Input::flush_accumulated_events() {
-	while (accumulated_events.front()) {
-		parse_input_event(accumulated_events.front()->get());
-		accumulated_events.pop_front();
+void Input::flush_buffered_events() {
+	_THREAD_SAFE_METHOD_
+
+	while (buffered_events.front()) {
+		_parse_input_event_impl(buffered_events.front()->get(), false);
+		buffered_events.pop_front();
 	}
+}
+
+bool Input::is_using_input_buffering() {
+	return use_input_buffering;
+}
+
+void Input::set_use_input_buffering(bool p_enable) {
+	use_input_buffering = p_enable;
 }
 
 void Input::set_use_accumulated_input(bool p_enable) {
@@ -864,7 +857,7 @@ void Input::set_use_accumulated_input(bool p_enable) {
 }
 
 void Input::release_pressed_events() {
-	flush_accumulated_events(); // this is needed to release actions strengths
+	flush_buffered_events(); // this is needed to release actions strengths
 
 	keys_pressed.clear();
 	joy_buttons_pressed.clear();

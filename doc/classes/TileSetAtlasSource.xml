@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="TileSetAtlasSource" inherits="TileSetSource" version="4.0">
 	<brief_description>
+		Exposes a 2D atlas texture as a set of tiles for a [TileSet] resource.
 	</brief_description>
 	<description>
+		An atlas is a grid of tiles laid out on a texture. Each tile in the grid must be exposed using [method create_tile]. Those tiles are then indexed using their coordinates in the grid.
+		Each tile can also have a size in the grid coordinates, making it more or less cells in the atlas.
+
+		Alternatives version of a tile can be created using [method create_alternative_tile], which are then indexed using an alternative ID. The main tile (the one in the grid), is accessed with an alternative ID equal to 0.
+
+		Each tile alternate has a set of properties that is defined by the source's [TileSet] layers. Those properties are stored in a TileData object that can be accessed and modified using [method get_tile_data].
+		As TileData properties are stored directly in the TileSetAtlasSource resource, their properties might also be set using [code]TileSetAtlasSource.set("&lt;coords_x&gt;:&lt;coords_y&gt;/&lt;alternative_id&gt;/&lt;tile_data_property&gt;")[/code].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,11 +21,14 @@
 			<argument index="1" name="new_atlas_coords" type="Vector2i" default="Vector2i(-1, -1)" />
 			<argument index="2" name="new_size" type="Vector2i" default="Vector2i(-1, -1)" />
 			<description>
+				Returns true if the tile at the [code]atlas_coords[/code] coordinates can be moved to the [code]new_atlas_coords[/code] coordinates with the [code]new_size[/code] size. This functions returns false if a tile is already present in the given area, or if this area is outside the atlas boundaries.
+				If [code]new_atlas_coords[/code] is [code]Vector2i(-1, -1)[/code], keeps the tile's coordinates. If [code]new_size[/code] is [code]Vector2i(-1, -1)[/code], keeps the tile's size.
 			</description>
 		</method>
 		<method name="clear_tiles_outside_texture">
 			<return type="void" />
 			<description>
+				Clears all tiles that are defined outside the texture boundaries.
 			</description>
 		</method>
 		<method name="create_alternative_tile">
@@ -25,6 +36,8 @@
 			<argument index="0" name="atlas_coords" type="Vector2i" />
 			<argument index="1" name="alternative_id_override" type="int" default="-1" />
 			<description>
+				Creates an alternative tile for the tile at coords [code]atlas_coords[/code]. If [code]alternative_id_override[/code] is -1, give it an automatically generated unique ID, or assigns it the given ID otherwise.
+				Returns the new alternative identifier, or -1 if the alternative could not be created with a provided [code]alternative_id_override[/code].
 			</description>
 		</method>
 		<method name="create_tile">
@@ -32,84 +45,55 @@
 			<argument index="0" name="atlas_coords" type="Vector2i" />
 			<argument index="1" name="size" type="Vector2i" default="Vector2i(1, 1)" />
 			<description>
-			</description>
-		</method>
-		<method name="get_alternative_tile_id" qualifiers="const">
-			<return type="int" />
-			<argument index="0" name="atlas_coords" type="Vector2i" />
-			<argument index="1" name="index" type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="get_alternative_tiles_count" qualifiers="const">
-			<return type="int" />
-			<argument index="0" name="atlas_coords" type="Vector2i" />
-			<description>
+				Creates a new tile at coords [code]atlas_coords[/code] with size [code]size[/code].
 			</description>
 		</method>
 		<method name="get_atlas_grid_size" qualifiers="const">
 			<return type="Vector2i" />
 			<description>
+				Returns the atlas grid size, which depends on how many tiles can fit in the texture. It thus depends on the Texture's size, the atlas [code]margins[/code] the tiles' [code]texture_region_size[/code].
 			</description>
 		</method>
 		<method name="get_next_alternative_tile_id" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="atlas_coords" type="Vector2i" />
 			<description>
+				Returns the alternative ID a following call to [method create_alternative_tile] would return.
 			</description>
 		</method>
 		<method name="get_tile_at_coords" qualifiers="const">
 			<return type="Vector2i" />
 			<argument index="0" name="atlas_coords" type="Vector2i" />
 			<description>
+				If there is a tile covering the [code]atlas_coords[/code] coordinates, returns the top-left coordinates of the tile (thus its coordinate ID). Returns [code]Vector2i(-1, -1)[/code] otherwise.
 			</description>
 		</method>
 		<method name="get_tile_data" qualifiers="const">
 			<return type="Object" />
 			<argument index="0" name="atlas_coords" type="Vector2i" />
-			<argument index="1" name="index" type="int" />
+			<argument index="1" name="alternative_tile" type="int" />
 			<description>
-			</description>
-		</method>
-		<method name="get_tile_id" qualifiers="const">
-			<return type="Vector2i" />
-			<argument index="0" name="index" type="int" />
-			<description>
+				Returns the [TileData] object for the given atlas coordinates and alternative ID.
 			</description>
 		</method>
 		<method name="get_tile_size_in_atlas" qualifiers="const">
 			<return type="Vector2i" />
 			<argument index="0" name="atlas_coords" type="Vector2i" />
 			<description>
+				Returns the size of the tile (in the grid coordinates system) at coordinates [code]atlas_coords[/code].
 			</description>
 		</method>
 		<method name="get_tile_texture_region" qualifiers="const">
 			<return type="Rect2i" />
 			<argument index="0" name="atlas_coords" type="Vector2i" />
 			<description>
-			</description>
-		</method>
-		<method name="get_tiles_count" qualifiers="const">
-			<return type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="has_alternative_tile" qualifiers="const">
-			<return type="bool" />
-			<argument index="0" name="atlas_coords" type="Vector2i" />
-			<argument index="1" name="alternative_tile" type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="has_tile" qualifiers="const">
-			<return type="bool" />
-			<argument index="0" name="atlas_coords" type="Vector2i" />
-			<description>
+				Returns a tile's texture region in the atlas texture.
 			</description>
 		</method>
 		<method name="has_tiles_outside_texture">
 			<return type="bool" />
 			<description>
+				Returns if this atlas has tiles outside of its texture.
 			</description>
 		</method>
 		<method name="move_tile_in_atlas">
@@ -118,6 +102,9 @@
 			<argument index="1" name="new_atlas_coords" type="Vector2i" default="Vector2i(-1, -1)" />
 			<argument index="2" name="new_size" type="Vector2i" default="Vector2i(-1, -1)" />
 			<description>
+				Move the tile and its alternatives at the [code]atlas_coords[/code] coordinates to the [code]new_atlas_coords[/code] coordinates with the [code]new_size[/code] size. This functions will fail if a tile is already present in the given area.
+				If [code]new_atlas_coords[/code] is [code]Vector2i(-1, -1)[/code], keeps the tile's coordinates. If [code]new_size[/code] is [code]Vector2i(-1, -1)[/code], keeps the tile's size.
+				To avoid an error, first check if a move is possible using [method can_move_tile_in_atlas].
 			</description>
 		</method>
 		<method name="remove_alternative_tile">
@@ -125,12 +112,15 @@
 			<argument index="0" name="atlas_coords" type="Vector2i" />
 			<argument index="1" name="alternative_tile" type="int" />
 			<description>
+				Remove a tile's alternative with alternative ID [code]alternative_tile[/code].
+				Calling this function with [code]alternative_tile[/code] equals to 0 will fail, as the base tile alternative cannot be removed.
 			</description>
 		</method>
 		<method name="remove_tile">
 			<return type="void" />
 			<argument index="0" name="atlas_coords" type="Vector2i" />
 			<description>
+				Remove a tile and its alternative at coordinates [code]atlas_coords[/code].
 			</description>
 		</method>
 		<method name="set_alternative_tile_id">
@@ -139,17 +129,23 @@
 			<argument index="1" name="alternative_tile" type="int" />
 			<argument index="2" name="new_id" type="int" />
 			<description>
+				Change a tile's alternative ID from [code]alternative_tile[/code] to [code]new_id[/code].
+				Calling this function with [code]alternative_id[/code] equals to 0 will fail, as the base tile alternative cannot be moved.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="margins" type="Vector2i" setter="set_margins" getter="get_margins" default="Vector2i(0, 0)">
+			Margins, in pixels, to offset the origin of the grid in the texture.
 		</member>
 		<member name="separation" type="Vector2i" setter="set_separation" getter="get_separation" default="Vector2i(0, 0)">
+			Separation, in pixels, between each tile texture region of the grid.
 		</member>
 		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
+			The atlas texture.
 		</member>
-		<member name="tile_size" type="Vector2i" setter="set_texture_region_size" getter="get_texture_region_size" default="Vector2i(16, 16)">
+		<member name="texture_region_size" type="Vector2i" setter="set_texture_region_size" getter="get_texture_region_size" default="Vector2i(16, 16)">
+			The base tile size in the texture (in pixel). This size must be bigger than the TileSet's [code]tile_size[/code] value.
 		</member>
 	</members>
 	<constants>

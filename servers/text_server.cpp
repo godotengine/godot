@@ -216,82 +216,129 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &TextServer::free); // shouldn't conflict with Object::free()
 
 	/* Font Interface */
-	ClassDB::bind_method(D_METHOD("create_font_system", "name", "base_size"), &TextServer::create_font_system, DEFVAL(16));
-	ClassDB::bind_method(D_METHOD("create_font_resource", "filename", "base_size"), &TextServer::create_font_resource, DEFVAL(16));
-	ClassDB::bind_method(D_METHOD("create_font_memory", "data", "type", "base_size"), &TextServer::_create_font_memory, DEFVAL(16));
-	ClassDB::bind_method(D_METHOD("create_font_bitmap", "height", "ascent", "base_size"), &TextServer::create_font_bitmap);
 
-	ClassDB::bind_method(D_METHOD("font_bitmap_add_texture", "font", "texture"), &TextServer::font_bitmap_add_texture);
-	ClassDB::bind_method(D_METHOD("font_bitmap_add_char", "font", "char", "texture_idx", "rect", "align", "advance"), &TextServer::font_bitmap_add_char);
-	ClassDB::bind_method(D_METHOD("font_bitmap_add_kerning_pair", "font", "A", "B", "kerning"), &TextServer::font_bitmap_add_kerning_pair);
+	ClassDB::bind_method(D_METHOD("create_font"), &TextServer::create_font);
 
-	ClassDB::bind_method(D_METHOD("font_get_height", "font", "size"), &TextServer::font_get_height);
-	ClassDB::bind_method(D_METHOD("font_get_ascent", "font", "size"), &TextServer::font_get_ascent);
-	ClassDB::bind_method(D_METHOD("font_get_descent", "font", "size"), &TextServer::font_get_descent);
+	ClassDB::bind_method(D_METHOD("font_set_data", "data"), &TextServer::font_set_data);
 
-	ClassDB::bind_method(D_METHOD("font_get_underline_position", "font", "size"), &TextServer::font_get_underline_position);
-	ClassDB::bind_method(D_METHOD("font_get_underline_thickness", "font", "size"), &TextServer::font_get_underline_thickness);
+	ClassDB::bind_method(D_METHOD("font_set_antialiased", "font_rid", "antialiased"), &TextServer::font_set_antialiased);
+	ClassDB::bind_method(D_METHOD("font_is_antialiased", "font_rid"), &TextServer::font_is_antialiased);
 
-	ClassDB::bind_method(D_METHOD("font_get_spacing_space", "font"), &TextServer::font_get_spacing_space);
-	ClassDB::bind_method(D_METHOD("font_set_spacing_space", "font", "value"), &TextServer::font_set_spacing_space);
+	ClassDB::bind_method(D_METHOD("font_set_multichannel_signed_distance_field", "font_rid", "msdf"), &TextServer::font_set_multichannel_signed_distance_field);
+	ClassDB::bind_method(D_METHOD("font_is_multichannel_signed_distance_field", "font_rid"), &TextServer::font_is_multichannel_signed_distance_field);
 
-	ClassDB::bind_method(D_METHOD("font_get_spacing_glyph", "font"), &TextServer::font_get_spacing_glyph);
-	ClassDB::bind_method(D_METHOD("font_set_spacing_glyph", "font", "value"), &TextServer::font_set_spacing_glyph);
+	ClassDB::bind_method(D_METHOD("font_set_msdf_pixel_range", "font_rid", "msdf_pixel_range"), &TextServer::font_set_msdf_pixel_range);
+	ClassDB::bind_method(D_METHOD("font_get_msdf_pixel_range", "font_rid"), &TextServer::font_get_msdf_pixel_range);
 
-	ClassDB::bind_method(D_METHOD("font_set_antialiased", "font", "antialiased"), &TextServer::font_set_antialiased);
-	ClassDB::bind_method(D_METHOD("font_get_antialiased", "font"), &TextServer::font_get_antialiased);
+	ClassDB::bind_method(D_METHOD("font_set_msdf_size", "font_rid", "msdf_size"), &TextServer::font_set_msdf_size);
+	ClassDB::bind_method(D_METHOD("font_get_msdf_size", "font_rid"), &TextServer::font_get_msdf_size);
 
-	ClassDB::bind_method(D_METHOD("font_get_feature_list", "font"), &TextServer::font_get_feature_list);
-	ClassDB::bind_method(D_METHOD("font_get_variation_list", "font"), &TextServer::font_get_variation_list);
+	ClassDB::bind_method(D_METHOD("font_set_fixed_size", "font_rid", "fixed_size"), &TextServer::font_set_fixed_size);
+	ClassDB::bind_method(D_METHOD("font_get_fixed_size", "font_rid"), &TextServer::font_get_fixed_size);
 
-	ClassDB::bind_method(D_METHOD("font_set_variation", "font", "tag", "value"), &TextServer::font_set_variation);
-	ClassDB::bind_method(D_METHOD("font_get_variation", "font", "tag"), &TextServer::font_get_variation);
+	ClassDB::bind_method(D_METHOD("font_set_force_autohinter", "font_rid", "force_autohinter"), &TextServer::font_set_force_autohinter);
+	ClassDB::bind_method(D_METHOD("font_is_force_autohinter", "font_rid"), &TextServer::font_is_force_autohinter);
 
-	ClassDB::bind_method(D_METHOD("font_set_hinting", "font", "hinting"), &TextServer::font_set_hinting);
-	ClassDB::bind_method(D_METHOD("font_get_hinting", "font"), &TextServer::font_get_hinting);
+	ClassDB::bind_method(D_METHOD("font_set_hinting", "font_rid", "_hinting"), &TextServer::font_set_hinting);
+	ClassDB::bind_method(D_METHOD("font_get_hinting", "font_rid"), &TextServer::font_get_hinting);
 
-	ClassDB::bind_method(D_METHOD("font_set_distance_field_hint", "font", "distance_field"), &TextServer::font_set_distance_field_hint);
-	ClassDB::bind_method(D_METHOD("font_get_distance_field_hint", "font"), &TextServer::font_get_distance_field_hint);
+	ClassDB::bind_method(D_METHOD("font_set_variation_coordinates", "font_rid", "variation_coordinates"), &TextServer::font_set_variation_coordinates);
+	ClassDB::bind_method(D_METHOD("font_get_variation_coordinates", "font_rid"), &TextServer::font_get_variation_coordinates);
 
-	ClassDB::bind_method(D_METHOD("font_set_force_autohinter", "font", "enabeld"), &TextServer::font_set_force_autohinter);
-	ClassDB::bind_method(D_METHOD("font_get_force_autohinter", "font"), &TextServer::font_get_force_autohinter);
+	ClassDB::bind_method(D_METHOD("font_set_oversampling", "font_rid", "oversampling"), &TextServer::font_set_oversampling);
+	ClassDB::bind_method(D_METHOD("font_get_oversampling", "font_rid"), &TextServer::font_get_oversampling);
 
-	ClassDB::bind_method(D_METHOD("font_has_char", "font", "char"), &TextServer::font_has_char);
-	ClassDB::bind_method(D_METHOD("font_get_supported_chars", "font"), &TextServer::font_get_supported_chars);
+	ClassDB::bind_method(D_METHOD("font_get_size_cache_list", "font_rid"), &TextServer::font_get_size_cache_list);
+	ClassDB::bind_method(D_METHOD("font_clear_size_cache", "font_rid"), &TextServer::font_clear_size_cache);
+	ClassDB::bind_method(D_METHOD("font_remove_size_cache", "font_rid", "size"), &TextServer::font_remove_size_cache);
 
-	ClassDB::bind_method(D_METHOD("font_has_outline", "font"), &TextServer::font_has_outline);
-	ClassDB::bind_method(D_METHOD("font_get_base_size", "font"), &TextServer::font_get_base_size);
+	ClassDB::bind_method(D_METHOD("font_set_ascent", "font_rid", "size", "ascent"), &TextServer::font_set_ascent);
+	ClassDB::bind_method(D_METHOD("font_get_ascent", "font_rid", "size"), &TextServer::font_get_ascent);
 
-	ClassDB::bind_method(D_METHOD("font_is_language_supported", "font", "language"), &TextServer::font_is_language_supported);
-	ClassDB::bind_method(D_METHOD("font_set_language_support_override", "font", "language", "supported"), &TextServer::font_set_language_support_override);
+	ClassDB::bind_method(D_METHOD("font_set_descent", "font_rid", "size", "descent"), &TextServer::font_set_descent);
+	ClassDB::bind_method(D_METHOD("font_get_descent", "font_rid", "size"), &TextServer::font_get_descent);
 
-	ClassDB::bind_method(D_METHOD("font_get_language_support_override", "font", "language"), &TextServer::font_get_language_support_override);
-	ClassDB::bind_method(D_METHOD("font_remove_language_support_override", "font", "language"), &TextServer::font_remove_language_support_override);
-	ClassDB::bind_method(D_METHOD("font_get_language_support_overrides", "font"), &TextServer::font_get_language_support_overrides);
+	ClassDB::bind_method(D_METHOD("font_set_underline_position", "font_rid", "size", "underline_position"), &TextServer::font_set_underline_position);
+	ClassDB::bind_method(D_METHOD("font_get_underline_position", "font_rid", "size"), &TextServer::font_get_underline_position);
 
-	ClassDB::bind_method(D_METHOD("font_is_script_supported", "font", "script"), &TextServer::font_is_script_supported);
-	ClassDB::bind_method(D_METHOD("font_set_script_support_override", "font", "script", "supported"), &TextServer::font_set_script_support_override);
+	ClassDB::bind_method(D_METHOD("font_set_underline_thickness", "font_rid", "size", "underline_thickness"), &TextServer::font_set_underline_thickness);
+	ClassDB::bind_method(D_METHOD("font_get_underline_thickness", "font_rid", "size"), &TextServer::font_get_underline_thickness);
 
-	ClassDB::bind_method(D_METHOD("font_get_script_support_override", "font", "script"), &TextServer::font_get_script_support_override);
-	ClassDB::bind_method(D_METHOD("font_remove_script_support_override", "font", "script"), &TextServer::font_remove_script_support_override);
-	ClassDB::bind_method(D_METHOD("font_get_script_support_overrides", "font"), &TextServer::font_get_script_support_overrides);
+	ClassDB::bind_method(D_METHOD("font_set_scale", "font_rid", "size", "scale"), &TextServer::font_set_scale);
+	ClassDB::bind_method(D_METHOD("font_get_scale", "font_rid", "size"), &TextServer::font_get_scale);
 
-	ClassDB::bind_method(D_METHOD("font_get_glyph_index", "font", "char", "variation_selector"), &TextServer::font_get_glyph_index, DEFVAL(0x0000));
-	ClassDB::bind_method(D_METHOD("font_get_glyph_advance", "font", "index", "size"), &TextServer::font_get_glyph_advance);
-	ClassDB::bind_method(D_METHOD("font_get_glyph_kerning", "font", "index_a", "index_b", "size"), &TextServer::font_get_glyph_kerning);
+	ClassDB::bind_method(D_METHOD("font_set_spacing", "font_rid", "size", "spacing", "value"), &TextServer::font_set_spacing);
+	ClassDB::bind_method(D_METHOD("font_get_spacing", "font_rid", "size", "spacing"), &TextServer::font_get_spacing);
 
-	ClassDB::bind_method(D_METHOD("font_draw_glyph", "font", "canvas", "size", "pos", "index", "color"), &TextServer::font_draw_glyph, DEFVAL(Color(1, 1, 1)));
-	ClassDB::bind_method(D_METHOD("font_draw_glyph_outline", "font", "canvas", "size", "outline_size", "pos", "index", "color"), &TextServer::font_draw_glyph_outline, DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("font_get_texture_count", "font_rid", "size"), &TextServer::font_get_texture_count);
+	ClassDB::bind_method(D_METHOD("font_clear_textures", "font_rid", "size"), &TextServer::font_clear_textures);
+	ClassDB::bind_method(D_METHOD("font_remove_texture", "font_rid", "size", "texture_index"), &TextServer::font_remove_texture);
 
-	ClassDB::bind_method(D_METHOD("font_get_oversampling"), &TextServer::font_get_oversampling);
-	ClassDB::bind_method(D_METHOD("font_set_oversampling", "oversampling"), &TextServer::font_set_oversampling);
+	ClassDB::bind_method(D_METHOD("font_set_texture_image", "font_rid", "size", "texture_index", "image"), &TextServer::font_set_texture_image);
+	ClassDB::bind_method(D_METHOD("font_get_texture_image", "font_rid", "size", "texture_index"), &TextServer::font_get_texture_image);
 
-	ClassDB::bind_method(D_METHOD("get_system_fonts"), &TextServer::get_system_fonts);
+	ClassDB::bind_method(D_METHOD("font_set_texture_offsets", "font_rid", "size", "texture_index", "offset"), &TextServer::font_set_texture_offsets);
+	ClassDB::bind_method(D_METHOD("font_get_texture_offsets", "font_rid", "size", "texture_index"), &TextServer::font_get_texture_offsets);
+
+	ClassDB::bind_method(D_METHOD("font_get_glyph_list", "font_rid", "size"), &TextServer::font_get_glyph_list);
+	ClassDB::bind_method(D_METHOD("font_clear_glyphs", "font_rid", "size"), &TextServer::font_clear_glyphs);
+	ClassDB::bind_method(D_METHOD("font_remove_glyph", "font_rid", "size", "glyph"), &TextServer::font_remove_glyph);
+
+	ClassDB::bind_method(D_METHOD("font_get_glyph_advance", "font_rid", "size", "glyph"), &TextServer::font_get_glyph_advance);
+	ClassDB::bind_method(D_METHOD("font_set_glyph_advance", "font_rid", "size", "glyph", "advance"), &TextServer::font_set_glyph_advance);
+
+	ClassDB::bind_method(D_METHOD("font_get_glyph_offset", "font_rid", "size", "glyph"), &TextServer::font_get_glyph_offset);
+	ClassDB::bind_method(D_METHOD("font_set_glyph_offset", "font_rid", "size", "glyph", "offset"), &TextServer::font_set_glyph_offset);
+
+	ClassDB::bind_method(D_METHOD("font_get_glyph_size", "font_rid", "size", "glyph"), &TextServer::font_get_glyph_size);
+	ClassDB::bind_method(D_METHOD("font_set_glyph_size", "font_rid", "size", "glyph", "gl_size"), &TextServer::font_set_glyph_size);
+
+	ClassDB::bind_method(D_METHOD("font_get_glyph_uv_rect", "font_rid", "size", "glyph"), &TextServer::font_get_glyph_uv_rect);
+	ClassDB::bind_method(D_METHOD("font_set_glyph_uv_rect", "font_rid", "size", "glyph", "uv_rect"), &TextServer::font_set_glyph_uv_rect);
+
+	ClassDB::bind_method(D_METHOD("font_get_glyph_texture_idx", "font_rid", "size", "glyph"), &TextServer::font_get_glyph_texture_idx);
+	ClassDB::bind_method(D_METHOD("font_set_glyph_texture_idx", "font_rid", "size", "glyph", "texture_idx"), &TextServer::font_set_glyph_texture_idx);
+
+	ClassDB::bind_method(D_METHOD("font_get_glyph_contours", "font", "size", "index"), &TextServer::_font_get_glyph_contours);
+
+	ClassDB::bind_method(D_METHOD("font_get_kerning_list", "font_rid", "size"), &TextServer::font_get_kerning_list);
+	ClassDB::bind_method(D_METHOD("font_clear_kerning_map", "font_rid", "size"), &TextServer::font_clear_kerning_map);
+	ClassDB::bind_method(D_METHOD("font_remove_kerning", "font_rid", "size", "glyph_pair"), &TextServer::font_remove_kerning);
+
+	ClassDB::bind_method(D_METHOD("font_set_kerning", "font_rid", "size", "glyph_pair", "kerning"), &TextServer::font_set_kerning);
+	ClassDB::bind_method(D_METHOD("font_get_kerning", "font_rid", "size", "glyph_pair"), &TextServer::font_get_kerning);
+
+	ClassDB::bind_method(D_METHOD("font_get_glyph_index", "font_rid", "size", "char", "variation_selector"), &TextServer::font_get_glyph_index);
+
+	ClassDB::bind_method(D_METHOD("font_has_char", "font_rid", "char"), &TextServer::font_has_char);
+	ClassDB::bind_method(D_METHOD("font_get_supported_chars", "font_rid"), &TextServer::font_get_supported_chars);
+
+	ClassDB::bind_method(D_METHOD("font_render_range", "font_rid", "size", "start", "end"), &TextServer::font_render_range);
+	ClassDB::bind_method(D_METHOD("font_render_glyph", "font_rid", "size", "index"), &TextServer::font_render_glyph);
+
+	ClassDB::bind_method(D_METHOD("font_draw_glyph", "font_rid", "canvas", "size", "pos", "index", "color"), &TextServer::font_draw_glyph, DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("font_draw_glyph_outline", "font_rid", "canvas", "size", "outline_size", "pos", "index", "color"), &TextServer::font_draw_glyph_outline, DEFVAL(Color(1, 1, 1)));
+
+	ClassDB::bind_method(D_METHOD("font_is_language_supported", "font_rid", "language"), &TextServer::font_is_language_supported);
+	ClassDB::bind_method(D_METHOD("font_set_language_support_override", "font_rid", "language", "supported"), &TextServer::font_set_language_support_override);
+	ClassDB::bind_method(D_METHOD("font_get_language_support_override", "font_rid", "language"), &TextServer::font_get_language_support_override);
+	ClassDB::bind_method(D_METHOD("font_remove_language_support_override", "font_rid", "language"), &TextServer::font_remove_language_support_override);
+	ClassDB::bind_method(D_METHOD("font_get_language_support_overrides", "font_rid"), &TextServer::font_get_language_support_overrides);
+
+	ClassDB::bind_method(D_METHOD("font_is_script_supported", "font_rid", "script"), &TextServer::font_is_script_supported);
+	ClassDB::bind_method(D_METHOD("font_set_script_support_override", "font_rid", "script", "supported"), &TextServer::font_set_script_support_override);
+	ClassDB::bind_method(D_METHOD("font_get_script_support_override", "font_rid", "script"), &TextServer::font_get_script_support_override);
+	ClassDB::bind_method(D_METHOD("font_remove_script_support_override", "font_rid", "script"), &TextServer::font_remove_script_support_override);
+	ClassDB::bind_method(D_METHOD("font_get_script_support_overrides", "font_rid"), &TextServer::font_get_script_support_overrides);
+
+	ClassDB::bind_method(D_METHOD("font_supported_feature_list", "font_rid"), &TextServer::font_supported_feature_list);
+	ClassDB::bind_method(D_METHOD("font_supported_variation_list", "font_rid"), &TextServer::font_supported_variation_list);
+
+	ClassDB::bind_method(D_METHOD("font_get_global_oversampling"), &TextServer::font_get_global_oversampling);
+	ClassDB::bind_method(D_METHOD("font_set_global_oversampling", "oversampling"), &TextServer::font_set_global_oversampling);
 
 	ClassDB::bind_method(D_METHOD("get_hex_code_box_size", "size", "index"), &TextServer::get_hex_code_box_size);
 	ClassDB::bind_method(D_METHOD("draw_hex_code_box", "canvas", "size", "pos", "index", "color"), &TextServer::draw_hex_code_box);
-
-	ClassDB::bind_method(D_METHOD("font_get_glyph_contours", "font", "size", "index"), &TextServer::_font_get_glyph_contours);
 
 	/* Shaped text buffer interface */
 
@@ -314,8 +361,8 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_text_get_preserve_control", "shaped"), &TextServer::shaped_text_get_preserve_control);
 
 	ClassDB::bind_method(D_METHOD("shaped_text_add_string", "shaped", "text", "fonts", "size", "opentype_features", "language"), &TextServer::shaped_text_add_string, DEFVAL(Dictionary()), DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("shaped_text_add_object", "shaped", "key", "size", "inline_align", "length"), &TextServer::shaped_text_add_object, DEFVAL(VALIGN_CENTER), DEFVAL(1));
-	ClassDB::bind_method(D_METHOD("shaped_text_resize_object", "shaped", "key", "size", "inline_align"), &TextServer::shaped_text_resize_object, DEFVAL(VALIGN_CENTER));
+	ClassDB::bind_method(D_METHOD("shaped_text_add_object", "shaped", "key", "size", "inline_align", "length"), &TextServer::shaped_text_add_object, DEFVAL(INLINE_ALIGN_CENTER), DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("shaped_text_resize_object", "shaped", "key", "size", "inline_align"), &TextServer::shaped_text_resize_object, DEFVAL(INLINE_ALIGN_CENTER));
 
 	ClassDB::bind_method(D_METHOD("shaped_text_substr", "shaped", "start", "length"), &TextServer::shaped_text_substr);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_parent", "shaped"), &TextServer::shaped_text_get_parent);
@@ -420,6 +467,12 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONTOUR_CURVE_TAG_ON);
 	BIND_ENUM_CONSTANT(CONTOUR_CURVE_TAG_OFF_CONIC);
 	BIND_ENUM_CONSTANT(CONTOUR_CURVE_TAG_OFF_CUBIC);
+
+	/* Font Spacing*/
+	BIND_ENUM_CONSTANT(SPACING_GLYPH);
+	BIND_ENUM_CONSTANT(SPACING_SPACE);
+	BIND_ENUM_CONSTANT(SPACING_TOP);
+	BIND_ENUM_CONSTANT(SPACING_BOTTOM);
 }
 
 Vector3 TextServer::hex_code_box_font_size[2] = { Vector3(5, 5, 1), Vector3(10, 10, 2) };
@@ -514,8 +567,8 @@ void TextServer::finish_hex_code_box_fonts() {
 Vector2 TextServer::get_hex_code_box_size(int p_size, char32_t p_index) const {
 	int fnt = (p_size < 20) ? 0 : 1;
 
-	float w = ((p_index <= 0xFF) ? 1 : ((p_index <= 0xFFFF) ? 2 : 3)) * hex_code_box_font_size[fnt].x;
-	float h = 2 * hex_code_box_font_size[fnt].y;
+	real_t w = ((p_index <= 0xFF) ? 1 : ((p_index <= 0xFFFF) ? 2 : 3)) * hex_code_box_font_size[fnt].x;
+	real_t h = 2 * hex_code_box_font_size[fnt].y;
 	return Vector2(w + 4, h + 3 + 2 * hex_code_box_font_size[fnt].z);
 }
 
@@ -534,8 +587,8 @@ void TextServer::draw_hex_code_box(RID p_canvas, int p_size, const Vector2 &p_po
 	Vector2 pos = p_pos;
 	Rect2 dest = Rect2(Vector2(), Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y));
 
-	float w = ((p_index <= 0xFF) ? 1 : ((p_index <= 0xFFFF) ? 2 : 3)) * hex_code_box_font_size[fnt].x;
-	float h = 2 * hex_code_box_font_size[fnt].y;
+	real_t w = ((p_index <= 0xFF) ? 1 : ((p_index <= 0xFFFF) ? 2 : 3)) * hex_code_box_font_size[fnt].x;
+	real_t h = 2 * hex_code_box_font_size[fnt].y;
 
 	pos.y -= Math::floor((h + 3 + hex_code_box_font_size[fnt].z) * 0.75);
 
@@ -575,7 +628,7 @@ void TextServer::draw_hex_code_box(RID p_canvas, int p_size, const Vector2 &p_po
 	}
 }
 
-Vector<Vector2i> TextServer::shaped_text_get_line_breaks_adv(RID p_shaped, const Vector<float> &p_width, int p_start, bool p_once, uint8_t /*TextBreakFlag*/ p_break_flags) const {
+Vector<Vector2i> TextServer::shaped_text_get_line_breaks_adv(RID p_shaped, const Vector<real_t> &p_width, int p_start, bool p_once, uint8_t /*TextBreakFlag*/ p_break_flags) const {
 	Vector<Vector2i> lines;
 
 	ERR_FAIL_COND_V(p_width.is_empty(), lines);
@@ -584,7 +637,7 @@ Vector<Vector2i> TextServer::shaped_text_get_line_breaks_adv(RID p_shaped, const
 	const Vector<Glyph> &logical = const_cast<TextServer *>(this)->shaped_text_sort_logical(p_shaped);
 	const Vector2i &range = shaped_text_get_range(p_shaped);
 
-	float width = 0.f;
+	real_t width = 0.f;
 	int line_start = MAX(p_start, range.x);
 	int last_safe_break = -1;
 	int chunk = 0;
@@ -646,14 +699,14 @@ Vector<Vector2i> TextServer::shaped_text_get_line_breaks_adv(RID p_shaped, const
 	return lines;
 }
 
-Vector<Vector2i> TextServer::shaped_text_get_line_breaks(RID p_shaped, float p_width, int p_start, uint8_t /*TextBreakFlag*/ p_break_flags) const {
+Vector<Vector2i> TextServer::shaped_text_get_line_breaks(RID p_shaped, real_t p_width, int p_start, uint8_t /*TextBreakFlag*/ p_break_flags) const {
 	Vector<Vector2i> lines;
 
 	const_cast<TextServer *>(this)->shaped_text_update_breaks(p_shaped);
 	const Vector<Glyph> &logical = const_cast<TextServer *>(this)->shaped_text_sort_logical(p_shaped);
 	const Vector2i &range = shaped_text_get_range(p_shaped);
 
-	float width = 0.f;
+	real_t width = 0.f;
 	int line_start = MAX(p_start, range.x);
 	int last_safe_break = -1;
 	int word_count = 0;
@@ -665,9 +718,7 @@ Vector<Vector2i> TextServer::shaped_text_get_line_breaks(RID p_shaped, float p_w
 			continue;
 		}
 		if (l_gl[i].count > 0) {
-			//Ignore trailing spaces.
-			bool is_space = (l_gl[i].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE;
-			if ((p_width > 0) && (width + (is_space ? 0 : l_gl[i].advance) > p_width) && (last_safe_break >= 0)) {
+			if ((p_width > 0) && (width + l_gl[i].advance * l_gl[i].repeat > p_width) && (last_safe_break >= 0)) {
 				lines.push_back(Vector2i(line_start, l_gl[last_safe_break].end));
 				line_start = l_gl[last_safe_break].end;
 				i = last_safe_break;
@@ -698,7 +749,7 @@ Vector<Vector2i> TextServer::shaped_text_get_line_breaks(RID p_shaped, float p_w
 				last_safe_break = i;
 			}
 		}
-		width += l_gl[i].advance;
+		width += l_gl[i].advance * l_gl[i].repeat;
 	}
 
 	if (l_size > 0) {
@@ -739,16 +790,21 @@ Vector<Vector2i> TextServer::shaped_text_get_word_breaks(RID p_shaped, int p_gra
 	return words;
 }
 
+TextServer::TrimData TextServer::shaped_text_get_trim_data(RID p_shaped) const {
+	WARN_PRINT("Getting overrun data not supported by this TextServer.");
+	return TrimData();
+}
+
 void TextServer::shaped_text_get_carets(RID p_shaped, int p_position, Rect2 &p_leading_caret, Direction &p_leading_dir, Rect2 &p_trailing_caret, Direction &p_trailing_dir) const {
 	Vector<Rect2> carets;
 	const Vector<TextServer::Glyph> visual = shaped_text_get_glyphs(p_shaped);
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
 	const Vector2 &range = shaped_text_get_range(p_shaped);
-	float ascent = shaped_text_get_ascent(p_shaped);
-	float descent = shaped_text_get_descent(p_shaped);
-	float height = (ascent + descent) / 2;
+	real_t ascent = shaped_text_get_ascent(p_shaped);
+	real_t descent = shaped_text_get_descent(p_shaped);
+	real_t height = (ascent + descent) / 2;
 
-	float off = 0.0f;
+	real_t off = 0.0f;
 	p_leading_dir = DIRECTION_AUTO;
 	p_trailing_dir = DIRECTION_AUTO;
 
@@ -854,11 +910,11 @@ void TextServer::shaped_text_get_carets(RID p_shaped, int p_position, Rect2 &p_l
 			}
 			// Caret inside grapheme (middle).
 			if (p_position > glyphs[i].start && p_position < glyphs[i].end && (glyphs[i].flags & GRAPHEME_IS_VIRTUAL) != GRAPHEME_IS_VIRTUAL) {
-				float advance = 0.f;
+				real_t advance = 0.f;
 				for (int j = 0; j < glyphs[i].count; j++) {
 					advance += glyphs[i + j].advance * glyphs[i + j].repeat;
 				}
-				float char_adv = advance / (float)(glyphs[i].end - glyphs[i].start);
+				real_t char_adv = advance / (real_t)(glyphs[i].end - glyphs[i].start);
 				Rect2 cr;
 				if (orientation == ORIENTATION_HORIZONTAL) {
 					cr.size.x = 1.0f;
@@ -937,14 +993,14 @@ Vector<Vector2> TextServer::shaped_text_get_selection(RID p_shaped, int p_start,
 	int v_size = visual.size();
 	const Glyph *glyphs = visual.ptr();
 
-	float off = 0.0f;
+	real_t off = 0.0f;
 	for (int i = 0; i < v_size; i++) {
 		for (int k = 0; k < glyphs[i].repeat; k++) {
 			if ((glyphs[i].count > 0) && ((glyphs[i].index != 0) || ((glyphs[i].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE))) {
 				if (glyphs[i].start < end && glyphs[i].end > start) {
 					// Grapheme fully in selection range.
 					if (glyphs[i].start >= start && glyphs[i].end <= end) {
-						float advance = 0.f;
+						real_t advance = 0.f;
 						for (int j = 0; j < glyphs[i].count; j++) {
 							advance += glyphs[i + j].advance;
 						}
@@ -952,11 +1008,11 @@ Vector<Vector2> TextServer::shaped_text_get_selection(RID p_shaped, int p_start,
 					}
 					// Only start of grapheme is in selection range.
 					if (glyphs[i].start >= start && glyphs[i].end > end) {
-						float advance = 0.f;
+						real_t advance = 0.f;
 						for (int j = 0; j < glyphs[i].count; j++) {
 							advance += glyphs[i + j].advance;
 						}
-						float char_adv = advance / (float)(glyphs[i].end - glyphs[i].start);
+						real_t char_adv = advance / (real_t)(glyphs[i].end - glyphs[i].start);
 						if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
 							ranges.push_back(Vector2(off + char_adv * (glyphs[i].end - end), off + advance));
 						} else {
@@ -965,24 +1021,24 @@ Vector<Vector2> TextServer::shaped_text_get_selection(RID p_shaped, int p_start,
 					}
 					// Only end of grapheme is in selection range.
 					if (glyphs[i].start < start && glyphs[i].end <= end) {
-						float advance = 0.f;
+						real_t advance = 0.f;
 						for (int j = 0; j < glyphs[i].count; j++) {
 							advance += glyphs[i + j].advance;
 						}
-						float char_adv = advance / (float)(glyphs[i].end - glyphs[i].start);
+						real_t char_adv = advance / (real_t)(glyphs[i].end - glyphs[i].start);
 						if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
 							ranges.push_back(Vector2(off, off + char_adv * (start - glyphs[i].start)));
 						} else {
 							ranges.push_back(Vector2(off + char_adv * (glyphs[i].end - start), off + advance));
 						}
 					}
-					// Selection range is within grapheme
+					// Selection range is within grapheme.
 					if (glyphs[i].start < start && glyphs[i].end > end) {
-						float advance = 0.f;
+						real_t advance = 0.f;
 						for (int j = 0; j < glyphs[i].count; j++) {
 							advance += glyphs[i + j].advance;
 						}
-						float char_adv = advance / (float)(glyphs[i].end - glyphs[i].start);
+						real_t char_adv = advance / (real_t)(glyphs[i].end - glyphs[i].start);
 						if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
 							ranges.push_back(Vector2(off + char_adv * (glyphs[i].end - end), off + char_adv * (glyphs[i].end - start)));
 						} else {
@@ -1017,11 +1073,11 @@ Vector<Vector2> TextServer::shaped_text_get_selection(RID p_shaped, int p_start,
 	return ranges;
 }
 
-int TextServer::shaped_text_hit_test_grapheme(RID p_shaped, float p_coords) const {
+int TextServer::shaped_text_hit_test_grapheme(RID p_shaped, real_t p_coords) const {
 	const Vector<TextServer::Glyph> visual = shaped_text_get_glyphs(p_shaped);
 
 	// Exact grapheme hit test, return -1 if missed.
-	float off = 0.0f;
+	real_t off = 0.0f;
 
 	int v_size = visual.size();
 	const Glyph *glyphs = visual.ptr();
@@ -1037,7 +1093,7 @@ int TextServer::shaped_text_hit_test_grapheme(RID p_shaped, float p_coords) cons
 	return -1;
 }
 
-int TextServer::shaped_text_hit_test_position(RID p_shaped, float p_coords) const {
+int TextServer::shaped_text_hit_test_position(RID p_shaped, real_t p_coords) const {
 	const Vector<TextServer::Glyph> visual = shaped_text_get_glyphs(p_shaped);
 
 	int v_size = visual.size();
@@ -1071,10 +1127,10 @@ int TextServer::shaped_text_hit_test_position(RID p_shaped, float p_coords) cons
 		}
 	}
 
-	float off = 0.0f;
+	real_t off = 0.0f;
 	for (int i = 0; i < v_size; i++) {
 		if (glyphs[i].count > 0) {
-			float advance = 0.f;
+			real_t advance = 0.f;
 			for (int j = 0; j < glyphs[i].count; j++) {
 				advance += glyphs[i + j].advance * glyphs[i + j].repeat;
 			}
@@ -1132,15 +1188,31 @@ int TextServer::shaped_text_prev_grapheme_pos(RID p_shaped, int p_pos) {
 	return p_pos;
 }
 
-void TextServer::shaped_text_draw(RID p_shaped, RID p_canvas, const Vector2 &p_pos, float p_clip_l, float p_clip_r, const Color &p_color) const {
+void TextServer::shaped_text_draw(RID p_shaped, RID p_canvas, const Vector2 &p_pos, real_t p_clip_l, real_t p_clip_r, const Color &p_color) const {
 	const Vector<TextServer::Glyph> visual = shaped_text_get_glyphs(p_shaped);
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
 	bool hex_codes = shaped_text_get_preserve_control(p_shaped) || shaped_text_get_preserve_invalid(p_shaped);
+
+	bool rtl = shaped_text_get_direction(p_shaped) == DIRECTION_RTL;
+	TrimData trim_data = shaped_text_get_trim_data(p_shaped);
 
 	int v_size = visual.size();
 	const Glyph *glyphs = visual.ptr();
 
 	Vector2 ofs = p_pos;
+	// Draw RTL ellipsis string when needed.
+	if (rtl && trim_data.ellipsis_pos >= 0) {
+		for (int i = trim_data.ellipsis_glyph_buf.size() - 1; i >= 0; i--) {
+			for (int j = 0; j < trim_data.ellipsis_glyph_buf[i].repeat; j++) {
+				font_draw_glyph(trim_data.ellipsis_glyph_buf[i].font_rid, p_canvas, trim_data.ellipsis_glyph_buf[i].font_size, ofs + Vector2(trim_data.ellipsis_glyph_buf[i].x_off, trim_data.ellipsis_glyph_buf[i].y_off), trim_data.ellipsis_glyph_buf[i].index, p_color);
+				if (orientation == ORIENTATION_HORIZONTAL) {
+					ofs.x += trim_data.ellipsis_glyph_buf[i].advance;
+				} else {
+					ofs.y += trim_data.ellipsis_glyph_buf[i].advance;
+				}
+			}
+		}
+	}
 	// Draw at the baseline.
 	for (int i = 0; i < v_size; i++) {
 		for (int j = 0; j < glyphs[i].repeat; j++) {
@@ -1170,6 +1242,18 @@ void TextServer::shaped_text_draw(RID p_shaped, RID p_canvas, const Vector2 &p_p
 					}
 				}
 			}
+			if (trim_data.trim_pos >= 0) {
+				if (rtl) {
+					if (i < trim_data.trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
+						continue;
+					}
+				} else {
+					if (i >= trim_data.trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
+						break;
+					}
+				}
+			}
+
 			if (glyphs[i].font_rid != RID()) {
 				font_draw_glyph(glyphs[i].font_rid, p_canvas, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, p_color);
 			} else if (hex_codes && ((glyphs[i].flags & GRAPHEME_IS_VIRTUAL) != GRAPHEME_IS_VIRTUAL)) {
@@ -1182,15 +1266,44 @@ void TextServer::shaped_text_draw(RID p_shaped, RID p_canvas, const Vector2 &p_p
 			}
 		}
 	}
+	// Draw LTR ellipsis string when needed.
+	if (!rtl && trim_data.ellipsis_pos >= 0) {
+		for (int i = 0; i < trim_data.ellipsis_glyph_buf.size(); i++) {
+			for (int j = 0; j < trim_data.ellipsis_glyph_buf[i].repeat; j++) {
+				font_draw_glyph(trim_data.ellipsis_glyph_buf[i].font_rid, p_canvas, trim_data.ellipsis_glyph_buf[i].font_size, ofs + Vector2(trim_data.ellipsis_glyph_buf[i].x_off, trim_data.ellipsis_glyph_buf[i].y_off), trim_data.ellipsis_glyph_buf[i].index, p_color);
+				if (orientation == ORIENTATION_HORIZONTAL) {
+					ofs.x += trim_data.ellipsis_glyph_buf[i].advance;
+				} else {
+					ofs.y += trim_data.ellipsis_glyph_buf[i].advance;
+				}
+			}
+		}
+	}
 }
 
-void TextServer::shaped_text_draw_outline(RID p_shaped, RID p_canvas, const Vector2 &p_pos, float p_clip_l, float p_clip_r, int p_outline_size, const Color &p_color) const {
+void TextServer::shaped_text_draw_outline(RID p_shaped, RID p_canvas, const Vector2 &p_pos, real_t p_clip_l, real_t p_clip_r, int p_outline_size, const Color &p_color) const {
 	const Vector<TextServer::Glyph> visual = shaped_text_get_glyphs(p_shaped);
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
+
+	bool rtl = (shaped_text_get_direction(p_shaped) == DIRECTION_RTL);
+	TrimData trim_data = shaped_text_get_trim_data(p_shaped);
 
 	int v_size = visual.size();
 	const Glyph *glyphs = visual.ptr();
 	Vector2 ofs = p_pos;
+	// Draw RTL ellipsis string when needed.
+	if (rtl && trim_data.ellipsis_pos >= 0) {
+		for (int i = trim_data.ellipsis_glyph_buf.size() - 1; i >= 0; i--) {
+			for (int j = 0; j < trim_data.ellipsis_glyph_buf[i].repeat; j++) {
+				font_draw_glyph(trim_data.ellipsis_glyph_buf[i].font_rid, p_canvas, trim_data.ellipsis_glyph_buf[i].font_size, ofs + Vector2(trim_data.ellipsis_glyph_buf[i].x_off, trim_data.ellipsis_glyph_buf[i].y_off), trim_data.ellipsis_glyph_buf[i].index, p_color);
+				if (orientation == ORIENTATION_HORIZONTAL) {
+					ofs.x += trim_data.ellipsis_glyph_buf[i].advance;
+				} else {
+					ofs.y += trim_data.ellipsis_glyph_buf[i].advance;
+				}
+			}
+		}
+	}
 	// Draw at the baseline.
 	for (int i = 0; i < v_size; i++) {
 		for (int j = 0; j < glyphs[i].repeat; j++) {
@@ -1217,6 +1330,17 @@ void TextServer::shaped_text_draw_outline(RID p_shaped, RID p_canvas, const Vect
 					if (ofs.y - p_pos.y < p_clip_l) {
 						ofs.y += glyphs[i].advance;
 						continue;
+					}
+				}
+			}
+			if (trim_data.trim_pos >= 0) {
+				if (rtl) {
+					if (i < trim_data.trim_pos) {
+						continue;
+					}
+				} else {
+					if (i >= trim_data.trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
+						break;
 					}
 				}
 			}
@@ -1230,13 +1354,22 @@ void TextServer::shaped_text_draw_outline(RID p_shaped, RID p_canvas, const Vect
 			}
 		}
 	}
+	// Draw LTR ellipsis string when needed.
+	if (!rtl && trim_data.ellipsis_pos >= 0) {
+		for (int i = 0; i < trim_data.ellipsis_glyph_buf.size(); i++) {
+			for (int j = 0; j < trim_data.ellipsis_glyph_buf[i].repeat; j++) {
+				font_draw_glyph(trim_data.ellipsis_glyph_buf[i].font_rid, p_canvas, trim_data.ellipsis_glyph_buf[i].font_size, ofs + Vector2(trim_data.ellipsis_glyph_buf[i].x_off, trim_data.ellipsis_glyph_buf[i].y_off), trim_data.ellipsis_glyph_buf[i].index, p_color);
+				if (orientation == ORIENTATION_HORIZONTAL) {
+					ofs.x += trim_data.ellipsis_glyph_buf[i].advance;
+				} else {
+					ofs.y += trim_data.ellipsis_glyph_buf[i].advance;
+				}
+			}
+		}
+	}
 }
 
-RID TextServer::_create_font_memory(const PackedByteArray &p_data, const String &p_type, int p_base_size) {
-	return create_font_memory(p_data.ptr(), p_data.size(), p_type, p_base_size);
-}
-
-Dictionary TextServer::_font_get_glyph_contours(RID p_font, int p_size, uint32_t p_index) const {
+Dictionary TextServer::_font_get_glyph_contours(RID p_font, int p_size, int32_t p_index) const {
 	Vector<Vector3> points;
 	Vector<int32_t> contours;
 	bool orientation;
@@ -1294,7 +1427,7 @@ Array TextServer::_shaped_text_get_line_breaks_adv(RID p_shaped, const PackedFlo
 	return ret;
 }
 
-Array TextServer::_shaped_text_get_line_breaks(RID p_shaped, float p_width, int p_start, uint8_t p_break_flags) const {
+Array TextServer::_shaped_text_get_line_breaks(RID p_shaped, real_t p_width, int p_start, uint8_t p_break_flags) const {
 	Array ret;
 
 	Vector<Vector2i> lines = shaped_text_get_line_breaks(p_shaped, p_width, p_start, p_break_flags);

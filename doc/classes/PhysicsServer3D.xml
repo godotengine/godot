@@ -347,7 +347,7 @@
 			</description>
 		</method>
 		<method name="body_get_param" qualifiers="const">
-			<return type="float" />
+			<return type="Variant" />
 			<argument index="0" name="body" type="RID" />
 			<argument index="1" name="param" type="int" enum="PhysicsServer3D.BodyParameter" />
 			<description>
@@ -430,6 +430,13 @@
 				Removes a shape from a body. The shape is not deleted, so it can be reused afterwards.
 			</description>
 		</method>
+		<method name="body_reset_mass_properties">
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<description>
+				Restores the default inertia and center of mass based on shapes to cancel any custom values previously set using [method body_set_param].
+			</description>
+		</method>
 		<method name="body_set_axis_lock">
 			<return type="void" />
 			<argument index="0" name="body" type="RID" />
@@ -478,6 +485,9 @@
 			<argument index="2" name="userdata" type="Variant" default="null" />
 			<description>
 				Sets the function used to calculate physics for an object, if that object allows it (see [method body_set_omit_force_integration]).
+				The force integration function takes 2 arguments:
+				[code]state:[/code] [PhysicsDirectBodyState3D] used to retrieve and modify the body's state.
+				[code]userdata:[/code] Optional user data, if it was passed when calling [code]body_set_force_integration_callback[/code].
 			</description>
 		</method>
 		<method name="body_set_max_contacts_reported">
@@ -508,7 +518,7 @@
 			<return type="void" />
 			<argument index="0" name="body" type="RID" />
 			<argument index="1" name="param" type="int" enum="PhysicsServer3D.BodyParameter" />
-			<argument index="2" name="value" type="float" />
+			<argument index="2" name="value" type="Variant" />
 			<description>
 				Sets a body parameter. A list of available parameters is on the [enum BodyParameter] constants.
 			</description>
@@ -569,9 +579,10 @@
 			<argument index="0" name="body" type="RID" />
 			<argument index="1" name="from" type="Transform3D" />
 			<argument index="2" name="motion" type="Vector3" />
-			<argument index="3" name="infinite_inertia" type="bool" />
-			<argument index="4" name="margin" type="float" default="0.001" />
-			<argument index="5" name="result" type="PhysicsTestMotionResult3D" default="null" />
+			<argument index="3" name="margin" type="float" default="0.001" />
+			<argument index="4" name="result" type="PhysicsTestMotionResult3D" default="null" />
+			<argument index="5" name="collide_separation_ray" type="bool" default="false" />
+			<argument index="6" name="exclude" type="Array" default="[]" />
 			<description>
 				Returns [code]true[/code] if a collision would result from moving in the given direction from a given point in space. Margin increases the size of the shapes involved in the collision detection. [PhysicsTestMotionResult3D] can be passed to return additional information in.
 			</description>
@@ -849,7 +860,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="ray_shape_create">
+		<method name="separation_ray_shape_create">
 			<return type="RID" />
 			<description>
 			</description>
@@ -1176,8 +1187,8 @@
 		<constant name="SHAPE_PLANE" value="0" enum="ShapeType">
 			The [Shape3D] is a [WorldMarginShape3D].
 		</constant>
-		<constant name="SHAPE_RAY" value="1" enum="ShapeType">
-			The [Shape3D] is a [RayShape3D].
+		<constant name="SHAPE_SEPARATION_RAY" value="1" enum="ShapeType">
+			The [Shape3D] is a [SeparationRayShape3D].
 		</constant>
 		<constant name="SHAPE_SPHERE" value="2" enum="ShapeType">
 			The [Shape3D] is a [SphereShape3D].
@@ -1230,6 +1241,18 @@
 		<constant name="AREA_PARAM_PRIORITY" value="7" enum="AreaParameter">
 			Constant to set/get the priority (order of processing) of an area.
 		</constant>
+		<constant name="AREA_PARAM_WIND_FORCE_MAGNITUDE" value="8" enum="AreaParameter">
+			Constant to set/get the magnitude of area-specific wind force.
+		</constant>
+		<constant name="AREA_PARAM_WIND_SOURCE" value="9" enum="AreaParameter">
+			Constant to set/get the 3D vector that specifies the origin from which an area-specific wind blows.
+		</constant>
+		<constant name="AREA_PARAM_WIND_DIRECTION" value="10" enum="AreaParameter">
+			Constant to set/get the 3D vector that specifies the direction in which an area-specific wind blows.
+		</constant>
+		<constant name="AREA_PARAM_WIND_ATTENUATION_FACTOR" value="11" enum="AreaParameter">
+			Constant to set/get the exponential rate at which wind force decreases with distance from its origin.
+		</constant>
 		<constant name="AREA_SPACE_OVERRIDE_DISABLED" value="0" enum="AreaSpaceOverrideMode">
 			This area does not affect gravity/damp. These are generally areas that exist only to detect collisions, and objects entering or exiting them.
 		</constant>
@@ -1246,7 +1269,7 @@
 			This area replaces any gravity/damp calculated so far, but keeps calculating the rest of the areas, down to the default one.
 		</constant>
 		<constant name="BODY_MODE_STATIC" value="0" enum="BodyMode">
-			Constant for static bodies. In this mode, a body can be only moved by user code.
+			Constant for static bodies. In this mode, a body can be only moved by user code and doesn't collide with other bodies along its path when moved.
 		</constant>
 		<constant name="BODY_MODE_KINEMATIC" value="1" enum="BodyMode">
 			Constant for kinematic bodies. In this mode, a body can be only moved by user code and collides with other bodies along its path.
@@ -1266,16 +1289,22 @@
 		<constant name="BODY_PARAM_MASS" value="2" enum="BodyParameter">
 			Constant to set/get a body's mass.
 		</constant>
-		<constant name="BODY_PARAM_GRAVITY_SCALE" value="3" enum="BodyParameter">
+		<constant name="BODY_PARAM_INERTIA" value="3" enum="BodyParameter">
+			Constant to set/get a body's inertia.
+		</constant>
+		<constant name="BODY_PARAM_CENTER_OF_MASS" value="4" enum="BodyParameter">
+			Constant to set/get a body's center of mass.
+		</constant>
+		<constant name="BODY_PARAM_GRAVITY_SCALE" value="5" enum="BodyParameter">
 			Constant to set/get a body's gravity multiplier.
 		</constant>
-		<constant name="BODY_PARAM_LINEAR_DAMP" value="4" enum="BodyParameter">
+		<constant name="BODY_PARAM_LINEAR_DAMP" value="6" enum="BodyParameter">
 			Constant to set/get a body's linear dampening factor.
 		</constant>
-		<constant name="BODY_PARAM_ANGULAR_DAMP" value="5" enum="BodyParameter">
+		<constant name="BODY_PARAM_ANGULAR_DAMP" value="7" enum="BodyParameter">
 			Constant to set/get a body's angular dampening factor.
 		</constant>
-		<constant name="BODY_PARAM_MAX" value="6" enum="BodyParameter">
+		<constant name="BODY_PARAM_MAX" value="8" enum="BodyParameter">
 			Represents the size of the [enum BodyParameter] enum.
 		</constant>
 		<constant name="BODY_STATE_TRANSFORM" value="0" enum="BodyState">

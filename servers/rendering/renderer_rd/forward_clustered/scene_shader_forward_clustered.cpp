@@ -131,8 +131,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 
 	SceneShaderForwardClustered *shader_singleton = (SceneShaderForwardClustered *)SceneShaderForwardClustered::singleton;
 	Error err = shader_singleton->compiler.compile(RS::SHADER_SPATIAL, code, &actions, path, gen_code);
-
-	ERR_FAIL_COND(err != OK);
+	ERR_FAIL_COND_MSG(err != OK, "Shader compilation failed.");
 
 	if (version.is_null()) {
 		version = shader_singleton->shader.version_create();
@@ -684,6 +683,8 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		default_shader = storage->shader_allocate();
 		storage->shader_initialize(default_shader);
 		storage->shader_set_code(default_shader, R"(
+// Default 3D material shader (clustered).
+
 shader_type spatial;
 
 void vertex() {
@@ -713,6 +714,8 @@ void fragment() {
 		storage->shader_initialize(overdraw_material_shader);
 		// Use relatively low opacity so that more "layers" of overlapping objects can be distinguished.
 		storage->shader_set_code(overdraw_material_shader, R"(
+// 3D editor Overdraw debug draw mode shader (clustered).
+
 shader_type spatial;
 
 render_mode blend_add, unshaded;

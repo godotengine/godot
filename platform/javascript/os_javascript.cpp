@@ -137,12 +137,12 @@ int OS_JavaScript::get_processor_count() const {
 }
 
 bool OS_JavaScript::_check_internal_feature_support(const String &p_feature) {
-	if (p_feature == "HTML5" || p_feature == "web") {
+	if (p_feature == "html5" || p_feature == "web") {
 		return true;
 	}
 
 #ifdef JAVASCRIPT_EVAL_ENABLED
-	if (p_feature == "JavaScript") {
+	if (p_feature == "javascript") {
 		return true;
 	}
 #endif

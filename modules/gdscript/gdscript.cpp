@@ -87,6 +87,19 @@ Object *GDScriptNativeClass::instantiate() {
 	return ClassDB::instantiate(name);
 }
 
+GDScriptFunction *GDScript::_super_constructor(GDScript *p_script) {
+	if (p_script->initializer) {
+		return p_script->initializer;
+	} else {
+		GDScript *base = p_script->_base;
+		if (base != nullptr) {
+			return _super_constructor(base);
+		} else {
+			return nullptr;
+		}
+	}
+}
+
 void GDScript::_super_implicit_constructor(GDScript *p_script, GDScriptInstance *p_instance, Callable::CallError &r_error) {
 	GDScript *base = p_script->_base;
 	if (base != nullptr) {
@@ -135,6 +148,8 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 	if (p_argcount < 0) {
 		return instance;
 	}
+
+	initializer = _super_constructor(this);
 	if (initializer != nullptr) {
 		initializer->call(instance, p_args, p_argcount, r_error);
 		if (r_error.error != Callable::CallError::CALL_OK) {
@@ -625,9 +640,9 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 				String path = "";
 				if (String(c->extends_path) != "" && String(c->extends_path) != get_path()) {
 					path = c->extends_path;
-					if (path.is_rel_path()) {
+					if (path.is_relative_path()) {
 						String base = get_path();
-						if (base == "" || base.is_rel_path()) {
+						if (base == "" || base.is_relative_path()) {
 							ERR_PRINT(("Could not resolve relative path for parent class: " + path).utf8().get_data());
 						} else {
 							path = base.get_base_dir().plus_file(path);
@@ -900,7 +915,7 @@ void GDScript::get_members(Set<StringName> *p_members) {
 	}
 }
 
-const Vector<MultiplayerAPI::RPCConfig> GDScript::get_rpc_methods() const {
+const Vector<Multiplayer::RPCConfig> GDScript::get_rpc_methods() const {
 	return rpc_functions;
 }
 
@@ -1164,8 +1179,8 @@ void GDScript::_init_rpc_methods_properties() {
 	while (cscript) {
 		// RPC Methods
 		for (Map<StringName, GDScriptFunction *>::Element *E = cscript->member_functions.front(); E; E = E->next()) {
-			MultiplayerAPI::RPCConfig config = E->get()->get_rpc_config();
-			if (config.rpc_mode != MultiplayerAPI::RPC_MODE_DISABLED) {
+			Multiplayer::RPCConfig config = E->get()->get_rpc_config();
+			if (config.rpc_mode != Multiplayer::RPC_MODE_DISABLED) {
 				config.name = E->get()->get_name();
 				if (rpc_functions.find(config) == -1) {
 					rpc_functions.push_back(config);
@@ -1185,7 +1200,7 @@ void GDScript::_init_rpc_methods_properties() {
 	}
 
 	// Sort so we are 100% that they are always the same.
-	rpc_functions.sort_custom<MultiplayerAPI::SortRPCConfig>();
+	rpc_functions.sort_custom<Multiplayer::SortRPCConfig>();
 }
 
 GDScript::~GDScript() {
@@ -1541,7 +1556,7 @@ ScriptLanguage *GDScriptInstance::get_language() {
 	return GDScriptLanguage::get_singleton();
 }
 
-const Vector<MultiplayerAPI::RPCConfig> GDScriptInstance::get_rpc_methods() const {
+const Vector<Multiplayer::RPCConfig> GDScriptInstance::get_rpc_methods() const {
 	return script->get_rpc_methods();
 }
 
@@ -1644,16 +1659,11 @@ void GDScriptLanguage::init() {
 	List<StringName> class_list;
 	ClassDB::get_class_list(&class_list);
 	for (const StringName &n : class_list) {
-		String s = String(n);
-		if (s.begins_with("_")) {
-			s = s.substr(1, s.length());
-		}
-
-		if (globals.has(s)) {
+		if (globals.has(n)) {
 			continue;
 		}
 		Ref<GDScriptNativeClass> nc = memnew(GDScriptNativeClass(n));
-		_add_global(s, nc);
+		_add_global(n, nc);
 	}
 
 	//populate singletons
@@ -2064,7 +2074,7 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 		if (r_icon_path) {
 			if (c->icon_path.is_empty() || c->icon_path.is_absolute_path()) {
 				*r_icon_path = c->icon_path;
-			} else if (c->icon_path.is_rel_path()) {
+			} else if (c->icon_path.is_relative_path()) {
 				*r_icon_path = p_path.get_base_dir().plus_file(c->icon_path).simplify_path();
 			}
 		}
@@ -2092,7 +2102,7 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 								break;
 							}
 							String subpath = subclass->extends_path;
-							if (subpath.is_rel_path()) {
+							if (subpath.is_relative_path()) {
 								subpath = path.get_base_dir().plus_file(subpath).simplify_path();
 							}
 

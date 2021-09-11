@@ -484,7 +484,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_message->set_h_grow_direction(Control::GrowDirection::GROW_DIRECTION_BEGIN);
 	commit_message->set_v_grow_direction(Control::GrowDirection::GROW_DIRECTION_END);
 	commit_message->set_custom_minimum_size(Size2(200, 100));
-	commit_message->set_wrap_enabled(true);
+	commit_message->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
 	commit_message->connect("text_changed", callable_mp(this, &VersionControlEditorPlugin::_update_commit_button));
 	commit_message->connect("gui_input", callable_mp(this, &VersionControlEditorPlugin::_commit_message_gui_input));
 	commit_box_vbc->add_child(commit_message);

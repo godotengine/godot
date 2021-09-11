@@ -133,6 +133,7 @@ private:
 	List<PropertyData> clipboard;
 	UndoRedo undo_redo;
 	Vector<Callable> undo_redo_callbacks;
+	Map<StringName, Callable> move_element_functions;
 
 	void _cleanup_history();
 
@@ -167,9 +168,13 @@ public:
 	EditorPlugin *get_editor_plugin(int p_idx);
 
 	UndoRedo &get_undo_redo();
-	void add_undo_redo_inspector_hook_callback(Callable p_callable); // Callbacks should have 4 args: (Object* undo_redo, Object *modified_object, String property, Variant new_value)
+	void add_undo_redo_inspector_hook_callback(Callable p_callable); // Callbacks should have this signature: void (Object* undo_redo, Object *modified_object, String property, Variant new_value)
 	void remove_undo_redo_inspector_hook_callback(Callable p_callable);
 	const Vector<Callable> get_undo_redo_inspector_hook_callback();
+
+	void add_move_array_element_function(const StringName &p_class, Callable p_callable); // Function should have this signature: void (Object* undo_redo, Object *modified_object, String array_prefix, int element_index, int new_position)
+	void remove_move_array_element_function(const StringName &p_class);
+	Callable get_move_array_element_function(const StringName &p_class) const;
 
 	void save_editor_global_states();
 	void restore_editor_global_states();

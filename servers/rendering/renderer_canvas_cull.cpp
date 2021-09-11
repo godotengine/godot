@@ -639,17 +639,19 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 
 			j2 = j + 1;
 
-			Vector2 tangent = ((t + prev_t).normalized()) * p_width * 0.5;
+			Vector2 dir = (t + prev_t).normalized();
+			Vector2 tangent = dir * p_width * 0.5;
+			Vector2 border = dir * 2.0;
 			Vector2 pos = p_points[i];
 
 			points_ptr[j] = pos + tangent;
 			points_ptr[j2] = pos - tangent;
 
-			points_top_ptr[j] = pos + tangent + tangent;
+			points_top_ptr[j] = pos + tangent + border;
 			points_top_ptr[j2] = pos + tangent;
 
 			points_bottom_ptr[j] = pos - tangent;
-			points_bottom_ptr[j2] = pos - tangent - tangent;
+			points_bottom_ptr[j2] = pos - tangent - border;
 
 			if (i < p_colors.size()) {
 				color = p_colors[i];
@@ -802,6 +804,40 @@ void RendererCanvasCull::canvas_item_add_texture_rect(RID p_item, const Rect2 &p
 	}
 
 	rect->texture = p_texture;
+}
+
+void RendererCanvasCull::canvas_item_add_msdf_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate, int p_outline_size, float p_px_range) {
+	Item *canvas_item = canvas_item_owner.getornull(p_item);
+	ERR_FAIL_COND(!canvas_item);
+
+	Item::CommandRect *rect = canvas_item->alloc_command<Item::CommandRect>();
+	ERR_FAIL_COND(!rect);
+	rect->modulate = p_modulate;
+	rect->rect = p_rect;
+
+	rect->texture = p_texture;
+
+	rect->source = p_src_rect;
+	rect->flags = RendererCanvasRender::CANVAS_RECT_REGION | RendererCanvasRender::CANVAS_RECT_MSDF;
+
+	if (p_rect.size.x < 0) {
+		rect->flags |= RendererCanvasRender::CANVAS_RECT_FLIP_H;
+		rect->rect.size.x = -rect->rect.size.x;
+	}
+	if (p_src_rect.size.x < 0) {
+		rect->flags ^= RendererCanvasRender::CANVAS_RECT_FLIP_H;
+		rect->source.size.x = -rect->source.size.x;
+	}
+	if (p_rect.size.y < 0) {
+		rect->flags |= RendererCanvasRender::CANVAS_RECT_FLIP_V;
+		rect->rect.size.y = -rect->rect.size.y;
+	}
+	if (p_src_rect.size.y < 0) {
+		rect->flags ^= RendererCanvasRender::CANVAS_RECT_FLIP_V;
+		rect->source.size.y = -rect->source.size.y;
+	}
+	rect->outline = p_outline_size;
+	rect->px_range = p_px_range;
 }
 
 void RendererCanvasCull::canvas_item_add_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, bool p_clip_uv) {

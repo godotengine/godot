@@ -88,6 +88,7 @@ public:
 
 	Mesh::PrimitiveType get_surface_primitive_type(int p_surface);
 	String get_surface_name(int p_surface) const;
+	void set_surface_name(int p_surface, const String &p_name);
 	Array get_surface_arrays(int p_surface) const;
 	Array get_surface_blend_shape_arrays(int p_surface, int p_blend_shape) const;
 	int get_surface_lod_count(int p_surface) const;
@@ -112,7 +113,7 @@ public:
 	Size2i get_lightmap_size_hint() const;
 
 	bool has_mesh() const;
-	Ref<ArrayMesh> get_mesh(const Ref<Mesh> &p_base = Ref<Mesh>());
+	Ref<ArrayMesh> get_mesh(const Ref<ArrayMesh> &p_base = Ref<ArrayMesh>());
 	void clear();
 };
 #endif // EDITOR_SCENE_IMPORTER_MESH_H

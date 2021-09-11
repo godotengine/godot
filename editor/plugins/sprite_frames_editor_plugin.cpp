@@ -40,7 +40,7 @@
 #include "scene/gui/margin_container.h"
 #include "scene/gui/panel_container.h"
 
-void SpriteFramesEditor::_gui_input(Ref<InputEvent> p_event) {
+void SpriteFramesEditor::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void SpriteFramesEditor::_open_sprite_sheet() {
@@ -200,34 +200,36 @@ void SpriteFramesEditor::_sheet_scroll_input(const Ref<InputEvent> &p_event) {
 
 void SpriteFramesEditor::_sheet_add_frames() {
 	Size2i size = split_sheet_preview->get_texture()->get_size();
-	int h = split_sheet_h->get_value();
-	int v = split_sheet_v->get_value();
+	int frame_count_x = split_sheet_h->get_value();
+	int frame_count_y = split_sheet_v->get_value();
+	Size2 frame_size(size.width / frame_count_x, size.height / frame_count_y);
 
 	undo_redo->create_action(TTR("Add Frame"));
 
 	int fc = frames->get_frame_count(edited_anim);
 
-	AtlasTexture *atlas_source = Object::cast_to<AtlasTexture>(*split_sheet_preview->get_texture());
+	Point2 src_origin;
+	Rect2 src_region(Point2(), size);
 
-	Rect2 region_rect = Rect2();
-
-	if (atlas_source && atlas_source->get_atlas().is_valid()) {
-		region_rect = atlas_source->get_region();
+	AtlasTexture *src_atlas = Object::cast_to<AtlasTexture>(*split_sheet_preview->get_texture());
+	if (src_atlas && src_atlas->get_atlas().is_valid()) {
+		src_origin = src_atlas->get_region().position - src_atlas->get_margin().position;
+		src_region = src_atlas->get_region();
 	}
 
 	for (Set<int>::Element *E = frames_selected.front(); E; E = E->next()) {
 		int idx = E->get();
-		int width = size.width / h;
-		int height = size.height / v;
-		int xp = idx % h;
-		int yp = (idx - xp) / h;
-		int x = (xp * width) + region_rect.position.x;
-		int y = (yp * height) + region_rect.position.y;
+		Point2 frame_coords(idx % frame_count_x, idx / frame_count_x);
+
+		Rect2 frame(frame_coords * frame_size + src_origin, frame_size);
+		Rect2 region = frame.intersection(src_region);
+		Rect2 margin(region == Rect2() ? Point2() : region.position - frame.position, frame.size - region.size);
 
 		Ref<AtlasTexture> at;
 		at.instantiate();
 		at->set_atlas(split_sheet_preview->get_texture());
-		at->set_region(Rect2(x, y, width, height));
+		at->set_region(region);
+		at->set_margin(margin);
 
 		undo_redo->add_do_method(frames, "add_frame", edited_anim, at, -1);
 		undo_redo->add_undo_method(frames, "remove_frame", edited_anim, fc);

@@ -57,16 +57,16 @@ public:
 
 	Vector<Input> inputs;
 
-	float process_input(int p_input, float p_time, bool p_seek, float p_blend);
+	real_t process_input(int p_input, real_t p_time, bool p_seek, real_t p_blend);
 
 	friend class AnimationTree;
 
 	struct AnimationState {
 		Ref<Animation> animation;
-		float time = 0.0;
-		float delta = 0.0;
-		const Vector<float> *track_blends = nullptr;
-		float blend = 0.0;
+		double time = 0.0;
+		double delta = 0.0;
+		const Vector<real_t> *track_blends = nullptr;
+		real_t blend = 0.0;
 		bool seeked = false;
 	};
 
@@ -81,10 +81,10 @@ public:
 		uint64_t last_pass = 0;
 	};
 
-	Vector<float> blends;
+	Vector<real_t> blends;
 	State *state = nullptr;
 
-	float _pre_process(const StringName &p_base_path, AnimationNode *p_parent, State *p_state, float p_time, bool p_seek, const Vector<StringName> &p_connections);
+	real_t _pre_process(const StringName &p_base_path, AnimationNode *p_parent, State *p_state, real_t p_time, bool p_seek, const Vector<StringName> &p_connections);
 	void _pre_update_animations(HashMap<NodePath, int> *track_map);
 
 	//all this is temporary
@@ -98,12 +98,12 @@ public:
 	Array _get_filters() const;
 	void _set_filters(const Array &p_filters);
 	friend class AnimationNodeBlendTree;
-	float _blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true, float *r_max = nullptr);
+	real_t _blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, real_t p_time, bool p_seek, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true, real_t *r_max = nullptr);
 
 protected:
-	void blend_animation(const StringName &p_animation, float p_time, float p_delta, bool p_seeked, float p_blend);
-	float blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true);
-	float blend_input(int p_input, float p_time, bool p_seek, float p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true);
+	void blend_animation(const StringName &p_animation, real_t p_time, real_t p_delta, bool p_seeked, real_t p_blend);
+	real_t blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, real_t p_time, bool p_seek, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true);
+	real_t blend_input(int p_input, real_t p_time, bool p_seek, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true);
 	void make_invalid(const String &p_reason);
 
 	static void _bind_methods();
@@ -111,6 +111,14 @@ protected:
 	void _validate_property(PropertyInfo &property) const override;
 
 	void _set_parent(Object *p_parent);
+
+	GDVIRTUAL0RC(Dictionary, _get_child_nodes)
+	GDVIRTUAL0RC(Array, _get_parameter_list)
+	GDVIRTUAL1RC(Ref<AnimationNode>, _get_child_by_name, StringName)
+	GDVIRTUAL1RC(Variant, _get_parameter_default_value, StringName)
+	GDVIRTUAL2RC(double, _process, double, bool)
+	GDVIRTUAL0RC(String, _get_caption)
+	GDVIRTUAL0RC(bool, _has_filter)
 
 public:
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
@@ -126,7 +134,7 @@ public:
 
 	virtual void get_child_nodes(List<ChildNode> *r_child_nodes);
 
-	virtual float process(float p_time, bool p_seek);
+	virtual double process(double p_time, bool p_seek);
 	virtual String get_caption() const;
 
 	int get_input_count() const;
@@ -191,7 +199,7 @@ private:
 		int bone_idx = -1;
 		Vector3 loc;
 		Quaternion rot;
-		float rot_blend_accum = 0.0;
+		real_t rot_blend_accum = 0.0;
 		Vector3 scale;
 
 		TrackCacheTransform() {
@@ -210,7 +218,7 @@ private:
 	};
 
 	struct TrackCacheBezier : public TrackCache {
-		float value = 0.0;
+		real_t value = 0.0;
 		Vector<StringName> subpath;
 		TrackCacheBezier() {
 			type = Animation::TYPE_BEZIER;
@@ -219,8 +227,8 @@ private:
 
 	struct TrackCacheAudio : public TrackCache {
 		bool playing = false;
-		float start = 0.0;
-		float len = 0.0;
+		real_t start = 0.0;
+		real_t len = 0.0;
 
 		TrackCacheAudio() {
 			type = Animation::TYPE_AUDIO;
@@ -251,7 +259,7 @@ private:
 
 	void _clear_caches();
 	bool _update_caches(AnimationPlayer *player);
-	void _process_graph(float p_delta);
+	void _process_graph(real_t p_delta);
 
 	uint64_t setup_pass = 1;
 	uint64_t process_pass = 1;
@@ -271,7 +279,7 @@ private:
 
 	struct Activity {
 		uint64_t last_pass = 0;
-		float activity = 0.0;
+		real_t activity = 0.0;
 	};
 
 	HashMap<StringName, Vector<Activity>> input_activity_map;
@@ -312,8 +320,8 @@ public:
 
 	Transform3D get_root_motion_transform() const;
 
-	float get_connection_activity(const StringName &p_path, int p_connection) const;
-	void advance(float p_time);
+	real_t get_connection_activity(const StringName &p_path, int p_connection) const;
+	void advance(real_t p_time);
 
 	void rename_parameter(const String &p_base, const String &p_new_base);
 

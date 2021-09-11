@@ -92,6 +92,7 @@ protected:
 	void _edit_option(int p_op);
 	void _make_context_menu(bool p_selection, bool p_can_fold, bool p_is_folded, Vector2 p_position);
 	void _text_edit_gui_input(const Ref<InputEvent> &ev);
+	void _prepare_edit_menu();
 
 	Map<String, Ref<EditorSyntaxHighlighter>> highlighters;
 	void _change_syntax_highlighter(int p_idx);
@@ -120,6 +121,8 @@ public:
 	virtual void set_edit_state(const Variant &p_state) override;
 	virtual Vector<String> get_functions() override;
 	virtual Array get_breakpoints() override;
+	virtual void set_breakpoint(int p_line, bool p_enabled) override{};
+	virtual void clear_breakpoints() override{};
 	virtual void goto_line(int p_line, bool p_with_error = false) override;
 	void goto_line_selection(int p_line, int p_begin, int p_end);
 	virtual void set_executing_line(int p_line) override;

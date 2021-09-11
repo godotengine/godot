@@ -221,12 +221,12 @@ void AudioStreamPlaybackSample::do_resample(const Depth *p_src, AudioFrame *p_ds
 	}
 }
 
-void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
+int AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
 	if (!base->data || !active) {
 		for (int i = 0; i < p_frames; i++) {
 			p_buffer[i] = AudioFrame(0, 0);
 		}
-		return;
+		return 0;
 	}
 
 	int len = base->data_bytes;
@@ -261,11 +261,11 @@ void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, in
 		sign = -1;
 	}
 
-	float global_rate_scale = AudioServer::get_singleton()->get_global_rate_scale();
-	float base_rate = AudioServer::get_singleton()->get_mix_rate() * global_rate_scale;
+	float base_rate = AudioServer::get_singleton()->get_mix_rate();
 	float srate = base->mix_rate;
 	srate *= p_rate_scale;
-	float fincrement = srate / base_rate;
+	float playback_speed_scale = AudioServer::get_singleton()->get_playback_speed_scale();
+	float fincrement = (srate * playback_speed_scale) / base_rate;
 	int32_t increment = int32_t(MAX(fincrement * MIX_FRAC_LEN, 1));
 	increment *= sign;
 
@@ -395,12 +395,15 @@ void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, in
 	}
 
 	if (todo) {
+		int mixed_frames = p_frames - todo;
 		//bit was missing from mix
 		int todo_ofs = p_frames - todo;
 		for (int i = todo_ofs; i < p_frames; i++) {
 			p_buffer[i] = AudioFrame(0, 0);
 		}
+		return mixed_frames;
 	}
+	return p_frames;
 }
 
 AudioStreamPlaybackSample::AudioStreamPlaybackSample() {}
@@ -475,6 +478,10 @@ float AudioStreamSample::get_length() const {
 	}
 
 	return float(len) / mix_rate;
+}
+
+bool AudioStreamSample::is_monophonic() const {
+	return false;
 }
 
 void AudioStreamSample::set_data(const Vector<uint8_t> &p_data) {

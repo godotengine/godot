@@ -34,6 +34,10 @@ real_t Vector2::angle() const {
 	return Math::atan2(y, x);
 }
 
+Vector2 Vector2::from_angle(const real_t p_angle) {
+	return Vector2(Math::cos(p_angle), Math::sin(p_angle));
+}
+
 real_t Vector2::length() const {
 	return Math::sqrt(x * x + y * y);
 }
@@ -102,7 +106,7 @@ Vector2 Vector2::round() const {
 	return Vector2(Math::round(x), Math::round(y));
 }
 
-Vector2 Vector2::rotated(real_t p_by) const {
+Vector2 Vector2::rotated(const real_t p_by) const {
 	real_t sine = Math::sin(p_by);
 	real_t cosi = Math::cos(p_by);
 	return Vector2(
@@ -145,7 +149,7 @@ Vector2 Vector2::limit_length(const real_t p_len) const {
 	return v;
 }
 
-Vector2 Vector2::cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, real_t p_weight) const {
+Vector2 Vector2::cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, const real_t p_weight) const {
 	Vector2 p0 = p_pre_a;
 	Vector2 p1 = *this;
 	Vector2 p2 = p_b;

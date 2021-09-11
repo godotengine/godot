@@ -31,6 +31,7 @@
 #include "input_event.h"
 
 #include "core/input/input_map.h"
+#include "core/input/shortcut.h"
 #include "core/os/keyboard.h"
 
 const int InputEvent::DEVICE_ID_TOUCH_MOUSE = -1;
@@ -306,21 +307,21 @@ bool InputEventKey::is_pressed() const {
 	return pressed;
 }
 
-void InputEventKey::set_keycode(uint32_t p_keycode) {
+void InputEventKey::set_keycode(Key p_keycode) {
 	keycode = p_keycode;
 	emit_changed();
 }
 
-uint32_t InputEventKey::get_keycode() const {
+Key InputEventKey::get_keycode() const {
 	return keycode;
 }
 
-void InputEventKey::set_physical_keycode(uint32_t p_keycode) {
+void InputEventKey::set_physical_keycode(Key p_keycode) {
 	physical_keycode = p_keycode;
 	emit_changed();
 }
 
-uint32_t InputEventKey::get_physical_keycode() const {
+Key InputEventKey::get_physical_keycode() const {
 	return physical_keycode;
 }
 
@@ -386,7 +387,7 @@ String InputEventKey::to_string() {
 	return vformat("InputEventKey: keycode=%s, mods=%s, physical=%s, pressed=%s, echo=%s", kc, mods, physical, p, e);
 }
 
-Ref<InputEventKey> InputEventKey::create_reference(uint32_t p_keycode) {
+Ref<InputEventKey> InputEventKey::create_reference(Key p_keycode) {
 	Ref<InputEventKey> ie;
 	ie.instantiate();
 	ie->set_keycode(p_keycode & KEY_CODE_MASK);
@@ -430,10 +431,11 @@ bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool *p_pressed
 		match = get_keycode() == key->get_keycode() && (!key->is_pressed() || (code & event_code) == code);
 	}
 	if (match) {
+		bool pressed = key->is_pressed();
 		if (p_pressed != nullptr) {
-			*p_pressed = key->is_pressed();
+			*p_pressed = pressed;
 		}
-		float strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
+		float strength = pressed ? 1.0f : 0.0f;
 		if (p_strength != nullptr) {
 			*p_strength = strength;
 		}
@@ -586,10 +588,11 @@ bool InputEventMouseButton::action_match(const Ref<InputEvent> &p_event, bool *p
 
 	bool match = mb->button_index == button_index;
 	if (match) {
+		bool pressed = mb->is_pressed();
 		if (p_pressed != nullptr) {
-			*p_pressed = mb->is_pressed();
+			*p_pressed = pressed;
 		}
-		float strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
+		float strength = pressed ? 1.0f : 0.0f;
 		if (p_strength != nullptr) {
 			*p_strength = strength;
 		}
@@ -997,10 +1000,11 @@ bool InputEventJoypadButton::action_match(const Ref<InputEvent> &p_event, bool *
 
 	bool match = button_index == jb->button_index;
 	if (match) {
+		bool pressed = jb->is_pressed();
 		if (p_pressed != nullptr) {
-			*p_pressed = jb->is_pressed();
+			*p_pressed = pressed;
 		}
-		float strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
+		float strength = pressed ? 1.0f : 0.0f;
 		if (p_strength != nullptr) {
 			*p_strength = strength;
 		}
@@ -1209,6 +1213,22 @@ String InputEventScreenDrag::to_string() {
 	return vformat("InputEventScreenDrag: index=%d, position=(%s), relative=(%s), speed=(%s)", index, String(get_position()), String(get_relative()), String(get_speed()));
 }
 
+bool InputEventScreenDrag::accumulate(const Ref<InputEvent> &p_event) {
+	Ref<InputEventScreenDrag> drag = p_event;
+	if (drag.is_null())
+		return false;
+
+	if (get_index() != drag->get_index()) {
+		return false;
+	}
+
+	set_position(drag->get_position());
+	set_speed(drag->get_speed());
+	relative += drag->get_relative();
+
+	return true;
+}
+
 void InputEventScreenDrag::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_index", "index"), &InputEventScreenDrag::set_index);
 	ClassDB::bind_method(D_METHOD("get_index"), &InputEventScreenDrag::get_index);
@@ -1274,10 +1294,11 @@ bool InputEventAction::action_match(const Ref<InputEvent> &p_event, bool *p_pres
 
 	bool match = action == act->action;
 	if (match) {
+		bool pressed = act->pressed;
 		if (p_pressed != nullptr) {
-			*p_pressed = act->pressed;
+			*p_pressed = pressed;
 		}
-		float strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
+		float strength = pressed ? 1.0f : 0.0f;
 		if (p_strength != nullptr) {
 			*p_strength = strength;
 		}
@@ -1511,4 +1532,34 @@ void InputEventMIDI::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "pressure"), "set_pressure", "get_pressure");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "controller_number"), "set_controller_number", "get_controller_number");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "controller_value"), "set_controller_value", "get_controller_value");
+}
+
+///////////////////////////////////
+
+void InputEventShortcut::set_shortcut(Ref<Shortcut> p_shortcut) {
+	shortcut = p_shortcut;
+	emit_changed();
+}
+
+Ref<Shortcut> InputEventShortcut::get_shortcut() {
+	return shortcut;
+}
+
+void InputEventShortcut::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_shortcut", "shortcut"), &InputEventShortcut::set_shortcut);
+	ClassDB::bind_method(D_METHOD("get_shortcut"), &InputEventShortcut::get_shortcut);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, "Shortcut"), "set_shortcut", "get_shortcut");
+}
+
+bool InputEventShortcut::is_pressed() const {
+	return true;
+}
+
+String InputEventShortcut::as_text() const {
+	return vformat(RTR("Input Event with Shortcut=%s"), shortcut->get_as_text());
+}
+
+String InputEventShortcut::to_string() {
+	return vformat("InputEventShortcut: shortcut=%s", shortcut->get_as_text());
 }

@@ -31,13 +31,13 @@
 #ifndef EDITOR_SETTINGS_H
 #define EDITOR_SETTINGS_H
 
+#include "core/input/shortcut.h"
 #include "core/io/config_file.h"
 #include "core/io/resource.h"
 #include "core/object/class_db.h"
 #include "core/os/thread_safe.h"
 #include "core/string/translation.h"
 #include "editor/editor_paths.h"
-#include "scene/gui/shortcut.h"
 
 class EditorPlugin;
 
@@ -200,7 +200,7 @@ Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default, bool p_re
 Variant _EDITOR_GET(const String &p_setting);
 
 #define ED_IS_SHORTCUT(p_name, p_ev) (EditorSettings::get_singleton()->is_shortcut(p_name, p_ev))
-Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p_keycode = 0);
+Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, Key p_keycode = KEY_NONE);
 Ref<Shortcut> ED_GET_SHORTCUT(const String &p_path);
 
 #endif // EDITOR_SETTINGS_H

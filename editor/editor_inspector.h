@@ -32,8 +32,12 @@
 #define EDITOR_INSPECTOR_H
 
 #include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/panel_container.h"
 #include "scene/gui/scroll_container.h"
+#include "scene/gui/texture_rect.h"
 
 class UndoRedo;
 
@@ -50,6 +54,13 @@ public:
 
 class EditorProperty : public Container {
 	GDCLASS(EditorProperty, Container);
+
+public:
+	enum MenuItems {
+		MENU_COPY_PROPERTY,
+		MENU_PASTE_PROPERTY,
+		MENU_COPY_PROPERTY_PATH,
+	};
 
 private:
 	String label;
@@ -84,6 +95,7 @@ private:
 	bool use_folding;
 	bool draw_top_bg;
 
+	void _ensure_popup();
 	bool _is_property_different(const Variant &p_current, const Variant &p_orig);
 	bool _get_instantiated_node_original_property(const StringName &p_prop, Variant &value);
 	void _focusable_focused(int p_index);
@@ -97,16 +109,20 @@ private:
 	Vector<Control *> focusables;
 	Control *label_reference;
 	Control *bottom_editor;
+	PopupMenu *menu;
 
 	mutable String tooltip_text;
 
 	Map<StringName, Variant> cache;
 
+	GDVIRTUAL0(_update_property)
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+	virtual void _set_read_only(bool p_read_only);
 
-	void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	void emit_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field = StringName(), bool p_changing = false);
@@ -174,6 +190,8 @@ public:
 
 	bool can_revert_to_default() const { return can_revert; }
 
+	void menu_option(int p_option);
+
 	EditorProperty();
 };
 
@@ -191,6 +209,12 @@ class EditorInspectorPlugin : public RefCounted {
 
 protected:
 	static void _bind_methods();
+
+	GDVIRTUAL1RC(bool, _can_handle, Variant)
+	GDVIRTUAL0(_parse_begin)
+	GDVIRTUAL2(_parse_category, Object *, String)
+	GDVIRTUAL7R(bool, _parse_property, Object *, int, String, int, String, int, bool)
+	GDVIRTUAL0(_parse_end)
 
 public:
 	void add_custom_control(Control *control);
@@ -231,9 +255,7 @@ class EditorInspectorSection : public Container {
 
 	String label;
 	String section;
-	Object *object;
-	VBoxContainer *vbox;
-	bool vbox_added; //optimization
+	bool vbox_added; // Optimization.
 	Color bg_color;
 	bool foldable;
 
@@ -243,9 +265,12 @@ class EditorInspectorSection : public Container {
 	void _test_unfold();
 
 protected:
+	Object *object;
+	VBoxContainer *vbox;
+
 	void _notification(int p_what);
 	static void _bind_methods();
-	void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	virtual Size2 get_minimum_size() const override;
@@ -259,6 +284,118 @@ public:
 
 	EditorInspectorSection();
 	~EditorInspectorSection();
+};
+
+class EditorInspectorArray : public EditorInspectorSection {
+	GDCLASS(EditorInspectorArray, EditorInspectorSection);
+
+	UndoRedo *undo_redo;
+
+	enum Mode {
+		MODE_NONE,
+		MODE_USE_COUNT_PROPERTY,
+		MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION,
+	} mode;
+	StringName count_property;
+	StringName array_element_prefix;
+
+	int count = 0;
+
+	VBoxContainer *elements_vbox;
+
+	Control *control_dropping;
+	bool dropping = false;
+
+	Button *add_button;
+
+	AcceptDialog *resize_dialog;
+	int new_size = 0;
+	LineEdit *new_size_line_edit;
+
+	// Pagination
+	int page_lenght = 5;
+	int page = 0;
+	int max_page = 0;
+	int begin_array_index = 0;
+	int end_array_index = 0;
+	HBoxContainer *hbox_pagination;
+	Button *first_page_button;
+	Button *prev_page_button;
+	LineEdit *page_line_edit;
+	Label *page_count_label;
+	Button *next_page_button;
+	Button *last_page_button;
+
+	enum MenuOptions {
+		OPTION_MOVE_UP = 0,
+		OPTION_MOVE_DOWN,
+		OPTION_NEW_BEFORE,
+		OPTION_NEW_AFTER,
+		OPTION_REMOVE,
+		OPTION_CLEAR_ARRAY,
+		OPTION_RESIZE_ARRAY,
+	};
+	int popup_array_index_pressed = -1;
+	PopupMenu *rmb_popup;
+
+	struct ArrayElement {
+		PanelContainer *panel;
+		MarginContainer *margin;
+		HBoxContainer *hbox;
+		TextureRect *move_texture_rect;
+		VBoxContainer *vbox;
+	};
+	LocalVector<ArrayElement> array_elements;
+
+	Ref<StyleBoxFlat> odd_style;
+	Ref<StyleBoxFlat> even_style;
+
+	int _get_array_count();
+	void _add_button_pressed();
+
+	void _first_page_button_pressed();
+	void _prev_page_button_pressed();
+	void _page_line_edit_text_submitted(String p_text);
+	void _next_page_button_pressed();
+	void _last_page_button_pressed();
+
+	void _rmb_popup_id_pressed(int p_id);
+
+	void _control_dropping_draw();
+
+	void _vbox_visibility_changed();
+
+	void _panel_draw(int p_index);
+	void _panel_gui_input(Ref<InputEvent> p_event, int p_index);
+	void _move_element(int p_element_index, int p_to_pos);
+	void _clear_array();
+	void _resize_array(int p_size);
+	Array _extract_properties_as_array(const List<PropertyInfo> &p_list);
+	int _drop_position() const;
+
+	void _new_size_line_edit_text_changed(String p_text);
+	void _new_size_line_edit_text_submitted(String p_text);
+	void _resize_dialog_confirmed();
+
+	void _update_elements_visibility();
+	void _setup();
+
+	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	void set_undo_redo(UndoRedo *p_undo_redo);
+
+	void setup_with_move_element_function(Object *p_object, String p_label, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable);
+	void setup_with_count_property(Object *p_object, String p_label, const StringName &p_count_property, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable);
+	VBoxContainer *get_vbox(int p_index);
+
+	EditorInspectorArray();
 };
 
 class EditorInspector : public ScrollContainer {
@@ -314,14 +451,14 @@ class EditorInspector : public ScrollContainer {
 
 	String property_prefix; //used for sectioned inspector
 	String object_class;
+	Variant property_clipboard;
 
 	bool restrict_to_basic = false;
 
 	void _edit_set(const String &p_name, const Variant &p_value, bool p_refresh_all, const String &p_changed_field);
 
-	void _property_changed(const String &p_path, const Variant &p_value, const String &p_name = "", bool p_changing = false);
-	void _property_changed_update_all(const String &p_path, const Variant &p_value, const String &p_name = "", bool p_changing = false);
-	void _multiple_properties_changed(Vector<String> p_paths, Array p_values);
+	void _property_changed(const String &p_path, const Variant &p_value, const String &p_name = "", bool p_changing = false, bool p_update_all = false);
+	void _multiple_properties_changed(Vector<String> p_paths, Array p_values, bool p_changing = false);
 	void _property_keyed(const String &p_path, bool p_advance);
 	void _property_keyed_with_value(const String &p_path, const Variant &p_value, bool p_advance);
 	void _property_deleted(const String &p_path);
@@ -333,6 +470,9 @@ class EditorInspector : public ScrollContainer {
 	void _object_id_selected(const String &p_path, ObjectID p_id);
 
 	void _node_removed(Node *p_node);
+
+	Map<StringName, int> per_array_page;
+	void _page_change_request(int p_new_page, const StringName &p_array_prefix);
 
 	void _changed_callback();
 	void _edit_request_change(Object *p_object, const String &p_prop);
@@ -405,6 +545,8 @@ public:
 	void set_use_deletable_properties(bool p_enabled);
 
 	void set_restrict_to_basic_settings(bool p_restrict);
+	void set_property_clipboard(const Variant &p_value);
+	Variant get_property_clipboard() const;
 
 	EditorInspector();
 };

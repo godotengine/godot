@@ -22,5 +22,8 @@
 		<constant name="FUNC_IS_NAN" value="1" enum="Function">
 			Comparison with [code]NaN[/code] (Not a Number; denotes invalid numeric results, e.g. division by zero).
 		</constant>
+		<constant name="FUNC_MAX" value="2" enum="Function">
+			Represents the size of the [enum Function] enum.
+		</constant>
 	</constants>
 </class>

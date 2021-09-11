@@ -89,7 +89,7 @@
 			<return type="int" />
 			<argument index="0" name="to" type="String" />
 			<description>
-				Performs a case-sensitive comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/code] of each string, which roughly matches the alphabetical order.
+				Performs a case-sensitive comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/url] of each string, which roughly matches the alphabetical order.
 				[b]Behavior with different string lengths:[/b] Returns [code]1[/code] if the "base" string is longer than the [code]to[/code] string or [code]-1[/code] if the "base" string is shorter than the [code]to[/code] string. Keep in mind this length is determined by the number of Unicode codepoints, [i]not[/i] the actual visible characters.
 				[b]Behavior with empty strings:[/b] Returns [code]-1[/code] if the "base" string is empty, [code]1[/code] if the [code]to[/code] string is empty or [code]0[/code] if both strings are empty.
 				To get a boolean result from a string comparison, use the [code]==[/code] operator instead. See also [method nocasecmp_to] and [method naturalnocasecmp_to].
@@ -181,7 +181,17 @@
 		<method name="get_extension" qualifiers="const">
 			<return type="String" />
 			<description>
-				If the string is a valid file path, returns the extension.
+				Returns the extension without the leading period character ([code].[/code]) if the string is a valid file name or path. If the string does not contain an extension, returns an empty string instead.
+				[codeblock]
+				print("/path/to/file.txt".get_extension())  # "txt"
+				print("file.txt".get_extension())  # "txt"
+				print("file.sample.txt".get_extension())  # "txt"
+				print(".txt".get_extension())  # "txt"
+				print("file.txt.".get_extension())  # "" (empty string)
+				print("file.txt..".get_extension())  # "" (empty string)
+				print("txt".get_extension())  # "" (empty string)
+				print("".get_extension())  # "" (empty string)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_file" qualifiers="const">
@@ -229,7 +239,7 @@
 		<method name="is_absolute_path" qualifiers="const">
 			<return type="bool" />
 			<description>
-				If the string is a path to a file or directory, returns [code]true[/code] if the path is absolute.
+				Returns [code]true[/code] if the string is a path to a file or directory and its starting point is explicitly defined. This includes [code]res://[/code], [code]user://[/code], [code]C:\[/code], [code]/[/code], etc.
 			</description>
 		</method>
 		<method name="is_empty" qualifiers="const">
@@ -238,10 +248,10 @@
 				Returns [code]true[/code] if the length of the string equals [code]0[/code].
 			</description>
 		</method>
-		<method name="is_rel_path" qualifiers="const">
+		<method name="is_relative_path" qualifiers="const">
 			<return type="bool" />
 			<description>
-				If the string is a path to a file or directory, returns [code]true[/code] if the path is relative.
+				Returns [code]true[/code] if the string is a path to a file or directory and its starting point is implicitly defined within the context it is being used. The starting point may refer to the current directory ([code]./[/code]), or the current [Node].
 			</description>
 		</method>
 		<method name="is_subsequence_of" qualifiers="const">
@@ -388,7 +398,7 @@
 			<return type="int" />
 			<argument index="0" name="to" type="String" />
 			<description>
-				Performs a case-insensitive [i]natural order[/i] comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/code] of each string, which roughly matches the alphabetical order. Internally, lowercase characters will be converted to uppercase during the comparison.
+				Performs a case-insensitive [i]natural order[/i] comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/url] of each string, which roughly matches the alphabetical order. Internally, lowercase characters will be converted to uppercase during the comparison.
 				When used for sorting, natural order comparison will order suites of numbers as expected by most people. If you sort the numbers from 1 to 10 using natural order, you will get [code][1, 2, 3, ...][/code] instead of [code][1, 10, 2, 3, ...][/code].
 				[b]Behavior with different string lengths:[/b] Returns [code]1[/code] if the "base" string is longer than the [code]to[/code] string or [code]-1[/code] if the "base" string is shorter than the [code]to[/code] string. Keep in mind this length is determined by the number of Unicode codepoints, [i]not[/i] the actual visible characters.
 				[b]Behavior with empty strings:[/b] Returns [code]-1[/code] if the "base" string is empty, [code]1[/code] if the [code]to[/code] string is empty or [code]0[/code] if both strings are empty.
@@ -399,7 +409,7 @@
 			<return type="int" />
 			<argument index="0" name="to" type="String" />
 			<description>
-				Performs a case-insensitive comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/code] of each string, which roughly matches the alphabetical order. Internally, lowercase characters will be converted to uppercase during the comparison.
+				Performs a case-insensitive comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/url] of each string, which roughly matches the alphabetical order. Internally, lowercase characters will be converted to uppercase during the comparison.
 				[b]Behavior with different string lengths:[/b] Returns [code]1[/code] if the "base" string is longer than the [code]to[/code] string or [code]-1[/code] if the "base" string is shorter than the [code]to[/code] string. Keep in mind this length is determined by the number of Unicode codepoints, [i]not[/i] the actual visible characters.
 				[b]Behavior with empty strings:[/b] Returns [code]-1[/code] if the "base" string is empty, [code]1[/code] if the [code]to[/code] string is empty or [code]0[/code] if both strings are empty.
 				To get a boolean result from a string comparison, use the [code]==[/code] operator instead. See also [method casecmp_to] and [method naturalnocasecmp_to].
@@ -410,6 +420,21 @@
 			<argument index="0" name="number" type="float" />
 			<argument index="1" name="decimals" type="int" default="-1" />
 			<description>
+				Converts a [float] to a string representation of a decimal number.
+				The number of decimal places can be specified with [code]decimals[/code]. If [code]decimals[/code] is [code]-1[/code] (default), decimal places will be automatically adjusted so that the string representation has 14 significant digits (counting both digits to the left and the right of the decimal point).
+				Trailing zeros are not included in the string. The last digit will be rounded and not truncated.
+				Some examples:
+				[codeblock]
+				String.num(3.141593)     # "3.141593"
+				String.num(3.141593, 3)  # "3.142"
+				String.num(3.14159300)   # "3.141593", no trailing zeros.
+				# Last digit will be rounded up here, which reduces total digit count since
+				# trailing zeros are removed:
+				String.num(42.129999, 5) # "42.13"
+				# If `decimals` is not specified, the total amount of significant digits is 14:
+				String.num(-0.0000012345432123454321)     # "-0.00000123454321"
+				String.num(-10000.0000012345432123454321) # "-10000.0000012345"
+				[/codeblock]
 			</description>
 		</method>
 		<method name="num_scientific" qualifiers="static">
@@ -619,6 +644,12 @@
 			<argument index="0" name="text" type="String" />
 			<description>
 				Returns the similarity index of the text compared to this string. 1 means totally similar and 0 means totally dissimilar.
+			</description>
+		</method>
+		<method name="simplify_path" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns a simplified canonical path.
 			</description>
 		</method>
 		<method name="split" qualifiers="const">

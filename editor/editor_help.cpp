@@ -30,6 +30,7 @@
 
 #include "editor_help.h"
 
+#include "core/core_constants.h"
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "doc_data_compressed.gen.h"
@@ -170,7 +171,7 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 	if (t.is_empty()) {
 		t = "void";
 	}
-	bool can_ref = (t != "void") || !p_enum.is_empty();
+	bool can_ref = (t != "void" && t.find("*") == -1) || !p_enum.is_empty();
 
 	if (!p_enum.is_empty()) {
 		if (p_enum.get_slice_count(".") > 1) {
@@ -632,8 +633,8 @@ void EditorHelp::_update_doc() {
 				continue;
 			}
 		}
-		// Ignore undocumented private.
-		if (cd.methods[i].name.begins_with("_") && cd.methods[i].description.is_empty()) {
+		// Ignore undocumented non virtual private.
+		if (cd.methods[i].name.begins_with("_") && cd.methods[i].description.is_empty() && cd.methods[i].qualifiers.find("virtual") == -1) {
 			continue;
 		}
 		methods.push_back(cd.methods[i]);
@@ -695,7 +696,7 @@ void EditorHelp::_update_doc() {
 					class_desc->pop(); //cell
 				}
 
-				if (m[i].description != "") {
+				if (m[i].description != "" || m[i].errors_returned.size() > 0) {
 					method_descr = true;
 				}
 
@@ -1227,6 +1228,31 @@ void EditorHelp::_update_doc() {
 				class_desc->push_color(text_color);
 				class_desc->push_font(doc_font);
 				class_desc->push_indent(1);
+				if (methods_filtered[i].errors_returned.size()) {
+					class_desc->append_bbcode(TTR("Error codes returned:"));
+					class_desc->add_newline();
+					class_desc->push_list(0, RichTextLabel::LIST_DOTS, false);
+					for (int j = 0; j < methods_filtered[i].errors_returned.size(); j++) {
+						if (j > 0) {
+							class_desc->add_newline();
+						}
+						int val = methods_filtered[i].errors_returned[j];
+						String text = itos(val);
+						for (int k = 0; k < CoreConstants::get_global_constant_count(); k++) {
+							if (CoreConstants::get_global_constant_value(k) == val && CoreConstants::get_global_constant_enum(k) == SNAME("Error")) {
+								text = CoreConstants::get_global_constant_name(k);
+								break;
+							}
+						}
+
+						class_desc->push_bold();
+						class_desc->append_bbcode(text);
+						class_desc->pop();
+					}
+					class_desc->pop();
+					class_desc->add_newline();
+					class_desc->add_newline();
+				}
 				if (!methods_filtered[i].description.strip_edges().is_empty()) {
 					_add_text(DTR(methods_filtered[i].description));
 				} else {
@@ -1302,6 +1328,8 @@ void EditorHelp::_help_callback(const String &p_topic) {
 	} else if (what == "class_global") {
 		if (constant_line.has(name)) {
 			line = constant_line[name];
+		} else if (method_line.has(name)) {
+			line = method_line[name];
 		} else {
 			Map<String, Map<String, int>>::Element *iter = enum_values_line.front();
 			while (true) {
@@ -1825,8 +1853,6 @@ void FindBar::_notification(int p_what) {
 }
 
 void FindBar::_bind_methods() {
-	ClassDB::bind_method("_unhandled_input", &FindBar::_unhandled_input);
-
 	ADD_SIGNAL(MethodInfo("search"));
 }
 
@@ -1902,7 +1928,7 @@ void FindBar::_hide_bar() {
 	hide();
 }
 
-void FindBar::_unhandled_input(const Ref<InputEvent> &p_event) {
+void FindBar::unhandled_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventKey> k = p_event;

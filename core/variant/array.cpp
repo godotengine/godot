@@ -203,9 +203,9 @@ Error Array::resize(int p_new_size) {
 	return _p->array.resize(p_new_size);
 }
 
-void Array::insert(int p_pos, const Variant &p_value) {
-	ERR_FAIL_COND(!_p->typed.validate(p_value, "insert"));
-	_p->array.insert(p_pos, p_value);
+Error Array::insert(int p_pos, const Variant &p_value) {
+	ERR_FAIL_COND_V(!_p->typed.validate(p_value, "insert"), ERR_INVALID_PARAMETER);
+	return _p->array.insert(p_pos, p_value);
 }
 
 void Array::fill(const Variant &p_value) {
@@ -535,8 +535,8 @@ void Array::push_front(const Variant &p_value) {
 
 Variant Array::pop_back() {
 	if (!_p->array.is_empty()) {
-		int n = _p->array.size() - 1;
-		Variant ret = _p->array.get(n);
+		const int n = _p->array.size() - 1;
+		const Variant ret = _p->array.get(n);
 		_p->array.resize(n);
 		return ret;
 	}
@@ -545,11 +545,36 @@ Variant Array::pop_back() {
 
 Variant Array::pop_front() {
 	if (!_p->array.is_empty()) {
-		Variant ret = _p->array.get(0);
+		const Variant ret = _p->array.get(0);
 		_p->array.remove(0);
 		return ret;
 	}
 	return Variant();
+}
+
+Variant Array::pop_at(int p_pos) {
+	if (_p->array.is_empty()) {
+		// Return `null` without printing an error to mimic `pop_back()` and `pop_front()` behavior.
+		return Variant();
+	}
+
+	if (p_pos < 0) {
+		// Relative offset from the end
+		p_pos = _p->array.size() + p_pos;
+	}
+
+	ERR_FAIL_INDEX_V_MSG(
+			p_pos,
+			_p->array.size(),
+			Variant(),
+			vformat(
+					"The calculated index %s is out of bounds (the array has %s elements). Leaving the array untouched and returning `null`.",
+					p_pos,
+					_p->array.size()));
+
+	const Variant ret = _p->array.get(p_pos);
+	_p->array.remove(p_pos);
+	return ret;
 }
 
 Variant Array::min() const {

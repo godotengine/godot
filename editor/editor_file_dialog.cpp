@@ -124,7 +124,7 @@ void EditorFileDialog::_notification(int p_what) {
 	}
 }
 
-void EditorFileDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
+void EditorFileDialog::unhandled_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventKey> k = p_event;
@@ -728,6 +728,7 @@ void EditorFileDialog::update_file_list() {
 		item_list->set_icon_mode(ItemList::ICON_MODE_TOP);
 		item_list->set_fixed_column_width(thumbnail_size * 3 / 2);
 		item_list->set_max_text_lines(2);
+		item_list->set_text_overrun_behavior(TextParagraph::OVERRUN_TRIM_ELLIPSIS);
 		item_list->set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
 
 		if (thumbnail_size < 64) {
@@ -957,7 +958,7 @@ String EditorFileDialog::get_current_path() const {
 }
 
 void EditorFileDialog::set_current_dir(const String &p_dir) {
-	if (p_dir.is_rel_path()) {
+	if (p_dir.is_relative_path()) {
 		dir_access->change_dir(OS::get_singleton()->get_resource_dir());
 	}
 	dir_access->change_dir(p_dir);
@@ -1354,8 +1355,6 @@ EditorFileDialog::DisplayMode EditorFileDialog::get_display_mode() const {
 }
 
 void EditorFileDialog::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_unhandled_input"), &EditorFileDialog::_unhandled_input);
-
 	ClassDB::bind_method(D_METHOD("_cancel_pressed"), &EditorFileDialog::_cancel_pressed);
 
 	ClassDB::bind_method(D_METHOD("clear_filters"), &EditorFileDialog::clear_filters);
@@ -1645,6 +1644,7 @@ EditorFileDialog::EditorFileDialog() {
 	item_list->connect("item_rmb_selected", callable_mp(this, &EditorFileDialog::_item_list_item_rmb_selected));
 	item_list->connect("rmb_clicked", callable_mp(this, &EditorFileDialog::_item_list_rmb_clicked));
 	item_list->set_allow_rmb_select(true);
+
 	list_vb->add_child(item_list);
 
 	item_menu = memnew(PopupMenu);

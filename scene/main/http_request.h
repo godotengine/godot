@@ -31,12 +31,12 @@
 #ifndef HTTPREQUEST_H
 #define HTTPREQUEST_H
 
-#include "core/io/file_access.h"
 #include "core/io/http_client.h"
 #include "core/os/thread.h"
 #include "core/templates/safe_refcount.h"
-#include "node.h"
-#include "scene/main/timer.h"
+#include "scene/main/node.h"
+
+class Timer;
 
 class HTTPRequest : public Node {
 	GDCLASS(HTTPRequest, Node);

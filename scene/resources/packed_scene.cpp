@@ -162,12 +162,14 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				}
 				WARN_PRINT(vformat("Node %s of type %s cannot be created. A placeholder will be created instead.", snames[n.name], snames[n.type]).ascii().get_data());
 				if (n.parent >= 0 && n.parent < nc && ret_nodes[n.parent]) {
-					if (Object::cast_to<Node3D>(ret_nodes[n.parent])) {
-						obj = memnew(Node3D);
-					} else if (Object::cast_to<Control>(ret_nodes[n.parent])) {
+					if (Object::cast_to<Control>(ret_nodes[n.parent])) {
 						obj = memnew(Control);
 					} else if (Object::cast_to<Node2D>(ret_nodes[n.parent])) {
 						obj = memnew(Node2D);
+#ifndef _3D_DISABLED
+					} else if (Object::cast_to<Node3D>(ret_nodes[n.parent])) {
+						obj = memnew(Node3D);
+#endif // _3D_DISABLED
 					}
 				}
 
@@ -377,10 +379,17 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 		return OK;
 	}
 
+	bool is_editable_instance = false;
+
 	// save the child instantiated scenes that are chosen as editable, so they can be restored
 	// upon load back
 	if (p_node != p_owner && p_node->get_filename() != String() && p_owner->is_editable_instance(p_node)) {
 		editable_instances.push_back(p_owner->get_path_to(p_node));
+		// Node is the root of an editable instance.
+		is_editable_instance = true;
+	} else if (p_node->get_owner() && p_node->get_owner() != p_owner && p_owner->is_editable_instance(p_node->get_owner())) {
+		// Node is part of an editable instance.
+		is_editable_instance = true;
 	}
 
 	NodeData nd;
@@ -608,7 +617,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 
 	// Save the right type. If this node was created by an instance
 	// then flag that the node should not be created but reused
-	if (pack_state_stack.is_empty()) {
+	if (pack_state_stack.is_empty() && !is_editable_instance) {
 		//this node is not part of an instancing process, so save the type
 		nd.type = _nm_get_string(p_node->get_class(), name_map);
 	} else {

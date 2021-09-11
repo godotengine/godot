@@ -30,11 +30,8 @@
 
 #include "touch_screen_button.h"
 
-#include "core/input/input.h"
-#include "core/input/input_map.h"
-#include "core/os/os.h"
 #include "scene/main/window.h"
-#
+
 void TouchScreenButton::set_texture(const Ref<Texture2D> &p_texture) {
 	texture = p_texture;
 	update();
@@ -188,7 +185,7 @@ String TouchScreenButton::get_action() const {
 	return action;
 }
 
-void TouchScreenButton::_input(const Ref<InputEvent> &p_event) {
+void TouchScreenButton::input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (!get_tree()) {
@@ -291,7 +288,7 @@ void TouchScreenButton::_press(int p_finger_pressed) {
 		iea.instantiate();
 		iea->set_action(action);
 		iea->set_pressed(true);
-		get_viewport()->input(iea, true);
+		get_viewport()->push_input(iea, true);
 	}
 
 	emit_signal(SNAME("pressed"));
@@ -308,7 +305,7 @@ void TouchScreenButton::_release(bool p_exiting_tree) {
 			iea.instantiate();
 			iea->set_action(action);
 			iea->set_pressed(false);
-			get_viewport()->input(iea, true);
+			get_viewport()->push_input(iea, true);
 		}
 	}
 
@@ -386,8 +383,6 @@ void TouchScreenButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_passby_press_enabled"), &TouchScreenButton::is_passby_press_enabled);
 
 	ClassDB::bind_method(D_METHOD("is_pressed"), &TouchScreenButton::is_pressed);
-
-	ClassDB::bind_method(D_METHOD("_input"), &TouchScreenButton::_input);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "pressed", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture_pressed", "get_texture_pressed");

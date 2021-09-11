@@ -44,7 +44,11 @@
 #endif
 #include "vk_mem_alloc.h"
 
+#ifdef USE_VOLK
+#include <volk.h>
+#else
 #include <vulkan/vulkan.h>
+#endif
 
 class VulkanContext;
 
@@ -635,6 +639,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		Vector<VkPipelineShaderStageCreateInfo> pipeline_stages;
 		Vector<SpecializationConstant> specialization_constants;
 		VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
+		String name; //used for debug
 	};
 
 	String _shader_uniform_debug(RID p_shader, int p_set = -1);
@@ -1039,6 +1044,7 @@ public:
 	virtual bool texture_is_format_supported_for_usage(DataFormat p_format, uint32_t p_usage) const;
 	virtual bool texture_is_shared(RID p_texture);
 	virtual bool texture_is_valid(RID p_texture);
+	virtual Size2i texture_size(RID p_texture);
 
 	virtual Error texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, uint32_t p_post_barrier = BARRIER_MASK_ALL);
 	virtual Error texture_clear(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, uint32_t p_post_barrier = BARRIER_MASK_ALL);
@@ -1084,7 +1090,7 @@ public:
 	/****************/
 
 	virtual String shader_get_binary_cache_key() const;
-	virtual Vector<uint8_t> shader_compile_binary_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv);
+	virtual Vector<uint8_t> shader_compile_binary_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name = "");
 
 	virtual RID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary);
 
@@ -1220,6 +1226,8 @@ public:
 	virtual String get_device_vendor_name() const;
 	virtual String get_device_name() const;
 	virtual String get_device_pipeline_cache_uuid() const;
+
+	virtual uint64_t get_driver_resource(DriverResource p_resource, RID p_rid = RID(), uint64_t p_index = 0);
 
 	RenderingDeviceVulkan();
 	~RenderingDeviceVulkan();

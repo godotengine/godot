@@ -83,7 +83,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2021-08-01 12:02+0000\n"
+"PO-Revision-Date: 2021-08-12 14:48+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -413,6 +413,7 @@ msgstr "更改动画循环模式"
 msgid "Remove Anim Track"
 msgstr "移除动画轨道"
 
+#. TRANSLATORS: %s will be replaced by a phrase describing the target of track.
 #: editor/animation_track_editor.cpp
 msgid "Create NEW track for %s and insert key?"
 msgstr "是否为 %s 新建轨道并插入关键帧？"
@@ -437,9 +438,27 @@ msgstr "创建"
 msgid "Anim Insert"
 msgstr "插入动画"
 
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "node '%s'"
+msgstr "无法打开 \"%s\"。"
+
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "animation"
+msgstr "动画"
+
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
 msgstr "AnimationPlayer 不能动画化自己，只可动画化其它 Player。"
+
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "property '%s'"
+msgstr "不存在属性“%s”。"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -644,9 +663,8 @@ msgid "Go to Previous Step"
 msgstr "返回上一步"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Apply Reset"
-msgstr "重置"
+msgstr "应用重置"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize Animation"
@@ -665,9 +683,8 @@ msgid "Use Bezier Curves"
 msgstr "使用贝塞尔曲线"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Create RESET Track(s)"
-msgstr "粘贴轨道"
+msgstr "创建 RESET 轨道"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
@@ -988,7 +1005,6 @@ msgid "Edit..."
 msgstr "编辑..."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Go to Method"
 msgstr "跳转到方法"
 
@@ -1008,9 +1024,9 @@ msgstr "创建 %s"
 msgid "No results for \"%s\"."
 msgstr "未找到 “%s”。"
 
-#: editor/create_dialog.cpp
+#: editor/create_dialog.cpp editor/property_selector.cpp
 msgid "No description available for %s."
-msgstr ""
+msgstr "没有针对 %s 的描述。"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
@@ -1110,17 +1126,15 @@ msgid "Owners Of:"
 msgstr "拥有者："
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Remove the selected files from the project? (Cannot be undone.)\n"
 "Depending on your filesystem configuration, the files will either be moved "
 "to the system trash or deleted permanently."
 msgstr ""
-"是否从项目中删除所选文件？（无法撤销）\n"
-"你可以在系统回收站中恢复被删除的文件。"
+"是否从项目中删除所选文件？（无法撤销。）\n"
+"根据你的文件系统设置，文件会被移动至系统回收站或永久删除。"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
@@ -1128,9 +1142,9 @@ msgid ""
 "Depending on your filesystem configuration, the files will either be moved "
 "to the system trash or deleted permanently."
 msgstr ""
-"要删除的文件被其他资源所依赖。\n"
-"仍然要删除吗？（无法撤销）\n"
-"你可以在系统回收站中恢复被删除的文件。"
+"其它资源需要这些即将被删除的文件才能正常工作。\n"
+"仍然要删除吗？（无法撤销。）\n"
+"根据你的文件系统设置，文件会被移动至系统回收站或永久删除。"
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
@@ -1298,41 +1312,36 @@ msgid "Licenses"
 msgstr "许可证"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
-msgstr "打开包文件时出错（非 ZIP 格式）。"
+msgstr "打开“%s”的素材文件时出错（非 ZIP 格式）。"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "%s (already exists)"
 msgstr "%s（已存在）"
 
 #: editor/editor_asset_installer.cpp
 msgid "Contents of asset \"%s\" - %d file(s) conflict with your project:"
-msgstr ""
+msgstr "素材“%s”的内容 - %d 个文件与你的项目冲突："
 
 #: editor/editor_asset_installer.cpp
 msgid "Contents of asset \"%s\" - No files conflict with your project:"
-msgstr ""
+msgstr "素材“%s”的内容 - 没有文件与你的项目冲突："
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "正在解压素材"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "The following files failed extraction from asset \"%s\":"
-msgstr "以下文件无法从包中提取："
+msgstr "以下文件无法从素材“%s”中提取："
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "(and %s more files)"
-msgstr "以及其它 %s 个文件。"
+msgstr "（以及其它 %s 个文件）"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Asset \"%s\" installed successfully!"
-msgstr "软件包安装成功！"
+msgstr "素材“%s”安装成功！"
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -1344,9 +1353,8 @@ msgid "Install"
 msgstr "安装"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Asset Installer"
-msgstr "程序包安装程序"
+msgstr "素材安装器"
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
@@ -1409,7 +1417,6 @@ msgid "Bypass"
 msgstr "旁通"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Bus Options"
 msgstr "总线选项"
 
@@ -1577,13 +1584,12 @@ msgid "Can't add autoload:"
 msgstr "无法加载 Autoload："
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "%s is an invalid path. File does not exist."
-msgstr "文件不存在。"
+msgstr "%s 是无效路径。文件不存在。"
 
 #: editor/editor_autoload_settings.cpp
 msgid "%s is an invalid path. Not in resource path (res://)."
-msgstr ""
+msgstr "%s 是无效路径。不是资源路径（res://）。"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -1607,9 +1613,8 @@ msgid "Name"
 msgstr "名称"
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Global Variable"
-msgstr "变量"
+msgstr "全局变量"
 
 #: editor/editor_data.cpp
 msgid "Paste Params"
@@ -1775,48 +1780,47 @@ msgstr "导入面板"
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to view and edit 3D scenes."
-msgstr ""
+msgstr "允许查看并编辑 3D 场景。"
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to edit scripts using the integrated script editor."
-msgstr ""
+msgstr "允许使用内置脚本编辑器编辑脚本。"
 
 #: editor/editor_feature_profile.cpp
 msgid "Provides built-in access to the Asset Library."
-msgstr ""
+msgstr "提供对素材库的内置访问。"
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows editing the node hierarchy in the Scene dock."
-msgstr ""
+msgstr "允许在场景面板中编辑节点层级。"
 
 #: editor/editor_feature_profile.cpp
 msgid ""
 "Allows to work with signals and groups of the node selected in the Scene "
 "dock."
-msgstr ""
+msgstr "允许在场景面板操作所选节点的信号和分组。"
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to browse the local file system via a dedicated dock."
-msgstr ""
+msgstr "允许使用专门的面板浏览本地文件系统。"
 
 #: editor/editor_feature_profile.cpp
 msgid ""
 "Allows to configure import settings for individual assets. Requires the "
 "FileSystem dock to function."
-msgstr ""
+msgstr "允许为各个素材配置导入设置。文件系统面板需要可用。"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "(current)"
 msgstr "（当前）"
 
 #: editor/editor_feature_profile.cpp
 msgid "(none)"
-msgstr ""
+msgstr "（无）"
 
 #: editor/editor_feature_profile.cpp
 msgid "Remove currently selected profile, '%s'? Cannot be undone."
-msgstr ""
+msgstr "要删除当前所选的配置文件“%s”吗？无法撤销。"
 
 #: editor/editor_feature_profile.cpp
 msgid "Profile must be a valid filename and must not contain '.'"
@@ -1847,19 +1851,16 @@ msgid "Enable Contextual Editor"
 msgstr "启用上下文编辑器"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Class Properties:"
-msgstr "属性:"
+msgstr "类属性："
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Main Features:"
-msgstr "特性"
+msgstr "主要特性："
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Nodes and Classes:"
-msgstr "启用的类："
+msgstr "节点和类："
 
 #: editor/editor_feature_profile.cpp
 msgid "File '%s' format is invalid, import aborted."
@@ -1876,7 +1877,6 @@ msgid "Error saving profile to path: '%s'."
 msgstr "将配置文件保存到路径 “%s” 时出错。"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Reset to Default"
 msgstr "重置为默认值"
 
@@ -1885,14 +1885,12 @@ msgid "Current Profile:"
 msgstr "当前配置文件："
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Create Profile"
-msgstr "删除配置文件"
+msgstr "创建配置文件"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Remove Profile"
-msgstr "移除图块"
+msgstr "删除配置文件"
 
 #: editor/editor_feature_profile.cpp
 msgid "Available Profiles:"
@@ -1912,18 +1910,16 @@ msgid "Export"
 msgstr "导出"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Configure Selected Profile:"
-msgstr "当前配置文件："
+msgstr "配置所选配置文件："
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Extra Options:"
-msgstr "纹理选项"
+msgstr "更多选项："
 
 #: editor/editor_feature_profile.cpp
 msgid "Create or import a profile to edit available classes and properties."
-msgstr ""
+msgstr "创建或导入配置文件以编辑可用的类和属性。"
 
 #: editor/editor_feature_profile.cpp
 msgid "New profile name:"
@@ -1950,7 +1946,6 @@ msgid "Select Current Folder"
 msgstr "选择当前文件夹"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "File exists, overwrite?"
 msgstr "文件已存在，是否覆盖？"
 
@@ -2343,6 +2338,17 @@ msgid "New Window"
 msgstr "新窗口"
 
 #: editor/editor_node.cpp
+msgid ""
+"Spins when the editor window redraws.\n"
+"Update Continuously is enabled, which can increase power usage. Click to "
+"disable it."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Spins when the editor window redraws."
+msgstr "编辑器窗口重绘时旋转。"
+
+#: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
 msgstr "导入的资源无法保存。"
 
@@ -2503,9 +2509,9 @@ msgid ""
 "Please read the documentation relevant to importing scenes to better "
 "understand this workflow."
 msgstr ""
-"场景已被导入，所做的更改将不会保留。\n"
-"请实例化或继承该场景以允许对其进行更改。\n"
-"请阅读与导入场景相关的文档，以更佳理解此工作流。"
+"该场景是被导入的场景，不会保留对它的更改。\n"
+"实例化或继承该场景就可以对其进行更改。\n"
+"请阅读与导入场景相关的文档，以便更好地理解此工作流。"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2560,14 +2566,13 @@ msgstr "是否在关闭前保存对 “%s” 的更改？"
 msgid ""
 "The current scene has no root node, but %d modified external resource(s) "
 "were saved anyway."
-msgstr ""
+msgstr "当前场景没有根节点，不过保存了 %d 个已修改的外部资源。"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "A root node is required to save the scene. You can add a root node using the "
 "Scene tree dock."
-msgstr "必须有根节点才可保存场景。"
+msgstr "必须有根节点才能保存场景。你可以通过场景面板添加根节点。"
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
@@ -2938,9 +2943,8 @@ msgid "Orphan Resource Explorer..."
 msgstr "孤立资源浏览器..."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Reload Current Project"
-msgstr "重命名项目"
+msgstr "重新加载当前项目"
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
@@ -3088,22 +3092,20 @@ msgid "Help"
 msgstr "帮助"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Online Documentation"
-msgstr "打开文档"
+msgstr "在线文档"
 
 #: editor/editor_node.cpp
 msgid "Questions & Answers"
-msgstr ""
+msgstr "问与答"
 
 #: editor/editor_node.cpp
 msgid "Report a Bug"
 msgstr "报告问题"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Suggest a Feature"
-msgstr "设置值"
+msgstr "提交新特性建议"
 
 #: editor/editor_node.cpp
 msgid "Send Docs Feedback"
@@ -3114,9 +3116,8 @@ msgid "Community"
 msgstr "社区"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "About Godot"
-msgstr "关于"
+msgstr "关于 Godot"
 
 #: editor/editor_node.cpp
 msgid "Support Godot Development"
@@ -3168,10 +3169,6 @@ msgid "Save & Restart"
 msgstr "保存并重启"
 
 #: editor/editor_node.cpp
-msgid "Spins when the editor window redraws."
-msgstr "编辑器窗口重绘时旋转。"
-
-#: editor/editor_node.cpp
 msgid "Update Continuously"
 msgstr "持续更新"
 
@@ -3212,14 +3209,12 @@ msgid "Manage Templates"
 msgstr "管理模板"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Install from file"
 msgstr "从文件安装"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Select android sources file"
-msgstr "选择源网格："
+msgstr "选择 Android 源文件"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3299,9 +3294,8 @@ msgid "Select"
 msgstr "选择"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Select Current"
-msgstr "选择当前文件夹"
+msgstr "选择当前"
 
 #: editor/editor_node.cpp
 msgid "Open 2D Editor"
@@ -3336,9 +3330,8 @@ msgid "No sub-resources found."
 msgstr "找不到子资源。"
 
 #: editor/editor_path.cpp
-#, fuzzy
 msgid "Open a list of sub-resources."
-msgstr "找不到子资源。"
+msgstr "打开子资源列表。"
 
 #: editor/editor_plugin.cpp
 msgid "Creating Mesh Previews"
@@ -3365,12 +3358,10 @@ msgid "Update"
 msgstr "更新"
 
 #: editor/editor_plugin_settings.cpp
-#, fuzzy
 msgid "Version"
-msgstr "版本："
+msgstr "版本"
 
 #: editor/editor_plugin_settings.cpp
-#, fuzzy
 msgid "Author"
 msgstr "作者"
 
@@ -3385,14 +3376,12 @@ msgid "Measure:"
 msgstr "测量："
 
 #: editor/editor_profiler.cpp
-#, fuzzy
 msgid "Frame Time (ms)"
-msgstr "帧时间（秒）"
+msgstr "帧时间（毫秒）"
 
 #: editor/editor_profiler.cpp
-#, fuzzy
 msgid "Average Time (ms)"
-msgstr "平均时间（秒）"
+msgstr "平均时间（毫秒）"
 
 #: editor/editor_profiler.cpp
 msgid "Frame %"
@@ -3419,6 +3408,11 @@ msgid ""
 "functions called by that function.\n"
 "Use this to find individual functions to optimize."
 msgstr ""
+"全部：包括该函数调用的其它函数的时间。\n"
+"使用该选项寻找瓶颈。\n"
+"\n"
+"仅自己：只计算消耗在该函数本身的时间，不包含该函数所调用的其它函数。\n"
+"使用该选项寻找需要优化的函数。"
 
 #: editor/editor_profiler.cpp
 msgid "Frame #:"
@@ -3536,7 +3530,6 @@ msgid "Paste"
 msgstr "粘贴"
 
 #: editor/editor_resource_picker.cpp editor/property_editor.cpp
-#, fuzzy
 msgid "Convert to %s"
 msgstr "转换为 %s"
 
@@ -3586,9 +3579,8 @@ msgid "Did you forget the '_run' method?"
 msgstr "是否遗漏了 _run() 方法？"
 
 #: editor/editor_spin_slider.cpp
-#, fuzzy
 msgid "Hold %s to round to integers. Hold Shift for more precise changes."
-msgstr "按住 Ctrl 键来取整。 按住 Shift 键获取更精确的变化。"
+msgstr "按住 %s 取整。 按住 Shift 获取更精确的变化。"
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -3608,49 +3600,43 @@ msgstr "从节点中导入："
 
 #: editor/export_template_manager.cpp
 msgid "Open the folder containing these templates."
-msgstr ""
+msgstr "打开包含这些模板的文件夹。"
 
 #: editor/export_template_manager.cpp
 msgid "Uninstall these templates."
-msgstr ""
+msgstr "卸载这些模板。"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "There are no mirrors available."
-msgstr "文件 “%s” 不存在。"
+msgstr "没有可用的镜像。"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Retrieving the mirror list..."
-msgstr "检索镜像，请等待..."
+msgstr "正在获取镜像列表……"
 
 #: editor/export_template_manager.cpp
 msgid "Starting the download..."
-msgstr ""
+msgstr "正在开始下载……"
 
 #: editor/export_template_manager.cpp
 msgid "Error requesting URL:"
 msgstr "请求 URL 时出错："
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Connecting to the mirror..."
-msgstr "正在连接镜像网站..."
+msgstr "正在连接镜像……"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Can't resolve the requested address."
-msgstr "无法解析主机名："
+msgstr "无法解析请求地址。"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Can't connect to the mirror."
-msgstr "无法连接到主机："
+msgstr "无法连接到镜像。"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "No response from the mirror."
-msgstr "主机无响应："
+msgstr "镜像无响应。"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -3658,18 +3644,16 @@ msgid "Request failed."
 msgstr "请求失败。"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Request ended up in a redirect loop."
-msgstr "请求失败，重定向次数过多"
+msgstr "请求进入了重定向循环。"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Request failed:"
-msgstr "请求失败。"
+msgstr "请求失败："
 
 #: editor/export_template_manager.cpp
 msgid "Download complete; extracting templates..."
-msgstr ""
+msgstr "下载完成；正在解压模板……"
 
 #: editor/export_template_manager.cpp
 msgid "Cannot remove temporary file:"
@@ -3688,13 +3672,12 @@ msgid "Error getting the list of mirrors."
 msgstr "获取镜像列表时出错。"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error parsing JSON with the list of mirrors. Please report this issue!"
 msgstr "解析镜像列表 JSON 时出错。请提交此问题！"
 
 #: editor/export_template_manager.cpp
 msgid "Best available mirror"
-msgstr ""
+msgstr "最佳可用镜像"
 
 #: editor/export_template_manager.cpp
 msgid ""
@@ -3745,24 +3728,20 @@ msgid "SSL Handshake Error"
 msgstr "SSL 握手错误"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Can't open the export templates file."
-msgstr "无法打开 ZIP 导出模板。"
+msgstr "无法打开导出模板文件。"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Invalid version.txt format inside the export templates file: %s."
-msgstr "模板中的 version.txt 格式无效：%s。"
+msgstr "导出模板中的 version.txt 格式无效：%s。"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "No version.txt found inside the export templates file."
-msgstr "模板中没有找到 version.txt。"
+msgstr "导出模板中没有 version.txt。"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error creating path for extracting templates:"
-msgstr "创建模板路径出错："
+msgstr "为解压模板创建路径时出错："
 
 #: editor/export_template_manager.cpp
 msgid "Extracting Export Templates"
@@ -3773,9 +3752,8 @@ msgid "Importing:"
 msgstr "正在导入："
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Remove templates for the version '%s'?"
-msgstr "是否移除模板版本 “%s”？"
+msgstr "是否移除模板版本“%s”？"
 
 #: editor/export_template_manager.cpp
 msgid "Uncompressing Android Build Sources"
@@ -3791,58 +3769,63 @@ msgstr "当前版本："
 
 #: editor/export_template_manager.cpp
 msgid "Export templates are missing. Download them or install from a file."
-msgstr ""
+msgstr "缺失导出模板。请下载或从文件安装。"
 
 #: editor/export_template_manager.cpp
 msgid "Export templates are installed and ready to be used."
-msgstr ""
+msgstr "导出模板已安装就绪。"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Open Folder"
-msgstr "打开文件"
+msgstr "打开文件夹"
 
 #: editor/export_template_manager.cpp
 msgid "Open the folder containing installed templates for the current version."
-msgstr ""
+msgstr "打开包含当前版本已安装模板的文件夹。"
 
 #: editor/export_template_manager.cpp
 msgid "Uninstall"
 msgstr "卸载"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Uninstall templates for the current version."
-msgstr "计数器初始值"
+msgstr "卸载当前版本的模板。"
+
+#: editor/export_template_manager.cpp
+msgid "Download from:"
+msgstr "下载："
 
 #: editor/export_template_manager.cpp
 #, fuzzy
-msgid "Download from:"
-msgstr "下载错误"
+msgid "Open in Web Browser"
+msgstr "在浏览器中运行"
+
+#: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Copy Mirror URL"
+msgstr "复制错误信息"
 
 #: editor/export_template_manager.cpp
 msgid "Download and Install"
-msgstr ""
+msgstr "下载并安装"
 
 #: editor/export_template_manager.cpp
 msgid ""
 "Download and install templates for the current version from the best "
 "possible mirror."
-msgstr ""
+msgstr "从最佳的镜像下载当前版本的模板并安装。"
 
 #: editor/export_template_manager.cpp
 msgid "Official export templates aren't available for development builds."
 msgstr "开发构建下官方导出模板不可用。"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Install from File"
 msgstr "从文件安装"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Install templates from a local file."
-msgstr "从 ZIP 文件中导入模板"
+msgstr "从本地文件安装模板。"
 
 #: editor/export_template_manager.cpp editor/find_in_files.cpp
 #: editor/progress_dialog.cpp scene/gui/dialogs.cpp
@@ -3850,19 +3833,16 @@ msgid "Cancel"
 msgstr "取消"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Cancel the download of the templates."
-msgstr "无法打开 ZIP 导出模板。"
+msgstr "取消下载模板。"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Other Installed Versions:"
-msgstr "已安装版本："
+msgstr "其它已安装版本："
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Uninstall Template"
-msgstr "卸载"
+msgstr "卸载模板"
 
 #: editor/export_template_manager.cpp
 msgid "Select Template File"
@@ -3877,6 +3857,8 @@ msgid ""
 "The templates will continue to download.\n"
 "You may experience a short editor freeze when they finish."
 msgstr ""
+"模板下载仍会继续。\n"
+"完成时你可能会感受到编辑器的短暂冻结。"
 
 #: editor/filesystem_dock.cpp
 msgid "Favorites"
@@ -3972,7 +3954,7 @@ msgstr "打开场景"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance"
-msgstr "实例"
+msgstr "实例化"
 
 #: editor/filesystem_dock.cpp
 msgid "Add to Favorites"
@@ -4019,35 +4001,32 @@ msgid "Collapse All"
 msgstr "全部折叠"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Sort files"
-msgstr "搜索文件"
+msgstr "文件排序"
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by Name (Ascending)"
-msgstr ""
+msgstr "按名称（升序）"
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by Name (Descending)"
-msgstr ""
+msgstr "按名称（降序）"
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by Type (Ascending)"
-msgstr ""
+msgstr "按类型（升序）"
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by Type (Descending)"
-msgstr ""
+msgstr "按类型（降序）"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Sort by Last Modified"
-msgstr "修改时间"
+msgstr "按最近修改"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Sort by First Modified"
-msgstr "修改时间"
+msgstr "按最早修改"
 
 #: editor/filesystem_dock.cpp
 msgid "Duplicate..."
@@ -4059,7 +4038,7 @@ msgstr "重命名为..."
 
 #: editor/filesystem_dock.cpp
 msgid "Focus the search box"
-msgstr ""
+msgstr "聚焦搜索框"
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Folder/File"
@@ -4363,14 +4342,12 @@ msgid "Failed to load resource."
 msgstr "加载资源失败。"
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Copy Properties"
-msgstr "属性"
+msgstr "复制属性"
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Paste Properties"
-msgstr "属性"
+msgstr "粘贴属性"
 
 #: editor/inspector_dock.cpp
 msgid "Make Sub-Resources Unique"
@@ -4395,23 +4372,20 @@ msgid "Save As..."
 msgstr "另存为..."
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Extra resource options."
-msgstr "不在资源路径下。"
+msgstr "更多资源选项。"
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Edit Resource from Clipboard"
-msgstr "编辑资源剪贴板"
+msgstr "编辑剪贴板中的资源"
 
 #: editor/inspector_dock.cpp
 msgid "Copy Resource"
 msgstr "复制资源"
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Make Resource Built-In"
-msgstr "转为内置"
+msgstr "将资源转为内置"
 
 #: editor/inspector_dock.cpp
 msgid "Go to the previous edited object in history."
@@ -4426,9 +4400,8 @@ msgid "History of recently edited objects."
 msgstr "最近编辑历史对象。"
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Open documentation for this object."
-msgstr "打开文档"
+msgstr "打开该对象的文档。"
 
 #: editor/inspector_dock.cpp editor/scene_tree_dock.cpp
 msgid "Open Documentation"
@@ -4439,9 +4412,8 @@ msgid "Filter properties"
 msgstr "筛选属性"
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Manage object properties."
-msgstr "对象属性。"
+msgstr "管理对象属性。"
 
 #: editor/inspector_dock.cpp
 msgid "Changes may be lost!"
@@ -4684,9 +4656,8 @@ msgid "Blend:"
 msgstr "混合："
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Parameter Changed:"
-msgstr "参数已更改"
+msgstr "修改参数："
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -5408,11 +5379,11 @@ msgstr "全部"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Search templates, projects, and demos"
-msgstr ""
+msgstr "搜索模板、项目、演示"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Search assets (excluding templates, projects, and demos)"
-msgstr ""
+msgstr "搜索素材（不包含模板、项目、演示）"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Import..."
@@ -5456,7 +5427,7 @@ msgstr "素材 ZIP 文件"
 
 #: editor/plugins/audio_stream_editor_plugin.cpp
 msgid "Audio Preview Play/Pause"
-msgstr ""
+msgstr "音频预览播放/暂停"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -5705,13 +5676,12 @@ msgstr "编辑锚点"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Project Camera Override\n"
 "Overrides the running project's camera with the editor viewport camera."
 msgstr ""
-"游戏相机覆盖\n"
-"使用编辑器视图相机覆盖游戏相机。"
+"项目相机覆盖\n"
+"使用编辑器视图相机覆盖正在运行的项目中的相机。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5720,6 +5690,8 @@ msgid ""
 "No project instance running. Run the project from the editor to use this "
 "feature."
 msgstr ""
+"项目相机覆盖\n"
+"没有正在运行的项目实例。请先在编辑器中运行项目再使用本功能。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5785,31 +5757,25 @@ msgstr "选择模式"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Drag: Rotate selected node around pivot."
-msgstr "移除选中的节点或过渡动画。"
+msgstr "拖动：围绕中心点旋转所选节点。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Alt+Drag: Move selected node."
-msgstr "Alt+拖动：移动"
+msgstr "Alt+拖动：移动所选节点。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "V: Set selected node's pivot position."
-msgstr "移除选中的节点或过渡动画。"
+msgstr "V：设置所选节点的中心点位置。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
-msgstr ""
-"显示鼠标点击位置的所有节点\n"
-"（同 Alt + 鼠标右键）。"
+msgstr "Alt+右键：显示点击位置的所有节点列表，包含已锁定节点。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "RMB: Add node at position clicked."
-msgstr ""
+msgstr "右键：在点击位置添加节点。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6045,14 +6011,12 @@ msgid "Clear Pose"
 msgstr "清除姿势"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Add Node Here"
-msgstr "添加节点"
+msgstr "在此处添加节点"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Instance Scene Here"
-msgstr "实例化场景"
+msgstr "在此处实例化场景"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Multiply grid step by 2"
@@ -6068,49 +6032,43 @@ msgstr "平移视图"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom to 3.125%"
-msgstr ""
+msgstr "缩放至 3.125%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom to 6.25%"
-msgstr ""
+msgstr "缩放至 6.25%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom to 12.5%"
-msgstr ""
+msgstr "缩放至 12.5%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 25%"
-msgstr "缩小"
+msgstr "缩放至 25%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 50%"
-msgstr "缩小"
+msgstr "缩放至 50%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 100%"
-msgstr "缩小"
+msgstr "缩放至 100%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 200%"
-msgstr "缩小"
+msgstr "缩放至 200%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 400%"
-msgstr "缩小"
+msgstr "缩放至 400%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 800%"
-msgstr "缩小"
+msgstr "缩放至 800%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom to 1600%"
-msgstr ""
+msgstr "缩放至 1600%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Add %s"
@@ -6355,9 +6313,8 @@ msgid "Couldn't create a single convex collision shape."
 msgstr "无法创建单一凸碰撞形状。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Simplified Convex Shape"
-msgstr "创建单一凸形状"
+msgstr "创建简化凸形状"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Single Convex Shape"
@@ -6392,9 +6349,8 @@ msgid "No mesh to debug."
 msgstr "没有可调试的网格。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Mesh has no UV in layer %d."
-msgstr "模型在此层上没有 UV"
+msgstr "网格在层 %d 上没有 UV。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "MeshInstance lacks a Mesh!"
@@ -6458,9 +6414,8 @@ msgstr ""
 "这是最快（但是最不精确）的碰撞检测手段。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Simplified Convex Collision Sibling"
-msgstr "创建单一凸碰撞同级"
+msgstr "创建简化凸碰撞同级"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
@@ -6468,20 +6423,21 @@ msgid ""
 "This is similar to single collision shape, but can result in a simpler "
 "geometry in some cases, at the cost of accuracy."
 msgstr ""
+"创建简化凸碰撞同级。\n"
+"与单一碰撞形状类似，但某些情况下产生的形状更简单，代价是牺牲准确性。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Multiple Convex Collision Siblings"
 msgstr "创建多个凸碰撞同级"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Creates a polygon-based collision shape.\n"
 "This is a performance middle-ground between a single convex collision and a "
 "polygon-based collision."
 msgstr ""
 "创建基于多边形的碰撞形状。\n"
-"这是性能位于上述两种之间的碰撞检测手段。"
+"性能位于单一凸形碰撞和多边形碰撞之间。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
@@ -7117,24 +7073,20 @@ msgid "ResourcePreloader"
 msgstr "预加载资源"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Flip Portals"
-msgstr "水平翻转"
+msgstr "翻转门户"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Room Generate Points"
-msgstr "生成顶点计数:"
+msgstr "房间生成点"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Generate Points"
-msgstr "生成顶点计数:"
+msgstr "生成点"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Flip Portal"
-msgstr "水平翻转"
+msgstr "翻转门户"
 
 #: editor/plugins/root_motion_editor_plugin.cpp
 msgid "AnimationTree has no path set to an AnimationPlayer"
@@ -7692,20 +7644,17 @@ msgid "None"
 msgstr "无"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate"
-msgstr "州(State)"
+msgstr "旋转"
 
 #. TRANSLATORS: This refers to the movement that changes the position of an object.
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Translate"
-msgstr "移动："
+msgstr "平移"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Scale"
-msgstr "缩放："
+msgstr "缩放"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
@@ -7728,52 +7677,44 @@ msgid "Animation Key Inserted."
 msgstr "插入动画键。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Pitch:"
-msgstr "俯仰角"
+msgstr "俯仰角："
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw:"
-msgstr ""
+msgstr "偏航角："
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Size:"
-msgstr "大小： "
+msgstr "大小："
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Objects Drawn:"
-msgstr "绘制对象"
+msgstr "绘制对象："
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Material Changes:"
-msgstr "材质变更"
+msgstr "材质变更："
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Shader Changes:"
-msgstr "着色器变更"
+msgstr "着色器变更："
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Surface Changes:"
-msgstr "表面变更"
+msgstr "表面变更："
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Draw Calls:"
-msgstr "绘制调用"
+msgstr "绘制调用："
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Vertices:"
-msgstr "顶点"
+msgstr "顶点："
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "FPS: %d (%s ms)"
-msgstr ""
+msgstr "FPS：%d（%s 毫秒）"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top View."
@@ -7928,9 +7869,8 @@ msgid "Freelook Slow Modifier"
 msgstr "缓慢自由视图速度"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle Camera Preview"
-msgstr "修改摄像机尺寸"
+msgstr "开关摄像机预览"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
@@ -7950,9 +7890,8 @@ msgstr ""
 "不能反馈出实际游戏中的性能。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Convert Rooms"
-msgstr "转换为 %s"
+msgstr "转换房间"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -7973,7 +7912,6 @@ msgstr ""
 "半睁眼：Gizmo 也可穿过不透明的表面可见（“X 光”）。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Snap Nodes to Floor"
 msgstr "将节点吸附至地面"
 
@@ -7991,7 +7929,7 @@ msgstr "使用吸附"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Converts rooms for portal culling."
-msgstr ""
+msgstr "为门户剔除转换房间。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -8087,9 +8025,8 @@ msgid "View Grid"
 msgstr "显示网格"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "View Portal Culling"
-msgstr "视口设置"
+msgstr "显示门户剔除"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
@@ -8409,221 +8346,194 @@ msgid "TextureRegion"
 msgstr "纹理区域"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Colors"
 msgstr "颜色"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Fonts"
 msgstr "字体"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Icons"
 msgstr "图标"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Styleboxes"
-msgstr "样式"
+msgstr "样式盒"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "{num} color(s)"
-msgstr ""
+msgstr "{num} 个颜色"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "No colors found."
-msgstr "找不到子资源。"
+msgstr "没有颜色。"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "{num} constant(s)"
-msgstr "常量"
+msgstr "{num} 个常量"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "No constants found."
-msgstr "颜色常量。"
+msgstr "没有常量。"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "{num} font(s)"
-msgstr ""
+msgstr "{num} 个字体"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "No fonts found."
-msgstr "未找到！"
+msgstr "没有字体。"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "{num} icon(s)"
-msgstr ""
+msgstr "{num} 个图标"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "No icons found."
-msgstr "未找到！"
+msgstr "没有图标。"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "{num} stylebox(es)"
-msgstr ""
+msgstr "{num} 个样式盒"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "No styleboxes found."
-msgstr "找不到子资源。"
+msgstr "没有样式盒。"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "{num} currently selected"
-msgstr ""
+msgstr "当前选中 {num} 个"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Nothing was selected for the import."
-msgstr ""
+msgstr "没有选中导入任何东西。"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Importing Theme Items"
-msgstr "导入主题"
+msgstr "正在导入主题项目"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Importing items {n}/{n}"
-msgstr ""
+msgstr "正在导入项目 {n}/{n}"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Updating the editor"
-msgstr "确定要退出编辑器吗？"
+msgstr "正在更新编辑器"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Finalizing"
-msgstr "正在分析"
+msgstr "正在收尾"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Filter:"
-msgstr "过滤： "
+msgstr "筛选："
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "With Data"
-msgstr ""
+msgstr "含数据"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select by data type:"
-msgstr "选择一个节点"
+msgstr "按数据类型选择："
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all visible color items."
-msgstr "选择一个拆分以擦除它。"
+msgstr "选择所有可见的颜色项目。"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all visible color items and their data."
-msgstr ""
+msgstr "选择所有可见的颜色项目和它们的数据。"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Deselect all visible color items."
-msgstr ""
+msgstr "取消选择所有可见的颜色项目。"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all visible constant items."
-msgstr "请先选择一个设置项！"
+msgstr "选择所有可见的常量项目。"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all visible constant items and their data."
-msgstr ""
+msgstr "选择所有可见的常量项目和它们的数据。"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Deselect all visible constant items."
-msgstr ""
+msgstr "取消选择所有可见的常量项目。"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all visible font items."
-msgstr "请先选择一个设置项！"
+msgstr "选择所有可见的字体项目。"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all visible font items and their data."
-msgstr ""
+msgstr "选择所有可见的字体项目和它们的数据。"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Deselect all visible font items."
-msgstr ""
+msgstr "取消选择所有可见的字体项目。"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all visible icon items."
-msgstr "请先选择一个设置项！"
+msgstr "选择所有可见的图标项目。"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all visible icon items and their data."
-msgstr "请先选择一个设置项！"
+msgstr "选择所有可见的图标项目和它们的数据。"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Deselect all visible icon items."
-msgstr "请先选择一个设置项！"
+msgstr "取消选择所有可见的图标项目。"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all visible stylebox items."
-msgstr ""
+msgstr "选择所有可见的样式盒项目。"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all visible stylebox items and their data."
-msgstr ""
+msgstr "选择所有可见的样式盒项目和它们的数据。"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Deselect all visible stylebox items."
-msgstr ""
+msgstr "取消选择所有可见的样式盒项目。"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid ""
 "Caution: Adding icon data may considerably increase the size of your Theme "
 "resource."
-msgstr ""
+msgstr "注意：添加图标数据可能显著增加主题资源的大小。"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Collapse types."
-msgstr "全部折叠"
+msgstr "折叠类型。"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Expand types."
-msgstr "全部展开"
+msgstr "展开类型。"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all Theme items."
-msgstr "选择模板文件"
+msgstr "选择所有主题项目。"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select With Data"
-msgstr "选择顶点"
+msgstr "选择含数据"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all Theme items with item data."
-msgstr ""
+msgstr "选择所有主题项目及项目数据。"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Deselect All"
-msgstr "全选"
+msgstr "取消全选"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Deselect all Theme items."
-msgstr ""
+msgstr "取消选择所有主题项目。"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Import Selected"
-msgstr "导入场景"
+msgstr "导入所选项"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid ""
@@ -8631,271 +8541,241 @@ msgid ""
 "closing this window.\n"
 "Close anyway?"
 msgstr ""
+"导入项目选项卡还有选中的项目。关闭本窗口会丢失选项。\n"
+"仍然关闭吗？"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Remove All Color Items"
-msgstr "移除所有项目"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Rename Item"
-msgstr "移除项目"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Remove All Constant Items"
-msgstr "移除所有项目"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Remove All Font Items"
-msgstr "移除所有项目"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Remove All Icon Items"
-msgstr "移除所有项目"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Remove All StyleBox Items"
-msgstr "移除所有项目"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Add Color Item"
-msgstr "添加类项目"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Add Constant Item"
-msgstr "添加类项目"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Add Font Item"
-msgstr "添加项目"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Add Icon Item"
-msgstr "添加项目"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Add Stylebox Item"
-msgstr "添加所有项目"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Rename Color Item"
-msgstr "移除类项目"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Rename Constant Item"
-msgstr "移除类项目"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Rename Font Item"
-msgstr "重命名节点"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Rename Icon Item"
-msgstr "重命名节点"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Rename Stylebox Item"
-msgstr "移除选中项目"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Invalid file, not a Theme resource."
-msgstr "无效文件，不是音频总线布局。"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Invalid file, same as the edited Theme resource."
+msgid ""
+"Select a theme type from the list to edit its items.\n"
+"You can add a custom type or import a type with its items from another theme."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
+msgid "Remove All Color Items"
+msgstr "移除所有颜色项目"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Rename Item"
+msgstr "重命名项目"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Remove All Constant Items"
+msgstr "移除所有常量项目"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Remove All Font Items"
+msgstr "移除所有字体项目"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Remove All Icon Items"
+msgstr "移除所有图标项目"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Remove All StyleBox Items"
+msgstr "移除所有样式盒项目"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"This theme type is empty.\n"
+"Add more items to it manually or by importing from another theme."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Color Item"
+msgstr "添加颜色项目"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Constant Item"
+msgstr "添加常量项目"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Font Item"
+msgstr "添加字体项目"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Icon Item"
+msgstr "添加图标项目"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Stylebox Item"
+msgstr "添加样式盒项目"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Rename Color Item"
+msgstr "重命名颜色项目"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Rename Constant Item"
+msgstr "重命名常量项目"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Rename Font Item"
+msgstr "重命名字体项目"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Rename Icon Item"
+msgstr "重命名图标项目"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Rename Stylebox Item"
+msgstr "重命名样式盒项目"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Invalid file, not a Theme resource."
+msgstr "无效文件，不是 Theme 资源。"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Invalid file, same as the edited Theme resource."
+msgstr "无效文件，与正在编辑的 Theme 资源相同。"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Manage Theme Items"
-msgstr "管理模板"
+msgstr "管理主题项目"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Items"
-msgstr "可编辑的项目"
+msgstr "编辑项目"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Types:"
 msgstr "类型："
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Type:"
-msgstr "类型："
+msgstr "添加类型："
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Item:"
-msgstr "添加项目"
+msgstr "添加项目："
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add StyleBox Item"
-msgstr "添加所有项目"
+msgstr "添加样式盒项目"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Items:"
-msgstr "移除项目"
+msgstr "移除项目："
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Remove Class Items"
 msgstr "移除类项目"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Custom Items"
-msgstr "移除类项目"
+msgstr "移除自定义项目"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Remove All Items"
 msgstr "移除所有项目"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Theme Item"
-msgstr "GUI主题项目"
+msgstr "添加主题项目"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Old Name:"
-msgstr "节点名称："
+msgstr "旧名称："
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Import Items"
-msgstr "导入主题"
+msgstr "导入项目"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Default Theme"
-msgstr "默认"
+msgstr "默认主题"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Editor Theme"
-msgstr "编辑主题"
+msgstr "编辑器主题"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select Another Theme Resource:"
-msgstr "删除资源"
+msgstr "选择其它主题资源："
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Another Theme"
-msgstr "导入主题"
+msgstr "其它主题"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Confirm Item Rename"
-msgstr "重命名轨道"
+msgstr "确认项目重命名"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Cancel Item Rename"
-msgstr "批量重命名"
+msgstr "取消项目重命名"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Override Item"
-msgstr "重写"
+msgstr "覆盖项目"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Unpin this StyleBox as a main style."
-msgstr ""
+msgstr "取消将此样式盒置顶为主样式。"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid ""
 "Pin this StyleBox as a main style. Editing its properties will update the "
 "same properties in all other StyleBoxes of this type."
 msgstr ""
+"将此样式盒置顶为主样式。编辑其属性会更新该类型下其它所有样式盒的相同属性。"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Type"
-msgstr "类型"
+msgstr "添加类型"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Item Type"
-msgstr "添加项目"
+msgstr "添加项目类型"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Node Types:"
-msgstr "节点类型"
+msgstr "节点类型："
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Show Default"
-msgstr "加载默认"
+msgstr "显示默认"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Show default type items alongside items that have been overridden."
-msgstr ""
+msgstr "将默认类型项目与覆盖后的一起显示。"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Override All"
-msgstr "重写"
+msgstr "全部覆盖"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Override all default type items."
-msgstr ""
+msgstr "覆盖所有默认类型项目。"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Theme:"
-msgstr "主题"
+msgstr "主题："
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Manage Items..."
-msgstr "管理导出模板..."
+msgstr "管理项目..."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add, remove, organize and import Theme items."
-msgstr ""
+msgstr "添加、移除、组织和导入 Theme 项目。"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Preview"
-msgstr "预览"
+msgstr "添加预览"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Default Preview"
-msgstr "更新预览"
+msgstr "默认预览"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select UI Scene:"
-msgstr "选择源网格："
+msgstr "选择 UI 场景："
 
 #: editor/plugins/theme_editor_preview.cpp
 msgid ""
 "Toggle the control picker, allowing to visually select control types for "
 "edit."
-msgstr ""
+msgstr "开关控件拾取器，可以可视化地选择所需编辑的控件类型。"
 
 #: editor/plugins/theme_editor_preview.cpp
 msgid "Toggle Button"
@@ -8930,7 +8810,6 @@ msgid "Checked Radio Item"
 msgstr "已选单选项目"
 
 #: editor/plugins/theme_editor_preview.cpp
-#, fuzzy
 msgid "Named Separator"
 msgstr "带名称的分隔线"
 
@@ -8984,20 +8863,19 @@ msgstr "有, 很多, 选项"
 
 #: editor/plugins/theme_editor_preview.cpp
 msgid "Invalid path, the PackedScene resource was probably moved or removed."
-msgstr ""
+msgstr "无效路径，PackedScene 资源可能已被移动或移除。"
 
 #: editor/plugins/theme_editor_preview.cpp
 msgid "Invalid PackedScene resource, must have a Control node at its root."
-msgstr ""
+msgstr "无效 PackedScene 资源，根节点必须是 Control 节点。"
 
 #: editor/plugins/theme_editor_preview.cpp
-#, fuzzy
 msgid "Invalid file, not a PackedScene resource."
-msgstr "无效文件，不是音频总线布局。"
+msgstr "无效文件，不是 PackedScene 资源。"
 
 #: editor/plugins/theme_editor_preview.cpp
 msgid "Reload the scene to reflect its most actual state."
-msgstr ""
+msgstr "重新加载场景，反映最新状态。"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -10354,9 +10232,8 @@ msgid "VisualShader"
 msgstr "可视着色器"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Visual Property:"
-msgstr "编辑可视属性"
+msgstr "编辑可视属性："
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Mode Changed"
@@ -10480,9 +10357,8 @@ msgid "Script"
 msgstr "脚本"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "GDScript Export Mode:"
-msgstr "脚本导出模式:"
+msgstr "GDScript 导出模式："
 
 #: editor/project_export.cpp
 msgid "Text"
@@ -10490,21 +10366,19 @@ msgstr "文本"
 
 #: editor/project_export.cpp
 msgid "Compiled Bytecode (Faster Loading)"
-msgstr ""
+msgstr "编译后的字节码（加载更快）"
 
 #: editor/project_export.cpp
 msgid "Encrypted (Provide Key Below)"
 msgstr "加密（在下面提供密钥）"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Invalid Encryption Key (must be 64 hexadecimal characters long)"
-msgstr "无效的加密密钥（长度必须为 64 个字符）"
+msgstr "无效的加密密钥（长度必须为 64 个十六进制字符）"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "GDScript Encryption Key (256-bits as hexadecimal):"
-msgstr "脚本加密密钥（256 位 16 进制码）:"
+msgstr "GDScript 加密密钥（256 位十六进制码）:"
 
 #: editor/project_export.cpp
 msgid "Export PCK/Zip"
@@ -10576,7 +10450,6 @@ msgid "Imported Project"
 msgstr "已导入的项目"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Invalid project name."
 msgstr "项目名称无效。"
 
@@ -10792,14 +10665,12 @@ msgid "Are you sure to run %d projects at once?"
 msgstr "确定要同时运行 %d 个项目吗？"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Remove %d projects from the list?"
-msgstr "从列表中选择设备"
+msgstr "是否从列表中移除 %d 个项目？"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Remove this project from the list?"
-msgstr "从列表中选择设备"
+msgstr "是否从列表中移除该项目？"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -10831,9 +10702,8 @@ msgid "Project Manager"
 msgstr "项目管理器"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Local Projects"
-msgstr "项目"
+msgstr "本地项目"
 
 #: editor/project_manager.cpp
 msgid "Loading, please wait..."
@@ -10844,23 +10714,20 @@ msgid "Last Modified"
 msgstr "修改时间"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Edit Project"
-msgstr "导出项目"
+msgstr "编辑项目"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Run Project"
-msgstr "重命名项目"
+msgstr "运行项目"
 
 #: editor/project_manager.cpp
 msgid "Scan"
 msgstr "扫描"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Scan Projects"
-msgstr "项目"
+msgstr "扫描项目"
 
 #: editor/project_manager.cpp
 msgid "Select a Folder to Scan"
@@ -10871,14 +10738,12 @@ msgid "New Project"
 msgstr "新建项目"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Import Project"
-msgstr "已导入的项目"
+msgstr "导入项目"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Remove Project"
-msgstr "重命名项目"
+msgstr "移除项目"
 
 #: editor/project_manager.cpp
 msgid "Remove Missing"
@@ -10889,9 +10754,8 @@ msgid "About"
 msgstr "关于"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Asset Library Projects"
-msgstr "素材库"
+msgstr "素材库项目"
 
 #: editor/project_manager.cpp
 msgid "Restart Now"
@@ -10903,7 +10767,7 @@ msgstr "移除全部"
 
 #: editor/project_manager.cpp
 msgid "Also delete project contents (no undo!)"
-msgstr ""
+msgstr "同时删除项目内容（无法撤销！）"
 
 #: editor/project_manager.cpp
 msgid "Can't run project"
@@ -10918,19 +10782,17 @@ msgstr ""
 "是否查看素材库中的官方示例项目？"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Filter projects"
-msgstr "筛选属性"
+msgstr "筛选项目"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "This field filters projects by name and last path component.\n"
 "To filter projects by name and full path, the query must contain at least "
 "one `/` character."
 msgstr ""
-"搜索框根据名称和路径的末尾部分来过滤项目。\n"
-"如果要根据名称和完整路径过滤，搜索内容应至少包含一个 `/` 字符。"
+"该搜索框根据名称和路径的末尾部分来筛选项目。\n"
+"如果要根据名称和完整路径筛选，搜索内容应至少包含一个“/”字符。"
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
@@ -10938,7 +10800,7 @@ msgstr "按键 "
 
 #: editor/project_settings_editor.cpp
 msgid "Physical Key"
-msgstr ""
+msgstr "物理按键"
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Button"
@@ -10984,7 +10846,7 @@ msgstr "设备"
 
 #: editor/project_settings_editor.cpp
 msgid " (Physical)"
-msgstr ""
+msgstr " （物理）"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Press a Key..."
@@ -11126,23 +10988,20 @@ msgid "Override for Feature"
 msgstr "重写功能"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Add %d Translations"
-msgstr "添加翻译"
+msgstr "添加 %d 个翻译"
 
 #: editor/project_settings_editor.cpp
 msgid "Remove Translation"
 msgstr "移除翻译"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Translation Resource Remap: Add %d Path(s)"
-msgstr "添加资源重定向"
+msgstr "翻译资源重定向：添加 %d 个路径"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Translation Resource Remap: Add %d Remap(s)"
-msgstr "添加资源重定向"
+msgstr "翻译资源重定向：添加 %d 个重定向"
 
 #: editor/project_settings_editor.cpp
 msgid "Change Resource Remap Language"
@@ -11581,13 +11440,13 @@ msgstr "是否删除节点 “%s”？"
 #: editor/scene_tree_dock.cpp
 msgid ""
 "Saving the branch as a scene requires having a scene open in the editor."
-msgstr ""
+msgstr "将分支保存为场景需要编辑器打开场景。"
 
 #: editor/scene_tree_dock.cpp
 msgid ""
 "Saving the branch as a scene requires selecting only one node, but you have "
 "selected %d nodes."
-msgstr ""
+msgstr "将分支保存为场景需要仅选择一个节点，但你选了 %d 个。"
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -11596,6 +11455,9 @@ msgid ""
 "FileSystem dock context menu\n"
 "or create an inherited scene using Scene > New Inherited Scene... instead."
 msgstr ""
+"无法将根节点保存为实例化节点。\n"
+"如果要创建当前场景的可编辑副本，请在文件系统面板的上下文菜单中复制\n"
+"或者使用场景 > 新建继承场景... 创建继承场景。"
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -11603,6 +11465,9 @@ msgid ""
 "To create a variation of a scene, you can make an inherited scene based on "
 "the instanced scene using Scene > New Inherited Scene... instead."
 msgstr ""
+"无法保存实例化场景分支。\n"
+"如果要创建场景的变种，请使用场景 > 新建继承场景... 创建基于该实例化场景的继承"
+"场景。"
 
 #: editor/scene_tree_dock.cpp
 msgid "Save New Scene As..."
@@ -11998,7 +11863,7 @@ msgstr "注意：内置脚本有其局限性，并且不能使用外部编辑器
 msgid ""
 "Warning: Having the script name be the same as a built-in type is usually "
 "not desired."
-msgstr ""
+msgstr "警告：脚本名称通常不能与内置类型一致。"
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -12070,7 +11935,7 @@ msgstr "复制错误信息"
 
 #: editor/script_editor_debugger.cpp
 msgid "Open C++ Source on GitHub"
-msgstr ""
+msgstr "在 GitHub 打开 C++ 源码"
 
 #: editor/script_editor_debugger.cpp
 msgid "Video RAM"
@@ -12142,7 +12007,7 @@ msgstr "格式"
 
 #: editor/script_editor_debugger.cpp
 msgid "Usage"
-msgstr "用法"
+msgstr "占用"
 
 #: editor/script_editor_debugger.cpp
 msgid "Misc"
@@ -12247,6 +12112,16 @@ msgstr "修改圆柱体高度"
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Ray Shape Length"
 msgstr "修改射线形状长度"
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Room Point Position"
+msgstr "设置曲线的顶点坐标"
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Portal Point Position"
+msgstr "设置曲线的顶点坐标"
 
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Radius"
@@ -12357,14 +12232,12 @@ msgid "Object can't provide a length."
 msgstr "对象无法提供长度。"
 
 #: modules/gltf/editor_scene_exporter_gltf_plugin.cpp
-#, fuzzy
 msgid "Export Mesh GLTF2"
-msgstr "导出网格库"
+msgstr "导出网格 GLTF2"
 
 #: modules/gltf/editor_scene_exporter_gltf_plugin.cpp
-#, fuzzy
 msgid "Export GLTF..."
-msgstr "导出..."
+msgstr "导出 GLTF..."
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Plane"
@@ -12404,12 +12277,11 @@ msgstr "网格地图粘贴所选项"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Paint"
-msgstr "绘制栅格图"
+msgstr "网格地图绘制"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "GridMap Selection"
-msgstr "网格地图填充所选项"
+msgstr "网格地图选择"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
@@ -12656,14 +12528,12 @@ msgid "Add Output Port"
 msgstr "增加输出端口"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Port Type"
-msgstr "更改类型"
+msgstr "更改端口类型"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Port Name"
-msgstr "更改输入端口名称"
+msgstr "更改端口名称"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Override an existing built-in function."
@@ -12774,7 +12644,6 @@ msgid "Add Preload Node"
 msgstr "添加预载 (Preload) 节点"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Node(s)"
 msgstr "添加节点"
 
@@ -13034,37 +12903,31 @@ msgstr "从列表中选择设备"
 
 #: platform/android/export/export.cpp
 msgid "Running on %s"
-msgstr ""
+msgstr "正运行于 %d"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Exporting APK..."
-msgstr "全部导出"
+msgstr "正在导出 APK……"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Uninstalling..."
-msgstr "卸载"
+msgstr "正在卸载……"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Installing to device, please wait..."
-msgstr "正在加载，请稍候……"
+msgstr "正在安装到设备，请稍候……"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Could not install to device: %s"
-msgstr "无法实例化场景！"
+msgstr "无法安装到设备：%s"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Running on device..."
-msgstr "执行自定义脚本..."
+msgstr "正在设备上运行……"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Could not execute on device."
-msgstr "无法创建文件夹。"
+msgstr "无法在设备上运行。"
 
 #: platform/android/export/export.cpp
 msgid "Unable to find the 'apksigner' tool."
@@ -13173,40 +13036,37 @@ msgid ""
 "directory.\n"
 "The resulting %s is unsigned."
 msgstr ""
+"无法找到“apksigner”。\n"
+"请检查 Android SDK 的 build-tools 目录中是否有此命令。\n"
+"生成的 %s 未签名。"
 
 #: platform/android/export/export.cpp
 msgid "Signing debug %s..."
-msgstr ""
+msgstr "正在签名调试 %s……"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Signing release %s..."
-msgstr ""
-"正在扫描文件，\n"
-"请稍候……"
+msgstr "正在签名发布 %s……"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Could not find keystore, unable to export."
-msgstr "无法打开导出模板："
+msgstr "找不到密钥库，无法导出。"
 
 #: platform/android/export/export.cpp
 msgid "'apksigner' returned with error #%d"
-msgstr ""
+msgstr "“apksigner”返回错误 #%d"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Verifying %s..."
-msgstr "正在添加 %s..."
+msgstr "正在校验 %s……"
 
 #: platform/android/export/export.cpp
 msgid "'apksigner' verification of %s failed."
-msgstr ""
+msgstr "“apksigner”校验 %s 失败。"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Exporting for Android"
-msgstr "全部导出"
+msgstr "正在为 Android 导出"
 
 #: platform/android/export/export.cpp
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
@@ -13222,7 +13082,7 @@ msgstr "无效文件名！Android APK 必须有 *.apk 扩展。"
 
 #: platform/android/export/export.cpp
 msgid "Unsupported export format!\n"
-msgstr ""
+msgstr "不支持的导出格式！\n"
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -13246,17 +13106,15 @@ msgstr ""
 #: platform/android/export/export.cpp
 msgid ""
 "Unable to overwrite res://android/build/res/*.xml files with project name"
-msgstr ""
+msgstr "无法使用项目名称覆盖 res://android/build/res/*.xml 文件"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Could not export project files to gradle project\n"
-msgstr "无法在项目目录下找到project.godot文件。"
+msgstr "无法将项目文件导出至 gradle 项目\n"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Could not write expansion package file!"
-msgstr "无法写入文件:"
+msgstr "无法写入扩展包文件！"
 
 #: platform/android/export/export.cpp
 msgid "Building Android Project (gradle)"
@@ -13281,21 +13139,20 @@ msgid ""
 msgstr "无法复制与更名导出文件，请在 Gradle 项目文件夹内确认输出。"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Package not found: %s"
-msgstr "没有动画： “%s”"
+msgstr "包不存在：%s"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Creating APK..."
-msgstr "正在创建轮廓..."
+msgstr "正在创建 APK……"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid ""
 "Could not find template APK to export:\n"
 "%s"
-msgstr "无法打开导出模板："
+msgstr ""
+"找不到导出模板 APK：\n"
+"%s"
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -13304,24 +13161,24 @@ msgid ""
 "Please build a template with all required libraries, or uncheck the missing "
 "architectures in the export preset."
 msgstr ""
+"导出模板缺失所选架构的库：%s。\n"
+"请使用全部所需的库构建模板，或者在导出预设中取消对缺失架构的选择。"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Adding files..."
-msgstr "正在添加 %s..."
+msgstr "正在添加文件……"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Could not export project files"
-msgstr "无法写入文件:"
+msgstr "无法导出项目文件"
 
 #: platform/android/export/export.cpp
 msgid "Aligning APK..."
-msgstr "对齐 APK..."
+msgstr "正在对齐 APK……"
 
 #: platform/android/export/export.cpp
 msgid "Could not unzip temporary unaligned APK."
-msgstr ""
+msgstr "无法解压未对齐的临时 APK。"
 
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
 msgid "Identifier is missing."
@@ -13368,45 +13225,40 @@ msgid "Could not write file:"
 msgstr "无法写入文件:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read file:"
-msgstr "无法写入文件:"
+msgstr "无法读取文件："
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read HTML shell:"
-msgstr "无法读取自定义 HTML 壳层:"
+msgstr "无法读取 HTML 壳："
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not create HTTP server directory:"
-msgstr "无法创建文件夹。"
+msgstr "无法创建 HTTP 服务器目录："
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Error starting HTTP server:"
-msgstr "保存场景出错。"
+msgstr "启动 HTTP 服务器时出错："
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Invalid bundle identifier:"
-msgstr "无效的标识符："
+msgstr "无效的包标识符："
 
 #: platform/osx/export/export.cpp
 msgid "Notarization: code signing required."
-msgstr ""
+msgstr "公证：需要代码签名。"
 
 #: platform/osx/export/export.cpp
 msgid "Notarization: hardened runtime required."
-msgstr ""
+msgstr "公证：需要加强的运行时环境。"
 
 #: platform/osx/export/export.cpp
 msgid "Notarization: Apple ID name not specified."
-msgstr ""
+msgstr "公证：未指定 Apple ID 名称。"
 
 #: platform/osx/export/export.cpp
 msgid "Notarization: Apple ID password not specified."
-msgstr ""
+msgstr "公证：未指定 Apple ID 密码。"
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package short name."
@@ -13799,6 +13651,8 @@ msgid ""
 "longer has any effect.\n"
 "To remove this warning, disable the GIProbe's Compress property."
 msgstr ""
+"因为存在已知问题，GIProbe Compress 属性已被启用，不会再起任何作用。\n"
+"如果要移除本警告，请禁用 GIProbe 的 Compress 属性。"
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -13882,15 +13736,15 @@ msgstr "Node A 与 Node B 必须为不同的 PhysicsBody"
 
 #: scene/3d/portal.cpp
 msgid "The RoomManager should not be a child or grandchild of a Portal."
-msgstr ""
+msgstr "RoomManager 不应该是 Portal 的子节点或孙节点。"
 
 #: scene/3d/portal.cpp
 msgid "A Room should not be a child or grandchild of a Portal."
-msgstr ""
+msgstr "Room 不应该是 Portal 的子节点或孙节点。"
 
 #: scene/3d/portal.cpp
 msgid "A RoomGroup should not be a child or grandchild of a Portal."
-msgstr ""
+msgstr "RoomGroup 不应该是 Portal 的子节点或孙节点。"
 
 #: scene/3d/remote_transform.cpp
 msgid ""
@@ -13901,42 +13755,82 @@ msgstr ""
 
 #: scene/3d/room.cpp
 msgid "A Room cannot have another Room as a child or grandchild."
-msgstr ""
+msgstr "Room 不能是另一个 Room 的子节点或孙节点。"
 
 #: scene/3d/room.cpp
 msgid "The RoomManager should not be placed inside a Room."
-msgstr ""
+msgstr "RoomManager 不应该被放置在 Room 中。"
 
 #: scene/3d/room.cpp
 msgid "A RoomGroup should not be placed inside a Room."
-msgstr ""
+msgstr "RoomGroup 不应该被放置在 Room 中。"
 
 #: scene/3d/room.cpp
 msgid ""
 "Room convex hull contains a large number of planes.\n"
 "Consider simplifying the room bound in order to increase performance."
 msgstr ""
+"房间的凸包中包含大量平面。\n"
+"为了提升性能，请考虑简化房间的边界。"
 
 #: scene/3d/room_group.cpp
 msgid "The RoomManager should not be placed inside a RoomGroup."
-msgstr ""
+msgstr "RoomManager 不应该被放置在 RoomGroup 中。"
 
 #: scene/3d/room_manager.cpp
 msgid "The RoomList has not been assigned."
-msgstr ""
+msgstr "RoomList 尚未赋值。"
 
 #: scene/3d/room_manager.cpp
 msgid "The RoomList node should be a Spatial (or derived from Spatial)."
-msgstr ""
+msgstr "RoomList 节点应该是 Spatial（或者派生自 Spatial）。"
 
 #: scene/3d/room_manager.cpp
 msgid ""
 "Portal Depth Limit is set to Zero.\n"
 "Only the Room that the Camera is in will render."
 msgstr ""
+"Portal Depth Limit 被设置为零。\n"
+"仅会渲染摄像机所在房间。"
 
 #: scene/3d/room_manager.cpp
 msgid "There should only be one RoomManager in the SceneTree."
+msgstr "场景树中仅能存在一个 RoomManager。"
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"RoomList path is invalid.\n"
+"Please check the RoomList branch has been assigned in the RoomManager."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "RoomList contains no Rooms, aborting."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "Misnamed nodes detected, check output log for details. Aborting."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "Portal link room not found, check output log for details."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Portal autolink failed, check output log for details.\n"
+"Check the portal is facing outwards from the source room."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Room overlap detected, cameras may work incorrectly in overlapping area.\n"
+"Check output log for details."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Error calculating room bounds.\n"
+"Ensure all rooms contain geometry or manual bounds."
 msgstr ""
 
 #: scene/3d/soft_body.cpp
@@ -13999,7 +13893,7 @@ msgstr "没有动画： “%s”"
 
 #: scene/animation/animation_player.cpp
 msgid "Anim Apply Reset"
-msgstr ""
+msgstr "动画应用重置"
 
 #: scene/animation/animation_tree.cpp
 msgid "In node '%s', invalid animation: '%s'."
@@ -14165,25 +14059,24 @@ msgid "Invalid comparison function for that type."
 msgstr "该类型的比较功能无效。"
 
 #: servers/visual/shader_language.cpp
-#, fuzzy
 msgid "Varying may not be assigned in the '%s' function."
-msgstr "变量只能在顶点函数中指定。"
+msgstr "Varying 不能在“%s”函数中赋值。"
 
 #: servers/visual/shader_language.cpp
 msgid ""
 "Varyings which assigned in 'vertex' function may not be reassigned in "
 "'fragment' or 'light'."
-msgstr ""
+msgstr "已在“vertex”函数中赋值的 varying 不能在“fragment”或“light”中重新赋值。"
 
 #: servers/visual/shader_language.cpp
 msgid ""
 "Varyings which assigned in 'fragment' function may not be reassigned in "
 "'vertex' or 'light'."
-msgstr ""
+msgstr "已在“fragment”函数中赋值的 varying 不能在“vertex”或“light”中重新赋值。"
 
 #: servers/visual/shader_language.cpp
 msgid "Fragment-stage varying could not been accessed in custom function!"
-msgstr ""
+msgstr "不能在自定义函数中访问片段 varying！"
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."
@@ -15183,9 +15076,6 @@ msgstr "不允许修改常量。"
 
 #~ msgid "I see..."
 #~ msgstr "好吧..."
-
-#~ msgid "Can't open '%s'."
-#~ msgstr "无法打开 \"%s\"。"
 
 #~ msgid "Ugh"
 #~ msgstr "呃"

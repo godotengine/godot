@@ -30,10 +30,7 @@
 
 #include "camera_2d.h"
 
-#include "core/config/engine.h"
-#include "core/math/math_funcs.h"
-#include "scene/scene_string_names.h"
-#include "servers/rendering_server.h"
+#include "scene/main/window.h"
 
 void Camera2D::_update_scroll() {
 	if (!is_inside_tree()) {
@@ -99,7 +96,7 @@ Transform2D Camera2D::get_camera_transform() {
 
 	Size2 screen_size = _get_camera_screen_size();
 
-	Point2 new_camera_pos = get_global_transform().get_origin();
+	Point2 new_camera_pos = get_global_position();
 	Point2 ret_camera_pos;
 
 	if (!first) {
@@ -172,7 +169,7 @@ Transform2D Camera2D::get_camera_transform() {
 
 	Point2 screen_offset = (anchor_mode == ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5 * zoom) : Point2());
 
-	real_t angle = get_global_transform().get_rotation();
+	real_t angle = get_global_rotation();
 	if (rotating) {
 		screen_offset = screen_offset.rotated(angle);
 	}
@@ -264,6 +261,7 @@ void Camera2D::_notification(int p_what) {
 				if (viewport && !(custom_viewport && !ObjectDB::get_instance(custom_viewport_id))) {
 					viewport->set_canvas_transform(Transform2D());
 					clear_current();
+					current = true;
 				}
 			}
 			remove_from_group(group_name);
@@ -308,8 +306,8 @@ void Camera2D::_notification(int p_what) {
 					limit_drawing_width = 3;
 				}
 
-				Vector2 camera_origin = get_global_transform().get_origin();
-				Vector2 camera_scale = get_global_transform().get_scale().abs();
+				Vector2 camera_origin = get_global_position();
+				Vector2 camera_scale = get_global_scale().abs();
 				Vector2 limit_points[4] = {
 					(Vector2(limit[SIDE_LEFT], limit[SIDE_TOP]) - camera_origin) / camera_scale,
 					(Vector2(limit[SIDE_RIGHT], limit[SIDE_TOP]) - camera_origin) / camera_scale,
@@ -492,7 +490,7 @@ void Camera2D::align() {
 
 	Size2 screen_size = _get_camera_screen_size();
 
-	Point2 current_camera_pos = get_global_transform().get_origin();
+	Point2 current_camera_pos = get_global_position();
 	if (anchor_mode == ANCHOR_MODE_DRAG_CENTER) {
 		if (drag_horizontal_offset < 0) {
 			camera_pos.x = current_camera_pos.x + screen_size.x * 0.5 * drag_margin[SIDE_RIGHT] * drag_horizontal_offset;

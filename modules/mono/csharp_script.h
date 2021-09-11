@@ -136,7 +136,7 @@ private:
 	Map<StringName, EventSignal> event_signals;
 	bool signals_invalidated = true;
 
-	Vector<MultiplayerAPI::RPCConfig> rpc_functions;
+	Vector<Multiplayer::RPCConfig> rpc_functions;
 
 #ifdef TOOLS_ENABLED
 	List<PropertyInfo> exported_members_cache; // members_cache
@@ -179,7 +179,7 @@ private:
 	static void update_script_class_info(Ref<CSharpScript> p_script);
 	static void initialize_for_managed_type(Ref<CSharpScript> p_script, GDMonoClass *p_class, GDMonoClass *p_native);
 
-	MultiplayerAPI::RPCMode _member_get_rpc_mode(IMonoClassMember *p_member) const;
+	Multiplayer::RPCMode _member_get_rpc_mode(IMonoClassMember *p_member) const;
 
 protected:
 	static void _bind_methods();
@@ -234,7 +234,7 @@ public:
 
 	int get_member_line(const StringName &p_member) const override;
 
-	const Vector<MultiplayerAPI::RPCConfig> get_rpc_methods() const override;
+	const Vector<Multiplayer::RPCConfig> get_rpc_methods() const override;
 
 #ifdef TOOLS_ENABLED
 	bool is_placeholder_fallback_enabled() const override { return placeholder_fallback_enabled; }
@@ -311,7 +311,7 @@ public:
 	void refcount_incremented() override;
 	bool refcount_decremented() override;
 
-	const Vector<MultiplayerAPI::RPCConfig> get_rpc_methods() const override;
+	const Vector<Multiplayer::RPCConfig> get_rpc_methods() const override;
 
 	void notification(int p_notification) override;
 	void _call_notification(int p_notification);
@@ -401,7 +401,18 @@ class CSharpLanguage : public ScriptLanguage {
 	static void _editor_init_callback();
 #endif
 
+	static void *_instance_binding_create_callback(void *p_token, void *p_instance);
+	static void _instance_binding_free_callback(void *p_token, void *p_instance, void *p_binding);
+	static GDNativeBool _instance_binding_reference_callback(void *p_token, void *p_binding, GDNativeBool p_reference);
+
+	static GDNativeInstanceBindingCallbacks _instance_binding_callbacks;
+
 public:
+	static void *get_instance_binding(Object *p_object);
+	static void *get_existing_instance_binding(Object *p_object);
+	static void set_instance_binding(Object *p_object, void *p_binding);
+	static bool has_instance_binding(Object *p_object);
+
 	StringNameCache string_names;
 
 	const Mutex &get_language_bind_mutex() { return language_bind_mutex; }
@@ -506,12 +517,6 @@ public:
 	/* THREAD ATTACHING */
 	void thread_enter() override;
 	void thread_exit() override;
-
-	// Don't use these. I'm watching you
-	void *alloc_instance_binding_data(Object *p_object) override;
-	void free_instance_binding_data(void *p_data) override;
-	void refcount_incremented_instance_binding(Object *p_object) override;
-	bool refcount_decremented_instance_binding(Object *p_object) override;
 
 	Map<Object *, CSharpScriptBinding>::Element *insert_script_binding(Object *p_object, const CSharpScriptBinding &p_script_binding);
 	bool setup_csharp_script_binding(CSharpScriptBinding &r_script_binding, Object *p_object);

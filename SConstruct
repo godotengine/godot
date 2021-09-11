@@ -119,6 +119,7 @@ opts.Add(BoolVariable("tools", "Build the tools (a.k.a. the Godot editor)", True
 opts.Add(EnumVariable("target", "Compilation target", "debug", ("debug", "release_debug", "release")))
 opts.Add("arch", "Platform-dependent architecture (arm/arm64/x86/x64/mips/...)", "")
 opts.Add(EnumVariable("bits", "Target platform bits", "default", ("default", "32", "64")))
+opts.Add(EnumVariable("float", "Floating-point precision", "default", ("default", "32", "64")))
 opts.Add(EnumVariable("optimize", "Optimization type", "speed", ("speed", "size", "none")))
 opts.Add(BoolVariable("production", "Set defaults to build Godot for use in production", False))
 opts.Add(BoolVariable("use_lto", "Use link-time optimization", False))
@@ -130,6 +131,7 @@ opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver", False))
 opts.Add(BoolVariable("vulkan", "Enable the vulkan video driver", True))
 opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
 opts.Add(BoolVariable("custom_modules_recursive", "Detect custom modules recursively for each specified path.", True))
+opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loader dynamically", True))
 
 # Advanced options
 opts.Add(BoolVariable("dev", "If yes, alias for verbose=yes warnings=extra werror=yes", False))
@@ -154,6 +156,7 @@ opts.Add(BoolVariable("builtin_certs", "Use the built-in SSL certificates bundle
 opts.Add(BoolVariable("builtin_embree", "Use the built-in Embree library", True))
 opts.Add(BoolVariable("builtin_enet", "Use the built-in ENet library", True))
 opts.Add(BoolVariable("builtin_freetype", "Use the built-in FreeType library", True))
+opts.Add(BoolVariable("builtin_msdfgen", "Use the built-in MSDFgen library", True))
 opts.Add(BoolVariable("builtin_glslang", "Use the built-in glslang library", True))
 opts.Add(BoolVariable("builtin_graphite", "Use the built-in Graphite library", True))
 opts.Add(BoolVariable("builtin_harfbuzz", "Use the built-in HarfBuzz library", True))
@@ -173,7 +176,6 @@ opts.Add(BoolVariable("builtin_pcre2_with_jit", "Use JIT compiler for the built-
 opts.Add(BoolVariable("builtin_recast", "Use the built-in Recast library", True))
 opts.Add(BoolVariable("builtin_rvo2", "Use the built-in RVO2 library", True))
 opts.Add(BoolVariable("builtin_squish", "Use the built-in squish library", True))
-opts.Add(BoolVariable("builtin_vulkan", "Use the built-in Vulkan loader library and headers", True))
 opts.Add(BoolVariable("builtin_xatlas", "Use the built-in xatlas library", True))
 opts.Add(BoolVariable("builtin_zlib", "Use the built-in zlib library", True))
 opts.Add(BoolVariable("builtin_zstd", "Use the built-in Zstd library", True))
@@ -201,7 +203,13 @@ elif env_base["p"] != "":
     selected_platform = env_base["p"]
 else:
     # Missing `platform` argument, try to detect platform automatically
-    if sys.platform.startswith("linux"):
+    if (
+        sys.platform.startswith("linux")
+        or sys.platform.startswith("dragonfly")
+        or sys.platform.startswith("freebsd")
+        or sys.platform.startswith("netbsd")
+        or sys.platform.startswith("openbsd")
+    ):
         selected_platform = "linuxbsd"
     elif sys.platform == "darwin":
         selected_platform = "osx"
@@ -309,10 +317,10 @@ if env_base["target"] == "debug":
     # will properly be rebuilt. As such, we only enable them for debug (dev) builds, not release.
 
     # To decide whether to rebuild a file, use the MD5 sum only if the timestamp has changed.
-    # http://scons.org/doc/production/HTML/scons-user/ch06.html#idm139837621851792
+    # https://scons.org/doc/production/HTML/scons-user/ch06.html#idm139837621851792
     env_base.Decider("MD5-timestamp")
     # Use cached implicit dependencies by default. Can be overridden by specifying `--implicit-deps-changed` in the command line.
-    # http://scons.org/doc/production/HTML/scons-user/ch06s04.html
+    # https://scons.org/doc/production/HTML/scons-user/ch06s04.html
     env_base.SetOption("implicit_cache", 1)
 
 if env_base["no_editor_splash"]:
@@ -320,6 +328,9 @@ if env_base["no_editor_splash"]:
 
 if not env_base["deprecated"]:
     env_base.Append(CPPDEFINES=["DISABLE_DEPRECATED"])
+
+if env_base["float"] == "64":
+    env_base.Append(CPPDEFINES=["REAL_T_IS_DOUBLE"])
 
 if selected_platform in platform_list:
     tmppath = "./platform/" + selected_platform
@@ -557,6 +568,9 @@ if selected_platform in platform_list:
         suffix = "." + detect.get_program_suffix()
     else:
         suffix = "." + selected_platform
+
+    if env_base["float"] == "64":
+        suffix += ".double"
 
     if env["target"] == "release":
         if env["tools"]:

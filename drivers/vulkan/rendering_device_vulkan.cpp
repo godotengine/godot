@@ -2740,6 +2740,14 @@ bool RenderingDeviceVulkan::texture_is_valid(RID p_texture) {
 	return texture_owner.owns(p_texture);
 }
 
+Size2i RenderingDeviceVulkan::texture_size(RID p_texture) {
+	_THREAD_SAFE_METHOD_
+
+	Texture *tex = texture_owner.getornull(p_texture);
+	ERR_FAIL_COND_V(!tex, Size2i());
+	return Size2i(tex->width, tex->height);
+}
+
 Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, uint32_t p_post_barrier) {
 	_THREAD_SAFE_METHOD_
 
@@ -3299,13 +3307,25 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		// Also, each UNDEFINED will do an immediate layout transition (write), s.t. we must ensure execution synchronization vs.
 		// the read. If this is a performance issue, one could track the actual last accessor of each resource, adding only that
 		// stage
+
 		switch (is_depth ? p_initial_depth_action : p_initial_action) {
 			case INITIAL_ACTION_CLEAR_REGION:
 			case INITIAL_ACTION_CLEAR: {
-				description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-				description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-				description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
-				dependency_from_external.srcStageMask |= reading_stages;
+				if (p_attachments[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
+					description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+					description.initialLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+				} else if (p_attachments[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+					description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+					description.initialLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+					dependency_from_external.srcStageMask |= reading_stages;
+				} else {
+					description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+					description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
+					dependency_from_external.srcStageMask |= reading_stages;
+				}
 			} break;
 			case INITIAL_ACTION_KEEP: {
 				if (p_attachments[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
@@ -3363,7 +3383,58 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 			}
 		}
 
-		switch (is_depth ? p_final_depth_action : p_final_action) {
+		bool used_last = false;
+
+		{
+			int last_pass = p_passes.size() - 1;
+
+			if (is_depth) {
+				//likely missing depth resolve?
+				if (p_passes[last_pass].depth_attachment == i) {
+					used_last = true;
+				}
+			} else {
+				if (p_passes[last_pass].resolve_attachments.size()) {
+					//if using resolve attachments, check resolve attachments
+					for (int j = 0; j < p_passes[last_pass].resolve_attachments.size(); j++) {
+						if (p_passes[last_pass].resolve_attachments[j] == i) {
+							used_last = true;
+							break;
+						}
+					}
+				} else {
+					for (int j = 0; j < p_passes[last_pass].color_attachments.size(); j++) {
+						if (p_passes[last_pass].color_attachments[j] == i) {
+							used_last = true;
+							break;
+						}
+					}
+				}
+			}
+
+			if (!used_last) {
+				for (int j = 0; j < p_passes[last_pass].preserve_attachments.size(); j++) {
+					if (p_passes[last_pass].preserve_attachments[j] == i) {
+						used_last = true;
+						break;
+					}
+				}
+			}
+		}
+
+		FinalAction final_action = p_final_action;
+		FinalAction final_depth_action = p_final_depth_action;
+
+		if (!used_last) {
+			if (is_depth) {
+				final_depth_action = FINAL_ACTION_DISCARD;
+
+			} else {
+				final_action = FINAL_ACTION_DISCARD;
+			}
+		}
+
+		switch (is_depth ? final_depth_action : final_action) {
 			case FINAL_ACTION_READ: {
 				if (p_attachments[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
 					description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -3516,21 +3587,6 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 			resolve_references.push_back(reference);
 		}
 
-		LocalVector<uint32_t> &preserve_references = preserve_reference_array[i];
-
-		for (int j = 0; j < pass->preserve_attachments.size(); j++) {
-			int32_t attachment = pass->preserve_attachments[j];
-
-			ERR_FAIL_COND_V_MSG(attachment == FramebufferPass::ATTACHMENT_UNUSED, VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), preserve attachment (" + itos(j) + "). Preserve attachments can't be unused.");
-
-			ERR_FAIL_INDEX_V_MSG(attachment, p_attachments.size(), VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), preserve attachment (" + itos(j) + ").");
-			ERR_FAIL_COND_V_MSG(attachment_last_pass[attachment] == i, VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it already was used for something else before in this pass.");
-
-			attachment_last_pass[attachment] = i;
-
-			preserve_references.push_back(attachment);
-		}
-
 		VkAttachmentReference &depth_stencil_reference = depth_reference_array[i];
 
 		if (pass->depth_attachment != FramebufferPass::ATTACHMENT_UNUSED) {
@@ -3552,6 +3608,22 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		} else {
 			depth_stencil_reference.attachment = VK_ATTACHMENT_UNUSED;
 			depth_stencil_reference.layout = VK_IMAGE_LAYOUT_UNDEFINED;
+		}
+
+		LocalVector<uint32_t> &preserve_references = preserve_reference_array[i];
+
+		for (int j = 0; j < pass->preserve_attachments.size(); j++) {
+			int32_t attachment = pass->preserve_attachments[j];
+
+			ERR_FAIL_COND_V_MSG(attachment == FramebufferPass::ATTACHMENT_UNUSED, VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), preserve attachment (" + itos(j) + "). Preserve attachments can't be unused.");
+
+			ERR_FAIL_INDEX_V_MSG(attachment, p_attachments.size(), VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), preserve attachment (" + itos(j) + ").");
+
+			if (attachment_last_pass[attachment] != i) {
+				//preserve can still be used to keep depth or color from being discarded after use
+				attachment_last_pass[attachment] = i;
+				preserve_references.push_back(attachment);
+			}
 		}
 
 		VkSubpassDescription &subpass = subpasses[i];
@@ -3761,7 +3833,7 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_c
 	VkRenderPass render_pass;
 	VkResult res = vkCreateRenderPass(device, &render_pass_create_info, nullptr, &render_pass);
 
-	ERR_FAIL_COND_V_MSG(res, VK_NULL_HANDLE, "vkCreateRenderPass for empty fb failed with error " + itos(res) + ".");
+	ERR_FAIL_COND_V_MSG(res, 0, "vkCreateRenderPass for empty fb failed with error " + itos(res) + ".");
 
 	if (render_pass == VK_NULL_HANDLE) { //was likely invalid
 		return INVALID_ID;
@@ -4378,7 +4450,10 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 }
 #endif
 
-#define SHADER_BINARY_VERSION 1
+//version 1: initial
+//version 2: Added shader name
+
+#define SHADER_BINARY_VERSION 2
 
 String RenderingDeviceVulkan::shader_get_binary_cache_key() const {
 	return "Vulkan-SV" + itos(SHADER_BINARY_VERSION);
@@ -4412,9 +4487,10 @@ struct RenderingDeviceVulkanShaderBinaryData {
 	uint32_t push_constant_size;
 	uint32_t push_constants_vk_stage;
 	uint32_t stage_count;
+	uint32_t shader_name_len;
 };
 
-Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv) {
+Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name) {
 	RenderingDeviceVulkanShaderBinaryData binary_data;
 	binary_data.vertex_input_mask = 0;
 	binary_data.fragment_outputs = 0;
@@ -4771,8 +4847,18 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 	binary_data.set_count = uniform_info.size();
 	binary_data.stage_count = p_spirv.size();
 
+	CharString shader_name_utf = p_shader_name.utf8();
+
+	binary_data.shader_name_len = shader_name_utf.length();
+
 	uint32_t total_size = sizeof(uint32_t) * 3; //header + version + main datasize;
 	total_size += sizeof(RenderingDeviceVulkanShaderBinaryData);
+
+	total_size += binary_data.shader_name_len;
+
+	if ((binary_data.shader_name_len % 4) != 0) { //alignment rules are really strange
+		total_size += 4 - (binary_data.shader_name_len % 4);
+	}
 
 	for (int i = 0; i < uniform_info.size(); i++) {
 		total_size += sizeof(uint32_t);
@@ -4800,6 +4886,12 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 		offset += sizeof(uint32_t);
 		memcpy(binptr + offset, &binary_data, sizeof(RenderingDeviceVulkanShaderBinaryData));
 		offset += sizeof(RenderingDeviceVulkanShaderBinaryData);
+		memcpy(binptr + offset, shader_name_utf.ptr(), binary_data.shader_name_len);
+		offset += binary_data.shader_name_len;
+
+		if ((binary_data.shader_name_len % 4) != 0) { //alignment rules are really strange
+			offset += 4 - (binary_data.shader_name_len % 4);
+		}
 
 		for (int i = 0; i < uniform_info.size(); i++) {
 			int count = uniform_info[i].size();
@@ -4869,6 +4961,16 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 	uint32_t compute_local_size[3] = { binary_data.compute_local_size[0], binary_data.compute_local_size[1], binary_data.compute_local_size[2] };
 
 	read_offset += sizeof(uint32_t) * 3 + bin_data_size;
+
+	String name;
+
+	if (binary_data.shader_name_len) {
+		name.parse_utf8((const char *)(binptr + read_offset), binary_data.shader_name_len);
+		read_offset += binary_data.shader_name_len;
+		if ((binary_data.shader_name_len % 4) != 0) { //alignment rules are really strange
+			read_offset += 4 - (binary_data.shader_name_len % 4);
+		}
+	}
 
 	Vector<Vector<VkDescriptorSetLayoutBinding>> set_bindings;
 	Vector<Vector<UniformInfo>> uniform_info;
@@ -5024,6 +5126,7 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 	shader.compute_local_size[1] = compute_local_size[1];
 	shader.compute_local_size[2] = compute_local_size[2];
 	shader.specialization_constants = specialization_constants;
+	shader.name = name;
 
 	String error_text;
 
@@ -6385,7 +6488,6 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 				specialization_info.write[i].pData = data_ptr;
 				specialization_info.write[i].mapEntryCount = specialization_map_entries[i].size();
 				specialization_info.write[i].pMapEntries = specialization_map_entries[i].ptr();
-
 				pipeline_stages.write[i].pSpecializationInfo = specialization_info.ptr() + i;
 			}
 		}
@@ -6412,7 +6514,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 
 	RenderPipeline pipeline;
 	VkResult err = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &graphics_pipeline_create_info, nullptr, &pipeline.pipeline);
-	ERR_FAIL_COND_V_MSG(err, RID(), "vkCreateGraphicsPipelines failed with error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, RID(), "vkCreateGraphicsPipelines failed with error " + itos(err) + " for shader '" + shader->name + "'.");
 
 	pipeline.set_formats = shader->set_formats;
 	pipeline.push_constant_stages = shader->push_constant.push_constants_vk_stage;
@@ -7486,7 +7588,7 @@ Error RenderingDeviceVulkan::_draw_list_allocate(const Rect2i &p_viewport, uint3
 				VkCommandPoolCreateInfo cmd_pool_info;
 				cmd_pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 				cmd_pool_info.pNext = nullptr;
-				cmd_pool_info.queueFamilyIndex = context->get_graphics_queue();
+				cmd_pool_info.queueFamilyIndex = context->get_graphics_queue_family_index();
 				cmd_pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
 				VkResult res = vkCreateCommandPool(device, &cmd_pool_info, nullptr, &split_draw_list_allocators.write[i].command_pool);
@@ -7863,13 +7965,13 @@ void RenderingDeviceVulkan::compute_list_bind_uniform_set(ComputeListID p_list, 
 
 				textures_to_storage[i]->used_in_compute = false;
 				textures_to_storage[i]->used_in_raster = false;
-				textures_to_storage[i]->used_in_compute = false;
+				textures_to_storage[i]->used_in_transfer = false;
 
 			} else {
 				src_access_flags = 0;
 				textures_to_storage[i]->used_in_compute = false;
 				textures_to_storage[i]->used_in_raster = false;
-				textures_to_storage[i]->used_in_compute = false;
+				textures_to_storage[i]->used_in_transfer = false;
 				textures_to_storage[i]->used_in_frame = frames_drawn;
 			}
 
@@ -8730,6 +8832,7 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 		memset(&allocatorInfo, 0, sizeof(VmaAllocatorCreateInfo));
 		allocatorInfo.physicalDevice = p_context->get_physical_device();
 		allocatorInfo.device = device;
+		allocatorInfo.instance = p_context->get_instance();
 		vmaCreateAllocator(&allocatorInfo, &allocator);
 	}
 
@@ -8743,7 +8846,7 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 			VkCommandPoolCreateInfo cmd_pool_info;
 			cmd_pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 			cmd_pool_info.pNext = nullptr;
-			cmd_pool_info.queueFamilyIndex = p_context->get_graphics_queue();
+			cmd_pool_info.queueFamilyIndex = p_context->get_graphics_queue_family_index();
 			cmd_pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
 			VkResult res = vkCreateCommandPool(device, &cmd_pool_info, nullptr, &frames[i].command_pool);
@@ -8864,6 +8967,7 @@ void RenderingDeviceVulkan::_free_rids(T &p_owner, const char *p_type) {
 }
 
 void RenderingDeviceVulkan::capture_timestamp(const String &p_name) {
+	ERR_FAIL_COND_MSG(draw_list != nullptr, "Capturing timestamps during draw list creation is not allowed. Offending timestap was: " + p_name);
 	ERR_FAIL_COND(frames[frame].timestamp_count >= max_timestamp_query_elements);
 
 	//this should be optional for profiling, else it will slow things down
@@ -8910,6 +9014,92 @@ void RenderingDeviceVulkan::capture_timestamp(const String &p_name) {
 	frames[frame].timestamp_names[frames[frame].timestamp_count] = p_name;
 	frames[frame].timestamp_cpu_values[frames[frame].timestamp_count] = OS::get_singleton()->get_ticks_usec();
 	frames[frame].timestamp_count++;
+}
+
+uint64_t RenderingDeviceVulkan::get_driver_resource(DriverResource p_resource, RID p_rid, uint64_t p_index) {
+	_THREAD_SAFE_METHOD_
+
+	switch (p_resource) {
+		case DRIVER_RESOURCE_VULKAN_DEVICE: {
+			return (uint64_t)context->get_device();
+		}; break;
+		case DRIVER_RESOURCE_VULKAN_PHYSICAL_DEVICE: {
+			return (uint64_t)context->get_physical_device();
+		}; break;
+		case DRIVER_RESOURCE_VULKAN_INSTANCE: {
+			return (uint64_t)context->get_instance();
+		}; break;
+		case DRIVER_RESOURCE_VULKAN_QUEUE: {
+			return (uint64_t)context->get_graphics_queue();
+		}; break;
+		case DRIVER_RESOURCE_VULKAN_QUEUE_FAMILY_INDEX: {
+			return context->get_graphics_queue_family_index();
+		}; break;
+		case DRIVER_RESOURCE_VULKAN_IMAGE: {
+			Texture *tex = texture_owner.getornull(p_rid);
+			ERR_FAIL_NULL_V(tex, 0);
+
+			return (uint64_t)tex->image;
+		}; break;
+		case DRIVER_RESOURCE_VULKAN_IMAGE_VIEW: {
+			Texture *tex = texture_owner.getornull(p_rid);
+			ERR_FAIL_NULL_V(tex, 0);
+
+			return (uint64_t)tex->view;
+		}; break;
+		case DRIVER_RESOURCE_VULKAN_IMAGE_NATIVE_TEXTURE_FORMAT: {
+			Texture *tex = texture_owner.getornull(p_rid);
+			ERR_FAIL_NULL_V(tex, 0);
+
+			return vulkan_formats[tex->format];
+		}; break;
+		case DRIVER_RESOURCE_VULKAN_SAMPLER: {
+			VkSampler *sampler = sampler_owner.getornull(p_rid);
+			ERR_FAIL_NULL_V(sampler, 0);
+
+			return uint64_t(*sampler);
+		}; break;
+		case DRIVER_RESOURCE_VULKAN_DESCRIPTOR_SET: {
+			UniformSet *uniform_set = uniform_set_owner.getornull(p_rid);
+			ERR_FAIL_NULL_V(uniform_set, 0);
+
+			return uint64_t(uniform_set->descriptor_set);
+		}; break;
+		case DRIVER_RESOURCE_VULKAN_BUFFER: {
+			Buffer *buffer = nullptr;
+			if (vertex_buffer_owner.owns(p_rid)) {
+				buffer = vertex_buffer_owner.getornull(p_rid);
+			} else if (index_buffer_owner.owns(p_rid)) {
+				buffer = index_buffer_owner.getornull(p_rid);
+			} else if (uniform_buffer_owner.owns(p_rid)) {
+				buffer = uniform_buffer_owner.getornull(p_rid);
+			} else if (texture_buffer_owner.owns(p_rid)) {
+				buffer = &texture_buffer_owner.getornull(p_rid)->buffer;
+			} else if (storage_buffer_owner.owns(p_rid)) {
+				buffer = storage_buffer_owner.getornull(p_rid);
+			}
+
+			ERR_FAIL_NULL_V(buffer, 0);
+
+			return uint64_t(buffer->buffer);
+		}; break;
+		case DRIVER_RESOURCE_VULKAN_COMPUTE_PIPELINE: {
+			ComputePipeline *compute_pipeline = compute_pipeline_owner.getornull(p_rid);
+			ERR_FAIL_NULL_V(compute_pipeline, 0);
+
+			return uint64_t(compute_pipeline->pipeline);
+		}; break;
+		case DRIVER_RESOURCE_VULKAN_RENDER_PIPELINE: {
+			RenderPipeline *render_pipeline = render_pipeline_owner.getornull(p_rid);
+			ERR_FAIL_NULL_V(render_pipeline, 0);
+
+			return uint64_t(render_pipeline->pipeline);
+		}; break;
+		default: {
+			// not supported for this driver
+			return 0;
+		}; break;
+	}
 }
 
 uint32_t RenderingDeviceVulkan::get_captured_timestamps_count() const {

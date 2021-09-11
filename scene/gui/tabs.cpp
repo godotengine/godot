@@ -90,7 +90,7 @@ Size2 Tabs::get_minimum_size() const {
 	return ms;
 }
 
-void Tabs::_gui_input(const Ref<InputEvent> &p_event) {
+void Tabs::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventMouseMotion> mm = p_event;
@@ -1107,7 +1107,6 @@ bool Tabs::get_select_with_rmb() const {
 }
 
 void Tabs::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &Tabs::_gui_input);
 	ClassDB::bind_method(D_METHOD("_update_hover"), &Tabs::_update_hover);
 	ClassDB::bind_method(D_METHOD("get_tab_count"), &Tabs::get_tab_count);
 	ClassDB::bind_method(D_METHOD("set_current_tab", "tab_idx"), &Tabs::set_current_tab);

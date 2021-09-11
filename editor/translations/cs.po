@@ -362,6 +362,7 @@ msgstr "Změnit mód smyčky animace"
 msgid "Remove Anim Track"
 msgstr "Odstranit stopu animace"
 
+#. TRANSLATORS: %s will be replaced by a phrase describing the target of track.
 #: editor/animation_track_editor.cpp
 msgid "Create NEW track for %s and insert key?"
 msgstr "Vytvořit NOVOU stopu pro %s a vložit klíč?"
@@ -386,9 +387,27 @@ msgstr "Vytvořit"
 msgid "Anim Insert"
 msgstr "Animace: vložit"
 
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "node '%s'"
+msgstr "Nelze otevřít  '%s'."
+
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "animation"
+msgstr "Animace"
+
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
 msgstr "AnimationPlayer nemůže animovat sám sebe, pouze ostatní přehrávače."
+
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "property '%s'"
+msgstr "Vlastnost '%s' neexistuje."
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -966,7 +985,7 @@ msgstr "Vytvořit nový %s"
 msgid "No results for \"%s\"."
 msgstr "Žádné výsledky pro \"%s\"."
 
-#: editor/create_dialog.cpp
+#: editor/create_dialog.cpp editor/property_selector.cpp
 msgid "No description available for %s."
 msgstr ""
 
@@ -2313,6 +2332,17 @@ msgid "New Window"
 msgstr "Nové okno"
 
 #: editor/editor_node.cpp
+msgid ""
+"Spins when the editor window redraws.\n"
+"Update Continuously is enabled, which can increase power usage. Click to "
+"disable it."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Spins when the editor window redraws."
+msgstr "Točí se, když se okno editoru překresluje."
+
+#: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
 msgstr "Nelze uložit importované zdroje."
 
@@ -3165,10 +3195,6 @@ msgid "Save & Restart"
 msgstr "Uložit a restartovat"
 
 #: editor/editor_node.cpp
-msgid "Spins when the editor window redraws."
-msgstr "Točí se, když se okno editoru překresluje."
-
-#: editor/editor_node.cpp
 msgid "Update Continuously"
 msgstr "Aktualizovat průběžně"
 
@@ -3829,6 +3855,16 @@ msgstr "Počáteční hodnota pro počítadlo"
 #, fuzzy
 msgid "Download from:"
 msgstr "Chyba při stahování"
+
+#: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Open in Web Browser"
+msgstr "Spustit v prohlížeči"
+
+#: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Copy Mirror URL"
+msgstr "Kopírovat chybu"
 
 #: editor/export_template_manager.cpp
 msgid "Download and Install"
@@ -8679,6 +8715,12 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"Select a theme type from the list to edit its items.\n"
+"You can add a custom type or import a type with its items from another theme."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
 msgid "Remove All Color Items"
 msgstr "Odstranit všechny položky"
@@ -8707,6 +8749,12 @@ msgstr "Odstranit všechny položky"
 #, fuzzy
 msgid "Remove All StyleBox Items"
 msgstr "Odstranit všechny položky"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"This theme type is empty.\n"
+"Add more items to it manually or by importing from another theme."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -12353,6 +12401,16 @@ msgstr "Změnit výšku Cylinder Shape"
 msgid "Change Ray Shape Length"
 msgstr "Změnit délku Ray Shape"
 
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Room Point Position"
+msgstr "Nastavit pozici bodu křivky"
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Portal Point Position"
+msgstr "Nastavit pozici bodu křivky"
+
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Radius"
 msgstr "Změnit poloměr Cylinder"
@@ -14097,6 +14155,42 @@ msgstr ""
 msgid "There should only be one RoomManager in the SceneTree."
 msgstr ""
 
+#: scene/3d/room_manager.cpp
+msgid ""
+"RoomList path is invalid.\n"
+"Please check the RoomList branch has been assigned in the RoomManager."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "RoomList contains no Rooms, aborting."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "Misnamed nodes detected, check output log for details. Aborting."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "Portal link room not found, check output log for details."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Portal autolink failed, check output log for details.\n"
+"Check the portal is facing outwards from the source room."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Room overlap detected, cameras may work incorrectly in overlapping area.\n"
+"Check output log for details."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Error calculating room bounds.\n"
+"Ensure all rooms contain geometry or manual bounds."
+msgstr ""
+
 #: scene/3d/soft_body.cpp
 msgid "This body will be ignored until you set a mesh."
 msgstr "Toto tělo bude ignorováno dokud nenastavíte síť."
@@ -15195,9 +15289,6 @@ msgstr "Konstanty není možné upravovat."
 
 #~ msgid "I see..."
 #~ msgstr "Chápu..."
-
-#~ msgid "Can't open '%s'."
-#~ msgstr "Nelze otevřít  '%s'."
 
 #~ msgid "Ugh"
 #~ msgstr "Ups"

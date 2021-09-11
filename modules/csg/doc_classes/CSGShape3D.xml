@@ -9,18 +9,18 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="get_collision_layer_bit" qualifiers="const">
+		<method name="get_collision_layer_value" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="bit" type="int" />
+			<argument index="0" name="layer_number" type="int" />
 			<description>
-				Returns an individual bit on the collision mask.
+				Returns whether or not the specified layer of the [member collision_layer] is enabled, given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
-		<method name="get_collision_mask_bit" qualifiers="const">
+		<method name="get_collision_mask_value" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="bit" type="int" />
+			<argument index="0" name="layer_number" type="int" />
 			<description>
-				Returns an individual bit on the collision mask.
+				Returns whether or not the specified layer of the [member collision_mask] is enabled, given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
 		<method name="get_meshes" qualifiers="const">
@@ -35,20 +35,20 @@
 				Returns [code]true[/code] if this is a root shape and is thus the object that is rendered.
 			</description>
 		</method>
-		<method name="set_collision_layer_bit">
+		<method name="set_collision_layer_value">
 			<return type="void" />
-			<argument index="0" name="bit" type="int" />
+			<argument index="0" name="layer_number" type="int" />
 			<argument index="1" name="value" type="bool" />
 			<description>
-				Sets individual bits on the layer mask. Use this if you only need to change one layer's value.
+				Based on [code]value[/code], enables or disables the specified layer in the [member collision_layer], given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
-		<method name="set_collision_mask_bit">
+		<method name="set_collision_mask_value">
 			<return type="void" />
-			<argument index="0" name="bit" type="int" />
+			<argument index="0" name="layer_number" type="int" />
 			<argument index="1" name="value" type="bool" />
 			<description>
-				Sets individual bits on the collision mask. Use this if you only need to change one layer's value.
+				Based on [code]value[/code], enables or disables the specified layer in the [member collision_mask], given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
 	</methods>

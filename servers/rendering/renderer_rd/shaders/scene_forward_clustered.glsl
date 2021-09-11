@@ -118,7 +118,7 @@ void main() {
 
 	mat3 world_normal_matrix;
 	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_NON_UNIFORM_SCALE)) {
-		world_normal_matrix = inverse(mat3(world_matrix));
+		world_normal_matrix = transpose(inverse(mat3(world_matrix)));
 	} else {
 		world_normal_matrix = mat3(world_matrix);
 	}
@@ -374,6 +374,9 @@ layout(constant_id = 9) const uint sc_directional_penumbra_shadow_samples = 4;
 layout(constant_id = 10) const bool sc_decal_use_mipmaps = true;
 layout(constant_id = 11) const bool sc_projector_use_mipmaps = true;
 
+// not used in clustered renderer but we share some code with the mobile renderer that requires this.
+const float sc_luminance_multiplier = 1.0;
+
 #include "scene_forward_clustered_inc.glsl"
 
 /* Varyings */
@@ -465,6 +468,11 @@ layout(location = 0) out vec4 frag_color;
 #include "scene_forward_aa_inc.glsl"
 
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
+
+/* Make a default specular mode SPECULAR_SCHLICK_GGX. */
+#if !defined(SPECULAR_DISABLED) && !defined(SPECULAR_SCHLICK_GGX) && !defined(SPECULAR_BLINN) && !defined(SPECULAR_PHONG) && !defined(SPECULAR_TOON)
+#define SPECULAR_SCHLICK_GGX
+#endif
 
 #include "scene_forward_lights_inc.glsl"
 
@@ -876,7 +884,7 @@ void main() {
 
 #ifdef NORMAL_USED
 	if (scene_data.roughness_limiter_enabled) {
-		//http://www.jp.square-enix.com/tech/library/pdf/ImprovedGeometricSpecularAA.pdf
+		//https://www.jp.square-enix.com/tech/library/pdf/ImprovedGeometricSpecularAA.pdf
 		float roughness2 = roughness * roughness;
 		vec3 dndu = dFdx(normal), dndv = dFdy(normal);
 		float variance = scene_data.roughness_limiter_amount * (dot(dndu, dndu) + dot(dndv, dndv));
@@ -907,6 +915,8 @@ void main() {
 		specular_light = textureLod(samplerCube(radiance_cubemap, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), ref_vec, roughness * MAX_ROUGHNESS_LOD).rgb;
 
 #endif //USE_RADIANCE_CUBEMAP_ARRAY
+		float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
+		specular_light *= horizon * horizon;
 		specular_light *= scene_data.ambient_light_color_energy.a;
 	}
 
@@ -1594,7 +1604,7 @@ void main() {
 					continue; // Statically baked light and object uses lightmap, skip
 				}
 
-				float shadow = light_process_omni_shadow(light_index, vertex, view);
+				float shadow = light_process_omni_shadow(light_index, vertex, normal);
 
 				shadow = blur_shadow(shadow);
 
@@ -1670,7 +1680,7 @@ void main() {
 					continue; // Statically baked light and object uses lightmap, skip
 				}
 
-				float shadow = light_process_spot_shadow(light_index, vertex, view);
+				float shadow = light_process_spot_shadow(light_index, vertex, normal);
 
 				shadow = blur_shadow(shadow);
 

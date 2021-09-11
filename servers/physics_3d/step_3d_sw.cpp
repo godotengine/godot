@@ -185,6 +185,8 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 
 	p_space->setup(); //update inertias, etc
 
+	p_space->set_last_step(p_delta);
+
 	iterations = p_iterations;
 	delta = p_delta;
 

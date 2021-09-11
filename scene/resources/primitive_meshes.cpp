@@ -300,7 +300,7 @@ void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
 			z = cos(u * Math_TAU);
 
 			Vector3 p = Vector3(x * radius * w, y, -z * radius * w);
-			points.push_back(p + Vector3(0.0, 0.5 * mid_height, 0.0));
+			points.push_back(p + Vector3(0.0, 0.5 * height - radius, 0.0));
 			normals.push_back(p.normalized());
 			ADD_TANGENT(z, 0.0, x, 1.0)
 			uvs.push_back(Vector2(u, v * onethird));
@@ -328,8 +328,8 @@ void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
 		v = j;
 		v /= (rings + 1);
 
-		y = mid_height * v;
-		y = (mid_height * 0.5) - y;
+		y = (height - 2.0 * radius) * v;
+		y = (0.5 * height - radius) - y;
 
 		for (i = 0; i <= radial_segments; i++) {
 			u = i;
@@ -379,7 +379,7 @@ void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
 			z = cos(u2 * Math_TAU);
 
 			Vector3 p = Vector3(x * radius * w, y, -z * radius * w);
-			points.push_back(p + Vector3(0.0, -0.5 * mid_height, 0.0));
+			points.push_back(p + Vector3(0.0, -0.5 * height + radius, 0.0));
 			normals.push_back(p.normalized());
 			ADD_TANGENT(z, 0.0, x, 1.0)
 			uvs.push_back(Vector2(u2, twothirds + ((v - 1.0) * onethird)));
@@ -410,8 +410,8 @@ void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
 void CapsuleMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &CapsuleMesh::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &CapsuleMesh::get_radius);
-	ClassDB::bind_method(D_METHOD("set_mid_height", "mid_height"), &CapsuleMesh::set_mid_height);
-	ClassDB::bind_method(D_METHOD("get_mid_height"), &CapsuleMesh::get_mid_height);
+	ClassDB::bind_method(D_METHOD("set_height", "height"), &CapsuleMesh::set_height);
+	ClassDB::bind_method(D_METHOD("get_height"), &CapsuleMesh::get_height);
 
 	ClassDB::bind_method(D_METHOD("set_radial_segments", "segments"), &CapsuleMesh::set_radial_segments);
 	ClassDB::bind_method(D_METHOD("get_radial_segments"), &CapsuleMesh::get_radial_segments);
@@ -419,13 +419,16 @@ void CapsuleMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rings"), &CapsuleMesh::get_rings);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater"), "set_radius", "get_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mid_height", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater"), "set_mid_height", "get_mid_height");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "radial_segments", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_radial_segments", "get_radial_segments");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_rings", "get_rings");
 }
 
 void CapsuleMesh::set_radius(const float p_radius) {
 	radius = p_radius;
+	if (radius > height * 0.5) {
+		radius = height * 0.5;
+	}
 	_request_update();
 }
 
@@ -433,13 +436,16 @@ float CapsuleMesh::get_radius() const {
 	return radius;
 }
 
-void CapsuleMesh::set_mid_height(const float p_mid_height) {
-	mid_height = p_mid_height;
+void CapsuleMesh::set_height(const float p_height) {
+	height = p_height;
+	if (radius > height * 0.5) {
+		height = radius * 2;
+	}
 	_request_update();
 }
 
-float CapsuleMesh::get_mid_height() const {
-	return mid_height;
+float CapsuleMesh::get_height() const {
+	return height;
 }
 
 void CapsuleMesh::set_radial_segments(const int p_segments) {
@@ -1414,6 +1420,8 @@ void SphereMesh::_create_mesh_array(Array &p_arr) const {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z;
 
+	float scale = height * (is_hemisphere ? 1.0 : 0.5);
+
 	// set our bounding box
 
 	Vector<Vector3> points;
@@ -1437,7 +1445,7 @@ void SphereMesh::_create_mesh_array(Array &p_arr) const {
 
 		v /= (rings + 1);
 		w = sin(Math_PI * v);
-		y = height * (is_hemisphere ? 1.0 : 0.5) * cos(Math_PI * v);
+		y = scale * cos(Math_PI * v);
 
 		for (i = 0; i <= radial_segments; i++) {
 			float u = i;
@@ -1452,7 +1460,8 @@ void SphereMesh::_create_mesh_array(Array &p_arr) const {
 			} else {
 				Vector3 p = Vector3(x * radius * w, y, z * radius * w);
 				points.push_back(p);
-				normals.push_back(p.normalized());
+				Vector3 normal = Vector3(x * radius * w * scale, y / scale, z * radius * w * scale);
+				normals.push_back(normal.normalized());
 			};
 			ADD_TANGENT(z, 0.0, -x, 1.0)
 			uvs.push_back(Vector2(u, v));

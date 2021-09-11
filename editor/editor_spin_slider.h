@@ -81,10 +81,11 @@ class EditorSpinSlider : public Range {
 
 	void _update_value_input_stylebox();
 	void _ensure_input_popup();
+	void _draw_spin_slider();
 
 protected:
 	void _notification(int p_what);
-	void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	static void _bind_methods();
 	void _grabber_mouse_entered();
 	void _grabber_mouse_exited();

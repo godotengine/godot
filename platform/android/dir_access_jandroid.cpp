@@ -161,7 +161,7 @@ bool DirAccessJAndroid::dir_exists(String p_dir) {
 	if (current_dir == "")
 		sd = p_dir;
 	else {
-		if (p_dir.is_rel_path())
+		if (p_dir.is_relative_path())
 			sd = current_dir.plus_file(p_dir);
 		else
 			sd = fix_path(p_dir);

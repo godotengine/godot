@@ -39,6 +39,19 @@ class EditorImportPlugin : public ResourceImporter {
 protected:
 	static void _bind_methods();
 
+	GDVIRTUAL0RC(String, _get_importer_name)
+	GDVIRTUAL0RC(String, _get_visible_name)
+	GDVIRTUAL0RC(int, _get_preset_count)
+	GDVIRTUAL1RC(String, _get_preset_name, int)
+	GDVIRTUAL0RC(Vector<String>, _get_recognized_extensions)
+	GDVIRTUAL1RC(Array, _get_import_options, int)
+	GDVIRTUAL0RC(String, _get_save_extension)
+	GDVIRTUAL0RC(String, _get_resource_type)
+	GDVIRTUAL0RC(float, _get_priority)
+	GDVIRTUAL0RC(int, _get_import_order)
+	GDVIRTUAL2RC(bool, _get_option_visibility, StringName, Dictionary)
+	GDVIRTUAL5RC(int, _import, String, String, Dictionary, Array, Array)
+
 public:
 	EditorImportPlugin();
 	virtual String get_importer_name() const override;

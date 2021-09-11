@@ -30,7 +30,6 @@
 
 #include "navigation_region_2d.h"
 
-#include "core/config/engine.h"
 #include "core/core_string_names.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/mutex.h"
@@ -455,7 +454,7 @@ void NavigationRegion2D::_notification(int p_what) {
 				// Draw the region
 				Transform2D xform = get_global_transform();
 				const NavigationServer2D *ns = NavigationServer2D::get_singleton();
-				float radius = ns->map_get_edge_connection_margin(get_world_2d()->get_navigation_map()) / 2.0;
+				real_t radius = ns->map_get_edge_connection_margin(get_world_2d()->get_navigation_map()) / 2.0;
 				for (int i = 0; i < ns->region_get_connections_count(region); i++) {
 					// Two main points
 					Vector2 a = ns->region_get_connection_pathway_start(region, i);
@@ -465,7 +464,7 @@ void NavigationRegion2D::_notification(int p_what) {
 					draw_line(a, b, doors_color);
 
 					// Draw a circle to illustrate the margins.
-					float angle = (b - a).angle();
+					real_t angle = (b - a).angle();
 					draw_arc(a, radius, angle + Math_PI / 2.0, angle - Math_PI / 2.0 + Math_TAU, 10, doors_color);
 					draw_arc(b, radius, angle - Math_PI / 2.0, angle + Math_PI / 2.0, 10, doors_color);
 				}

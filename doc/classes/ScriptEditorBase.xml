@@ -9,13 +9,6 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_add_syntax_highlighter" qualifiers="virtual">
-			<return type="void" />
-			<argument index="0" name="highlighter" type="Object" />
-			<description>
-				Adds a [EditorSyntaxHighlighter] to the open script.
-			</description>
-		</method>
 		<method name="get_base_editor" qualifiers="const">
 			<return type="Control" />
 			<description>

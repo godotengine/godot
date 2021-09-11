@@ -382,6 +382,7 @@ msgstr "Промени циклус анимације"
 msgid "Remove Anim Track"
 msgstr "Обриши траку анимације"
 
+#. TRANSLATORS: %s will be replaced by a phrase describing the target of track.
 #: editor/animation_track_editor.cpp
 msgid "Create NEW track for %s and insert key?"
 msgstr "Направите нову траку за %s и убаците кључ?"
@@ -406,10 +407,28 @@ msgstr "Направи"
 msgid "Anim Insert"
 msgstr "Налепи"
 
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "node '%s'"
+msgstr "Режим лепљења:"
+
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "animation"
+msgstr "Анимација"
+
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "AnimationPlayer can't animate itself, only other players."
 msgstr "AnimationPlayer не може сам себе да анимира, само друге плејере."
+
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "property '%s'"
+msgstr "Особина %s' не постоји."
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -1051,7 +1070,7 @@ msgstr "Направи нов"
 msgid "No results for \"%s\"."
 msgstr "Нема резултата за \"%s\"."
 
-#: editor/create_dialog.cpp
+#: editor/create_dialog.cpp editor/property_selector.cpp
 msgid "No description available for %s."
 msgstr ""
 
@@ -2502,6 +2521,18 @@ msgid "New Window"
 msgstr "Нов Прозор"
 
 #: editor/editor_node.cpp
+msgid ""
+"Spins when the editor window redraws.\n"
+"Update Continuously is enabled, which can increase power usage. Click to "
+"disable it."
+msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Spins when the editor window redraws."
+msgstr "Окрене се кад се едиторски прозор поново обоји!"
+
+#: editor/editor_node.cpp
 #, fuzzy
 msgid "Imported resources can't be saved."
 msgstr "Увезени ресурси не могу бити упамћени."
@@ -3397,11 +3428,6 @@ msgstr "Сачувај и изађи"
 
 #: editor/editor_node.cpp
 #, fuzzy
-msgid "Spins when the editor window redraws."
-msgstr "Окрене се кад се едиторски прозор поново обоји!"
-
-#: editor/editor_node.cpp
-#, fuzzy
 msgid "Update Continuously"
 msgstr "Трајан"
 
@@ -4104,6 +4130,16 @@ msgstr "Иницијална вредност бројача"
 #, fuzzy
 msgid "Download from:"
 msgstr "Грешка при преузимању"
+
+#: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Open in Web Browser"
+msgstr "Покрени у Претраживачу"
+
+#: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Copy Mirror URL"
+msgstr "Копирај Грешку"
 
 #: editor/export_template_manager.cpp
 msgid "Download and Install"
@@ -9423,6 +9459,12 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"Select a theme type from the list to edit its items.\n"
+"You can add a custom type or import a type with its items from another theme."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
 msgid "Remove All Color Items"
 msgstr "Обриши све ставке"
@@ -9451,6 +9493,12 @@ msgstr "Обриши све ставке"
 #, fuzzy
 msgid "Remove All StyleBox Items"
 msgstr "Обриши све ставке"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"This theme type is empty.\n"
+"Add more items to it manually or by importing from another theme."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -13751,6 +13799,16 @@ msgstr "Промени Висину Цилиндар Облика"
 msgid "Change Ray Shape Length"
 msgstr "Промени Дужину Зрак Облика"
 
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Room Point Position"
+msgstr "Постави позицију тачке криве"
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Portal Point Position"
+msgstr "Постави позицију тачке криве"
+
 #: modules/csg/csg_gizmos.cpp
 #, fuzzy
 msgid "Change Cylinder Radius"
@@ -15695,6 +15753,42 @@ msgstr ""
 msgid "There should only be one RoomManager in the SceneTree."
 msgstr ""
 
+#: scene/3d/room_manager.cpp
+msgid ""
+"RoomList path is invalid.\n"
+"Please check the RoomList branch has been assigned in the RoomManager."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "RoomList contains no Rooms, aborting."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "Misnamed nodes detected, check output log for details. Aborting."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "Portal link room not found, check output log for details."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Portal autolink failed, check output log for details.\n"
+"Check the portal is facing outwards from the source room."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Room overlap detected, cameras may work incorrectly in overlapping area.\n"
+"Check output log for details."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Error calculating room bounds.\n"
+"Ensure all rooms contain geometry or manual bounds."
+msgstr ""
+
 #: scene/3d/soft_body.cpp
 #, fuzzy
 msgid "This body will be ignored until you set a mesh."
@@ -16455,10 +16549,6 @@ msgstr "Константе није могуће мењати."
 
 #~ msgid "Local Coords"
 #~ msgstr "Локалне координате"
-
-#, fuzzy
-#~ msgid "Snap Mode (%s)"
-#~ msgstr "Режим лепљења:"
 
 #~ msgid "Tool Select"
 #~ msgstr "Избор алатки"

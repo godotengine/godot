@@ -13,7 +13,7 @@
 			<return type="bool" />
 			<argument index="0" name="key" type="Variant" />
 			<argument index="1" name="size" type="Vector2" />
-			<argument index="2" name="inline_align" type="int" enum="VAlign" default="1" />
+			<argument index="2" name="inline_align" type="int" enum="InlineAlign" default="5" />
 			<argument index="3" name="length" type="int" default="1" />
 			<description>
 				Adds inline object to the text buffer, [code]key[/code] must be unique. In the text, object is represented as [code]length[/code] object replacement characters.
@@ -220,13 +220,13 @@
 		<method name="get_spacing_bottom" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns extra spacing at the bottom of the line. See [member Font.extra_spacing_bottom].
+				Returns extra spacing at the bottom of the line. See [member Font.spacing_bottom].
 			</description>
 		</method>
 		<method name="get_spacing_top" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns extra spacing at the top of the line. See [member Font.extra_spacing_top].
+				Returns extra spacing at the top of the line. See [member Font.spacing_top].
 			</description>
 		</method>
 		<method name="hit_test" qualifiers="const">
@@ -240,7 +240,7 @@
 			<return type="bool" />
 			<argument index="0" name="key" type="Variant" />
 			<argument index="1" name="size" type="Vector2" />
-			<argument index="2" name="inline_align" type="int" enum="VAlign" default="1" />
+			<argument index="2" name="inline_align" type="int" enum="InlineAlign" default="5" />
 			<description>
 				Sets new size and alignment of embedded object.
 			</description>
@@ -284,6 +284,9 @@
 		<member name="flags" type="int" setter="set_flags" getter="get_flags" default="51">
 			Line breaking and alignment rules. For more info see [TextServer].
 		</member>
+		<member name="max_lines_visible" type="int" setter="set_max_lines_visible" getter="get_max_lines_visible" default="-1">
+			Limits the lines of text shown.
+		</member>
 		<member name="orientation" type="int" setter="set_orientation" getter="get_orientation" enum="TextServer.Orientation" default="0">
 			Text orientation.
 		</member>
@@ -293,10 +296,28 @@
 		<member name="preserve_invalid" type="bool" setter="set_preserve_invalid" getter="get_preserve_invalid" default="true">
 			If set to [code]true[/code] text will display invalid characters.
 		</member>
+		<member name="text_overrun_behavior" type="int" setter="set_text_overrun_behavior" getter="get_text_overrun_behavior" enum="TextParagraph.OverrunBehavior" default="0">
+			Sets the clipping behavior when the text exceeds the paragraph's set width. See [enum OverrunBehavior] for a description of all modes.
+		</member>
 		<member name="width" type="float" setter="set_width" getter="get_width" default="-1.0">
 			Paragraph width.
 		</member>
 	</members>
 	<constants>
+		<constant name="OVERRUN_NO_TRIMMING" value="0" enum="OverrunBehavior">
+			No text trimming is performed.
+		</constant>
+		<constant name="OVERRUN_TRIM_CHAR" value="1" enum="OverrunBehavior">
+			Trims the text per character.
+		</constant>
+		<constant name="OVERRUN_TRIM_WORD" value="2" enum="OverrunBehavior">
+			Trims the text per word.
+		</constant>
+		<constant name="OVERRUN_TRIM_ELLIPSIS" value="3" enum="OverrunBehavior">
+			Trims the text per character and adds an ellipsis to indicate that parts are hidden.
+		</constant>
+		<constant name="OVERRUN_TRIM_WORD_ELLIPSIS" value="4" enum="OverrunBehavior">
+			Trims the text per word and adds an ellipsis to indicate that parts are hidden.
+		</constant>
 	</constants>
 </class>

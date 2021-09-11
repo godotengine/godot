@@ -31,9 +31,7 @@
 #ifndef PARTICLES_2D_H
 #define PARTICLES_2D_H
 
-#include "core/templates/rid.h"
 #include "scene/2d/node_2d.h"
-#include "scene/resources/texture.h"
 
 class GPUParticles2D : public Node2D {
 private:
@@ -51,11 +49,11 @@ private:
 
 	bool one_shot;
 	int amount;
-	float lifetime;
-	float pre_process_time;
-	float explosiveness_ratio;
-	float randomness_ratio;
-	float speed_scale;
+	double lifetime;
+	double pre_process_time;
+	real_t explosiveness_ratio;
+	real_t randomness_ratio;
+	double speed_scale;
 	Rect2 visibility_rect;
 	bool local_coords;
 	int fixed_fps;
@@ -70,10 +68,10 @@ private:
 	void _update_particle_emission_transform();
 
 	NodePath sub_emitter;
-	float collision_base_size = 1.0;
+	real_t collision_base_size = 1.0;
 
 	bool trail_enabled = false;
-	float trail_length = 0.3;
+	double trail_length = 0.3;
 	int trail_sections = 8;
 	int trail_section_subdivisions = 4;
 
@@ -89,36 +87,36 @@ protected:
 public:
 	void set_emitting(bool p_emitting);
 	void set_amount(int p_amount);
-	void set_lifetime(float p_lifetime);
+	void set_lifetime(double p_lifetime);
 	void set_one_shot(bool p_enable);
-	void set_pre_process_time(float p_time);
-	void set_explosiveness_ratio(float p_ratio);
-	void set_randomness_ratio(float p_ratio);
+	void set_pre_process_time(double p_time);
+	void set_explosiveness_ratio(real_t p_ratio);
+	void set_randomness_ratio(real_t p_ratio);
 	void set_visibility_rect(const Rect2 &p_visibility_rect);
 	void set_use_local_coordinates(bool p_enable);
 	void set_process_material(const Ref<Material> &p_material);
-	void set_speed_scale(float p_scale);
-	void set_collision_base_size(float p_ratio);
+	void set_speed_scale(double p_scale);
+	void set_collision_base_size(real_t p_ratio);
 	void set_trail_enabled(bool p_enabled);
-	void set_trail_length(float p_seconds);
+	void set_trail_length(double p_seconds);
 	void set_trail_sections(int p_sections);
 	void set_trail_section_subdivisions(int p_subdivisions);
 
 	bool is_emitting() const;
 	int get_amount() const;
-	float get_lifetime() const;
+	double get_lifetime() const;
 	bool get_one_shot() const;
-	float get_pre_process_time() const;
-	float get_explosiveness_ratio() const;
-	float get_randomness_ratio() const;
+	double get_pre_process_time() const;
+	real_t get_explosiveness_ratio() const;
+	real_t get_randomness_ratio() const;
 	Rect2 get_visibility_rect() const;
 	bool get_use_local_coordinates() const;
 	Ref<Material> get_process_material() const;
-	float get_speed_scale() const;
+	double get_speed_scale() const;
 
-	float get_collision_base_size() const;
+	real_t get_collision_base_size() const;
 	bool is_trail_enabled() const;
-	float get_trail_length() const;
+	double get_trail_length() const;
 	int get_trail_sections() const;
 	int get_trail_section_subdivisions() const;
 
