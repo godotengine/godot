@@ -493,27 +493,26 @@ void OS_JavaScript::set_mouse_mode(OS::MouseMode p_mode) {
 
 	if (p_mode == MOUSE_MODE_VISIBLE) {
 		godot_js_display_cursor_set_visible(1);
-		emscripten_exit_pointerlock();
+		godot_js_display_cursor_lock_set(false);
 
 	} else if (p_mode == MOUSE_MODE_HIDDEN) {
 		godot_js_display_cursor_set_visible(0);
-		emscripten_exit_pointerlock();
+		godot_js_display_cursor_lock_set(false);
 
 	} else if (p_mode == MOUSE_MODE_CAPTURED) {
 		godot_js_display_cursor_set_visible(1);
-		EMSCRIPTEN_RESULT result = emscripten_request_pointerlock(canvas_id, false);
-		ERR_FAIL_COND_MSG(result == EMSCRIPTEN_RESULT_FAILED_NOT_DEFERRED, "MOUSE_MODE_CAPTURED can only be entered from within an appropriate input callback.");
-		ERR_FAIL_COND_MSG(result != EMSCRIPTEN_RESULT_SUCCESS, "MOUSE_MODE_CAPTURED can only be entered from within an appropriate input callback.");
+		godot_js_display_cursor_lock_set(true);
 	}
 }
 
 OS::MouseMode OS_JavaScript::get_mouse_mode() const {
-	if (godot_js_display_cursor_is_hidden())
+	if (godot_js_display_cursor_is_hidden()) {
 		return MOUSE_MODE_HIDDEN;
-
-	EmscriptenPointerlockChangeEvent ev;
-	emscripten_get_pointerlock_status(&ev);
-	return (ev.isActive && String::utf8(ev.id) == String::utf8(&canvas_id[1])) ? MOUSE_MODE_CAPTURED : MOUSE_MODE_VISIBLE;
+	}
+	if (godot_js_display_cursor_is_locked()) {
+		return MOUSE_MODE_CAPTURED;
+	}
+	return MOUSE_MODE_VISIBLE;
 }
 
 // Wheel
