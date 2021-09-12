@@ -81,6 +81,8 @@ extern void godot_js_display_cursor_set_shape(const char *p_cursor);
 extern int godot_js_display_cursor_is_hidden();
 extern void godot_js_display_cursor_set_custom_shape(const char *p_shape, const uint8_t *p_ptr, int p_len, int p_hotspot_x, int p_hotspot_y);
 extern void godot_js_display_cursor_set_visible(int p_visible);
+extern void godot_js_display_cursor_lock_set(int p_lock);
+extern int godot_js_display_cursor_is_locked();
 
 // Display gamepad
 extern void godot_js_display_gamepad_cb(void (*p_on_change)(int p_index, int p_connected, const char *p_id, const char *p_guid));

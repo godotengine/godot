@@ -376,6 +376,20 @@ const GodotDisplayCursor = {
 				delete GodotDisplayCursor.cursors[key];
 			});
 		},
+		lockPointer: function () {
+			const canvas = GodotConfig.canvas;
+			if (canvas.requestPointerLock) {
+				canvas.requestPointerLock();
+			}
+		},
+		releasePointer: function () {
+			if (document.exitPointerLock) {
+				document.exitPointerLock();
+			}
+		},
+		isPointerLocked: function () {
+			return document.pointerLockElement === GodotConfig.canvas;
+		},
 	},
 };
 mergeInto(LibraryManager.library, GodotDisplayCursor);
@@ -848,6 +862,20 @@ const GodotDisplay = {
 		if (old_shape) {
 			URL.revokeObjectURL(old_shape.url);
 		}
+	},
+
+	godot_js_display_cursor_lock_set__sig: 'vi',
+	godot_js_display_cursor_lock_set: function (p_lock) {
+		if (p_lock) {
+			GodotDisplayCursor.lockPointer();
+		} else {
+			GodotDisplayCursor.releasePointer();
+		}
+	},
+
+	godot_js_display_cursor_is_locked__sig: 'i',
+	godot_js_display_cursor_is_locked: function () {
+		return GodotDisplayCursor.isPointerLocked() ? 1 : 0;
 	},
 
 	/*
