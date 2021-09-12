@@ -71,8 +71,8 @@ void JavaScriptToolsEditorPlugin::_download_zip(Variant p_v) {
 	// Replace characters not allowed (or risky) in Windows file names with safe characters.
 	// In the project name, all invalid characters become an empty string so that a name
 	// like "Platformer 2: Godette's Revenge" becomes "platformer_2-_godette-s_revenge".
-	const String project_name_safe =
-			GLOBAL_GET("application/config/name").to_lower().replace(" ", "_");
+	const String project_name = GLOBAL_GET("application/config/name");
+	const String project_name_safe = project_name.to_lower().replace(" ", "_");
 	const String datetime_safe =
 			Time::get_singleton()->get_datetime_string_from_system(false, true).replace(" ", "_");
 	const String output_name = OS::get_singleton()->get_safe_dir_name(vformat("%s_%s.zip"));
