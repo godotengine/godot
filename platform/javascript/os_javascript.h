@@ -82,9 +82,9 @@ private:
 	bool idb_needs_sync;
 	bool idb_is_syncing;
 
-	static EM_BOOL fullscreen_change_callback(int p_event_type, const EmscriptenFullscreenChangeEvent *p_event, void *p_user_data);
 	static EM_BOOL blur_callback(int p_event_type, const EmscriptenFocusEvent *p_event, void *p_user_data);
 
+	static void fullscreen_change_callback(int p_fullscreen);
 	static int mouse_button_callback(int p_pressed, int p_button, double p_x, double p_y, int p_modifiers);
 	static void mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers);
 	static int mouse_wheel_callback(double p_delta_x, double p_delta_y);

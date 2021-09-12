@@ -96,23 +96,16 @@ bool OS_JavaScript::check_size_force_redraw() {
 	return godot_js_display_size_update() != 0;
 }
 
-EM_BOOL OS_JavaScript::fullscreen_change_callback(int p_event_type, const EmscriptenFullscreenChangeEvent *p_event, void *p_user_data) {
+void OS_JavaScript::fullscreen_change_callback(int p_fullscreen) {
 	OS_JavaScript *os = get_singleton();
-	// Empty ID is canvas.
-	String target_id = String::utf8(p_event->id);
-	if (target_id.empty() || target_id == String::utf8(&(os->canvas_id[1]))) {
-		// This event property is the only reliable data on
-		// browser fullscreen state.
-		os->video_mode.fullscreen = p_event->isFullscreen;
-		if (os->video_mode.fullscreen) {
-			os->entering_fullscreen = false;
-		} else {
-			// Restoring maximized window now will cause issues,
-			// so delay until main_loop_iterate.
-			os->just_exited_fullscreen = true;
-		}
+	os->video_mode.fullscreen = p_fullscreen;
+	if (os->video_mode.fullscreen) {
+		os->entering_fullscreen = false;
+	} else {
+		// Restoring maximized window now will cause issues,
+		// so delay until main_loop_iterate.
+		os->just_exited_fullscreen = true;
 	}
-	return false;
 }
 
 EM_BOOL OS_JavaScript::blur_callback(int p_event_type, const EmscriptenFocusEvent *p_event, void *p_user_data) {
@@ -823,7 +816,6 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	// These callbacks from Emscripten's html5.h suffice to access most
 	// JavaScript APIs.
 	SET_EM_WINDOW_CALLBACK(blur, blur_callback)
-	SET_EM_CALLBACK(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, fullscreenchange, fullscreen_change_callback)
 #undef SET_EM_CALLBACK
 #undef EM_CHECK
 
@@ -832,8 +824,7 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	godot_js_display_mouse_wheel_cb(&OS_JavaScript::mouse_wheel_callback);
 	godot_js_display_touch_cb(&OS_JavaScript::touch_callback, touch_event.identifier, touch_event.coords);
 	godot_js_display_key_cb(&OS_JavaScript::key_callback, key_event.code, key_event.key);
-	// For APIs that are not (sufficiently) exposed, a
-	// library is used below (implemented in library_godot_display.js).
+	godot_js_display_fullscreen_cb(&OS_JavaScript::fullscreen_change_callback);
 	godot_js_display_notification_cb(&OS_JavaScript::send_notification_callback,
 			MainLoop::NOTIFICATION_WM_MOUSE_ENTER,
 			MainLoop::NOTIFICATION_WM_MOUSE_EXIT,

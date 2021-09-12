@@ -853,6 +853,20 @@ const GodotDisplay = {
 	/*
 	 * Listeners
 	 */
+	godot_js_display_fullscreen_cb__sig: 'vi',
+	godot_js_display_fullscreen_cb: function (callback) {
+		const canvas = GodotConfig.canvas;
+		const func = GodotRuntime.get_func(callback);
+		function change_cb(evt) {
+			if (evt.target === canvas) {
+				func(GodotDisplayScreen.isFullscreen());
+			}
+		}
+		GodotDisplayListeners.add(document, 'fullscreenchange', change_cb, false);
+		GodotDisplayListeners.add(document, 'mozfullscreenchange', change_cb, false);
+		GodotDisplayListeners.add(document, 'webkitfullscreenchange', change_cb, false);
+	},
+
 	godot_js_display_notification_cb__sig: 'viiiii',
 	godot_js_display_notification_cb: function (callback, p_enter, p_exit, p_in, p_out) {
 		const canvas = GodotConfig.canvas;
