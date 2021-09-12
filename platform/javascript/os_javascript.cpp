@@ -622,14 +622,14 @@ void OS_JavaScript::gamepad_callback(int p_index, int p_connected, const char *p
 }
 
 void OS_JavaScript::process_joypads() {
-	int32_t pads = godot_js_display_gamepad_sample_count();
+	int32_t pads = godot_js_input_gamepad_sample_count();
 	int32_t s_btns_num = 0;
 	int32_t s_axes_num = 0;
 	int32_t s_standard = 0;
 	float s_btns[16];
 	float s_axes[10];
 	for (int idx = 0; idx < pads; idx++) {
-		int err = godot_js_display_gamepad_sample_get(idx, s_btns, &s_btns_num, s_axes, &s_axes_num, &s_standard);
+		int err = godot_js_input_gamepad_sample_get(idx, s_btns, &s_btns_num, s_axes, &s_axes_num, &s_standard);
 		if (err) {
 			continue;
 		}
@@ -801,11 +801,17 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 #endif
 	input = memnew(InputDefault);
 
-	godot_js_display_mouse_button_cb(&OS_JavaScript::mouse_button_callback);
-	godot_js_display_mouse_move_cb(&OS_JavaScript::mouse_move_callback);
-	godot_js_display_mouse_wheel_cb(&OS_JavaScript::mouse_wheel_callback);
-	godot_js_display_touch_cb(&OS_JavaScript::touch_callback, touch_event.identifier, touch_event.coords);
-	godot_js_display_key_cb(&OS_JavaScript::key_callback, key_event.code, key_event.key);
+	// JS Input interface (js/libs/library_godot_input.js)
+	godot_js_input_mouse_button_cb(&OS_JavaScript::mouse_button_callback);
+	godot_js_input_mouse_move_cb(&OS_JavaScript::mouse_move_callback);
+	godot_js_input_mouse_wheel_cb(&OS_JavaScript::mouse_wheel_callback);
+	godot_js_input_touch_cb(&OS_JavaScript::touch_callback, touch_event.identifier, touch_event.coords);
+	godot_js_input_key_cb(&OS_JavaScript::key_callback, key_event.code, key_event.key);
+	godot_js_input_gamepad_cb(&OS_JavaScript::gamepad_callback);
+	godot_js_input_paste_cb(&OS_JavaScript::update_clipboard_callback);
+	godot_js_input_drop_files_cb(&OS_JavaScript::drop_files_callback);
+
+	// JS Display interface (js/libs/library_godot_display.js)
 	godot_js_display_fullscreen_cb(&OS_JavaScript::fullscreen_change_callback);
 	godot_js_display_window_blur_cb(&window_blur_callback);
 	godot_js_display_notification_cb(&OS_JavaScript::send_notification_callback,
@@ -813,9 +819,6 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 			MainLoop::NOTIFICATION_WM_MOUSE_EXIT,
 			MainLoop::NOTIFICATION_WM_FOCUS_IN,
 			MainLoop::NOTIFICATION_WM_FOCUS_OUT);
-	godot_js_display_paste_cb(&OS_JavaScript::update_clipboard_callback);
-	godot_js_display_drop_files_cb(&OS_JavaScript::drop_files_callback);
-	godot_js_display_gamepad_cb(&OS_JavaScript::gamepad_callback);
 	godot_js_display_vk_cb(&input_text_callback);
 
 	visual_server->init();
@@ -890,8 +893,9 @@ bool OS_JavaScript::main_loop_iterate() {
 
 	input->flush_buffered_events();
 
-	if (godot_js_display_gamepad_sample() == OK)
+	if (godot_js_input_gamepad_sample() == OK) {
 		process_joypads();
+	}
 
 	if (just_exited_fullscreen) {
 		if (window_maximized) {
