@@ -56,6 +56,9 @@ extern "C" {
 #define GD_PINVOKE_EXPORT MAYBE_UNUSED
 #endif
 
+// For ArrayPrivate and DictionaryPrivate
+static_assert(sizeof(SafeRefCount) == sizeof(uint32_t));
+
 typedef Object *(*godotsharp_class_creation_func)();
 
 GD_PINVOKE_EXPORT MethodBind *godotsharp_method_bind_get_method(const StringName *p_classname, const char16_t *p_methodname) {
@@ -185,7 +188,7 @@ GD_PINVOKE_EXPORT void godotsharp_packed_string_array_add(PackedStringArray *r_d
 GD_PINVOKE_EXPORT void godotsharp_callable_new_with_delegate(void *p_delegate_handle, Callable *r_callable) {
 	// TODO: Use pooling for ManagedCallable instances.
 	CallableCustom *managed_callable = memnew(ManagedCallable(p_delegate_handle));
-	*r_callable = Callable(managed_callable);
+	memnew_placement(r_callable, Callable(managed_callable));
 }
 
 GD_PINVOKE_EXPORT bool godotsharp_callable_get_data_for_marshalling(const Callable *p_callable,
@@ -198,31 +201,31 @@ GD_PINVOKE_EXPORT bool godotsharp_callable_get_data_for_marshalling(const Callab
 			ManagedCallable *managed_callable = static_cast<ManagedCallable *>(custom);
 			*r_delegate_handle = managed_callable->get_delegate();
 			*r_object = nullptr;
-			*r_name = StringName();
+			memnew_placement(r_name, StringName());
 			return true;
 		} else if (compare_equal_func == SignalAwaiterCallable::compare_equal_func_ptr) {
 			SignalAwaiterCallable *signal_awaiter_callable = static_cast<SignalAwaiterCallable *>(custom);
 			*r_delegate_handle = nullptr;
 			*r_object = ObjectDB::get_instance(signal_awaiter_callable->get_object());
-			*r_name = signal_awaiter_callable->get_signal();
+			memnew_placement(r_name, StringName(signal_awaiter_callable->get_signal()));
 			return true;
 		} else if (compare_equal_func == EventSignalCallable::compare_equal_func_ptr) {
 			EventSignalCallable *event_signal_callable = static_cast<EventSignalCallable *>(custom);
 			*r_delegate_handle = nullptr;
 			*r_object = ObjectDB::get_instance(event_signal_callable->get_object());
-			*r_name = event_signal_callable->get_signal();
+			memnew_placement(r_name, StringName(event_signal_callable->get_signal()));
 			return true;
 		}
 
 		// Some other CallableCustom. We only support ManagedCallable.
 		*r_delegate_handle = nullptr;
 		*r_object = nullptr;
-		*r_name = StringName();
+		memnew_placement(r_name, StringName());
 		return false;
 	} else {
 		*r_delegate_handle = nullptr;
 		*r_object = ObjectDB::get_instance(p_callable->get_object_id());
-		*r_name = p_callable->get_method();
+		memnew_placement(r_name, StringName(p_callable->get_method()));
 		return true;
 	}
 }
@@ -235,7 +238,7 @@ GD_PINVOKE_EXPORT void godotsharp_method_bind_ptrcall(godot_method_bind *p_metho
 	godot_method_bind_ptrcall(p_method_bind, p_instance, p_args, p_ret);
 }
 
-GD_PINVOKE_EXPORT godot_variant godotsharp_method_bind_call(godot_method_bind *p_method_bind, godot_object *p_instance, const godot_variant **p_args, const int p_arg_count, godot_variant_call_error *p_call_error) {
+GD_PINVOKE_EXPORT godot_variant godotsharp_method_bind_call(godot_method_bind *p_method_bind, godot_object *p_instance, const godot_variant **p_args, const int32_t p_arg_count, godot_variant_call_error *p_call_error) {
 	return godot_method_bind_call(p_method_bind, p_instance, p_args, p_arg_count, p_call_error);
 }
 
@@ -445,6 +448,10 @@ GD_PINVOKE_EXPORT godot_packed_color_array godotsharp_variant_as_packed_color_ar
 	return godot_variant_as_packed_color_array(p_self);
 }
 
+GD_PINVOKE_EXPORT bool godotsharp_variant_equals(const godot_variant *p_a, const godot_variant *p_b) {
+	return *reinterpret_cast<const Variant *>(p_a) == *reinterpret_cast<const Variant *>(p_b);
+}
+
 // string.h
 
 GD_PINVOKE_EXPORT void godotsharp_string_new_with_utf16_chars(godot_string *r_dest, const char16_t *p_contents) {
@@ -465,11 +472,23 @@ GD_PINVOKE_EXPORT void godotsharp_node_path_new_copy(godot_node_path *r_dest, co
 
 // array.h
 
+GD_PINVOKE_EXPORT void godotsharp_array_new(godot_array *r_dest) {
+	godot_array_new(r_dest);
+}
+
 GD_PINVOKE_EXPORT void godotsharp_array_new_copy(godot_array *r_dest, const godot_array *p_src) {
 	godot_array_new_copy(r_dest, p_src);
 }
 
+GD_PINVOKE_EXPORT godot_variant *godotsharp_array_ptrw(godot_array *p_self) {
+	return reinterpret_cast<godot_variant *>(&reinterpret_cast<Array *>(p_self)->operator[](0));
+}
+
 // dictionary.h
+
+GD_PINVOKE_EXPORT void godotsharp_dictionary_new(godot_dictionary *r_dest) {
+	godot_dictionary_new(r_dest);
+}
 
 GD_PINVOKE_EXPORT void godotsharp_dictionary_new_copy(godot_dictionary *r_dest, const godot_dictionary *p_src) {
 	godot_dictionary_new_copy(r_dest, p_src);
@@ -545,12 +564,152 @@ GD_PINVOKE_EXPORT void godotsharp_dictionary_destroy(godot_dictionary *p_self) {
 	godot_dictionary_destroy(p_self);
 }
 
+// Array
+
+int32_t godotsharp_array_add(Array *p_self, const Variant *p_item) {
+	p_self->append(*p_item);
+	return p_self->size();
+}
+
+void godotsharp_array_duplicate(const Array *p_self, bool p_deep, Array *r_dest) {
+	memnew_placement(r_dest, Array(p_self->duplicate(p_deep)));
+}
+
+int32_t godotsharp_array_index_of(const Array *p_self, const Variant *p_item) {
+	return p_self->find(*p_item);
+}
+
+void godotsharp_array_insert(Array *p_self, int32_t p_index, const Variant *p_item) {
+	p_self->insert(p_index, *p_item);
+}
+
+void godotsharp_array_remove_at(Array *p_self, int32_t p_index) {
+	p_self->remove_at(p_index);
+}
+
+int32_t godotsharp_array_resize(Array *p_self, int32_t p_new_size) {
+	return (int32_t)p_self->resize(p_new_size);
+}
+
+void godotsharp_array_shuffle(Array *p_self) {
+	p_self->shuffle();
+}
+
+// Dictionary
+
+bool godotsharp_dictionary_try_get_value(const Dictionary *p_self, const Variant *p_key, Variant *r_value) {
+	const Variant *ret = p_self->getptr(*p_key);
+	if (ret == nullptr) {
+		memnew_placement(r_value, Variant());
+		return false;
+	}
+	memnew_placement(r_value, Variant(*ret));
+	return true;
+}
+
+void godotsharp_dictionary_set_value(Dictionary *p_self, const Variant *p_key, const Variant *p_value) {
+	p_self->operator[](*p_key) = *p_value;
+}
+
+void godotsharp_dictionary_keys(const Dictionary *p_self, Array *r_dest) {
+	memnew_placement(r_dest, Array(p_self->keys()));
+}
+
+void godotsharp_dictionary_values(const Dictionary *p_self, Array *r_dest) {
+	memnew_placement(r_dest, Array(p_self->values()));
+}
+
+int32_t godotsharp_dictionary_count(const Dictionary *p_self) {
+	return p_self->size();
+}
+
+void godotsharp_dictionary_key_value_pair_at(const Dictionary *p_self, int32_t p_index, Variant *r_key, Variant *r_value) {
+	memnew_placement(r_key, Variant(p_self->get_key_at_index(p_index)));
+	memnew_placement(r_value, Variant(p_self->get_value_at_index(p_index)));
+}
+
+void godotsharp_dictionary_add(Dictionary *p_self, const Variant *p_key, const Variant *p_value) {
+	p_self->operator[](*p_key) = *p_value;
+}
+
+void godotsharp_dictionary_clear(Dictionary *p_self) {
+	p_self->clear();
+}
+
+bool godotsharp_dictionary_contains_key(const Dictionary *p_self, const Variant *p_key) {
+	return p_self->has(*p_key);
+}
+
+void godotsharp_dictionary_duplicate(const Dictionary *p_self, bool p_deep, Dictionary *r_dest) {
+	memnew_placement(r_dest, Dictionary(p_self->duplicate(p_deep)));
+}
+
+bool godotsharp_dictionary_remove_key(Dictionary *p_self, const Variant *p_key) {
+	return p_self->erase(*p_key);
+}
+
+void godotsharp_string_md5_buffer(const String *p_self, PackedByteArray *r_md5_buffer) {
+	memnew_placement(r_md5_buffer, PackedByteArray(p_self->md5_buffer()));
+}
+
+void godotsharp_string_md5_text(const String *p_self, String *r_md5_text) {
+	memnew_placement(r_md5_text, String(p_self->md5_text()));
+}
+
+int32_t godotsharp_string_rfind(const String *p_self, const String *p_what, int32_t p_from) {
+	return p_self->rfind(*p_what, p_from);
+}
+
+int32_t godotsharp_string_rfindn(const String *p_self, const String *p_what, int32_t p_from) {
+	return p_self->rfindn(*p_what, p_from);
+}
+
+void godotsharp_string_sha256_buffer(const String *p_self, PackedByteArray *r_sha256_buffer) {
+	memnew_placement(r_sha256_buffer, PackedByteArray(p_self->sha256_buffer()));
+}
+
+void godotsharp_string_sha256_text(const String *p_self, String *r_sha256_text) {
+	memnew_placement(r_sha256_text, String(p_self->sha256_text()));
+}
+
+void godotsharp_string_simplify_path(const String *p_self, String *r_simplified_path) {
+	memnew_placement(r_simplified_path, String(p_self->simplify_path()));
+}
+
+void godotsharp_node_path_get_as_property_path(const NodePath *p_ptr, NodePath *r_dest) {
+	memnew_placement(r_dest, NodePath(p_ptr->get_as_property_path()));
+}
+
+void godotsharp_node_path_get_concatenated_subnames(const NodePath *p_self, String *r_subnames) {
+	memnew_placement(r_subnames, String(p_self->get_concatenated_subnames()));
+}
+
+void godotsharp_node_path_get_name(const NodePath *p_self, uint32_t p_idx, String *r_name) {
+	memnew_placement(r_name, String(p_self->get_name(p_idx)));
+}
+
+int32_t godotsharp_node_path_get_name_count(const NodePath *p_self) {
+	return p_self->get_name_count();
+}
+
+void godotsharp_node_path_get_subname(const NodePath *p_self, uint32_t p_idx, String *r_subname) {
+	memnew_placement(r_subname, String(p_self->get_subname(p_idx)));
+}
+
+int32_t godotsharp_node_path_get_subname_count(const NodePath *p_self) {
+	return p_self->get_subname_count();
+}
+
+bool godotsharp_node_path_is_absolute(const NodePath *p_self) {
+	return p_self->is_absolute();
+}
+
 #ifdef __cplusplus
 }
 #endif
 
 // We need this to prevent the functions from being stripped.
-void *godotsharp_pinvoke_funcs[95] = {
+void *godotsharp_pinvoke_funcs[131] = {
 	(void *)godotsharp_method_bind_get_method,
 	(void *)godotsharp_get_class_constructor,
 	(void *)godotsharp_invoke_class_constructor,
@@ -624,10 +783,14 @@ void *godotsharp_pinvoke_funcs[95] = {
 	(void *)godotsharp_variant_as_packed_vector2_array,
 	(void *)godotsharp_variant_as_packed_vector3_array,
 	(void *)godotsharp_variant_as_packed_color_array,
+	(void *)godotsharp_variant_equals,
 	(void *)godotsharp_string_new_with_utf16_chars,
 	(void *)godotsharp_string_name_new_copy,
 	(void *)godotsharp_node_path_new_copy,
+	(void *)godotsharp_array_new,
 	(void *)godotsharp_array_new_copy,
+	(void *)godotsharp_array_ptrw,
+	(void *)godotsharp_dictionary_new,
 	(void *)godotsharp_dictionary_new_copy,
 	(void *)godotsharp_packed_byte_array_destroy,
 	(void *)godotsharp_packed_int32_array_destroy,
@@ -645,5 +808,37 @@ void *godotsharp_pinvoke_funcs[95] = {
 	(void *)godotsharp_signal_destroy,
 	(void *)godotsharp_callable_destroy,
 	(void *)godotsharp_array_destroy,
-	(void *)godotsharp_dictionary_destroy
+	(void *)godotsharp_dictionary_destroy,
+	(void *)godotsharp_array_add,
+	(void *)godotsharp_array_duplicate,
+	(void *)godotsharp_array_index_of,
+	(void *)godotsharp_array_insert,
+	(void *)godotsharp_array_remove_at,
+	(void *)godotsharp_array_resize,
+	(void *)godotsharp_array_shuffle,
+	(void *)godotsharp_dictionary_try_get_value,
+	(void *)godotsharp_dictionary_set_value,
+	(void *)godotsharp_dictionary_keys,
+	(void *)godotsharp_dictionary_values,
+	(void *)godotsharp_dictionary_count,
+	(void *)godotsharp_dictionary_key_value_pair_at,
+	(void *)godotsharp_dictionary_add,
+	(void *)godotsharp_dictionary_clear,
+	(void *)godotsharp_dictionary_contains_key,
+	(void *)godotsharp_dictionary_duplicate,
+	(void *)godotsharp_dictionary_remove_key,
+	(void *)godotsharp_string_md5_buffer,
+	(void *)godotsharp_string_md5_text,
+	(void *)godotsharp_string_rfind,
+	(void *)godotsharp_string_rfindn,
+	(void *)godotsharp_string_sha256_buffer,
+	(void *)godotsharp_string_sha256_text,
+	(void *)godotsharp_string_simplify_path,
+	(void *)godotsharp_node_path_get_as_property_path,
+	(void *)godotsharp_node_path_get_concatenated_subnames,
+	(void *)godotsharp_node_path_get_name,
+	(void *)godotsharp_node_path_get_name_count,
+	(void *)godotsharp_node_path_get_subname,
+	(void *)godotsharp_node_path_get_subname_count,
+	(void *)godotsharp_node_path_is_absolute
 };

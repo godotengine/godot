@@ -109,7 +109,7 @@ Error CSharpLanguage::execute_file(const String &p_path) {
 	return OK;
 }
 
-extern void *godotsharp_pinvoke_funcs[95];
+extern void *godotsharp_pinvoke_funcs[131];
 [[maybe_unused]] volatile void **do_not_strip_godotsharp_pinvoke_funcs;
 
 void CSharpLanguage::init() {

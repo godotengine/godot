@@ -161,7 +161,7 @@ namespace Godot
         public NodePath GetAsPropertyPath()
         {
             godot_node_path propertyPath = default;
-            godot_icall_NodePath_get_as_property_path(ref NativeValue, ref propertyPath);
+            NativeFuncs.godotsharp_node_path_get_as_property_path(ref NativeValue, ref propertyPath);
             return CreateTakingOwnershipOfDisposableValue(propertyPath);
         }
 
@@ -176,9 +176,11 @@ namespace Godot
         /// </code>
         /// </example>
         /// <returns>The subnames concatenated with <c>:</c>.</returns>
-        public string GetConcatenatedSubNames()
+        public unsafe string GetConcatenatedSubNames()
         {
-            return godot_icall_NodePath_get_concatenated_subnames(ref NativeValue);
+            using godot_string subNames = default;
+            NativeFuncs.godotsharp_node_path_get_concatenated_subnames(ref NativeValue, &subNames);
+            return Marshaling.mono_string_from_godot(&subNames);
         }
 
         /// <summary>
@@ -194,9 +196,11 @@ namespace Godot
         /// </example>
         /// <param name="idx">The name index.</param>
         /// <returns>The name at the given index <paramref name="idx"/>.</returns>
-        public string GetName(int idx)
+        public unsafe string GetName(int idx)
         {
-            return godot_icall_NodePath_get_name(ref NativeValue, idx);
+            using godot_string name = default;
+            NativeFuncs.godotsharp_node_path_get_name(ref NativeValue, idx, &name);
+            return Marshaling.mono_string_from_godot(&name);
         }
 
         /// <summary>
@@ -207,7 +211,7 @@ namespace Godot
         /// <returns>The number of node names which make up the path.</returns>
         public int GetNameCount()
         {
-            return godot_icall_NodePath_get_name_count(ref NativeValue);
+            return NativeFuncs.godotsharp_node_path_get_name_count(ref NativeValue);
         }
 
         /// <summary>
@@ -215,9 +219,11 @@ namespace Godot
         /// </summary>
         /// <param name="idx">The subname index.</param>
         /// <returns>The subname at the given index <paramref name="idx"/>.</returns>
-        public string GetSubName(int idx)
+        public unsafe string GetSubName(int idx)
         {
-            return godot_icall_NodePath_get_subname(ref NativeValue, idx);
+            using godot_string subName = default;
+            NativeFuncs.godotsharp_node_path_get_subname(ref NativeValue, idx, &subName);
+            return Marshaling.mono_string_from_godot(&subName);
         }
 
         /// <summary>
@@ -228,7 +234,7 @@ namespace Godot
         /// <returns>The number of subnames in the path.</returns>
         public int GetSubNameCount()
         {
-            return godot_icall_NodePath_get_subname_count(ref NativeValue);
+            return NativeFuncs.godotsharp_node_path_get_subname_count(ref NativeValue);
         }
 
         /// <summary>
@@ -240,7 +246,7 @@ namespace Godot
         /// <returns>If the <see cref="NodePath"/> is an absolute path.</returns>
         public bool IsAbsolute()
         {
-            return godot_icall_NodePath_is_absolute(ref NativeValue);
+            return NativeFuncs.godotsharp_node_path_is_absolute(ref NativeValue);
         }
 
         /// <summary>
@@ -248,26 +254,5 @@ namespace Godot
         /// </summary>
         /// <returns>If the <see cref="NodePath"/> is empty.</returns>
         public bool IsEmpty => godot_node_path.IsEmpty(in NativeValue);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void godot_icall_NodePath_get_as_property_path(ref godot_node_path ptr, ref godot_node_path dest);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string godot_icall_NodePath_get_concatenated_subnames(ref godot_node_path ptr);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string godot_icall_NodePath_get_name(ref godot_node_path ptr, int arg1);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern int godot_icall_NodePath_get_name_count(ref godot_node_path ptr);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string godot_icall_NodePath_get_subname(ref godot_node_path ptr, int arg1);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern int godot_icall_NodePath_get_subname_count(ref godot_node_path ptr);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern bool godot_icall_NodePath_is_absolute(ref godot_node_path ptr);
     }
 }

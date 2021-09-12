@@ -152,7 +152,8 @@ namespace Godot.NativeInterop
                         if (genericTypeDefinition == typeof(IDictionary<,>))
                             return Variant.Type.Dictionary;
 
-                        if (genericTypeDefinition == typeof(ICollection<>) || genericTypeDefinition == typeof(IEnumerable<>))
+                        if (genericTypeDefinition == typeof(ICollection<>) ||
+                            genericTypeDefinition == typeof(IEnumerable<>))
                             return Variant.Type.Array;
                     }
                     else if (type == typeof(object))
@@ -415,7 +416,8 @@ namespace Godot.NativeInterop
                         {
                             // TODO: Validate key and value types are compatible with Variant
 #if NET
-                            Collections.IGenericGodotDictionary genericGodotDictionary = IDictionaryToGenericGodotDictionary((dynamic)p_obj);
+                            Collections.IGenericGodotDictionary genericGodotDictionary =
+ IDictionaryToGenericGodotDictionary((dynamic)p_obj);
 #else
                             var genericArguments = type.GetGenericArguments();
 
@@ -426,7 +428,7 @@ namespace Godot.NativeInterop
                                 .MakeGenericMethod(genericArguments[0], genericArguments[1]);
 
                             var genericGodotDictionary = (Collections.IGenericGodotDictionary)method
-                                .Invoke(null, new[] {p_obj});
+                                .Invoke(null, new[] { p_obj });
 #endif
 
                             var godotDict = genericGodotDictionary.UnderlyingDictionary;
@@ -439,7 +441,8 @@ namespace Godot.NativeInterop
                         {
                             // TODO: Validate element type is compatible with Variant
 #if NET
-                            var nativeGodotArray = mono_array_to_Array(System.Runtime.InteropServices.CollectionsMarshal.AsSpan((dynamic)p_obj));
+                            var nativeGodotArray =
+ mono_array_to_Array(System.Runtime.InteropServices.CollectionsMarshal.AsSpan((dynamic)p_obj));
 #else
                             // With .NET Standard we need a package reference for Microsoft.CSharp in order to
                             // use dynamic, so we have this workaround for now until we switch to .NET 5/6.
@@ -599,8 +602,9 @@ namespace Godot.NativeInterop
                                 return VariantUtils.ConvertToUInt64(p_var);
                             default:
                             {
-                                GD.PushError("Attempted to convert Variant to enum value of unsupported underlying type. Name: " +
-                                             type.FullName + " : " + enumUnderlyingType.FullName + ".");
+                                GD.PushError(
+                                    "Attempted to convert Variant to enum value of unsupported underlying type. Name: " +
+                                    type.FullName + " : " + enumUnderlyingType.FullName + ".");
                                 return null;
                             }
                         }
@@ -753,7 +757,7 @@ namespace Godot.NativeInterop
                     VariantUtils.ConvertToDictionary(p_var));
                 return Activator.CreateInstance(fullType,
                     BindingFlags.Public | BindingFlags.Instance, null,
-                    args: new object[] {underlyingDict}, null);
+                    args: new object[] { underlyingDict }, null);
             }
 
             static object variant_to_generic_godot_collections_array(godot_variant* p_var, Type fullType)
@@ -762,7 +766,7 @@ namespace Godot.NativeInterop
                     VariantUtils.ConvertToArray(p_var));
                 return Activator.CreateInstance(fullType,
                     BindingFlags.Public | BindingFlags.Instance, null,
-                    args: new object[] {underlyingArray}, null);
+                    args: new object[] { underlyingArray }, null);
             }
 
             var genericTypeDefinition = type.GetGenericTypeDefinition();
@@ -980,7 +984,7 @@ namespace Godot.NativeInterop
 
             const int sizeOfChar32 = 4;
             byte* bytes = (byte*)(*p_string)._ptr;
-            int size = *((int*)(*p_string)._ptr - 1);
+            int size = (*p_string).Size;
             if (size == 0)
                 return string.Empty;
             size -= 1; // zero at the end
@@ -1118,11 +1122,7 @@ namespace Godot.NativeInterop
         public static godot_array mono_array_to_Array(Span<object> p_array)
         {
             if (p_array.IsEmpty)
-            {
-                godot_array ret;
-                Collections.Array.godot_icall_Array_Ctor(out ret);
-                return ret;
-            }
+                return NativeFuncs.godotsharp_array_new();
 
             using var array = new Collections.Array();
             array.Resize(p_array.Length);
@@ -1141,8 +1141,8 @@ namespace Godot.NativeInterop
 
         public static unsafe byte[] PackedByteArray_to_mono_array(godot_packed_byte_array* p_array)
         {
-            byte* buffer = (byte*)(*p_array)._ptr;
-            int size = *((int*)(*p_array)._ptr - 1);
+            byte* buffer = (*p_array)._ptr;
+            int size = (*p_array).Size;
             var array = new byte[size];
             fixed (byte* dest = array)
                 Buffer.MemoryCopy(buffer, dest, size, size);
@@ -1161,8 +1161,8 @@ namespace Godot.NativeInterop
 
         public static unsafe int[] PackedInt32Array_to_mono_array(godot_packed_int32_array* p_array)
         {
-            int* buffer = (int*)(*p_array)._ptr;
-            int size = *((int*)(*p_array)._ptr - 1);
+            int* buffer = (*p_array)._ptr;
+            int size = (*p_array).Size;
             int sizeInBytes = size * sizeof(int);
             var array = new int[size];
             fixed (int* dest = array)
@@ -1182,8 +1182,8 @@ namespace Godot.NativeInterop
 
         public static unsafe long[] PackedInt64Array_to_mono_array(godot_packed_int64_array* p_array)
         {
-            long* buffer = (long*)(*p_array)._ptr;
-            int size = *((int*)(*p_array)._ptr - 1);
+            long* buffer = (*p_array)._ptr;
+            int size = (*p_array).Size;
             int sizeInBytes = size * sizeof(long);
             var array = new long[size];
             fixed (long* dest = array)
@@ -1203,8 +1203,8 @@ namespace Godot.NativeInterop
 
         public static unsafe float[] PackedFloat32Array_to_mono_array(godot_packed_float32_array* p_array)
         {
-            float* buffer = (float*)(*p_array)._ptr;
-            int size = *((int*)(*p_array)._ptr - 1);
+            float* buffer = (*p_array)._ptr;
+            int size = (*p_array).Size;
             int sizeInBytes = size * sizeof(float);
             var array = new float[size];
             fixed (float* dest = array)
@@ -1224,8 +1224,8 @@ namespace Godot.NativeInterop
 
         public static unsafe double[] PackedFloat64Array_to_mono_array(godot_packed_float64_array* p_array)
         {
-            double* buffer = (double*)(*p_array)._ptr;
-            int size = *((int*)(*p_array)._ptr - 1);
+            double* buffer = (*p_array)._ptr;
+            int size = (*p_array).Size;
             int sizeInBytes = size * sizeof(double);
             var array = new double[size];
             fixed (double* dest = array)
@@ -1245,10 +1245,10 @@ namespace Godot.NativeInterop
 
         public static unsafe string[] PackedStringArray_to_mono_array(godot_packed_string_array* p_array)
         {
-            godot_string* buffer = (godot_string*)(*p_array)._ptr;
+            godot_string* buffer = (*p_array)._ptr;
             if (buffer == null)
                 return new string[] { };
-            int size = *((int*)(*p_array)._ptr - 1);
+            int size = (*p_array).Size;
             var array = new string[size];
             for (int i = 0; i < size; i++)
                 array[i] = mono_string_from_godot(&buffer[i]);
@@ -1278,8 +1278,8 @@ namespace Godot.NativeInterop
 
         public static unsafe Vector2[] PackedVector2Array_to_mono_array(godot_packed_vector2_array* p_array)
         {
-            Vector2* buffer = (Vector2*)(*p_array)._ptr;
-            int size = *((int*)(*p_array)._ptr - 1);
+            Vector2* buffer = (*p_array)._ptr;
+            int size = (*p_array).Size;
             int sizeInBytes = size * sizeof(Vector2);
             var array = new Vector2[size];
             fixed (Vector2* dest = array)
@@ -1299,8 +1299,8 @@ namespace Godot.NativeInterop
 
         public static unsafe Vector3[] PackedVector3Array_to_mono_array(godot_packed_vector3_array* p_array)
         {
-            Vector3* buffer = (Vector3*)(*p_array)._ptr;
-            int size = *((int*)(*p_array)._ptr - 1);
+            Vector3* buffer = (*p_array)._ptr;
+            int size = (*p_array).Size;
             int sizeInBytes = size * sizeof(Vector3);
             var array = new Vector3[size];
             fixed (Vector3* dest = array)
@@ -1320,8 +1320,8 @@ namespace Godot.NativeInterop
 
         public static unsafe Color[] PackedColorArray_to_mono_array(godot_packed_color_array* p_array)
         {
-            Color* buffer = (Color*)(*p_array)._ptr;
-            int size = *((int*)(*p_array)._ptr - 1);
+            Color* buffer = (*p_array)._ptr;
+            int size = (*p_array).Size;
             int sizeInBytes = size * sizeof(Color);
             var array = new Color[size];
             fixed (Color* dest = array)
