@@ -494,7 +494,7 @@ namespace Godot
             using var whatGodotArray = Marshaling.mono_array_to_Array(what);
             using godot_string ret = default;
             NativeFuncs.godotsharp_str(&whatGodotArray, &ret);
-            return Marshaling.mono_string_from_godot(&ret);
+            return Marshaling.mono_string_from_godot(ret);
         }
 
         /// <summary>
@@ -557,7 +557,7 @@ namespace Godot
             using var variant = Marshaling.mono_object_to_variant(var);
             using godot_string ret = default;
             NativeFuncs.godotsharp_var2str(&variant, &ret);
-            return Marshaling.mono_string_from_godot(&ret);
+            return Marshaling.mono_string_from_godot(ret);
         }
 
         /// <summary>

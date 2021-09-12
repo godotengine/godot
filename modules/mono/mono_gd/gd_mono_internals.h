@@ -37,9 +37,9 @@
 
 #include "core/object/class_db.h"
 
-namespace GDMonoInternals {
-void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged);
+class CSharpScript;
 
+namespace GDMonoInternals {
 /**
  * Do not call this function directly.
  * Use GDMonoUtils::debug_unhandled_exception(MonoException *) instead.

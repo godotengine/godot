@@ -13,7 +13,7 @@ namespace Godot
     /// </summary>
     public sealed class StringName : IDisposable
     {
-        internal godot_string_name NativeValue;
+        public godot_string_name NativeValue;
 
         ~StringName()
         {
@@ -86,7 +86,7 @@ namespace Godot
             godot_string_name src = NativeValue;
             NativeFuncs.godotsharp_string_name_as_string(&dest, &src);
             using (dest)
-                return Marshaling.mono_string_from_godot(&dest);
+                return Marshaling.mono_string_from_godot(dest);
         }
 
         /// <summary>

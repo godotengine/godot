@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace Godot.NativeInterop
 {
-    internal static class VariantUtils
+    public static class VariantUtils
     {
         public static godot_variant CreateFromRID(RID from)
             => new() {_type = Variant.Type.Rid, _data = {_m_rid = from}};

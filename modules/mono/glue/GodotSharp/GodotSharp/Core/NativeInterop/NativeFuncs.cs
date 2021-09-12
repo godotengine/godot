@@ -10,7 +10,7 @@ namespace Godot.NativeInterop
     // The attribute is not available with .NET Core and it's not needed there.
     [System.Security.SuppressUnmanagedCodeSecurity]
 #endif
-    internal static unsafe partial class NativeFuncs
+    public static unsafe partial class NativeFuncs
     {
         private const string GodotDllName = "__Internal";
 

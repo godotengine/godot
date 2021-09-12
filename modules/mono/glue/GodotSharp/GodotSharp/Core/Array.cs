@@ -14,7 +14,7 @@ namespace Godot.Collections
     /// </summary>
     public sealed class Array : IList, IDisposable
     {
-        internal godot_array NativeValue;
+        public godot_array NativeValue;
 
         /// <summary>
         /// Constructs a new empty <see cref="Array"/>.
@@ -307,7 +307,7 @@ namespace Godot.Collections
         {
             using godot_string str = default;
             NativeFuncs.godotsharp_array_to_string(ref NativeValue, &str);
-            return Marshaling.mono_string_from_godot(&str);
+            return Marshaling.mono_string_from_godot(str);
         }
 
         /// <summary>

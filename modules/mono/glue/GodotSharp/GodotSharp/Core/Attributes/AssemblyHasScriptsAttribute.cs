@@ -1,22 +1,27 @@
 using System;
 
+#nullable enable
+
 namespace Godot
 {
     [AttributeUsage(AttributeTargets.Assembly)]
     public class AssemblyHasScriptsAttribute : Attribute
     {
-        private readonly bool requiresLookup;
-        private readonly System.Type[] scriptTypes;
+        public bool RequiresLookup { get; private set; }
+        public Type[]? ScriptTypes { get; private set; }
 
         public AssemblyHasScriptsAttribute()
         {
-            requiresLookup = true;
+            RequiresLookup = true;
+            ScriptTypes = null;
         }
 
-        public AssemblyHasScriptsAttribute(System.Type[] scriptTypes)
+        public AssemblyHasScriptsAttribute(Type[] scriptTypes)
         {
-            requiresLookup = false;
-            this.scriptTypes = scriptTypes;
+            RequiresLookup = false;
+            ScriptTypes = scriptTypes;
         }
     }
 }
+
+#nullable restore

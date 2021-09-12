@@ -13,7 +13,7 @@ namespace Godot.NativeInterop
 {
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_bool
+    public struct godot_bool
     {
         public byte _value;
 
@@ -25,7 +25,7 @@ namespace Godot.NativeInterop
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_ref : IDisposable
+    public struct godot_ref : IDisposable
     {
         internal IntPtr _reference;
 
@@ -41,7 +41,7 @@ namespace Godot.NativeInterop
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    internal enum godot_variant_call_error_error
+    public enum godot_variant_call_error_error
     {
         GODOT_CALL_ERROR_CALL_OK = 0,
         GODOT_CALL_ERROR_CALL_ERROR_INVALID_METHOD,
@@ -53,16 +53,16 @@ namespace Godot.NativeInterop
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_variant_call_error
+    public struct godot_variant_call_error
     {
-        godot_variant_call_error_error error;
-        int argument;
-        Godot.Variant.Type expected;
+        public godot_variant_call_error_error error;
+        public int argument;
+        public Godot.Variant.Type expected;
     }
 
     [StructLayout(LayoutKind.Explicit)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_variant : IDisposable
+    public struct godot_variant : IDisposable
     {
         [FieldOffset(0)] public Godot.Variant.Type _type;
 
@@ -152,7 +152,7 @@ namespace Godot.NativeInterop
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_string : IDisposable
+    public struct godot_string : IDisposable
     {
         internal IntPtr _ptr;
 
@@ -170,7 +170,7 @@ namespace Godot.NativeInterop
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_string_name : IDisposable
+    public struct godot_string_name : IDisposable
     {
         internal IntPtr _data;
 
@@ -191,7 +191,7 @@ namespace Godot.NativeInterop
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_node_path : IDisposable
+    public struct godot_node_path : IDisposable
     {
         internal IntPtr _data;
 
@@ -212,7 +212,7 @@ namespace Godot.NativeInterop
 
     [StructLayout(LayoutKind.Explicit)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_signal : IDisposable
+    public struct godot_signal : IDisposable
     {
         [FieldOffset(0)] public godot_string_name _name;
 
@@ -231,7 +231,7 @@ namespace Godot.NativeInterop
 
     [StructLayout(LayoutKind.Explicit)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_callable : IDisposable
+    public struct godot_callable : IDisposable
     {
         [FieldOffset(0)] public godot_string_name _method;
 
@@ -255,7 +255,7 @@ namespace Godot.NativeInterop
     // be re-assigned a new value (the copy constructor checks if `_p` is null so that's fine).
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_array : IDisposable
+    public struct godot_array : IDisposable
     {
         internal unsafe ArrayPrivate* _p;
 
@@ -294,7 +294,7 @@ namespace Godot.NativeInterop
     // be re-assigned a new value (the copy constructor checks if `_p` is null so that's fine).
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_dictionary : IDisposable
+    public struct godot_dictionary : IDisposable
     {
         internal IntPtr _p;
 
@@ -309,7 +309,7 @@ namespace Godot.NativeInterop
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_packed_byte_array : IDisposable
+    public struct godot_packed_byte_array : IDisposable
     {
         internal IntPtr _writeProxy;
         internal unsafe byte* _ptr;
@@ -327,7 +327,7 @@ namespace Godot.NativeInterop
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_packed_int32_array : IDisposable
+    public struct godot_packed_int32_array : IDisposable
     {
         internal IntPtr _writeProxy;
         internal unsafe int* _ptr;
@@ -345,7 +345,7 @@ namespace Godot.NativeInterop
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_packed_int64_array : IDisposable
+    public struct godot_packed_int64_array : IDisposable
     {
         internal IntPtr _writeProxy;
         internal unsafe long* _ptr;
@@ -363,7 +363,7 @@ namespace Godot.NativeInterop
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_packed_float32_array : IDisposable
+    public struct godot_packed_float32_array : IDisposable
     {
         internal IntPtr _writeProxy;
         internal unsafe float* _ptr;
@@ -381,7 +381,7 @@ namespace Godot.NativeInterop
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_packed_float64_array : IDisposable
+    public struct godot_packed_float64_array : IDisposable
     {
         internal IntPtr _writeProxy;
         internal unsafe double* _ptr;
@@ -399,7 +399,7 @@ namespace Godot.NativeInterop
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_packed_string_array : IDisposable
+    public struct godot_packed_string_array : IDisposable
     {
         internal IntPtr _writeProxy;
         internal unsafe godot_string* _ptr;
@@ -417,7 +417,7 @@ namespace Godot.NativeInterop
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_packed_vector2_array : IDisposable
+    public struct godot_packed_vector2_array : IDisposable
     {
         internal IntPtr _writeProxy;
         internal unsafe Vector2* _ptr;
@@ -435,7 +435,7 @@ namespace Godot.NativeInterop
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_packed_vector3_array : IDisposable
+    public struct godot_packed_vector3_array : IDisposable
     {
         internal IntPtr _writeProxy;
         internal unsafe Vector3* _ptr;
@@ -453,7 +453,7 @@ namespace Godot.NativeInterop
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_packed_color_array : IDisposable
+    public struct godot_packed_color_array : IDisposable
     {
         internal IntPtr _writeProxy;
         internal unsafe Color* _ptr;

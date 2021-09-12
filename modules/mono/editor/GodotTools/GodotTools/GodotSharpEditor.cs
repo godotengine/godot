@@ -53,7 +53,7 @@ namespace GodotTools
 
         private bool CreateProjectSolution()
         {
-            using (var pr = new EditorProgress("create_csharp_solution", "Generating solution...".TTR(), 3))
+            using (var pr = new EditorProgress("create_csharp_solution", "Generating solution...".TTR(), 2))
             {
                 pr.Step("Generating C# project...".TTR());
 
@@ -87,24 +87,6 @@ namespace GodotTools
                     catch (IOException e)
                     {
                         ShowErrorDialog("Failed to save solution. Exception message: ".TTR() + e.Message);
-                        return false;
-                    }
-
-                    pr.Step("Updating Godot API assemblies...".TTR());
-
-                    string debugApiAssembliesError = Internal.UpdateApiAssembliesFromPrebuilt("Debug");
-
-                    if (!string.IsNullOrEmpty(debugApiAssembliesError))
-                    {
-                        ShowErrorDialog("Failed to update the Godot API assemblies: " + debugApiAssembliesError);
-                        return false;
-                    }
-
-                    string releaseApiAssembliesError = Internal.UpdateApiAssembliesFromPrebuilt("Release");
-
-                    if (!string.IsNullOrEmpty(releaseApiAssembliesError))
-                    {
-                        ShowErrorDialog("Failed to update the Godot API assemblies: " + releaseApiAssembliesError);
                         return false;
                     }
 
@@ -533,8 +515,9 @@ namespace GodotTools
         public static GodotSharpEditor Instance { get; private set; }
 
         [UsedImplicitly]
-        private GodotSharpEditor()
+        private static IntPtr InternalCreateInstance()
         {
+            return new GodotSharpEditor().NativeInstance;
         }
     }
 }

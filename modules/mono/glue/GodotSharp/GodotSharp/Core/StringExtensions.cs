@@ -1051,7 +1051,7 @@ namespace Godot
             using godot_string instanceStr = Marshaling.mono_string_to_godot(instance);
             using godot_string md5Text = default;
             NativeFuncs.godotsharp_string_md5_text(&instanceStr, &md5Text);
-            return Marshaling.mono_string_from_godot(&md5Text);
+            return Marshaling.mono_string_from_godot(md5Text);
         }
 
         /// <summary>
@@ -1300,7 +1300,7 @@ namespace Godot
             using godot_string instanceStr = Marshaling.mono_string_to_godot(instance);
             using godot_string sha256Text = default;
             NativeFuncs.godotsharp_string_sha256_text(&instanceStr, &sha256Text);
-            return Marshaling.mono_string_from_godot(&sha256Text);
+            return Marshaling.mono_string_from_godot(sha256Text);
         }
 
         /// <summary>
@@ -1356,7 +1356,7 @@ namespace Godot
             using godot_string instanceStr = Marshaling.mono_string_to_godot(instance);
             using godot_string simplifiedPath = default;
             NativeFuncs.godotsharp_string_simplify_path(&instanceStr, &simplifiedPath);
-            return Marshaling.mono_string_from_godot(&simplifiedPath);
+            return Marshaling.mono_string_from_godot(simplifiedPath);
         }
 
         /// <summary>

@@ -1,102 +1,102 @@
 using System.Runtime.CompilerServices;
+using Godot.NativeInterop;
 
 namespace GodotTools.Internals
 {
     public static class GodotSharpDirs
     {
-        public static string ResDataDir => internal_ResDataDir();
-        public static string ResMetadataDir => internal_ResMetadataDir();
-        public static string ResAssembliesBaseDir => internal_ResAssembliesBaseDir();
-        public static string ResAssembliesDir => internal_ResAssembliesDir();
-        public static string ResConfigDir => internal_ResConfigDir();
-        public static string ResTempDir => internal_ResTempDir();
-        public static string ResTempAssembliesBaseDir => internal_ResTempAssembliesBaseDir();
-        public static string ResTempAssembliesDir => internal_ResTempAssembliesDir();
+        public static string ResMetadataDir
+        {
+            get
+            {
+                internal_ResMetadataDir(out godot_string dest);
+                using (dest)
+                    return Marshaling.mono_string_from_godot(dest);
+            }
+        }
 
-        public static string MonoUserDir => internal_MonoUserDir();
-        public static string MonoLogsDir => internal_MonoLogsDir();
+        public static string ResTempAssembliesBaseDir
+        {
+            get
+            {
+                internal_ResTempAssembliesBaseDir(out godot_string dest);
+                using (dest)
+                    return Marshaling.mono_string_from_godot(dest);
+            }
+        }
 
-        #region Tools-only
-        public static string MonoSolutionsDir => internal_MonoSolutionsDir();
-        public static string BuildLogsDirs => internal_BuildLogsDirs();
+        public static string MonoUserDir
+        {
+            get
+            {
+                internal_MonoUserDir(out godot_string dest);
+                using (dest)
+                    return Marshaling.mono_string_from_godot(dest);
+            }
+        }
 
-        public static string ProjectSlnPath => internal_ProjectSlnPath();
-        public static string ProjectCsProjPath => internal_ProjectCsProjPath();
+        public static string BuildLogsDirs
+        {
+            get
+            {
+                internal_BuildLogsDirs(out godot_string dest);
+                using (dest)
+                    return Marshaling.mono_string_from_godot(dest);
+            }
+        }
 
-        public static string DataEditorToolsDir => internal_DataEditorToolsDir();
-        public static string DataEditorPrebuiltApiDir => internal_DataEditorPrebuiltApiDir();
-        #endregion
+        public static string ProjectSlnPath
+        {
+            get
+            {
+                internal_ProjectSlnPath(out godot_string dest);
+                using (dest)
+                    return Marshaling.mono_string_from_godot(dest);
+            }
+        }
 
-        public static string DataMonoEtcDir => internal_DataMonoEtcDir();
-        public static string DataMonoLibDir => internal_DataMonoLibDir();
+        public static string ProjectCsProjPath
+        {
+            get
+            {
+                internal_ProjectCsProjPath(out godot_string dest);
+                using (dest)
+                    return Marshaling.mono_string_from_godot(dest);
+            }
+        }
 
-        #region Windows-only
-        public static string DataMonoBinDir => internal_DataMonoBinDir();
-        #endregion
-
+        public static string DataEditorToolsDir
+        {
+            get
+            {
+                internal_DataEditorToolsDir(out godot_string dest);
+                using (dest)
+                    return Marshaling.mono_string_from_godot(dest);
+            }
+        }
 
         #region Internal
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_ResDataDir();
+        private static extern void internal_ResMetadataDir(out godot_string r_dest);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_ResMetadataDir();
+        private static extern void internal_ResTempAssembliesBaseDir(out godot_string r_dest);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_ResAssembliesBaseDir();
+        private static extern void internal_MonoUserDir(out godot_string r_dest);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_ResAssembliesDir();
+        private static extern void internal_BuildLogsDirs(out godot_string r_dest);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_ResConfigDir();
+        private static extern void internal_ProjectSlnPath(out godot_string r_dest);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_ResTempDir();
+        private static extern void internal_ProjectCsProjPath(out godot_string r_dest);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_ResTempAssembliesBaseDir();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_ResTempAssembliesDir();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_MonoUserDir();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_MonoLogsDir();
-
-        #region Tools-only
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_MonoSolutionsDir();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_BuildLogsDirs();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_ProjectSlnPath();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_ProjectCsProjPath();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_DataEditorToolsDir();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_DataEditorPrebuiltApiDir();
-        #endregion
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_DataMonoEtcDir();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_DataMonoLibDir();
-
-        #region Windows-only
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_DataMonoBinDir();
-        #endregion
+        private static extern void internal_DataEditorToolsDir(out godot_string r_dest);
 
         #endregion
     }

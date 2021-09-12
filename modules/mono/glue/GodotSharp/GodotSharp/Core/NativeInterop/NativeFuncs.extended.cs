@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace Godot.NativeInterop
 {
-    internal static unsafe partial class NativeFuncs
+    public static unsafe partial class NativeFuncs
     {
         public static godot_string_name godotsharp_string_name_new_copy(godot_string_name* src)
         {
