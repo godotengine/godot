@@ -28,49 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-/*
- * Display Server listeners.
- * Keeps track of registered event listeners so it can remove them on shutdown.
- */
-const GodotDisplayListeners = {
-	$GodotDisplayListeners__deps: ['$GodotOS'],
-	$GodotDisplayListeners__postset: 'GodotOS.atexit(function(resolve, reject) { GodotDisplayListeners.clear(); resolve(); });',
-	$GodotDisplayListeners: {
-		handlers: [],
-
-		has: function (target, event, method, capture) {
-			return GodotDisplayListeners.handlers.findIndex(function (e) {
-				return e.target === target && e.event === event && e.method === method && e.capture === capture;
-			}) !== -1;
-		},
-
-		add: function (target, event, method, capture) {
-			if (GodotDisplayListeners.has(target, event, method, capture)) {
-				return;
-			}
-			function Handler(p_target, p_event, p_method, p_capture) {
-				this.target = p_target;
-				this.event = p_event;
-				this.method = p_method;
-				this.capture = p_capture;
-			}
-			GodotDisplayListeners.handlers.push(new Handler(target, event, method, capture));
-			target.addEventListener(event, method, capture);
-		},
-
-		clear: function () {
-			GodotDisplayListeners.handlers.forEach(function (h) {
-				h.target.removeEventListener(h.event, h.method, h.capture);
-			});
-			GodotDisplayListeners.handlers.length = 0;
-		},
-	},
-};
-mergeInto(LibraryManager.library, GodotDisplayListeners);
-
 const GodotDisplayVK = {
 
-	$GodotDisplayVK__deps: ['$GodotRuntime', '$GodotConfig', '$GodotDisplayListeners'],
+	$GodotDisplayVK__deps: ['$GodotRuntime', '$GodotConfig', '$GodotEventListeners'],
 	$GodotDisplayVK__postset: 'GodotOS.atexit(function(resolve, reject) { GodotDisplayVK.clear(); resolve(); });',
 	$GodotDisplayVK: {
 		textinput: null,
@@ -96,12 +56,12 @@ const GodotDisplayVK = {
 				elem.style.outline = 'none';
 				elem.readonly = true;
 				elem.disabled = true;
-				GodotDisplayListeners.add(elem, 'input', function (evt) {
+				GodotEventListeners.add(elem, 'input', function (evt) {
 					const c_str = GodotRuntime.allocString(elem.value);
 					input_cb(c_str, elem.selectionEnd);
 					GodotRuntime.free(c_str);
 				}, false);
-				GodotDisplayListeners.add(elem, 'blur', function (evt) {
+				GodotEventListeners.add(elem, 'blur', function (evt) {
 					elem.style.display = 'none';
 					elem.readonly = true;
 					elem.disabled = true;
@@ -334,7 +294,7 @@ mergeInto(LibraryManager.library, GodotDisplayScreen);
  * Exposes all the functions needed by DisplayServer implementation.
  */
 const GodotDisplay = {
-	$GodotDisplay__deps: ['$GodotConfig', '$GodotRuntime', '$GodotDisplayCursor', '$GodotDisplayListeners', '$GodotDisplayScreen', '$GodotDisplayVK'],
+	$GodotDisplay__deps: ['$GodotConfig', '$GodotRuntime', '$GodotDisplayCursor', '$GodotEventListeners', '$GodotDisplayScreen', '$GodotDisplayVK'],
 	$GodotDisplay: {
 		window_icon: '',
 		findDPI: function () {
@@ -588,15 +548,15 @@ const GodotDisplay = {
 				func(GodotDisplayScreen.isFullscreen());
 			}
 		}
-		GodotDisplayListeners.add(document, 'fullscreenchange', change_cb, false);
-		GodotDisplayListeners.add(document, 'mozfullscreenchange', change_cb, false);
-		GodotDisplayListeners.add(document, 'webkitfullscreenchange', change_cb, false);
+		GodotEventListeners.add(document, 'fullscreenchange', change_cb, false);
+		GodotEventListeners.add(document, 'mozfullscreenchange', change_cb, false);
+		GodotEventListeners.add(document, 'webkitfullscreenchange', change_cb, false);
 	},
 
 	godot_js_display_window_blur_cb__sig: 'vi',
 	godot_js_display_window_blur_cb: function (callback) {
 		const func = GodotRuntime.get_func(callback);
-		GodotDisplayListeners.add(window, 'blur', function () {
+		GodotEventListeners.add(window, 'blur', function () {
 			func();
 		}, false);
 	},
@@ -607,7 +567,7 @@ const GodotDisplay = {
 		const func = GodotRuntime.get_func(callback);
 		const notif = [p_enter, p_exit, p_in, p_out];
 		['mouseover', 'mouseleave', 'focus', 'blur'].forEach(function (evt_name, idx) {
-			GodotDisplayListeners.add(canvas, evt_name, function () {
+			GodotEventListeners.add(canvas, evt_name, function () {
 				func(notif[idx]);
 			}, true);
 		});
@@ -616,10 +576,10 @@ const GodotDisplay = {
 	godot_js_display_setup_canvas__sig: 'viiii',
 	godot_js_display_setup_canvas: function (p_width, p_height, p_fullscreen, p_hidpi) {
 		const canvas = GodotConfig.canvas;
-		GodotDisplayListeners.add(canvas, 'contextmenu', function (ev) {
+		GodotEventListeners.add(canvas, 'contextmenu', function (ev) {
 			ev.preventDefault();
 		}, false);
-		GodotDisplayListeners.add(canvas, 'webglcontextlost', function (ev) {
+		GodotEventListeners.add(canvas, 'webglcontextlost', function (ev) {
 			alert('WebGL context lost, please reload the page'); // eslint-disable-line no-alert
 			ev.preventDefault();
 		}, false);

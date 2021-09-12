@@ -32,7 +32,7 @@
  * Gamepad API helper.
  */
 const GodotInputGamepads = {
-	$GodotInputGamepads__deps: ['$GodotRuntime', '$GodotDisplayListeners'],
+	$GodotInputGamepads__deps: ['$GodotRuntime', '$GodotEventListeners'],
 	$GodotInputGamepads: {
 		samples: [],
 
@@ -87,7 +87,7 @@ const GodotInputGamepads = {
 		},
 
 		init: function (onchange) {
-			GodotDisplayListeners.samples = [];
+			GodotEventListeners.samples = [];
 			function add(pad) {
 				const guid = GodotInputGamepads.get_guid(pad);
 				const c_id = GodotRuntime.allocString(pad.id);
@@ -103,10 +103,10 @@ const GodotInputGamepads = {
 					add(pads[i]);
 				}
 			}
-			GodotDisplayListeners.add(window, 'gamepadconnected', function (evt) {
+			GodotEventListeners.add(window, 'gamepadconnected', function (evt) {
 				add(evt.gamepad);
 			}, false);
-			GodotDisplayListeners.add(window, 'gamepaddisconnected', function (evt) {
+			GodotEventListeners.add(window, 'gamepaddisconnected', function (evt) {
 				onchange(evt.gamepad.index, 0);
 			}, false);
 		},
@@ -334,7 +334,7 @@ mergeInto(LibraryManager.library, GodotInputDragDrop);
  * Godot exposed input functions.
  */
 const GodotInput = {
-	$GodotInput__deps: ['$GodotRuntime', '$GodotConfig', '$GodotDisplayListeners', '$GodotInputGamepads', '$GodotInputDragDrop'],
+	$GodotInput__deps: ['$GodotRuntime', '$GodotConfig', '$GodotEventListeners', '$GodotInputGamepads', '$GodotInputDragDrop'],
 	$GodotInput: {
 		getModifiers: function (evt) {
 			return (evt.shiftKey + 0) + ((evt.altKey + 0) << 1) + ((evt.ctrlKey + 0) << 2) + ((evt.metaKey + 0) << 3);
@@ -367,7 +367,7 @@ const GodotInput = {
 			const modifiers = GodotInput.getModifiers(evt);
 			func(pos[0], pos[1], rel_pos_x, rel_pos_y, modifiers);
 		}
-		GodotDisplayListeners.add(window, 'mousemove', move_cb, false);
+		GodotEventListeners.add(window, 'mousemove', move_cb, false);
 	},
 
 	godot_js_input_mouse_wheel_cb__sig: 'vi',
@@ -378,7 +378,7 @@ const GodotInput = {
 				evt.preventDefault();
 			}
 		}
-		GodotDisplayListeners.add(GodotConfig.canvas, 'wheel', wheel_cb, false);
+		GodotEventListeners.add(GodotConfig.canvas, 'wheel', wheel_cb, false);
 	},
 
 	godot_js_input_mouse_button_cb__sig: 'vi',
@@ -393,8 +393,8 @@ const GodotInput = {
 				evt.preventDefault();
 			}
 		}
-		GodotDisplayListeners.add(canvas, 'mousedown', button_cb.bind(null, 1), false);
-		GodotDisplayListeners.add(window, 'mouseup', button_cb.bind(null, 0), false);
+		GodotEventListeners.add(canvas, 'mousedown', button_cb.bind(null, 1), false);
+		GodotEventListeners.add(window, 'mouseup', button_cb.bind(null, 0), false);
 	},
 
 	/*
@@ -419,10 +419,10 @@ const GodotInput = {
 				evt.preventDefault();
 			}
 		}
-		GodotDisplayListeners.add(canvas, 'touchstart', touch_cb.bind(null, 0), false);
-		GodotDisplayListeners.add(canvas, 'touchend', touch_cb.bind(null, 1), false);
-		GodotDisplayListeners.add(canvas, 'touchcancel', touch_cb.bind(null, 1), false);
-		GodotDisplayListeners.add(canvas, 'touchmove', touch_cb.bind(null, 2), false);
+		GodotEventListeners.add(canvas, 'touchstart', touch_cb.bind(null, 0), false);
+		GodotEventListeners.add(canvas, 'touchend', touch_cb.bind(null, 1), false);
+		GodotEventListeners.add(canvas, 'touchcancel', touch_cb.bind(null, 1), false);
+		GodotEventListeners.add(canvas, 'touchmove', touch_cb.bind(null, 2), false);
 	},
 
 	/*
@@ -438,8 +438,8 @@ const GodotInput = {
 			func(pressed, evt.repeat, modifiers);
 			evt.preventDefault();
 		}
-		GodotDisplayListeners.add(GodotConfig.canvas, 'keydown', key_cb.bind(null, 1), false);
-		GodotDisplayListeners.add(GodotConfig.canvas, 'keyup', key_cb.bind(null, 0), false);
+		GodotEventListeners.add(GodotConfig.canvas, 'keydown', key_cb.bind(null, 1), false);
+		GodotEventListeners.add(GodotConfig.canvas, 'keyup', key_cb.bind(null, 0), false);
 	},
 
 	/*
@@ -502,18 +502,18 @@ const GodotInput = {
 			GodotRuntime.freeStringArray(argv, argc);
 		};
 		const canvas = GodotConfig.canvas;
-		GodotDisplayListeners.add(canvas, 'dragover', function (ev) {
+		GodotEventListeners.add(canvas, 'dragover', function (ev) {
 			// Prevent default behavior (which would try to open the file(s))
 			ev.preventDefault();
 		}, false);
-		GodotDisplayListeners.add(canvas, 'drop', GodotInputDragDrop.handler(dropFiles));
+		GodotEventListeners.add(canvas, 'drop', GodotInputDragDrop.handler(dropFiles));
 	},
 
 	/* Paste API */
 	godot_js_input_paste_cb__sig: 'vi',
 	godot_js_input_paste_cb: function (callback) {
 		const func = GodotRuntime.get_func(callback);
-		GodotDisplayListeners.add(window, 'paste', function (evt) {
+		GodotEventListeners.add(window, 'paste', function (evt) {
 			const text = evt.clipboardData.getData('text');
 			const ptr = GodotRuntime.allocString(text);
 			func(ptr);
