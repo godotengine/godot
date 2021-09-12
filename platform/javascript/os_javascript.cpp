@@ -99,13 +99,6 @@ bool OS_JavaScript::check_size_force_redraw() {
 void OS_JavaScript::fullscreen_change_callback(int p_fullscreen) {
 	OS_JavaScript *os = get_singleton();
 	os->video_mode.fullscreen = p_fullscreen;
-	if (os->video_mode.fullscreen) {
-		os->entering_fullscreen = false;
-	} else {
-		// Restoring maximized window now will cause issues,
-		// so delay until main_loop_iterate.
-		os->just_exited_fullscreen = true;
-	}
 }
 
 void OS_JavaScript::window_blur_callback() {
@@ -128,15 +121,9 @@ Size2 OS_JavaScript::get_screen_size(int p_screen) const {
 
 void OS_JavaScript::set_window_size(const Size2 p_size) {
 	if (video_mode.fullscreen) {
-		window_maximized = false;
 		set_window_fullscreen(false);
-	} else {
-		if (window_maximized) {
-			emscripten_exit_soft_fullscreen();
-			window_maximized = false;
-		}
-		godot_js_display_desired_size_set(p_size.x, p_size.y);
 	}
+	godot_js_display_desired_size_set(p_size.x, p_size.y);
 }
 
 Size2 OS_JavaScript::get_window_size() const {
@@ -146,29 +133,11 @@ Size2 OS_JavaScript::get_window_size() const {
 }
 
 void OS_JavaScript::set_window_maximized(bool p_enabled) {
-#ifndef TOOLS_ENABLED
-	if (video_mode.fullscreen) {
-		window_maximized = p_enabled;
-		set_window_fullscreen(false);
-	} else if (!p_enabled) {
-		emscripten_exit_soft_fullscreen();
-		window_maximized = false;
-	} else if (!window_maximized) {
-		// Prevent calling emscripten_enter_soft_fullscreen mutltiple times,
-		// this would hide page elements permanently.
-		EmscriptenFullscreenStrategy strategy;
-		strategy.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_STRETCH;
-		strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
-		strategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
-		strategy.canvasResizedCallback = NULL;
-		emscripten_enter_soft_fullscreen(canvas_id, &strategy);
-		window_maximized = p_enabled;
-	}
-#endif
+	WARN_PRINT_ONCE("Maximizing windows is not supported for the HTML5 platform.");
 }
 
 bool OS_JavaScript::is_window_maximized() const {
-	return window_maximized;
+	return false;
 }
 
 void OS_JavaScript::set_window_fullscreen(bool p_enabled) {
@@ -179,14 +148,8 @@ void OS_JavaScript::set_window_fullscreen(bool p_enabled) {
 	// Just request changes here, if successful, logic continues in
 	// fullscreen_change_callback.
 	if (p_enabled) {
-		if (window_maximized) {
-			// Soft fullsreen during real fullscreen can cause issues, so exit.
-			// This must be called before requesting full screen.
-			emscripten_exit_soft_fullscreen();
-		}
 		int result = godot_js_display_fullscreen_request();
 		ERR_FAIL_COND_MSG(result, "The request was denied. Remember that enabling fullscreen is only possible from an input callback for the HTML5 platform.");
-		entering_fullscreen = true;
 	} else {
 		// No logic allowed here, since exiting w/ ESC key won't use this function.
 		ERR_FAIL_COND(godot_js_display_fullscreen_exit());
@@ -897,19 +860,6 @@ bool OS_JavaScript::main_loop_iterate() {
 		process_joypads();
 	}
 
-	if (just_exited_fullscreen) {
-		if (window_maximized) {
-			EmscriptenFullscreenStrategy strategy;
-			strategy.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_STRETCH;
-			strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
-			strategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
-			strategy.canvasResizedCallback = NULL;
-			emscripten_enter_soft_fullscreen(canvas_id, &strategy);
-		} else {
-			godot_js_display_size_update();
-		}
-		just_exited_fullscreen = false;
-	}
 	return Main::iteration();
 }
 
@@ -1126,9 +1076,6 @@ OS_JavaScript::OS_JavaScript() {
 	last_click_ms = 0;
 	last_click_pos = Point2(-100, -100);
 
-	window_maximized = false;
-	entering_fullscreen = false;
-	just_exited_fullscreen = false;
 	transparency_enabled = false;
 
 	main_loop = NULL;

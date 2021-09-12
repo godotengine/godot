@@ -55,9 +55,6 @@ private:
 	JSKeyEvent key_event;
 
 	VideoMode video_mode;
-	bool window_maximized;
-	bool entering_fullscreen;
-	bool just_exited_fullscreen;
 	bool transparency_enabled;
 
 	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE webgl_ctx;
