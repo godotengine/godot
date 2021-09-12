@@ -24,14 +24,16 @@ namespace Godot
             if (nativeBase)
             {
                 // Native type
-                var field = typeOfT.GetField("NativeName", BindingFlags.DeclaredOnly | BindingFlags.Static |
-                                                           BindingFlags.Public | BindingFlags.NonPublic);
+                var field = typeOfT.GetField("NativeName",
+                    BindingFlags.DeclaredOnly | BindingFlags.Static |
+                    BindingFlags.Public | BindingFlags.NonPublic);
 
                 var nativeName = (StringName)field!.GetValue(null);
                 godot_string_name nativeNameAux = nativeName.NativeValue;
                 godot_array inputAux = array.NativeValue;
                 godot_array filteredArray;
-                godotsharp_array_filter_godot_objects_by_native(&nativeNameAux, &inputAux, &filteredArray);
+                NativeFuncs.godotsharp_array_filter_godot_objects_by_native(
+                    &nativeNameAux, &inputAux, &filteredArray);
                 return Array<T>.CreateTakingOwnershipOfDisposableValue(filteredArray);
             }
             else
@@ -39,7 +41,7 @@ namespace Godot
                 // Custom derived type
                 godot_array inputAux = array.NativeValue;
                 godot_array filteredArray;
-                godotsharp_array_filter_godot_objects_by_non_native(&inputAux, &filteredArray);
+                NativeFuncs.godotsharp_array_filter_godot_objects_by_non_native(&inputAux, &filteredArray);
 
                 var filteredArrayWrapped = Array.CreateTakingOwnershipOfDisposableValue(filteredArray);
 
@@ -62,13 +64,5 @@ namespace Godot
                 return resWrapped;
             }
         }
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern unsafe void godotsharp_array_filter_godot_objects_by_native(godot_string_name* p_native_name,
-            godot_array* p_input, godot_array* r_output);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern unsafe void godotsharp_array_filter_godot_objects_by_non_native(godot_array* p_input,
-            godot_array* r_output);
     }
 }

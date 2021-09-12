@@ -46,9 +46,26 @@
 #include "../godotsharp_dirs.h"
 #include "../utils/osx_utils.h"
 #include "code_completion.h"
-#include "godotsharp_export.h"
 
 #include <gdnative/gdnative.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifdef __cplusplus
+#define MAYBE_UNUSED [[maybe_unused]]
+#else
+#define MAYBE_UNUSED
+#endif
+
+#ifdef __GNUC__
+#define GD_PINVOKE_EXPORT MAYBE_UNUSED __attribute__((visibility("default")))
+#elif defined(_WIN32)
+#define GD_PINVOKE_EXPORT MAYBE_UNUSED __declspec(dllexport)
+#else
+#define GD_PINVOKE_EXPORT MAYBE_UNUSED
+#endif
 
 void godot_icall_GodotSharpDirs_ResMetadataDir(godot_string *r_dest) {
 	memnew_placement(r_dest, String(GodotSharpDirs::get_res_metadata_dir()));
@@ -109,16 +126,6 @@ bool godot_icall_EditorProgress_Step(const godot_string *p_task, const godot_str
 	String task = *reinterpret_cast<const String *>(p_task);
 	String state = *reinterpret_cast<const String *>(p_state);
 	return EditorNode::progress_task_step(task, state, p_step, (bool)p_force_refresh);
-}
-
-uint32_t godot_icall_ExportPlugin_GetExportedAssemblyDependencies(const godot_dictionary *p_initial_assemblies,
-		const godot_string *p_build_config, const godot_string *p_custom_bcl_dir, godot_dictionary *r_assembly_dependencies) {
-	Dictionary initial_dependencies = *reinterpret_cast<const Dictionary *>(p_initial_assemblies);
-	String build_config = *reinterpret_cast<const String *>(p_build_config);
-	String custom_bcl_dir = *reinterpret_cast<const String *>(p_custom_bcl_dir);
-	Dictionary assembly_dependencies = *reinterpret_cast<Dictionary *>(r_assembly_dependencies);
-
-	return GodotSharpExport::get_exported_assembly_dependencies(initial_dependencies, build_config, custom_bcl_dir, assembly_dependencies);
 }
 
 void godot_icall_Internal_FullTemplatesDir(godot_string *r_dest) {
@@ -253,49 +260,41 @@ bool godot_icall_Utils_OS_UnixFileHasExecutableAccess(const godot_string *p_file
 #endif
 }
 
-void register_editor_internal_calls() {
-	// GodotSharpDirs
-	GDMonoUtils::add_internal_call("GodotTools.Internals.GodotSharpDirs::internal_ResMetadataDir", godot_icall_GodotSharpDirs_ResMetadataDir);
-	GDMonoUtils::add_internal_call("GodotTools.Internals.GodotSharpDirs::internal_ResTempAssembliesBaseDir", godot_icall_GodotSharpDirs_ResTempAssembliesBaseDir);
-	GDMonoUtils::add_internal_call("GodotTools.Internals.GodotSharpDirs::internal_MonoUserDir", godot_icall_GodotSharpDirs_MonoUserDir);
-	GDMonoUtils::add_internal_call("GodotTools.Internals.GodotSharpDirs::internal_BuildLogsDirs", godot_icall_GodotSharpDirs_BuildLogsDirs);
-	GDMonoUtils::add_internal_call("GodotTools.Internals.GodotSharpDirs::internal_ProjectSlnPath", godot_icall_GodotSharpDirs_ProjectSlnPath);
-	GDMonoUtils::add_internal_call("GodotTools.Internals.GodotSharpDirs::internal_ProjectCsProjPath", godot_icall_GodotSharpDirs_ProjectCsProjPath);
-	GDMonoUtils::add_internal_call("GodotTools.Internals.GodotSharpDirs::internal_DataEditorToolsDir", godot_icall_GodotSharpDirs_DataEditorToolsDir);
-
-	// EditorProgress
-	GDMonoUtils::add_internal_call("GodotTools.Internals.EditorProgress::internal_Create", godot_icall_EditorProgress_Create);
-	GDMonoUtils::add_internal_call("GodotTools.Internals.EditorProgress::internal_Dispose", godot_icall_EditorProgress_Dispose);
-	GDMonoUtils::add_internal_call("GodotTools.Internals.EditorProgress::internal_Step", godot_icall_EditorProgress_Step);
-
-	// ExportPlugin
-	GDMonoUtils::add_internal_call("GodotTools.Export.ExportPlugin::internal_GetExportedAssemblyDependencies", godot_icall_ExportPlugin_GetExportedAssemblyDependencies);
-
-	// Internals
-	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_FullTemplatesDir", godot_icall_Internal_FullTemplatesDir);
-	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_IsOsxAppBundleInstalled", godot_icall_Internal_IsOsxAppBundleInstalled);
-	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_GodotIs32Bits", godot_icall_Internal_GodotIs32Bits);
-	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_GodotIsRealTDouble", godot_icall_Internal_GodotIsRealTDouble);
-	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_GodotMainIteration", godot_icall_Internal_GodotMainIteration);
-	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_IsAssembliesReloadingNeeded", godot_icall_Internal_IsAssembliesReloadingNeeded);
-	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_ReloadAssemblies", godot_icall_Internal_ReloadAssemblies);
-	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_EditorDebuggerNodeReloadScripts", godot_icall_Internal_EditorDebuggerNodeReloadScripts);
-	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_ScriptEditorEdit", godot_icall_Internal_ScriptEditorEdit);
-	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_EditorNodeShowScriptScreen", godot_icall_Internal_EditorNodeShowScriptScreen);
-	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_MonoWindowsInstallRoot", godot_icall_Internal_MonoWindowsInstallRoot);
-	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_EditorRunPlay", godot_icall_Internal_EditorRunPlay);
-	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_EditorRunStop", godot_icall_Internal_EditorRunStop);
-	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_ScriptEditorDebugger_ReloadScripts", godot_icall_Internal_ScriptEditorDebugger_ReloadScripts);
-	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_CodeCompletionRequest", godot_icall_Internal_CodeCompletionRequest);
-
-	// Globals
-	GDMonoUtils::add_internal_call("GodotTools.Internals.Globals::internal_EditorScale", godot_icall_Globals_EditorScale);
-	GDMonoUtils::add_internal_call("GodotTools.Internals.Globals::internal_GlobalDef", godot_icall_Globals_GlobalDef);
-	GDMonoUtils::add_internal_call("GodotTools.Internals.Globals::internal_EditorDef", godot_icall_Globals_EditorDef);
-	GDMonoUtils::add_internal_call("GodotTools.Internals.Globals::internal_EditorShortcut", godot_icall_Globals_EditorShortcut);
-	GDMonoUtils::add_internal_call("GodotTools.Internals.Globals::internal_TTR", godot_icall_Globals_TTR);
-
-	// Utils.OS
-	GDMonoUtils::add_internal_call("GodotTools.Utils.OS::GetPlatformName", godot_icall_Utils_OS_GetPlatformName);
-	GDMonoUtils::add_internal_call("GodotTools.Utils.OS::UnixFileHasExecutableAccess", godot_icall_Utils_OS_UnixFileHasExecutableAccess);
+#ifdef __cplusplus
 }
+#endif
+
+void *godotsharp_editor_pinvoke_funcs[32] = {
+	(void *)godot_icall_GodotSharpDirs_ResMetadataDir,
+	(void *)godot_icall_GodotSharpDirs_ResTempAssembliesBaseDir,
+	(void *)godot_icall_GodotSharpDirs_MonoUserDir,
+	(void *)godot_icall_GodotSharpDirs_BuildLogsDirs,
+	(void *)godot_icall_GodotSharpDirs_ProjectSlnPath,
+	(void *)godot_icall_GodotSharpDirs_ProjectCsProjPath,
+	(void *)godot_icall_GodotSharpDirs_DataEditorToolsDir,
+	(void *)godot_icall_EditorProgress_Create,
+	(void *)godot_icall_EditorProgress_Dispose,
+	(void *)godot_icall_EditorProgress_Step,
+	(void *)godot_icall_Internal_FullTemplatesDir,
+	(void *)godot_icall_Internal_IsOsxAppBundleInstalled,
+	(void *)godot_icall_Internal_GodotIs32Bits,
+	(void *)godot_icall_Internal_GodotIsRealTDouble,
+	(void *)godot_icall_Internal_GodotMainIteration,
+	(void *)godot_icall_Internal_IsAssembliesReloadingNeeded,
+	(void *)godot_icall_Internal_ReloadAssemblies,
+	(void *)godot_icall_Internal_EditorDebuggerNodeReloadScripts,
+	(void *)godot_icall_Internal_ScriptEditorEdit,
+	(void *)godot_icall_Internal_EditorNodeShowScriptScreen,
+	(void *)godot_icall_Internal_MonoWindowsInstallRoot,
+	(void *)godot_icall_Internal_EditorRunPlay,
+	(void *)godot_icall_Internal_EditorRunStop,
+	(void *)godot_icall_Internal_ScriptEditorDebugger_ReloadScripts,
+	(void *)godot_icall_Internal_CodeCompletionRequest,
+	(void *)godot_icall_Globals_EditorScale,
+	(void *)godot_icall_Globals_GlobalDef,
+	(void *)godot_icall_Globals_EditorDef,
+	(void *)godot_icall_Globals_EditorShortcut,
+	(void *)godot_icall_Globals_TTR,
+	(void *)godot_icall_Utils_OS_GetPlatformName,
+	(void *)godot_icall_Utils_OS_UnixFileHasExecutableAccess,
+};

@@ -1,8 +1,8 @@
 using Godot;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Godot.Collections;
 using GodotTools.Internals;
-using JetBrains.Annotations;
 using File = GodotTools.Utils.File;
 using Path = System.IO.Path;
 

@@ -38,17 +38,13 @@ void MonoGCHandleData::release() {
 	CRASH_COND(handle.value && GDMono::get_singleton() == nullptr);
 #endif
 
-	if (handle.value && !GDMonoCache::cached_data.methodthunk_GCHandleBridge_FreeGCHandle.is_null() &&
+	if (handle.value && GDMonoCache::godot_api_cache_updated &&
 			GDMono::get_singleton()->is_runtime_initialized()) {
 		free_gchandle(handle);
 		handle.value = nullptr;
 	}
 }
 void MonoGCHandleData::free_gchandle(GCHandleIntPtr p_gchandle) {
-	CRASH_COND(GDMonoCache::cached_data.methodthunk_GCHandleBridge_FreeGCHandle.is_null());
-	MonoException *exc = nullptr;
-	GDMonoCache::cached_data.methodthunk_GCHandleBridge_FreeGCHandle.invoke(p_gchandle, &exc);
-	if (exc) {
-		GDMonoUtils::debug_unhandled_exception(exc);
-	}
+	CRASH_COND(!GDMonoCache::godot_api_cache_updated);
+	GDMonoCache::managed_callbacks.GCHandleBridge_FreeGCHandle(p_gchandle);
 }

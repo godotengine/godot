@@ -1,9 +1,9 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 using GodotTools.Ides.Rider;
 using GodotTools.Internals;
-using JetBrains.Annotations;
 using static GodotTools.Internals.Globals;
 using File = GodotTools.Utils.File;
 using OS = GodotTools.Utils.OS;
@@ -159,7 +159,7 @@ namespace GodotTools.Build
             }
         }
 
-        public static bool BuildProjectBlocking(string config, [CanBeNull] string[] targets = null, [CanBeNull] string platform = null)
+        public static bool BuildProjectBlocking(string config, [MaybeNull] string[] targets = null, [MaybeNull] string platform = null)
         {
             var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, targets ?? new[] {"Build"}, config, restore: true);
 

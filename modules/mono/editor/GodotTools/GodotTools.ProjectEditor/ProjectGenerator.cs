@@ -21,7 +21,8 @@ namespace GodotTools.ProjectEditor
             root.Sdk = GodotSdkAttrValue;
 
             var mainGroup = root.AddPropertyGroup();
-            mainGroup.AddProperty("TargetFramework", "netstandard2.1");
+            mainGroup.AddProperty("TargetFramework", "net5.0");
+            mainGroup.AddProperty("EnableDynamicLoading", "true");
 
             string sanitizedName = IdentifierUtils.SanitizeQualifiedIdentifier(name, allowEmptyIdentifiers: true);
 
