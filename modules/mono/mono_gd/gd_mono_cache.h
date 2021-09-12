@@ -90,7 +90,6 @@ struct CachedData {
 
 	GDMonoMethodThunk<MonoObject *> methodthunk_GodotObject_Dispose;
 	GDMonoMethodThunk<MonoObject *, MonoArray *> methodthunk_SignalAwaiter_SignalCallback;
-	GDMonoMethodThunk<MonoObject *> methodthunk_GodotTaskScheduler_Activate;
 
 	GDMonoMethodThunkR<MonoBoolean, MonoObject *, MonoObject *> methodthunk_Delegate_Equals;
 
@@ -113,8 +112,6 @@ struct CachedData {
 	GDMonoMethodThunk<MonoReflectionField *, MonoObject *, const Variant *> methodthunk_Marshaling_SetFieldValue;
 
 	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeHasFlagsAttribute;
-
-	Ref<MonoGCHandleRef> task_scheduler_handle;
 
 	bool corlib_cache_updated;
 	bool godot_api_cache_updated;

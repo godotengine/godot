@@ -442,14 +442,12 @@ bool GDMono::_are_api_assemblies_out_of_sync() {
 	return out_of_sync;
 }
 
-void godot_register_gd_icalls();
 void godot_register_object_icalls();
 void godot_register_scene_tree_icalls();
 void godot_register_placeholder_icalls();
 
 void GDMono::_register_internal_calls() {
 	// Registers internal calls that were not generated.
-	godot_register_gd_icalls();
 	godot_register_object_icalls();
 	godot_register_scene_tree_icalls();
 	godot_register_placeholder_icalls();
@@ -987,6 +985,8 @@ Error GDMono::_load_scripts_domain() {
 Error GDMono::_unload_scripts_domain() {
 	ERR_FAIL_NULL_V(scripts_domain, ERR_BUG);
 
+	CSharpLanguage::get_singleton()->_on_scripts_domain_about_to_unload();
+
 	print_verbose("Mono: Finalizing scripts domain...");
 
 	if (mono_domain_get() != root_domain) {
@@ -1039,8 +1039,6 @@ Error GDMono::_unload_scripts_domain() {
 #ifdef GD_MONO_HOT_RELOAD
 Error GDMono::reload_scripts_domain() {
 	ERR_FAIL_COND_V(!runtime_initialized, ERR_BUG);
-
-	CSharpLanguage::get_singleton()->_on_scripts_domain_about_to_unload();
 
 	if (scripts_domain) {
 		Error domain_unload_err = _unload_scripts_domain();

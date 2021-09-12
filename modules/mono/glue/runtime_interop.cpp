@@ -29,8 +29,10 @@
 /*************************************************************************/
 
 #include "core/config/engine.h"
+#include "core/io/marshalls.h"
 #include "core/object/class_db.h"
 #include "core/object/method_bind.h"
+#include "core/os/os.h"
 #include "core/string/string_name.h"
 
 #include "../interop_types.h"
@@ -839,12 +841,194 @@ GD_PINVOKE_EXPORT bool godotsharp_node_path_is_absolute(const NodePath *p_self) 
 	return p_self->is_absolute();
 }
 
+GD_PINVOKE_EXPORT void godotsharp_randomize() {
+	Math::randomize();
+}
+
+GD_PINVOKE_EXPORT uint32_t godotsharp_randi() {
+	return Math::rand();
+}
+
+GD_PINVOKE_EXPORT float godotsharp_randf() {
+	return Math::randf();
+}
+
+GD_PINVOKE_EXPORT int32_t godotsharp_randi_range(int32_t p_from, int32_t p_to) {
+	return Math::random(p_from, p_to);
+}
+
+GD_PINVOKE_EXPORT double godotsharp_randf_range(double p_from, double p_to) {
+	return Math::random(p_from, p_to);
+}
+
+GD_PINVOKE_EXPORT double godotsharp_randfn(double p_mean, double p_deviation) {
+	return Math::randfn(p_mean, p_deviation);
+}
+
+GD_PINVOKE_EXPORT void godotsharp_seed(uint64_t p_seed) {
+	Math::seed(p_seed);
+}
+
+GD_PINVOKE_EXPORT uint32_t godotsharp_rand_from_seed(uint64_t p_seed, uint64_t *r_new_seed) {
+	uint32_t ret = Math::rand_from_seed(&p_seed);
+	*r_new_seed = p_seed;
+	return ret;
+}
+
+GD_PINVOKE_EXPORT void godotsharp_weakref(Object *p_ptr, Ref<RefCounted> *r_weak_ref) {
+	if (!p_ptr) {
+		return;
+	}
+
+	Ref<WeakRef> wref;
+	RefCounted *rc = Object::cast_to<RefCounted>(p_ptr);
+
+	if (rc) {
+		Ref<RefCounted> r = rc;
+		if (!r.is_valid()) {
+			return;
+		}
+
+		wref.instantiate();
+		wref->set_ref(r);
+	} else {
+		wref.instantiate();
+		wref->set_obj(p_ptr);
+	}
+
+	memnew_placement(r_weak_ref, Ref<RefCounted>(wref));
+}
+
+GD_PINVOKE_EXPORT void godotsharp_str(const godot_array *p_what, godot_string *r_ret) {
+	String &str = *memnew_placement(r_ret, String);
+	const Array &what = *reinterpret_cast<const Array *>(p_what);
+
+	for (int i = 0; i < what.size(); i++) {
+		String os = what[i].operator String();
+
+		if (i == 0) {
+			str = os;
+		} else {
+			str += os;
+		}
+	}
+}
+
+GD_PINVOKE_EXPORT void godotsharp_print(const godot_string *p_what) {
+	print_line(*reinterpret_cast<const String *>(p_what));
+}
+
+GD_PINVOKE_EXPORT void godotsharp_print_rich(const godot_string *p_what) {
+	print_line_rich(*reinterpret_cast<const String *>(p_what));
+}
+
+GD_PINVOKE_EXPORT void godotsharp_printerr(const godot_string *p_what) {
+	print_error(*reinterpret_cast<const String *>(p_what));
+}
+
+GD_PINVOKE_EXPORT void godotsharp_printt(const godot_string *p_what) {
+	print_line(*reinterpret_cast<const String *>(p_what));
+}
+
+GD_PINVOKE_EXPORT void godotsharp_prints(const godot_string *p_what) {
+	print_line(*reinterpret_cast<const String *>(p_what));
+}
+
+GD_PINVOKE_EXPORT void godotsharp_printraw(const godot_string *p_what) {
+	OS::get_singleton()->print("%s", reinterpret_cast<const String *>(p_what)->utf8().get_data());
+}
+
+GD_PINVOKE_EXPORT void godotsharp_pusherror(const godot_string *p_str) {
+	ERR_PRINT(*reinterpret_cast<const String *>(p_str));
+}
+
+GD_PINVOKE_EXPORT void godotsharp_pushwarning(const godot_string *p_str) {
+	WARN_PRINT(*reinterpret_cast<const String *>(p_str));
+}
+
+GD_PINVOKE_EXPORT void godotsharp_var2str(const godot_variant *p_var, godot_string *r_ret) {
+	const Variant &var = *reinterpret_cast<const Variant *>(p_var);
+	String &vars = *memnew_placement(r_ret, String);
+	VariantWriter::write_to_string(var, vars);
+}
+
+GD_PINVOKE_EXPORT void godotsharp_str2var(const godot_string *p_str, godot_variant *r_ret) {
+	Variant ret;
+
+	VariantParser::StreamString ss;
+	ss.s = *reinterpret_cast<const String *>(p_str);
+
+	String errs;
+	int line;
+	Error err = VariantParser::parse(&ss, ret, errs, line);
+	if (err != OK) {
+		String err_str = "Parse error at line " + itos(line) + ": " + errs + ".";
+		ERR_PRINT(err_str);
+		ret = err_str;
+	}
+	memnew_placement(r_ret, Variant(ret));
+}
+
+GD_PINVOKE_EXPORT void godotsharp_var2bytes(const godot_variant *p_var, bool p_full_objects, godot_packed_array *r_bytes) {
+	const Variant &var = *reinterpret_cast<const Variant *>(p_var);
+	PackedByteArray &bytes = *memnew_placement(r_bytes, PackedByteArray);
+
+	int len;
+	Error err = encode_variant(var, nullptr, len, p_full_objects);
+	ERR_FAIL_COND_MSG(err != OK, "Unexpected error encoding variable to bytes, likely unserializable type found (Object or RID).");
+
+	bytes.resize(len);
+	encode_variant(var, bytes.ptrw(), len, p_full_objects);
+}
+
+GD_PINVOKE_EXPORT void godotsharp_bytes2var(const godot_packed_array *p_bytes, bool p_allow_objects, godot_variant *r_ret) {
+	const PackedByteArray *bytes = reinterpret_cast<const PackedByteArray *>(p_bytes);
+	Variant ret;
+	Error err = decode_variant(ret, bytes->ptr(), bytes->size(), nullptr, p_allow_objects);
+	if (err != OK) {
+		ret = RTR("Not enough bytes for decoding bytes, or invalid format.");
+	}
+	memnew_placement(r_ret, Variant(ret));
+}
+
+GD_PINVOKE_EXPORT int godotsharp_hash(const godot_variant *p_var) {
+	return reinterpret_cast<const Variant *>(p_var)->hash();
+}
+
+GD_PINVOKE_EXPORT void godotsharp_convert(const godot_variant *p_what, int32_t p_type, godot_variant *r_ret) {
+	const Variant *args[1] = { reinterpret_cast<const Variant *>(p_what) };
+	Callable::CallError ce;
+	Variant ret;
+	Variant::construct(Variant::Type(p_type), ret, args, 1, ce);
+	if (ce.error != Callable::CallError::CALL_OK) {
+		memnew_placement(r_ret, Variant);
+		ERR_FAIL_MSG("Unable to convert parameter from '" +
+					 Variant::get_type_name(reinterpret_cast<const Variant *>(p_what)->get_type()) +
+					 "' to '" + Variant::get_type_name(Variant::Type(p_type)) + "'.");
+	}
+	memnew_placement(r_ret, Variant(ret));
+}
+
+GD_PINVOKE_EXPORT Object *godotsharp_instance_from_id(uint64_t p_instance_id) {
+	return ObjectDB::get_instance(ObjectID(p_instance_id));
+}
+
+GD_PINVOKE_EXPORT void godotsharp_object_to_string(Object *p_ptr, godot_string *r_str) {
+#ifdef DEBUG_ENABLED
+	// Cannot happen in C#; would get an ObjectDisposedException instead.
+	CRASH_COND(p_ptr == nullptr);
+#endif
+	// Can't call 'Object::to_string()' here, as that can end up calling 'ToString' again resulting in an endless circular loop.
+	memnew_placement(r_str,
+			String("[" + p_ptr->get_class() + ":" + itos(p_ptr->get_instance_id()) + "]"));
+}
+
 #ifdef __cplusplus
 }
 #endif
 
 // We need this to prevent the functions from being stripped.
-void *godotsharp_pinvoke_funcs[138] = {
+void *godotsharp_pinvoke_funcs[164] = {
 	(void *)godotsharp_method_bind_get_method,
 	(void *)godotsharp_get_class_constructor,
 	(void *)godotsharp_invoke_class_constructor,
@@ -982,5 +1166,31 @@ void *godotsharp_pinvoke_funcs[138] = {
 	(void *)godotsharp_node_path_get_name_count,
 	(void *)godotsharp_node_path_get_subname,
 	(void *)godotsharp_node_path_get_subname_count,
-	(void *)godotsharp_node_path_is_absolute
+	(void *)godotsharp_node_path_is_absolute,
+	(void *)godotsharp_randomize,
+	(void *)godotsharp_randi,
+	(void *)godotsharp_randf,
+	(void *)godotsharp_randi_range,
+	(void *)godotsharp_randf_range,
+	(void *)godotsharp_randfn,
+	(void *)godotsharp_seed,
+	(void *)godotsharp_rand_from_seed,
+	(void *)godotsharp_weakref,
+	(void *)godotsharp_str,
+	(void *)godotsharp_print,
+	(void *)godotsharp_print_rich,
+	(void *)godotsharp_printerr,
+	(void *)godotsharp_printt,
+	(void *)godotsharp_prints,
+	(void *)godotsharp_printraw,
+	(void *)godotsharp_pusherror,
+	(void *)godotsharp_pushwarning,
+	(void *)godotsharp_var2str,
+	(void *)godotsharp_str2var,
+	(void *)godotsharp_var2bytes,
+	(void *)godotsharp_bytes2var,
+	(void *)godotsharp_hash,
+	(void *)godotsharp_convert,
+	(void *)godotsharp_instance_from_id,
+	(void *)godotsharp_object_to_string,
 };

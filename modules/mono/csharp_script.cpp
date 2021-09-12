@@ -109,7 +109,7 @@ Error CSharpLanguage::execute_file(const String &p_path) {
 	return OK;
 }
 
-extern void *godotsharp_pinvoke_funcs[138];
+extern void *godotsharp_pinvoke_funcs[164];
 [[maybe_unused]] volatile void **do_not_strip_godotsharp_pinvoke_funcs;
 
 void CSharpLanguage::init() {
@@ -705,19 +705,14 @@ void CSharpLanguage::pre_unsafe_unreference(Object *p_obj) {
 
 void CSharpLanguage::frame() {
 	if (gdmono && gdmono->is_runtime_initialized() && gdmono->get_core_api_assembly() != nullptr) {
-		const Ref<MonoGCHandleRef> &task_scheduler_handle = GDMonoCache::cached_data.task_scheduler_handle;
+		MonoException *exc = nullptr;
+		gdmono->get_core_api_assembly()
+				->get_class("Godot", "ScriptManager")
+				->get_method("FrameCallback")
+				->invoke(nullptr, &exc);
 
-		if (task_scheduler_handle.is_valid()) {
-			MonoObject *task_scheduler = task_scheduler_handle->get_target();
-
-			if (task_scheduler) {
-				MonoException *exc = nullptr;
-				CACHED_METHOD_THUNK(GodotTaskScheduler, Activate).invoke(task_scheduler, &exc);
-
-				if (exc) {
-					GDMonoUtils::debug_unhandled_exception(exc);
-				}
-			}
+		if (exc) {
+			GDMonoUtils::debug_unhandled_exception(exc);
 		}
 	}
 }

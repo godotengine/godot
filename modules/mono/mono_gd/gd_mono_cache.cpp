@@ -116,7 +116,6 @@ void CachedData::clear_godot_api_cache() {
 
 	methodthunk_GodotObject_Dispose.nullify();
 	methodthunk_SignalAwaiter_SignalCallback.nullify();
-	methodthunk_GodotTaskScheduler_Activate.nullify();
 
 	methodthunk_Delegate_Equals.nullify();
 
@@ -137,8 +136,6 @@ void CachedData::clear_godot_api_cache() {
 	methodthunk_Marshaling_SetFieldValue.nullify();
 
 	methodthunk_MarshalUtils_TypeHasFlagsAttribute.nullify();
-
-	task_scheduler_handle = Ref<MonoGCHandleRef>();
 }
 
 #define GODOT_API_CLASS(m_class) (GDMono::get_singleton()->get_core_api_assembly()->get_class(BINDINGS_NAMESPACE, #m_class))
@@ -197,7 +194,6 @@ void update_godot_api_cache() {
 
 	CACHE_METHOD_THUNK_AND_CHECK(GodotObject, Dispose, CACHED_CLASS(GodotObject)->get_method("Dispose", 0));
 	CACHE_METHOD_THUNK_AND_CHECK(SignalAwaiter, SignalCallback, GODOT_API_CLASS(SignalAwaiter)->get_method("SignalCallback", 1));
-	CACHE_METHOD_THUNK_AND_CHECK(GodotTaskScheduler, Activate, GODOT_API_CLASS(GodotTaskScheduler)->get_method("Activate", 0));
 
 	CACHE_METHOD_THUNK_AND_CHECK(DelegateUtils, TrySerializeDelegateWithGCHandle, GODOT_API_CLASS(DelegateUtils)->get_method("TrySerializeDelegateWithGCHandle", 2));
 	CACHE_METHOD_THUNK_AND_CHECK(DelegateUtils, TryDeserializeDelegateWithGCHandle, GODOT_API_CLASS(DelegateUtils)->get_method("TryDeserializeDelegateWithGCHandle", 2));
@@ -233,10 +229,16 @@ void update_godot_api_cache() {
 	CACHE_METHOD_THUNK_AND_CHECK(DebuggingUtils, GetStackFrameInfo, GODOT_API_CLASS(DebuggingUtils)->get_method("GetStackFrameInfo", 4));
 #endif
 
-	// TODO Move to CSharpLanguage::init() and do handle disposal
-	MonoObject *task_scheduler = mono_object_new(mono_domain_get(), GODOT_API_CLASS(GodotTaskScheduler)->get_mono_ptr());
-	GDMonoUtils::runtime_object_init(task_scheduler, GODOT_API_CLASS(GodotTaskScheduler));
-	cached_data.task_scheduler_handle = MonoGCHandleRef::create_strong(task_scheduler);
+	MonoException *exc = nullptr;
+	GDMono::get_singleton()
+			->get_core_api_assembly()
+			->get_class("Godot", "Dispatcher")
+			->get_method("InitializeDefaultGodotTaskScheduler")
+			->invoke(nullptr, &exc);
+
+	if (exc) {
+		GDMonoUtils::debug_unhandled_exception(exc);
+	}
 
 	cached_data.godot_api_cache_updated = true;
 }

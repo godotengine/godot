@@ -510,5 +510,89 @@ namespace Godot.NativeInterop
 
         [DllImport(GodotDllName)]
         public static extern bool godotsharp_node_path_is_absolute(ref godot_node_path p_self);
+
+        // GD, etc
+
+        [DllImport(GodotDllName)]
+        public static extern void godotsharp_bytes2var(godot_packed_byte_array* p_bytes, bool p_allow_objects,
+            godot_variant* r_ret);
+
+        [DllImport(GodotDllName)]
+        public static extern void godotsharp_convert(godot_variant* p_what, int p_type, godot_variant* r_ret);
+
+        [DllImport(GodotDllName)]
+        public static extern int godotsharp_hash(godot_variant* var);
+
+        [DllImport(GodotDllName)]
+        public static extern IntPtr godotsharp_instance_from_id(ulong instanceId);
+
+        [DllImport(GodotDllName)]
+        public static extern void godotsharp_print(godot_string* p_what);
+
+        [DllImport(GodotDllName)]
+        public static extern void godotsharp_print_rich(godot_string* p_what);
+
+        [DllImport(GodotDllName)]
+        public static extern void godotsharp_printerr(godot_string* p_what);
+
+        [DllImport(GodotDllName)]
+        public static extern void godotsharp_printraw(godot_string* p_what);
+
+        [DllImport(GodotDllName)]
+        public static extern void godotsharp_prints(godot_string* p_what);
+
+        [DllImport(GodotDllName)]
+        public static extern void godotsharp_printt(godot_string* p_what);
+
+        [DllImport(GodotDllName)]
+        public static extern float godotsharp_randf();
+
+        [DllImport(GodotDllName)]
+        public static extern uint godotsharp_randi();
+
+        [DllImport(GodotDllName)]
+        public static extern void godotsharp_randomize();
+
+        [DllImport(GodotDllName)]
+        public static extern double godotsharp_randf_range(double from, double to);
+
+        [DllImport(GodotDllName)]
+        public static extern double godotsharp_randfn(double mean, double deviation);
+
+        [DllImport(GodotDllName)]
+        public static extern int godotsharp_randi_range(int from, int to);
+
+        [DllImport(GodotDllName)]
+        public static extern uint godotsharp_rand_from_seed(ulong seed, out ulong newSeed);
+
+        [DllImport(GodotDllName)]
+        public static extern void godotsharp_seed(ulong seed);
+
+        [DllImport(GodotDllName)]
+        public static extern void godotsharp_weakref(IntPtr obj, godot_ref* r_weak_ref);
+
+        [DllImport(GodotDllName)]
+        public static extern string godotsharp_str(godot_array* p_what, godot_string* r_ret);
+
+        [DllImport(GodotDllName)]
+        public static extern void godotsharp_str2var(godot_string* p_str, godot_variant* r_ret);
+
+        [DllImport(GodotDllName)]
+        public static extern void godotsharp_var2bytes(godot_variant* what, bool fullObjects,
+            godot_packed_byte_array* bytes);
+
+        [DllImport(GodotDllName)]
+        public static extern void godotsharp_var2str(godot_variant* var, godot_string* r_ret);
+
+        [DllImport(GodotDllName)]
+        public static extern void godotsharp_pusherror(godot_string* type);
+
+        [DllImport(GodotDllName)]
+        public static extern void godotsharp_pushwarning(godot_string* type);
+
+        // Object
+
+        [DllImport(GodotDllName)]
+        public static extern string godotsharp_object_to_string(IntPtr ptr, godot_string* r_str);
     }
 }

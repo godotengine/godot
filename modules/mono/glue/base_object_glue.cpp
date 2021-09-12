@@ -124,50 +124,14 @@ void godot_icall_Object_ConnectEventSignals(Object *p_ptr) {
 	}
 }
 
-MonoObject *godot_icall_Object_weakref(Object *p_ptr) {
-	if (!p_ptr) {
-		return nullptr;
-	}
-
-	Ref<WeakRef> wref;
-	RefCounted *rc = Object::cast_to<RefCounted>(p_ptr);
-
-	if (rc) {
-		Ref<RefCounted> r = rc;
-		if (!r.is_valid()) {
-			return nullptr;
-		}
-
-		wref.instantiate();
-		wref->set_ref(r);
-	} else {
-		wref.instantiate();
-		wref->set_obj(p_ptr);
-	}
-
-	return GDMonoUtils::unmanaged_get_managed(wref.ptr());
-}
-
 int32_t godot_icall_SignalAwaiter_connect(Object *p_source, StringName *p_signal, Object *p_target, MonoObject *p_awaiter) {
 	StringName signal = p_signal ? *p_signal : StringName();
 	return (int32_t)gd_mono_connect_signal_awaiter(p_source, signal, p_target, p_awaiter);
-}
-
-MonoString *godot_icall_Object_ToString(Object *p_ptr) {
-#ifdef DEBUG_ENABLED
-	// Cannot happen in C#; would get an ObjectDisposedException instead.
-	CRASH_COND(p_ptr == nullptr);
-#endif
-	// Can't call 'Object::to_string()' here, as that can end up calling 'ToString' again resulting in an endless circular loop.
-	String result = "[" + p_ptr->get_class() + ":" + itos(p_ptr->get_instance_id()) + "]";
-	return GDMonoMarshal::mono_string_from_godot(result);
 }
 
 void godot_register_object_icalls() {
 	GDMonoUtils::add_internal_call("Godot.Object::godot_icall_Object_Disposed", godot_icall_Object_Disposed);
 	GDMonoUtils::add_internal_call("Godot.Object::godot_icall_RefCounted_Disposed", godot_icall_RefCounted_Disposed);
 	GDMonoUtils::add_internal_call("Godot.Object::godot_icall_Object_ConnectEventSignals", godot_icall_Object_ConnectEventSignals);
-	GDMonoUtils::add_internal_call("Godot.Object::godot_icall_Object_ToString", godot_icall_Object_ToString);
-	GDMonoUtils::add_internal_call("Godot.Object::godot_icall_Object_weakref", godot_icall_Object_weakref);
 	GDMonoUtils::add_internal_call("Godot.SignalAwaiter::godot_icall_SignalAwaiter_connect", godot_icall_SignalAwaiter_connect);
 }

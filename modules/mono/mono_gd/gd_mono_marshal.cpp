@@ -40,9 +40,7 @@ namespace GDMonoMarshal {
 // TODO: Those are just temporary until the code that needs them is moved to C#
 
 Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_variant) {
-	if (p_type.type_encoding == MONO_TYPE_VOID) {
-		return Variant::NIL;
-	}
+	CRASH_COND(p_type.type_class == nullptr);
 
 	MonoReflectionType *refltype = mono_type_get_object(mono_domain_get(), p_type.type_class->get_mono_type());
 	MonoBoolean nil_is_variant = false;
@@ -135,59 +133,6 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 
 Variant mono_object_to_variant_no_err(MonoObject *p_obj) {
 	return mono_object_to_variant_impl(p_obj, /* fail_with_err: */ false);
-}
-
-String mono_object_to_variant_string(MonoObject *p_obj, MonoException **r_exc) {
-	if (p_obj == nullptr) {
-		return String("null");
-	}
-
-	Variant var = GDMonoMarshal::mono_object_to_variant_no_err(p_obj);
-
-	if (var.get_type() == Variant::NIL) { // `&& p_obj != nullptr` but omitted because always true
-		// Cannot convert MonoObject* to Variant; fallback to 'ToString()'.
-		MonoException *exc = nullptr;
-		MonoString *mono_str = GDMonoUtils::object_to_string(p_obj, &exc);
-
-		if (exc) {
-			if (r_exc) {
-				*r_exc = exc;
-			}
-			return String();
-		}
-
-		return GDMonoMarshal::mono_string_to_godot(mono_str);
-	} else {
-		return var.operator String();
-	}
-}
-
-MonoArray *Array_to_mono_array(const Array &p_array) {
-	int length = p_array.size();
-	MonoArray *ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), length);
-
-	for (int i = 0; i < length; i++) {
-		MonoObject *boxed = variant_to_mono_object(p_array[i]);
-		mono_array_setref(ret, i, boxed);
-	}
-
-	return ret;
-}
-
-Array mono_array_to_Array(MonoArray *p_array) {
-	Array ret;
-	if (!p_array) {
-		return ret;
-	}
-	int length = mono_array_length(p_array);
-	ret.resize(length);
-
-	for (int i = 0; i < length; i++) {
-		MonoObject *elem = mono_array_get(p_array, MonoObject *, i);
-		ret[i] = mono_object_to_variant(elem);
-	}
-
-	return ret;
 }
 
 MonoArray *PackedStringArray_to_mono_array(const PackedStringArray &p_array) {

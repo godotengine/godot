@@ -36,6 +36,8 @@ namespace Godot.NativeInterop
             NativeFuncs.godotsharp_ref_destroy(ref this);
             _reference = IntPtr.Zero;
         }
+
+        public bool IsNull => _reference == IntPtr.Zero;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming")]
