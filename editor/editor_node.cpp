@@ -2584,13 +2584,21 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 						file->set_current_path(path.replacen("." + ext, "." + extensions.front()->get()));
 					}
 				}
-			} else {
-				String existing;
-				if (extensions.size()) {
-					String root_name(scene->get_name());
-					existing = root_name + "." + extensions.front()->get().to_lower();
+			} else if (extensions.size()) {
+				String root_name = scene->get_name();
+				// Very similar to node naming logic.
+				switch (ProjectSettings::get_singleton()->get("editor/scene/scene_naming").operator int()) {
+					case SCENE_NAME_CASING_AUTO:
+						// Use casing of the root node.
+						break;
+					case SCENE_NAME_CASING_PASCAL_CASE: {
+						root_name = root_name.capitalize().replace(" ", "");
+					} break;
+					case SCENE_NAME_CASING_SNAKE_CASE:
+						root_name = root_name.capitalize().replace(" ", "").replace("-", "_").camelcase_to_underscore();
+						break;
 				}
-				file->set_current_path(existing);
+				file->set_current_path(root_name + "." + extensions.front()->get().to_lower());
 			}
 			file->popup_file_dialog();
 			file->set_title(TTR("Save Scene As..."));
@@ -5669,6 +5677,8 @@ void EditorNode::_feature_profile_changed() {
 }
 
 void EditorNode::_bind_methods() {
+	GLOBAL_DEF("editor/scene/scene_naming", SCENE_NAME_CASING_SNAKE_CASE);
+	ProjectSettings::get_singleton()->set_custom_property_info("editor/scene/scene_naming", PropertyInfo(Variant::INT, "editor/scene/scene_naming", PROPERTY_HINT_ENUM, "Auto,PascalCase,snake_case"));
 	ClassDB::bind_method("_editor_select", &EditorNode::_editor_select);
 	ClassDB::bind_method("_node_renamed", &EditorNode::_node_renamed);
 	ClassDB::bind_method("edit_node", &EditorNode::edit_node);
