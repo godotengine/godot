@@ -253,9 +253,13 @@ const MethodInfo &GDMonoMethod::get_method_info() {
 		method_info.name = name;
 
 		bool nil_is_variant = false;
-		method_info.return_val = PropertyInfo(GDMonoMarshal::managed_to_variant_type(return_type, &nil_is_variant), "");
-		if (method_info.return_val.type == Variant::NIL && nil_is_variant) {
-			method_info.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+		if (return_type.type_encoding == MONO_TYPE_VOID) {
+			method_info.return_val = PropertyInfo(Variant::NIL, "");
+		} else {
+			method_info.return_val = PropertyInfo(GDMonoMarshal::managed_to_variant_type(return_type, &nil_is_variant), "");
+			if (method_info.return_val.type == Variant::NIL && nil_is_variant) {
+				method_info.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+			}
 		}
 
 		Vector<StringName> names;

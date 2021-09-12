@@ -88,15 +88,6 @@ _FORCE_INLINE_ MonoObject *variant_to_mono_object(const Variant *p_var) {
 Variant mono_object_to_variant(MonoObject *p_obj);
 Variant mono_object_to_variant_no_err(MonoObject *p_obj);
 
-/// Tries to convert the MonoObject* to Variant and then convert the Variant to String.
-/// If the MonoObject* cannot be converted to Variant, then 'ToString()' is called instead.
-String mono_object_to_variant_string(MonoObject *p_obj, MonoException **r_exc);
-
-// Array
-
-MonoArray *Array_to_mono_array(const Array &p_array);
-Array mono_array_to_Array(MonoArray *p_array);
-
 // PackedStringArray
 
 MonoArray *PackedStringArray_to_mono_array(const PackedStringArray &p_array);

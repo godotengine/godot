@@ -18,8 +18,10 @@ namespace Godot.NativeInterop
             fieldInfo.SetValue(obj, valueObj);
         }
 
-        public static Variant.Type managed_to_variant_type(Type type, ref bool r_nil_is_variant)
+        public static Variant.Type managed_to_variant_type(Type type, out bool r_nil_is_variant)
         {
+            r_nil_is_variant = false;
+
             switch (Type.GetTypeCode(type))
             {
                 case TypeCode.Boolean:
@@ -189,8 +191,6 @@ namespace Godot.NativeInterop
                     break;
                 }
             }
-
-            r_nil_is_variant = false;
 
             // Unknown
             return Variant.Type.Nil;
@@ -687,7 +687,7 @@ namespace Godot.NativeInterop
             if (typeof(Godot.Object[]).IsAssignableFrom(type))
             {
                 using var godotArray = NativeFuncs.godotsharp_variant_as_array(p_var);
-                return Array_to_mono_array_of_type(&godotArray, type);
+                return Array_to_mono_array_of_godot_object_type(&godotArray, type);
             }
 
             if (type == typeof(object[]))
@@ -1106,7 +1106,7 @@ namespace Godot.NativeInterop
             return ret;
         }
 
-        public static unsafe object Array_to_mono_array_of_type(godot_array* p_array, Type type)
+        public static unsafe object Array_to_mono_array_of_godot_object_type(godot_array* p_array, Type type)
         {
             var array = Collections.Array.CreateTakingOwnershipOfDisposableValue(
                 NativeFuncs.godotsharp_array_new_copy(p_array));
@@ -1114,7 +1114,9 @@ namespace Godot.NativeInterop
             int length = array.Count;
             object ret = Activator.CreateInstance(type, length);
 
-            array.CopyTo((object[])ret, 0); // variant_to_mono_object handled by Collections.Array
+            // variant_to_mono_object handled by Collections.Array
+            // variant_to_mono_object_of_type is not needed because target element types are Godot.Object (or derived)
+            array.CopyTo((object[])ret, 0);
 
             return ret;
         }

@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using Godot.NativeInterop;
 
 namespace Godot
 {
@@ -85,9 +86,11 @@ namespace Godot
             _disposed = true;
         }
 
-        public override string ToString()
+        public override unsafe string ToString()
         {
-            return godot_icall_Object_ToString(GetPtr(this));
+            using godot_string str = default;
+            NativeFuncs.godotsharp_object_to_string(GetPtr(this), &str);
+            return Marshaling.mono_string_from_godot(&str);
         }
 
         /// <summary>
@@ -170,8 +173,5 @@ namespace Godot
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void godot_icall_Object_ConnectEventSignals(IntPtr obj);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern string godot_icall_Object_ToString(IntPtr ptr);
     }
 }
