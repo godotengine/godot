@@ -15,7 +15,7 @@ namespace Godot.Collections
         IDictionary,
         IDisposable
     {
-        internal godot_dictionary NativeValue;
+        public godot_dictionary NativeValue;
 
         /// <summary>
         /// Constructs a new empty <see cref="Dictionary"/>.
@@ -319,7 +319,7 @@ namespace Godot.Collections
         {
             using godot_string str = default;
             NativeFuncs.godotsharp_dictionary_to_string(ref NativeValue, &str);
-            return Marshaling.mono_string_from_godot(&str);
+            return Marshaling.mono_string_from_godot(str);
         }
     }
 

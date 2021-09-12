@@ -11,10 +11,6 @@ namespace Godot
 {
     internal static class DelegateUtils
     {
-        // TODO: Move somewhere else once we need to for things other than delegates
-        internal static void FreeGCHandle(IntPtr delegateGCHandle)
-            => GCHandle.FromIntPtr(delegateGCHandle).Free();
-
         internal static bool DelegateEquals(IntPtr delegateGCHandleA, IntPtr delegateGCHandleB)
         {
             var @delegateA = (Delegate)GCHandle.FromIntPtr(delegateGCHandleA).Target;
@@ -22,14 +18,14 @@ namespace Godot
             return @delegateA == @delegateB;
         }
 
-        internal static unsafe void InvokeWithVariantArgs(IntPtr delegateGCHandle, godot_variant** args, uint argc, godot_variant* ret)
+        internal static unsafe void InvokeWithVariantArgs(IntPtr delegateGCHandle, godot_variant** args, uint argc,
+            godot_variant* ret)
         {
             // TODO: Optimize
             var @delegate = (Delegate)GCHandle.FromIntPtr(delegateGCHandle).Target;
             var managedArgs = new object[argc];
 
             var parameterInfos = @delegate.Method.GetParameters();
-
             var paramsLength = parameterInfos.Length;
 
             if (argc != paramsLength)
@@ -260,7 +256,8 @@ namespace Godot
             }
         }
 
-        private static bool TryDeserializeDelegateWithGCHandle(Collections.Array serializedData, out IntPtr delegateGCHandle)
+        private static bool TryDeserializeDelegateWithGCHandle(Collections.Array serializedData,
+            out IntPtr delegateGCHandle)
         {
             bool res = TryDeserializeDelegate(serializedData, out Delegate @delegate);
             delegateGCHandle = GCHandle.ToIntPtr(GCHandle.Alloc(@delegate));
@@ -368,7 +365,8 @@ namespace Godot
                             int valueBufferLength = reader.ReadInt32();
                             byte[] valueBuffer = reader.ReadBytes(valueBufferLength);
 
-                            FieldInfo fieldInfo = targetType.GetField(name, BindingFlags.Instance | BindingFlags.Public);
+                            FieldInfo fieldInfo =
+                                targetType.GetField(name, BindingFlags.Instance | BindingFlags.Public);
                             fieldInfo?.SetValue(recreatedTarget, GD.Bytes2Var(valueBuffer));
                         }
 

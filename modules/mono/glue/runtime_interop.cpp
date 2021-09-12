@@ -187,14 +187,14 @@ GD_PINVOKE_EXPORT void godotsharp_packed_string_array_add(PackedStringArray *r_d
 	r_dest->append(*p_element);
 }
 
-GD_PINVOKE_EXPORT void godotsharp_callable_new_with_delegate(void *p_delegate_handle, Callable *r_callable) {
+GD_PINVOKE_EXPORT void godotsharp_callable_new_with_delegate(GCHandleIntPtr p_delegate_handle, Callable *r_callable) {
 	// TODO: Use pooling for ManagedCallable instances.
 	CallableCustom *managed_callable = memnew(ManagedCallable(p_delegate_handle));
 	memnew_placement(r_callable, Callable(managed_callable));
 }
 
 GD_PINVOKE_EXPORT bool godotsharp_callable_get_data_for_marshalling(const Callable *p_callable,
-		void **r_delegate_handle, Object **r_object, StringName *r_name) {
+		GCHandleIntPtr *r_delegate_handle, Object **r_object, StringName *r_name) {
 	if (p_callable->is_custom()) {
 		CallableCustom *custom = p_callable->get_custom();
 		CallableCustom::CompareEqualFunc compare_equal_func = custom->get_compare_equal_func();
@@ -207,25 +207,25 @@ GD_PINVOKE_EXPORT bool godotsharp_callable_get_data_for_marshalling(const Callab
 			return true;
 		} else if (compare_equal_func == SignalAwaiterCallable::compare_equal_func_ptr) {
 			SignalAwaiterCallable *signal_awaiter_callable = static_cast<SignalAwaiterCallable *>(custom);
-			*r_delegate_handle = nullptr;
+			*r_delegate_handle = GCHandleIntPtr();
 			*r_object = ObjectDB::get_instance(signal_awaiter_callable->get_object());
 			memnew_placement(r_name, StringName(signal_awaiter_callable->get_signal()));
 			return true;
 		} else if (compare_equal_func == EventSignalCallable::compare_equal_func_ptr) {
 			EventSignalCallable *event_signal_callable = static_cast<EventSignalCallable *>(custom);
-			*r_delegate_handle = nullptr;
+			*r_delegate_handle = GCHandleIntPtr();
 			*r_object = ObjectDB::get_instance(event_signal_callable->get_object());
 			memnew_placement(r_name, StringName(event_signal_callable->get_signal()));
 			return true;
 		}
 
 		// Some other CallableCustom. We only support ManagedCallable.
-		*r_delegate_handle = nullptr;
+		*r_delegate_handle = GCHandleIntPtr();
 		*r_object = nullptr;
 		memnew_placement(r_name, StringName());
 		return false;
 	} else {
-		*r_delegate_handle = nullptr;
+		*r_delegate_handle = GCHandleIntPtr();
 		*r_object = ObjectDB::get_instance(p_callable->get_object_id());
 		memnew_placement(r_name, StringName(p_callable->get_method()));
 		return true;

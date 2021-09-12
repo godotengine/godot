@@ -92,7 +92,7 @@ Error get_assembly_dependencies(GDMonoAssembly *p_assembly, MonoAssemblyName *re
 		mono_assembly_get_assemblyref(image, i, reusable_aname);
 
 		GDMonoAssembly *ref_assembly = nullptr;
-		if (!GDMono::get_singleton()->load_assembly(ref_name, reusable_aname, &ref_assembly, /* refonly: */ true, p_search_dirs)) {
+		if (!GDMono::get_singleton()->load_assembly(ref_name, reusable_aname, &ref_assembly, p_search_dirs)) {
 			ERR_FAIL_V_MSG(ERR_CANT_RESOLVE, "Cannot load assembly (refonly): '" + ref_name + "'.");
 		}
 
@@ -126,7 +126,7 @@ Error get_exported_assembly_dependencies(const Dictionary &p_initial_assemblies,
 		String assembly_path = p_initial_assemblies[*key];
 
 		GDMonoAssembly *assembly = nullptr;
-		bool load_success = GDMono::get_singleton()->load_assembly_from(assembly_name, assembly_path, &assembly, /* refonly: */ true);
+		bool load_success = GDMono::get_singleton()->load_assembly_from(assembly_name, assembly_path, &assembly);
 
 		ERR_FAIL_COND_V_MSG(!load_success, ERR_CANT_RESOLVE, "Cannot load assembly (refonly): '" + assembly_name + "'.");
 

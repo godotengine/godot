@@ -5,11 +5,11 @@ namespace Godot
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     public class ScriptPathAttribute : Attribute
     {
-        private string path;
+        public string Path { get; private set; }
 
         public ScriptPathAttribute(string path)
         {
-            this.path = path;
+            Path = path;
         }
     }
 }
