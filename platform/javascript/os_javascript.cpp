@@ -63,9 +63,7 @@ void OS_JavaScript::initialize() {
 }
 
 void OS_JavaScript::resume_audio() {
-	if (audio_driver_javascript) {
-		audio_driver_javascript->resume();
-	}
+	AudioDriverJavaScript::resume();
 }
 
 void OS_JavaScript::set_main_loop(MainLoop *p_main_loop) {
@@ -101,10 +99,10 @@ void OS_JavaScript::delete_main_loop() {
 
 void OS_JavaScript::finalize() {
 	delete_main_loop();
-	if (audio_driver_javascript) {
-		memdelete(audio_driver_javascript);
-		audio_driver_javascript = nullptr;
+	for (AudioDriverJavaScript *driver : audio_drivers) {
+		memdelete(driver);
 	}
+	audio_drivers.clear();
 }
 
 // Miscellaneous
@@ -229,8 +227,13 @@ OS_JavaScript::OS_JavaScript() {
 	setenv("LANG", locale_ptr, true);
 
 	if (AudioDriverJavaScript::is_available()) {
-		audio_driver_javascript = memnew(AudioDriverJavaScript);
-		AudioDriverManager::add_driver(audio_driver_javascript);
+#ifdef NO_THREADS
+		audio_drivers.push_back(memnew(AudioDriverScriptProcessor));
+#endif
+		audio_drivers.push_back(memnew(AudioDriverWorklet));
+	}
+	for (int i = 0; i < audio_drivers.size(); i++) {
+		AudioDriverManager::add_driver(audio_drivers[i]);
 	}
 
 	idb_available = godot_js_os_fs_is_persistent();
