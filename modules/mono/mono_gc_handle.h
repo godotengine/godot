@@ -42,9 +42,11 @@ enum class GCHandleType : char {
 };
 }
 
+extern "C" {
 struct GCHandleIntPtr {
 	void *value = nullptr;
 };
+}
 
 static_assert(sizeof(GCHandleIntPtr) == sizeof(void *));
 

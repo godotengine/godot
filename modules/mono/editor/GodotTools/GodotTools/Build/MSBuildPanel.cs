@@ -1,7 +1,6 @@
 using System;
 using Godot;
 using GodotTools.Internals;
-using JetBrains.Annotations;
 using static GodotTools.Internals.Globals;
 using File = GodotTools.Utils.File;
 
@@ -28,7 +27,6 @@ namespace GodotTools.Build
             BuildOutputView.UpdateIssuesList();
         }
 
-        [UsedImplicitly]
         public void BuildSolution()
         {
             if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
@@ -57,7 +55,6 @@ namespace GodotTools.Build
                 Internal.ReloadAssemblies(softReload: false);
         }
 
-        [UsedImplicitly]
         private void RebuildSolution()
         {
             if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
@@ -86,7 +83,6 @@ namespace GodotTools.Build
                 Internal.ReloadAssemblies(softReload: false);
         }
 
-        [UsedImplicitly]
         private void CleanSolution()
         {
             if (!File.Exists(GodotSharpDirs.ProjectSlnPath))

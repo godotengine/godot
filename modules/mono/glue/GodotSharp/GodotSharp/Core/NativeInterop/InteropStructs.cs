@@ -1,26 +1,36 @@
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
 using real_t = System.Single;
-
 #endif
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Godot.NativeInterop
 {
-    [StructLayout(LayoutKind.Sequential)]
-    // ReSharper disable once InconsistentNaming
-    public struct godot_bool
+    internal static class GodotBoolExtensions
     {
-        public byte _value;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe godot_bool ToGodotBool(this bool @bool)
+        {
+            return *(godot_bool*)&@bool;
+        }
 
-        public unsafe godot_bool(bool value) => _value = *(byte*)&value;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe bool ToBool(this godot_bool godotBool)
+        {
+            return *(bool*)&godotBool;
+        }
+    }
 
-        public static unsafe implicit operator bool(godot_bool godotBool) => *(bool*)&godotBool._value;
-        public static implicit operator godot_bool(bool @bool) => new godot_bool(@bool);
+    // Apparently a struct with a byte is not blittable? It crashes when calling a UnmanagedCallersOnly function ptr.
+    // ReSharper disable once InconsistentNaming
+    public enum godot_bool : byte
+    {
+        True = 1,
+        False = 0
     }
 
     [StructLayout(LayoutKind.Sequential)]

@@ -30,82 +30,47 @@
 
 #include "gd_mono_cache.h"
 
-#include "gd_mono.h"
-#include "gd_mono_utils.h"
+#include "core/error/error_macros.h"
 
 namespace GDMonoCache {
 
-CachedData cached_data;
+ManagedCallbacks managed_callbacks;
+bool godot_api_cache_updated = false;
 
-static MonoMethod *get_mono_method(MonoClass *p_mono_class, const char *p_method_name, int p_param_count) {
-	ERR_FAIL_NULL_V(p_mono_class, nullptr);
-	return mono_class_get_method_from_name(p_mono_class, p_method_name, p_param_count);
-}
+void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks) {
+#define CHECK_CALLBACK_NOT_NULL_IMPL(m_var, m_class, m_method) ERR_FAIL_COND_MSG(m_var == nullptr, \
+		"Mono Cache: Managed callback for '" #m_class "_" #m_method "' is null.")
 
-static MonoClass *get_mono_class(GDMonoAssembly *p_assembly, const char *p_namespace, const char *p_name) {
-	ERR_FAIL_NULL_V(p_assembly->get_image(), nullptr);
-	return mono_class_from_name(p_assembly->get_image(), p_namespace, p_name);
-}
+#define CHECK_CALLBACK_NOT_NULL(m_class, m_method) CHECK_CALLBACK_NOT_NULL_IMPL(p_managed_callbacks.m_class##_##m_method, m_class, m_method)
 
-void update_godot_api_cache() {
-#define CACHE_METHOD_THUNK_AND_CHECK_IMPL(m_var, m_val)                                         \
-	{                                                                                           \
-		CRASH_COND(!m_var.is_null());                                                           \
-		val = m_val;                                                                            \
-		ERR_FAIL_COND_MSG(val == nullptr, "Mono Cache: Method for member " #m_var " is null."); \
-		m_var.set_from_method(val);                                                             \
-		ERR_FAIL_COND_MSG(m_var.is_null(), "Mono Cache: Member " #m_var " is null.");           \
-	}
+	CHECK_CALLBACK_NOT_NULL(SignalAwaiter, SignalCallback);
+	CHECK_CALLBACK_NOT_NULL(DelegateUtils, InvokeWithVariantArgs);
+	CHECK_CALLBACK_NOT_NULL(DelegateUtils, DelegateEquals);
+	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, FrameCallback);
+	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, CreateManagedForGodotObjectBinding);
+	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, CreateManagedForGodotObjectScriptInstance);
+	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, GetScriptNativeName);
+	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, SetGodotObjectPtr);
+	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, RaiseEventSignal);
+	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, GetScriptSignalList);
+	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, HasScriptSignal);
+	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, HasMethodUnknownParams);
+	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, ScriptIsOrInherits);
+	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, AddScriptBridge);
+	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, RemoveScriptBridge);
+	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, UpdateScriptClassInfo);
+	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, SwapGCHandleForType);
+	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, Call);
+	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, Set);
+	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, Get);
+	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, CallDispose);
+	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, CallToString);
+	CHECK_CALLBACK_NOT_NULL(GCHandleBridge, FreeGCHandle);
+	CHECK_CALLBACK_NOT_NULL(DebuggingUtils, InstallTraceListener);
+	CHECK_CALLBACK_NOT_NULL(Dispatcher, InitializeDefaultGodotTaskScheduler);
 
-#define CACHE_METHOD_THUNK_AND_CHECK(m_class, m_method, m_val) CACHE_METHOD_THUNK_AND_CHECK_IMPL(cached_data.methodthunk_##m_class##_##m_method, m_val)
+	managed_callbacks = p_managed_callbacks;
 
-#define GODOT_API_CLASS(m_class) (get_mono_class(GDMono::get_singleton()->get_core_api_assembly(), BINDINGS_NAMESPACE, #m_class))
-#define GODOT_API_BRIDGE_CLASS(m_class) (get_mono_class(GDMono::get_singleton()->get_core_api_assembly(), BINDINGS_NAMESPACE_BRIDGE, #m_class))
-
-	MonoMethod *val = nullptr;
-
-	CACHE_METHOD_THUNK_AND_CHECK(SignalAwaiter, SignalCallback, get_mono_method(GODOT_API_CLASS(SignalAwaiter), "SignalCallback", 4));
-
-	CACHE_METHOD_THUNK_AND_CHECK(DelegateUtils, InvokeWithVariantArgs, get_mono_method(GODOT_API_CLASS(DelegateUtils), "InvokeWithVariantArgs", 4));
-	CACHE_METHOD_THUNK_AND_CHECK(DelegateUtils, DelegateEquals, get_mono_method(GODOT_API_CLASS(DelegateUtils), "DelegateEquals", 2));
-
-	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, FrameCallback, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "FrameCallback", 0));
-	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, CreateManagedForGodotObjectBinding, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "CreateManagedForGodotObjectBinding", 2));
-	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, CreateManagedForGodotObjectScriptInstance, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "CreateManagedForGodotObjectScriptInstance", 4));
-	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, GetScriptNativeName, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "GetScriptNativeName", 2));
-	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, LookupScriptsInAssembly, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "LookupScriptsInAssembly", 1));
-	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, SetGodotObjectPtr, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "SetGodotObjectPtr", 2));
-	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, RaiseEventSignal, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "RaiseEventSignal", 5));
-	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, GetScriptSignalList, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "GetScriptSignalList", 2));
-	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, HasScriptSignal, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "HasScriptSignal", 2));
-	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, HasMethodUnknownParams, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "HasMethodUnknownParams", 3));
-	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, ScriptIsOrInherits, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "ScriptIsOrInherits", 2));
-	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, AddScriptBridge, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "AddScriptBridge", 2));
-	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, RemoveScriptBridge, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "RemoveScriptBridge", 1));
-	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, UpdateScriptClassInfo, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "UpdateScriptClassInfo", 3));
-	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, SwapGCHandleForType, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "SwapGCHandleForType", 3));
-
-	CACHE_METHOD_THUNK_AND_CHECK(CSharpInstanceBridge, Call, get_mono_method(GODOT_API_BRIDGE_CLASS(CSharpInstanceBridge), "Call", 6));
-	CACHE_METHOD_THUNK_AND_CHECK(CSharpInstanceBridge, Set, get_mono_method(GODOT_API_BRIDGE_CLASS(CSharpInstanceBridge), "Set", 3));
-	CACHE_METHOD_THUNK_AND_CHECK(CSharpInstanceBridge, Get, get_mono_method(GODOT_API_BRIDGE_CLASS(CSharpInstanceBridge), "Get", 3));
-	CACHE_METHOD_THUNK_AND_CHECK(CSharpInstanceBridge, CallDispose, get_mono_method(GODOT_API_BRIDGE_CLASS(CSharpInstanceBridge), "CallDispose", 2));
-	CACHE_METHOD_THUNK_AND_CHECK(CSharpInstanceBridge, CallToString, get_mono_method(GODOT_API_BRIDGE_CLASS(CSharpInstanceBridge), "CallToString", 3));
-
-	CACHE_METHOD_THUNK_AND_CHECK(GCHandleBridge, FreeGCHandle, get_mono_method(GODOT_API_BRIDGE_CLASS(GCHandleBridge), "FreeGCHandle", 1));
-
-	CACHE_METHOD_THUNK_AND_CHECK(DebuggingUtils, InstallTraceListener, get_mono_method(GODOT_API_CLASS(DebuggingUtils), "InstallTraceListener", 0));
-
-	MonoException *exc = nullptr;
-	MonoMethod *init_default_godot_task_scheduler =
-			get_mono_method(GODOT_API_CLASS(Dispatcher), "InitializeDefaultGodotTaskScheduler", 0);
-	ERR_FAIL_COND_MSG(init_default_godot_task_scheduler == nullptr,
-			"Mono Cache: InitializeDefaultGodotTaskScheduler is null.");
-	mono_runtime_invoke(init_default_godot_task_scheduler, nullptr, nullptr, (MonoObject **)&exc);
-
-	if (exc) {
-		GDMonoUtils::debug_unhandled_exception(exc);
-	}
-
-	cached_data.godot_api_cache_updated = true;
+	godot_api_cache_updated = true;
 }
 } // namespace GDMonoCache

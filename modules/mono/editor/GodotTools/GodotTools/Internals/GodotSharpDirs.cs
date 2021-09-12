@@ -9,7 +9,7 @@ namespace GodotTools.Internals
         {
             get
             {
-                internal_ResMetadataDir(out godot_string dest);
+                Internal.godot_icall_GodotSharpDirs_ResMetadataDir(out godot_string dest);
                 using (dest)
                     return Marshaling.mono_string_from_godot(dest);
             }
@@ -19,7 +19,7 @@ namespace GodotTools.Internals
         {
             get
             {
-                internal_ResTempAssembliesBaseDir(out godot_string dest);
+                Internal.godot_icall_GodotSharpDirs_ResTempAssembliesBaseDir(out godot_string dest);
                 using (dest)
                     return Marshaling.mono_string_from_godot(dest);
             }
@@ -29,7 +29,7 @@ namespace GodotTools.Internals
         {
             get
             {
-                internal_MonoUserDir(out godot_string dest);
+                Internal.godot_icall_GodotSharpDirs_MonoUserDir(out godot_string dest);
                 using (dest)
                     return Marshaling.mono_string_from_godot(dest);
             }
@@ -39,7 +39,7 @@ namespace GodotTools.Internals
         {
             get
             {
-                internal_BuildLogsDirs(out godot_string dest);
+                Internal.godot_icall_GodotSharpDirs_BuildLogsDirs(out godot_string dest);
                 using (dest)
                     return Marshaling.mono_string_from_godot(dest);
             }
@@ -49,7 +49,7 @@ namespace GodotTools.Internals
         {
             get
             {
-                internal_ProjectSlnPath(out godot_string dest);
+                Internal.godot_icall_GodotSharpDirs_ProjectSlnPath(out godot_string dest);
                 using (dest)
                     return Marshaling.mono_string_from_godot(dest);
             }
@@ -59,7 +59,7 @@ namespace GodotTools.Internals
         {
             get
             {
-                internal_ProjectCsProjPath(out godot_string dest);
+                Internal.godot_icall_GodotSharpDirs_ProjectCsProjPath(out godot_string dest);
                 using (dest)
                     return Marshaling.mono_string_from_godot(dest);
             }
@@ -69,35 +69,10 @@ namespace GodotTools.Internals
         {
             get
             {
-                internal_DataEditorToolsDir(out godot_string dest);
+                Internal.godot_icall_GodotSharpDirs_DataEditorToolsDir(out godot_string dest);
                 using (dest)
                     return Marshaling.mono_string_from_godot(dest);
             }
         }
-
-        #region Internal
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void internal_ResMetadataDir(out godot_string r_dest);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void internal_ResTempAssembliesBaseDir(out godot_string r_dest);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void internal_MonoUserDir(out godot_string r_dest);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void internal_BuildLogsDirs(out godot_string r_dest);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void internal_ProjectSlnPath(out godot_string r_dest);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void internal_ProjectCsProjPath(out godot_string r_dest);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void internal_DataEditorToolsDir(out godot_string r_dest);
-
-        #endregion
     }
 }

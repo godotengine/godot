@@ -100,7 +100,7 @@ namespace Godot
 
         public bool IsAbsolute()
         {
-            return NativeFuncs.godotsharp_node_path_is_absolute(ref NativeValue);
+            return NativeFuncs.godotsharp_node_path_is_absolute(ref NativeValue).ToBool();
         }
 
         public bool IsEmpty => godot_node_path.IsEmpty(in NativeValue);
