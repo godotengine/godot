@@ -350,9 +350,9 @@ void MultiplayerReplicator::process_sync(int p_from, const uint8_t *p_packet, in
 			}
 		}
 		PackedByteArray pba;
-		pba.resize(p_packet_len - SPAWN_CMD_OFFSET);
+		pba.resize(p_packet_len - SYNC_CMD_OFFSET);
 		if (pba.size()) {
-			memcpy(pba.ptrw(), p_packet, p_packet_len - SPAWN_CMD_OFFSET);
+			memcpy(pba.ptrw(), p_packet + SYNC_CMD_OFFSET, p_packet_len - SYNC_CMD_OFFSET);
 		}
 		Variant args[4] = { p_from, id, objs, pba };
 		Variant *argp[4] = { args, &args[1], &args[2], &args[3] };
@@ -749,6 +749,9 @@ Error MultiplayerReplicator::send_sync(int p_peer_id, const ResourceUID::ID &p_s
 	uint8_t *ptr = packet_cache.ptrw();
 	ptr[0] = MultiplayerAPI::NETWORK_COMMAND_SYNC;
 	encode_uint64(p_scene_id, &ptr[1]);
+	if (p_data.size()) {
+		memcpy(&ptr[SYNC_CMD_OFFSET], p_data.ptr(), p_data.size());
+	}
 	Ref<MultiplayerPeer> peer = multiplayer->get_multiplayer_peer();
 	peer->set_target_peer(p_peer_id);
 	peer->set_transfer_channel(p_channel);
