@@ -39,7 +39,11 @@
 #include <sys/resource.h>
 #endif
 
+#if defined(LIBRARY_ENABLED)
+extern "C" int godot_main(int argc, char *argv[]) {
+#else
 int main(int argc, char **argv) {
+#endif
 #if defined(VULKAN_ENABLED)
 	// MoltenVK - enable full component swizzling support.
 	setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1);

@@ -133,7 +133,6 @@ env_base.__class__.use_windows_spawn_fix = methods.use_windows_spawn_fix
 
 env_base.__class__.add_shared_library = methods.add_shared_library
 env_base.__class__.add_library = methods.add_library
-env_base.__class__.add_program = methods.add_program
 env_base.__class__.CommandNoCache = methods.CommandNoCache
 env_base.__class__.Run = methods.Run
 env_base.__class__.disable_warnings = methods.disable_warnings
@@ -184,6 +183,14 @@ opts.Add(BoolVariable("custom_modules_recursive", "Detect custom modules recursi
 opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loader dynamically", True))
 
 # Advanced options
+opts.Add(
+    EnumVariable(
+        "library_type",
+        "Build library type",
+        "executable",
+        ("executable", "static_library", "shared_library"),
+    )
+)
 opts.Add(BoolVariable("dev", "If yes, alias for verbose=yes warnings=extra werror=yes", False))
 opts.Add(BoolVariable("tests", "Build the unit tests", False))
 opts.Add(BoolVariable("fast_unsafe", "Enable unsafe options for faster rebuilds", False))
@@ -245,6 +252,16 @@ opts.Update(env_base)
 # Platform selection: validate input, and add options.
 
 selected_platform = ""
+
+if env_base["library_type"] == "static_library":
+    env_base.__class__.add_program = methods.add_library
+    env_base.Append(CPPDEFINES=["LIBRARY_ENABLED"])
+elif env_base["library_type"] == "shared_library":
+    env_base.__class__.add_program = methods.add_shared_library
+    env_base.Append(CPPDEFINES=["LIBRARY_ENABLED"])
+    env_base.env_base(CCFLAGS=["-fPIC"])
+else:
+    env_base.__class__.add_program = methods.add_program
 
 if env_base["platform"] != "":
     selected_platform = env_base["platform"]
