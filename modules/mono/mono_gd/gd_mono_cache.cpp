@@ -31,210 +31,76 @@
 #include "gd_mono_cache.h"
 
 #include "gd_mono.h"
-#include "gd_mono_class.h"
-#include "gd_mono_marshal.h"
-#include "gd_mono_method.h"
 #include "gd_mono_utils.h"
 
 namespace GDMonoCache {
 
 CachedData cached_data;
 
-#define CACHE_AND_CHECK(m_var, m_val)                                                  \
-	{                                                                                  \
-		CRASH_COND(m_var != nullptr);                                                  \
-		m_var = m_val;                                                                 \
-		ERR_FAIL_COND_MSG(m_var == nullptr, "Mono Cache: Member " #m_var " is null."); \
-	}
+static MonoMethod *get_mono_method(MonoClass *p_mono_class, const char *p_method_name, int p_param_count) {
+	ERR_FAIL_NULL_V(p_mono_class, nullptr);
+	return mono_class_get_method_from_name(p_mono_class, p_method_name, p_param_count);
+}
 
-#define CACHE_CLASS_AND_CHECK(m_class, m_val) CACHE_AND_CHECK(cached_data.class_##m_class, m_val)
-#define CACHE_FIELD_AND_CHECK(m_class, m_field, m_val) CACHE_AND_CHECK(cached_data.field_##m_class##_##m_field, m_val)
-#define CACHE_METHOD_AND_CHECK(m_class, m_method, m_val) CACHE_AND_CHECK(cached_data.method_##m_class##_##m_method, m_val)
-#define CACHE_PROPERTY_AND_CHECK(m_class, m_property, m_val) CACHE_AND_CHECK(cached_data.property_##m_class##_##m_property, m_val)
+static MonoClass *get_mono_class(GDMonoAssembly *p_assembly, const char *p_namespace, const char *p_name) {
+	ERR_FAIL_NULL_V(p_assembly->get_image(), nullptr);
+	return mono_class_from_name(p_assembly->get_image(), p_namespace, p_name);
+}
 
-#define CACHE_METHOD_THUNK_AND_CHECK_IMPL(m_var, m_val)                                           \
-	{                                                                                             \
-		CRASH_COND(!m_var.is_null());                                                             \
-		ERR_FAIL_COND_MSG(m_val == nullptr, "Mono Cache: Method for member " #m_var " is null."); \
-		m_var.set_from_method(m_val);                                                             \
-		ERR_FAIL_COND_MSG(m_var.is_null(), "Mono Cache: Member " #m_var " is null.");             \
+void update_godot_api_cache() {
+#define CACHE_METHOD_THUNK_AND_CHECK_IMPL(m_var, m_val)                                         \
+	{                                                                                           \
+		CRASH_COND(!m_var.is_null());                                                           \
+		val = m_val;                                                                            \
+		ERR_FAIL_COND_MSG(val == nullptr, "Mono Cache: Method for member " #m_var " is null."); \
+		m_var.set_from_method(val);                                                             \
+		ERR_FAIL_COND_MSG(m_var.is_null(), "Mono Cache: Member " #m_var " is null.");           \
 	}
 
 #define CACHE_METHOD_THUNK_AND_CHECK(m_class, m_method, m_val) CACHE_METHOD_THUNK_AND_CHECK_IMPL(cached_data.methodthunk_##m_class##_##m_method, m_val)
 
-void CachedData::clear_corlib_cache() {
-	corlib_cache_updated = false;
+#define GODOT_API_CLASS(m_class) (get_mono_class(GDMono::get_singleton()->get_core_api_assembly(), BINDINGS_NAMESPACE, #m_class))
+#define GODOT_API_BRIDGE_CLASS(m_class) (get_mono_class(GDMono::get_singleton()->get_core_api_assembly(), BINDINGS_NAMESPACE_BRIDGE, #m_class))
 
-	class_MonoObject = nullptr;
-	class_String = nullptr;
+	MonoMethod *val = nullptr;
 
-#ifdef DEBUG_ENABLED
-	class_System_Diagnostics_StackTrace = nullptr;
-	methodthunk_System_Diagnostics_StackTrace_GetFrames.nullify();
-	method_System_Diagnostics_StackTrace_ctor_bool = nullptr;
-	method_System_Diagnostics_StackTrace_ctor_Exception_bool = nullptr;
-#endif
+	CACHE_METHOD_THUNK_AND_CHECK(SignalAwaiter, SignalCallback, get_mono_method(GODOT_API_CLASS(SignalAwaiter), "SignalCallback", 4));
 
-	class_KeyNotFoundException = nullptr;
-}
+	CACHE_METHOD_THUNK_AND_CHECK(DelegateUtils, InvokeWithVariantArgs, get_mono_method(GODOT_API_CLASS(DelegateUtils), "InvokeWithVariantArgs", 4));
+	CACHE_METHOD_THUNK_AND_CHECK(DelegateUtils, DelegateEquals, get_mono_method(GODOT_API_CLASS(DelegateUtils), "DelegateEquals", 2));
 
-void CachedData::clear_godot_api_cache() {
-	godot_api_cache_updated = false;
+	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, FrameCallback, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "FrameCallback", 0));
+	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, CreateManagedForGodotObjectBinding, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "CreateManagedForGodotObjectBinding", 2));
+	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, CreateManagedForGodotObjectScriptInstance, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "CreateManagedForGodotObjectScriptInstance", 4));
+	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, GetScriptNativeName, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "GetScriptNativeName", 2));
+	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, LookupScriptsInAssembly, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "LookupScriptsInAssembly", 1));
+	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, SetGodotObjectPtr, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "SetGodotObjectPtr", 2));
+	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, RaiseEventSignal, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "RaiseEventSignal", 5));
+	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, GetScriptSignalList, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "GetScriptSignalList", 2));
+	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, HasScriptSignal, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "HasScriptSignal", 2));
+	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, HasMethodUnknownParams, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "HasMethodUnknownParams", 3));
+	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, ScriptIsOrInherits, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "ScriptIsOrInherits", 2));
+	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, AddScriptBridge, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "AddScriptBridge", 2));
+	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, RemoveScriptBridge, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "RemoveScriptBridge", 1));
+	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, UpdateScriptClassInfo, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "UpdateScriptClassInfo", 3));
+	CACHE_METHOD_THUNK_AND_CHECK(ScriptManagerBridge, SwapGCHandleForType, get_mono_method(GODOT_API_BRIDGE_CLASS(ScriptManagerBridge), "SwapGCHandleForType", 3));
 
-	class_GodotObject = nullptr;
-	class_GodotResource = nullptr;
-	class_Node = nullptr;
-	class_Control = nullptr;
-	class_Callable = nullptr;
-	class_SignalInfo = nullptr;
-	class_ISerializationListener = nullptr;
+	CACHE_METHOD_THUNK_AND_CHECK(CSharpInstanceBridge, Call, get_mono_method(GODOT_API_BRIDGE_CLASS(CSharpInstanceBridge), "Call", 6));
+	CACHE_METHOD_THUNK_AND_CHECK(CSharpInstanceBridge, Set, get_mono_method(GODOT_API_BRIDGE_CLASS(CSharpInstanceBridge), "Set", 3));
+	CACHE_METHOD_THUNK_AND_CHECK(CSharpInstanceBridge, Get, get_mono_method(GODOT_API_BRIDGE_CLASS(CSharpInstanceBridge), "Get", 3));
+	CACHE_METHOD_THUNK_AND_CHECK(CSharpInstanceBridge, CallDispose, get_mono_method(GODOT_API_BRIDGE_CLASS(CSharpInstanceBridge), "CallDispose", 2));
+	CACHE_METHOD_THUNK_AND_CHECK(CSharpInstanceBridge, CallToString, get_mono_method(GODOT_API_BRIDGE_CLASS(CSharpInstanceBridge), "CallToString", 3));
 
-#ifdef DEBUG_ENABLED
-	class_DebuggingUtils = nullptr;
-	methodthunk_DebuggingUtils_GetStackFrameInfo.nullify();
-#endif
+	CACHE_METHOD_THUNK_AND_CHECK(GCHandleBridge, FreeGCHandle, get_mono_method(GODOT_API_BRIDGE_CLASS(GCHandleBridge), "FreeGCHandle", 1));
 
-	class_ExportAttribute = nullptr;
-	field_ExportAttribute_hint = nullptr;
-	field_ExportAttribute_hintString = nullptr;
-	class_SignalAttribute = nullptr;
-	class_ToolAttribute = nullptr;
-	class_RPCAttribute = nullptr;
-	property_RPCAttribute_Mode = nullptr;
-	property_RPCAttribute_CallLocal = nullptr;
-	property_RPCAttribute_TransferMode = nullptr;
-	property_RPCAttribute_TransferChannel = nullptr;
-	class_GodotMethodAttribute = nullptr;
-	field_GodotMethodAttribute_methodName = nullptr;
-	class_ScriptPathAttribute = nullptr;
-	field_ScriptPathAttribute_path = nullptr;
-	class_AssemblyHasScriptsAttribute = nullptr;
-	field_AssemblyHasScriptsAttribute_requiresLookup = nullptr;
-	field_AssemblyHasScriptsAttribute_scriptTypes = nullptr;
-
-	field_GodotObject_ptr = nullptr;
-
-	methodthunk_GodotObject_Dispose.nullify();
-	methodthunk_SignalAwaiter_SignalCallback.nullify();
-
-	methodthunk_Delegate_Equals.nullify();
-
-	methodthunk_DelegateUtils_TrySerializeDelegateWithGCHandle.nullify();
-	methodthunk_DelegateUtils_TryDeserializeDelegateWithGCHandle.nullify();
-	methodthunk_DelegateUtils_TrySerializeDelegate.nullify();
-	methodthunk_DelegateUtils_TryDeserializeDelegate.nullify();
-	methodthunk_DelegateUtils_InvokeWithVariantArgs.nullify();
-	methodthunk_DelegateUtils_DelegateEquals.nullify();
-	methodthunk_DelegateUtils_FreeGCHandle.nullify();
-
-	methodthunk_Marshaling_managed_to_variant_type.nullify();
-	methodthunk_Marshaling_try_get_array_element_type.nullify();
-	methodthunk_Marshaling_variant_to_mono_object_of_type.nullify();
-	methodthunk_Marshaling_variant_to_mono_object.nullify();
-	methodthunk_Marshaling_mono_object_to_variant_out.nullify();
-
-	methodthunk_Marshaling_SetFieldValue.nullify();
-
-	methodthunk_MarshalUtils_TypeHasFlagsAttribute.nullify();
-}
-
-#define GODOT_API_CLASS(m_class) (GDMono::get_singleton()->get_core_api_assembly()->get_class(BINDINGS_NAMESPACE, #m_class))
-
-void update_corlib_cache() {
-	CACHE_CLASS_AND_CHECK(MonoObject, GDMono::get_singleton()->get_corlib_assembly()->get_class(mono_get_object_class()));
-	CACHE_CLASS_AND_CHECK(String, GDMono::get_singleton()->get_corlib_assembly()->get_class(mono_get_string_class()));
-
-#ifdef DEBUG_ENABLED
-	CACHE_CLASS_AND_CHECK(System_Diagnostics_StackTrace, GDMono::get_singleton()->get_corlib_assembly()->get_class("System.Diagnostics", "StackTrace"));
-	CACHE_METHOD_THUNK_AND_CHECK(System_Diagnostics_StackTrace, GetFrames, CACHED_CLASS(System_Diagnostics_StackTrace)->get_method("GetFrames"));
-	CACHE_METHOD_AND_CHECK(System_Diagnostics_StackTrace, ctor_bool, CACHED_CLASS(System_Diagnostics_StackTrace)->get_method_with_desc("System.Diagnostics.StackTrace:.ctor(bool)", true));
-	CACHE_METHOD_AND_CHECK(System_Diagnostics_StackTrace, ctor_Exception_bool, CACHED_CLASS(System_Diagnostics_StackTrace)->get_method_with_desc("System.Diagnostics.StackTrace:.ctor(System.Exception,bool)", true));
-#endif
-
-	CACHE_METHOD_THUNK_AND_CHECK(Delegate, Equals, GDMono::get_singleton()->get_corlib_assembly()->get_class("System", "Delegate")->get_method_with_desc("System.Delegate:Equals(object)", true));
-
-	CACHE_CLASS_AND_CHECK(KeyNotFoundException, GDMono::get_singleton()->get_corlib_assembly()->get_class("System.Collections.Generic", "KeyNotFoundException"));
-
-	cached_data.corlib_cache_updated = true;
-}
-
-void update_godot_api_cache() {
-	CACHE_CLASS_AND_CHECK(GodotObject, GODOT_API_CLASS(Object));
-	CACHE_CLASS_AND_CHECK(GodotResource, GODOT_API_CLASS(Resource));
-	CACHE_CLASS_AND_CHECK(Node, GODOT_API_CLASS(Node));
-	CACHE_CLASS_AND_CHECK(Control, GODOT_API_CLASS(Control));
-	CACHE_CLASS_AND_CHECK(Callable, GODOT_API_CLASS(Callable));
-	CACHE_CLASS_AND_CHECK(SignalInfo, GODOT_API_CLASS(SignalInfo));
-	CACHE_CLASS_AND_CHECK(ISerializationListener, GODOT_API_CLASS(ISerializationListener));
-
-#ifdef DEBUG_ENABLED
-	CACHE_CLASS_AND_CHECK(DebuggingUtils, GODOT_API_CLASS(DebuggingUtils));
-#endif
-
-	// Attributes
-	CACHE_CLASS_AND_CHECK(ExportAttribute, GODOT_API_CLASS(ExportAttribute));
-	CACHE_FIELD_AND_CHECK(ExportAttribute, hint, CACHED_CLASS(ExportAttribute)->get_field("hint"));
-	CACHE_FIELD_AND_CHECK(ExportAttribute, hintString, CACHED_CLASS(ExportAttribute)->get_field("hintString"));
-	CACHE_CLASS_AND_CHECK(SignalAttribute, GODOT_API_CLASS(SignalAttribute));
-	CACHE_CLASS_AND_CHECK(ToolAttribute, GODOT_API_CLASS(ToolAttribute));
-	CACHE_CLASS_AND_CHECK(RPCAttribute, GODOT_API_CLASS(RPCAttribute));
-	CACHE_PROPERTY_AND_CHECK(RPCAttribute, Mode, CACHED_CLASS(RPCAttribute)->get_property("Mode"));
-	CACHE_PROPERTY_AND_CHECK(RPCAttribute, CallLocal, CACHED_CLASS(RPCAttribute)->get_property("CallLocal"));
-	CACHE_PROPERTY_AND_CHECK(RPCAttribute, TransferMode, CACHED_CLASS(RPCAttribute)->get_property("TransferMode"));
-	CACHE_PROPERTY_AND_CHECK(RPCAttribute, TransferChannel, CACHED_CLASS(RPCAttribute)->get_property("TransferChannel"));
-	CACHE_CLASS_AND_CHECK(GodotMethodAttribute, GODOT_API_CLASS(GodotMethodAttribute));
-	CACHE_FIELD_AND_CHECK(GodotMethodAttribute, methodName, CACHED_CLASS(GodotMethodAttribute)->get_field("methodName"));
-	CACHE_CLASS_AND_CHECK(ScriptPathAttribute, GODOT_API_CLASS(ScriptPathAttribute));
-	CACHE_FIELD_AND_CHECK(ScriptPathAttribute, path, CACHED_CLASS(ScriptPathAttribute)->get_field("path"));
-	CACHE_CLASS_AND_CHECK(AssemblyHasScriptsAttribute, GODOT_API_CLASS(AssemblyHasScriptsAttribute));
-	CACHE_FIELD_AND_CHECK(AssemblyHasScriptsAttribute, requiresLookup, CACHED_CLASS(AssemblyHasScriptsAttribute)->get_field("requiresLookup"));
-	CACHE_FIELD_AND_CHECK(AssemblyHasScriptsAttribute, scriptTypes, CACHED_CLASS(AssemblyHasScriptsAttribute)->get_field("scriptTypes"));
-
-	CACHE_FIELD_AND_CHECK(GodotObject, ptr, CACHED_CLASS(GodotObject)->get_field(BINDINGS_PTR_FIELD));
-
-	CACHE_METHOD_THUNK_AND_CHECK(GodotObject, Dispose, CACHED_CLASS(GodotObject)->get_method("Dispose", 0));
-	CACHE_METHOD_THUNK_AND_CHECK(SignalAwaiter, SignalCallback, GODOT_API_CLASS(SignalAwaiter)->get_method("SignalCallback", 1));
-
-	CACHE_METHOD_THUNK_AND_CHECK(DelegateUtils, TrySerializeDelegateWithGCHandle, GODOT_API_CLASS(DelegateUtils)->get_method("TrySerializeDelegateWithGCHandle", 2));
-	CACHE_METHOD_THUNK_AND_CHECK(DelegateUtils, TryDeserializeDelegateWithGCHandle, GODOT_API_CLASS(DelegateUtils)->get_method("TryDeserializeDelegateWithGCHandle", 2));
-	CACHE_METHOD_THUNK_AND_CHECK(DelegateUtils, TrySerializeDelegate, GODOT_API_CLASS(DelegateUtils)->get_method("TrySerializeDelegate", 2));
-	CACHE_METHOD_THUNK_AND_CHECK(DelegateUtils, TryDeserializeDelegate, GODOT_API_CLASS(DelegateUtils)->get_method("TryDeserializeDelegate", 2));
-	CACHE_METHOD_THUNK_AND_CHECK(DelegateUtils, InvokeWithVariantArgs, GODOT_API_CLASS(DelegateUtils)->get_method("InvokeWithVariantArgs", 4));
-	CACHE_METHOD_THUNK_AND_CHECK(DelegateUtils, DelegateEquals, GODOT_API_CLASS(DelegateUtils)->get_method("DelegateEquals", 2));
-	CACHE_METHOD_THUNK_AND_CHECK(DelegateUtils, FreeGCHandle, GODOT_API_CLASS(DelegateUtils)->get_method("FreeGCHandle", 1));
-
-	GDMonoClass *gd_mono_marshal_class = GDMono::get_singleton()->get_core_api_assembly()->get_class(
-			"Godot.NativeInterop", "Marshaling");
-
-	ERR_FAIL_COND_MSG(gd_mono_marshal_class == nullptr,
-			"Mono Cache: Class `Godot.NativeInterop.Marshaling` not found.");
-
-	CACHE_METHOD_THUNK_AND_CHECK(Marshaling, managed_to_variant_type,
-			gd_mono_marshal_class->get_method("managed_to_variant_type", 2));
-	CACHE_METHOD_THUNK_AND_CHECK(Marshaling, try_get_array_element_type,
-			gd_mono_marshal_class->get_method("try_get_array_element_type", 2));
-	CACHE_METHOD_THUNK_AND_CHECK(Marshaling, variant_to_mono_object_of_type,
-			gd_mono_marshal_class->get_method("variant_to_mono_object_of_type", 2));
-	CACHE_METHOD_THUNK_AND_CHECK(Marshaling, variant_to_mono_object,
-			gd_mono_marshal_class->get_method("variant_to_mono_object", 1));
-	CACHE_METHOD_THUNK_AND_CHECK(Marshaling, mono_object_to_variant_out,
-			gd_mono_marshal_class->get_method("mono_object_to_variant_out", 3));
-
-	CACHE_METHOD_THUNK_AND_CHECK(Marshaling, SetFieldValue,
-			gd_mono_marshal_class->get_method("SetFieldValue", 3));
-
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeHasFlagsAttribute, GODOT_API_CLASS(MarshalUtils)->get_method("TypeHasFlagsAttribute", 1));
-
-#ifdef DEBUG_ENABLED
-	CACHE_METHOD_THUNK_AND_CHECK(DebuggingUtils, GetStackFrameInfo, GODOT_API_CLASS(DebuggingUtils)->get_method("GetStackFrameInfo", 4));
-#endif
+	CACHE_METHOD_THUNK_AND_CHECK(DebuggingUtils, InstallTraceListener, get_mono_method(GODOT_API_CLASS(DebuggingUtils), "InstallTraceListener", 0));
 
 	MonoException *exc = nullptr;
-	GDMono::get_singleton()
-			->get_core_api_assembly()
-			->get_class("Godot", "Dispatcher")
-			->get_method("InitializeDefaultGodotTaskScheduler")
-			->invoke(nullptr, &exc);
+	MonoMethod *init_default_godot_task_scheduler =
+			get_mono_method(GODOT_API_CLASS(Dispatcher), "InitializeDefaultGodotTaskScheduler", 0);
+	ERR_FAIL_COND_MSG(init_default_godot_task_scheduler == nullptr,
+			"Mono Cache: InitializeDefaultGodotTaskScheduler is null.");
+	mono_runtime_invoke(init_default_godot_task_scheduler, nullptr, nullptr, (MonoObject **)&exc);
 
 	if (exc) {
 		GDMonoUtils::debug_unhandled_exception(exc);

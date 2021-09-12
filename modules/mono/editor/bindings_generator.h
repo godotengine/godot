@@ -380,6 +380,8 @@ class BindingsGenerator {
 		List<MethodInterface> methods;
 		List<SignalInterface> signals_;
 
+		bool has_virtual_methods = false;
+
 		const MethodInterface *find_method_by_name(const StringName &p_cname) const {
 			for (const MethodInterface &E : methods) {
 				if (E.cname == p_cname) {

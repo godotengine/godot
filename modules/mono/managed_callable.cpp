@@ -32,7 +32,6 @@
 
 #include "csharp_script.h"
 #include "mono_gd/gd_mono_cache.h"
-#include "mono_gd/gd_mono_marshal.h"
 #include "mono_gd/gd_mono_utils.h"
 
 #ifdef GD_MONO_HOT_RELOAD
@@ -45,8 +44,8 @@ bool ManagedCallable::compare_equal(const CallableCustom *p_a, const CallableCus
 	const ManagedCallable *a = static_cast<const ManagedCallable *>(p_a);
 	const ManagedCallable *b = static_cast<const ManagedCallable *>(p_b);
 
-	if (!a->delegate_handle || !b->delegate_handle) {
-		if (!a->delegate_handle && !b->delegate_handle) {
+	if (!a->delegate_handle.value || !b->delegate_handle.value) {
+		if (!a->delegate_handle.value && !b->delegate_handle.value) {
 			return true;
 		}
 		return false;
@@ -54,7 +53,7 @@ bool ManagedCallable::compare_equal(const CallableCustom *p_a, const CallableCus
 
 	// Call Delegate's 'Equals'
 	MonoException *exc = nullptr;
-	MonoBoolean res = CACHED_METHOD_THUNK(DelegateUtils, DelegateEquals)
+	MonoBoolean res = GDMonoCache::cached_data.methodthunk_DelegateUtils_DelegateEquals
 							  .invoke(a->delegate_handle,
 									  b->delegate_handle, &exc);
 	UNHANDLED_EXCEPTION(exc);
@@ -69,7 +68,7 @@ bool ManagedCallable::compare_less(const CallableCustom *p_a, const CallableCust
 }
 
 uint32_t ManagedCallable::hash() const {
-	return hash_murmur3_one_64((uint64_t)delegate_handle);
+	return hash_murmur3_one_64((uint64_t)delegate_handle.value);
 }
 
 String ManagedCallable::get_as_text() const {
@@ -94,7 +93,7 @@ void ManagedCallable::call(const Variant **p_arguments, int p_argcount, Variant 
 	r_return_value = Variant();
 
 	MonoException *exc = nullptr;
-	CACHED_METHOD_THUNK(DelegateUtils, InvokeWithVariantArgs)
+	GDMonoCache::cached_data.methodthunk_DelegateUtils_InvokeWithVariantArgs
 			.invoke(delegate_handle, p_arguments,
 					p_argcount, &r_return_value, &exc);
 
@@ -106,21 +105,21 @@ void ManagedCallable::call(const Variant **p_arguments, int p_argcount, Variant 
 }
 
 void ManagedCallable::release_delegate_handle() {
-	if (delegate_handle) {
+	if (delegate_handle.value) {
 		MonoException *exc = nullptr;
-		CACHED_METHOD_THUNK(DelegateUtils, FreeGCHandle).invoke(delegate_handle, &exc);
+		GDMonoCache::cached_data.methodthunk_GCHandleBridge_FreeGCHandle.invoke(delegate_handle, &exc);
 
 		if (exc) {
 			GDMonoUtils::debug_print_unhandled_exception(exc);
 		}
 
-		delegate_handle = nullptr;
+		delegate_handle = GCHandleIntPtr();
 	}
 }
 
 // Why you do this clang-format...
 /* clang-format off */
-ManagedCallable::ManagedCallable(void *p_delegate_handle) : delegate_handle(p_delegate_handle) {
+ManagedCallable::ManagedCallable(GCHandleIntPtr p_delegate_handle) : delegate_handle(p_delegate_handle) {
 #ifdef GD_MONO_HOT_RELOAD
 	{
 		MutexLock lock(instances_mutex);

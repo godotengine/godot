@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Godot.NativeInterop;
 
 namespace Godot
@@ -12,11 +13,13 @@ namespace Godot
 
         public SignalAwaiter(Object source, StringName signal, Object target)
         {
-            godot_icall_SignalAwaiter_connect(Object.GetPtr(source), ref signal.NativeValue, Object.GetPtr(target), this);
+            godot_icall_SignalAwaiter_connect(Object.GetPtr(source), ref signal.NativeValue,
+                Object.GetPtr(target), GCHandle.ToIntPtr(GCHandle.Alloc(this)));
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern Error godot_icall_SignalAwaiter_connect(IntPtr source, ref godot_string_name signal, IntPtr target, SignalAwaiter awaiter);
+        internal static extern Error godot_icall_SignalAwaiter_connect(IntPtr source, ref godot_string_name signal,
+            IntPtr target, IntPtr awaiterHandlePtr);
 
         public bool IsCompleted => _completed;
 
@@ -29,11 +32,30 @@ namespace Godot
 
         public IAwaiter<object[]> GetAwaiter() => this;
 
-        internal void SignalCallback(object[] args)
+        internal static unsafe void SignalCallback(IntPtr awaiterGCHandlePtr,
+            godot_variant** args, int argCount,
+            bool* r_awaiterIsNull)
         {
-            _completed = true;
-            _result = args;
-            _action?.Invoke();
+            var awaiter = (SignalAwaiter)GCHandle.FromIntPtr(awaiterGCHandlePtr).Target;
+
+            if (awaiter == null)
+            {
+                *r_awaiterIsNull = true;
+                return;
+            }
+
+            *r_awaiterIsNull = false;
+
+            awaiter._completed = true;
+
+            object[] signalArgs = new object[argCount];
+
+            for (int i = 0; i < argCount; i++)
+                signalArgs[i] = Marshaling.variant_to_mono_object(args[i]);
+
+            awaiter._result = signalArgs;
+
+            awaiter._action?.Invoke();
         }
     }
 }

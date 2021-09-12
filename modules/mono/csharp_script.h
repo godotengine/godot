@@ -39,7 +39,6 @@
 
 #include "mono_gc_handle.h"
 #include "mono_gd/gd_mono.h"
-#include "mono_gd/gd_mono_header.h"
 #include "mono_gd/gd_mono_internals.h"
 
 #ifdef TOOLS_ENABLED
@@ -67,18 +66,6 @@ TScriptInstance *cast_script_instance(ScriptInstance *p_inst) {
 
 #define CAST_CSHARP_INSTANCE(m_inst) (cast_script_instance<CSharpInstance, CSharpLanguage>(m_inst))
 
-struct DotNetScriptLookupInfo {
-	String class_namespace;
-	String class_name;
-	GDMonoClass *script_class = nullptr;
-
-	DotNetScriptLookupInfo() {} // Required by HashMap...
-
-	DotNetScriptLookupInfo(const String &p_class_namespace, const String &p_class_name, GDMonoClass *p_script_class) :
-			class_namespace(p_class_namespace), class_name(p_class_name), script_class(p_script_class) {
-	}
-};
-
 class CSharpScript : public Script {
 	GDCLASS(CSharpScript, Script);
 
@@ -89,24 +76,13 @@ public:
 		bool nil_is_variant = false;
 	};
 
-	struct EventSignal {
-		GDMonoField *field = nullptr;
-		GDMonoMethod *invoke_method = nullptr;
-		Vector<SignalParameter> parameters;
-	};
-
 private:
 	friend class CSharpInstance;
 	friend class CSharpLanguage;
-	friend struct CSharpScriptDepSort;
 
 	bool tool = false;
 	bool valid = false;
 	bool reload_invalidated = false;
-
-	GDMonoClass *base = nullptr;
-	GDMonoClass *native = nullptr;
-	GDMonoClass *script_class = nullptr;
 
 	Ref<CSharpScript> base_cache; // TODO what's this for?
 
@@ -128,13 +104,8 @@ private:
 #endif
 
 	String source;
-	StringName name;
 
 	SelfList<CSharpScript> script_list = this;
-
-	HashMap<StringName, Vector<SignalParameter>> _signals;
-	HashMap<StringName, EventSignal> event_signals;
-	bool signals_invalidated = true;
 
 	Dictionary rpc_config;
 
@@ -158,34 +129,26 @@ private:
 
 	void _clear();
 
-	void _update_name();
-
-	void load_script_signals(GDMonoClass *p_class, GDMonoClass *p_native_class);
-	bool _get_signal(GDMonoClass *p_class, GDMonoMethod *p_delegate_invoke, Vector<SignalParameter> &params);
-
 	bool _update_exports(PlaceHolderScriptInstance *p_instance_to_update = nullptr);
 
+#warning TODO
+#if 0
 	bool _get_member_export(IMonoClassMember *p_member, bool p_inspect_export, PropertyInfo &r_prop_info, bool &r_exported);
 #ifdef TOOLS_ENABLED
 	static int _try_get_member_export_hint(IMonoClassMember *p_member, ManagedType p_type, Variant::Type p_variant_type, bool p_allow_generics, PropertyHint &r_hint, String &r_hint_string);
+#endif
 #endif
 
 	CSharpInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_is_ref_counted, Callable::CallError &r_error);
 	Variant _new(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	// Do not use unless you know what you are doing
-	friend void GDMonoInternals::tie_managed_to_unmanaged(MonoObject *, Object *);
-	static Ref<CSharpScript> create_for_managed_type(GDMonoClass *p_class, GDMonoClass *p_native);
 	static void update_script_class_info(Ref<CSharpScript> p_script);
-	static void initialize_for_managed_type(Ref<CSharpScript> p_script, GDMonoClass *p_class, GDMonoClass *p_native);
-
-	Variant _member_get_rpc_config(IMonoClassMember *p_member) const;
+	static void initialize_for_managed_type(Ref<CSharpScript> p_script);
 
 protected:
 	static void _bind_methods();
 
-	Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
-	void _resource_path_changed() override;
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	bool _set(const StringName &p_name, const Variant &p_value);
 	void _get_property_list(List<PropertyInfo> *p_properties) const;
@@ -270,21 +233,20 @@ class CSharpInstance : public ScriptInstance {
 	bool _unreference_owner_unsafe();
 
 	/*
-	 * If nullptr is returned, the caller must destroy the script instance by removing it from its owner.
+	 * If false is returned, the caller must destroy the script instance by removing it from its owner.
 	 */
-	MonoObject *_internal_new_managed();
+	bool _internal_new_managed();
 
 	// Do not use unless you know what you are doing
-	friend void GDMonoInternals::tie_managed_to_unmanaged(MonoObject *, Object *);
 	static CSharpInstance *create_for_managed_type(Object *p_owner, CSharpScript *p_script, const MonoGCHandleData &p_gchandle);
 
 	void get_properties_state_for_reloading(List<Pair<StringName, Variant>> &r_state);
 	void get_event_signals_state_for_reloading(List<Pair<StringName, Array>> &r_state);
 
 public:
-	MonoObject *get_mono_object() const;
-
 	_FORCE_INLINE_ bool is_destructing_script_instance() { return destructing_script_instance; }
+
+	_FORCE_INLINE_ GCHandleIntPtr get_gchandle_intptr() { return gchandle.get_intptr(); }
 
 	Object *get_owner() override;
 
@@ -300,15 +262,15 @@ public:
 	bool has_method(const StringName &p_method) const override;
 	Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
-	void mono_object_disposed(MonoObject *p_obj);
+	void mono_object_disposed();
 
 	/*
 	 * If 'r_delete_owner' is set to true, the caller must memdelete the script instance's owner. Otherwise, if
 	 * 'r_remove_script_instance' is set to true, the caller must destroy the script instance by removing it from its owner.
 	 */
-	void mono_object_disposed_baseref(MonoObject *p_obj, bool p_is_finalizer, bool &r_delete_owner, bool &r_remove_script_instance);
+	void mono_object_disposed_baseref(bool p_is_finalizer, bool &r_delete_owner, bool &r_remove_script_instance);
 
-	void connect_event_signals();
+	void connect_event_signal(const StringName &p_event_signal);
 	void disconnect_event_signals();
 
 	void refcount_incremented() override;
@@ -332,7 +294,6 @@ public:
 struct CSharpScriptBinding {
 	bool inited = false;
 	StringName type_name;
-	GDMonoClass *wrapper_class = nullptr;
 	MonoGCHandleData gchandle;
 	Object *owner = nullptr;
 
@@ -370,27 +331,16 @@ class CSharpLanguage : public ScriptLanguage {
 	ManagedCallableMiddleman *managed_callable_middleman = memnew(ManagedCallableMiddleman);
 
 	struct StringNameCache {
-		StringName _signal_callback;
-		StringName _set;
-		StringName _get;
-		StringName _get_property_list;
 		StringName _property_can_revert;
 		StringName _property_get_revert;
-		StringName _notification;
 		StringName _script_source;
-		StringName dotctor; // .ctor
 		StringName on_before_serialize; // OnBeforeSerialize
 		StringName on_after_deserialize; // OnAfterDeserialize
-		StringName delegate_invoke_method_name;
 
 		StringNameCache();
 	};
 
 	int lang_idx = -1;
-
-	HashMap<String, DotNetScriptLookupInfo> dotnet_script_lookup_map;
-
-	void lookup_script_for_class(GDMonoClass *p_class);
 
 	// For debug_break and debug_break_parse
 	int _debug_parse_err_line = -1;
@@ -421,6 +371,7 @@ public:
 	StringNameCache string_names;
 
 	const Mutex &get_language_bind_mutex() { return language_bind_mutex; }
+	const Mutex &get_script_instances_mutex() { return script_instances_mutex; }
 
 	_FORCE_INLINE_ int get_language_index() { return lang_idx; }
 	void set_language_index(int p_idx);
@@ -434,7 +385,7 @@ public:
 #endif
 
 	static void release_script_gchandle(MonoGCHandleData &p_gchandle);
-	static void release_script_gchandle(MonoObject *p_expected_obj, MonoGCHandleData &p_gchandle);
+	static void release_script_gchandle(void *p_expected_mono_obj_unused, MonoGCHandleData &p_gchandle);
 
 	bool debug_break(const String &p_error, bool p_allow_continue = true);
 	bool debug_break_parse(const String &p_file, int p_line, const String &p_error);
@@ -445,12 +396,6 @@ public:
 #endif
 
 	_FORCE_INLINE_ ManagedCallableMiddleman *get_managed_callable_middleman() const { return managed_callable_middleman; }
-
-	void lookup_scripts_in_assembly(GDMonoAssembly *p_assembly);
-
-	const DotNetScriptLookupInfo *lookup_dotnet_script(const String &p_script_path) const {
-		return dotnet_script_lookup_map.getptr(p_script_path);
-	}
 
 	String get_name() const override;
 
@@ -526,6 +471,10 @@ public:
 
 	RBMap<Object *, CSharpScriptBinding>::Element *insert_script_binding(Object *p_object, const CSharpScriptBinding &p_script_binding);
 	bool setup_csharp_script_binding(CSharpScriptBinding &r_script_binding, Object *p_object);
+
+	static void tie_native_managed_to_unmanaged(GCHandleIntPtr p_gchandle_intptr, Object *p_unmanaged, const StringName *p_native_name, bool p_ref_counted);
+	static void tie_user_managed_to_unmanaged(GCHandleIntPtr p_gchandle_intptr, Object *p_unmanaged, CSharpScript *p_script, bool p_ref_counted);
+	static void tie_managed_to_unmanaged_with_pre_setup(GCHandleIntPtr p_gchandle_intptr, Object *p_unmanaged);
 
 #ifdef DEBUG_ENABLED
 	Vector<StackInfo> stack_trace_get_info(MonoObject *p_stack_trace);

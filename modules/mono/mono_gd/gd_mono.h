@@ -41,43 +41,11 @@
 #include "../utils/mono_reg_utils.h"
 #endif
 
-namespace ApiAssemblyInfo {
-enum Type {
-	API_CORE,
-	API_EDITOR
-};
-
-struct Version {
-	uint64_t godot_api_hash = 0;
-
-	bool operator==(const Version &p_other) const {
-		return godot_api_hash == p_other.godot_api_hash;
-	}
-
-	Version() {}
-
-	Version(uint64_t p_godot_api_hash) :
-			godot_api_hash(p_godot_api_hash) {
-	}
-
-	static Version get_from_loaded_assembly(GDMonoAssembly *p_api_assembly, Type p_api_type);
-};
-
-String to_string(Type p_type);
-} // namespace ApiAssemblyInfo
-
 class GDMono {
 public:
 	enum UnhandledExceptionPolicy {
 		POLICY_TERMINATE_APP,
 		POLICY_LOG_ERROR
-	};
-
-	struct LoadedApiAssembly {
-		GDMonoAssembly *assembly = nullptr;
-		bool out_of_sync = false;
-
-		LoadedApiAssembly() {}
 	};
 
 private:
@@ -98,17 +66,12 @@ private:
 	GDMonoAssembly *tools_project_editor_assembly = nullptr;
 #endif
 
-	LoadedApiAssembly core_api_assembly;
-	LoadedApiAssembly editor_api_assembly;
+	GDMonoAssembly *core_api_assembly;
+	GDMonoAssembly *editor_api_assembly;
 
-	typedef bool (*CoreApiAssemblyLoadedCallback)();
-
-	bool _are_api_assemblies_out_of_sync();
-	bool _temp_domain_load_are_assemblies_out_of_sync(const String &p_config);
-
-	bool _load_core_api_assembly(LoadedApiAssembly &r_loaded_api_assembly, const String &p_config, bool p_refonly);
+	bool _load_core_api_assembly(GDMonoAssembly **r_loaded_api_assembly, const String &p_config);
 #ifdef TOOLS_ENABLED
-	bool _load_editor_api_assembly(LoadedApiAssembly &r_loaded_api_assembly, const String &p_config, bool p_refonly);
+	bool _load_editor_api_assembly(GDMonoAssembly **r_loaded_api_assembly, const String &p_config);
 #endif
 
 	static bool _on_core_api_assembly_loaded();
@@ -119,10 +82,7 @@ private:
 #endif
 	bool _load_project_assembly();
 
-	bool _try_load_api_assemblies(LoadedApiAssembly &r_core_api_assembly, LoadedApiAssembly &r_editor_api_assembly,
-			const String &p_config, bool p_refonly, CoreApiAssemblyLoadedCallback p_callback);
-	bool _try_load_api_assemblies_preset();
-	void _load_api_assemblies();
+	bool _try_load_api_assemblies();
 
 	void _install_trace_listener();
 
@@ -184,11 +144,6 @@ public:
 #endif
 	}
 
-#ifdef TOOLS_ENABLED
-	bool copy_prebuilt_api_assembly(ApiAssemblyInfo::Type p_api_type, const String &p_config);
-	String update_api_assemblies_from_prebuilt(const String &p_config, const bool *p_core_api_out_of_sync = nullptr, const bool *p_editor_api_out_of_sync = nullptr);
-#endif
-
 	static GDMono *get_singleton() { return singleton; }
 
 	[[noreturn]] static void unhandled_exception_hook(MonoObject *p_exc, void *p_user_data);
@@ -206,29 +161,24 @@ public:
 	_FORCE_INLINE_ MonoDomain *get_scripts_domain() { return scripts_domain; }
 
 	_FORCE_INLINE_ GDMonoAssembly *get_corlib_assembly() const { return corlib_assembly; }
-	_FORCE_INLINE_ GDMonoAssembly *get_core_api_assembly() const { return core_api_assembly.assembly; }
+	_FORCE_INLINE_ GDMonoAssembly *get_core_api_assembly() const { return core_api_assembly; }
 	_FORCE_INLINE_ GDMonoAssembly *get_project_assembly() const { return project_assembly; }
 #ifdef TOOLS_ENABLED
-	_FORCE_INLINE_ GDMonoAssembly *get_editor_api_assembly() const { return editor_api_assembly.assembly; }
 	_FORCE_INLINE_ GDMonoAssembly *get_tools_assembly() const { return tools_assembly; }
-	_FORCE_INLINE_ GDMonoAssembly *get_tools_project_editor_assembly() const { return tools_project_editor_assembly; }
 #endif
 
 #if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
 	const MonoRegInfo &get_mono_reg_info() { return mono_reg_info; }
 #endif
 
-	GDMonoClass *get_class(MonoClass *p_raw_class);
-	GDMonoClass *get_class(const StringName &p_namespace, const StringName &p_name);
-
 #ifdef GD_MONO_HOT_RELOAD
 	Error reload_scripts_domain();
 #endif
 
-	bool load_assembly(const String &p_name, GDMonoAssembly **r_assembly, bool p_refonly = false);
-	bool load_assembly(const String &p_name, MonoAssemblyName *p_aname, GDMonoAssembly **r_assembly, bool p_refonly = false);
-	bool load_assembly(const String &p_name, MonoAssemblyName *p_aname, GDMonoAssembly **r_assembly, bool p_refonly, const Vector<String> &p_search_dirs);
-	bool load_assembly_from(const String &p_name, const String &p_path, GDMonoAssembly **r_assembly, bool p_refonly = false);
+	bool load_assembly(const String &p_name, GDMonoAssembly **r_assembly);
+	bool load_assembly(const String &p_name, MonoAssemblyName *p_aname, GDMonoAssembly **r_assembly);
+	bool load_assembly(const String &p_name, MonoAssemblyName *p_aname, GDMonoAssembly **r_assembly, const Vector<String> &p_search_dirs);
+	bool load_assembly_from(const String &p_name, const String &p_path, GDMonoAssembly **r_assembly);
 
 	Error finalize_and_unload_domain(MonoDomain *p_domain);
 

@@ -31,115 +31,57 @@
 #ifndef GD_MONO_CACHE_H
 #define GD_MONO_CACHE_H
 
-#include "gd_mono_header.h"
 #include "gd_mono_method_thunk.h"
+
+class CSharpScript;
 
 namespace GDMonoCache {
 
 struct CachedData {
-	// -----------------------------------------------
-	// corlib classes
+	// Mono method thunks require structs to be boxed, even if passed by ref (out, ref, in).
+	// As such we need to use pointers instead for now, instead of by ref parameters.
 
-	// Let's use the no-namespace format for these too
-	GDMonoClass *class_MonoObject = nullptr; // object
-	GDMonoClass *class_String = nullptr; // string
+	GDMonoMethodThunk<GCHandleIntPtr, const Variant **, int, bool *> methodthunk_SignalAwaiter_SignalCallback;
 
-#ifdef DEBUG_ENABLED
-	GDMonoClass *class_System_Diagnostics_StackTrace = nullptr;
-	GDMonoMethodThunkR<MonoArray *, MonoObject *> methodthunk_System_Diagnostics_StackTrace_GetFrames;
-	GDMonoMethod *method_System_Diagnostics_StackTrace_ctor_bool = nullptr;
-	GDMonoMethod *method_System_Diagnostics_StackTrace_ctor_Exception_bool = nullptr;
-#endif
+	GDMonoMethodThunk<GCHandleIntPtr, const Variant **, uint32_t, const Variant *> methodthunk_DelegateUtils_InvokeWithVariantArgs;
+	GDMonoMethodThunkR<bool, GCHandleIntPtr, GCHandleIntPtr> methodthunk_DelegateUtils_DelegateEquals;
 
-	GDMonoClass *class_KeyNotFoundException = nullptr;
-	// -----------------------------------------------
+	GDMonoMethodThunk<> methodthunk_ScriptManagerBridge_FrameCallback;
+	GDMonoMethodThunkR<GCHandleIntPtr, const StringName *, Object *> methodthunk_ScriptManagerBridge_CreateManagedForGodotObjectBinding;
+	GDMonoMethodThunk<const CSharpScript *, Object *, const Variant **, int> methodthunk_ScriptManagerBridge_CreateManagedForGodotObjectScriptInstance;
+	GDMonoMethodThunk<const CSharpScript *, StringName *> methodthunk_ScriptManagerBridge_GetScriptNativeName;
+	GDMonoMethodThunk<MonoReflectionAssembly *> methodthunk_ScriptManagerBridge_LookupScriptsInAssembly;
+	GDMonoMethodThunk<GCHandleIntPtr, Object *> methodthunk_ScriptManagerBridge_SetGodotObjectPtr;
+	GDMonoMethodThunk<GCHandleIntPtr, const StringName *, const Variant **, int, bool *> methodthunk_ScriptManagerBridge_RaiseEventSignal;
+	GDMonoMethodThunk<const CSharpScript *, Dictionary *> methodthunk_ScriptManagerBridge_GetScriptSignalList;
+	GDMonoMethodThunkR<bool, const CSharpScript *, const String *> methodthunk_ScriptManagerBridge_HasScriptSignal;
+	GDMonoMethodThunkR<bool, const CSharpScript *, const String *, bool> methodthunk_ScriptManagerBridge_HasMethodUnknownParams;
+	GDMonoMethodThunkR<bool, const CSharpScript *, const CSharpScript *> methodthunk_ScriptManagerBridge_ScriptIsOrInherits;
+	GDMonoMethodThunkR<bool, const CSharpScript *, const String *> methodthunk_ScriptManagerBridge_AddScriptBridge;
+	GDMonoMethodThunk<const CSharpScript *> methodthunk_ScriptManagerBridge_RemoveScriptBridge;
+	GDMonoMethodThunk<const CSharpScript *, bool *, Dictionary *> methodthunk_ScriptManagerBridge_UpdateScriptClassInfo;
+	GDMonoMethodThunkR<bool, GCHandleIntPtr, GCHandleIntPtr *, bool> methodthunk_ScriptManagerBridge_SwapGCHandleForType;
 
-	GDMonoClass *class_GodotObject = nullptr;
-	GDMonoClass *class_GodotResource = nullptr;
-	GDMonoClass *class_Node = nullptr;
-	GDMonoClass *class_Control = nullptr;
-	GDMonoClass *class_Callable = nullptr;
-	GDMonoClass *class_SignalInfo = nullptr;
-	GDMonoClass *class_ISerializationListener = nullptr;
+	GDMonoMethodThunk<GCHandleIntPtr, const StringName *, const Variant **, int, Callable::CallError *, Variant *> methodthunk_CSharpInstanceBridge_Call;
+	GDMonoMethodThunkR<bool, GCHandleIntPtr, const StringName *, const Variant *> methodthunk_CSharpInstanceBridge_Set;
+	GDMonoMethodThunkR<bool, GCHandleIntPtr, const StringName *, Variant *> methodthunk_CSharpInstanceBridge_Get;
+	GDMonoMethodThunk<GCHandleIntPtr, bool> methodthunk_CSharpInstanceBridge_CallDispose;
+	GDMonoMethodThunk<GCHandleIntPtr, String *, bool *> methodthunk_CSharpInstanceBridge_CallToString;
 
-#ifdef DEBUG_ENABLED
-	GDMonoClass *class_DebuggingUtils = nullptr;
-	GDMonoMethodThunk<MonoObject *, MonoString **, int *, MonoString **> methodthunk_DebuggingUtils_GetStackFrameInfo;
-#endif
+	GDMonoMethodThunk<GCHandleIntPtr> methodthunk_GCHandleBridge_FreeGCHandle;
 
-	GDMonoClass *class_ExportAttribute = nullptr;
-	GDMonoField *field_ExportAttribute_hint = nullptr;
-	GDMonoField *field_ExportAttribute_hintString = nullptr;
-	GDMonoClass *class_SignalAttribute = nullptr;
-	GDMonoClass *class_ToolAttribute = nullptr;
-	GDMonoClass *class_RPCAttribute = nullptr;
-	GDMonoProperty *property_RPCAttribute_Mode = nullptr;
-	GDMonoProperty *property_RPCAttribute_CallLocal = nullptr;
-	GDMonoProperty *property_RPCAttribute_TransferMode = nullptr;
-	GDMonoProperty *property_RPCAttribute_TransferChannel = nullptr;
-	GDMonoClass *class_GodotMethodAttribute = nullptr;
-	GDMonoField *field_GodotMethodAttribute_methodName = nullptr;
-	GDMonoClass *class_ScriptPathAttribute = nullptr;
-	GDMonoField *field_ScriptPathAttribute_path = nullptr;
-	GDMonoClass *class_AssemblyHasScriptsAttribute = nullptr;
-	GDMonoField *field_AssemblyHasScriptsAttribute_requiresLookup = nullptr;
-	GDMonoField *field_AssemblyHasScriptsAttribute_scriptTypes = nullptr;
+	GDMonoMethodThunk<> methodthunk_DebuggingUtils_InstallTraceListener;
 
-
-	GDMonoField *field_GodotObject_ptr = nullptr;
-
-	GDMonoMethodThunk<MonoObject *> methodthunk_GodotObject_Dispose;
-	GDMonoMethodThunk<MonoObject *, MonoArray *> methodthunk_SignalAwaiter_SignalCallback;
-
-	GDMonoMethodThunkR<MonoBoolean, MonoObject *, MonoObject *> methodthunk_Delegate_Equals;
-
-	GDMonoMethodThunkR<MonoBoolean, void *, MonoObject *> methodthunk_DelegateUtils_TrySerializeDelegateWithGCHandle;
-	GDMonoMethodThunkR<MonoBoolean, MonoObject *, void **> methodthunk_DelegateUtils_TryDeserializeDelegateWithGCHandle;
-
-	GDMonoMethodThunkR<MonoBoolean, MonoDelegate *, MonoObject *> methodthunk_DelegateUtils_TrySerializeDelegate;
-	GDMonoMethodThunkR<MonoBoolean, MonoObject *, MonoDelegate **> methodthunk_DelegateUtils_TryDeserializeDelegate;
-
-	GDMonoMethodThunk<void *, const Variant **, uint32_t, const Variant *> methodthunk_DelegateUtils_InvokeWithVariantArgs;
-	GDMonoMethodThunkR<MonoBoolean, void *, void *> methodthunk_DelegateUtils_DelegateEquals;
-	GDMonoMethodThunk<void *> methodthunk_DelegateUtils_FreeGCHandle;
-
-	GDMonoMethodThunkR<int32_t, MonoReflectionType *, MonoBoolean *> methodthunk_Marshaling_managed_to_variant_type;
-	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *, MonoReflectionType **> methodthunk_Marshaling_try_get_array_element_type;
-	GDMonoMethodThunkR<MonoObject *, const Variant *, MonoReflectionType *> methodthunk_Marshaling_variant_to_mono_object_of_type;
-	GDMonoMethodThunkR<MonoObject *, const Variant *> methodthunk_Marshaling_variant_to_mono_object;
-	GDMonoMethodThunk<MonoObject *, MonoBoolean, Variant *> methodthunk_Marshaling_mono_object_to_variant_out;
-
-	GDMonoMethodThunk<MonoReflectionField *, MonoObject *, const Variant *> methodthunk_Marshaling_SetFieldValue;
-
-	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeHasFlagsAttribute;
-
-	bool corlib_cache_updated;
-	bool godot_api_cache_updated;
-
-	void clear_corlib_cache();
-	void clear_godot_api_cache();
-
-	CachedData() {
-		clear_corlib_cache();
-		clear_godot_api_cache();
-	}
+	bool godot_api_cache_updated = false;
 };
 
 extern CachedData cached_data;
 
-void update_corlib_cache();
 void update_godot_api_cache();
 
 inline void clear_godot_api_cache() {
-	cached_data.clear_godot_api_cache();
+	cached_data = CachedData();
 }
 } // namespace GDMonoCache
-
-#define CACHED_CLASS(m_class) (GDMonoCache::cached_data.class_##m_class)
-#define CACHED_CLASS_RAW(m_class) (GDMonoCache::cached_data.class_##m_class->get_mono_ptr())
-#define CACHED_FIELD(m_class, m_field) (GDMonoCache::cached_data.field_##m_class##_##m_field)
-#define CACHED_METHOD(m_class, m_method) (GDMonoCache::cached_data.method_##m_class##_##m_method)
-#define CACHED_METHOD_THUNK(m_class, m_method) (GDMonoCache::cached_data.methodthunk_##m_class##_##m_method)
-#define CACHED_PROPERTY(m_class, m_property) (GDMonoCache::cached_data.property_##m_class##_##m_property)
 
 #endif // GD_MONO_CACHE_H

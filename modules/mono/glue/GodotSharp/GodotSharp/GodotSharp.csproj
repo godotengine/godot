@@ -32,6 +32,9 @@
     <Compile Include="Core\Attributes\SignalAttribute.cs" />
     <Compile Include="Core\Attributes\ToolAttribute.cs" />
     <Compile Include="Core\Basis.cs" />
+    <Compile Include="Core\Bridge\CSharpInstanceBridge.cs" />
+    <Compile Include="Core\Bridge\GCHandleBridge.cs" />
+    <Compile Include="Core\Bridge\ScriptManagerBridge.cs" />
     <Compile Include="Core\Callable.cs" />
     <Compile Include="Core\Color.cs" />
     <Compile Include="Core\Colors.cs" />
@@ -71,7 +74,6 @@
     <Compile Include="Core\NativeInterop\NativeFuncs.cs" />
     <Compile Include="Core\NativeInterop\InteropStructs.cs" />
     <Compile Include="Core\NativeInterop\Marshaling.cs" />
-    <Compile Include="Core\ScriptManager.cs" />
     <Compile Include="Core\SignalInfo.cs" />
     <Compile Include="Core\SignalAwaiter.cs" />
     <Compile Include="Core\StringExtensions.cs" />

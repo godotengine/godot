@@ -34,13 +34,11 @@
 
 #include "../csharp_script.h"
 #include "../mono_gd/gd_mono_cache.h"
-#include "../mono_gd/gd_mono_class.h"
 #include "../mono_gd/gd_mono_internals.h"
-#include "../mono_gd/gd_mono_marshal.h"
 #include "../mono_gd/gd_mono_utils.h"
 #include "../signal_awaiter_utils.h"
 
-void godot_icall_Object_Disposed(MonoObject *p_obj, Object *p_ptr) {
+void godot_icall_Object_Disposed(Object *p_ptr) {
 #ifdef DEBUG_ENABLED
 	CRASH_COND(p_ptr == nullptr);
 #endif
@@ -49,7 +47,7 @@ void godot_icall_Object_Disposed(MonoObject *p_obj, Object *p_ptr) {
 		CSharpInstance *cs_instance = CAST_CSHARP_INSTANCE(p_ptr->get_script_instance());
 		if (cs_instance) {
 			if (!cs_instance->is_destructing_script_instance()) {
-				cs_instance->mono_object_disposed(p_obj);
+				cs_instance->mono_object_disposed();
 				p_ptr->set_script_instance(nullptr);
 			}
 			return;
@@ -63,13 +61,14 @@ void godot_icall_Object_Disposed(MonoObject *p_obj, Object *p_ptr) {
 		if (script_binding.inited) {
 			MonoGCHandleData &gchandle = script_binding.gchandle;
 			if (!gchandle.is_released()) {
-				CSharpLanguage::release_script_gchandle(p_obj, gchandle);
+				CSharpLanguage::release_script_gchandle(nullptr, gchandle);
+				script_binding.inited = false;
 			}
 		}
 	}
 }
 
-void godot_icall_RefCounted_Disposed(MonoObject *p_obj, Object *p_ptr, MonoBoolean p_is_finalizer) {
+void godot_icall_RefCounted_Disposed(Object *p_ptr, MonoBoolean p_is_finalizer) {
 #ifdef DEBUG_ENABLED
 	CRASH_COND(p_ptr == nullptr);
 	// This is only called with RefCounted derived classes
@@ -85,7 +84,7 @@ void godot_icall_RefCounted_Disposed(MonoObject *p_obj, Object *p_ptr, MonoBoole
 				bool delete_owner;
 				bool remove_script_instance;
 
-				cs_instance->mono_object_disposed_baseref(p_obj, p_is_finalizer, delete_owner, remove_script_instance);
+				cs_instance->mono_object_disposed_baseref(p_is_finalizer, delete_owner, remove_script_instance);
 
 				if (delete_owner) {
 					memdelete(rc);
@@ -110,28 +109,29 @@ void godot_icall_RefCounted_Disposed(MonoObject *p_obj, Object *p_ptr, MonoBoole
 			if (script_binding.inited) {
 				MonoGCHandleData &gchandle = script_binding.gchandle;
 				if (!gchandle.is_released()) {
-					CSharpLanguage::release_script_gchandle(p_obj, gchandle);
+					CSharpLanguage::release_script_gchandle(nullptr, gchandle);
+					script_binding.inited = false;
 				}
 			}
 		}
 	}
 }
 
-void godot_icall_Object_ConnectEventSignals(Object *p_ptr) {
+void godot_icall_Object_ConnectEventSignal(Object *p_ptr, const StringName *p_event_signal) {
 	CSharpInstance *csharp_instance = CAST_CSHARP_INSTANCE(p_ptr->get_script_instance());
 	if (csharp_instance) {
-		csharp_instance->connect_event_signals();
+		csharp_instance->connect_event_signal(*p_event_signal);
 	}
 }
 
-int32_t godot_icall_SignalAwaiter_connect(Object *p_source, StringName *p_signal, Object *p_target, MonoObject *p_awaiter) {
+int32_t godot_icall_SignalAwaiter_connect(Object *p_source, StringName *p_signal, Object *p_target, GCHandleIntPtr p_awaiter_handle_ptr) {
 	StringName signal = p_signal ? *p_signal : StringName();
-	return (int32_t)gd_mono_connect_signal_awaiter(p_source, signal, p_target, p_awaiter);
+	return (int32_t)gd_mono_connect_signal_awaiter(p_source, signal, p_target, p_awaiter_handle_ptr);
 }
 
 void godot_register_object_icalls() {
 	GDMonoUtils::add_internal_call("Godot.Object::godot_icall_Object_Disposed", godot_icall_Object_Disposed);
 	GDMonoUtils::add_internal_call("Godot.Object::godot_icall_RefCounted_Disposed", godot_icall_RefCounted_Disposed);
-	GDMonoUtils::add_internal_call("Godot.Object::godot_icall_Object_ConnectEventSignals", godot_icall_Object_ConnectEventSignals);
+	GDMonoUtils::add_internal_call("Godot.Object::godot_icall_Object_ConnectEventSignal", godot_icall_Object_ConnectEventSignal);
 	GDMonoUtils::add_internal_call("Godot.SignalAwaiter::godot_icall_SignalAwaiter_connect", godot_icall_SignalAwaiter_connect);
 }

@@ -96,14 +96,15 @@ class _GodotSharpDirs {
 public:
 	String res_data_dir;
 	String res_metadata_dir;
-	String res_assemblies_base_dir;
-	String res_assemblies_dir;
 	String res_config_dir;
 	String res_temp_dir;
 	String res_temp_assemblies_base_dir;
 	String res_temp_assemblies_dir;
 	String mono_user_dir;
 	String mono_logs_dir;
+
+	String api_assemblies_base_dir;
+	String api_assemblies_dir;
 
 #ifdef TOOLS_ENABLED
 	String mono_solutions_dir;
@@ -113,7 +114,6 @@ public:
 	String csproj_filepath;
 
 	String data_editor_tools_dir;
-	String data_editor_prebuilt_api_dir;
 #else
 	// Equivalent of res_assemblies_dir, but in the data directory rather than in 'res://'.
 	// Only defined on export templates. Used when exporting assemblies outside of PCKs.
@@ -131,14 +131,14 @@ private:
 	_GodotSharpDirs() {
 		res_data_dir = ProjectSettings::get_singleton()->get_project_data_path().plus_file("mono");
 		res_metadata_dir = res_data_dir.plus_file("metadata");
-		res_assemblies_base_dir = res_data_dir.plus_file("assemblies");
-		res_assemblies_dir = res_assemblies_base_dir.plus_file(GDMono::get_expected_api_build_config());
 		res_config_dir = res_data_dir.plus_file("etc").plus_file("mono");
 
 		// TODO use paths from csproj
 		res_temp_dir = res_data_dir.plus_file("temp");
 		res_temp_assemblies_base_dir = res_temp_dir.plus_file("bin");
 		res_temp_assemblies_dir = res_temp_assemblies_base_dir.plus_file(_get_expected_build_config());
+
+		api_assemblies_base_dir = res_data_dir.plus_file("assemblies");
 
 #ifdef JAVASCRIPT_ENABLED
 		mono_user_dir = "user://";
@@ -169,7 +169,7 @@ private:
 
 		String data_dir_root = exe_dir.plus_file("GodotSharp");
 		data_editor_tools_dir = data_dir_root.plus_file("Tools");
-		data_editor_prebuilt_api_dir = data_dir_root.plus_file("Api");
+		api_assemblies_base_dir = data_dir_root.plus_file("Api");
 
 		String data_mono_root_dir = data_dir_root.plus_file("Mono");
 		data_mono_etc_dir = data_mono_root_dir.plus_file("etc");
@@ -189,8 +189,8 @@ private:
 			data_editor_tools_dir = exe_dir.plus_file("../Resources/GodotSharp/Tools");
 		}
 
-		if (!DirAccess::exists(data_editor_prebuilt_api_dir)) {
-			data_editor_prebuilt_api_dir = exe_dir.plus_file("../Resources/GodotSharp/Api");
+		if (!DirAccess::exists(api_assemblies_base_dir)) {
+			api_assemblies_base_dir = exe_dir.plus_file("../Resources/GodotSharp/Api");
 		}
 
 		if (!DirAccess::exists(data_mono_root_dir)) {
@@ -234,6 +234,8 @@ private:
 #endif
 
 #endif
+
+		api_assemblies_dir = api_assemblies_base_dir.plus_file(GDMono::get_expected_api_build_config());
 	}
 
 public:
@@ -251,14 +253,6 @@ String get_res_metadata_dir() {
 	return _GodotSharpDirs::get_singleton().res_metadata_dir;
 }
 
-String get_res_assemblies_base_dir() {
-	return _GodotSharpDirs::get_singleton().res_assemblies_base_dir;
-}
-
-String get_res_assemblies_dir() {
-	return _GodotSharpDirs::get_singleton().res_assemblies_dir;
-}
-
 String get_res_config_dir() {
 	return _GodotSharpDirs::get_singleton().res_config_dir;
 }
@@ -273,6 +267,14 @@ String get_res_temp_assemblies_base_dir() {
 
 String get_res_temp_assemblies_dir() {
 	return _GodotSharpDirs::get_singleton().res_temp_assemblies_dir;
+}
+
+String get_api_assemblies_dir() {
+	return _GodotSharpDirs::get_singleton().api_assemblies_dir;
+}
+
+String get_api_assemblies_base_dir() {
+	return _GodotSharpDirs::get_singleton().api_assemblies_base_dir;
 }
 
 String get_mono_user_dir() {
@@ -302,10 +304,6 @@ String get_project_csproj_path() {
 
 String get_data_editor_tools_dir() {
 	return _GodotSharpDirs::get_singleton().data_editor_tools_dir;
-}
-
-String get_data_editor_prebuilt_api_dir() {
-	return _GodotSharpDirs::get_singleton().data_editor_prebuilt_api_dir;
 }
 #else
 String get_data_game_assemblies_dir() {

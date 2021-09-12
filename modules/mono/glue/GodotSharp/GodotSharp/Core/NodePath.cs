@@ -42,7 +42,7 @@ namespace Godot
     /// </example>
     public sealed class NodePath : IDisposable
     {
-        internal godot_node_path NativeValue;
+        public godot_node_path NativeValue;
 
         ~NodePath()
         {
@@ -140,7 +140,7 @@ namespace Godot
             godot_node_path src = NativeValue;
             NativeFuncs.godotsharp_node_path_as_string(&dest, &src);
             using (dest)
-                return Marshaling.mono_string_from_godot(&dest);
+                return Marshaling.mono_string_from_godot(dest);
         }
 
         /// <summary>
@@ -179,7 +179,7 @@ namespace Godot
         {
             using godot_string names = default;
             NativeFuncs.godotsharp_node_path_get_concatenated_names(ref NativeValue, &names);
-            return Marshaling.mono_string_from_godot(&names);
+            return Marshaling.mono_string_from_godot(names);
         }
 
         /// <summary>
@@ -197,7 +197,7 @@ namespace Godot
         {
             using godot_string subNames = default;
             NativeFuncs.godotsharp_node_path_get_concatenated_subnames(ref NativeValue, &subNames);
-            return Marshaling.mono_string_from_godot(&subNames);
+            return Marshaling.mono_string_from_godot(subNames);
         }
 
         /// <summary>
@@ -217,7 +217,7 @@ namespace Godot
         {
             using godot_string name = default;
             NativeFuncs.godotsharp_node_path_get_name(ref NativeValue, idx, &name);
-            return Marshaling.mono_string_from_godot(&name);
+            return Marshaling.mono_string_from_godot(name);
         }
 
         /// <summary>
@@ -240,7 +240,7 @@ namespace Godot
         {
             using godot_string subName = default;
             NativeFuncs.godotsharp_node_path_get_subname(ref NativeValue, idx, &subName);
-            return Marshaling.mono_string_from_godot(&subName);
+            return Marshaling.mono_string_from_godot(subName);
         }
 
         /// <summary>

@@ -2,12 +2,13 @@
   <PropertyGroup>
     <ProjectGuid>{27B00618-A6F2-4828-B922-05CAEB08C286}</ProjectGuid>
     <TargetFramework>net472</TargetFramework>
-    <LangVersion>7.2</LangVersion>
+    <LangVersion>8</LangVersion>
     <!-- The Godot editor uses the Debug Godot API assemblies -->
     <GodotApiConfiguration>Debug</GodotApiConfiguration>
     <GodotSourceRootPath>$(SolutionDir)/../../../../</GodotSourceRootPath>
     <GodotOutputDataDir>$(GodotSourceRootPath)/bin/GodotSharp</GodotOutputDataDir>
     <GodotApiAssembliesDir>$(GodotOutputDataDir)/Api/$(GodotApiConfiguration)</GodotApiAssembliesDir>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" Exists('$(GodotApiAssembliesDir)/GodotSharp.dll') ">
     <!-- The project is part of the Godot source tree -->

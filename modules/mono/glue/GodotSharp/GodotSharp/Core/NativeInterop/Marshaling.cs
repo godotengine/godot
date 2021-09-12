@@ -10,14 +10,8 @@ namespace Godot.NativeInterop
 {
     // We want to use full name qualifiers here even if redundant for clarity
     [SuppressMessage("ReSharper", "RedundantNameQualifier")]
-    internal static class Marshaling
+    public static class Marshaling
     {
-        public static unsafe void SetFieldValue(FieldInfo fieldInfo, object obj, godot_variant* value)
-        {
-            var valueObj = variant_to_mono_object_of_type(value, fieldInfo.FieldType);
-            fieldInfo.SetValue(obj, valueObj);
-        }
-
         public static Variant.Type managed_to_variant_type(Type type, out bool r_nil_is_variant)
         {
             r_nil_is_variant = false;
@@ -242,10 +236,6 @@ namespace Godot.NativeInterop
             return mono_object_to_variant_impl(p_obj);
         }
 
-        // TODO: Only called from C++. Remove once no longer needed.
-        private static unsafe void mono_object_to_variant_out(object p_obj, bool p_fail_with_err, godot_variant* r_ret)
-            => *r_ret = mono_object_to_variant_impl(p_obj, p_fail_with_err);
-
         private static unsafe godot_variant mono_object_to_variant_impl(object p_obj, bool p_fail_with_err = true)
         {
             if (p_obj == null)
@@ -457,7 +447,7 @@ namespace Godot.NativeInterop
                             // TODO: Validate element type is compatible with Variant
 #if NET
                             var nativeGodotArray =
- mono_array_to_Array(System.Runtime.InteropServices.CollectionsMarshal.AsSpan((dynamic)p_obj));
+ (godot_array)mono_array_to_Array(System.Runtime.InteropServices.CollectionsMarshal.AsSpan((dynamic)p_obj));
 #else
                             // With .NET Standard we need a package reference for Microsoft.CSharp in order to
                             // use dynamic, so we have this workaround for now until we switch to .NET 5/6.
@@ -500,12 +490,12 @@ namespace Godot.NativeInterop
                 case Variant.Type.String:
                 {
                     // We avoid the internal call if the stored type is the same we want.
-                    return mono_string_from_godot(&(*p_var)._data._m_string);
+                    return mono_string_from_godot((*p_var)._data._m_string);
                 }
                 default:
                 {
                     using godot_string godotString = NativeFuncs.godotsharp_variant_as_string(p_var);
-                    return mono_string_from_godot(&godotString);
+                    return mono_string_from_godot(godotString);
                 }
             }
         }
@@ -877,7 +867,7 @@ namespace Godot.NativeInterop
 #endif
                 }
                 case Variant.Type.String:
-                    return mono_string_from_godot(&(*p_var)._data._m_string);
+                    return mono_string_from_godot((*p_var)._data._m_string);
                 case Variant.Type.Vector2:
                     return (*p_var)._data._m_vector2;
                 case Variant.Type.Vector2i:
@@ -1007,14 +997,14 @@ namespace Godot.NativeInterop
             }
         }
 
-        public static unsafe string mono_string_from_godot(godot_string* p_string)
+        public static unsafe string mono_string_from_godot(in godot_string p_string)
         {
-            if ((*p_string)._ptr == IntPtr.Zero)
+            if (p_string._ptr == IntPtr.Zero)
                 return string.Empty;
 
             const int sizeOfChar32 = 4;
-            byte* bytes = (byte*)(*p_string)._ptr;
-            int size = (*p_string).Size;
+            byte* bytes = (byte*)p_string._ptr;
+            int size = p_string.Size;
             if (size == 0)
                 return string.Empty;
             size -= 1; // zero at the end
@@ -1283,7 +1273,7 @@ namespace Godot.NativeInterop
             int size = (*p_array).Size;
             var array = new string[size];
             for (int i = 0; i < size; i++)
-                array[i] = mono_string_from_godot(&buffer[i]);
+                array[i] = mono_string_from_godot(buffer[i]);
             return array;
         }
 

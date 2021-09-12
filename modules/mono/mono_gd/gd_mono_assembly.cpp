@@ -40,8 +40,8 @@
 #include "core/templates/list.h"
 
 #include "../godotsharp_dirs.h"
+#include "gd_mono.h"
 #include "gd_mono_cache.h"
-#include "gd_mono_class.h"
 
 Vector<String> GDMonoAssembly::search_dirs;
 
@@ -73,21 +73,18 @@ void GDMonoAssembly::fill_search_dirs(Vector<String> &r_search_dirs, const Strin
 	}
 
 	if (p_custom_config.is_empty()) {
-		r_search_dirs.push_back(GodotSharpDirs::get_res_assemblies_dir());
+		r_search_dirs.push_back(GodotSharpDirs::get_api_assemblies_dir());
 	} else {
 		String api_config = p_custom_config == "ExportRelease" ? "Release" : "Debug";
-		r_search_dirs.push_back(GodotSharpDirs::get_res_assemblies_base_dir().plus_file(api_config));
+		r_search_dirs.push_back(GodotSharpDirs::get_api_assemblies_base_dir().plus_file(api_config));
 	}
 
-	r_search_dirs.push_back(GodotSharpDirs::get_res_assemblies_base_dir());
+	r_search_dirs.push_back(GodotSharpDirs::get_api_assemblies_base_dir());
 	r_search_dirs.push_back(OS::get_singleton()->get_resource_dir());
 	r_search_dirs.push_back(OS::get_singleton()->get_executable_path().get_base_dir());
 
 #ifdef TOOLS_ENABLED
 	r_search_dirs.push_back(GodotSharpDirs::get_data_editor_tools_dir());
-
-	// For GodotTools to find the api assemblies
-	r_search_dirs.push_back(GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file("Debug"));
 #endif
 }
 
@@ -330,103 +327,12 @@ no_pdb:
 void GDMonoAssembly::unload() {
 	ERR_FAIL_NULL(image); // Should not be called if already unloaded
 
-	for (const KeyValue<MonoClass *, GDMonoClass *> &E : cached_raw) {
-		memdelete(E.value);
-	}
-
-	cached_classes.clear();
-	cached_raw.clear();
-
 	assembly = nullptr;
 	image = nullptr;
 }
 
 String GDMonoAssembly::get_path() const {
 	return String::utf8(mono_image_get_filename(image));
-}
-
-bool GDMonoAssembly::has_attribute(GDMonoClass *p_attr_class) {
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_NULL_V(p_attr_class, false);
-#endif
-
-	if (!attrs_fetched) {
-		fetch_attributes();
-	}
-
-	if (!attributes) {
-		return false;
-	}
-
-	return mono_custom_attrs_has_attr(attributes, p_attr_class->get_mono_ptr());
-}
-
-MonoObject *GDMonoAssembly::get_attribute(GDMonoClass *p_attr_class) {
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_NULL_V(p_attr_class, nullptr);
-#endif
-
-	if (!attrs_fetched) {
-		fetch_attributes();
-	}
-
-	if (!attributes) {
-		return nullptr;
-	}
-
-	return mono_custom_attrs_get_attr(attributes, p_attr_class->get_mono_ptr());
-}
-
-void GDMonoAssembly::fetch_attributes() {
-	ERR_FAIL_COND(attributes != nullptr);
-
-	attributes = mono_custom_attrs_from_assembly(assembly);
-	attrs_fetched = true;
-}
-
-GDMonoClass *GDMonoAssembly::get_class(const StringName &p_namespace, const StringName &p_name) {
-	ERR_FAIL_NULL_V(image, nullptr);
-
-	ClassKey key(p_namespace, p_name);
-
-	GDMonoClass **match = cached_classes.getptr(key);
-
-	if (match) {
-		return *match;
-	}
-
-	MonoClass *mono_class = mono_class_from_name(image, String(p_namespace).utf8(), String(p_name).utf8());
-
-	if (!mono_class) {
-		return nullptr;
-	}
-
-	GDMonoClass *wrapped_class = memnew(GDMonoClass(p_namespace, p_name, mono_class, this));
-
-	cached_classes[key] = wrapped_class;
-	cached_raw[mono_class] = wrapped_class;
-
-	return wrapped_class;
-}
-
-GDMonoClass *GDMonoAssembly::get_class(MonoClass *p_mono_class) {
-	ERR_FAIL_NULL_V(image, nullptr);
-
-	HashMap<MonoClass *, GDMonoClass *>::Iterator match = cached_raw.find(p_mono_class);
-
-	if (match) {
-		return match->value;
-	}
-
-	StringName namespace_name = String::utf8(mono_class_get_namespace(p_mono_class));
-	StringName class_name = String::utf8(mono_class_get_name(p_mono_class));
-
-	GDMonoClass *wrapped_class = memnew(GDMonoClass(namespace_name, class_name, p_mono_class, this));
-
-	cached_classes[ClassKey(namespace_name, class_name)] = wrapped_class;
-	cached_raw[p_mono_class] = wrapped_class;
-
-	return wrapped_class;
 }
 
 GDMonoAssembly *GDMonoAssembly::load(const String &p_name, MonoAssemblyName *p_aname, bool p_refonly, const Vector<String> &p_search_dirs) {

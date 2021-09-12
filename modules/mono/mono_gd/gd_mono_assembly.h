@@ -40,46 +40,13 @@
 #include "gd_mono_utils.h"
 
 class GDMonoAssembly {
-	struct ClassKey {
-		struct Hasher {
-			static _FORCE_INLINE_ uint32_t hash(const ClassKey &p_key) {
-				uint32_t hash = 0;
-
-				GDMonoUtils::hash_combine(hash, p_key.namespace_name.hash());
-				GDMonoUtils::hash_combine(hash, p_key.class_name.hash());
-
-				return hash;
-			}
-		};
-
-		_FORCE_INLINE_ bool operator==(const ClassKey &p_a) const {
-			return p_a.class_name == class_name && p_a.namespace_name == namespace_name;
-		}
-
-		ClassKey() {}
-
-		ClassKey(const StringName &p_namespace_name, const StringName &p_class_name) {
-			namespace_name = p_namespace_name;
-			class_name = p_class_name;
-		}
-
-		StringName namespace_name;
-		StringName class_name;
-	};
-
 	String name;
 	MonoImage *image = nullptr;
 	MonoAssembly *assembly = nullptr;
 
-	bool attrs_fetched = false;
-	MonoCustomAttrInfo *attributes = nullptr;
-
 #ifdef GD_MONO_HOT_RELOAD
 	uint64_t modified_time = 0;
 #endif
-
-	HashMap<ClassKey, GDMonoClass *, ClassKey::Hasher> cached_classes;
-	HashMap<MonoClass *, GDMonoClass *> cached_raw;
 
 	static Vector<String> search_dirs;
 
@@ -110,14 +77,6 @@ public:
 #endif
 
 	String get_path() const;
-
-	bool has_attribute(GDMonoClass *p_attr_class);
-	MonoObject *get_attribute(GDMonoClass *p_attr_class);
-
-	void fetch_attributes();
-
-	GDMonoClass *get_class(const StringName &p_namespace, const StringName &p_name);
-	GDMonoClass *get_class(MonoClass *p_mono_class);
 
 	static String find_assembly(const String &p_name);
 

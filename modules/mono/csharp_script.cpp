@@ -59,8 +59,6 @@
 #include "godotsharp_dirs.h"
 #include "managed_callable.h"
 #include "mono_gd/gd_mono_cache.h"
-#include "mono_gd/gd_mono_class.h"
-#include "mono_gd/gd_mono_marshal.h"
 #include "mono_gd/gd_mono_utils.h"
 #include "signal_awaiter_utils.h"
 #include "utils/macros.h"
@@ -590,6 +588,8 @@ String CSharpLanguage::debug_get_stack_level_source(int p_level) const {
 	return String();
 }
 
+#warning TODO
+#if 0
 Vector<ScriptLanguage::StackInfo> CSharpLanguage::debug_get_current_stack_info() {
 #ifdef DEBUG_ENABLED
 	// Printing an error here will result in endless recursion, so we must be careful
@@ -682,6 +682,11 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::stack_trace_get_info(MonoObjec
 	return si;
 }
 #endif
+#else
+Vector<ScriptLanguage::StackInfo> CSharpLanguage::debug_get_current_stack_info() {
+	return Vector<StackInfo>();
+}
+#endif
 
 void CSharpLanguage::post_unsafe_reference(Object *p_obj) {
 #ifdef DEBUG_ENABLED
@@ -706,36 +711,12 @@ void CSharpLanguage::pre_unsafe_unreference(Object *p_obj) {
 void CSharpLanguage::frame() {
 	if (gdmono && gdmono->is_runtime_initialized() && gdmono->get_core_api_assembly() != nullptr) {
 		MonoException *exc = nullptr;
-		gdmono->get_core_api_assembly()
-				->get_class("Godot", "ScriptManager")
-				->get_method("FrameCallback")
-				->invoke(nullptr, &exc);
-
+		GDMonoCache::cached_data.methodthunk_ScriptManagerBridge_FrameCallback.invoke(&exc);
 		if (exc) {
 			GDMonoUtils::debug_unhandled_exception(exc);
 		}
 	}
 }
-
-struct CSharpScriptDepSort {
-	// must support sorting so inheritance works properly (parent must be reloaded first)
-	bool operator()(const Ref<CSharpScript> &A, const Ref<CSharpScript> &B) const {
-		if (A == B) {
-			return false; // shouldn't happen but..
-		}
-		GDMonoClass *I = B->base;
-		while (I) {
-			if (I == A->script_class) {
-				// A is a base of B
-				return true;
-			}
-
-			I = I->get_parent_class();
-		}
-
-		return false; // not a base
-	}
-};
 
 void CSharpLanguage::reload_all_scripts() {
 #ifdef GD_MONO_HOT_RELOAD
@@ -803,6 +784,8 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		return;
 	}
 
+#warning TODO ALCs after switching to .NET 6
+#if 0
 	// There is no soft reloading with Mono. It's always hard reloading.
 
 	List<Ref<CSharpScript>> scripts;
@@ -829,7 +812,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 			MonoObject *managed_serialized_data = GDMonoMarshal::variant_to_mono_object(serialized_data);
 
 			MonoException *exc = nullptr;
-			bool success = (bool)CACHED_METHOD_THUNK(DelegateUtils, TrySerializeDelegateWithGCHandle)
+			bool success = (bool)GDMonoCache::cached_data.methodthunk_DelegateUtils_TrySerializeDelegateWithGCHandle
 								   .invoke(managed_callable->delegate_handle,
 										   managed_serialized_data, &exc);
 
@@ -909,7 +892,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 			CSharpInstance *csi = static_cast<CSharpInstance *>(obj->get_script_instance());
 
 			// Call OnBeforeSerialize
-			if (csi->script->script_class->implements_interface(CACHED_CLASS(ISerializationListener))) {
+			if (csi->script->script_class->implements_interface(GDMonoCache::cached_data.class_ISerializationListener)) {
 				obj->get_script_instance()->call(string_names.on_before_serialize);
 			}
 
@@ -977,7 +960,6 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 #ifdef TOOLS_ENABLED
 		script->exports_invalidated = true;
 #endif
-		script->signals_invalidated = true;
 
 		if (!script->get_path().is_empty()) {
 			script->reload(p_soft_reload);
@@ -1011,7 +993,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 				continue;
 			}
 
-			bool obj_type = CACHED_CLASS(GodotObject)->is_assignable_from(script_class);
+			bool obj_type = GDMonoCache::cached_data.class_GodotObject->is_assignable_from(script_class);
 			if (!obj_type) {
 				// The class no longer inherits Godot.Object, can't reload
 				script->pending_reload_instances.clear();
@@ -1103,20 +1085,20 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 					const StringName &name = G.first;
 					const Array &serialized_data = G.second;
 
-					HashMap<StringName, CSharpScript::EventSignal>::Iterator match = script->event_signals.find(name);
+					HashMap<StringName, GDMonoField *>::Iterator match = script->event_signals.find(name);
 
 					if (!match) {
 						// The event or its signal attribute were removed
 						continue;
 					}
 
-					const CSharpScript::EventSignal &event_signal = match->value;
+					GDMonoField *event_signal_field = match->value;
 
 					MonoObject *managed_serialized_data = GDMonoMarshal::variant_to_mono_object(serialized_data);
 					MonoDelegate *delegate = nullptr;
 
 					MonoException *exc = nullptr;
-					bool success = (bool)CACHED_METHOD_THUNK(DelegateUtils, TryDeserializeDelegate).invoke(managed_serialized_data, &delegate, &exc);
+					bool success = (bool)GDMonoCache::cached_data.methodthunk_DelegateUtils_TryDeserializeDelegate.invoke(managed_serialized_data, &delegate, &exc);
 
 					if (exc) {
 						GDMonoUtils::debug_print_unhandled_exception(exc);
@@ -1125,14 +1107,14 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 					if (success) {
 						ERR_CONTINUE(delegate == nullptr);
-						event_signal.field->set_value(csi->get_mono_object(), (MonoObject *)delegate);
+						event_signal_field->set_value(csi->get_mono_object(), (MonoObject *)delegate);
 					} else if (OS::get_singleton()->is_stdout_verbose()) {
 						OS::get_singleton()->print("Failed to deserialize event signal delegate\n");
 					}
 				}
 
 				// Call OnAfterDeserialization
-				if (csi->script->script_class->implements_interface(CACHED_CLASS(ISerializationListener))) {
+				if (csi->script->script_class->implements_interface(GDMonoCache::cached_data.class_ISerializationListener)) {
 					obj->get_script_instance()->call(string_names.on_after_deserialize);
 				}
 			}
@@ -1153,7 +1135,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 			void *delegate = nullptr;
 
 			MonoException *exc = nullptr;
-			bool success = (bool)CACHED_METHOD_THUNK(DelegateUtils, TryDeserializeDelegateWithGCHandle)
+			bool success = (bool)GDMonoCache::cached_data.methodthunk_DelegateUtils_TryDeserializeDelegateWithGCHandle
 								   .invoke(managed_serialized_data, &delegate, &exc);
 
 			if (exc) {
@@ -1179,62 +1161,9 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		NodeDock::get_singleton()->update_lists();
 	}
 #endif
+#endif
 }
 #endif
-
-void CSharpLanguage::lookup_script_for_class(GDMonoClass *p_class) {
-	if (!p_class->has_attribute(CACHED_CLASS(ScriptPathAttribute))) {
-		return;
-	}
-
-	MonoObject *attr = p_class->get_attribute(CACHED_CLASS(ScriptPathAttribute));
-	String path = CACHED_FIELD(ScriptPathAttribute, path)->get_string_value(attr);
-
-	dotnet_script_lookup_map[path] = DotNetScriptLookupInfo(
-			p_class->get_namespace(), p_class->get_name(), p_class);
-}
-
-void CSharpLanguage::lookup_scripts_in_assembly(GDMonoAssembly *p_assembly) {
-	if (p_assembly->has_attribute(CACHED_CLASS(AssemblyHasScriptsAttribute))) {
-		MonoObject *attr = p_assembly->get_attribute(CACHED_CLASS(AssemblyHasScriptsAttribute));
-		bool requires_lookup = CACHED_FIELD(AssemblyHasScriptsAttribute, requiresLookup)->get_bool_value(attr);
-
-		if (requires_lookup) {
-			// This is supported for scenarios where specifying all types would be cumbersome,
-			// such as when disabling C# source generators (for whatever reason) or when using a
-			// language other than C# that has nothing similar to source generators to automate it.
-			MonoImage *image = p_assembly->get_image();
-
-			int rows = mono_image_get_table_rows(image, MONO_TABLE_TYPEDEF);
-
-			for (int i = 1; i < rows; i++) {
-				// We don't search inner classes, only top-level.
-				MonoClass *mono_class = mono_class_get(image, (i + 1) | MONO_TOKEN_TYPE_DEF);
-
-				if (!mono_class_is_assignable_from(CACHED_CLASS_RAW(GodotObject), mono_class)) {
-					continue;
-				}
-
-				GDMonoClass *current = p_assembly->get_class(mono_class);
-				if (current) {
-					lookup_script_for_class(current);
-				}
-			}
-		} else {
-			// This is the most likely scenario as we use C# source generators
-			MonoArray *script_types = (MonoArray *)CACHED_FIELD(AssemblyHasScriptsAttribute, scriptTypes)->get_value(attr);
-
-			int length = mono_array_length(script_types);
-
-			for (int i = 0; i < length; i++) {
-				MonoReflectionType *reftype = mono_array_get(script_types, MonoReflectionType *, i);
-				ManagedType type = ManagedType::from_reftype(reftype);
-				ERR_CONTINUE(!type.type_class);
-				lookup_script_for_class(type.type_class);
-			}
-		}
-	}
-}
 
 void CSharpLanguage::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("cs");
@@ -1308,8 +1237,6 @@ void CSharpLanguage::_on_scripts_domain_about_to_unload() {
 		}
 	}
 #endif
-
-	dotnet_script_lookup_map.clear();
 }
 
 #ifdef TOOLS_ENABLED
@@ -1318,18 +1245,20 @@ void CSharpLanguage::_editor_init_callback() {
 
 	// Initialize GodotSharpEditor
 
-	GDMonoClass *editor_klass = GDMono::get_singleton()->get_tools_assembly()->get_class("GodotTools", "GodotSharpEditor");
+	MonoClass *editor_klass = mono_class_from_name(
+			GDMono::get_singleton()->get_tools_assembly()->get_image(),
+			"GodotTools", "GodotSharpEditor");
 	CRASH_COND(editor_klass == nullptr);
 
-	MonoObject *mono_object = mono_object_new(mono_domain_get(), editor_klass->get_mono_ptr());
-	CRASH_COND(mono_object == nullptr);
+	MonoMethod *create_instance = mono_class_get_method_from_name(editor_klass, "InternalCreateInstance", 0);
+	CRASH_COND(create_instance == nullptr);
 
 	MonoException *exc = nullptr;
-	GDMonoUtils::runtime_object_init(mono_object, editor_klass, &exc);
+	MonoObject *ret = mono_runtime_invoke(create_instance, nullptr, nullptr, (MonoObject **)&exc);
 	UNHANDLED_EXCEPTION(exc);
 
-	EditorPlugin *godotsharp_editor = Object::cast_to<EditorPlugin>(
-			GDMonoMarshal::mono_object_to_variant(mono_object).operator Object *());
+	EditorPlugin *godotsharp_editor = *(EditorPlugin **)mono_object_unbox(ret);
+
 	CRASH_COND(godotsharp_editor == nullptr);
 
 	// Enable it as a plugin
@@ -1353,24 +1282,17 @@ void CSharpLanguage::release_script_gchandle(MonoGCHandleData &p_gchandle) {
 	}
 }
 
-void CSharpLanguage::release_script_gchandle(MonoObject *p_expected_obj, MonoGCHandleData &p_gchandle) {
-	uint32_t pinned_gchandle = GDMonoUtils::new_strong_gchandle_pinned(p_expected_obj); // We might lock after this, so pin it
+void CSharpLanguage::release_script_gchandle(void *p_expected_mono_obj_unused, MonoGCHandleData &p_gchandle) {
+#warning KNOWN BUG. DO NOT USE THIS IN PRODUCTION
+	// KNOWN BUG:
+	//  I removed the patch from commit e558e1ec09aa27852426bbd24dfa21e9b60cfbfc.
+	//  This may cause data races. Re-implementing it without the Mono embedding API would be
+	//  too painful and would make the code even more of a mess than it already was.
+	//  We will switch from scripts to the new extension system before a release with .NET 6 support.
+	//  The problem the old patch was working around won't be present at all with the new extension system.
 
-	if (!p_gchandle.is_released()) { // Do not lock unnecessarily
-		MutexLock lock(get_singleton()->script_gchandle_release_mutex);
-
-		MonoObject *target = p_gchandle.get_target();
-
-		// We release the gchandle if it points to the MonoObject* we expect (otherwise it was
-		// already released and could have been replaced) or if we can't get its target MonoObject*
-		// (which doesn't necessarily mean it was released, and we want it released in order to
-		// avoid locking other threads unnecessarily).
-		if (target == p_expected_obj || target == nullptr) {
-			p_gchandle.release();
-		}
-	}
-
-	GDMonoUtils::free_gchandle(pinned_gchandle);
+	(void)p_expected_mono_obj_unused;
+	return release_script_gchandle(p_gchandle);
 }
 
 CSharpLanguage::CSharpLanguage() {
@@ -1402,18 +1324,25 @@ bool CSharpLanguage::setup_csharp_script_binding(CSharpScriptBinding &r_script_b
 	ERR_FAIL_NULL_V(classinfo, false);
 	type_name = classinfo->name;
 
-	GDMonoClass *type_class = GDMonoUtils::type_get_proxy_class(type_name);
+	bool parent_is_object_class = ClassDB::is_parent_class(p_object->get_class_name(), type_name);
+	ERR_FAIL_COND_V_MSG(!parent_is_object_class, false,
+			"Type inherits from native type '" + type_name + "', so it can't be instantiated in object of type: '" + p_object->get_class() + "'.");
 
-	ERR_FAIL_NULL_V(type_class, false);
+	MonoException *exc = nullptr;
+	GCHandleIntPtr strong_gchandle =
+			GDMonoCache::cached_data.methodthunk_ScriptManagerBridge_CreateManagedForGodotObjectBinding
+					.invoke(&type_name, p_object, &exc);
 
-	MonoObject *mono_object = GDMonoUtils::create_managed_for_godot_object(type_class, type_name, p_object);
+	if (exc) {
+		GDMonoUtils::set_pending_exception(exc);
+		return false;
+	}
 
-	ERR_FAIL_NULL_V(mono_object, false);
+	ERR_FAIL_NULL_V(strong_gchandle.value, false);
 
 	r_script_binding.inited = true;
 	r_script_binding.type_name = type_name;
-	r_script_binding.wrapper_class = type_class; // cache
-	r_script_binding.gchandle = MonoGCHandleData::new_strong_handle(mono_object);
+	r_script_binding.gchandle = MonoGCHandleData(strong_gchandle, gdmono::GCHandleType::STRONG_HANDLE);
 	r_script_binding.owner = p_object;
 
 	// Tie managed to unmanaged
@@ -1478,11 +1407,13 @@ void CSharpLanguage::_instance_binding_free_callback(void *, void *, void *p_bin
 		if (script_binding.inited) {
 			// Set the native instance field to IntPtr.Zero, if not yet garbage collected.
 			// This is done to avoid trying to dispose the native instance from Dispose(bool).
-			MonoObject *mono_object = script_binding.gchandle.get_target();
-			if (mono_object) {
-				CACHED_FIELD(GodotObject, ptr)->set_value_raw(mono_object, nullptr);
-			}
+			MonoException *exc = nullptr;
+			GDMonoCache::cached_data.methodthunk_ScriptManagerBridge_SetGodotObjectPtr
+					.invoke(script_binding.gchandle.get_intptr(), nullptr, &exc);
+			UNHANDLED_EXCEPTION(exc);
+
 			script_binding.gchandle.release();
+			script_binding.inited = false;
 		}
 
 		csharp_lang->script_bindings.erase(data);
@@ -1517,15 +1448,23 @@ GDNativeBool CSharpLanguage::_instance_binding_reference_callback(void *p_token,
 			// This means the owner is being referenced again by the unmanaged side,
 			// so the owner must hold the managed side alive again to avoid it from being GCed.
 
-			MonoObject *target = gchandle.get_target();
-			if (!target) {
+			// Release the current weak handle and replace it with a strong handle.
+
+			GCHandleIntPtr old_gchandle = gchandle.get_intptr();
+			gchandle.handle = GCHandleIntPtr(); // No longer owns the handle (released by swap function)
+
+			GCHandleIntPtr new_gchandle;
+			bool create_weak = false;
+			MonoException *exc = nullptr;
+			bool target_alive = GDMonoCache::cached_data.methodthunk_ScriptManagerBridge_SwapGCHandleForType
+										.invoke(old_gchandle, &new_gchandle, create_weak, &exc);
+			UNHANDLED_EXCEPTION(exc);
+
+			if (!target_alive) {
 				return false; // Called after the managed side was collected, so nothing to do here
 			}
 
-			// Release the current weak handle and replace it with a strong handle.
-			MonoGCHandleData strong_gchandle = MonoGCHandleData::new_strong_handle(target);
-			gchandle.release();
-			gchandle = strong_gchandle;
+			gchandle = MonoGCHandleData(new_gchandle, gdmono::GCHandleType::STRONG_HANDLE);
 		}
 
 		return false;
@@ -1537,15 +1476,23 @@ GDNativeBool CSharpLanguage::_instance_binding_reference_callback(void *p_token,
 			// If owner owner is no longer referenced by the unmanaged side,
 			// the managed instance takes responsibility of deleting the owner when GCed.
 
-			MonoObject *target = gchandle.get_target();
-			if (!target) {
+			// Release the current strong handle and replace it with a weak handle.
+
+			GCHandleIntPtr old_gchandle = gchandle.get_intptr();
+			gchandle.handle = GCHandleIntPtr(); // No longer owns the handle (released by swap function)
+
+			GCHandleIntPtr new_gchandle;
+			bool create_weak = true;
+			MonoException *exc = nullptr;
+			bool target_alive = GDMonoCache::cached_data.methodthunk_ScriptManagerBridge_SwapGCHandleForType
+										.invoke(old_gchandle, &new_gchandle, create_weak, &exc);
+			UNHANDLED_EXCEPTION(exc);
+
+			if (!target_alive) {
 				return refcount == 0; // Called after the managed side was collected, so nothing to do here
 			}
 
-			// Release the current strong handle and replace it with a weak handle.
-			MonoGCHandleData weak_gchandle = MonoGCHandleData::new_weak_handle(target);
-			gchandle.release();
-			gchandle = weak_gchandle;
+			gchandle = MonoGCHandleData(new_gchandle, gdmono::GCHandleType::WEAK_HANDLE);
 
 			return false;
 		}
@@ -1590,6 +1537,111 @@ void CSharpLanguage::set_instance_binding(Object *p_object, void *p_binding) {
 bool CSharpLanguage::has_instance_binding(Object *p_object) {
 	return p_object->has_instance_binding(get_singleton());
 }
+void CSharpLanguage::tie_native_managed_to_unmanaged(GCHandleIntPtr p_gchandle_intptr, Object *p_unmanaged, const StringName *p_native_name, bool p_ref_counted) {
+	// This method should not fail
+
+	CRASH_COND(!p_unmanaged);
+
+	// All mono objects created from the managed world (e.g.: 'new Player()')
+	// need to have a CSharpScript in order for their methods to be callable from the unmanaged side
+
+	RefCounted *rc = Object::cast_to<RefCounted>(p_unmanaged);
+
+	CRASH_COND(p_ref_counted != (bool)rc);
+
+	MonoGCHandleData gchandle = MonoGCHandleData(p_gchandle_intptr,
+			p_ref_counted ? gdmono::GCHandleType::WEAK_HANDLE : gdmono::GCHandleType::STRONG_HANDLE);
+
+	// If it's just a wrapper Godot class and not a custom inheriting class, then attach a
+	// script binding instead. One of the advantages of this is that if a script is attached
+	// later and it's not a C# script, then the managed object won't have to be disposed.
+	// Another reason for doing this is that this instance could outlive CSharpLanguage, which would
+	// be problematic when using a script. See: https://github.com/godotengine/godot/issues/25621
+
+	CSharpScriptBinding script_binding;
+
+	script_binding.inited = true;
+	script_binding.type_name = *p_native_name;
+	script_binding.gchandle = gchandle;
+	script_binding.owner = p_unmanaged;
+
+	if (p_ref_counted) {
+		// Unsafe refcount increment. The managed instance also counts as a reference.
+		// This way if the unmanaged world has no references to our owner
+		// but the managed instance is alive, the refcount will be 1 instead of 0.
+		// See: godot_icall_RefCounted_Dtor(MonoObject *p_obj, Object *p_ptr)
+
+		// May not me referenced yet, so we must use init_ref() instead of reference()
+		if (rc->init_ref()) {
+			CSharpLanguage::get_singleton()->post_unsafe_reference(rc);
+		}
+	}
+
+	// The object was just created, no script instance binding should have been attached
+	CRASH_COND(CSharpLanguage::has_instance_binding(p_unmanaged));
+
+	void *data;
+	{
+		MutexLock lock(CSharpLanguage::get_singleton()->get_language_bind_mutex());
+		data = (void *)CSharpLanguage::get_singleton()->insert_script_binding(p_unmanaged, script_binding);
+	}
+
+	// Should be thread safe because the object was just created and nothing else should be referencing it
+	CSharpLanguage::set_instance_binding(p_unmanaged, data);
+}
+
+void CSharpLanguage::tie_user_managed_to_unmanaged(GCHandleIntPtr p_gchandle_intptr, Object *p_unmanaged, CSharpScript *p_script, bool p_ref_counted) {
+	// This method should not fail
+
+	CRASH_COND(!p_unmanaged);
+
+	// All mono objects created from the managed world (e.g.: 'new Player()')
+	// need to have a CSharpScript in order for their methods to be callable from the unmanaged side
+
+	RefCounted *rc = Object::cast_to<RefCounted>(p_unmanaged);
+
+	CRASH_COND(p_ref_counted != (bool)rc);
+
+	MonoGCHandleData gchandle = MonoGCHandleData(p_gchandle_intptr,
+			p_ref_counted ? gdmono::GCHandleType::WEAK_HANDLE : gdmono::GCHandleType::STRONG_HANDLE);
+
+	Ref<CSharpScript> script = p_script;
+
+	CSharpScript::initialize_for_managed_type(script);
+
+	CRASH_COND(script.is_null());
+
+	CSharpInstance *csharp_instance = CSharpInstance::create_for_managed_type(p_unmanaged, script.ptr(), gchandle);
+
+	p_unmanaged->set_script_and_instance(script, csharp_instance);
+}
+
+void CSharpLanguage::tie_managed_to_unmanaged_with_pre_setup(GCHandleIntPtr p_gchandle_intptr, Object *p_unmanaged) {
+	// This method should not fail
+
+	CRASH_COND(!p_unmanaged);
+
+	CSharpInstance *instance = CAST_CSHARP_INSTANCE(p_unmanaged->get_script_instance());
+
+	if (!instance) {
+		return;
+	}
+
+	CRASH_COND(!instance->gchandle.is_released());
+
+	// Tie managed to unmanaged
+	instance->gchandle = MonoGCHandleData(p_gchandle_intptr, gdmono::GCHandleType::STRONG_HANDLE);
+
+	if (instance->base_ref_counted) {
+		instance->_reference_owner_unsafe(); // Here, after assigning the gchandle (for the refcount_incremented callback)
+	}
+
+	{
+		MutexLock lock(CSharpLanguage::get_singleton()->get_script_instances_mutex());
+		// instances is a set, so it's safe to insert multiple times (e.g.: from _internal_new_managed)
+		instance->script->instances.insert(instance->owner);
+	}
+}
 
 CSharpInstance *CSharpInstance::create_for_managed_type(Object *p_owner, CSharpScript *p_script, const MonoGCHandleData &p_gchandle) {
 	CSharpInstance *instance = memnew(CSharpInstance(Ref<CSharpScript>(p_script)));
@@ -1609,11 +1661,6 @@ CSharpInstance *CSharpInstance::create_for_managed_type(Object *p_owner, CSharpS
 	return instance;
 }
 
-MonoObject *CSharpInstance::get_mono_object() const {
-	ERR_FAIL_COND_V(gchandle.is_released(), nullptr);
-	return gchandle.get_target();
-}
-
 Object *CSharpInstance::get_owner() {
 	return owner;
 }
@@ -1623,50 +1670,14 @@ bool CSharpInstance::set(const StringName &p_name, const Variant &p_value) {
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
-	MonoObject *mono_object = get_mono_object();
-	ERR_FAIL_NULL_V(mono_object, false);
+	MonoException *exc = nullptr;
+	bool ret = GDMonoCache::cached_data.methodthunk_CSharpInstanceBridge_Set.invoke(
+			gchandle.get_intptr(), &p_name, &p_value, &exc);
 
-	GDMonoClass *top = script->script_class;
-
-	while (top && top != script->native) {
-		GDMonoField *field = top->get_field(p_name);
-
-		if (field) {
-			field->set_value_from_variant(mono_object, p_value);
-			return true;
-		}
-
-		GDMonoProperty *property = top->get_property(p_name);
-
-		if (property) {
-			property->set_value_from_variant(mono_object, p_value);
-			return true;
-		}
-
-		top = top->get_parent_class();
-	}
-
-	// Call _set
-
-	top = script->script_class;
-
-	while (top && top != script->native) {
-		GDMonoMethod *method = top->get_method(CACHED_STRING_NAME(_set), 2);
-
-		if (method) {
-			Variant name = p_name;
-			const Variant *args[2] = { &name, &p_value };
-
-			MonoObject *ret = method->invoke(mono_object, args);
-
-			if (ret && GDMonoMarshal::unbox<MonoBoolean>(ret)) {
-				return true;
-			}
-
-			break;
-		}
-
-		top = top->get_parent_class();
+	if (exc) {
+		GDMonoUtils::set_pending_exception(exc);
+	} else if (ret) {
+		return true;
 	}
 
 	return false;
@@ -1677,64 +1688,24 @@ bool CSharpInstance::get(const StringName &p_name, Variant &r_ret) const {
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
-	MonoObject *mono_object = get_mono_object();
-	ERR_FAIL_NULL_V(mono_object, false);
+	Variant ret_value;
 
-	GDMonoClass *top = script->script_class;
+	MonoException *exc = nullptr;
+	bool ret = GDMonoCache::cached_data.methodthunk_CSharpInstanceBridge_Get.invoke(
+			gchandle.get_intptr(), &p_name, &ret_value, &exc);
 
-	while (top && top != script->native) {
-		GDMonoField *field = top->get_field(p_name);
-
-		if (field) {
-			MonoObject *value = field->get_value(mono_object);
-			r_ret = GDMonoMarshal::mono_object_to_variant(value);
-			return true;
-		}
-
-		GDMonoProperty *property = top->get_property(p_name);
-
-		if (property) {
-			MonoException *exc = nullptr;
-			MonoObject *value = property->get_value(mono_object, &exc);
-			if (exc) {
-				r_ret = Variant();
-				GDMonoUtils::set_pending_exception(exc);
-			} else {
-				r_ret = GDMonoMarshal::mono_object_to_variant(value);
-			}
-			return true;
-		}
-
-		top = top->get_parent_class();
-	}
-
-	// Call _get
-
-	top = script->script_class;
-
-	while (top && top != script->native) {
-		GDMonoMethod *method = top->get_method(CACHED_STRING_NAME(_get), 1);
-
-		if (method) {
-			Variant name = p_name;
-			const Variant *args[1] = { &name };
-
-			MonoObject *ret = method->invoke(mono_object, args);
-
-			if (ret) {
-				r_ret = GDMonoMarshal::mono_object_to_variant(ret);
-				return true;
-			}
-
-			break;
-		}
-
-		top = top->get_parent_class();
+	if (exc) {
+		GDMonoUtils::set_pending_exception(exc);
+	} else if (ret) {
+		r_ret = ret_value;
+		return true;
 	}
 
 	return false;
 }
 
+#warning TODO
+#if 0
 void CSharpInstance::get_properties_state_for_reloading(List<Pair<StringName, Variant>> &r_state) {
 	List<PropertyInfo> property_list;
 	get_property_list(&property_list);
@@ -1773,10 +1744,10 @@ void CSharpInstance::get_event_signals_state_for_reloading(List<Pair<StringName,
 	MonoObject *owner_managed = get_mono_object();
 	ERR_FAIL_NULL(owner_managed);
 
-	for (const KeyValue<StringName, CSharpScript::EventSignal> &E : script->event_signals) {
-		const CSharpScript::EventSignal &event_signal = E.value;
+	for (const KeyValue<StringName, GDMonoField *> &E : script->event_signals) {
+		GDMonoField *event_signal_field = E.value;
 
-		MonoDelegate *delegate_field_value = (MonoDelegate *)event_signal.field->get_value(owner_managed);
+		MonoDelegate *delegate_field_value = (MonoDelegate *)event_signal_field->get_value(owner_managed);
 		if (!delegate_field_value) {
 			continue; // Empty
 		}
@@ -1785,7 +1756,7 @@ void CSharpInstance::get_event_signals_state_for_reloading(List<Pair<StringName,
 		MonoObject *managed_serialized_data = GDMonoMarshal::variant_to_mono_object(serialized_data);
 
 		MonoException *exc = nullptr;
-		bool success = (bool)CACHED_METHOD_THUNK(DelegateUtils, TrySerializeDelegate)
+		bool success = (bool)GDMonoCache::cached_data.methodthunk_DelegateUtils_TrySerializeDelegate
 							   .invoke(delegate_field_value, managed_serialized_data, &exc);
 
 		if (exc) {
@@ -1794,12 +1765,13 @@ void CSharpInstance::get_event_signals_state_for_reloading(List<Pair<StringName,
 		}
 
 		if (success) {
-			r_state.push_back(Pair<StringName, Array>(event_signal.field->get_name(), serialized_data));
+			r_state.push_back(Pair<StringName, Array>(event_signal_field->get_name(), serialized_data));
 		} else if (OS::get_singleton()->is_stdout_verbose()) {
 			OS::get_singleton()->print("Failed to serialize event signal delegate\n");
 		}
 	}
 }
+#endif
 
 void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 	List<PropertyInfo> props;
@@ -1811,28 +1783,24 @@ void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
-	MonoObject *mono_object = get_mono_object();
-	ERR_FAIL_NULL(mono_object);
+	StringName method = SNAME("_get_property_list");
 
-	GDMonoClass *top = script->script_class;
+	Variant ret;
+	Callable::CallError call_error;
+	MonoException *exc = nullptr;
+	GDMonoCache::cached_data.methodthunk_CSharpInstanceBridge_Call.invoke(
+			gchandle.get_intptr(), &method, nullptr, 0, &call_error, &ret, &exc);
 
-	while (top && top != script->native) {
-		GDMonoMethod *method = top->get_method(CACHED_STRING_NAME(_get_property_list), 0);
+	if (exc) {
+		GDMonoUtils::set_pending_exception(exc);
+	}
 
-		if (method) {
-			MonoObject *ret = method->invoke(mono_object);
+	ERR_FAIL_COND_MSG(call_error.error != Callable::CallError::CALL_OK,
+			"Error calling '_get_property_list': " + Variant::get_call_error_text(method, nullptr, 0, call_error));
 
-			if (ret) {
-				Array array = Array(GDMonoMarshal::mono_object_to_variant(ret));
-				for (int i = 0, size = array.size(); i < size; i++) {
-					props.push_back(PropertyInfo::from_dict(array.get(i)));
-				}
-			}
-
-			break;
-		}
-
-		top = top->get_parent_class();
+	Array array = ret;
+	for (int i = 0, size = array.size(); i < size; i++) {
+		p_properties->push_back(PropertyInfo::from_dict(array.get(i)));
 	}
 
 	for (const PropertyInfo &prop : props) {
@@ -1860,34 +1828,26 @@ bool CSharpInstance::property_can_revert(const StringName &p_name) const {
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
-	MonoObject *mono_object = get_mono_object();
-	ERR_FAIL_NULL_V(mono_object, false);
+	Callable::CallError call_error;
 
-	GDMonoClass *top = script->script_class;
+	Variant name_arg = p_name;
+	const Variant *args[1] = { &name_arg };
 
-	while (top && top != script->native) {
-		GDMonoMethod *method = top->get_method(CACHED_STRING_NAME(_property_can_revert), 1);
+	Variant ret;
+	MonoException *exc = nullptr;
+	GDMonoCache::cached_data.methodthunk_CSharpInstanceBridge_Call.invoke(
+			gchandle.get_intptr(), &CACHED_STRING_NAME(_property_can_revert), args, 1, &call_error, &ret, &exc);
 
-		if (method) {
-			Variant name = p_name;
-			const Variant *args[1] = { &name };
-
-			MonoObject *ret = method->invoke(mono_object, args);
-
-			if (ret) {
-				bool can_revert = GDMonoMarshal::mono_object_to_variant(ret);
-				if (can_revert) {
-					return true;
-				}
-			}
-
-			break;
-		}
-
-		top = top->get_parent_class();
+	if (exc) {
+		GDMonoUtils::set_pending_exception(exc);
+		return false;
 	}
 
-	return false;
+	if (call_error.error != Callable::CallError::CALL_OK) {
+		return false;
+	}
+
+	return (bool)ret;
 }
 
 bool CSharpInstance::property_get_revert(const StringName &p_name, Variant &r_ret) const {
@@ -1895,35 +1855,32 @@ bool CSharpInstance::property_get_revert(const StringName &p_name, Variant &r_re
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
-	MonoObject *mono_object = get_mono_object();
-	ERR_FAIL_NULL_V(mono_object, false);
+	Callable::CallError call_error;
 
-	GDMonoClass *top = script->script_class;
+	Variant name_arg = p_name;
+	const Variant *args[1] = { &name_arg };
 
-	while (top && top != script->native) {
-		GDMonoMethod *method = top->get_method(CACHED_STRING_NAME(_property_get_revert), 1);
+	Variant ret;
+	MonoException *exc = nullptr;
+	GDMonoCache::cached_data.methodthunk_CSharpInstanceBridge_Call.invoke(
+			gchandle.get_intptr(), &CACHED_STRING_NAME(_property_get_revert), args, 1, &call_error, &ret, &exc);
 
-		if (method) {
-			Variant name = p_name;
-			const Variant *args[1] = { &name };
-
-			MonoObject *ret = method->invoke(mono_object, args);
-
-			if (ret) {
-				r_ret = GDMonoMarshal::mono_object_to_variant(ret);
-				return true;
-			}
-
-			break;
-		}
-
-		top = top->get_parent_class();
+	if (exc) {
+		GDMonoUtils::set_pending_exception(exc);
+		return false;
 	}
 
-	return false;
+	if (call_error.error != Callable::CallError::CALL_OK) {
+		return false;
+	}
+
+	r_ret = ret;
+	return true;
 }
 
 void CSharpInstance::get_method_list(List<MethodInfo> *p_list) const {
+#warning TODO
+#if 0
 	if (!script->is_valid() || !script->script_class) {
 		return;
 	}
@@ -1944,6 +1901,7 @@ void CSharpInstance::get_method_list(List<MethodInfo> *p_list) const {
 
 		top = top->get_parent_class();
 	}
+#endif
 }
 
 bool CSharpInstance::has_method(const StringName &p_method) const {
@@ -1953,17 +1911,19 @@ bool CSharpInstance::has_method(const StringName &p_method) const {
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
-	GDMonoClass *top = script->script_class;
-
-	while (top && top != script->native) {
-		if (top->has_fetched_method_unknown_params(p_method)) {
-			return true;
-		}
-
-		top = top->get_parent_class();
+	if (!GDMonoCache::cached_data.godot_api_cache_updated) {
+		return false;
 	}
 
-	return false;
+	String method = p_method;
+	bool deep = true;
+
+	MonoException *exc = nullptr;
+	bool found = GDMonoCache::cached_data.methodthunk_ScriptManagerBridge_HasMethodUnknownParams
+						 .invoke(script.ptr(), &method, deep, &exc);
+	UNHANDLED_EXCEPTION(exc);
+
+	return found;
 }
 
 Variant CSharpInstance::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -1971,36 +1931,16 @@ Variant CSharpInstance::callp(const StringName &p_method, const Variant **p_args
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
-	MonoObject *mono_object = get_mono_object();
+	Variant ret;
+	MonoException *exc = nullptr;
+	GDMonoCache::cached_data.methodthunk_CSharpInstanceBridge_Call.invoke(
+			gchandle.get_intptr(), &p_method, p_args, p_argcount, &r_error, &ret, &exc);
 
-	if (!mono_object) {
-		r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
-		ERR_FAIL_V(Variant());
+	if (exc) {
+		GDMonoUtils::set_pending_exception(exc);
 	}
 
-	GDMonoClass *top = script->script_class;
-
-	while (top && top != script->native) {
-		GDMonoMethod *method = top->get_method(p_method, p_argcount);
-
-		if (method) {
-			MonoObject *return_value = method->invoke(mono_object, p_args);
-
-			r_error.error = Callable::CallError::CALL_OK;
-
-			if (return_value) {
-				return GDMonoMarshal::mono_object_to_variant(return_value);
-			} else {
-				return Variant();
-			}
-		}
-
-		top = top->get_parent_class();
-	}
-
-	r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-
-	return Variant();
+	return ret;
 }
 
 bool CSharpInstance::_reference_owner_unsafe() {
@@ -2046,48 +1986,32 @@ bool CSharpInstance::_unreference_owner_unsafe() {
 	return static_cast<RefCounted *>(owner)->unreference();
 }
 
-MonoObject *CSharpInstance::_internal_new_managed() {
-	// Search the constructor first, to fail with an error if it's not found before allocating anything else.
-	GDMonoMethod *ctor = script->script_class->get_method(CACHED_STRING_NAME(dotctor), 0);
-	ERR_FAIL_NULL_V_MSG(ctor, nullptr,
-			"Cannot create script instance because the class does not define a parameterless constructor: '" + script->get_path() + "'.");
-
+bool CSharpInstance::_internal_new_managed() {
 	CSharpLanguage::get_singleton()->release_script_gchandle(gchandle);
 
-	ERR_FAIL_NULL_V(owner, nullptr);
-	ERR_FAIL_COND_V(script.is_null(), nullptr);
+	ERR_FAIL_NULL_V(owner, false);
+	ERR_FAIL_COND_V(script.is_null(), false);
 
-	MonoObject *mono_object = mono_object_new(mono_domain_get(), script->script_class->get_mono_ptr());
+	MonoException *exc = nullptr;
+	GDMonoCache::cached_data.methodthunk_ScriptManagerBridge_CreateManagedForGodotObjectScriptInstance
+			.invoke(script.ptr(), owner, nullptr, 0, &exc);
 
-	if (!mono_object) {
+	if (exc) {
+		GDMonoUtils::set_pending_exception(exc);
+
 		// Important to clear this before destroying the script instance here
 		script = Ref<CSharpScript>();
-
-		bool die = _unreference_owner_unsafe();
-		// Not ok for the owner to die here. If there is a situation where this can happen, it will be considered a bug.
-		CRASH_COND(die);
-
 		owner = nullptr;
 
-		ERR_FAIL_V_MSG(nullptr, "Failed to allocate memory for the object.");
+		return false;
 	}
 
-	// Tie managed to unmanaged
-	gchandle = MonoGCHandleData::new_strong_handle(mono_object);
+	CRASH_COND(gchandle.is_released());
 
-	if (base_ref_counted) {
-		_reference_owner_unsafe(); // Here, after assigning the gchandle (for the refcount_incremented callback)
-	}
-
-	CACHED_FIELD(GodotObject, ptr)->set_value_raw(mono_object, owner);
-
-	// Construct
-	ctor->invoke_raw(mono_object, nullptr);
-
-	return mono_object;
+	return true;
 }
 
-void CSharpInstance::mono_object_disposed(MonoObject *p_obj) {
+void CSharpInstance::mono_object_disposed() {
 	// Must make sure event signals are not left dangling
 	disconnect_event_signals();
 
@@ -2095,10 +2019,10 @@ void CSharpInstance::mono_object_disposed(MonoObject *p_obj) {
 	CRASH_COND(base_ref_counted);
 	CRASH_COND(gchandle.is_released());
 #endif
-	CSharpLanguage::get_singleton()->release_script_gchandle(p_obj, gchandle);
+	CSharpLanguage::get_singleton()->release_script_gchandle(nullptr, gchandle);
 }
 
-void CSharpInstance::mono_object_disposed_baseref(MonoObject *p_obj, bool p_is_finalizer, bool &r_delete_owner, bool &r_remove_script_instance) {
+void CSharpInstance::mono_object_disposed_baseref(bool p_is_finalizer, bool &r_delete_owner, bool &r_remove_script_instance) {
 #ifdef DEBUG_ENABLED
 	CRASH_COND(!base_ref_counted);
 	CRASH_COND(gchandle.is_released());
@@ -2114,7 +2038,7 @@ void CSharpInstance::mono_object_disposed_baseref(MonoObject *p_obj, bool p_is_f
 		r_delete_owner = true;
 	} else {
 		r_delete_owner = false;
-		CSharpLanguage::get_singleton()->release_script_gchandle(p_obj, gchandle);
+		CSharpLanguage::get_singleton()->release_script_gchandle(nullptr, gchandle);
 
 		if (!p_is_finalizer) {
 			// If the native instance is still alive and Dispose() was called
@@ -2126,27 +2050,20 @@ void CSharpInstance::mono_object_disposed_baseref(MonoObject *p_obj, bool p_is_f
 			// unreference and delete it, so we want to keep it.
 			// GC.ReRegisterForFinalize(this) is not safe because the objects referenced by 'this'
 			// could have already been collected. Instead we will create a new managed instance here.
-			MonoObject *new_managed = _internal_new_managed();
-			if (!new_managed) {
+			if (!_internal_new_managed()) {
 				r_remove_script_instance = true;
 			}
 		}
 	}
 }
 
-void CSharpInstance::connect_event_signals() {
-	for (const KeyValue<StringName, CSharpScript::EventSignal> &E : script->event_signals) {
-		const CSharpScript::EventSignal &event_signal = E.value;
+void CSharpInstance::connect_event_signal(const StringName &p_event_signal) {
+	// TODO: Use pooling for ManagedCallable instances.
+	EventSignalCallable *event_signal_callable = memnew(EventSignalCallable(owner, p_event_signal));
 
-		StringName signal_name = event_signal.field->get_name();
-
-		// TODO: Use pooling for ManagedCallable instances.
-		EventSignalCallable *event_signal_callable = memnew(EventSignalCallable(owner, &event_signal));
-
-		Callable callable(event_signal_callable);
-		connected_event_signals.push_back(callable);
-		owner->connect(signal_name, callable);
-	}
+	Callable callable(event_signal_callable);
+	connected_event_signals.push_back(callable);
+	owner->connect(p_event_signal, callable);
 }
 
 void CSharpInstance::disconnect_event_signals() {
@@ -2174,9 +2091,22 @@ void CSharpInstance::refcount_incremented() {
 		// so the owner must hold the managed side alive again to avoid it from being GCed.
 
 		// Release the current weak handle and replace it with a strong handle.
-		MonoGCHandleData strong_gchandle = MonoGCHandleData::new_strong_handle(gchandle.get_target());
-		gchandle.release();
-		gchandle = strong_gchandle;
+
+		GCHandleIntPtr old_gchandle = gchandle.get_intptr();
+		gchandle.handle = GCHandleIntPtr(); // No longer owns the handle (released by swap function)
+
+		GCHandleIntPtr new_gchandle;
+		bool create_weak = false;
+		MonoException *exc = nullptr;
+		bool target_alive = GDMonoCache::cached_data.methodthunk_ScriptManagerBridge_SwapGCHandleForType
+									.invoke(old_gchandle, &new_gchandle, create_weak, &exc);
+		UNHANDLED_EXCEPTION(exc);
+
+		if (!target_alive) {
+			return; // Called after the managed side was collected, so nothing to do here
+		}
+
+		gchandle = MonoGCHandleData(new_gchandle, gdmono::GCHandleType::STRONG_HANDLE);
 	}
 }
 
@@ -2197,9 +2127,22 @@ bool CSharpInstance::refcount_decremented() {
 		// the managed instance takes responsibility of deleting the owner when GCed.
 
 		// Release the current strong handle and replace it with a weak handle.
-		MonoGCHandleData weak_gchandle = MonoGCHandleData::new_weak_handle(gchandle.get_target());
-		gchandle.release();
-		gchandle = weak_gchandle;
+
+		GCHandleIntPtr old_gchandle = gchandle.get_intptr();
+		gchandle.handle = GCHandleIntPtr(); // No longer owns the handle (released by swap function)
+
+		GCHandleIntPtr new_gchandle;
+		bool create_weak = true;
+		MonoException *exc = nullptr;
+		bool target_alive = GDMonoCache::cached_data.methodthunk_ScriptManagerBridge_SwapGCHandleForType
+									.invoke(old_gchandle, &new_gchandle, create_weak, &exc);
+		UNHANDLED_EXCEPTION(exc);
+
+		if (!target_alive) {
+			return refcount == 0; // Called after the managed side was collected, so nothing to do here
+		}
+
+		gchandle = MonoGCHandleData(new_gchandle, gdmono::GCHandleType::WEAK_HANDLE);
 
 		return false;
 	}
@@ -2235,11 +2178,9 @@ void CSharpInstance::notification(int p_notification) {
 
 		_call_notification(p_notification);
 
-		MonoObject *mono_object = get_mono_object();
-		ERR_FAIL_NULL(mono_object);
-
 		MonoException *exc = nullptr;
-		GDMonoUtils::dispose(mono_object, &exc);
+		GDMonoCache::cached_data.methodthunk_CSharpInstanceBridge_CallDispose
+				.invoke(gchandle.get_intptr(), /* okIfNull */ false, &exc);
 
 		if (exc) {
 			GDMonoUtils::set_pending_exception(exc);
@@ -2254,43 +2195,31 @@ void CSharpInstance::notification(int p_notification) {
 void CSharpInstance::_call_notification(int p_notification) {
 	GD_MONO_ASSERT_THREAD_ATTACHED;
 
-	MonoObject *mono_object = get_mono_object();
-	ERR_FAIL_NULL(mono_object);
+	Variant arg = p_notification;
+	const Variant *args[1] = { &arg };
+	StringName method_name = SNAME("_notification");
 
-	// Custom version of _call_multilevel, optimized for _notification
+	Callable::CallError call_error;
 
-	int32_t arg = p_notification;
-	void *args[1] = { &arg };
-	StringName method_name = CACHED_STRING_NAME(_notification);
+	Variant ret;
+	MonoException *exc = nullptr;
+	GDMonoCache::cached_data.methodthunk_CSharpInstanceBridge_Call.invoke(
+			gchandle.get_intptr(), &method_name, args, 1, &call_error, &ret, &exc);
 
-	GDMonoClass *top = script->script_class;
-
-	while (top && top != script->native) {
-		GDMonoMethod *method = top->get_method(method_name, 1);
-
-		if (method) {
-			method->invoke_raw(mono_object, args);
-			return;
-		}
-
-		top = top->get_parent_class();
+	if (exc) {
+		GDMonoUtils::set_pending_exception(exc);
 	}
 }
 
 String CSharpInstance::to_string(bool *r_valid) {
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
-	MonoObject *mono_object = get_mono_object();
-
-	if (mono_object == nullptr) {
-		if (r_valid) {
-			*r_valid = false;
-		}
-		return String();
-	}
+	String res;
+	bool valid;
 
 	MonoException *exc = nullptr;
-	MonoString *result = GDMonoUtils::object_to_string(mono_object, &exc);
+	GDMonoCache::cached_data.methodthunk_CSharpInstanceBridge_CallToString
+			.invoke(gchandle.get_intptr(), &res, &valid, &exc);
 
 	if (exc) {
 		GDMonoUtils::set_pending_exception(exc);
@@ -2300,14 +2229,11 @@ String CSharpInstance::to_string(bool *r_valid) {
 		return String();
 	}
 
-	if (result == nullptr) {
-		if (r_valid) {
-			*r_valid = false;
-		}
-		return String();
+	if (r_valid) {
+		*r_valid = valid;
 	}
 
-	return GDMonoMarshal::mono_string_to_godot(result);
+	return res;
 }
 
 Ref<Script> CSharpInstance::get_script() const {
@@ -2338,15 +2264,12 @@ CSharpInstance::~CSharpInstance() {
 			// we must call Dispose here, because Dispose calls owner->set_script_instance(nullptr)
 			// and that would mess up with the new script instance if called later.
 
-			MonoObject *mono_object = gchandle.get_target();
+			MonoException *exc = nullptr;
+			GDMonoCache::cached_data.methodthunk_CSharpInstanceBridge_CallDispose
+					.invoke(gchandle.get_intptr(), /* okIfNull */ true, &exc);
 
-			if (mono_object) {
-				MonoException *exc = nullptr;
-				GDMonoUtils::dispose(mono_object, &exc);
-
-				if (exc) {
-					GDMonoUtils::set_pending_exception(exc);
-				}
+			if (exc) {
+				GDMonoUtils::set_pending_exception(exc);
 			}
 		}
 
@@ -2424,6 +2347,8 @@ void CSharpScript::_update_member_info_no_exports() {
 
 		member_info.clear();
 
+#warning TODO
+#if 0
 		GDMonoClass *top = script_class;
 		List<PropertyInfo> props;
 
@@ -2468,6 +2393,7 @@ void CSharpScript::_update_member_info_no_exports() {
 
 			top = top->get_parent_class();
 		}
+#endif
 	}
 }
 #endif
@@ -2489,6 +2415,8 @@ bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_upda
 	if (exports_invalidated)
 #endif
 	{
+#warning TODO
+#if 0
 		GD_MONO_SCOPE_THREAD_ATTACH;
 
 		changed = true;
@@ -2524,7 +2452,7 @@ bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_upda
 			MonoException *ctor_exc = nullptr;
 			ctor->invoke(tmp_object, nullptr, &ctor_exc);
 
-			tmp_native = GDMonoMarshal::unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(tmp_object));
+			tmp_native = GDMonoMarshal::unbox<Object *>(GDMonoCache::cached_data.field_GodotObject_ptr->get_value(tmp_object));
 
 			if (ctor_exc) {
 				// TODO: Should we free 'tmp_native' if the exception was thrown after its creation?
@@ -2649,6 +2577,8 @@ bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_upda
 			}
 		}
 #endif
+
+#endif // #if 0
 	}
 
 #ifdef TOOLS_ENABLED
@@ -2675,111 +2605,8 @@ bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_upda
 	return changed;
 }
 
-void CSharpScript::load_script_signals(GDMonoClass *p_class, GDMonoClass *p_native_class) {
-	// no need to load the script's signals more than once
-	if (!signals_invalidated) {
-		return;
-	}
-
-	// make sure this classes signals are empty when loading for the first time
-	_signals.clear();
-	event_signals.clear();
-
-	GD_MONO_SCOPE_THREAD_ATTACH;
-
-	GDMonoClass *top = p_class;
-	while (top && top != p_native_class) {
-		const Vector<GDMonoClass *> &delegates = top->get_all_delegates();
-		for (int i = delegates.size() - 1; i >= 0; --i) {
-			GDMonoClass *delegate = delegates[i];
-
-			if (!delegate->has_attribute(CACHED_CLASS(SignalAttribute))) {
-				continue;
-			}
-
-			// Arguments are accessibles as arguments of .Invoke method
-			GDMonoMethod *invoke_method = delegate->get_method(mono_get_delegate_invoke(delegate->get_mono_ptr()));
-
-			Vector<SignalParameter> parameters;
-			if (_get_signal(top, invoke_method, parameters)) {
-				_signals[delegate->get_name()] = parameters;
-			}
-		}
-
-		List<StringName> found_event_signals;
-
-		void *iter = nullptr;
-		MonoEvent *raw_event = nullptr;
-		while ((raw_event = mono_class_get_events(top->get_mono_ptr(), &iter)) != nullptr) {
-			MonoCustomAttrInfo *event_attrs = mono_custom_attrs_from_event(top->get_mono_ptr(), raw_event);
-			if (event_attrs) {
-				if (mono_custom_attrs_has_attr(event_attrs, CACHED_CLASS(SignalAttribute)->get_mono_ptr())) {
-					String event_name = String::utf8(mono_event_get_name(raw_event));
-					found_event_signals.push_back(StringName(event_name));
-				}
-
-				mono_custom_attrs_free(event_attrs);
-			}
-		}
-
-		const Vector<GDMonoField *> &fields = top->get_all_fields();
-		for (int i = 0; i < fields.size(); i++) {
-			GDMonoField *field = fields[i];
-
-			GDMonoClass *field_class = field->get_type().type_class;
-
-			if (!mono_class_is_delegate(field_class->get_mono_ptr())) {
-				continue;
-			}
-
-			if (!found_event_signals.find(field->get_name())) {
-				continue;
-			}
-
-			GDMonoMethod *invoke_method = field_class->get_method(mono_get_delegate_invoke(field_class->get_mono_ptr()));
-
-			Vector<SignalParameter> parameters;
-			if (_get_signal(top, invoke_method, parameters)) {
-				event_signals[field->get_name()] = { field, invoke_method, parameters };
-			}
-		}
-
-		top = top->get_parent_class();
-	}
-
-	signals_invalidated = false;
-}
-
-bool CSharpScript::_get_signal(GDMonoClass *p_class, GDMonoMethod *p_delegate_invoke, Vector<SignalParameter> &params) {
-	GD_MONO_ASSERT_THREAD_ATTACHED;
-
-	Vector<StringName> names;
-	Vector<ManagedType> types;
-	p_delegate_invoke->get_parameter_names(names);
-	p_delegate_invoke->get_parameter_types(types);
-
-	for (int i = 0; i < names.size(); ++i) {
-		SignalParameter arg;
-		arg.name = names[i];
-
-		bool nil_is_variant = false;
-		arg.type = GDMonoMarshal::managed_to_variant_type(types[i], &nil_is_variant);
-
-		if (arg.type == Variant::NIL) {
-			if (nil_is_variant) {
-				arg.nil_is_variant = true;
-			} else {
-				ERR_PRINT("Unknown type of signal parameter: '" + arg.name + "' in '" + p_class->get_full_name() + "'.");
-				return false;
-			}
-		}
-
-		params.push_back(arg);
-	}
-
-	return true;
-}
-
+#warning TODO
+#if 0
 /**
  * Returns false if there was an error, otherwise true.
  * If there was an error, r_prop_info and r_exported are not assigned any value.
@@ -2793,7 +2620,7 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 
 	if (p_member->is_static()) {
 #ifdef TOOLS_ENABLED
-		if (p_member->has_attribute(CACHED_CLASS(ExportAttribute))) {
+		if (p_member->has_attribute(GDMonoCache::cached_data.class_ExportAttribute)) {
 			ERR_PRINT("Cannot export member because it is static: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
 		}
 #endif
@@ -2814,7 +2641,7 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 		CRASH_NOW();
 	}
 
-	bool exported = p_member->has_attribute(CACHED_CLASS(ExportAttribute));
+	bool exported = p_member->has_attribute(GDMonoCache::cached_data.class_ExportAttribute);
 
 	if (p_member->get_member_type() == IMonoClassMember::MEMBER_TYPE_PROPERTY) {
 		GDMonoProperty *property = static_cast<GDMonoProperty *>(p_member);
@@ -2846,7 +2673,7 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 	}
 
 #ifdef TOOLS_ENABLED
-	MonoObject *attr = p_member->get_attribute(CACHED_CLASS(ExportAttribute));
+	MonoObject *attr = p_member->get_attribute(GDMonoCache::cached_data.class_ExportAttribute);
 #endif
 
 	PropertyHint hint = PROPERTY_HINT_NONE;
@@ -2867,8 +2694,8 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 					MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
 
 	if (hint_res == 0) {
-		hint = PropertyHint(CACHED_FIELD(ExportAttribute, hint)->get_int_value(attr));
-		hint_string = CACHED_FIELD(ExportAttribute, hintString)->get_string_value(attr);
+		hint = PropertyHint(GDMonoCache::cached_data.field_ExportAttribute_hint->get_int_value(attr));
+		hint_string = GDMonoCache::cached_data.field_ExportAttribute_hintString->get_string_value(attr);
 	}
 #endif
 
@@ -2950,7 +2777,7 @@ int CSharpScript::_try_get_member_export_hint(IMonoClassMember *p_member, Manage
 			// This may not be needed in the future if the editor is changed to not display values.
 			r_hint_string = name_only_hint_string;
 		}
-	} else if (p_variant_type == Variant::OBJECT && CACHED_CLASS(GodotResource)->is_assignable_from(p_type.type_class)) {
+	} else if (p_variant_type == Variant::OBJECT && GDMonoCache::cached_data.class_GodotResource->is_assignable_from(p_type.type_class)) {
 		GDMonoClass *field_native_class = GDMonoUtils::get_class_native_base(p_type.type_class);
 		CRASH_COND(field_native_class == nullptr);
 
@@ -3007,41 +2834,7 @@ int CSharpScript::_try_get_member_export_hint(IMonoClassMember *p_member, Manage
 	return 1;
 }
 #endif
-
-Variant CSharpScript::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-	if (unlikely(GDMono::get_singleton() == nullptr)) {
-		// Probably not the best error but eh.
-		r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
-		return Variant();
-	}
-
-	GD_MONO_SCOPE_THREAD_ATTACH;
-
-	GDMonoClass *top = script_class;
-
-	while (top && top != native) {
-		GDMonoMethod *method = top->get_method(p_method, p_argcount);
-
-		if (method && method->is_static()) {
-			MonoObject *result = method->invoke(nullptr, p_args);
-
-			if (result) {
-				return GDMonoMarshal::mono_object_to_variant(result);
-			} else {
-				return Variant();
-			}
-		}
-
-		top = top->get_parent_class();
-	}
-
-	// No static method found. Try regular instance calls
-	return Script::callp(p_method, p_args, p_argcount, r_error);
-}
-
-void CSharpScript::_resource_path_changed() {
-	_update_name();
-}
+#endif
 
 bool CSharpScript::_get(const StringName &p_name, Variant &r_ret) const {
 	if (p_name == CSharpLanguage::singleton->string_names._script_source) {
@@ -3070,29 +2863,12 @@ void CSharpScript::_bind_methods() {
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &CSharpScript::_new, MethodInfo("new"));
 }
 
-Ref<CSharpScript> CSharpScript::create_for_managed_type(GDMonoClass *p_class, GDMonoClass *p_native) {
+void CSharpScript::initialize_for_managed_type(Ref<CSharpScript> p_script) {
+	// IMPORTANT:
+	// This method must be called only after the CSharpScript and its associated type
+	// have been added to the script bridge map in the ScriptManagerBridge C# class.
+
 	// This method should not fail, only assertions allowed
-
-	CRASH_COND(p_class == nullptr);
-
-	// TODO OPTIMIZE: Cache the 'CSharpScript' associated with this 'p_class' instead of allocating a new one every time
-	Ref<CSharpScript> script = memnew(CSharpScript);
-
-	initialize_for_managed_type(script, p_class, p_native);
-
-	return script;
-}
-
-void CSharpScript::initialize_for_managed_type(Ref<CSharpScript> p_script, GDMonoClass *p_class, GDMonoClass *p_native) {
-	// This method should not fail, only assertions allowed
-
-	CRASH_COND(p_class == nullptr);
-
-	p_script->name = p_class->get_name();
-	p_script->script_class = p_class;
-	p_script->native = p_native;
-
-	CRASH_COND(p_script->native == nullptr);
 
 	p_script->valid = true;
 	p_script->reload_invalidated = false;
@@ -3106,71 +2882,21 @@ void CSharpScript::initialize_for_managed_type(Ref<CSharpScript> p_script, GDMon
 
 // Extract information about the script using the mono class.
 void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
-	GDMonoClass *base = p_script->script_class->get_parent_class();
+	bool tool = false;
+	Dictionary rpc_functions_dict;
+	// Destructor won't be called from C#, and I don't want to include the GDNative header
+	// only for this, so need to call the destructor manually before passing this to C#.
+	rpc_functions_dict.~Dictionary();
 
-	// `base` should only be set if the script is a user defined type.
-	if (base != p_script->native) {
-		p_script->base = base;
-	}
+	MonoException *exc = nullptr;
+	GDMonoCache::cached_data.methodthunk_ScriptManagerBridge_UpdateScriptClassInfo
+			.invoke(p_script.ptr(), &tool, &rpc_functions_dict, &exc);
+	UNHANDLED_EXCEPTION(exc);
 
-	p_script->tool = p_script->script_class->has_attribute(CACHED_CLASS(ToolAttribute));
-
-	if (!p_script->tool) {
-		GDMonoClass *nesting_class = p_script->script_class->get_nesting_class();
-		p_script->tool = nesting_class && nesting_class->has_attribute(CACHED_CLASS(ToolAttribute));
-	}
-
-#ifdef TOOLS_ENABLED
-	if (!p_script->tool) {
-		p_script->tool = p_script->script_class->get_assembly() == GDMono::get_singleton()->get_tools_assembly();
-	}
-#endif
-
-#ifdef DEBUG_ENABLED
-	// For debug builds, we must fetch from all native base methods as well.
-	// Native base methods must be fetched before the current class.
-	// Not needed if the script class itself is a native class.
-
-	if (p_script->script_class != p_script->native) {
-		GDMonoClass *native_top = p_script->native;
-		while (native_top) {
-			native_top->fetch_methods_with_godot_api_checks(p_script->native);
-
-			if (native_top == CACHED_CLASS(GodotObject)) {
-				break;
-			}
-
-			native_top = native_top->get_parent_class();
-		}
-	}
-#endif
-
-	p_script->script_class->fetch_methods_with_godot_api_checks(p_script->native);
+	p_script->tool = tool;
 
 	p_script->rpc_config.clear();
-
-	GDMonoClass *top = p_script->script_class;
-	while (top && top != p_script->native) {
-		// Fetch methods from base classes as well
-		top->fetch_methods_with_godot_api_checks(p_script->native);
-
-		// Update RPC info
-		{
-			Vector<GDMonoMethod *> methods = top->get_all_methods();
-			for (int i = 0; i < methods.size(); i++) {
-				if (!methods[i]->is_static()) {
-					const Variant rpc_config = p_script->_member_get_rpc_config(methods[i]);
-					if (rpc_config.get_type() != Variant::NIL) {
-						p_script->rpc_config[methods[i]->get_name()] = rpc_config;
-					}
-				}
-			}
-		}
-
-		top = top->get_parent_class();
-	}
-
-	p_script->load_script_signals(p_script->script_class, p_script->native);
+	p_script->rpc_config = rpc_functions_dict;
 }
 
 bool CSharpScript::can_instantiate() const {
@@ -3183,13 +2909,13 @@ bool CSharpScript::can_instantiate() const {
 	// FIXME Need to think this through better.
 	// For tool scripts, this will never fire if the class is not found. That's because we
 	// don't know if it's a tool script if we can't find the class to access the attributes.
-	if (extra_cond && !script_class) {
+	if (extra_cond && !valid) {
 		if (GDMono::get_singleton()->get_project_assembly() == nullptr) {
 			// The project assembly is not loaded
 			ERR_FAIL_V_MSG(false, "Cannot instance script because the project assembly is not loaded. Script: '" + get_path() + "'.");
 		} else {
 			// The project assembly is loaded, but the class could not found
-			ERR_FAIL_V_MSG(false, "Cannot instance script because the class '" + name + "' could not be found. Script: '" + get_path() + "'.");
+			ERR_FAIL_V_MSG(false, "Cannot instance script because the associated class could not be found. Script: '" + get_path() + "'.");
 		}
 	}
 
@@ -3197,28 +2923,18 @@ bool CSharpScript::can_instantiate() const {
 }
 
 StringName CSharpScript::get_instance_base_type() const {
-	if (native) {
-		return native->get_name();
-	} else {
-		return StringName();
-	}
+	StringName native_name;
+	MonoException *exc = nullptr;
+	GDMonoCache::cached_data.methodthunk_ScriptManagerBridge_GetScriptNativeName
+			.invoke(this, &native_name, &exc);
+	UNHANDLED_EXCEPTION(exc);
+	return native_name;
 }
 
 CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_is_ref_counted, Callable::CallError &r_error) {
 	GD_MONO_ASSERT_THREAD_ATTACHED;
 
 	/* STEP 1, CREATE */
-
-	// Search the constructor first, to fail with an error if it's not found before allocating anything else.
-	GDMonoMethod *ctor = script_class->get_method(CACHED_STRING_NAME(dotctor), p_argcount);
-	if (ctor == nullptr) {
-		ERR_FAIL_COND_V_MSG(p_argcount == 0, nullptr,
-				"Cannot create script instance. The class '" + script_class->get_full_name() +
-						"' does not define a parameterless constructor." +
-						(get_path().is_empty() ? String() : " Path: '" + get_path() + "'."));
-
-		ERR_FAIL_V_MSG(nullptr, "Constructor not found.");
-	}
 
 	Ref<RefCounted> ref;
 	if (p_is_ref_counted) {
@@ -3233,14 +2949,12 @@ CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_arg
 
 		CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->get();
 		if (script_binding.inited && !script_binding.gchandle.is_released()) {
-			MonoObject *mono_object = script_binding.gchandle.get_target();
-			if (mono_object) {
-				MonoException *exc = nullptr;
-				GDMonoUtils::dispose(mono_object, &exc);
+			MonoException *exc = nullptr;
+			GDMonoCache::cached_data.methodthunk_CSharpInstanceBridge_CallDispose
+					.invoke(script_binding.gchandle.get_intptr(), /* okIfNull */ true, &exc);
 
-				if (exc) {
-					GDMonoUtils::set_pending_exception(exc);
-				}
+			if (exc) {
+				GDMonoUtils::set_pending_exception(exc);
 			}
 
 			script_binding.gchandle.release(); // Just in case
@@ -3255,38 +2969,22 @@ CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_arg
 
 	/* STEP 2, INITIALIZE AND CONSTRUCT */
 
-	MonoObject *mono_object = mono_object_new(mono_domain_get(), script_class->get_mono_ptr());
+	MonoException *exc = nullptr;
+	GDMonoCache::cached_data.methodthunk_ScriptManagerBridge_CreateManagedForGodotObjectScriptInstance
+			.invoke(this, p_owner, p_args, p_argcount, &exc);
 
-	if (!mono_object) {
+	if (exc) {
+		GDMonoUtils::set_pending_exception(exc);
+
 		// Important to clear this before destroying the script instance here
 		instance->script = Ref<CSharpScript>();
 		instance->owner = nullptr;
-
-		bool die = instance->_unreference_owner_unsafe();
-		// Not ok for the owner to die here. If there is a situation where this can happen, it will be considered a bug.
-		CRASH_COND(die);
-
 		p_owner->set_script_instance(nullptr);
-		r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
-		ERR_FAIL_V_MSG(nullptr, "Failed to allocate memory for the object.");
+
+		return nullptr;
 	}
 
-	// Tie managed to unmanaged
-	instance->gchandle = MonoGCHandleData::new_strong_handle(mono_object);
-
-	if (instance->base_ref_counted) {
-		instance->_reference_owner_unsafe(); // Here, after assigning the gchandle (for the refcount_incremented callback)
-	}
-
-	{
-		MutexLock lock(CSharpLanguage::get_singleton()->script_instances_mutex);
-		instances.insert(instance->owner);
-	}
-
-	CACHED_FIELD(GodotObject, ptr)->set_value_raw(mono_object, instance->owner);
-
-	// Construct
-	ctor->invoke(mono_object, p_args);
+	CRASH_COND(instance->gchandle.is_released());
 
 	/* STEP 3, PARTY */
 
@@ -3302,11 +3000,17 @@ Variant CSharpScript::_new(const Variant **p_args, int p_argcount, Callable::Cal
 
 	r_error.error = Callable::CallError::CALL_OK;
 
-	ERR_FAIL_NULL_V(native, Variant());
+	StringName native_name;
+	MonoException *exc = nullptr;
+	GDMonoCache::cached_data.methodthunk_ScriptManagerBridge_GetScriptNativeName
+			.invoke(this, &native_name, &exc);
+	UNHANDLED_EXCEPTION(exc);
+
+	ERR_FAIL_COND_V(native_name == StringName(), Variant());
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
-	Object *owner = ClassDB::instantiate(NATIVE_GDMONOCLASS_NAME(native));
+	Object *owner = ClassDB::instantiate(native_name);
 
 	Ref<RefCounted> ref;
 	RefCounted *r = Object::cast_to<RefCounted>(owner);
@@ -3336,16 +3040,21 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
-	if (native) {
-		StringName native_name = NATIVE_GDMONOCLASS_NAME(native);
-		if (!ClassDB::is_parent_class(p_this->get_class_name(), native_name)) {
-			if (EngineDebugger::is_active()) {
-				CSharpLanguage::get_singleton()->debug_break_parse(get_path(), 0,
-						"Script inherits from native type '" + String(native_name) +
-								"', so it can't be instantiated in object of type: '" + p_this->get_class() + "'");
-			}
-			ERR_FAIL_V_MSG(nullptr, "Script inherits from native type '" + String(native_name) + "', so it can't be instantiated in object of type: '" + p_this->get_class() + "'.");
+	StringName native_name;
+	MonoException *exc = nullptr;
+	GDMonoCache::cached_data.methodthunk_ScriptManagerBridge_GetScriptNativeName
+			.invoke(this, &native_name, &exc);
+	UNHANDLED_EXCEPTION(exc);
+
+	ERR_FAIL_COND_V(native_name == StringName(), nullptr);
+
+	if (!ClassDB::is_parent_class(p_this->get_class_name(), native_name)) {
+		if (EngineDebugger::is_active()) {
+			CSharpLanguage::get_singleton()->debug_break_parse(get_path(), 0,
+					"Script inherits from native type '" + String(native_name) +
+							"', so it can't be instantiated in object of type: '" + p_this->get_class() + "'");
 		}
+		ERR_FAIL_V_MSG(nullptr, "Script inherits from native type '" + String(native_name) + "', so it can't be instantiated in object of type: '" + p_this->get_class() + "'.");
 	}
 
 	Callable::CallError unchecked_error;
@@ -3387,12 +3096,14 @@ void CSharpScript::set_source_code(const String &p_code) {
 }
 
 void CSharpScript::get_script_method_list(List<MethodInfo> *p_list) const {
-	if (!script_class) {
+	if (!valid) {
 		return;
 	}
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
+#warning TODO
+#if 0
 	// TODO: We're filtering out constructors but there may be other methods unsuitable for explicit calls.
 	GDMonoClass *top = script_class;
 
@@ -3407,35 +3118,51 @@ void CSharpScript::get_script_method_list(List<MethodInfo> *p_list) const {
 
 		top = top->get_parent_class();
 	}
+#endif
 }
 
 bool CSharpScript::has_method(const StringName &p_method) const {
-	if (!script_class) {
+	if (!valid) {
 		return false;
 	}
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
-	return script_class->has_fetched_method_unknown_params(p_method);
+	if (!GDMonoCache::cached_data.godot_api_cache_updated) {
+		return false;
+	}
+
+	String method = p_method;
+	bool deep = false;
+
+	MonoException *exc = nullptr;
+	bool found = GDMonoCache::cached_data.methodthunk_ScriptManagerBridge_HasMethodUnknownParams
+						 .invoke(this, &method, deep, &exc);
+	UNHANDLED_EXCEPTION(exc);
+
+	return found;
 }
 
 MethodInfo CSharpScript::get_method_info(const StringName &p_method) const {
-	if (!script_class) {
+	if (!valid) {
 		return MethodInfo();
 	}
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
+#warning TODO
+#if 0
 	GDMonoClass *top = script_class;
 
 	while (top && top != native) {
-		GDMonoMethod *params = top->get_fetched_method_unknown_params(p_method);
+		GDMonoMethod *params = top->get_method_unknown_params(p_method);
 		if (params) {
 			return params->get_method_info();
 		}
 
 		top = top->get_parent_class();
 	}
+#endif
 
 	return MethodInfo();
 }
@@ -3451,27 +3178,17 @@ Error CSharpScript::reload(bool p_keep_state) {
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
-	const DotNetScriptLookupInfo *lookup_info =
-			CSharpLanguage::get_singleton()->lookup_dotnet_script(get_path());
+	String script_path = get_path();
 
-	if (lookup_info) {
-		GDMonoClass *klass = lookup_info->script_class;
-		if (klass) {
-			ERR_FAIL_COND_V(!CACHED_CLASS(GodotObject)->is_assignable_from(klass), FAILED);
-			script_class = klass;
-		}
-	}
+	MonoException *exc = nullptr;
+	valid = GDMonoCache::cached_data.methodthunk_ScriptManagerBridge_AddScriptBridge
+					.invoke(this, &script_path, &exc);
+	UNHANDLED_EXCEPTION(exc);
 
-	valid = script_class != nullptr;
-
-	if (script_class) {
+	if (valid) {
 #ifdef DEBUG_ENABLED
-		print_verbose("Found class " + script_class->get_full_name() + " for script " + get_path());
+		print_verbose("Found class for script " + get_path());
 #endif
-
-		native = GDMonoUtils::get_class_native_base(script_class);
-
-		CRASH_COND(native == nullptr);
 
 		update_script_class_info(this);
 
@@ -3509,43 +3226,59 @@ void CSharpScript::update_exports() {
 }
 
 bool CSharpScript::has_script_signal(const StringName &p_signal) const {
-	return event_signals.has(p_signal) || _signals.has(p_signal);
+	if (!valid) {
+		return false;
+	}
+
+	if (!GDMonoCache::cached_data.godot_api_cache_updated) {
+		return false;
+	}
+
+	String signal = p_signal;
+
+	MonoException *exc = nullptr;
+	bool res = GDMonoCache::cached_data.methodthunk_ScriptManagerBridge_HasScriptSignal
+					   .invoke(this, &signal, &exc);
+	UNHANDLED_EXCEPTION(exc);
+
+	return res;
 }
 
 void CSharpScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
-	for (const KeyValue<StringName, Vector<SignalParameter>> &E : _signals) {
-		MethodInfo mi;
-		mi.name = E.key;
-
-		const Vector<SignalParameter> &params = E.value;
-		for (int i = 0; i < params.size(); i++) {
-			const SignalParameter &param = params[i];
-
-			PropertyInfo arg_info = PropertyInfo(param.type, param.name);
-			if (param.type == Variant::NIL && param.nil_is_variant) {
-				arg_info.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
-			}
-
-			mi.arguments.push_back(arg_info);
-		}
-
-		r_signals->push_back(mi);
+	if (!valid) {
+		return;
 	}
 
-	for (const KeyValue<StringName, EventSignal> &E : event_signals) {
+	// Performance is not critical here as this will be replaced with source generators.
+
+	if (!GDMonoCache::cached_data.godot_api_cache_updated) {
+		return;
+	}
+
+	Dictionary signals_dict;
+	// Destructor won't be called from C#, and I don't want to include the GDNative header
+	// only for this, so need to call the destructor manually before passing this to C#.
+	signals_dict.~Dictionary();
+
+	MonoException *exc = nullptr;
+	GDMonoCache::cached_data.methodthunk_ScriptManagerBridge_GetScriptSignalList
+			.invoke(this, &signals_dict, &exc);
+	UNHANDLED_EXCEPTION(exc);
+
+	for (const Variant *s = signals_dict.next(nullptr); s != nullptr; s = signals_dict.next(s)) {
 		MethodInfo mi;
-		mi.name = E.key;
+		mi.name = *s;
 
-		const EventSignal &event_signal = E.value;
-		const Vector<SignalParameter> &params = event_signal.parameters;
+		Array params = signals_dict[*s];
+
 		for (int i = 0; i < params.size(); i++) {
-			const SignalParameter &param = params[i];
+			Dictionary param = params[i];
 
-			PropertyInfo arg_info = PropertyInfo(param.type, param.name);
-			if (param.type == Variant::NIL && param.nil_is_variant) {
+			Variant::Type param_type = (Variant::Type)(int)param["type"];
+			PropertyInfo arg_info = PropertyInfo(param_type, (String)param["name"]);
+			if (param_type == Variant::NIL && (bool)param["nil_is_variant"]) {
 				arg_info.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 			}
-
 			mi.arguments.push_back(arg_info);
 		}
 
@@ -3559,15 +3292,20 @@ bool CSharpScript::inherits_script(const Ref<Script> &p_script) const {
 		return false;
 	}
 
-	if (script_class == nullptr || cs->script_class == nullptr) {
+	if (!valid || !cs->valid) {
 		return false;
 	}
 
-	if (script_class == cs->script_class) {
-		return true;
+	if (!GDMonoCache::cached_data.godot_api_cache_updated) {
+		return false;
 	}
 
-	return cs->script_class->is_assignable_from(script_class);
+	MonoException *exc = nullptr;
+	bool res = GDMonoCache::cached_data.methodthunk_ScriptManagerBridge_ScriptIsOrInherits
+					   .invoke(this, cs.ptr(), &exc);
+	UNHANDLED_EXCEPTION(exc);
+
+	return res;
 }
 
 Ref<Script> CSharpScript::get_base_script() const {
@@ -3598,22 +3336,6 @@ int CSharpScript::get_member_line(const StringName &p_member) const {
 	return -1;
 }
 
-Variant CSharpScript::_member_get_rpc_config(IMonoClassMember *p_member) const {
-	Variant out;
-
-	MonoObject *rpc_attribute = p_member->get_attribute(CACHED_CLASS(RPCAttribute));
-	if (rpc_attribute != nullptr) {
-		Dictionary rpc_config;
-		rpc_config["rpc_mode"] = CACHED_PROPERTY(RPCAttribute, Mode)->get_int_value(rpc_attribute);
-		rpc_config["call_local"] = CACHED_PROPERTY(RPCAttribute, CallLocal)->get_bool_value(rpc_attribute);
-		rpc_config["transfer_mode"] = CACHED_PROPERTY(RPCAttribute, TransferMode)->get_int_value(rpc_attribute);
-		rpc_config["channel"] = CACHED_PROPERTY(RPCAttribute, TransferChannel)->get_int_value(rpc_attribute);
-		out = rpc_config;
-	}
-
-	return out;
-}
-
 const Variant CSharpScript::get_rpc_config() const {
 	return rpc_config;
 }
@@ -3634,28 +3356,14 @@ Error CSharpScript::load_source_code(const String &p_path) {
 	return OK;
 }
 
-void CSharpScript::_update_name() {
-	String path = get_path();
-
-	if (!path.is_empty()) {
-		name = get_path().get_file().get_basename();
-	}
-}
-
 void CSharpScript::_clear() {
 	tool = false;
 	valid = false;
 	reload_invalidated = true;
-
-	base = nullptr;
-	native = nullptr;
-	script_class = nullptr;
 }
 
 CSharpScript::CSharpScript() {
 	_clear();
-
-	_update_name();
 
 #ifdef DEBUG_ENABLED
 	{
@@ -3670,6 +3378,12 @@ CSharpScript::~CSharpScript() {
 	MutexLock lock(CSharpLanguage::get_singleton()->script_instances_mutex);
 	CSharpLanguage::get_singleton()->script_list.remove(&this->script_list);
 #endif
+
+	if (GDMonoCache::cached_data.godot_api_cache_updated) {
+		MonoException *exc = nullptr;
+		GDMonoCache::cached_data.methodthunk_ScriptManagerBridge_RemoveScriptBridge.invoke(this, &exc);
+		UNHANDLED_EXCEPTION(exc);
+	}
 }
 
 void CSharpScript::get_members(HashSet<StringName> *p_members) {
@@ -3771,16 +3485,9 @@ bool ResourceFormatSaverCSharpScript::recognize(const Ref<Resource> &p_resource)
 }
 
 CSharpLanguage::StringNameCache::StringNameCache() {
-	_signal_callback = StaticCString::create("_signal_callback");
-	_set = StaticCString::create("_set");
-	_get = StaticCString::create("_get");
-	_get_property_list = StaticCString::create("_get_property_list");
 	_property_can_revert = StaticCString::create("_property_can_revert");
 	_property_get_revert = StaticCString::create("_property_get_revert");
-	_notification = StaticCString::create("_notification");
 	_script_source = StaticCString::create("script/source");
 	on_before_serialize = StaticCString::create("OnBeforeSerialize");
 	on_after_deserialize = StaticCString::create("OnAfterDeserialize");
-	dotctor = StaticCString::create(".ctor");
-	delegate_invoke_method_name = StaticCString::create("Invoke");
 }
