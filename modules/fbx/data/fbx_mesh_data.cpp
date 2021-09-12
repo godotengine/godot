@@ -1087,7 +1087,7 @@ HashMap<int, R> FBXMeshData::extract_per_vertex_data(
 				// https://help.autodesk.com/view/FBX/2017/ENU/?guid=__cpp_ref_class_fbx_layer_element_html
 				ERR_FAIL_COND_V_MSG((int)p_mapping_data.index.size() != p_vertex_count, (HashMap<int, R>()), "FBX file corrupted: #ERR02");
 				for (size_t vertex_index = 0; vertex_index < p_mapping_data.index.size(); vertex_index += 1) {
-					ERR_FAIL_INDEX_V_MSG(p_mapping_data.index[vertex_index], (int)p_mapping_data.data.size(), (HashMap<int, R>()), "FBX file seems corrupted: #ERR03.")
+					ERR_FAIL_INDEX_V_MSG(p_mapping_data.index[vertex_index], (int)p_mapping_data.data.size(), (HashMap<int, R>()), "FBX file seems corrupted: #ERR03.");
 					aggregate_vertex_data[vertex_index].push_back({ -1, p_mapping_data.data[p_mapping_data.index[vertex_index]] });
 				}
 			}
@@ -1136,9 +1136,9 @@ HashMap<int, R> FBXMeshData::extract_per_vertex_data(
 					}
 					const int vertex_index = get_vertex_from_polygon_vertex(p_mesh_indices, polygon_vertex_index);
 					ERR_FAIL_COND_V_MSG(vertex_index < 0, (HashMap<int, R>()), "FBX file corrupted: #ERR8");
-					ERR_FAIL_COND_V_MSG(vertex_index >= p_vertex_count, (HashMap<int, R>()), "FBX file seems corrupted: #ERR9.")
-					ERR_FAIL_COND_V_MSG(p_mapping_data.index[polygon_vertex_index] < 0, (HashMap<int, R>()), "FBX file seems corrupted: #ERR10.")
-					ERR_FAIL_COND_V_MSG(p_mapping_data.index[polygon_vertex_index] >= (int)p_mapping_data.data.size(), (HashMap<int, R>()), "FBX file seems corrupted: #ERR11.")
+					ERR_FAIL_COND_V_MSG(vertex_index >= p_vertex_count, (HashMap<int, R>()), "FBX file seems corrupted: #ERR9.");
+					ERR_FAIL_COND_V_MSG(p_mapping_data.index[polygon_vertex_index] < 0, (HashMap<int, R>()), "FBX file seems corrupted: #ERR10.");
+					ERR_FAIL_COND_V_MSG(p_mapping_data.index[polygon_vertex_index] >= (int)p_mapping_data.data.size(), (HashMap<int, R>()), "FBX file seems corrupted: #ERR11.");
 					aggregate_vertex_data[vertex_index].push_back({ polygon_id, p_mapping_data.data[p_mapping_data.index[polygon_vertex_index]] });
 				}
 			}
@@ -1164,7 +1164,7 @@ HashMap<int, R> FBXMeshData::extract_per_vertex_data(
 
 					aggregate_vertex_data[vertex_index].push_back({ polygon_index, p_mapping_data.data[polygon_index] });
 				}
-				ERR_FAIL_COND_V_MSG((polygon_index + 1) != polygon_count, (HashMap<int, R>()), "FBX file seems corrupted: #ERR16. Not all Polygons are present in the file.")
+				ERR_FAIL_COND_V_MSG((polygon_index + 1) != polygon_count, (HashMap<int, R>()), "FBX file seems corrupted: #ERR16. Not all Polygons are present in the file.");
 			} else {
 				// The data is mapped per polygon using a reference.
 				// The indices array, contains a *reference_id for each polygon.
@@ -1190,7 +1190,7 @@ HashMap<int, R> FBXMeshData::extract_per_vertex_data(
 
 					aggregate_vertex_data[vertex_index].push_back({ polygon_index, p_mapping_data.data[p_mapping_data.index[polygon_index]] });
 				}
-				ERR_FAIL_COND_V_MSG((polygon_index + 1) != polygon_count, (HashMap<int, R>()), "FBX file seems corrupted: #ERR22. Not all Polygons are present in the file.")
+				ERR_FAIL_COND_V_MSG((polygon_index + 1) != polygon_count, (HashMap<int, R>()), "FBX file seems corrupted: #ERR22. Not all Polygons are present in the file.");
 			}
 		} break;
 		case FBXDocParser::MeshGeometry::MapType::edge: {

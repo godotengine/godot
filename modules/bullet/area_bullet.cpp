@@ -171,7 +171,7 @@ bool AreaBullet::is_monitoring() const {
 }
 
 void AreaBullet::main_shape_changed() {
-	CRASH_COND(!get_main_shape())
+	CRASH_COND(!get_main_shape());
 	btGhost->setCollisionShape(get_main_shape());
 }
 

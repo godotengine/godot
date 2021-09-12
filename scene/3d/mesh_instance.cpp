@@ -416,7 +416,7 @@ void MeshInstance::_update_skinning() {
 		uint32_t array_offsets_write[Mesh::ARRAY_MAX];
 		uint32_t array_strides_write[Mesh::ARRAY_MAX];
 		visual_server->mesh_surface_make_offsets_from_format(format_write, vertex_count_write, index_count_write, array_offsets_write, array_strides_write);
-		ERR_FAIL_COND(array_strides_write[Mesh::ARRAY_VERTEX] != array_strides_write[Mesh::ARRAY_NORMAL])
+		ERR_FAIL_COND(array_strides_write[Mesh::ARRAY_VERTEX] != array_strides_write[Mesh::ARRAY_NORMAL]);
 		const uint32_t stride_write = array_strides_write[Mesh::ARRAY_VERTEX];
 		const uint32_t offset_vertices_write = array_offsets_write[Mesh::ARRAY_VERTEX];
 		const uint32_t offset_normals_write = array_offsets_write[Mesh::ARRAY_NORMAL];
@@ -438,7 +438,7 @@ void MeshInstance::_update_skinning() {
 		uint32_t array_offsets[Mesh::ARRAY_MAX];
 		uint32_t array_strides[Mesh::ARRAY_MAX];
 		visual_server->mesh_surface_make_offsets_from_format(format_read, vertex_count, index_count, array_offsets, array_strides);
-		ERR_FAIL_COND(array_strides[Mesh::ARRAY_VERTEX] != array_strides[Mesh::ARRAY_NORMAL])
+		ERR_FAIL_COND(array_strides[Mesh::ARRAY_VERTEX] != array_strides[Mesh::ARRAY_NORMAL]);
 		const uint32_t stride = array_strides[Mesh::ARRAY_VERTEX];
 		const uint32_t offset_vertices = array_offsets[Mesh::ARRAY_VERTEX];
 		const uint32_t offset_normals = array_offsets[Mesh::ARRAY_NORMAL];
