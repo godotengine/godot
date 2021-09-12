@@ -263,7 +263,7 @@ namespace Godot
         /// <returns>If the <see cref="NodePath"/> is an absolute path.</returns>
         public bool IsAbsolute()
         {
-            return NativeFuncs.godotsharp_node_path_is_absolute(ref NativeValue);
+            return NativeFuncs.godotsharp_node_path_is_absolute(ref NativeValue).ToBool();
         }
 
         /// <summary>

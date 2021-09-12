@@ -1,12 +1,24 @@
+using System;
+using System.Runtime.InteropServices;
+using Godot.NativeInterop;
+
 namespace Godot
 {
     public static class Dispatcher
     {
         internal static GodotTaskScheduler DefaultGodotTaskScheduler;
 
-        private static void InitializeDefaultGodotTaskScheduler()
+        [UnmanagedCallersOnly]
+        internal static void InitializeDefaultGodotTaskScheduler()
         {
-            DefaultGodotTaskScheduler = new GodotTaskScheduler();
+            try
+            {
+                DefaultGodotTaskScheduler = new GodotTaskScheduler();
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.DebugUnhandledException(e);
+            }
         }
 
         public static GodotSynchronizationContext SynchronizationContext => DefaultGodotTaskScheduler.Context;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,9 @@
 
 #include "../interop_types.h"
 
+#include "modules/mono/csharp_script.h"
 #include "modules/mono/managed_callable.h"
+#include "modules/mono/mono_gd/gd_mono_cache.h"
 #include "modules/mono/signal_awaiter_utils.h"
 
 #ifdef __cplusplus
@@ -75,12 +77,223 @@ GD_PINVOKE_EXPORT godotsharp_class_creation_func godotsharp_get_class_constructo
 	return nullptr;
 }
 
-GD_PINVOKE_EXPORT Object *godotsharp_invoke_class_constructor(godotsharp_class_creation_func p_creation_func) {
-	return p_creation_func();
-}
-
 GD_PINVOKE_EXPORT Object *godotsharp_engine_get_singleton(const String *p_name) {
 	return Engine::get_singleton()->get_singleton_object(*p_name);
+}
+
+GD_PINVOKE_EXPORT void godotsharp_internal_object_disposed(Object *p_ptr) {
+#ifdef DEBUG_ENABLED
+	CRASH_COND(p_ptr == nullptr);
+#endif
+
+	if (p_ptr->get_script_instance()) {
+		CSharpInstance *cs_instance = CAST_CSHARP_INSTANCE(p_ptr->get_script_instance());
+		if (cs_instance) {
+			if (!cs_instance->is_destructing_script_instance()) {
+				cs_instance->mono_object_disposed();
+				p_ptr->set_script_instance(nullptr);
+			}
+			return;
+		}
+	}
+
+	void *data = CSharpLanguage::get_existing_instance_binding(p_ptr);
+
+	if (data) {
+		CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->get();
+		if (script_binding.inited) {
+			MonoGCHandleData &gchandle = script_binding.gchandle;
+			if (!gchandle.is_released()) {
+				CSharpLanguage::release_script_gchandle(nullptr, gchandle);
+				script_binding.inited = false;
+			}
+		}
+	}
+}
+
+GD_PINVOKE_EXPORT void godotsharp_internal_refcounted_disposed(Object *p_ptr, bool p_is_finalizer) {
+#ifdef DEBUG_ENABLED
+	CRASH_COND(p_ptr == nullptr);
+	// This is only called with RefCounted derived classes
+	CRASH_COND(!Object::cast_to<RefCounted>(p_ptr));
+#endif
+
+	RefCounted *rc = static_cast<RefCounted *>(p_ptr);
+
+	if (rc->get_script_instance()) {
+		CSharpInstance *cs_instance = CAST_CSHARP_INSTANCE(rc->get_script_instance());
+		if (cs_instance) {
+			if (!cs_instance->is_destructing_script_instance()) {
+				bool delete_owner;
+				bool remove_script_instance;
+
+				cs_instance->mono_object_disposed_baseref(p_is_finalizer, delete_owner, remove_script_instance);
+
+				if (delete_owner) {
+					memdelete(rc);
+				} else if (remove_script_instance) {
+					rc->set_script_instance(nullptr);
+				}
+			}
+			return;
+		}
+	}
+
+	// Unsafe refcount decrement. The managed instance also counts as a reference.
+	// See: CSharpLanguage::alloc_instance_binding_data(Object *p_object)
+	CSharpLanguage::get_singleton()->pre_unsafe_unreference(rc);
+	if (rc->unreference()) {
+		memdelete(rc);
+	} else {
+		void *data = CSharpLanguage::get_existing_instance_binding(rc);
+
+		if (data) {
+			CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->get();
+			if (script_binding.inited) {
+				MonoGCHandleData &gchandle = script_binding.gchandle;
+				if (!gchandle.is_released()) {
+					CSharpLanguage::release_script_gchandle(nullptr, gchandle);
+					script_binding.inited = false;
+				}
+			}
+		}
+	}
+}
+
+GD_PINVOKE_EXPORT void godotsharp_internal_object_connect_event_signal(Object *p_ptr, const StringName *p_event_signal) {
+	CSharpInstance *csharp_instance = CAST_CSHARP_INSTANCE(p_ptr->get_script_instance());
+	if (csharp_instance) {
+		csharp_instance->connect_event_signal(*p_event_signal);
+	}
+}
+
+GD_PINVOKE_EXPORT int32_t godotsharp_internal_signal_awaiter_connect(Object *p_source, StringName *p_signal, Object *p_target, GCHandleIntPtr p_awaiter_handle_ptr) {
+	StringName signal = p_signal ? *p_signal : StringName();
+	return (int32_t)gd_mono_connect_signal_awaiter(p_source, signal, p_target, p_awaiter_handle_ptr);
+}
+
+GD_PINVOKE_EXPORT GCHandleIntPtr godotsharp_internal_unmanaged_get_script_instance_managed(Object *p_unmanaged, bool *r_has_cs_script_instance) {
+#ifdef DEBUG_ENABLED
+	CRASH_COND(!p_unmanaged);
+	CRASH_COND(!r_has_cs_script_instance);
+#endif
+
+	if (p_unmanaged->get_script_instance()) {
+		CSharpInstance *cs_instance = CAST_CSHARP_INSTANCE(p_unmanaged->get_script_instance());
+
+		if (cs_instance) {
+			*r_has_cs_script_instance = true;
+			return cs_instance->get_gchandle_intptr();
+		}
+	}
+
+	*r_has_cs_script_instance = false;
+	return GCHandleIntPtr();
+}
+
+GD_PINVOKE_EXPORT GCHandleIntPtr godotsharp_internal_unmanaged_get_instance_binding_managed(Object *p_unmanaged) {
+#ifdef DEBUG_ENABLED
+	CRASH_COND(!p_unmanaged);
+#endif
+
+	void *data = CSharpLanguage::get_instance_binding(p_unmanaged);
+	ERR_FAIL_NULL_V(data, GCHandleIntPtr());
+	CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->value();
+	ERR_FAIL_COND_V(!script_binding.inited, GCHandleIntPtr());
+
+	return script_binding.gchandle.get_intptr();
+}
+
+GD_PINVOKE_EXPORT GCHandleIntPtr godotsharp_internal_unmanaged_instance_binding_create_managed(Object *p_unmanaged, GCHandleIntPtr p_old_gchandle) {
+#ifdef DEBUG_ENABLED
+	CRASH_COND(!p_unmanaged);
+#endif
+
+	void *data = CSharpLanguage::get_instance_binding(p_unmanaged);
+	ERR_FAIL_NULL_V(data, GCHandleIntPtr());
+	CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->value();
+	ERR_FAIL_COND_V(!script_binding.inited, GCHandleIntPtr());
+
+	MonoGCHandleData &gchandle = script_binding.gchandle;
+
+	// TODO: Possible data race?
+	CRASH_COND(gchandle.get_intptr().value != p_old_gchandle.value);
+
+	CSharpLanguage::get_singleton()->release_script_gchandle(gchandle);
+	script_binding.inited = false;
+
+	// Create a new one
+
+#ifdef DEBUG_ENABLED
+	CRASH_COND(script_binding.type_name == StringName());
+#endif
+
+	bool parent_is_object_class = ClassDB::is_parent_class(p_unmanaged->get_class_name(), script_binding.type_name);
+	ERR_FAIL_COND_V_MSG(!parent_is_object_class, GCHandleIntPtr(),
+			"Type inherits from native type '" + script_binding.type_name + "', so it can't be instantiated in object of type: '" + p_unmanaged->get_class() + "'.");
+
+	GCHandleIntPtr strong_gchandle =
+			GDMonoCache::managed_callbacks.ScriptManagerBridge_CreateManagedForGodotObjectBinding(
+					&script_binding.type_name, p_unmanaged);
+
+	ERR_FAIL_NULL_V(strong_gchandle.value, GCHandleIntPtr());
+
+	gchandle = MonoGCHandleData(strong_gchandle, gdmono::GCHandleType::STRONG_HANDLE);
+	script_binding.inited = true;
+
+	// Tie managed to unmanaged
+	RefCounted *rc = Object::cast_to<RefCounted>(p_unmanaged);
+
+	if (rc) {
+		// Unsafe refcount increment. The managed instance also counts as a reference.
+		// This way if the unmanaged world has no references to our owner
+		// but the managed instance is alive, the refcount will be 1 instead of 0.
+		// See: godot_icall_RefCounted_Dtor(MonoObject *p_obj, Object *p_ptr)
+		rc->reference();
+		CSharpLanguage::get_singleton()->post_unsafe_reference(rc);
+	}
+
+	return gchandle.get_intptr();
+}
+
+GD_PINVOKE_EXPORT void godotsharp_internal_tie_native_managed_to_unmanaged(GCHandleIntPtr p_gchandle_intptr, Object *p_unmanaged, const StringName *p_native_name, bool p_ref_counted) {
+	CSharpLanguage::tie_native_managed_to_unmanaged(p_gchandle_intptr, p_unmanaged, p_native_name, p_ref_counted);
+}
+
+GD_PINVOKE_EXPORT void godotsharp_internal_tie_user_managed_to_unmanaged(GCHandleIntPtr p_gchandle_intptr, Object *p_unmanaged, CSharpScript *p_script, bool p_ref_counted) {
+	CSharpLanguage::tie_user_managed_to_unmanaged(p_gchandle_intptr, p_unmanaged, p_script, p_ref_counted);
+}
+
+GD_PINVOKE_EXPORT void godotsharp_internal_tie_managed_to_unmanaged_with_pre_setup(GCHandleIntPtr p_gchandle_intptr, Object *p_unmanaged) {
+	CSharpLanguage::tie_managed_to_unmanaged_with_pre_setup(p_gchandle_intptr, p_unmanaged);
+}
+
+GD_PINVOKE_EXPORT CSharpScript *godotsharp_internal_new_csharp_script() {
+	CSharpScript *script = memnew(CSharpScript);
+	CRASH_COND(!script);
+	return script;
+}
+
+GD_PINVOKE_EXPORT void godotsharp_array_filter_godot_objects_by_native(StringName *p_native_name, const Array *p_input, Array *r_output) {
+	memnew_placement(r_output, Array);
+
+	for (int i = 0; i < p_input->size(); ++i) {
+		if (ClassDB::is_parent_class(((Object *)(*p_input)[i])->get_class(), *p_native_name)) {
+			r_output->push_back(p_input[i]);
+		}
+	}
+}
+
+GD_PINVOKE_EXPORT void godotsharp_array_filter_godot_objects_by_non_native(const Array *p_input, Array *r_output) {
+	memnew_placement(r_output, Array);
+
+	for (int i = 0; i < p_input->size(); ++i) {
+		CSharpInstance *si = CAST_CSHARP_INSTANCE(((Object *)(*p_input)[i])->get_script_instance());
+
+		if (si != nullptr) {
+			r_output->push_back(p_input[i]);
+		}
+	}
 }
 
 GD_PINVOKE_EXPORT void godotsharp_ref_destroy(Ref<RefCounted> *p_instance) {
@@ -1003,8 +1216,8 @@ GD_PINVOKE_EXPORT void godotsharp_convert(const godot_variant *p_what, int32_t p
 	if (ce.error != Callable::CallError::CALL_OK) {
 		memnew_placement(r_ret, Variant);
 		ERR_FAIL_MSG("Unable to convert parameter from '" +
-					 Variant::get_type_name(reinterpret_cast<const Variant *>(p_what)->get_type()) +
-					 "' to '" + Variant::get_type_name(Variant::Type(p_type)) + "'.");
+				Variant::get_type_name(reinterpret_cast<const Variant *>(p_what)->get_type()) +
+				"' to '" + Variant::get_type_name(Variant::Type(p_type)) + "'.");
 	}
 	memnew_placement(r_ret, Variant(ret));
 }
@@ -1028,11 +1241,23 @@ GD_PINVOKE_EXPORT void godotsharp_object_to_string(Object *p_ptr, godot_string *
 #endif
 
 // We need this to prevent the functions from being stripped.
-void *godotsharp_pinvoke_funcs[164] = {
+void *godotsharp_pinvoke_funcs[176] = {
 	(void *)godotsharp_method_bind_get_method,
 	(void *)godotsharp_get_class_constructor,
-	(void *)godotsharp_invoke_class_constructor,
 	(void *)godotsharp_engine_get_singleton,
+	(void *)godotsharp_internal_object_disposed,
+	(void *)godotsharp_internal_refcounted_disposed,
+	(void *)godotsharp_internal_object_connect_event_signal,
+	(void *)godotsharp_internal_signal_awaiter_connect,
+	(void *)godotsharp_internal_unmanaged_get_script_instance_managed,
+	(void *)godotsharp_internal_unmanaged_get_instance_binding_managed,
+	(void *)godotsharp_internal_unmanaged_instance_binding_create_managed,
+	(void *)godotsharp_internal_tie_native_managed_to_unmanaged,
+	(void *)godotsharp_internal_tie_user_managed_to_unmanaged,
+	(void *)godotsharp_internal_tie_managed_to_unmanaged_with_pre_setup,
+	(void *)godotsharp_internal_new_csharp_script,
+	(void *)godotsharp_array_filter_godot_objects_by_native,
+	(void *)godotsharp_array_filter_godot_objects_by_non_native,
 	(void *)godotsharp_ref_destroy,
 	(void *)godotsharp_string_name_new_from_string,
 	(void *)godotsharp_node_path_new_from_string,

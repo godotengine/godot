@@ -4,7 +4,7 @@
     <OutputPath>bin/$(Configuration)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <RootNamespace>Godot</RootNamespace>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <DocumentationFile>$(OutputPath)/$(AssemblyName).xml</DocumentationFile>
     <EnableDefaultItems>false</EnableDefaultItems>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -34,6 +34,7 @@
     <Compile Include="Core\Basis.cs" />
     <Compile Include="Core\Bridge\CSharpInstanceBridge.cs" />
     <Compile Include="Core\Bridge\GCHandleBridge.cs" />
+    <Compile Include="Core\Bridge\ManagedCallbacks.cs" />
     <Compile Include="Core\Bridge\ScriptManagerBridge.cs" />
     <Compile Include="Core\Callable.cs" />
     <Compile Include="Core\Color.cs" />
@@ -58,6 +59,7 @@
     <Compile Include="Core\MarshalUtils.cs" />
     <Compile Include="Core\Mathf.cs" />
     <Compile Include="Core\MathfEx.cs" />
+    <Compile Include="Core\NativeInterop\ExceptionUtils.cs" />
     <Compile Include="Core\NativeInterop\InteropUtils.cs" />
     <Compile Include="Core\NativeInterop\NativeFuncs.extended.cs" />
     <Compile Include="Core\NativeInterop\VariantSpanHelpers.cs" />

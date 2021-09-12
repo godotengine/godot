@@ -3,13 +3,13 @@ using Godot.NativeInterop;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using GodotTools.Build;
 using GodotTools.Core;
 using GodotTools.Internals;
-using JetBrains.Annotations;
 using static GodotTools.Internals.Globals;
 using Directory = GodotTools.Utils.Directory;
 using File = GodotTools.Utils.File;
@@ -238,8 +238,9 @@ namespace GodotTools.Export
             using godot_string buildConfigAux = Marshaling.mono_string_to_godot(buildConfig);
             using godot_string bclDirAux = Marshaling.mono_string_to_godot(bclDir);
             godot_dictionary assembliesAux = ((Godot.Collections.Dictionary)assemblies).NativeValue;
-            internal_GetExportedAssemblyDependencies(initialAssembliesAux, buildConfigAux, bclDirAux,
-                ref assembliesAux);
+            // TODO
+            throw new NotImplementedException();
+            //internal_GetExportedAssemblyDependencies(initialAssembliesAux, buildConfigAux, bclDirAux, ref assembliesAux);
 
             AddI18NAssemblies(assemblies, bclDir);
 
@@ -349,7 +350,7 @@ namespace GodotTools.Export
             }
         }
 
-        [NotNull]
+        [return: NotNull]
         private static string ExportDataDirectory(string[] features, string platform, bool isDebug, string outputDir)
         {
             string target = isDebug ? "release_debug" : "release";
@@ -498,10 +499,5 @@ namespace GodotTools.Export
             string appNameSafe = appName.ToSafeDirName();
             return $"data_{appNameSafe}";
         }
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void internal_GetExportedAssemblyDependencies(
-            in godot_dictionary initialAssemblies, in godot_string buildConfig,
-            in godot_string customBclDir, ref godot_dictionary dependencyAssemblies);
     }
 }

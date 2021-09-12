@@ -20,20 +20,61 @@ namespace Godot.NativeInterop
         public static extern IntPtr godotsharp_method_bind_get_method(ref godot_string_name p_classname,
             char* p_methodname);
 
-#if NET
         [DllImport(GodotDllName)]
-        public static extern delegate* unmanaged<IntPtr> godotsharp_get_class_constructor(ref godot_string_name p_classname);
-#else
-        // Workaround until we switch to .NET 5/6
-        [DllImport(GodotDllName)]
-        public static extern IntPtr godotsharp_get_class_constructor(ref godot_string_name p_classname);
-
-        [DllImport(GodotDllName)]
-        public static extern IntPtr godotsharp_invoke_class_constructor(IntPtr p_creation_func);
-#endif
+        public static extern delegate* unmanaged<IntPtr> godotsharp_get_class_constructor(
+            ref godot_string_name p_classname);
 
         [DllImport(GodotDllName)]
         public static extern IntPtr godotsharp_engine_get_singleton(godot_string* p_name);
+
+        [DllImport(GodotDllName)]
+        internal static extern void godotsharp_internal_object_disposed(IntPtr ptr);
+
+        [DllImport(GodotDllName)]
+        internal static extern void godotsharp_internal_refcounted_disposed(IntPtr ptr, godot_bool isFinalizer);
+
+        [DllImport(GodotDllName)]
+        internal static extern void godotsharp_internal_object_connect_event_signal(IntPtr obj,
+            godot_string_name* eventSignal);
+
+        [DllImport(GodotDllName)]
+        internal static extern Error godotsharp_internal_signal_awaiter_connect(IntPtr source,
+            ref godot_string_name signal,
+            IntPtr target, IntPtr awaiterHandlePtr);
+
+        [DllImport(GodotDllName)]
+        public static extern void godotsharp_internal_tie_native_managed_to_unmanaged(IntPtr gcHandleIntPtr,
+            IntPtr unmanaged, godot_string_name* nativeName, godot_bool refCounted);
+
+        [DllImport(GodotDllName)]
+        public static extern void godotsharp_internal_tie_user_managed_to_unmanaged(IntPtr gcHandleIntPtr,
+            IntPtr unmanaged, IntPtr scriptPtr, godot_bool refCounted);
+
+        [DllImport(GodotDllName)]
+        public static extern void godotsharp_internal_tie_managed_to_unmanaged_with_pre_setup(
+            IntPtr gcHandleIntPtr, IntPtr unmanaged);
+
+        [DllImport(GodotDllName)]
+        public static extern IntPtr godotsharp_internal_unmanaged_get_script_instance_managed(IntPtr p_unmanaged,
+            godot_bool* r_has_cs_script_instance);
+
+        [DllImport(GodotDllName)]
+        public static extern IntPtr godotsharp_internal_unmanaged_get_instance_binding_managed(IntPtr p_unmanaged);
+
+        [DllImport(GodotDllName)]
+        public static extern IntPtr godotsharp_internal_unmanaged_instance_binding_create_managed(IntPtr p_unmanaged,
+            IntPtr oldGCHandlePtr);
+
+        [DllImport(GodotDllName)]
+        public static extern IntPtr godotsharp_internal_new_csharp_script();
+
+        [DllImport(GodotDllName)]
+        public static extern void godotsharp_array_filter_godot_objects_by_native(godot_string_name* p_native_name,
+            godot_array* p_input, godot_array* r_output);
+
+        [DllImport(GodotDllName)]
+        public static extern void godotsharp_array_filter_godot_objects_by_non_native(godot_array* p_input,
+            godot_array* r_output);
 
         [DllImport(GodotDllName)]
         public static extern void godotsharp_ref_destroy(ref godot_ref p_instance);
@@ -509,12 +550,12 @@ namespace Godot.NativeInterop
         public static extern int godotsharp_node_path_get_subname_count(ref godot_node_path p_self);
 
         [DllImport(GodotDllName)]
-        public static extern bool godotsharp_node_path_is_absolute(ref godot_node_path p_self);
+        public static extern godot_bool godotsharp_node_path_is_absolute(ref godot_node_path p_self);
 
         // GD, etc
 
         [DllImport(GodotDllName)]
-        public static extern void godotsharp_bytes2var(godot_packed_byte_array* p_bytes, bool p_allow_objects,
+        public static extern void godotsharp_bytes2var(godot_packed_byte_array* p_bytes, godot_bool p_allow_objects,
             godot_variant* r_ret);
 
         [DllImport(GodotDllName)]
@@ -578,7 +619,7 @@ namespace Godot.NativeInterop
         public static extern void godotsharp_str2var(godot_string* p_str, godot_variant* r_ret);
 
         [DllImport(GodotDllName)]
-        public static extern void godotsharp_var2bytes(godot_variant* what, bool fullObjects,
+        public static extern void godotsharp_var2bytes(godot_variant* what, godot_bool fullObjects,
             godot_packed_byte_array* bytes);
 
         [DllImport(GodotDllName)]

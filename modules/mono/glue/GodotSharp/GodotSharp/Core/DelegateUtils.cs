@@ -11,38 +11,56 @@ namespace Godot
 {
     internal static class DelegateUtils
     {
-        internal static bool DelegateEquals(IntPtr delegateGCHandleA, IntPtr delegateGCHandleB)
+        [UnmanagedCallersOnly]
+        internal static godot_bool DelegateEquals(IntPtr delegateGCHandleA, IntPtr delegateGCHandleB)
         {
-            var @delegateA = (Delegate)GCHandle.FromIntPtr(delegateGCHandleA).Target;
-            var @delegateB = (Delegate)GCHandle.FromIntPtr(delegateGCHandleB).Target;
-            return @delegateA == @delegateB;
+            try
+            {
+                var @delegateA = (Delegate)GCHandle.FromIntPtr(delegateGCHandleA).Target;
+                var @delegateB = (Delegate)GCHandle.FromIntPtr(delegateGCHandleB).Target;
+                return (@delegateA == @delegateB).ToGodotBool();
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.DebugUnhandledException(e);
+                return false.ToGodotBool();
+            }
         }
 
+        [UnmanagedCallersOnly]
         internal static unsafe void InvokeWithVariantArgs(IntPtr delegateGCHandle, godot_variant** args, uint argc,
-            godot_variant* ret)
+            godot_variant* outRet)
         {
-            // TODO: Optimize
-            var @delegate = (Delegate)GCHandle.FromIntPtr(delegateGCHandle).Target;
-            var managedArgs = new object[argc];
-
-            var parameterInfos = @delegate.Method.GetParameters();
-            var paramsLength = parameterInfos.Length;
-
-            if (argc != paramsLength)
+            try
             {
-                throw new InvalidOperationException(
-                    $"The delegate expects {paramsLength} arguments, but received {argc}.");
-            }
+                // TODO: Optimize
+                var @delegate = (Delegate)GCHandle.FromIntPtr(delegateGCHandle).Target;
+                var managedArgs = new object[argc];
 
-            for (uint i = 0; i < argc; i++)
+                var parameterInfos = @delegate!.Method.GetParameters();
+                var paramsLength = parameterInfos.Length;
+
+                if (argc != paramsLength)
+                {
+                    throw new InvalidOperationException(
+                        $"The delegate expects {paramsLength} arguments, but received {argc}.");
+                }
+
+                for (uint i = 0; i < argc; i++)
+                {
+                    managedArgs[i] = Marshaling.variant_to_mono_object_of_type(
+                        args[i], parameterInfos[i].ParameterType);
+                }
+
+                object invokeRet = @delegate.DynamicInvoke(managedArgs);
+
+                *outRet = Marshaling.mono_object_to_variant(invokeRet);
+            }
+            catch (Exception e)
             {
-                managedArgs[i] = Marshaling.variant_to_mono_object_of_type(
-                    args[i], parameterInfos[i].ParameterType);
+                ExceptionUtils.DebugPrintUnhandledException(e);
+                *outRet = default;
             }
-
-            object invokeRet = @delegate.DynamicInvoke(managedArgs);
-
-            *ret = Marshaling.mono_object_to_variant(invokeRet);
         }
 
         // TODO: Check if we should be using BindingFlags.DeclaredOnly (would give better reflection performance).

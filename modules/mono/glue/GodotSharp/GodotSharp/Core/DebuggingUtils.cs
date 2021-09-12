@@ -1,7 +1,9 @@
 using System;
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
+using Godot.NativeInterop;
 
 namespace Godot
 {
@@ -19,13 +21,23 @@ namespace Godot
             sb.Append(" ");
         }
 
-        public static void InstallTraceListener()
+        [UnmanagedCallersOnly]
+        internal static void InstallTraceListener()
         {
-            Trace.Listeners.Clear();
-            Trace.Listeners.Add(new GodotTraceListener());
+            try
+            {
+                Trace.Listeners.Clear();
+                Trace.Listeners.Add(new GodotTraceListener());
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.DebugPrintUnhandledException(e);
+                ExceptionUtils.PushError("Failed to install 'System.Diagnostics.Trace' listener.");
+            }
         }
 
-        public static void GetStackFrameInfo(StackFrame frame, out string fileName, out int fileLineNumber, out string methodDecl)
+        public static void GetStackFrameInfo(StackFrame frame, out string fileName, out int fileLineNumber,
+            out string methodDecl)
         {
             fileName = frame.GetFileName();
             fileLineNumber = frame.GetFileLineNumber();

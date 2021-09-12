@@ -39,7 +39,6 @@
 
 #include "mono_gc_handle.h"
 #include "mono_gd/gd_mono.h"
-#include "mono_gd/gd_mono_internals.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_plugin.h"
@@ -465,10 +464,6 @@ public:
 	bool overrides_external_editor() override;
 #endif
 
-	/* THREAD ATTACHING */
-	void thread_enter() override;
-	void thread_exit() override;
-
 	RBMap<Object *, CSharpScriptBinding>::Element *insert_script_binding(Object *p_object, const CSharpScriptBinding &p_script_binding);
 	bool setup_csharp_script_binding(CSharpScriptBinding &r_script_binding, Object *p_object);
 
@@ -476,8 +471,11 @@ public:
 	static void tie_user_managed_to_unmanaged(GCHandleIntPtr p_gchandle_intptr, Object *p_unmanaged, CSharpScript *p_script, bool p_ref_counted);
 	static void tie_managed_to_unmanaged_with_pre_setup(GCHandleIntPtr p_gchandle_intptr, Object *p_unmanaged);
 
+#warning TODO
+#if 0
 #ifdef DEBUG_ENABLED
 	Vector<StackInfo> stack_trace_get_info(MonoObject *p_stack_trace);
+#endif
 #endif
 
 	void post_unsafe_reference(Object *p_obj);

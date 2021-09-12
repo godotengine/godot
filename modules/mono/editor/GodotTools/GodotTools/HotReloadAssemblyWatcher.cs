@@ -1,5 +1,6 @@
 using Godot;
 using GodotTools.Internals;
+using JetBrains.Annotations;
 using static GodotTools.Internals.Globals;
 
 namespace GodotTools
@@ -25,6 +26,7 @@ namespace GodotTools
                 Internal.ReloadAssemblies(softReload: false);
         }
 
+        [UsedImplicitly]
         public void RestartTimer()
         {
             _watchTimer.Stop();

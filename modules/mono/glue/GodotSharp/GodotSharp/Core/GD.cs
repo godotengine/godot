@@ -30,7 +30,7 @@ namespace Godot
         {
             using var varBytes = Marshaling.mono_array_to_PackedByteArray(bytes);
             using godot_variant ret = default;
-            NativeFuncs.godotsharp_bytes2var(&varBytes, allowObjects, &ret);
+            NativeFuncs.godotsharp_bytes2var(&varBytes, allowObjects.ToGodotBool(), &ret);
             return Marshaling.variant_to_mono_object(&ret);
         }
 
@@ -561,7 +561,7 @@ namespace Godot
         {
             using var variant = Marshaling.mono_object_to_variant(var);
             using godot_packed_byte_array varBytes = default;
-            NativeFuncs.godotsharp_var2bytes(&variant, fullObjects, &varBytes);
+            NativeFuncs.godotsharp_var2bytes(&variant, fullObjects.ToGodotBool(), &varBytes);
             using (varBytes)
                 return Marshaling.PackedByteArray_to_mono_array(&varBytes);
         }

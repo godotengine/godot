@@ -2255,18 +2255,6 @@ bool Main::start() {
 			ERR_FAIL_COND_V_MSG(da.is_null(), false, "Argument supplied to --doctool must be a valid directory path.");
 		}
 
-#ifndef MODULE_MONO_ENABLED
-		// Hack to define Mono-specific project settings even on non-Mono builds,
-		// so that we don't lose their descriptions and default values in DocData.
-		// Default values should be synced with mono_gd/gd_mono.cpp.
-		GLOBAL_DEF("mono/debugger_agent/port", 23685);
-		GLOBAL_DEF("mono/debugger_agent/wait_for_debugger", false);
-		GLOBAL_DEF("mono/debugger_agent/wait_timeout", 3000);
-		GLOBAL_DEF("mono/profiler/args", "log:calls,alloc,sample,output=output.mlpd");
-		GLOBAL_DEF("mono/profiler/enabled", false);
-		GLOBAL_DEF("mono/runtime/unhandled_exception_policy", 0);
-#endif
-
 		Error err;
 		DocTools doc;
 		doc.generate(doc_base);

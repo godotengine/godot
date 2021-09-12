@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -420,44 +421,18 @@ namespace Godot.NativeInterop
                         if (genericTypeDefinition == typeof(System.Collections.Generic.Dictionary<,>))
                         {
                             // TODO: Validate key and value types are compatible with Variant
-#if NET
-                            Collections.IGenericGodotDictionary genericGodotDictionary =
- IDictionaryToGenericGodotDictionary((dynamic)p_obj);
-#else
-                            var genericArguments = type.GetGenericArguments();
+                            var godotDict = new Collections.Dictionary();
 
-                            // With .NET Standard we need a package reference for Microsoft.CSharp in order to
-                            // use dynamic, so we have this workaround for now until we switch to .NET 5/6.
-                            var method = typeof(Marshaling).GetMethod(nameof(IDictionaryToGenericGodotDictionary),
-                                    BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.DeclaredOnly)!
-                                .MakeGenericMethod(genericArguments[0], genericArguments[1]);
+                            foreach (KeyValuePair<object, object> entry in (IDictionary)p_obj)
+                                godotDict.Add(entry.Key, entry.Value);
 
-                            var genericGodotDictionary = (Collections.IGenericGodotDictionary)method
-                                .Invoke(null, new[] { p_obj });
-#endif
-
-                            var godotDict = genericGodotDictionary.UnderlyingDictionary;
-                            if (godotDict == null)
-                                return new godot_variant();
                             return VariantUtils.CreateFromDictionary(godotDict.NativeValue);
                         }
 
                         if (genericTypeDefinition == typeof(System.Collections.Generic.List<>))
                         {
                             // TODO: Validate element type is compatible with Variant
-#if NET
-                            var nativeGodotArray =
- (godot_array)mono_array_to_Array(System.Runtime.InteropServices.CollectionsMarshal.AsSpan((dynamic)p_obj));
-#else
-                            // With .NET Standard we need a package reference for Microsoft.CSharp in order to
-                            // use dynamic, so we have this workaround for now until we switch to .NET 5/6.
-                            // Also CollectionsMarshal.AsSpan is not available with .NET Standard.
-
-                            var collection = (System.Collections.ICollection)p_obj;
-                            var array = new object[collection.Count];
-                            collection.CopyTo(array, 0);
-                            var nativeGodotArray = mono_array_to_Array(array);
-#endif
+                            var nativeGodotArray = mono_array_to_Array((IList)p_obj);
                             return VariantUtils.CreateFromArray(&nativeGodotArray);
                         }
                     }
@@ -477,9 +452,6 @@ namespace Godot.NativeInterop
                 return new godot_variant();
             }
         }
-
-        private static Collections.Dictionary<TKey, TValue> IDictionaryToGenericGodotDictionary<TKey, TValue>
-            (IDictionary<TKey, TValue> dictionary) => new(dictionary);
 
         public static unsafe string variant_to_mono_string(godot_variant* p_var)
         {
@@ -855,7 +827,7 @@ namespace Godot.NativeInterop
             switch ((*p_var)._type)
             {
                 case Variant.Type.Bool:
-                    return (bool)(*p_var)._data._bool;
+                    return (*p_var)._data._bool.ToBool();
                 case Variant.Type.Int:
                     return (*p_var)._data._int;
                 case Variant.Type.Float:
@@ -1058,7 +1030,7 @@ namespace Godot.NativeInterop
             godot_string_name name;
 
             if (NativeFuncs.godotsharp_callable_get_data_for_marshalling(
-                p_callable, &delegateGCHandle, &godotObject, &name))
+                p_callable, &delegateGCHandle, &godotObject, &name).ToBool())
             {
                 if (delegateGCHandle != IntPtr.Zero)
                 {
@@ -1141,15 +1113,37 @@ namespace Godot.NativeInterop
             return ret;
         }
 
-        public static godot_array mono_array_to_Array(Span<object> p_array)
+        public static godot_array mono_array_to_Array(object[] p_array)
         {
-            if (p_array.IsEmpty)
+            int length = p_array.Length;
+
+            if (length == 0)
                 return NativeFuncs.godotsharp_array_new();
 
             using var array = new Collections.Array();
-            array.Resize(p_array.Length);
+            array.Resize(length);
 
-            for (int i = 0; i < p_array.Length; i++)
+            for (int i = 0; i < length; i++)
+                array[i] = p_array[i];
+
+            godot_array src = array.NativeValue;
+            unsafe
+            {
+                return NativeFuncs.godotsharp_array_new_copy(&src);
+            }
+        }
+
+        public static godot_array mono_array_to_Array(IList p_array)
+        {
+            int length = p_array.Count;
+
+            if (length == 0)
+                return NativeFuncs.godotsharp_array_new();
+
+            using var array = new Collections.Array();
+            array.Resize(length);
+
+            for (int i = 0; i < length; i++)
                 array[i] = p_array[i];
 
             godot_array src = array.NativeValue;

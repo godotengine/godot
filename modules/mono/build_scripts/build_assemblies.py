@@ -203,6 +203,9 @@ def build_godot_api(msbuild_tool, module_dir, output_dir):
         "GodotSharpEditor.dll",
         "GodotSharpEditor.pdb",
         "GodotSharpEditor.xml",
+        "GodotPlugins.dll",
+        "GodotPlugins.pdb",
+        "GodotPlugins.runtimeconfig.json",
     ]
 
     for build_config in ["Debug", "Release"]:
@@ -223,6 +226,7 @@ def build_godot_api(msbuild_tool, module_dir, output_dir):
 
         core_src_dir = os.path.abspath(os.path.join(sln, os.pardir, "GodotSharp", "bin", build_config))
         editor_src_dir = os.path.abspath(os.path.join(sln, os.pardir, "GodotSharpEditor", "bin", build_config))
+        plugins_src_dir = os.path.abspath(os.path.join(sln, os.pardir, "GodotPlugins", "bin", build_config, "net5.0"))
 
         if not os.path.isdir(editor_api_dir):
             assert not os.path.isfile(editor_api_dir)
@@ -236,6 +240,8 @@ def build_godot_api(msbuild_tool, module_dir, output_dir):
             src_path = os.path.join(core_src_dir, filename)
             if not os.path.isfile(src_path):
                 src_path = os.path.join(editor_src_dir, filename)
+            if not os.path.isfile(src_path):
+                src_path = os.path.join(plugins_src_dir, filename)
 
             print(f"Copying assembly to {target_path}...")
             copy(src_path, target_path)

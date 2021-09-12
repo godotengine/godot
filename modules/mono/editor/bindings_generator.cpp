@@ -1143,9 +1143,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 	cs_icalls_content.append(INDENT1 "[SuppressMessage(\"ReSharper\", \"InconsistentNaming\")]\n");
 	cs_icalls_content.append(INDENT1 "[SuppressMessage(\"ReSharper\", \"RedundantUnsafeContext\")]\n");
 	cs_icalls_content.append(INDENT1 "[SuppressMessage(\"ReSharper\", \"RedundantNameQualifier\")]\n");
-	cs_icalls_content.append("#if NET\n");
 	cs_icalls_content.append(INDENT1 "[System.Runtime.CompilerServices.SkipLocalsInit]\n");
-	cs_icalls_content.append("#endif\n");
 	cs_icalls_content.append(INDENT1 "internal static class " BINDINGS_CLASS_NATIVECALLS "\n" INDENT1 "{");
 
 	cs_icalls_content.append(MEMBER_BEGIN "internal static ulong godot_api_hash = ");
@@ -1252,9 +1250,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 	cs_icalls_content.append(INDENT1 "[SuppressMessage(\"ReSharper\", \"InconsistentNaming\")]\n");
 	cs_icalls_content.append(INDENT1 "[SuppressMessage(\"ReSharper\", \"RedundantUnsafeContext\")]\n");
 	cs_icalls_content.append(INDENT1 "[SuppressMessage(\"ReSharper\", \"RedundantNameQualifier\")]\n");
-	cs_icalls_content.append("#if NET\n");
 	cs_icalls_content.append(INDENT1 "[System.Runtime.CompilerServices.SkipLocalsInit]\n");
-	cs_icalls_content.append("#endif\n");
 	cs_icalls_content.append(INDENT1 "internal static class " BINDINGS_CLASS_NATIVECALLS_EDITOR "\n" OPEN_BLOCK_L1);
 
 	cs_icalls_content.append(INDENT2 "internal static ulong godot_api_hash = ");
@@ -1550,20 +1546,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			// Add native constructor static field
 
 			output << MEMBER_BEGIN << "[DebuggerBrowsable(DebuggerBrowsableState.Never)]\n"
-
-				   << "#if NET\n"
-
 				   << INDENT2 "private static unsafe readonly delegate* unmanaged<IntPtr> "
 				   << CS_STATIC_FIELD_NATIVE_CTOR " = " ICALL_CLASSDB_GET_CONSTRUCTOR
-				   << "(" BINDINGS_NATIVE_NAME_FIELD ");\n"
-
-				   << "#else\n"
-
-				   // Get rid of this one once we switch to .NET 5/6
-				   << INDENT2 "private static readonly IntPtr " CS_STATIC_FIELD_NATIVE_CTOR
-				   << " = " ICALL_CLASSDB_GET_CONSTRUCTOR "(" BINDINGS_NATIVE_NAME_FIELD ");\n"
-
-				   << "#endif\n";
+				   << "(" BINDINGS_NATIVE_NAME_FIELD ");\n";
 		}
 
 		if (is_derived_type) {
@@ -1576,20 +1561,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				// The engine will initialize the pointer field of the managed side before calling the constructor
 				// This is why we only allocate a new native object from the constructor if the pointer field is not set
 				output << INDENT3 "if (" BINDINGS_PTR_FIELD " == IntPtr.Zero)\n" OPEN_BLOCK_L3
-
-					   << "#if NET\n"
-
 					   << INDENT4 "unsafe\n" INDENT4 OPEN_BLOCK
 					   << INDENT5 BINDINGS_PTR_FIELD " = " CS_STATIC_FIELD_NATIVE_CTOR "();\n"
 					   << CLOSE_BLOCK_L4
-
-					   << "#else\n"
-
-					   // Get rid of this one once we switch to .NET 5/6
-					   << INDENT4 BINDINGS_PTR_FIELD " = _gd__invoke_class_constructor(" CS_STATIC_FIELD_NATIVE_CTOR ");\n"
-
-					   << "#endif\n"
-
 					   << INDENT4 C_METHOD_TIE_MANAGED_TO_UNMANAGED "(this, " BINDINGS_PTR_FIELD ", "
 					   << BINDINGS_NATIVE_NAME_FIELD << ", refCounted: " << (itype.is_ref_counted ? "true" : "false")
 					   << ", ((object)this).GetType(), _cachedType);\n" CLOSE_BLOCK_L3
@@ -3337,6 +3311,8 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 
 	// bool
 	itype = TypeInterface::create_value_type(String("bool"));
+	itype.cs_in = "%s.ToGodotBool()";
+	itype.cs_out = "%5return %0(%1).ToBool();";
 	itype.c_type = "godot_bool";
 	itype.c_type_in = itype.c_type;
 	itype.c_type_out = itype.c_type;

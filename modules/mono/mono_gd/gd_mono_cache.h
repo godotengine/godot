@@ -31,56 +31,88 @@
 #ifndef GD_MONO_CACHE_H
 #define GD_MONO_CACHE_H
 
-#include "gd_mono_method_thunk.h"
+#include <stdint.h>
+
+#include "../csharp_script.h"
+#include "../mono_gc_handle.h"
+#include "core/object/object.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/variant/callable.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 
 class CSharpScript;
 
 namespace GDMonoCache {
 
-struct CachedData {
-	// Mono method thunks require structs to be boxed, even if passed by ref (out, ref, in).
-	// As such we need to use pointers instead for now, instead of by ref parameters.
+#ifdef WIN32
+#define GD_CLR_STDCALL __stdcall
+#else
+#define GD_CLR_STDCALL
+#endif
 
-	GDMonoMethodThunk<GCHandleIntPtr, const Variant **, int, bool *> methodthunk_SignalAwaiter_SignalCallback;
+struct ManagedCallbacks {
+	using FuncSignalAwaiter_SignalCallback = void(GD_CLR_STDCALL *)(GCHandleIntPtr, const Variant **, int32_t, bool *);
+	using FuncDelegateUtils_InvokeWithVariantArgs = void(GD_CLR_STDCALL *)(GCHandleIntPtr, const Variant **, uint32_t, const Variant *);
+	using FuncDelegateUtils_DelegateEquals = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, GCHandleIntPtr);
+	using FuncScriptManagerBridge_FrameCallback = void(GD_CLR_STDCALL *)();
+	using FuncScriptManagerBridge_CreateManagedForGodotObjectBinding = GCHandleIntPtr(GD_CLR_STDCALL *)(const StringName *, Object *);
+	using FuncScriptManagerBridge_CreateManagedForGodotObjectScriptInstance = bool(GD_CLR_STDCALL *)(const CSharpScript *, Object *, const Variant **, int);
+	using FuncScriptManagerBridge_GetScriptNativeName = void(GD_CLR_STDCALL *)(const CSharpScript *, StringName *);
+	using FuncScriptManagerBridge_SetGodotObjectPtr = void(GD_CLR_STDCALL *)(GCHandleIntPtr, Object *);
+	using FuncScriptManagerBridge_RaiseEventSignal = void(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *, const Variant **, int, bool *);
+	using FuncScriptManagerBridge_GetScriptSignalList = void(GD_CLR_STDCALL *)(const CSharpScript *, Dictionary *);
+	using FuncScriptManagerBridge_HasScriptSignal = bool(GD_CLR_STDCALL *)(const CSharpScript *, const String *);
+	using FuncScriptManagerBridge_HasMethodUnknownParams = bool(GD_CLR_STDCALL *)(const CSharpScript *, const String *, bool);
+	using FuncScriptManagerBridge_ScriptIsOrInherits = bool(GD_CLR_STDCALL *)(const CSharpScript *, const CSharpScript *);
+	using FuncScriptManagerBridge_AddScriptBridge = bool(GD_CLR_STDCALL *)(const CSharpScript *, const String *);
+	using FuncScriptManagerBridge_RemoveScriptBridge = void(GD_CLR_STDCALL *)(const CSharpScript *);
+	using FuncScriptManagerBridge_UpdateScriptClassInfo = void(GD_CLR_STDCALL *)(const CSharpScript *, bool *, Dictionary *);
+	using FuncScriptManagerBridge_SwapGCHandleForType = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, GCHandleIntPtr *, bool);
+	using FuncCSharpInstanceBridge_Call = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *, const Variant **, int, Callable::CallError *, Variant *);
+	using FuncCSharpInstanceBridge_Set = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *, const Variant *);
+	using FuncCSharpInstanceBridge_Get = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *, Variant *);
+	using FuncCSharpInstanceBridge_CallDispose = void(GD_CLR_STDCALL *)(GCHandleIntPtr, bool);
+	using FuncCSharpInstanceBridge_CallToString = void(GD_CLR_STDCALL *)(GCHandleIntPtr, String *, bool *);
+	using FuncGCHandleBridge_FreeGCHandle = void(GD_CLR_STDCALL *)(GCHandleIntPtr);
+	using FuncDebuggingUtils_InstallTraceListener = void(GD_CLR_STDCALL *)();
+	using FuncDispatcher_InitializeDefaultGodotTaskScheduler = void(GD_CLR_STDCALL *)();
 
-	GDMonoMethodThunk<GCHandleIntPtr, const Variant **, uint32_t, const Variant *> methodthunk_DelegateUtils_InvokeWithVariantArgs;
-	GDMonoMethodThunkR<bool, GCHandleIntPtr, GCHandleIntPtr> methodthunk_DelegateUtils_DelegateEquals;
-
-	GDMonoMethodThunk<> methodthunk_ScriptManagerBridge_FrameCallback;
-	GDMonoMethodThunkR<GCHandleIntPtr, const StringName *, Object *> methodthunk_ScriptManagerBridge_CreateManagedForGodotObjectBinding;
-	GDMonoMethodThunk<const CSharpScript *, Object *, const Variant **, int> methodthunk_ScriptManagerBridge_CreateManagedForGodotObjectScriptInstance;
-	GDMonoMethodThunk<const CSharpScript *, StringName *> methodthunk_ScriptManagerBridge_GetScriptNativeName;
-	GDMonoMethodThunk<MonoReflectionAssembly *> methodthunk_ScriptManagerBridge_LookupScriptsInAssembly;
-	GDMonoMethodThunk<GCHandleIntPtr, Object *> methodthunk_ScriptManagerBridge_SetGodotObjectPtr;
-	GDMonoMethodThunk<GCHandleIntPtr, const StringName *, const Variant **, int, bool *> methodthunk_ScriptManagerBridge_RaiseEventSignal;
-	GDMonoMethodThunk<const CSharpScript *, Dictionary *> methodthunk_ScriptManagerBridge_GetScriptSignalList;
-	GDMonoMethodThunkR<bool, const CSharpScript *, const String *> methodthunk_ScriptManagerBridge_HasScriptSignal;
-	GDMonoMethodThunkR<bool, const CSharpScript *, const String *, bool> methodthunk_ScriptManagerBridge_HasMethodUnknownParams;
-	GDMonoMethodThunkR<bool, const CSharpScript *, const CSharpScript *> methodthunk_ScriptManagerBridge_ScriptIsOrInherits;
-	GDMonoMethodThunkR<bool, const CSharpScript *, const String *> methodthunk_ScriptManagerBridge_AddScriptBridge;
-	GDMonoMethodThunk<const CSharpScript *> methodthunk_ScriptManagerBridge_RemoveScriptBridge;
-	GDMonoMethodThunk<const CSharpScript *, bool *, Dictionary *> methodthunk_ScriptManagerBridge_UpdateScriptClassInfo;
-	GDMonoMethodThunkR<bool, GCHandleIntPtr, GCHandleIntPtr *, bool> methodthunk_ScriptManagerBridge_SwapGCHandleForType;
-
-	GDMonoMethodThunk<GCHandleIntPtr, const StringName *, const Variant **, int, Callable::CallError *, Variant *> methodthunk_CSharpInstanceBridge_Call;
-	GDMonoMethodThunkR<bool, GCHandleIntPtr, const StringName *, const Variant *> methodthunk_CSharpInstanceBridge_Set;
-	GDMonoMethodThunkR<bool, GCHandleIntPtr, const StringName *, Variant *> methodthunk_CSharpInstanceBridge_Get;
-	GDMonoMethodThunk<GCHandleIntPtr, bool> methodthunk_CSharpInstanceBridge_CallDispose;
-	GDMonoMethodThunk<GCHandleIntPtr, String *, bool *> methodthunk_CSharpInstanceBridge_CallToString;
-
-	GDMonoMethodThunk<GCHandleIntPtr> methodthunk_GCHandleBridge_FreeGCHandle;
-
-	GDMonoMethodThunk<> methodthunk_DebuggingUtils_InstallTraceListener;
-
-	bool godot_api_cache_updated = false;
+	FuncSignalAwaiter_SignalCallback SignalAwaiter_SignalCallback;
+	FuncDelegateUtils_InvokeWithVariantArgs DelegateUtils_InvokeWithVariantArgs;
+	FuncDelegateUtils_DelegateEquals DelegateUtils_DelegateEquals;
+	FuncScriptManagerBridge_FrameCallback ScriptManagerBridge_FrameCallback;
+	FuncScriptManagerBridge_CreateManagedForGodotObjectBinding ScriptManagerBridge_CreateManagedForGodotObjectBinding;
+	FuncScriptManagerBridge_CreateManagedForGodotObjectScriptInstance ScriptManagerBridge_CreateManagedForGodotObjectScriptInstance;
+	FuncScriptManagerBridge_GetScriptNativeName ScriptManagerBridge_GetScriptNativeName;
+	FuncScriptManagerBridge_SetGodotObjectPtr ScriptManagerBridge_SetGodotObjectPtr;
+	FuncScriptManagerBridge_RaiseEventSignal ScriptManagerBridge_RaiseEventSignal;
+	FuncScriptManagerBridge_GetScriptSignalList ScriptManagerBridge_GetScriptSignalList;
+	FuncScriptManagerBridge_HasScriptSignal ScriptManagerBridge_HasScriptSignal;
+	FuncScriptManagerBridge_HasMethodUnknownParams ScriptManagerBridge_HasMethodUnknownParams;
+	FuncScriptManagerBridge_ScriptIsOrInherits ScriptManagerBridge_ScriptIsOrInherits;
+	FuncScriptManagerBridge_AddScriptBridge ScriptManagerBridge_AddScriptBridge;
+	FuncScriptManagerBridge_RemoveScriptBridge ScriptManagerBridge_RemoveScriptBridge;
+	FuncScriptManagerBridge_UpdateScriptClassInfo ScriptManagerBridge_UpdateScriptClassInfo;
+	FuncScriptManagerBridge_SwapGCHandleForType ScriptManagerBridge_SwapGCHandleForType;
+	FuncCSharpInstanceBridge_Call CSharpInstanceBridge_Call;
+	FuncCSharpInstanceBridge_Set CSharpInstanceBridge_Set;
+	FuncCSharpInstanceBridge_Get CSharpInstanceBridge_Get;
+	FuncCSharpInstanceBridge_CallDispose CSharpInstanceBridge_CallDispose;
+	FuncCSharpInstanceBridge_CallToString CSharpInstanceBridge_CallToString;
+	FuncGCHandleBridge_FreeGCHandle GCHandleBridge_FreeGCHandle;
+	FuncDebuggingUtils_InstallTraceListener DebuggingUtils_InstallTraceListener;
+	FuncDispatcher_InitializeDefaultGodotTaskScheduler Dispatcher_InitializeDefaultGodotTaskScheduler;
 };
 
-extern CachedData cached_data;
+extern ManagedCallbacks managed_callbacks;
+extern bool godot_api_cache_updated;
 
-void update_godot_api_cache();
+void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks);
 
 inline void clear_godot_api_cache() {
-	cached_data = CachedData();
+	managed_callbacks = ManagedCallbacks();
 }
 } // namespace GDMonoCache
 

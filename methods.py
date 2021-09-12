@@ -818,18 +818,21 @@ def generate_vs_project(env, num_jobs):
         module_configs = ModuleConfigs()
 
         if env.get("module_mono_enabled"):
-            import modules.mono.build_scripts.mono_reg_utils as mono_reg
+            import modules.mono.build_scripts.mono_configure as mono_configure
 
-            mono_root = env.get("mono_prefix") or mono_reg.find_mono_root_dir(env["bits"])
-            if mono_root:
+            app_host_dir = mono_configure.find_dotnet_app_host_dir(env)
+            if app_host_dir and os.path.isdir(app_host_dir):
+                mono_defines = [("NETHOST_USE_AS_STATIC",)]
+                if env["tools"]:
+                    mono_defines += [("GD_MONO_HOT_RELOAD",)]
                 module_configs.add_mode(
                     "mono",
-                    includes=os.path.join(mono_root, "include", "mono-2.0"),
-                    cli_args="module_mono_enabled=yes mono_glue=yes",
-                    defines=[("MONO_GLUE_ENABLED",)],
+                    includes=app_host_dir,
+                    cli_args="module_mono_enabled=yes",
+                    defines=mono_defines,
                 )
             else:
-                print("Mono installation directory not found. Generated project will not have build variants for Mono.")
+                print(".NET App Host directory not found. Generated project will not have build variants for .NET.")
 
         env["MSVSBUILDCOM"] = module_configs.build_commandline("scons")
         env["MSVSREBUILDCOM"] = module_configs.build_commandline("scons vsproj=yes")

@@ -6,19 +6,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using JetBrains.Annotations;
+using GodotTools.Internals;
 
 namespace GodotTools.Utils
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public static class OS
     {
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void GetPlatformName(out godot_string dest);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern bool UnixFileHasExecutableAccess(in godot_string filePath);
-
         public static class Names
         {
             public const string Windows = "Windows";
@@ -66,7 +60,7 @@ namespace GodotTools.Utils
 
         private static unsafe bool IsOS(string name)
         {
-            GetPlatformName(out godot_string dest);
+            Internal.godot_icall_Utils_OS_GetPlatformName(out godot_string dest);
             using (dest)
             {
                 string platformName = Marshaling.mono_string_from_godot(dest);
@@ -76,7 +70,7 @@ namespace GodotTools.Utils
 
         private static unsafe bool IsAnyOS(IEnumerable<string> names)
         {
-            GetPlatformName(out godot_string dest);
+            Internal.godot_icall_Utils_OS_GetPlatformName(out godot_string dest);
             using (dest)
             {
                 string platformName = Marshaling.mono_string_from_godot(dest);
@@ -102,14 +96,23 @@ namespace GodotTools.Utils
         private static readonly Lazy<bool> _isHTML5 = new Lazy<bool>(() => IsOS(Names.HTML5));
         private static readonly Lazy<bool> _isUnixLike = new Lazy<bool>(() => IsAnyOS(UnixLikePlatforms));
 
+        // TODO SupportedOSPlatformGuard once we target .NET 6
+        // [SupportedOSPlatformGuard("windows")]
         public static bool IsWindows => _isWindows.Value || IsUWP;
+        // [SupportedOSPlatformGuard("osx")]
         public static bool IsMacOS => _isMacOS.Value;
+        // [SupportedOSPlatformGuard("linux")]
         public static bool IsLinuxBSD => _isLinuxBSD.Value;
+        // [SupportedOSPlatformGuard("linux")]
         public static bool IsServer => _isServer.Value;
+        // [SupportedOSPlatformGuard("windows")]
         public static bool IsUWP => _isUWP.Value;
         public static bool IsHaiku => _isHaiku.Value;
+        // [SupportedOSPlatformGuard("android")]
         public static bool IsAndroid => _isAndroid.Value;
+        // [SupportedOSPlatformGuard("ios")]
         public static bool IsiOS => _isiOS.Value;
+        // [SupportedOSPlatformGuard("browser")]
         public static bool IsHTML5 => _isHTML5.Value;
         public static bool IsUnixLike => _isUnixLike.Value;
 
@@ -183,7 +186,7 @@ namespace GodotTools.Utils
                 .FirstOrDefault(path =>
                 {
                     using godot_string pathIn = Marshaling.mono_string_to_godot(path);
-                    return File.Exists(path) && UnixFileHasExecutableAccess(pathIn);
+                    return File.Exists(path) && Internal.godot_icall_Utils_OS_UnixFileHasExecutableAccess(pathIn);
                 });
         }
 

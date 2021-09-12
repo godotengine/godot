@@ -76,7 +76,7 @@ namespace Godot.Collections
         public Dictionary Duplicate(bool deep = false)
         {
             godot_dictionary newDictionary;
-            NativeFuncs.godotsharp_dictionary_duplicate(ref NativeValue, deep, out newDictionary);
+            NativeFuncs.godotsharp_dictionary_duplicate(ref NativeValue, deep.ToGodotBool(), out newDictionary);
             return CreateTakingOwnershipOfDisposableValue(newDictionary);
         }
 
@@ -137,7 +137,7 @@ namespace Godot.Collections
             {
                 using godot_variant variantKey = Marshaling.mono_object_to_variant(key);
                 if (NativeFuncs.godotsharp_dictionary_try_get_value(ref NativeValue, &variantKey,
-                    out godot_variant value))
+                    out godot_variant value).ToBool())
                 {
                     using (value)
                         return Marshaling.variant_to_mono_object(&value);
@@ -165,7 +165,7 @@ namespace Godot.Collections
         {
             using godot_variant variantKey = Marshaling.mono_object_to_variant(key);
 
-            if (NativeFuncs.godotsharp_dictionary_contains_key(ref NativeValue, &variantKey))
+            if (NativeFuncs.godotsharp_dictionary_contains_key(ref NativeValue, &variantKey).ToBool())
                 throw new ArgumentException("An element with the same key already exists", nameof(key));
 
             using godot_variant variantValue = Marshaling.mono_object_to_variant(value);
@@ -185,7 +185,7 @@ namespace Godot.Collections
         public unsafe bool Contains(object key)
         {
             using godot_variant variantKey = Marshaling.mono_object_to_variant(key);
-            return NativeFuncs.godotsharp_dictionary_contains_key(ref NativeValue, &variantKey);
+            return NativeFuncs.godotsharp_dictionary_contains_key(ref NativeValue, &variantKey).ToBool();
         }
 
         /// <summary>
@@ -432,7 +432,7 @@ namespace Godot.Collections
                 {
                     using godot_variant variantKey = Marshaling.mono_object_to_variant(key);
                     if (NativeFuncs.godotsharp_dictionary_try_get_value(ref _underlyingDict.NativeValue,
-                        &variantKey, out godot_variant value))
+                        &variantKey, out godot_variant value).ToBool())
                     {
                         using (value)
                             return (TValue)Marshaling.variant_to_mono_object_of_type(&value, TypeOfValues);
@@ -513,7 +513,7 @@ namespace Godot.Collections
         public unsafe bool Remove(TKey key)
         {
             using godot_variant variantKey = Marshaling.mono_object_to_variant(key);
-            return NativeFuncs.godotsharp_dictionary_remove_key(ref _underlyingDict.NativeValue, &variantKey);
+            return NativeFuncs.godotsharp_dictionary_remove_key(ref _underlyingDict.NativeValue, &variantKey).ToBool();
         }
 
         /// <summary>
@@ -526,7 +526,7 @@ namespace Godot.Collections
         {
             using godot_variant variantKey = Marshaling.mono_object_to_variant(key);
             bool found = NativeFuncs.godotsharp_dictionary_try_get_value(ref _underlyingDict.NativeValue,
-                &variantKey, out godot_variant retValue);
+                &variantKey, out godot_variant retValue).ToBool();
 
             using (retValue)
             {
@@ -566,7 +566,7 @@ namespace Godot.Collections
         {
             using godot_variant variantKey = Marshaling.mono_object_to_variant(item.Key);
             bool found = NativeFuncs.godotsharp_dictionary_try_get_value(ref _underlyingDict.NativeValue,
-                &variantKey, out godot_variant retValue);
+                &variantKey, out godot_variant retValue).ToBool();
 
             using (retValue)
             {
@@ -574,7 +574,7 @@ namespace Godot.Collections
                     return false;
 
                 using godot_variant variantValue = Marshaling.mono_object_to_variant(item.Value);
-                return NativeFuncs.godotsharp_variant_equals(&variantValue, &retValue);
+                return NativeFuncs.godotsharp_variant_equals(&variantValue, &retValue).ToBool();
             }
         }
 
@@ -610,7 +610,7 @@ namespace Godot.Collections
         {
             using godot_variant variantKey = Marshaling.mono_object_to_variant(item.Key);
             bool found = NativeFuncs.godotsharp_dictionary_try_get_value(ref _underlyingDict.NativeValue,
-                &variantKey, out godot_variant retValue);
+                &variantKey, out godot_variant retValue).ToBool();
 
             using (retValue)
             {
@@ -618,8 +618,11 @@ namespace Godot.Collections
                     return false;
 
                 using godot_variant variantValue = Marshaling.mono_object_to_variant(item.Value);
-                if (NativeFuncs.godotsharp_variant_equals(&variantValue, &retValue))
-                    return NativeFuncs.godotsharp_dictionary_remove_key(ref _underlyingDict.NativeValue, &variantKey);
+                if (NativeFuncs.godotsharp_variant_equals(&variantValue, &retValue).ToBool())
+                {
+                    return NativeFuncs.godotsharp_dictionary_remove_key(
+                        ref _underlyingDict.NativeValue, &variantKey).ToBool();
+                }
 
                 return false;
             }

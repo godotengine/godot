@@ -95,7 +95,7 @@ namespace Godot.Collections
         public Array Duplicate(bool deep = false)
         {
             godot_array newArray;
-            NativeFuncs.godotsharp_array_duplicate(ref NativeValue, deep, out newArray);
+            NativeFuncs.godotsharp_array_duplicate(ref NativeValue, deep.ToGodotBool(), out newArray);
             return CreateTakingOwnershipOfDisposableValue(newArray);
         }
 

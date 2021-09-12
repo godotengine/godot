@@ -32,7 +32,6 @@
 
 #include "csharp_script.h"
 #include "mono_gd/gd_mono_cache.h"
-#include "mono_gd/gd_mono_utils.h"
 
 Error gd_mono_connect_signal_awaiter(Object *p_source, const StringName &p_signal, Object *p_target, GCHandleIntPtr p_awaiter_handle_ptr) {
 	ERR_FAIL_NULL_V(p_source, ERR_INVALID_DATA);
@@ -104,14 +103,8 @@ void SignalAwaiterCallable::call(const Variant **p_arguments, int p_argcount, Va
 			"Resumed after await, but class instance is gone.");
 #endif
 
-	MonoException *exc = nullptr;
 	bool awaiter_is_null = false;
-	GDMonoCache::cached_data.methodthunk_SignalAwaiter_SignalCallback.invoke(awaiter_handle.get_intptr(), p_arguments, p_argcount, &awaiter_is_null, &exc);
-
-	if (exc) {
-		GDMonoUtils::set_pending_exception(exc);
-		ERR_FAIL();
-	}
+	GDMonoCache::managed_callbacks.SignalAwaiter_SignalCallback(awaiter_handle.get_intptr(), p_arguments, p_argcount, &awaiter_is_null);
 
 	if (awaiter_is_null) {
 		r_call_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
@@ -192,16 +185,10 @@ void EventSignalCallable::call(const Variant **p_arguments, int p_argcount, Vari
 
 	GCHandleIntPtr owner_gchandle_intptr = csharp_instance->get_gchandle_intptr();
 
-	MonoException *exc = nullptr;
 	bool awaiter_is_null = false;
-	GDMonoCache::cached_data.methodthunk_ScriptManagerBridge_RaiseEventSignal.invoke(
+	GDMonoCache::managed_callbacks.ScriptManagerBridge_RaiseEventSignal(
 			owner_gchandle_intptr, &event_signal_name,
-			p_arguments, p_argcount, &awaiter_is_null, &exc);
-
-	if (exc) {
-		GDMonoUtils::set_pending_exception(exc);
-		ERR_FAIL();
-	}
+			p_arguments, p_argcount, &awaiter_is_null);
 
 	if (awaiter_is_null) {
 		r_call_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;

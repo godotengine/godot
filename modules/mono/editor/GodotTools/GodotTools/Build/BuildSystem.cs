@@ -127,7 +127,7 @@ namespace GodotTools.Build
 
             arguments += $@" /t:{string.Join(",", buildInfo.Targets)} " +
                          $@"""/p:{"Configuration=" + buildInfo.Configuration}"" /v:normal " +
-                         $@"""/l:{typeof(GodotBuildLogger).FullName},{GodotBuildLogger.AssemblyPath};{buildInfo.LogsDirPath}""";
+                         $@"""{AddLoggerArgument(buildInfo)}""";
 
             foreach (string customProperty in buildInfo.CustomProperties)
             {
@@ -135,6 +135,14 @@ namespace GodotTools.Build
             }
 
             return arguments;
+        }
+
+        private static string AddLoggerArgument(BuildInfo buildInfo)
+        {
+            string buildLoggerPath = Path.Combine(GodotSharpDirs.DataEditorToolsDir,
+                "GodotTools.BuildLogger.dll");
+
+            return $"/l:{typeof(GodotBuildLogger).FullName},{buildLoggerPath};{buildInfo.LogsDirPath}";
         }
 
         private static void RemovePlatformVariable(StringDictionary environmentVariables)

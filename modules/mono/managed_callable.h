@@ -31,8 +31,6 @@
 #ifndef MANAGED_CALLABLE_H
 #define MANAGED_CALLABLE_H
 
-#include <mono/metadata/object.h>
-
 #include "core/os/mutex.h"
 #include "core/templates/self_list.h"
 #include "core/variant/callable.h"
