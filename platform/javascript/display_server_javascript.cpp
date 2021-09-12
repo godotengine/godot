@@ -543,14 +543,14 @@ void DisplayServerJavaScript::gamepad_callback(int p_index, int p_connected, con
 
 void DisplayServerJavaScript::process_joypads() {
 	Input *input = Input::get_singleton();
-	int32_t pads = godot_js_display_gamepad_sample_count();
+	int32_t pads = godot_js_input_gamepad_sample_count();
 	int32_t s_btns_num = 0;
 	int32_t s_axes_num = 0;
 	int32_t s_standard = 0;
 	float s_btns[16];
 	float s_axes[10];
 	for (int idx = 0; idx < pads; idx++) {
-		int err = godot_js_display_gamepad_sample_get(idx, s_btns, &s_btns_num, s_axes, &s_axes_num, &s_standard);
+		int err = godot_js_input_gamepad_sample_get(idx, s_btns, &s_btns_num, s_axes, &s_axes_num, &s_standard);
 		if (err) {
 			continue;
 		}
@@ -713,11 +713,17 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 	video_driver_index = p_video_driver;
 #endif
 
-	godot_js_display_mouse_button_cb(&DisplayServerJavaScript::mouse_button_callback);
-	godot_js_display_mouse_move_cb(&DisplayServerJavaScript::mouse_move_callback);
-	godot_js_display_mouse_wheel_cb(&DisplayServerJavaScript::mouse_wheel_callback);
-	godot_js_display_touch_cb(&DisplayServerJavaScript::touch_callback, touch_event.identifier, touch_event.coords);
-	godot_js_display_key_cb(&DisplayServerJavaScript::key_callback, key_event.code, key_event.key);
+	// JS Input interface (js/libs/library_godot_input.js)
+	godot_js_input_mouse_button_cb(&DisplayServerJavaScript::mouse_button_callback);
+	godot_js_input_mouse_move_cb(&DisplayServerJavaScript::mouse_move_callback);
+	godot_js_input_mouse_wheel_cb(&DisplayServerJavaScript::mouse_wheel_callback);
+	godot_js_input_touch_cb(&DisplayServerJavaScript::touch_callback, touch_event.identifier, touch_event.coords);
+	godot_js_input_key_cb(&DisplayServerJavaScript::key_callback, key_event.code, key_event.key);
+	godot_js_input_paste_cb(update_clipboard_callback);
+	godot_js_input_drop_files_cb(drop_files_js_callback);
+	godot_js_input_gamepad_cb(&DisplayServerJavaScript::gamepad_callback);
+
+	// JS Display interface (js/libs/library_godot_display.js)
 	godot_js_display_fullscreen_cb(&DisplayServerJavaScript::fullscreen_change_callback);
 	godot_js_display_window_blur_cb(&window_blur_callback);
 	godot_js_display_notification_cb(&send_window_event_callback,
@@ -725,9 +731,6 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 			WINDOW_EVENT_MOUSE_EXIT,
 			WINDOW_EVENT_FOCUS_IN,
 			WINDOW_EVENT_FOCUS_OUT);
-	godot_js_display_paste_cb(update_clipboard_callback);
-	godot_js_display_drop_files_cb(drop_files_js_callback);
-	godot_js_display_gamepad_cb(&DisplayServerJavaScript::gamepad_callback);
 	godot_js_display_vk_cb(&vk_input_text_callback);
 
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_event);
@@ -950,7 +953,7 @@ bool DisplayServerJavaScript::can_any_window_draw() const {
 
 void DisplayServerJavaScript::process_events() {
 	Input::get_singleton()->flush_buffered_events();
-	if (godot_js_display_gamepad_sample() == OK) {
+	if (godot_js_input_gamepad_sample() == OK) {
 		process_joypads();
 	}
 }
