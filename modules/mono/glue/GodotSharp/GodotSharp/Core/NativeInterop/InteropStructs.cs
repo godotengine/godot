@@ -161,6 +161,9 @@ namespace Godot.NativeInterop
             NativeFuncs.godotsharp_string_destroy(ref this);
             _ptr = IntPtr.Zero;
         }
+
+        // Size including the null termination character
+        public unsafe int Size => _ptr != IntPtr.Zero ? *((int*)_ptr - 1) : 0;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -252,14 +255,34 @@ namespace Godot.NativeInterop
     // ReSharper disable once InconsistentNaming
     internal struct godot_array : IDisposable
     {
-        internal IntPtr _p;
+        internal unsafe ArrayPrivate* _p;
 
-        public void Dispose()
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct ArrayPrivate
         {
-            if (_p == IntPtr.Zero)
+            private uint _safeRefCount;
+
+            internal VariantVector _arrayVector;
+            // There's more here, but we don't care as we never store this in C#
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct VariantVector
+        {
+            internal IntPtr _writeProxy;
+            internal unsafe godot_variant* _ptr;
+
+            public unsafe int Size => _ptr != null ? *((int*)_ptr - 1) : 0;
+        }
+
+        public unsafe int Size => _p != null ? _p->_arrayVector.Size : 0;
+
+        public unsafe void Dispose()
+        {
+            if (_p == null)
                 return;
             NativeFuncs.godotsharp_array_destroy(ref this);
-            _p = IntPtr.Zero;
+            _p = null;
         }
     }
 
@@ -287,15 +310,17 @@ namespace Godot.NativeInterop
     internal struct godot_packed_byte_array : IDisposable
     {
         internal IntPtr _writeProxy;
-        internal IntPtr _ptr;
+        internal unsafe byte* _ptr;
 
-        public void Dispose()
+        public unsafe void Dispose()
         {
-            if (_ptr == IntPtr.Zero)
+            if (_ptr == null)
                 return;
             NativeFuncs.godotsharp_packed_byte_array_destroy(ref this);
-            _ptr = IntPtr.Zero;
+            _ptr = null;
         }
+
+        public unsafe int Size => _ptr != null ? *((int*)_ptr - 1) : 0;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -303,15 +328,17 @@ namespace Godot.NativeInterop
     internal struct godot_packed_int32_array : IDisposable
     {
         internal IntPtr _writeProxy;
-        internal IntPtr _ptr;
+        internal unsafe int* _ptr;
 
-        public void Dispose()
+        public unsafe void Dispose()
         {
-            if (_ptr == IntPtr.Zero)
+            if (_ptr == null)
                 return;
             NativeFuncs.godotsharp_packed_int32_array_destroy(ref this);
-            _ptr = IntPtr.Zero;
+            _ptr = null;
         }
+
+        public unsafe int Size => _ptr != null ? *(_ptr - 1) : 0;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -319,15 +346,17 @@ namespace Godot.NativeInterop
     internal struct godot_packed_int64_array : IDisposable
     {
         internal IntPtr _writeProxy;
-        internal IntPtr _ptr;
+        internal unsafe long* _ptr;
 
-        public void Dispose()
+        public unsafe void Dispose()
         {
-            if (_ptr == IntPtr.Zero)
+            if (_ptr == null)
                 return;
             NativeFuncs.godotsharp_packed_int64_array_destroy(ref this);
-            _ptr = IntPtr.Zero;
+            _ptr = null;
         }
+
+        public unsafe int Size => _ptr != null ? *((int*)_ptr - 1) : 0;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -335,15 +364,17 @@ namespace Godot.NativeInterop
     internal struct godot_packed_float32_array : IDisposable
     {
         internal IntPtr _writeProxy;
-        internal IntPtr _ptr;
+        internal unsafe float* _ptr;
 
-        public void Dispose()
+        public unsafe void Dispose()
         {
-            if (_ptr == IntPtr.Zero)
+            if (_ptr == null)
                 return;
             NativeFuncs.godotsharp_packed_float32_array_destroy(ref this);
-            _ptr = IntPtr.Zero;
+            _ptr = null;
         }
+
+        public unsafe int Size => _ptr != null ? *((int*)_ptr - 1) : 0;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -351,15 +382,17 @@ namespace Godot.NativeInterop
     internal struct godot_packed_float64_array : IDisposable
     {
         internal IntPtr _writeProxy;
-        internal IntPtr _ptr;
+        internal unsafe double* _ptr;
 
-        public void Dispose()
+        public unsafe void Dispose()
         {
-            if (_ptr == IntPtr.Zero)
+            if (_ptr == null)
                 return;
             NativeFuncs.godotsharp_packed_float64_array_destroy(ref this);
-            _ptr = IntPtr.Zero;
+            _ptr = null;
         }
+
+        public unsafe int Size => _ptr != null ? *((int*)_ptr - 1) : 0;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -367,15 +400,17 @@ namespace Godot.NativeInterop
     internal struct godot_packed_string_array : IDisposable
     {
         internal IntPtr _writeProxy;
-        internal IntPtr _ptr;
+        internal unsafe godot_string* _ptr;
 
-        public void Dispose()
+        public unsafe void Dispose()
         {
-            if (_ptr == IntPtr.Zero)
+            if (_ptr == null)
                 return;
             NativeFuncs.godotsharp_packed_string_array_destroy(ref this);
-            _ptr = IntPtr.Zero;
+            _ptr = null;
         }
+
+        public unsafe int Size => _ptr != null ? *((int*)_ptr - 1) : 0;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -383,15 +418,17 @@ namespace Godot.NativeInterop
     internal struct godot_packed_vector2_array : IDisposable
     {
         internal IntPtr _writeProxy;
-        internal IntPtr _ptr;
+        internal unsafe Vector2* _ptr;
 
-        public void Dispose()
+        public unsafe void Dispose()
         {
-            if (_ptr == IntPtr.Zero)
+            if (_ptr == null)
                 return;
             NativeFuncs.godotsharp_packed_vector2_array_destroy(ref this);
-            _ptr = IntPtr.Zero;
+            _ptr = null;
         }
+
+        public unsafe int Size => _ptr != null ? *((int*)_ptr - 1) : 0;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -399,15 +436,17 @@ namespace Godot.NativeInterop
     internal struct godot_packed_vector3_array : IDisposable
     {
         internal IntPtr _writeProxy;
-        internal IntPtr _ptr;
+        internal unsafe Vector3* _ptr;
 
-        public void Dispose()
+        public unsafe void Dispose()
         {
-            if (_ptr == IntPtr.Zero)
+            if (_ptr == null)
                 return;
             NativeFuncs.godotsharp_packed_vector3_array_destroy(ref this);
-            _ptr = IntPtr.Zero;
+            _ptr = null;
         }
+
+        public unsafe int Size => _ptr != null ? *((int*)_ptr - 1) : 0;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -415,14 +454,16 @@ namespace Godot.NativeInterop
     internal struct godot_packed_color_array : IDisposable
     {
         internal IntPtr _writeProxy;
-        internal IntPtr _ptr;
+        internal unsafe Color* _ptr;
 
-        public void Dispose()
+        public unsafe void Dispose()
         {
-            if (_ptr == IntPtr.Zero)
+            if (_ptr == null)
                 return;
             NativeFuncs.godotsharp_packed_color_array_destroy(ref this);
-            _ptr = IntPtr.Zero;
+            _ptr = null;
         }
+
+        public unsafe int Size => _ptr != null ? *((int*)_ptr - 1) : 0;
     }
 }
