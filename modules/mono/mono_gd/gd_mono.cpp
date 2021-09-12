@@ -442,22 +442,15 @@ bool GDMono::_are_api_assemblies_out_of_sync() {
 	return out_of_sync;
 }
 
-void godot_register_collections_icalls();
 void godot_register_gd_icalls();
-void godot_register_node_path_icalls();
 void godot_register_object_icalls();
-void godot_register_rid_icalls();
-void godot_register_string_icalls();
 void godot_register_scene_tree_icalls();
 void godot_register_placeholder_icalls();
 
 void GDMono::_register_internal_calls() {
 	// Registers internal calls that were not generated.
-	godot_register_collections_icalls();
 	godot_register_gd_icalls();
-	godot_register_node_path_icalls();
 	godot_register_object_icalls();
-	godot_register_string_icalls();
 	godot_register_scene_tree_icalls();
 	godot_register_placeholder_icalls();
 }

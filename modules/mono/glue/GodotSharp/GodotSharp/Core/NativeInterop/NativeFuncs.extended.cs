@@ -29,6 +29,13 @@ namespace Godot.NativeInterop
         public static godot_node_path godotsharp_node_path_new_copy(godot_node_path src)
             => godotsharp_node_path_new_copy(&src);
 
+        public static godot_array godotsharp_array_new()
+        {
+            godot_array ret;
+            godotsharp_array_new(&ret);
+            return ret;
+        }
+
         public static godot_array godotsharp_array_new_copy(godot_array* src)
         {
             godot_array ret;
@@ -39,6 +46,13 @@ namespace Godot.NativeInterop
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static godot_array godotsharp_array_new_copy(godot_array src)
             => godotsharp_array_new_copy(&src);
+
+        public static godot_dictionary godotsharp_dictionary_new()
+        {
+            godot_dictionary ret;
+            godotsharp_dictionary_new(&ret);
+            return ret;
+        }
 
         public static godot_dictionary godotsharp_dictionary_new_copy(godot_dictionary* src)
         {
