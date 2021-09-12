@@ -331,7 +331,8 @@
 		<method name="get_class" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the object's class as a [String].
+				Returns the object's class as a [String]. See also [method is_class].
+				[b]Note:[/b] [method get_class] does not take [code]class_name[/code] declarations into account. If the object has a [code]class_name[/code] defined, the base class name will be returned instead.
 			</description>
 		</method>
 		<method name="get_incoming_connections" qualifiers="const">
@@ -441,7 +442,8 @@
 			<return type="bool" />
 			<argument index="0" name="class" type="String" />
 			<description>
-				Returns [code]true[/code] if the object inherits from the given [code]class[/code].
+				Returns [code]true[/code] if the object inherits from the given [code]class[/code]. See also [method get_class].
+				[b]Note:[/b] [method is_class] does not take [code]class_name[/code] declarations into account. If the object has a [code]class_name[/code] defined, [method is_class] will return [code]false[/code] for that name.
 			</description>
 		</method>
 		<method name="is_connected" qualifiers="const">
