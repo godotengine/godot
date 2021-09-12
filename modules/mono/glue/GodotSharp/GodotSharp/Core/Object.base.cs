@@ -118,11 +118,6 @@ namespace Godot
             return new SignalAwaiter(source, signal, this);
         }
 
-        /// <summary>
-        /// Gets a new <see cref="Godot.DynamicGodotObject"/> associated with this instance.
-        /// </summary>
-        public dynamic DynamicObject => new DynamicGodotObject(this);
-
         internal static unsafe IntPtr ClassDB_get_method(StringName type, string method)
         {
             IntPtr methodBind;
