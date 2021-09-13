@@ -415,6 +415,7 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 	TestResult result;
 	result.status = GDTEST_OK;
 	result.output = String();
+	result.passed = false;
 
 	Error err = OK;
 
@@ -498,6 +499,8 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 	}
 	// Script files matching this pattern are allowed to not contain a test() function.
 	if (source_file.match("*.notest.gd")) {
+		enable_stdout();
+		result.passed = check_output(result.output);
 		return result;
 	}
 	// Test running.
