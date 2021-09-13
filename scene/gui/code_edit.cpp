@@ -1407,9 +1407,14 @@ void CodeEdit::fold_line(int p_line) {
 	int in_string = (in_comment == -1) ? is_in_string(p_line) : -1;
 	if (in_string != -1 || in_comment != -1) {
 		end_line = get_delimiter_end_position(p_line, get_line(p_line).size() - 1).y;
-		/* End line is the same therefore we have a block. */
+		/* End line is the same therefore we have a block of single line delimiters. */
 		if (end_line == p_line) {
 			for (int i = p_line + 1; i <= line_count; i++) {
+				if (i == line_count) {
+					end_line = line_count;
+					break;
+				}
+
 				if ((in_string != -1 && is_in_string(i) == -1) || (in_comment != -1 && is_in_comment(i) == -1)) {
 					end_line = i - 1;
 					break;
