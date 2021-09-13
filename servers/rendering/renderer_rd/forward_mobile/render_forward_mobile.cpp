@@ -159,7 +159,6 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_b
 			RD::TEXTURE_SAMPLES_2,
 			RD::TEXTURE_SAMPLES_4,
 			RD::TEXTURE_SAMPLES_8,
-			RD::TEXTURE_SAMPLES_16
 		};
 
 		texture_samples = ts[p_msaa];

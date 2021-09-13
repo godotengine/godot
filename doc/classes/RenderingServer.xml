@@ -3801,21 +3801,18 @@
 		<constant name="VIEWPORT_SDF_SCALE_MAX" value="3" enum="ViewportSDFScale">
 		</constant>
 		<constant name="VIEWPORT_MSAA_DISABLED" value="0" enum="ViewportMSAA">
-			Multisample antialiasing is disabled.
+			Multisample antialiasing for 3D is disabled. This is the default value, and also the fastest setting.
 		</constant>
 		<constant name="VIEWPORT_MSAA_2X" value="1" enum="ViewportMSAA">
-			Multisample antialiasing uses 2 samples per pixel.
+			Multisample antialiasing uses 2 samples per pixel for 3D. This has a moderate impact on performance.
 		</constant>
 		<constant name="VIEWPORT_MSAA_4X" value="2" enum="ViewportMSAA">
-			Multisample antialiasing uses 4 samples per pixel.
+			Multisample antialiasing uses 4 samples per pixel for 3D. This has a high impact on performance.
 		</constant>
 		<constant name="VIEWPORT_MSAA_8X" value="3" enum="ViewportMSAA">
-			Multisample antialiasing uses 8 samples per pixel.
+			Multisample antialiasing uses 8 samples per pixel for 3D. This has a very high impact on performance. Likely unsupported on low-end and older hardware.
 		</constant>
-		<constant name="VIEWPORT_MSAA_16X" value="4" enum="ViewportMSAA">
-			Multisample antialiasing uses 16 samples per pixel.
-		</constant>
-		<constant name="VIEWPORT_MSAA_MAX" value="5" enum="ViewportMSAA">
+		<constant name="VIEWPORT_MSAA_MAX" value="4" enum="ViewportMSAA">
 		</constant>
 		<constant name="VIEWPORT_SCREEN_SPACE_AA_DISABLED" value="0" enum="ViewportScreenSpaceAA">
 		</constant>

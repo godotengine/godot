@@ -321,10 +321,7 @@
 		<constant name="MSAA_8X" value="3" enum="MSAA">
 			Use 8× Multisample Antialiasing. This has a very high performance cost. The difference between 4× and 8× MSAA may not always be visible in real gameplay conditions. Likely unsupported on low-end and older hardware.
 		</constant>
-		<constant name="MSAA_16X" value="4" enum="MSAA">
-			Use 16× Multisample Antialiasing. This has a very high performance cost. The difference between 8× and 16× MSAA may not always be visible in real gameplay conditions. Likely unsupported on medium and low-end hardware.
-		</constant>
-		<constant name="MSAA_MAX" value="5" enum="MSAA">
+		<constant name="MSAA_MAX" value="4" enum="MSAA">
 			Represents the size of the [enum MSAA] enum.
 		</constant>
 		<constant name="SCREEN_SPACE_AA_DISABLED" value="0" enum="ScreenSpaceAA">

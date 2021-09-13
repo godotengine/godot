@@ -1337,7 +1337,7 @@ SceneTree::SceneTree() {
 	current_scene = nullptr;
 
 	const int msaa_mode = GLOBAL_DEF("rendering/anti_aliasing/quality/msaa", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/quality/msaa", PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/msaa", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Fast),4× (Average),8× (Slow),16× (Slower)")));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/quality/msaa", PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/msaa", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Average),4× (Slow),8× (Slowest)")));
 	root->set_msaa(Viewport::MSAA(msaa_mode));
 
 	const int ssaa_mode = GLOBAL_DEF("rendering/anti_aliasing/quality/screen_space_aa", 0);

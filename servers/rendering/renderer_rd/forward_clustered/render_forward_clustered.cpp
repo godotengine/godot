@@ -223,7 +223,6 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::configure(RID p_c
 			RD::TEXTURE_SAMPLES_2,
 			RD::TEXTURE_SAMPLES_4,
 			RD::TEXTURE_SAMPLES_8,
-			RD::TEXTURE_SAMPLES_16
 		};
 
 		texture_samples = ts[p_msaa];
@@ -1163,7 +1162,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		render_buffer = (RenderBufferDataForwardClustered *)render_buffers_get_data(p_render_data->render_buffers);
 	}
 	RendererSceneEnvironmentRD *env = get_environment(p_render_data->environment);
-	static const int texture_multisamples[RS::VIEWPORT_MSAA_MAX] = { 1, 2, 4, 8, 16 };
+	static const int texture_multisamples[RS::VIEWPORT_MSAA_MAX] = { 1, 2, 4, 8 };
 
 	//first of all, make a new render pass
 	//fill up ubo
