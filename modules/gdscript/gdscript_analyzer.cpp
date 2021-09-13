@@ -681,8 +681,9 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 					specified_type.is_meta_type = false;
 				}
 
-				GDScriptParser::DataType datatype = member.constant->get_datatype();
+				GDScriptParser::DataType datatype;
 				if (member.constant->initializer) {
+					datatype = member.constant->initializer->get_datatype();
 					if (member.constant->initializer->type == GDScriptParser::Node::ARRAY) {
 						GDScriptParser::ArrayNode *array = static_cast<GDScriptParser::ArrayNode *>(member.constant->initializer);
 						const_fold_array(array);
@@ -2516,14 +2517,29 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 		while (outer != nullptr) {
 			if (outer->has_member(name)) {
 				const GDScriptParser::ClassNode::Member &member = outer->get_member(name);
-				if (member.type == GDScriptParser::ClassNode::Member::CONSTANT) {
-					// TODO: Make sure loops won't cause problem. And make special error message for those.
-					// For out-of-order resolution:
-					reduce_expression(member.constant->initializer);
-					p_identifier->set_datatype(member.get_datatype());
-					p_identifier->is_constant = true;
-					p_identifier->reduced_value = member.constant->initializer->reduced_value;
-					return;
+				switch (member.type) {
+					case GDScriptParser::ClassNode::Member::CONSTANT: {
+						// TODO: Make sure loops won't cause problem. And make special error message for those.
+						// For out-of-order resolution:
+						reduce_expression(member.constant->initializer);
+						p_identifier->set_datatype(member.get_datatype());
+						p_identifier->is_constant = true;
+						p_identifier->reduced_value = member.constant->initializer->reduced_value;
+						return;
+					} break;
+					case GDScriptParser::ClassNode::Member::ENUM_VALUE: {
+						p_identifier->set_datatype(member.get_datatype());
+						p_identifier->is_constant = true;
+						p_identifier->reduced_value = member.enum_value.value;
+						return;
+					} break;
+					case GDScriptParser::ClassNode::Member::ENUM: {
+						p_identifier->set_datatype(member.get_datatype());
+						p_identifier->is_constant = false;
+						return;
+					} break;
+					default:
+						break;
 				}
 			}
 			outer = outer->outer;
