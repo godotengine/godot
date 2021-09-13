@@ -6,7 +6,7 @@
 # Georgios Katsanakis <geo.elgeo@gmail.com>, 2019.
 # Overloaded <manoschool@yahoo.gr>, 2019.
 # Eternal Death <eternaldeath0001@gmail.com>, 2019.
-# Overloaded @ Orama Interactive https://orama-interactive.com/ <manoschool@yahoo.gr>, 2020.
+# Overloaded @ Orama Interactive http://orama-interactive.com/ <manoschool@yahoo.gr>, 2020.
 # pandektis <pandektis@gmail.com>, 2020.
 # KostasMSC <kargyris@athtech.gr>, 2020.
 # lawfulRobot <czavantias@gmail.com>, 2020, 2021.
