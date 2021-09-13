@@ -337,11 +337,28 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 	tokenizer.set_cursor_position(cursor_line, cursor_column);
 	script_path = p_script_path;
 	current = tokenizer.scan();
-	// Avoid error as the first token.
-	while (current.type == GDScriptTokenizer::Token::ERROR) {
-		push_error(current.literal);
+	// Avoid error or newline as the first token.
+	// The latter can mess with the parser when opening files filled exclusively with comments and newlines.
+	while (current.type == GDScriptTokenizer::Token::ERROR || current.type == GDScriptTokenizer::Token::NEWLINE) {
+		if (current.type == GDScriptTokenizer::Token::ERROR) {
+			push_error(current.literal);
+		}
 		current = tokenizer.scan();
 	}
+
+#ifdef DEBUG_ENABLED
+	// Warn about parsing an empty script file:
+	if (current.type == GDScriptTokenizer::Token::TK_EOF) {
+		// Create a dummy Node for the warning, pointing to the very beginning of the file
+		Node *nd = alloc_node<PassNode>();
+		nd->start_line = 1;
+		nd->start_column = 0;
+		nd->end_line = 1;
+		nd->leftmost_column = 0;
+		nd->rightmost_column = 0;
+		push_warning(nd, GDScriptWarning::EMPTY_FILE);
+	}
+#endif
 
 	push_multiline(false); // Keep one for the whole parsing.
 	parse_program();
