@@ -30,7 +30,7 @@ jobs:
       - name: Configure dependencies
         run: |
           sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
-            libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm
+            libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libjack-dev libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm
 
       # Upload cache on completion and check it out now
       - name: Load .scons_cache directory
@@ -116,7 +116,7 @@ jobs:
       - name: Configure dependencies
         run: |
           sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
-            libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm \
+            libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libjack-dev libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm \
             xvfb wget unzip
 
       # Upload cache on completion and check it out now
@@ -208,7 +208,7 @@ jobs:
       - name: Configure dependencies
         run: |
           sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
-            libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm
+            libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libjack-dev libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm
 
       # Upload cache on completion and check it out now
       - name: Load .scons_cache directory

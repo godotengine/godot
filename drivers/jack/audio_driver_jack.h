@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  os_linuxbsd.h                                                        */
+/*  audio_driver_jack.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,85 +28,76 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OS_LINUXBSD_H
-#define OS_LINUXBSD_H
-
-#include "core/input/input.h"
-#include "crash_handler_linuxbsd.h"
-#include "drivers/alsa/audio_driver_alsa.h"
-#include "drivers/alsamidi/midi_driver_alsamidi.h"
-#include "drivers/jack/audio_driver_jack.h"
-#include "drivers/pulseaudio/audio_driver_pulseaudio.h"
-#include "drivers/unix/os_unix.h"
-#include "joypad_linux.h"
-#include "servers/audio_server.h"
-#include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering_server.h"
-
-class OS_LinuxBSD : public OS_Unix {
-	virtual void delete_main_loop() override;
-
-	bool force_quit;
-
-#ifdef JOYDEV_ENABLED
-	JoypadLinux *joypad = nullptr;
-#endif
-
-#ifdef ALSA_ENABLED
-	AudioDriverALSA driver_alsa;
-#endif
-
-#ifdef ALSAMIDI_ENABLED
-	MIDIDriverALSAMidi driver_alsamidi;
-#endif
-
-#ifdef PULSEAUDIO_ENABLED
-	AudioDriverPulseAudio driver_pulseaudio;
-#endif
+#ifndef AUDIO_DRIVER_JACK_H
+#define AUDIO_DRIVER_JACK_H
 
 #ifdef JACK_ENABLED
-	AudioDriverJACK driver_jack;
-#endif
 
-	CrashHandler crash_handler;
+#include "core/os/mutex.h"
+#include "servers/audio_server.h"
 
-	MainLoop *main_loop;
+#include "jack-so_wrap.h"
 
-protected:
-	virtual void initialize() override;
-	virtual void finalize() override;
+class AudioDriverJACK : public AudioDriver {
+	Mutex mutex;
 
-	virtual void initialize_joypads() override;
+	jack_client_t *client = nullptr;
+	Vector<jack_port_t *> ports;
+	Vector<jack_port_t *> capture_ports;
 
-	virtual void set_main_loop(MainLoop *p_main_loop) override;
+	Vector<int32_t> samples_in;
+
+	Error init_device();
+	void finish_device();
+
+	static int process_func(jack_nframes_t total_frames, void *p_udata);
+
+	struct DeviceJACK {
+		const char *name;
+		SpeakerMode speaker_mode;
+		int channels() const;
+	};
+
+	static const DeviceJACK devices[];
+	static const unsigned num_devices;
+
+	static const DeviceJACK capture_devices[];
+	static const unsigned num_capture_devices;
+
+	int device_index = 0;
+	int capture_device_index = 0;
+
+	bool active = false;
+	bool capture_active = false;
+
+	void connect_physical_ports();
+	void connect_physical_capture_ports();
 
 public:
-	virtual String get_name() const override;
+	const char *get_name() const {
+		return "JACK";
+	}
 
-	virtual MainLoop *get_main_loop() const override;
+	Error init();
+	void start();
+	int get_mix_rate() const;
+	SpeakerMode get_speaker_mode() const;
+	Array get_device_list();
+	String get_device();
+	void set_device(String device);
+	void lock();
+	void unlock();
+	void finish();
 
-	virtual String get_config_path() const override;
-	virtual String get_data_path() const override;
-	virtual String get_cache_path() const override;
+	Error capture_start();
+	Error capture_stop();
+	void capture_set_device(const String &device);
+	String capture_get_device();
+	Array capture_get_device_list();
 
-	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const override;
-
-	virtual Error shell_open(String p_uri) override;
-
-	virtual String get_unique_id() const override;
-
-	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
-
-	virtual bool _check_internal_feature_support(const String &p_feature) override;
-
-	void run();
-
-	virtual void disable_crash_handler() override;
-	virtual bool is_disable_crash_handler() const override;
-
-	virtual Error move_to_trash(const String &p_path) override;
-
-	OS_LinuxBSD();
+	AudioDriverJACK();
+	~AudioDriverJACK();
 };
 
+#endif // AUDIO_DRIVER_JACK_H
 #endif

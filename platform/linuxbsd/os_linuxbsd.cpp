@@ -532,6 +532,10 @@ OS_LinuxBSD::OS_LinuxBSD() {
 	main_loop = nullptr;
 	force_quit = false;
 
+#ifdef JACK_ENABLED
+	AudioDriverManager::add_driver(&driver_jack);
+#endif
+
 #ifdef PULSEAUDIO_ENABLED
 	AudioDriverManager::add_driver(&driver_pulseaudio);
 #endif
