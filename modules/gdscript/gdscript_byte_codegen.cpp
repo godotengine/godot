@@ -864,6 +864,12 @@ void GDScriptByteCodeGenerator::write_assign_default_parameter(const Address &p_
 	function->default_arguments.push_back(opcodes.size());
 }
 
+void GDScriptByteCodeGenerator::write_store_global(const Address &p_dst, int p_global_index) {
+	append(GDScriptFunction::OPCODE_STORE_GLOBAL, 1);
+	append(p_dst);
+	append(p_global_index);
+}
+
 void GDScriptByteCodeGenerator::write_store_named_global(const Address &p_dst, const StringName &p_global) {
 	append(GDScriptFunction::OPCODE_STORE_NAMED_GLOBAL, 1);
 	append(p_dst);

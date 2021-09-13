@@ -35,6 +35,8 @@
 #include "gdscript_cache.h"
 #include "gdscript_utility_functions.h"
 
+#include "core/config/project_settings.h"
+
 bool GDScriptCompiler::_is_class_member_property(CodeGen &codegen, const StringName &p_name) {
 	if (codegen.function_node && codegen.function_node->is_static) {
 		return false;
@@ -316,10 +318,21 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				}
 			}
 
+			// Try globals.
 			if (GDScriptLanguage::get_singleton()->get_global_map().has(identifier)) {
-				int idx = GDScriptLanguage::get_singleton()->get_global_map()[identifier];
-				Variant global = GDScriptLanguage::get_singleton()->get_global_array()[idx];
-				return codegen.add_constant(global); // TODO: Get type.
+				// If it's an autoload singleton, we postpone to load it at runtime.
+				// This is so one autoload doesn't try to load another before it's compiled.
+				OrderedHashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
+				if (autoloads.has(identifier) && autoloads[identifier].is_singleton) {
+					GDScriptCodeGenerator::Address global = codegen.add_temporary(_gdtype_from_datatype(in->get_datatype()));
+					int idx = GDScriptLanguage::get_singleton()->get_global_map()[identifier];
+					gen->write_store_global(global, idx);
+					return global;
+				} else {
+					int idx = GDScriptLanguage::get_singleton()->get_global_map()[identifier];
+					Variant global = GDScriptLanguage::get_singleton()->get_global_array()[idx];
+					return codegen.add_constant(global);
+				}
 			}
 
 			// Try global classes.

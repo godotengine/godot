@@ -322,6 +322,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_ITERATE_PACKED_VECTOR3_ARRAY,       \
 		&&OPCODE_ITERATE_PACKED_COLOR_ARRAY,         \
 		&&OPCODE_ITERATE_OBJECT,                     \
+		&&OPCODE_STORE_GLOBAL,                       \
 		&&OPCODE_STORE_NAMED_GLOBAL,                 \
 		&&OPCODE_TYPE_ADJUST_BOOL,                   \
 		&&OPCODE_TYPE_ADJUST_INT,                    \
@@ -3113,6 +3114,18 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 					ip += 5; // Loop again.
 				}
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_STORE_GLOBAL) {
+				CHECK_SPACE(3);
+				int global_idx = _code_ptr[ip + 2];
+				GD_ERR_BREAK(global_idx < 0 || global_idx >= GDScriptLanguage::get_singleton()->get_global_array_size());
+
+				GET_INSTRUCTION_ARG(dst, 0);
+				*dst = GDScriptLanguage::get_singleton()->get_global_array()[global_idx];
+
+				ip += 3;
 			}
 			DISPATCH_OPCODE;
 
