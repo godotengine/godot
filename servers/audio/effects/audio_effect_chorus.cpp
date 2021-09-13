@@ -343,7 +343,6 @@ void AudioEffectChorus::_bind_methods() {
 }
 
 AudioEffectChorus::AudioEffectChorus() {
-	voice_count = 2;
 	voice[0].delay = 15;
 	voice[1].delay = 20;
 	voice[0].rate = 0.8;
@@ -354,7 +353,4 @@ AudioEffectChorus::AudioEffectChorus() {
 	voice[1].cutoff = 8000;
 	voice[0].pan = -0.5;
 	voice[1].pan = 0.5;
-
-	wet = 0.5;
-	dry = 1.0;
 }

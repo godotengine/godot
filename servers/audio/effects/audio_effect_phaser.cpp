@@ -151,10 +151,4 @@ void AudioEffectPhaser::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth", PROPERTY_HINT_RANGE, "0.1,4,0.1"), "set_depth", "get_depth");
 }
 
-AudioEffectPhaser::AudioEffectPhaser() {
-	range_min = 440;
-	range_max = 1600;
-	rate = 0.5;
-	feedback = 0.7;
-	depth = 1;
-}
+AudioEffectPhaser::AudioEffectPhaser() {}

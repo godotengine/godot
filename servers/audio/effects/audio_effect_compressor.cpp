@@ -227,11 +227,4 @@ void AudioEffectCompressor::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "sidechain", PROPERTY_HINT_ENUM), "set_sidechain", "get_sidechain");
 }
 
-AudioEffectCompressor::AudioEffectCompressor() {
-	threshold = 0;
-	ratio = 4;
-	gain = 0;
-	attack_us = 20;
-	release_ms = 250;
-	mix = 1;
-}
+AudioEffectCompressor::AudioEffectCompressor() {}

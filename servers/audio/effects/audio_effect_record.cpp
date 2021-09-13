@@ -291,7 +291,4 @@ void AudioEffectRecord::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "format", PROPERTY_HINT_ENUM, "8-Bit,16-Bit,IMA-ADPCM"), "set_format", "get_format");
 }
 
-AudioEffectRecord::AudioEffectRecord() {
-	format = AudioStreamSample::FORMAT_16_BITS;
-	recording_active = false;
-}
+AudioEffectRecord::AudioEffectRecord() {}

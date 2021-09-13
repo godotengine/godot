@@ -320,17 +320,6 @@ void Reverb::clear_buffers() {
 }
 
 Reverb::Reverb() {
-	params.room_size = 0.8;
-	params.damp = 0.5;
-	params.dry = 1.0;
-	params.wet = 0.0;
-	params.mix_rate = 44100;
-	params.extra_spread_base = 0;
-	params.extra_spread = 1.0;
-	params.predelay = 150;
-	params.predelay_fb = 0.4;
-	params.hpf = 0;
-
 	input_buffer = memnew_arr(float, INPUT_BUFFER_MAX_SIZE);
 
 	configure_buffers();

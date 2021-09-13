@@ -164,16 +164,7 @@ Array AudioDriver::capture_get_device_list() {
 	return list;
 }
 
-AudioDriver::AudioDriver() {
-	_last_mix_time = 0;
-	_last_mix_frames = 0;
-	input_position = 0;
-	input_size = 0;
-
-#ifdef DEBUG_ENABLED
-	prof_time = 0;
-#endif
-}
+AudioDriver::AudioDriver() {}
 
 AudioDriverDummy AudioDriverManager::dummy_driver;
 AudioDriver *AudioDriverManager::drivers[MAX_DRIVERS] = {

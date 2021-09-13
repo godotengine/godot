@@ -126,9 +126,4 @@ void AudioEffectLimiter::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "soft_clip_ratio", PROPERTY_HINT_RANGE, "3,20,0.1"), "set_soft_clip_ratio", "get_soft_clip_ratio");
 }
 
-AudioEffectLimiter::AudioEffectLimiter() {
-	threshold = 0;
-	ceiling = -0.1;
-	soft_clip = 2;
-	soft_clip_ratio = 10;
-}
+AudioEffectLimiter::AudioEffectLimiter() {}

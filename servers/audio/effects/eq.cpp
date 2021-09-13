@@ -63,10 +63,7 @@ static int solve_quadratic(double a, double b, double c, double *r1, double *r2)
 	}
 }
 
-EQ::BandProcess::BandProcess() {
-	c1 = c2 = c3 = history.a1 = history.a2 = history.a3 = 0;
-	history.b1 = history.b2 = history.b3 = 0;
-}
+EQ::BandProcess::BandProcess() {}
 
 void EQ::recalculate_band_coefficients() {
 #define BAND_LOG(m_f) (log((m_f)) / log(2.))
@@ -195,9 +192,6 @@ EQ::BandProcess EQ::get_band_processor(int p_band) const {
 	return band_proc;
 }
 
-EQ::EQ() {
-	mix_rate = 44100;
-}
+EQ::EQ() {}
 
-EQ::~EQ() {
-}
+EQ::~EQ() {}

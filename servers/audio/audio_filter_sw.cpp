@@ -219,18 +219,9 @@ float AudioFilterSW::get_response(float p_freq, Coeffs *p_coeffs) {
 	return H;
 }
 
-AudioFilterSW::AudioFilterSW() {
-	sampling_rate = 44100;
-	resonance = 0.5;
-	cutoff = 5000;
-	gain = 1.0;
-	mode = LOWPASS;
-	stages = 1;
-}
+AudioFilterSW::AudioFilterSW() {}
 
-AudioFilterSW::Processor::Processor() {
-	set_filter(nullptr);
-}
+AudioFilterSW::Processor::Processor() {}
 
 void AudioFilterSW::Processor::set_filter(AudioFilterSW *p_filter, bool p_clear_history) {
 	if (p_clear_history) {

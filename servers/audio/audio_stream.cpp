@@ -421,9 +421,7 @@ void AudioStreamRandomPitch::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "random_pitch", PROPERTY_HINT_RANGE, "1,16,0.01"), "set_random_pitch", "get_random_pitch");
 }
 
-AudioStreamRandomPitch::AudioStreamRandomPitch() {
-	random_pitch = 1.1;
-}
+AudioStreamRandomPitch::AudioStreamRandomPitch() {}
 
 void AudioStreamPlaybackRandomPitch::start(float p_from_pos) {
 	playing = playback;

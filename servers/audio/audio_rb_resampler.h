@@ -37,26 +37,26 @@
 #include "servers/audio_server.h"
 
 struct AudioRBResampler {
-	uint32_t rb_bits;
-	uint32_t rb_len;
-	uint32_t rb_mask;
-	uint32_t read_buff_len;
-	uint32_t channels;
-	uint32_t src_mix_rate;
-	uint32_t target_mix_rate;
+	uint32_t rb_bits = 0;
+	uint32_t rb_len = 0;
+	uint32_t rb_mask = 0;
+	uint32_t read_buff_len = 0;
+	uint32_t channels = 0;
+	uint32_t src_mix_rate = 0;
+	uint32_t target_mix_rate = 0;
 
 	SafeNumeric<int> rb_read_pos;
 	SafeNumeric<int> rb_write_pos;
 
-	int32_t offset; //contains the fractional remainder of the resampler
+	int32_t offset = 0; //contains the fractional remainder of the resampler
 	enum {
 		MIX_FRAC_BITS = 13,
 		MIX_FRAC_LEN = (1 << MIX_FRAC_BITS),
 		MIX_FRAC_MASK = MIX_FRAC_LEN - 1,
 	};
 
-	float *read_buf;
-	float *rb;
+	float *read_buf = nullptr;
+	float *rb = nullptr;
 
 	template <int C>
 	uint32_t _resample(AudioFrame *p_dest, int p_todo, int32_t p_increment);

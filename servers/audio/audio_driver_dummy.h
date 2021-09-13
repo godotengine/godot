@@ -40,19 +40,19 @@ class AudioDriverDummy : public AudioDriver {
 	Thread thread;
 	Mutex mutex;
 
-	int32_t *samples_in;
+	int32_t *samples_in = nullptr;
 
 	static void thread_func(void *p_udata);
 
-	unsigned int buffer_frames;
-	unsigned int mix_rate;
-	SpeakerMode speaker_mode;
+	unsigned int buffer_frames = 0;
+	unsigned int mix_rate = 0;
+	SpeakerMode speaker_mode = SPEAKER_MODE_STEREO;
 
-	int channels;
+	int channels = 2;
 
-	bool active;
-	bool thread_exited;
-	mutable bool exit_thread;
+	bool active = false;
+	bool thread_exited = false;
+	mutable bool exit_thread = false;
 
 public:
 	const char *get_name() const {

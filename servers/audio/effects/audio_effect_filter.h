@@ -66,11 +66,11 @@ public:
 	};
 	friend class AudioEffectFilterInstance;
 
-	AudioFilterSW::Mode mode;
-	float cutoff;
-	float resonance;
-	float gain;
-	FilterDB db;
+	AudioFilterSW::Mode mode = AudioFilterSW::Mode::BANDLIMIT;
+	float cutoff = 2000.0;
+	float resonance = 0.5;
+	float gain = 1.0;
+	FilterDB db = FILTER_6DB;
 
 protected:
 	static void _bind_methods();

@@ -78,7 +78,7 @@ class AudioStreamPlaybackResampled : public AudioStreamPlayback {
 
 	AudioFrame internal_buffer[INTERNAL_BUFFER_LEN + CUBIC_INTERP_HISTORY];
 	unsigned int internal_buffer_end = -1;
-	uint64_t mix_offset;
+	uint64_t mix_offset = 0;
 
 protected:
 	void _begin_resample();
@@ -89,7 +89,7 @@ protected:
 public:
 	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
 
-	AudioStreamPlaybackResampled() { mix_offset = 0; }
+	AudioStreamPlaybackResampled() {}
 };
 
 class AudioStream : public Resource {
@@ -140,8 +140,8 @@ class AudioStreamPlaybackMicrophone : public AudioStreamPlaybackResampled {
 	GDCLASS(AudioStreamPlaybackMicrophone, AudioStreamPlaybackResampled);
 	friend class AudioStreamMicrophone;
 
-	bool active;
-	unsigned int input_ofs;
+	bool active = false;
+	unsigned int input_ofs = 0;
 
 	Ref<AudioStreamMicrophone> microphone;
 
@@ -175,7 +175,7 @@ class AudioStreamRandomPitch : public AudioStream {
 
 	Set<AudioStreamPlaybackRandomPitch *> playbacks;
 	Ref<AudioStream> audio_stream;
-	float random_pitch;
+	float random_pitch = 1.1;
 
 protected:
 	static void _bind_methods();
@@ -203,7 +203,7 @@ class AudioStreamPlaybackRandomPitch : public AudioStreamPlayback {
 	Ref<AudioStreamRandomPitch> random_pitch;
 	Ref<AudioStreamPlayback> playback;
 	Ref<AudioStreamPlayback> playing;
-	float pitch_scale;
+	float pitch_scale = 1.0;
 
 public:
 	virtual void start(float p_from_pos = 0.0) override;
