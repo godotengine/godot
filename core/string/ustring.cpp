@@ -4329,23 +4329,39 @@ bool String::is_relative_path() const {
 }
 
 String String::get_base_dir() const {
-	int basepos = find(":/");
-	if (basepos == -1) {
-		basepos = find(":\\");
+	int end = 0;
+
+	// url scheme style base
+	int basepos = find("://");
+	if (basepos != -1) {
+		end = basepos + 3;
 	}
+
+	// windows top level directory base
+	if (end == 0) {
+		basepos = find(":/");
+		if (basepos == -1) {
+			basepos = find(":\\");
+		}
+		if (basepos != -1) {
+			end = basepos + 2;
+		}
+	}
+
+	// unix root directory base
+	if (end == 0) {
+		if (begins_with("/")) {
+			end = 1;
+		}
+	}
+
 	String rs;
 	String base;
-	if (basepos != -1) {
-		int end = basepos + 3;
+	if (end != 0) {
 		rs = substr(end, length());
 		base = substr(0, end);
 	} else {
-		if (begins_with("/")) {
-			rs = substr(1, length());
-			base = "/";
-		} else {
-			rs = *this;
-		}
+		rs = *this;
 	}
 
 	int sep = MAX(rs.rfind("/"), rs.rfind("\\"));
