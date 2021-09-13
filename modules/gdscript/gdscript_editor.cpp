@@ -1733,7 +1733,7 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 		}
 	}
 
-	if (is_function_parameter && p_context.current_function && p_context.current_class) {
+	if (is_function_parameter && p_context.current_function && p_context.current_function->source_lambda == nullptr && p_context.current_class) {
 		// Check if it's override of native function, then we can assume the type from the signature.
 		GDScriptParser::DataType base_type = p_context.current_class->base_type;
 		while (base_type.is_set()) {
