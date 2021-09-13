@@ -37,7 +37,7 @@
 #include "core/templates/pair.h"
 #include "scene/2d/camera_2d.h"
 #include "scene/2d/collision_object_2d.h"
-#include "scene/2d/listener_2d.cpp"
+#include "scene/2d/listener_2d.h"
 #ifndef _3D_DISABLED
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/collision_object_3d.h"
