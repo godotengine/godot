@@ -108,6 +108,11 @@ void BaseButton::_notification(int p_what) {
 		} else if (status.hovering) {
 			update();
 		}
+
+		if (status.pressed_down) {
+			status.pressed_down = false;
+			emit_signal(SNAME("button_up"));
+		}
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE || (p_what == NOTIFICATION_VISIBILITY_CHANGED && !is_visible_in_tree())) {
@@ -133,9 +138,10 @@ void BaseButton::_toggled(bool p_pressed) {
 }
 
 void BaseButton::on_action_event(Ref<InputEvent> p_event) {
-	if (p_event->is_pressed()) {
+	if (p_event->is_pressed() && !status.pressed_down) {
 		status.press_attempt = true;
 		status.pressing_inside = true;
+		status.pressed_down = true;
 		emit_signal(SNAME("button_down"));
 	}
 
@@ -160,20 +166,21 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 			}
 		} else {
 			if ((p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_PRESS) || (!p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
+				status.press_attempt = false;
+				status.pressing_inside = false;
 				_pressed();
 			}
 		}
 	}
 
-	if (!p_event->is_pressed()) {
+	if (!p_event->is_pressed() && status.pressed_down) {
 		Ref<InputEventMouseButton> mouse_button = p_event;
 		if (mouse_button.is_valid()) {
 			if (!has_point(mouse_button->get_position())) {
 				status.hovering = false;
 			}
 		}
-		status.press_attempt = false;
-		status.pressing_inside = false;
+		status.pressed_down = false;
 		emit_signal(SNAME("button_up"));
 	}
 
