@@ -55,6 +55,9 @@ if env["builtin_embree"]:
         "kernels/bvh/bvh_builder_sah_mb.cpp",
         "kernels/bvh/bvh_builder_twolevel.cpp",
         "kernels/bvh/bvh_intersector1_bvh4.cpp",
+        "kernels/bvh/bvh_intersector_hybrid4_bvh4.cpp",
+        "kernels/bvh/bvh_intersector_stream_bvh4.cpp",
+        "kernels/bvh/bvh_intersector_stream_filters.cpp",
     ]
 
     thirdparty_sources = [thirdparty_dir + file for file in embree_src]
