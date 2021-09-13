@@ -2610,10 +2610,10 @@ void TextEdit::set_text(const String &p_text) {
 		set_caret_column(0);
 
 		begin_complex_operation();
+		deselect();
 		_remove_text(0, 0, MAX(0, get_line_count() - 1), MAX(get_line(MAX(get_line_count() - 1, 0)).size() - 1, 0));
 		insert_text_at_caret(p_text);
 		end_complex_operation();
-		selection.active = false;
 	}
 
 	set_caret_line(0);
