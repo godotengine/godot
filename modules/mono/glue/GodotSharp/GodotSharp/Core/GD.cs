@@ -376,7 +376,7 @@ namespace Godot
         /// <example>
         /// <code>
         /// GD.Print(GD.RandRange(0, 1)); // Prints 0 or 1
-        /// GD.Print(GD.RangeRange(-10, 1000)); // Prints any number from -10 to 1000
+        /// GD.Print(GD.RandRange(-10, 1000)); // Prints any number from -10 to 1000
         /// </code>
         /// </example>
         /// <returns>A random <see langword="int"/> number inside the given range.</returns>
