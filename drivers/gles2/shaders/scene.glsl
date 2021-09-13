@@ -1688,12 +1688,12 @@ FRAGMENT_SHADER_CODE
 #ifdef USE_RADIANCE_MAP
 
 	vec3 ref_vec = reflect(-eye_position, N);
+	float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
 	ref_vec = normalize((radiance_inverse_xform * vec4(ref_vec, 0.0)).xyz);
 
 	ref_vec.z *= -1.0;
 
 	specular_light = textureCubeLod(radiance_map, ref_vec, roughness * RADIANCE_MAX_LOD).xyz * bg_energy;
-	float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
 	specular_light *= horizon * horizon;
 #ifndef USE_LIGHTMAP
 	{
