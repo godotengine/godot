@@ -268,6 +268,10 @@ int AudioDriverCoreAudio::get_mix_rate() const {
 	return mix_rate;
 };
 
+int AudioDriverCoreAudio::get_mix_buffer_size() const {
+	return (int)buffer_frames;
+}
+
 AudioDriver::SpeakerMode AudioDriverCoreAudio::get_speaker_mode() const {
 	return get_speaker_mode_by_total_channels(channels);
 };
@@ -333,6 +337,13 @@ void AudioDriverCoreAudio::finish() {
 		audio_unit = nullptr;
 		unlock();
 	}
+}
+
+float AudioDriverCoreAudio::get_latency() {
+	if (mix_rate == 0) {
+		return 0;
+	}
+	return (float)buffer_frames / mix_rate;
 }
 
 Error AudioDriverCoreAudio::capture_init() {

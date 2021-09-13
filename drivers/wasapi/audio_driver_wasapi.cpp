@@ -518,6 +518,10 @@ int AudioDriverWASAPI::get_mix_rate() const {
 	return mix_rate;
 }
 
+int AudioDriverWASAPI::get_mix_buffer_size() const {
+	return buffer_frames;
+}
+
 AudioDriver::SpeakerMode AudioDriverWASAPI::get_speaker_mode() const {
 	return get_speaker_mode_by_total_channels(channels);
 }
@@ -884,6 +888,13 @@ void AudioDriverWASAPI::finish() {
 
 	finish_capture_device();
 	finish_render_device();
+}
+
+float AudioDriverWASAPI::get_latency() {
+	if (mix_rate == 0) {
+		return 0;
+	}
+	return (float)buffer_frames / mix_rate;
 }
 
 Error AudioDriverWASAPI::capture_start() {

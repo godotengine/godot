@@ -153,6 +153,10 @@ int AudioDriverJavaScript::get_mix_rate() const {
 	return mix_rate;
 }
 
+int AudioDriverJavaScript::get_mix_buffer_size() const {
+	return buffer_length;
+}
+
 AudioDriver::SpeakerMode AudioDriverJavaScript::get_speaker_mode() const {
 	return get_speaker_mode_by_total_channels(channel_count);
 }

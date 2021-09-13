@@ -107,7 +107,8 @@ public:
 	virtual String capture_get_device() { return "Default"; }
 	virtual Array capture_get_device_list(); // TODO: convert this and get_device_list to PackedStringArray
 
-	virtual float get_latency() { return 0; }
+	virtual float get_latency() = 0;
+	virtual int get_mix_buffer_size() const = 0;
 
 	SpeakerMode get_speaker_mode_by_total_channels(int p_channels) const;
 	int get_total_channels_by_speaker_mode(SpeakerMode) const;
@@ -164,6 +165,7 @@ public:
 		MAX_CHANNELS_PER_BUS = 4,
 		MAX_BUSES_PER_PLAYBACK = 6,
 		LOOKAHEAD_BUFFER_SIZE = 64,
+		DEFAULT_MIX_BUFFER_SIZE = 512,
 	};
 
 	typedef void (*AudioCallback)(void *p_userdata);

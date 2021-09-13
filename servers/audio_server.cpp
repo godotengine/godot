@@ -1345,7 +1345,14 @@ void AudioServer::init() {
 	channel_disable_threshold_db = GLOBAL_DEF_RST("audio/buses/channel_disable_threshold_db", -60.0);
 	channel_disable_frames = float(GLOBAL_DEF_RST("audio/buses/channel_disable_time", 2.0)) * get_mix_rate();
 	ProjectSettings::get_singleton()->set_custom_property_info("audio/buses/channel_disable_time", PropertyInfo(Variant::FLOAT, "audio/buses/channel_disable_time", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"));
-	buffer_size = 512; //hardcoded for now
+	if (AudioDriver::get_singleton()) {
+		buffer_size = AudioDriver::get_singleton()->get_mix_buffer_size();
+	}
+
+	if (buffer_size < 1) {
+		WARN_PRINT("AudioServer: Invalid mix buffer size given by driver; falling back to " + itos(DEFAULT_MIX_BUFFER_SIZE));
+		buffer_size = DEFAULT_MIX_BUFFER_SIZE;
+	}
 
 	init_channels_and_buffers();
 
