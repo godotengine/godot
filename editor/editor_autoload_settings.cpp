@@ -64,7 +64,12 @@ void EditorAutoloadSettings::_notification(int p_what) {
 bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, String *r_error) {
 	if (!p_name.is_valid_identifier()) {
 		if (r_error) {
-			*r_error = TTR("Invalid name.") + "\n" + TTR("Valid characters:") + " a-z, A-Z, 0-9 or _";
+			*r_error = TTR("Invalid name.") + " ";
+			if (p_name.size() > 0 && p_name.left(1).is_numeric()) {
+				*r_error += TTR("Cannot begin with a digit.");
+			} else {
+				*r_error += TTR("Valid characters:") + " a-z, A-Z, 0-9 or _";
+			}
 		}
 
 		return false;
@@ -72,7 +77,7 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 
 	if (ClassDB::class_exists(p_name)) {
 		if (r_error) {
-			*r_error = TTR("Invalid name.") + "\n" + TTR("Must not collide with an existing engine class name.");
+			*r_error = TTR("Invalid name.") + " " + TTR("Must not collide with an existing engine class name.");
 		}
 
 		return false;
@@ -81,7 +86,7 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 		if (Variant::get_type_name(Variant::Type(i)) == p_name) {
 			if (r_error) {
-				*r_error = TTR("Invalid name.") + "\n" + TTR("Must not collide with an existing built-in type name.");
+				*r_error = TTR("Invalid name.") + " " + TTR("Must not collide with an existing built-in type name.");
 			}
 
 			return false;
@@ -91,7 +96,7 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 	for (int i = 0; i < GlobalConstants::get_global_constant_count(); i++) {
 		if (GlobalConstants::get_global_constant_name(i) == p_name) {
 			if (r_error) {
-				*r_error = TTR("Invalid name.") + "\n" + TTR("Must not collide with an existing global constant name.");
+				*r_error = TTR("Invalid name.") + " " + TTR("Must not collide with an existing global constant name.");
 			}
 
 			return false;
@@ -104,7 +109,7 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 		for (List<String>::Element *E = keywords.front(); E; E = E->next()) {
 			if (E->get() == p_name) {
 				if (r_error) {
-					*r_error = TTR("Invalid name.") + "\n" + TTR("Keyword cannot be used as an autoload name.");
+					*r_error = TTR("Invalid name.") + " " + TTR("Keyword cannot be used as an autoload name.");
 				}
 
 				return false;
@@ -338,8 +343,11 @@ void EditorAutoloadSettings::_autoload_path_text_changed(const String p_path) {
 }
 
 void EditorAutoloadSettings::_autoload_text_changed(const String p_name) {
-	add_autoload->set_disabled(
-			autoload_add_path->get_line_edit()->get_text() == "" || !_autoload_name_is_valid(p_name, nullptr));
+	String error_string;
+	bool is_name_valid = _autoload_name_is_valid(p_name, &error_string);
+	add_autoload->set_disabled(autoload_add_path->get_line_edit()->get_text() == "" || !is_name_valid);
+	error_message->set_text(error_string);
+	error_message->set_visible(autoload_add_name->get_text() != "" && !is_name_valid);
 }
 
 Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
@@ -829,6 +837,12 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	add_child(hbc);
+
+	error_message = memnew(Label);
+	error_message->hide();
+	error_message->set_align(Label::Align::ALIGN_RIGHT);
+	error_message->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
+	add_child(error_message);
 
 	Label *l = memnew(Label);
 	l->set_text(TTR("Path:"));
