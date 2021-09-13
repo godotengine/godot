@@ -1622,7 +1622,8 @@ Point2 CodeEdit::get_delimiter_start_position(int p_line, int p_column) const {
 	}
 
 	/* Region was found on this line and is not a multiline continuation. */
-	if (start_position.x != -1 && start_position.x != get_line(p_line).length() + 1) {
+	int line_length = get_line(p_line).length();
+	if (start_position.x != -1 && line_length > 0 && start_position.x != line_length + 1) {
 		start_position.y = p_line;
 		return start_position;
 	}
@@ -1641,7 +1642,8 @@ Point2 CodeEdit::get_delimiter_start_position(int p_line, int p_column) const {
 		start_position.x = delimiter_cache[i].back()->key();
 
 		/* Make sure it's not a multiline continuation. */
-		if (start_position.x != get_line(i).length() + 1) {
+		line_length = get_line(i).length();
+		if (line_length > 0 && start_position.x != line_length + 1) {
 			break;
 		}
 	}
@@ -2567,7 +2569,10 @@ int CodeEdit::_is_in_delimiter(int p_line, int p_column, DelimiterType p_type) c
 }
 
 void CodeEdit::_add_delimiter(const String &p_start_key, const String &p_end_key, bool p_line_only, DelimiterType p_type) {
-	if (p_start_key.length() > 0) {
+	// If we are the editor allow "null" as a valid start key, otherwise users cannot add delimiters via the inspector.
+	if (!(Engine::get_singleton()->is_editor_hint() && p_start_key == "null")) {
+		ERR_FAIL_COND_MSG(p_start_key.is_empty(), "delimiter start key cannot be empty");
+
 		for (int i = 0; i < p_start_key.length(); i++) {
 			ERR_FAIL_COND_MSG(!is_symbol(p_start_key[i]), "delimiter must start with a symbol");
 		}
@@ -2632,7 +2637,11 @@ void CodeEdit::_set_delimiters(const TypedArray<String> &p_delimiters, Delimiter
 	_clear_delimiters(p_type);
 
 	for (int i = 0; i < p_delimiters.size(); i++) {
-		String key = p_delimiters[i].is_null() ? "" : p_delimiters[i];
+		String key = p_delimiters[i];
+
+		if (key.is_empty()) {
+			continue;
+		}
 
 		const String start_key = key.get_slice(" ", 0);
 		const String end_key = key.get_slice_count(" ") > 1 ? key.get_slice(" ", 1) : String();
