@@ -43,6 +43,8 @@ bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 			set_item_name(idx, p_value);
 		} else if (what == "mesh") {
 			set_item_mesh(idx, p_value);
+		} else if (what == "mesh_transform") {
+			set_item_mesh_transform(idx, p_value);
 		} else if (what == "shape") {
 			Vector<ShapeData> shapes;
 			ShapeData sd;
@@ -77,6 +79,8 @@ bool MeshLibrary::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = get_item_name(idx);
 	} else if (what == "mesh") {
 		r_ret = get_item_mesh(idx);
+	} else if (what == "mesh_transform") {
+		r_ret = get_item_mesh_transform(idx);
 	} else if (what == "shapes") {
 		r_ret = _get_item_shapes(idx);
 	} else if (what == "navmesh") {
@@ -127,6 +131,14 @@ void MeshLibrary::set_item_mesh(int p_item, const Ref<Mesh> &p_mesh) {
 	notify_property_list_changed();
 }
 
+void MeshLibrary::set_item_mesh_transform(int p_item, const Transform3D &p_transform) {
+	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
+	item_map[p_item].mesh_transform = p_transform;
+	notify_change_to_owners();
+	emit_changed();
+	notify_property_list_changed();
+}
+
 void MeshLibrary::set_item_shapes(int p_item, const Vector<ShapeData> &p_shapes) {
 	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	item_map[p_item].shapes = p_shapes;
@@ -168,6 +180,11 @@ String MeshLibrary::get_item_name(int p_item) const {
 Ref<Mesh> MeshLibrary::get_item_mesh(int p_item) const {
 	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), Ref<Mesh>(), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	return item_map[p_item].mesh;
+}
+
+Transform3D MeshLibrary::get_item_mesh_transform(int p_item) const {
+	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), Transform3D(), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
+	return item_map[p_item].mesh_transform;
 }
 
 Vector<MeshLibrary::ShapeData> MeshLibrary::get_item_shapes(int p_item) const {
@@ -271,12 +288,14 @@ void MeshLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_item", "id"), &MeshLibrary::create_item);
 	ClassDB::bind_method(D_METHOD("set_item_name", "id", "name"), &MeshLibrary::set_item_name);
 	ClassDB::bind_method(D_METHOD("set_item_mesh", "id", "mesh"), &MeshLibrary::set_item_mesh);
+	ClassDB::bind_method(D_METHOD("set_item_mesh_transform", "id", "mesh_transform"), &MeshLibrary::set_item_mesh_transform);
 	ClassDB::bind_method(D_METHOD("set_item_navmesh", "id", "navmesh"), &MeshLibrary::set_item_navmesh);
 	ClassDB::bind_method(D_METHOD("set_item_navmesh_transform", "id", "navmesh"), &MeshLibrary::set_item_navmesh_transform);
 	ClassDB::bind_method(D_METHOD("set_item_shapes", "id", "shapes"), &MeshLibrary::_set_item_shapes);
 	ClassDB::bind_method(D_METHOD("set_item_preview", "id", "texture"), &MeshLibrary::set_item_preview);
 	ClassDB::bind_method(D_METHOD("get_item_name", "id"), &MeshLibrary::get_item_name);
 	ClassDB::bind_method(D_METHOD("get_item_mesh", "id"), &MeshLibrary::get_item_mesh);
+	ClassDB::bind_method(D_METHOD("get_item_mesh_transform", "id"), &MeshLibrary::get_item_mesh_transform);
 	ClassDB::bind_method(D_METHOD("get_item_navmesh", "id"), &MeshLibrary::get_item_navmesh);
 	ClassDB::bind_method(D_METHOD("get_item_navmesh_transform", "id"), &MeshLibrary::get_item_navmesh_transform);
 	ClassDB::bind_method(D_METHOD("get_item_shapes", "id"), &MeshLibrary::_get_item_shapes);
