@@ -227,7 +227,15 @@ void Label::_update_visible() {
 	}
 }
 
-inline void draw_glyph(const TextServer::Glyph &p_gl, const RID &p_canvas, const Color &p_font_color, const Color &p_font_shadow_color, const Color &p_font_outline_color, const int &p_shadow_outline_size, const int &p_outline_size, const Vector2 &p_ofs, const Vector2 &shadow_ofs) {
+inline void draw_glyph(const TextServer::Glyph &p_gl, const RID &p_canvas, const Color &p_font_color, const Vector2 &p_ofs) {
+	if (p_gl.font_rid != RID()) {
+		TS->font_draw_glyph(p_gl.font_rid, p_canvas, p_gl.font_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off), p_gl.index, p_font_color);
+	} else {
+		TS->draw_hex_code_box(p_canvas, p_gl.font_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off), p_gl.index, p_font_color);
+	}
+}
+
+inline void draw_glyph_outline(const TextServer::Glyph &p_gl, const RID &p_canvas, const Color &p_font_color, const Color &p_font_shadow_color, const Color &p_font_outline_color, const int &p_shadow_outline_size, const int &p_outline_size, const Vector2 &p_ofs, const Vector2 &shadow_ofs) {
 	if (p_gl.font_rid != RID()) {
 		if (p_font_shadow_color.a > 0) {
 			TS->font_draw_glyph(p_gl.font_rid, p_canvas, p_gl.font_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off) + shadow_ofs, p_gl.index, p_font_shadow_color);
@@ -240,9 +248,6 @@ inline void draw_glyph(const TextServer::Glyph &p_gl, const RID &p_canvas, const
 		if (p_font_outline_color.a != 0.0 && p_outline_size > 0) {
 			TS->font_draw_glyph_outline(p_gl.font_rid, p_canvas, p_gl.font_size, p_outline_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off), p_gl.index, p_font_outline_color);
 		}
-		TS->font_draw_glyph(p_gl.font_rid, p_canvas, p_gl.font_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off), p_gl.index, p_font_color);
-	} else {
-		TS->draw_hex_code_box(p_canvas, p_gl.font_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off), p_gl.index, p_font_color);
 	}
 }
 
@@ -385,12 +390,70 @@ void Label::_notification(int p_what) {
 			int gl_size = visual.size();
 			TextServer::TrimData trim_data = TS->shaped_text_get_trim_data(lines_rid[i]);
 
+			// Draw outline. Note: Do not merge this into the single loop with the main text, to prevent overlaps.
+			if (font_shadow_color.a > 0 || (font_outline_color.a != 0.0 && outline_size > 0)) {
+				Vector2 offset = ofs;
+				// Draw RTL ellipsis string when necessary.
+				if (rtl && trim_data.ellipsis_pos >= 0) {
+					for (int gl_idx = trim_data.ellipsis_glyph_buf.size() - 1; gl_idx >= 0; gl_idx--) {
+						for (int j = 0; j < trim_data.ellipsis_glyph_buf[gl_idx].repeat; j++) {
+							//Draw glyph outlines and shadow.
+							draw_glyph_outline(trim_data.ellipsis_glyph_buf[gl_idx], ci, font_color, font_shadow_color, font_outline_color, shadow_outline_size, outline_size, offset, shadow_ofs);
+							offset.x += trim_data.ellipsis_glyph_buf[gl_idx].advance;
+						}
+					}
+				}
+
+				// Draw main text.
+				for (int j = 0; j < gl_size; j++) {
+					for (int k = 0; k < glyphs[j].repeat; k++) {
+						if (visible_glyphs != -1) {
+							if ((glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
+								if (glyhps_drawn >= visible_glyphs) {
+									return;
+								}
+							}
+						}
+
+						// Trim when necessary.
+						if (trim_data.trim_pos >= 0) {
+							if (rtl) {
+								if (j < trim_data.trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
+									continue;
+								}
+							} else {
+								if (j >= trim_data.trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
+									break;
+								}
+							}
+						}
+
+						// Draw glyph outlines and shadow.
+						draw_glyph_outline(glyphs[j], ci, font_color, font_shadow_color, font_outline_color, shadow_outline_size, outline_size, offset, shadow_ofs);
+						offset.x += glyphs[j].advance;
+						glyhps_drawn++;
+					}
+				}
+				// Draw LTR ellipsis string when necessary.
+				if (!rtl && trim_data.ellipsis_pos >= 0) {
+					for (int gl_idx = 0; gl_idx < trim_data.ellipsis_glyph_buf.size(); gl_idx++) {
+						for (int j = 0; j < trim_data.ellipsis_glyph_buf[gl_idx].repeat; j++) {
+							//Draw glyph outlines and shadow.
+							draw_glyph_outline(trim_data.ellipsis_glyph_buf[gl_idx], ci, font_color, font_shadow_color, font_outline_color, shadow_outline_size, outline_size, offset, shadow_ofs);
+							offset.x += trim_data.ellipsis_glyph_buf[gl_idx].advance;
+						}
+					}
+				}
+			}
+
+			// Draw main text. Note: Do not merge this into the single loop with the outline, to prevent overlaps.
+
 			// Draw RTL ellipsis string when necessary.
 			if (rtl && trim_data.ellipsis_pos >= 0) {
 				for (int gl_idx = trim_data.ellipsis_glyph_buf.size() - 1; gl_idx >= 0; gl_idx--) {
 					for (int j = 0; j < trim_data.ellipsis_glyph_buf[gl_idx].repeat; j++) {
 						//Draw glyph outlines and shadow.
-						draw_glyph(trim_data.ellipsis_glyph_buf[gl_idx], ci, font_color, font_shadow_color, font_outline_color, shadow_outline_size, outline_size, ofs, shadow_ofs);
+						draw_glyph(trim_data.ellipsis_glyph_buf[gl_idx], ci, font_color, ofs);
 						ofs.x += trim_data.ellipsis_glyph_buf[gl_idx].advance;
 					}
 				}
@@ -421,7 +484,7 @@ void Label::_notification(int p_what) {
 					}
 
 					// Draw glyph outlines and shadow.
-					draw_glyph(glyphs[j], ci, font_color, font_shadow_color, font_outline_color, shadow_outline_size, outline_size, ofs, shadow_ofs);
+					draw_glyph(glyphs[j], ci, font_color, ofs);
 					ofs.x += glyphs[j].advance;
 					glyhps_drawn++;
 				}
@@ -431,7 +494,7 @@ void Label::_notification(int p_what) {
 				for (int gl_idx = 0; gl_idx < trim_data.ellipsis_glyph_buf.size(); gl_idx++) {
 					for (int j = 0; j < trim_data.ellipsis_glyph_buf[gl_idx].repeat; j++) {
 						//Draw glyph outlines and shadow.
-						draw_glyph(trim_data.ellipsis_glyph_buf[gl_idx], ci, font_color, font_shadow_color, font_outline_color, shadow_outline_size, outline_size, ofs, shadow_ofs);
+						draw_glyph(trim_data.ellipsis_glyph_buf[gl_idx], ci, font_color, ofs);
 						ofs.x += trim_data.ellipsis_glyph_buf[gl_idx].advance;
 					}
 				}
