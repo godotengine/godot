@@ -92,12 +92,12 @@
 				Calls the [code]method[/code] on the object and returns the result. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
 				[codeblocks]
 				[gdscript]
-				var node = Node2D.new()
-				node.call("set", "position", Vector2(42, 0))
+				var node = Node3D.new()
+				node.call("rotate", Vector3(1.0, 0.0, 0.0), 1.571)
 				[/gdscript]
 				[csharp]
-				var node = new Node2D();
-				node.Call("set", "position", new Vector2(42, 0));
+				var node = new Node3D();
+				node.Call("rotate", new Vector3(1f, 0f, 0f), 1.571f);
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] In C#, the method name must be specified as snake_case if it is defined by a built-in Godot node. This doesn't apply to user-defined methods where you should use the same convention as in the C# source (typically PascalCase).
@@ -110,12 +110,12 @@
 				Calls the [code]method[/code] on the object during idle time. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
 				[codeblocks]
 				[gdscript]
-				var node = Node2D.new()
-				node.call_deferred("set", "position", Vector2(42, 0))
+				var node = Node3D.new()
+				node.call_deferred("rotate", Vector3(1.0, 0.0, 0.0), 1.571)
 				[/gdscript]
 				[csharp]
-				var node = new Node2D();
-				node.CallDeferred("set", "position", new Vector2(42, 0));
+				var node = new Node3D();
+				node.CallDeferred("rotate", new Vector3(1f, 0f, 0f), 1.571f);
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] In C#, the method name must be specified as snake_case if it is defined by a built-in Godot node. This doesn't apply to user-defined methods where you should use the same convention as in the C# source (typically PascalCase).
@@ -129,12 +129,12 @@
 				Calls the [code]method[/code] on the object and returns the result. Contrarily to [method call], this method does not support a variable number of arguments but expects all parameters to be via a single [Array].
 				[codeblocks]
 				[gdscript]
-				var node = Node2D.new()
-				node.callv("set", ["position", Vector2(42, 0)])
+				var node = Node3D.new()
+				node.callv("rotate", [Vector3(1.0, 0.0, 0.0), 1.571])
 				[/gdscript]
 				[csharp]
-				var node = new Node2D();
-				node.Callv("set", new Godot.Collections.Array { "position", new Vector2(42, 0) });
+				var node = new Node3D();
+				node.Callv("rotate", new Godot.Collections.Array { new Vector3(1f, 0f, 0f), 1.571f });
 				[/csharp]
 				[/codeblocks]
 			</description>
