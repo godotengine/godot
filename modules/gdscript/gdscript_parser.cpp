@@ -2369,8 +2369,12 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 	}
 
 #ifdef DEBUG_ENABLED
-	if (has_operator && source_variable != nullptr && source_variable->assignments == 0) {
-		push_warning(assignment, GDScriptWarning::UNASSIGNED_VARIABLE_OP_ASSIGN, source_variable->identifier->name);
+	if (source_variable != nullptr) {
+		if (has_operator && source_variable->assignments == 0) {
+			push_warning(assignment, GDScriptWarning::UNASSIGNED_VARIABLE_OP_ASSIGN, source_variable->identifier->name);
+		}
+
+		source_variable->assignments += 1;
 	}
 #endif
 
