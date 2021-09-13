@@ -80,12 +80,16 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 			double total = orientation == VERTICAL ? get_size().height : get_size().width;
 
 			if (ofs < decr_size) {
+				decr_active = true;
 				set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+				update();
 				return;
 			}
 
 			if (ofs > total - incr_size) {
+				incr_active = true;
 				set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+				update();
 				return;
 			}
 
@@ -130,6 +134,8 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 		} else {
+			incr_active = false;
+			decr_active = false;
 			drag.active = false;
 			update();
 		}
@@ -215,8 +221,24 @@ void ScrollBar::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {
 		RID ci = get_canvas_item();
 
-		Ref<Texture2D> decr = highlight == HIGHLIGHT_DECR ? get_theme_icon(SNAME("decrement_highlight")) : get_theme_icon(SNAME("decrement"));
-		Ref<Texture2D> incr = highlight == HIGHLIGHT_INCR ? get_theme_icon(SNAME("increment_highlight")) : get_theme_icon(SNAME("increment"));
+		Ref<Texture2D> decr, incr;
+
+		if (decr_active) {
+			decr = get_theme_icon(SNAME("decrement_pressed"));
+		} else if (highlight == HIGHLIGHT_DECR) {
+			decr = get_theme_icon(SNAME("decrement_highlight"));
+		} else {
+			decr = get_theme_icon(SNAME("decrement"));
+		}
+
+		if (incr_active) {
+			incr = get_theme_icon(SNAME("increment_pressed"));
+		} else if (highlight == HIGHLIGHT_INCR) {
+			incr = get_theme_icon(SNAME("increment_highlight"));
+		} else {
+			incr = get_theme_icon(SNAME("increment"));
+		}
+
 		Ref<StyleBox> bg = has_focus() ? get_theme_stylebox(SNAME("scroll_focus")) : get_theme_stylebox(SNAME("scroll"));
 
 		Ref<StyleBox> grabber;
