@@ -605,4 +605,5 @@ DisplayServer::DisplayServer() {
 }
 
 DisplayServer::~DisplayServer() {
+	singleton = nullptr;
 }

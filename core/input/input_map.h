@@ -95,6 +95,7 @@ public:
 	const OrderedHashMap<String, List<Ref<InputEvent>>> &get_builtins();
 
 	InputMap();
+	~InputMap();
 };
 
 #endif // INPUT_MAP_H

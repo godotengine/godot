@@ -746,3 +746,7 @@ InputMap::InputMap() {
 	ERR_FAIL_COND_MSG(singleton, "Singleton in InputMap already exist.");
 	singleton = this;
 }
+
+InputMap::~InputMap() {
+	singleton = nullptr;
+}

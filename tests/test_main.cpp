@@ -37,6 +37,7 @@
 #include "test_astar.h"
 #include "test_basis.h"
 #include "test_class_db.h"
+#include "test_code_edit.h"
 #include "test_color.h"
 #include "test_command_queue.h"
 #include "test_config_file.h"
@@ -146,3 +147,153 @@ int test_main(int argc, char *argv[]) {
 
 	return test_context.run();
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include "servers/navigation_server_2d.h"
+#include "servers/navigation_server_3d.h"
+#include "servers/rendering/rendering_server_default.h"
+
+struct GodotTestCaseListener : public doctest::IReporter {
+	GodotTestCaseListener(const doctest::ContextOptions &p_in) {}
+
+	SignalWatcher *signal_watcher = nullptr;
+
+	PhysicsServer3D *physics_3d_server = nullptr;
+	PhysicsServer2D *physics_2d_server = nullptr;
+	NavigationServer3D *navigation_3d_server = nullptr;
+	NavigationServer2D *navigation_2d_server = nullptr;
+
+	void test_case_start(const doctest::TestCaseData &p_in) override {
+		SignalWatcher::get_singleton()->_clear_signals();
+
+		String name = String(p_in.m_name);
+
+		if (name.find("[SceneTree]") != -1) {
+			GLOBAL_DEF("memory/limits/multithreaded_server/rid_pool_prealloc", 60);
+			memnew(MessageQueue);
+
+			GLOBAL_DEF("internationalization/rendering/force_right_to_left_layout_direction", false);
+			memnew(TextServerManager);
+			Error err = OK;
+			TextServerManager::initialize(0, err);
+
+			OS::get_singleton()->set_has_server_feature_callback(nullptr);
+			for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
+				if (String("headless") == DisplayServer::get_create_function_name(i)) {
+					DisplayServer::create(i, "", DisplayServer::WindowMode::WINDOW_MODE_MINIMIZED, DisplayServer::VSyncMode::VSYNC_ENABLED, 0, Vector2i(0, 0), err);
+					break;
+				}
+			}
+			memnew(RenderingServerDefault());
+			RenderingServerDefault::get_singleton()->init();
+			RenderingServerDefault::get_singleton()->set_render_loop_enabled(false);
+
+			physics_3d_server = PhysicsServer3DManager::new_default_server();
+			physics_3d_server->init();
+
+			physics_2d_server = PhysicsServer2DManager::new_default_server();
+			physics_2d_server->init();
+
+			navigation_3d_server = NavigationServer3DManager::new_default_server();
+			navigation_2d_server = memnew(NavigationServer2D);
+
+			memnew(InputMap);
+			InputMap::get_singleton()->load_default();
+
+			make_default_theme(false, Ref<Font>());
+
+			memnew(SceneTree);
+			SceneTree::get_singleton()->initialize();
+			return;
+		}
+	}
+
+	void test_case_end(const doctest::CurrentTestCaseStats &) override {
+		if (SceneTree::get_singleton()) {
+			SceneTree::get_singleton()->finalize();
+		}
+
+		if (MessageQueue::get_singleton()) {
+			MessageQueue::get_singleton()->flush();
+		}
+
+		if (SceneTree::get_singleton()) {
+			memdelete(SceneTree::get_singleton());
+		}
+
+		clear_default_theme();
+
+		if (TextServerManager::get_singleton()) {
+			memdelete(TextServerManager::get_singleton());
+		}
+
+		if (navigation_3d_server) {
+			memdelete(navigation_3d_server);
+			navigation_3d_server = nullptr;
+		}
+
+		if (navigation_2d_server) {
+			memdelete(navigation_2d_server);
+			navigation_2d_server = nullptr;
+		}
+
+		if (physics_3d_server) {
+			physics_3d_server->finish();
+			memdelete(physics_3d_server);
+			physics_3d_server = nullptr;
+		}
+
+		if (physics_2d_server) {
+			physics_2d_server->finish();
+			memdelete(physics_2d_server);
+			physics_2d_server = nullptr;
+		}
+
+		if (RenderingServer::get_singleton()) {
+			RenderingServer::get_singleton()->sync();
+			RenderingServer::get_singleton()->global_variables_clear();
+			RenderingServer::get_singleton()->finish();
+			memdelete(RenderingServer::get_singleton());
+		}
+
+		if (DisplayServer::get_singleton()) {
+			memdelete(DisplayServer::get_singleton());
+		}
+
+		if (InputMap::get_singleton()) {
+			memdelete(InputMap::get_singleton());
+		}
+
+		if (MessageQueue::get_singleton()) {
+			MessageQueue::get_singleton()->flush();
+			memdelete(MessageQueue::get_singleton());
+		}
+	}
+
+	void test_run_start() override {
+		signal_watcher = memnew(SignalWatcher);
+	}
+
+	void test_run_end(const doctest::TestRunStats &) override {
+		memdelete(signal_watcher);
+	}
+
+	void test_case_reenter(const doctest::TestCaseData &) override {
+		SignalWatcher::get_singleton()->_clear_signals();
+	}
+
+	void subcase_start(const doctest::SubcaseSignature &) override {
+		SignalWatcher::get_singleton()->_clear_signals();
+	}
+
+	void report_query(const doctest::QueryData &) override {}
+	void test_case_exception(const doctest::TestCaseException &) override {}
+	void subcase_end() override {}
+
+	void log_assert(const doctest::AssertData &in) override {}
+	void log_message(const doctest::MessageData &) override {}
+	void test_case_skipped(const doctest::TestCaseData &) override {}
+};
+
+REGISTER_LISTENER("GodotTestCaseListener", 1, GodotTestCaseListener);

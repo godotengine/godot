@@ -545,7 +545,6 @@ private:
 
 protected:
 	void _notification(int p_what);
-	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;
 
 	static void _bind_methods();
 
@@ -594,6 +593,7 @@ protected:
 
 public:
 	/* General overrides. */
+	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;
 	virtual Size2 get_minimum_size() const override;
 	virtual bool is_text_field() const override;
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;

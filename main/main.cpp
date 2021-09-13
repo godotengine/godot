@@ -403,6 +403,7 @@ Error Main::test_setup() {
 
 	GLOBAL_DEF("debug/settings/crash_handler/message",
 			String("Please include this when reporting the bug on https://github.com/godotengine/godot/issues"));
+	GLOBAL_DEF_RST("rendering/occlusion_culling/bvh_build_quality", 2);
 
 	translation_server = memnew(TranslationServer);
 
