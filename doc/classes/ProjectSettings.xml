@@ -258,6 +258,9 @@
 		<member name="audio/mix_rate" type="int" setter="" getter="" default="44100">
 			Mixing rate used for audio. In general, it's better to not touch this and leave it to the host operating system.
 		</member>
+		<member name="audio/mix_rate.web" type="int" setter="" getter="" default="0">
+			Safer override for [member audio/mix_rate] in the Web platform. Here [code]0[/code] means "let the browser choose" (since some browsers do not like forcing the mix rate).
+		</member>
 		<member name="audio/output_latency" type="int" setter="" getter="" default="15">
 			Output latency in milliseconds for audio. Lower values will result in lower audio latency at the cost of increased CPU usage. Low values may result in audible cracking on slower hardware.
 		</member>
