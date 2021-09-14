@@ -1242,7 +1242,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				tx->set_caret_line(bpoints[bpoints.size() - 1]);
 				tx->center_viewport_to_caret();
 			} else {
-				for (int i = bpoints.size(); i >= 0; i--) {
+				for (int i = bpoints.size() - 1; i >= 0; i--) {
 					int bline = bpoints[i];
 					if (bline < line) {
 						tx->unfold_line(bline);

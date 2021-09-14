@@ -1755,7 +1755,7 @@ void CodeTextEditor::goto_prev_bookmark() {
 		text_editor->set_caret_line(bmarks[bmarks.size() - 1]);
 		text_editor->center_viewport_to_caret();
 	} else {
-		for (int i = bmarks.size(); i >= 0; i--) {
+		for (int i = bmarks.size() - 1; i >= 0; i--) {
 			int bmark_line = bmarks[i];
 			if (bmark_line < line) {
 				text_editor->unfold_line(bmark_line);
