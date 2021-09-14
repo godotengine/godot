@@ -982,10 +982,10 @@ void TileSet::clear_tile_proxies() {
 Vector<Vector2> TileSet::get_tile_shape_polygon() {
 	Vector<Vector2> points;
 	if (tile_shape == TileSet::TILE_SHAPE_SQUARE) {
-		points.append(Vector2(0.0, 0.0));
-		points.append(Vector2(1.0, 0.0));
-		points.append(Vector2(1.0, 1.0));
-		points.append(Vector2(0.0, 1.0));
+		points.append(Vector2(-0.5, -0.5));
+		points.append(Vector2(0.5, -0.5));
+		points.append(Vector2(0.5, 0.5));
+		points.append(Vector2(-0.5, 0.5));
 	} else {
 		float overlap = 0.0;
 		switch (tile_shape) {
@@ -1002,31 +1002,24 @@ Vector<Vector2> TileSet::get_tile_shape_polygon() {
 				break;
 		}
 
-		points.append(Vector2(0.5, 0.0));
-		points.append(Vector2(0.0, overlap));
-		points.append(Vector2(0.0, 1.0 - overlap));
-		points.append(Vector2(0.5, 1.0));
-		points.append(Vector2(1.0, 1.0 - overlap));
-		points.append(Vector2(1.0, overlap));
-		points.append(Vector2(0.5, 0.0));
+		points.append(Vector2(0.0, -0.5));
+		points.append(Vector2(-0.5, overlap - 0.5));
+		points.append(Vector2(-0.5, 0.5 - overlap));
+		points.append(Vector2(0.0, 0.5));
+		points.append(Vector2(0.5, 0.5 - overlap));
+		points.append(Vector2(0.5, overlap - 0.5));
 		if (get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
 			for (int i = 0; i < points.size(); i++) {
 				points.write[i] = Vector2(points[i].y, points[i].x);
 			}
 		}
 	}
-	for (int i = 0; i < points.size(); i++) {
-		points.write[i] = points[i] * tile_size - tile_size / 2;
-	}
 	return points;
 }
 
-void TileSet::draw_tile_shape(CanvasItem *p_canvas_item, Rect2 p_region, Color p_color, bool p_filled, Ref<Texture2D> p_texture) {
+void TileSet::draw_tile_shape(CanvasItem *p_canvas_item, Transform2D p_transform, Color p_color, bool p_filled, Ref<Texture2D> p_texture) {
 	if (tile_meshes_dirty) {
 		Vector<Vector2> uvs = get_tile_shape_polygon();
-		for (int i = 0; i < uvs.size(); i++) {
-			uvs.write[i] = (uvs[i] + tile_size / 2) / tile_size;
-		}
 
 		Vector<Color> colors;
 		colors.resize(uvs.size());
@@ -1056,13 +1049,10 @@ void TileSet::draw_tile_shape(CanvasItem *p_canvas_item, Rect2 p_region, Color p
 		tile_meshes_dirty = false;
 	}
 
-	Transform2D xform;
-	xform.scale(p_region.size);
-	xform.set_origin(p_region.get_position());
 	if (p_filled) {
-		p_canvas_item->draw_mesh(tile_filled_mesh, p_texture, xform, p_color);
+		p_canvas_item->draw_mesh(tile_filled_mesh, p_texture, p_transform, p_color);
 	} else {
-		p_canvas_item->draw_mesh(tile_lines_mesh, Ref<Texture2D>(), xform, p_color);
+		p_canvas_item->draw_mesh(tile_lines_mesh, Ref<Texture2D>(), p_transform, p_color);
 	}
 }
 

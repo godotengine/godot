@@ -636,8 +636,10 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 				for (int y = rect.position.y; y < rect.get_end().y; y++) {
 					Vector2i coords = Vector2i(x, y);
 					if (tile_map->get_cell_source_id(tile_map_layer, coords) != TileSet::INVALID_SOURCE) {
-						Rect2 cell_region = xform.xform(Rect2(tile_map->map_to_world(coords) - tile_shape_size / 2, tile_shape_size));
-						tile_set->draw_tile_shape(p_overlay, cell_region, Color(1.0, 1.0, 1.0), false);
+						Transform2D tile_xform;
+						tile_xform.set_origin(tile_map->map_to_world(coords));
+						tile_xform.set_scale(tile_shape_size);
+						tile_set->draw_tile_shape(p_overlay, xform * tile_xform, Color(1.0, 1.0, 1.0), false);
 					}
 				}
 			}
@@ -734,10 +736,12 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 							float bottom_opacity = CLAMP(Math::inverse_lerp((float)drawn_grid_rect.size.y, (float)(drawn_grid_rect.size.y - fading), (float)pos_in_rect.y), 0.0f, 1.0f);
 							float opacity = CLAMP(MIN(left_opacity, MIN(right_opacity, MIN(top_opacity, bottom_opacity))) + 0.1, 0.0f, 1.0f);
 
-							Rect2 cell_region = xform.xform(Rect2(tile_map->map_to_world(Vector2(x, y)) - tile_shape_size / 2, tile_shape_size));
+							Transform2D tile_xform;
+							tile_xform.set_origin(tile_map->map_to_world(Vector2(x, y)));
+							tile_xform.set_scale(tile_shape_size);
 							Color color = grid_color;
 							color.a = color.a * opacity;
-							tile_set->draw_tile_shape(p_overlay, cell_region, color, false);
+							tile_set->draw_tile_shape(p_overlay, xform * tile_xform, color, false);
 						}
 					}
 				}
@@ -745,11 +749,11 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 
 			// Draw the preview.
 			for (Map<Vector2i, TileMapCell>::Element *E = preview.front(); E; E = E->next()) {
-				Vector2i size = tile_set->get_tile_size();
-				Vector2 position = tile_map->map_to_world(E->key()) - size / 2;
-				Rect2 cell_region = xform.xform(Rect2(position, size));
+				Transform2D tile_xform;
+				tile_xform.set_origin(tile_map->map_to_world(E->key()));
+				tile_xform.set_scale(tile_set->get_tile_size());
 				if (!erase_button->is_pressed() && random_tile_checkbox->is_pressed()) {
-					tile_set->draw_tile_shape(p_overlay, cell_region, Color(1.0, 1.0, 1.0, 0.5), true);
+					tile_set->draw_tile_shape(p_overlay, xform * tile_xform, Color(1.0, 1.0, 1.0, 0.5), true);
 				} else {
 					if (tile_set->has_source(E->get().source_id)) {
 						TileSetSource *source = *tile_set->get_source(E->get().source_id);
@@ -791,10 +795,10 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 							// Draw the tile.
 							p_overlay->draw_texture_rect_region(atlas_source->get_texture(), dest_rect, source_rect, modulate * Color(1.0, 1.0, 1.0, 0.5), transpose, tile_set->is_uv_clipping());
 						} else {
-							tile_set->draw_tile_shape(p_overlay, cell_region, Color(1.0, 1.0, 1.0, 0.5), true);
+							tile_set->draw_tile_shape(p_overlay, xform * tile_xform, Color(1.0, 1.0, 1.0, 0.5), true);
 						}
 					} else {
-						tile_set->draw_tile_shape(p_overlay, cell_region, Color(0.0, 0.0, 0.0, 0.5), true);
+						tile_set->draw_tile_shape(p_overlay, xform * tile_xform, Color(0.0, 0.0, 0.0, 0.5), true);
 					}
 				}
 			}
@@ -3689,8 +3693,10 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 								0.8);
 
 						// Draw the scaled tile.
-						Rect2 cell_region = xform.xform(Rect2(tile_map->map_to_world(coords) - Vector2(tile_shape_size) / 2, Vector2(tile_shape_size)));
-						tile_set->draw_tile_shape(p_overlay, cell_region, color, true, warning_pattern_texture);
+						Transform2D tile_xform;
+						tile_xform.set_origin(tile_map->map_to_world(coords));
+						tile_xform.set_scale(tile_shape_size);
+						tile_set->draw_tile_shape(p_overlay, xform * tile_xform, color, true, warning_pattern_texture);
 					}
 
 					// Draw the warning icon.
@@ -3746,10 +3752,12 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 				float bottom_opacity = CLAMP(Math::inverse_lerp((float)displayed_rect.size.y, (float)(displayed_rect.size.y - fading), (float)pos_in_rect.y), 0.0f, 1.0f);
 				float opacity = CLAMP(MIN(left_opacity, MIN(right_opacity, MIN(top_opacity, bottom_opacity))) + 0.1, 0.0f, 1.0f);
 
-				Rect2 cell_region = xform.xform(Rect2(tile_map->map_to_world(Vector2(x, y)) - tile_shape_size / 2, tile_shape_size));
+				Transform2D tile_xform;
+				tile_xform.set_origin(tile_map->map_to_world(Vector2(x, y)));
+				tile_xform.set_scale(tile_shape_size);
 				Color color = grid_color;
 				color.a = color.a * opacity;
-				tile_set->draw_tile_shape(p_overlay, cell_region, color, false);
+				tile_set->draw_tile_shape(p_overlay, xform * tile_xform, color, false);
 			}
 		}
 	}

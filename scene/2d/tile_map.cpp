@@ -2857,50 +2857,57 @@ void TileMap::draw_cells_outline(Control *p_control, Set<Vector2i> p_cells, Colo
 
 	// Create a set.
 	Vector2i tile_size = tile_set->get_tile_size();
-	Vector<Vector2> uvs;
-
-	if (tile_set->get_tile_shape() == TileSet::TILE_SHAPE_SQUARE) {
-		uvs.append(Vector2(1.0, 0.0));
-		uvs.append(Vector2(1.0, 1.0));
-		uvs.append(Vector2(0.0, 1.0));
-		uvs.append(Vector2(0.0, 0.0));
-	} else {
-		float overlap = 0.0;
-		switch (tile_set->get_tile_shape()) {
-			case TileSet::TILE_SHAPE_ISOMETRIC:
-				overlap = 0.5;
-				break;
-			case TileSet::TILE_SHAPE_HEXAGON:
-				overlap = 0.25;
-				break;
-			case TileSet::TILE_SHAPE_HALF_OFFSET_SQUARE:
-				overlap = 0.0;
-				break;
-			default:
-				break;
-		}
-		uvs.append(Vector2(1.0, overlap));
-		uvs.append(Vector2(1.0, 1.0 - overlap));
-		uvs.append(Vector2(0.5, 1.0));
-		uvs.append(Vector2(0.0, 1.0 - overlap));
-		uvs.append(Vector2(0.0, overlap));
-		uvs.append(Vector2(0.5, 0.0));
-		if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
-			for (int i = 0; i < uvs.size(); i++) {
-				uvs.write[i] = Vector2(uvs[i].y, uvs[i].x);
-			}
-		}
-	}
+	Vector<Vector2> polygon = tile_set->get_tile_shape_polygon();
+	TileSet::TileShape shape = tile_set->get_tile_shape();
 
 	for (Set<Vector2i>::Element *E = p_cells.front(); E; E = E->next()) {
-		Vector2 top_left = map_to_world(E->get()) - tile_size / 2;
-		TypedArray<Vector2i> surrounding_tiles = get_surrounding_tiles(E->get());
-		for (int i = 0; i < surrounding_tiles.size(); i++) {
-			if (!p_cells.has(surrounding_tiles[i])) {
-				p_control->draw_line(p_transform.xform(top_left + uvs[i] * tile_size), p_transform.xform(top_left + uvs[(i + 1) % uvs.size()] * tile_size), p_color);
+		Vector2 center = map_to_world(E->get());
+
+#define DRAW_SIDE_IF_NEEDED(side, polygon_index_from, polygon_index_to)                     \
+	if (!p_cells.has(get_neighbor_cell(E->get(), side))) {                                  \
+		Vector2 from = p_transform.xform(center + polygon[polygon_index_from] * tile_size); \
+		Vector2 to = p_transform.xform(center + polygon[polygon_index_to] * tile_size);     \
+		p_control->draw_line(from, to, p_color);                                            \
+	}
+
+		if (shape == TileSet::TILE_SHAPE_SQUARE) {
+			DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_RIGHT_SIDE, 1, 2);
+			DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_BOTTOM_SIDE, 2, 3);
+			DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_LEFT_SIDE, 3, 0);
+			DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_TOP_SIDE, 0, 1);
+		} else {
+			if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+				if (shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+					DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, 3, 4);
+					DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, 2, 3);
+					DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, 0, 1);
+					DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, 5, 0);
+				} else {
+					DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, 3, 4);
+					DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, 2, 3);
+					DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_LEFT_SIDE, 1, 2);
+					DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, 0, 1);
+					DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, 5, 0);
+					DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_RIGHT_SIDE, 4, 5);
+				}
+			} else {
+				if (shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+					DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, 3, 4);
+					DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, 5, 0);
+					DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, 0, 1);
+					DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, 2, 3);
+				} else {
+					DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, 3, 4);
+					DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_BOTTOM_SIDE, 4, 5);
+					DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, 5, 0);
+					DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, 0, 1);
+					DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_TOP_SIDE, 1, 2);
+					DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, 2, 3);
+				}
 			}
 		}
 	}
+#undef DRAW_SIDE_IF_NEEDED
 }
 
 TypedArray<String> TileMap::get_configuration_warnings() const {
