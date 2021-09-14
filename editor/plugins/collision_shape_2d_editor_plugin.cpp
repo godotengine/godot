@@ -39,7 +39,7 @@
 #include "scene/resources/rectangle_shape_2d.h"
 #include "scene/resources/segment_shape_2d.h"
 #include "scene/resources/separation_ray_shape_2d.h"
-#include "scene/resources/world_margin_shape_2d.h"
+#include "scene/resources/world_boundary_shape_2d.h"
 
 void CollisionShape2DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
@@ -70,13 +70,13 @@ Variant CollisionShape2DEditor::get_handle_value(int idx) const {
 		case CONVEX_POLYGON_SHAPE: {
 		} break;
 
-		case WORLD_MARGIN_SHAPE: {
-			Ref<WorldMarginShape2D> line = node->get_shape();
+		case WORLD_BOUNDARY_SHAPE: {
+			Ref<WorldBoundaryShape2D> world_boundary = node->get_shape();
 
 			if (idx == 0) {
-				return line->get_distance();
+				return world_boundary->get_distance();
 			} else {
-				return line->get_normal();
+				return world_boundary->get_normal();
 			}
 
 		} break;
@@ -147,14 +147,14 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 		case CONVEX_POLYGON_SHAPE: {
 		} break;
 
-		case WORLD_MARGIN_SHAPE: {
+		case WORLD_BOUNDARY_SHAPE: {
 			if (idx < 2) {
-				Ref<WorldMarginShape2D> line = node->get_shape();
+				Ref<WorldBoundaryShape2D> world_boundary = node->get_shape();
 
 				if (idx == 0) {
-					line->set_distance(p_point.length());
+					world_boundary->set_distance(p_point.length());
 				} else {
-					line->set_normal(p_point.normalized());
+					world_boundary->set_normal(p_point.normalized());
 				}
 
 				canvas_item_editor->update_viewport();
@@ -255,18 +255,18 @@ void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
 			// Cannot be edited directly, use CollisionPolygon2D instead.
 		} break;
 
-		case WORLD_MARGIN_SHAPE: {
-			Ref<WorldMarginShape2D> line = node->get_shape();
+		case WORLD_BOUNDARY_SHAPE: {
+			Ref<WorldBoundaryShape2D> world_boundary = node->get_shape();
 
 			if (idx == 0) {
-				undo_redo->add_do_method(line.ptr(), "set_distance", line->get_distance());
+				undo_redo->add_do_method(world_boundary.ptr(), "set_distance", world_boundary->get_distance());
 				undo_redo->add_do_method(canvas_item_editor, "update_viewport");
-				undo_redo->add_undo_method(line.ptr(), "set_distance", p_org);
+				undo_redo->add_undo_method(world_boundary.ptr(), "set_distance", p_org);
 				undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 			} else {
-				undo_redo->add_do_method(line.ptr(), "set_normal", line->get_normal());
+				undo_redo->add_do_method(world_boundary.ptr(), "set_normal", world_boundary->get_normal());
 				undo_redo->add_do_method(canvas_item_editor, "update_viewport");
-				undo_redo->add_undo_method(line.ptr(), "set_normal", p_org);
+				undo_redo->add_undo_method(world_boundary.ptr(), "set_normal", p_org);
 				undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 			}
 
@@ -421,8 +421,8 @@ void CollisionShape2DEditor::_get_current_shape_type() {
 		shape_type = CONCAVE_POLYGON_SHAPE;
 	} else if (Object::cast_to<ConvexPolygonShape2D>(*s)) {
 		shape_type = CONVEX_POLYGON_SHAPE;
-	} else if (Object::cast_to<WorldMarginShape2D>(*s)) {
-		shape_type = WORLD_MARGIN_SHAPE;
+	} else if (Object::cast_to<WorldBoundaryShape2D>(*s)) {
+		shape_type = WORLD_BOUNDARY_SHAPE;
 	} else if (Object::cast_to<SeparationRayShape2D>(*s)) {
 		shape_type = SEPARATION_RAY_SHAPE;
 	} else if (Object::cast_to<RectangleShape2D>(*s)) {
@@ -490,8 +490,8 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 		case CONVEX_POLYGON_SHAPE: {
 		} break;
 
-		case WORLD_MARGIN_SHAPE: {
-			Ref<WorldMarginShape2D> shape = node->get_shape();
+		case WORLD_BOUNDARY_SHAPE: {
+			Ref<WorldBoundaryShape2D> shape = node->get_shape();
 
 			handles.resize(2);
 			handles.write[0] = shape->get_normal() * shape->get_distance();

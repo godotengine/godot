@@ -100,18 +100,17 @@ protected:
 		return body;
 	}
 
-	RID create_static_plane(const Plane &p_plane) {
+	RID create_world_boundary(const Plane &p_plane) {
 		PhysicsServer3D *ps = PhysicsServer3D::get_singleton();
 
-		RID world_margin_shape = ps->shape_create(PhysicsServer3D::SHAPE_PLANE);
-		ps->shape_set_data(world_margin_shape, p_plane);
+		RID world_boundary_shape = ps->shape_create(PhysicsServer3D::SHAPE_WORLD_BOUNDARY);
+		ps->shape_set_data(world_boundary_shape, p_plane);
 
 		RID b = ps->body_create();
 		ps->body_set_mode(b, PhysicsServer3D::BODY_MODE_STATIC);
 
 		ps->body_set_space(b, space);
-		//todo set space
-		ps->body_add_shape(b, world_margin_shape);
+		ps->body_add_shape(b, world_boundary_shape);
 		return b;
 	}
 
@@ -391,12 +390,12 @@ public:
 			create_body(type, PhysicsServer3D::BODY_MODE_DYNAMIC, t);
 		}
 
-		create_static_plane(Plane(Vector3(0, 1, 0), -1));
+		create_world_boundary(Plane(Vector3(0, 1, 0), -1));
 	}
 
 	void test_activate() {
 		create_body(PhysicsServer3D::SHAPE_BOX, PhysicsServer3D::BODY_MODE_DYNAMIC, Transform3D(Basis(), Vector3(0, 2, 0)), true);
-		create_static_plane(Plane(Vector3(0, 1, 0), -1));
+		create_world_boundary(Plane(Vector3(0, 1, 0), -1));
 	}
 
 	virtual bool process(double p_time) override {

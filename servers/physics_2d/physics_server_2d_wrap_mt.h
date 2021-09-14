@@ -79,7 +79,7 @@ public:
 #include "servers/server_wrap_mt_common.h"
 
 	//FUNC1RID(shape,ShapeType); todo fix
-	FUNCRID(world_margin_shape)
+	FUNCRID(world_boundary_shape)
 	FUNCRID(separation_ray_shape)
 	FUNCRID(segment_shape)
 	FUNCRID(circle_shape)

@@ -79,7 +79,7 @@ public:
 
 	static void _shape_col_cbk(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata);
 
-	virtual RID plane_shape_create() override;
+	virtual RID world_boundary_shape_create() override;
 	virtual RID separation_ray_shape_create() override;
 	virtual RID sphere_shape_create() override;
 	virtual RID box_shape_create() override;

@@ -508,7 +508,7 @@ bool PhysicsServer2D::_body_test_motion(RID p_body, const Transform2D &p_from, c
 }
 
 void PhysicsServer2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("world_margin_shape_create"), &PhysicsServer2D::world_margin_shape_create);
+	ClassDB::bind_method(D_METHOD("world_boundary_shape_create"), &PhysicsServer2D::world_boundary_shape_create);
 	ClassDB::bind_method(D_METHOD("separation_ray_shape_create"), &PhysicsServer2D::separation_ray_shape_create);
 	ClassDB::bind_method(D_METHOD("segment_shape_create"), &PhysicsServer2D::segment_shape_create);
 	ClassDB::bind_method(D_METHOD("circle_shape_create"), &PhysicsServer2D::circle_shape_create);
@@ -672,7 +672,7 @@ void PhysicsServer2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS);
 	BIND_ENUM_CONSTANT(SPACE_PARAM_TEST_MOTION_MIN_CONTACT_DEPTH);
 
-	BIND_ENUM_CONSTANT(SHAPE_WORLD_MARGIN);
+	BIND_ENUM_CONSTANT(SHAPE_WORLD_BOUNDARY);
 	BIND_ENUM_CONSTANT(SHAPE_SEPARATION_RAY);
 	BIND_ENUM_CONSTANT(SHAPE_SEGMENT);
 	BIND_ENUM_CONSTANT(SHAPE_CIRCLE);

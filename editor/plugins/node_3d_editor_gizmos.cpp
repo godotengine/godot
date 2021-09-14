@@ -69,7 +69,7 @@
 #include "scene/resources/separation_ray_shape_3d.h"
 #include "scene/resources/sphere_shape_3d.h"
 #include "scene/resources/surface_tool.h"
-#include "scene/resources/world_margin_shape_3d.h"
+#include "scene/resources/world_boundary_shape_3d.h"
 
 #define HANDLE_HALF_SIZE 9.5
 
@@ -4537,9 +4537,9 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		p_gizmo->add_handles(handles, handles_material);
 	}
 
-	if (Object::cast_to<WorldMarginShape3D>(*s)) {
-		Ref<WorldMarginShape3D> ps = s;
-		Plane p = ps->get_plane();
+	if (Object::cast_to<WorldBoundaryShape3D>(*s)) {
+		Ref<WorldBoundaryShape3D> wbs = s;
+		const Plane &p = wbs->get_plane();
 		Vector<Vector3> points;
 
 		Vector3 n1 = p.get_any_perpendicular_normal();

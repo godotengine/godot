@@ -112,7 +112,7 @@ public:
 	ConcaveShape3DSW() {}
 };
 
-class PlaneShape3DSW : public Shape3DSW {
+class WorldBoundaryShape3DSW : public Shape3DSW {
 	Plane plane;
 
 	void _setup(const Plane &p_plane);
@@ -121,7 +121,7 @@ public:
 	Plane get_plane() const;
 
 	virtual real_t get_area() const override { return INFINITY; }
-	virtual PhysicsServer3D::ShapeType get_type() const override { return PhysicsServer3D::SHAPE_PLANE; }
+	virtual PhysicsServer3D::ShapeType get_type() const override { return PhysicsServer3D::SHAPE_WORLD_BOUNDARY; }
 	virtual void project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const override;
 	virtual Vector3 get_support(const Vector3 &p_normal) const override;
 	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const override { r_amount = 0; }
@@ -134,7 +134,7 @@ public:
 	virtual void set_data(const Variant &p_data) override;
 	virtual Variant get_data() const override;
 
-	PlaneShape3DSW();
+	WorldBoundaryShape3DSW();
 };
 
 class SeparationRayShape3DSW : public Shape3DSW {

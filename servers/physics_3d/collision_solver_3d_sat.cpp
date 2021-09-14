@@ -2272,13 +2272,13 @@ static void _collision_convex_polygon_face(const Shape3DSW *p_a, const Transform
 bool sat_calculate_penetration(const Shape3DSW *p_shape_A, const Transform3D &p_transform_A, const Shape3DSW *p_shape_B, const Transform3D &p_transform_B, CollisionSolver3DSW::CallbackResult p_result_callback, void *p_userdata, bool p_swap, Vector3 *r_prev_axis, real_t p_margin_a, real_t p_margin_b) {
 	PhysicsServer3D::ShapeType type_A = p_shape_A->get_type();
 
-	ERR_FAIL_COND_V(type_A == PhysicsServer3D::SHAPE_PLANE, false);
+	ERR_FAIL_COND_V(type_A == PhysicsServer3D::SHAPE_WORLD_BOUNDARY, false);
 	ERR_FAIL_COND_V(type_A == PhysicsServer3D::SHAPE_SEPARATION_RAY, false);
 	ERR_FAIL_COND_V(p_shape_A->is_concave(), false);
 
 	PhysicsServer3D::ShapeType type_B = p_shape_B->get_type();
 
-	ERR_FAIL_COND_V(type_B == PhysicsServer3D::SHAPE_PLANE, false);
+	ERR_FAIL_COND_V(type_B == PhysicsServer3D::SHAPE_WORLD_BOUNDARY, false);
 	ERR_FAIL_COND_V(type_B == PhysicsServer3D::SHAPE_SEPARATION_RAY, false);
 	ERR_FAIL_COND_V(p_shape_B->is_concave(), false);
 
