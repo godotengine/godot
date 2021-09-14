@@ -306,6 +306,12 @@ MonoObject *godot_icall_Globals_EditorDef(MonoString *p_setting, MonoObject *p_d
 	return GDMonoMarshal::variant_to_mono_object(result);
 }
 
+MonoObject *godot_icall_Globals_EditorShortcut(MonoString *p_setting) {
+	String setting = GDMonoMarshal::mono_string_to_godot(p_setting);
+	Ref<Shortcut> result = ED_GET_SHORTCUT(setting);
+	return GDMonoMarshal::variant_to_mono_object(result);
+}
+
 MonoString *godot_icall_Globals_TTR(MonoString *p_text) {
 	String text = GDMonoMarshal::mono_string_to_godot(p_text);
 	return GDMonoMarshal::mono_string_from_godot(TTR(text));
@@ -380,6 +386,7 @@ void register_editor_internal_calls() {
 	GDMonoUtils::add_internal_call("GodotTools.Internals.Globals::internal_EditorScale", godot_icall_Globals_EditorScale);
 	GDMonoUtils::add_internal_call("GodotTools.Internals.Globals::internal_GlobalDef", godot_icall_Globals_GlobalDef);
 	GDMonoUtils::add_internal_call("GodotTools.Internals.Globals::internal_EditorDef", godot_icall_Globals_EditorDef);
+	GDMonoUtils::add_internal_call("GodotTools.Internals.Globals::internal_EditorShortcut", godot_icall_Globals_EditorShortcut);
 	GDMonoUtils::add_internal_call("GodotTools.Internals.Globals::internal_TTR", godot_icall_Globals_TTR);
 
 	// Utils.OS

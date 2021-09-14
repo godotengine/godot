@@ -418,11 +418,15 @@ namespace GodotTools
 
             AddToolSubmenuItem("C#", _menuPopup);
 
+            var buildSolutionShortcut = (Shortcut)EditorShortcut("mono/build_solution");
+
             _toolBarBuildButton = new Button
             {
                 Text = "Build",
-                HintTooltip = "Build solution",
-                FocusMode = Control.FocusModeEnum.None
+                HintTooltip = "Build Solution".TTR(),
+                FocusMode = Control.FocusModeEnum.None,
+                Shortcut = buildSolutionShortcut,
+                ShortcutInTooltip = true
             };
             _toolBarBuildButton.PressedSignal += BuildSolutionPressed;
             AddControlToContainer(CustomControlContainer.Toolbar, _toolBarBuildButton);

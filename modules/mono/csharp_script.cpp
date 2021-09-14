@@ -43,8 +43,10 @@
 #include "core/os/thread.h"
 
 #ifdef TOOLS_ENABLED
+#include "core/os/keyboard.h"
 #include "editor/bindings_generator.h"
 #include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 #include "editor/node_dock.h"
 #endif
 
@@ -1353,6 +1355,7 @@ void CSharpLanguage::_editor_init_callback() {
 
 	// Enable it as a plugin
 	EditorNode::add_editor_plugin(godotsharp_editor);
+	ED_SHORTCUT("mono/build_solution", TTR("Build Solution"), KEY_MASK_ALT | KEY_B);
 	godotsharp_editor->enable_plugin();
 
 	get_singleton()->godotsharp_editor = godotsharp_editor;
