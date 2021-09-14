@@ -549,7 +549,7 @@ Transform SkeletonIK::_get_target_transform() {
 		target_node_override = Object::cast_to<Spatial>(get_node(target_node_path_override));
 	}
 
-	if (target_node_override) {
+	if (target_node_override && target_node_override->is_inside_tree()) {
 		return target_node_override->get_global_transform();
 	} else {
 		return target;
