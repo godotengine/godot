@@ -59,17 +59,17 @@ class BodyPair2DSW : public Constraint2DSW {
 		Vector2 position;
 		Vector2 normal;
 		Vector2 local_A, local_B;
-		real_t acc_normal_impulse; // accumulated normal impulse (Pn)
-		real_t acc_tangent_impulse; // accumulated tangent impulse (Pt)
-		real_t acc_bias_impulse; // accumulated normal impulse for position bias (Pnb)
-		real_t mass_normal, mass_tangent;
-		real_t bias;
+		real_t acc_normal_impulse = 0.0; // accumulated normal impulse (Pn)
+		real_t acc_tangent_impulse = 0.0; // accumulated tangent impulse (Pt)
+		real_t acc_bias_impulse = 0.0; // accumulated normal impulse for position bias (Pnb)
+		real_t mass_normal, mass_tangent = 0.0;
+		real_t bias = 0.0;
 
-		real_t depth;
-		bool active;
+		real_t depth = 0.0;
+		bool active = false;
 		Vector2 rA, rB;
-		bool reused;
-		real_t bounce;
+		bool reused = false;
+		real_t bounce = 0.0;
 	};
 
 	Vector2 offset_B; //use local A coordinates to avoid numerical issues on collision detection

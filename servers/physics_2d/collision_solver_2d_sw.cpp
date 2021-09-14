@@ -133,20 +133,20 @@ bool CollisionSolver2DSW::solve_separation_ray(const Shape2DSW *p_shape_A, const
 }
 
 struct _ConcaveCollisionInfo2D {
-	const Transform2D *transform_A;
-	const Shape2DSW *shape_A;
-	const Transform2D *transform_B;
+	const Transform2D *transform_A = nullptr;
+	const Shape2DSW *shape_A = nullptr;
+	const Transform2D *transform_B = nullptr;
 	Vector2 motion_A;
 	Vector2 motion_B;
-	real_t margin_A;
-	real_t margin_B;
+	real_t margin_A = 0.0;
+	real_t margin_B = 0.0;
 	CollisionSolver2DSW::CallbackResult result_callback;
-	void *userdata;
-	bool swap_result;
-	bool collided;
-	int aabb_tests;
-	int collisions;
-	Vector2 *sep_axis;
+	void *userdata = nullptr;
+	bool swap_result = false;
+	bool collided = false;
+	int aabb_tests = 0;
+	int collisions = 0;
+	Vector2 *sep_axis = nullptr;
 };
 
 bool CollisionSolver2DSW::concave_callback(void *p_userdata, Shape2DSW *p_convex) {

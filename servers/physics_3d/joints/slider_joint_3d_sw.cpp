@@ -72,41 +72,6 @@ static _FORCE_INLINE_ real_t atan2fast(real_t y, real_t x) {
 	return (y < 0.0f) ? -angle : angle;
 }
 
-void SliderJoint3DSW::initParams() {
-	m_lowerLinLimit = real_t(1.0);
-	m_upperLinLimit = real_t(-1.0);
-	m_lowerAngLimit = real_t(0.);
-	m_upperAngLimit = real_t(0.);
-	m_softnessDirLin = SLIDER_CONSTRAINT_DEF_SOFTNESS;
-	m_restitutionDirLin = SLIDER_CONSTRAINT_DEF_RESTITUTION;
-	m_dampingDirLin = real_t(0.);
-	m_softnessDirAng = SLIDER_CONSTRAINT_DEF_SOFTNESS;
-	m_restitutionDirAng = SLIDER_CONSTRAINT_DEF_RESTITUTION;
-	m_dampingDirAng = real_t(0.);
-	m_softnessOrthoLin = SLIDER_CONSTRAINT_DEF_SOFTNESS;
-	m_restitutionOrthoLin = SLIDER_CONSTRAINT_DEF_RESTITUTION;
-	m_dampingOrthoLin = SLIDER_CONSTRAINT_DEF_DAMPING;
-	m_softnessOrthoAng = SLIDER_CONSTRAINT_DEF_SOFTNESS;
-	m_restitutionOrthoAng = SLIDER_CONSTRAINT_DEF_RESTITUTION;
-	m_dampingOrthoAng = SLIDER_CONSTRAINT_DEF_DAMPING;
-	m_softnessLimLin = SLIDER_CONSTRAINT_DEF_SOFTNESS;
-	m_restitutionLimLin = SLIDER_CONSTRAINT_DEF_RESTITUTION;
-	m_dampingLimLin = SLIDER_CONSTRAINT_DEF_DAMPING;
-	m_softnessLimAng = SLIDER_CONSTRAINT_DEF_SOFTNESS;
-	m_restitutionLimAng = SLIDER_CONSTRAINT_DEF_RESTITUTION;
-	m_dampingLimAng = SLIDER_CONSTRAINT_DEF_DAMPING;
-
-	m_poweredLinMotor = false;
-	m_targetLinMotorVelocity = real_t(0.);
-	m_maxLinMotorForce = real_t(0.);
-	m_accumulatedLinMotorImpulse = real_t(0.0);
-
-	m_poweredAngMotor = false;
-	m_targetAngMotorVelocity = real_t(0.);
-	m_maxAngMotorForce = real_t(0.);
-	m_accumulatedAngMotorImpulse = real_t(0.0);
-} // SliderJointSW::initParams()
-
 //-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
@@ -120,8 +85,6 @@ SliderJoint3DSW::SliderJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform3D
 
 	A->add_constraint(this, 0);
 	B->add_constraint(this, 1);
-
-	initParams();
 } // SliderJointSW::SliderJointSW()
 
 //-----------------------------------------------------------------------------

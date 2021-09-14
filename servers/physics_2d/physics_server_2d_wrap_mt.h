@@ -56,19 +56,19 @@ class PhysicsServer2DWrapMT : public PhysicsServer2D {
 	SafeFlag exit;
 	Thread thread;
 	SafeFlag step_thread_up;
-	bool create_thread;
+	bool create_thread = false;
 
 	Semaphore step_sem;
-	int step_pending;
+	int step_pending = 0;
 	void thread_step(real_t p_delta);
 	void thread_flush();
 
 	void thread_exit();
 
-	bool first_frame;
+	bool first_frame = true;
 
 	Mutex alloc_mutex;
-	int pool_max_size;
+	int pool_max_size = 0;
 
 public:
 #define ServerName PhysicsServer2D

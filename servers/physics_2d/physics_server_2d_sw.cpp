@@ -1357,10 +1357,5 @@ PhysicsServer2DSW::PhysicsServer2DSW(bool p_using_threads) {
 	singletonsw = this;
 	BroadPhase2DSW::create_func = BroadPhase2DBVH::_create;
 
-	active = true;
-	island_count = 0;
-	active_objects = 0;
-	collision_pairs = 0;
 	using_threads = p_using_threads;
-	flushing_queries = false;
 };

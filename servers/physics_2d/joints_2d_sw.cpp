@@ -64,7 +64,7 @@ void Joint2DSW::copy_settings_from(Joint2DSW *p_joint) {
 }
 
 static inline real_t k_scalar(Body2DSW *a, Body2DSW *b, const Vector2 &rA, const Vector2 &rB, const Vector2 &n) {
-	real_t value = 0;
+	real_t value = 0.0;
 
 	{
 		value += a->get_inv_mass();
@@ -212,8 +212,6 @@ PinJoint2DSW::PinJoint2DSW(const Vector2 &p_pos, Body2DSW *p_body_a, Body2DSW *p
 	B = p_body_b;
 	anchor_A = p_body_a->get_inv_transform().xform(p_pos);
 	anchor_B = p_body_b ? p_body_b->get_inv_transform().xform(p_pos) : p_pos;
-
-	softness = 0;
 
 	p_body_a->add_constraint(this, 0);
 	if (p_body_b) {
@@ -482,8 +480,6 @@ DampedSpringJoint2DSW::DampedSpringJoint2DSW(const Vector2 &p_anchor_a, const Ve
 	anchor_B = B->get_inv_transform().xform(p_anchor_b);
 
 	rest_length = p_anchor_a.distance_to(p_anchor_b);
-	stiffness = 20;
-	damping = 1.5;
 
 	A->add_constraint(this, 0);
 	B->add_constraint(this, 1);

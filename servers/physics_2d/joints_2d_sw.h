@@ -35,9 +35,9 @@
 #include "constraint_2d_sw.h"
 
 class Joint2DSW : public Constraint2DSW {
-	real_t max_force;
-	real_t bias;
-	real_t max_bias;
+	real_t bias = 0;
+	real_t max_bias = 3.40282e+38;
+	real_t max_force = 3.40282e+38;
 
 protected:
 	bool dynamic_A = false;
@@ -61,10 +61,7 @@ public:
 
 	virtual PhysicsServer2D::JointType get_type() const { return PhysicsServer2D::JOINT_TYPE_MAX; }
 	Joint2DSW(Body2DSW **p_body_ptr = nullptr, int p_body_count = 0) :
-			Constraint2DSW(p_body_ptr, p_body_count) {
-		bias = 0;
-		max_force = max_bias = 3.40282e+38;
-	};
+			Constraint2DSW(p_body_ptr, p_body_count) {}
 
 	virtual ~Joint2DSW() {
 		for (int i = 0; i < get_body_count(); i++) {
@@ -83,7 +80,7 @@ class PinJoint2DSW : public Joint2DSW {
 			Body2DSW *B;
 		};
 
-		Body2DSW *_arr[2];
+		Body2DSW *_arr[2] = { nullptr, nullptr };
 	};
 
 	Transform2D M;
@@ -92,7 +89,7 @@ class PinJoint2DSW : public Joint2DSW {
 	Vector2 anchor_B;
 	Vector2 bias;
 	Vector2 P;
-	real_t softness;
+	real_t softness = 0.0;
 
 public:
 	virtual PhysicsServer2D::JointType get_type() const override { return PhysicsServer2D::JOINT_TYPE_PIN; }
@@ -114,7 +111,7 @@ class GrooveJoint2DSW : public Joint2DSW {
 			Body2DSW *B;
 		};
 
-		Body2DSW *_arr[2];
+		Body2DSW *_arr[2] = { nullptr, nullptr };
 	};
 
 	Vector2 A_groove_1;
@@ -123,13 +120,13 @@ class GrooveJoint2DSW : public Joint2DSW {
 	Vector2 B_anchor;
 	Vector2 jn_acc;
 	Vector2 gbias;
-	real_t jn_max;
-	real_t clamp;
+	real_t jn_max = 0.0;
+	real_t clamp = 0.0;
 	Vector2 xf_normal;
 	Vector2 rA, rB;
 	Vector2 k1, k2;
 
-	bool correct;
+	bool correct = false;
 
 public:
 	virtual PhysicsServer2D::JointType get_type() const override { return PhysicsServer2D::JOINT_TYPE_GROOVE; }
@@ -148,22 +145,22 @@ class DampedSpringJoint2DSW : public Joint2DSW {
 			Body2DSW *B;
 		};
 
-		Body2DSW *_arr[2];
+		Body2DSW *_arr[2] = { nullptr, nullptr };
 	};
 
 	Vector2 anchor_A;
 	Vector2 anchor_B;
 
-	real_t rest_length;
-	real_t damping;
-	real_t stiffness;
+	real_t rest_length = 0.0;
+	real_t damping = 1.5;
+	real_t stiffness = 20.0;
 
 	Vector2 rA, rB;
 	Vector2 n;
 	Vector2 j;
-	real_t n_mass;
-	real_t target_vrn;
-	real_t v_coef;
+	real_t n_mass = 0.0;
+	real_t target_vrn = 0.0;
+	real_t v_coef = 0.0;
 
 public:
 	virtual PhysicsServer2D::JointType get_type() const override { return PhysicsServer2D::JOINT_TYPE_DAMPED_SPRING; }

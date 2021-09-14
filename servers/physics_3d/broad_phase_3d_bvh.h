@@ -40,10 +40,10 @@ class BroadPhase3DBVH : public BroadPhase3DSW {
 	static void *_pair_callback(void *, uint32_t, CollisionObject3DSW *, int, uint32_t, CollisionObject3DSW *, int);
 	static void _unpair_callback(void *, uint32_t, CollisionObject3DSW *, int, uint32_t, CollisionObject3DSW *, int, void *);
 
-	PairCallback pair_callback;
-	void *pair_userdata;
-	UnpairCallback unpair_callback;
-	void *unpair_userdata;
+	PairCallback pair_callback = nullptr;
+	void *pair_userdata = nullptr;
+	UnpairCallback unpair_callback = nullptr;
+	void *unpair_userdata = nullptr;
 
 public:
 	// 0 is an invalid ID

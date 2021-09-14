@@ -48,8 +48,8 @@ public:
 class Shape3DSW {
 	RID self;
 	AABB aabb;
-	bool configured;
-	real_t custom_bias;
+	bool configured = false;
+	real_t custom_bias = 0.0;
 
 	Map<ShapeOwner3DSW *, int> owners;
 
@@ -95,7 +95,7 @@ public:
 	bool is_owner(ShapeOwner3DSW *p_owner) const;
 	const Map<ShapeOwner3DSW *, int> &get_owners() const;
 
-	Shape3DSW();
+	Shape3DSW() {}
 	virtual ~Shape3DSW();
 };
 
@@ -138,8 +138,8 @@ public:
 };
 
 class SeparationRayShape3DSW : public Shape3DSW {
-	real_t length;
-	bool slide_on_slope;
+	real_t length = 1.0;
+	bool slide_on_slope = false;
 
 	void _setup(real_t p_length, bool p_slide_on_slope);
 
@@ -166,7 +166,7 @@ public:
 };
 
 class SphereShape3DSW : public Shape3DSW {
-	real_t radius;
+	real_t radius = 0.0;
 
 	void _setup(real_t p_radius);
 
@@ -218,8 +218,8 @@ public:
 };
 
 class CapsuleShape3DSW : public Shape3DSW {
-	real_t height;
-	real_t radius;
+	real_t height = 0.0;
+	real_t radius = 0.0;
 
 	void _setup(real_t p_height, real_t p_radius);
 
@@ -247,8 +247,8 @@ public:
 };
 
 class CylinderShape3DSW : public Shape3DSW {
-	real_t height;
-	real_t radius;
+	real_t height = 0.0;
+	real_t radius = 0.0;
 
 	void _setup(real_t p_height, real_t p_radius);
 
@@ -308,7 +308,7 @@ struct ConcavePolygonShape3DSW : public ConcaveShape3DSW {
 
 	struct Face {
 		Vector3 normal;
-		int indices[3];
+		int indices[3] = {};
 	};
 
 	Vector<Face> faces;
@@ -316,10 +316,10 @@ struct ConcavePolygonShape3DSW : public ConcaveShape3DSW {
 
 	struct BVH {
 		AABB aabb;
-		int left;
-		int right;
+		int left = 0;
+		int right = 0;
 
-		int face_index;
+		int face_index = 0;
 	};
 
 	Vector<BVH> bvh;
@@ -469,7 +469,7 @@ struct FaceShape3DSW : public Shape3DSW {
 };
 
 struct MotionShape3DSW : public Shape3DSW {
-	Shape3DSW *shape;
+	Shape3DSW *shape = nullptr;
 	Vector3 motion;
 
 	virtual PhysicsServer3D::ShapeType get_type() const override { return PhysicsServer3D::SHAPE_CONVEX_POLYGON; }

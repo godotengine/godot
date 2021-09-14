@@ -329,17 +329,7 @@ Area3DSW::Area3DSW() :
 		monitor_query_list(this),
 		moved_list(this) {
 	_set_static(true); //areas are never active
-	space_override_mode = PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;
-	gravity = 9.80665;
-	gravity_vector = Vector3(0, -1, 0);
-	gravity_is_point = false;
-	gravity_distance_scale = 0;
-	point_attenuation = 1;
-	angular_damp = 0.1;
-	linear_damp = 0.1;
-	priority = 0;
 	set_ray_pickable(false);
-	monitorable = false;
 }
 
 Area3DSW::~Area3DSW() {

@@ -407,8 +407,6 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 }
 
 Step3DSW::Step3DSW() {
-	_step = 1;
-
 	body_islands.reserve(BODY_ISLAND_COUNT_RESERVE);
 	constraint_islands.reserve(ISLAND_COUNT_RESERVE);
 	all_constraints.reserve(CONSTRAINT_COUNT_RESERVE);

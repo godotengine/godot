@@ -383,18 +383,18 @@ bool PhysicsDirectSpaceState2DSW::collide_shape(RID p_shape, const Transform2D &
 }
 
 struct _RestCallbackData2D {
-	const CollisionObject2DSW *object;
-	const CollisionObject2DSW *best_object;
-	int local_shape;
-	int best_local_shape;
-	int shape;
-	int best_shape;
+	const CollisionObject2DSW *object = nullptr;
+	const CollisionObject2DSW *best_object = nullptr;
+	int local_shape = 0;
+	int best_local_shape = 0;
+	int shape = 0;
+	int best_shape = 0;
 	Vector2 best_contact;
 	Vector2 best_normal;
-	real_t best_len;
+	real_t best_len = 0.0;
 	Vector2 valid_dir;
-	real_t valid_depth;
-	real_t min_allowed_depth;
+	real_t valid_depth = 0.0;
+	real_t min_allowed_depth = 0.0;
 };
 
 static void _rest_cbk_result(const Vector2 &p_point_A, const Vector2 &p_point_B, void *p_userdata) {
@@ -490,10 +490,6 @@ bool PhysicsDirectSpaceState2DSW::rest_info(RID p_shape, const Transform2D &p_sh
 	}
 
 	return true;
-}
-
-PhysicsDirectSpaceState2DSW::PhysicsDirectSpaceState2DSW() {
-	space = nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1190,19 +1186,6 @@ PhysicsDirectSpaceState2DSW *Space2DSW::get_direct_state() {
 }
 
 Space2DSW::Space2DSW() {
-	collision_pairs = 0;
-	active_objects = 0;
-	island_count = 0;
-
-	contact_debug_count = 0;
-
-	locked = false;
-	contact_recycle_radius = 1.0;
-	contact_max_separation = 1.5;
-	contact_max_allowed_penetration = 0.3;
-	test_motion_min_contact_depth = 0.005;
-
-	constraint_bias = 0.2;
 	body_linear_velocity_sleep_threshold = GLOBAL_DEF("physics/2d/sleep_threshold_linear", 2.0);
 	body_angular_velocity_sleep_threshold = GLOBAL_DEF("physics/2d/sleep_threshold_angular", Math::deg2rad(8.0));
 	body_time_to_sleep = GLOBAL_DEF("physics/2d/time_before_sleep", 0.5);
@@ -1211,14 +1194,9 @@ Space2DSW::Space2DSW() {
 	broadphase = BroadPhase2DSW::create_func();
 	broadphase->set_pair_callback(_broadphase_pair, this);
 	broadphase->set_unpair_callback(_broadphase_unpair, this);
-	area = nullptr;
 
 	direct_access = memnew(PhysicsDirectSpaceState2DSW);
 	direct_access->space = this;
-
-	for (int i = 0; i < ELAPSED_TIME_MAX; i++) {
-		elapsed_time[i] = 0;
-	}
 }
 
 Space2DSW::~Space2DSW() {

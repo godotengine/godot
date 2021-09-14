@@ -110,7 +110,4 @@ BroadPhase2DSW *BroadPhase2DBVH::_create() {
 BroadPhase2DBVH::BroadPhase2DBVH() {
 	bvh.set_pair_callback(_pair_callback, this);
 	bvh.set_unpair_callback(_unpair_callback, this);
-	pair_callback = nullptr;
-	pair_userdata = nullptr;
-	unpair_userdata = nullptr;
 }

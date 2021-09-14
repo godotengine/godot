@@ -75,11 +75,6 @@ const Map<ShapeOwner2DSW *, int> &Shape2DSW::get_owners() const {
 	return owners;
 }
 
-Shape2DSW::Shape2DSW() {
-	custom_bias = 0;
-	configured = false;
-}
-
 Shape2DSW::~Shape2DSW() {
 	ERR_FAIL_COND(owners.size());
 }
@@ -650,11 +645,6 @@ Variant ConvexPolygonShape2DSW::get_data() const {
 	}
 
 	return dvr;
-}
-
-ConvexPolygonShape2DSW::ConvexPolygonShape2DSW() {
-	points = nullptr;
-	point_count = 0;
 }
 
 ConvexPolygonShape2DSW::~ConvexPolygonShape2DSW() {

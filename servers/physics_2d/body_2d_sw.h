@@ -96,8 +96,8 @@ class Body2DSW : public CollisionObject2DSW {
 	List<Pair<Constraint2DSW *, int>> constraint_list;
 
 	struct AreaCMP {
-		Area2DSW *area;
-		int refCount;
+		Area2DSW *area = nullptr;
+		int refCount = 0;
 		_FORCE_INLINE_ bool operator==(const AreaCMP &p_cmp) const { return area->get_self() == p_cmp.area->get_self(); }
 		_FORCE_INLINE_ bool operator<(const AreaCMP &p_cmp) const { return area->get_priority() < p_cmp.area->get_priority(); }
 		_FORCE_INLINE_ AreaCMP() {}
@@ -112,10 +112,10 @@ class Body2DSW : public CollisionObject2DSW {
 	struct Contact {
 		Vector2 local_pos;
 		Vector2 local_normal;
-		real_t depth;
-		int local_shape;
+		real_t depth = 0.0;
+		int local_shape = 0;
 		Vector2 collider_pos;
-		int collider_shape;
+		int collider_shape = 0;
 		ObjectID collider_instance_id;
 		RID collider;
 		Vector2 collider_velocity_at_pos;
