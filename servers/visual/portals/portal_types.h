@@ -400,6 +400,9 @@ struct VSOccluder {
 	// location for finding the room
 	Vector3 pt_center;
 
+	// world space aabb, only updated when dirty
+	AABB aabb;
+
 	// global xform
 	Transform xform;
 
