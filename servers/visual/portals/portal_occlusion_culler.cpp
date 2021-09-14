@@ -33,7 +33,7 @@
 #include "core/project_settings.h"
 #include "portal_renderer.h"
 
-void PortalOcclusionCuller::prepare_generic(PortalRenderer &p_portal_renderer, const LocalVector<uint32_t, uint32_t> &p_occluder_pool_ids, const Vector3 &pt_camera, const LocalVector<Plane> &p_planes, const Plane *p_near_plane) {
+void PortalOcclusionCuller::prepare_generic(PortalRenderer &p_portal_renderer, const LocalVector<uint32_t, uint32_t> &p_occluder_pool_ids, const Vector3 &pt_camera, const LocalVector<Plane> &p_planes) {
 	_num_spheres = 0;
 	_pt_camera = pt_camera;
 
@@ -65,21 +65,21 @@ void PortalOcclusionCuller::prepare_generic(PortalRenderer &p_portal_renderer, c
 			// make sure world space spheres are up to date
 			p_portal_renderer.occluder_ensure_up_to_date_sphere(occ);
 
+			// cull entire AABB
+			if (is_aabb_culled(occ.aabb, p_planes)) {
+				continue;
+			}
+
 			// multiple spheres
 			for (int n = 0; n < occ.list_ids.size(); n++) {
 				const Occlusion::Sphere &occluder_sphere = p_portal_renderer.get_pool_occluder_sphere(occ.list_ids[n]).world;
 
 				// is the occluder sphere culled?
-				if (is_sphere_culled(occluder_sphere.pos, occluder_sphere.radius, p_planes, p_near_plane)) {
+				if (is_sphere_culled(occluder_sphere.pos, occluder_sphere.radius, p_planes)) {
 					continue;
 				}
 
 				real_t dist = (occluder_sphere.pos - pt_camera).length();
-
-				// keep a record of the closest sphere for quick rejects
-				if (dist < _sphere_closest_dist) {
-					_sphere_closest_dist = dist;
-				}
 
 				// calculate the goodness of fit .. smaller distance better, and larger radius
 				// calculate adjusted radius at 100.0
@@ -98,6 +98,11 @@ void PortalOcclusionCuller::prepare_generic(PortalRenderer &p_portal_renderer, c
 						weakest_sphere = _num_spheres;
 					}
 
+					// keep a record of the closest sphere for quick rejects
+					if (dist < _sphere_closest_dist) {
+						_sphere_closest_dist = dist;
+					}
+
 					_num_spheres++;
 				} else {
 					// must beat the weakest
@@ -105,6 +110,11 @@ void PortalOcclusionCuller::prepare_generic(PortalRenderer &p_portal_renderer, c
 						_spheres[weakest_sphere] = occluder_sphere;
 						_sphere_distances[weakest_sphere] = dist;
 						goodness_of_fit[weakest_sphere] = fit;
+
+						// keep a record of the closest sphere for quick rejects
+						if (dist < _sphere_closest_dist) {
+							_sphere_closest_dist = dist;
+						}
 
 						// the weakest may have changed (this could be done more efficiently)
 						weakest_fit = FLT_MAX;
@@ -123,9 +133,26 @@ void PortalOcclusionCuller::prepare_generic(PortalRenderer &p_portal_renderer, c
 	// force the sphere closest distance to above zero to prevent
 	// divide by zero in the quick reject
 	_sphere_closest_dist = MAX(_sphere_closest_dist, 0.001);
+
+	// sphere self occlusion.
+	// we could avoid testing the closest sphere, but the complexity isn't worth any speed benefit
+	for (int n = 0; n < _num_spheres; n++) {
+		const Occlusion::Sphere &sphere = _spheres[n];
+
+		// is it occluded by another sphere?
+		if (cull_sphere(sphere.pos, sphere.radius, n)) {
+			// yes, unordered remove
+			_num_spheres--;
+			_spheres[n] = _spheres[_num_spheres];
+			_sphere_distances[n] = _sphere_distances[_num_spheres];
+
+			// repeat this n
+			n--;
+		}
+	}
 }
 
-bool PortalOcclusionCuller::cull_sphere(const Vector3 &p_occludee_center, real_t p_occludee_radius) const {
+bool PortalOcclusionCuller::cull_sphere(const Vector3 &p_occludee_center, real_t p_occludee_radius, int p_ignore_sphere) const {
 	if (!_num_spheres) {
 		return false;
 	}
@@ -169,7 +196,7 @@ bool PortalOcclusionCuller::cull_sphere(const Vector3 &p_occludee_center, real_t
 			real_t dist;
 
 			if (occluder_sphere.intersect_ray(_pt_camera, ray_dir, dist, occluder_radius)) {
-				if (dist < dist_to_occludee) {
+				if ((dist < dist_to_occludee) && (s != p_ignore_sphere)) {
 					// occluded
 					return true;
 				}

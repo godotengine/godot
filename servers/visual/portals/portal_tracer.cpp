@@ -544,7 +544,7 @@ int PortalTracer::occlusion_cull(PortalRenderer &p_portal_renderer, const Vector
 		local_planes[n] = p_convex[n];
 	}
 
-	_occlusion_culler.prepare_generic(p_portal_renderer, p_portal_renderer.get_occluders_active_list(), p_point, local_planes, nullptr);
+	_occlusion_culler.prepare_generic(p_portal_renderer, p_portal_renderer.get_occluders_active_list(), p_point, local_planes);
 
 	// cull each instance
 	int count = p_num_results;

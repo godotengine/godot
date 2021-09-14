@@ -335,6 +335,10 @@ inline void PortalRenderer::occluder_ensure_up_to_date_sphere(VSOccluder &r_occl
 	Vector3 scale3 = tr.basis.get_scale_abs();
 	real_t scale = (scale3.x + scale3.y + scale3.z) / 3.0;
 
+	// update the AABB
+	Vector3 bb_min = Vector3(FLT_MAX, FLT_MAX, FLT_MAX);
+	Vector3 bb_max = Vector3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
 	// transform spheres
 	for (int n = 0; n < r_occluder.list_ids.size(); n++) {
 		uint32_t pool_id = r_occluder.list_ids[n];
@@ -343,7 +347,21 @@ inline void PortalRenderer::occluder_ensure_up_to_date_sphere(VSOccluder &r_occl
 		// transform position and radius
 		osphere.world.pos = tr.xform(osphere.local.pos);
 		osphere.world.radius = osphere.local.radius * scale;
+
+		Vector3 bradius = Vector3(osphere.world.radius, osphere.world.radius, osphere.world.radius);
+		Vector3 bmin = osphere.world.pos - bradius;
+		Vector3 bmax = osphere.world.pos + bradius;
+
+		bb_min.x = MIN(bb_min.x, bmin.x);
+		bb_min.y = MIN(bb_min.y, bmin.y);
+		bb_min.z = MIN(bb_min.z, bmin.z);
+		bb_max.x = MAX(bb_max.x, bmax.x);
+		bb_max.y = MAX(bb_max.y, bmax.y);
+		bb_max.z = MAX(bb_max.z, bmax.z);
 	}
+
+	r_occluder.aabb.position = bb_min;
+	r_occluder.aabb.size = bb_max - bb_min;
 }
 
 #endif
