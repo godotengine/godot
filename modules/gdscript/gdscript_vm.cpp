@@ -1232,6 +1232,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				GD_ERR_BREAK(to_type < 0 || to_type >= Variant::VARIANT_MAX);
 
+#ifdef DEBUG_ENABLED
+				if (src->get_type() == Variant::OBJECT && !src->operator ObjectID().is_ref_counted() && ObjectDB::get_instance(src->operator ObjectID()) == nullptr) {
+					err_text = "Trying to cast a freed object.";
+					OPCODE_BREAK;
+				}
+#endif
+
 				Callable::CallError err;
 				Variant::construct(to_type, *dst, (const Variant **)&src, 1, err);
 
@@ -1256,6 +1263,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(!nc);
 
 #ifdef DEBUG_ENABLED
+				if (src->get_type() == Variant::OBJECT && !src->operator ObjectID().is_ref_counted() && ObjectDB::get_instance(src->operator ObjectID()) == nullptr) {
+					err_text = "Trying to cast a freed object.";
+					OPCODE_BREAK;
+				}
 				if (src->get_type() != Variant::OBJECT && src->get_type() != Variant::NIL) {
 					err_text = "Invalid cast: can't convert a non-object value to an object type.";
 					OPCODE_BREAK;
@@ -1284,6 +1295,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(!base_type);
 
 #ifdef DEBUG_ENABLED
+				if (src->get_type() == Variant::OBJECT && !src->operator ObjectID().is_ref_counted() && ObjectDB::get_instance(src->operator ObjectID()) == nullptr) {
+					err_text = "Trying to cast a freed object.";
+					OPCODE_BREAK;
+				}
 				if (src->get_type() != Variant::OBJECT && src->get_type() != Variant::NIL) {
 					err_text = "Trying to assign a non-object value to a variable of type '" + base_type->get_path().get_file() + "'.";
 					OPCODE_BREAK;
