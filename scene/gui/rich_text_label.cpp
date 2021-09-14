@@ -366,7 +366,7 @@ void RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 	}
 
 	if (p_line > 0) {
-		l.offset.y = p_frame->lines[p_line - 1].offset.y + p_frame->lines[p_line - 1].text_buf->get_size().y;
+		l.offset.y = p_frame->lines[p_line - 1].offset.y + p_frame->lines[p_line - 1].text_buf->get_size().y + get_theme_constant(SNAME("line_separation"));
 	} else {
 		l.offset.y = 0;
 	}
@@ -614,7 +614,7 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 	*r_char_offset = l.char_offset + l.char_count;
 
 	if (p_line > 0) {
-		l.offset.y = p_frame->lines[p_line - 1].offset.y + p_frame->lines[p_line - 1].text_buf->get_size().y;
+		l.offset.y = p_frame->lines[p_line - 1].offset.y + p_frame->lines[p_line - 1].text_buf->get_size().y + get_theme_constant(SNAME("line_separation"));
 	} else {
 		l.offset.y = 0;
 	}
