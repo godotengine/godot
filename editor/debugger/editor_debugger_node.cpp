@@ -183,16 +183,16 @@ ScriptEditorDebugger *EditorDebuggerNode::get_default_debugger() const {
 	return Object::cast_to<ScriptEditorDebugger>(tabs->get_tab_control(0));
 }
 
-Error EditorDebuggerNode::start(const String &p_protocol) {
+Error EditorDebuggerNode::start(const String &p_uri) {
 	stop();
+	ERR_FAIL_COND_V(p_uri.find("://") < 0, ERR_INVALID_PARAMETER);
 	if (EDITOR_GET("run/output/always_open_output_on_play")) {
 		EditorNode::get_singleton()->make_bottom_panel_item_visible(EditorNode::get_log());
 	} else {
 		EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
 	}
-
-	server = Ref<EditorDebuggerServer>(EditorDebuggerServer::create(p_protocol));
-	const Error err = server->start();
+	server = Ref<EditorDebuggerServer>(EditorDebuggerServer::create(p_uri.substr(0, p_uri.find("://") + 3)));
+	const Error err = server->start(p_uri);
 	if (err != OK) {
 		return err;
 	}
