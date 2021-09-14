@@ -799,7 +799,7 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void EditorProperty::unhandled_key_input(const Ref<InputEvent> &p_event) {
-	if (!selected) {
+	if (!selected || !p_event->is_pressed()) {
 		return;
 	}
 
