@@ -2731,6 +2731,8 @@ void TextEdit::insert_line_at(int p_at, const String &p_text) {
 }
 
 void TextEdit::insert_text_at_caret(const String &p_text) {
+	begin_complex_operation();
+
 	delete_selection();
 
 	int new_column, new_line;
@@ -2740,6 +2742,8 @@ void TextEdit::insert_text_at_caret(const String &p_text) {
 	set_caret_line(new_line, false);
 	set_caret_column(new_column);
 	update();
+
+	end_complex_operation();
 }
 
 void TextEdit::remove_text(int p_from_line, int p_from_column, int p_to_line, int p_to_column) {
@@ -3024,13 +3028,20 @@ void TextEdit::menu_option(int p_option) {
 /* Versioning */
 void TextEdit::begin_complex_operation() {
 	_push_current_op();
-	next_operation_is_complex = true;
+	if (complex_operation_count == 0) {
+		next_operation_is_complex = true;
+	}
+	complex_operation_count++;
 }
 
 void TextEdit::end_complex_operation() {
 	_push_current_op();
 	ERR_FAIL_COND(undo_stack.size() == 0);
 
+	complex_operation_count = MAX(complex_operation_count - 1, 0);
+	if (complex_operation_count > 0) {
+		return;
+	}
 	if (undo_stack.back()->get().chain_forward) {
 		undo_stack.back()->get().chain_forward = false;
 		return;
