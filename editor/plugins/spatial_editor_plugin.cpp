@@ -1612,6 +1612,8 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							motion = Vector3(scale, scale, scale);
 						}
 
+						motion /= click.distance_to(_edit.center);
+
 						List<Node *> &selection = editor_selection->get_selected_node_list();
 
 						// Disable local transformation for TRANSFORM_VIEW
