@@ -1227,7 +1227,9 @@ void CodeTextEditor::_delete_line(int p_line) {
 		text_editor->cursor_set_column(0);
 	}
 	text_editor->backspace_at_cursor();
-	text_editor->unfold_line(p_line);
+	if (p_line < text_editor->get_line_count()) {
+		text_editor->unfold_line(p_line);
+	}
 	text_editor->cursor_set_line(p_line);
 }
 
