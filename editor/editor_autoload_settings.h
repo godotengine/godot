@@ -70,6 +70,7 @@ class EditorAutoloadSettings : public VBoxContainer {
 	LineEdit *autoload_add_name;
 	Button *add_autoload;
 	LineEdit *autoload_add_path;
+	Label *error_message;
 	Button *browse_button;
 	EditorFileDialog *file_dialog;
 
