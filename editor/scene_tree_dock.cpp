@@ -34,7 +34,7 @@
 #include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
-
+#include "core/property_utils.h"
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
@@ -3073,7 +3073,6 @@ void SceneTreeDock::_clear_clipboard() {
 void SceneTreeDock::_create_remap_for_node(Node *p_node, Map<RES, RES> &r_remap) {
 	List<PropertyInfo> props;
 	p_node->get_property_list(&props);
-	bool is_instanced = EditorPropertyRevert::may_node_be_in_instance(p_node);
 
 	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 		if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
@@ -3084,13 +3083,9 @@ void SceneTreeDock::_create_remap_for_node(Node *p_node, Map<RES, RES> &r_remap)
 		if (v.is_ref()) {
 			RES res = v;
 			if (res.is_valid()) {
-				if (is_instanced) {
-					Variant orig;
-					if (EditorPropertyRevert::get_instanced_node_original_property(p_node, E->get().name, orig)) {
-						if (!EditorPropertyRevert::is_node_property_different(p_node, v, orig)) {
-							continue;
-						}
-					}
+				Variant orig = PropertyUtils::get_property_default_value(p_node, E->get().name);
+				if (!PropertyUtils::is_property_value_different(v, orig)) {
+					continue;
 				}
 
 				if ((res->get_path() == "" || res->get_path().find("::") > -1) && !r_remap.has(res)) {

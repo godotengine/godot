@@ -81,8 +81,6 @@ private:
 	bool use_folding;
 	bool draw_top_bg;
 
-	bool _is_property_different(const Variant &p_current, const Variant &p_orig);
-	bool _get_instanced_node_original_property(const StringName &p_prop, Variant &value);
 	void _focusable_focused(int p_index);
 
 	bool selectable;
