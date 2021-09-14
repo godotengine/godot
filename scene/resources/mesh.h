@@ -160,11 +160,42 @@ public:
 	Size2i get_lightmap_size_hint() const;
 	void clear_cache() const;
 
-	typedef Vector<Vector<Face3>> (*ConvexDecompositionFunc)(const Vector<Face3> &p_faces, int p_max_convex_hulls);
+	struct ConvexDecompositionSettings {
+		enum Mode : int {
+			CONVEX_DECOMPOSITION_MODE_VOXEL = 0,
+			CONVEX_DECOMPOSITION_MODE_TETRAHEDRON
+		};
+
+		/// Maximum concavity. [Range: 0.0 -> 1.0]
+		real_t max_concavity = 1.0;
+		/// Controls the bias toward clipping along symmetry planes. [Range: 0.0 -> 1.0]
+		real_t symmetry_planes_clipping_bias = 0.05;
+		/// Controls the bias toward clipping along revolution axes. [Range: 0.0 -> 1.0]
+		real_t revolution_axes_clipping_bias = 0.05;
+		real_t min_volume_per_convex_hull = 0.0001;
+		/// Maximum number of voxels generated during the voxelization stage.
+		uint32_t resolution = 10'000;
+		uint32_t max_num_vertices_per_convex_hull = 32;
+		/// Controls the granularity of the search for the "best" clipping plane.
+		/// [Range: 1 -> 16]
+		uint32_t plane_downsampling = 4;
+		/// Controls the precision of the convex-hull generation process during the
+		/// clipping plane selection stage.
+		/// [Range: 1 -> 16]
+		uint32_t convexhull_downsampling = 4;
+		/// enable/disable normalizing the mesh before applying the convex decomposition.
+		bool normalize_mesh = false;
+		Mode mode = CONVEX_DECOMPOSITION_MODE_VOXEL;
+		bool convexhull_approximation = true;
+		/// This is the maximum number of convex hulls to produce from the merge operation.
+		uint32_t max_convex_hulls = 1;
+		bool project_hull_vertices = true;
+	};
+	typedef Vector<Vector<Face3>> (*ConvexDecompositionFunc)(const Vector<Face3> &p_faces, const ConvexDecompositionSettings &p_settings);
 
 	static ConvexDecompositionFunc convex_composition_function;
 
-	Vector<Ref<Shape3D>> convex_decompose(int p_max_convex_hulls = -1) const;
+	Vector<Ref<Shape3D>> convex_decompose(const ConvexDecompositionSettings &p_settings) const;
 
 	virtual int get_builtin_bind_pose_count() const;
 	virtual Transform3D get_builtin_bind_pose(int p_index) const;

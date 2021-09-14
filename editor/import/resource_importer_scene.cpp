@@ -233,13 +233,14 @@ static String _fixstr(const String &p_what, const String &p_str) {
 	return what;
 }
 
-static void _pre_gen_shape_list(const Ref<EditorSceneImporterMesh> &mesh, List<Ref<Shape3D>> &r_shape_list, bool p_convex) {
+static void _pre_gen_shape_list(Ref<EditorSceneImporterMesh> &mesh, Vector<Ref<Shape3D>> &r_shape_list, bool p_convex) {
 	ERR_FAIL_NULL_MSG(mesh, "Cannot generate shape list with null mesh value");
 	if (!p_convex) {
 		Ref<Shape3D> shape = mesh->create_trimesh_shape();
 		r_shape_list.push_back(shape);
 	} else {
-		Vector<Ref<Shape3D>> cd = mesh->convex_decompose();
+		Vector<Ref<Shape3D>> cd;
+		cd.push_back(mesh->get_mesh()->create_convex_shape(true, /*Passing false, otherwise VHACD will be used to simplify (Decompose) the Mesh.*/ false));
 		if (cd.size()) {
 			for (int i = 0; i < cd.size(); i++) {
 				r_shape_list.push_back(cd[i]);
@@ -248,7 +249,7 @@ static void _pre_gen_shape_list(const Ref<EditorSceneImporterMesh> &mesh, List<R
 	}
 }
 
-Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<EditorSceneImporterMesh>, List<Ref<Shape3D>>> &collision_map) {
+Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<EditorSceneImporterMesh>, Vector<Ref<Shape3D>>> &collision_map) {
 	// children first
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *r = _pre_fix_node(p_node->get_child(i), p_root, collision_map);
@@ -335,7 +336,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 			Ref<EditorSceneImporterMesh> mesh = mi->get_mesh();
 
 			if (mesh.is_valid()) {
-				List<Ref<Shape3D>> shapes;
+				Vector<Ref<Shape3D>> shapes;
 				String fixed_name;
 				if (collision_map.has(mesh)) {
 					shapes = collision_map[mesh];
@@ -406,7 +407,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 		Ref<EditorSceneImporterMesh> mesh = mi->get_mesh();
 
 		if (mesh.is_valid()) {
-			List<Ref<Shape3D>> shapes;
+			Vector<Ref<Shape3D>> shapes;
 			if (collision_map.has(mesh)) {
 				shapes = collision_map[mesh];
 			} else {
@@ -431,7 +432,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 		Ref<EditorSceneImporterMesh> mesh = mi->get_mesh();
 
 		if (mesh.is_valid()) {
-			List<Ref<Shape3D>> shapes;
+			Vector<Ref<Shape3D>> shapes;
 			String fixed_name;
 			if (collision_map.has(mesh)) {
 				shapes = collision_map[mesh];
@@ -490,7 +491,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 
 		Ref<EditorSceneImporterMesh> mesh = mi->get_mesh();
 		if (!mesh.is_null()) {
-			List<Ref<Shape3D>> shapes;
+			Vector<Ref<Shape3D>> shapes;
 			if (collision_map.has(mesh)) {
 				shapes = collision_map[mesh];
 			} else if (_teststr(mesh->get_name(), "col")) {
@@ -516,7 +517,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 	return p_node;
 }
 
-Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<EditorSceneImporterMesh>, List<Ref<Shape3D>>> &collision_map, Set<Ref<EditorSceneImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps) {
+Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<EditorSceneImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Set<Ref<EditorSceneImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps) {
 	// children first
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *r = _post_fix_node(p_node->get_child(i), p_root, collision_map, r_scanned_meshes, p_node_data, p_material_data, p_animation_data, p_animation_fps);
@@ -579,28 +580,35 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 			}
 
 			if (node_settings.has("generate/physics")) {
-				int mesh_physics_mode = node_settings["generate/physics"];
+				int mesh_physics_mode = MeshPhysicsMode::MESH_PHYSICS_DISABLED;
 
-				if (mesh_physics_mode != MESH_PHYSICS_DISABLED) {
-					List<Ref<Shape3D>> shapes;
+				const bool generate_collider = node_settings["generate/physics"];
+				if (generate_collider) {
+					mesh_physics_mode = MeshPhysicsMode::MESH_PHYSICS_MESH_AND_STATIC_COLLIDER;
+					if (node_settings.has("physics/body_type")) {
+						const BodyType body_type = (BodyType)node_settings["physics/body_type"].operator int();
+						switch (body_type) {
+							case BODY_TYPE_STATIC:
+								mesh_physics_mode = MeshPhysicsMode::MESH_PHYSICS_MESH_AND_STATIC_COLLIDER;
+								break;
+							case BODY_TYPE_DYNAMIC:
+								mesh_physics_mode = MeshPhysicsMode::MESH_PHYSICS_RIGID_BODY_AND_MESH;
+								break;
+							case BODY_TYPE_AREA:
+								mesh_physics_mode = MeshPhysicsMode::MESH_PHYSICS_AREA_ONLY;
+								break;
+						}
+					}
+				}
 
+				if (mesh_physics_mode != MeshPhysicsMode::MESH_PHYSICS_DISABLED) {
+					Vector<Ref<Shape3D>> shapes;
 					if (collision_map.has(m)) {
 						shapes = collision_map[m];
 					} else {
-						switch (mesh_physics_mode) {
-							case MESH_PHYSICS_MESH_AND_STATIC_COLLIDER: {
-								_pre_gen_shape_list(m, shapes, false);
-							} break;
-							case MESH_PHYSICS_RIGID_BODY_AND_MESH: {
-								_pre_gen_shape_list(m, shapes, true);
-							} break;
-							case MESH_PHYSICS_STATIC_COLLIDER_ONLY: {
-								_pre_gen_shape_list(m, shapes, false);
-							} break;
-							case MESH_PHYSICS_AREA_ONLY: {
-								_pre_gen_shape_list(m, shapes, true);
-							} break;
-						}
+						shapes = get_collision_shapes(
+								m->get_mesh(),
+								node_settings);
 					}
 
 					if (shapes.size()) {
@@ -609,13 +617,15 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 							case MESH_PHYSICS_MESH_AND_STATIC_COLLIDER: {
 								StaticBody3D *col = memnew(StaticBody3D);
 								p_node->add_child(col);
+								col->set_owner(p_node->get_owner());
+								col->set_transform(get_collision_shapes_transform(node_settings));
 								base = col;
 							} break;
 							case MESH_PHYSICS_RIGID_BODY_AND_MESH: {
 								RigidBody3D *rigid_body = memnew(RigidBody3D);
 								rigid_body->set_name(p_node->get_name());
 								p_node->replace_by(rigid_body);
-								rigid_body->set_transform(mi->get_transform());
+								rigid_body->set_transform(mi->get_transform() * get_collision_shapes_transform(node_settings));
 								p_node = rigid_body;
 								mi->set_transform(Transform3D());
 								rigid_body->add_child(mi);
@@ -624,7 +634,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 							} break;
 							case MESH_PHYSICS_STATIC_COLLIDER_ONLY: {
 								StaticBody3D *col = memnew(StaticBody3D);
-								col->set_transform(mi->get_transform());
+								col->set_transform(mi->get_transform() * get_collision_shapes_transform(node_settings));
 								col->set_name(p_node->get_name());
 								p_node->replace_by(col);
 								memdelete(p_node);
@@ -633,7 +643,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 							} break;
 							case MESH_PHYSICS_AREA_ONLY: {
 								Area3D *area = memnew(Area3D);
-								area->set_transform(mi->get_transform());
+								area->set_transform(mi->get_transform() * get_collision_shapes_transform(node_settings));
 								area->set_name(p_node->get_name());
 								p_node->replace_by(area);
 								memdelete(p_node);
@@ -933,8 +943,35 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE: {
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/skip_import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/physics", PROPERTY_HINT_ENUM, "Disabled,Mesh + Static Collider,Rigid Body + Mesh,Static Collider Only,Area Only"), 0));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "generate/physics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/navmesh", PROPERTY_HINT_ENUM, "Disabled,Mesh + NavMesh,NavMesh Only"), 0));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/body_type", PROPERTY_HINT_ENUM, "Static,Dynamic,Area"), 0));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/shape_type", PROPERTY_HINT_ENUM, "Decompose Convex,Simple Convex,Trimesh,Box,Sphere,Cylinder,Capsule", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
+
+			// Decomposition
+			Mesh::ConvexDecompositionSettings decomposition_default;
+			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "decomposition/advanced", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/precision", PROPERTY_HINT_RANGE, "1,10,1"), 5));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "decomposition/max_concavity", PROPERTY_HINT_RANGE, "0.0,1.0,0.001", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.max_concavity));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "decomposition/symmetry_planes_clipping_bias", PROPERTY_HINT_RANGE, "0.0,1.0,0.001", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.symmetry_planes_clipping_bias));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "decomposition/revolution_axes_clipping_bias", PROPERTY_HINT_RANGE, "0.0,1.0,0.001", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.revolution_axes_clipping_bias));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "decomposition/min_volume_per_convex_hull", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.min_volume_per_convex_hull));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/resolution", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.resolution));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/max_num_vertices_per_convex_hull", PROPERTY_HINT_RANGE, "5,512,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.max_num_vertices_per_convex_hull));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/plane_downsampling", PROPERTY_HINT_RANGE, "1,16,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.plane_downsampling));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/convexhull_downsampling", PROPERTY_HINT_RANGE, "1,16,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.convexhull_downsampling));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "decomposition/normalize_mesh", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.normalize_mesh));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/mode", PROPERTY_HINT_ENUM, "Voxel,Tetrahedron", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), static_cast<int>(decomposition_default.mode)));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "decomposition/convexhull_approximation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.convexhull_approximation));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/max_convex_hulls", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.max_convex_hulls));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "decomposition/project_hull_vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.project_hull_vertices));
+
+			// Primitives: Box, Sphere, Cylinder, Capsule.
+			r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "primitive/size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), Vector3(2.0, 2.0, 2.0)));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "primitive/height", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 1.0));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "primitive/radius", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 1.0));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "primitive/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), Vector3()));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "primitive/rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), Vector3()));
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_MESH: {
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "save_to_file/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
@@ -985,6 +1022,65 @@ bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategor
 		case INTERNAL_IMPORT_CATEGORY_NODE: {
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE: {
+			const bool generate_physics =
+					p_options.has("generate/physics") &&
+					p_options["generate/physics"].operator bool();
+
+			if (
+					p_option == "physics/body_type" ||
+					p_option == "physics/shape_type") {
+				// Show if need to generate collisions.
+				return generate_physics;
+			}
+
+			if (p_option.find("decomposition/") >= 0) {
+				// Show if need to generate collisions.
+				if (generate_physics &&
+						// Show if convex is enabled.
+						p_options["physics/shape_type"] == Variant(SHAPE_TYPE_DECOMPOSE_CONVEX)) {
+					if (p_option == "decomposition/advanced") {
+						return true;
+					}
+
+					const bool decomposition_advanced =
+							p_options.has("decomposition/advanced") &&
+							p_options["decomposition/advanced"].operator bool();
+
+					if (p_option == "decomposition/precision") {
+						return !decomposition_advanced;
+					} else {
+						return decomposition_advanced;
+					}
+				}
+
+				return false;
+			}
+
+			if (p_option == "primitive/position" || p_option == "primitive/rotation") {
+				const ShapeType physics_shape = (ShapeType)p_options["physics/shape_type"].operator int();
+				return generate_physics &&
+					   physics_shape >= SHAPE_TYPE_BOX;
+			}
+
+			if (p_option == "primitive/size") {
+				const ShapeType physics_shape = (ShapeType)p_options["physics/shape_type"].operator int();
+				return generate_physics &&
+					   physics_shape == SHAPE_TYPE_BOX;
+			}
+
+			if (p_option == "primitive/radius") {
+				const ShapeType physics_shape = (ShapeType)p_options["physics/shape_type"].operator int();
+				return generate_physics && (physics_shape == SHAPE_TYPE_SPHERE ||
+												   physics_shape == SHAPE_TYPE_CYLINDER ||
+												   physics_shape == SHAPE_TYPE_CAPSULE);
+			}
+
+			if (p_option == "primitive/height") {
+				const ShapeType physics_shape = (ShapeType)p_options["physics/shape_type"].operator int();
+				return generate_physics &&
+					   (physics_shape == SHAPE_TYPE_CYLINDER ||
+							   physics_shape == SHAPE_TYPE_CAPSULE);
+			}
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_MESH: {
 			if (p_option == "save_to_file/path" || p_option == "save_to_file/make_streamable") {
@@ -1019,6 +1115,33 @@ bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategor
 	}
 
 	return true;
+}
+
+bool ResourceImporterScene::get_internal_option_update_view_required(InternalImportCategory p_category, const String &p_option, const Map<StringName, Variant> &p_options) const {
+	switch (p_category) {
+		case INTERNAL_IMPORT_CATEGORY_NODE: {
+		} break;
+		case INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE: {
+			if (
+					p_option == "generate/physics" ||
+					p_option == "physics/shape_type" ||
+					p_option.find("decomposition/") >= 0 ||
+					p_option.find("primitive/") >= 0) {
+				return true;
+			}
+		} break;
+		case INTERNAL_IMPORT_CATEGORY_MESH: {
+		} break;
+		case INTERNAL_IMPORT_CATEGORY_MATERIAL: {
+		} break;
+		case INTERNAL_IMPORT_CATEGORY_ANIMATION: {
+		} break;
+		case INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE: {
+		} break;
+		default: {
+		}
+	}
+	return false;
 }
 
 void ResourceImporterScene::get_import_options(List<ImportOption> *r_options, int p_preset) const {
@@ -1275,7 +1398,7 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 	}
 }
 
-void ResourceImporterScene::_add_shapes(Node *p_node, const List<Ref<Shape3D>> &p_shapes) {
+void ResourceImporterScene::_add_shapes(Node *p_node, const Vector<Ref<Shape3D>> &p_shapes) {
 	for (const Ref<Shape3D> &E : p_shapes) {
 		CollisionShape3D *cshape = memnew(CollisionShape3D);
 		cshape->set_shape(E);
@@ -1316,7 +1439,7 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file) {
 		return nullptr;
 	}
 
-	Map<Ref<EditorSceneImporterMesh>, List<Ref<Shape3D>>> collision_map;
+	Map<Ref<EditorSceneImporterMesh>, Vector<Ref<Shape3D>>> collision_map;
 
 	_pre_fix_node(scene, scene, collision_map);
 
@@ -1392,7 +1515,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	}
 
 	Set<Ref<EditorSceneImporterMesh>> scanned_meshes;
-	Map<Ref<EditorSceneImporterMesh>, List<Ref<Shape3D>>> collision_map;
+	Map<Ref<EditorSceneImporterMesh>, Vector<Ref<Shape3D>>> collision_map;
 
 	_pre_fix_node(scene, scene, collision_map);
 	_post_fix_node(scene, scene, collision_map, scanned_meshes, node_data, material_data, animation_data, fps);

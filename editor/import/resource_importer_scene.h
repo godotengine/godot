@@ -63,7 +63,6 @@ public:
 		IMPORT_FAIL_ON_MISSING_DEPENDENCIES = 4,
 		IMPORT_GENERATE_TANGENT_ARRAYS = 8,
 		IMPORT_USE_NAMED_SKIN_BINDS = 16,
-
 	};
 
 	virtual uint32_t get_import_flags() const;
@@ -125,9 +124,25 @@ class ResourceImporterScene : public ResourceImporter {
 		MESH_OVERRIDE_DISABLE,
 	};
 
+	enum BodyType {
+		BODY_TYPE_STATIC,
+		BODY_TYPE_DYNAMIC,
+		BODY_TYPE_AREA
+	};
+
+	enum ShapeType {
+		SHAPE_TYPE_DECOMPOSE_CONVEX,
+		SHAPE_TYPE_SIMPLE_CONVEX,
+		SHAPE_TYPE_TRIMESH,
+		SHAPE_TYPE_BOX,
+		SHAPE_TYPE_SPHERE,
+		SHAPE_TYPE_CYLINDER,
+		SHAPE_TYPE_CAPSULE,
+	};
+
 	void _replace_owner(Node *p_node, Node *p_scene, Node *p_new_owner);
 	void _generate_meshes(Node *p_node, const Dictionary &p_mesh_data, bool p_generate_lods, bool p_create_shadow_meshes, LightBakeMode p_light_bake_mode, float p_lightmap_texel_size, const Vector<uint8_t> &p_src_lightmap_cache, Vector<Vector<uint8_t>> &r_lightmap_caches);
-	void _add_shapes(Node *p_node, const List<Ref<Shape3D>> &p_shapes);
+	void _add_shapes(Node *p_node, const Vector<Ref<Shape3D>> &p_shapes);
 
 public:
 	static ResourceImporterScene *get_singleton() { return singleton; }
@@ -159,14 +174,15 @@ public:
 
 	void get_internal_import_options(InternalImportCategory p_category, List<ImportOption> *r_options) const;
 	bool get_internal_option_visibility(InternalImportCategory p_category, const String &p_option, const Map<StringName, Variant> &p_options) const;
+	bool get_internal_option_update_view_required(InternalImportCategory p_category, const String &p_option, const Map<StringName, Variant> &p_options) const;
 
 	virtual void get_import_options(List<ImportOption> *r_options, int p_preset = 0) const override;
 	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const override;
 	// Import scenes *after* everything else (such as textures).
 	virtual int get_import_order() const override { return ResourceImporter::IMPORT_ORDER_SCENE; }
 
-	Node *_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<EditorSceneImporterMesh>, List<Ref<Shape3D>>> &collision_map);
-	Node *_post_fix_node(Node *p_node, Node *p_root, Map<Ref<EditorSceneImporterMesh>, List<Ref<Shape3D>>> &collision_map, Set<Ref<EditorSceneImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps);
+	Node *_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<EditorSceneImporterMesh>, Vector<Ref<Shape3D>>> &collision_map);
+	Node *_post_fix_node(Node *p_node, Node *p_root, Map<Ref<EditorSceneImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Set<Ref<EditorSceneImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps);
 
 	Ref<Animation> _save_animation_to_file(Ref<Animation> anim, bool p_save_to_file, String p_save_to_path, bool p_keep_custom_tracks);
 	void _create_clips(AnimationPlayer *anim, const Array &p_clips, bool p_bake_all);
@@ -184,6 +200,12 @@ public:
 	virtual bool can_import_threaded() const override { return false; }
 
 	ResourceImporterScene();
+
+	template <class M>
+	static Vector<Ref<Shape3D>> get_collision_shapes(const Ref<Mesh> &p_mesh, const M &p_options);
+
+	template <class M>
+	static Transform3D get_collision_shapes_transform(const M &p_options);
 };
 
 class EditorSceneImporterESCN : public EditorSceneImporter {
@@ -195,5 +217,177 @@ public:
 	virtual Node *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err = nullptr) override;
 	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps) override;
 };
+
+#include "scene/resources/box_shape_3d.h"
+#include "scene/resources/capsule_shape_3d.h"
+#include "scene/resources/cylinder_shape_3d.h"
+#include "scene/resources/sphere_shape_3d.h"
+
+template <class M>
+Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Mesh> &p_mesh, const M &p_options) {
+	ShapeType generate_shape_type = SHAPE_TYPE_DECOMPOSE_CONVEX;
+	if (p_options.has(SNAME("physics/shape_type"))) {
+		generate_shape_type = (ShapeType)p_options[SNAME("physics/shape_type")].operator int();
+	}
+
+	if (generate_shape_type == SHAPE_TYPE_DECOMPOSE_CONVEX) {
+		Mesh::ConvexDecompositionSettings decomposition_settings;
+		bool advanced = false;
+		if (p_options.has(SNAME("decomposition/advanced"))) {
+			advanced = p_options[SNAME("decomposition/advanced")];
+		}
+
+		if (advanced) {
+			if (p_options.has(SNAME("decomposition/max_concavity"))) {
+				decomposition_settings.max_concavity = p_options[SNAME("decomposition/max_concavity")];
+			}
+
+			if (p_options.has(SNAME("decomposition/symmetry_planes_clipping_bias"))) {
+				decomposition_settings.symmetry_planes_clipping_bias = p_options[SNAME("decomposition/symmetry_planes_clipping_bias")];
+			}
+
+			if (p_options.has(SNAME("decomposition/revolution_axes_clipping_bias"))) {
+				decomposition_settings.revolution_axes_clipping_bias = p_options[SNAME("decomposition/revolution_axes_clipping_bias")];
+			}
+
+			if (p_options.has(SNAME("decomposition/min_volume_per_convex_hull"))) {
+				decomposition_settings.min_volume_per_convex_hull = p_options[SNAME("decomposition/min_volume_per_convex_hull")];
+			}
+
+			if (p_options.has(SNAME("decomposition/resolution"))) {
+				decomposition_settings.resolution = p_options[SNAME("decomposition/resolution")];
+			}
+
+			if (p_options.has(SNAME("decomposition/max_num_vertices_per_convex_hull"))) {
+				decomposition_settings.max_num_vertices_per_convex_hull = p_options[SNAME("decomposition/max_num_vertices_per_convex_hull")];
+			}
+
+			if (p_options.has(SNAME("decomposition/plane_downsampling"))) {
+				decomposition_settings.plane_downsampling = p_options[SNAME("decomposition/plane_downsampling")];
+			}
+
+			if (p_options.has(SNAME("decomposition/convexhull_downsampling"))) {
+				decomposition_settings.convexhull_downsampling = p_options[SNAME("decomposition/convexhull_downsampling")];
+			}
+
+			if (p_options.has(SNAME("decomposition/normalize_mesh"))) {
+				decomposition_settings.normalize_mesh = p_options[SNAME("decomposition/normalize_mesh")];
+			}
+
+			if (p_options.has(SNAME("decomposition/mode"))) {
+				decomposition_settings.mode = (Mesh::ConvexDecompositionSettings::Mode)p_options[SNAME("decomposition/mode")].operator int();
+			}
+
+			if (p_options.has(SNAME("decomposition/convexhull_approximation"))) {
+				decomposition_settings.convexhull_approximation = p_options[SNAME("decomposition/convexhull_approximation")];
+			}
+
+			if (p_options.has(SNAME("decomposition/max_convex_hulls"))) {
+				decomposition_settings.max_convex_hulls = p_options[SNAME("decomposition/max_convex_hulls")];
+			}
+
+			if (p_options.has(SNAME("decomposition/project_hull_vertices"))) {
+				decomposition_settings.project_hull_vertices = p_options[SNAME("decomposition/project_hull_vertices")];
+			}
+		} else {
+			int precision_level = 5;
+			if (p_options.has(SNAME("decomposition/precision"))) {
+				precision_level = p_options[SNAME("decomposition/precision")];
+			}
+
+			const real_t precision = real_t(precision_level - 1) / 9.0;
+
+			decomposition_settings.max_concavity = Math::lerp(real_t(1.0), real_t(0.001), precision);
+			decomposition_settings.min_volume_per_convex_hull = Math::lerp(real_t(0.01), real_t(0.0001), precision);
+			decomposition_settings.resolution = Math::lerp(10'000, 100'000, precision);
+			decomposition_settings.max_num_vertices_per_convex_hull = Math::lerp(32, 64, precision);
+			decomposition_settings.plane_downsampling = Math::lerp(3, 16, precision);
+			decomposition_settings.convexhull_downsampling = Math::lerp(3, 16, precision);
+			decomposition_settings.max_convex_hulls = Math::lerp(1, 32, precision);
+		}
+
+		return p_mesh->convex_decompose(decomposition_settings);
+	} else if (generate_shape_type == SHAPE_TYPE_SIMPLE_CONVEX) {
+		Vector<Ref<Shape3D>> shapes;
+		shapes.push_back(p_mesh->create_convex_shape(true, /*Passing false, otherwise VHACD will be used to simplify (Decompose) the Mesh.*/ false));
+		return shapes;
+	} else if (generate_shape_type == SHAPE_TYPE_TRIMESH) {
+		Vector<Ref<Shape3D>> shapes;
+		shapes.push_back(p_mesh->create_trimesh_shape());
+		return shapes;
+	} else if (generate_shape_type == SHAPE_TYPE_BOX) {
+		Ref<BoxShape3D> box;
+		box.instantiate();
+		if (p_options.has(SNAME("primitive/size"))) {
+			box->set_size(p_options[SNAME("primitive/size")]);
+		}
+
+		Vector<Ref<Shape3D>> shapes;
+		shapes.push_back(box);
+		return shapes;
+
+	} else if (generate_shape_type == SHAPE_TYPE_SPHERE) {
+		Ref<SphereShape3D> sphere;
+		sphere.instantiate();
+		if (p_options.has(SNAME("primitive/radius"))) {
+			sphere->set_radius(p_options[SNAME("primitive/radius")]);
+		}
+
+		Vector<Ref<Shape3D>> shapes;
+		shapes.push_back(sphere);
+		return shapes;
+	} else if (generate_shape_type == SHAPE_TYPE_CYLINDER) {
+		Ref<CylinderShape3D> cylinder;
+		cylinder.instantiate();
+		if (p_options.has(SNAME("primitive/height"))) {
+			cylinder->set_height(p_options[SNAME("primitive/height")]);
+		}
+		if (p_options.has(SNAME("primitive/radius"))) {
+			cylinder->set_radius(p_options[SNAME("primitive/radius")]);
+		}
+
+		Vector<Ref<Shape3D>> shapes;
+		shapes.push_back(cylinder);
+		return shapes;
+	} else if (generate_shape_type == SHAPE_TYPE_CAPSULE) {
+		Ref<CapsuleShape3D> capsule;
+		capsule.instantiate();
+		if (p_options.has(SNAME("primitive/height"))) {
+			capsule->set_height(p_options[SNAME("primitive/height")]);
+		}
+		if (p_options.has(SNAME("primitive/radius"))) {
+			capsule->set_radius(p_options[SNAME("primitive/radius")]);
+		}
+
+		Vector<Ref<Shape3D>> shapes;
+		shapes.push_back(capsule);
+		return shapes;
+	}
+	return Vector<Ref<Shape3D>>();
+}
+
+template <class M>
+Transform3D ResourceImporterScene::get_collision_shapes_transform(const M &p_options) {
+	Transform3D transform;
+
+	ShapeType generate_shape_type = SHAPE_TYPE_DECOMPOSE_CONVEX;
+	if (p_options.has(SNAME("physics/shape_type"))) {
+		generate_shape_type = (ShapeType)p_options[SNAME("physics/shape_type")].operator int();
+	}
+
+	if (generate_shape_type == SHAPE_TYPE_BOX ||
+			generate_shape_type == SHAPE_TYPE_SPHERE ||
+			generate_shape_type == SHAPE_TYPE_CYLINDER ||
+			generate_shape_type == SHAPE_TYPE_CAPSULE) {
+		if (p_options.has(SNAME("primitive/position"))) {
+			transform.origin = p_options[SNAME("primitive/position")];
+		}
+
+		if (p_options.has(SNAME("primitive/rotation"))) {
+			transform.basis.set_euler((p_options[SNAME("primitive/rotation")].operator Vector3() / 180.0) * Math_PI);
+		}
+	}
+	return transform;
+}
 
 #endif // RESOURCEIMPORTERSCENE_H

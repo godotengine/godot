@@ -224,7 +224,9 @@ Vector<Face3> Mesh::get_faces() const {
 
 Ref<Shape3D> Mesh::create_convex_shape(bool p_clean, bool p_simplify) const {
 	if (p_simplify) {
-		Vector<Ref<Shape3D>> decomposed = convex_decompose(1);
+		ConvexDecompositionSettings settings;
+		settings.max_convex_hulls = 1;
+		Vector<Ref<Shape3D>> decomposed = convex_decompose(settings);
 		if (decomposed.size() == 1) {
 			return decomposed[0];
 		} else {
@@ -565,12 +567,12 @@ void Mesh::clear_cache() const {
 	debug_lines.clear();
 }
 
-Vector<Ref<Shape3D>> Mesh::convex_decompose(int p_max_convex_hulls) const {
+Vector<Ref<Shape3D>> Mesh::convex_decompose(const ConvexDecompositionSettings &p_settings) const {
 	ERR_FAIL_COND_V(!convex_composition_function, Vector<Ref<Shape3D>>());
 
 	const Vector<Face3> faces = get_faces();
 
-	Vector<Vector<Face3>> decomposed = convex_composition_function(faces, p_max_convex_hulls);
+	const Vector<Vector<Face3>> decomposed = convex_composition_function(faces, p_settings);
 
 	Vector<Ref<Shape3D>> ret;
 

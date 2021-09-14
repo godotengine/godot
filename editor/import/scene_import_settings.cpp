@@ -53,6 +53,11 @@ class SceneImportSettingsData : public Object {
 			}
 
 			current[p_name] = p_value;
+
+			if (ResourceImporterScene::get_singleton()->get_internal_option_update_view_required(category, p_name, current)) {
+				SceneImportSettings::get_singleton()->update_view();
+			}
+
 			return true;
 		}
 		return false;
@@ -317,6 +322,13 @@ void SceneImportSettings::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
 	if (mesh_node && mesh_node->get_mesh().is_valid()) {
 		_fill_mesh(scene_tree, mesh_node->get_mesh(), item);
 
+		// Add the collider view.
+		MeshInstance3D *collider_view = memnew(MeshInstance3D);
+		collider_view->set_name("collider_view");
+		collider_view->set_visible(false);
+		mesh_node->add_child(collider_view);
+		collider_view->set_owner(mesh_node);
+
 		Transform3D accum_xform;
 		Node3D *base = mesh_node;
 		while (base) {
@@ -344,6 +356,54 @@ void SceneImportSettings::_update_scene() {
 	mesh_tree->create_item();
 
 	_fill_scene(scene, nullptr);
+}
+
+void SceneImportSettings::_update_view_gizmos() {
+	for (const KeyValue<String, NodeData> &e : node_map) {
+		bool generate_collider = false;
+		if (e.value.settings.has(SNAME("generate/physics"))) {
+			generate_collider = e.value.settings[SNAME("generate/physics")];
+		}
+
+		MeshInstance3D *mesh_node = Object::cast_to<MeshInstance3D>(e.value.node);
+		if (mesh_node == nullptr || mesh_node->get_mesh().is_null()) {
+			// Nothing to do
+			continue;
+		}
+
+		MeshInstance3D *collider_view = static_cast<MeshInstance3D *>(mesh_node->find_node("collider_view"));
+		CRASH_COND_MSG(collider_view == nullptr, "This is unreachable, since the collider view is always created even when the collision is not used! If this is triggered there is a bug on the function `_fill_scene`.");
+
+		collider_view->set_visible(generate_collider);
+		if (generate_collider) {
+			// This collider_view doesn't have a mesh so we need to generate a new one.
+
+			// Generate the mesh collider.
+			Vector<Ref<Shape3D>> shapes = ResourceImporterScene::get_collision_shapes(mesh_node->get_mesh(), e.value.settings);
+			const Transform3D transform = ResourceImporterScene::get_collision_shapes_transform(e.value.settings);
+
+			Ref<ArrayMesh> collider_view_mesh;
+			collider_view_mesh.instantiate();
+			for (Ref<Shape3D> shape : shapes) {
+				Ref<ArrayMesh> debug_shape_mesh;
+				if (shape.is_valid()) {
+					debug_shape_mesh = shape->get_debug_mesh();
+				}
+				if (debug_shape_mesh.is_valid()) {
+					collider_view_mesh->add_surface_from_arrays(
+							debug_shape_mesh->surface_get_primitive_type(0),
+							debug_shape_mesh->surface_get_arrays(0));
+
+					collider_view_mesh->surface_set_material(
+							collider_view_mesh->get_surface_count() - 1,
+							collider_mat);
+				}
+			}
+
+			collider_view->set_mesh(collider_view_mesh);
+			collider_view->set_transform(transform);
+		}
+	}
 }
 
 void SceneImportSettings::_update_camera() {
@@ -404,11 +464,16 @@ void SceneImportSettings::_load_default_subresource_settings(Map<StringName, Var
 	}
 }
 
+void SceneImportSettings::update_view() {
+	_update_view_gizmos();
+}
+
 void SceneImportSettings::open_settings(const String &p_path) {
 	if (scene) {
 		memdelete(scene);
 		scene = nullptr;
 	}
+	scene_import_settings_data->settings = nullptr;
 	scene = ResourceImporterScene::get_singleton()->pre_import(p_path);
 	if (scene == nullptr) {
 		EditorNode::get_singleton()->show_warning(TTR("Error opening scene"));
@@ -463,6 +528,7 @@ void SceneImportSettings::open_settings(const String &p_path) {
 	}
 
 	popup_centered_ratio();
+	_update_view_gizmos();
 	_update_camera();
 
 	set_title(vformat(TTR("Advanced Import Settings for '%s'"), base_path.get_file()));
@@ -629,6 +695,7 @@ void SceneImportSettings::_material_tree_selected() {
 
 	_select(material_tree, type, import_id);
 }
+
 void SceneImportSettings::_mesh_tree_selected() {
 	if (selecting) {
 		return;
@@ -640,6 +707,7 @@ void SceneImportSettings::_mesh_tree_selected() {
 
 	_select(mesh_tree, type, import_id);
 }
+
 void SceneImportSettings::_scene_tree_selected() {
 	if (selecting) {
 		return;
@@ -1142,6 +1210,12 @@ SceneImportSettings::SceneImportSettings() {
 		mesh_preview->hide();
 
 		material_preview.instantiate();
+	}
+
+	{
+		collider_mat.instantiate();
+		collider_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+		collider_mat->set_albedo(Color(0.5, 0.5, 1.0));
 	}
 
 	inspector = memnew(EditorInspector);
