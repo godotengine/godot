@@ -203,6 +203,7 @@ protected:
 public:
 	static Lightmapper::BakeStepFunc bake_step_function;
 	static Lightmapper::BakeStepFunc bake_substep_function;
+	static Lightmapper::BakeEndFunc bake_end_function;
 
 	void set_light_data(const Ref<BakedLightmapData> &p_data);
 	Ref<BakedLightmapData> get_light_data() const;
