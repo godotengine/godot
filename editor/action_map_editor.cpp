@@ -248,10 +248,8 @@ void InputEventConfigurationDialog::_listen_window_input(const Ref<InputEvent> &
 		k->set_pressed(false); // to avoid serialisation of 'pressed' property - doesn't matter for actions anyway.
 		// Maintain physical keycode option state
 		if (physical_key_checkbox->is_pressed()) {
-			k->set_physical_keycode(k->get_keycode());
 			k->set_keycode(KEY_NONE);
 		} else {
-			k->set_keycode((Key)k->get_physical_keycode());
 			k->set_physical_keycode(KEY_NONE);
 		}
 	}
