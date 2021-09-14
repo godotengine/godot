@@ -1831,6 +1831,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							motion = Vector3(scale, scale, scale);
 						}
 
+						motion /= click.distance_to(_edit.center);
+
 						// Disable local transformation for TRANSFORM_VIEW
 						bool local_coords = (spatial_editor->are_local_coords_enabled() && _edit.plane != TRANSFORM_VIEW);
 
