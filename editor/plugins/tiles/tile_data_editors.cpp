@@ -124,7 +124,9 @@ void GenericTilePolygonEditor::_base_control_draw() {
 	base_control->draw_set_transform_matrix(xform);
 
 	// Draw the tile shape filled.
-	tile_set->draw_tile_shape(base_control, Rect2(-tile_size / 2, tile_size), Color(1.0, 1.0, 1.0, 0.3), true);
+	Transform2D tile_xform;
+	tile_xform.set_scale(tile_size);
+	tile_set->draw_tile_shape(base_control, tile_xform, Color(1.0, 1.0, 1.0, 0.3), true);
 
 	// Draw the background.
 	if (background_texture.is_valid()) {
@@ -213,7 +215,7 @@ void GenericTilePolygonEditor::_base_control_draw() {
 
 	// Draw the tile shape line.
 	base_control->draw_set_transform_matrix(xform);
-	tile_set->draw_tile_shape(base_control, Rect2(-tile_size / 2, tile_size), grid_color, false);
+	tile_set->draw_tile_shape(base_control, tile_xform, grid_color, false);
 	base_control->draw_set_transform_matrix(Transform2D());
 }
 
@@ -1072,14 +1074,15 @@ void TileDataTextureOffsetEditor::draw_over_tile(CanvasItem *p_canvas_item, Tran
 	ERR_FAIL_COND(!tile_data);
 
 	Vector2i tile_set_tile_size = tile_set->get_tile_size();
-	Rect2i rect = Rect2i(-tile_set_tile_size / 2, tile_set_tile_size);
 	Color color = Color(1.0, 0.0, 0.0);
 	if (p_selected) {
 		Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
 		Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 		color = selection_color;
 	}
-	tile_set->draw_tile_shape(p_canvas_item, p_transform.xform(rect), color);
+	Transform2D tile_xform;
+	tile_xform.set_scale(tile_set_tile_size);
+	tile_set->draw_tile_shape(p_canvas_item, p_transform * tile_xform, color);
 }
 
 void TileDataPositionEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2D p_transform, TileMapCell p_cell, bool p_selected) {
@@ -1514,9 +1517,10 @@ void TileDataTerrainsEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas
 				}
 			} else {
 				// Draw hovered tile.
-				Vector2i tile_size = tile_set->get_tile_size();
-				Rect2i rect = p_transform.xform(Rect2i(position - tile_size / 2, tile_size));
-				tile_set->draw_tile_shape(p_canvas_item, rect, Color(1.0, 1.0, 1.0, 0.5), true);
+				Transform2D tile_xform;
+				tile_xform.set_origin(position);
+				tile_xform.set_scale(tile_set->get_tile_size());
+				tile_set->draw_tile_shape(p_canvas_item, p_transform * tile_xform, Color(1.0, 1.0, 1.0, 0.5), true);
 			}
 		}
 	}
@@ -1686,9 +1690,10 @@ void TileDataTerrainsEditor::forward_draw_over_alternatives(TileAtlasView *p_til
 				}
 			} else {
 				// Draw hovered tile.
-				Vector2i tile_size = tile_set->get_tile_size();
-				Rect2i rect = p_transform.xform(Rect2i(position - tile_size / 2, tile_size));
-				tile_set->draw_tile_shape(p_canvas_item, rect, Color(1.0, 1.0, 1.0, 0.5), true);
+				Transform2D tile_xform;
+				tile_xform.set_origin(position);
+				tile_xform.set_scale(tile_set->get_tile_size());
+				tile_set->draw_tile_shape(p_canvas_item, p_transform * tile_xform, Color(1.0, 1.0, 1.0, 0.5), true);
 			}
 		}
 	}

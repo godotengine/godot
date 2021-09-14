@@ -327,10 +327,12 @@ void TileAtlasView::_draw_base_tiles_shape_grid() {
 		Vector2i tile_id = tile_set_atlas_source->get_tile_id(i);
 		Vector2 in_tile_base_offset = tile_set_atlas_source->get_tile_effective_texture_offset(tile_id, 0);
 		Rect2i texture_region = tile_set_atlas_source->get_tile_texture_region(tile_id);
-		Vector2 origin = texture_region.position + (texture_region.size - tile_shape_size) / 2 + in_tile_base_offset;
 
 		// Draw only if the tile shape fits in the texture region
-		tile_set->draw_tile_shape(base_tiles_shape_grid, Rect2(origin, tile_shape_size), grid_color);
+		Transform2D tile_xform;
+		tile_xform.set_origin(texture_region.position + texture_region.size / 2 + in_tile_base_offset);
+		tile_xform.set_scale(tile_shape_size);
+		tile_set->draw_tile_shape(base_tiles_shape_grid, tile_xform, grid_color);
 	}
 }
 
