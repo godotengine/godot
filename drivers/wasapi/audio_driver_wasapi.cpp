@@ -499,7 +499,7 @@ Error AudioDriverWASAPI::finish_capture_device() {
 Error AudioDriverWASAPI::init() {
 	mix_rate = GLOBAL_GET("audio/driver/mix_rate");
 
-	target_latency_ms = GLOBAL_GET("audio/output_latency");
+	target_latency_ms = GLOBAL_GET("audio/driver/output_latency");
 
 	Error err = init_render_device();
 	if (err != OK) {
