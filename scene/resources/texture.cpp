@@ -131,25 +131,6 @@ void ImageTexture::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::VECTOR2, "size", PROPERTY_HINT_NONE, ""));
 }
 
-void ImageTexture::_reload_hook(const RID &p_hook) {
-	String path = get_path();
-	if (!path.is_resource_file()) {
-		return;
-	}
-
-	Ref<Image> img;
-	img.instantiate();
-	Error err = ImageLoader::load_image(path, img);
-
-	ERR_FAIL_COND_MSG(err != OK, "Cannot load image from path '" + path + "'.");
-
-	RID new_texture = RenderingServer::get_singleton()->texture_2d_create(img);
-	RenderingServer::get_singleton()->texture_replace(texture, new_texture);
-
-	notify_property_list_changed();
-	emit_changed();
-}
-
 void ImageTexture::create_from_image(const Ref<Image> &p_image) {
 	ERR_FAIL_COND_MSG(p_image.is_null() || p_image->is_empty(), "Invalid image");
 	w = p_image->get_width();
@@ -190,10 +171,6 @@ void ImageTexture::update(const Ref<Image> &p_image) {
 
 	alpha_cache.unref();
 	image_stored = true;
-}
-
-void ImageTexture::_resource_path_changed() {
-	String path = get_path();
 }
 
 Ref<Image> ImageTexture::get_image() const {
@@ -303,7 +280,6 @@ void ImageTexture::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("update", "image"), &ImageTexture::update);
 	ClassDB::bind_method(D_METHOD("set_size_override", "size"), &ImageTexture::set_size_override);
-	ClassDB::bind_method(D_METHOD("_reload_hook", "rid"), &ImageTexture::_reload_hook);
 }
 
 ImageTexture::ImageTexture() {}
