@@ -158,6 +158,10 @@ EM_BOOL DisplayServerJavaScript::keydown_callback(int p_event_type, const Emscri
 		return false;
 	}
 	Input::get_singleton()->parse_input_event(ev);
+
+	// Make sure to flush all events so we can call restricted APIs inside the event.
+	Input::get_singleton()->flush_buffered_events();
+
 	return true;
 }
 
@@ -165,6 +169,10 @@ EM_BOOL DisplayServerJavaScript::keypress_callback(int p_event_type, const Emscr
 	DisplayServerJavaScript *display = get_singleton();
 	display->deferred_key_event->set_unicode(p_event->charCode);
 	Input::get_singleton()->parse_input_event(display->deferred_key_event);
+
+	// Make sure to flush all events so we can call restricted APIs inside the event.
+	Input::get_singleton()->flush_buffered_events();
+
 	return true;
 }
 
@@ -172,6 +180,10 @@ EM_BOOL DisplayServerJavaScript::keyup_callback(int p_event_type, const Emscript
 	Ref<InputEventKey> ev = setup_key_event(p_event);
 	ev->set_pressed(false);
 	Input::get_singleton()->parse_input_event(ev);
+
+	// Make sure to flush all events so we can call restricted APIs inside the event.
+	Input::get_singleton()->flush_buffered_events();
+
 	return ev->get_keycode() != KEY_UNKNOWN && ev->get_keycode() != (Key)0;
 }
 
@@ -245,6 +257,10 @@ EM_BOOL DisplayServerJavaScript::mouse_button_callback(int p_event_type, const E
 	ev->set_button_mask(mask);
 
 	input->parse_input_event(ev);
+
+	// Make sure to flush all events so we can call restricted APIs inside the event.
+	Input::get_singleton()->flush_buffered_events();
+
 	// Prevent multi-click text selection and wheel-click scrolling anchor.
 	// Context menu is prevented through contextmenu event.
 	return true;
@@ -507,6 +523,10 @@ EM_BOOL DisplayServerJavaScript::touch_press_callback(int p_event_type, const Em
 
 		Input::get_singleton()->parse_input_event(ev);
 	}
+
+	// Make sure to flush all events so we can call restricted APIs inside the event.
+	Input::get_singleton()->flush_buffered_events();
+
 	// Resume audio context after input in case autoplay was denied.
 	return true;
 }
@@ -1019,6 +1039,7 @@ bool DisplayServerJavaScript::can_any_window_draw() const {
 }
 
 void DisplayServerJavaScript::process_events() {
+	Input::get_singleton()->flush_buffered_events();
 	if (godot_js_display_gamepad_sample() == OK) {
 		process_joypads();
 	}
