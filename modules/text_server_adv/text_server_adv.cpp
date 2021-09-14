@@ -1225,7 +1225,7 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontDataAdvanced 
 		int error = 0;
 		if (!library) {
 			error = FT_Init_FreeType(&library);
-			ERR_FAIL_COND_V_MSG(error != 0, false, TTR("FreeType: Error initializing library:") + " '" + String(FT_Error_String(error)) + "'.");
+			ERR_FAIL_COND_V_MSG(error != 0, false, RTR("FreeType: Error initializing library:") + " '" + String(FT_Error_String(error)) + "'.");
 		}
 
 		memset(&fd->stream, 0, sizeof(FT_StreamRec));
@@ -1243,13 +1243,7 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontDataAdvanced 
 		if (error) {
 			FT_Done_Face(fd->face);
 			fd->face = nullptr;
-			ERR_FAIL_V_MSG(false, TTR("FreeType: Error loading font:") + " '" + String(FT_Error_String(error)) + "'.");
-		}
-		fd->hb_handle = hb_ft_font_create(fd->face, nullptr);
-		if (fd->hb_handle == nullptr) {
-			FT_Done_Face(fd->face);
-			fd->face = nullptr;
-			ERR_FAIL_V_MSG(false, TTR("HarfBuzz: Error creating FreeType font object."));
+			ERR_FAIL_V_MSG(false, RTR("FreeType: Error loading font:") + " '" + String(FT_Error_String(error)) + "'.");
 		}
 
 		if (p_font_data->msdf) {
@@ -1277,6 +1271,8 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontDataAdvanced 
 		} else {
 			FT_Set_Pixel_Sizes(fd->face, 0, fd->size.x * fd->oversampling);
 		}
+
+		fd->hb_handle = hb_ft_font_create(fd->face, nullptr);
 
 		fd->ascent = (fd->face->size->metrics.ascender / 64.0) / fd->oversampling * fd->scale;
 		fd->descent = (-fd->face->size->metrics.descender / 64.0) / fd->oversampling * fd->scale;
@@ -1592,14 +1588,11 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontDataAdvanced 
 			FT_Done_MM_Var(library, amaster);
 		}
 #else
-		ERR_FAIL_V_MSG(false, TTR("FreeType: Can't load dynamic font, engine is compiled without FreeType support!");
+		ERR_FAIL_V_MSG(false, RTR("FreeType: Can't load dynamic font, engine is compiled without FreeType support!");
 #endif
 	} else {
 		// Init bitmap font.
 		fd->hb_handle = hb_bmp_font_create(fd, nullptr);
-		if (!fd->hb_handle) {
-			ERR_FAIL_V_MSG(false, TTR("HarfBuzz: Error creating bitmap font object."));
-		}
 	}
 	p_font_data->cache[p_size] = fd;
 	return true;

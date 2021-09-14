@@ -686,7 +686,7 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontDataFallback 
 		int error = 0;
 		if (!library) {
 			error = FT_Init_FreeType(&library);
-			ERR_FAIL_COND_V_MSG(error != 0, false, TTR("FreeType: Error initializing library:") + " '" + String(FT_Error_String(error)) + "'.");
+			ERR_FAIL_COND_V_MSG(error != 0, false, RTR("FreeType: Error initializing library:") + " '" + String(FT_Error_String(error)) + "'.");
 		}
 
 		memset(&fd->stream, 0, sizeof(FT_StreamRec));
@@ -704,7 +704,7 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontDataFallback 
 		if (error) {
 			FT_Done_Face(fd->face);
 			fd->face = nullptr;
-			ERR_FAIL_V_MSG(false, TTR("FreeType: Error loading font:") + " '" + String(FT_Error_String(error)) + "'.");
+			ERR_FAIL_V_MSG(false, RTR("FreeType: Error loading font:") + " '" + String(FT_Error_String(error)) + "'.");
 		}
 
 		if (p_font_data->msdf) {
@@ -784,7 +784,7 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontDataFallback 
 			FT_Done_MM_Var(library, amaster);
 		}
 #else
-		ERR_FAIL_V_MSG(false, TTR("FreeType: Can't load dynamic font, engine is compiled without FreeType support!");
+		ERR_FAIL_V_MSG(false, RTR("FreeType: Can't load dynamic font, engine is compiled without FreeType support!");
 #endif
 	}
 	p_font_data->cache[p_size] = fd;
