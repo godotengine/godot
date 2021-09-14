@@ -876,9 +876,7 @@ String ScriptTextEditor::_get_absolute_path(const String &rel_path) {
 }
 
 void ScriptTextEditor::update_toggle_scripts_button() {
-	if (code_editor != nullptr) {
-		code_editor->update_toggle_scripts_button();
-	}
+	code_editor->update_toggle_scripts_button();
 }
 
 void ScriptTextEditor::_update_connected_methods() {

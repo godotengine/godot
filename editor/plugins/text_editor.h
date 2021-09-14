@@ -139,6 +139,7 @@ public:
 	virtual void set_debugger_active(bool p_active) override;
 	virtual void set_tooltip_request_func(String p_method, Object *p_obj) override;
 	virtual void add_callback(const String &p_function, PackedStringArray p_args) override;
+	void update_toggle_scripts_button() override;
 
 	virtual Control *get_edit_menu() override;
 	virtual void clear_edit_menu() override;

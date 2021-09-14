@@ -161,6 +161,7 @@ public:
 	virtual void update_settings() = 0;
 	virtual void set_debugger_active(bool p_active) = 0;
 	virtual bool can_lose_focus_on_node_selection() { return true; }
+	virtual void update_toggle_scripts_button() {}
 
 	virtual bool show_members_overview() = 0;
 

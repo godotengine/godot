@@ -3592,6 +3592,11 @@ void VisualScriptEditor::_hide_timer() {
 	hint_text->hide();
 }
 
+void VisualScriptEditor::_toggle_scripts_pressed() {
+	ScriptEditor::get_singleton()->toggle_scripts_panel();
+	update_toggle_scripts_button();
+}
+
 void VisualScriptEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
@@ -3605,6 +3610,8 @@ void VisualScriptEditor::_notification(int p_what) {
 			if (p_what != NOTIFICATION_READY && !is_visible_in_tree()) {
 				return;
 			}
+
+			update_toggle_scripts_button();
 
 			edit_variable_edit->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 			edit_signal_edit->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
@@ -3650,6 +3657,7 @@ void VisualScriptEditor::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
+			update_toggle_scripts_button();
 			members_section->set_visible(is_visible_in_tree());
 		} break;
 	}
@@ -4232,6 +4240,15 @@ void VisualScriptEditor::add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_h
 void VisualScriptEditor::set_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) {
 }
 
+void VisualScriptEditor::update_toggle_scripts_button() {
+	if (is_layout_rtl()) {
+		toggle_scripts_button->set_icon(Control::get_theme_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? SNAME("Forward") : SNAME("Back"), SNAME("EditorIcons")));
+	} else {
+		toggle_scripts_button->set_icon(Control::get_theme_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? SNAME("Back") : SNAME("Forward"), SNAME("EditorIcons")));
+	}
+	toggle_scripts_button->set_tooltip(vformat("%s (%s)", TTR("Toggle Scripts Panel"), ED_GET_SHORTCUT("script_editor/toggle_scripts_panel")->get_as_text()));
+}
+
 void VisualScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_move_node", &VisualScriptEditor::_move_node);
 	ClassDB::bind_method("_update_graph", &VisualScriptEditor::_update_graph, DEFVAL(-1));
@@ -4332,6 +4349,16 @@ VisualScriptEditor::VisualScriptEditor() {
 	graph->set_minimap_opacity(graph_minimap_opacity);
 	graph->hide();
 	graph->connect("scroll_offset_changed", callable_mp(this, &VisualScriptEditor::_graph_ofs_changed));
+
+	status_bar = memnew(HBoxContainer);
+	add_child(status_bar);
+	status_bar->set_h_size_flags(SIZE_EXPAND_FILL);
+	status_bar->set_custom_minimum_size(Size2(0, 24 * EDSCALE));
+
+	toggle_scripts_button = memnew(Button);
+	toggle_scripts_button->set_flat(true);
+	toggle_scripts_button->connect("pressed", callable_mp(this, &VisualScriptEditor::_toggle_scripts_pressed));
+	status_bar->add_child(toggle_scripts_button);
 
 	/// Add Buttons to Top Bar/Zoom bar.
 	HBoxContainer *graph_hbc = graph->get_zoom_hbox();

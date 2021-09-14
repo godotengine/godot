@@ -513,6 +513,10 @@ void TextEditor::_make_context_menu(bool p_selection, bool p_can_fold, bool p_is
 	context_menu->popup();
 }
 
+void TextEditor::update_toggle_scripts_button() {
+	code_editor->update_toggle_scripts_button();
+}
+
 TextEditor::TextEditor() {
 	code_editor = memnew(CodeTextEditor);
 	add_child(code_editor);
@@ -521,6 +525,7 @@ TextEditor::TextEditor() {
 	code_editor->connect("validate_script", callable_mp(this, &TextEditor::_validate_script));
 	code_editor->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	code_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	code_editor->show_toggle_scripts_button();
 
 	update_settings();
 

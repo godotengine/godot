@@ -123,6 +123,8 @@ class EditorHelp : public VBoxContainer {
 	ConfirmationDialog *search_dialog;
 	LineEdit *search;
 	FindBar *find_bar;
+	HBoxContainer *status_bar;
+	Button *toggle_scripts_button;
 
 	String base_path;
 
@@ -159,6 +161,7 @@ class EditorHelp : public VBoxContainer {
 	void _search(bool p_search_previous = false);
 
 	String _fix_constant(const String &p_constant) const;
+	void _toggle_scripts_pressed();
 
 protected:
 	void _notification(int p_what);
@@ -184,6 +187,8 @@ public:
 
 	int get_scroll() const;
 	void set_scroll(int p_scroll);
+
+	void update_toggle_scripts_button();
 
 	EditorHelp();
 	~EditorHelp();
