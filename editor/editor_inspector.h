@@ -43,7 +43,6 @@ class UndoRedo;
 
 class EditorPropertyRevert {
 public:
-	static bool may_node_be_in_instance(Node *p_node);
 	static bool get_instantiated_node_original_property(Node *p_node, const StringName &p_prop, Variant &value, bool p_check_class_default = true);
 	static bool is_node_property_different(Node *p_node, const Variant &p_current, const Variant &p_orig);
 	static bool is_property_value_different(const Variant &p_a, const Variant &p_b);

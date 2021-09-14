@@ -39,6 +39,7 @@
 #include "editor_scale.h"
 #include "editor_settings.h"
 #include "multi_node_edit.h"
+#include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
 
 Size2 EditorProperty::get_minimum_size() const {
@@ -398,177 +399,12 @@ bool EditorProperty::is_read_only() const {
 	return read_only;
 }
 
-bool EditorPropertyRevert::may_node_be_in_instance(Node *p_node) {
-	Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
-
-	bool might_be = false;
-	Node *node = p_node;
-
-	while (node) {
-		if (node == edited_scene) {
-			if (node->get_scene_inherited_state().is_valid()) {
-				might_be = true;
-				break;
-			}
-			might_be = false;
-			break;
-		}
-		if (node->get_scene_instance_state().is_valid()) {
-			might_be = true;
-			break;
-		}
-		node = node->get_owner();
-	}
-
-	return might_be; // or might not be
-}
-
-bool EditorPropertyRevert::get_instantiated_node_original_property(Node *p_node, const StringName &p_prop, Variant &value, bool p_check_class_default) {
-	Node *node = p_node;
-	Node *orig = node;
-
-	Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
-
-	bool found = false;
-
-	while (node) {
-		Ref<SceneState> ss;
-
-		if (node == edited_scene) {
-			ss = node->get_scene_inherited_state();
-
-		} else {
-			ss = node->get_scene_instance_state();
-		}
-
-		if (ss.is_valid()) {
-			NodePath np = node->get_path_to(orig);
-			int node_idx = ss->find_node_by_path(np);
-			if (node_idx >= 0) {
-				bool lfound = false;
-				Variant lvar;
-				lvar = ss->get_property_value(node_idx, p_prop, lfound);
-				if (lfound) {
-					found = true;
-					value = lvar;
-				}
-			}
-		}
-		if (node == edited_scene) {
-			//just in case
-			break;
-		}
-		node = node->get_owner();
-	}
-
-	if (p_check_class_default && !found && p_node) {
-		//if not found, try default class value
-		Variant attempt = ClassDB::class_get_default_property_value(p_node->get_class_name(), p_prop);
-		if (attempt.get_type() != Variant::NIL) {
-			found = true;
-			value = attempt;
-		}
-	}
-
-	return found;
-}
-
-bool EditorPropertyRevert::is_node_property_different(Node *p_node, const Variant &p_current, const Variant &p_orig) {
-	// this is a pretty difficult function, because a property may not be saved but may have
-	// the flag to not save if one or if zero
-
-	//make sure there is an actual state
-	{
-		Node *node = p_node;
-		if (!node) {
-			return false;
-		}
-
-		Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
-		bool found_state = false;
-
-		while (node) {
-			Ref<SceneState> ss;
-
-			if (node == edited_scene) {
-				ss = node->get_scene_inherited_state();
-
-			} else {
-				ss = node->get_scene_instance_state();
-			}
-
-			if (ss.is_valid()) {
-				found_state = true;
-				break;
-			}
-			if (node == edited_scene) {
-				//just in case
-				break;
-			}
-			node = node->get_owner();
-		}
-
-		if (!found_state) {
-			return false; //pointless to check if we are not comparing against anything.
-		}
-	}
-
-	return is_property_value_different(p_current, p_orig);
-}
-
-bool EditorPropertyRevert::is_property_value_different(const Variant &p_a, const Variant &p_b) {
-	if (p_a.get_type() == Variant::FLOAT && p_b.get_type() == Variant::FLOAT) {
-		//this must be done because, as some scenes save as text, there might be a tiny difference in floats due to numerical error
-		return !Math::is_equal_approx((float)p_a, (float)p_b);
-	} else {
-		return p_a != p_b;
-	}
-}
-
 Variant EditorPropertyRevert::get_property_revert_value(Object *p_object, const StringName &p_property) {
-	// If the object implements property_can_revert, rely on that completely
-	// (i.e. don't then try to revert to default value - the property_get_revert implementation
-	// can do that if so desired)
 	if (p_object->has_method("property_can_revert") && p_object->call("property_can_revert", p_property)) {
 		return p_object->call("property_get_revert", p_property);
 	}
 
-	Ref<Script> scr = p_object->get_script();
-	Node *node = Object::cast_to<Node>(p_object);
-	if (node && EditorPropertyRevert::may_node_be_in_instance(node)) {
-		//if this node is an instance or inherits, but it has a script attached which is unrelated
-		//to the one set for the parent and also has a default value for the property, consider that
-		//has precedence over the value from the parent, because that is an explicit source of defaults
-		//closer in the tree to the current node
-		bool ignore_parent = false;
-		if (scr.is_valid()) {
-			Variant sorig;
-			if (EditorPropertyRevert::get_instantiated_node_original_property(node, "script", sorig) && !scr->inherits_script(sorig)) {
-				Variant dummy;
-				if (scr->get_property_default_value(p_property, dummy)) {
-					ignore_parent = true;
-				}
-			}
-		}
-
-		if (!ignore_parent) {
-			//check for difference including instantiation
-			Variant vorig;
-			if (EditorPropertyRevert::get_instantiated_node_original_property(node, p_property, vorig, false)) {
-				return vorig;
-			}
-		}
-	}
-
-	if (scr.is_valid()) {
-		Variant orig_value;
-		if (scr->get_property_default_value(p_property, orig_value)) {
-			return orig_value;
-		}
-	}
-
-	//report default class value instead
-	return ClassDB::class_get_default_property_value(p_object->get_class_name(), p_property);
+	return PropertyUtils::get_property_default_value(p_object, p_property);
 }
 
 bool EditorPropertyRevert::can_property_revert(Object *p_object, const StringName &p_property) {
@@ -577,7 +413,7 @@ bool EditorPropertyRevert::can_property_revert(Object *p_object, const StringNam
 		return false;
 	}
 	Variant current_value = p_object->get(p_property);
-	return EditorPropertyRevert::is_property_value_different(current_value, revert_value);
+	return PropertyUtils::is_property_value_different(current_value, revert_value);
 }
 
 void EditorProperty::update_reload_status() {
@@ -585,10 +421,10 @@ void EditorProperty::update_reload_status() {
 		return; //no property, so nothing to do
 	}
 
-	bool has_reload = EditorPropertyRevert::can_property_revert(object, property);
+	bool new_can_revert = EditorPropertyRevert::can_property_revert(object, property);
 
-	if (has_reload != can_revert) {
-		can_revert = has_reload;
+	if (new_can_revert != can_revert) {
+		can_revert = new_can_revert;
 		update();
 	}
 }
