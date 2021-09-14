@@ -2034,7 +2034,9 @@ String CodeEdit::get_text_for_symbol_lookup() {
 void CodeEdit::set_symbol_lookup_word_as_valid(bool p_valid) {
 	symbol_lookup_word = p_valid ? symbol_lookup_new_word : "";
 	symbol_lookup_new_word = "";
-	_set_symbol_lookup_word(symbol_lookup_word);
+	if (lookup_symbol_word != symbol_lookup_word) {
+		_set_symbol_lookup_word(symbol_lookup_word);
+	}
 }
 
 void CodeEdit::_bind_methods() {
