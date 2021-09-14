@@ -216,7 +216,7 @@
 			<argument index="0" name="exception" type="RID" />
 			<description>
 				Adds a collision exception to the physical bone.
-				Works just like the [RigidBody3D] node.
+				Works just like the [RigidDynamicBody3D] node.
 			</description>
 		</method>
 		<method name="physical_bones_remove_collision_exception">
@@ -224,7 +224,7 @@
 			<argument index="0" name="exception" type="RID" />
 			<description>
 				Removes a collision exception to the physical bone.
-				Works just like the [RigidBody3D] node.
+				Works just like the [RigidDynamicBody3D] node.
 			</description>
 		</method>
 		<method name="physical_bones_start_simulation">

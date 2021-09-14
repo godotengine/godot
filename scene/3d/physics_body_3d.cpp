@@ -364,7 +364,7 @@ AnimatableBody3D::AnimatableBody3D() :
 	_update_kinematic_motion();
 }
 
-void RigidBody3D::_body_enter_tree(ObjectID p_id) {
+void RigidDynamicBody3D::_body_enter_tree(ObjectID p_id) {
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_COND(!node);
@@ -387,7 +387,7 @@ void RigidBody3D::_body_enter_tree(ObjectID p_id) {
 	contact_monitor->locked = false;
 }
 
-void RigidBody3D::_body_exit_tree(ObjectID p_id) {
+void RigidDynamicBody3D::_body_exit_tree(ObjectID p_id) {
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_COND(!node);
@@ -408,7 +408,7 @@ void RigidBody3D::_body_exit_tree(ObjectID p_id) {
 	contact_monitor->locked = false;
 }
 
-void RigidBody3D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, int p_body_shape, int p_local_shape) {
+void RigidDynamicBody3D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, int p_body_shape, int p_local_shape) {
 	bool body_in = p_status == 1;
 	ObjectID objid = p_instance;
 
@@ -427,8 +427,8 @@ void RigidBody3D::_body_inout(int p_status, const RID &p_body, ObjectID p_instan
 			//E->get().rc=0;
 			E->get().in_tree = node && node->is_inside_tree();
 			if (node) {
-				node->connect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidBody3D::_body_enter_tree), make_binds(objid));
-				node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidBody3D::_body_exit_tree), make_binds(objid));
+				node->connect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidDynamicBody3D::_body_enter_tree), make_binds(objid));
+				node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidDynamicBody3D::_body_exit_tree), make_binds(objid));
 				if (E->get().in_tree) {
 					emit_signal(SceneStringNames::get_singleton()->body_entered, node);
 				}
@@ -454,8 +454,8 @@ void RigidBody3D::_body_inout(int p_status, const RID &p_body, ObjectID p_instan
 
 		if (E->get().shapes.is_empty()) {
 			if (node) {
-				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidBody3D::_body_enter_tree));
-				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidBody3D::_body_exit_tree));
+				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidDynamicBody3D::_body_enter_tree));
+				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidDynamicBody3D::_body_exit_tree));
 				if (in_tree) {
 					emit_signal(SceneStringNames::get_singleton()->body_exited, node);
 				}
@@ -469,19 +469,19 @@ void RigidBody3D::_body_inout(int p_status, const RID &p_body, ObjectID p_instan
 	}
 }
 
-struct _RigidBodyInOut {
+struct _RigidDynamicBodyInOut {
 	RID rid;
 	ObjectID id;
 	int shape = 0;
 	int local_shape = 0;
 };
 
-void RigidBody3D::_body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state) {
-	RigidBody3D *body = (RigidBody3D *)p_instance;
+void RigidDynamicBody3D::_body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state) {
+	RigidDynamicBody3D *body = (RigidDynamicBody3D *)p_instance;
 	body->_body_state_changed(p_state);
 }
 
-void RigidBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
+void RigidDynamicBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 	set_ignore_transform_notification(true);
 	set_global_transform(p_state->get_transform());
 
@@ -512,9 +512,9 @@ void RigidBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 			}
 		}
 
-		_RigidBodyInOut *toadd = (_RigidBodyInOut *)alloca(p_state->get_contact_count() * sizeof(_RigidBodyInOut));
+		_RigidDynamicBodyInOut *toadd = (_RigidDynamicBodyInOut *)alloca(p_state->get_contact_count() * sizeof(_RigidDynamicBodyInOut));
 		int toadd_count = 0; //state->get_contact_count();
-		RigidBody3D_RemoveAction *toremove = (RigidBody3D_RemoveAction *)alloca(rc * sizeof(RigidBody3D_RemoveAction));
+		RigidDynamicBody3D_RemoveAction *toremove = (RigidDynamicBody3D_RemoveAction *)alloca(rc * sizeof(RigidDynamicBody3D_RemoveAction));
 		int toremove_count = 0;
 
 		//put the ones to add
@@ -580,7 +580,7 @@ void RigidBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 	}
 }
 
-void RigidBody3D::_notification(int p_what) {
+void RigidDynamicBody3D::_notification(int p_what) {
 #ifdef TOOLS_ENABLED
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -598,7 +598,7 @@ void RigidBody3D::_notification(int p_what) {
 #endif
 }
 
-void RigidBody3D::set_mode(Mode p_mode) {
+void RigidDynamicBody3D::set_mode(Mode p_mode) {
 	mode = p_mode;
 	switch (p_mode) {
 		case MODE_DYNAMIC: {
@@ -617,21 +617,21 @@ void RigidBody3D::set_mode(Mode p_mode) {
 	update_configuration_warnings();
 }
 
-RigidBody3D::Mode RigidBody3D::get_mode() const {
+RigidDynamicBody3D::Mode RigidDynamicBody3D::get_mode() const {
 	return mode;
 }
 
-void RigidBody3D::set_mass(real_t p_mass) {
+void RigidDynamicBody3D::set_mass(real_t p_mass) {
 	ERR_FAIL_COND(p_mass <= 0);
 	mass = p_mass;
 	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_MASS, mass);
 }
 
-real_t RigidBody3D::get_mass() const {
+real_t RigidDynamicBody3D::get_mass() const {
 	return mass;
 }
 
-void RigidBody3D::set_inertia(const Vector3 &p_inertia) {
+void RigidDynamicBody3D::set_inertia(const Vector3 &p_inertia) {
 	ERR_FAIL_COND(p_inertia.x < 0);
 	ERR_FAIL_COND(p_inertia.y < 0);
 	ERR_FAIL_COND(p_inertia.z < 0);
@@ -640,11 +640,11 @@ void RigidBody3D::set_inertia(const Vector3 &p_inertia) {
 	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_INERTIA, inertia);
 }
 
-const Vector3 &RigidBody3D::get_inertia() const {
+const Vector3 &RigidDynamicBody3D::get_inertia() const {
 	return inertia;
 }
 
-void RigidBody3D::set_center_of_mass_mode(CenterOfMassMode p_mode) {
+void RigidDynamicBody3D::set_center_of_mass_mode(CenterOfMassMode p_mode) {
 	if (center_of_mass_mode == p_mode) {
 		return;
 	}
@@ -666,11 +666,11 @@ void RigidBody3D::set_center_of_mass_mode(CenterOfMassMode p_mode) {
 	}
 }
 
-RigidBody3D::CenterOfMassMode RigidBody3D::get_center_of_mass_mode() const {
+RigidDynamicBody3D::CenterOfMassMode RigidDynamicBody3D::get_center_of_mass_mode() const {
 	return center_of_mass_mode;
 }
 
-void RigidBody3D::set_center_of_mass(const Vector3 &p_center_of_mass) {
+void RigidDynamicBody3D::set_center_of_mass(const Vector3 &p_center_of_mass) {
 	if (center_of_mass == p_center_of_mass) {
 		return;
 	}
@@ -681,88 +681,88 @@ void RigidBody3D::set_center_of_mass(const Vector3 &p_center_of_mass) {
 	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_CENTER_OF_MASS, center_of_mass);
 }
 
-const Vector3 &RigidBody3D::get_center_of_mass() const {
+const Vector3 &RigidDynamicBody3D::get_center_of_mass() const {
 	return center_of_mass;
 }
 
-void RigidBody3D::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
+void RigidDynamicBody3D::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
 	if (physics_material_override.is_valid()) {
-		if (physics_material_override->is_connected(CoreStringNames::get_singleton()->changed, callable_mp(this, &RigidBody3D::_reload_physics_characteristics))) {
-			physics_material_override->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &RigidBody3D::_reload_physics_characteristics));
+		if (physics_material_override->is_connected(CoreStringNames::get_singleton()->changed, callable_mp(this, &RigidDynamicBody3D::_reload_physics_characteristics))) {
+			physics_material_override->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &RigidDynamicBody3D::_reload_physics_characteristics));
 		}
 	}
 
 	physics_material_override = p_physics_material_override;
 
 	if (physics_material_override.is_valid()) {
-		physics_material_override->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &RigidBody3D::_reload_physics_characteristics));
+		physics_material_override->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &RigidDynamicBody3D::_reload_physics_characteristics));
 	}
 	_reload_physics_characteristics();
 }
 
-Ref<PhysicsMaterial> RigidBody3D::get_physics_material_override() const {
+Ref<PhysicsMaterial> RigidDynamicBody3D::get_physics_material_override() const {
 	return physics_material_override;
 }
 
-void RigidBody3D::set_gravity_scale(real_t p_gravity_scale) {
+void RigidDynamicBody3D::set_gravity_scale(real_t p_gravity_scale) {
 	gravity_scale = p_gravity_scale;
 	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_GRAVITY_SCALE, gravity_scale);
 }
 
-real_t RigidBody3D::get_gravity_scale() const {
+real_t RigidDynamicBody3D::get_gravity_scale() const {
 	return gravity_scale;
 }
 
-void RigidBody3D::set_linear_damp(real_t p_linear_damp) {
+void RigidDynamicBody3D::set_linear_damp(real_t p_linear_damp) {
 	ERR_FAIL_COND(p_linear_damp < -1);
 	linear_damp = p_linear_damp;
 	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_LINEAR_DAMP, linear_damp);
 }
 
-real_t RigidBody3D::get_linear_damp() const {
+real_t RigidDynamicBody3D::get_linear_damp() const {
 	return linear_damp;
 }
 
-void RigidBody3D::set_angular_damp(real_t p_angular_damp) {
+void RigidDynamicBody3D::set_angular_damp(real_t p_angular_damp) {
 	ERR_FAIL_COND(p_angular_damp < -1);
 	angular_damp = p_angular_damp;
 	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_ANGULAR_DAMP, angular_damp);
 }
 
-real_t RigidBody3D::get_angular_damp() const {
+real_t RigidDynamicBody3D::get_angular_damp() const {
 	return angular_damp;
 }
 
-void RigidBody3D::set_axis_velocity(const Vector3 &p_axis) {
+void RigidDynamicBody3D::set_axis_velocity(const Vector3 &p_axis) {
 	Vector3 axis = p_axis.normalized();
 	linear_velocity -= axis * axis.dot(linear_velocity);
 	linear_velocity += p_axis;
 	PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PhysicsServer3D::BODY_STATE_LINEAR_VELOCITY, linear_velocity);
 }
 
-void RigidBody3D::set_linear_velocity(const Vector3 &p_velocity) {
+void RigidDynamicBody3D::set_linear_velocity(const Vector3 &p_velocity) {
 	linear_velocity = p_velocity;
 	PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PhysicsServer3D::BODY_STATE_LINEAR_VELOCITY, linear_velocity);
 }
 
-Vector3 RigidBody3D::get_linear_velocity() const {
+Vector3 RigidDynamicBody3D::get_linear_velocity() const {
 	return linear_velocity;
 }
 
-void RigidBody3D::set_angular_velocity(const Vector3 &p_velocity) {
+void RigidDynamicBody3D::set_angular_velocity(const Vector3 &p_velocity) {
 	angular_velocity = p_velocity;
 	PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PhysicsServer3D::BODY_STATE_ANGULAR_VELOCITY, angular_velocity);
 }
 
-Vector3 RigidBody3D::get_angular_velocity() const {
+Vector3 RigidDynamicBody3D::get_angular_velocity() const {
 	return angular_velocity;
 }
 
-Basis RigidBody3D::get_inverse_inertia_tensor() const {
+Basis RigidDynamicBody3D::get_inverse_inertia_tensor() const {
 	return inverse_inertia_tensor;
 }
 
-void RigidBody3D::set_use_custom_integrator(bool p_enable) {
+void RigidDynamicBody3D::set_use_custom_integrator(bool p_enable) {
 	if (custom_integrator == p_enable) {
 		return;
 	}
@@ -771,73 +771,73 @@ void RigidBody3D::set_use_custom_integrator(bool p_enable) {
 	PhysicsServer3D::get_singleton()->body_set_omit_force_integration(get_rid(), p_enable);
 }
 
-bool RigidBody3D::is_using_custom_integrator() {
+bool RigidDynamicBody3D::is_using_custom_integrator() {
 	return custom_integrator;
 }
 
-void RigidBody3D::set_sleeping(bool p_sleeping) {
+void RigidDynamicBody3D::set_sleeping(bool p_sleeping) {
 	sleeping = p_sleeping;
 	PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PhysicsServer3D::BODY_STATE_SLEEPING, sleeping);
 }
 
-void RigidBody3D::set_can_sleep(bool p_active) {
+void RigidDynamicBody3D::set_can_sleep(bool p_active) {
 	can_sleep = p_active;
 	PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PhysicsServer3D::BODY_STATE_CAN_SLEEP, p_active);
 }
 
-bool RigidBody3D::is_able_to_sleep() const {
+bool RigidDynamicBody3D::is_able_to_sleep() const {
 	return can_sleep;
 }
 
-bool RigidBody3D::is_sleeping() const {
+bool RigidDynamicBody3D::is_sleeping() const {
 	return sleeping;
 }
 
-void RigidBody3D::set_max_contacts_reported(int p_amount) {
+void RigidDynamicBody3D::set_max_contacts_reported(int p_amount) {
 	max_contacts_reported = p_amount;
 	PhysicsServer3D::get_singleton()->body_set_max_contacts_reported(get_rid(), p_amount);
 }
 
-int RigidBody3D::get_max_contacts_reported() const {
+int RigidDynamicBody3D::get_max_contacts_reported() const {
 	return max_contacts_reported;
 }
 
-void RigidBody3D::add_central_force(const Vector3 &p_force) {
+void RigidDynamicBody3D::add_central_force(const Vector3 &p_force) {
 	PhysicsServer3D::get_singleton()->body_add_central_force(get_rid(), p_force);
 }
 
-void RigidBody3D::add_force(const Vector3 &p_force, const Vector3 &p_position) {
+void RigidDynamicBody3D::add_force(const Vector3 &p_force, const Vector3 &p_position) {
 	PhysicsServer3D *singleton = PhysicsServer3D::get_singleton();
 	singleton->body_add_force(get_rid(), p_force, p_position);
 }
 
-void RigidBody3D::add_torque(const Vector3 &p_torque) {
+void RigidDynamicBody3D::add_torque(const Vector3 &p_torque) {
 	PhysicsServer3D::get_singleton()->body_add_torque(get_rid(), p_torque);
 }
 
-void RigidBody3D::apply_central_impulse(const Vector3 &p_impulse) {
+void RigidDynamicBody3D::apply_central_impulse(const Vector3 &p_impulse) {
 	PhysicsServer3D::get_singleton()->body_apply_central_impulse(get_rid(), p_impulse);
 }
 
-void RigidBody3D::apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position) {
+void RigidDynamicBody3D::apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position) {
 	PhysicsServer3D *singleton = PhysicsServer3D::get_singleton();
 	singleton->body_apply_impulse(get_rid(), p_impulse, p_position);
 }
 
-void RigidBody3D::apply_torque_impulse(const Vector3 &p_impulse) {
+void RigidDynamicBody3D::apply_torque_impulse(const Vector3 &p_impulse) {
 	PhysicsServer3D::get_singleton()->body_apply_torque_impulse(get_rid(), p_impulse);
 }
 
-void RigidBody3D::set_use_continuous_collision_detection(bool p_enable) {
+void RigidDynamicBody3D::set_use_continuous_collision_detection(bool p_enable) {
 	ccd = p_enable;
 	PhysicsServer3D::get_singleton()->body_set_enable_continuous_collision_detection(get_rid(), p_enable);
 }
 
-bool RigidBody3D::is_using_continuous_collision_detection() const {
+bool RigidDynamicBody3D::is_using_continuous_collision_detection() const {
 	return ccd;
 }
 
-void RigidBody3D::set_contact_monitor(bool p_enabled) {
+void RigidDynamicBody3D::set_contact_monitor(bool p_enabled) {
 	if (p_enabled == is_contact_monitor_enabled()) {
 		return;
 	}
@@ -851,8 +851,8 @@ void RigidBody3D::set_contact_monitor(bool p_enabled) {
 			Node *node = Object::cast_to<Node>(obj);
 
 			if (node) {
-				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidBody3D::_body_enter_tree));
-				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidBody3D::_body_exit_tree));
+				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidDynamicBody3D::_body_enter_tree));
+				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidDynamicBody3D::_body_exit_tree));
 			}
 		}
 
@@ -864,11 +864,11 @@ void RigidBody3D::set_contact_monitor(bool p_enabled) {
 	}
 }
 
-bool RigidBody3D::is_contact_monitor_enabled() const {
+bool RigidDynamicBody3D::is_contact_monitor_enabled() const {
 	return contact_monitor != nullptr;
 }
 
-Array RigidBody3D::get_colliding_bodies() const {
+Array RigidDynamicBody3D::get_colliding_bodies() const {
 	ERR_FAIL_COND_V(!contact_monitor, Array());
 
 	Array ret;
@@ -886,83 +886,83 @@ Array RigidBody3D::get_colliding_bodies() const {
 	return ret;
 }
 
-TypedArray<String> RigidBody3D::get_configuration_warnings() const {
+TypedArray<String> RigidDynamicBody3D::get_configuration_warnings() const {
 	Transform3D t = get_transform();
 
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if ((get_mode() == MODE_DYNAMIC || get_mode() == MODE_DYNAMIC_LOCKED) && (ABS(t.basis.get_axis(0).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(1).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(2).length() - 1.0) > 0.05)) {
-		warnings.push_back(TTR("Size changes to RigidBody3D (in dynamic modes) will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
+		warnings.push_back(TTR("Size changes to RigidDynamicBody (in dynamic modes) will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
 	}
 
 	return warnings;
 }
 
-void RigidBody3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_mode", "mode"), &RigidBody3D::set_mode);
-	ClassDB::bind_method(D_METHOD("get_mode"), &RigidBody3D::get_mode);
+void RigidDynamicBody3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_mode", "mode"), &RigidDynamicBody3D::set_mode);
+	ClassDB::bind_method(D_METHOD("get_mode"), &RigidDynamicBody3D::get_mode);
 
-	ClassDB::bind_method(D_METHOD("set_mass", "mass"), &RigidBody3D::set_mass);
-	ClassDB::bind_method(D_METHOD("get_mass"), &RigidBody3D::get_mass);
+	ClassDB::bind_method(D_METHOD("set_mass", "mass"), &RigidDynamicBody3D::set_mass);
+	ClassDB::bind_method(D_METHOD("get_mass"), &RigidDynamicBody3D::get_mass);
 
-	ClassDB::bind_method(D_METHOD("set_inertia", "inertia"), &RigidBody3D::set_inertia);
-	ClassDB::bind_method(D_METHOD("get_inertia"), &RigidBody3D::get_inertia);
+	ClassDB::bind_method(D_METHOD("set_inertia", "inertia"), &RigidDynamicBody3D::set_inertia);
+	ClassDB::bind_method(D_METHOD("get_inertia"), &RigidDynamicBody3D::get_inertia);
 
-	ClassDB::bind_method(D_METHOD("set_center_of_mass_mode", "mode"), &RigidBody3D::set_center_of_mass_mode);
-	ClassDB::bind_method(D_METHOD("get_center_of_mass_mode"), &RigidBody3D::get_center_of_mass_mode);
+	ClassDB::bind_method(D_METHOD("set_center_of_mass_mode", "mode"), &RigidDynamicBody3D::set_center_of_mass_mode);
+	ClassDB::bind_method(D_METHOD("get_center_of_mass_mode"), &RigidDynamicBody3D::get_center_of_mass_mode);
 
-	ClassDB::bind_method(D_METHOD("set_center_of_mass", "center_of_mass"), &RigidBody3D::set_center_of_mass);
-	ClassDB::bind_method(D_METHOD("get_center_of_mass"), &RigidBody3D::get_center_of_mass);
+	ClassDB::bind_method(D_METHOD("set_center_of_mass", "center_of_mass"), &RigidDynamicBody3D::set_center_of_mass);
+	ClassDB::bind_method(D_METHOD("get_center_of_mass"), &RigidDynamicBody3D::get_center_of_mass);
 
-	ClassDB::bind_method(D_METHOD("set_physics_material_override", "physics_material_override"), &RigidBody3D::set_physics_material_override);
-	ClassDB::bind_method(D_METHOD("get_physics_material_override"), &RigidBody3D::get_physics_material_override);
+	ClassDB::bind_method(D_METHOD("set_physics_material_override", "physics_material_override"), &RigidDynamicBody3D::set_physics_material_override);
+	ClassDB::bind_method(D_METHOD("get_physics_material_override"), &RigidDynamicBody3D::get_physics_material_override);
 
-	ClassDB::bind_method(D_METHOD("set_linear_velocity", "linear_velocity"), &RigidBody3D::set_linear_velocity);
-	ClassDB::bind_method(D_METHOD("get_linear_velocity"), &RigidBody3D::get_linear_velocity);
+	ClassDB::bind_method(D_METHOD("set_linear_velocity", "linear_velocity"), &RigidDynamicBody3D::set_linear_velocity);
+	ClassDB::bind_method(D_METHOD("get_linear_velocity"), &RigidDynamicBody3D::get_linear_velocity);
 
-	ClassDB::bind_method(D_METHOD("set_angular_velocity", "angular_velocity"), &RigidBody3D::set_angular_velocity);
-	ClassDB::bind_method(D_METHOD("get_angular_velocity"), &RigidBody3D::get_angular_velocity);
+	ClassDB::bind_method(D_METHOD("set_angular_velocity", "angular_velocity"), &RigidDynamicBody3D::set_angular_velocity);
+	ClassDB::bind_method(D_METHOD("get_angular_velocity"), &RigidDynamicBody3D::get_angular_velocity);
 
-	ClassDB::bind_method(D_METHOD("get_inverse_inertia_tensor"), &RigidBody3D::get_inverse_inertia_tensor);
+	ClassDB::bind_method(D_METHOD("get_inverse_inertia_tensor"), &RigidDynamicBody3D::get_inverse_inertia_tensor);
 
-	ClassDB::bind_method(D_METHOD("set_gravity_scale", "gravity_scale"), &RigidBody3D::set_gravity_scale);
-	ClassDB::bind_method(D_METHOD("get_gravity_scale"), &RigidBody3D::get_gravity_scale);
+	ClassDB::bind_method(D_METHOD("set_gravity_scale", "gravity_scale"), &RigidDynamicBody3D::set_gravity_scale);
+	ClassDB::bind_method(D_METHOD("get_gravity_scale"), &RigidDynamicBody3D::get_gravity_scale);
 
-	ClassDB::bind_method(D_METHOD("set_linear_damp", "linear_damp"), &RigidBody3D::set_linear_damp);
-	ClassDB::bind_method(D_METHOD("get_linear_damp"), &RigidBody3D::get_linear_damp);
+	ClassDB::bind_method(D_METHOD("set_linear_damp", "linear_damp"), &RigidDynamicBody3D::set_linear_damp);
+	ClassDB::bind_method(D_METHOD("get_linear_damp"), &RigidDynamicBody3D::get_linear_damp);
 
-	ClassDB::bind_method(D_METHOD("set_angular_damp", "angular_damp"), &RigidBody3D::set_angular_damp);
-	ClassDB::bind_method(D_METHOD("get_angular_damp"), &RigidBody3D::get_angular_damp);
+	ClassDB::bind_method(D_METHOD("set_angular_damp", "angular_damp"), &RigidDynamicBody3D::set_angular_damp);
+	ClassDB::bind_method(D_METHOD("get_angular_damp"), &RigidDynamicBody3D::get_angular_damp);
 
-	ClassDB::bind_method(D_METHOD("set_max_contacts_reported", "amount"), &RigidBody3D::set_max_contacts_reported);
-	ClassDB::bind_method(D_METHOD("get_max_contacts_reported"), &RigidBody3D::get_max_contacts_reported);
+	ClassDB::bind_method(D_METHOD("set_max_contacts_reported", "amount"), &RigidDynamicBody3D::set_max_contacts_reported);
+	ClassDB::bind_method(D_METHOD("get_max_contacts_reported"), &RigidDynamicBody3D::get_max_contacts_reported);
 
-	ClassDB::bind_method(D_METHOD("set_use_custom_integrator", "enable"), &RigidBody3D::set_use_custom_integrator);
-	ClassDB::bind_method(D_METHOD("is_using_custom_integrator"), &RigidBody3D::is_using_custom_integrator);
+	ClassDB::bind_method(D_METHOD("set_use_custom_integrator", "enable"), &RigidDynamicBody3D::set_use_custom_integrator);
+	ClassDB::bind_method(D_METHOD("is_using_custom_integrator"), &RigidDynamicBody3D::is_using_custom_integrator);
 
-	ClassDB::bind_method(D_METHOD("set_contact_monitor", "enabled"), &RigidBody3D::set_contact_monitor);
-	ClassDB::bind_method(D_METHOD("is_contact_monitor_enabled"), &RigidBody3D::is_contact_monitor_enabled);
+	ClassDB::bind_method(D_METHOD("set_contact_monitor", "enabled"), &RigidDynamicBody3D::set_contact_monitor);
+	ClassDB::bind_method(D_METHOD("is_contact_monitor_enabled"), &RigidDynamicBody3D::is_contact_monitor_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_use_continuous_collision_detection", "enable"), &RigidBody3D::set_use_continuous_collision_detection);
-	ClassDB::bind_method(D_METHOD("is_using_continuous_collision_detection"), &RigidBody3D::is_using_continuous_collision_detection);
+	ClassDB::bind_method(D_METHOD("set_use_continuous_collision_detection", "enable"), &RigidDynamicBody3D::set_use_continuous_collision_detection);
+	ClassDB::bind_method(D_METHOD("is_using_continuous_collision_detection"), &RigidDynamicBody3D::is_using_continuous_collision_detection);
 
-	ClassDB::bind_method(D_METHOD("set_axis_velocity", "axis_velocity"), &RigidBody3D::set_axis_velocity);
+	ClassDB::bind_method(D_METHOD("set_axis_velocity", "axis_velocity"), &RigidDynamicBody3D::set_axis_velocity);
 
-	ClassDB::bind_method(D_METHOD("add_central_force", "force"), &RigidBody3D::add_central_force);
-	ClassDB::bind_method(D_METHOD("add_force", "force", "position"), &RigidBody3D::add_force, Vector3());
-	ClassDB::bind_method(D_METHOD("add_torque", "torque"), &RigidBody3D::add_torque);
+	ClassDB::bind_method(D_METHOD("add_central_force", "force"), &RigidDynamicBody3D::add_central_force);
+	ClassDB::bind_method(D_METHOD("add_force", "force", "position"), &RigidDynamicBody3D::add_force, Vector3());
+	ClassDB::bind_method(D_METHOD("add_torque", "torque"), &RigidDynamicBody3D::add_torque);
 
-	ClassDB::bind_method(D_METHOD("apply_central_impulse", "impulse"), &RigidBody3D::apply_central_impulse);
-	ClassDB::bind_method(D_METHOD("apply_impulse", "impulse", "position"), &RigidBody3D::apply_impulse, Vector3());
-	ClassDB::bind_method(D_METHOD("apply_torque_impulse", "impulse"), &RigidBody3D::apply_torque_impulse);
+	ClassDB::bind_method(D_METHOD("apply_central_impulse", "impulse"), &RigidDynamicBody3D::apply_central_impulse);
+	ClassDB::bind_method(D_METHOD("apply_impulse", "impulse", "position"), &RigidDynamicBody3D::apply_impulse, Vector3());
+	ClassDB::bind_method(D_METHOD("apply_torque_impulse", "impulse"), &RigidDynamicBody3D::apply_torque_impulse);
 
-	ClassDB::bind_method(D_METHOD("set_sleeping", "sleeping"), &RigidBody3D::set_sleeping);
-	ClassDB::bind_method(D_METHOD("is_sleeping"), &RigidBody3D::is_sleeping);
+	ClassDB::bind_method(D_METHOD("set_sleeping", "sleeping"), &RigidDynamicBody3D::set_sleeping);
+	ClassDB::bind_method(D_METHOD("is_sleeping"), &RigidDynamicBody3D::is_sleeping);
 
-	ClassDB::bind_method(D_METHOD("set_can_sleep", "able_to_sleep"), &RigidBody3D::set_can_sleep);
-	ClassDB::bind_method(D_METHOD("is_able_to_sleep"), &RigidBody3D::is_able_to_sleep);
+	ClassDB::bind_method(D_METHOD("set_can_sleep", "able_to_sleep"), &RigidDynamicBody3D::set_can_sleep);
+	ClassDB::bind_method(D_METHOD("is_able_to_sleep"), &RigidDynamicBody3D::is_able_to_sleep);
 
-	ClassDB::bind_method(D_METHOD("get_colliding_bodies"), &RigidBody3D::get_colliding_bodies);
+	ClassDB::bind_method(D_METHOD("get_colliding_bodies"), &RigidDynamicBody3D::get_colliding_bodies);
 
 	GDVIRTUAL_BIND(_integrate_forces, "state");
 
@@ -1002,7 +1002,7 @@ void RigidBody3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(CENTER_OF_MASS_MODE_CUSTOM);
 }
 
-void RigidBody3D::_validate_property(PropertyInfo &property) const {
+void RigidDynamicBody3D::_validate_property(PropertyInfo &property) const {
 	if (center_of_mass_mode != CENTER_OF_MASS_MODE_CUSTOM) {
 		if (property.name == "center_of_mass") {
 			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
@@ -1010,18 +1010,18 @@ void RigidBody3D::_validate_property(PropertyInfo &property) const {
 	}
 }
 
-RigidBody3D::RigidBody3D() :
+RigidDynamicBody3D::RigidDynamicBody3D() :
 		PhysicsBody3D(PhysicsServer3D::BODY_MODE_DYNAMIC) {
 	PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), this, _body_state_changed_callback);
 }
 
-RigidBody3D::~RigidBody3D() {
+RigidDynamicBody3D::~RigidDynamicBody3D() {
 	if (contact_monitor) {
 		memdelete(contact_monitor);
 	}
 }
 
-void RigidBody3D::_reload_physics_characteristics() {
+void RigidDynamicBody3D::_reload_physics_characteristics() {
 	if (physics_material_override.is_null()) {
 		PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_BOUNCE, 0);
 		PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_FRICTION, 1);

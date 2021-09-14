@@ -129,8 +129,8 @@ private:
 	bool is_sync_to_physics_enabled() const;
 };
 
-class RigidBody3D : public PhysicsBody3D {
-	GDCLASS(RigidBody3D, PhysicsBody3D);
+class RigidDynamicBody3D : public PhysicsBody3D {
+	GDCLASS(RigidDynamicBody3D, PhysicsBody3D);
 
 public:
 	enum Mode {
@@ -191,7 +191,7 @@ protected:
 			tagged = false;
 		}
 	};
-	struct RigidBody3D_RemoveAction {
+	struct RigidDynamicBody3D_RemoveAction {
 		RID rid;
 		ObjectID body_id;
 		ShapePair pair;
@@ -291,15 +291,15 @@ public:
 
 	virtual TypedArray<String> get_configuration_warnings() const override;
 
-	RigidBody3D();
-	~RigidBody3D();
+	RigidDynamicBody3D();
+	~RigidDynamicBody3D();
 
 private:
 	void _reload_physics_characteristics();
 };
 
-VARIANT_ENUM_CAST(RigidBody3D::Mode);
-VARIANT_ENUM_CAST(RigidBody3D::CenterOfMassMode);
+VARIANT_ENUM_CAST(RigidDynamicBody3D::Mode);
+VARIANT_ENUM_CAST(RigidDynamicBody3D::CenterOfMassMode);
 
 class KinematicCollision3D;
 

@@ -22,23 +22,23 @@
 		AddChild(scene);
 		[/csharp]
 		[/codeblocks]
-		[b]Example of saving a node with different owners:[/b] The following example creates 3 objects: [code]Node2D[/code] ([code]node[/code]), [code]RigidBody2D[/code] ([code]rigid[/code]) and [code]CollisionObject2D[/code] ([code]collision[/code]). [code]collision[/code] is a child of [code]rigid[/code] which is a child of [code]node[/code]. Only [code]rigid[/code] is owned by [code]node[/code] and [code]pack[/code] will therefore only save those two nodes, but not [code]collision[/code].
+		[b]Example of saving a node with different owners:[/b] The following example creates 3 objects: [code]Node2D[/code] ([code]node[/code]), [code]RigidDynamicBody2D[/code] ([code]body[/code]) and [code]CollisionObject2D[/code] ([code]collision[/code]). [code]collision[/code] is a child of [code]body[/code] which is a child of [code]node[/code]. Only [code]body[/code] is owned by [code]node[/code] and [code]pack[/code] will therefore only save those two nodes, but not [code]collision[/code].
 		[codeblocks]
 		[gdscript]
 		# Create the objects.
 		var node = Node2D.new()
-		var rigid = RigidBody2D.new()
+		var body = RigidDynamicBody2D.new()
 		var collision = CollisionShape2D.new()
 
 		# Create the object hierarchy.
-		rigid.add_child(collision)
-		node.add_child(rigid)
+		body.add_child(collision)
+		node.add_child(body)
 
-		# Change owner of `rigid`, but not of `collision`.
-		rigid.owner = node
+		# Change owner of `body`, but not of `collision`.
+		body.owner = node
 		var scene = PackedScene.new()
 
-		# Only `node` and `rigid` are now packed.
+		# Only `node` and `body` are now packed.
 		var result = scene.pack(node)
 		if result == OK:
 		    var error = ResourceSaver.save("res://path/name.tscn", scene)  # Or "user://..."
@@ -48,18 +48,18 @@
 		[csharp]
 		// Create the objects.
 		var node = new Node2D();
-		var rigid = new RigidBody2D();
+		var body = new RigidDynamicBody2D();
 		var collision = new CollisionShape2D();
 
 		// Create the object hierarchy.
-		rigid.AddChild(collision);
-		node.AddChild(rigid);
+		body.AddChild(collision);
+		node.AddChild(body);
 
-		// Change owner of `rigid`, but not of `collision`.
-		rigid.Owner = node;
+		// Change owner of `body`, but not of `collision`.
+		body.Owner = node;
 		var scene = new PackedScene();
 
-		// Only `node` and `rigid` are now packed.
+		// Only `node` and `body` are now packed.
 		Error result = scene.Pack(node);
 		if (result == Error.Ok)
 		{

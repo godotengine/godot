@@ -379,8 +379,8 @@ public:
 	VehicleWheel3DGizmoPlugin();
 };
 
-class SoftBody3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-	GDCLASS(SoftBody3DGizmoPlugin, EditorNode3DGizmoPlugin);
+class SoftDynamicBody3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(SoftDynamicBody3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
@@ -394,7 +394,7 @@ public:
 	void commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, const Variant &p_restore, bool p_cancel = false) override;
 	bool is_handle_highlighted(const EditorNode3DGizmo *p_gizmo, int p_id) const override;
 
-	SoftBody3DGizmoPlugin();
+	SoftDynamicBody3DGizmoPlugin();
 };
 
 class VisibleOnScreenNotifier3DGizmoPlugin : public EditorNode3DGizmoPlugin {
