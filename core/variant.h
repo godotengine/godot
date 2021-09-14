@@ -192,6 +192,8 @@ public:
 	bool is_zero() const;
 	bool is_one() const;
 
+	ObjectID get_object_instance_id() const;
+
 	operator bool() const;
 	operator signed int() const;
 	operator unsigned int() const; // this is the real one
