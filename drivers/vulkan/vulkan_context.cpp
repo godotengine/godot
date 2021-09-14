@@ -275,22 +275,21 @@ Error VulkanContext::_obtain_vulkan_version() {
 		if (res == VK_SUCCESS) {
 			vulkan_major = VK_VERSION_MAJOR(api_version);
 			vulkan_minor = VK_VERSION_MINOR(api_version);
-			uint32_t vulkan_patch = VK_VERSION_PATCH(api_version);
-
-			print_line("Vulkan API " + itos(vulkan_major) + "." + itos(vulkan_minor) + "." + itos(vulkan_patch));
+			vulkan_patch = VK_VERSION_PATCH(api_version);
 		} else {
 			// according to the documentation this shouldn't fail with anything except a memory allocation error
 			// in which case we're in deep trouble anyway
 			ERR_FAIL_V(ERR_CANT_CREATE);
 		}
 	} else {
-		print_line("vkEnumerateInstanceVersion not available, assuming Vulkan 1.0");
+		print_line("vkEnumerateInstanceVersion not available, assuming Vulkan 1.0.");
 	}
 
 	// we don't go above 1.2
 	if ((vulkan_major > 1) || (vulkan_major == 1 && vulkan_minor > 2)) {
 		vulkan_major = 1;
 		vulkan_minor = 2;
+		vulkan_patch = 0;
 	}
 
 	return OK;
@@ -759,7 +758,9 @@ Error VulkanContext::_create_physical_device() {
 		}
 	}
 
-	print_line("Using Vulkan Device #" + itos(device_index) + ": " + device_vendor + " - " + device_name);
+	print_line(
+			"Vulkan API " + itos(vulkan_major) + "." + itos(vulkan_minor) + "." + itos(vulkan_patch) +
+			" - " + "Using Vulkan Device #" + itos(device_index) + ": " + device_vendor + " - " + device_name);
 
 	device_api_version = gpu_props.apiVersion;
 
