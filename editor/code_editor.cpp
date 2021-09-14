@@ -1302,7 +1302,9 @@ void CodeTextEditor::_delete_line(int p_line) {
 		text_editor->set_caret_column(0);
 	}
 	text_editor->backspace();
-	text_editor->unfold_line(p_line);
+	if (p_line < text_editor->get_line_count()) {
+		text_editor->unfold_line(p_line);
+	}
 	text_editor->set_caret_line(p_line);
 }
 
