@@ -91,7 +91,7 @@ RID RasterizerCanvasBaseGLES3::light_internal_create() {
 
 	glGenBuffers(1, &li->ubo);
 	glBindBuffer(GL_UNIFORM_BUFFER, li->ubo);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(LightInternal::UBOData), &state.canvas_item_ubo_data, GL_DYNAMIC_DRAW);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(LightInternal::UBOData), nullptr, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	return light_internal_owner.make_rid(li);
