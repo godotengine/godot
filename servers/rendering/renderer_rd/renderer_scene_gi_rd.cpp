@@ -3098,12 +3098,14 @@ void RendererSceneGIRD::setup_voxel_gi_instances(RID p_render_buffers, const Tra
 		}
 		rb->gi.uniform_set = RID();
 		if (rb->volumetric_fog) {
-			if (RD::get_singleton()->uniform_set_is_valid(rb->volumetric_fog->uniform_set)) {
-				RD::get_singleton()->free(rb->volumetric_fog->uniform_set);
-				RD::get_singleton()->free(rb->volumetric_fog->uniform_set2);
+			if (RD::get_singleton()->uniform_set_is_valid(rb->volumetric_fog->fog_uniform_set)) {
+				RD::get_singleton()->free(rb->volumetric_fog->fog_uniform_set);
+				RD::get_singleton()->free(rb->volumetric_fog->process_uniform_set);
+				RD::get_singleton()->free(rb->volumetric_fog->process_uniform_set2);
 			}
-			rb->volumetric_fog->uniform_set = RID();
-			rb->volumetric_fog->uniform_set2 = RID();
+			rb->volumetric_fog->fog_uniform_set = RID();
+			rb->volumetric_fog->process_uniform_set = RID();
+			rb->volumetric_fog->process_uniform_set2 = RID();
 		}
 	}
 

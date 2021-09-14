@@ -1399,6 +1399,8 @@ void RendererStorageRD::shader_set_code(RID p_shader, const String &p_code) {
 		new_type = SHADER_TYPE_3D;
 	} else if (mode_string == "sky") {
 		new_type = SHADER_TYPE_SKY;
+	} else if (mode_string == "fog") {
+		new_type = SHADER_TYPE_FOG;
 	} else {
 		new_type = SHADER_TYPE_MAX;
 	}

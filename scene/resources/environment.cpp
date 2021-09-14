@@ -792,7 +792,11 @@ void Environment::_update_fog() {
 // Volumetric Fog
 
 void Environment::_update_volumetric_fog() {
-	RS::get_singleton()->environment_set_volumetric_fog(environment, volumetric_fog_enabled, volumetric_fog_density, volumetric_fog_light, volumetric_fog_light_energy, volumetric_fog_length, volumetric_fog_detail_spread, volumetric_fog_gi_inject, volumetric_fog_temporal_reproject, volumetric_fog_temporal_reproject_amount);
+	RID volumetric_fog_material_rid;
+	if (volumetric_fog_material.is_valid()) {
+		volumetric_fog_material_rid = volumetric_fog_material->get_rid();
+	}
+	RS::get_singleton()->environment_set_volumetric_fog(environment, volumetric_fog_enabled, volumetric_fog_density, volumetric_fog_light, volumetric_fog_light_energy, volumetric_fog_length, volumetric_fog_detail_spread, volumetric_fog_gi_inject, volumetric_fog_temporal_reproject, volumetric_fog_temporal_reproject_amount, volumetric_fog_material_rid);
 }
 
 void Environment::set_volumetric_fog_enabled(bool p_enable) {
@@ -863,6 +867,15 @@ void Environment::set_volumetric_fog_temporal_reprojection_amount(float p_amount
 
 float Environment::get_volumetric_fog_temporal_reprojection_amount() const {
 	return volumetric_fog_temporal_reproject_amount;
+}
+
+void Environment::set_volumetric_fog_material(const Ref<Material> &p_material) {
+	volumetric_fog_material = p_material;
+	_update_volumetric_fog();
+}
+
+Ref<Material> Environment::get_volumetric_fog_material() const {
+	return volumetric_fog_material;
 }
 
 // Adjustment
@@ -1324,6 +1337,8 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_volumetric_fog_temporal_reprojection_enabled"), &Environment::is_volumetric_fog_temporal_reprojection_enabled);
 	ClassDB::bind_method(D_METHOD("set_volumetric_fog_temporal_reprojection_amount", "temporal_reprojection_amount"), &Environment::set_volumetric_fog_temporal_reprojection_amount);
 	ClassDB::bind_method(D_METHOD("get_volumetric_fog_temporal_reprojection_amount"), &Environment::get_volumetric_fog_temporal_reprojection_amount);
+	ClassDB::bind_method(D_METHOD("set_volumetric_fog_material", "material"), &Environment::set_volumetric_fog_material);
+	ClassDB::bind_method(D_METHOD("get_volumetric_fog_material"), &Environment::get_volumetric_fog_material);
 
 	ADD_GROUP("Volumetric Fog", "volumetric_fog_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "volumetric_fog_enabled"), "set_volumetric_fog_enabled", "is_volumetric_fog_enabled");
@@ -1333,6 +1348,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_gi_inject", PROPERTY_HINT_RANGE, "0.00,16,0.01,exp"), "set_volumetric_fog_gi_inject", "get_volumetric_fog_gi_inject");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_length", PROPERTY_HINT_RANGE, "0,1024,0.01,or_greater"), "set_volumetric_fog_length", "get_volumetric_fog_length");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_detail_spread", PROPERTY_HINT_EXP_EASING, "0.01,16,0.01"), "set_volumetric_fog_detail_spread", "get_volumetric_fog_detail_spread");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "volumetric_fog_material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial"), "set_volumetric_fog_material", "get_volumetric_fog_material");
 	ADD_SUBGROUP("Temporal Reprojection", "volumetric_fog_temporal_reprojection_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "volumetric_fog_temporal_reprojection_enabled"), "set_volumetric_fog_temporal_reprojection_enabled", "is_volumetric_fog_temporal_reprojection_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_temporal_reprojection_amount", PROPERTY_HINT_RANGE, "0.0,0.999,0.001"), "set_volumetric_fog_temporal_reprojection_amount", "get_volumetric_fog_temporal_reprojection_amount");

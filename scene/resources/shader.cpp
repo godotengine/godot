@@ -49,6 +49,8 @@ void Shader::set_code(const String &p_code) {
 		mode = MODE_PARTICLES;
 	} else if (type == "sky") {
 		mode = MODE_SKY;
+	} else if (type == "fog") {
+		mode = MODE_FOG;
 	} else {
 		mode = MODE_SPATIAL;
 	}
@@ -149,6 +151,7 @@ void Shader::_bind_methods() {
 	BIND_ENUM_CONSTANT(MODE_CANVAS_ITEM);
 	BIND_ENUM_CONSTANT(MODE_PARTICLES);
 	BIND_ENUM_CONSTANT(MODE_SKY);
+	BIND_ENUM_CONSTANT(MODE_FOG);
 }
 
 Shader::Shader() {

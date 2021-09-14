@@ -32,6 +32,7 @@
 #define ENVIRONMENT_H
 
 #include "core/io/resource.h"
+#include "scene/resources/material.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/texture.h"
 #include "servers/rendering_server.h"
@@ -199,6 +200,7 @@ private:
 	float volumetric_fog_gi_inject = 0.0;
 	bool volumetric_fog_temporal_reproject = true;
 	float volumetric_fog_temporal_reproject_amount = 0.9;
+	Ref<Material> volumetric_fog_material;
 	void _update_volumetric_fog();
 
 	// Adjustment
@@ -392,6 +394,8 @@ public:
 	bool is_volumetric_fog_temporal_reprojection_enabled() const;
 	void set_volumetric_fog_temporal_reprojection_amount(float p_amount);
 	float get_volumetric_fog_temporal_reprojection_amount() const;
+	void set_volumetric_fog_material(const Ref<Material> &p_material);
+	Ref<Material> get_volumetric_fog_material() const;
 
 	// Adjustment
 	void set_adjustment_enabled(bool p_enabled);

@@ -1116,6 +1116,7 @@
 			<argument index="7" name="gi_inject" type="float" />
 			<argument index="8" name="temporal_reprojection" type="bool" />
 			<argument index="9" name="temporal_reprojection_amount" type="float" />
+			<argument index="10" name="material" type="RID" />
 			<description>
 			</description>
 		</method>
@@ -3396,7 +3397,10 @@
 		<constant name="SHADER_SKY" value="3" enum="ShaderMode">
 			Shader is a sky shader.
 		</constant>
-		<constant name="SHADER_MAX" value="4" enum="ShaderMode">
+		<constant name="SHADER_FOG" value="4" enum="ShaderMode">
+			Shader is a fog shader.
+		</constant>
+		<constant name="SHADER_MAX" value="5" enum="ShaderMode">
 			Represents the size of the [enum ShaderMode] enum.
 		</constant>
 		<constant name="MATERIAL_RENDER_PRIORITY_MIN" value="-128">

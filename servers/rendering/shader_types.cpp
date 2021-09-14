@@ -443,10 +443,23 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SKY].modes.push_back("use_quarter_res_pass");
 	shader_modes[RS::SHADER_SKY].modes.push_back("disable_fog");
 
+	/************ FOG **************************/
+
+	shader_modes[RS::SHADER_FOG].functions["global"].built_ins["TIME"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_FOG].functions["global"].built_ins["PI"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_FOG].functions["global"].built_ins["TAU"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_FOG].functions["global"].built_ins["E"] = constt(ShaderLanguage::TYPE_FLOAT);
+
+	shader_modes[RS::SHADER_FOG].functions["fog"].built_ins["POSITION"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_FOG].functions["fog"].built_ins["COLOR"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_FOG].functions["fog"].built_ins["DENSITY"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_FOG].functions["fog"].main_function = true;
+
 	shader_types_list.push_back("spatial");
 	shader_types_list.push_back("canvas_item");
 	shader_types_list.push_back("particles");
 	shader_types_list.push_back("sky");
+	shader_types_list.push_back("fog");
 
 	for (int i = 0; i < shader_types_list.size(); i++) {
 		shader_types.insert(shader_types_list[i]);

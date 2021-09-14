@@ -40,6 +40,7 @@
 #include "servers/rendering/renderer_rd/renderer_scene_sky_rd.h"
 #include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_rd/shaders/volumetric_fog.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/volumetric_fog_process.glsl.gen.h"
 #include "servers/rendering/renderer_scene.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
@@ -720,22 +721,15 @@ private:
 		RID prev_light_density_map;
 
 		RID fog_map;
-		RID uniform_set;
-		RID uniform_set2;
+		RID fog_uniform_set;
+		RID process_uniform_set;
+		RID process_uniform_set2;
 		RID sdfgi_uniform_set;
 		RID sky_uniform_set;
 
 		int last_shadow_filter = -1;
 
 		Transform3D prev_cam_transform;
-	};
-
-	enum {
-		VOLUMETRIC_FOG_SHADER_DENSITY,
-		VOLUMETRIC_FOG_SHADER_DENSITY_WITH_SDFGI,
-		VOLUMETRIC_FOG_SHADER_FILTER,
-		VOLUMETRIC_FOG_SHADER_FOG,
-		VOLUMETRIC_FOG_SHADER_MAX,
 	};
 
 	struct VolumetricFogShader {
@@ -746,7 +740,7 @@ private:
 			float fog_frustum_end;
 			float z_near;
 			float z_far;
-			uint32_t filter_axis;
+			float time;
 
 			int32_t fog_volume_size[3];
 			uint32_t directional_light_count;
@@ -770,13 +764,49 @@ private:
 
 			float cam_rotation[12];
 			float to_prev_view[16];
+			float view_transform[16];
 		};
 
+		enum FogSet {
+			FOG_SET_BASE,
+			FOG_SET_UNIFORMS,
+			FOG_SET_SDFGI,
+			FOG_SET_MATERIAL,
+			FOG_SET_MAX,
+		};
+
+		ShaderCompilerRD compiler;
 		VolumetricFogShaderRD shader;
 
+		RID default_shader;
+		RID default_material;
+		RID default_shader_rd;
+
+		RID base_uniform_set;
+
 		RID params_ubo;
-		RID shader_version;
-		RID pipelines[VOLUMETRIC_FOG_SHADER_MAX];
+
+		enum {
+			VOLUMETRIC_FOG_PROCESS_SHADER_FILTER,
+			VOLUMETRIC_FOG_PROCESS_SHADER_PROCESS,
+			VOLUMETRIC_FOG_PROCESS_SHADER_MAX,
+		};
+
+		struct ProcessPushConstant {
+			float fog_frustum_end;
+			float detail_spread;
+			float pad[2];
+
+			int32_t fog_volume_size[3];
+			uint32_t filter_axis;
+		};
+
+		VolumetricFogProcessShaderRD process_shader;
+
+		RID process_shader_version;
+		RID process_pipelines[VOLUMETRIC_FOG_PROCESS_SHADER_MAX];
+
+		ProcessPushConstant process_push_constant;
 
 	} volumetric_fog;
 
@@ -786,6 +816,54 @@ private:
 
 	void _volumetric_fog_erase(RenderBuffers *rb);
 	void _update_volumetric_fog(RID p_render_buffers, RID p_environment, const CameraMatrix &p_cam_projection, const Transform3D &p_cam_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count);
+
+	struct FogShaderData : public RendererStorageRD::ShaderData {
+		bool valid;
+		RID version;
+
+		RID pipelines[2];
+		Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
+		Vector<ShaderCompilerRD::GeneratedCode::Texture> texture_uniforms;
+
+		Vector<uint32_t> ubo_offsets;
+		uint32_t ubo_size;
+
+		String path;
+		String code;
+		Map<StringName, RID> default_texture_params;
+
+		bool uses_time;
+
+		virtual void set_code(const String &p_Code);
+		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
+		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
+		virtual void get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const;
+		virtual bool is_param_texture(const StringName &p_param) const;
+		virtual bool is_animated() const;
+		virtual bool casts_shadows() const;
+		virtual Variant get_default_parameter(const StringName &p_parameter) const;
+		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		FogShaderData();
+		virtual ~FogShaderData();
+	};
+
+	struct FogMaterialData : public RendererStorageRD::MaterialData {
+		uint64_t last_frame;
+		FogShaderData *shader_data;
+		RID uniform_set;
+		bool uniform_set_updated;
+
+		virtual void set_render_priority(int p_priority) {}
+		virtual void set_next_pass(RID p_pass) {}
+		virtual bool update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
+		virtual ~FogMaterialData();
+	};
+
+	RendererStorageRD::ShaderData *_create_fog_shader_func();
+	static RendererStorageRD::ShaderData *_create_fog_shader_funcs();
+
+	RendererStorageRD::MaterialData *_create_fog_material_func(FogShaderData *p_shader);
+	static RendererStorageRD::MaterialData *_create_fog_material_funcs(RendererStorageRD::ShaderData *p_shader);
 
 	RID shadow_sampler;
 
@@ -905,7 +983,7 @@ public:
 	float environment_get_fog_height_density(RID p_env) const;
 	float environment_get_fog_aerial_perspective(RID p_env) const;
 
-	virtual void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount) override;
+	virtual void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount, RID p_material) override;
 
 	virtual void environment_set_volumetric_fog_volume_size(int p_size, int p_depth) override;
 	virtual void environment_set_volumetric_fog_filter_active(bool p_enable) override;

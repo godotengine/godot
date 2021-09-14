@@ -262,6 +262,10 @@
 		</member>
 		<member name="volumetric_fog_light_energy" type="float" setter="set_volumetric_fog_light_energy" getter="get_volumetric_fog_light_energy" default="1.0">
 		</member>
+		<member name="volumetric_fog_material" type="Material" setter="set_volumetric_fog_material" getter="get_volumetric_fog_material">
+			Material used to set the color and density of volumetric fog effect.
+			Note: the material operates in world-space froxels, so the resolution is very low and it is best used for subtle effects.
+		</member>
 		<member name="volumetric_fog_temporal_reprojection_amount" type="float" setter="set_volumetric_fog_temporal_reprojection_amount" getter="get_volumetric_fog_temporal_reprojection_amount" default="0.9">
 		</member>
 		<member name="volumetric_fog_temporal_reprojection_enabled" type="bool" setter="set_volumetric_fog_temporal_reprojection_enabled" getter="is_volumetric_fog_temporal_reprojection_enabled" default="true">

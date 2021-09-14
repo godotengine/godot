@@ -13,64 +13,61 @@
 #endif
 */
 
-#if defined(MODE_FOG) || defined(MODE_FILTER)
-
-layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
-
-#endif
-
-#if defined(MODE_DENSITY)
-
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
-#endif
+#define SAMPLER_NEAREST_CLAMP 0
+#define SAMPLER_LINEAR_CLAMP 1
+#define SAMPLER_NEAREST_WITH_MIPMAPS_CLAMP 2
+#define SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP 3
+#define SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_CLAMP 4
+#define SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_CLAMP 5
+#define SAMPLER_NEAREST_REPEAT 6
+#define SAMPLER_LINEAR_REPEAT 7
+#define SAMPLER_NEAREST_WITH_MIPMAPS_REPEAT 8
+#define SAMPLER_LINEAR_WITH_MIPMAPS_REPEAT 9
+#define SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_REPEAT 10
+#define SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_REPEAT 11
 
 #include "cluster_data_inc.glsl"
 #include "light_data_inc.glsl"
 
 #define M_PI 3.14159265359
 
-layout(set = 0, binding = 1) uniform texture2D shadow_atlas;
-layout(set = 0, binding = 2) uniform texture2D directional_shadow_atlas;
+layout(set = 0, binding = 1) uniform sampler material_samplers[12];
 
-layout(set = 0, binding = 3, std430) restrict readonly buffer OmniLights {
+layout(set = 0, binding = 2, std430) restrict readonly buffer GlobalVariableData {
+	vec4 data[];
+}
+global_variables;
+
+layout(set = 1, binding = 1) uniform texture2D shadow_atlas;
+layout(set = 1, binding = 2) uniform texture2D directional_shadow_atlas;
+
+layout(set = 1, binding = 3, std430) restrict readonly buffer OmniLights {
 	LightData data[];
 }
 omni_lights;
 
-layout(set = 0, binding = 4, std430) restrict readonly buffer SpotLights {
+layout(set = 1, binding = 4, std430) restrict readonly buffer SpotLights {
 	LightData data[];
 }
 spot_lights;
 
-layout(set = 0, binding = 5, std140) uniform DirectionalLights {
+layout(set = 1, binding = 5, std140) uniform DirectionalLights {
 	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 }
 directional_lights;
 
-layout(set = 0, binding = 6, std430) buffer restrict readonly ClusterBuffer {
+layout(set = 1, binding = 6, std430) buffer restrict readonly ClusterBuffer {
 	uint data[];
 }
 cluster_buffer;
 
-layout(set = 0, binding = 7) uniform sampler linear_sampler;
+layout(set = 1, binding = 7) uniform sampler linear_sampler;
 
-#ifdef MODE_DENSITY
-layout(rgba16f, set = 0, binding = 8) uniform restrict writeonly image3D density_map;
-layout(rgba16f, set = 0, binding = 9) uniform restrict readonly image3D fog_map; //unused
-#endif
+layout(rgba16f, set = 1, binding = 8) uniform restrict writeonly image3D density_map;
 
-#ifdef MODE_FOG
-layout(rgba16f, set = 0, binding = 8) uniform restrict readonly image3D density_map;
-layout(rgba16f, set = 0, binding = 9) uniform restrict writeonly image3D fog_map;
-#endif
-
-#ifdef MODE_FILTER
-layout(rgba16f, set = 0, binding = 8) uniform restrict readonly image3D source_map;
-layout(rgba16f, set = 0, binding = 9) uniform restrict writeonly image3D dest_map;
-#endif
-
-layout(set = 0, binding = 10) uniform sampler shadow_sampler;
+layout(set = 1, binding = 9) uniform sampler shadow_sampler;
 
 #define MAX_VOXEL_GI_INSTANCES 8
 
@@ -90,14 +87,51 @@ struct VoxelGIData {
 	uint mipmaps;
 };
 
-layout(set = 0, binding = 11, std140) uniform VoxelGIs {
+layout(set = 1, binding = 10, std140) uniform VoxelGIs {
 	VoxelGIData data[MAX_VOXEL_GI_INSTANCES];
 }
 voxel_gi_instances;
 
-layout(set = 0, binding = 12) uniform texture3D voxel_gi_textures[MAX_VOXEL_GI_INSTANCES];
+layout(set = 1, binding = 11) uniform texture3D voxel_gi_textures[MAX_VOXEL_GI_INSTANCES];
 
-layout(set = 0, binding = 13) uniform sampler linear_sampler_with_mipmaps;
+layout(set = 1, binding = 12) uniform sampler linear_sampler_with_mipmaps;
+
+layout(set = 1, binding = 13, std140) uniform Params {
+	vec2 fog_frustum_size_begin;
+	vec2 fog_frustum_size_end;
+
+	float fog_frustum_end;
+	float z_near;
+	float z_far;
+	float time;
+
+	ivec3 fog_volume_size;
+	uint directional_light_count;
+
+	vec3 light_color;
+	float base_density;
+
+	float detail_spread;
+	float gi_inject;
+	uint max_voxel_gi_instances;
+	uint cluster_type_size;
+
+	vec2 screen_size;
+	uint cluster_shift;
+	uint cluster_width;
+
+	uint max_cluster_element_count_div_32;
+	bool use_temporal_reprojection;
+	uint temporal_frame;
+	float temporal_blend;
+
+	mat3x4 cam_rotation;
+	mat4 to_prev_view;
+	mat4 transform;
+}
+params;
+
+layout(set = 1, binding = 14) uniform texture3D prev_density_texture;
 
 #ifdef ENABLE_SDFGI
 
@@ -111,7 +145,7 @@ struct SDFVoxelGICascadeData {
 	float to_cell; // 1/bounds * grid_size
 };
 
-layout(set = 1, binding = 0, std140) uniform SDFGI {
+layout(set = 2, binding = 0, std140) uniform SDFGI {
 	vec3 grid_size;
 	uint max_cascades;
 
@@ -139,47 +173,19 @@ layout(set = 1, binding = 0, std140) uniform SDFGI {
 }
 sdfgi;
 
-layout(set = 1, binding = 1) uniform texture2DArray sdfgi_ambient_texture;
+layout(set = 2, binding = 1) uniform texture2DArray sdfgi_ambient_texture;
 
-layout(set = 1, binding = 2) uniform texture3D sdfgi_occlusion_texture;
+layout(set = 2, binding = 2) uniform texture3D sdfgi_occlusion_texture;
 
 #endif //SDFGI
 
-layout(set = 0, binding = 14, std140) uniform Params {
-	vec2 fog_frustum_size_begin;
-	vec2 fog_frustum_size_end;
+#ifdef MATERIAL_UNIFORMS_USED
+layout(set = 3, binding = 0, std140) uniform MaterialUniforms{
+#MATERIAL_UNIFORMS
+} material;
+#endif
 
-	float fog_frustum_end;
-	float z_near;
-	float z_far;
-	int filter_axis;
-
-	ivec3 fog_volume_size;
-	uint directional_light_count;
-
-	vec3 light_color;
-	float base_density;
-
-	float detail_spread;
-	float gi_inject;
-	uint max_voxel_gi_instances;
-	uint cluster_type_size;
-
-	vec2 screen_size;
-	uint cluster_shift;
-	uint cluster_width;
-
-	uint max_cluster_element_count_div_32;
-	bool use_temporal_reprojection;
-	uint temporal_frame;
-	float temporal_blend;
-
-	mat3x4 cam_rotation;
-	mat4 to_prev_view;
-}
-params;
-
-layout(set = 0, binding = 15) uniform texture3D prev_density_texture;
+#GLOBALS
 
 float get_depth_at_pos(float cell_depth_size, int z) {
 	float d = float(z) * cell_depth_size + cell_depth_size * 0.5; //center of voxels
@@ -241,8 +247,6 @@ const vec3 halton_map[TEMPORAL_FRAMES] = vec3[](
 
 void main() {
 	vec3 fog_cell_size = 1.0 / vec3(params.fog_volume_size);
-
-#ifdef MODE_DENSITY
 
 	ivec3 pos = ivec3(gl_GlobalInvocationID.xyz);
 	if (any(greaterThanEqual(pos, params.fog_volume_size))) {
@@ -629,75 +633,19 @@ void main() {
 	}
 
 #endif
+	vec4 world = params.transform * vec4(view_pos, 1.0);
+	world.xyz /= world.w;
+
+	{
+#CODE : FOG
+	}
+
+	total_density = max(0.0, total_density);
+	total_light = max(vec3(0.0), total_light);
 
 	vec4 final_density = vec4(total_light, total_density);
 
 	final_density = mix(final_density, reprojected_density, reproject_amount);
 
 	imageStore(density_map, pos, final_density);
-#endif
-
-#ifdef MODE_FOG
-
-	ivec3 pos = ivec3(gl_GlobalInvocationID.xy, 0);
-
-	if (any(greaterThanEqual(pos, params.fog_volume_size))) {
-		return; //do not compute
-	}
-
-	vec4 fog_accum = vec4(0.0);
-	float prev_z = 0.0;
-
-	float t = 1.0;
-
-	for (int i = 0; i < params.fog_volume_size.z; i++) {
-		//compute fog position
-		ivec3 fog_pos = pos + ivec3(0, 0, i);
-		//get fog value
-		vec4 fog = imageLoad(density_map, fog_pos);
-
-		//get depth at cell pos
-		float z = get_depth_at_pos(fog_cell_size.z, i);
-		//get distance from previous pos
-		float d = abs(prev_z - z);
-		//compute exinction based on beer's
-		float extinction = t * exp(-d * fog.a);
-		//compute alpha based on different of extinctions
-		float alpha = t - extinction;
-		//update extinction
-		t = extinction;
-
-		fog_accum += vec4(fog.rgb * alpha, alpha);
-		prev_z = z;
-
-		vec4 fog_value;
-
-		if (fog_accum.a > 0.0) {
-			fog_value = vec4(fog_accum.rgb / fog_accum.a, 1.0 - t);
-		} else {
-			fog_value = vec4(0.0);
-		}
-
-		imageStore(fog_map, fog_pos, fog_value);
-	}
-
-#endif
-
-#ifdef MODE_FILTER
-
-	ivec3 pos = ivec3(gl_GlobalInvocationID.xyz);
-
-	const float gauss[7] = float[](0.071303, 0.131514, 0.189879, 0.214607, 0.189879, 0.131514, 0.071303);
-
-	const ivec3 filter_dir[3] = ivec3[](ivec3(1, 0, 0), ivec3(0, 1, 0), ivec3(0, 0, 1));
-	ivec3 offset = filter_dir[params.filter_axis];
-
-	vec4 accum = vec4(0.0);
-	for (int i = -3; i <= 3; i++) {
-		accum += imageLoad(source_map, clamp(pos + offset * i, ivec3(0), params.fog_volume_size - ivec3(1))) * gauss[i + 3];
-	}
-
-	imageStore(dest_map, pos, accum);
-
-#endif
 }
