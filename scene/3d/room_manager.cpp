@@ -873,7 +873,14 @@ void RoomManager::_second_pass_portals(Spatial *p_roomlist, LocalVector<Portal *
 			String string_link_room = string_link_room_shortname + "-room";
 
 			if (string_link_room_shortname != "") {
+				// try the room name plus the postfix first, this will be the most common case during import
 				Room *linked_room = Object::cast_to<Room>(p_roomlist->find_node(string_link_room, true, false));
+
+				// try the short name as a last ditch attempt
+				if (!linked_room) {
+					linked_room = Object::cast_to<Room>(p_roomlist->find_node(string_link_room_shortname, true, false));
+				}
+
 				if (linked_room) {
 					NodePath path = portal->get_path_to(linked_room);
 					portal->set_linked_room_internal(path);
