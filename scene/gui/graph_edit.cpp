@@ -356,16 +356,6 @@ void GraphEdit::_graph_node_raised(Node *p_gn) {
 	} else {
 		gn->raise();
 	}
-	int first_not_comment = 0;
-	for (int i = 0; i < get_child_count(); i++) {
-		GraphNode *gn2 = Object::cast_to<GraphNode>(get_child(i));
-		if (gn2 && !gn2->is_comment()) {
-			first_not_comment = i;
-			break;
-		}
-	}
-
-	move_child(connections_layer, first_not_comment);
 	emit_signal(SNAME("node_selected"), p_gn);
 }
 
