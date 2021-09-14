@@ -36,6 +36,10 @@ void Tweener::set_tween(Ref<Tween> p_tween) {
 	tween = p_tween;
 }
 
+void Tweener::clear_tween() {
+	tween.unref();
+}
+
 void Tweener::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("finished"));
 }
@@ -53,7 +57,7 @@ void Tween::start_tweeners() {
 
 Ref<PropertyTweener> Tween::tween_property(Object *p_target, NodePath p_property, Variant p_to, float p_duration) {
 	ERR_FAIL_NULL_V(p_target, nullptr);
-	ERR_FAIL_COND_V_MSG(invalid, nullptr, "Tween was created outside the scene tree, can't use Tweeners.");
+	ERR_FAIL_COND_V_MSG(!valid, nullptr, "Tween invalid. Either finished or created outside scene tree.");
 	ERR_FAIL_COND_V_MSG(started, nullptr, "Can't append to a Tween that has started. Use stop() first.");
 
 	Ref<PropertyTweener> tweener = memnew(PropertyTweener(p_target, p_property, p_to, p_duration));
@@ -62,7 +66,7 @@ Ref<PropertyTweener> Tween::tween_property(Object *p_target, NodePath p_property
 }
 
 Ref<IntervalTweener> Tween::tween_interval(float p_time) {
-	ERR_FAIL_COND_V_MSG(invalid, nullptr, "Tween was created outside the scene tree, can't use Tweeners.");
+	ERR_FAIL_COND_V_MSG(!valid, nullptr, "Tween invalid. Either finished or created outside scene tree.");
 	ERR_FAIL_COND_V_MSG(started, nullptr, "Can't append to a Tween that has started. Use stop() first.");
 
 	Ref<IntervalTweener> tweener = memnew(IntervalTweener(p_time));
@@ -71,7 +75,7 @@ Ref<IntervalTweener> Tween::tween_interval(float p_time) {
 }
 
 Ref<CallbackTweener> Tween::tween_callback(Callable p_callback) {
-	ERR_FAIL_COND_V_MSG(invalid, nullptr, "Tween was created outside the scene tree, can't use Tweeners.");
+	ERR_FAIL_COND_V_MSG(!valid, nullptr, "Tween invalid. Either finished or created outside scene tree.");
 	ERR_FAIL_COND_V_MSG(started, nullptr, "Can't append to a Tween that has started. Use stop() first.");
 
 	Ref<CallbackTweener> tweener = memnew(CallbackTweener(p_callback));
@@ -80,7 +84,7 @@ Ref<CallbackTweener> Tween::tween_callback(Callable p_callback) {
 }
 
 Ref<MethodTweener> Tween::tween_method(Callable p_callback, float p_from, float p_to, float p_duration) {
-	ERR_FAIL_COND_V_MSG(invalid, nullptr, "Tween was created outside the scene tree, can't use Tweeners.");
+	ERR_FAIL_COND_V_MSG(!valid, nullptr, "Tween invalid. Either finished or created outside scene tree.");
 	ERR_FAIL_COND_V_MSG(started, nullptr, "Can't append to a Tween that has started. Use stop() first.");
 
 	Ref<MethodTweener> tweener = memnew(MethodTweener(p_callback, p_from, p_to, p_duration));
@@ -88,9 +92,7 @@ Ref<MethodTweener> Tween::tween_method(Callable p_callback, float p_from, float 
 	return tweener;
 }
 
-Ref<Tween> Tween::append(Ref<Tweener> p_tweener) {
-	ERR_FAIL_COND_V_MSG(invalid, nullptr, "Tween was created outside the scene tree, can't use Tweeners.");
-	ERR_FAIL_COND_V_MSG(started, nullptr, "Can't append to a Tween that has started. Use stop() first.");
+void Tween::append(Ref<Tweener> p_tweener) {
 	p_tweener->set_tween(this);
 
 	if (parallel_enabled) {
@@ -102,8 +104,6 @@ Ref<Tween> Tween::append(Ref<Tweener> p_tweener) {
 
 	tweeners.resize(current_step + 1);
 	tweeners.write[current_step].push_back(p_tweener);
-
-	return this;
 }
 
 void Tween::stop() {
@@ -117,7 +117,7 @@ void Tween::pause() {
 }
 
 void Tween::play() {
-	ERR_FAIL_COND_MSG(invalid, "Tween invalid, can't play.");
+	ERR_FAIL_COND_MSG(!valid, "Tween invalid. Either finished or created outside scene tree.");
 	ERR_FAIL_COND_MSG(dead, "Can't play finished Tween, use stop() first to reset its state.");
 	running = true;
 }
@@ -132,11 +132,22 @@ bool Tween::is_running() {
 }
 
 void Tween::set_valid(bool p_valid) {
-	invalid = !p_valid;
+	valid = p_valid;
 }
 
 bool Tween::is_valid() {
-	return invalid;
+	return valid;
+}
+
+void Tween::clear() {
+	valid = false;
+
+	for (List<Ref<Tweener>> &step : tweeners) {
+		for (Ref<Tweener> &tweener : step) {
+			tweener->clear_tween();
+		}
+	}
+	tweeners.clear();
 }
 
 Ref<Tween> Tween::bind_node(Node *p_node) {

@@ -544,7 +544,7 @@ void SceneTree::process_tweens(float p_delta, bool p_physics) {
 		}
 
 		if (!E->get()->step(p_delta)) {
-			E->get()->set_valid(false);
+			E->get()->clear();
 			tweens.erase(E);
 		}
 		if (E == L) {
