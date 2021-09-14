@@ -85,6 +85,7 @@ private:
 	// Vulkan 1.0 doesn't return version info so we assume this by default until we know otherwise
 	uint32_t vulkan_major = 1;
 	uint32_t vulkan_minor = 0;
+	uint32_t vulkan_patch = 0;
 	SubgroupCapabilities subgroup_capabilities;
 	MultiviewCapabilities multiview_capabilities;
 
