@@ -269,9 +269,9 @@ void CSGShape::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const f
 }
 
 void CSGShape::_update_shape() {
-
-	if (parent)
+	if (parent || !is_inside_tree()) {
 		return;
+	}
 
 	set_base(RID());
 	root_mesh.unref(); //byebye root mesh
