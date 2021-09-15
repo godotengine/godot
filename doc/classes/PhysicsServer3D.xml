@@ -855,11 +855,6 @@
 				Sets a pin_joint parameter (see [enum PinJointParam] constants).
 			</description>
 		</method>
-		<method name="plane_shape_create">
-			<return type="RID" />
-			<description>
-			</description>
-		</method>
 		<method name="separation_ray_shape_create">
 			<return type="RID" />
 			<description>
@@ -971,6 +966,11 @@
 			</description>
 		</method>
 		<method name="sphere_shape_create">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="world_boundary_shape_create">
 			<return type="RID" />
 			<description>
 			</description>
@@ -1184,8 +1184,8 @@
 		<constant name="G6DOF_JOINT_FLAG_ENABLE_LINEAR_MOTOR" value="5" enum="G6DOFJointAxisFlag">
 			If [code]set[/code] there is a linear motor on this axis that targets a specific velocity.
 		</constant>
-		<constant name="SHAPE_PLANE" value="0" enum="ShapeType">
-			The [Shape3D] is a [WorldMarginShape3D].
+		<constant name="SHAPE_WORLD_BOUNDARY" value="0" enum="ShapeType">
+			The [Shape3D] is a [WorldBoundaryShape3D].
 		</constant>
 		<constant name="SHAPE_SEPARATION_RAY" value="1" enum="ShapeType">
 			The [Shape3D] is a [SeparationRayShape3D].

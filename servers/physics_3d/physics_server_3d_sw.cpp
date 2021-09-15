@@ -43,8 +43,8 @@
 #define FLUSH_QUERY_CHECK(m_object) \
 	ERR_FAIL_COND_MSG(m_object->get_space() && flushing_queries, "Can't change this state while flushing queries. Use call_deferred() or set_deferred() to change monitoring state instead.");
 
-RID PhysicsServer3DSW::plane_shape_create() {
-	Shape3DSW *shape = memnew(PlaneShape3DSW);
+RID PhysicsServer3DSW::world_boundary_shape_create() {
+	Shape3DSW *shape = memnew(WorldBoundaryShape3DSW);
 	RID rid = shape_owner.make_rid(shape);
 	shape->set_self(rid);
 	return rid;

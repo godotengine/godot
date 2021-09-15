@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  world_margin_shape_2d.cpp                                            */
+/*  world_boundary_shape_2d.cpp                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "world_margin_shape_2d.h"
+#include "world_boundary_shape_2d.h"
 
 #include "core/math/geometry_2d.h"
 #include "servers/physics_server_2d.h"
 #include "servers/rendering_server.h"
 
-bool WorldMarginShape2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+bool WorldBoundaryShape2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 	Vector2 point = get_distance() * get_normal();
 	Vector2 l[2][2] = { { point - get_normal().orthogonal() * 100, point + get_normal().orthogonal() * 100 }, { point, point + get_normal() * 30 } };
 
@@ -48,7 +48,7 @@ bool WorldMarginShape2D::_edit_is_selected_on_click(const Point2 &p_point, doubl
 	return false;
 }
 
-void WorldMarginShape2D::_update_shape() {
+void WorldBoundaryShape2D::_update_shape() {
 	Array arr;
 	arr.push_back(normal);
 	arr.push_back(distance);
@@ -56,25 +56,25 @@ void WorldMarginShape2D::_update_shape() {
 	emit_changed();
 }
 
-void WorldMarginShape2D::set_normal(const Vector2 &p_normal) {
+void WorldBoundaryShape2D::set_normal(const Vector2 &p_normal) {
 	normal = p_normal;
 	_update_shape();
 }
 
-void WorldMarginShape2D::set_distance(real_t p_distance) {
+void WorldBoundaryShape2D::set_distance(real_t p_distance) {
 	distance = p_distance;
 	_update_shape();
 }
 
-Vector2 WorldMarginShape2D::get_normal() const {
+Vector2 WorldBoundaryShape2D::get_normal() const {
 	return normal;
 }
 
-real_t WorldMarginShape2D::get_distance() const {
+real_t WorldBoundaryShape2D::get_distance() const {
 	return distance;
 }
 
-void WorldMarginShape2D::draw(const RID &p_to_rid, const Color &p_color) {
+void WorldBoundaryShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 	Vector2 point = get_distance() * get_normal();
 
 	Vector2 l1[2] = { point - get_normal().orthogonal() * 100, point + get_normal().orthogonal() * 100 };
@@ -83,7 +83,7 @@ void WorldMarginShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 	RS::get_singleton()->canvas_item_add_line(p_to_rid, l2[0], l2[1], p_color, 3);
 }
 
-Rect2 WorldMarginShape2D::get_rect() const {
+Rect2 WorldBoundaryShape2D::get_rect() const {
 	Vector2 point = get_distance() * get_normal();
 
 	Vector2 l1[2] = { point - get_normal().orthogonal() * 100, point + get_normal().orthogonal() * 100 };
@@ -96,22 +96,22 @@ Rect2 WorldMarginShape2D::get_rect() const {
 	return rect;
 }
 
-real_t WorldMarginShape2D::get_enclosing_radius() const {
+real_t WorldBoundaryShape2D::get_enclosing_radius() const {
 	return distance;
 }
 
-void WorldMarginShape2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_normal", "normal"), &WorldMarginShape2D::set_normal);
-	ClassDB::bind_method(D_METHOD("get_normal"), &WorldMarginShape2D::get_normal);
+void WorldBoundaryShape2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_normal", "normal"), &WorldBoundaryShape2D::set_normal);
+	ClassDB::bind_method(D_METHOD("get_normal"), &WorldBoundaryShape2D::get_normal);
 
-	ClassDB::bind_method(D_METHOD("set_distance", "distance"), &WorldMarginShape2D::set_distance);
-	ClassDB::bind_method(D_METHOD("get_distance"), &WorldMarginShape2D::get_distance);
+	ClassDB::bind_method(D_METHOD("set_distance", "distance"), &WorldBoundaryShape2D::set_distance);
+	ClassDB::bind_method(D_METHOD("get_distance"), &WorldBoundaryShape2D::get_distance);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "normal"), "set_normal", "get_normal");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance"), "set_distance", "get_distance");
 }
 
-WorldMarginShape2D::WorldMarginShape2D() :
-		Shape2D(PhysicsServer2D::get_singleton()->world_margin_shape_create()) {
+WorldBoundaryShape2D::WorldBoundaryShape2D() :
+		Shape2D(PhysicsServer2D::get_singleton()->world_boundary_shape_create()) {
 	_update_shape();
 }

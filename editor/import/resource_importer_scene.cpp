@@ -49,7 +49,7 @@
 #include "scene/resources/separation_ray_shape_3d.h"
 #include "scene/resources/sphere_shape_3d.h"
 #include "scene/resources/surface_tool.h"
-#include "scene/resources/world_margin_shape_3d.h"
+#include "scene/resources/world_boundary_shape_3d.h"
 
 uint32_t EditorSceneImporter::get_import_flags() const {
 	int ret;
@@ -387,8 +387,8 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 				colshape->set_shape(rayShape);
 				Object::cast_to<Node3D>(sb)->rotate_x(Math_PI / 2);
 			} else if (empty_draw_type == "IMAGE") {
-				WorldMarginShape3D *world_margin_shape = memnew(WorldMarginShape3D);
-				colshape->set_shape(world_margin_shape);
+				WorldBoundaryShape3D *world_boundary_shape = memnew(WorldBoundaryShape3D);
+				colshape->set_shape(world_boundary_shape);
 			} else {
 				SphereShape3D *sphereShape = memnew(SphereShape3D);
 				sphereShape->set_radius(1);

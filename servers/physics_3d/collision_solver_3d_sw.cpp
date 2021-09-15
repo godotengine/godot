@@ -37,12 +37,12 @@
 #define collision_solver sat_calculate_penetration
 //#define collision_solver gjk_epa_calculate_penetration
 
-bool CollisionSolver3DSW::solve_static_plane(const Shape3DSW *p_shape_A, const Transform3D &p_transform_A, const Shape3DSW *p_shape_B, const Transform3D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result) {
-	const PlaneShape3DSW *plane = static_cast<const PlaneShape3DSW *>(p_shape_A);
-	if (p_shape_B->get_type() == PhysicsServer3D::SHAPE_PLANE) {
+bool CollisionSolver3DSW::solve_static_world_boundary(const Shape3DSW *p_shape_A, const Transform3D &p_transform_A, const Shape3DSW *p_shape_B, const Transform3D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result) {
+	const WorldBoundaryShape3DSW *world_boundary = static_cast<const WorldBoundaryShape3DSW *>(p_shape_A);
+	if (p_shape_B->get_type() == PhysicsServer3D::SHAPE_WORLD_BOUNDARY) {
 		return false;
 	}
-	Plane p = p_transform_A.xform(plane->get_plane());
+	Plane p = p_transform_A.xform(world_boundary->get_plane());
 
 	static const int max_supports = 16;
 	Vector3 supports[max_supports];
@@ -365,8 +365,8 @@ bool CollisionSolver3DSW::solve_static(const Shape3DSW *p_shape_A, const Transfo
 		swap = true;
 	}
 
-	if (type_A == PhysicsServer3D::SHAPE_PLANE) {
-		if (type_B == PhysicsServer3D::SHAPE_PLANE) {
+	if (type_A == PhysicsServer3D::SHAPE_WORLD_BOUNDARY) {
+		if (type_B == PhysicsServer3D::SHAPE_WORLD_BOUNDARY) {
 			return false;
 		}
 		if (type_B == PhysicsServer3D::SHAPE_SEPARATION_RAY) {
@@ -377,9 +377,9 @@ bool CollisionSolver3DSW::solve_static(const Shape3DSW *p_shape_A, const Transfo
 		}
 
 		if (swap) {
-			return solve_static_plane(p_shape_B, p_transform_B, p_shape_A, p_transform_A, p_result_callback, p_userdata, true);
+			return solve_static_world_boundary(p_shape_B, p_transform_B, p_shape_A, p_transform_A, p_result_callback, p_userdata, true);
 		} else {
-			return solve_static_plane(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false);
+			return solve_static_world_boundary(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false);
 		}
 
 	} else if (type_A == PhysicsServer3D::SHAPE_SEPARATION_RAY) {
@@ -443,12 +443,12 @@ bool CollisionSolver3DSW::concave_distance_callback(void *p_userdata, Shape3DSW 
 	return false;
 }
 
-bool CollisionSolver3DSW::solve_distance_plane(const Shape3DSW *p_shape_A, const Transform3D &p_transform_A, const Shape3DSW *p_shape_B, const Transform3D &p_transform_B, Vector3 &r_point_A, Vector3 &r_point_B) {
-	const PlaneShape3DSW *plane = static_cast<const PlaneShape3DSW *>(p_shape_A);
-	if (p_shape_B->get_type() == PhysicsServer3D::SHAPE_PLANE) {
+bool CollisionSolver3DSW::solve_distance_world_boundary(const Shape3DSW *p_shape_A, const Transform3D &p_transform_A, const Shape3DSW *p_shape_B, const Transform3D &p_transform_B, Vector3 &r_point_A, Vector3 &r_point_B) {
+	const WorldBoundaryShape3DSW *world_boundary = static_cast<const WorldBoundaryShape3DSW *>(p_shape_A);
+	if (p_shape_B->get_type() == PhysicsServer3D::SHAPE_WORLD_BOUNDARY) {
 		return false;
 	}
-	Plane p = p_transform_A.xform(plane->get_plane());
+	Plane p = p_transform_A.xform(world_boundary->get_plane());
 
 	static const int max_supports = 16;
 	Vector3 supports[max_supports];
@@ -500,9 +500,9 @@ bool CollisionSolver3DSW::solve_distance(const Shape3DSW *p_shape_A, const Trans
 		return false;
 	}
 
-	if (p_shape_B->get_type() == PhysicsServer3D::SHAPE_PLANE) {
+	if (p_shape_B->get_type() == PhysicsServer3D::SHAPE_WORLD_BOUNDARY) {
 		Vector3 a, b;
-		bool col = solve_distance_plane(p_shape_B, p_transform_B, p_shape_A, p_transform_A, a, b);
+		bool col = solve_distance_world_boundary(p_shape_B, p_transform_B, p_shape_A, p_transform_A, a, b);
 		r_point_A = b;
 		r_point_B = a;
 		return !col;

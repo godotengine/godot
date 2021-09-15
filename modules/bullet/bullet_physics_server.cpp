@@ -87,8 +87,8 @@ RID BulletPhysicsServer3D::shape_create(ShapeType p_shape) {
 	ShapeBullet *shape = nullptr;
 
 	switch (p_shape) {
-		case SHAPE_PLANE: {
-			shape = bulletnew(PlaneShapeBullet);
+		case SHAPE_WORLD_BOUNDARY: {
+			shape = bulletnew(WorldBoundaryShapeBullet);
 		} break;
 		case SHAPE_SPHERE: {
 			shape = bulletnew(SphereShapeBullet);

@@ -218,7 +218,7 @@ public:
 	static PhysicsServer2D *get_singleton();
 
 	enum ShapeType {
-		SHAPE_WORLD_MARGIN, ///< plane:"plane"
+		SHAPE_WORLD_BOUNDARY, ///< plane:"plane"
 		SHAPE_SEPARATION_RAY, ///< float:"length"
 		SHAPE_SEGMENT, ///< float:"length"
 		SHAPE_CIRCLE, ///< float:"radius"
@@ -229,7 +229,7 @@ public:
 		SHAPE_CUSTOM, ///< Server-Implementation based custom shape, calling shape_create() with this value will result in an error
 	};
 
-	virtual RID world_margin_shape_create() = 0;
+	virtual RID world_boundary_shape_create() = 0;
 	virtual RID separation_ray_shape_create() = 0;
 	virtual RID segment_shape_create() = 0;
 	virtual RID circle_shape_create() = 0;

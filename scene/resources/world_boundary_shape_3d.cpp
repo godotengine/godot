@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  world_margin_shape_2d.h                                              */
+/*  world_boundary_shape_3d.cpp                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,37 +28,61 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WORLD_MARGIN_SHAPE_2D_H
-#define WORLD_MARGIN_SHAPE_2D_H
+#include "world_boundary_shape_3d.h"
 
-#include "scene/resources/shape_2d.h"
+#include "servers/physics_server_3d.h"
 
-class WorldMarginShape2D : public Shape2D {
-	GDCLASS(WorldMarginShape2D, Shape2D);
+Vector<Vector3> WorldBoundaryShape3D::get_debug_mesh_lines() const {
+	Plane p = get_plane();
+	Vector<Vector3> points;
 
-	// WorldMarginShape2D is often used for one-way platforms, where the normal pointing up makes sense.
-	Vector2 normal = Vector2(0, -1);
-	real_t distance = 0.0;
+	Vector3 n1 = p.get_any_perpendicular_normal();
+	Vector3 n2 = p.normal.cross(n1).normalized();
 
-	void _update_shape();
+	Vector3 pface[4] = {
+		p.normal * p.d + n1 * 10.0 + n2 * 10.0,
+		p.normal * p.d + n1 * 10.0 + n2 * -10.0,
+		p.normal * p.d + n1 * -10.0 + n2 * -10.0,
+		p.normal * p.d + n1 * -10.0 + n2 * 10.0,
+	};
 
-protected:
-	static void _bind_methods();
+	points.push_back(pface[0]);
+	points.push_back(pface[1]);
+	points.push_back(pface[1]);
+	points.push_back(pface[2]);
+	points.push_back(pface[2]);
+	points.push_back(pface[3]);
+	points.push_back(pface[3]);
+	points.push_back(pface[0]);
+	points.push_back(p.normal * p.d);
+	points.push_back(p.normal * p.d + p.normal * 3);
 
-public:
-	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
+	return points;
+}
 
-	void set_normal(const Vector2 &p_normal);
-	void set_distance(real_t p_distance);
+void WorldBoundaryShape3D::_update_shape() {
+	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), plane);
+	Shape3D::_update_shape();
+}
 
-	Vector2 get_normal() const;
-	real_t get_distance() const;
+void WorldBoundaryShape3D::set_plane(const Plane &p_plane) {
+	plane = p_plane;
+	_update_shape();
+	notify_change_to_owners();
+}
 
-	virtual void draw(const RID &p_to_rid, const Color &p_color) override;
-	virtual Rect2 get_rect() const override;
-	virtual real_t get_enclosing_radius() const override;
+const Plane &WorldBoundaryShape3D::get_plane() const {
+	return plane;
+}
 
-	WorldMarginShape2D();
-};
+void WorldBoundaryShape3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_plane", "plane"), &WorldBoundaryShape3D::set_plane);
+	ClassDB::bind_method(D_METHOD("get_plane"), &WorldBoundaryShape3D::get_plane);
 
-#endif // WORLD_MARGIN_SHAPE_2D_H
+	ADD_PROPERTY(PropertyInfo(Variant::PLANE, "plane"), "set_plane", "get_plane");
+}
+
+WorldBoundaryShape3D::WorldBoundaryShape3D() :
+		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_WORLD_BOUNDARY)) {
+	set_plane(Plane(0, 1, 0, 0));
+}

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  world_margin_shape_3d.h                                              */
+/*  world_boundary_shape_2d.h                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,29 +28,37 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WORLD_MARGIN_SHAPE_3D_H
-#define WORLD_MARGIN_SHAPE_3D_H
+#ifndef WORLD_BOUNDARY_SHAPE_2D_H
+#define WORLD_BOUNDARY_SHAPE_2D_H
 
-#include "scene/resources/shape_3d.h"
+#include "scene/resources/shape_2d.h"
 
-class WorldMarginShape3D : public Shape3D {
-	GDCLASS(WorldMarginShape3D, Shape3D);
-	Plane plane;
+class WorldBoundaryShape2D : public Shape2D {
+	GDCLASS(WorldBoundaryShape2D, Shape2D);
+
+	// WorldBoundaryShape2D is often used for one-way platforms, where the normal pointing up makes sense.
+	Vector2 normal = Vector2(0, -1);
+	real_t distance = 0.0;
+
+	void _update_shape();
 
 protected:
 	static void _bind_methods();
-	virtual void _update_shape() override;
 
 public:
-	void set_plane(Plane p_plane);
-	Plane get_plane() const;
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
 
-	virtual Vector<Vector3> get_debug_mesh_lines() const override;
-	virtual real_t get_enclosing_radius() const override {
-		// Should be infinite?
-		return 0;
-	}
+	void set_normal(const Vector2 &p_normal);
+	void set_distance(real_t p_distance);
 
-	WorldMarginShape3D();
+	Vector2 get_normal() const;
+	real_t get_distance() const;
+
+	virtual void draw(const RID &p_to_rid, const Color &p_color) override;
+	virtual Rect2 get_rect() const override;
+	virtual real_t get_enclosing_radius() const override;
+
+	WorldBoundaryShape2D();
 };
-#endif // WORLD_MARGIN_SHAPE_H
+
+#endif // WORLD_BOUNDARY_SHAPE_2D_H

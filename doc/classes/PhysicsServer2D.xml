@@ -823,7 +823,7 @@
 				Sets the value for a space parameter. See [enum SpaceParameter] for a list of available parameters.
 			</description>
 		</method>
-		<method name="world_margin_shape_create">
+		<method name="world_boundary_shape_create">
 			<return type="RID" />
 			<description>
 			</description>
@@ -853,8 +853,8 @@
 		</constant>
 		<constant name="SPACE_PARAM_TEST_MOTION_MIN_CONTACT_DEPTH" value="7" enum="SpaceParameter">
 		</constant>
-		<constant name="SHAPE_WORLD_MARGIN" value="0" enum="ShapeType">
-			This is the constant for creating world margin shapes. A world margin shape is an [i]infinite[/i] line with an origin point, and a normal. Thus, it can be used for front/behind checks.
+		<constant name="SHAPE_WORLD_BOUNDARY" value="0" enum="ShapeType">
+			This is the constant for creating world boundary shapes. A world boundary shape is an [i]infinite[/i] line with an origin point, and a normal. Thus, it can be used for front/behind checks.
 		</constant>
 		<constant name="SHAPE_SEPARATION_RAY" value="1" enum="ShapeType">
 			This is the constant for creating separation ray shapes. A separation ray is defined by a length and separates itself from what is touching its far endpoint. Useful for character controllers.
