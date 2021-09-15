@@ -3614,7 +3614,8 @@ DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, W
 	DisplayServer *ds = memnew(DisplayServerX11(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, r_error));
 	if (r_error != OK) {
 		OS::get_singleton()->alert("Your video card driver does not support any of the supported Vulkan versions.\n"
-								   "Please update your drivers or if you have a very old or integrated GPU upgrade it.",
+								   "Please update your drivers or if you have a very old or integrated GPU, upgrade it.\n"
+								   "If you have updated your graphics drivers recently, try rebooting.",
 				"Unable to initialize Video driver");
 	}
 	return ds;
