@@ -128,7 +128,7 @@ public:
 	Ref<PropertyTweener> tween_property(Object *p_target, NodePath p_property, Variant p_to, float p_duration);
 	Ref<IntervalTweener> tween_interval(float p_time);
 	Ref<CallbackTweener> tween_callback(Callable p_callback);
-	Ref<MethodTweener> tween_method(Callable p_callback, float p_from, float p_to, float p_duration);
+	Ref<MethodTweener> tween_method(Callable p_callback, Variant p_from, Variant p_to, float p_duration);
 	void append(Ref<Tweener> p_tweener);
 
 	bool custom_step(float p_delta);
@@ -258,7 +258,7 @@ public:
 	void start() override;
 	bool step(float &r_delta) override;
 
-	MethodTweener(Callable p_callback, float p_from, float p_to, float p_duration);
+	MethodTweener(Callable p_callback, Variant p_from, Variant p_to, float p_duration);
 	MethodTweener();
 
 protected:
