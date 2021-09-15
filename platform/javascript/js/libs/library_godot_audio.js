@@ -37,10 +37,14 @@ const GodotAudio = {
 		interval: 0,
 
 		init: function (mix_rate, latency, onstatechange, onlatencyupdate) {
-			const ctx = new (window.AudioContext || window.webkitAudioContext)({
-				sampleRate: mix_rate,
-				// latencyHint: latency / 1000 // Do not specify, leave 'interactive' for good performance.
-			});
+			const opts = {};
+			// If mix_rate is 0, let the browser choose.
+			if (mix_rate) {
+				opts['sampleRate'] = mix_rate;
+			}
+			// Do not specify, leave 'interactive' for good performance.
+			// opts['latencyHint'] = latency / 1000;
+			const ctx = new (window.AudioContext || window.webkitAudioContext)(opts);
 			GodotAudio.ctx = ctx;
 			ctx.onstatechange = function () {
 				let state = 0;
@@ -159,7 +163,10 @@ const GodotAudio = {
 	godot_audio_init: function (p_mix_rate, p_latency, p_state_change, p_latency_update) {
 		const statechange = GodotRuntime.get_func(p_state_change);
 		const latencyupdate = GodotRuntime.get_func(p_latency_update);
-		return GodotAudio.init(p_mix_rate, p_latency, statechange, latencyupdate);
+		const mix_rate = GodotRuntime.getHeapValue(p_mix_rate, 'i32');
+		const channels = GodotAudio.init(mix_rate, p_latency, statechange, latencyupdate);
+		GodotRuntime.setHeapValue(p_mix_rate, GodotAudio.ctx.sampleRate, 'i32');
+		return channels;
 	},
 
 	godot_audio_resume__sig: 'v',
