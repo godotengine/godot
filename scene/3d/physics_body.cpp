@@ -357,7 +357,7 @@ void RigidBody::_direct_state_changed(Object *p_state) {
 	ERR_FAIL_COND_MSG(!state, "Method '_direct_state_changed' must receive a valid PhysicsDirectBodyState object as argument");
 
 	set_ignore_transform_notification(true);
-	set_global_transform(state->get_transform());
+	_physics_set_global_transform(state->get_transform());
 	linear_velocity = state->get_linear_velocity();
 	angular_velocity = state->get_angular_velocity();
 	inverse_inertia_tensor = state->get_inverse_inertia_tensor();
@@ -1042,7 +1042,7 @@ bool KinematicBody::move_and_collide(const Vector3 &p_motion, bool p_infinite_in
 
 	if (!p_test_only) {
 		gt.origin += result.motion;
-		set_global_transform(gt);
+		_physics_set_global_transform(gt);
 	}
 
 	return colliding;
@@ -1134,7 +1134,7 @@ Vector3 KinematicBody::_move_and_slide_internal(const Vector3 &p_linear_velocity
 						} else {
 							gt.origin -= collision.travel;
 						}
-						set_global_transform(gt);
+						_physics_set_global_transform(gt);
 						return Vector3();
 					}
 				}
@@ -1189,7 +1189,7 @@ Vector3 KinematicBody::_move_and_slide_internal(const Vector3 &p_linear_velocity
 			}
 			if (apply) {
 				gt.origin += col.travel;
-				set_global_transform(gt);
+				_physics_set_global_transform(gt);
 			}
 		}
 	}
@@ -1275,7 +1275,7 @@ bool KinematicBody::separate_raycast_shapes(bool p_infinite_inertia, Collision &
 	}
 
 	gt.origin += recover;
-	set_global_transform(gt);
+	_physics_set_global_transform(gt);
 
 	if (deepest != -1) {
 		r_collision.collider = sep_res[deepest].collider_id;
@@ -1383,7 +1383,7 @@ void KinematicBody::_direct_state_changed(Object *p_state) {
 
 	last_valid_transform = state->get_transform();
 	set_notify_local_transform(false);
-	set_global_transform(last_valid_transform);
+	_physics_set_global_transform(last_valid_transform);
 	set_notify_local_transform(true);
 	_on_transform_changed();
 }
@@ -1407,7 +1407,7 @@ void KinematicBody::_notification(int p_what) {
 		PhysicsServer::get_singleton()->body_set_state(get_rid(), PhysicsServer::BODY_STATE_TRANSFORM, new_transform);
 		//but then revert changes
 		set_notify_local_transform(false);
-		set_global_transform(last_valid_transform);
+		_physics_set_global_transform(last_valid_transform);
 		set_notify_local_transform(true);
 		_on_transform_changed();
 	}

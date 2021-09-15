@@ -31,6 +31,7 @@
 #include "node.h"
 
 #include "core/core_string_names.h"
+#include "core/engine.h"
 #include "core/io/resource_loader.h"
 #include "core/message_queue.h"
 #include "core/print_string.h"
@@ -187,6 +188,19 @@ void Node::_propagate_ready() {
 		notification(NOTIFICATION_READY);
 		emit_signal(SceneStringNames::get_singleton()->ready);
 	}
+}
+
+void Node::_propagate_physics_interpolated(bool p_interpolated) {
+	data.physics_interpolated = p_interpolated;
+
+	// allow a call to the VisualServer etc in derived classes
+	_physics_interpolated_changed();
+
+	data.blocked++;
+	for (int i = 0; i < data.children.size(); i++) {
+		data.children[i]->_propagate_physics_interpolated(p_interpolated);
+	}
+	data.blocked--;
 }
 
 void Node::_propagate_enter_tree() {
@@ -375,6 +389,8 @@ void Node::remove_child_notify(Node *p_child) {
 void Node::move_child_notify(Node *p_child) {
 	// to be used when not wanted
 }
+
+void Node::_physics_interpolated_changed() {}
 
 void Node::set_physics_process(bool p_process) {
 	if (data.physics_process == p_process) {
@@ -752,6 +768,25 @@ bool Node::can_process() const {
 	}
 
 	return true;
+}
+
+void Node::_set_physics_teleport_on_transform(bool p_enabled) {
+	data.physics_teleport_on_transform = p_enabled;
+}
+
+void Node::_set_branch_physics_interpolated(bool p_interpolated) {
+	// most common case, noop
+	if (is_physics_interpolated() == p_interpolated) {
+		return;
+	}
+	_propagate_physics_interpolated(p_interpolated);
+}
+
+void Node::_teleport() {
+	if (!Engine::get_singleton()->is_physics_interpolation_enabled() || !is_physics_interpolated() || !data.physics_teleport_on_transform) {
+		return;
+	}
+	propagate_notification(NOTIFICATION_TELEPORT);
 }
 
 float Node::get_physics_process_delta_time() const {
@@ -2765,6 +2800,9 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_processing_unhandled_key_input"), &Node::is_processing_unhandled_key_input);
 	ClassDB::bind_method(D_METHOD("set_pause_mode", "mode"), &Node::set_pause_mode);
 	ClassDB::bind_method(D_METHOD("get_pause_mode"), &Node::get_pause_mode);
+	// ClassDB::bind_method(D_METHOD("set_physics_interpolated", "p_interpolated"), &Node::set_physics_interpolated);
+	// ClassDB::bind_method(D_METHOD("is_physics_interpolated"), &Node::is_physics_interpolated);
+	// ClassDB::bind_method(D_METHOD("teleport"), &Node::teleport);
 	ClassDB::bind_method(D_METHOD("can_process"), &Node::can_process);
 	ClassDB::bind_method(D_METHOD("print_stray_nodes"), &Node::_print_stray_nodes);
 	ClassDB::bind_method(D_METHOD("get_position_in_parent"), &Node::get_position_in_parent);
@@ -2853,6 +2891,7 @@ void Node::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_INTERNAL_PROCESS);
 	BIND_CONSTANT(NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 	BIND_CONSTANT(NOTIFICATION_POST_ENTER_TREE);
+	BIND_CONSTANT(NOTIFICATION_TELEPORT);
 
 	BIND_CONSTANT(NOTIFICATION_WM_MOUSE_ENTER);
 	BIND_CONSTANT(NOTIFICATION_WM_MOUSE_EXIT);
@@ -2897,6 +2936,7 @@ void Node::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", 0), "", "get_multiplayer");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "custom_multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", 0), "set_custom_multiplayer", "get_custom_multiplayer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_priority"), "set_process_priority", "get_process_priority");
+	// ADD_PROPERTY(PropertyInfo(Variant::BOOL, "physics_interpolated"), "set_physics_interpolated", "is_physics_interpolated");
 
 	BIND_VMETHOD(MethodInfo("_process", PropertyInfo(Variant::REAL, "delta")));
 	BIND_VMETHOD(MethodInfo("_physics_process", PropertyInfo(Variant::REAL, "delta")));
@@ -2936,6 +2976,8 @@ Node::Node() {
 	data.idle_process_internal = false;
 	data.inside_tree = false;
 	data.ready_notified = false;
+	data.physics_interpolated = false;
+	data.physics_teleport_on_transform = true;
 
 	data.owner = nullptr;
 	data.OW = nullptr;

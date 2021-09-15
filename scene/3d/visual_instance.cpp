@@ -85,6 +85,13 @@ void VisualInstance::_notification(int p_what) {
 				VisualServer::get_singleton()->instance_set_transform(instance, gt);
 			}
 		} break;
+		case NOTIFICATION_TELEPORT: {
+			if (_get_spatial_flags() & SPATIAL_FLAG_VI_VISIBLE) {
+				if (is_physics_interpolated()) {
+					VisualServer::get_singleton()->instance_teleport(instance);
+				}
+			}
+		} break;
 		case NOTIFICATION_EXIT_WORLD: {
 			VisualServer::get_singleton()->instance_set_scenario(instance, RID());
 			VisualServer::get_singleton()->instance_attach_skeleton(instance, RID());
@@ -99,6 +106,10 @@ void VisualInstance::_notification(int p_what) {
 			_update_visibility();
 		} break;
 	}
+}
+
+void VisualInstance::_physics_interpolated_changed() {
+	VisualServer::get_singleton()->instance_set_interpolated(instance, is_physics_interpolated());
 }
 
 RID VisualInstance::get_instance() const {

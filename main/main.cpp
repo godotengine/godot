@@ -1186,6 +1186,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	Engine::get_singleton()->set_iterations_per_second(GLOBAL_DEF("physics/common/physics_fps", 60));
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/common/physics_fps", PropertyInfo(Variant::INT, "physics/common/physics_fps", PROPERTY_HINT_RANGE, "1,1000,1"));
+	Engine::get_singleton()->set_physics_interpolation_enabled(GLOBAL_DEF("physics/common/physics_interpolation", true));
 	Engine::get_singleton()->set_physics_jitter_fix(GLOBAL_DEF("physics/common/physics_jitter_fix", 0.5));
 	Engine::get_singleton()->set_target_fps(GLOBAL_DEF("debug/settings/fps/force_fps", 0));
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/settings/fps/force_fps", PropertyInfo(Variant::INT, "debug/settings/fps/force_fps", PROPERTY_HINT_RANGE, "0,1000,1"));
@@ -2140,6 +2141,8 @@ bool Main::iteration() {
 	bool exit = false;
 
 	for (int iters = 0; iters < advance.physics_steps; ++iters) {
+		VisualServer::get_singleton()->tick();
+
 		if (InputDefault::get_singleton()->is_using_input_buffering() && agile_input_event_flushing) {
 			InputDefault::get_singleton()->flush_buffered_events();
 		}
@@ -2199,6 +2202,8 @@ bool Main::iteration() {
 			Engine::get_singleton()->frames_drawn++;
 			force_redraw_requested = false;
 		}
+	} else {
+		VisualServer::get_singleton()->no_draw();
 	}
 
 #ifndef TOOLS_ENABLED

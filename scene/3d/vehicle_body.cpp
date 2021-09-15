@@ -833,7 +833,7 @@ void VehicleBody::_direct_state_changed(Object *p_state) {
 
 	for (int i = 0; i < wheels.size(); i++) {
 		_ray_cast(i, state);
-		wheels[i]->set_transform(state->get_transform().inverse() * wheels[i]->m_worldTransform);
+		wheels[i]->_physics_set_transform(state->get_transform().inverse() * wheels[i]->m_worldTransform);
 	}
 
 	_update_suspension(state);

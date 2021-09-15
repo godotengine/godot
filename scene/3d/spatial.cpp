@@ -242,7 +242,27 @@ void Spatial::_notification(int p_what) {
 	}
 }
 
+void Spatial::_physics_set_transform(const Transform &p_transform) {
+	_set_branch_physics_interpolated(true);
+	_set_transform(p_transform);
+}
+
+void Spatial::_physics_set_global_transform(const Transform &p_transform) {
+	_set_branch_physics_interpolated(true);
+	_set_global_transform(p_transform);
+}
+
 void Spatial::set_transform(const Transform &p_transform) {
+	_set_transform(p_transform);
+	_teleport();
+}
+
+void Spatial::set_global_transform(const Transform &p_transform) {
+	_set_global_transform(p_transform);
+	_teleport();
+}
+
+void Spatial::_set_transform(const Transform &p_transform) {
 	data.local_transform = p_transform;
 	data.dirty |= DIRTY_VECTORS;
 	_change_notify("translation");
@@ -255,10 +275,9 @@ void Spatial::set_transform(const Transform &p_transform) {
 	}
 }
 
-void Spatial::set_global_transform(const Transform &p_transform) {
+void Spatial::_set_global_transform(const Transform &p_transform) {
 	Transform xform = (data.parent && !data.toplevel_active) ? data.parent->get_global_transform().affine_inverse() * p_transform : p_transform;
-
-	set_transform(xform);
+	_set_transform(xform);
 }
 
 Transform Spatial::get_transform() const {

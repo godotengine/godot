@@ -128,6 +128,11 @@ protected:
 		}
 	}
 
+	void _physics_set_transform(const Transform &p_transform);
+	void _physics_set_global_transform(const Transform &p_transform);
+	void _set_transform(const Transform &p_transform);
+	void _set_global_transform(const Transform &p_transform);
+
 	void _notification(int p_what);
 	static void _bind_methods();
 

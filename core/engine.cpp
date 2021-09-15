@@ -75,6 +75,10 @@ uint32_t Engine::get_frame_delay() const {
 	return _frame_delay;
 }
 
+void Engine::set_physics_interpolation_enabled(bool p_enabled) {
+	_physics_interpolation_enabled = is_editor_hint() ? false : p_enabled;
+}
+
 void Engine::set_time_scale(float p_scale) {
 	_time_scale = p_scale;
 }

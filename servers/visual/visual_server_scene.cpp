@@ -30,6 +30,7 @@
 
 #include "visual_server_scene.h"
 
+#include "core/math/interpolator.h"
 #include "core/os/os.h"
 #include "visual_server_globals.h"
 #include "visual_server_raster.h"
@@ -37,6 +38,16 @@
 #include <new>
 
 /* CAMERA API */
+
+Transform VisualServerScene::Camera::get_transform() const {
+	if (!Engine::get_singleton()->is_physics_interpolation_enabled() || !interpolated) {
+		return transform;
+	}
+
+	Transform final;
+	Interpolator::interpolate_transform_linear(transform_prev, transform, final, Engine::get_singleton()->get_physics_interpolation_fraction());
+	return final;
+}
 
 RID VisualServerScene::camera_create() {
 	Camera *camera = memnew(Camera);
@@ -71,9 +82,27 @@ void VisualServerScene::camera_set_frustum(RID p_camera, float p_size, Vector2 p
 	camera->zfar = p_z_far;
 }
 
+void VisualServerScene::camera_teleport(RID p_camera) {
+	_interpolation_data.camera_teleport_list.push_back(p_camera);
+}
+
+void VisualServerScene::camera_set_interpolated(RID p_camera, bool p_interpolated) {
+	Camera *camera = camera_owner.get(p_camera);
+	ERR_FAIL_COND(!camera);
+	camera->interpolated = p_interpolated;
+}
+
 void VisualServerScene::camera_set_transform(RID p_camera, const Transform &p_transform) {
 	Camera *camera = camera_owner.get(p_camera);
 	ERR_FAIL_COND(!camera);
+
+	if (Engine::get_singleton()->is_physics_interpolation_enabled() && camera->interpolated) {
+		if (!camera->on_interpolate_transform_list) {
+			_interpolation_data.camera_transform_update_list_curr->push_back(p_camera);
+			camera->on_interpolate_transform_list = true;
+		}
+	}
+
 	camera->transform = p_transform.orthonormalized();
 }
 
@@ -675,30 +704,238 @@ void VisualServerScene::instance_set_layer_mask(RID p_instance, uint32_t p_mask)
 
 	instance->layer_mask = p_mask;
 }
+
+void VisualServerScene::instance_teleport(RID p_instance) {
+	_interpolation_data.instance_teleport_list.push_back(p_instance);
+}
+
+void VisualServerScene::instance_set_interpolated(RID p_instance, bool p_interpolated) {
+	Instance *instance = instance_owner.get(p_instance);
+	ERR_FAIL_COND(!instance);
+	instance->interpolated = p_interpolated;
+}
+
 void VisualServerScene::instance_set_transform(RID p_instance, const Transform &p_transform) {
 	Instance *instance = instance_owner.get(p_instance);
 	ERR_FAIL_COND(!instance);
 
-	if (instance->transform == p_transform) {
-		return; //must be checked to avoid worst evil
-	}
+	if (!Engine::get_singleton()->is_physics_interpolation_enabled() || !instance->interpolated) {
+		if (instance->transform == p_transform) {
+			return; //must be checked to avoid worst evil
+		}
 
 #ifdef DEBUG_ENABLED
 
-	for (int i = 0; i < 4; i++) {
-		const Vector3 &v = i < 3 ? p_transform.basis.elements[i] : p_transform.origin;
-		ERR_FAIL_COND(Math::is_inf(v.x));
-		ERR_FAIL_COND(Math::is_nan(v.x));
-		ERR_FAIL_COND(Math::is_inf(v.y));
-		ERR_FAIL_COND(Math::is_nan(v.y));
-		ERR_FAIL_COND(Math::is_inf(v.z));
-		ERR_FAIL_COND(Math::is_nan(v.z));
-	}
+		for (int i = 0; i < 4; i++) {
+			const Vector3 &v = i < 3 ? p_transform.basis.elements[i] : p_transform.origin;
+			ERR_FAIL_COND(Math::is_inf(v.x));
+			ERR_FAIL_COND(Math::is_nan(v.x));
+			ERR_FAIL_COND(Math::is_inf(v.y));
+			ERR_FAIL_COND(Math::is_nan(v.y));
+			ERR_FAIL_COND(Math::is_inf(v.z));
+			ERR_FAIL_COND(Math::is_nan(v.z));
+		}
 
 #endif
-	instance->transform = p_transform;
-	_instance_queue_update(instance, true);
+		instance->transform = p_transform;
+		_instance_queue_update(instance, true);
+		return;
+	}
+
+	float new_checksum = Interpolator::checksum_transform(p_transform);
+	bool checksums_match = (instance->transform_checksum_curr == new_checksum) && (instance->transform_checksum_prev == new_checksum);
+
+	// we can't entirely reject no changes because we need the interpolation
+	// system to keep on stewing
+	// bool no_change = (instance->transform_curr == p_transform) && (instance->transform_prev == p_transform);
+
+	// optimized check. First checks the checksums. If they pass it does the slow check at the end.
+	bool no_change = checksums_match && (instance->transform_curr == p_transform) && (instance->transform_prev == p_transform);
+
+	if (!no_change) {
+#ifdef DEBUG_ENABLED
+
+		for (int i = 0; i < 4; i++) {
+			const Vector3 &v = i < 3 ? p_transform.basis.elements[i] : p_transform.origin;
+			ERR_FAIL_COND(Math::is_inf(v.x));
+			ERR_FAIL_COND(Math::is_nan(v.x));
+			ERR_FAIL_COND(Math::is_inf(v.y));
+			ERR_FAIL_COND(Math::is_nan(v.y));
+			ERR_FAIL_COND(Math::is_inf(v.z));
+			ERR_FAIL_COND(Math::is_nan(v.z));
+		}
+
+#endif
+
+		instance->transform_curr = p_transform;
+
+		// keep checksums up to date
+		instance->transform_checksum_curr = new_checksum;
+
+		// We temporarily need to also store the current transform here
+		// for use by the update_instance function, so the calculated AABB
+		// makes sense.
+		// instance->transform = p_transform;
+
+		if (!instance->on_interpolate_transform_list) {
+			_interpolation_data.instance_transform_update_list_curr->push_back(p_instance);
+			instance->on_interpolate_transform_list = true;
+		} else {
+			CRASH_COND(!_interpolation_data.instance_transform_update_list_curr->size());
+		}
+
+		if (!instance->on_interpolate_list) {
+			_interpolation_data.instance_interpolate_update_list.push_back(p_instance);
+			instance->on_interpolate_list = true;
+		} else {
+			CRASH_COND(!_interpolation_data.instance_interpolate_update_list.size());
+		}
+
+		_instance_queue_update(instance, true);
+	}
 }
+
+void VisualServerScene::InterpolationData::notify_free_camera(RID p_rid) {
+	if (!Engine::get_singleton()->is_physics_interpolation_enabled()) {
+		return;
+	}
+
+	// if the camera was on any of the lists, remove
+	camera_transform_update_list_curr->erase_multiple_unordered(p_rid);
+	camera_transform_update_list_prev->erase_multiple_unordered(p_rid);
+	camera_teleport_list.erase_multiple_unordered(p_rid);
+}
+
+void VisualServerScene::InterpolationData::notify_free_instance(RID p_rid) {
+	if (!Engine::get_singleton()->is_physics_interpolation_enabled()) {
+		return;
+	}
+
+	// if the instance was on any of the lists, remove
+	instance_interpolate_update_list.erase_multiple_unordered(p_rid);
+	instance_transform_update_list_curr->erase_multiple_unordered(p_rid);
+	instance_transform_update_list_prev->erase_multiple_unordered(p_rid);
+	instance_teleport_list.erase_multiple_unordered(p_rid);
+}
+
+void VisualServerScene::update_interpolation_transform_list(bool p_process) {
+	// detect any that were on the previous transform list that are no longer active,
+	// we should remove them from the interpolate list
+	for (unsigned int n = 0; n < _interpolation_data.instance_transform_update_list_prev->size(); n++) {
+		const RID &rid = (*_interpolation_data.instance_transform_update_list_prev)[n];
+		Instance *instance = instance_owner.getornull(rid);
+
+		bool active = true;
+
+		// no longer active? (either the instance deleted or no longer being transformed)
+		if (instance && !instance->on_interpolate_transform_list) {
+			active = false;
+			instance->on_interpolate_list = false;
+
+			// make sure the most recent transform is set
+			instance->transform = instance->transform_curr;
+
+			// and that both prev and current are the same, just in case of any interpolations
+			instance->transform_prev = instance->transform_curr;
+		}
+
+		if (!instance) {
+			active = false;
+		}
+
+		if (!active) {
+			_interpolation_data.instance_interpolate_update_list.erase(rid);
+		}
+	}
+
+	// and now for any in the transform list (being actively interpolated), keep the previous transform
+	// value up to date ready for the next tick
+	if (p_process) {
+		for (unsigned int n = 0; n < _interpolation_data.instance_transform_update_list_curr->size(); n++) {
+			const RID &rid = (*_interpolation_data.instance_transform_update_list_curr)[n];
+			Instance *instance = instance_owner.getornull(rid);
+			if (instance) {
+				instance->transform_prev = instance->transform_curr;
+				instance->transform_checksum_prev = instance->transform_checksum_curr;
+				instance->on_interpolate_transform_list = false;
+			}
+		}
+	}
+
+	// we maintain a mirror list for the transform updates, so we can detect when an instance
+	// is no longer being transformed, and remove it from the interpolate list
+	SWAP(_interpolation_data.instance_transform_update_list_curr, _interpolation_data.instance_transform_update_list_prev);
+
+	// prepare for the next iteration
+	_interpolation_data.instance_transform_update_list_curr->clear();
+
+	// CAMERAS
+	// detect any that were on the previous transform list that are no longer active,
+	for (unsigned int n = 0; n < _interpolation_data.camera_transform_update_list_prev->size(); n++) {
+		const RID &rid = (*_interpolation_data.camera_transform_update_list_prev)[n];
+		Camera *camera = camera_owner.getornull(rid);
+
+		// no longer active? (either the instance deleted or no longer being transformed)
+		if (camera && !camera->on_interpolate_transform_list) {
+			camera->transform = camera->transform_prev;
+		}
+	}
+
+	// cameras , swap any current with previous
+	for (unsigned int n = 0; n < _interpolation_data.camera_transform_update_list_curr->size(); n++) {
+		const RID &rid = (*_interpolation_data.camera_transform_update_list_curr)[n];
+		Camera *camera = camera_owner.getornull(rid);
+		if (camera) {
+			camera->transform_prev = camera->transform;
+			camera->on_interpolate_transform_list = false;
+		}
+	}
+
+	// we maintain a mirror list for the transform updates, so we can detect when an instance
+	// is no longer being transformed, and remove it from the interpolate list
+	SWAP(_interpolation_data.camera_transform_update_list_curr, _interpolation_data.camera_transform_update_list_prev);
+
+	// prepare for the next iteration
+	_interpolation_data.camera_transform_update_list_curr->clear();
+}
+
+void VisualServerScene::update_interpolate_list(bool p_process) {
+	// teleported instances
+	for (unsigned int n = 0; n < _interpolation_data.instance_teleport_list.size(); n++) {
+		const RID &rid = _interpolation_data.instance_teleport_list[n];
+		Instance *instance = instance_owner.getornull(rid);
+		if (instance) {
+			instance->transform_prev = instance->transform_curr;
+			instance->transform_checksum_prev = instance->transform_checksum_curr;
+		}
+	}
+
+	_interpolation_data.instance_teleport_list.clear();
+
+	// camera teleports
+	for (unsigned int n = 0; n < _interpolation_data.camera_teleport_list.size(); n++) {
+		const RID &rid = _interpolation_data.camera_teleport_list[n];
+		Camera *camera = camera_owner.getornull(rid);
+		if (camera) {
+			camera->transform_prev = camera->transform;
+		}
+	}
+
+	_interpolation_data.camera_teleport_list.clear();
+
+	if (p_process) {
+		real_t f = Engine::get_singleton()->get_physics_interpolation_fraction();
+
+		for (unsigned int i = 0; i < _interpolation_data.instance_interpolate_update_list.size(); i++) {
+			const RID &rid = _interpolation_data.instance_interpolate_update_list[i];
+			Instance *instance = instance_owner.getornull(rid);
+			if (instance) {
+				Interpolator::interpolate_transform_linear(instance->transform_prev, instance->transform_curr, instance->transform, f);
+			}
+		} // for n
+	}
+}
+
 void VisualServerScene::instance_attach_object_instance_id(RID p_instance, ObjectID p_id) {
 	Instance *instance = instance_owner.get(p_instance);
 	ERR_FAIL_COND(!instance);
@@ -1529,22 +1766,30 @@ void VisualServerScene::instance_geometry_set_as_instance_lod(RID p_instance, RI
 void VisualServerScene::_update_instance(Instance *p_instance) {
 	p_instance->version++;
 
+	// when not using interpolation the transform is used straight
+	const Transform *instance_xform = &p_instance->transform;
+
+	// but when using interpolation the current transform is the most up to date on the tick
+	if (Engine::get_singleton()->is_physics_interpolation_enabled() && p_instance->interpolated) {
+		instance_xform = &p_instance->transform_curr;
+	}
+
 	if (p_instance->base_type == VS::INSTANCE_LIGHT) {
 		InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
 
-		VSG::scene_render->light_instance_set_transform(light->instance, p_instance->transform);
+		VSG::scene_render->light_instance_set_transform(light->instance, *instance_xform);
 		light->shadow_dirty = true;
 	}
 
 	if (p_instance->base_type == VS::INSTANCE_REFLECTION_PROBE) {
 		InstanceReflectionProbeData *reflection_probe = static_cast<InstanceReflectionProbeData *>(p_instance->base_data);
 
-		VSG::scene_render->reflection_probe_instance_set_transform(reflection_probe->instance, p_instance->transform);
+		VSG::scene_render->reflection_probe_instance_set_transform(reflection_probe->instance, *instance_xform);
 		reflection_probe->reflection_dirty = true;
 	}
 
 	if (p_instance->base_type == VS::INSTANCE_PARTICLES) {
-		VSG::storage->particles_set_emission_transform(p_instance->base, p_instance->transform);
+		VSG::storage->particles_set_emission_transform(p_instance->base, *instance_xform);
 	}
 
 	if (p_instance->base_type == VS::INSTANCE_LIGHTMAP_CAPTURE) {
@@ -1579,11 +1824,11 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 		}
 	}
 
-	p_instance->mirror = p_instance->transform.basis.determinant() < 0.0;
+	p_instance->mirror = instance_xform->basis.determinant() < 0.0;
 
 	AABB new_aabb;
 
-	new_aabb = p_instance->transform.xform(p_instance->aabb);
+	new_aabb = instance_xform->xform(p_instance->aabb);
 
 	p_instance->transformed_aabb = new_aabb;
 
@@ -2378,8 +2623,11 @@ void VisualServerScene::render_camera(RID p_camera, RID p_scenario, Size2 p_view
 		} break;
 	}
 
-	_prepare_scene(camera->transform, camera_matrix, ortho, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID(), camera->previous_room_id_hint);
-	_render_scene(camera->transform, camera_matrix, 0, ortho, camera->env, p_scenario, p_shadow_atlas, RID(), -1);
+	// This getter allows optional fixed timestep interpolation for the camera.
+	Transform camera_transform = camera->get_transform();
+
+	_prepare_scene(camera_transform, camera_matrix, ortho, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID(), camera->previous_room_id_hint);
+	_render_scene(camera_transform, camera_matrix, 0, ortho, camera->env, p_scenario, p_shadow_atlas, RID(), -1);
 #endif
 }
 
@@ -4030,7 +4278,7 @@ bool VisualServerScene::free(RID p_rid) {
 
 		camera_owner.free(p_rid);
 		memdelete(camera);
-
+		_interpolation_data.notify_free_camera(p_rid);
 	} else if (scenario_owner.owns(p_rid)) {
 		Scenario *scenario = scenario_owner.get(p_rid);
 
@@ -4059,6 +4307,7 @@ bool VisualServerScene::free(RID p_rid) {
 
 		instance_owner.free(p_rid);
 		memdelete(instance);
+		_interpolation_data.notify_free_instance(p_rid);
 	} else if (room_owner.owns(p_rid)) {
 		Room *room = room_owner.get(p_rid);
 		room_owner.free(p_rid);

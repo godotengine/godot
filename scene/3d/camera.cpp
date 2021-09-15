@@ -98,6 +98,10 @@ void Camera::_update_camera() {
 	}
 }
 
+void Camera::_physics_interpolated_changed() {
+	VisualServer::get_singleton()->camera_set_interpolated(camera, is_physics_interpolated());
+}
+
 void Camera::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_WORLD: {
@@ -117,6 +121,11 @@ void Camera::_notification(int p_what) {
 			_request_camera_update();
 			if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
 				velocity_tracker->update_position(get_global_transform().origin);
+			}
+		} break;
+		case NOTIFICATION_TELEPORT: {
+			if (is_physics_interpolated()) {
+				VisualServer::get_singleton()->camera_teleport(camera);
 			}
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
@@ -666,6 +675,12 @@ Camera::Camera() {
 	doppler_tracking = DOPPLER_TRACKING_DISABLED;
 	set_notify_transform(true);
 	set_disable_scale(true);
+	_set_branch_physics_interpolated(true);
+
+	// most nodes will teleport when calling set_transform,
+	// but cameras are different.
+	// (note: this logic is way overcomplicated imo).
+	_set_physics_teleport_on_transform(false);
 }
 
 Camera::~Camera() {
