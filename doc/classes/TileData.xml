@@ -37,6 +37,20 @@
 				Returns how many polygons the tile has for TileSet physics layer with index [code]layer_id[/code].
 			</description>
 		</method>
+		<method name="get_constant_angular_velocity" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="layer_id" type="int" />
+			<description>
+				Returns the constant angular velocity applied to objects colliding with this tile.
+			</description>
+		</method>
+		<method name="get_constant_linear_velocity" qualifiers="const">
+			<return type="Vector2" />
+			<argument index="0" name="layer_id" type="int" />
+			<description>
+				Returns the constant linear velocity applied to objects colliding with this tile.
+			</description>
+		</method>
 		<method name="get_custom_data" qualifiers="const">
 			<return type="Variant" />
 			<argument index="0" name="layer_name" type="String" />
@@ -121,6 +135,22 @@
 			<argument index="1" name="polygons_count" type="int" />
 			<description>
 				Sets the polygons count for TileSet physics layer with index [code]layer_id[/code].
+			</description>
+		</method>
+		<method name="set_constant_angular_velocity">
+			<return type="void" />
+			<argument index="0" name="layer_id" type="int" />
+			<argument index="1" name="velocity" type="float" />
+			<description>
+				Sets the constant angular velocity. This does not rotate the tile. This angular velocity is applied to objects colliding with this tile.
+			</description>
+		</method>
+		<method name="set_constant_linear_velocity">
+			<return type="void" />
+			<argument index="0" name="layer_id" type="int" />
+			<argument index="1" name="velocity" type="Vector2" />
+			<description>
+				Sets the constant linear velocity. This does not move the tile. This linear velocity is applied to objects colliding with this tile. This is useful to create conveyor belts.
 			</description>
 		</method>
 		<method name="set_custom_data">
