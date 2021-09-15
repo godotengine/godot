@@ -100,6 +100,10 @@ void ParallaxLayer::_notification(int p_what) {
 			_update_mirroring();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
+			if (Engine::get_singleton()->is_editor_hint()) {
+				break;
+			}
+
 			set_position(orig_offset);
 			set_scale(orig_scale);
 		} break;
