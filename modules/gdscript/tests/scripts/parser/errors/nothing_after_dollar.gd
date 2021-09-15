@@ -1,3 +1,5 @@
 extends Node
+
+
 func test():
-    var a = $ # Expected some node path.
+	var a = $ # Expected some node path.
