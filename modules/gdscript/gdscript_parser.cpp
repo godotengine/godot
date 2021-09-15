@@ -2275,6 +2275,10 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_ternary_operator(Expressio
 
 	operation->false_expr = parse_precedence(PREC_TERNARY, false);
 
+	if (operation->false_expr == nullptr) {
+		push_error(R"(Expected expression after "else".)");
+	}
+
 	return operation;
 }
 
