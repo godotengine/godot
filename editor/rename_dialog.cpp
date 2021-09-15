@@ -284,6 +284,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	vbc->add_child(lbl_preview_title);
 
 	lbl_preview = memnew(Label);
+	lbl_preview->set_autowrap(true);
 	vbc->add_child(lbl_preview);
 
 	// ---- Dialog related
