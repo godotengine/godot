@@ -771,17 +771,16 @@ Vector2 Curve2D::interpolate_baked(real_t p_offset, bool p_cubic) const {
 		return baked_point_cache.get(0);
 	}
 
-	int bpc = baked_point_cache.size();
 	const Vector2 *r = baked_point_cache.ptr();
 
 	if (p_offset < 0) {
 		return r[0];
 	}
 	if (p_offset >= baked_max_ofs) {
-		return r[bpc - 1];
+		return r[pc - 1];
 	}
 
-	int start = 0, end = bpc, idx = (end + start) / 2;
+	int start = 0, end = pc, idx = (end + start) / 2;
 	// binary search to find baked points
 	while (start < idx) {
 		real_t offset = baked_dist_cache[idx];
@@ -803,7 +802,7 @@ Vector2 Curve2D::interpolate_baked(real_t p_offset, bool p_cubic) const {
 
 	if (p_cubic) {
 		Vector2 pre = idx > 0 ? r[idx - 1] : r[idx];
-		Vector2 post = (idx < (bpc - 2)) ? r[idx + 2] : r[idx + 1];
+		Vector2 post = (idx < (pc - 2)) ? r[idx + 2] : r[idx + 1];
 		return r[idx].cubic_interpolate(r[idx + 1], pre, post, frac);
 	} else {
 		return r[idx].lerp(r[idx + 1], frac);
@@ -1336,17 +1335,16 @@ Vector3 Curve3D::interpolate_baked(real_t p_offset, bool p_cubic) const {
 		return baked_point_cache.get(0);
 	}
 
-	int bpc = baked_point_cache.size();
 	const Vector3 *r = baked_point_cache.ptr();
 
 	if (p_offset < 0) {
 		return r[0];
 	}
 	if (p_offset >= baked_max_ofs) {
-		return r[bpc - 1];
+		return r[pc - 1];
 	}
 
-	int start = 0, end = bpc, idx = (end + start) / 2;
+	int start = 0, end = pc, idx = (end + start) / 2;
 	// binary search to find baked points
 	while (start < idx) {
 		real_t offset = baked_dist_cache[idx];
@@ -1368,7 +1366,7 @@ Vector3 Curve3D::interpolate_baked(real_t p_offset, bool p_cubic) const {
 
 	if (p_cubic) {
 		Vector3 pre = idx > 0 ? r[idx - 1] : r[idx];
-		Vector3 post = (idx < (bpc - 2)) ? r[idx + 2] : r[idx + 1];
+		Vector3 post = (idx < (pc - 2)) ? r[idx + 2] : r[idx + 1];
 		return r[idx].cubic_interpolate(r[idx + 1], pre, post, frac);
 	} else {
 		return r[idx].lerp(r[idx + 1], frac);
@@ -1388,28 +1386,34 @@ real_t Curve3D::interpolate_baked_tilt(real_t p_offset) const {
 		return baked_tilt_cache.get(0);
 	}
 
-	int bpc = baked_tilt_cache.size();
 	const real_t *r = baked_tilt_cache.ptr();
 
 	if (p_offset < 0) {
 		return r[0];
 	}
 	if (p_offset >= baked_max_ofs) {
-		return r[bpc - 1];
+		return r[pc - 1];
 	}
 
-	int idx = Math::floor((double)p_offset / (double)bake_interval);
-	real_t frac = Math::fmod(p_offset, bake_interval);
-
-	if (idx >= bpc - 1) {
-		return r[bpc - 1];
-	} else if (idx == bpc - 2) {
-		if (frac > 0) {
-			frac /= Math::fmod(baked_max_ofs, bake_interval);
+	int start = 0, end = pc, idx = (end + start) / 2;
+	// binary search to find baked points
+	while (start < idx) {
+		real_t offset = baked_dist_cache[idx];
+		if (p_offset <= offset) {
+			end = idx;
+		} else {
+			start = idx;
 		}
-	} else {
-		frac /= bake_interval;
+		idx = (end + start) / 2;
 	}
+
+	real_t offset_begin = baked_dist_cache[idx];
+	real_t offset_end = baked_dist_cache[idx + 1];
+
+	real_t idx_interval = offset_end - offset_begin;
+	ERR_FAIL_COND_V_MSG(p_offset < offset_begin || p_offset > offset_end, 0, "failed to find baked segment");
+
+	real_t frac = (p_offset - offset_begin) / idx_interval;
 
 	return Math::lerp(r[idx], r[idx + 1], (real_t)frac);
 }
@@ -1432,10 +1436,25 @@ Vector3 Curve3D::interpolate_baked_up_vector(real_t p_offset, bool p_apply_tilt)
 	const Vector3 *rp = baked_point_cache.ptr();
 	const real_t *rt = baked_tilt_cache.ptr();
 
-	real_t offset = CLAMP(p_offset, 0.0f, baked_max_ofs);
+	int start = 0, end = count, idx = (end + start) / 2;
+	// binary search to find baked points
+	while (start < idx) {
+		real_t offset = baked_dist_cache[idx];
+		if (p_offset <= offset) {
+			end = idx;
+		} else {
+			start = idx;
+		}
+		idx = (end + start) / 2;
+	}
 
-	int idx = Math::floor((double)offset / (double)bake_interval);
-	real_t frac = Math::fmod(offset, bake_interval) / bake_interval;
+	real_t offset_begin = baked_dist_cache[idx];
+	real_t offset_end = baked_dist_cache[idx + 1];
+
+	real_t idx_interval = offset_end - offset_begin;
+	ERR_FAIL_COND_V_MSG(p_offset < offset_begin || p_offset > offset_end, Vector3(0, 1, 0), "failed to find baked segment");
+
+	real_t frac = (p_offset - offset_begin) / idx_interval;
 
 	if (idx == count - 1) {
 		return p_apply_tilt ? r[idx].rotated((rp[idx] - rp[idx - 1]).normalized(), rt[idx]) : r[idx];
