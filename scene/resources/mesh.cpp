@@ -38,7 +38,7 @@
 
 #include <stdlib.h>
 
-Mesh::ConvexDecompositionFunc Mesh::convex_composition_function = nullptr;
+Mesh::ConvexDecompositionFunc Mesh::convex_decomposition_function = nullptr;
 
 Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 	if (triangle_mesh.is_valid()) {
@@ -167,59 +167,6 @@ Vector<Face3> Mesh::get_faces() const {
 		return tm->get_faces();
 	}
 	return Vector<Face3>();
-	/*
-	for (int i=0;i<surfaces.size();i++) {
-		if (RenderingServer::get_singleton()->mesh_surface_get_primitive_type( mesh, i ) != RenderingServer::PRIMITIVE_TRIANGLES )
-			continue;
-
-		Vector<int> indices;
-		Vector<Vector3> vertices;
-
-		vertices=RenderingServer::get_singleton()->mesh_surface_get_array(mesh, i,RenderingServer::ARRAY_VERTEX);
-
-		int len=RenderingServer::get_singleton()->mesh_surface_get_array_index_len(mesh, i);
-		bool has_indices;
-
-		if (len>0) {
-			indices=RenderingServer::get_singleton()->mesh_surface_get_array(mesh, i,RenderingServer::ARRAY_INDEX);
-			has_indices=true;
-
-		} else {
-			len=vertices.size();
-			has_indices=false;
-		}
-
-		if (len<=0)
-			continue;
-
-		const int* indicesr = indices.ptr();
-		const int *indicesptr = indicesr.ptr();
-
-		const Vector3* verticesr = vertices.ptr();
-		const Vector3 *verticesptr = verticesr.ptr();
-
-		int old_faces=faces.size();
-		int new_faces=old_faces+(len/3);
-
-		faces.resize(new_faces);
-
-		Face3* facesw = faces.ptrw();
-		Face3 *facesptr=facesw.ptr();
-
-
-		for (int i=0;i<len/3;i++) {
-			Face3 face;
-
-			for (int j=0;j<3;j++) {
-				int idx=i*3+j;
-				face.vertex[j] = has_indices ? verticesptr[ indicesptr[ idx ] ] : verticesptr[idx];
-			}
-
-			facesptr[i+old_faces]=face;
-		}
-
-	}
-*/
 }
 
 Ref<Shape3D> Mesh::create_convex_shape(bool p_clean, bool p_simplify) const {
@@ -568,35 +515,36 @@ void Mesh::clear_cache() const {
 }
 
 Vector<Ref<Shape3D>> Mesh::convex_decompose(const ConvexDecompositionSettings &p_settings) const {
-	ERR_FAIL_COND_V(!convex_composition_function, Vector<Ref<Shape3D>>());
+	ERR_FAIL_COND_V(!convex_decomposition_function, Vector<Ref<Shape3D>>());
 
-	const Vector<Face3> faces = get_faces();
+	Ref<TriangleMesh> tm = generate_triangle_mesh();
+	ERR_FAIL_COND_V(!tm.is_valid(), Vector<Ref<Shape3D>>());
 
-	const Vector<Vector<Face3>> decomposed = convex_composition_function(faces, p_settings);
+	const Vector<TriangleMesh::Triangle> &triangles = tm->get_triangles();
+	int triangle_count = triangles.size();
+
+	Vector<uint32_t> indices;
+	{
+		indices.resize(triangle_count * 3);
+		uint32_t *w = indices.ptrw();
+		for (int i = 0; i < triangle_count; i++) {
+			for (int j = 0; j < 3; j++) {
+				w[i * 3 + j] = triangles[i].indices[j];
+			}
+		}
+	}
+
+	const Vector<Vector3> &vertices = tm->get_vertices();
+	int vertex_count = vertices.size();
+
+	Vector<Vector<Vector3>> decomposed = convex_decomposition_function((real_t *)vertices.ptr(), vertex_count, indices.ptr(), triangle_count, p_settings, nullptr);
 
 	Vector<Ref<Shape3D>> ret;
 
 	for (int i = 0; i < decomposed.size(); i++) {
-		Set<Vector3> points;
-		for (int j = 0; j < decomposed[i].size(); j++) {
-			points.insert(decomposed[i][j].vertex[0]);
-			points.insert(decomposed[i][j].vertex[1]);
-			points.insert(decomposed[i][j].vertex[2]);
-		}
-
-		Vector<Vector3> convex_points;
-		convex_points.resize(points.size());
-		{
-			Vector3 *w = convex_points.ptrw();
-			int idx = 0;
-			for (Set<Vector3>::Element *E = points.front(); E; E = E->next()) {
-				w[idx++] = E->get();
-			}
-		}
-
 		Ref<ConvexPolygonShape3D> shape;
 		shape.instantiate();
-		shape->set_points(convex_points);
+		shape->set_points(decomposed[i]);
 		ret.push_back(shape);
 	}
 

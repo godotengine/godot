@@ -525,35 +525,46 @@ Vector<Face3> EditorSceneImporterMesh::get_faces() const {
 }
 
 Vector<Ref<Shape3D>> EditorSceneImporterMesh::convex_decompose(const Mesh::ConvexDecompositionSettings &p_settings) const {
-	ERR_FAIL_COND_V(!Mesh::convex_composition_function, Vector<Ref<Shape3D>>());
+	ERR_FAIL_COND_V(!Mesh::convex_decomposition_function, Vector<Ref<Shape3D>>());
 
 	const Vector<Face3> faces = get_faces();
+	int face_count = faces.size();
 
-	Vector<Vector<Face3>> decomposed = Mesh::convex_composition_function(faces, p_settings);
+	Vector<Vector3> vertices;
+	uint32_t vertex_count = 0;
+	vertices.resize(face_count * 3);
+	Vector<uint32_t> indices;
+	indices.resize(face_count * 3);
+	{
+		Map<Vector3, uint32_t> vertex_map;
+		Vector3 *vertex_w = vertices.ptrw();
+		uint32_t *index_w = indices.ptrw();
+		for (int i = 0; i < face_count; i++) {
+			for (int j = 0; j < 3; j++) {
+				const Vector3 &vertex = faces[i].vertex[j];
+				Map<Vector3, uint32_t>::Element *found_vertex = vertex_map.find(vertex);
+				uint32_t index;
+				if (found_vertex) {
+					index = found_vertex->get();
+				} else {
+					index = ++vertex_count;
+					vertex_map[vertex] = index;
+					vertex_w[index] = vertex;
+				}
+				index_w[i * 3 + j] = index;
+			}
+		}
+	}
+	vertices.resize(vertex_count);
+
+	Vector<Vector<Vector3>> decomposed = Mesh::convex_decomposition_function((real_t *)vertices.ptr(), vertex_count, indices.ptr(), face_count, p_settings, nullptr);
 
 	Vector<Ref<Shape3D>> ret;
 
 	for (int i = 0; i < decomposed.size(); i++) {
-		Set<Vector3> points;
-		for (int j = 0; j < decomposed[i].size(); j++) {
-			points.insert(decomposed[i][j].vertex[0]);
-			points.insert(decomposed[i][j].vertex[1]);
-			points.insert(decomposed[i][j].vertex[2]);
-		}
-
-		Vector<Vector3> convex_points;
-		convex_points.resize(points.size());
-		{
-			Vector3 *w = convex_points.ptrw();
-			int idx = 0;
-			for (Set<Vector3>::Element *E = points.front(); E; E = E->next()) {
-				w[idx++] = E->get();
-			}
-		}
-
 		Ref<ConvexPolygonShape3D> shape;
 		shape.instantiate();
-		shape->set_points(convex_points);
+		shape->set_points(decomposed[i]);
 		ret.push_back(shape);
 	}
 
