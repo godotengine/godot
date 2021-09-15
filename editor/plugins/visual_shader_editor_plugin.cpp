@@ -4042,7 +4042,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->get_zoom_hbox()->add_child(add_node);
 	add_node->set_text(TTR("Add Node..."));
 	graph->get_zoom_hbox()->move_child(add_node, 0);
-	add_node->connect("pressed", callable_mp(this, &VisualShaderEditor::_show_members_dialog), varray(false));
+	add_node->connect("pressed", callable_mp(this, &VisualShaderEditor::_show_members_dialog), varray(false, VisualShaderNode::PORT_TYPE_MAX, VisualShaderNode::PORT_TYPE_MAX));
 
 	preview_shader = memnew(Button);
 	preview_shader->set_flat(true);
