@@ -66,17 +66,17 @@ class RingBuffer {
 		const mw = this.buffer.length - this.wpos;
 		if (mw >= to_write) {
 			this.buffer.set(p_buffer, this.wpos);
+			this.wpos += to_write;
+			if (mw === to_write) {
+				this.wpos = 0;
+			}
 		} else {
-			const high = p_buffer.subarray(0, to_write - mw);
-			const low = p_buffer.subarray(to_write - mw);
+			const high = p_buffer.subarray(0, mw);
+			const low = p_buffer.subarray(mw);
 			this.buffer.set(high, this.wpos);
 			this.buffer.set(low);
+			this.wpos = low.length;
 		}
-		let diff = to_write;
-		if (this.wpos + diff >= this.buffer.length) {
-			diff -= this.buffer.length;
-		}
-		this.wpos += diff;
 		Atomics.add(this.avail, 0, to_write);
 		Atomics.notify(this.avail, 0);
 	}
