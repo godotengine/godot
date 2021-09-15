@@ -62,7 +62,9 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_COPY,
 		TOOL_PASTE,
 		TOOL_RENAME,
+#ifdef MODULE_REGEX_ENABLED
 		TOOL_BATCH_RENAME,
+#endif // MODULE_REGEX_ENABLED
 		TOOL_REPLACE,
 		TOOL_EXTEND_SCRIPT,
 		TOOL_ATTACH_SCRIPT,
@@ -105,7 +107,9 @@ class SceneTreeDock : public VBoxContainer {
 
 	int current_option;
 	CreateDialog *create_dialog;
+#ifdef MODULE_REGEX_ENABLED
 	RenameDialog *rename_dialog;
+#endif // MODULE_REGEX_ENABLED
 
 	Button *button_add;
 	Button *button_instance;
