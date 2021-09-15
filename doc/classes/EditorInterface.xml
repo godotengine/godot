@@ -33,6 +33,7 @@
 		<method name="get_command_palette" qualifiers="const">
 			<return type="EditorCommandPalette" />
 			<description>
+				Returns the editor's [EditorCommandPalette] instance.
 			</description>
 		</method>
 		<method name="get_current_path" qualifiers="const">
