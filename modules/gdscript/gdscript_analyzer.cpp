@@ -253,6 +253,9 @@ Error GDScriptAnalyzer::resolve_inheritance(GDScriptParser::ClassNode *p_class, 
 		int extends_index = 0;
 
 		if (!p_class->extends_path.is_empty()) {
+			if (p_class->extends_path.is_relative_path()) {
+				p_class->extends_path = class_type.script_path.get_base_dir().plus_file(p_class->extends_path).simplify_path();
+			}
 			Ref<GDScriptParserRef> parser = get_parser_for(p_class->extends_path);
 			if (parser.is_null()) {
 				push_error(vformat(R"(Could not resolve super class path "%s".)", p_class->extends_path), p_class);
