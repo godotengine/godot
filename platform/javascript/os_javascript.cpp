@@ -616,9 +616,10 @@ EM_BOOL OS_JavaScript::wheel_callback(int p_event_type, const EmscriptenWheelEve
 	ev->set_button_mask(input->get_mouse_button_mask() | button_flag);
 	input->parse_input_event(ev);
 
-	ev->set_pressed(false);
-	ev->set_button_mask(input->get_mouse_button_mask() & ~button_flag);
-	input->parse_input_event(ev);
+	Ref<InputEventMouseButton> release = ev->duplicate();
+	release->set_pressed(false);
+	release->set_button_mask(input->get_mouse_button_mask() & ~button_flag);
+	input->parse_input_event(release);
 
 	return true;
 }
@@ -632,7 +633,6 @@ bool OS_JavaScript::has_touchscreen_ui_hint() const {
 EM_BOOL OS_JavaScript::touch_press_callback(int p_event_type, const EmscriptenTouchEvent *p_event, void *p_user_data) {
 	OS_JavaScript *os = get_singleton();
 	Ref<InputEventScreenTouch> ev;
-	ev.instance();
 	int lowest_id_index = -1;
 	for (int i = 0; i < p_event->numTouches; ++i) {
 		const EmscriptenTouchPoint &touch = p_event->touches[i];
@@ -640,6 +640,7 @@ EM_BOOL OS_JavaScript::touch_press_callback(int p_event_type, const EmscriptenTo
 			lowest_id_index = i;
 		if (!touch.isChanged)
 			continue;
+		ev.instance();
 		ev->set_index(touch.identifier);
 		ev->set_position(compute_position_in_canvas(touch.clientX, touch.clientY));
 		os->touches[i] = ev->get_position();
@@ -659,7 +660,6 @@ EM_BOOL OS_JavaScript::touch_press_callback(int p_event_type, const EmscriptenTo
 EM_BOOL OS_JavaScript::touchmove_callback(int p_event_type, const EmscriptenTouchEvent *p_event, void *p_user_data) {
 	OS_JavaScript *os = get_singleton();
 	Ref<InputEventScreenDrag> ev;
-	ev.instance();
 	int lowest_id_index = -1;
 	for (int i = 0; i < p_event->numTouches; ++i) {
 		const EmscriptenTouchPoint &touch = p_event->touches[i];
@@ -667,6 +667,7 @@ EM_BOOL OS_JavaScript::touchmove_callback(int p_event_type, const EmscriptenTouc
 			lowest_id_index = i;
 		if (!touch.isChanged)
 			continue;
+		ev.instance();
 		ev->set_index(touch.identifier);
 		ev->set_position(compute_position_in_canvas(touch.clientX, touch.clientY));
 		Point2 &prev = os->touches[i];
