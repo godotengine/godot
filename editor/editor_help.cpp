@@ -117,7 +117,7 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		} else {
 			if (table->has(link)) {
 				// Found in the current page
-				class_desc->scroll_to_line((*table)[link]);
+				class_desc->scroll_to_paragraph((*table)[link]);
 			} else {
 				if (topic == "class_enum") {
 					// Try to find the enum in @GlobalScope
@@ -1345,7 +1345,7 @@ void EditorHelp::_help_callback(const String &p_topic) {
 		}
 	}
 
-	class_desc->call_deferred(SNAME("scroll_to_line"), line);
+	class_desc->call_deferred(SNAME("scroll_to_paragraph"), line);
 }
 
 static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
@@ -1653,7 +1653,7 @@ Vector<Pair<String, int>> EditorHelp::get_sections() {
 
 void EditorHelp::scroll_to_section(int p_section_index) {
 	int line = section_line[p_section_index].second;
-	class_desc->scroll_to_line(line);
+	class_desc->scroll_to_paragraph(line);
 }
 
 void EditorHelp::popup_search() {
