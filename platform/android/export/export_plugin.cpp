@@ -2552,6 +2552,11 @@ void EditorExportPlatformAndroid::get_command_line_flags(const Ref<EditorExportP
 		command_line_strings.push_back("--debug_opengl");
 	}
 
+	bool translucent = ProjectSettings::get_singleton()->get("display/window/per_pixel_transparency/enabled");
+	if (translucent) {
+		command_line_strings.push_back("--translucent");
+	}
+
 	if (command_line_strings.size()) {
 		r_command_line_flags.resize(4);
 		encode_uint32(command_line_strings.size(), &r_command_line_flags.write[0]);
