@@ -221,6 +221,9 @@ static const LauncherIcon launcher_adaptive_icon_backgrounds[icon_densities_coun
 static const int EXPORT_FORMAT_APK = 0;
 static const int EXPORT_FORMAT_AAB = 1;
 
+static const char *APK_ASSETS_DIRECTORY = "res://android/build/assets";
+static const char *AAB_ASSETS_DIRECTORY = "res://android/build/assetPacks/installTime/src/main/assets";
+
 void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 	EditorExportPlatformAndroid *ea = (EditorExportPlatformAndroid *)ud;
 
@@ -424,6 +427,11 @@ String EditorExportPlatformAndroid::get_package_name(const String &p_package) co
 	pname = pname.replace("$genname", name);
 
 	return pname;
+}
+
+String EditorExportPlatformAndroid::get_assets_directory(const Ref<EditorExportPreset> &p_preset) const {
+	int export_format = int(p_preset->get("custom_template/export_format"));
+	return export_format == EXPORT_FORMAT_AAB ? AAB_ASSETS_DIRECTORY : APK_ASSETS_DIRECTORY;
 }
 
 bool EditorExportPlatformAndroid::is_package_name_valid(const String &p_package, String *r_error) const {
@@ -2335,11 +2343,21 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 
 void EditorExportPlatformAndroid::_clear_assets_directory() {
 	DirAccessRef da_res = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	if (da_res->dir_exists("res://android/build/assets")) {
-		print_verbose("Clearing assets directory..");
-		DirAccessRef da_assets = DirAccess::open("res://android/build/assets");
+
+	// Clear the APK assets directory
+	if (da_res->dir_exists(APK_ASSETS_DIRECTORY)) {
+		print_verbose("Clearing APK assets directory..");
+		DirAccessRef da_assets = DirAccess::open(APK_ASSETS_DIRECTORY);
 		da_assets->erase_contents_recursive();
-		da_res->remove("res://android/build/assets");
+		da_res->remove(APK_ASSETS_DIRECTORY);
+	}
+
+	// Clear the AAB assets directory
+	if (da_res->dir_exists(AAB_ASSETS_DIRECTORY)) {
+		print_verbose("Clearing AAB assets directory..");
+		DirAccessRef da_assets = DirAccess::open(AAB_ASSETS_DIRECTORY);
+		da_assets->erase_contents_recursive();
+		da_res->remove(AAB_ASSETS_DIRECTORY);
 	}
 }
 
@@ -2459,6 +2477,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 				return ERR_UNCONFIGURED;
 			}
 		}
+		const String assets_directory = get_assets_directory(p_preset);
 		String sdk_path = EDITOR_GET("export/android/android_sdk_path");
 		ERR_FAIL_COND_V_MSG(sdk_path.is_empty(), ERR_UNCONFIGURED, "Android SDK path must be configured in Editor Settings at 'export/android/android_sdk_path'.");
 		print_verbose("Android sdk path: " + sdk_path);
@@ -2480,6 +2499,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		if (!apk_expansion) {
 			print_verbose("Exporting project files..");
 			CustomExportData user_data;
+			user_data.assets_directory = assets_directory;
 			user_data.debug = p_debug;
 			err = export_project_files(p_preset, rename_and_store_file_in_gradle_project, &user_data, copy_gradle_so);
 			if (err != OK) {
@@ -2501,7 +2521,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			}
 		}
 		print_verbose("Storing command line flags..");
-		store_file_at_path("res://android/build/assets/_cl_", command_line_flags);
+		store_file_at_path(assets_directory + "/_cl_", command_line_flags);
 
 		print_verbose("Updating ANDROID_HOME environment to " + sdk_path);
 		OS::get_singleton()->set_environment("ANDROID_HOME", sdk_path); //set and overwrite if required

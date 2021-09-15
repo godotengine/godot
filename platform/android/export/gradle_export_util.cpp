@@ -121,7 +121,8 @@ Error store_string_at_path(const String &p_path, const String &p_data) {
 // It's functionality mirrors that of the method save_apk_file.
 // This method will be called ONLY when custom build is enabled.
 Error rename_and_store_file_in_gradle_project(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key) {
-	String dst_path = p_path.replace_first("res://", "res://android/build/assets/");
+	CustomExportData *export_data = (CustomExportData *)p_userdata;
+	String dst_path = p_path.replace_first("res://", export_data->assets_directory + "/");
 	print_verbose("Saving project files from " + p_path + " into " + dst_path);
 	Error err = store_file_at_path(dst_path, p_data);
 	return err;
