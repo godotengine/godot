@@ -48,6 +48,14 @@
 				Returns the [Transform2D] of a specific instance.
 			</description>
 		</method>
+		<method name="reset_instance_physics_interpolation">
+			<return type="void" />
+			<argument index="0" name="instance" type="int" />
+			<description>
+				When using [i]physics interpolation[/i], this function allows you to prevent interpolation on an instance in the current physics tick.
+				This allows you to move instances instantaneously, and should usually be used when initially placing an instance such as a bullet to prevent graphical glitches.
+			</description>
+		</method>
 		<method name="set_as_bulk_array">
 			<return type="void" />
 			<argument index="0" name="array" type="PoolRealArray" />
@@ -55,6 +63,16 @@
 				Sets all data related to the instances in one go. This is especially useful when loading the data from disk or preparing the data from GDNative.
 				All data is packed in one large float array. An array may look like this: Transform for instance 1, color data for instance 1, custom data for instance 1, transform for instance 2, color data for instance 2, etc...
 				[Transform] is stored as 12 floats, [Transform2D] is stored as 8 floats, [code]COLOR_8BIT[/code] / [code]CUSTOM_DATA_8BIT[/code] is stored as 1 float (4 bytes as is) and [code]COLOR_FLOAT[/code] / [code]CUSTOM_DATA_FLOAT[/code] is stored as 4 floats.
+			</description>
+		</method>
+		<method name="set_as_bulk_array_interpolated">
+			<return type="void" />
+			<argument index="0" name="array_current" type="PoolRealArray" />
+			<argument index="1" name="array_previous" type="PoolRealArray" />
+			<description>
+				An alternative version of [method MultiMesh.set_as_bulk_array] which can be used with [i]physics interpolation[/i]. This method takes two arrays, and can set the data for the current and previous tick in one go. The renderer will automatically interpolate the data at each frame.
+				This is useful for situations where the order of instances may change from physics tick to tick, such as particle systems.
+				When the order of instances is coherent, the simpler [method MultiMesh.set_as_bulk_array] can still be used with interpolation.
 			</description>
 		</method>
 		<method name="set_instance_color">
@@ -104,6 +122,11 @@
 		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
 			Mesh to be drawn.
 		</member>
+		<member name="physics_interpolation_quality" type="int" setter="set_physics_interpolation_quality" getter="get_physics_interpolation_quality" enum="MultiMesh.PhysicsInterpolationQuality" default="0">
+			Choose whether to use an interpolation method that favors speed or quality.
+			When using low physics tick rates (typically below 20) or high rates of object rotation, you may get better results from the high quality setting.
+			[b]Note:[/b] Fast quality does not equate to low quality. Except in the special cases mentioned above, the quality should be comparable to high quality.
+		</member>
 		<member name="transform_format" type="int" setter="set_transform_format" getter="get_transform_format" enum="MultiMesh.TransformFormat" default="0">
 			Format of transform used to transform mesh, either 2D or 3D.
 		</member>
@@ -135,6 +158,12 @@
 		</constant>
 		<constant name="CUSTOM_DATA_FLOAT" value="2" enum="CustomDataFormat">
 			The [Color] passed into [method set_instance_custom_data] will use 4 floats. Use this for highest precision.
+		</constant>
+		<constant name="INTERP_QUALITY_FAST" value="0" enum="PhysicsInterpolationQuality">
+			Always interpolate using Basis lerping, which can produce warping artifacts in some situations.
+		</constant>
+		<constant name="INTERP_QUALITY_HIGH" value="1" enum="PhysicsInterpolationQuality">
+			Attempt to interpolate using Basis slerping (spherical linear interpolation) where possible, otherwise fall back to lerping.
 		</constant>
 	</constants>
 </class>

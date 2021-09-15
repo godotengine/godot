@@ -58,6 +58,7 @@ public:
 	static VisualServerScene *singleton;
 
 	/* CAMERA API */
+	struct Scenario;
 
 	struct Camera : public RID_Data {
 		enum Type {
@@ -71,11 +72,26 @@ public:
 		float size;
 		Vector2 offset;
 		uint32_t visible_layers;
-		bool vaspect;
 		RID env;
 
+		// transform_prev is only used when using fixed timestep interpolation
 		Transform transform;
+		Transform transform_prev;
+
+		Scenario *scenario;
+
+		bool interpolated : 1;
+		bool on_interpolate_transform_list : 1;
+
+		bool vaspect : 1;
+		TransformInterpolator::Method interpolation_method : 3;
+
 		int32_t previous_room_id_hint;
+
+		// call get transform to get either the transform straight,
+		// or the interpolated transform if using fixed timestep interpolation
+		Transform get_transform() const;
+		bool is_currently_interpolated() const { return scenario && scenario->is_physics_interpolation_enabled() && interpolated; }
 
 		Camera() {
 			visible_layers = 0xFFFFFFFF;
@@ -86,17 +102,24 @@ public:
 			size = 1.0;
 			offset = Vector2();
 			vaspect = false;
+			scenario = nullptr;
 			previous_room_id_hint = -1;
+			interpolated = true;
+			on_interpolate_transform_list = false;
+			interpolation_method = TransformInterpolator::INTERP_LERP;
 		}
 	};
 
 	mutable RID_Owner<Camera> camera_owner;
 
 	virtual RID camera_create();
+	virtual void camera_set_scenario(RID p_camera, RID p_scenario);
 	virtual void camera_set_perspective(RID p_camera, float p_fovy_degrees, float p_z_near, float p_z_far);
 	virtual void camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far);
 	virtual void camera_set_frustum(RID p_camera, float p_size, Vector2 p_offset, float p_z_near, float p_z_far);
 	virtual void camera_set_transform(RID p_camera, const Transform &p_transform);
+	virtual void camera_set_interpolated(RID p_camera, bool p_interpolated);
+	virtual void camera_reset_physics_interpolation(RID p_camera);
 	virtual void camera_set_cull_mask(RID p_camera, uint32_t p_layers);
 	virtual void camera_set_environment(RID p_camera, RID p_env);
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable);
@@ -247,6 +270,26 @@ public:
 
 		SelfList<Instance>::List instances;
 
+		bool is_physics_interpolation_enabled() const { return _interpolation_data.interpolation_enabled; }
+
+		// fixed timestep interpolation
+		struct InterpolationData {
+			void notify_free_camera(RID p_rid, Camera &r_camera);
+			void notify_free_instance(RID p_rid, Instance &r_instance);
+			LocalVector<RID> instance_interpolate_update_list;
+			LocalVector<RID> instance_transform_update_lists[2];
+			LocalVector<RID> *instance_transform_update_list_curr = &instance_transform_update_lists[0];
+			LocalVector<RID> *instance_transform_update_list_prev = &instance_transform_update_lists[1];
+			LocalVector<RID> instance_teleport_list;
+
+			LocalVector<RID> camera_transform_update_lists[2];
+			LocalVector<RID> *camera_transform_update_list_curr = &camera_transform_update_lists[0];
+			LocalVector<RID> *camera_transform_update_list_prev = &camera_transform_update_lists[1];
+			LocalVector<RID> camera_teleport_list;
+
+			bool interpolation_enabled;
+		} _interpolation_data;
+
 		Scenario();
 		~Scenario() { memdelete(sps); }
 	};
@@ -262,6 +305,9 @@ public:
 	virtual void scenario_set_environment(RID p_scenario, RID p_environment);
 	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment);
 	virtual void scenario_set_reflection_atlas_size(RID p_scenario, int p_size, int p_subdiv);
+	virtual void scenario_set_physics_interpolation_enabled(RID p_scenario, bool p_enabled);
+	void _scenario_tick(RID p_scenario);
+	void _scenario_pre_draw(RID p_scenario, bool p_will_draw);
 
 	/* INSTANCING API */
 
@@ -319,6 +365,8 @@ public:
 			singleton->_instance_queue_update(this, p_aabb, p_materials);
 		}
 
+		bool is_currently_interpolated() const { return scenario && scenario->is_physics_interpolation_enabled() && interpolated; }
+
 		Instance() :
 				scenario_item(this),
 				update_item(this) {
@@ -363,6 +411,7 @@ public:
 	};
 
 	SelfList<Instance>::List _instance_update_list;
+
 	void _instance_queue_update(Instance *p_instance, bool p_update_aabb, bool p_update_materials = false);
 
 	struct InstanceGeometryData : public InstanceBaseData {
@@ -573,6 +622,8 @@ public:
 	virtual void instance_set_scenario(RID p_instance, RID p_scenario);
 	virtual void instance_set_layer_mask(RID p_instance, uint32_t p_mask);
 	virtual void instance_set_transform(RID p_instance, const Transform &p_transform);
+	virtual void instance_set_interpolated(RID p_instance, bool p_interpolated);
+	virtual void instance_reset_physics_interpolation(RID p_instance);
 	virtual void instance_attach_object_instance_id(RID p_instance, ObjectID p_id);
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight);
 	virtual void instance_set_surface_material(RID p_instance, int p_surface, RID p_material);
@@ -769,6 +820,10 @@ public:
 	void render_camera(RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas);
 	void render_camera(Ref<ARVRInterface> &p_interface, ARVRInterface::Eyes p_eye, RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas);
 	void update_dirty_instances();
+
+	// interpolation
+	void update_interpolation_tick(Scenario::InterpolationData &r_interpolation_data, bool p_process = true);
+	void update_interpolation_frame(Scenario::InterpolationData &r_interpolation_data, bool p_process = true);
 
 	//probes
 	struct GIProbeDataHeader {

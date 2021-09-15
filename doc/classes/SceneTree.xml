@@ -254,6 +254,9 @@
 			- 2D and 3D physics will be stopped. This includes signals and collision detection.
 			- [method Node._process], [method Node._physics_process] and [method Node._input] will not be called anymore in nodes.
 		</member>
+		<member name="physics_interpolation" type="bool" setter="set_physics_interpolation_enabled" getter="is_physics_interpolation_enabled" default="false">
+			Although physics interpolation would normally be globally turned on and off using [member ProjectSettings.physics/common/physics_interpolation], this property allows control over interpolation at runtime.
+		</member>
 		<member name="refuse_new_network_connections" type="bool" setter="set_refuse_new_network_connections" getter="is_refusing_new_network_connections" default="false">
 			If [code]true[/code], the [SceneTree]'s [member network_peer] refuses new incoming connections.
 		</member>

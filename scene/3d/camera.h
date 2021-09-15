@@ -94,6 +94,8 @@ protected:
 	virtual void _request_camera_update();
 	void _update_camera_mode();
 
+	virtual void _physics_interpolated_changed();
+
 	void _notification(int p_what);
 	virtual void _validate_property(PropertyInfo &p_property) const;
 

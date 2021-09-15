@@ -56,6 +56,11 @@ public:
 		CUSTOM_DATA_FLOAT,
 	};
 
+	enum PhysicsInterpolationQuality {
+		INTERP_QUALITY_FAST,
+		INTERP_QUALITY_HIGH,
+	};
+
 private:
 	Ref<Mesh> mesh;
 	RID multimesh;
@@ -64,6 +69,7 @@ private:
 	CustomDataFormat custom_data_format;
 	int instance_count;
 	int visible_instance_count;
+	PhysicsInterpolationQuality _physics_interpolation_quality;
 
 protected:
 	static void _bind_methods();
@@ -99,6 +105,9 @@ public:
 	void set_visible_instance_count(int p_count);
 	int get_visible_instance_count() const;
 
+	void set_physics_interpolation_quality(PhysicsInterpolationQuality p_quality);
+	PhysicsInterpolationQuality get_physics_interpolation_quality() const { return _physics_interpolation_quality; }
+
 	void set_instance_transform(int p_instance, const Transform &p_transform);
 	void set_instance_transform_2d(int p_instance, const Transform2D &p_transform);
 	Transform get_instance_transform(int p_instance) const;
@@ -110,7 +119,12 @@ public:
 	void set_instance_custom_data(int p_instance, const Color &p_custom_data);
 	Color get_instance_custom_data(int p_instance) const;
 
+	void reset_instance_physics_interpolation(int p_instance);
+
 	void set_as_bulk_array(const PoolVector<float> &p_array);
+	void set_as_bulk_array_interpolated(const PoolVector<float> &p_array_curr, const PoolVector<float> &p_array_prev);
+
+	void set_physics_interpolated(bool p_interpolated);
 
 	virtual AABB get_aabb() const;
 
@@ -123,5 +137,6 @@ public:
 VARIANT_ENUM_CAST(MultiMesh::TransformFormat);
 VARIANT_ENUM_CAST(MultiMesh::ColorFormat);
 VARIANT_ENUM_CAST(MultiMesh::CustomDataFormat);
+VARIANT_ENUM_CAST(MultiMesh::PhysicsInterpolationQuality);
 
 #endif // MULTI_MESH_H

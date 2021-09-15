@@ -171,6 +171,7 @@ public:
 	bool is_rotation() const;
 
 	Basis slerp(const Basis &p_to, const real_t &p_weight) const;
+	_FORCE_INLINE_ Basis lerp(const Basis &p_to, const real_t &p_weight) const;
 
 	operator String() const;
 
@@ -339,5 +340,14 @@ real_t Basis::determinant() const {
 	return elements[0][0] * (elements[1][1] * elements[2][2] - elements[2][1] * elements[1][2]) -
 			elements[1][0] * (elements[0][1] * elements[2][2] - elements[2][1] * elements[0][2]) +
 			elements[2][0] * (elements[0][1] * elements[1][2] - elements[1][1] * elements[0][2]);
+}
+
+Basis Basis::lerp(const Basis &p_to, const real_t &p_weight) const {
+	Basis b;
+	b.elements[0] = elements[0].linear_interpolate(p_to.elements[0], p_weight);
+	b.elements[1] = elements[1].linear_interpolate(p_to.elements[1], p_weight);
+	b.elements[2] = elements[2].linear_interpolate(p_to.elements[2], p_weight);
+
+	return b;
 }
 #endif // BASIS_H
