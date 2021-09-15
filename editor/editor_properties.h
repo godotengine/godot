@@ -554,7 +554,7 @@ protected:
 public:
 	virtual void update_property() override;
 	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
-	EditorPropertyTransform2D();
+	EditorPropertyTransform2D(bool p_include_origin = true);
 };
 
 class EditorPropertyBasis : public EditorProperty {
