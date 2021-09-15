@@ -30,6 +30,7 @@
 
 #include "text_server_adv.h"
 
+#include "core/error/error_macros.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
 
@@ -1225,7 +1226,7 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontDataAdvanced 
 		int error = 0;
 		if (!library) {
 			error = FT_Init_FreeType(&library);
-			ERR_FAIL_COND_V_MSG(error != 0, false, RTR("FreeType: Error initializing library:") + " '" + String(FT_Error_String(error)) + "'.");
+			ERR_FAIL_COND_V_MSG(error != 0, false, "FreeType: Error initializing library: '" + String(FT_Error_String(error)) + "'.");
 		}
 
 		memset(&fd->stream, 0, sizeof(FT_StreamRec));
@@ -1243,7 +1244,7 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontDataAdvanced 
 		if (error) {
 			FT_Done_Face(fd->face);
 			fd->face = nullptr;
-			ERR_FAIL_V_MSG(false, RTR("FreeType: Error loading font:") + " '" + String(FT_Error_String(error)) + "'.");
+			ERR_FAIL_V_MSG(false, "FreeType: Error loading font: '" + String(FT_Error_String(error)) + "'.");
 		}
 
 		if (p_font_data->msdf) {
@@ -1588,7 +1589,7 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontDataAdvanced 
 			FT_Done_MM_Var(library, amaster);
 		}
 #else
-		ERR_FAIL_V_MSG(false, RTR("FreeType: Can't load dynamic font, engine is compiled without FreeType support!");
+		ERR_FAIL_V_MSG(false, "FreeType: Can't load dynamic font, engine is compiled without FreeType support!");
 #endif
 	} else {
 		// Init bitmap font.
