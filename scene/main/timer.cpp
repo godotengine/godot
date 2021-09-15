@@ -49,11 +49,13 @@ void Timer::_notification(int p_what) {
 			}
 			time_left -= get_process_delta_time();
 
-			if (time_left < 0) {
+			while (time_left < 0) {
 				if (!one_shot) {
 					time_left += wait_time;
 				} else {
 					stop();
+					emit_signal(SNAME("timeout"));
+					break;
 				}
 
 				emit_signal(SNAME("timeout"));
@@ -66,11 +68,13 @@ void Timer::_notification(int p_what) {
 			}
 			time_left -= get_physics_process_delta_time();
 
-			if (time_left < 0) {
+			while (time_left < 0) {
 				if (!one_shot) {
 					time_left += wait_time;
 				} else {
 					stop();
+					emit_signal(SNAME("timeout"));
+					break;
 				}
 				emit_signal(SNAME("timeout"));
 			}
