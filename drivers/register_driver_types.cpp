@@ -30,6 +30,7 @@
 
 #include "register_driver_types.h"
 
+#include "core/extension/native_extension_manager.h"
 #include "drivers/png/image_loader_png.h"
 #include "drivers/png/resource_saver_png.h"
 
@@ -54,7 +55,9 @@ void unregister_core_driver_types() {
 }
 
 void register_driver_types() {
+	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_DRIVER);
 }
 
 void unregister_driver_types() {
+	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_DRIVER);
 }
