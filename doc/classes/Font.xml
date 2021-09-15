@@ -7,7 +7,8 @@
 		Font contains a set of glyphs to represent Unicode characters, as well as the ability to draw it with variable width, ascent, descent and kerning.
 		[b]Note:[/b] A character is a symbol that represents an item (letter, digit etc.) in an abstract way.
 		[b]Note:[/b] A glyph is a bitmap or shape used to draw a one or more characters in a context-dependent manner. Glyph indices are bound to the specific font data source.
-		[b]Note:[/b] If a non of the font data sources contain glyphs for a character used in a string, the character in question will be replaced with a box displaying its hexadecimal code.
+		[b]Note:[/b] If a none of the font data sources contain glyphs for a character used in a string, the character in question will be replaced with a box displaying its hexadecimal code.
+		[b]Note:[/b] Unicode characters after [code]0xffff[/code] (such as most emoji) are [i]not[/i] supported on Windows. They will display as unknown characters instead. This will be resolved in Godot 4.0.
 		[codeblocks]
 		[gdscript]
 		var font = Font.new()
