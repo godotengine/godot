@@ -15,11 +15,11 @@
 		</member>
 		<member name="intensity" type="float" setter="set_intensity" getter="get_intensity" default="0.0">
 		</member>
+		<member name="light_type" type="String" setter="set_light_type" getter="get_light_type" default="&quot;&quot;">
+		</member>
 		<member name="outer_cone_angle" type="float" setter="set_outer_cone_angle" getter="get_outer_cone_angle" default="0.0">
 		</member>
 		<member name="range" type="float" setter="set_range" getter="get_range" default="0.0">
-		</member>
-		<member name="type" type="String" setter="set_type" getter="get_type" default="&quot;&quot;">
 		</member>
 	</members>
 	<constants>

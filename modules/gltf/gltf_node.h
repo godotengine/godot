@@ -48,7 +48,7 @@ private:
 	GLTFSkinIndex skin = -1;
 	GLTFSkeletonIndex skeleton = -1;
 	bool joint = false;
-	Vector3 translation;
+	Vector3 position;
 	Quaternion rotation;
 	Vector3 scale = Vector3(1, 1, 1);
 	Vector<int> children;
@@ -82,8 +82,8 @@ public:
 	bool get_joint();
 	void set_joint(bool p_joint);
 
-	Vector3 get_translation();
-	void set_translation(Vector3 p_translation);
+	Vector3 get_position();
+	void set_position(Vector3 p_position);
 
 	Quaternion get_rotation();
 	void set_rotation(Quaternion p_rotation);

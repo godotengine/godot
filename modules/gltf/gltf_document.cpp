@@ -429,8 +429,8 @@ Error GLTFDocument::_serialize_nodes(Ref<GLTFState> state) {
 			node["scale"] = _vec3_to_arr(n->scale);
 		}
 
-		if (!n->translation.is_equal_approx(Vector3())) {
-			node["translation"] = _vec3_to_arr(n->translation);
+		if (!n->position.is_equal_approx(Vector3())) {
+			node["translation"] = _vec3_to_arr(n->position);
 		}
 		if (n->children.size()) {
 			Array children;
@@ -584,7 +584,7 @@ Error GLTFDocument::_parse_nodes(Ref<GLTFState> state) {
 			node->xform = _arr_to_xform(n["matrix"]);
 		} else {
 			if (n.has("translation")) {
-				node->translation = _arr_to_vec3(n["translation"]);
+				node->position = _arr_to_vec3(n["translation"]);
 			}
 			if (n.has("rotation")) {
 				node->rotation = _arr_to_quaternion(n["rotation"]);
@@ -594,7 +594,7 @@ Error GLTFDocument::_parse_nodes(Ref<GLTFState> state) {
 			}
 
 			node->xform.basis.set_quaternion_scale(node->rotation, node->scale);
-			node->xform.origin = node->translation;
+			node->xform.origin = node->position;
 		}
 
 		if (n.has("extensions")) {
@@ -4470,8 +4470,8 @@ Error GLTFDocument::_serialize_lights(Ref<GLTFState> state) {
 		color[1] = light->color.g;
 		color[2] = light->color.b;
 		d["color"] = color;
-		d["type"] = light->type;
-		if (light->type == "spot") {
+		d["type"] = light->light_type;
+		if (light->light_type == "spot") {
 			Dictionary s;
 			float inner_cone_angle = light->inner_cone_angle;
 			s["innerConeAngle"] = inner_cone_angle;
@@ -4517,16 +4517,16 @@ Error GLTFDocument::_serialize_cameras(Ref<GLTFState> state) {
 			Dictionary og;
 			og["ymag"] = Math::deg2rad(camera->get_fov_size());
 			og["xmag"] = Math::deg2rad(camera->get_fov_size());
-			og["zfar"] = camera->get_zfar();
-			og["znear"] = camera->get_znear();
+			og["zfar"] = camera->get_depth_far();
+			og["znear"] = camera->get_depth_near();
 			d["orthographic"] = og;
 			d["type"] = "orthographic";
 		} else if (camera->get_perspective()) {
 			Dictionary ppt;
 			// GLTF spec is in radians, Godot's camera is in degrees.
 			ppt["yfov"] = Math::deg2rad(camera->get_fov_size());
-			ppt["zfar"] = camera->get_zfar();
-			ppt["znear"] = camera->get_znear();
+			ppt["zfar"] = camera->get_depth_far();
+			ppt["znear"] = camera->get_depth_near();
 			d["perspective"] = ppt;
 			d["type"] = "perspective";
 		}
@@ -4566,7 +4566,7 @@ Error GLTFDocument::_parse_lights(Ref<GLTFState> state) {
 		light.instantiate();
 		ERR_FAIL_COND_V(!d.has("type"), ERR_PARSE_ERROR);
 		const String &type = d["type"];
-		light->type = type;
+		light->light_type = type;
 
 		if (d.has("color")) {
 			const Array &arr = d["color"];
@@ -4617,8 +4617,8 @@ Error GLTFDocument::_parse_cameras(Ref<GLTFState> state) {
 				const Dictionary &og = d["orthographic"];
 				// GLTF spec is in radians, Godot's camera is in degrees.
 				camera->set_fov_size(Math::rad2deg(real_t(og["ymag"])));
-				camera->set_zfar(og["zfar"]);
-				camera->set_znear(og["znear"]);
+				camera->set_depth_far(og["zfar"]);
+				camera->set_depth_near(og["znear"]);
 			} else {
 				camera->set_fov_size(10);
 			}
@@ -4628,8 +4628,8 @@ Error GLTFDocument::_parse_cameras(Ref<GLTFState> state) {
 				const Dictionary &ppt = d["perspective"];
 				// GLTF spec is in radians, Godot's camera is in degrees.
 				camera->set_fov_size(Math::rad2deg(real_t(ppt["yfov"])));
-				camera->set_zfar(ppt["zfar"]);
-				camera->set_znear(ppt["znear"]);
+				camera->set_depth_far(ppt["zfar"]);
+				camera->set_depth_near(ppt["znear"]);
 			} else {
 				camera->set_fov_size(10);
 			}
@@ -4690,15 +4690,15 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> state) {
 
 		for (Map<int, GLTFAnimation::Track>::Element *track_i = gltf_animation->get_tracks().front(); track_i; track_i = track_i->next()) {
 			GLTFAnimation::Track track = track_i->get();
-			if (track.translation_track.times.size()) {
+			if (track.position_track.times.size()) {
 				Dictionary t;
 				t["sampler"] = samplers.size();
 				Dictionary s;
 
-				s["interpolation"] = interpolation_to_string(track.translation_track.interpolation);
-				Vector<real_t> times = Variant(track.translation_track.times);
+				s["interpolation"] = interpolation_to_string(track.position_track.interpolation);
+				Vector<real_t> times = Variant(track.position_track.times);
 				s["input"] = _encode_accessor_as_floats(state, times, false);
-				Vector<Vector3> values = Variant(track.translation_track.values);
+				Vector<Vector3> values = Variant(track.position_track.values);
 				s["output"] = _encode_accessor_as_vec3(state, values, false);
 
 				samplers.push_back(s);
@@ -4883,10 +4883,10 @@ Error GLTFDocument::_parse_animations(Ref<GLTFState> state) {
 
 			const Vector<float> times = _decode_accessor_as_floats(state, input, false);
 			if (path == "translation") {
-				const Vector<Vector3> translations = _decode_accessor_as_vec3(state, output, false);
-				track->translation_track.interpolation = interp;
-				track->translation_track.times = Variant(times); //convert via variant
-				track->translation_track.values = Variant(translations); //convert via variant
+				const Vector<Vector3> positions = _decode_accessor_as_vec3(state, output, false);
+				track->position_track.interpolation = interp;
+				track->position_track.times = Variant(times); //convert via variant
+				track->position_track.values = Variant(positions); //convert via variant
 			} else if (path == "rotation") {
 				const Vector<Quaternion> rotations = _decode_accessor_as_quaternion(state, output, false);
 				track->rotation_track.interpolation = interp;
@@ -5064,7 +5064,7 @@ Node3D *GLTFDocument::_generate_light(Ref<GLTFState> state, Node *scene_parent, 
 		intensity /= 100;
 	}
 
-	if (l->type == "directional") {
+	if (l->light_type == "directional") {
 		DirectionalLight3D *light = memnew(DirectionalLight3D);
 		light->set_param(Light3D::PARAM_ENERGY, intensity);
 		light->set_color(l->color);
@@ -5075,14 +5075,14 @@ Node3D *GLTFDocument::_generate_light(Ref<GLTFState> state, Node *scene_parent, 
 	// Doubling the range will double the effective brightness, so we need double attenuation (half brightness).
 	// We want to have double intensity give double brightness, so we need half the attenuation.
 	const float attenuation = range / intensity;
-	if (l->type == "point") {
+	if (l->light_type == "point") {
 		OmniLight3D *light = memnew(OmniLight3D);
 		light->set_param(OmniLight3D::PARAM_ATTENUATION, attenuation);
 		light->set_param(OmniLight3D::PARAM_RANGE, range);
 		light->set_color(l->color);
 		return light;
 	}
-	if (l->type == "spot") {
+	if (l->light_type == "spot") {
 		SpotLight3D *light = memnew(SpotLight3D);
 		light->set_param(SpotLight3D::PARAM_ATTENUATION, attenuation);
 		light->set_param(SpotLight3D::PARAM_RANGE, range);
@@ -5109,9 +5109,9 @@ Camera3D *GLTFDocument::_generate_camera(Ref<GLTFState> state, Node *scene_paren
 
 	Ref<GLTFCamera> c = state->cameras[gltf_node->camera];
 	if (c->get_perspective()) {
-		camera->set_perspective(c->get_fov_size(), c->get_znear(), c->get_zfar());
+		camera->set_perspective(c->get_fov_size(), c->get_depth_near(), c->get_depth_far());
 	} else {
-		camera->set_orthogonal(c->get_fov_size(), c->get_znear(), c->get_zfar());
+		camera->set_orthogonal(c->get_fov_size(), c->get_depth_near(), c->get_depth_far());
 	}
 
 	return camera;
@@ -5125,14 +5125,10 @@ GLTFCameraIndex GLTFDocument::_convert_camera(Ref<GLTFState> state, Camera3D *p_
 
 	if (p_camera->get_projection() == Camera3D::Projection::PROJECTION_PERSPECTIVE) {
 		c->set_perspective(true);
-		c->set_fov_size(p_camera->get_fov());
-		c->set_zfar(p_camera->get_far());
-		c->set_znear(p_camera->get_near());
-	} else {
-		c->set_fov_size(p_camera->get_fov());
-		c->set_zfar(p_camera->get_far());
-		c->set_znear(p_camera->get_near());
 	}
+	c->set_fov_size(p_camera->get_fov());
+	c->set_depth_far(p_camera->get_far());
+	c->set_depth_near(p_camera->get_near());
 	GLTFCameraIndex camera_index = state->cameras.size();
 	state->cameras.push_back(c);
 	return camera_index;
@@ -5145,18 +5141,18 @@ GLTFLightIndex GLTFDocument::_convert_light(Ref<GLTFState> state, Light3D *p_lig
 	l.instantiate();
 	l->color = p_light->get_color();
 	if (cast_to<DirectionalLight3D>(p_light)) {
-		l->type = "directional";
+		l->light_type = "directional";
 		DirectionalLight3D *light = cast_to<DirectionalLight3D>(p_light);
 		l->intensity = light->get_param(DirectionalLight3D::PARAM_ENERGY);
 		l->range = FLT_MAX; // Range for directional lights is infinite in Godot.
 	} else if (cast_to<OmniLight3D>(p_light)) {
-		l->type = "point";
+		l->light_type = "point";
 		OmniLight3D *light = cast_to<OmniLight3D>(p_light);
 		l->range = light->get_param(OmniLight3D::PARAM_RANGE);
 		float attenuation = p_light->get_param(OmniLight3D::PARAM_ATTENUATION);
 		l->intensity = l->range / attenuation;
 	} else if (cast_to<SpotLight3D>(p_light)) {
-		l->type = "spot";
+		l->light_type = "spot";
 		SpotLight3D *light = cast_to<SpotLight3D>(p_light);
 		l->range = light->get_param(SpotLight3D::PARAM_RANGE);
 		float attenuation = light->get_param(SpotLight3D::PARAM_ATTENUATION);
@@ -5189,7 +5185,7 @@ void GLTFDocument::_convert_spatial(Ref<GLTFState> state, Node3D *p_spatial, Ref
 	Transform3D xform = p_spatial->get_transform();
 	p_node->scale = xform.basis.get_scale();
 	p_node->rotation = xform.basis.get_rotation_quaternion();
-	p_node->translation = xform.origin;
+	p_node->position = xform.origin;
 }
 
 Node3D *GLTFDocument::_generate_spatial(Ref<GLTFState> state, Node *scene_parent, const GLTFNodeIndex node_index) {
@@ -5772,8 +5768,8 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 		for (int i = 0; i < track.rotation_track.times.size(); i++) {
 			length = MAX(length, track.rotation_track.times[i]);
 		}
-		for (int i = 0; i < track.translation_track.times.size(); i++) {
-			length = MAX(length, track.translation_track.times[i]);
+		for (int i = 0; i < track.position_track.times.size(); i++) {
+			length = MAX(length, track.position_track.times[i]);
 		}
 		for (int i = 0; i < track.scale_track.times.size(); i++) {
 			length = MAX(length, track.scale_track.times[i]);
@@ -5787,7 +5783,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 
 		// Animated TRS properties will not affect a skinned mesh.
 		const bool transform_affects_skinned_mesh_instance = gltf_node->skeleton < 0 && gltf_node->skin >= 0;
-		if ((track.rotation_track.values.size() || track.translation_track.values.size() || track.scale_track.values.size()) && !transform_affects_skinned_mesh_instance) {
+		if ((track.rotation_track.values.size() || track.position_track.values.size() || track.scale_track.values.size()) && !transform_affects_skinned_mesh_instance) {
 			//make transform track
 			int track_idx = animation->get_track_count();
 			animation->add_track(Animation::TYPE_TRANSFORM3D);
@@ -5805,8 +5801,8 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 				base_rot = state->nodes[track_i->key()]->rotation.normalized();
 			}
 
-			if (!track.translation_track.values.size()) {
-				base_pos = state->nodes[track_i->key()]->translation;
+			if (!track.position_track.values.size()) {
+				base_pos = state->nodes[track_i->key()]->position;
 			}
 
 			if (!track.scale_track.values.size()) {
@@ -5819,8 +5815,8 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 				Quaternion rot = base_rot;
 				Vector3 scale = base_scale;
 
-				if (track.translation_track.times.size()) {
-					pos = _interpolate_track<Vector3>(track.translation_track.times, track.translation_track.values, time, track.translation_track.interpolation);
+				if (track.position_track.times.size()) {
+					pos = _interpolate_track<Vector3>(track.position_track.times, track.position_track.values, time, track.position_track.interpolation);
 				}
 
 				if (track.rotation_track.times.size()) {
@@ -5928,7 +5924,7 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> state) {
 		Transform3D mi_xform = mi->get_transform();
 		node->scale = mi_xform.basis.get_scale();
 		node->rotation = mi_xform.basis.get_rotation_quaternion();
-		node->translation = mi_xform.origin;
+		node->position = mi_xform.origin;
 
 		Dictionary json_skin;
 		Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(mi->get_node(mi->get_skeleton_path()));
@@ -5992,7 +5988,7 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> state) {
 			Transform3D bone_rest_xform = skeleton->get_bone_rest(bone_index);
 			joint_node->scale = bone_rest_xform.basis.get_scale();
 			joint_node->rotation = bone_rest_xform.basis.get_rotation_quaternion();
-			joint_node->translation = bone_rest_xform.origin;
+			joint_node->position = bone_rest_xform.origin;
 			joint_node->joint = true;
 
 			int32_t joint_node_i = state->nodes.size();
@@ -6138,8 +6134,8 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 	}
 	const float BAKE_FPS = 30.0f;
 	if (track_type == Animation::TYPE_TRANSFORM3D) {
-		p_track.translation_track.times = times;
-		p_track.translation_track.interpolation = gltf_interpolation;
+		p_track.position_track.times = times;
+		p_track.position_track.interpolation = gltf_interpolation;
 		p_track.rotation_track.times = times;
 		p_track.rotation_track.interpolation = gltf_interpolation;
 		p_track.scale_track.times = times;
@@ -6147,27 +6143,27 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 
 		p_track.scale_track.values.resize(key_count);
 		p_track.scale_track.interpolation = gltf_interpolation;
-		p_track.translation_track.values.resize(key_count);
-		p_track.translation_track.interpolation = gltf_interpolation;
+		p_track.position_track.values.resize(key_count);
+		p_track.position_track.interpolation = gltf_interpolation;
 		p_track.rotation_track.values.resize(key_count);
 		p_track.rotation_track.interpolation = gltf_interpolation;
 		for (int32_t key_i = 0; key_i < key_count; key_i++) {
-			Vector3 translation;
+			Vector3 position;
 			Quaternion rotation;
 			Vector3 scale;
-			Error err = p_animation->transform_track_get_key(p_track_i, key_i, &translation, &rotation, &scale);
+			Error err = p_animation->transform_track_get_key(p_track_i, key_i, &position, &rotation, &scale);
 			ERR_CONTINUE(err != OK);
 			Transform3D xform;
 			xform.basis.set_quaternion_scale(rotation, scale);
-			xform.origin = translation;
+			xform.origin = position;
 			xform = p_bone_rest * xform;
-			p_track.translation_track.values.write[key_i] = xform.get_origin();
+			p_track.position_track.values.write[key_i] = xform.get_origin();
 			p_track.rotation_track.values.write[key_i] = xform.basis.get_rotation_quaternion();
 			p_track.scale_track.values.write[key_i] = xform.basis.get_scale();
 		}
 	} else if (path.find(":transform") != -1) {
-		p_track.translation_track.times = times;
-		p_track.translation_track.interpolation = gltf_interpolation;
+		p_track.position_track.times = times;
+		p_track.position_track.interpolation = gltf_interpolation;
 		p_track.rotation_track.times = times;
 		p_track.rotation_track.interpolation = gltf_interpolation;
 		p_track.scale_track.times = times;
@@ -6175,13 +6171,13 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 
 		p_track.scale_track.values.resize(key_count);
 		p_track.scale_track.interpolation = gltf_interpolation;
-		p_track.translation_track.values.resize(key_count);
-		p_track.translation_track.interpolation = gltf_interpolation;
+		p_track.position_track.values.resize(key_count);
+		p_track.position_track.interpolation = gltf_interpolation;
 		p_track.rotation_track.values.resize(key_count);
 		p_track.rotation_track.interpolation = gltf_interpolation;
 		for (int32_t key_i = 0; key_i < key_count; key_i++) {
 			Transform3D xform = p_animation->track_get_key_value(p_track_i, key_i);
-			p_track.translation_track.values.write[key_i] = xform.get_origin();
+			p_track.position_track.values.write[key_i] = xform.get_origin();
 			p_track.rotation_track.values.write[key_i] = xform.basis.get_rotation_quaternion();
 			p_track.scale_track.values.write[key_i] = xform.basis.get_scale();
 		}
@@ -6197,16 +6193,16 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 				Quaternion rotation_track = p_animation->track_get_key_value(p_track_i, key_i);
 				p_track.rotation_track.values.write[key_i] = rotation_track;
 			}
-		} else if (path.find(":translation") != -1) {
-			p_track.translation_track.times = times;
-			p_track.translation_track.interpolation = gltf_interpolation;
+		} else if (path.find(":position") != -1) {
+			p_track.position_track.times = times;
+			p_track.position_track.interpolation = gltf_interpolation;
 
-			p_track.translation_track.values.resize(key_count);
-			p_track.translation_track.interpolation = gltf_interpolation;
+			p_track.position_track.values.resize(key_count);
+			p_track.position_track.interpolation = gltf_interpolation;
 
 			for (int32_t key_i = 0; key_i < key_count; key_i++) {
-				Vector3 translation = p_animation->track_get_key_value(p_track_i, key_i);
-				p_track.translation_track.values.write[key_i] = translation;
+				Vector3 position = p_animation->track_get_key_value(p_track_i, key_i);
+				p_track.position_track.values.write[key_i] = position;
 			}
 		} else if (path.find(":rotation") != -1) {
 			p_track.rotation_track.times = times;
@@ -6265,34 +6261,34 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 				}
 				p_track.scale_track.values.write[key_i] = bezier_track;
 			}
-		} else if (path.find("/translation") != -1) {
+		} else if (path.find("/position") != -1) {
 			const int32_t keys = p_animation->track_get_key_time(p_track_i, key_count - 1) * BAKE_FPS;
-			if (!p_track.translation_track.times.size()) {
+			if (!p_track.position_track.times.size()) {
 				Vector<float> new_times;
 				new_times.resize(keys);
 				for (int32_t key_i = 0; key_i < keys; key_i++) {
 					new_times.write[key_i] = key_i / BAKE_FPS;
 				}
-				p_track.translation_track.times = new_times;
-				p_track.translation_track.interpolation = gltf_interpolation;
+				p_track.position_track.times = new_times;
+				p_track.position_track.interpolation = gltf_interpolation;
 
-				p_track.translation_track.values.resize(keys);
-				p_track.translation_track.interpolation = gltf_interpolation;
+				p_track.position_track.values.resize(keys);
+				p_track.position_track.interpolation = gltf_interpolation;
 			}
 
 			for (int32_t key_i = 0; key_i < keys; key_i++) {
-				Vector3 bezier_track = p_track.translation_track.values[key_i];
-				if (path.find("/translation:x") != -1) {
+				Vector3 bezier_track = p_track.position_track.values[key_i];
+				if (path.find("/position:x") != -1) {
 					bezier_track.x = p_animation->bezier_track_interpolate(p_track_i, key_i / BAKE_FPS);
 					bezier_track.x = p_bone_rest.affine_inverse().origin.x * bezier_track.x;
-				} else if (path.find("/translation:y") != -1) {
+				} else if (path.find("/position:y") != -1) {
 					bezier_track.y = p_animation->bezier_track_interpolate(p_track_i, key_i / BAKE_FPS);
 					bezier_track.y = p_bone_rest.affine_inverse().origin.y * bezier_track.y;
-				} else if (path.find("/translation:z") != -1) {
+				} else if (path.find("/position:z") != -1) {
 					bezier_track.z = p_animation->bezier_track_interpolate(p_track_i, key_i / BAKE_FPS);
 					bezier_track.z = p_bone_rest.affine_inverse().origin.z * bezier_track.z;
 				}
-				p_track.translation_track.values.write[key_i] = bezier_track;
+				p_track.position_track.values.write[key_i] = bezier_track;
 			}
 		}
 	}
@@ -6311,17 +6307,17 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 			continue;
 		}
 		String orig_track_path = animation->track_get_path(track_i);
-		if (String(orig_track_path).find(":translation") != -1) {
-			const Vector<String> node_suffix = String(orig_track_path).split(":translation");
+		if (String(orig_track_path).find(":position") != -1) {
+			const Vector<String> node_suffix = String(orig_track_path).split(":position");
 			const NodePath path = node_suffix[0];
 			const Node *node = ap->get_parent()->get_node_or_null(path);
-			for (Map<GLTFNodeIndex, Node *>::Element *translation_scene_node_i = state->scene_nodes.front(); translation_scene_node_i; translation_scene_node_i = translation_scene_node_i->next()) {
-				if (translation_scene_node_i->get() == node) {
-					GLTFNodeIndex node_index = translation_scene_node_i->key();
-					Map<int, GLTFAnimation::Track>::Element *translation_track_i = gltf_animation->get_tracks().find(node_index);
+			for (Map<GLTFNodeIndex, Node *>::Element *position_scene_node_i = state->scene_nodes.front(); position_scene_node_i; position_scene_node_i = position_scene_node_i->next()) {
+				if (position_scene_node_i->get() == node) {
+					GLTFNodeIndex node_index = position_scene_node_i->key();
+					Map<int, GLTFAnimation::Track>::Element *position_track_i = gltf_animation->get_tracks().find(node_index);
 					GLTFAnimation::Track track;
-					if (translation_track_i) {
-						track = translation_track_i->get();
+					if (position_track_i) {
+						track = position_track_i->get();
 					}
 					track = _convert_animation_track(state, track, animation, Transform3D(), track_i, node_index);
 					gltf_animation->get_tracks().insert(node_index, track);

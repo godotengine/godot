@@ -44,7 +44,7 @@ protected:
 private:
 	Color color;
 	float intensity = 0.0f;
-	String type;
+	String light_type;
 	float range = 0.0f;
 	float inner_cone_angle = 0.0f;
 	float outer_cone_angle = 0.0f;
@@ -56,8 +56,8 @@ public:
 	float get_intensity();
 	void set_intensity(float p_intensity);
 
-	String get_type();
-	void set_type(String p_type);
+	String get_light_type();
+	void set_light_type(String p_light_type);
 
 	float get_range();
 	void set_range(float p_range);
