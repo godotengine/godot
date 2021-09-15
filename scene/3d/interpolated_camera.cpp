@@ -31,17 +31,41 @@
 #include "interpolated_camera.h"
 
 #include "core/engine.h"
+#include "core/math/interpolator.h"
+
+void InterpolatedCamera::_physics_interpolated_changed() {
+	update_process_modes();
+}
+
+void InterpolatedCamera::update_process_modes() {
+	if (Engine::get_singleton()->is_editor_hint() || !enabled) {
+		set_physics_process_internal(false);
+		set_process_internal(false);
+		return;
+	}
+
+	if (Engine::get_singleton()->is_physics_interpolation_enabled()) {
+		set_physics_process_internal(true);
+	} else {
+		set_physics_process_internal(false);
+	}
+
+	if (Engine::get_singleton()->is_physics_interpolation_enabled() && is_physics_interpolated()) {
+		set_process_internal(false);
+	} else {
+		set_process_internal(true);
+	}
+}
 
 void InterpolatedCamera::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			if (Engine::get_singleton()->is_editor_hint() && enabled) {
-				set_process_internal(false);
-			}
-
+			update_process_modes();
 		} break;
-		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (!enabled) {
+
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			// should not usually happen because internal physics process should be switched off in these circumstances
+			if (!enabled || !Engine::get_singleton()->is_physics_interpolation_enabled()) {
 				break;
 			}
 			if (has_node(target)) {
@@ -50,29 +74,72 @@ void InterpolatedCamera::_notification(int p_what) {
 					break;
 				}
 
-				float delta = speed * get_process_delta_time();
-				Transform target_xform = node->get_global_transform();
-				Transform local_transform = get_global_transform();
-				local_transform = local_transform.interpolate_with(target_xform, delta);
-				set_global_transform(local_transform);
-				Camera *cam = Object::cast_to<Camera>(node);
-				if (cam) {
-					if (cam->get_projection() == get_projection()) {
-						float new_near = Math::lerp(get_znear(), cam->get_znear(), delta);
-						float new_far = Math::lerp(get_zfar(), cam->get_zfar(), delta);
-
-						if (cam->get_projection() == PROJECTION_ORTHOGONAL) {
-							float size = Math::lerp(get_size(), cam->get_size(), delta);
-							set_orthogonal(size, new_near, new_far);
-						} else {
-							float fov = Math::lerp(get_fov(), cam->get_fov(), delta);
-							set_perspective(fov, new_near, new_far);
-						}
-					}
+				// if this camera has fixed timestep interpolation, we only need to set the transform here and we are done
+				if (is_physics_interpolated()) {
+					target_transform_curr = node->get_global_transform();
+					lerp_camera_to(node, target_transform_curr, get_physics_process_delta_time());
+				} else {
+					target_transform_prev = target_transform_curr;
+					target_transform_curr = node->get_global_transform();
 				}
 			}
 
 		} break;
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (!enabled) {
+				break;
+			}
+
+			// nothing to do in internal process, should be switched off normally
+			if (Engine::get_singleton()->is_physics_interpolation_enabled() && is_physics_interpolated()) {
+				break;
+			}
+
+			if (has_node(target)) {
+				Spatial *node = Object::cast_to<Spatial>(get_node(target));
+				if (!node) {
+					break;
+				}
+
+				Transform target_xform;
+				if (!Engine::get_singleton()->is_physics_interpolation_enabled()) {
+					target_xform = node->get_global_transform();
+				} else {
+					// interpolate transform
+					Interpolator::interpolate_transform_linear(target_transform_prev, target_transform_curr, target_xform, Engine::get_singleton()->get_physics_interpolation_fraction());
+				}
+
+				lerp_camera_to(node, target_xform, get_process_delta_time());
+			} // if target exists
+
+		} break;
+	}
+}
+
+void InterpolatedCamera::lerp_camera_to(Spatial *p_node, const Transform &p_target_xform, real_t p_delta) {
+	float delta = speed * p_delta;
+
+	// cap delta, we don't want to overshoot and produce a feedback loop
+	delta = MIN(delta, 1.0);
+
+	Transform local_transform = get_global_transform();
+	local_transform = local_transform.interpolate_with(p_target_xform, delta);
+	_set_global_transform_auto(local_transform);
+
+	Camera *cam = Object::cast_to<Camera>(p_node);
+	if (cam) {
+		if (cam->get_projection() == get_projection()) {
+			float new_near = Math::lerp(get_znear(), cam->get_znear(), delta);
+			float new_far = Math::lerp(get_zfar(), cam->get_zfar(), delta);
+
+			if (cam->get_projection() == PROJECTION_ORTHOGONAL) {
+				float size = Math::lerp(get_size(), cam->get_size(), delta);
+				set_orthogonal(size, new_near, new_far);
+			} else {
+				float fov = Math::lerp(get_fov(), cam->get_fov(), delta);
+				set_perspective(fov, new_near, new_far);
+			}
+		}
 	}
 }
 
@@ -99,14 +166,7 @@ void InterpolatedCamera::set_interpolation_enabled(bool p_enable) {
 		return;
 	}
 	enabled = p_enable;
-	if (p_enable) {
-		if (is_inside_tree() && Engine::get_singleton()->is_editor_hint()) {
-			return;
-		}
-		set_process_internal(true);
-	} else {
-		set_process_internal(false);
-	}
+	update_process_modes();
 }
 
 bool InterpolatedCamera::is_interpolation_enabled() const {

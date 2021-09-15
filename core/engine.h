@@ -60,6 +60,7 @@ private:
 	bool _gpu_pixel_snap;
 	uint64_t _physics_frames;
 	float _physics_interpolation_fraction;
+	bool _physics_interpolation_enabled;
 	bool _portals_active;
 	bool _occlusion_culling_active;
 
@@ -95,6 +96,9 @@ public:
 	uint64_t get_idle_frame_ticks() const { return _frame_ticks; }
 	float get_idle_frame_step() const { return _frame_step; }
 	float get_physics_interpolation_fraction() const { return _physics_interpolation_fraction; }
+
+	bool is_physics_interpolation_enabled() const { return _physics_interpolation_enabled; }
+	void set_physics_interpolation_enabled(bool p_enabled) { _physics_interpolation_enabled = p_enabled; }
 
 	void set_time_scale(float p_scale);
 	float get_time_scale() const;

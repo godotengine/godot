@@ -74,8 +74,17 @@ public:
 		bool vaspect;
 		RID env;
 
+		// transform_prev is only used when using fixed timestep interpolation
 		Transform transform;
+		Transform transform_prev;
+		bool interpolated : 1;
+		bool on_interpolate_transform_list : 1;
+
 		int32_t previous_room_id_hint;
+
+		// call get transform to get either the transform straight,
+		// or the interpolated transform if using fixed timestep interpolation
+		Transform get_transform() const;
 
 		Camera() {
 			visible_layers = 0xFFFFFFFF;
@@ -87,6 +96,8 @@ public:
 			offset = Vector2();
 			vaspect = false;
 			previous_room_id_hint = -1;
+			interpolated = false;
+			on_interpolate_transform_list = false;
 		}
 	};
 
@@ -97,6 +108,7 @@ public:
 	virtual void camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far);
 	virtual void camera_set_frustum(RID p_camera, float p_size, Vector2 p_offset, float p_z_near, float p_z_far);
 	virtual void camera_set_transform(RID p_camera, const Transform &p_transform);
+	virtual void camera_set_transform_interpolated(RID p_camera, const Transform &p_transform, bool p_interpolated);
 	virtual void camera_set_cull_mask(RID p_camera, uint32_t p_layers);
 	virtual void camera_set_environment(RID p_camera, RID p_env);
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable);
@@ -307,6 +319,21 @@ public:
 	};
 
 	SelfList<Instance>::List _instance_update_list;
+
+	// fixed timestep interpolation
+	struct InterpolationData {
+		void notify_free_camera(RID p_rid);
+		void notify_free_instance(RID p_rid);
+		LocalVector<RID> instance_interpolate_update_list;
+		LocalVector<RID> instance_transform_update_lists[2];
+		LocalVector<RID> *instance_transform_update_list_curr = &instance_transform_update_lists[0];
+		LocalVector<RID> *instance_transform_update_list_prev = &instance_transform_update_lists[1];
+
+		LocalVector<RID> camera_transform_update_lists[2];
+		LocalVector<RID> *camera_transform_update_list_curr = &camera_transform_update_lists[0];
+		LocalVector<RID> *camera_transform_update_list_prev = &camera_transform_update_lists[1];
+	} _interpolation_data;
+
 	void _instance_queue_update(Instance *p_instance, bool p_update_aabb, bool p_update_materials = false);
 
 	struct InstanceGeometryData : public InstanceBaseData {
@@ -517,6 +544,7 @@ public:
 	virtual void instance_set_scenario(RID p_instance, RID p_scenario);
 	virtual void instance_set_layer_mask(RID p_instance, uint32_t p_mask);
 	virtual void instance_set_transform(RID p_instance, const Transform &p_transform);
+	virtual void instance_set_transform_interpolated(RID p_instance, const Transform &p_transform, bool p_interpolated);
 	virtual void instance_attach_object_instance_id(RID p_instance, ObjectID p_id);
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight);
 	virtual void instance_set_surface_material(RID p_instance, int p_surface, RID p_material);
@@ -708,6 +736,10 @@ public:
 	void render_camera(RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas);
 	void render_camera(Ref<ARVRInterface> &p_interface, ARVRInterface::Eyes p_eye, RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas);
 	void update_dirty_instances();
+
+	// interpolation
+	void update_interpolation_transform_list(bool p_process = true);
+	void update_interpolate_list(bool p_process = true);
 
 	//probes
 	struct GIProbeDataHeader {

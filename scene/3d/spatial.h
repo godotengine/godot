@@ -113,10 +113,18 @@ private:
 
 	void _propagate_visibility_changed();
 
+	void _set_transform(const Transform &p_transform);
+
 protected:
 	_FORCE_INLINE_ void set_ignore_transform_notification(bool p_ignore) { data.ignore_notification = p_ignore; }
 
 	_FORCE_INLINE_ void _update_local_transform() const;
+	void _set_transform_interpolated(const Transform &p_transform, bool p_interpolated = true);
+	void _set_transform_auto(const Transform &p_transform) { _set_transform_interpolated(p_transform, is_physics_interpolated()); }
+	void _set_global_transform_interpolated(const Transform &p_transform, bool p_interpolated = true);
+	void _set_global_transform_auto(const Transform &p_transform) {
+		_set_global_transform_interpolated(p_transform, is_physics_interpolated());
+	}
 
 	uint32_t _get_spatial_flags() const { return data.spatial_flags; }
 	void _replace_spatial_flags(uint32_t p_flags) { data.spatial_flags = p_flags; }
@@ -158,8 +166,13 @@ public:
 	Vector3 get_rotation_degrees() const;
 	Vector3 get_scale() const;
 
-	void set_transform(const Transform &p_transform);
+	void set_transform(const Transform &p_transform) {
+		_set_branch_interpolated(false);
+		_set_transform(p_transform);
+	}
+	void set_transform_interpolated(const Transform &p_transform) { _set_transform_interpolated(p_transform, true); }
 	void set_global_transform(const Transform &p_transform);
+	void set_global_transform_interpolated(const Transform &p_transform) { _set_global_transform_interpolated(p_transform, true); }
 
 	Transform get_transform() const;
 	Transform get_global_transform() const;

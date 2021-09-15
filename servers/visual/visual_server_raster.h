@@ -438,6 +438,7 @@ public:
 	BIND4(camera_set_orthogonal, RID, float, float, float)
 	BIND5(camera_set_frustum, RID, float, Vector2, float, float)
 	BIND2(camera_set_transform, RID, const Transform &)
+	BIND3(camera_set_transform_interpolated, RID, const Transform &, bool)
 	BIND2(camera_set_cull_mask, RID, uint32_t)
 	BIND2(camera_set_environment, RID, RID)
 	BIND2(camera_set_use_vertical_aspect, RID, bool)
@@ -546,6 +547,7 @@ public:
 	BIND2(instance_set_scenario, RID, RID)
 	BIND2(instance_set_layer_mask, RID, uint32_t)
 	BIND2(instance_set_transform, RID, const Transform &)
+	BIND3(instance_set_transform_interpolated, RID, const Transform &, bool)
 	BIND2(instance_attach_object_instance_id, RID, ObjectID)
 	BIND3(instance_set_blend_shape_weight, RID, int, float)
 	BIND3(instance_set_surface_material, RID, int, RID)
@@ -729,6 +731,8 @@ public:
 	virtual void request_frame_drawn_callback(Object *p_where, const StringName &p_method, const Variant &p_userdata);
 
 	virtual void draw(bool p_swap_buffers, double frame_step);
+	virtual void no_draw();
+	virtual void tick();
 	virtual void sync();
 	virtual bool has_changed() const;
 	virtual void init();

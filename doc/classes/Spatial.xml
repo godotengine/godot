@@ -172,6 +172,12 @@
 				Sets whether the node uses a scale of [code](1, 1, 1)[/code] or its local transformation scale. Changes to the local transformation scale are preserved.
 			</description>
 		</method>
+		<method name="set_global_transform_interpolated">
+			<return type="void" />
+			<argument index="0" name="global" type="Transform" />
+			<description>
+			</description>
+		</method>
 		<method name="set_identity">
 			<return type="void" />
 			<description>
@@ -197,6 +203,12 @@
 			<argument index="0" name="enable" type="bool" />
 			<description>
 				Sets whether the node notifies about its global and local transformation changes. [Spatial] will not propagate this by default, unless it is in the editor context and it has a valid gizmo.
+			</description>
+		</method>
+		<method name="set_transform_interpolated">
+			<return type="void" />
+			<argument index="0" name="local" type="Transform" />
+			<description>
 			</description>
 		</method>
 		<method name="show">

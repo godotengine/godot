@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  interpolated_camera.h                                                */
+/*  interpolator.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,43 +28,29 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef INTERPOLATED_CAMERA_H
-#define INTERPOLATED_CAMERA_H
+#ifndef INTERPOLATOR_H
+#define INTERPOLATOR_H
 
-#include "scene/3d/camera.h"
+#include "core/math/math_defs.h"
+#include "core/math/vector3.h"
 
-class InterpolatedCamera : public Camera {
-	GDCLASS(InterpolatedCamera, Camera);
+// Keep all the functions for fixed timestep interpolation together
 
-	bool enabled;
-	real_t speed;
-	NodePath target;
+class Transform;
 
-	Transform target_transform_curr;
-	Transform target_transform_prev;
-
-	void update_process_modes();
-	void lerp_camera_to(Spatial *p_node, const Transform &p_target_xform, real_t p_delta);
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-	void _set_target(const Object *p_target);
-
-	virtual void _physics_interpolated_changed();
+class Interpolator {
+	static real_t vec3_sum(const Vector3 &p_pt) { return p_pt.x + p_pt.y + p_pt.z; }
 
 public:
-	void set_target(const Spatial *p_target);
-	void set_target_path(const NodePath &p_path);
-	NodePath get_target_path() const;
+	enum Method {
+		INTERP_LERP,
+		INTERP_SLERP,
+	};
 
-	void set_speed(real_t p_speed);
-	real_t get_speed() const;
-
-	void set_interpolation_enabled(bool p_enable);
-	bool is_interpolation_enabled() const;
-
-	InterpolatedCamera();
+	static void interpolate_transform_linear(const Transform &p_prev, const Transform &p_curr, Transform &r_result, real_t p_fraction);
+	static void interpolate_transform(const Transform &p_prev, const Transform &p_curr, Transform &r_result, real_t p_fraction, Method p_method);
+	static real_t checksum_transform(const Transform &p_transform);
+	static bool should_slerp(const Basis &p_a, const Basis &p_b);
 };
 
-#endif // INTERPOLATED_CAMERA_H
+#endif // INTERPOLATOR_H

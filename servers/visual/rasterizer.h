@@ -32,6 +32,7 @@
 #define RASTERIZER_H
 
 #include "core/math/camera_matrix.h"
+#include "core/math/interpolator.h"
 #include "servers/visual_server.h"
 
 #include "core/self_list.h"
@@ -89,7 +90,15 @@ public:
 		RID skeleton;
 		RID material_override;
 
+		// This is the main transform to be drawn with ..
+		// This will either be the interpolated transform (when using fixed timestep interpolation)
+		// or the ONLY transform (when not using FTI).
 		Transform transform;
+
+		// for interpolation we store the current transform (this physics tick)
+		// and the transform in the previous tick
+		Transform transform_curr;
+		Transform transform_prev;
 
 		int depth_layer;
 		uint32_t layer_mask;
@@ -106,11 +115,16 @@ public:
 		VS::ShadowCastingSetting cast_shadows;
 
 		//fit in 32 bits
-		bool mirror : 8;
-		bool receive_shadows : 8;
-		bool visible : 8;
-		bool baked_light : 4; //this flag is only to know if it actually did use baked light
-		bool redraw_if_visible : 4;
+		bool mirror : 1;
+		bool receive_shadows : 1;
+		bool visible : 1;
+		bool baked_light : 1; //this flag is only to know if it actually did use baked light
+		bool redraw_if_visible : 1;
+
+		bool on_interpolate_list : 1;
+		bool on_interpolate_transform_list : 1;
+		bool interpolated : 1;
+		Interpolator::Method interpolation_method : 3;
 
 		float depth; //used for sorting
 
@@ -137,6 +151,10 @@ public:
 			lightmap_capture = nullptr;
 			lightmap_slice = -1;
 			lightmap_uv_rect = Rect2(0, 0, 1, 1);
+			on_interpolate_list = false;
+			on_interpolate_transform_list = false;
+			interpolated = true;
+			interpolation_method = Interpolator::INTERP_LERP;
 		}
 	};
 

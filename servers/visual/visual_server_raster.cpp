@@ -94,7 +94,19 @@ void VisualServerRaster::request_frame_drawn_callback(Object *p_where, const Str
 	frame_drawn_callbacks.push_back(fdc);
 }
 
+void VisualServerRaster::tick() {
+	VSG::scene->update_interpolation_transform_list(true);
+}
+
+void VisualServerRaster::no_draw() {
+	// dummy version called if there is no draw() called.
+	// This is necessary to clear out intermediate per frame lists.
+	VSG::scene->update_interpolate_list(false);
+}
+
 void VisualServerRaster::draw(bool p_swap_buffers, double frame_step) {
+	VSG::scene->update_interpolate_list();
+
 	//needs to be done before changes is reset to 0, to not force the editor to redraw
 	VS::get_singleton()->emit_signal("frame_pre_draw");
 

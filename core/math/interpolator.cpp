@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  interpolated_camera.h                                                */
+/*  interpolator.cpp                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,43 +28,60 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef INTERPOLATED_CAMERA_H
-#define INTERPOLATED_CAMERA_H
+#include "interpolator.h"
 
-#include "scene/3d/camera.h"
+#include "core/math/transform.h"
 
-class InterpolatedCamera : public Camera {
-	GDCLASS(InterpolatedCamera, Camera);
+void Interpolator::interpolate_transform(const Transform &p_prev, const Transform &p_curr, Transform &r_result, real_t p_fraction, Method p_method) {
+	switch (p_method) {
+		default: {
+			interpolate_transform_linear(p_prev, p_curr, r_result, p_fraction);
+		} break;
+		case INTERP_SLERP: {
+			r_result.origin = p_prev.origin + ((p_curr.origin - p_prev.origin) * p_fraction);
+			r_result.basis = p_prev.basis.slerp(p_curr.basis, p_fraction);
+		} break;
+	}
+}
 
-	bool enabled;
-	real_t speed;
-	NodePath target;
+void Interpolator::interpolate_transform_linear(const Transform &p_prev, const Transform &p_curr, Transform &r_result, real_t p_fraction) {
+	// interpolate translate
+	r_result.origin = p_prev.origin + ((p_curr.origin - p_prev.origin) * p_fraction);
 
-	Transform target_transform_curr;
-	Transform target_transform_prev;
+	// interpolate basis
+	for (int n = 0; n < 3; n++) {
+		r_result.basis.elements[n] = p_prev.basis.elements[n].linear_interpolate(p_curr.basis.elements[n], p_fraction);
+	}
+}
 
-	void update_process_modes();
-	void lerp_camera_to(Spatial *p_node, const Transform &p_target_xform, real_t p_delta);
+real_t Interpolator::checksum_transform(const Transform &p_transform) {
+	// just a really basic checksum, this can probably be improved
+	real_t sum = vec3_sum(p_transform.origin);
+	sum -= vec3_sum(p_transform.basis.elements[0]);
+	sum += vec3_sum(p_transform.basis.elements[1]);
+	sum -= vec3_sum(p_transform.basis.elements[2]);
+	return sum;
+}
 
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-	void _set_target(const Object *p_target);
+bool Interpolator::should_slerp(const Basis &p_a, const Basis &p_b) {
+	// the two basis should be suitable, and also if they are close enough,
+	// no need for a slerp anyway.
+	bool slerp = false;
+	if (p_a.is_rotation()) {
+		Quat from(p_a);
 
-	virtual void _physics_interpolated_changed();
+		if (from.is_normalized() && p_b.is_rotation()) {
+			Quat to(p_b);
+			if (to.is_normalized()) {
+				// are they close together?
+				// calc cosine
+				real_t cosom = Math::abs(from.dot(to));
+				if ((1.0 - cosom) > CMP_EPSILON) {
+					slerp = true;
+				}
+			}
+		}
+	}
 
-public:
-	void set_target(const Spatial *p_target);
-	void set_target_path(const NodePath &p_path);
-	NodePath get_target_path() const;
-
-	void set_speed(real_t p_speed);
-	real_t get_speed() const;
-
-	void set_interpolation_enabled(bool p_enable);
-	bool is_interpolation_enabled() const;
-
-	InterpolatedCamera();
-};
-
-#endif // INTERPOLATED_CAMERA_H
+	return slerp;
+}

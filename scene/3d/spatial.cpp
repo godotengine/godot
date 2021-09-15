@@ -242,7 +242,12 @@ void Spatial::_notification(int p_what) {
 	}
 }
 
-void Spatial::set_transform(const Transform &p_transform) {
+void Spatial::_set_transform_interpolated(const Transform &p_transform, bool p_interpolated) {
+	_set_branch_interpolated(Engine::get_singleton()->is_physics_interpolation_enabled() && p_interpolated);
+	_set_transform(p_transform);
+}
+
+void Spatial::_set_transform(const Transform &p_transform) {
 	data.local_transform = p_transform;
 	data.dirty |= DIRTY_VECTORS;
 	_change_notify("translation");
@@ -259,6 +264,15 @@ void Spatial::set_global_transform(const Transform &p_transform) {
 	Transform xform = (data.parent && !data.toplevel_active) ? data.parent->get_global_transform().affine_inverse() * p_transform : p_transform;
 
 	set_transform(xform);
+}
+
+void Spatial::_set_global_transform_interpolated(const Transform &p_transform, bool p_interpolated) {
+	Transform xform = (data.parent && !data.toplevel_active) ? data.parent->get_global_transform().affine_inverse() * p_transform : p_transform;
+	if (Engine::get_singleton()->is_physics_interpolation_enabled() && p_interpolated) {
+		set_transform_interpolated(xform);
+	} else {
+		set_transform(xform);
+	}
 }
 
 Transform Spatial::get_transform() const {
@@ -582,36 +596,36 @@ bool Spatial::is_visible() const {
 void Spatial::rotate_object_local(const Vector3 &p_axis, float p_angle) {
 	Transform t = get_transform();
 	t.basis.rotate_local(p_axis, p_angle);
-	set_transform(t);
+	_set_transform_auto(t);
 }
 
 void Spatial::rotate(const Vector3 &p_axis, float p_angle) {
 	Transform t = get_transform();
 	t.basis.rotate(p_axis, p_angle);
-	set_transform(t);
+	_set_transform_auto(t);
 }
 
 void Spatial::rotate_x(float p_angle) {
 	Transform t = get_transform();
 	t.basis.rotate(Vector3(1, 0, 0), p_angle);
-	set_transform(t);
+	_set_transform_auto(t);
 }
 
 void Spatial::rotate_y(float p_angle) {
 	Transform t = get_transform();
 	t.basis.rotate(Vector3(0, 1, 0), p_angle);
-	set_transform(t);
+	_set_transform_auto(t);
 }
 void Spatial::rotate_z(float p_angle) {
 	Transform t = get_transform();
 	t.basis.rotate(Vector3(0, 0, 1), p_angle);
-	set_transform(t);
+	_set_transform_auto(t);
 }
 
 void Spatial::translate(const Vector3 &p_offset) {
 	Transform t = get_transform();
 	t.translate(p_offset);
-	set_transform(t);
+	_set_transform_auto(t);
 }
 
 void Spatial::translate_object_local(const Vector3 &p_offset) {
@@ -619,37 +633,37 @@ void Spatial::translate_object_local(const Vector3 &p_offset) {
 
 	Transform s;
 	s.translate(p_offset);
-	set_transform(t * s);
+	_set_transform_auto(t * s);
 }
 
 void Spatial::scale(const Vector3 &p_ratio) {
 	Transform t = get_transform();
 	t.basis.scale(p_ratio);
-	set_transform(t);
+	_set_transform_auto(t);
 }
 
 void Spatial::scale_object_local(const Vector3 &p_scale) {
 	Transform t = get_transform();
 	t.basis.scale_local(p_scale);
-	set_transform(t);
+	_set_transform_auto(t);
 }
 
 void Spatial::global_rotate(const Vector3 &p_axis, float p_angle) {
 	Transform t = get_global_transform();
 	t.basis.rotate(p_axis, p_angle);
-	set_global_transform(t);
+	_set_global_transform_auto(t);
 }
 
 void Spatial::global_scale(const Vector3 &p_scale) {
 	Transform t = get_global_transform();
 	t.basis.scale(p_scale);
-	set_global_transform(t);
+	_set_global_transform_auto(t);
 }
 
 void Spatial::global_translate(const Vector3 &p_offset) {
 	Transform t = get_global_transform();
 	t.origin += p_offset;
-	set_global_transform(t);
+	_set_global_transform_auto(t);
 }
 
 void Spatial::orthonormalize() {
@@ -676,7 +690,7 @@ void Spatial::look_at_from_position(const Vector3 &p_pos, const Vector3 &p_targe
 
 	Vector3 original_scale(get_scale());
 	lookat = lookat.looking_at(p_target, p_up);
-	set_global_transform(lookat);
+	_set_global_transform_auto(lookat);
 	set_scale(original_scale);
 }
 
@@ -716,6 +730,7 @@ void Spatial::force_update_transform() {
 
 void Spatial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_transform", "local"), &Spatial::set_transform);
+	ClassDB::bind_method(D_METHOD("set_transform_interpolated", "local"), &Spatial::set_transform_interpolated);
 	ClassDB::bind_method(D_METHOD("get_transform"), &Spatial::get_transform);
 	ClassDB::bind_method(D_METHOD("set_translation", "translation"), &Spatial::set_translation);
 	ClassDB::bind_method(D_METHOD("get_translation"), &Spatial::get_translation);
@@ -726,6 +741,7 @@ void Spatial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_scale", "scale"), &Spatial::set_scale);
 	ClassDB::bind_method(D_METHOD("get_scale"), &Spatial::get_scale);
 	ClassDB::bind_method(D_METHOD("set_global_transform", "global"), &Spatial::set_global_transform);
+	ClassDB::bind_method(D_METHOD("set_global_transform_interpolated", "global"), &Spatial::set_global_transform_interpolated);
 	ClassDB::bind_method(D_METHOD("get_global_transform"), &Spatial::get_global_transform);
 	ClassDB::bind_method(D_METHOD("get_parent_spatial"), &Spatial::get_parent_spatial);
 	ClassDB::bind_method(D_METHOD("set_ignore_transform_notification", "enabled"), &Spatial::set_ignore_transform_notification);

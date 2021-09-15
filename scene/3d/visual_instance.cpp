@@ -82,7 +82,7 @@ void VisualInstance::_notification(int p_what) {
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (_get_spatial_flags() & SPATIAL_FLAG_VI_VISIBLE) {
 				Transform gt = get_global_transform();
-				VisualServer::get_singleton()->instance_set_transform(instance, gt);
+				VisualServer::get_singleton()->instance_set_transform_interpolated(instance, gt, is_physics_interpolated());
 			}
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {

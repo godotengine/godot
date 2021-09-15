@@ -189,6 +189,19 @@ void Node::_propagate_ready() {
 	}
 }
 
+void Node::_propagate_interpolated(bool p_interpolated) {
+	data.physics_interpolated = p_interpolated;
+
+	// allow a call to the VisualServer etc in derived classes
+	_physics_interpolated_changed();
+
+	data.blocked++;
+	for (int i = 0; i < data.children.size(); i++) {
+		data.children[i]->_propagate_interpolated(p_interpolated);
+	}
+	data.blocked--;
+}
+
 void Node::_propagate_enter_tree() {
 	// this needs to happen to all children before any enter_tree
 
@@ -1757,6 +1770,14 @@ void Node::propagate_call(const StringName &p_method, const Array &p_args, const
 	data.blocked--;
 }
 
+void Node::_set_branch_interpolated(bool p_interpolated) {
+	// most common case, noop
+	if (is_physics_interpolated() == p_interpolated) {
+		return;
+	}
+	_propagate_interpolated(p_interpolated);
+}
+
 void Node::_propagate_replace_owner(Node *p_owner, Node *p_by_owner) {
 	if (get_owner() == p_owner) {
 		set_owner(p_by_owner);
@@ -2936,6 +2957,7 @@ Node::Node() {
 	data.idle_process_internal = false;
 	data.inside_tree = false;
 	data.ready_notified = false;
+	data.physics_interpolated = false;
 
 	data.owner = nullptr;
 	data.OW = nullptr;

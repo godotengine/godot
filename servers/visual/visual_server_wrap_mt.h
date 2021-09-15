@@ -53,6 +53,8 @@ class VisualServerWrapMT : public VisualServer {
 
 	SafeNumeric<uint64_t> draw_pending;
 	void thread_draw(bool p_swap_buffers, double frame_step);
+	void thread_no_draw();
+	void thread_tick();
 	void thread_flush();
 
 	void thread_exit();
@@ -369,6 +371,7 @@ public:
 	FUNC4(camera_set_orthogonal, RID, float, float, float)
 	FUNC5(camera_set_frustum, RID, float, Vector2, float, float)
 	FUNC2(camera_set_transform, RID, const Transform &)
+	FUNC3(camera_set_transform_interpolated, RID, const Transform &, bool)
 	FUNC2(camera_set_cull_mask, RID, uint32_t)
 	FUNC2(camera_set_environment, RID, RID)
 	FUNC2(camera_set_use_vertical_aspect, RID, bool)
@@ -469,6 +472,7 @@ public:
 	FUNC2(instance_set_scenario, RID, RID)
 	FUNC2(instance_set_layer_mask, RID, uint32_t)
 	FUNC2(instance_set_transform, RID, const Transform &)
+	FUNC3(instance_set_transform_interpolated, RID, const Transform &, bool)
 	FUNC2(instance_attach_object_instance_id, RID, ObjectID)
 	FUNC3(instance_set_blend_shape_weight, RID, int, float)
 	FUNC3(instance_set_surface_material, RID, int, RID)
@@ -650,6 +654,8 @@ public:
 	virtual void init();
 	virtual void finish();
 	virtual void draw(bool p_swap_buffers, double frame_step);
+	virtual void no_draw();
+	virtual void tick();
 	virtual void sync();
 	FUNC0RC(bool, has_changed)
 
