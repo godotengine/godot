@@ -98,6 +98,10 @@ void Camera::_update_camera() {
 	}
 }
 
+void Camera::_physics_interpolated_changed() {
+	VisualServer::get_singleton()->camera_set_interpolated(camera, is_physics_interpolated());
+}
+
 void Camera::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_WORLD: {
@@ -112,6 +116,9 @@ void Camera::_notification(int p_what) {
 				viewport->_camera_set(this);
 			}
 
+			ERR_FAIL_COND(get_world().is_null());
+			VisualServer::get_singleton()->camera_set_scenario(camera, get_world()->get_scenario());
+
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			_request_camera_update();
@@ -119,7 +126,14 @@ void Camera::_notification(int p_what) {
 				velocity_tracker->update_position(get_global_transform().origin);
 			}
 		} break;
+		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
+			if (is_physics_interpolated()) {
+				VisualServer::get_singleton()->camera_reset_physics_interpolation(camera);
+			}
+		} break;
 		case NOTIFICATION_EXIT_WORLD: {
+			VisualServer::get_singleton()->camera_set_scenario(camera, RID());
+
 			if (!get_tree()->is_node_being_edited(this)) {
 				if (is_current()) {
 					clear_current();

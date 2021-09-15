@@ -291,6 +291,17 @@ int64_t MainTimerSync::DeltaSmoother::smooth_delta(int64_t p_delta) {
 // before advance_core considers changing the physics_steps return from
 // the typical values as defined by typical_physics_steps
 float MainTimerSync::get_physics_jitter_fix() {
+	// Turn off jitter fix when using fixed timestep interpolation
+	// Note this shouldn't be on UNTIL 2d interpolation is implemented,
+	// otherwise we will get people making 2d games with the physics_interpolation
+	// set to on getting jitter fix disabled unexpectedly.
+#if 0
+	if (Engine::get_singleton()->is_physics_interpolation_enabled()) {
+		// would be better to write a simple bypass for jitter fix but this will do to get started
+		return 0.0;
+	}
+#endif
+
 	return Engine::get_singleton()->get_physics_jitter_fix();
 }
 

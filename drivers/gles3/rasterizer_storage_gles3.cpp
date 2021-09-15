@@ -4459,12 +4459,12 @@ void RasterizerStorageGLES3::mesh_render_blend_shapes(Surface *s, const float *p
 
 /* MULTIMESH API */
 
-RID RasterizerStorageGLES3::multimesh_create() {
+RID RasterizerStorageGLES3::_multimesh_create() {
 	MultiMesh *multimesh = memnew(MultiMesh);
 	return multimesh_owner.make_rid(multimesh);
 }
 
-void RasterizerStorageGLES3::multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, VS::MultimeshColorFormat p_color_format, VS::MultimeshCustomDataFormat p_data_format) {
+void RasterizerStorageGLES3::_multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, VS::MultimeshColorFormat p_color_format, VS::MultimeshCustomDataFormat p_data_format) {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
 
@@ -4597,14 +4597,14 @@ void RasterizerStorageGLES3::multimesh_allocate(RID p_multimesh, int p_instances
 	}
 }
 
-int RasterizerStorageGLES3::multimesh_get_instance_count(RID p_multimesh) const {
+int RasterizerStorageGLES3::_multimesh_get_instance_count(RID p_multimesh) const {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND_V(!multimesh, 0);
 
 	return multimesh->size;
 }
 
-void RasterizerStorageGLES3::multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
+void RasterizerStorageGLES3::_multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
 
@@ -4631,7 +4631,7 @@ void RasterizerStorageGLES3::multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
 	}
 }
 
-void RasterizerStorageGLES3::multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform) {
+void RasterizerStorageGLES3::_multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform) {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
 	ERR_FAIL_INDEX(p_index, multimesh->size);
@@ -4661,7 +4661,7 @@ void RasterizerStorageGLES3::multimesh_instance_set_transform(RID p_multimesh, i
 	}
 }
 
-void RasterizerStorageGLES3::multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) {
+void RasterizerStorageGLES3::_multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
 	ERR_FAIL_INDEX(p_index, multimesh->size);
@@ -4686,7 +4686,7 @@ void RasterizerStorageGLES3::multimesh_instance_set_transform_2d(RID p_multimesh
 		multimesh_update_list.add(&multimesh->update_list);
 	}
 }
-void RasterizerStorageGLES3::multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) {
+void RasterizerStorageGLES3::_multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
 	ERR_FAIL_INDEX(p_index, multimesh->size);
@@ -4718,7 +4718,7 @@ void RasterizerStorageGLES3::multimesh_instance_set_color(RID p_multimesh, int p
 	}
 }
 
-void RasterizerStorageGLES3::multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_custom_data) {
+void RasterizerStorageGLES3::_multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_custom_data) {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
 	ERR_FAIL_INDEX(p_index, multimesh->size);
@@ -4749,14 +4749,14 @@ void RasterizerStorageGLES3::multimesh_instance_set_custom_data(RID p_multimesh,
 		multimesh_update_list.add(&multimesh->update_list);
 	}
 }
-RID RasterizerStorageGLES3::multimesh_get_mesh(RID p_multimesh) const {
+RID RasterizerStorageGLES3::_multimesh_get_mesh(RID p_multimesh) const {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND_V(!multimesh, RID());
 
 	return multimesh->mesh;
 }
 
-Transform RasterizerStorageGLES3::multimesh_instance_get_transform(RID p_multimesh, int p_index) const {
+Transform RasterizerStorageGLES3::_multimesh_instance_get_transform(RID p_multimesh, int p_index) const {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND_V(!multimesh, Transform());
 	ERR_FAIL_INDEX_V(p_index, multimesh->size, Transform());
@@ -4782,7 +4782,7 @@ Transform RasterizerStorageGLES3::multimesh_instance_get_transform(RID p_multime
 
 	return xform;
 }
-Transform2D RasterizerStorageGLES3::multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const {
+Transform2D RasterizerStorageGLES3::_multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND_V(!multimesh, Transform2D());
 	ERR_FAIL_INDEX_V(p_index, multimesh->size, Transform2D());
@@ -4803,7 +4803,7 @@ Transform2D RasterizerStorageGLES3::multimesh_instance_get_transform_2d(RID p_mu
 	return xform;
 }
 
-Color RasterizerStorageGLES3::multimesh_instance_get_color(RID p_multimesh, int p_index) const {
+Color RasterizerStorageGLES3::_multimesh_instance_get_color(RID p_multimesh, int p_index) const {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND_V(!multimesh, Color());
 	ERR_FAIL_INDEX_V(p_index, multimesh->size, Color());
@@ -4836,7 +4836,7 @@ Color RasterizerStorageGLES3::multimesh_instance_get_color(RID p_multimesh, int 
 	return Color();
 }
 
-Color RasterizerStorageGLES3::multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const {
+Color RasterizerStorageGLES3::_multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND_V(!multimesh, Color());
 	ERR_FAIL_INDEX_V(p_index, multimesh->size, Color());
@@ -4869,7 +4869,7 @@ Color RasterizerStorageGLES3::multimesh_instance_get_custom_data(RID p_multimesh
 	return Color();
 }
 
-void RasterizerStorageGLES3::multimesh_set_as_bulk_array(RID p_multimesh, const PoolVector<float> &p_array) {
+void RasterizerStorageGLES3::_multimesh_set_as_bulk_array(RID p_multimesh, const PoolVector<float> &p_array) {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
 	ERR_FAIL_COND(!multimesh->data.ptr());
@@ -4889,26 +4889,33 @@ void RasterizerStorageGLES3::multimesh_set_as_bulk_array(RID p_multimesh, const 
 	}
 }
 
-void RasterizerStorageGLES3::multimesh_set_visible_instances(RID p_multimesh, int p_visible) {
+void RasterizerStorageGLES3::_multimesh_set_visible_instances(RID p_multimesh, int p_visible) {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
 
 	multimesh->visible_instances = p_visible;
 }
-int RasterizerStorageGLES3::multimesh_get_visible_instances(RID p_multimesh) const {
+int RasterizerStorageGLES3::_multimesh_get_visible_instances(RID p_multimesh) const {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND_V(!multimesh, -1);
 
 	return multimesh->visible_instances;
 }
 
-AABB RasterizerStorageGLES3::multimesh_get_aabb(RID p_multimesh) const {
+AABB RasterizerStorageGLES3::_multimesh_get_aabb(RID p_multimesh) const {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND_V(!multimesh, AABB());
 
 	const_cast<RasterizerStorageGLES3 *>(this)->update_dirty_multimeshes(); //update pending AABBs
 
 	return multimesh->aabb;
+}
+
+RasterizerStorage::MMInterpolator *RasterizerStorageGLES3::_multimesh_get_interpolator(RID p_multimesh) const {
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND_V_MSG(!multimesh, nullptr, "Multimesh not found: " + itos(p_multimesh.get_id()));
+
+	return &multimesh->interpolator;
 }
 
 void RasterizerStorageGLES3::update_dirty_multimeshes() {
@@ -7856,6 +7863,9 @@ bool RasterizerStorageGLES3::free(RID p_rid) {
 		memdelete(mesh);
 
 	} else if (multimesh_owner.owns(p_rid)) {
+		// remove from interpolator
+		_interpolation_data.notify_free_multimesh(p_rid);
+
 		// delete the texture
 		MultiMesh *multimesh = multimesh_owner.get(p_rid);
 		multimesh->instance_remove_deps();

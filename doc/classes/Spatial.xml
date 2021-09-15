@@ -19,6 +19,13 @@
 				Forces the transform to update. Transform changes in physics are not instant for performance reasons. Transforms are accumulated and then set. Use this if you need an up-to-date transform when doing physics operations.
 			</description>
 		</method>
+		<method name="get_global_transform_interpolated">
+			<return type="Transform" />
+			<description>
+				When using physics interpolation, there will be circumstances in which you want to know the interpolated (displayed) transform of a node rather than the standard transform (which may only be accurate to the most recent physics tick).
+				This is particularly important for frame-based operations that take place in [method Node._process], rather than [method Node._physics_process]. Examples include [Camera]s focusing on a node, or finding where to fire lasers from on a frame rather than physics tick.
+			</description>
+		</method>
 		<method name="get_parent_spatial" qualifiers="const">
 			<return type="Spatial" />
 			<description>

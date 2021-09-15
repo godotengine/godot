@@ -52,17 +52,34 @@ void VisualInstance::_update_visibility() {
 	// keep a quick flag available in each node.
 	// no need to call is_visible_in_tree all over the place,
 	// providing it is propagated with a notification.
-	bool already_visible = (_get_spatial_flags() & SPATIAL_FLAG_VI_VISIBLE) != 0;
-	_set_spatial_flag(SPATIAL_FLAG_VI_VISIBLE, visible);
+	bool already_visible = _is_vi_visible();
+	_set_vi_visible(visible);
 
 	// if making visible, make sure the visual server is up to date with the transform
 	if (visible && (!already_visible)) {
-		Transform gt = get_global_transform();
-		VisualServer::get_singleton()->instance_set_transform(instance, gt);
+		if (!_is_using_identity_transform()) {
+			Transform gt = get_global_transform();
+			VisualServer::get_singleton()->instance_set_transform(instance, gt);
+		}
 	}
 
 	_change_notify("visible");
 	VS::get_singleton()->instance_set_visible(get_instance(), visible);
+}
+
+void VisualInstance::set_instance_use_identity_transform(bool p_enable) {
+	// prevent sending instance transforms when using global coords
+	_set_use_identity_transform(p_enable);
+
+	if (is_inside_tree()) {
+		if (p_enable) {
+			// want to make sure instance is using identity transform
+			VisualServer::get_singleton()->instance_set_transform(instance, get_global_transform());
+		} else {
+			// want to make sure instance is up to date
+			VisualServer::get_singleton()->instance_set_transform(instance, Transform());
+		}
+	}
 }
 
 void VisualInstance::_notification(int p_what) {
@@ -80,9 +97,18 @@ void VisualInstance::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			if (_get_spatial_flags() & SPATIAL_FLAG_VI_VISIBLE) {
-				Transform gt = get_global_transform();
-				VisualServer::get_singleton()->instance_set_transform(instance, gt);
+			if (_is_vi_visible()) {
+				if (!_is_using_identity_transform()) {
+					Transform gt = get_global_transform();
+					VisualServer::get_singleton()->instance_set_transform(instance, gt);
+				}
+			}
+		} break;
+		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
+			if (_is_vi_visible()) {
+				if (is_physics_interpolated()) {
+					VisualServer::get_singleton()->instance_reset_physics_interpolation(instance);
+				}
 			}
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
@@ -93,12 +119,16 @@ void VisualInstance::_notification(int p_what) {
 			// the vi visible flag is always set to invisible when outside the tree,
 			// so it can detect re-entering the tree and becoming visible, and send
 			// the transform to the visual server
-			_set_spatial_flag(SPATIAL_FLAG_VI_VISIBLE, false);
+			_set_vi_visible(false);
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			_update_visibility();
 		} break;
 	}
+}
+
+void VisualInstance::_physics_interpolated_changed() {
+	VisualServer::get_singleton()->instance_set_interpolated(instance, is_physics_interpolated());
 }
 
 RID VisualInstance::get_instance() const {

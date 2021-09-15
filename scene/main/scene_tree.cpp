@@ -474,10 +474,41 @@ void SceneTree::init() {
 	MainLoop::init();
 }
 
+void SceneTree::set_physics_interpolation_enabled(bool p_enabled) {
+	// disallow interpolation in editor
+	if (Engine::get_singleton()->is_editor_hint()) {
+		p_enabled = false;
+	}
+
+	if (p_enabled == _physics_interpolation_enabled) {
+		return;
+	}
+
+	_physics_interpolation_enabled = p_enabled;
+
+	if (root->get_world().is_valid()) {
+		RID scenario = root->get_world()->get_scenario();
+		if (scenario.is_valid()) {
+			VisualServer::get_singleton()->scenario_set_physics_interpolation_enabled(scenario, p_enabled);
+		}
+	}
+}
+
+bool SceneTree::is_physics_interpolation_enabled() const {
+	return _physics_interpolation_enabled;
+}
+
 bool SceneTree::iteration(float p_time) {
 	root_lock++;
 
 	current_frame++;
+
+	if (root->get_world().is_valid()) {
+		RID scenario = root->get_world()->get_scenario();
+		if (scenario.is_valid()) {
+			VisualServer::get_singleton()->scenario_tick(scenario);
+		}
+	}
 
 	flush_transform_notifications();
 
@@ -617,6 +648,13 @@ bool SceneTree::idle(float p_time) {
 	}
 
 #endif
+
+	if (root->get_world().is_valid()) {
+		RID scenario = root->get_world()->get_scenario();
+		if (scenario.is_valid()) {
+			VisualServer::get_singleton()->scenario_pre_draw(scenario, true);
+		}
+	}
 
 	return _quit;
 }
@@ -1840,6 +1878,9 @@ void SceneTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_screen_stretch", "mode", "aspect", "minsize", "scale"), &SceneTree::set_screen_stretch, DEFVAL(1));
 
+	ClassDB::bind_method(D_METHOD("set_physics_interpolation_enabled", "enabled"), &SceneTree::set_physics_interpolation_enabled);
+	ClassDB::bind_method(D_METHOD("is_physics_interpolation_enabled"), &SceneTree::is_physics_interpolation_enabled);
+
 	ClassDB::bind_method(D_METHOD("queue_delete", "obj"), &SceneTree::queue_delete);
 
 	MethodInfo mi;
@@ -1909,6 +1950,7 @@ void SceneTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "root", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "", "get_root");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", 0), "set_multiplayer", "get_multiplayer");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multiplayer_poll"), "set_multiplayer_poll_enabled", "is_multiplayer_poll_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "physics_interpolation"), "set_physics_interpolation_enabled", "is_physics_interpolation_enabled");
 
 	ADD_SIGNAL(MethodInfo("tree_changed"));
 	ADD_SIGNAL(MethodInfo("node_added", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
@@ -2045,6 +2087,7 @@ SceneTree::SceneTree() {
 	call_lock = 0;
 	root_lock = 0;
 	node_count = 0;
+	_physics_interpolation_enabled = false;
 
 	//create with mainloop
 
@@ -2054,6 +2097,7 @@ SceneTree::SceneTree() {
 	if (!root->get_world().is_valid()) {
 		root->set_world(Ref<World>(memnew(World)));
 	}
+	set_physics_interpolation_enabled(GLOBAL_DEF("physics/common/physics_interpolation", false));
 
 	// Initialize network state
 	multiplayer_poll = true;

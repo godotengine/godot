@@ -1152,6 +1152,10 @@
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.iterations_per_second] instead.
 			[b]Note:[/b] Only 8 physics ticks may be simulated per rendered frame at most. If more than 8 physics ticks have to be simulated per rendered frame to keep up with rendering, the game will appear to slow down (even if [code]delta[/code] is used consistently in physics calculations). Therefore, it is recommended not to increase [member physics/common/physics_fps] above 240. Otherwise, the game will slow down when the rendering framerate goes below 30 FPS.
 		</member>
+		<member name="physics/common/physics_interpolation" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the renderer will interpolate the transforms of physics objects between the last two transforms, such that smooth motion is seen when physics ticks do not coincide with rendered frames.
+			[b]Note:[/b] When moving objects to new positions (rather than the usual physics motion) you may want to temporarily turn off interpolation to prevent a visible glitch. You can do this using the [method Node.reset_physics_interpolation] function.
+		</member>
 		<member name="physics/common/physics_jitter_fix" type="float" setter="" getter="" default="0.5">
 			Controls how much physics ticks are synchronized with real time. For 0 or less, the ticks are synchronized. Such values are recommended for network games, where clock synchronization matters. Higher values cause higher deviation of in-game clock and real clock, but allows smoothing out framerate jitters. The default value of 0.5 should be fine for most; values above 2 could cause the game to react to dropped frames with a noticeable delay and are not recommended.
 			[b]Note:[/b] For best results, when using a custom physics interpolation solution, the physics jitter fix should be disabled by setting [member physics/common/physics_jitter_fix] to [code]0[/code].

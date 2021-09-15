@@ -32,6 +32,7 @@
 #define RASTERIZER_H
 
 #include "core/math/camera_matrix.h"
+#include "core/math/transform_interpolator.h"
 #include "servers/visual_server.h"
 
 #include "core/self_list.h"
@@ -90,7 +91,15 @@ public:
 		RID material_override;
 		RID material_overlay;
 
+		// This is the main transform to be drawn with ..
+		// This will either be the interpolated transform (when using fixed timestep interpolation)
+		// or the ONLY transform (when not using FTI).
 		Transform transform;
+
+		// for interpolation we store the current transform (this physics tick)
+		// and the transform in the previous tick
+		Transform transform_curr;
+		Transform transform_prev;
 
 		int depth_layer;
 		uint32_t layer_mask;
@@ -107,11 +116,21 @@ public:
 		VS::ShadowCastingSetting cast_shadows;
 
 		//fit in 32 bits
-		bool mirror : 8;
-		bool receive_shadows : 8;
-		bool visible : 8;
-		bool baked_light : 4; //this flag is only to know if it actually did use baked light
-		bool redraw_if_visible : 4;
+		bool mirror : 1;
+		bool receive_shadows : 1;
+		bool visible : 1;
+		bool baked_light : 1; //this flag is only to know if it actually did use baked light
+		bool redraw_if_visible : 1;
+
+		bool on_interpolate_list : 1;
+		bool on_interpolate_transform_list : 1;
+		bool interpolated : 1;
+		TransformInterpolator::Method interpolation_method : 3;
+
+		// For fixed timestep interpolation.
+		// Note 32 bits is plenty for checksum, no need for real_t
+		float transform_checksum_curr;
+		float transform_checksum_prev;
 
 		float depth; //used for sorting
 
@@ -138,6 +157,12 @@ public:
 			lightmap_capture = nullptr;
 			lightmap_slice = -1;
 			lightmap_uv_rect = Rect2(0, 0, 1, 1);
+			on_interpolate_list = false;
+			on_interpolate_transform_list = false;
+			interpolated = true;
+			interpolation_method = TransformInterpolator::INTERP_LERP;
+			transform_checksum_curr = 0.0;
+			transform_checksum_prev = 0.0;
 		}
 	};
 
@@ -320,32 +345,83 @@ public:
 	virtual void mesh_clear(RID p_mesh) = 0;
 
 	/* MULTIMESH API */
+	struct MMInterpolator {
+		VS::MultimeshTransformFormat _transform_format = VS::MULTIMESH_TRANSFORM_3D;
+		VS::MultimeshColorFormat _color_format = VS::MULTIMESH_COLOR_NONE;
+		VS::MultimeshCustomDataFormat _data_format = VS::MULTIMESH_CUSTOM_DATA_NONE;
 
-	virtual RID multimesh_create() = 0;
+		// in floats
+		int _stride = 0;
 
-	virtual void multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, VS::MultimeshColorFormat p_color_format, VS::MultimeshCustomDataFormat p_data = VS::MULTIMESH_CUSTOM_DATA_NONE) = 0;
-	virtual int multimesh_get_instance_count(RID p_multimesh) const = 0;
+		// Vertex format sizes in floats
+		int _vf_size_xform = 0;
+		int _vf_size_color = 0;
+		int _vf_size_data = 0;
 
-	virtual void multimesh_set_mesh(RID p_multimesh, RID p_mesh) = 0;
-	virtual void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform) = 0;
-	virtual void multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) = 0;
-	virtual void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) = 0;
-	virtual void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) = 0;
+		// Set by allocate, can be used to prevent indexing out of range.
+		int _num_instances = 0;
 
-	virtual RID multimesh_get_mesh(RID p_multimesh) const = 0;
+		// Quality determines whether to use lerp or slerp etc.
+		int quality = 0;
+		bool interpolated = false;
+		bool on_interpolate_update_list = false;
+		bool on_transform_update_list = false;
 
-	virtual Transform multimesh_instance_get_transform(RID p_multimesh, int p_index) const = 0;
-	virtual Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const = 0;
-	virtual Color multimesh_instance_get_color(RID p_multimesh, int p_index) const = 0;
-	virtual Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const = 0;
+		PoolVector<float> _data_prev;
+		PoolVector<float> _data_curr;
+		PoolVector<float> _data_interpolated;
+	};
 
-	virtual void multimesh_set_as_bulk_array(RID p_multimesh, const PoolVector<float> &p_array) = 0;
+	virtual RID multimesh_create();
+	virtual void multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, VS::MultimeshColorFormat p_color_format, VS::MultimeshCustomDataFormat p_data = VS::MULTIMESH_CUSTOM_DATA_NONE);
+	virtual int multimesh_get_instance_count(RID p_multimesh) const;
+	virtual void multimesh_set_mesh(RID p_multimesh, RID p_mesh);
+	virtual void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform);
+	virtual void multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform);
+	virtual void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color);
+	virtual void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color);
+	virtual RID multimesh_get_mesh(RID p_multimesh) const;
+	virtual Transform multimesh_instance_get_transform(RID p_multimesh, int p_index) const;
+	virtual Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const;
+	virtual Color multimesh_instance_get_color(RID p_multimesh, int p_index) const;
+	virtual Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const;
+	virtual void multimesh_set_as_bulk_array(RID p_multimesh, const PoolVector<float> &p_array);
 
-	virtual void multimesh_set_visible_instances(RID p_multimesh, int p_visible) = 0;
-	virtual int multimesh_get_visible_instances(RID p_multimesh) const = 0;
+	virtual void multimesh_set_as_bulk_array_interpolated(RID p_multimesh, const PoolVector<float> &p_array, const PoolVector<float> &p_array_prev);
+	virtual void multimesh_set_physics_interpolated(RID p_multimesh, bool p_interpolated);
+	virtual void multimesh_set_physics_interpolation_quality(RID p_multimesh, int p_quality);
+	virtual void multimesh_instance_reset_physics_interpolation(RID p_multimesh, int p_index);
 
-	virtual AABB multimesh_get_aabb(RID p_multimesh) const = 0;
+	virtual void multimesh_set_visible_instances(RID p_multimesh, int p_visible);
+	virtual int multimesh_get_visible_instances(RID p_multimesh) const;
+	virtual AABB multimesh_get_aabb(RID p_multimesh) const;
 
+	virtual RID _multimesh_create() = 0;
+	virtual void _multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, VS::MultimeshColorFormat p_color_format, VS::MultimeshCustomDataFormat p_data = VS::MULTIMESH_CUSTOM_DATA_NONE) = 0;
+	virtual int _multimesh_get_instance_count(RID p_multimesh) const = 0;
+	virtual void _multimesh_set_mesh(RID p_multimesh, RID p_mesh) = 0;
+	virtual void _multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform) = 0;
+	virtual void _multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) = 0;
+	virtual void _multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) = 0;
+	virtual void _multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) = 0;
+	virtual RID _multimesh_get_mesh(RID p_multimesh) const = 0;
+	virtual Transform _multimesh_instance_get_transform(RID p_multimesh, int p_index) const = 0;
+	virtual Transform2D _multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const = 0;
+	virtual Color _multimesh_instance_get_color(RID p_multimesh, int p_index) const = 0;
+	virtual Color _multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const = 0;
+	virtual void _multimesh_set_as_bulk_array(RID p_multimesh, const PoolVector<float> &p_array) = 0;
+	virtual void _multimesh_set_visible_instances(RID p_multimesh, int p_visible) = 0;
+	virtual int _multimesh_get_visible_instances(RID p_multimesh) const = 0;
+	virtual AABB _multimesh_get_aabb(RID p_multimesh) const = 0;
+
+	// Multimesh is responsible for allocating / destroying an MMInterpolator object.
+	// This allows shared functionality for interpolation across backends.
+	virtual MMInterpolator *_multimesh_get_interpolator(RID p_multimesh) const = 0;
+
+private:
+	void _multimesh_add_to_interpolation_lists(RID p_multimesh, MMInterpolator &r_mmi);
+
+public:
 	/* IMMEDIATE API */
 
 	virtual RID immediate_create() = 0;
@@ -596,6 +672,22 @@ public:
 	virtual RID canvas_light_occluder_create() = 0;
 	virtual void canvas_light_occluder_set_polylines(RID p_occluder, const PoolVector<Vector2> &p_lines) = 0;
 
+	/* INTERPOLATION */
+	struct InterpolationData {
+		void notify_free_multimesh(RID p_rid);
+		LocalVector<RID> multimesh_interpolate_update_list;
+		LocalVector<RID> multimesh_transform_update_lists[2];
+		LocalVector<RID> *multimesh_transform_update_list_curr = &multimesh_transform_update_lists[0];
+		LocalVector<RID> *multimesh_transform_update_list_prev = &multimesh_transform_update_lists[1];
+	} _interpolation_data;
+
+	void update_interpolation_tick(bool p_process = true);
+	void update_interpolation_frame(bool p_process = true);
+
+private:
+	_FORCE_INLINE_ void _interpolate_RGBA8(const uint8_t *p_a, const uint8_t *p_b, uint8_t *r_dest, float p_f) const;
+
+public:
 	virtual VS::InstanceType get_base_type(RID p_rid) const = 0;
 	virtual bool free(RID p_rid) = 0;
 
@@ -1168,5 +1260,29 @@ public:
 
 	virtual ~Rasterizer() {}
 };
+
+// Use float rather than real_t as cheaper and no need for 64 bit.
+_FORCE_INLINE_ void RasterizerStorage::_interpolate_RGBA8(const uint8_t *p_a, const uint8_t *p_b, uint8_t *r_dest, float p_f) const {
+	// Todo, jiggle these values and test for correctness.
+	// Integer interpolation is finicky.. :)
+	p_f *= 256.0f;
+	int32_t mult = CLAMP(int32_t(p_f), 0, 255);
+
+	for (int n = 0; n < 4; n++) {
+		int32_t a = p_a[n];
+		int32_t b = p_b[n];
+
+		int32_t diff = b - a;
+
+		diff *= mult;
+		diff /= 255;
+
+		int32_t res = a + diff;
+
+		// may not be needed
+		res = CLAMP(res, 0, 255);
+		r_dest[n] = res;
+	}
+}
 
 #endif // RASTERIZER_H

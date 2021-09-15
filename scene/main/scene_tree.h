@@ -121,6 +121,7 @@ private:
 	bool _quit;
 	bool initialized;
 	bool input_handled;
+	bool _physics_interpolation_enabled;
 
 	Size2 last_screen_size;
 	StringName tree_changed_name;
@@ -406,6 +407,9 @@ public:
 
 	void set_refuse_new_network_connections(bool p_refuse);
 	bool is_refusing_new_network_connections() const;
+
+	void set_physics_interpolation_enabled(bool p_enabled);
+	bool is_physics_interpolation_enabled() const;
 
 	static void add_idle_callback(IdleCallback p_callback);
 	SceneTree();

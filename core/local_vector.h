@@ -101,6 +101,22 @@ public:
 		}
 	}
 
+	U erase_multiple_unordered(const T &p_val) {
+		U from = 0;
+		U count = 0;
+		while (true) {
+			int64_t idx = find(p_val, from);
+
+			if (idx == -1) {
+				break;
+			}
+			remove_unordered(idx);
+			from = idx;
+			count++;
+		}
+		return count;
+	}
+
 	void invert() {
 		for (U i = 0; i < count / 2; i++) {
 			SWAP(data[i], data[count - i - 1]);

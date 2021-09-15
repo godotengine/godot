@@ -181,6 +181,19 @@ void Node::_propagate_ready() {
 	}
 }
 
+void Node::_propagate_physics_interpolated(bool p_interpolated) {
+	data.physics_interpolated = p_interpolated;
+
+	// allow a call to the VisualServer etc in derived classes
+	_physics_interpolated_changed();
+
+	data.blocked++;
+	for (int i = 0; i < data.children.size(); i++) {
+		data.children[i]->_propagate_physics_interpolated(p_interpolated);
+	}
+	data.blocked--;
+}
+
 void Node::_propagate_enter_tree() {
 	// this needs to happen to all children before any enter_tree
 
@@ -400,6 +413,8 @@ void Node::remove_child_notify(Node *p_child) {
 void Node::move_child_notify(Node *p_child) {
 	// to be used when not wanted
 }
+
+void Node::_physics_interpolated_changed() {}
 
 void Node::set_physics_process(bool p_process) {
 	if (data.physics_process == p_process) {
@@ -779,6 +794,22 @@ bool Node::can_process() const {
 	return true;
 }
 
+void Node::set_physics_interpolated(bool p_interpolated) {
+	// if swapping from interpolated to non-interpolated, use this as
+	// an extra means to cause a reset
+	if (is_physics_interpolated() && !p_interpolated) {
+		reset_physics_interpolation();
+	}
+
+	_propagate_physics_interpolated(p_interpolated);
+}
+
+void Node::reset_physics_interpolation() {
+	if (is_physics_interpolated_and_enabled()) {
+		propagate_notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
+	}
+}
+
 float Node::get_physics_process_delta_time() const {
 	if (data.tree) {
 		return data.tree->get_physics_process_time();
@@ -923,6 +954,14 @@ void Node::set_process_unhandled_key_input(bool p_enable) {
 
 bool Node::is_processing_unhandled_key_input() const {
 	return data.unhandled_key_input;
+}
+
+void Node::_set_physics_interpolated_client_side(bool p_enable) {
+	data.physics_interpolated_client_side = p_enable;
+}
+
+void Node::_set_use_identity_transform(bool p_enable) {
+	data.use_identity_transform = p_enable;
 }
 
 StringName Node::get_name() const {
@@ -2828,6 +2867,11 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physics_process_internal", "enable"), &Node::set_physics_process_internal);
 	ClassDB::bind_method(D_METHOD("is_physics_processing_internal"), &Node::is_physics_processing_internal);
 
+	ClassDB::bind_method(D_METHOD("set_physics_interpolated", "enable"), &Node::set_physics_interpolated);
+	ClassDB::bind_method(D_METHOD("is_physics_interpolated"), &Node::is_physics_interpolated);
+	ClassDB::bind_method(D_METHOD("is_physics_interpolated_and_enabled"), &Node::is_physics_interpolated_and_enabled);
+	ClassDB::bind_method(D_METHOD("reset_physics_interpolation"), &Node::reset_physics_interpolation);
+
 	ClassDB::bind_method(D_METHOD("get_tree"), &Node::get_tree);
 
 	ClassDB::bind_method(D_METHOD("duplicate", "flags"), &Node::duplicate, DEFVAL(DUPLICATE_USE_INSTANCING | DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS));
@@ -2907,6 +2951,7 @@ void Node::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_INTERNAL_PROCESS);
 	BIND_CONSTANT(NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 	BIND_CONSTANT(NOTIFICATION_POST_ENTER_TREE);
+	BIND_CONSTANT(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
 
 	BIND_CONSTANT(NOTIFICATION_WM_MOUSE_ENTER);
 	BIND_CONSTANT(NOTIFICATION_WM_MOUSE_EXIT);
@@ -2954,6 +2999,9 @@ void Node::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "custom_multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", 0), "set_custom_multiplayer", "get_custom_multiplayer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_priority"), "set_process_priority", "get_process_priority");
 
+	// Disabled for now
+	// ADD_PROPERTY(PropertyInfo(Variant::BOOL, "physics_interpolated"), "set_physics_interpolated", "is_physics_interpolated");
+
 	BIND_VMETHOD(MethodInfo("_process", PropertyInfo(Variant::REAL, "delta")));
 	BIND_VMETHOD(MethodInfo("_physics_process", PropertyInfo(Variant::REAL, "delta")));
 	BIND_VMETHOD(MethodInfo("_enter_tree"));
@@ -2992,6 +3040,9 @@ Node::Node() {
 	data.idle_process_internal = false;
 	data.inside_tree = false;
 	data.ready_notified = false;
+	data.physics_interpolated = true;
+	data.physics_interpolated_client_side = false;
+	data.use_identity_transform = false;
 
 	data.owner = nullptr;
 	data.OW = nullptr;

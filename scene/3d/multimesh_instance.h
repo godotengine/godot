@@ -39,8 +39,12 @@ class MultiMeshInstance : public GeometryInstance {
 
 	Ref<MultiMesh> multimesh;
 
+	void _refresh_interpolated();
+
 protected:
+	virtual void _physics_interpolated_changed();
 	static void _bind_methods();
+	void _notification(int p_what);
 	// bind helpers
 
 public:
