@@ -2051,6 +2051,10 @@ void ProjectManager::_open_selected_projects() {
 			args.push_back("--disable-crash-handler");
 		}
 
+		if (OS::get_singleton()->is_single_window()) {
+			args.push_back("--single-window");
+		}
+
 		String exec = OS::get_singleton()->get_executable_path();
 		Error err = OS::get_singleton()->create_process(exec, args);
 		ERR_FAIL_COND(err);

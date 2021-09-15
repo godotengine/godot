@@ -52,6 +52,7 @@ class OS {
 	int low_processor_usage_mode_sleep_usec = 10000;
 	bool _verbose_stdout = false;
 	bool _debug_stdout = false;
+	bool _single_window = false;
 	String _local_clipboard;
 	int _exit_code = EXIT_FAILURE; // unexpected exit is marked as failure
 	int _orientation;
@@ -223,6 +224,8 @@ public:
 	bool is_stderr_enabled() const;
 	void set_stdout_enabled(bool p_enabled);
 	void set_stderr_enabled(bool p_enabled);
+
+	bool is_single_window() const;
 
 	virtual void disable_crash_handler() {}
 	virtual bool is_disable_crash_handler() const { return false; }
