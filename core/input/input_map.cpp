@@ -703,11 +703,11 @@ void InputMap::load_default() {
 	OrderedHashMap<String, List<Ref<InputEvent>>> builtins = get_builtins();
 
 	// List of Builtins which have an override for macOS.
-	Vector<String> osx_builtins;
+	Vector<String> macos_builtins;
 	for (OrderedHashMap<String, List<Ref<InputEvent>>>::Element E = builtins.front(); E; E = E.next()) {
 		if (String(E.key()).ends_with(".macos")) {
 			// Strip .macos from name: some_input_name.macos -> some_input_name
-			osx_builtins.push_back(String(E.key()).split(".")[0]);
+			macos_builtins.push_back(String(E.key()).split(".")[0]);
 		}
 	}
 
@@ -717,12 +717,12 @@ void InputMap::load_default() {
 		String override_for = fullname.split(".").size() > 1 ? fullname.split(".")[1] : "";
 
 #ifdef APPLE_STYLE_KEYS
-		if (osx_builtins.has(name) && override_for != "osx") {
-			// Name has `osx` builtin but this particular one is for non-macOS systems - so skip.
+		if (macos_builtins.has(name) && override_for != "macos") {
+			// Name has `macos` builtin but this particular one is for non-macOS systems - so skip.
 			continue;
 		}
 #else
-		if (override_for == "osx") {
+		if (override_for == "macos") {
 			// Override for macOS - not needed on non-macOS platforms.
 			continue;
 		}
