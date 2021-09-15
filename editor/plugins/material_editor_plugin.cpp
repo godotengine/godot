@@ -274,6 +274,8 @@ Ref<Resource> SpatialMaterialConversionPlugin::convert(const Ref<Resource> &p_re
 	}
 
 	smat->set_render_priority(mat->get_render_priority());
+	smat->set_local_to_scene(mat->is_local_to_scene());
+	smat->set_name(mat->get_name());
 	return smat;
 }
 
@@ -309,6 +311,8 @@ Ref<Resource> ParticlesMaterialConversionPlugin::convert(const Ref<Resource> &p_
 	}
 
 	smat->set_render_priority(mat->get_render_priority());
+	smat->set_local_to_scene(mat->is_local_to_scene());
+	smat->set_name(mat->get_name());
 	return smat;
 }
 
@@ -344,5 +348,7 @@ Ref<Resource> CanvasItemMaterialConversionPlugin::convert(const Ref<Resource> &p
 	}
 
 	smat->set_render_priority(mat->get_render_priority());
+	smat->set_local_to_scene(mat->is_local_to_scene());
+	smat->set_name(mat->get_name());
 	return smat;
 }
