@@ -2472,8 +2472,13 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 
 			switch (dictionary->style) {
 				case DictionaryNode::LUA_TABLE:
-					if (key != nullptr && key->type != Node::IDENTIFIER) {
-						push_error("Expected identifier as LUA-style dictionary key.");
+					if (key != nullptr && key->type != Node::IDENTIFIER && key->type != Node::LITERAL) {
+						push_error("Expected identifier or string as LUA-style dictionary key.");
+						advance();
+						break;
+					}
+					if (key != nullptr && key->type == Node::LITERAL && static_cast<LiteralNode *>(key)->value.get_type() != Variant::STRING) {
+						push_error("Expected identifier or string as LUA-style dictionary key.");
 						advance();
 						break;
 					}
@@ -2487,7 +2492,11 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 					}
 					if (key != nullptr) {
 						key->is_constant = true;
-						key->reduced_value = static_cast<IdentifierNode *>(key)->name;
+						if (key->type == Node::IDENTIFIER) {
+							key->reduced_value = static_cast<IdentifierNode *>(key)->name;
+						} else if (key->type == Node::LITERAL) {
+							key->reduced_value = StringName(static_cast<LiteralNode *>(key)->value.operator String());
+						}
 					}
 					break;
 				case DictionaryNode::PYTHON_DICT:
