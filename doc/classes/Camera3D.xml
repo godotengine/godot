@@ -26,7 +26,7 @@
 		<method name="get_camera_transform" qualifiers="const">
 			<return type="Transform3D" />
 			<description>
-				Gets the camera transform. Subclassed cameras such as [ClippedCamera3D] may provide different transforms than the [Node] transform.
+				Returns the transform of the camera plus the vertical ([member v_offset]) and horizontal ([member h_offset]) offsets; and any other adjustments made to the position and orientation of the camera by subclassed cameras such as [ClippedCamera3D] and [XRCamera3D].
 			</description>
 		</method>
 		<method name="get_cull_mask_value" qualifiers="const">
