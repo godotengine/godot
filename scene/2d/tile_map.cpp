@@ -261,6 +261,7 @@ void TileMap::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			pending_update = true;
+			_clear_internals();
 			_recreate_internals();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
@@ -298,6 +299,7 @@ void TileMap::set_tileset(const Ref<TileSet> &p_tileset) {
 
 	if (tile_set.is_valid()) {
 		tile_set->connect("changed", callable_mp(this, &TileMap::_tile_set_changed));
+		_clear_internals();
 		_recreate_internals();
 	}
 
@@ -308,6 +310,7 @@ void TileMap::set_quadrant_size(int p_size) {
 	ERR_FAIL_COND_MSG(p_size < 1, "TileMapQuadrant size cannot be smaller than 1.");
 
 	quadrant_size = p_size;
+	_clear_internals();
 	_recreate_internals();
 	emit_signal(SNAME("changed"));
 }
@@ -327,6 +330,9 @@ void TileMap::add_layer(int p_to_pos) {
 
 	ERR_FAIL_INDEX(p_to_pos, (int)layers.size() + 1);
 
+	// Must clear before adding the layer.
+	_clear_internals();
+
 	layers.insert(p_to_pos, TileMapLayer());
 	_recreate_internals();
 	notify_property_list_changed();
@@ -339,6 +345,9 @@ void TileMap::add_layer(int p_to_pos) {
 void TileMap::move_layer(int p_layer, int p_to_pos) {
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 	ERR_FAIL_INDEX(p_to_pos, (int)layers.size() + 1);
+
+	// Clear before shuffling layers.
+	_clear_internals();
 
 	TileMapLayer tl = layers[p_layer];
 	layers.insert(p_to_pos, tl);
@@ -357,6 +366,9 @@ void TileMap::move_layer(int p_layer, int p_to_pos) {
 
 void TileMap::remove_layer(int p_layer) {
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+
+	// Clear before removing the layer.
+	_clear_internals();
 
 	layers.remove(p_layer);
 	_recreate_internals();
@@ -385,6 +397,7 @@ String TileMap::get_layer_name(int p_layer) const {
 void TileMap::set_layer_enabled(int p_layer, bool p_enabled) {
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 	layers[p_layer].enabled = p_enabled;
+	_clear_internals();
 	_recreate_internals();
 	emit_signal(SNAME("changed"));
 
@@ -399,6 +412,7 @@ bool TileMap::is_layer_enabled(int p_layer) const {
 void TileMap::set_layer_y_sort_enabled(int p_layer, bool p_y_sort_enabled) {
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 	layers[p_layer].y_sort_enabled = p_y_sort_enabled;
+	_clear_internals();
 	_recreate_internals();
 	emit_signal(SNAME("changed"));
 
@@ -413,6 +427,7 @@ bool TileMap::is_layer_y_sort_enabled(int p_layer) const {
 void TileMap::set_layer_y_sort_origin(int p_layer, int p_y_sort_origin) {
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 	layers[p_layer].y_sort_origin = p_y_sort_origin;
+	_clear_internals();
 	_recreate_internals();
 	emit_signal(SNAME("changed"));
 }
@@ -425,6 +440,7 @@ int TileMap::get_layer_y_sort_origin(int p_layer) const {
 void TileMap::set_layer_z_index(int p_layer, int p_z_index) {
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 	layers[p_layer].z_index = p_z_index;
+	_clear_internals();
 	_recreate_internals();
 	emit_signal(SNAME("changed"));
 
@@ -438,6 +454,7 @@ int TileMap::get_layer_z_index(int p_layer) const {
 
 void TileMap::set_collision_visibility_mode(TileMap::VisibilityMode p_show_collision) {
 	collision_visibility_mode = p_show_collision;
+	_clear_internals();
 	_recreate_internals();
 	emit_signal(SNAME("changed"));
 }
@@ -448,6 +465,7 @@ TileMap::VisibilityMode TileMap::get_collision_visibility_mode() {
 
 void TileMap::set_navigation_visibility_mode(TileMap::VisibilityMode p_show_navigation) {
 	navigation_visibility_mode = p_show_navigation;
+	_clear_internals();
 	_recreate_internals();
 	emit_signal(SNAME("changed"));
 }
@@ -458,6 +476,7 @@ TileMap::VisibilityMode TileMap::get_navigation_visibility_mode() {
 
 void TileMap::set_y_sort_enabled(bool p_enable) {
 	Node2D::set_y_sort_enabled(p_enable);
+	_clear_internals();
 	_recreate_internals();
 	emit_signal(SNAME("changed"));
 }
@@ -578,10 +597,10 @@ void TileMap::_update_dirty_quadrants() {
 }
 
 void TileMap::_recreate_internals() {
-	// Clear all internals.
-	_clear_internals();
-
 	for (unsigned int layer = 0; layer < layers.size(); layer++) {
+		// Make sure that _clear_internals() was called prior.
+		ERR_FAIL_COND_MSG(layers[layer].quadrant_map.size() > 0, "TileMap layer " + itos(layer) + " had a non-empty quadrant map.");
+
 		if (!layers[layer].enabled) {
 			continue;
 		}
@@ -3000,6 +3019,7 @@ void TileMap::_bind_methods() {
 
 void TileMap::_tile_set_changed() {
 	emit_signal(SNAME("changed"));
+	_clear_internals();
 	_recreate_internals();
 }
 
