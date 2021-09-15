@@ -1069,7 +1069,7 @@
 		<member name="TranslationServer" type="TranslationServer" setter="" getter="">
 			The [TranslationServer] singleton.
 		</member>
-		<member name="VisualScriptEditor" type="VisualScriptCustomNodes" setter="" getter="">
+		<member name="VisualScriptCustomNodes" type="VisualScriptCustomNodes" setter="" getter="">
 			The [VisualScriptCustomNodes] singleton.
 		</member>
 		<member name="XRServer" type="XRServer" setter="" getter="">

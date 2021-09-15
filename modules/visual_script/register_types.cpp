@@ -117,7 +117,7 @@ void register_visual_script_types() {
 	GDREGISTER_CLASS(VisualScriptCustomNodes);
 	ClassDB::set_current_api(ClassDB::API_CORE);
 	vs_custom_nodes_singleton = memnew(VisualScriptCustomNodes);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("VisualScriptEditor", VisualScriptCustomNodes::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("VisualScriptCustomNodes", VisualScriptCustomNodes::get_singleton()));
 
 	VisualScriptEditor::register_editor();
 #endif
