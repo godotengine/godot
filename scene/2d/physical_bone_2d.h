@@ -49,7 +49,7 @@ private:
 	NodePath bone2d_nodepath;
 	bool follow_bone_when_simulating = false;
 
-	Joint2D *child_joint;
+	Joint2D *child_joint = nullptr;
 	bool auto_configure_joint = true;
 
 	bool simulate_physics = false;

@@ -67,7 +67,7 @@ private:
 	int item_shadow_mask = 1;
 	real_t shadow_smooth = 0.0;
 	Ref<Texture2D> texture;
-	Vector2 texture_offset;
+	Vector2 texture_offset = Vector2(0,0);
 	ShadowFilter shadow_filter = SHADOW_FILTER_NONE;
 	BlendMode blend_mode = BLEND_MODE_ADD;
 

@@ -45,7 +45,7 @@ union TileMapCell {
 		int32_t alternative_tile : 16;
 	};
 
-	uint64_t _u64t;
+	uint64_t _u64t = 0;
 	TileMapCell(int p_source_id = -1, Vector2i p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = TileSetSource::INVALID_TILE_ALTERNATIVE) {
 		source_id = p_source_id;
 		set_atlas_coords(p_atlas_coords);

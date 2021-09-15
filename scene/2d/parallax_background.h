@@ -36,15 +36,15 @@
 class ParallaxBackground : public CanvasLayer {
 	GDCLASS(ParallaxBackground, CanvasLayer);
 
-	Point2 offset;
+	Point2 offset = Point2(0, 0);
 	real_t scale = 1.0;
-	Point2 base_offset;
+	Point2 base_offset = Point2(0, 0);
 	Point2 base_scale = Vector2(1, 1);
-	Point2 screen_offset;
+	Point2 screen_offset = Point2(0, 0);
 	String group_name;
-	Point2 limit_begin;
-	Point2 limit_end;
-	Point2 final_offset;
+	Point2 limit_begin = Point2(0, 0);
+	Point2 limit_end = Point2(0, 0);
+	Point2 final_offset = Point2(0, 0);
 	bool ignore_camera_zoom = false;
 
 	void _update_scroll();

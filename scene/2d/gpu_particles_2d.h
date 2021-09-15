@@ -47,17 +47,17 @@ public:
 private:
 	RID particles;
 
-	bool one_shot;
-	int amount;
-	double lifetime;
-	double pre_process_time;
-	real_t explosiveness_ratio;
-	real_t randomness_ratio;
-	double speed_scale;
-	Rect2 visibility_rect;
-	bool local_coords;
-	int fixed_fps;
-	bool fractional_delta;
+	bool one_shot = false;
+	int amount = 0;
+	double lifetime = 0.0f;
+	double pre_process_time = 0.0f;
+	real_t explosiveness_ratio = 0;
+	real_t randomness_ratio = 0;
+	double speed_scale = 0.0f;
+	Rect2 visibility_rect = Rect2(0, 0, 0, 0);
+	bool local_coords = false;
+	int fixed_fps = false;
+	bool fractional_delta = false;
 
 	Ref<Material> process_material;
 

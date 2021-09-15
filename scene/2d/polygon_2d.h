@@ -53,16 +53,16 @@ class Polygon2D : public Node2D {
 	Ref<Texture2D> texture;
 
 	Size2 tex_scale = Vector2(1, 1);
-	Vector2 tex_ofs;
+	Vector2 tex_ofs = Vector2(0, 0);
 	bool tex_tile = true;
 	real_t tex_rot = 0.0;
 	bool invert = false;
 	real_t invert_border = 100.0;
 	bool antialiased = false;
 
-	Vector2 offset;
+	Vector2 offset = Vector2(0, 0);
 	mutable bool rect_cache_dirty = true;
-	mutable Rect2 item_rect;
+	mutable Rect2 item_rect = Rect2(0, 0, 0, 0);
 
 	NodePath skeleton;
 	ObjectID current_skeleton_id;

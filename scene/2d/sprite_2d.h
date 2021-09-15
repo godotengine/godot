@@ -38,7 +38,7 @@ class Sprite2D : public Node2D {
 	GDCLASS(Sprite2D, Node2D);
 
 	Ref<Texture2D> texture;
-	Color specular_color;
+	Color specular_color = Color(0, 0, 0, 0);
 	real_t shininess = 0.0;
 
 	bool centered = true;
@@ -47,7 +47,7 @@ class Sprite2D : public Node2D {
 	bool hflip = false;
 	bool vflip = false;
 	bool region_enabled = false;
-	Rect2 region_rect;
+	Rect2 region_rect = Rect2(0, 0, 0, 0);
 	bool region_filter_clip_enabled = false;
 
 	int frame = 0;
