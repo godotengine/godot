@@ -42,10 +42,10 @@ class BroadPhase2DBVH : public BroadPhase2DSW {
 	static void *_pair_callback(void *, uint32_t, CollisionObject2DSW *, int, uint32_t, CollisionObject2DSW *, int);
 	static void _unpair_callback(void *, uint32_t, CollisionObject2DSW *, int, uint32_t, CollisionObject2DSW *, int, void *);
 
-	PairCallback pair_callback;
-	void *pair_userdata;
-	UnpairCallback unpair_callback;
-	void *unpair_userdata;
+	PairCallback pair_callback = nullptr;
+	void *pair_userdata = nullptr;
+	UnpairCallback unpair_callback = nullptr;
+	void *unpair_userdata = nullptr;
 
 public:
 	// 0 is an invalid ID

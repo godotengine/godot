@@ -40,16 +40,16 @@ class Body2DSW;
 class Constraint2DSW;
 
 class Area2DSW : public CollisionObject2DSW {
-	PhysicsServer2D::AreaSpaceOverrideMode space_override_mode;
-	real_t gravity;
-	Vector2 gravity_vector;
-	bool gravity_is_point;
-	real_t gravity_distance_scale;
-	real_t point_attenuation;
-	real_t linear_damp;
-	real_t angular_damp;
-	int priority;
-	bool monitorable;
+	PhysicsServer2D::AreaSpaceOverrideMode space_override_mode = PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED;
+	real_t gravity = 9.80665;
+	Vector2 gravity_vector = Vector2(0, -1);
+	bool gravity_is_point = false;
+	real_t gravity_distance_scale = 0.0;
+	real_t point_attenuation = 1.0;
+	real_t linear_damp = 0.1;
+	real_t angular_damp = 1.0;
+	int priority = 0;
+	bool monitorable = false;
 
 	ObjectID monitor_callback_id;
 	StringName monitor_callback_method;
@@ -63,8 +63,8 @@ class Area2DSW : public CollisionObject2DSW {
 	struct BodyKey {
 		RID rid;
 		ObjectID instance_id;
-		uint32_t body_shape;
-		uint32_t area_shape;
+		uint32_t body_shape = 0;
+		uint32_t area_shape = 0;
 
 		_FORCE_INLINE_ bool operator<(const BodyKey &p_key) const {
 			if (rid == p_key.rid) {
@@ -84,10 +84,9 @@ class Area2DSW : public CollisionObject2DSW {
 	};
 
 	struct BodyState {
-		int state;
+		int state = 0;
 		_FORCE_INLINE_ void inc() { state++; }
 		_FORCE_INLINE_ void dec() { state--; }
-		_FORCE_INLINE_ BodyState() { state = 0; }
 	};
 
 	Map<BodyKey, BodyState> monitored_bodies;

@@ -163,7 +163,7 @@ public:
 	Vector3 m_0MinvJt;
 	Vector3 m_1MinvJt;
 	//Optimization: can be stored in the w/last component of one of the vectors
-	real_t m_Adiag;
+	real_t m_Adiag = 1.0;
 };
 
 #endif // JACOBIAN_ENTRY_SW_H

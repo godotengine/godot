@@ -42,18 +42,18 @@ class PhysicsServer3DSW : public PhysicsServer3D {
 	GDCLASS(PhysicsServer3DSW, PhysicsServer3D);
 
 	friend class PhysicsDirectSpaceState3DSW;
-	bool active;
-	int iterations;
+	bool active = true;
+	int iterations = 0;
 
-	int island_count;
-	int active_objects;
-	int collision_pairs;
+	int island_count = 0;
+	int active_objects = 0;
+	int collision_pairs = 0;
 
-	bool using_threads;
-	bool doing_sync;
-	bool flushing_queries;
+	bool using_threads = false;
+	bool doing_sync = false;
+	bool flushing_queries = false;
 
-	Step3DSW *stepper;
+	Step3DSW *stepper = nullptr;
 	Set<const Space3DSW *> active_spaces;
 
 	mutable RID_PtrOwner<Shape3DSW, true> shape_owner;

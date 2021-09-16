@@ -37,7 +37,7 @@
 #include "core/templates/thread_work_pool.h"
 
 class Step2DSW {
-	uint64_t _step;
+	uint64_t _step = 1;
 
 	int iterations = 0;
 	real_t delta = 0.0;

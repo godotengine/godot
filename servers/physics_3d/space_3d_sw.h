@@ -72,7 +72,7 @@ public:
 	};
 
 private:
-	uint64_t elapsed_time[ELAPSED_TIME_MAX];
+	uint64_t elapsed_time[ELAPSED_TIME_MAX] = {};
 
 	PhysicsDirectSpaceState3DSW *direct_access;
 	RID self;
@@ -90,13 +90,13 @@ private:
 
 	Set<CollisionObject3DSW *> objects;
 
-	Area3DSW *area;
+	Area3DSW *area = nullptr;
 
-	real_t contact_recycle_radius;
-	real_t contact_max_separation;
-	real_t contact_max_allowed_penetration;
-	real_t constraint_bias;
-	real_t test_motion_min_contact_depth;
+	real_t contact_recycle_radius = 0.01;
+	real_t contact_max_separation = 0.05;
+	real_t contact_max_allowed_penetration = 0.01;
+	real_t constraint_bias = 0.01;
+	real_t test_motion_min_contact_depth = 0.00001;
 
 	enum {
 		INTERSECTION_QUERY_MAX = 2048
@@ -110,18 +110,18 @@ private:
 	real_t body_time_to_sleep;
 	real_t body_angular_velocity_damp_ratio;
 
-	bool locked;
+	bool locked = false;
 
 	real_t last_step = 0.001;
 
-	int island_count;
-	int active_objects;
-	int collision_pairs;
+	int island_count = 0;
+	int active_objects = 0;
+	int collision_pairs = 0;
 
 	RID static_global_body;
 
 	Vector<Vector3> contact_debug;
-	int contact_debug_count;
+	int contact_debug_count = 0;
 
 	friend class PhysicsDirectSpaceState3DSW;
 

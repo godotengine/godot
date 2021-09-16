@@ -34,11 +34,11 @@
 
 struct _CollectorCallback2D {
 	CollisionSolver2DSW::CallbackResult callback;
-	void *userdata;
-	bool swap;
-	bool collided;
+	void *userdata = nullptr;
+	bool swap = false;
+	bool collided = false;
 	Vector2 normal;
-	Vector2 *sep_axis;
+	Vector2 *sep_axis = nullptr;
 
 	_FORCE_INLINE_ void call(const Vector2 &p_point_A, const Vector2 &p_point_B) {
 		/*
@@ -75,9 +75,9 @@ _FORCE_INLINE_ static void _generate_contacts_point_edge(const Vector2 *p_points
 }
 
 struct _generate_contacts_Pair {
-	bool a;
-	int idx;
-	real_t d;
+	bool a = false;
+	int idx = 0;
+	real_t d = 0.0;
 	_FORCE_INLINE_ bool operator<(const _generate_contacts_Pair &l) const { return d < l.d; }
 };
 
@@ -146,10 +146,10 @@ static void _generate_contacts_from_supports(const Vector2 *p_points_A, int p_po
 		}
 	};
 
-	int pointcount_B;
-	int pointcount_A;
-	const Vector2 *points_A;
-	const Vector2 *points_B;
+	int pointcount_B = 0;
+	int pointcount_A = 0;
+	const Vector2 *points_A = nullptr;
+	const Vector2 *points_B = nullptr;
 
 	if (p_point_count_A > p_point_count_B) {
 		//swap
@@ -177,18 +177,20 @@ static void _generate_contacts_from_supports(const Vector2 *p_points_A, int p_po
 
 template <class ShapeA, class ShapeB, bool castA = false, bool castB = false, bool withMargin = false>
 class SeparatorAxisTest2D {
-	const ShapeA *shape_A;
-	const ShapeB *shape_B;
-	const Transform2D *transform_A;
-	const Transform2D *transform_B;
-	real_t best_depth;
+	const ShapeA *shape_A = nullptr;
+	const ShapeB *shape_B = nullptr;
+	const Transform2D *transform_A = nullptr;
+	const Transform2D *transform_B = nullptr;
+	real_t best_depth = 1e15;
 	Vector2 best_axis;
-	int best_axis_count;
-	int best_axis_index;
+#ifdef DEBUG_ENABLED
+	int best_axis_count = 0;
+	int best_axis_index = -1;
+#endif
 	Vector2 motion_A;
 	Vector2 motion_B;
-	real_t margin_A;
-	real_t margin_B;
+	real_t margin_A = 0.0;
+	real_t margin_B = 0.0;
 	_CollectorCallback2D *callback;
 
 public:
@@ -364,19 +366,13 @@ public:
 	_FORCE_INLINE_ SeparatorAxisTest2D(const ShapeA *p_shape_A, const Transform2D &p_transform_a, const ShapeB *p_shape_B, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_A = Vector2(), const Vector2 &p_motion_B = Vector2(), real_t p_margin_A = 0, real_t p_margin_B = 0) {
 		margin_A = p_margin_A;
 		margin_B = p_margin_B;
-		best_depth = 1e15;
 		shape_A = p_shape_A;
 		shape_B = p_shape_B;
 		transform_A = &p_transform_a;
 		transform_B = &p_transform_b;
 		motion_A = p_motion_A;
 		motion_B = p_motion_B;
-
 		callback = p_collector;
-#ifdef DEBUG_ENABLED
-		best_axis_count = 0;
-		best_axis_index = -1;
-#endif
 	}
 };
 

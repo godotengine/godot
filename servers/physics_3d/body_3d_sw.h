@@ -108,10 +108,10 @@ class Body3DSW : public CollisionObject3DSW {
 	struct Contact {
 		Vector3 local_pos;
 		Vector3 local_normal;
-		real_t depth;
-		int local_shape;
+		real_t depth = 0.0;
+		int local_shape = 0;
 		Vector3 collider_pos;
-		int collider_shape;
+		int collider_shape = 0;
 		ObjectID collider_instance_id;
 		RID collider;
 		Vector3 collider_velocity_at_pos;

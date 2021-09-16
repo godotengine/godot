@@ -236,11 +236,5 @@ void CollisionObject3DSW::_shape_changed() {
 
 CollisionObject3DSW::CollisionObject3DSW(Type p_type) :
 		pending_shape_update_list(this) {
-	_static = true;
 	type = p_type;
-	space = nullptr;
-
-	collision_layer = 1;
-	collision_mask = 1;
-	ray_pickable = true;
 }

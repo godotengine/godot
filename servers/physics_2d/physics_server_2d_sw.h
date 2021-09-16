@@ -43,19 +43,19 @@ class PhysicsServer2DSW : public PhysicsServer2D {
 
 	friend class PhysicsDirectSpaceState2DSW;
 	friend class PhysicsDirectBodyState2DSW;
-	bool active;
-	int iterations;
-	bool doing_sync;
+	bool active = true;
+	int iterations = 0;
+	bool doing_sync = false;
 
-	int island_count;
-	int active_objects;
-	int collision_pairs;
+	int island_count = 0;
+	int active_objects = 0;
+	int collision_pairs = 0;
 
-	bool using_threads;
+	bool using_threads = false;
 
-	bool flushing_queries;
+	bool flushing_queries = false;
 
-	Step2DSW *stepper;
+	Step2DSW *stepper = nullptr;
 	Set<const Space2DSW *> active_spaces;
 
 	mutable RID_PtrOwner<Shape2DSW, true> shape_owner;
@@ -76,12 +76,12 @@ class PhysicsServer2DSW : public PhysicsServer2D {
 public:
 	struct CollCbkData {
 		Vector2 valid_dir;
-		real_t valid_depth;
-		int max;
-		int amount;
-		int passed;
-		int invalid_by_dir;
-		Vector2 *ptr;
+		real_t valid_depth = 0.0;
+		int max = 0;
+		int amount = 0;
+		int passed = 0;
+		int invalid_by_dir = 0;
+		Vector2 *ptr = nullptr;
 	};
 
 	virtual RID world_boundary_shape_create() override;

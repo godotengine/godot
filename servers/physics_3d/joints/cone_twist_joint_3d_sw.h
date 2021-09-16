@@ -67,39 +67,39 @@ public:
 			Body3DSW *B;
 		};
 
-		Body3DSW *_arr[2];
+		Body3DSW *_arr[2] = { nullptr, nullptr };
 	};
 
-	JacobianEntry3DSW m_jac[3]; //3 orthogonal linear constraints
+	JacobianEntry3DSW m_jac[3] = {}; //3 orthogonal linear constraints
 
-	real_t m_appliedImpulse;
+	real_t m_appliedImpulse = 0.0;
 	Transform3D m_rbAFrame;
 	Transform3D m_rbBFrame;
 
-	real_t m_limitSoftness;
-	real_t m_biasFactor;
-	real_t m_relaxationFactor;
+	real_t m_limitSoftness = 0.0;
+	real_t m_biasFactor = 0.3;
+	real_t m_relaxationFactor = 1.0;
 
-	real_t m_swingSpan1;
-	real_t m_swingSpan2;
-	real_t m_twistSpan;
+	real_t m_swingSpan1 = Math_TAU / 8.0;
+	real_t m_swingSpan2 = 0.0;
+	real_t m_twistSpan = 0.0;
 
 	Vector3 m_swingAxis;
 	Vector3 m_twistAxis;
 
-	real_t m_kSwing;
-	real_t m_kTwist;
+	real_t m_kSwing = 0.0;
+	real_t m_kTwist = 0.0;
 
-	real_t m_twistLimitSign;
-	real_t m_swingCorrection;
-	real_t m_twistCorrection;
+	real_t m_twistLimitSign = 0.0;
+	real_t m_swingCorrection = 0.0;
+	real_t m_twistCorrection = 0.0;
 
-	real_t m_accSwingLimitImpulse;
-	real_t m_accTwistLimitImpulse;
+	real_t m_accSwingLimitImpulse = 0.0;
+	real_t m_accTwistLimitImpulse = 0.0;
 
-	bool m_angularOnly;
-	bool m_solveTwistLimit;
-	bool m_solveSwingLimit;
+	bool m_angularOnly = false;
+	bool m_solveTwistLimit = false;
+	bool m_solveSwingLimit = false;
 
 public:
 	virtual PhysicsServer3D::JointType get_type() const override { return PhysicsServer3D::JOINT_TYPE_CONE_TWIST; }

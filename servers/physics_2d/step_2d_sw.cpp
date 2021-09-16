@@ -296,8 +296,6 @@ void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
 }
 
 Step2DSW::Step2DSW() {
-	_step = 1;
-
 	body_islands.reserve(BODY_ISLAND_COUNT_RESERVE);
 	constraint_islands.reserve(ISLAND_COUNT_RESERVE);
 	all_constraints.reserve(CONSTRAINT_COUNT_RESERVE);

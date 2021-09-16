@@ -299,17 +299,6 @@ Area2DSW::Area2DSW() :
 		monitor_query_list(this),
 		moved_list(this) {
 	_set_static(true); //areas are not active by default
-	space_override_mode = PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED;
-	gravity = 9.80665;
-	gravity_vector = Vector2(0, -1);
-	gravity_is_point = false;
-	gravity_distance_scale = 0;
-	point_attenuation = 1;
-
-	angular_damp = 1.0;
-	linear_damp = 0.1;
-	priority = 0;
-	monitorable = false;
 }
 
 Area2DSW::~Area2DSW() {

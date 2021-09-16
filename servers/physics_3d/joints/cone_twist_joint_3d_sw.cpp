@@ -92,20 +92,8 @@ ConeTwistJoint3DSW::ConeTwistJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Trans
 	m_rbAFrame = rbAFrame;
 	m_rbBFrame = rbBFrame;
 
-	m_swingSpan1 = Math_TAU / 8.0;
-	m_swingSpan2 = Math_TAU / 8.0;
-	m_twistSpan = Math_TAU;
-	m_biasFactor = 0.3f;
-	m_relaxationFactor = 1.0f;
-
-	m_angularOnly = false;
-	m_solveTwistLimit = false;
-	m_solveSwingLimit = false;
-
 	A->add_constraint(this, 0);
 	B->add_constraint(this, 1);
-
-	m_appliedImpulse = 0;
 }
 
 bool ConeTwistJoint3DSW::setup(real_t p_timestep) {

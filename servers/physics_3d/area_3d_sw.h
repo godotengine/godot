@@ -41,20 +41,20 @@ class SoftBody3DSW;
 class Constraint3DSW;
 
 class Area3DSW : public CollisionObject3DSW {
-	PhysicsServer3D::AreaSpaceOverrideMode space_override_mode;
-	real_t gravity;
-	Vector3 gravity_vector;
-	bool gravity_is_point;
-	real_t gravity_distance_scale;
-	real_t point_attenuation;
-	real_t linear_damp;
-	real_t angular_damp;
+	PhysicsServer3D::AreaSpaceOverrideMode space_override_mode = PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;
+	real_t gravity = 9.80665;
+	Vector3 gravity_vector = Vector3(0, -1, 0);
+	bool gravity_is_point = false;
+	real_t gravity_distance_scale = 0.0;
+	real_t point_attenuation = 1.0;
+	real_t linear_damp = 0.1;
+	real_t angular_damp = 0.1;
 	real_t wind_force_magnitude = 0.0;
 	real_t wind_attenuation_factor = 0.0;
 	Vector3 wind_source;
 	Vector3 wind_direction;
-	int priority;
-	bool monitorable;
+	int priority = 0;
+	bool monitorable = false;
 
 	ObjectID monitor_callback_id;
 	StringName monitor_callback_method;
@@ -68,8 +68,8 @@ class Area3DSW : public CollisionObject3DSW {
 	struct BodyKey {
 		RID rid;
 		ObjectID instance_id;
-		uint32_t body_shape;
-		uint32_t area_shape;
+		uint32_t body_shape = 0;
+		uint32_t area_shape = 0;
 
 		_FORCE_INLINE_ bool operator<(const BodyKey &p_key) const {
 			if (rid == p_key.rid) {
@@ -90,10 +90,9 @@ class Area3DSW : public CollisionObject3DSW {
 	};
 
 	struct BodyState {
-		int state;
+		int state = 0;
 		_FORCE_INLINE_ void inc() { state++; }
 		_FORCE_INLINE_ void dec() { state--; }
-		_FORCE_INLINE_ BodyState() { state = 0; }
 	};
 
 	Map<BodyKey, BodyState> monitored_soft_bodies;
@@ -232,8 +231,8 @@ void Area3DSW::remove_area_from_query(Area3DSW *p_area, uint32_t p_area_shape, u
 }
 
 struct AreaCMP {
-	Area3DSW *area;
-	int refCount;
+	Area3DSW *area = nullptr;
+	int refCount = 0;
 	_FORCE_INLINE_ bool operator==(const AreaCMP &p_cmp) const { return area->get_self() == p_cmp.area->get_self(); }
 	_FORCE_INLINE_ bool operator<(const AreaCMP &p_cmp) const { return area->get_priority() < p_cmp.area->get_priority(); }
 	_FORCE_INLINE_ AreaCMP() {}
