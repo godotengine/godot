@@ -149,6 +149,7 @@ opts.Add(BoolVariable("modules_enabled_by_default", "If no, disable all modules 
 opts.Add(BoolVariable("no_editor_splash", "Don't use the custom splash screen for the editor", False))
 opts.Add("system_certs_path", "Use this path as SSL certificates default for editor (for package maintainers)", "")
 opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
+opts.Add(BoolVariable("auto_black", "Run black automatically every build.", True))
 
 # Thirdparty libraries
 opts.Add(BoolVariable("builtin_bullet", "Use the built-in Bullet library", True))
@@ -192,6 +193,9 @@ opts.Add("LINKFLAGS", "Custom flags for the linker")
 # Update the environment to have all above options defined
 # in following code (especially platform and custom_modules).
 opts.Update(env_base)
+
+if env_base["auto_black"]:
+    env_base.Tool("black")
 
 # Platform selection: validate input, and add options.
 

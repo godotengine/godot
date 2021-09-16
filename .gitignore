@@ -390,3 +390,6 @@ gcov.css
 # https://clangd.llvm.org/ cache folder
 .clangd/
 .cache/
+
+# auto black format tool
+.black.out
