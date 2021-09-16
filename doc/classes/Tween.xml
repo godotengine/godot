@@ -58,8 +58,8 @@
 				[codeblock]
 				var tween = create_tween().set_parallel(true)
 				tween.tween_property(...)
-				tween.tween_property(...) #will run parallelly with above
-				tween.chain().tween_property(...) #will run after two above are finished
+				tween.tween_property(...) # Will run parallelly with above.
+				tween.chain().tween_property(...) # Will run after two above are finished.
 				[/codeblock]
 			</description>
 		</method>
@@ -215,11 +215,9 @@
 				Creates and appends an [IntervalTweener]. This method can be used to create delays in the tween animation, as an alternative for using the delay in other [Tweener]s or when there's no animation (in which case the [Tween] acts as a timer). [code]time[/code] is the length of the interval, in seconds.
 				Example: creating an interval in code execution.
 				[codeblock]
-				#... some code
-				var tween = create_tween()
-				tween.tween_interval(2)
-				await tween.finished
-				#... more code
+				# ... some code
+				await create_tween().tween_interval(2).finished
+				# ... more code
 				[/codeblock]
 				Example: creating an object that moves back and forth and jumps every few seconds.
 				[codeblock]
@@ -236,15 +234,15 @@
 		<method name="tween_method">
 			<return type="MethodTweener" />
 			<argument index="0" name="method" type="Callable" />
-			<argument index="1" name="from" type="float" />
-			<argument index="2" name="to" type="float" />
+			<argument index="1" name="from" type="Variant" />
+			<argument index="2" name="to" type="Variant" />
 			<argument index="3" name="duration" type="float" />
 			<description>
 				Creates and appends a [MethodTweener]. This method is similar to a combination of [method tween_callback] and [method tween_property]. It calls a method over time with a tweened value provided as an argument. The value is tweened between [code]from[/code] and [code]to[/code] over the time specified by [code]duration[/code], in seconds. Use [method Callable.bind] to bind additional arguments for the call. You can use [method MethodTweener.set_ease] and [method MethodTweener.set_trans] to tweak the easing and transition of the value or [method MethodTweener.set_delay] to delay the tweening.
 				Example: making a 3D object look from one point to another point.
 				[codeblock]
 				var tween = create_tween()
-				tween.tween_method(look_at.bind(Vector3.UP), Vector3(-1, 0, -1), Vector3(1, 0, -1), 1) #the look_at() method takes up vector as second argument
+				tween.tween_method(look_at.bind(Vector3.UP), Vector3(-1, 0, -1), Vector3(1, 0, -1), 1) # The look_at() method takes up vector as second argument.
 				[/codeblock]
 				Example: setting a text of a [Label], using an intermediate method and after a delay.
 				[codeblock]

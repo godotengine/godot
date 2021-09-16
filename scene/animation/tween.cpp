@@ -60,6 +60,11 @@ Ref<PropertyTweener> Tween::tween_property(Object *p_target, NodePath p_property
 	ERR_FAIL_COND_V_MSG(!valid, nullptr, "Tween invalid. Either finished or created outside scene tree.");
 	ERR_FAIL_COND_V_MSG(started, nullptr, "Can't append to a Tween that has started. Use stop() first.");
 
+#ifdef DEBUG_ENABLED
+	Variant::Type property_type = p_target->get_indexed(p_property.get_as_property_path().get_subnames()).get_type();
+	ERR_FAIL_COND_V_MSG(property_type != p_to.get_type(), Ref<PropertyTweener>(), "Type mismatch between property and final value: " + Variant::get_type_name(property_type) + " and " + Variant::get_type_name(p_to.get_type()));
+#endif
+
 	Ref<PropertyTweener> tweener = memnew(PropertyTweener(p_target, p_property, p_to, p_duration));
 	append(tweener);
 	return tweener;
@@ -83,7 +88,7 @@ Ref<CallbackTweener> Tween::tween_callback(Callable p_callback) {
 	return tweener;
 }
 
-Ref<MethodTweener> Tween::tween_method(Callable p_callback, float p_from, float p_to, float p_duration) {
+Ref<MethodTweener> Tween::tween_method(Callable p_callback, Variant p_from, Variant p_to, float p_duration) {
 	ERR_FAIL_COND_V_MSG(!valid, nullptr, "Tween invalid. Either finished or created outside scene tree.");
 	ERR_FAIL_COND_V_MSG(started, nullptr, "Can't append to a Tween that has started. Use stop() first.");
 
@@ -496,6 +501,8 @@ Variant Tween::interpolate_variant(Variant p_initial_val, Variant p_delta_val, f
 }
 
 Variant Tween::calculate_delta_value(Variant p_intial_val, Variant p_final_val) {
+	ERR_FAIL_COND_V_MSG(p_intial_val.get_type() != p_final_val.get_type(), p_intial_val, "Type mismatch between initial and final value: " + Variant::get_type_name(p_intial_val.get_type()) + " and " + Variant::get_type_name(p_final_val.get_type()));
+
 	switch (p_intial_val.get_type()) {
 		case Variant::BOOL: {
 			return (int)p_final_val - (int)p_intial_val;
@@ -888,7 +895,7 @@ void MethodTweener::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ease", "ease"), &MethodTweener::set_ease);
 }
 
-MethodTweener::MethodTweener(Callable p_callback, float p_from, float p_to, float p_duration) {
+MethodTweener::MethodTweener(Callable p_callback, Variant p_from, Variant p_to, float p_duration) {
 	callback = p_callback;
 	initial_val = p_from;
 	delta_val = tween->calculate_delta_value(p_from, p_to);
