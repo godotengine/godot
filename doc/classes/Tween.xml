@@ -86,6 +86,7 @@
 				[code]initial_value[/code] is the starting value of the interpolation.
 				[code]delta_value[/code] is the change of the value in the interpolation, i.e. it's equal to [code]final_value - initial_value[/code].
 				[code]duration[/code] is the total time of the interpolation.
+				[b]Note:[/b] If [code]duration[/code] is equal to [code]0[/code], the method will always return the final value, regardless of [code]elapsed_time[/code] provided.
 			</description>
 		</method>
 		<method name="is_running">
