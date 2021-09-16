@@ -48,8 +48,8 @@ public:
 	};
 
 protected:
-	Point2 camera_pos = Point2(0, 0);
-	Point2 smoothed_camera_pos = Point2(0, 0);
+	Point2 camera_pos;
+	Point2 smoothed_camera_pos;
 	bool first = true;
 
 	ObjectID custom_viewport_id; // to check validity
@@ -59,7 +59,7 @@ protected:
 	StringName group_name;
 	StringName canvas_group_name;
 	RID canvas;
-	Vector2 offset = Vector2(1, 1);
+	Vector2 offset;
 	Vector2 zoom = Vector2(1, 1);
 	AnchorMode anchor_mode = ANCHOR_MODE_DRAG_CENTER;
 	bool rotating = false;
@@ -77,7 +77,7 @@ protected:
 	bool drag_horizontal_offset_changed = false;
 	bool drag_vertical_offset_changed = false;
 
-	Point2 camera_screen_center = Vector2(1, 1);
+	Point2 camera_screen_center;
 	void _update_process_callback();
 	void _update_scroll();
 

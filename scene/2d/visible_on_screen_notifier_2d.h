@@ -39,7 +39,7 @@ class VisibleOnScreenNotifier2D : public Node2D {
 
 	Set<Viewport *> viewports;
 
-	Rect2 rect = Rect2(0, 0, 0, 0);
+	Rect2 rect;
 
 private:
 	bool on_screen = false;

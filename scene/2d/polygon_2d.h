@@ -60,9 +60,9 @@ class Polygon2D : public Node2D {
 	real_t invert_border = 100.0;
 	bool antialiased = false;
 
-	Vector2 offset = Vector2(0, 0);
+	Vector2 offset;
 	mutable bool rect_cache_dirty = true;
-	mutable Rect2 item_rect = Rect2(0, 0, 0, 0);
+	mutable Rect2 item_rect;
 
 	NodePath skeleton;
 	ObjectID current_skeleton_id;

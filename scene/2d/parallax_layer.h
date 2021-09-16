@@ -36,11 +36,11 @@
 class ParallaxLayer : public Node2D {
 	GDCLASS(ParallaxLayer, Node2D);
 
-	Point2 orig_offset = Point2(0, 0);
-	Point2 orig_scale = Point2(0, 0);
+	Point2 orig_offset;
+	Point2 orig_scale;
 	Size2 motion_scale = Size2(1, 1);
-	Vector2 motion_offset = Vector2(0, 0);
-	Vector2 mirroring = Vector2(0, 0);
+	Vector2 motion_offset;
+	Vector2 mirroring;
 	void _update_mirroring();
 
 	Point2 screen_offset = Point2(0, 0);

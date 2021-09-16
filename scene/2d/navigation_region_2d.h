@@ -44,7 +44,7 @@ class NavigationPolygon : public Resource {
 	Vector<Polygon> polygons;
 	Vector<Vector<Vector2>> outlines;
 
-	mutable Rect2 item_rect = Rect2(0, 0, 0, 0);
+	mutable Rect2 item_rect;
 	mutable bool rect_cache_dirty = true;
 
 	Mutex navmesh_generation;

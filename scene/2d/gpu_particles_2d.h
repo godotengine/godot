@@ -54,7 +54,7 @@ private:
 	real_t explosiveness_ratio = 0;
 	real_t randomness_ratio = 0;
 	double speed_scale = 0.0f;
-	Rect2 visibility_rect = Rect2(0, 0, 0, 0);
+	Rect2 visibility_rect;
 	bool local_coords = false;
 	int fixed_fps = false;
 	bool fractional_delta = false;

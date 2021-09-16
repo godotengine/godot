@@ -80,10 +80,10 @@ private:
 
 	struct Particle {
 		Transform2D transform;
-		Color color = Color(1, 1, 1, 1);
+		Color color;
 		real_t custom[4] = {};
 		real_t rotation = 0.0;
-		Vector2 velocity = Vector2(0, 0);
+		Vector2 velocity;
 		bool active = false;
 		real_t angle_rand = 0.0;
 		real_t scale_rand = 0.0;
@@ -91,7 +91,7 @@ private:
 		real_t anim_offset_rand = 0.0;
 		double time = 0.0;
 		double lifetime = 0.0;
-		Color base_color = Color(1, 1, 1, 1);
+		Color base_color;
 
 		uint32_t seed = 0;
 	};

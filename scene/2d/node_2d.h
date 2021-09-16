@@ -36,7 +36,7 @@
 class Node2D : public CanvasItem {
 	GDCLASS(Node2D, CanvasItem);
 
-	Point2 pos = Point2(0, 0);
+	Point2 pos;
 	real_t angle = 0.0;
 	Size2 _scale = Vector2(1, 1);
 	real_t skew = 0.0;
