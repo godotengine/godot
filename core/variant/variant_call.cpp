@@ -1387,6 +1387,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(String, repeat, sarray("count"), varray());
 	bind_method(String, insert, sarray("position", "what"), varray());
 	bind_method(String, capitalize, sarray(), varray());
+	bind_method(String, camelcase_to_underscore, sarray("lowercase"), varray(true));
 	bind_method(String, split, sarray("delimiter", "allow_empty", "maxsplit"), varray(true, 0));
 	bind_method(String, rsplit, sarray("delimiter", "allow_empty", "maxsplit"), varray(true, 0));
 	bind_method(String, split_floats, sarray("delimiter", "allow_empty"), varray(true));

@@ -79,6 +79,13 @@
 				[b]Note:[/b] Unlike the GDScript parser, this method doesn't support the [code]\uXXXX[/code] escape sequence.
 			</description>
 		</method>
+		<method name="camelcase_to_underscore" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="lowercase" type="bool" default="true" />
+			<description>
+				Adds underscores before uppercase characters (except for acronyms and the first character of the string). If [code]lowercase[/code] is [code]true[/code], the string will be converted to lowercase. For [code]ToHtml5 ToHTMLElement toHtml to_html TO_HTML A_B-C.D[/code], it will return [code]to_html_5 _to_html_element to_html to_html _to__html _a__b-_c._d[/code].
+			</description>
+		</method>
 		<method name="capitalize" qualifiers="const">
 			<return type="String" />
 			<description>

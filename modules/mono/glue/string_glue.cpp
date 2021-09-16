@@ -36,6 +36,11 @@
 
 #include "../mono_gd/gd_mono_marshal.h"
 
+MonoString *godot_icall_String_camelcase_to_underscore(MonoString *p_str, bool p_lowercase) {
+	String ret = GDMonoMarshal::mono_string_to_godot(p_str).camelcase_to_underscore(p_lowercase);
+	return GDMonoMarshal::mono_string_from_godot(ret);
+}
+
 MonoArray *godot_icall_String_md5_buffer(MonoString *p_str) {
 	Vector<uint8_t> ret = GDMonoMarshal::mono_string_to_godot(p_str).md5_buffer();
 	// TODO Check possible Array/Vector<uint8_t> problem?
@@ -73,6 +78,7 @@ MonoString *godot_icall_String_simplify_path(MonoString *p_str) {
 }
 
 void godot_register_string_icalls() {
+	GDMonoUtils::add_internal_call("Godot.StringExtensions::godot_icall_String_camelcase_to_underscore", godot_icall_String_camelcase_to_underscore);
 	GDMonoUtils::add_internal_call("Godot.StringExtensions::godot_icall_String_md5_buffer", godot_icall_String_md5_buffer);
 	GDMonoUtils::add_internal_call("Godot.StringExtensions::godot_icall_String_md5_text", godot_icall_String_md5_text);
 	GDMonoUtils::add_internal_call("Godot.StringExtensions::godot_icall_String_rfind", godot_icall_String_rfind);

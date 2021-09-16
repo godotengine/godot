@@ -285,6 +285,20 @@ namespace Godot
         }
 
         /// <summary>
+        /// Adds underscores before uppercase characters (except for acronyms and the first character
+        /// of the string). If <c>lowercase</c> is <c>true</c>, the string will be converted to lowercase.
+        /// For <c>ToHtml5 ToHTMLElement toHtml to_html TO_HTML A_B-C.D</c>, it will return
+        /// <c>to_html_5 _to_html_element to_html to_html _to__html _a__b-_c._d</c>.
+        /// </summary>
+        public static string CamelcaseToUnderscore(this string instance, bool lowercase = true)
+        {
+            return godot_icall_String_camelcase_to_underscore(instance, lowercase);
+        }
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static string godot_icall_String_camelcase_to_underscore(string str, bool lowercase);
+
+        /// <summary>
         /// Performs a case-sensitive comparison to another string, return -1 if less, 0 if equal and +1 if greater.
         /// </summary>
         /// <seealso cref="NocasecmpTo(string, string)"/>
