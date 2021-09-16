@@ -157,7 +157,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 	Item *it = l.from;
 
 	int line_ofs = 0;
-	int margin = _find_margin(it, p_base_font);
+	float margin = _find_margin(it, p_base_font);
 	Align align = _find_align(it);
 	int line = 0;
 	int spaces = 0;
@@ -179,14 +179,14 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 		l.maximum_width = 0;
 	}
 
-	int wofs = margin;
-	int align_ofs = 0;
+	float wofs = margin;
+	float align_ofs = 0.0f;
 
 	if (p_mode != PROCESS_CACHE && align != ALIGN_FILL) {
 		wofs += line_ofs;
 	}
 
-	int begin = margin;
+	float begin = margin;
 
 	Ref<Font> cfont = _find_font(it);
 	if (cfont.is_null()) {
@@ -198,7 +198,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 	int line_ascent = cfont->get_ascent();
 	int line_descent = cfont->get_descent();
 
-	int backtrack = 0; // for dynamic hidden content.
+	float backtrack = 0.0f; // for dynamic hidden content.
 
 	int nonblank_line_count = 0; //number of nonblank lines as counted during PROCESS_DRAW
 
@@ -210,7 +210,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 	{                                                                                                                                                           \
 		if (p_mode != PROCESS_CACHE) {                                                                                                                          \
 			line++;                                                                                                                                             \
-			backtrack = 0;                                                                                                                                      \
+			backtrack = 0.0f;                                                                                                                                   \
 			if (!line_is_blank) {                                                                                                                               \
 				nonblank_line_count++;                                                                                                                          \
 			}                                                                                                                                                   \
@@ -248,7 +248,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 		line_descent = 0;                                                                                                                                       \
 		spaces = 0;                                                                                                                                             \
 		wofs = begin;                                                                                                                                           \
-		align_ofs = 0;                                                                                                                                          \
+		align_ofs = 0.0f;                                                                                                                                       \
 		if (p_mode != PROCESS_CACHE) {                                                                                                                          \
 			lh = line < l.height_caches.size() ? l.height_caches[line] : 1;                                                                                     \
 			line_ascent = line < l.ascent_caches.size() ? l.ascent_caches[line] : 1;                                                                            \
@@ -336,7 +336,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 				if (it != l.from) {
 					ItemIndent *indent_it = static_cast<ItemIndent *>(it);
 
-					int indent = indent_it->level * tab_size * cfont->get_char_size(' ').width;
+					float indent = indent_it->level * tab_size * cfont->get_char_size(' ').width;
 					margin += indent;
 					begin += indent;
 					wofs += indent;
@@ -394,8 +394,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 				FontDrawer drawer(font, Color(1, 1, 1));
 				while (*c) {
 					int end = 0;
-					int w = 0;
-					int fw = 0;
+					float w = 0.0f;
+					float fw = 0.0f;
 					bool was_separatable = false;
 
 					lh = 0;
@@ -406,7 +406,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						line_descent = line < l.descent_caches.size() ? l.descent_caches[line] : 1;
 					}
 					while (c[end] != 0 && !(end && c[end - 1] == ' ' && c[end] != ' ')) {
-						int cw = font->get_char_size(c[end], c[end + 1]).width;
+						float cw = font->get_char_size(c[end], c[end + 1]).width;
 						if (c[end] == '\t') {
 							cw = tab_size * font->get_char_size(' ').width;
 						}
@@ -457,13 +457,13 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					}
 
 					{
-						int ofs = 0 - backtrack;
+						float ofs = 0.0f - backtrack;
 
 						for (int i = 0; i < end; i++) {
-							int pofs = wofs + ofs;
+							float pofs = wofs + ofs;
 
 							if (p_mode == PROCESS_POINTER && r_click_char && p_click_pos.y >= p_ofs.y + y && p_click_pos.y <= p_ofs.y + y + lh) {
-								int cw = font->get_char_size(c[i], c[i + 1]).x;
+								float cw = font->get_char_size(c[i], c[i + 1]).x;
 
 								if (c[i] == '\t') {
 									cw = tab_size * font->get_char_size(' ').width;
@@ -487,7 +487,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 									}
 								}
 
-								int cw = 0;
+								float cw = 0.0f;
 								int c_item_offset = p_char_count - it_char_start;
 
 								float faded_visibility = 1.0f;
