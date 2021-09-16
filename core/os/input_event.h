@@ -214,7 +214,7 @@ public:
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
 
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
-	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const;
+	virtual bool shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
 	virtual bool is_action_type() const;
 
 	virtual bool accumulate(const Ref<InputEvent> &p_event) { return false; }
@@ -263,6 +263,8 @@ public:
 
 	void set_modifiers_from_event(const InputEventWithModifiers *event);
 
+	uint32_t get_modifiers_mask() const;
+
 	InputEventWithModifiers();
 };
 
@@ -300,7 +302,7 @@ public:
 	uint32_t get_physical_scancode_with_modifiers() const;
 
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
-	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const;
+	virtual bool shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
 
 	virtual bool is_action_type() const { return true; }
 
@@ -359,6 +361,7 @@ public:
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
+	virtual bool shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
 
 	virtual bool is_action_type() const { return true; }
 	virtual String as_text() const;
@@ -416,6 +419,7 @@ public:
 	virtual bool is_pressed() const;
 
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
+	virtual bool shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
 
 	virtual bool is_action_type() const { return true; }
 	virtual String as_text() const;
@@ -443,7 +447,7 @@ public:
 	float get_pressure() const;
 
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
-	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const;
+	virtual bool shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
 
 	virtual bool is_action_type() const { return true; }
 	virtual String as_text() const;
@@ -531,7 +535,7 @@ public:
 
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
 
-	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const;
+	virtual bool shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
 	virtual bool is_action_type() const { return true; }
 	virtual String as_text() const;
 

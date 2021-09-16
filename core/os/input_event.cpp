@@ -92,7 +92,7 @@ bool InputEvent::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, f
 	return false;
 }
 
-bool InputEvent::shortcut_match(const Ref<InputEvent> &p_event) const {
+bool InputEvent::shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match) const {
 	return false;
 }
 
@@ -114,7 +114,7 @@ void InputEvent::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("as_text"), &InputEvent::as_text);
 
-	ClassDB::bind_method(D_METHOD("shortcut_match", "event"), &InputEvent::shortcut_match);
+	ClassDB::bind_method(D_METHOD("shortcut_match", "event", "exact_match"), &InputEvent::shortcut_match, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("is_action_type"), &InputEvent::is_action_type);
 
@@ -172,6 +172,23 @@ void InputEventWithModifiers::set_modifiers_from_event(const InputEventWithModif
 	set_shift(event->get_shift());
 	set_control(event->get_control());
 	set_metakey(event->get_metakey());
+}
+
+uint32_t InputEventWithModifiers::get_modifiers_mask() const {
+	uint32_t mask = 0;
+	if (get_control()) {
+		mask |= KEY_MASK_CTRL;
+	}
+	if (get_shift()) {
+		mask |= KEY_MASK_SHIFT;
+	}
+	if (get_alt()) {
+		mask |= KEY_MASK_ALT;
+	}
+	if (get_metakey()) {
+		mask |= KEY_MASK_META;
+	}
+	return mask;
 }
 
 void InputEventWithModifiers::_bind_methods() {
@@ -243,35 +260,11 @@ bool InputEventKey::is_echo() const {
 }
 
 uint32_t InputEventKey::get_scancode_with_modifiers() const {
-	uint32_t sc = scancode;
-	if (get_control()) {
-		sc |= KEY_MASK_CTRL;
-	}
-	if (get_alt()) {
-		sc |= KEY_MASK_ALT;
-	}
-	if (get_shift()) {
-		sc |= KEY_MASK_SHIFT;
-	}
-	if (get_metakey()) {
-		sc |= KEY_MASK_META;
-	}
-
-	return sc;
+	return scancode | get_modifiers_mask();
 }
 
 uint32_t InputEventKey::get_physical_scancode_with_modifiers() const {
-	uint32_t sc = physical_scancode;
-	if (get_control())
-		sc |= KEY_MASK_CTRL;
-	if (get_alt())
-		sc |= KEY_MASK_ALT;
-	if (get_shift())
-		sc |= KEY_MASK_SHIFT;
-	if (get_metakey())
-		sc |= KEY_MASK_META;
-
-	return sc;
+	return physical_scancode | get_modifiers_mask();
 }
 
 String InputEventKey::as_text() const {
@@ -330,16 +323,14 @@ bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool *p_pressed
 	return match;
 }
 
-bool InputEventKey::shortcut_match(const Ref<InputEvent> &p_event) const {
+bool InputEventKey::shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match) const {
 	Ref<InputEventKey> key = p_event;
 	if (key.is_null()) {
 		return false;
 	}
 
-	uint32_t code = get_scancode_with_modifiers();
-	uint32_t event_code = key->get_scancode_with_modifiers();
-
-	return code == event_code;
+	return scancode == key->scancode &&
+		   (!p_exact_match || get_modifiers_mask() == key->get_modifiers_mask());
 }
 
 void InputEventKey::_bind_methods() {
@@ -492,6 +483,16 @@ bool InputEventMouseButton::action_match(const Ref<InputEvent> &p_event, bool *p
 	}
 
 	return match;
+}
+
+bool InputEventMouseButton::shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match) const {
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_null()) {
+		return false;
+	}
+
+	return button_index == mb->button_index &&
+		   (!p_exact_match || get_modifiers_mask() == mb->get_modifiers_mask());
 }
 
 String InputEventMouseButton::as_text() const {
@@ -760,6 +761,16 @@ bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event, bool *
 	return match;
 }
 
+bool InputEventJoypadMotion::shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match) const {
+	Ref<InputEventJoypadMotion> jm = p_event;
+	if (jm.is_null()) {
+		return false;
+	}
+
+	return axis == jm->axis &&
+		   (!p_exact_match || ((axis_value < 0) == (jm->axis_value < 0)));
+}
+
 String InputEventJoypadMotion::as_text() const {
 	return "InputEventJoypadMotion : axis=" + itos(axis) + ", axis_value=" + String(Variant(axis_value));
 }
@@ -827,7 +838,7 @@ bool InputEventJoypadButton::action_match(const Ref<InputEvent> &p_event, bool *
 	return match;
 }
 
-bool InputEventJoypadButton::shortcut_match(const Ref<InputEvent> &p_event) const {
+bool InputEventJoypadButton::shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match) const {
 	Ref<InputEventJoypadButton> button = p_event;
 	if (button.is_null()) {
 		return false;
@@ -1031,7 +1042,7 @@ float InputEventAction::get_strength() const {
 	return strength;
 }
 
-bool InputEventAction::shortcut_match(const Ref<InputEvent> &p_event) const {
+bool InputEventAction::shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match) const {
 	if (p_event.is_null()) {
 		return false;
 	}
