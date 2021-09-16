@@ -34,6 +34,7 @@
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
+#include "scene/3d/audio_listener_3d.h"
 #include "scene/3d/audio_stream_player_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/collision_polygon_3d.h"
@@ -45,7 +46,6 @@
 #include "scene/3d/light_3d.h"
 #include "scene/3d/lightmap_gi.h"
 #include "scene/3d/lightmap_probe.h"
-#include "scene/3d/listener_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/3d/occluder_instance_3d.h"
@@ -1619,24 +1619,24 @@ void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 //////
 
-Listener3DGizmoPlugin::Listener3DGizmoPlugin() {
-	create_icon_material("listener_3d_icon", Node3DEditor::get_singleton()->get_theme_icon("GizmoListener3D", "EditorIcons"));
+AudioListener3DGizmoPlugin::AudioListener3DGizmoPlugin() {
+	create_icon_material("audio_listener_3d_icon", Node3DEditor::get_singleton()->get_theme_icon("GizmoAudioListener3D", "EditorIcons"));
 }
 
-bool Listener3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<Listener3D>(p_spatial) != nullptr;
+bool AudioListener3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
+	return Object::cast_to<AudioListener3D>(p_spatial) != nullptr;
 }
 
-String Listener3DGizmoPlugin::get_gizmo_name() const {
-	return "Listener3D";
+String AudioListener3DGizmoPlugin::get_gizmo_name() const {
+	return "AudioListener3D";
 }
 
-int Listener3DGizmoPlugin::get_priority() const {
+int AudioListener3DGizmoPlugin::get_priority() const {
 	return -1;
 }
 
-void Listener3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	const Ref<Material> icon = get_material("listener_3d_icon", p_gizmo);
+void AudioListener3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+	const Ref<Material> icon = get_material("audio_listener_3d_icon", p_gizmo);
 	p_gizmo->add_unscaled_billboard(icon, 0.05);
 }
 
