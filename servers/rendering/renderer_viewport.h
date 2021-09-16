@@ -47,7 +47,7 @@ public:
 		RID self;
 		RID parent;
 
-		bool use_xr; /* use xr interface to override camera positioning and projection matrices and control output */
+		bool use_xr = false; /* use xr interface to override camera positioning and projection matrices and control output */
 
 		RS::ViewportScale3D scale_3d = RenderingServer::VIEWPORT_SCALE_3D_DISABLED;
 
@@ -55,57 +55,57 @@ public:
 		RID camera;
 		RID scenario;
 
-		RS::ViewportUpdateMode update_mode;
+		RS::ViewportUpdateMode update_mode = RS::VIEWPORT_UPDATE_WHEN_VISIBLE;
 		RID render_target;
 		RID render_target_texture;
 		RID render_buffers;
 
-		RS::ViewportMSAA msaa;
-		RS::ViewportScreenSpaceAA screen_space_aa;
-		bool use_debanding;
+		RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
+		RS::ViewportScreenSpaceAA screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
+		bool use_debanding = false;
 
-		bool use_occlusion_culling;
-		bool occlusion_buffer_dirty;
+		bool use_occlusion_culling = false;
+		bool occlusion_buffer_dirty = true;
 
-		DisplayServer::WindowID viewport_to_screen;
+		DisplayServer::WindowID viewport_to_screen = DisplayServer::INVALID_WINDOW_ID;
 		Rect2 viewport_to_screen_rect;
-		bool viewport_render_direct_to_screen;
+		bool viewport_render_direct_to_screen = false;
 
 		bool disable_2d = false;
 		bool disable_environment = false;
 		bool disable_3d = false;
-		bool measure_render_time;
+		bool measure_render_time = false;
 
-		bool snap_2d_transforms_to_pixel;
-		bool snap_2d_vertices_to_pixel;
+		bool snap_2d_transforms_to_pixel = false;
+		bool snap_2d_vertices_to_pixel = false;
 
-		uint64_t time_cpu_begin;
-		uint64_t time_cpu_end;
+		uint64_t time_cpu_begin = 0;
+		uint64_t time_cpu_end = 0;
 
-		uint64_t time_gpu_begin;
-		uint64_t time_gpu_end;
+		uint64_t time_gpu_begin = 0;
+		uint64_t time_gpu_end = 0;
 
 		RID shadow_atlas;
-		int shadow_atlas_size;
+		int shadow_atlas_size = 0;
 		bool shadow_atlas_16_bits = false;
 
-		bool sdf_active;
+		bool sdf_active = false;
 
 		float lod_threshold = 1.0;
 
 		uint64_t last_pass = 0;
 
-		RS::ViewportDebugDraw debug_draw;
+		RS::ViewportDebugDraw debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
 
-		RS::ViewportClearMode clear_mode;
+		RS::ViewportClearMode clear_mode = RS::VIEWPORT_CLEAR_ALWAYS;
 
 		RS::CanvasItemTextureFilter texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
 		RS::CanvasItemTextureRepeat texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
 
-		bool transparent_bg;
+		bool transparent_bg = false;
 
 		struct CanvasKey {
-			int64_t stacking;
+			int64_t stacking = 0;
 			RID canvas;
 			bool operator<(const CanvasKey &p_canvas) const {
 				if (stacking == p_canvas.stacking) {
@@ -113,9 +113,7 @@ public:
 				}
 				return stacking < p_canvas.stacking;
 			}
-			CanvasKey() {
-				stacking = 0;
-			}
+			CanvasKey() {}
 			CanvasKey(const RID &p_canvas, int p_layer, int p_sublayer) {
 				canvas = p_canvas;
 				int64_t sign = p_layer < 0 ? -1 : 1;
@@ -125,10 +123,10 @@ public:
 		};
 
 		struct CanvasData {
-			CanvasBase *canvas;
+			CanvasBase *canvas = nullptr;
 			Transform2D transform;
-			int layer;
-			int sublayer;
+			int layer = 0;
+			int sublayer = 0;
 		};
 
 		Transform2D global_transform;
@@ -136,35 +134,6 @@ public:
 		Map<RID, CanvasData> canvas_map;
 
 		RendererScene::RenderInfo render_info;
-
-		Viewport() {
-			update_mode = RS::VIEWPORT_UPDATE_WHEN_VISIBLE;
-			clear_mode = RS::VIEWPORT_CLEAR_ALWAYS;
-			transparent_bg = false;
-
-			viewport_to_screen = DisplayServer::INVALID_WINDOW_ID;
-			shadow_atlas_size = 0;
-			measure_render_time = false;
-
-			debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
-			msaa = RS::VIEWPORT_MSAA_DISABLED;
-			screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
-			use_debanding = false;
-			use_occlusion_culling = false;
-			occlusion_buffer_dirty = true;
-
-			snap_2d_transforms_to_pixel = false;
-			snap_2d_vertices_to_pixel = false;
-
-			use_xr = false;
-			sdf_active = false;
-
-			time_cpu_begin = 0;
-			time_cpu_end = 0;
-
-			time_gpu_begin = 0;
-			time_gpu_end = 0;
-		}
 
 		uint32_t get_view_count();
 	};

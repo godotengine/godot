@@ -63,7 +63,7 @@ public:
 
 private:
 	Code code;
-	int line;
+	int line = 0;
 	StringName subject;
 
 public:

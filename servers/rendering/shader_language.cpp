@@ -8593,9 +8593,6 @@ ShaderLanguage::ShaderNode *ShaderLanguage::get_shader() {
 }
 
 ShaderLanguage::ShaderLanguage() {
-	nodes = nullptr;
-	completion_class = TAG_GLOBAL;
-
 #if DEBUG_ENABLED
 	warnings_check_map.insert(ShaderWarning::UNUSED_CONSTANT, &used_constants);
 	warnings_check_map.insert(ShaderWarning::UNUSED_FUNCTION, &used_functions);

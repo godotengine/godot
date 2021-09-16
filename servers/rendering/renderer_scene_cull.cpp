@@ -3833,7 +3833,6 @@ void RendererSceneCull::set_scene_render(RendererSceneRender *p_scene_render) {
 }
 
 RendererSceneCull::RendererSceneCull() {
-	render_pass = 1;
 	singleton = this;
 
 	instance_cull_result.set_page_pool(&instance_cull_page_pool);

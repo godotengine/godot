@@ -68,7 +68,7 @@ class RenderingServerDefault : public RenderingServer {
 
 	static void _changes_changed() {}
 
-	uint64_t frame_profile_frame;
+	uint64_t frame_profile_frame = 0;
 	Vector<FrameProfileArea> frame_profile;
 
 	double frame_setup_time = 0;

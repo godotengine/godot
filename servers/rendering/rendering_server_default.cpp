@@ -396,8 +396,6 @@ RenderingServerDefault::RenderingServerDefault(bool p_create_thread) :
 	RSG::storage = RSG::rasterizer->get_storage();
 	RSG::canvas_render = RSG::rasterizer->get_canvas();
 	sr->set_scene_render(RSG::rasterizer->get_scene());
-
-	frame_profile_frame = 0;
 }
 
 RenderingServerDefault::~RenderingServerDefault() {

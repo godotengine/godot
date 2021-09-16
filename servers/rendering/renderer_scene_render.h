@@ -211,20 +211,20 @@ public:
 
 	struct RenderSDFGIUpdateData {
 		bool update_static = false;
-		uint32_t static_cascade_count;
-		uint32_t *static_cascade_indices;
-		PagedArray<RID> *static_positional_lights;
+		uint32_t static_cascade_count = 0;
+		uint32_t *static_cascade_indices = nullptr;
+		PagedArray<RID> *static_positional_lights = nullptr;
 
-		const Vector<RID> *directional_lights;
-		const RID *positional_light_instances;
-		uint32_t positional_light_count;
+		const Vector<RID> *directional_lights = nullptr;
+		const RID *positional_light_instances = nullptr;
+		uint32_t positional_light_count = 0;
 	};
 
 	struct CameraData {
 		// flags
-		uint32_t view_count;
-		bool is_ortogonal;
-		bool vaspect;
+		uint32_t view_count = 0;
+		bool is_ortogonal = false;
+		bool vaspect = false;
 
 		// Main/center projection
 		Transform3D main_transform;
