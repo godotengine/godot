@@ -576,7 +576,7 @@ public:
 	FUNC1(viewport_set_occlusion_rays_per_thread, int)
 	FUNC1(viewport_set_occlusion_culling_build_quality, ViewportOcclusionCullingBuildQuality)
 	FUNC2(viewport_set_lod_threshold, RID, float)
-	FUNC2(viewport_set_canvas_cull_mask, RID, int)
+	FUNC2(viewport_set_canvas_cull_mask, RID, uint32_t)
 
 	FUNC3R(int, viewport_get_render_info, RID, ViewportRenderInfoType, ViewportRenderInfo)
 	FUNC2(viewport_set_debug_draw, RID, ViewportDebugDraw)
@@ -754,7 +754,7 @@ public:
 	FUNC2(canvas_item_set_visible, RID, bool)
 	FUNC2(canvas_item_set_light_mask, RID, int)
 
-	FUNC2(canvas_item_set_layer_mask, RID, int)
+	FUNC2(canvas_item_set_layer_mask, RID, uint32_t)
 	FUNC2(canvas_item_set_cull_children, RID, bool)
 
 	FUNC2(canvas_item_set_update_when_visible, RID, bool)

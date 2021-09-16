@@ -103,7 +103,7 @@ bool CanvasItem::is_visible_in_tree_ignoring_cull_masks() const {
 	return true;
 }
 
-bool CanvasItem::is_visible_in_tree_with_cull_mask(int p_mask) const {
+bool CanvasItem::is_visible_in_tree_with_cull_mask(uint32_t p_mask) const {
 	if (!is_inside_tree()) {
 		return false;
 	}
@@ -505,12 +505,12 @@ int CanvasItem::get_light_mask() const {
 	return light_mask;
 }
 
-void CanvasItem::set_layer_mask(int p_layer_mask) {
+void CanvasItem::set_layer_mask(uint32_t p_layer_mask) {
 	layers = p_layer_mask;
 	RenderingServer::get_singleton()->canvas_item_set_layer_mask(canvas_item, layers);
 }
 
-int CanvasItem::get_layer_mask() const {
+uint32_t CanvasItem::get_layer_mask() const {
 	return layers;
 }
 

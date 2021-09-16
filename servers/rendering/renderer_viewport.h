@@ -108,7 +108,7 @@ public:
 
 		bool transparent_bg;
 
-		int canvas_visible_layers;
+		uint32_t canvas_visible_layers;
 
 		struct CanvasKey {
 			int64_t stacking;
@@ -261,7 +261,7 @@ public:
 	void viewport_set_occlusion_rays_per_thread(int p_rays_per_thread);
 	void viewport_set_occlusion_culling_build_quality(RS::ViewportOcclusionCullingBuildQuality p_quality);
 	void viewport_set_lod_threshold(RID p_viewport, float p_pixels);
-	void viewport_set_canvas_cull_mask(RID p_viewport, int p_mask);
+	void viewport_set_canvas_cull_mask(RID p_viewport, uint32_t p_mask);
 
 	virtual int viewport_get_render_info(RID p_viewport, RS::ViewportRenderInfoType p_type, RS::ViewportRenderInfo p_info);
 	virtual void viewport_set_debug_draw(RID p_viewport, RS::ViewportDebugDraw p_draw);

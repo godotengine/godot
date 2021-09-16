@@ -1091,7 +1091,7 @@ void RendererViewport::viewport_set_lod_threshold(RID p_viewport, float p_pixels
 	viewport->lod_threshold = p_pixels;
 }
 
-void RendererViewport::viewport_set_canvas_cull_mask(RID p_viewport, int p_mask) {
+void RendererViewport::viewport_set_canvas_cull_mask(RID p_viewport, uint32_t p_mask) {
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);
 	viewport->canvas_visible_layers = p_mask;

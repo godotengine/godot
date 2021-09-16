@@ -81,7 +81,7 @@ private:
 	List<CanvasItem *>::Element *C = nullptr;
 
 	int light_mask = 1;
-	int layers = 1;
+	uint32_t layers = 1;
 
 	Window *window = nullptr;
 	bool first_draw = false;
@@ -199,7 +199,7 @@ public:
 	bool is_visible() const;
 	bool is_visible_in_tree() const;
 	bool is_visible_in_tree_ignoring_cull_masks() const;
-	bool is_visible_in_tree_with_cull_mask(int p_mask) const;
+	bool is_visible_in_tree_with_cull_mask(uint32_t p_mask) const;
 	void show();
 	void hide();
 
@@ -211,8 +211,8 @@ public:
 	virtual void set_light_mask(int p_light_mask);
 	int get_light_mask() const;
 
-	void set_layer_mask(int p_layer_mask);
-	int get_layer_mask() const;
+	void set_layer_mask(uint32_t p_layer_mask);
+	uint32_t get_layer_mask() const;
 	void set_layer_mask_value(int p_layer_number, bool p_value);
 	bool get_layer_mask_value(int p_layer_number) const;
 	void set_cull_children(bool p_enable);
