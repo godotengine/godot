@@ -28,6 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+// Define PLATFORM_CUSTOM_THREAD_H in platform_config.h
+// Overriding the platform implementation is required in some proprietary platforms
+#ifndef PLATFORM_CUSTOM_THREAD_H
+
 #include "thread.h"
 
 #include "core/object/script_language.h"
@@ -126,3 +130,4 @@ Thread::~Thread() {
 }
 
 #endif
+#endif // PLATFORM_CUSTOM_THREAD_H
