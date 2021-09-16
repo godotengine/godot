@@ -2949,8 +2949,8 @@ bool Viewport::is_handling_input_locally() const {
 	return handle_input_locally;
 }
 
-void Viewport::set_canvas_cull_mask(uint32_t p_layers) {
-	canvas_cull_mask = p_layers;
+void Viewport::set_canvas_cull_mask(uint32_t p_mask) {
+	canvas_cull_mask = p_mask;
 	RenderingServer::get_singleton()->viewport_set_canvas_cull_mask(viewport, canvas_cull_mask);
 }
 

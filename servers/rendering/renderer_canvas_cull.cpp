@@ -220,7 +220,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 		return;
 	}
 
-	if (ci->cull_children && (ci->layer_mask & p_visible_layers) == 0) {
+	if (ci->cull_children && (ci->visibility_layer & p_visible_layers) == 0) {
 		return;
 	}
 
@@ -304,7 +304,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 				_cull_canvas_item(child_items[i], xform * child_items[i]->ysort_xform, p_clip_rect, modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner, false, p_visible_layers);
 			}
 		} else {
-			if (ci->layer_mask & p_visible_layers) {
+			if (ci->visibility_layer & p_visible_layers) {
 				RendererCanvasRender::Item *canvas_group_from = nullptr;
 				bool use_canvas_group = ci->canvas_group != nullptr && (ci->canvas_group->fit_empty || ci->commands != nullptr);
 				if (use_canvas_group) {
@@ -330,7 +330,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 			_cull_canvas_item(child_items[i], xform, p_clip_rect, modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, p_material_owner, true, p_visible_layers);
 		}
 
-		if (ci->layer_mask & p_visible_layers) {
+		if (ci->visibility_layer & p_visible_layers) {
 			_attach_canvas_item_for_draw(ci, p_canvas_clip, z_list, z_last_list, xform, p_clip_rect, global_rect, modulate, p_z, p_material_owner, use_canvas_group, canvas_group_from, xform);
 		}
 
@@ -500,11 +500,11 @@ void RendererCanvasCull::canvas_item_set_light_mask(RID p_item, int p_mask) {
 	canvas_item->light_mask = p_mask;
 }
 
-void RendererCanvasCull::canvas_item_set_layer_mask(RID p_item, uint32_t p_mask) {
+void RendererCanvasCull::canvas_item_set_visibility_layer(RID p_item, uint32_t p_layer) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
-	canvas_item->layer_mask = p_mask;
+	canvas_item->visibility_layer = p_layer;
 }
 
 void RendererCanvasCull::canvas_item_set_cull_children(RID p_item, bool p_enable) {

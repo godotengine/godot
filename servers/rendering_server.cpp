@@ -2544,7 +2544,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_item_set_default_texture_repeat", "item", "repeat"), &RenderingServer::canvas_item_set_default_texture_repeat);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_visible", "item", "visible"), &RenderingServer::canvas_item_set_visible);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_light_mask", "item", "mask"), &RenderingServer::canvas_item_set_light_mask);
-	ClassDB::bind_method(D_METHOD("canvas_item_set_layer_mask", "item", "mask"), &RenderingServer::canvas_item_set_layer_mask);
+	ClassDB::bind_method(D_METHOD("canvas_item_set_visibility_layer", "item", "layer"), &RenderingServer::canvas_item_set_visibility_layer);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_cull_children", "item", "enable"), &RenderingServer::canvas_item_set_cull_children);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_transform", "item", "transform"), &RenderingServer::canvas_item_set_transform);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_clip", "item", "clip"), &RenderingServer::canvas_item_set_clip);

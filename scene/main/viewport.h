@@ -584,7 +584,7 @@ public:
 	bool gui_is_dragging() const;
 	bool gui_is_drag_successful() const;
 
-	void set_canvas_cull_mask(uint32_t p_layers);
+	void set_canvas_cull_mask(uint32_t p_mask);
 	int get_canvas_cull_mask() const;
 	void set_canvas_cull_mask_value(int p_layer_number, bool p_value);
 	bool get_canvas_cull_mask_value(int p_layer_number) const;

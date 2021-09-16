@@ -402,14 +402,6 @@
 				Sets the index for the [CanvasItem].
 			</description>
 		</method>
-		<method name="canvas_item_set_layer_mask">
-			<return type="void" />
-			<argument index="0" name="item" type="RID" />
-			<argument index="1" name="mask" type="int" />
-			<description>
-				Sets the 2D render layers that this canvas item will be drawn to. Equivalent to [member CanvasItem.layers].
-			</description>
-		</method>
 		<method name="canvas_item_set_light_mask">
 			<return type="void" />
 			<argument index="0" name="item" type="RID" />
@@ -466,6 +458,14 @@
 			<argument index="1" name="enabled" type="bool" />
 			<description>
 				Sets if the [CanvasItem] uses its parent's material.
+			</description>
+		</method>
+		<method name="canvas_item_set_visibility_layer">
+			<return type="void" />
+			<argument index="0" name="item" type="RID" />
+			<argument index="1" name="layer" type="int" />
+			<description>
+				Sets the 2D render layers that this canvas item will be drawn to. Equivalent to [member CanvasItem.visibility_layer].
 			</description>
 		</method>
 		<method name="canvas_item_set_visibility_notifier">

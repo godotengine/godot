@@ -53,7 +53,7 @@ public:
 		Transform2D ysort_xform;
 		Vector2 ysort_pos;
 		int ysort_index;
-		uint32_t layer_mask;
+		uint32_t visibility_layer;
 		bool cull_children;
 
 		Vector<Item *> child_items;
@@ -86,7 +86,7 @@ public:
 			ysort_xform = Transform2D();
 			ysort_pos = Vector2();
 			ysort_index = 0;
-			layer_mask = 0xfffff;
+			visibility_layer = 0xfffff;
 			cull_children = false;
 		}
 	};
@@ -208,7 +208,7 @@ public:
 	void canvas_item_set_visible(RID p_item, bool p_visible);
 	void canvas_item_set_light_mask(RID p_item, int p_mask);
 
-	void canvas_item_set_layer_mask(RID p_item, uint32_t p_mask);
+	void canvas_item_set_visibility_layer(RID p_item, uint32_t p_layer);
 	void canvas_item_set_cull_children(RID p_item, bool p_enable);
 
 	void canvas_item_set_transform(RID p_item, const Transform2D &p_transform);

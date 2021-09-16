@@ -61,7 +61,7 @@ bool CanvasItem::is_visible_in_tree() const {
 	}
 
 	// check this item's mask separately, since it doesn't depend on cull_children
-	if (!visible || (layers & get_viewport()->get_canvas_cull_mask()) == 0) {
+	if (!visible || (visibility_layer & get_viewport()->get_canvas_cull_mask()) == 0) {
 		return false;
 	}
 
@@ -74,7 +74,7 @@ bool CanvasItem::is_visible_in_tree() const {
 		if (p->window && !p->window->is_visible()) {
 			return false;
 		}
-		if (p->cull_children && (p->layers & p->get_viewport()->get_canvas_cull_mask()) == 0) {
+		if (p->cull_children && (p->visibility_layer & p->get_viewport()->get_canvas_cull_mask()) == 0) {
 			return false;
 		}
 		p = p->get_parent_item();
@@ -109,7 +109,7 @@ bool CanvasItem::is_visible_in_tree_with_cull_mask(uint32_t p_mask) const {
 	}
 
 	// check this item's mask separately, since it doesn't depend on cull_children
-	if (!visible || (layers & p_mask) == 0) {
+	if (!visible || (visibility_layer & p_mask) == 0) {
 		return false;
 	}
 
@@ -122,7 +122,7 @@ bool CanvasItem::is_visible_in_tree_with_cull_mask(uint32_t p_mask) const {
 		if (p->window && !p->window->is_visible()) {
 			return false;
 		}
-		if (p->cull_children && (p->layers & p_mask) == 0) {
+		if (p->cull_children && (p->visibility_layer & p_mask) == 0) {
 			return false;
 		}
 		p = p->get_parent_item();
@@ -295,7 +295,7 @@ void CanvasItem::_enter_canvas() {
 		}
 
 		RenderingServer::get_singleton()->canvas_item_set_parent(canvas_item, canvas);
-		RenderingServer::get_singleton()->canvas_item_set_layer_mask(canvas_item, layers);
+		RenderingServer::get_singleton()->canvas_item_set_visibility_layer(canvas_item, visibility_layer);
 
 		group = "root_canvas" + itos(canvas.get_id());
 
@@ -313,7 +313,7 @@ void CanvasItem::_enter_canvas() {
 		canvas_layer = parent->canvas_layer;
 		RenderingServer::get_singleton()->canvas_item_set_parent(canvas_item, parent->get_canvas_item());
 		RenderingServer::get_singleton()->canvas_item_set_draw_index(canvas_item, get_index());
-		RenderingServer::get_singleton()->canvas_item_set_layer_mask(canvas_item, layers);
+		RenderingServer::get_singleton()->canvas_item_set_visibility_layer(canvas_item, visibility_layer);
 	}
 
 	pending_update = false;
@@ -505,31 +505,31 @@ int CanvasItem::get_light_mask() const {
 	return light_mask;
 }
 
-void CanvasItem::set_layer_mask(uint32_t p_layer_mask) {
-	layers = p_layer_mask;
-	RenderingServer::get_singleton()->canvas_item_set_layer_mask(canvas_item, layers);
+void CanvasItem::set_visibility_layer(uint32_t p_layer) {
+	visibility_layer = p_layer;
+	RenderingServer::get_singleton()->canvas_item_set_visibility_layer(canvas_item, visibility_layer);
 }
 
-uint32_t CanvasItem::get_layer_mask() const {
-	return layers;
+uint32_t CanvasItem::get_visibility_layer() const {
+	return visibility_layer;
 }
 
-void CanvasItem::set_layer_mask_value(int p_layer_number, bool p_value) {
+void CanvasItem::set_visibility_layer_value(int p_layer_number, bool p_value) {
 	ERR_FAIL_COND_MSG(p_layer_number < 1, "Render layer number must be between 1 and 20 inclusive.");
 	ERR_FAIL_COND_MSG(p_layer_number > 20, "Render layer number must be between 1 and 20 inclusive.");
-	int mask = get_layer_mask();
+	int mask = get_visibility_layer();
 	if (p_value) {
 		mask |= 1 << (p_layer_number - 1);
 	} else {
 		mask &= ~(1 << (p_layer_number - 1));
 	}
-	set_layer_mask(mask);
+	set_visibility_layer(mask);
 }
 
-bool CanvasItem::get_layer_mask_value(int p_layer_number) const {
+bool CanvasItem::get_visibility_layer_value(int p_layer_number) const {
 	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Render layer number must be between 1 and 20 inclusive.");
 	ERR_FAIL_COND_V_MSG(p_layer_number > 20, false, "Render layer number must be between 1 and 20 inclusive.");
-	return (layers & (1 << (p_layer_number - 1)));
+	return (visibility_layer & (1 << (p_layer_number - 1)));
 }
 
 void CanvasItem::set_cull_children(bool p_enable) {
@@ -962,10 +962,10 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_light_mask", "light_mask"), &CanvasItem::set_light_mask);
 	ClassDB::bind_method(D_METHOD("get_light_mask"), &CanvasItem::get_light_mask);
 
-	ClassDB::bind_method(D_METHOD("set_layer_mask", "mask"), &CanvasItem::set_layer_mask);
-	ClassDB::bind_method(D_METHOD("get_layer_mask"), &CanvasItem::get_layer_mask);
-	ClassDB::bind_method(D_METHOD("set_layer_mask_value", "layer_number", "value"), &CanvasItem::set_layer_mask_value);
-	ClassDB::bind_method(D_METHOD("get_layer_mask_value", "layer_number"), &CanvasItem::get_layer_mask_value);
+	ClassDB::bind_method(D_METHOD("set_visibility_layer", "layer"), &CanvasItem::set_visibility_layer);
+	ClassDB::bind_method(D_METHOD("get_visibility_layer"), &CanvasItem::get_visibility_layer);
+	ClassDB::bind_method(D_METHOD("set_visibility_layer_value", "layer_number", "value"), &CanvasItem::set_visibility_layer_value);
+	ClassDB::bind_method(D_METHOD("get_visibility_layer_value", "layer_number"), &CanvasItem::get_visibility_layer_value);
 	ClassDB::bind_method(D_METHOD("set_cull_children", "enable"), &CanvasItem::set_cull_children);
 	ClassDB::bind_method(D_METHOD("is_cull_children_enabled"), &CanvasItem::is_cull_children_enabled);
 
@@ -1055,7 +1055,7 @@ void CanvasItem::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_on_top", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "_set_on_top", "_is_on_top"); //compatibility
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_children"), "set_clip_children", "is_clipping_children");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_light_mask", "get_light_mask");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_LAYERS_2D_RENDER), "set_layer_mask", "get_layer_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_layer", PROPERTY_HINT_LAYERS_2D_RENDER), "set_visibility_layer", "get_visibility_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cull_children"), "set_cull_children", "is_cull_children_enabled");
 
 	ADD_GROUP("Texture", "texture_");

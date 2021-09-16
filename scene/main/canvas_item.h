@@ -81,7 +81,7 @@ private:
 	List<CanvasItem *>::Element *C = nullptr;
 
 	int light_mask = 1;
-	uint32_t layers = 1;
+	uint32_t visibility_layer = 1;
 
 	Window *window = nullptr;
 	bool first_draw = false;
@@ -211,10 +211,10 @@ public:
 	virtual void set_light_mask(int p_light_mask);
 	int get_light_mask() const;
 
-	void set_layer_mask(uint32_t p_layer_mask);
-	uint32_t get_layer_mask() const;
-	void set_layer_mask_value(int p_layer_number, bool p_value);
-	bool get_layer_mask_value(int p_layer_number) const;
+	void set_visibility_layer(uint32_t p_layer);
+	uint32_t get_visibility_layer() const;
+	void set_visibility_layer_value(int p_layer_number, bool p_value);
+	bool get_visibility_layer_value(int p_layer_number) const;
 	void set_cull_children(bool p_enable);
 	bool is_cull_children_enabled() const;
 

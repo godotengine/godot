@@ -754,7 +754,7 @@ public:
 	FUNC2(canvas_item_set_visible, RID, bool)
 	FUNC2(canvas_item_set_light_mask, RID, int)
 
-	FUNC2(canvas_item_set_layer_mask, RID, uint32_t)
+	FUNC2(canvas_item_set_visibility_layer, RID, uint32_t)
 	FUNC2(canvas_item_set_cull_children, RID, bool)
 
 	FUNC2(canvas_item_set_update_when_visible, RID, bool)
