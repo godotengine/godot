@@ -1226,6 +1226,29 @@ void AudioStreamPlayer3DSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) 
 
 //////
 
+ListenerSpatialGizmoPlugin::ListenerSpatialGizmoPlugin() {
+	create_icon_material("listener_icon", SpatialEditor::get_singleton()->get_icon("GizmoListener", "EditorIcons"));
+}
+
+bool ListenerSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
+	return Object::cast_to<Listener>(p_spatial) != nullptr;
+}
+
+String ListenerSpatialGizmoPlugin::get_name() const {
+	return "Listener";
+}
+
+int ListenerSpatialGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+void ListenerSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
+	const Ref<Material> icon = get_material("listener_icon", p_gizmo);
+	p_gizmo->add_unscaled_billboard(icon, 0.05);
+}
+
+//////
+
 CameraSpatialGizmoPlugin::CameraSpatialGizmoPlugin() {
 	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/camera", Color(0.8, 0.4, 0.8));
 
