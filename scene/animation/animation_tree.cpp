@@ -1239,8 +1239,7 @@ void AnimationTree::_process_graph(real_t p_delta) {
 							continue;
 						}
 
-						t->value = Math::lerp(t->value, value, blend);
-
+						t->value = Math::lerp(t->value, value, (float)blend);
 #endif // _3D_DISABLED
 					} break;
 					case Animation::TYPE_VALUE: {

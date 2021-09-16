@@ -729,7 +729,7 @@ void CPUParticles2D::_particles_process(double p_delta) {
 
 			real_t angle1_rad = direction.angle() + Math::deg2rad((Math::randf() * 2.0 - 1.0) * spread);
 			Vector2 rot = Vector2(Math::cos(angle1_rad), Math::sin(angle1_rad));
-			p.velocity = rot * Math::lerp(parameters_min[PARAM_INITIAL_LINEAR_VELOCITY], parameters_min[PARAM_INITIAL_LINEAR_VELOCITY], Math::randf());
+			p.velocity = rot * Math::lerp(parameters_min[PARAM_INITIAL_LINEAR_VELOCITY], parameters_min[PARAM_INITIAL_LINEAR_VELOCITY], (real_t)Math::randf());
 
 			real_t base_angle = tex_angle * Math::lerp(parameters_min[PARAM_ANGLE], parameters_max[PARAM_ANGLE], p.angle_rand);
 			p.rotation = Math::deg2rad(base_angle);

@@ -736,7 +736,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					ba->bezier_accum = bezier;
 					ba->accum_pass = accum_pass;
 				} else {
-					ba->bezier_accum = Math::lerp(ba->bezier_accum, bezier, p_interp);
+					ba->bezier_accum = Math::lerp(ba->bezier_accum, (float)bezier, p_interp);
 				}
 
 			} break;

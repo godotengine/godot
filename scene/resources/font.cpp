@@ -1449,7 +1449,7 @@ real_t Font::get_underline_thickness(int p_size) const {
 	return ret;
 }
 
-Size2 Font::get_string_size(const String &p_text, int p_size, HorizontalAlignment p_alignment, real_t p_width, uint16_t p_flags) const {
+Size2 Font::get_string_size(const String &p_text, int p_size, HorizontalAlignment p_alignment, float p_width, uint16_t p_flags) const {
 	ERR_FAIL_COND_V(data.is_empty(), Size2());
 
 	for (int i = 0; i < data.size(); i++) {
@@ -1474,7 +1474,7 @@ Size2 Font::get_string_size(const String &p_text, int p_size, HorizontalAlignmen
 	return buffer->get_size();
 }
 
-Size2 Font::get_multiline_string_size(const String &p_text, real_t p_width, int p_size, uint16_t p_flags) const {
+Size2 Font::get_multiline_string_size(const String &p_text, float p_width, int p_size, uint16_t p_flags) const {
 	ERR_FAIL_COND_V(data.is_empty(), Size2());
 
 	for (int i = 0; i < data.size(); i++) {
@@ -1511,7 +1511,7 @@ Size2 Font::get_multiline_string_size(const String &p_text, real_t p_width, int 
 	return ret;
 }
 
-void Font::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, real_t p_width, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate, uint16_t p_flags) const {
+void Font::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate, uint16_t p_flags) const {
 	ERR_FAIL_COND(data.is_empty());
 
 	for (int i = 0; i < data.size(); i++) {
