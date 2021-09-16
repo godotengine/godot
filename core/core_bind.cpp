@@ -286,6 +286,10 @@ String OS::get_locale() const {
 	return ::OS::get_singleton()->get_locale();
 }
 
+String OS::get_locale_language() const {
+	return ::OS::get_singleton()->get_locale_language();
+}
+
 String OS::get_model_name() const {
 	return ::OS::get_singleton()->get_model_name();
 }
@@ -547,6 +551,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("delay_usec", "usec"), &OS::delay_usec);
 	ClassDB::bind_method(D_METHOD("delay_msec", "msec"), &OS::delay_msec);
 	ClassDB::bind_method(D_METHOD("get_locale"), &OS::get_locale);
+	ClassDB::bind_method(D_METHOD("get_locale_language"), &OS::get_locale_language);
 	ClassDB::bind_method(D_METHOD("get_model_name"), &OS::get_model_name);
 
 	ClassDB::bind_method(D_METHOD("is_userfs_persistent"), &OS::is_userfs_persistent);
