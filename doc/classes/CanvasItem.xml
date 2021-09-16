@@ -407,20 +407,13 @@
 		<method name="is_visible_in_tree" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code], its [member visibility_layer] property is not masked by the current [Viewport] and all of its antecedents are also visible to and not masked by the current [Viewport]. If any antecedent is hidden or masked-and-marked with [member cull_children], then this node will not be visible in the scene tree.
-			</description>
-		</method>
-		<method name="is_visible_in_tree_ignoring_cull_masks" qualifiers="const">
-			<return type="bool" />
-			<description>
 				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code] and all of its antecedents are also visible. If any antecedent is hidden, this node will not be visible in the scene tree. This method ignores the [member visibility_layer] property and any [Viewport] cull masks.
 			</description>
 		</method>
-		<method name="is_visible_in_tree_with_cull_mask" qualifiers="const">
+		<method name="is_visible_in_viewport" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="mask" type="int" />
 			<description>
-				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code], its [member visibility_layer] property is not masked by the specified [code]mask[/code] and all of its antecedents are also not masked by the specified [code]mask[/code]. If any antecedent is hidden or masked-and-marked with [member cull_children], then this node will not be visible in the scene tree if the specified [code]mask[/code] is used to cull nodes.
+				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code], its [member visibility_layer] property is not masked by the current [Viewport] and all of its antecedents are also visible to and not masked by the current [Viewport]. If any antecedent is hidden or masked-and-marked with [member cull_children], then this node will not be visible in the scene tree.
 			</description>
 		</method>
 		<method name="make_canvas_position_local" qualifiers="const">

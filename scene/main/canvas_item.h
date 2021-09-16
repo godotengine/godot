@@ -198,8 +198,7 @@ public:
 	void set_visible(bool p_visible);
 	bool is_visible() const;
 	bool is_visible_in_tree() const;
-	bool is_visible_in_tree_ignoring_cull_masks() const;
-	bool is_visible_in_tree_with_cull_mask(uint32_t p_mask) const;
+	bool is_visible_in_viewport() const;
 	void show();
 	void hide();
 

@@ -60,34 +60,6 @@ bool CanvasItem::is_visible_in_tree() const {
 		return false;
 	}
 
-	// check this item's mask separately, since it doesn't depend on cull_children
-	if (!visible || (visibility_layer & get_viewport()->get_canvas_cull_mask()) == 0) {
-		return false;
-	}
-
-	const CanvasItem *p = get_parent_item();
-
-	while (p) {
-		if (!p->visible) {
-			return false;
-		}
-		if (p->window && !p->window->is_visible()) {
-			return false;
-		}
-		if (p->cull_children && (p->visibility_layer & p->get_viewport()->get_canvas_cull_mask()) == 0) {
-			return false;
-		}
-		p = p->get_parent_item();
-	}
-
-	return true;
-}
-
-bool CanvasItem::is_visible_in_tree_ignoring_cull_masks() const {
-	if (!is_inside_tree()) {
-		return false;
-	}
-
 	const CanvasItem *p = this;
 
 	while (p) {
@@ -103,13 +75,13 @@ bool CanvasItem::is_visible_in_tree_ignoring_cull_masks() const {
 	return true;
 }
 
-bool CanvasItem::is_visible_in_tree_with_cull_mask(uint32_t p_mask) const {
+bool CanvasItem::is_visible_in_viewport() const {
 	if (!is_inside_tree()) {
 		return false;
 	}
 
 	// check this item's mask separately, since it doesn't depend on cull_children
-	if (!visible || (visibility_layer & p_mask) == 0) {
+	if (!visible || (visibility_layer & get_viewport()->get_canvas_cull_mask()) == 0) {
 		return false;
 	}
 
@@ -122,7 +94,7 @@ bool CanvasItem::is_visible_in_tree_with_cull_mask(uint32_t p_mask) const {
 		if (p->window && !p->window->is_visible()) {
 			return false;
 		}
-		if (p->cull_children && (p->visibility_layer & p_mask) == 0) {
+		if (p->cull_children && (p->visibility_layer & p->get_viewport()->get_canvas_cull_mask()) == 0) {
 			return false;
 		}
 		p = p->get_parent_item();
@@ -198,7 +170,7 @@ void CanvasItem::_update_callback() {
 
 	RenderingServer::get_singleton()->canvas_item_clear(get_canvas_item());
 	//todo updating = true - only allow drawing here
-	if (is_visible_in_tree_ignoring_cull_masks()) { //todo optimize this!!
+	if (is_visible_in_tree()) { //todo optimize this!!
 		if (first_draw) {
 			notification(NOTIFICATION_VISIBILITY_CHANGED);
 			first_draw = false;
@@ -949,8 +921,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_visible", "visible"), &CanvasItem::set_visible);
 	ClassDB::bind_method(D_METHOD("is_visible"), &CanvasItem::is_visible);
 	ClassDB::bind_method(D_METHOD("is_visible_in_tree"), &CanvasItem::is_visible_in_tree);
-	ClassDB::bind_method(D_METHOD("is_visible_in_tree_ignoring_cull_masks"), &CanvasItem::is_visible_in_tree_ignoring_cull_masks);
-	ClassDB::bind_method(D_METHOD("is_visible_in_tree_with_cull_mask", "mask"), &CanvasItem::is_visible_in_tree_with_cull_mask);
+	ClassDB::bind_method(D_METHOD("is_visible_in_viewport"), &CanvasItem::is_visible_in_viewport);
 	ClassDB::bind_method(D_METHOD("show"), &CanvasItem::show);
 	ClassDB::bind_method(D_METHOD("hide"), &CanvasItem::hide);
 
