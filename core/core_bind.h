@@ -178,6 +178,7 @@ public:
 	Vector<String> get_cmdline_args();
 
 	String get_locale() const;
+	String get_locale_language() const;
 
 	String get_model_name() const;
 
