@@ -1306,11 +1306,7 @@ void CharacterBody2D::_set_collision_direction(const PhysicsServer2D::MotionResu
 void CharacterBody2D::_set_platform_data(const PhysicsServer2D::MotionResult &p_result) {
 	platform_rid = p_result.collider;
 	platform_velocity = p_result.collider_velocity;
-	platform_layer = 0;
-	CollisionObject2D *collision_object = Object::cast_to<CollisionObject2D>(ObjectDB::get_instance(p_result.collider_id));
-	if (collision_object) {
-		platform_layer = collision_object->get_collision_layer();
-	}
+	platform_layer = PhysicsServer2D::get_singleton()->body_get_collision_layer(platform_rid);
 }
 
 const Vector2 &CharacterBody2D::get_linear_velocity() const {
