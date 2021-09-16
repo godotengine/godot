@@ -111,9 +111,6 @@ public:
 	StringName _body_inout;
 	StringName _area_inout;
 
-	StringName _get_gizmo_geometry;
-	StringName _can_gizmo_scale;
-
 	StringName _physics_process;
 	StringName _process;
 	StringName _enter_world;
