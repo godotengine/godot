@@ -803,15 +803,19 @@ void EditorProperty::unhandled_key_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	if (ED_IS_SHORTCUT("property_editor/copy_property", p_event)) {
-		menu_option(MENU_COPY_PROPERTY);
-		accept_event();
-	} else if (ED_IS_SHORTCUT("property_editor/paste_property", p_event) && !is_read_only()) {
-		menu_option(MENU_PASTE_PROPERTY);
-		accept_event();
-	} else if (ED_IS_SHORTCUT("property_editor/copy_property_path", p_event)) {
-		menu_option(MENU_COPY_PROPERTY_PATH);
-		accept_event();
+	const Ref<InputEventKey> k = p_event;
+
+	if (k.is_valid() && k->is_pressed()) {
+		if (ED_IS_SHORTCUT("property_editor/copy_property", p_event)) {
+			menu_option(MENU_COPY_PROPERTY);
+			accept_event();
+		} else if (ED_IS_SHORTCUT("property_editor/paste_property", p_event) && !is_read_only()) {
+			menu_option(MENU_PASTE_PROPERTY);
+			accept_event();
+		} else if (ED_IS_SHORTCUT("property_editor/copy_property_path", p_event)) {
+			menu_option(MENU_COPY_PROPERTY_PATH);
+			accept_event();
+		}
 	}
 }
 
