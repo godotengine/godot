@@ -598,27 +598,60 @@ void RigidDynamicBody3D::_notification(int p_what) {
 #endif
 }
 
-void RigidDynamicBody3D::set_mode(Mode p_mode) {
-	mode = p_mode;
-	switch (p_mode) {
-		case MODE_DYNAMIC: {
-			set_body_mode(PhysicsServer3D::BODY_MODE_DYNAMIC);
-		} break;
-		case MODE_STATIC: {
-			set_body_mode(PhysicsServer3D::BODY_MODE_STATIC);
-		} break;
-		case MODE_DYNAMIC_LOCKED: {
-			set_body_mode(PhysicsServer3D::BODY_MODE_DYNAMIC_LOCKED);
-		} break;
-		case MODE_KINEMATIC: {
-			set_body_mode(PhysicsServer3D::BODY_MODE_KINEMATIC);
-		} break;
+void RigidDynamicBody3D::_apply_body_mode() {
+	if (freeze) {
+		switch (freeze_mode) {
+			case FREEZE_MODE_STATIC: {
+				set_body_mode(PhysicsServer3D::BODY_MODE_STATIC);
+			} break;
+			case FREEZE_MODE_KINEMATIC: {
+				set_body_mode(PhysicsServer3D::BODY_MODE_KINEMATIC);
+			} break;
+		}
+	} else if (lock_rotation) {
+		set_body_mode(PhysicsServer3D::BODY_MODE_DYNAMIC_LINEAR);
+	} else {
+		set_body_mode(PhysicsServer3D::BODY_MODE_DYNAMIC);
 	}
-	update_configuration_warnings();
 }
 
-RigidDynamicBody3D::Mode RigidDynamicBody3D::get_mode() const {
-	return mode;
+void RigidDynamicBody3D::set_lock_rotation_enabled(bool p_lock_rotation) {
+	if (p_lock_rotation == lock_rotation) {
+		return;
+	}
+
+	lock_rotation = p_lock_rotation;
+	_apply_body_mode();
+}
+
+bool RigidDynamicBody3D::is_lock_rotation_enabled() const {
+	return lock_rotation;
+}
+
+void RigidDynamicBody3D::set_freeze_enabled(bool p_freeze) {
+	if (p_freeze == freeze) {
+		return;
+	}
+
+	freeze = p_freeze;
+	_apply_body_mode();
+}
+
+bool RigidDynamicBody3D::is_freeze_enabled() const {
+	return freeze;
+}
+
+void RigidDynamicBody3D::set_freeze_mode(FreezeMode p_freeze_mode) {
+	if (p_freeze_mode == freeze_mode) {
+		return;
+	}
+
+	freeze_mode = p_freeze_mode;
+	_apply_body_mode();
+}
+
+RigidDynamicBody3D::FreezeMode RigidDynamicBody3D::get_freeze_mode() const {
+	return freeze_mode;
 }
 
 void RigidDynamicBody3D::set_mass(real_t p_mass) {
@@ -891,17 +924,14 @@ TypedArray<String> RigidDynamicBody3D::get_configuration_warnings() const {
 
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
-	if ((get_mode() == MODE_DYNAMIC || get_mode() == MODE_DYNAMIC_LOCKED) && (ABS(t.basis.get_axis(0).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(1).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(2).length() - 1.0) > 0.05)) {
-		warnings.push_back(TTR("Size changes to RigidDynamicBody (in dynamic modes) will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
+	if (ABS(t.basis.get_axis(0).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(1).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(2).length() - 1.0) > 0.05) {
+		warnings.push_back(TTR("Size changes to RigidDynamicBody will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
 	}
 
 	return warnings;
 }
 
 void RigidDynamicBody3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_mode", "mode"), &RigidDynamicBody3D::set_mode);
-	ClassDB::bind_method(D_METHOD("get_mode"), &RigidDynamicBody3D::get_mode);
-
 	ClassDB::bind_method(D_METHOD("set_mass", "mass"), &RigidDynamicBody3D::set_mass);
 	ClassDB::bind_method(D_METHOD("get_mass"), &RigidDynamicBody3D::get_mass);
 
@@ -962,11 +992,19 @@ void RigidDynamicBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_can_sleep", "able_to_sleep"), &RigidDynamicBody3D::set_can_sleep);
 	ClassDB::bind_method(D_METHOD("is_able_to_sleep"), &RigidDynamicBody3D::is_able_to_sleep);
 
+	ClassDB::bind_method(D_METHOD("set_lock_rotation_enabled", "lock_rotation"), &RigidDynamicBody3D::set_lock_rotation_enabled);
+	ClassDB::bind_method(D_METHOD("is_lock_rotation_enabled"), &RigidDynamicBody3D::is_lock_rotation_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_freeze_enabled", "freeze_mode"), &RigidDynamicBody3D::set_freeze_enabled);
+	ClassDB::bind_method(D_METHOD("is_freeze_enabled"), &RigidDynamicBody3D::is_freeze_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_freeze_mode", "freeze_mode"), &RigidDynamicBody3D::set_freeze_mode);
+	ClassDB::bind_method(D_METHOD("get_freeze_mode"), &RigidDynamicBody3D::get_freeze_mode);
+
 	ClassDB::bind_method(D_METHOD("get_colliding_bodies"), &RigidDynamicBody3D::get_colliding_bodies);
 
 	GDVIRTUAL_BIND(_integrate_forces, "state");
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Dynamic,Static,DynamicLocked,Kinematic"), "set_mode", "get_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mass", PROPERTY_HINT_RANGE, "0.01,1000,0.01,or_greater,exp"), "set_mass", "get_mass");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "inertia", PROPERTY_HINT_RANGE, "0,1000,0.01,or_greater,exp"), "set_inertia", "get_inertia");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "center_of_mass_mode", PROPERTY_HINT_ENUM, "Auto,Custom", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_center_of_mass_mode", "get_center_of_mass_mode");
@@ -980,6 +1018,9 @@ void RigidDynamicBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "contact_monitor"), "set_contact_monitor", "is_contact_monitor_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sleeping"), "set_sleeping", "is_sleeping");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "can_sleep"), "set_can_sleep", "is_able_to_sleep");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "lock_rotation"), "set_lock_rotation_enabled", "is_lock_rotation_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "freeze"), "set_freeze_enabled", "is_freeze_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "freeze_mode", PROPERTY_HINT_ENUM, "Static,Kinematic"), "set_freeze_mode", "get_freeze_mode");
 	ADD_GROUP("Linear", "linear_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "linear_velocity"), "set_linear_velocity", "get_linear_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), "set_linear_damp", "get_linear_damp");
@@ -993,10 +1034,8 @@ void RigidDynamicBody3D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("body_exited", PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("sleeping_state_changed"));
 
-	BIND_ENUM_CONSTANT(MODE_DYNAMIC);
-	BIND_ENUM_CONSTANT(MODE_STATIC);
-	BIND_ENUM_CONSTANT(MODE_DYNAMIC_LOCKED);
-	BIND_ENUM_CONSTANT(MODE_KINEMATIC);
+	BIND_ENUM_CONSTANT(FREEZE_MODE_STATIC);
+	BIND_ENUM_CONSTANT(FREEZE_MODE_KINEMATIC);
 
 	BIND_ENUM_CONSTANT(CENTER_OF_MASS_MODE_AUTO);
 	BIND_ENUM_CONSTANT(CENTER_OF_MASS_MODE_CUSTOM);

@@ -133,11 +133,9 @@ class RigidDynamicBody3D : public PhysicsBody3D {
 	GDCLASS(RigidDynamicBody3D, PhysicsBody3D);
 
 public:
-	enum Mode {
-		MODE_DYNAMIC,
-		MODE_STATIC,
-		MODE_DYNAMIC_LOCKED,
-		MODE_KINEMATIC,
+	enum FreezeMode {
+		FREEZE_MODE_STATIC,
+		FREEZE_MODE_KINEMATIC,
 	};
 
 	enum CenterOfMassMode {
@@ -145,11 +143,11 @@ public:
 		CENTER_OF_MASS_MODE_CUSTOM,
 	};
 
-	GDVIRTUAL1(_integrate_forces, PhysicsDirectBodyState3D *)
-
-protected:
+private:
 	bool can_sleep = true;
-	Mode mode = MODE_DYNAMIC;
+	bool lock_rotation = false;
+	bool freeze = false;
+	FreezeMode freeze_mode = FREEZE_MODE_STATIC;
 
 	real_t mass = 1.0;
 	Vector3 inertia;
@@ -214,16 +212,28 @@ protected:
 
 	void _body_inout(int p_status, const RID &p_body, ObjectID p_instance, int p_body_shape, int p_local_shape);
 	static void _body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state);
-	virtual void _body_state_changed(PhysicsDirectBodyState3D *p_state);
 
+protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 	virtual void _validate_property(PropertyInfo &property) const override;
 
+	GDVIRTUAL1(_integrate_forces, PhysicsDirectBodyState3D *)
+
+	virtual void _body_state_changed(PhysicsDirectBodyState3D *p_state);
+
+	void _apply_body_mode();
+
 public:
-	void set_mode(Mode p_mode);
-	Mode get_mode() const;
+	void set_lock_rotation_enabled(bool p_lock_rotation);
+	bool is_lock_rotation_enabled() const;
+
+	void set_freeze_enabled(bool p_freeze);
+	bool is_freeze_enabled() const;
+
+	void set_freeze_mode(FreezeMode p_freeze_mode);
+	FreezeMode get_freeze_mode() const;
 
 	void set_mass(real_t p_mass);
 	real_t get_mass() const;
@@ -298,7 +308,7 @@ private:
 	void _reload_physics_characteristics();
 };
 
-VARIANT_ENUM_CAST(RigidDynamicBody3D::Mode);
+VARIANT_ENUM_CAST(RigidDynamicBody3D::FreezeMode);
 VARIANT_ENUM_CAST(RigidDynamicBody3D::CenterOfMassMode);
 
 class KinematicCollision3D;

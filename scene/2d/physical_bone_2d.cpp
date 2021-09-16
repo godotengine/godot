@@ -150,27 +150,15 @@ void PhysicalBone2D::_start_physics_simulation() {
 		return;
 	}
 
-	// Reset to Bone2D position
+	// Reset to Bone2D position.
 	_position_at_bone2d();
 
-	// Apply the layers and masks
+	// Apply the layers and masks.
 	PhysicsServer2D::get_singleton()->body_set_collision_layer(get_rid(), get_collision_layer());
 	PhysicsServer2D::get_singleton()->body_set_collision_mask(get_rid(), get_collision_mask());
 
-	// Apply the correct mode
-	RigidDynamicBody2D::Mode rigid_mode = get_mode();
-	if (rigid_mode == RigidDynamicBody2D::MODE_STATIC) {
-		set_body_mode(PhysicsServer2D::BODY_MODE_STATIC);
-	} else if (rigid_mode == RigidDynamicBody2D::MODE_DYNAMIC) {
-		set_body_mode(PhysicsServer2D::BODY_MODE_DYNAMIC);
-	} else if (rigid_mode == RigidDynamicBody2D::MODE_KINEMATIC) {
-		set_body_mode(PhysicsServer2D::BODY_MODE_KINEMATIC);
-	} else if (rigid_mode == RigidDynamicBody2D::MODE_DYNAMIC_LOCKED) {
-		set_body_mode(PhysicsServer2D::BODY_MODE_DYNAMIC_LOCKED);
-	} else {
-		// Default to Dynamic.
-		set_body_mode(PhysicsServer2D::BODY_MODE_DYNAMIC);
-	}
+	// Apply the correct mode.
+	_apply_body_mode();
 
 	_internal_simulate_physics = true;
 	set_physics_process_internal(true);

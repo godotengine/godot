@@ -1277,8 +1277,8 @@
 		<constant name="BODY_MODE_DYNAMIC" value="2" enum="BodyMode">
 			Constant for dynamic bodies. In this mode, a body can be pushed by other bodies and has forces applied.
 		</constant>
-		<constant name="BODY_MODE_DYNAMIC_LOCKED" value="3" enum="BodyMode">
-			Constant for locked dynamic bodies. In this mode, a body is dynamic but can not rotate, and only its linear velocity is affected by external forces.
+		<constant name="BODY_MODE_DYNAMIC_LINEAR" value="3" enum="BodyMode">
+			Constant for linear dynamic bodies. In this mode, a body is dynamic but can not rotate, and only its linear velocity is affected by external forces.
 		</constant>
 		<constant name="BODY_PARAM_BOUNCE" value="0" enum="BodyParameter">
 			Constant to set/get a body's bounce factor.
