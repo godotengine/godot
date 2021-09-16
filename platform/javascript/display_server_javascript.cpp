@@ -497,9 +497,10 @@ EM_BOOL DisplayServerJavaScript::wheel_callback(int p_event_type, const Emscript
 	ev->set_button_mask(MouseButton(input->get_mouse_button_mask() | button_flag));
 	input->parse_input_event(ev);
 
-	ev->set_pressed(false);
-	ev->set_button_mask(MouseButton(input->get_mouse_button_mask() & ~button_flag));
-	input->parse_input_event(ev);
+	Ref<InputEventMouseButton> release = ev->duplicate();
+	release->set_pressed(false);
+	release->set_button_mask(MouseButton(input->get_mouse_button_mask() & ~button_flag));
+	input->parse_input_event(release);
 
 	return true;
 }
@@ -508,7 +509,6 @@ EM_BOOL DisplayServerJavaScript::wheel_callback(int p_event_type, const Emscript
 EM_BOOL DisplayServerJavaScript::touch_press_callback(int p_event_type, const EmscriptenTouchEvent *p_event, void *p_user_data) {
 	DisplayServerJavaScript *display = get_singleton();
 	Ref<InputEventScreenTouch> ev;
-	ev.instantiate();
 	int lowest_id_index = -1;
 	for (int i = 0; i < p_event->numTouches; ++i) {
 		const EmscriptenTouchPoint &touch = p_event->touches[i];
@@ -516,6 +516,7 @@ EM_BOOL DisplayServerJavaScript::touch_press_callback(int p_event_type, const Em
 			lowest_id_index = i;
 		if (!touch.isChanged)
 			continue;
+		ev.instantiate();
 		ev->set_index(touch.identifier);
 		ev->set_position(compute_position_in_canvas(touch.clientX, touch.clientY));
 		display->touches[i] = ev->get_position();
@@ -534,7 +535,6 @@ EM_BOOL DisplayServerJavaScript::touch_press_callback(int p_event_type, const Em
 EM_BOOL DisplayServerJavaScript::touchmove_callback(int p_event_type, const EmscriptenTouchEvent *p_event, void *p_user_data) {
 	DisplayServerJavaScript *display = get_singleton();
 	Ref<InputEventScreenDrag> ev;
-	ev.instantiate();
 	int lowest_id_index = -1;
 	for (int i = 0; i < p_event->numTouches; ++i) {
 		const EmscriptenTouchPoint &touch = p_event->touches[i];
@@ -542,6 +542,7 @@ EM_BOOL DisplayServerJavaScript::touchmove_callback(int p_event_type, const Emsc
 			lowest_id_index = i;
 		if (!touch.isChanged)
 			continue;
+		ev.instantiate();
 		ev->set_index(touch.identifier);
 		ev->set_position(compute_position_in_canvas(touch.clientX, touch.clientY));
 		Point2 &prev = display->touches[i];
