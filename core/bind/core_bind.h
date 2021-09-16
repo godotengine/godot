@@ -256,6 +256,7 @@ public:
 	Vector<String> get_cmdline_args();
 
 	String get_locale() const;
+	String get_locale_language() const;
 	String get_latin_keyboard_variant() const;
 	int keyboard_get_layout_count() const;
 	int keyboard_get_current_layout() const;
