@@ -43,7 +43,7 @@ class ParallaxLayer : public Node2D {
 	Vector2 mirroring;
 	void _update_mirroring();
 
-	Point2 screen_offset = Point2(0, 0);
+	Point2 screen_offset;
 
 protected:
 	void _notification(int p_what);

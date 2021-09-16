@@ -53,7 +53,7 @@ class Polygon2D : public Node2D {
 	Ref<Texture2D> texture;
 
 	Size2 tex_scale = Vector2(1, 1);
-	Vector2 tex_ofs = Vector2(0, 0);
+	Vector2 tex_ofs;
 	bool tex_tile = true;
 	real_t tex_rot = 0.0;
 	bool invert = false;
