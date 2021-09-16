@@ -834,11 +834,9 @@ void CodeTextEditor::_line_col_changed() {
 	}
 
 	StringBuilder sb;
-	sb.append("(");
-	sb.append(itos(text_editor->get_caret_line() + 1).lpad(3));
-	sb.append(",");
+	sb.append(itos(text_editor->get_caret_line() + 1).lpad(4));
+	sb.append(" : ");
 	sb.append(itos(positional_column + 1).lpad(3));
-	sb.append(")");
 
 	line_and_col_txt->set_text(sb.as_string());
 }
