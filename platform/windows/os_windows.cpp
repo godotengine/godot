@@ -1477,8 +1477,9 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 		// If the user has mouse trails enabled in windows, then sometimes the cursor disappears in fullscreen mode.
 		// Save number of trails so we can restore when exiting, then turn off mouse trails
 		SystemParametersInfoA(SPI_GETMOUSETRAILS, 0, &restore_mouse_trails, 0);
-		if (restore_mouse_trails > 0)
+		if (restore_mouse_trails > 1) {
 			SystemParametersInfoA(SPI_SETMOUSETRAILS, 0, 0, 0);
+		}
 	}
 
 	DWORD dwExStyle;
@@ -1839,8 +1840,9 @@ void OS_Windows::finalize() {
 		SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)user_proc);
 	};
 
-	if (restore_mouse_trails > 0)
+	if (restore_mouse_trails > 1) {
 		SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, 0, 0);
+	}
 }
 
 void OS_Windows::finalize_core() {
@@ -2227,8 +2229,9 @@ void OS_Windows::set_window_fullscreen(bool p_enabled) {
 		MoveWindow(hWnd, pos.x, pos.y, size.width, size.height, TRUE);
 
 		SystemParametersInfoA(SPI_GETMOUSETRAILS, 0, &restore_mouse_trails, 0);
-		if (restore_mouse_trails > 0)
+		if (restore_mouse_trails > 1) {
 			SystemParametersInfoA(SPI_SETMOUSETRAILS, 0, 0, 0);
+		}
 	} else {
 
 		RECT rect;
@@ -2250,8 +2253,9 @@ void OS_Windows::set_window_fullscreen(bool p_enabled) {
 
 		pre_fs_valid = true;
 
-		if (restore_mouse_trails > 0)
+		if (restore_mouse_trails > 1) {
 			SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, 0, 0);
+		}
 	}
 }
 bool OS_Windows::is_window_fullscreen() const {
