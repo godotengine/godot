@@ -771,6 +771,18 @@ static GDNativeTypePtr gdnative_packed_vector3_array_operator_index_const(const 
 	return (GDNativeTypePtr)&self->ptr()[p_index];
 }
 
+static GDNativeVariantPtr gdnative_array_operator_index(GDNativeTypePtr p_self, GDNativeInt p_index) {
+	Array *self = (Array *)p_self;
+	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
+	return (GDNativeTypePtr)&self[p_index];
+}
+
+static GDNativeVariantPtr gdnative_array_operator_index_const(const GDNativeTypePtr p_self, GDNativeInt p_index) {
+	const Array *self = (const Array *)p_self;
+	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
+	return (GDNativeTypePtr)&self[p_index];
+}
+
 /* OBJECT API */
 
 static void gdnative_object_method_bind_call(const GDNativeMethodBindPtr p_method_bind, GDNativeObjectPtr p_instance, const GDNativeVariantPtr *p_args, GDNativeInt p_arg_count, GDNativeVariantPtr r_return, GDNativeCallError *r_error) {
@@ -978,6 +990,9 @@ void gdnative_setup_interface(GDNativeInterface *p_interface) {
 	gdni.packed_vector2_array_operator_index_const = gdnative_packed_vector2_array_operator_index_const;
 	gdni.packed_vector3_array_operator_index = gdnative_packed_vector3_array_operator_index;
 	gdni.packed_vector3_array_operator_index_const = gdnative_packed_vector3_array_operator_index_const;
+
+	gdni.array_operator_index = gdnative_array_operator_index;
+	gdni.array_operator_index_const = gdnative_array_operator_index_const;
 
 	/* OBJECT */
 
