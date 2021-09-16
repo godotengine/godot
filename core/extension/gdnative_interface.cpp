@@ -1005,6 +1005,8 @@ void gdnative_setup_interface(GDNativeInterface *p_interface) {
 	gdni.classdb_register_extension_class_method = nullptr;
 	gdni.classdb_register_extension_class_integer_constant = nullptr;
 	gdni.classdb_register_extension_class_property = nullptr;
+	gdni.classdb_register_extension_class_property_group = nullptr;
+	gdni.classdb_register_extension_class_property_subgroup = nullptr;
 	gdni.classdb_register_extension_class_signal = nullptr;
 	gdni.classdb_unregister_extension_class = nullptr;
 }

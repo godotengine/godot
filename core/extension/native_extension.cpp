@@ -184,6 +184,7 @@ void NativeExtension::_register_extension_class_integer_constant(const GDNativeE
 
 	ClassDB::bind_integer_constant(class_name, p_enum_name, p_constant_name, p_constant_value);
 }
+
 void NativeExtension::_register_extension_class_property(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const GDNativePropertyInfo *p_info, const char *p_setter, const char *p_getter) {
 	NativeExtension *self = (NativeExtension *)p_library;
 
@@ -200,6 +201,24 @@ void NativeExtension::_register_extension_class_property(const GDNativeExtension
 	pinfo.usage = p_info->usage;
 
 	ClassDB::add_property(class_name, pinfo, p_setter, p_getter);
+}
+
+void NativeExtension::_register_extension_class_property_group(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_group_name, const char *p_prefix) {
+	NativeExtension *self = (NativeExtension *)p_library;
+
+	StringName class_name = p_class_name;
+	ERR_FAIL_COND_MSG(!self->extension_classes.has(class_name), "Attempt to register extension class property group '" + String(p_group_name) + "' for unexisting class '" + class_name + "'.");
+
+	ClassDB::add_property_group(class_name, p_group_name, p_prefix);
+}
+
+void NativeExtension::_register_extension_class_property_subgroup(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_subgroup_name, const char *p_prefix) {
+	NativeExtension *self = (NativeExtension *)p_library;
+
+	StringName class_name = p_class_name;
+	ERR_FAIL_COND_MSG(!self->extension_classes.has(class_name), "Attempt to register extension class property subgroup '" + String(p_subgroup_name) + "' for unexisting class '" + class_name + "'.");
+
+	ClassDB::add_property_subgroup(class_name, p_subgroup_name, p_prefix);
 }
 
 void NativeExtension::_register_extension_class_signal(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_signal_name, const GDNativePropertyInfo *p_argument_info, GDNativeInt p_argument_count) {
@@ -325,6 +344,8 @@ void NativeExtension::initialize_native_extensions() {
 	gdnative_interface.classdb_register_extension_class_method = _register_extension_class_method;
 	gdnative_interface.classdb_register_extension_class_integer_constant = _register_extension_class_integer_constant;
 	gdnative_interface.classdb_register_extension_class_property = _register_extension_class_property;
+	gdnative_interface.classdb_register_extension_class_property_group = _register_extension_class_property_group;
+	gdnative_interface.classdb_register_extension_class_property_subgroup = _register_extension_class_property_subgroup;
 	gdnative_interface.classdb_register_extension_class_signal = _register_extension_class_signal;
 	gdnative_interface.classdb_unregister_extension_class = _unregister_extension_class;
 }
